@@ -1,5 +1,6 @@
 # Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights
 # reserved.
+# Copyright (c) 2013, Monty Program Ab.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -100,16 +101,16 @@ sub say {
     if ($text =~ m{[\r\n]}sio) {
         foreach my $line (split (m{[\r\n]}, $text)) {
             if (defined $logger) {
-                $logger->info($line);
+                $logger->info("[$$] ".$line);
             } else {
-                print "# ".isoTimestamp()." $line\n";
+                print "# ".isoTimestamp()." [$$] $line\n";
             }
         }
     } else {
         if (defined $logger) {
-            $logger->info($text);
+            $logger->info("[$$] ".$text);
         } else {
-            print "# ".isoTimestamp()." $text\n";
+            print "# ".isoTimestamp()." [$$] $text\n";
         }
     }
 }

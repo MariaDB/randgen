@@ -1,5 +1,6 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Use is subject to license terms.
+# Copyright (c) 2013, Monty Program Ab.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -660,9 +661,9 @@ sub execute {
 		        # Mark invalid queries in the trace by prefixing each line.
 		        # We need to prefix all lines of multi-line statements also.
 		        $trace_query =~ s/\n/\n# [sqltrace]    /g;
-		        print '# [sqltrace] ERROR '.$err.": $trace_query;\n";
+		        print '# [$$] [sqltrace] ERROR '.$err.": $trace_query;\n";
 		} else {
-			print "$trace_query;\n";
+			print "[$$] $trace_query;\n";
 		}
 	}
 
