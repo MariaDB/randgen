@@ -438,7 +438,7 @@ sub startServer {
             $pid =~ m/([0-9]+)/;
             $self->[MYSQLD_SERVERPID] = int($1);
         } else {
-            exec("$command > \"$errorlog\"  2>&1") || croak("Could not start mysql server");
+            exec("$command >> \"$errorlog\"  2>&1") || croak("Could not start mysql server");
         }
     }
     
