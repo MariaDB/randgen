@@ -194,8 +194,6 @@ sub new {
                                "--datadir=".$self->datadir,
                                $self->_messages,
                                "--character-sets-dir=".$self->[MYSQLD_CHARSETS],
-                               "--default-storage-engine=myisam",
-                               "--log-warnings=0",
                                "--tmpdir=".$self->tmpdir];    
 
     if ($self->[MYSQLD_START_DIRTY]) {
@@ -343,7 +341,7 @@ sub createMysqlBase  {
         system("$command < \"$boot\" > \"$bootlog\"");
     } else {
         my $boot_options = ["--no-defaults","--bootstrap"];
-        push(@$boot_options,"--loose-skip-innodb") if $self->_olderThan(5,6,3);
+        push(@$boot_options,"--loose-skip-innodb --default-storage-engine=MyISAM") if $self->_olderThan(5,6,3);
         my $command = $self->generateCommand($boot_options,
                                              $self->[MYSQLD_STDOPTS]);
         my $bootlog = $self->vardir."/boot.log";
@@ -363,14 +361,7 @@ sub startServer {
     my $command = $self->generateCommand(["--no-defaults"],
                                          $self->[MYSQLD_STDOPTS],
                                          ["--core-file",
-                                          #"--skip-ndbcluster",
-                                          #"--skip-grant",
-                                          "--loose-new",
-                                          "--relay-log=slave-relay-bin",
-                                          "--loose-innodb",
-                                          "--max-allowed-packet=16Mb",	# Allow loading bigger blobs
-                                          "--loose-innodb-status-file=1",
-                                          "--master-retry-count=65535",
+                                          "--max-allowed-packet=128Mb",	# Allow loading bigger blobs
                                           "--port=".$self->port,
                                           "--socket=".$self->socketfile,
                                           "--pid-file=".$self->pidfile],
