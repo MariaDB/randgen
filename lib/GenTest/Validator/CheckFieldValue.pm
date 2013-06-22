@@ -65,14 +65,14 @@ sub validate {
 			or ( ( $sign eq '<=' ) and not ( $val <= $value ) )
 			or ( ( $sign eq '>=' ) and not ( $val >= $value ) ) )
 		{
-			say("ERROR: For row " . ( $r + 1 ) . " result " . $val . " does not meet the condition $sign $value");
+			say("ERROR: For query \'$query\' on row " . ( $r + 1 ) . " result " . $val . " does not meet the condition $sign $value");
 			my $rowset = '';
 			foreach my $i ( 0..$#{$result->data()->[$row-1]} ) 
 			{
 				$rowset .= " [" . ($i + 1 ) . "] : " . $result->data()->[$r]->[$i] . ";";
 			}
 			say("Full row:$rowset");
-			return STATUS_ENVIRONMENT_FAILURE;
+			return STATUS_REQUIREMENT_UNMET;
 		}
 	}
 	return STATUS_OK;
