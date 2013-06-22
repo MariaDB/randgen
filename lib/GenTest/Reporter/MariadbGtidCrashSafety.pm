@@ -51,7 +51,7 @@ use DBServer::MySQL::MySQLd;
 my $first_reporter;
 my $last_crash_time;
 my $slave_dsn;
-my $gtid_prev_seq_no = 0;
+my %gtid_prev_seq_no = ();
 my $dbh;
 my $restart_count = 0;
 
@@ -104,14 +104,29 @@ sub check_gtid_status {
 		."  gtid_slave_pos:   $gtid_status[2]\n"
 		."  gtid_binlog_pos:  $gtid_status[3]"
 	);
-	if ($gtid_status[4] < $gtid_prev_seq_no) {
-		say("ERROR: current maximum seq_no $gtid_status[4] is less than the last stored seq_no $gtid_prev_seq_no. \nStopping replication, the test will continue without this reporter");
+	if (check_seq_no($gtid_status[1]) != STATUS_OK) {
+		say("Stopping replication, the test will continue without this reporter");
 		$dbh->do("STOP SLAVE");
 		return STATUS_REPLICATION_FAILURE;
 	} 
-	$gtid_prev_seq_no = $gtid_status[4];
 	return STATUS_OK;
 }	
+
+sub check_seq_no {
+	my $curpos = shift;
+	my @cur_pos = split /,/, $curpos;
+	foreach (@cur_pos) {
+		if (/(\d+)-\d+-(\d+)/) {
+			if ( $2 < $gtid_prev_seq_no{$1} ) {
+				say("ERROR: for domain $1 current seq_no $2 is less than the previously stored seq_no $gtid_prev_seq_no{$1}");
+				return STATUS_REPLICATION_FAILURE;
+			}
+			$gtid_prev_seq_no{$1} = $2;
+		}
+	}
+	return STATUS_OK;
+}
+
 
 sub report {
 	return STATUS_OK;
