@@ -1,4 +1,5 @@
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, Monty Program Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -201,8 +202,19 @@ sub startServer {
 
 sub waitForSlaveSync {
     my ($self) = @_;
-    my ($file, $pos) = $self->master->dbh->selectrow_array("SHOW MASTER STATUS");
-    say("master status $file/$pos");
+    my ($file, $pos) = $self->master->dbh->selectrow_array("SHOW MASTER STATUS"); 
+    # Workaround for a race condition between killing ErrorFilter and this function
+    # (killing ErrorFilter makes the main connection disconnect, and if it happens after
+    #  the ping in dbh(), we end up with an error here).
+    if ($self->master->dbh->err) {
+        ($file, $pos) = $self->master->dbh->selectrow_array("SHOW MASTER STATUS"); 
+        # If we got the error again, something is wrong
+        if ($self->master->dbh->err) { 
+            say("ERROR: Could not retrieve master status, error code: " . $self->master->dbh->err);
+            return DBSTATUS_FAILURE;
+        }
+    }        
+    say("master status $file/$pos - waiting for the slave to catch up with the master...");
     my $wait_result = $self->slave->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
     if (not defined $wait_result) {
         my @slave_status = $self->slave->dbh->selectrow_array("SHOW SLAVE STATUS");
