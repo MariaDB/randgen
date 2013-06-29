@@ -599,7 +599,7 @@ if (($gentest_result == STATUS_OK) && ($rpl_mode || (defined $basedirs[1]) || $g
 	if ($rpl_mode ne '') {
 		$diff_result = $rplsrv->waitForSlaveSync;
 		if ($diff_result != STATUS_OK) {
-			exit_test($dump_result >> 8);
+			exit_test(STATUS_INTERNAL_ERROR);
 		}
 	}
   
