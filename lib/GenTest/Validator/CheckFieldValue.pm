@@ -36,12 +36,12 @@ use GenTest::Validator;
 
 sub validate {
 	my ($validator, $executors, $results) = @_;
-
+	$| = 1;
 	my $executor = $executors->[0];
 	my $result = $results->[0];
 	my $query = $result->query();
 
-	return STATUS_OK if $query !~ m{validate\s+(\d+)\s*([<>=]+)\s*(\w+)\s+for\s+row\s+(\d+|all)}io;
+	return STATUS_OK if $query !~ m{validate\s+(\d+)\s*(\S+)\s*(.+?)\s+for\s+row\s+(\d+|all)}io;
 	my ($pos, $sign, $value, $row) = ($1, $2, $3, lc($4));
 
 	my @rownums = ();
@@ -58,12 +58,15 @@ sub validate {
 	foreach my $r ( @rownums ) 
 	{
 		my $val = $result->data()->[$r]->[$pos-1];
-
-		if ( ( ( $sign eq '=' or $sign eq '==' ) and not ( $val == $value ) )
+		if ( ( ( $sign eq '=' or $sign eq '==' ) and not ( $val eq $value ) )
+			or ( ( $sign eq '!=' or $sign eq '<>' ) and ( $val eq $value ) )
 			or ( ( $sign eq '<' ) and not ( $val < $value ) ) 
 			or ( ( $sign eq '>' ) and not ( $val > $value ) )
 			or ( ( $sign eq '<=' ) and not ( $val <= $value ) )
-			or ( ( $sign eq '>=' ) and not ( $val >= $value ) ) )
+			or ( ( $sign eq '>=' ) and not ( $val >= $value ) ) 
+			or ( ( $sign eq '~' or ( $sign eq '=~') ) and not ( $val =~ /$value/ ) ) 
+			or ( ( $sign eq '!~' ) and ( $val =~ /$value/ ) ) 
+		)
 		{
 			say("ERROR: For query \'$query\' on row " . ( $r + 1 ) . " result " . $val . " does not meet the condition $sign $value");
 			my $rowset = '';
