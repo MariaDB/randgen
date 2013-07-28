@@ -738,7 +738,6 @@ sub execute {
 				push @data, \@row;				
 			}
 
-			$row_count++;
 			last if ($row_count > MAX_ROWS_THRESHOLD);
 		}
 
