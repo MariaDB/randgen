@@ -23,6 +23,15 @@ else
   mkdir $WORKDIR/$WORKDIRSUB
   mkdir $WORKDIR/$WORKDIRSUB/tmp
   export TMP=$WORKDIR/$WORKDIRSUB/tmp
+
+  # Special preparation: _epoch temporary directory setup
+  mkdir $WORKDIR/$WORKDIRSUB/_epoch
+  export EPOCH_DIR=$WORKDIR/$WORKDIRSUB/_epoch
+
+  # Make sure we keep a copy of the yy grammars
+  mkdir $WORKDIR/$WORKDIRSUB/KEEP
+  cp * $WORKDIR/$WORKDIRSUB/KEEP
+
   cd $RQGDIR
   MTR_BUILD_THREAD=$MTR_BT; perl ./combinations.pl \
   --clean \

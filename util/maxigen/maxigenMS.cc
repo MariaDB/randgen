@@ -21,32 +21,20 @@ $combinations=
 [
  ['
   --seed=random --duration=300 --querytimeout=60
-  --short_column_names
   --reporter=Shutdown,Backtrace,QueryTimeout,ErrorLog,ErrorLogAlarm
   --mysqld=--log-output=none --mysqld=--sql_mode=ONLY_FULL_GROUP_BY
-  --grammar=conf/percona_qa/percona_qa.yy --gendata=conf/percona_qa/percona_qa.zz'
- ],[
-  '--basedir=/Percona-Server',
-  '--basedir=/Percona-Server --valgrind --reporter=ValgrindErrors --validator=MarkErrorLog'
+  --mysqld=--slow_query_log'
  ],[
   '--threads=1',
   '--threads=25'
  ],[
-  '--views --mysqld=--innodb_adaptive_hash_index_partitions=1',
-  '--views --notnull',
-  '--validator=Transformer',
-  '--notnull --validator=Transformer --mysqld=--innodb_adaptive_hash_index_partitions=8',
-  '--views --validator=Transformer --mysqld=--innodb_adaptive_hash_index_partitions=16',
-  '--views --notnull --validator=Transformer'
+  '--mysqld=--innodb_file_per_table=1 --validator=Transformer',
+  '--mysqld=--innodb_file_per_table=1 --mysqld=--innodb_file_format=barracuda --views',
+  '--notnull',
+  ''
  ],[
-  '',
-  '--mysqld=--slow_query_log'
+  '--basedir=PERCONA-DBG-SERVER',
+  '--basedir=PERCONA-VAL-SERVER
+   --valgrind --reporter=ValgrindErrors --validator=MarkErrorLog'
  ],[
-  '',
-  '--mysqld=--userstat'
- ],[
-  '',
-  '--mysqld=--innodb_file_per_table=1',
-  '--mysqld=--innodb_file_per_table=1 --mysqld=--innodb_file_format=barracuda'
- ]
-]
+#GRAMMAR-GENDATA-DUMMY-TAG   # do not remove, and leave file otherwise as-is, except you may make modifications above as needed

@@ -24,8 +24,8 @@ else
 fi
 
 RND_DIR=$(echo $RANDOM$RANDOM$RANDOM | sed 's/..\(......\).*/\1/')
-NR_OF_GRAMMARS=100
-LINES_PER_GRAM=10     # The number of queries (rules) to extract from each sub-grammar created from the existing RQG grammars by maxigen.pl
+NR_OF_GRAMMARS=500
+LINES_PER_GRAM=3     # The number of queries (rules) to extract from each sub-grammar created from the existing RQG grammars by maxigen.pl
 QUERIES=$[$NR_OF_GRAMMARS * $LINES_PER_GRAM]
 
 mkdir /tmp/$RND_DIR
@@ -34,20 +34,26 @@ LOOP=0
 for GRAMMAR in $(find $RQG_DIR -maxdepth 2 -name '*.yy'); do 
   LOOP=$[$LOOP +1]
 done
+ORIG_GRAMMARS=$LOOP
 
 FIN_GRAM_SIZE=$[$LINES_PER_GRAM * $LOOP]
-echo "------------------------------------------------------------------------------"
-echo "| Welcome to MaxiGen v0.20 - A Powerfull RQG Grammar Generator"
-echo "------------------------------------------------------------------------------"
+echo "----------------------------------------------------------------------------------------"
+echo "| Welcome to MaxiGen v0.41 - A Powerfull RQG Random Grammar Generator"
+echo "----------------------------------------------------------------------------------------"
+echo "| IMPORTANT: by default a Percona-Server-only compatible cc file is used (maxigen.cc)"
+echo "| If you would like to use the MySQL-Server compatible cc file maxigenMS.cc (and thus"
+echo "| avoid a failed RQG run, due to all trials ending in STATUS_ENVIRONMENT_FAILURE), then"
+echo "| please rename maxigenMS.cc to maxigen.cc, to let maxigen.sh use this file instead!"
+echo "----------------------------------------------------------------------------------------"
 echo "| Number of original RQG grammars in $RQG_DIR: $LOOP"
 echo "| Number of new random grammars requested: $NR_OF_GRAMMARS"
 echo "| Number of lines taken from each original RQG grammar: $LINES_PER_GRAM"
 echo "| So, we will generate $QUERIES rules per original RQG grammar,"
 echo "| resulting in approx $FIN_GRAM_SIZE rules per generated new random grammar"
-echo "------------------------------------------------------------------------------"
+echo "----------------------------------------------------------------------------------------"
 
 LOOP=0
-echo "Stage 1: generating initial grammar files in: /tmp/$RND_DIR/"
+echo -e "\nStage 1 ($ORIG_GRAMMARS): Generating initial grammar files in: /tmp/$RND_DIR/"
 for GRAMMAR in $(find $RQG_DIR -maxdepth 2 -name '*.yy'); do 
   LOOP=$[$LOOP +1]
   SEED=$[$RANDOM % 10000]
@@ -61,46 +67,54 @@ for GRAMMAR in $(find $RQG_DIR -maxdepth 2 -name '*.yy'); do
   > /tmp/$RND_DIR/${LOOP}.yy 2>/dev/null
   echo -n "$LOOP..."
 done
-echo -e "\n"
 
 LOOP=0
-echo "Stage 2: looping through files and filtering faulty lines, failed grammars and unhandy Perl code"
+echo -e "\n\nStage 2 ($ORIG_GRAMMARS): Looping through files; filtering faulty lines, grammar failures, and unhandy Perl code"
 for GRAMMAR in $(find /tmp/$RND_DIR/ -name '*.yy'); do
   LOOP=$[$LOOP +1]
   #egrep -v "^$|^[; \t]*$|Sentence is now longer|return undef|no strict|{|}" $GRAMMAR > ${GRAMMAR}.new
   # Maybe Perl is not so unhandy after all. Example:
   #  SELECT * FROM { if (scalar(@created_tables) > 0) { $prng->arrayElement(\@created_tables) } else { $prng->letter() } };
-  # To be tested, may be ok for some, not ok for others
-  egrep -v "^$|^[; \t]*$|SET SESSION debug|SET GLOBAL debug|Sentence is now longer" $GRAMMAR > ${GRAMMAR}.new
+  # To be tested, may be ok for some, not ok for others. Example: filtering " table1 " as queries with this string create all trials to fail.
+  egrep -v "^$|^[; \t]*$|SET SESSION debug|SET GLOBAL debug| table1 |Sentence is now longer" $GRAMMAR > ${GRAMMAR}.new
   rm ${GRAMMAR}
   mv ${GRAMMAR}.new ${GRAMMAR}
   echo -n "$LOOP..."
 done
-echo -e "\n"
 
 LOOP=0
-echo "Stage 3: Shuffle mix all queries generated from existing RQG grammars into $NR_OF_GRAMMARS new grammars"
+echo -e "\n\nStage 3 ($ORIG_GRAMMARS): Random sort all lines in each file"
+for GRAMMAR in $(find /tmp/$RND_DIR/ -name '*.yy'); do
+  LOOP=$[$LOOP +1]
+  while read i; do echo "`printf '%05d' $RANDOM`$i"; done < ${GRAMMAR} | sort | sed 's/^.\{5\}//' > ${GRAMMAR}.new
+  rm ${GRAMMAR}
+  mv ${GRAMMAR}.new ${GRAMMAR}
+  echo -n "$LOOP..."
+done
+
+LOOP=0
+echo -e "\n\nStage 4 ($ORIG_GRAMMARS): Shuffle mix all queries generated from existing RQG grammars into $NR_OF_GRAMMARS new grammars"
 for GRAMMAR in $(find /tmp/$RND_DIR/ -name '*.yy'); do
   LOOP=$[$LOOP +1]
   for ((i=1;i<=$NR_OF_GRAMMARS;i++)); do
     TOP=$[ $i * $LINES_PER_GRAM - $LINES_PER_GRAM + 1]
     END=$[ $i * $LINES_PER_GRAM ]
+    # This sed will *not* duplicate end-of-file lines if there aren't sufficient lines; output will simply be blank when addressing past EOF
     sed -n "${TOP},${END}p" $GRAMMAR >> /tmp/$RND_DIR/_${i}.yy
   done
   echo -n "$LOOP..."
 done
-echo -e "\n"
 
 # Delete old grammars
 rm /tmp/$RND_DIR/[0-9]*.yy
 
 LOOP=0
-echo "Stage 4: Setup grammars to be correctly formed"
+echo -e "\n\nStage 5 ($NR_OF_GRAMMARS): Setup grammars to be correctly formed"
 for GRAMMAR in $(find /tmp/$RND_DIR/ -name '*.yy'); do
   LOOP=$[$LOOP +1]
   echo "query:" > /tmp/$RND_DIR/${LOOP}.yy
   cat $GRAMMAR | sed 's/;[ \t]*$/ |/' >> /tmp/$RND_DIR/${LOOP}.yy
-  echo ";" >> /tmp/$RND_DIR/${LOOP}.yy
+  echo "SELECT 1 ;" >> /tmp/$RND_DIR/${LOOP}.yy
   echo -n "$LOOP..."
 done
 echo -e "\n"
@@ -121,7 +135,12 @@ done
 # Insert new random yy grammars into cc template
 for GRAMMAR in $(find /tmp/$RND_DIR/ -name '*.yy'); do
   echo "  '--grammar=$GRAMMAR" >> /tmp/$RND_DIR/maxigen.cc
-  sort -uR /tmp/$RND_DIR/GENDATA.txt | head -n1 >> /tmp/$RND_DIR/maxigen.cc
+  INT_GD_RAND=$[$RANDOM % 5]
+  if [ $INT_GD_RAND -lt 1 ]; then # Use built-in gendata (-lt 1 = ~20% of runs)
+    echo "   '," >> /tmp/$RND_DIR/maxigen.cc
+  else
+    sort -uR /tmp/$RND_DIR/GENDATA.txt | head -n1 >> /tmp/$RND_DIR/maxigen.cc
+  fi
 done
 echo -e " ]\n]" >> /tmp/$RND_DIR/maxigen.cc
 rm /tmp/$RND_DIR/GENDATA.txt
@@ -143,9 +162,10 @@ if [ $(ls -1d /ssd/Percona-Server*-debug* | grep -v '.tar.gz' | wc -l) -eq 2 ]; 
   echo "(Valgrind: $VALGR)"
 else 
   echo -e "\nOnly thing left to do;"
-  echo "=====> cd /tmp/$RND_DIR/; vi maxigen.cc <====="
-  echo " > Change 'PERCONA-DBG-SERVER' and 'PERCONA-VAL-SERVER' to normal debug/valgrind server location path names,"
-  echo "   for example; use /ssd/Percona-Server-5.6.11-rc60.3-383-debug.Linux.x86_64 instead of PERCONA-DBG-SERVER"
-  echo "./maxirun.sh"
+  echo "=====> cd /tmp/$RND_DIR/; vi maxirun.sh; vi maxigen.cc <====="
+  echo " > Change the WORKDIR variable (default: /ssd) in maxirun.sh to the location you prefer as workdir"
+  echo " > Change 'PERCONA-DBG-SERVER' and 'PERCONA-VAL-SERVER' to normal debug/valgrind server location path names, for example use"
+  echo "   /ssd/Percona-Server-5.6.11-rc60.3-383-debug.Linux.x86_64 instead of PERCONA-DBG-SERVER. Make these changes in maxigen.cc"
+  echo "====> ./maxirun.sh <====="
 fi
 
