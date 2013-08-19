@@ -174,13 +174,13 @@ sub next {
 	my $item_nodash;
 	my $orig_item;
 
+
 	foreach (@sentence) {
 		next if $_ eq ' ';
-		next if $_ eq uc($_);				# Short-cut for UPPERCASE literals
+		next if $_ eq uc($_) and substr($_, 0, 1) ne '{';				# Short-cut for UPPERCASE literals
 		next if $_ eq 'executor1' || $_ eq 'executor2' || $_ eq 'executor3' ;
 
 		$orig_item = $_;
-
 		if (
 			(substr($_, 0, 1) eq '{') &&
 			(substr($_, -1, 1) eq '}')
