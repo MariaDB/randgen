@@ -603,6 +603,7 @@ sub execute {
 	my $trace_query;
 	my $trace_me = 0;
 
+
 	# Write query to log before execution so it's sure to get there
 	if ($executor->sqltrace) {
 		if ($query =~ m{(procedure|function)}sgio) {
