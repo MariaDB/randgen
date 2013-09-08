@@ -54,6 +54,7 @@ my $slave_dsn;
 my %gtid_prev_seq_no = ();
 my $dbh;
 my $restart_count = 0;
+my $crash_interval = 30; # Time interval between slave crashes; also used as a slave connect timeout
 
 sub monitor {
 	my $reporter = shift;
@@ -78,7 +79,7 @@ sub monitor {
 
 	$last_crash_time = $reporter->testStart() if not defined $last_crash_time;
 
-	if (time() > $last_crash_time + 30) {
+	if (time() > $last_crash_time + $crash_interval) {
 		$last_crash_time = time();
 		my $pid = $reporter->properties->servers->[1]->serverpid();
 		say("Sending SIGKILL to server with pid $pid in order to force crash recovery");
@@ -179,14 +180,15 @@ sub restart {
 				say("Starting replication...");
 				$dbh->do("START SLAVE");
 				my ($sql_thread, $io_thread, $sql_error, $io_error);
-				do {
+				foreach (1..$crash_interval) {
 					sleep(1);
 		     		my @slave_status = $dbh->selectrow_array("SHOW SLAVE STATUS");
 		     		($sql_thread, $io_thread, $sql_error, $io_error) = ($slave_status[11], $slave_status[10], $slave_status[37], $slave_status[35]);
 					say("Current replication status: IO thread $io_thread, SQL thread $sql_thread");
-				} until ( ( $sql_thread eq 'Yes' and $io_thread eq 'Yes' ) or ( $sql_thread eq 'No' and $sql_error ) or ( $io_thread eq 'No' and $io_error ) );
+					last if ( ( $sql_thread eq 'Yes' and $io_thread eq 'Yes' ) or ( $sql_thread eq 'No' and $sql_error ) or ( $io_thread eq 'No' and $io_error ) );
+				}
 
-				if ( $sql_thread eq 'No' or $io_thread eq 'No' ) {
+				if ( $sql_thread ne 'Yes' or $io_thread ne 'Yes' ) {
 					say("Slave start failed. SQL thread: status [$sql_thread], error [$sql_error]; IO thread: status [$io_thread], error [$io_error]");
 					$restart_status = STATUS_REPLICATION_FAILURE;
 					last;
