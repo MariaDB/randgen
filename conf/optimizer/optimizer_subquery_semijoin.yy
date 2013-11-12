@@ -199,18 +199,10 @@ general_subquery:
     ( existing_table_item . int_field_name , existing_table_item . int_field_name ) not IN int_double_member_subquery |
     ( existing_table_item . int_field_name , existing_table_item . int_field_name ) not IN int_double_member_subquery |
     ( existing_table_item . int_field_name , existing_table_item . int_field_name ) not IN int_double_member_subquery |
-    ( existing_table_item . int_field_name , existing_table_item . int_field_name ) not IN int_double_member_subquery |
     existing_table_item . char_field_name membership_operator  char_single_member_subquery  |
     ( existing_table_item . char_field_name , existing_table_item . char_field_name ) not IN char_double_member_subquery |
     ( existing_table_item . char_field_name , existing_table_item . char_field_name ) not IN char_double_member_subquery |
     ( existing_table_item . char_field_name , existing_table_item . char_field_name ) not IN char_double_member_subquery |
-    ( existing_table_item . char_field_name , existing_table_item . char_field_name ) not IN char_double_member_subquery |
-    ( _digit, _digit ) not IN int_double_member_subquery |
-    ( _char, _char ) not IN char_double_member_subquery |
-    ( _digit, _digit ) not IN int_double_member_subquery |
-    ( _char, _char ) not IN char_double_member_subquery |
-    ( _digit, _digit ) not IN int_double_member_subquery |
-    ( _char, _char ) not IN char_double_member_subquery |
     ( _digit, _digit ) not IN int_double_member_subquery |
     ( _char, _char ) not IN char_double_member_subquery |
     ( _digit, _digit ) not IN int_double_member_subquery |
@@ -656,7 +648,7 @@ order_by_item:
         alias1 . _field_indexed , existing_table_item .`pk` desc  |
         alias1 . _field_indexed desc |
 	existing_select_item desc |
-        CONCAT ( existing_table_item . char_field_name, existing_table_item . char_field_name );
+        CONCAT( existing_table_item . char_field_name, existing_table_item . char_field_name );
 desc:
         ASC | | DESC ; 
 
@@ -706,7 +698,7 @@ select_subquery_body_disabled:
 
 combo_select_item:
     ( ( table_one_two . int_field_name ) math_operator ( table_one_two . int_field_name ) ) AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-    CONCAT ( table_one_two . char_field_name , table_one_two . char_field_name ) AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
+    CONCAT( table_one_two . char_field_name , table_one_two . char_field_name ) AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 table_one_two:
 	alias1 | alias1 | alias2 ;
@@ -728,9 +720,8 @@ aggregate:
 # track of what we have added.  You shouldn't need to touch these ever         #
 ################################################################################
 new_table_item:
-	_table AS { "alias".++$tables } | _table AS { "alias".++$tables } | _table AS { "alias".++$tables } ;
-#|
- #       ( from_subquery ) AS { "alias".++$tables } ;
+	_table AS { "alias".++$tables } | _table AS { "alias".++$tables } | _table AS { "alias".++$tables } |
+       ( from_subquery ) AS { "alias".++$tables } ;
 
 from_subquery:
        { $subquery_idx += 1 ; $subquery_tables=0 ; ""}  SELECT distinct select_option subquery_table_one_two . * subquery_body  ;
