@@ -19,31 +19,27 @@
 # Certain parts (c) Percona Inc
 
 # Suggested use:
-# 1. Use this grammar (percona_qa.yy) in combination with percona_qa.zz & percona_qa.cc
+# 1. Use this grammar (tokudb.yy) in combination with tokudb.zz* & tokudb.cc
 # 2. Use a duration of 300 to 900 seconds. Short durations ensure fresh/plenty data in the tables
 # 3. For use with combinations.pl (assuming a high-end testing server):
 #    - 10 RQG threads (--parallel=10) with one SQL thread (--threads=1) for single threaded testing
 #    - 8 RQG threads (--parallel=8) with 10-30 SQL threads (--threads=10) for multi threaded testing
 #    - Both these over many (400+) trials, both in normal and Valgrind mode, to catch most issues
 # 4. You can use --short_column_names option to RQG to avoid overly long column names
-# 5. Do not use the --engines option, storage engine assignent is done in percona_qa.zz
+# 5. Do not use the --engines option, storage engine assignent is done in tokudb.zz*
 
-# TODO:
-# Find a working solution for these types of rules:
-#	"log_slow_filter_list,log_slow_filter_list" ; 
-#	"log_slow_verbosity_list,log_slow_verbosity_list";
-#	"slow_query_log_use_global_control_list,slow_query_log_use_global_control_list" ;
-# As they are, they fail, may want to try spaces; " a , a " 
-# Also, PURGE ARCHIVED LOGS TO cannot be added due to not having actual filename.
+query_init:
+	install plugin tokudb soname 'ha_tokudb.so' ; install plugin tokudb_user_data soname 'ha_tokudb.so' ; install plugin tokudb_user_data_exact soname 'ha_tokudb.so' ; install plugin tokudb_file_map soname 'ha_tokudb.so' ; install plugin tokudb_fractal_tree_info soname 'ha_tokudb.so' ; install plugin tokudb_fractal_tree_block_map soname 'ha_tokudb.so' ; set global default_storage_engine=TokuDB ; set session default_storage_engine=TokuDB ;
 
+# Temp workaround: fake_changes |   removed from query: due to feature WIP
+# Temp workaround: i_s |            removed from query: to avoid I_S crashes ftm for tokudb testing 
+#                                   (IMPORTANT: to be re-tested later for tokudb+i_s interoperability)
 query:
-	select | select | insert | insert | delete | delete | replace | update | transaction | i_s |
+	select | select | insert | insert | delete | delete | replace | update | transaction | 
         alter | views | set | flush | proc_func | outfile_infile | update_multi | kill_idle | query_cache |
         ext_slow_query_log | user_stats | drop_create_table | table_comp | table_comp | optimize_table | 
         bitmap | bitmap | archive_logs | thread_pool | max_stmt_time | innodb_prio | locking | prio_shed |
 	cleaner | preflush ;
-
-# Disabled for 5.6 GA checking: fake_changes ;
 
 zero_to_ten:
 	0 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 ;
@@ -63,7 +59,6 @@ zero_to_ttsh:
 hundred_to_thousand:
 	100 | 150 | 200 | 250 | 300 | 400 | 500 | 600 | 650 | 700 | 800 | 900 | 999 | 1000 ;
 
-# Post 5.6 GA, add/try shorter msec durations to max_stmt_time_range also
 max_stmt_time_range:
 	100000 | 200000 | 300000 ;
 
@@ -116,7 +111,7 @@ thread_pool:
 
 archive_logs:
         SHOW ENGINE INNODB STATUS |
-        SET GLOBAL INNODB_LOG_ARCHIVE = onoff |
+        SET GLOBAL INNODB_LOG_ARCHIVE=ON | SET GLOBAL INNODB_LOG_ARCHIVE=OFF |
         SET GLOBAL INNODB_LOG_ARCH_EXPIRE_SEC = _digit |
         PURGE ARCHIVED LOGS BEFORE _datetime |
         PURGE ARCHIVED LOGS BEFORE NOW() ;
@@ -239,8 +234,6 @@ slow_query_log_use_global_control_list:
 	LOG_SLOW_FILTER | LOG_SLOW_RATE_LIMIT | LOG_SLOW_VERBOSITY | LONG_QUERY_TIME | MIN_EXAMINED_ROW_LIMIT | ALL | "" ;
 
 user_stats:
-	SET GLOBAL USERSTAT = moreon |
-	SET GLOBAL THREAD_STATISTICS = moreon | 
 	SELECT user_stats_1 FROM INFORMATION_SCHEMA.USER_STATISTICS |
 	SELECT user_stats_1 FROM INFORMATION_SCHEMA.THREAD_STATISTICS |
 	SELECT user_stats_2 FROM INFORMATION_SCHEMA.TABLE_STATISTICS |
@@ -284,9 +277,6 @@ onoff:
 
 moreoff:
 	0 | 0 | 0 | 0 | 1 ;
-
-moreon:
-	1 | 1 | 0 ;
 
 set:
 	SET GLOBAL innodb_show_verbose_locks = onoff | 

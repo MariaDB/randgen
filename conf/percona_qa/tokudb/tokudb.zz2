@@ -18,23 +18,25 @@
 # Certain parts (c) Percona Inc
 
 $tables = {
-  pk => [undef,'int','int auto_increment','varchar(250)'],
-  engines => ['Memory'],
-  rows => [100,500]
+  pk => [undef,'varchar(250)','char(250)'],
+  engines => ['TokuDB'],
+  rows => [1,10],
+  row_formats => ['tokudb_default','tokudb_fast','tokudb_small']
 };
 
 $fields = {
-  types => ['varchar(250)','char(250)','int','date'],
+  types => ['char(250)','tinyint','tinyblob','tinytext','datetime'],
   indexes => [undef,'unique','key'],
   null => [undef,'not null'],
   default => [undef,'default null'],
   sign => [undef, 'unsigned'],
-  charsets => ['utf8','latin1']
+  charsets => ['utf8']
 };
 
 $data = {
   numbers => ['digit','null',undef],
   temporals => ['datetime','timestamp'],
-  strings => ['varchar(1024)','varchar(1024)','english','letter'],
-  temporals => ['date','year','null',undef]
+  strings => ['varchar(10)','varchar(20)','english','letter'],
+  blobs => ['letter','data','english'],
+  temporals => ['year','datetime','null',undef]
 }

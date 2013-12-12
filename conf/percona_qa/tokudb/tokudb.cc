@@ -17,7 +17,7 @@
 
 # Certain parts (c) Percona Inc
 
-# Version 2.0: Advanced Combinatorics
+# Version 2.0: Advanced Combinatorics (for PS, TokuDB: to be done)
 # Note that --short_column_names is required for this grammar (see .zz1 for use of 'c1' name)
 
 # Workarounds
@@ -29,7 +29,6 @@ $combinations=
   --seed=random --duration=300 --querytimeout=60 --short_column_names
   --reporter=Shutdown,Backtrace,QueryTimeout,ErrorLog,ErrorLogAlarm
   --mysqld=--log-output=none --mysqld=--sql_mode=ONLY_FULL_GROUP_BY
-  
   --mysqld=--utility-user-password=test
  '],[
   '--grammar=conf/percona_qa/5.6/5.6.yy --gendata=conf/percona_qa/5.6/5.6.zz1 --threads=15 --no-mask

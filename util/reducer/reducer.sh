@@ -86,6 +86,7 @@ MYBASE="/sde/Percona-Server-5.6.12-rc60.4-410-debug.Linux.x86_64"
 #VARMOD# < please do not remove this, it is here as a marker for other scripts (including reducer itself) to auto-insert settings
 
 # ======== Ideas for improvement
+# - Add a MYEXRA simplificator at end (extra stage) so that mysqld options are minimal
 # - Improve ";" work in STAGE4 (";" sometimes missing from results - does not affect reproducibility)
 # - Improve VALGRIND/ERRORLOG run work (complete?)
 # - Improve clause elimination when sub queries are used: "ORDER BY f1);" is not filtered due to the ending ")"
@@ -128,6 +129,8 @@ MYBASE="/sde/Percona-Server-5.6.12-rc60.4-410-debug.Linux.x86_64"
 #   - Check if it is a debug server by issuing dummy DEBUG_SYNC command and see if it waits (TIMEOUT?)
 #   - cut_threadsync_chunk is not in use at the moment, this will be used? but try ts_thread_elimination first
 # - Need to capture interrupt (CTRL+C) signal and do some end-processing (show info + locations + copy to tmp if tmpfs/ramfs used)
+# - If "sed: -e expression #1, char 44: unknown option to `s'" text or similar is seen in the output, it is likely due to the #VARMOD# block 
+#   replacement in multi_reducer() failing somewhere. Update RV 16/9: Added functionality to fix/change ":" to "\:" ($FIXED_TEXT) to avoid this error.
 # - Implement cmd line options instead of in-file options. Example:
 #   while [ "$1" != ""]; do
 #    case $1 in
@@ -181,7 +184,11 @@ options_check(){
     echo "As fs.aio-max-nr on this system is lower than 300000, so you will likely run into BUG#12677594: INNODB: WARNING: IO_SETUP() FAILED WITH EAGAIN"
     echo "To prevent this from happening, please use the following command at your shell prompt (you will need to have sudo privileges):"
     echo "sudo sysctl -w fs.aio-max-nr=300000"
-    echo "Or alternatively ask your system administartor to make this a system wide change. The setting can be verified by executing: sysctl fs.aio-max-nr"
+    echo "The setting can be verified by executing: sysctl fs.aio-max-nr"
+    echo "Alternatively, you can add make the following settings to be system wide:"
+    echo "sudo vi /etc/sysctl.conf           # Then, add the following two lines to the bottom of the file"
+    echo "fs.aio-max-nr = 1048576"
+    echo "fs.file-max = 6815744"
     echo "Terminating now."
     exit 1
   fi
@@ -339,10 +346,14 @@ multi_reducer(){
     export MULTI_WORKD=$(eval echo $(echo '$WORKD'"$t"))
     mkdir $MULTI_WORKD
 
+    # This section can likely be improved further by inserting first part of reducer, 
+    # then inserting the variable block VARMOD as a block (potentially even using EOF 
+    # block), and then inserting the final part of reducer.
+    FIXED_TEXT=$(echo "$TEXT" | sed "s|:|\\\:|g")
     cat $0 \
       | sed -e "0,/#VARMOD#/s:#VARMOD#:MULTI_REDUCER=1\n#VARMOD#:" \
       | sed -e "0,/#VARMOD#/s:#VARMOD#:MODE=$MODE\n#VARMOD#:" \
-      | sed -e "0,/#VARMOD#/s:#VARMOD#:TEXT=\"$TEXT\"\n#VARMOD#:" \
+      | sed -e "0,/#VARMOD#/s:#VARMOD#:TEXT=\"$FIXED_TEXT\"\n#VARMOD#:" \
       | sed -e "0,/#VARMOD#/s:#VARMOD#:MODE5_COUNTTEXT=$MODE5_COUNTTEXT\n#VARMOD#:" \
       | sed -e "0,/#VARMOD#/s:#VARMOD#:SKIPV=$SKIPV\n#VARMOD#:" \
       | sed -e "0,/#VARMOD#/s:#VARMOD#:SPORADIC=$SPORADIC\n#VARMOD#:" \
@@ -635,7 +646,7 @@ init_workdir_and_files(){
     $MYBASE/scripts/mysql_install_db --basedir=$MYBASE --datadir=$WORKD/data --user=$MYUSER > $WORKD/mysql_install_db.init 2>&1
     start_mysqld_main
     if ! $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock ping > /dev/null 2>&1; then 
-      echo_out "[Init] [ERROR] Failed to start mysqld server (1st boot), check $WORKD/error.log.out, $WORKD/mysqld.out and $WORKD/mysql_install_db.init"
+      echo_out "[Init] [ERROR] Failed to start mysqld server (1st boot), check $WORKD/error.log.out, $WORKD/mysqld.out, $WORKD/mysql_install_db.init, and maybe $WORKD/data/error.log. Also check that there is plenty of space on the device being used"
       exit 1
     fi
     echo_out "[Init] Loading timezone data into mysql database"
@@ -655,11 +666,15 @@ init_workdir_and_files(){
       echo_out "[Not implemented yet] MODE6 or higher does not auto-generate a $WORK_RUN file yet."
       echo "Not implemented yet: MODE6 or higher does not auto-generate a $WORK_RUN file yet." > $WORK_RUN
       echo "#${MYBASE}/bin/mysql -uroot -S$WORKD/socket.sock < INPUT_FILE_GOES_HERE (like $WORKO)" >> $WORK_RUN
+      chmod +x $WORK_RUN
     else
       echo "${MYBASE}/bin/mysql -uroot -S$WORKD/socket.sock < $WORKO" > $WORK_RUN
+      chmod +x $WORK_RUN
     fi 
     echo "${MYBASE}/bin/mysqladmin -uroot -S$WORKD/socket.sock shutdown" > $WORK_STOP
+    chmod +x $WORK_STOP
     echo "${MYBASE}/bin/mysql -uroot -S$WORKD/socket.sock test" > $WORK_CL
+    chmod +x $WORK_CL
     stop_mysqld
 
     mkdir $WORKD/data.init
@@ -699,6 +714,7 @@ start_mysqld_main(){
     $CMD > $WORKD/mysqld.out 2>&1 &
      PIDV="$!"
     echo "$CMD > $WORKD/mysqld.out 2>&1 &" | sed 's/ \+/ /g' > $WORK_START
+    chmod +x $WORK_START
   else
     CMD="${MYBASE}${BIN} --basedir=$MYBASE --datadir=$WORKD/data --port=$MYPORT \
                          --pid=$WORKD/pid.pid --log-error=$WORKD/error.log.out \
@@ -707,6 +723,7 @@ start_mysqld_main(){
     $CMD > $WORKD/mysqld.out 2>&1 &
      PIDV="$!"
     echo "$CMD > $WORKD/mysqld.out 2>&1 &" | sed 's/ \+/ /g' > $WORK_START
+    chmod +x $WORK_START
   fi
   for X in $(seq 1 120); do
     sleep 1; if $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock ping > /dev/null 2>&1; then break; fi
@@ -726,6 +743,7 @@ start_valgrind_mysqld(){
   $CMD > $WORKD/valgrind.out 2>&1 &
    PIDV="$!"; STARTUPCOUNT=$[$STARTUPCOUNT+1]
   echo "$CMD > $WORKD/valgrind.out 2>&1 &" | sed 's/ \+/ /g' > $WORK_START
+  chmod +x $WORK_START
   for X in $(seq 1 360); do 
     sleep 1; if $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock ping > /dev/null 2>&1; then break; fi
   done
@@ -1217,7 +1235,7 @@ finish(){
     echo_out "[Finish] Final testcase            : $INPUTFILE (= input file, no optimizations were successful)"
   fi
   echo_out "[Finish] Matching startup script   : $WORK_START"
-  if [ $MODE -ge 6]; then
+  if [ $MODE -ge 6 ]; then
     # See init_workdir_and_files() and search for WORK_RUN for more info. Also more info in improvements section at top
     echo_out "[Finish] Matching run script       : $WORK_RUN (though you can look at this file for an example, implementation for MODE6+ is not finished yet)"
   else
