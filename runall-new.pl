@@ -72,7 +72,7 @@ my ($gendata, @basedirs, @mysqld_options, @vardirs, $rpl_mode,
     $report_xml_tt, $report_xml_tt_type, $report_xml_tt_dest,
     $notnull, $logfile, $logconf, $report_tt_logdir, $querytimeout, $no_mask,
     $short_column_names, $strict_fields, $freeze_time, $wait_debugger, @debug_server,
-    $skip_gendata, $skip_shutdown, $galera);
+    $skip_gendata, $skip_shutdown, $galera, $use_gtid);
 
 my $gendata=''; ## default simple gendata
 
@@ -144,7 +144,9 @@ my $opt_result = GetOptions(
         'no-mask' => \$no_mask,
 	'skip_shutdown' => \$skip_shutdown,
 	'skip-shutdown' => \$skip_shutdown,
-	'galera=s' => \$galera
+	'galera=s' => \$galera,
+	'use-gtid=s' => \$use_gtid,
+	'use_gtid=s' => \$use_gtid
     );
 
 if (defined $logfile && defined $logger) {
@@ -312,7 +314,9 @@ if ($rpl_mode ne '') {
                                                valgrind => $valgrind,
                                                valgrind_options => \@valgrind_options,
                                                general_log => 1,
-                                               start_dirty => $start_dirty);
+                                               start_dirty => $start_dirty,
+                                               use_gtid => $use_gtid,
+	);
     
     my $status = $rplsrv->startServer();
     
@@ -676,6 +680,8 @@ $0 - Run a complete random query generation test, including server start with re
     --grammar   : Grammar file to use when generating queries (REQUIRED);
     --redefine  : Grammar file(s) to redefine and/or add rules to the given grammar
     --rpl_mode  : Replication type to use (statement|row|mixed) (default: no replication);
+    --use_gtid  : Use GTID mode for replication (current_pos|slave_pos|no). Adds the MASTER_USE_GTID clause to CHANGE MASTER,
+                  (default: empty, no additional clause in CHANGE MASTER command);
     --galera    : Galera topology, presented as a string of 'm' or 's' (master or slave).
                   The test flow will be executed on each "master". "Slaves" will only be updated through Galera replication
     --vardir1   : Optional.

@@ -45,6 +45,7 @@ use constant REPLMYSQLD_VALGRIND => 10;
 use constant REPLMYSQLD_VALGRIND_OPTIONS => 11;
 use constant REPLMYSQLD_GENERAL_LOG => 12;
 use constant REPLMYSQLD_DEBUG_SERVER => 13;
+use constant REPLMYSQLD_USE_GTID => 14;
 
 sub new {
     my $class = shift;
@@ -62,7 +63,16 @@ sub new {
                                    'general_log' => REPLMYSQLD_GENERAL_LOG,
                                    'start_dirty' => REPLMYSQLD_START_DIRTY,
                                    'valgrind' => REPLMYSQLD_VALGRIND,
-                                   'valgrind_options', REPLMYSQLD_VALGRIND_OPTIONS},@_);
+                                   'valgrind_options', REPLMYSQLD_VALGRIND_OPTIONS,
+                                   'use_gtid', REPLMYSQLD_USE_GTID},@_);
+
+    if (defined $self->[REPLMYSQLD_USE_GTID] 
+        and lc($self->[REPLMYSQLD_USE_GTID] ne 'no')
+        and lc($self->[REPLMYSQLD_USE_GTID] ne 'current_pos')
+        and lc($self->[REPLMYSQLD_USE_GTID] ne 'slave_pos')
+    ) {
+        croak("Invalid value $self->[REPLMYSQLD_USE_GTID] for use_gtid option");
+    }
     
     if (defined $self->master || defined $self->slave) {
         ## Repl pair defined from two predefined servers
@@ -99,7 +109,7 @@ sub new {
             $varbase =~ s/(.*)\/$/\1/;
             $self->[REPLMYSQLD_SLAVE_VARDIR] = $varbase.'_slave';
         }
-        
+
         my @master_options;
         push(@master_options, 
              "--server_id=1",
@@ -188,12 +198,18 @@ sub startServer {
 	$slave_dbh->do("STOP SLAVE");
 
 #	$slave_dbh->do("SET GLOBAL storage_engine = '$engine'") if defined $engine;
+
+	my $master_use_gtid = ( 
+		defined $self->[REPLMYSQLD_USE_GTID] 
+		? ', MASTER_USE_GTID = ' . $self->[REPLMYSQLD_USE_GTID] 
+		: '' 
+	);
     
 	$slave_dbh->do("CHANGE MASTER TO ".
                    " MASTER_PORT = ".$self->master->port.",".
                    " MASTER_HOST = '127.0.0.1',".
                    " MASTER_USER = 'root',".
-                   " MASTER_CONNECT_RETRY = 1");
+                   " MASTER_CONNECT_RETRY = 1" . $master_use_gtid);
     
 	$slave_dbh->do("START SLAVE");
     
