@@ -1,17 +1,30 @@
-query:
-   select | create_as_drop ;
+query_init:
+	{ $tmp_table = 0; '' } ;
 
-create_as_drop:
-   CREATE temporary TABLE `tmp` AS select ; DROP TABLE IF EXISTS `tmp` ;
+query:
+   select | select | select | select | select | select | 
+	prepare_execute | { $tmp_table++; '' } create_and_drop ;
+
+create_and_drop:
+   CREATE temporary TABLE { 'tmp'.$tmp_table } AS select ; DROP TABLE IF EXISTS { 'tmp'.$tmp_table } ; 
+
+prepare_execute:
+	SET @stmt = " select "; SET @stmt_create = CONCAT("CREATE TEMPORARY TABLE `ps` AS ", @stmt ); PREPARE stmt FROM @stmt_create ; EXECUTE stmt ; SET @stmt_ins = CONCAT("INSERT INTO `ps` ", @stmt) ; PREPARE stmt FROM @stmt_ins; EXECUTE stmt; EXECUTE stmt; DEALLOCATE stmt; DROP TEMPORARY TABLE `ps`;
 
 temporary:
    | TEMPORARY ;
 
+explain_extended:
+	| | | | | | | EXPLAIN extended ;
+
+extended:
+	| EXTENDED ;
+
 select:
-   SELECT distinct select_list FROM _table where group_by_having_order_by_limit;
+   { $num = 0; '' } explain_extended SELECT distinct select_list FROM _table where group_by_having_order_by_limit;
 
 select_list:
-   { $num = 0; '' } select_item AS { $num++; 'field'.$num } | select_item, select_list ;
+   select_item AS { $num++; 'field'.$num } | select_item AS { $num++; 'field'.$num } , select_list ;
 
 distinct:
    | DISTINCT ; 

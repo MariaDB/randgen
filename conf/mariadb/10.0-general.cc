@@ -12,6 +12,8 @@ $combinations = [
 		--redefine=conf/mariadb/10.0-features-redefine.yy
 		--mysqld=--log_output=FILE
 		--mysqld=--query_cache_size=64M
+                --mysqld=--slow_query_log
+                --mysqld=--long_query_time=0.000001
 	'], 
 	[
 		'--views --grammar=conf/runtime/metadata_stability.yy --gendata=conf/runtime/metadata_stability.zz',
