@@ -80,15 +80,17 @@ sub monitor {
 	my $slave_port = $master_port + 4;
 	my $plugin_dir = $reporter->serverVariable('plugin_dir');
 	my $plugins = $reporter->serverPlugins();
+	my ($version) = ( $reporter->serverVariable('version') =~ /^(\d+\.\d+)\./ ) ;
+	my $xtrabackup_binary = ( $version eq '5.5' ? 'xtrabackup_55' : ( $version gt '5.5' or $version =~ /^10/ ? 'xtrabackup_56' : 'xtrabackup' ) );
 
 	my $master_dbh = DBI->connect($reporter->dsn());
 
-	my $xtrabackup_backup_command = "xtrabackup --backup --datadir=$datadir --target-dir=$slave_datadir";
+	my $xtrabackup_backup_command = "$xtrabackup_binary --backup --datadir=$datadir --target-dir=$slave_datadir";
 	say("Executing backup: $xtrabackup_backup_command");
 	system($xtrabackup_backup_command);
 	return STATUS_ENVIRONMENT_FAILURE if $! != 0;
 
-	my $xtrabackup_prepare_command = "xtrabackup --prepare --target-dir=$slave_datadir";
+	my $xtrabackup_prepare_command = "$xtrabackup_binary --prepare --target-dir=$slave_datadir";
 	say("Executing first prepare: $xtrabackup_prepare_command");
 	system($xtrabackup_prepare_command);
 	return STATUS_ENVIRONMENT_FAILURE if $! != 0;
