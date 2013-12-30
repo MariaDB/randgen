@@ -88,16 +88,25 @@ sub monitor {
 	my $xtrabackup_backup_command = "$xtrabackup_binary --backup --datadir=$datadir --target-dir=$slave_datadir";
 	say("Executing backup: $xtrabackup_backup_command");
 	system($xtrabackup_backup_command);
-	return STATUS_ENVIRONMENT_FAILURE if $! != 0;
+	if ($? != 0) {
+		say("ERROR: Backup returned $?. Status will be set to ENVIRONMENT_FAILURE");
+		return STATUS_ENVIRONMENT_FAILURE;
+	}
 
 	my $xtrabackup_prepare_command = "$xtrabackup_binary --prepare --target-dir=$slave_datadir";
 	say("Executing first prepare: $xtrabackup_prepare_command");
 	system($xtrabackup_prepare_command);
-	return STATUS_ENVIRONMENT_FAILURE if $! != 0;
+	if ($? != 0) {
+		say("ERROR: First prepare returned $?. Status will be set to ENVIRONMENT_FAILURE");
+		return STATUS_ENVIRONMENT_FAILURE;
+	}
 
 	say("Executing second prepare: $xtrabackup_prepare_command");
 	system($xtrabackup_prepare_command);
-	return STATUS_ENVIRONMENT_FAILURE if $! != 0;
+	if ($? != 0) {
+		say("ERROR: Second prepare returned $?. Status will be set to ENVIRONMENT_FAILURE");
+		return STATUS_ENVIRONMENT_FAILURE;
+	}
 
 	my $binlog_pos_file = $slave_datadir.'/xtrabackup_binlog_pos_innodb';
 	open(BINLOG_POS_FILE, $binlog_pos_file);
@@ -106,7 +115,7 @@ sub monitor {
 	my ($binlog_file, $binlog_pos) = $binlog_pos_text =~ m{.*/(.*?)\t(.*?)$}sgio;
 
 	if (($binlog_file eq '') || ($binlog_pos eq '')) {
-		say("Xtrabackup did not provide master_log_file and master_log_pos.");
+		say("ERROR: Xtrabackup did not provide master_log_file and master_log_pos. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	} else {
 		say("Xtrabackup reports: master_log_file: $binlog_file; master_log_pos: $binlog_pos.");
@@ -116,11 +125,12 @@ sub monitor {
 
         my @all_databases = @{$master_dbh->selectcol_arrayref("SHOW DATABASES")};
 	foreach my $database (grep { $_ !~ m{^(information_schema|performance_schema)$}sgio } @all_databases ) {
-		system("Copying .frm files for database $database...");
+		say("Copying .frm files for database $database...");
 		mkdir("$slave_datadir/$database");
 	        system("cp -r $datadir/$database/*.frm $slave_datadir/$database");
 	}
 
+	my $clone_err = $slave_datadir.'/clonedslave.err';
 	my @mysqld_options = (
 		'--no-defaults',
 		'--server-id=3',
@@ -134,13 +144,13 @@ sub monitor {
 		'--general-log',
 		'--relay-log=clonedslave-relay',
 		'--general_log_file="'.$slave_datadir.'/clonedslave.log"',
-		'--log_error="'.$slave_datadir.'/clonedslave.err"',
-		'--datadir="'.$slave_datadir.'"',
+		'--log_error="'.$clone_err.'"',
+		'--datadir='.$slave_datadir,
 		'--port='.$slave_port,
-		'--loose-plugin-dir='.$plugin_dir,
+		'--loose-plugin-dir="'.$plugin_dir.'"',
 		'--max-allowed-packet=20M',
 		'--innodb',
-		'--sql_mode="NO_ENGINE_SUBSTITUTION"',
+		'--sql_mode=NO_ENGINE_SUBSTITUTION',
 		'--skip-grant-tables'
 	);
 
@@ -148,10 +158,26 @@ sub monitor {
 		push @mysqld_options, '--plugin-load='.$plugin->[0].'='.$plugin->[1];
 	};
 
-	my $mysqld_command = $binary.' '.join(' ', @mysqld_options).' 2>&1';
+	$|=1;
+	my $mysqld_command = $binary.' '.join(' ', @mysqld_options);
 	say("Starting a new mysqld for the cloned slave.");
-	say("$mysqld_command.");
-	my $mysqld_pid = open2(\*RDRFH, \*WTRFH, $mysqld_command);
+	say("$mysqld_command");
+	my $mysqld_pid = system("$mysqld_command &");
+
+	sleep(2);
+	open(CLONE,$clone_err);
+	while (<CLONE>) {
+		print;
+		if (/ready for connections/) {
+			say("Server started, trying to connect...");
+			last;
+		}
+		elsif (/Aborting/) {
+			say("ERROR: startup failed. Status will be set to ENVIRONMENT_FAILURE");
+			return STATUS_ENVIRONMENT_FAILURE;
+		}
+	}
+	close(CLONE);
 
 	my $slave_dbh;
 
@@ -162,7 +188,10 @@ sub monitor {
 		last if $slave_dbh->ping();
 	}
 
-	return STATUS_ENVIRONMENT_FAILURE if not defined $slave_dbh;
+	if (not defined $slave_dbh) {
+		say("ERROR: Could not connect to slave on port $slave_port. Status will be set to ENVIRONMENT_FAILURE");
+		return STATUS_ENVIRONMENT_FAILURE;
+	} 
 
 	say("Cloned slave has started.");
 	
@@ -252,8 +281,11 @@ sub report {
 		$dump_files[$i] = tmpdir()."/server_".abs($$)."_".$i.".dump";
 
 		my $dump_result = system("\"$client_basedir/mysqldump\" --hex-blob --no-tablespaces --skip-triggers --compact --order-by-primary --skip-extended-insert --no-create-info --host=127.0.0.1 --port=$dump_ports[$i] --user=root --password='' --databases $databases_string | sort > $dump_files[$i]") >> 8;
-		return STATUS_ENVIRONMENT_FAILURE if $dump_result > 0;
-        }
+		if ($dump_result > 0) {
+			say("ERROR: mysqldump returned $dump_result. Status will be set to ENVIRONMENT_FAILURE");
+			return STATUS_ENVIRONMENT_FAILURE;
+		}
+	}
 
 	say("Comparing SQL dumps...");
 	my $diff_result = system("diff -u $dump_files[0] $dump_files[1]") >> 8;
