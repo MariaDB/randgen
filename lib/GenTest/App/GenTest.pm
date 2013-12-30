@@ -297,7 +297,7 @@ sub run {
     }
         
     $errorfilter_p->kill();
-   
+
     return $self->reportResults($total_status);
 
 }
@@ -416,8 +416,11 @@ sub workerProcess {
         properties =>  $self->config,
         filters => $self->queryFilters()
     );
-        
-    $self->stopChild(STATUS_ENVIRONMENT_FAILURE) if not defined $mixer;
+
+    if (not defined $mixer) {
+        say("ERROR: Failed to create a Mixer, status will be set to ENVIRONMENT_FAILURE");
+        $self->stopChild(STATUS_ENVIRONMENT_FAILURE);
+    }
         
     my $worker_result = 0;
         
@@ -533,26 +536,32 @@ sub initGenerator {
 
     if ($generator_name eq 'GenTest::Generator::FromGrammar') {
         if (not defined $self->config->grammar) {
-            say("--grammar not specified but Generator is $generator_name");
+            say("ERROR: --grammar not specified but Generator is $generator_name, status will be set to ENVIRONMENT_FAILURE");
             return STATUS_ENVIRONMENT_FAILURE;
         }
 
-	$self->[GT_GRAMMAR] = GenTest::Grammar->new(
- 	    grammar_file => $self->config->grammar,
+        $self->[GT_GRAMMAR] = GenTest::Grammar->new(
+            grammar_file => $self->config->grammar,
             grammar_flags => (defined $self->config->property('skip-recursive-rules') ? GRAMMAR_FLAG_SKIP_RECURSIVE_RULES : undef )
         ) if defined $self->config->grammar;
 
-	return STATUS_ENVIRONMENT_FAILURE if not defined $self->grammar();
+        if (not defined $self->grammar()) {
+            say("ERROR: Could not initialize the grammar, status will be set to ENVIRONMENT_FAILURE");
+            return STATUS_ENVIRONMENT_FAILURE;
+        }
 
-	if ($self->config->redefine) {
-	    foreach (@{$self->config->redefine}) {
-	        $self->[GT_GRAMMAR] = $self->[GT_GRAMMAR]->patch(
+        if ($self->config->redefine) {
+            foreach (@{$self->config->redefine}) {
+	             $self->[GT_GRAMMAR] = $self->[GT_GRAMMAR]->patch(
                     GenTest::Grammar->new( grammar_file => $_ )
-	        ) 
-	    }
-	}
+                ) 
+            }
+        }
 
-	return STATUS_ENVIRONMENT_FAILURE if not defined $self->grammar();
+        if (not defined $self->grammar()) {
+            say("ERROR: Could not redefine the grammar, status will be set to ENVIRONMENT_FAILURE");
+            return STATUS_ENVIRONMENT_FAILURE;
+        }
     }
 
     $self->[GT_GENERATOR] = $generator_name->new(
@@ -562,7 +571,10 @@ sub initGenerator {
         mask_level => $self->config->property('mask-level')
     );
 
-    return STATUS_ENVIRONMENT_FAILURE if not defined $self->generator();
+    if (not defined $self->generator()) {
+        say("ERROR: Could not initialize the generator, status will be set to ENVIRONMENT_FAILURE");
+        return STATUS_ENVIRONMENT_FAILURE;
+    }
 }
 
 sub isMySQLCompatible {

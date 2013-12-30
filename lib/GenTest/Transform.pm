@@ -188,7 +188,7 @@ sub transformExecuteValidate {
 			(not defined $transform_outcome) ||
 			($transform_outcome == STATUS_WONT_HANDLE)
 		) {
-			say("Transform ".ref($transformer)." produced no query which could be validated ($transform_outcome).");
+			say("ERROR: Transform ".ref($transformer)." produced no query which could be validated ($transform_outcome). Status will be set to ENVIRONMENT_FAILURE");
 			say("The following queries were produced");
 			print Dumper \@transformed_queries;
 			return STATUS_ENVIRONMENT_FAILURE;

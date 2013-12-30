@@ -128,7 +128,10 @@ sub monitor {
 		last if $slave_dbh->ping();
 	}
 
-	return STATUS_ENVIRONMENT_FAILURE if not defined $slave_dbh;
+	if (not defined $slave_dbh) {
+		say("ERROR: Could not connect to slave on port $slave_port. Status will be set to ENVIRONMENT_FAILURE");
+		return STATUS_ENVIRONMENT_FAILURE;
+	}
 
 	say("Cloned slave has started.");
 	
@@ -140,14 +143,20 @@ sub monitor {
 	my $mysqldump_command = $client_basedir."/mysqldump --max_allowed_packet=25M --net_buffer_length=1M -uroot --password='' --protocol=tcp --port=".$master_port.' --single-transaction --master-data --skip-tz-utc --databases '.$databases_string.' > '.$dump_file;
 	say($mysqldump_command);
 	system($mysqldump_command);
-	return STATUS_ENVIRONMENT_FAILURE if $? != 0;
+	if ($? != 0) {
+		say("ERROR: mysqldump returned error code $?. Status will be set to ENVIRONMENT_FAILURE");
+		return STATUS_ENVIRONMENT_FAILURE;
+	}
 	say("Mysqldump done.");
 
 	say("Loading dump from $dump_file into cloned slave ...");
 	my $mysql_command = $client_basedir."/mysql -uroot --password='' --max_allowed_packet=30M --protocol=tcp --port=".$slave_port.' < '.$dump_file;
 	say($mysql_command);
 	system($mysql_command);
-	return STATUS_ENVIRONMENT_FAILURE if $? != 0;
+	if ($? != 0) {
+		say("ERROR: Attempt to restore the dump returned error code $?. Status will be set to ENVIRONMENT_FAILURE");
+		return STATUS_ENVIRONMENT_FAILURE;
+	}
 	say("Mysql done.");
 
 	say("Issuing START SLAVE on the cloned slave.");
@@ -231,8 +240,11 @@ sub report {
 		$dump_files[$i] = tmpdir()."/server_".abs($$)."_".$i.".dump";
 
 		my $dump_result = system("\"$client_basedir/mysqldump\" --hex-blob --no-tablespaces --skip-triggers --compact --order-by-primary --skip-extended-insert --no-create-info --host=127.0.0.1 --port=$dump_ports[$i] --user=root --password='' --databases $databases_string | sort > $dump_files[$i]") >> 8;
-		return STATUS_ENVIRONMENT_FAILURE if $dump_result > 0;
-        }
+		if ($dump_result > 0) {
+			say("ERROR: mysqldump returned error code $dump_result. Status will be set to ENVIRONMENT_FAILURE");
+			return STATUS_ENVIRONMENT_FAILURE if $dump_result > 0;
+		}
+	}
 
 	say("Comparing SQL dumps...");
 	my $diff_result = system("diff -u $dump_files[0] $dump_files[1]") >> 8;

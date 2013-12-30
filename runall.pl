@@ -188,6 +188,7 @@ if (length($sqltrace) > 0) {
         say("Invalid value for --sqltrace option: '$sqltrace'");
         say("Valid values are: ".join(', ', keys(%sqltrace_legal_values)));
         say("No value means that default/plain sqltrace will be used.");
+        say("Exit status will be set to ENVIRONMENT_FAILURE");
         exit(STATUS_ENVIRONMENT_FAILURE);
     }
 }
@@ -211,6 +212,7 @@ if (not defined $build_thread) {
 
 if ( $build_thread eq 'auto' ) {
     say ("Please set the environment variable MTR_BUILD_THREAD to a value <> 'auto' (recommended) or unset it (will take the value ".DEFAULT_MTR_BUILD_THREAD.") ");
+    say ("Exit status will be set to ENVIRONMENT_FAILURE");
     exit (STATUS_ENVIRONMENT_FAILURE);
 }
 
@@ -401,6 +403,7 @@ foreach my $server_id (0..1) {
 	if ($mtr_status != 0) {
 #		system("cat $out_file");
 		system("cat \"$vardir/log/master.err\"");
+		say("MTR exited with an error code $mtr_status, status will be set to ENVIRONMENT_FAILURE");
 		exit_test(STATUS_ENVIRONMENT_FAILURE);
 	}
 #	unlink($out_file);

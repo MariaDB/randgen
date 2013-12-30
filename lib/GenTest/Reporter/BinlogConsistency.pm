@@ -59,7 +59,7 @@ sub report {
 	);
 
 	unless ($client) {
-		say("ERROR: Could not find mysql client");
+		say("ERROR: Could not find mysql client. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
@@ -72,14 +72,14 @@ sub report {
 											 osWindows()?"mysqlbinlog.exe":"mysqlbinlog");
 
 	unless ($binlog) {
-		say("ERROR: Could not find mysqlbinlog");
+		say("ERROR: Could not find mysqlbinlog. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
 	my $dbh = DBI->connect($reporter->dsn());
 
 	unless (defined $dbh) {
-		say("ERROR: Could not connect to the server, nothing to dump");
+		say("ERROR: Could not connect to the server, nothing to dump. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
@@ -100,7 +100,7 @@ sub report {
 	$dbh = DBI->connect($reporter->dsn());
 
 	if (defined $dbh) {
-		say("ERROR: Can still connect to the server, shutdown failed");
+		say("ERROR: Can still connect to the server, shutdown failed. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
@@ -122,7 +122,7 @@ sub report {
 	my $dbh_new = DBI->connect($reporter->dsn());
 
 	unless (defined $dbh_new) {
-		say("ERROR: Could not connect to the newly started server");
+		say("ERROR: Could not connect to the newly started server. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
@@ -171,7 +171,10 @@ sub dump_all {
 	# but we still want to continue. But if sort fails, that's really bad because it must mean the file doesn't exist,
 	# or something equally fatal.
 	$dump_result = system("sort $dumpfile > $dumpfile.sorted");
-	return STATUS_ENVIRONMENT_FAILURE if $dump_result > 0;
+	if ($dump_result > 0) {
+		say("ERROR: dump returned error code $dum_result. Status will be set to ENVIRONMENT_FAILURE");
+		return STATUS_ENVIRONMENT_FAILURE;
+	}
 }
 
 

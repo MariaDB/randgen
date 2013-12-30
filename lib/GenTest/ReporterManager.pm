@@ -76,7 +76,10 @@ sub addReporter {
 		my $module = "GenTest::Reporter::".$reporter;
 		eval "use $module" or print $@;
 		$reporter = $module->new(%$params);
-		return STATUS_ENVIRONMENT_FAILURE if not defined $reporter;
+		if (not defined $reporter) {
+				say("ERROR: Reporter could not be added. Status will be set to ENVIRONMENT_FAILURE");
+				return STATUS_ENVIRONMENT_FAILURE;
+		}
 	}
 
 	push @{$manager->[MANAGER_REPORTERS]}, $reporter;
