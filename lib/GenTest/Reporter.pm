@@ -244,8 +244,13 @@ sub configure {
 sub findMySQLD {
     my ($reporter,$binname)=@_;
     my $bindir;
-    # Handling general basedirs and MTRv1 style basedir.
-    my @basedirs=($reporter->serverVariable('basedir'),File::Spec->catfile($reporter->serverVariable('basedir'),'..'));
+    # Handling general basedirs and MTRv1 style basedir,
+    # but trying not to search the entire universe just for the sake of it
+    my @basedirs = ($reporter->serverVariable('basedir'));
+    if (! -e File::Spec->catfile($reporter->serverVariable('basedir'),'mysql-test') and -e File::Spec->catfile($reporter->serverVariable('basedir'),'t')) {
+        # Assuming it's the MTRv1 style basedir
+        @basedirs=(File::Spec->catfile($reporter->serverVariable('basedir'),'..'));
+    }
     find(sub {
             $bindir=$File::Find::dir if $_ eq $binname;
     }, @basedirs);
