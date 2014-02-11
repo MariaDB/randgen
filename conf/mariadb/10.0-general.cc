@@ -5,15 +5,19 @@ $combinations = [
 		--no-mask
 		--seed=time
 		--threads=8
-		--duration=400
+		--duration=600
 		--queries=100M
 		--reporters=QueryTimeout,Backtrace,ErrorLog,Deadlock,Shutdown
+		--validators=TransformerLight
+		--transformers=ExecuteAsDeleteReturning,ExecuteAsPreparedTwice
 		--redefine=conf/mariadb/general-workarounds.yy
 		--redefine=conf/mariadb/10.0-features-redefine.yy
 		--mysqld=--log_output=FILE
 		--mysqld=--query_cache_size=64M
                 --mysqld=--slow_query_log
                 --mysqld=--long_query_time=0.000001
+		--skip-shutdown
+		--mysqld=--log_bin_trust_function_creators=1
 	'], 
 	[
 		'--views --grammar=conf/runtime/metadata_stability.yy --gendata=conf/runtime/metadata_stability.zz',
@@ -34,7 +38,8 @@ $combinations = [
 		'--engine=MyISAM',
 		'--engine=Aria',
 		'',
-		'--engine=TokuDB --mysqld=--plugin-load=ha_tokudb.so --mysqld=--loose-tokudb'
+		'--engine=TokuDB --mysqld=--plugin-load=ha_tokudb.so --mysqld=--loose-tokudb',
+		'--engine=InnoDB --mysqld=--ignore-builtin-innodb --mysqld=--plugin-load=ha_xtradb.so'
 	],
 # slave-skip-errors: 
 # 1054: MySQL:67878 (LOAD DATA in views)
@@ -45,9 +50,9 @@ $combinations = [
 		'--rpl_mode=row --mysqld=--slave-skip-errors=1049,1305,1539,1505',
 		'--rpl_mode=statement --mysqld=--slave-skip-errors=1054,1317,1049,1305,1539,1505',
 		'--rpl_mode=mixed --mysqld=--slave-skip-errors=1049,1305,1539,1505,1317',
-		''
 	],
 	['
+		--use-gtid=current_pos
 		--mysqld=--optimizer_switch=extended_keys=on,exists_to_in=on 
 		--mysqld=--use_stat_tables=PREFERABLY
 		--mysqld=--optimizer_selectivity_sampling_limit=100 
