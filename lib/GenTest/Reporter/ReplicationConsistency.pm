@@ -27,6 +27,8 @@ use GenTest::Reporter;
 
 my $reporter_called = 0;
 
+$| = 1;
+
 sub report {
 	my $reporter = shift;
 
