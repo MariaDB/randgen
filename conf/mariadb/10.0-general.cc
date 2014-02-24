@@ -8,8 +8,7 @@ $combinations = [
 		--duration=600
 		--queries=100M
 		--reporters=QueryTimeout,Backtrace,ErrorLog,Deadlock,Shutdown
-		--validators=TransformerLight
-		--transformers=ExecuteAsDeleteReturning,ExecuteAsPreparedTwice
+		--transformers=ExecuteAsDeleteReturning,ExecuteAsPreparedTwice,DisableOptimizations
 		--redefine=conf/mariadb/general-workarounds.yy
 		--redefine=conf/mariadb/10.0-features-redefine.yy
 		--mysqld=--log_output=FILE
@@ -28,7 +27,7 @@ $combinations = [
 		'--views --grammar=conf/partitioning/partitions.yy',
 		'--views --grammar=conf/partitioning/partition_pruning.yy --gendata=conf/partitioning/partition_pruning.zz',
 		'--views --grammar=conf/replication/replication.yy --gendata=conf/replication/replication-5.1.zz',
-		'--views --grammar=conf/replication/replication-ddl_sql.yy --gendata=conf/replication/replication-ddl_data.zz',
+		'--grammar=conf/replication/replication-ddl_sql.yy --gendata=conf/replication/replication-ddl_data.zz',
 		'--views --grammar=conf/replication/replication-dml_sql.yy --gendata=conf/replication/replication-dml_data.zz',
 		'--views --grammar=conf/runtime/connect_kill_sql.yy --gendata=conf/runtime/connect_kill_data.zz',
 		'--views --grammar=conf/runtime/WL5004_sql.yy --gendata=conf/runtime/WL5004_data.zz'
