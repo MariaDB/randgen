@@ -8,13 +8,14 @@ $combinations = [
 		--duration=600
 		--queries=100M
 		--reporters=QueryTimeout,Backtrace,ErrorLog,Deadlock,Shutdown
-		--transformers=ExecuteAsDeleteReturning,ExecuteAsPreparedTwice,DisableOptimizations
+		--validators=TransformerNoComparator
+		--transformers=ExecuteAsDeleteReturning,ExecuteAsPreparedTwice,DisableOptimizations,EnableOptimizations,OrderBy
 		--redefine=conf/mariadb/general-workarounds.yy
 		--redefine=conf/mariadb/10.0-features-redefine.yy
 		--mysqld=--log_output=FILE
 		--mysqld=--query_cache_size=64M
-                --mysqld=--slow_query_log
-                --mysqld=--long_query_time=0.000001
+		--mysqld=--slow_query_log
+		--mysqld=--long_query_time=0.000001
 		--skip-shutdown
 		--mysqld=--log_bin_trust_function_creators=1
 	'], 
