@@ -676,7 +676,7 @@ sub initValidators {
     {
         my $hasTransformer = 0;
         foreach my $t (@{$self->config->validators}) {
-            if ($t eq 'Transformer' or $t eq 'TransformerLight') {
+            if ($t =~ /^Transformer/) {
                 $hasTransformer = 1;
                 last;
             }
