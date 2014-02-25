@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-package GenTest::Transform::DisableOptimizations;
+package GenTest::Transform::EnableOptimizations;
 
 require Exporter;
 @ISA = qw(GenTest GenTest::Transform);
@@ -28,7 +28,7 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 #
-# This Transformer simply disables all optimizer switches except for in_to_exists
+# This Transformer simply enables ALL optimizer switches 
 #
 
 sub transform {
@@ -38,8 +38,7 @@ sub transform {
 
 	return [
 		'SET @switch_saved = @@optimizer_switch;',
-		'SET SESSION optimizer_switch = REPLACE( @@optimizer_switch, "=on", "=off" );',
-		'SET SESSION optimizer_switch = "in_to_exists=on";',
+		'SET SESSION optimizer_switch = REPLACE( @@optimizer_switch, "=off", "=on" );',
 		"$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ;",
 		'SET SESSION optimizer_switch=@switch_saved'
 	];
