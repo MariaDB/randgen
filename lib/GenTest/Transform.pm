@@ -82,7 +82,7 @@ sub transformExecuteValidate {
 
 	$transformer->[TRANSFORMER_QUERIES_PROCESSED]++;
 
-	my $transformer_output = $transformer->transform($original_query, $executor, $original_result);
+	my $transformer_output = $transformer->transform($original_query, $executor, $original_result, $skip_result_validations);
 
 	my $transform_blocks;
 

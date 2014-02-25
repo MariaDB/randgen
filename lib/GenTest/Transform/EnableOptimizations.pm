@@ -26,15 +26,18 @@ use lib 'lib';
 use GenTest;
 use GenTest::Transform;
 use GenTest::Constants;
-
+use Carp;
 #
 # This Transformer simply enables ALL optimizer switches 
 #
 
 sub transform {
-	my ($class, $original_query, $executor) = @_;
+	my ($class, $original_query, $executor, $original_result, $skip_result_validations) = @_;
 
-	return STATUS_WONT_HANDLE if $original_query !~ m{(SELECT|UPDATE|DELETE)}sio;
+		return STATUS_WONT_HANDLE 
+	if ( $skip_result_validations 
+			and $original_query !~ m{^\s*(SELECT|UPDATE|DELETE|CREATE\s+OR\s+REPLACE\s+?TABLE.+SELECT|INSERT.+SELECT)}sio )
+		or ( ( ! $skip_result_validations and $original_query !~ m{^\s*(SELECT)}sio ) ) ;
 
 	return [
 		'SET @switch_saved = @@optimizer_switch;',
