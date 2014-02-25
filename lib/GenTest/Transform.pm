@@ -78,7 +78,7 @@ my %mysql_grouping_errors = (
 my %suppressed_errors = ();
 
 sub transformExecuteValidate {
-	my ($transformer, $original_query, $original_result, $executor) = @_;
+	my ($transformer, $original_query, $original_result, $executor, $skip_result_validations) = @_;
 
 	$transformer->[TRANSFORMER_QUERIES_PROCESSED]++;
 
@@ -172,6 +172,8 @@ sub transformExecuteValidate {
 				say("ERROR: Possible syntax or semantic error caused by code in transformer ".ref($transformer).
 					". Not handling this particular transform any further: Please fix the transformer code so as to handle the query shown above correctly.");
 				return STATUS_WONT_HANDLE;
+			} elsif ($skip_result_validations) {
+				$transform_outcome = STATUS_OK unless defined $transform_outcome;
 			} elsif ($part_result->status() != STATUS_OK) {
 				say("---------- TRANSFORM ISSUE ----------");
 				say("Transform ".$transformer->name()." failed with an error: ".$part_result->err().'  '.$part_result->errstr());
