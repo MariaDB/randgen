@@ -303,7 +303,8 @@ if ($rpl_mode ne '') {
     if (defined $mysqld_options[0]) {
         push @options, @{$mysqld_options[0]};
     }
-    $rplsrv = DBServer::MySQL::ReplMySQLd->new(basedir => $basedirs[0],
+    $rplsrv = DBServer::MySQL::ReplMySQLd->new(master_basedir => $basedirs[0],
+                                               slave_basedir => $basedirs[1],
                                                master_vardir => $vardirs[0],
                                                debug_server => $debug_server[0],
                                                master_port => $ports[0],

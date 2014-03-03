@@ -31,7 +31,7 @@ use strict;
 use Carp;
 use Data::Dumper;
 
-use constant REPLMYSQLD_BASEDIR => 0;
+use constant REPLMYSQLD_MASTER_BASEDIR => 0;
 use constant REPLMYSQLD_MASTER_VARDIR => 1;
 use constant REPLMYSQLD_SLAVE_VARDIR => 2;
 use constant REPLMYSQLD_MASTER_PORT => 3;
@@ -46,13 +46,15 @@ use constant REPLMYSQLD_VALGRIND_OPTIONS => 11;
 use constant REPLMYSQLD_GENERAL_LOG => 12;
 use constant REPLMYSQLD_DEBUG_SERVER => 13;
 use constant REPLMYSQLD_USE_GTID => 14;
+use constant REPLMYSQLD_SLAVE_BASEDIR => 15;
 
 sub new {
     my $class = shift;
 
     my $self = $class->SUPER::new({'master' => REPLMYSQLD_MASTER,
                                    'slave' => REPLMYSQLD_SLAVE,
-                                   'basedir' => REPLMYSQLD_BASEDIR,
+                                   'master_basedir' => REPLMYSQLD_MASTER_BASEDIR,
+                                   'slave_basedir' => REPLMYSQLD_SLAVE_BASEDIR,
                                    'debug_server' => REPLMYSQLD_DEBUG_SERVER,
                                    'master_vardir' => REPLMYSQLD_MASTER_VARDIR,
                                    'master_port' => REPLMYSQLD_MASTER_PORT,
@@ -88,7 +90,7 @@ sub new {
                                         "--report-host=127.0.0.1",
                                         "--report_port=".$self->slave->port]);
     } else {
-        ## Repl pair defined from parameters. The servers have the same basedir (is of the same version)
+        ## Repl pair defined from parameters. 
         if (not defined $self->[REPLMYSQLD_MASTER_PORT]) {
             $self->[REPLMYSQLD_MASTER_PORT] = DBServer::MySQL::MySQLd::MYSQLD_DEFAULT_PORT;
         }
@@ -110,6 +112,10 @@ sub new {
             $self->[REPLMYSQLD_SLAVE_VARDIR] = $varbase.'_slave';
         }
 
+        if (not defined $self->[REPLMYSQLD_SLAVE_BASEDIR]) {
+            $self->[REPLMYSQLD_SLAVE_BASEDIR] = $self->[REPLMYSQLD_SLAVE_BASEDIR];
+        }
+
         my @master_options;
         push(@master_options, 
              "--server_id=1",
@@ -120,10 +126,10 @@ sub new {
             push(@master_options, 
                  @{$self->[REPLMYSQLD_SERVER_OPTIONS]});
         }
-        
+
         
         $self->[REPLMYSQLD_MASTER] = 
-        DBServer::MySQL::MySQLd->new(basedir => $self->[REPLMYSQLD_BASEDIR],
+        DBServer::MySQL::MySQLd->new(basedir => $self->[REPLMYSQLD_MASTER_BASEDIR],
                                      vardir => $self->[REPLMYSQLD_MASTER_VARDIR],
                                      debug_server => $self->[REPLMYSQLD_DEBUG_SERVER],                
                                      port => $self->[REPLMYSQLD_MASTER_PORT],
@@ -149,7 +155,7 @@ sub new {
         
         
         $self->[REPLMYSQLD_SLAVE] = 
-        DBServer::MySQL::MySQLd->new(basedir => $self->[REPLMYSQLD_BASEDIR],
+        DBServer::MySQL::MySQLd->new(basedir => $self->[REPLMYSQLD_SLAVE_BASEDIR],
                                      vardir => $self->[REPLMYSQLD_SLAVE_VARDIR],
                                      debug_server => $self->[REPLMYSQLD_DEBUG_SERVER],                
                                      port => $self->[REPLMYSQLD_SLAVE_PORT],
