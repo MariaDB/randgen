@@ -113,7 +113,7 @@ sub new {
         }
 
         if (not defined $self->[REPLMYSQLD_SLAVE_BASEDIR]) {
-            $self->[REPLMYSQLD_SLAVE_BASEDIR] = $self->[REPLMYSQLD_SLAVE_BASEDIR];
+            $self->[REPLMYSQLD_SLAVE_BASEDIR] = $self->[REPLMYSQLD_MASTER_BASEDIR];
         }
 
         my @master_options;
