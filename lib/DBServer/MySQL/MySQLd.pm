@@ -59,6 +59,8 @@ use constant MYSQLD_DEBUG_SERVER => 22;
 use constant MYSQLD_SERVER_TYPE => 23;
 use constant MYSQLD_VALGRIND_SUPPRESSION_FILE => 24;
 use constant MYSQLD_TMPDIR => 25;
+use constant MYSQLD_CONFIG_CONTENTS => 26;
+use constant MYSQLD_CONFIG_FILE => 27;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -80,7 +82,8 @@ sub new {
                                    'start_dirty' => MYSQLD_START_DIRTY,
                                    'general_log' => MYSQLD_GENERAL_LOG,
                                    'valgrind' => MYSQLD_VALGRIND,
-                                   'valgrind_options' => MYSQLD_VALGRIND_OPTIONS},@_);
+                                   'valgrind_options' => MYSQLD_VALGRIND_OPTIONS,
+                                   'config' => MYSQLD_CONFIG_CONTENTS},@_);
     
     croak "No valgrind support on windows" if osWindows() and $self->[MYSQLD_VALGRIND];
     
@@ -335,20 +338,31 @@ sub createMysqlBase  {
     ## Don't want empty users
     print BOOT "DELETE FROM user WHERE `User` = '';\n";
     close BOOT;
-    
+
+    if ($self->[MYSQLD_CONFIG_CONTENTS] and ref $self->[MYSQLD_CONFIG_CONTENTS] eq 'ARRAY' and scalar(@{$self->[MYSQLD_CONFIG_CONTENTS]})) {
+		$self->[MYSQLD_CONFIG_FILE] = $self->vardir."/my.cnf";
+		open(CONFIG,">$self->[MYSQLD_CONFIG_FILE]") || die "Could not open $self->[MYSQLD_CONFIG_FILE] for writing: $!\n";
+		print CONFIG @{$self->[MYSQLD_CONFIG_CONTENTS]};
+		close CONFIG;
+	}
+
+	my $defaults = ($self->[MYSQLD_CONFIG_FILE] ? "--defaults-file=$self->[MYSQLD_CONFIG_FILE]" : "--no-defaults");
+
     ## 4. Boot database
     if (osWindows()) {
-        my $command = $self->generateCommand(["--no-defaults","--bootstrap"],
+        my $command = $self->generateCommand([$defaults,"--bootstrap"],
                                              $self->[MYSQLD_STDOPTS]);
     
         my $bootlog = $self->vardir."/boot.log";
+        say("Running bootstrap: $command (and feeding $boot to it)");
         system("$command < \"$boot\" > \"$bootlog\"");
     } else {
-        my $boot_options = ["--no-defaults","--bootstrap"];
+        my $boot_options = [$defaults,"--bootstrap"];
         push(@$boot_options,"--loose-skip-innodb --default-storage-engine=MyISAM") if $self->_olderThan(5,6,3);
         my $command = $self->generateCommand($boot_options,
                                              $self->[MYSQLD_STDOPTS]);
         my $bootlog = $self->vardir."/boot.log";
+        say("Running bootstrap: $command (and feeding $boot to it)");
         system("cat \"$boot\" | $command > \"$bootlog\"  2>&1 ");
     }
 }
@@ -360,9 +374,11 @@ sub _reportError {
 sub startServer {
     my ($self) = @_;
 
+	my $defaults = ($self->[MYSQLD_CONFIG_FILE] ? "--defaults-file=$self->[MYSQLD_CONFIG_FILE]" : "--no-defaults");
+
     my ($v1,$v2,@rest) = $self->versionNumbers;
     my $v = $v1*1000+$v2;
-    my $command = $self->generateCommand(["--no-defaults"],
+    my $command = $self->generateCommand([$defaults],
                                          $self->[MYSQLD_STDOPTS],
                                          ["--core-file",
                                           "--max-allowed-packet=128Mb",	# Allow loading bigger blobs

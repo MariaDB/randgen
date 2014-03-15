@@ -29,6 +29,7 @@ use GenTest::BzrInfo;
 use GenTest::Constants;
 use GenTest::Properties;
 use GenTest::App::GenTest;
+use GenTest::App::GenConfig;
 use DBServer::DBServer;
 use DBServer::MySQL::MySQLd;
 use DBServer::MySQL::ReplMySQLd;
@@ -72,9 +73,11 @@ my ($gendata, @basedirs, @mysqld_options, @vardirs, $rpl_mode,
     $report_xml_tt, $report_xml_tt_type, $report_xml_tt_dest,
     $notnull, $logfile, $logconf, $report_tt_logdir, $querytimeout, $no_mask,
     $short_column_names, $strict_fields, $freeze_time, $wait_debugger, @debug_server,
-    $skip_gendata, $skip_shutdown, $galera, $use_gtid);
+    $skip_gendata, $skip_shutdown, $galera, $use_gtid, $genconfig);
 
 my $gendata=''; ## default simple gendata
+
+my $genconfig=''; # if template is not set, the server will be run with --no-defaults
 
 my $threads = my $default_threads = 10;
 my $queries = my $default_queries = 1000;
@@ -112,6 +115,7 @@ my $opt_result = GetOptions(
 	'transformers=s@' => \@transformers,
 	'gendata:s' => \$gendata,
 	'skip-gendata' => \$skip_gendata,
+	'genconfig:s' => \$genconfig,
 	'notnull' => \$notnull,
 	'short_column_names' => \$short_column_names,
         'freeze_time' => \$freeze_time,
@@ -287,6 +291,25 @@ foreach my $path ("$basedirs[0]/client/RelWithDebInfo", "$basedirs[0]/client/Deb
 	}
 }
 
+# Originally it was done in Gendata, but we want the same seed for all components
+
+if (defined $seed and $seed eq 'time') {
+	$seed = time();
+	say("Converted --seed=time to --seed=$seed");
+}
+
+my $cnf_array_ref;
+
+if ($genconfig) {
+	unless (-e $genconfig) {
+		croak("ERROR: Specified config template $genconfig does not exist");
+	}
+	$cnf_array_ref = GenTest::App::GenConfig->new(spec_file => $genconfig,
+                                               seed => $seed,
+                                               debug => $debug
+	);
+}
+
 #
 # Start servers. Use rpl_alter if replication is needed.
 #
@@ -317,6 +340,7 @@ if ($rpl_mode ne '') {
                                                general_log => 1,
                                                start_dirty => $start_dirty,
                                                use_gtid => $use_gtid,
+                                               config => $cnf_array_ref
 	);
     
     my $status = $rplsrv->startServer();
@@ -403,7 +427,8 @@ if ($rpl_mode ne '') {
                                                            valgrind => $valgrind,
                                                            valgrind_options => \@valgrind_options,
                                                            server_options => \@options,
-                                                           general_log => 1);
+                                                           general_log => 1,
+                                                           config => $cnf_array_ref);
         
         my $status = $server[$server_id]->startServer;
         

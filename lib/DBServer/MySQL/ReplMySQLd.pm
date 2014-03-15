@@ -47,6 +47,7 @@ use constant REPLMYSQLD_GENERAL_LOG => 12;
 use constant REPLMYSQLD_DEBUG_SERVER => 13;
 use constant REPLMYSQLD_USE_GTID => 14;
 use constant REPLMYSQLD_SLAVE_BASEDIR => 15;
+use constant REPLMYSQLD_CONFIG_CONTENTS => 16;
 
 sub new {
     my $class = shift;
@@ -65,8 +66,9 @@ sub new {
                                    'general_log' => REPLMYSQLD_GENERAL_LOG,
                                    'start_dirty' => REPLMYSQLD_START_DIRTY,
                                    'valgrind' => REPLMYSQLD_VALGRIND,
-                                   'valgrind_options', REPLMYSQLD_VALGRIND_OPTIONS,
-                                   'use_gtid', REPLMYSQLD_USE_GTID},@_);
+                                   'valgrind_options' => REPLMYSQLD_VALGRIND_OPTIONS,
+                                   'use_gtid' => REPLMYSQLD_USE_GTID,
+                                   'config' => REPLMYSQLD_CONFIG_CONTENTS},@_);
 
     if (defined $self->[REPLMYSQLD_USE_GTID] 
         and lc($self->[REPLMYSQLD_USE_GTID] ne 'no')
@@ -137,7 +139,8 @@ sub new {
                                      general_log => $self->[REPLMYSQLD_GENERAL_LOG],
                                      start_dirty => $self->[REPLMYSQLD_START_DIRTY],
                                      valgrind => $self->[REPLMYSQLD_VALGRIND],
-                                     valgrind_options => $self->[REPLMYSQLD_VALGRIND_OPTIONS]);
+                                     valgrind_options => $self->[REPLMYSQLD_VALGRIND_OPTIONS],
+                                     config => $self->[REPLMYSQLD_CONFIG_CONTENTS]);
         
         if (not defined $self->master) {
             croak("Could not create master");
@@ -163,7 +166,8 @@ sub new {
                                      general_log => $self->[REPLMYSQLD_GENERAL_LOG],
                                      start_dirty => $self->[REPLMYSQLD_START_DIRTY],
                                      valgrind => $self->[REPLMYSQLD_VALGRIND],
-                                     valgrind_options => $self->[REPLMYSQLD_VALGRIND_OPTIONS]);
+                                     valgrind_options => $self->[REPLMYSQLD_VALGRIND_OPTIONS],
+                                     config => $self->[REPLMYSQLD_CONFIG_CONTENTS]);
         
         if (not defined $self->slave) {
             $self->master->stopServer;
