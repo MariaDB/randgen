@@ -82,7 +82,7 @@ expensive-subquery-limit                                   [ 0 .. 10000 ]
 expire-logs-days                                           [ 0 .. 99 ]
 external-locking                                           [ FALSE , TRUE ]
 extra-max-connections                                      [ 1 .. 20 ]
-extra-port                                                 [ 0 , 10739 ]
+#### extra-port                                                 [ 0 , 10739 ]
 flush                                                      [ FALSE , TRUE ]
 flush-time                                                 [ 0 .. 10 ]
 #### ft-boolean-syntax                                          + -><()~*:""&|
@@ -249,7 +249,7 @@ query-cache-limit                                          [ 0 .. 134217728 ]   
 query-cache-min-res-unit                                   [ 0 .. 262144 ]       # max 4294967295
 query-cache-size                                           [ 0 .. 134217728 ]
 query-cache-strip-comments                                 [ FALSE , TRUE ]
-query-cache-type                                           [ ON , OFF , DEMAND ]
+query-cache-type                                           [ ON , DEMAND ] # OFF is removed due to MDEV-5866
 query-cache-wlock-invalidate                               [ FALSE , TRUE ]
 query-prealloc-size                                        [ 8192 .. 8388608 ]   # max 4294967295
 range-alloc-block-size                                     [ 4096 .. 8388608 ]   # max 4294967295
@@ -518,7 +518,7 @@ innodb_trx_rseg_n_slots_debug                              [ 0 , 1 ]
 innodb_undo_logs                                           [ 0 .. 128 ]
 # innodb_undo_tablespaces                                    [ 0 .. 126 ]    # should be in bootstrap as well
 #### innodb_use_atomic_writes                                   [ OFF , ON ]
-innodb_use_fallocate                                       [ OFF , ON ]
+#### innodb_use_fallocate                                       [ OFF , ON ]    # MDEV-5878
 innodb_use_global_flush_log_at_trx_commit                  [ ON , OFF ]
 innodb_use_native_aio                                      [ ON , OFF ]
 innodb_use_stacktrace                                      [ OFF , ON ]
