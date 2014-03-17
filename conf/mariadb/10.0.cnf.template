@@ -9,7 +9,8 @@ innodb_checksum_algorithm                                  [ innodb , crc32 , no
 #### innodb_log_block_size                                      [ 16 .. 4096 ]    ## Asserts, said to be BETA-quality
 innodb_log_file_size                                       [ 16777216 .. 1073741824 ]
 innodb_log_files_in_group	                                [ 1 .. 4 ]
-#### innodb_log_group_home_dir	./                     # should go to bootstrap too
+#### innodb_log_group_home_dir	./
+innodb_page_size                                           [ 4K , 8K , 16K ]
 innodb_undo_tablespaces                                    [ 0 .. 126 ] 
 
 
@@ -229,7 +230,7 @@ performance-schema-max-stage-classes                       [ 0 .. 1500 ]
 performance-schema-max-statement-classes                   [ -1 .. 2000 ]
 performance-schema-max-table-handles                       [ -1 .. 5000 ]
 performance-schema-max-table-instances                     [ -1 .. 5000 ]
-performance-schema-max-thread-classes                      [ 0 .. 500 ]
+performance-schema-max-thread-classes                      [ 5 .. 500 ]         # minimum set to 5 due to MDEV-5885
 performance-schema-max-thread-instances                    [ -1 .. 2000 ]
 performance-schema-session-connect-attrs-size              [ -1 .. 5000 ]
 performance-schema-setup-actors-size                       [ 0 .. 1000 ]
@@ -384,8 +385,8 @@ innodb_buffer_pool_size                                    [ 134217728 .. 214748
 innodb_change_buffer_max_size                              [ 0 .. 50 ]
 innodb_change_buffering                                    [ inserts , none , deletes , purges , changes , all ]
 innodb_change_buffering_debug                              [ 0 , 1 ]
-# innodb_checksum_algorithm                                  [ innodb , crc32 , none , strict_innodb , strict_crc32 , strict_none ]  # should be in bootstrap too
-innodb_checksums                                           [ ON , OFF ]
+#### innodb_checksum_algorithm                                  [ innodb , crc32 , none , strict_innodb , strict_crc32 , strict_none ]  # should be in bootstrap too
+#### innodb_checksums                                           [ ON , OFF ]  # deprecated
 innodb_cleaner_eviction_factor                             [ OFF , ON ]
 innodb_cleaner_flush_chunk_size                            [ 0 .. 1000 ]
 innodb_cleaner_free_list_lwm                               [ 0 .. 100 ]
@@ -407,7 +408,7 @@ innodb_disable_sort_file_cache                             [ OFF , ON ]
 innodb_doublewrite                                         [ ON , OFF ]
 innodb_doublewrite_batch_size                              [ 0 .. 200 ]
 innodb_empty_free_list_algorithm                           [ backoff , legacy ]
-innodb_fake_changes                                        [ OFF , ON ]
+#### innodb_fake_changes                                        [ OFF , ON ]
 innodb_fast_shutdown                                       [ 0 .. 2 ]
 innodb_file_format                                         [ Antelope , Barracuda ]
 innodb_file_format_check                                   [ ON , OFF ]
@@ -471,7 +472,7 @@ innodb_online_alter_log_max_size                           [ 65536 .. 268435456 
 innodb_open_files                                          [ 200 .. 800 ]
 innodb_optimize_fulltext_only                              [ OFF , ON ]
 innodb_page_hash_locks                                     [ 8 .. 64 ]
-innodb_page_size                                           [ 4K , 8K , 16K ]
+#### innodb_page_size                                           [ 4K , 8K , 16K ]    # needs to be in bootstrap too
 innodb_print_all_deadlocks                                 [ OFF , ON ]
 #### innodb_priority_cleaner                                    [ OFF , ON ]
 innodb_priority_io                                         [ OFF , ON ]
