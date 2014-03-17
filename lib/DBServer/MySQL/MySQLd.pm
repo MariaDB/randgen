@@ -374,11 +374,11 @@ sub _reportError {
 sub startServer {
     my ($self) = @_;
 
-	my $defaults = ($self->[MYSQLD_CONFIG_FILE] ? "--defaults-file=$self->[MYSQLD_CONFIG_FILE]" : "--no-defaults");
+	my @defaults = ($self->[MYSQLD_CONFIG_FILE] ? ("--defaults-group-suffix=.runtime", "--defaults-file=$self->[MYSQLD_CONFIG_FILE]") : ("--no-defaults"));
 
     my ($v1,$v2,@rest) = $self->versionNumbers;
     my $v = $v1*1000+$v2;
-    my $command = $self->generateCommand([$defaults],
+    my $command = $self->generateCommand([@defaults],
                                          $self->[MYSQLD_STDOPTS],
                                          ["--core-file",
                                           "--max-allowed-packet=128Mb",	# Allow loading bigger blobs
