@@ -387,13 +387,17 @@ innodb_change_buffering                                    [ inserts , none , de
 innodb_change_buffering_debug                              [ 0 , 1 ]
 #### innodb_checksum_algorithm                                  [ innodb , crc32 , none , strict_innodb , strict_crc32 , strict_none ]  # should be in bootstrap too
 #### innodb_checksums                                           [ ON , OFF ]  # deprecated
-innodb_cleaner_eviction_factor                             [ OFF , ON ]
-innodb_cleaner_flush_chunk_size                            [ 0 .. 1000 ]
-innodb_cleaner_free_list_lwm                               [ 0 .. 100 ]
-innodb_cleaner_lru_chunk_size                              [ 0 .. 1000 ]
-innodb_cleaner_lsn_age_factor	                             [ high_checkpoint , legacy ]
-innodb_cleaner_max_flush_time                              [ 0 .. 10000 ]
-innodb_cleaner_max_lru_time                                [ 0 .. 10000 ]
+
+###### Cleaner tuning is experimental and causes hang ups as of MariaDB 10.0.9
+###### http://www.percona.com/doc/percona-server/5.6/performance/page_cleaner_tuning.html
+#### innodb_cleaner_eviction_factor                             [ OFF , ON ]
+#### innodb_cleaner_flush_chunk_size                            [ 0 .. 1000 ]
+#### innodb_cleaner_free_list_lwm                               [ 0 .. 100 ]
+#### innodb_cleaner_lru_chunk_size                              [ 0 .. 1000 ]
+#### innodb_cleaner_lsn_age_factor	                             [ high_checkpoint , legacy ]
+#### innodb_cleaner_max_flush_time                              [ 0 .. 10000 ]
+#### innodb_cleaner_max_lru_time                                [ 0 .. 10000 ]
+
 innodb_cmp_per_index_enabled                               [ OFF , ON ]
 innodb_commit_concurrency                                  [ 0 .. 1000 ]
 innodb_compression_failure_threshold_pct                   [ 0 .. 100 ]
