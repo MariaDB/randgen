@@ -1,4 +1,5 @@
 # Copyright (C) 2013 Monty Program Ab
+# Copyright (C) 2014 SkySQL Ab
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -45,7 +46,11 @@ sub validate {
 	my ($pos, $sign, $value, $row) = ($1, $2, $3, lc($4));
 
 	my @rownums = ();
-	if ( $row eq 'all' and $result and $result->data() ) { 
+	unless ( $result and $result->data() ) {
+		say("Warning: Query in CheckFieldValue didn't return a result");
+		return STATUS_OK;
+	}
+	if ( $row eq 'all' ) { 
 		foreach ( 0..$#{$result->data()} ) 
 		{ 
 			push @rownums, $_;
