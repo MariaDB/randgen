@@ -45,7 +45,7 @@ sub validate {
 	my ($pos, $sign, $value, $row) = ($1, $2, $3, lc($4));
 
 	my @rownums = ();
-	if ( $row eq 'all' ) { 
+	if ( $row eq 'all' and $result and $result->data() ) { 
 		foreach ( 0..$#{$result->data()} ) 
 		{ 
 			push @rownums, $_;
