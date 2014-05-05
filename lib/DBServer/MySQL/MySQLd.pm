@@ -358,9 +358,13 @@ sub createMysqlBase  {
         system("$command < \"$boot\" > \"$bootlog\"");
     } else {
         my $boot_options = [$defaults,"--bootstrap"];
-        push(@$boot_options,"--loose-skip-innodb --default-storage-engine=MyISAM") if $self->_olderThan(5,6,3);
-        my $command = $self->generateCommand($boot_options,
-                                             $self->[MYSQLD_STDOPTS]);
+        push @$boot_options, @{$self->[MYSQLD_STDOPTS]};
+        if ($self->_olderThan(5,6,3)) {
+          push(@$boot_options,"--loose-skip-innodb --default-storage-engine=MyISAM") ;
+        } else {
+          push(@$boot_options, @{$self->[MYSQLD_SERVER_OPTIONS]});
+        }
+        my $command = $self->generateCommand($boot_options);
         my $bootlog = $self->vardir."/boot.log";
         say("Running bootstrap: $command (and feeding $boot to it)");
         system("cat \"$boot\" | $command > \"$bootlog\"  2>&1 ");
