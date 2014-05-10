@@ -112,7 +112,7 @@ eistat_select_stat:
 	SELECT * FROM eistat_stat_table WHERE `table_name` = '_table' ;
 
 set_names_or_charset:
-	SELECT CHARACTER_SET_NAME INTO @cset INFORMATION_SCHEMA.CHARACTER_SETS ORDER BY RAND() LIMIT 1; SET @stmt_names_or_charset = CONCAT( names_or_charset, @cset ); add_collation ; PREPARE stmt_names_or_charset FROM @stmt_names_or_charset ; EXECUTE stmt_names_or_charset ; DEALLOCATE PREPARE stmt_names_or_charset |
+	SELECT CHARACTER_SET_NAME INTO @cset FROM INFORMATION_SCHEMA.CHARACTER_SETS ORDER BY RAND() LIMIT 1; SET @stmt_names_or_charset = CONCAT( names_or_charset, @cset ); add_collation ; PREPARE stmt_names_or_charset FROM @stmt_names_or_charset ; EXECUTE stmt_names_or_charset ; DEALLOCATE PREPARE stmt_names_or_charset |
 	SET NAMES DEFAULT |
 	SET CHARACTER SET DEFAULT ;
 
