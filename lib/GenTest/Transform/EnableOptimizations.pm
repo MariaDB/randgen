@@ -37,7 +37,7 @@ sub transform {
 		return STATUS_WONT_HANDLE 
 	if ( $skip_result_validations 
 			and $original_query !~ m{^\s*(SELECT|UPDATE|DELETE|CREATE\s+OR\s+REPLACE\s+?TABLE.+SELECT|INSERT.+SELECT)}sio )
-		or ( ( ! $skip_result_validations and $original_query !~ m{^\s*(SELECT)}sio ) ) ;
+		or ( ( ! $skip_result_validations and ( $original_query !~ m{^\s*(SELECT)}sio or $original_query =~ m{\sINTO\s}sio ) ) ) ;
 
 	return [
 		'SET @switch_saved = @@optimizer_switch;',
