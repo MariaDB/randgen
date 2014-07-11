@@ -228,6 +228,11 @@ sub startServer {
 
 sub waitForSlaveSync {
     my ($self) = @_;
+
+    # It's not really "OK", but we don't need to wait for slave sync 
+    # lost connection to the master
+    return DBSTATUS_OK if ! $self->master->dbh;
+
     my ($file, $pos) = $self->master->dbh->selectrow_array("SHOW MASTER STATUS"); 
     # Workaround for a race condition between killing ErrorFilter and this function
     # (killing ErrorFilter makes the main connection disconnect, and if it happens after
