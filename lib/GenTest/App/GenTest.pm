@@ -639,8 +639,6 @@ sub initValidators {
 
     if (not defined $self->config->validators or $#{$self->config->validators} < 0) {
         $self->config->validators([]);
-        push(@{$self->config->validators}, 'ErrorMessageCorruption') 
-            if $self->isMySQLCompatible();
 
         # In case of multi-master topology (e.g. Galera with multiple "masters"),
         # we don't want to compare results after each query.
