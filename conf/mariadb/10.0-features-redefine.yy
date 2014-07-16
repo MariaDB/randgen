@@ -112,12 +112,13 @@ eistat_select_stat:
 	SELECT * FROM eistat_stat_table WHERE `table_name` = '_table' ;
 
 set_names_or_charset:
-	SELECT CHARACTER_SET_NAME INTO @cset FROM INFORMATION_SCHEMA.CHARACTER_SETS ORDER BY RAND() LIMIT 1; SET @stmt_names_or_charset = CONCAT( names_or_charset, @cset ); add_collation ; PREPARE stmt_names_or_charset FROM @stmt_names_or_charset ; EXECUTE stmt_names_or_charset ; DEALLOCATE PREPARE stmt_names_or_charset |
+	SELECT CHARACTER_SET_NAME INTO @cset FROM INFORMATION_SCHEMA.CHARACTER_SETS ORDER BY RAND() LIMIT 1; names_or_charset ; PREPARE stmt_names_or_charset FROM @stmt_names_or_charset ; EXECUTE stmt_names_or_charset ; DEALLOCATE PREPARE stmt_names_or_charset |
 	SET NAMES DEFAULT |
 	SET CHARACTER SET DEFAULT ;
 
 names_or_charset:
-	'SET NAMES ' | 'SET CHARACTER SET ' ;
+	SET @stmt_names_or_charset = CONCAT( 'SET NAMES ', @cset ); add_collation |
+	SET @stmt_names_or_charset = CONCAT( 'SET CHARACTER SET ', @cset );
 
 add_collation:
 	valid_collation | valid_collation | valid_collation | valid_collation | valid_collation | valid_collation | 
