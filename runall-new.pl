@@ -87,8 +87,8 @@ my @ARGV_saved = @ARGV;
 
 my $opt_result = GetOptions(
 	'mysqld=s@' => \$mysqld_options[0],
-	'mysqld1=s@' => \$mysqld_options[0],
-	'mysqld2=s@' => \$mysqld_options[1],
+	'mysqld1=s@' => \$mysqld_options[1],
+	'mysqld2=s@' => \$mysqld_options[2],
         'basedir=s' => \$basedirs[0],
         'basedir1=s' => \$basedirs[0],
         'basedir2=s' => \$basedirs[1],
@@ -262,13 +262,6 @@ foreach my $dir (cwd(), @basedirs) {
 }
 
 
-if (
-	($mysqld_options[1] ne '') && 
-	($basedirs[1] eq '')
-    ) {
-	$basedirs[1] = $basedirs[0];	
-}
-
 #
 # If the user has provided identical basedirs and vardirs, warn of a
 # potential overlap.
@@ -317,15 +310,27 @@ if ($genconfig) {
 my @server;
 my $rplsrv;
 
+# mysqld_options[0] are those that are applied to all servers (--mysqld=...)
+# mysqld_options[N] (N in 1,2) are those that are applied to the corresponding server only,
+# if it's started (--mysqld1=...)
+
+
+@{$mysqld_options[0]} = () if not defined $mysqld_options[0];
+push @{$mysqld_options[0]}, lc("--$engine") if defined $engine && (lc($engine) ne lc('myisam') && lc($engine) ne lc('memory'));
+push @{$mysqld_options[0]}, "--sql-mode=no_engine_substitution" if join(' ', @ARGV_saved) !~ m{sql-mode}io;
+
+@{$mysqld_options[1]} = ( defined $mysqld_options[1] 
+		? ( @{$mysqld_options[0]}, @{$mysqld_options[1]} )
+		: @{$mysqld_options[0]}
+);
+    
+@{$mysqld_options[2]} = ( defined $mysqld_options[2] 
+		? ( @{$mysqld_options[0]}, @{$mysqld_options[2]} )
+		: @{$mysqld_options[0]}
+);
+
 if ($rpl_mode ne '') {
-    my @options;
-    push @options, lc("--$engine") if defined $engine && (lc($engine) ne lc('myisam') && lc($engine) ne lc('memory'));
-    
-    push @options, "--sql-mode=no_engine_substitution" if join(' ', @ARGV_saved) !~ m{sql-mode}io;
-    
-    if (defined $mysqld_options[0]) {
-        push @options, @{$mysqld_options[0]};
-    }
+
     $rplsrv = DBServer::MySQL::ReplMySQLd->new(master_basedir => $basedirs[0],
                                                slave_basedir => $basedirs[1],
                                                master_vardir => $vardirs[0],
@@ -334,7 +339,7 @@ if ($rpl_mode ne '') {
                                                slave_vardir => $vardirs[1],
                                                slave_port => $ports[1],
                                                mode => $rpl_mode,
-                                               server_options => \@options,
+                                               server_options => $mysqld_options[1],
                                                valgrind => $valgrind,
                                                valgrind_options => \@valgrind_options,
                                                general_log => 1,
@@ -377,7 +382,7 @@ if ($rpl_mode ne '') {
 		parent_vardir => $vardirs[0],
 		debug_server => $debug_server[0],
 		first_port => $ports[0],
-		server_options => $mysqld_options[0],
+		server_options => $mysqld_options[1],
 		valgrind => $valgrind,
 		valgrind_options => \@valgrind_options,
 		general_log => 1,
@@ -411,14 +416,6 @@ if ($rpl_mode ne '') {
     foreach my $server_id (0..1) {
         next if $basedirs[$server_id] eq '';
         
-        my @options;
-        push @options, lc("--$engine") if defined $engine && (lc($engine) ne lc('myisam') && lc($engine) ne lc('memory'));
-        
-        push @options, "--sql-mode=no_engine_substitution" if join(' ', @ARGV_saved) !~ m{sql-mode}io;
-        
-        if (defined $mysqld_options[$server_id]) {
-            push @options, @{$mysqld_options[$server_id]};
-        }
         $server[$server_id] = DBServer::MySQL::MySQLd->new(basedir => $basedirs[$server_id],
                                                            vardir => $vardirs[$server_id],
                                                            debug_server => $debug_server[$server_id],
@@ -426,7 +423,7 @@ if ($rpl_mode ne '') {
                                                            start_dirty => $start_dirty,
                                                            valgrind => $valgrind,
                                                            valgrind_options => \@valgrind_options,
-                                                           server_options => \@options,
+                                                           server_options => $mysqld_options[$server_id+1],
                                                            general_log => 1,
                                                            config => $cnf_array_ref);
         
@@ -694,10 +691,11 @@ $0 - Run a complete random query generation test, including server start with re
 
     --basedir1  : Specifies the base directory of the first MySQL installation;
     --basedir2  : Specifies the base directory of the second MySQL installation;
+    --mysqld    : Options passed to both MySQL servers
     --mysqld1   : Options passed to the first MySQL server
+    --mysqld2   : Options passed to the second MySQL server
     --debug-server1: Use mysqld-debug server for MySQL server1
     --debug-server2: Use mysqld-debug server for MySQL server2
-    --mysqld2   : Options passed to the second MySQL server
     --vardir1   : Optional. (default \$basedir1/mysql-test/var);
     --vardir2   : Optional. (default \$basedir2/mysql-test/var);
 
