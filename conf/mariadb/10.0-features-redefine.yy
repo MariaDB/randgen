@@ -23,10 +23,13 @@ create_or_replace:
 	create_or_replace_as_select | create_or_replace_like ;
 
 create_or_replace_as_select:
-	CREATE OR REPLACE TEMPORARY TABLE `tmp` AS SELECT * FROM _table[invariant] ; CREATE OR REPLACE TABLE _table[invariant] AS SELECT * FROM `tmp` ;
+	CREATE OR REPLACE temporary_for_create_or_replace TABLE `tmp` AS SELECT * FROM _table[invariant] ; 
 
 create_or_replace_like:
 	CREATE OR REPLACE TEMPORARY TABLE `tmp` LIKE _table[invariant] ; INSERT INTO `tmp` SELECT * FROM _table[invariant] ; LOCK TABLE _table[invariant] WRITE ; CREATE OR REPLACE TABLE _table[invariant] LIKE `tmp`; INSERT INTO _table[invariant] SELECT * FROM `tmp`; UNLOCK TABLES ;
+
+temporary_for_create_or_replace:
+	| TEMPORARY ;
 
 
 #############################
