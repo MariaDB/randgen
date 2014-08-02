@@ -248,10 +248,11 @@ sub waitForSlaveSync {
     say("master status $file/$pos - waiting for the slave to catch up with the master...");
     my $wait_result = $self->slave->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
     if ($self->slave->dbh->err) {
+	    say("Retrying MASTER_POS_WAIT because the previous failure could be caused by reconnect");
 	    my $wait_result = $self->slave->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
         # If we got the error again, something is wrong
 		 if ($self->slave->dbh->err) { 
-		     say("ERROR: Could not run MASTSER_POS_WAIT, error code: " . $self->slave->dbh->err);
+		     say("ERROR: Could not run MASTER_POS_WAIT, error code: " . $self->slave->dbh->err);
 		     return DBSTATUS_FAILURE;
 		 }
 		 elsif (not defined $wait_result) {
