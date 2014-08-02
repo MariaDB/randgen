@@ -50,7 +50,7 @@ sub transform {
 		# The first transformation is simple, we create a table with the contents identical to the initial resultset,
 		# and delete from it returning all columns
 
-		return STATUS_WONT_HANDLE if "@{$original_result->columnNames()}" =~ m{`}sgio;
+		return STATUS_WONT_HANDLE if not $original_result or not $original_result->columnNames() or "@{$original_result->columnNames()}" =~ m{`}sgio;
 
 		my $table_name = 'transforms.delete_returning_'.abs($$);
 		my $col_list = join ',', @{$original_result->columnNames()};
