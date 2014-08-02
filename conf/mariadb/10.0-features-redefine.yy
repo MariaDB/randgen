@@ -72,7 +72,6 @@ eistat_analyze_stats:
 eistat_persistent_for:
 	| 
 	PERSISTENT FOR ALL |
-	PERSISTENT FOR COLUMNS eistat_persistent_for_columns |
 	PERSISTENT FOR COLUMNS eistat_persistent_for_columns INDEXES eistat_persistent_for_columns ;
 
 eistat_persistent_for_columns:
