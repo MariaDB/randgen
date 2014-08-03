@@ -247,7 +247,10 @@ sub waitForSlaveSync {
     }        
     say("master status $file/$pos - waiting for the slave to catch up with the master...");
     my $wait_result = $self->slave->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
-    if (! $self->slave->dbh or $self->slave->dbh->err) {
+    if (! $self->slave->dbh) {
+	    say("ERROR: Cannot re-establish connection to the slave");
+	    return DBSTATUS_FAILURE;
+    } elsif ($self->slave->dbh->err) {
 	    say("Retrying MASTER_POS_WAIT because the previous failure could be caused by reconnect");
 	    my $wait_result = $self->slave->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
         # If we got the error again, something is wrong
