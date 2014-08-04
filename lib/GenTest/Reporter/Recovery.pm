@@ -134,7 +134,7 @@ sub report {
 		return STATUS_RECOVERY_FAILURE if $aria_read_log_result > 0;
 		say("$aria_read_log_path apparently returned success");
 
-		my $aria_chk_result = system("$aria_chk_path --extend-check */*.MAI");
+		my $aria_chk_result = system("$aria_chk_path --extend-check --silent */*.MAI");
 		return STATUS_RECOVERY_FAILURE if $aria_chk_result > 0;
 		say("$aria_chk_path apparently returned success");
 	} else {
