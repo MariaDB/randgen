@@ -292,8 +292,8 @@ sub run {
             
         if ($? > -1 ) {
             my $reporter_status = $? > 0 ? $? >> 8 : 0;
+            say("Reporter status " . status2text($reporter_status) . ", previous total status " . status2text($total_status));
             $total_status = $reporter_status if $reporter_status > $total_status;
-            say("Set status " . status2text($total_status));
         }
     }
         

@@ -655,24 +655,25 @@ sub dbh {
     my ($self) = @_;
     if (defined $self->[MYSQLD_DBH]) {
         if (!$self->[MYSQLD_DBH]->ping) {
-            say("Stale connection. Reconnecting");
+            say("Stale connection to ".$self->[MYSQLD_PORT].". Reconnecting");
             $self->[MYSQLD_DBH] = DBI->connect($self->dsn("mysql"),
                                                undef,
                                                undef,
                                                {PrintError => 0,
                                                 RaiseError => 0,
                                                 AutoCommit => 1});
-            if(!defined $self->[MYSQLD_DBH]) {
-                say("Reconnect failed due to ".$DBI::err.":".$DBI::errstr);
-            }
         }
     } else {
+        say("Connecting to ".$self->[MYSQLD_PORT]);
         $self->[MYSQLD_DBH] = DBI->connect($self->dsn("mysql"),
                                            undef,
                                            undef,
-                                           {PrintError => 1,
+                                           {PrintError => 0,
                                             RaiseError => 0,
                                             AutoCommit => 1});
+    }
+    if(!defined $self->[MYSQLD_DBH]) {
+        say("ERROR: (Re)connect to ".$self->[MYSQLD_PORT]." failed due to ".$DBI::err.": ".$DBI::errstr);
     }
     return $self->[MYSQLD_DBH];
 }
