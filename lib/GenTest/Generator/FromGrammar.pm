@@ -30,6 +30,7 @@ use GenTest::Grammar::Rule;
 use GenTest::Stack::Stack;
 use GenTest;
 use Cwd;
+use List::Util qw(shuffle); # For some grammars
 
 use constant GENERATOR_MAX_OCCURRENCES	=> 3500;
 use constant GENERATOR_MAX_LENGTH	=> 10000;
