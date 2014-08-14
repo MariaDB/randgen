@@ -492,4 +492,9 @@ sub tables {
     return $self->metaTables(@args);
 }
 
+sub baseTables {
+    my ($self, @args) = @_;
+    return $self->metaBaseTables(@args);
+}
+
 1;
