@@ -26,7 +26,7 @@ create_or_replace_as_select:
 	CREATE OR REPLACE temporary_for_create_or_replace TABLE `tmp` AS SELECT * FROM _table[invariant] ; 
 
 create_or_replace_like:
-	CREATE OR REPLACE TEMPORARY TABLE `tmp` LIKE _table[invariant] ; INSERT INTO `tmp` SELECT * FROM _table[invariant] ; LOCK TABLE _table[invariant] WRITE ; CREATE OR REPLACE TABLE _table[invariant] LIKE `tmp`; INSERT INTO _table[invariant] SELECT * FROM `tmp`; UNLOCK TABLES ;
+	CREATE OR REPLACE TEMPORARY TABLE `tmp` LIKE _basetable[invariant] ; INSERT INTO `tmp` SELECT * FROM _basetable[invariant] ; LOCK TABLE _basetable[invariant] WRITE ; CREATE OR REPLACE TABLE _basetable[invariant] LIKE `tmp`; INSERT INTO _basetable[invariant] SELECT * FROM `tmp`; UNLOCK TABLES ;
 
 temporary_for_create_or_replace:
 	| TEMPORARY ;
@@ -36,16 +36,19 @@ temporary_for_create_or_replace:
 # FLUSH TABLES .. FOR EXPORT
 
 flush_export:
-	FLUSH TABLE flush_table_list FOR EXPORT ; UNLOCK TABLES ;
+	{ @tables = shuffle(@{$executors->[0]->baseTables()}); '' } FLUSH TABLE flush_table_list FOR EXPORT ; UNLOCK TABLES ;
 
 flush_table_list:
-	_table | flush_table_list, _table ;
+	flush_table_name | flush_table_list, flush_table_name ;
+
+flush_table_name:
+	{ pop @tables } ;
 
 #############################
 # SHOW EXPLAIN
 
 show_explain:
-	SELECT ID INTO @thread_id FROM INFORMATION_SCHEMA.PROCESSLIST ORDER BY RAND() LIMIT 1 ; EXECUTE stmt USING @thread_id ;
+	SELECT ID INTO @thread_id FROM INFORMATION_SCHEMA.PROCESSLIST ORDER BY RAND() LIMIT 1 ; EXECUTE show_expl_stmt USING @thread_id ;
 
 #############################
 # EXPLAIN UPDATE/DELETE/INSERT
@@ -127,8 +130,8 @@ add_collation:
 	invalid_collation ;
 
 valid_collation:
-	SELECT CONCAT(@stmt_names_or_charset, ' COLLATE ', COLLATION_NAME) INTO @stmt_names_or_charset FROM INFORMATION_SCHEMA.COLLATIONS WHERE CHARACTER_SET_NAME = @cset ORDER BY RAND() LIMIT 1;
+	SELECT CONCAT(@stmt_names_or_charset, ' COLLATE `', COLLATION_NAME, '`') INTO @stmt_names_or_charset FROM INFORMATION_SCHEMA.COLLATIONS WHERE CHARACTER_SET_NAME = @cset ORDER BY RAND() LIMIT 1;
 
 invalid_collation:
-        SELECT CONCAT(@stmt_names_or_charset, ' COLLATE ', COLLATION_NAME) INTO @stmt_names_or_charset FROM INFORMATION_SCHEMA.COLLATIONS WHERE CHARACTER_SET_NAME != @cset ORDER BY RAND() LIMIT 1;
+        SELECT CONCAT(@stmt_names_or_charset, ' COLLATE `', COLLATION_NAME, '`') INTO @stmt_names_or_charset FROM INFORMATION_SCHEMA.COLLATIONS WHERE CHARACTER_SET_NAME != @cset ORDER BY RAND() LIMIT 1;
 
