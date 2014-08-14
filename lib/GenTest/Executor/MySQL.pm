@@ -502,6 +502,9 @@ my %acceptable_se_errors = (
         139                     => "TOO_BIG_ROW"
 );
 
+my ($version, $major_version);
+
+
 sub init {
 	my $executor = shift;
 	my $dbh = DBI->connect($executor->dsn(), undef, undef, {
@@ -527,6 +530,11 @@ sub init {
 	# Hack around bug 35676, optiimzer_switch must be set sesson-wide in order to have effect
 	# So we read it from the GLOBAL_VARIABLE table and set it locally to the session
 	#
+
+	$version = version($executor);
+	if ($version =~ /^(\d+\.\d+)/) {
+		$major_version = $1;
+	}
 
 	$dbh->do("
 		SET optimizer_switch = (
@@ -815,8 +823,12 @@ sub execute {
 
 sub version {
 	my $executor = shift;
-	my $dbh = $executor->dbh();
-	return $dbh->selectrow_array("SELECT VERSION()");
+	if (defined $version) {
+		return $version;
+	} else {
+		my $dbh = $executor->dbh();
+		return $dbh->selectrow_array("SELECT VERSION()");
+	}
 }
 
 sub slaveInfo {
@@ -836,6 +848,8 @@ sub masterStatus {
 
 sub explain {
 	my ($executor, $query) = @_;
+
+	return unless is_query_explainable($executor,$query);
 
 	my $sth_output = $executor->dbh()->prepare("EXPLAIN /*!50100 PARTITIONS */ $query");
 
@@ -876,7 +890,17 @@ sub explain {
 
 }
 
+# If Oracle ever issues 5.10.x, this logic will stop working. 
+# Until then it should be fine
+sub is_query_explainable {
+	my ($executor, $query) = @_;
 
+	if ( $major_version > 5.5 ) {
+		return $query =~ /^\s*(?:SELECT|UPDATE|DELETE|INSERT)/i;
+	} else {
+		return $query =~ /^\s*SELECT/;
+	}
+}
 
 sub disconnect {
 	my $executor = shift;
