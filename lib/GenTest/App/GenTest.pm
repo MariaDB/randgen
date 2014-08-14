@@ -265,6 +265,7 @@ sub run {
                 delete $worker_pids{$child_pid};
             }
             
+            say("Process with pid $child_pid ended with status ".status2text($child_exit_status));
             last OUTER if $child_exit_status >= STATUS_CRITICAL_FAILURE;
             last OUTER if keys %worker_pids == 0;
             last OUTER if $child_pid == -1;
