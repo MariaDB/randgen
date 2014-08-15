@@ -52,8 +52,10 @@ sub transform {
 
 		return STATUS_WONT_HANDLE if not $original_result or not $original_result->columnNames() or "@{$original_result->columnNames()}" =~ m{`}sgio;
 
-		my $table_name = 'transforms.delete_returning_'.abs($$);
 		my $col_list = join ',', @{$original_result->columnNames()};
+		# DELETE ... RETURNING does not work with aggregate functions
+		return STATUS_WONT_HANDLE if $col_list =~ m{AVG|COUNT|MAX|MIN|GROUP_CONCAT|BIT_AND|BIT_OR|BIT_XOR|STD|SUM|VAR_POP|VAR_SAMP|VARIANCE}sgio;
+		my $table_name = 'transforms.delete_returning_'.abs($$);
 
 		return [
 			#Include database transforms creation DDL so that it appears in the simplified testcase.
