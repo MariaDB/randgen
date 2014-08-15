@@ -38,8 +38,16 @@ sub new {
 }
 
 sub run {
-    my ($self,@args) = @_;
+    my ($self,$servers,@args) = @_;
     $self->[ERRORFILTER_CHANNEL]->reader;
+
+    # This is a forked process. When it gets killed at the end, 
+    # it destroys dbh which causes problems and race conditions
+    # on connecting to server. 
+    # Setting InactiveDestroy should help to avoid it. 
+    foreach my $server (@$servers) {
+        $server->dbh()->{InactiveDestroy} = 1;
+    }
     while (1) {
         my $msg = $self->[ERRORFILTER_CHANNEL]->recv;
         if (defined $msg) {

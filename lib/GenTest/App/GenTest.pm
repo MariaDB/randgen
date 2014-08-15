@@ -215,7 +215,7 @@ sub run {
     my $errorfilter = GenTest::ErrorFilter->new(channel => $self->channel());
     my $errorfilter_p = GenTest::IPC::Process->new(object => $errorfilter);
     if (!osWindows()) {
-        $errorfilter_p->start();
+        $errorfilter_p->start($self->config->servers);
     }
 
     my $reporter_pid = $self->reportingProcess();

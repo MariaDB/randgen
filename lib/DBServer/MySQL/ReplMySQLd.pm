@@ -228,43 +228,24 @@ sub startServer {
 
 sub waitForSlaveSync {
     my ($self) = @_;
-
-    # It's not really "OK", but we don't need to wait for slave sync 
-    # lost connection to the master
-    return DBSTATUS_OK if ! $self->master->dbh;
-
-    my ($file, $pos) = $self->master->dbh->selectrow_array("SHOW MASTER STATUS"); 
-    # Workaround for a race condition between killing ErrorFilter and this function
-    # (killing ErrorFilter makes the main connection disconnect, and if it happens after
-    #  the ping in dbh(), we end up with an error here).
-    if ($self->master->dbh->err) {
-        ($file, $pos) = $self->master->dbh->selectrow_array("SHOW MASTER STATUS"); 
-        # If we got the error again, something is wrong
-        if ($self->master->dbh->err) { 
-            say("ERROR: Could not retrieve master status, error code: " . $self->master->dbh->err);
-            return DBSTATUS_FAILURE;
-        }
-    }        
-    say("master status $file/$pos - waiting for the slave to catch up with the master...");
-    my $wait_result = $self->slave->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
+    if (! $self->master->dbh) {
+        say("ERROR: Could not connect to master");
+        return DBSTATUS_FAILURE;
+    }
     if (! $self->slave->dbh) {
-	    say("ERROR: Cannot re-establish connection to the slave");
-	    return DBSTATUS_FAILURE;
-    } elsif ($self->slave->dbh->err) {
-	    say("Retrying MASTER_POS_WAIT because the previous failure could be caused by reconnect");
-	    my $wait_result = $self->slave->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
-        # If we got the error again, something is wrong
-		 if ($self->slave->dbh->err) { 
-		     say("ERROR: Could not run MASTER_POS_WAIT, error code: " . $self->slave->dbh->err);
-		     return DBSTATUS_FAILURE;
-		 }
-		 elsif (not defined $wait_result) {
-		     my @slave_status = $self->slave->dbh->selectrow_array("SHOW SLAVE STATUS");
-		     say("ERROR: Slave SQL thread has stopped with error: ".$slave_status[37]);
-			return DBSTATUS_FAILURE;
-		 } else {
-		     return DBSTATUS_OK;
-		 }
+        say("ERROR: Could not connect to slave");
+        return DBSTATUS_FAILURE;
+    }
+
+    my ($file, $pos) = $self->master->dbh->selectrow_array("SHOW MASTER STATUS");
+    say("Master status $file/$pos. Waiting for slave to catch up...");
+    my $wait_result = $self->slave->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
+    if (not defined $wait_result) {
+        my @slave_status = $self->slave->dbh->selectrow_array("SHOW SLAVE STATUS");
+        say("Slave SQL thread has stopped with error: ".$slave_status[37]);
+                return DBSTATUS_FAILURE;
+    } else {
+        return DBSTATUS_OK;
     }
 }
 
