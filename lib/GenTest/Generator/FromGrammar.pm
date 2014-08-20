@@ -361,8 +361,53 @@ sub next {
 	# can be examined
 
 	if (
-		(index($sentence, 'CREATE') > -1 ) &&
-		(index($sentence, 'BEGIN') > -1 || index($sentence, 'END') > -1)
+		# Stored procedures of all sorts
+			( 
+				(index($sentence, 'CREATE') > -1 ) &&
+				(index($sentence, 'BEGIN') > -1 || index($sentence, 'END') > -1) 
+			)
+		or
+		# MDEV-5317, anonymous blocks BEGIN NOT ATOMIC .. END
+			( 
+				(index($sentence, 'BEGIN') > -1 ) &&
+				(index($sentence, 'ATOMIC') > -1 ) &&
+				(index($sentence, 'END') > -1 )
+			)
+		or
+		# MDEV-5317, IF .. THEN .. [ELSE ..] END IF
+			( 
+				(index($sentence, 'IF') > -1 ) &&
+				(index($sentence, 'THEN') > -1 ) &&
+				(index($sentence, 'END') > -1 )
+			)
+		or
+		# MDEV-5317, CASE .. [WHEN .. THEN .. [WHEN .. THEN ..] [ELSE .. ]] END CASE
+			( 
+				(index($sentence, 'CASE') > -1 ) &&
+				(index($sentence, 'WHEN') > -1 ) &&
+				(index($sentence, 'THEN') > -1 ) &&
+				(index($sentence, 'END') > -1 )
+			)
+		or
+		# MDEV-5317, LOOP .. END LOOP
+			( 
+				(index($sentence, 'LOOP') > -1 ) &&
+				(index($sentence, 'END') > -1 )
+			)
+		or
+		# MDEV-5317, REPEAT .. UNTIL .. END REPEAT
+			( 
+				(index($sentence, 'REPEAT') > -1 ) &&
+				(index($sentence, 'UNTIL') > -1 ) &&
+				(index($sentence, 'END') > -1 )
+			)
+		or
+		# MDEV-5317, WHILE .. DO .. END WHILE
+			( 
+				(index($sentence, 'WHILE') > -1 ) &&
+				(index($sentence, 'DO') > -1 ) &&
+				(index($sentence, 'END') > -1 )
+			)
 	) {
 		return [ $sentence ];
 	} elsif (index($sentence, ';') > -1) {
