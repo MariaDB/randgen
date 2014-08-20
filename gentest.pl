@@ -147,6 +147,7 @@ my $config = GenTest::Properties->new(
               'report-tt-logdir',
               'debug_server',
               'querytimeout',
+              'servers',
               'multi-master'],
     help => \&help);
 
