@@ -241,9 +241,13 @@ sub waitForSlaveSync {
     say("Master status $file/$pos. Waiting for slave to catch up...");
     my $wait_result = $self->slave->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
     if (not defined $wait_result) {
-        my @slave_status = $self->slave->dbh->selectrow_array("SHOW SLAVE STATUS");
-        say("Slave SQL thread has stopped with error: ".$slave_status[37]);
-                return DBSTATUS_FAILURE;
+        if ($self->slave->dbh) {
+            my @slave_status = $self->slave->dbh->selectrow_array("SHOW SLAVE STATUS");
+            say("ERROR: Slave SQL thread has stopped with error: ".$slave_status[37]);
+        } else {
+            say("ERROR: Lost connection to the slave");
+        }
+        return DBSTATUS_FAILURE;
     } else {
         return DBSTATUS_OK;
     }

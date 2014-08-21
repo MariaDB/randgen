@@ -56,21 +56,27 @@ sub validate {
 	my ($validator, $executors, $results) = @_;
 
 	my $master_executor = $executors->[0];
+	my $dbh = $validator->dbh();
 
-	my $slave_status = $validator->dbh()->selectrow_arrayref("SHOW SLAVE STATUS");
+	if ($dbh) {
+		my $slave_status = $dbh->selectrow_arrayref("SHOW SLAVE STATUS");
 
-	if ($slave_status->[SLAVE_STATUS_LAST_IO_ERROR] ne '') {
-		say("Slave IO thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_IO_ERROR]);
+		if ($slave_status->[SLAVE_STATUS_LAST_IO_ERROR] ne '') {
+			say("Slave IO thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_IO_ERROR]);
+			return STATUS_REPLICATION_FAILURE;
+		} elsif ($slave_status->[SLAVE_STATUS_LAST_SQL_ERROR] ne '') {
+			say("Slave SQL thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_SQL_ERROR]);
+			return STATUS_REPLICATION_FAILURE;
+		} elsif ($slave_status->[SLAVE_STATUS_LAST_ERROR] ne '') {
+			say("Slave has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_ERROR]);
+			return STATUS_REPLICATION_FAILURE;
+		} else {
+			return STATUS_OK;
+		}
+	} else {
+		say("ERROR: Lost connection to the slave");
 		return STATUS_REPLICATION_FAILURE;
-	} elsif ($slave_status->[SLAVE_STATUS_LAST_SQL_ERROR] ne '') {
-		say("Slave SQL thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_SQL_ERROR]);
-		return STATUS_REPLICATION_FAILURE;
-	} elsif ($slave_status->[SLAVE_STATUS_LAST_ERROR] ne '') {
-		say("Slave has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_ERROR]);
-		return STATUS_REPLICATION_FAILURE;
-        } else {
-                return STATUS_OK;
-        }
+	}
 }
 
 1;
