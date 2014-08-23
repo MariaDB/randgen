@@ -20,20 +20,19 @@ thread3:
 # CREATE OR REPLACE
 
 create_or_replace:
-	create_or_replace_as_select | create_or_replace_like ;
+	CREATE OR REPLACE temporary_for_create_or_replace TABLE `create_or_replace_tmp` AS SELECT * FROM _table |
+	lock_for_create_or_replace CREATE OR REPLACE temporary_for_create_or_replace TABLE `create_or_replace_tmp` LIKE _basetable[invariant] ; INSERT INTO `create_or_replace_tmp` SELECT * FROM _basetable[invariant] ; UNLOCK TABLES;
 
-create_or_replace_as_select:
-	CREATE OR REPLACE temporary_for_create_or_replace TABLE `tmp` AS SELECT * FROM _table[invariant] ; 
-
-create_or_replace_like:
-	CREATE OR REPLACE TEMPORARY TABLE `tmp` LIKE _basetable[invariant] ; INSERT INTO `tmp` SELECT * FROM _basetable[invariant] ; LOCK TABLE _basetable[invariant] WRITE ; CREATE OR REPLACE TABLE _basetable[invariant] LIKE `tmp`; INSERT INTO _basetable[invariant] SELECT * FROM `tmp`; UNLOCK TABLES ;
+lock_for_create_or_replace:
+	| LOCK TABLE `create_or_replace_tmp` WRITE, _basetable[invariant] READ ; 
 
 temporary_for_create_or_replace:
 	| TEMPORARY ;
 
-
 #############################
 # FLUSH TABLES .. FOR EXPORT
+
+# Use a table only once in FLUSH command
 
 flush_export:
 	{ @tables = shuffle(@{$executors->[0]->baseTables()}); '' } FLUSH TABLE flush_table_list FOR EXPORT ; UNLOCK TABLES ;
