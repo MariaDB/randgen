@@ -257,7 +257,9 @@ sub stopServer {
     my ($self) = @_;
 
     $self->waitForSlaveSync();
-    $self->slave->dbh->do("STOP SLAVE");
+    if ($self->slave->dbh) {
+        $self->slave->dbh->do("STOP SLAVE");
+    }
     
     $self->slave->stopServer;
     $self->master->stopServer;
