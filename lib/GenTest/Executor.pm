@@ -497,4 +497,9 @@ sub baseTables {
     return $self->metaBaseTables(@args);
 }
 
+sub tableColumns {
+    my ($self, @args) = @_;
+    return $self->metaColumns(@args);
+}
+
 1;
