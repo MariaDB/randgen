@@ -1,4 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014 SkySQL Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -33,35 +34,25 @@ sub transform {
 
 	my @selects = $original_query =~ m{(SELECT)}sgio;
 
+	return STATUS_WONT_HANDLE if $original_query !~ m{^\s*SELECT}sio;
 	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
 	#          - CONCAT() in ORDER BY queries, which require more complex regexes below for correct behavior
-	return STATUS_WONT_HANDLE if $original_query =~ m{(OUTFILE|INFILE|PROCESSLIST|GRANT)}sio
-		|| $original_query =~ m{GROUP\s+BY}io
-		|| $original_query =~ m{ORDER\s+BY[^()]*CONCAT\s*\(}sio;
+	#          - INTO, because there will be nothing to compare
+
+	return STATUS_WONT_HANDLE if $original_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO|GROUP\s+BY|ORDER\s+BY[^()]*CONCAT\s*\()}sio;
 		
 	my $transform_outcome;
 
 	if ($original_query =~ m{LIMIT[^()]*$}sio) {
 		$transform_outcome = "TRANSFORM_OUTCOME_SUPERSET";
 
-		if ($original_query =~ s{ORDER\s+BY[^()]*$}{}sio) {
+		if ($original_query =~ s{ORDER\s+BY.*$}{}sio) {
 			# Removing ORDER BY
-		} elsif ($#selects == 0) {
-			return STATUS_WONT_HANDLE if $original_query !~ s{LIMIT[^()]*$}{ORDER BY 1}sio;
-		} else {
+		} elsif ($original_query !~ s{LIMIT[^()]*$}{ORDER BY 1}sio) {
 			return STATUS_WONT_HANDLE;
-		}
+		} 
 	} else {
 		$transform_outcome = "TRANSFORM_OUTCOME_UNORDERED_MATCH";
-
-		if ($original_query =~ s{ORDER\s+BY[^()]*$}{}sio) {
-			# Removing ORDER BY
-                     } elsif ($#selects == 0) {
-                              return STATUS_WONT_HANDLE if $original_query !~ s{$}{ ORDER BY 1}sio;
-			# Add ORDER BY 1 (no LIMIT)
-		} else {
-			return STATUS_WONT_HANDLE;
-		}
 	}
 
 	return $original_query." /* $transform_outcome */ ";
