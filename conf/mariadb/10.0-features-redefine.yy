@@ -1,3 +1,6 @@
+thread1_init:
+	ANALYZE TABLE { join ',', @{$executors->[0]->baseTables()} };
+
 thread4_init:
 	PREPARE show_expl_stmt FROM "SHOW EXPLAIN FOR ?"; 
 
