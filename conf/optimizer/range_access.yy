@@ -184,19 +184,22 @@ multi_char_idx_where_clause:
 ################################################################################
 
 single_idx_query:
-  { $tables=0 ; $fields = 0 ; "" }  SELECT select_list FROM join WHERE single_idx_where_list opt_where_list order_by_clause ;
+  { $tables=0 ; $fields = 0 ; "" }  SELECT straight_join select_list FROM join WHERE single_idx_where_list opt_where_list group_by_clause order_by_clause ;
 
 multi_int_idx_query:
-  { $tables=0 ; $fields = 0 ; "" }  SELECT select_list FROM idx_join WHERE multi_int_idx_where_list opt_where_list order_by_clause ;
+  { $tables=0 ; $fields = 0 ; "" }  SELECT straight_join select_list FROM idx_join WHERE multi_int_idx_where_list opt_where_list group_by_clause order_by_clause ;
 
 multi_char_idx_query:
-  { $tables=0 ; $fields = 0 ; "" }  SELECT select_list FROM idx_join WHERE multi_char_idx_where_list opt_where_list order_by_clause ;
+  { $tables=0 ; $fields = 0 ; "" }  SELECT straight_join select_list FROM idx_join WHERE multi_char_idx_where_list opt_where_list group_by_clause order_by_clause ;
 
 select_list:
   select_item | select_item , select_list ;
 
 select_item:
   table_one_two . _field AS { my $f = "field".++$fields ; $f } ; 
+
+straight_join:
+	| | | | | | | | STRAIGHT_JOIN ;
 
 join:
    { $stack->push() }      
@@ -286,6 +289,9 @@ where_item:
   existing_table_item . _field IS not NULL |
   existing_table_item . `pk` IS not NULL |
   single_idx_where_list ;
+
+group_by_clause:
+	| | | | | GROUP BY { @groupby = (); for (1..$fields) { push @groupby, 'field'.$_ }; join ',', @groupby } ;
 
 order_by_clause:
 	| | |
