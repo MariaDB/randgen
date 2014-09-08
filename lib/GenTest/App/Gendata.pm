@@ -207,7 +207,7 @@ sub run {
         push(@schema_perms, $executor->defaultSchema());
     }
 
-    $table_perms[TABLE_ROW] = (defined $self->rows() ? [ $self->rows() ] : undef ) || $tables->{rows} || [0, 1, 2, 10, 100];
+    $table_perms[TABLE_ROW] = (defined $self->rows() ? [split(',', $self->rows())] : undef ) || $tables->{rows} || [0, 1, 2, 10, 100];
     $table_perms[TABLE_ENGINE] = defined $self->engine() ? [ $self->engine() ] : $tables->{engines};
     $table_perms[TABLE_CHARSET] = $tables->{charsets} || [ undef ];
     $table_perms[TABLE_COLLATION] = $tables->{collations} || [ undef ];
