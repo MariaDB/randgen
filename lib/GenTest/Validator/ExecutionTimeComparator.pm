@@ -226,7 +226,7 @@ sub validate {
     # In the case of @tables being defined, we try to repeat each query against
     # the specified tables. We skip this if we cannot recognize the original
     # table name.
-    if (defined @tables) {
+    if (@tables) {
         my $tableVarStatus = doTableVariation($executors, $results, $query, $total_status);
         $total_status = $tableVarStatus if $tableVarStatus > $total_status;
     }
@@ -318,7 +318,7 @@ sub compareDurations {
     if (defined $outfile && (tell OUTFILE == -1) ) {
         open (OUTFILE, ">$outfile");
         print(OUTFILE "# Numbers from the RQG's $thisFile validator.\n\n");
-        if (defined @relative_std_devs) {
+        if (@relative_std_devs) {
             print(OUTFILE "ratio\treversed_ratio\ttime0\ttime1\trelative_std_dev0 (\%)\trelative_std_dev1 (\%)\tquery\n");
         } else {
             print(OUTFILE "ratio\treversed_ratio\ttime0\ttime1\tquery\n");
@@ -336,7 +336,7 @@ sub compareDurations {
         my $output = "ratio = $ratio; ".
                      "time0 = ".$times[0]." sec; ".
                      "time1 = ".$times[1]." sec; ";
-        if (defined @relative_std_devs) {
+        if (@relative_std_devs) {
             $output .= "rel_std_dev0: ".sprintf('%.2f', $relative_std_devs[0])."; ".
                        "rel_std_dev1: ".sprintf('%.2f', $relative_std_devs[1])."; ";
         }
@@ -359,7 +359,7 @@ sub compareDurations {
         if (defined $outfile) {
             my $file_output = $ratio."\t".$reversed_ratio."\t".
                               $times[0]."\t".$times[1]."\t";
-            if (defined @relative_std_devs) {
+            if (@relative_std_devs) {
                 $file_output .= sprintf('%.2f', $relative_std_devs[0])."\t".
                                 sprintf('%.2f', $relative_std_devs[1])."\t";
             }
