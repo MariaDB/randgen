@@ -299,12 +299,14 @@ sub compareDurations {
     }
 
     # We only do EXPLAIN checking once.
+    my @explains;
+    my @explains_to_print;
     if ($skip_explain == 0) {
-        my @explains;
         foreach my $executor_id (0..1) {
             my $explain_extended = $executors->[$executor_id]->dbh()->selectall_arrayref("EXPLAIN EXTENDED $query");
             my $explain_warnings = $executors->[$executor_id]->dbh()->selectall_arrayref("SHOW WARNINGS");
             $explains[$executor_id] = Dumper($explain_extended)."\n".Dumper($explain_warnings);
+            $explains_to_print[$executor_id] = join("\n", map { join("\t", map { defined $_ ? $_ : "NULL" } @$_) } @$explain_extended);
         }
 
         $different_plans++ if $explains[0] ne $explains[1];
@@ -340,6 +342,18 @@ sub compareDurations {
         }
         $output .= "query: $query";
         say($output);
+
+        if (!$skip_explain) {
+            if ($explains[0] ne $explains[1]) {
+                say("EXPLAIN on server 1:");
+                say($explains_to_print[0]);
+                say("EXPLAIN on server 2:");
+                say($explains_to_print[1]);
+            } else {
+                say("EXPLAIN on both servers:");
+                say($explains_to_print[0]);
+            }
+        }
 
         # Also print to output file...
         if (defined $outfile) {
