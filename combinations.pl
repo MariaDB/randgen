@@ -278,10 +278,11 @@ sub doCombination {
 	my $command = "
 		perl ".($Carp::Verbose?"-MCarp=verbose ":"").
         (defined $ENV{RQG_HOME} ? $ENV{RQG_HOME}."/" : "" ).
-        "$runall --queries=100000000 $comb_str ";
+        "$runall $comb_str ";
 
-    $command .= " --mtr-build-thread=".($mtrbt+($thread_id-1)*2);
-	$command .= " --mask=$mask" if not defined $no_mask;
+	$command .= " --queries=100000000" if $comb_str !~ /--queries=/;
+	$command .= " --mask=$mask" if $comb_str !~ /-mask/;
+	$command .= " --mtr-build-thread=".($mtrbt+($thread_id-1)*2);
 	$command .= " --duration=$duration" if $duration ne '';
     foreach my $s (1..$servers) {
         $command .= " --basedir".$s."=".$basedirs[$s-1]." " if $basedirs[$s-1] ne '';
