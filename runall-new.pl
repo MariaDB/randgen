@@ -291,6 +291,11 @@ if (defined $seed and $seed eq 'time') {
 	say("Converted --seed=time to --seed=$seed");
 }
 
+my $cmd = $0 . " " . join(" ", @ARGV_saved);
+$cmd =~ s/seed=time/seed=$seed/g;
+say("Final command line: \nperl $cmd");
+
+
 my $cnf_array_ref;
 
 if ($genconfig) {
