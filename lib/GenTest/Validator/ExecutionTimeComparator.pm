@@ -1,4 +1,5 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014 SkySQL Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -307,6 +308,9 @@ sub compareDurations {
             my $explain_warnings = $executors->[$executor_id]->dbh()->selectall_arrayref("SHOW WARNINGS");
             $explains[$executor_id] = Dumper($explain_extended)."\n".Dumper($explain_warnings);
             $explains_to_print[$executor_id] = join("\n", map { join("\t", map { defined $_ ? $_ : "NULL" } @$_) } @$explain_extended);
+            foreach my $w (@$explain_warnings) { 
+                $explains_to_print[$executor_id] .= "\n@$w";
+            }
         }
 
         $different_plans++ if $explains[0] ne $explains[1];
