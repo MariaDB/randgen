@@ -71,7 +71,8 @@ my %mysql_grouping_errors = (
 	1111 => 'ER_INVALID_GROUP_FUNC_USE',
 	1615 => 'ER_NEED_REPREPARE',
 	1060 => 'DUPLICATE_COLUMN_NAME',
-	1104 => 'ER_TOO_BIG_SELECT'
+	1104 => 'ER_TOO_BIG_SELECT',
+	1247 => 'ER_ILLEGAL_REFERENCE'
 );
 
 # List of encountered errors that we want to suppress later in the test run.
