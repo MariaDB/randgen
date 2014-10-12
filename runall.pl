@@ -331,7 +331,6 @@ foreach my $server_id (0..1) {
 		}
 	}
 			
-	push @mtr_options, "--skip-ndb";
 	push @mtr_options, "--mysqld=--core-file";
 	push @mtr_options, "--mysqld=--loose-new";
 	push @mtr_options, "--mysqld=--default-storage-engine=$engine" if defined $engine;
