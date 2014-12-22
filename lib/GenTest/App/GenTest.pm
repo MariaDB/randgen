@@ -416,7 +416,8 @@ sub workerProcess {
         executors => \@executors,
         validators => $self->config->validators,
         properties =>  $self->config,
-        filters => $self->queryFilters()
+        filters => $self->queryFilters(),
+	end_time => $self->[GT_TEST_END]
     );
 
     if (not defined $mixer) {

@@ -534,6 +534,7 @@ sub init {
 	# 
 	# Hack around bug 35676, optiimzer_switch must be set sesson-wide in order to have effect
 	# So we read it from the GLOBAL_VARIABLE table and set it locally to the session
+	# Please leave this statement on a single line, which allows easier correct parsing from general log.
 	#
 
 	$version = version($executor);
@@ -541,13 +542,7 @@ sub init {
 		$major_version = $1;
 	}
 
-	$dbh->do("
-		SET optimizer_switch = (
-			SELECT variable_value
-			FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES
-			WHERE VARIABLE_NAME = 'optimizer_switch'
-		)
-	");
+	$dbh->do("SET optimizer_switch=(SELECT variable_value FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES WHERE VARIABLE_NAME='optimizer_switch')");
 
 	$executor->defaultSchema($executor->currentSchema());
 

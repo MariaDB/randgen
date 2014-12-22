@@ -15,6 +15,7 @@ if [ $(grep "use strict" $RQGDIR/lib/GenTest/Random.pm | sed 's/\(.\).*/\1/') !=
   echo "=== modified file 'lib/GenTest/Random.pm'"
   echo "-use strict;"
   echo "+#use strict;"
+  echo -e "\n If you like you can make the same patch to lib/GenTest/Validator/Transformer.pm, though this has not been established as necessary or helpful [yet]."
   echo -e "\n Please ensure this patch is in place (exactly as shown above; with '#' as the first character on the line) before re-starting maxigen."
   exit 1
 fi
@@ -40,6 +41,14 @@ else
   # Special preparation: _epoch temporary directory setup
   mkdir $WORKDIR/$WORKDIRSUB/_epoch
   export EPOCH_DIR=$WORKDIR/$WORKDIRSUB/_epoch
+
+  # jemalloc provisioning (reqd for TokuDB)
+  if [ -r /usr/lib64/libjemalloc.so.1 ]; then
+    export LD_PRELOAD=/usr/lib64/libjemalloc.so.1
+  else
+    echo "Error: jemalloc not found, please install it first"
+    exit 1
+  fi
 
   # Make sure we keep a copy of the yy grammars
   mkdir $WORKDIR/$WORKDIRSUB/KEEP

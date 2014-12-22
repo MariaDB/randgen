@@ -27,6 +27,11 @@ SKIPSTAGE=0
 TEXT="strcmp"
 #TEXT="\|      0 \|      7 \|"  # Example of CLI output for MODE5
 #TEXT="\| i      \|"
+PQUERY_MOD=0
+PQUERY_LOC=~/percona-qa/pquery/pquery
+PXC_DOCKER_FIG_MOD=0
+PXC_DOCKER_FIG_LOC=~/percona-qa/pxc-pquery/existing/fig.yml
+PXC_ISSUE_NODE=0
 MODE5_COUNTTEXT=1
 MODE5_ADDITIONAL_TEXT=""
 MODE5_ADDITIONAL_COUNTTEXT=1
@@ -37,8 +42,10 @@ TS_DS_TIMEOUT=10
 TS_VARIABILITY_SLEEP=1
 WORKDIR_LOCATION=1
 STAGE1_LINES=90
-MYEXTRA="--log-output=none --sql_mode=ONLY_FULL_GROUP_BY"
-MYBASE="/sde/Percona-Server-5.6.12-rc60.4-410-debug.Linux.x86_64"
+MYEXTRA="--no-defaults --log-output=none --sql_mode=ONLY_FULL_GROUP_BY"  # --no-defaults is removed automatically later. Present here to highlight it's set.
+MYBASE="/sda/Percona-Server-5.6.21-rel70.0-693.Linux.x86_64-debug"
+FORCE_SPORADIC=0
+FORCE_SKIPV=0
 
 # ======== User configurable variable reference
 # - MODE: 
@@ -55,6 +62,15 @@ MYBASE="/sde/Percona-Server-5.6.12-rc60.4-410-debug.Linux.x86_64"
 # - TEXT: Text to look for in MODEs 1,2,3,5,6,7,8. Ignored in MODEs 4 and 9. 
 #   Can contain egrep+regex syntax like "^ERROR|some_other_string". Remember this is regex: specify | as \| etc. 
 #   For MODE5, you would use a mysql CLI to get the desired output "string" (see example given above) and then set MODE5_COUNTTEXT
+# - PQUERY_MOD: 1: use pquery, 0: use mysql CLI. Causes reducer.sh to use pquery instead of the mysql client for replays (default=0). Supported for MODE=1,3,4
+# - PQUERY_LOC: Location of the pquery binary
+# - PXC_DOCKER_FIG_MOD: 1: use Fig + Docker to bring up 3 node Percona XtraDB Cluster instead of default server, 0: use default non-cluster server (mysqld)
+#   see lp:/percona-qa/pxc-pquery/new/pxc-pquery_info.txt and lp:/percona-qa/docker_info.txt for more information on this. See above for some limitations etc.
+#   IMPORTANT NOTE: If this is set to 1, ftm, these settings (and limitations) are automatically set: INHERENT: PQUERY_MOD=1, LIMTATIONS: FORCE_SPORADIC=0, 
+#   SPORADIC=0, FORCE_SKIPV=0, SKIPV=1, MYEXTRA="", MULTI_THREADS=0 
+# - PXC_ISSUE_NODE: This indicates which node you would like to be checked for presence of the issue. 0 = Any node. Valid options: 0, 1, 2, or 3. Only works
+#   for MODE=4 currently.
+# - PXC_DOCKER_FIG_LOC: Location of the Fig file used to bring up 3 node Percona XtraDB Cluster (using images previously prepared by "new" method) 
 # - MODE5_COUNTTEXT: Number of times the text should appear (default=minimum=1). Currently only used for MODE 5
 # - MODE5_ADDITIONAL_TEXT: An additional string to look for in the CLI output when using MODE 5. When not using this set to "" (=default)
 # - MODE5_ADDITIONAL_COUNTTEXT: Number of times the additional text should appear (default=minimum=1). Only used for MODE 5
@@ -81,6 +97,20 @@ MYBASE="/sde/Percona-Server-5.6.12-rc60.4-410-debug.Linux.x86_64"
 #   Generally should be left disabled to obtain cleaner output (using this option gives "core dumped" messages, use less space, and have faster reducer runs)
 # - MYBASE: Full path to MySQL basedir (example: "/mysql/mysql-5.6"). 
 #   If the directory name starts with '/mysql/' then this may be ommited (example: MYBASE="mysql-5.6-trunk")
+# - FORCE_SPORADIC=0 or 1: If set to 1, STAGE1_LINES setting is ignored and set to 3. MULTI reducer mode is used after verify, even if issue is found to
+#   seemingly not be sporadic (i.e. all verify threads, normally 10, reproduced the issue). This can be handy for issues which are very slow to reduce
+#   or which, on visual inspection of the testcase reduction process are clearly sporadic (i.e. it comes to 2 line chunks with still thousands of lines 
+#   in the testcase and/or there are many trials without the issue being observed. Another situation which would call for use of this parameter is when
+#   produced testcases are still greater then 15 to 80 lines - this also indicates a possibly sporadic issue (even if verify stage manages to produce it 10x.
+#   Note that this may be a bug in reducer too - i.e. a mismatch between verify stage and stage 1. Yet, if that were true, the issue would likely not 
+#   reproduce to start with. Another plausible reason for this occurence (10/10 verified in verify stage but low frequency reproduction later on) is the
+#   existence of 10 threads in verify stage vs 1 thread in stage 1. It has been observed that a very loaded server (or using Valgrind as it also slows the
+#   code down significantly) is better at reproducing (many) issues then a low-load/single-thread-running machine. Whatever the case, this hack will help.
+# - FORCE_SKIV=0 or 1: If set to 1, FORCE_SPORADIC is automatically set to 1 also. This option skips the verify stage and goes straight into testcase reduction
+#   mode. Ideal for issues that have a very low reproducibility, at least initially (usually either increases or decreases during a simplification run.)
+#   Note that skipping the verify stage means that you may not be sure if the issue is reproducibile untill it actually reproduces (how long is a piece of 
+#   string), and the other caveat is that the verify stage normally does some very important inital simplifications which is now skipped. It is suggested that 
+#   if the issue becomes more reproducible during simplification, to restart reducer with this hack turned off. This way you get the best of both worlds.
 
 # ======== General develoment information
 # - Subreducer(s): these are multi-threaded runs of reducer.sh started from within reducer.sh. They have a specific role, similar to the main reducer. 
@@ -91,6 +121,7 @@ MYBASE="/sde/Percona-Server-5.6.12-rc60.4-410-debug.Linux.x86_64"
 #VARMOD# < please do not remove this, it is here as a marker for other scripts (including reducer itself) to auto-insert settings
 
 # ======== Ideas for improvement
+# - PXC Node work: rm -Rf's in other places (non-supported subreducers for example) will need sudo. Also test for sudo working correctly upfront
 # - Add a MYEXRA simplificator at end (extra stage) so that mysqld options are minimal
 # - Improve ";" work in STAGE4 (";" sometimes missing from results - does not affect reproducibility)
 # - Improve VALGRIND/ERRORLOG run work (complete?)
@@ -176,7 +207,20 @@ echo_out_overwrite(){
 ctrl_c(){
   echo_out "[Abort] CTRL+C Was pressed. Dumping variable stack"
   echo_out "[Abort] WORKD: $WORKD (reducer log @ $WORKD/reducer.log)"
-  echo_out "[Abort] End of dump stack. Ensuring threads are terminated"
+  if [ -s $WORKO ]; then  # If there were no issues found, $WORKO was never written
+    echo_out "[Abort] Best testcase thus far: $WORKO"
+  else
+    echo_out "[Abort] Best testcase thus far: $INPUTFILE (= input file, no optimizations were successful)"
+  fi
+  echo_out "[Abort] End of dump stack."
+  if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then 
+    echo_out "[Abort] Ensuring any remaining PXC Docker containers are terminated and removed"
+    sudo docker kill $(sudo docker ps -a | grep "new_pxc" | awk '{print $1}' | tr '\n' ' ') 2>/dev/null
+    sleep 1; sync
+    sudo docker rm $(sudo docker ps -a | grep "new_pxc" | awk '{print $1}' | tr '\n' ' ') 2>/dev/null
+    sleep 1; sync
+  fi
+  echo_out "[Abort] Ensuring any remaining live processes are terminated"
   PIDS_TO_TERMINATE=$(ps -ef | grep "$DIRVALUE" | grep -v "grep" | awk '{print $2}' | tr '\n' ' ')
   echo_out "[Abort] Terminating these PID's: $PIDS_TO_TERMINATE"
   kill -9 $PIDS_TO_TERMINATE >/dev/null 2>&1
@@ -197,6 +241,37 @@ options_check(){
     echo "fs.aio-max-nr = 1048576"
     echo "fs.file-max = 6815744"
     echo "Terminating now."
+    exit 1
+  fi
+  # Check if O_DIRECT is being used on tmpfs, which (when the original run was not on tmpfs) is not a 100% reproduce match, which may affect reproducibility
+  # See http://bugs.mysql.com/bug.php?id=26662 for more info
+  if $(echo $MYEXTRA | egrep -qi "MYEXTRA=.*O_DIRECT"); then
+    if [ $WORKDIR_LOCATION -eq 1 -o $WORKDIR_LOCATION -eq 2 ]; then  # ramfs may not have this same issue, maybe '-o $WORKDIR_LOCATION -eq 2' can be removed?
+      echo 'Error: O_DIRECT is being used in the MYEXTRA option string, and tmpfs (or ramfs) storage was specified, but because'
+      echo 'of bug http://bugs.mysql.com/bug.php?id=26662 one would see a WARNING for this in the error log along the lines of;'
+      echo '[Warning] InnoDB: Failed to set O_DIRECT on file ./ibdata1: OPEN: Invalid argument, continuing anyway.'
+      echo "          O_DIRECT is known to result in 'Invalid argument' on Linux on tmpfs, see MySQL Bug#26662."
+      echo 'So, reducer is exiting to allow you to change WORKDIR_LOCATION in the script to a non-tmpfs setting.'
+      echo 'Note: this assertion currently shows for ramfs as well, yet it has not been established if ramfs also'        #
+      echo '      shows the same problem. If it does not (modify the script in this section to get it to run with ramfs'  # ramfs, delete if ramfs is affected
+      echo '      as a trial/test), then please remove ramfs, or, if it does, then please remove these 3 last lines.'     # 
+      exit 1
+    fi
+  fi 
+  # This section could be expanded to check for any directory specified (by for instance checking for paths), not just the two listed here
+  DIR_ISSUE=0;
+  if $(echo $MYEXTRA | egrep -qi "MYEXTRA=.*innodb_log_group_home_dir"); then DIR_ISSUE='innodb_log_group_home_dir'; fi
+  if $(echo $MYEXTRA | egrep -qi "MYEXTRA=.*innodb_log_arch_dir"); then DIR_ISSUE='innodb_log_arch_dir'; fi
+  if [ "$DIR_ISSUE" != "0" ]; then
+    echo "Error: the $DIR_ISSUE option is being used in the MYEXTRA option string. This can lead to all sorts of problems;"
+    echo 'Remember that reducer 1) is multi-threaded - i.e. it would access that particularly named directory for each started mysqld, which'
+    echo 'clearly would result in issues, and 2) whilst reducer creates new directories for every trial (and for each thread), it would not do'
+    echo 'anything for this hardcoded directory, so this directory would get used every time, again clearly resulting in issues, especially'
+    echo 'when one considers that 3) running mysqld instances get killed once the achieved result (for example, issue discovered) is obtained.'
+    echo 'Suggested course of action: remove this/these sort of options from the MYEXTRA string and see if the issue reproduces. This/these sort'
+    echo 'of options often have little effect on reproducibility. Howerver, if found significant, reducer.sh can be expanded to cater for this/'
+    echo 'these sort of options being in MYEXTRA by re-directing them to a per-trial (and per-thread) subdirectory of the trial`s rundir used.'
+    echo 'Terminating reducer to allow this change to be made.'
     exit 1
   fi
   if [ $MODE -ge 6 ]; then
@@ -222,6 +297,15 @@ options_check(){
         exit 1
       else
         TS_INPUTDIR="$1/log"
+        if egrep -qi "tokudb" $TS_INPUTDIR/C[0-9]*T[0-9]*.sql; then
+          if [ -r /usr/lib64/libjemalloc.so.1 ]; then 
+            export LD_PRELOAD=/usr/lib64/libjemalloc.so.1
+          else
+            echo 'This run contains TokuDB SE SQL, yet jemalloc - which is required for TokuDB - was not found, please install it first'
+            echo 'This can be done with a command similar to: $ yum install jemalloc'
+            exit 1
+          fi
+        fi
       fi
     fi
   else
@@ -240,6 +324,15 @@ options_check(){
       fi
     else
       INPUTFILE=$1
+    fi 
+    if egrep -qi "tokudb" $INPUTFILE; then
+      if [ -r /usr/lib64/libjemalloc.so.1 ]; then 
+        export LD_PRELOAD=/usr/lib64/libjemalloc.so.1
+      else
+        echo 'This run contains TokuDB SE SQL, yet jemalloc - which is required for TokuDB - was not found, please install it first'
+        echo 'This can be done with a command similar to: $ yum install jemalloc'
+        exit 1
+      fi
     fi
   fi
   BIN="/bin/mysqld"
@@ -273,6 +366,61 @@ options_check(){
       exit 1
     fi
   fi
+  if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+    # These are currently limitations of PXC_DOCKER_FIG_MOD. Feel free to extend reducer.sh to handle these.
+    FORCE_SPORADIC=0
+    SPORADIC=0
+    FORCE_SKIPV=0
+    SKIPV=1
+    PQUERY_MOD=1
+    MYEXTRA=""
+    if [ ! -r $PXC_DOCKER_FIG_LOC ]; then
+      echo "Error: PXC_DOCKER_FIG_MOD is set to 1, but the Fig file (as defined by PXC_DOCKER_FIG_LOC; currently set to '$PXC_DOCKER_FIG_LOC') is not available."
+      echo 'Please check script contents/options ($PXC_DOCKER_FIG_MOD and $PXC_DOCKER_FIG_LOC variables)'
+      exit 1
+    fi
+    if [ $MODE -eq 1 -o $MODE -eq 6 ]; then
+      echo "Error: Valgrind for 3 node PXC replay has not been implemented yet. Please do so! Free cookies afterwards!"
+      echo "Starting tip: this would involve creating a new lp:percona-qa/pxc-pquery/ Fig+Docker setup that has Valgrind build in"
+      exit 1
+    fi
+    if [ $MODE -ge 6 -a $MODE -le 9 ]; then
+      echo "Error: wrong option combination: MODE is set to $MODE (ThreadSync) and PXC_DOCKER_FIG_MOD is active"
+      echo 'Please check script contents/options ($MODE and $PXC_DOCKER_FIG_MOD variables)'
+      exit 1
+    fi
+    if [ $MODE -eq 5 -o $MODE -eq 3 ]; then
+      echo_out "[Warning] MODE=$MODE is set, as well as PXC_DOCKER_FIG_MOD=1. This combination will likely work, but has not been tested yet. Removing this warning (for MODE=$MODE only please) when it was tested a number of times"
+    fi
+    if [ $MODE -eq 4 ]; then
+      if [ $PXC_ISSUE_NODE -eq 0 ]; then
+        echo_out "[Info] All PXC nodes will be checked for the issue. As long as one node reproduces, testcase reduction will continue (PXC_ISSUE_NODE=0)"
+      elif [ $PXC_ISSUE_NODE -eq 1 ]; then
+        echo_out "[Info] Important: PXC_ISSUE_NODE is set to 1, so only PXC node 1 will be checked for the presence of the issue"
+      elif [ $PXC_ISSUE_NODE -eq 2 ]; then
+        echo_out "[Info] Important: PXC_ISSUE_NODE is set to 2, so only PXC node 2 will be checked for the presence of the issue"
+      elif [ $PXC_ISSUE_NODE -eq 3 ]; then
+        echo_out "[Info] Important: PXC_ISSUE_NODE is set to 3, so only PXC node 3 will be checked for the presence of the issue"
+      fi
+    fi
+  fi
+  if [ $PQUERY_MOD -eq 1 ]; then
+    if [ ! -r $PQUERY_LOC ]; then
+      echo "Error: PQUERY_MOD is set to 1, but the pquery binary (as defined by PQUERY_LOC; currently set to '$PQUERY_LOC') is not available."
+      echo 'Please check script contents/options ($PQUERY_MOD and $PQUERY_LOC variables)'
+      exit 1
+    fi
+  fi
+  if [ $FORCE_SKIPV -gt 0 ]; then
+    FORCE_SPORADIC=1
+    STAGE1_LINES=3
+    SPORADIC=1
+    SKIPV=1
+  fi  
+  if [ $FORCE_SPORADIC -gt 0 ]; then
+    STAGE1_LINES=3
+  fi
+  MYEXTRA=`echo ${MYEXTRA} | sed 's|--no-defaults||g'`  # Ensuring --no-defaults is no longer part of MYEXTRA. Reducer already sets this itself always.
 }
 
 set_internal_options(){
@@ -287,12 +435,37 @@ set_internal_options(){
   TRIAL=1
   STAGE='0'
   NOISSUEFLOW=0
-  MULTI_THREADS=10
+  if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+    MULTI_THREADS=0
+  else
+    MULTI_THREADS=10
+  fi
   C_COL_COUNTER=1
   TS_ELIMINATED_THREAD_COUNT=0
   TS_ORIG_VARS_FLAG=0
   TS_DEBUG_SYNC_REQUIRED_FLAG=0  # Untill proven otherwise
   TS_TE_DIR_SWAP_DONE=0
+}
+
+kill_multi_reducer(){
+  WHOAMI=`whoami`
+  if [ $(ps -ef | grep subreducer | grep $WHOAMI | grep $DIRVALUE | grep -v grep | awk '{print $2}' | wc -l) -ge 1 ]; then
+    PIDS_TO_TERMINATE=$(ps -ef | grep subreducer | grep $WHOAMI | grep $DIRVALUE | grep -v grep | awk '{print $2}' | sort -u | tr '\n' ' ')
+    echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] Terminating these PID's: $PIDS_TO_TERMINATE"
+    while [ $(ps -ef | grep subreducer | grep `whoami` | grep $DIRVALUE | grep -v grep | awk '{print $2}' | wc -l) -ge 1 ]; do
+      for t in $(ps -ef | grep subreducer | grep `whoami` | grep $DIRVALUE | grep -v grep | awk '{print $2}' | sort -u); do
+        kill -9 $t 2>/dev/null
+        wait $t 2>/dev/null  # Prevents "<process id> Killed" messages
+      done
+      sync; sleep 3
+      if [ $(ps -ef | grep subreducer | grep `whoami` | grep $DIRVALUE | grep -v grep | awk '{print $2}' | wc -l) -ge 1 ]; then
+        sync; sleep 20  # Extended wait for processes to terminate
+        if [ $(ps -ef | grep subreducer | grep `whoami` | grep $DIRVALUE | grep -v grep | awk '{print $2}' | wc -l) -ge 1 ]; then
+          echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] WARNING: $(ps -ef | grep subreducer | grep `whoami` | grep $DIRVALUE | grep -v grep | wc -l) subreducer processes still exists after they were killed, re-attempting kill"
+        fi
+      fi
+    done
+  fi
 }
 
 multi_reducer(){
@@ -311,24 +484,12 @@ multi_reducer(){
     SKIPV=1 # For subreducers started for simplification (STAGE1+), verify/initial simplification should be skipped as this was done already by the parent/main reducer (i.e. just above)
   fi
 
-  # Ensure there are no leftover reducer processes
-  while [ $(ps -ef | grep subreducer | grep `whoami` | grep $DIRVALUE | grep -v grep | awk '{print $2}' | wc -l) -ge 1 ]; do
-    for t in $(ps -ef | grep subreducer | grep `whoami` | grep $DIRVALUE | grep -v grep | awk '{print $2}' | sort -u); do
-      kill -9 $t 2>/dev/null
-      wait $t 2>/dev/null  # Prevents "<process id> Killed" messages
-    done
-    sleep 3
-    if [ $(ps -ef | grep subreducer | grep `whoami` | grep $DIRVALUE | grep -v grep | awk '{print $2}' | wc -l) -ge 1 ]; then
-      sleep 20  # Extended wait for processes to terminate
-      if [ $(ps -ef | grep subreducer | grep `whoami` | grep $DIRVALUE | grep -v grep | awk '{print $2}' | wc -l) -ge 1 ]; then
-        echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] WARNING: $(ps -ef | grep subreducer | grep `whoami` | grep $DIRVALUE | grep -v grep | wc -l) subreducer processes still exists after they were killed, re-attempting kill"
-      fi
-    fi
-  done
+  echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] Ensuring any old subreducer processes are terminated"
+  kill_multi_reducer
 
   # Create (or remove/create) main multi-reducer path
   rm -Rf $WORKD/subreducer/
-  sleep 0.5
+  sync; sleep 0.5
   if [ -d $WORKD/subreducer/ ]; then
     echo_out "ASSERT: $WORKD/subreducer/ still exists after it has been deleted"
     exit 1
@@ -459,8 +620,19 @@ multi_reducer(){
       echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] Threads which reproduced the issue: <none>"
     elif [ $MULTI_FOUND -eq $MULTI_THREADS ]; then
       echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] Threads which reproduced the issue:$TXT_OUT"
-      echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] All threads reproduced the issue: this issue is not sporadic"
-      SPORADIC=0
+      if [ $FORCE_SPORADIC -gt 0 ]; then
+        echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] All threads reproduced the issue: this issue is not considered sporadic"
+        echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] However, as the FORCE_SPORADIC hack is on, sporadic testcase reduction will commence"
+      else
+        echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] All threads reproduced the issue: this issue is not sporadic"
+        echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] Note: if this issue proves sporadic in actual reduction (slow/stalling reduction), use the FORCE_SPORADIC=1 setting"
+        SPORADIC=0
+      fi
+      if [ $MODE -lt 6 ]; then
+        echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] Ensuring any rogue subreducer processes are terminated"
+        kill_multi_reducer
+        rm -Rf $WORKD/subreducer/  # Cleanup subreducer directory: if this issue was non-sporadic, and stage 1 is next (with no MULTI threaded reducing because the issue is found non-sporadic), then this ensures that the space currently used by ./subreducer is saved. This is handy for /dev/shm usage which tends to quickly run out os space. Normally the subreducer dir is removed at the start of a new MULTI threaded run, but this is the one case where the directory still exists and is no longer needed. This will also remove the subreducer directory when the issues IS sporadic, and that is fine - it would have been deleted at the starrt of MULTI threaded reducing anyways. MULTI threaded reducing is done in multi_reducer()
+      fi
     elif [ $MULTI_FOUND -lt $MULTI_THREADS ]; then
       echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] Threads which reproduced the issue:$TXT_OUT"
       echo_out "$ATLEASTONCE [Stage $STAGE] [MULTI] Only $MULTI_FOUND out of $MULTI_THREADS threads reproduced the issue: this issue is sporadic"
@@ -608,7 +780,7 @@ init_workdir_and_files(){
   if [ "$MULTI_REDUCER" != "1" ]; then  # This is a parent/main reducer
     mkdir $WORKD
   fi
-  mkdir $WORKD/data $WORKD/data/test $WORKD/tmp
+  mkdir $WORKD/data $WORKD/tmp
   chmod -R 777 $WORKD
   touch $WORKD/reducer.log
   echo_out "[Init] Workdir: $WORKD"
@@ -634,9 +806,21 @@ init_workdir_and_files(){
     # Initial INPUTFILE to WORKF copy
     (echo "$DROPC"; (cat $INPUTFILE | grep -v "$DROPC")) > $WORKF
   fi
-  echo_out "[Init] Server (When MULTI mode is not active): ${MYBASE}${BIN} (as $MYUSER)"
-  echo_out "[Init] Client (When MULTI mode is not active): $MYBASE/bin/mysql -uroot -S$WORKD/socket.sock"
-  if [ $SKIPSTAGE -gt 0 ]; then echo_out "[Init] Skip stage hack active. Stages up to and including $SKIPSTAGE are skipped"; fi
+  if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+    echo_out "[Init] PXC Node #1 Client: $MYBASE/bin/mysql -uroot -h127.0.0.1 -P10000"
+    echo_out "[Init] PXC Node #2 Client: $MYBASE/bin/mysql -uroot -h127.0.0.1 -P11000"
+    echo_out "[Init] PXC Node #3 Client: $MYBASE/bin/mysql -uroot -h127.0.0.1 -P12000"
+  else
+    echo_out "[Init] Server (When MULTI mode is not active): ${MYBASE}${BIN} (as $MYUSER)"
+    echo_out "[Init] Client (When MULTI mode is not active): $MYBASE/bin/mysql -uroot -S$WORKD/socket.sock"
+  fi
+  if [ $SKIPSTAGE -gt 0 ]; then echo_out "[Init] SKIPSTAGE hack active. Stages up to and including $SKIPSTAGE are skipped"; fi
+  if [ $FORCE_SKIPV -gt 0 ]; then echo_out "[Init] FORCE_SKIPV hack active. Verify stage skipped, and immediately commencing multi threaded simplification"; fi
+  if [ $FORCE_SKIPV -gt 0 -a $FORCE_SPORADIC -gt 0 ]; then echo_out "[Init] FORCE_SKIPV hack is active, so FORCE_SPORADIC hack is automatically set active also" ; fi
+  if [ $FORCE_SPORADIC -gt 0 ]; then 
+    echo_out "[Init] FORCE_SPORADIC hack active. Issue is assumed to be sporadic, even if verify stage shows otherwise"
+    echo_out "[Init] STAGE1_LINES variable was overwritten and set to $STAGE1_LINES to match FORCE_SPORADIC=$FORCE_SPORADIC setting"
+  fi
   echo_out "[Init] Querytimeout: $QUERYTIMEOUT seconds (ensure this is at least 1.5x what was set in RQG using the --querytimeout option)"
   if [ -n "$MYEXTRA" ]; then echo_out "[Init] Passing the following additional options to mysqld: $MYEXTRA"; fi
   if [ $MODE -ge 6 ]; then 
@@ -651,84 +835,144 @@ init_workdir_and_files(){
     fi
   fi
   if [ "$MULTI_REDUCER" != "1" ]; then  # This is a parent/main reducer
-    echo_out "[Init] Setting up standard working subdirectories"
-    $MYBASE/scripts/mysql_install_db --basedir=$MYBASE --datadir=$WORKD/data --user=$MYUSER > $WORKD/mysql_install_db.init 2>&1
-    start_mysqld_main
-    if ! $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock ping > /dev/null 2>&1; then 
-      echo_out "[Init] [ERROR] Failed to start mysqld server (1st boot), check $WORKD/error.log.out, $WORKD/mysqld.out, $WORKD/mysql_install_db.init, and maybe $WORKD/data/error.log. Also check that there is plenty of space on the device being used"
-      exit 1
-    fi
-    echo_out "[Init] Loading timezone data into mysql database"
-    # echo_out "[Info] You may safely ignore any 'Warning: Unable to load...' messages, unless there are very many (Ref. BUG#13563952)"
-    # The ones listed in BUG#13563952 are now filterered out to make output nicer
-    $MYBASE/bin/mysql_tzinfo_to_sql /usr/share/zoneinfo > $WORKD/timezone.init 2> $WORKD/timezone.err
-    egrep -v "Riyadh8[789]'|zoneinfo/iso3166.tab|zoneinfo/zone.tab" $WORKD/timezone.err > $WORKD/timezone.err.tmp 
-    for A in $(cat $WORKD/timezone.err.tmp|sed 's/ /=DUMMY=/g'); do 
-      echo_out "$(echo "[Warning from mysql_tzinfo_to_sql] $A" | sed 's/=DUMMY=/ /g')"
-    done
-    echo_out "[Info] If you see a GLIBC crash above, change reducer to use a non-Valgrind-instrumented build of mysql_tzinfo_to_sql (Ref. BUG#13498842)"
-    $MYBASE/bin/mysql -uroot -S$WORKD/socket.sock --force mysql < $WORKD/timezone.init
-    # Add various scripts: _run (runs the sql), _cl (starts a mysql cli), _stop (stop mysqld). _start is added in the respective startup functions
-    # (start_mysqld_main and start_valgrind_mysqld). Togheter these scripts can be used for executing the final testcase ($WORKO_start > $WORKO_run)
-    if [ $MODE -ge 6 ]; then
-      # This still needs implementation for MODE6 or higher ("else line" below simply assumes a single $WORKO atm, while MODE6 and higher has more then 1)
-      echo_out "[Not implemented yet] MODE6 or higher does not auto-generate a $WORK_RUN file yet."
-      echo "Not implemented yet: MODE6 or higher does not auto-generate a $WORK_RUN file yet." > $WORK_RUN
-      echo "#${MYBASE}/bin/mysql -uroot -S$WORKD/socket.sock < INPUT_FILE_GOES_HERE (like $WORKO)" >> $WORK_RUN
-      chmod +x $WORK_RUN
-    else
-      echo "${MYBASE}/bin/mysql -uroot -S$WORKD/socket.sock < $WORKO" > $WORK_RUN
-      chmod +x $WORK_RUN
-    fi 
-    echo "${MYBASE}/bin/mysqladmin -uroot -S$WORKD/socket.sock shutdown" > $WORK_STOP
-    chmod +x $WORK_STOP
-    echo "${MYBASE}/bin/mysql -uroot -S$WORKD/socket.sock test" > $WORK_CL
-    chmod +x $WORK_CL
-    stop_mysqld
+    if [ $PXC_DOCKER_FIG_MOD -ne 1 ]; then  # For PXC, we do not need this, Fig/Docker takes care of it
+      echo_out "[Init] Setting up standard working subdirectories"
+      if [ "`echo $MYBASE | sed 's|.*\(5\.[567]\).*|\1|'`" == "5.7" ]; then
+        MID_OPTIONS="--insecure"  # --insecure prevents random root password in 5.7. --force is no longer supported in new mysql_install_db binary in 5.7
+      elif [ "`echo $MYBASE | sed 's|.*\(5\.[567]\).*|\1|'`" == "5.6" ]; then
+        MID_OPTIONS="--force"
+      elif [ "`echo $MYBASE | sed 's|.*\(5\.[567]\).*|\1|'`" == "5.5" ]; then
+        MID_OPTIONS="--force"
+      else
+        MID_OPTIONS="" 
+        echo_out "[Warning] Could not automatically determine the mysqld version. If this is 5.7, mysql_install_db will now fail due to a missing '--insecure' option, which is normally set by this script if a 5.7 mysqld is detected. If this happens, please rename the BASE directory (${BASE}) to contain the string '5.7' in it's directory name. Alternatively, you can hack reducer.sh and set MID_OPTIONS. Search for any part of this warning message to find the right area, and add MID_OPTIONS='--insecure' directly under the closing fi statement of this warning."
+      fi
+      # MID_OPTIONS='--insecure'  # 5.7 Hack described in [Warning above], normally not needed if path name contains 5.7 (usually the case)
+      if [ -r $MYBASE/scripts/mysql_install_db ]; then
+        $MYBASE/scripts/mysql_install_db --no-defaults --basedir=$MYBASE --datadir=$WORKD/data ${MID_OPTIONS} --user=$MYUSER > $WORKD/mysql_install_db.init 2>&1
+      elif [ -r $MYBASE/bin/mysql_install_db ]; then
+        $MYBASE/bin/mysql_install_db --no-defaults --basedir=$MYBASE --datadir=$WORKD/data ${MID_OPTIONS} --user=$MYUSER > $WORKD/mysql_install_db.init 2>&1
+      else
+        echo_out "[Assert] Script could not locate mysql_install_db. Checked in $MYBASE/scripts/ and in $MYBASE/bin/."
+        exit 1
+      fi
+      mkdir $WORKD/data/test 2>/dev/null  # test db provisioning if not there already (needs to be done here & not earlier as mysql_install_db expects an empty data directory in 5.7)
+      start_mysqld_main
+      if ! $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock ping > /dev/null 2>&1; then 
+        echo_out "[Init] [ERROR] Failed to start mysqld server (1st boot), check $WORKD/error.log.out, $WORKD/mysqld.out, $WORKD/mysql_install_db.init, and maybe $WORKD/data/error.log. Also check that there is plenty of space on the device being used"
+        exit 1
+      fi
+      echo_out "[Init] Loading timezone data into mysql database"
+      # echo_out "[Info] You may safely ignore any 'Warning: Unable to load...' messages, unless there are very many (Ref. BUG#13563952)"
+      # The ones listed in BUG#13563952 are now filterered out to make output nicer
+      $MYBASE/bin/mysql_tzinfo_to_sql /usr/share/zoneinfo > $WORKD/timezone.init 2> $WORKD/timezone.err
+      egrep -v "Riyadh8[789]'|zoneinfo/iso3166.tab|zoneinfo/zone.tab" $WORKD/timezone.err > $WORKD/timezone.err.tmp 
+      for A in $(cat $WORKD/timezone.err.tmp|sed 's/ /=DUMMY=/g'); do 
+        echo_out "$(echo "[Warning from mysql_tzinfo_to_sql] $A" | sed 's/=DUMMY=/ /g')"
+      done
+      echo_out "[Info] If you see a GLIBC crash above, change reducer to use a non-Valgrind-instrumented build of mysql_tzinfo_to_sql (Ref. BUG#13498842)"
+      $MYBASE/bin/mysql -uroot -S$WORKD/socket.sock --force mysql < $WORKD/timezone.init
+      # Add various scripts: _run (runs the sql), _cl (starts a mysql cli), _stop (stop mysqld). _start is added in the respective startup functions
+      # (start_mysqld_main and start_valgrind_mysqld). Togheter these scripts can be used for executing the final testcase ($WORKO_start > $WORKO_run)
+      if [ $MODE -ge 6 ]; then
+        # This still needs implementation for MODE6 or higher ("else line" below simply assumes a single $WORKO atm, while MODE6 and higher has more then 1)
+        echo_out "[Not implemented yet] MODE6 or higher does not auto-generate a $WORK_RUN file yet."
+        echo "Not implemented yet: MODE6 or higher does not auto-generate a $WORK_RUN file yet." > $WORK_RUN
+        echo "#${MYBASE}/bin/mysql -uroot -S$WORKD/socket.sock < INPUT_FILE_GOES_HERE (like $WORKO)" >> $WORK_RUN
+        chmod +x $WORK_RUN
+      else
+        echo "${MYBASE}/bin/mysql -uroot -S$WORKD/socket.sock < $WORKO" > $WORK_RUN
+        chmod +x $WORK_RUN
+      fi 
+      echo "${MYBASE}/bin/mysqladmin -uroot -S$WORKD/socket.sock shutdown" > $WORK_STOP
+      chmod +x $WORK_STOP
+      echo "${MYBASE}/bin/mysql -uroot -S$WORKD/socket.sock test" > $WORK_CL
+      chmod +x $WORK_CL
+      stop_mysqld_or_pxc
 
-    mkdir $WORKD/data.init
-    cp -R $WORKD/data/* $WORKD/data.init/
+      mkdir $WORKD/data.init
+      cp -R $WORKD/data/* $WORKD/data.init/
+    fi
   else
     echo_out "[Init] This is a subreducer process; use initialization data from the main process ($WORKD/../../data.init)"
   fi
 }
 
 init_mysql_dir(){
-  rm -Rf $WORKD/data/*
-  if [ "$MULTI_REDUCER" != "1" ]; then  # This is a parent/main reducer
-    cp -R $WORKD/data.init/* $WORKD/data/
+  if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+    sudo rm -Rf $WORKD/data/*
+    cp $PXC_DOCKER_FIG_LOC $WORKD
+    sed -i "s|/dev/shm/pxc-pquery|$WORKD/data/|" $WORKD/fig.yml
   else
-    cp -R $WORKD/../../data.init/* $WORKD/data/
+    rm -Rf $WORKD/data/*
+    if [ "$MULTI_REDUCER" != "1" ]; then  # This is a parent/main reducer
+      cp -R $WORKD/data.init/* $WORKD/data/
+    else
+      cp -R $WORKD/../../data.init/* $WORKD/data/
+    fi
   fi
 }
 
-start_mysqld(){
+start_mysqld_or_pxc(){
   init_mysql_dir
-  if [ -f $WORKD/mysqld.out ]; then mv -f $WORKD/mysqld.out $WORKD/mysqld.prev; fi
-  start_mysqld_main
-  if ! $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock ping > /dev/null 2>&1; then 
-    echo_out "$ATLEASTONCE [Stage $STAGE] [ERROR] Failed to start mysqld server, check $WORKD/error.log.out, $WORKD/mysqld.out and $WORKD/mysql_install_db.init"
-    exit 1
+  if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+    CLUSTER_UP=0
+    start_pxc_main
+    if [ $CLUSTER_UP -ne 6 ]; then
+      echo_out "$ATLEASTONCE [Stage $STAGE] [ERROR] Failed to start 3 node PXC Cluster, check clients on ports 10000, 11000, 12000 (if still live), and error logs for all 3 nodes in $WORKD/data/{node_nr}/error.log"
+      exit 1
+    fi
+  else
+    if [ -f $WORKD/mysqld.out ]; then mv -f $WORKD/mysqld.out $WORKD/mysqld.prev; fi
+    start_mysqld_main
+    if ! $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock ping > /dev/null 2>&1; then 
+      echo_out "$ATLEASTONCE [Stage $STAGE] [ERROR] Failed to start mysqld server, check $WORKD/error.log.out, $WORKD/mysqld.out and $WORKD/mysql_install_db.init"
+      exit 1
+    fi
   fi
   STARTUPCOUNT=$[$STARTUPCOUNT+1]
+}
+
+start_pxc_main(){
+  CURPATH=$PWD
+  cd $WORKD
+  sudo fig up &
+  cd ${CURPATH}
+  CURPATH=
+  echo_out "$ATLEASTONCE [Stage $STAGE] Waiting for the 3 node PXC Cluster to fully start..."
+  for X in $(seq 1 300); do
+    sleep 1
+    CLUSTER_UP=0;
+    if $MYBASE/bin/mysqladmin -uroot -h127.0.0.1 -P12000 ping > /dev/null 2>&1; then
+      if [ `$MYBASE/bin/mysql -uroot -h127.0.0.1 -P10000 -e"show global status like 'wsrep_cluster_size'" | sed 's/[| \t]\+/\t/g' | grep "wsrep_cluster" | awk '{print $2}'` -eq 3 ]; then CLUSTER_UP=$[ $CLUSTER_UP + 1]; fi
+      if [ `$MYBASE/bin/mysql -uroot -h127.0.0.1 -P11000 -e"show global status like 'wsrep_cluster_size'" | sed 's/[| \t]\+/\t/g' | grep "wsrep_cluster" | awk '{print $2}'` -eq 3 ]; then CLUSTER_UP=$[ $CLUSTER_UP + 1]; fi
+      if [ `$MYBASE/bin/mysql -uroot -h127.0.0.1 -P12000 -e"show global status like 'wsrep_cluster_size'" | sed 's/[| \t]\+/\t/g' | grep "wsrep_cluster" | awk '{print $2}'` -eq 3 ]; then CLUSTER_UP=$[ $CLUSTER_UP + 1]; fi
+      if [ "`$MYBASE/bin/mysql -uroot -h127.0.0.1 -P10000 -e"show global status like 'wsrep_local_state_comment'" | sed 's/[| \t]\+/\t/g' | grep "wsrep_local" | awk '{print $2}'`" == "Synced" ]; then CLUSTER_UP=$[ $CLUSTER_UP + 1]; fi
+      if [ "`$MYBASE/bin/mysql -uroot -h127.0.0.1 -P11000 -e"show global status like 'wsrep_local_state_comment'" | sed 's/[| \t]\+/\t/g' | grep "wsrep_local" | awk '{print $2}'`" == "Synced" ]; then CLUSTER_UP=$[ $CLUSTER_UP + 1]; fi
+      if [ "`$MYBASE/bin/mysql -uroot -h127.0.0.1 -P12000 -e"show global status like 'wsrep_local_state_comment'" | sed 's/[| \t]\+/\t/g' | grep "wsrep_local" | awk '{print $2}'`" == "Synced" ]; then CLUSTER_UP=$[ $CLUSTER_UP + 1]; fi
+    fi
+    # If count reached 6 (there are 6 checks), then the Cluster is up & running and consistent in it's Cluster topology views (as seen by each node)
+    if [ $CLUSTER_UP -eq 6 ]; then
+      break
+    fi
+  done
 }
 
 start_mysqld_main(){
   # Change --port=$MYPORT to --skip-networking instead once BUG#13917335 is fixed and remove all MYPORT + MULTI_MYPORT coding
   if [ $MODE -ge 6 -a $TS_DEBUG_SYNC_REQUIRED_FLAG -eq 1 ]; then
-    CMD="${MYBASE}${BIN} --basedir=$MYBASE --datadir=$WORKD/data --port=$MYPORT \
-                         --pid-file=$WORKD/pid.pid --log-error=$WORKD/error.log.out \
-                         --socket=$WORKD/socket.sock --user=$MYUSER $MYEXTRA \
-                         --loose-debug-sync-timeout=$TS_DS_TIMEOUT --event-scheduler=ON"
+    CMD="${MYBASE}${BIN} --no-defaults --basedir=$MYBASE --datadir=$WORKD/data --tmpdir=$WORKD/tmp \
+                         --port=$MYPORT --pid-file=$WORKD/pid.pid --socket=$WORKD/socket.sock \
+                         --user=$MYUSER $MYEXTRA --log-error=$WORKD/error.log.out --event-scheduler=ON \
+                         --loose-debug-sync-timeout=$TS_DS_TIMEOUT"
     $CMD > $WORKD/mysqld.out 2>&1 &
      PIDV="$!"
     echo "$CMD > $WORKD/mysqld.out 2>&1 &" | sed 's/ \+/ /g' > $WORK_START
     chmod +x $WORK_START
   else
-    CMD="${MYBASE}${BIN} --basedir=$MYBASE --datadir=$WORKD/data --port=$MYPORT \
-                         --pid-file=$WORKD/pid.pid --log-error=$WORKD/error.log.out \
-                         --socket=$WORKD/socket.sock --user=$MYUSER $MYEXTRA \
-                         --event-scheduler=ON"
+    CMD="${MYBASE}${BIN} --no-defaults --basedir=$MYBASE --datadir=$WORKD/data --tmpdir=$WORKD/tmp \
+                         --port=$MYPORT --pid-file=$WORKD/pid.pid --socket=$WORKD/socket.sock \
+                         --user=$MYUSER $MYEXTRA --log-error=$WORKD/error.log.out --event-scheduler=ON"
     $CMD > $WORKD/mysqld.out 2>&1 &
      PIDV="$!"
     echo "$CMD > $WORKD/mysqld.out 2>&1 &" | sed 's/ \+/ /g' > $WORK_START
@@ -744,7 +988,7 @@ start_valgrind_mysqld(){
   init_mysql_dir
   if [ -f $WORKD/valgrind.out ]; then mv -f $WORKD/valgrind.out $WORKD/valgrind.prev; fi
   CMD="valgrind --suppressions=$MYBASE/mysql-test/valgrind.supp --num-callers=40 --show-reachable=yes \
-              ${MYBASE}${BIN} --basedir=$MYBASE --datadir=$WORKD/data --port=$MYPORT \
+              ${MYBASE}${BIN} --basedir=$MYBASE --datadir=$WORKD/data --port=$MYPORT --tmpdir=$WORKD/tmp \
                               --pid-file=$WORKD/pid.pid --log-error=$WORKD/error.log.out \
                               --socket=$WORKD/socket.sock --user=$MYUSER $MYEXTRA \
                               --event-scheduler=ON"
@@ -896,15 +1140,21 @@ cut_threadsync_chunk(){
 }
 
 run_and_check(){
-  if [ $MODE -ne 1 -a $MODE -ne 6 ]; then start_mysqld; else start_valgrind_mysqld; fi
+  if [ $MODE -ne 1 -a $MODE -ne 6 ]; then start_mysqld_or_pxc; else start_valgrind_mysqld; fi
   run_sql_code
-  if [ $MODE -eq 1 -o $MODE -eq 6 ]; then stop_mysqld; fi
+  if [ $MODE -eq 1 -o $MODE -eq 6 ]; then stop_mysqld_or_pxc; fi
   process_outcome
   OUTCOME="$?"
-  if [ $MODE -ne 1 -a $MODE -ne 6 ]; then stop_mysqld; fi
+  if [ $MODE -ne 1 -a $MODE -ne 6 ]; then stop_mysqld_or_pxc; fi
   # Add error log from this trial to the overall run error log
-  cat $WORKD/error.log.out >> $WORKD/error.log
-  rm -f $WORKD/error.log.out 
+  if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+    sudo cat $WORKD/data/1/error.log >> $WORKD/node1_error.log
+    sudo cat $WORKD/data/2/error.log >> $WORKD/node2_error.log
+    sudo cat $WORKD/data/3/error.log >> $WORKD/node3_error.log
+  else
+    cat $WORKD/error.log.out >> $WORKD/error.log
+    rm -f $WORKD/error.log.out 
+  fi
   return $OUTCOME
 }
 
@@ -914,15 +1164,27 @@ run_sql_code(){
 
   # Setting up query timeouts using the MySQL Event Sheduler
   # Place event into the mysql db, not test db as the test db is dropped immediately
-  $MYBASE/bin/mysql -uroot -S$WORKD/socket.sock --force mysql -e"
-    DELIMITER ||
-    CREATE EVENT querytimeout ON SCHEDULE EVERY 20 SECOND DO BEGIN
-    SET @id:='';
-    SET @id:=(SELECT id FROM INFORMATION_SCHEMA.PROCESSLIST WHERE ID<>CONNECTION_ID() AND STATE<>'killed' AND TIME>$QUERYTIMEOUT ORDER BY TIME DESC LIMIT 1);
-    IF @id > 1 THEN KILL QUERY @id; END IF;
-    END ||
-    DELIMITER ;
-  "
+  if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+    $MYBASE/bin/mysql -uroot -h127.0.0.1 -P10000 --force mysql -e"
+      DELIMITER ||
+      CREATE EVENT querytimeout ON SCHEDULE EVERY 20 SECOND DO BEGIN
+      SET @id:='';
+      SET @id:=(SELECT id FROM INFORMATION_SCHEMA.PROCESSLIST WHERE ID<>CONNECTION_ID() AND STATE<>'killed' AND TIME>$QUERYTIMEOUT ORDER BY TIME DESC LIMIT 1);
+      IF @id > 1 THEN KILL QUERY @id; END IF;
+      END ||
+      DELIMITER ;
+    "
+  else
+    $MYBASE/bin/mysql -uroot -S$WORKD/socket.sock --force mysql -e"
+      DELIMITER ||
+      CREATE EVENT querytimeout ON SCHEDULE EVERY 20 SECOND DO BEGIN
+      SET @id:='';
+      SET @id:=(SELECT id FROM INFORMATION_SCHEMA.PROCESSLIST WHERE ID<>CONNECTION_ID() AND STATE<>'killed' AND TIME>$QUERYTIMEOUT ORDER BY TIME DESC LIMIT 1);
+      IF @id > 1 THEN KILL QUERY @id; END IF;
+      END ||
+      DELIMITER ;
+    "
+  fi
   #DEBUG 
   #read -p "Go! (run_sql_code break)"
   if   [ $MODE -ge 6 ]; then
@@ -961,9 +1223,38 @@ run_sql_code(){
     echo_out "$TXT_OUT"
     echo_out "$ATLEASTONCE [Stage $STAGE] [Trial $TRIAL] [SQL] All SQL threads have finished/terminated"
   elif [ $MODE -eq 5 ]; then
-    cat $WORKT | $MYBASE/bin/mysql -uroot -S$WORKD/socket.sock -vvv --force test > $WORKD/mysql.out 2>&1
+    if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+      cat $WORKT | $MYBASE/bin/mysql -uroot -h127.0.0.1 -P10000 -vvv --force test > $WORKD/mysql.out 2>&1
+    else
+      cat $WORKT | $MYBASE/bin/mysql -uroot -S$WORKD/socket.sock -vvv --force test > $WORKD/mysql.out 2>&1
+    fi
   else
-    cat $WORKT | $MYBASE/bin/mysql -uroot -S$WORKD/socket.sock --force test > $WORKD/mysql.out 2>&1
+    # Could MODE=2 (CLI output capture) be extended to cater for pquery replay? Untill this research is done, just use client CLI for replay only.
+    # Obviously with the same issues/limiations that the CLI comes with; a mis-matched single or double quote will fail re-play if the original
+    # issue was generated by pquery. Reason; pquery is C/API driven, each statement executed is a statement in and by itself. In the CLI OTOH. each
+    # statement can be continued on the next line, and a mismatched (i.e. unterminated) single or double quote in the sql file can throw off the replay.
+    if [ $MODE -eq 2 ]; then
+      if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+        cat $WORKT | $MYBASE/bin/mysql -uroot -h127.0.0.1 -P10000 --binary-mode --force test > $WORKD/mysql.out 2>&1
+      else
+        cat $WORKT | $MYBASE/bin/mysql -uroot -S$WORKD/socket.sock --binary-mode --force test > $WORKD/mysql.out 2>&1
+      fi
+    else
+      if [ $PQUERY_MOD -eq 1 ]; then
+        export LD_LIBRARY_PATH=${MYBASE}/lib
+        if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+          ${PQUERY_LOC} --infile=$WORKT --database=test --threads=1 --no-shuffle --user=root --addr=127.0.0.1 --port=10000 > $WORKD/pquery.out 2>&1
+        else
+          ${PQUERY_LOC} --infile=$WORKT --database=test --threads=1 --no-shuffle --user=root --socket=$WORKD/socket.sock > $WORKD/pquery.out 2>&1
+        fi
+      else
+        if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+          cat $WORKT | $MYBASE/bin/mysql -uroot -h127.0.0.1 -P10000 --binary-mode --force test > $WORKD/mysql.out 2>&1
+        else
+          cat $WORKT | $MYBASE/bin/mysql -uroot -S$WORKD/socket.sock --binary-mode --force test > $WORKD/mysql.out 2>&1
+        fi
+      fi
+    fi
   fi
   sleep 1
 }
@@ -1028,7 +1319,7 @@ process_outcome(){
   if [ $MODE -eq 1 ]; then
     echo_out "$ATLEASTONCE [Stage $STAGE] [Trial $TRIAL] Waiting for Valgrind to terminate analysis" 
     while :; do
-      sleep 1;
+      sleep 1; sync
       if egrep -q "ERROR SUMMARY" $WORKD/valgrind.out; then break; fi
     done
     if egrep -iq "$TEXT" $WORKD/valgrind.out; then
@@ -1067,7 +1358,13 @@ process_outcome(){
 
   # MODE3: mysqld error output log testing (set TEXT)
   if [ $MODE -eq 3 ]; then
-    if egrep -iq "$TEXT" $WORKD/error.log.out; then
+    ERRORLOG=
+    if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+      ERRORLOG=$WORKD/data/*/error.log
+    else
+      ERRORLOG=$WORKD/error.log.out
+    fi
+    if egrep -iq "$TEXT" $ERRORLOG; then
       if [ ! "$STAGE" = "V" ]; then
         echo_out "$ATLEASTONCE [Stage $STAGE] [Trial $TRIAL] [*ErrorLogOutputBug*] [$NOISSUEFLOW] Swapping files & saving last known good mysqld error log output issue in $WORKO" 
         control_backtrack_flow
@@ -1085,7 +1382,23 @@ process_outcome(){
   
   # MODE4: Crash testing
   if [ $MODE -eq 4 ]; then
-    if ! $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock ping > /dev/null 2>&1; then
+    M4_ISSUE_FOUND=0
+    if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+      if [ $PXC_ISSUE_NODE -eq 0 -o $PXC_ISSUE_NODE -eq 1 ]; then
+        if ! $MYBASE/bin/mysqladmin -uroot -h127.0.0.1 -P10000 ping > /dev/null 2>&1; then M4_ISSUE_FOUND=1; fi
+      fi
+      if [ $PXC_ISSUE_NODE -eq 0 -o $PXC_ISSUE_NODE -eq 2 ]; then
+        if ! $MYBASE/bin/mysqladmin -uroot -h127.0.0.1 -P11000 ping > /dev/null 2>&1; then M4_ISSUE_FOUND=1; fi
+      fi
+      if [ $PXC_ISSUE_NODE -eq 0 -o $PXC_ISSUE_NODE -eq 3 ]; then
+        if ! $MYBASE/bin/mysqladmin -uroot -h127.0.0.1 -P12000 ping > /dev/null 2>&1; then M4_ISSUE_FOUND=1; fi
+      fi
+    else
+      if ! $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock ping > /dev/null 2>&1; then
+        M4_ISSUE_FOUND=1
+      fi
+    fi
+    if [ $M4_ISSUE_FOUND -eq 1 ]; then
       if [ ! "$STAGE" = "V" ]; then
         if [ $STAGE -eq 6 ]; then 
           echo_out "$ATLEASTONCE [Stage $STAGE] [Trial $TRIAL] [Column $COLUMN/$COUNTCOLS] [*Crash*] Swapping files & saving last known good crash in $WORKO"
@@ -1141,7 +1454,7 @@ process_outcome(){
   if [ $MODE -eq 6 ]; then
     echo_out "$ATLEASTONCE [Stage $STAGE] [Trial $TRIAL] Waiting for Valgrind to terminate analysis" 
     while :; do
-      sleep 1;
+      sleep 1; sync
       if egrep -q "ERROR SUMMARY" $WORKD/valgrind.out; then break; fi
     done
     if egrep -iq "$TEXT" $WORKD/valgrind.out; then
@@ -1223,27 +1536,36 @@ process_outcome(){
   fi
 }
 
-stop_mysqld(){
-  $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock shutdown >> $WORKD/mysqld.out 2>&1
-  if [ $MODE -eq 1 -o $MODE -eq 6 ]; then sleep 5; else sleep 1; fi
+stop_mysqld_or_pxc(){
+  if [ $PXC_DOCKER_FIG_MOD -eq 1 ]; then
+    sudo docker kill $(sudo docker ps -a | grep "new_pxc" | awk '{print $1}' | tr '\n' ' ') 2>/dev/null
+    sleep 1; sync
+    sudo docker rm $(sudo docker ps -a | grep "new_pxc" | awk '{print $1}' | tr '\n' ' ') 2>/dev/null
+    sleep 1; sync
+  else
+    # RV-15/09/14 Added timeout due to bug http://bugs.mysql.com/bug.php?id=73914
+    # RV-02/12/14 We do not want too fast a shutdown either; quite a few bugs happen when mysqld is being shutdown
+    timeout -k40 -s9 40s $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock shutdown >> $WORKD/mysqld.out 2>&1
+    if [ $MODE -eq 1 -o $MODE -eq 6 ]; then sleep 5; else sleep 1; fi
 
-  while :; do
-    sleep 1; 
-    if kill -0 $PIDV > /dev/null 2>&1; then 
-      if [ $MODE -eq 1 -o $MODE -eq 6 ]; then sleep 5; else sleep 2; fi
-      if kill -0 $PIDV > /dev/null 2>&1; then $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock shutdown >> $WORKD/mysqld.out 2>&1; else break; fi
-      if [ $MODE -eq 1 -o $MODE -eq 6 ]; then sleep 8; else sleep 4; fi
-      if kill -0 $PIDV > /dev/null 2>&1; then echo_out "$ATLEASTONCE [Stage $STAGE] [WARNING] Attempting to bring down server failed at least twice. Is this server very busy?"; else break; fi
-      sleep 5
-      if [ $MODE -ne 1 -a $MODE -ne 6 ]; then if kill -0 $PIDV > /dev/null 2>&1; then 
-        echo_out "$ATLEASTONCE [Stage $STAGE] [WARNING] Attempting to bring down server failed. Now forcing kill of mysqld (you may see a kill message).";
-        kill -9 $PIDV
-      else break; fi; fi
-    else
-      break
-    fi
-  done
-  PIDV=""
+    while :; do
+      sleep 1
+      if kill -0 $PIDV > /dev/null 2>&1; then 
+        if [ $MODE -eq 1 -o $MODE -eq 6 ]; then sleep 5; else sleep 2; fi
+        if kill -0 $PIDV > /dev/null 2>&1; then $MYBASE/bin/mysqladmin -uroot -S$WORKD/socket.sock shutdown >> $WORKD/mysqld.out 2>&1; else break; fi
+        if [ $MODE -eq 1 -o $MODE -eq 6 ]; then sleep 8; else sleep 4; fi
+        if kill -0 $PIDV > /dev/null 2>&1; then echo_out "$ATLEASTONCE [Stage $STAGE] [WARNING] Attempting to bring down server failed at least twice. Is this server very busy?"; else break; fi
+        sleep 5
+        if [ $MODE -ne 1 -a $MODE -ne 6 ]; then if kill -0 $PIDV > /dev/null 2>&1; then 
+          echo_out "$ATLEASTONCE [Stage $STAGE] [WARNING] Attempting to bring down server failed. Now forcing kill of mysqld (you may see a kill message).";
+          kill -9 $PIDV
+        else break; fi; fi
+      else
+        break
+      fi
+    done
+    PIDV=""
+  fi
 }
 
 finish(){
@@ -1266,6 +1588,8 @@ finish(){
   if [ "$MULTI_REDUCER" != "1" ]; then  # This is the parent/main reducer
     echo_out "[Finish] Final testcase size       : $SIZEF bytes ($LINECOUNTF lines)"
     echo_out "[Info] It is often beneficial to re-run reducer on the output file ($0 $WORKO) to make it smaller still (Reason for this is that certain lines may have been chopped up (think about missing end quotes or semicolons) resulting in non-reproducibility)"
+    echo_out "[Info] Remember that MYEXTRA options (extra options passed to mysqld) may be necessary to have the issue reproduce correctly. Relisting them here to copy/paste:"
+    echo_out "[Info] MYEXTRA: $MYEXTRA"
     if [ $WORKDIR_LOCATION -eq 1 -o $WORKDIR_LOCATION -eq 2 ]; then
       echo_out "[Cleanup] Since tmpfs or ramfs (volatile memory) was used, reducer is now saving a copy of the work directory in /tmp/$DIRVALUE"
       cp -R $WORKD /tmp/$DIRVALUE
@@ -1332,10 +1656,10 @@ verify_not_found(){
 }
 
 verify(){
-  #STAGEV: VERIFY: Check first if the bug/issue really exists
+  #STAGEV: VERIFY: Check first if the bug/issue exists and is reproducible by reducer
   STAGE='V'
   TRIAL=1
-  echo_out "$ATLEASTONCE [Stage $STAGE] Verifying the bug/issue really exists (duration depends on initial input file size)"
+  echo_out "$ATLEASTONCE [Stage $STAGE] Verifying the bug/issue exists and is reproducible by reducer (duration depends on initial input file size)"
   if [ "$MULTI_REDUCER" != "1" ]; then  # This is the parent/main reducer 
     while :; do
       multi_reducer $1
@@ -1516,7 +1840,7 @@ verify(){
                            echo_out "[Init] Looking for this string: '$TEXT' in mysql CLI output (@ $WORKD/mysql.out when MULTI mode is not active)"; fi
   if [ $MODE -eq 1 ]; then echo_out "[Init] Run mode: MODE$MODE: Valgrind output"
                            echo_out "[Init] Looking for this string: '$TEXT' in Valgrind output (@ $WORKD/valgrind.out when MULTI mode is not active)"; fi
-  echo_out "[Init] Leading [] = No bug/issue found yet | [*] = Bug/issue at least seen once"
+  echo_out "[Info] Leading [] = No bug/issue found yet | [*] = Bug/issue at least seen once"
   report_linecounts
   if [ "$SKIPV" != "1" ]; then
     verify $1
@@ -1711,7 +2035,7 @@ if [ $SKIPSTAGE -lt 3 ]; then
     elif [ $TRIAL -eq 19 ]; then sed -e 's/\*\//@##@/' -e 's/\/\*.*@##@//' $WORKF > $WORKT
     elif [ $TRIAL -eq 20 ]; then sed -e 's/\*\//@##@/' -e 's/\/\*.*@##@//' $WORKF > $WORKT
     elif [ $TRIAL -eq 21 ]; then sed -e 's/ \. /\./g' -e 's/, /,/g' $WORKF > $WORKT
-    elif [ $TRIAL -eq 22 ]; then sed -e 's/)[ \t]*,/),/g' -e 's/)[ \t]*;/);/g' $WORKF > $WORKT
+    elif [ $TRIAL -eq 22 ]; then sed -e 's/)[ \t]\+,/),/g' -e 's/)[ \t]\+;/);/g' $WORKF > $WORKT
     elif [ $TRIAL -eq 23 ]; then sed -e 's/\/\*\(.*\)\*\//\1/' $WORKF > $WORKT
     elif [ $TRIAL -eq 24 ]; then sed -e 's/field/f/g' $WORKF > $WORKT
     elif [ $TRIAL -eq 25 ]; then sed -e 's/field/f/gi' $WORKF > $WORKT
@@ -1892,7 +2216,7 @@ if [ $SKIPSTAGE -lt 4 ]; then
     elif [ $TRIAL -eq 131 ]; then sed -e 's/SELECT .* /SELECT * /i' $WORKF > $WORKT
     elif [ $TRIAL -eq 132 ]; then sed -e 's/SELECT .* /SELECT 1 /gi' $WORKF > $WORKT
     elif [ $TRIAL -eq 133 ]; then sed -e 's/SELECT .* /SELECT 1 /i' $WORKF > $WORKT
-    elif [ $TRIAL -eq 134 ]; then sed -e 's/[\t ]*/ /g' -e 's/ *\([;,]\)/\1/g' -e 's/ $//g' -e 's/^ //g' $WORKF > $WORKT
+    elif [ $TRIAL -eq 134 ]; then sed -e 's/[\t ]\+/ /g' -e 's/ *\([;,]\)/\1/g' -e 's/ $//g' -e 's/^ //g' $WORKF > $WORKT
     elif [ $TRIAL -eq 135 ]; then sed -e 's/CHARACTER[ ]*SET[ ]*latin1/ /i' $WORKF > $WORKT
     elif [ $TRIAL -eq 136 ]; then sed -e 's/CHARACTER[ ]*SET[ ]*utf8/ /i' $WORKF > $WORKT
     elif [ $TRIAL -eq 137 ]; then NEXTACTION="& progress to the next stage"; sed -e 's/DROP DATABASE transforms;CREATE DATABASE transforms;//' $WORKF > $WORKT
@@ -2307,7 +2631,7 @@ if [ $SKIPSTAGE -lt 7 ]; then
     elif [ $TRIAL -eq 137 ]; then sed -e "s/set[ ]*('','',/SET('',/gi" $WORKF > $WORKT
     elif [ $TRIAL -eq 138 ]; then sed -e "s/INNR/I/gi" $WORKF > $WORKT
     elif [ $TRIAL -eq 139 ]; then sed -e "s/OUTR/O/gi" $WORKF > $WORKT
-    elif [ $TRIAL -eq 140 ]; then sed -e 's/[\t ]*/ /g' -e 's/ \([;,]\)/\1/g' -e 's/ $//g' -e 's/^ //g' $WORKF > $WORKT
+    elif [ $TRIAL -eq 140 ]; then sed -e 's/[\t ]\+/ /g' -e 's/ \([;,]\)/\1/g' -e 's/ $//g' -e 's/^ //g' $WORKF > $WORKT
     elif [ $TRIAL -eq 141 ]; then sed -e 's/.*/\L&/' $WORKF > $WORKT
     elif [ $TRIAL -eq 142 ]; then sed -e 's/[ ]*([ ]*/(/;s/[ ]*)[ ]*/)/' $WORKF > $WORKT
     elif [ $TRIAL -eq 143 ]; then sed "s/''/0/g" $WORKF > $WORKT

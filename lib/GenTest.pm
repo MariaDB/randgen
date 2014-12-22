@@ -30,6 +30,9 @@ use strict;
 use Cwd;
 use POSIX;
 use Carp;
+use Fcntl qw(:flock SEEK_END);
+use File::Temp qw/ :POSIX /;
+use GDBM_File;
 
 my $logger;
 eval
@@ -40,6 +43,9 @@ eval
 };
 
 my $tmpdir;
+
+# For use with persistentProperty - temporary filename
+my $ppFile;
 
 1;
 
@@ -66,6 +72,11 @@ sub BEGIN {
 	}
 
 	croak("Unable to locate suitable temporary directory.") if not defined $tmpdir;
+	
+	# persistent property file
+	if (! defined $ppFile) {
+                $ppFile=tmpnam();
+        }  
 	
 	return 1;
 }
@@ -247,6 +258,41 @@ sub setLogConf {
     my $logfile = shift;
     Log::Log4perl::init($logfile);
     say("Logging defined by $logfile");
+}
+
+# Persistent Property which should always return the
+# same value regardless of fork'ing
+#
+# to get a property call  my $name = $self->persistentProperty('name');
+# to set a property call  $self->persistentProperty('name','value');
+#
+sub persistentProperty {
+    my $self=shift;
+    my %h;
+    # lock to prevent multiple processes from accessing
+    # at the same time
+    open(MYLOCK,'>'.$ppFile.'.lck');
+    flock(MYLOCK,LOCK_EX);
+    # access persistent property    
+    tie(%h, 'GDBM_File', $ppFile, , &GDBM_WRCREAT, 0640);
+    if (defined $_[1]) {
+        $h{$_[0]}=$_[1];
+    }
+    my $ret=$h{$_[0]};
+    untie %h;
+    # unlock
+    flock(MYLOCK,LOCK_UN);
+    close(MYLOCK);
+    return($ret);
+}
+
+# delete the persistentProperty file when we are done
+#
+sub ppUnlink {
+    if (defined $ppFile) {
+        unlink $ppFile;
+        unlink $ppFile.'.lck';
+    }
 }
 
 1;

@@ -637,5 +637,22 @@ sub exit_test {
 	my $status = shift;
 
 	print isoTimestamp()." [$$] $0 will exit with exit status ".status2text($status)." ($status)\n";
+        	
+	# shutdown any remaining mysqld servers that were
+	# started by this script (If they haven't been
+	# shutdown by the Shutdown reporter already)
+	foreach my $vardir (@vardirs) {
+	  foreach my $role ('master','slave') {
+	    my $pid_file = "$vardir/run/$role.pid";
+            if(open(PIDFILE, $pid_file)) {
+              my $pid = <PIDFILE>;
+              chomp $pid;
+              kill("TERM",$pid);
+              close(PIDFILE);
+            }
+          }
+        }
+        
+        # exit                              	
 	safe_exit($status);
 }
