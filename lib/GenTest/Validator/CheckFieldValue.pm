@@ -41,13 +41,12 @@ sub validate {
 	my $executor = $executors->[0];
 	my $result = $results->[0];
 	my $query = $result->query();
-
 	return STATUS_OK if $query !~ m{validate\s+(\d+)\s*(\S+)\s*(.+?)\s+for\s+row\s+(\d+|all)}io;
 	my ($pos, $sign, $value, $row) = ($1, $2, $3, lc($4));
 
 	my @rownums = ();
 	unless ( $result and $result->data() ) {
-		say("Warning: Query in CheckFieldValue didn't return a result");
+		say("Warning: Query in CheckFieldValue didn't return a result: $query");
 		return STATUS_OK;
 	}
 	if ( $row eq 'all' ) { 
