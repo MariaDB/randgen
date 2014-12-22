@@ -99,6 +99,8 @@ use constant FIELD_TYPE_QUID		=> 19;
 
 use constant FIELD_TYPE_BIT		=> 20;
 
+use constant FIELD_TYPE_FLOAT		=> 21;
+
 use constant ASCII_RANGE_START		=> 97;
 use constant ASCII_RANGE_END		=> 122;
 
@@ -118,9 +120,9 @@ my %name2type = (
 	'int'			=> FIELD_TYPE_NUMERIC,
 	'integer'		=> FIELD_TYPE_NUMERIC,
 	'bigint'		=> FIELD_TYPE_NUMERIC,
-	'float'			=> FIELD_TYPE_NUMERIC,
-	'double'		=> FIELD_TYPE_NUMERIC,
-	'double precision'	=> FIELD_TYPE_NUMERIC,
+	'float'			=> FIELD_TYPE_FLOAT,
+	'double'		=> FIELD_TYPE_FLOAT,
+	'double precision'	=> FIELD_TYPE_FLOAT,
 	'decimal'		=> FIELD_TYPE_NUMERIC,
 	'dec'			=> FIELD_TYPE_NUMERIC,
 	'numeric'		=> FIELD_TYPE_NUMERIC,
@@ -169,6 +171,9 @@ my %name2range = (
         'int'           => [-2147483648, 2147483647],
         'integer'       => [-2147483648, 2147483647],
         'bigint'        => [-9223372036854775808, 9223372036854775807],
+        'float'         => [-9223372036854775808, 9223372036854775807],
+        'double'        => [-999999999999999999999999999999999999999999999999999999999999999999999999999999999, 999999999999999999999999999999999999999999999999999999999999999999999999999999999],
+        'double_nano'   => [-0.00000000000000000000000000000000000000000000000000000000000000000001, 0.00000000000000000000000000000000000000000000000000000000000000000001],
 
         'tinyint_unsigned'      => [0, 255],
         'smallint_unsigned'     => [0, 65535],
@@ -209,14 +214,20 @@ sub setSeed {
 	$_[0]->[RANDOM_GENERATOR] = $_[1];
 }	
 
+sub update_generator {
+	{
+		use integer;
+		$_[0]->[RANDOM_GENERATOR] = 
+			$_[0]->[RANDOM_GENERATOR] * 1103515245 + 12345;
+	}
+}
 
 ### Random unsigned integer. 16 bit on 32-bit platforms, 48 bit on
 ### 64-bit platforms. For internal use in Random.pm. Use int() or
 ### uint16() instead.
 sub urand {
     use integer;
-    $_[0]->[RANDOM_GENERATOR] = 
-        $_[0]->[RANDOM_GENERATOR] * 1103515245 + 12345;
+    update_generator($_[0]);
     ## The lower bits are of bad statsictical quality in an LCG, so we
     ## just use the higher bits.
  
@@ -238,8 +249,7 @@ sub urand {
 sub uint16 {
     use integer;
     # urand() is manually inlined for efficiency
-    $_[0]->[RANDOM_GENERATOR] = 
-        $_[0]->[RANDOM_GENERATOR] * 1103515245 + 12345;
+    update_generator($_[0]);
     return $_[1] + 
         ((($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF) % ($_[2] - $_[1] + 1));
 }
@@ -251,13 +261,23 @@ sub int {
     { 
         use integer;
         # urand() is manually inlined for efficiency
-        $_[0]->[RANDOM_GENERATOR] = 
-            $_[0]->[RANDOM_GENERATOR] * 1103515245 + 12345;
+        update_generator($_[0]);
         # Since this may be a 64-bit platform, we mask down to 16 bit
         # to ensure the division below becomes correct.
         $rand = ($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF;
     }
     return int($_[1] + (($rand / 0x10000) * ($_[2] - $_[1] + 1)));
+}
+
+### Signed 64-bit float of any range.
+sub float {
+	my $rand;
+	# urand() is manually inlined for efficiency
+	update_generator($_[0]);
+	# Since this may be a 64-bit platform, we mask down to 16 bit
+	# to ensure the division below becomes correct.
+	$rand = ($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF;
+	return $_[1] + (($rand / 0x10000) * ($_[2] - $_[1] + 1));
 }
 
 sub digit {
@@ -408,6 +428,8 @@ sub fieldType {
 		return $rand->string(1);
 	} elsif ($field_type == FIELD_TYPE_NUMERIC) {
 		return $rand->int(@{$name2range{$field_full_type}});
+	} elsif ($field_type == FIELD_TYPE_FLOAT) {
+		return $rand->float(@{$name2range{$field_full_type}});
 	} elsif ($field_type == FIELD_TYPE_STRING) {
 		return $rand->string($field_length);
 	} elsif ($field_type == FIELD_TYPE_DATE) {
