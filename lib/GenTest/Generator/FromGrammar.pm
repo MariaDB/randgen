@@ -87,6 +87,8 @@ sub participatingRules {
 	return $_[0]->[GENERATOR_PARTICIPATING_RULES];
 }
 
+
+
 #
 # Generate a new query. We do this by iterating over the array containing grammar rules and expanding each grammar rule
 # to one of its right-side components . We do that in-place in the array.
@@ -101,9 +103,7 @@ sub next {
 	my $grammar_rules = $grammar->rules();
 
 	my $prng = $generator->[GENERATOR_PRNG];
-
-	my $stack = GenTest::Stack::Stack->new();
-	my $global = $generator->globalFrame();
+	my %rule_invariants = ();
 
 	my %rule_counters;
 	my %invariants;
@@ -111,6 +111,205 @@ sub next {
 	my $last_table;
 	my $last_database;
     
+	sub expand {
+		my ($rule_counters, $rule_invariants, @sentence) = @_;
+		my $item_nodash;
+		my $orig_item;
+
+		if ($#sentence > GENERATOR_MAX_LENGTH) {
+			say("Sentence is now longer than ".GENERATOR_MAX_LENGTH()." symbols. Possible endless loop in grammar. Aborting.");
+			return undef;
+		}
+		
+		for (my $pos = 0; $pos <= $#sentence; $pos++) {
+			$orig_item = $sentence[$pos];
+
+			next if $orig_item eq ' ';
+			next if $orig_item eq uc($orig_item);
+
+			my $item = $orig_item;
+			my $invariant = 0;
+			my @expansion = ();
+
+			if ($item =~ m{^([a-z0-9_]+)\[invariant\]}sio) {
+				($item, $invariant) = ($1, 1);
+			}
+
+			if (exists $grammar_rules->{$item}) {
+
+				if (++($rule_counters->{$orig_item}) > GENERATOR_MAX_OCCURRENCES) {
+					say("Rule $orig_item occured more than ".GENERATOR_MAX_OCCURRENCES()." times. Possible endless loop in grammar. Aborting.");
+					return undef;
+				}
+
+				if ($invariant) {
+					@{$rule_invariants->{$item}} = expand($rule_counters,$rule_invariants,($item)) unless defined $rule_invariants->{$item};
+					@expansion = @{$rule_invariants->{$item}};
+				} else {
+					@expansion = expand($rule_counters,$rule_invariants,@{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]->[
+						$prng->uint16(0, $#{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]})
+					]});
+
+				}
+			} else {
+				if (
+					(substr($item, 0, 1) eq '{') &&
+					(substr($item, -1, 1) eq '}')
+				) {
+					$item = eval("no strict;\n".$item);		# Code
+
+					if ($@ ne '') {
+						if ($@ =~ m{at .*? line}o) {
+							say("Internal grammar error: $@");
+							return undef;			# Code called die()
+						} else {
+							warn("Syntax error in Perl snippet $orig_item : $@");
+							return undef;
+						}
+					}
+				} elsif (substr($item, 0, 1) eq '$') {
+					$item = eval("no strict;\n".$item.";\n");	# Variable
+				} else {
+					my $field_type = $prng->isFieldType($item);
+
+					if ( ($item eq 'letter') || ($item eq '_letter') ) {
+						$item = $prng->letter();
+					} elsif ( ($item eq 'digit')  || ($item eq '_digit') ) {
+						$item = $prng->digit();
+					} elsif ($item eq '_table') {
+						my $tables = $executors->[0]->metaTables($last_database);
+						$last_table = $prng->arrayElement($tables);
+						$item = '`'.$last_table.'`';
+					} elsif ($item eq '_field') {
+						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
+						$item = '`'.$prng->arrayElement($fields).'`';
+					} elsif ($item eq '_hex') {
+						$item = $prng->hex();
+					} elsif ($item eq '_cwd') {
+						$item = "'".$cwd."'";
+					} elsif (
+						($item eq '_tmpnam') ||
+						($item eq 'tmpnam') ||
+						($item eq '_tmpfile')
+					) {
+						# Create a new temporary file name and record it for unlinking at the next statement
+						$generator->[GENERATOR_TMPNAM] = tmpdir()."gentest".abs($$).".tmp" if not defined $generator->[GENERATOR_TMPNAM];
+						$item = "'".$generator->[GENERATOR_TMPNAM]."'";
+						$item =~ s{\\}{\\\\}sgio if osWindows();	# Backslash-escape backslashes on Windows
+					} elsif ($item eq '_tmptable') {
+						$item = "tmptable".abs($$);
+					} elsif ($item eq '_unix_timestamp') {
+						$item = time();
+					} elsif ($item eq '_pid') {
+						$item = abs($$);
+					} elsif ($item eq '_thread_id') {
+						$item = $generator->threadId();
+					} elsif ($item eq '_thread_count') {
+						$item = $ENV{RQG_THREADS};
+					} elsif (($item eq '_database') || ($item eq '_db') || ($item eq '_schema')) {
+						my $databases = $executors->[0]->metaSchemas();
+						$last_database = $prng->arrayElement($databases);
+						$item = '`'.$last_database.'`';
+					} elsif ($item eq '_table') {
+						my $tables = $executors->[0]->metaTables($last_database);
+						$last_table = $prng->arrayElement($tables);
+						$item = '`'.$last_table.'`';
+					} elsif ($item eq '_basetable') {
+						my $tables = $executors->[0]->metaBaseTables($last_database);
+						$last_table = $prng->arrayElement($tables);
+						$item = '`'.$last_table.'`';
+					} elsif ($item eq '_view') {
+						my $tables = $executors->[0]->metaViews($last_database);
+						$last_table = $prng->arrayElement($tables);
+						$item = '`'.$last_table.'`';
+					} elsif ($item eq '_field') {
+						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
+						$item = '`'.$prng->arrayElement($fields).'`';
+					} elsif ($item eq '_field_list') {
+						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
+						$item = '`'.join('`,`', @$fields).'`';
+					} elsif ($item eq '_field_count') {
+						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
+						$item = $#$fields + 1;
+					} elsif ($item eq '_field_next') {
+						# Pick the next field that has not been picked recently and increment the $field_pos counter
+						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
+						$item = '`'.$fields->[$field_pos++ % $#$fields].'`';
+					} elsif ($item eq '_field_no_pk') {
+						my $fields = $executors->[0]->metaColumnsTypeNot('primary',$last_table, $last_database);
+						$item = '`'.$prng->arrayElement($fields).'`';
+					} elsif (($item eq '_field_indexed') || ($item eq '_field_key')) {
+						my $fields_indexed = $executors->[0]->metaColumnsType('indexed',$last_table, $last_database);
+						$item = '`'.$prng->arrayElement($fields_indexed).'`';
+					} elsif (($item eq '_field_unindexed') || ($item eq '_field_nokey')) {
+						my $fields_unindexed = $executors->[0]->metaColumnsTypeNot('indexed',$last_table, $last_database);
+						$item = '`'.$prng->arrayElement($fields_unindexed).'`';
+					} elsif ($item eq '_collation') {
+						my $collations = $executors->[0]->metaCollations();
+						$item = '_'.$prng->arrayElement($collations);
+					} elsif ($item eq '_collation_name') {
+						my $collations = $executors->[0]->metaCollations();
+						$item = $prng->arrayElement($collations);
+					} elsif ($item eq '_charset') {
+						my $charsets = $executors->[0]->metaCharactersets();
+						$item = '_'.$prng->arrayElement($charsets);
+					} elsif ($item eq '_charset_name') {
+						my $charsets = $executors->[0]->metaCharactersets();
+						$item = $prng->arrayElement($charsets);
+					} elsif ($item eq '_data') {
+						$item = $prng->file($cwd."/data");
+					} elsif (
+						($field_type == FIELD_TYPE_NUMERIC) ||
+						($field_type == FIELD_TYPE_BLOB) 
+					) {
+						$item = $prng->fieldType($item);
+					} elsif ($field_type) {
+						$item = $prng->fieldType($item);
+						if (
+							(substr($orig_item, -1) eq '`') ||
+							(substr($orig_item, 0, 2) eq "b'") ||
+							(substr($orig_item, 0, 2) eq '0x')
+						) {
+							# Do not quote, quotes are already present
+						} elsif (index($item, "'") > -1) {
+							$item = '"'.$item.'"';
+						} else {
+							$item = "'".$item."'";
+						}
+					} elsif (substr($item, 0, 1) eq '_') {
+						$item_nodash = substr($item, 1);
+						if ($prng->isFieldType($item_nodash)) {
+							$item = "'".$prng->fieldType($item_nodash)."'";
+							if (index($item, "'") > -1) {
+								$item = '"'.$item.'"';
+							} else {
+								$item = "'".$item."'";
+							}
+						}
+					}
+
+					# If the grammar initially contained a ` , restore it. This allows
+					# The generation of constructs such as `table _digit` => `table 5`
+
+					if (
+						(substr($orig_item, -1) eq '`') && 
+						(index($item, '`') == -1)
+					) {
+						$item = $item.'`';
+					}
+
+				}
+				@expansion = ($item);
+			}
+			splice(@sentence, $pos, 1, @expansion);
+
+		}
+		return @sentence;
+	}
+
+	my $stack = GenTest::Stack::Stack->new();
+	my $global = $generator->globalFrame();
+
 	#
 	# If a temporary file has been left from a previous statement, unlink it.
 	#
@@ -143,216 +342,16 @@ sub next {
 		}
 	}
     
-	my @sentence = ($starting_rule);
-        for (my $pos = 0; $pos <= $#sentence; $pos++) {
-		$_ = $sentence[$pos];
-		next if $_ eq ' ';
-		next if $_ eq uc($_);
-		next if not exists $grammar_rules->{$_};
-
-		if (++$rule_counters{$_} > GENERATOR_MAX_OCCURRENCES) {
-			say("Rule $_ occured more than ".GENERATOR_MAX_OCCURRENCES()." times. Possible endless loop in grammar. Aborting.");
-			return undef;
-		}
-
-		# Expand grammar rule into one of its productions
-
-		splice(@sentence, $pos, 1, @{$grammar_rules->{$_}->[GenTest::Grammar::Rule::RULE_COMPONENTS]->[
-			$prng->uint16(0, $#{$grammar_rules->{$_}->[GenTest::Grammar::Rule::RULE_COMPONENTS]})
-		]});
-
-		if ($#sentence > GENERATOR_MAX_LENGTH) {
-			say("Sentence is now longer than ".GENERATOR_MAX_LENGTH()." symbols. Possible endless loop in grammar. Aborting.");
-			return undef;
-		}
-		
-		# Process the current element of @sentence once more, as it was just expanded
-		redo;
-	}
-
-	# Once the SQL sentence has been constructed, iterate over it to replace variable items with their final values
-
-	my $item_nodash;
-	my $orig_item;
-
-
-	foreach (@sentence) {
-		next if $_ eq ' ';
-		next if $_ eq uc($_) and substr($_, 0, 1) ne '{';				# Short-cut for UPPERCASE literals
-		next if $_ eq 'executor1' || $_ eq 'executor2' || $_ eq 'executor3' ;
-
-		$orig_item = $_;
-		if (
-			(substr($_, 0, 1) eq '{') &&
-			(substr($_, -1, 1) eq '}')
-		) {
-			$_ = eval("no strict;\n".$_);		# Code
-
-			if ($@ ne '') {
-				if ($@ =~ m{at .*? line}o) {
-					say("Internal grammar error: $@");
-					return undef;			# Code called die()
-				} else {
-					warn("Syntax error in Perl snippet $orig_item : $@");
-					return undef;
-				}
-			}
-			next;
-		} elsif (substr($_, 0, 1) eq '$') {
-			$_ = eval("no strict;\n".$_.";\n");	# Variable
-			next;
-		}
-
-		# Check for expressions such as _tinyint[invariant]
-
-		my $modifier;
-		if (index($_, '[') > -1) {
-			my $invariant_substitution = 0;
-			if ($_ =~ m{^(_[a-z_]*?)\[(.*?)\]}sio) {
-				$modifier = $2;
-				if ($modifier eq 'invariant') {
-					$invariant_substitution = 1;
-					$_ = exists $invariants{$orig_item} ? $invariants{$orig_item} : $1 ;
-				} else {
-					$_ = $1;
-				}
-			}
-		}
-
-		my $field_type = $prng->isFieldType($_);
-
-		if ( ($_ eq 'letter') || ($_ eq '_letter') ) {
-			$_ = $prng->letter();
-		} elsif ( ($_ eq 'digit')  || ($_ eq '_digit') ) {
-			$_ = $prng->digit();
-		} elsif ($_ eq '_table') {
-			my $tables = $executors->[0]->metaTables($last_database);
-			$last_table = $prng->arrayElement($tables);
-			$_ = '`'.$last_table.'`';
-		} elsif ($_ eq '_field') {
-			my $fields = $executors->[0]->metaColumns($last_table, $last_database);
-			$_ = '`'.$prng->arrayElement($fields).'`';
-		} elsif ($_ eq '_hex') {
-			$_ = $prng->hex();
-		} elsif ($_ eq '_cwd') {
-			$_ = "'".$cwd."'";
-		} elsif (
-			($_ eq '_tmpnam') ||
-			($_ eq 'tmpnam') ||
-			($_ eq '_tmpfile')
-		) {
-			# Create a new temporary file name and record it for unlinking at the next statement
-			$generator->[GENERATOR_TMPNAM] = tmpdir()."gentest".abs($$).".tmp" if not defined $generator->[GENERATOR_TMPNAM];
-			$_ = "'".$generator->[GENERATOR_TMPNAM]."'";
-			$_ =~ s{\\}{\\\\}sgio if osWindows();	# Backslash-escape backslashes on Windows
-		} elsif ($_ eq '_tmptable') {
-			$_ = "tmptable".abs($$);
-		} elsif ($_ eq '_unix_timestamp') {
-			$_ = time();
-		} elsif ($_ eq '_pid') {
-			$_ = abs($$);
-		} elsif ($_ eq '_thread_id') {
-			$_ = $generator->threadId();
-		} elsif ($_ eq '_thread_count') {
-			$_ = $ENV{RQG_THREADS};
-		} elsif (($_ eq '_database') || ($_ eq '_db') || ($_ eq '_schema')) {
-			my $databases = $executors->[0]->metaSchemas();
-			$last_database = $prng->arrayElement($databases);
-			$_ = '`'.$last_database.'`';
-		} elsif ($_ eq '_table') {
-			my $tables = $executors->[0]->metaTables($last_database);
-			$last_table = $prng->arrayElement($tables);
-			$_ = '`'.$last_table.'`';
-		} elsif ($_ eq '_basetable') {
-			my $tables = $executors->[0]->metaBaseTables($last_database);
-			$last_table = $prng->arrayElement($tables);
-			$_ = '`'.$last_table.'`';
-		} elsif ($_ eq '_view') {
-			my $tables = $executors->[0]->metaViews($last_database);
-			$last_table = $prng->arrayElement($tables);
-			$_ = '`'.$last_table.'`';
-		} elsif ($_ eq '_field') {
-			my $fields = $executors->[0]->metaColumns($last_table, $last_database);
-			$_ = '`'.$prng->arrayElement($fields).'`';
-		} elsif ($_ eq '_field_list') {
-			my $fields = $executors->[0]->metaColumns($last_table, $last_database);
-			$_ = '`'.join('`,`', @$fields).'`';
-		} elsif ($_ eq '_field_count') {
-			my $fields = $executors->[0]->metaColumns($last_table, $last_database);
-			$_ = $#$fields + 1;
-		} elsif ($_ eq '_field_next') {
-			# Pick the next field that has not been picked recently and increment the $field_pos counter
-			my $fields = $executors->[0]->metaColumns($last_table, $last_database);
-			$_ = '`'.$fields->[$field_pos++ % $#$fields].'`';
-		} elsif ($_ eq '_field_no_pk') {
-			my $fields = $executors->[0]->metaColumnsTypeNot('primary',$last_table, $last_database);
-			$_ = '`'.$prng->arrayElement($fields).'`';
-		} elsif (($_ eq '_field_indexed') || ($_ eq '_field_key')) {
-			my $fields_indexed = $executors->[0]->metaColumnsType('indexed',$last_table, $last_database);
-			$_ = '`'.$prng->arrayElement($fields_indexed).'`';
-		} elsif (($_ eq '_field_unindexed') || ($_ eq '_field_nokey')) {
-			my $fields_unindexed = $executors->[0]->metaColumnsTypeNot('indexed',$last_table, $last_database);
-			$_ = '`'.$prng->arrayElement($fields_unindexed).'`';
-		} elsif ($_ eq '_collation') {
-			my $collations = $executors->[0]->metaCollations();
-			$_ = '_'.$prng->arrayElement($collations);
-		} elsif ($_ eq '_collation_name') {
-			my $collations = $executors->[0]->metaCollations();
-			$_ = $prng->arrayElement($collations);
-		} elsif ($_ eq '_charset') {
-			my $charsets = $executors->[0]->metaCharactersets();
-			$_ = '_'.$prng->arrayElement($charsets);
-		} elsif ($_ eq '_charset_name') {
-			my $charsets = $executors->[0]->metaCharactersets();
-			$_ = $prng->arrayElement($charsets);
-		} elsif ($_ eq '_data') {
-			$_ = $prng->file($cwd."/data");
-		} elsif (
-			($field_type == FIELD_TYPE_NUMERIC) ||
-			($field_type == FIELD_TYPE_BLOB) 
-		) {
-			$_ = $prng->fieldType($_);
-		} elsif ($field_type) {
-			$_ = $prng->fieldType($_);
-			if (
-				(substr($orig_item, -1) eq '`') ||
-				(substr($orig_item, 0, 2) eq "b'") ||
-				(substr($orig_item, 0, 2) eq '0x')
-			) {
-				# Do not quote, quotes are already present
-			} elsif (index($_, "'") > -1) {
-				$_ = '"'.$_.'"';
-			} else {
-				$_ = "'".$_."'";
-			}
-		} elsif (substr($_, 0, 1) eq '_') {
-			$item_nodash = substr($_, 1);
-			if ($prng->isFieldType($item_nodash)) {
-				$_ = "'".$prng->fieldType($item_nodash)."'";
-				if (index($_, "'") > -1) {
-					$_ = '"'.$_.'"';
-				} else {
-					$_ = "'".$_."'";
-				}
-			}
-		}
-
-		# If the grammar initially contained a ` , restore it. This allows
-		# The generation of constructs such as `table _digit` => `table 5`
-
-		if (
-			(substr($orig_item, -1) eq '`') && 
-			(index($_, '`') == -1)
-		) {
-			$_ = $_.'`';
-		}
-	
-		$invariants{$orig_item} = $_ if $modifier eq 'invariant';
-	}
+	my @sentence = expand(\%rule_counters,\%rule_invariants,($starting_rule));
 
 	$generator->[GENERATOR_SEQ_ID]++;
 
 	my $sentence = join ('', @sentence);
+	# Remove extra spaces while we are here
+	while ($sentence =~ s/\.\s/\./s) {};
+	while ($sentence =~ s/\s([\.,])/$1/s) {};
+	while ($sentence =~ s/\s\s/ /s) {};
+	while ($sentence =~ s/(AVG|BIT_AND|BIT_OR|BIT_XOR|COUNT|GROUP_CONCAT|MAX|MIN|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE) /$1/s) {};
 
 	$generator->[GENERATOR_PARTICIPATING_RULES] = [ keys %rule_counters ];
 
