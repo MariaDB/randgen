@@ -71,6 +71,7 @@ use constant PS_ROWS => 4;
 use constant PS_SERVER_ID => 5;
 use constant PS_SQLTRACE => 6;
 use constant PS_BASEDIR => 7;
+use constant PS_TABLES => 8;
 
 sub new {
 	my $class = shift;
@@ -83,7 +84,8 @@ sub new {
 		'rows' => PS_ROWS,
 		'server_id' => PS_SERVER_ID,
 		'sqltrace' => PS_SQLTRACE,
-		'basedir' => PS_BASEDIR
+		'basedir' => PS_BASEDIR,
+		'tables' => PS_TABLES,
 	},@_);
 
 	if (not defined $self->[PS_SEED]) {
@@ -99,6 +101,11 @@ sub new {
 
 sub schema_file {
 	return $_[0]->[PS_SPEC];
+}
+
+
+sub tables {
+	return $_[0]->[PS_TABLES];
 }
 
 
@@ -139,6 +146,7 @@ sub run {
 	my ($self) = @_;
 
 	my $schema_file = $self->schema_file();
+	my $tables = $self->tables();
 
 	my $executor = GenTest::Executor->newFromDSN($self->dsn());
 	$executor->init();
@@ -160,36 +168,47 @@ sub run {
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
-	# We only want to populate the tables that were created while loading the schema file, 
+	# If the schema file was defined,
+	# we only want to populate the tables that were created while loading the schema file, 
 	# so we'll store the list of existing tables with their creation times
 
-	my $tables = $executor->execute("SELECT CONCAT(TABLE_SCHEMA, '.', TABLE_NAME), CREATE_TIME FROM INFORMATION_SCHEMA.TABLES "
-			. "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema')")->data();
-	my %old_tables = ();
-	foreach (@$tables) {
-		$old_tables{$_->[0]} = $_->[1];
+	my @tables_to_populate = ();
+
+	if ($schema_file) {
+		$tables = $executor->execute("SELECT CONCAT(TABLE_SCHEMA, '.', TABLE_NAME), CREATE_TIME FROM INFORMATION_SCHEMA.TABLES "
+				. "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema')")->data();
+		my %old_tables = ();
+		foreach (@$tables) {
+			$old_tables{$_->[0]} = $_->[1];
+		}
+	
+		my $port = $executor->port();
+		system("$mysql_client_path --port=$port --protocol=tcp -uroot test < $schema_file");
+		if ($?) {
+			say("ERROR: failed to load $schema_file through MySQL client");
+			return STATUS_ENVIRONMENT_FAILURE;
+		}
+
+		# Now we will get the list of tables again. We don't care about those which already have rows in them
+		# (even if they are new, we consider them populated from the schema file);
+		# for empty ones, we'll compare their creation time with the stored one
+
+		$tables = $executor->execute("SELECT CONCAT(TABLE_SCHEMA, '.', TABLE_NAME), CREATE_TIME FROM INFORMATION_SCHEMA.TABLES "
+				. "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema') AND TABLE_ROWS = 0")->data();
+		foreach (@$tables) {
+			push @tables_to_populate, $_->[0] unless defined $old_tables{$_->[0]} and $old_tables{$_->[0]} eq $_->[1];
+		}
+	} 
+	# If the table list was defined,
+	# we want to populate the given tables
+	else {
+		@tables_to_populate = @$tables;
 	}
 	
-	my $port = $executor->port();
-	system("$mysql_client_path --port=$port --protocol=tcp -uroot test < $schema_file");
-	if ($?) {
-		say("ERROR: failed to load $schema_file through MySQL client");
-		return STATUS_ENVIRONMENT_FAILURE;
-	}
+	say("Tables to populate: @tables_to_populate");
 
-	# Now we will get the list of tables again. We don't care about those which already have rows in them
-	# (even if they are new, we consider them populated from the schema file);
-	# for empty ones, we'll compare their creation time with the stored one
-
-	$tables = $executor->execute("SELECT CONCAT(TABLE_SCHEMA, '.', TABLE_NAME), CREATE_TIME FROM INFORMATION_SCHEMA.TABLES "
-			. "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema') AND TABLE_ROWS = 0")->data();
-	my %new_tables = ();
-	foreach (@$tables) {
-		$new_tables{$_->[0]} = $_->[1] unless defined $old_tables{$_->[0]} and $old_tables{$_->[0]} eq $_->[1];
-	}
-	
 	# TODO: be smarter about rows count
-	foreach my $t (keys %new_tables) {
+	foreach my $t (@tables_to_populate) {
 		populate_table($self, $executor, $t, $self->rows());
 	}
 
