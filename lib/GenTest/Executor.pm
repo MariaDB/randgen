@@ -322,11 +322,11 @@ sub cacheMetaData {
     if (not exists $global_schema_cache{$self->dsn()}) {
         say ("Caching schema metadata for ".$self->dsn());
         foreach my $row (@{$self->getSchemaMetaData()}) {
-            my ($schema, $table, $type, $col, $key) = @$row;
+            my ($schema, $table, $type, $col, $key, $datatype) = @$row;
             $meta->{$schema}={} if not exists $meta->{$schema};
             $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
             $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
-            $meta->{$schema}->{$type}->{$table}->{$col}=$key;
+            $meta->{$schema}->{$type}->{$table}->{$col}= [$key,$datatype];
         }
 	$global_schema_cache{$self->dsn()} = $meta;
     } else {
@@ -428,19 +428,24 @@ sub metaColumns {
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }
 
-sub metaColumnsType {
-    my ($self, $type, $table, $schema) = @_;
+sub metaColumnsIndexType {
+    my ($self, $indextype, $table, $schema) = @_;
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
     
     $schema = $self->defaultSchema if not defined $schema;
     $table = $self->metaTables($schema)->[0] if not defined $table;
     
-    my $cachekey="COL-$type-$schema-$table";
+    my $cachekey="COL-$indextype-$schema-$table";
     
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $colref = $meta->{$schema}->{table}->{$table} || $meta->{$schema}->{view}->{$table};
-        my $cols = [sort grep {$colref->{$_} eq $type} keys %$colref];
-        croak "Table/view '$table' in schema '$schema' has no '$type' columns (Might be caused by use of --views option in combination with grammars containing _field_indexed)"  
+        my $cols;
+        if ($indextype eq 'indexed') {
+            $cols = [sort grep {$colref->{$_}->[0] eq $indextype or $colref->{$_}->[0] eq 'primary'} keys %$colref];
+        } else {
+            $cols = [sort grep {$colref->{$_}->[0] eq $indextype} keys %$colref];
+        };
+        croak "Table/view '$table' in schema '$schema' has no '$indextype' columns (Might be caused by use of --views option in combination with grammars containing _field_indexed)"  
             if not defined $cols or $#$cols < 0;
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }
@@ -448,19 +453,92 @@ sub metaColumnsType {
     
 }
 
-sub metaColumnsTypeNot {
-    my ($self, $type, $table, $schema) = @_;
+sub metaColumnsDataType {
+    my ($self, $datatype, $table, $schema) = @_;
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
     
     $schema = $self->defaultSchema if not defined $schema;
     $table = $self->metaTables($schema)->[0] if not defined $table;
     
-    my $cachekey="COLNOT-$type-$schema-$table";
+    my $cachekey="COL-$datatype-$schema-$table";
+    
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my $colref = $meta->{$schema}->{table}->{$table} || $meta->{$schema}->{view}->{$table};
+        my $cols = [sort grep {$colref->{$_}->[1] eq $datatype} keys %$colref];
+        croak "Table/view '$table' in schema '$schema' has no '$datatype' columns (Might be caused by use of --views option in combination with grammars containing _field_indexed)"  
+            if not defined $cols or $#$cols < 0;
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+    
+}
+
+sub metaColumnsDataIndexType {
+    my ($self, $datatype, $indextype, $table, $schema) = @_;
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+    
+    $schema = $self->defaultSchema if not defined $schema;
+    $table = $self->metaTables($schema)->[0] if not defined $table;
+    
+    my $cachekey="COL-$datatype-$indextype-$schema-$table";
+    
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my $colref = $meta->{$schema}->{table}->{$table} || $meta->{$schema}->{view}->{$table};
+        my $cols_by_datatype = [sort grep {$colref->{$_}->[1] eq $datatype} keys %$colref];
+        croak "Table/view '$table' in schema '$schema' has no '$datatype' columns"  
+            if not defined $cols_by_datatype or $#$cols_by_datatype < 0;
+        my $cols_by_indextype;
+        if ($indextype eq 'indexed') {
+            $cols_by_indextype = [sort grep {$colref->{$_}->[0] eq $indextype or $colref->{$_}->[0] eq 'primary'} keys %$colref];
+        } else {
+            $cols_by_indextype = [sort grep {$colref->{$_}->[0] eq $indextype} keys %$colref];
+        }
+        croak "Table/view '$table' in schema '$schema' has no '$indextype' columns (Might be caused by use of --views option in combination with grammars containing _field_indexed)"  
+            if not defined $cols_by_indextype or $#$cols_by_indextype < 0;
+        my $cols = GenTest::intersect_arrays($cols_by_datatype,$cols_by_indextype);
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+    
+}
+
+sub metaColumnsDataTypeIndexTypeNot {
+    my ($self, $datatype, $indextype, $table, $schema) = @_;
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+    
+    $schema = $self->defaultSchema if not defined $schema;
+    $table = $self->metaTables($schema)->[0] if not defined $table;
+    
+    my $cachekey="COL-$datatype-$indextype-$schema-$table";
+    
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my $colref = $meta->{$schema}->{table}->{$table} || $meta->{$schema}->{view}->{$table};
+        my $cols_by_datatype = [sort grep {$colref->{$_}->[1] eq $datatype} keys %$colref];
+        croak "Table/view '$table' in schema '$schema' has no '$datatype' columns"  
+            if not defined $cols_by_datatype or $#$cols_by_datatype < 0;
+        my $cols_by_indextype = [sort grep {$colref->{$_}->[0] ne $indextype} keys %$colref];
+        croak "Table '$table' in schema '$schema' has no columns which are not '$indextype'"  
+            if not defined $cols_by_indextype or $#$cols_by_indextype < 0;
+        my $cols = intersect_arrays($cols_by_datatype,$cols_by_indextype);
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+    
+}
+
+sub metaColumnsIndexTypeNot {
+    my ($self, $indextype, $table, $schema) = @_;
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+    
+    $schema = $self->defaultSchema if not defined $schema;
+    $table = $self->metaTables($schema)->[0] if not defined $table;
+    
+    my $cachekey="COLNOT-$indextype-$schema-$table";
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $colref = $meta->{$schema}->{table}->{$table} || $meta->{$schema}->{view}->{$table};
-        my $cols = [sort grep {$colref->{$_} ne $type} keys %$colref];
-        croak "Table '$table' in schema '$schema' has no columns which are not '$type'"  
+        my $cols = [sort grep {$colref->{$_}->[0] ne $indextype} keys %$colref];
+        croak "Table '$table' in schema '$schema' has no columns which are not '$indextype'"  
             if not defined $cols or $#$cols < 0;
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }

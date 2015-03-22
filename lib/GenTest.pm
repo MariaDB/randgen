@@ -295,4 +295,14 @@ sub ppUnlink {
     }
 }
 
+# array intersection
+# (so that we don't need to require additional packages)
+
+sub intersect_arrays {
+	my ($a,$b) = @_;
+	my %in_a = map {$_ => 1} @$a;
+	return [ grep($in_a{$_},@$b) ];
+}
+
+
 1;

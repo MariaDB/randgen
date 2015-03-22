@@ -490,7 +490,7 @@ my %err2type = (
 	ER_STACK_OVERRUN()	=> STATUS_ENVIRONMENT_FAILURE,
 	ER_UNKNOWN_STORAGE_ENGINE() => STATUS_ENVIRONMENT_FAILURE,
 	ER_BACKUP_NOT_ENABLED()	=> STATUS_ENVIRONMENT_FAILURE,
-	ER_FEATURE_DISABLED()	=> STATUS_ENVIRONMENT_FAILURE,
+	ER_FEATURE_DISABLED()	=> STATUS_SEMANTIC_ERROR,
 	ER_OPTION_PREVENTS_STATEMENT() => STATUS_ENVIRONMENT_FAILURE,
 	CR_COMMANDS_OUT_OF_SYNC() => STATUS_ENVIRONMENT_FAILURE,
 
@@ -991,7 +991,15 @@ sub getSchemaMetaData {
                "CASE WHEN column_key = 'PRI' THEN 'primary' ".
                     "WHEN column_key = 'MUL' THEN 'indexed' ".
                     "WHEN column_key = 'UNI' THEN 'indexed' ".
-                    "ELSE 'ordinary' END ".
+                    "ELSE 'ordinary' END, ".
+               "CASE WHEN data_type IN ('bit','tinyint','smallint','mediumint','int','bigint') THEN 'int' ".
+                    "WHEN data_type IN ('float','double') THEN 'float' ".
+                    "WHEN data_type IN ('datetime','timestamp') THEN 'timestamp' ".
+                    "WHEN data_type IN ('char','varchar') THEN 'char' ".
+                    "WHEN data_type IN ('binary','varbinary') THEN 'binary' ".
+                    "WHEN data_type IN ('tinyblob','blob','mediumblob','longblob') THEN 'blob' ".
+                    "WHEN data_type IN ('tinytext','text','mediumtext','longtext') THEN 'text' ".
+                    "ELSE data_type END ".
          "FROM information_schema.tables INNER JOIN ".
               "information_schema.columns USING(table_schema, table_name) ".
           "WHERE table_name <> 'DUMMY'"; 

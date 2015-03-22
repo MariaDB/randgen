@@ -31,6 +31,7 @@ use GenTest::Stack::Stack;
 use GenTest;
 use Cwd;
 use List::Util qw(shuffle); # For some grammars
+use Time::HiRes qw(time);
 
 use constant GENERATOR_MAX_OCCURRENCES	=> 3500;
 use constant GENERATOR_MAX_LENGTH	=> 10000;
@@ -235,15 +236,30 @@ sub next {
 						# Pick the next field that has not been picked recently and increment the $field_pos counter
 						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
 						$item = '`'.$fields->[$field_pos++ % $#$fields].'`';
+					} elsif ($item eq '_field_pk') {
+						my $fields = $executors->[0]->metaColumnsIndexType('primary',$last_table, $last_database);
+						$item = '`'.$fields->[0].'`';
 					} elsif ($item eq '_field_no_pk') {
-						my $fields = $executors->[0]->metaColumnsTypeNot('primary',$last_table, $last_database);
+						my $fields = $executors->[0]->metaColumnsIndexTypeNot('primary',$last_table, $last_database);
 						$item = '`'.$prng->arrayElement($fields).'`';
 					} elsif (($item eq '_field_indexed') || ($item eq '_field_key')) {
-						my $fields_indexed = $executors->[0]->metaColumnsType('indexed',$last_table, $last_database);
+						my $fields_indexed = $executors->[0]->metaColumnsIndexType('indexed',$last_table, $last_database);
 						$item = '`'.$prng->arrayElement($fields_indexed).'`';
 					} elsif (($item eq '_field_unindexed') || ($item eq '_field_nokey')) {
-						my $fields_unindexed = $executors->[0]->metaColumnsTypeNot('indexed',$last_table, $last_database);
+						my $fields_unindexed = $executors->[0]->metaColumnsIndexTypeNot('indexed',$last_table, $last_database);
 						$item = '`'.$prng->arrayElement($fields_unindexed).'`';
+					} elsif ($item eq '_field_int') {
+						my $fields_int = $executors->[0]->metaColumnsDataType('int',$last_table, $last_database);
+						$item = '`'.$prng->arrayElement($fields_int).'`';
+					} elsif (($item eq '_field_int_indexed') || ($item eq '_field_int_key')) {
+						my $fields_int_indexed = $executors->[0]->metaColumnsDataIndexType('int','indexed',$last_table, $last_database);
+						$item = '`'.$prng->arrayElement($fields_int_indexed).'`';
+					} elsif ($item eq '_field_char') {
+						my $fields_char = $executors->[0]->metaColumnsDataType('char',$last_table, $last_database);
+						$item = '`'.$prng->arrayElement($fields_char).'`';
+					} elsif (($item eq '_field_char_indexed') || ($item eq '_field_char_key')) {
+						my $fields_char_indexed = $executors->[0]->metaColumnsDataIndexType('char','indexed',$last_table, $last_database);
+						$item = '`'.$prng->arrayElement($fields_char_indexed).'`';
 					} elsif ($item eq '_collation') {
 						my $collations = $executors->[0]->metaCollations();
 						$item = '_'.$prng->arrayElement($collations);
