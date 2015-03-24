@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014 SkySQL Ab
-# Copyright (c) 2015 MariaDB Corporation
+# Copyright (c) 2015 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -50,13 +50,7 @@ query_init:
 	{ $query_count = 0; $total_dur = 0; "" };
 
 query:
-	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } explain_extended main_select /* QUERY_NO { ++$query_count } */;
-
-_table:
-	 A | B | C | BB | CC | B | C | BB | CC | 
-	 CC | CC | CC | CC | CC |
-	 C | C | C | C | C | D
-;
+	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } explain_extended main_select /* QUERY_NO { ++$query_count } CON_ID _connection_id */;
 
 main_select:
 	simple_select | simple_select | simple_select | simple_select |
@@ -106,7 +100,7 @@ simple_select:
 	optional_group_by 
 	having_clause
 	order_by_clause ;
- 
+
 aggregate_select:
 	SELECT distinct straight_join select_option aggregate_select_list
 	FROM join_list
@@ -217,7 +211,21 @@ generic_where_list:
 not:
 	| | | NOT;
 
+degenerate_where_item:
+   _tinyint[invariant] = _tinyint[invariant] |
+   _tinyint[invariant] > _tinyint[invariant] |
+	_char[invariant] = _char[invariant] |
+	_char[invariant] NOT LIKE _char[invariant] ;
+
 where_item:
+	real_where_item |
+	real_where_item |
+	real_where_item |
+	real_where_item |
+	real_where_item |
+	degenerate_where_item ;
+
+real_where_item:
 	where_subquery  |  
 	existing_table_item . _field_char arithmetic_operator _char  |
 	existing_table_item . _field_char arithmetic_operator existing_table_item . _field_char |
@@ -373,7 +381,10 @@ char_correlated_subquery:
 int_scalar_correlated_subquery:
 	 ( SELECT distinct select_option aggregate subquery_table_one_two . _field_int ) AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" }
 	  FROM subquery_join_list 
-	  correlated_subquery_where_clause ) ;
+	  correlated_subquery_where_clause ) |
+	 ( SELECT distinct select_option aggregate table_one_two . _field_int ) AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" }
+	  FROM subquery_join_list 
+	  subquery_where_clause ) ; 
 
 subquery_body:
 	  FROM subquery_join_list
@@ -392,7 +403,17 @@ correlated_subquery_where_list:
 
 correlated_subquery_where_item:
 	existing_subquery_table_item . _field_int arithmetic_operator existing_table_item . _field_int |
-	existing_subquery_table_item . _field_char arithmetic_operator existing_table_item . _field_char ;
+	existing_subquery_table_item . _field_char arithmetic_operator existing_table_item . _field_char |
+# TODO: commented due to MDEV-7823, uncomment when done
+#	existing_table_item . _field_int IN ( child_subquery ) |
+	existing_table_item . _field_int IN ( simple_child_subquery ) |
+	existing_subquery_table_item . _field_int IN ( correlated_with_top_child_subquery ) ;
+
+correlated_with_top_child_subquery:
+	{ $child_subquery_idx += 1 ; $c_sq_ifields = 0; $c_sq_cfields = 0; $child_subquery_tables=0 ; ""} int_correlated_with_top_child_subquery ;
+
+simple_child_subquery:
+	{ $child_subquery_idx += 1 ; $c_sq_ifields = 0; $c_sq_cfields = 0; $child_subquery_tables=0 ; ""} int_single_member_child_subquery ;
 
 subquery_where_list:
 	subquery_where_item | subquery_where_item | subquery_where_item |
@@ -535,6 +556,11 @@ int_correlated_child_subquery:
 	  FROM child_subquery_join_list 
 	  correlated_child_subquery_where_clause ) ;
 
+int_correlated_with_top_child_subquery:
+	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { $c_sq_ifields=1; "C_SQ".$child_subquery_idx."_ifield1" }
+	  FROM child_subquery_join_list 
+	  correlated_with_top_child_subquery_where_clause ) ;
+
 char_correlated_child_subquery:
 	( SELECT distinct select_option child_subquery_table_one_two . _field_char AS { $c_sq_cfields=1; "C_SQ".$child_subquery_idx."_cfield1" }
 	  FROM child_subquery_join_list 
@@ -550,14 +576,26 @@ child_subquery_where_clause:
 correlated_child_subquery_where_clause:
 	WHERE correlated_child_subquery_where_list ;
 
+correlated_with_top_child_subquery_where_clause:
+	WHERE correlated_with_top_child_subquery_where_list ;
+
 correlated_child_subquery_where_list:
 	correlated_child_subquery_where_item | correlated_child_subquery_where_item | correlated_child_subquery_where_item |
 	correlated_child_subquery_where_item and_or correlated_child_subquery_where_item |
 	correlated_child_subquery_where_item and_or child_subquery_where_item ;
 
+correlated_with_top_child_subquery_where_list:
+	correlated_with_top_child_subquery_where_item | correlated_with_top_child_subquery_where_item | correlated_with_top_child_subquery_where_item |
+	correlated_with_top_child_subquery_where_item and_or correlated_with_top_child_subquery_where_item |
+	correlated_with_top_child_subquery_where_item and_or child_subquery_where_item ;
+
 correlated_child_subquery_where_item:
 	existing_child_subquery_table_item . _field_int arithmetic_operator existing_subquery_table_item . _field_int |
 	existing_child_subquery_table_item . _field_char arithmetic_operator existing_subquery_table_item . _field_char ;
+
+correlated_with_top_child_subquery_where_item:
+	existing_child_subquery_table_item . _field_int arithmetic_operator existing_table_item . _field_int |
+	existing_child_subquery_table_item . _field_char arithmetic_operator existing_table_item . _field_char ;
 
 child_subquery_where_list:
 	child_subquery_where_item | child_subquery_where_item | child_subquery_where_item |
@@ -738,6 +776,9 @@ new_select_item:
 	aggregate_select_item |
 	select_subquery;
 
+primitive_select_item:
+	nonaggregate_select_item | aggregate_select_item ;
+ 
 ################################################################################
 # We have the perl code here to help us write more sensible queries
 # It allows us to use field1...fieldn in the WHERE, ORDER BY, and GROUP BY
@@ -745,6 +786,8 @@ new_select_item:
 ################################################################################
 
 nonaggregate_select_item:
+	_tinyint AS { my $f = "ifield".++$ifields ; push @nonaggregates , $f ; $f } |
+	_char AS { my $f = "cfield".++$cfields ; push @nonaggregates , $f ; $f } |
 	table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
 	table_one_two . _field_int_indexed AS { my $f = "ifield".++$ifields ; push @nonaggregates , $f ; $f } |
 	table_one_two . _field_char_indexed AS { my $f = "cfield".++$cfields ; push @nonaggregates , $f ; $f } |
@@ -792,22 +835,24 @@ aggregate:
 	COUNT( distinct | SUM( distinct | MIN( distinct | MAX( distinct ;
 
 aggregate_group_concat:
-	{$count_gc_fields = 0; '' } GROUP_CONCAT( aggregate_list ORDER BY aggregate_order_by aggregate_separator ) ;
+	{$count_gc_fields = 0; '' } GROUP_CONCAT( aggregate_list aggregate_order_by aggregate_separator ) ;
 
 aggregate_list:
 	{ $count_gc_fields++; '' } table_one_two . _field | 
 	{ $count_gc_fields++; '' } table_one_two . _field , aggregate_list | 
 	{ $count_gc_fields++; '' } IF( table_one_two . _field , table_one_two . _field , table_one_two . _field ), aggregate_list;
 
+# TODO: Commented due to MDEV-7820, MDEV-7821. Uncomment when fixed
 aggregate_order_by:
-	aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | 
-	aggregate_order_by_fields, ( aggregate_order_by_subquery ) | ( aggregate_order_by_subquery ), aggregate_order_by_fields ;
+	| | | ;
+#	aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | 
+#	aggregate_order_by_fields, ( aggregate_order_by_subquery ) | ( aggregate_order_by_subquery ), aggregate_order_by_fields ;
 
 aggregate_order_by_subquery:
-	{ $subquery_idx += 1 ; $subquery_tables=0 ; $sq_ifields = 0; $sq_cfields = 0; ""} subquery_type ;
+	ORDER BY { $subquery_idx += 1 ; $subquery_tables=0 ; $sq_ifields = 0; $sq_cfields = 0; ""} subquery_type ;
 
 aggregate_order_by_fields:
-	{ join ',', shuffle 1..$count_gc_fields } ;	
+	ORDER BY { join ',', shuffle 1..$count_gc_fields } ;	
 
 aggregate_separator:
 	| SEPARATOR ',' | SEPARATOR '___' ;
@@ -912,9 +957,6 @@ value:
 # Add a possibility for 'view' to occur at the end of the previous '_table' rule
 # to allow a chance to use views (when running the RQG with --views)
 ################################################################################
-
-view:
-	view_A | view_AA | view_B | view_BB | view_C | view_CC | view_C | view_CC | view_D ;
 
 _digit:
 	1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | _tinyint_unsigned ;
