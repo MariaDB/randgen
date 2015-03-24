@@ -205,6 +205,8 @@ sub next {
 						$item = abs($$);
 					} elsif ($item eq '_thread_id') {
 						$item = $generator->threadId();
+					} elsif ($item eq '_connection_id') {
+						$item = $executors->[0]->connectionId();
 					} elsif ($item eq '_thread_count') {
 						$item = $ENV{RQG_THREADS};
 					} elsif (($item eq '_database') || ($item eq '_db') || ($item eq '_schema')) {
