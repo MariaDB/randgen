@@ -10,6 +10,7 @@ $combinations = [
 		--querytimeout=30
 	'], 
 	[
+		'--grammar=conf/mariadb/optimizer.yy --gendata=conf/mariadb/optimizer.zz',
 		'--grammar=conf/mariadb/optimizer.yy --views=TEMPTABLE',
 		'--grammar=conf/mariadb/optimizer.yy --notnull --views=TEMPTABLE',
 		'--grammar=conf/mariadb/optimizer.yy --views=MERGE',
