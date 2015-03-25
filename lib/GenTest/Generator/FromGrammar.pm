@@ -112,6 +112,9 @@ sub next {
 	my $last_table;
 	my $last_database;
     
+	my $stack = GenTest::Stack::Stack->new();
+	my $global = $generator->globalFrame();
+
 	sub expand {
 		my ($rule_counters, $rule_invariants, @sentence) = @_;
 		my $item_nodash;
@@ -324,9 +327,6 @@ sub next {
 		}
 		return @sentence;
 	}
-
-	my $stack = GenTest::Stack::Stack->new();
-	my $global = $generator->globalFrame();
 
 	#
 	# If a temporary file has been left from a previous statement, unlink it.
