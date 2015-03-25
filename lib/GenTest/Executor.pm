@@ -439,6 +439,9 @@ sub metaColumnsIndexType {
     
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $colref = $meta->{$schema}->{table}->{$table} || $meta->{$schema}->{view}->{$table};
+        # If the table is a view, don't bother looking for indexed columns, fall back to ordinary
+        $indextype = 'ordinary'
+            if ($meta->{$schema}->{view}->{$table} and ($indextype eq 'indexed' or $indextype eq 'primary'));
         my $cols;
         if ($indextype eq 'indexed') {
             $cols = [sort grep {$colref->{$_}->[0] eq $indextype or $colref->{$_}->[0] eq 'primary'} keys %$colref];
@@ -465,7 +468,7 @@ sub metaColumnsDataType {
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $colref = $meta->{$schema}->{table}->{$table} || $meta->{$schema}->{view}->{$table};
         my $cols = [sort grep {$colref->{$_}->[1] eq $datatype} keys %$colref];
-        croak "Table/view '$table' in schema '$schema' has no '$datatype' columns (Might be caused by use of --views option in combination with grammars containing _field_indexed)"  
+        croak "Table/view '$table' in schema '$schema' has no '$datatype' columns"  
             if not defined $cols or $#$cols < 0;
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }
@@ -484,6 +487,9 @@ sub metaColumnsDataIndexType {
     
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $colref = $meta->{$schema}->{table}->{$table} || $meta->{$schema}->{view}->{$table};
+        # If the table is a view, don't bother looking for indexed columns, fall back to ordinary
+        $indextype = 'ordinary'
+            if ($meta->{$schema}->{view}->{$table} and ($indextype eq 'indexed' or $indextype eq 'primary'));
         my $cols_by_datatype = [sort grep {$colref->{$_}->[1] eq $datatype} keys %$colref];
         croak "Table/view '$table' in schema '$schema' has no '$datatype' columns"  
             if not defined $cols_by_datatype or $#$cols_by_datatype < 0;
@@ -513,6 +519,9 @@ sub metaColumnsDataTypeIndexTypeNot {
     
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $colref = $meta->{$schema}->{table}->{$table} || $meta->{$schema}->{view}->{$table};
+        # If the table is a view, don't bother looking for indexed columns, fall back to ordinary
+        $indextype = 'unknown'
+            if ($meta->{$schema}->{view}->{$table} and $indextype eq 'ordinary');
         my $cols_by_datatype = [sort grep {$colref->{$_}->[1] eq $datatype} keys %$colref];
         croak "Table/view '$table' in schema '$schema' has no '$datatype' columns"  
             if not defined $cols_by_datatype or $#$cols_by_datatype < 0;
@@ -537,6 +546,9 @@ sub metaColumnsIndexTypeNot {
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $colref = $meta->{$schema}->{table}->{$table} || $meta->{$schema}->{view}->{$table};
+        # If the table is a view, don't bother looking for indexed columns, fall back to ordinary
+        $indextype = 'unknown'
+            if ($meta->{$schema}->{view}->{$table} and $indextype eq 'ordinary');
         my $cols = [sort grep {$colref->{$_}->[0] ne $indextype} keys %$colref];
         croak "Table '$table' in schema '$schema' has no columns which are not '$indextype'"  
             if not defined $cols or $#$cols < 0;
