@@ -606,8 +606,6 @@ child_subquery_where_item:
    existing_child_subquery_table_item . _field_char arithmetic_operator _char |
    existing_child_subquery_table_item . _field_int arithmetic_operator existing_child_subquery_table_item . _field_int |
    existing_child_subquery_table_item . _field_char arithmetic_operator existing_child_subquery_table_item . _field_char ;
-# |
-#   child_child_subquery ;
 
 child_subquery_join_list:
 	child_subquery_new_table_item  |  child_subquery_new_table_item  |
@@ -845,7 +843,7 @@ aggregate_list:
 
 # TODO: Commented due to MDEV-7820, MDEV-7821. Uncomment when fixed
 aggregate_order_by:
-	| | | ;
+	aggregate_order_by_fields ;
 #	aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | 
 #	aggregate_order_by_fields, ( aggregate_order_by_subquery ) | ( aggregate_order_by_subquery ), aggregate_order_by_fields ;
 
