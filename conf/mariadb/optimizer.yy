@@ -864,6 +864,7 @@ aggregate_separator:
 # track of what we have added.  You shouldn't need to touch these ever
 ################################################################################
 new_table_item:
+	_table AS { "alias".++$tables } | _table AS { "alias".++$tables } | _table AS { "alias".++$tables } |
 	( from_subquery ) AS { "alias".++$tables } ;
 
 from_subquery:
