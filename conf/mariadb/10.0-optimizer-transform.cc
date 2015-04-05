@@ -6,7 +6,6 @@ $combinations = [
 		--duration=400
 		--queries=100M
 		--reporters=QueryTimeout,Backtrace,ErrorLog,Deadlock
-		--validator=TransformerLight
 		--transformers=DisableOptimizations,EnableOptimizations,DisableChosenPlan,ExecuteAsDerived,DisableJoinCache,ExecuteAsPreparedThrice
 		--redefine=conf/mariadb/analyze-tables-at-start.yy
 		--mysqld=--log-output=FILE
@@ -17,20 +16,18 @@ $combinations = [
 #		--mysqld=--long_query_time=0.000001
 #		--mysqld=--log_slow_verbosity=query_plan,explain
 	[
-		'--grammar=conf/mariadb/optimizer.yy --gendata=conf/mariadb/optimizer.zz',
-		'--grammar=conf/mariadb/optimizer.yy --views=TEMPTABLE',
-		'--grammar=conf/mariadb/optimizer.yy --notnull --views=TEMPTABLE',
-		'--grammar=conf/mariadb/optimizer.yy --views=MERGE',
-		'--grammar=conf/mariadb/optimizer.yy --notnull --views=MERGE',
-		'--grammar=conf/mariadb/optimizer.yy --skip-gendata --mysqld=--init-file=$RQG_HOME/conf/mariadb/world.sql',
-		'--grammar=conf/optimizer/range_access2.yy --gendata=conf/optimizer/range_access2.zz',
-		'--grammar=conf/optimizer/range_access.yy --gendata=conf/optimizer/range_access.zz',
-		'--grammar=conf/optimizer/outer_join.yy --gendata=conf/optimizer/outer_join.zz',
-		'--grammar=conf/optimizer/optimizer_access_exp.yy --views=TEMPTABLE',
-		'--grammar=conf/optimizer/optimizer_access_exp.yy --notnull --views=TEMPTABLE',
-		'--grammar=conf/optimizer/optimizer_access_exp.yy --views=MERGE',
-		'--grammar=conf/optimizer/optimizer_access_exp.yy --notnull --views=MERGE',
-		'--grammar=conf/optimizer/optimizer_access_exp.yy --skip-gendata --mysqld=--init-file=$RQG_HOME/conf/mariadb/world.sql',
+		'--validator=TransformerNoComparator --grammar=conf/mariadb/multi_update.yy --gendata=conf/mariadb/multi_update.zz',
+		'--validator=TransformerLight --grammar=conf/mariadb/optimizer.yy --gendata=conf/mariadb/optimizer.zz',
+		'--validator=TransformerLight --grammar=conf/mariadb/optimizer.yy',
+		'--validator=TransformerLight --grammar=conf/mariadb/optimizer.yy --notnull',
+		'--validator=TransformerLight --grammar=conf/mariadb/optimizer.yy --skip-gendata --mysqld=--init-file=$RQG_HOME/conf/mariadb/world.sql',
+		'--validator=TransformerLight --grammar=conf/optimizer/range_access2.yy --gendata=conf/optimizer/range_access2.zz',
+		'--validator=TransformerLight --grammar=conf/optimizer/range_access.yy --gendata=conf/optimizer/range_access.zz',
+		'--validator=TransformerLight --grammar=conf/optimizer/outer_join.yy --gendata=conf/optimizer/outer_join.zz',
+		'--validator=TransformerLight --grammar=conf/optimizer/optimizer_access_exp.yy --gendata=conf/optimizer/range_access.zz',
+		'--validator=TransformerLight --grammar=conf/optimizer/optimizer_access_exp.yy --notnull',
+		'--validator=TransformerLight --grammar=conf/optimizer/optimizer_access_exp.yy',
+		'--validator=TransformerLight --grammar=conf/optimizer/optimizer_access_exp.yy --skip-gendata --mysqld=--init-file=$RQG_HOME/conf/mariadb/world.sql',
 	], 
 	[
 		'--engine=MyISAM',
@@ -47,5 +44,9 @@ $combinations = [
 		',
 		' --mysqld=--optimizer_selectivity_sampling_limit=100 --mysqld=--optimizer_use_condition_selectivity=5',
 		''
+	],
+	[
+		'--views=TEMPTABLE',
+		'--views=MERGE'
 	]
 ];
