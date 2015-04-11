@@ -384,8 +384,10 @@ sub metaBaseTables {
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $tables = [sort keys %{$meta->{$schema}->{table}}];
-        croak "Schema '$schema' has no tables"  
-            if not defined $tables or $#$tables < 0;
+        if (not defined $tables or $#$tables < 0) {
+            say "WARNING: Schema '$schema' has no base tables";
+            $tables = [ 'non_existing_base_table' ];
+        }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
@@ -402,8 +404,10 @@ sub metaViews {
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $tables = [sort keys %{$meta->{$schema}->{view}}];
-        croak "Schema '$schema' has no tables"  
-            if not defined $tables or $#$tables < 0;
+        if (not defined $tables or $#$tables < 0) {
+            say "WARNING: Schema '$schema' has no views";
+            $tables = [ 'non_existing_view' ];
+        }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
