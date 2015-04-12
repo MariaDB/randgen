@@ -425,8 +425,13 @@ sub metaColumns {
     
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $cols = [sort keys %{$meta->{$schema}->{table}->{$table} || $meta->{$schema}->{view}->{$table} }];
-        croak "Table '$table' in schema '$schema' has no columns"  
-            if not defined $cols or $#$cols < 0;
+        if (not defined $cols or $#$cols < 0) {
+            if ($table =~ /^non_existing/) {
+                $cols = ['non_existing_column'];
+            } else {
+                croak "Table '$table' in schema '$schema' has no columns"  
+            }
+        }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
@@ -452,8 +457,13 @@ sub metaColumnsIndexType {
         } else {
             $cols = [sort grep {$colref->{$_}->[0] eq $indextype} keys %$colref];
         };
-        croak "Table/view '$table' in schema '$schema' has no '$indextype' columns (Might be caused by use of --views option in combination with grammars containing _field_indexed)"  
-            if not defined $cols or $#$cols < 0;
+        if (not defined $cols or $#$cols < 0) {
+            if ($table =~ /^non_existing/) {
+                $cols = ['non_existing_column'];
+            } else {
+                croak "Table/view '$table' in schema '$schema' has no '$indextype' columns (Might be caused by use of --views option in combination with grammars containing _field_indexed)"  
+            }
+        }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
