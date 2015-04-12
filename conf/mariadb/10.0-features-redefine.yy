@@ -24,7 +24,7 @@ thread3:
 
 create_or_replace:
 	CREATE OR REPLACE temporary_for_create_or_replace TABLE `create_or_replace_tmp` AS SELECT * FROM _table |
-	lock_for_create_or_replace CREATE OR REPLACE temporary_for_create_or_replace TABLE `create_or_replace_tmp` LIKE _basetable[invariant] ; INSERT INTO `create_or_replace_tmp` SELECT * FROM _basetable[invariant] ; UNLOCK TABLES;
+	lock_for_create_or_replace ; CREATE OR REPLACE temporary_for_create_or_replace TABLE `create_or_replace_tmp` LIKE _basetable[invariant] ; INSERT INTO `create_or_replace_tmp` SELECT * FROM _basetable[invariant] ; UNLOCK TABLES;
 
 lock_for_create_or_replace:
 	| LOCK TABLE `create_or_replace_tmp` WRITE, _basetable[invariant] READ ; 
