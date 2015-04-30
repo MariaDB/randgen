@@ -61,8 +61,30 @@ sub monitor {
 	}
 }
 
+sub report {
+
+	my $reporter = shift;
+	my $slave_host = $reporter->serverInfo('slave_host');
+	my $slave_port = $reporter->serverInfo('slave_port');
+
+	my $slave_dsn = 'dbi:mysql:host='.$slave_host.':port='.$slave_port.':user=root';
+	my $slave_dbh = DBI->connect($slave_dsn);
+
+	if (defined $slave_dbh) {
+		$slave_dbh->do("START SLAVE");
+		if ($slave_dbh->err()) {
+			say("Query START SLAVE failed: ".$slave_dbh->errstr());
+			return STATUS_REPLICATION_FAILURE;
+		} else {
+			return STATUS_OK;
+		}
+	} else {
+		return STATUS_SERVER_CRASHED;
+	}
+}
+
 sub type {
-	return REPORTER_TYPE_PERIODIC;
+	return REPORTER_TYPE_PERIODIC | REPORTER_TYPE_SUCCESS;
 }
 
 1;
