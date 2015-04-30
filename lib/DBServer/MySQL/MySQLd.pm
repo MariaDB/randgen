@@ -365,6 +365,8 @@ sub createMysqlBase  {
           push(@$boot_options, @{$self->[MYSQLD_SERVER_OPTIONS]});
         }
         push @$boot_options, "--skip-log-bin";
+        push @$boot_options, "--loose-innodb-encrypt-tables=OFF";
+        push @$boot_options, "--loose-innodb-encrypt-log=OFF";
         my $command = $self->generateCommand($boot_options);
         my $bootlog = $self->vardir."/boot.log";
         say("Running bootstrap: $command (and feeding $boot to it)");
