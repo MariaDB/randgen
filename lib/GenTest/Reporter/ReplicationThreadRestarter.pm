@@ -25,6 +25,8 @@ use GenTest;
 use GenTest::Reporter;
 use GenTest::Constants;
 
+my $previous_verb = 'START';
+
 sub monitor {
 
 	my $reporter = shift;
@@ -37,7 +39,7 @@ sub monitor {
 	my $slave_dsn = 'dbi:mysql:host='.$slave_host.':port='.$slave_port.':user=root';
 	my $slave_dbh = DBI->connect($slave_dsn);
 
-	my $verb = $prng->arrayElement(['START','STOP']);
+	my $verb = ( $previous_verb eq 'START' ? 'STOP' : 'START' );
 	my $threads = $prng->arrayElement([
 		'',
 		'IO_THREAD',
@@ -54,6 +56,7 @@ sub monitor {
 			say("Query: $query failed: ".$slave_dbh->errstr());
 			return STATUS_REPLICATION_FAILURE;
 		} else {
+			$previous_verb = $verb;
 			return STATUS_OK;
 		}
 	} else {
