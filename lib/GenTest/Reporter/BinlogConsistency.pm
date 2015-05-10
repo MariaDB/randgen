@@ -172,7 +172,7 @@ sub dump_all {
 	# or something equally fatal.
 	$dump_result = system("sort $dumpfile > $dumpfile.sorted");
 	if ($dump_result > 0) {
-		say("ERROR: dump returned error code $dum_result. Status will be set to ENVIRONMENT_FAILURE");
+		say("ERROR: dump returned error code $dump_result. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 }
