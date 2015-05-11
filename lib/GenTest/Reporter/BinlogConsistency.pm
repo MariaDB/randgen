@@ -83,7 +83,7 @@ sub report {
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
-	$dbh->do("SET GLOBAL sql_log_bin = OFF");
+#	$dbh->do("SET GLOBAL sql_log_bin = OFF");
 	my @all_binlogs = @{$dbh->selectcol_arrayref("SHOW BINARY LOGS")};
 	my $binlogs_string = join(' ', map { "$vardir/vardir_orig/data/$_" } @all_binlogs );
 
