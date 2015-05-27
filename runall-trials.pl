@@ -56,7 +56,7 @@ $SIG{INT} = sub { $ctrl_c = 1 };
 $SIG{TERM} = sub { exit(0) };
 $SIG{CHLD} = "IGNORE" if osWindows();
 
-my ($vardir, $vardir1, $vardir2, $trials, $force, $old);
+my ($vardir, $vardir1, $vardir2, $trials, $force, $old, $exit_status, @exit_status);
 
 my $max_result = 0;
 
@@ -66,7 +66,9 @@ my $opt_result = GetOptions(
 	'vardir2=s' => \$vardir2,
 	'trials=i' => \$trials,
 	'force' => \$force,
-	'old' => \$old
+	'old' => \$old,
+	'exit_status=s' => \$exit_status,
+	'exit-status=s' => \$exit_status,
 );
 
 $trials = 1 unless defined $trials;
@@ -77,8 +79,13 @@ push @ARGV, "--vardir2=$vardir2" if defined $vardir2;
 
 my $comb_str = join(' ', @ARGV);		
 
+if ($exit_status) {
+	@exit_status = split(',', $exit_status);
+}
+
 foreach my $trial_id (1..$trials) {
 
+	say("##########################################################");
 	say("Running trial ".$trial_id."/".$trials);
 	my $runall = $old?"runall.pl":"runall-new.pl";
 
@@ -97,8 +104,13 @@ foreach my $trial_id (1..$trials) {
 	say("$command");
 
 	my $result = system($command) >> 8;
-	say("Trial $trial_id ended with exit status ".status2text($result)."($result)");
-	exit($result) if (($result != STATUS_OK) && (not defined $force));
+	my $result_name = status2text($result);
+	say("Trial $trial_id ended with exit status $result_name ($result)");
+	unless (check_for_desired_status($result_name)) {
+		say("Exit status $result_name is not on the list of desired status codes ($exit_status), it will be ignored");
+		next;
+	}
+	exit($result) if not defined $force;
 
 	$max_result = $result if $result > $max_result;
 
@@ -106,6 +118,8 @@ foreach my $trial_id (1..$trials) {
 		# Storing vardirs for the failure
 		foreach my $v ($vardir,$vardir1,$vardir2) {
 			next unless defined $v;
+			# Remove trailing slashes
+			$v =~ s/[\/\\]+$//;
 			my $from = $v;
 			my $to = $v.'_trial'.$trial_id;
 			say("Copying $from to $to");
@@ -136,6 +150,18 @@ foreach my $trial_id (1..$trials) {
 say("$0 will exit with exit status ".status2text($max_result)."($max_result)");
 exit($max_result);
 
-
+sub check_for_desired_status {
+	my $resname = shift;
+	if (!$exit_status) {
+		# No desired codes, anything except for STATUS_OIK will do
+		return $resname ne 'STATUS_OK';
+	}
+	else {
+		foreach (@exit_status) {
+			return 1 if $resname eq $_;
+		}
+		return 0;
+	}
+}
 
 
