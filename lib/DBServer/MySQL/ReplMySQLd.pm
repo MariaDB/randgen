@@ -254,9 +254,11 @@ sub waitForSlaveSync {
 }
 
 sub stopServer {
-    my ($self) = @_;
+    my ($self, $status) = @_;
 
-    $self->waitForSlaveSync();
+    if ($status == DBSTATUS_OK) {
+        $self->waitForSlaveSync();
+    }
     if ($self->slave->dbh) {
         $self->slave->dbh->do("STOP SLAVE");
     }

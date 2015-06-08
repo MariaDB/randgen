@@ -356,7 +356,7 @@ if ($rpl_mode ne '') {
     my $status = $rplsrv->startServer();
     
     if ($status > DBSTATUS_OK) {
-        stopServers();
+        stopServers($status);
         if (osWindows()) {
             say(system("dir ".unix2winPath($rplsrv->master->datadir)));
             say(system("dir ".unix2winPath($rplsrv->slave->datadir)));
@@ -662,12 +662,13 @@ if (($gentest_result == STATUS_OK) && ($rpl_mode || (defined $basedirs[1]) || $g
 }
 
 sub stopServers {
+    my $status = shift;
     if ($skip_shutdown) {
         say("Server shutdown is skipped upon request");
         return;
     }
     if ($rpl_mode ne '') {
-        $rplsrv->stopServer();
+        $rplsrv->stopServer($status);
     } else {
         foreach my $srv (@server) {
             if ($srv) {
