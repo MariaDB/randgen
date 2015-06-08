@@ -369,7 +369,7 @@ sub next {
 	while ($sentence =~ s/\.\s/\./s) {};
 	while ($sentence =~ s/\s([\.,])/$1/s) {};
 	while ($sentence =~ s/\s\s/ /s) {};
-	while ($sentence =~ s/(AVG|BIT_AND|BIT_OR|BIT_XOR|COUNT|GROUP_CONCAT|MAX|MIN|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE) /$1/s) {};
+	while ($sentence =~ s/(\W)(AVG|BIT_AND|BIT_OR|BIT_XOR|COUNT|GROUP_CONCAT|MAX|MIN|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE) /$1$2/s) {};
 
 	$generator->[GENERATOR_PARTICIPATING_RULES] = [ keys %rule_counters ];
 
