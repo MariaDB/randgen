@@ -37,7 +37,6 @@ $combinations = [
 		'--engine=MyISAM',
 		'--engine=Aria',
 		'',
-		'--engine=TokuDB --mysqld=--plugin-load=ha_tokudb.so --mysqld=--loose-tokudb',
 		'--engine=InnoDB --mysqld=--ignore-builtin-innodb --mysqld=--plugin-load=ha_innodb.so'
 	],
 # slave-skip-errors: 
@@ -47,7 +46,6 @@ $combinations = [
 # 1505: MySQL:64041 (Partition management on a not partitioned table) 
 	[
 		'--rpl_mode=row --mysqld=--slave-skip-errors=1049,1305,1539,1505',
-		'--rpl_mode=statement --mysqld=--slave-skip-errors=1054,1317,1049,1305,1539,1505',
 		'--rpl_mode=mixed --mysqld=--slave-skip-errors=1049,1305,1539,1505,1317',
 	],
 	['
