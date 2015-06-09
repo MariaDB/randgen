@@ -9,7 +9,7 @@ $combinations = [
 		--queries=100M
 		--reporters=QueryTimeout,Backtrace,ErrorLog,Deadlock
 		--validators=TransformerNoComparator
-		--transformers=ExecuteAsDeleteReturning,ExecuteAsPreparedTwice,DisableOptimizations,EnableOptimizations,OrderBy
+		--transformers=ExecuteAsPreparedTwice,DisableOptimizations,EnableOptimizations,OrderBy
 		--redefine=conf/mariadb/general-workarounds.yy
 		--mysqld=--log_output=FILE
 		--mysqld=--log_bin_trust_function_creators=1
