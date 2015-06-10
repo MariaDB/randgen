@@ -398,7 +398,7 @@ if ($rpl_mode ne '') {
 	my $status = $rplsrv->startServer();
     
 	if ($status > DBSTATUS_OK) {
-		stopServers();
+		stopServers($status);
 
 		say("ERROR: Could not start Galera cluster");
 		exit_test(STATUS_ENVIRONMENT_FAILURE);
@@ -435,7 +435,7 @@ if ($rpl_mode ne '') {
         my $status = $server[$server_id]->startServer;
         
         if ($status > DBSTATUS_OK) {
-            stopServers();
+            stopServers($status);
             if (osWindows()) {
                 say(system("dir ".unix2winPath($server[$server_id]->datadir)));
             } else {
@@ -667,6 +667,7 @@ sub stopServers {
         say("Server shutdown is skipped upon request");
         return;
     }
+    say("Stopping server(s)...");
     if ($rpl_mode ne '') {
         $rplsrv->stopServer($status);
     } else {
@@ -758,7 +759,7 @@ EOF
 
 sub exit_test {
 	my $status = shift;
-    stopServers();
+    stopServers($status);
 	say("[$$] $0 will exit with exit status ".status2text($status). " ($status)");
 	safe_exit($status);
 }
