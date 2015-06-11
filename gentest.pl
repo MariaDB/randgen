@@ -95,7 +95,9 @@ my $opt_result = GetOptions($options,
                             'logfile=s',
                             'logconf=s',
                             'report-tt-logdir=s',
-                            'querytimeout=i');
+                            'querytimeout=i',
+                            'annotate-rules',
+                            'annotate_rules');
 backwardCompatability($options);
 my $config = GenTest::Properties->new(
     options => $options,
@@ -148,7 +150,8 @@ my $config = GenTest::Properties->new(
               'debug_server',
               'querytimeout',
               'servers',
-              'multi-master'],
+              'multi-master',
+              'annotate-rules'],
     help => \&help);
 
 help() if !$opt_result || $config->help;
@@ -221,6 +224,8 @@ $0 - Testing via random query generation. Options:
         --freeze_time: Freeze time for each query so that CURRENT_TIMESTAMP gives the same result for all transformers/validators
         --strict_fields: Disable all AI applied to columns defined in \$fields in the gendata file. Allows for very specific column definitions
         --short_column_names: use short column names in gendata (c<number>)
+        --annotate-rules: Add to the resulting query a comment with the rule name before expanding each rule. 
+                          Useful for debugging query generation, otherwise makes the query look ugly and barely readable.
         --help      : This help message
         --debug     : Provide debug output
 EOF

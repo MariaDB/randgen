@@ -571,7 +571,8 @@ sub initGenerator {
         grammar => $self->grammar(),
         varchar_length => $self->config->property('varchar-length'),
         mask => $self->config->mask,
-        mask_level => $self->config->property('mask-level')
+        mask_level => $self->config->property('mask-level'),
+        annotate_rules => $self->config->property('annotate-rules')
     );
 
     if (not defined $self->generator()) {

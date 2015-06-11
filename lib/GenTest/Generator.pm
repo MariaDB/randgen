@@ -39,6 +39,7 @@ require Exporter;
 	GENERATOR_MASKED_GRAMMAR
 	GENERATOR_GLOBAL_FRAME
 	GENERATOR_PARTICIPATING_RULES
+	GENERATOR_ANNOTATE_RULES
 );
 
 use strict;
@@ -57,6 +58,7 @@ use constant GENERATOR_VARCHAR_LENGTH	=> 10;
 use constant GENERATOR_MASKED_GRAMMAR	=> 11;
 use constant GENERATOR_GLOBAL_FRAME	=> 12;
 use constant GENERATOR_PARTICIPATING_RULES => 13;       # Stores the list of rules used in the last generated query
+use constant GENERATOR_ANNOTATE_RULES => 14; 
 
 sub new {
 	my $class = shift;
@@ -69,7 +71,8 @@ sub new {
 		'thread_id'		=> GENERATOR_THREAD_ID,
 		'mask'			=> GENERATOR_MASK,
 		'mask_level'		=> GENERATOR_MASK_LEVEL,
-		'varchar_length'	=> GENERATOR_VARCHAR_LENGTH		
+		'varchar_length'	=> GENERATOR_VARCHAR_LENGTH,
+		'annotate_rules'	=> GENERATOR_ANNOTATE_RULES
 	}, @_);
 
 	return $generator;

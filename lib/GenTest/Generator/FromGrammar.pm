@@ -155,6 +155,9 @@ sub next {
 					]});
 
 				}
+				if ($generator->[GENERATOR_ANNOTATE_RULES]) {
+					@expansion = ("/* rule: $item */ ", @expansion);
+				}
 			} else {
 				if (
 					(substr($item, 0, 1) eq '{') &&

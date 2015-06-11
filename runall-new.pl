@@ -73,7 +73,7 @@ my ($gendata, @basedirs, @mysqld_options, @vardirs, $rpl_mode,
     $report_xml_tt, $report_xml_tt_type, $report_xml_tt_dest,
     $notnull, $logfile, $logconf, $report_tt_logdir, $querytimeout, $no_mask,
     $short_column_names, $strict_fields, $freeze_time, $wait_debugger, @debug_server,
-    $skip_gendata, $skip_shutdown, $galera, $use_gtid, $genconfig);
+    $skip_gendata, $skip_shutdown, $galera, $use_gtid, $genconfig, $annotate_rules);
 
 my $gendata=''; ## default simple gendata
 
@@ -150,7 +150,9 @@ my $opt_result = GetOptions(
 	'skip-shutdown' => \$skip_shutdown,
 	'galera=s' => \$galera,
 	'use-gtid=s' => \$use_gtid,
-	'use_gtid=s' => \$use_gtid
+	'use_gtid=s' => \$use_gtid,
+	'annotate_rules' => \$annotate_rules,
+	'annotate-rules' => \$annotate_rules
     );
 
 if (defined $logfile && defined $logger) {
@@ -525,7 +527,9 @@ my $gentestProps = GenTest::Properties->new(
               'debug_server',
               'report-tt-logdir',
               'servers',
-              'multi-master']
+              'multi-master',
+              'annotate-rules'
+]
     );
 
 my @gentest_options;
@@ -610,6 +614,8 @@ $gentestProps->property('multi-master', 1) if (defined $galera and scalar(@dsns)
 # Pass debug server if used.
 $gentestProps->debug_server(\@debug_server) if @debug_server;
 $gentestProps->servers(\@server) if @server;
+$gentestProps->property('annotate-rules',$annotate_rules) if defined $annotate_rules;
+
 
 # Push the number of "worker" threads into the environment.
 # lib/GenTest/Generator/FromGrammar.pm will generate a corresponding grammar element.
@@ -746,6 +752,8 @@ $0 - Run a complete random query generation test, including server start with re
     --short_column_names: use short column names in gendata (c<number>)
     --strict_fields: Disable all AI applied to columns defined in \$fields in the gendata file. Allows for very specific column definitions
     --freeze_time: Freeze time for each query so that CURRENT_TIMESTAMP gives the same result for all transformers/validators
+    --annotate-rules: Add to the resulting query a comment with the rule name before expanding each rule. 
+                      Useful for debugging query generation, otherwise makes the query look ugly and barely readable.
     --wait-for-debugger: Pause and wait for keypress after server startup to allow attaching a debugger to the server process.
     --help      : This help message
 
