@@ -395,11 +395,12 @@ correlated_subquery_where_list:
 
 correlated_subquery_where_item:
 	existing_subquery_table_item . _field_int arithmetic_operator existing_table_item . _field_int |
-	existing_subquery_table_item . _field_char arithmetic_operator existing_table_item . _field_char |
+	existing_subquery_table_item . _field_char arithmetic_operator existing_table_item . _field_char ;
 # TODO: commented due to MDEV-7823, uncomment when done
 #	existing_table_item . _field_int IN ( child_subquery ) |
-	existing_table_item . _field_int IN ( simple_child_subquery ) |
-	existing_subquery_table_item . _field_int IN ( correlated_with_top_child_subquery ) ;
+# TODO: commented due to MDEV-7691 family, uncomment when done
+#	existing_table_item . _field_int IN ( simple_child_subquery ) |
+#	existing_subquery_table_item . _field_int IN ( correlated_with_top_child_subquery ) ;
 
 correlated_with_top_child_subquery:
 	{ $child_subquery_idx += 1 ; $c_sq_ifields = 0; $c_sq_cfields = 0; $child_subquery_tables=0 ; ""} int_correlated_with_top_child_subquery ;
