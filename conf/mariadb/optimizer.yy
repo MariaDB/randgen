@@ -406,7 +406,8 @@ correlated_subquery_where_item:
 	existing_subquery_table_item . _field_char arithmetic_operator existing_table_item . _field_char |
 # TODO: commented due to MDEV-7823, uncomment when done
 #	existing_table_item . _field_int IN ( child_subquery ) |
-	existing_table_item . _field_int IN ( simple_child_subquery ) |
+# TODO: commented due to MDEV-7445 / MDEV-7565 / MDEV-7846
+#	existing_table_item . _field_int IN ( simple_child_subquery ) |
 	existing_subquery_table_item . _field_int IN ( correlated_with_top_child_subquery ) ;
 
 correlated_with_top_child_subquery:
@@ -841,7 +842,7 @@ aggregate_list:
 	{ $count_gc_fields++; '' } table_one_two . _field , aggregate_list | 
 	{ $count_gc_fields++; '' } IF( table_one_two . _field , table_one_two . _field , table_one_two . _field ), aggregate_list;
 
-# TODO: Commented due to MDEV-7820, MDEV-7821. Uncomment when fixed
+# TODO: Commented due to MDEV-7821. Uncomment when fixed
 aggregate_order_by:
 	aggregate_order_by_fields ;
 #	aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | 
