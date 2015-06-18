@@ -738,10 +738,10 @@ create_is_copy:
 	CREATE TABLE IF NOT EXISTS test . { 't1_is_columns_'.abs($$) }  AS columns_part  WHERE 1 = 0 |
 	CREATE TABLE IF NOT EXISTS test . { 't1_is_routines_'.abs($$) } AS routines_part WHERE 1 = 0 ;
 fill_is_copy:
-	TRUNCATE test . { 't1_is_schemata_'.abs($$) } ; safety_check { return $m10 } INSERT INTO test . { 't1_is_schemata_'.abs($$) } schemata_part WHERE SCHEMA_NAME    LIKE 'test%' ORDER BY 1     { return $m11 } ; safety_check COMMIT |
-	TRUNCATE test . { 't1_is_tables_'.abs($$) }   ; safety_check { return $m10 } INSERT INTO test . { 't1_is_tables_'.abs($$) }   tables_part   WHERE TABLE_SCHEMA   LIKE 'test%' ORDER BY 1,2   { return $m11 } ; safety_check COMMIT |
-	TRUNCATE test . { 't1_is_columns_'.abs($$) }  ; safety_check { return $m10 } INSERT INTO test . { 't1_is_columns_'.abs($$) }  columns_part  WHERE TABLE_SCHEMA   LIKE 'test%' ORDER BY 1,2,3 { return $m11 } ; safety_check COMMIT |
-	TRUNCATE test . { 't1_is_routines_'.abs($$) } ; safety_check { return $m10 } INSERT INTO test . { 't1_is_routines_'.abs($$) } routines_part WHERE ROUTINE_SCHEMA LIKE 'test%' ORDER BY 1,2   { return $m11 } ; safety_check COMMIT ;
+	DELETE FROM test . { 't1_is_schemata_'.abs($$) } ; safety_check { return $m10 } INSERT INTO test . { 't1_is_schemata_'.abs($$) } schemata_part WHERE SCHEMA_NAME    LIKE 'test%' ORDER BY 1     { return $m11 } ; safety_check COMMIT |
+	DELETE FROM test . { 't1_is_tables_'.abs($$) }   ; safety_check { return $m10 } INSERT INTO test . { 't1_is_tables_'.abs($$) }   tables_part   WHERE TABLE_SCHEMA   LIKE 'test%' ORDER BY 1,2   { return $m11 } ; safety_check COMMIT |
+	DELETE FROM test . { 't1_is_columns_'.abs($$) }  ; safety_check { return $m10 } INSERT INTO test . { 't1_is_columns_'.abs($$) }  columns_part  WHERE TABLE_SCHEMA   LIKE 'test%' ORDER BY 1,2,3 { return $m11 } ; safety_check COMMIT |
+	DELETE FROM test . { 't1_is_routines_'.abs($$) } ; safety_check { return $m10 } INSERT INTO test . { 't1_is_routines_'.abs($$) } routines_part WHERE ROUTINE_SCHEMA LIKE 'test%' ORDER BY 1,2   { return $m11 } ; safety_check COMMIT ;
 schemata_part:
 	SELECT SCHEMA_NAME,DEFAULT_CHARACTER_SET_NAME,DEFAULT_COLLATION_NAME FROM information_schema.schemata ;
 tables_part:
