@@ -307,6 +307,12 @@ sub populate_table
 		}
 		chop $stmt; chop $stmt; # Remove the last ,(
 		$executor->execute("$stmt");
+		if ($row_count >= $rows) {
+			say("Inserted ~$row_count rows into $table_name");
+		} 
+		elsif ($row_count%10000 == 0) {
+			say("Inserted ~$row_count rows...")
+		}
 	}
 }
 
