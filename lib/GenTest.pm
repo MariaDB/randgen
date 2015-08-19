@@ -106,6 +106,11 @@ sub new {
 
 sub say {
 	my $text = shift;
+
+	# Suppress warnings "Wide character in print". 
+	# We already know that our UTFs in some grammars are ugly.
+	no warnings 'layer';
+
     defaultLogging();
     if ($text =~ m{[\r\n]}sio) {
         foreach my $line (split (m{[\r\n]}, $text)) {
