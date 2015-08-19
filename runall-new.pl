@@ -62,6 +62,7 @@ use DBI;
 use Cwd;
 
 my $database = 'test';
+my $user = 'rqg';
 my @dsns;
 
 my ($gendata, @basedirs, @mysqld_options, @vardirs, $rpl_mode,
@@ -101,6 +102,7 @@ my $opt_result = GetOptions(
         'debug-server2' => \$debug_server[1],
 	#'vardir=s@' => \@vardirs,
 	'rpl_mode=s' => \$rpl_mode,
+	'rpl-mode=s' => \$rpl_mode,
 	'engine=s' => \$engine,
 	'grammar=s' => \$grammar_file,
 	'skip-recursive-rules' > \$skip_recursive_rules,
@@ -352,7 +354,8 @@ if ($rpl_mode ne '') {
                                                general_log => 1,
                                                start_dirty => $start_dirty,
                                                use_gtid => $use_gtid,
-                                               config => $cnf_array_ref
+                                               config => $cnf_array_ref,
+                                               user => $user
 	);
     
     my $status = $rplsrv->startServer();
@@ -369,7 +372,7 @@ if ($rpl_mode ne '') {
         croak("Could not start replicating server pair");
     }
     
-    $dsns[0] = $rplsrv->master->dsn($database);
+    $dsns[0] = $rplsrv->master->dsn($database,$user);
     $dsns[1] = undef; ## passed to gentest. No dsn for slave!
     $server[0] = $rplsrv->master;
     $server[1] = $rplsrv->slave;
@@ -410,7 +413,7 @@ if ($rpl_mode ne '') {
 	my $i = 0;
 	while ($galera_topology =~ s/^(\w)//) {
 		if (lc($1) eq 'm') {
-			$dsns[$i] = $rplsrv->nodes->[$i]->dsn($database);
+			$dsns[$i] = $rplsrv->nodes->[$i]->dsn($database,$user);
 		}
 		$server[$i] = $rplsrv->nodes->[$i];
 		$i++;
@@ -432,7 +435,8 @@ if ($rpl_mode ne '') {
                                                            valgrind_options => \@valgrind_options,
                                                            server_options => $mysqld_options[$server_id+1],
                                                            general_log => 1,
-                                                           config => $cnf_array_ref);
+                                                           config => $cnf_array_ref,
+                                                           user => $user);
         
         my $status = $server[$server_id]->startServer;
         
@@ -450,7 +454,7 @@ if ($rpl_mode ne '') {
             ($server_id == 0) ||
             ($rpl_mode eq '') 
             ) {
-            $dsns[$server_id] = $server[$server_id]->dsn($database);
+            $dsns[$server_id] = $server[$server_id]->dsn($database,$user);
         }
     
         if ((defined $dsns[$server_id]) && (defined $engine)) {

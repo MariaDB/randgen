@@ -48,6 +48,7 @@ use constant REPLMYSQLD_DEBUG_SERVER => 13;
 use constant REPLMYSQLD_USE_GTID => 14;
 use constant REPLMYSQLD_SLAVE_BASEDIR => 15;
 use constant REPLMYSQLD_CONFIG_CONTENTS => 16;
+use constant REPLMYSQLD_USER => 17;
 
 sub new {
     my $class = shift;
@@ -68,7 +69,8 @@ sub new {
                                    'valgrind' => REPLMYSQLD_VALGRIND,
                                    'valgrind_options' => REPLMYSQLD_VALGRIND_OPTIONS,
                                    'use_gtid' => REPLMYSQLD_USE_GTID,
-                                   'config' => REPLMYSQLD_CONFIG_CONTENTS},@_);
+                                   'config' => REPLMYSQLD_CONFIG_CONTENTS,
+                                   'user' => REPLMYSQLD_USER},@_);
 
     if (defined $self->[REPLMYSQLD_USE_GTID] 
         and lc($self->[REPLMYSQLD_USE_GTID] ne 'no')
@@ -140,7 +142,8 @@ sub new {
                                      start_dirty => $self->[REPLMYSQLD_START_DIRTY],
                                      valgrind => $self->[REPLMYSQLD_VALGRIND],
                                      valgrind_options => $self->[REPLMYSQLD_VALGRIND_OPTIONS],
-                                     config => $self->[REPLMYSQLD_CONFIG_CONTENTS]);
+                                     config => $self->[REPLMYSQLD_CONFIG_CONTENTS],
+                                     user => $self->[REPLMYSQLD_USER]);
         
         if (not defined $self->master) {
             croak("Could not create master");
@@ -167,7 +170,8 @@ sub new {
                                      start_dirty => $self->[REPLMYSQLD_START_DIRTY],
                                      valgrind => $self->[REPLMYSQLD_VALGRIND],
                                      valgrind_options => $self->[REPLMYSQLD_VALGRIND_OPTIONS],
-                                     config => $self->[REPLMYSQLD_CONFIG_CONTENTS]);
+                                     config => $self->[REPLMYSQLD_CONFIG_CONTENTS],
+                                     user => $self->[REPLMYSQLD_USER]);
         
         if (not defined $self->slave) {
             $self->master->stopServer;

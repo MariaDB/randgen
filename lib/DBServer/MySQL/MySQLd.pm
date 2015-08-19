@@ -61,6 +61,7 @@ use constant MYSQLD_VALGRIND_SUPPRESSION_FILE => 24;
 use constant MYSQLD_TMPDIR => 25;
 use constant MYSQLD_CONFIG_CONTENTS => 26;
 use constant MYSQLD_CONFIG_FILE => 27;
+use constant MYSQLD_USER => 28;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -83,7 +84,8 @@ sub new {
                                    'general_log' => MYSQLD_GENERAL_LOG,
                                    'valgrind' => MYSQLD_VALGRIND,
                                    'valgrind_options' => MYSQLD_VALGRIND_OPTIONS,
-                                   'config' => MYSQLD_CONFIG_CONTENTS},@_);
+                                   'config' => MYSQLD_CONFIG_CONTENTS,
+                                   'user' => MYSQLD_USER},@_);
     
     croak "No valgrind support on windows" if osWindows() and $self->[MYSQLD_VALGRIND];
     
@@ -239,6 +241,10 @@ sub port {
     }
 }
 
+sub user {
+    return $_[0]->[MYSQLD_USER];
+}
+
 sub serverpid {
     return $_[0]->[MYSQLD_SERVERPID];
 }
@@ -337,6 +343,16 @@ sub createMysqlBase  {
     }
     ## Don't want empty users
     print BOOT "DELETE FROM user WHERE `User` = '';\n";
+    if ($self->user ne 'root') {
+        print BOOT "CREATE TABLE tmp_user AS SELECT * FROM user WHERE `User`='root' AND `Host`='localhost';\n";
+        print BOOT "UPDATE tmp_user SET `User` = '". $self->user ."';\n";
+        print BOOT "INSERT INTO user SELECT * FROM tmp_user;\n";
+        print BOOT "DROP TABLE tmp_user;\n";
+        print BOOT "CREATE TABLE tmp_proxies AS SELECT * FROM proxies_priv WHERE `User`='root' AND `Host`='localhost';\n";
+        print BOOT "UPDATE tmp_proxies SET `User` = '". $self->user . "';\n";
+        print BOOT "INSERT INTO proxies_priv SELECT * FROM tmp_proxies;\n";
+        print BOOT "DROP TABLE tmp_proxies;\n";
+    }
     close BOOT;
 
     if ($self->[MYSQLD_CONFIG_CONTENTS] and ref $self->[MYSQLD_CONFIG_CONTENTS] eq 'ARRAY' and scalar(@{$self->[MYSQLD_CONFIG_CONTENTS]})) {
@@ -650,7 +666,9 @@ sub dsn {
     $database = "test" if not defined MYSQLD_DEFAULT_DATABASE;
     return "dbi:mysql:host=127.0.0.1:port=".
         $self->[MYSQLD_PORT].
-        ":user=root:database=".$database;
+        ":user=".
+        $self->[MYSQLD_USER].
+        ":database=".$database;
 }
 
 sub dbh {

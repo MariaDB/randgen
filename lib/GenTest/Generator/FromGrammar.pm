@@ -99,7 +99,11 @@ sub participatingRules {
 
 sub next {
 	my ($generator, $executors) = @_;
-    
+
+	# Suppress complaints "returns its argument for UTF-16 surrogate".
+	# We already know that our UTFs in some grammars are ugly.
+	no warnings 'surrogate';
+
 	my $grammar = $generator->[GENERATOR_GRAMMAR];
 	my $grammar_rules = $grammar->rules();
 
@@ -213,6 +217,8 @@ sub next {
 						$item = $generator->threadId();
 					} elsif ($item eq '_connection_id') {
 						$item = $executors->[0]->connectionId();
+					} elsif ($item eq '_current_user') {
+						$item = $executors->[0]->currentUser();
 					} elsif ($item eq '_thread_count') {
 						$item = $ENV{RQG_THREADS};
 					} elsif (($item eq '_database') || ($item eq '_db') || ($item eq '_schema')) {
@@ -376,7 +382,8 @@ sub next {
 
 	$generator->[GENERATOR_PARTICIPATING_RULES] = [ keys %rule_counters ];
 
-	# If this is a BEGIN ... END block then send it to server without splitting.
+	# If this is a BEGIN ... END block or alike, then send it to server without splitting.
+	# If the semicolon is inside a string literal, ignore it. 
 	# Otherwise, split it into individual statements so that the error and the result set from each statement
 	# can be examined
 
@@ -431,7 +438,45 @@ sub next {
 	) {
 		return [ $sentence ];
 	} elsif (index($sentence, ';') > -1) {
-		my @sentences = split (';', $sentence);
+
+		my @sentences;
+
+		# We want to split the sentence into separate statements, but we do not want 
+		# to split literals if a semicolon happens to be inside. 
+		# I am sure it could be done much smarter; feel free to improve it.
+		# For now, we do the following:
+		# - store and mask all literals (inside single or double quote marks);
+		# - replace remaining semicolons with something expectedly unique;
+		# - restore the literals;
+		# - split the sentence, not by the semicolon, but by the unique substitution
+		# Do not forget that there can also be escaped quote marks, which are not literal boundaries
+
+		if (index($sentence, "'") > -1 or index($sentence, '"') > -1) {
+			# Store literals in single quotes
+			my @singles = ( $sentence =~ /(?<!\\)(\'.*?(?<!\\)\')/g );
+			# Mask these literals 
+			$sentence =~ s/(?<!\\)\'.*?(?<!\\)\'/######SINGLES######/g;
+			# Store remaining literals in double quotes
+			my @doubles = ( $sentence =~ /(?<!\\)(\".*?(?<!\\)\")/g );
+			# Mask these literals 
+			$sentence =~ s/(?<!\\)\".*?(?<!\\)\"/######DOUBLES######/g;
+			# Replace remaining semicolons
+			$sentence =~ s/;/######SEMICOLON######/g;
+
+			# Restore literals in single quotes
+			while ( $sentence =~ s/######SINGLES######/$singles[0]/ ) {
+				shift @singles;
+			}
+			# Restore literals in double quotes
+			while ( $sentence =~ s/######DOUBLES######/$doubles[0]/ ) {
+				shift @doubles;
+			}
+			# split the sentence
+			@sentences = split('######SEMICOLON######', $sentence);
+		}
+		else {
+			@sentences = split (';', $sentence);
+		}
 		return \@sentences;
 	} else {
 		return [ $sentence ];

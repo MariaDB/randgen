@@ -66,6 +66,7 @@ use constant EXECUTOR_FLAGS			=> 18;
 use constant EXECUTOR_HOST          => 19;
 use constant EXECUTOR_PORT          => 20;
 use constant EXECUTOR_END_TIME	    => 21;
+use constant EXECUTOR_CURRENT_USER	    => 22;
 
 use constant FETCH_METHOD_AUTO		=> 0;
 use constant FETCH_METHOD_STORE_RESULT	=> 1;
@@ -153,6 +154,14 @@ sub port {
 
 sub setPort {
 	$_[0]->[EXECUTOR_PORT] = $_[1];
+}
+
+sub currentUser {
+	return $_[0]->[EXECUTOR_CURRENT_USER];
+}
+
+sub setCurrentUser {
+	$_[0]->[EXECUTOR_CURRENT_USER] = $_[1];
 }
 
 sub setDbh {
