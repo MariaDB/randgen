@@ -348,6 +348,7 @@ sub reportResults {
 sub stopChild {
     my ($self, $status) = @_;
 
+    say("GenTest: child is being stopped with status " . status2text($status));
     croak "calling stopChild() without a \$status" if not defined $status;
 
     if (osWindows()) {
@@ -417,24 +418,27 @@ sub workerProcess {
         validators => $self->config->validators,
         properties =>  $self->config,
         filters => $self->queryFilters(),
-	end_time => $self->[GT_TEST_END]
+        end_time => $self->[GT_TEST_END],
+        restart_timeout => $self->config->property('restart-timeout')
     );
 
     if (not defined $mixer) {
-        say("ERROR: Failed to create a Mixer, status will be set to ENVIRONMENT_FAILURE");
+        say("GenTest: ERROR: Failed to create a Mixer, status will be set to ENVIRONMENT_FAILURE");
         $self->stopChild(STATUS_ENVIRONMENT_FAILURE);
     }
         
     my $worker_result = 0;
-        
+
     foreach my $i (1..$self->config->queries) {
         my $query_result = $mixer->next();
+        $worker_result = $query_result if $query_result > $worker_result && $query_result > STATUS_TEST_FAILURE;
+
         if ($query_result > STATUS_CRITICAL_FAILURE) {
+				say("GenTest: Server crash or critical failure (". status2text($query_result) . ") reported, the child will be stopped");
             undef $mixer;	# so that destructors are called
             $self->stopChild($query_result);
         }
 
-        $worker_result = $query_result if $query_result > $worker_result && $query_result > STATUS_TEST_FAILURE;
         last if $query_result == STATUS_EOF;
         last if $ctrl_c == 1;
         last if time() > $self->[GT_TEST_END];
@@ -450,10 +454,10 @@ sub workerProcess {
     undef $self->[GT_QUERY_FILTERS];
         
     if ($worker_result > 0) {
-        say("Child worker process completed with error code $worker_result.");
+        say("GenTest: Child worker process completed with error code $worker_result.");
         $self->stopChild($worker_result);
     } else {
-        say("Child worker process completed successfully.");
+        say("GenTest: Child worker process completed successfully.");
         $self->stopChild(STATUS_OK);
     }
 }

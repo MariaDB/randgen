@@ -34,6 +34,7 @@ use constant MIXER_VALIDATORS	=> 2;
 use constant MIXER_FILTERS	=> 3;
 use constant MIXER_PROPERTIES	=> 4;
 use constant MIXER_END_TIME	=> 5;
+use constant MIXER_RESTART_TIMEOUT => 6;
 
 my %rule_status;
 
@@ -48,7 +49,8 @@ sub new {
 		'validators'	=> MIXER_VALIDATORS,
 		'properties'	=> MIXER_PROPERTIES,
 		'filters'	=> MIXER_FILTERS,
-		'end_time'	=> MIXER_END_TIME
+		'end_time'	=> MIXER_END_TIME,
+		'restart_timeout' => MIXER_RESTART_TIMEOUT
 	}, @_);
 
 	foreach my $executor (@{$mixer->executors()}) {
@@ -70,7 +72,7 @@ sub new {
 		my $validator = $validators[$i];
 		if (ref($validator) eq '') {
 			$validator = "GenTest::Validator::".$validator;
-			say("Loading Validator $validator.");
+			say("Mixer: Loading Validator $validator.");
 			eval "use $validator" or print $@;
 			$validators[$i] = $validator->new();
             
@@ -89,7 +91,7 @@ sub new {
 		foreach my $prerequisite (@$prerequisites) {
 			next if exists $validators{$prerequisite};
 			$prerequisite = "GenTest::Validator::".$prerequisite;
-#			say("Loading Prerequisite $prerequisite, required by $validator.");
+#			say("Mixer: Loading Prerequisite $prerequisite, required by $validator.");
 			eval "use $prerequisite" or print $@;
 			push @prerequisites, $prerequisite->new();
 		}
@@ -124,10 +126,10 @@ sub next {
 
 	my $queries = $mixer->generator()->next($executors);
 	if (not defined $queries) {
-		say("Internal grammar problem. Terminating.");
+		say("Mixer: Internal grammar problem. Terminating.");
 		return STATUS_ENVIRONMENT_FAILURE;
 	} elsif ($queries->[0] eq '') {
-#		say("Your grammar generated an empty query.");
+#		say("Mixer: Your grammar generated an empty query.");
 #		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
@@ -137,7 +139,7 @@ sub next {
 		next if $query =~ m{^\s*$}o;
 
 		if ($mixer->end_time() && (time() > $mixer->end_time())) {
-			say("We have already exceeded time specified by --duration=x; exiting now.");
+			say("Mixer: We have already exceeded time specified by --duration=x; exiting now.");
 			last;
 		}
 
@@ -150,17 +152,30 @@ sub next {
 		}
 
 		my @execution_results;
+		my $restart_timeout = $mixer->restart_timeout();
+
 		foreach my $executor (@$executors) {
 			my $execution_result = $executor->execute($query);
+			
+			# If the server has crashed but we expect server restarts during the test, we will wait and retry
+			if (($execution_result->status() == STATUS_SERVER_CRASHED or $execution_result->status() == STATUS_SERVER_KILLED) and $restart_timeout) {
+            say("Mixer: Server has gone away, waiting for $restart_timeout more seconds to see if it gets back") 
+					if $restart_timeout == $mixer->restart_timeout() or $restart_timeout == 1;
+            sleep 1;
+            $restart_timeout--;
+            redo;
+			}
+
 			$max_status = $execution_result->status() if $execution_result->status() > $max_status;
 			push @execution_results, $execution_result;
-			
+
 			# If one server has crashed, do not send the query to the second one in order to preserve consistency
-			if ($execution_result->status() == STATUS_SERVER_CRASHED) {
-				say("Server crash reported at dsn ".$executor->dsn());
-				last;
+			if ($execution_result->status() > STATUS_CRITICAL_FAILURE) {
+				say("Mixer: Server crash or critical failure (". status2text($execution_result->status()) . ") reported at dsn ".$executor->dsn());
+				last query;
 			}
 			
+			$restart_timeout = $mixer->restart_timeout();
 			next query if $execution_result->status() == STATUS_SKIP;
 		}
 		
@@ -187,7 +202,6 @@ sub next {
 			}
 		}
 	}
-
 	return $max_status;
 }
 
@@ -199,7 +213,7 @@ sub DESTROY {
 	}
 
 	if ($#rule_failures > -1) {
-		say("The following rules produced no STATUS_OK queries: ".join(', ', @rule_failures));
+		say("Mixer: The following rules produced no STATUS_OK queries: ".join(', ', @rule_failures));
 	}
 }
 
@@ -229,6 +243,10 @@ sub setValidators {
 
 sub end_time {
 	return ($_[0]->[MIXER_END_TIME] > 0) ? $_[0]->[MIXER_END_TIME] : undef;
+}
+
+sub restart_timeout {
+	return ( $_[0]->[MIXER_RESTART_TIMEOUT] || 0 );
 }
 
 1;

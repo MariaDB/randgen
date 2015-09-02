@@ -74,7 +74,8 @@ my ($gendata, @basedirs, @mysqld_options, @vardirs, $rpl_mode,
     $report_xml_tt, $report_xml_tt_type, $report_xml_tt_dest,
     $notnull, $logfile, $logconf, $report_tt_logdir, $querytimeout, $no_mask,
     $short_column_names, $strict_fields, $freeze_time, $wait_debugger, @debug_server,
-    $skip_gendata, $skip_shutdown, $galera, $use_gtid, $genconfig, $annotate_rules);
+    $skip_gendata, $skip_shutdown, $galera, $use_gtid, $genconfig, $annotate_rules,
+    $restart_timeout);
 
 my $gendata=''; ## default simple gendata
 
@@ -132,6 +133,8 @@ my $opt_result = GetOptions(
 	'report-xml-tt'	=> \$report_xml_tt,
 	'report-xml-tt-type=s' => \$report_xml_tt_type,
 	'report-xml-tt-dest=s' => \$report_xml_tt_dest,
+	'restart_timeout=i' => \$restart_timeout,
+	'restart-timeout=i' => \$restart_timeout,
 	'testname=s'		=> \$testname,
 	'valgrind!'	=> \$valgrind,
 	'valgrind_options=s@'	=> \@valgrind_options,
@@ -532,7 +535,8 @@ my $gentestProps = GenTest::Properties->new(
               'report-tt-logdir',
               'servers',
               'multi-master',
-              'annotate-rules'
+              'annotate-rules',
+              'restart-timeout'
 ]
     );
 
@@ -610,6 +614,7 @@ $gentestProps->property('report-tt-logdir',$report_tt_logdir) if defined $report
 $gentestProps->property('report-xml-tt', 1) if defined $report_xml_tt;
 $gentestProps->property('report-xml-tt-type', $report_xml_tt_type) if defined $report_xml_tt_type;
 $gentestProps->property('report-xml-tt-dest', $report_xml_tt_dest) if defined $report_xml_tt_dest;
+$gentestProps->property('restart-timeout', $restart_timeout) if defined $restart_timeout;
 # In case of multi-master topology (e.g. Galera with multiple "masters"),
 # we don't want to compare results after each query.
 # Instead, we want to run the flow independently and only compare dumps at the end.
@@ -725,8 +730,6 @@ $0 - Run a complete random query generation test, including server start with re
                   (default: empty, no additional clause in CHANGE MASTER command);
     --galera    : Galera topology, presented as a string of 'm' or 's' (master or slave).
                   The test flow will be executed on each "master". "Slaves" will only be updated through Galera replication
-    --vardir1   : Optional.
-    --vardir2   : Optional. 
     --engine    : Table engine to use when creating tables with gendata (default no ENGINE in CREATE TABLE);
     --threads   : Number of threads to spawn (default $default_threads);
     --queries   : Number of queries to execute per thread (default $default_queries);
@@ -759,6 +762,7 @@ $0 - Run a complete random query generation test, including server start with re
     --annotate-rules: Add to the resulting query a comment with the rule name before expanding each rule. 
                       Useful for debugging query generation, otherwise makes the query look ugly and barely readable.
     --wait-for-debugger: Pause and wait for keypress after server startup to allow attaching a debugger to the server process.
+    --restart-timeout: If the server has gone away, do not fail immediately, but wait to see if it restarts (it might be a part of the test)
     --help      : This help message
 
     If you specify --basedir1 and --basedir2 or --vardir1 and --vardir2, two servers will be started and the results from the queries

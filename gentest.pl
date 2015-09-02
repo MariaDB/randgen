@@ -151,7 +151,8 @@ my $config = GenTest::Properties->new(
               'querytimeout',
               'servers',
               'multi-master',
-              'annotate-rules'],
+              'annotate-rules',
+              'restart-timeout'],
     help => \&help);
 
 help() if !$opt_result || $config->help;

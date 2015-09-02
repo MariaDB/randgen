@@ -801,8 +801,10 @@ sub execute {
 	$sth->finish();
 
 	if ($sth->{mysql_warning_count} > 0) {
-		my $warnings = $dbh->selectall_arrayref("SHOW WARNINGS");
-		$result->setWarnings($warnings);
+		eval {
+		    my $warnings = $dbh->selectall_arrayref("SHOW WARNINGS");
+		    $result->setWarnings($warnings);
+		}
 	}
 
 	if ( (rqg_debug()) && (! ($execution_flags & EXECUTOR_FLAG_SILENT)) ) {
