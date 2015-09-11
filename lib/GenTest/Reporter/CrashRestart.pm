@@ -1,4 +1,4 @@
-# Copyright (C) 2015 MariaDB Corporation Ab
+# Copyright (C) 2013 Monty Program Ab
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -16,14 +16,14 @@
 
 
 #################
-# Goal: Check server behavior on normal restart.
+# Goal: Check server behavior on restart after a crash.
 # 
-# The reporter shuts down the server gracefully and immediately restarts it.
+# The reporter crashes the server and immediately restarts it.
 # The test (runall-new) must be run with --restart-timeout=N to wait
 # till the server is up again.
 #################
 
-package GenTest::Reporter::Restart;
+package GenTest::Reporter::CrashRestart;
 
 require Exporter;
 @ISA = qw(GenTest::Reporter);
@@ -55,32 +55,39 @@ sub monitor {
 	my $dbh = DBI->connect($reporter->dsn());
 
 	unless ($dbh) {
-		say("Restart reporter: ERROR: Could not connect to the server before shutdown. Status will be set to STATUS_SERVER_CRASHED");
+		say("CrashRestart reporter: ERROR: Could not connect to the server before shutdown. Status will be set to STATUS_SERVER_CRASHED");
 		return STATUS_SERVER_CRASHED;
 	}
 
-	say("Restart reporter: Shutting down the server ...");
-	$status = $server->stopServer();
-	sleep(5);
+	my $pid = $reporter->serverInfo('pid');
+	if (!defined $pid) {
+		say("CrashRestart reporter: ERROR: Server PID is not defined, cannot crash the server");
+		return STATUS_ENVIRONMENT_FAILURE;
+	} else {
+		say("CrashRestart reporter: Sending SIGKILL to server with pid $pid...");
+		kill(9, $pid);
+	}
+
+	sleep(1);
 
 	my $dbh = DBI->connect($reporter->dsn(),'','',{PrintError=>0}) ;
 	if ($dbh) {
-		say("Restart reporter: ERROR: Still can connect to the server, shutdown failed. Status will be set to ENVIRONMENT_FAILURE");
+		say("CrashRestart reporter: ERROR: Still can connect to the server, shutdown failed. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
-
-	say("Restart reporter: Restarting the server ...");
+	system ("rm /home/elenst/analyze/data/test/*TMM");
+	say("CrashRestart reporter: Restarting the server ...");
 	my $status = $server->startServer();
 
 	if ($status > STATUS_OK) {
-		say("Restart reporter: ERROR: Server startup finished with an error");
+		say("CrashRestart reporter: ERROR: Server startup finished with an error");
 		return $status;
 	}
 
 	$dbh = DBI->connect($reporter->dsn());
 
 	unless ($dbh) {
-		say("Restart reporter: ERROR: Could not connect to the restarted server. Status will be set to ENVIRONMENT_FAILURE");
+		say("CrashRestart reporter: ERROR: Could not connect to the restarted server. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
@@ -93,3 +100,4 @@ sub type {
 
 
 1;
+
