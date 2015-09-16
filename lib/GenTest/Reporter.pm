@@ -106,15 +106,7 @@ sub new {
 
 	$dbh->disconnect();
 
-	my $pid_file = $reporter->serverVariable('pid_file');
-
-	open (PF, $pid_file);
-	read (PF, my $pid, -s $pid_file);
-	close (PF);
-
-	$pid =~ s{[\r\n]}{}sio;
-
-	$reporter->[REPORTER_SERVER_INFO]->{pid} = $pid;
+	$reporter->updatePid();
 
     my $binary;
     my $bindir;
@@ -189,6 +181,18 @@ sub new {
 	$reporter->[REPORTER_CUSTOM_ATTRIBUTES]={};
 
 	return $reporter;
+}
+
+sub updatePid {
+	my $pid_file = $_[0]->serverVariable('pid_file');
+
+	open (PF, $pid_file);
+	read (PF, my $pid, -s $pid_file);
+	close (PF);
+
+	$pid =~ s{[\r\n]}{}sio;
+
+	$_[0]->[REPORTER_SERVER_INFO]->{pid} = $pid;
 }
 
 sub monitor {
