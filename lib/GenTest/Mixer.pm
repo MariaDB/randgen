@@ -63,22 +63,26 @@ sub new {
 	        $executor->cacheMetaData();
 	}
 
-	my @validators = @{$mixer->validators()};
+	my @validators;
 	my %validators;
 
 	# If a Validator was specified by name, load the class and create an object.
+	# none is a special word to use when no validators are needed 
+	# (and we don't want any to be added automatically which happens when we don't provide any)
 
-	foreach my $i (0..$#validators) {
-		my $validator = $validators[$i];
+	my @v = @{$mixer->validators()};
+	foreach my $i (0..$#v) {
+		next if $v[$i] =~ /^none$/i;
+		my $validator = $v[$i];
 		if (ref($validator) eq '') {
 			$validator = "GenTest::Validator::".$validator;
 			say("Mixer: Loading Validator $validator.");
 			eval "use $validator" or print $@;
-			$validators[$i] = $validator->new();
+			push @validators, $validator->new();
             
             $validators[$i]->configure($mixer->properties);
 		}
-		$validators{ref($validators[$i])}++;
+		$validators{ref($validators[$#validators])}++;
 	}
 
 	# Query every object for its prerequisies. If one is not loaded, load it and place it
@@ -158,7 +162,11 @@ sub next {
 			my $execution_result = $executor->execute($query);
 			
 			# If the server has crashed but we expect server restarts during the test, we will wait and retry
-			if (($execution_result->status() == STATUS_SERVER_CRASHED or $execution_result->status() == STATUS_SERVER_KILLED) and $restart_timeout) {
+			if (($execution_result->status() == STATUS_SERVER_CRASHED 
+					or $execution_result->status() == STATUS_SERVER_KILLED 
+					or $execution_result->status() == STATUS_REPLICATION_FAILURE
+				 ) and $restart_timeout) 
+			{
             say("Mixer: Server has gone away, waiting for $restart_timeout more seconds to see if it gets back") 
 					if $restart_timeout == $mixer->restart_timeout() or $restart_timeout == 1;
             sleep 1;
