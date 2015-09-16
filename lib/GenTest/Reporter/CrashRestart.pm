@@ -68,14 +68,18 @@ sub monitor {
 		kill(9, $pid);
 	}
 
-	sleep(1);
-
-	my $dbh = DBI->connect($reporter->dsn(),'','',{PrintError=>0}) ;
+	my $dbh;
+	foreach (1..5) {
+		$dbh = DBI->connect($reporter->dsn(),'','',{PrintError=>0}) ;
+		last if not $dbh;
+		sleep(1);
+	}
 	if ($dbh) {
-		say("CrashRestart reporter: ERROR: Still can connect to the server, shutdown failed. Status will be set to ENVIRONMENT_FAILURE");
+		say("CrashRestart reporter: ERROR: Still can connect to the server, crash did not work. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
-	system ("rm /home/elenst/analyze/data/test/*TMM");
+
+
 	say("CrashRestart reporter: Restarting the server ...");
 	my $status = $server->startServer();
 
@@ -90,6 +94,8 @@ sub monitor {
 		say("CrashRestart reporter: ERROR: Could not connect to the restarted server. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
+
+	$reporter->updatePid();
 
 	return STATUS_OK;
 }
