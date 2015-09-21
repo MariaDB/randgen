@@ -50,6 +50,10 @@ use constant REPORTER_TEST_DURATION     => 7;
 use constant REPORTER_PROPERTIES        => 8;
 use constant REPORTER_SERVER_DEBUG      => 9;
 use constant REPORTER_CUSTOM_ATTRIBUTES => 10;
+# TEST_START is when the RQG test started running; 
+# REPORTER_START_TIME is when the data has been generated, and reporter was started
+# (more or less when the test flow started)
+use constant REPORTER_START_TIME        => 11; 
 
 use constant REPORTER_TYPE_PERIODIC     => 2;
 use constant REPORTER_TYPE_DEADLOCK     => 4;
@@ -179,6 +183,7 @@ sub new {
 
 	# general properties area for sub-classes
 	$reporter->[REPORTER_CUSTOM_ATTRIBUTES]={};
+	$reporter->[REPORTER_START_TIME]= time();
 
 	return $reporter;
 }
@@ -221,6 +226,10 @@ sub serverPlugins {
 
 sub testStart {
 	return $_[0]->[REPORTER_TEST_START];
+}
+
+sub reporterStartTime {
+	return $_[0]->[REPORTER_START_TIME];
 }
 
 sub testEnd {

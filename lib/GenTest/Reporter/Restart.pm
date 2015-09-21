@@ -44,6 +44,9 @@ sub monitor {
 	$first_reporter = $reporter if not defined $first_reporter;
 	return STATUS_OK if $reporter ne $first_reporter;
 
+	# Do not restart in the first 20 seconds after the test flow started
+	return STATUS_OK if (time() < $reporter->reporterStartTime() + 20);
+
 	my $server = $reporter->properties->servers->[0];
 	my $status;
 	my $vardir = $server->vardir();
