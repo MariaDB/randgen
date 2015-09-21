@@ -205,7 +205,9 @@ sub new {
         say("Using existing data for MySQL " .$self->version ." at ".$self->datadir);
     } else {
         say("Creating MySQL " . $self->version . " database at ".$self->datadir);
-        $self->createMysqlBase;
+        if ($self->createMysqlBase != DBSTATUS_OK) {
+            croak("FATAL ERROR: Bootstrap failed, cannot proceed!");
+        }
     }
 
     return $self;
@@ -388,6 +390,7 @@ sub createMysqlBase  {
         say("Running bootstrap: $command (and feeding $boot to it)");
         system("cat \"$boot\" | $command > \"$bootlog\"  2>&1 ");
     }
+    return $?;
 }
 
 sub _reportError {
