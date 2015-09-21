@@ -324,11 +324,11 @@ sub getCollationMetaData {
 ########### Metadata routines
 
 sub cacheMetaData {
-    my ($self) = @_;
+    my ($self, $redo) = @_;
     
     my $meta = {};
 
-    if (not exists $global_schema_cache{$self->dsn()}) {
+    if ($redo or not exists $global_schema_cache{$self->dsn()}) {
         say ("Caching schema metadata for ".$self->dsn());
         foreach my $row (@{$self->getSchemaMetaData()}) {
             my ($schema, $table, $type, $col, $key, $datatype) = @$row;
@@ -370,10 +370,15 @@ sub metaTables {
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if not defined $schema;
-
     my $cachekey = "TAB-$schema";
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+
+        unless (scalar(keys %{$meta->{$schema}->{table}}) + scalar(keys %{$meta->{$schema}->{view}})) {
+            # Give it another chance, maybe we created data after starting the test
+            $self->cacheMetaData('redo');
+				$meta = $self->[EXECUTOR_SCHEMA_METADATA]; 
+        }
         my $tables = [sort ( keys %{$meta->{$schema}->{table}}, keys %{$meta->{$schema}->{view}} )];
         croak "Schema '$schema' has no tables"  
             if not defined $tables or $#$tables < 0;
