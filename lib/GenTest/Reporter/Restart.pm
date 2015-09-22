@@ -64,13 +64,13 @@ sub monitor {
 
 	say("Restart reporter: Shutting down the server ...");
 	$status = $server->stopServer();
+	my $pid = $reporter->serverInfo('pid');
 
-	my $dbh;
-	foreach (1..5) {
-		$dbh = DBI->connect($reporter->dsn(),'','',{PrintError=>0}) ;
-		last if not $dbh;
-		sleep(1);
+	foreach (1..30) {
+		last if not kill(0, $pid);
+		sleep 1;
 	}
+	$dbh = DBI->connect($reporter->dsn(),'','',{PrintError=>0}) ;
 	if ($dbh) {
 		say("Restart reporter: ERROR: Still can connect to the server, shutdown failed. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
