@@ -833,11 +833,10 @@ aggregate_list:
 	{ $count_gc_fields++; '' } table_one_two . _field , aggregate_list | 
 	{ $count_gc_fields++; '' } IF( table_one_two . _field , table_one_two . _field , table_one_two . _field ), aggregate_list;
 
-# TODO: Commented due to MDEV-7820, MDEV-7821. Uncomment when fixed
 aggregate_order_by:
 	aggregate_order_by_fields ;
-#	aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | 
-#	aggregate_order_by_fields, ( aggregate_order_by_subquery ) | ( aggregate_order_by_subquery ), aggregate_order_by_fields ;
+	aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | 
+	aggregate_order_by_fields, ( aggregate_order_by_subquery ) | ( aggregate_order_by_subquery ), aggregate_order_by_fields ;
 
 aggregate_order_by_subquery:
 	ORDER BY { $subquery_idx += 1 ; $subquery_tables=0 ; $sq_ifields = 0; $sq_cfields = 0; ""} subquery_type ;

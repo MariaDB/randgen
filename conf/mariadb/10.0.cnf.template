@@ -230,7 +230,7 @@ performance-schema-max-stage-classes                       [ 0 .. 1500 ]
 performance-schema-max-statement-classes                   [ -1 .. 2000 ]
 performance-schema-max-table-handles                       [ -1 .. 5000 ]
 performance-schema-max-table-instances                     [ -1 .. 5000 ]
-performance-schema-max-thread-classes                      [ 5 .. 500 ]         # minimum set to 5 due to MDEV-5885
+performance-schema-max-thread-classes                      [ 0 .. 500 ]
 performance-schema-max-thread-instances                    [ -1 .. 2000 ]
 performance-schema-session-connect-attrs-size              [ -1 .. 5000 ]
 performance-schema-setup-actors-size                       [ 0 .. 1000 ]
@@ -523,7 +523,7 @@ innodb_trx_rseg_n_slots_debug                              [ 0 , 1 ]
 innodb_undo_logs                                           [ 0 .. 128 ]
 # innodb_undo_tablespaces                                    [ 0 .. 126 ]    # should be in bootstrap as well
 #### innodb_use_atomic_writes                                   [ OFF , ON ]
-#### innodb_use_fallocate                                       [ OFF , ON ]    # MDEV-5878
+innodb_use_fallocate                                       [ OFF , ON ]
 innodb_use_global_flush_log_at_trx_commit                  [ ON , OFF ]
 innodb_use_native_aio                                      [ ON , OFF ]
 innodb_use_stacktrace                                      [ OFF , ON ]
