@@ -74,6 +74,7 @@ sub new {
 # Additionally we will set wsrep_sst_method=rsync as it makes the configuration simpler.
 # It can be overridden from the command line if the user chooses so.
 	my @common_options = (
+		"--wsrep_on=ON",
 		"--wsrep_sst_method=rsync", 
 		"--innodb_autoinc_lock_mode=2", 
 		"--default-storage-engine=InnoDB", 
