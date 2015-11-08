@@ -166,9 +166,11 @@ sub new {
     }
    
     ## Use valgrind suppression file available in mysql-test path. 
-    $self->[MYSQLD_VALGRIND_SUPPRESSION_FILE] = $self->_find(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir],
+    if ($self->[MYSQLD_VALGRIND]) {
+        $self->[MYSQLD_VALGRIND_SUPPRESSION_FILE] = $self->_find(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir],
                                                              osWindows()?["share/mysql-test","mysql-test"]:["share/mysql-test","mysql-test"],
-                                                             "valgrind.supp");
+                                                             "valgrind.supp")
+    };
     
     foreach my $file ("mysql_system_tables.sql", 
                       "mysql_performance_tables.sql",
