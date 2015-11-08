@@ -322,30 +322,73 @@ sub addServerOptions {
 sub createMysqlBase  {
     my ($self) = @_;
     
-    ## 1. Clean old db if any
+    ## Clean old db if any
     if (-d $self->vardir) {
         rmtree($self->vardir);
     }
 
-    ## 2. Create database directory structure
+    ## Create database directory structure
     mkpath($self->vardir);
     mkpath($self->tmpdir);
     mkpath($self->datadir);
-    mkpath($self->datadir."/mysql");
-    mkpath($self->datadir."/test");
-    
-    ## 3. Create boot file
+
+    ## Prepare config file if needed
+    if ($self->[MYSQLD_CONFIG_CONTENTS] and ref $self->[MYSQLD_CONFIG_CONTENTS] eq 'ARRAY' and scalar(@{$self->[MYSQLD_CONFIG_CONTENTS]})) {
+        $self->[MYSQLD_CONFIG_FILE] = $self->vardir."/my.cnf";
+        open(CONFIG,">$self->[MYSQLD_CONFIG_FILE]") || die "Could not open $self->[MYSQLD_CONFIG_FILE] for writing: $!\n";
+        print CONFIG @{$self->[MYSQLD_CONFIG_CONTENTS]};
+        close CONFIG;
+    }
+
+    my $defaults = ($self->[MYSQLD_CONFIG_FILE] ? "--defaults-file=$self->[MYSQLD_CONFIG_FILE]" : "--no-defaults");
+
+    ## Create boot file
+
     my $boot = $self->vardir."/boot.sql";
     open BOOT,">$boot";
-    
-    ## Set curren database
-    print BOOT  "use mysql;\n";
-    foreach my $b (@{$self->[MYSQLD_BOOT_SQL]}) {
-        open B,$b;
-        while (<B>) { print BOOT $_;}
-        close B;
+    print BOOT "CREATE DATABASE test;\n";
+
+    ## Boot database
+
+    my $boot_options = [$defaults];
+    push @$boot_options, @{$self->[MYSQLD_STDOPTS]};
+
+    if ($self->_olderThan(5,6,3)) {
+        push(@$boot_options,"--loose-skip-innodb --default-storage-engine=MyISAM") ;
+    } else {
+        push(@$boot_options, @{$self->[MYSQLD_SERVER_OPTIONS]});
     }
-    ## Don't want empty users
+    push @$boot_options, "--skip-log-bin";
+    push @$boot_options, "--loose-innodb-encrypt-tables=OFF";
+    push @$boot_options, "--loose-innodb-encrypt-log=OFF";
+
+    my $command;
+
+    if ($self->_olderThan(5,7,5)) {
+
+       # Add the whole init db logic to the bootstrap script
+       print BOOT "CREATE DATABASE mysql;\n";
+       print BOOT "USE mysql;\n";
+       foreach my $b (@{$self->[MYSQLD_BOOT_SQL]}) {
+            open B,$b;
+            while (<B>) { print BOOT $_;}
+            close B;
+        }
+
+        push(@$boot_options,"--bootstrap") ;
+        $command = $self->generateCommand($boot_options);
+        if (osWindows()) {
+            $command = "$command < \"$boot\"";
+        } else {
+            $command = "cat \"$boot\" | $command";
+        }
+    } else {
+        push @$boot_options, "--initialize-insecure", "--init-file=$boot";
+        $command = $self->generateCommand($boot_options);
+    }
+
+    ## Add last strokes to the boot/init file: don't want empty users, but want the test user instead
+    print BOOT "USE mysql;\n";
     print BOOT "DELETE FROM user WHERE `User` = '';\n";
     if ($self->user ne 'root') {
         print BOOT "CREATE TABLE tmp_user AS SELECT * FROM user WHERE `User`='root' AND `Host`='localhost';\n";
@@ -359,39 +402,8 @@ sub createMysqlBase  {
     }
     close BOOT;
 
-    if ($self->[MYSQLD_CONFIG_CONTENTS] and ref $self->[MYSQLD_CONFIG_CONTENTS] eq 'ARRAY' and scalar(@{$self->[MYSQLD_CONFIG_CONTENTS]})) {
-		$self->[MYSQLD_CONFIG_FILE] = $self->vardir."/my.cnf";
-		open(CONFIG,">$self->[MYSQLD_CONFIG_FILE]") || die "Could not open $self->[MYSQLD_CONFIG_FILE] for writing: $!\n";
-		print CONFIG @{$self->[MYSQLD_CONFIG_CONTENTS]};
-		close CONFIG;
-	}
-
-	my $defaults = ($self->[MYSQLD_CONFIG_FILE] ? "--defaults-file=$self->[MYSQLD_CONFIG_FILE]" : "--no-defaults");
-
-    ## 4. Boot database
-    if (osWindows()) {
-        my $command = $self->generateCommand([$defaults,"--bootstrap"],
-                                             $self->[MYSQLD_STDOPTS]);
-    
-        my $bootlog = $self->vardir."/boot.log";
-        say("Running bootstrap: $command (and feeding $boot to it)");
-        system("$command < \"$boot\" > \"$bootlog\"");
-    } else {
-        my $boot_options = [$defaults,"--bootstrap"];
-        push @$boot_options, @{$self->[MYSQLD_STDOPTS]};
-        if ($self->_olderThan(5,6,3)) {
-          push(@$boot_options,"--loose-skip-innodb --default-storage-engine=MyISAM") ;
-        } else {
-          push(@$boot_options, @{$self->[MYSQLD_SERVER_OPTIONS]});
-        }
-        push @$boot_options, "--skip-log-bin";
-        push @$boot_options, "--loose-innodb-encrypt-tables=OFF";
-        push @$boot_options, "--loose-innodb-encrypt-log=OFF";
-        my $command = $self->generateCommand($boot_options);
-        my $bootlog = $self->vardir."/boot.log";
-        say("Running bootstrap: $command (and feeding $boot to it)");
-        system("cat \"$boot\" | $command > \"$bootlog\"  2>&1 ");
-    }
+    say("Running bootstrap: $command (and feeding $boot to it)");
+    system("$command > \"".$self->vardir."/boot.log\" 2>&1");
     return $?;
 }
 
@@ -734,25 +746,14 @@ sub version {
     my($self) = @_;
 
     if (not defined $self->[MYSQLD_VERSION]) {
-        my $ver;
-        if (osWindows) {
-            my $conf = $self->_find([$self->basedir], 
-                                    ['scripts',
-                                     'bin',
-                                     'sbin'], 
-                                    'mysql_config.pl');
-            ## This will not work if there is no perl installation,
-            ## but without perl, RQG won't work either :-)
-            $ver = `perl $conf --version`;
-        } else {
-            my $conf = $self->_find([$self->basedir], 
-                                    ['scripts',
-                                     'bin',
-                                     'sbin'], 
-                                    'mysql_config');
-            
-            $ver = `sh "$conf" --version`;
-        }
+        my $conf = $self->_find([$self->basedir], 
+                                ['scripts',
+                                 'bin',
+                                 'sbin'], 
+                                'mysql_config.pl');
+        ## This will not work if there is no perl installation,
+        ## but without perl, RQG won't work either :-)
+        my $ver = `perl $conf --version`;
         chop($ver);
         $self->[MYSQLD_VERSION] = $ver;
     }
@@ -762,7 +763,7 @@ sub version {
 sub printInfo {
     my($self) = @_;
 
-    say("MySQL Version:". $self->version);
+    say("MySQL Version: ". $self->version);
     say("Binary: ". $self->binary);
     say("Type: ". $self->serverType($self->binary));
     say("Datadir: ". $self->datadir);
@@ -804,10 +805,18 @@ sub _logOptions {
     }
 }
 
+# For _olderThan and _newerThan we will match according to InnoDB versions
+# 10.0 to 5.6
+# 10.1 to 5.6
+# 10.2 to ? 
+
 sub _olderThan {
     my ($self,$b1,$b2,$b3) = @_;
     
     my ($v1, $v2, $v3) = $self->versionNumbers;
+
+    if ($v1 == 10 and $b1 == 5 and ($v2 == 0 or $v2 == 1)) { $v1 = 5; $v2 = 6 }
+    elsif ($v1 == 5 and $b1 == 10 and ($b2 == 0 or $b2 == 1)) { $b1 = 5; $b2 = 6 }
 
     my $b = $b1*1000 + $b2 * 100 + $b3;
     my $v = $v1*1000 + $v2 * 100 + $v3;
@@ -819,6 +828,9 @@ sub _newerThan {
     my ($self,$b1,$b2,$b3) = @_;
 
     my ($v1, $v2, $v3) = $self->versionNumbers;
+
+    if ($v1 == 10 and $b1 == 5 and ($v2 == 0 or $v2 == 1)) { $v1 = 5; $v2 = 6 }
+    elsif ($v1 == 5 and $b1 == 10 and ($b2 == 0 or $b2 == 1)) { $b1 = 5; $b2 = 6 }
 
     my $b = $b1*1000 + $b2 * 100 + $b3;
     my $v = $v1*1000 + $v2 * 100 + $v3;
