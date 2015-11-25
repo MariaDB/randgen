@@ -234,6 +234,8 @@ sub populate_table
 
 	my $row_count = 0;
 
+	$executor->execute("START TRANSACTION");
+
 	VALUES:
 	while ($row_count < $rows) 
 	{
@@ -314,6 +316,8 @@ sub populate_table
 			say("Inserted ~$row_count rows...")
 		}
 	}
+
+	$executor->execute("COMMIT");
 }
 
 1;
