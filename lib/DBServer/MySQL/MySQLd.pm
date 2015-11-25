@@ -750,7 +750,7 @@ sub version {
                                 ['scripts',
                                  'bin',
                                  'sbin'], 
-                                'mysql_config.pl');
+                                'mysql_config.pl', 'mysql_config');
         ## This will not work if there is no perl installation,
         ## but without perl, RQG won't work either :-)
         my $ver = `perl $conf --version`;
