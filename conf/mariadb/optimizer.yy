@@ -406,8 +406,7 @@ correlated_subquery_where_item:
 	existing_subquery_table_item . _field_char arithmetic_operator existing_table_item . _field_char |
 # TODO: commented due to MDEV-7823, uncomment when done
 #	existing_table_item . _field_int IN ( child_subquery ) |
-# TODO: commented due to MDEV-7445 / MDEV-7565 / MDEV-7846
-#	existing_table_item . _field_int IN ( simple_child_subquery ) |
+	existing_table_item . _field_int IN ( simple_child_subquery ) |
 	existing_subquery_table_item . _field_int IN ( correlated_with_top_child_subquery ) ;
 
 correlated_with_top_child_subquery:
