@@ -39,7 +39,7 @@ sub transform {
 	# like "/* 1 */" after the original LIMIT, hence the regex part 
 	# (\/\*\s*[a-zA-Z0-9 ]+\s*\*\/)*.
 	my $orig_query_no_limit = $orig_query;
-	$orig_query_no_limit =~ s{LIMIT\s+\d+\s+OFFSET\s+\d+\s*(\/\*\s*[a-zA-Z0-9 ]+\s*\*\/)*\s*$}{}sio;
+	$orig_query_no_limit =~ s{LIMIT\s+\d+\s+OFFSET\s+\d+\s*(\/\*\s*[\w ]+\s*\*\/)*\s*$}{}sio;
 	$orig_query_no_limit =~ s{LIMIT\s+\d+\s*(\/\*\s*[a-zA-Z0-9 ]+\s*\*\/)*\s*$}{}sio;
 
 	return [
