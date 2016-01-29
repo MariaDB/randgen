@@ -39,12 +39,12 @@ sub transform {
 			and $original_query !~ m{^\s*(SELECT|UPDATE|DELETE|CREATE\s+OR\s+REPLACE\s+?TABLE.+SELECT|INSERT.+SELECT)}sio )
 		or ( ( ! $skip_result_validations and ( $original_query !~ m{^\s*(SELECT)}sio or $original_query =~ m{\sINTO\s}sio ) ) ) ;
 
-	return [
+	return [ [
 		'SET @switch_saved = @@optimizer_switch;',
 		'SET SESSION optimizer_switch = REPLACE( @@optimizer_switch, "=on", "=off" );',
 		'SET SESSION optimizer_switch = "in_to_exists=on";',
-		"$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ;",
-		'SET SESSION optimizer_switch=@switch_saved'
+		"$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" ],
+		[ '/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=@switch_saved' ]
 	];
 }
 

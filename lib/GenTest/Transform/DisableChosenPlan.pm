@@ -108,9 +108,9 @@ sub transform {
 			push @transformed_queries, [
 				'SET @switch_saved = @@'.$switch_name.';',
 				"SET SESSION $optimizer_switch;",
-				"$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ;",
-				'SET SESSION '.$switch_name.'=@switch_saved'
+				"$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ;"
 			];
+			push @transformed_queries, [ '/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@switch_saved' ];
 		}
 	}
 

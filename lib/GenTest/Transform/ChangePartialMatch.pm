@@ -70,7 +70,8 @@ sub transform {
 			"SET SESSION optimizer_switch='semijoin=off,in_to_exists=off,materialization=on,partial_match_rowid_merge=off,partial_match_table_scan=off';",
 			"$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ;",
 			"SET SESSION optimizer_switch='$original_optimizer_switch'"
-		]
+		],
+        [ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch='$original_optimizer_switch'" ]
 	];
 }
 

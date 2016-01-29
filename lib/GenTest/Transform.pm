@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013 Monty Program Ab.
+# Copyright (c) 2016 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -106,6 +107,15 @@ sub transformExecuteValidate {
         $transform_blocks = [ [ $transformer_output ] ];
     }
 
+    # See a comment to sub cleanup()
+    my $cleanup_block = pop @$transform_blocks;
+    if ($cleanup_block->[0] =~ /TRANSFORM_CLEANUP/) {
+        $cleanup_block->[0] = '/* '.ref($transformer).' */ ' . $cleanup_block->[0];
+    } else {
+        push @$transform_blocks, $cleanup_block;
+        $cleanup_block = undef;
+    } 
+
     foreach my $transform_block (@$transform_blocks) {
         my @transformed_queries = @$transform_block;
         my @transformed_results;
@@ -163,6 +173,7 @@ sub transformExecuteValidate {
                     }
                     # Then move on...
                     # We "cheat" by returning STATUS_OK, as the validator would otherwise try to access the result.
+                    cleanup($executor, $cleanup_block);
                     return STATUS_OK;
                 }
                 say("---------- TRANSFORM ISSUE ----------");
@@ -172,6 +183,7 @@ sub transformExecuteValidate {
                 say("Original query is: $original_query;");
                 say("ERROR: Possible syntax or semantic error caused by code in transformer ".ref($transformer).
                     ". Not handling this particular transform any further: Please fix the transformer code so as to handle the query shown above correctly.");
+                cleanup($executor, $cleanup_block);
                 return STATUS_WONT_HANDLE;
             } elsif ($skip_result_validations) {
                 $transform_outcome = STATUS_OK unless defined $transform_outcome;
@@ -179,6 +191,7 @@ sub transformExecuteValidate {
                 say("---------- TRANSFORM ISSUE ----------");
                 say("Transform ".$transformer->name()." failed with an error: ".$part_result->err().'  '.$part_result->errstr());
                 say("Transformed query was: ".$transformed_query_part);
+                cleanup($executor, $cleanup_block);
                 return $part_result->status();
             } elsif (defined $part_result->data()) {
                 my $part_outcome = $transformer->validate($original_result, $part_result);
@@ -194,11 +207,13 @@ sub transformExecuteValidate {
             say("ERROR: Transform ".ref($transformer)." produced no query which could be validated ($transform_outcome). Status will be set to ENVIRONMENT_FAILURE");
             say("The following queries were produced");
             print Dumper \@transformed_queries;
+            cleanup($executor, $cleanup_block);
             return STATUS_ENVIRONMENT_FAILURE;
         }
 
         $transformer->[TRANSFORMER_QUERIES_TRANSFORMED]++;
 
+        cleanup($executor, $cleanup_block);
         if ($transform_outcome != STATUS_OK) {
             return ($transform_outcome, \@transformed_queries, \@transformed_results);
         }
@@ -209,8 +224,24 @@ sub transformExecuteValidate {
         }
     }
     
+    cleanup($executor, $cleanup_block);
     return STATUS_OK;
 
+}
+
+# Some transformations can end prematurely and leave the environment in a dirty state, 
+# e.g. with some variables changed. 
+# If a transformation changes the environment, it must have a block marked as TRANSFORM_CLEANUP 
+# (as a comment before the first statement in the block). If such a block exists, 
+# it will be executed even if the transformation is going to quit. 
+sub cleanup {
+    my ($executor, $cleanup_block) = @_;
+    if ($cleanup_block) {
+        my @cleanup_queries = @$cleanup_block;
+        foreach my $cleanup_query_part (@cleanup_queries) {
+            $executor->execute($cleanup_query_part);
+        }
+    }
 }
 
 sub validate {

@@ -72,12 +72,12 @@ sub transform {
 		next if not exists $available_switches->{$optimizer_switch};
 		if ($original_explain_string =~ m{$explain_fragment}si) {
 			my ($switch_name) = $optimizer_switch =~ m{^(.*?)=}sgio;
-			push @transformed_queries, (
+			push @transformed_queries, [
 				'SET @switch_saved = @@'.$switch_name.';',
 				"SET SESSION $optimizer_switch;",
-				"$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ;",
-				'SET SESSION '.$switch_name.'=@switch_saved'
-			);
+				"$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"
+			];
+			push @transformed_queries, ['/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@switch_saved'];
 			last;
 		}
 	}
