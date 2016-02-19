@@ -815,7 +815,7 @@ sub _olderThan {
     
     my ($v1, $v2, $v3) = $self->versionNumbers;
 
-    if ($v1 == 10 and $b1 == 5 and ($v2 == 0 or $v2 == 1 or $v == 2)) { $v1 = 5; $v2 = 6 }
+    if ($v1 == 10 and $b1 == 5 and ($v2 == 0 or $v2 == 1 or $v2 == 2)) { $v1 = 5; $v2 = 6 }
     elsif ($v1 == 5 and $b1 == 10 and ($b2 == 0 or $b2 == 1)) { $b1 = 5; $b2 = 6 }
 
     my $b = $b1*1000 + $b2 * 100 + $b3;
