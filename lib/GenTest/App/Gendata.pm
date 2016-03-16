@@ -40,6 +40,7 @@ use constant FIELD_SQL			=> 7;
 use constant FIELD_INDEX_SQL		=> 8;
 use constant FIELD_NAME			=> 9;
 use constant FIELD_DEFAULT => 10;
+use constant FIELD_NAMES    => 11;
 
 use constant TABLE_ROW		=> 0;
 use constant TABLE_ENGINE	=> 1;
@@ -220,6 +221,7 @@ sub run {
     
     $table_perms[TABLE_NAMES] = $tables->{names} || [ ];
     
+    $field_perms[FIELD_NAMES] = $fields->{names} || [ ];
     $field_perms[FIELD_TYPE] = $fields->{types} || [ 'int', 'varchar', 'date', 'time', 'datetime' ];
     if (not ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE or $executor->type==DB_DUMMY)) {
         my @datetimestuff = grep(/date|time/,@{$fields->{types}});
@@ -326,7 +328,9 @@ sub run {
         }
         
         my $field_name;
-        if ($self->short_column_names) {
+        if ($#{$field_perms[FIELD_NAMES]} > -1) {
+            $field_name = shift @{$field_perms[FIELD_NAMES]};
+        } elsif ($self->short_column_names) {
             $field_name = 'c'.($field_no++);
         } else {
             $field_name = "col_".join('_', grep { $_ ne '' } @field_copy);
