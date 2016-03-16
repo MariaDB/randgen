@@ -455,7 +455,7 @@ sub startServer {
         $proc->GetExitCode($self->[MYSQLD_WINDOWS_PROCESS_EXITCODE]);
         if ($self->[MYSQLD_WINDOWS_PROCESS_EXITCODE] == MYSQLD_WINDOWS_PROCESS_STILLALIVE) {
             ## Wait for the pid file to have been created
-            my $wait_time = 0.2;
+            my $wait_time = 0.5;
             my $waits = 0;
             while (!-f $self->pidfile && $waits < 600) {
                 Time::HiRes::sleep($wait_time);
@@ -685,7 +685,8 @@ sub dsn {
         $self->[MYSQLD_PORT].
         ":user=".
         $self->[MYSQLD_USER].
-        ":database=".$database;
+        ":database=".$database.
+        ":mysql_local_infile=1";
 }
 
 sub dbh {
