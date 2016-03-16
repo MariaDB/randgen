@@ -34,7 +34,6 @@ $combinations = [
 		'--engine=MyISAM',
 		'--engine=InnoDB --mysqld=--ignore-builtin-innodb --mysqld=--plugin-load=ha_innodb',
 		'--engine=Aria',
-		'--engine=TokuDB --mysqld=--plugin-load=ha_tokudb',
 		''
 	],
 	[	'
