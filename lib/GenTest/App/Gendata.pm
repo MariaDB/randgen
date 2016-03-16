@@ -1,4 +1,5 @@
 # Copyright (C) 2009, 2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, Monty Program Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -41,6 +42,8 @@ use constant FIELD_INDEX_SQL		=> 8;
 use constant FIELD_NAME			=> 9;
 use constant FIELD_DEFAULT => 10;
 use constant FIELD_NAMES    => 11;
+use constant FIELD_SQLS     => 12;
+use constant FIELD_INDEX_SQLS   => 13;
 
 use constant TABLE_ROW		=> 0;
 use constant TABLE_ENGINE	=> 1;
@@ -222,6 +225,8 @@ sub run {
     $table_perms[TABLE_NAMES] = $tables->{names} || [ ];
     
     $field_perms[FIELD_NAMES] = $fields->{names} || [ ];
+    $field_perms[FIELD_SQLS] = $fields->{sqls} || [ ];
+    $field_perms[FIELD_INDEX_SQLS] = $fields->{index_sqls} || [ ];
     $field_perms[FIELD_TYPE] = $fields->{types} || [ 'int', 'varchar', 'date', 'time', 'datetime' ];
     if (not ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE or $executor->type==DB_DUMMY)) {
         my @datetimestuff = grep(/date|time/,@{$fields->{types}});
@@ -388,6 +393,14 @@ sub run {
         }
     }
 
+    foreach my $sql (@{$field_perms[FIELD_SQLS]}) {
+        my $f = [];
+        $f->[FIELD_SQL] = $sql;
+        if ($sql =~ /^\s*`?\w+\`?\s+(\w+)/) { $f->[FIELD_TYPE] = lc($1) };
+        if ($sql =~ /auto_increment/i) { $f->[FIELD_TYPE] .= ' auto_increment' };
+        @fields = ( $f, @fields );
+    }
+
     foreach my $table_id (0..$#tables) {
         my $table = $tables[$table_id];
         my @table_copy = @$table;
@@ -478,6 +491,12 @@ sub run {
             ## Just keep the primary keys.....
             @index_fields = grep { $_->[FIELD_INDEX_SQL] =~ m/primary/ } @fields_copy;
         }
+
+        foreach my $sql (@{$field_perms[FIELD_INDEX_SQLS]}) {
+            my $f = [];
+            $f->[FIELD_INDEX_SQL] = $sql;
+            @index_fields = ( $f, @index_fields );
+        }
         
         my $index_sqls = $#index_fields > -1 ? join(",\n", map { $_->[FIELD_INDEX_SQL] } @index_fields) : undef;
 
@@ -532,29 +551,27 @@ sub run {
                 next if not defined $field->[FIELD_TYPE];
                 my $value;
                 my $quote = 0;
-                if ($field->[FIELD_INDEX] eq 'primary key') {
-                    if ($field->[FIELD_TYPE] =~ m{auto_increment}sio) {
-                        if ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE) {
-                            $value = undef;		# Trigger auto-increment by inserting NULLS for PK
-                        } else {
-                            $value = 'DEFAULT';
-                        }
+                if ($field->[FIELD_TYPE] =~ m{auto_increment}sio) {
+                    if ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE) {
+                        $value = undef;		# Trigger auto-increment by inserting NULLS for PK
                     } else {
-                        if ($field->[FIELD_TYPE] =~ m{^(datetime|timestamp)$}sgio) {
-				$value = "FROM_UNIXTIME(UNIX_TIMESTAMP('2000-01-01') + $row_id)";
-			} elsif ($field->[FIELD_TYPE] =~ m{date}sgio) {
-				$value = "FROM_DAYS(TO_DAYS('2000-01-01') + $row_id)";
-			} elsif ($field->[FIELD_TYPE] =~ m{^time$}sgio) {
-				$value = "SEC_TO_TIME($row_id)";
-			# Support wider range for frastionl seconds precision with temporal datatypes.
-			} elsif ($field->[FIELD_TYPE] =~ m{^(timestamp|datetime|time)\((\d+)\)$}sgio) {
-				$value = "CURRENT_TIMESTAMP($2) + $row_id";
-			} elsif ($field->[FIELD_TYPE] =~ m{^(time)\((\d+)\)$}sgio) {
-				$value = "CURRENT_TIME($2) + $row_id";			
-			} else {
-	                        $value = $row_id;	# Otherwise, insert sequential numbers
-			}
+                        $value = 'DEFAULT';
                     }
+                } elsif ($field->[FIELD_INDEX] eq 'primary key') {
+                    if ($field->[FIELD_TYPE] =~ m{^(datetime|timestamp)$}sgio) {
+    				$value = "FROM_UNIXTIME(UNIX_TIMESTAMP('2000-01-01') + $row_id)";
+	                } elsif ($field->[FIELD_TYPE] =~ m{date}sgio) {
+		                $value = "FROM_DAYS(TO_DAYS('2000-01-01') + $row_id)";
+	                } elsif ($field->[FIELD_TYPE] =~ m{^time$}sgio) {
+		                $value = "SEC_TO_TIME($row_id)";
+	                # Support wider range for frastionl seconds precision with temporal datatypes.
+	                } elsif ($field->[FIELD_TYPE] =~ m{^(timestamp|datetime|time)\((\d+)\)$}sgio) {
+		                $value = "CURRENT_TIMESTAMP($2) + $row_id";
+	                } elsif ($field->[FIELD_TYPE] =~ m{^(time)\((\d+)\)$}sgio) {
+		                $value = "CURRENT_TIME($2) + $row_id";			
+	                } else {
+                        $value = $row_id;	# Otherwise, insert sequential numbers
+	                }
                 } else {
                     my (@possible_values, $value_type);
                     
