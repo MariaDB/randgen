@@ -300,7 +300,7 @@ int_single_member_subquery:
 	( SELECT _digit FROM DUAL ) ;
 
 int_single_union_subquery:
-	(  SELECT _digit  UNION all_distinct  SELECT _digit  )  ;
+	( SELECT _digit UNION all_distinct SELECT _digit order_by_union_sq ) ;
 
 int_single_union_subquery_disabled:
 	int_single_member_subquery   UNION all_distinct  int_single_member_subquery ;
@@ -328,6 +328,9 @@ int_double_member_subquery:
 	  subquery_having ) |
 	(  SELECT _digit , _digit  UNION all_distinct  SELECT _digit, _digit  ) ;
 
+order_by_union_sq:
+	| order_by_anon ;
+
 char_single_member_subquery:
 	( SELECT distinct select_option subquery_table_one_two . _field_char AS { $sq_cfields = 1; "SQ".$subquery_idx."_cfield1" }
 	 subquery_body
@@ -335,7 +338,7 @@ char_single_member_subquery:
 	 subquery_having) ;
 
 char_single_union_subquery:
-	(  SELECT _char  UNION all_distinct  SELECT _char  )  ;
+	( SELECT _char UNION all_distinct SELECT _char order_by_union_sq ) ;
 
 char_single_union_subquery_disabled:
 	char_single_member_subquery   UNION all_distinct char_single_member_subquery  ;
@@ -750,7 +753,14 @@ having_subquery:
 order_by_clause:
 	|
 	ORDER BY total_order_by limit |
-	ORDER BY partial_order_by;
+	ORDER BY partial_order_by |
+	order_by_anon;
+
+# TODO: Uncomment after MDEV-9513 and MDEV-9514 are fixed
+order_by_anon:
+#	ORDER BY 1 | ORDER BY 2 | ORDER BY 2, 1 | ORDER BY RAND();
+#	ORDER BY 1 | ORDER BY RAND()
+;
 
 partial_order_by:
    { join(', ', (shuffle ( (map { "field".$_ } 1..$fields), (map { "ifield".$_ } 1..$ifields), (map { "cfield".$_ } 1..$cfields) ))[0..int(rand($fields+$ifields+$cfields))] ) };
