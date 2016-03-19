@@ -82,7 +82,7 @@ my $gendata=''; ## default simple gendata
 my $genconfig=''; # if template is not set, the server will be run with --no-defaults
 
 my $threads = my $default_threads = 10;
-my $queries = my $default_queries = 1000;
+my $queries = my $default_queries = 100000000;
 my $duration = my $default_duration = 3600;
 
 my @ARGV_saved = @ARGV;
