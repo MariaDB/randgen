@@ -165,6 +165,7 @@ sub transformExecuteValidate {
                     if (rqg_debug()) {
                         say("Ignoring transform ".ref($transformer)." that failed with the error: ".$part_result->errstr());
                         say("Offending query is: $transformed_query_part;");
+                        say("Original query is: $original_query;");
                     } else {
                         if (not defined $suppressed_errors{$part_result->err()}) {
                             say("Ignoring transforms of the type ".ref($transformer)." that fail with an error like: ".$part_result->errstr());
