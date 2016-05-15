@@ -29,13 +29,51 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 # Expression in round brackets
+my $single_quotes_template =
+    qr{
+        (
+            \'
+                (                       # group 1 - inside quotes
+                    (?:
+                        (?> [^']+ )    # non-quotes
+                    )*
+                )
+            \'
+        )
+}xi;
+my $double_quotes_template =
+    qr{
+        (
+            \"
+                (                       # group 1 - inside quotes
+                    (?:
+                        (?> [^"]+ )    # non-quotes
+                    )*
+                )
+            \"
+        )
+}xi;
+my $comment_boundaries = qr{\/\*|\*\/};
+my $comment_template =
+    qr{
+        (
+            \/\*
+                (                       # group 1 - inside quotes
+                    (?:
+                        (?> [^$comment_boundaries]+ )    # non-quotes
+                    )*
+                )
+            \*\/
+        )
+}xi;
+
 my $parens_template =
     qr{
         (\s*
             \(
                 (                       # group 1 - inside parens
                     (?:
-                        (?> [^()]+ )    # non-parens
+                        (?> (?:$single_quotes_template|$double_quotes_template|$comment_template|[^()])+ )    # non-parens
                         |
                         (?1)            # recurse to group 1
                     )*
@@ -46,9 +84,11 @@ my $parens_template =
 
 # either a simple fragment without brackets
 # or something in round brackets
-my $part_select_template = qr{[^()]+|$parens_template}xi;
+#my $part_select_template = qr{[^()]+|$parens_template}xi;
+my $part_select_template = qr{$parens_template|$comment_template|$single_quotes_template|$double_quotes_template|[^();'"$comment_boundaries]+|;}xi;
 
-sub convert_selects_to_cte {
+sub convert_selects_to_cte 
+{
     my ($tmp_query, $cte_count) = @_;
 
     my $new_query = '';
@@ -58,6 +98,7 @@ sub convert_selects_to_cte {
     # Parse the query or query fragment
     while ($tmp_query =~ s/($part_select_template)//xi) 
     { 
+
         # Token here is either a part of the query without brackets, 
         # or something in round brackets
         my $token = $1;
@@ -74,7 +115,7 @@ sub convert_selects_to_cte {
         # or when the fragment ends
         elsif ($token =~ /^\s*(?:UNION|INTO\s+OUTFILE|RETURNING|;)/) {
             $in_select = 0;
-            $new_query .= "WITH cte$cte_count AS ( $select ) SELECT * FROM cte$cte_count";
+            $new_query .= "WITH cte$cte_count AS ( $select ) SELECT * FROM cte$cte_count " . $token ;
         }
 
         # Fragment in round brackets -- keep the brackets and process the contents
