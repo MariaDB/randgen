@@ -607,6 +607,8 @@ sub initReporters {
             $self->config->reporters(['ErrorLog', 'Backtrace']);
             push @{$self->config->reporters}, 'ValgrindXMLErrors' if (defined $self->config->property('valgrind-xml'));
             push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode ne '';
+            push @{$self->config->reporters}, 'ReplicationSlaveStatus' 
+                if $self->config->rpl_mode ne '' && $self->isMySQLCompatible();
         }
     } else {
         ## Remove the "None" reporter
@@ -658,8 +660,6 @@ sub initValidators {
                 push @{$self->config->validators}, 'ResultsetComparator';
             }
         }        
-        push @{$self->config->validators}, 'ReplicationSlaveStatus' 
-            if $self->config->rpl_mode ne '' && $self->isMySQLCompatible();
         push @{$self->config->validators}, 'MarkErrorLog' 
             if (defined $self->config->valgrind) && $self->isMySQLCompatible();
         
