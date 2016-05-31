@@ -183,7 +183,7 @@ sub isSlaveBehind {
 	my ($last_log_id) = $last_log_name =~ m{(\d+)}sgio;
 	say("Master: last_log_name = $last_log_name; last_log_pos = $last_log_pos; $last_log_id = $last_log_id.");
 			
-	my $slave_status = $slave_dbh->selectrow_arrayref("SHOW SLAVE STATUS");
+	my $slave_status = $slave_dbh->selectrow_arrayref("SHOW SLAVE STATUS /* ReplicationSemiSync::isSlaveBehind */");
 	my ($master_log_file, $read_master_log_pos) = ($slave_status->[5], $slave_status->[6]);
 	my ($master_log_id) = $master_log_file =~ m{(\d+)}sgio;
 	say("GenTest::Reporter::ReplicationSemiSync: slave: master_log_file = $master_log_file; read_master_log_pos = $read_master_log_pos; master_log_id = $master_log_id.");

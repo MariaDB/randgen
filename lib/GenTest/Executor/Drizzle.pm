@@ -398,8 +398,8 @@ sub id {
 
 		my @capabilities;
 
-		push @capabilities, "master" if $dbh->selectrow_array("SHOW SLAVE HOSTS");
-		push @capabilities, "slave" if $dbh->selectrow_array("SHOW SLAVE STATUS");
+		push @capabilities, "master" if $dbh->selectrow_array("SHOW SLAVE HOSTS /* Drizzle::id */");
+		push @capabilities, "slave" if $dbh->selectrow_array("SHOW SLAVE STATUS /* Drizzle::id */");
 		push @capabilities, "no_semijoin" if $dbh->selectrow_array('SELECT @@optimizer_switch') =~ m{no_semijoin}sio;
 		push @capabilities, "no_materialization" if $dbh->selectrow_array('SELECT @@optimizer_switch') =~ m{no_materialization}sio;
 		push @capabilities, "mo_mrr" if $dbh->selectrow_array('SELECT @@optimizer_use_mrr') eq '0';

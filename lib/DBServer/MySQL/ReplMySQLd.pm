@@ -246,7 +246,7 @@ sub waitForSlaveSync {
     my $wait_result = $self->slave->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
     if (not defined $wait_result) {
         if ($self->slave->dbh) {
-            my @slave_status = $self->slave->dbh->selectrow_array("SHOW SLAVE STATUS");
+            my @slave_status = $self->slave->dbh->selectrow_array("SHOW SLAVE STATUS /* ReplMySQLd::waitForSlaveSync */");
             say("ERROR: Slave SQL thread has stopped with error: ".$slave_status[37]);
         } else {
             say("ERROR: Lost connection to the slave");

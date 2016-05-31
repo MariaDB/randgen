@@ -59,7 +59,7 @@ sub validate {
 	my $dbh = $validator->dbh();
 
 	if ($dbh) {
-		my $slave_status = $dbh->selectrow_arrayref("SHOW SLAVE STATUS");
+		my $slave_status = $dbh->selectrow_arrayref("SHOW SLAVE STATUS /* ReplicationSlaveStatus::validate */");
 
 		if ($slave_status->[SLAVE_STATUS_LAST_IO_ERROR] ne '') {
 			say("Slave IO thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_IO_ERROR]);

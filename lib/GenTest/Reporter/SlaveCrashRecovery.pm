@@ -79,13 +79,14 @@ sub restart {
 	$first_reporter = $reporter if not defined $first_reporter;
 	return STATUS_OK if $reporter ne $first_reporter;
 
-	my $dbh_prev = DBI->connect($reporter->dsn());
+	my $server = $reporter->properties->servers->[1];
+
+	my $dbh_prev = DBI->connect($server->dsn());
 
 	if (defined $dbh_prev) {
 		$dbh_prev->disconnect();
 	}
 
-	my $server = $reporter->properties->servers->[1];
 	$server->setStartDirty(1);
 
 	say("Trying to restart the server ...");
@@ -129,7 +130,7 @@ sub restart {
 	close(RESTART);
 
 	$restart_count++;
-	my $dbh = DBI->connect($reporter->dsn());
+	my $dbh = DBI->connect($server->dsn());
 	$restart_status = STATUS_DATABASE_CORRUPTION if not defined $dbh && $restart_status == STATUS_OK;
 
 	if ($restart_status > STATUS_OK) {
