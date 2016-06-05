@@ -276,6 +276,15 @@ if (
 	die("Please specify either different --basedir[12] or different --vardir[12] in order to start two MySQL servers");
 }
 
+# Fix Windows-style paths
+
+foreach my $i (0..$#basedirs) {
+    $basedirs[$i] =~ s/\\/\//g;
+}
+foreach my $i (0..$#vardirs) {
+    $vardirs[$i] =~ s/\\/\//g;
+}
+
 #
 # If RQG_HOME is set, prepend it to config files if they can not be found without it 
 #
