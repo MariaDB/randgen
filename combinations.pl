@@ -31,6 +31,7 @@ use Getopt::Long;
 use GenTest::BzrInfo; 
 use Data::Dumper;
 use File::Basename;
+use File::Path qw(make_path);
 
 if (defined $ENV{RQG_HOME}) {
     if (osWindows()) {
@@ -176,7 +177,7 @@ for my $i (1..$threads) {
     if ($pid == 0) {
         ## Child
         $thread_id = $i;
-        mkdir($workdir);
+        make_path($workdir);
         
         if ($exhaustive) {
             doExhaustive(0);
