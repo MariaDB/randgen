@@ -142,7 +142,6 @@ use constant	ER_SP_DOES_NOT_EXIST	=> 1305;
 use constant	ER_TABLESPACE_NOT_EMPTY	=> 1721;
 use constant	ER_TABLESPACE_DATAFILE_EXIST => 1726;
 use constant	ER_BAD_DB_ERROR		=> 1049;
-use constant	ER_PARTITION_MGMT_ON_NONPARTITIONED	=> 1505;
 use constant	ER_UNKNOWN_SYSTEM_VARIABLE	=> 1193;
 use constant	ER_VAR_CANT_BE_READ	=> 1233;
 use constant	ER_TRG_DOES_NOT_EXIST	=> 1360;
@@ -206,6 +205,7 @@ use constant	ER_NO_PARTITION_FOR_GIVEN_VALUE		=> 1526;
 use constant	ER_PARTITION_MAXVALUE_ERROR		=> 1481;
 use constant	ER_WRONG_PARTITION_NAME			=> 1567;
 use constant	ER_NO_PARTS_ERROR			=> 1504;
+use constant    ER_PARTITION_NO_TEMPORARY => 1562;
 
 use constant	ER_NON_INSERTABLE_TABLE			=> 1471;
 use constant	ER_NON_UPDATABLE_TABLE			=> 1288;
@@ -349,7 +349,6 @@ my %err2type = (
 	ER_TABLESPACE_NOT_EMPTY()	=> STATUS_SEMANTIC_ERROR,
 	ER_TABLESPACE_DATAFILE_EXIST()	=> STATUS_SEMANTIC_ERROR,
 	ER_BAD_DB_ERROR()	=> STATUS_SEMANTIC_ERROR,
-	ER_PARTITION_MGMT_ON_NONPARTITIONED()	=> STATUS_SEMANTIC_ERROR,
 	ER_UNKNOWN_SYSTEM_VARIABLE() => STATUS_SEMANTIC_ERROR,
 	ER_VAR_CANT_BE_READ()	=> STATUS_SEMANTIC_ERROR,
 	ER_TRG_DOES_NOT_EXIST() => STATUS_SEMANTIC_ERROR,
@@ -410,6 +409,7 @@ my %err2type = (
 	ER_PARTITION_MAXVALUE_ERROR()		=> STATUS_SEMANTIC_ERROR,
 	ER_WRONG_PARTITION_NAME()		=> STATUS_SEMANTIC_ERROR,
 	ER_NO_PARTS_ERROR()			=> STATUS_SEMANTIC_ERROR,
+	ER_PARTITION_NO_TEMPORARY() => STATUS_SEMANTIC_ERROR,
 
 	ER_NON_INSERTABLE_TABLE()		=> STATUS_SEMANTIC_ERROR,
 	ER_NON_UPDATABLE_TABLE()		=> STATUS_SEMANTIC_ERROR,
@@ -575,7 +575,7 @@ sub reportError {
     if (defined $self->channel) {
         $self->sendError($msg) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
     } elsif (not defined $reported_errors{$errstr}) {
-        say("Query: $query failed: $err $errstr. Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+        say("Executor::MySQL::reportError Query: $query failed: $err $errstr. Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
         $reported_errors{$errstr}++;
     }
 }
@@ -718,10 +718,10 @@ sub execute {
 				$executor->setDbh($dbh);
 			}
 
-			say("Query: $query failed: $err ".$sth->errstr()) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+			say("Executor::MySQL::execute: Query: $query failed: $err ".$sth->errstr()) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
 		} elsif (not ($execution_flags & EXECUTOR_FLAG_SILENT)) {
 			$executor->[EXECUTOR_ERROR_COUNTS]->{$sth->errstr()}++;
-			say("Query: $query failed: $err ".$sth->errstr());
+			say("Executor::MySQL::execute: Query: $query failed: $err ".$sth->errstr());
 		}
 
 		$result = GenTest::Result->new(
