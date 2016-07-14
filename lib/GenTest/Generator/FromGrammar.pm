@@ -113,6 +113,7 @@ sub next {
 	my %rule_counters;
 	my %invariants;
 
+	my $last_field;
 	my $last_table;
 	my $last_database;
     
@@ -191,9 +192,6 @@ sub next {
 						my $tables = $executors->[0]->metaTables($last_database);
 						$last_table = $prng->arrayElement($tables);
 						$item = '`'.$last_table.'`';
-					} elsif ($item eq '_field') {
-						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
-						$item = '`'.$prng->arrayElement($fields).'`';
 					} elsif ($item eq '_hex') {
 						$item = $prng->hex();
 					} elsif ($item eq '_cwd') {
@@ -239,7 +237,8 @@ sub next {
 						$item = '`'.$last_table.'`';
 					} elsif ($item eq '_field') {
 						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
-						$item = '`'.$prng->arrayElement($fields).'`';
+                        $last_field = $prng->arrayElement($fields);
+						$item = '`'.$last_field.'`';
 					} elsif ($item eq '_field_list') {
 						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
 						$item = '`'.join('`,`', @$fields).'`';
@@ -252,28 +251,36 @@ sub next {
 						$item = '`'.$fields->[$field_pos++ % $#$fields].'`';
 					} elsif ($item eq '_field_pk') {
 						my $fields = $executors->[0]->metaColumnsIndexType('primary',$last_table, $last_database);
-						$item = '`'.$fields->[0].'`';
+                        $last_field = $fields->[0];
+						$item = '`'.$last_field.'`';
 					} elsif ($item eq '_field_no_pk') {
 						my $fields = $executors->[0]->metaColumnsIndexTypeNot('primary',$last_table, $last_database);
-						$item = '`'.$prng->arrayElement($fields).'`';
+                        $last_field = $prng->arrayElement($fields);
+						$item = '`'.$last_field.'`';
 					} elsif (($item eq '_field_indexed') || ($item eq '_field_key')) {
 						my $fields_indexed = $executors->[0]->metaColumnsIndexType('indexed',$last_table, $last_database);
-						$item = '`'.$prng->arrayElement($fields_indexed).'`';
+                        $last_field = $prng->arrayElement($fields_indexed);
+						$item = '`'.$last_field.'`';
 					} elsif (($item eq '_field_unindexed') || ($item eq '_field_nokey')) {
 						my $fields_unindexed = $executors->[0]->metaColumnsIndexTypeNot('indexed',$last_table, $last_database);
-						$item = '`'.$prng->arrayElement($fields_unindexed).'`';
+                        $last_field = $prng->arrayElement($fields_unindexed);
+						$item = '`'.$last_field.'`';
 					} elsif ($item eq '_field_int') {
 						my $fields_int = $executors->[0]->metaColumnsDataType('int',$last_table, $last_database);
-						$item = '`'.$prng->arrayElement($fields_int).'`';
+                        $last_field = $prng->arrayElement($fields_int);
+						$item = '`'.$last_field.'`';
 					} elsif (($item eq '_field_int_indexed') || ($item eq '_field_int_key')) {
 						my $fields_int_indexed = $executors->[0]->metaColumnsDataIndexType('int','indexed',$last_table, $last_database);
-						$item = '`'.$prng->arrayElement($fields_int_indexed).'`';
+                        $last_field = $prng->arrayElement($fields_int_indexed);
+						$item = '`'.$last_field.'`';
 					} elsif ($item eq '_field_char') {
 						my $fields_char = $executors->[0]->metaColumnsDataType('char',$last_table, $last_database);
-						$item = '`'.$prng->arrayElement($fields_char).'`';
+                        $last_field = $prng->arrayElement($fields_char);
+						$item = '`'.$last_field.'`';
 					} elsif (($item eq '_field_char_indexed') || ($item eq '_field_char_key')) {
 						my $fields_char_indexed = $executors->[0]->metaColumnsDataIndexType('char','indexed',$last_table, $last_database);
-						$item = '`'.$prng->arrayElement($fields_char_indexed).'`';
+                        $last_field = $prng->arrayElement($fields_char_indexed);
+						$item = '`'.$last_field.'`';
 					} elsif ($item eq '_collation') {
 						my $collations = $executors->[0]->metaCollations();
 						$item = '_'.$prng->arrayElement($collations);
@@ -463,13 +470,13 @@ sub next {
 			# Replace remaining semicolons
 			$sentence =~ s/;/######SEMICOLON######/g;
 
-			# Restore literals in single quotes
-			while ( $sentence =~ s/######SINGLES######/$singles[0]/ ) {
-				shift @singles;
-			}
 			# Restore literals in double quotes
 			while ( $sentence =~ s/######DOUBLES######/$doubles[0]/ ) {
 				shift @doubles;
+			}
+			# Restore literals in single quotes
+			while ( $sentence =~ s/######SINGLES######/$singles[0]/ ) {
+				shift @singles;
 			}
 			# split the sentence
 			@sentences = split('######SEMICOLON######', $sentence);
