@@ -2,6 +2,7 @@
 
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2016, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -548,21 +549,13 @@ sub initGenerator {
         }
 
         $self->[GT_GRAMMAR] = GenTest::Grammar->new(
-            grammar_file => $self->config->grammar,
+            grammar_files => [ $self->config->grammar, @{$self->config->redefine} ],
             grammar_flags => (defined $self->config->property('skip-recursive-rules') ? GRAMMAR_FLAG_SKIP_RECURSIVE_RULES : undef )
         ) if defined $self->config->grammar;
 
         if (not defined $self->grammar()) {
             say("ERROR: Could not initialize the grammar, status will be set to ENVIRONMENT_FAILURE");
             return STATUS_ENVIRONMENT_FAILURE;
-        }
-
-        if ($self->config->redefine) {
-            foreach (@{$self->config->redefine}) {
-	             $self->[GT_GRAMMAR] = $self->[GT_GRAMMAR]->patch(
-                    GenTest::Grammar->new( grammar_file => $_ )
-                ) 
-            }
         }
 
         if (not defined $self->grammar()) {

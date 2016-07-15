@@ -1,4 +1,5 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2016, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -34,7 +35,7 @@ use GenTest::Random;
 use Data::Dumper;
 
 use constant GRAMMAR_RULES	=> 0;
-use constant GRAMMAR_FILE	=> 1;
+use constant GRAMMAR_FILES	=> 1;
 use constant GRAMMAR_STRING	=> 2;
 use constant GRAMMAR_FLAGS	=> 3;
 
@@ -48,7 +49,7 @@ sub new {
 
 
 	my $grammar = $class->SUPER::new({
-		'grammar_file'			=> GRAMMAR_FILE,
+		'grammar_files'			=> GRAMMAR_FILES,
 		'grammar_string'		=> GRAMMAR_STRING,
 		'grammar_flags'		=> GRAMMAR_FLAGS,
 		'grammar_rules'		=> GRAMMAR_RULES
@@ -60,8 +61,8 @@ sub new {
 	} else {
 		$grammar->[GRAMMAR_RULES] = {};
 
-		if (defined $grammar->file()) {
-			my $parse_result = $grammar->parseFromFile($grammar->file());
+		if (defined $grammar->files()) {
+			my $parse_result = $grammar->extractFromFiles($grammar->files());
 			return undef if $parse_result > STATUS_OK;
 		}
 
@@ -74,8 +75,8 @@ sub new {
 	return $grammar;
 }
 
-sub file {
-	return $_[0]->[GRAMMAR_FILE];
+sub files {
+	return $_[0]->[GRAMMAR_FILES];
 }
 
 sub string {
@@ -90,15 +91,21 @@ sub toString {
 }
 
 
-sub parseFromFile {
-	my ($grammar, $grammar_file) = @_;
+sub extractFromFiles {
+	my ($grammar, $grammar_files) = @_;
 
-	open (GF, $grammar_file) or die "Unable to open() grammar $grammar_file: $!";
-	read (GF, my $grammar_string, -s $grammar_file) or die "Unable to read() $grammar_file: $!";
+    $grammar->[GRAMMAR_STRING] = '';
+    foreach my $grammar_file (@$grammar_files) {
+        open (GF, $grammar_file) or die "Unable to open() grammar $grammar_file: $!";
+        say "Reading grammar from file $grammar_file";
+        read (GF, my $grammar_string, -s $grammar_file) or die "Unable to read() $grammar_file: $!";
+        close (GF);
+        $grammar->[GRAMMAR_STRING] .= $grammar_string;
+    }
+    
+    return $grammar->[GRAMMAR_STRING];
 
-	$grammar->[GRAMMAR_STRING] = $grammar_string;
-
-	return $grammar->parseFromString($grammar_string);
+#	return $grammar->parseFromString($grammar_string);
 }
 
 sub parseFromString {
@@ -138,6 +145,44 @@ sub parseFromString {
 
 	my %rules;
 
+    # Redefining grammars might want to *add* something to an existing rule
+    # rather than replace them. For now we recognize additions only to init queries
+    # and to the main queries ('query' and 'threadX'). Additions should end with '_add':
+    # - query_add
+    # - threadX_add
+    # - query_init_add
+    # _ threadX_init_add
+    # Grammars can have multiple additions like these, they all will be stored
+    # and appended to the corresponding rule.
+    #
+    # Additions to 'query' and 'threadX' will be appended as an option, e.g.
+    #
+    # In grammar files we have:
+    #   query:
+    #     rule1 | rule2;
+    #   query_add:
+    #     rule3;
+    # In the resulting grammar we will have:
+    #   query:
+    #     rule1 | rule2 | rule3;
+    # 
+    # Additions to '*_init' rules will be added as a part of a multiple-statement, e.g.
+    #
+    # In grammar files we have:
+    #   query_init:
+    #     rule4 ;
+    #   query_init_add:
+    #     rule5;
+    # In the resulting grammar we will have:
+    #   query_init:
+    #     rule4 ; rule5;
+    
+
+    my @query_adds = ();
+    my %thread_adds = ();
+    my @query_init_adds = ();
+    my %thread_init_adds = ();
+
 	foreach my $rule_string (@rule_strings) {
 		my ($rule_name, $components_string) = $rule_string =~ m{^(.*?)\s*:(.*)$}sio;
 
@@ -146,8 +191,52 @@ sub parseFromString {
 
 		next if $rule_name eq '';
 
-		say("Warning: Rule $rule_name is defined twice.") if exists $rules{$rule_name};
+        if ($rule_name =~ /^query_add$/) {
+            push @query_adds, $components_string;
+        }
+        elsif ($rule_name =~ /^thread(\d+)_add$/) {
+            @{$thread_adds{$1}} = () unless defined $thread_adds{$1};
+            push @{$thread_adds{$1}}, $components_string;
+        }
+        elsif ($rule_name =~ /^query_init_add$/) {
+            push @query_init_adds, $components_string;
+        }
+        elsif ($rule_name =~ /^thread(\d+)_init_add$/) {
+            @{$thread_init_adds{$1}} = () unless defined $thread_init_adds{$1};
+            push @{$thread_init_adds{$1}}, $components_string;
+        }
+        else {
+            say("Warning: Rule $rule_name is defined twice.") if exists $rules{$rule_name};
+            $rules{$rule_name} = $components_string;
+        }
+    }
 
+    if (@query_adds) {
+        my $adds = join '; ', @query_adds;
+        $rules{'query'} = ( defined $rules{'query'} ? $rules{'query'} . ' | ' . $adds : $adds );
+    }
+
+    foreach my $tid (keys %thread_adds) {
+        my $adds = join '; ', @{$thread_adds{$tid}};
+        $rules{'thread'.$tid} = ( defined $rules{'thread'.$tid} ? $rules{'thread'.$tid} . ' | ' . $adds : $adds );
+    }
+    
+    if (@query_init_adds) {
+        my $adds = join '; ', @query_init_adds;
+        $rules{'query_init'} = ( defined $rules{'query_init'} ? $rules{'query_init'} . '; ' . $adds : $adds );
+    }
+
+    foreach my $tid (keys %thread_init_adds) {
+        my $adds = join '; ', @{$thread_init_adds{$tid}};
+        $rules{'thread'.$tid.'_init'} = ( defined $rules{'thread'.$tid.'_init'} ? $rules{'thread'.$tid.'_init'} . '; ' . $adds : $adds );
+    }
+
+    # Now we have all the rules extracted from grammar files, time to parse
+
+	foreach my $rule_name (keys %rules) {
+
+        my $components_string = $rules{$rule_name};
+        
 		my @component_strings = split (m{\|}, $components_string);
 		my @components;
 		my %components;
@@ -300,8 +389,26 @@ sub patch {
 
     my $rules = $self->rules();
 
-    foreach my $ruleName (keys %$patch_rules) {
-        $rules->{$ruleName} = $patch_rules->{$ruleName};
+    foreach my $ruleName (sort keys %$patch_rules) {
+        if ($ruleName =~ /^query_init_add/) {
+            if (defined $rules->{'query_init'}) {
+                $rules->{'query_init'} .= '; ' . $patch_rules->{$ruleName}
+            }
+            else {
+                $rules->{'query_init'} = $patch_rules->{$ruleName}
+            }
+        }
+        elsif ($ruleName =~ /^thread(\d+)_init_add/) {
+            if (defined $rules->{'thread'.$1.'_init'}) {
+                $rules->{'thread'.$1.'_init'} .= '; ' . $patch_rules->{$ruleName}
+            }
+            else {
+                $rules->{'thread'.$1.'_init'} = $patch_rules->{$ruleName}
+            }
+        }
+        else {
+            $rules->{$ruleName} = $patch_rules->{$ruleName};
+        }
     }
 
     my $new_grammar = GenTest::Grammar->new(grammar_rules => $rules);
