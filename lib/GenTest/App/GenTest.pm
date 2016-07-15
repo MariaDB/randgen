@@ -549,7 +549,7 @@ sub initGenerator {
         }
 
         $self->[GT_GRAMMAR] = GenTest::Grammar->new(
-            grammar_files => [ $self->config->grammar, @{$self->config->redefine} ],
+            grammar_files => [ $self->config->grammar, ( $self->config->redefine ? @{$self->config->redefine} : () ) ],
             grammar_flags => (defined $self->config->property('skip-recursive-rules') ? GRAMMAR_FLAG_SKIP_RECURSIVE_RULES : undef )
         ) if defined $self->config->grammar;
 
