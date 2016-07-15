@@ -331,11 +331,11 @@ sub cacheMetaData {
     if ($redo or not exists $global_schema_cache{$self->dsn()}) {
         say ("Caching schema metadata for ".$self->dsn());
         foreach my $row (@{$self->getSchemaMetaData()}) {
-            my ($schema, $table, $type, $col, $key, $datatype) = @$row;
+            my ($schema, $table, $type, $col, $key, $metatype, $realtype, $maxlength) = @$row;
             $meta->{$schema}={} if not exists $meta->{$schema};
             $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
             $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
-            $meta->{$schema}->{$type}->{$table}->{$col}= [$key,$datatype];
+            $meta->{$schema}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
         }
 	$global_schema_cache{$self->dsn()} = $meta;
     } else {
@@ -674,6 +674,29 @@ sub metaCharactersets {
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }
 
+sub metaColumnInfo {
+    my ($self, $table, $schema) = @_;
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+
+    $schema = $self->defaultSchema if not defined $schema;
+    $table = $self->metaTables($schema)->[0] if not defined $table;
+
+    my $cachekey="COLINFO-$schema-$table";
+    
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my $cols = ();
+        if ($meta->{$schema}->{table}->{$table}) {
+            $cols = $meta->{$schema}->{table}->{$table}
+        } elsif ($meta->{$schema}->{view}->{$table}) {
+            $cols = $meta->{$schema}->{view}->{$table}
+        } else {
+            say "WARNING: Table '$table' in schema '$schema' has no columns";
+        }
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+}
+
 ################### Public interface to be used from grammars
 ##
 
@@ -690,6 +713,24 @@ sub baseTables {
 sub tableColumns {
     my ($self, @args) = @_;
     return $self->metaColumns(@args);
+}
+
+sub columnRealType {
+    my ($self, $column, @args) = @_;
+    my $col_info = $self->metaColumnInfo(@args);
+    return $col_info->{$column}->[2];
+}
+
+sub columnMetaType {
+    my ($self, $column, @args) = @_;
+    my $col_info = $self->metaColumnInfo(@args);
+    return ${$col_info->{$column}}[1];
+}
+
+sub columnMaxLength {
+    my ($self, $column, @args) = @_;
+    my $col_info = $self->metaColumnInfo(@args);
+    return ${$col_info->{$column}}[3];
 }
 
 1;

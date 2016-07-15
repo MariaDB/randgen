@@ -987,6 +987,8 @@ sub getSchemaMetaData {
     ## 3. TABLE for tables VIEW for views and MISC for other stuff
     ## 4. Column name
     ## 5. PRIMARY for primary key, INDEXED for indexed column and "ORDINARY" for all other columns
+    ## 6. generalized data type (INT, FLOAT, BLOB, etc.)
+    ## 7. real data type
     my ($self) = @_;
     my $query = 
         "SELECT CASE WHEN table_schema = 'information_schema' ".
@@ -1008,12 +1010,15 @@ sub getSchemaMetaData {
                     "ELSE 'ordinary' END, ".
                "CASE WHEN data_type IN ('bit','tinyint','smallint','mediumint','int','bigint') THEN 'int' ".
                     "WHEN data_type IN ('float','double') THEN 'float' ".
+                    "WHEN data_type IN ('decimal') THEN 'decimal' ".
                     "WHEN data_type IN ('datetime','timestamp') THEN 'timestamp' ".
                     "WHEN data_type IN ('char','varchar') THEN 'char' ".
                     "WHEN data_type IN ('binary','varbinary') THEN 'binary' ".
                     "WHEN data_type IN ('tinyblob','blob','mediumblob','longblob') THEN 'blob' ".
                     "WHEN data_type IN ('tinytext','text','mediumtext','longtext') THEN 'text' ".
-                    "ELSE data_type END ".
+                    "ELSE data_type END, ".
+               "data_type, ".
+               "character_maximum_length ".
          "FROM information_schema.tables INNER JOIN ".
               "information_schema.columns USING(table_schema, table_name) ".
           "WHERE table_name <> 'DUMMY'"; 
