@@ -401,6 +401,7 @@ sub run {
         @fields = ( $f, @fields );
     }
 
+    my %tnames = ();
     foreach my $table_id (0..$#tables) {
         my $table = $tables[$table_id];
         my @table_copy = @$table;
@@ -421,6 +422,13 @@ sub run {
             $table_name =~ s{partitions}{parts}siog;
             $table_name =~ s{values_less_than}{}siog;
             $table_name =~ s{integer}{int}siog;
+            
+            # We don't want duplicate table names in case all parameters that affect the name are tehe same
+            if ($tnames{$table_name}) {
+                $table_name .= '_'.(++$tnames{$table_name});
+            } else {
+                $tnames{$table_name} = 1;
+            }
             
             if (
                 (uc($table_copy[TABLE_ENGINE]) eq 'MYISAM') ||
