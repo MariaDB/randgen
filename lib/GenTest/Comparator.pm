@@ -73,7 +73,7 @@ sub dumpDiff {
 	my $diff;
 
 	foreach my $i (0..1) {
-		return undef if not defined $results[$i]->data();
+		return undef if not defined $results[$i] or not defined $results[$i]->data();
 		my $data_sorted = join("\n", sort map { join("\t", map { defined $_ ? $_ : "NULL" } @$_) } @{$results[$i]->data()});
 		$data_sorted = $data_sorted."\n" if $data_sorted ne '';
 		$files[$i] = tmpdir()."/randgen".abs($$)."-".time()."-server".$i.".dump";
