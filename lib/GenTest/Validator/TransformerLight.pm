@@ -103,7 +103,9 @@ sub validate {
 
 	return STATUS_WONT_HANDLE if $original_query !~ m{^\s*(SELECT|HANDLER)}sio;
 	return STATUS_WONT_HANDLE if defined $results->[0]->warnings();
-	return STATUS_WONT_HANDLE if $results->[0]->status() != STATUS_OK;
+    foreach my $r (@{$results}) {
+        return STATUS_WONT_HANDLE if $r->status() != STATUS_OK;
+    };
 
 	my $max_transformer_status; 
 	foreach my $transformer (@transformers) {
