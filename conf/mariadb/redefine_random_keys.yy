@@ -16,25 +16,83 @@
 # rkr stands for "random_keys_redefine"
 # this is to avoid overriding rule names from other grammars
 
-thread2_init_add:
-    { %primary_keys = (); '' }
-      LOCK TABLE { join ' WRITE, ', @{$executors->[0]->tables()} } WRITE
+
+thread1_init_add:
+    # rkr_indexes is a hash: table => hash of index numbers
+    { %primary_keys = (); %rkr_indexes = (); '' }
+#      LOCK TABLE { join ' WRITE, ', @{$executors->[0]->tables()} } WRITE
+      rkr_add_autoinc_pk ; rkr_add_autoinc_pk ; rkr_add_autoinc_pk 
+    ; rkr_add_autoinc_pk ; rkr_add_autoinc_pk ; rkr_add_autoinc_pk 
     ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key
     ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key
     ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key
-    ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key
-    ; UNLOCK TABLES
+#    ; UNLOCK TABLES
+;
+
+thread1_add:
+      query | query | query | query | query | query | query 
+    | query | query | query | query | query | query | query 
+    | query | query | query | query | query | query | query 
+    | query | query | query | query | query | query | query 
+    | rkr_add_key | rkr_add_key | rkr_drop_key ;
+
+
+rkr_new_key_name:
+    { 
+          %{$rkr_indexes{$last_table}} = () unless defined $rkr_indexes{$last_table}
+        ; @rkr_table_indexes = (keys %{$rkr_indexes{$last_table}} ? sort {$b <=> $a} keys %{$rkr_indexes{$last_table}} : (0) )
+        ; $rkr_index_num = $rkr_table_indexes[0]+1
+        ; ${$rkr_indexes{$last_table}}{$rkr_index_num} = 1
+        ; 'rkr_index_'.$rkr_index_num
+    }
+;
+
+rkr_key_name_to_drop:
+    { 
+          @rkr_table_indexes = keys %{$rkr_indexes{$last_table}} or () 
+        ; $rkr_index_num = $prng->arrayElement(\@rkr_table_indexes)
+        ; delete ${$rkr_indexes{$last_table}}{$rkr_index_num} if $rkr_index_num
+        ; ( $rkr_index_num ? 'rkr_index_'.$rkr_index_num : 'non_existing_rk_index' )
+    }
+;
+
+rkr_add_autoinc_pk:
+    { $tries = 0
+        ; $tables = $executors->[0]->metaBaseTables($last_database)
+        ; do { 
+              $last_table = $prng->arrayElement($tables)
+            ; $tries++ 
+        } until ($tries > @{$tables} or not $primary_keys{$last_table})
+        ; '' 
+    } UPDATE { $last_table } SET _field_int = 0
+    ; ALTER TABLE { $last_table } MODIFY { $last_field } INT AUTO_INCREMENT PRIMARY KEY 
+    { $primary_keys{$last_table} = 1; '' }
 ;
 
 rkr_add_key:
-    { %index_fields = (); '' } ALTER TABLE _basetable ADD rkr_index_type KEY ( rkr_index_field_list );
-
-rkr_index_type:
-    | | | 
-    # Some unique/primary keys will fail at creation due to duplicate values. That's okay
-    | { if ($primary_keys{$last_table}) { '' } else { $primary_keys{$last_table} = 1; 'PRIMARY' } } 
-    | UNIQUE ;
+    ALTER TABLE _basetable ADD rkr_index_type_and_name ( { %index_fields = (); 'rkr_index_field_list' } ) ;
     
+rkr_index_type_and_name:
+      rkr_non_unique_key
+    | rkr_non_unique_key
+    | rkr_non_unique_key
+    | rkr_non_unique_key
+    | rkr_unique_key
+    | rkr_pk_if_possible
+;
+
+rkr_pk_if_possible:
+    { if ($primary_keys{$last_table}) { 'rkr_non_unique_key' } else { $primary_keys{$last_table} = 1; 'PRIMARY KEY' } } ;
+    
+rkr_unique_key:
+    UNIQUE rkr_non_unique_key;
+    
+rkr_non_unique_key:
+    KEY rkr_new_key_name ;
+    
+rkr_drop_key:
+    ALTER TABLE _basetable DROP KEY rkr_key_name_to_drop ;
+
 rkr_index_field_list:
       rkr_partially_covered_column 
     | rkr_partially_covered_column, rkr_partially_covered_column

@@ -17,40 +17,48 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-# **NOTE** Joins for this grammar are currently not working as intended.
-# For example, if we have tables 1, 2, and 3, we end up with ON conditions that 
-# only involve tables 2 and 3.
-# This will be fixed, but initial attempts at altering this had a negative 
-# impact on the coverage the test was providing.  To be fixed when scheduling 
-# permits.  We are still seeing significant coverage with the grammar as-is.
 
-################################################################################
-# recommendations:
-#	   queries: 10k+.  We can see a lot with lower values, but over 10k is
-#		best.  The intersect optimization happens with low frequency
-#		so larger values help us to hit it at least some of the time
-#	   engines: MyISAM *and* Innodb.  Certain optimizations are only hit with
-#		one engine or another and we should use both to ensure we
-#		are getting maximum coverage
-#	   Validators:  ResultsetComparatorSimplify
-#			  - used on server-server comparisons
-#			Transformer - used on a single server
-#			  - creates equivalent versions of a single query
-#			SelectStability - used on a single server
-#			  - ensures the same query produces stable result sets
-################################################################################
-
-################################################################################
-# The perl code in {} helps us with bookkeeping for writing more sensible
-# queries.  We need to keep track of these items to ensure we get interesting
-# and stable queries that find bugs rather than wondering if our query is
-# dodgy.
-################################################################################
 query_init:
-	{ $query_count = 0; $total_dur = 0; "" };
+	{ $query_count = 0; $total_dur = 0; %table_columns; %table_columns_by_type; "" } fetch_table_columns fetch_table_int_columns fetch_table_char_columns;
+    
+fetch_table_columns:
+    { unless (%table_columns) { foreach $t (@{$executors->[0]->baseTables()}) { $table_columns{$t} = $executors->[0]->metaColumns($t, $last_database) }; } '' };
+
+fetch_table_int_columns:
+    { $type = 'int'; '' } fetch_table_columns_by_type;
+
+fetch_table_char_columns:
+    { $type = 'char'; '' } fetch_table_columns_by_type;
+
+fetch_table_columns_by_type:
+    { unless (%table_columns_by_type and $table_columns_by_type{$type}) { foreach $t (@{$executors->[0]->baseTables()}) { ${$table_columns_by_type{$type}}{$t} = $executors->[0]->metaColumnsDataType($type,$t,$last_database) } }; '' } ;
+
+# We don't want many big tables in a query, it makes queries too slow and does not really add value to the tests
+# Now we'll have the max number of big tables hardcoded here to 1, maybe later we'll change it
+smart_table:
+    { if ( $bigtables < 1 ) { $last_table = $prng->arrayElement($executors->[0]->tables($last_database)); $bigtables++ if ($executors->[0]->isBigTable($last_table)) } else { $last_table = $prng->arrayElement($executors->[0]->smallTables($last_database)) } ; $last_table };
+
+smart_base_table:
+    { if ( $bigtables < 1 ) { $last_table = $prng->arrayElement($executors->[0]->baseTables($last_database)); $bigtables++ if ($executors->[0]->isBigTable($last_table)) } else { $last_table = $prng->arrayElement($executors->[0]->smallBaseTables($last_database)) } ; $last_table };
+# else { $last_table = $prng->arrayElement($executors->[0]->smallTables($last_database)) }
+
+# else { $last_table = $prng->arrayElement($executors->[0]->smallTables($last_database)) }
 
 query:
-	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } explain_extended main_select /* QUERY_NO { ++$query_count } CON_ID _connection_id */;
+	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $bigtables = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } query_type ;
+
+#################################################################################
+#################################################################################
+#-------------------------------------------------------------------------------#
+#---- This part of the grammar was derived from optimizer.yy -------------------#
+#-------------------------------------------------------------------------------#
+#################################################################################
+#################################################################################
+
+
+query_type:
+      main_select 
+    | range_access ;
 
 main_select:
 	simple_select | simple_select | simple_select | simple_select |
@@ -116,18 +124,16 @@ explain_extended2: | | | | EXPLAIN | EXPLAIN EXTENDED ;
 	   
 distinct: DISTINCT | | | | | | | | | ;
 
-select_option:  | | | | | | | | | | | SQL_SMALL_RESULT ;
+select_option:  | | | | | | | | | | | | | | | | SQL_SMALL_RESULT | SQL_BIG_RESULT ;
 
 straight_join:  | | | | | | | | | | | | | | | | | | | | | STRAIGHT_JOIN ;
 
 select_list:
 	new_select_item |
-	new_select_item , select_list |
 	new_select_item , select_list ;
 
 simple_select_list:
 	nonaggregate_select_item |
-	nonaggregate_select_item , simple_select_list |
 	nonaggregate_select_item , simple_select_list ;
 
 aggregate_select_list:
@@ -139,22 +145,15 @@ join_list:
 # this limits us to 2 and 3 table joins / can use it if we hit
 # too many mega-join conditions which take too long to run
 ################################################################################
-	( new_table_item join_type new_table_item ON (join_condition_list ) ) |
-	( new_table_item join_type ( ( new_table_item join_type new_table_item ON (join_condition_list ) ) ) ON (join_condition_list ) ) |
+	  new_table_item |
+	  new_table_item |
 	( new_table_item , new_table_item ) |
+	( new_table_item , new_table_item ) |
+	( new_table_item join_type new_table_item ON (join_condition_list ) ) |
+	( new_table_item join_type new_table_item ON (join_condition_list ) ) |
+	( new_table_item join_type ( new_table_item join_type new_table_item ON (join_condition_list ) ) ON (join_condition_list ) ) |
 	( new_table_item , new_table_item , new_table_item ) ;
 
-
-join_list_disabled:
-################################################################################
-# preventing deep join nesting for run time / table access methods are more
-# important here - join.yy can provide deeper join coverage
-# Enabling this / swapping out with join_list above can produce some
-# time-consuming queries.
-################################################################################
-
-	new_table_item |
-	( new_table_item join_type join_list ON (join_condition_list ) ) ;
 
 join_type:
 	INNER JOIN | left_right outer JOIN |
@@ -184,15 +183,16 @@ on_subquery:
 
 
 left_right:
-	LEFT | RIGHT ;
+	LEFT | LEFT | LEFT | RIGHT ;
 
 outer:
-	| OUTER ;
+	| | | OUTER ;
 
 where_clause:
-	WHERE where_subquery |
 	WHERE where_list |
- 	WHERE ( where_subquery ) and_or where_list |
+	WHERE where_list |
+	WHERE where_list |
+	WHERE where_subquery |
  	WHERE ( where_subquery ) and_or where_list ;
 
 
@@ -218,6 +218,8 @@ degenerate_where_item:
 	_char[invariant] NOT LIKE _char[invariant] ;
 
 where_item:
+	real_where_item |
+	real_where_item |
 	real_where_item |
 	real_where_item |
 	real_where_item |
@@ -250,30 +252,36 @@ subquery_type:
 
 general_subquery:
 	existing_table_item . _field_int arithmetic_operator  int_single_value_subquery  |
+	existing_table_item . _field_int arithmetic_operator  int_single_value_subquery  |
+	existing_table_item . _field_char arithmetic_operator char_single_value_subquery |
 	existing_table_item . _field_char arithmetic_operator char_single_value_subquery |
 	existing_table_item . _field_int membership_operator  int_single_member_subquery  |
+	existing_table_item . _field_int membership_operator  int_single_member_subquery  |
 	existing_table_item . _field_int membership_operator  int_single_value_subquery  |
+	existing_table_item . _field_int membership_operator  int_single_value_subquery  |
+	existing_table_item . _field_char membership_operator  char_single_member_subquery  |
+	existing_table_item . _field_char membership_operator  char_single_member_subquery  |
+	existing_table_item . _field_char membership_operator  char_single_value_subquery  |
+	existing_table_item . _field_char membership_operator  char_single_value_subquery  |
 	_digit membership_operator  int_single_member_subquery  |
 	_char membership_operator  char_single_member_subquery  |
 	( existing_table_item . _field_int , existing_table_item . _field_int ) not IN int_double_member_subquery |
-	existing_table_item . _field_char membership_operator  char_single_member_subquery  |
-	existing_table_item . _field_char membership_operator  char_single_value_subquery  |
 	( existing_table_item . _field_char , existing_table_item . _field_char ) not IN char_double_member_subquery |
 	( _digit, _digit ) not IN int_double_member_subquery |
 	( _char, _char ) not IN char_double_member_subquery |
 	existing_table_item . _field_int membership_operator int_single_union_subquery |
 	existing_table_item . _field_char membership_operator char_single_union_subquery ;
 
-general_subquery_union_test_disabled:
-	existing_table_item . _field_char arithmetic_operator all_any char_single_union_subquery_disabled |
-	existing_table_item . _field_int arithmetic_operator all_any int_single_union_subquery_disabled ;
-
 special_subquery:
 	not EXISTS ( int_single_member_subquery ) |
 	not EXISTS ( char_single_member_subquery ) |
 	not EXISTS int_correlated_subquery |
+	not EXISTS int_correlated_subquery |
+	not EXISTS char_correlated_subquery  | 
 	not EXISTS char_correlated_subquery  | 
 	existing_table_item . _field_int membership_operator  int_correlated_subquery  |
+	existing_table_item . _field_int membership_operator  int_correlated_subquery  |
+	existing_table_item . _field_char membership_operator char_correlated_subquery  |
 	existing_table_item . _field_char membership_operator char_correlated_subquery  |
 	int_single_value_subquery IS not NULL |
 	char_single_value_subquery IS not NULL ;
@@ -430,6 +438,8 @@ subquery_where_item:
 
 subquery_join_list:
    subquery_new_table_item  |  subquery_new_table_item  |
+   subquery_new_table_item  |  subquery_new_table_item  |
+   subquery_new_table_item  |  subquery_new_table_item  |
    ( subquery_new_table_item , subquery_new_table_item ) |
    ( subquery_new_table_item join_type subquery_new_table_item ON (subquery_join_condition_item ) ) |
    ( subquery_new_table_item join_type subquery_new_table_item ON (subquery_join_condition_item ) ) |
@@ -484,10 +494,14 @@ child_subquery_type:
 
 general_child_subquery:
 	existing_subquery_table_item . _field_int arithmetic_operator  int_single_value_child_subquery  |
+	existing_subquery_table_item . _field_int arithmetic_operator  int_single_value_child_subquery  |
+	existing_subquery_table_item . _field_char arithmetic_operator char_single_value_child_subquery |
 	existing_subquery_table_item . _field_char arithmetic_operator char_single_value_child_subquery |
 	existing_subquery_table_item . _field_int membership_operator  int_single_member_child_subquery  |
-	( existing_subquery_table_item . _field_int , existing_subquery_table_item . _field_int ) not IN int_double_member_child_subquery |
+	existing_subquery_table_item . _field_int membership_operator  int_single_member_child_subquery  |
 	existing_subquery_table_item . _field_char membership_operator  char_single_member_child_subquery  |
+	existing_subquery_table_item . _field_char membership_operator  char_single_member_child_subquery  |
+	( existing_subquery_table_item . _field_int , existing_subquery_table_item . _field_int ) not IN int_double_member_child_subquery |
 	( existing_subquery_table_item . _field_char , existing_subquery_table_item . _field_char ) not IN char_double_member_child_subquery |
 	( _digit, _digit ) not IN int_double_member_child_subquery |
 	( _char, _char ) not IN char_double_member_child_subquery |
@@ -611,6 +625,9 @@ child_subquery_where_item:
 
 child_subquery_join_list:
 	child_subquery_new_table_item  |  child_subquery_new_table_item  |
+	child_subquery_new_table_item  |  child_subquery_new_table_item  |
+	child_subquery_new_table_item  |  child_subquery_new_table_item  |
+	child_subquery_new_table_item  |  child_subquery_new_table_item  |
    ( child_subquery_new_table_item join_type child_subquery_new_table_item ON (child_subquery_join_condition_item ) ) |
    ( child_subquery_new_table_item join_type child_subquery_new_table_item ON (child_subquery_join_condition_item ) ) |
    ( child_subquery_new_table_item join_type ( ( child_subquery_new_table_item join_type child_subquery_new_table_item ON (child_subquery_join_condition_item ) ) ) ON (child_subquery_join_condition_item ) ) ;
@@ -696,7 +713,7 @@ number_list:
 	_tinyint_unsigned | number_list, _tinyint_unsigned ;
 
 char_list:
-	_char | 'USA' | char_list , _char | char_list , 'USA' ;
+	_char | _char | _char | _char | 'USA' | char_list , _char | char_list , _char | char_list , 'USA' ;
 
 ################################################################################
 # We ensure that a GROUP BY statement includes all nonaggregates.
@@ -772,7 +789,7 @@ desc:
 
 
 limit:
-	| | LIMIT limit_size | LIMIT limit_size OFFSET _digit;
+	| | LIMIT limit_size | LIMIT limit_size OFFSET int_value;
 
 new_select_item:
 	nonaggregate_select_item |
@@ -872,17 +889,17 @@ aggregate_separator:
 # track of what we have added.  You shouldn't need to touch these ever
 ################################################################################
 new_table_item:
-	_table AS { "alias".++$tables } | _table AS { "alias".++$tables } | _table AS { "alias".++$tables } |
+	smart_table AS { "alias".++$tables } | _table AS { "alias".++$tables } | _table AS { "alias".++$tables } |
 	( from_subquery ) AS { "alias".++$tables } ;
 
 from_subquery:
 	   { $subquery_idx += 1 ; $subquery_tables=0 ; $sq_ifields = 0; $sq_cfields = 0; ""}  SELECT distinct select_option subquery_table_one_two . * subquery_body  ;
 
 subquery_new_table_item:
-	_table AS { "SQ".$subquery_idx."_alias".++$subquery_tables } ;
+	smart_table AS { "SQ".$subquery_idx."_alias".++$subquery_tables } ;
 
 child_subquery_new_table_item:
-	_table AS { "C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables } ;	  
+	smart_table AS { "C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables } ;	  
 
 current_table_item:
 	{ "alias".$tables };
@@ -977,3 +994,332 @@ _digit:
 
 limit_size:
 	1 | 2 | 10 | 100 | 1000;
+
+
+#################################################################################
+#################################################################################
+#-------------------------------------------------------------------------------#
+#---- This part of the grammar was derived from range_access.yy ----------------#
+#-------------------------------------------------------------------------------#
+#################################################################################
+#################################################################################
+
+range_access:
+  { $idx_table = '' ; %idx_fields = () ;  "" } range_access_query_type ;
+
+range_access_query_type:
+    single_idx_query_set 
+  | dual_int_idx_query_set 
+  | dual_char_idx_query_set 
+  | tri_int_idx_query_set 
+  | tri_char_idx_query_set 
+;
+
+single_idx_query_set:
+  single_idx_query ; single_idx_query ; single_idx_query ; single_idx_query ; single_idx_query ; 
+
+dual_int_idx_query_set:
+  new_dual_int_index ; multi_int_idx_query_set ;
+
+dual_char_idx_query_set:
+  new_dual_char_index ; multi_char_idx_query_set ;
+
+tri_int_idx_query_set:
+  new_tri_int_index ; multi_int_idx_query_set ;
+
+tri_char_idx_query_set:
+  new_tri_char_index ; multi_char_idx_query_set ;
+
+wild_query:
+  single_idx_query | multi_int_idx_query | multi_char_idx_query ;
+
+multi_int_idx_query_set:
+  multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; wild_query ; drop_index ;  
+
+multi_char_idx_query_set:
+  multi_char_idx_query ; multi_char_idx_query ; multi_char_idx_query ; multi_char_idx_query ; multi_char_idx_query ; wild_query ; drop_index ;
+
+################################################################################
+# index-specific rules
+################################################################################
+
+drop_index:
+ DROP INDEX `test_idx` ON { $idx_table } ;
+
+index_pre:
+  ALTER TABLE index_table { $suitable_columns = ${$table_columns_by_type{$idxcoltype}}{$idx_table}; '' } ADD INDEX `test_idx` USING index_type ;
+
+new_dual_int_index:
+  { $idxcoltype = 'int'; '' } index_pre (dual_idx_field_list);
+
+new_dual_char_index:
+  { $idxcoltype = 'char'; '' } index_pre (dual_idx_field_list);
+
+new_tri_int_index:
+  { $idxcoltype = 'int'; '' } index_pre (tri_idx_field_list);
+
+new_tri_char_index:
+  { $idxcoltype = 'char'; '' } index_pre (tri_idx_field_list);
+
+dual_idx_field_list:
+  unique_field_for_index unique_field_for_index;
+    
+tri_idx_field_list:
+  unique_field_for_index unique_field_for_index unique_field_for_index;
+
+unique_field_for_index:
+  { if (scalar(%idx_fields)>= scalar(@$suitable_columns)) { "/* Not enough $idxcoltype columns for $idx_table, only @$suitable_columns */" } else { do { $last_field = $prng->arrayElement($suitable_columns) } until (not defined $idx_fields{$last_field}); $idx_fields{$last_field} = 1; (scalar(keys %idx_fields) > 1 ? ', ' : '') . $last_field } };
+
+
+################################################################################
+# single index rules
+################################################################################
+
+single_idx_where_list:
+    single_int_idx_where_clause | single_char_idx_where_clause |
+    single_idx_where_list and_or single_int_idx_where_clause |
+    single_idx_where_list and_or single_char_idx_where_clause ;
+
+
+single_int_idx_where_clause:
+   single_int_idx_where_list ;
+
+
+single_int_idx_where_list:
+   single_int_idx_where_list or_and single_int_idx_where_item |
+   single_int_idx_where_item | single_int_idx_where_item ;
+
+int_idx_field:
+    { $last_idx_field = "alias".$prng->int(1,$tables).'.' } _field_int { $last_idx_field .= $last_field; '' } ;
+
+single_int_idx_where_item:
+   int_idx_field greater_than _digit[invariant] AND { $last_idx_field } less_than ( _digit[invariant] + increment ) |
+   int_idx_field greater_than _digit[invariant] AND { $last_idx_field } less_than ( _digit[invariant] + increment ) |
+   int_idx_field greater_than _digit AND { $last_idx_field } less_than ( _digit[invariant] + int_value ) |
+   int_idx_field greater_than _digit[invariant] AND { $last_idx_field } less_than ( _digit + int_value ) |
+   int_idx_field greater_than _digit AND { $last_idx_field } less_than ( _digit + increment ) |
+   int_idx_field comparison_operator int_value |
+   int_idx_field not_equal int_value |
+   int_idx_field not IN (number_list) |
+   int_idx_field not BETWEEN _digit[invariant] AND (_digit[invariant] + int_value ) |
+   int_idx_field IS not NULL ;
+
+
+single_char_idx_where_clause:
+  single_char_idx_where_list ;
+
+single_char_idx_where_list:
+  single_char_idx_where_list and_or single_char_idx_where_item |
+  single_char_idx_where_item | single_char_idx_where_item ;
+
+char_idx_field:
+    { $last_idx_field = "alias".$prng->int(1,$tables).'.' } _field_char { $last_idx_field .= $last_field; '' } ;
+
+
+single_char_idx_where_item:
+  char_idx_field greater_than _char AND { $last_idx_field } less_than 'z' |
+  char_idx_field greater_than _char AND { $last_idx_field } less_than 'z' |
+  char_idx_field greater_than _char AND { $last_idx_field } less_than 'z' |
+  char_idx_field greater_than char_value AND { $last_idx_field } less_than char_value |
+  char_idx_field greater_than char_value AND { $last_idx_field } less_than 'zzzz' |
+  char_idx_field IS not NULL |
+  char_idx_field not IN (char_list) |
+  char_idx_field not LIKE ( char_pattern ) |
+  char_idx_field not BETWEEN _char AND 'z' ;
+
+################################################################################
+# multi-part index rules
+################################################################################
+
+multi_int_idx_where_list:
+    multi_int_idx_where_clause | 
+    multi_int_idx_where_list and_or multi_int_idx_where_clause | multi_int_idx_where_list and_or multi_int_idx_where_clause ;
+
+
+multi_int_idx_where_clause:
+   {  $int_idx_field = $idx_table_alias." . ".$prng->arrayElement([keys %idx_fields]) ; "" } single_int_idx_where_list ;
+
+# char rules
+multi_char_idx_where_list:
+    multi_char_idx_where_clause |
+    multi_char_idx_where_list and_or multi_char_idx_where_clause | multi_char_idx_where_list and_or multi_char_idx_where_clause ;
+
+multi_char_idx_where_clause:
+   {  $char_idx_field = $idx_table_alias." . ".$prng->arrayElement([keys %idx_fields]) ; "" } single_char_idx_where_list ;
+  
+
+
+################################################################################
+# general-purpose query rules
+################################################################################
+
+single_idx_query:
+  { $tables=0 ; $fields = 0 ; "" }  SELECT straight_join range_access_select_list FROM join WHERE single_idx_where_list opt_where_list range_access_group_by_clause range_access_order_by_clause ;
+
+multi_int_idx_query:
+  { $tables=0 ; $fields = 0 ; "" }  SELECT straight_join range_access_select_list FROM idx_join WHERE multi_int_idx_where_list opt_where_list range_access_group_by_clause range_access_order_by_clause ;
+
+multi_char_idx_query:
+  { $tables=0 ; $fields = 0 ; "" }  SELECT straight_join range_access_select_list FROM idx_join WHERE multi_char_idx_where_list opt_where_list range_access_group_by_clause range_access_order_by_clause ;
+
+range_access_select_list:
+  select_item | select_item , range_access_select_list ;
+
+select_item:
+  table_one_two . _field AS { my $f = "field".++$fields ; $f } ; 
+
+join:
+   { $stack->push() }      
+   table_or_join 
+   { $stack->set("left",$stack->get("result")); }
+   left_right outer JOIN table_or_join 
+   ON 
+   join_condition ;
+
+idx_join:
+   { $stack->push() }      
+   idx_table_for_join 
+   { $stack->set("left",$stack->get("result")); }
+   left_right outer JOIN table_or_join 
+   ON 
+   join_condition ;
+
+join_condition:
+   int_condition | char_condition ;
+
+int_condition: 
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed = 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed
+   { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed =
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_field_name
+   { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_field_name =
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/,
+ $table_string); $table_array[1] } . int_indexed
+   { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_field_name =
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/,
+ $table_string); $table_array[1] } . int_field_name
+   { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } ;
+
+char_condition:
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name =
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name 
+   { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed  =
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name 
+   { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name =
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed 
+   { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } ;
+
+table_or_join:
+           table | table | table | table | table | table | 
+           table | table | join | join ;
+
+table:
+# We use the "AS alias" bit here so we can have unique aliases if we use the same table many times
+       { $stack->push(); '' } smart_base_table { my $x = " AS alias".++$tables;  my @s=($last_table.$x); $stack->pop(\@s); $x } ;
+
+idx_table_for_join:
+       { $stack->push() ; my $x = $idx_table." AS alias".++$tables; $idx_table_alias = "alias".$tables; my @s=($x); $stack->pop(\@s); $x } ;
+
+index_type:
+  BTREE | HASH ;
+
+index_table:
+  smart_base_table { my $idx_table_candidate = $last_table ; $idx_table = $idx_table_candidate ; '' } ;
+
+opt_where_list:
+  | | | | and_or range_access_where_list ;
+
+range_access_where_list:
+  range_access_where_item | range_access_where_item | range_access_where_item | ( range_access_where_list and_or range_access_where_item ) ;
+
+range_access_where_item:
+  existing_table_item . int_field_name comparison_operator int_value |
+  existing_table_item . char_field_name comparison_operator _char |
+  existing_table_item . int_field_name comparison_operator int_value |
+  existing_table_item . int_field_name comparison_operator existing_table_item . int_field_name |
+  existing_table_item . char_field_name comparison_operator _char |
+  existing_table_item . char_field_name comparison_operator existing_table_item . char_field_name |
+  existing_table_item . _field IS not NULL |
+  existing_table_item . int_field_name IS not NULL |
+  single_idx_where_list ;
+
+range_access_group_by_clause:
+	| | | | | GROUP BY { @groupby = (); for (1..$fields) { push @groupby, 'field'.$_ }; join ',', @groupby } ;
+
+range_access_order_by_clause:
+	| | |
+    ORDER BY range_access_total_order_by desc limit |
+	ORDER BY order_by_list  ;
+
+range_access_total_order_by:
+	{ join(', ', map { "field".$_ } (1..$fields) ) };
+
+order_by_list:
+	order_by_item  |
+	order_by_item  , order_by_list ;
+
+order_by_item:
+	range_access_existing_select_item desc ;
+
+################################################################################
+# utility / helper rules
+################################################################################
+
+range_access_existing_select_item:
+	{ "field".$prng->int(1,$fields) };
+
+comparison_operator:
+  = | > | < | != | <> | <= | >= ;
+
+greater_than:
+  > | >= ;
+
+less_than:
+  < | <= ;
+
+not_equal:
+  <> | != ;
+
+int_value:
+   _digit | _digit | _digit | _digit | _digit | digit | other_int ;
+
+other_int:
+   _tinyint_unsigned | 20 | 25 | 30 | 35 | 50 | 65 | 75 | 100 ;
+
+char_value:
+  _char | _char | _char | _quid | _english ; 
+
+char_pattern:
+ char_value | char_value | CONCAT( _char, '%') | 'a%'| _quid | '_' | '_%' ;
+
+increment:
+   1 |  1 | 2 | 2 | 5 | 5 | 6 | 10 ; 
+
+large_length:
+   200 | 200 | 200 | 200 | 200 | 100 | 200 | 250 | 37 | 50 | 175 | small_length ;
+
+small_length:
+   1 | 2 | 5 | 7 | 8 | 9 | 10 | 10 | 10 | 10 ; 
+
+random_length:
+  large_length | large_length | small_length ;
+
+int_indexed:
+   _field_int ;
+
+int_field_name: 
+   _field_int ;
+
+char_indexed:  
+   _field_char;
+ 
+char_field_name:
+   _field_char ; 
+
+or_and:
+  OR | OR | OR | AND ;
