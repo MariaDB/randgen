@@ -2,19 +2,19 @@ query_init_add:
     set_variables ;
     
 set_variables: 
-    SET SESSION set_variables_list ;
+    SET @dummy=1 set_variables_list ;
     
 set_variables_list:
-    set_variable | set_variable , set_variables_list ;
+    | set_variable set_variables_list ;
     
 set_variable:
-      SQL_MODE = set_sql_mode
-    | USE_STAT_TABLES = set_use_stat_tables_value
-    | OPTIMIZER_USE_CONDITION_SELECTIVITY = set_selectivity
+      , SQL_MODE = set_sql_mode
+    | /*!100000 , USE_STAT_TABLES = set_use_stat_tables_value */
+    | /*!100000 , OPTIMIZER_USE_CONDITION_SELECTIVITY = set_selectivity */
 # Disabled due to MDEV-10397
-#    | JOIN_CACHE_LEVEL = set_join_cache_level
-    | HISTOGRAM_SIZE = set_histogram_size
-    | HISTOGRAM_TYPE = set_histogram_type
+#    | , JOIN_CACHE_LEVEL = set_join_cache_level
+    | /*!100000 , HISTOGRAM_SIZE = set_histogram_size */
+    | /*!100000 , HISTOGRAM_TYPE = set_histogram_type */
 ;
     
 set_sql_mode:
