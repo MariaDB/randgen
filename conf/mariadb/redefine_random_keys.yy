@@ -30,12 +30,17 @@ thread1_init_add:
 ;
 
 thread1_add:
-      query | query | query | query | query | query | query 
-    | query | query | query | query | query | query | query 
-    | query | query | query | query | query | query | query 
-    | query | query | query | query | query | query | query 
-    | rkr_add_key | rkr_add_key | rkr_drop_key ;
+      query | query | query | query | query | query | query
+    | query | query | query | query | query | query | query
+    | query | query | query | query | query | query | query
+    | query | query | query | query | query | query | query
+    | query | query | query | query | query | query | query
+    | rkr_add_key | rkr_add_key | rkr_drop_key
+    | rkr_analyze_tables
+;
 
+rkr_analyze_tables:
+    ANALYZE TABLE { join ',', @{$executors->[0]->baseTables()} };
 
 rkr_new_key_name:
     { 
