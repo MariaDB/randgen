@@ -47,10 +47,10 @@
 # dodgy.
 ################################################################################
 query_init:
-	{ $query_count = 0; $total_dur = 0; "" };
+	{ $total_dur = 0; "" };
 
 query:
-	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } explain_extended main_select /* QUERY_NO { ++$query_count } CON_ID _connection_id */;
+	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } explain_extended main_select ;
 
 main_select:
 	simple_select | simple_select | simple_select | simple_select |
