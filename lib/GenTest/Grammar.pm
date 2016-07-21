@@ -176,6 +176,18 @@ sub parseFromString {
     # In the resulting grammar we will have:
     #   query_init:
     #     rule4 ; rule5;
+    #
+    # Also, we will add threadX_init_add to query_init (if it's not overridden for the given thread ID).
+    # That is, if we have in the grammars
+    # query_init: ...
+    # query_init_add: ...
+    # thread2_init_add: ...
+    # thread3_init: ...
+    #
+    # then the resulting init sequence for threads will be:
+    # 1: query_init; query_init_add
+    # 2: query_init; query_init_add; thread2_init_add
+    # 3: thread3_init
     
 
     my @query_adds = ();
@@ -228,7 +240,14 @@ sub parseFromString {
 
     foreach my $tid (keys %thread_init_adds) {
         my $adds = join '; ', @{$thread_init_adds{$tid}};
-        $rules{'thread'.$tid.'_init'} = ( defined $rules{'thread'.$tid.'_init'} ? $rules{'thread'.$tid.'_init'} . '; ' . $adds : $adds );
+        $rules{'thread'.$tid.'_init'} = (
+            defined $rules{'thread'.$tid.'_init'}
+                ? $rules{'thread'.$tid.'_init'} . '; ' . $adds
+                : ( defined $rules{'query_init'}
+                    ? $rules{'query_init'} . '; ' . $adds
+                    : $adds
+                )
+        );
     }
 
     # Now we have all the rules extracted from grammar files, time to parse
