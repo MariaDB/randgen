@@ -519,6 +519,7 @@ my %acceptable_se_errors = (
 );
 
 my ($version, $major_version);
+my $query_no = 0;
 
 
 sub init {
@@ -584,13 +585,15 @@ sub reportError {
     if (defined $self->channel) {
         $self->sendError($msg) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
     } elsif (not defined $reported_errors{$errstr}) {
-        say("Executor::MySQL::reportError Query: $query failed: $err $errstr. Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+        say("Executor: Query: $query failed: $err $errstr. Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
         $reported_errors{$errstr}++;
     }
 }
 
 sub execute {
 	my ($executor, $query, $execution_flags) = @_;
+    
+    $query .= ' /* QUERY_NO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId() . ' */ ';
 
 	$execution_flags = $execution_flags | $executor->flags();
 
@@ -1018,12 +1021,23 @@ sub getSchemaMetaData {
                     "WHEN data_type IN ('tinytext','text','mediumtext','longtext') THEN 'text' ".
                     "ELSE data_type END, ".
                "data_type, ".
-               "character_maximum_length ".
+               "character_maximum_length, ".
+               "table_rows ".
          "FROM information_schema.tables INNER JOIN ".
               "information_schema.columns USING(table_schema, table_name) ".
           "WHERE table_name <> 'DUMMY'"; 
 
-    return $self->dbh()->selectall_arrayref($query);
+    my @res = @{$self->dbh()->selectall_arrayref($query)};
+    my %table_rows = ();
+    foreach my $i (0..$#res) {
+        my $tbl = $res[$i]->[0].'.'.$res[$i]->[1];
+        if ((not defined $table_rows{$tbl}) or ($table_rows{$tbl} eq 'NULL') or ($table_rows{$tbl} eq '')) {
+            my $count_row = $self->dbh()->selectrow_arrayref("SELECT COUNT(*) FROM $tbl");
+            $table_rows{$tbl} = $count_row->[0];
+        }
+        $res[$i]->[8] = $table_rows{$tbl};
+    }
+    return \@res;
 }
 
 sub getCollationMetaData {

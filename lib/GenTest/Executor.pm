@@ -331,15 +331,30 @@ sub cacheMetaData {
     if ($redo or not exists $global_schema_cache{$self->dsn()}) {
         say ("Caching schema metadata for ".$self->dsn());
         foreach my $row (@{$self->getSchemaMetaData()}) {
-            my ($schema, $table, $type, $col, $key, $metatype, $realtype, $maxlength) = @$row;
+            my ($schema, $table, $type, $col, $key, $metatype, $realtype, $maxlength, $table_rows) = @$row;
             $meta->{$schema}={} if not exists $meta->{$schema};
+            $meta->{$schema}->{'bigtable'}={} if not exists $meta->{$schema}->{'bigtable'};
+            $meta->{$schema}->{'bigbasetable'}={} if not exists $meta->{$schema}->{'bigbasetable'};
+            $meta->{$schema}->{'smalltable'}={} if not exists $meta->{$schema}->{'smalltable'};
+            $meta->{$schema}->{'smallbasetable'}={} if not exists $meta->{$schema}->{'bigbasetable'};
+            if ($table_rows < 500) {
+                $meta->{$schema}->{'smalltable'}->{$table} = $table_rows;
+                if ($type eq 'table') {
+                    $meta->{$schema}->{'smallbasetable'}->{$table} = $table_rows;
+                }
+            } else {
+                $meta->{$schema}->{'bigtable'}->{$table} = $table_rows;
+                if ($type eq 'table') {
+                    $meta->{$schema}->{'bigbasetable'}->{$table} = $table_rows;
+                }
+            }
             $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
             $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
             $meta->{$schema}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
         }
-	$global_schema_cache{$self->dsn()} = $meta;
+        $global_schema_cache{$self->dsn()} = $meta;
     } else {
-	$meta = $global_schema_cache{$self->dsn()};
+        $meta = $global_schema_cache{$self->dsn()};
     }
 
     $self->[EXECUTOR_SCHEMA_METADATA] = $meta;
@@ -411,6 +426,101 @@ sub metaBaseTables {
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
     
 }
+
+sub metaBigTables {
+    my ($self, $schema) = @_;
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+
+    $schema = $self->defaultSchema if not defined $schema;
+
+    my $cachekey = "BIGTAB-$schema";
+
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my $tables = [sort keys %{$meta->{$schema}->{bigtable}}];
+        if (not defined $tables or $#$tables < 0) {
+            say "WARNING: Schema '$schema' has no big tables";
+            $tables = [ 'non_existing_big_table' ];
+        }
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+}
+
+sub isBigTable {
+    my ($self, $table, $schema) = @_;
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+
+    $schema = $self->defaultSchema if not defined $schema;
+
+    my $cachekey = "BIGTABHASH-$schema";
+
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my $tables = $meta->{$schema}->{bigtable};
+        if (not defined $tables or not scalar(keys %$tables)) {
+            say "WARNING: Schema '$schema' has no big tables";
+        }
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey}->{$table};
+}
+
+sub metaBigBaseTables {
+    my ($self, $schema) = @_;
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+
+    $schema = $self->defaultSchema if not defined $schema;
+
+    my $cachekey = "BIGBASETAB-$schema";
+
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my $tables = [sort keys %{$meta->{$schema}->{bigbasetable}}];
+        if (not defined $tables or $#$tables < 0) {
+            say "WARNING: Schema '$schema' has no big base tables";
+            $tables = [ 'non_existing_big_base_table' ];
+        }
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+}
+
+sub metaSmallTables {
+    my ($self, $schema) = @_;
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+
+    $schema = $self->defaultSchema if not defined $schema;
+
+    my $cachekey = "SMALLTAB-$schema";
+
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my $tables = [sort keys %{$meta->{$schema}->{smalltable}}];
+        if (not defined $tables or $#$tables < 0) {
+            say "WARNING: Schema '$schema' has no small tables";
+            $tables = [ 'non_existing_small_table' ];
+        }
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+}
+
+sub metaSmallBaseTables {
+    my ($self, $schema) = @_;
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+
+    $schema = $self->defaultSchema if not defined $schema;
+
+    my $cachekey = "SMALLBASETAB-$schema";
+
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my $tables = [sort keys %{$meta->{$schema}->{smallbasetable}}];
+        if (not defined $tables or $#$tables < 0) {
+            say "WARNING: Schema '$schema' has no small base tables";
+            $tables = [ 'non_existing_small_base_table' ];
+        }
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+}
+
 
 sub metaViews {
     my ($self, $schema) = @_;
@@ -523,6 +633,7 @@ sub metaColumnsDataType {
         }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }
+#    say("HERE: $datatype columns for $table in $schema: @{$self->[EXECUTOR_META_CACHE]->{$cachekey}}");
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
     
 }
@@ -708,6 +819,26 @@ sub tables {
 sub baseTables {
     my ($self, @args) = @_;
     return $self->metaBaseTables(@args);
+}
+
+sub smallTables {
+    my ($self, @args) = @_;
+    return $self->metaSmallTables(@args);
+}
+
+sub bigTables {
+    my ($self, @args) = @_;
+    return $self->metaBigTables(@args);
+}
+
+sub smallBaseTables {
+    my ($self, @args) = @_;
+    return $self->metaSmallBaseTables(@args);
+}
+
+sub bigBaseTables {
+    my ($self, @args) = @_;
+    return $self->metaBigBaseTables(@args);
 }
 
 sub tableColumns {
