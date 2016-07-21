@@ -52,10 +52,10 @@ sub run {
         my $msg = $self->[ERRORFILTER_CHANNEL]->recv;
         if (defined $msg) {
             my ($query, $err, $errstr) = @$msg;
-            if (not defined $self->[ERRORFILTER_CACHE]->{$errstr}) {
-                say("Query: $query failed: $err $errstr. Further errors of this kind will be suppressed.");
+            if (not defined $self->[ERRORFILTER_CACHE]->{$err}) {
+                say("ErrorFilter: Query: $query failed: $err $errstr. Further errors of this kind will be suppressed.");
             }
-            $self->[ERRORFILTER_CACHE]->{$errstr}++;
+            $self->[ERRORFILTER_CACHE]->{$err}++;
         }
         sleep 1 if !$self->[ERRORFILTER_CHANNEL]->more;
     }
