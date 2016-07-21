@@ -423,7 +423,7 @@ sub run {
             $table_name =~ s{values_less_than}{}siog;
             $table_name =~ s{integer}{int}siog;
             
-            # We don't want duplicate table names in case all parameters that affect the name are tehe same
+            # We don't want duplicate table names in case all parameters that affect the name are the same
             if ($tnames{$table_name}) {
                 $table_name .= '_'.(++$tnames{$table_name});
             } else {
