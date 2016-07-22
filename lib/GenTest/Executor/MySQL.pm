@@ -848,6 +848,12 @@ sub version {
 	}
 }
 
+sub versionNumeric {
+    my $executor = shift;
+    version() =~ /([0-9]+)\.([0-9]+)\.([0-9]+)/;
+    return sprintf("%d%02d%02d",int($1),int($2),int($3));
+}
+
 sub slaveInfo {
 	my $executor = shift;
 	my $slave_info = $executor->dbh()->selectrow_arrayref("SHOW SLAVE HOSTS");

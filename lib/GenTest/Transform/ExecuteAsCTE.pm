@@ -150,9 +150,10 @@ sub convert_selects_to_cte
 }
 
 sub transform {
-    my ($class, $orig_query) = @_;
+    my ($class, $orig_query, $executor) = @_;
 
 # TODO: 2nd part of UNION does not work for now
+    return STATUS_WONT_HANDLE if $executor->versionNumeric() < 100201;
     return STATUS_WONT_HANDLE if $orig_query =~ m{UNION}sio;
     return STATUS_WONT_HANDLE if $orig_query !~ m{SELECT}sio;
 
