@@ -183,7 +183,7 @@ sub run {
 		}
 	
 		my $port = $executor->port();
-		system("$mysql_client_path --port=$port --protocol=tcp -uroot test < $schema_file");
+		system("$mysql_client_path --port=$port --protocol=tcp -uroot --force test < $schema_file");
 		if ($?) {
 			say("ERROR: failed to load $schema_file through MySQL client");
 			return STATUS_ENVIRONMENT_FAILURE;
