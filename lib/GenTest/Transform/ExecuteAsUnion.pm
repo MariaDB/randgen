@@ -32,7 +32,7 @@ sub transform {
 	
 	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
 	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-		|| $orig_query !~ m{\s*SELECT}sio;
+		|| $orig_query !~ m{^\s*SELECT}sio;
 
 	# We remove LIMIT/OFFSET if present in the (outer) query, because we are 
 	# using LIMIT 0 in some of the transformed queries. There can be comments
