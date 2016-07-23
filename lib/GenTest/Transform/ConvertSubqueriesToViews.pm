@@ -58,7 +58,7 @@ sub transform {
 		my $subquery = $1;
 		my $view_name = "view_".abs($$)."_inline_".$view_counter;
 		my $drop_view = "DROP VIEW IF EXISTS $view_name",
-		my $create_view = "CREATE OR REPLACE VIEW $view_name AS $subquery;";
+		my $create_view = "CREATE OR REPLACE VIEW $view_name AS $subquery";
 		if ($executor->execute($create_view, 1)->err() == 0) {
 			push @view_ddl, $drop_view, $create_view;
 			$view_counter++;
