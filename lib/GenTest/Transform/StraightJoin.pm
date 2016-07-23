@@ -32,7 +32,8 @@ sub transform {
 
 	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
 	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-		|| $orig_query =~ m{LIMIT};
+		|| $orig_query =~ m{LIMIT}
+		|| $orig_query !~ m{SELECT};
 
 	if ($orig_query =~ s{SELECT\s+STRAIGHT_JOIN}{SELECT}sio) {
 		return $orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
@@ -44,7 +45,7 @@ sub transform {
 	} else {
 		# Add STRAIGHT_JOIN immediately after SELECT
 
-		$orig_query =~ s{SELECT}{SELECT STRAIGHT_JOIN}sgio;
+		$orig_query =~ s{SELECT(\W)}{SELECT STRAIGHT_JOIN $1}sgio;
 		return $orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 	}
 }
