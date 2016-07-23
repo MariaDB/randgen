@@ -36,15 +36,14 @@ sub transform {
 	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
 	#          - Certain HANDLER statements: they can not be re-run as prepared because they advance a cursor
 	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-		|| $orig_query !~ m{SELECT|HANDLER}sio
 		|| $orig_query =~ m{PREPARE|OPEN|CLOSE|PREV|NEXT|INTO}sio;
 
 	return [
-		"PREPARE prep_stmt_$$"."_".(++$count)." FROM ".$executor->dbh()->quote($orig_query),
-		"EXECUTE prep_stmt_$$"."_$count /* TRANSFORM_OUTCOME_UNORDERED_MATCH *//* 1st execution */",
-		"EXECUTE prep_stmt_$$"."_$count /* TRANSFORM_OUTCOME_UNORDERED_MATCH *//* 2nd execution */",
-		"EXECUTE prep_stmt_$$"."_$count /* TRANSFORM_OUTCOME_UNORDERED_MATCH *//* 3rd execution */",
-		"DEALLOCATE PREPARE prep_stmt_$$"."_$count"
+		"PREPARE prep_stmt_".abs($$)."_".(++$count)." FROM ".$executor->dbh()->quote($orig_query),
+		"EXECUTE prep_stmt_".abs($$)."_$count /* TRANSFORM_OUTCOME_UNORDERED_MATCH *//* 1st execution */",
+		"EXECUTE prep_stmt_".abs($$)."_$count /* TRANSFORM_OUTCOME_UNORDERED_MATCH *//* 2nd execution */",
+		"EXECUTE prep_stmt_".abs($$)."_$count /* TRANSFORM_OUTCOME_UNORDERED_MATCH *//* 3rd execution */",
+		"DEALLOCATE PREPARE prep_stmt_".abs($$)."_$count"
 	];
 }
 
