@@ -53,8 +53,8 @@ sub nativeReport {
 
 	foreach my $log ( $main_log, $main_log.'-old' ) {
 		if ((-e $log) && (-s $log > 0)) {
-			say("The last 100 lines from $log :");
-			system("tail -100 $log");
+			say("The last 200 lines from $log :");
+			system("tail -200 $log");
 		}
 	}
 	
