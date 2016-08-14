@@ -52,7 +52,10 @@ my $opt_result = GetOptions($options,
                             'dsn1=s',
                             'dsn2=s',
                             'dsn3=s',
-                            'engine=s',
+                            'engine:s',
+                            'engine1:s',
+                            'engine2:s',
+                            'engine3:s',
                             'generator=s',
                             'gendata:s',
                             'grammar=s',
@@ -82,6 +85,7 @@ my $opt_result = GetOptions($options,
                             'views:s',
                             'views1:s',
                             'views2:s',
+                            'views3:s',
                             'start-dirty',
                             'filter=s',
                             'valgrind',
@@ -192,6 +196,7 @@ $0 - Testing via random query generation. Options:
         --gendata=s : Execute gendata.pl in order to populate tables with data 
                       using the argument as specification file to gendata.pl
         --engine    : Table engine to use when creating tables with gendata (default: no ENGINE for CREATE TABLE)
+                      Different values can be provided to servers through --engine1 | --engine2 | --engine3
         --threads   : Number of threads to spawn (default $DEFAULT_THREADS)
         --queries   : Numer of queries to execute per thread (default $DEFAULT_QUERIES);
         --duration  : Duration of the test in seconds (default $DEFAULT_DURATION seconds);
@@ -209,7 +214,7 @@ $0 - Testing via random query generation. Options:
         --rows      : Number of rows to generate for each table in gendata.pl, unless specified in the ZZ file
         --varchar-length: maximum length of strings (deault 1) in gendata.pl
         --views     : Pass --views to gendata-old.pl or gendata.pl. Optionally specify view type (algorithm) as option value. 
-                           Different values can be provided to two servers through --views1 | --views2
+                      Different values can be provided to servers through --views1 | --views2 | views3
         --filter    : ......
         --sqltrace  : Print all generated SQL statements. 
                       Optional: Specify --sqltrace=MarkErrors to mark invalid statements.
@@ -313,11 +318,23 @@ sub backwardCompatability {
 
     my @views = ( 
         defined $options->{views1} ? $options->{views1} : $options->{views}, 
-        defined $options->{views2} ? $options->{views2} : $options->{views}  
+        defined $options->{views2} ? $options->{views2} : $options->{views},
+        defined $options->{views3} ? $options->{views3} : $options->{views}  
     );
     $options->{views} = \@views;
     delete $options->{views1};
     delete $options->{views2};
+    delete $options->{views3};
+
+    my @engine = ( 
+        defined $options->{engine1} ? $options->{engine1} : $options->{engine}, 
+        defined $options->{engine2} ? $options->{engine2} : $options->{engine},
+        defined $options->{engine3} ? $options->{engine3} : $options->{engine}  
+    );
+    $options->{engine} = \@engine;
+    delete $options->{engine1};
+    delete $options->{engine2};
+    delete $options->{engine3};
 
 }
 

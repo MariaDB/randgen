@@ -478,7 +478,7 @@ sub doGenData {
             $gendata_result = GenTest::App::GendataSimple->new(
                dsn => $dsn,
                views => ${$self->config->views}[$i],
-               engine => $self->config->engine,
+               engine => ${$self->config->engine}[$i],
                sqltrace=> $self->config->sqltrace,
                notnull => $self->config->notnull,
                rows => $self->config->rows,
@@ -488,7 +488,7 @@ sub doGenData {
             $gendata_result = GenTest::App::Gendata->new(
                spec_file => $self->config->gendata,
                dsn => $dsn,
-               engine => $self->config->engine,
+               engine => ${$self->config->engine}[$i],
                seed => $self->config->seed(),
                debug => $self->config->debug,
                rows => $self->config->rows,

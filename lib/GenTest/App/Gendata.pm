@@ -201,7 +201,7 @@ sub run {
     }
 
     $executor->execute("SET SQL_MODE= 'NO_ENGINE_SUBSTITUTION'") if $executor->type == DB_MYSQL;
-    $executor->execute("SET STORAGE_ENGINE='".$self->engine()."'") 
+    $executor->execute("SET DEFAULT_STORAGE_ENGINE='".$self->engine()."'") 
         if $self->engine() ne '' and ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE);
 
     if (defined $schemas) {

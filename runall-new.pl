@@ -66,7 +66,7 @@ my $user = 'rqg';
 my @dsns;
 
 my ($gendata, @basedirs, @mysqld_options, @vardirs, $rpl_mode,
-    $engine, $help, $debug, @validators, @reporters, @transformers, 
+    @engine, $help, $debug, @validators, @reporters, @transformers, 
     $grammar_file, $skip_recursive_rules,
     @redefine_files, $seed, $mask, $mask_level, $mem, $rows,
     $varchar_len, $xml_output, $valgrind, @valgrind_options, @views,
@@ -91,20 +91,27 @@ my $opt_result = GetOptions(
     'mysqld=s@' => \$mysqld_options[0],
     'mysqld1=s@' => \$mysqld_options[1],
     'mysqld2=s@' => \$mysqld_options[2],
+    'mysqld3=s@' => \$mysqld_options[3],
     'basedir=s' => \$basedirs[0],
-    'basedir1=s' => \$basedirs[0],
-    'basedir2=s' => \$basedirs[1],
+    'basedir1=s' => \$basedirs[1],
+    'basedir2=s' => \$basedirs[2],
+    'basedir3=s' => \$basedirs[3],
     #'basedir=s@' => \@basedirs,
     'vardir=s' => \$vardirs[0],
-    'vardir1=s' => \$vardirs[0],
-    'vardir2=s' => \$vardirs[1],
+    'vardir1=s' => \$vardirs[1],
+    'vardir2=s' => \$vardirs[2],
+    'vardir3=s' => \$vardirs[3],
     'debug-server' => \$debug_server[0],
-    'debug-server1' => \$debug_server[0],
-    'debug-server2' => \$debug_server[1],
+    'debug-server1' => \$debug_server[1],
+    'debug-server2' => \$debug_server[2],
+    'debug-server3' => \$debug_server[3],
     #'vardir=s@' => \@vardirs,
     'rpl_mode=s' => \$rpl_mode,
     'rpl-mode=s' => \$rpl_mode,
-    'engine=s' => \$engine,
+    'engine=s' => \$engine[0],
+    'engine1=s' => \$engine[1],
+    'engine2=s' => \$engine[2],
+    'engine3=s' => \$engine[3],
     'grammar=s' => \$grammar_file,
     'skip-recursive-rules' > \$skip_recursive_rules,
     'redefine=s@' => \@redefine_files,
@@ -141,6 +148,7 @@ my $opt_result = GetOptions(
     'views:s'        => \$views[0],
     'views1:s'        => \$views[1],
     'views2:s'        => \$views[2],
+    'views3:s'        => \$views[3],
     'wait-for-debugger' => \$wait_debugger,
     'start-dirty'    => \$start_dirty,
     'filter=s'    => \$filter,
@@ -172,7 +180,7 @@ if ($help) {
     help();
     exit 0;
 }
-if ($basedirs[0] eq '') {
+if ($basedirs[0] eq '' and $basedirs[1] eq '') {
     print STDERR "\nERROR: Basedir is not defined\n\n";
     help();
     exit 1;
@@ -233,19 +241,73 @@ if ( $build_thread eq 'auto' ) {
     exit (STATUS_ENVIRONMENT_FAILURE);
 }
 
-my @ports = (10000 + 10 * $build_thread, 10000 + 10 * $build_thread + 2);
+my @ports = (10000 + 10 * $build_thread, 10000 + 10 * $build_thread + 2, 10000 + 10 * $build_thread + 4);
 
 say("master_port : $ports[0] slave_port : $ports[1] ports : @ports MTR_BUILD_THREAD : $build_thread ");
 
-#
-# If the user has provided two vardirs and one basedir, start second
-# server using the same basedir
-#
+# Different servers can be defined either by providing separate basedirs (basedir1, basedir2[, basedir3]),
+# or by providing separate vardirs (vardir1, vardir2[, vardir3]).
+# Now it's time to clean it all up and define for sure how many servers we need to run, and with options 
 
-if ( ($vardirs[1] ne '') && ($basedirs[1] eq '') ) {
+if ($basedirs[1] eq '' and $basedirs[0] ne '') {
+    # We need at least one server anyway
     $basedirs[1] = $basedirs[0];
 }
+if ($vardirs[1] eq '' and $vardirs[0] ne '') {
+    $vardirs[1] = $vardirs[0];
+}
 
+foreach (2..3) {
+    # If servers 2 and 3 are defined through vardirs, use the default basedir for them
+    if ($vardirs[$_] ne '' and $basedirs[$_] eq '') {
+        $basedirs[$_] = $basedirs[0];
+    }
+}
+
+# Now we should have all basedirs.
+# Check that there is no overlap in vardirs (when the user defines for two different servers the same basedir,
+# but does not define separate vardirs)
+
+foreach my $i (1..3) {
+    next unless $basedirs[$i] or $vardirs[$i];
+    foreach my $j ($i+1..3) {
+        next unless $basedirs[$j] or $vardirs[$j];
+        if ($basedirs[$i] eq $basedirs[$j] and $vardirs[$i] eq $vardirs[$j]) {
+            croak("Please specify either different --basedir[$i]/--basedir[$j] or different --vardir[$i]/--vardir[$j] in order to start two MySQL servers");
+        }
+    }
+}
+
+# Make sure that "default" values ([0]) are also set, for compatibility,
+# in case they are used somewhere
+$basedirs[0] ||= $basedirs[1];
+$vardirs[0] ||= $vardirs[1];
+
+# Now sort out other options that can be set differently for different servers:
+# - mysqld_options
+# - debug_server
+# - views
+# - engine
+# values[0] are those that are applied to all servers.
+# values[N] expand or override values[0] for the server N
+
+@{$mysqld_options[0]} = () if not defined $mysqld_options[0];
+push @{$mysqld_options[0]}, "--sql-mode=no_engine_substitution" if join(' ', @ARGV_saved) !~ m{sql-mode}io;
+
+foreach my $i (1..3) {
+    @{$mysqld_options[$i]} = ( defined $mysqld_options[$i] 
+            ? ( @{$mysqld_options[0]}, @{$mysqld_options[$i]} )
+            : @{$mysqld_options[0]}
+    );
+    $debug_server[$i] = $debug_server[0] if $debug_server[$i] eq '';
+    $views[$i] = $views[0] if $views[$i] eq '';
+    $engine[$i] ||= $engine[0];
+}
+
+shift @mysqld_options;
+shift @debug_server;
+shift @views;
+shift @engine;
 
 foreach my $dir (cwd(), @basedirs) {
 # calling bzr usually takes a few seconds...
@@ -265,15 +327,6 @@ foreach my $dir (cwd(), @basedirs) {
     }
 }
 
-
-#
-# If the user has provided identical basedirs and vardirs, warn of a
-# potential overlap.
-#
-
-if ( ($basedirs[0] eq $basedirs[1]) && ($vardirs[0] eq $vardirs[1]) && ($rpl_mode eq '') ) {
-    croak("Please specify either different --basedir[12] or different --vardir[12] in order to start two MySQL servers");
-}
 
 my $client_basedir;
 
@@ -315,33 +368,15 @@ if ($genconfig) {
 my @server;
 my $rplsrv;
 
-# mysqld_options[0] are those that are applied to all servers (--mysqld=...)
-# mysqld_options[N] (N in 1,2) are those that are applied to the corresponding server only,
-# if it's started (--mysqld1=...)
-
-
-@{$mysqld_options[0]} = () if not defined $mysqld_options[0];
-push @{$mysqld_options[0]}, lc("--$engine") if defined $engine && (lc($engine) ne lc('myisam') && lc($engine) ne lc('memory'));
-push @{$mysqld_options[0]}, "--sql-mode=no_engine_substitution" if join(' ', @ARGV_saved) !~ m{sql-mode}io;
-
-@{$mysqld_options[1]} = ( defined $mysqld_options[1] 
-        ? ( @{$mysqld_options[0]}, @{$mysqld_options[1]} )
-        : @{$mysqld_options[0]}
-);
-    
-@{$mysqld_options[2]} = ( defined $mysqld_options[2] 
-        ? ( @{$mysqld_options[0]}, @{$mysqld_options[2]} )
-        : @{$mysqld_options[0]}
-);
 
 if ($rpl_mode ne '') {
 
-    $rplsrv = DBServer::MySQL::ReplMySQLd->new(master_basedir => $basedirs[0],
-                                               slave_basedir => $basedirs[1],
-                                               master_vardir => $vardirs[0],
-                                               debug_server => $debug_server[0],
+    $rplsrv = DBServer::MySQL::ReplMySQLd->new(master_basedir => $basedirs[1],
+                                               slave_basedir => $basedirs[2],
+                                               master_vardir => $vardirs[1],
+                                               debug_server => $debug_server[1],
                                                master_port => $ports[0],
-                                               slave_vardir => $vardirs[1],
+                                               slave_vardir => $vardirs[2],
                                                slave_port => $ports[1],
                                                mode => $rpl_mode,
                                                server_options => $mysqld_options[1],
@@ -386,7 +421,7 @@ if ($rpl_mode ne '') {
     $rplsrv = DBServer::MySQL::GaleraMySQLd->new(
         basedir => $basedirs[0],
         parent_vardir => $vardirs[0],
-        debug_server => $debug_server[0],
+        debug_server => $debug_server[1],
         first_port => $ports[0],
         server_options => $mysqld_options[1],
         valgrind => $valgrind,
@@ -416,20 +451,18 @@ if ($rpl_mode ne '') {
     }
 
 } else {
-    if ($#basedirs != $#vardirs) {
-        croak ("The number of basedirs and vardirs must match $#basedirs != $#vardirs")
-    }
-    foreach my $server_id (0..1) {
-        next if $basedirs[$server_id] eq '';
+
+    foreach my $server_id (0..2) {
+        next unless $basedirs[$server_id+1];
         
-        $server[$server_id] = DBServer::MySQL::MySQLd->new(basedir => $basedirs[$server_id],
-                                                           vardir => $vardirs[$server_id],
+        $server[$server_id] = DBServer::MySQL::MySQLd->new(basedir => $basedirs[$server_id+1],
+                                                           vardir => $vardirs[$server_id+1],
                                                            debug_server => $debug_server[$server_id],
                                                            port => $ports[$server_id],
                                                            start_dirty => $start_dirty,
                                                            valgrind => $valgrind,
                                                            valgrind_options => \@valgrind_options,
-                                                           server_options => $mysqld_options[$server_id+1],
+                                                           server_options => $mysqld_options[$server_id],
                                                            general_log => 1,
                                                            config => $cnf_array_ref,
                                                            user => $user);
@@ -450,9 +483,9 @@ if ($rpl_mode ne '') {
             $dsns[$server_id] = $server[$server_id]->dsn($database,$user);
         }
     
-        if ((defined $dsns[$server_id]) && (defined $engine)) {
+        if ((defined $dsns[$server_id]) && (defined $engine[$server_id])) {
             my $dbh = DBI->connect($dsns[$server_id], undef, undef, { mysql_multi_statements => 1, RaiseError => 1 } );
-            $dbh->do("SET GLOBAL default_storage_engine = '$engine'");
+            $dbh->do("SET GLOBAL default_storage_engine = '$engine[$server_id]'");
         }
     }
 }
@@ -547,19 +580,6 @@ if ($#transformers == 0 and $transformers[0] =~ m/,/) {
     @transformers = split(/,/,$transformers[0]);
 }
 
-## For backward compatibility
-
-# if --views[=<value>] is defined, it will be used for both servers.
-# --views1 and --views2 will only be used for the corresponding server 
-#   and have priority over --views
-
-if (defined $views[0]) {
-    $views[1] = $views[0] unless defined $views[1];
-    $views[2] = $views[0] unless defined $views[2];
-}
-shift @views;
-
-
 ## For uniformity
 if ($#redefine_files == 0 and $redefine_files[0] =~ m/,/) {
     @redefine_files = split(/,/,$redefine_files[0]);
@@ -569,7 +589,7 @@ $gentestProps->property('generator','FromGrammar') if not defined $gentestProps-
 
 $gentestProps->property('start-dirty',1) if defined $start_dirty;
 $gentestProps->gendata($gendata) unless defined $skip_gendata;
-$gentestProps->engine($engine) if defined $engine;
+$gentestProps->engine(\@engine) if @engine;
 $gentestProps->rpl_mode($rpl_mode) if defined $rpl_mode;
 $gentestProps->validators(\@validators) if @validators;
 $gentestProps->reporters(\@reporters) if @reporters;
@@ -628,11 +648,11 @@ say("GenTest exited with exit status ".status2text($gentest_result)." ($gentest_
 # otherwise if the test is replication/with two servers compare the 
 # server dumps for any differences else if there are no failures exit with success.
 
-if (($gentest_result == STATUS_OK) && ($rpl_mode || (defined $basedirs[1]) || $galera)) {
+if (($gentest_result == STATUS_OK) && ($rpl_mode || (defined $basedirs[2]) || (defined $basedirs[3]) || $galera)) {
 #
 # Compare master and slave, or all masters
 #
-    my $diff_result;
+    my $diff_result = STATUS_OK;
     if ($rpl_mode ne '') {
         $diff_result = $rplsrv->waitForSlaveSync;
         if ($diff_result != STATUS_OK) {
@@ -650,13 +670,17 @@ if (($gentest_result == STATUS_OK) && ($rpl_mode || (defined $basedirs[1]) || $g
     }
   
     say("Comparing SQL dumps...");
-    $diff_result = system("diff -u $dump_files[0] $dump_files[1]");
-    $diff_result = ($diff_result ? STATUS_CONTENT_MISMATCH : STATUS_OK);
-  
-    if ($diff_result == STATUS_OK) {
-        say("No differences were found between servers.");
+    
+    foreach my $i (1..$#server) {
+        my $diff = system("diff -u $dump_files[$i-1] $dump_files[$i]");
+        if ($diff == STATUS_OK) {
+            say("No differences were found between servers ".($i-1)." and $i.");
+        } else {
+            say("ERROR: found differences between servers ".($i-1)." and $i.");
+            $diff_result = STATUS_CONTENT_MISMATCH;
+        }
     }
-  
+
     foreach my $dump_file (@dump_files) {
         unlink($dump_file);
     }
@@ -721,6 +745,7 @@ $0 - Run a complete random query generation test, including server start with re
     --galera    : Galera topology, presented as a string of 'm' or 's' (master or slave).
                   The test flow will be executed on each "master". "Slaves" will only be updated through Galera replication
     --engine    : Table engine to use when creating tables with gendata (default no ENGINE in CREATE TABLE);
+                  Different values can be provided to servers through --engine1 | --engine2 | --engine3
     --threads   : Number of threads to spawn (default $default_threads);
     --queries   : Number of queries to execute per thread (default $default_queries);
     --duration  : Duration of the test in seconds (default $default_duration seconds);
@@ -740,7 +765,7 @@ $0 - Run a complete random query generation test, including server start with re
     --varchar-length: length of strings. passed to gentest.pl
     --xml-outputs: Passed to gentest.pl
     --views     : Generate views. Optionally specify view type (algorithm) as option value. Passed to gentest.pl.
-                  Different values can be provided to two servers through --views1 | --views2
+                  Different values can be provided to servers through --views1 | --views2 | --views3
     --valgrind  : Passed to gentest.pl
     --filter    : Passed to gentest.pl
     --mem       : Passed to mtr
