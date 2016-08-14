@@ -45,7 +45,7 @@ eval
 
 $| = 1;
 if (osWindows()) {
-	$SIG{CHLD} = "IGNORE";
+    $SIG{CHLD} = "IGNORE";
 }
 
 if (defined $ENV{RQG_HOME}) {
@@ -88,77 +88,77 @@ my $duration = my $default_duration = 3600;
 my @ARGV_saved = @ARGV;
 
 my $opt_result = GetOptions(
-	'mysqld=s@' => \$mysqld_options[0],
-	'mysqld1=s@' => \$mysqld_options[1],
-	'mysqld2=s@' => \$mysqld_options[2],
-        'basedir=s' => \$basedirs[0],
-        'basedir1=s' => \$basedirs[0],
-        'basedir2=s' => \$basedirs[1],
-	#'basedir=s@' => \@basedirs,
-        'vardir=s' => \$vardirs[0],
-        'vardir1=s' => \$vardirs[0],
-        'vardir2=s' => \$vardirs[1],
-        'debug-server' => \$debug_server[0],
-        'debug-server1' => \$debug_server[0],
-        'debug-server2' => \$debug_server[1],
-	#'vardir=s@' => \@vardirs,
-	'rpl_mode=s' => \$rpl_mode,
-	'rpl-mode=s' => \$rpl_mode,
-	'engine=s' => \$engine,
-	'grammar=s' => \$grammar_file,
-	'skip-recursive-rules' > \$skip_recursive_rules,
-	'redefine=s@' => \@redefine_files,
-	'threads=i' => \$threads,
-	'queries=s' => \$queries,
-	'duration=i' => \$duration,
-	'help' => \$help,
-	'debug' => \$debug,
-	'validators=s@' => \@validators,
-	'reporters=s@' => \@reporters,
-	'transformers=s@' => \@transformers,
-	'gendata:s' => \$gendata,
-	'skip-gendata' => \$skip_gendata,
-	'genconfig:s' => \$genconfig,
-	'notnull' => \$notnull,
-	'short_column_names' => \$short_column_names,
-        'freeze_time' => \$freeze_time,
-	'strict_fields' => \$strict_fields,
-	'seed=s' => \$seed,
-	'mask=i' => \$mask,
-        'mask-level=i' => \$mask_level,
-	'mem' => \$mem,
-	'rows=s' => \$rows,
-	'varchar-length=i' => \$varchar_len,
-	'xml-output=s'	=> \$xml_output,
-	'report-xml-tt'	=> \$report_xml_tt,
-	'report-xml-tt-type=s' => \$report_xml_tt_type,
-	'report-xml-tt-dest=s' => \$report_xml_tt_dest,
-	'restart_timeout=i' => \$restart_timeout,
-	'restart-timeout=i' => \$restart_timeout,
-	'testname=s'		=> \$testname,
-	'valgrind!'	=> \$valgrind,
-	'valgrind_options=s@'	=> \@valgrind_options,
-	'views:s'		=> \$views[0],
-	'views1:s'		=> \$views[1],
-	'views2:s'		=> \$views[2],
-	'wait-for-debugger' => \$wait_debugger,
-	'start-dirty'	=> \$start_dirty,
-	'filter=s'	=> \$filter,
-        'mtr-build-thread=i' => \$build_thread,
-        'sqltrace:s' => \$sqltrace,
-        'logfile=s' => \$logfile,
-        'logconf=s' => \$logconf,
-        'report-tt-logdir=s' => \$report_tt_logdir,
-        'querytimeout=i' => \$querytimeout,
-        'no-mask' => \$no_mask,
-	'skip_shutdown' => \$skip_shutdown,
-	'skip-shutdown' => \$skip_shutdown,
-	'galera=s' => \$galera,
-	'use-gtid=s' => \$use_gtid,
-	'use_gtid=s' => \$use_gtid,
-	'annotate_rules' => \$annotate_rules,
-	'annotate-rules' => \$annotate_rules
-    );
+    'mysqld=s@' => \$mysqld_options[0],
+    'mysqld1=s@' => \$mysqld_options[1],
+    'mysqld2=s@' => \$mysqld_options[2],
+    'basedir=s' => \$basedirs[0],
+    'basedir1=s' => \$basedirs[0],
+    'basedir2=s' => \$basedirs[1],
+    #'basedir=s@' => \@basedirs,
+    'vardir=s' => \$vardirs[0],
+    'vardir1=s' => \$vardirs[0],
+    'vardir2=s' => \$vardirs[1],
+    'debug-server' => \$debug_server[0],
+    'debug-server1' => \$debug_server[0],
+    'debug-server2' => \$debug_server[1],
+    #'vardir=s@' => \@vardirs,
+    'rpl_mode=s' => \$rpl_mode,
+    'rpl-mode=s' => \$rpl_mode,
+    'engine=s' => \$engine,
+    'grammar=s' => \$grammar_file,
+    'skip-recursive-rules' > \$skip_recursive_rules,
+    'redefine=s@' => \@redefine_files,
+    'threads=i' => \$threads,
+    'queries=s' => \$queries,
+    'duration=i' => \$duration,
+    'help' => \$help,
+    'debug' => \$debug,
+    'validators=s@' => \@validators,
+    'reporters=s@' => \@reporters,
+    'transformers=s@' => \@transformers,
+    'gendata:s' => \$gendata,
+    'skip-gendata' => \$skip_gendata,
+    'genconfig:s' => \$genconfig,
+    'notnull' => \$notnull,
+    'short_column_names' => \$short_column_names,
+    'freeze_time' => \$freeze_time,
+    'strict_fields' => \$strict_fields,
+    'seed=s' => \$seed,
+    'mask=i' => \$mask,
+    'mask-level=i' => \$mask_level,
+    'mem' => \$mem,
+    'rows=s' => \$rows,
+    'varchar-length=i' => \$varchar_len,
+    'xml-output=s'    => \$xml_output,
+    'report-xml-tt'    => \$report_xml_tt,
+    'report-xml-tt-type=s' => \$report_xml_tt_type,
+    'report-xml-tt-dest=s' => \$report_xml_tt_dest,
+    'restart_timeout=i' => \$restart_timeout,
+    'restart-timeout=i' => \$restart_timeout,
+    'testname=s'        => \$testname,
+    'valgrind!'    => \$valgrind,
+    'valgrind_options=s@'    => \@valgrind_options,
+    'views:s'        => \$views[0],
+    'views1:s'        => \$views[1],
+    'views2:s'        => \$views[2],
+    'wait-for-debugger' => \$wait_debugger,
+    'start-dirty'    => \$start_dirty,
+    'filter=s'    => \$filter,
+    'mtr-build-thread=i' => \$build_thread,
+    'sqltrace:s' => \$sqltrace,
+    'logfile=s' => \$logfile,
+    'logconf=s' => \$logconf,
+    'report-tt-logdir=s' => \$report_tt_logdir,
+    'querytimeout=i' => \$querytimeout,
+    'no-mask' => \$no_mask,
+    'skip_shutdown' => \$skip_shutdown,
+    'skip-shutdown' => \$skip_shutdown,
+    'galera=s' => \$galera,
+    'use-gtid=s' => \$use_gtid,
+    'use_gtid=s' => \$use_gtid,
+    'annotate_rules' => \$annotate_rules,
+    'annotate-rules' => \$annotate_rules
+);
 
 if (defined $logfile && defined $logger) {
     setLoggingToFile($logfile);
@@ -169,23 +169,23 @@ if (defined $logfile && defined $logger) {
 }
 
 if ($help) {
-        help();
-        exit 0;
+    help();
+    exit 0;
 }
 if ($basedirs[0] eq '') {
-	print STDERR "\nERROR: Basedir is not defined\n\n";
-        help();
-        exit 1;
+    print STDERR "\nERROR: Basedir is not defined\n\n";
+    help();
+    exit 1;
 }
 if (not defined $grammar_file) {
-	print STDERR "\nERROR: Grammar file is not defined\n\n";
-        help();
-        exit 1;
+    print STDERR "\nERROR: Grammar file is not defined\n\n";
+    help();
+    exit 1;
 }
 if (!$opt_result) {
-	print STDERR "\nERROR: Error occured while reading options\n\n";
-	help();
-	exit 1;
+    print STDERR "\nERROR: Error occured while reading options\n\n";
+    help();
+    exit 1;
 }
 
 if (defined $sqltrace) {
@@ -242,11 +242,8 @@ say("master_port : $ports[0] slave_port : $ports[1] ports : @ports MTR_BUILD_THR
 # server using the same basedir
 #
 
-if (
-	($vardirs[1] ne '') && 
-	($basedirs[1] eq '')
-    ) {
-	$basedirs[1] = $basedirs[0];	
+if ( ($vardirs[1] ne '') && ($basedirs[1] eq '') ) {
+    $basedirs[1] = $basedirs[0];
 }
 
 
@@ -255,7 +252,7 @@ foreach my $dir (cwd(), @basedirs) {
     if (defined $dir) {
         my $bzrinfo = GenTest::BzrInfo->new(
             dir => $dir
-            ); 
+        );
         my $revno = $bzrinfo->bzrRevno();
         my $revid = $bzrinfo->bzrRevisionId();
         
@@ -274,28 +271,24 @@ foreach my $dir (cwd(), @basedirs) {
 # potential overlap.
 #
 
-if (
-	($basedirs[0] eq $basedirs[1]) &&
-	($vardirs[0] eq $vardirs[1]) &&
-	($rpl_mode eq '')
-    ) {
-	croak("Please specify either different --basedir[12] or different --vardir[12] in order to start two MySQL servers");
+if ( ($basedirs[0] eq $basedirs[1]) && ($vardirs[0] eq $vardirs[1]) && ($rpl_mode eq '') ) {
+    croak("Please specify either different --basedir[12] or different --vardir[12] in order to start two MySQL servers");
 }
 
 my $client_basedir;
 
 foreach my $path ("$basedirs[0]/client/RelWithDebInfo", "$basedirs[0]/client/Debug", "$basedirs[0]/client", "$basedirs[0]/bin") {
-	if (-e $path) {
-		$client_basedir = $path;
-		last;
-	}
+    if (-e $path) {
+        $client_basedir = $path;
+        last;
+    }
 }
 
 # Originally it was done in Gendata, but we want the same seed for all components
 
 if (defined $seed and $seed eq 'time') {
-	$seed = time();
-	say("Converted --seed=time to --seed=$seed");
+    $seed = time();
+    say("Converted --seed=time to --seed=$seed");
 }
 
 my $cmd = $0 . " " . join(" ", @ARGV_saved);
@@ -306,13 +299,13 @@ say("Final command line: \nperl $cmd");
 my $cnf_array_ref;
 
 if ($genconfig) {
-	unless (-e $genconfig) {
-		croak("ERROR: Specified config template $genconfig does not exist");
-	}
-	$cnf_array_ref = GenTest::App::GenConfig->new(spec_file => $genconfig,
+    unless (-e $genconfig) {
+        croak("ERROR: Specified config template $genconfig does not exist");
+    }
+    $cnf_array_ref = GenTest::App::GenConfig->new(spec_file => $genconfig,
                                                seed => $seed,
                                                debug => $debug
-	);
+    );
 }
 
 #
@@ -332,13 +325,13 @@ push @{$mysqld_options[0]}, lc("--$engine") if defined $engine && (lc($engine) n
 push @{$mysqld_options[0]}, "--sql-mode=no_engine_substitution" if join(' ', @ARGV_saved) !~ m{sql-mode}io;
 
 @{$mysqld_options[1]} = ( defined $mysqld_options[1] 
-		? ( @{$mysqld_options[0]}, @{$mysqld_options[1]} )
-		: @{$mysqld_options[0]}
+        ? ( @{$mysqld_options[0]}, @{$mysqld_options[1]} )
+        : @{$mysqld_options[0]}
 );
     
 @{$mysqld_options[2]} = ( defined $mysqld_options[2] 
-		? ( @{$mysqld_options[0]}, @{$mysqld_options[2]} )
-		: @{$mysqld_options[0]}
+        ? ( @{$mysqld_options[0]}, @{$mysqld_options[2]} )
+        : @{$mysqld_options[0]}
 );
 
 if ($rpl_mode ne '') {
@@ -359,7 +352,7 @@ if ($rpl_mode ne '') {
                                                use_gtid => $use_gtid,
                                                config => $cnf_array_ref,
                                                user => $user
-	);
+    );
     
     my $status = $rplsrv->startServer();
     
@@ -382,45 +375,45 @@ if ($rpl_mode ne '') {
 
 } elsif ($galera ne '') {
 
-	if (osWindows()) {
-		croak("Galera is not supported on Windows (yet)");
-	}
+    if (osWindows()) {
+        croak("Galera is not supported on Windows (yet)");
+    }
 
-	unless ($galera =~ /^[ms]+$/i) {
-		croak ("--galera option should contain a combination of M and S, indicating masters and slaves");
-	}
+    unless ($galera =~ /^[ms]+$/i) {
+        croak ("--galera option should contain a combination of M and S, indicating masters and slaves");
+    }
 
-	$rplsrv = DBServer::MySQL::GaleraMySQLd->new(
-		basedir => $basedirs[0],
-		parent_vardir => $vardirs[0],
-		debug_server => $debug_server[0],
-		first_port => $ports[0],
-		server_options => $mysqld_options[1],
-		valgrind => $valgrind,
-		valgrind_options => \@valgrind_options,
-		general_log => 1,
-		start_dirty => $start_dirty,
-		node_count => length($galera)
-	);
+    $rplsrv = DBServer::MySQL::GaleraMySQLd->new(
+        basedir => $basedirs[0],
+        parent_vardir => $vardirs[0],
+        debug_server => $debug_server[0],
+        first_port => $ports[0],
+        server_options => $mysqld_options[1],
+        valgrind => $valgrind,
+        valgrind_options => \@valgrind_options,
+        general_log => 1,
+        start_dirty => $start_dirty,
+        node_count => length($galera)
+    );
     
-	my $status = $rplsrv->startServer();
+    my $status = $rplsrv->startServer();
     
-	if ($status > DBSTATUS_OK) {
-		stopServers($status);
+    if ($status > DBSTATUS_OK) {
+        stopServers($status);
 
-		say("ERROR: Could not start Galera cluster");
-		exit_test(STATUS_ENVIRONMENT_FAILURE);
-	}
+        say("ERROR: Could not start Galera cluster");
+        exit_test(STATUS_ENVIRONMENT_FAILURE);
+    }
 
-	my $galera_topology = $galera;
-	my $i = 0;
-	while ($galera_topology =~ s/^(\w)//) {
-		if (lc($1) eq 'm') {
-			$dsns[$i] = $rplsrv->nodes->[$i]->dsn($database,$user);
-		}
-		$server[$i] = $rplsrv->nodes->[$i];
-		$i++;
-	}
+    my $galera_topology = $galera;
+    my $i = 0;
+    while ($galera_topology =~ s/^(\w)//) {
+        if (lc($1) eq 'm') {
+            $dsns[$i] = $rplsrv->nodes->[$i]->dsn($database,$user);
+        }
+        $server[$i] = $rplsrv->nodes->[$i];
+        $i++;
+    }
 
 } else {
     if ($#basedirs != $#vardirs) {
@@ -453,10 +446,7 @@ if ($rpl_mode ne '') {
             croak("Could not start all servers");
         }
         
-        if (
-            ($server_id == 0) ||
-            ($rpl_mode eq '') 
-            ) {
+        if ( ($server_id == 0) || ($rpl_mode eq '') ) {
             $dsns[$server_id] = $server[$server_id]->dsn($database,$user);
         }
     
@@ -564,8 +554,8 @@ if ($#transformers == 0 and $transformers[0] =~ m/,/) {
 #   and have priority over --views
 
 if (defined $views[0]) {
-	$views[1] = $views[0] unless defined $views[1];
-	$views[2] = $views[0] unless defined $views[2];
+    $views[1] = $views[0] unless defined $views[1];
+    $views[2] = $views[0] unless defined $views[2];
 }
 shift @views;
 
@@ -642,38 +632,38 @@ if (($gentest_result == STATUS_OK) && ($rpl_mode || (defined $basedirs[1]) || $g
 #
 # Compare master and slave, or all masters
 #
-	my $diff_result;
-	if ($rpl_mode ne '') {
-		$diff_result = $rplsrv->waitForSlaveSync;
-		if ($diff_result != STATUS_OK) {
-			exit_test(STATUS_INTERNAL_ERROR);
-		}
-	}
+    my $diff_result;
+    if ($rpl_mode ne '') {
+        $diff_result = $rplsrv->waitForSlaveSync;
+        if ($diff_result != STATUS_OK) {
+            exit_test(STATUS_INTERNAL_ERROR);
+        }
+    }
   
-	my @dump_files;
+    my @dump_files;
   
-	foreach my $i (0..$#server) {
-		$dump_files[$i] = tmpdir()."server_".abs($$)."_".$i.".dump";
+    foreach my $i (0..$#server) {
+        $dump_files[$i] = tmpdir()."server_".abs($$)."_".$i.".dump";
       
-		my $dump_result = $server[$i]->dumpdb($database,$dump_files[$i]);
-		exit_test($dump_result >> 8) if $dump_result > 0;
-	}
+        my $dump_result = $server[$i]->dumpdb($database,$dump_files[$i]);
+        exit_test($dump_result >> 8) if $dump_result > 0;
+    }
   
-	say("Comparing SQL dumps...");
-	$diff_result = system("diff -u $dump_files[0] $dump_files[1]");
-	$diff_result = ($diff_result ? STATUS_CONTENT_MISMATCH : STATUS_OK);
+    say("Comparing SQL dumps...");
+    $diff_result = system("diff -u $dump_files[0] $dump_files[1]");
+    $diff_result = ($diff_result ? STATUS_CONTENT_MISMATCH : STATUS_OK);
   
-	if ($diff_result == STATUS_OK) {
-		say("No differences were found between servers.");
-	}
+    if ($diff_result == STATUS_OK) {
+        say("No differences were found between servers.");
+    }
   
-	foreach my $dump_file (@dump_files) {
-		unlink($dump_file);
-	}
-	exit_test($diff_result);
+    foreach my $dump_file (@dump_files) {
+        unlink($dump_file);
+    }
+    exit_test($diff_result);
 } else {
-	# If test was not sucessfull or not rpl/multiple servers.
-	exit_test($gentest_result);
+    # If test was not sucessfull or not rpl/multiple servers.
+    exit_test($gentest_result);
 }
 
 sub stopServers {
@@ -697,7 +687,7 @@ sub stopServers {
 
 sub help {
     
-	print <<EOF
+    print <<EOF
 Copyright (c) 2010,2011 Oracle and/or its affiliates. All rights reserved. Use is subject to license terms.
 
 $0 - Run a complete random query generation test, including server start with replication and master/slave verification
@@ -768,14 +758,14 @@ $0 - Run a complete random query generation test, including server start with re
     If you specify --basedir1 and --basedir2 or --vardir1 and --vardir2, two servers will be started and the results from the queries
     will be compared between them.
 EOF
-	;
-	print "$0 arguments were: ".join(' ', @ARGV_saved)."\n";
-	exit_test(STATUS_UNKNOWN_ERROR);
+    ;
+    print "$0 arguments were: ".join(' ', @ARGV_saved)."\n";
+    exit_test(STATUS_UNKNOWN_ERROR);
 }
 
 sub exit_test {
-	my $status = shift;
+    my $status = shift;
     stopServers($status);
-	say("[$$] $0 will exit with exit status ".status2text($status). " ($status)");
-	safe_exit($status);
+    say("[$$] $0 will exit with exit status ".status2text($status). " ($status)");
+    safe_exit($status);
 }
