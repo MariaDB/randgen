@@ -699,7 +699,8 @@ sub dbh {
                                                undef,
                                                {PrintError => 0,
                                                 RaiseError => 0,
-                                                AutoCommit => 1});
+                                                AutoCommit => 1,
+                                                mysql_auto_reconnect => 1});
         }
     } else {
         say("Connecting to ".$self->[MYSQLD_PORT]);
@@ -708,7 +709,8 @@ sub dbh {
                                            undef,
                                            {PrintError => 0,
                                             RaiseError => 0,
-                                            AutoCommit => 1});
+                                            AutoCommit => 1,
+                                            mysql_auto_reconnect => 1});
     }
     if(!defined $self->[MYSQLD_DBH]) {
         say("ERROR: (Re)connect to ".$self->[MYSQLD_PORT]." failed due to ".$DBI::err.": ".$DBI::errstr);

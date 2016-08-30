@@ -33,7 +33,7 @@ use Time::HiRes;
 use Digest::MD5;
 
 use constant RARE_QUERY_THRESHOLD	=> 5;
-use constant MAX_ROWS_THRESHOLD		=> 50000;
+use constant MAX_ROWS_THRESHOLD		=> 5000000;
 
 my %reported_errors;
 
@@ -323,6 +323,8 @@ use constant	ER_OPTION_PREVENTS_STATEMENT	=> 1290;
 
 use constant	CR_COMMANDS_OUT_OF_SYNC	=> 2014;	# Caused by old DBD::mysql
 
+use constant	ER_CONNECTION_KILLED => 1927;
+
 my %err2type = (
 
 	ER_GET_ERRNO()		=> STATUS_DATABASE_CORRUPTION,
@@ -507,7 +509,9 @@ my %err2type = (
 	ER_VIRTUAL_COLUMN_FUNCTION_IS_NOT_ALLOWED() => STATUS_SEMANTIC_ERROR,
 	ER_EXPRESSION_REFERS_TO_UNINIT_FIELD() => STATUS_SEMANTIC_ERROR,
 	ER_INVALID_DEFAULT() => STATUS_SEMANTIC_ERROR,
-	ER_DATA_OUT_OF_RANGE() => STATUS_SEMANTIC_ERROR
+	ER_DATA_OUT_OF_RANGE() => STATUS_SEMANTIC_ERROR,
+
+    ER_CONNECTION_KILLED() => STATUS_SEMANTIC_ERROR
 );
 
 # Sub-error numbers (<nr>) from storage engine failures (ER_GET_ERRNO);
@@ -528,7 +532,8 @@ sub init {
 		PrintError => 0,
 		RaiseError => 0,
 		AutoCommit => 1,
-		mysql_multi_statements => 1
+		mysql_multi_statements => 1,
+        mysql_auto_reconnect => 1
 	} );
 
 	if (not defined $dbh) {
@@ -593,7 +598,7 @@ sub reportError {
 sub execute {
 	my ($executor, $query, $execution_flags) = @_;
     
-    $query .= ' /* QUERY_NO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId() . ' */ ';
+#    $query .= ' /* QUERY_NO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId() . ' */ ';
 
 	$execution_flags = $execution_flags | $executor->flags();
 
@@ -720,7 +725,8 @@ sub execute {
 				PrintError => 0,
 				RaiseError => 0,
 				AutoCommit => 1,
-				mysql_multi_statements => 1
+				mysql_multi_statements => 1,
+                mysql_auto_reconnect => 1
 			} );
 
 			# If server is still connectable, it is not a real crash, but most likely a KILL query
