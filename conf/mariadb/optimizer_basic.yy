@@ -1286,7 +1286,7 @@ not_equal:
   <> | != ;
 
 int_value:
-   _digit | _digit | _digit | _digit | _digit | digit | other_int ;
+   _digit | _digit | _digit | _digit | _digit | _digit | other_int ;
 
 other_int:
    _tinyint_unsigned | 20 | 25 | 30 | 35 | 50 | 65 | 75 | 100 ;

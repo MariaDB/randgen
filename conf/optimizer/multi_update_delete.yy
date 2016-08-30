@@ -182,7 +182,7 @@ expression:
         char_field_name char_expression ;
 
 int_expression:
-        arithmetic_operator digit ;
+        arithmetic_operator _digit ;
 
 date_expression:
         arithmetic_operator date | BETWEEN date AND date ;

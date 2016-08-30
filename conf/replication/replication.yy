@@ -60,7 +60,7 @@ user_var_event:
 
 user_var_dml:
 	INSERT INTO _table ( _field ) VALUES ( @a ) |
-	UPDATE _table SET _field = @a ORDER BY _field LIMIT digit |
+	UPDATE _table SET _field = @a ORDER BY _field LIMIT _digit |
 	DELETE FROM _table WHERE _field < @a LIMIT 1 ;
 
 xid_event:
@@ -69,15 +69,15 @@ xid_event:
 	implicit_commit ;
 
 implicit_commit:
-	CREATE DATABASE ic ; CREATE TABLE ic . _letter SELECT * FROM _table LIMIT digit ; DROP DATABASE ic |
+	CREATE DATABASE ic ; CREATE TABLE ic . _letter SELECT * FROM _table LIMIT _digit ; DROP DATABASE ic |
 	CREATE USER _letter | DROP USER _letter | RENAME USER _letter TO _letter |
 	SET AUTOCOMMIT = ON | SET AUTOCOMMIT = OFF |
-	CREATE TABLE IF NOT EXISTS _letter ENGINE = engine SELECT * FROM _table LIMIT digit |
+	CREATE TABLE IF NOT EXISTS _letter ENGINE = engine SELECT * FROM _table LIMIT _digit |
 	RENAME TABLE _letter TO _letter |
 	TRUNCATE TABLE _letter |
 	DROP TABLE IF EXISTS _letter |
 	LOCK TABLE _table WRITE ; UNLOCK TABLES |
-	SELECT * FROM _table LIMIT digit INTO OUTFILE tmpnam ; LOAD DATA INFILE tmpnam REPLACE INTO TABLE _table ;
+	SELECT * FROM _table LIMIT _digit INTO OUTFILE tmpnam ; LOAD DATA INFILE tmpnam REPLACE INTO TABLE _table ;
 
 begin_load_query_event:
 	binlog_format_statement ; load_data_infile ; binlog_format_restore ;
@@ -86,7 +86,7 @@ execute_load_query_event:
 	binlog_format_statement ; load_data_infile ; binlog_format_restore ;
 
 load_data_infile:
-	SELECT * FROM _table ORDER BY _field LIMIT digit INTO OUTFILE tmpnam ; LOAD DATA INFILE tmpnam REPLACE INTO TABLE _table ;
+	SELECT * FROM _table ORDER BY _field LIMIT _digit INTO OUTFILE tmpnam ; LOAD DATA INFILE tmpnam REPLACE INTO TABLE _table ;
 
 write_rows_event:
 	binlog_format_row ; insert ; binlog_format_restore ;
@@ -120,7 +120,7 @@ delete:
 
 ddl:
 	CREATE TRIGGER _letter trigger_time trigger_event ON _table FOR EACH ROW BEGIN procedure_body ; END |
-	CREATE EVENT IF NOT EXISTS _letter ON SCHEDULE EVERY digit SECOND ON COMPLETION PRESERVE DO BEGIN procedure_body ; END ;
+	CREATE EVENT IF NOT EXISTS _letter ON SCHEDULE EVERY _digit SECOND ON COMPLETION PRESERVE DO BEGIN procedure_body ; END ;
 	CREATE PROCEDURE _letter () BEGIN procedure_body ; END ;
 
 trigger_time:
@@ -144,7 +144,7 @@ order_by:
 	| ORDER BY _field ;
 
 limit:
-	| LIMIT digit ;
+	| LIMIT _digit ;
 
 value:
 	_digit | _english | NULL ;

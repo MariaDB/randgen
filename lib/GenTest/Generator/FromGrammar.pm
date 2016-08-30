@@ -182,11 +182,11 @@ sub next {
 				} elsif (substr($item, 0, 1) eq '$') {
 					$item = eval("no strict;\n".$item.";\n");	# Variable
 				} else {
-					my $field_type = $prng->isFieldType($item);
+					my $field_type = (substr($item, 0, 1) eq '_' ? $prng->isFieldType(substr($item, 1)) : undef);
 
-					if ( ($item eq 'letter') || ($item eq '_letter') ) {
+					if ($item eq '_letter') {
 						$item = $prng->letter();
-					} elsif ( ($item eq 'digit')  || ($item eq '_digit') ) {
+					} elsif ($item eq '_digit') {
 						$item = $prng->digit();
 					} elsif ($item eq '_table') {
 						my $tables = $executors->[0]->metaTables($last_database);
@@ -198,7 +198,6 @@ sub next {
 						$item = "'".$cwd."'";
 					} elsif (
 						($item eq '_tmpnam') ||
-						($item eq 'tmpnam') ||
 						($item eq '_tmpfile')
 					) {
 						# Create a new temporary file name and record it for unlinking at the next statement
@@ -301,6 +300,7 @@ sub next {
 					) {
 						$item = $prng->fieldType($item);
 					} elsif ($field_type) {
+                        $item = substr($item,1);
 						$item = $prng->fieldType($item);
 						if (
 							(substr($orig_item, -1) eq '`') ||
@@ -312,16 +312,6 @@ sub next {
 							$item = '"'.$item.'"';
 						} else {
 							$item = "'".$item."'";
-						}
-					} elsif (substr($item, 0, 1) eq '_') {
-						$item_nodash = substr($item, 1);
-						if ($prng->isFieldType($item_nodash)) {
-							$item = "'".$prng->fieldType($item_nodash)."'";
-							if (index($item, "'") > -1) {
-								$item = '"'.$item.'"';
-							} else {
-								$item = "'".$item."'";
-							}
 						}
 					}
 
