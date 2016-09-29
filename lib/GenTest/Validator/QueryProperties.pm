@@ -52,28 +52,41 @@ sub validate {
 	my $query_status = STATUS_OK;
 
 	foreach my $result (@$results) {
+        my @error_codes = ();
+		my $property_status;
 		foreach my $query_property (@query_properties) {
-			my $property_status = STATUS_OK;
+            $property_status = STATUS_OK;
 			if (exists $properties{$query_property}) {
 				#
 				# This is a named property, call the respective validation procedure
 				#
 				$property_status = $validator->$query_property($result);
+                $query_status = $property_status if $property_status > $query_status;
 			} elsif (my ($error) = $query_property =~ m{ERROR_(.*)}so) {
-				#
-				# This is an error code, check that the query returned that error code
-				#
-
-				if ($error !~ m{^\d*$}) {
-					say("Query: $query needs to use a numeric code in in query property $query_property.");
+                if ($error !~ m{^\d*$}) {
+					say("ERROR: Query: $query needs to use a numeric code in in query property $query_property.");
 					return STATUS_ENVIRONMENT_FAILURE;
-				} elsif ($result->err() != $error) {
-					say("Query: $query did not fail with error $error.");
-					$property_status = STATUS_ERROR_MISMATCH;
-				}
+				} 
+				#
+				# This is an error code, check that the query returned one of the given error codes
+				#
+                push @error_codes, $error;
 			}
-			$query_status = $property_status if $property_status > $query_status;
 		}
+        my $err = $result->err();
+        if ($err and scalar(@error_codes)) {
+            $property_status = STATUS_ERROR_MISMATCH;
+            foreach (@error_codes) {
+                if ($err == $_) {
+                    $property_status = STATUS_OK;
+                    last;
+                }
+            }
+            if ($property_status != STATUS_OK) {
+                say("ERROR: error code ".$result->err()." for query $query does not match the expected list: @error_codes");
+                $query_status = $property_status if $property_status > $query_status;
+            }
+        }
 	}
 
 	if ($query_status != STATUS_OK) {
