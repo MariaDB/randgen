@@ -193,6 +193,7 @@ use constant	ER_TOO_MANY_ROWS		=> 1172;
 use constant	ER_KEY_DOES_NOT_EXITS		=> 1176;
 use constant	ER_INVALID_GROUP_FUNC_USE	=> 1111;
 use constant	ER_WRONG_GROUP_FIELD		=> 1056;
+use constant    ER_REFERENCED_TRG_DOES_NOT_EXIST => 4031;
 
 use constant	ER_PARTITION_MGMT_ON_NONPARTITIONED	=> 1505;
 use constant	ER_DROP_PARTITION_NON_EXISTENT		=> 1507;
@@ -460,6 +461,7 @@ my %err2type = (
 	ER_TOO_LONG_KEY()			=> STATUS_SEMANTIC_ERROR,
 	ER_TOO_BIG_SELECT()			=> STATUS_SEMANTIC_ERROR,
 	ER_WRONG_GROUP_FIELD()			=> STATUS_SEMANTIC_ERROR,
+    ER_REFERENCED_TRG_DOES_NOT_EXIST() => STATUS_SEMANTIC_ERROR,
 
 	ER_LOCK_OR_ACTIVE_TRANSACTION => STATUS_TRANSACTION_ERROR,
 
@@ -598,7 +600,7 @@ sub reportError {
 sub execute {
 	my ($executor, $query, $execution_flags) = @_;
     
-#    $query .= ' /* QUERY_NO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId() . ' */ ';
+	$query .= ' /* QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId() . ' */ ';
 
 	$execution_flags = $execution_flags | $executor->flags();
 
