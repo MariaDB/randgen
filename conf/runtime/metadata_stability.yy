@@ -34,7 +34,7 @@ transaction:
 	START TRANSACTION | COMMIT | ROLLBACK ;
 
 select:
-	SELECT /* QUERY_ID: _mediumint_unsigned */ /* RESULTSET_SAME_DATA_IN_EVERY_ROW */ select_item AS `col_int_key`
+	SELECT /* RESULTSET_SAME_DATA_IN_EVERY_ROW */ select_item AS `col_int_key`
 	FROM join_list
 	where;
 
