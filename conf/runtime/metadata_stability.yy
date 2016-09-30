@@ -34,13 +34,13 @@ transaction:
 	START TRANSACTION | COMMIT | ROLLBACK ;
 
 select:
-	SELECT /* RESULTSET_SAME_DATA_IN_EVERY_ROW */ select_item AS `col_int_key`
+	SELECT /* QProp.RESULTSET_HAS_SAME_DATA_IN_EVERY_ROW */ select_item AS `col_int_key`
 	FROM join_list
 	where;
 
 call:
-	CALL /* RESULTSET_SAME_DATA_IN_EVERY_ROW */ procedure_name ( @inout1 ) |
-	SET @inout1 = 0 ; CALL procedure_name ( @inout1 ) ; SELECT /* RESULTSET_SINGLE_INTEGER_ONE */ IF(@inout1 IN (0,1), 1, 999);
+	CALL /* QProp.RESULTSET_HAS_SAME_DATA_IN_EVERY_ROW */ procedure_name ( @inout1 ) |
+	SET @inout1 = 0 ; CALL procedure_name ( @inout1 ) ; SELECT /* QProp.RESULTSET_IS_SINGLE_INTEGER_ONE */ IF(@inout1 IN (0,1), 1, 999);
 
 dml:
 	update | 

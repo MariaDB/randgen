@@ -56,7 +56,7 @@ commit_rollback:
 # events and rules that are included in order to simulate a more realistic workload
 
 standalone_query:
-	/* QUERY_IS_REPLICATION_SAFE */ sql_statement ;
+	/* QProp.QUERY_IS_REPLICATION_SAFE */ sql_statement ;
 #	binlog_event | sql_statement ;	# TODO
 
 sql_statement:

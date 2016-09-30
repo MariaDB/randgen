@@ -1,4 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
+# Copyright (C) 2016 MariaDB Corporation.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -45,7 +46,7 @@ sub validate {
 	my ($validator, $executors, $results) = @_;
 
 	my $query = $results->[0]->query();
-	my @query_properties = $query =~ m{((?:RESULTSET_|ERROR_|QUERY_).*?)[^A-Z_0-9]}sog;
+	my @query_properties = $query =~ m{((?:QProp\.RESULTSET_|QProp\.ERROR_|QProp\.QUERY_).*?)[^A-Z_0-9]}sog;
 
 	return STATUS_WONT_HANDLE if $#query_properties == -1;
 
@@ -61,15 +62,18 @@ sub validate {
 				# This is a named property, call the respective validation procedure
 				#
 				$property_status = $validator->$query_property($result);
+                if ($property_status != STATUS_OK) {
+                    say("ERROR: Query: $query does not have the required property: $query_property");
+                }
                 $query_status = $property_status if $property_status > $query_status;
 			} elsif (my ($error) = $query_property =~ m{ERROR_(.*)}so) {
+				#
+				# This is an error code, check that the query returned one of the given error codes
+				#
                 if ($error !~ m{^\d*$}) {
 					say("ERROR: Query: $query needs to use a numeric code in in query property $query_property.");
 					return STATUS_ENVIRONMENT_FAILURE;
 				} 
-				#
-				# This is an error code, check that the query returned one of the given error codes
-				#
                 push @error_codes, $error;
 			}
 		}
@@ -83,14 +87,13 @@ sub validate {
                 }
             }
             if ($property_status != STATUS_OK) {
-                say("ERROR: error code ".$result->err()." for query $query does not match the expected list: @error_codes");
+                say("ERROR: Error code ".$result->err()." for query $query does not match the expected list: @error_codes");
                 $query_status = $property_status if $property_status > $query_status;
             }
         }
 	}
 
 	if ($query_status != STATUS_OK) {
-		say("Query: $query does not have the declared properties: ".join(', ', @query_properties));
 		print Dumper $results if rqg_debug();
 	}
 	

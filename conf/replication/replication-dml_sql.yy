@@ -203,7 +203,7 @@
 
 safety_check:
 	# For debugging the grammar use
-	{ return '/*' . $pick_mode . '*/' } /* QUERY_IS_REPLICATION_SAFE */ ;
+	{ return '/*' . $pick_mode . '*/' } /* QProp.QUERY_IS_REPLICATION_SAFE */ ;
 	# For faster execution set this grammar element to "empty".
 	# ;
 
