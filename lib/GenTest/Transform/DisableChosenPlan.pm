@@ -1,4 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2016, MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,29 +41,29 @@ use Data::Dumper;
 #
 
 my @explain2switch = (
-	[ 'sort_intersect'	=> "optimizer_switch='index_merge_sort_intersection=off'"],
-	[ 'intersect'		=> "optimizer_switch='index_merge_intersection=off'"],
-	[ 'firstmatch'		=> "optimizer_switch='firstmatch=off'" ],
-	[ '<expr_cache>'	=> "optimizer_switch='subquery_cache=off'" ],
-	[ 'materializ'		=> "optimizer_switch='materialization=off,in_to_exists=on'" ],
-	[ 'semijoin'		=> "optimizer_switch='semijoin=off'" ],
-	[ 'Start temporary'     => "optimizer_switch='semijoin=off'" ],
-	[ 'loosescan'		=> "optimizer_switch='loosescan=off'" ],
-	[ '<subquery'		=> "optimizer_switch='materialization=off,in_to_exists=on'" ],
-	[ '<exists>'		=> "optimizer_switch='in_to_exists=off,materialization=on'" ],
-	[ qr{hash|BNLH|BKAH}	=> "optimizer_switch='join_cache_hashed=off'" ],	
-	[ 'BKA'			=> "optimizer_switch='join_cache_bka=off'" ],
-	[ 'incremental'		=> "optimizer_switch='join_cache_incremental=off'" ],
-	[ 'join buffer'		=> "join_cache_level=0" ],
-	[ 'join buffer'		=> "optimizer_join_cache_level=0" ],
-	[ 'mrr'			=> "optimizer_switch='mrr=off'" ],
-	[ 'index condition'	=> "optimizer_switch='index_condition_pushdown=off'" ],
-	[ qr{DERIVED}s		=> "optimizer_switch='derived_merge=on'" ],
-	[ qr{(?!DERIVED)}s	=> "optimizer_switch='derived_merge=off'" ],
-	[ qr{key[0-9]}		=> "optimizer_switch='derived_with_keys=off'" ],
-	[ 'Key-ordered'		=> "optimizer_switch='mrr_sort_keys=off'" ],
-	[ 'Key-ordered'		=> "optimizer_switch='mrr=off'" ],
-	[ 'Rowid-ordered'	=> "optimizer_switch='mrr=off'" ]
+    [ 'sort_intersect'    => "optimizer_switch='index_merge_sort_intersection=off'"],
+    [ 'intersect'        => "optimizer_switch='index_merge_intersection=off'"],
+    [ 'firstmatch'        => "optimizer_switch='firstmatch=off'" ],
+    [ '<expr_cache>'    => "optimizer_switch='subquery_cache=off'" ],
+    [ 'materializ'        => "optimizer_switch='materialization=off,in_to_exists=on'" ],
+    [ 'semijoin'        => "optimizer_switch='semijoin=off'" ],
+    [ 'Start temporary'     => "optimizer_switch='semijoin=off'" ],
+    [ 'loosescan'        => "optimizer_switch='loosescan=off'" ],
+    [ '<subquery'        => "optimizer_switch='materialization=off,in_to_exists=on'" ],
+    [ '<exists>'        => "optimizer_switch='in_to_exists=off,materialization=on'" ],
+    [ qr{hash|BNLH|BKAH}    => "optimizer_switch='join_cache_hashed=off'" ],    
+    [ 'BKA'            => "optimizer_switch='join_cache_bka=off'" ],
+    [ 'incremental'        => "optimizer_switch='join_cache_incremental=off'" ],
+    [ 'join buffer'        => "join_cache_level=0" ],
+    [ 'join buffer'        => "optimizer_join_cache_level=0" ],
+    [ 'mrr'            => "optimizer_switch='mrr=off'" ],
+    [ 'index condition'    => "optimizer_switch='index_condition_pushdown=off'" ],
+    [ qr{DERIVED}s        => "optimizer_switch='derived_merge=on'" ],
+    [ qr{(?!DERIVED)}s    => "optimizer_switch='derived_merge=off'" ],
+    [ qr{key[0-9]}        => "optimizer_switch='derived_with_keys=off'" ],
+    [ 'Key-ordered'        => "optimizer_switch='mrr_sort_keys=off'" ],
+    [ 'Key-ordered'        => "optimizer_switch='mrr=off'" ],
+    [ 'Rowid-ordered'    => "optimizer_switch='mrr=off'" ]
 );
 
 my %explain2count;
@@ -70,62 +71,62 @@ my %explain2count;
 my $available_switches;
 
 sub transform {
-	my ($class, $original_query, $executor) = @_;
+    my ($class, $original_query, $executor) = @_;
 
-	if (not defined $available_switches) {
-		my $dbh_probe = DBI->connect($executor->dsn(), undef, undef, { PrintError => 0 } );
-		
-		foreach my $explain2switch (@explain2switch) {
-			my ($explain_fragment, $optimizer_switch) = ($explain2switch->[0], $explain2switch->[1]);
-			my $sth_probe = $dbh_probe->prepare("SET SESSION $optimizer_switch");
-			$sth_probe->execute();
-			$available_switches->{$optimizer_switch}++ if not defined $sth_probe->err();
-		}
-	}
+    if (not defined $available_switches) {
+        my $dbh_probe = DBI->connect($executor->dsn(), undef, undef, { PrintError => 0 } );
+        
+        foreach my $explain2switch (@explain2switch) {
+            my ($explain_fragment, $optimizer_switch) = ($explain2switch->[0], $explain2switch->[1]);
+            my $sth_probe = $dbh_probe->prepare("SET SESSION $optimizer_switch");
+            $sth_probe->execute();
+            $available_switches->{$optimizer_switch}++ if not defined $sth_probe->err();
+        }
+    }
 
-	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-		return STATUS_WONT_HANDLE if $original_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO)}sio
-		|| $original_query !~ m{^\s*SELECT}sio;
+    # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+        return STATUS_WONT_HANDLE if $original_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO)}sio
+        || $original_query !~ m{^\s*SELECT}sio;
 
-	my $original_explain = $executor->execute("EXPLAIN EXTENDED $original_query");
+    my $original_explain = $executor->execute("EXPLAIN EXTENDED $original_query");
 
-	if ($original_explain->status() == STATUS_SERVER_CRASHED) {
-		return STATUS_SERVER_CRASHED;
-	} elsif ($original_explain->status() ne STATUS_OK) {
-		say("Query: $original_query EXPLAIN failed: ".$original_explain->err()." ".$original_explain->errstr());
-		return $original_explain->status();
-	}
+    if ($original_explain->status() == STATUS_SERVER_CRASHED) {
+        return STATUS_SERVER_CRASHED;
+    } elsif ($original_explain->status() ne STATUS_OK) {
+        say("Query: $original_query EXPLAIN failed: ".$original_explain->err()." ".$original_explain->errstr());
+        return $original_explain->status();
+    }
 
-	my $original_explain_string = Dumper($original_explain->data())."\n".Dumper($original_explain->warnings());
+    my $original_explain_string = Dumper($original_explain->data())."\n".Dumper($original_explain->warnings());
 
-	my @transformed_queries;
-	foreach my $explain2switch (@explain2switch) {
-		my ($explain_fragment, $optimizer_switch) = ($explain2switch->[0], $explain2switch->[1]);
-		next if not exists $available_switches->{$optimizer_switch};
-		if ($original_explain_string =~ m{$explain_fragment}si) {
-			$explain2count{"$explain_fragment => $optimizer_switch"}++;
-			my ($switch_name) = $optimizer_switch =~ m{^(.*?)=}sgio;
-			push @transformed_queries, [
-				'SET @switch_saved = @@'.$switch_name.';',
-				"SET SESSION $optimizer_switch;",
-				"$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ;"
-			];
-			push @transformed_queries, [ '/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@switch_saved' ];
-		}
-	}
+    my @transformed_queries;
+    foreach my $explain2switch (@explain2switch) {
+        my ($explain_fragment, $optimizer_switch) = ($explain2switch->[0], $explain2switch->[1]);
+        next if not exists $available_switches->{$optimizer_switch};
+        if ($original_explain_string =~ m{$explain_fragment}si) {
+            $explain2count{"$explain_fragment => $optimizer_switch"}++;
+            my ($switch_name) = $optimizer_switch =~ m{^(.*?)=}sgio;
+            push @transformed_queries, [
+                'SET @switch_saved = @@'.$switch_name.';',
+                "SET SESSION $optimizer_switch;",
+                "$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ;"
+            ];
+            push @transformed_queries, [ '/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@switch_saved' ];
+        }
+    }
 
-	if ($#transformed_queries > -1) {
-		return \@transformed_queries;
-	} else {
-		return STATUS_WONT_HANDLE;
-	}
+    if ($#transformed_queries > -1) {
+        return \@transformed_queries;
+    } else {
+        return STATUS_WONT_HANDLE;
+    }
 }
 
 sub DESTROY {
-	if (rqg_debug()) {
-		say("DisableChosenPlan statistics:");
-		print Dumper \%explain2count;
-	}
+    if (rqg_debug()) {
+        say("DisableChosenPlan statistics:");
+        print Dumper \%explain2count;
+    }
 }
 
 1;
