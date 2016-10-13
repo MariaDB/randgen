@@ -810,7 +810,7 @@ dml:
 	# We need the next statement for other statements which should use a user variable.
 	SET @aux = value         |
 	# We need the next statements for other statements which should be affected by switching the database.
-	USE `test` | USE `test1` |
+	USE { $last_database = 'test' } | USE { $last_database = 'test1' } |
 	select_for_update        |
 	xid_event                ;
 
