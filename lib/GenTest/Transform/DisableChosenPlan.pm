@@ -42,28 +42,29 @@ use Data::Dumper;
 
 my @explain2switch = (
     [ 'sort_intersect'    => "optimizer_switch='index_merge_sort_intersection=off'"],
-    [ 'intersect'        => "optimizer_switch='index_merge_intersection=off'"],
+    [ 'intersect'         => "optimizer_switch='index_merge_intersection=off'"],
     [ 'firstmatch'        => "optimizer_switch='firstmatch=off'" ],
-    [ '<expr_cache>'    => "optimizer_switch='subquery_cache=off'" ],
+    [ '<expr_cache>'      => "optimizer_switch='subquery_cache=off'" ],
     [ 'materializ'        => "optimizer_switch='materialization=off,in_to_exists=on'" ],
-    [ 'semijoin'        => "optimizer_switch='semijoin=off'" ],
-    [ 'Start temporary'     => "optimizer_switch='semijoin=off'" ],
-    [ 'loosescan'        => "optimizer_switch='loosescan=off'" ],
-    [ '<subquery'        => "optimizer_switch='materialization=off,in_to_exists=on'" ],
-    [ '<exists>'        => "optimizer_switch='in_to_exists=off,materialization=on'" ],
-    [ qr{hash|BNLH|BKAH}    => "optimizer_switch='join_cache_hashed=off'" ],    
-    [ 'BKA'            => "optimizer_switch='join_cache_bka=off'" ],
-    [ 'incremental'        => "optimizer_switch='join_cache_incremental=off'" ],
-    [ 'join buffer'        => "join_cache_level=0" ],
-    [ 'join buffer'        => "optimizer_join_cache_level=0" ],
-    [ 'mrr'            => "optimizer_switch='mrr=off'" ],
-    [ 'index condition'    => "optimizer_switch='index_condition_pushdown=off'" ],
+    [ 'semijoin'          => "optimizer_switch='semijoin=off'" ],
+    [ 'Start temporary'   => "optimizer_switch='semijoin=off'" ],
+    [ 'loosescan'         => "optimizer_switch='loosescan=off'" ],
+    [ '<subquery'         => "optimizer_switch='materialization=off,in_to_exists=on'" ],
+    [ '<exists>'          => "optimizer_switch='in_to_exists=off,materialization=on'" ],
+    [ qr{hash|BNLH|BKAH}  => "optimizer_switch='join_cache_hashed=off'" ],
+    [ 'BKA'               => "optimizer_switch='join_cache_bka=off'" ],
+    [ 'incremental'       => "optimizer_switch='join_cache_incremental=off'" ],
+    [ 'join buffer'       => "join_cache_level=0" ],
+# MySQL version:
+    [ 'join buffer'       => "optimizer_join_cache_level=0" ],
+    [ 'mrr'               => "optimizer_switch='mrr=off'" ],
+    [ 'index condition'   => "optimizer_switch='index_condition_pushdown=off'" ],
     [ qr{DERIVED}s        => "optimizer_switch='derived_merge=on'" ],
     [ qr{(?!DERIVED)}s    => "optimizer_switch='derived_merge=off'" ],
     [ qr{key[0-9]}        => "optimizer_switch='derived_with_keys=off'" ],
-    [ 'Key-ordered'        => "optimizer_switch='mrr_sort_keys=off'" ],
-    [ 'Key-ordered'        => "optimizer_switch='mrr=off'" ],
-    [ 'Rowid-ordered'    => "optimizer_switch='mrr=off'" ]
+    [ 'Key-ordered'       => "optimizer_switch='mrr_sort_keys=off'" ],
+    [ 'Key-ordered'       => "optimizer_switch='mrr=off'" ],
+    [ 'Rowid-ordered'     => "optimizer_switch='mrr=off'" ]
 );
 
 my %explain2count;
@@ -75,12 +76,12 @@ sub transform {
 
     if (not defined $available_switches) {
         my $dbh_probe = DBI->connect($executor->dsn(), undef, undef, { PrintError => 0 } );
-        
+
         foreach my $explain2switch (@explain2switch) {
-            my ($explain_fragment, $optimizer_switch) = ($explain2switch->[0], $explain2switch->[1]);
-            my $sth_probe = $dbh_probe->prepare("SET SESSION $optimizer_switch");
+            my ($explain_fragment, $switch) = ($explain2switch->[0], $explain2switch->[1]);
+            my $sth_probe = $dbh_probe->prepare("SET SESSION $switch");
             $sth_probe->execute();
-            $available_switches->{$optimizer_switch}++ if not defined $sth_probe->err();
+            $available_switches->{$switch}++ if not defined $sth_probe->err();
         }
     }
 
@@ -101,17 +102,17 @@ sub transform {
 
     my @transformed_queries;
     foreach my $explain2switch (@explain2switch) {
-        my ($explain_fragment, $optimizer_switch) = ($explain2switch->[0], $explain2switch->[1]);
-        next if not exists $available_switches->{$optimizer_switch};
+        my ($explain_fragment, $switch) = ($explain2switch->[0], $explain2switch->[1]);
+        next if not exists $available_switches->{$switch};
         if ($original_explain_string =~ m{$explain_fragment}si) {
-            $explain2count{"$explain_fragment => $optimizer_switch"}++;
-            my ($switch_name) = $optimizer_switch =~ m{^(.*?)=}sgio;
+            $explain2count{"$explain_fragment => $switch"}++;
+            my ($switch_name) = $switch =~ m{^(.*?)=}sgio;
             push @transformed_queries, [
-                'SET @switch_saved = @@'.$switch_name.';',
-                "SET SESSION $optimizer_switch;",
+                'SET @'.$switch_name.'_saved = @@'.$switch_name.';',
+                "SET SESSION $switch;",
                 "$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ;"
             ];
-            push @transformed_queries, [ '/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@switch_saved' ];
+            push @transformed_queries, [ '/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@'.$switch_name.'_saved' ];
         }
     }
 
