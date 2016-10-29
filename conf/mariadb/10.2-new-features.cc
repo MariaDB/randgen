@@ -7,6 +7,8 @@
 #    thread pool turned on
 # MDEV-7635 new defaults
 #    binlog_format=MIXED is set for testing purposes (until it's changed by default)
+# MDEV-5535 cannot reopen temporary table
+#    conf/mariadb/redefine_temporary_tables.yy is added
 
 $combinations = [
     [
@@ -22,6 +24,7 @@ $combinations = [
         --transformers=ExecuteAsExecuteImmediate
         --redefine=conf/mariadb/general-workarounds.yy
         --redefine=conf/mariadb/redefine_multiple_triggers.yy
+        --redefine=conf/mariadb/redefine_temporary_tables.yy
         --mysqld=--log_output=FILE
         --mysqld=--log_bin_trust_function_creators=1
         --use-gtid=current_pos
