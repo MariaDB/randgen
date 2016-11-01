@@ -19,7 +19,6 @@ $combinations = [
         --duration=300
         --queries=100M
         --reporters=QueryTimeout,Backtrace,ErrorLog,Deadlock
-        --validators=QueryProperties
         --validators=QueryProperties,TransformerNoComparator
         --transformers=ExecuteAsExecuteImmediate
         --redefine=conf/mariadb/general-workarounds.yy
