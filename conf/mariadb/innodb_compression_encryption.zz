@@ -1,0 +1,45 @@
+# Copyright (C) 2016 MariaDB Corporation.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+# Rough imitation of OLTP test (sysbench-like)
+# Default number of tables is 5, 1000 rows each, 
+# it can be changed by providing --rows parameter on the command line
+
+$tables = {
+        pk => [ undef ],
+        names => [  't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8' ],
+        rows => [ 1000, 1000, 1000, 1000, 1000, 10000, 10000, 50000 ]
+};
+
+$fields = {
+        sqls => [
+            "`id` int(10) unsigned NOT NULL auto_increment",
+            "`k` int(10) unsigned NOT NULL default '0'",
+            "`c` char(120) NOT NULL default ''",
+            "`pad` char(60) NOT NULL default ''"
+        ],
+        index_sqls => [
+            "PRIMARY KEY (`id`)",
+            "KEY `k` (`k`)"
+        ],
+        types => [ undef ],
+        indexes => [ undef ]
+};
+
+$data = {
+        numbers => [ 'digit', 'null', undef ],
+        strings => [ 'letter', 'english', 'char(12)' ]
+}
