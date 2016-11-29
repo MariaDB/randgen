@@ -167,7 +167,7 @@ join_type:
 join_condition_list:
 	join_condition_item | 
 	( join_condition_item ) and_or ( join_condition_list ) |
-	( current_table_item  . _field_pk arithmetic_operator previous_table_item . _field ) AND (current_table_item  . _field_pk arithmetic_operator previous_table_item . _field ) ;	
+	( current_table_item  . _field_pk arithmetic_operator previous_table_item . _field_int ) AND (current_table_item  . _field_pk arithmetic_operator previous_table_item . _field_int ) ;	
 
 join_condition_item:
 	current_table_item . _field_int_indexed = previous_table_item . _field_int on_subquery |
