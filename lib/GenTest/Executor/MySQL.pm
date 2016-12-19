@@ -1130,7 +1130,7 @@ sub getSchemaMetaData {
     ## 7. real data type
     my ($self) = @_;
 
-    my $query =
+    my $query = 
         "SELECT DISTINCT ".
                 "CASE WHEN table_schema = 'information_schema' ".
                      "THEN 'INFORMATION_SCHEMA' ".  ## Hack due to
@@ -1138,26 +1138,26 @@ sub getSchemaMetaData {
                                                     ## behaviour on
                                                     ## schema names
                                                     ## (See Bug#49708)
-                     "ELSE table_schema END, ".
+                     "ELSE table_schema END AS table_schema, ".
                "table_name, ".
                "CASE WHEN table_type = 'BASE TABLE' THEN 'table' ".
                     "WHEN table_type = 'VIEW' THEN 'view' ".
                     "WHEN table_type = 'SYSTEM VIEW' then 'view' ".
-                    "ELSE 'misc' END, ".
+                    "ELSE 'misc' END AS table_type, ".
                "column_name, ".
                "CASE WHEN column_key = 'PRI' THEN 'primary' ".
-                    "WHEN column_key = 'MUL' THEN 'indexed' ".
-                    "WHEN column_key = 'UNI' THEN 'indexed' ".
-                    "ELSE 'ordinary' END, ".
+                    "WHEN column_key IN ('MUL','UNI') THEN 'indexed' ".
+                    "WHEN index_name = 'PRIMARY' THEN 'primary' ".
+                    "WHEN non_unique IS NOT NULL THEN 'indexed' ".
+                    "ELSE 'ordinary' END AS column_key, ".
                "CASE WHEN data_type IN ('bit','tinyint','smallint','mediumint','int','bigint') THEN 'int' ".
                     "WHEN data_type IN ('float','double') THEN 'float' ".
                     "WHEN data_type IN ('decimal') THEN 'decimal' ".
                     "WHEN data_type IN ('datetime','timestamp') THEN 'timestamp' ".
-                    "WHEN data_type IN ('char','varchar') THEN 'char' ".
-                    "WHEN data_type IN ('binary','varbinary') THEN 'binary' ".
+                    "WHEN data_type IN ('char','varchar','binary','varbinary') THEN 'char' ".
                     "WHEN data_type IN ('tinyblob','blob','mediumblob','longblob') THEN 'blob' ".
                     "WHEN data_type IN ('tinytext','text','mediumtext','longtext') THEN 'text' ".
-                    "ELSE data_type END, ".
+                    "ELSE data_type END AS data_type_normalized, ".
                "data_type, ".
                "character_maximum_length, ".
                "table_rows ".
@@ -1165,7 +1165,7 @@ sub getSchemaMetaData {
               "information_schema.columns USING(table_schema,table_name) LEFT JOIN ".
               "information_schema.statistics USING(table_schema,table_name,column_name) ".
 
-          "WHERE table_name <> 'DUMMY'";
+          "WHERE table_name <> 'DUMMY'"; 
 
     my @res = @{$self->dbh()->selectall_arrayref($query)};
     my %table_rows = ();
