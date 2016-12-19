@@ -301,14 +301,14 @@ sub hex {
 sub date {
 	my $prng = shift;
 	return sprintf('%04d-%02d-%02d',
-                   $prng->uint16(2000,2009),
+                   $prng->uint16(1971,2035),
                    $prng->uint16(1,12),
                    $prng->uint16(1,28));
 }
 
 sub year {
 	my $prng = shift;
-	return $prng->uint16(2000,2009);
+	return $prng->uint16(1971,2035);
 }
 
 sub time {
@@ -328,7 +328,7 @@ sub datetime {
 sub timestamp {
 	my $prng = shift;
 	return sprintf('%04d%02d%02d%02d%02d%02d.%06d',
-                   $prng->uint16(2000,2009),
+                   $prng->uint16(1971,2035),
                    $prng->uint16(1,12),
                    $prng->uint16(1,28),
                    $prng->uint16(0,23),
