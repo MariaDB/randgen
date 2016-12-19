@@ -58,6 +58,8 @@ my $opt_result = GetOptions($options,
                             'engine3:s',
                             'generator=s',
                             'gendata:s',
+                            'gendata-advanced',
+                            'gendata_advanced',
                             'grammar=s',
                             'skip-recursive-rules',
                             'redefine=s@',
@@ -113,6 +115,7 @@ my $config = GenTest::Properties->new(
     legal => ['dsn',
               'engine',
               'gendata',
+              'gendata-advanced',
               'generator',
               'grammar',
               'skip-recursive-rules',
@@ -136,6 +139,7 @@ my $config = GenTest::Properties->new(
               'rows',
               'varchar-length',
               'xml-output',
+              'vcols',
               'views',
               'sqltrace',
               'no-err-filter',
@@ -174,6 +178,7 @@ say("Starting: $0 ".join(" ", @ARGV_saved));
 # Pass debug server.
 $config->debug_server(\@debug_server) if @debug_server;
 $ENV{RQG_DEBUG} = 1 if defined $config->debug;
+$config->property('gendata-advanced',1) if defined $options->{'gendata_advanced'} || defined $options->{'gendata-advanced'};
 my $gentest = GenTest::App::GenTest->new(config => $config);
 
 my $status = $gentest->run();

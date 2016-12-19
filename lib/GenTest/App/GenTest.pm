@@ -36,6 +36,7 @@ use GenTest::Properties;
 use GenTest::Constants;
 use GenTest::App::Gendata;
 use GenTest::App::GendataSimple;
+use GenTest::App::GendataAdvanced;
 use GenTest::IPC::Channel;
 use GenTest::IPC::Process;
 use GenTest::ErrorFilter;
@@ -466,7 +467,6 @@ sub workerProcess {
 sub doGenData {
     my $self = shift;
 
-    return STATUS_OK if not defined $self->config->gendata();
     return STATUS_OK if defined $self->config->property('start-dirty');
 
     my $i = -1;
@@ -474,9 +474,10 @@ sub doGenData {
         $i++;
         next if $dsn eq '';
         my $gendata_result;
-        if ($self->config->gendata eq '') {
-            $gendata_result = GenTest::App::GendataSimple->new(
+        if (defined $self->config->property('gendata-advanced')) {
+            $gendata_result = GenTest::App::GendataAdvanced->new(
                dsn => $dsn,
+               vcols => (defined $self->config->vcols ? ${$self->config->vcols}[$i] : undef),
                views => ${$self->config->views}[$i],
                engine => ${$self->config->engine}[$i],
                sqltrace=> $self->config->sqltrace,
@@ -484,7 +485,22 @@ sub doGenData {
                rows => $self->config->rows,
                varchar_length => $self->config->property('varchar-length')
             )->run();
-        } else {
+        }
+
+        next if not defined $self->config->gendata();
+
+        if ($self->config->gendata eq '' or $self->config->gendata eq '1') {
+            $gendata_result = GenTest::App::GendataSimple->new(
+               dsn => $dsn,
+               vcols => (defined $self->config->vcols ? ${$self->config->vcols}[$i] : undef),
+               views => ${$self->config->views}[$i],
+               engine => ${$self->config->engine}[$i],
+               sqltrace=> $self->config->sqltrace,
+               notnull => $self->config->notnull,
+               rows => $self->config->rows,
+               varchar_length => $self->config->property('varchar-length')
+            )->run();
+        } elsif (defined $self->config->gendata()) {
             $gendata_result = GenTest::App::Gendata->new(
                spec_file => $self->config->gendata,
                dsn => $dsn,
@@ -492,6 +508,7 @@ sub doGenData {
                seed => $self->config->seed(),
                debug => $self->config->debug,
                rows => $self->config->rows,
+               vcols => ${$self->config->vcols}[$i],
                views => ${$self->config->views}[$i],
                varchar_length => $self->config->property('varchar-length'),
                sqltrace => $self->config->sqltrace,
