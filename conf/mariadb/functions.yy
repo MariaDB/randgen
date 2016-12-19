@@ -153,8 +153,15 @@ charset:
    utf8 | latin1 ;
 
 type:
-   BINARY | BINARY(_digit) | CHAR | CHAR(_digit) | DATE | DATETIME | DECIMAL | DECIMAL(_digit) | DECIMAL(_digit,_digit) | SIGNED | TIME | UNSIGNED ;
+   BINARY | BINARY(_digit) | CHAR | CHAR(_digit) | DATE | DATETIME | DECIMAL | DECIMAL(decimal_m) | DECIMAL(decimal_m,decimal_d) | SIGNED | TIME | UNSIGNED ;
 
+decimal_m:
+    { $decimal_m = $prng->int(0,65) }
+;
+
+decimal_d:
+    { $decimal_d = $prng->int(0,$decimal_m) }
+;
 
 encrypt_func:
    AES_DECRYPT( arg, arg ) |
