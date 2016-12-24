@@ -271,6 +271,7 @@ sub doCombination {
     my ($trial_id,$comb_str,$comment) = @_;
 
     return if (($trial_id -1) % $threads +1) != $thread_id;
+    say("#============================================================");
     say("[$thread_id] Running $comment ".$trial_id."/".$trials);
 	my $mask = $prng->uint16(0, 65535);
 
