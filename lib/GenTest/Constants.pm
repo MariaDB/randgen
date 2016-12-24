@@ -53,6 +53,7 @@ require Exporter;
 
 	STATUS_REQUIREMENT_UNMET
 	STATUS_ERROR_MISMATCH
+	STATUS_SCHEMA_MISMATCH
 	STATUS_LENGTH_MISMATCH
 	STATUS_CONTENT_MISMATCH
 
@@ -62,6 +63,7 @@ require Exporter;
 	STATUS_REPLICATION_FAILURE
 	STATUS_BACKUP_FAILURE
 	STATUS_RECOVERY_FAILURE
+	STATUS_UPGRADE_FAILURE
 	STATUS_DATABASE_CORRUPTION
 	STATUS_SERVER_DEADLOCKED
 	STATUS_VALGRIND_FAILURE
@@ -109,7 +111,7 @@ use constant STATUS_REQUIREMENT_UNMET_SELECT	=> 25;
 use constant STATUS_ERROR_MISMATCH_SELECT	=> 26;	# A SELECT query caused those erros, however the test can continue
 use constant STATUS_LENGTH_MISMATCH_SELECT	=> 27;	# since the database has not been modified
 use constant STATUS_CONTENT_MISMATCH_SELECT		=> 28;	# 
-
+use constant STATUS_SCHEMA_MISMATCH		=> 29;	#
 use constant STATUS_REQUIREMENT_UNMET		=> 30;
 use constant STATUS_ERROR_MISMATCH		=> 31;	# A DML statement caused those errors, and the test can not continue
 use constant STATUS_LENGTH_MISMATCH		=> 32;	# because the databases are in an unknown inconsistent state
@@ -129,12 +131,13 @@ use constant STATUS_SERVER_CRASHED		=> 101;
 use constant STATUS_SERVER_KILLED		=> 102;	# Willfull killing of the server, will not be reported as a crash
 
 use constant STATUS_REPLICATION_FAILURE		=> 103;
-use constant STATUS_RECOVERY_FAILURE		=> 104;
-use constant STATUS_DATABASE_CORRUPTION		=> 105;
-use constant STATUS_SERVER_DEADLOCKED		=> 106;
-use constant STATUS_BACKUP_FAILURE		=> 107;
-use constant STATUS_VALGRIND_FAILURE		=> 108;
-use constant STATUS_ALARM			=> 109; # A module, e.g. a Reporter, raises an alarm with critical severity
+use constant STATUS_UPGRADE_FAILURE         => 104;
+use constant STATUS_RECOVERY_FAILURE		=> 105;
+use constant STATUS_DATABASE_CORRUPTION		=> 106;
+use constant STATUS_SERVER_DEADLOCKED		=> 107;
+use constant STATUS_BACKUP_FAILURE		=> 108;
+use constant STATUS_VALGRIND_FAILURE		=> 109;
+use constant STATUS_ALARM			=> 110; # A module, e.g. a Reporter, raises an alarm with critical severity
 
 use constant ORACLE_ISSUE_STILL_REPEATABLE	=> 2;
 use constant ORACLE_ISSUE_NO_LONGER_REPEATABLE	=> 3;
