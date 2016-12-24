@@ -20,13 +20,14 @@
 
 $tables = {
         pk => [ undef ],
-        names => [  't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10', 
-                    't11', 't12', 't13', 't14', 't15', 't16', 't17', 't18', 't19', 't20', 
-                    't21', 't22', 't23', 't24', 't25', 't26', 't27', 't28', 't29', 't30',
-                    't31', 't32', 't33', 't34', 't35', 't36', 't37', 't38', 't39', 't40',
-                    't41', 't42', 't43', 't44', 't45', 't46', 't47', 't48', 't49', 't50'
+        names => [  'oltp1',  'oltp2',  'oltp3',  'oltp4',  'oltp5',  'oltp6',  'oltp7',  'oltp8',  'oltp9',  'oltp10', 
+                    'oltp11', 'oltp12', 'oltp13', 'oltp14', 'oltp15', 'oltp16', 'oltp17', 'oltp18', 'oltp19', 'oltp20', 
+                    'oltp21', 'oltp22', 'oltp23', 'oltp24', 'oltp25', 'oltp26', 'oltp27', 'oltp28', 'oltp29', 'oltp30',
+                    'oltp31', 'oltp32', 'oltp33', 'oltp34', 'oltp35', 'oltp36', 'oltp37', 'oltp38', 'oltp39', 'oltp40',
+                    'oltp41', 'oltp42', 'oltp43', 'oltp44', 'oltp45', 'oltp46', 'oltp47', 'oltp48', 'oltp49', 'oltp50'
         ],
-        rows => [ 1000, 1000, 1000, 1000, 1000 ]
+        engines => [ 'InnoDB', 'MyISAM' ],
+        rows => [ 1000, 1000, 1000, 1000 ]
 };
 
 $fields = {
