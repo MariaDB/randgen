@@ -1,0 +1,226 @@
+############################################################
+# Notes on reasonable values
+# innnodb_spin_wait_delay: big values make the server effectively hang
+# read-only mode and log resizing (innodb_log_file_size, innodb_log_files_in_group) don't work together
+# "ib_logfiles are too small for innodb_thread_concurrency 743. The combined size of ib_logfiles should be bigger than 200 kB * innodb_thread_concurrency."
+# innodb_log_file_size=2831202399 and innodb_log_files_in_group=77 -- just too much
+
+############################################################
+#### Both for the bootstrap and for the server
+############################################################
+
+[mariadb]
+innodb_checksum_algorithm                                  [ innodb , crc32 , none , strict_innodb , strict_crc32 , strict_none ]
+#### innodb_data_file_path               ibdata1:12M:autoextend          
+#### innodb_data_home_dir                                    
+#### innodb_log_block_size                                      [ 16 .. 4096 ]    ## Asserts, said to be BETA-quality
+innodb_log_file_size                                         [ 4194304 .. 4294967295 ] # max 512GB / innodb_log_files_in_group
+innodb_log_files_in_group                                    [ 1 .. 4 ]
+#### innodb_log_group_home_dir    ./
+innodb_page_size                                           [ 4K , 8K , 16K , 32K , 64K ]
+innodb_undo_tablespaces                                      [ 0 .. 95 ]   # Default 0
+
+
+############################################################
+#### For the server but not bootstrap
+############################################################
+
+[mysql.runtime]
+
+#####--------------------------
+##### InnoDB (XtraDB) options
+#####--------------------------
+
+innodb-status-file                                           [ ON, OFF, FORCE ]
+
+innodb_adaptive_flushing                                     [ ON , OFF ]
+innodb_adaptive_flushing_lwm                                 [ 0 .. 70 ]
+innodb_adaptive_hash_index                                   [ ON , OFF ]
+innodb_adaptive_hash_index_parts                             [ 1 .. 512 ] 
+innodb_adaptive_max_sleep_delay                              [ 0 .. 1000000 ]
+innodb_additional_mem_pool_size                              [ 2097152 .. 268435456 ]  # max 4294967295
+innodb_api_bk_commit_interval                                [ 1 .. 1073741824 ]
+innodb_api_disable_rowlock                                   [ OFF , ON ]
+innodb_api_enable_binlog                                     [ OFF , ON ]
+innodb_api_enable_mdl                                        [ OFF , ON ]
+innodb_api_trx_level                                         [ 0 .. 4294967295 ] # meaningful values 0-3
+innodb_autoextend_increment                                  [ 1 .. 1000 ]
+innodb_autoinc_lock_mode                                     [ 0 .. 2 ]
+innodb_background_drop_list_empty                            [ OFF , ON ]
+innodb_buffer_pool_chunk_size                                [ 1048576 .. 4294967295 ]
+innodb_buffer_pool_dump_at_shutdown                          [ OFF , ON ]
+innodb_buffer_pool_dump_now                                  [ OFF , ON ] 
+innodb_buffer_pool_filename                                  [ bp, my_buffer_pool ] # string value
+innodb_buffer_pool_instances                                 [ 1 .. 64 ]
+innodb_buffer_pool_load_abort                                [ OFF , ON ]
+innodb_buffer_pool_load_at_startup                           [ OFF , ON ]
+innodb_buffer_pool_load_now                                  [ OFF , ON ]
+innodb_buffer_pool_size                                      [ 5242880 .. 4294967295 ]
+innodb_change_buffer_max_size                                [ 0 .. 50 ]
+innodb_change_buffering                                      [ inserts , none , deletes , purges , changes , all ]
+innodb_change_buffering_debug                                [ 0 , 1 ]  # value 2 causes crash on merge (by design)
+#### innodb_checksum_algorithm                                          # should be in bootstrap too
+innodb_checksums                                             [ ON , OFF ]  # deprecated
+innodb_cmp_per_index_enabled                                 [ OFF , ON ]
+innodb_commit_concurrency                                    [ 0 .. 1000 ]
+innodb_compress_debug                                        [ none , zlib , lz4 , lz4hc ]
+innodb_compression_failure_threshold_pct                     [ 0 .. 100 ]
+innodb_compression_level                                     [ 0 .. 9 ]
+innodb_compression_pad_pct_max                               [ 0 .. 75 ]
+innodb_concurrency_tickets                                   [ 0 .. 50000 ] # max 4294967295
+innodb_create_intrinsic                                      [ OFF , ON ]
+#### innodb_data_file_path                                              # should go to bootstrap too
+#### innodb_data_home_dir                                               # should go to bootstrap too
+innodb_deadlock_detect                                       [ OFF , ON ]  # 5.7.15 only, we are currently on 5.7.14
+innodb_default_row_format                                    [ DYNAMIC , COMPACT , REDUNDANT ]
+innodb_disable_sort_file_cache                               [ OFF , ON ]
+innodb_disable_resize_buffer_pool_debug                      [ OFF , ON ]
+innodb_doublewrite                                           [ ON , OFF ]
+innodb_fast_shutdown                                         [ 0 .. 2 ]
+innodb_fil_make_page_dirty_debug                             [ 0 .. 4294967295 ]
+innodb_file_format                                           [ Antelope , Barracuda ]
+innodb_file_format_check                                     [ ON , OFF ]
+innodb_file_format_max                                       [ Antelope , Barracuda ]
+innodb_file_per_table                                        [ ON , OFF ]
+innodb_fill_factor                                           [ 10 .. 100 ]
+innodb_flush_log_at_timeout                                  [ 1 .. 2700 ]
+innodb_flush_log_at_trx_commit                               [ 0 .. 2 ] 
+innodb_flush_method                                          [  fsync , O_DSYNC , littlesync , nosync , O_DIRECT , O_DIRECT_NO_FSYNC ]
+innodb_flush_neighbors                                       [ 0 .. 2 ]
+innodb_flush_sync                                            [ OFF , ON ]
+innodb_flushing_avg_loops                                    [ 1 .. 1000 ]
+innodb_force_load_corrupted                                  [ OFF , ON ]
+#### innodb_force_recovery                                   [ 0 .. 6 ]
+innodb_ft_aux_table                                          [ NULL , ft_aux_table ]
+innodb_ft_cache_size                                         [ 1600000 .. 80000000 ]
+innodb_ft_enable_diag_print                                  [ OFF , ON ]
+innodb_ft_enable_stopword                                    [ ON , OFF ]
+innodb_ft_max_token_size                                     [ 10 .. 84 ]
+innodb_ft_min_token_size                                     [ 0 .. 16 ]
+innodb_ft_num_word_optimize                                  [ 0 .. 20000 ]
+innodb_ft_result_cache_limit                                 [ 1000000 .. 4294967295 ]
+innodb_ft_server_stopword_table                              [ NULL , ft_server_stopword ]
+innodb_ft_sort_pll_degree                                    [ 1 .. 32 ]
+innodb_ft_total_cache_size                                   [ 32000000 .. 1600000000 ]
+innodb_ft_user_stopword_table                                [ NULL , ft_user_stopword_table ]
+innodb_io_capacity                                           [ 100 .. 4294967295 ]   # max 2**64-1 on 64-bit
+innodb_io_capacity_max                                       [ 100 .. 10000 ]        # max 2**64-1 on 64-bit
+innodb_large_prefix                                          [ OFF , ON ]            # deprecated
+innodb_limit_optimistic_insert_debug                         [ 0 .. 4294967295 ]
+innodb_lock_wait_timeout                                     [ 1 .. 1073741824 ]
+innodb_locks_unsafe_for_binlog                               [ OFF , ON ]
+innodb_log_buffer_size                                       [ 1048576 .. 4294967295 ]
+innodb_log_checksum_algorithm                                [ innodb , none , crc32 , strict_none , strict_innodb , strict_crc32 ]
+innodb_log_checksums                                         [ OFF , ON ]
+innodb_log_compressed_pages                                  [ OFF , ON ]
+#### innodb_log_file_size                                               # does not have to be in bootstrap, but let it be so
+innodb_log_files_in_group                                    [ 2 .. 100 ]
+#### innodb_log_group_home_dir
+innodb_log_write_ahead_size                                  [ 512 .. 65536 ]          # max == innodb_log_page_size
+innodb_lru_scan_depth                                        [ 100 .. 4294967295 ]     # max 2**64-1 on 64-bit
+innodb_max_dirty_pages_pct                                   [ 0 .. 99 ]               # max 99.99
+innodb_max_dirty_pages_pct_lwm                               [ 0 .. 99 ]               # max 99.99
+innodb_max_purge_lag                                         [ 0 .. 4294967295 ]
+innodb_max_purge_lag_delay                                   [ 0 .. 4294967295 ]
+innodb_max_undo_log_size                                     [ 10485760 .. 4294967295 ]   # max 2**64-1 on 64-bit
+innodb_merge_threshold_set_all_debug                         [ 1 .. 50 ]
+innodb_monitor_disable                                       [ counter , module , pattern , all , latch ]
+innodb_monitor_enable                                        [ counter , module , pattern , all , latch ]
+innodb_monitor_reset                                         [ counter , module , pattern , all , latch ]
+innodb_monitor_reset_all                                     [ counter , module , pattern , all , latch ]
+innodb_numa_interleave                                       [ OFF , ON ]
+innodb_old_blocks_pct                                        [ 5 .. 95 ]
+innodb_old_blocks_time                                       [ 0 .. 4294967295 ]
+innodb_online_alter_log_max_size                             [ 65536 .. 4294967295 ]   # max 2**64-1 on 64-bit
+innodb_open_files                                            [ 10 .. 4294967295 ]
+innodb_optimize_fulltext_only                                [ OFF , ON ]
+innodb_optimize_point_storage                                [ OFF , ON ]
+innodb_page_cleaners                                         [ 1 .. 64 ]
+#### innodb_page_size                                                   # needs to be in bootstrap too
+innodb_print_all_deadlocks                                   [ OFF , ON ]
+innodb_purge_batch_size                                      [ 1 .. 5000 ]
+innodb_purge_threads                                         [ 1 .. 32 ]
+innodb_purge_rseg_truncate_frequency                         [ 1 .. 128 ]
+innodb_random_read_ahead                                     [ OFF , ON ]
+innodb_read_ahead_threshold                                  [ 0 .. 64 ]
+innodb_read_io_threads                                       [ 1 .. 64 ]
+#innodb_read_only                                             [ OFF , ON ]
+innodb_replication_delay                                     [ 0 .. 4294967295 ]
+innodb_rollback_on_timeout                                   [ OFF , ON ]
+innodb_rollback_segments                                     [ 1 .. 128 ]
+innodb_saved_page_number_debug                               [ 0 .. 8388607 ]     # really 2**23 - 1?
+innodb_sort_buffer_size                                      [ 65536 .. 67108864 ]
+innodb_spin_wait_delay                                       [ 0 .. 2000 ]       # max 2**64 - 1, but big values make the server effectively hang
+innodb_stats_auto_recalc                                     [ ON , OFF ]
+innodb_stats_include_delete_marked                           [ OFF , ON ]  # added in 5.7.17, we are on 5.7.14 at the moment
+innodb_stats_method                                          [ nulls_equal , nulls_unequal , nulls_ignored ]
+innodb_stats_on_metadata                                     [ OFF , ON ]
+innodb_stats_persistent                                      [ ON , OFF ]
+innodb_stats_persistent_sample_pages                         [ 0 .. 4294967295 ]
+innodb_stats_sample_pages                                    [ 0 .. 4294967295 ]       # max 2**64-1
+innodb_stats_transient_sample_pages                          [ 0 .. 4294967295 ]
+innodb_status_output                                         [ OFF , ON ]
+innodb_status_output_locks                                   [ OFF , ON ]
+innodb_strict_mode                                           [ OFF , ON ]
+innodb_support_xa                                            [ ON , OFF ]
+innodb_sync_array_size                                       [ 1 .. 1024 ]
+innodb_sync_spin_loops                                       [ 0 .. 4294967295 ]
+innodb_sync_debug                                            [ OFF , ON ]
+innodb_table_locks                                           [ ON , OFF ]
+#### innodb_temp_data_file_path ibtmp1:12M:autoextend
+innodb_thread_concurrency                                    [ 0 .. 1000 ]
+innodb_thread_sleep_delay                                    [ 0 .. 4294967295 ]        # max 18446744073709551615
+#### innodb_tmpdir
+innodb_trx_purge_view_update_only_debug                      [ OFF , ON ]
+innodb_trx_rseg_n_slots_debug                                [ 0 .. 1024 ]
+#### innodb_undo_directory    .
+innodb_undo_log_truncate                                     [ OFF , ON ]
+innodb_undo_logs                                             [ 0 .. 128 ]
+#### innodb_undo_tablespaces                                            # should be in bootstrap as well
+innodb_use_native_aio                                        [ ON , OFF ]
+innodb_use_sys_malloc                                        [ ON , OFF ]
+#### innodb_version    5.6.15-63.0
+innodb_write_io_threads                                      [ 1 .. 64 ]
+
+
+[mariadb.runtime]
+
+innodb_background_scrub_data_check_interval                  [ 1 .. 4294967295 ]
+innodb_background_scrub_data_compressed                      [ OFF , ON ]
+innodb_background_scrub_data_interval                        [ 1 .. 4294967295 ]
+innodb_background_scrub_data_uncompressed                    [ OFF , ON ]
+innodb_buf_dump_status_frequency                             [ 0 .. 100 ]
+innodb_compression_algorithm                                 [ none , zlib , lz4 , lzo , lzma , bzip2 , snappy ]
+innodb_compression_default                                   [ OFF , ON ]
+innodb_debug_force_scrubbing                                 [ OFF , ON ]
+innodb_default_encryption_key_id                             [ 1 .. 4294967295 ]
+innodb_defragment                                            [ OFF , ON ]
+innodb_defragment_fill_factor                                [ 0.7 , 0.8 , 0.9 , 1 ] # double, 0.7 - 1.0
+innodb_defragment_fill_factor_n_recs                         [ 1 .. 100 ]
+innodb_defragment_frequency                                  [ 1 .. 1000 ]
+innodb_defragment_n_pages                                    [ 2 .. 32 ]
+innodb_defragment_stats_accuracy                             [ 0 .. 4294967295 ]
+innodb_disallow_writes                                       [ OFF , ON ]
+innodb_encryption_rotate_key_age                             [ 0 .. 4294967295 ]
+innodb_encryption_rotation_iops                              [ 0 .. 4294967295 ]
+innodb_encryption_threads                                    [ 0 .. 20 ]  # max 4294967295
+innodb_encrypt_log                                           [ OFF , ON ]
+innodb_encrypt_tables                                        [ OFF , ON , FORCE ]
+innodb_fatal_semaphore_wait_threshold                        [ 1 .. 4294967295 ]
+innodb_force_primary_key                                     [ OFF , ON ]
+innodb_idle_flush_pct                                        [ 0 .. 100 ]
+innodb_immediate_scrub_data_uncompressed                     [ OFF , ON ]
+innodb_instrument_semaphores                                 [ OFF , ON ]
+innodb_lock_schedule_algorithm                               [ VATS , FCFS ]
+innodb_mtflush_threads                                       [ 1 .. 64 ]
+innodb_prefix_index_cluster_optimization                     [ OFF , ON ]
+innodb_scrub_log                                             [ OFF , ON ]
+innodb_scrub_log_speed                                       [ 1 .. 50000 ]
+innodb_simulate_comp_failures                                [ 0 .. 99 ]
+innodb_stats_modified_counter                                [ 0 .. 4294967295 ] # max 18446744073709551615
+innodb_stats_traditional                                     [ OFF , ON ]
+innodb_use_atomic_writes                                     [ OFF , ON ]
+innodb_use_fallocate                                         [ OFF , ON ]
+innodb_use_mtflush                                           [ OFF , ON ]
+innodb_use_trim                                              [ OFF , ON ]
+
