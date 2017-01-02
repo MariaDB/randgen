@@ -23,6 +23,7 @@ require Exporter;
 @ISA = qw(GenTest::Executor);
 
 use strict;
+use Carp;
 use DBI;
 use GenTest;
 use GenTest::Constants;
@@ -1167,17 +1168,19 @@ sub getSchemaMetaData {
 
           "WHERE table_name <> 'DUMMY'"; 
 
-    my @res = @{$self->dbh()->selectall_arrayref($query)};
+    my $res = $self->dbh()->selectall_arrayref($query);
+    croak("FATAL ERROR: Failed to retrieve schema metadata") unless $res;
+
     my %table_rows = ();
-    foreach my $i (0..$#res) {
-        my $tbl = $res[$i]->[0].'.'.$res[$i]->[1];
+    foreach my $i (0..$#$res) {
+        my $tbl = $res->[$i]->[0].'.'.$res->[$i]->[1];
         if ((not defined $table_rows{$tbl}) or ($table_rows{$tbl} eq 'NULL') or ($table_rows{$tbl} eq '')) {
             my $count_row = $self->dbh()->selectrow_arrayref("SELECT COUNT(*) FROM $tbl");
             $table_rows{$tbl} = $count_row->[0];
         }
-        $res[$i]->[8] = $table_rows{$tbl};
+        $res=>[$i]->[8] = $table_rows{$tbl};
     }
-    return \@res;
+    return $res;
 }
 
 sub getCollationMetaData {

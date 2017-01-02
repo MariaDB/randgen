@@ -330,7 +330,11 @@ sub cacheMetaData {
 
     if ($redo or not exists $global_schema_cache{$self->dsn()}) {
         say ("Caching schema metadata for ".$self->dsn());
-        foreach my $row (@{$self->getSchemaMetaData()}) {
+
+        my $metadata= $self->getSchemaMetaData();
+        croak("FATAL ERROR: failed to cache schema metadata") unless $metadata;
+
+        foreach my $row (@$metadata) {
             my ($schema, $table, $type, $col, $key, $metatype, $realtype, $maxlength, $table_rows) = @$row;
             $meta->{$schema}={} if not exists $meta->{$schema};
             $meta->{$schema}->{'bigtable'}={} if not exists $meta->{$schema}->{'bigtable'};
@@ -360,7 +364,10 @@ sub cacheMetaData {
     $self->[EXECUTOR_SCHEMA_METADATA] = $meta;
 
     my $coll = {};
-    foreach my $row (@{$self->getCollationMetaData()}) {
+
+    my $metadata= $self->getCollationMetaData();
+    croak("FATAL ERROR: failed to cache collation metadata") unless $metadata;
+    foreach my $row (@$metadata) {
         my ($collation, $charset) = @$row;
         $coll->{$collation} = $charset;
     }

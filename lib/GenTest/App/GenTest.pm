@@ -180,6 +180,8 @@ sub run {
         
         # Guessing the error log file name relative to datadir (lacking safer methods).
         my $datadir_result = $metadata_executor->execute("SHOW VARIABLES LIKE 'datadir'");
+        croak("FATAL ERROR: Failed to retrieve datadir") unless $datadir_result;
+
         my $errorlog;
         foreach my $errorlog_path (
             "../log/master.err",  # MTRv1 regular layout
