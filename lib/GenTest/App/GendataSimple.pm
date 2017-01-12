@@ -309,9 +309,13 @@ sub gen_table {
 
 		my $rnd_date = "'".$prng->date()."'";
 
-		$rnd_date = ($rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, "NULL", "'1900-01-01'")[$prng->uint16(0,9)];
+		if (not defined $self->[GDS_NOTNULL]) {
+			$rnd_date = ($rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, "NULL", "'1900-01-01'")[$prng->uint16(0,9)];
+        }
 		my $rnd_time = "'".$prng->time()."'";
-		$rnd_time = ($rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
+		if (not defined $self->[GDS_NOTNULL]) {
+			$rnd_time = ($rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
+        }
 
 		# 10% NULLS, 10% "1900-01-01 00:00:00', 20% date + " 00:00:00"
 
