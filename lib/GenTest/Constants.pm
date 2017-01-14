@@ -57,6 +57,8 @@ require Exporter;
 	STATUS_LENGTH_MISMATCH
 	STATUS_CONTENT_MISMATCH
 
+	STATUS_POSSIBLE_FAILURE
+
 	STATUS_CRITICAL_FAILURE
 	STATUS_SERVER_CRASHED
 	STATUS_SERVER_KILLED
@@ -116,6 +118,8 @@ use constant STATUS_REQUIREMENT_UNMET		=> 30;
 use constant STATUS_ERROR_MISMATCH		=> 31;	# A DML statement caused those errors, and the test can not continue
 use constant STATUS_LENGTH_MISMATCH		=> 32;	# because the databases are in an unknown inconsistent state
 use constant STATUS_CONTENT_MISMATCH		=> 33;	#
+
+use constant STATUS_POSSIBLE_FAILURE   => 60;
 
 # Higher-priority errors
 
