@@ -65,6 +65,7 @@ use constant MYSQLD_CONFIG_FILE => 27;
 use constant MYSQLD_USER => 28;
 use constant MYSQLD_MAJOR_VERSION => 29;
 use constant MYSQLD_CLIENT_BINDIR => 30;
+use constant MYSLQD_SERVER_VARIABLES => 31;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -337,6 +338,13 @@ sub addServerOptions {
     my ($self,$opts) = @_;
 
     push(@{$self->[MYSQLD_SERVER_OPTIONS]}, @$opts);
+}
+
+sub printServerOptions {
+    my $self = shift;
+    foreach (@{$self->[MYSQLD_SERVER_OPTIONS]}) {
+        say("    $_");
+    }
 }
 
 sub createMysqlBase  {
@@ -793,6 +801,28 @@ sub stopServer {
     }
 }
 
+sub serverVariables {
+    my $self = shift;
+    if (not keys %{$self->[MYSLQD_SERVER_VARIABLES]}) {
+        my $dbh = $self->dbh;
+        return undef if not defined $dbh;
+        my $sth = $dbh->prepare("SHOW VARIABLES");
+        $sth->execute();
+        my %vars = ();
+        while (my $array_ref = $sth->fetchrow_arrayref()) {
+            $vars{$array_ref->[0]} = $array_ref->[1];
+        }
+        $sth->finish();
+        $self->[MYSLQD_SERVER_VARIABLES] = \%vars;
+    }
+    return $self->[MYSLQD_SERVER_VARIABLES];
+}
+
+sub serverVariable {
+    my ($self, $var) = @_;
+    return $self->serverVariables()->{$var};
+}
+
 sub running {
     my($self) = @_;
     if (osWindows()) {
@@ -939,6 +969,12 @@ sub versionNumbers {
     $self->version =~ m/([0-9]+)\.([0-9]+)\.([0-9]+)/;
 
     return (int($1),int($2),int($3));
+}
+
+sub versionNumeric {
+    my $self = shift;
+    $self->version =~ /([0-9]+)\.([0-9]+)\.([0-9]+)/;
+    return sprintf("%d%02d%02d",int($1),int($2),int($3));
 }
 
 #############  Version specific stuff
