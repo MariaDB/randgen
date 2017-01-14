@@ -256,6 +256,11 @@ sub port {
     }
 }
 
+sub setPort {
+    my ($self, $port) = @_;
+    $self->[MYSQLD_PORT]= $port;
+}
+
 sub user {
     return $_[0]->[MYSQLD_USER];
 }
@@ -548,7 +553,7 @@ sub startServer {
                 sayFile($errorlog);
                 return DBSTATUS_FAILURE;
             }
-            
+
             if (!$pid)
             {
                 # If we are here, server has started updating the error log. 
@@ -578,7 +583,7 @@ sub startServer {
                 
                 TAIL:
                 for (;;) {
-                    while (!eof($errlog_fh)) {
+                    do {
                         $_= readline $errlog_fh;
                         if (/\[Note\]\s+\S+?\/mysqld\s+\(mysqld.*?\)\s+starting as process (\d+)\s+\.\./) {
                             $pid= $1;
@@ -587,7 +592,7 @@ sub startServer {
                         elsif (! /^== /) {
                             last TAIL;
                         }
-                    }
+                    } until (eof($errlog_fh));
                     sleep 1;
                     seek ERRLOG, 0, 1;    # this clears the EOF flag
                 }
@@ -601,12 +606,12 @@ sub startServer {
             # Now we know the pid and can monitor it along with the pid file,
             # to avoid unnecessary waiting if the server goes down
             $wait_end= time() + $startup_timeout;
-            
+
             while (!-f $self->pidfile and time() < $wait_end) {
                 Time::HiRes::sleep($wait_time);
                 last if $pid and not kill(0, $pid);
             }
-            
+
             if (!-f $self->pidfile) {
                 sayFile($errorlog);
                 if ($pid and not kill(0, $pid)) {
@@ -623,6 +628,7 @@ sub startServer {
             # We should only get here if the pid file was created
             my $pidfile = $self->pidfile;
             my $pid_from_file = `cat \"$pidfile\"`;
+
             $pid_from_file =~ s/.*?([0-9]+).*/$1/;
             if ($pid and $pid != $pid_from_file) {
                 say("WARNING: pid extracted from the error log ($pid) is different from the pid in the pidfile ($pid_from_file). Assuming the latter is correct");
@@ -638,14 +644,20 @@ sub startServer {
 
 sub kill {
     my ($self) = @_;
-    
+
     if (osWindows()) {
         if (defined $self->[MYSQLD_WINDOWS_PROCESS]) {
             $self->[MYSQLD_WINDOWS_PROCESS]->Kill(0);
             say("Killed process ".$self->[MYSQLD_WINDOWS_PROCESS]->GetProcessID());
         }
     } else {
-        if (defined $self->serverpid) {
+        my $pidfile= $self->pidfile;
+
+        if (not defined $self->serverpid and -f $pidfile) {
+            $self->[MYSQLD_SERVERPID] = `cat \"$pidfile\"`;
+        }
+
+        if (defined $self->serverpid and $self->serverpid =~ /^\d+$/) {
             kill KILL => $self->serverpid;
             my $waits = 0;
             while ($self->running && $waits < 100) {

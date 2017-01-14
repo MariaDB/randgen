@@ -27,6 +27,7 @@ use GenTest;
 use GenTest::Constants;
 use GenTest::Result;
 use GenTest::Validator;
+use GenTest::Executor;
 
 use constant MIXER_GENERATOR	=> 0;
 use constant MIXER_EXECUTORS	=> 1;
@@ -158,6 +159,7 @@ sub next {
 		my @execution_results;
 		my $restart_timeout = $mixer->restart_timeout();
 
+      EXECUTE_QUERY:
 		foreach my $executor (@$executors) {
 			my $execution_result = $executor->execute($query);
 			
@@ -167,13 +169,17 @@ sub next {
 					or $execution_result->status() == STATUS_REPLICATION_FAILURE
 				 ) and $restart_timeout) 
 			{
-            say("Mixer: Server has gone away, waiting for $restart_timeout more seconds to see if it gets back") 
+                say("Mixer: Server has gone away, waiting for $restart_timeout more seconds to see if it gets back")
 					if $restart_timeout == $mixer->restart_timeout() or $restart_timeout == 1;
-            sleep 1;
-            $restart_timeout--;
-            redo;
-			}
-
+                while ($restart_timeout) {
+                    sleep 1;
+                    $restart_timeout--;
+                    if ($executor->execute("SELECT 'Heartbeat'", EXECUTOR_FLAG_SILENT)->status() == STATUS_OK) {
+                        say("Mixer: Server is back, repeating the last query");
+                        redo EXECUTE_QUERY;
+                    }
+                }
+            }
 			$max_status = $execution_result->status() if $execution_result->status() > $max_status;
 			push @execution_results, $execution_result;
 
