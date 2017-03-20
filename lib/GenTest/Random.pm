@@ -39,6 +39,7 @@ require Exporter;
 
 	FIELD_TYPE_HEX
 	FIELD_TYPE_QUID
+	FIELD_TYPE_JSON
 );
 
 #RV 15/9/14 - Disabled permanently as bugs reported with maxigen
@@ -54,7 +55,7 @@ use Cwd;
 =pod
 
 This module provides a clean interface to a pseudo-random number
-generator. 
+generator.
 
 There are quite a few of them on CPAN with various interfaces, so I
 decided to create a uniform interface so that the underlying
@@ -105,10 +106,34 @@ use constant FIELD_TYPE_BIT		=> 20;
 
 use constant FIELD_TYPE_FLOAT		=> 21;
 
+use constant FIELD_TYPE_JSON		=> 22;
+use constant FIELD_TYPE_JSONPATH	=> 23;
+use constant FIELD_TYPE_JSONKEY     => 24;
+use constant FIELD_TYPE_JSONVALUE   => 25;
+use constant FIELD_TYPE_JSONARRAY   => 26;
+use constant FIELD_TYPE_JSONPAIR    => 27;
+use constant FIELD_TYPE_JSONOBJECT  => 28;
+
 use constant ASCII_RANGE_START		=> 97;
 use constant ASCII_RANGE_END		=> 122;
 
 use constant RANDOM_STRBUF_SIZE		=> 1024;
+
+use constant JSON_STRUCT_OBJECT     => 0;
+use constant JSON_STRUCT_ARRAY      => 1;
+
+use constant JSON_VALUE_OBJECT      => 0;
+use constant JSON_VALUE_ARRAY       => 1;
+use constant JSON_VALUE_STRING      => 2;
+use constant JSON_VALUE_NUMBER      => 3;
+use constant JSON_VALUE_TRUE        => 4;
+use constant JSON_VALUE_FALSE       => 5;
+use constant JSON_VALUE_NULL        => 6;
+
+use constant JSON_PATHLEG_MEMBER    => 0;
+use constant JSON_PATHLEG_ARRAYLOC  => 1;
+use constant JSON_PATHLEG_DBLASTER  => 2;
+
 
 my %dict_exists;
 my %dict_data;
@@ -159,7 +184,14 @@ my %name2type = (
 	'empty'			=> FIELD_TYPE_EMPTY,
 
 	'hex'			=> FIELD_TYPE_HEX,
-	'quid'			=> FIELD_TYPE_QUID
+	'quid'			=> FIELD_TYPE_QUID,
+	'json'			=> FIELD_TYPE_JSON,
+	'jsonpath'		=> FIELD_TYPE_JSONPATH,
+	'jsonkey'       => FIELD_TYPE_JSONKEY,
+	'jsonvalue'     => FIELD_TYPE_JSONVALUE,
+	'jsonarray'     => FIELD_TYPE_JSONARRAY,
+	'jsonpair'      => FIELD_TYPE_JSONPAIR,
+	'jsonobject'    => FIELD_TYPE_JSONOBJECT
 );
 
 my $cwd = cwd();
@@ -216,12 +248,12 @@ sub seed {
 sub setSeed {
 	$_[0]->[RANDOM_SEED] = $_[1];
 	$_[0]->[RANDOM_GENERATOR] = $_[1];
-}	
+}
 
 sub update_generator {
 	{
 		use integer;
-		$_[0]->[RANDOM_GENERATOR] = 
+		$_[0]->[RANDOM_GENERATOR] =
 			$_[0]->[RANDOM_GENERATOR] * 1103515245 + 12345;
 	}
 }
@@ -234,11 +266,11 @@ sub urand {
     update_generator($_[0]);
     ## The lower bits are of bad statsictical quality in an LCG, so we
     ## just use the higher bits.
- 
+
     ## Unfortunetaly, >> is an arithemtic shift so we shift right 15
     ## bits and have take the absoulte value off that to get a 16-bit
     ## unsigned random value.
-    
+
     my $rand = $_[0]->[RANDOM_GENERATOR] >> 15;
 
     ## Can't use abs() since abs() is a function that use float (SIC!)
@@ -254,7 +286,7 @@ sub uint16 {
     use integer;
     # urand() is manually inlined for efficiency
     update_generator($_[0]);
-    return $_[1] + 
+    return $_[1] +
         ((($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF) % ($_[2] - $_[1] + 1));
 }
 
@@ -262,7 +294,7 @@ sub uint16 {
 ### Slower, so use uint16 wherever possible.
 sub int {
     my $rand;
-    { 
+    {
         use integer;
         # urand() is manually inlined for efficiency
         update_generator($_[0]);
@@ -356,7 +388,7 @@ sub string {
 
 	# If the length is 0 or negative, return a zero-length string
 	return '' if $len <= 0;
- 
+
 	# If the length is 1, just return one random character
         return chr($prng->uint16(ASCII_RANGE_START, ASCII_RANGE_END)) if $len == 1;
 
@@ -387,9 +419,148 @@ sub string {
 	}
 }
 
+
+#-- JSON -----------------------------
+#
+# _json is a JSON value in a grammar.
+# For JSON, we'll use terminology from here (to some extent):
+# http://www.json.org/
+# "structure" is either a OBJECT '{}', or ARRAY '[]'
+# "member" is what OBJECT consists of -- a PAIR string:value
+# VALUE is what ARRAY consists of, and also it's the right part of PAIR:
+#  a string, or a number, or an OBJECT, or an ARRAY, or 'true', or 'false', or NULL
+
+sub json {
+	# Length here will be a number of structures on the 1st + 2nd level. That is,
+	# length <= 0: empty string (invalid JSON)
+	# length == 1: '[]' or '{}'
+	# length == 2: '["a"]' or '[{}]' or '{"a":"b"}'
+	# etc.
+
+	my ($prng, $len) = @_;
+
+	$len = defined $len ? $len : $prng->uint16(0,64);
+
+	# If the length is 0 or negative, return a zero-length string
+	return '' if $len <= 0;
+
+    return $prng->json_struct($len-1);
+}
+
+sub json_struct {
+	my ($prng, $len) = @_;
+	return (
+		$prng->arrayElement([JSON_STRUCT_ARRAY, JSON_STRUCT_OBJECT]) == JSON_STRUCT_ARRAY
+		? $prng->json_array($len)
+		: $prng->json_object($len)
+	);
+}
+
+sub json_array {
+	my ($prng, $len) = @_;
+
+	my @contents = ();
+	foreach (1..$len) {
+		push @contents, $prng->json_value();
+	}
+	return '[' . join(',', @contents) . ']';
+}
+
+sub json_object {
+	my ($prng, $len) = @_;
+
+	my @contents = ();
+	foreach (1..$len) {
+		push @contents, $prng->json_pair();
+	}
+	return '{' . join(',', @contents) . '}';
+}
+
+sub json_value {
+	my $prng = shift;
+
+	my $value_type= $prng->json_value_type();
+
+	if ($value_type == JSON_VALUE_OBJECT) {
+		return $prng->json_object($prng->uint16(0,8));
+	} elsif ($value_type == JSON_VALUE_ARRAY) {
+		return $prng->json_array($prng->uint16(0,16));
+	} elsif ($value_type == JSON_VALUE_STRING) {
+		return '"'.$prng->string($prng->uint16(0,64)).'"';
+	} elsif ($value_type == JSON_VALUE_NUMBER) {
+		return $prng->int();
+	} elsif ($value_type == JSON_VALUE_TRUE) {
+		return 'true';
+	} elsif ($value_type == JSON_VALUE_FALSE) {
+		return 'false';
+	} elsif ($value_type == JSON_VALUE_NULL) {
+		return 'NULL';
+	}
+}
+
+sub json_key {
+	my $prng = shift;
+	my $key = $prng->fromDictionary('english');
+	$key =~ s/'//g;
+	return $key;
+}
+
+sub json_pair {
+	my $prng = shift;
+	return '"'. $prng->json_key() . '": ' . $prng->json_value();
+}
+
+sub json_value_type {
+	my $prng = shift;
+	return $prng->arrayElement([
+		JSON_VALUE_OBJECT,
+		JSON_VALUE_ARRAY,
+		JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING,
+		JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING,
+		JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER,
+		JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER,
+		JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE,
+		JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE,
+		JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL
+	]);
+}
+
+# For JSON Path, we'll use syntax from here:
+# https://dev.mysql.com/doc/refman/5.7/en/json-path-syntax.html
+
+sub jsonpath {
+	my $prng = shift;
+
+	my $path= '$';
+	my $num_of_legs = $prng->uint16(0,4);
+	foreach (1..$num_of_legs) {
+		$path .= $prng->json_pathleg();
+	}
+	return $path;
+}
+
+sub json_pathleg {
+	my $prng = shift;
+	my $pathleg_type= $prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_DBLASTER, JSON_PATHLEG_MEMBER]);
+
+	if ($pathleg_type == JSON_PATHLEG_DBLASTER) {
+		return '**';
+	} elsif ($pathleg_type == JSON_PATHLEG_ARRAYLOC) {
+		my $ind= $prng->uint16(-1,8);
+		return '[' . ( $ind < 0 ? '*' : $ind ) . ']';
+	} else { # MEMBER
+		my $key= $prng->json_key();
+		# Quoted string or identifier
+		$key = $prng->uint16(0,2) ? $key : '"'.$key.'"';
+		return '.' . ($prng->uint16(0,3) ? $key : '*');
+	}
+}
+
+#-- END OF JSON -----------------------------
+
 sub quid {
 	my $prng = shift;
-    
+
 	return pack("c*", map {
 		$prng->uint16(65,90);
                 } (1..5));
@@ -422,8 +593,8 @@ sub fieldType {
 	$field_def =~ s{^_}{}o;
 	my ($field_base_type) = $field_def =~ m{^([A-Za-z]*)}o;
 	my ($field_full_type) = $field_def =~ m{^([A-Za-z_]*)}o;
-	my ($field_length) = $field_def =~ m{\((.*?)\)}o;
-	$field_length = 1 if not defined $field_length;
+	my ($orig_field_length) = $field_def =~ m{\((.*?)\)}o;
+	my $field_length = (defined $orig_field_length ? $orig_field_length : 1);
 	my $field_type = $name2type{$field_base_type};
 
 	if ($field_type == FIELD_TYPE_DIGIT) {
@@ -466,6 +637,20 @@ sub fieldType {
 		return $rand->fromDictionary($field_base_type);
 	} elsif ($field_type == FIELD_TYPE_BIT) {
 		return $rand->bit($field_length);
+	} elsif ($field_type == FIELD_TYPE_JSON) {
+		return $rand->json($orig_field_length);
+	} elsif ($field_type == FIELD_TYPE_JSONPATH) {
+		return $rand->jsonpath();
+	} elsif ($field_type == FIELD_TYPE_JSONKEY) {
+		return $rand->json_key();
+	} elsif ($field_type == FIELD_TYPE_JSONVALUE) {
+		return $rand->json_value();
+	} elsif ($field_type == FIELD_TYPE_JSONARRAY) {
+		return $rand->json_array();
+	} elsif ($field_type == FIELD_TYPE_JSONPAIR) {
+		return $rand->json_pair();
+	} elsif ($field_type == FIELD_TYPE_JSONOBJECT) {
+		return $rand->json_object();
 	} else {
 		croak ("unknown field type $field_def");
 	}
@@ -474,7 +659,7 @@ sub fieldType {
 sub file {
 	my ($prng, $dir) = @_;
 	if (not exists $data_dirs{$dir}) {
-		my @files = <$dir/*>; 
+		my @files = <$dir/*>;
 		$data_dirs{$dir} = \@files;
 	}
 
