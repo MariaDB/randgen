@@ -23,37 +23,37 @@
 # Experiences
 #
 # --rpl_mode=row:
-# perl runall.pl  --engine=MyISAM --debug --rpl_mode=row --duration=12000 --queries=40000 
-# --reporter=Deadlock,Backtrace,ErrorLog --threads=10 --basedir=/home/horst/bzrysql-trunk 
+# perl runall.pl  --engine=MyISAM --debug --rpl_mode=row --duration=12000 --queries=40000
+# --reporter=Deadlock,Backtrace,ErrorLog --threads=10 --basedir=/home/horst/bzrysql-trunk
 # --mysqld=--lock-wait-timeout=1 --mysqld=--general-log=ON --mysqld=--default-storage-engine=
-# MyISAM --mysqld=--log-output=table --mysqld=--loose-innodb-lock-wait-timeout=1 
-# --grammar=./conpartitioning/partitions.yy --vardir=/dev/shm/var1 --mask-level=0 
+# MyISAM --mysqld=--log-output=table --mysqld=--loose-innodb-lock-wait-timeout=1
+# --grammar=./conpartitioning/partitions.yy --vardir=/dev/shm/var1 --mask-level=0
 # --mask=0 --seed=1 >./storage/1.l 2>&1a
 #
-# Failed sometimes with reclication-error 103, but also succedded (needed about 5-10 Minutes). 
+# Failed sometimes with reclication-error 103, but also succedded (needed about 5-10 Minutes).
 # Produced a log file of about 10MB and a var directory with 6,6MB.
-# 
+#
 # --rpl_mode=mixed:
-# Failed sometimes with reclication-error 103, but also succedded (needed about 5-10 Minutes). 
+# Failed sometimes with reclication-error 103, but also succedded (needed about 5-10 Minutes).
 # Produced a log file of about 36KB  and a var directory with 5MB.
-# 
-# perl runall.pl  --engine=MyISAM --debug --duration=12000 --queries=40000 
-# --reporter=Deadlock,Backtrace,ErrorLog --threads=10 
-# --basedir=/home/horst/bzr/mysql-trunk--mysqld=--lock-wait-timeout=1 --mysqld=--general-log=ON 
-# --mysqld=--default-storage-engine=MyISAM --mysqld=--log-output=table 
-# --mysqld=--loose-innodb-lock-wait-timeout=1 --grammar=./conf/partitioning/partitions.yy 
+#
+# perl runall.pl  --engine=MyISAM --debug --duration=12000 --queries=40000
+# --reporter=Deadlock,Backtrace,ErrorLog --threads=10
+# --basedir=/home/horst/bzr/mysql-trunk--mysqld=--lock-wait-timeout=1 --mysqld=--general-log=ON
+# --mysqld=--default-storage-engine=MyISAM --mysqld=--log-output=table
+# --mysqld=--loose-innodb-lock-wait-timeout=1 --grammar=./conf/partitioning/partitions.yy
 # --vardir=/dev/shm/var1 --mask-level=0 --mask=0 --seed=1 >./storage/1.log 2>&1
 
 # Log: 21MB, var: 148Mb, time about 8Min.  Semantic_error: 12234, OK:27980
 
-# perl runall.pl  --engine=MyISAM --debug --duration=24000 --queries=100000 
-# --reporter=Deadlock,Backtrace,ErrorLog --threads=16 
-# --basedir=/home/horst/bzr/mysql-trunk--mysqld=--lock-wait-timeout=1 --mysqld=--general-log=ON 
-# --mysqld=--default-storage-engine=MyISAM --mysqld=--log-output=table 
-# --mysqld=--loose-innodb-lock-wait-timeout=1 --grammar=./conf/partitioning/partitions.yy 
+# perl runall.pl  --engine=MyISAM --debug --duration=24000 --queries=100000
+# --reporter=Deadlock,Backtrace,ErrorLog --threads=16
+# --basedir=/home/horst/bzr/mysql-trunk--mysqld=--lock-wait-timeout=1 --mysqld=--general-log=ON
+# --mysqld=--default-storage-engine=MyISAM --mysqld=--log-output=table
+# --mysqld=--loose-innodb-lock-wait-timeout=1 --grammar=./conf/partitioning/partitions.yy
 # --vardir=/dev/shm/var1 --mask-level=0 --mask=0 --seed=1 >./storage/1.log 2>&1
 
-# Log: 48MB, var: 320Mb, time about 20Min. 
+# Log: 48MB, var: 320Mb, time about 20Min.
 
 
 ##########################################################################
@@ -94,7 +94,7 @@ create:
                 `col_int_nokey` INTEGER,
                 `col_int_key` INTEGER NOT NULL,
                 KEY (`col_int_key`)
-	) ENGINE = engine /*!50100 partition */ ;
+	) ENGINE = engine partition ;
 
 create_nop:
         CREATE TABLE if_not_exists table_name_nopart (
@@ -130,24 +130,24 @@ exec_sql:
 
 cache_index:
 	CACHE INDEX table_name_letter IN cache_name                                               |
-	CACHE INDEX table_name_letter /*!50400 PARTITION ( ALL ) */ IN cache_name                 |
-	CACHE INDEX table_name_letter /*!50400 PARTITION ( partition_name_list ) */ IN cache_name ;
+	CACHE INDEX table_name_letter PARTITION ( ALL ) IN cache_name                 |
+	CACHE INDEX table_name_letter PARTITION ( partition_name_list ) IN cache_name ;
 
 load_index:
 	LOAD INDEX INTO CACHE table_name_letter ignore_leaves                                               |
-	LOAD INDEX INTO CACHE table_name_letter /*!50400 PARTITION ( ALL ) */ ignore_leaves                 |
-	LOAD INDEX INTO CACHE table_name_letter /*!50400 PARTITION ( partition_name_list ) */ ignore_leaves ;
+	LOAD INDEX INTO CACHE table_name_letter PARTITION ( ALL ) ignore_leaves                 |
+	LOAD INDEX INTO CACHE table_name_letter PARTITION ( partition_name_list ) ignore_leaves ;
 
 ignore_leaves:
 	| IGNORE LEAVES ;
 
 set_key_buffer_size:
-	/*!50400 SET GLOBAL cache_name.key_buffer_size = _tinyint_unsigned   */ |
-	/*!50400 SET GLOBAL cache_name.key_buffer_size = _smallint_unsigned  */ |
-	/*!50400 SET GLOBAL cache_name.key_buffer_size = _mediumint_unsigned */ ;
+	SET GLOBAL cache_name.key_buffer_size = _tinyint_unsigned |
+	SET GLOBAL cache_name.key_buffer_size = _smallint_unsigned |
+	SET GLOBAL cache_name.key_buffer_size = _mediumint_unsigned ;
 
 set_key_cache_block_size:
-	/*!50400 SET GLOBAL cache_name.key_cache_block_size = key_cache_block_size_enum */ ;
+	SET GLOBAL cache_name.key_cache_block_size = key_cache_block_size_enum ;
 
 key_cache_block_size_enum:
 	512 | 1024 | 2048 | 4096 | 8192 | 16384 ;
@@ -156,7 +156,7 @@ cache_name:
 	c1 | c2 | c3 | c4;
 
 select_explain:
-	EXPLAIN /*!50100 PARTITIONS */ SELECT _field FROM table_name_letter where ;
+	EXPLAIN PARTITIONS SELECT _field FROM table_name_letter where ;
 
 create_select:
 	SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM table_name_letter where ;
@@ -214,7 +214,7 @@ create_part:
 		`col_int_nokey` INTEGER,
 		`col_int_key` INTEGER NOT NULL,
 		KEY (`col_int_key`)
-	) ENGINE = engine /*!50100 partition */ create_select ;
+	) ENGINE = engine partition create_select ;
 
 create_nopart:
         CREATE TABLE if_not_exists table_name_nopart (
@@ -231,7 +231,7 @@ drop:
 	DROP TABLE if_exists table_name_letter ;
 
 alter:
-	/*!50400 ALTER TABLE table_name_letter alter_operation */;
+	ALTER TABLE table_name_letter alter_operation;
 
 alter_operation:
 	partition                                                           |
@@ -321,7 +321,12 @@ partition_by_list:
 		PARTITION p1 VALUES IN ( shift_digit, shift_digit, shift_digit ),
 		PARTITION p2 VALUES IN ( shift_digit, shift_digit, shift_digit ),
 		PARTITION p3 VALUES IN ( shift_digit, shift_digit, shift_digit )
+		default_list_partition
 	);
+
+default_list_partition:
+	| { '/*!100202 , PARTITION pdef DEFAULT */' }
+;
 
 populate_digits:
 	{ @digits = @{$prng->shuffleArray([0..9])} ; return undef };
@@ -349,7 +354,7 @@ partition_count:
 	1 | 2 | 3 | 3 | 3 | 4 | 4 | 4 | 4 ;
 
 if_exists:
-	IF EXISTS ;   
+	IF EXISTS ;
 
 if_not_exists:
 	IF NOT EXISTS ;

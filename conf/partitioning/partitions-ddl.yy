@@ -19,7 +19,7 @@ query_init:
 	create ; create ; create ; create ; create ; create ; create ; create ; create ; create ;
 
 query:
-	select_explain | select_explain | 
+	select_explain | select_explain |
 	select | select | select | select | select | select |
 	select | select | select | select | select | select |
 	select | select | select | select | select | select |
@@ -54,8 +54,8 @@ set_key_cache_block_size:
 	/*!50400 SET GLOBAL key_cache_block_size = key_cache_block_size_enum */ ;
 
 key_cache_block_size_enum:
-	512 | 1024 | 2048 | 4096 | 8192 | 16384 ;	
-		
+	512 | 1024 | 2048 | 4096 | 8192 | 16384 ;
+
 cache_name:
 	c1 | c2 | c3 | c4;
 
@@ -97,7 +97,7 @@ value:
 	_digit ;
 
 # We can not use IF NOT EXISTS here to reduce the "Table doesn't exist errors", because
-# If we run the same grammar on 5.0, the CREATE will always succeed, but in 5.1/5.4 it 
+# If we run the same grammar on 5.0, the CREATE will always succeed, but in 5.1/5.4 it
 # can still fail due to a partition type mismatch
 
 create:
@@ -120,7 +120,7 @@ alter_operation:
 	partition |
 	ADD PARTITION (PARTITION p3 VALUES LESS THAN MAXVALUE) |
 	ADD PARTITION (PARTITION p3 VALUES LESS THAN MAXVALUE) |
-	COALESCE PARTITION one_two | 
+	COALESCE PARTITION one_two |
 	REORGANIZE PARTITION |
 	ANALYZE PARTITION partition_name_list |
 	CHECK PARTITION partition_name_list |
@@ -128,7 +128,7 @@ alter_operation:
 	REPAIR PARTITION partition_name_list |
 	OPTIMIZE PARTITION partition_name_list |	# bug47459
 	REMOVE PARTITIONING |				# bug42438
-	DROP PARTITION partition_name_list |		# DROP and TRUNCATE 
+	DROP PARTITION partition_name_list |		# DROP and TRUNCATE
 	TRUNCATE PARTITION partition_name_list		# can not be used in comparison tests against 5.0
 ;
 
@@ -185,7 +185,12 @@ partition_by_list:
 		PARTITION p1 VALUES IN ( shift_digit, shift_digit, shift_digit ),
 		PARTITION p2 VALUES IN ( shift_digit, shift_digit, shift_digit ),
 		PARTITION p3 VALUES IN ( shift_digit, shift_digit, shift_digit )
+		default_list_partition
 	);
+
+default_list_partition:
+	| { '/*!100202 , PARTITION pdef DEFAULT */' }
+;
 
 populate_digits:
 	{ @digits = @{$prng->shuffleArray([0..9])} ; return undef };
@@ -203,7 +208,7 @@ partition_by_key:
 	PARTITION BY KEY(`col_int_key`) PARTITIONS partition_count ;
 
 partition_item:
-	PARTITION partition_name VALUES 
+	PARTITION partition_name VALUES
 
 
 	PARTITION BY partition_hash_or_key;
