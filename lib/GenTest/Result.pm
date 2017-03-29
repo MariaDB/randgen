@@ -87,7 +87,7 @@ sub sqlstate {
 }
 
 sub affectedRows {
-	return $_[0]->[RESULT_AFFECTED_ROWS];
+	return int($_[0]->[RESULT_AFFECTED_ROWS]);
 }
 
 sub matchedRows {
