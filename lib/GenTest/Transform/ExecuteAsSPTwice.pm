@@ -35,11 +35,11 @@ sub transform {
 	        || $orig_query !~ m{SELECT}io;
 
 	return [
-		"DROP PROCEDURE IF EXISTS stored_proc_$$",
-		"CREATE PROCEDURE stored_proc_$$ () LANGUAGE SQL $orig_query",
-		"CALL stored_proc_$$ /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-                "CALL stored_proc_$$ /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-		"DROP PROCEDURE IF EXISTS stored_proc_$$"
+		"DROP PROCEDURE IF EXISTS stored_proc_".abs($$),
+		"CREATE PROCEDURE stored_proc_".abs($$)." () LANGUAGE SQL $orig_query",
+		"CALL stored_proc_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+                "CALL stored_proc_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+		"DROP PROCEDURE IF EXISTS stored_proc_".abs($$)
 	];
 }
 

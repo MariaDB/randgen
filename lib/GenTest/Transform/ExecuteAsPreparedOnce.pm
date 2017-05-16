@@ -37,9 +37,9 @@ sub transform {
 		|| $orig_query =~ m{PREPARE|OPEN|CLOSE|PREV|NEXT}sio;
 
 	return [
-		"PREPARE prep_stmt_$$ FROM ".$executor->dbh()->quote($orig_query),
-		"EXECUTE prep_stmt_$$ /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-		"DEALLOCATE PREPARE prep_stmt_$$"
+		"PREPARE prep_stmt_".abs($$)." FROM ".$executor->dbh()->quote($orig_query),
+		"EXECUTE prep_stmt_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+		"DEALLOCATE PREPARE prep_stmt_".abs($$)
 	];
 }
 
