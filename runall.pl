@@ -72,7 +72,7 @@ my ($gendata, $skip_gendata, @basedirs, @mysqld_options, @vardirs, $rpl_mode,
     $start_dirty, $filter, $build_thread, $testname, $report_xml_tt,
     $report_xml_tt_type, $report_xml_tt_dest, $notnull, $sqltrace,
     $lcov, $transformers, $logfile, $logconf, $report_tt_logdir,$querytimeout,
-    $short_column_names, $strict_fields, $freeze_time, $wait_debugger);
+    $short_column_names, $strict_fields, $freeze_time, $wait_debugger, $appverif);
 
 my $threads = my $default_threads = 10;
 my $queries = my $default_queries = 1000;
@@ -93,7 +93,7 @@ my $opt_result = GetOptions(
 	'rpl_mode=s' => \$rpl_mode,
 	'engine=s' => \$engine,
 	'grammar=s' => \$grammar_file,
-	'skip-recursive-rules' => \$skip_recursive_rules,	
+	'skip-recursive-rules' => \$skip_recursive_rules,
 	'redefine=s@' => \@redefine_files,
 	'threads=i' => \$threads,
 	'queries=s' => \$queries,
@@ -136,7 +136,8 @@ my $opt_result = GetOptions(
     'logconf=s' => \$logconf,
     'report-tt-logdir=s' => \$report_tt_logdir,
     'querytimeout=i' => \$querytimeout,
-    'wait-for-debugger' => \$wait_debugger
+    'wait-for-debugger' => \$wait_debugger,
+    'appverif:i' => \$appverif
 );
 
 if ( osWindows() && !$debug )
@@ -175,7 +176,7 @@ if (!$opt_result) {
 	exit(0);
 }
 
-# --sqltrace may have a string value (optional). 
+# --sqltrace may have a string value (optional).
 # Allowed values for --sqltrace:
 my %sqltrace_legal_values = (
     'MarkErrors' => 1 # Prefixes invalid SQL statements for easier post-processing
@@ -231,10 +232,10 @@ $ENV{MTR_BUILD_THREAD} = $build_thread;
 
 
 if (
-	($vardirs[1] ne '') && 
+	($vardirs[1] ne '') &&
 	($basedirs[1] eq '')
 ) {
-	$basedirs[1] = $basedirs[0];	
+	$basedirs[1] = $basedirs[0];
 }
 
 foreach my $dir (cwd(), @basedirs) {
@@ -242,26 +243,26 @@ foreach my $dir (cwd(), @basedirs) {
     if (defined $dir) {
         my $bzrinfo = GenTest::BzrInfo->new(
             dir => $dir
-            ); 
+            );
         my $revno = $bzrinfo->bzrRevno();
         my $revid = $bzrinfo->bzrRevisionId();
-        
+
         if ((defined $revno) && (defined $revid)) {
             say("$dir Revno: $revno");
             say("$dir Revision-Id: $revid");
         } else {
             say($dir.' does not look like a bzr branch, cannot get revision info.');
-        } 
+        }
     }
 }
 
 
 
 if (
-	($mysqld_options[1] ne '') && 
+	($mysqld_options[1] ne '') &&
 	($basedirs[1] eq '')
 ) {
-	$basedirs[1] = $basedirs[0];	
+	$basedirs[1] = $basedirs[0];
 }
 
 #
@@ -286,7 +287,7 @@ foreach my $i (0..$#vardirs) {
 }
 
 #
-# If RQG_HOME is set, prepend it to config files if they can not be found without it 
+# If RQG_HOME is set, prepend it to config files if they can not be found without it
 #
 
 $gendata = $ENV{RQG_HOME}.'/'.$gendata if defined $gendata && defined $ENV{RQG_HOME} && ! -e $gendata;
@@ -294,7 +295,7 @@ $grammar_file = $ENV{RQG_HOME}.'/'.$grammar_file if defined $grammar_file && def
 
 foreach (0..$#redefine_files)
 {
-	$redefine_files[$_] = $ENV{RQG_HOME}.'/'.$redefine_files[$_] 
+	$redefine_files[$_] = $ENV{RQG_HOME}.'/'.$redefine_files[$_]
 		if defined $redefine_files[$_] && defined $ENV{RQG_HOME} && ! -e $redefine_files[$_];
 }
 
@@ -308,13 +309,13 @@ if ($lcov) {
 #
 # Start servers. Use rpl_alter if replication is needed.
 #
-	
+
 foreach my $server_id (0..1) {
 	next if $basedirs[$server_id] eq '';
 
 	if (
 		($server_id == 0) ||
-		($rpl_mode eq '') 
+		($rpl_mode eq '')
 	) {
 		$master_dsns[$server_id] = "dbi:mysql:host=127.0.0.1:port=".$master_ports[$server_id].":user=root:database=".$database;
 	}
@@ -339,7 +340,7 @@ foreach my $server_id (0..1) {
 			}
 		}
 	}
-			
+
 	push @mtr_options, "--mysqld=--core-file";
 	push @mtr_options, "--mysqld=--loose-new";
 	push @mtr_options, "--mysqld=--default-storage-engine=$engine" if defined $engine;
@@ -370,7 +371,7 @@ foreach my $server_id (0..1) {
 
 	my $mtr_path = $basedirs[$server_id].'/mysql-test/';
 	chdir($mtr_path) or croak "unable to chdir() to $mtr_path: $!";
-	
+
 	push @mtr_options, "--vardir=$vardirs[$server_id]" if defined $vardirs[$server_id];
 	push @mtr_options, "--master_port=".$master_ports[$server_id];
 
@@ -398,7 +399,6 @@ foreach my $server_id (0..1) {
 	$ENV{MTR_VERSION} = 1;
 #	my $out_file = "/tmp/mtr-".$$."-".$server_id.".out";
 	my $mtr_command = "perl mysql-test-run.pl --start-and-exit ".join(' ', @mtr_options)." 2>&1";
-	say("Running $mtr_command .");
 
 	my $vardir = $vardirs[$server_id] || $basedirs[$server_id].'/mysql-test/var';
 
@@ -406,7 +406,22 @@ foreach my $server_id (0..1) {
 	print MTR_COMMAND $mtr_command;
 	close MTR_COMMAND;
 
+    if (osWindows() and $server_id == 0 and $appverif) {
+        say("Enabling appverif");
+        system("appverif /verify mysqld.exe");
+    } elsif (osWindows() and defined $appverif) {
+        say("Disabling appverif");
+        system("appverif /n mysqld.exe");
+    }
+
+	say("Running $mtr_command .");
+
 	my $mtr_status = system($mtr_command);
+
+    if (osWindows() and $server_id == 0 and $appverif) {
+        say("Disabling appverif");
+        system("appverif /n mysqld.exe");
+    }
 
 	if ($mtr_status != 0) {
 #		system("cat $out_file");
@@ -415,7 +430,7 @@ foreach my $server_id (0..1) {
 		exit_test(STATUS_ENVIRONMENT_FAILURE);
 	}
 #	unlink($out_file);
-	
+
 	if ((defined $master_dsns[$server_id]) && (defined $engine)) {
 		my $dbh = DBI->connect($master_dsns[$server_id], undef, undef, { mysql_multi_statements => 1, RaiseError => 1 } );
 		$dbh->do("SET GLOBAL storage_engine = '$engine'");
@@ -454,7 +469,7 @@ if ($rpl_mode) {
 }
 
 #
-# Wait for user interaction before continuing, allowing the user to attach 
+# Wait for user interaction before continuing, allowing the user to attach
 # a debugger to the server process.
 # Will print a message and ask the user to press a key to continue.
 # User is responsible for actually attaching the debugger if so desired.
@@ -479,7 +494,7 @@ if ($wait_debugger) {
             close(PIDFILE) or carp("WARNING: Unable to close master.pid file: $!");
             push(@pids, $pid);
         } else {
-            carp("WARNING: Unable to read file $master_pid_file: $!");  
+            carp("WARNING: Unable to read file $master_pid_file: $!");
         }
         # Replication slave is not included in server_id list, so check it now.
         if ($rpl_mode) {
@@ -492,10 +507,10 @@ if ($wait_debugger) {
             } else {
               carp("WARNING: Unable to read slave.pid file: $!");
             }
-            
+
         }
     }
-    
+
     say('Number of servers started: '.$server_count);
     say('Server PID: '.($#pids < 0 ? "Unknown" : join(', ', @pids)));
     say("Press ENTER to continue the test run...");
@@ -527,7 +542,7 @@ push @gentest_options, "--dsn=$master_dsns[1]" if defined $master_dsns[1];
 push @gentest_options, "--grammar=$grammar_file";
 push @gentest_options, "--skip-recursive-rules" if defined $skip_recursive_rules;
 push @gentest_options, map {'--redefine='.$_} @redefine_files if @redefine_files;
-push @gentest_options, "--seed=$seed" if defined $seed;	
+push @gentest_options, "--seed=$seed" if defined $seed;
 push @gentest_options, "--mask=$mask" if ((defined $mask) && (not defined $no_mask));
 push @gentest_options, "--mask-level=$mask_level" if defined $mask_level;
 push @gentest_options, "--rows=$rows" if defined $rows;
@@ -564,7 +579,7 @@ if ($lcov) {
 	system("genhtml --quiet --no-sort --output-directory=".tmpdir()."/rqg-lcov-".abs($$)." ".tmpdir()."/lcov-rqg.info");
 	say("genhtml lcov report may have been generated in ".tmpdir()."/rqg-lcov-".abs($$)." .");
 
-}	
+}
 
 exit_test($gentest_result);
 
@@ -574,7 +589,7 @@ sub help {
 Copyright (c) 2008,2011 Oracle and/or its affiliates. All rights reserved. Use is subject to license terms.
 
 $0 - Run a complete random query generation test, including server start with replication and master/slave verification
-    
+
     Options related to one standalone MySQL server:
 
     --basedir   : Specifies the base directory of the stand-alone MySQL installation;
@@ -592,11 +607,17 @@ $0 - Run a complete random query generation test, including server start with re
 
     General options
 
+    --appverif  : Enable or disable appverif before starting server1.
+                  The absence of value means that
+                  it will be neither enabled nor disabled, so whatever system-wide value is used, will be preserved.
+                  If set to 'enabled', it will be enabled for 'mysqld.exe' before starting the server and disabled
+                  immediately after. If set to 'disabled', it will be disabled for 'mysqld.exe' before starting the server,
+                  and left this way after. The value is ignored for non-Windows systems.
     --grammar   : Grammar file to use when generating queries (REQUIRED);
     --redefine  : Grammar file to redefine and/or add rules to the given grammar
     --rpl_mode  : Replication type to use (statement|row|mixed) (default: no replication);
     --vardir1   : Optional.
-    --vardir2   : Optional. 
+    --vardir2   : Optional.
     --engine    : Table engine to use when creating tables with gendata (default no ENGINE in CREATE TABLE);
     --threads   : Number of threads to spawn (default $default_threads);
     --queries   : Number of queries to execute per thread (default $default_queries);
@@ -627,7 +648,7 @@ $0 - Run a complete random query generation test, including server start with re
     --wait-for-debugger: Pause and wait for keypress after server startup to allow attaching a debugger to the server process.
     --filter    : Passed to gentest.pl
     --mem       : Passed to mtr
-    --mtr-build-thread: Value used for MTR_BUILD_THREAD when servers are started and accessed 
+    --mtr-build-thread: Value used for MTR_BUILD_THREAD when servers are started and accessed
     --short_column_names: Use short column names in gendata (c<number>)
     --strict_fields: Disable all AI applied to columns defined in \$fields in the gendata file. Allows for very specific column definitions
     --freeze_time: Freeze time for each query so that CURRENT_TIMESTAMP gives the same result for all transformers/validators
@@ -646,7 +667,7 @@ sub exit_test {
 	my $status = shift;
 
 	print isoTimestamp()." [$$] $0 will exit with exit status ".status2text($status)." ($status)\n";
-        	
+
 	# shutdown any remaining mysqld servers that were
 	# started by this script (If they haven't been
 	# shutdown by the Shutdown reporter already)
@@ -661,7 +682,7 @@ sub exit_test {
             }
           }
         }
-        
-        # exit                              	
+
+        # exit
 	safe_exit($status);
 }
