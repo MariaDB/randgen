@@ -30,19 +30,27 @@ use Data::Dumper;
 use IPC::Open2;
 use IPC::Open3;
 
+use DBServer::MySQL::MySQLd;
+
 sub report {
     if (defined $ENV{RQG_CALLBACK}) {
         say "Shutdown reporter should not be used in callback environments (E.g. JET)";
         return STATUS_OK;
     }
     my $reporter = shift;
-    
+
     my $primary_port = $reporter->serverVariable('port');
-    
+
+    my $mysqladmin_path =
+         DBServer::MySQL::MySQLd->_find([$reporter->serverVariable('basedir')],
+                                        ['client','bin','client/debug','client/relwithdebinfo'],
+                                        'mysqladmin','mysqladmin.exe');
+
     for (my $port = $primary_port + 9; $port >= $primary_port; $port--) {
         my $dsn = "dbi:mysql:host=127.0.0.1:port=".$port.":user=root";
         my $dbh = DBI->connect($dsn, undef, undef, { PrintError => 0 } );
-        
+        my $mysqladmin_shutdown = "$mysqladmin_path -uroot --port=$port --protocol=tcp --silent shutdown";
+
         my $pid;
         if ($port == $primary_port) {
             $pid = $reporter->serverInfo('pid');
@@ -56,16 +64,21 @@ sub report {
                 say("Unable to obtain pid: $!");
             }
         }
-        
+
         if (defined $dbh) {
             say("Shutting down server on port $port via DBI...");
             $dbh->func('shutdown', 'admin');
         }
-        
+
+        if (defined $dbh) {
+            say("Also trying mysqladmin: $mysqladmin_shutdown");
+            system("$mysqladmin_shutdown");
+        }
+
         if (defined $pid) {
             say("Shutting down server with pid $pid with SIGTERM...");
             kill(15, $pid);
-            
+
             if (!osWindows()) {
                 say("Waiting for mysqld with pid $pid to terminate...");
                 foreach my $i (1..60) {
@@ -80,7 +93,7 @@ sub report {
                 kill(9, $pid);
             }
         }
-    }	
+    }
     return STATUS_OK;
 }
 
