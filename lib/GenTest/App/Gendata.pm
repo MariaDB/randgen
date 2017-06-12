@@ -57,6 +57,7 @@ use constant TABLE_NAME		=> 8;
 use constant TABLE_VIEWS	=> 9;
 use constant TABLE_MERGES	=> 10;
 use constant TABLE_NAMES	=> 11;
+use constant TABLE_EXTRA_OPTS	=> 12;
 
 use constant DATA_NUMBER	=> 0;
 use constant DATA_STRING	=> 1;
@@ -218,6 +219,7 @@ sub run {
     $table_perms[TABLE_PARTITION] = $tables->{partitions} || [ undef ];
     $table_perms[TABLE_PK] = $tables->{pk} || $tables->{primary_key} || [ 'integer auto_increment' ];
     $table_perms[TABLE_ROW_FORMAT] = $tables->{row_formats} || [ undef ];
+    $table_perms[TABLE_EXTRA_OPTS] = $tables->{options} || [ undef ];
     
     $table_perms[TABLE_VIEWS] = $tables->{views} || (defined $self->views() ? [ $self->views() ] : undef );
     $table_perms[TABLE_MERGES] = $tables->{merges} || undef ;
@@ -260,7 +262,7 @@ sub run {
     my @tables = (undef);
     my @myisam_tables;
     
-    foreach my $cycle (TABLE_ROW, TABLE_ENGINE, TABLE_CHARSET, TABLE_COLLATION, TABLE_PARTITION, TABLE_PK, TABLE_ROW_FORMAT) {
+    foreach my $cycle (TABLE_ROW, TABLE_ENGINE, TABLE_CHARSET, TABLE_COLLATION, TABLE_PARTITION, TABLE_PK, TABLE_ROW_FORMAT, TABLE_EXTRA_OPTS) {
         @tables = map {
             my $old_table = $_;
             if (not defined $table_perms[$cycle]) {

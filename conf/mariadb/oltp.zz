@@ -27,7 +27,9 @@ $tables = {
                     'oltp41', 'oltp42', 'oltp43', 'oltp44', 'oltp45', 'oltp46', 'oltp47', 'oltp48', 'oltp49', 'oltp50'
         ],
         engines => [ 'InnoDB', 'MyISAM' ],
-        rows => [ 1000, 1000, 1000, 1000 ]
+        rows => [ 0, 100, 10000 ],
+        row_formats => [ undef, 'DYNAMIC' ],
+        options => [ undef, '/*!100110 PAGE_COMPRESSED=1 */' ]
 };
 
 $fields = {
