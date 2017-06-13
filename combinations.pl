@@ -69,7 +69,7 @@ $SIG{CHLD} = "IGNORE" if osWindows();
 my ($config_file, $basedir, $vardir, $trials, $duration, $grammar, $gendata, 
     $seed, $testname, $xml_output, $report_xml_tt, $report_xml_tt_type,
     $report_xml_tt_dest, $force, $no_mask, $exhaustive, $start_combination, $debug, $noLog, 
-    $threads, $new, $servers, $noshuffle, $clean, $workdir);
+    $threads, $new, $servers, $noshuffle, $clean, $workdir, $discard_logs);
 
 my @basedirs=('','');
 my $combinations;
@@ -79,6 +79,7 @@ my $max_result = 0;
 my $thread_id = 0;
 my $epochcreadir;
 my $mtrbt = defined $ENV{MTR_BUILD_THREAD}?$ENV{MTR_BUILD_THREAD}:300;
+my $discard_logs = 0;
 
 my $opt_result = GetOptions(
 	'config=s' => \$config_file,
@@ -107,7 +108,9 @@ my $opt_result = GetOptions(
     'new' => \$new,
     'servers=i' => \$servers,
     'no-shuffle' => \$noshuffle,
-    'clean' => \$clean
+    'clean' => \$clean,
+    'discard_logs' => \$discard_logs,
+    'discard-logs' => \$discard_logs
 );
 
 my $prng = GenTest::Random->new(
@@ -343,9 +346,9 @@ sub doCombination {
     }
     exit($result) if (($result == STATUS_ENVIRONMENT_FAILURE) || ($result == 255)) && (not defined $force);
 
-    if ($result > 0) {
+    $max_result = $result if $result > $max_result;
+    if ($result > 0 and not $discard_logs) {
         foreach my $s (1..$servers) {
-            $max_result = $result if $result > $max_result;
             my $from = $workdir.'/current'.$s.'_'.$thread_id;
             my $to = $workdir.'/vardir'.$s.'_'.$trial_id;
             say("[$thread_id] Copying $from to $to") if $logToStd;
