@@ -394,7 +394,7 @@ sub createMysqlBase  {
 
     my $command;
 
-    if ($self->_olderThan(5,7,5)) {
+    if (not $self->_isMySQL or $self->_olderThan(5,7,5)) {
 
        # Add the whole init db logic to the bootstrap script
        print BOOT "CREATE DATABASE mysql;\n";
@@ -946,7 +946,7 @@ sub majorVersion {
     if (not defined $self->[MYSQLD_MAJOR_VERSION]) {
         my $ver= $self->version;
         if ($ver =~ /(\d+\.\d+)/) {
-            $self->[MYSQLD_MAJOR_VERSION]= $ver;
+            $self->[MYSQLD_MAJOR_VERSION]= $1;
         }
     }
     return $self->[MYSQLD_MAJOR_VERSION];
@@ -1006,15 +1006,18 @@ sub _logOptions {
 # For _olderThan and _newerThan we will match according to InnoDB versions
 # 10.0 to 5.6
 # 10.1 to 5.6
-# 10.2 to 5.6 (for now, at least) 
+# 10.2 to 5.6
+# 10.2 to 5.7
 
 sub _olderThan {
     my ($self,$b1,$b2,$b3) = @_;
     
     my ($v1, $v2, $v3) = $self->versionNumbers;
 
-    if ($v1 == 10 and $b1 == 5 and ($v2 == 0 or $v2 == 1 or $v2 == 2)) { $v1 = 5; $v2 = 6 }
-    elsif ($v1 == 5 and $b1 == 10 and ($b2 == 0 or $b2 == 1)) { $b1 = 5; $b2 = 6 }
+    if    ($v1 == 10 and $b1 == 5 and ($v2 == 0 or $v2 == 1 or $v2 == 2)) { $v1 = 5; $v2 = 6 }
+    elsif ($v1 == 10 and $b1 == 5 and $v2 == 3) { $v1 = 5; $v2 = 7 }
+    elsif ($v1 == 5 and $b1 == 10 and ($b2 == 0 or $b2 == 1 or $b2 == 2)) { $b1 = 5; $b2 = 6 }
+    elsif ($v1 == 5 and $b1 == 10 and $b2 == 3) { $b1 = 5; $b2 = 7 }
 
     my $b = $b1*1000 + $b2 * 100 + $b3;
     my $v = $v1*1000 + $v2 * 100 + $v3;
@@ -1022,18 +1025,14 @@ sub _olderThan {
     return $v < $b;
 }
 
-sub _newerThan {
-    my ($self,$b1,$b2,$b3) = @_;
-
+sub _isMySQL {
+    my $self = shift;
     my ($v1, $v2, $v3) = $self->versionNumbers;
+    return ($v1 == 8 or $v1 == 5 and ($v2 == 6 or $v2 == 7));
+}
 
-    if ($v1 == 10 and $b1 == 5 and ($v2 == 0 or $v2 == 1)) { $v1 = 5; $v2 = 6 }
-    elsif ($v1 == 5 and $b1 == 10 and ($b2 == 0 or $b2 == 1)) { $b1 = 5; $b2 = 6 }
-
-    my $b = $b1*1000 + $b2 * 100 + $b3;
-    my $v = $v1*1000 + $v2 * 100 + $v3;
-
-    return $v > $b;
+sub _notOlderThan {
+    return not _olderThan(@_);
 }
 
 
