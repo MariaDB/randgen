@@ -384,7 +384,7 @@ sub createMysqlBase  {
 
 
     if ($self->_olderThan(5,6,3)) {
-        push(@$boot_options,"--loose-skip-innodb --default-storage-engine=MyISAM") ;
+        push(@$boot_options,"--loose-skip-innodb", "--default-storage-engine=MyISAM") ;
     } else {
         push(@$boot_options, @{$self->[MYSQLD_SERVER_OPTIONS]});
     }
