@@ -131,18 +131,18 @@ croak "--servers may only be 1 or 2" if !($servers == 1 or $servers == 2);
 
 my $logToStd = !osWindows() && !$noLog;
 
-my $bzrinfo = GenTest::BzrInfo->new(
-    dir => cwd()
-    ); 
-my $revno = $bzrinfo->bzrRevno();
-my $revid = $bzrinfo->bzrRevisionId();
-
-if ((defined $revno) && (defined $revid)) {
-    say(cwd()." Revno: $revno");
-    say(cwd()." Revision-Id: $revid");
-} else {
-    say(cwd().' does not look like a bzr branch, cannot get revision info.');
-} 
+#my $bzrinfo = GenTest::BzrInfo->new(
+#    dir => cwd()
+#    ); 
+#my $revno = $bzrinfo->bzrRevno();
+#my $revid = $bzrinfo->bzrRevisionId();
+#
+#if ((defined $revno) && (defined $revid)) {
+#    say(cwd()." Revno: $revno");
+#    say(cwd()." Revision-Id: $revid");
+#} else {
+#    say(cwd().' does not look like a bzr branch, cannot get revision info.');
+#} 
 
 if (not defined $threads) {
     $threads=1;
