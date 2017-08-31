@@ -330,9 +330,8 @@ sub doCombination {
 		$command = 'bash -c "set -o pipefail; '.$command.'"';
 	}
 
-    if ($logToStd) {
-        say("[$thread_id] $command");
-    }
+    say("[$thread_id] $command");
+
     my $result = 0;
     $result = system($command) if not $debug;
 
