@@ -124,7 +124,7 @@ sub run {
         return $gen_table_result if $gen_table_result != STATUS_OK;
     }
 
-    $executor->execute("SET SQL_MODE= 'NO_ENGINE_SUBSTITUTION'") if $executor->type == DB_MYSQL;
+    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if $executor->type == DB_MYSQL;
     return STATUS_OK;
 }
 
