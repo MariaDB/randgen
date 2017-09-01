@@ -40,7 +40,7 @@ sub transform {
 	# (\/\*\s*[a-zA-Z0-9 ]+\s*\*\/)*.
 	my $orig_query_no_limit = $orig_query;
 	$orig_query_no_limit =~ s{LIMIT\s+\d+\s+OFFSET\s+\d+\s*(\/\*\s*[\w ]+\s*\*\/)*\s*$}{}sio;
-	$orig_query_no_limit =~ s{LIMIT\s+\d+\s*(\/\*\s*[a-zA-Z0-9 ]+\s*\*\/)*\s*$}{}sio;
+	$orig_query_no_limit =~ s{LIMIT\s+\d+\s*(\/\*\s*[\w ]+\s*\*\/)*\s*$}{}sio;
 
 	return [
 		"( $orig_query ) UNION ALL ( $orig_query_no_limit LIMIT 0 ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
