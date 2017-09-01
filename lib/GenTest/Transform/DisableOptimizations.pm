@@ -40,11 +40,11 @@ sub transform {
 		or ( ( ! $skip_result_validations and ( $original_query !~ m{^\s*(SELECT)}sio or $original_query =~ m{\sINTO\s}sio ) ) ) ;
 
 	return [ [
-		'SET @switch_saved = @@optimizer_switch',
-		'SET SESSION optimizer_switch = REPLACE( @@optimizer_switch, "=on", "=off" )',
-		'SET SESSION optimizer_switch = "in_to_exists=on"',
+		"SET \@switch_saved = \@\@optimizer_switch",
+		"SET SESSION optimizer_switch = REPLACE( \@\@optimizer_switch, '=on', '=off' )",
+		"SET SESSION optimizer_switch = 'in_to_exists=on'",
 		"$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" ],
-		[ '/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=@switch_saved' ]
+		[ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=\@switch_saved" ]
 	];
 }
 
