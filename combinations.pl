@@ -115,9 +115,11 @@ my $opt_result = GetOptions(
     'discard-logs' => \$discard_logs
 );
 
-my $prng = GenTest::Random->new(
-	seed => $seed eq 'time' ? time() : $seed
-);
+if ($seed eq 'time') {
+  $seed = time();
+}
+
+my $prng = GenTest::Random->new(seed => $seed);
 
 open(CONF, $config_file) or croak "unable to open config file '$config_file': $!";
 read(CONF, my $config_text, -s $config_file);
@@ -303,6 +305,9 @@ sub doCombination {
 	$command .= " --report-xml-tt-type=$report_xml_tt_type " if $report_xml_tt_type ne '';
 	$command .= " --report-xml-tt-dest=$report_xml_tt_dest " if $report_xml_tt_dest ne '';
 
+  my $tm= time();
+  $command =~ s/--seed=time/--seed=$tm/g;
+
     foreach my $s (1..$servers) {
         $command .= " --vardir".$s."=$workdir/current".$s."_$thread_id " if $command !~ m{--mem}sio && $workdir ne '';
     }
@@ -327,12 +332,14 @@ sub doCombination {
 		$command =~ s/_epoch/$epochcreadir/sgo;	
 	}
 
+  while ($command =~ s/\s\s/ /g) {};
+  $command =~ s/^\s*//;
+  say("[$thread_id] $command\n");
+
 	unless (osWindows())
 	{
 		$command = 'bash -c "set -o pipefail; '.$command.'"';
 	}
-
-    say("[$thread_id] $command");
 
     my $result = 0;
     $result = system($command) if not $debug;
