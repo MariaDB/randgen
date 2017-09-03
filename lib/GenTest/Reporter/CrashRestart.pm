@@ -58,13 +58,13 @@ sub monitor {
 	my $dbh = DBI->connect($reporter->dsn());
 
 	unless ($dbh) {
-		say("CrashRestart reporter: ERROR: Could not connect to the server before shutdown. Status will be set to STATUS_SERVER_CRASHED");
+		sayError("CrashRestart reporter could not connect to the server before shutdown. Status will be set to STATUS_SERVER_CRASHED");
 		return STATUS_SERVER_CRASHED;
 	}
 
 	my $pid = $reporter->serverInfo('pid');
 	if (!defined $pid) {
-		say("CrashRestart reporter: ERROR: Server PID is not defined, cannot crash the server");
+		sayError("CrashRestart reporter cannot crash the server: server PID is not defined");
 		return STATUS_ENVIRONMENT_FAILURE;
 	} else {
 		say("CrashRestart reporter: Sending SIGKILL to server with pid $pid...");
@@ -78,7 +78,7 @@ sub monitor {
 		sleep(1);
 	}
 	if ($dbh) {
-		say("CrashRestart reporter: ERROR: Still can connect to the server, crash did not work. Status will be set to ENVIRONMENT_FAILURE");
+		sayError("CrashRestart reporter still can connect to the server, crash did not work. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
@@ -87,14 +87,14 @@ sub monitor {
 	my $status = $server->startServer();
 
 	if ($status > STATUS_OK) {
-		say("CrashRestart reporter: ERROR: Server startup finished with an error");
+		sayError("Server startup finished with an error in CrashRestart reporter");
 		return $status;
 	}
 
 	$dbh = DBI->connect($reporter->dsn());
 
 	unless ($dbh) {
-		say("CrashRestart reporter: ERROR: Could not connect to the restarted server. Status will be set to ENVIRONMENT_FAILURE");
+		sayError("CrashRestart reporter could not connect to the restarted server. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 

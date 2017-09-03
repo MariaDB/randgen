@@ -58,7 +58,7 @@ sub monitor {
 	my $dbh = DBI->connect($reporter->dsn());
 
 	unless ($dbh) {
-		say("Restart reporter: ERROR: Could not connect to the server before shutdown. Status will be set to STATUS_SERVER_CRASHED");
+		sayError("Restart reporter could not connect to the server before shutdown. Status will be set to STATUS_SERVER_CRASHED");
 		return STATUS_SERVER_CRASHED;
 	}
 
@@ -72,7 +72,7 @@ sub monitor {
 	}
 	$dbh = DBI->connect($reporter->dsn(),'','',{PrintError=>0}) ;
 	if ($dbh) {
-		say("Restart reporter: ERROR: Still can connect to the server, shutdown failed. Status will be set to ENVIRONMENT_FAILURE");
+		sayError("Restart reporter still can connect to the server, shutdown failed. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
@@ -80,14 +80,14 @@ sub monitor {
 	my $status = $server->startServer();
 
 	if ($status > STATUS_OK) {
-		say("Restart reporter: ERROR: Server startup finished with an error");
+		sayError("Server startup finished with an error in Restart reporter");
 		return $status;
 	}
 
 	$dbh = DBI->connect($reporter->dsn());
 
 	unless ($dbh) {
-		say("Restart reporter: ERROR: Could not connect to the restarted server. Status will be set to ENVIRONMENT_FAILURE");
+		sayError("Restart reporter could not connect to the restarted server. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 

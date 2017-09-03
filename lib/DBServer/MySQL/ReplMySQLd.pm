@@ -233,11 +233,11 @@ sub startServer {
 sub waitForSlaveSync {
     my ($self) = @_;
     if (! $self->master->dbh) {
-        say("ERROR: Could not connect to master");
+        sayError("Could not connect to master");
         return DBSTATUS_FAILURE;
     }
     if (! $self->slave->dbh) {
-        say("ERROR: Could not connect to slave");
+        sayError("Could not connect to slave");
         return DBSTATUS_FAILURE;
     }
 
@@ -247,9 +247,9 @@ sub waitForSlaveSync {
     if (not defined $wait_result) {
         if ($self->slave->dbh) {
             my @slave_status = $self->slave->dbh->selectrow_array("SHOW SLAVE STATUS /* ReplMySQLd::waitForSlaveSync */");
-            say("ERROR: Slave SQL thread has stopped with error: ".$slave_status[37]);
+            sayError("Slave SQL thread has stopped with error: ".$slave_status[37]);
         } else {
-            say("ERROR: Lost connection to the slave");
+            sayError("Lost connection to the slave");
         }
         return DBSTATUS_FAILURE;
     } else {

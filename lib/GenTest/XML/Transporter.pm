@@ -138,7 +138,7 @@ sub sendXML {
         $dest = $self->defaultScpDestination if not defined $dest;
         return $self->scp($xml, $dest);
     } else {
-        say("[ERROR] XML transport type '".$self->type."' not supported.");
+        sayError("XML transport type '".$self->type."' not supported.");
         return STATUS_ENVIRONMENT_FAILURE;
     }
 

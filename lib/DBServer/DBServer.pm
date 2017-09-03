@@ -19,7 +19,7 @@
 package DBServer::DBServer;
 use base 'Exporter';
 
-@EXPORT = ('say', 'sayFile', 'tmpdir', 'safe_exit', 
+@EXPORT = ('say', 'sayError', 'sayFile', 'tmpdir', 'safe_exit', 
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp',
            'DBSTATUS_OK','DBSTATUS_FAILURE');
@@ -114,6 +114,27 @@ sub say {
         }
     }
 }
+
+sub sayError {
+	my $text = shift;
+    defaultLogging();
+    if ($text =~ m{[\r\n]}sio) {
+        foreach my $line (split (m{[\r\n]}, $text)) {
+            if (defined $logger) {
+                $logger->error("[$$] ".$line);
+            } else {
+                print "# ".isoTimestamp()." [$$][ERROR] $line\n";
+            }
+        }
+    } else {
+        if (defined $logger) {
+            $logger->error("[$$] ".$text);
+        } else {
+            print "# ".isoTimestamp()." [$$][ERROR] $text\n";
+        }
+    }
+}
+
 
 sub sayFile {
     my ($file) = @_;

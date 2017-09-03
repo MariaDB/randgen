@@ -33,6 +33,8 @@ use Data::Dumper;
 use File::Basename;
 use File::Path qw(make_path);
 
+$| = 1;
+
 if (defined $ENV{RQG_HOME}) {
     if (osWindows()) {
         $ENV{RQG_HOME} = $ENV{RQG_HOME}.'\\';

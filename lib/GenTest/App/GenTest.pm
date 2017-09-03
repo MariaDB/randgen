@@ -427,7 +427,7 @@ sub workerProcess {
     );
 
     if (not defined $mixer) {
-        say("GenTest: ERROR: Failed to create a Mixer, status will be set to ENVIRONMENT_FAILURE");
+        sayError("GenTest failed to create a Mixer, status will be set to ENVIRONMENT_FAILURE");
         $self->stopChild(STATUS_ENVIRONMENT_FAILURE);
     }
         
@@ -563,7 +563,7 @@ sub initGenerator {
 
     if ($generator_name eq 'GenTest::Generator::FromGrammar') {
         if (not defined $self->config->grammar) {
-            say("ERROR: --grammar not specified but Generator is $generator_name, status will be set to ENVIRONMENT_FAILURE");
+            sayError("Grammar not specified but Generator is $generator_name, status will be set to ENVIRONMENT_FAILURE");
             return STATUS_ENVIRONMENT_FAILURE;
         }
 
@@ -573,12 +573,12 @@ sub initGenerator {
         ) if defined $self->config->grammar;
 
         if (not defined $self->grammar()) {
-            say("ERROR: Could not initialize the grammar, status will be set to ENVIRONMENT_FAILURE");
+            sayError("Could not initialize the grammar, status will be set to ENVIRONMENT_FAILURE");
             return STATUS_ENVIRONMENT_FAILURE;
         }
 
         if (not defined $self->grammar()) {
-            say("ERROR: Could not redefine the grammar, status will be set to ENVIRONMENT_FAILURE");
+            sayError("Could not redefine the grammar, status will be set to ENVIRONMENT_FAILURE");
             return STATUS_ENVIRONMENT_FAILURE;
         }
     }
@@ -592,7 +592,7 @@ sub initGenerator {
     );
 
     if (not defined $self->generator()) {
-        say("ERROR: Could not initialize the generator, status will be set to ENVIRONMENT_FAILURE");
+        sayError("Could not initialize the generator, status will be set to ENVIRONMENT_FAILURE");
         return STATUS_ENVIRONMENT_FAILURE;
     }
 }

@@ -521,7 +521,7 @@ sub startServer {
         my $errlog_fh;
         my $errlog_last_update_time= (stat($errorlog))[9] || 0;
         if ($errlog_last_update_time) {
-            open($errlog_fh,$errorlog) || ( say("ERROR: could not open the error log " . $errorlog . " for initial read: $!") && return DBSTATUS_FAILURE );
+            open($errlog_fh,$errorlog) || ( sayError("Could not open the error log " . $errorlog . " for initial read: $!") && return DBSTATUS_FAILURE );
             while (!eof($errlog_fh)) { readline $errlog_fh };
             seek $errlog_fh, 0, 1;
         }
@@ -557,7 +557,7 @@ sub startServer {
                 $pid= get_pid_from_file($self->pidfile);
                 say("Server created pid file with pid $pid");
             } elsif (!$errlog_update) {
-                say("ERROR: server has not started updating the error log withing $start_wait_timeout sec. timeout, and has not created pid file");
+                sayError("Server has not started updating the error log withing $start_wait_timeout sec. timeout, and has not created pid file");
                 sayFile($errorlog);
                 return DBSTATUS_FAILURE;
             }
@@ -573,7 +573,7 @@ sub startServer {
                 
                 unless ($errlog_fh) {
                     unless (open($errlog_fh, $errorlog)) {
-                        say("ERROR: could not open the error log  " . $errorlog . ": $!");
+                        sayError("Could not open the error log  " . $errorlog . ": $!");
                         return DBSTATUS_FAILURE;
                     }
                 }
@@ -623,12 +623,12 @@ sub startServer {
             if (!-f $self->pidfile) {
                 sayFile($errorlog);
                 if ($pid and not kill(0, $pid)) {
-                    say("ERROR: server disappeared after having started with pid $pid");
+                    sayError("Server disappeared after having started with pid $pid");
                 } elsif ($pid) {
-                    say("ERROR: timeout $startup_timeout has passed and the server still has not created the pid file, assuming it has hung, sending final SIGABRT to pid $pid...");
+                    sayError("Timeout $startup_timeout has passed and the server still has not created the pid file, assuming it has hung, sending final SIGABRT to pid $pid...");
                     kill 'ABRT', $pid;
                 } else {
-                    say("ERROR: timeout $startup_timeout has passed and the server still has not created the pid file, assuming it has hung, but cannot kill because we don't know the pid");
+                    sayError("Timeout $startup_timeout has passed and the server still has not created the pid file, assuming it has hung, but cannot kill because we don't know the pid");
                 }
                 return DBSTATUS_FAILURE;
             }
@@ -890,7 +890,7 @@ sub dbh {
                                             mysql_auto_reconnect => 1});
     }
     if(!defined $self->[MYSQLD_DBH]) {
-        say("ERROR: (Re)connect to ".$self->[MYSQLD_PORT]." failed due to ".$DBI::err.": ".$DBI::errstr);
+        sayError("(Re)connect to ".$self->[MYSQLD_PORT]." failed due to ".$DBI::err.": ".$DBI::errstr);
     }
     return $self->[MYSQLD_DBH];
 }

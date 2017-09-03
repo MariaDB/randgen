@@ -50,7 +50,7 @@ if ($help) {
 	help();
 	exit(1);
 } elsif (!$opt_result) {
-	say("ERROR: could not parse the command-line options\n");
+	sayError("Could not parse the command-line options\n");
 	help();
 	exit(1);
 }

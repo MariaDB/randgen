@@ -164,7 +164,7 @@ sub run {
         say("WARNING: basedir was not defined, relying on MySQL client being on the default path");
     }
     unless ($mysql_client_path) {
-        say("ERROR: Could not find MySQL client");
+        sayError("Could not find MySQL client");
         return STATUS_ENVIRONMENT_FAILURE;
     }
 
@@ -185,7 +185,7 @@ sub run {
         my $port = $executor->port();
         system("$mysql_client_path --port=$port --protocol=tcp -uroot --force test < $schema_file");
         if ($?) {
-            say("ERROR: failed to load $schema_file through MySQL client");
+            sayError("Failed to load $schema_file through MySQL client");
             return STATUS_ENVIRONMENT_FAILURE;
         }
 

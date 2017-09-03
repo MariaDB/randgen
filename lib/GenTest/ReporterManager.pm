@@ -77,7 +77,7 @@ sub addReporter {
 		eval "use $module" or print $@;
 		$reporter = $module->new(%$params);
 		if (not defined $reporter) {
-				say("ERROR: Reporter could not be added. Status will be set to ENVIRONMENT_FAILURE");
+				sayError("Reporter could not be added. Status will be set to ENVIRONMENT_FAILURE");
 				return STATUS_ENVIRONMENT_FAILURE;
 		}
 	}

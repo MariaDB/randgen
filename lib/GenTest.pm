@@ -19,7 +19,7 @@
 package GenTest;
 use base 'Exporter';
 
-@EXPORT = ('say', 'sayFile', 'tmpdir', 'safe_exit', 
+@EXPORT = ('say', 'sayError', 'sayFile', 'tmpdir', 'safe_exit', 
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp', 
            'rqg_debug', 'unix2winPath',
@@ -125,6 +125,31 @@ sub say {
             $logger->info("[$$] ".$text);
         } else {
             print "# ".isoTimestamp()." [$$] $text\n";
+        }
+    }
+}
+
+sub sayError {
+	my $text = shift;
+
+	# Suppress warnings "Wide character in print". 
+	# We already know that our UTFs in some grammars are ugly.
+	no warnings 'layer';
+
+    defaultLogging();
+    if ($text =~ m{[\r\n]}sio) {
+        foreach my $line (split (m{[\r\n]}, $text)) {
+            if (defined $logger) {
+                $logger->error("[$$] ".$line);
+            } else {
+                print STDERR "# ".isoTimestamp()." [$$][ERROR] $line\n";
+            }
+        }
+    } else {
+        if (defined $logger) {
+            $logger->error("[$$] ".$text);
+        } else {
+            print STDERR "# ".isoTimestamp()." [$$][ERROR] $text\n";
         }
     }
 }

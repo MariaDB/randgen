@@ -46,7 +46,7 @@ sub monitor {
 	return STATUS_OK if $reporter ne $first_reporter;
 	my $pid = $reporter->serverInfo('pid');
 	if (!defined $pid) {
-		say("ERROR: Server PID is not defined, cannot crash the server");
+		sayError("Server PID is not defined, cannot crash the server");
 		return STATUS_ENVIRONMENT_FAILURE;
 	} elsif (time() > $reporter->testEnd() - 19) {
 		say("Sending SIGKILL to server with pid $pid...");
