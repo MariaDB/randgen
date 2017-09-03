@@ -310,7 +310,7 @@ sub doCombination {
     if ($logToStd) {
         $command .= " 2>&1 | tee $workdir/trial".$trial_id.'.log';
     } else {
-        $command .= " > $workdir/trial".$trial_id.'.log'. " 2>&1";
+        $command .= " > $workdir/trial".$trial_id.'.log';
     }
 
 	$commands[$trial_id] = $command;
