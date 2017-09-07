@@ -83,7 +83,19 @@ $tables = {
         ],
         engines => [ 'InnoDB' ],
         rows => [ 0, 1, 1000 ],
-        row_formats => [ undef, 'DYNAMIC', 'REDUNDANT', 'COMPACT', 'COMPRESSED' ],
+        options => [ undef, 
+            'ROW_FORMAT=REDUNDANT',
+            'ROW_FORMAT=COMPRESSED',
+            '/*!100100 PAGE_COMPRESSED=1 */', 
+            '/*!100100 PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=1 */',
+            '/*!100100 PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=9 */',
+            'ROW_FORMAT=DYNAMIC /*!100100 PAGE_COMPRESSED=1 */', 
+            'ROW_FORMAT=DYNAMIC /*!100100 PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=1 */',
+            'ROW_FORMAT=DYNAMIC /*!100100 PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=9 */',
+            'ROW_FORMAT=COMPACT /*!100100 PAGE_COMPRESSED=1 */', 
+            'ROW_FORMAT=COMPACT /*!100100 PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=1 */',
+            'ROW_FORMAT=COMPACT /*!100100 PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=9 */',
+        ]
 };
 
 $fields = {

@@ -20,12 +20,14 @@ $tables = {
 	rows => [0, 1, 10, 20, 100],
 	engines => [ 'MyISAM', 'InnoDB', 'Aria' ],
 	views => [ 'MERGE', 'TEMPTABLE' ],
+	pk => [ undef ]
 };
 
 $fields = {
-	types => [ 'int', 'char(2)', 'char(255)', 'varchar(64)', 'date', 'time', 'datetime', 'text', 'blob', 'decimal' ],
-	indexes => [ undef, 'key' ],
+	types => [ 'int', 'char(2)', 'char(255)', 'varchar(64)', 'date', 'time', 'datetime', 'text', 'blob', 'float', 'decimal' ],
+	indexes => [ undef ],
 	null => [ 'null', 'not null' ],
+	sign => [ undef, 'unsigned' ]
 };
 
 $data = {
