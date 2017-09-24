@@ -45,6 +45,7 @@ sub monitor {
 	my $dbh = DBI->connect($dsn);
 
 	if (defined GenTest::Executor::MySQL::errorType($DBI::err)) {
+	  say("QueryTimeout:: DBI returned error ".$DBI::err." (".$DBI::errstr."), errorType ".GenTest::Executor::MySQL::errorType($DBI::err));
 		return GenTest::Executor::MySQL::errorType($DBI::err);
 	} elsif (not defined $dbh) {
 		return STATUS_UNKNOWN_ERROR;
