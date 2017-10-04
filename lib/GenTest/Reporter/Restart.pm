@@ -37,6 +37,7 @@ use GenTest::Reporter;
 use DBServer::MySQL::MySQLd;
 
 my $first_reporter;
+my $restart_count= 0;
 
 sub monitor {
 	my $reporter = shift;
@@ -75,6 +76,9 @@ sub monitor {
 		sayError("Restart reporter still can connect to the server, shutdown failed. Status will be set to ENVIRONMENT_FAILURE");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
+
+  system("cp -r $datadir $datadir.$restart_count");
+  $restart_count++;
 
 	say("Restart reporter: Restarting the server ...");
 	my $status = $server->startServer();
