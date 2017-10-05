@@ -1,4 +1,4 @@
-# Copyright (C) 2013 Monty Program Ab
+# Copyright (c) 2013, 2017 MariaDB
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -83,8 +83,18 @@ sub monitor {
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
-  system("cp -r $datadir $datadir.$restart_count");
   $restart_count++;
+  system("cp -r $datadir $datadir.$restart_count");
+
+  my $errorlog= $server->errorlog;
+  my $restart_marker= "RQG RESTART MARKER $restart_count";
+  if (open(ERRLOG,">>$errorlog")) {
+    print ERRLOG "$restart_marker\n";
+    close (ERRLOG);
+  }
+  else {
+    sayError("Could not open $errorlog for writing a marker")
+  }
 
 	say("CrashRestart reporter: Restarting the server ...");
 	my $status = $server->startServer();
@@ -94,6 +104,50 @@ sub monitor {
 		return $status;
 	}
 
+  open(RESTART, $errorlog);
+  my $found_marker= 0;
+
+  say("Checking server log for important errors");
+
+  while (<RESTART>) {
+    next unless $found_marker or /$restart_marker/;
+    $found_marker= 1;
+
+		$_ =~ s{[\r\n]}{}siog;
+
+    # Ignore certain errors
+    next if
+         $_ =~ /innodb_table_stats/so
+      or $_ =~ /ib_buffer_pool' for reading: No such file or directory/so
+    ;
+
+		say($_);
+    # Crashes
+    if (
+           $_ =~ /Assertion\W/sio
+        or $_ =~ /got signal/sio
+        or $_ =~ /segmentation fault/sio
+        or $_ =~ /segfault/sio
+        or $_ =~ /exception/sio
+    ) {
+      $status= STATUS_SERVER_CRASHED;
+    }
+    # Other errors
+    elsif (
+           $_ =~ /\[ERROR\]\s+InnoDB/sio
+        or $_ =~ /InnoDB:\s+Error:/sio
+        or $_ =~ /registration as a STORAGE ENGINE failed./sio
+    ) {
+      $status= STATUS_DATABASE_CORRUPTION;
+    }
+  }
+  close(RESTART);
+
+  if ($status > STATUS_OK) {
+    sayError("Server log after restart indicates critical errors");
+    return $status;
+  }
+
 	$dbh = DBI->connect($reporter->dsn());
 
 	unless ($dbh) {
@@ -102,6 +156,43 @@ sub monitor {
 	}
 
 	$reporter->updatePid();
+
+  say("Testing database integrity");
+
+  my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
+  foreach my $database (@$databases) {
+      next if $database =~ m{^(mysql|information_schema|pbxt|performance_schema)$}sio;
+      $dbh->do("USE $database");
+      my $tabl_ref = $dbh->selectcol_arrayref("SHOW FULL TABLES", { Columns=>[1,2] });
+      # 1178 is ER_CHECK_NOT_IMPLEMENTED
+      my %tables = @$tabl_ref;
+      foreach my $table (keys %tables) {
+        # Should not do CHECK etc., and especially ALTER, on a view
+        next if $tables{$table} eq 'VIEW';
+        say("Verifying table: $table; database: $database");
+#          $dbh->do("CHECK TABLE `$database`.`$table` EXTENDED");
+        my $check = $dbh->selectcol_arrayref("CHECK TABLE `$database`.`$table` EXTENDED", { Columns=>[3,4] });
+        if ($dbh->err() > 0 && $dbh->err() != 1178) {
+          sayError("Table $database.$table appears to be corrupted");
+          $status= STATUS_DATABASE_CORRUPTION;
+        }
+        else {
+          my %msg = @$check;
+          foreach my $m (keys %msg) {
+            say("For table `$database`.`$table` : $m $msg{$m}");
+            if ($m ne 'status') {
+              $status= STATUS_DATABASE_CORRUPTION;
+            }
+          }
+        }
+      }
+  }
+  if ($status > STATUS_OK) {
+    sayError("Database integrity check failed");
+    return $status;
+  }
+
+  say("Schema does not look corrupt");
 
 	return STATUS_OK;
 }
