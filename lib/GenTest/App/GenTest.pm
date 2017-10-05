@@ -257,10 +257,12 @@ sub run {
     OUTER: while (1) {
         # Wait for processes to complete, i.e only processes spawned by workers & reporters. 
         foreach my $spawned_pid (@spawned_pids) {
-            my $child_pid = waitpid($spawned_pid, 0);
+            my $child_pid = waitpid($spawned_pid, WNOHANG);
+            next if $child_pid == 0;
             my $child_exit_status = $? > 0 ? ($? >> 8) : 0;
-            
+
             $total_status = $child_exit_status if $child_exit_status > $total_status;
+            say("Process with pid $child_pid ended with status ".status2text($child_exit_status));
             
             if ($child_pid == $reporter_pid) {
                 $reporter_died = 1;
@@ -269,11 +271,11 @@ sub run {
                 delete $worker_pids{$child_pid};
             }
             
-            say("Process with pid $child_pid ended with status ".status2text($child_exit_status));
             last OUTER if $child_exit_status >= STATUS_CRITICAL_FAILURE;
             last OUTER if keys %worker_pids == 0;
             last OUTER if $child_pid == -1;
         }
+        sleep 5;
     }
 
     foreach my $worker_pid (keys %worker_pids) {
@@ -352,8 +354,8 @@ sub reportResults {
 sub stopChild {
     my ($self, $status) = @_;
 
-    say("GenTest: child is being stopped with status " . status2text($status));
-    croak "calling stopChild() without a \$status" if not defined $status;
+    say("GenTest: child $$ is being stopped with status " . status2text($status));
+    croak "calling stopChild() for $$ without a \$status" if not defined $status;
 
     if (osWindows()) {
         exit $status;
@@ -380,14 +382,14 @@ sub reportingProcess {
     Time::HiRes::sleep(($self->config->threads + 1) / 10);
     say("Started periodic reporting process...");
 
+    my $reporter_status= STATUS_OK;
     while (1) {
-        my $reporter_status = $self->reporterManager()->monitor(REPORTER_TYPE_PERIODIC);
-        $self->stopChild($reporter_status) if $reporter_status > STATUS_CRITICAL_FAILURE;
-        last if $reporter_killed == 1;
+        $reporter_status = $self->reporterManager()->monitor(REPORTER_TYPE_PERIODIC);
+        last if $reporter_status > STATUS_CRITICAL_FAILURE or $reporter_killed == 1;
         sleep(10);
     }
 
-    $self->stopChild(STATUS_OK);
+    $self->stopChild($reporter_status);
 }
 
 sub workerProcess {
