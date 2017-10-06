@@ -1,4 +1,4 @@
-# Copyright (C) 2015 MariaDB Corporation Ab
+# Copyright (C) 2015, 2017 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -38,9 +38,13 @@ use DBServer::MySQL::MySQLd;
 
 my $first_reporter;
 my $restart_count= 0;
+my $restart_marker='';
 
 sub monitor {
-	my $reporter = shift;
+	my $reporter= shift;
+  my $shutdown_timeout= shift;
+
+  $shutdown_timeout = 120 unless defined $shutdown_timeout;
 
 	$first_reporter = $reporter if not defined $first_reporter;
 	return STATUS_OK if $reporter ne $first_reporter;
@@ -48,11 +52,8 @@ sub monitor {
 	# Do not restart in the first 20 seconds after the test flow started
 	return STATUS_OK if (time() < $reporter->reporterStartTime() + 20);
 
-	my $server = $reporter->properties->servers->[0];
-	my $status;
-	my $vardir = $server->vardir();
-	my $datadir = $server->datadir();
-	my $port = $server->port();
+	my $server= $reporter->properties->servers->[0];
+	my $status= STATUS_OK;
 
 	# First, check that the server is still available 
 	# (or it might happen that it crashed on its own, and by restarting it we will hide the problem)
@@ -63,30 +64,39 @@ sub monitor {
 		return STATUS_SERVER_CRASHED;
 	}
 
-	say("Restart reporter: Shutting down the server ...");
-	$status = $server->stopServer();
-	my $pid = $reporter->serverInfo('pid');
+  if (!$server->stopServer($shutdown_timeout)) {
+    say("Restart reporter failed to stop the server");
+    return STATUS_ENVIRONMENT_FAILURE;
+  }
 
-	foreach (1..30) {
-		last if not kill(0, $pid);
-		sleep 1;
-	}
-	$dbh = DBI->connect($reporter->dsn(),'','',{PrintError=>0}) ;
-	if ($dbh) {
-		sayError("Restart reporter still can connect to the server, shutdown failed. Status will be set to ENVIRONMENT_FAILURE");
-		return STATUS_ENVIRONMENT_FAILURE;
-	}
+  my ($crashes, $errors)= $server->checkErrorLogForErrors($restart_marker);
 
-  system("cp -r $datadir $datadir.$restart_count");
-  $restart_count++;
+  if (@$crashes) {
+    return STATUS_SERVER_CRASHED;
+  } elsif (@$errors) {
+    return STATUS_DATABASE_CORRUPTION;
+  }
+
+  my $old_marker= $restart_marker;
+  $restart_marker= 'RQG RESTART MARKER ' . (++$restart_count);
+  $server->backupDatadir($server->datadir.".$restart_count");
+  $server->addErrorLogMarker($restart_marker);
 
 	say("Restart reporter: Restarting the server ...");
 	my $status = $server->startServer();
 
-	if ($status > STATUS_OK) {
-		sayError("Server startup finished with an error in Restart reporter");
-		return $status;
-	}
+	return $status if $status > STATUS_OK;
+
+  # We intentionally check the error log from the same (old) marker again,
+  # because we might have missed something that was written on/after shutdown
+
+  my ($crashes, $errors)= $server->checkErrorLogForErrors($old_marker);
+
+  if (@$crashes) {
+    return STATUS_SERVER_CRASHED;
+  } elsif (@$errors) {
+    return STATUS_DATABASE_CORRUPTION;
+  }
 
 	$dbh = DBI->connect($reporter->dsn());
 
@@ -97,12 +107,17 @@ sub monitor {
 
 	$reporter->updatePid();
 
+  if ($server->checkDatabaseIntegrity > STATUS_OK) {
+    return STATUS_DATABASE_CORRUPTION;
+  } else {
+    say("Schema does not look corrupt");
+  }
+
 	return STATUS_OK;
 }
 
 sub type {
 	return REPORTER_TYPE_PERIODIC;
 }
-
 
 1;

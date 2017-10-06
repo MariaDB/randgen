@@ -1,5 +1,5 @@
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved. 
-# Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2013, 2017, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -646,8 +646,7 @@ sub startServer {
             exec("$command >> \"$errorlog\"  2>&1") || croak("Could not start mysql server");
         }
     }
-    
-    return $self->dbh ? DBSTATUS_OK : DBSTATUS_FAILURE;
+    return ($self->waitForServerToStart && $self->dbh) ? DBSTATUS_OK : DBSTATUS_FAILURE;
 }
 
 sub kill {
@@ -753,7 +752,7 @@ sub dumpdb {
                              "--port=".$self->port.
                              " -uroot $database";
     # --no-tablespaces option was introduced in version 5.1.14.
-    if ($self->_newerThan(5,1,13)) {
+    if ($self->_notOlderThan(5,1,14)) {
         $dump_command = $dump_command . " --no-tablespaces";
     }
     my $dump_result = system("$dump_command | sort > $file");
@@ -765,29 +764,24 @@ sub binary {
 }
 
 sub stopServer {
-    my ($self) = @_;
-    
-    if (defined $self->[MYSQLD_DBH]) {
+    my ($self, $shutdown_timeout) = @_;
+    $shutdown_timeout = 60 unless defined $shutdown_timeout;
+
+    if ($shutdown_timeout and defined $self->[MYSQLD_DBH]) {
         say("Stopping server on port ".$self->port);
         ## Use dbh routine to ensure reconnect in case connection is
         ## stale (happens i.e. with mdl_stability/valgrind runs)
         my $dbh = $self->dbh();
         my $res;
-        my $waits = 0;
         # Need to check if $dbh is defined, in case the server has crashed
         if (defined $dbh) {
             $res = $dbh->func('shutdown','127.0.0.1','root','admin');
-            if ($res) {
-                while ($self->running && $waits < 100) {
-                    Time::HiRes::sleep(0.2);
-                    $waits++;
-                }
-            } else {
+            if (!$res) {
                 ## If shutdown fails, we want to know why:
                 say("Shutdown failed due to ".$dbh->err.":".$dbh->errstr);
             }
         }
-        if (!$res or $waits >= 100) {
+        if (!$self->waitForServerToStop($shutdown_timeout)) {
             # Terminate process
             say("Server would not shut down properly. Terminate it");
             $self->term;
@@ -799,6 +793,148 @@ sub stopServer {
     } else {
         $self->kill;
     }
+    return !$self->running;
+}
+
+sub checkDatabaseIntegrity {
+  my $self= shift;
+
+  say("Testing database integrity");
+  my $dbh= $self->dbh;
+  my $status= DBSTATUS_OK;
+
+  my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
+  foreach my $database (@$databases) {
+      next if $database =~ m{^(mysql|information_schema|pbxt|performance_schema)$}sio;
+      $dbh->do("USE $database");
+      my $tabl_ref = $dbh->selectcol_arrayref("SHOW FULL TABLES", { Columns=>[1,2] });
+      # 1178 is ER_CHECK_NOT_IMPLEMENTED
+      my %tables = @$tabl_ref;
+      foreach my $table (keys %tables) {
+        # Should not do CHECK etc., and especially ALTER, on a view
+        next if $tables{$table} eq 'VIEW';
+        say("Verifying table: $database.$table:");
+        my $check = $dbh->selectcol_arrayref("CHECK TABLE `$database`.`$table` EXTENDED", { Columns=>[3,4] });
+        if ($dbh->err() > 0 && $dbh->err() != 1178) {
+          sayError("Table $database.$table appears to be corrupted, error: ".$dbh->err());
+          $status= DBSTATUS_FAILURE;
+        }
+        else {
+          my %msg = @$check;
+          foreach my $m (keys %msg) {
+            say("For table `$database`.`$table` : $m $msg{$m}");
+            if ($m ne 'status' and $m ne 'note') {
+              $status= DBSTATUS_FAILURE;
+            }
+          }
+        }
+      }
+  }
+  if ($status > DBSTATUS_OK) {
+    sayError("Database integrity check failed");
+  }
+  return $status;
+}
+
+sub addErrorLogMarker {
+  my $self= shift;
+  my $marker= shift;
+
+    say("Adding marker $marker to the error log ".$self->errorlog);
+  if (open(ERRLOG,">>".$self->errorlog)) {
+    print ERRLOG "$marker\n";
+    close (ERRLOG);
+  } else {
+    say("Could not add marker $marker to the error log ".$self->errorlog);
+  }
+}
+
+sub waitForServerToStop {
+  my $self= shift;
+  my $timeout= shift;
+  $timeout = (defined $timeout ? $timeout*2 : 120);
+  my $waits= 0;
+  while ($self->running && $waits < $timeout) {
+    Time::HiRes::sleep(0.5);
+    $waits++;
+  }
+  return !$self->running;
+}
+
+sub waitForServerToStart {
+  my $self= shift;
+  my $waits= 0;
+  while (!$self->running && $waits < 120) {
+    Time::HiRes::sleep(0.5);
+    $waits++;
+  }
+  return $self->running;
+}
+
+
+sub backupDatadir {
+  my $self= shift;
+  my $backup_name= shift;
+  
+  say("Copying datadir... (interrupting the copy operation may cause investigation problems later)");
+  if (osWindows()) {
+      system('xcopy "'.$self->datadir.'" "'.$backup_name.' /E /I /Q');
+  } else {
+      system('cp -r '.$self->datadir.' '.$backup_name);
+  }
+}
+
+# Extract important messages from the error log.
+# The check starts from the provided marker or from the beginning of the log
+
+sub checkErrorLogForErrors {
+  my $self= shift;
+  my $marker= shift;
+
+  my @crashes= ();
+  my @errors= ();
+
+  open(ERRLOG, $self->errorlog);
+  my $found_marker= 0;
+
+  say("------ Checking server log for important errors starting from " . ($marker ? "marker $marker" : 'the beginning'));
+
+  while (<ERRLOG>)
+  {
+    next unless !$marker or $found_marker or /^$marker$/;
+    $found_marker= 1;
+		$_ =~ s{[\r\n]}{}siog;
+
+    # Ignore certain errors
+    next if
+         $_ =~ /innodb_table_stats/so
+      or $_ =~ /ib_buffer_pool' for reading: No such file or directory/so
+    ;
+
+    # Crashes
+    if (
+           $_ =~ /Assertion\W/sio
+        or $_ =~ /got signal/sio
+        or $_ =~ /segmentation fault/sio
+        or $_ =~ /segfault/sio
+        or $_ =~ /exception/sio
+    ) {
+      say($_);
+      push @crashes, $_;
+    }
+    # Other errors
+    elsif (
+           $_ =~ /\[ERROR\]\s+InnoDB/sio
+        or $_ =~ /InnoDB:\s+Error:/sio
+        or $_ =~ /registration as a STORAGE ENGINE failed./sio
+    ) {
+      say($_);
+      push @errors, $_;
+    }
+  }
+  say("------");
+  close(ERRLOG);
+  return (\@crashes, \@errors);
 }
 
 sub serverVariables {
@@ -831,8 +967,7 @@ sub running {
         return -f $self->pidfile;
     } else {
         ## Check if the child process is active.
-        my $child_status = waitpid($self->serverpid,WNOHANG);
-        return $child_status != -1;
+        return kill(0,$self->serverpid);
     }
 }
 
@@ -1003,7 +1138,7 @@ sub _logOptions {
     }
 }
 
-# For _olderThan and _newerThan we will match according to InnoDB versions
+# For _olderThan and _notOlderThan we will match according to InnoDB versions
 # 10.0 to 5.6
 # 10.1 to 5.6
 # 10.2 to 5.6
