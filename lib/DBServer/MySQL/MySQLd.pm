@@ -965,9 +965,16 @@ sub running {
         ## Need better solution fir windows. This is actually the old
         ## non-working solution for unix....
         return -f $self->pidfile;
-    } else {
+    } elsif ($self->serverpid and $self->serverpid =~ /^\d+$/) {
         ## Check if the child process is active.
         return kill(0,$self->serverpid);
+    } elsif (-f $self->pidfile) {
+        my $pid= get_pid_from_file($self->pidfile);
+        if ($pid and $pid =~ /^\d+$/) {
+          return kill(0,$pid);
+        }
+    } else {
+        return 0;
     }
 }
 
