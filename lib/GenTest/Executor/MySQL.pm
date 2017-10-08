@@ -789,7 +789,7 @@ sub execute {
         $executor->[EXECUTOR_ERROR_COUNTS]->{$errstr_prepare}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
         return GenTest::Result->new(
             query        => $query,
-            status        => $executor->getStatusFromErr($dbh->err()) || STATUS_UNKNOWN_ERROR,
+            status        => $err2type{$dbh->err()} || STATUS_UNKNOWN_ERROR,
             err        => $dbh->err(),
             errstr         => $dbh->errstr(),
             sqlstate    => $dbh->state(),
