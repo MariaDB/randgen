@@ -32,6 +32,7 @@ use Carp;
 use Data::Dumper;
 use File::Basename qw(dirname);
 use File::Path qw(mkpath rmtree);
+use File::Copy qw(move);
 
 use constant MYSQLD_BASEDIR => 0;
 use constant MYSQLD_VARDIR => 1;
@@ -432,7 +433,6 @@ sub createMysqlBase  {
     }
     close BOOT;
 
-    say("Running bootstrap: $command (and feeding $boot to it)");
     system("$command > \"".$self->vardir."/boot.log\" 2>&1");
     return $?;
 }
@@ -682,6 +682,7 @@ sub kill {
     # clean up when the server is not alive.
     unlink $self->socketfile if -e $self->socketfile;
     unlink $self->pidfile if -e $self->pidfile;
+    return ($self->running ? DBSTATUS_FAILURE : DBSTATUS_OK);
 }
 
 sub term {
@@ -738,13 +739,51 @@ sub corefile {
     return $self->datadir."/core.".$self->serverpid;
 }
 
+sub upgradeDb {
+  my $self= shift;
+
+  my $mysql_upgrade= $self->_find([$self->basedir],
+                                        osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
+                                        osWindows()?"mysql_upgrade.exe":"mysql_upgrade");
+  my $upgrade_command=
+    '"'.$mysql_upgrade.'" --host=127.0.0.1 --port='.$self->port.' -uroot';
+  my $upgrade_log= $self->datadir.'/mysql_upgrade.log';
+  say("Running mysql_upgrade:\n  $upgrade_command");
+  my $res= system("$upgrade_command > $upgrade_log");
+  if ($res == DBSTATUS_OK) {
+    # mysql_upgrade can return exit code 0 even if user tables are corrupt,
+    # so we don't trust the exit code, we should also check the actual output
+    if (open(UPGRADE_LOG, "$upgrade_log")) {
+     OUTER_READ:
+      while (<UPGRADE_LOG>) {
+        # For now we will only check 'Repairing tables' section,
+        # and if there are any errors, we'll consider it a failure
+        next unless /Repairing tables/;
+        while (<UPGRADE_LOG>) {
+          if (/^\s*Error/) {
+            $res= DBSTATUS_FAILURE;
+            sayError("Found errors in mysql_upgrade output");
+            sayFile("$upgrade_log");
+            last OUTER_READ;
+          }
+        }
+      }
+      close (UPGRADE_LOG);
+    } else {
+      sayError("Could not find $upgrade_log");
+      $res= DBSTATUS_FAILURE;
+    }
+  }
+  return $res;
+}
+
 sub dumper {
     return $_[0]->[MYSQLD_DUMPER];
 }
 
 sub dumpdb {
     my ($self,$database, $file) = @_;
-    say("Dumping MySQL server ".$self->version." on port ".$self->port);
+    say("Dumping MySQL server ".$self->version." data on port ".$self->port);
     my $dump_command = '"'.$self->dumper.
                              "\" --hex-blob --skip-triggers --compact ".
                              "--order-by-primary --skip-extended-insert ".
@@ -757,6 +796,94 @@ sub dumpdb {
     }
     my $dump_result = system("$dump_command | sort > $file");
     return $dump_result;
+}
+
+sub dumpSchema {
+    my ($self,$database, $file) = @_;
+    say("Dumping MySQL server ".$self->version." schema on port ".$self->port);
+    my $dump_command = '"'.$self->dumper.
+                             "\" --hex-blob --compact ".
+                             "--order-by-primary --skip-extended-insert ".
+                             "--no-data --host=127.0.0.1 ".
+                             "--port=".$self->port.
+                             " -uroot $database";
+    # --no-tablespaces option was introduced in version 5.1.14.
+    if ($self->_notOlderThan(5,1,14)) {
+        $dump_command = $dump_command . " --no-tablespaces";
+    }
+    my $dump_result = system("$dump_command > $file");
+    return $dump_result;
+}
+
+# There are some known expected differences in dump structure between versions.
+# We need to normalize the dumps to avoid false positives while comparing them.
+# For now, we'll re-format to 10.2 style.
+# Optionally, we can also remove AUTOINCREMENT=N clauses.
+# The old file is stored in <filename_orig>.
+sub normalizeDump {
+  my ($self, $file, $remove_autoincs)= @_;
+  if ($remove_autoincs) {
+    move($file, $file.'.tmp1');
+    open(DUMP1,$file.'.tmp1');
+    open(DUMP2,">$file");
+    while (<DUMP1>) {
+      if (s/AUTO_INCREMENT=\d+//) {};
+      print DUMP2 $_;
+    }
+    close(DUMP1);
+    close(DUMP2);
+  }
+  if ($self->versionNumeric() le '100201') {
+    move($file, $file.'.tmp2');
+    open(DUMP1,$file.'.tmp2');
+    open(DUMP2,">$file");
+    while (<DUMP1>) {
+        # `k` int(10) unsigned NOT NULL DEFAULT '0' => `k` int(10) unsigned NOT NULL DEFAULT 0
+        s/(DEFAULT\s+)\'(\d+)\'(,?)$/${1}${2}${3}/;
+
+        # `col_blob` blob NOT NULL => `col_blob` blob NOT NULL DEFAULT '',
+        # This part is conditional, see MDEV-12006. For upgrade from 10.1, a text column does not get a default value
+        if ($self->versionNumeric() lt '100101') {
+            s/(\s+(?:blob|text|mediumblob|mediumtext|longblob|longtext|tinyblob|tinytext)(\s+)NOT\sNULL)(,)?$/${1}${2}DEFAULT${2}\'\'${3}/;
+        }
+        # `col_blob` text => `col_blob` text DEFAULT NULL,
+        s/(\s)(blob|text|mediumblob|mediumtext|longblob|longtext|tinyblob|tinytext)(,)?$/${1}${2}${1}DEFAULT${1}NULL${3}/;
+        print DUMP2 $_;
+    }
+    close(DUMP1);
+    close(DUMP2);
+  }
+  if (-e $file.'.tmp1') {
+    move($file.'.tmp1',$file.'.orig');
+    unlink($file.'.tmp2') if -e $file.'tmp2';
+  } elsif (-e $file.'.tmp2') {
+    move($file.'.tmp2',$file.'.orig');
+  }
+}
+
+sub nonSystemDatabases {
+  my $self= shift;
+  return @{$self->dbh->selectcol_arrayref(
+      "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA ".
+      "WHERE LOWER(SCHEMA_NAME) NOT IN ('mysql','information_schema','performance_schema','sys')"
+    )
+  };
+}
+
+sub collectAutoincrements {
+  my $self= shift;
+	my $autoinc_tables= $self->dbh->selectall_arrayref(
+      "SELECT CONCAT(ist.TABLE_SCHEMA,'.',ist.TABLE_NAME), ist.AUTO_INCREMENT, isc.COLUMN_NAME, '' ".
+      "FROM INFORMATION_SCHEMA.TABLES ist JOIN INFORMATION_SCHEMA.COLUMNS isc ON (ist.TABLE_SCHEMA = isc.TABLE_SCHEMA AND ist.TABLE_NAME = isc.TABLE_NAME) ".
+      "WHERE ist.TABLE_SCHEMA NOT IN ('mysql','information_schema','performance_schema','sys') ".
+      "AND ist.AUTO_INCREMENT IS NOT NULL ".
+      "AND isc.EXTRA LIKE '%auto_increment%' ".
+      "ORDER BY ist.TABLE_SCHEMA, ist.TABLE_NAME, isc.COLUMN_NAME"
+    );
+  foreach my $t (@$autoinc_tables) {
+      $t->[3] = $self->dbh->selectrow_arrayref("SELECT IFNULL(MAX($t->[2]),0) FROM $t->[0]")->[0];
+  }
+  return $autoinc_tables;
 }
 
 sub binary {
@@ -791,9 +918,10 @@ sub stopServer {
             unlink $self->pidfile if -e $self->pidfile;
         }
     } else {
+        say("Shutdown timeout or dbh is not defined, killing the server");
         $self->kill;
     }
-    return !$self->running;
+    return ($self->running ? DBSTATUS_FAILURE : DBSTATUS_OK);
 }
 
 sub checkDatabaseIntegrity {
@@ -810,10 +938,10 @@ sub checkDatabaseIntegrity {
       my $tabl_ref = $dbh->selectcol_arrayref("SHOW FULL TABLES", { Columns=>[1,2] });
       # 1178 is ER_CHECK_NOT_IMPLEMENTED
       my %tables = @$tabl_ref;
-      foreach my $table (keys %tables) {
+      foreach my $table (sort keys %tables) {
         # Should not do CHECK etc., and especially ALTER, on a view
         next if $tables{$table} eq 'VIEW';
-        say("Verifying table: $database.$table:");
+#        say("Verifying table: $database.$table:");
         my $check = $dbh->selectcol_arrayref("CHECK TABLE `$database`.`$table` EXTENDED", { Columns=>[3,4] });
         if ($dbh->err() > 0 && $dbh->err() != 1178) {
           sayError("Table $database.$table appears to be corrupted, error: ".$dbh->err());
@@ -888,8 +1016,7 @@ sub backupDatadir {
 # The check starts from the provided marker or from the beginning of the log
 
 sub checkErrorLogForErrors {
-  my $self= shift;
-  my $marker= shift;
+  my ($self, $marker)= @_;
 
   my @crashes= ();
   my @errors= ();
@@ -897,8 +1024,9 @@ sub checkErrorLogForErrors {
   open(ERRLOG, $self->errorlog);
   my $found_marker= 0;
 
-  say("------ Checking server log for important errors starting from " . ($marker ? "marker $marker" : 'the beginning'));
+  say("Checking server log for important errors starting from " . ($marker ? "marker $marker" : 'the beginning'));
 
+  my $count= 0;
   while (<ERRLOG>)
   {
     next unless !$marker or $found_marker or /^$marker$/;
@@ -919,6 +1047,7 @@ sub checkErrorLogForErrors {
         or $_ =~ /segfault/sio
         or $_ =~ /exception/sio
     ) {
+      say("------") unless $count++;
       say($_);
       push @crashes, $_;
     }
@@ -928,11 +1057,12 @@ sub checkErrorLogForErrors {
         or $_ =~ /InnoDB:\s+Error:/sio
         or $_ =~ /registration as a STORAGE ENGINE failed./sio
     ) {
+      say("------") unless $count++;
       say($_);
       push @errors, $_;
     }
   }
-  say("------");
+  say("------") if $count;
   close(ERRLOG);
   return (\@crashes, \@errors);
 }

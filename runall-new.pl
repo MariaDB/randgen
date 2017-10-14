@@ -20,6 +20,13 @@
 
 #################### FOR THE MOMENT THIS SCRIPT IS FOR TESTING PURPOSES
 
+
+unless (defined $ENV{RQG_HOME}) {
+  use File::Basename qw(dirname);
+  use Cwd qw(abs_path);
+  $ENV{RQG_HOME}= abs_path(dirname($0));
+}
+
 use lib 'lib';
 use lib "$ENV{RQG_HOME}/lib";
 use Carp;
@@ -76,7 +83,7 @@ my ($gendata, @basedirs, @mysqld_options, @vardirs, $rpl_mode,
     $notnull, $logfile, $logconf, $report_tt_logdir, $querytimeout, $no_mask,
     $short_column_names, $strict_fields, $freeze_time, $wait_debugger, @debug_server,
     $skip_gendata, $skip_shutdown, $galera, $use_gtid, $genconfig, $annotate_rules,
-    $restart_timeout, $gendata_advanced);
+    $restart_timeout, $gendata_advanced, $scenario);
 
 my $gendata=''; ## default simple gendata
 
@@ -166,14 +173,18 @@ my $opt_result = GetOptions(
     'report-tt-logdir=s' => \$report_tt_logdir,
     'querytimeout=i' => \$querytimeout,
     'no-mask' => \$no_mask,
-    'skip_shutdown' => \$skip_shutdown,
-    'skip-shutdown' => \$skip_shutdown,
+    'skip_shutdown|skip-shutdown' => \$skip_shutdown,
     'galera=s' => \$galera,
     'use-gtid=s' => \$use_gtid,
     'use_gtid=s' => \$use_gtid,
-    'annotate_rules' => \$annotate_rules,
-    'annotate-rules' => \$annotate_rules
+    'annotate_rules|annotate-rules' => \$annotate_rules,
+    'scenario:s' => \$scenario
 );
+
+if (defined $scenario) {
+  system("perl $ENV{RQG_HOME}/run-scenario.pl @ARGV_saved");
+  exit $? >> 8;
+}
 
 if (defined $logfile && defined $logger) {
     setLoggingToFile($logfile);
