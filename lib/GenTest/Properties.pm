@@ -196,6 +196,19 @@ sub property {
     return $self->[PROPS_PROPS]->{$name};
     
 }
+# Since the basic set/get cannot set a property to 'undef',
+# we need a separate method to unset an existing property
+sub unsetProperty {
+    my ($self, $name) = @_;
+
+    if (defined $self->[PROPS_LEGAL_HASH]) {
+        croak("Illegal property '$name' caught by AUTOLOAD ")
+            if not $self->[PROPS_LEGAL_HASH]->{$name};
+    }
+
+    $self->[PROPS_PROPS]->{$name} = undef;
+    return $self->[PROPS_PROPS]->{$name};
+}
 ## Read properties from a given file
 sub _readProps {
     my ($file) = @_;
