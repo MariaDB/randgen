@@ -585,8 +585,6 @@ my $gentestProps = GenTest::Properties->new(
 ]
     );
 
-my @gentest_options;
-
 ## For backward compatability
 if ($#validators == 0 and $validators[0] =~ m/,/) {
     @validators = split(/,/,$validators[0]);

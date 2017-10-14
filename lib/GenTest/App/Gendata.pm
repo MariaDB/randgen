@@ -470,7 +470,7 @@ sub run {
             } @fields ;
         }
         
-        say("# Creating ".$executor->getName().
+        say("Creating ".$executor->getName().
             " table: $schema.$table_copy[TABLE_NAME]; engine: $table_copy[TABLE_ENGINE]; rows: $table_copy[TABLE_ROW] .");
         
         if ($table_copy[TABLE_PK] ne '') {
