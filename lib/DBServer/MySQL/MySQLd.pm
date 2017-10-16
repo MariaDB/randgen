@@ -687,11 +687,13 @@ sub kill {
 
 sub term {
     my ($self) = @_;
-    
+
+    my $res;
     if (osWindows()) {
         ### Not for windows
         say("Don't know how to do SIGTERM on Windows");
         $self->kill;
+        $res= DBSTATUS_OK;
     } else {
         if (defined $self->serverpid) {
             kill TERM => $self->serverpid;
@@ -703,14 +705,17 @@ sub term {
             if ($waits >= 100) {
                 say("Unable to terminate process ".$self->serverpid." Trying kill");
                 $self->kill;
+                $res= DBSTATUS_FAILURE;
             } else {
                 say("Terminated process ".$self->serverpid);
+                $res= DBSTATUS_OK;
             }
         }
     }
     if (-e $self->socketfile) {
         unlink $self->socketfile;
     }
+    return $res;
 }
 
 sub crash {
@@ -815,14 +820,16 @@ sub dumpSchema {
     return $dump_result;
 }
 
-# There are some known expected differences in dump structure between versions.
+# There are some known expected differences in dump structure between
+# pre-10.2 and 10.2+ versions.
 # We need to normalize the dumps to avoid false positives while comparing them.
-# For now, we'll re-format to 10.2 style.
+# For now, we'll re-format to 10.1 style.
 # Optionally, we can also remove AUTOINCREMENT=N clauses.
 # The old file is stored in <filename_orig>.
 sub normalizeDump {
   my ($self, $file, $remove_autoincs)= @_;
   if ($remove_autoincs) {
+    say("normalizeDump removes AUTO_INCREMENT clauses from table definitions");
     move($file, $file.'.tmp1');
     open(DUMP1,$file.'.tmp1');
     open(DUMP2,">$file");
@@ -833,29 +840,25 @@ sub normalizeDump {
     close(DUMP1);
     close(DUMP2);
   }
-  if ($self->versionNumeric() le '100201') {
+  if ($self->versionNumeric() ge '100201') {
+    say("normalizeDump patches DEFAULT clauses for version ".$self->versionNumeric);
     move($file, $file.'.tmp2');
     open(DUMP1,$file.'.tmp2');
     open(DUMP2,">$file");
     while (<DUMP1>) {
-        # `k` int(10) unsigned NOT NULL DEFAULT '0' => `k` int(10) unsigned NOT NULL DEFAULT 0
-        s/(DEFAULT\s+)\'(\d+)\'(,?)$/${1}${2}${3}/;
-
-        # `col_blob` blob NOT NULL => `col_blob` blob NOT NULL DEFAULT '',
-        # This part is conditional, see MDEV-12006. For upgrade from 10.1, a text column does not get a default value
-        if ($self->versionNumeric() lt '100101') {
-            s/(\s+(?:blob|text|mediumblob|mediumtext|longblob|longtext|tinyblob|tinytext)(\s+)NOT\sNULL)(,)?$/${1}${2}DEFAULT${2}\'\'${3}/;
-        }
-        # `col_blob` text => `col_blob` text DEFAULT NULL,
-        s/(\s)(blob|text|mediumblob|mediumtext|longblob|longtext|tinyblob|tinytext)(,)?$/${1}${2}${1}DEFAULT${1}NULL${3}/;
-        print DUMP2 $_;
+      # In 10.2 blobs can have a default clause
+      # `col_blob` blob NOT NULL DEFAULT ... => `col_blob` blob NOT NULL.
+      s/(\s+(?:blob|text|mediumblob|mediumtext|longblob|longtext|tinyblob|tinytext)(?:\s*NOT\sNULL)?)\s*DEFAULT\s*(?:\d+|NULL|\'[^\']*\')\s*(.*)$/${1}${2}/;
+      # `k` int(10) unsigned NOT NULL DEFAULT '0' => `k` int(10) unsigned NOT NULL DEFAULT 0
+      s/(DEFAULT\s+)(\d+)(.*)$/${1}\'${2}\'${3}/;
+      print DUMP2 $_;
     }
     close(DUMP1);
     close(DUMP2);
   }
   if (-e $file.'.tmp1') {
     move($file.'.tmp1',$file.'.orig');
-    unlink($file.'.tmp2') if -e $file.'tmp2';
+#    unlink($file.'.tmp2') if -e $file.'.tmp2';
   } elsif (-e $file.'.tmp2') {
     move($file.'.tmp2',$file.'.orig');
   }
@@ -893,35 +896,37 @@ sub binary {
 sub stopServer {
     my ($self, $shutdown_timeout) = @_;
     $shutdown_timeout = 60 unless defined $shutdown_timeout;
+    my $res;
 
     if ($shutdown_timeout and defined $self->[MYSQLD_DBH]) {
         say("Stopping server on port ".$self->port);
         ## Use dbh routine to ensure reconnect in case connection is
         ## stale (happens i.e. with mdl_stability/valgrind runs)
         my $dbh = $self->dbh();
-        my $res;
         # Need to check if $dbh is defined, in case the server has crashed
         if (defined $dbh) {
             $res = $dbh->func('shutdown','127.0.0.1','root','admin');
             if (!$res) {
                 ## If shutdown fails, we want to know why:
                 say("Shutdown failed due to ".$dbh->err.":".$dbh->errstr);
+                $res= DBSTATUS_FAILURE;
             }
         }
         if (!$self->waitForServerToStop($shutdown_timeout)) {
             # Terminate process
             say("Server would not shut down properly. Terminate it");
-            $self->term;
+            $res= $self->term;
         } else {
             # clean up when server is not alive.
             unlink $self->socketfile if -e $self->socketfile;
             unlink $self->pidfile if -e $self->pidfile;
+            $res= DBSTATUS_OK;
         }
     } else {
         say("Shutdown timeout or dbh is not defined, killing the server");
-        $self->kill;
+        $res= $self->kill;
     }
-    return ($self->running ? DBSTATUS_FAILURE : DBSTATUS_OK);
+    return $res;
 }
 
 sub checkDatabaseIntegrity {
