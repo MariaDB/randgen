@@ -273,6 +273,14 @@ sub run {
   
   if ($status != STATUS_OK) {
     sayError("Test flow on the new server failed");
+    #####
+    $self->printStep("Checking the server error log for known errors");
+
+    if ($self->checkErrorLog($new_server) == STATUS_CUSTOM_OUTCOME) {
+      $status= STATUS_CUSTOM_OUTCOME;
+    }
+
+    $self->setStatus($status);
     return $self->finalize($status,[$new_server])
   }
 

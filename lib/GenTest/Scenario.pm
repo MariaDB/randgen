@@ -260,6 +260,13 @@ sub checkErrorLog {
         $status= STATUS_CUSTOM_OUTCOME if $status < STATUS_CUSTOM_OUTCOME;
         last;
     }
+# Assertion `id == 0 || id > trx_id' failed
+    elsif (m{Assertion \`id == 0 \|\| id \> trx_id\' failed}so)
+    {
+        $self->addDetectedBug(13820);
+        $status= STATUS_CUSTOM_OUTCOME if $status < STATUS_CUSTOM_OUTCOME;
+        last;
+    }
     else {
         $status= STATUS_UPGRADE_FAILURE if $status < STATUS_UPGRADE_FAILURE;
     }
