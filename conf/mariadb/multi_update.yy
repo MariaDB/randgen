@@ -397,9 +397,8 @@ correlated_subquery_where_item:
 	existing_subquery_table_item . _field_int arithmetic_operator existing_table_item . _field_int |
 	existing_subquery_table_item . _field_char arithmetic_operator existing_table_item . _field_char ;
 	existing_table_item . _field_int IN ( child_subquery ) |
-# TODO: commented due to MDEV-7691 family, uncomment when done
-#	existing_table_item . _field_int IN ( simple_child_subquery ) |
-#	existing_subquery_table_item . _field_int IN ( correlated_with_top_child_subquery ) ;
+	existing_table_item . _field_int IN ( simple_child_subquery ) |
+	existing_subquery_table_item . _field_int IN ( correlated_with_top_child_subquery ) ;
 
 correlated_with_top_child_subquery:
 	{ $child_subquery_idx += 1 ; $c_sq_ifields = 0; $c_sq_cfields = 0; $child_subquery_tables=0 ; ""} int_correlated_with_top_child_subquery ;
@@ -713,9 +712,8 @@ having_item:
 	existing_int_select_item arithmetic_operator value |
 	existing_int_select_item arithmetic_operator value |
 	existing_int_select_item arithmetic_operator value |
-	existing_int_select_item arithmetic_operator value ;
-# TODO: Commented due to MDEV-7691, uncomment when fixed
-#	{ $subquery_idx += 1 ; $subquery_tables=0 ; $sq_ifields = 0; $sq_cfields = 0; ""} having_subquery;
+	existing_int_select_item arithmetic_operator value |
+	{ $subquery_idx += 1 ; $subquery_tables=0 ; $sq_ifields = 0; $sq_cfields = 0; ""} having_subquery;
 
 having_subquery:
 	existing_int_select_item arithmetic_operator int_single_value_subquery  |
