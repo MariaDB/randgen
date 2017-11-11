@@ -72,7 +72,8 @@ my ($gendata, $skip_gendata, @basedirs, @mysqld_options, @vardirs, $rpl_mode,
     $start_dirty, $filter, $build_thread, $testname, $report_xml_tt,
     $report_xml_tt_type, $report_xml_tt_dest, $notnull, $sqltrace,
     $lcov, $transformers, $logfile, $logconf, $report_tt_logdir,$querytimeout,
-    $short_column_names, $strict_fields, $freeze_time, $wait_debugger, $appverif);
+    $short_column_names, $strict_fields, $freeze_time, $wait_debugger, $appverif,
+    $store_binaries);
 
 my $threads = my $default_threads = 10;
 my $queries = my $default_queries = 1000;
@@ -137,7 +138,8 @@ my $opt_result = GetOptions(
     'report-tt-logdir=s' => \$report_tt_logdir,
     'querytimeout=i' => \$querytimeout,
     'wait-for-debugger' => \$wait_debugger,
-    'appverif:i' => \$appverif
+    'appverif:i' => \$appverif,
+    'store-binaries|store_binaries' => \$store_binaries
 );
 
 if ( osWindows() && !$debug )
@@ -573,6 +575,23 @@ my $gentest_result = system("perl ".($Carp::Verbose?"-MCarp=verbose ":"").
                             "$ENV{RQG_HOME}gentest.pl ".join(' ', @gentest_options)) >> 8;
 say("gentest.pl exited with exit status ".status2text($gentest_result). " ($gentest_result)");
 
+if ($gentest_result != STATUS_OK and $store_binaries) {
+  foreach my $s (1..2)
+  {
+    last if not defined $vardirs[$s-1] or not defined $basedirs[$s-1];
+    if (osWindows()) {
+      my $file= _find( [$basedirs[$s-1]], ["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"],'mysqld.exe' );
+      system("xcopy \"$file\" \"".$vardirs[$s-1]."\"") if -e $file;
+      $file= _find( [$basedirs[$s-1]], ["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"],'mysqld.pdb' );
+      system("xcopy \"$file\" \"".$vardirs[$s-1]."\"") if -e $file;
+    }
+    else {
+      my $file= _find( [$basedirs[$s-1]], ["sql","libexec","bin","sbin"],'mysqld' );
+      system("cp $file ".$vardirs[$s-1]) if -e $file;
+    }
+  }
+}
+
 if ($lcov) {
 	say("Trying to generate a genhtml lcov report in ".tmpdir()."/rqg-lcov-".abs($$)." ...");
 	system("lcov --quiet --directory $basedirs[0] --capture --output-file ".tmpdir()."/lcov-rqg.info");
@@ -685,4 +704,23 @@ sub exit_test {
 
         # exit
 	safe_exit($status);
+}
+
+sub _find {
+  my($bases, $subdir, @names) = @_;
+
+  foreach my $base (@$bases) {
+    foreach my $s (@$subdir) {
+      foreach my $n (@names) {
+        my $path  = $base."/".$s."/".$n;
+        return $path if -f $path;
+      }
+    }
+  }
+  my $paths = "";
+  foreach my $base (@$bases) {
+    $paths .= join(",",map {"'".$base."/".$_."'"} @$subdir).",";
+  }
+  my $names = join(" or ", @names );
+  croak "Cannot find '$names' in $paths";
 }

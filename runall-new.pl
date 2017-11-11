@@ -83,7 +83,7 @@ my ($gendata, @basedirs, @mysqld_options, @vardirs, $rpl_mode,
     $notnull, $logfile, $logconf, $report_tt_logdir, $querytimeout, $no_mask,
     $short_column_names, $strict_fields, $freeze_time, $wait_debugger, @debug_server,
     $skip_gendata, $skip_shutdown, $galera, $use_gtid, $genconfig, $annotate_rules,
-    $restart_timeout, $gendata_advanced, $scenario);
+    $restart_timeout, $gendata_advanced, $scenario, $store_binaries);
 
 my $gendata=''; ## default simple gendata
 
@@ -178,7 +178,8 @@ my $opt_result = GetOptions(
     'use-gtid=s' => \$use_gtid,
     'use_gtid=s' => \$use_gtid,
     'annotate_rules|annotate-rules' => \$annotate_rules,
-    'scenario:s' => \$scenario
+    'scenario:s' => \$scenario,
+    'store-binaries|store_binaries' => \$store_binaries
 );
 
 if (defined $scenario) {
@@ -709,6 +710,22 @@ if (($gentest_result == STATUS_OK) && ($rpl_mode || (defined $basedirs[2]) || (d
     exit_test($diff_result);
 } else {
     # If test was not sucessfull or not rpl/multiple servers.
+    
+    if ($gentest_result != STATUS_OK and $store_binaries) {
+      foreach my $i ($#server) {
+        my $file= $server[$i]->binary;
+        my $to= $vardirs[$i];
+        say("HERE: trying to copy $file to $to");
+        if (osWindows()) {
+          system("xcopy \"$file\" \"".$to."\"") if -e $file and $to;
+          $file =~ s/\.exe/\.pdb/;
+          system("xcopy \"$file\" \"".$to."\"") if -e $file and $to;
+        }
+        else {
+          system("cp $file ".$to) if -e $file and $to;
+        }
+      }
+    }
     exit_test($gentest_result);
 }
 
