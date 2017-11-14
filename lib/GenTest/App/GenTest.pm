@@ -82,6 +82,37 @@ sub new {
     my $self = $class->SUPER::new({
         'config' => GT_CONFIG},@_);
     
+    if ($self->config->reporters and not ref $self->config->reporters eq 'ARRAY') {
+        $self->config->reporters([ split /,/, $self->config->reporters ]);
+    }
+    if ($self->config->validators and not ref $self->config->validators eq 'ARRAY') {
+        $self->config->validators([ split /,/, $self->config->validators ]);
+    }
+    if ($self->config->transformers and not ref $self->config->transformers eq 'ARRAY') {
+        $self->config->transformers([ split /,/, $self->config->transformers ]);
+    }
+    if ($self->config->redefine and not ref $self->config->redefine eq 'ARRAY') {
+        $self->config->redefine([ split /,/, $self->config->redefine ]);
+    }
+    if ($self->config->engine and not ref $self->config->engine eq 'ARRAY') {
+        $self->config->engine([ split /,/, $self->config->engine ]);
+    }
+    if ($self->config->dsn and not ref $self->config->dsn eq 'ARRAY') {
+        $self->config->dsn([ split /,/, $self->config->dsn ]);
+    }
+    if ($self->config->vcols and not ref $self->config->vcols eq 'ARRAY') {
+        $self->config->vcols([ split /,/, $self->config->vcols ]);
+    }
+    if ($self->config->views and not ref $self->config->views eq 'ARRAY') {
+        $self->config->views([ split /,/, $self->config->views ]);
+    }
+    if ($self->config->debug_server and not ref $self->config->debug_server eq 'ARRAY') {
+        $self->config->debug_server([ split /,/, $self->config->debug_server ]);
+    }
+    if ($self->config->servers and not ref $self->config->servers eq 'ARRAY') {
+        $self->config->servers([ split /,/, $self->config->servers ]);
+    }
+
     croak ("Need config") if not defined $self->config;
 
     return $self;
@@ -561,6 +592,11 @@ sub initGenerator {
     say("Loading Generator $generator_name.") if rqg_debug();
     eval("use $generator_name");
     croak($@) if $@;
+
+    if ($self->config->redefine and not ref $self->config->redefine eq 'ARRAY') {
+        my $redefines= [ split /,/, $self->config->redefine ];
+        $self->config->redefine($redefines);
+    }
 
     if ($generator_name eq 'GenTest::Generator::FromGrammar') {
         if (not defined $self->config->grammar) {

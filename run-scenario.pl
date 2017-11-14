@@ -144,8 +144,7 @@ my $cp= my $class= "GenTest::Scenario::$scenario";
 $cp =~ s/::/\//g;
 require "$cp.pm";
 my $sc= $class->new(
-    properties => \%sc_opts,
-    type => 'normal'
+    properties => \%sc_opts
 );
 
 my $status= $sc->run();

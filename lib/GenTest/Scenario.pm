@@ -38,13 +38,15 @@ sub new {
   my $class = shift;
 
   my $scenario = $class->SUPER::new({
-      properties => SCENARIO_PROPERTIES,
-      type => SCENARIO_TYPE
+      properties => SCENARIO_PROPERTIES
   }, @_);
 
   $scenario->[SCENARIO_DETECTED_BUGS] = {};
   $scenario->[SCENARIO_GLOBAL_RESULT] = STATUS_OK;
 
+  if (defined $scenario->getProperty('scenario-type')) {
+    $scenario->setTestType($scenario->getProperty('scenario-type'));
+  }
   if (!defined $scenario->getProperty('database')) {
     $scenario->setProperty('database','test');
   }
@@ -149,13 +151,21 @@ sub prepareGentest {
   foreach my $o (keys %$opts) {
     $config->property($o, $opts->{$o});
   }
-  
-  if (!defined $config->property('database')) {
-    $config->property('database', $self->getProperty('database') || 'test');
+
+  foreach my $p (keys %{$self->getProperties}) {
+    if (!defined $config->property($p)) {
+      $config->property($p, $self->getProperty($p.$gentest_num) || $self->getProperty($p));
+    }
   }
-  if (!defined $config->property('duration')) {
-    $config->property('duration', $self->getProperty('duration') || 300);
-  }
+
+  # Set hard defaults for missing values
+  $config->property('database', 'test') if !defined $config->property('database');
+  $config->property('duration', 300) if !defined $config->property('duration');
+  $config->property('generator', 'FromGrammar') if !defined $config->property('generator');
+  $config->property('queries', '1000M') if !defined $config->property('queries');
+  $config->property('reporters', ['Backtrace', 'Deadlock']) if !defined $config->property('reporters');
+  $config->property('user', 'root') if !defined $config->property('user');
+
   # gendata and gendata-advanced will only be used if they specified
   # explicitly for this run
 #  if (!defined $config->property('gendata')) {
@@ -164,24 +174,6 @@ sub prepareGentest {
 #  if (!defined $config->property('gendata-advanced')) {
 #    $config->property('gendata-advanced', $self->getProperty('gendata-advanced'.$gentest_num));
 #  }
-  if (!defined $config->property('generator')) {
-    $config->property('generator', $self->getProperty('generator') || 'FromGrammar');
-  }
-  if (!defined $config->property('grammar')) {
-    $config->property('grammar', $self->getProperty('grammar'.$gentest_num) || $self->getProperty('grammar'));
-  }
-  if (!defined $config->property('queries')) {
-    $config->property('queries', $self->getProperty('queries') || '100M');
-  }
-  if (!defined $config->property('reporters')) {
-    $config->property('reporters', $self->getProperty('reporters') || ['Backtrace', 'Deadlock']);
-  }
-  if (!defined $config->property('threads')) {
-    $config->property('threads', $self->getProperty('threads'.$gentest_num) || $self->getProperty('threads'));
-  }
-  if (!defined $config->property('user')) {
-    $config->property('user', $self->getProperty('user') || 'root');
-  }
 
   return GenTest::App::GenTest->new(config => $config);
 }
@@ -305,6 +297,9 @@ sub finalize {
 
 sub printTitle {
   my ($self, $title)= @_;
+  if ($title =~ /^(\w)(.*)/) {
+    $title= uc($1).$2;
+  }
   $title= '=== '.$title.' scenario ===';
   my $filler='';
   foreach (1..length($title)) {
@@ -318,6 +313,9 @@ sub printTitle {
 
 sub printStep {
   my ($self, $step)= @_;
+  if ($step =~ /^(\w)(.*)/) {
+    $step= uc($1).$2;
+  }
   $step= "-- $step --";
   my $filler='';
   foreach (1..length($step)) {
