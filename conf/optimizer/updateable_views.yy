@@ -127,8 +127,9 @@ value:
 cmp_op:
 	= | > | < | >= | <= | <> | != | <=> ;
 
+# Disabled CHECK OPTION for 5.5 due to MDEV-10558
 check_option:
-	| | | | WITH cascaded_local CHECK OPTION ;
+	| | | | /*!100012 WITH cascaded_local CHECK OPTION */;
 
 cascaded_local:
 	CASCADED | LOCAL ;
