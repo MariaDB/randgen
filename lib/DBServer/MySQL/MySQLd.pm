@@ -1041,6 +1041,9 @@ sub checkErrorLogForErrors {
     # Ignore certain errors
     next if
          $_ =~ /innodb_table_stats/so
+      or $_ =~ /InnoDB: Cannot save table statistics for table/so
+      or $_ =~ /InnoDB: Deleting persistent statistics for table/so
+      or $_ =~ /InnoDB: Unable to rename statistics from/so
       or $_ =~ /ib_buffer_pool' for reading: No such file or directory/so
     ;
 
