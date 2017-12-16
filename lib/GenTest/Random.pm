@@ -212,11 +212,17 @@ my %name2range = (
         'double_nano'   => [-0.00000000000000000000000000000000000000000000000000000000000000000001, 0.00000000000000000000000000000000000000000000000000000000000000000001],
 
         'tinyint_unsigned'      => [0, 255],
+        'tinyint_positive'      => [1, 255],
         'smallint_unsigned'     => [0, 65535],
+        'smallint_positive'     => [1, 65535],
         'mediumint_unsigned'    => [0, 16777215],
+        'mediumint_positive'    => [1, 16777215],
         'int_unsigned'          => [0, 4294967295],
+        'int_positive'          => [1, 4294967295],
         'integer_unsigned'      => [0, 4294967295],
-        'bigint_unsigned'       => [0, 18446744073709551615]
+        'integer_positive'      => [1, 4294967295],
+        'bigint_unsigned'       => [0, 18446744073709551615],
+        'bigint_positive'       => [1, 18446744073709551615]
 );
 
 my $prng_class;
@@ -318,6 +324,10 @@ sub float {
 
 sub digit {
 	return $_[0]->uint16(0, 9);
+}
+
+sub positive_digit {
+	return $_[0]->uint16(1, 9);
 }
 
 sub letter {
