@@ -579,6 +579,7 @@ my %err2type = (
     ER_TABLE_NOT_LOCKED_FOR_WRITE()                     => STATUS_SEMANTIC_ERROR,
     ER_TARGET_NOT_EXPLAINABLE()                         => STATUS_SEMANTIC_ERROR,
     ER_TOO_BIG_ROWSIZE()                                => STATUS_SEMANTIC_ERROR,
+    ER_TOO_BIG_SCALE()                                  => STATUS_SEMANTIC_ERROR,
     ER_TOO_BIG_SELECT()                                 => STATUS_SEMANTIC_ERROR,
     ER_TOO_LONG_KEY()                                   => STATUS_SEMANTIC_ERROR,
     ER_TOO_MANY_ROWS()                                  => STATUS_SEMANTIC_ERROR,

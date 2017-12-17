@@ -247,7 +247,7 @@ alter_operation:
 	REPAIR PARTITION partition_name_list                                |
 	REMOVE PARTITIONING                                                 |
 	OPTIMIZE PARTITION partition_name_list                              |
-	REORGANIZE PARTITION partition_name_list                            |
+	REORGANIZE PARTITION partition_name_list INTO partition_by_range_or_list_definition |
 	ENGINE = engine                                                     |
 	ORDER BY _field                                                     |
 	TRUNCATE PARTITION partition_name_list		# can not be used in comparison tests against 5.0
@@ -302,12 +302,17 @@ subpartition:
 	SUBPARTITION BY linear HASH ( _field ) SUBPARTITIONS partition_count ;
 
 partition_by_range:
-	populate_ranges PARTITION BY RANGE ( _field ) subpartition (
+	PARTITION BY RANGE ( _field ) subpartition partition_by_range_definition
+;
+
+partition_by_range_definition:
+  ( populate_ranges
 		PARTITION p0 VALUES LESS THAN ( shift_range ),
 		PARTITION p1 VALUES LESS THAN ( shift_range ),
 		PARTITION p2 VALUES LESS THAN ( shift_range ),
 		PARTITION p3 VALUES LESS THAN MAXVALUE
-	);
+	)
+;
 
 populate_ranges:
 	{ @ranges = ($prng->digit(), $prng->int(10,255), $prng->int(256,65535)) ; return undef } ;
@@ -316,13 +321,23 @@ shift_range:
 	{ shift @ranges };
 
 partition_by_list:
-	populate_digits PARTITION BY LIST ( _field ) subpartition (
+	PARTITION BY LIST ( _field ) subpartition partition_by_list_definition
+;
+
+partition_by_list_definition:  
+  ( populate_digits
 		PARTITION p0 VALUES IN ( shift_digit, NULL ),
 		PARTITION p1 VALUES IN ( shift_digit, shift_digit, shift_digit ),
 		PARTITION p2 VALUES IN ( shift_digit, shift_digit, shift_digit ),
 		PARTITION p3 VALUES IN ( shift_digit, shift_digit, shift_digit )
 		default_list_partition
-	);
+	)
+;
+
+partition_by_range_or_list_definition:
+    partition_by_range_definition
+  | partition_by_list_definition
+;
 
 default_list_partition:
 	| { '/*!100202 , PARTITION pdef DEFAULT */' }

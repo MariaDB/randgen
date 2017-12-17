@@ -34,13 +34,15 @@ sub transform {
 	my %virtual_columns;
 
 	my $dbh = $executor->dbh();
-	my ($table_name) = $query =~ m{FROM (.*?)[ ^]}sio;
 
 	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
 	return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
 		|| $query !~ m{\s*SELECT}sio;
+    
+	my ($table_name) = $query =~ m{FROM (`.*?`|\w+)[ ^]}sio;
+  return STATUS_WONT_HANDLE unless $table_name;
 
-	my ($foo, $table_create) = $dbh->selectrow_array("SHOW CREATE TABLE $table_name");
+	my (undef, $table_create) = $dbh->selectrow_array("SHOW CREATE TABLE $table_name");
 
 	foreach my $create_row (split("\n", $table_create)) {
 		next if $create_row !~ m{ VIRTUAL}sio;

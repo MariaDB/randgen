@@ -38,14 +38,16 @@ sub transform {
 
 	# We skip: - GROUP BY any other aggregate functions as those are difficult to validate with a simple check like TRANSFORM_OUTCOME_COUNT
 	#          - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $orig_query =~ m{GROUP\s+BY|LIMIT|HAVING}sio
+  #          - UNION since replacing all select lists is tricky with the current logic
+	return STATUS_WONT_HANDLE if $orig_query =~ m{GROUP\s+BY|LIMIT|HAVING|UNION}sio
 		|| $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio;
 
-	my ($select_list) = $orig_query =~ m{SELECT (.*?) FROM}sio;
+	my ($select_list) = $orig_query =~ m{SELECT\s+(.*?)\s+FROM}sio;
+  return STATUS_WONT_HANDLE if not $select_list;
 
 	if ($select_list =~ m{AVG|BIT|CONCAT|DISTINCT|GROUP|MAX|MIN|STD|SUM|VAR|STRAIGHT_JOIN|SQL_SMALL_RESULT}sio) {
 		return STATUS_WONT_HANDLE;
-	} elsif ($select_list =~ m{SELECT\s?\*}sio) {
+	} elsif ($select_list =~ m{\*}sio) {
 		# "SELECT *" was matched. Cannot have both * and COUNT(...) in SELECT list.
 		$orig_query =~ s{SELECT (.*?) FROM}{SELECT COUNT(*) FROM}sio;
 	} elsif ($select_list !~ m{COUNT}sio) {

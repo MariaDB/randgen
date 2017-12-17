@@ -16,7 +16,7 @@ create_and_drop:
    CREATE temporary TABLE { 'tmp'.$tmp_table } AS select ; DROP TABLE IF EXISTS { 'tmp'.$tmp_table } ; 
 
 prepare_execute:
-	SET @stmt = " select "; SET @stmt_create = CONCAT("CREATE TEMPORARY TABLE `ps` AS ", @stmt ); PREPARE stmt FROM @stmt_create ; EXECUTE stmt ; SET @stmt_ins = CONCAT("INSERT INTO `ps` ", @stmt) ; PREPARE stmt FROM @stmt_ins; EXECUTE stmt; EXECUTE stmt; DEALLOCATE stmt; DROP TEMPORARY TABLE `ps`;
+	SET @stmt = " select "; SET @stmt_create = CONCAT("CREATE TEMPORARY TABLE `ps` AS ", @stmt ); PREPARE stmt FROM @stmt_create ; EXECUTE stmt ; SET @stmt_ins = CONCAT("INSERT INTO `ps` ", @stmt) ; PREPARE stmt FROM @stmt_ins; EXECUTE stmt; EXECUTE stmt; DEALLOCATE PREPARE stmt; DROP TEMPORARY TABLE `ps`;
 
 temporary:
    | TEMPORARY ;
@@ -88,7 +88,7 @@ limit:
    | | | LIMIT _tinyint_unsigned ;
 
 func:
-  math_func |
+   math_func | 
 	arithm_oper | 
 	comparison_oper | 
 	logical_or_bitwise_oper | 
@@ -105,22 +105,20 @@ func:
 
 misc_func:
 	DEFAULT( _field ) |
-	GET_LOCK( arg_char , zero_or_almost ) |
+	GET_LOCK( arg , zero_or_almost ) |
 # TODO: provide reasonable IP
 	INET_ATON( arg ) |
 	INET_NTOA( arg ) |
-	IS_FREE_LOCK( arg_char ) |
-	IS_USED_LOCK( arg_char ) |
+	IS_FREE_LOCK( arg ) |
+	IS_USED_LOCK( arg ) |
 	MASTER_POS_WAIT( 'log', _int_unsigned, zero_or_almost ) |
 	NAME_CONST( const_char_value, value ) |
 	RAND() | RAND( arg ) |
-	RELEASE_LOCK( arg_char ) |
+	RELEASE_LOCK( arg ) |
 	SLEEP( zero_or_almost ) |
 	UUID_SHORT() |
 	UUID() |
-# Changed due to MDEV-14895
-#	VALUES( _field )
-	VALUE( _field )
+	VALUES( _field )
 ;	
 
 zero_or_almost:
@@ -448,10 +446,6 @@ truncate_second_arg:
 
 arg:
    _field | value | ( func ) ;
-
-arg_char:
-  _field_char | _char(1) | _english | _string(16) | NULL
-;
 
 const_char_value:
   _char(1) | _english | _string(16) | ''

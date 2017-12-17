@@ -62,10 +62,30 @@ my %transform_outcomes = (
 # Subset of semantic errors that we may want to allow during transforms.
 my %mysql_grouping_errors = (
     1004 => 'ER_NON_GROUPING_FIELD_USED',
+    1028 => 'ER_FILSORT_ABORT',
+    # Transformation for CREATE statement can cause ER_TABLE_EXISTS_ERROR
+    1050 => 'ER_TABLE_EXISTS_ERROR',
     1055 => 'ER_WRONG_FIELD_WITH_GROUP',
     1056 => 'ER_WRONG_GROUP_FIELD',
+    1060 => 'DUPLICATE_COLUMN_NAME',
+    # Union, intersect, except can complain about missing locks even if
+    # the origina query went all right
+    1100 => 'ER_TABLE_NOT_LOCKED',
+    1104 => 'ER_TOO_BIG_SELECT',
+    1111 => 'ER_INVALID_GROUP_FUNC_USE',
     1140 => 'ER_MIX_OF_GROUP_FUNC_AND_FIELDS',
+    1192 => 'ER_LOCK_OR_ACTIVE_TRANSACTION',
+    1247 => 'ER_ILLEGAL_REFERENCE',
+    1304 => 'ER_SP_ALREADY_EXISTS',
     1317 => 'ER_QUERY_INTERRUPTED',
+    1359 => 'ER_TRG_ALREADY_EXISTS',
+    # Sometimes the original query doesn't violate XA state (e.g. "SELECT 1" for IDLE),
+    # but the transformed one does
+    1399 => 'ER_XAER_RMFAIL',
+    1415 => 'ER_SP_NO_RETSET',
+    1560 => 'ER_STORED_FUNCTION_PREVENTS_SWITCH_BINLOG_FORMAT',
+    1615 => 'ER_NEED_REPREPARE',
+    2006 => 'CR_SERVER_GONE_ERROR',
     2013 => 'CR_SERVER_LOST',
     2006 => 'CR_SERVER_GONE_ERROR',
     1028 => 'ER_FILSORT_ABORT',
@@ -73,7 +93,10 @@ my %mysql_grouping_errors = (
     1615 => 'ER_NEED_REPREPARE',
     1060 => 'DUPLICATE_COLUMN_NAME',
     1104 => 'ER_TOO_BIG_SELECT',
-    1247 => 'ER_ILLEGAL_REFERENCE'
+    1247 => 'ER_ILLEGAL_REFERENCE',
+    # Sequence numbers are used on every call, they can run out during
+    # transformations even if the original query went all right
+    4084 => 'ER_SEQUENCE_RUN_OUT'
 );
 
 # List of encountered errors that we want to suppress later in the test run.

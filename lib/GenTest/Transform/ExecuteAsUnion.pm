@@ -31,20 +31,21 @@ sub transform {
 	my ($class, $orig_query, $executor) = @_;
 	
 	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
+	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO)}sio
 		|| $orig_query !~ m{^\s*SELECT}sio;
 
 	# We remove LIMIT/OFFSET if present in the (outer) query, because we are 
-	# using LIMIT 0 in some of the transformed queries. There can be comments
-	# like "/* 1 */" after the original LIMIT, hence the regex part 
-	# (\/\*\s*[a-zA-Z0-9 ]+\s*\*\/)*.
-	my $orig_query_no_limit = $orig_query;
-	$orig_query_no_limit =~ s{LIMIT\s+\d+\s+OFFSET\s+\d+\s*(\/\*\s*[\w ]+\s*\*\/)*\s*$}{}sio;
-	$orig_query_no_limit =~ s{LIMIT\s+\d+\s*(\/\*\s*[\w ]+\s*\*\/)*\s*$}{}sio;
+	# using LIMIT 0 in some of the transformed queries.
+	my $orig_query_zero_limit = $orig_query;
+	$orig_query_zero_limit =~ s{LIMIT\s+\d+(?:\s+OFFSET\s+\d+)?}{LIMIT 0}sio;
+	$orig_query_zero_limit =~ s{(FOR\s+UPDATE|LOCK\s+IN\s+(?:SHARE|EXCLUSIVE)\sMODE)\s+LIMIT 0}{LIMIT 0 $1}sio;
+  if (not $orig_query_zero_limit =~ /LIMIT 0/) {
+    $orig_query_zero_limit.= ' LIMIT 0';
+  }
 
 	return [
-		"( $orig_query ) UNION ALL ( $orig_query_no_limit LIMIT 0 ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-		"( $orig_query_no_limit LIMIT 0 ) UNION ALL ( $orig_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+		"( $orig_query ) UNION ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+		"( $orig_query_zero_limit ) UNION ALL ( $orig_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
 		"( $orig_query ) UNION DISTINCT ( $orig_query ) /* TRANSFORM_OUTCOME_DISTINCT */",
 		"( $orig_query ) UNION ALL ( $orig_query ) /* TRANSFORM_OUTCOME_SUPERSET */"
 	];

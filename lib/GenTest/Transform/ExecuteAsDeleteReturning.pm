@@ -32,13 +32,12 @@ sub transform {
 	my ($class, $orig_query, $executor, $original_result, $skip_result_validations) = @_;
 
 	# We skip [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-		|| $orig_query =~ m{RETURNING}sio
+  # SELECT HISTORY .. (versioning) does not work with RETURNING
+	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|RETURNING|HISTORY)}sio
 		|| $orig_query !~ m{^\s*(SELECT|DELETE)}sio
 		|| $orig_query =~ m{^\s*DELETE}sio && ! $skip_result_validations 
       || $orig_query =~ m{LIMIT\s+\d+\s*,\s*\d+}sio
-		|| $orig_query =~ m{(AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE)\s*\(}sio
-		|| $orig_query =~ m{(SYSDATE)\s*\(}sio
+		|| $orig_query =~ m{(AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE|SYSDATE)\s*\(}sio
 	;
 
 	# Two variants of transformations: for SELECT, we convert it into DELETE .. RETURNING
@@ -57,13 +56,16 @@ sub transform {
 		return STATUS_WONT_HANDLE if $col_list =~ m{AVG|COUNT|MAX|MIN|GROUP_CONCAT|BIT_AND|BIT_OR|BIT_XOR|STD|SUM|VAR_POP|VAR_SAMP|VARIANCE}sgio;
 		my $table_name = 'transforms.delete_returning_'.abs($$);
 
+    # If a column has non-"word" symbols, it should already be quoted anyway
+    my $cols= join ',', map { '`'.$_.'`' unless $_ =~ /\W/ } ( split /,/, $col_list );
+
 		return [
 			#Include database transforms creation DDL so that it appears in the simplified testcase.
 			"CREATE DATABASE IF NOT EXISTS transforms",
 			"DROP TABLE IF EXISTS $table_name",
 			"CREATE TABLE $table_name $orig_query",
 
-			"DELETE FROM $table_name RETURNING $col_list /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"
+			"DELETE FROM $table_name RETURNING $cols /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"
 		];
 	} 
 	elsif ($orig_query =~ m{^\s*DELETE}sio )

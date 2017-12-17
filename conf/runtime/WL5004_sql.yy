@@ -1328,7 +1328,8 @@ select:
 
 select_normal:
 	# select = Just a query = A statement starting with "SELECT".
-	select_part1 addition into for_update_lock_in_share_mode ;
+	select_part1 addition_no_procedure into for_update_lock_in_share_mode |
+	select_part1 addition for_update_lock_in_share_mode ;
 
 select_with_sleep:
 	# Run a SELECT which holds locks (if there are any) longer.
@@ -1365,7 +1366,7 @@ addition:
 	where procedure_analyze       |
 	subquery procedure_analyze    |
 	join where procedure_analyze  |
-	procedure_analyze union where ;
+	union where ;
 
 addition_no_procedure:
 	# Involve one (simple where condition) or two tables (subquery | join | union)
@@ -1477,7 +1478,7 @@ dump_load_data_sequence:
 	# We generate an outfile so that we have a chance to find an infile.
 	# Go with the next command as soon as "LOCAL" is supported. (not supported in 5.4)
 	# generate_outfile ; LOAD DATA low_priority_concurrent local_or_empty INFILE tmpnam replace_ignore INTO TABLE table_item ;
-	generate_outfile ; LOAD DATA low_priority_concurrent INFILE tmpnam replace_ignore INTO TABLE table_item ;
+	generate_outfile ; LOAD DATA low_priority_concurrent INFILE _tmpnam replace_ignore INTO TABLE table_item ;
 generate_outfile:
 	SELECT * FROM template_table_item INTO OUTFILE _tmpnam ;
 low_priority_concurrent:

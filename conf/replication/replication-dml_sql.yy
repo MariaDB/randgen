@@ -85,8 +85,6 @@
 #-----------------------------------
 # http://dev.mysql.com/doc/refman/5.4/en/replication-features-flush.html
 #-----------------------------------
-# USE LIMIT WITH ORDER BY    safety_check needs to be switched off otherwise we get a false alarm
-#-----------------------------------
 # http://dev.mysql.com/doc/refman/5.4/en/replication-features-slaveerrors.html
 # FOREIGN KEY, master InnoDB and slave MyISAM
 #-----------------------------------
@@ -201,12 +199,6 @@
 #           after transactional reads or writes inside a transaction.
 #
 
-safety_check:
-	# For debugging the grammar use
-	{ return '/*' . $pick_mode . '*/' } /* QProp.QUERY_IS_REPLICATION_SAFE */ ;
-	# For faster execution set this grammar element to "empty".
-	# ;
-
 query:
 	binlog_event ;
 
@@ -236,22 +228,22 @@ binlog_event:
 	# This fools the RQG deadlock detection shake_clock        ;
 
 set_iso_level:
-	safety_check SET global_or_session TRANSACTION ISOLATION LEVEL iso_level ;
+	SET global_or_session TRANSACTION ISOLATION LEVEL iso_level ;
 iso_level:
-	{ if ( $format == 'STATEMENT' ) { return $prng->arrayElement(['REPEATABLE READ','SERIALIZABLE']) } else { return $prng->arrayElement(['READ UNCOMMITTED','READ COMMITTED','REPEATABLE READ','SERIALIZABLE']) } } ;
+	{ if ( $format and $format eq 'STATEMENT' ) { return $prng->arrayElement(['REPEATABLE READ','SERIALIZABLE']) } else { return $prng->arrayElement(['READ UNCOMMITTED','READ COMMITTED','REPEATABLE READ','SERIALIZABLE']) } } ;
 
 global_or_session:
 	SESSION | GLOBAL ;
 
 shake_clock:
-	safety_check SET SESSION TIMESTAMP = UNIX_TIMESTAMP() plus_minus _digit ;
+	SET SESSION TIMESTAMP = UNIX_TIMESTAMP() plus_minus _digit ;
 
 rotate_event:
 	# Cause that the master switches to a new binary log file
 	# RESET MASTER is not useful here because it causes
 	# - master.err: [ERROR] Failed to open log (file '/dev/shm/var_290/log/master-bin.000002', errno 2)
 	# - the RQG test does not terminate in usual way (RQG assumes deadlock)
-	safety_check FLUSH LOGS ;
+	FLUSH LOGS ;
 
 xid_event:
 	# Omit BEGIN because it is only an alias for START TRANSACTION
@@ -261,7 +253,7 @@ xid_event:
 	# In SBR after a "SAVEPOINT A" any statement which modifies a nontransactional table is unsafe.
 	# Therefore we enforce here that future statements within the current transaction use
 	# a transactional table.
-	SAVEPOINT A { $pick_mode=3; return undef} |
+	SAVEPOINT A { $pick_mode=3; '' }      |
 	ROLLBACK TO SAVEPOINT A               |
 	RELEASE SAVEPOINT A                   |
 	implicit_commit                       ;
@@ -283,14 +275,14 @@ implicit_commit:
 	# Grant/Revoke
 	# FLUSH
 	# LOAD DATA INFILE causes an implicit commit only for tables using the NDB storage engine
-	LOCK TABLE _table WRITE ; safety_check UNLOCK TABLES ;
+	LOCK TABLE _table WRITE ; UNLOCK TABLES ;
 
 # Guarantee that the transaction has ended before we switch the binlog format
 dml_event:
-	COMMIT ; safety_check binlog_format_set ; dml_list ; safety_check xid_event ;
+	COMMIT ; binlog_format_set ; dml_list ; xid_event ;
 dml_list:
-	safety_check dml |
-	safety_check dml nontrans_trans ; dml_list ;
+	dml |
+	dml nontrans_trans ; dml_list ;
 
 nontrans_trans:
 	# This is needed for the generation of the following scenario.
@@ -321,7 +313,7 @@ dml:
 	# Enable the next line if
 	#    Bug#49628 corrupt table after legal SQL, LONGTEXT column
 	# is fixed.
-	# generate_outfile ; safety_check LOAD DATA concurrent_or_empty INFILE _tmpnam REPLACE INTO TABLE pick_schema pick_safe_table |
+	# generate_outfile ; LOAD DATA concurrent_or_empty INFILE _tmpnam REPLACE INTO TABLE pick_schema pick_safe_table |
 	# We MUST reduce the huge amount of NULL's
 	UPDATE ignore pick_schema pick_safe_table SET _field[invariant] = col_tinyint WHERE col_tinyint BETWEEN _tinyint[invariant] AND _tinyint[invariant] + _digit AND _field[invariant] IS NULL |
 	UPDATE ignore pick_schema pick_safe_table SET _field[invariant] = col_tinyint WHERE col_tinyint BETWEEN _tinyint[invariant] AND _tinyint[invariant] + _digit AND _field[invariant] IS NULL |
@@ -329,9 +321,9 @@ dml:
 	delete |
 	insert |
 	# LOAD DATA INFILE ... is not supported in prepared statement mode.
-	PREPARE st1 FROM " update " ; safety_check EXECUTE st1 ; DEALLOCATE PREPARE st1 |
-	PREPARE st1 FROM " delete " ; safety_check EXECUTE st1 ; DEALLOCATE PREPARE st1 |
-	PREPARE st1 FROM " insert " ; safety_check EXECUTE st1 ; DEALLOCATE PREPARE st1 |
+	PREPARE st1 FROM " update " ; EXECUTE st1 ; DEALLOCATE PREPARE st1 |
+	PREPARE st1 FROM " delete " ; EXECUTE st1 ; DEALLOCATE PREPARE st1 |
+	PREPARE st1 FROM " insert " ; EXECUTE st1 ; DEALLOCATE PREPARE st1 |
 	# We need the next statement for other statements which should use a user variable.
 	# As long as
 	#    Bug#49562 SBR out of sync when using numeric data types + user variable
@@ -436,7 +428,7 @@ value:
 	value_temporal         |
 	@aux                   |
 	NULL                   |
-	{ if ($format=='STATEMENT') {return '/*'} } value_unsafe_for_sbr { if ($format=='STATEMENT') {return '*/ 17 '} };
+	{ if ($format and $format eq 'STATEMENT') {return '/*'} } value_unsafe_for_sbr { if ($format and $format eq 'STATEMENT') {return '*/ 17 '} };
 
 value_unsafe_for_sbr:
 # Functions which are unsafe when bin log format = 'STATEMENT'

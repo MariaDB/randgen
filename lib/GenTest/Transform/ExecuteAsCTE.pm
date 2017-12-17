@@ -85,7 +85,7 @@ my $parens_template =
 # either a simple fragment without brackets
 # or something in round brackets
 #my $part_select_template = qr{[^()]+|$parens_template}xi;
-my $part_select_template = qr{$parens_template|$comment_template|$single_quotes_template|$double_quotes_template|[^();'"$comment_boundaries]+|;}xi;
+my $part_select_template = qr{$parens_template|$comment_template|$single_quotes_template|$double_quotes_template|[^();'" ]+|;}xi;
 
 sub convert_selects_to_cte 
 {
@@ -96,9 +96,8 @@ sub convert_selects_to_cte
     my $select;
 
     # Parse the query or query fragment
-    while ($tmp_query =~ s/($part_select_template)//xi) 
+    while ($tmp_query =~ s/\s*($part_select_template)//xi)
     { 
-
         # Token here is either a part of the query without brackets, 
         # or something in round brackets
         my $token = $1;
@@ -106,16 +105,18 @@ sub convert_selects_to_cte
         # If the fragment starts with SELECT, we'll start collecting the complete SELECT
         # (we assume there had been no CTEs before transformation, 
         #  or if there had, we ignore them).
-        if ($token =~ /^\s*SELECT/is) {
+        if ($token =~ /^SELECT$/is) {
             $in_select = 1;
             $select = $token;
         }
 
         # SELECT ends either by one of the words below, or by semicolon, 
         # or when the fragment ends
-        elsif ($token =~ /^\s*(?:UNION|INTO\s+OUTFILE|RETURNING|;)/) {
-            $in_select = 0;
-            $new_query .= "WITH cte$cte_count AS ( $select ) SELECT * FROM cte$cte_count " . $token ;
+        elsif ($token =~ /^(?:UNION|INTO|RETURNING|;)/) {
+          if ($in_select) {
+            $new_query .= " WITH cte$cte_count AS ( $select ) SELECT * FROM cte$cte_count " . $token ;
+          }
+          $in_select = 0;
         }
 
         # Fragment in round brackets -- keep the brackets and process the contents
@@ -132,12 +133,12 @@ sub convert_selects_to_cte
 
         # No conversion needed, just add the next part to the select
         elsif ($in_select) {
-            $select .= $token;
+            $select .= " $token";
         }
 
         # No conversion needed, just add the next part to the query
         else {
-            $new_query .= $token;
+            $new_query .= " $token";
         }
     };
 
@@ -152,9 +153,11 @@ sub convert_selects_to_cte
 sub transform {
     my ($class, $orig_query, $executor) = @_;
 
-# TODO: 2nd part of UNION does not work for now
     return STATUS_WONT_HANDLE if $executor->versionNumeric() < 100201;
-    return STATUS_WONT_HANDLE if $orig_query =~ m{UNION}sio;
+# TODO: Don't handle anything that looks like multi-statements for now
+    return STATUS_WONT_HANDLE if $orig_query =~ m{;}sio;
+# TODO: 2nd part of UNION does not work for now
+    return STATUS_WONT_HANDLE if $orig_query =~ m{(?:GRANT\W|\sINTO\sOUTFILE|\sINTO\s\@|\WUNION\W)}sio;
     return STATUS_WONT_HANDLE if $orig_query !~ m{SELECT}sio;
 
     my $transformed_query = convert_selects_to_cte($orig_query, 1);

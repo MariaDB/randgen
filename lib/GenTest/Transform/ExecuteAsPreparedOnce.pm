@@ -32,9 +32,10 @@ sub transform {
 
 	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
 	#          - Certain HANDLER statements: they can not be re-run as prepared because they advance a cursor
-	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-		|| $orig_query !~ m{SELECT|HANDLER}sio
-		|| $orig_query =~ m{PREPARE|OPEN|CLOSE|PREV|NEXT}sio;
+	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|PREPARE\s|OPEN\s|CLOSE\s|PREV\s|NEXT\s|INTO\s|FUNCTION|PROCEDURE)}sio
+		|| $orig_query !~ m{SELECT|HANDLER}sio;
+# TODO: Don't handle anything that looks like multi-statements for now
+    return STATUS_WONT_HANDLE if $orig_query =~ m{;}sio;
 
 	return [
 		"PREPARE prep_stmt_".abs($$)." FROM ".$executor->dbh()->quote($orig_query),
