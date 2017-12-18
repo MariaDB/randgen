@@ -643,19 +643,34 @@ sub isMySQLCompatible {
         next if $self->config->dsn->[$i] eq '';
         $is_mysql_compatible = 0 if ($self->config->dsn->[$i] !~ m{mysql|drizzle}sio);
     }
-
     return $is_mysql_compatible;
 }
 
 sub initReporters {
     my $self = shift;
 
+    # Initialize the array to avoid further checks on its existence
     if (not defined $self->config->reporters or $#{$self->config->reporters} < 0) {
-        $self->config->reporters([]);
+      $self->config->reporters([]);
+    }
+
+    # If reporters were set to None or empty string explicitly,
+    # remove the "None" reporter and don't add any reporters automatically
+    my $no_reporters= 0;
+    foreach my $i (0..$#{$self->config->reporters}) {
+        if ($self->config->reporters->[$i] eq "None"
+            or $self->config->reporters->[$i] eq '')
+        {
+          delete $self->config->reporters->[$i];
+          $no_reporters= 1;
+        }
+    }
+
+    if (not $no_reporters) {
         if ($self->isMySQLCompatible()) {
             $self->config->reporters(['ErrorLog', 'Backtrace']);
             push @{$self->config->reporters}, 'ValgrindXMLErrors' if (defined $self->config->property('valgrind-xml'));
-            push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode ne '';
+            push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode ne '' and $self->config->rpl_mode !~ /nosync/;
             push @{$self->config->reporters}, 'ReplicationSlaveStatus' 
                 if $self->config->rpl_mode ne '' && $self->isMySQLCompatible();
         }

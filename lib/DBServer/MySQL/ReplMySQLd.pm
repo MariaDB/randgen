@@ -49,6 +49,7 @@ use constant REPLMYSQLD_USE_GTID => 14;
 use constant REPLMYSQLD_SLAVE_BASEDIR => 15;
 use constant REPLMYSQLD_CONFIG_CONTENTS => 16;
 use constant REPLMYSQLD_USER => 17;
+use constant REPLMYSQLD_NOSYNC => 18;
 
 sub new {
     my $class = shift;
@@ -105,6 +106,10 @@ sub new {
 
         if (not defined $self->[REPLMYSQLD_MODE]) {
             $self->[REPLMYSQLD_MODE] = 'default';
+        }
+        elsif ($self->[REPLMYSQLD_MODE] =~ /(\w+)-nosync/i) {
+          $self->[REPLMYSQLD_MODE]= $1;
+          $self->[REPLMYSQLD_NOSYNC]= 1;
         }
     
         if (not defined $self->[REPLMYSQLD_MASTER_VARDIR]) {
@@ -232,6 +237,12 @@ sub startServer {
 
 sub waitForSlaveSync {
     my ($self) = @_;
+
+    if ($self->[REPLMYSQLD_NOSYNC]) {
+      say("Replication mode is NOSYNC, slave synchronization will be skipped");
+      return DBSTATUS_OK;
+    }
+
     if (! $self->master->dbh) {
         sayError("Could not connect to master");
         return DBSTATUS_FAILURE;

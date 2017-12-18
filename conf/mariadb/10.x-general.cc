@@ -50,8 +50,8 @@ $combinations = [
 # 1049, 1305, 1539: MySQL:65428 (Unknown database) - fixed in 5.7.0
 # 1505: MySQL:64041 (Partition management on a not partitioned table) 
 	[
-		'--rpl_mode=row --mysqld=--slave-skip-errors=1049,1305,1539,1505',
-		'--rpl_mode=mixed --mysqld=--slave-skip-errors=1049,1305,1539,1505,1317',
+		'--rpl_mode=row-nosync --mysqld=--slave-skip-errors=1049,1305,1539,1505',
+		'--rpl_mode=mixed-nosync --mysqld=--slave-skip-errors=1049,1305,1539,1505,1317',
 	],
 ];
 

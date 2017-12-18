@@ -671,7 +671,8 @@ say("GenTest exited with exit status ".status2text($gentest_result)." ($gentest_
 # otherwise if the test is replication/with two servers compare the 
 # server dumps for any differences else if there are no failures exit with success.
 
-if (($gentest_result == STATUS_OK) && ($rpl_mode || (defined $basedirs[2]) || (defined $basedirs[3]) || $galera)) {
+if (($gentest_result == STATUS_OK) && ( ($rpl_mode && $rpl_mode !~ /nosync/) || (defined $basedirs[2]) || (defined $basedirs[3]) || $galera))
+{
 #
 # Compare master and slave, or all masters
 #
@@ -778,7 +779,9 @@ $0 - Run a complete random query generation test, including server start with re
 
     --grammar   : Grammar file to use when generating queries (REQUIRED);
     --redefine  : Grammar file(s) to redefine and/or add rules to the given grammar
-    --rpl_mode  : Replication type to use (statement|row|mixed) (default: no replication);
+    --rpl_mode  : Replication type to use (statement|row|mixed) (default: no replication).
+                  The mode can contain modifier 'nosync', e.g. row-nosync. It means that at the end the test
+                  will not wait for the slave to catch up with master and perform the consistency check
     --use_gtid  : Use GTID mode for replication (current_pos|slave_pos|no). Adds the MASTER_USE_GTID clause to CHANGE MASTER,
                   (default: empty, no additional clause in CHANGE MASTER command);
     --galera    : Galera topology, presented as a string of 'm' or 's' (master or slave).
