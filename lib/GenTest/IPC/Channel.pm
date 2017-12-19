@@ -72,6 +72,9 @@ sub send {
 
     ## Encode newline because that is used as message separator
     ## (readline on the other end)
+    if (length($msg) > 8191) {
+      $msg= substr($msg,0,2000).' <...> '.substr($msg,-512);
+    }
     $msg =~ s/\n/&NEWLINE;/g;
 
     my $chn = $self->[CHANNEL_OUT];
