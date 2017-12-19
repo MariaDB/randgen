@@ -217,7 +217,7 @@ sub setConnectionId {
 }
 
 sub flags {
-	return $_[0]->[EXECUTOR_FLAGS];
+	return $_[0]->[EXECUTOR_FLAGS] || 0;
 }
 
 sub setFlags {
@@ -336,6 +336,7 @@ sub cacheMetaData {
 
         foreach my $row (@$metadata) {
             my ($schema, $table, $type, $col, $key, $metatype, $realtype, $maxlength, $table_rows) = @$row;
+            $table_rows= 0 unless defined $table_rows;
             $meta->{$schema}={} if not exists $meta->{$schema};
             $meta->{$schema}->{'bigtable'}={} if not exists $meta->{$schema}->{'bigtable'};
             $meta->{$schema}->{'bigbasetable'}={} if not exists $meta->{$schema}->{'bigbasetable'};

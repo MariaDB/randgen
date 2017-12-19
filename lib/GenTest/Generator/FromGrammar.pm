@@ -133,6 +133,7 @@ sub next {
 		for (my $pos = 0; $pos <= $#sentence; $pos++) {
 			$orig_item = $sentence[$pos];
 
+			next if not defined $orig_item;
 			next if $orig_item eq ' ';
 			next if $orig_item eq uc($orig_item);
 
@@ -296,20 +297,20 @@ sub next {
 						$item = $prng->arrayElement($charsets);
 					} elsif ($item eq '_data') {
 						$item = $prng->file($cwd."/data");
-					} elsif (
-						($field_type == FIELD_TYPE_NUMERIC) ||
-						($field_type == FIELD_TYPE_BLOB) 
+					} elsif ( defined $field_type and
+						(($field_type == FIELD_TYPE_NUMERIC) ||
+						 ($field_type == FIELD_TYPE_BLOB))
 					) {
 						$item = $prng->fieldType($item);
 					} elsif ($field_type) {
                         $item = substr($item,1);
 						$item = $prng->fieldType($item);
 						if (
-							(substr($orig_item, -1) eq '`') ||
-							(substr($orig_item, 0, 2) eq "b'") ||
-							(substr($orig_item, 0, 2) eq '0x')
+							(substr($item, -1) eq '`') ||
+							(substr($item, 0, 2) eq "b'") ||
+							(substr($item, 0, 2) eq '0x')
 						) {
-							# Do not quote, quotes are already present
+							# Do not quote, quotes are already present or not needed
 						} elsif (index($item, "'") > -1) {
 							$item = '"'.$item.'"';
 						} else {
@@ -372,7 +373,7 @@ sub next {
 
 	$generator->[GENERATOR_SEQ_ID]++;
 
-	my $sentence = join ('', @sentence);
+	my $sentence = join ('', map { defined $_ ? $_ : '' } @sentence);
 	# Remove extra spaces while we are here
 	while ($sentence =~ s/\.\s/\./s) {};
 	while ($sentence =~ s/\s([\.,])/$1/s) {};

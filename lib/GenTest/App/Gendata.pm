@@ -272,7 +272,7 @@ sub run {
                 map {
                     my $new_perm = $_;
                     my @new_table = defined $old_table ? @$old_table : [];
-                    $new_table[$cycle] = lc($new_perm);
+                    $new_table[$cycle] = (defined $new_perm ? lc($new_perm) : '');
                     \@new_table;
                 } @{$table_perms[$cycle]};
             }
@@ -308,7 +308,7 @@ sub run {
                 map {
                     my $new_perm = $_;
                     my @new_field = defined $old_field ? @$old_field : [];
-                    $new_field[$cycle] = lc($new_perm);
+                    $new_field[$cycle] = (defined $new_perm ? lc($new_perm) : undef);
                     \@new_field;
                 } @{$field_perms[$cycle]};
             }

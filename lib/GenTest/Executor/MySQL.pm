@@ -204,6 +204,7 @@ use constant  ER_OPERAND_COLUMNS                                => 1241;
 use constant  ER_UNKNOWN_STMT_HANDLER                           => 1243;
 use constant  ER_ILLEGAL_REFERENCE                              => 1247;
 use constant  ER_SPATIAL_CANT_HAVE_NULL                         => 1252;
+use constant  ER_WARN_DATA_OUT_OF_RANGE                         => 1264;
 use constant  WARN_DATA_TRUNCATED                               => 1265;
 use constant  ER_CANT_AGGREGATE_2COLLATIONS                     => 1267;
 use constant  ER_CANT_AGGREGATE_3COLLATIONS                     => 1270;
@@ -618,6 +619,7 @@ my %err2type = (
     ER_VIEW_SELECT_DERIVED()                            => STATUS_SEMANTIC_ERROR,
     ER_VIEW_SELECT_TMPTABLE()                           => STATUS_SEMANTIC_ERROR,
     ER_VIRTUAL_COLUMN_FUNCTION_IS_NOT_ALLOWED()         => STATUS_SEMANTIC_ERROR,
+    ER_WARN_DATA_OUT_OF_RANGE()                         => STATUS_SEMANTIC_ERROR,
     ER_WRONG_AUTO_KEY()                                 => STATUS_SEMANTIC_ERROR,
     ER_WRONG_FIELD_SPEC()                               => STATUS_SEMANTIC_ERROR,
     ER_WRONG_FIELD_WITH_GROUP()                         => STATUS_SEMANTIC_ERROR,
@@ -722,6 +724,7 @@ sub reportError {
 
 sub execute {
     my ($executor, $query, $execution_flags) = @_;
+    $execution_flags= 0 unless defined $execution_flags;
 
     $query .= ' /* QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId() . ' */ ';
 
@@ -804,17 +807,21 @@ sub execute {
 
     my $err = $sth->err();
     my $errstr = $executor->normalizeError($sth->errstr()) if defined $sth->errstr();
-    my $err_type = $err2type{$err} || STATUS_OK;
-    if ($err == ER_GET_ERRNO) {
-        my ($se_err) = $sth->errstr() =~ m{^Got error\s+(\d+)\s+from storage engine}sgio;
-        $err_type = STATUS_OK if (defined $acceptable_se_errors{$se_err});
+    my $err_type = STATUS_OK;
+    if (defined $err) {
+      $err_type= $err2type{$err} || STATUS_OK;
+      if ($err == ER_GET_ERRNO) {
+          my ($se_err) = $sth->errstr() =~ m{^Got error\s+(\d+)\s+from storage engine}sgio;
+          $err_type = STATUS_OK if (defined $acceptable_se_errors{$se_err});
+      }
     }
     $executor->[EXECUTOR_STATUS_COUNTS]->{$err_type}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
     my $mysql_info = $dbh->{'mysql_info'};
+    $mysql_info= '' unless defined $mysql_info;
     my ($matched_rows, $changed_rows) = $mysql_info =~ m{^Rows matched:\s+(\d+)\s+Changed:\s+(\d+)}sgio;
 
-    my $column_names = $sth->{NAME} if $sth->{NUM_OF_FIELDS} > 0;
-    my $column_types = $sth->{mysql_type_name} if $sth->{NUM_OF_FIELDS} > 0;
+    my $column_names = $sth->{NAME} if $sth and $sth->{NUM_OF_FIELDS};
+    my $column_types = $sth->{mysql_type_name} if $sth and $sth->{NUM_OF_FIELDS};
 
     if (defined $performance) {
         $performance->record();
