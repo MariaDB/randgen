@@ -44,6 +44,7 @@ use constant TRANSFORM_OUTCOME_COUNT                 => 1008;
 use constant TRANSFORM_OUTCOME_EMPTY_RESULT          => 1009;
 use constant TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE    => 1010;
 use constant TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED => 1011;
+use constant TRANSFORM_OUTCOME_ANY                   => 1012;
 
 my %transform_outcomes = (
     'TRANSFORM_OUTCOME_EXACT_MATCH'           => 1001,
@@ -56,7 +57,8 @@ my %transform_outcomes = (
     'TRANSFORM_OUTCOME_COUNT'                 => 1008,
     'TRANSFORM_OUTCOME_EMPTY_RESULT'          => 1009,
     'TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE'    => 1010,
-    'TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED' => 1011
+    'TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED' => 1011,
+    'TRANSFORM_OUTCOME_ANY'                   => 1012
 );
 
 # Subset of semantic errors that we may want to allow during transforms.
@@ -201,12 +203,13 @@ sub transformExecuteValidate {
                     return STATUS_OK;
                 }
                 say("---------- TRANSFORM ISSUE ----------");
-                say("Transform ".ref($transformer)." failed with a syntactic or semantic error: ".$part_result->err()." ".$part_result->errstr().
+                say("Transform ".ref($transformer)." failed: ".$part_result->err()." ".$part_result->errstr().
                     "; RQG Status: ".status2text($part_result->status())." (".$part_result->status().")");
                 say("Offending query is: $transformed_query_part;");
                 say("Original query is: $original_query;");
-                say("ERROR: Possible syntax or semantic error caused by code in transformer ".ref($transformer).
-                    ". Not handling this particular transform any further: Please fix the transformer code so as to handle the query shown above correctly.");
+#                say("ERROR: Possible syntax or semantic error caused by code in transformer ".ref($transformer).
+#                    ". Not handling this particular transform any further: Please fix the transformer code so as to handle the query shown above correctly.");
+                say("-------------------------------------");
                 cleanup($executor, $cleanup_block);
                 return STATUS_WONT_HANDLE;
             } elsif ($skip_result_validations) {
