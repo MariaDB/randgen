@@ -522,7 +522,7 @@ sub doGenData {
             )->run();
         }
 
-        next if not defined $self->config->gendata();
+        next if not $self->config->gendata();
 
         if ($self->config->gendata eq '' or $self->config->gendata eq '1') {
             $gendata_result = GenTest::App::GendataSimple->new(

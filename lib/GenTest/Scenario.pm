@@ -158,6 +158,11 @@ sub prepareGentest {
     }
   }
 
+  if (not $config->property('gendata') and not $config->property('gendata-advanced') and not $config->property('grammar')) {
+    say("Neither gendata nor grammar are configured for this gentest, skipping");
+    return undef;
+  }
+
   # Set hard defaults for missing values
   $config->property('database', 'test') if !defined $config->property('database');
   $config->property('duration', 300) if !defined $config->property('duration');
