@@ -89,13 +89,6 @@ my %mysql_grouping_errors = (
     1615 => 'ER_NEED_REPREPARE',
     2006 => 'CR_SERVER_GONE_ERROR',
     2013 => 'CR_SERVER_LOST',
-    2006 => 'CR_SERVER_GONE_ERROR',
-    1028 => 'ER_FILSORT_ABORT',
-    1111 => 'ER_INVALID_GROUP_FUNC_USE',
-    1615 => 'ER_NEED_REPREPARE',
-    1060 => 'DUPLICATE_COLUMN_NAME',
-    1104 => 'ER_TOO_BIG_SELECT',
-    1247 => 'ER_ILLEGAL_REFERENCE',
     # Sequence numbers are used on every call, they can run out during
     # transformations even if the original query went all right
     4084 => 'ER_SEQUENCE_RUN_OUT'
