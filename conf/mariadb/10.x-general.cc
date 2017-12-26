@@ -9,7 +9,7 @@ $combinations = [
 		--queries=100M
 		--reporters=Backtrace,ErrorLog,Deadlock
     --validators=TransformerNoComparator
-    --transformers=ConvertSubqueriesToViews,ConvertTablesToDerived,ConvertTablesToViews,Count,DisableIndexes,DisableOptimizations,Distinct,EnableOptimizations,ExecuteAsCTE,ExecuteAsDeleteReturning,ExecuteAsDerived,ExecuteAsExcept,ExecuteAsExecuteImmediate,ExecuteAsFunctionTwice,ExecuteAsInsertSelect,ExecuteAsIntersect,ExecuteAsPreparedThrice,ExecuteAsSelectItem,ExecuteAsSPTwice,ExecuteAsTrigger,ExecuteAsUnion,ExecuteAsUpdateDelete,ExecuteAsView,ExecuteAsWhereSubquery,Having,InlineSubqueries,InlineVirtualColumns,LimitRowsExamined,OrderBy,StraightJoin
+    --transformers=ConvertSubqueriesToViews,ConvertTablesToDerived,Count,DisableIndexes,DisableOptimizations,Distinct,EnableOptimizations,ExecuteAsCTE,ExecuteAsDeleteReturning,ExecuteAsDerived,ExecuteAsExcept,ExecuteAsExecuteImmediate,ExecuteAsFunctionTwice,ExecuteAsInsertSelect,ExecuteAsIntersect,ExecuteAsPreparedThrice,ExecuteAsSelectItem,ExecuteAsSPTwice,ExecuteAsTrigger,ExecuteAsUnion,ExecuteAsUpdateDelete,ExecuteAsView,ExecuteAsWhereSubquery,Having,InlineSubqueries,InlineVirtualColumns,LimitRowsExamined,OrderBy,StraightJoin
 		--redefine=conf/mariadb/general-workarounds.yy
 		--mysqld=--log_output=FILE
 		--mysqld=--log_bin_trust_function_creators=1

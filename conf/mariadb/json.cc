@@ -28,7 +28,7 @@ $combinations = [
 		--queries=100M
 		--reporters=QueryTimeout,Backtrace,ErrorLog,Deadlock
 		--validators=TransformerNoComparator
-		--transformers=ConvertLiteralsToDyncols,ConvertLiteralsToSubqueries,ConvertLiteralsToVariables,ConvertTablesToDerived,ConvertTablesToViews,Count,Distinct,ExecuteAsCTE,ExecuteAsDeleteReturning,ExecuteAsDerived,ExecuteAsExecuteImmediate,ExecuteAsFunctionTwice,ExecuteAsInsertSelect,ExecuteAsPreparedTwice,ExecuteAsSelectItem,ExecuteAsSPTwice,ExecuteAsTrigger,ExecuteAsUnion,ExecuteAsUpdateDelete,ExecuteAsView,ExecuteAsWhereSubquery,Having
+		--transformers=ConvertLiteralsToDyncols,ConvertLiteralsToSubqueries,ConvertLiteralsToVariables,ConvertTablesToDerived,Count,Distinct,ExecuteAsCTE,ExecuteAsDeleteReturning,ExecuteAsDerived,ExecuteAsExecuteImmediate,ExecuteAsFunctionTwice,ExecuteAsInsertSelect,ExecuteAsPreparedTwice,ExecuteAsSelectItem,ExecuteAsSPTwice,ExecuteAsTrigger,ExecuteAsUnion,ExecuteAsUpdateDelete,ExecuteAsView,ExecuteAsWhereSubquery,Having
 		--mysqld=--log_bin=mysql-bin
 		--mysqld=--log_output=FILE
 		--grammar=conf/mariadb/json.yy
