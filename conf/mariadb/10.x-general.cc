@@ -51,7 +51,7 @@ $combinations = [
 # 1505: MySQL:64041 (Partition management on a not partitioned table) 
 	[
 		'--rpl_mode=row-nosync --mysqld=--slave-skip-errors=1049,1305,1539,1505',
-		'--rpl_mode=mixed-nosync --mysqld=--slave-skip-errors=1049,1305,1539,1505,1317',
+		'--rpl_mode=mixed-nosync --mysqld=--slave-skip-errors=1049,1305,1539,1505,1317,1568',
 	],
 ];
 

@@ -15,7 +15,7 @@ $combinations = [
     --mysqld=--max-statement-time=30
     --redefine=conf/mariadb/sequences.yy
     --rpl_mode=mixed-nosync
-    --mysqld=--slave-skip-errors=1049,1305,1539,1505,1317
+    --mysqld=--slave-skip-errors=1049,1305,1539,1505,1317,1568
     --mysqld=--loose-debug_assert_on_not_freed_memory=0
     --views
 	'], 
