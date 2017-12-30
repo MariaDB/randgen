@@ -16,7 +16,7 @@ create_and_drop:
    CREATE temporary TABLE { 'tmp'.$tmp_table } AS select ; DROP TABLE IF EXISTS { 'tmp'.$tmp_table } ; 
 
 prepare_execute:
-	SET @stmt = " select "; SET @stmt_create = CONCAT("CREATE TEMPORARY TABLE `ps` AS ", @stmt ); PREPARE stmt FROM @stmt_create ; EXECUTE stmt ; SET @stmt_ins = CONCAT("INSERT INTO `ps` ", @stmt) ; PREPARE stmt FROM @stmt_ins; EXECUTE stmt; EXECUTE stmt; DEALLOCATE stmt; DROP TEMPORARY TABLE `ps`;
+	SET @stmt = " select "; SET @stmt_create = CONCAT("CREATE TEMPORARY TABLE `ps` AS ", @stmt ); PREPARE stmt FROM @stmt_create ; EXECUTE stmt ; SET @stmt_ins = CONCAT("INSERT INTO `ps` ", @stmt) ; PREPARE stmt FROM @stmt_ins; EXECUTE stmt; EXECUTE stmt; DEALLOCATE PREPARE stmt; DROP TEMPORARY TABLE `ps`;
 
 temporary:
    | TEMPORARY ;
