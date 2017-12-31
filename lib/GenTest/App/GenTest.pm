@@ -522,7 +522,7 @@ sub doGenData {
             )->run();
         }
 
-        next if not $self->config->gendata();
+        next if not defined $self->config->gendata();
 
         if ($self->config->gendata eq '' or $self->config->gendata eq '1') {
             $gendata_result = GenTest::App::GendataSimple->new(
@@ -535,7 +535,7 @@ sub doGenData {
                rows => $self->config->rows,
                varchar_length => $self->config->property('varchar-length')
             )->run();
-        } elsif (defined $self->config->gendata()) {
+        } elsif ($self->config->gendata()) {
             $gendata_result = GenTest::App::Gendata->new(
                spec_file => $self->config->gendata,
                dsn => $dsn,
