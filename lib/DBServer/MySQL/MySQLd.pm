@@ -341,6 +341,11 @@ sub addServerOptions {
     push(@{$self->[MYSQLD_SERVER_OPTIONS]}, @$opts);
 }
 
+sub getServerOptions {
+  my $self= shift;
+  return $self->[MYSQLD_SERVER_OPTIONS];
+}
+
 sub printServerOptions {
     my $self = shift;
     foreach (@{$self->[MYSQLD_SERVER_OPTIONS]}) {
