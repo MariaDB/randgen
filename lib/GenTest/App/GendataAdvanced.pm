@@ -161,6 +161,9 @@ sub random_pk_variation {
 sub random_or_predefined_vcol_kind {
     return ($_[0]->vcols() eq '' ? ($prng->uint16(0,1) ? 'PERSISTENT' : 'VIRTUAL') : $_[0]->vcols());
 }
+sub random_invisible {
+    return $prng->uint16(0,3) ? undef : '/*!100303 INVISIBLE */' ;
+}
 
 
 sub gen_table {
@@ -178,7 +181,7 @@ sub gen_table {
     
     my ($nullable, $precision);
     
-    # column_name => [ type, length, unsigned, zerofill, nullability, default, virtual ]
+    # column_name => [ type, length, unsigned, zerofill, nullability, default, virtual, invisible ]
 
     my %columns = (
         pk      => [    random_pk_variation(),
@@ -187,7 +190,8 @@ sub gen_table {
                         undef,
                         undef,
                         undef,
-                        undef
+                        undef,
+                        random_invisible()
                     ],
         col_bit => [    'BIT',
                         $prng->uint16(0,64),
@@ -195,7 +199,8 @@ sub gen_table {
                         undef,
                         $nullable = random_null(),
                         ( $nullable eq 'NULL' ? undef : '0' ),
-                        undef
+                        undef,
+                        random_invisible()
                     ],
         col_int => [    random_int_type(),
                         $prng->uint16(0,64),
@@ -203,7 +208,8 @@ sub gen_table {
                         random_zerofill(),
                         $nullable = random_null(),
                         ( $nullable eq 'NULL' ? undef : '0' ),
-                        undef
+                        undef,
+                        random_invisible()
                     ],
         col_dec => [    'DECIMAL',
                         $precision = $prng->uint16(0,65) . ',' . $prng->uint16(0,$precision),
@@ -211,7 +217,8 @@ sub gen_table {
                         random_zerofill(),
                         $nullable = random_null(),
                         ( $nullable eq 'NULL' ? undef : '0' ),
-                        undef
+                        undef,
+                        random_invisible()
                     ],
         col_date => [   'DATE',
                         undef,
@@ -219,7 +226,8 @@ sub gen_table {
                         undef,
                         $nullable = random_null(),
                         ( $nullable eq 'NULL' ? undef : "'1900-01-01'" ),
-                        undef
+                        undef,
+                        random_invisible()
                     ],
         col_datetime => ['DATETIME',
                         $prng->uint16(0,6),
@@ -227,7 +235,8 @@ sub gen_table {
                         undef,
                         $nullable = random_null(),
                         ( $nullable eq 'NULL' ? undef : "'1900-01-01 00:00:00'" ),
-                        undef
+                        undef,
+                        random_invisible()
                     ],
         col_timestamp => ['TIMESTAMP',
                         $prng->uint16(0,6),
@@ -235,7 +244,8 @@ sub gen_table {
                         undef,
                         $nullable = random_null(),
                         ( $nullable eq 'NULL' ? undef : "'1971-01-01 00:00:00'" ),
-                        undef
+                        undef,
+                        random_invisible()
                     ],
         col_time    => ['TIME',
                         $prng->uint16(0,6),
@@ -243,7 +253,8 @@ sub gen_table {
                         undef,
                         $nullable = random_null(),
                         ( $nullable eq 'NULL' ? undef : "'00:00:00'" ),
-                        undef
+                        undef,
+                        random_invisible()
                     ],
         col_year    => ['YEAR',
                         undef,
@@ -251,7 +262,8 @@ sub gen_table {
                         undef,
                         $nullable = random_null(),
                         ( $nullable eq 'NULL' ? undef : "'1970'" ),
-                        undef
+                        undef,
+                        random_invisible()
                     ],
         col_char => [   random_char_type(),
                         $prng->uint16(0,255),
@@ -259,7 +271,8 @@ sub gen_table {
                         undef,
                         $nullable = random_null(),
                         ( $nullable eq 'NULL' ? undef : "''" ),
-                        undef
+                        undef,
+                        random_invisible()
                     ],
         col_varchar => [random_varchar_type(),
                         $prng->uint16(0,4096),
@@ -267,7 +280,8 @@ sub gen_table {
                         undef,
                         $nullable = random_null(),
                         ( $nullable eq 'NULL' ? undef : "''" ),
-                        undef
+                        undef,
+                        random_invisible()
                     ],
         col_blob => [   random_blob_type(),
                         undef,
@@ -275,7 +289,8 @@ sub gen_table {
                         undef,
                         $nullable = random_null(),
                         ( $nullable eq 'NULL' ? undef : "''" ),
-                        undef
+                        undef,
+                        random_invisible()
                     ],
         col_enum => [   random_enum_type(),
                         undef,
@@ -283,7 +298,8 @@ sub gen_table {
                         undef,
                         $nullable = random_null(),
                         ( $nullable eq 'NULL' ? undef : "''" ),
-                        undef
+                        undef,
+                        random_invisible()
                     ],
     );
     
@@ -296,7 +312,8 @@ sub gen_table {
                                 undef,
                                 undef,
                                 undef,
-                                'AS (col_bit) '.$self->random_or_predefined_vcol_kind()
+                                'AS (col_bit) '.$self->random_or_predefined_vcol_kind(),
+                                random_invisible()
                             ];
         $columns{vcol_int}= [   random_int_type(),
                                 $prng->uint16(0,64),
@@ -304,7 +321,8 @@ sub gen_table {
                                 random_zerofill(),
                                 undef,
                                 undef,
-                                'AS (col_int) '.$self->random_or_predefined_vcol_kind()
+                                'AS (col_int) '.$self->random_or_predefined_vcol_kind(),
+                                random_invisible()
                             ];
         my $precision = $prng->uint16(0,65);
         my $scale = $prng->uint16(0,($precision<=38?$precision:38));
@@ -314,7 +332,8 @@ sub gen_table {
                                 random_zerofill(),
                                 undef,
                                 undef,
-                                'AS (col_dec) '.$self->random_or_predefined_vcol_kind()
+                                'AS (col_dec) '.$self->random_or_predefined_vcol_kind(),
+                                random_invisible()
                             ];
         $columns{vcol_date}= [  'DATE',
                                 undef,
@@ -322,7 +341,8 @@ sub gen_table {
                                 undef,
                                 undef,
                                 undef,
-                                'AS (col_date) '.$self->random_or_predefined_vcol_kind()
+                                'AS (col_date) '.$self->random_or_predefined_vcol_kind(),
+                                random_invisible()
                             ];
         $columns{vcol_datetime}= ['DATETIME',
                                 $prng->uint16(0,6),
@@ -330,7 +350,8 @@ sub gen_table {
                                 undef,
                                 undef,
                                 undef,
-                                'AS (col_datetime) '.$self->random_or_predefined_vcol_kind()
+                                'AS (col_datetime) '.$self->random_or_predefined_vcol_kind(),
+                                random_invisible()
                             ];
         $columns{vcol_timestamp}= ['TIMESTAMP',
                                 $prng->uint16(0,6),
@@ -338,7 +359,8 @@ sub gen_table {
                                 undef,
                                 undef,
                                 undef,
-                                'AS (col_timestamp) '.$self->random_or_predefined_vcol_kind()
+                                'AS (col_timestamp) '.$self->random_or_predefined_vcol_kind(),
+                                random_invisible()
                             ];
         $columns{vcol_time}= [  'TIME',
                                 $prng->uint16(0,6),
@@ -346,7 +368,8 @@ sub gen_table {
                                 undef,
                                 undef,
                                 undef,
-                                'AS (col_time) '.$self->random_or_predefined_vcol_kind()
+                                'AS (col_time) '.$self->random_or_predefined_vcol_kind(),
+                                random_invisible()
                             ];
         $columns{vcol_year}= [  'YEAR',
                                 undef,
@@ -354,7 +377,8 @@ sub gen_table {
                                 undef,
                                 undef,
                                 undef,
-                                'AS (col_year) '.$self->random_or_predefined_vcol_kind()
+                                'AS (col_year) '.$self->random_or_predefined_vcol_kind(),
+                                random_invisible()
                             ];
         $columns{vcol_char}= [  random_char_type(),
                                 $prng->uint16(0,255),
@@ -362,7 +386,8 @@ sub gen_table {
                                 undef,
                                 undef,
                                 undef,
-                                'AS (col_char) '.$self->random_or_predefined_vcol_kind()
+                                'AS (col_char) '.$self->random_or_predefined_vcol_kind(),
+                                random_invisible()
                             ];
         $columns{vcol_varchar}= [random_varchar_type(),
                                 $prng->uint16(0,4096),
@@ -370,7 +395,8 @@ sub gen_table {
                                 undef,
                                 undef,
                                 undef,
-                                'AS (col_varchar) '.$self->random_or_predefined_vcol_kind()
+                                'AS (col_varchar) '.$self->random_or_predefined_vcol_kind(),
+                                random_invisible()
                             ];
         $columns{vcol_blob}= [  random_blob_type(),
                                 undef,
@@ -378,7 +404,8 @@ sub gen_table {
                                 undef,
                                 undef,
                                 undef,
-                                'AS (col_blob) '.$self->random_or_predefined_vcol_kind()
+                                'AS (col_blob) '.$self->random_or_predefined_vcol_kind(),
+                                random_invisible()
                             ];
         $columns{vcol_enum}= [  random_enum_type(),
                                 undef,
@@ -386,7 +413,8 @@ sub gen_table {
                                 undef,
                                 undef,
                                 undef,
-                                'AS (col_enum) '.$self->random_or_predefined_vcol_kind()
+                                'AS (col_enum) '.$self->random_or_predefined_vcol_kind(),
+                                random_invisible()
                             ];
     }
 
@@ -412,6 +440,7 @@ sub gen_table {
             . ($coldef->[4] ? " $coldef->[4]" : '')  # nullability
             . (defined $coldef->[5] ? " DEFAULT $coldef->[5]" : '')   # default
             . (defined $coldef->[6] ? " $coldef->[6]" : '') # virtual
+            . ($coldef->[7] ? " $coldef->[7]" : '')  # invisible
             . ",\n";
     };
     $create_stmt .= "PRIMARY KEY(pk)\n";
