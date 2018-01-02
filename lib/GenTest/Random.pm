@@ -30,6 +30,7 @@ require Exporter;
 	FIELD_TYPE_SET
 	FIELD_TYPE_YEAR
 	FIELD_TYPE_BLOB
+  FIELD_TYPE_TEXT
 	FIELD_TYPE_DICT
 	FIELD_TYPE_DIGIT
 	FIELD_TYPE_LETTER
@@ -114,6 +115,8 @@ use constant FIELD_TYPE_JSONARRAY   => 26;
 use constant FIELD_TYPE_JSONPAIR    => 27;
 use constant FIELD_TYPE_JSONOBJECT  => 28;
 
+use constant FIELD_TYPE_TEXT  => 29;
+
 use constant ASCII_RANGE_START		=> 97;
 use constant ASCII_RANGE_END		=> 122;
 
@@ -164,10 +167,10 @@ my %name2type = (
 	'blob'			=> FIELD_TYPE_BLOB,
 	'mediumblob'		=> FIELD_TYPE_BLOB,
 	'longblob'		=> FIELD_TYPE_BLOB,
-	'tinytext'		=> FIELD_TYPE_STRING,
-	'text'			=> FIELD_TYPE_STRING,
-	'mediumtext'		=> FIELD_TYPE_STRING,
-	'longtext'		=> FIELD_TYPE_STRING,
+	'tinytext'		=> FIELD_TYPE_TEXT,
+	'text'			=> FIELD_TYPE_TEXT,
+	'mediumtext'		=> FIELD_TYPE_TEXT,
+	'longtext'		=> FIELD_TYPE_TEXT,
 	'date'			=> FIELD_TYPE_DATE,
 	'time'			=> FIELD_TYPE_TIME,
 	'datetime'		=> FIELD_TYPE_DATETIME,
@@ -387,6 +390,24 @@ sub enum {
 sub set {
 	my $prng = shift;
 	return join(',', map { $prng->letter() } (0..$prng->digit() ) );
+}
+
+sub text {
+  my ($prng, $len)= @_;
+  # If length is not defined, stick with the shortest text length
+  $len= 255 unless defined $len;
+  my $str= '';
+  while (my $remainder= $len - length($str)) {
+    my $word= $prng->fromDictionary('english');
+    if (length($word) < $remainder) {
+      $str .= "$word ";
+    }
+    else {
+      chop $str if $str;
+      last;
+    }
+  }
+  return $str;
 }
 
 sub string {
@@ -617,6 +638,8 @@ sub fieldType {
 		return $rand->float(@{$name2range{$field_full_type}});
 	} elsif ($field_type == FIELD_TYPE_STRING) {
 		return $rand->string($field_length);
+	} elsif ($field_type == FIELD_TYPE_TEXT) {
+		return $rand->text($field_length);
 	} elsif ($field_type == FIELD_TYPE_DATE) {
 		return $rand->date();
 	} elsif ($field_type == FIELD_TYPE_YEAR) {
