@@ -926,6 +926,7 @@ sub stopServer {
             unlink $self->socketfile if -e $self->socketfile;
             unlink $self->pidfile if -e $self->pidfile;
             $res= DBSTATUS_OK;
+            say("Server has been stopped");
         }
     } else {
         say("Shutdown timeout or dbh is not defined, killing the server");
