@@ -23,7 +23,7 @@ use base 'Exporter';
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp', 
            'rqg_debug', 'unix2winPath',
-           'setLoggingToFile','setLogConf');
+           'setLoggingToFile','setLogConf','shorten_message');
 
 use strict;
 
@@ -334,5 +334,13 @@ sub intersect_arrays {
 	return [ grep($in_a{$_},@$b) ];
 }
 
+# Shortens message for keeping output more sensible
+sub shorten_message {
+  my $msg= shift;
+  if (length($msg) > 8191) {
+    $msg= substr($msg,0,2000).' <...> '.substr($msg,-512);
+  }
+  return $msg;
+}
 
 1;

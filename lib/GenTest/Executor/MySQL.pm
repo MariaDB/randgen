@@ -718,7 +718,8 @@ sub reportError {
     if (defined $self->channel) {
         $self->sendError($msg) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
     } elsif (not defined $reported_errors{$errstr}) {
-        say("Executor: Query: $query failed: $err $errstr. Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+        my $query_for_print= shorten_message($query);
+        say("Executor: Query: $query_for_print failed: $err $errstr. Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
         $reported_errors{$errstr}++;
     }
 }
@@ -869,10 +870,12 @@ sub execute {
                 $executor->setDbh($dbh);
             }
 
-            say("Executor::MySQL::execute: Query: $query failed: $err ".$sth->errstr()) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+            my $query_for_print= shorten_message($query);
+            say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr()) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
         } elsif (not ($execution_flags & EXECUTOR_FLAG_SILENT)) {
             $executor->[EXECUTOR_ERROR_COUNTS]->{$sth->errstr()}++;
-            say("Executor::MySQL::execute: Query: $query failed: $err ".$sth->errstr());
+            my $query_for_print= shorten_message($query);
+            say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr());
         }
 
         $result = GenTest::Result->new(
@@ -920,7 +923,8 @@ sub execute {
             $result_status = $err2type{$sth->err()};
             @data = ();
         } elsif ($row_count > MAX_ROWS_THRESHOLD) {
-            say("Query: $query returned more than MAX_ROWS_THRESHOLD (".MAX_ROWS_THRESHOLD().") rows. Killing it ...");
+            my $query_for_print= shorten_message($query);
+            say("Query: $query_for_print returned more than MAX_ROWS_THRESHOLD (".MAX_ROWS_THRESHOLD().") rows. Killing it ...");
             $executor->[EXECUTOR_RETURNED_ROW_COUNTS]->{'>MAX_ROWS_THRESHOLD'}++;
 
             my $kill_dbh = DBI->connect($executor->dsn(), undef, undef, { PrintError => 1 });
