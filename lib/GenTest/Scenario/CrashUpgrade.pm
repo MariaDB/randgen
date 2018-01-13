@@ -53,7 +53,7 @@ sub new {
     $self->printTitle('Crash recovery');
   }
   else {
-    $self->printTitle('Crash upgrade');
+    $self->printTitle('Crash upgrade/downgrade');
   }
 
   if (not defined $self->getProperty('grammar')) {

@@ -52,7 +52,7 @@ sub new {
     $self->printTitle('Normal restart');
   }
   else {
-    $self->printTitle('Normal upgrade');
+    $self->printTitle('Normal upgrade/downgrade');
   }
 
   if (not defined $self->getProperty('grammar')) {
