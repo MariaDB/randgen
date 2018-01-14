@@ -438,6 +438,7 @@ sub createMysqlBase  {
     }
     close BOOT;
 
+    say("Bootstrap command: $command");
     system("$command > \"".$self->vardir."/boot.log\" 2>&1");
     return $?;
 }
