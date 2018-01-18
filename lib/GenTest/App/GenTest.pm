@@ -668,7 +668,7 @@ sub initReporters {
 
     if (not $no_reporters) {
         if ($self->isMySQLCompatible()) {
-            $self->config->reporters(['ErrorLog', 'Backtrace']);
+            $self->config->reporters(['ErrorLog', 'Backtrace']) unless scalar(@{$self->config->reporters});
             push @{$self->config->reporters}, 'ValgrindXMLErrors' if (defined $self->config->property('valgrind-xml'));
             push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode ne '' and $self->config->rpl_mode !~ /nosync/;
             push @{$self->config->reporters}, 'ReplicationSlaveStatus' 
