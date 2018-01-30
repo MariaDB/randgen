@@ -224,12 +224,12 @@ sub parseFromString {
     }
 
     if (@query_adds) {
-        my $adds = join '; ', @query_adds;
+        my $adds = join ' | ', @query_adds;
         $rules{'query'} = ( defined $rules{'query'} ? $rules{'query'} . ' | ' . $adds : $adds );
     }
 
     foreach my $tid (keys %thread_adds) {
-        my $adds = join '; ', @{$thread_adds{$tid}};
+        my $adds = join ' | ', @{$thread_adds{$tid}};
         $rules{'thread'.$tid} = ( defined $rules{'thread'.$tid} ? $rules{'thread'.$tid} . ' | ' . $adds : $adds );
     }
     
