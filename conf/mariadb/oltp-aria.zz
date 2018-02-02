@@ -1,0 +1,77 @@
+# Copyright (C) 2016 MariaDB Corporation.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+# Rough imitation of OLTP test (sysbench-like)
+# Default number of tables is 5, 1000 rows each, 
+# it can be changed by providing --rows parameter on the command line
+
+$tables = {
+        pk => [ undef ],
+        names => [  'oltp1',  'oltp2',  'oltp3',  'oltp4',  'oltp5',  'oltp6',  'oltp7',  'oltp8',  'oltp9',  'oltp10', 
+                    'oltp11', 'oltp12', 'oltp13', 'oltp14', 'oltp15', 'oltp16', 'oltp17', 'oltp18', 'oltp19', 'oltp20', 
+                    'oltp21', 'oltp22', 'oltp23', 'oltp24', 'oltp25', 'oltp26', 'oltp27', 'oltp28', 'oltp29', 'oltp30',
+                    'oltp31', 'oltp32', 'oltp33', 'oltp34', 'oltp35', 'oltp36', 'oltp37', 'oltp38', 'oltp39', 'oltp40',
+                    'oltp41', 'oltp42', 'oltp43', 'oltp44', 'oltp45', 'oltp46', 'oltp47', 'oltp48', 'oltp49', 'oltp50',
+                    'oltp51', 'oltp52', 'oltp53', 'oltp54', 'oltp55', 'oltp56', 'oltp57', 'oltp58', 'oltp59', 'oltp60', 
+                    'oltp61', 'oltp62', 'oltp63', 'oltp64', 'oltp65', 'oltp66', 'oltp67', 'oltp68', 'oltp69', 'oltp70', 
+                    'oltp71', 'oltp72', 'oltp73', 'oltp74', 'oltp75', 'oltp76', 'oltp77', 'oltp78', 'oltp79', 'oltp80', 
+                    'oltp81', 'oltp82', 'oltp83', 'oltp84', 'oltp85', 'oltp86', 'oltp87', 'oltp88', 'oltp89', 'oltp90', 
+                    'oltp91', 'oltp92', 'oltp93', 'oltp94', 'oltp95', 'oltp96', 'oltp97', 'oltp98', 'oltp99', 'oltp100',
+                    'oltp101', 'oltp102', 'oltp103', 'oltp104', 'oltp105', 'oltp106', 'oltp107', 'oltp108', 'oltp109', 'oltp110', 
+                    'oltp111', 'oltp112', 'oltp113', 'oltp114', 'oltp115', 'oltp116', 'oltp117', 'oltp118', 'oltp119', 'oltp120', 
+                    'oltp121', 'oltp122', 'oltp123', 'oltp124', 'oltp125', 'oltp126', 'oltp127', 'oltp128', 'oltp129', 'oltp130',
+                    'oltp131', 'oltp132', 'oltp133', 'oltp134', 'oltp135', 'oltp136', 'oltp137', 'oltp138', 'oltp139', 'oltp140',
+                    'oltp141', 'oltp142', 'oltp143', 'oltp144', 'oltp145', 'oltp146', 'oltp147', 'oltp148', 'oltp149', 'oltp150',
+                    'oltp151', 'oltp152', 'oltp153', 'oltp154', 'oltp155', 'oltp156', 'oltp157', 'oltp158', 'oltp159', 'oltp160', 
+                    'oltp161', 'oltp162', 'oltp163', 'oltp164', 'oltp165', 'oltp166', 'oltp167', 'oltp168', 'oltp169', 'oltp170', 
+                    'oltp171', 'oltp172', 'oltp173', 'oltp174', 'oltp175', 'oltp176', 'oltp177', 'oltp178', 'oltp179', 'oltp180', 
+                    'oltp181', 'oltp182', 'oltp183', 'oltp184', 'oltp185', 'oltp186', 'oltp187', 'oltp188', 'oltp189', 'oltp190', 
+                    'oltp191', 'oltp192', 'oltp193', 'oltp194', 'oltp195', 'oltp196', 'oltp197', 'oltp198', 'oltp199', 'oltp200'
+        ],
+        engines => [ 'Aria' ],
+        rows => [ 0, 100, 1000 ],
+        row_formats => [ undef, 'PAGE', 'FIXED', 'DYNAMIC' ],
+        options => [  undef, 
+                      'TRANSACTIONAL=0 PAGE_CHECKSUM=0 TABLE_CHECKSUM=0',
+                      'TRANSACTIONAL=0 PAGE_CHECKSUM=0 TABLE_CHECKSUM=1',
+                      'TRANSACTIONAL=0 PAGE_CHECKSUM=1 TABLE_CHECKSUM=0',
+                      'TRANSACTIONAL=0 PAGE_CHECKSUM=0 TABLE_CHECKSUM=1',
+                      'TRANSACTIONAL=1 PAGE_CHECKSUM=0 TABLE_CHECKSUM=0',
+                      'TRANSACTIONAL=1 PAGE_CHECKSUM=0 TABLE_CHECKSUM=1',
+                      'TRANSACTIONAL=1 PAGE_CHECKSUM=1 TABLE_CHECKSUM=0',
+                      'TRANSACTIONAL=1 PAGE_CHECKSUM=1 TABLE_CHECKSUM=1',
+        ]
+};
+
+$fields = {
+        sqls => [
+            "`id` int(10) unsigned NOT NULL auto_increment",
+            "`k` int(10) unsigned NOT NULL default '0'",
+            "`c` char(120) NOT NULL default ''",
+            "`pad` char(60) NOT NULL default ''"
+        ],
+        index_sqls => [
+            "PRIMARY KEY (`id`)",
+            "KEY `k` (`k`)"
+        ],
+        types => [ undef ],
+        indexes => [ undef ]
+};
+
+$data = {
+        numbers => [ 'digit', 'null', undef ],
+        strings => [ 'letter', 'english', 'char(12)' ]
+}

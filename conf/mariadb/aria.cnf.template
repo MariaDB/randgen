@@ -1,0 +1,34 @@
+############################################################
+#### Both for the bootstrap and for the server
+############################################################
+
+[mariadb]
+
+aria_block_size                            [ 8192 , 2048 , 4096 , 1024 , 16384]
+aria_checkpoint_interval                   [ 0 .. 400 ]
+aria_checkpoint_log_activity               [ 1048576 , 262144 , 65536 , 2097152 ]
+# aria_encrypt_tables                                                   # 10.1+
+aria_force_start_after_recovery_failures   [ 0 , 1 , 10 ]
+aria_group_commit                          [ none , hard , soft ]
+aria_group_commit_interval                 [ 0 , 1000 , 1000000 , 10000000 ]
+# aria_log_dir_path
+aria_log_file_size                         [ 1073741824 , 1048576 , 268435456 , 262144 ]
+aria_log_purge_type                        [ immediate , external , at_flush ]
+aria_max_sort_file_size                    [ 9223372036853727232 , 879609 , 900719925 ]
+aria_page_checksum                         [ ON , OFF ]
+aria_pagecache_age_threshold               [ 300 , 100 , 9999900 , 10000 ]
+aria_pagecache_buffer_size                 [ 128M , 128K , 1M , 256M ]
+aria_pagecache_division_limit              [ 100 , 1 , 25 , 50 , 75 ]
+# aria_pagecache_file_hash_size                                         # 10.0+
+aria_recover                               [ NORMAL , BACKUP , FORCE , QUICK , OFF ]
+# aria_recover_options                                                  # 10.2+
+aria_repair_threads                        [ 1 , 4 , 10 ]
+aria_sort_buffer_size                      [ 134217728 , 268434432 , 1048572 ]
+aria_stats_method                          [ nulls_unequal , nulls_equal , nulls_ignored ]
+aria_sync_log_dir                          [ NEWFILE , NEVER , ALWAYS ]
+# aria_used_for_temp_tables
+deadlock_search_depth_long                 [ 15 , 0 , 1 , 33 ]
+deadlock_search_depth_short                [ 4 , 0 , 1 , 32 ]
+deadlock_timeout_long                      [ 50000000 , 0 , 1000000 , 4294967295 ]
+deadlock_timeout_short                     [ 10000 , 0 , 1000 , 1000000 , 4294967295 ]
+
