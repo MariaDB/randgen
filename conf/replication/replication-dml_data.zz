@@ -26,8 +26,7 @@ $tables = {
         rows => [ 0 , 1 , 10] ,
         # partitions => [ undef , 'KEY (pk) PARTITIONS 2' ] ,
         # Example: table<rows> , table<rows>_<engine>
-        # engines => [ undef , 'MyISAM' , 'InnoDB' ] ,
-        engines => [ undef , 'MyISAM' ] ,
+        engines => [ undef , 'MyISAM' , 'InnoDB' ] ,
         # Example: table<rows>_<engine>_<pk> like table0_myisam_int_autoinc
         # Enable the next line when the RPL team says it is time to do this.
         #    pk => [ 'int auto_increment' , 'int' , undef ]
