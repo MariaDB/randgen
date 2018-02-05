@@ -192,7 +192,7 @@ dml_table_name:
 	table_name_nopart                                                                     ;
 
 table_name_part_ext:
-	table_name_part PARTITION (partition_name_list) ;
+	table_name_part /*!50610 PARTITION (partition_name_list) */ ;
 
 table_name_nopart:
 	a | b ;
@@ -240,7 +240,7 @@ alter_operation:
 	ADD PARTITION (PARTITION p3 VALUES LESS THAN MAXVALUE)              |
 	DROP PARTITION partition_name                                       |
 	COALESCE PARTITION one_two                                          |
-        EXCHANGE PARTITION partition_name WITH TABLE table_name_nopart      |
+  /*!50610 EXCHANGE PARTITION partition_name WITH TABLE table_name_nopart */ |
 	ANALYZE PARTITION partition_name_list                               |
 	CHECK PARTITION partition_name_list                                 |
 	REBUILD PARTITION partition_name_list                               |
