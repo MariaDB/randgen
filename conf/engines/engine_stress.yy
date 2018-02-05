@@ -57,7 +57,7 @@ select_list:
 	X . `pk` |
 	X . _field |
 	* |
-	( subselect );
+	( subselect ) AS sq;
 
 subselect:
 	SELECT _field_key FROM _table WHERE `pk` = value ;
