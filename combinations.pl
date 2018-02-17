@@ -345,6 +345,7 @@ sub doCombination {
     $result = system($command) if not $debug;
 
     $result = $result >> 8;
+
     my $tl = $workdir.'/trial'.$trial_id.'.log';
     if (defined $clean && $result == 0) {
         say("[$thread_id] $runall exited with exit status ".status2text($result)."($result). Clean mode active: deleting this OK log");
@@ -355,14 +356,16 @@ sub doCombination {
     exit($result) if (($result == STATUS_ENVIRONMENT_FAILURE) || ($result == 255)) && (not defined $force);
 
     $max_result = $result if $result > $max_result;
-    if ($result > 0 and not $discard_logs) {
-        foreach my $s (1..$servers) {
-            my $from = $workdir.'/current'.$s.'_'.$thread_id;
+
+    foreach my $s (1..$servers) {
+      my $from = $workdir.'/current'.$s.'_'.$thread_id;
+      system("$ENV{RQG_HOME}\\util\\unlock_handles.bat -nobanner \"$from\"") if osWindows() and -e "\"$from\"";
+      if ($result > 0 and not $discard_logs) {
             my $to = $workdir.'/vardir'.$s.'_'.$trial_id;
             say("[$thread_id] Copying $from to $to") if $logToStd;
-            if (osWindows()) {
-                system("xcopy \"$from\" \"$to\" /E /I /Q") if -e $from;
-                system("xcopy \"$from"."_slave\" \"$to\" /E /I /Q") if -e $from.'_slave';
+            if (osWindows() and -e $from) {
+                system("move \"$from\" \"$to\"");
+                system("move \"$from"."_slave\" \"$to\"") if -e $from.'_slave';
                 open(OUT, ">$to/command");
                 print OUT $command;
                 close(OUT);

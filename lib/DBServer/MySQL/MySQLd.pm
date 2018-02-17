@@ -198,11 +198,6 @@ sub new {
                         ["sql/share/charsets","share/mysql/charsets","share/charsets"], "Index.xml");
                          
     
-    #$self->[MYSQLD_LIBMYSQL] = 
-    #   $self->_findDir([$self->basedir], 
-    #                   osWindows()?["libmysql/Debug","libmysql/RelWithDebInfo","libmysql/Release","lib","lib/debug","lib/opt","bin"]:["libmysql","libmysql/.libs","lib/mysql","lib"], 
-    #                   osWindows()?"libmysql.dll":osMac()?"libmysqlclient.dylib":"libmysqlclient.so");
-    
     $self->[MYSQLD_STDOPTS] = ["--basedir=".$self->basedir,
                                $self->_messages,
                                "--character-sets-dir=".$self->[MYSQLD_CHARSETS],
@@ -413,11 +408,7 @@ sub createMysqlBase  {
 
         push(@$boot_options,"--bootstrap") ;
         $command = $self->generateCommand($boot_options);
-        if (osWindows()) {
-            $command = "$command < \"$boot\"";
-        } else {
-            $command = "cat \"$boot\" | $command";
-        }
+        $command = "$command < \"$boot\"";
     } else {
         push @$boot_options, "--initialize-insecure", "--init-file=$boot";
         $command = $self->generateCommand($boot_options);
@@ -481,207 +472,162 @@ sub startServer {
     # (before the server is considered hanging)
     my $startup_timeout= 600;
     
-    if (osWindows) {
-        my $proc;
-        my $exe = $self->binary;
-        my $vardir = $self->[MYSQLD_VARDIR];
-        $exe =~ s/\//\\/g;
-        $vardir =~ s/\//\\/g;
-        $self->printInfo();
-        say("Starting MySQL ".$self->version.": $exe as $command on $vardir");
-        Win32::Process::Create($proc,
-                               $exe,
-                               $command,
-                               0,
-                               NORMAL_PRIORITY_CLASS(),
-                               ".") || croak _reportError();
-        $self->[MYSQLD_WINDOWS_PROCESS]=$proc;
-        $self->[MYSQLD_SERVERPID]=$proc->GetProcessID();
-        # Gather the exit code and check if server is running.
-        $proc->GetExitCode($self->[MYSQLD_WINDOWS_PROCESS_EXITCODE]);
-        if ($self->[MYSQLD_WINDOWS_PROCESS_EXITCODE] == MYSQLD_WINDOWS_PROCESS_STILLALIVE) {
-            ## Wait for the pid file to have been created
-            my $wait_time = 0.5;
-            my $waits = 0;
-            while (!-f $self->pidfile && $waits < 600) {
-                Time::HiRes::sleep($wait_time);
-                $waits++;
-            }
-            if (!-f $self->pidfile) {
-                sayFile($errorlog);
-                croak("Could not start mysql server, waited ".($waits*$wait_time)." seconds for pid file");
-            }
+    if ($self->[MYSQLD_VALGRIND]) {
+        my $val_opt ="";
+        $start_wait_timeout= 60;
+        $startup_timeout= 1200;
+        if (defined $self->[MYSQLD_VALGRIND_OPTIONS]) {
+            $val_opt = join(' ',@{$self->[MYSQLD_VALGRIND_OPTIONS]});
         }
-    } else {
-        if ($self->[MYSQLD_VALGRIND]) {
-            my $val_opt ="";
-            $start_wait_timeout= 60;
-            $startup_timeout= 1200;
-            if (defined $self->[MYSQLD_VALGRIND_OPTIONS]) {
-                $val_opt = join(' ',@{$self->[MYSQLD_VALGRIND_OPTIONS]});
-            }
-            $command = "valgrind --time-stamp=yes --leak-check=yes --suppressions=".$self->valgrind_suppressionfile." ".$val_opt." ".$command;
-        }
-        $self->printInfo;
-
-        my $errlog_fh;
-        my $errlog_last_update_time= (stat($errorlog))[9] || 0;
-        if ($errlog_last_update_time) {
-            open($errlog_fh,$errorlog) || ( sayError("Could not open the error log " . $errorlog . " for initial read: $!") && return DBSTATUS_FAILURE );
-            while (!eof($errlog_fh)) { readline $errlog_fh };
-            seek $errlog_fh, 0, 1;
-        }
-
-        say("Starting MySQL ".$self->version.": $command");
-
-        $self->[MYSQLD_AUXPID] = fork();
-        if ($self->[MYSQLD_AUXPID]) {
-            
-            sub get_pid_from_file {
-                my $fname= shift;
-                my $p = `cat \"$fname\"`;
-                $p =~ s/.*?([0-9]+).*/$1/;
-                return $p;
-            }
-            
-            ## Wait for the pid file to have been created
-            my $wait_time = 0.2;
-            my $waits= 0;
-            my $errlog_update= 0;
-            my $pid;
-            my $wait_end= time() + $start_wait_timeout;
-
-            # After we've launched server startup, we'll wait for max $start_wait_timeout seconds
-            # for the server to start updating the error log
-            while (!-f $self->pidfile and time() < $wait_end ) {
-                Time::HiRes::sleep($wait_time);
-                $errlog_update= ( (stat($errorlog))[9] > $errlog_last_update_time);
-                last if $errlog_update;
-            }
-
-            if (-f $self->pidfile) {
-                $pid= get_pid_from_file($self->pidfile);
-                say("Server created pid file with pid $pid");
-            } elsif (!$errlog_update) {
-                sayError("Server has not started updating the error log withing $start_wait_timeout sec. timeout, and has not created pid file");
-                sayFile($errorlog);
-                return DBSTATUS_FAILURE;
-            }
-
-            if (!$pid)
-            {
-                # If we are here, server has started updating the error log. 
-                # It can be doing some lengthy startup before creating the pid file,
-                # but we might be able to get the pid from the error log record
-                # [Note] <path>/mysqld (mysqld <version>) starting as process <pid> ...
-                # (if the server is new enough to produce it).
-                # We need the latest line of this kind
-                
-                unless ($errlog_fh) {
-                    unless (open($errlog_fh, $errorlog)) {
-                        sayError("Could not open the error log  " . $errorlog . ": $!");
-                        return DBSTATUS_FAILURE;
-                    }
-                }
-                # In case the file is being slowly updated (e.g. with valgrind),
-                # and pid is not the first line which was printed (again, as with valgrind),
-                # we don't want to reach the EOF and exit too quickly.
-                # So, first we read the whole file till EOF, and if the last line was a valgrind-produced line
-                # (starts with '== ', we'll keep waiting for more updates, until we get the first normal line,
-                # which is supposed to be the PID. If it's not, there is nothing more to wait for.
-                # TODO: 
-                # - if it's not the first start in this error log, so our protection against
-                #   quitting too quickly won't work -- we'll read a wrong (old) PID and will leave.
-                # And of course it won't work on Windows, but the new-style server start is generally
-                # not reliable there and needs to be fixed.
-                
-                TAIL:
-                for (;;) {
-                    do {
-                        $_= readline $errlog_fh;
-                        if (/\[Note\]\s+\S+?\/mysqld\s+\(mysqld.*?\)\s+starting as process (\d+)\s+\.\./) {
-                            $pid= $1;
-                            last TAIL;
-                        }
-                        elsif (! /^== /) {
-                            last TAIL;
-                        }
-                    } until (eof($errlog_fh));
-                    sleep 1;
-                    seek ERRLOG, 0, 1;    # this clears the EOF flag
-                }
-            }
-            close($errlog_fh) if $errlog_fh;
-
-            unless (defined $pid) {
-                say("WARNING: could not find the pid in the error log, might be an old version");
-            }
-
-            # Now we know the pid and can monitor it along with the pid file,
-            # to avoid unnecessary waiting if the server goes down
-            $wait_end= time() + $startup_timeout;
-
-            while (!-f $self->pidfile and time() < $wait_end) {
-                Time::HiRes::sleep($wait_time);
-                last if $pid and not kill(0, $pid);
-            }
-
-            if (!-f $self->pidfile) {
-                sayFile($errorlog);
-                if ($pid and not kill(0, $pid)) {
-                    sayError("Server disappeared after having started with pid $pid");
-                } elsif ($pid) {
-                    sayError("Timeout $startup_timeout has passed and the server still has not created the pid file, assuming it has hung, sending final SIGABRT to pid $pid...");
-                    kill 'ABRT', $pid;
-                } else {
-                    sayError("Timeout $startup_timeout has passed and the server still has not created the pid file, assuming it has hung, but cannot kill because we don't know the pid");
-                }
-                return DBSTATUS_FAILURE;
-            }
-
-            # We should only get here if the pid file was created
-            my $pidfile = $self->pidfile;
-            my $pid_from_file = `cat \"$pidfile\"`;
-
-            $pid_from_file =~ s/.*?([0-9]+).*/$1/;
-            if ($pid and $pid != $pid_from_file) {
-                say("WARNING: pid extracted from the error log ($pid) is different from the pid in the pidfile ($pid_from_file). Assuming the latter is correct");
-            }
-            $self->[MYSQLD_SERVERPID] = int($pid_from_file);
-        } else {
-            exec("$command >> \"$errorlog\"  2>&1") || croak("Could not start mysql server");
-        }
+        $command = "valgrind --time-stamp=yes --leak-check=yes --suppressions=".$self->valgrind_suppressionfile." ".$val_opt." ".$command;
     }
+    $self->printInfo;
+
+    my $errlog_fh;
+    my $errlog_last_update_time= (stat($errorlog))[9] || 0;
+    if ($errlog_last_update_time) {
+        open($errlog_fh,$errorlog) || ( sayError("Could not open the error log " . $errorlog . " for initial read: $!") && return DBSTATUS_FAILURE );
+        while (!eof($errlog_fh)) { readline $errlog_fh };
+        seek $errlog_fh, 0, 1;
+    }
+
+    say("Starting MySQL ".$self->version.": $command");
+
+    $self->[MYSQLD_AUXPID] = fork();
+    if ($self->[MYSQLD_AUXPID]) {
+
+        ## Wait for the pid file to have been created
+        my $wait_time = 0.2;
+        my $waits= 0;
+        my $errlog_update= 0;
+        my $pid;
+        my $wait_end= time() + $start_wait_timeout;
+
+        # After we've launched server startup, we'll wait for max $start_wait_timeout seconds
+        # for the server to start updating the error log
+        while (!-f $self->pidfile and time() < $wait_end ) {
+            Time::HiRes::sleep($wait_time);
+            $errlog_update= ( (stat($errorlog))[9] > $errlog_last_update_time);
+            last if $errlog_update;
+        }
+
+        if (-f $self->pidfile) {
+            $pid= get_pid_from_file($self->pidfile);
+            say("Server created pid file with pid $pid");
+        } elsif (!$errlog_update) {
+            sayError("Server has not started updating the error log withing $start_wait_timeout sec. timeout, and has not created pid file");
+            sayFile($errorlog);
+            return DBSTATUS_FAILURE;
+        }
+
+        if (!$pid)
+        {
+            # If we are here, server has started updating the error log.
+            # It can be doing some lengthy startup before creating the pid file,
+            # but we might be able to get the pid from the error log record
+            # [Note] <path>/mysqld (mysqld <version>) starting as process <pid> ...
+            # (if the server is new enough to produce it).
+            # We need the latest line of this kind
+            
+            unless ($errlog_fh) {
+                unless (open($errlog_fh, $errorlog)) {
+                    sayError("Could not open the error log  " . $errorlog . ": $!");
+                    return DBSTATUS_FAILURE;
+                }
+            }
+            # In case the file is being slowly updated (e.g. with valgrind),
+            # and pid is not the first line which was printed (again, as with valgrind),
+            # we don't want to reach the EOF and exit too quickly.
+            # So, first we read the whole file till EOF, and if the last line was a valgrind-produced line
+            # (starts with '== ', we'll keep waiting for more updates, until we get the first normal line,
+            # which is supposed to be the PID. If it's not, there is nothing more to wait for.
+            # TODO:
+            # - if it's not the first start in this error log, so our protection against
+            #   quitting too quickly won't work -- we'll read a wrong (old) PID and will leave.
+            # And of course it won't work on Windows, but the new-style server start is generally
+            # not reliable there and needs to be fixed.
+
+            TAIL:
+            for (;;) {
+                do {
+                    $_= readline $errlog_fh;
+                    if (/\[Note\]\s+\S+?[\/\\]mysqld(?:\.exe)\s+\(mysqld.*?\)\s+starting as process (\d+)\s+\.\./) {
+                        $pid= $1;
+                        last TAIL;
+                    }
+                    elsif (! /^== /) {
+                        last TAIL;
+                    }
+                } until (eof($errlog_fh));
+                sleep 1;
+                seek ERRLOG, 0, 1;    # this clears the EOF flag
+            }
+        }
+        close($errlog_fh) if $errlog_fh;
+
+        unless (defined $pid) {
+            say("WARNING: could not find the pid in the error log, might be an old version");
+        }
+
+        # Now we know the pid and can monitor it along with the pid file,
+        # to avoid unnecessary waiting if the server goes down
+        $wait_end= time() + $startup_timeout;
+
+        while (!-f $self->pidfile and time() < $wait_end) {
+            Time::HiRes::sleep($wait_time);
+            last if $pid and not kill(0, $pid);
+        }
+
+        if (!-f $self->pidfile) {
+            sayFile($errorlog);
+            if ($pid and not kill(0, $pid)) {
+                sayError("Server disappeared after having started with pid $pid");
+            } elsif ($pid) {
+                sayError("Timeout $startup_timeout has passed and the server still has not created the pid file, assuming it has hung, sending final SIGABRT to pid $pid...");
+                kill 'ABRT', $pid;
+            } else {
+                sayError("Timeout $startup_timeout has passed and the server still has not created the pid file, assuming it has hung, but cannot kill because we don't know the pid");
+            }
+            return DBSTATUS_FAILURE;
+        }
+
+        # We should only get here if the pid file was created
+        my $pidfile = $self->pidfile;
+        my $pid_from_file= get_pid_from_file($self->pidfile);
+
+        $pid_from_file =~ s/.*?([0-9]+).*/$1/;
+        if ($pid and $pid != $pid_from_file) {
+            say("WARNING: pid extracted from the error log ($pid) is different from the pid in the pidfile ($pid_from_file). Assuming the latter is correct");
+        }
+        $self->[MYSQLD_SERVERPID] = int($pid_from_file);
+        say("Server started with PID ".$self->[MYSQLD_SERVERPID]);
+    } else {
+        exec("$command >> \"$errorlog\"  2>&1") || croak("Could not start mysql server");
+    }
+
     return ($self->waitForServerToStart && $self->dbh) ? DBSTATUS_OK : DBSTATUS_FAILURE;
 }
 
 sub kill {
     my ($self) = @_;
 
-    if (osWindows()) {
-        if (defined $self->[MYSQLD_WINDOWS_PROCESS]) {
-            $self->[MYSQLD_WINDOWS_PROCESS]->Kill(0);
-            say("Killed process ".$self->[MYSQLD_WINDOWS_PROCESS]->GetProcessID());
-        }
-    } else {
-        my $pidfile= $self->pidfile;
+    my $pidfile= $self->pidfile;
 
-        if (not defined $self->serverpid and -f $pidfile) {
-            $self->[MYSQLD_SERVERPID] = `cat \"$pidfile\"`;
-        }
+    if (not defined $self->serverpid and -f $pidfile) {
+        $self->[MYSQLD_SERVERPID]= get_pid_from_file($self->pidfile);
+    }
 
-        if (defined $self->serverpid and $self->serverpid =~ /^\d+$/) {
-            kill KILL => $self->serverpid;
-            my $waits = 0;
-            while ($self->running && $waits < 100) {
-                Time::HiRes::sleep(0.2);
-                $waits++;
-            }
-            if ($waits >= 100) {
-                croak("Unable to kill process ".$self->serverpid);
-            } else {
-                say("Killed process ".$self->serverpid);
-            }
+    if (defined $self->serverpid and $self->serverpid =~ /^\d+$/) {
+        kill KILL => $self->serverpid;
+        my $waits = 0;
+        while ($self->running && $waits < 100) {
+            Time::HiRes::sleep(0.2);
+            $waits++;
+        }
+        if ($waits >= 100) {
+            sayError("Unable to kill process ".$self->serverpid);
+        } else {
+            say("Killed process ".$self->serverpid);
         }
     }
 
@@ -695,36 +641,29 @@ sub term {
     my ($self) = @_;
 
     my $res;
-    if (osWindows()) {
-        ### Not for windows
-        say("Don't know how to do SIGTERM on Windows");
-        $self->kill;
-        $res= DBSTATUS_OK;
-    } else {
-        if (defined $self->serverpid) {
-            kill TERM => $self->serverpid;
-            my $waits = 0;
-            while ($self->running && $waits < 100) {
-                Time::HiRes::sleep(0.2);
-                $waits++;
+    if (defined $self->serverpid) {
+        kill TERM => $self->serverpid;
+        my $waits = 0;
+        while ($self->running && $waits < 100) {
+            Time::HiRes::sleep(0.2);
+            $waits++;
+        }
+        if ($waits >= 100) {
+            say("Unable to terminate process ".$self->serverpid.". Trying SIGABRT");
+            kill ABRT => $self->serverpid;
+            $res= DBSTATUS_FAILURE;
+            $waits= 0;
+            while ($self->running && $waits < 20) {
+              Time::HiRes::sleep(0.2);
+              $waits++;
             }
-            if ($waits >= 100) {
-                say("Unable to terminate process ".$self->serverpid.". Trying SIGABRT");
-                kill ABRT => $self->serverpid;
-                $res= DBSTATUS_FAILURE;
-                $waits= 0;
-                while ($self->running && $waits < 20) {
-                  Time::HiRes::sleep(0.2);
-                  $waits++;
-                }
-                if ($waits >= 20) {
-                  say("SIGABRT didn't work for process ".$self->serverpid.". Trying KILL");
-                  $self->kill;
-                }
-            } else {
-                say("Terminated process ".$self->serverpid);
-                $res= DBSTATUS_OK;
+            if ($waits >= 20) {
+              say("SIGABRT didn't work for process ".$self->serverpid.". Trying KILL");
+              $self->kill;
             }
+        } else {
+            say("Terminated process ".$self->serverpid);
+            $res= DBSTATUS_OK;
         }
     }
     if (-e $self->socketfile) {
@@ -736,14 +675,9 @@ sub term {
 sub crash {
     my ($self) = @_;
     
-    if (osWindows()) {
-        ## How do i do this?????
-        $self->kill; ## Temporary
-    } else {
-        if (defined $self->serverpid) {
-            kill SEGV => $self->serverpid;
-            say("Crashed process ".$self->serverpid);
-        }
+    if (defined $self->serverpid) {
+        kill SEGV => $self->serverpid;
+        say("Crashed process ".$self->serverpid);
     }
 
     # clean up when the server is not alive.
@@ -1115,11 +1049,7 @@ sub serverVariable {
 
 sub running {
     my($self) = @_;
-    if (osWindows()) {
-        ## Need better solution fir windows. This is actually the old
-        ## non-working solution for unix....
-        return -f $self->pidfile;
-    } elsif ($self->serverpid and $self->serverpid =~ /^\d+$/) {
+    if ($self->serverpid and $self->serverpid =~ /^\d+$/) {
         ## Check if the child process is active.
         return kill(0,$self->serverpid);
     } elsif (-f $self->pidfile) {
@@ -1331,4 +1261,15 @@ sub _notOlderThan {
     return not _olderThan(@_);
 }
 
+sub get_pid_from_file {
+	my $fname= shift;
+	my $separ= $/;
+	$/= undef;
+	open(PID,$fname) || croak("Could not open pid file $fname for reading");
+	my $p = <PID>;
+	close(PID);
+	$p =~ s/.*?([0-9]+).*/$1/;
+	$/= $separ;
+	return $p;
+}
 

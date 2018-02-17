@@ -53,8 +53,15 @@ sub nativeReport {
 
 	foreach my $log ( $main_log, $main_log.'-old' ) {
 		if ((-e $log) && (-s $log > 0)) {
+      open(ERRLOG, $log) || sayError("Could not open the error log $log");
+      my @errlog= ();
+      my $maxsize= 200;
+      while (<ERRLOG>) {
+        shift @errlog if scalar(@errlog) >= $maxsize;
+        push @errlog, $_;
+      }
 			say("The last 200 lines from $log :");
-			system("tail -200 $log | cut -c 1-4096");
+			print(@errlog);
 		}
 	}
 	

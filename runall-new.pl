@@ -184,6 +184,14 @@ my $opt_result = GetOptions(
     'store-binaries|store_binaries' => \$store_binaries
 );
 
+if ( osWindows() && !$debug )
+{
+    require Win32::API;
+    my $errfunc = Win32::API->new('kernel32', 'SetErrorMode', 'I', 'I');
+    my $initial_mode = $errfunc->Call(2);
+    $errfunc->Call($initial_mode | 2);
+};
+
 if (defined $scenario) {
   system("perl $ENV{RQG_HOME}/run-scenario.pl @ARGV_saved");
   exit $? >> 8;
