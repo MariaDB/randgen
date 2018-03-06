@@ -56,8 +56,8 @@ some_record:
    ($my_digit,$my_digit,$my_digit,REPEAT(CAST($my_digit AS CHAR(1)),@fill_amount)) ;
 
 delete:
-   DELETE FROM t1 WHERE column_name_int = my_digit OR $column_name_int IS NULL                              |
-   DELETE FROM t1 WHERE MATCH(col4) AGAINST (TRIM(' my_digit ') IN BOOLEAN MODE) OR column_name_int IS NULL ;
+   DELETE FROM t1 WHERE column_name_int = my_digit OR $column_name_int IS NULL                              ;
+#   DELETE FROM t1 WHERE MATCH(col4) AGAINST (TRIM(' my_digit ') IN BOOLEAN MODE) OR column_name_int IS NULL ;
 
 my_digit:
    { $my_digit= 1 }      |

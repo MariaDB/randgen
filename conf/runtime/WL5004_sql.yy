@@ -1477,7 +1477,7 @@ dump_load_data_sequence:
 	# be important for locking tests.
 	# We generate an outfile so that we have a chance to find an infile.
 	# Go with the next command as soon as "LOCAL" is supported. (not supported in 5.4)
-	# generate_outfile ; LOAD DATA low_priority_concurrent local_or_empty INFILE tmpnam replace_ignore INTO TABLE table_item ;
+	# generate_outfile ; LOAD DATA low_priority_concurrent local_or_empty INFILE _tmpnam replace_ignore INTO TABLE table_item ;
 	generate_outfile ; LOAD DATA low_priority_concurrent INFILE _tmpnam replace_ignore INTO TABLE table_item ;
 generate_outfile:
 	SELECT * FROM template_table_item INTO OUTFILE _tmpnam ;

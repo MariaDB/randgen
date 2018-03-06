@@ -77,7 +77,7 @@ implicit_commit:
 	TRUNCATE TABLE _letter |
 	DROP TABLE IF EXISTS _letter |
 	LOCK TABLE _table WRITE ; UNLOCK TABLES |
-	SELECT * FROM _table LIMIT _digit INTO OUTFILE tmpnam ; LOAD DATA INFILE tmpnam REPLACE INTO TABLE _table ;
+	SELECT * FROM _table LIMIT _digit INTO OUTFILE _tmpnam ; LOAD DATA INFILE _tmpnam REPLACE INTO TABLE _table ;
 
 begin_load_query_event:
 	binlog_format_statement ; load_data_infile ; binlog_format_restore ;
@@ -86,7 +86,7 @@ execute_load_query_event:
 	binlog_format_statement ; load_data_infile ; binlog_format_restore ;
 
 load_data_infile:
-	SELECT * FROM _table ORDER BY _field LIMIT _digit INTO OUTFILE tmpnam ; LOAD DATA INFILE tmpnam REPLACE INTO TABLE _table ;
+	SELECT * FROM _table ORDER BY _field LIMIT _digit INTO OUTFILE _tmpnam ; LOAD DATA INFILE _tmpnam REPLACE INTO TABLE _table ;
 
 write_rows_event:
 	binlog_format_row ; insert ; binlog_format_restore ;
