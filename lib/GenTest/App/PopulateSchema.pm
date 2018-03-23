@@ -296,6 +296,9 @@ sub populate_table
                         elsif ($c->[0] =~ /geometry/) {
                             push @possible_vals, 'NULL';
                         }
+                        elsif ($c->[0] =~ /enum\((.*?)\)/) {
+                          push @possible_vals, split /,/, $1;
+                        }
                         else {
                             push @possible_vals, $c->[0];
                         }
