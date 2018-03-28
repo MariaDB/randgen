@@ -198,6 +198,9 @@ sub run {
     my @log_files_to_report;
     foreach my $i (0..2) {
         next unless $self->config->dsn->[$i];
+        if ($self->config->property('ps-protocol') and $self->config->dsn->[$i] !~ /mysql_server_prepare/) {
+          $self->config->dsn->[$i] .= ';mysql_server_prepare=1';
+        }
         next if $self->config->dsn->[$i] !~ m{mysql}sio;
         my $metadata_executor = GenTest::Executor->newFromDSN($self->config->dsn->[$i], osWindows() ? undef : $self->channel());
         $metadata_executor->init();

@@ -103,7 +103,8 @@ my $opt_result = GetOptions($options,
                             'report-tt-logdir=s',
                             'querytimeout=i',
                             'annotate-rules',
-                            'annotate_rules');
+                            'annotate_rules',
+                            'ps-protocol');
 backwardCompatability($options);
 my $config = GenTest::Properties->new(
     options => $options,
@@ -160,6 +161,7 @@ my $config = GenTest::Properties->new(
               'servers',
               'multi-master',
               'annotate-rules',
+              'ps-protocol',
               'restart-timeout'],
     help => \&help);
 

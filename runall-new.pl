@@ -83,7 +83,7 @@ my ($gendata, @basedirs, @mysqld_options, @vardirs, $rpl_mode,
     $notnull, $logfile, $logconf, $report_tt_logdir, $querytimeout, $no_mask,
     $short_column_names, $strict_fields, $freeze_time, $wait_debugger, @debug_server,
     $skip_gendata, $skip_shutdown, $galera, $use_gtid, $genconfig, $annotate_rules,
-    $restart_timeout, $gendata_advanced, $scenario, $store_binaries);
+    $restart_timeout, $gendata_advanced, $scenario, $store_binaries, $ps_protocol);
 
 my $gendata=''; ## default simple gendata
 
@@ -179,6 +179,8 @@ my $opt_result = GetOptions(
     'use_gtid=s' => \$use_gtid,
     'annotate_rules|annotate-rules' => \$annotate_rules,
     'scenario:s' => \$scenario,
+    'ps-protocol' => \$ps_protocol,
+    'ps_protocol' => \$ps_protocol,
     'store-binaries|store_binaries' => \$store_binaries
 );
 
@@ -582,7 +584,8 @@ my $gentestProps = GenTest::Properties->new(
               'servers',
               'multi-master',
               'annotate-rules',
-              'restart-timeout'
+              'restart-timeout',
+              'ps-protocol'
 ]
     );
 
@@ -638,6 +641,7 @@ $gentestProps->short_column_names($short_column_names) if defined $short_column_
 $gentestProps->strict_fields($strict_fields) if defined $strict_fields;
 $gentestProps->freeze_time($freeze_time) if defined $freeze_time;
 $gentestProps->valgrind(1) if $valgrind;
+$gentestProps->property('ps-protocol',1) if $ps_protocol;
 $gentestProps->sqltrace($sqltrace) if $sqltrace;
 $gentestProps->querytimeout($querytimeout) if defined $querytimeout;
 $gentestProps->testname($testname) if $testname;
