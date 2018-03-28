@@ -25,7 +25,6 @@
 $tables = {
 	rows => [10, 11],
 	primary_key => [ undef ],
-	engine => [ 'Innodb' ]
 };
 
 $fields = {
