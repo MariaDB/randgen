@@ -185,7 +185,7 @@ sub next {
 
 			# If one server has crashed, do not send the query to the second one in order to preserve consistency
 			if ($execution_result->status() > STATUS_CRITICAL_FAILURE) {
-				say("Mixer: Server crash or critical failure (". status2text($execution_result->status()) . ") reported at dsn ".$executor->dsn());
+				say("Mixer: Server crash or critical failure " . $execution_result->err() . " (". status2text($execution_result->status()) . ") reported at dsn ".$executor->dsn());
 				last query;
 			}
 			
