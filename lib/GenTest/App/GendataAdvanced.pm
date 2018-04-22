@@ -488,7 +488,7 @@ sub gen_table {
     foreach (1..$number_of_indexes) {
         my $number_of_columns= $prng->uint16(1,4);
         # TODO: make it conditional depending on the version -- keys %columns vs @column_list
-        my $cols= $prng->shuffleArray([keys %columns]);
+        my $cols= $prng->shuffleArray([sort keys %columns]);
         my @cols= @$cols[1..$number_of_columns];
         foreach my $i (0..$#cols) {
             my $c= $cols[$i];
