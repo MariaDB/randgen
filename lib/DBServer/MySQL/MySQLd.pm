@@ -709,9 +709,18 @@ sub term {
                 $waits++;
             }
             if ($waits >= 100) {
-                say("Unable to terminate process ".$self->serverpid." Trying kill");
-                $self->kill;
+                say("Unable to terminate process ".$self->serverpid.". Trying SIGABRT");
+                kill ABRT => $self->serverpid;
                 $res= DBSTATUS_FAILURE;
+                $waits= 0;
+                while ($self->running && $waits < 20) {
+                  Time::HiRes::sleep(0.2);
+                  $waits++;
+                }
+                if ($waits >= 20) {
+                  say("SIGABRT didn't work for process ".$self->serverpid.". Trying KILL");
+                  $self->kill;
+                }
             } else {
                 say("Terminated process ".$self->serverpid);
                 $res= DBSTATUS_OK;
