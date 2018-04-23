@@ -79,6 +79,7 @@ use constant GD_SQLTRACE => 9;
 use constant GD_NOTNULL => 10;
 use constant GD_SHORT_COLUMN_NAMES => 11;
 use constant GD_STRICT_FIELDS => 12;
+use constant GD_EXECUTOR_ID => 13;
 
 sub new {
     my $class = shift;
@@ -96,6 +97,7 @@ sub new {
         'short_column_names' => GD_SHORT_COLUMN_NAMES,	
         'strict_fields' => GD_STRICT_FIELDS,	
         'server_id' => GD_SERVER_ID,
+        'executor_id' => GD_EXECUTOR_ID,
         'sqltrace' => GD_SQLTRACE},@_);
 
     if (not defined $self->[GD_SEED]) {
@@ -166,6 +168,9 @@ sub strict_fields {
     return $_[0]->[GD_STRICT_FIELDS];
 }
 
+sub executor_id {
+    return $_[0]->[GD_EXECUTOR_ID] || '';
+}
 
 sub run {
     my ($self) = @_;
@@ -457,6 +462,7 @@ sub run {
     foreach my $schema (@schema_perms) {
         $executor->execute("CREATE SCHEMA /*!IF NOT EXISTS*/ $schema");
         $executor->sqltrace($self->sqltrace);
+        $executor->setId($self->executor_id);
         $executor->currentSchema($schema);
 
     foreach my $table_id (0..$#tables) {

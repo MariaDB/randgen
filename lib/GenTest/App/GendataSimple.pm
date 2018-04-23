@@ -38,6 +38,7 @@ use constant GDS_NOTNULL => 4;
 use constant GDS_ROWS => 5;
 use constant GDS_VARCHAR_LENGTH => 6;
 use constant GDS_VCOLS => 7;
+use constant GDS_EXECUTOR_ID => 8;
 
 use constant GDS_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
 use constant GDS_DEFAULT_NAMES => ['A', 'B', 'C', 'D', 'E', 'AA', 'BB', 'CC', 'DD'];
@@ -54,6 +55,7 @@ sub new {
 	'rows' => GDS_ROWS,
         'varchar_length' => GDS_VARCHAR_LENGTH,
         'vcols' => GDS_VCOLS,
+        'executor_id' => GDS_EXECUTOR_ID
     },@_);
 
     if (not defined $self->[GDS_DSN]) {
@@ -95,6 +97,10 @@ sub varcharLength {
     return $_[0]->[GDS_VARCHAR_LENGTH] || 1;
 }
 
+sub executor_id {
+    return $_[0]->[GDS_EXECUTOR_ID] || '';
+}
+
 sub run {
     my ($self) = @_;
 
@@ -102,6 +108,7 @@ sub run {
 
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
     $executor->sqltrace($self->sqltrace);
+    $executor->setId($self->executor_id);
     $executor->init();
     
     my $names = GDS_DEFAULT_NAMES;

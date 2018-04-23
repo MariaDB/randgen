@@ -521,7 +521,8 @@ sub doGenData {
                sqltrace=> $self->config->sqltrace,
                notnull => $self->config->notnull,
                rows => $self->config->rows,
-               varchar_length => $self->config->property('varchar-length')
+               varchar_length => $self->config->property('varchar-length'),
+               executor_id => $i
             )->run();
         }
 
@@ -536,7 +537,8 @@ sub doGenData {
                sqltrace=> $self->config->sqltrace,
                notnull => $self->config->notnull,
                rows => $self->config->rows,
-               varchar_length => $self->config->property('varchar-length')
+               varchar_length => $self->config->property('varchar-length'),
+               executor_id => $i
             )->run();
         } elsif ($self->config->gendata()) {
             $gendata_result = GenTest::App::Gendata->new(
@@ -551,7 +553,8 @@ sub doGenData {
                sqltrace => $self->config->sqltrace,
                short_column_names => $self->config->short_column_names,
                strict_fields => $self->config->strict_fields,
-               notnull => $self->config->notnull
+               notnull => $self->config->notnull,
+               executor_id => $i
             )->run();
         }
             

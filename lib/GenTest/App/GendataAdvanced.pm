@@ -39,6 +39,7 @@ use constant GDS_NOTNULL => 4;
 use constant GDS_ROWS => 5;
 use constant GDS_VARCHAR_LENGTH => 6;
 use constant GDS_VCOLS => 7;
+use constant GDS_EXECUTOR_ID => 8;
 
 use constant GDS_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
 use constant GDS_DEFAULT_NAMES => ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9'];
@@ -57,6 +58,7 @@ sub new {
         'rows' => GDS_ROWS,
         'varchar_length' => GDS_VARCHAR_LENGTH,
         'vcols' => GDS_VCOLS,
+        'executor_id' => GDS_EXECUTOR_ID,
     },@_);
 
     if (not defined $self->[GDS_DSN]) {
@@ -98,6 +100,10 @@ sub varcharLength {
     return $_[0]->[GDS_VARCHAR_LENGTH] || 1;
 }
 
+sub executor_id {
+    return $_[0]->[GDS_EXECUTOR_ID] || '';
+}
+
 sub run {
     my ($self) = @_;
     
@@ -108,6 +114,7 @@ sub run {
         die "Only MySQL executor type is supported\n";
     }
     $executor->sqltrace($self->sqltrace);
+    $executor->setId($self->executor_id);
     $executor->init();
 
     my $names = GDS_DEFAULT_NAMES;
