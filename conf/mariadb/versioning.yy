@@ -714,7 +714,7 @@ vers_ia_any_key:
   | vers_ia_index(vers_ia_key_column_list)
   | vers_ia_index(vers_ia_key_column_list)
   | FULLTEXT KEY(vers_ia_text_col_name)
-  | SPATIAL INDEX(vers_ia_geo_col_name)
+#  | SPATIAL INDEX(vers_ia_geo_col_name)
 ;
 
 vers_ia_comment:

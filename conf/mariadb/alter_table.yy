@@ -662,7 +662,7 @@ alt_any_key:
   | alt_index(alt_key_column_list)
   | FULLTEXT KEY(alt_text_col_name)
   | FULLTEXT KEY(alt_text_col_name)
-  | SPATIAL INDEX(alt_geo_col_name)
+#  | SPATIAL INDEX(alt_geo_col_name)
 ;
 
 alt_comment:
