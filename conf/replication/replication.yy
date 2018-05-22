@@ -36,19 +36,19 @@ rotate_event:
 	FLUSH LOGS ;
 	
 query_event:
-	binlog_format_statement ; dml ; dml ; dml ; dml ; binlog_format_restore ;
+	dml ; dml ; dml ; dml ; 
 
 intvar_event:
 	intvar_event_pk | intvar_event_last_insert_id ;
 
 intvar_event_pk:
-	binlog_format_statement ; INSERT INTO _table ( `pk` ) VALUES ( NULL ) ; binlog_format_restore ;
+	INSERT INTO _table ( `pk` ) VALUES ( NULL ) ; 
 
 intvar_event_last_insert_id:
-	binlog_format_statement ; INSERT INTO _table ( _field ) VALUES ( LAST_INSERT_ID() ) ; binlog_format_restore ;
+	INSERT INTO _table ( _field ) VALUES ( LAST_INSERT_ID() ) ; 
 
 rand_event:
-	binlog_format_statement ; rand_event_dml ; binlog_format_restore ;
+	rand_event_dml ;
 
 rand_event_dml:
 	INSERT INTO _table ( _field ) VALUES ( RAND () ) |
@@ -56,7 +56,7 @@ rand_event_dml:
 	DELETE FROM _table WHERE _field < RAND() limit ;
 
 user_var_event:
-	binlog_format_statement ; SET @a = value ; user_var_dml ; binlog_format_restore ;
+	SET @a = value ; user_var_dml ; 
 
 user_var_dml:
 	INSERT INTO _table ( _field ) VALUES ( @a ) |
@@ -80,22 +80,22 @@ implicit_commit:
 	SELECT * FROM _table LIMIT _digit INTO OUTFILE _tmpnam ; LOAD DATA INFILE _tmpnam REPLACE INTO TABLE _table ;
 
 begin_load_query_event:
-	binlog_format_statement ; load_data_infile ; binlog_format_restore ;
+	load_data_infile ;
 
 execute_load_query_event:
-	binlog_format_statement ; load_data_infile ; binlog_format_restore ;
+	load_data_infile ;
 
 load_data_infile:
 	SELECT * FROM _table ORDER BY _field LIMIT _digit INTO OUTFILE _tmpnam ; LOAD DATA INFILE _tmpnam REPLACE INTO TABLE _table ;
 
 write_rows_event:
-	binlog_format_row ; insert ; binlog_format_restore ;
+	insert ;
 
 update_rows_event:
-	binlog_format_row ; update ; binlog_format_restore ;
+	update ; 
 
 delete_rows_event:
-	binlog_format_row ; delete ; binlog_format_restore ;
+	delete ;
 
 binlog_format_statement:
 	SET @binlog_format_saved = @@binlog_format ; SET BINLOG_FORMAT = 'STATEMENT' ;

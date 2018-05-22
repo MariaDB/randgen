@@ -217,9 +217,9 @@
 
 safety_check:
 	# For debugging the grammar use
-	{ return '/*' . $pick_mode . '*/' } /* QProp.QUERY_IS_REPLICATION_SAFE */ ;
+#	{ return '/*' . $pick_mode . '*/' } /* QProp.QUERY_IS_REPLICATION_SAFE */ ;
 	# For faster execution set this grammar element to "empty".
-	# ;
+;
 
 query:
 	binlog_format_sequence |
@@ -246,10 +246,6 @@ query:
 	# We MUST reduce the huge amount of NULL's
 	safety_check UPDATE ignore pick_schema pick_safe_table SET _field[invariant] = col_tinyint WHERE col_tinyint BETWEEN _tinyint[invariant] AND _tinyint[invariant] + _digit AND _field[invariant] IS NULL ; COMMIT |
 	safety_check UPDATE ignore pick_schema pick_safe_table SET _field[invariant] = col_tinyint WHERE col_tinyint BETWEEN _tinyint[invariant] AND _tinyint[invariant] + _digit AND _field[invariant] IS NULL ; COMMIT ;
-
-query_init:
-	# We need to know our current SESSION BINLOG_FORMAT. We do this by simply setting the BINLOG_FORMAT.
-	rand_session_binlog_format ;
 
 set_iso_level:
 	safety_check SET global_or_session TRANSACTION ISOLATION LEVEL iso_level ;
@@ -282,9 +278,9 @@ savepoint_event:
 	# In SBR after a "SAVEPOINT A" any statement which modifies a nontransactional table is unsafe.
 	# Therefore we enforce here that future statements within the current transaction use
 	# a transactional table.
-	SAVEPOINT A { $pick_mode=3; return undef} |
-	SAVEPOINT A { $pick_mode=3; return undef} |
-	SAVEPOINT A { $pick_mode=3; return undef} |
+	SAVEPOINT A { $pick_mode=0; return undef} |
+	SAVEPOINT A { $pick_mode=0; return undef} |
+	SAVEPOINT A { $pick_mode=0; return undef} |
 	ROLLBACK TO SAVEPOINT A                   |
 	RELEASE SAVEPOINT A                       ;
 
@@ -504,8 +500,8 @@ create_table1:
 	# 2         | nontrans                      | t1_*_myisam_*
 	# 3         | trans                         | t1_*_innodb_*
 	# 4         | nontrans and later trans      | SET pick_mode = 2 (-> t1_*_myisam_*)
-	{if ($format eq 'STATEMENT') {$pick_mode=2}; return '/*' . $pick_mode . '*/'} vmarker_set CREATE TABLE IF NOT EXISTS pick_schema { 't1_base_myisam_'.abs($$) } ENGINE = MyISAM AS SELECT _field_list[invariant] FROM table_in_select AS A addition |
-	{if ($format eq 'STATEMENT') {$pick_mode=3}; return '/*' . $pick_mode . '*/'} vmarker_set CREATE TABLE IF NOT EXISTS pick_schema { 't1_base_innodb_'.abs($$) } ENGINE = InnoDB AS SELECT _field_list[invariant] FROM table_in_select AS A addition ;
+	{if ($format eq 'STATEMENT') {$pick_mode=0}; return '/*' . $pick_mode . '*/'} vmarker_set CREATE TABLE IF NOT EXISTS pick_schema { 't1_base_myisam_'.abs($$) } ENGINE = MyISAM AS SELECT _field_list[invariant] FROM table_in_select AS A addition |
+	{if ($format eq 'STATEMENT') {$pick_mode=0}; return '/*' . $pick_mode . '*/'} vmarker_set CREATE TABLE IF NOT EXISTS pick_schema { 't1_base_innodb_'.abs($$) } ENGINE = InnoDB AS SELECT _field_list[invariant] FROM table_in_select AS A addition ;
 drop_table:
 	# FIXME Move this out of xid.....
 	DROP             TABLE IF EXISTS pick_schema { 't1_base_myisam_'.abs($$) } |
@@ -753,7 +749,7 @@ routines_part:
 
 # Guarantee that the transaction has ended before we switch the binlog format
 binlog_format_sequence:
-	COMMIT ; safety_check binlog_format_set ; dml_list ; safety_check xid_event ;
+	COMMIT ; dml_list ; xid_event ;
 dml_list:
 	safety_check dml |
 	safety_check dml nontrans_trans_shift ; dml_list ;
@@ -762,7 +758,7 @@ nontrans_trans_shift:
 	# This is needed for the generation of the following scenario.
 	# m statements of an transaction use non transactional tables followed by
 	# n statements which use transactional tables.
-	{ if ( ($prng->int(1,4) == 4) && ($pick_mode == 4) ) { $pick_mode = 3 } ; return undef } ;
+	{ if ( ($prng->int(1,4) == 4) && ($pick_mode == 4) ) { $pick_mode = 0 } ; return undef } ;
 
 binlog_format_set:
 	# 1. SESSION BINLOG_FORMAT --> How the actions of our current session will be bin logged.

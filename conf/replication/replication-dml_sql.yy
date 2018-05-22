@@ -213,7 +213,7 @@ query_init:
 	# that we get a statement using a transactional and a non transactional table.
 	# And this is UNSAFE if our current SESSION BINLOG_FORMAT is STATEMENT.
 	# $pick_mode = 3 brings us to the safe side.
-	{ $pick_mode = 3 ; return undef } ;
+	{ $pick_mode = 0 ; return undef } ;
 
 binlog_event:
 	/* BEGIN 1 */ dml_event    /* 1 END */  |
@@ -253,7 +253,7 @@ xid_event:
 	# In SBR after a "SAVEPOINT A" any statement which modifies a nontransactional table is unsafe.
 	# Therefore we enforce here that future statements within the current transaction use
 	# a transactional table.
-	SAVEPOINT A { $pick_mode=3; '' }      |
+	SAVEPOINT A { $pick_mode=0; '' }      |
 	ROLLBACK TO SAVEPOINT A               |
 	RELEASE SAVEPOINT A                   |
 	implicit_commit                       ;
@@ -279,7 +279,7 @@ implicit_commit:
 
 # Guarantee that the transaction has ended before we switch the binlog format
 dml_event:
-	COMMIT ; binlog_format_set ; dml_list ; xid_event ;
+	COMMIT ; dml_list ; xid_event ;
 dml_list:
 	dml |
 	dml nontrans_trans ; dml_list ;
@@ -288,7 +288,7 @@ nontrans_trans:
 	# This is needed for the generation of the following scenario.
 	# m statements of an transaction use non transactional tables followed by
 	# n statements which use transactional tables.
-	{ if ( ($prng->int(1,4) == 4) && ($pick_mode == 4) ) { $pick_mode = 3 } ; return undef } ;
+	{ if ( ($prng->int(1,4) == 4) && ($pick_mode == 4) ) { $pick_mode = 0 } ; return undef } ;
 
 binlog_format_set:
 	# 1. SESSION BINLOG_FORMAT --> How the actions of our current session will be bin logged
