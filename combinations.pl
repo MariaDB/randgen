@@ -71,7 +71,7 @@ $SIG{CHLD} = "IGNORE" if osWindows();
 my ($config_file, $basedir, $vardir, $trials, $duration, $grammar, $gendata, 
     $seed, $testname, $xml_output, $report_xml_tt, $report_xml_tt_type,
     $report_xml_tt_dest, $force, $no_mask, $exhaustive, $start_combination, $debug, $noLog, 
-    $threads, $new, $servers, $noshuffle, $clean, $workdir, $discard_logs);
+    $threads, $new, $servers, $noshuffle, $clean, $workdir, $discard_logs, $dry_run);
 
 my @basedirs=('','');
 my $combinations;
@@ -111,8 +111,8 @@ my $opt_result = GetOptions(
     'servers=i' => \$servers,
     'no-shuffle' => \$noshuffle,
     'clean' => \$clean,
-    'discard_logs' => \$discard_logs,
-    'discard-logs' => \$discard_logs
+    'discard_logs|discard-logs' => \$discard_logs,
+    'dry-run|dry_run' => \$dry_run
 );
 
 if ($seed eq 'time') {
@@ -336,6 +336,8 @@ sub doCombination {
   $command =~ s/^\s*//;
   say("[$thread_id] $command\n");
 
+  unless ($dry_run)
+  {
 	unless (osWindows())
 	{
 		$command = 'bash -c "set -o pipefail; '.$command.'"';
@@ -394,4 +396,5 @@ sub doCombination {
         }
     }
     $results{$result >> 8}++;
+  }
 }
