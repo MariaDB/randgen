@@ -728,6 +728,22 @@ sub execute {
     my ($executor, $query, $execution_flags) = @_;
     $execution_flags= 0 unless defined $execution_flags;
 
+    # Process "reverse executable comments" -- imitation of feature MDEV-7381
+    # Syntax is /*!!nnnnnn ... */.
+    # If nnnnnn is less than the server version, it should be executed,
+    # and we'll convert it into a normal executable comment.
+    # Otherwise (if nnnnnn is greater or equal than the server version),
+    # it shouldn't be executed, and we'll convert it into a normal comment.
+
+    while ($query =~ /\/\*\!\!(\d+).*?\*\//) {
+      my $ver= $1;
+      if ($executor->versionNumeric() lt $ver) {
+        $query =~ s/\/\*\!\!$ver/\/\*\!/g;
+      } else {
+        $query =~ s/\/\*\!\!$ver/\/\*/g;
+      }
+    }
+
     $query .= ' /* QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId() . ' */ ';
 
     $execution_flags = $execution_flags | $executor->flags();
