@@ -118,9 +118,8 @@ misc_func:
 	SLEEP( zero_or_almost ) |
 	UUID_SHORT() |
 	UUID() |
-# Changed due to MDEV-14895
-#	VALUES( _field )
-	VALUE( _field )
+# Changed due to MDEV-12172
+	/*!!100303 VALUES( _field ) */ /*!100303 VALUE( _field ) */
 ;	
 
 zero_or_almost:
