@@ -32,7 +32,9 @@ sub transform {
     my ($class, $orig_query, $executor) = @_;
 
     return STATUS_WONT_HANDLE unless $executor->versionNumeric() >= 100307;
-    return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION)}sio;
+    return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION)}sio;
+    # Disabled due to MDEV-16783
+    return STATUS_WONT_HANDLE if $orig_query =~ m{HISTORY}sio;
 
     return [
         [
