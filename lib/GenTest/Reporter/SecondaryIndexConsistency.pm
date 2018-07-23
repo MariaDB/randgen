@@ -47,7 +47,6 @@ sub monitor {
     return STATUS_OK if (time() - $last_run) < $interval;
 
     my $dbh = DBI->connect($reporter->dsn());
-    my $consistency_status = STATUS_OK;
 
     say("Testing consistency of secondary indexes");
 
@@ -90,7 +89,7 @@ sub monitor {
             my $diff= GenTest::Comparator::dumpDiff($pk_data, $ind_data);
             if ($diff) {
                 sayError("Found difference for indexes PRIMARY and $ind: $diff");
-                $consistency_status= STATUS_DATABASE_CORRUPTION;
+                return STATUS_DATABASE_CORRUPTION;
             } else {
                 say("Indexes PRIMARY and $ind produce identical data");
             }
@@ -98,7 +97,7 @@ sub monitor {
         $dbh->do("UNLOCK TABLES");
     }
     $last_run= time();
-    return $consistency_status;
+    return STATUS_OK;
 }
 
 sub type {
