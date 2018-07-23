@@ -323,7 +323,7 @@ alt_virt_col_definition:
 ;
 
 alt_virt_type:
-  STORED | VIRTUAL
+  /*!100201 STORED */ /*!!100201 PERSISTENT */ | VIRTUAL
 ;
 
 alt_optional_default_or_current_timestamp:
@@ -333,7 +333,7 @@ alt_optional_default_or_current_timestamp:
 alt_default_or_current_timestamp_val:
     '1970-01-01'
   | CURRENT_TIMESTAMP
-  | CURRENT_TIESTAMP ON UPDATE CURRENT_TIMESTAMP
+  | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   | 0
 ;
 
@@ -563,7 +563,7 @@ alt_default_int_val:
 ;
 
 alt_geo_optional_default:
-  | DEFAULT ST_GEOMFROMTEXT('Point(1 1)') ;
+  | /*!100201 DEFAULT ST_GEOMFROMTEXT('Point(1 1)') */ ;
 
 alt_optional_auto_increment:
   | | | | | | AUTO_INCREMENT
@@ -587,7 +587,7 @@ alt_add_check_constraint:
 ;
 
 alt_drop_check_constraint:
-  DROP CONSTRAINT alt_if_exists _letter
+  /*!100200 DROP CONSTRAINT alt_if_exists _letter */ /*!!100200 COMMENT 'Skipped DROP CONSTRAINT' */
 ;
 
 # TODO: extend
