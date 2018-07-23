@@ -90,7 +90,7 @@ sub monitor {
             my $diff= GenTest::Comparator::dumpDiff($pk_data, $ind_data);
             if ($diff) {
                 sayError("Found difference for indexes PRIMARY and $ind: $diff");
-                set $consistency_status= STATUS_DATABASE_CORRUPTION;
+                $consistency_status= STATUS_DATABASE_CORRUPTION;
             } else {
                 say("Indexes PRIMARY and $ind produce identical data");
             }
