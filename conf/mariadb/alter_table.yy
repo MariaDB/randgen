@@ -13,8 +13,9 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
+
 query_init_add:
-    alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace
+   alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace
   ; alt_create_or_replace_sequence ; alt_create_or_replace_sequence
 ;
  
@@ -27,7 +28,6 @@ alt_query:
   | alt_dml | alt_dml | alt_dml
   | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter
   | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter
-# Disable with ASAN due to MDEV-13828
   | alt_rename_multi
   | alt_alter_partitioning
   | alt_flush
@@ -42,7 +42,7 @@ alt_create:
 ;
 
 alt_rename_multi:
-  DROP TABLE IF EXISTS { 'tmp_rename_'.abs($$) } ; RENAME TABLE alt_table_name TO { 'tmp_rename_'.abs($$) }, { 'tmp_rename_'.abs($$) } TO { $my_last_table }
+    DROP TABLE IF EXISTS { $tmp_tbl= 'tmp_rename_'.abs($$) } ; RENAME TABLE alt_table_name TO $tmp_tbl, $tmp_tbl TO { $my_last_table }
 ;
 
 alt_dml:
@@ -52,7 +52,7 @@ alt_dml:
 ;  
 
 alt_alter:
-  ALTER alt_online_optional alt_ignore_optional TABLE alt_table_name alt_wait_optional alt_alter_list
+  ALTER alt_online_optional alt_ignore_optional TABLE alt_table_name alt_wait_optional alt_alter_list_with_optional_order_by
 ;
 
 alt_wait_optional:
@@ -67,8 +67,12 @@ alt_online_optional:
   | | | ONLINE
 ;
 
+alt_alter_list_with_optional_order_by:
+  alt_alter_list alt_optional_order_by
+;
+
 alt_alter_list:
-  alt_alter_item | alt_alter_item, alt_alter_list
+  alt_alter_item | alt_alter_item | alt_alter_item, alt_alter_list
 ;
 
 alt_alter_item:
@@ -85,8 +89,12 @@ alt_alter_item:
   | alt_drop_column | alt_drop_column
   | alt_drop_index | alt_drop_index
   | FORCE alt_lock alt_algorithm
-#  | ORDER BY alt_column_list
   | RENAME TO alt_table_name
+;
+
+# Can't put it on the list, as ORDER BY should always go last
+alt_optional_order_by:
+  | | | | | | | | | | , ORDER BY alt_column_list
 ;
 
 alt_table_option:
@@ -100,8 +108,8 @@ alt_table_option:
   | CHECKSUM alt_eq_optional alt_zero_or_one
   | CHECKSUM alt_eq_optional alt_zero_or_one
   | alt_default_optional COLLATE alt_eq_optional alt_collation
-  | COMMENT alt_eq_optional _english
-  | COMMENT alt_eq_optional _english
+  | alt_comment
+  | alt_comment
 #  | CONNECTION [=] 'connect_string'
 #  | DATA DIRECTORY [=] 'absolute path to directory'
   | DELAY_KEY_WRITE alt_eq_optional alt_zero_or_one
@@ -128,8 +136,7 @@ alt_table_option:
   | STATS_PERSISTENT alt_eq_optional alt_zero_or_one_or_default
   | STATS_SAMPLE_PAGES alt_eq_optional alt_stats_sample_pages
 #  | TABLESPACE tablespace_name
-# Disabled due to MDEV-13982 (0 also fails)
-#  | TRANSACTIONAL alt_eq_optional alt_zero_or_one
+  | TRANSACTIONAL alt_eq_optional alt_zero_or_one
 #  | UNION [=] (tbl_name[,tbl_name]...)
 ;
 
@@ -158,9 +165,16 @@ alt_character_set:
 ;
 
 alt_collation:
-    latin1_bin | latin1_general_cs | latin1_general_ci
-  | utf8_bin | utf8_nopad_bin | utf8_general_ci
-  | utf8mb4_bin | utf8mb4_nopad_bin | utf8mb4_general_nopad_ci | utf8mb4_general_ci
+    latin1_bin
+  | latin1_general_cs
+  | latin1_general_ci
+  | utf8_bin
+  | /*!100202 utf8_nopad_bin */ /*!!100202 utf8_bin */
+  | utf8_general_ci
+  | utf8mb4_bin
+  | /*!100202 utf8mb4_nopad_bin */ /*!!100202 utf8mb4_bin */
+  | /*!100202 utf8mb4_general_nopad_ci */ /*!!100202 utf8mb4_general_ci */
+  | utf8mb4_general_ci
 ;
 
 alt_eq_optional:
@@ -168,7 +182,7 @@ alt_eq_optional:
 ;
 
 alt_engine:
-  InnoDB | InnoDB | InnoDB | MyISAM | MyISAM | Aria | Memory
+  InnoDB | InnoDB | InnoDB | InnoDB | MyISAM | MyISAM | Aria | Memory
 ;
 
 alt_default_optional:
@@ -190,9 +204,8 @@ alt_transaction:
 ;
 
 alt_lock_unlock_table:
-# Disabled due to MDEV-13553 and MDEV-12466
-#    FLUSH TABLE alt_table_name FOR EXPORT
-    LOCK TABLE alt_table_name READ
+    FLUSH TABLE alt_table_name FOR EXPORT
+  | LOCK TABLE alt_table_name READ
   | LOCK TABLE alt_table_name WRITE
   | SELECT * FROM alt_table_name FOR UPDATE
   | UNLOCK TABLES
@@ -377,7 +390,13 @@ alt_change_row_format:
 ;
 
 alt_row_format:
-  DEFAULT | DYNAMIC | FIXED | COMPRESSED | REDUNDANT | COMPACT | PAGE
+    DEFAULT | DEFAULT | DEFAULT
+  | DYNAMIC | DYNAMIC | DYNAMIC | DYNAMIC
+  | FIXED | FIXED
+  | COMPRESSED | COMPRESSED | COMPRESSED | COMPRESSED
+  | REDUNDANT | REDUNDANT | REDUNDANT
+  | COMPACT | COMPACT | COMPACT
+  | PAGE
 ;
 
 alt_row_format_optional:
@@ -433,10 +452,8 @@ alt_change_column:
   CHANGE COLUMN alt_if_exists alt_col_name alt_col_name_and_definition alt_algorithm alt_lock
 ;
 
-# MDEV-14694 - ALTER COLUMN does not accept IF EXISTS
-# alt_if_exists
 alt_alter_column:
-    ALTER COLUMN alt_col_name SET DEFAULT alt_default_val
+    ALTER COLUMN /*!100305 alt_if_exists */ alt_col_name SET DEFAULT alt_default_val
   | ALTER COLUMN alt_col_name DROP DEFAULT
 ;
 
@@ -465,9 +482,8 @@ alt_column_list:
   alt_col_name | alt_col_name, alt_column_list
 ;
 
-# Disabled due to MDEV-11071
 alt_temporary:
-#  | | | | TEMPORARY
+  | | | | TEMPORARY
 ;
 
 alt_flush:
@@ -666,7 +682,8 @@ alt_any_key:
 ;
 
 alt_comment:
-  | | COMMENT 'comment';
+  COMMENT alt_eq_optional _english
+;
   
 alt_compressed:
   | | | | | | COMPRESSED ;
