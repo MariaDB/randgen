@@ -2,20 +2,21 @@ INTRODUCTION
 ---------------------------------------------------------------
 
 This is the source or binary distribution of The Random Query
-Generator, a tool for generating complete databases and executing
-queries against them for the purpose of stress testing.
+Generator with MariaDB patches, a tool for generating complete databases
+and executing queries against them for the purpose of testing.
 
-Copyright © 2008, 2011, Oracle and/or its affiliates. All rights
+Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights
 reserved.  Use is subject to license terms.
+Copyright (c) 2010, 2018, MariaDB
 
-Wiki:
-* http://forge.mysql.com/wiki/Category:RandomQueryGenerator
+Upstream Wiki:
+* https://github.com/RQG/RQG-Documentation/wiki
 
-Launchpad homepage:
-* https://launchpad.net/randgen
+MariaDB Knowledge Base:
+* https://mariadb.com/kb/en/library/rqg-extensions-for-mariadb-features
 
-Bazaar code repository:
-* lp:randgen
+Github:
+* https://github.com/MariaDB/randgen
 
 
 LICENSE
