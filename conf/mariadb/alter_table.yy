@@ -56,7 +56,6 @@ alt_alter:
 ;
 
 alt_wait_optional:
-  | | | /*!100301 WAIT _digit */ | /*!100301 NOWAIT */
 ;
 
 alt_ignore_optional:
@@ -314,11 +313,9 @@ alt_check_optional:
 ;
 
 alt_invisible_optional:
-  | | | | /*!100303 INVISIBLE */
 ;
 
 alt_col_versioning_optional:
- | | | | | /*!100304 alt_with_without SYSTEM VERSIONING */
 ;
 
 alt_with_without:
@@ -368,7 +365,6 @@ alt_create_or_replace:
 ;
 
 alt_create_or_replace_sequence:
-  /*!100303 CREATE OR REPLACE SEQUENCE alt_table_name */
 ;
 
 alt_col_name_and_definition_list:
@@ -453,7 +449,7 @@ alt_change_column:
 ;
 
 alt_alter_column:
-    ALTER COLUMN /*!100305 alt_if_exists */ alt_col_name SET DEFAULT alt_default_val
+    ALTER COLUMN alt_col_name SET DEFAULT alt_default_val
   | ALTER COLUMN alt_col_name DROP DEFAULT
 ;
 
