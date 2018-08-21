@@ -123,19 +123,19 @@ alt_table_option:
 #  | /*!100108 IETF_QUOTES = alt_yes_or_no_no_no */
 #  | INDEX DIRECTORY [=] 'absolute path to directory'
 #  | INSERT_METHOD [=] { NO | FIRST | LAST }
-  | KEY_BLOCK_SIZE alt_eq_optional alt_key_block_size
-  | MAX_ROWS alt_eq_optional _int_unsigned
-  | MIN_ROWS alt_eq_optional _tinyint_unsigned
-  | PACK_KEYS alt_eq_optional alt_zero_or_one_or_default
+#  | KEY_BLOCK_SIZE alt_eq_optional alt_key_block_size
+#  | MAX_ROWS alt_eq_optional _int_unsigned
+#  | MIN_ROWS alt_eq_optional _tinyint_unsigned
+#  | PACK_KEYS alt_eq_optional alt_zero_or_one_or_default
   | PAGE_CHECKSUM alt_eq_optional alt_zero_or_one
-  | PASSWORD alt_eq_optional _english
+#  | PASSWORD alt_eq_optional _english
   | alt_change_row_format
   | alt_change_row_format
   | STATS_AUTO_RECALC alt_eq_optional alt_zero_or_one_or_default
   | STATS_PERSISTENT alt_eq_optional alt_zero_or_one_or_default
   | STATS_SAMPLE_PAGES alt_eq_optional alt_stats_sample_pages
 #  | TABLESPACE tablespace_name
-  | TRANSACTIONAL alt_eq_optional alt_zero_or_one
+#  | TRANSACTIONAL alt_eq_optional alt_zero_or_one
 #  | UNION [=] (tbl_name[,tbl_name]...)
 ;
 
