@@ -64,7 +64,7 @@ sub monitor {
 		return STATUS_SERVER_CRASHED;
 	}
 
-  if (!$server->stopServer($shutdown_timeout)) {
+  if ($server->stopServer($shutdown_timeout) != STATUS_OK) {
     say("Restart reporter failed to stop the server");
     return STATUS_ENVIRONMENT_FAILURE;
   }
