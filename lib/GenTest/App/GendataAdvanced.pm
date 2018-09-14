@@ -325,6 +325,8 @@ sub gen_table {
                         undef
                     ],
     );
+
+    $vcols= '';
     
     # TODO: add actual functions
 
