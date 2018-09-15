@@ -170,6 +170,7 @@ sub prepareGentest {
   $config->property('queries', '1000M') if !defined $config->property('queries');
   $config->property('reporters', ['Backtrace', 'Deadlock']) if !defined $config->property('reporters');
   $config->property('user', 'root') if !defined $config->property('user');
+  $config->property('strict_fields', 1);
 
   # gendata and gendata-advanced will only be used if they specified
   # explicitly for this run
