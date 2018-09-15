@@ -728,7 +728,6 @@ if (($gentest_result == STATUS_OK) && ( ($rpl_mode && $rpl_mode !~ /nosync/) || 
       foreach my $i ($#server) {
         my $file= $server[$i]->binary;
         my $to= $vardirs[$i];
-        say("HERE: trying to copy $file to $to");
         if (osWindows()) {
           system("xcopy \"$file\" \"".$to."\"") if -e $file and $to;
           $file =~ s/\.exe/\.pdb/;
