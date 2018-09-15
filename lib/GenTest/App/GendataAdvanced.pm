@@ -166,7 +166,7 @@ sub random_pk_variation {
     return $prng->uint16(0,1) ? 'INTEGER AUTO_INCREMENT' : 'SERIAL';
 }
 sub random_or_predefined_vcol_kind {
-    return ($_[0]->vcols() eq '' ? ($prng->uint16(0,1) ? 'PERSISTENT' : 'VIRTUAL') : $_[0]->vcols());
+    return ($_[0]->vcols() eq '' ? ($prng->uint16(0,1) ? 'STORED' : 'VIRTUAL') : $_[0]->vcols());
 }
 sub random_invisible {
     return $prng->uint16(0,3) ? undef : '/*!100303 INVISIBLE */' ;
