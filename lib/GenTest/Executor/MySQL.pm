@@ -750,6 +750,16 @@ sub execute {
       }
     }
 
+    # It turns out that MySQL fails with a syntax error upon executable comments of the kind /*!100101 ... */
+    # (with 6 digits for the version), so we have to process them here as well.
+    # To avoid complicated logic, we'll replace such versions with 99999,
+    # but only when the server logic is 5xxxx. This way the server won't execute
+    # the comment, which is what we need, and we don't need to search for the end of the comment
+
+    if ($executor->versionNumeric() =~ /^05\d{4}$/) {
+      while ($query =~ s/\/\*\!1\d{5}/\/\*\!99999/g) {};
+    }
+
     $query .= ' /* QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId() . ' */ ';
 
     $execution_flags = $execution_flags | $executor->flags();
