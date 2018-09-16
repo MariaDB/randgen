@@ -641,7 +641,6 @@ sub metaColumnsDataType {
         }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }
-#    say("HERE: $datatype columns for $table in $schema: @{$self->[EXECUTOR_META_CACHE]->{$cachekey}}");
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
     
 }
