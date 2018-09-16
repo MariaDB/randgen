@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights
 # reserved.
+# Copyright (c) 2018, MariaDB Corporation
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -176,6 +177,110 @@ sub new {
     }
     
     return $props;
+}
+
+sub init {
+  my ($class, $props)= @_;
+  my $gentestProps= $class->new(
+    legal => ['grammar',
+              'skip-recursive-rules',
+              'dsn',
+              'engine',
+              'gendata',
+              'gendata-advanced',
+              'generator',
+              'redefine',
+              'threads',
+              'queries',
+              'duration',
+              'help',
+              'debug',
+              'rpl_mode',
+              'validators',
+              'reporters',
+              'transformers',
+              'seed',
+              'mask',
+              'mask-level',
+              'rows',
+              'varchar-length',
+              'xml-output',
+              'vcols',
+              'views',
+              'start-dirty',
+              'filter',
+              'notnull',
+              'short_column_names',
+              'strict_fields',
+              'freeze_time',
+              'valgrind',
+              'valgrind-xml',
+              'testname',
+              'sqltrace',
+              'querytimeout',
+              'report-xml-tt',
+              'report-xml-tt-type',
+              'report-xml-tt-dest',
+              'logfile',
+              'logconf',
+              'debug_server',
+              'report-tt-logdir',
+              'servers',
+              'multi-master',
+              'annotate-rules',
+              'restart-timeout',
+              'ps-protocol'
+      ]
+  );
+
+  $gentestProps->property('annotate-rules',$props->{annotate_rules}) if defined $props->{annotate_rules};
+  $gentestProps->property('debug',1) if defined $props->{debug};
+  $gentestProps->property('debug_server',$props->{debug_server}) if $props->{debug_server};
+  $gentestProps->property('dsn',$props->{dsns}) if $props->{dsns};
+  $gentestProps->property('duration',$props->{duration}) if defined $props->{duration};
+  $gentestProps->property('engine',$props->{engine}) if $props->{engine};
+  $gentestProps->property('filter',$props->{filter}) if defined $props->{filter};
+  $gentestProps->property('freeze_time',$props->{freeze_time}) if defined $props->{freeze_time};
+  $gentestProps->property('gendata',$props->{gendata}) if exists $props->{gendata};
+  $gentestProps->property('gendata-advanced',1) if defined $props->{gendata_advanced};
+  $gentestProps->property('generator','FromGrammar') if not defined $gentestProps->property('generator');
+  $gentestProps->property('grammar',$props->{grammar});
+  $gentestProps->property('queries',$props->{queries}) if defined $props->{queries};
+  $gentestProps->property('logconf',$props->{logconf}) if defined $props->{logconf};
+  $gentestProps->property('logfile',$props->{logfile}) if defined $props->{logfile};
+  $gentestProps->property('mask',$props->{mask}) if (exists $props->{mask});
+  $gentestProps->property('mask-level',$props->{mask_level}) if defined $props->{mask_level};
+  $gentestProps->property('multi-master',1) if $props->{'multi_master'};
+  $gentestProps->property('notnull',$props->{notnull}) if defined $props->{notnull};
+  $gentestProps->property('ps-protocol',1) if $props->{ps_protocol};
+  $gentestProps->property('querytimeout',$props->{querytimeout}) if defined $props->{querytimeout};
+  $gentestProps->property('redefine',$props->{redefine}) if $props->{redefine};
+  $gentestProps->property('report-tt-logdir',$props->{report_tt_logdir}) if defined $props->{report_tt_logdir};
+  $gentestProps->property('report-xml-tt',1) if defined $props->{report_xml_tt};
+  $gentestProps->property('report-xml-tt-dest',$props->{report_xml_tt_dest}) if defined $props->{report_xml_tt_dest};
+  $gentestProps->property('report-xml-tt-type',$props->{report_xml_tt_type}) if defined $props->{report_xml_tt_type};
+  $gentestProps->property('reporters',$props->{reporters}) if $props->{reporters};
+  $gentestProps->property('restart-timeout',$props->{restart_timeout}) if defined $props->{restart_timeout};
+  $gentestProps->property('rows',$props->{rows}) if defined $props->{rows};
+  $gentestProps->property('rpl_mode',$props->{rpl_mode}) if defined $props->{rpl_mode};
+  $gentestProps->property('seed',$props->{seed}) if defined $props->{seed};
+  $gentestProps->property('servers',$props->{server}) if $props->{server};
+  $gentestProps->property('short_column_names',$props->{short_column_names}) if defined $props->{short_column_names};
+  $gentestProps->property('skip-recursive-rules',$props->{skip_recursive_rules});
+  $gentestProps->property('sqltrace',$props->{sqltrace}) if $props->{sqltrace};
+  $gentestProps->property('start-dirty',1) if defined $props->{start_dirty};
+  $gentestProps->property('strict_fields',$props->{strict_fields}) if defined $props->{strict_fields};
+  $gentestProps->property('testname',$props->{testname}) if $props->{testname};
+  $gentestProps->property('threads',$props->{threads}) if defined $props->{threads};
+  $gentestProps->property('transformers',$props->{transformers}) if $props->{transformers};
+  $gentestProps->property('valgrind',1) if $props->{valgrind};
+  $gentestProps->property('validators',$props->{validators}) if $props->{validators};
+  $gentestProps->property('varchar-length',$props->{varchar_len}) if defined $props->{varchar_len};
+  $gentestProps->property('vcols',$props->{vcols}) if $props->{vcols};
+  $gentestProps->property('views',$props->{views}) if $props->{views};
+  $gentestProps->property('xml-output',$props->{xml_output}) if defined $props->{xml_output};
+
+  return $gentestProps;
 }
 
 
