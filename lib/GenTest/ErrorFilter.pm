@@ -46,6 +46,7 @@ sub run {
     # on connecting to server. 
     # Setting InactiveDestroy should help to avoid it. 
     foreach my $server (@$servers) {
+        next unless $server;
         $server->dbh()->{InactiveDestroy} = 1;
     }
     while (1) {
