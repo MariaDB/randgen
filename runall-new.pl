@@ -73,115 +73,104 @@ my $database = 'test';
 my $user = 'rqg';
 my @dsns;
 
-my ($gendata, @basedirs, @mysqld_options, @vardirs, $rpl_mode,
-    @engine, $help, $debug, @validators, @reporters, @transformers, 
-    $grammar_file, $skip_recursive_rules,
-    @redefine_files, $seed, $mask, $mask_level, $mem, $rows,
-    $varchar_len, $xml_output, $valgrind, @valgrind_options, @vcols, @views,
-    $start_dirty, $filter, $build_thread, $sqltrace, $testname,
-    $report_xml_tt, $report_xml_tt_type, $report_xml_tt_dest,
-    $notnull, $logfile, $logconf, $report_tt_logdir, $querytimeout, $no_mask,
-    $short_column_names, $strict_fields, $freeze_time, $wait_debugger, @debug_server,
-    $skip_gendata, $skip_shutdown, $galera, $use_gtid, $genconfig, $annotate_rules,
-    $restart_timeout, $gendata_advanced, $scenario, $store_binaries, $ps_protocol);
-
-my $gendata=''; ## default simple gendata
+my (@basedirs, @mysqld_options, @vardirs,
+    $help, $debug,
+    $mem,
+    @valgrind_options,
+    $build_thread,
+    $no_mask,
+    $wait_debugger,
+    $skip_gendata, $skip_shutdown, $galera, $use_gtid, $genconfig,
+    $scenario, $store_binaries, $props);
 
 my $genconfig=''; # if template is not set, the server will be run with --no-defaults
 
-my $threads = my $default_threads = 10;
-my $queries = my $default_queries = 100000000;
-my $duration = my $default_duration = 3600;
+my $default_threads= 10;
+my $default_queries= 100000000;
+my $default_duration= 600;
 
 my @ARGV_saved = @ARGV;
 
 my $opt_result = GetOptions(
-    'mysqld=s@' => \$mysqld_options[0],
-    'mysqld1=s@' => \$mysqld_options[1],
-    'mysqld2=s@' => \$mysqld_options[2],
-    'mysqld3=s@' => \$mysqld_options[3],
+    'annotate_rules|annotate-rules' => \$props->{annotate_rules},
     'basedir=s' => \$basedirs[0],
     'basedir1=s' => \$basedirs[1],
     'basedir2=s' => \$basedirs[2],
     'basedir3=s' => \$basedirs[3],
-    #'basedir=s@' => \@basedirs,
+    'debug' => \$debug,
+    'debug-server' => \${$props->{debug_server}}[0],
+    'debug-server1' => \${$props->{debug_server}}[1],
+    'debug-server2' => \${$props->{debug_server}}[2],
+    'debug-server3' => \${$props->{debug_server}}[3],
+    'duration=i' => \$props->{duration},
+    'engine=s' => \${$props->{engine}}[0],
+    'engine1=s' => \${$props->{engine}}[1],
+    'engine2=s' => \${$props->{engine}}[2],
+    'engine3=s' => \${$props->{engine}}[3],
+    'filter=s'    => \$props->{filter},
+    'freeze_time' => \$props->{freeze_time},
+    'galera=s' => \$galera,
+    'genconfig:s' => \$genconfig,
+    'gendata:s' => \$props->{gendata},
+    'gendata_advanced|gendata-advanced' => \$props->{gendata_advanced},
+    'grammar=s' => \$props->{grammar},
+    'help' => \$help,
+    'logconf=s' => \$props->{logconf},
+    'logfile=s' => \$props->{logfile},
+    'mask=i' => \$props->{mask},
+    'mask-level|mask_level=i' => \$props->{mask_level},
+    'mem' => \$mem,
+    'mtr-build-thread=i' => \$build_thread,
+    'mysqld=s@' => \$mysqld_options[0],
+    'mysqld1=s@' => \$mysqld_options[1],
+    'mysqld2=s@' => \$mysqld_options[2],
+    'mysqld3=s@' => \$mysqld_options[3],
+    'no_mask|no-mask' => \$no_mask,
+    'notnull' => \$props->{notnull},
+    'ps_protocol|ps-protocol' => \$props->{ps_protocol},
+    'queries=s' => \$props->{queries},
+    'querytimeout=i' => \$props->{querytimeout},
+    'redefine=s@' => \@{$props->{redefine}},
+    'report-tt-logdir=s' => \$props->{report_tt_logdir},
+    'report-xml-tt'    => \$props->{report_xml_tt},
+    'report-xml-tt-dest=s' => \$props->{report_xml_tt_dest},
+    'report-xml-tt-type=s' => \$props->{report_xml_tt_type},
+    'reporters=s@' => \@{$props->{reporters}},
+    'restart_timeout|restart-timeout=i' => \$props->{restart_timeout},
+    'rows=s' => \$props->{rows},
+    'rpl_mode|rpl-mode=s' => \$props->{rpl_mode},
+    'scenario:s' => \$scenario,
+    'seed=s' => \$props->{seed},
+    'short_column_names|short-column-names' => \$props->{short_column_names},
+    'skip_recursive_rules|skip-recursive-rules' > \$props->{skip_recursive_rules},
+    'skip_gendata|skip-gendata' => \$skip_gendata,
+    'skip_shutdown|skip-shutdown' => \$skip_shutdown,
+    'sqltrace:s' => \$props->{sqltrace},
+    'start_dirty|start-dirty'    => \$props->{start_dirty},
+    'store-binaries|store_binaries' => \$store_binaries,
+    'strict_fields|strict-fields' => \$props->{strict_fields},
+    'testname=s'        => \$props->{testname},
+    'threads=i' => \$props->{threads},
+    'transformers=s@' => \@{$props->{transformers}},
+    'use_gtid|use-gtid=s' => \$use_gtid,
+    'valgrind!'    => \$props->{valgrind},
+    'valgrind_options=s@'    => \@valgrind_options,
+    'validators=s@' => \@{$props->{validators}},
     'vardir=s' => \$vardirs[0],
     'vardir1=s' => \$vardirs[1],
     'vardir2=s' => \$vardirs[2],
     'vardir3=s' => \$vardirs[3],
-    'debug-server' => \$debug_server[0],
-    'debug-server1' => \$debug_server[1],
-    'debug-server2' => \$debug_server[2],
-    'debug-server3' => \$debug_server[3],
-    #'vardir=s@' => \@vardirs,
-    'rpl_mode=s' => \$rpl_mode,
-    'rpl-mode=s' => \$rpl_mode,
-    'engine=s' => \$engine[0],
-    'engine1=s' => \$engine[1],
-    'engine2=s' => \$engine[2],
-    'engine3=s' => \$engine[3],
-    'grammar=s' => \$grammar_file,
-    'skip-recursive-rules' > \$skip_recursive_rules,
-    'redefine=s@' => \@redefine_files,
-    'threads=i' => \$threads,
-    'queries=s' => \$queries,
-    'duration=i' => \$duration,
-    'help' => \$help,
-    'debug' => \$debug,
-    'validators=s@' => \@validators,
-    'reporters=s@' => \@reporters,
-    'transformers=s@' => \@transformers,
-    'gendata:s' => \$gendata,
-    'gendata_advanced' => \$gendata_advanced,
-    'gendata-advanced' => \$gendata_advanced,
-    'skip-gendata' => \$skip_gendata,
-    'genconfig:s' => \$genconfig,
-    'notnull' => \$notnull,
-    'short_column_names' => \$short_column_names,
-    'freeze_time' => \$freeze_time,
-    'strict_fields' => \$strict_fields,
-    'seed=s' => \$seed,
-    'mask=i' => \$mask,
-    'mask-level=i' => \$mask_level,
-    'mem' => \$mem,
-    'rows=s' => \$rows,
-    'varchar-length=i' => \$varchar_len,
-    'xml-output=s'    => \$xml_output,
-    'report-xml-tt'    => \$report_xml_tt,
-    'report-xml-tt-type=s' => \$report_xml_tt_type,
-    'report-xml-tt-dest=s' => \$report_xml_tt_dest,
-    'restart_timeout=i' => \$restart_timeout,
-    'restart-timeout=i' => \$restart_timeout,
-    'testname=s'        => \$testname,
-    'valgrind!'    => \$valgrind,
-    'valgrind_options=s@'    => \@valgrind_options,
-    'vcols:s'        => \$vcols[0],
-    'vcols1:s'        => \$vcols[1],
-    'vcols2:s'        => \$vcols[2],
-    'vcols3:s'        => \$vcols[3],
-    'views:s'        => \$views[0],
-    'views1:s'        => \$views[1],
-    'views2:s'        => \$views[2],
-    'views3:s'        => \$views[3],
+    'varchar_length|varchar-length=i' => \$props->{varchar_len},
+    'vcols:s'        => \${$props->{vcols}}[0],
+    'vcols1:s'        => \${$props->{vcols}}[1],
+    'vcols2:s'        => \${$props->{vcols}}[2],
+    'vcols3:s'        => \${$props->{vcols}}[3],
+    'views:s'        => \${$props->{views}}[0],
+    'views1:s'        => \${$props->{views}}[1],
+    'views2:s'        => \${$props->{views}}[2],
+    'views3:s'        => \${$props->{views}}[3],
     'wait-for-debugger' => \$wait_debugger,
-    'start-dirty'    => \$start_dirty,
-    'filter=s'    => \$filter,
-    'mtr-build-thread=i' => \$build_thread,
-    'sqltrace:s' => \$sqltrace,
-    'logfile=s' => \$logfile,
-    'logconf=s' => \$logconf,
-    'report-tt-logdir=s' => \$report_tt_logdir,
-    'querytimeout=i' => \$querytimeout,
-    'no-mask' => \$no_mask,
-    'skip_shutdown|skip-shutdown' => \$skip_shutdown,
-    'galera=s' => \$galera,
-    'use-gtid=s' => \$use_gtid,
-    'use_gtid=s' => \$use_gtid,
-    'annotate_rules|annotate-rules' => \$annotate_rules,
-    'scenario:s' => \$scenario,
-    'ps-protocol' => \$ps_protocol,
-    'ps_protocol' => \$ps_protocol,
-    'store-binaries|store_binaries' => \$store_binaries
+    'xml-output=s'    => \$props->{xml_output},
 );
 
 if ( osWindows() && !$debug )
@@ -197,11 +186,11 @@ if (defined $scenario) {
   exit $? >> 8;
 }
 
-if (defined $logfile && defined $logger) {
-    setLoggingToFile($logfile);
+if (defined $props->{logfile} && defined $logger) {
+    setLoggingToFile($props->{logfile});
 } else {
-    if (defined $logconf && defined $logger) {
-        setLogConf($logconf);
+    if (defined $props->{logconf} && defined $logger) {
+        setLogConf($props->{logconf});
     }
 }
 
@@ -214,7 +203,7 @@ if ($basedirs[0] eq '' and $basedirs[1] eq '') {
     help();
     exit 1;
 }
-if (not defined $grammar_file) {
+if (not defined $props->{grammar}) {
     print STDERR "\nERROR: Grammar file is not defined\n\n";
     help();
     exit 1;
@@ -225,17 +214,17 @@ if (!$opt_result) {
     exit 1;
 }
 
-if (defined $sqltrace) {
+if (defined $props->{sqltrace}) {
     # --sqltrace may have a string value (optional). 
     # Allowed values for --sqltrace:
     my %sqltrace_legal_values = (
         'MarkErrors'    => 1  # Prefixes invalid SQL statements for easier post-processing
     );
     
-    if (length($sqltrace) > 0) {
+    if (length($props->{sqltrace}) > 0) {
         # A value is given, check if it is legal.
-        if (not exists $sqltrace_legal_values{$sqltrace}) {
-            say("Invalid value for --sqltrace option: '$sqltrace'");
+        if (not exists $sqltrace_legal_values{$props->{sqltrace}}) {
+            say("Invalid value for --sqltrace option: '$props->{sqltrace}'");
             say("Valid values are: ".join(', ', keys(%sqltrace_legal_values)));
             say("No value means that default/plain sqltrace will be used.");
             exit(STATUS_ENVIRONMENT_FAILURE);
@@ -244,7 +233,7 @@ if (defined $sqltrace) {
         # If no value is given, GetOpt will assign the value '' (empty string).
         # We interpret this as plain tracing (no marking of errors, prefixing etc.).
         # Better to use 1 instead of empty string for comparisons later.
-        $sqltrace = 1;
+        $props->{sqltrace} = 1;
     }
 }
 
@@ -321,24 +310,24 @@ $vardirs[0] ||= $vardirs[1];
 # values[N] expand or override values[0] for the server N
 
 @{$mysqld_options[0]} = () if not defined $mysqld_options[0];
-push @{$mysqld_options[0]}, "--sql-mode=no_engine_substitution" if join(' ', @ARGV_saved) !~ m{sql-mode}io;
+push @{$mysqld_options[0]}, "--sql-mode=no_engine_substitution" if join(' ', @ARGV_saved) !~ m{sql[-_]mode}io;
 
 foreach my $i (1..3) {
     @{$mysqld_options[$i]} = ( defined $mysqld_options[$i] 
             ? ( @{$mysqld_options[0]}, @{$mysqld_options[$i]} )
             : @{$mysqld_options[0]}
     );
-    $debug_server[$i] = $debug_server[0] if $debug_server[$i] eq '';
-    $vcols[$i] = $vcols[0] if $vcols[$i] eq '';
-    $views[$i] = $views[0] if $views[$i] eq '';
-    $engine[$i] ||= $engine[0];
+    ${$props->{debug_server}}[$i] = ${$props->{debug_server}}[0] if ${$props->{debug_server}}[$i] eq '';
+    ${$props->{vcols}}[$i] = ${$props->{vcols}}[0] if ${$props->{vcols}}[$i] eq '';
+    ${$props->{views}}[$i] = ${$props->{views}}[0] if ${$props->{views}}[$i] eq '';
+    ${$props->{engine}}[$i] ||= ${$props->{engine}}[0];
 }
 
 shift @mysqld_options;
-shift @debug_server;
-shift @vcols;
-shift @views;
-shift @engine;
+shift @{$props->{debug_server}};
+shift @{$props->{vcols}};
+shift @{$props->{views}};
+shift @{$props->{engine}};
 
 #foreach my $dir (cwd(), @basedirs) {
 ## calling bzr usually takes a few seconds...
@@ -369,13 +358,13 @@ foreach my $path ("$basedirs[0]/client/RelWithDebInfo", "$basedirs[0]/client/Deb
 
 # Originally it was done in Gendata, but we want the same seed for all components
 
-if (defined $seed and $seed eq 'time') {
-    $seed = time();
-    say("Converted --seed=time to --seed=$seed");
+if (defined $props->{seed} and $props->{seed} eq 'time') {
+    $props->{seed} = time();
+    say("Converted --seed=time to --seed=$props->{seed}");
 }
 
 my $cmd = $0 . " " . join(" ", @ARGV_saved);
-$cmd =~ s/seed=time/seed=$seed/g;
+$cmd =~ s/seed=time/seed=$props->{seed}/g;
 say("Final command line: \nperl $cmd");
 
 
@@ -386,7 +375,7 @@ if ($genconfig) {
         croak("ERROR: Specified config template $genconfig does not exist");
     }
     $cnf_array_ref = GenTest::App::GenConfig->new(spec_file => $genconfig,
-                                               seed => $seed,
+                                               seed => $props->{seed},
                                                debug => $debug
     );
 }
@@ -395,25 +384,24 @@ if ($genconfig) {
 # Start servers. Use rpl_alter if replication is needed.
 #
 
-my @server;
 my $rplsrv;
 
 
-if ($rpl_mode ne '') {
+if ($props->{rpl_mode} ne '') {
 
     $rplsrv = DBServer::MySQL::ReplMySQLd->new(master_basedir => $basedirs[1],
                                                slave_basedir => $basedirs[2],
                                                master_vardir => $vardirs[1],
-                                               debug_server => $debug_server[1],
+                                               debug_server => ${$props->{debug_server}}[1],
                                                master_port => $ports[0],
                                                slave_vardir => $vardirs[2],
                                                slave_port => $ports[1],
-                                               mode => $rpl_mode,
+                                               mode => $props->{rpl_mode},
                                                server_options => $mysqld_options[1],
-                                               valgrind => $valgrind,
+                                               valgrind => $props->{valgrind},
                                                valgrind_options => \@valgrind_options,
                                                general_log => 1,
-                                               start_dirty => $start_dirty,
+                                               start_dirty => $props->{start_dirty},
                                                use_gtid => $use_gtid,
                                                config => $cnf_array_ref,
                                                user => $user
@@ -435,8 +423,8 @@ if ($rpl_mode ne '') {
     
     $dsns[0] = $rplsrv->master->dsn($database,$user);
     $dsns[1] = undef; ## passed to gentest. No dsn for slave!
-    $server[0] = $rplsrv->master;
-    $server[1] = $rplsrv->slave;
+    ${$props->{server}}[0] = $rplsrv->master;
+    ${$props->{server}}[1] = $rplsrv->slave;
 
 } elsif ($galera ne '') {
 
@@ -451,13 +439,13 @@ if ($rpl_mode ne '') {
     $rplsrv = DBServer::MySQL::GaleraMySQLd->new(
         basedir => $basedirs[0],
         parent_vardir => $vardirs[0],
-        debug_server => $debug_server[1],
+        debug_server => ${$props->{debug_server}}[1],
         first_port => $ports[0],
         server_options => $mysqld_options[1],
-        valgrind => $valgrind,
+        valgrind => $props->{valgrind},
         valgrind_options => \@valgrind_options,
         general_log => 1,
-        start_dirty => $start_dirty,
+        start_dirty => $props->{start_dirty},
         node_count => length($galera)
     );
     
@@ -476,7 +464,7 @@ if ($rpl_mode ne '') {
         if (lc($1) eq 'm') {
             $dsns[$i] = $rplsrv->nodes->[$i]->dsn($database,$user);
         }
-        $server[$i] = $rplsrv->nodes->[$i];
+        ${$props->{server}}[$i] = $rplsrv->nodes->[$i];
         $i++;
     }
 
@@ -485,38 +473,38 @@ if ($rpl_mode ne '') {
     foreach my $server_id (0..2) {
         next unless $basedirs[$server_id+1];
         
-        $server[$server_id] = DBServer::MySQL::MySQLd->new(basedir => $basedirs[$server_id+1],
+        ${$props->{server}}[$server_id] = DBServer::MySQL::MySQLd->new(basedir => $basedirs[$server_id+1],
                                                            vardir => $vardirs[$server_id+1],
-                                                           debug_server => $debug_server[$server_id],
+                                                           debug_server => ${$props->{debug_server}}[$server_id],
                                                            port => $ports[$server_id],
-                                                           start_dirty => $start_dirty,
-                                                           valgrind => $valgrind,
+                                                           start_dirty => $props->{start_dirty},
+                                                           valgrind => $props->{valgrind},
                                                            valgrind_options => \@valgrind_options,
                                                            server_options => $mysqld_options[$server_id],
                                                            general_log => 1,
                                                            config => $cnf_array_ref,
                                                            user => $user);
         
-        my $status = $server[$server_id]->startServer;
+        my $status = ${$props->{server}}[$server_id]->startServer;
         
         if ($status > DBSTATUS_OK) {
             stopServers($status);
             if (osWindows()) {
-                say(system("dir ".unix2winPath($server[$server_id]->datadir)));
+                say(system("dir ".unix2winPath(${$props->{server}}[$server_id]->datadir)));
             } else {
-                say(system("ls -l ".$server[$server_id]->datadir));
+                say(system("ls -l ".${$props->{server}}[$server_id]->datadir));
             }
             sayError("Could not start all servers");
             exit_test(STATUS_CRITICAL_FAILURE);
         }
         
-        if ( ($server_id == 0) || ($rpl_mode eq '') ) {
-            $dsns[$server_id] = $server[$server_id]->dsn($database,$user);
+        if ( ($server_id == 0) || ($props->{rpl_mode} eq '') ) {
+            $dsns[$server_id] = ${$props->{server}}[$server_id]->dsn($database,$user);
         }
     
-        if ((defined $dsns[$server_id]) && (defined $engine[$server_id])) {
+        if ((defined $dsns[$server_id]) && (defined ${$props->{engine}}[$server_id])) {
             my $dbh = DBI->connect($dsns[$server_id], undef, undef, { mysql_multi_statements => 1, RaiseError => 1 } );
-            $dbh->do("SET GLOBAL default_storage_engine = '$engine[$server_id]'");
+            $dbh->do("SET GLOBAL default_storage_engine = '${$props->{engine}}[$server_id]'");
         }
     }
 }
@@ -531,10 +519,10 @@ if ($rpl_mode ne '') {
 if ($wait_debugger) {
     say("Pausing test to allow attaching debuggers etc. to the server process.");
     my @pids;   # there may be more than one server process
-    foreach my $server_id (0..$#server) {
-        $pids[$server_id] = $server[$server_id]->serverpid;
+    foreach my $server_id (0..$#{$props->{server}}) {
+        $pids[$server_id] = ${$props->{server}}[$server_id]->serverpid;
     }
-    say('Number of servers started: '.($#server+1));
+    say('Number of servers started: '.($#{$props->{server}}+1));
     say('Server PID: '.join(', ', @pids));
     say("Press ENTER to continue the test run...");
     my $keypress = <STDIN>;
@@ -545,135 +533,51 @@ if ($wait_debugger) {
 # Run actual queries
 #
 
-my $gentestProps = GenTest::Properties->new(
-    legal => ['grammar',
-              'skip-recursive-rules',
-              'dsn',
-              'engine',
-              'gendata',
-              'gendata-advanced',
-              'generator',
-              'redefine',
-              'threads',
-              'queries',
-              'duration',
-              'help',
-              'debug',
-              'rpl_mode',
-              'validators',
-              'reporters',
-              'transformers',
-              'seed',
-              'mask',
-              'mask-level',
-              'rows',
-              'varchar-length',
-              'xml-output',
-              'vcols',
-              'views',
-              'start-dirty',
-              'filter',
-              'notnull',
-              'short_column_names',
-              'strict_fields',
-              'freeze_time',
-              'valgrind',
-              'valgrind-xml',
-              'testname',
-              'sqltrace',
-              'querytimeout',
-              'report-xml-tt',
-              'report-xml-tt-type',
-              'report-xml-tt-dest',
-              'logfile',
-              'logconf',
-              'debug_server',
-              'report-tt-logdir',
-              'servers',
-              'multi-master',
-              'annotate-rules',
-              'restart-timeout',
-              'ps-protocol'
-]
-    );
-
 ## For backward compatability
-if ($#validators == 0 and $validators[0] =~ m/,/) {
-    @validators = split(/,/,$validators[0]);
+if ($#{$props->{validators}} == 0 and ${$props->{validators}}[0] =~ m/,/) {
+    @{$props->{validators}} = split(/,/,${$props->{validators}}[0]);
 }
 
 ## For backward compatability
-if ($#reporters == 0 and $reporters[0] =~ m/,/) {
-    @reporters = split(/,/,$reporters[0]);
+if ($#{$props->{reporters}} == 0 and ${$props->{reporters}}[0] =~ m/,/) {
+    @{$props->{reporters}} = split(/,/,${$props->{reporters}}[0]);
 }
 
 ## For backward compatability
-if ($#transformers == 0 and $transformers[0] =~ m/,/) {
-    @transformers = split(/,/,$transformers[0]);
+if ($#{$props->{transformers}} == 0 and ${$props->{transformers}}[0] =~ m/,/) {
+    @{$props->{transformers}} = split(/,/,${$props->{transformers}}[0]);
 }
 
 ## For uniformity
-if ($#redefine_files == 0 and $redefine_files[0] =~ m/,/) {
-    @redefine_files = split(/,/,$redefine_files[0]);
+if ($#{$props->{redefine}} == 0 and ${$props->{redefine}}[0] =~ m/,/) {
+    @{$props->{redefine}} = split(/,/,${$props->{redefine}}[0]);
 }
 
-$gentestProps->property('generator','FromGrammar') if not defined $gentestProps->property('generator');
+# Some more adjustments
 
-$gentestProps->property('start-dirty',1) if defined $start_dirty;
-$gentestProps->gendata($gendata) unless defined $skip_gendata;
-$gentestProps->property('gendata-advanced',1) if defined $gendata_advanced;
-$gentestProps->engine(\@engine) if @engine;
-$gentestProps->rpl_mode($rpl_mode) if defined $rpl_mode;
-$gentestProps->validators(\@validators) if @validators;
-$gentestProps->reporters(\@reporters) if @reporters;
-$gentestProps->transformers(\@transformers) if @transformers;
-$gentestProps->threads($threads) if defined $threads;
-$gentestProps->queries($queries) if defined $queries;
-$gentestProps->duration($duration) if defined $duration;
-$gentestProps->dsn(\@dsns) if @dsns;
-$gentestProps->grammar($grammar_file);
-$gentestProps->property('skip-recursive-rules', $skip_recursive_rules);
-$gentestProps->redefine(\@redefine_files) if @redefine_files;
-$gentestProps->seed($seed) if defined $seed;
-$gentestProps->mask($mask) if (defined $mask) && (not defined $no_mask);
-$gentestProps->property('mask-level',$mask_level) if defined $mask_level;
-$gentestProps->rows($rows) if defined $rows;
-$gentestProps->vcols(\@vcols) if @vcols;
-$gentestProps->views(\@views) if @views;
-$gentestProps->property('varchar-length',$varchar_len) if defined $varchar_len;
-$gentestProps->property('xml-output',$xml_output) if defined $xml_output;
-$gentestProps->debug(1) if defined $debug;
-$gentestProps->filter($filter) if defined $filter;
-$gentestProps->notnull($notnull) if defined $notnull;
-$gentestProps->short_column_names($short_column_names) if defined $short_column_names;
-$gentestProps->strict_fields($strict_fields) if defined $strict_fields;
-$gentestProps->freeze_time($freeze_time) if defined $freeze_time;
-$gentestProps->valgrind(1) if $valgrind;
-$gentestProps->property('ps-protocol',1) if $ps_protocol;
-$gentestProps->sqltrace($sqltrace) if $sqltrace;
-$gentestProps->querytimeout($querytimeout) if defined $querytimeout;
-$gentestProps->testname($testname) if $testname;
-$gentestProps->logfile($logfile) if defined $logfile;
-$gentestProps->logconf($logconf) if defined $logconf;
-$gentestProps->property('report-tt-logdir',$report_tt_logdir) if defined $report_tt_logdir;
-$gentestProps->property('report-xml-tt', 1) if defined $report_xml_tt;
-$gentestProps->property('report-xml-tt-type', $report_xml_tt_type) if defined $report_xml_tt_type;
-$gentestProps->property('report-xml-tt-dest', $report_xml_tt_dest) if defined $report_xml_tt_dest;
-$gentestProps->property('restart-timeout', $restart_timeout) if defined $restart_timeout;
+$props->{debug}= $debug;
+$props->{dsns}= \@dsns;
+$props->{duration}= $default_duration unless defined $props->{duration};
+$props->{gendata}= '' unless exists $props->{gendata};
+$props->{queries}= $default_queries unless defined $props->{queries};
+$props->{threads}= $default_threads unless defined $props->{threads};
+
+delete $props->{gendata} if $skip_gendata;
+delete $props->{mask} if $no_mask;
+
 # In case of multi-master topology (e.g. Galera with multiple "masters"),
 # we don't want to compare results after each query.
 # Instead, we want to run the flow independently and only compare dumps at the end.
 # If GenTest gets 'multi-master' property, it won't run ResultsetComparator
-$gentestProps->property('multi-master', 1) if (defined $galera and scalar(@dsns)>1);
-# Pass debug server if used.
-$gentestProps->debug_server(\@debug_server) if @debug_server;
-$gentestProps->servers(\@server) if @server;
-$gentestProps->property('annotate-rules',$annotate_rules) if defined $annotate_rules;
+
+$props->{'multi_master'}= (defined $galera and scalar(@{$props->{dsns}})>1);
 
 
 # Push the number of "worker" threads into the environment.
 # lib/GenTest/Generator/FromGrammar.pm will generate a corresponding grammar element.
-$ENV{RQG_THREADS}= $threads;
+$ENV{RQG_THREADS}= $props->{threads};
+
+my $gentestProps = GenTest::Properties->init($props);
 
 my $gentest = GenTest::App::GenTest->new(config => $gentestProps);
 my $gentest_result = $gentest->run();
@@ -683,13 +587,13 @@ say("GenTest exited with exit status ".status2text($gentest_result)." ($gentest_
 # otherwise if the test is replication/with two servers compare the 
 # server dumps for any differences else if there are no failures exit with success.
 
-if (($gentest_result == STATUS_OK) && ( ($rpl_mode && $rpl_mode !~ /nosync/) || (defined $basedirs[2]) || (defined $basedirs[3]) || $galera))
+if (($gentest_result == STATUS_OK) && ( ($props->{rpl_mode} && $props->{rpl_mode} !~ /nosync/) || (defined $basedirs[2]) || (defined $basedirs[3]) || $galera))
 {
 #
 # Compare master and slave, or all masters
 #
     my $diff_result = STATUS_OK;
-    if ($rpl_mode ne '') {
+    if ($props->{rpl_mode} ne '') {
         $diff_result = $rplsrv->waitForSlaveSync;
         if ($diff_result != STATUS_OK) {
             exit_test(STATUS_INTERNAL_ERROR);
@@ -698,16 +602,16 @@ if (($gentest_result == STATUS_OK) && ( ($rpl_mode && $rpl_mode !~ /nosync/) || 
   
     my @dump_files;
   
-    foreach my $i (0..$#server) {
+    foreach my $i (0..$#{$props->{server}}) {
         $dump_files[$i] = tmpdir()."server_".abs($$)."_".$i.".dump";
       
-        my $dump_result = $server[$i]->dumpdb($database,$dump_files[$i]);
+        my $dump_result = ${$props->{server}}[$i]->dumpdb($database,$dump_files[$i]);
         exit_test($dump_result >> 8) if $dump_result > 0;
     }
   
     say("Comparing SQL dumps...");
     
-    foreach my $i (1..$#server) {
+    foreach my $i (1..$#{$props->{server}}) {
         my $diff = system("diff -u $dump_files[$i-1] $dump_files[$i]");
         if ($diff == STATUS_OK) {
             say("No differences were found between servers ".($i-1)." and $i.");
@@ -725,8 +629,8 @@ if (($gentest_result == STATUS_OK) && ( ($rpl_mode && $rpl_mode !~ /nosync/) || 
     # If test was not sucessfull or not rpl/multiple servers.
     
     if ($gentest_result != STATUS_OK and $store_binaries) {
-      foreach my $i ($#server) {
-        my $file= $server[$i]->binary;
+      foreach my $i ($#{$props->{server}}) {
+        my $file= ${$props->{server}}[$i]->binary;
         my $to= $vardirs[$i];
         if (osWindows()) {
           system("xcopy \"$file\" \"".$to."\"") if -e $file and $to;
@@ -748,10 +652,10 @@ sub stopServers {
         return;
     }
     say("Stopping server(s)...");
-    if ($rpl_mode ne '') {
+    if ($props->{rpl_mode} ne '') {
         $rplsrv->stopServer($status);
     } else {
-        foreach my $srv (@server) {
+        foreach my $srv (@{$props->{server}}) {
             if ($srv) {
                 $srv->stopServer;
             }
