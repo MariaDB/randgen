@@ -326,8 +326,6 @@ sub gen_table {
                     ],
     );
 
-    $vcols= '';
-    
     # TODO: add actual functions
 
     if (defined $vcols) {
