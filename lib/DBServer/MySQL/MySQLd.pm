@@ -800,11 +800,33 @@ sub normalizeDump {
       s/(\s+(?:blob|text|mediumblob|mediumtext|longblob|longtext|tinyblob|tinytext)(?:\s*NOT\sNULL)?)\s*DEFAULT\s*(?:\d+|NULL|\'[^\']*\')\s*(.*)$/${1}${2}/;
       # `k` int(10) unsigned NOT NULL DEFAULT '0' => `k` int(10) unsigned NOT NULL DEFAULT 0
       s/(DEFAULT\s+)(\d+)(.*)$/${1}\'${2}\'${3}/;
+      # DEFAULT current_timestamp() ON UPDATE current_timestamp() => DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      s/DEFAULT current_timestamp\(\)/DEFAULT CURRENT_TIMESTAMP/g;
+      s/ON UPDATE current_timestamp\(\)/ON UPDATE CURRENT_TIMESTAMP/g;
       print DUMP2 $_;
     }
     close(DUMP1);
     close(DUMP2);
   }
+  if ($self->versionNumeric() le '100100') {
+    say("normalizeDump patches PERSISTENT NULL etc. for version ".$self->versionNumeric)." (MDEV-5614)";
+    move($file, $file.'.tmp3');
+    open(DUMP1,$file.'.tmp3');
+    open(DUMP2,">$file");
+    while (<DUMP1>) {
+      # In 10.0 SHOW CREATE TABLE shows things like
+      #   `vcol_timestamp` timestamp(3) AS (col_timestamp) VIRTUAL NULL ON UPDATE CURRENT_TIMESTAMP(3)
+      # or
+      #   `vcol_timestamp` timestamp(5) AS (col_timestamp) PERSISTENT NULL
+      # which makes CREATE TABLE invalid (MDEV-5614, fixed in 10.1+)
+      s/(PERSISTENT|VIRTUAL) NULL/$1/g;
+      s/(PERSISTENT|VIRTUAL) ON UPDATE CURRENT_TIMESTAMP(?:\(\d?\))?/$1/g;
+      print DUMP2 $_;
+    }
+    close(DUMP1);
+    close(DUMP2);
+  }
+
   if (-e $file.'.tmp1') {
     move($file.'.tmp1',$file.'.orig');
 #    unlink($file.'.tmp2') if -e $file.'.tmp2';
