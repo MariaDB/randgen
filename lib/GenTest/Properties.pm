@@ -280,6 +280,13 @@ sub init {
   $gentestProps->property('views',$props->{views}) if $props->{views};
   $gentestProps->property('xml-output',$props->{xml_output}) if defined $props->{xml_output};
 
+  # In case of multi-master topology (e.g. Galera with multiple "masters"),
+  # we don't want to compare results after each query.
+  # Instead, we want to run the flow independently and only compare dumps at the end.
+  # If GenTest gets 'multi-master' property, it won't run ResultsetComparator
+
+  $gentestProps->property('multi_master',1) if (defined $props->{galera} and scalar(@{$props->{dsns}})>1);
+
   return $gentestProps;
 }
 
