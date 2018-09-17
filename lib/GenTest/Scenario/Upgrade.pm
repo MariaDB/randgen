@@ -141,6 +141,7 @@ sub run {
   $old_server->dumpSchema($databases, $old_server->vardir.'/server_schema_old.dump');
   $old_server->normalizeDump($old_server->vardir.'/server_schema_old.dump', 'remove_autoincs');
   $old_server->dumpdb($databases, $old_server->vardir.'/server_data_old.dump');
+  $old_server->normalizeDump($old_server->vardir.'/server_data_old.dump');
   $table_autoinc{'old'}= $old_server->collectAutoincrements();
    
   #####
@@ -226,6 +227,7 @@ sub run {
   $new_server->dumpSchema($databases, $new_server->vardir.'/server_schema_new.dump');
   $new_server->normalizeDump($new_server->vardir.'/server_schema_new.dump', 'remove_autoincs');
   $new_server->dumpdb($databases, $new_server->vardir.'/server_data_new.dump');
+  $new_server->normalizeDump($new_server->vardir.'/server_data_new.dump');
   $table_autoinc{'new'} = $new_server->collectAutoincrements();
 
   #####
@@ -271,6 +273,7 @@ sub run {
   $status= compare($new_server->vardir.'/server_schema_old.dump', $new_server->vardir.'/server_schema_new.dump');
   if ($status != STATUS_OK) {
     sayError("Database structures differ after upgrade");
+    system('diff -u '.$new_server->vardir.'/server_schema_old.dump'.' '.$new_server->vardir.'/server_schema_new.dump');
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
   }
   else {
@@ -280,6 +283,7 @@ sub run {
   $status= compare($new_server->vardir.'/server_data_old.dump', $new_server->vardir.'/server_data_new.dump');
   if ($status != STATUS_OK) {
     sayError("Data differs after upgrade");
+    system('diff -u '.$new_server->vardir.'/server_data_old.dump'.' '.$new_server->vardir.'/server_data_new.dump');
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
   }
   else {
