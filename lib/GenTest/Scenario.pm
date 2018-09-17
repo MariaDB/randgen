@@ -1,4 +1,4 @@
-# Copyright (C) 2017 MariaDB Corporation Ab
+# Copyright (C) 2017, 2018 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -98,11 +98,8 @@ sub prepareServer {
 
   my @server_options= ();
   # "Zero" options are applied to all servers
-  if ($self->getProperty('mysqld')) {
-    push @server_options, @{$self->getProperty('mysqld')};
-  }
-  if ($self->getProperty('mysqld'.$server_num)) {
-    push @server_options, @{$self->getProperty('mysqld'.$server_num)};
+  if (${$self->getProperty('mysqld_options')}[$server_num]) {
+    push @server_options, @{${$self->getProperty('mysqld_options')}[$server_num]};
   }
 
   if (!exists $opts->{start_dirty}) {
@@ -115,16 +112,16 @@ sub prepareServer {
     $opts->{valgrind}= $self->getProperty('valgrind');
   }
   if (!defined $opts->{port}) {
-    $opts->{port}= $self->getProperty('port') + $server_num - 1;
+    $opts->{port}= ${$self->getProperty('port')}[$server_num] || ${$self->getProperty('port')}[0];
   }
   if (!defined $opts->{user}) {
     $opts->{user}= $self->getProperty('user');
   }
   if (!defined $opts->{basedir}) {
-    $opts->{basedir}= $self->getProperty('basedir'.$server_num) || $self->getProperty('basedir');
+    $opts->{basedir}= ${$self->getProperty('basedir')}[$server_num] || ${$self->getProperty('basedir')}[0];
   }
   if (!defined $opts->{vardir}) {
-    $opts->{vardir}= $self->getProperty('vardir'.$server_num) || $self->getProperty('vardir');
+    $opts->{vardir}= ${$self->getProperty('vardir')}[$server_num] || ${$self->getProperty('vardir')}[0];
   }
 
   return DBServer::MySQL::MySQLd->new(
@@ -144,32 +141,42 @@ sub prepareServer {
 # number of test flows. Each flow might potentially have different set
 # of options. $gentest_num indicates which options should be used
 
+#  my $props= $self->getProperties;
+#  $props->{duration}= int($self->getTestDuration * 2 / 3);
+#  $props->{server}= [$old_server];
+#  my $gentestProps = GenTest::Properties->init($props);
+
 sub prepareGentest {
-  my ($self, $gentest_num, $opts)= @_;
-  my $config= GenTest::Properties->new();
+  my ($self, $gentest_num, $opts, $skip_gendata)= @_;
   
+  my $props= $self->getProperties;
+  foreach my $p (keys %$props) {
+    if ($p =~ /^([-\w]+)$gentest_num/) {
+      $props->{$1}= $props->{$p};
+    }
+    if ($skip_gendata and $p =~ /^gendata/) {
+      delete $props->{$p};
+    }
+  }
+
+  my $config= GenTest::Properties->init($self->getProperties);
+
   foreach my $o (keys %$opts) {
     $config->property($o, $opts->{$o});
   }
 
-  foreach my $p (keys %{$self->getProperties}) {
-    if (!defined $config->property($p)) {
-      $config->property($p, $self->getProperty($p.$gentest_num) || $self->getProperty($p));
-    }
-  }
-
-  if (not $config->property('gendata') and not $config->property('gendata-advanced') and not $config->property('grammar')) {
-    say("Neither gendata nor grammar are configured for this gentest, skipping");
-    return undef;
-  }
+#  if (not $config->property('gendata') and not $config->property('gendata-advanced') and not $config->property('grammar')) {
+#    say("Neither gendata nor grammar are configured for this gentest, skipping");
+#    return undef;
+#  }
 
   # Set hard defaults for missing values
-  $config->property('database', 'test') if !defined $config->property('database');
-  $config->property('duration', 300) if !defined $config->property('duration');
-  $config->property('generator', 'FromGrammar') if !defined $config->property('generator');
-  $config->property('queries', '1000M') if !defined $config->property('queries');
-  $config->property('reporters', ['Backtrace', 'Deadlock']) if !defined $config->property('reporters');
-  $config->property('user', 'root') if !defined $config->property('user');
+#  $config->property('database', 'test') if !defined $config->property('database');
+#  $config->property('duration', 300) if !defined $config->property('duration');
+#  $config->property('generator', 'FromGrammar') if !defined $config->property('generator');
+#  $config->property('queries', '1000M') if !defined $config->property('queries');
+#  $config->property('reporters', ['Backtrace', 'Deadlock']) if !defined $config->property('reporters');
+#  $config->property('user', 'root') if !defined $config->property('user');
   $config->property('strict_fields', 1);
 
   # gendata and gendata-advanced will only be used if they specified

@@ -75,8 +75,8 @@ sub run {
 
   $server= $self->prepareServer(1,
     {
-      vardir => $self->getProperty('vardir'),
-      port => $self->getProperty('port'),
+      vardir => ${$self->getProperty('vardir')}[0],
+      port => ${$self->getProperty('port')}[0],
       valgrind => 0,
     }
   );
@@ -103,8 +103,6 @@ sub run {
       duration => $self->getTestDuration,
       dsn => [$server->dsn($self->getProperty('database'))],
       servers => [$server],
-      gendata => $self->getProperty('gendata'),
-      'gendata-advanced' => $self->getProperty('gendata-advanced'),
     }
   );
   $status= $gentest->doGenData();
@@ -119,8 +117,8 @@ sub run {
       duration => $self->getTestDuration,
       dsn => [$server->dsn($self->getProperty('database'))],
       servers => [$server],
-      'start-dirty' => 1,
-    }
+    },
+    my $skip_gendata=1
   );
 
   my $test_end=time() + $self->getTestDuration;
