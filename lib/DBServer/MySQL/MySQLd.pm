@@ -827,6 +827,23 @@ sub normalizeDump {
     close(DUMP2);
   }
 
+  if ($self->versionNumeric() gt '050701') {
+    say("normalizeDump removes _binary for version ".$self->versionNumeric);
+    move($file, $file.'.tmp4');
+    open(DUMP1,$file.'.tmp4');
+    open(DUMP2,">$file");
+    while (<DUMP1>) {
+      # In 5.7 mysqldump writes _binary before corresponding fields
+      #   INSERT INTO `t4` VALUES (0x0000000000,'',_binary ''
+      if (/INSERT INTO/) {
+        s/([\(,])_binary '/$1'/g;
+      }
+      print DUMP2 $_;
+    }
+    close(DUMP1);
+    close(DUMP2);
+  }
+
   if (-e $file.'.tmp1') {
     move($file.'.tmp1',$file.'.orig');
 #    unlink($file.'.tmp2') if -e $file.'.tmp2';
