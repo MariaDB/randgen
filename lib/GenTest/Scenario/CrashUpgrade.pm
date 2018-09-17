@@ -1,4 +1,4 @@
-# Copyright (C) 2017 MariaDB Corporation Ab
+# Copyright (C) 2017, 2018 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
 
-  if (!defined $self->getProperty('basedir2') or ($self->getProperty('basedir') eq $self->getProperty('basedir2'))) {
+  if (!defined ${$self->getProperty('basedir')}[2] or (${$self->getProperty('basedir')}[1] eq ${$self->getProperty('basedir')}[2])) {
     $self->printTitle('Crash recovery');
   }
   else {
@@ -86,15 +86,15 @@ sub run {
   
   $old_server= $self->prepareServer(1,
     {
-      vardir => $self->getProperty('vardir'),
-      port => $self->getProperty('port'),
+      vardir => ${$self->getProperty('vardir')}[0],
+      port => ${$self->getProperty('port')}[0],
       valgrind => 0,
     }
   );
   $new_server= $self->prepareServer(2, 
     {
-      vardir => $self->getProperty('vardir'),
-      port => $self->getProperty('port'),
+      vardir => ${$self->getProperty('vardir')}[0],
+      port => ${$self->getProperty('port')}[0],
       start_dirty => 1
     }
   );
@@ -115,25 +115,6 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Old server failed to start");
     return $self->finalize(STATUS_TEST_FAILURE,[]);
-  }
-
-  #####
-  $self->printStep("Generating test data on the old server");
-
-  $gentest= $self->prepareGentest(1,
-    {
-      duration => int($self->getTestDuration * 2 / 3),
-      dsn => [$old_server->dsn($self->getProperty('database'))],
-      servers => [$old_server],
-      gendata => $self->getProperty('gendata'),
-      'gendata-advanced' => $self->getProperty('gendata-advanced'),
-    }
-  );
-  $status= $gentest->doGenData();
-
-  if ($status != STATUS_OK) {
-    sayError("Could not generate the test data");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
   }
 
   #####
@@ -167,7 +148,6 @@ sub run {
         duration => int($self->getTestDuration * 2 / 3),
         dsn => [$old_server->dsn($self->getProperty('database'))],
         servers => [$old_server],
-        'start-dirty' => 1,
       }
     );
     my $res= $gentest->run();
@@ -267,7 +247,8 @@ sub run {
       duration => int($self->getTestDuration / 3),
       dsn => [$new_server->dsn($self->getProperty('database'))],
       servers => [$new_server],
-    }
+    },
+    my $skip_gendata=1
   );
   $status= $gentest->run();
   

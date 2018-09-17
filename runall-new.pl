@@ -27,6 +27,8 @@ unless (defined $ENV{RQG_HOME}) {
   $ENV{RQG_HOME}= abs_path(dirname($0));
 }
 
+use Getopt::Long qw( :config pass_through );
+
 use lib 'lib';
 use lib "$ENV{RQG_HOME}/lib";
 use Carp;
@@ -73,17 +75,13 @@ my $database = 'test';
 my $user = 'rqg';
 my @dsns;
 
-my (@basedirs, @mysqld_options, @vardirs,
-    $help, $debug,
+my ($help, $debug,
     $mem,
     @valgrind_options,
-    $build_thread,
     $no_mask,
     $wait_debugger,
-    $skip_gendata, $skip_shutdown, $galera, $use_gtid, $genconfig,
+    $skip_gendata, $skip_shutdown, $use_gtid,
     $scenario, $store_binaries, $props);
-
-my $genconfig=''; # if template is not set, the server will be run with --no-defaults
 
 my $default_threads= 10;
 my $default_queries= 100000000;
@@ -93,10 +91,10 @@ my @ARGV_saved = @ARGV;
 
 my $opt_result = GetOptions(
     'annotate_rules|annotate-rules' => \$props->{annotate_rules},
-    'basedir=s' => \$basedirs[0],
-    'basedir1=s' => \$basedirs[1],
-    'basedir2=s' => \$basedirs[2],
-    'basedir3=s' => \$basedirs[3],
+    'basedir=s' => \${$props->{basedir}}[0],
+    'basedir1=s' => \${$props->{basedir}}[1],
+    'basedir2=s' => \${$props->{basedir}}[2],
+    'basedir3=s' => \${$props->{basedir}}[3],
     'debug' => \$debug,
     'debug-server' => \${$props->{debug_server}}[0],
     'debug-server1' => \${$props->{debug_server}}[1],
@@ -109,8 +107,8 @@ my $opt_result = GetOptions(
     'engine3=s' => \${$props->{engine}}[3],
     'filter=s'    => \$props->{filter},
     'freeze_time' => \$props->{freeze_time},
-    'galera=s' => \$galera,
-    'genconfig:s' => \$genconfig,
+    'galera=s' => \$props->{galera},
+    'genconfig:s' => \$props->{genconfig},
     'gendata:s' => \$props->{gendata},
     'gendata_advanced|gendata-advanced' => \$props->{gendata_advanced},
     'grammar=s' => \$props->{grammar},
@@ -120,11 +118,11 @@ my $opt_result = GetOptions(
     'mask=i' => \$props->{mask},
     'mask-level|mask_level=i' => \$props->{mask_level},
     'mem' => \$mem,
-    'mtr-build-thread=i' => \$build_thread,
-    'mysqld=s@' => \$mysqld_options[0],
-    'mysqld1=s@' => \$mysqld_options[1],
-    'mysqld2=s@' => \$mysqld_options[2],
-    'mysqld3=s@' => \$mysqld_options[3],
+    'mtr-build-thread=i' => \$props->{build_thread},
+    'mysqld=s@' => \${$props->{mysqld_options}}[0],
+    'mysqld1=s@' => \${$props->{mysqld_options}}[1],
+    'mysqld2=s@' => \${$props->{mysqld_options}}[2],
+    'mysqld3=s@' => \${$props->{mysqld_options}}[3],
     'no_mask|no-mask' => \$no_mask,
     'notnull' => \$props->{notnull},
     'ps_protocol|ps-protocol' => \$props->{ps_protocol},
@@ -156,10 +154,10 @@ my $opt_result = GetOptions(
     'valgrind!'    => \$props->{valgrind},
     'valgrind_options=s@'    => \@valgrind_options,
     'validators=s@' => \@{$props->{validators}},
-    'vardir=s' => \$vardirs[0],
-    'vardir1=s' => \$vardirs[1],
-    'vardir2=s' => \$vardirs[2],
-    'vardir3=s' => \$vardirs[3],
+    'vardir=s' => \${$props->{vardir}}[0],
+    'vardir1=s' => \${$props->{vardir}}[1],
+    'vardir2=s' => \${$props->{vardir}}[2],
+    'vardir3=s' => \${$props->{vardir}}[3],
     'varchar_length|varchar-length=i' => \$props->{varchar_len},
     'vcols:s'        => \${$props->{vcols}}[0],
     'vcols1:s'        => \${$props->{vcols}}[1],
@@ -173,6 +171,12 @@ my $opt_result = GetOptions(
     'xml-output=s'    => \$props->{xml_output},
 );
 
+if (!$opt_result) {
+    print STDERR "\nERROR: Error occured while reading options\n\n";
+    help();
+    exit 1;
+}
+
 if ( osWindows() && !$debug )
 {
     require Win32::API;
@@ -180,11 +184,6 @@ if ( osWindows() && !$debug )
     my $initial_mode = $errfunc->Call(2);
     $errfunc->Call($initial_mode | 2);
 };
-
-if (defined $scenario) {
-  system("perl $ENV{RQG_HOME}/run-scenario.pl @ARGV_saved");
-  exit $? >> 8;
-}
 
 if (defined $props->{logfile} && defined $logger) {
     setLoggingToFile($props->{logfile});
@@ -198,18 +197,22 @@ if ($help) {
     help();
     exit 0;
 }
-if ($basedirs[0] eq '' and $basedirs[1] eq '') {
+
+if (${$props->{basedir}}[0] eq '' and ${$props->{basedir}}[1] eq '') {
     print STDERR "\nERROR: Basedir is not defined\n\n";
     help();
     exit 1;
 }
-if (not defined $props->{grammar}) {
-    print STDERR "\nERROR: Grammar file is not defined\n\n";
-    help();
-    exit 1;
+
+# Originally it was done in Gendata, but we want the same seed for all components
+
+if (defined $props->{seed} and $props->{seed} eq 'time') {
+    $props->{seed} = time();
+    say("Converted --seed=time to --seed=$props->{seed}");
 }
-if (!$opt_result) {
-    print STDERR "\nERROR: Error occured while reading options\n\n";
+
+if (not defined $scenario and not defined $props->{grammar}) {
+    print STDERR "\nERROR: Grammar file is not defined\n\n";
     help();
     exit 1;
 }
@@ -246,39 +249,39 @@ say("Starting \n# $0 \\ \n# ".join(" \\ \n# ", @ARGV_saved));
 # Version 1 behaviour)
 #
 
-if (not defined $build_thread) {
+if (not defined $props->{build_thread}) {
     if (defined $ENV{MTR_BUILD_THREAD}) {
-        $build_thread = $ENV{MTR_BUILD_THREAD}
+        $props->{build_thread} = $ENV{MTR_BUILD_THREAD}
     } else {
-        $build_thread = DEFAULT_MTR_BUILD_THREAD;
+        $props->{build_thread} = DEFAULT_MTR_BUILD_THREAD;
     }
 }
 
-if ( $build_thread eq 'auto' ) {
+if ( $props->{build_thread} eq 'auto' ) {
     say ("Please set the environment variable MTR_BUILD_THREAD to a value <> 'auto' (recommended) or unset it (will take the value ".DEFAULT_MTR_BUILD_THREAD.") ");
     exit (STATUS_ENVIRONMENT_FAILURE);
 }
 
-my @ports = (10000 + 10 * $build_thread, 10000 + 10 * $build_thread + 2, 10000 + 10 * $build_thread + 4);
+@{$props->{port}} = (10000 + 10 * $props->{build_thread}, 10000 + 10 * $props->{build_thread}, 10000 + 10 * $props->{build_thread} + 2, 10000 + 10 * $props->{build_thread} + 4);
 
-say("master_port : $ports[0] slave_port : $ports[1] ports : @ports MTR_BUILD_THREAD : $build_thread ");
+say("Ports : @{$props->{port}} MTR_BUILD_THREAD : $props->{build_thread} ");
 
 # Different servers can be defined either by providing separate basedirs (basedir1, basedir2[, basedir3]),
 # or by providing separate vardirs (vardir1, vardir2[, vardir3]).
 # Now it's time to clean it all up and define for sure how many servers we need to run, and with options 
 
-if ($basedirs[1] eq '' and $basedirs[0] ne '') {
+if (${$props->{basedir}}[1] eq '' and ${$props->{basedir}}[0] ne '') {
     # We need at least one server anyway
-    $basedirs[1] = $basedirs[0];
+    ${$props->{basedir}}[1] = ${$props->{basedir}}[0];
 }
-if ($vardirs[1] eq '' and $vardirs[0] ne '') {
-    $vardirs[1] = $vardirs[0];
+if (${$props->{vardir}}[1] eq '' and ${$props->{vardir}}[0] ne '') {
+    ${$props->{vardir}}[1] = ${$props->{vardir}}[0];
 }
 
 foreach (2..3) {
     # If servers 2 and 3 are defined through vardirs, use the default basedir for them
-    if ($vardirs[$_] ne '' and $basedirs[$_] eq '') {
-        $basedirs[$_] = $basedirs[0];
+    if (${$props->{vardir}}[$_] ne '' and ${$props->{basedir}}[$_] eq '') {
+        ${$props->{basedir}}[$_] = ${$props->{basedir}}[0];
     }
 }
 
@@ -287,10 +290,10 @@ foreach (2..3) {
 # but does not define separate vardirs)
 
 foreach my $i (1..3) {
-    next unless $basedirs[$i] or $vardirs[$i];
+    next unless ${$props->{basedir}}[$i] or ${$props->{vardir}}[$i];
     foreach my $j ($i+1..3) {
-        next unless $basedirs[$j] or $vardirs[$j];
-        if ($basedirs[$i] eq $basedirs[$j] and $vardirs[$i] eq $vardirs[$j]) {
+        next unless ${$props->{basedir}}[$j] or ${$props->{vardir}}[$j];
+        if (${$props->{basedir}}[$i] eq ${$props->{basedir}}[$j] and ${$props->{vardir}}[$i] eq ${$props->{vardir}}[$j]) {
             croak("Please specify either different --basedir[$i]/--basedir[$j] or different --vardir[$i]/--vardir[$j] in order to start two MySQL servers");
         }
     }
@@ -298,8 +301,8 @@ foreach my $i (1..3) {
 
 # Make sure that "default" values ([0]) are also set, for compatibility,
 # in case they are used somewhere
-$basedirs[0] ||= $basedirs[1];
-$vardirs[0] ||= $vardirs[1];
+${$props->{basedir}}[0] ||= ${$props->{basedir}}[1];
+${$props->{vardir}}[0] ||= ${$props->{vardir}}[1];
 
 # Now sort out other options that can be set differently for different servers:
 # - mysqld_options
@@ -309,13 +312,13 @@ $vardirs[0] ||= $vardirs[1];
 # values[0] are those that are applied to all servers.
 # values[N] expand or override values[0] for the server N
 
-@{$mysqld_options[0]} = () if not defined $mysqld_options[0];
-push @{$mysqld_options[0]}, "--sql-mode=no_engine_substitution" if join(' ', @ARGV_saved) !~ m{sql[-_]mode}io;
+@{${$props->{mysqld_options}}[0]} = () if not defined ${$props->{mysqld_options}}[0];
+push @{${$props->{mysqld_options}}[0]}, "--sql-mode=no_engine_substitution" if join(' ', @ARGV_saved) !~ m{sql[-_]mode}io;
 
 foreach my $i (1..3) {
-    @{$mysqld_options[$i]} = ( defined $mysqld_options[$i] 
-            ? ( @{$mysqld_options[0]}, @{$mysqld_options[$i]} )
-            : @{$mysqld_options[0]}
+    @{${$props->{mysqld_options}}[$i]} = ( defined ${$props->{mysqld_options}}[$i] 
+            ? ( @{${$props->{mysqld_options}}[0]}, @{${$props->{mysqld_options}}[$i]} )
+            : @{${$props->{mysqld_options}}[0]}
     );
     ${$props->{debug_server}}[$i] = ${$props->{debug_server}}[0] if ${$props->{debug_server}}[$i] eq '';
     ${$props->{vcols}}[$i] = ${$props->{vcols}}[0] if ${$props->{vcols}}[$i] eq '';
@@ -323,61 +326,131 @@ foreach my $i (1..3) {
     ${$props->{engine}}[$i] ||= ${$props->{engine}}[0];
 }
 
-shift @mysqld_options;
 shift @{$props->{debug_server}};
 shift @{$props->{vcols}};
 shift @{$props->{views}};
 shift @{$props->{engine}};
 
-#foreach my $dir (cwd(), @basedirs) {
-## calling bzr usually takes a few seconds...
-#    if (defined $dir) {
-#        my $bzrinfo = GenTest::BzrInfo->new(
-#            dir => $dir
-#        );
-#        my $revno = $bzrinfo->bzrRevno();
-#        my $revid = $bzrinfo->bzrRevisionId();
-#
-#        if ((defined $revno) && (defined $revid)) {
-#            say("$dir Revno: $revno");
-#            say("$dir Revision-Id: $revid");
-#        } else {
-#            say($dir.' does not look like a bzr branch, cannot get revision info.');
-#        }
-#    }
-#}
-
 my $client_basedir;
 
-foreach my $path ("$basedirs[0]/client/RelWithDebInfo", "$basedirs[0]/client/Debug", "$basedirs[0]/client", "$basedirs[0]/bin") {
+foreach my $path ("${$props->{basedir}}[0]/client/RelWithDebInfo", "${$props->{basedir}}[0]/client/Debug", "${$props->{basedir}}[0]/client", "${$props->{basedir}}[0]/bin") {
     if (-e $path) {
         $client_basedir = $path;
         last;
     }
 }
 
-# Originally it was done in Gendata, but we want the same seed for all components
+my $cnf_array_ref;
 
-if (defined $props->{seed} and $props->{seed} eq 'time') {
-    $props->{seed} = time();
-    say("Converted --seed=time to --seed=$props->{seed}");
+if ($props->{genconfig}) {
+    unless (-e $props->{genconfig}) {
+        croak("ERROR: Specified config template $props->{genconfig} does not exist");
+    }
+    $cnf_array_ref = GenTest::App::GenConfig->new(spec_file => $props->{genconfig},
+                                               seed => $props->{seed},
+                                               debug => $debug
+    );
 }
+
+## For backward compatability
+if ($#{$props->{validators}} == 0 and ${$props->{validators}}[0] =~ m/,/) {
+    @{$props->{validators}} = split(/,/,${$props->{validators}}[0]);
+}
+
+## For backward compatability
+if ($#{$props->{reporters}} == 0 and ${$props->{reporters}}[0] =~ m/,/) {
+    @{$props->{reporters}} = split(/,/,${$props->{reporters}}[0]);
+}
+
+## For backward compatability
+if ($#{$props->{transformers}} == 0 and ${$props->{transformers}}[0] =~ m/,/) {
+    @{$props->{transformers}} = split(/,/,${$props->{transformers}}[0]);
+}
+
+## For uniformity
+if ($#{$props->{redefine}} == 0 and ${$props->{redefine}}[0] =~ m/,/) {
+    @{$props->{redefine}} = split(/,/,${$props->{redefine}}[0]);
+}
+
+# Some more adjustments
+
+$props->{debug}= $debug;
+$props->{dsns}= \@dsns;
+$props->{duration}= $default_duration unless defined $props->{duration};
+$props->{gendata}= '' unless exists $props->{gendata};
+$props->{queries}= $default_queries unless defined $props->{queries};
+$props->{threads}= $default_threads unless defined $props->{threads};
+
+delete $props->{gendata} if $skip_gendata;
+delete $props->{mask} if $no_mask;
+
+# Push the number of "worker" threads into the environment.
+# lib/GenTest/Generator/FromGrammar.pm will generate a corresponding grammar element.
+$ENV{RQG_THREADS}= $props->{threads};
+
 
 my $cmd = $0 . " " . join(" ", @ARGV_saved);
 $cmd =~ s/seed=time/seed=$props->{seed}/g;
 say("Final command line: \nperl $cmd");
 
+if (defined $scenario) {
+  # Scenario mode.
 
-my $cnf_array_ref;
+  # Different scenarios can expect different options. Besides,
+  # some options can be defined per server, and different scenarios can
+  # define them differently. So, here we just want to store all of them
+  # and pass over to the scenario. Since we don't know how many servers
+  # the given scenario runs, it's impossible to put it all in GetOptions,
+  # thus we will parse them manually
 
-if ($genconfig) {
-    unless (-e $genconfig) {
-        croak("ERROR: Specified config template $genconfig does not exist");
+  foreach my $o (@ARGV) {
+    if ($o =~ /^--(?:loose[-_])?mysqld=(\S+)$/) {
+      if (not defined $props->{mysqld}) {
+        @{$props->{mysqld}}= ();
+      }
+      push @{$props->{mysqld}}, $1;
     }
-    $cnf_array_ref = GenTest::App::GenConfig->new(spec_file => $genconfig,
-                                               seed => $props->{seed},
-                                               debug => $debug
-    );
+    elsif ($o =~ /^--(?:loose[-_])?(mysqld\d+)=(\S+)$/) {
+      if (not defined $props->{$1}) {
+        @{$props->{$1}}= ();
+      }
+      push @{$props->{$1}}, $2;
+    }
+    elsif ($o =~ /^--([-_\w]+)=(\S+)$/) {
+      my $opt=$1;
+      $opt =~ s/_/-/g;
+      $props->{$opt}= $2;
+    }
+    elsif ($o =~ /^--skip-([-_\w]+)$/) {
+      my $opt=$1;
+      $opt =~ s/_/-/g;
+      $props->{$opt}= 0;
+    }
+    elsif ($o =~ /^--([-_\w]+)$/) {
+      my $opt=$1;
+      $opt =~ s/_/-/g;
+      $props->{$opt}= 1;
+    }
+  }
+
+  my $cp= my $class= "GenTest::Scenario::$scenario";
+  $cp =~ s/::/\//g;
+  require "$cp.pm";
+  my $sc= $class->new(
+      properties => $props
+  );
+
+  my $status= $sc->run();
+  say("[$$] $0 will exit with exit status ".status2text($status). " ($status)\n");
+  safe_exit($status);
+}
+
+# Without scenario mode, be strict about GetOpts -- return error
+# if there were unknown options on the command line
+
+if (scalar @ARGV) {
+  print STDERR "\nERROR: Unknown options: @ARGV\n\n";
+  exit 1;
 }
 
 #
@@ -386,18 +459,17 @@ if ($genconfig) {
 
 my $rplsrv;
 
-
 if ($props->{rpl_mode} ne '') {
 
-    $rplsrv = DBServer::MySQL::ReplMySQLd->new(master_basedir => $basedirs[1],
-                                               slave_basedir => $basedirs[2],
-                                               master_vardir => $vardirs[1],
+    $rplsrv = DBServer::MySQL::ReplMySQLd->new(master_basedir => ${$props->{basedir}}[1],
+                                               slave_basedir => ${$props->{basedir}}[2],
+                                               master_vardir => ${$props->{vardir}}[1],
                                                debug_server => ${$props->{debug_server}}[1],
-                                               master_port => $ports[0],
-                                               slave_vardir => $vardirs[2],
-                                               slave_port => $ports[1],
+                                               master_port => ${$props->{port}}[1],
+                                               slave_vardir => ${$props->{vardir}}[2],
+                                               slave_port => ${$props->{port}}[2],
                                                mode => $props->{rpl_mode},
-                                               server_options => $mysqld_options[1],
+                                               server_options => ${$props->{mysqld_options}}[1],
                                                valgrind => $props->{valgrind},
                                                valgrind_options => \@valgrind_options,
                                                general_log => 1,
@@ -426,27 +498,27 @@ if ($props->{rpl_mode} ne '') {
     ${$props->{server}}[0] = $rplsrv->master;
     ${$props->{server}}[1] = $rplsrv->slave;
 
-} elsif ($galera ne '') {
+} elsif ($props->{galera} ne '') {
 
     if (osWindows()) {
         croak("Galera is not supported on Windows (yet)");
     }
 
-    unless ($galera =~ /^[ms]+$/i) {
+    unless ($props->{galera} =~ /^[ms]+$/i) {
         croak ("--galera option should contain a combination of M and S, indicating masters and slaves");
     }
 
     $rplsrv = DBServer::MySQL::GaleraMySQLd->new(
-        basedir => $basedirs[0],
-        parent_vardir => $vardirs[0],
+        basedir => ${$props->{basedir}}[0],
+        parent_vardir => ${$props->{vardir}}[0],
         debug_server => ${$props->{debug_server}}[1],
-        first_port => $ports[0],
-        server_options => $mysqld_options[1],
+        first_port => ${$props->{port}}[1],
+        server_options => ${$props->{mysqld_options}}[1],
         valgrind => $props->{valgrind},
         valgrind_options => \@valgrind_options,
         general_log => 1,
         start_dirty => $props->{start_dirty},
-        node_count => length($galera)
+        node_count => length($props->{galera})
     );
     
     my $status = $rplsrv->startServer();
@@ -458,7 +530,7 @@ if ($props->{rpl_mode} ne '') {
         exit_test(STATUS_ENVIRONMENT_FAILURE);
     }
 
-    my $galera_topology = $galera;
+    my $galera_topology = $props->{galera};
     my $i = 0;
     while ($galera_topology =~ s/^(\w)//) {
         if (lc($1) eq 'm') {
@@ -470,17 +542,17 @@ if ($props->{rpl_mode} ne '') {
 
 } else {
 
-    foreach my $server_id (0..2) {
-        next unless $basedirs[$server_id+1];
+    foreach my $server_id (1..3) {
+        next unless ${$props->{basedir}}[$server_id];
         
-        ${$props->{server}}[$server_id] = DBServer::MySQL::MySQLd->new(basedir => $basedirs[$server_id+1],
-                                                           vardir => $vardirs[$server_id+1],
+        ${$props->{server}}[$server_id] = DBServer::MySQL::MySQLd->new(basedir => ${$props->{basedir}}[$server_id],
+                                                           vardir => ${$props->{vardir}}[$server_id],
                                                            debug_server => ${$props->{debug_server}}[$server_id],
-                                                           port => $ports[$server_id],
+                                                           port => ${$props->{port}}[$server_id],
                                                            start_dirty => $props->{start_dirty},
                                                            valgrind => $props->{valgrind},
                                                            valgrind_options => \@valgrind_options,
-                                                           server_options => $mysqld_options[$server_id],
+                                                           server_options => ${$props->{mysqld_options}}[$server_id],
                                                            general_log => 1,
                                                            config => $cnf_array_ref,
                                                            user => $user);
@@ -522,60 +594,11 @@ if ($wait_debugger) {
     foreach my $server_id (0..$#{$props->{server}}) {
         $pids[$server_id] = ${$props->{server}}[$server_id]->serverpid;
     }
-    say('Number of servers started: '.($#{$props->{server}}+1));
+    say('Number of servers started: '.scalar(@{$props->{server}}));
     say('Server PID: '.join(', ', @pids));
     say("Press ENTER to continue the test run...");
     my $keypress = <STDIN>;
 }
-
-
-#
-# Run actual queries
-#
-
-## For backward compatability
-if ($#{$props->{validators}} == 0 and ${$props->{validators}}[0] =~ m/,/) {
-    @{$props->{validators}} = split(/,/,${$props->{validators}}[0]);
-}
-
-## For backward compatability
-if ($#{$props->{reporters}} == 0 and ${$props->{reporters}}[0] =~ m/,/) {
-    @{$props->{reporters}} = split(/,/,${$props->{reporters}}[0]);
-}
-
-## For backward compatability
-if ($#{$props->{transformers}} == 0 and ${$props->{transformers}}[0] =~ m/,/) {
-    @{$props->{transformers}} = split(/,/,${$props->{transformers}}[0]);
-}
-
-## For uniformity
-if ($#{$props->{redefine}} == 0 and ${$props->{redefine}}[0] =~ m/,/) {
-    @{$props->{redefine}} = split(/,/,${$props->{redefine}}[0]);
-}
-
-# Some more adjustments
-
-$props->{debug}= $debug;
-$props->{dsns}= \@dsns;
-$props->{duration}= $default_duration unless defined $props->{duration};
-$props->{gendata}= '' unless exists $props->{gendata};
-$props->{queries}= $default_queries unless defined $props->{queries};
-$props->{threads}= $default_threads unless defined $props->{threads};
-
-delete $props->{gendata} if $skip_gendata;
-delete $props->{mask} if $no_mask;
-
-# In case of multi-master topology (e.g. Galera with multiple "masters"),
-# we don't want to compare results after each query.
-# Instead, we want to run the flow independently and only compare dumps at the end.
-# If GenTest gets 'multi-master' property, it won't run ResultsetComparator
-
-$props->{'multi_master'}= (defined $galera and scalar(@{$props->{dsns}})>1);
-
-
-# Push the number of "worker" threads into the environment.
-# lib/GenTest/Generator/FromGrammar.pm will generate a corresponding grammar element.
-$ENV{RQG_THREADS}= $props->{threads};
 
 my $gentestProps = GenTest::Properties->init($props);
 
@@ -587,7 +610,7 @@ say("GenTest exited with exit status ".status2text($gentest_result)." ($gentest_
 # otherwise if the test is replication/with two servers compare the 
 # server dumps for any differences else if there are no failures exit with success.
 
-if (($gentest_result == STATUS_OK) && ( ($props->{rpl_mode} && $props->{rpl_mode} !~ /nosync/) || (defined $basedirs[2]) || (defined $basedirs[3]) || $galera))
+if (($gentest_result == STATUS_OK) && ( ($props->{rpl_mode} && $props->{rpl_mode} !~ /nosync/) || (defined ${$props->{basedir}}[2]) || (defined ${$props->{basedir}}[3]) || $props->{galera}))
 {
 #
 # Compare master and slave, or all masters
@@ -631,7 +654,7 @@ if (($gentest_result == STATUS_OK) && ( ($props->{rpl_mode} && $props->{rpl_mode
     if ($gentest_result != STATUS_OK and $store_binaries) {
       foreach my $i ($#{$props->{server}}) {
         my $file= ${$props->{server}}[$i]->binary;
-        my $to= $vardirs[$i];
+        my $to= ${$props->{vardir}}[$i];
         if (osWindows()) {
           system("xcopy \"$file\" \"".$to."\"") if -e $file and $to;
           $file =~ s/\.exe/\.pdb/;
