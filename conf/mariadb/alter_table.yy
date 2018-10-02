@@ -33,12 +33,10 @@ alt_query:
   | alt_flush
   | alt_optimize
   | alt_lock_unlock_table
-  | alt_transaction
 ;
 
 alt_create:
-    alt_create_or_replace
-  | alt_create_like
+   alt_create_like
 ;
 
 alt_rename_multi:
@@ -47,7 +45,6 @@ alt_rename_multi:
 
 alt_dml:
     alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert
-  | alt_update | alt_update
   | alt_delete | alt_truncate
 ;  
 
