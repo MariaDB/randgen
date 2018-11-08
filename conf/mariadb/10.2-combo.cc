@@ -9,7 +9,7 @@ $combinations = [ $grammars,
   '
     --no-mask
     --queries=100M
-    --duration=350
+    --duration=400
     --threads=6
     --seed=time
     --views
@@ -20,16 +20,20 @@ $combinations = [ $grammars,
     --redefine=conf/mariadb/general-workarounds.yy
     --redefine=conf/mariadb/alter_table.yy
     --redefine=conf/mariadb/bulk_insert.yy
+    --redefine=conf/mariadb/event.yy
+    --redefine=conf/mariadb/sp.yy
     --mysqld=--log_output=FILE
     --mysqld=--log_bin_trust_function_creators=1
     --mysqld=--log-bin
     --mysqld=--loose-max-statement-time=30
     --mysqld=--loose-debug_assert_on_not_freed_memory=0
+    --mysqld=--lock-wait-timeout=10
+    --mysqld=--innodb-lock-wait-timeout=5
   '], 
   [
-    '--engine=InnoDB --mysqld=--innodb-buffer-pool-size=256M',
-    '--mysqld=--default-storage-engine=MyISAM --engine=MyISAM',
-    '--mysqld=--plugin-load-add=ha_rocksdb --mysqld=--binlog-format=ROW --mysqld=--default-storage-engine=RocksDB --engine=RocksDB',
+    '--engine=InnoDB --mysqld=--innodb-buffer-pool-size=2G',
+    '--engine=MyISAM --mysqld=--default-storage-engine=MyISAM',
+    '--engine=RocksDB --mysqld=--default-storage-engine=RocksDB --mysqld=--plugin-load-add=ha_rocksdb --mysqld=--binlog-format=ROW',
   ]
 ];
 

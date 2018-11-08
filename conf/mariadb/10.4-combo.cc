@@ -35,6 +35,7 @@ $combinations = [ $grammars,
   [
     '--engine=InnoDB --mysqld=--innodb-buffer-pool-size=2G',
     '--engine=MyISAM --mysqld=--default-storage-engine=MyISAM',
+    '--engine=Aria --mysqld=--default-storage-engine=Aria',
     '--engine=RocksDB --mysqld=--default-storage-engine=RocksDB --mysqld=--plugin-load-add=ha_rocksdb --mysqld=--binlog-format=ROW',
   ]
 ];
