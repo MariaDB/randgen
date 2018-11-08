@@ -20,6 +20,7 @@
 
 use strict;
 use lib 'lib';
+use lib "$ENV{RQG_HOME}";
 use lib "$ENV{RQG_HOME}/lib";
 use Carp;
 #use List::Util 'shuffle';
