@@ -69,7 +69,7 @@ debug-no-sync                                              [ FALSE , TRUE ]
 debug-no-thread-alarm                                      [ FALSE , TRUE ]
 #### debug-sporadic-binlog-dump-fail                            FALSE
 #### debug-sync-timeout                                         0
-#### default-storage-engine                                     InnoDB
+default-storage-engine                                     [ InnoDB , MyISAM , Aria ]
 #### default-time-zone                                          (No default value)
 default-week-format                                        [ 0 .. 7 ]
 delay-key-write                                            [ OFF , ON , ALL ]
