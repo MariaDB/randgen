@@ -508,7 +508,12 @@ sub startServer {
         while (!-f $self->pidfile and time() < $wait_end ) {
             Time::HiRes::sleep($wait_time);
             $errlog_update= ( (stat($errorlog))[9] > $errlog_last_update_time);
-            last if $errlog_update;
+            if ($errlog_update) {
+              say("Pid file does not exist and timeout hasn't passed yet, but the error log has already been updated");
+              last;
+            } else {
+              say("Pid file hasn't been found yet, waiting");
+            }
         }
 
         if (-f $self->pidfile) {
@@ -519,6 +524,8 @@ sub startServer {
             sayFile($errorlog);
             return DBSTATUS_FAILURE;
         }
+
+        my $abort_found_in_error_log= 0;
 
         if (!$pid)
         {
@@ -551,11 +558,17 @@ sub startServer {
             for (;;) {
                 do {
                     $_= readline $errlog_fh;
-                    if (/\[Note\]\s+\S+?[\/\\]mysqld(?:\.exe)\s+\(mysqld.*?\)\s+starting as process (\d+)\s+\.\./) {
+                    if (/\[Note\]\s+\S+?[\/\\]mysqld(?:\.exe)?\s+\(mysqld.*?\)\s+starting as process (\d+)\s+\.\./) {
                         $pid= $1;
+                        say("Found PID $pid in the error log");
                         last TAIL;
                     }
-                    elsif (! /^== /) {
+                    elsif (/(?:Aborting|signal\s+\d+)/) {
+                        sayError("Server has apparently crashed");
+                        $abort_found_in_error_log= 1;
+                        last TAIL;
+                    }
+                    elsif ($self->[MYSQLD_VALGRIND] and ! /^== /) {
                         last TAIL;
                     }
                 } until (eof($errlog_fh));
@@ -565,16 +578,21 @@ sub startServer {
         }
         close($errlog_fh) if $errlog_fh;
 
+        if ($abort_found_in_error_log) {
+          sayFile($errorlog);
+          return DBSTATUS_FAILURE;
+        }
+
         unless (defined $pid) {
             say("WARNING: could not find the pid in the error log, might be an old version");
         }
 
-        # Now we know the pid and can monitor it along with the pid file,
-        # to avoid unnecessary waiting if the server goes down
         $wait_end= time() + $startup_timeout;
 
         while (!-f $self->pidfile and time() < $wait_end) {
             Time::HiRes::sleep($wait_time);
+            # If we by now know the pid, we can monitor it along with the pid file,
+            # to avoid unnecessary waiting if the server goes down
             last if $pid and not kill(0, $pid);
         }
 
