@@ -1,4 +1,5 @@
 # Copyright (C) 2014 SkySQL Ab
+# Copyright (c) 2018 MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +23,7 @@ use strict;
 use Carp;
 use GenTest;
 #use GenTest::Constants;
-#use GenTest::Random;
+use GenTest::Random;
 #use GenTest::Executor;
 
 #use Data::Dumper;
@@ -63,6 +64,7 @@ use constant GC_SPEC => 0;
 use constant GC_DEBUG => 1;
 use constant GC_CONFIG => 2;
 use constant GC_SEED => 3;
+use constant GC_PRNG => 4;
 # use constant GD_ENGINE => 4;
 # use constant GD_ROWS => 5;
 # use constant GD_VIEWS => 6;
@@ -86,8 +88,10 @@ sub new {
 	} elsif ($self->[GC_SEED] eq 'time') {
 		$self->[GC_SEED] = time();
 		say("GenConfig: Converting --seed=time to --seed=".$self->[GC_SEED]);
-	}
-	
+	} else {
+    say("GenConfig: seed=".$self->[GC_SEED]);
+  }
+  $self->[GC_PRNG]= GenTest::Random->new(seed => $self->[GC_SEED]);
 	return generate($self);
 }
 
@@ -107,21 +111,23 @@ sub seed {
 }
 
 sub rand_bool {
-	return int(rand(2));
+  my $self= shift;
+	return $self->[GC_PRNG]->uint16(0,1);
 }
 
 sub rand_int {
-	my ($first, $last) = @_;
-	return int(rand($last-$first+1)) + $first;
+	my ($self, $first, $last) = @_;
+	return $self->[GC_PRNG]->int($first,$last);
 }
 
 sub rand_float {
-	my ($first, $last) = @_;
-	return rand($last-$first+0.0001) + $first;
+	my ($self, $first, $last) = @_;
+	return $self->[GC_PRNG]->float($first,$last);
 }
 
 sub rand_array_element {
-	return @_[rand_int(0,$#_)];
+  my $self= shift;
+  return $self->[GC_PRNG]->arrayElement(\@_);
 }
 
 sub generate {
@@ -133,14 +139,12 @@ sub generate {
 	open(TEMPLATE, "<$spec_file") or croak "ERROR: GenConfig: unable to open specification file '$spec_file': $!";
 	my @config_contents = ();
 
-	srand($self->seed());
-
 	while (<TEMPLATE>) 
 	{
 		if  (/^\s*([^\#\s]+)(?:\s*=\s*)?\s*\[\s*(.*)\s*\](.*)/) {
 			# real option with template
 			my ( $name, $template, $suffix ) = ( $1, $2 , $3 );
-			next if (! rand_bool()); # do not use the template, leave default;
+			next if (! $self->rand_bool()); # do not use the template, leave default;
 
 			if ($template =~ /\(\s*(\S+)\s*\)/) {
 
@@ -148,10 +152,10 @@ sub generate {
 				# several values can be used simultaneously
 				my $allowed_values = $1;
 				my %allowed_values = map( ($_, 1), split /,/, $allowed_values);
-				my $number_of_values = rand_int(0,scalar(keys %allowed_values));
+				my $number_of_values = $self->rand_int(0,scalar(keys %allowed_values));
 				my @values = ();
 				foreach (1 .. $number_of_values) {
-					my $val = rand_array_element(keys %allowed_values);
+					my $val = $self->rand_array_element(sort keys %allowed_values);
 					push @values, $val;
 					delete $allowed_values{$val};
 				}
@@ -164,7 +168,7 @@ sub generate {
 				# the comma is supposed to be surrounded by spaces, to differentiate
 				# from actual values containing commas
 				my @allowed_values = split / , /, $template;
-				push @config_contents, sprintf( "loose-%-64s = " . rand_array_element(@allowed_values) . "\n" , $name );
+				push @config_contents, sprintf( "loose-%-64s = " . $self->rand_array_element(@allowed_values) . "\n" , $name );
 			}
 
 			elsif ($template =~ /([\.\d]+)\s+..\s+([\.\d]+)/) {
@@ -172,10 +176,10 @@ sub generate {
 				# The first and last limits are separated by ' .. ' (with spaces).
 				my ($first, $last) = ($1, $2);
 				if ( $first =~ /\./ or $last =~ /\./ ) {
-					push @config_contents, sprintf( "loose-%-64s = " . rand_float($first,$last) . "\n" , $name );
+					push @config_contents, sprintf( "loose-%-64s = " . $self->rand_float($first,$last) . "\n" , $name );
 				}
 				else {
-					push @config_contents, sprintf( "loose-%-64s = " . rand_int($first,$last) . "\n" , $name );
+					push @config_contents, sprintf( "loose-%-64s = " . $self->rand_int($first,$last) . "\n" , $name );
 				}
 			}
 
