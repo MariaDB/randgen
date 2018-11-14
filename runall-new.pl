@@ -313,7 +313,7 @@ ${$props->{vardir}}[0] ||= ${$props->{vardir}}[1];
 # values[N] expand or override values[0] for the server N
 
 @{${$props->{mysqld_options}}[0]} = () if not defined ${$props->{mysqld_options}}[0];
-push @{${$props->{mysqld_options}}[0]}, "--sql-mode=no_engine_substitution" if join(' ', @ARGV_saved) !~ m{sql[-_]mode}io;
+# push @{${$props->{mysqld_options}}[0]}, "--sql-mode=no_engine_substitution" if join(' ', @ARGV_saved) !~ m{sql[-_]mode}io;
 
 foreach my $i (1..3) {
     @{${$props->{mysqld_options}}[$i]} = ( defined ${$props->{mysqld_options}}[$i] 
