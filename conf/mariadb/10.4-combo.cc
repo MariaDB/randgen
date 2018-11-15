@@ -21,6 +21,7 @@ $combinations = [ $grammars,
     --redefine=conf/mariadb/alter_table.yy
     --redefine=conf/mariadb/bulk_insert.yy
     --redefine=conf/mariadb/event.yy
+    --redefine=conf/mariadb/instant_add.yy
     --redefine=conf/mariadb/sequences.yy
     --redefine=conf/mariadb/sp.yy
     --redefine=conf/mariadb/versioning.yy
