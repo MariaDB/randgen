@@ -6,7 +6,7 @@
 innodb_checksum_algorithm                                  [ innodb , crc32 , none , strict_innodb , strict_crc32 , strict_none ]
 #### innodb_data_file_path	ibdata1:12M:autoextend          
 #### innodb_data_home_dir	                                
-#### innodb_log_block_size                                      [ 16 .. 4096 ]    ## Asserts, said to be BETA-quality
+#### innodb_log_block_size                                      [ 16 .. 4096 ]    ## MDEV-5874 : Asserts, said to be BETA-quality in 10.1, deprecated in 10.2, removed in 10.3
 innodb_log_file_size                                       [ 16777216 .. 1073741824 ]
 innodb_log_files_in_group	                                [ 1 .. 4 ]
 #### innodb_log_group_home_dir	./
@@ -123,7 +123,7 @@ lc-messages                                                [ en_US , ru_RU ]
 #### lc-messages-dir                                            (No default value)
 lc-time-names                                              [ en_US , ru_RU ]
 local-infile =                                              TRUE
-lock-wait-timeout                                          [ 1 .. 86400 ]        # max 31536000
+lock_wait_timeout                                          [ 1 .. 60 ]        # max 31536000
 #### log-basename                                               wheezy-64
 log-bin                                                    
 #### log-bin-index                                              (No default value)
@@ -444,7 +444,7 @@ innodb_io_capacity_max                                     [ 2000 .. 10000 ]
 innodb_kill_idle_transaction                               [ 0 .. 600 ]
 innodb_large_prefix                                        [ OFF , ON ]
 innodb_limit_optimistic_insert_debug                       [ 60 .. 10000 ]
-innodb_lock_wait_timeout                                   [ 1 .. 30 ]
+innodb_lock_wait_timeout                                   [ 1 .. 60 ]
 innodb_locking_fake_changes                                [ ON , OFF ]
 innodb_locks_unsafe_for_binlog                             [ OFF , ON ]
 #### innodb_log_arch_dir	./

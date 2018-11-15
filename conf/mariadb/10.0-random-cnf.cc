@@ -13,9 +13,6 @@ $combinations = [
     --redefine=conf/mariadb/bulk_insert.yy
     --redefine=conf/mariadb/event.yy
     --redefine=conf/mariadb/sp.yy
-		--mysqld=--log_output=FILE
-    --mysqld=--lock-wait-timeout=10
-    --mysqld=--innodb-lock-wait-timeout=5
 		--genconfig=conf/mariadb/10.0.cnf.template
     --views
 	'], 
