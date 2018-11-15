@@ -671,7 +671,7 @@ unique_checks                                              [ ON , OFF ]
 updatable_views_with_limit                                 [ YES , NO ]
 use_stat_tables                                            [ NEVER , complementary , preferably ]
 userstat                                                   [ OFF , ON ]
-#### version	10.1.38-MariaDB-debug
+version                                                    [ '10.2-fake' , 'fake-10.2' ]
 #### version_comment	Source distribution
 #### version_compile_machine	x86_64
 #### version_compile_os	Linux
