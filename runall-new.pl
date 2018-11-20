@@ -377,7 +377,7 @@ if ($#{$props->{redefine}} == 0 and ${$props->{redefine}}[0] =~ m/,/) {
 $props->{debug}= $debug;
 $props->{dsns}= \@dsns;
 $props->{duration}= $default_duration unless defined $props->{duration};
-$props->{gendata}= '' unless exists $props->{gendata};
+$props->{gendata}= '' unless exists $props->{gendata} and defined $props->{gendata};
 $props->{queries}= $default_queries unless defined $props->{queries};
 $props->{threads}= $default_threads unless defined $props->{threads};
 
