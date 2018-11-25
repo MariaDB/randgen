@@ -133,14 +133,14 @@ vers_add_drop_sys_column:
 
 vers_select:
     SELECT * from vers_existing_table FOR system_time vers_system_time_select
-  | SELECT * from vers_existing_table WHERE row_start vers_comparison_operator @trx
-  | SELECT * from vers_existing_table WHERE row_end vers_comparison_operator @trx
+  | SELECT * from vers_existing_table WHERE row_start vers_comparison_operator @trx_user_var
+  | SELECT * from vers_existing_table WHERE row_end vers_comparison_operator @trx_user_var
   | SELECT * from vers_existing_table WHERE row_start IN (SELECT row_start FROM vers_existing_table)
   | SELECT * from vers_existing_table WHERE row_end IN (SELECT row_start FROM vers_existing_table)
   | SELECT * from vers_existing_table WHERE row_start IN (SELECT row_end FROM vers_existing_table)
   | SELECT * from vers_existing_table WHERE row_end IN (SELECT row_end FROM vers_existing_table)
-  | SELECT row_start FROM vers_existing_table ORDER BY RAND() LIMIT 1 INTO @trx
-  | SELECT row_end FROM vers_existing_table ORDER BY RAND() LIMIT 1 INTO @trx
+  | SELECT row_start FROM vers_existing_table ORDER BY RAND() LIMIT 1 INTO @trx_user_var
+  | SELECT row_end FROM vers_existing_table ORDER BY RAND() LIMIT 1 INTO @trx_user_var
 ;
 
 vers_comparison_operator:
@@ -148,7 +148,7 @@ vers_comparison_operator:
 ;
 
 vers_delete_history:
-  DELETE HISTORY FROM vers_existing_table BEFORE system_time vers_system_time
+  DELETE HISTORY FROM vers_existing_table BEFORE SYSTEM_TIME vers_system_time
 ;
 
 vers_tx_history:
@@ -171,7 +171,7 @@ vers_system_time:
   | CURRENT_TIMESTAMP 
   | NOW() | NOW(6)
   | _tinyint_unsigned 
-  | @trx | @trx | @trx | @trx 
+  | @trx_user_var | @trx_user_var | @trx_user_var | @trx_user_var
   | DATE_ADD(_timestamp, INTERVAL _positive_digit vers_interval)
   | DATE_SUB(_timestamp, INTERVAL _positive_digit vers_interval)
   | DATE_SUB(NOW(), INTERVAL _positive_digit vers_interval)
@@ -216,9 +216,8 @@ vers_partitioning_definition:
 vers_partitioning_interval_or_limit:
     INTERVAL _positive_digit vers_interval
   | INTERVAL _positive_digit vers_interval
-  | LIMIT _smallint_unsigned
-  | LIMIT _digit
-  | INTERVAL _positive_digit vers_interval LIMIT _tinyint_unsigned
+  | LIMIT _smallint_positive
+  | LIMIT _positive_digit
 ;
     
 vers_subpartitioning_optional:
