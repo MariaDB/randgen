@@ -93,8 +93,9 @@ alt_alter_item:
 ;
 
 # Can't put it on the list, as ORDER BY should always go last
+# Disabled due to MDEV-17725
 alt_optional_order_by:
-  | | | | | | | | | | , ORDER BY alt_column_list
+#  | | | | | | | | | | , ORDER BY alt_column_list
 ;
 
 alt_table_option:
