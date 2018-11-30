@@ -945,7 +945,7 @@ sub checkDatabaseIntegrity {
 
   my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
   foreach my $database (@$databases) {
-      next if $database =~ m{^(mysql|information_schema|pbxt|performance_schema)$}sio;
+      next if $database =~ m{^(information_schema|pbxt|performance_schema)$}sio;
       $dbh->do("USE $database");
       my $tabl_ref = $dbh->selectcol_arrayref("SHOW FULL TABLES", { Columns=>[1,2] });
       # 1178 is ER_CHECK_NOT_IMPLEMENTED
@@ -955,6 +955,7 @@ sub checkDatabaseIntegrity {
         next if $tables{$table} eq 'VIEW';
 #        say("Verifying table: $database.$table:");
         my $check = $dbh->selectcol_arrayref("CHECK TABLE `$database`.`$table` EXTENDED", { Columns=>[3,4] });
+        # 1178 is ER_CHECK_NOT_IMPLEMENTED
         if ($dbh->err() > 0 && $dbh->err() != 1178) {
           sayError("Table $database.$table appears to be corrupted, error: ".$dbh->err());
           $status= DBSTATUS_FAILURE;
@@ -962,8 +963,8 @@ sub checkDatabaseIntegrity {
         else {
           my %msg = @$check;
           foreach my $m (keys %msg) {
-            say("For table `$database`.`$table` : $m $msg{$m}");
-            if ($m ne 'status' and $m ne 'note') {
+            say("For table `$database`.`$table` : $m : $msg{$m}");
+            if ($m eq 'status' and $msg{$m} ne 'OK' or $m eq 'Error') {
               $status= DBSTATUS_FAILURE;
             }
           }
