@@ -356,6 +356,7 @@ use constant  ER_JSON_DOCUMENT_NULL_KEY                         => 3158;
 
 use constant  ER_EXPRESSION_REFERS_TO_UNINIT_FIELD              => 4026;
 use constant  ER_REFERENCED_TRG_DOES_NOT_EXIST                  => 4031;
+use constant  ER_UNSUPPORT_COMPRESSED_TEMPORARY_TABLE           => 4047;
 use constant  ER_ISOLATION_MODE_NOT_SUPPORTED                   => 4057;
 use constant  ER_MYROCKS_CANT_NOPAD_COLLATION                   => 4077;
 
@@ -607,6 +608,7 @@ my %err2type = (
     ER_UNKNOWN_SYSTEM_VARIABLE()                        => STATUS_SEMANTIC_ERROR,
     ER_UNKNOWN_TABLE()                                  => STATUS_SEMANTIC_ERROR,
     ER_UNKNOWN_VIEW()                                   => STATUS_SEMANTIC_ERROR,
+    ER_UNSUPPORT_COMPRESSED_TEMPORARY_TABLE()           => STATUS_SEMANTIC_ERROR,
     ER_UNSUPPORTED_PS()                                 => STATUS_SEMANTIC_ERROR,
     ER_UPDATE_TABLE_USED()                              => STATUS_SEMANTIC_ERROR,
     ER_VAR_CANT_BE_READ()                               => STATUS_SEMANTIC_ERROR,
