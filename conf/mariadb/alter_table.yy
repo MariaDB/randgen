@@ -183,7 +183,7 @@ alt_eq_optional:
 ;
 
 alt_engine:
-  InnoDB | InnoDB | InnoDB | InnoDB | MyISAM | MyISAM | Aria | Memory
+  InnoDB | InnoDB | InnoDB | InnoDB | MyISAM | MyISAM | Aria | Aria | Memory
 ;
 
 alt_default_optional:
