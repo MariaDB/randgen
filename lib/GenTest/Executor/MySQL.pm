@@ -153,6 +153,7 @@ use constant  ER_PARSE_ERROR                                    => 1064;
 use constant  ER_NONUNIQ_TABLE                                  => 1066;
 use constant  ER_INVALID_DEFAULT                                => 1067;
 use constant  ER_MULTIPLE_PRI_KEY                               => 1068;
+use constant  ER_TOO_MANY_KEYS                                  => 1069;
 use constant  ER_TOO_LONG_KEY                                   => 1071;
 use constant  ER_KEY_COLUMN_DOES_NOT_EXIST                      => 1072;
 use constant  ER_COLUMN_LENGTH_TOO_BIG                          => 1074;
@@ -254,6 +255,7 @@ use constant  ER_SP_NO_RECURSION                                => 1424;
 use constant  ER_TOO_BIG_SCALE                                  => 1425;
 use constant  ER_XAER_DUPID                                     => 1440;
 use constant  ER_CANT_UPDATE_USED_TABLE_IN_SF_OR_TRG            => 1442;
+use constant  ER_MALFORMED_DEFINER                              => 1446;
 use constant  ER_SP_RECURSION_LIMIT                             => 1456;
 use constant  ER_SP_PROC_TABLE_CORRUPT                          => 1457;
 use constant  ER_NON_GROUPING_FIELD_USED                        => 1463;
@@ -322,6 +324,8 @@ use constant  ER_CANT_DO_ONLINE                                 => 1915;
 use constant  ER_CONNECTION_KILLED                              => 1927;
 use constant  ER_NO_SUCH_TABLE_IN_ENGINE                        => 1932;
 use constant  ER_TARGET_NOT_EXPLAINABLE                         => 1933;
+use constant  ER_INVALID_ROLE                                   => 1959;
+use constant  ER_INVALID_CURRENT_USER                           => 1960;
 use constant  ER_IT_IS_A_VIEW                                   => 1965;
 use constant  ER_STATEMENT_TIMEOUT                              => 1969;
 
@@ -331,6 +335,10 @@ use constant  ER_SERVER_GONE_ERROR                              => 2006;
 use constant  ER_SERVER_LOST                                    => 2013;
 use constant  CR_COMMANDS_OUT_OF_SYNC                           => 2014;  # Caused by old DBD::mysql
 use constant  ER_SERVER_LOST_EXTENDED                           => 2055;
+
+#--- MySQL 5.7 ---
+
+use constant  ER_FIELD_IN_ORDER_NOT_SELECT                      => 3065;
 
 #--- MySQL 5.7 JSON-related errors ---
 
@@ -458,6 +466,7 @@ my %err2type = (
     ER_EVENTS_DB_ERROR()                                => STATUS_DATABASE_CORRUPTION,
     ER_EXPRESSION_REFERS_TO_UNINIT_FIELD()              => STATUS_SEMANTIC_ERROR,
     ER_FEATURE_DISABLED()                               => STATUS_SEMANTIC_ERROR,
+    ER_FIELD_IN_ORDER_NOT_SELECT()                      => STATUS_SEMANTIC_ERROR,
     ER_FIELD_NOT_FOUND_PART_ERROR()                     => STATUS_SEMANTIC_ERROR,
     ER_FIELD_TYPE_NOT_ALLOWED_AS_PARTITION_FIELD()      => STATUS_SEMANTIC_ERROR,
     ER_FIELD_SPECIFIED_TWICE()                          => STATUS_SEMANTIC_ERROR,
@@ -474,6 +483,7 @@ my %err2type = (
     ER_INSIDE_TRANSACTION_PREVENTS_SWITCH_BINLOG_FORMAT() => STATUS_SEMANTIC_ERROR,
     ER_INVALID_CAST_TO_JSON()                           => STATUS_SEMANTIC_ERROR,
     ER_INVALID_CHARACTER_STRING()                       => STATUS_SEMANTIC_ERROR,
+    ER_INVALID_CURRENT_USER()                           => STATUS_SEMANTIC_ERROR, # switch to something critical after MDEV-17943 is fixed
     ER_INVALID_DEFAULT()                                => STATUS_SEMANTIC_ERROR,
     ER_INVALID_GROUP_FUNC_USE()                         => STATUS_SEMANTIC_ERROR,
     ER_INVALID_JSON_BINARY_DATA()                       => STATUS_SEMANTIC_ERROR,
@@ -485,6 +495,7 @@ my %err2type = (
     ER_INVALID_JSON_TEXT()                              => STATUS_SEMANTIC_ERROR,
     ER_INVALID_JSON_TEXT_IN_PARAM()                     => STATUS_SEMANTIC_ERROR,
     ER_INVALID_JSON_VALUE_FOR_CAST()                    => STATUS_SEMANTIC_ERROR,
+    ER_INVALID_ROLE()                                   => STATUS_SEMANTIC_ERROR,
     ER_INVALID_TYPE_FOR_JSON()                          => STATUS_SEMANTIC_ERROR,
     ER_ISOLATION_MODE_NOT_SUPPORTED()                   => STATUS_SEMANTIC_ERROR,
     ER_JSON_BAD_ONE_OR_ALL_ARG()                        => STATUS_SEMANTIC_ERROR,
@@ -501,6 +512,7 @@ my %err2type = (
     ER_LOCK_DEADLOCK()                                  => STATUS_TRANSACTION_ERROR,
     ER_LOCK_OR_ACTIVE_TRANSACTION()                     => STATUS_SEMANTIC_ERROR,
     ER_LOCK_WAIT_TIMEOUT()                              => STATUS_TRANSACTION_ERROR,
+    ER_MALFORMED_DEFINER()                              => STATUS_SEMANTIC_ERROR,
     ER_MISSING()                                        => STATUS_SYNTAX_ERROR,
     ER_MIX_HANDLER_ERROR()                              => STATUS_SEMANTIC_ERROR,
     ER_MIX_OF_GROUP_FUNC_AND_FIELDS()                   => STATUS_SEMANTIC_ERROR,
@@ -596,6 +608,7 @@ my %err2type = (
     ER_TOO_BIG_SCALE()                                  => STATUS_SEMANTIC_ERROR,
     ER_TOO_BIG_SELECT()                                 => STATUS_SEMANTIC_ERROR,
     ER_TOO_LONG_KEY()                                   => STATUS_SEMANTIC_ERROR,
+    ER_TOO_MANY_KEYS()                                  => STATUS_SEMANTIC_ERROR,
     ER_TOO_MANY_ROWS()                                  => STATUS_SEMANTIC_ERROR,
     ER_TRANS_CACHE_FULL()                               => STATUS_SEMANTIC_ERROR, # or STATUS_TRANSACTION_ERROR
     ER_TRG_ALREADY_EXISTS()                             => STATUS_SEMANTIC_ERROR,
