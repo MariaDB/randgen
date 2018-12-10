@@ -15,7 +15,7 @@
 
 
 query_add:
-  | | | | | | | | sql_mode_set
+  query | query | query | query | query | query | query | sql_mode_set
 ;
 
 sql_mode_set:
