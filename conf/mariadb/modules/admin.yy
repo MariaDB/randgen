@@ -84,7 +84,8 @@ admin_flush_option:
   | HOSTS
 #  | INDEX_STATISTICS # userstat
   | admin_flush_log_type LOGS
-  | MASTER
+# Disabled due to MDEV-17977
+#  | MASTER
   | PRIVILEGES
   | QUERY CACHE
 #  | QUERY_RESPONSE_TIME # query_response_time
