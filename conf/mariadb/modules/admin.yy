@@ -120,7 +120,8 @@ admin_show:
   | SHOW CREATE PACKAGE admin_package_name
   | SHOW CREATE PACKAGE BODY admin_package_name
   | SHOW CREATE PROCEDURE _letter
-  | SHOW CREATE SEQUENCE admin_sequence_name
+# Disabled due to MDEV-17978
+#  | SHOW CREATE SEQUENCE admin_sequence_name
   | SHOW CREATE TABLE _table
   | SHOW CREATE TRIGGER _letter
   | SHOW CREATE USER admin_user_name
