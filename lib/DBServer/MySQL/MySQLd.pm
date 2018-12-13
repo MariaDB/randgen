@@ -414,13 +414,15 @@ sub createMysqlBase  {
         $command = $self->generateCommand($boot_options);
     }
 
+    my $usertable= ($self->versionNumeric() gt '100400' ? 'global_priv' : 'user');
+
     ## Add last strokes to the boot/init file: don't want empty users, but want the test user instead
     print BOOT "USE mysql;\n";
-    print BOOT "DELETE FROM user WHERE `User` = '';\n";
+    print BOOT "DELETE FROM $usertable WHERE `User` = '';\n";
     if ($self->user ne 'root') {
-        print BOOT "CREATE TABLE tmp_user AS SELECT * FROM user WHERE `User`='root' AND `Host`='localhost';\n";
+        print BOOT "CREATE TABLE tmp_user AS SELECT * FROM $usertable WHERE `User`='root' AND `Host`='localhost';\n";
         print BOOT "UPDATE tmp_user SET `User` = '". $self->user ."';\n";
-        print BOOT "INSERT INTO user SELECT * FROM tmp_user;\n";
+        print BOOT "INSERT INTO $usertable SELECT * FROM tmp_user;\n";
         print BOOT "DROP TABLE tmp_user;\n";
         print BOOT "CREATE TABLE tmp_proxies AS SELECT * FROM proxies_priv WHERE `User`='root' AND `Host`='localhost';\n";
         print BOOT "UPDATE tmp_proxies SET `User` = '". $self->user . "';\n";
@@ -1298,10 +1300,10 @@ sub _olderThan {
     
     my ($v1, $v2, $v3) = $self->versionNumbers;
 
-    if    ($v1 == 10 and $b1 == 5 and ($v2 == 0 or $v2 == 1 or $v2 == 2)) { $v1 = 5; $v2 = 6 }
-    elsif ($v1 == 10 and $b1 == 5 and $v2 == 3) { $v1 = 5; $v2 = 7 }
-    elsif ($v1 == 5 and $b1 == 10 and ($b2 == 0 or $b2 == 1 or $b2 == 2)) { $b1 = 5; $b2 = 6 }
-    elsif ($v1 == 5 and $b1 == 10 and $b2 == 3) { $b1 = 5; $b2 = 7 }
+    if    ($v1 == 10 and $b1 == 5 and $v2 >= 0 and $v2 < 3) { $v1 = 5; $v2 = 6 }
+    elsif ($v1 == 10 and $b1 == 5 and $v2 >= 3) { $v1 = 5; $v2 = 7 }
+    elsif ($v1 == 5 and $b1 == 10 and $b2 >= 0 and $b2 < 3) { $b1 = 5; $b2 = 6 }
+    elsif ($v1 == 5 and $b1 == 10 and $b2 >= 3) { $b1 = 5; $b2 = 7 }
 
     my $b = $b1*1000 + $b2 * 100 + $b3;
     my $v = $v1*1000 + $v2 * 100 + $v3;
