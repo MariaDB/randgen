@@ -401,6 +401,9 @@ use constant  ER_VERS_ALTER_SYSTEM_FIELD                        => 4130;
 use constant  ER_VERS_DUPLICATE_ROW_START_END                   => 4134;
 use constant  ER_VERS_ALREADY_VERSIONED                         => 4135;
 use constant  ER_VERS_TEMPORARY                                 => 4137;
+use constant  ER_BACKUP_LOCK_IS_ACTIVE                          => 4145;
+use constant  ER_BACKUP_NOT_RUNNING                             => 4146;
+use constant  ER_BACKUP_WRONG_STAGE                             => 4147;
 
 #--- end of 10.3 errors ---
 
@@ -411,11 +414,14 @@ my %err2type = (
     ER_ALTER_OPERATION_NOT_SUPPORTED()                  => STATUS_SEMANTIC_ERROR,
     ER_ALTER_OPERATION_NOT_SUPPORTED_REASON()           => STATUS_SEMANTIC_ERROR,
     ER_AUTOINCREMENT()                                  => STATUS_SEMANTIC_ERROR,
+    ER_BACKUP_LOCK_IS_ACTIVE()                          => STATUS_SEMANTIC_ERROR,
     ER_BACKUP_NOT_ENABLED()                             => STATUS_ENVIRONMENT_FAILURE,
+    ER_BACKUP_NOT_RUNNING()                             => STATUS_SEMANTIC_ERROR,
     ER_BACKUP_PROGRESS_TABLES()                         => STATUS_BACKUP_FAILURE,
     ER_BACKUP_RUNNING()                                 => STATUS_SEMANTIC_ERROR,
     ER_BACKUP_SEND_DATA1()                              => STATUS_BACKUP_FAILURE,
     ER_BACKUP_SEND_DATA2()                              => STATUS_BACKUP_FAILURE,
+    ER_BACKUP_WRONG_STAGE()                             => STATUS_SEMANTIC_ERROR,
     ER_BAD_DB_ERROR()                                   => STATUS_SEMANTIC_ERROR,
     ER_BAD_FIELD_ERROR()                                => STATUS_SEMANTIC_ERROR,
     ER_BAD_FT_COLUMN()                                  => STATUS_SEMANTIC_ERROR,
