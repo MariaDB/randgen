@@ -15,7 +15,7 @@
 
 
 query_add:
-  query | alttcol_query
+  query | query | query | alttcol_query
 ;
 
 alttcol_query:
