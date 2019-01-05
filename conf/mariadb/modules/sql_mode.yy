@@ -29,7 +29,7 @@ sql_mode_session_or_global:
 sql_mode_value:
   sql_mode_list | '' | DEFAULT
 ;
-
+# NO_ZERO_DATE is disabled due to MDEV-18042
 sql_mode_list:
   { @modes= qw(
       ALLOW_INVALID_DATES
@@ -54,7 +54,6 @@ sql_mode_list:
       NO_KEY_OPTIONS
       NO_TABLE_OPTIONS
       NO_UNSIGNED_SUBTRACTION
-      NO_ZERO_DATE
       NO_ZERO_IN_DATE
       ONLY_FULL_GROUP_BY
       ORACLE
