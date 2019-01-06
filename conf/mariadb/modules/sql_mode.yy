@@ -30,6 +30,7 @@ sql_mode_value:
   sql_mode_list | '' | DEFAULT
 ;
 # NO_ZERO_DATE is disabled due to MDEV-18042
+# TRADITIONAL is disabled due to MDEV-18042
 sql_mode_list:
   { @modes= qw(
       ALLOW_INVALID_DATES
@@ -65,7 +66,6 @@ sql_mode_list:
       STRICT_ALL_TABLES
       STRICT_TRANS_TABLES
       TIME_ROUND_FRACTIONAL
-      TRADITIONAL
     ); $length=$prng->int(1,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length]) . "'"
   }
 ;
