@@ -77,6 +77,9 @@ sub run {
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
   }
 
+  my $vardir= $server->vardir;
+  my $mbackup_target= $vardir.'/backup';
+
   say("-- Server info: --");
   say($server->version());
   $server->printServerOptions();
@@ -124,14 +127,14 @@ sub run {
     }
     
     $self->printStep("Creating full backup");
-    $cmd= "$mbackup --backup --target-dir=".$server->vardir."/backup/ --protocol=tcp --port=".$server->port." --user=".$server->user." 2>".$server->vardir."/mbackup_backup.log";
+    $cmd= "$mbackup --backup --target-dir=$mbackup_target --protocol=tcp --port=".$server->port." --user=".$server->user." 2>$vardir/mbackup_backup.log";
     say($cmd);
     system($cmd);
     $status= $? >> 8;
 
     if ($status != STATUS_OK) {
       sayError("Full backup failed");
-      sayFile($server->vardir."/mbackup_backup.log");
+      sayFile("$vardir/mbackup_backup.log");
       return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
     }
 
@@ -192,28 +195,36 @@ sub run {
 
   #####
   $self->printStep("Preparing backup");
-  $cmd= "$mbackup --prepare --target-dir=".$server->vardir."/backup/ --user=".$server->user." 2>".$server->vardir."/mbackup_prepare.log";
+
+  say("Storing the backup before prepare attempt...");
+  if (osWindows()) {
+    system('xcopy "'.$mbackup_target.'" "'.$mbackup_target.'_before_prepare'.'" /E /I /Q');
+  } else {
+    system('cp -r '.$mbackup_target.' '.$mbackup_target.'_before_prepare');
+  }
+
+  $cmd= "$mbackup --prepare --target-dir=$mbackup_target --user=".$server->user." 2>$vardir/mbackup_prepare.log";
   say($cmd);
   system($cmd);
   $status= $? >> 8;
 
   if ($status != STATUS_OK) {
     sayError("Backup preparing failed");
-    sayFile($server->vardir."/mbackup_prepare.log");
+    sayFile("$vardir/mbackup_prepare.log");
     return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
   }
 
   #####
   $self->printStep("Restoring backup");
   system("rm -rf ".$server->datadir);
-  $cmd= "$mbackup --copy-back --target-dir=".$server->vardir."/backup/ --datadir=".$server->datadir." --user=".$server->user." 2>".$server->vardir."/mbackup_restore.log";
+  $cmd= "$mbackup --copy-back --target-dir=$mbackup_target --datadir=".$server->datadir." --user=".$server->user." 2>$vardir/mbackup_restore.log";
   say($cmd);
   system($cmd);
   $status= $? >> 8;
 
   if ($status != STATUS_OK) {
     sayError("Backup restore failed");
-    sayFile($server->vardir."/mbackup_restore.log");
+    sayFile("$vardir/mbackup_restore.log");
     return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
   }
 
