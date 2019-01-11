@@ -28,6 +28,9 @@ query_add:
 ;
 
 locks_104_query:
+  locks_104_backup_mariabackup_stages | locks_104_backup_mariabackup_stages |
+  locks_104_backup_mariabackup_stages | locks_104_backup_mariabackup_stages |
+  locks_104_backup_mariabackup_stages | locks_104_backup_mariabackup_stages |
   locks_104_backup_ordered_stages | locks_104_backup_ordered_stages |
   locks_104_backup_ordered_stages | locks_104_backup_ordered_stages |
   locks_104_backup_random_stage
@@ -38,6 +41,11 @@ locks_104_backup_random_stage:
   BACKUP STAGE END |
   BACKUP STAGE END
 ;
+
+locks_104_backup_mariabackup_stages:
+  BACKUP STAGE START; BACKUP STAGE BLOCK_COMMIT; BACKUP STAGE END
+;
+
 
 locks_104_backup_ordered_stages:
   { $ordered_stages= ''; foreach $s (@stages) { $ordered_stages .= 'BACKUP STAGE '.$s.'; SELECT SLEEP(_digit); ' } }
