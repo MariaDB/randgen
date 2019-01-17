@@ -63,20 +63,20 @@ sub new {
   if (not defined $self->getProperty('threads')) {
     $self->setProperty('threads', 4);
   }
-  
+
   return $self;
 }
 
 sub run {
   my $self= shift;
   my ($status, $old_server, $new_server, $gentest);
-  my ($old_user_definitions, $new_user_definitions, $old_grants, $new_grants);
+  my ($old_grants, $new_grants);
 
   $status= STATUS_OK;
 
   # We can initialize both servers right away, because the second one
   # runs with start_dirty, so it won't bootstrap
-  
+
   $old_server= $self->prepareServer(1,
     {
       vardir => ${$self->getProperty('vardir')}[0],
@@ -109,7 +109,7 @@ sub run {
     sayError("Old server failed to start");
     return $self->finalize(STATUS_TEST_FAILURE,[]);
   }
-  
+
   #####
   $self->printStep("Running test flow on the old server");
 
@@ -122,7 +122,7 @@ sub run {
   );
 
   $status= $gentest->run();
-  
+
   if ($status != STATUS_OK) {
     sayError("Test flow on the old server failed");
     return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
@@ -130,15 +130,15 @@ sub run {
 
   #####
   $self->printStep("Getting ACL info from the old server");
-  
-  ($status, $old_user_definitions, $old_grants)= $self->collectAclData($old_server);
-  
+
+  ($status, $old_grants)= $self->collectAclData($old_server);
+
   if ($status != STATUS_OK) {
     sayError("ACL info collection from the old server failed");
     $status= STATUS_TEST_FAILURE if $status < STATUS_TEST_FAILURE;
     return $self->finalize($status,[$old_server]);
   }
-   
+
   #####
   $self->printStep("Stopping the old server");
 
@@ -215,12 +215,12 @@ sub run {
     sayError("Database appears to be corrupt after upgrade");
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
   }
-  
+
   #####
   $self->printStep("Getting ACL info from the new server");
-  
-  ($status, $new_user_definitions, $new_grants)= $self->collectAclData($new_server);
-  
+
+  ($status, $new_grants)= $self->collectAclData($new_server);
+
   if ($status != STATUS_OK) {
     sayError("ACL info collection from the new server failed");
     $status= STATUS_UPGRADE_FAILURE if $status < STATUS_UPGRADE_FAILURE;
@@ -228,8 +228,16 @@ sub run {
   }
 
   #####
+  $self->printStep("Normalizing ACL data");
+  $self->normalizeGrants($old_server, $new_server, $old_grants, $new_grants);
+
+  foreach my $u (keys %$old_grants) {
+    say("$u: $old_grants->{$u}");
+  }
+
+  #####
   $self->printStep("Comparing ACL data before and after upgrade");
-  
+
   foreach my $u (sort keys %$old_grants) {
     if (not exists $new_grants->{$u}) {
       sayError("User/role $u disappeared from the user table after upgrade");
@@ -240,7 +248,7 @@ sub run {
       $status= STATUS_UPGRADE_FAILURE;
     }
   }
-      
+
   foreach my $u (sort keys %$new_grants) {
     if (not exists $old_grants->{$u}) {
       sayError("User/role $u appeared in the user table after upgrade");
@@ -248,19 +256,12 @@ sub run {
     }
   }
 
-  foreach my $u (sort keys %$old_user_definitions) {
-    if ($new_user_definitions->{$u} ne $old_user_definitions->{$u}) {
-      sayError("User definition for $u changed after upgrade:\nOld: $old_user_definitions->{$u}\nNew: $new_user_definitions->{$u}");
-      $status= STATUS_UPGRADE_FAILURE;
-    }
-  }
-  
   if ($status == STATUS_OK) {
     say("Comparison didn't reveal any discrepancies");
   } else {
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
   }
-  
+
   #####
   $self->printStep("Running test flow on the new server");
 
@@ -301,17 +302,39 @@ sub run {
   return $self->finalize($status,[]);
 }
 
+sub normalizeGrants {
+  my ($self, $old_server, $new_server, $old_grants, $new_grants)= @_;
+
+  # 10.3+ adds 'DELETE VERSIONING ROWS' to superuser grants
+  # if the old version was versioning-unaware
+
+  if ($old_server->versionNumeric lt '1003' and $new_server->versionNumeric ge '1003') {
+    foreach my $u (keys %$old_grants) {
+      if ($old_grants->{$u} =~ s/(SUPER[ ,\w]*?) ON \*\.\*/$1, DELETE VERSIONING ROWS ON \*\.\*/) {
+        say("Adjusted old grants for $u to have DELETE VERSIONING ROWS: $old_grants->{$u}");
+      }
+    }
+  }
+
+}
+
 sub collectAclData {
   my ($self, $server)= @_;
   my $res= STATUS_OK;
 
-  say("Collecting user definitions");
+  say("Collecting user names");
   my $dbh= $server->dbh;
+  my $has_roles= ($server->versionNumeric ge '1000');
 
-  my %user_definitions= ();
-  # MDEV-17950: Skip users identified via not installed plugins
   $dbh->do("FLUSH PRIVILEGES");
-  my $users= $dbh->selectcol_arrayref("SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user WHERE is_role = 'N' AND ( plugin = '' or plugin in (select plugin_name from information_schema.plugins where plugin_status = 'ACTIVE'))");
+
+  # MDEV-17950: Skip users identified via not installed plugins
+  my $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user WHERE ( plugin = '' or plugin in (select plugin_name from information_schema.plugins where plugin_status = 'ACTIVE'))";
+
+  if ($has_roles) {
+    $query.= " AND is_role = 'N'";
+  }
+  my $users= $dbh->selectcol_arrayref($query);
   if ($dbh->err() > 0) {
     sayError("Couldn't fetch users, error: ".$dbh->err()." (".$dbh->errstr().")");
     $users= [];
@@ -319,30 +342,24 @@ sub collectAclData {
   }
   else {
     say("Found ".scalar(@$users)." users");
-    foreach my $u (@$users) {
-      my $sth= $dbh->prepare("SHOW CREATE USER $u");
-      $sth->execute;
-      if ($sth->err() > 0) {
-        sayError("Couldn't fetch user definition for $u, error: ".$sth->err()." (".$sth->errstr().")");
-        $res= STATUS_TEST_FAILURE;
-      }
-      else {
-        my $def= $sth->fetchrow_arrayref;
-        $user_definitions{$u}= $def->[0];
-        # MDEV-18263: Inconsistent appearance of CIPHER ''
-        $user_definitions{$u} =~ s/\s+CIPHER\s+''//gs;
-      }
+  }
+
+  my $roles= [];
+  if ($has_roles) {
+    $roles= $dbh->selectcol_arrayref("SELECT CONCAT('`',user,'`') FROM mysql.user WHERE is_role = 'Y'");
+    if ($dbh->err() > 0) {
+      sayError("Couldn't fetch roles, error: ".$dbh->err()." (".$dbh->errstr().")");
+      $roles= [];
+      $res= STATUS_DATABASE_CORRUPTION;
+    }
+    else {
+      say("Found ".scalar(@$roles)." roles");
     }
   }
-  my $roles= $dbh->selectcol_arrayref("SELECT CONCAT('`',user,'`') FROM mysql.user WHERE is_role = 'Y'");
-  if ($dbh->err() > 0) {
-    sayError("Couldn't fetch roles, error: ".$dbh->err()." (".$dbh->errstr().")");
-    $roles= [];
-    $res= STATUS_DATABASE_CORRUPTION;
-  }
   else {
-    say("Found ".scalar(@$roles)." roles");
+    say("Server doesn't know anything about roles");
   }
+
   say("Collecting grants");
 
   my %grants= ();
@@ -360,7 +377,7 @@ sub collectAclData {
       $grants{$u} =~ s/\s+CIPHER\s+''//gs;
     }
   }
-  return ($res, \%user_definitions, \%grants);
+  return ($res, \%grants);
 }
 
 
