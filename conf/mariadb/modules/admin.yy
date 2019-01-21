@@ -117,8 +117,8 @@ admin_show:
   | SHOW CREATE admin_db_or_schema admin_db_name
   | SHOW CREATE EVENT _letter
   | SHOW CREATE FUNCTION _letter
-  | SHOW CREATE PACKAGE admin_package_name
-  | SHOW CREATE PACKAGE BODY admin_package_name
+  | /*!100305 SHOW CREATE PACKAGE admin_package_name */
+  | /*!100305 SHOW CREATE PACKAGE BODY admin_package_name */
   | SHOW CREATE PROCEDURE _letter
 # Disabled due to MDEV-17978
 #  | SHOW CREATE SEQUENCE admin_sequence_name
@@ -141,8 +141,8 @@ admin_show:
 #  | SHOW LOCALES # Plugin locales
   | SHOW MASTER STATUS
   | SHOW OPEN TABLES admin_from_in_db admin_show_like_or_where
-  | SHOW PACKAGE BODY STATUS admin_show_like_or_where
-  | SHOW PACKAGE STATUS admin_show_like_or_where
+  | /*!100305 SHOW PACKAGE BODY STATUS admin_show_like_or_where */
+  | /*!100305 SHOW PACKAGE STATUS admin_show_like_or_where */
   | SHOW PLUGINS
 #  | SHOW PLUGINS SONAME <soname>
   | SHOW PRIVILEGES
