@@ -1227,6 +1227,9 @@ sub getSchemaMetaData {
     ## 7. real data type
     my ($self) = @_;
 
+    # Try to set long enough statement timeout to override possible short one in test parameters.
+    # No need to check the result of the statement, it might fail on some servers
+    $self->dbh()->do('SET @@max_statement_time= 600');
     my $query = 
         "SELECT DISTINCT ".
                 "CASE WHEN table_schema = 'information_schema' ".
