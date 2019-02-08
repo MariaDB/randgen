@@ -3284,7 +3284,6 @@ romance
 romantic
 roof
 room
-root
 rope
 rose
 rough
@@ -3877,7 +3876,6 @@ territory
 terror
 terrorism
 terrorist
-test
 testify
 testimony
 testing
