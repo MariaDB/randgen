@@ -136,7 +136,7 @@ sub run {
 }
 
 sub gen_table {
-	my ($self, $executor, $name, $size, $prng) = @_;
+	my ($self, $executor, $basename, $size, $prng) = @_;
 
     my $nullability = defined $self->[GDS_NOTNULL] ? 'NOT NULL' : '/*! NULL */';  
     ### NULL is not a valid ANSI constraint, (but NOT NULL of course,
@@ -148,17 +148,21 @@ sub gen_table {
     my $vcols = $self->vcols();
     my $views = $self->views();
 
-	if (
-		($executor->type == DB_MYSQL) ||
-		($executor->type == DB_DRIZZLE)
-	) {
+    my @engines= ($engine ? split /,/, $engine : '');
+    foreach my $e (@engines)
+    {
+      my $name = ( $e eq $engine ? $basename : $basename . '_'.$e );
+      if (($executor->type == DB_MYSQL) || ($executor->type == DB_DRIZZLE))
+      {
+        # For backward compatibility, only extend names
+        # if multiple engines were provided
 
-        say("Creating ".$executor->getName()." table $name, size $size rows, engine $engine .");
-    
-		### This variant is needed due to
-		### http://bugs.mysql.com/bug.php?id=47125
+        say("Creating ".$executor->getName()." table $name, size $size rows, engine $e .");
 
-		$executor->execute("DROP TABLE /*! IF EXISTS */ $name");
+        ### This variant is needed due to
+        ### http://bugs.mysql.com/bug.php?id=47125
+
+        $executor->execute("DROP TABLE /*! IF EXISTS */ $name");
         if ($vcols) {
             $executor->execute("
             CREATE TABLE $name (
@@ -184,7 +188,7 @@ sub gen_table {
                 KEY (col_time_key),
                 KEY (col_datetime_key),
                 KEY (col_varchar_key, col_int_key)
-            ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($engine ne '' ? " ENGINE=$engine" : "")
+            ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
                                # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
                                # joining such tables on PK does not produce only 1-to-1 matches.
                 );
@@ -213,12 +217,12 @@ sub gen_table {
                 KEY (col_time_key),
                 KEY (col_datetime_key),
                 KEY (col_varchar_key, col_int_key)
-            ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($engine ne '' ? " ENGINE=$engine" : "")
+            ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
                                # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
                                # joining such tables on PK does not produce only 1-to-1 matches.
                 );
         }
-    } elsif ($executor->type == DB_POSTGRES) {
+      } elsif ($executor->type == DB_POSTGRES) {
         say("Creating ".$executor->getName()." table $name, size $size rows");
     
         my $increment_size = (length($name) > 1 ? (length($name) * 5) : 1);
@@ -251,7 +255,7 @@ sub gen_table {
 		$executor->execute("CREATE INDEX ".$name."_datetime_key ON $name(col_datetime_key)");
 		$executor->execute("CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key, col_int_key)");
 
-	} else {
+    } else {
         say("Creating ".$executor->getName()." table $name, size $size rows");
 
 		$executor->execute("DROP TABLE /*! IF EXISTS */ $name");
@@ -274,7 +278,7 @@ sub gen_table {
 			col_varchar_nokey VARCHAR($varchar_length) $nullability,
 
 			PRIMARY KEY (pk)
-		) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($engine ne '' ? " ENGINE=$engine" : "")
+		) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
 						   # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
 						   # joining such tables on PK does not produce only 1-to-1 matches.
 			);
@@ -284,82 +288,83 @@ sub gen_table {
 		$executor->execute("CREATE INDEX ".$name."_time_key ON $name(col_time_key)");
 		$executor->execute("CREATE INDEX ".$name."_datetime_key ON $name(col_datetime_key)");
 		$executor->execute("CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key, col_int_key)");
-	};
+    };
 
-	if (defined $views) {
-		if ($views ne '') {
-			$executor->execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
-		} else {
-			$executor->execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
-		}
-	}
+    if (defined $views) {
+      if ($views ne '') {
+        $executor->execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
+      } else {
+        $executor->execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
+      }
+    }
 
 	my @values;
 
-	foreach my $row (1..$size) {
-	
-		# 10% NULLs, 10% tinyint_unsigned, 80% digits
+    foreach my $row (1..$size) {
 
-		my $pick1 = $prng->uint16(0,9);
-		my $pick2 = $prng->uint16(0,9);
+      # 10% NULLs, 10% tinyint_unsigned, 80% digits
 
-		my ($rnd_int1, $rnd_int2);
-		if (defined $self->[GDS_NOTNULL]) {
-			$rnd_int1 = ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
-			$rnd_int2 = ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
-		} else {
-			$rnd_int1 = $pick1 == 9 ? "NULL" : ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
-			$rnd_int2 = $pick2 == 9 ? "NULL" : ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
-		}
+      my $pick1 = $prng->uint16(0,9);
+      my $pick2 = $prng->uint16(0,9);
 
-		# 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
+      my ($rnd_int1, $rnd_int2);
+      if (defined $self->[GDS_NOTNULL]) {
+        $rnd_int1 = ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
+        $rnd_int2 = ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
+      } else {
+        $rnd_int1 = $pick1 == 9 ? "NULL" : ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
+        $rnd_int2 = $pick2 == 9 ? "NULL" : ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
+      }
 
-		my $rnd_date = "'".$prng->date()."'";
+      # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
 
-		if (not defined $self->[GDS_NOTNULL]) {
-			$rnd_date = ($rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, "NULL", "'1900-01-01'")[$prng->uint16(0,9)];
-        }
-		my $rnd_time = "'".$prng->time()."'";
-		if (not defined $self->[GDS_NOTNULL]) {
-			$rnd_time = ($rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
-        }
+      my $rnd_date = "'".$prng->date()."'";
 
-		# 10% NULLS, 10% "1900-01-01 00:00:00', 20% date + " 00:00:00"
+      if (not defined $self->[GDS_NOTNULL]) {
+        $rnd_date = ($rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, "NULL", "'1900-01-01'")[$prng->uint16(0,9)];
+          }
+      my $rnd_time = "'".$prng->time()."'";
+      if (not defined $self->[GDS_NOTNULL]) {
+        $rnd_time = ($rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
+          }
 
-		my $rnd_datetime = $prng->datetime();
-		my $rnd_datetime_date_only = $prng->date();
+      # 10% NULLS, 10% "1900-01-01 00:00:00', 20% date + " 00:00:00"
 
-		if (defined $self->[GDS_NOTNULL]) {
-			$rnd_datetime = ($rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime_date_only." 00:00:00", $rnd_datetime_date_only." 00:00:00", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
-		} else {
-			$rnd_datetime = ($rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime_date_only." 00:00:00", $rnd_datetime_date_only." 00:00:00", "NULL", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
-		}
-		$rnd_datetime = "'".$rnd_datetime."'" if not $rnd_datetime eq "NULL";
+      my $rnd_datetime = $prng->datetime();
+      my $rnd_datetime_date_only = $prng->date();
 
-		my $rnd_varchar;
+      if (defined $self->[GDS_NOTNULL]) {
+        $rnd_datetime = ($rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime_date_only." 00:00:00", $rnd_datetime_date_only." 00:00:00", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
+      } else {
+        $rnd_datetime = ($rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime_date_only." 00:00:00", $rnd_datetime_date_only." 00:00:00", "NULL", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
+      }
+      $rnd_datetime = "'".$rnd_datetime."'" if not $rnd_datetime eq "NULL";
 
-		if (defined $self->[GDS_NOTNULL]) {
-			$rnd_varchar = "'".$prng->string($varchar_length)."'";
-		} else {
-			$rnd_varchar = $prng->uint16(0,9) == 9 ? "NULL" : "'".$prng->string($varchar_length)."'";
-		}
+      my $rnd_varchar;
 
-		push(@values, "($rnd_int1, $rnd_int2, $rnd_date, $rnd_date, $rnd_time, $rnd_time, $rnd_datetime, $rnd_datetime, $rnd_varchar, $rnd_varchar)");
+      if (defined $self->[GDS_NOTNULL]) {
+        $rnd_varchar = "'".$prng->string($varchar_length)."'";
+      } else {
+        $rnd_varchar = $prng->uint16(0,9) == 9 ? "NULL" : "'".$prng->string($varchar_length)."'";
+      }
 
-		## We do one insert per 500 rows for speed
-		if ($row % 500 == 0 || $row == $size) {
-			my $insert_result = $executor->execute("
-			INSERT /*! IGNORE */ INTO $name (
-				col_int_key, col_int_nokey,
-				col_date_key, col_date_nokey,
-				col_time_key, col_time_nokey,
-				col_datetime_key, col_datetime_nokey,
-				col_varchar_key, col_varchar_nokey
-			) VALUES " . join(",",@values));
-			return $insert_result->status() if $insert_result->status() != STATUS_OK;
-			@values = ();
-		}
-	}
+      push(@values, "($rnd_int1, $rnd_int2, $rnd_date, $rnd_date, $rnd_time, $rnd_time, $rnd_datetime, $rnd_datetime, $rnd_varchar, $rnd_varchar)");
+
+      ## We do one insert per 500 rows for speed
+      if ($row % 500 == 0 || $row == $size) {
+        my $insert_result = $executor->execute("
+        INSERT /*! IGNORE */ INTO $name (
+          col_int_key, col_int_nokey,
+          col_date_key, col_date_nokey,
+          col_time_key, col_time_nokey,
+          col_datetime_key, col_datetime_nokey,
+          col_varchar_key, col_varchar_nokey
+        ) VALUES " . join(",",@values));
+        return $insert_result->status() if $insert_result->status() != STATUS_OK;
+        @values = ();
+      }
+    }
+  }
 	return STATUS_OK;
 }
 

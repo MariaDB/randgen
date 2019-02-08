@@ -573,10 +573,15 @@ if ($props->{rpl_mode} ne '') {
         if ( ($server_id == 0) || ($props->{rpl_mode} eq '') ) {
             $dsns[$server_id] = ${$props->{server}}[$server_id]->dsn($database,$user);
         }
-    
-        if ((defined $dsns[$server_id]) && (defined ${$props->{engine}}[$server_id])) {
-            my $dbh = DBI->connect($dsns[$server_id], undef, undef, { mysql_multi_statements => 1, RaiseError => 1 } );
-            $dbh->do("SET GLOBAL default_storage_engine = '${$props->{engine}}[$server_id]'");
+
+        # For backward compatibility, check that no multiple engines were requested
+        # before setting the default one
+        unless (${$props->{engine}}[$server_id] =~ /,/)
+        {
+          if ((defined $dsns[$server_id]) && (defined ${$props->{engine}}[$server_id])) {
+              my $dbh = DBI->connect($dsns[$server_id], undef, undef, { mysql_multi_statements => 1, RaiseError => 1 } );
+              $dbh->do("SET GLOBAL default_storage_engine = '${$props->{engine}}[$server_id]'");
+          }
         }
     }
 }

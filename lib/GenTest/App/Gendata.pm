@@ -208,7 +208,7 @@ sub run {
 
     $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if $executor->type == DB_MYSQL;
     $executor->execute("SET DEFAULT_STORAGE_ENGINE='".$self->engine()."'") 
-        if $self->engine() ne '' and ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE);
+        if $self->engine() ne '' and ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE) and $self->engine !~ /,/;
 
     if (defined $schemas) {
         push(@schema_perms, @$schemas);
@@ -218,7 +218,7 @@ sub run {
     }
 
     $table_perms[TABLE_ROW] = (defined $self->rows() ? [split(',', $self->rows())] : undef ) || $tables->{rows} || [0, 1, 2, 10, 100];
-    $table_perms[TABLE_ENGINE] = defined $self->engine() ? [ $self->engine() ] : $tables->{engines};
+    $table_perms[TABLE_ENGINE] = defined $self->engine() ? [ split /,/, $self->engine() ] : $tables->{engines};
     $table_perms[TABLE_CHARSET] = $tables->{charsets} || [ undef ];
     $table_perms[TABLE_COLLATION] = $tables->{collations} || [ undef ];
     $table_perms[TABLE_PARTITION] = $tables->{partitions} || [ undef ];

@@ -27,6 +27,9 @@
 #
 #
 
+print "\nERROR: This script is not maintained anymore. Use runall-new.pl instead\n\n";
+exit 1;
+
 use lib 'lib';
 use lib "$ENV{RQG_HOME}/lib";
 use strict;

@@ -177,7 +177,7 @@ sub random_compressed {
 
 
 sub gen_table {
-    my ($self, $executor, $name, $size, $prng) = @_;
+    my ($self, $executor, $basename, $size, $prng) = @_;
 
     my $nullability = defined $self->[GDS_NOTNULL] ? 'NOT NULL' : '/*! NULL */';  
     ### NULL is not a valid ANSI constraint, (but NOT NULL of course,
@@ -453,174 +453,180 @@ sub gen_table {
                             ];
     }
 
-    say("Creating ".$executor->getName()." table $name, size $size rows, engine $engine .");
+    my @engines= ($engine ? split /,/, $engine : '');
+    foreach my $e (@engines)
+    {
+      my $name = ( $e eq $engine ? $basename : $basename . '_'.$e );
 
-    ### This variant is needed due to
-    ### http://bugs.mysql.com/bug.php?id=47125
+      say("Creating ".$executor->getName()." table $name, size $size rows, engine $e .");
 
-    $executor->execute("DROP TABLE /*! IF EXISTS */ $name");
-    my $create_stmt = "CREATE TABLE $name ( \n";
-    my @column_list = ();
-    my $columns= $prng->shuffleArray([sort keys %columns]);
-    foreach my $c (@$columns) {
-        my $coldef= $columns{$c};
-        unless ($c eq 'pk' or defined $coldef->[6]) {
-            push @column_list, $c;
-        }
-        $create_stmt .= 
-            "$c $coldef->[0]"         # type
-            . ($coldef->[1] ? "($coldef->[1])" : '') # length
-            . ($coldef->[2] ? " $coldef->[2]" : '')  # unsigned
-            . ($coldef->[3] ? " $coldef->[3]" : '')  # zerofill
-            . ($coldef->[4] ? " $coldef->[4]" : '')  # nullability
-            . (defined $coldef->[5] ? " DEFAULT $coldef->[5]" : '')   # default
-            . (defined $coldef->[6] ? " $coldef->[6]" : '') # virtual
-            . ($coldef->[7] ? " $coldef->[7]" : '')  # invisible
-            . ($coldef->[8] ? " $coldef->[8]" : '')  # compressed
-            . ",\n";
-    };
-    $create_stmt .= "PRIMARY KEY(pk)\n";
-    $create_stmt .= ")" . ($engine ne '' ? " ENGINE=$engine" : "");
-    $executor->execute($create_stmt);
-    
-    if (defined $views) {
-        if ($views ne '') {
-            $executor->execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
-        } else {
-            $executor->execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
-        }
+      ### This variant is needed due to
+      ### http://bugs.mysql.com/bug.php?id=47125
+
+      $executor->execute("DROP TABLE /*! IF EXISTS */ $name");
+      my $create_stmt = "CREATE TABLE $name ( \n";
+      my @column_list = ();
+      my $columns= $prng->shuffleArray([sort keys %columns]);
+      foreach my $c (@$columns) {
+          my $coldef= $columns{$c};
+          unless ($c eq 'pk' or defined $coldef->[6]) {
+              push @column_list, $c;
+          }
+          $create_stmt .=
+              "$c $coldef->[0]"         # type
+              . ($coldef->[1] ? "($coldef->[1])" : '') # length
+              . ($coldef->[2] ? " $coldef->[2]" : '')  # unsigned
+              . ($coldef->[3] ? " $coldef->[3]" : '')  # zerofill
+              . ($coldef->[4] ? " $coldef->[4]" : '')  # nullability
+              . (defined $coldef->[5] ? " DEFAULT $coldef->[5]" : '')   # default
+              . (defined $coldef->[6] ? " $coldef->[6]" : '') # virtual
+              . ($coldef->[7] ? " $coldef->[7]" : '')  # invisible
+              . ($coldef->[8] ? " $coldef->[8]" : '')  # compressed
+              . ",\n";
+      };
+      $create_stmt .= "PRIMARY KEY(pk)\n";
+      $create_stmt .= ")" . ($e ne '' ? " ENGINE=$e" : "");
+      $executor->execute($create_stmt);
+
+      if (defined $views) {
+          if ($views ne '') {
+              $executor->execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
+          } else {
+              $executor->execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
+          }
+      }
+
+      my $number_of_indexes= $prng->uint16(2,8);
+      foreach (1..$number_of_indexes) {
+          my $number_of_columns= $prng->uint16(1,4);
+          # TODO: make it conditional depending on the version -- keys %columns vs @column_list
+          my $cols= $prng->shuffleArray([sort keys %columns]);
+          my @cols= @$cols[1..$number_of_columns];
+          foreach my $i (0..$#cols) {
+              my $c= $cols[$i];
+              my $tp= $columns{$c}->[0];
+              if ($tp eq 'TINYBLOB' or $tp eq 'TINYTEXT' or $tp eq 'BLOB' or $tp eq 'TEXT' or $tp eq 'MEDIUMBLOB' or $tp eq 'MEDIUMTEXT' or $tp eq 'LONGBLOB' or $tp eq 'LONGTEXT' or $tp eq 'CHAR' or $tp eq 'VARCHAR' or $tp eq 'BINARY' or $tp eq 'VARBINARY') {
+                  my $length= ( $columns{$c}->[1] and $columns{$c}->[1] < 64 ) ? $columns{$c}->[1] : 64;
+                  $cols[$i] = "$c($length)";
+              }
+          }
+          $executor->execute("ALTER TABLE $name ADD " . ($prng->uint16(0,5) ? 'INDEX' : 'UNIQUE') . "(". join(',',@cols) . ")");
+      }
+
+      my @values;
+
+      $executor->execute("START TRANSACTION");
+      foreach my $row (1..$size)
+      {
+          my @row_values = ();
+          my $val;
+
+          foreach my $cname (@column_list)
+          {
+              my $c = $columns{$cname};
+
+              if ($c->[0] eq 'TINYINT' or $c->[0] eq 'SMALLINT' or $c->[0] eq 'MEDIUMINT' or $c->[0] eq 'INT' or $c->[0] eq 'BIGINT')
+              {
+                  # 10% NULLs, 10% tinyint_unsigned, 80% digits
+                  my $pick = $prng->uint16(0,9);
+
+                  if ($c->[4] eq 'NOT NULL') {
+                      $val = ($pick == 8 ? $prng->int(0,255) : $prng->digit() );
+                  } else {
+                      $val = $pick == 9 ? "NULL" : ($pick == 8 ? $prng->int(0,255) : $prng->digit() );
+                  }
+              }
+              elsif ($c->[0] eq 'BIT') {
+                  if ($c->[4] eq 'NOT NULL') {
+                      $val = $prng->bit($c->[1]);
+                  } else {
+                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->bit($c->[1]);
+                  }
+              }
+              # ('','a','b','c','d','e','f','foo','bar')
+              elsif ($c->[0] =~ /^(?:ENUM|SET)/) {
+                  if ($c->[4] eq 'NOT NULL') {
+                      $val = "'".$prng->arrayElement('','a','b','c','d','e','f','foo','bar')."'";
+                  } else {
+                      $val = $prng->uint16(0,9) == 9 ? "NULL" : "'".$prng->arrayElement('','a','b','c','d','e','f','foo','bar')."'";
+                  }
+              }
+              elsif ($c->[0] eq 'FLOAT' or $c->[0] eq 'DOUBLE' or $c->[0] eq 'DECIMAL') {
+                  if ($c->[4] eq 'NOT NULL') {
+                      $val = $prng->float();
+                  } else {
+                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->float();
+                  }
+              }
+              elsif ($c->[0] eq 'YEAR') {
+                  if ($c->[4] eq 'NOT NULL') {
+                      $val = $prng->year();
+                  } else {
+                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->year();
+                  }
+              }
+              elsif ($c->[0] eq 'DATE') {
+                  # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
+
+                  $val = "'".$prng->date()."'";
+                  $val = ($val, $val, $val, $val, $val, $val, $val, $val, "NULL", "'1900-01-01'")[$prng->uint16(0,9)];
+              }
+              elsif ($c->[0] eq 'TIME') {
+                  # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
+
+                  $val = "'".$prng->time()."'";
+                  $val = ($val, $val, $val, $val, $val, $val, $val, $val, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
+              }
+              elsif ($c->[0] eq 'DATETIME' or $c->[0] eq 'TIMESTAMP') {
+              # 10% NULLS, 10% "1900-01-01 00:00:00', 20% date + " 00:00:00"
+
+                  $val = $prng->datetime();
+                  my $val_date_only = $prng->date();
+
+                  if ($c->[4] eq 'NOT NULL') {
+                      $val = ($val, $val, $val, $val, $val, $val, $val, $val_date_only." 00:00:00", $val_date_only." 00:00:00", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
+                  } else {
+                      $val = ($val, $val, $val, $val, $val, $val, $val_date_only." 00:00:00", $val_date_only." 00:00:00", "NULL", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
+                  }
+                  $val = "'".$val."'" if not $val eq "NULL";
+              }
+              elsif ($c->[0] eq 'CHAR' or $c->[0] eq 'VARCHAR' or $c->[0] eq 'BINARY' or $c->[0] eq 'VARBINARY' or $c->[0] eq 'TINYBLOB' or $c->[0] eq 'BLOB' or $c->[0] eq 'MEDIUMBLOB' or $c->[0] eq 'LONGBLOB')
+              {
+                  my $length= $prng->uint16(0,9) == 9 ? $prng->uint16(0,$c->[1]) : $prng->uint16(0,8);
+                  if ($c->[4] eq 'NOT NULL') {
+                      $val = "'".$prng->string($length)."'";
+                  } else {
+                      $val = $prng->uint16(0,9) == 9 ? "NULL" : "'".$prng->string($length)."'";
+                  }
+              }
+              elsif ($c->[0] =~ /(TINY|MEDIUM|LONG)?TEXT/)
+              {
+                  my $maxlength= 65535;
+                  if ($1 eq 'TINY') {
+                    $maxlength= 255;
+                  }
+                  my $length= $prng->uint16(0,$maxlength);
+                  if ($c->[4] eq 'NOT NULL') {
+                      $val = "'".$prng->text($length)."'";
+                  } else {
+                      $val = $prng->uint16(0,5) ? "'".$prng->text($length)."'" : "NULL";
+                  }
+              }
+              push @row_values, $val;
+          }
+          # $rnd_int1, $rnd_int2, $rnd_date, $rnd_date, $rnd_time, $rnd_time, $rnd_datetime, $rnd_datetime, $rnd_varchar, $rnd_varchar)
+          push @values, "\n(" . join(',',@row_values).")";
+
+          ## We do one insert per 500 rows for speed
+          if ($row % 500 == 0 || $row == $size) {
+              my $insert_result = $executor->execute("
+              INSERT IGNORE INTO $name (" . join(",",@column_list).") VALUES" . join(",",@values));
+              return $insert_result->status() if $insert_result->status() != STATUS_OK;
+              @values = ();
+          }
+      }
+      $executor->execute("COMMIT");
     }
-    
-    my $number_of_indexes= $prng->uint16(2,8);
-    foreach (1..$number_of_indexes) {
-        my $number_of_columns= $prng->uint16(1,4);
-        # TODO: make it conditional depending on the version -- keys %columns vs @column_list
-        my $cols= $prng->shuffleArray([sort keys %columns]);
-        my @cols= @$cols[1..$number_of_columns];
-        foreach my $i (0..$#cols) {
-            my $c= $cols[$i];
-            my $tp= $columns{$c}->[0];
-            if ($tp eq 'TINYBLOB' or $tp eq 'TINYTEXT' or $tp eq 'BLOB' or $tp eq 'TEXT' or $tp eq 'MEDIUMBLOB' or $tp eq 'MEDIUMTEXT' or $tp eq 'LONGBLOB' or $tp eq 'LONGTEXT' or $tp eq 'CHAR' or $tp eq 'VARCHAR' or $tp eq 'BINARY' or $tp eq 'VARBINARY') {
-                my $length= ( $columns{$c}->[1] and $columns{$c}->[1] < 64 ) ? $columns{$c}->[1] : 64;
-                $cols[$i] = "$c($length)";
-            }
-        }
-        $executor->execute("ALTER TABLE $name ADD " . ($prng->uint16(0,5) ? 'INDEX' : 'UNIQUE') . "(". join(',',@cols) . ")");
-    }
-
-    my @values;
-
-    $executor->execute("START TRANSACTION");
-    foreach my $row (1..$size) {
-    
-        my @row_values = ();
-        my $val;
-        
-        foreach my $cname (@column_list) {
-            
-            my $c = $columns{$cname};
-            
-            if ($c->[0] eq 'TINYINT' or $c->[0] eq 'SMALLINT' or $c->[0] eq 'MEDIUMINT' or $c->[0] eq 'INT' or $c->[0] eq 'BIGINT')
-            {
-                # 10% NULLs, 10% tinyint_unsigned, 80% digits
-                my $pick = $prng->uint16(0,9);
-
-                if ($c->[4] eq 'NOT NULL') {
-                    $val = ($pick == 8 ? $prng->int(0,255) : $prng->digit() );
-                } else {
-                    $val = $pick == 9 ? "NULL" : ($pick == 8 ? $prng->int(0,255) : $prng->digit() );
-                }
-            }
-            elsif ($c->[0] eq 'BIT') {
-                if ($c->[4] eq 'NOT NULL') {
-                    $val = $prng->bit($c->[1]);
-                } else {
-                    $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->bit($c->[1]);
-                }
-            }
-            # ('','a','b','c','d','e','f','foo','bar')
-            elsif ($c->[0] =~ /^(?:ENUM|SET)/) {
-                if ($c->[4] eq 'NOT NULL') {
-                    $val = "'".$prng->arrayElement('','a','b','c','d','e','f','foo','bar')."'";
-                } else {
-                    $val = $prng->uint16(0,9) == 9 ? "NULL" : "'".$prng->arrayElement('','a','b','c','d','e','f','foo','bar')."'";
-                }
-            }
-            elsif ($c->[0] eq 'FLOAT' or $c->[0] eq 'DOUBLE' or $c->[0] eq 'DECIMAL') {
-                if ($c->[4] eq 'NOT NULL') {
-                    $val = $prng->float();
-                } else {
-                    $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->float();
-                }
-            }
-            elsif ($c->[0] eq 'YEAR') {
-                if ($c->[4] eq 'NOT NULL') {
-                    $val = $prng->year();
-                } else {
-                    $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->year();
-                }
-            }
-            elsif ($c->[0] eq 'DATE') {
-                # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
-
-                $val = "'".$prng->date()."'";
-                $val = ($val, $val, $val, $val, $val, $val, $val, $val, "NULL", "'1900-01-01'")[$prng->uint16(0,9)];
-            }
-            elsif ($c->[0] eq 'TIME') {
-                # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
-
-                $val = "'".$prng->time()."'";
-                $val = ($val, $val, $val, $val, $val, $val, $val, $val, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
-            }
-            elsif ($c->[0] eq 'DATETIME' or $c->[0] eq 'TIMESTAMP') {
-            # 10% NULLS, 10% "1900-01-01 00:00:00', 20% date + " 00:00:00"
-
-                $val = $prng->datetime();
-                my $val_date_only = $prng->date();
-
-                if ($c->[4] eq 'NOT NULL') {
-                    $val = ($val, $val, $val, $val, $val, $val, $val, $val_date_only." 00:00:00", $val_date_only." 00:00:00", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
-                } else {
-                    $val = ($val, $val, $val, $val, $val, $val, $val_date_only." 00:00:00", $val_date_only." 00:00:00", "NULL", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
-                }
-                $val = "'".$val."'" if not $val eq "NULL";
-            }
-            elsif ($c->[0] eq 'CHAR' or $c->[0] eq 'VARCHAR' or $c->[0] eq 'BINARY' or $c->[0] eq 'VARBINARY' or $c->[0] eq 'TINYBLOB' or $c->[0] eq 'BLOB' or $c->[0] eq 'MEDIUMBLOB' or $c->[0] eq 'LONGBLOB') 
-            {
-                my $length= $prng->uint16(0,9) == 9 ? $prng->uint16(0,$c->[1]) : $prng->uint16(0,8);
-                if ($c->[4] eq 'NOT NULL') {
-                    $val = "'".$prng->string($length)."'";
-                } else {
-                    $val = $prng->uint16(0,9) == 9 ? "NULL" : "'".$prng->string($length)."'";
-                }
-            }
-            elsif ($c->[0] =~ /(TINY|MEDIUM|LONG)?TEXT/) 
-            {
-                my $maxlength= 65535;
-                if ($1 eq 'TINY') {
-                  $maxlength= 255;
-                }
-                my $length= $prng->uint16(0,$maxlength);
-                if ($c->[4] eq 'NOT NULL') {
-                    $val = "'".$prng->text($length)."'";
-                } else {
-                    $val = $prng->uint16(0,5) ? "'".$prng->text($length)."'" : "NULL";
-                }
-            }
-            push @row_values, $val;
-        }
-        # $rnd_int1, $rnd_int2, $rnd_date, $rnd_date, $rnd_time, $rnd_time, $rnd_datetime, $rnd_datetime, $rnd_varchar, $rnd_varchar)
-        push @values, "\n(" . join(',',@row_values).")";
-
-        ## We do one insert per 500 rows for speed
-        if ($row % 500 == 0 || $row == $size) {
-            my $insert_result = $executor->execute("
-            INSERT IGNORE INTO $name (" . join(",",@column_list).") VALUES" . join(",",@values));
-            return $insert_result->status() if $insert_result->status() != STATUS_OK;
-            @values = ();
-        }
-    }
-    $executor->execute("COMMIT");
     return STATUS_OK;
 }
 
