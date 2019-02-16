@@ -957,10 +957,15 @@ sub checkDatabaseIntegrity {
         next if $tables{$table} eq 'VIEW';
 #        say("Verifying table: $database.$table:");
         my $check = $dbh->selectcol_arrayref("CHECK TABLE `$database`.`$table` EXTENDED", { Columns=>[3,4] });
-        # 1178 is ER_CHECK_NOT_IMPLEMENTED
-        if ($dbh->err() > 0 && $dbh->err() != 1178) {
-          sayError("Table $database.$table appears to be corrupted, error: ".$dbh->err());
-          $status= DBSTATUS_FAILURE;
+        if ($dbh->err() > 0) {
+          sayError("Got an error for table.$table: ".$dbh->err()." (".$dbh->errstr().")");
+          # 1178 is ER_CHECK_NOT_IMPLEMENTED. It's not an error
+          $status= DBSTATUS_FAILURE unless ($dbh->err() == 1178);
+          # Mysterious loss of connection upon checks
+          if ($dbh->err() == 2013) {
+            say("Trying again...");
+            redo;
+          }
         }
         else {
           my %msg = @$check;
