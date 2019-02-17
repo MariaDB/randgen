@@ -358,9 +358,11 @@ if ($#{$props->{validators}} == 0 and ${$props->{validators}}[0] =~ m/,/) {
 }
 
 ## For backward compatability
-if ($#{$props->{reporters}} == 0 and ${$props->{reporters}}[0] =~ m/,/) {
-    @{$props->{reporters}} = split(/,/,${$props->{reporters}}[0]);
+my @reps= ();
+foreach my $r (@{$props->{reporters}}) {
+  push @reps, split /,/, $r;
 }
+@{$props->{reporters}}= @reps;
 
 ## For backward compatability
 if ($#{$props->{transformers}} == 0 and ${$props->{transformers}}[0] =~ m/,/) {
