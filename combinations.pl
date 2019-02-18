@@ -29,6 +29,7 @@ use GenTest;
 use GenTest::Random;
 use GenTest::Constants;
 use Getopt::Long;
+use Getopt::Long qw( :config pass_through );
 use GenTest::BzrInfo; 
 use Data::Dumper;
 use File::Basename;
@@ -115,6 +116,10 @@ my $opt_result = GetOptions(
     'discard_logs|discard-logs' => \$discard_logs,
     'dry-run|dry_run' => \$dry_run
 );
+
+if (@ARGV) {
+  say("Unrecognized options will be passed to the runner: @ARGV");
+}
 
 if ($seed eq 'time') {
   $seed = time();
@@ -309,6 +314,8 @@ sub doCombination {
   my $tm= time();
   $command =~ s/--seed=time/--seed=$tm/g;
 
+	$command.= " @ARGV";
+
     foreach my $s (1..$servers) {
         $command .= " --vardir".$s."=$workdir/current".$s."_$thread_id " if $command !~ m{--mem}sio && $workdir ne '';
     }
@@ -318,7 +325,6 @@ sub doCombination {
     } else {
         $command .= " > $workdir/trial".$trial_id.'.log';
     }
-
 	$commands[$trial_id] = $command;
 
 	$command =~ s{"}{\\"}sgio;
