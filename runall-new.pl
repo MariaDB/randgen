@@ -632,7 +632,7 @@ if (($gentest_result == STATUS_OK) && ( ($props->{rpl_mode} && $props->{rpl_mode
   
     my @dump_files;
   
-    foreach my $i (0..$#{$props->{server}}) {
+    foreach my $i (1..$#{$props->{server}}) {
         $dump_files[$i] = tmpdir()."server_".abs($$)."_".$i.".dump";
       
         my $dump_result = ${$props->{server}}[$i]->dumpdb($database,$dump_files[$i]);
@@ -641,7 +641,7 @@ if (($gentest_result == STATUS_OK) && ( ($props->{rpl_mode} && $props->{rpl_mode
   
     say("Comparing SQL dumps...");
     
-    foreach my $i (1..$#{$props->{server}}) {
+    foreach my $i (2..$#{$props->{server}}) {
         my $diff = system("diff -u $dump_files[$i-1] $dump_files[$i]");
         if ($diff == STATUS_OK) {
             say("No differences were found between servers ".($i-1)." and $i.");
