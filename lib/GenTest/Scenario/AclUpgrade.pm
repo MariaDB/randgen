@@ -328,12 +328,10 @@ sub collectAclData {
 
   $dbh->do("FLUSH PRIVILEGES");
 
-  # MDEV-17950: Skip users identified via not installed plugins
-  # MDEV-18290: Skip users identified via ed25519 which have non-empty authentication_string
-  my $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user WHERE ( plugin = '' or plugin in (select plugin_name from information_schema.plugins where plugin_status = 'ACTIVE') and (plugin != 'ed25519' or authentication_string = '') )";
+  my $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user";
 
   if ($has_roles) {
-    $query.= " AND is_role = 'N'";
+    $query.= " WHERE is_role = 'N'";
   }
   my $users= $dbh->selectcol_arrayref($query);
   if ($dbh->err() > 0) {
