@@ -293,7 +293,7 @@ acl_authentication_option:
   | IDENTIFIED acl_via_with acl_authentication_plugin acl_using_as acl_authentication_string
   # MDEV-12321 - authentication plugin: SET PASSWORD support (10.4.0)
   # TODO: wrap it up in /*!100400 ... */ after comparative testing with 10.3 is finished
-  | IDENTIFIED acl_via_with acl_authentication_plugin acl_using_as PASSWORD(acl_password)
+  | IDENTIFIED acl_via_with acl_authentication_plugin /*!100402 acl_using_as PASSWORD(acl_password) */
 ;
 
 acl_password:
