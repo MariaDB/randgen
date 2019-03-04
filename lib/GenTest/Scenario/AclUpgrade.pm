@@ -372,8 +372,6 @@ sub collectAclData {
     else {
       my $def= $sth->fetchrow_arrayref;
       $grants{$u}= $def->[0];
-      # MDEV-18263: Inconsistent appearance of CIPHER ''
-      $grants{$u} =~ s/\s+CIPHER\s+''//gs;
     }
   }
   return ($res, \%grants);
