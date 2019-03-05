@@ -6,4 +6,5 @@ $rules = {
   'mdev17974_1' => sub { $_ =~ m{(?:CREATE\s+.*PROCEDURE|PREPARE).*CREATE\s+.*ROLE.*WITH\s+ADMIN}s },
   'mdev18003_1' => sub { $_ =~ m{CREATE\s+(?:OR\s+REPLACE|IF\s+NOT\s+EXISTS)\s*ROLE.*WITH\s+ADMIN}s },
   'mdev18083_1' => sub { $_ =~ m{\s+TEMPORARY\s+}s },
+  'vcols'       => sub { $_ =~ m{VIRTUAL|PERSISTENT|STORED|GENERATED\s+ALWAYS}s },
 }
