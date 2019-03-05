@@ -242,7 +242,8 @@ alt_col_name:
   | alt_timestamp_col_name
   | alt_text_col_name
   | alt_enum_col_name
-  | alt_virt_col_name
+# TODO: re-enable when virtual columns start working
+#  | alt_virt_col_name
   | _field
 ;
 
@@ -305,7 +306,8 @@ alt_col_name_and_definition:
   | alt_text_col_name alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
   | alt_text_col_name alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
   | alt_enum_col_name alt_enum_type alt_null alt_optional_default alt_invisible_optional alt_check_optional
-  | alt_virt_col_name alt_virt_col_definition alt_virt_type alt_invisible_optional alt_check_optional
+# TODO: re-enable when virtual columns start working
+#  | alt_virt_col_name alt_virt_col_definition alt_virt_type alt_invisible_optional alt_check_optional
   | alt_geo_col_name alt_geo_type alt_null alt_geo_optional_default alt_invisible_optional alt_check_optional
 ;
 

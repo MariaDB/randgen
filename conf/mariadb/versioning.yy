@@ -333,7 +333,8 @@ vers_ia_col_name:
   | vers_ia_timestamp_col_name
   | vers_ia_text_col_name
   | vers_ia_enum_col_name
-  | vers_ia_virt_col_name
+# TODO: re-enable when virtual columns start working
+#  | vers_ia_virt_col_name
   | _field
   | vers_col
 ;
@@ -395,7 +396,8 @@ vers_ia_col_name_and_definition:
   | vers_ia_real_col_name_and_definition
   | vers_ia_real_col_name_and_definition
   | vers_ia_real_col_name_and_definition
-  | vers_ia_virt_col_name_and_definition
+# TODO: re-enable when virtual columns start working
+#  | vers_ia_virt_col_name_and_definition
 ;
 
 vers_ia_virt_col_name_and_definition:

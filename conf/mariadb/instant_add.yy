@@ -106,7 +106,8 @@ ia_col_name:
   | ia_timestamp_col_name
   | ia_text_col_name
   | ia_enum_col_name
-  | ia_virt_col_name
+# TODO: re-enable when virtual columns start working
+#  | ia_virt_col_name
   | _field
 ;
 
@@ -169,7 +170,8 @@ ia_col_name_and_definition:
   | ia_text_col_name ia_text_type ia_null ia_optional_default_char
   | ia_text_col_name ia_text_type ia_null ia_optional_default_char
   | ia_enum_col_name ia_enum_type ia_null ia_optional_default
-  | ia_virt_col_name ia_virt_col_definition ia_virt_type
+# TODO: re-enable when virtual columns start working
+#  | ia_virt_col_name ia_virt_col_definition ia_virt_type
   | ia_geo_col_name ia_geo_type ia_null ia_geo_optional_default
 ;
 
