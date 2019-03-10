@@ -31,6 +31,7 @@ sql_mode_value:
 ;
 # NO_ZERO_DATE is disabled due to MDEV-18042
 # TRADITIONAL is disabled due to MDEV-18042
+# MAXDB is disabled due to MDEV-18864
 sql_mode_list:
   { @modes= qw(
       ALLOW_INVALID_DATES
@@ -42,7 +43,6 @@ sql_mode_list:
       HIGH_NOT_PRECEDENCE
       IGNORE_BAD_TABLE_OPTIONS
       IGNORE_SPACE
-      MAXDB
       MSSQL
       MYSQL323
       MYSQL40
