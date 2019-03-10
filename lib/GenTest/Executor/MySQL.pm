@@ -328,6 +328,7 @@ use constant  ER_BACKUP_NOT_ENABLED                             => 1789;
 use constant  ER_ALTER_OPERATION_NOT_SUPPORTED                  => 1845;
 use constant  ER_ALTER_OPERATION_NOT_SUPPORTED_REASON           => 1846;
 use constant  ER_VIRTUAL_COLUMN_FUNCTION_IS_NOT_ALLOWED         => 1901;
+use constant  ER_WARNING_NON_DEFAULT_VALUE_FOR_GENERATED_COLUMN => 1906;
 use constant  ER_CONST_EXPR_IN_VCOL                             => 1908;
 use constant  ER_CANT_DO_ONLINE                                 => 1915;
 use constant  ER_CONNECTION_KILLED                              => 1927;
@@ -382,8 +383,6 @@ use constant  ER_MYROCKS_CANT_NOPAD_COLLATION                   => 4077;
 
 #--- end of 10.2 errors ---
 
-#--- the codes below can still change---
-
 use constant  ER_SEQUENCE_RUN_OUT                               => 4084;
 use constant  ER_SEQUENCE_INVALID_DATA                          => 4085;
 use constant  ER_SEQUENCE_INVALID_TABLE_STRUCTURE               => 4086;
@@ -392,6 +391,7 @@ use constant  ER_UNKNOWN_SEQUENCES                              => 4091;
 use constant  ER_UNKNOWN_VIEW                                   => 4092;
 use constant  ER_COMPRESSED_COLUMN_USED_AS_KEY                  => 4097;
 use constant  ER_VERSIONING_REQUIRED                            => 4106;
+use constant  ER_INVISIBLE_NOT_NULL_WITHOUT_DEFAULT             => 4108;
 use constant  ER_VERS_FIELD_WRONG_TYPE                          => 4110;
 use constant  ER_VERS_ENGINE_UNSUPPORTED                        => 4111;
 use constant  ER_VERS_ALTER_NOT_ALLOWED                         => 4119;
@@ -409,6 +409,16 @@ use constant  ER_BACKUP_NOT_RUNNING                             => 4146;
 use constant  ER_BACKUP_WRONG_STAGE                             => 4147;
 
 #--- end of 10.3 errors ---
+
+#--- the codes below can still change---
+
+use constant  ER_PERIOD_TEMPORARY_NOT_ALLOWED                   => 4152;
+use constant  ER_PERIOD_TYPES_MISMATCH                          => 4153;
+use constant  ER_MORE_THAN_ONE_PERIOD                           => 4154;
+use constant  ER_PERIOD_FIELD_WRONG_ATTRIBUTES                  => 4155;
+use constant  ER_PERIOD_NOT_FOUND                               => 4156;
+use constant  ER_PERIOD_COLUMNS_UPDATED                         => 4157;
+use constant  ER_PERIOD_CONSTRAINT_DROP                         => 4158;
 
 my %err2type = (
 
@@ -517,6 +527,7 @@ my %err2type = (
     ER_INVALID_JSON_VALUE_FOR_CAST()                    => STATUS_SEMANTIC_ERROR,
     ER_INVALID_ROLE()                                   => STATUS_SEMANTIC_ERROR,
     ER_INVALID_TYPE_FOR_JSON()                          => STATUS_SEMANTIC_ERROR,
+    ER_INVISIBLE_NOT_NULL_WITHOUT_DEFAULT()             => STATUS_SEMANTIC_ERROR,
     ER_ISOLATION_MODE_NOT_SUPPORTED()                   => STATUS_SEMANTIC_ERROR,
     ER_JSON_BAD_ONE_OR_ALL_ARG()                        => STATUS_SEMANTIC_ERROR,
     ER_JSON_DOCUMENT_NULL_KEY()                         => STATUS_SEMANTIC_ERROR,
@@ -536,6 +547,7 @@ my %err2type = (
     ER_MISSING()                                        => STATUS_SYNTAX_ERROR,
     ER_MIX_HANDLER_ERROR()                              => STATUS_SEMANTIC_ERROR,
     ER_MIX_OF_GROUP_FUNC_AND_FIELDS()                   => STATUS_SEMANTIC_ERROR,
+    ER_MORE_THAN_ONE_PERIOD()                           => STATUS_SEMANTIC_ERROR,
     ER_MULTIPLE_PRI_KEY()                               => STATUS_SEMANTIC_ERROR,
     ER_MULTI_UPDATE_KEY_CONFLICT()                      => STATUS_SEMANTIC_ERROR,
     ER_MYROCKS_CANT_NOPAD_COLLATION()                   => STATUS_SEMANTIC_ERROR,
@@ -580,6 +592,11 @@ my %err2type = (
     ER_PARTITION_NO_TEMPORARY()                         => STATUS_SEMANTIC_ERROR,
     ER_PARTITION_WRONG_VALUES_ERROR()                   => STATUS_SEMANTIC_ERROR,
     ER_PASSWORD_NO_MATCH()                              => STATUS_SEMANTIC_ERROR,
+    ER_PERIOD_COLUMNS_UPDATED()                         => STATUS_SEMANTIC_ERROR,
+    ER_PERIOD_FIELD_WRONG_ATTRIBUTES()                  => STATUS_SEMANTIC_ERROR,
+    ER_PERIOD_NOT_FOUND()                               => STATUS_SEMANTIC_ERROR,
+    ER_PERIOD_TEMPORARY_NOT_ALLOWED()                   => STATUS_SEMANTIC_ERROR,
+    ER_PERIOD_TYPES_MISMATCH()                          => STATUS_SEMANTIC_ERROR,
     ER_PLUGIN_IS_NOT_LOADED()                           => STATUS_SEMANTIC_ERROR,
     ER_QUERY_INTERRUPTED()                              => STATUS_SKIP,
     ER_RECORD_FILE_FULL()                               => STATUS_SEMANTIC_ERROR,
@@ -677,6 +694,7 @@ my %err2type = (
     ER_WARN_DATA_OUT_OF_RANGE()                         => STATUS_SEMANTIC_ERROR,
     ER_WARN_TOO_FEW_RECORDS()                           => STATUS_SEMANTIC_ERROR,
     ER_WARN_TOO_MANY_RECORDS()                          => STATUS_SEMANTIC_ERROR,
+    ER_WARNING_NON_DEFAULT_VALUE_FOR_GENERATED_COLUMN() => STATUS_SEMANTIC_ERROR,
     ER_WRONG_ARGUMENTS()                                => STATUS_SEMANTIC_ERROR,
     ER_WRONG_AUTO_KEY()                                 => STATUS_SEMANTIC_ERROR,
     ER_WRONG_FIELD_SPEC()                               => STATUS_SEMANTIC_ERROR,
