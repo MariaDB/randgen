@@ -16,7 +16,9 @@
 
 ########################################################################
 # Application periods (10.4+),
-# can be used as a standalone or redefining grammar.
+# MDEV-16973, MDEV-16974, MDEV-16975, MDEV-17082
+#
+# Can be used as a standalone or redefining grammar.
 #
 # ATTENTION:
 # It assumes the use of basics.yy as a redefining grammar for primitives.
@@ -80,9 +82,12 @@ app_periods_query:
 ;
 
 app_periods_create:
-  { @cols= (); $inds= 1; $periods= 0; $periodtype= 'DATE'; '' } _basics_create_table_clause app_periods_random_preversioned_table_name ( app_periods_table_elements ) _basics_main_engine_clause_50pct _basics_table_options app_periods_partitioning_definition { $max_cols= scalar(@cols) if scalar(@cols) > $max_cols; @cols= (); '' } |
-  { @cols= (); $inds= 1; $periods= 0; $periodtype= 'DATE'; '' } _basics_create_table_clause app_periods_strict_preversioned_table_name ( app_periods_preversioned_table_elements ) _basics_main_engine_clause_50pct _basics_table_options app_periods_partitioning_definition { $max_cols= scalar(@cols) if scalar(@cols) > $max_cols; @cols= (); '' } |
-  _basics_create_table_clause app_periods_random_preversioned_table_name LIKE app_periods_random_preversioned_table_name |
+  { @cols= (); $inds= 1; $periods= 0; $periodtype= 'DATE'; '' }  app_periods_create_table { $max_cols= scalar(@cols) if scalar(@cols) > $max_cols; @cols= (); '' } ;
+
+app_periods_create_table:
+  _basics_create_table_clause app_periods_nonstrict_table_name ( app_periods_table_elements ) _basics_main_engine_clause_50pct _basics_table_options app_periods_partitioning_definition |
+  { @cols= (); $inds= 1; $periods= 0; $periodtype= 'DATE'; '' } _basics_create_table_clause app_periods_strict_preversioned_table_name ( app_periods_preversioned_table_elements ) _basics_main_engine_clause_50pct _basics_table_options app_periods_partitioning_definition |
+  _basics_create_table_clause app_periods_nonstrict_table_name LIKE app_periods_nonstrict_table_name |
   _basics_create_table_clause app_periods_strict_preversioned_table_name LIKE app_periods_strict_preversioned_table_name
 ;
 
@@ -103,10 +108,10 @@ app_periods_admin_table:
 ;
 
 app_periods_select:
-  SELECT * FROM app_periods_table app_periods_for_system_time_clause |
-  SELECT COUNT(*) FROM app_periods_table app_periods_for_system_time_clause |
-  SELECT * FROM app_periods_strict_preversioned_table_name app_periods_for_system_time_clause WHERE `from` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), app_periods_interval) |
-  SELECT MAX(`from`), MIN(`to`) FROM app_periods_strict_preversioned_table_name app_periods_for_system_time_clause
+  _basics_explain_analyze_5pct SELECT * FROM app_periods_table app_periods_for_system_time_clause |
+  _basics_explain_analyze_5pct SELECT COUNT(*) FROM app_periods_table app_periods_for_system_time_clause |
+  _basics_explain_analyze_5pct SELECT * FROM app_periods_strict_preversioned_table_name app_periods_for_system_time_clause WHERE `from` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), app_periods_interval) |
+  _basics_explain_analyze_5pct SELECT MAX(`from`), MIN(`to`) FROM app_periods_strict_preversioned_table_name app_periods_for_system_time_clause
 ;
 
 app_periods_for_system_time_clause:
@@ -157,9 +162,9 @@ app_periods_before_system_time:
   | BEFORE SYSTEM_TIME NOW() ;
 
 app_periods_table:
-  app_periods_random_preversioned_table_name | app_periods_random_preversioned_table_name | app_periods_random_preversioned_table_name | app_periods_random_preversioned_table_name |
-  app_periods_random_preversioned_table_name | app_periods_random_preversioned_table_name | app_periods_random_preversioned_table_name | app_periods_random_preversioned_table_name |
-  app_periods_random_preversioned_table_name | app_periods_random_preversioned_table_name | app_periods_random_preversioned_table_name | app_periods_random_preversioned_table_name |
+  app_periods_nonstrict_table_name | app_periods_nonstrict_table_name | app_periods_nonstrict_table_name | app_periods_nonstrict_table_name |
+  app_periods_nonstrict_table_name | app_periods_nonstrict_table_name | app_periods_nonstrict_table_name | app_periods_nonstrict_table_name |
+  app_periods_nonstrict_table_name | app_periods_nonstrict_table_name | app_periods_nonstrict_table_name | app_periods_nonstrict_table_name |
   app_periods_strict_preversioned_table_name | app_periods_strict_preversioned_table_name | app_periods_strict_preversioned_table_name | app_periods_strict_preversioned_table_name |
   app_periods_strict_preversioned_table_name | app_periods_strict_preversioned_table_name | app_periods_strict_preversioned_table_name | app_periods_strict_preversioned_table_name |
   app_periods_strict_preversioned_table_name | app_periods_strict_preversioned_table_name | app_periods_strict_preversioned_table_name | app_periods_strict_preversioned_table_name |
@@ -169,7 +174,7 @@ app_periods_table:
 app_periods_view_name:
   { $last_table = 'v'.$prng->int(1,10) } ;
 
-app_periods_random_preversioned_table_name:
+app_periods_nonstrict_table_name:
   { $last_table = 't'.$prng->int(1,10) } ;
 
 app_periods_strict_preversioned_table_name:
@@ -193,7 +198,7 @@ app_periods_preversioned_table_elements:
 app_periods_table_element:
   app_periods_column_definition | app_periods_column_definition | app_periods_column_definition |
   app_periods_column_definition | app_periods_column_definition | app_periods_column_definition |
-  app_periods_period_definition_random |
+  app_periods_period_definition_random | app_periods_period_definition_random | app_periods_period_definition_random |
   app_periods_index_definition |
   app_periods_constraint_definition
 ;
@@ -220,17 +225,26 @@ app_periods_period_name:
   app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
   app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
   app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
+  app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
+  app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
+  app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
+  app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
   app_periods_invalid_period_name
 ;
 
+# TODO: '``' disabled due to MDEV-18873
 app_periods_valid_period_name:
-  { $last_period_name= $prng->arrayElement(['app','app','app','app','app','app','app','app','A','period']) } ;
+  { $last_period_name= $prng->arrayElement(['app','app','app','app','app','app','app','app','app','app','A','period']) } ;
 
+# This will cause syntax errors, intentionally
 app_periods_invalid_period_name:
-  SYSTEM_TIME | system_time | `system_time` | `SYSTEM_TIME` ;
+  | SYSTEM_TIME | system_time | `system_time` | `SYSTEM_TIME` ;
 
 app_periods_period_definition_fixed:
   { push @cols, '`from`'; '' } `from` app_periods_period_type { $last_column_type= $periodtype; '' } _basics_column_attributes, { push @cols, '`to`'; '' } `to` { $last_column_type } _basics_column_attributes, { $periods++ ? 'KEY' : 'PERIOD FOR ' } `app`(`from`, `to`) ;
+
+app_periods_period_definition_fixed_with_random_temporal_types:
+  { push @cols, '`from`'; '' } `from` app_periods_period_type { $last_column_type= $periodtype; '' } _basics_column_attributes, { push @cols, '`to`'; '' } `to` app_periods_period_type { $last_column_type= $periodtype; '' } _basics_column_attributes, { $periods++ ? 'KEY' : 'PERIOD FOR ' } `app`(`from`, `to`) ;
 
 app_periods_period_definition_fixed_with_virtual_columns:
   app_periods_period_definition_fixed, { push @cols, '`vfrom`'; '' } `vfrom` { $periodtype } GENERATED ALWAYS AS (`from`) _basics_stored_or_virtual, { push @cols, '`vto`'; '' } `vto` { $periodtype } GENERATED ALWAYS AS  (`to`) _basics_stored_or_virtual;
@@ -240,7 +254,8 @@ app_periods_period_definition_strict:
   app_periods_period_definition_fixed | app_periods_period_definition_fixed |
   app_periods_period_definition_fixed | app_periods_period_definition_fixed |
   app_periods_period_definition_fixed | app_periods_period_definition_fixed |
-  app_periods_period_definition_fixed_with_virtual_columns
+  app_periods_period_definition_fixed_with_virtual_columns |
+  app_periods_period_definition_fixed_with_random_temporal_types
 ;
 
 app_periods_period_definition_random:
@@ -311,13 +326,13 @@ app_periods_add_period:
   ADD PERIOD _basics_if_not_exists_95pct FOR app_periods_period_name ( app_periods_existing_column_name, app_periods_existing_column_name ) ;
 
 app_periods_drop_period:
-  DROP PERIOD _basics_if_exists_95pct FOR app_periods_random_preversioned_table_name ;
+  DROP PERIOD _basics_if_exists_95pct FOR app_periods_nonstrict_table_name ;
 
 app_periods_delete_portion:
   # Random
-  DELETE _basics_ignore_80pct FROM app_periods_table app_periods_portion app_periods_optional_where_clause ORDER BY app_periods_existing_column_name _basics_limit_50pct |
+  _basics_explain_analyze_5pct DELETE _basics_ignore_80pct FROM app_periods_table app_periods_portion app_periods_optional_where_clause ORDER BY app_periods_existing_column_name _basics_limit_50pct |
   # Specific
-  app_periods_get_valid_boundaries ; DELETE _basics_ignore_80pct FROM { $last_table } app_periods_exact_portion app_periods_optional_order_by_clause _basics_limit_50pct
+  app_periods_get_valid_boundaries ; _basics_explain_analyze_5pct DELETE _basics_ignore_80pct FROM { $last_table } app_periods_exact_portion app_periods_optional_order_by_clause _basics_limit_50pct
 ;
 
 app_periods_portion:
@@ -362,9 +377,9 @@ app_periods_for_portion_identical_to_period:
 
 app_periods_update_portion:
   # Random
-  UPDATE _basics_ignore_80pct app_periods_table app_periods_portion SET app_periods_update_list app_periods_optional_where_clause app_periods_optional_order_by_clause _basics_limit_50pct |
+  _basics_explain_analyze_5pct UPDATE _basics_ignore_80pct app_periods_table app_periods_portion SET app_periods_update_list app_periods_optional_where_clause app_periods_optional_order_by_clause _basics_limit_50pct |
   # Specific
-  app_periods_get_valid_boundaries ; UPDATE _basics_ignore_80pct { $last_table } app_periods_exact_portion SET app_periods_update_list app_periods_optional_order_by_clause _basics_limit_50pct
+  app_periods_get_valid_boundaries ; _basics_explain_analyze_5pct UPDATE _basics_ignore_80pct { $last_table } app_periods_exact_portion SET app_periods_update_list app_periods_optional_order_by_clause _basics_limit_50pct
 ;
 
 app_periods_optional_order_by_clause:
