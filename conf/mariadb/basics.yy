@@ -334,3 +334,17 @@ _basics_sql_mode_list:
     ); $length=$prng->int(1,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length]) . "'"
   }
 ;
+
+_basics_explain_analyze:
+  EXPLAIN _basics_explain_modifier |
+  ANALYZE _basics_format_json_50pct
+;
+
+_basics_explain_modifier:
+  _basics_format_json_50pct | EXTENDED | EXTENDED | EXTENDED | PARTITIONS ;
+
+_basics_format_json_50pct:
+    | FORMAT=JSON ;
+
+_basics_explain_analyze_5pct:
+  | | | | | | | | | | | | | | | | | | | _basics_explain_analyze ;
