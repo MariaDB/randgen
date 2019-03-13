@@ -76,6 +76,9 @@ _basics_if_not_exists_95pct:
   IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS |
 ;
 
+_basics_global_or_session_optional:
+  | GLOBAL | SESSION | SESSION | SESSION ;
+
 _basics_temporary_5pct:
   | | | | | | | | | | | | | | | | | | | TEMPORARY ;
 
@@ -286,6 +289,9 @@ _basics_order_by_50pct:
 
 _basics_order_by_limit_50pct:
   | ORDER BY 1 LIMIT _tinyint_unsigned ;
+
+_basics_order_by_limit_50pct_offset_10pct:
+  | ORDER BY 1 LIMIT _tinyint_unsigned _basics_offset_10pct ;
 
 _basics_offset_10pct:
   | | | | | | | | | OFFSET _digit ;
