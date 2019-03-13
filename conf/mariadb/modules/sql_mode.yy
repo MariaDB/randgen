@@ -32,6 +32,7 @@ sql_mode_value:
 # NO_ZERO_DATE is disabled due to MDEV-18042
 # TRADITIONAL is disabled due to MDEV-18042
 # MAXDB is disabled due to MDEV-18864
+# EMPTY_STRING_IS_NULL is disabled due to MDEV-18918
 sql_mode_list:
   { @modes= qw(
       ALLOW_INVALID_DATES
