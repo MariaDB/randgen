@@ -151,7 +151,7 @@ sub report {
 		say("No differences were found between servers.");
 		return STATUS_OK;
 	} else {
-		say("Servers have diverged.");
+		sayError("Servers have diverged.");
 		return STATUS_RECOVERY_FAILURE;
 	}
 }
