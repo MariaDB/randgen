@@ -50,14 +50,14 @@ use constant TABLE_ENGINE	=> 1;
 use constant TABLE_CHARSET	=> 2;
 use constant TABLE_COLLATION	=> 3;
 use constant TABLE_ROW_FORMAT	=> 4;
-use constant TABLE_PARTITION	=> 5;
+use constant TABLE_EXTRA_OPTS	=> 5;
 use constant TABLE_PK		=> 6;
 use constant TABLE_SQL		=> 7;
 use constant TABLE_NAME		=> 8;
 use constant TABLE_VIEWS	=> 9;
 use constant TABLE_MERGES	=> 10;
 use constant TABLE_NAMES	=> 11;
-use constant TABLE_EXTRA_OPTS	=> 12;
+use constant TABLE_PARTITION	=> 12;
 
 use constant DATA_NUMBER	=> 0;
 use constant DATA_STRING	=> 1;
