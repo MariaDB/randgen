@@ -340,7 +340,9 @@ sub run {
         
     $errorfilter_p->kill();
 
-    return $self->reportResults($total_status);
+    my $gentest_result= $self->reportResults($total_status);
+    say("GenTest will exit with exit status ".status2text($gentest_result)." ($gentest_result)");
+    return $gentest_result;
 
 }
 
@@ -541,8 +543,10 @@ sub doGenData {
                executor_id => $i
             )->run();
         } elsif ($self->config->gendata()) {
-            $gendata_result = GenTest::App::Gendata->new(
-               spec_file => $self->config->gendata,
+          foreach my $gendata (@{$self->config->gendata()})
+          {
+            my $res = GenTest::App::Gendata->new(
+               spec_file => $gendata,
                dsn => $dsn,
                engine => (defined $self->config->engine ? ${$self->config->engine}[$i] : undef),
                seed => $self->config->seed(),
@@ -556,6 +560,8 @@ sub doGenData {
                notnull => $self->config->notnull,
                executor_id => $i
             )->run();
+            $gendata_result= $res if $res > $gendata_result;
+          }
         }
             
         return $gendata_result if $gendata_result > STATUS_OK;

@@ -100,6 +100,7 @@ my $opt_result = GetOptions(
     'debug-server1' => \${$props->{debug_server}}[1],
     'debug-server2' => \${$props->{debug_server}}[2],
     'debug-server3' => \${$props->{debug_server}}[3],
+    'default-database|default_database=s' => \$database,
     'duration=i' => \$props->{duration},
     'engine=s' => \${$props->{engine}}[0],
     'engine1=s' => \${$props->{engine}}[1],
@@ -109,7 +110,7 @@ my $opt_result = GetOptions(
     'freeze_time' => \$props->{freeze_time},
     'galera=s' => \$props->{galera},
     'genconfig:s' => \$props->{genconfig},
-    'gendata:s' => \$props->{gendata},
+    'gendata:s@' => \$props->{gendata},
     'gendata_advanced|gendata-advanced' => \$props->{gendata_advanced},
     'grammar=s' => \$props->{grammar},
     'help' => \$help,
@@ -379,7 +380,7 @@ if ($#{$props->{redefine}} == 0 and ${$props->{redefine}}[0] =~ m/,/) {
 $props->{debug}= $debug;
 $props->{dsns}= \@dsns;
 $props->{duration}= $default_duration unless defined $props->{duration};
-$props->{gendata}= '' unless exists $props->{gendata} and defined $props->{gendata};
+$props->{gendata}= '' unless exists $props->{gendata} and defined $props->{gendata} and scalar @{$props->{gendata}};
 $props->{queries}= $default_queries unless defined $props->{queries};
 $props->{threads}= $default_threads unless defined $props->{threads};
 
