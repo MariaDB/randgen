@@ -43,7 +43,7 @@ sub nativeReport {
 
 	my $binary = $reporter->serverInfo('binary');
 	say("binary is $binary");
-	
+
 	my $bindir = $reporter->serverInfo('bindir');
 	say("bindir is $bindir");
 
@@ -58,7 +58,7 @@ sub nativeReport {
 
 	if (osWindows()) {
 		$bindir =~ s{/}{\\}sgio;
-		my $cdb_cmd = "!sym prompts off; !analyze -v; .ecxr; !for_each_frame dv /t;~*k;q";		
+		my $cdb_cmd = "!sym prompts off; !analyze -v; .ecxr; !for_each_frame dv /t;~*k;q";
 		push @commands, 'cdb -i "'.$bindir.'" -y "'.$bindir.';srv*C:\\cdb_symbols*http://msdl.microsoft.com/download/symbols" -z "'.$datadir.'\mysqld.dmp" -lines -c "'.$cdb_cmd.'"';
     } elsif (osSolaris()) {
         ## We don't want to run gdb on solaris since it may core-dump
@@ -73,7 +73,7 @@ sub nativeReport {
         `echo | dbx - $core 2>&1` =~ m/Corefile specified executable: "([^"]+)"/;
         if ($1) {
             ## We do apparently have a working dbx
-            
+
             # First, identify all threads
             my @threads = `echo threads | dbx $binary $core 2>&1` =~ m/t@\d+/g;
 
@@ -95,10 +95,12 @@ sub nativeReport {
         }
 	} else {
         ## Assume all other systems are gdb-"friendly" ;-)
-		push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace.gdb";
-		push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace-all.gdb";
+        if (-f $core) {
+          push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace.gdb";
+          push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace-all.gdb";
+        }
 	}
-	
+
 	my @debugs;
 
 	foreach my $command (@commands) {
