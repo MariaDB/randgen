@@ -1,4 +1,5 @@
 # Copyright (c) 2008,2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -61,7 +62,6 @@ sub new {
 		}
 		my $init_result = $executor->init();
 		return undef if $init_result > STATUS_OK;
-	        $executor->cacheMetaData();
 	}
 
 	my @validators;

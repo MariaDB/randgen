@@ -2,6 +2,7 @@
 
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2019, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -119,6 +120,7 @@ my $opt_result = GetOptions(
     'mask=i' => \$props->{mask},
     'mask-level|mask_level=i' => \$props->{mask_level},
     'mem' => \$mem,
+    'metadata!' => \$props->{metadata},
     'mtr-build-thread=i' => \$props->{build_thread},
     'mysqld=s@' => \${$props->{mysqld_options}}[0],
     'mysqld1=s@' => \${$props->{mysqld_options}}[1],
@@ -193,6 +195,7 @@ if (defined $props->{logfile} && defined $logger) {
         setLogConf($props->{logconf});
     }
 }
+
 
 if ($help) {
     help();
@@ -609,7 +612,6 @@ if ($wait_debugger) {
 }
 
 my $gentestProps = GenTest::Properties->init($props);
-
 my $gentest = GenTest::App::GenTest->new(config => $gentestProps);
 my $gentest_result = $gentest->run();
 say("GenTest exited with exit status ".status2text($gentest_result)." ($gentest_result)");
@@ -769,6 +771,7 @@ $0 - Run a complete random query generation test, including server start with re
                       Useful for debugging query generation, otherwise makes the query look ugly and barely readable.
     --wait-for-debugger: Pause and wait for keypress after server startup to allow attaching a debugger to the server process.
     --restart-timeout: If the server has gone away, do not fail immediately, but wait to see if it restarts (it might be a part of the test)
+    --[no]metadata   : Load metadata after data generation before the test flow. On by default, to turn off, run with --nometadata
     --help      : This help message
 
     If you specify --basedir1 and --basedir2 or --vardir1 and --vardir2, two servers will be started and the results from the queries

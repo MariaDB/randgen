@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights
 # reserved.
-# Copyright (c) 2018, MariaDB Corporation
+# Copyright (c) 2018, 2019 MariaDB Corporation
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -202,6 +202,7 @@ sub init {
               'seed',
               'mask',
               'mask-level',
+              'metadata',
               'rows',
               'varchar-length',
               'xml-output',
@@ -250,6 +251,7 @@ sub init {
   $gentestProps->property('logfile',$props->{logfile}) if defined $props->{logfile};
   $gentestProps->property('mask',$props->{mask}) if (exists $props->{mask});
   $gentestProps->property('mask-level',$props->{mask_level}) if defined $props->{mask_level};
+  $gentestProps->property('metadata',(defined $props->{metadata} ? $props->{metadata} : 1)); # By default metadata is loaded
   $gentestProps->property('multi-master',1) if $props->{'multi_master'};
   $gentestProps->property('notnull',$props->{notnull}) if defined $props->{notnull};
   $gentestProps->property('ps-protocol',1) if $props->{ps_protocol};

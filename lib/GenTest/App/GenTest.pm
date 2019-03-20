@@ -2,7 +2,7 @@
 
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2016, MariaDB Corporation
+# Copyright (c) 2016, 2019 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -204,7 +204,9 @@ sub run {
         next if $self->config->dsn->[$i] !~ m{mysql}sio;
         my $metadata_executor = GenTest::Executor->newFromDSN($self->config->dsn->[$i], osWindows() ? undef : $self->channel());
         $metadata_executor->init();
-        $metadata_executor->cacheMetaData() if defined $metadata_executor->dbh();
+        if ($self->config->metadata and defined $metadata_executor->dbh()) {
+          $metadata_executor->cacheMetaData();
+        }
         
         # Cache log file names needed for result reporting at end-of-test
         

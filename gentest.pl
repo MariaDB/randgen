@@ -3,6 +3,7 @@
 # Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights
 # reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2019, MariaDB Corporation Ab.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,6 +80,7 @@ my $opt_result = GetOptions($options,
                             'seed=s',
                             'mask=i',
                             'mask-level=i',
+                            'metadata!',
                             'rows=s',
                             'varchar-length=i',
                             'xml-output=s',
@@ -137,6 +139,7 @@ my $config = GenTest::Properties->new(
               'seed',
               'mask',
               'mask-level',
+              'metadata',
               'rows',
               'varchar-length',
               'xml-output',
@@ -342,6 +345,8 @@ sub backwardCompatability {
     delete $options->{engine1};
     delete $options->{engine2};
     delete $options->{engine3};
+
+    $options->{metadata}= 1 unless defined $options->{metadata};
 
 }
 
