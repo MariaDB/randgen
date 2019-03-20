@@ -1251,6 +1251,7 @@ sub getSchemaMetaData {
 
     # Try to set long enough statement timeout to override possible short one in test parameters.
     # No need to check the result of the statement, it might fail on some servers
+    say("Reading metadata from the database...");
     $self->dbh()->do('SET @@max_statement_time= 600');
     my $query = 
         "SELECT DISTINCT ".
@@ -1269,8 +1270,6 @@ sub getSchemaMetaData {
                "column_name, ".
                "CASE WHEN column_key = 'PRI' THEN 'primary' ".
                     "WHEN column_key IN ('MUL','UNI') THEN 'indexed' ".
-                    "WHEN index_name = 'PRIMARY' THEN 'primary' ".
-                    "WHEN non_unique IS NOT NULL THEN 'indexed' ".
                     "ELSE 'ordinary' END AS column_key, ".
                "CASE WHEN data_type IN ('bit','tinyint','smallint','mediumint','int','bigint') THEN 'int' ".
                     "WHEN data_type IN ('float','double') THEN 'float' ".
@@ -1284,13 +1283,13 @@ sub getSchemaMetaData {
                "character_maximum_length, ".
                "table_rows ".
          "FROM information_schema.tables INNER JOIN ".
-              "information_schema.columns USING(table_schema,table_name) LEFT JOIN ".
-              "information_schema.statistics USING(table_schema,table_name,column_name) ".
+              "information_schema.columns USING(table_schema,table_name) ".
 
           "WHERE table_name <> 'DUMMY'"; 
 
     my $res = $self->dbh()->selectall_arrayref($query);
     croak("FATAL ERROR: Failed to retrieve schema metadata") unless $res;
+    say("Finished reading metadata from the database");
 
     my %table_rows = ();
     foreach my $i (0..$#$res) {
