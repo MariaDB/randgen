@@ -1249,10 +1249,9 @@ sub getSchemaMetaData {
     ## 7. real data type
     my ($self) = @_;
 
-    # Try to set long enough statement timeout to override possible short one in test parameters.
-    # No need to check the result of the statement, it might fail on some servers
-    say("Reading metadata from the database...");
-    $self->dbh()->do('SET @@max_statement_time= 600');
+    # Unset max_statement_time in case it was set in test configuration
+
+    $self->dbh()->do('/*!100108 SET @@max_statement_time= 0 */');
     my $query = 
         "SELECT DISTINCT ".
                 "CASE WHEN table_schema = 'information_schema' ".
@@ -1289,17 +1288,8 @@ sub getSchemaMetaData {
 
     my $res = $self->dbh()->selectall_arrayref($query);
     croak("FATAL ERROR: Failed to retrieve schema metadata") unless $res;
-    say("Finished reading metadata from the database");
+    say("Finished reading metadata from the database: $#$res entries");
 
-    my %table_rows = ();
-    foreach my $i (0..$#$res) {
-        my $tbl = $res->[$i]->[0].'.'.$res->[$i]->[1];
-        if ((not defined $table_rows{$tbl}) or ($table_rows{$tbl} eq 'NULL') or ($table_rows{$tbl} eq '')) {
-            my $count_row = $self->dbh()->selectrow_arrayref("SELECT COUNT(*) FROM $tbl");
-            $table_rows{$tbl} = $count_row->[0];
-        }
-        $res=>[$i]->[8] = $table_rows{$tbl};
-    }
     return $res;
 }
 

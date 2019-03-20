@@ -33,19 +33,8 @@ fetch_table_char_columns:
 fetch_table_columns_by_type:
     { unless (%table_columns_by_type and $table_columns_by_type{$type}) { foreach $t (@{$executors->[0]->baseTables()}) { ${$table_columns_by_type{$type}}{$t} = $executors->[0]->metaColumnsDataType($type,$t,$last_database) } }; '' } ;
 
-# We don't want many big tables in a query, it makes queries too slow and does not really add value to the tests
-# Now we'll have the max number of big tables hardcoded here to 1, maybe later we'll change it
-smart_table:
-    { if ( $bigtables < 1 ) { $last_table = $prng->arrayElement($executors->[0]->tables($last_database)); $bigtables++ if ($executors->[0]->isBigTable($last_table)) } else { $last_table = $prng->arrayElement($executors->[0]->smallTables($last_database)) } ; $last_table };
-
-smart_base_table:
-    { if ( $bigtables < 1 ) { $last_table = $prng->arrayElement($executors->[0]->baseTables($last_database)); $bigtables++ if ($executors->[0]->isBigTable($last_table)) } else { $last_table = $prng->arrayElement($executors->[0]->smallBaseTables($last_database)) } ; $last_table };
-# else { $last_table = $prng->arrayElement($executors->[0]->smallTables($last_database)) }
-
-# else { $last_table = $prng->arrayElement($executors->[0]->smallTables($last_database)) }
-
 query:
-	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $bigtables = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } query_type ;
+	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } query_type ;
 
 #################################################################################
 #################################################################################
@@ -888,17 +877,17 @@ aggregate_separator:
 # track of what we have added.  You shouldn't need to touch these ever
 ################################################################################
 new_table_item:
-	smart_table AS { "alias".++$tables } | _table AS { "alias".++$tables } | _table AS { "alias".++$tables } |
+	_table AS { "alias".++$tables } | _table AS { "alias".++$tables } | _table AS { "alias".++$tables } |
 	( from_subquery ) AS { "alias".++$tables } ;
 
 from_subquery:
 	   { $subquery_idx += 1 ; $subquery_tables=0 ; $sq_ifields = 0; $sq_cfields = 0; ""}  SELECT distinct select_option subquery_table_one_two . * subquery_body  ;
 
 subquery_new_table_item:
-	smart_table AS { "SQ".$subquery_idx."_alias".++$subquery_tables } ;
+	_table AS { "SQ".$subquery_idx."_alias".++$subquery_tables } ;
 
 child_subquery_new_table_item:
-	smart_table AS { "C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables } ;	  
+	_table AS { "C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables } ;
 
 current_table_item:
 	{ "alias".$tables };
@@ -1219,7 +1208,7 @@ table_or_join:
 
 table:
 # We use the "AS alias" bit here so we can have unique aliases if we use the same table many times
-       { $stack->push(); '' } smart_base_table { my $x = " AS alias".++$tables;  my @s=($last_table.$x); $stack->pop(\@s); $x } ;
+       { $stack->push(); '' } _basetable { my $x = " AS alias".++$tables;  my @s=($last_table.$x); $stack->pop(\@s); $x } ;
 
 idx_table_for_join:
        { $stack->push() ; my $x = $idx_table." AS alias".++$tables; $idx_table_alias = "alias".$tables; my @s=($x); $stack->pop(\@s); $x } ;
@@ -1228,7 +1217,7 @@ index_type:
   BTREE | HASH ;
 
 index_table:
-  smart_base_table { my $idx_table_candidate = $last_table ; $idx_table = $idx_table_candidate ; '' } ;
+  _basetable { my $idx_table_candidate = $last_table ; $idx_table = $idx_table_candidate ; '' } ;
 
 opt_where_list:
   | | | | and_or range_access_where_list ;
