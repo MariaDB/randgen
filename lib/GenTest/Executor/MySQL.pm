@@ -761,6 +761,8 @@ sub init {
     # Please leave this statement on a single line, which allows easier correct parsing from general log.
     #
 
+    # Reset the version
+    $version= undef;
     $version = version($executor);
     if ($version =~ /^(\d+\.\d+)/) {
         $major_version = $1;
