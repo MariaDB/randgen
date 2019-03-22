@@ -17,14 +17,14 @@ acl:
 ;
 
 acl_create_user:
-  CREATE USER acl_if_not_exists acl_user_specification_list acl_require acl_with
-  | CREATE acl_or_replace USER acl_user_specification_list acl_require acl_with
+  CREATE USER acl_if_not_exists acl_user_specification_list /*!100200 acl_require acl_with */
+  | CREATE acl_or_replace USER acl_user_specification_list /*!100200 acl_require acl_with */
 ;
 
 # MDEV-17941 - ALTER USER IF EXISTS does not work
 #   ALTER USER acl_if_exists acl_user_specification_list acl_require acl_with
 acl_alter_user:
-  ALTER USER acl_user_specification_list acl_require acl_with
+  /*!100200 ALTER */ /*!!100200 CREATE */ USER acl_user_specification_list /*!100200 acl_require acl_with */
 ;
 
 acl_drop_user:
@@ -78,7 +78,7 @@ acl_show_grants:
 ;
 
 acl_grant:
-  GRANT acl_grant_variation TO acl_username acl_authentication_option acl_require acl_with
+  GRANT acl_grant_variation TO acl_username acl_authentication_option /*!100200 acl_require acl_with */
 ;
 
 acl_revoke:
@@ -128,7 +128,7 @@ acl_opt_routine:
 ;
 
 acl_grant_target_user:
-  acl_username acl_authentication_option acl_require acl_with
+  acl_username acl_authentication_option /*!100200 acl_require acl_with */
 ;
 
 acl_priv_type:
@@ -183,7 +183,7 @@ acl_table_privilege:
   | CREATE
   | CREATE VIEW
   | DELETE
-  | DELETE HISTORY
+  | /*!!100304 DELETE */ /*!100304 DELETE HISTORY */
   | DROP
   | INDEX
   | INSERT
@@ -212,10 +212,6 @@ acl_column_privilege_list:
 
 acl_column_list:
   _field | _field, acl_column_list
-;
-
-acl_column_privilege_list:
-  acl_column_privilege | acl_column_privilege, acl_column_privilege_list
 ;
 
 acl_routine_privilege:
