@@ -214,6 +214,10 @@ if (defined $props->{seed} and $props->{seed} eq 'time') {
     $props->{seed} = time();
     say("Converted --seed=time to --seed=$props->{seed}");
 }
+elsif (not defined $props->{seed}) {
+    $props->{seed} = time();
+    say("Seed was not set, using 'time': --seed=$props->{seed}");
+}
 
 if (not defined $scenario and not defined $props->{grammar}) {
     print STDERR "\nERROR: Grammar file is not defined\n\n";
