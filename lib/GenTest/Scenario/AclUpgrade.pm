@@ -231,9 +231,9 @@ sub run {
   $self->printStep("Normalizing ACL data");
   $self->normalizeGrants($old_server, $new_server, $old_grants, $new_grants);
 
-  foreach my $u (keys %$old_grants) {
-    say("$u: $old_grants->{$u}");
-  }
+#  foreach my $u (keys %$old_grants) {
+#    say("$u: $old_grants->{$u}");
+#  }
 
   #####
   $self->printStep("Comparing ACL data before and after upgrade");
@@ -359,6 +359,37 @@ sub collectAclData {
     say("Server doesn't know anything about roles");
   }
 
+  # Before 10.4, there could be users identified via a plugin, but also having
+  # non-empty password value in mysql.user. The password would be unused, but
+  # such configuration was not prohibited.
+  # 10.4 processes such users in a special way: if they have non-empty plugin
+  # _and_ an empty authentication string _and_ a non-empty password, then
+  # the password value is relocated to authentication string.
+  # As a result of this exercise, the discrepancy in SHOW GRANTS
+  # between pre-10.4 and 10.4+ can occur, such as
+  # Old: GRANT USAGE ON *.* TO 'dccjm'@'%' IDENTIFIED VIA unix_socket
+  # New: GRANT USAGE ON *.* TO 'dccjm'@'%' IDENTIFIED VIA unix_socket USING '*998833943E8FD8643750560AE3074C26C06F41EC'
+  #
+  # To avoid it, we'll take note of such users for old servers, and then
+  # imitate the new form of SHOW GRANTS for them
+
+  my %plugin_users_with_passwords= ();
+  if ($server->versionNumeric lt '100403')
+  {
+    $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`'), password FROM mysql.user WHERE plugin != '' AND password != '' AND authentication_string = ''";
+
+    my $plugin_users_with_passwords= $dbh->selectall_arrayref($query);
+    if ($dbh->err() > 0) {
+      sayError("Couldn't fetch plugin users with passwords, error: ".$dbh->err()." (".$dbh->errstr().")");
+      $res= STATUS_DATABASE_CORRUPTION;
+    }
+    else {
+      say("Found ".scalar(@$plugin_users_with_passwords)." plugin users with passwords");
+      foreach my $pu (@$plugin_users_with_passwords) {
+        $plugin_users_with_passwords{$pu->[0]}= $pu->[1];
+      }
+    }
+  }
   say("Collecting grants");
 
   my %grants= ();
@@ -371,9 +402,14 @@ sub collectAclData {
     }
     else {
       my $def= $sth->fetchrow_arrayref;
+      if (defined $plugin_users_with_passwords{$u} and $def->[0] !~ /USING /) {
+        $def->[0] =~ s/IDENTIFIED VIA (\w+)/IDENTIFIED VIA $1 USING $plugin_users_with_passwords{$u}/;
+        say("Adjusted old grants for $u to show the password along with the plugin: $def->[0]");
+      }
       $grants{$u}= $def->[0];
     }
   }
+
   return ($res, \%grants);
 }
 
