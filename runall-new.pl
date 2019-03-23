@@ -400,7 +400,11 @@ $ENV{RQG_THREADS}= $props->{threads};
 
 
 my $cmd = $0 . " " . join(" ", @ARGV_saved);
-$cmd =~ s/seed=time/seed=$props->{seed}/g;
+if ($cmd =~ /--seed=/) {
+  $cmd =~ s/seed=time/seed=$props->{seed}/g
+} else {
+  $cmd.= "--seed=$props->{seed}";
+}
 say("Final command line: \nperl $cmd");
 
 if (defined $scenario) {
