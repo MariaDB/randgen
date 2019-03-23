@@ -18,7 +18,7 @@
 
 $tables = {
 	rows => [0, 1, 10, 20, 1000],
-	engines => [ 'MyISAM', 'InnoDB', 'Aria' ],
+	engines => [ 'Aria' ],
 	views => [ 'MERGE', 'TEMPTABLE' ],
 };
 
