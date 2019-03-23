@@ -47,7 +47,7 @@
 # dodgy.
 ################################################################################
 query_init:
-	{ $total_dur = 0; "" };
+	{ $total_dur = 0; "" }; SET SESSION debug_dbug="+d,maria_emulate_big_block";
 
 query:
 	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } explain_extended main_select ;
