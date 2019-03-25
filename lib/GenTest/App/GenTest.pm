@@ -452,7 +452,7 @@ sub workerProcess {
         next unless $self->config->dsn->[$i];
         my $executor = GenTest::Executor->newFromDSN($self->config->dsn->[$i], osWindows() ? undef : $self->channel());
         $executor->sqltrace($self->config->sqltrace);
-        $executor->setId($i+1);
+        $executor->setId($i);
         push @executors, $executor;
     }
 
