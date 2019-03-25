@@ -267,21 +267,13 @@ sub next {
 						my $fields_unindexed = $executors->[0]->metaColumnsIndexTypeNot('indexed',$last_table, $last_database);
                         $last_field = $prng->arrayElement($fields_unindexed);
 						$item = '`'.$last_field.'`';
-					} elsif ($item eq '_field_int') {
-						my $fields_int = $executors->[0]->metaColumnsDataType('int',$last_table, $last_database);
-                        $last_field = $prng->arrayElement($fields_int);
+					} elsif ($item =~ /^_field_([a-z]+)/) {
+						my $fields = $executors->[0]->metaColumnsDataType($1,$last_table, $last_database);
+                        $last_field = $prng->arrayElement($fields);
 						$item = '`'.$last_field.'`';
-					} elsif (($item eq '_field_int_indexed') || ($item eq '_field_int_key')) {
-						my $fields_int_indexed = $executors->[0]->metaColumnsDataIndexType('int','indexed',$last_table, $last_database);
-                        $last_field = $prng->arrayElement($fields_int_indexed);
-						$item = '`'.$last_field.'`';
-					} elsif ($item eq '_field_char') {
-						my $fields_char = $executors->[0]->metaColumnsDataType('char',$last_table, $last_database);
-                        $last_field = $prng->arrayElement($fields_char);
-						$item = '`'.$last_field.'`';
-					} elsif (($item eq '_field_char_indexed') || ($item eq '_field_char_key')) {
-						my $fields_char_indexed = $executors->[0]->metaColumnsDataIndexType('char','indexed',$last_table, $last_database);
-                        $last_field = $prng->arrayElement($fields_char_indexed);
+					} elsif ($item =~ /^_field_([a-z]+)_(?:indexed|key)/) {
+						my $fields = $executors->[0]->metaColumnsDataIndexType($1,'indexed',$last_table, $last_database);
+                        $last_field = $prng->arrayElement($fields);
 						$item = '`'.$last_field.'`';
 					} elsif ($item eq '_collation') {
 						my $collations = $executors->[0]->metaCollations();
