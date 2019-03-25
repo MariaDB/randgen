@@ -1,0 +1,138 @@
+# Copyright (C) 2019 MariaDB Corporation.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+# Data generation for InnoDB upgrade tests with compression and partitioning
+# Applicable to 10.1+
+# In 10.1 requires innodb_file_format=Barracuda
+#
+# The reason why we have a separate file for partitioning is that we can't
+# have a meaningful unique key here.
+
+$tables = {
+        pk => [ undef ],
+        names => [  
+                    'tcp001', 'tcp002', 'tcp003', 'tcp004', 'tcp005', 'tcp006', 'tcp007', 'tcp008', 'tcp009', 'tcp010', 
+                    'tcp011', 'tcp012', 'tcp013', 'tcp014', 'tcp015', 'tcp016', 'tcp017', 'tcp018', 'tcp019', 'tcp020', 
+                    'tcp021', 'tcp022', 'tcp023', 'tcp024', 'tcp025', 'tcp026', 'tcp027', 'tcp028', 'tcp029', 'tcp030',
+                    'tcp031', 'tcp032', 'tcp033', 'tcp034', 'tcp035', 'tcp036', 'tcp037', 'tcp038', 'tcp039', 'tcp040',
+                    'tcp041', 'tcp042', 'tcp043', 'tcp044', 'tcp045', 'tcp046', 'tcp047', 'tcp048', 'tcp049', 'tcp050',
+                    'tcp051', 'tcp052', 'tcp053', 'tcp054', 'tcp055', 'tcp056', 'tcp057', 'tcp058', 'tcp059', 'tcp060', 
+                    'tcp061', 'tcp062', 'tcp063', 'tcp064', 'tcp065', 'tcp066', 'tcp067', 'tcp068', 'tcp069', 'tcp070', 
+                    'tcp071', 'tcp072', 'tcp073', 'tcp074', 'tcp075', 'tcp076', 'tcp077', 'tcp078', 'tcp079', 'tcp080',
+                    'tcp081', 'tcp082', 'tcp083', 'tcp084', 'tcp085', 'tcp086', 'tcp087', 'tcp088', 'tcp089', 'tcp090',
+                    'tcp091', 'tcp092', 'tcp093', 'tcp094', 'tcp095', 'tcp096', 'tcp097', 'tcp098', 'tcp099', 'tcp100',
+                    'tcp101', 'tcp102', 'tcp103', 'tcp104', 'tcp105', 'tcp106', 'tcp107', 'tcp108', 'tcp109', 'tcp110', 
+                    'tcp111', 'tcp112', 'tcp113', 'tcp114', 'tcp115', 'tcp116', 'tcp117', 'tcp118', 'tcp119', 'tcp120', 
+                    'tcp121', 'tcp122', 'tcp123', 'tcp124', 'tcp125', 'tcp126', 'tcp127', 'tcp128', 'tcp129', 'tcp130',
+                    'tcp131', 'tcp132', 'tcp133', 'tcp134', 'tcp135', 'tcp136', 'tcp137', 'tcp138', 'tcp139', 'tcp140',
+                    'tcp141', 'tcp142', 'tcp143', 'tcp144', 'tcp145', 'tcp146', 'tcp147', 'tcp148', 'tcp149', 'tcp150',
+                    'tcp151', 'tcp152', 'tcp153', 'tcp154', 'tcp155', 'tcp156', 'tcp157', 'tcp158', 'tcp159', 'tcp160', 
+                    'tcp161', 'tcp162', 'tcp163', 'tcp164', 'tcp165', 'tcp166', 'tcp167', 'tcp168', 'tcp169', 'tcp170', 
+                    'tcp171', 'tcp172', 'tcp173', 'tcp174', 'tcp175', 'tcp176', 'tcp177', 'tcp178', 'tcp179', 'tcp180',
+                    'tcp181', 'tcp182', 'tcp183', 'tcp184', 'tcp185', 'tcp186', 'tcp187', 'tcp188', 'tcp189', 'tcp190',
+                    'tcp191', 'tcp192', 'tcp193', 'tcp194', 'tcp195', 'tcp196', 'tcp197', 'tcp198', 'tcp199', 'tcp100',
+                    'tcp201', 'tcp202', 'tcp203', 'tcp204', 'tcp205', 'tcp206', 'tcp207', 'tcp208', 'tcp209', 'tcp210', 
+                    'tcp211', 'tcp212', 'tcp213', 'tcp214', 'tcp215', 'tcp216', 'tcp217', 'tcp218', 'tcp219', 'tcp220', 
+                    'tcp221', 'tcp222', 'tcp223', 'tcp224', 'tcp225', 'tcp226', 'tcp227', 'tcp228', 'tcp229', 'tcp230',
+                    'tcp231', 'tcp232', 'tcp233', 'tcp234', 'tcp235', 'tcp236', 'tcp237', 'tcp238', 'tcp239', 'tcp240',
+                    'tcp241', 'tcp242', 'tcp243', 'tcp244', 'tcp245', 'tcp246', 'tcp247', 'tcp248', 'tcp249', 'tcp250',
+                    'tcp251', 'tcp252', 'tcp253', 'tcp254', 'tcp255', 'tcp256', 'tcp257', 'tcp258', 'tcp259', 'tcp260', 
+                    'tcp261', 'tcp262', 'tcp263', 'tcp264', 'tcp265', 'tcp266', 'tcp267', 'tcp268', 'tcp269', 'tcp270', 
+                    'tcp271', 'tcp272', 'tcp273', 'tcp274', 'tcp275', 'tcp276', 'tcp277', 'tcp278', 'tcp279', 'tcp280',
+                    'tcp281', 'tcp282', 'tcp283', 'tcp284', 'tcp285', 'tcp286', 'tcp287', 'tcp288', 'tcp289', 'tcp290',
+                    'tcp291', 'tcp292', 'tcp293', 'tcp294', 'tcp295', 'tcp296', 'tcp297', 'tcp298', 'tcp299', 'tcp200',
+                    'tcp301', 'tcp302', 'tcp303', 'tcp304', 'tcp305', 'tcp306', 'tcp307', 'tcp308', 'tcp309', 'tcp310', 
+                    'tcp311', 'tcp312', 'tcp313', 'tcp314', 'tcp315', 'tcp316', 'tcp317', 'tcp318', 'tcp319', 'tcp320', 
+                    'tcp321', 'tcp322', 'tcp323', 'tcp324', 'tcp325', 'tcp326', 'tcp327', 'tcp328', 'tcp329', 'tcp330',
+                    'tcp331', 'tcp332', 'tcp333', 'tcp334', 'tcp335', 'tcp336', 'tcp337', 'tcp338', 'tcp339', 'tcp340',
+                    'tcp341', 'tcp342', 'tcp343', 'tcp344', 'tcp345', 'tcp346', 'tcp347', 'tcp348', 'tcp349', 'tcp350',
+                    'tcp351', 'tcp352', 'tcp353', 'tcp354', 'tcp355', 'tcp356', 'tcp357', 'tcp358', 'tcp359', 'tcp360', 
+                    'tcp361', 'tcp362', 'tcp363', 'tcp364', 'tcp365', 'tcp366', 'tcp367', 'tcp368', 'tcp369', 'tcp370', 
+                    'tcp371', 'tcp372', 'tcp373', 'tcp374', 'tcp375', 'tcp376', 'tcp377', 'tcp378', 'tcp379', 'tcp380',
+                    'tcp381', 'tcp382', 'tcp383', 'tcp384', 'tcp385', 'tcp386', 'tcp387', 'tcp388', 'tcp389', 'tcp390',
+                    'tcp391', 'tcp392', 'tcp393', 'tcp394', 'tcp395', 'tcp396', 'tcp397', 'tcp398', 'tcp399', 'tcp300',
+                    'tcp401', 'tcp402', 'tcp403', 'tcp404', 'tcp405', 'tcp406', 'tcp407', 'tcp408', 'tcp409', 'tcp410', 
+                    'tcp411', 'tcp412', 'tcp413', 'tcp414', 'tcp415', 'tcp416', 'tcp417', 'tcp418', 'tcp419', 'tcp420', 
+                    'tcp421', 'tcp422', 'tcp423', 'tcp424', 'tcp425', 'tcp426', 'tcp427', 'tcp428', 'tcp429', 'tcp430',
+                    'tcp431', 'tcp432', 'tcp433', 'tcp434', 'tcp435', 'tcp436', 'tcp437', 'tcp438', 'tcp439', 'tcp440',
+                    'tcp441', 'tcp442', 'tcp443', 'tcp444', 'tcp445', 'tcp446', 'tcp447', 'tcp448', 'tcp449', 'tcp450',
+                    'tcp451', 'tcp452', 'tcp453', 'tcp454', 'tcp455', 'tcp456', 'tcp457', 'tcp458', 'tcp459', 'tcp460', 
+                    'tcp461', 'tcp462', 'tcp463', 'tcp464', 'tcp465', 'tcp466', 'tcp467', 'tcp468', 'tcp469', 'tcp470', 
+                    'tcp471', 'tcp472', 'tcp473', 'tcp474', 'tcp475', 'tcp476', 'tcp477', 'tcp478', 'tcp479', 'tcp480',
+                    'tcp481', 'tcp482', 'tcp483', 'tcp484', 'tcp485', 'tcp486', 'tcp487', 'tcp488', 'tcp489', 'tcp490',
+                    'tcp491', 'tcp492', 'tcp493', 'tcp494', 'tcp495', 'tcp496', 'tcp497', 'tcp498', 'tcp499', 'tcp400',
+                    'tcp501', 'tcp502', 'tcp503', 'tcp504', 'tcp505', 'tcp506', 'tcp507', 'tcp508', 'tcp509', 'tcp510', 
+                    'tcp511', 'tcp512', 'tcp513', 'tcp514', 'tcp515', 'tcp516', 'tcp517', 'tcp518', 'tcp519', 'tcp520', 
+                    'tcp521', 'tcp522', 'tcp523', 'tcp524', 'tcp525', 'tcp526', 'tcp527', 'tcp528', 'tcp529', 'tcp530',
+                    'tcp531', 'tcp532', 'tcp533', 'tcp534', 'tcp535', 'tcp536', 'tcp537', 'tcp538', 'tcp539', 'tcp540',
+                    'tcp541', 'tcp542', 'tcp543', 'tcp544', 'tcp545', 'tcp546', 'tcp547', 'tcp548', 'tcp549', 'tcp550',
+                    'tcp551', 'tcp552', 'tcp553', 'tcp554', 'tcp555', 'tcp556', 'tcp557', 'tcp558', 'tcp559', 'tcp560', 
+                    'tcp561', 'tcp562', 'tcp563', 'tcp564', 'tcp565', 'tcp566', 'tcp567', 'tcp568', 'tcp569', 'tcp570', 
+                    'tcp571', 'tcp572', 'tcp573', 'tcp574', 'tcp575', 'tcp576', 'tcp577', 'tcp578', 'tcp579', 'tcp580',
+                    'tcp581', 'tcp582', 'tcp583', 'tcp584', 'tcp585', 'tcp586', 'tcp587', 'tcp588', 'tcp589', 'tcp590',
+                    'tcp591', 'tcp592', 'tcp593', 'tcp594', 'tcp595', 'tcp596', 'tcp597', 'tcp598', 'tcp599', 'tcp600'
+        ],
+        rows => [ 0, 1000 ],
+        engines => [ 'InnoDB' ],
+        row_formats => [ undef, 'DYNAMIC', 'COMPACT' ],
+        partitions => [ undef ],
+        options => [ 'PAGE_COMPRESSED=1',
+                     'PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=1',
+                     'PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=2',
+                     'PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=3',
+                     'PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=4',
+                     'PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=5',
+                     'PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=6',
+                     'PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=7',
+                     'PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=8',
+                     'PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=9',
+                    ]
+};
+
+$fields = {
+        sqls => [
+            "`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT",
+            "`c01` INT ZEROFILL NOT NULL DEFAULT 0",
+            "`c02` CHAR(3) NOT NULL DEFAULT ''",
+            "`c03` VARCHAR(1024) NOT NULL DEFAULT ''",
+            "`c04` TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+            "`c05` LONGBLOB NOT NULL DEFAULT ''",
+            "`c06` DOUBLE(16,8) COMMENT 'Percentage'",
+            "`c07` DATE",
+            "`c08` TEXT DEFAULT ''",
+            "`c09` BIGINT COMMENT 'X'",
+            "`c10` BIGINT COMMENT 'Y'",
+            "`c11` VARCHAR(64) AS (CONCAT(`c09`,' ',`c10`)) PERSISTENT",
+# To work around MDEV-18084, comment the next line
+#            "`c12` VARCHAR(64) AS (CONCAT(`c09`,' ',`c10`)) VIRTUAL",
+        ],
+        index_sqls => [
+            "PRIMARY KEY (`id`)",
+            "KEY idx1 (`c01`,`c02`)",
+            "KEY idx2 (c05(128))",
+#            "/*!100403 UNIQUE idx3 (c08)*/",
+#            "/*!100106 UNIQUE idx4 (c12)*/",
+        ],
+        types => [ undef ],
+        indexes => [ undef ],
+};
+
+$data = {
+        numbers => [ 'digit', 'null', undef, 'smallint' ],
+        strings => [ 'letter', 'english', undef, 'null' ],
+        temporals => [ undef, 'timestamp', 'null' ],
+        blobs => [ 'null', 'english', 'int' ],
+}

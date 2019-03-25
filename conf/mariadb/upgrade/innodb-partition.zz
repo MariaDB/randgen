@@ -1,0 +1,137 @@
+# Copyright (C) 2019 MariaDB Corporation.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+# Data generation for InnoDB upgrade tests with partitioning
+# Applicable to 5.5+
+#
+# The reason why we have a separate file for partitioning is that we can't
+# have a meaningful unique key here.
+
+$tables = {
+        pk => [ undef ],
+        names => [  
+                    'tp001', 'tp002', 'tp003', 'tp004', 'tp005', 'tp006', 'tp007', 'tp008', 'tp009', 'tp010', 
+                    'tp011', 'tp012', 'tp013', 'tp014', 'tp015', 'tp016', 'tp017', 'tp018', 'tp019', 'tp020', 
+                    'tp021', 'tp022', 'tp023', 'tp024', 'tp025', 'tp026', 'tp027', 'tp028', 'tp029', 'tp030',
+                    'tp031', 'tp032', 'tp033', 'tp034', 'tp035', 'tp036', 'tp037', 'tp038', 'tp039', 'tp040',
+                    'tp041', 'tp042', 'tp043', 'tp044', 'tp045', 'tp046', 'tp047', 'tp048', 'tp049', 'tp050',
+                    'tp051', 'tp052', 'tp053', 'tp054', 'tp055', 'tp056', 'tp057', 'tp058', 'tp059', 'tp060', 
+                    'tp061', 'tp062', 'tp063', 'tp064', 'tp065', 'tp066', 'tp067', 'tp068', 'tp069', 'tp070', 
+                    'tp071', 'tp072', 'tp073', 'tp074', 'tp075', 'tp076', 'tp077', 'tp078', 'tp079', 'tp080',
+                    'tp081', 'tp082', 'tp083', 'tp084', 'tp085', 'tp086', 'tp087', 'tp088', 'tp089', 'tp090',
+                    'tp091', 'tp092', 'tp093', 'tp094', 'tp095', 'tp096', 'tp097', 'tp098', 'tp099', 'tp100',
+                    'tp101', 'tp102', 'tp103', 'tp104', 'tp105', 'tp106', 'tp107', 'tp108', 'tp109', 'tp110', 
+                    'tp111', 'tp112', 'tp113', 'tp114', 'tp115', 'tp116', 'tp117', 'tp118', 'tp119', 'tp120', 
+                    'tp121', 'tp122', 'tp123', 'tp124', 'tp125', 'tp126', 'tp127', 'tp128', 'tp129', 'tp130',
+                    'tp131', 'tp132', 'tp133', 'tp134', 'tp135', 'tp136', 'tp137', 'tp138', 'tp139', 'tp140',
+                    'tp141', 'tp142', 'tp143', 'tp144', 'tp145', 'tp146', 'tp147', 'tp148', 'tp149', 'tp150',
+                    'tp151', 'tp152', 'tp153', 'tp154', 'tp155', 'tp156', 'tp157', 'tp158', 'tp159', 'tp160', 
+                    'tp161', 'tp162', 'tp163', 'tp164', 'tp165', 'tp166', 'tp167', 'tp168', 'tp169', 'tp170', 
+                    'tp171', 'tp172', 'tp173', 'tp174', 'tp175', 'tp176', 'tp177', 'tp178', 'tp179', 'tp180',
+                    'tp181', 'tp182', 'tp183', 'tp184', 'tp185', 'tp186', 'tp187', 'tp188', 'tp189', 'tp190',
+                    'tp191', 'tp192', 'tp193', 'tp194', 'tp195', 'tp196', 'tp197', 'tp198', 'tp199', 'tp100',
+                    'tp201', 'tp202', 'tp203', 'tp204', 'tp205', 'tp206', 'tp207', 'tp208', 'tp209', 'tp210', 
+                    'tp211', 'tp212', 'tp213', 'tp214', 'tp215', 'tp216', 'tp217', 'tp218', 'tp219', 'tp220', 
+                    'tp221', 'tp222', 'tp223', 'tp224', 'tp225', 'tp226', 'tp227', 'tp228', 'tp229', 'tp230',
+                    'tp231', 'tp232', 'tp233', 'tp234', 'tp235', 'tp236', 'tp237', 'tp238', 'tp239', 'tp240',
+                    'tp241', 'tp242', 'tp243', 'tp244', 'tp245', 'tp246', 'tp247', 'tp248', 'tp249', 'tp250',
+                    'tp251', 'tp252', 'tp253', 'tp254', 'tp255', 'tp256', 'tp257', 'tp258', 'tp259', 'tp260', 
+                    'tp261', 'tp262', 'tp263', 'tp264', 'tp265', 'tp266', 'tp267', 'tp268', 'tp269', 'tp270', 
+                    'tp271', 'tp272', 'tp273', 'tp274', 'tp275', 'tp276', 'tp277', 'tp278', 'tp279', 'tp280',
+                    'tp281', 'tp282', 'tp283', 'tp284', 'tp285', 'tp286', 'tp287', 'tp288', 'tp289', 'tp290',
+                    'tp291', 'tp292', 'tp293', 'tp294', 'tp295', 'tp296', 'tp297', 'tp298', 'tp299', 'tp200',
+                    'tp301', 'tp302', 'tp303', 'tp304', 'tp305', 'tp306', 'tp307', 'tp308', 'tp309', 'tp310', 
+                    'tp311', 'tp312', 'tp313', 'tp314', 'tp315', 'tp316', 'tp317', 'tp318', 'tp319', 'tp320', 
+                    'tp321', 'tp322', 'tp323', 'tp324', 'tp325', 'tp326', 'tp327', 'tp328', 'tp329', 'tp330',
+                    'tp331', 'tp332', 'tp333', 'tp334', 'tp335', 'tp336', 'tp337', 'tp338', 'tp339', 'tp340',
+                    'tp341', 'tp342', 'tp343', 'tp344', 'tp345', 'tp346', 'tp347', 'tp348', 'tp349', 'tp350',
+                    'tp351', 'tp352', 'tp353', 'tp354', 'tp355', 'tp356', 'tp357', 'tp358', 'tp359', 'tp360', 
+                    'tp361', 'tp362', 'tp363', 'tp364', 'tp365', 'tp366', 'tp367', 'tp368', 'tp369', 'tp370', 
+                    'tp371', 'tp372', 'tp373', 'tp374', 'tp375', 'tp376', 'tp377', 'tp378', 'tp379', 'tp380',
+                    'tp381', 'tp382', 'tp383', 'tp384', 'tp385', 'tp386', 'tp387', 'tp388', 'tp389', 'tp390',
+                    'tp391', 'tp392', 'tp393', 'tp394', 'tp395', 'tp396', 'tp397', 'tp398', 'tp399', 'tp300',
+                    'tp401', 'tp402', 'tp403', 'tp404', 'tp405', 'tp406', 'tp407', 'tp408', 'tp409', 'tp410', 
+                    'tp411', 'tp412', 'tp413', 'tp414', 'tp415', 'tp416', 'tp417', 'tp418', 'tp419', 'tp420', 
+                    'tp421', 'tp422', 'tp423', 'tp424', 'tp425', 'tp426', 'tp427', 'tp428', 'tp429', 'tp430',
+                    'tp431', 'tp432', 'tp433', 'tp434', 'tp435', 'tp436', 'tp437', 'tp438', 'tp439', 'tp440',
+                    'tp441', 'tp442', 'tp443', 'tp444', 'tp445', 'tp446', 'tp447', 'tp448', 'tp449', 'tp450',
+                    'tp451', 'tp452', 'tp453', 'tp454', 'tp455', 'tp456', 'tp457', 'tp458', 'tp459', 'tp460', 
+                    'tp461', 'tp462', 'tp463', 'tp464', 'tp465', 'tp466', 'tp467', 'tp468', 'tp469', 'tp470', 
+                    'tp471', 'tp472', 'tp473', 'tp474', 'tp475', 'tp476', 'tp477', 'tp478', 'tp479', 'tp480',
+                    'tp481', 'tp482', 'tp483', 'tp484', 'tp485', 'tp486', 'tp487', 'tp488', 'tp489', 'tp490',
+                    'tp491', 'tp492', 'tp493', 'tp494', 'tp495', 'tp496', 'tp497', 'tp498', 'tp499', 'tp400',
+                    'tp501', 'tp502', 'tp503', 'tp504', 'tp505', 'tp506', 'tp507', 'tp508', 'tp509', 'tp510', 
+                    'tp511', 'tp512', 'tp513', 'tp514', 'tp515', 'tp516', 'tp517', 'tp518', 'tp519', 'tp520', 
+                    'tp521', 'tp522', 'tp523', 'tp524', 'tp525', 'tp526', 'tp527', 'tp528', 'tp529', 'tp530',
+                    'tp531', 'tp532', 'tp533', 'tp534', 'tp535', 'tp536', 'tp537', 'tp538', 'tp539', 'tp540',
+                    'tp541', 'tp542', 'tp543', 'tp544', 'tp545', 'tp546', 'tp547', 'tp548', 'tp549', 'tp550',
+                    'tp551', 'tp552', 'tp553', 'tp554', 'tp555', 'tp556', 'tp557', 'tp558', 'tp559', 'tp560', 
+                    'tp561', 'tp562', 'tp563', 'tp564', 'tp565', 'tp566', 'tp567', 'tp568', 'tp569', 'tp570', 
+                    'tp571', 'tp572', 'tp573', 'tp574', 'tp575', 'tp576', 'tp577', 'tp578', 'tp579', 'tp580',
+                    'tp581', 'tp582', 'tp583', 'tp584', 'tp585', 'tp586', 'tp587', 'tp588', 'tp589', 'tp590',
+                    'tp591', 'tp592', 'tp593', 'tp594', 'tp595', 'tp596', 'tp597', 'tp598', 'tp599', 'tp600'
+        ],
+        rows => [ 0, 1000 ],
+        engines => [ 'InnoDB' ],
+        # We don't use row_formats here, because we want KEY_BLOCK_SIZE
+        options => [ undef,
+                     'ROW_FORMAT=DYNAMIC',
+                     'ROW_FORMAT=REDUNDANT',
+                     'ROW_FORMAT=COMPACT',
+                     'ROW_FORMAT=COMPRESSED',
+                     'ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=1',
+                     'ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=2',
+                     'ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=4',
+                     'ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=8',
+                     'ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=16',
+                   ],
+        partitions => [ 'HASH(`id`) PARTITIONS 2' ]
+};
+
+$fields = {
+        sqls => [
+            "`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT",
+            "`c01` INT ZEROFILL NOT NULL DEFAULT 0",
+            "`c02` CHAR(3) NOT NULL DEFAULT ''",
+            "`c03` VARCHAR(1024) NOT NULL DEFAULT ''",
+            "`c04` TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+            "`c05` LONGBLOB NOT NULL DEFAULT ''",
+            "`c06` DOUBLE(16,8) COMMENT 'Percentage'",
+            "`c07` DATE",
+            "`c08` TEXT DEFAULT ''",
+            "`c09` BIGINT COMMENT 'X'",
+            "`c10` BIGINT COMMENT 'Y'",
+            "`c11` VARCHAR(64) AS (CONCAT(`c09`,' ',`c10`)) PERSISTENT",
+# To work around MDEV-18084, comment the next line
+            "`c12` VARCHAR(64) AS (CONCAT(`c09`,' ',`c10`)) VIRTUAL",
+        ],
+        index_sqls => [
+            "PRIMARY KEY (`id`)",
+            "KEY idx1 (`c01`,`c02`)",
+            "KEY idx2 (c05(128))",
+#            "/*!100403 UNIQUE idx3 (c08)*/",
+#            "/*!100106 UNIQUE idx4 (c12)*/",
+        ],
+        types => [ undef ],
+        indexes => [ undef ],
+};
+
+$data = {
+        numbers => [ 'digit', 'null', undef, 'smallint' ],
+        strings => [ 'letter', 'english', undef, 'null' ],
+        temporals => [ undef, 'timestamp', 'null' ],
+        blobs => [ 'null', 'english', 'int' ],
+}
