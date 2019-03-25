@@ -44,9 +44,7 @@ alttind_list:
 
 # Can't put it on the list, as ORDER BY should always go last
 alttind_order_by:
-# Disabled due to MDEV-17725
-#  | | | | | | | | | | , ORDER BY alttind_column_list
-;
+  | | | | | | | | | | , ORDER BY alttind_column_list ;
 
 alttind_item_alg_lock:
   alttind_item alttind_algorithm alttind_lock

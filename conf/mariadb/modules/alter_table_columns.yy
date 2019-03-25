@@ -44,9 +44,7 @@ alttcol_list:
 
 # Can't put it on the list, as ORDER BY should always go last
 alttcol_order_by:
-# Disabled due to MDEV-17725
-#  | | | | | | | | | | , ORDER BY alttcol_column_list
-;
+  | | | | | | | | | | , ORDER BY alttcol_column_list ;
 
 alttcol_item_alg_lock:
   alttcol_item alttcol_algorithm alttcol_lock
