@@ -1278,7 +1278,7 @@ sub getSchemaMetaData {
                     "WHEN data_type IN ('datetime','timestamp') THEN 'timestamp' ".
                     "WHEN data_type IN ('char','varchar','binary','varbinary') THEN 'char' ".
                     "WHEN data_type IN ('tinyblob','blob','mediumblob','longblob') THEN 'blob' ".
-                    "WHEN data_type IN ('tinytext','text','mediumtext','longtext') THEN 'text' ".
+                    "WHEN data_type IN ('tinytext','text','mediumtext','longtext') THEN 'blob' ".
                     "ELSE data_type END AS data_type_normalized, ".
                "data_type, ".
                "character_maximum_length, ".
@@ -1291,6 +1291,7 @@ sub getSchemaMetaData {
     my $res = $self->dbh()->selectall_arrayref($query);
     croak("FATAL ERROR: Failed to retrieve schema metadata") unless $res;
     say("Finished reading metadata from the database: $#$res entries");
+    $self->dbh()->do('/*!100108 SET @@max_statement_time= @@global.max_statement_time */');
 
     return $res;
 }
