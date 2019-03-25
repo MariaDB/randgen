@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2019, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -34,14 +35,15 @@ sub validate {
 
 	return STATUS_OK if $#$results != 1;
 
-	my $query = $results->[0]->query();
-	my $compare_outcome = GenTest::Comparator::compare($results->[0], $results->[1]);
-
 	return STATUS_WONT_HANDLE if $results->[0]->status() == STATUS_SEMANTIC_ERROR || $results->[1]->status() == STATUS_SEMANTIC_ERROR;
 	return STATUS_WONT_HANDLE if $results->[0]->status() == STATUS_SYNTAX_ERROR || $results->[1]->status() == STATUS_SYNTAX_ERROR;
-	return STATUS_WONT_HANDLE if $results->[0]->query() =~ m{EXPLAIN}sio;
-	return STATUS_WONT_HANDLE if $results->[0]->query() =~ m{ANALYZE}sio;
 
+	my $query = $results->[0]->query();
+  return STATUS_WONT_HANDLE if $query =~ m{skip\s+ResultsetComparator}sio;
+	return STATUS_WONT_HANDLE if $query =~ m{EXPLAIN}sio;
+	return STATUS_WONT_HANDLE if $query =~ m{ANALYZE}sio;
+
+	my $compare_outcome = GenTest::Comparator::compare($results->[0], $results->[1]);
 	if ( ($compare_outcome == STATUS_LENGTH_MISMATCH) ||
 	     ($compare_outcome == STATUS_CONTENT_MISMATCH) 
 	) {
