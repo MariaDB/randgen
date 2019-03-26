@@ -70,8 +70,7 @@ fk_lock:
   |
   | , LOCK=NONE
   | , LOCK=SHARED
-# Disabled due to MDEV-17595:
-#  | , LOCK=EXCLUSIVE
+  | , LOCK=EXCLUSIVE
   | , LOCK=DEFAULT
 ;
   

@@ -229,8 +229,7 @@ acl_target_user:
 ;
 
 acl_or_replace:
-# MDEV-17942 - Assertion failure after failed CREATE OR REPLACE
-#  | | OR REPLACE
+  | | OR REPLACE
 ;
 
 acl_if_not_exists:
