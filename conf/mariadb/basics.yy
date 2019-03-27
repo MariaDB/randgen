@@ -346,6 +346,9 @@ _basics_explain_analyze:
   ANALYZE _basics_format_json_50pct
 ;
 
+_basics_extended_50pct:
+  | EXTENDED ;
+
 _basics_explain_modifier:
   _basics_format_json_50pct | EXTENDED | EXTENDED | EXTENDED | PARTITIONS ;
 
