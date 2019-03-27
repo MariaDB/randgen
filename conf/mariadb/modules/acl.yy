@@ -14,17 +14,19 @@ acl:
   | acl_drop_role
   | acl_set_role | acl_set_default_role
   | acl_show_grants
+  # MDEV-7597 - Expiration of user passwords (10.4.3)
+  | /*!100403 acl_password_expiration_variables */
 ;
 
 acl_create_user:
-  CREATE USER acl_if_not_exists acl_user_specification_list /*!100200 acl_require acl_with */
-  | CREATE acl_or_replace USER acl_user_specification_list /*!100200 acl_require acl_with */
+  CREATE USER acl_if_not_exists acl_user_specification_list /*!100200 acl_require acl_with */ /*!100403 acl_password_expire */
+  | CREATE acl_or_replace USER acl_user_specification_list /*!100200 acl_require acl_with */ /*!100403 acl_password_expire */
 ;
 
 # MDEV-17941 - ALTER USER IF EXISTS does not work
 #   ALTER USER acl_if_exists acl_user_specification_list acl_require acl_with
 acl_alter_user:
-  /*!100200 ALTER */ /*!!100200 CREATE */ USER acl_user_specification_list /*!100200 acl_require acl_with */
+  /*!100200 ALTER */ /*!!100200 CREATE */ USER acl_user_specification_list /*!100200 acl_require acl_with */ /*!100403 acl_password_expire */
 ;
 
 acl_drop_user:
@@ -289,6 +291,19 @@ acl_authentication_option:
   # MDEV-12321 - authentication plugin: SET PASSWORD support (10.4.0)
   # TODO: wrap it up in /*!100400 ... */ after comparative testing with 10.3 is finished
   | IDENTIFIED acl_via_with acl_authentication_plugin /*!100402 acl_using_as PASSWORD(acl_password) */
+;
+
+acl_password_expire:
+  | | | PASSWORD EXPIRE acl_password_expiration_option ;
+
+# MDEV-7597 - Expiration of user passwords (10.4.3)
+acl_password_expiration_option:
+  | DEFAULT | NEVER | INTERVAL _smallint_unsigned DAY ;
+
+acl_password_expiration_variables:
+  SET GLOBAL default_password_lifetime = _smallint_unsigned |
+  SET GLOBAL disconnect_on_expired_password = ON |
+  SET GLOBAL disconnect_on_expired_password = OFF
 ;
 
 acl_password:
