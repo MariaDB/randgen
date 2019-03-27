@@ -6,7 +6,7 @@ LINESTRINGs compatible with MySQL and PostGIS as follows:
 
 1. Use the software at
 
-http://www.tm.kit.edu/~mayer/osm2wkt/
+http://web.archive.org/web/20141013091652/http://www.tm.kit.edu/~mayer/osm2wkt/
 
 to convert an OpenStreetMap XML to WKT, or use one of the existing WKT
 files on that site.
@@ -22,7 +22,7 @@ Copyright notices on the map data
 Due to licensing incompatibility, map data is not part of the RQG source
 tree. It can be downloaded from
 
-http://www.tm.kit.edu/~mayer/osm2wkt/
+http://web.archive.org/web/20141013091652/http://www.tm.kit.edu/~mayer/osm2wkt/
 
 The map data is (c) OpenStreetMap contributors and has a CC-BY-SA license. See
 
