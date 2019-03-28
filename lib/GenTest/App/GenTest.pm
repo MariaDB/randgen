@@ -528,12 +528,13 @@ sub doGenData {
                varchar_length => $self->config->property('varchar-length'),
                executor_id => $i
             )->run();
+            say("GendataAdvanced finished with result ".status2text($gendata_result));
         }
 
-        next if not defined $self->config->gendata();
-
-        if ($self->config->gendata eq '' or $self->config->gendata eq '1') {
-            $gendata_result = GenTest::App::GendataSimple->new(
+        # Contrary to the obvious, we will use the *best* result code --
+        # if at least one of data generations succeeded, it means we have some data and can proceed
+        if (defined $self->config->gendata and $self->config->gendata eq '' or $self->config->gendata eq '1') {
+            my $res = GenTest::App::GendataSimple->new(
                dsn => $dsn,
                vcols => (defined $self->config->property('vcols') ? ${$self->config->property('vcols')}[$i] : undef),
                views => (defined $self->config->views ? ${$self->config->views}[$i] : undef),
@@ -544,6 +545,8 @@ sub doGenData {
                varchar_length => $self->config->property('varchar-length'),
                executor_id => $i
             )->run();
+            say("GendataSimple finished with result ".status2text($res));
+            $gendata_result= STATUS_OK if $res == STATUS_OK;
         } elsif ($self->config->gendata()) {
           foreach my $gendata (@{$self->config->gendata()})
           {
@@ -562,7 +565,8 @@ sub doGenData {
                notnull => $self->config->notnull,
                executor_id => $i
             )->run();
-            $gendata_result= $res if $res > $gendata_result;
+            say("Gendata $gendata finished with result ".status2text($res));
+            $gendata_result= STATUS_OK if $res == STATUS_OK;
           }
         }
             
