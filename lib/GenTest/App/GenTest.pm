@@ -570,7 +570,7 @@ sub doGenData {
           }
         }
             
-        return $gendata_result if $gendata_result > STATUS_OK;
+        return $gendata_result if $gendata_result >= STATUS_CRITICAL_FAILURE;
 
         # For multi-master setup, e.g. Galera, we only need to do generatoion once
         return STATUS_OK if $self->config->property('multi-master');
