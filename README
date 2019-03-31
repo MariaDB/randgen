@@ -7,7 +7,7 @@ and executing queries against them for the purpose of testing.
 
 Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights
 reserved.  Use is subject to license terms.
-Copyright (c) 2010, 2018, MariaDB
+Copyright (c) 2010, 2019, MariaDB
 
 Upstream Wiki:
 * https://github.com/RQG/RQG-Documentation/wiki
@@ -17,6 +17,18 @@ MariaDB Knowledge Base:
 
 Github:
 * https://github.com/MariaDB/randgen
+
+QUICK START
+---------------------------------------------------------------
+
+Example (replace <basedir> with the location of your MariaDB build):
+
+perl runall-new.pl --basedir=<basedir> \
+--grammar=conf/mariadb/oltp.yy \
+--gendata=conf/mariadb/oltp.zz --threads=4 \
+--duration=60 \
+--engine=InnoDB \
+--vardir=/dev/shm/vardir
 
 
 LICENSE
