@@ -7,6 +7,7 @@ innodb_checksum_algorithm                                  [ innodb , crc32 , no
 #### innodb_data_file_path	ibdata1:12M:autoextend          
 #### innodb_data_home_dir	                                
 #### innodb_log_block_size                                      [ 16 .. 4096 ]    ## MDEV-5874 : Asserts, said to be BETA-quality in 10.1, deprecated in 10.2, removed in 10.3
+innodb_log_checksum_algorithm                              [ innodb , none , crc32 , strict_none , strict_innodb , strict_crc32 ]
 innodb_log_file_size                                       [ 16777216 .. 1073741824 ]
 innodb_log_files_in_group	                                [ 1 .. 4 ]
 #### innodb_log_group_home_dir	./
@@ -453,7 +454,7 @@ innodb_log_archive                                         [ OFF , ON ]
 #### innodb_log_block_size                           # has to go to bootstrap too
 innodb_log_buffer_size                                     [ 1048576 .. 268435456 ]
 innodb_log_checkpoint_now                                  [ OFF , ON ]
-innodb_log_checksum_algorithm                              [ innodb , none , crc32 , strict_none , strict_innodb , strict_crc32 ]
+#### innodb_log_checksum_algorithm                              [ innodb , none , crc32 , strict_none , strict_innodb , strict_crc32 ] # should be in bootstrap too because of strict
 innodb_log_compressed_pages                                [ ON , OFF ]
 #### innodb_log_file_size	                          # should go to bootstrap too
 #### innodb_log_files_in_group	2                   # should go to bootstrap too
