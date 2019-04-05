@@ -403,7 +403,7 @@ sub collectAclData {
     else {
       my $def= $sth->fetchrow_arrayref;
       if (defined $plugin_users_with_passwords{$u} and $def->[0] !~ /USING /) {
-        $def->[0] =~ s/IDENTIFIED VIA (\w+)/IDENTIFIED VIA $1 USING $plugin_users_with_passwords{$u}/;
+        $def->[0] =~ s/IDENTIFIED VIA (\w+)/IDENTIFIED VIA $1 USING \'$plugin_users_with_passwords{$u}\'/;
         say("Adjusted old grants for $u to show the password along with the plugin: $def->[0]");
       }
       $grants{$u}= $def->[0];
