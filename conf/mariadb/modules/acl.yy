@@ -12,15 +12,15 @@ acl:
   | acl_set_password
   | acl_create_role | acl_create_role | acl_create_role
   | acl_drop_role
-  | acl_set_role | acl_set_default_role
+  | acl_set_role | /*!100101 acl_set_default_role */
   | acl_show_grants
   # MDEV-7597 - Expiration of user passwords (10.4.3)
   | /*!100403 acl_password_expiration_variables */
 ;
 
 acl_create_user:
-  CREATE USER acl_if_not_exists acl_user_specification_list /*!100200 acl_require acl_with */ /*!100403 acl_password_expire */
-  | CREATE acl_or_replace USER acl_user_specification_list /*!100200 acl_require acl_with */ /*!100403 acl_password_expire */
+  CREATE USER /*!100103 acl_if_not_exists */ acl_user_specification_list /*!100200 acl_require acl_with */ /*!100403 acl_password_expire */
+  | CREATE /*!100103 acl_or_replace */ USER acl_user_specification_list /*!100200 acl_require acl_with */ /*!100403 acl_password_expire */
 ;
 
 # MDEV-17941 - ALTER USER IF EXISTS does not work
@@ -30,7 +30,7 @@ acl_alter_user:
 ;
 
 acl_drop_user:
-  DROP USER acl_if_exists acl_username_list
+  DROP USER /*!100103 acl_if_exists */ acl_username_list
 ;
 
 acl_rename_user:
@@ -46,12 +46,12 @@ acl_set_password:
 ;
 
 acl_create_role:
-    CREATE ROLE acl_if_not_exists acl_short_name acl_with_admin
-  | CREATE acl_or_replace ROLE acl_short_name acl_with_admin
+    CREATE ROLE /*!100103 acl_if_not_exists */ acl_short_name acl_with_admin
+  | CREATE /*!100103 acl_or_replace */ ROLE acl_short_name acl_with_admin
 ;
 
 acl_drop_role:
-  DROP ROLE acl_if_exists acl_role_list
+  DROP ROLE /*!100103 acl_if_exists */ acl_role_list
 ;
 
 acl_with_admin:
