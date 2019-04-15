@@ -331,7 +331,8 @@ sub cacheMetaData {
     if ($redo or not exists $global_schema_cache{$self->dsn()}) {
         say ("Caching schema metadata for ".$self->dsn());
 
-        my $metadata= $self->getSchemaMetaData();
+        # The parameter serves as "redo" flag for getSchemaMetaData
+        my $metadata= $self->getSchemaMetaData($global_schema_cache{$self->dsn()});
         croak("FATAL ERROR: failed to cache schema metadata") unless $metadata;
 
         foreach my $row (@$metadata) {
@@ -443,7 +444,7 @@ sub metaColumns {
     $table = $self->metaTables($schema)->[0] if not defined $table;
     
     my $cachekey="COL-$schema-$table";
-    
+
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $cols;
         if ($meta->{$schema}->{table}->{$table}) {
@@ -451,7 +452,7 @@ sub metaColumns {
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $cols = [sort keys %{$meta->{$schema}->{view}->{$table}}]
         } else {
-            say "WARNING: Table '$table' in schema '$schema' has no columns";
+            say "WARNING: In metaColumns: Table '$table' in schema '$schema' has no columns";
             $cols = ['non_existing_column']
         } 
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
@@ -475,7 +476,7 @@ sub metaColumnsIndexType {
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $colref = $meta->{$schema}->{view}->{$table};
         } else {
-            say "WARNING: Table/view '$table' in schema '$schema' has no columns";
+            say "WARNING: In metaColumnsIndexType: Table/view '$table' in schema '$schema' has no columns";
             $colref = { 'non_existing_column1' => ['ordinary','int'], 'non_existing_column2' => ['indexed','int'] };
         }
 
@@ -515,7 +516,7 @@ sub metaColumnsDataType {
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $colref = $meta->{$schema}->{view}->{$table};
         } else {
-            say "WARNING: Table/view '$table' in schema '$schema' has no columns";
+            say "WARNING: In metaColumnsDataType: Table/view '$table' in schema '$schema' has no columns";
             $colref = { 'non_existing_column1' => ['ordinary','int'], 'non_existing_column2' => ['indexed','int'] }
         }
 
@@ -546,7 +547,7 @@ sub metaColumnsDataIndexType {
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $colref = $meta->{$schema}->{view}->{$table};
         } else {
-            say "WARNING: Table/view '$table' in schema '$schema' has no columns";
+            say "WARNING: In metaColumnsDataIndexType: Table/view '$table' in schema '$schema' has no columns";
             $colref = { 'non_existing_column1' => ['ordinary','int'], 'non_existing_column2' => ['indexed','int'] };
         }
 
@@ -593,7 +594,7 @@ sub metaColumnsDataTypeIndexTypeNot {
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $colref = $meta->{$schema}->{view}->{$table};
         } else {
-            say "WARNING: Table/view '$table' in schema '$schema' has no columns";
+            say "WARNING: In metaColumnsDataTypeIndexTypeNot: Table/view '$table' in schema '$schema' has no columns";
             $colref = { 'non_existing_column1' => ['ordinary','int'], 'non_existing_column2' => ['indexed','int'] };
         }
 
@@ -607,7 +608,7 @@ sub metaColumnsDataTypeIndexTypeNot {
         }
         my $cols_by_indextype = [sort grep {$colref->{$_}->[0] ne $indextype} keys %$colref];
         if (not defined $cols_by_indextype or $#$cols_by_indextype < 0) {
-            say "WARNING: Table '$table' in schema '$schema' has no columns which are not '$indextype'";
+            say "WARNING: In metaColumnsDataTypeIndexTypeNot: Table '$table' in schema '$schema' has no columns which are not '$indextype'";
             $cols_by_indextype = [ 'non_existing_column' ];
         }
         my $cols = intersect_arrays($cols_by_datatype,$cols_by_indextype);
@@ -633,7 +634,7 @@ sub metaColumnsIndexTypeNot {
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $colref = $meta->{$schema}->{view}->{$table};
         } else {
-            say "WARNING: Table/view '$table' in schema '$schema' has no columns";
+            say "WARNING: In metaColumnsIndexTypeNot: Table/view '$table' in schema '$schema' has no columns";
             $colref = { 'non_existing_column1' => ['ordinary','int'], 'non_existing_column2' => ['indexed','int'] };
         }
 
@@ -642,7 +643,7 @@ sub metaColumnsIndexTypeNot {
             if ($meta->{$schema}->{view}->{$table} and $indextype eq 'ordinary');
         my $cols = [sort grep {$colref->{$_}->[0] ne $indextype} keys %$colref];
         if (not defined $cols or $#$cols < 0) {
-            say "WARNING: Table '$table' in schema '$schema' has no columns which are not '$indextype'";
+            say "WARNING: In metaColumnsIndexTypeNot: Table '$table' in schema '$schema' has no columns which are not '$indextype'";
             $cols = [ 'non_existing_column' ];
         }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
@@ -693,7 +694,7 @@ sub metaColumnInfo {
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $cols = $meta->{$schema}->{view}->{$table}
         } else {
-            say "WARNING: Table '$table' in schema '$schema' has no columns";
+            say "WARNING: In metaColumnInfo: Table '$table' in schema '$schema' has no columns";
         }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }
