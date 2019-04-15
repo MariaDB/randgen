@@ -207,13 +207,13 @@ app_periods_column_definition:
   app_periods_new_column_name _basics_column_specification ;
 
 app_periods_new_column_name:
-  { $last_field= 'c'.(scalar(@cols)+1); push @cols, $last_field; $last_field } ;
+  { $last_field= 'c'.(scalar(@cols)+1); push @cols, $last_field; '`'.$last_field.'`' } ;
 
 app_periods_existing_column_name:
-  { $last_field= scalar(@cols) ? $prng->arrayElement(\@cols) : 'c'.$prng->int(1,$max_cols) } ;
+  { $last_field= scalar(@cols) ? $prng->arrayElement(\@cols) : 'c'.$prng->int(1,$max_cols); '`'.$last_field.'`' } ;
 
 app_periods_random_column_name:
-  { $last_field= ( $prng->int(0,10) ? ( $prng->int(0,10) ? 'c'.$prng->int(1,$max_cols) : '`to`' ) : '`from`' ) } ;
+  { $last_field= ( $prng->int(0,10) ? ( $prng->int(0,10) ? 'c'.$prng->int(1,$max_cols) : 'to' ) : 'from' ); '`'.$last_field.'`' } ;
 
 app_periods_existing_column_list:
   app_periods_existing_column_name | app_periods_existing_column_name | app_periods_existing_column_name | app_periods_existing_column_name, app_periods_existing_column_list ;
@@ -241,13 +241,13 @@ app_periods_invalid_period_name:
   | SYSTEM_TIME | system_time | `system_time` | `SYSTEM_TIME` ;
 
 app_periods_period_definition_fixed:
-  { push @cols, '`from`'; '' } `from` app_periods_period_type { $last_column_type= $periodtype; '' } _basics_column_attributes, { push @cols, '`to`'; '' } `to` { $last_column_type } _basics_column_attributes, { $periods++ ? 'KEY' : 'PERIOD FOR ' } `app`(`from`, `to`) ;
+  { push @cols, 'from'; '' } `from` app_periods_period_type { $last_column_type= $periodtype; '' } _basics_column_attributes, { push @cols, 'to'; '' } `to` { $last_column_type } _basics_column_attributes, { $periods++ ? 'KEY' : 'PERIOD FOR ' } `app`(`from`, `to`) ;
 
 app_periods_period_definition_fixed_with_random_temporal_types:
-  { push @cols, '`from`'; '' } `from` app_periods_period_type { $last_column_type= $periodtype; '' } _basics_column_attributes, { push @cols, '`to`'; '' } `to` app_periods_period_type { $last_column_type= $periodtype; '' } _basics_column_attributes, { $periods++ ? 'KEY' : 'PERIOD FOR ' } `app`(`from`, `to`) ;
+  { push @cols, 'from'; '' } `from` app_periods_period_type { $last_column_type= $periodtype; '' } _basics_column_attributes, { push @cols, 'to'; '' } `to` app_periods_period_type { $last_column_type= $periodtype; '' } _basics_column_attributes, { $periods++ ? 'KEY' : 'PERIOD FOR ' } `app`(`from`, `to`) ;
 
 app_periods_period_definition_fixed_with_virtual_columns:
-  app_periods_period_definition_fixed, { push @cols, '`vfrom`'; '' } `vfrom` { $periodtype } GENERATED ALWAYS AS (`from`) _basics_stored_or_virtual, { push @cols, '`vto`'; '' } `vto` { $periodtype } GENERATED ALWAYS AS  (`to`) _basics_stored_or_virtual;
+  app_periods_period_definition_fixed, { push @cols, 'vfrom'; '' } `vfrom` { $periodtype } GENERATED ALWAYS AS (`from`) _basics_stored_or_virtual, { push @cols, 'vto'; '' } `vto` { $periodtype } GENERATED ALWAYS AS  (`to`) _basics_stored_or_virtual;
 
 app_periods_period_definition_strict:
   app_periods_period_definition_fixed | app_periods_period_definition_fixed |
