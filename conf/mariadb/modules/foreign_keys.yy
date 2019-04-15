@@ -106,7 +106,7 @@ fk_column_list:
 ;
 
 fk_column_list_last:
-  { join ',', @columns }
+  { join ',', map { ($_ =~ /^\`/?$_:'`'.$_.'`') } @columns }
 ;
 
 fk_column:
