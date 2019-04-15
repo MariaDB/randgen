@@ -1251,10 +1251,11 @@ sub getSchemaMetaData {
     ## 5. PRIMARY for primary key, INDEXED for indexed column and "ORDINARY" for all other columns
     ## 6. generalized data type (INT, FLOAT, BLOB, etc.)
     ## 7. real data type
-    my ($self) = @_;
+    my ($self, $redo) = @_;
+
+    # TODO: recognize SEQUENCE as a separate type with separate logic
 
     # Unset max_statement_time in case it was set in test configuration
-
     $self->dbh()->do('/*!100108 SET @@max_statement_time= 0 */');
     my $query = 
         "SELECT DISTINCT ".
@@ -1267,6 +1268,8 @@ sub getSchemaMetaData {
                      "ELSE table_schema END AS table_schema, ".
                "table_name, ".
                "CASE WHEN table_type = 'BASE TABLE' THEN 'table' ".
+                    "WHEN table_type = 'SYSTEM VERSIONED' THEN 'table' ".
+                    "WHEN table_type = 'SEQUENCE' THEN 'table' ".
                     "WHEN table_type = 'VIEW' THEN 'view' ".
                     "WHEN table_type = 'SYSTEM VIEW' then 'view' ".
                     "ELSE 'misc' END AS table_type, ".
@@ -1288,7 +1291,11 @@ sub getSchemaMetaData {
          "FROM information_schema.tables INNER JOIN ".
               "information_schema.columns USING(table_schema,table_name) ".
 
-          "WHERE table_name <> 'DUMMY'"; 
+          "WHERE table_name <> 'DUMMY'";
+    # Do not reload metadata for system tables
+    if ($redo) {
+      $query.= " AND table_schema NOT IN ('performance_schema','information_schema','mysql')";
+    }
 
     my $res = $self->dbh()->selectall_arrayref($query);
     croak("FATAL ERROR: Failed to retrieve schema metadata") unless $res;
