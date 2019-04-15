@@ -44,8 +44,10 @@ sub validate {
   return STATUS_OK 
     if $reloaded_before and time() < $last_reload + METADATA_RELOAD_INTERVAL
       # First time we reload sooner in case something was created
-      # in query_init / threadX_init steps
-      or time() < $last_reload + METADATA_RELOAD_INTERVAL / 2;
+      # in query_init / threadX_init steps;
+      # and randomize the initial point a bit, so that we don't reload
+      # in all threads at once
+      or time() < $last_reload + METADATA_RELOAD_INTERVAL * rand($$)/$$;
 
   $last_reload= time();
 	my ($validator, $executors) = @_;
