@@ -588,7 +588,7 @@ my %err2type = (
     ER_OUTOFMEMORY()                                    => STATUS_ENVIRONMENT_FAILURE,
     ER_OUTOFMEMORY2()                                   => STATUS_ENVIRONMENT_FAILURE,
     ER_OUT_OF_RESOURCES()                               => STATUS_ENVIRONMENT_FAILURE,
-#    ER_PARSE_ERROR()                                    => STATUS_SYNTAX_ERROR, # Don't mask syntax errors, fix them instead
+    ER_PARSE_ERROR()                                    => STATUS_SYNTAX_ERROR, # Don't mask syntax errors, fix them instead
     ER_PARTITION_CLAUSE_ON_NONPARTITIONED()             => STATUS_SEMANTIC_ERROR,
     ER_PARTITION_EXCHANGE_PART_TABLE()                  => STATUS_SEMANTIC_ERROR,
     ER_PARTITION_INSTEAD_OF_SUBPARTITION()              => STATUS_SEMANTIC_ERROR,
@@ -953,9 +953,12 @@ sub execute {
     my $result;
     if (defined $err) {            # Error on EXECUTE
 
+        if ($err_type == STATUS_SYNTAX_ERROR) {
+            $executor->[EXECUTOR_ERROR_COUNTS]->{$errstr}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+            $err_type= undef;
+        }
         if (
             ($err_type == STATUS_SKIP) ||
-            ($err_type == STATUS_SYNTAX_ERROR) ||
             ($err_type == STATUS_SEMANTIC_ERROR) ||
             ($err_type == STATUS_TRANSACTION_ERROR)
         ) {
@@ -1201,12 +1204,12 @@ sub DESTROY {
         print Dumper $executor->[EXECUTOR_AFFECTED_ROW_COUNTS];
         say("Explain items:");
         print Dumper $executor->[EXECUTOR_EXPLAIN_COUNTS];
+        say("Errors:");
+        print Dumper $executor->[EXECUTOR_ERROR_COUNTS];
 #        say("Rare EXPLAIN items:");
 #        print Dumper $executor->[EXECUTOR_EXPLAIN_QUERIES];
     }
-    say("Errors:");
-    print Dumper $executor->[EXECUTOR_ERROR_COUNTS];
-    say("Statuses: ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
+    say("Statuses: ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } sort keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
 }
 
 sub currentSchema {
