@@ -1201,12 +1201,12 @@ sub DESTROY {
         print Dumper $executor->[EXECUTOR_AFFECTED_ROW_COUNTS];
         say("Explain items:");
         print Dumper $executor->[EXECUTOR_EXPLAIN_COUNTS];
-        say("Errors:");
-        print Dumper $executor->[EXECUTOR_ERROR_COUNTS];
 #        say("Rare EXPLAIN items:");
 #        print Dumper $executor->[EXECUTOR_EXPLAIN_QUERIES];
         say("Statuses: ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
     }
+    say("Errors:");
+    print Dumper $executor->[EXECUTOR_ERROR_COUNTS];
 }
 
 sub currentSchema {
@@ -1298,7 +1298,7 @@ sub getSchemaMetaData {
     }
 
     my $res = $self->dbh()->selectall_arrayref($query);
-    croak("FATAL ERROR: Failed to retrieve schema metadata") unless $res;
+    croak("FATAL ERROR: Failed to retrieve schema metadata: " . $self->dbh()->err . " " . $self->dbh()->errstr) unless $res;
     say("Finished reading metadata from the database: $#$res entries");
     $self->dbh()->do('/*!100108 SET @@max_statement_time= @@global.max_statement_time */');
 
