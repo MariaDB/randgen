@@ -1203,10 +1203,10 @@ sub DESTROY {
         print Dumper $executor->[EXECUTOR_EXPLAIN_COUNTS];
 #        say("Rare EXPLAIN items:");
 #        print Dumper $executor->[EXECUTOR_EXPLAIN_QUERIES];
-        say("Statuses: ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
     }
     say("Errors:");
     print Dumper $executor->[EXECUTOR_ERROR_COUNTS];
+    say("Statuses: ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
 }
 
 sub currentSchema {
