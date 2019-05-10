@@ -12,7 +12,7 @@ acl:
   | acl_set_password
   | acl_create_role | acl_create_role | acl_create_role
   | acl_drop_role
-  | acl_set_role | /*!100101 acl_set_default_role */
+  | /*!100005 acl_set_role */ | /*!100101 acl_set_default_role */
   | acl_show_grants
   # MDEV-7597 - Expiration of user passwords (10.4.3)
   | /*!100403 acl_password_expiration_variables */
@@ -39,23 +39,23 @@ acl_rename_user:
 
 acl_set_password:
     SET PASSWORD FOR acl_username = PASSWORD(acl_password)
-  | SET PASSWORD FOR acl_username = OLD_PASSWORD(acl_password)
+  | SET PASSWORD FOR acl_username = /*!!050706 OLD_PASSWORD(acl_password) */ /*!100000 OLD_PASSWORD(acl_password) */ /*!50706 PASSWORD(acl_password) */
   | SET PASSWORD FOR acl_username = acl_password_hash
   # Can't change password for the current user, it will cause troubles
   | SET PASSWORD = ''
 ;
 
 acl_create_role:
-    CREATE ROLE /*!100103 acl_if_not_exists */ acl_short_name acl_with_admin
-  | CREATE /*!100103 acl_or_replace */ ROLE acl_short_name acl_with_admin
+    CREATE /*!100005 ROLE */ /*!!100005 USER */ /*!100103 acl_if_not_exists */ acl_short_name acl_with_admin
+  | CREATE /*!100103 acl_or_replace */ /*!100005 ROLE */ /*!!100005 USER */ acl_short_name acl_with_admin
 ;
 
 acl_drop_role:
-  DROP ROLE /*!100103 acl_if_exists */ acl_role_list
+  DROP /*!100005 ROLE */ /*!!100005 USER */ /*!100103 acl_if_exists */ acl_role_list
 ;
 
 acl_with_admin:
-  | | | WITH ADMIN acl_role_admin
+  | | | /*!100005 WITH ADMIN acl_role_admin */
 ;
 
 acl_role_admin:
@@ -315,7 +315,7 @@ acl_password_hash:
 ;
 
 acl_via_with:
-  VIA | WITH
+  /*!100000 VIA */ /*!!100000 WITH */ | WITH
 ;
 
 acl_authentication_plugin:
@@ -323,7 +323,7 @@ acl_authentication_plugin:
 ;
 
 acl_using_as:
-  USING | AS
+  /*!100000 USING */ /*!!100000 AS */ | AS
 ;
 
 acl_authentication_string:
