@@ -310,9 +310,24 @@ sub normalizeGrants {
 
   if ($old_server->versionNumeric lt '1003' and $new_server->versionNumeric ge '1003') {
     foreach my $u (keys %$old_grants) {
-      if ($old_grants->{$u} =~ s/(SUPER[ ,\w]*?) ON \*\.\*/$1, DELETE VERSIONING ROWS ON \*\.\*/) {
-        say("Adjusted old grants for $u to have DELETE VERSIONING ROWS: $old_grants->{$u}");
+      if ($old_grants->{$u} =~ s/(SUPER[ ,\w]*?) ON \*\.\*/$1, DELETE HISTORY ON \*\.\*/) {
+        say("Adjusted old grants for $u to have DELETE HISTORY: $old_grants->{$u}");
       }
+    }
+  }
+
+  # MDEV-17655: In 10.3.15+ and 10.4.5+ DELETE VERSIONING ROWS has become DELETE HISTORY.
+  # It's not enough to adjust super accounts above, as non-super ones could have it as well.
+  # We will just blindly rename it everywhere
+
+  foreach my $u (keys %$old_grants) {
+    if ($old_grants->{$u} =~ s/DELETE VERSIONING ROWS/DELETE HISTORY/g) {
+      say("Adjusted old grants for $u to have DELETE HISTORY instead of DELETE VERSIONING ROWS: $old_grants->{$u}");
+    }
+  }
+  foreach my $u (keys %$new_grants) {
+    if ($new_grants->{$u} =~ s/DELETE VERSIONING ROWS/DELETE HISTORY/g) {
+      say("Adjusted new grants for $u to have DELETE HISTORY instead of DELETE VERSIONING ROWS: $new_grants->{$u}");
     }
   }
 
@@ -376,7 +391,12 @@ sub collectAclData {
   my %plugin_users_with_passwords= ();
   if ($server->versionNumeric lt '100403')
   {
-    $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`'), password FROM mysql.user WHERE plugin != '' AND password != '' AND authentication_string = ''";
+    # MySQL 5.7+ doesn't have `password` field
+    if ($server->versionNumeric ge '0507') {
+      $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user WHERE plugin != '' AND authentication_string = ''";
+    } else {
+      $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`'), password FROM mysql.user WHERE plugin != '' AND password != '' AND authentication_string = ''";
+    }
 
     my $plugin_users_with_passwords= $dbh->selectall_arrayref($query);
     if ($dbh->err() > 0) {
