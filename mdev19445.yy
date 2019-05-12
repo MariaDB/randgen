@@ -1,0 +1,4 @@
+query:
+    CREATE TABLE t1 (c1 INT, c2 TINYTEXT, PRIMARY KEY (c1), FULLTEXT KEY (c2)) ENGINE=InnoDB |
+    SET GLOBAL innodb_ft_aux_table='test/t1' |
+    SELECT * FROM INFORMATION_SCHEMA.INNODB_FT_CONFIG;
