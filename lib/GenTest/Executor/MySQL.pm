@@ -785,7 +785,12 @@ sub init {
 #        $dbh->{'mysql_use_result'} = 0;
     }
 
-    $executor->setConnectionId($dbh->selectrow_arrayref("SELECT CONNECTION_ID()")->[0]);
+    my $cidref= $dbh->selectrow_arrayref("SELECT CONNECTION_ID()");
+    if ($dbh->err) {
+        sayError("Couldn't get connection ID: " . $dbh->err() . " (" . $dbh->errstr() .")");
+    }
+
+    $executor->setConnectionId($cidref->[0]);
     $executor->setCurrentUser($dbh->selectrow_arrayref("SELECT CURRENT_USER()")->[0]);
 
     say("Executor initialized. id: ".$executor->id()."; default schema: ".$executor->defaultSchema()."; connection ID: ".$executor->connectionId()) if rqg_debug();
