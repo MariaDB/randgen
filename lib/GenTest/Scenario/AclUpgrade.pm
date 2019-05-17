@@ -392,7 +392,7 @@ sub collectAclData {
   if ($server->versionNumeric lt '100403')
   {
     # MySQL 5.7+ doesn't have `password` field
-    if ($server->versionNumeric ge '0507') {
+    if ($server->versionNumeric ge '0507' and $server->versionNumeric lt '1000') {
       $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user WHERE plugin != '' AND authentication_string = ''";
     } else {
       $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`'), password FROM mysql.user WHERE plugin != '' AND password != '' AND authentication_string = ''";
