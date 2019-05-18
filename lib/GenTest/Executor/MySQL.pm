@@ -1306,8 +1306,11 @@ sub getSchemaMetaData {
     }
 
     my $res = $self->dbh()->selectall_arrayref($query);
-    croak("FATAL ERROR: Failed to retrieve schema metadata: " . $self->dbh()->err . " " . $self->dbh()->errstr) unless $res;
-    say("Finished reading metadata from the database: $#$res entries");
+    if ($res) {
+        say("Finished reading metadata from the database: $#$res entries");
+    } else {
+        sayError("Failed to retrieve schema metadata: " . $self->dbh()->err . " " . $self->dbh()->errstr);
+    }
     $self->dbh()->do('/*!100108 SET @@max_statement_time= @@global.max_statement_time */');
 
     return $res;

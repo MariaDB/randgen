@@ -333,7 +333,14 @@ sub cacheMetaData {
 
         # The parameter serves as "redo" flag for getSchemaMetaData
         my $metadata= $self->getSchemaMetaData($global_schema_cache{$self->dsn()});
-        croak("FATAL ERROR: failed to cache schema metadata") unless $metadata;
+        if (! $metadata) {
+            if ($redo) {
+                sayError("Failed to re-cache schema metadata");
+                return;
+            } else {
+                croak("FATAL ERROR: failed to cache schema metadata");
+            }
+        }
 
         foreach my $row (@$metadata) {
             my ($schema, $table, $type, $col, $key, $metatype, $realtype, $maxlength) = @$row;
