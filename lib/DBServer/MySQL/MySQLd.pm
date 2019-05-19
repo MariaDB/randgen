@@ -976,7 +976,11 @@ sub checkDatabaseIntegrity {
           foreach my $m (keys %msg) {
             say("For table `$database`.`$table` : $m : $msg{$m}");
             if ($m eq 'status' and $msg{$m} ne 'OK' or $m eq 'Error') {
-              $status= DBSTATUS_FAILURE;
+              if ($msg{$m} =~ /Unable to open underlying table which is differently defined or of non-MyISAM type or doesn't exist/) {
+                say("... ignoring inconsistency for the MERGE table");
+              } else {
+                $status= DBSTATUS_FAILURE;
+              }
             }
           }
         }
