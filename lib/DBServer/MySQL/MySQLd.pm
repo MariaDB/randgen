@@ -515,7 +515,7 @@ sub startServer {
             Time::HiRes::sleep($wait_time);
             $errlog_update= ( (stat($errorlog))[9] > $errlog_last_update_time);
             if ($errlog_update) {
-              say("Pid file $self->pidfile does not exist and timeout hasn't passed yet, but the error log has already been updated");
+              say("Pid file " . $self->pidfile . " does not exist and timeout hasn't passed yet, but the error log has already been updated");
               last;
             } else {
               say("Pid file hasn't been found yet, waiting");
