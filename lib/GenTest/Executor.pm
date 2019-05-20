@@ -349,6 +349,13 @@ sub cacheMetaData {
             $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
             $meta->{$schema}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
         }
+
+        # Now merge old meta into the new one on the schema level
+        if (exists $global_schema_cache{$self->dsn()}) {
+            foreach my $s (keys %{$global_schema_cache{$self->dsn()}}) {
+                $meta->{$s}= $global_schema_cache{$self->dsn()}->{$s} if not exists $meta->{$s};
+            }
+        }
         $global_schema_cache{$self->dsn()} = $meta;
     } else {
         $meta = $global_schema_cache{$self->dsn()};
