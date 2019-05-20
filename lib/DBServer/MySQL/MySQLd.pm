@@ -948,6 +948,7 @@ sub checkDatabaseIntegrity {
   say("Testing database integrity");
   my $dbh= $self->dbh;
   my $status= DBSTATUS_OK;
+  my $foreign_key_check_workaround= 0;
 
   my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
   foreach my $database (@$databases) {
@@ -978,6 +979,10 @@ sub checkDatabaseIntegrity {
             if ($m eq 'status' and $msg{$m} ne 'OK' or $m eq 'Error') {
               if ($msg{$m} =~ /Unable to open underlying table which is differently defined or of non-MyISAM type or doesn't exist/) {
                 say("... ignoring inconsistency for the MERGE table");
+              } elsif (! $foreign_key_check_workaround and $msg{$m} =~ /Table .* doesn't exist in engine/) {
+                say("... possible foreign key check problem. Trying to turn off FOREIGN_KEY_CHECKS and retry");
+                $dbh->do("SET FOREIGN_KEY_CHECKS= 0");
+                redo;
               } else {
                 $status= DBSTATUS_FAILURE;
               }
@@ -988,6 +993,9 @@ sub checkDatabaseIntegrity {
   }
   if ($status > DBSTATUS_OK) {
     sayError("Database integrity check failed");
+  }
+  if ($foreign_key_check_workaround) {
+    $dbh->do("SET FOREIGN_KEY_CHECKS= DEFAULT");
   }
   return $status;
 }
