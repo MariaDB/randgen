@@ -1081,10 +1081,10 @@ sub checkErrorLogForErrors {
     # Crashes
     if (
            $_ =~ /Assertion\W/sio
-        or $_ =~ /got signal/sio
+        or $_ =~ /got\s+signal/sio
         or $_ =~ /segmentation fault/sio
         or $_ =~ /segfault/sio
-        or $_ =~ /exception/sio
+        or $_ =~ /got\s+exception/sio
     ) {
       say("------") unless $count++;
       say($_);
