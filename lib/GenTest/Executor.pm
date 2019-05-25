@@ -366,7 +366,14 @@ sub cacheMetaData {
     my $coll = {};
 
     my $metadata= $self->getCollationMetaData();
-    croak("FATAL ERROR: failed to cache collation metadata") unless $metadata;
+    if (! $metadata) {
+        if ($redo) {
+            sayError("Failed to re-cache collation metadata");
+            return;
+        } else {
+            croak("FATAL ERROR: failed to cache collation metadata");
+        }
+    }
     foreach my $row (@$metadata) {
         my ($collation, $charset) = @$row;
         $coll->{$collation} = $charset;
