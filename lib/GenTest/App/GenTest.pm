@@ -736,9 +736,9 @@ sub initValidators {
         # we don't want to compare results after each query.
 
         unless ($self->config->property('multi-master')) {
-            if ($self->config->dsn->[2] ne '') {
+            if ($self->config->dsn->[3] ne '') {
                 push @{$self->config->validators}, 'ResultsetComparator3';
-            } elsif ($self->config->dsn->[1] ne '') {
+            } elsif ($self->config->dsn->[2] ne '') {
                 push @{$self->config->validators}, 'ResultsetComparator';
             }
         }        
