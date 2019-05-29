@@ -986,8 +986,11 @@ sub execute {
             # If server is still connectable, it is not a real crash, but most likely a KILL query
 
             if (defined $dbh) {
+                say("Executor::MySQL::execute: Successfully reconnected after getting " . status2text($err_type));
                 $err_type = STATUS_SEMANTIC_ERROR;
                 $executor->setDbh($dbh);
+            } else {
+                sayError("Executor::MySQL::execute: Failed to reconnect after getting " . status2text($err_type));
             }
 
             my $query_for_print= shorten_message($query);
