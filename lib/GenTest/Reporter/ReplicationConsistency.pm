@@ -53,6 +53,8 @@ sub report {
 
 	return STATUS_REPLICATION_FAILURE if not defined $slave_dbh;
 
+	$slave_dbh->do("SET GLOBAL max_statement_time=0");
+	$slave_dbh->do("SET SESSION max_statement_time=0");
 	$slave_dbh->do("START SLAVE");
 
 	#
