@@ -1,3 +1,6 @@
+query_init_add:
+  { $last_sp= 'sp_'.abs($$) } ;
+
 query_add:
   sp_create_and_or_execute
 ;
