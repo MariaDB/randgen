@@ -1,7 +1,3 @@
-query_init_add:
-  CREATE PROCEDURE IF NOT EXISTS { $last_sp= 'sp_grammar' } () BEGIN END 
-;
-
 query_add:
   sp_create_and_or_execute
 ;
@@ -10,9 +6,9 @@ sp_name:
     # This one is to be dealt with only in this thread
     { $last_sp= 'sp_'.abs($$) } 
     # This one is to be dealt with concurrently
-  | { $last_sp= 'sp_grammar' }
   | { $last_sp= 'sp_grammar1' }
   | { $last_sp= 'sp_grammar2' }
+  | { $last_sp= 'sp_grammar3' }
 ;
 
 sp_create_and_or_execute:
