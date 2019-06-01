@@ -34,24 +34,24 @@ query:
 
 cache_index:
 	CACHE INDEX table_name IN cache_name |
-	CACHE INDEX _letter /*!50400 PARTITION ( ALL ) */ IN cache_name |
-	CACHE INDEX _letter /*!50400 PARTITION ( partition_name_list ) */ IN cache_name ;
+	CACHE INDEX _letter PARTITION ( ALL ) IN cache_name |
+	CACHE INDEX _letter PARTITION ( partition_name_list ) IN cache_name ;
 
 load_index:
 	LOAD INDEX INTO CACHE table_name ignore_leaves |
-	LOAD INDEX INTO CACHE _letter /*!50400 PARTITION ( ALL ) */ ignore_leaves |
-	LOAD INDEX INTO CACHE _letter /*!50400 PARTITION ( partition_name_list ) */ ignore_leaves ;
+	LOAD INDEX INTO CACHE _letter PARTITION ( ALL ) ignore_leaves |
+	LOAD INDEX INTO CACHE _letter PARTITION ( partition_name_list ) ignore_leaves ;
 
 ignore_leaves:
 	| IGNORE LEAVES ;
 
 set_key_buffer_size:
-	/*!50400 SET GLOBAL cache_name . key_buffer_size = _tinyint_unsigned  */ |
-	/*!50400 SET GLOBAL cache_name . key_buffer_size = _smallint_unsigned */ |
-	/*!50400 SET GLOBAL cache_name . key_buffer_size = _mediumint_unsigned */ ;
+	SET GLOBAL cache_name . key_buffer_size = _tinyint_unsigned  |
+	SET GLOBAL cache_name . key_buffer_size = _smallint_unsigned |
+	SET GLOBAL cache_name . key_buffer_size = _mediumint_unsigned ;
 
 set_key_cache_block_size:
-	/*!50400 SET GLOBAL key_cache_block_size = key_cache_block_size_enum */ ;
+	SET GLOBAL key_cache_block_size = key_cache_block_size_enum ;
 
 key_cache_block_size_enum:
 	512 | 1024 | 2048 | 4096 | 8192 | 16384 ;
@@ -60,7 +60,7 @@ cache_name:
 	c1 | c2 | c3 | c4;
 
 select_explain:
-	EXPLAIN /*!50100 PARTITIONS */ SELECT _field FROM table_name where ;
+	EXPLAIN PARTITIONS SELECT _field FROM table_name where ;
 
 select:
 	SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM table_name where ;
@@ -105,13 +105,13 @@ create:
 		`col_int_nokey` INTEGER,
 		`col_int_key` INTEGER NOT NULL,
 		KEY (`col_int_key`)
-	) ENGINE = engine /*!50100 partition */ select ;
+	) ENGINE = engine partition select ;
 
 drop:
 	DROP TABLE IF EXISTS _letter ;
 
 alter:
-	/*!50400 ALTER TABLE _letter alter_operation */;
+	ALTER TABLE _letter alter_operation;
 
 alter_operation:
 	ENGINE = engine |
