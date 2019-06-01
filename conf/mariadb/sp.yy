@@ -1,5 +1,5 @@
 query_init_add:
-  { $last_sp= 'sp_'.abs($$) } ;
+  { $last_sp= 'sp_'.abs($$) ; '' } ;
 
 query_add:
   sp_create_and_or_execute
@@ -16,8 +16,8 @@ sp_name:
 
 sp_create_and_or_execute:
     sp_drop ; sp_create
-  | sp_create_or_replace
-  | sp_call | sp_call | sp_call | sp_call
+  | sp_create_or_replace | sp_create_or_replace
+  | sp_call | sp_call | sp_call | sp_call | sp_call | sp_call | sp_call
 ;
 
 sp_drop:
@@ -27,6 +27,7 @@ sp_drop:
 sp_create:
   CREATE PROCEDURE IF NOT EXISTS sp_name () BEGIN sp_body ; END
 ;
+
 sp_create_or_replace:
   CREATE OR REPLACE PROCEDURE sp_name () BEGIN sp_body ; END
 ;
