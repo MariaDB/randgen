@@ -357,3 +357,6 @@ _basics_format_json_50pct:
 
 _basics_explain_analyze_5pct:
   | | | | | | | | | | | | | | | | | | | _basics_explain_analyze ;
+
+_basics_off_on:
+    OFF | ON ;
