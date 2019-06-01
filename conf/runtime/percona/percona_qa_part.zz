@@ -27,7 +27,7 @@ $tables = {
 
 $fields = {
   types => ['varchar','char','int','blob','text','date'],
-  indexes => [undef,'unique','key'],
+  indexes => [undef,'key'],
   null => [undef,'not null'],
   default => [undef,'default null'],
   sign => [undef, 'unsigned'],
