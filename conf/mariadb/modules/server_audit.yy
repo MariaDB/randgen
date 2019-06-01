@@ -27,11 +27,11 @@ plugin_server_audit_var:
 # Variables disabled due to MDEV-19665
 #    SERVER_AUDIT_EXCL_USERS = plugin_server_audit_users |
 #    SERVER_AUDIT_FILE_PATH = plugin_server_audit_file |
-#    SERVER_AUDIT_FILE_ROTATE_NOW = plugin_server_audit_mostly_on |
+#    SERVER_AUDIT_FILE_ROTATE_NOW = _basics_10pct_off_90pct_on |
 #    SERVER_AUDIT_FILE_ROTATE_SIZE = { $prng->int(100,1024*1024*1024) } |
 #    SERVER_AUDIT_FILE_ROTATIONS = { $prng->int(0,999) } |
 #    SERVER_AUDIT_INCL_USERS = plugin_server_audit_users |
-#    SERVER_AUDIT_LOGGING = plugin_server_audit_mostly_on |
+#    SERVER_AUDIT_LOGGING = _basics_10pct_off_90pct_on |
 #    SERVER_AUDIT_MODE = plugin_server_audit_mostly_0 |
 #    SERVER_AUDIT_OUTPUT_TYPE = plugin_server_audit_output |
     SERVER_AUDIT_QUERY_LOG_LIMIT = { $prng->int(0,1024*1024*1024) } |
@@ -53,9 +53,6 @@ plugin_server_audit_users:
 
 plugin_server_audit_file:
     'server_audit.log' | 'audit.log' ;
-
-plugin_server_audit_mostly_on:
-    ON | ON | ON | ON | ON | ON | ON | ON | ON | OFF ;
 
 plugin_server_audit_mostly_0:
     0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 ;

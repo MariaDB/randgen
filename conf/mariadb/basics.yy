@@ -360,3 +360,6 @@ _basics_explain_analyze_5pct:
 
 _basics_off_on:
     OFF | ON ;
+
+_basics_10pct_off_90pct_on:
+    OFF | ON | ON | ON | ON | ON | ON | ON | ON | ON ;
