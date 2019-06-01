@@ -33,6 +33,7 @@ sql_mode_value:
 # TRADITIONAL is disabled due to MDEV-18042
 # MAXDB is disabled due to MDEV-18864
 # EMPTY_STRING_IS_NULL is disabled due to MDEV-18918
+# ORACLE mode invokes the whole different syntax, it needs to be tested separately
 sql_mode_list:
   { @modes= qw(
       ALLOW_INVALID_DATES
@@ -58,7 +59,6 @@ sql_mode_list:
       NO_UNSIGNED_SUBTRACTION
       NO_ZERO_IN_DATE
       ONLY_FULL_GROUP_BY
-      ORACLE
       PAD_CHAR_TO_FULL_LENGTH
       PIPES_AS_CONCAT
       POSTGRESQL

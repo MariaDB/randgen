@@ -77,7 +77,7 @@ app_periods_query:
   app_periods_insert | app_periods_insert | app_periods_insert | app_periods_insert | app_periods_insert | app_periods_insert |
   app_periods_delete_data |
   app_periods_triggers |
-  app_periods_set_sql_mode |
+#  app_periods_set_sql_mode |
   app_periods_create_view
 ;
 
