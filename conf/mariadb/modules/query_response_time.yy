@@ -36,6 +36,6 @@ plugin_query_response_vars:
 plugin_query_response_var:
     QUERY_RESPONSE_TIME_FLUSH = _basics_off_on |
     QUERY_RESPONSE_TIME_RANGE_BASE = { $prng->int(2,100) } |
-    QUERY_RESPONSE_TIME_EXEC_TIME_DEBUG = { $prng->int(0,10000000000) } |
+    QUERY_RESPONSE_TIME_EXEC_TIME_DEBUG = { $prng->int(0,100000000) } |
     QUERY_RESPONSE_TIME_STATS = _basics_10pct_off_90pct_on
 ;
