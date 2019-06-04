@@ -56,6 +56,25 @@ sub validate {
 
     return STATUS_WONT_HANDLE if $garbage_in and $results->[0]->status != STATUS_SYNTAX_ERROR and $results->[1]->status != STATUS_SYNTAX_ERROR;
 
+    # Other misc exceptions
+
+    # 10.4x differs from previous versions upon
+    # CREATE TABLE IF NOT EXISTS t AS SELECT .. FROM x
+    # when t exists and x doesn't. Older versions would return ER_NO_SUCH_TABLE for x,
+    # but 10.4+ succeeds with a warning that t already exists
+
+    return STATUS_OK if ( ( $results->[0]->err == 1146
+                            and $executors->[0]->versionNumeric lt '1004'
+                            and $results->[1]->status == STATUS_OK
+                            and $executors->[1]->versionNumeric ge '1004'
+                          ) or
+                          ( $results->[1]->err == 1146
+                            and $executors->[1]->versionNumeric lt '1004'
+                            and $results->[0]->status == STATUS_OK
+                            and $executors->[0]->versionNumeric ge '1004'
+                          )
+                        ) and $results->[0]->query =~ /CREATE.*IF\s+NOT\s+EXISTS/ ;
+
     # If one of the servers returns syntax error and another one doesn't,
     # it might be because the server with syntax error is of an older version,
     # and something was implemented later.
