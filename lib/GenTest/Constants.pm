@@ -39,6 +39,7 @@ require Exporter;
 	STATUS_WONT_HANDLE
 	STATUS_SKIP
 
+    STATUS_UNSUPPORTED
 	STATUS_SYNTAX_ERROR
 	STATUS_SEMANTIC_ERROR
 	STATUS_TRANSACTION_ERROR
@@ -101,6 +102,7 @@ use constant STATUS_EOF				=> 4;	# A module requested that the test is terminate
 use constant STATUS_WONT_HANDLE			=> 5;	# A module, e.g. a Validator refuses to handle certain query
 use constant STATUS_SKIP			=> 6;	# A Filter specifies that the query should not be processed further
 
+use constant STATUS_UNSUPPORTED         => 20; # Error codes caused by certain functionality recognized as unsupported (NOT syntax errors)
 use constant STATUS_SYNTAX_ERROR		=> 21;
 use constant STATUS_SEMANTIC_ERROR		=> 22;	# Errors caused by the randomness of the test, e.g. dropping a non-existing table
 use constant STATUS_TRANSACTION_ERROR		=> 23;	# Lock wait timeouts, deadlocks, duplicate keys, etc.

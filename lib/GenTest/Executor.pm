@@ -67,6 +67,9 @@ use constant EXECUTOR_HOST          => 19;
 use constant EXECUTOR_PORT          => 20;
 use constant EXECUTOR_END_TIME	    => 21;
 use constant EXECUTOR_CURRENT_USER	    => 22;
+use constant EXECUTOR_SERVER_VERSION    => 23;
+use constant EXECUTOR_SERVER_VERSION_MAJOR => 24;
+use constant EXECUTOR_SERVER_VERSION_NUMERIC => 25;
 
 use constant FETCH_METHOD_AUTO		=> 0;
 use constant FETCH_METHOD_STORE_RESULT	=> 1;
@@ -223,6 +226,31 @@ sub flags {
 sub setFlags {
 	$_[0]->[EXECUTOR_FLAGS] = $_[1];
 }
+
+sub setServerVersion {
+    $_[0]->[EXECUTOR_SERVER_VERSION] = $_[1];
+}
+
+sub serverVersion {
+    return $_[0]->[EXECUTOR_SERVER_VERSION];
+}
+
+sub setServerMajorVersion {
+    $_[0]->[EXECUTOR_SERVER_VERSION_MAJOR] = $_[1];
+}
+
+sub serverMajorVersion {
+    return $_[0]->[EXECUTOR_SERVER_VERSION_MAJOR];
+}
+
+sub setServerNumericVersion {
+    $_[0]->[EXECUTOR_SERVER_VERSION_NUMERIC] = $_[1];
+}
+
+sub serverNumericVersion {
+    return $_[0]->[EXECUTOR_SERVER_VERSION_NUMERIC];
+}
+
 
 sub type {
 	my ($self) = @_;
