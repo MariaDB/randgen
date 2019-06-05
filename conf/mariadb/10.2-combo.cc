@@ -1,5 +1,5 @@
 our $grammars;
-require 'conf/mariadb/combo.grammars';
+require 'conf/mariadb/include/combo.grammars';
 
 # XA removed due to the amount of bugs
 #    --redefine=conf/mariadb/xa.yy
