@@ -84,6 +84,7 @@ my $thread_id = 0;
 my $epochcreadir;
 my $mtrbt = defined $ENV{MTR_BUILD_THREAD}?$ENV{MTR_BUILD_THREAD}:300;
 my $discard_logs = 0;
+my $new= 1;
 
 my $opt_result = GetOptions(
 	'config=s' => \$config_file,
@@ -109,7 +110,7 @@ my $opt_result = GetOptions(
     'debug' => \$debug,
     'no-log' => \$noLog,
     'parallel=i' => \$threads,
-    'new' => \$new,
+    'new=i' => \$new,
     'servers=i' => \$servers,
     'no-shuffle' => \$noshuffle,
     'clean' => \$clean,
@@ -295,8 +296,8 @@ sub doCombination {
         (defined $ENV{RQG_HOME} ? $ENV{RQG_HOME}."/" : "" ).
         "$runall $comb_str ";
 
-	$command .= " --queries=100000000" if $comb_str !~ /--queries=/;
-	$command .= " --mask=$mask" if $comb_str !~ /-mask/;
+#	$command .= " --queries=100000000" if $comb_str !~ /--queries=/;
+#	$command .= " --mask=$mask" if $comb_str !~ /-mask/;
 	$command .= " --mtr-build-thread=".($mtrbt+($thread_id-1)*2);
 	$command .= " --duration=$duration" if $duration ne '';
     foreach my $s (1..$servers) {
