@@ -1,0 +1,11 @@
+# RQG_HOME must be defined in the environment. But it has to be defined anyway,
+# or the include file won't be found
+
+$innodb_pagesizes = 
+  [
+    '--mysqld=--innodb-page-size=4K',
+    '--mysqld=--innodb-page-size=8K',
+    '--mysqld=--innodb-page-size=16K',
+    '--mysqld=--innodb-page-size=32K',
+    '--mysqld=--innodb-page-size=64K'
+  ];

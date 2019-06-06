@@ -1,0 +1,8 @@
+# RQG_HOME must be defined in the environment. But it has to be defined anyway,
+# or the include file won't be found
+
+$innodb_compression = 
+  [
+    '--mysqld=--innodb-compression-algorithm=none',
+    '--mysqld=--innodb-compression-algorithm=zlib',
+  ];
