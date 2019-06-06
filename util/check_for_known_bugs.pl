@@ -23,7 +23,13 @@ my @expected_files= glob "@ARGV";
 my @files;
 map { push @files, $_ if -e $_ } @expected_files;
 
-if (! scalar @files) {
+if (scalar @last_choice_files) {
+  my @last_files= glob "@last_choice_files";
+  @last_choice_files= ();
+  map { push @last_choice_files, $_ if -e $_ } @last_files;
+}
+
+if (! scalar @files and ! scalar @last_choice_files) {
   print "No files found to check for signatures\n";
   exit 0;
 }
@@ -39,16 +45,13 @@ if ($ENV{TRAVIS} eq 'true') {
 } elsif (defined $ENV{AZURE_HTTP_USER_AGENT}) {
   $ci= 'Azure';
   $page_url= "'https://dev.azure.com/elenst/MariaDB tests/_build/results?buildId=".$ENV{BUILD_BUILDID}."'";
+} elsif (defined $ENV{LOCAL_CI}) {
+    $ci= 'Local-'.$ENV{LOCAL_CI};
 }
 my $test_result= (defined $ENV{TEST_RESULT} and $ENV{TEST_RESULT} !~ /\s/) ? $ENV{TEST_RESULT} : 'N/A';
 my $server_branch= $ENV{SERVER_BRANCH} || 'N/A';
-my $test_line= $ENV{SYSTEM_DEFINITIONNAME} || $ENV{TRAVIS_BRANCH} || 'N/A';
+my $test_line= $ENV{SYSTEM_DEFINITIONNAME} || $ENV{TRAVIS_BRANCH} || $ENV{TEST_ALIAS} || 'N/A';
 
-if (scalar @last_choice_files) {
-  my @last_files= glob "@last_choice_files";
-  @last_choice_files= ();
-  map { push @last_choice_files, $_ if -e $_ } @last_files;
-}
 my %found_mdevs= ();
 my %fixed_mdevs= ();
 my %draft_mdevs= ();
