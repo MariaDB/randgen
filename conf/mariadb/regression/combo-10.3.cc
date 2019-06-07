@@ -11,7 +11,7 @@ $combinations = [
   --seed=time
   --reporters=Backtrace,ErrorLog,Deadlock
   --validators=TransformerNoComparator
-  --transformers=ExecuteAsCTE,ExecuteAsExecuteImmediate,ExecuteAsDeleteReturning,ExecuteAsInsertSelect,ExecuteAsUnion,ExecuteAsUpdateDelete,ExecuteAsView,ExecuteAsPreparedTwice
+  --transformers=ExecuteAsCTE,ExecuteAsExecuteImmediate,ExecuteAsDeleteReturning,ExecuteAsInsertSelect,ExecuteAsUnion,ExecuteAsUpdateDelete,ExecuteAsView,ExecuteAsPreparedTwice,ExecuteAsIntersect,ExecuteAsExcept
   --views
   --filter=conf/mariadb/10.4-combo-filter.ff
   --redefine=conf/mariadb/bulk_insert.yy
@@ -21,6 +21,8 @@ $combinations = [
   --redefine=conf/mariadb/modules/foreign_keys.yy
   --redefine=conf/mariadb/modules/admin.yy
   --redefine=conf/mariadb/modules/sql_mode.yy
+  --redefine=conf/mariadb/versioning.yy
+  --redefine=conf/mariadb/sequences.yy
   --mysqld=--server-id=111
   --mysqld=--log_output=FILE
   --mysqld=--max-statement-time=20
