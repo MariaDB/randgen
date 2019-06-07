@@ -37,8 +37,8 @@ sub transform {
 	# We remove LIMIT/OFFSET if present in the (outer) query, because we are 
 	# using LIMIT 0 in some of the transformed queries.
 	my $orig_query_zero_limit = $orig_query;
-	$orig_query_zero_limit =~ s{LIMIT\s+\d+(?:\s+OFFSET\s+\d+)?}{LIMIT 0}sio;
-	$orig_query_zero_limit =~ s{(FOR\s+UPDATE|LOCK\s+IN\s+(?:SHARE|EXCLUSIVE)\sMODE)\s+LIMIT 0}{LIMIT 0 $1}sio;
+	$orig_query_zero_limit =~ s{LIMIT\s+\d+(?:\s+OFFSET\s+\d+)?}{}sio;
+	$orig_query_zero_limit =~ s{(FOR\s+UPDATE|LOCK\s+IN\s+(?:SHARE|EXCLUSIVE)\sMODE)}{LIMIT 0 $1}sio;
   if (not $orig_query_zero_limit =~ /LIMIT 0/) {
     $orig_query_zero_limit.= ' LIMIT 0';
   }
