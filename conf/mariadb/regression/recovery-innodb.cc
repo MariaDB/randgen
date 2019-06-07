@@ -15,6 +15,7 @@ $combinations = [
   --gendata=conf/mariadb/innodb_upgrade.zz
   --gendata=conf/mariadb/innodb_upgrade_compression.zz
   --gendata-advanced
+  --reporters=Backtrace,ErrorLog,Deadlock
   --mysqld=--server-id=111
   --mysqld=--log_output=FILE
   --mysqld=--max-statement-time=20

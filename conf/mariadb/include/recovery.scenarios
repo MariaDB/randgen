@@ -3,6 +3,6 @@
 
 $recovery_scenarios = 
   [
-    '--scenario=CrashUpgrade --duration=90',
-    '--scenario=UndoLogUpgrade --duration=200',
+    '--scenario=CrashUpgrade --duration=180',
+    '--scenario=UndoLogUpgrade --duration=300',
   ];
