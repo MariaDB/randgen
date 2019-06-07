@@ -67,6 +67,8 @@ my $res= 1;
 sub search_files_for_matches
 {
   my @files= @_;
+  return $res unless scalar(@files);
+
   seek DATA, 0, 0;
   while (<DATA>) {
     if (/^\# Weak matches/) {
