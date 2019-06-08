@@ -4,6 +4,30 @@
 # Strong matches
 ##############################################################################
 
+MDEV-19720:
+=~ Assertion \`sel->quick'
+=~ make_range_rowid_filters
+=~ JOIN::optimize_stage2
+MDEV-19720:
+=~ signal 11
+=~ st_join_table::save_explain_data
+=~ JOIN::save_explain_data
+=~ JOIN::build_explain
+MDEV-19718:
+=~ Aria engine: starting recovery
+=~ Assertion \`rownr == 0 && new_page'
+=~ _ma_apply_redo_insert_row_head_or_tail
+=~ run_redo_phase
+MDEV-19717:
+=~ AddressSanitizer: heap-use-after-free
+=~ ha_maria::info
+=~ ha_sequence::info
+=~ get_schema_tables_record
+MDEV-19716:
+=~ AddressSanitizer: use-after-poison
+=~ Query_log_event::Query_log_event
+=~ THD::log_events_and_free_tmp_shares
+=~ THD::close_temporary_tables
 MDEV-19680:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'
 =~ Field_.*::val_.*
@@ -114,8 +138,8 @@ MDEV-19595:
 =~ my_ok
 =~ mysql_alter_table|Sql_cmd_truncate_table::execute|mysqld_show_create
 MDEV-19576:
-=~ Got error 175 when executing record redo_index
-=~ Aria engine: Redo phase failed
+=~ Got error 175 when executing record redo_index|Got error 175 when executing undo undo_row_insert
+=~ Aria engine: Redo phase failed|Aria engine: Undo phase failed
 =~ Aria recovery failed
 MDEV-19536:
 =~ AddressSanitizer: heap-use-after-free|signal 11|Invalid read of size
@@ -1092,7 +1116,7 @@ MDEV-15878:
 =~ Assertion \`table->file->stats\.records > 0 \|\| error'
 =~ join_read_const_table
 =~ JOIN::optimize
-=~ mysql_select|mysql_update
+=~ mysql_select|mysql_update|mysql_delete
 MDEV-15572:
 =~ signal 11|AddressSanitizer: SEGV
 =~ ha_maria::end_bulk_insert|ha_maria::extra
@@ -1133,6 +1157,14 @@ MDEV-15257:
 =~ Diagnostics_area::set_ok_status|Diagnostics_area::set_error_status
 =~ THD::raise_condition|my_ok
 =~ mysql_prepare_create_table|mysql_alter_table
+MDEV-15013:
+=~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE \|\| (prebuilt->table->no_rollback() && trx->state == TRX_STATE_NOT_STARTED)'
+=~ row_search_mvcc
+=~ READ_RECORD::read_record
+MDEV-15013:
+=~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE'
+=~ row_search_mvcc
+=~ QUICK_RANGE_SELECT::get_next_prefix
 MDEV-15011:
 =~ Server version: 10\.2|Server version: 10\.1|Server version: 10\.0|Server version: 5\.5
 =~ AddressSanitizer: heap-buffer-overflow|signal 11
@@ -1700,8 +1732,6 @@ MDEV-15164:
 =~ ikey_\.type == kTypeValue
 MDEV-15161:
 =~ in get_addon_fields
-MDEV-15013:
-=~ trx->state == TRX_STATE_NOT_STARTED
 MDEV-15011:
 =~ Server version: 10\.2|Server version: 10\.1|Server version: 10\.0|Server version: 5\.5
 =~ signal 11
