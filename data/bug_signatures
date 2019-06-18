@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-19776:
+=~ Assertion \`to_len >= 8'
+=~ convert_to_printable
+=~ String::append_semi_hex
+=~ Field::print_key_value_binary
+MDEV-19774:
+=~ Assertion \`sec\.sec() <= 0x7FFFFFFFL'
+=~ Item_func_from_unixtime::get_date
+=~ Protocol::send_result_set_row
 MDEV-19720:
 =~ Assertion \`sel->quick'
 =~ make_range_rowid_filters
@@ -246,7 +255,7 @@ MDEV-19304:
 =~ compare_record
 =~ mysql_update
 MDEV-19304:
-=~ AddressSanitizer: unknown-crash
+=~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-buffer-overflow
 =~ create_tmp_table
 =~ select_unit::create_result_table
 =~ mysql_derived_prepare
@@ -261,6 +270,7 @@ MDEV-19303:
 =~ page_cur_search_with_match_bytes
 =~ rr_from_pointers
 MDEV-19303:
+=~ File too short; Expected more data in file
 =~ Conditional jump or move depends on uninitialised value
 =~ maria_rrnd
 =~ ha_sequence::rnd_pos
@@ -579,7 +589,7 @@ MDEV-18550:
 =~ fil_node_open_file
 =~ xb_load_single_table_tablespace
 MDEV-18546:
-=~ AddressSanitizer: heap-use-after-free
+=~ AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow
 =~ innobase_get_computed_value
 =~ row_vers_build_clust_v_col
 MDEV-18500:
@@ -890,10 +900,11 @@ MDEV-17844:
 =~ rec_offs_validate
 =~ page_zip_write_trx_id_and_roll_ptr
 =~ row_undo
+# The alternative is due to the broken stack trace
 MDEV-17843:
 =~ Assertion \`page_rec_is_leaf(rec)'
 =~ lock_rec_queue_validate
-=~ innodb_show_status
+=~ innodb_show_status|SHOW ENGINE INNODB STATUS
 MDEV-17842:
 =~ Assertion \`((copy & 0x00000003) == 0x02)'
 =~ pfs_lock::allocated_to_free
@@ -918,9 +929,10 @@ MDEV-17636:
 =~ Assertion \`pagecache->block_root[i]\.status == 0'
 =~ check_pagecache_is_cleaned_up
 =~ end_pagecache
+# Alternative is due to the broken stack trace
 MDEV-17627:
 =~ Assertion \`inited==RND'
-=~ handler::ha_rnd_end
+=~ handler::ha_rnd_end|translog_advance_pointer
 =~ handler::ha_rnd_init_with_error|handler::read_first_row
 MDEV-17622:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
@@ -1446,6 +1458,11 @@ TODO-842:
 =~ Assertion \`update->n_fields < ulint(table->n_cols + table->n_v_cols)'
 =~ upd_node_t::make_versioned_helper
 =~ TABLE::delete_row
+TODO-842:
+=~ AddressSanitizer: SEGV on unknown address
+=~ extra_cb
+=~ ha_partition::loop_partitions
+=~ ha_partition::extra
 
 ##############################################################################
 # Weak matches
@@ -1732,6 +1749,8 @@ MDEV-15164:
 =~ ikey_\.type == kTypeValue
 MDEV-15161:
 =~ in get_addon_fields
+MDEV-15013:
+=~ trx->state == TRX_STATE_NOT_STARTED
 MDEV-15011:
 =~ Server version: 10\.2|Server version: 10\.1|Server version: 10\.0|Server version: 5\.5
 =~ signal 11
