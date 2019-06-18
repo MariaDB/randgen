@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MENT-132:
+=~ InnoDB: Failing assertion: opt_no_lock
+=~ backup_optimized_ddl_op_fail|backup_file_op_fail
 MDEV-19776:
 =~ Assertion \`to_len >= 8'
 =~ convert_to_printable
