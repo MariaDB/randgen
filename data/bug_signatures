@@ -4,14 +4,27 @@
 # Strong matches
 ##############################################################################
 
+MDEV-19817:
+=~ signal 11
+=~ unsafe_key_update
+=~ Multiupdate_prelocking_strategy::handle_end
+MDEV-19817:
+=~ AddressSanitizer: heap-use-after-free
+=~ Item_field::used_tables
+=~ setup_fields_with_no_wrap
+=~ Multiupdate_prelocking_strategy::handle_end
+MDEV-19814:
+=~ row_upd_del_mark_clust_rec|Assertion \`update->n_fields < ulint(table->n_cols + table->n_v_cols)'
+=~ row_upd_clust_step|upd_node_t::make_versioned_helper
+=~ row_update_for_mysql
+=~ DELETE HISTORY
 MENT-132:
 =~ InnoDB: Failing assertion: opt_no_lock
 =~ backup_optimized_ddl_op_fail|backup_file_op_fail
 MDEV-19776:
 =~ Assertion \`to_len >= 8'
 =~ convert_to_printable
-=~ String::append_semi_hex
-=~ Field::print_key_value_binary
+=~ String::append_semi_hex|replace_db_table
 MDEV-19774:
 =~ Assertion \`sec\.sec() <= 0x7FFFFFFFL'
 =~ Item_func_from_unixtime::get_date
@@ -346,11 +359,12 @@ MDEV-19194:
 =~ base_list_iterator::next_fast
 =~ fk_prepare_copy_alter_table
 =~ mysql_alter_table
+# The alternative is due to the broken stack trace
 MDEV-19190:
 =~ Assertion \`part_share->auto_inc_initialized'
 =~ ha_partition::get_auto_increment
-=~ TABLE::update_generated_fields
-=~ TABLE::period_make_insert|update_portion_of_time
+=~ TABLE::update_generated_fields|PROFILING::fill_statistics_info
+=~ TABLE::period_make_insert|update_portion_of_time|wait_for_commit::remove_from_list
 MDEV-19189:
 =~ AddressSanitizer: memcpy-param-overlap: memory ranges
 =~ fill_alter_inplace_info
@@ -865,11 +879,12 @@ MDEV-17951:
 =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_thread_tables
 =~ Query_log_event::do_apply_event
+# The alternative is due to the broken stack trace
 MDEV-17939:
 =~ Assertion \`++loop_count < 2'
 =~ trx_undo_report_rename
-=~ fts_drop_table
-=~ mysql_alter_table
+=~ fts_drop_table|my_xpath_parse_EqualityExpr
+=~ mysql_alter_table|Alter_info::vers_prohibited
 MDEV-17912:
 =~ failed to decrypt .*  rc: -1  dstlen: 0  size: .*
 =~ Got error 192 when executing record .*
@@ -936,7 +951,7 @@ MDEV-17636:
 MDEV-17627:
 =~ Assertion \`inited==RND'
 =~ handler::ha_rnd_end|translog_advance_pointer
-=~ handler::ha_rnd_init_with_error|handler::read_first_row
+=~ handler::ha_rnd_init_with_error|handler::read_first_row|handler::print_error
 MDEV-17622:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_read
@@ -1200,7 +1215,6 @@ MDEV-15011:
 MDEV-14996:
 =~ Assertion \`!thd->get_stmt_da()->is_sent() \|\| thd->killed == KILL_CONNECTION'
 =~ int ha_maria::external_lock
-=~ THD::cleanup
 =~ Status: KILL_CONNECTION|Status: KILL_SERVER
 MDEV-14894:
 =~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
@@ -1458,14 +1472,20 @@ TODO-842:
 =~ row_log_table_apply_op
 =~ mysql_alter_table
 TODO-842:
-=~ Assertion \`update->n_fields < ulint(table->n_cols + table->n_v_cols)'
-=~ upd_node_t::make_versioned_helper
-=~ TABLE::delete_row
-TODO-842:
 =~ AddressSanitizer: SEGV on unknown address
 =~ extra_cb
 =~ ha_partition::loop_partitions
 =~ ha_partition::extra
+TODO-842:
+=~ Assertion \`mutex->__data\.__owner == 0'
+=~ Datafile::Datafile
+TODO-842:
+=~ InnoDB: Failing assertion: page_offset(rec) <= page_header_get_field(page, PAGE_HEAP_TOP)
+=~ ha_innobase::prepare_inplace_alter_table
+TODO-842:
+=~ InnoDB: Database page corruption on disk or a failed file read of tablespace
+=~ InnoDB: Page may be a freshly allocated page
+=~ Page read from tablespace is corrupted
 
 ##############################################################################
 # Weak matches
