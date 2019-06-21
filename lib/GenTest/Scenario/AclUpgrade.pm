@@ -316,6 +316,16 @@ sub normalizeGrants {
     }
   }
 
+  # 5.7 doesn't show IDENTIFIED BY PASSWORD in SHOW GRANTS
+
+  if ($old_server->versionNumeric gt '0507' and $old_server->versionNumeric lt '1000' and $new_server->versionNumeric gt '1000') {
+    foreach my $u (keys %$new_grants) {
+      if ($new_grants->{$u} =~ s/ IDENTIFIED\sBY\sPASSWORD\s\'\*[0-9A-Z]+\'//) {
+        say("Adjusted new grants for $u to remove the password");
+      }
+    }
+  }
+
   # MDEV-17655: In 10.3.15+ and 10.4.5+ DELETE VERSIONING ROWS has become DELETE HISTORY.
   # It's not enough to adjust super accounts above, as non-super ones could have it as well.
   # We will just blindly rename it everywhere
@@ -424,7 +434,7 @@ sub collectAclData {
       my $def= $sth->fetchrow_arrayref;
       if (defined $plugin_users_with_passwords{$u} and $def->[0] !~ /USING /) {
         $def->[0] =~ s/IDENTIFIED VIA (\w+)/IDENTIFIED VIA $1 USING \'$plugin_users_with_passwords{$u}\'/;
-        say("Adjusted old grants for $u to show the password along with the plugin: $def->[0]");
+        say("Adjusted grants for $u to show the password along with the plugin: $def->[0]");
       }
       $grants{$u}= $def->[0];
     }
