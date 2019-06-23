@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-19840:
+=~ Assertion \`m_status == DA_ERROR'
+=~ Diagnostics_area::sql_errno
+=~ ha_rollback_trans
+=~ trans_rollback_implicit
 MDEV-19817:
 =~ signal 11
 =~ unsafe_key_update
@@ -452,7 +457,7 @@ MDEV-19020:
 =~ strxnmov
 =~ mysql_load
 MDEV-19014:
-=~ pure virtual method called|signal 11|AddressSanitizer: heap-use-after-free
+=~ pure virtual method called|signal 11|AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow
 =~ Item_direct_view_ref::fix_fields
 =~ sp_instr_stmt::exec_core
 MDEV-19011:
@@ -626,6 +631,14 @@ MDEV-18496:
 =~ mysqld: Unknown key id 1\. Can't continue
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ simple_rename_or_index_change
+MDEV-18461:
+=~ Assertion \`sure_page <= last_page'
+=~ translog_init_with_table
+=~ ha_maria_init
+MDEV-18461:
+=~ Assertion \`undo_lsn == ((LSN)1) \|\| head_length == row_pos->length'
+=~ write_block_record
+=~ _ma_update_at_original_place
 MDEV-18457:
 =~ Assertion \`(bitmap->map + (bitmap->full_head_size/6\*6)) <= full_head_end'
 =~ _ma_check_bitmap
@@ -875,7 +888,7 @@ MDEV-17974:
 MDEV-17964:
 =~ Assertion \`status == 0'
 =~ add_role_user_mapping_action
-=~ rebuild_role_grants
+=~ rebuild_role_grants|mysql_create_user
 MDEV-17951:
 =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_thread_tables
@@ -1142,7 +1155,7 @@ MDEV-15912:
 MDEV-15800:
 =~ Assertion \`next_insert_id >= auto_inc_interval_for_cur_row\.minimum()'
 =~ handler::update_auto_increment
-=~ mysql_load|select_insert::send_data
+=~ mysql_load|select_insert::send_data|mysql_update
 MDEV-15878:
 =~ Assertion \`table->file->stats\.records > 0 \|\| error'
 =~ join_read_const_table
@@ -1504,10 +1517,6 @@ MDEV-18805:
 =~ Field::is_null_in_record
 =~ Column_definition::Column_definition
 =~ Create_field::Create_field
-MDEV-18461:
-=~ sure_page <= last_page
-MDEV-18461:
-=~ head_length == row_pos->length
 MDEV-18460:
 =~ THD::create_tmp_table_def_key
 MDEV-18459:
