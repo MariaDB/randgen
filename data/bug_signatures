@@ -4,6 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-19848:
+=~ signal 11|AddressSanitizer: SEGV
+=~ check_vcol_forward_refs
+=~ Delayed_insert::get_local_table
+MENT-175:
+=~ For table \`mysql\`\.\`.*_stats\` : Error : Can't find file: '\./mysql/.*_stats\.MYI' (errno: 2 "No such file or directory")
+=~ Database appears to be corrupt after restoring the backup
 MDEV-19840:
 =~ Assertion \`m_status == DA_ERROR'
 =~ Diagnostics_area::sql_errno
