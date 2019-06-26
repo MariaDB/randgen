@@ -128,7 +128,7 @@ sub search_files_for_matches
       $pattern=~ s/(\"|\?|\!|\(|\)|\[|\]|\&|\^|\~|\+|\/)/\\$1/g;
     }
     # MDEV line starts a new signature
-    elsif(/^\s*(MDEV-\d+|TODO-\d+):\s*(.*)/) {
+    elsif(/^\s*(MDEV-\d+|MENT-\d+|TODO-\d+):\s*(.*)/) {
       my $new_mdev= $1;
       # Process the previous result, if there was any
       if ($signature_lines_found and not $signature_does_not_match) {
@@ -164,7 +164,9 @@ sub search_files_for_matches
 
 if (search_files_for_matches(@files)) {
   # No matches found in main files, add the "last choice" files to the search
-  search_files_for_matches(@files, @last_choice_files);
+  if (@last_choice_files) {
+    search_files_for_matches(@files, @last_choice_files);
+  }
   if ($res) {
     print "\n--- NO MATCHES FOUND ---------------------------\n";
     register_no_match();
