@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MENT-222:
+=~ signal 11|asan_region_is_poisoned
+=~ add_str_to_buffer
+=~ backup_log_ddl
+=~ mysql_create_like_table
 MDEV-19848:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_vcol_forward_refs
@@ -412,7 +417,7 @@ MDEV-19130:
 =~ Assertion \`next_insert_id >= auto_inc_interval_for_cur_row\.minimum()'
 =~ handler::update_auto_increment
 =~ TABLE::update_generated_fields
-=~ TABLE::period_make_insert
+=~ TABLE::period_make_insert|update_portion_of_time
 MDEV-19127:
 =~ Assertion \`row_start_field'
 =~ vers_prepare_keys
@@ -595,6 +600,8 @@ MDEV-18654:
 =~ InnoDB: Failing assertion: sym_node->table != NULL
 =~ pars_retrieve_table_def
 =~ pars_insert_statement
+MDEV-18643:
+=~ FATAL ERROR: .* failed to execute query BACKUP STAGE BLOCK_.*L: Deadlock found when trying to get lock; try restarting transaction
 MDEV-18624:
 =~ AddressSanitizer: heap-use-after-free
 =~ mysql_derived_prepare
@@ -760,6 +767,10 @@ MDEV-18207:
 MDEV-18203:
 =~ error 126 when executing undo undo_key_insert|error 126 when executing undo undo_key_delete
 =~ Aria engine: Undo phase failed
+MDEV-18200:
+=~ InnoDB: Operating system error number 2 in a file operation
+=~ InnoDB: File .*: 'open' returned OS error 71
+=~ InnoDB: Failing assertion: success
 MDEV-18166:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
 =~ Field_varstring::val_str|Field_datetimef::get_TIME|Field_blob::val_str
@@ -861,6 +872,11 @@ MDEV-18046:
 =~ my_bitmap_free
 =~ Update_rows_log_event::~Update_rows_log_event
 =~ mysql_show_binlog_events
+MDEV-18042:
+=~ signal 11|AddressSanitizer: SEGV
+=~ mysql_alter_table
+=~ Sql_cmd_alter_table::execute
+=~ Query .*: ALTER TABLE .* DATE NOT NULL
 MDEV-18018:
 =~ signal 11|AddressSanitizer: heap-use-after-free
 =~ TABLE_LIST::reinit_before_use
@@ -1556,8 +1572,6 @@ MDEV-18213:
 =~ Error: failed to execute query BACKUP STAGE BLOCK_COMMIT: Deadlock found when trying to get lock
 MDEV-18209:
 =~ Enabling keys got errno 0 on
-MDEV-18200:
-=~ InnoDB: Failing assertion: success
 MDEV-18187:
 =~ error 192 when executing record redo_index_new_page
 MDEV-18171:
@@ -1610,10 +1624,6 @@ MDEV-18046:
 =~ in inline_mysql_mutex_destroy
 MDEV-18046:
 =~ Update_rows_log_event::~Update_rows_log_event
-MDEV-18042:
-=~ signal 11|AddressSanitizer: SEGV
-=~ mysql_alter_table
-=~ Sql_cmd_alter_table::execute
 MDEV-18017:
 =~ index->to_be_dropped
 MDEV-17999:
