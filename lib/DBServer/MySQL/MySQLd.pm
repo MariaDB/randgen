@@ -982,6 +982,7 @@ sub checkDatabaseIntegrity {
               } elsif (! $foreign_key_check_workaround and $msg{$m} =~ /Table .* doesn't exist in engine/) {
                 say("... possible foreign key check problem. Trying to turn off FOREIGN_KEY_CHECKS and retry");
                 $dbh->do("SET FOREIGN_KEY_CHECKS= 0");
+                $foreign_key_check_workaround= 1;
                 redo;
               } else {
                 $status= DBSTATUS_FAILURE;
