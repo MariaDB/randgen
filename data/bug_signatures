@@ -786,13 +786,11 @@ MDEV-18156:
 =~ Assertion \`btr_validate_index(index, 0, false)'|Assertion \`0'
 =~ row_upd_sec_index_entry
 =~ row_update_for_mysql
-# The alternative is due to the broken stack trace
 MDEV-18153:
 =~ Index for table .* is corrupt; try to repair it|InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Assertion \`0'|Assertion \`btr_validate_index(index, 0)'|Assertion \`btr_validate_index(index, 0, false)'
 =~ Server version: 10\.4
 =~ row_upd_sec_index_entry
-=~ row_update_for_mysql|find_eoln_buff
 MDEV-18151:
 =~ Assertion \`0'
 =~ Protocol::end_statement
@@ -1057,7 +1055,7 @@ MDEV-17004:
 =~ ADD FULLTEXT
 MDEV-16994:
 =~ signal 11|Assertion \`!alloced \|\| !Ptr \|\| !Alloced_length \|\| (Alloced_length >= (str_length + 1))'
-=~ String::c_ptr|base_list_iterator::next
+=~ String::c_ptr|base_list_iterator::next|String::length
 =~ partition_info::prune_partition_bitmaps
 =~ open_and_process_table
 MDEV-16985:
@@ -1262,6 +1260,10 @@ MDEV-14854:
 =~ transid_store_packed
 =~ _ma_make_key
 =~ ha_maria::write_row
+MDEV-14642:
+=~ Assertion \`table->s->db_create_options == part_table->s->db_create_options'
+=~ compare_table_with_partition
+=~ Sql_cmd_alter_table_exchange_partition::exchange_partition
 MDEV-14557:
 =~ Assertion \`m_sp == __null'
 =~ Item_func_sp::init_result_field
@@ -1855,8 +1857,6 @@ MDEV-14711:
 =~ fix_block->page\.file_page_was_freed
 MDEV-14643:
 =~ cursor->index->is_committed
-MDEV-14642:
-=~ table->s->db_create_options == part_table->s->db_create_options
 MDEV-14264:
 =~ binlog_cache_data::reset
 MDEV-14040:
