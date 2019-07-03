@@ -96,8 +96,7 @@ sub run {
   
   #####
 
-  my $number_of_backups= 3;
-  my $interval_between_backups= 60;
+  my $interval_between_backups= 30;
 
   my $gentest_pid= fork();
   if (not defined $gentest_pid) {
