@@ -96,117 +96,72 @@ sub run {
   
   #####
 
+  my $interval_between_backups= 30;
+
   my $gentest_pid= fork();
   if (not defined $gentest_pid) {
     sayError("Failed to fork for running the test flow");
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
   }
-  
+
   # The child will be running the test flow. The parent will be running
   # the backup in the middle, and while waiting, will be monitoring
   # the status of the test flow to notice if it exits prematurely.
-  
-  if ($gentest_pid > 0) {
-    my $timeout= int($self->getTestDuration / 6);
 
-    #####
-    $self->printStep("Running initial test flow on the server");
+  my $backup_num= 0;
 
-    foreach (1..$timeout) {
-      if (waitpid($gentest_pid, WNOHANG) == 0) {
-        sleep 1;
-      } 
-      else {
-        $status= $? >> 8;
-        last;
-      }
+  if ($gentest_pid > 0)
+  {
+    my $end_time= time() + $self->getTestDuration;
+
+    while (time() < $end_time - $interval_between_backups)
+    {
+        foreach (1..$interval_between_backups) {
+          if (waitpid($gentest_pid, WNOHANG) == 0) {
+            sleep 1;
+          }
+          else {
+            $status= $? >> 8;
+            if ($status != STATUS_OK) {
+              sayError("Test flow before the backup failed");
+              return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+            } else {
+                last BACKUP;
+            }
+          }
+        }
+
+        if ($backup_num == 0)
+        {
+            $self->printStep("Creating initial full backup");
+            $cmd= "$mbackup --backup --target-dir=${mbackup_target}_0 --protocol=tcp --port=".$server->port." --user=".$server->user." 2>$vardir/mbackup_backup_0.log";
+            say($cmd);
+            system($cmd);
+            $status= $? >> 8;
+        } else {
+            $self->printStep("Creating incremental backup #$backup_num");
+            $cmd= "$mbackup --backup --target-dir=${mbackup_target}_${backup_num} --incremental-basedir=${mbackup_target}_".($backup_num-1)." --protocol=tcp --port=".$server->port." --user=".$server->user." 2>$vardir/mbackup_backup_${backup_num}.log";
+            say($cmd);
+            system($cmd);
+            $status= $? >> 8;
+        }
+        if ($status != STATUS_OK) {
+          sayError("Backup failed");
+          sayFile("$vardir/mbackup_backup_${backup_num}.log");
+          return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+        } else {
+          say("Backup #$backup_num finished successfully");
+        }
+
+        $backup_num++;
     }
-
-    if ($status != STATUS_OK) {
-      sayError("Test flow before full backup failed");
-      return $self->finalize(STATUS_TEST_FAILURE,[$server]);
-    }
-    
-    #####
-    $self->printStep("Creating full backup");
-    $cmd= "$mbackup --backup --target-dir=${mbackup_target}_0 --protocol=tcp --port=".$server->port." --user=".$server->user." 2>$vardir/mbackup_backup_0.log";
-    say($cmd);
-    system($cmd);
-    $status= $? >> 8;
-
-    if ($status != STATUS_OK) {
-      sayError("Full backup failed");
-      sayFile("$vardir/mbackup_backup_0.log");
-      return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-    }
-
-    #####
-    $self->printStep("Continuing test flow after full backup");
-
-    foreach (1..$timeout) {
-      if (waitpid($gentest_pid, WNOHANG) == 0) {
-        sleep 1;
-      } 
-      else {
-        $status= $? >> 8;
-        last;
-      }
-    }
-
-    if ($status != STATUS_OK) {
-      sayError("Test flow after full backup failed");
-      return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-    }
-
-    #####
-    $self->printStep("Creating 1st incremental backup");
-    $cmd= "$mbackup --backup --target-dir=${mbackup_target}_1 --incremental-basedir=${mbackup_target}_0 --protocol=tcp --port=".$server->port." --user=".$server->user." 2>$vardir/mbackup_backup_1.log";
-    say($cmd);
-    system($cmd);
-    $status= $? >> 8;
-
-    if ($status != STATUS_OK) {
-      sayError("1st incremental backup failed");
-      sayFile("$vardir/mbackup_backup_1.log");
-      return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-    }
-
-    #####
-    $self->printStep("Continuing test flow after 1st incremental backup");
-
-    foreach (1..$timeout) {
-      if (waitpid($gentest_pid, WNOHANG) == 0) {
-        sleep 1;
-      } 
-      else {
-        $status= $? >> 8;
-        last;
-      }
-    }
-
-    if ($status != STATUS_OK) {
-      sayError("Test flow after 1st incremental backup failed");
-      return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-    }
-
-    #####
-    $self->printStep("Creating 2nd incremental backup");
-    $cmd= "$mbackup --backup --target-dir=${mbackup_target}_2 --incremental-basedir=${mbackup_target}_1 --protocol=tcp --port=".$server->port." --user=".$server->user." 2>$vardir/mbackup_backup_2.log";
-    say($cmd);
-    system($cmd);
-    $status= $? >> 8;
-
-    if ($status != STATUS_OK) {
-      sayError("2nd incremental backup failed");
-      sayFile("$vardir/mbackup_backup_2.log");
-      return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-    }
-
   }
   else {
+    $self->printStep("Running test flow on the server");
+
     $gentest= $self->prepareGentest(1,
       {
-        duration => int($self->getTestDuration * 4 / 5),
+        duration => $self->getTestDuration,
         dsn => [$server->dsn($self->getProperty('database'))],
         servers => [$server],
       }
@@ -242,20 +197,13 @@ sub run {
   move($server->errorlog, $server->errorlog.'_orig');
 
   say("Storing the backups before prepare attempt...");
-  if (osWindows()) {
-    system('xcopy "'.$mbackup_target.'_0" "'.$mbackup_target.'_before_prepare_0'.'" /E /I /Q');
-  } else {
-    system('cp -r '.$mbackup_target.'_0 '.$mbackup_target.'_before_prepare_0');
-  }
-  if (osWindows()) {
-    system('xcopy "'.$mbackup_target.'_1" "'.$mbackup_target.'_before_prepare_1'.'" /E /I /Q');
-  } else {
-    system('cp -r '.$mbackup_target.'_1 '.$mbackup_target.'_before_prepare_1');
-  }
-  if (osWindows()) {
-    system('xcopy "'.$mbackup_target.'_2" "'.$mbackup_target.'_before_prepare_2'.'" /E /I /Q');
-  } else {
-    system('cp -r '.$mbackup_target.'_2 '.$mbackup_target.'_before_prepare_2');
+
+  foreach my $b (0..$backup_num-1) {
+      if (osWindows()) {
+        system('xcopy "'.$mbackup_target.'_'.${b}.' '.$mbackup_target.'_before_prepare_'.${b}.'" /E /I /Q');
+      } else {
+        system("cp -r ${mbackup_target}_${b} ${mbackup_target}_before_prepare_${b}");
+      }
   }
 
   #####
@@ -273,31 +221,19 @@ sub run {
   }
 
   #####
-  $self->printStep("Preparing 1st incremental backup");
+  foreach my $b (1..$backup_num-1) {
+      $self->printStep("Preparing incremental backup #${b}");
 
-  $cmd= "$mbackup --prepare --apply-log-only --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --incremental-dir=${mbackup_target}_1 --user=".$server->user." 2>$vardir/mbackup_prepare_1.log";
-  say($cmd);
-  system($cmd);
-  $status= $? >> 8;
+      $cmd= "$mbackup --prepare --apply-log-only --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --incremental-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
+      say($cmd);
+      system($cmd);
+      $status= $? >> 8;
 
-  if ($status != STATUS_OK) {
-    sayError("Backup preparing failed");
-    sayFile("$vardir/mbackup_prepare_1.log");
-    return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-  }
-
-  #####
-  $self->printStep("Preparing 2nd incremental backup");
-
-  $cmd= "$mbackup --prepare --apply-log-only --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --incremental-dir=${mbackup_target}_2 --user=".$server->user." 2>$vardir/mbackup_prepare_2.log";
-  say($cmd);
-  system($cmd);
-  $status= $? >> 8;
-
-  if ($status != STATUS_OK) {
-    sayError("Backup preparing failed");
-    sayFile("$vardir/mbackup_prepare_2.log");
-    return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+      if ($status != STATUS_OK) {
+        sayError("Backup preparing failed");
+        sayFile("$vardir/mbackup_prepare_${b}.log");
+        return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+      }
   }
 
   #####
@@ -313,7 +249,6 @@ sub run {
     sayFile("$vardir/mbackup_restore.log");
     return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
   }
-
 
   #####
   $self->printStep("Restarting the server");
@@ -353,32 +288,6 @@ sub run {
     return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
   }
   
-  #####
-  $self->printStep("Running test flow on the server after restoring the backup");
-
-  $gentest= $self->prepareGentest(1,
-    {
-      duration => int($self->getTestDuration / 5),
-      dsn => [$server->dsn($self->getProperty('database'))],
-      servers => [$server],
-    },
-    my $skip_gendata=1
-  );
-  $status= $gentest->run();
-  
-  if ($status != STATUS_OK) {
-    sayError("Test flow on the server after restoring the backup failed");
-    #####
-    $self->printStep("Checking the server error log for known errors");
-
-    if ($self->checkErrorLog($server) == STATUS_CUSTOM_OUTCOME) {
-      $status= STATUS_CUSTOM_OUTCOME;
-    }
-
-    $self->setStatus($status);
-    return $self->finalize($status,[$server])
-  }
-
   #####
   $self->printStep("Stopping the server");
 
