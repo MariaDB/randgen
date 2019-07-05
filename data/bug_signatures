@@ -781,6 +781,12 @@ MDEV-18200:
 =~ InnoDB: Operating system error number 2 in a file operation
 =~ InnoDB: File .*: 'open' returned OS error 71
 =~ InnoDB: Failing assertion: success
+=~ mariabackup
+MDEV-18200:
+=~ InnoDB: Operating system error number 2 in a file operation
+=~ InnoDB: If you are installing InnoDB, remember that you must create directories yourself, InnoDB does not create them
+=~ InnoDB: Cannot open datafile for read-only: .* OS error: 71
+=~ InnoDB: Could not find a valid tablespace file for .*
 MDEV-18193:
 =~ InnoDB: Database page corruption on disk or a failed file read of tablespace
 =~ InnoDB: Page dump in ascii and hex
@@ -1028,6 +1034,10 @@ MDEV-17556:
 =~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
 =~ handler::ha_reset
 =~ close_thread_tables
+MDEV-17464:
+=~ InnoDB: Operating system error number 2 in a file operation
+=~ InnoDB: Cannot rename file '.*/.*\.ibd' to '.*/.*\.ibd'
+=~ 1025: Error on rename of
 MDEV-17361:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ Query_arena::set_query_arena
@@ -1706,8 +1716,6 @@ MDEV-17485:
 =~ Operating system error number 80 in a file operation
 MDEV-17466:
 =~ dfield2->type\.mtypex
-MDEV-17464:
-=~ Operating system error number 2
 MDEV-17356:
 =~ table->read_set, field_index
 MDEV_17344:
