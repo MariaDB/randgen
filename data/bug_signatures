@@ -802,10 +802,15 @@ MDEV-18156:
 =~ row_upd_sec_index_entry
 =~ row_update_for_mysql
 MDEV-18153:
-=~ Index for table .* is corrupt; try to repair it|InnoDB: Record in index .* of table .* was not found on update: TUPLE
+=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Assertion \`0'|Assertion \`btr_validate_index(index, 0)'|Assertion \`btr_validate_index(index, 0, false)'
 =~ Server version: 10\.4
 =~ row_upd_sec_index_entry
+MDEV-18153:
+=~ Index for table .* is corrupt; try to repair it
+=~ Got an error from thread_id=.*
+=~ MySQL thread id .*, OS thread handle .*, query id .* Reading file
+=~ Version: '10\.4
 MDEV-18151:
 =~ Assertion \`0'
 =~ Protocol::end_statement
@@ -1006,6 +1011,10 @@ MDEV-17622:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_read
 =~ _ma_scan_block_record
+MDEV-17619:
+=~ Index file is crashed|Table is crashed and last repair failed|Incorrect key file for table|Table .* is marked as crashed and last (automatic?) repair failed
+=~ full_text|FULLTEXT
+=~ Version: '10\.1
 MDEV-17580:
 =~ Server version: 10\.1|Server version: 10\.0
 =~ Diagnostics_area::set_ok_status.*Assertion \`! is_set()'
@@ -1611,7 +1620,8 @@ MDEV-18141:
 # MDEV-18065:
 # =~ Fatal error: Can't open and lock privilege tables
 MDEV-18063:
-=~ is corrupt; try to repair it
+=~ Index for table .* is corrupt; try to repair it
+=~ Version: '10\.1|Version: '10\.2
 MDEV-18062:
 =~ ha_innobase::innobase_get_index
 MDEV-18058:
@@ -1680,16 +1690,6 @@ MDEV-17665:
 =~ share->page_type == PAGECACHE_LSN_PAGE
 MDEV-17659:
 =~ File too short; Expected more data in file
-MDEV-17619:
-=~ Index file is crashed
-MDEV-17619:
-=~ Table is crashed and last repair failed
-MDEV-17619:
-=~ Incorrect key file for table
-MDEV-17619:
-=~ Got an error from thread_id=
-MDEV-17619:
-=~ Couldn't repair table
 MDEV-17596:
 =~ block->page\.flush_observer == __null
 MDEV-17583:
