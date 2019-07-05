@@ -264,6 +264,8 @@ MDEV-19348:
 =~ InnoDB: Database page corruption on disk or a failed file read of tablespace .* page .* You may have to recover from a backup
 =~ InnoDB: Failed to read file .* at offset .* Page read from tablespace is corrupted
 =~ mariabackup: innodb_init() returned 39 (Data structure corruption)
+MDEV-19320:
+=~ UPDATE.* 1032 Can't find record in 'seq.*'|DELETE.* 1032 Can't find record in 'seq.*'|SELECT SETVAL.* 1032 Can't find record in 'seq.*'|SELECT.* 1032 Can't find record in 'seq.*'|INSERT.* 1032 Can't find record in 'seq.*'
 MDEV-19318:
 =~ Assertion \`!(length < share->base\.min_block_length)'
 =~ _ma_scan_block_record
@@ -562,7 +564,6 @@ MDEV-18783:
 MDEV-18780:
 =~  Assertion \`col->prtype == prtype'
 =~ innobase_rename_or_enlarge_column_try
-=~ commit_try_norebuild
 MDEV-18776:
 =~ Assertion \`0' failed
 =~ mysql_execute_command
@@ -1544,8 +1545,6 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
-MDEV-19320:
-=~ Can't find record
 MDEV-18929:
 =~ Slave SQL: Error 'Table .* is not system-versioned' on query
 MDEV-18805:
