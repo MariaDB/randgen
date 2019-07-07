@@ -56,22 +56,6 @@ sub new {
     $self->printTitle('Crash upgrade/downgrade');
   }
 
-  if (not defined $self->getProperty('grammar')) {
-    $self->setProperty('grammar', 'conf/mariadb/oltp.yy');
-  }
-  if (not defined $self->getProperty('gendata')) {
-    $self->setProperty('gendata', 'conf/mariadb/innodb_upgrade.zz');
-  }
-  if (not defined $self->getProperty('gendata1')) {
-    $self->setProperty('gendata1', $self->getProperty('gendata'));
-  }
-  if (not defined $self->getProperty('gendata-advanced1')) {
-    $self->setProperty('gendata-advanced1', $self->getProperty('gendata-advanced'));
-  }
-  if (not defined $self->getProperty('threads')) {
-    $self->setProperty('threads', 4);
-  }
-  
   return $self;
 }
 
@@ -131,7 +115,7 @@ sub run {
   # the status of the test flow to notice if it exits prematurely.
   
   if ($gentest_pid > 0) {
-    my $timeout= $self->getTestDuration * 2 / 3;
+    my $timeout= int($self->getTestDuration * 3/4);
     foreach (1..$timeout) {
       if (waitpid($gentest_pid, WNOHANG) == 0) {
         sleep 1;
@@ -145,7 +129,7 @@ sub run {
   else {
     $gentest= $self->prepareGentest(1,
       {
-        duration => int($self->getTestDuration * 2 / 3),
+        duration => $self->getTestDuration,
         dsn => [$old_server->dsn($self->getProperty('database'))],
         servers => [$old_server],
       }
@@ -227,44 +211,6 @@ sub run {
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
   }
   
-  #####
-  if ($old_server->majorVersion ne $new_server->majorVersion) {
-    $self->printStep("Running mysql_upgrade");
-    $status= $new_server->upgradeDb;
-    if ($status != STATUS_OK) {
-      sayError("mysql_upgrade failed");
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
-    }
-  } else {
-    $self->printStep("mysql_upgrade is skipped, as servers have the same major version");
-  }
-
-  #####
-  $self->printStep("Running test flow on the new server");
-
-  $gentest= $self->prepareGentest(2,
-    {
-      duration => int($self->getTestDuration / 3),
-      dsn => [$new_server->dsn($self->getProperty('database'))],
-      servers => [$new_server],
-    },
-    my $skip_gendata=1
-  );
-  $status= $gentest->run();
-  
-  if ($status != STATUS_OK) {
-    sayError("Test flow on the new server failed");
-    #####
-    $self->printStep("Checking the server error log for known errors");
-
-    if ($self->checkErrorLog($new_server) == STATUS_CUSTOM_OUTCOME) {
-      $status= STATUS_CUSTOM_OUTCOME;
-    }
-
-    $self->setStatus($status);
-    return $self->finalize($status,[$new_server])
-  }
-
   #####
   $self->printStep("Stopping the new server");
 
