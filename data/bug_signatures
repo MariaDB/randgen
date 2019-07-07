@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-19980:
+=~ Got error 22 when executing undo undo_row_insert
+=~ Aria engine: Undo phase failed
 MDEV-19919:
 =~ Assertion \`!prebuilt->index->is_primary()'
 =~ ICP_RESULT row_search_idx_cond_check
@@ -82,7 +85,7 @@ MDEV-19680:
 =~ Aggregator_simple::add
 MDEV-19674:
 =~ Assertion \`marked_for_read()'
-=~ Field_newdate::get_TIME|Field_timestampf::val_native
+=~ Field_newdate::get_TIME|Field_timestampf::val_native|Field_datetimef::get_TIME
 =~ TABLE::verify_constraints
 =~ TABLE_LIST::view_check_option
 =~ multi_update::do_updates
@@ -184,6 +187,10 @@ MDEV-19595:
 =~ Diagnostics_area::set_ok_status
 =~ my_ok
 =~ mysql_alter_table|Sql_cmd_truncate_table::execute|mysqld_show_create
+MDEV-19595:
+=~ Assertion \`! is_set()' failed
+=~ Diagnostics_area::set_eof_status
+=~ mysqld_show_create
 MDEV-19576:
 =~ Got error 175 when executing record redo_index|Got error 175 when executing undo undo_row_insert
 =~ Aria engine: Redo phase failed|Aria engine: Undo phase failed
@@ -552,10 +559,6 @@ MDEV-18794:
 MDEV-18788:
 =~ at line 391: Event Scheduler: An error occurred when initializing system tables. Disabling the Event Scheduler
 =~ FATAL ERROR: Upgrade failed
-MDEV-18787:
-=~ Assertion \`! is_set()' failed
-=~ Diagnostics_area::set_eof_status
-=~ mysqld_show_create
 MDEV-18783:
 =~ AddressSanitizer: heap-use-after-free|signal 11
 =~ tree_search_next|hp_rb_make_key|tree_search_edge|check_one_key|check_one_rb_key
@@ -594,7 +597,7 @@ MDEV-18696:
 # Only fixed in 10.4!
 MDEV-18694:
 =~ mysql_socket\.fd != -1
-=~ Protocol::send_error
+=~ Protocol::send_error|Protocol::send_ok
 =~ KILL_SERVER
 MDEV-18693:
 =~ AddressSanitizer: heap-use-after-free|signal 11
