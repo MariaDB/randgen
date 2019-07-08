@@ -57,6 +57,8 @@ if (! scalar @files and ! scalar @last_choice_files) {
 #  print "The following files will be checked for signatures of known bugs: @files and as a last resort @last_choice_files\n";
 #}
 
+system("rm -rf /tmp/MDEV-* /tmp/MENT-* /tmp/TODO-*");
+
 foreach my $f (@signature_files) {
     if (open(SIGNATURES, $f)) {
         while (<SIGNATURES>) {
