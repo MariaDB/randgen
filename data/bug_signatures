@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-19984:
+=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
+=~ do_copy_null|do_outer_field_null
 MDEV-19980:
 =~ Got error 22 when executing undo undo_row_insert
 =~ Aria engine: Undo phase failed
@@ -609,7 +612,7 @@ MDEV-18654:
 =~ pars_retrieve_table_def
 =~ pars_insert_statement
 MDEV-18643:
-=~ FATAL ERROR: .* failed to execute query BACKUP STAGE BLOCK_.*L: Deadlock found when trying to get lock; try restarting transaction
+=~ FATAL ERROR: .* failed to execute query BACKUP .*: Deadlock found when trying to get lock; try restarting transaction
 MDEV-18624:
 =~ AddressSanitizer: heap-use-after-free
 =~ mysql_derived_prepare
