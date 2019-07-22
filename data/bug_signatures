@@ -4,6 +4,25 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20121:
+=~ signal 11
+=~ handler::ha_write_row
+=~ ha_partition::write_row
+=~ write_record
+MDEV-20120:
+=~ signal 11
+=~ extra_cb
+=~ ha_partition::loop_partitions
+=~ ha_partition::extra
+MDEV-20120:
+=~ signal 11
+=~ ha_partition::try_semi_consistent_read
+=~ mysql_update
+MDEV-20120:
+=~ signal 11
+=~ ha_partition::info
+=~ TABLE_LIST::fetch_number_of_rows
+=~ make_join_statistics
 MDEV-20114:
 =~ signal 11|AddressSanitizer: SEGV
 =~ dict_col_t::detach
