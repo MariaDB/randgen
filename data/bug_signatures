@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20114:
+=~ signal 11|AddressSanitizer: SEGV
+=~ dict_col_t::detach
+=~ dict_index_t::detach_columns
+MDEV-20015:
+=~ Assertion \`!in_use->is_error()'
+=~ update_virtual_field
+=~ compute_vcols
+MENT-264:
+=~ Error on file .*\.M.*I open during .*seq.* table copy
 MDEV-19984:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
 =~ do_copy_null|do_outer_field_null
@@ -568,7 +578,7 @@ MDEV-18783:
 =~ tc_purge|tc_remove_table
 =~ run_backup_stage|close_thread_tables
 MDEV-18780:
-=~  Assertion \`col->prtype == prtype'
+=~ Assertion \`col->prtype == prtype'
 =~ innobase_rename_or_enlarge_column_try
 MDEV-18776:
 =~ Assertion \`0' failed
@@ -612,7 +622,7 @@ MDEV-18654:
 =~ pars_retrieve_table_def
 =~ pars_insert_statement
 MDEV-18643:
-=~ FATAL ERROR: .* failed to execute query BACKUP .*: Deadlock found when trying to get lock; try restarting transaction
+=~ FATAL ERROR: .* failed to execute query BACKUP .*: Deadlock found when trying to get lock; try restarting transaction|FATAL ERROR: .* failed to execute query BACKUP .*: Lock wait timeout exceeded; try restarting transaction
 MDEV-18624:
 =~ AddressSanitizer: heap-use-after-free
 =~ mysql_derived_prepare
