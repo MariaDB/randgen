@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20132:
+=~ Assertion \`info->new_row\.checksum == (\*share->calc_checksum)(info, current_record)'
+=~ _ma_apply_undo_row_update
+=~ exec_UNDO_LOGREC_UNDO_ROW_UPDATE
+MDEV-20131:
+=~ Assertion \`!pk->has_virtual()'
+=~ instant_alter_column_possible
+=~ ha_innobase::check_if_supported_inplace_alter
 MDEV-20121:
 =~ signal 11
 =~ handler::ha_write_row
@@ -43,7 +51,10 @@ MDEV-19919:
 =~ Assertion \`!prebuilt->index->is_primary()'
 =~ ICP_RESULT row_search_idx_cond_check
 =~ row_search_mvcc
-=~ rr_from_pointers
+MDEV-19914:
+=~ Assertion \`id != LATCH_ID_NONE'
+=~ Context::Context
+=~ fil_space_crypt_close_tablespace
 MENT-222:
 =~ signal 11|asan_region_is_poisoned
 =~ add_str_to_buffer
@@ -1286,6 +1297,10 @@ MDEV-15401:
 =~ Item_direct_view_ref::used_tables() const: Assertion \`fixed' failed
 =~ Item_func_nullif::update_used_tables
 =~ Prepared_statement::execute
+MDEV-15282:
+=~ Assertion \`recv_sys->mlog_checkpoint_lsn <= recv_sys->recovered_lsn'
+=~ recv_parse_log_recs
+=~ recv_recovery_from_checkpoint_start
 MDEV-15257:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status|Diagnostics_area::set_error_status
