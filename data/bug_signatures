@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20154:
+=~ Assertion \`len <= col->len \|\| ((col->mtype) == 5 \|\| (col->mtype) == 14)'
+=~ row_merge_buf_add
+=~ row_merge_read_clustered_index
+=~ ha_innobase::inplace_alter_table
 MDEV-20132:
 =~ Assertion \`info->new_row\.checksum == (\*share->calc_checksum)(info, current_record)'
 =~ _ma_apply_undo_row_update
@@ -403,7 +408,6 @@ MDEV-19254:
 =~ maria_status
 =~ ha_maria::info
 =~ ha_partition
-=~ open_and_process_table|open_and_lock_tables
 MDEV-19225:
 =~ InnoDB: InnoDB FTS: Doc ID cannot be 0
 MDEV-19216:
@@ -1518,12 +1522,6 @@ TODO-842:
 =~ fts_cache_append_deleted_doc_ids
 =~ init_ftfuncs
 TODO-842:
-=~ AddressSanitizer: heap-use-after-free
-=~ maria_status
-=~ ha_partition::info
-=~ ha_partition::update_create_info
-=~ mysql_prepare_alter_table
-TODO-842:
 =~ Assertion \`inited==INDEX'
 =~ opt_sum_query
 =~ handler::ha_index_end
@@ -1595,11 +1593,6 @@ TODO-842:
 =~ row_log_table_apply_op
 =~ mysql_alter_table
 TODO-842:
-=~ AddressSanitizer: SEGV on unknown address
-=~ extra_cb
-=~ ha_partition::loop_partitions
-=~ ha_partition::extra
-TODO-842:
 =~ Assertion \`mutex->__data\.__owner == 0'
 =~ Datafile::Datafile
 TODO-842:
@@ -1609,6 +1602,43 @@ TODO-842:
 =~ InnoDB: Database page corruption on disk or a failed file read of tablespace
 =~ InnoDB: Page may be a freshly allocated page
 =~ Page read from tablespace is corrupted
+TODO-842:
+=~ Assertion \`new_col->mtype == col->mtype'
+=~ row_log_table_apply_convert_mrec
+=~ row_log_table_apply_op
+=~ ha_innobase::inplace_alter_table
+TODO-842:
+=~ Assertion \`marked_for_read()'
+=~ field_unpack
+=~ key_unpack
+=~ print_keydup_error
+TODO-842:
+=~ Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| (!purge_sys.enabled() && (srv_is_being_started \|\| trx_rollback_is_active \|\| srv_force_recovery >= SRV_FORCE_NO_BACKGROUND)) \|\| ((trx->mysql_thd \|\| trx->internal) && srv_fast_shutdown)'
+=~ trx_purge_add_undo_to_history
+=~ trx_write_serialisation_history
+=~ fts_optimize_words
+TODO-842:
+=~ Assertion \`!ldate->neg'
+=~ mix_date_and_time_complex
+=~ stored_field_cmp_to_item
+TODO-842:
+=~ InnoDB: Failing assertion: index_cache->words == NULL
+=~ row_log_table_apply_delete
+=~ pfs_rw_lock_sx_lock_func
+TODO-842:
+=~ InnoDB: Database page corruption on disk or a failed file read of tablespace
+=~ signal 11
+=~ pfs_rw_lock_s_unlock_func
+=~ buf_page_get_zip
+=~ btr_copy_zblob_prefix
+TODO-842:
+=~ Assertion \`mutex->__data\.__owner == 0'
+=~ __pthread_mutex_lock
+=~ row_sel_store_mysql_field
+TODO-842:
+=~ InnoDB: Failing assertion: thr_get_trx(thr)->error_state == DB_SUCCESS
+=~ MYSQL_BIN_LOG::do_binlog_recovery
+=~ mem_heap_free_heap_top
 
 ##############################################################################
 # Weak matches
