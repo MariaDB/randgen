@@ -21,11 +21,6 @@ MDEV-20131:
 =~ Assertion \`!pk->has_virtual()'
 =~ instant_alter_column_possible
 =~ ha_innobase::check_if_supported_inplace_alter
-MDEV-20121:
-=~ signal 11
-=~ handler::ha_write_row
-=~ ha_partition::write_row
-=~ write_record
 MDEV-20120:
 =~ signal 11
 =~ extra_cb
@@ -357,6 +352,11 @@ MDEV-19304:
 =~ create_tmp_table
 =~ select_unit::create_result_table
 =~ mysql_derived_prepare
+MDEV-19304:
+=~ signal 11
+=~ handler::ha_write_row
+=~ ha_partition::write_row
+=~ write_record
 MDEV-19303:
 =~ Conditional jump or move depends on uninitialised value
 =~ mi_rrnd
