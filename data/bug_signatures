@@ -66,7 +66,7 @@ MDEV-19840:
 =~ Assertion \`m_status == DA_ERROR'
 =~ Diagnostics_area::sql_errno
 =~ ha_rollback_trans
-=~ trans_rollback_implicit
+=~ trans_rollback_implicit|trans_rollback_stmt
 MDEV-19817:
 =~ signal 11
 =~ unsafe_key_update
@@ -303,11 +303,10 @@ MDEV-19304:
 =~ handler::ha_update_row
 MDEV-19304:
 =~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
-=~ Field::cmp_binary
 =~ compare_record
 =~ mysql_update
 MDEV-19304:
-=~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-buffer-overflow
+=~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
 =~ create_tmp_table
 =~ select_unit::create_result_table
 =~ mysql_derived_prepare
@@ -523,6 +522,11 @@ MDEV-18875:
 =~ ha_rollback_trans
 =~ mysql_trans_commit_alter_copy_data|trans_commit_implicit
 =~ ADD PERIOD|add period|LOCK TABLE
+MDEV-18833:
+=~ Assertion \`thd->is_error() \|\| kill_errno \|\| thd->killed == ABORT_QUERY'
+=~ filesort
+=~ create_sort_index
+=~ Server version: 10\.3|Server version: 10\.4
 MDEV-18826:
 =~ signal 11
 =~ l_find
