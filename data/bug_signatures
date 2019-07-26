@@ -4,6 +4,32 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20207:
+=~ Assertion \`! is_set()'
+=~ Diagnostics_area::set_eof_status
+=~ mysql_ha_read
+=~ mysql_execute_command
+MDEV-20207:
+=~ signal 11
+=~ Field_blob::get_key_image
+=~ key_copy
+=~ mysql_ha_read
+=~ Server version: 5\.5\.
+MDEV-20195:
+=~ Assertion \`0'
+=~ ha_partition::handle_unordered_next
+=~ ha_partition::index_next
+MDEV-20194:
+=~ check.*Warning.*Row size too large (> .*)\. Changing some columns to TEXT or BLOB or using ROW_FORMAT=DYNAMIC or ROW_FORMAT=COMPRESSED may help\. In current row format, BLOB prefix of .* bytes is stored inline
+=~ InnoDB: Cannot add field .* in table .* because after adding it, the row size is .* which is greater than maximum allowed size (.*) for a record on index leaf page
+MDEV-20191:
+=~ Assertion \`index\.fields[i]\.col->same_format( \*oindex\.fields[i]\.col)'
+=~ dict_table_t::prepare_instant
+=~ ha_innobase_inplace_ctx::prepare_instant
+MDEV-20190:
+=~ Assertion \`!((c\.prtype ^ o->prtype) & ~(256U \| (16384U\|32768U) \| 4096U))'
+=~ dict_table_t::instant_column
+=~ ha_innobase_inplace_ctx::instant_column
 MDEV-20186:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
 =~ Field_timestampf::is_max
@@ -51,6 +77,10 @@ MDEV-19984:
 MDEV-19980:
 =~ Got error 22 when executing undo undo_row_insert
 =~ Aria engine: Undo phase failed
+MDEV-19977:
+=~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'
+=~ lock_rec_lock
+=~ read_stored_values
 MDEV-19919:
 =~ Assertion \`!prebuilt->index->is_primary()'
 =~ ICP_RESULT row_search_idx_cond_check
@@ -66,7 +96,7 @@ MDEV-19840:
 =~ Assertion \`m_status == DA_ERROR'
 =~ Diagnostics_area::sql_errno
 =~ ha_rollback_trans
-=~ trans_rollback_implicit
+=~ trans_rollback_implicit|trans_rollback_stmt
 MDEV-19817:
 =~ signal 11
 =~ unsafe_key_update
@@ -261,8 +291,6 @@ MDEV-19394:
 =~ InnoDB: checksum mismatch in tablespace
 =~ InnoDB: Operating system error number 2 in a file operation
 =~ fil_load_single_table_tablespace
-=~ recv_init_crash_recovery
-=~ recv_scan_log_recs
 MDEV-19361:
 =~ Assertion \`marked_for_read()'
 =~ Item_func_mul::int_op
@@ -303,11 +331,10 @@ MDEV-19304:
 =~ handler::ha_update_row
 MDEV-19304:
 =~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
-=~ Field::cmp_binary
 =~ compare_record
 =~ mysql_update
 MDEV-19304:
-=~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-buffer-overflow
+=~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
 =~ create_tmp_table
 =~ select_unit::create_result_table
 =~ mysql_derived_prepare
@@ -323,19 +350,13 @@ MDEV-19304:
 =~ mysql_update
 MDEV-19303:
 =~ Conditional jump or move depends on uninitialised value
-=~ mi_rrnd
+=~ mi_rrnd|maria_rrnd
 =~ ha_sequence::rnd_pos
 =~ rr_from_pointers
 MDEV-19303:
 =~ Uninitialised byte(s) found during client check request
 =~ dtuple_validate
 =~ page_cur_search_with_match_bytes
-=~ rr_from_pointers
-MDEV-19303:
-=~ File too short; Expected more data in file
-=~ Conditional jump or move depends on uninitialised value
-=~ maria_rrnd
-=~ ha_sequence::rnd_pos
 =~ rr_from_pointers
 MDEV-19301:
 =~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
@@ -523,6 +544,11 @@ MDEV-18875:
 =~ ha_rollback_trans
 =~ mysql_trans_commit_alter_copy_data|trans_commit_implicit
 =~ ADD PERIOD|add period|LOCK TABLE
+MDEV-18833:
+=~ Assertion \`thd->is_error() \|\| kill_errno \|\| thd->killed == ABORT_QUERY'
+=~ filesort
+=~ create_sort_index
+=~ Server version: 10\.3|Server version: 10\.4
 MDEV-18826:
 =~ signal 11
 =~ l_find
@@ -645,6 +671,12 @@ MDEV-18461:
 =~ Assertion \`undo_lsn == ((LSN)1) \|\| head_length == row_pos->length'
 =~ write_block_record
 =~ _ma_update_at_original_place
+### DRAFT
+MDEV-18460:
+=~ signal 11
+=~ tdc_create_key
+=~ THD::create_tmp_table_def_key
+=~ THD::open_temporary_table
 MDEV-18457:
 =~ Assertion \`(bitmap->map + (bitmap->full_head_size/6\*6)) <= full_head_end'
 =~ _ma_check_bitmap
@@ -680,6 +712,11 @@ MDEV-18389:
 =~ InnoDB indexes are inconsistent with what defined in \.frm for table
 =~ ha_innobase::index_type
 =~ fill_schema_table_by_open
+### DRAFT
+MDEV-18381:
+=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ ha_innobase::store_lock
+=~ THD::notify_shared_lock
 MDEV-18371:
 =~ Conditional jump or move depends on uninitialised value|signal 11
 =~ cmp_key_rowid_part_id
@@ -800,6 +837,10 @@ MDEV-18153:
 =~ Got an error from thread_id=.*
 =~ MySQL thread id .*, OS thread handle .*, query id .* Reading file
 =~ Version: '10\.4
+MDEV-18153:
+=~ Index for table .* is corrupt; try to repair it
+=~ mysqld: Table .* is marked as crashed and should be repaired
+=~ Version: '10\.4
 MDEV-18151:
 =~ Assertion \`0'
 =~ Protocol::end_statement
@@ -896,7 +937,8 @@ MDEV-18003:
 MDEV-17998:
 =~ Assertion \`!table->pos_in_locked_tables'
 =~ tc_release_table
-=~ Locked_tables_list::unlink_all_closed_tables
+=~ unlink_all_closed_tables
+=~ Status: KILL_SERVER|Status: KILL_TIMEOUT
 MDEV-17998:
 =~ AddressSanitizer: heap-use-after-free
 =~ find_table_for_mdl_upgrade
@@ -964,6 +1006,11 @@ MDEV-17842:
 =~ Assertion \`((copy & 0x00000003) == 0x02)'
 =~ pfs_lock::allocated_to_free
 =~ drop_table_share
+MDEV-17717:
+=~ Assertion \`!table->pos_in_locked_tables'
+=~ tc_release_table
+=~ unlink_all_closed_tables
+=~ RocksDB
 MDEV-17699:
 =~ AddressSanitizer: use-after-poison
 =~ base_list_iterator::next_fast
@@ -983,6 +1030,11 @@ MDEV-17619:
 =~ Index file is crashed|Table is crashed and last repair failed|Incorrect key file for table|Table .* is marked as crashed and last (automatic?) repair failed
 =~ full_text|FULLTEXT
 =~ Version: '10\.1
+### DRAFT
+MDEV-17596:
+=~ Assertion \`block->page\.flush_observer == __null \|\| block->page\.flush_observer == observer'
+=~ buf_flush_note_modification
+=~ add_dirty_page_to_flush_list
 MDEV-17580:
 =~ Server version: 10\.1|Server version: 10\.0
 =~ Diagnostics_area::set_ok_status.*Assertion \`! is_set()'
@@ -1125,6 +1177,11 @@ MDEV-16549:
 =~ Assertion \`context' failed|signal 11
 =~ Item_direct_view_ref::fix_fields
 =~ mysql_handle_single_derived
+MDEV-16539:
+=~ mysqld got exception|signal 11
+=~ mark_tmp_table_as_free_for_reuse
+=~ unlock_locked_tables
+=~ Status: KILL_TIMEOUT
 MDEV-16500:
 =~ Assertion \`user_table->n_def > table->s->fields'
 =~ Server version: 10\.1
@@ -1149,6 +1206,10 @@ MDEV-15955:
 =~ Server version: 10\.1|Server version: 10\.0|Server version: 5\.5
 =~ Protocol_text::store_longlong
 =~ end_send_group
+### DRAFT
+MDEV-15949:
+=~ InnoDB: Failing assertion: space->n_pending_ops == 0
+=~ fil_delete_tablespace
 MDEV-15912:
 =~ Failing assertion: purge_sys\.tail\.commit <= purge_sys\.rseg->last_commit
 =~ TrxUndoRsegsIterator::set_next
@@ -1156,12 +1217,20 @@ MDEV-15912:
 MDEV-15800:
 =~ Assertion \`next_insert_id >= auto_inc_interval_for_cur_row\.minimum()'
 =~ handler::update_auto_increment
-=~ mysql_load|select_insert::send_data|mysql_update
+=~ mysql_load|select_insert::send_data|mysql_update|mysql_insert
 MDEV-15878:
 =~ Assertion \`table->file->stats\.records > 0 \|\| error'
 =~ join_read_const_table
 =~ JOIN::optimize
 =~ mysql_select|mysql_update|mysql_delete
+MDEV-15753:
+=~ Assertion \`thd->is_error()'
+=~ mysql_admin_table
+=~ Status: KILL_TIMEOUT
+MDEV-15572:
+=~ signal 11|AddressSanitizer: SEGV
+=~ ha_maria::end_bulk_insert|ha_maria::extra
+=~ select_insert::abort_result_set
 MDEV-15534:
 =~ Assertion \`m_lock_type == 2'
 =~ handler::ha_drop_table
@@ -1205,7 +1274,6 @@ MDEV-15257:
 MDEV-15013:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE \|\| (prebuilt->table->no_rollback() && trx->state == TRX_STATE_NOT_STARTED)'
 =~ row_search_mvcc
-=~ READ_RECORD::read_record
 MDEV-15013:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE'
 =~ row_search_mvcc
@@ -1227,10 +1295,11 @@ MDEV-15011:
 =~ Error: Freeing overrun buffer
 =~ sysmalloc: Assertion \`(old_top == initial_top (av) && old_size == 0) \|\| ((unsigned long) (old_size) >= MINSIZE && prev_inuse (old_top) && ((unsigned long) old_end & (pagesize - 1)) == 0)'
 =~ ilink::operator new
+### DRAFT
 MDEV-14894:
 =~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
 =~ tdc_remove_table
-=~ mysql_rm_table_no_locks
+### DRAFT
 MDEV-14854:
 =~ Assertion \`trid >= info->s->state\.create_trid'
 =~ transid_store_packed
@@ -1249,6 +1318,11 @@ MDEV-14472:
 =~ Assertion \`is_current_stmt_binlog_format_row()'
 =~ THD::binlog_write_table_map
 =~ write_locked_table_maps
+# DRAFT
+MDEV-14420:
+=~ Assertion failure in file .*log0recv\.cc line
+=~ recv_parse_or_apply_log_rec_body
+=~ recv_recover_page
 MDEV-13644:
 =~ void ilink::assert_linked(): Assertion \`prev != 0 && next != 0'
 =~ unlink_not_visible_thd
@@ -1372,7 +1446,7 @@ TODO-842:
 =~ list_callback
 =~ THD_list::iterate
 TODO-842:
-=~ AddressSanitizer: SEGV on unknown address
+=~ AddressSanitizer: SEGV on unknown address|signal 11
 =~ Item_field::used_tables
 =~ Item::const_item
 =~ mysql_update
@@ -1542,8 +1616,6 @@ MDEV-18805:
 =~ Field::is_null_in_record
 =~ Column_definition::Column_definition
 =~ Create_field::Create_field
-MDEV-18460:
-=~ THD::create_tmp_table_def_key
 MDEV-18459:
 =~ fil_op_write_log
 MDEV-18458:
@@ -1556,8 +1628,6 @@ MDEV-18421:
 =~ foreign->foreign_table
 MDEV-18414:
 =~ Value_source::Converter_strntod::Converter_strntod
-MDEV-18381:
-=~ ha_innobase::store_lock
 MDEV-18343:
 =~ Mutex RW_LOCK_LIST created sync0debug\.cc
 MDEV-18322:
@@ -1584,6 +1654,9 @@ MDEV-18158:
 =~ Can't find record in
 MDEV-18157:
 =~ Explain_node::print_explain_for_children
+MDEV-18156:
+=~ Index for table .* is corrupt; try to repair it
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
 MDEV-18147:
 =~ templ->mysql_col_len >= len
 MDEV-18146:
@@ -1599,11 +1672,12 @@ MDEV-18141:
 # =~ Fatal error: Can't open and lock privilege tables
 MDEV-18063:
 =~ Index for table .* is corrupt; try to repair it
-=~ Version: '10\.1|Version: '10\.2
+=~ Version: '10\.1
 MDEV-18062:
 =~ ha_innobase::innobase_get_index
+### DRAFT
 MDEV-18058:
-=~ trx0i_s\.cc line
+=~ Assertion failure in file .*trx0i_s\.cc line
 MDEV-18054:
 =~ ret > 0
 MDEV-18054:
@@ -1658,18 +1732,18 @@ MDEV-17814:
 MDEV-17760:
 =~ table->read_set, field_index
 =~ Server version: 10\.1|Server version: 10\.0|Server version: 5\.5
-MDEV-17717:
-=~ table->pos_in_locked_tables
 MDEV-17711:
 =~ arena_for_set_stmt== 0
 MDEV-17665:
 =~ share->page_type == PAGECACHE_LSN_PAGE
-MDEV-17596:
-=~ block->page\.flush_observer == __null
 MDEV-17583:
 =~ next_mrec == next_mrec_end
+### DRAFT
 MDEV-17582:
-=~ status_var\.local_memory_used == 0
+=~ Assertion \`status_var\.local_memory_used == 0'
+=~ THD::~THD()
+=~ Server version: 10\.1
+=~ Status: KILL_CONNECTION
 MDEV-17539:
 =~ Protocol::end_statement
 MDEV-17538:
@@ -1712,8 +1786,6 @@ MDEV-16728:
 =~ Slave SQL: Error 'Table .* already exists' on query\. Default database: .*\. Query: 'RENAME TABLE .* Internal MariaDB error code: 1050
 MDEV-16728:
 =~ Slave SQL: Error 'ALGORITHM=INPLACE is not supported for this operation. Try ALGORITHM=COPY' on query
-MDEV-16539:
-=~ THD::mark_tmp_table_as_free_for_reuse
 MDEV-16523:
 =~ level_and_file\.second->being_compacted
 MDEV-16501:
@@ -1736,14 +1808,11 @@ MDEV-16184:
 =~ nest->counter > 0
 MDEV-16171:
 =~ in setup_table_map
-MDEV-15949:
-=~ space->n_pending_ops == 0
 MDEV-15873:
 =~ precision > 0
 MDEV-15802:
 =~ Item::delete_self
-MDEV-15753:
-=~ thd->is_error
+### DRAFT
 MDEV-15657:
 =~ file->inited == handler::NONE
 MDEV-15656:
@@ -1780,8 +1849,7 @@ MDEV-15164:
 =~ ikey_\.type == kTypeValue
 MDEV-15161:
 =~ in get_addon_fields
-MDEV-15013:
-=~ trx->state == TRX_STATE_NOT_STARTED
+### DRAFT
 MDEV-15011:
 =~ Server version: 10\.2|Server version: 10\.1|Server version: 10\.0|Server version: 5\.5
 =~ signal 11
@@ -1816,10 +1884,6 @@ MDEV-15011:
 MDEV-15011:
 =~ Server version: 10\.2|Server version: 10\.1|Server version: 10\.0|Server version: 5\.5
 =~ Error in \`.*/mysqld': malloc(): memory corruption:
-MDEV-14894:
-=~ tdc_remove_table
-MDEV-14894:
-=~ table->in_use == thd
 MDEV-14864:
 =~ in mysql_prepare_create_table
 MDEV-14864:
