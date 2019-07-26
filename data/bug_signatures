@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20186:
+=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
+=~ Field_timestampf::is_max
+=~ TABLE::verify_constraints
 MDEV-20154:
 =~ Assertion \`len <= col->len \|\| ((col->mtype) == 5 \|\| (col->mtype) == 14)'
 =~ row_merge_buf_add
