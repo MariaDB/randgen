@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20191:
+=~ Assertion \`index\.fields[i]\.col->same_format( \*oindex\.fields[i]\.col)'
+=~ dict_table_t::prepare_instant
+=~ ha_innobase_inplace_ctx::prepare_instant
+MDEV-20190:
+=~ Assertion \`!((c\.prtype ^ o->prtype) & ~(256U \| (16384U\|32768U) \| 4096U))'
+=~ dict_table_t::instant_column
+=~ ha_innobase_inplace_ctx::instant_column
 MDEV-20186:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
 =~ Field_timestampf::is_max
@@ -322,19 +330,13 @@ MDEV-19304:
 =~ mysql_update
 MDEV-19303:
 =~ Conditional jump or move depends on uninitialised value
-=~ mi_rrnd
+=~ mi_rrnd|maria_rrnd
 =~ ha_sequence::rnd_pos
 =~ rr_from_pointers
 MDEV-19303:
 =~ Uninitialised byte(s) found during client check request
 =~ dtuple_validate
 =~ page_cur_search_with_match_bytes
-=~ rr_from_pointers
-MDEV-19303:
-=~ File too short; Expected more data in file
-=~ Conditional jump or move depends on uninitialised value
-=~ maria_rrnd
-=~ ha_sequence::rnd_pos
 =~ rr_from_pointers
 MDEV-19301:
 =~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
@@ -1607,7 +1609,7 @@ MDEV-18141:
 # =~ Fatal error: Can't open and lock privilege tables
 MDEV-18063:
 =~ Index for table .* is corrupt; try to repair it
-=~ Version: '10\.1|Version: '10\.2
+=~ Version: '10\.1
 MDEV-18062:
 =~ ha_innobase::innobase_get_index
 MDEV-18058:
