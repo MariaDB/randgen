@@ -1172,6 +1172,14 @@ MDEV-15878:
 =~ join_read_const_table
 =~ JOIN::optimize
 =~ mysql_select|mysql_update|mysql_delete
+MDEV-15753:
+=~ Assertion \`thd->is_error()'
+=~ mysql_admin_table
+=~ Status: KILL_TIMEOUT
+MDEV-15572:
+=~ signal 11|AddressSanitizer: SEGV
+=~ ha_maria::end_bulk_insert|ha_maria::extra
+=~ select_insert::abort_result_set
 MDEV-15534:
 =~ Assertion \`m_lock_type == 2'
 =~ handler::ha_drop_table
@@ -1215,7 +1223,6 @@ MDEV-15257:
 MDEV-15013:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE \|\| (prebuilt->table->no_rollback() && trx->state == TRX_STATE_NOT_STARTED)'
 =~ row_search_mvcc
-=~ READ_RECORD::read_record
 MDEV-15013:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE'
 =~ row_search_mvcc
@@ -1594,6 +1601,9 @@ MDEV-18158:
 =~ Can't find record in
 MDEV-18157:
 =~ Explain_node::print_explain_for_children
+MDEV-18156:
+=~ Index for table .* is corrupt; try to repair it
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
 MDEV-18147:
 =~ templ->mysql_col_len >= len
 MDEV-18146:
@@ -1612,8 +1622,9 @@ MDEV-18063:
 =~ Version: '10\.1
 MDEV-18062:
 =~ ha_innobase::innobase_get_index
+# DRAFT
 MDEV-18058:
-=~ trx0i_s\.cc line
+=~ Assertion failure in file .*trx0i_s\.cc line
 MDEV-18054:
 =~ ret > 0
 MDEV-18054:
@@ -1678,8 +1689,12 @@ MDEV-17596:
 =~ block->page\.flush_observer == __null
 MDEV-17583:
 =~ next_mrec == next_mrec_end
+# DRAFT
 MDEV-17582:
-=~ status_var\.local_memory_used == 0
+=~ Assertion \`status_var\.local_memory_used == 0'
+=~ THD::~THD()
+=~ Server version: 10\.1
+=~ Status: KILL_CONNECTION
 MDEV-17539:
 =~ Protocol::end_statement
 MDEV-17538:
@@ -1752,8 +1767,7 @@ MDEV-15873:
 =~ precision > 0
 MDEV-15802:
 =~ Item::delete_self
-MDEV-15753:
-=~ thd->is_error
+# DRAFT
 MDEV-15657:
 =~ file->inited == handler::NONE
 MDEV-15656:
@@ -1790,8 +1804,7 @@ MDEV-15164:
 =~ ikey_\.type == kTypeValue
 MDEV-15161:
 =~ in get_addon_fields
-MDEV-15013:
-=~ trx->state == TRX_STATE_NOT_STARTED
+# DRAFT
 MDEV-15011:
 =~ Server version: 10\.2|Server version: 10\.1|Server version: 10\.0|Server version: 5\.5
 =~ signal 11
