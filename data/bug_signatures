@@ -4,6 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20195:
+=~ Assertion \`0'
+=~ ha_partition::handle_unordered_next
+=~ ha_partition::index_next
+MDEV-20194:
+=~ check.*Warning.*Row size too large (> .*)\. Changing some columns to TEXT or BLOB or using ROW_FORMAT=DYNAMIC or ROW_FORMAT=COMPRESSED may help\. In current row format, BLOB prefix of .* bytes is stored inline
+=~ InnoDB: Cannot add field .* in table .* because after adding it, the row size is .* which is greater than maximum allowed size (.*) for a record on index leaf page
 MDEV-20191:
 =~ Assertion \`index\.fields[i]\.col->same_format( \*oindex\.fields[i]\.col)'
 =~ dict_table_t::prepare_instant
