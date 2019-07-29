@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20207:
+=~ Assertion \`! is_set()'
+=~ Diagnostics_area::set_eof_status
+=~ mysql_ha_read
+=~ mysql_execute_command
+MDEV-20207:
+=~ signal 11
+=~ Field_blob::get_key_image
+=~ key_copy
+=~ mysql_ha_read
+=~ Server version: 5\.5\.
 MDEV-20195:
 =~ Assertion \`0'
 =~ ha_partition::handle_unordered_next
@@ -66,6 +77,10 @@ MDEV-19984:
 MDEV-19980:
 =~ Got error 22 when executing undo undo_row_insert
 =~ Aria engine: Undo phase failed
+MDEV-19977:
+=~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'
+=~ lock_rec_lock
+=~ read_stored_values
 MDEV-19919:
 =~ Assertion \`!prebuilt->index->is_primary()'
 =~ ICP_RESULT row_search_idx_cond_check
@@ -1303,6 +1318,11 @@ MDEV-14472:
 =~ Assertion \`is_current_stmt_binlog_format_row()'
 =~ THD::binlog_write_table_map
 =~ write_locked_table_maps
+# DRAFT
+MDEV-14420:
+=~ Assertion failure in file .*log0recv\.cc line
+=~ recv_parse_or_apply_log_rec_body
+=~ recv_recover_page
 MDEV-13644:
 =~ void ilink::assert_linked(): Assertion \`prev != 0 && next != 0'
 =~ unlink_not_visible_thd
@@ -1426,7 +1446,7 @@ TODO-842:
 =~ list_callback
 =~ THD_list::iterate
 TODO-842:
-=~ AddressSanitizer: SEGV on unknown address
+=~ AddressSanitizer: SEGV on unknown address|signal 11
 =~ Item_field::used_tables
 =~ Item::const_item
 =~ mysql_update
