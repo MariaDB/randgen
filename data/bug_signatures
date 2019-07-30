@@ -344,7 +344,7 @@ MDEV-19304:
 =~ ha_partition::write_row
 =~ write_record
 MDEV-19304:
-=~ Server version: 10\.4|Server version: 10\.3
+=~ Server version: 10\.5|Server version: 10\.4|Server version: 10\.3
 =~ AddressSanitizer: SEGV|signal 6|signal 11
 =~ ha_partition::try_semi_consistent_read
 =~ mysql_update
@@ -360,7 +360,7 @@ MDEV-19303:
 =~ rr_from_pointers
 MDEV-19301:
 =~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
-=~ Server version: 10\.4
+=~ Server version: 10\.5|Server version: 10\.4
 =~ Datetime_truncation_not_needed::Datetime_truncation_not_needed
 =~ Item_func_nullif::date_op
 =~ Type_handler_temporal_result::Item_func_hybrid_field_type_get_date
@@ -548,7 +548,7 @@ MDEV-18833:
 =~ Assertion \`thd->is_error() \|\| kill_errno \|\| thd->killed == ABORT_QUERY'
 =~ filesort
 =~ create_sort_index
-=~ Server version: 10\.3|Server version: 10\.4
+=~ Server version: 10\.3|Server version: 10\.4|Server version: 10\.5
 MDEV-18826:
 =~ signal 11
 =~ l_find
@@ -718,7 +718,7 @@ MDEV-18381:
 =~ ha_innobase::store_lock
 =~ THD::notify_shared_lock
 MDEV-18371:
-=~ Conditional jump or move depends on uninitialised value|signal 11
+=~ Conditional jump or move depends on uninitialised value|signal 11|AddressSanitizer: SEGV
 =~ cmp_key_rowid_part_id
 =~ QUICK_RANGE_SELECT::get_next
 MDEV-18366:
@@ -818,7 +818,7 @@ MDEV-18166:
 =~ Item::save_in_field|Item_field::save_in_field
 =~ TABLE::update_virtual_fields
 MDEV-18166:
-=~ Server version: 10\.4|Server version: 10\.3|Server version: 10\.2
+=~ Server version: 10\.5|Server version: 10\.4|Server version: 10\.3|Server version: 10\.2
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
 =~ field_conv_incompatible
 =~ TABLE::update_virtual_fields
@@ -830,21 +830,21 @@ MDEV-18156:
 MDEV-18153:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Assertion \`0'|Assertion \`btr_validate_index(index, 0)'|Assertion \`btr_validate_index(index, 0, false)'
-=~ Server version: 10\.4
+=~ Server version: 10\.5|Server version: 10\.4|Server version: 10\.5
 =~ row_upd_sec_index_entry
 MDEV-18153:
 =~ Index for table .* is corrupt; try to repair it
 =~ Got an error from thread_id=.*
 =~ MySQL thread id .*, OS thread handle .*, query id .* Reading file
-=~ Version: '10\.4
+=~ Version: '10\.5|Version: '10\.4
 MDEV-18153:
 =~ Index for table .* is corrupt; try to repair it
 =~ mysqld: Table .* is marked as crashed and should be repaired
-=~ Version: '10\.4
+=~ Version: '10\.5|Version: '10\.4
 MDEV-18151:
 =~ Assertion \`0'
 =~ Protocol::end_statement
-=~ Server version: 10\.4
+=~ Server version: 10\.5|Server version: 10\.4
 =~ IDENTIFIED.*WITH|IDENTIFIED.*VIA
 MDEV-18088:
 =~ Assertion \`share->in_trans == 0'
@@ -978,12 +978,12 @@ MDEV-17896:
 MDEV-17891:
 =~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction.stmt.modified_non_trans_table'
 =~ select_insert::abort_result_set
-=~ Server version: 10\.3|Server version: 10\.4
+=~ Server version: 10\.3|Server version: 10\.4|Server version: 10\.5
 MDEV-17891:
 =~ The table .* is full|Warning: Enabling keys got errno 121
 =~ Assertion \`transactional_table \|\| !(info.copied \|\| info.deleted) \|\| thd->transaction.stmt.modified_non_trans_table'
 =~ mysql_load
-=~ Server version: 10\.3|Server version: 10\.4
+=~ Server version: 10\.3|Server version: 10\.4|Server version: 10\.5
 MDEV-17890:
 =~ InnoDB: Record in index .* was not found on update: TUPLE
 =~ Assertion \`0'|signal 11
@@ -1656,7 +1656,7 @@ MDEV-18157:
 =~ Explain_node::print_explain_for_children
 MDEV-18156:
 =~ Index for table .* is corrupt; try to repair it
-=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-18147:
 =~ templ->mysql_col_len >= len
 MDEV-18146:
