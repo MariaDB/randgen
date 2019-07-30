@@ -58,6 +58,11 @@ sub validate {
 
     # Other misc exceptions
 
+    # SELECT .. INTO OUTFILE will inevitably fail on the 2nd executor,
+    # regardless versions, with ER_FILE_EXISTS_ERROR
+
+    return STATUS_WONT_HANDLE if $results->[0]->query =~ /INTO OUTFILE/ and $results->[1]->err == 1086;
+
     # 10.4x differs from previous versions upon
     # CREATE TABLE IF NOT EXISTS t AS SELECT .. FROM x
     # when t exists and x doesn't. Older versions would return ER_NO_SUCH_TABLE for x,
