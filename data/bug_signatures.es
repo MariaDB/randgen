@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MENT-324:
+=~ Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id
+MENT-253:
+=~ AddressSanitizer: SEGV|signal 11
+=~ filter_query_type
+=~ log_statement
+=~ auditing
+MENT-189:
+=~ InnoDB: Failing assertion: opt_no_lock
+=~ recv_parse_log_recs
+=~ xtrabackup_copy_log
 MDEV-19914:
 =~ Assertion \`id != LATCH_ID_NONE'
 =~ Context::Context

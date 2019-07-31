@@ -4,6 +4,32 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20313:
+=~ For transactional Aria BASE TABLE ROW_FORMAT=Page .* : error : Found .* keys of .*
+MDEV-20237:
+=~ Assertion \`!page_rec_is_comp(clust_rec) \|\| rec_get_status(clust_rec) == REC_STATUS_ORDINARY'
+=~ fts_fetch_doc_from_rec
+=~ fts_add_doc_by_id
+MDEV-20235:
+=~ AddressSanitizer: use-after-poison
+=~ create_tmp_table
+=~ JOIN::exec_inner
+=~ Version: '10\.1\.
+MDEV-20235:
+=~ ERROR: AddressSanitizer failed to allocate
+=~ AddressSanitizer CHECK failed
+=~ create_tmp_table
+=~ Version: '10\.1\.
+MDEV-20235:
+=~ mysqld: Out of memory (Needed .* bytes)
+=~ Out of memory; check if mysqld or some other process uses all available memory
+=~ DISTINCT VARIANCE.* GROUP BY .* ORDER BY .*BENCHMARK .* failed: 5: Out of memory (Needed .* bytes)
+=~ Version: '10\.1\.
+MDEV-20252:
+=~ signal 11|AddressSanitizer: SEGV on unknown address
+=~ handler_index_cond_check
+=~ row_search_idx_cond_check
+=~ JOIN_TAB_SCAN::open
 MDEV-20207:
 =~ Assertion \`! is_set()'
 =~ Diagnostics_area::set_eof_status
@@ -139,7 +165,7 @@ MDEV-19680:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'
 =~ Field_.*::val_.*
 =~ Item_direct_view_ref::val_.*
-=~ Aggregator_simple::add
+=~ init_sum_functions|init_tmptable_sum_functions
 MDEV-19674:
 =~ Assertion \`marked_for_read()'
 =~ Field_newdate::get_TIME|Field_timestampf::val_native|Field_datetimef::get_TIME
@@ -296,14 +322,14 @@ MDEV-19361:
 =~ Item_func_mul::int_op
 =~ Item_func_hybrid_field_type::val_int_from_int_op
 =~ TABLE::update_virtual_fields
-MDEV-19361:
-=~ signal 11|AddressSanitizer: SEGV on unknown address
-=~ handler_index_cond_check
-=~ row_search_idx_cond_check
-=~ JOIN_TAB_SCAN::open
 MDEV-19348:
 =~ InnoDB: Database page corruption on disk or a failed file read of tablespace .* page .* You may have to recover from a backup
 =~ InnoDB: Failed to read file .* at offset .* Page read from tablespace is corrupted
+=~ mariabackup: innodb_init() returned 39 (Data structure corruption)
+MDEV-19348:
+=~ InnoDB: Encrypted page .* in file .* looks corrupted; key_version=
+=~ InnoDB: Failed to read file .* at offset .*: Table is encrypted but decrypt failed
+=~ InnoDB: Plugin initialization aborted with error Data structure corruption
 =~ mariabackup: innodb_init() returned 39 (Data structure corruption)
 MDEV-19320:
 =~ UPDATE.* 1032 Can't find record in 'seq.*'|DELETE.* 1032 Can't find record in 'seq.*'|SELECT SETVAL.* 1032 Can't find record in 'seq.*'|SELECT.* 1032 Can't find record in 'seq.*'|INSERT.* 1032 Can't find record in 'seq.*'
@@ -435,6 +461,9 @@ MDEV-19178:
 =~ create_view_field
 =~ Field_iterator_view::create_item
 =~ find_field_in_tables
+MDEV-19176:
+=~ InnoDB: Starting crash recovery from checkpoint
+=~ InnoDB: Difficult to find free blocks in the buffer pool (21 search iterations)! 21 failed attempts to flush a page! Consider increasing innodb_buffer_pool_size\. Pending flushes
 MDEV-19173:
 =~ Assertion \`pos < table->n_def'
 =~ dict_table_get_nth_col
@@ -646,6 +675,12 @@ MDEV-18546:
 =~ AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow
 =~ innobase_get_computed_value
 =~ row_vers_build_clust_v_col
+MDEV-18546:
+=~ InnoDB: tried to purge non-delete-marked record in index
+=~ signal 11
+=~ row_vers_build_clust_v_col
+=~ row_vers_old_has_index_entry
+# DRAFT
 MDEV-18500:
 =~ (block)->n_pointers == 0
 =~ btr_search_build_page_hash_index
@@ -807,11 +842,6 @@ MDEV-18200:
 =~ InnoDB: If you are installing InnoDB, remember that you must create directories yourself, InnoDB does not create them
 =~ InnoDB: Cannot open datafile for read-only: .* OS error: 71
 =~ InnoDB: Could not find a valid tablespace file for .*
-MDEV-18193:
-=~ InnoDB: Database page corruption on disk or a failed file read of tablespace
-=~ InnoDB: Page dump in ascii and hex
-=~ InnoDB: Failed to read file .* at offset .*: Page read from tablespace is corrupted
-=~ mariabackup
 MDEV-18166:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
 =~ Field_varstring::val_str|Field_datetimef::get_TIME|Field_blob::val_str
@@ -830,7 +860,7 @@ MDEV-18156:
 MDEV-18153:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Assertion \`0'|Assertion \`btr_validate_index(index, 0)'|Assertion \`btr_validate_index(index, 0, false)'
-=~ Server version: 10\.5|Server version: 10\.4|Server version: 10\.5
+=~ Server version: 10\.5|Server version: 10\.4
 =~ row_upd_sec_index_entry
 MDEV-18153:
 =~ Index for table .* is corrupt; try to repair it
@@ -861,10 +891,10 @@ MDEV-18069:
 =~ MDL_ticket::has_stronger_or_equal_type
 =~ run_backup_stage
 MDEV-18069:
-=~ AddressSanitizer: heap-use-after-free
+=~ AddressSanitizer: heap-use-after-free|signal 11
 =~ MDL_ticket::has_stronger_or_equal_type
 =~ MDL_context::upgrade_shared_lock
-=~ run_backup_stage
+=~ run_backup_stage|backup_flush
 MDEV-18068:
 =~ Assertion \`this == ticket->get_ctx()'
 =~ MDL_context::release_lock
@@ -1006,6 +1036,10 @@ MDEV-17842:
 =~ Assertion \`((copy & 0x00000003) == 0x02)'
 =~ pfs_lock::allocated_to_free
 =~ drop_table_share
+MDEV-17782:
+=~ decimal_bin_size: Assertion \`scale <= precision'
+=~ my_decimal_get_binary_size
+=~ calc_group_buffer
 MDEV-17717:
 =~ Assertion \`!table->pos_in_locked_tables'
 =~ tc_release_table
@@ -1040,6 +1074,12 @@ MDEV-17580:
 =~ Diagnostics_area::set_ok_status.*Assertion \`! is_set()'
 =~ mysql_alter_table
 =~ ADD CHECK
+# Only fixed in 10.2+
+MDEV-17576:
+=~ Server version: 10\.1
+=~ Assertion \`share->reopen == 1'
+=~ maria_extra
+=~ mysql_alter_table|mysql_create_or_drop_trigger
 MDEV-17556:
 =~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
 =~ handler::ha_reset
@@ -1227,6 +1267,10 @@ MDEV-15753:
 =~ Assertion \`thd->is_error()'
 =~ mysql_admin_table
 =~ Status: KILL_TIMEOUT
+MDEV-15589:
+=~ Assertion \`xid_seqno > trx_sys_cur_xid_seqno'
+=~ trx_sys_update_wsrep_checkpoint
+=~ innobase_wsrep_set_checkpoint
 MDEV-15572:
 =~ signal 11|AddressSanitizer: SEGV
 =~ ha_maria::end_bulk_insert|ha_maria::extra
@@ -1601,6 +1645,16 @@ TODO-842:
 =~ InnoDB: Failing assertion: thr_get_trx(thr)->error_state == DB_SUCCESS
 =~ MYSQL_BIN_LOG::do_binlog_recovery
 =~ mem_heap_free_heap_top
+TODO-842:
+=~ AddressSanitizer: use-after-poison
+=~ Field_timestampf::set_max
+=~ TABLE::vers_update_fields
+=~ fill_record_n_invoke_before_triggers
+TODO-842:
+=~ AddressSanitizer: SEGV|signal 11
+=~ Query_arena::set_query_arena
+=~ Field::set_default
+=~ VDec::VDec
 
 ##############################################################################
 # Weak matches
