@@ -807,11 +807,6 @@ MDEV-18200:
 =~ InnoDB: If you are installing InnoDB, remember that you must create directories yourself, InnoDB does not create them
 =~ InnoDB: Cannot open datafile for read-only: .* OS error: 71
 =~ InnoDB: Could not find a valid tablespace file for .*
-MDEV-18193:
-=~ InnoDB: Database page corruption on disk or a failed file read of tablespace
-=~ InnoDB: Page dump in ascii and hex
-=~ InnoDB: Failed to read file .* at offset .*: Page read from tablespace is corrupted
-=~ mariabackup
 MDEV-18166:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
 =~ Field_varstring::val_str|Field_datetimef::get_TIME|Field_blob::val_str
