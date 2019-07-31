@@ -45,6 +45,9 @@ use POSIX;
 
 use DBServer::MySQL::MySQLd;
 
+our $vardir;
+our $end_time;
+
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
@@ -77,7 +80,7 @@ sub run {
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
   }
 
-  my $vardir= $server->vardir;
+  $vardir= $server->vardir;
   my $mbackup_target= $vardir.'/backup';
 
   say("-- Server info: --");
@@ -112,7 +115,7 @@ sub run {
 
   if ($gentest_pid > 0)
   {
-    my $end_time= time() + $self->getTestDuration;
+    $end_time= time() + $self->getTestDuration;
 
     while (time() < $end_time - $interval_between_backups)
     {
@@ -133,17 +136,18 @@ sub run {
 
         $backup_num++;
         $self->printStep("Creating full backup #$backup_num");
-        $cmd= "$mbackup --backup --target-dir=${mbackup_target}_${backup_num} --protocol=tcp --port=".$server->port." --user=".$server->user." 2>$vardir/mbackup_backup_${backup_num}.log";
-        say($cmd);
-        system($cmd);
-        $status= $? >> 8;
+        $status= run_mbackup_in_background("$mbackup --backup --target-dir=${mbackup_target}_${backup_num} --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log");
 
-        if ($status != STATUS_OK) {
-          sayError("Full backup failed");
-          sayFile("$vardir/mbackup_backup.log");
-          return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+        if ($status == STATUS_OK) {
+            say("Backup #$backup_num finished successfully");
         } else {
-          say("Backup #$backup_num finished successfully");
+            if ($status < 0) {
+                sayError("Backup #$backup_num did not finish in time");
+            } else {
+                sayError("Backup #backup_num failed: $status");
+            }
+            sayFile("$vardir/mbackup_backup_${backup_num}.log");
+            return $self->finalize(STATUS_TEST_FAILURE,[$server]);
         }
     }
   }
@@ -276,6 +280,35 @@ sub run {
   }
 
   return $self->finalize($status,[]);
+}
+
+# The subroutine will return STATUS_OK (0) if the process finished successfully,
+# non-zero positive exit code if it failed,
+# and -1 if it hung
+sub run_mbackup_in_background {
+    my $cmd= shift;
+    open(MBACKUP,">$vardir/mbackup_script") || die "Could not open $vardir/mbackup_script for writing: $!\n";
+    print(MBACKUP "rm -f $vardir/mbackup_exit_code $vardir/mbackup_pid\n");
+    print(MBACKUP "$cmd 2>&1 && echo \$? > $vardir/mbackup_exit_code &\n");
+    print(MBACKUP "echo \$! > $vardir/mbackup_pid\n");
+    close(MBACKUP);
+    sayFile("$vardir/mbackup_script");
+    system(". $vardir/mbackup_script");
+    my $mbackup_pid=`cat $vardir/mbackup_pid`;
+    chomp $mbackup_pid;
+    say("Waiting for mariabackup with pid $mbackup_pid to finish");
+    while (time() < $end_time)
+    {
+        if (kill(0, $mbackup_pid)) {
+            sleep 1;
+        }
+        else {
+            my $status=`cat $vardir/mbackup_exit_code`;
+            chomp $status;
+            return $status;
+        }
+    }
+    return -1;
 }
 
 1;
