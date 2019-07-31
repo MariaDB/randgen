@@ -1,0 +1,10 @@
+# RQG_HOME must be defined in the environment. But it has to be defined anyway,
+# or the include file won't be found
+
+$mariabackup_scenarios = 
+  [
+    '--scenario=MariaBackupFull',
+    '--scenario=MariaBackupIncremental',
+    '--scenario=MariaBackupFull --redefine=conf/mariadb/alter_table.yy --redefine=conf/mariadb/modules/admin.yy --redefine=conf/mariadb/versioning.yy --redefine=conf/mariadb/sequences.yy --redefine=conf/mariadb/modules/application_periods.yy',
+    '--scenario=MariaBackupIncremental --redefine=conf/mariadb/alter_table.yy --redefine=conf/mariadb/modules/admin.yy --redefine=conf/mariadb/versioning.yy --redefine=conf/mariadb/sequences.yy --redefine=conf/mariadb/modules/application_periods.yy',
+  ];
