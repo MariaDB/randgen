@@ -75,6 +75,7 @@ use constant MYSQLD_DEFAULT_PORT =>  19300;
 use constant MYSQLD_DEFAULT_DATABASE => "test";
 use constant MYSQLD_WINDOWS_PROCESS_STILLALIVE => 259;
 
+my $default_shutdown_timeout= 60;
 
 sub new {
     my $class = shift;
@@ -643,12 +644,13 @@ sub kill {
 
     if (defined $self->serverpid and $self->serverpid =~ /^\d+$/) {
         kill KILL => $self->serverpid;
-        my $waits = 0;
-        while ($self->running && $waits < 100) {
-            Time::HiRes::sleep(0.2);
-            $waits++;
+        my $sleep_time= 0.2;
+        my $waits = int($default_shutdown_timeout / $sleep_time);
+        while ($self->running && $waits) {
+            Time::HiRes::sleep($sleep_time);
+            $waits--;
         }
-        if ($waits >= 100) {
+        unless ($waits) {
             sayError("Unable to kill process ".$self->serverpid);
         } else {
             say("Killed process ".$self->serverpid);
@@ -667,21 +669,22 @@ sub term {
     my $res;
     if (defined $self->serverpid) {
         kill TERM => $self->serverpid;
-        my $waits = 0;
-        while ($self->running && $waits < 100) {
-            Time::HiRes::sleep(0.2);
-            $waits++;
+        my $sleep_time= 0.2;
+        my $waits = int($default_shutdown_timeout / $sleep_time);
+        while ($self->running && $waits) {
+            Time::HiRes::sleep($sleep_time);
+            $waits--;
         }
-        if ($waits >= 100) {
+        unless ($waits) {
             say("Unable to terminate process ".$self->serverpid.". Trying SIGABRT");
             kill ABRT => $self->serverpid;
             $res= DBSTATUS_FAILURE;
-            $waits= 0;
-            while ($self->running && $waits < 20) {
-              Time::HiRes::sleep(0.2);
-              $waits++;
+            $waits= int($default_shutdown_timeout / $sleep_time);
+            while ($self->running && $waits) {
+              Time::HiRes::sleep($sleep_time);
+              $waits--;
             }
-            if ($waits >= 20) {
+            unless ($waits) {
               say("SIGABRT didn't work for process ".$self->serverpid.". Trying KILL");
               $self->kill;
             }
@@ -907,7 +910,7 @@ sub binary {
 
 sub stopServer {
     my ($self, $shutdown_timeout) = @_;
-    $shutdown_timeout = 60 unless defined $shutdown_timeout;
+    $shutdown_timeout = $default_shutdown_timeout unless defined $shutdown_timeout;
     my $res;
 
     if ($shutdown_timeout and defined $self->[MYSQLD_DBH]) {
