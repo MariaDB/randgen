@@ -1596,6 +1596,16 @@ TODO-842:
 =~ InnoDB: Failing assertion: thr_get_trx(thr)->error_state == DB_SUCCESS
 =~ MYSQL_BIN_LOG::do_binlog_recovery
 =~ mem_heap_free_heap_top
+TODO-842:
+=~ AddressSanitizer: use-after-poison
+=~ Field_timestampf::set_max
+=~ TABLE::vers_update_fields
+=~ fill_record_n_invoke_before_triggers
+TODO-842:
+=~ AddressSanitizer: SEGV|signal 11
+=~ Query_arena::set_query_arena
+=~ Field::set_default
+=~ VDec::VDec
 
 ##############################################################################
 # Weak matches
