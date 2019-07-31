@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MENT-253:
+=~ AddressSanitizer: SEGV|signal 11
+=~ filter_query_type
+=~ log_statement
+=~ auditing
 MDEV-19914:
 =~ Assertion \`id != LATCH_ID_NONE'
 =~ Context::Context
