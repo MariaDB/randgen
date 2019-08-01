@@ -207,7 +207,7 @@ sub run {
 
       if ($status != STATUS_OK) {
         sayError("Backup preparing failed");
-        sayFile("$vardir/mbackup_prepare.log");
+        sayFile("$vardir/mbackup_prepare_${b}.log");
         return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
       }
 
@@ -221,7 +221,7 @@ sub run {
 
       if ($status != STATUS_OK) {
         sayError("Backup restore failed");
-        sayFile("$vardir/mbackup_restore.log");
+        sayFile("$vardir/mbackup_restore_${b}.log");
         return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
       }
 
@@ -292,8 +292,10 @@ sub run_mbackup_in_background {
     system(". $vardir/mbackup_script");
     my $mbackup_pid=`cat $vardir/mbackup_pid`;
     chomp $mbackup_pid;
-    say("Waiting for mariabackup with pid $mbackup_pid to finish");
-    while (time() < $end_time)
+    my $wait_time= $end_time - time();
+    $wait_time= 60 if $wait_time < 60;
+    say("Waiting $wait_time sec for mariabackup with pid $mbackup_pid to finish");
+    foreach (1 .. $wait_time)
     {
         if (kill(0, $mbackup_pid)) {
             sleep 1;
