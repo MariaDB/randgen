@@ -218,7 +218,7 @@ sub run {
   }
 
   #####
-  foreach my $b (1..$backup_num-1) {
+  foreach my $b (1..$backup_num) {
       $self->printStep("Preparing incremental backup #${b}");
 
       $cmd= "$mbackup --prepare --apply-log-only --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --incremental-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
@@ -236,14 +236,14 @@ sub run {
   #####
   $self->printStep("Restoring backup");
   system("rm -rf ".$server->datadir);
-  $cmd= "$mbackup --copy-back --target-dir=${mbackup_target}_0 --datadir=".$server->datadir." --user=".$server->user." 2>$vardir/mbackup_restore.log";
+  $cmd= "$mbackup --copy-back --target-dir=${mbackup_target}_0 --datadir=".$server->datadir." --user=".$server->user." 2>$vardir/mbackup_restore_${b}.log";
   say($cmd);
   system($cmd);
   $status= $? >> 8;
 
   if ($status != STATUS_OK) {
     sayError("Backup restore failed");
-    sayFile("$vardir/mbackup_restore.log");
+    sayFile("$vardir/mbackup_restore_${b}.log");
     return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
   }
 
@@ -312,8 +312,10 @@ sub run_mbackup_in_background {
     system(". $vardir/mbackup_script");
     my $mbackup_pid=`cat $vardir/mbackup_pid`;
     chomp $mbackup_pid;
-    say("Waiting for mariabackup with pid $mbackup_pid to finish");
-    while (time() < $end_time)
+    my $wait_time= $end_time - time();
+    $wait_time= 60 if $wait_time < 60;
+    say("Waiting $wait_time sec for mariabackup with pid $mbackup_pid to finish");
+    foreach (1 .. $wait_time)
     {
         if (kill(0, $mbackup_pid)) {
             sleep 1;
