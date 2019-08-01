@@ -455,6 +455,9 @@ MDEV-19178:
 =~ create_view_field
 =~ Field_iterator_view::create_item
 =~ find_field_in_tables
+MDEV-19176:
+=~ InnoDB: Starting crash recovery from checkpoint
+=~ InnoDB: Difficult to find free blocks in the buffer pool (21 search iterations)! 21 failed attempts to flush a page! Consider increasing innodb_buffer_pool_size\. Pending flushes
 MDEV-19173:
 =~ Assertion \`pos < table->n_def'
 =~ dict_table_get_nth_col
