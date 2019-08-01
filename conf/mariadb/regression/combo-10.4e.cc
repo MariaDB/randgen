@@ -38,7 +38,7 @@ $combinations = [
     $encryption,
   [
     '',
-    '--ps-protocol',
+    '--ps-protocol --filter=conf/mariadb/need-reconnect.ff',
     '--vcols --mysqld=--log-bin --mysqld=--log_bin_trust_function_creators=1',
     '--mysqld=--log-bin --mysqld=--log_bin_trust_function_creators=1 --mysqld=--binlog-format=row',
   ]
