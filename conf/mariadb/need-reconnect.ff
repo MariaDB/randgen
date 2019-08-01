@@ -1,0 +1,4 @@
+$rules = {
+  'kill' => sub { $_ =~ m{KILL\s}s },
+  'release' => sub { $_ =~ m{COMMIT.*RELEASE|ROLLBACK.*RELEASE}s },
+}
