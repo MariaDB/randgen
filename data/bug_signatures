@@ -1660,6 +1660,9 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
+MDEV-19745:
+=~ Backup did not finish in due time
+=~ log scanned up to
 MDEV-18929:
 =~ Slave SQL: Error 'Table .* is not system-versioned' on query
 MDEV-18805:
