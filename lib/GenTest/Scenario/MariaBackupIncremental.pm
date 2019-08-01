@@ -218,7 +218,7 @@ sub run {
   }
 
   #####
-  foreach my $b (1..$backup_num) {
+  foreach my $b (1..$backup_num-1) {
       $self->printStep("Preparing incremental backup #${b}");
 
       $cmd= "$mbackup --prepare --apply-log-only --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --incremental-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
