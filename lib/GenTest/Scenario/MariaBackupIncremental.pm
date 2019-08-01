@@ -145,11 +145,7 @@ sub run {
         if ($status == STATUS_OK) {
             say("Backup #$backup_num finished successfully");
         } else {
-            if ($status < 0) {
-                sayError("Backup #$backup_num did not finish in time");
-            } else {
-                sayError("Backup #backup_num failed: $status");
-            }
+            sayError("Backup #backup_num failed: $status");
             sayFile("$vardir/mbackup_backup_${backup_num}.log");
             return $self->finalize(STATUS_TEST_FAILURE,[$server]);
         }
@@ -328,6 +324,8 @@ sub run_mbackup_in_background {
             return $status;
         }
     }
+    sayError("Backup did not finish in due time");
+    kill(6, $mbackup_pid);
     return -1;
 }
 
