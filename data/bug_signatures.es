@@ -9,6 +9,10 @@ MENT-253:
 =~ filter_query_type
 =~ log_statement
 =~ auditing
+MENT-189:
+=~ InnoDB: Failing assertion: opt_no_lock
+=~ recv_parse_log_recs
+=~ xtrabackup_copy_log
 MDEV-19914:
 =~ Assertion \`id != LATCH_ID_NONE'
 =~ Context::Context

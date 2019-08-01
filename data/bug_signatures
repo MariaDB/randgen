@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20235:
+=~ AddressSanitizer: use-after-poison
+=~ create_tmp_table
+=~ JOIN::exec_inner
+=~ Version: '10\.1\.
+MDEV-20235:
+=~ ERROR: AddressSanitizer failed to allocate
+=~ AddressSanitizer CHECK failed
+=~ create_tmp_table
+=~ Version: '10\.1\.
+MDEV-20235:
+=~ mysqld: Out of memory (Needed .* bytes)
+=~ Out of memory; check if mysqld or some other process uses all available memory
+=~ DISTINCT VARIANCE.* GROUP BY .* ORDER BY .*BENCHMARK .* failed: 5: Out of memory (Needed .* bytes)
+=~ Version: '10\.1\.
 MDEV-20207:
 =~ Assertion \`! is_set()'
 =~ Diagnostics_area::set_eof_status
@@ -651,6 +666,7 @@ MDEV-18546:
 =~ AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow
 =~ innobase_get_computed_value
 =~ row_vers_build_clust_v_col
+# DRAFT
 MDEV-18500:
 =~ (block)->n_pointers == 0
 =~ btr_search_build_page_hash_index
