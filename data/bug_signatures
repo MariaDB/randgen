@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20237:
+=~ Assertion \`!page_rec_is_comp(clust_rec) \|\| rec_get_status(clust_rec) == REC_STATUS_ORDINARY'
+=~ fts_fetch_doc_from_rec
+=~ fts_add_doc_by_id
 MDEV-20235:
 =~ AddressSanitizer: use-after-poison
 =~ create_tmp_table
@@ -849,7 +853,7 @@ MDEV-18156:
 MDEV-18153:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Assertion \`0'|Assertion \`btr_validate_index(index, 0)'|Assertion \`btr_validate_index(index, 0, false)'
-=~ Server version: 10\.5|Server version: 10\.4|Server version: 10\.5
+=~ Server version: 10\.5|Server version: 10\.4
 =~ row_upd_sec_index_entry
 MDEV-18153:
 =~ Index for table .* is corrupt; try to repair it
