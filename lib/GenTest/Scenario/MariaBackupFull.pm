@@ -99,6 +99,9 @@ sub run {
   
   #####
 
+  # We'll need it for --prepare (--use-memory)
+  my $buffer_pool_size= $server->serverVariable('innodb_buffer_pool_size');
+
   my $interval_between_backups= 30;
 
   my $gentest_pid= fork();
@@ -200,7 +203,7 @@ sub run {
         system("cp -r ${mbackup_target}_${b} ${mbackup_target}_${b}_before_prepare");
       }
 
-      $cmd= "$mbackup --prepare --target-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
+      $cmd= "$mbackup --use-memory=$buffer_pool_size --prepare --target-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
       say($cmd);
       system($cmd);
       $status= $? >> 8;
@@ -301,7 +304,7 @@ sub run_mbackup_in_background {
             sleep 1;
         }
         else {
-            my $status=`cat $vardir/mbackup_exit_code`;
+            my $status= (-e "$vardir/mbackup_exit_code" ? `cat $vardir/mbackup_exit_code` : 0);
             chomp $status;
             return $status;
         }
