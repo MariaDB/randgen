@@ -285,7 +285,7 @@ sub run_mbackup_in_background {
     my $cmd= shift;
     open(MBACKUP,">$vardir/mbackup_script") || die "Could not open $vardir/mbackup_script for writing: $!\n";
     print(MBACKUP "rm -f $vardir/mbackup_exit_code $vardir/mbackup_pid\n");
-    print(MBACKUP "$cmd 2>&1 && echo \$? > $vardir/mbackup_exit_code &\n");
+    print(MBACKUP "$cmd 2>&1 || echo \$? > $vardir/mbackup_exit_code &\n");
     print(MBACKUP "echo \$! > $vardir/mbackup_pid\n");
     close(MBACKUP);
     sayFile("$vardir/mbackup_script");
