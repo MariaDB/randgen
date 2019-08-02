@@ -99,6 +99,9 @@ sub run {
   
   #####
 
+  # We'll need it for --prepare (--use-memory)
+  my $buffer_pool_size= $server->serverVariable('innodb_buffer_pool_size');
+
   my $interval_between_backups= 30;
 
   my $gentest_pid= fork();
@@ -206,7 +209,7 @@ sub run {
   #####
   $self->printStep("Preparing full backup");
 
-  $cmd= "$mbackup --prepare --apply-log-only --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --user=".$server->user." 2>$vardir/mbackup_prepare_0.log";
+  $cmd= "$mbackup --prepare --use-memory=$buffer_pool_size --apply-log-only --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --user=".$server->user." 2>$vardir/mbackup_prepare_0.log";
   say($cmd);
   system($cmd);
   $status= $? >> 8;
@@ -221,7 +224,7 @@ sub run {
   foreach my $b (1..$backup_num-1) {
       $self->printStep("Preparing incremental backup #${b}");
 
-      $cmd= "$mbackup --prepare --apply-log-only --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --incremental-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
+      $cmd= "$mbackup --prepare --use-memory=$buffer_pool_size --apply-log-only --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --incremental-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
       say($cmd);
       system($cmd);
       $status= $? >> 8;
@@ -321,7 +324,7 @@ sub run_mbackup_in_background {
             sleep 1;
         }
         else {
-            my $status=`cat $vardir/mbackup_exit_code`;
+            my $status= (-e "$vardir/mbackup_exit_code" ? `cat $vardir/mbackup_exit_code` : 0);
             chomp $status;
             return $status;
         }
