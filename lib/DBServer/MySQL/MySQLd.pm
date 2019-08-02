@@ -979,7 +979,7 @@ sub checkDatabaseIntegrity {
           my %msg = @$check;
           foreach my $m (keys %msg) {
             say("For table `$database`.`$table` : $m : $msg{$m}");
-            if ($m eq 'status' and $msg{$m} ne 'OK' or $m eq 'Error') {
+            if ($m eq 'status' and $msg{$m} ne 'OK' or $m =~ /^error$/i) {
               if ($msg{$m} =~ /Unable to open underlying table which is differently defined or of non-MyISAM type or doesn't exist/) {
                 say("... ignoring inconsistency for the MERGE table");
               } elsif (! $foreign_key_check_workaround and $msg{$m} =~ /Table .* doesn't exist in engine/) {
