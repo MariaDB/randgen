@@ -154,7 +154,7 @@ MDEV-19680:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'
 =~ Field_.*::val_.*
 =~ Item_direct_view_ref::val_.*
-=~ Aggregator_simple::add
+=~ init_sum_functions|init_tmptable_sum_functions
 MDEV-19674:
 =~ Assertion \`marked_for_read()'
 =~ Field_newdate::get_TIME|Field_timestampf::val_native|Field_datetimef::get_TIME
