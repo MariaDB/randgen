@@ -144,7 +144,7 @@ sub run {
         if ($status == STATUS_OK) {
             say("Backup #$backup_num finished successfully");
         } else {
-            sayError("Backup #backup_num failed: $status");
+            sayError("Backup #$backup_num failed: $status");
             sayFile("$vardir/mbackup_backup_${backup_num}.log");
             return $self->finalize(STATUS_TEST_FAILURE,[$server]);
         }
