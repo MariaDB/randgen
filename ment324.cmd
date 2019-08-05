@@ -1,0 +1,1 @@
+perl ./runall-new.pl --threads=1 --grammar=conf/mariadb/oltp-transactional.yy --gendata=conf/mariadb/innodb_upgrade_compression.zz --mysqld=--innodb-compression-algorithm=none --scenario=CrashUpgrade --duration=100 --vardir=/dev/shm/vardir_ment324 --basedir1=$1 --basedir2=$2
