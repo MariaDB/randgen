@@ -1080,6 +1080,8 @@ sub checkErrorLogForErrors {
       or $_ =~ /InnoDB: Deleting persistent statistics for table/so
       or $_ =~ /InnoDB: Unable to rename statistics from/so
       or $_ =~ /ib_buffer_pool' for reading: No such file or directory/so
+      # MENT-324
+      or $_ =~ /Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id/
     ;
 
     # Crashes
