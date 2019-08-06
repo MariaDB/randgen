@@ -960,9 +960,10 @@ sub checkDatabaseIntegrity {
       my $tabl_ref = $dbh->selectcol_arrayref("SHOW FULL TABLES", { Columns=>[1,2] });
       # 1178 is ER_CHECK_NOT_IMPLEMENTED
       my %tables = @$tabl_ref;
+      CHECKTABLE:
       foreach my $table (sort keys %tables) {
         # Should not do CHECK etc., and especially ALTER, on a view
-        next if $tables{$table} eq 'VIEW';
+        next CHECKTABLE if $tables{$table} eq 'VIEW';
 #        say("Verifying table: $database.$table:");
         my $check = $dbh->selectcol_arrayref("CHECK TABLE `$database`.`$table` EXTENDED", { Columns=>[3,4] });
         if ($dbh->err() > 0) {
@@ -972,21 +973,24 @@ sub checkDatabaseIntegrity {
           # Mysterious loss of connection upon checks
           if ($dbh->err() == 2013) {
             say("Trying again...");
-            redo;
+            redo CHECKTABLE;
           }
         }
         else {
-          my %msg = @$check;
-          foreach my $m (keys %msg) {
-            say("For table `$database`.`$table` : $m : $msg{$m}");
-            if ($m eq 'status' and $msg{$m} ne 'OK' or $m =~ /^error$/i) {
-              if ($msg{$m} =~ /Unable to open underlying table which is differently defined or of non-MyISAM type or doesn't exist/) {
+          my @msg = @$check;
+          CHECKOUTPUT:
+          for (my $i = 0; $i < $#msg; $i= $i+2)  {
+            my ($msg_type, $msg_text)= ($msg[$i], $msg[$i+1]);
+            say("For table `$database`.`$table` : $msg_type : $msg_text");
+            if ($msg_type eq 'status' and $msg_text ne 'OK' or $msg_type =~ /^error$/i) {
+              if ($msg_text =~ /Unable to open underlying table which is differently defined or of non-MyISAM type or doesn't exist/) {
                 say("... ignoring inconsistency for the MERGE table");
-              } elsif (! $foreign_key_check_workaround and $msg{$m} =~ /Table .* doesn't exist in engine/) {
+                last CHECKOUTPUT;
+              } elsif (! $foreign_key_check_workaround and $msg_text =~ /Table .* doesn't exist in engine/) {
                 say("... possible foreign key check problem. Trying to turn off FOREIGN_KEY_CHECKS and retry");
                 $dbh->do("SET FOREIGN_KEY_CHECKS= 0");
                 $foreign_key_check_workaround= 1;
-                redo;
+                redo CHECKTABLE;
               } else {
                 $status= DBSTATUS_FAILURE;
               }
