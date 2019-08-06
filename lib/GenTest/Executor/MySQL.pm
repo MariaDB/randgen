@@ -822,7 +822,7 @@ sub reportError {
         $self->sendError($msg) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
     } elsif (not defined $reported_errors{$errstr}) {
         my $query_for_print= shorten_message($query);
-        say("Executor: Query: $query_for_print failed: $err $errstr. Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text($err2type{$err} || -1) . "). Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
         $reported_errors{$errstr}++;
     }
 }
@@ -1008,11 +1008,11 @@ sub execute {
             }
 
             my $query_for_print= shorten_message($query);
-            say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr()) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+            say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":"")) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
         } elsif (not ($execution_flags & EXECUTOR_FLAG_SILENT)) {
             $executor->[EXECUTOR_ERROR_COUNTS]->{$sth->errstr()}++;
             my $query_for_print= shorten_message($query);
-            say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr());
+            say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
         }
 
         $result = GenTest::Result->new(
