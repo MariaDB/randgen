@@ -673,6 +673,11 @@ MDEV-18546:
 =~ AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow
 =~ innobase_get_computed_value
 =~ row_vers_build_clust_v_col
+MDEV-18546:
+=~ InnoDB: tried to purge non-delete-marked record in index
+=~ signal 11
+=~ row_vers_build_clust_v_col
+=~ row_vers_old_has_index_entry
 # DRAFT
 MDEV-18500:
 =~ (block)->n_pointers == 0
@@ -1029,6 +1034,10 @@ MDEV-17842:
 =~ Assertion \`((copy & 0x00000003) == 0x02)'
 =~ pfs_lock::allocated_to_free
 =~ drop_table_share
+MDEV-17782:
+=~ decimal_bin_size: Assertion \`scale <= precision'
+=~ my_decimal_get_binary_size
+=~ calc_group_buffer
 MDEV-17717:
 =~ Assertion \`!table->pos_in_locked_tables'
 =~ tc_release_table
@@ -1250,6 +1259,10 @@ MDEV-15753:
 =~ Assertion \`thd->is_error()'
 =~ mysql_admin_table
 =~ Status: KILL_TIMEOUT
+MDEV-15589:
+=~ Assertion \`xid_seqno > trx_sys_cur_xid_seqno'
+=~ trx_sys_update_wsrep_checkpoint
+=~ innobase_wsrep_set_checkpoint
 MDEV-15572:
 =~ signal 11|AddressSanitizer: SEGV
 =~ ha_maria::end_bulk_insert|ha_maria::extra
