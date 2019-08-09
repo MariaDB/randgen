@@ -82,11 +82,16 @@ alt_alter_item:
   | alt_change_column
   | alt_alter_column
   | alt_add_index | alt_add_index | alt_add_index
+  | alt_add_index | alt_add_index | alt_add_index
+  | alt_add_index | alt_add_index | alt_add_index
+  | alt_add_index | alt_add_index | alt_add_index
+  | alt_add_index | alt_add_index | alt_add_index
   | alt_add_foreign_key | alt_add_foreign_key
   | alt_drop_foreign_key
   | alt_add_check_constraint | alt_add_check_constraint
   | alt_drop_check_constraint
   | alt_drop_column | alt_drop_column
+  | alt_drop_index | alt_drop_index
   | alt_drop_index | alt_drop_index
   | FORCE alt_lock alt_algorithm
   | RENAME TO alt_table_name
@@ -281,6 +286,7 @@ alt_text_col_name:
     { $last_column = 'scol'.$prng->int(1,10) }
   | { $last_column = 'scol'.$prng->int(1,10) }
   | { $last_column = 'scol'.$prng->int(1,10) }
+  | _field_char
   | _field_char
 ;
 
@@ -664,6 +670,11 @@ alt_key_column:
   | alt_timestamp_col_name
   | alt_text_col_name(_tinyint_positive)
   | alt_text_col_name(_smallint_positive)
+  | alt_text_col_name(_smallint_positive)
+  | alt_text_col_name(_smallint_positive)
+  | alt_text_col_name(_smallint_positive)
+  | alt_text_col_name
+  | alt_text_col_name
 ;
 
 alt_key_column_list:
