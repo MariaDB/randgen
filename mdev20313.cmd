@@ -1,0 +1,1 @@
+perl ./runall-trials.pl --trials=5 --threads=6 --duration=100 --scenario=CrashUpgrade --mysqld=--loose-max-statement-time=10 --mysqld=--lock-wait-timeout=5 --grammar=mdev20313.yy --gendata=mdev20313.zz --vardir=/dev/shm/vardir --basedir=$1
