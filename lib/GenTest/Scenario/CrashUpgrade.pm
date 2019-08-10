@@ -240,32 +240,6 @@ sub run {
   }
 
   #####
-  $self->printStep("Running test flow on the new server");
-
-  $gentest= $self->prepareGentest(2,
-    {
-      duration => int($self->getTestDuration / 3),
-      dsn => [$new_server->dsn($self->getProperty('database'))],
-      servers => [$new_server],
-    },
-    my $skip_gendata=1
-  );
-  $status= $gentest->run();
-  
-  if ($status != STATUS_OK) {
-    sayError("Test flow on the new server failed");
-    #####
-    $self->printStep("Checking the server error log for known errors");
-
-    if ($self->checkErrorLog($new_server) == STATUS_CUSTOM_OUTCOME) {
-      $status= STATUS_CUSTOM_OUTCOME;
-    }
-
-    $self->setStatus($status);
-    return $self->finalize($status,[$new_server])
-  }
-
-  #####
   $self->printStep("Stopping the new server");
 
   $status= $new_server->stopServer;
