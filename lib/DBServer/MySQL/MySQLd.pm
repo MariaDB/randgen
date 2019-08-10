@@ -976,15 +976,34 @@ sub checkDatabaseIntegrity {
             redo CHECKTABLE;
           }
         }
+        # CHECK as such doesn't return errors, even on corrupt tables, only prints them
         else {
           my @msg = @$check;
+          # table_schema.table_name => [table_type, engine, row_format, table_options]
+          my %table_attributes= ();
           CHECKOUTPUT:
           for (my $i = 0; $i < $#msg; $i= $i+2)  {
             my ($msg_type, $msg_text)= ($msg[$i], $msg[$i+1]);
-            say("For table `$database`.`$table` : $msg_type : $msg_text");
             if ($msg_type eq 'status' and $msg_text ne 'OK' or $msg_type =~ /^error$/i) {
+              if (not exists $table_attributes{"$database.$table"}) {
+                $table_attributes{"$database.$table"}= $dbh->selectrow_arrayref("SELECT TABLE_TYPE, ENGINE, ROW_FORMAT, CREATE_OPTIONS FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database' AND TABLE_NAME='$table'");
+              }
+              my $tname="$database.$table";
+              my $attrs= $table_attributes{$tname}->[1]." ".$table_attributes{$tname}->[0]." ROW_FORMAT=".$table_attributes{$tname}->[2];
+              if ($table_attributes{$tname}->[1] eq 'Aria') {
+                $attrs= ($table_attributes{$tname}->[3] =~ /transactional=1/ ? "transactional $attrs" : "non-transactional $attrs");
+              }
+              sayError("For $attrs `$database`.`$table` : $msg_type : $msg_text");
               if ($msg_text =~ /Unable to open underlying table which is differently defined or of non-MyISAM type or doesn't exist/) {
                 say("... ignoring inconsistency for the MERGE table");
+                last CHECKOUTPUT;
+              }
+              # MDEV-20313
+              elsif ( $table_attributes{$tname}->[1] eq 'Aria'
+                        and $table_attributes{$tname}->[3] =~ /transactional=1/
+                        and $table_attributes{$tname}->[2] eq 'Page'
+                        and $msg_text =~ /Found \d+ keys of \d+/ ) {
+                say("... ignoring due to known bug MDEV-20313");
                 last CHECKOUTPUT;
               } elsif (! $foreign_key_check_workaround and $msg_text =~ /Table .* doesn't exist in engine/) {
                 say("... possible foreign key check problem. Trying to turn off FOREIGN_KEY_CHECKS and retry");
@@ -994,6 +1013,8 @@ sub checkDatabaseIntegrity {
               } else {
                 $status= DBSTATUS_FAILURE;
               }
+            } else {
+              say("For table `$database`.`$table` : $msg_type : $msg_text");
             }
           }
         }
