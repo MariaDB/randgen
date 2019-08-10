@@ -4,6 +4,8 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20313:
+=~ For transactional Aria BASE TABLE ROW_FORMAT=Page .* : error : Found .* keys of .*
 MDEV-20237:
 =~ Assertion \`!page_rec_is_comp(clust_rec) \|\| rec_get_status(clust_rec) == REC_STATUS_ORDINARY'
 =~ fts_fetch_doc_from_rec
@@ -1072,6 +1074,12 @@ MDEV-17580:
 =~ Diagnostics_area::set_ok_status.*Assertion \`! is_set()'
 =~ mysql_alter_table
 =~ ADD CHECK
+# Only fixed in 10.2+
+MDEV-17576:
+=~ Server version: 10\.1
+=~ Assertion \`share->reopen == 1'
+=~ maria_extra
+=~ mysql_alter_table|mysql_create_or_drop_trigger
 MDEV-17556:
 =~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
 =~ handler::ha_reset
