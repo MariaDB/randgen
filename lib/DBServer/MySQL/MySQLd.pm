@@ -1105,9 +1105,30 @@ sub checkErrorLogForErrors {
       or $_ =~ /InnoDB: Deleting persistent statistics for table/so
       or $_ =~ /InnoDB: Unable to rename statistics from/so
       or $_ =~ /ib_buffer_pool' for reading: No such file or directory/so
-      # MENT-324
-      or $_ =~ /Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id/
     ;
+
+    # MDEV-20320
+    if ($_ =~ /Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id/) {
+        say("Encountered symptoms of MDEV-20320, variant 1");
+        next;
+    }
+    # MDEV-20320 2nd part
+    if ($_ =~ /InnoDB: Refusing to load .* \(id=\d+, flags=0x\d+\); dictionary contains id=\d+, flags=0x\d+/) {
+        $_=<ERRLOG>;
+        if (/InnoDB: Operating system error number 2 in a file operation/) {
+            $_=<ERRLOG>;
+            if (/InnoDB: The error means the system cannot find the path specified/) {
+                $_=<ERRLOG>;
+                if (/InnoDB: If you are installing InnoDB, remember that you must create directories yourself, InnoDB does not create them/) {
+                    $_=<ERRLOG>;
+                    if (/InnoDB: Could not find a valid tablespace file for .*/) {
+                        say("Encountered symptoms of MDEV-20320, variant 2");
+                        next;
+                    }
+                }
+            }
+        }
+    }
 
     # Crashes
     if (
