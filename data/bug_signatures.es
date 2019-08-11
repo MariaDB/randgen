@@ -4,8 +4,6 @@
 # Strong matches
 ##############################################################################
 
-MENT-324:
-=~ Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id
 MENT-253:
 =~ AddressSanitizer: SEGV|signal 11
 =~ filter_query_type
