@@ -275,7 +275,6 @@ MDEV-19536:
 MDEV-19526:
 =~ Assertion \`((val << shift) & mask) == (val << shift)'
 =~ rec_set_bit_field_2
-=~ page_cur_tuple_insert
 MDEV-19522:
 =~ Assertion \`val <= 4294967295u'
 =~ fts_encode_int
@@ -690,6 +689,11 @@ MDEV-18546:
 MDEV-18500:
 =~ (block)->n_pointers == 0
 =~ btr_search_build_page_hash_index
+# DRAFT
+MDEV-18499:
+=~ Assertion \`i + (8U\*1024) <= buffer->size'
+=~ translog_buffer_flush
+=~ maria_flush_log_for_page
 MDEV-18496:
 =~ mysqld: Unknown key id 1. Can't continue
 =~ ma_crypt_post_write_hook
@@ -1349,6 +1353,10 @@ MDEV-15011:
 MDEV-14894:
 =~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
 =~ tdc_remove_table
+MDEV-14865:
+=~ Assertion \`share->now_transactional == share->base\.born_transactional'
+=~ maria_close
+=~ closefrm
 ### DRAFT
 MDEV-14854:
 =~ Assertion \`trid >= info->s->state\.create_trid'
