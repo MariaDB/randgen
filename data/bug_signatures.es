@@ -4,8 +4,11 @@
 # Strong matches
 ##############################################################################
 
-MENT-324:
-=~ Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id
+MENT-319:
+=~ Assertion \`backup_flush_ticket == 0'
+=~ backup_start
+=~ backup_start
+=~ Server version: 10\.2|Server version: 10\.3
 MENT-253:
 =~ AddressSanitizer: SEGV|signal 11
 =~ filter_query_type

@@ -1,0 +1,108 @@
+# Copyright (C) 2017 MariaDB Corporation.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+# The data setup for InnoDB upgrade tests, focused on flags and formats.
+# Can be used with t0.yy as the test flow
+
+$tables = {
+        pk => [ 'bigint auto_increment' ],
+        names => [  
+                    'tc001', 'tc002', 'tc003', 'tc004', 'tc005', 'tc006', 'tc007', 'tc008', 'tc009', 'tc010',
+                    'tc011', 'tc012', 'tc013', 'tc014', 'tc015', 'tc016', 'tc017', 'tc018', 'tc019', 'tc020',
+                    'tc021', 'tc022', 'tc023', 'tc024', 'tc025', 'tc026', 'tc027', 'tc028', 'tc029', 'tc030',
+                    'tc031', 'tc032', 'tc033', 'tc034', 'tc035', 'tc036', 'tc037', 'tc038', 'tc039', 'tc040',
+                    'tc041', 'tc042', 'tc043', 'tc044', 'tc045', 'tc046', 'tc047', 'tc048', 'tc049', 'tc050',
+                    'tc051', 'tc052', 'tc053', 'tc054', 'tc055', 'tc056', 'tc057', 'tc058', 'tc059', 'tc060',
+                    'tc061', 'tc062', 'tc063', 'tc064', 'tc065', 'tc066', 'tc067', 'tc068', 'tc069', 'tc070',
+                    'tc071', 'tc072', 'tc073', 'tc074', 'tc075', 'tc076', 'tc077', 'tc078', 'tc079', 'tc080',
+                    'tc081', 'tc082', 'tc083', 'tc084', 'tc085', 'tc086', 'tc087', 'tc088', 'tc089', 'tc090',
+                    'tc091', 'tc092', 'tc093', 'tc094', 'tc095', 'tc096', 'tc097', 'tc098', 'tc099', 'tc100',
+                    'tc101', 'tc102', 'tc103', 'tc104', 'tc105', 'tc106', 'tc107', 'tc108', 'tc109', 'tc110',
+                    'tc111', 'tc112', 'tc113', 'tc114', 'tc115', 'tc116', 'tc117', 'tc118', 'tc119', 'tc120',
+                    'tc121', 'tc122', 'tc123', 'tc124', 'tc125', 'tc126', 'tc127', 'tc128', 'tc129', 'tc130',
+                    'tc131', 'tc132', 'tc133', 'tc134', 'tc135', 'tc136', 'tc137', 'tc138', 'tc139', 'tc140',
+                    'tc141', 'tc142', 'tc143', 'tc144', 'tc145', 'tc146', 'tc147', 'tc148', 'tc149', 'tc150',
+                    'tc151', 'tc152', 'tc153', 'tc154', 'tc155', 'tc156', 'tc157', 'tc158', 'tc159', 'tc160',
+                    'tc161', 'tc162', 'tc163', 'tc164', 'tc165', 'tc166', 'tc167', 'tc168', 'tc169', 'tc170',
+                    'tc171', 'tc172', 'tc173', 'tc174', 'tc175', 'tc176', 'tc177', 'tc178', 'tc179', 'tc180',
+                    'tc181', 'tc182', 'tc183', 'tc184', 'tc185', 'tc186', 'tc187', 'tc188', 'tc189', 'tc190',
+                    'tc191', 'tc192', 'tc193', 'tc194', 'tc195', 'tc196', 'tc197', 'tc198', 'tc199', 'tc100',
+                    'tc201', 'tc202', 'tc203', 'tc204', 'tc205', 'tc206', 'tc207', 'tc208', 'tc209', 'tc210',
+                    'tc211', 'tc212', 'tc213', 'tc214', 'tc215', 'tc216', 'tc217', 'tc218', 'tc219', 'tc220',
+                    'tc221', 'tc222', 'tc223', 'tc224', 'tc225', 'tc226', 'tc227', 'tc228', 'tc229', 'tc230',
+                    'tc231', 'tc232', 'tc233', 'tc234', 'tc235', 'tc236', 'tc237', 'tc238', 'tc239', 'tc240',
+                    'tc241', 'tc242', 'tc243', 'tc244', 'tc245', 'tc246', 'tc247', 'tc248', 'tc249', 'tc250',
+                    'tc251', 'tc252', 'tc253', 'tc254', 'tc255', 'tc256', 'tc257', 'tc258', 'tc259', 'tc260',
+                    'tc261', 'tc262', 'tc263', 'tc264', 'tc265', 'tc266', 'tc267', 'tc268', 'tc269', 'tc270',
+                    'tc271', 'tc272', 'tc273', 'tc274', 'tc275', 'tc276', 'tc277', 'tc278', 'tc279', 'tc280',
+                    'tc281', 'tc282', 'tc283', 'tc284', 'tc285', 'tc286', 'tc287', 'tc288', 'tc289', 'tc290',
+                    'tc291', 'tc292', 'tc293', 'tc294', 'tc295', 'tc296', 'tc297', 'tc298', 'tc299', 'tc200',
+                    'tc301', 'tc302', 'tc303', 'tc304', 'tc305', 'tc306', 'tc307', 'tc308', 'tc309', 'tc310',
+                    'tc311', 'tc312', 'tc313', 'tc314', 'tc315', 'tc316', 'tc317', 'tc318', 'tc319', 'tc320',
+                    'tc321', 'tc322', 'tc323', 'tc324', 'tc325', 'tc326', 'tc327', 'tc328', 'tc329', 'tc330',
+                    'tc331', 'tc332', 'tc333', 'tc334', 'tc335', 'tc336', 'tc337', 'tc338', 'tc339', 'tc340',
+                    'tc341', 'tc342', 'tc343', 'tc344', 'tc345', 'tc346', 'tc347', 'tc348', 'tc349', 'tc350',
+                    'tc351', 'tc352', 'tc353', 'tc354', 'tc355', 'tc356', 'tc357', 'tc358', 'tc359', 'tc360',
+                    'tc361', 'tc362', 'tc363', 'tc364', 'tc365', 'tc366', 'tc367', 'tc368', 'tc369', 'tc370',
+                    'tc371', 'tc372', 'tc373', 'tc374', 'tc375', 'tc376', 'tc377', 'tc378', 'tc379', 'tc380',
+                    'tc381', 'tc382', 'tc383', 'tc384', 'tc385', 'tc386', 'tc387', 'tc388', 'tc389', 'tc390',
+                    'tc391', 'tc392', 'tc393', 'tc394', 'tc395', 'tc396', 'tc397', 'tc398', 'tc399', 'tc300',
+                    'tc401', 'tc402', 'tc403', 'tc404', 'tc405', 'tc406', 'tc407', 'tc408', 'tc409', 'tc410',
+                    'tc411', 'tc412', 'tc413', 'tc414', 'tc415', 'tc416', 'tc417', 'tc418', 'tc419', 'tc420',
+                    'tc421', 'tc422', 'tc423', 'tc424', 'tc425', 'tc426', 'tc427', 'tc428', 'tc429', 'tc430',
+                    'tc431', 'tc432', 'tc433', 'tc434', 'tc435', 'tc436', 'tc437', 'tc438', 'tc439', 'tc440',
+                    'tc441', 'tc442', 'tc443', 'tc444', 'tc445', 'tc446', 'tc447', 'tc448', 'tc449', 'tc450',
+                    'tc451', 'tc452', 'tc453', 'tc454', 'tc455', 'tc456', 'tc457', 'tc458', 'tc459', 'tc460',
+                    'tc461', 'tc462', 'tc463', 'tc464', 'tc465', 'tc466', 'tc467', 'tc468', 'tc469', 'tc470',
+                    'tc471', 'tc472', 'tc473', 'tc474', 'tc475', 'tc476', 'tc477', 'tc478', 'tc479', 'tc480',
+                    'tc481', 'tc482', 'tc483', 'tc484', 'tc485', 'tc486', 'tc487', 'tc488', 'tc489', 'tc490',
+                    'tc491', 'tc492', 'tc493', 'tc494', 'tc495', 'tc496', 'tc497', 'tc498', 'tc499', 'tc400',
+                    'tc501', 'tc502', 'tc503', 'tc504', 'tc505', 'tc506', 'tc507', 'tc508', 'tc509', 'tc510',
+                    'tc511', 'tc512', 'tc513', 'tc514', 'tc515', 'tc516', 'tc517', 'tc518', 'tc519', 'tc520',
+                    'tc521', 'tc522', 'tc523', 'tc524', 'tc525', 'tc526', 'tc527', 'tc528', 'tc529', 'tc530',
+                    'tc531', 'tc532', 'tc533', 'tc534', 'tc535', 'tc536', 'tc537', 'tc538', 'tc539', 'tc540',
+                    'tc541', 'tc542', 'tc543', 'tc544', 'tc545', 'tc546', 'tc547', 'tc548', 'tc549', 'tc550',
+                    'tc551', 'tc552', 'tc553', 'tc554', 'tc555', 'tc556', 'tc557', 'tc558', 'tc559', 'tc560',
+                    'tc561', 'tc562', 'tc563', 'tc564', 'tc565', 'tc566', 'tc567', 'tc568', 'tc569', 'tc570',
+                    'tc571', 'tc572', 'tc573', 'tc574', 'tc575', 'tc576', 'tc577', 'tc578', 'tc579', 'tc580',
+                    'tc581', 'tc582', 'tc583', 'tc584', 'tc585', 'tc586', 'tc587', 'tc588', 'tc589', 'tc590',
+                    'tc591', 'tc592', 'tc593', 'tc594', 'tc595', 'tc596', 'tc597', 'tc598', 'tc599', 'tc500'
+        ],
+        engines => [ 'InnoDB' ],
+        rows => [ 10 ],
+        options => [ 
+            '/*!100100 PAGE_COMPRESSED=1 */', 
+            '/*!100100 PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=9 */',
+            'ROW_FORMAT=DYNAMIC /*!100100 PAGE_COMPRESSED=1 */', 
+            'ROW_FORMAT=DYNAMIC /*!100100 PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=1 */',
+            'ROW_FORMAT=DYNAMIC /*!100100 PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=9 */',
+            'ROW_FORMAT=COMPACT /*!100100 PAGE_COMPRESSED=1 */', 
+            'ROW_FORMAT=COMPACT /*!100100 PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=1 */',
+            'ROW_FORMAT=COMPACT /*!100100 PAGE_COMPRESSED=1 PAGE_COMPRESSION_LEVEL=9 */',
+        ]
+};
+
+$fields = {
+        types => [ 'int', 'timestamp', 'varchar(8)' ],
+        indexes => [ undef, 'key' ],
+        null => [ undef, 'not null' ]
+};
+
+$data = {
+        numbers => [ 'digit', 'null', undef ],
+        strings => [ 'letter', 'english', 'char(8)', 'null' ],
+        temporals => [ undef, 'timestamp', 'null' ]
+}

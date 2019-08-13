@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20320:
+=~ Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id
+MDEV-20320:
+=~ InnoDB: Refusing to load .* (id=.*, flags=.*); dictionary contains id=.*, flags=.*
+=~ InnoDB: Operating system error number 2 in a file operation
+=~ InnoDB: Could not find a valid tablespace file for .*
+MDEV-20313:
+=~ For transactional Aria BASE TABLE ROW_FORMAT=Page .* : error : Found .* keys of .*
 MDEV-20237:
 =~ Assertion \`!page_rec_is_comp(clust_rec) \|\| rec_get_status(clust_rec) == REC_STATUS_ORDINARY'
 =~ fts_fetch_doc_from_rec
@@ -267,7 +275,6 @@ MDEV-19536:
 MDEV-19526:
 =~ Assertion \`((val << shift) & mask) == (val << shift)'
 =~ rec_set_bit_field_2
-=~ page_cur_tuple_insert
 MDEV-19522:
 =~ Assertion \`val <= 4294967295u'
 =~ fts_encode_int
@@ -682,6 +689,11 @@ MDEV-18546:
 MDEV-18500:
 =~ (block)->n_pointers == 0
 =~ btr_search_build_page_hash_index
+# DRAFT
+MDEV-18499:
+=~ Assertion \`i + (8U\*1024) <= buffer->size'
+=~ translog_buffer_flush
+=~ maria_flush_log_for_page
 MDEV-18496:
 =~ mysqld: Unknown key id 1. Can't continue
 =~ ma_crypt_post_write_hook
@@ -1072,6 +1084,12 @@ MDEV-17580:
 =~ Diagnostics_area::set_ok_status.*Assertion \`! is_set()'
 =~ mysql_alter_table
 =~ ADD CHECK
+# Only fixed in 10.2+
+MDEV-17576:
+=~ Server version: 10\.1
+=~ Assertion \`share->reopen == 1'
+=~ maria_extra
+=~ mysql_alter_table|mysql_create_or_drop_trigger
 MDEV-17556:
 =~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
 =~ handler::ha_reset
@@ -1335,6 +1353,10 @@ MDEV-15011:
 MDEV-14894:
 =~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
 =~ tdc_remove_table
+MDEV-14865:
+=~ Assertion \`share->now_transactional == share->base\.born_transactional'
+=~ maria_close
+=~ closefrm
 ### DRAFT
 MDEV-14854:
 =~ Assertion \`trid >= info->s->state\.create_trid'
