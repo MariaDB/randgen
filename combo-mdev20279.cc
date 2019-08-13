@@ -34,6 +34,7 @@ $combinations = [
   --mysqld=--max-statement-time=20
   --mysqld=--lock-wait-timeout=10
   --mysqld=--innodb-lock-wait-timeout=5
+  --mysqld=--thread_stack=1310720
   --engine=Aria
   '],
   # Combo
@@ -42,7 +43,6 @@ $combinations = [
     $encryption,
   [
     '',
-    '--mysqld=--thread_stack=131072',
     '--vcols --mysqld=--log-bin --mysqld=--log_bin_trust_function_creators=1',
     '--ps-protocol --filter=conf/mariadb/need-reconnect.ff'
   ]
