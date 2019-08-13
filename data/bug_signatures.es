@@ -7,8 +7,7 @@
 MENT-319:
 =~ Assertion \`backup_flush_ticket == 0'
 =~ backup_start
-=~ backup_start
-=~ Server version: 10\.2|Server version: 10\.3
+=~ run_backup_stage
 MENT-253:
 =~ AddressSanitizer: SEGV|signal 11
 =~ filter_query_type
