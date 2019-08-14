@@ -29,3 +29,7 @@ MDEV-19166:
 =~ Assertion \`!is_zero_datetime()'
 =~ Timestamp_or_zero_datetime::tv
 =~ Item_cache_timestamp::to_datetime
+
+##############################################################################
+# Weak matches
+##############################################################################
