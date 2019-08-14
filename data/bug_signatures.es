@@ -4,6 +4,23 @@
 # Strong matches
 ##############################################################################
 
+MENT-350:
+=~ Installing MariaDB/MySQL system tables in
+=~ MariaDB Audit Plugin version 2.* STARTED
+=~ Assertion \`global_status_var\.global_memory_used == 0'
+=~ mysqld_exit(int)
+=~ AddressSanitizer: SEGV
+=~ Server version: 10\.4
+MENT-349:
+=~ AddressSanitizer: heap-use-after-free
+=~ filter_query_type
+=~ log_statement_ex
+=~ auditing
+=~ Version: '10\.3|Version: '10\.2
+MENT-341:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ my_ok
 MENT-319:
 =~ Assertion \`backup_flush_ticket == 0'
 =~ backup_start
