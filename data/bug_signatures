@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20349:
+=~ Assertion \`to_len >= 8'
+=~ convert_to_printable
+=~ String::append_semi_hex
 MDEV-20347:
 =~ AddressSanitizer: heap-use-after-free
 =~ String::c_ptr

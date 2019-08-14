@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MENT-341:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ mysql_create_or_drop_trigger
 MENT-319:
 =~ Assertion \`backup_flush_ticket == 0'
 =~ backup_start
