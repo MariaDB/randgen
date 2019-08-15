@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20360:
+=~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), part_id)'
+=~ ha_partition::part_records
+=~ partition_info::vers_set_hist_part
+MDEV-20358:
+=~ AddressSanitizer: use-after-poison
+=~ Item_ident::print
+=~ Item::print_for_table_def
+=~ Virtual_column_info::print
 MDEV-20349:
 =~ Assertion \`to_len >= 8'
 =~ convert_to_printable
@@ -18,7 +27,9 @@ MDEV-20338:
 =~ check_fields
 =~ mysql_update
 =~ sp_instr_stmt::exec_core
+# Fix merged into 10.3/10.4, but not yet in 10.5
 MDEV-20336:
+=~ Server version: 10\.5
 =~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), part_id)'
 =~ ha_partition::part_records
 =~ partition_info::vers_set_hist_part
@@ -475,7 +486,6 @@ MDEV-19173:
 MDEV-19131:
 =~ Assertion \`table->versioned(VERS_TRX_ID) \|\| (table->versioned() && table->s->table_category == TABLE_CATEGORY_TEMPORARY)'
 =~ Field_vers_trx_id::get_date
-=~ Temporal_with_date::make_from_item
 MDEV-19130:
 =~ Assertion \`next_insert_id >= auto_inc_interval_for_cur_row\.minimum()'
 =~ handler::update_auto_increment
@@ -486,7 +496,7 @@ MDEV-19127:
 =~ vers_prepare_keys
 =~ mysql_create_frm_image
 MDEV-19092:
-=~ Assertion \`foreign->referenced_index != __null'|signal 11|Assertion \`new_index != __null'
+=~ Assertion \`foreign->referenced_index != __null'|signal 11|Assertion \`new_index != __null'|InnoDB: Failing assertion: new_index != __null
 =~ dict_mem_table_col_rename_low
 =~ innobase_rename_or_enlarge_columns_cache
 MDEV-19091:
@@ -933,8 +943,7 @@ MDEV-18046:
 MDEV-18046:
 =~ Assertion \`var_header_len >= 2'
 =~ Rows_log_event::Rows_log_event
-=~ Update_rows_log_event::Update_rows_log_event
-=~ mysql_show_binlog_events
+=~ mysql_show_binlog_events|SHOW BINLOG EVENTS
 MDEV-18046:
 =~ Assertion \`m_field_metadata_size <= (m_colcnt \* 2)'
 =~ Table_map_log_event::Table_map_log_event
