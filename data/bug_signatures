@@ -1034,6 +1034,11 @@ MDEV-17842:
 =~ Assertion \`((copy & 0x00000003) == 0x02)'
 =~ pfs_lock::allocated_to_free
 =~ drop_table_share
+MDEV-17818:
+=~ signal 11
+=~ parse_vcol_defs
+=~ open_table_from_share
+=~ open_temporary_table
 MDEV-17782:
 =~ decimal_bin_size: Assertion \`scale <= precision'
 =~ my_decimal_get_binary_size
@@ -1778,8 +1783,6 @@ MDEV-17838:
 =~ in Item_field::rename_fields_processor
 MDEV-17834:
 =~ row_upd_build_difference_binary
-MDEV-17818:
-=~ parse_vcol_defs
 MDEV-17814:
 =~ is_current_stmt_binlog_format_row
 MDEV-17760:
