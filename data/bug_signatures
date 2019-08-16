@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20363:
+=~ Assertion \`is_unsigned() == attr\.unsigned_flag'
+=~ Type_handler_longlong::make_table_field
+=~ Server version: 10\.5
 MDEV-20360:
 =~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), part_id)'
 =~ ha_partition::part_records
