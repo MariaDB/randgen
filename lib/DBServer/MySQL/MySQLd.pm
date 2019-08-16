@@ -368,6 +368,8 @@ sub createMysqlBase  {
         open(CONFIG,">$self->[MYSQLD_CONFIG_FILE]") || die "Could not open $self->[MYSQLD_CONFIG_FILE] for writing: $!\n";
         print CONFIG @{$self->[MYSQLD_CONFIG_CONTENTS]};
         close CONFIG;
+        say("Config file contents:");
+        sayFile($self->[MYSQLD_CONFIG_FILE]);
     }
 
     my $defaults = ($self->[MYSQLD_CONFIG_FILE] ? "--defaults-file=$self->[MYSQLD_CONFIG_FILE]" : "--no-defaults");
