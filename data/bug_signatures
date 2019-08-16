@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20366:
+=~ signal 11|AddressSanitizer: SEGV
+=~ check_change_password
+=~ sp_instr_stmt::exec_core
+=~ Server version: 10\.5
 MDEV-20363:
 =~ Assertion \`is_unsigned() == attr\.unsigned_flag'
 =~ Type_handler_longlong::make_table_field
