@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20370:
+=~ Assertion \`mtr->get_log_mode() == MTR_LOG_NO_REDO'
+=~ page_cur_insert_rec_write_log
+=~ btr_defragment_merge_pages
 MDEV-20366:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_change_password
@@ -770,6 +774,10 @@ MDEV-18371:
 =~ Conditional jump or move depends on uninitialised value|signal 11|AddressSanitizer: SEGV
 =~ cmp_key_rowid_part_id
 =~ QUICK_RANGE_SELECT::get_next
+MDEV-18370:
+=~ Failing assertion: lsn % OS_FILE_LOG_BLOCK_SIZE == LOG_BLOCK_HDR_SIZE
+=~ log_pad_current_log_block
+=~ log_scrub
 MDEV-18366:
 =~ signal 11
 =~ row_sel_field_store_in_mysql_format_func
