@@ -100,7 +100,8 @@ sub run {
   #####
 
   # We'll need it for --prepare (--use-memory)
-  my $buffer_pool_size= $server->serverVariable('innodb_buffer_pool_size');
+  # Due to MDEV-19176, a bigger value is required
+  my $buffer_pool_size= $server->serverVariable('innodb_buffer_pool_size') * 2;
 
   my $interval_between_backups= 30;
 

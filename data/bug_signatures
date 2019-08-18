@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20349:
+=~ Assertion \`to_len >= 8'
+=~ convert_to_printable
+=~ String::append_semi_hex
+MDEV-20347:
+=~ AddressSanitizer: heap-use-after-free
+=~ String::c_ptr
+=~ partition_info::prune_partition_bitmaps
+=~ ha_partition::change_partitions_to_open
+MDEV-20338:
+=~ signal 11|AddressSanitizer: SEGV
+=~ check_fields
+=~ mysql_update
+=~ sp_instr_stmt::exec_core
 MDEV-20336:
 =~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), part_id)'
 =~ ha_partition::part_records
@@ -66,10 +80,6 @@ MDEV-20190:
 =~ Assertion \`!((c\.prtype ^ o->prtype) & ~(256U \| (16384U\|32768U) \| 4096U))'
 =~ dict_table_t::instant_column
 =~ ha_innobase_inplace_ctx::instant_column
-MDEV-20186:
-=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
-=~ Field_timestampf::is_max
-=~ TABLE::verify_constraints
 MDEV-20154:
 =~ Assertion \`len <= col->len \|\| ((col->mtype) == 5 \|\| (col->mtype) == 14)'
 =~ row_merge_buf_add
@@ -105,8 +115,6 @@ MDEV-20015:
 =~ Assertion \`!in_use->is_error()'
 =~ update_virtual_field
 =~ compute_vcols
-MENT-264:
-=~ Error on file .*\.M.*I open during .*seq.* table copy
 MDEV-19984:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
 =~ do_copy_null|do_outer_field_null
@@ -125,9 +133,6 @@ MDEV-19848:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_vcol_forward_refs
 =~ Delayed_insert::get_local_table
-MENT-175:
-=~ For table \`mysql\`\.\`.*_stats\` : Error : Can't find file: '\./mysql/.*_stats\.MYI' (errno: 2 "No such file or directory")
-=~ Database appears to be corrupt after restoring the backup
 MDEV-19840:
 =~ Assertion \`m_status == DA_ERROR'
 =~ Diagnostics_area::sql_errno
@@ -142,16 +147,6 @@ MDEV-19817:
 =~ Item_field::used_tables
 =~ setup_fields_with_no_wrap
 =~ Multiupdate_prelocking_strategy::handle_end
-MDEV-19814:
-=~ row_upd_del_mark_clust_rec|Assertion \`update->n_fields < ulint(table->n_cols + table->n_v_cols)'
-=~ row_upd_clust_step|upd_node_t::make_versioned_helper
-=~ row_update_for_mysql
-=~ DELETE HISTORY
-MDEV-19814:
-=~ signal 11|AddressSanitizer: SEGV on unknown address
-=~ row_upd_step
-=~ row_update_for_mysql
-=~ TABLE::delete_row
 MDEV-19720:
 =~ Assertion \`sel->quick'
 =~ make_range_rowid_filters
@@ -393,12 +388,6 @@ MDEV-19303:
 =~ dtuple_validate
 =~ page_cur_search_with_match_bytes
 =~ rr_from_pointers
-MDEV-19301:
-=~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
-=~ Server version: 10\.5|Server version: 10\.4
-=~ Datetime_truncation_not_needed::Datetime_truncation_not_needed
-=~ Item_func_nullif::date_op
-=~ Type_handler_temporal_result::Item_func_hybrid_field_type_get_date
 MDEV-19299:
 =~ AddressSanitizer: heap-use-after-free
 =~ my_scan_weight_utf8_general_ci|my_utf8_uni
@@ -483,10 +472,6 @@ MDEV-19173:
 =~ dict_table_get_col_name
 =~ innodb_base_col_setup_for_stored
 =~ create_table_info_t::create_table_def
-MDEV-19166:
-=~ Assertion \`!is_zero_datetime()'
-=~ Timestamp_or_zero_datetime::tv
-=~ Item_cache_timestamp::to_datetime
 MDEV-19131:
 =~ Assertion \`table->versioned(VERS_TRX_ID) \|\| (table->versioned() && table->s->table_category == TABLE_CATEGORY_TEMPORARY)'
 =~ Field_vers_trx_id::get_date
@@ -537,9 +522,9 @@ MDEV-19014:
 =~ Item_direct_view_ref::fix_fields
 =~ sp_instr_stmt::exec_core
 MDEV-19011:
-=~ Assertion \`file->s->base.reclength < file->s->vreclength'
+=~ Assertion \`file->s->base\.reclength < file->s->vreclength'
 =~ ha_myisam::setup_vcols_for_repair
-=~ ha_myisam::enable_indexes
+=~ ha_myisam::enable_indexes|ha_myisam::optimize
 =~ Sql_cmd_alter_table::execute
 MDEV-18980:
 =~ Assertion \`join->best_read < double(1\.79769313486231570814527423731704357e+308L)'
@@ -731,10 +716,6 @@ MDEV-18457:
 =~ _ma_check_bitmap
 =~ set_page_bits
 =~ _ma_write_init_block_record
-MDEV-18456:
-=~ Assertion \`item->maybe_null'
-=~ Type_handler_temporal_result::make_sort_key
-=~ create_sort_index
 MDEV-18451:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ maria_create_trn_for_mysql
@@ -819,6 +800,9 @@ MDEV-18285:
 =~ Diagnostics_area::disable_status
 =~ Prepared_statement::prepare
 =~ DROP
+MDEV-18274:
+=~ Assertion \`!!new_clustered == (innobase_need_rebuild(ha_alter_info, old_table) \|\| add_fts_doc_id)'
+=~ prepare_inplace_alter_table_dict
 MDEV-18260:
 =~ Assertion \`!was_changed \|\| (block->status & 64) \|\| (block->status & 32)'
 =~ pagecache_unlock_by_link
@@ -1090,10 +1074,10 @@ MDEV-17580:
 =~ ADD CHECK
 # Only fixed in 10.2+
 MDEV-17576:
-=~ Server version: 10\.1
 =~ Assertion \`share->reopen == 1'
 =~ maria_extra
 =~ mysql_alter_table|mysql_create_or_drop_trigger
+=~ Server version: 10\.1
 MDEV-17556:
 =~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
 =~ handler::ha_reset
@@ -1285,10 +1269,6 @@ MDEV-15589:
 =~ Assertion \`xid_seqno > trx_sys_cur_xid_seqno'
 =~ trx_sys_update_wsrep_checkpoint
 =~ innobase_wsrep_set_checkpoint
-MDEV-15572:
-=~ signal 11|AddressSanitizer: SEGV
-=~ ha_maria::end_bulk_insert|ha_maria::extra
-=~ select_insert::abort_result_set
 MDEV-15534:
 =~ Assertion \`m_lock_type == 2'
 =~ handler::ha_drop_table
@@ -1310,16 +1290,10 @@ MDEV-15464:
 =~ Assertion \`purge_sys\.purge_queue\.empty() \|\| purge_sys\.purge_queue\.top() != m_rsegs'
 =~ TrxUndoRsegsIterator::set_next
 =~ trx_purge_choose_next_log
-MDEV-15458:
-=~ AddressSanitizer: heap-buffer-overflow|signal 11|Conditional jump or move depends on uninitialised value|AddressSanitizer: heap-use-after-free|AddressSanitizer: SEGV on unknown address
-=~ heap_scan
-=~ handler::ha_rnd_next
-=~ rr_sequential
-=~ mysql_update
 MDEV-15401:
 =~ Item_direct_view_ref::used_tables() const: Assertion \`fixed' failed
 =~ Item_func_nullif::update_used_tables
-=~ Prepared_statement::execute
+=~ Prepared_statement::execute|sp_instr_stmt::exec_core
 MDEV-15282:
 =~ Assertion \`recv_sys->mlog_checkpoint_lsn <= recv_sys->recovered_lsn'
 =~ recv_parse_log_recs
@@ -1353,6 +1327,12 @@ MDEV-15011:
 =~ Error: Freeing overrun buffer
 =~ sysmalloc: Assertion \`(old_top == initial_top (av) && old_size == 0) \|\| ((unsigned long) (old_size) >= MINSIZE && prev_inuse (old_top) && ((unsigned long) old_end & (pagesize - 1)) == 0)'
 =~ ilink::operator new
+### Only fixed in 10.2+
+MDEV-14996:
+=~ Assertion \`!thd->get_stmt_da()->is_sent() \|\| thd->killed == KILL_CONNECTION'
+=~ int ha_maria::external_lock
+=~ Status: KILL_CONNECTION|Status: KILL_SERVER
+=~ Server version: 10\.1
 ### DRAFT
 MDEV-14894:
 =~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
@@ -1481,7 +1461,7 @@ TODO-842:
 TODO-842:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
-=~ BACKUP STAGE BLOCK_COMMIT
+=~ Query (.*): BACKUP STAGE BLOCK_COMMIT
 TODO-842:
 =~ AddressSanitizer: heap-buffer-overflow
 =~ update_const_equal_items
@@ -1709,8 +1689,6 @@ MDEV-18322:
 =~ wrong page type
 MDEV-18291:
 =~ ha_innobase_inplace_ctx::
-MDEV-18274:
-=~ new_clustered ==
 MDEV-18213:
 =~ Error: failed to execute query BACKUP STAGE BLOCK_COMMIT: Deadlock found when trying to get lock
 MDEV-18209:
