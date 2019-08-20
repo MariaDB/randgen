@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20395:
+=~ Assertion \`!found'
+=~ remove_ptr_from_dynarray
+=~ handle_grant_struct
 MDEV-20384:
 =~ Assertion \`field\.is_sane()'
 =~ Protocol_text::store_field_metadata
@@ -982,7 +986,7 @@ MDEV-18042:
 =~ signal 11|AddressSanitizer: SEGV
 =~ mysql_alter_table
 =~ Sql_cmd_alter_table::execute
-=~ Query .*: ALTER TABLE .* DATE NOT NULL
+=~ Query .*: ALTER TABLE .* DATE NOT NULL|Query .*: ALTER TABLE .* DATETIME NOT NULL
 MDEV-18018:
 =~ signal 11|AddressSanitizer: heap-use-after-free
 =~ TABLE_LIST::reinit_before_use
@@ -1418,6 +1422,11 @@ MDEV-13644:
 =~ void ilink::assert_linked(): Assertion \`prev != 0 && next != 0'
 =~ unlink_not_visible_thd
 =~ Status: KILL_SERVER
+MDEV-13444:
+=~ InnoDB: Failing assertion: mtflush_io != NULL
+=~ buf_mtflu_io_thread_exit
+=~ srv_shutdown_all_bg_threads
+=~ Server version: 10\.2|Server version: 10\.1
 MDEV-11740:
 =~ Assertion \`pos != (~(my_off_t) 0)' failed
 =~ my_seek
