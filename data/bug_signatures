@@ -1193,6 +1193,11 @@ MDEV-16932:
 =~ my_well_formed_char_length_utf8|lex_string_cmp|my_strcasecmp_utf8
 =~ mysql_prepare_create_table
 =~ sp_head::execute|Prepared_statement::execute
+MDEV-16932:
+=~ signal 11
+=~ build_frm_image
+=~ mysql_create_frm_image
+=~ mysql_alter_table
 MDEV-16929:
 =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ open_normal_and_derived_tables
