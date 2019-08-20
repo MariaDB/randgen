@@ -966,6 +966,7 @@ sub checkDatabaseIntegrity {
       foreach my $table (sort keys %tables) {
         # Should not do CHECK etc., and especially ALTER, on a view
         next CHECKTABLE if $tables{$table} eq 'VIEW';
+        my $repair_done= 0;
 #        say("Verifying table: $database.$table:");
         my $check = $dbh->selectcol_arrayref("CHECK TABLE `$database`.`$table` EXTENDED", { Columns=>[3,4] });
         if ($dbh->err() > 0) {
@@ -995,9 +996,9 @@ sub checkDatabaseIntegrity {
               if ($table_attributes{$tname}->[1] eq 'Aria') {
                 $attrs= ($table_attributes{$tname}->[3] =~ /transactional=1/ ? "transactional $attrs" : "non-transactional $attrs");
               }
-              sayError("For $attrs `$database`.`$table` : $msg_type : $msg_text");
               if ($msg_text =~ /Unable to open underlying table which is differently defined or of non-MyISAM type or doesn't exist/) {
-                say("... ignoring inconsistency for the MERGE table");
+                sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
+                sayWarning("... ignoring inconsistency for the MERGE table");
                 last CHECKOUTPUT;
               }
               # MDEV-20313
@@ -1005,14 +1006,23 @@ sub checkDatabaseIntegrity {
                         and $table_attributes{$tname}->[3] =~ /transactional=1/
                         and $table_attributes{$tname}->[2] eq 'Page'
                         and $msg_text =~ /Found \d+ keys of \d+/ ) {
-                say("... ignoring due to known bug MDEV-20313");
+                sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
+                sayWarning("... ignoring due to known bug MDEV-20313");
                 last CHECKOUTPUT;
               } elsif (! $foreign_key_check_workaround and $msg_text =~ /Table .* doesn't exist in engine/) {
-                say("... possible foreign key check problem. Trying to turn off FOREIGN_KEY_CHECKS and retry");
+                sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
+                sayWarning("... possible foreign key check problem. Trying to turn off FOREIGN_KEY_CHECKS and retry");
                 $dbh->do("SET FOREIGN_KEY_CHECKS= 0");
                 $foreign_key_check_workaround= 1;
                 redo CHECKTABLE;
+              } elsif (not $repair_done and ($table_attributes{$tname}->[1] eq 'Aria' and $table_attributes{$tname}->[3] !~ /transactional=1/ or $table_attributes{$tname}->[1] eq 'MyISAM')) {
+                sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
+                sayWarning("... non-transactional table may be corrupt after crash recovery, trying to repair");
+                $dbh->do("REPAIR TABLE $tname");
+                $repair_done= 1;
+                redo CHECKTABLE;
               } else {
+                sayError("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 $status= DBSTATUS_FAILURE;
               }
             } else {

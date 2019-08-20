@@ -19,7 +19,7 @@
 package DBServer::DBServer;
 use base 'Exporter';
 
-@EXPORT = ('say', 'sayError', 'sayFile', 'tmpdir', 'safe_exit', 
+@EXPORT = ('say', 'sayError', 'sayWarning', 'sayFile', 'tmpdir', 'safe_exit',
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp',
            'DBSTATUS_OK','DBSTATUS_FAILURE');
@@ -97,44 +97,33 @@ sub new {
 
 sub say {
 	my $text = shift;
+    my $level= shift; # ERROR or Warning or nothing
+    $level= ($level ? '['.$level.']' : '');
     defaultLogging();
     if ($text =~ m{[\r\n]}sio) {
         foreach my $line (split (m{[\r\n]}, $text)) {
             if (defined $logger) {
                 $logger->info("[$$] ".$line);
             } else {
-                print "# ".isoTimestamp()." [$$] $line\n";
+                print "# ".isoTimestamp()." [$$]$level $line\n";
             }
         }
     } else {
         if (defined $logger) {
             $logger->info("[$$] ".$text);
         } else {
-            print "# ".isoTimestamp()." [$$] $text\n";
+            print "# ".isoTimestamp()." [$$]$level $text\n";
         }
     }
 }
 
 sub sayError {
-	my $text = shift;
-    defaultLogging();
-    if ($text =~ m{[\r\n]}sio) {
-        foreach my $line (split (m{[\r\n]}, $text)) {
-            if (defined $logger) {
-                $logger->error("[$$] ".$line);
-            } else {
-                print "# ".isoTimestamp()." [$$][ERROR] $line\n";
-            }
-        }
-    } else {
-        if (defined $logger) {
-            $logger->error("[$$] ".$text);
-        } else {
-            print "# ".isoTimestamp()." [$$][ERROR] $text\n";
-        }
-    }
+    say(@_, 'ERROR');
 }
 
+sub sayWarning {
+    say(@_, 'Warning');
+}
 
 sub sayFile {
     my ($file) = @_;
