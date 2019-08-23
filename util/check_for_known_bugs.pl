@@ -112,6 +112,7 @@ sub search_files_for_matches
         $matches_info= '';
         $res= 0;
         register_matches('strong');
+        register_regression('strong');
         last;
       }
       $mdev= undef;
@@ -160,6 +161,7 @@ sub search_files_for_matches
     print "--------------------------------------\n";
     $res= 0;
     register_matches('weak');
+    register_regression('weak');
   }
   return $res;
 }
@@ -172,6 +174,7 @@ if (search_files_for_matches(@files)) {
   if ($res) {
     print "\n--- NO MATCHES FOUND ---------------------------\n";
     register_no_match();
+    register_regression('no_match');
   }
 }
 
@@ -221,6 +224,24 @@ sub register_no_match
   if (my $dbh= connect_to_db()) {
     $dbh->do("REPLACE INTO travis.no_match (ci, test_id, test_result, url, server_branch, test_line) VALUES (\'$ci\',\'$ENV{TEST_ID}\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')");
   }
+}
+
+sub register_regression
+{
+    my $type= shift; # strong, weak or no_match
+    if (my $dbh= connect_to_db()) {
+        if ($type eq 'no_match') {
+                $dbh->do("REPLACE INTO regression.result (ci, test_id, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\', \'no_match\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')");
+            }
+        }
+        else {
+            foreach my $j (keys %found_mdevs) {
+                my $fixdate= defined $fixed_mdevs{$j} ? "'$fixed_mdevs{$j}'" : 'NULL';
+                my $draft= $draft_mdevs{$j} || 0;
+                my $match_type= ($fixdate ne 'NULL' ? 'fixed' : ($draft ? 'draft' : $type));
+                $dbh->do("REPLACE INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')");
+        }
+    }
 }
 
 sub process_found_mdev
