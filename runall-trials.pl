@@ -56,7 +56,8 @@ $SIG{INT} = sub { $ctrl_c = 1 };
 $SIG{TERM} = sub { exit(0) };
 $SIG{CHLD} = "IGNORE" if osWindows();
 
-my ($vardir, $vardir1, $vardir2, $trials, $force, $old, $exit_status, @exit_status);
+my ($vardir, $vardir1, $vardir2, $trials, $force, $old, $output, @exit_status);
+my $output_file= "/dev/shm/runall_trials.$$.output";
 
 my $max_result = 0;
 
@@ -67,8 +68,8 @@ my $opt_result = GetOptions(
 	'trials=i' => \$trials,
 	'force' => \$force,
 	'old' => \$old,
-	'exit_status=s' => \$exit_status,
-	'exit-status=s' => \$exit_status,
+	'exit_status|exit-status=s@' => \@exit_status,
+    'output=s' => \$output,
 );
 
 $trials = 1 unless defined $trials;
@@ -78,10 +79,6 @@ push @ARGV, "--vardir1=$vardir1" if defined $vardir1;
 push @ARGV, "--vardir2=$vardir2" if defined $vardir2;
 
 my $comb_str = join(' ', @ARGV);		
-
-if ($exit_status) {
-	@exit_status = split(',', $exit_status);
-}
 
 foreach my $trial_id (1..$trials) {
 
@@ -98,7 +95,7 @@ foreach my $trial_id (1..$trials) {
 
 	unless (osWindows())
 	{
-		$command = 'bash -c "set -o pipefail; '.$command.'"';
+		$command = 'bash -c "set -o pipefail; '.$command.' 2>&1 | tee $output_file"';
 	}
 
 	say("$command");
@@ -106,8 +103,7 @@ foreach my $trial_id (1..$trials) {
 	my $result = system($command) >> 8;
 	my $result_name = status2text($result);
 	say("Trial $trial_id ended with exit status $result_name ($result)");
-	unless (check_for_desired_status($result_name)) {
-		say("Exit status $result_name is not on the list of desired status codes ($exit_status), it will be ignored");
+	unless (check_for_desired_result($result_name)) {
 		next;
 	}
 	exit($result) if not defined $force;
@@ -150,18 +146,51 @@ foreach my $trial_id (1..$trials) {
 say("$0 will exit with exit status ".status2text($max_result)."($max_result)");
 exit($max_result);
 
-sub check_for_desired_status {
+sub check_for_desired_result {
 	my $resname = shift;
-	if (!$exit_status) {
-		# No desired codes, anything except for STATUS_OIK will do
-		return $resname ne 'STATUS_OK';
+    my $exit_status_matches= 0;
+	if (scalar @exit_status) {
+		foreach (@exit_status) {
+			if ($resname eq $_) {
+                $exit_status_matches= 1;
+                last;
+            }
+		}
+        unless ($exit_status_matches) {
+            say("Exit status $resname is not on the list of desired status codes (@exit_status), it will be ignored");
+            return 0;
+        }
 	}
 	else {
-		foreach (@exit_status) {
-			return 1 if $resname eq $_;
-		}
-		return 0;
+		# No desired codes, anything except for STATUS_OK will do
+		if ($resname eq 'STATUS_OK') {
+            say("Exit status STATUS_OK and the list of desired status codes is empty, result will be ignored");
+            return 0;
+        }
 	}
+
+    if ($output) {
+        unless (open(OUTFILE, "$output_file")) {
+            sayError("Could not open $output_file for reading: $!");
+            say("Cannot check if output matches the pattern, result will be ignored");
+            unlink($output_file);
+            return 0;
+        }
+        my $output_matches= 0;
+        while (<OUTFILE>) {
+            if (/$output/) {
+                $output_matches= 1;
+                last;
+            }
+        }
+        close(OUTFILE);
+        unlink($output_file);
+        unless ($output_matches) {
+            say("Output did not match the pattern $output, result will be ignored");
+            return 0;
+        }
+    }
+    return 1;
 }
 
 
