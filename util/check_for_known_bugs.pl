@@ -231,7 +231,9 @@ sub register_regression
     my $type= shift; # strong, weak or no_match
     if (my $dbh= connect_to_db()) {
         if ($type eq 'no_match') {
-                $dbh->do("INSERT INTO regression.result (ci, test_id, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\', \'no_match\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')");
+                my $query= "INSERT INTO regression.result (ci, test_id, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\', \'no_match\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')";
+                print "Running query: $query\n";
+                $dbh->do($query);
             }
         }
         else {
@@ -239,7 +241,9 @@ sub register_regression
                 my $fixdate= defined $fixed_mdevs{$j} ? "'$fixed_mdevs{$j}'" : 'NULL';
                 my $draft= $draft_mdevs{$j} || 0;
                 my $match_type= ($fixdate ne 'NULL' ? 'fixed' : ($draft ? 'draft' : $type));
-                $dbh->do("INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')");
+                my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')";
+                print "Running query: $query\n";
+                $dbh->do($query);
         }
     }
 }
