@@ -395,6 +395,10 @@ sub createMysqlBase  {
     push @$boot_options, "--skip-log-bin";
     push @$boot_options, "--loose-innodb-encrypt-tables=OFF";
     push @$boot_options, "--loose-innodb-encrypt-log=OFF";
+    # Workaround for MENT-350
+    if ($self->_notOlderThan(10,4,6)) {
+        push @$boot_options, "--loose-server-audit-logging=OFF";
+    }
 
     my $command;
 
