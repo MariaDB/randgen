@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20410:
+=~ pure virtual method called
+=~ set_properties
+=~ Item_direct_ref
+MDEV-20410:
+=~ signal 11|AddressSanitizer: heap-use-after-free
+=~ create_view_field
+=~ find_field_in_view
+=~ find_field_in_tables
 MDEV-20395:
 =~ Assertion \`!found'
 =~ remove_ptr_from_dynarray
@@ -147,6 +156,10 @@ MDEV-20114:
 =~ signal 11|AddressSanitizer: SEGV
 =~ dict_col_t::detach
 =~ dict_index_t::detach_columns
+MDEV-20066:
+=~ InnoDB: Failing assertion: !cursor->index->is_committed()
+=~ row_ins_sec_index_entry_by_modify
+=~ row_update_for_mysql
 MDEV-20015:
 =~ Assertion \`!in_use->is_error()'
 =~ update_virtual_field
@@ -612,6 +625,10 @@ MDEV-18875:
 =~ ha_rollback_trans
 =~ mysql_trans_commit_alter_copy_data|trans_commit_implicit
 =~ ADD PERIOD|add period|LOCK TABLE
+MDEV-18865:
+=~ Assertion \`t->first->versioned_by_id()'
+=~ innodb_prepare_commit_versioned
+=~ mysql_alter_table
 MDEV-18833:
 =~ Assertion \`thd->is_error() \|\| kill_errno \|\| thd->killed == ABORT_QUERY'
 =~ filesort
@@ -955,6 +972,11 @@ MDEV-18067:
 =~ signal 11
 =~ backup_end
 =~ run_backup_stage|THD::cleanup|unlink_thd
+MDEV-18067:
+=~ signal 11
+=~ I_P_List
+=~ MDL_lock::Ticket_list::clear_bit_if_not_in_list|MDL_lock::Ticket_list::remove_ticket
+=~ MDL_context::upgrade_shared_lock
 MDEV-18047:
 =~ index->magic_n == 76789786|Assertion \`pos < index->n_def'|AddressSanitizer: heap-use-after-free
 =~ dict_index_get_nth_field|dict_index_get_nth_col
@@ -991,6 +1013,10 @@ MDEV-18046:
 =~ signal 11
 =~ my_bitmap_free
 =~ Update_rows_log_event::~Update_rows_log_event
+=~ mysql_show_binlog_events
+MDEV-18046:
+=~ Assertion \`(end - pos) >= infoLen'
+=~ Rows_log_event::Rows_log_event
 =~ mysql_show_binlog_events
 MDEV-18042:
 =~ signal 11|AddressSanitizer: SEGV
@@ -1215,9 +1241,9 @@ MDEV-16932:
 MDEV-16929:
 =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ open_normal_and_derived_tables
-=~ mysql_test_create_view
+=~ mysql_test_create_view|mysql_test_select
 =~ check_prepared_statement
-=~ KILL_SERVER|KILL_CONNECTION
+=~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY
 MDEV-16929:
 =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ open_normal_and_derived_tables
@@ -1249,7 +1275,7 @@ MDEV-16745:
 =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_thread_tables
 =~ mysqld_show_create
-=~ KILL_SERVER
+=~ KILL_SERVER|KILL_CONNECTION
 MDEV-16699:
 =~ AddressSanitizer: heap-use-after-free|signal 11
 =~ my_strnncoll_binary
