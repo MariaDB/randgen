@@ -236,9 +236,16 @@ sub register_result
         }
         else {
             foreach my $j (keys %found_mdevs) {
-                my $fixdate= defined $fixed_mdevs{$j} ? "'$fixed_mdevs{$j}'" : 'NULL';
-                my $draft= $draft_mdevs{$j} || 0;
-                my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, \'$type\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')";
+                my $fixdate= 'NULL';
+                my $match_type= $type;
+                if ($draft_mdevs{$j}) {
+                    $match_type= 'draft';
+                }
+                if (defined $fixed_mdevs{$j}) {
+                    $fixdate= "'$fixed_mdevs{$j}'";
+                    $match_type= 'fixed';
+                }
+                my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')";
                 $dbh->do($query);
             }
         }
