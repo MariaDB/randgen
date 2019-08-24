@@ -95,7 +95,7 @@ foreach my $trial_id (1..$trials) {
 
 	unless (osWindows())
 	{
-		$command = 'bash -c "set -o pipefail; '.$command.' 2>&1 | tee $output_file"';
+		$command = 'bash -c "set -o pipefail; '.$command.' 2>&1 | tee '.$output_file.'"';
 	}
 
 	say("$command");
