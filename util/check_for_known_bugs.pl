@@ -112,7 +112,7 @@ sub search_files_for_matches
         $matches_info= '';
         $res= 0;
         register_matches('strong');
-        register_regression('strong');
+        register_result('strong');
         last;
       }
       $mdev= undef;
@@ -161,7 +161,7 @@ sub search_files_for_matches
     print "--------------------------------------\n";
     $res= 0;
     register_matches('weak');
-    register_regression('weak');
+    register_result('weak');
   }
   return $res;
 }
@@ -174,7 +174,7 @@ if (search_files_for_matches(@files)) {
   if ($res) {
     print "\n--- NO MATCHES FOUND ---------------------------\n";
     register_no_match();
-    register_regression('no_match');
+    register_result('no_match');
   }
 }
 
@@ -226,7 +226,7 @@ sub register_no_match
   }
 }
 
-sub register_regression
+sub register_result
 {
     my $type= shift; # strong, weak or no_match
     if (my $dbh= connect_to_db()) {
@@ -236,9 +236,16 @@ sub register_regression
         }
         else {
             foreach my $j (keys %found_mdevs) {
-                my $fixdate= defined $fixed_mdevs{$j} ? "'$fixed_mdevs{$j}'" : 'NULL';
-                my $draft= $draft_mdevs{$j} || 0;
-                my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, \'$type\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')";
+                my $fixdate= 'NULL';
+                my $match_type= $type;
+                if ($draft_mdevs{$j}) {
+                    $match_type= 'draft';
+                }
+                if (defined $fixed_mdevs{$j}) {
+                    $fixdate= "'$fixed_mdevs{$j}'";
+                    $match_type= 'fixed';
+                }
+                my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')";
                 $dbh->do($query);
             }
         }
