@@ -76,7 +76,7 @@ sub simplify {
 	# loops in the grammar files.
 	#
 
-	foreach my $trial (0..1) {
+	foreach my $d (0..1) {
 		$simplifier->[SIMPLIFIER_GRAMMAR_OBJ] = GenTest::Grammar->new(
 			grammar_string	=> $grammar_string,
 			grammar_flags	=> $simplifier->[SIMPLIFIER_GRAMMAR_FLAGS]
@@ -86,11 +86,14 @@ sub simplify {
 
 		$simplifier->[SIMPLIFIER_RULES_VISITED] = {};
 
+        say("-----------------------");
+        say("Starting ".($d==0 ? "first" : "second")." descend");
 		$simplifier->descend('query');
 
 		foreach my $rule (keys %{$simplifier->[SIMPLIFIER_GRAMMAR_OBJ]->rules()}) {
+            next if $rule =~ /^(?:query|thread)_init$/;
 			if (not exists $simplifier->[SIMPLIFIER_RULES_VISITED]->{$rule}) {
-			#	say("Rule $rule is not referenced any more. Removing from grammar.");
+				say("Rule $rule is not referenced any more. Removing from grammar.");
 				$simplifier->[SIMPLIFIER_GRAMMAR_OBJ]->deleteRule($rule);
 			}
 		}
@@ -119,20 +122,24 @@ sub descend {
 
 	my $orig_components = $rule_obj->components();
 
-	for (my $component_id = $#$orig_components; $component_id >= 0; $component_id--) {
+    say("The number of original components: ".$#$orig_components);
+	for (my $component_id = $#$orig_components; $component_id >= 0; $component_id--)
+    {
+        say("-----");
+        say("Component ID to work with: $component_id");
 		my $orig_component = $orig_components->[$component_id];
 
 		# Remove one component and call the oracle to check if the issue is still repeatable
 
-	 	say("Attempting to remove component ".join(' ', @$orig_component)." ...");
+		say("Attempting to remove component [".join(' ', @$orig_component)."] ...");
 
 		splice (@$orig_components, $component_id, 1);
 		
 		if ($simplifier->oracle($grammar_obj->toString()) != ORACLE_ISSUE_NO_LONGER_REPEATABLE) {
-		 	say("Outcome still repeatable after removing ".join(' ', @$orig_component).". Deleting component.");
+			say("Outcome still repeatable after removing [".join(' ', @$orig_component)."]. Deleting component.");
 			next;
 		} else {
-			say("Outcome no longer repeatable after removing ".join(' ', @$orig_component).". Keeping component.");
+			say("Outcome no longer repeatable after removing [".join(' ', @$orig_component)."]. Keeping component.");
 
 			# Undo the change and dig deeper, into the parts of the rule component
 
