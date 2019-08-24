@@ -112,7 +112,7 @@ sub search_files_for_matches
         $matches_info= '';
         $res= 0;
         register_matches('strong');
-        register_regression('strong');
+        register_result('strong');
         last;
       }
       $mdev= undef;
@@ -161,7 +161,7 @@ sub search_files_for_matches
     print "--------------------------------------\n";
     $res= 0;
     register_matches('weak');
-    register_regression('weak');
+    register_result('weak');
   }
   return $res;
 }
@@ -174,7 +174,7 @@ if (search_files_for_matches(@files)) {
   if ($res) {
     print "\n--- NO MATCHES FOUND ---------------------------\n";
     register_no_match();
-    register_regression('no_match');
+    register_result('no_match');
   }
 }
 
@@ -226,7 +226,7 @@ sub register_no_match
   }
 }
 
-sub register_regression
+sub register_result
 {
     my $type= shift; # strong, weak or no_match
     if (my $dbh= connect_to_db()) {
