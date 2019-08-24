@@ -38,7 +38,7 @@ use Time::HiRes;
 # which will still reproduce a desired outcome.
 #
 
-my ($trials, $storage_prefix, $vardir);
+my ($trials, $storage_prefix);
 my @exit_status;
 my @expected_output;
 my $mtr_thread= 500;
@@ -47,7 +47,7 @@ GetOptions(
     'trials=i' => \$trials,
     'exit_status|exit-status=s@' => \@exit_status,
     'output=s@' => \@expected_output,
-    'storage=s' => \$storage_prefix,
+    'workdir=s' => \$storage_prefix,
     'mtr_thread|mtr-thread' => \$mtr_thread,
 );
 
@@ -58,11 +58,17 @@ unless (defined $storage_prefix) {
 my $run_id = time();
 say("The ID of this run is $run_id.");
 
-$vardir= $storage_prefix.'/simplifier_vardir_'.$$.'_'.$run_id;
+my $vardir= $storage_prefix.'/vardir';
+my $storage = $storage_prefix.'/grammars';
+system("rm -rf $vardir $storage");
 system("mkdir -p $vardir");
 if ($?) {
     croak("ERROR: Could not create vardir $vardir");
 }
+mkdir ($storage);
+say "Vardir: $vardir";
+say "Grammar storage: $storage";
+
 my $exit_status_values= '';
 map { $exit_status_values.= "--exit-status=".$_." " } (@exit_status);
 
@@ -116,10 +122,6 @@ foreach my $g (@grammars) {
     $initial_grammar.= $contents;
 }
 
-my $storage = $storage_prefix.'/'.$run_id;
-$vardir= $storage_prefix.'/simplifier_storage_'.$$.'_'.$run_id;
-say "Storage is $storage";
-mkdir ($storage);
 my $errfile = $vardir . '/mysqld.err';
 
 my $iteration;

@@ -126,12 +126,11 @@ sub descend {
 	for (my $component_id = $#$orig_components; $component_id >= 0; $component_id--)
     {
         say("-----");
-        say("Component ID to work with: $component_id");
 		my $orig_component = $orig_components->[$component_id];
 
 		# Remove one component and call the oracle to check if the issue is still repeatable
 
-		say("Attempting to remove component [".join(' ', @$orig_component)."] ...");
+		say("Attempting to remove component #$component_id: [".join(' ', @$orig_component)."] ...");
 
 		splice (@$orig_components, $component_id, 1);
 		
