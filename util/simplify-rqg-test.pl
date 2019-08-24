@@ -144,7 +144,6 @@ my $simplifier = GenTest::Simplifier::Grammar->new(
         my $start_time = Time::HiRes::time();
 
         my $rqgcmd =
-
             "perl runall-trials.pl ".
             "$exit_status_values ".
             "--output=\"".$expected_output[0]."\" ".
@@ -155,13 +154,22 @@ my $simplifier = GenTest::Simplifier::Grammar->new(
             "--vardir=$vardir ".
             "--mtr-build-thread=$mtr_thread ".
             "@rqg_options ".
-            "@validators ".
-            "@transformers ".
-            "@reporters ".
             "@gendata_options ".
             "@rqg_options ".
-            "@mysqld_options ".
-            " >$current_rqg_log 2>&1";
+            "@mysqld_options "
+        ;
+
+        if (scalar @transformers) {
+            $rqgcmd.= '--transformers='.join(',', @transformers).' ';
+        }
+        if (scalar @validators) {
+            $rqgcmd.= '--validators='.join(',', @validators).' ';
+        }
+        if (scalar @reporters) {
+            $rqgcmd.= '--reporters='.join(',', @reporters).' ';
+        }
+
+        $rqgcmd.= " >$current_rqg_log 2>&1";
 
         say($rqgcmd);
         my $rqg_status = system($rqgcmd);
@@ -214,14 +222,15 @@ my $simplifier = GenTest::Simplifier::Grammar->new(
                 }
             } # End of check if the output matches given string patterns
         } # End of loop over desired_status_codes
-        if ($rqg_status == STATUS_OK) {
-           # Run with exit status 0 -> RQG output is not of interest
-           unlink($current_rqg_log);
-        }
         return ORACLE_ISSUE_NO_LONGER_REPEATABLE;
     }
     );
 
 my $simplified_grammar = $simplifier->simplify($initial_grammar);
 
-print "Simplified grammar:\n\n$simplified_grammar;\n\n" if defined $simplified_grammar;
+if (defined $simplified_grammar) {
+    print "Simplified grammar:\n\n$simplified_grammar;\n\n";
+    exit 0;
+} else {
+    exit 1;
+}
