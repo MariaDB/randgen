@@ -583,7 +583,6 @@ MDEV-19011:
 =~ Assertion \`file->s->base\.reclength < file->s->vreclength'
 =~ ha_myisam::setup_vcols_for_repair
 =~ ha_myisam::enable_indexes|ha_myisam::optimize
-=~ Sql_cmd_alter_table::execute
 MDEV-18980:
 =~ Assertion \`join->best_read < double(1\.79769313486231570814527423731704357e+308L)'
 =~ greedy_search
@@ -857,6 +856,7 @@ MDEV-18291:
 =~ std::__cxx11::_List_base|std::_List_base
 =~ dict_table_remove_from_cache|dict_sys_t::remove
 =~ ha_delete_table|ha_innobase_inplace_ctx::~ha_innobase_inplace_ctx|Sql_cmd_truncate_table::handler_truncate|row_merge_drop_table
+### DRAFT
 MDEV-18286:
 =~ Assertion \`pagecache->cnt_for_resize_op == 0'
 =~ check_pagecache_is_cleaned_up
@@ -1200,7 +1200,7 @@ MDEV-17091:
 MDEV-17091:
 =~ Assertion \`old_part_id == m_last_part'
 =~ ha_partition::update_row
-=~ mysql_update|Update_rows_log_event::do_exec_row|mysql_multi_update|mysql_load
+=~ mysql_update|Update_rows_log_event::do_exec_row|mysql_multi_update|mysql_load|mysql_delete
 MDEV-17019:
 =~ signal 11
 =~ multi_delete::~multi_delete
