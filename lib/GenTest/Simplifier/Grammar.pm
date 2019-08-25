@@ -91,7 +91,7 @@ sub simplify {
 		$simplifier->descend('query');
 
 		foreach my $rule (keys %{$simplifier->[SIMPLIFIER_GRAMMAR_OBJ]->rules()}) {
-            next if $rule =~ /^(?:query|thread)_init$/;
+            next if $rule =~ /^(?:query|thread\d+)(?:_init)?(?:_add)?$/;
 			if (not exists $simplifier->[SIMPLIFIER_RULES_VISITED]->{$rule}) {
 				say("Rule $rule is not referenced any more. Removing from grammar.");
 				$simplifier->[SIMPLIFIER_GRAMMAR_OBJ]->deleteRule($rule);
