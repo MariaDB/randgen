@@ -33,7 +33,8 @@ use strict;
 
 my @last_choice_files= ();
 my @signature_files= ();
-my @signatures;
+my @strong_signatures;
+my @weak_signatures;
 
 GetOptions (
   "last=s@" => \@last_choice_files,
@@ -57,20 +58,6 @@ if (! scalar @files and ! scalar @last_choice_files) {
 #  print "The following files will be checked for signatures of known bugs: @files and as a last resort @last_choice_files\n";
 #}
 
-system("rm -rf /tmp/MDEV-* /tmp/MENT-* /tmp/TODO-*");
-
-foreach my $f (@signature_files) {
-    if (open(SIGNATURES, $f)) {
-        while (<SIGNATURES>) {
-            chomp $_;
-            push @signatures, $_;
-        }
-        close(SIGNATURES);
-    } else {
-        print "ERROR: Could not open signature file $f: $!\n";
-    }
-}
-
 my $ci= 'N/A';
 my $page_url= "NULL";
 if ($ENV{TRAVIS} eq 'true') {
@@ -86,107 +73,131 @@ my $test_result= (defined $ENV{TEST_RESULT} and $ENV{TEST_RESULT} !~ /\s/) ? $EN
 my $server_branch= $ENV{SERVER_BRANCH} || 'N/A';
 my $test_line= $ENV{SYSTEM_DEFINITIONNAME} || $ENV{TRAVIS_BRANCH} || $ENV{TEST_ALIAS} || 'N/A';
 
-my %found_mdevs= ();
+system("rm -rf /tmp/MDEV-* /tmp/MENT-* /tmp/TODO-*");
+
+my $strong= 0;
+
+foreach my $f (@signature_files) {
+    if (open(SIGNATURES, $f)) {
+        while (<SIGNATURES>) {
+            chomp $_;
+            if (/^\s*\#\s*Strong matches/i) {
+                $strong= 1;
+            } elsif (/^\s*\#\s*Weak matches/i) {
+                $strong= 0;
+            } elsif (/^\s*\#/) {
+                next;
+            } elsif ($strong) {
+                push @strong_signatures, $_;
+            } else {
+                push @weak_signatures, $_;
+            }
+        }
+        close(SIGNATURES);
+    } else {
+        print "ERROR: Could not open signature file $f: $!\n";
+    }
+}
+
 my %fixed_mdevs= ();
 my %draft_mdevs= ();
-my $matches_info= '';
+my %found_mdevs= ();
 
-my $mdev;
-my $pattern;
-my $signature_does_not_match= 0;
-my $signature_lines_found= 0;
+my $match_info;
 
-my $res= 1;
+if ($match_info= search_files_for_matches(\@files, \@last_choice_files, \@strong_signatures)) {
+    print_result('strong', $match_info);
+    exit 0;
+}
+if ($match_info= search_files_for_matches(\@files, \@last_choice_files, \@weak_signatures)) {
+    print_result('weak', $match_info);
+    exit 0;
+}
+
+print "\n--- NO MATCHES FOUND ---------------\n\n";
+register_result('no_match');
+
+exit 1;
+
+############ Subroutines
 
 sub search_files_for_matches
 {
-  my @files= @_;
-  return $res unless scalar(@files);
+  my ($files_ref, $last_choice_files_ref, $signatures_ref)= @_;
+  return undef unless scalar(@$signatures_ref);
+  my @signatures= @$signatures_ref;
 
-  foreach (@signatures) {
-    if (/^\# Weak matches/) {
-      # Don't search for weak matches if strong ones have been found
-      if ($matches_info) {
-        print "\n--- STRONG matches ---------------------------------\n";
-        print $matches_info;
-        $matches_info= '';
-        $res= 0;
-        register_matches('strong');
-        register_result('strong');
-        last;
-      }
-      $mdev= undef;
-      next;
-    }
+  foreach my $ref ($files_ref, $last_choice_files_ref)
+  {
+      my @files= @$ref;
+      next unless scalar (@files);
 
-    # Signature line starts with =~
-    # (TODO: in future maybe also !~ for anti-patterns)
-    if (/^\s*=~\s*(.*)/) {
-      # If we have already found a pattern which does not match, don't check this signature further
-      next if $signature_does_not_match;
-      # Don't check other MDEV signatures if one was already found
-      next if $found_mdevs{$mdev};
-      $pattern= $1;
-      chomp $pattern;
-      $pattern=~ s/(\"|\?|\!|\(|\)|\[|\]|\&|\^|\~|\+|\/)/\\$1/g;
-    }
-    # MDEV line starts a new signature
-    elsif(/^\s*(MDEV-\d+|MENT-\d+|TODO-\d+):\s*(.*)/) {
-      my $new_mdev= $1;
-      # Process the previous result, if there was any
-      if ($signature_lines_found and not $signature_does_not_match) {
-        process_found_mdev($mdev);
+      my $matches_info= '';
+
+      my $mdev;
+      my $pattern;
+      my $signature_does_not_match= 0;
+      my $signature_lines_found= 0;
+
+      foreach (@signatures) {
+        # Signature line starts with =~
+        # (TODO: in future maybe also !~ for anti-patterns)
+        if (/^\s*=~\s*(.*)/) {
+          # If we have already found a pattern which does not match, don't check this signature further
+          next if $signature_does_not_match;
+          # Don't check other MDEV signatures if one was already found
+          next if $found_mdevs{$mdev};
+          $pattern= $1;
+          chomp $pattern;
+          $pattern=~ s/(\"|\?|\!|\(|\)|\[|\]|\&|\^|\~|\+|\/)/\\$1/g;
+        }
+        # MDEV line starts a new signature
+        elsif(/^\s*(MDEV-\d+|MENT-\d+|TODO-\d+):\s*(.*)/) {
+          my $new_mdev= $1;
+          # Process the previous result, if there was any
+          if ($signature_lines_found and not $signature_does_not_match) {
+            process_found_mdev($mdev, \$matches_info);
+          }
+          $mdev= $new_mdev;
+          $signature_lines_found= 0;
+          $signature_does_not_match= 0;
+          next;
+        }
+        else {
+          # Skip anything that is not JIRA name or signature line
+          next;
+        }
+        system("grep -h -E -e \"$pattern\" @files > /dev/null 2>&1");
+        if ($?) {
+          $signature_does_not_match= 1;
+        } else {
+          $signature_lines_found++;
+        }
       }
-      $mdev= $new_mdev;
-      $signature_lines_found= 0;
-      $signature_does_not_match= 0;
-      next;
-    }
-    else {
-      # Skip comments and whatever else
-      next;
-    }
-    system("grep -h -E -e \"$pattern\" @files > /dev/null 2>&1");
-    if ($?) {
-      $signature_does_not_match= 1;
-    } else {
-      $signature_lines_found++;
-    }
+      # Don't go through last choice files if matches were found in the main set
+      return $matches_info if $matches_info;
   }
+  # If we are here, nothing was found
+  return undef;
+}
 
-  # If it's non-empty at this point, it's weak matches
+sub print_result {
+  my ($match_type, $matches_info)= @_; # match_type: strong or weak
   if ($matches_info) {
-    print "\n--- WEAK matches -------------------------------\n";
+    print "\n--- " . uc($match_type)." matches -------------------\n";
     print $matches_info;
+    print "--------------------------------------\n\n";
+    register_result($match_type);
+  }
+
+  if (keys %fixed_mdevs) {
+    foreach my $m (sort keys %fixed_mdevs) {
+      print "\n--- ATTENTION! FOUND FIXED MDEV: -----\n";
+      print "\t$m - $fixed_mdevs{$m}\n";
+    }
     print "--------------------------------------\n";
-    $res= 0;
-    register_matches('weak');
-    register_result('weak');
-  }
-  return $res;
-}
-
-if (search_files_for_matches(@files)) {
-  # No matches found in main files, add the "last choice" files to the search
-  if (@last_choice_files) {
-    search_files_for_matches(@files, @last_choice_files);
-  }
-  if ($res) {
-    print "\n--- NO MATCHES FOUND ---------------------------\n";
-    register_no_match();
-    register_result('no_match');
   }
 }
-
-if (keys %fixed_mdevs) {
-  foreach my $m (sort keys %fixed_mdevs) {
-    print "\n--- ATTENTION! FOUND FIXED MDEV: -----\n";
-    print "\t$m - $fixed_mdevs{$m}\n";
-  }
-  print "--------------------------------------\n";
-}
-
-exit $res;
 
 sub connect_to_db {
   if (defined $ENV{DB_USER}) {
@@ -198,32 +209,6 @@ sub connect_to_db {
     }
   }
   return undef;
-}
-
-sub register_matches
-{
-  my $type= shift; # Strong or weak, based on it, the table and the logic are chosen
-  if (my $dbh= connect_to_db()) {
-    if ( $type eq 'strong' ) {
-      # For strong matches, we insert each of them separately into jira field
-      foreach my $j (keys %found_mdevs) {
-        my $fixdate= defined $fixed_mdevs{$j} ? "'$fixed_mdevs{$j}'" : 'NULL';
-        my $draft= $draft_mdevs{$j} || 0;
-        $dbh->do("REPLACE INTO travis.strong_match (ci, test_id, jira, fixdate, draft, test_result, url, server_branch, test_line) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, $draft, \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')");
-      }
-    } elsif ( $type eq 'weak' ) {
-      my $jiras= join ',', keys %found_mdevs;
-      # For weak matches, we insert the concatenation into the notes field
-      $dbh->do("REPLACE INTO travis.weak_match (ci, test_id, notes, test_result, url, server_branch, test_line) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'??? $jiras\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')");
-    }
-  }
-}
-
-sub register_no_match
-{
-  if (my $dbh= connect_to_db()) {
-    $dbh->do("REPLACE INTO travis.no_match (ci, test_id, test_result, url, server_branch, test_line) VALUES (\'$ci\',\'$ENV{TEST_ID}\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')");
-  }
 }
 
 sub register_result
@@ -259,67 +244,73 @@ sub register_result
 
 sub process_found_mdev
 {
-  my $mdev= shift;
+  my ($mdev, $info_ref)= @_;
 
   $found_mdevs{$mdev}= 1;
 
-  unless (-e "/tmp/$mdev.resolution") {
-    system("wget https://jira.mariadb.org//rest/api/2/issue/$mdev?fields=resolution -O /tmp/$mdev.resolution -o /dev/null");
-  }
-
-  my $resolution= `cat /tmp/$mdev.resolution`;
-  my $resolutiondate;
-  if ($resolution=~ s/.*\"name\":\"([^\"]+)\".*/$1/) {
-    unless (-e "/tmp/$mdev.resolutiondate") {
-      system("wget https://jira.mariadb.org//rest/api/2/issue/$mdev?fields=resolutiondate -O /tmp/$mdev.resolutiondate -o /dev/null");
-    }
-    $resolution= uc($resolution);
-    $resolutiondate= `cat /tmp/$mdev.resolutiondate`;
-    unless ($resolutiondate=~ s/.*\"resolutiondate\":\"(\d\d\d\d-\d\d-\d\d).*/$1/) {
-      $resolutiondate= '';
-    }
-  } else {
-    $resolution= 'Unresolved';
-  }
-
-  $fixed_mdevs{$mdev} = $resolutiondate if $resolution eq 'FIXED';
-
-  unless (-e "/tmp/$mdev.summary") {
-    system("wget https://jira.mariadb.org//rest/api/2/issue/$mdev?fields=summary -O /tmp/$mdev.summary -o /dev/null");
-  }
-
-  my $summary= `cat /tmp/$mdev.summary`;
-  if ($summary =~ /\{\"summary\":\"(.*?)\"\}/) {
-    $summary= $1;
-  }
-
-  if ($mdev =~ /TODO/ or $summary =~ /^[\(\[]?draft/i) {
-    $draft_mdevs{$mdev}= 1;
-  }
-
-  if ($resolution eq 'FIXED' and not -e "/tmp/$mdev.fixVersions") {
-    system("wget https://jira.mariadb.org//rest/api/2/issue/$mdev?fields=fixVersions -O /tmp/$mdev.fixVersions -o /dev/null");
-  }
-
-  unless (-e "/tmp/$mdev.affectsVersions") {
-    system("wget https://jira.mariadb.org//rest/api/2/issue/$mdev?fields=versions -O /tmp/$mdev.affectsVersions -o /dev/null");
-  }
-
-  my $affectsVersions= `cat /tmp/$mdev.affectsVersions`;
-  my @affected = ($affectsVersions =~ /\"name\":\"(.*?)\"/g);
-
-  $matches_info .= "$mdev: $summary\n";
-
-  if ($resolution eq 'FIXED') {
-    my $fixVersions= `cat /tmp/$mdev.fixVersions`;
-    my @versions = ($fixVersions =~ /\"name\":\"(.*?)\"/g);
-    $matches_info .= "Fix versions: @versions ($resolutiondate)\n";
+  if ($mdev =~ /^(?:MENT|TODO)-/) {
+      # No point trying to retrieve information
+      $$info_ref .= "$mdev\n";
   }
   else {
-    $matches_info .= "RESOLUTION: $resolution". ($resolutiondate ? " ($resolutiondate)" : "") . "\n";
-    $matches_info .= "Affects versions: @affected\n";
-  }
-  $matches_info .= "-------------\n";
+      unless (-e "/tmp/$mdev.resolution") {
+        system("wget https://jira.mariadb.org//rest/api/2/issue/$mdev?fields=resolution -O /tmp/$mdev.resolution -o /dev/null");
+      }
+
+      my $resolution= `cat /tmp/$mdev.resolution`;
+      my $resolutiondate;
+      if ($resolution=~ s/.*\"name\":\"([^\"]+)\".*/$1/) {
+        unless (-e "/tmp/$mdev.resolutiondate") {
+          system("wget https://jira.mariadb.org//rest/api/2/issue/$mdev?fields=resolutiondate -O /tmp/$mdev.resolutiondate -o /dev/null");
+        }
+        $resolution= uc($resolution);
+        $resolutiondate= `cat /tmp/$mdev.resolutiondate`;
+        unless ($resolutiondate=~ s/.*\"resolutiondate\":\"(\d\d\d\d-\d\d-\d\d).*/$1/) {
+          $resolutiondate= '';
+        }
+      } else {
+        $resolution= 'Unresolved';
+      }
+
+      $fixed_mdevs{$mdev} = $resolutiondate if $resolution eq 'FIXED';
+
+      unless (-e "/tmp/$mdev.summary") {
+        system("wget https://jira.mariadb.org//rest/api/2/issue/$mdev?fields=summary -O /tmp/$mdev.summary -o /dev/null");
+      }
+
+      my $summary= `cat /tmp/$mdev.summary`;
+      if ($summary =~ /\{\"summary\":\"(.*?)\"\}/) {
+        $summary= $1;
+      }
+
+      if ($mdev =~ /TODO/ or $summary =~ /^[\(\[]?draft/i) {
+        $draft_mdevs{$mdev}= 1;
+      }
+
+      if ($resolution eq 'FIXED' and not -e "/tmp/$mdev.fixVersions") {
+        system("wget https://jira.mariadb.org//rest/api/2/issue/$mdev?fields=fixVersions -O /tmp/$mdev.fixVersions -o /dev/null");
+      }
+
+      unless (-e "/tmp/$mdev.affectsVersions") {
+        system("wget https://jira.mariadb.org//rest/api/2/issue/$mdev?fields=versions -O /tmp/$mdev.affectsVersions -o /dev/null");
+      }
+
+      my $affectsVersions= `cat /tmp/$mdev.affectsVersions`;
+      my @affected = ($affectsVersions =~ /\"name\":\"(.*?)\"/g);
+
+      $$info_ref .= "$mdev: $summary\n";
+
+      if ($resolution eq 'FIXED') {
+        my $fixVersions= `cat /tmp/$mdev.fixVersions`;
+        my @versions = ($fixVersions =~ /\"name\":\"(.*?)\"/g);
+        $$info_ref .= "Fix versions: @versions ($resolutiondate)\n";
+      }
+      else {
+        $$info_ref .= "RESOLUTION: $resolution". ($resolutiondate ? " ($resolutiondate)" : "") . "\n";
+        $$info_ref .= "Affects versions: @affected\n";
+      }
+   }
+   $$info_ref .= "-------------\n";
 }
 
 sub resolve_files {
