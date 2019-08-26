@@ -52,7 +52,7 @@ GetOptions(
 );
 
 unless (defined $storage_prefix) {
-    croak("ERROR: Storage is not defined");
+    croak("ERROR: Workdir (--workdir) is not defined");
 }
 
 my $run_id = time();
@@ -209,6 +209,7 @@ my $simplifier = GenTest::Simplifier::Grammar->new(
                 my $success = 1;
                 foreach my $expected_output (@expected_output) {
                     if ($rqgtest_output =~ m{$expected_output}sio) {
+                        say ("#####################");
                         say ("###### Found pattern:  $expected_output ######");
                     } else {
                         say ("###### Not found pattern:  $expected_output ######");
@@ -218,6 +219,7 @@ my $simplifier = GenTest::Simplifier::Grammar->new(
                 }
                 if ($success) {
                     say ("###### SUCCESS with $current_grammar ######");
+                    say ("#####################");
                     return ORACLE_ISSUE_STILL_REPEATABLE;
                 }
             } # End of check if the output matches given string patterns
