@@ -48,7 +48,7 @@ GetOptions(
     'exit_status|exit-status=s@' => \@exit_status,
     'output=s@' => \@expected_output,
     'workdir=s' => \$storage_prefix,
-    'mtr_thread|mtr-thread' => \$mtr_thread,
+    'mtr_thread|mtr-thread=i' => \$mtr_thread,
 );
 
 unless (defined $storage_prefix) {
