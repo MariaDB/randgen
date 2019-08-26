@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20422:
+=~ InnoDB: Failing assertion: field->prefix_len > 0
+=~ row_search_with_covering_prefix
+=~ row_search_mvcc
+MDEV-20417:
+=~ Assertion \`(m_ptr == __null) == item->null_value'
+=~ VDec::VDec
+=~ Server version: 10\.4|Server version: 10\.5
 MDEV-20410:
 =~ pure virtual method called
 =~ set_properties
@@ -1241,7 +1249,7 @@ MDEV-16932:
 MDEV-16929:
 =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ open_normal_and_derived_tables
-=~ mysql_test_create_view|mysql_test_select
+=~ mysql_test_create_view|mysql_test_select|mysql_test_create_table
 =~ check_prepared_statement
 =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY
 MDEV-16929:

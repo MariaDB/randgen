@@ -16,7 +16,6 @@ MENT-349:
 =~ filter_query_type
 =~ log_statement_ex
 =~ auditing
-=~ Version: '10\.3|Version: '10\.2
 MENT-341:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
