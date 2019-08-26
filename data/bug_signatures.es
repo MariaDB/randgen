@@ -14,7 +14,7 @@ MENT-350:
 MENT-349:
 =~ AddressSanitizer: heap-use-after-free
 =~ filter_query_type
-=~ log_statement_ex
+=~ log_statement
 =~ auditing
 MENT-341:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
