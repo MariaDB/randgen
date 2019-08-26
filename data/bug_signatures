@@ -511,10 +511,6 @@ MDEV-19130:
 =~ handler::update_auto_increment
 =~ TABLE::update_generated_fields
 =~ TABLE::period_make_insert|update_portion_of_time
-MDEV-19127:
-=~ Assertion \`row_start_field'
-=~ vers_prepare_keys
-=~ mysql_create_frm_image
 MDEV-19092:
 =~ Assertion \`foreign->referenced_index != __null'|signal 11|Assertion \`new_index != __null'|InnoDB: Failing assertion: new_index != __null
 =~ dict_mem_table_col_rename_low
@@ -549,7 +545,7 @@ MDEV-19020:
 =~ mysql_load
 MDEV-19014:
 =~ pure virtual method called|signal 11|AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow
-=~ Item_direct_view_ref::fix_fields
+=~ Item_direct_view_ref::fix_fields|Field_iterator_view::create_item
 =~ sp_instr_stmt::exec_core
 MDEV-19011:
 =~ Assertion \`file->s->base\.reclength < file->s->vreclength'
@@ -1436,6 +1432,11 @@ MDEV-13444:
 =~ buf_mtflu_io_thread_exit
 =~ srv_shutdown_all_bg_threads
 =~ Server version: 10\.2|Server version: 10\.1
+MDEV-12967:
+=~ signal 11
+=~ dict_index_is_spatial
+=~ btr_scrub_free_page
+=~ fil_crypt_rotate_page
 MDEV-11740:
 =~ Assertion \`pos != (~(my_off_t) 0)' failed
 =~ my_seek

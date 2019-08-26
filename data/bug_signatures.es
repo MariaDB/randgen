@@ -77,6 +77,10 @@ MDEV-19166:
 =~ Assertion \`!is_zero_datetime()'
 =~ Timestamp_or_zero_datetime::tv
 =~ Item_cache_timestamp::to_datetime
+MDEV-19127:
+=~ Assertion \`row_start_field'
+=~ vers_prepare_keys
+=~ mysql_create_frm_image
 
 ##############################################################################
 # Weak matches
