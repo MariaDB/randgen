@@ -50,6 +50,7 @@ MDEV-20360:
 =~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), part_id)'
 =~ ha_partition::part_records
 =~ partition_info::vers_set_hist_part
+=~ Server version: 10\.5
 MDEV-20358:
 =~ AddressSanitizer: use-after-poison
 =~ Item_ident::print
@@ -70,11 +71,6 @@ MDEV-20338:
 =~ mysql_update
 =~ sp_instr_stmt::exec_core
 # Fix merged into 10.3/10.4, but not yet in 10.5
-MDEV-20336:
-=~ Server version: 10\.5
-=~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), part_id)'
-=~ ha_partition::part_records
-=~ partition_info::vers_set_hist_part
 MDEV-20320:
 =~ Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id
 MDEV-20320:
