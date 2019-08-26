@@ -35,6 +35,38 @@ MENT-189:
 =~ InnoDB: Failing assertion: opt_no_lock
 =~ recv_parse_log_recs
 =~ xtrabackup_copy_log
+MDEV-19304:
+=~ signal 11|AddressSanitizer: SEGV on unknown address
+=~ row_sel_field_store_in_mysql_format_func|row_sel_store_mysql_rec
+=~ row_search_mvcc
+MDEV-19304:
+=~ AddressSanitizer: unknown-crash on address
+=~ my_timestamp_from_binary
+=~ Field_timestampf::get_timestamp
+=~ Column_definition::Column_definition|TABLE::validate_default_values_of_unset_fields
+MDEV-19304:
+=~ AddressSanitizer: SEGV on unknown address|signal 11
+=~ calc_row_difference
+=~ handler::ha_update_row
+MDEV-19304:
+=~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
+=~ compare_record
+=~ mysql_update
+MDEV-19304:
+=~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
+=~ create_tmp_table
+=~ select_unit::create_result_table
+=~ mysql_derived_prepare
+MDEV-19304:
+=~ signal 11
+=~ handler::ha_write_row
+=~ ha_partition::write_row
+=~ write_record
+MDEV-19304:
+=~ Server version: 10\.5|Server version: 10\.4|Server version: 10\.3
+=~ AddressSanitizer: SEGV|signal 6|signal 11
+=~ ha_partition::try_semi_consistent_read
+=~ mysql_update
 MDEV-19301:
 =~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
 =~ Server version: 10\.5|Server version: 10\.4
