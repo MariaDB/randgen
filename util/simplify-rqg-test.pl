@@ -122,7 +122,8 @@ foreach my $g (@grammars) {
     $initial_grammar.= $contents;
 }
 
-my $errfile = $vardir . '/mysqld.err';
+my $errfile = $vardir . '/mysql.err';
+my $general_log = $vardir . '/mysql.log';
 
 my $iteration;
 
@@ -220,6 +221,7 @@ my $simplifier = GenTest::Simplifier::Grammar->new(
                 if ($success) {
                     say ("###### SUCCESS with $current_grammar ######");
                     say ("#####################");
+                    system("cp $general_log $storage/mysql.log.$iteration");
                     return ORACLE_ISSUE_STILL_REPEATABLE;
                 }
             } # End of check if the output matches given string patterns
