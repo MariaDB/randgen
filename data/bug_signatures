@@ -1591,7 +1591,7 @@ TODO-842:
 =~ Item_field::used_tables
 =~ Item::const_item
 =~ mysql_update
-=~ sp_instr_stmt::execute
+=~ sp_instr_stmt::execute|sp_head::execute_procedure
 TODO-842:
 =~ Server version: 10\.1
 =~ InnoDB: Failing assertion: s_latch == rw_lock_own(&index->lock, 352)
@@ -1801,6 +1801,7 @@ MDEV-18170:
 MDEV-18169:
 =~ n_fields <= ulint
 MDEV-18168:
+=~ signal 11
 =~ general_log_write
 MDEV-18158:
 =~ Can't find record in
@@ -1895,6 +1896,7 @@ MDEV-17582:
 =~ Server version: 10\.1
 =~ Status: KILL_CONNECTION
 MDEV-17539:
+=~ Assertion \`0'
 =~ Protocol::end_statement
 MDEV-17538:
 =~ == UNALLOCATED_PAGE
