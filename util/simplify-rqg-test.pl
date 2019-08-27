@@ -68,6 +68,7 @@ if ($?) {
 mkdir ($storage);
 say "Vardir: $vardir";
 say "Grammar storage: $storage";
+say "MTR build thread: $mtr_thread";
 
 my $exit_status_values= '';
 map { $exit_status_values.= "--exit-status=".$_." " } (@exit_status);
@@ -103,7 +104,8 @@ foreach my $o (@ARGV) {
     } elsif ($o =~ /^--threads=(\d+)/) {
         $threads= $1;
     } elsif ($o !~ /^--(?:vardir|mtr[-_]build[-_]thread)/) {
-        # Vardir and mtr-build-thread are replaced by own values
+        # Vardir and mtr-build-thread are replaced by own values,
+        # everything else is passed over to trials
         push @rqg_options, $o;
     }
 }
