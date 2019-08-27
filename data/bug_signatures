@@ -991,7 +991,7 @@ MDEV-18042:
 =~ signal 11|AddressSanitizer: SEGV
 =~ mysql_alter_table
 =~ Sql_cmd_alter_table::execute
-=~ Query .*: ALTER TABLE .* DATE NOT NULL|Query .*: ALTER TABLE .* DATETIME NOT NULL
+=~ Query .*: ALTER.* TABLE .* DATE NOT NULL|Query .*: ALTER TABLE .* DATETIME NOT NULL
 MDEV-18018:
 =~ signal 11|AddressSanitizer: heap-use-after-free
 =~ TABLE_LIST::reinit_before_use
@@ -1038,6 +1038,11 @@ MDEV-17939:
 =~ trx_undo_report_rename
 =~ fts_drop_table|my_xpath_parse_EqualityExpr
 =~ mysql_alter_table|Alter_info::vers_prohibited
+MDEV-17936:
+=~ signal 11|AddressSanitizer: heap-use-after-free
+=~ Field::is_null
+=~ Arg_comparator::compare
+=~ Prepared_statement::execute
 MDEV-17912:
 =~ failed to decrypt .*  rc: -1  dstlen: 0  size: .*
 =~ Got error 192 when executing record .*
@@ -1837,8 +1842,6 @@ MDEV-17971:
 =~ Field_iterator_table_ref::set_field_iterator
 MDEV-17962:
 =~ setup_jtbm_semi_joins
-MDEV-17936:
-=~ Field::is_null
 MDEV-17897:
 =~ block->frame
 MDEV-17895:
