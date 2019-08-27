@@ -1879,8 +1879,6 @@ MDEV_17344:
 =~ Prepared_statement::~Prepared_statement
 MDEV-17333:
 =~ next_insert_id >= auto_inc_interval_for_cur_row\.minimum
-MDEV-17307:
-=~ Incorrect key file for table
 MDEV-17225:
 =~ log_descriptor\.bc\.buffer->prev_last_lsn
 MDEV-17217:

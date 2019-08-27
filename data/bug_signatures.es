@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MENT-360:
+=~ AddressSanitizer: heap-use-after-free
+=~ strmake_root
+=~ Query_arena::strmake
+=~ mysqld_list_processes
 MENT-350:
 =~ Installing MariaDB/MySQL system tables in
 =~ MariaDB Audit Plugin version 2.* STARTED
@@ -18,7 +23,7 @@ MENT-349:
 =~ auditing
 MENT-341:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ Diagnostics_area::set_ok_status
+=~ mysql_create_or_drop_trigger
 =~ my_ok
 MENT-319:
 =~ Assertion \`backup_flush_ticket == 0'
