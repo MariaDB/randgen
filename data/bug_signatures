@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20436:
+=~ Assertion \`thd->killed != 0'
+=~ ha_maria::enable_indexes
+=~ select_insert::abort_result_set
+=~ bootstrap
+MDEV-20436:
+=~ mysqld: Unknown key id 1\. Can't continue!
+=~ mysql\.proxies_priv: 126 when fixing table
+=~ mysql\.proxies_priv: Key 2 - Found too many records; Can't continue
+=~ mysql\.proxies_priv: Create index by sort failed
 MDEV-20422:
 =~ InnoDB: Failing assertion: field->prefix_len > 0
 =~ row_search_with_covering_prefix
