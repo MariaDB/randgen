@@ -174,6 +174,10 @@ sub search_files_for_matches
           $signature_lines_found++;
         }
       }
+      # Process last signature
+      if ($signature_lines_found and not $signature_does_not_match) {
+        process_found_mdev($mdev, \$matches_info);
+      }
       # Don't go through last choice files if matches were found in the main set
       return $matches_info if $matches_info;
   }
