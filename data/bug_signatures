@@ -1332,7 +1332,7 @@ MDEV-15878:
 MDEV-15753:
 =~ Assertion \`thd->is_error()'
 =~ mysql_admin_table
-=~ Status: KILL_TIMEOUT
+=~ Status: KILL_TIMEOUT|Status: KILL_SERVER
 MDEV-15589:
 =~ Assertion \`xid_seqno > trx_sys_cur_xid_seqno'
 =~ trx_sys_update_wsrep_checkpoint
