@@ -1566,11 +1566,6 @@ TODO-842:
 =~ Item_cache_temporal::val_time_packed
 =~ Item_func_between::val_int
 TODO-842:
-=~ AddressSanitizer: heap-use-after-free
-=~ Query_arena::strmake
-=~ list_callback
-=~ THD_list::iterate
-TODO-842:
 =~ AddressSanitizer: SEGV on unknown address|signal 11
 =~ Item_field::used_tables
 =~ Item::const_item
