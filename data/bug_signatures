@@ -1029,6 +1029,10 @@ MDEV-17991:
 =~ Out of memory
 =~ Lex_input_stream::body_utf8_start
 =~ MYSQLparse
+MDEV-17978:
+=~ signal 11
+=~ mysqld_show_create_get_fields
+=~ Query .*: SHOW CREATE SEQUENCE
 MDEV-17974:
 =~ signal 11|AddressSanitizer: use-after-poison
 =~ sp_process_definer
@@ -1736,6 +1740,10 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
+MDEV-20441:
+=~ is marked as crashed and should be repaired
+=~ versioning
+=~ Version: '10.3|Version: '10.4|Version: '10.5
 MDEV-19745:
 =~ Backup did not finish in due time
 =~ log scanned up to
@@ -1833,8 +1841,6 @@ MDEV-18017:
 =~ index->to_be_dropped
 MDEV-17999:
 =~ Invalid roles_mapping table entry user
-MDEV-17978:
-=~ mysqld_show_create_get_fields
 MDEV-17977:
 =~ Count >= rest_length
 MDEV-17976:
