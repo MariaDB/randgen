@@ -655,7 +655,7 @@ sub fieldType {
 	} elsif ($field_type == FIELD_TYPE_SET) {
 		return $rand->set();
 	} elsif ($field_type == FIELD_TYPE_BLOB) {
-		return $rand->file("$cwd/data");
+		return $rand->file("$cwd/data/blobs");
 	} elsif ($field_type == FIELD_TYPE_NULL) {
 		return undef;
 	} elsif ($field_type == FIELD_TYPE_ASCII) {
