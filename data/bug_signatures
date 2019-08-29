@@ -1375,11 +1375,6 @@ MDEV-15282:
 =~ Assertion \`recv_sys->mlog_checkpoint_lsn <= recv_sys->recovered_lsn'
 =~ recv_parse_log_recs
 =~ recv_recovery_from_checkpoint_start
-MDEV-15257:
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ Diagnostics_area::set_ok_status|Diagnostics_area::set_error_status
-=~ THD::raise_condition|my_ok
-=~ mysql_prepare_create_table|mysql_alter_table
 MDEV-15013:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE \|\| (prebuilt->table->no_rollback() && trx->state == TRX_STATE_NOT_STARTED)'
 =~ row_search_mvcc
