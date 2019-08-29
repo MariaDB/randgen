@@ -398,8 +398,6 @@ MDEV-19348:
 =~ InnoDB: Failed to read file .* at offset .*: Table is encrypted but decrypt failed
 =~ InnoDB: Plugin initialization aborted with error Data structure corruption
 =~ mariabackup: innodb_init() returned 39 (Data structure corruption)
-MDEV-19320:
-=~ UPDATE.* 1032 Can't find record in 'seq.*'|DELETE.* 1032 Can't find record in 'seq.*'|SELECT SETVAL.* 1032 Can't find record in 'seq.*'|SELECT.* 1032 Can't find record in 'seq.*'|INSERT.* 1032 Can't find record in 'seq.*'
 MDEV-19318:
 =~ Assertion \`!(length < share->base\.min_block_length)'
 =~ _ma_scan_block_record
@@ -1297,6 +1295,14 @@ MDEV-16500:
 =~ Server version: 10\.1
 =~ innobase_get_col_names
 =~ Sql_cmd_alter_table::execute
+MDEV-16397:
+=~ LOAD DATA.* INFILE .* Can't find record in
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ sequence
+MDEV-16242:
+=~ Slave worker thread retried transaction
+=~ Can't find record
+=~ rocksdb
 MDEV-16128:
 =~ signal 11
 =~ Item_func::print_op
@@ -1554,7 +1560,6 @@ TODO-842:
 =~ InnoDB: Failing assertion: !index->n_def \|\| i <= max_n_fields|Assertion \`!index->n_def \|\| i <= max_n_fields'
 =~ rem0rec\.cc
 =~ rec_offs_validate
-=~ rec_get_nth_cfield
 TODO-842:
 =~ AddressSanitizer: SEGV on unknown address
 =~ check_fields
@@ -1742,6 +1747,10 @@ MDEV-20441:
 MDEV-19745:
 =~ Backup did not finish in due time
 =~ log scanned up to
+MDEV-19320:
+=~ UPDATE.* 1032 Can't find record in|DELETE.* 1032 Can't find record in|SELECT SETVAL.* 1032 Can't find record in|SELECT.* 1032 Can't find record in|INSERT.* 1032 Can't find record in
+=~ sequence
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-18929:
 =~ Slave SQL: Error 'Table .* is not system-versioned' on query
 MDEV-18805:
@@ -1787,6 +1796,7 @@ MDEV-18168:
 =~ general_log_write
 MDEV-18158:
 =~ Can't find record in
+=~ view
 MDEV-18157:
 =~ Explain_node::print_explain_for_children
 MDEV-18156:
@@ -1801,7 +1811,10 @@ MDEV-18146:
 MDEV-18146:
 =~ merge_page, index
 MDEV-18141:
-=~ Can't find record in
+=~ REPLACE INTO .* Can't find record in
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ log-bin|log_bin
+#
 # Not fixed, but I don't want it to match
 # MDEV-18065:
 # =~ Fatal error: Can't open and lock privilege tables
@@ -1924,14 +1937,8 @@ MDEV-16407:
 =~ in MDL_key::mdl_key_init
 MDEV-16407:
 =~ Error: Freeing overrun buffer
-MDEV-16397:
-=~ Can't find record in
 MDEV-16292:
 =~ Item_func::print
-MDEV-16242:
-=~ Slave worker thread retried transaction
-MDEV-16242:
-=~ Can't find record
 MDEV-16184:
 =~ nest->counter > 0
 MDEV-16171:
