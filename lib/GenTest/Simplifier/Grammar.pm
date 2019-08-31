@@ -125,7 +125,7 @@ sub descend {
 
 	my $orig_components = $rule_obj->components();
 
-    say("The number of original components: ".$#$orig_components);
+    say("The number of original components in rule [$rule]: ".scalar(@$orig_components));
 	for (my $component_id = $#$orig_components; $component_id >= 0; $component_id--)
     {
         say("-----");
@@ -147,29 +147,35 @@ sub descend {
 
 			splice (@$orig_components, $component_id, 0, $orig_component);
 
-			for (my $part_id = $#{$orig_components->[$component_id]}; $part_id >= 0; $part_id--) {
-
-				my $child = $simplifier->descend($orig_components->[$component_id]->[$part_id]);
-
-				# If the outcome of the descend() is sufficiently simple, in-line it.
-
-				if (ref($child) eq 'GenTest::Grammar::Rule') {
-					my $child_name = $child->name();
-					if ($#{$child->components()} == -1) {
-					#	say("Child $child_name is empty. Removing altogether.");
-						splice(@{$orig_components->[$component_id]}, $part_id, 1);
-					} elsif ($#{$child->components()} == 0) {
-					#    	say("Child $child_name has a single component. In-lining.");
-						splice(@{$orig_components->[$component_id]}, $part_id, 1, @{$child->components()->[0]});
-					}
-				} else {
-				#	say("Got a string literal. In-lining.");
-					splice(@{$orig_components->[$component_id]}, $part_id, 1, $child);
-				}
-			}
 		}
 	}
+    if (scalar(@$orig_components)) {
+        say("-----");
+        say("Descending to the next level for remaining ".scalar(@$orig_components)." component(s)");
+        for (my $component_id = $#$orig_components; $component_id >= 0; $component_id--)
+        {
+            for (my $part_id = $#{$orig_components->[$component_id]}; $part_id >= 0; $part_id--) {
 
+                my $child = $simplifier->descend($orig_components->[$component_id]->[$part_id]);
+
+                # If the outcome of the descend() is sufficiently simple, in-line it.
+
+                if (ref($child) eq 'GenTest::Grammar::Rule') {
+                    my $child_name = $child->name();
+                    if ($#{$child->components()} == -1) {
+                    #	say("Child $child_name is empty. Removing altogether.");
+                        splice(@{$orig_components->[$component_id]}, $part_id, 1);
+                    } elsif ($#{$child->components()} == 0) {
+                    #    	say("Child $child_name has a single component. In-lining.");
+                        splice(@{$orig_components->[$component_id]}, $part_id, 1, @{$child->components()->[0]});
+                    }
+                } else {
+                #	say("Got a string literal. In-lining.");
+                    splice(@{$orig_components->[$component_id]}, $part_id, 1, $child);
+                }
+            }
+        }
+    }
 	return $rule_obj;
 }
 
