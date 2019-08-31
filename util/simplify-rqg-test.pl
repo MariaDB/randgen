@@ -86,7 +86,7 @@ my $duration= 400;
 foreach my $o (@ARGV) {
     if ($o =~ /^--mysqld\d?=/) {
         push @mysqld_options, $o;
-    } elsif ($o =~ /^(?:--grammar|--redefine)\d?=(.+)/) {
+    } elsif ($o =~ /^(?:--grammar|--redefine)1?=(.+)/) {
         push @grammars, $1;
     } elsif ($o =~ /^--reporters=(.*)/) {
         my @r= split(/,/,$1);
@@ -114,15 +114,18 @@ unless (scalar @grammars) {
     croak("No grammars defined");
 }
 
-my $initial_grammar= '';
-
-foreach my $g (@grammars) {
-    my $contents;
-    open(INITIAL_GRAMMAR, $g) or croak "Unable to open initial_grammar_file '" . $g . "' : $!";
-    read(INITIAL_GRAMMAR, $contents , -s $g);
-    close(INITIAL_GRAMMAR);
-    $initial_grammar.= $contents;
+unless ("@grammars" =~ 'basics.yy') {
+    push @grammars, 'conf/mariadb/basics.yy';
 }
+
+my $grammar = GenTest::Grammar->new(
+    grammar_files => [ @grammars ],
+    grammar_flags => (undef)
+);
+
+$grammar->extractFromFiles(\@grammars);
+$grammar->parseFromString($grammar->string());
+my $initial_grammar = $grammar->toString();
 
 my $errfile = $vardir . '/mysql.err';
 my $general_log = $vardir . '/mysql.log';
