@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20460:
+=~ Assertion \`inited==INDEX'
+=~ opt_sum_query
+=~ handler::ha_index_end
+=~ JOIN::optimize
 MDEV-20436:
 =~ Assertion \`thd->killed != 0'
 =~ ha_maria::enable_indexes
@@ -201,6 +206,7 @@ MDEV-19840:
 =~ Diagnostics_area::sql_errno
 =~ ha_rollback_trans
 =~ trans_rollback_implicit|trans_rollback_stmt
+=~ Version: '10\.4|Version: '10\.5
 MDEV-19817:
 =~ signal 11
 =~ unsafe_key_update
@@ -325,6 +331,11 @@ MDEV-19576:
 =~ Got error 175 when executing record redo_index|Got error 175 when executing undo undo_row_insert
 =~ Aria engine: Redo phase failed|Aria engine: Undo phase failed
 =~ Aria recovery failed
+MDEV-19555:
+=~ Assertion \`m_status == DA_ERROR'
+=~ Diagnostics_area::sql_errno
+=~ ha_rollback_trans
+=~ Sql_cmd_check_table::execute
 MDEV-19536:
 =~ AddressSanitizer: heap-use-after-free|signal 11|Invalid read of size
 =~ is_temporary_table|Index_stat::set_full_table_name|Stat_table::Stat_table|statistics_for_tables_is_needed
@@ -1537,19 +1548,10 @@ TODO-842:
 =~ Temporal_with_date::Temporal_with_date
 =~ Arg_comparator::compare_datetime
 TODO-842:
-=~ signal 11
-=~ wait_while_table_is_used
-=~ mysql_rm_table_no_locks
-=~ mysql_create_table
-TODO-842:
 =~ AddressSanitizer: SEGV on unknown address
 =~ Query_arena::set_query_arena
 =~ Field::set_default
 =~ Item::remove_eq_conds
-TODO-842:
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ Diagnostics_area::set_ok_status
-=~ Query (.*): BACKUP STAGE BLOCK_COMMIT
 TODO-842:
 =~ AddressSanitizer: heap-buffer-overflow
 =~ update_const_equal_items
@@ -1608,20 +1610,10 @@ TODO-842:
 =~ fts_cache_append_deleted_doc_ids
 =~ init_ftfuncs
 TODO-842:
-=~ Assertion \`inited==INDEX'
-=~ opt_sum_query
-=~ handler::ha_index_end
-=~ JOIN::optimize
-TODO-842:
 =~ Assertion \`(uint) (res->buff[7] & 7) == page_type'
 =~ get_head_or_tail_page
 =~ allocate_and_write_block_record
 =~ maria_write
-TODO-842:
-=~ Assertion \`m_status == DA_ERROR'
-=~ Diagnostics_area::sql_errno
-=~ trans_rollback_implicit
-=~ mysql_admin_table
 TODO-842:
 =~ signal 11
 =~ Server version: 10\.1
@@ -2019,10 +2011,6 @@ MDEV-15011:
 MDEV-15011:
 =~ Server version: 10\.2|Server version: 10\.1|Server version: 10\.0|Server version: 5\.5
 =~ Error in \`.*/mysqld': malloc(): memory corruption:
-MDEV-14864:
-=~ in mysql_prepare_create_table
-MDEV-14864:
-=~ in mysql_prepare_alter_table
 MDEV-14846:
 =~ prebuilt->trx, TRX_STATE_ACTIVE
 MDEV-14846:
