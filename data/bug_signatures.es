@@ -40,6 +40,11 @@ MENT-189:
 =~ InnoDB: Failing assertion: opt_no_lock
 =~ recv_parse_log_recs
 =~ xtrabackup_copy_log
+MENT-189:
+=~ Failing assertion: opt_no_lock
+=~ backup_file_op_fail
+=~ fil_name_parse
+=~ recv_parse_or_apply_log_rec_body
 MDEV-19304:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ row_sel_field_store_in_mysql_format_func|row_sel_store_mysql_rec
