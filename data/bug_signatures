@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20464:
+=~ signal 8|AddressSanitizer: FPE
+=~ row_search_with_covering_prefix
+=~ row_search_mvcc
 MDEV-20460:
 =~ Assertion \`inited==INDEX'
 =~ opt_sum_query
@@ -1003,6 +1007,11 @@ MDEV-18046:
 =~ mysql_show_binlog_events
 MDEV-18046:
 =~ Assertion \`(end - pos) >= infoLen'
+=~ Rows_log_event::Rows_log_event
+=~ mysql_show_binlog_events
+MDEV-18046:
+=~ AddressSanitizer: heap-buffer-overflow
+=~ net_field_length
 =~ Rows_log_event::Rows_log_event
 =~ mysql_show_binlog_events
 MDEV-18042:
