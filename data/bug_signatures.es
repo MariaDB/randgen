@@ -15,7 +15,7 @@ MENT-350:
 =~ Assertion \`global_status_var\.global_memory_used == 0'
 =~ mysqld_exit(int)
 =~ AddressSanitizer: SEGV
-=~ Server version: 10\.4
+=~ Version: '10\.4
 MENT-349:
 =~ AddressSanitizer: heap-use-after-free
 =~ filter_query_type
@@ -45,6 +45,11 @@ MENT-189:
 =~ backup_file_op_fail
 =~ fil_name_parse
 =~ recv_parse_or_apply_log_rec_body
+MDEV-20360:
+=~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), part_id)'
+=~ ha_partition::part_records
+=~ partition_info::vers_set_hist_part
+=~ Version: '10\.3|Version: '10\.4
 MDEV-19304:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ row_sel_field_store_in_mysql_format_func|row_sel_store_mysql_rec
@@ -73,13 +78,13 @@ MDEV-19304:
 =~ ha_partition::write_row
 =~ write_record
 MDEV-19304:
-=~ Server version: 10\.5|Server version: 10\.4|Server version: 10\.3
+=~ Version: '10\.5|Version: '10\.4|Version: '10\.3
 =~ AddressSanitizer: SEGV|signal 6|signal 11
 =~ ha_partition::try_semi_consistent_read
 =~ mysql_update
 MDEV-19301:
 =~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
-=~ Server version: 10\.5|Server version: 10\.4
+=~ Version: '10\.5|Version: '10\.4
 =~ Datetime_truncation_not_needed::Datetime_truncation_not_needed
 =~ Item_func_nullif::date_op
 =~ Type_handler_temporal_result::Item_func_hybrid_field_type_get_date
