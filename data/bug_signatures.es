@@ -4,38 +4,40 @@
 # Strong matches
 ##############################################################################
 
+MENT-416:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ mysql_alter_table
+=~ RENAME
+=~ Version: '10\.2
+MENT-368:
+=~ Assertion \`inline_mysql_file_tell(.*, file, (myf) (0)) == base_pos+ (16 + 5\*8 + 6\*4 + 11\*2 + 6 + 5\*2 + 1 + 16)'
+=~ maria_create
+=~ create_internal_tmp_table
+MENT-361:
+=~ AddressSanitizer: heap-use-after-free
+=~ filter_query_type
+=~ log_statement
+=~ Prepared_statement
 MENT-360:
 =~ AddressSanitizer: heap-use-after-free|signal 11
 =~ strmake_root
 =~ Query_arena::strmake
 =~ mysqld_list_processes
-MENT-350:
-=~ Installing MariaDB/MySQL system tables in
-=~ MariaDB Audit Plugin version 2.* STARTED
-=~ Assertion \`global_status_var\.global_memory_used == 0'
-=~ mysqld_exit(int)
-=~ AddressSanitizer: SEGV
-=~ Version: '10\.4
-MENT-349:
-=~ AddressSanitizer: heap-use-after-free
-=~ filter_query_type
-=~ log_statement
-=~ auditing
-MENT-341:
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ mysql_create_or_drop_trigger|mysql_drop_view|mysql_create_view|Sql_cmd_create_table|mysql_rm_table|mysql_load|mysql_alter_table|Sql_cmd_truncate_table|mysql_rename_tables|mysql_create_db|FLUSH
-=~ my_ok
+MENT-328:
+=~ mariabackup: File '.*seq.*MAI' not found (Errcode: 2 "No such file or directory")
+=~ Error on aria table file open .*seq.*MAI
+=~ Version: '10\.3|Version: '10\.4
+MENT-328:
+=~ scenario=MariaBackup
+=~ For  BASE TABLE ROW_FORMAT= .* : Error : Can't find file: '.*seq.*MAI' (errno: 2 "No such file or directory")
+=~ status STATUS_BACKUP_FAILURE
+=~ Version: '10\.3|Version: '10\.4
 MENT-319:
 =~ Assertion \`backup_flush_ticket == 0'
 =~ backup_start
-=~ run_backup_stage
 MENT-264:
 =~ Error on file .*\.M.*I open during .*seq.* table copy
-MENT-253:
-=~ AddressSanitizer: SEGV|signal 11
-=~ filter_query_type
-=~ log_statement
-=~ auditing
 MENT-189:
 =~ InnoDB: Failing assertion: opt_no_lock
 =~ recv_parse_log_recs
@@ -45,57 +47,47 @@ MENT-189:
 =~ backup_file_op_fail
 =~ fil_name_parse
 =~ recv_parse_or_apply_log_rec_body
-MDEV-20360:
-=~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), part_id)'
-=~ ha_partition::part_records
-=~ partition_info::vers_set_hist_part
-=~ Version: '10\.3|Version: '10\.4
-MDEV-19304:
+#
+# Fixed in the next release
+#
+MDEV-20495:
+=~ Assertion \`precision > 0'
+=~ decimal_bin_size
+=~ select_create::create_table_from_items|Field_new_decimal::create_from_item
+MDEV-20320:
+=~ Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id
+MDEV-20320:
+=~ InnoDB: Refusing to load .* (id=.*, flags=.*); dictionary contains id=.*, flags=.*
+=~ InnoDB: Operating system error number 2 in a file operation
+=~ InnoDB: Could not find a valid tablespace file for .*
+MDEV-19406:
+=~ Assertion \`marked_for_write_or_computed()'|Assertion \`is_stat_field \|\| !table \|\| (!table->write_set \|\| bitmap_is_set(table->write_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength))) \|\| (table->vcol_set && bitmap_is_set(table->vcol_set, field_index))'
+=~ Field_date_common::store_TIME_with_warning
+=~ Field::do_field_temporal
+=~ multi_update::do_updates
+MDEV-19406:
+=~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
+=~ handler::ha_reset
+=~ close_thread_table
+MDEV-17939:
+=~ Assertion \`++loop_count < 2'
+=~ trx_undo_report_rename
+=~ fts_drop_table|my_xpath_parse_EqualityExpr
+=~ mysql_alter_table|Alter_info::vers_prohibited
+MDEV-19647:
+=~ Assertion \`find(table)'
+=~ dict_sys_t::prevent_eviction
+=~ fts_optimize_add_table
+=~ dict_load_columns
+MDEV-19189:
+=~ AddressSanitizer: memcpy-param-overlap: memory ranges
+=~ fill_alter_inplace_info
+=~ mysql_alter_table
+MDEV-18451:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
-=~ row_sel_field_store_in_mysql_format_func|row_sel_store_mysql_rec
-=~ row_search_mvcc
-MDEV-19304:
-=~ AddressSanitizer: unknown-crash on address
-=~ my_timestamp_from_binary
-=~ Field_timestampf::get_timestamp
-=~ Column_definition::Column_definition|TABLE::validate_default_values_of_unset_fields
-MDEV-19304:
-=~ AddressSanitizer: SEGV on unknown address|signal 11
-=~ calc_row_difference
-=~ handler::ha_update_row
-MDEV-19304:
-=~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
-=~ compare_record
-=~ mysql_update
-MDEV-19304:
-=~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
-=~ create_tmp_table
-=~ select_unit::create_result_table
-=~ mysql_derived_prepare
-MDEV-19304:
-=~ signal 11
-=~ handler::ha_write_row
-=~ ha_partition::write_row
-=~ write_record
-MDEV-19304:
-=~ Version: '10\.5|Version: '10\.4|Version: '10\.3
-=~ AddressSanitizer: SEGV|signal 6|signal 11
-=~ ha_partition::try_semi_consistent_read
-=~ mysql_update
-MDEV-19301:
-=~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
-=~ Version: '10\.5|Version: '10\.4
-=~ Datetime_truncation_not_needed::Datetime_truncation_not_needed
-=~ Item_func_nullif::date_op
-=~ Type_handler_temporal_result::Item_func_hybrid_field_type_get_date
-MDEV-19166:
-=~ Assertion \`!is_zero_datetime()'
-=~ Timestamp_or_zero_datetime::tv
-=~ Item_cache_timestamp::to_datetime
-MDEV-19127:
-=~ Assertion \`row_start_field'
-=~ vers_prepare_keys
-=~ mysql_create_frm_image
+=~ maria_create_trn_for_mysql
+=~ _ma_setup_live_state
+=~ trans_commit_implicit
 
 ##############################################################################
 # Weak matches
