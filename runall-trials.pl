@@ -2,6 +2,7 @@
 
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014, SkySQL Ab.
+# Copyright (c) 2019, MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -144,6 +145,7 @@ foreach my $trial_id (1..$trials) {
 }
 
 say("$0 will exit with exit status ".status2text($max_result)."($max_result)");
+unlink($output_file);
 exit($max_result);
 
 sub check_for_desired_result {
@@ -184,7 +186,6 @@ sub check_for_desired_result {
             }
         }
         close(OUTFILE);
-        unlink($output_file);
         unless ($output_matches) {
             say("Output did not match the pattern $output, result will be ignored");
             return 0;
