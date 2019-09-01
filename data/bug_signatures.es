@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MENT-368:
+=~ Assertion \`inline_mysql_file_tell(.*, file, (myf) (0)) == base_pos+ (16 + 5\*8 + 6\*4 + 11*2 + 6 + 5\*2 + 1 + 16)'
+=~ maria_create
+=~ create_internal_tmp_table
 MENT-360:
 =~ AddressSanitizer: heap-use-after-free|signal 11
 =~ strmake_root
@@ -28,7 +32,6 @@ MENT-341:
 MENT-319:
 =~ Assertion \`backup_flush_ticket == 0'
 =~ backup_start
-=~ run_backup_stage
 MENT-264:
 =~ Error on file .*\.M.*I open during .*seq.* table copy
 MENT-253:

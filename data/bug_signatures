@@ -950,7 +950,6 @@ MDEV-18069:
 MDEV-18068:
 =~ Assertion \`this == ticket->get_ctx()'
 =~ MDL_context::release_lock
-=~ backup_end
 MDEV-18067:
 =~ Assertion \`ticket->m_duration == MDL_EXPLICIT'|AddressSanitizer: heap-use-after-free
 =~ MDL_context::release_lock
