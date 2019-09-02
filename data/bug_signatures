@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20471:
+=~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
+=~ tdc_remove_table
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-20464:
 =~ signal 8|AddressSanitizer: FPE
 =~ row_search_with_covering_prefix
@@ -1430,10 +1434,6 @@ MDEV-14996:
 =~ int ha_maria::external_lock
 =~ Status: KILL_CONNECTION|Status: KILL_SERVER
 =~ Version: '10\.1
-### DRAFT
-MDEV-14894:
-=~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
-=~ tdc_remove_table
 MDEV-14865:
 =~ Assertion \`share->now_transactional == share->base\.born_transactional'
 =~ maria_close
