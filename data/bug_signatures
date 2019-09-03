@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20479:
+=~ Assertion \`pos < table->n_def'
+=~ dict_table_get_nth_col
+=~ check_col_exists_in_indexes
+=~ Version: '10\.4|Version: '10\.5
+MDEV-20476:
+=~ Assertion \`!"wrong page type"'
+=~ row_log_table_low
+=~ row_upd_clust_rec
+=~ Prepared_statement::execute
 MDEV-20471:
 =~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
 =~ tdc_remove_table
@@ -271,7 +281,7 @@ MDEV-19631:
 =~ Assertion \`0'
 =~ st_select_lex_unit::optimize
 =~ mysql_explain_union
-=~ return_zero_rows
+=~ Prepared_statement::execute
 MDEV-19622:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'|Assertion \`marked_for_read()'
 =~ ha_partition::set_auto_increment_if_higher
