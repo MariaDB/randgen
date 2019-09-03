@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20484:
+=~ signal 11|AddressSanitizer: unknown-crash
+=~ mem_heap_dup
+=~ dfield_dup
+=~ innobase_get_computed_value
+=~ row_upd_store_v_row
+MDEV-20484:
+=~ signal 11
+=~ String::realloc_raw
+=~ Field_blob::store_field
+=~ innobase_get_computed_value
 MDEV-20479:
 =~ Assertion \`pos < table->n_def'
 =~ dict_table_get_nth_col
@@ -69,7 +80,6 @@ MDEV-20376:
 MDEV-20370:
 =~ Assertion \`mtr->get_log_mode() == MTR_LOG_NO_REDO'
 =~ page_cur_insert_rec_write_log
-=~ btr_defragment_merge_pages
 MDEV-20366:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_change_password
@@ -1316,7 +1326,7 @@ MDEV-16635:
 =~ mysql_create_table_no_lock
 MDEV-16549:
 =~ Assertion \`context' failed|signal 11
-=~ Item_direct_view_ref::fix_fields
+=~ Item_direct_view_ref.*fix_fields
 =~ mysql_handle_single_derived
 MDEV-16539:
 =~ mysqld got exception|signal 11
@@ -1750,6 +1760,8 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
+MDEV-20484:
+=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 MDEV-20441:
 =~ is marked as crashed and should be repaired
 =~ versioning
