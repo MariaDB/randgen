@@ -4,17 +4,42 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20498:
+=~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type == 1'
+=~ handler::ha_write_row
+=~ ha_partition::copy_partitions
+=~ fast_alter_partition_table
+MDEV-20497:
+=~ AddressSanitizer: SEGV on unknown address|signal 11
+=~ Item_field::used_tables
+=~ Item::const_item
+=~ mysql_update
+=~ sp_instr_stmt::execute|sp_head::execute_procedure
+=~ versioning
+MDEV-20495:
+=~ Assertion \`precision > 0'
+=~ decimal_bin_size
+=~ Field_new_decimal::Field_new_decimal
+=~ select_create::create_table_from_items
+MDEV-20494:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ fast_end_partition
+=~ mysql_alter_table
+=~ versioning
+=~ Version: '10.4|Version: '10.5
 MDEV-20484:
 =~ signal 11|AddressSanitizer: unknown-crash
 =~ mem_heap_dup
 =~ dfield_dup
 =~ innobase_get_computed_value
 =~ row_upd_store_v_row
+=~ Version: '10.3
 MDEV-20484:
 =~ signal 11
 =~ String::realloc_raw
 =~ Field_blob::store_field
 =~ innobase_get_computed_value
+=~ Version: '10.3
 MDEV-20479:
 =~ Assertion \`pos < table->n_def'
 =~ dict_table_get_nth_col
@@ -69,10 +94,6 @@ MDEV-20395:
 =~ Assertion \`!found'
 =~ remove_ptr_from_dynarray
 =~ handle_grant_struct
-MDEV-20384:
-=~ Assertion \`field\.is_sane()'
-=~ Protocol_text::store_field_metadata
-=~ Version: '10\.5
 MDEV-20376:
 =~ Assertion \`file->trn == 0 \|\| file->trn == &dummy_transaction_object'
 =~ ha_maria::close
@@ -1600,12 +1621,6 @@ TODO-842:
 =~ Item_cache_temporal::val_time_packed
 =~ Item_func_between::val_int
 TODO-842:
-=~ AddressSanitizer: SEGV on unknown address|signal 11
-=~ Item_field::used_tables
-=~ Item::const_item
-=~ mysql_update
-=~ sp_instr_stmt::execute|sp_head::execute_procedure
-TODO-842:
 =~ Version: '10\.1
 =~ InnoDB: Failing assertion: s_latch == rw_lock_own(&index->lock, 352)
 =~ row_ins_scan_sec_index_for_duplicate
@@ -1760,8 +1775,17 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
+MDEV-20494:
+=~ mysqld: Incorrect information in file: .*
+=~ versioning
+=~ Version: '10.4|Version: '10.5
+MDEV-20493:
+=~ in Protocol::send_result_set_row
+=~ in select_send::send_data
+=~ in Prepared_statement::execute
 MDEV-20484:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
+=~ Version: '10.3
 MDEV-20441:
 =~ is marked as crashed and should be repaired
 =~ versioning
