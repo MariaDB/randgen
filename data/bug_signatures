@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20501:
+=~ Assertion \`maybe_null \|\| !null_value'
+=~ Item_func_round::date_op
+=~ Type_handler_temporal_result.*Item_func_hybrid_field_type_val_real
+=~ Version: '10.4
 MDEV-20498:
 =~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type == 1'
 =~ handler::ha_write_row
@@ -1058,6 +1063,11 @@ MDEV-18046:
 =~ AddressSanitizer: heap-buffer-overflow
 =~ net_field_length
 =~ Rows_log_event::Rows_log_event
+=~ mysql_show_binlog_events
+MDEV-18046:
+=~ Assertion \`lenlen >= 1 && lenlen <= 4'
+=~ binlog_get_uncompress_len
+=~ Rows_log_event.*uncompress_buf
 =~ mysql_show_binlog_events
 MDEV-18042:
 =~ signal 11|AddressSanitizer: SEGV
