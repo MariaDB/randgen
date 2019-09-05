@@ -94,7 +94,7 @@ sub new {
     if ($self->config->redefine and not ref $self->config->redefine eq 'ARRAY') {
         $self->config->redefine([ split /,/, $self->config->redefine ]);
     }
-    if ("@{$self->config->redefine}" !~ /basics.yy/) {
+    if ($self->config->redefine and "@{$self->config->redefine}" !~ /basics.yy/) {
         push @{$self->config->redefine}, 'conf/mariadb/basics.yy';
     }
     if ($self->config->engine and not ref $self->config->engine eq 'ARRAY') {
