@@ -155,6 +155,27 @@ sub run {
   }
 
   #####
+  $self->printStep("Generating data on the old server");
+
+  $gentest= $self->prepareGentest(1,
+    {
+      duration => 3600,
+      dsn => [$old_server->dsn($self->getProperty('database'))],
+      servers => [$old_server],
+      queries => 0,
+      threads => 1,
+      reporters => 'None'
+    }
+  );
+
+  $status= $gentest->run();
+
+  if ($status != STATUS_OK) {
+    sayError("Data generation on the old server failed");
+    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+  }
+
+  #####
   $self->printStep("Running test flow on the old server");
 
   my $gentest_pid= fork();
@@ -168,7 +189,7 @@ sub run {
   # the status of the test flow to notice if it exits prematurely.
   
   if ($gentest_pid > 0) {
-    my $timeout= $self->getTestDuration * 2 / 3;
+    my $timeout= $self->getTestDuration / 3;
     foreach (1..$timeout) {
       if (waitpid($gentest_pid, WNOHANG) == 0) {
         sleep 1;
@@ -185,7 +206,9 @@ sub run {
         duration => int($self->getTestDuration * 2 / 3),
         dsn => [$old_server->dsn($self->getProperty('database'))],
         servers => [$old_server],
-      }
+        'start-dirty' => 1,
+      },
+      my $skip_gendata=1
     );
     my $res= $gentest->run();
     exit $res;
