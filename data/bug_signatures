@@ -4,6 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20510:
+=~ signal 11|AddressSanitizer: SEGV
+=~ my_strcasecmp_utf8
+=~ lex_string_cmp
+=~ mysql_write_frm
+=~ fast_alter_partition_table
+=~ Version: '10.4
 MDEV-20501:
 =~ Assertion \`maybe_null \|\| !null_value'
 =~ Item_func_round::date_op
