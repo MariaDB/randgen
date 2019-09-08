@@ -647,7 +647,7 @@ MDEV-19014:
 MDEV-19011:
 =~ Assertion \`file->s->base\.reclength < file->s->vreclength'
 =~ ha_myisam::setup_vcols_for_repair
-=~ ha_myisam::enable_indexes|ha_myisam::optimize|Sql_cmd_check_table
+=~ ha_myisam::enable_indexes|ha_myisam::optimize|Sql_cmd_check_table|handler::ha_analyze
 MDEV-18980:
 =~ Assertion \`join->best_read < double(1\.79769313486231570814527423731704357e+308L)'
 =~ greedy_search
@@ -982,6 +982,7 @@ MDEV-18166:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
 =~ field_conv_incompatible
 =~ TABLE::update_virtual_fields
+# Only fixed in 10.5!
 MDEV-18156:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Assertion \`btr_validate_index(index, 0, false)'|Assertion \`0'
@@ -1032,7 +1033,6 @@ MDEV-18067:
 =~ Assertion \`ticket->m_duration == MDL_EXPLICIT'|AddressSanitizer: heap-use-after-free
 =~ MDL_context::release_lock
 =~ backup_end
-=~ run_backup_stage
 MDEV-18067:
 =~ signal 11
 =~ backup_end
@@ -1875,9 +1875,11 @@ MDEV-18158:
 =~ view
 MDEV-18157:
 =~ Explain_node::print_explain_for_children
+#
+# Only fixed in 10.5!
 MDEV-18156:
 =~ Index for table .* is corrupt; try to repair it
-=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
 MDEV-18147:
 =~ templ->mysql_col_len >= len
 MDEV-18146:
