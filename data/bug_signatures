@@ -5,7 +5,7 @@
 ##############################################################################
 
 MDEV-20518:
-=~ Assertion `share->now_transactional == share->base\.born_transactional'
+=~ Assertion \`share->now_transactional == share->base\.born_transactional'
 =~ maria_close
 =~ closefrm
 =~ tc_purge
