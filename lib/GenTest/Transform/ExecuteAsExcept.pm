@@ -35,11 +35,14 @@ sub transform {
 	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO)}sio
 		|| $orig_query !~ m{^\s*SELECT}sio;
 
-	# We remove LIMIT/OFFSET if present in the (outer) query, because we are 
-	# using LIMIT 0 in some of the transformed queries.
 	my $orig_query_zero_limit = $orig_query;
+	# We remove LIMIT/OFFSET if present in the (outer) query, because we are
+	# using LIMIT 0 instead
 	$orig_query_zero_limit =~ s{LIMIT\s+\d+(?:\s+OFFSET\s+\d+)?}{LIMIT 0}sio;
 	$orig_query_zero_limit =~ s{(FOR\s+UPDATE|LOCK\s+IN\s+(?:SHARE|EXCLUSIVE)\sMODE)\s+LIMIT 0}{LIMIT 0 $1}sio;
+    unless ($orig_query_zero_limit =~ /LIMIT\s+0/sio) {
+        $orig_query_zero_limit.= ' LIMIT 0';
+    }
 
 	return [
 		"( $orig_query ) EXCEPT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_DISTINCT */",
