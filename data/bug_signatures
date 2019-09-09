@@ -663,7 +663,7 @@ MDEV-18947:
 =~ flush_cached_blocks
 =~ flush_pagecache_blocks_with_filter
 MDEV-18925:
-=~ AddressSanitizer: heap-buffer-overflow
+=~ AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
 =~ Item_exists_subselect::is_top_level_item|Item_in_optimizer::is_top_level_item
 =~ st_select_lex::update_used_tables
 =~ JOIN::optimize
@@ -954,7 +954,7 @@ MDEV-18244:
 =~ ha_innobase::info_low
 =~ ha_partition::update_next_auto_inc_val|ha_partition::update_row|a_partition::write_row
 MDEV-18216:
-=~ signal 11
+=~ signal 11|AddressSanitizer: SEGV
 =~ Query_arena::set_query_arena
 =~ THD::set_n_backup_active_arena
 =~ Field::set_default
