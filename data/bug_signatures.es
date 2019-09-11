@@ -13,18 +13,6 @@ MENT-360:
 =~ strmake_root
 =~ Query_arena::strmake
 =~ mysqld_list_processes
-MENT-350:
-=~ Installing MariaDB/MySQL system tables in
-=~ MariaDB Audit Plugin version 2.* STARTED
-=~ Assertion \`global_status_var\.global_memory_used == 0'
-=~ mysqld_exit(int)
-=~ AddressSanitizer: SEGV
-=~ Version: '10\.4
-MENT-349:
-=~ AddressSanitizer: heap-use-after-free
-=~ filter_query_type
-=~ log_statement
-=~ auditing
 MENT-341:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ mysql_create_or_drop_trigger|mysql_drop_view|mysql_create_view|Sql_cmd_create_table|mysql_rm_table|mysql_load|mysql_alter_table|Sql_cmd_truncate_table|mysql_rename_tables|mysql_create_db|FLUSH
@@ -34,11 +22,6 @@ MENT-319:
 =~ backup_start
 MENT-264:
 =~ Error on file .*\.M.*I open during .*seq.* table copy
-MENT-253:
-=~ AddressSanitizer: SEGV|signal 11
-=~ filter_query_type
-=~ log_statement
-=~ auditing
 MENT-189:
 =~ InnoDB: Failing assertion: opt_no_lock
 =~ recv_parse_log_recs

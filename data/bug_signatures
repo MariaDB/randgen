@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20554:
+=~ Assertion \`fil_page_get_type(page_align(rec)) == 17855'|InnoDB: Failing assertion: fil_page_get_type(page_align(rec)) == 17855
+=~ row_log_table_low
+=~ ha_innobase::update_row
+MDEV-20545:
+=~ Assertion \`col\.vers_sys_end()'
+=~ dict_index_t::vers_history_row
+=~ row_merge_read_clustered_index
+=~ mysql_inplace_alter_table
 MDEV-20518:
 =~ Assertion \`share->now_transactional == share->base\.born_transactional'
 =~ maria_close
@@ -1023,7 +1032,7 @@ MDEV-18069:
 =~ run_backup_stage
 MDEV-18069:
 =~ AddressSanitizer: heap-use-after-free|signal 11
-=~ MDL_ticket::has_stronger_or_equal_type
+=~ MDL_ticket::has_stronger_or_equal_type|inline_mysql_prlock_wrlock
 =~ MDL_context::upgrade_shared_lock
 =~ run_backup_stage|backup_flush
 MDEV-18068:
@@ -1261,6 +1270,12 @@ MDEV-17223:
 =~ Assertion \`thd->killed != 0'
 =~ ha_maria::enable_indexes
 =~ handler::ha_end_bulk_insert
+MDEV-17177:
+=~ signal 11|AddressSanitizer: use-after-poison
+=~ Item_func_in::cleanup
+=~ Item::delete_self
+=~ Query_arena::free_items
+=~ THD::cleanup_after_query
 MDEV-17166:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ heap_check_heap
@@ -1550,6 +1565,11 @@ MDEV-12967:
 =~ dict_index_is_spatial
 =~ btr_scrub_free_page
 =~ fil_crypt_rotate_page
+MDEV-12251:
+=~ InnoDB: Failing assertion: table->data_dir_path
+=~ srv_get_meta_data_filename
+=~ row_quiesce_write_cfg|row_quiesce_table_complete
+=~ ha_innodb::external_lock
 MDEV-11740:
 =~ Assertion \`pos != (~(my_off_t) 0)' failed
 =~ my_seek
@@ -1803,6 +1823,9 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
+MDEV-20554:
+=~ Index for table .* is corrupt; try to repair it
+=~ scrub
 MDEV-20515:
 =~ 1032: Can't find record in .*|1034: Index for table .* is corrupt; try to repair it|1030: Got error 176 "Read page with wrong checksum" from storage engine Aria
 MDEV-20494:
@@ -1816,6 +1839,9 @@ MDEV-20493:
 MDEV-20484:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Version: '10.3
+MDEV-20476:
+=~ Index for table .* is corrupt; try to repair it
+=~ scrub
 MDEV-20441:
 =~ is marked as crashed and should be repaired
 =~ versioning
