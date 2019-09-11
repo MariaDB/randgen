@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20563:
+=~ Assertion \`update->n_fields < ulint(table->n_cols + table->n_v_cols)'
+=~ upd_node_t::make_versioned_helper
+=~ row_update_for_mysql
+=~ ha_innobase::delete_row
+MDEV-20563:
+=~ signal 11
+=~ row_upd_del_mark_clust_rec
+=~ row_upd_clust_step
+=~ ha_innobase::delete_row
+=~ versioning
 MDEV-20560:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
@@ -1041,7 +1052,7 @@ MDEV-18082:
 MDEV-18069:
 =~ signal 11
 =~ MDL_lock::incompatible_granted_types_bitmap
-=~ MDL_ticket::has_stronger_or_equal_type
+=~ MDL_ticket::has_stronger_or_equal_type|MDL_ticket::is_incompatible_when_granted
 =~ run_backup_stage
 MDEV-18069:
 =~ AddressSanitizer: heap-use-after-free|signal 11
