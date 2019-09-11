@@ -4,10 +4,22 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20560:
+=~ Assertion \`precision > 0'
+=~ decimal_bin_size
+=~ Type_handler::make_and_init_table_field
+=~ Item_result_field::create_tmp_field_ex
+=~ create_tmp_table
+MDEV-20557:
+=~ Assertion \`thd'|signal 11
+=~ Item_subselect::const_item
+=~ Item_func::update_used_tables
+=~ JOIN::optimize
 MDEV-20554:
 =~ Assertion \`fil_page_get_type(page_align(rec)) == 17855'|InnoDB: Failing assertion: fil_page_get_type(page_align(rec)) == 17855
 =~ row_log_table_low
 =~ ha_innobase::update_row
+=~ Version: '10.1|Version: '10.2
 MDEV-20545:
 =~ Assertion \`col\.vers_sys_end()'
 =~ dict_index_t::vers_history_row
@@ -27,7 +39,7 @@ MDEV-20515:
 =~ ha_partition::rnd_pos
 =~ multi_update::do_updates
 =~ versioning
-=~ Version: '10.3|=~ Version: '10.4|=~ Version: '10.5
+=~ Version: '10.3|Version: '10.4|Version: '10.5
 MDEV-20510:
 =~ signal 11|AddressSanitizer: SEGV
 =~ my_strcasecmp_utf8
@@ -55,7 +67,8 @@ MDEV-20497:
 MDEV-20495:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
-=~ Field_new_decimal::Field_new_decimal
+=~ Type_handler::make_and_init_table_field
+=~ Item_func::create_field_for_create_select
 =~ select_create::create_table_from_items
 MDEV-20494:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
@@ -171,7 +184,7 @@ MDEV-20338:
 =~ mysql_update
 =~ sp_instr_stmt::exec_core
 =~ versioning
-=~ Version: '10\.4\.|=~ Version: '10\.5\.
+=~ Version: '10\.4\.|Version: '10\.5\.
 # Fix merged into 10.3/10.4, but not yet in 10.5
 MDEV-20320:
 =~ Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id
@@ -1451,6 +1464,15 @@ MDEV-15878:
 =~ join_read_const_table
 =~ JOIN::optimize
 =~ mysql_select|mysql_update|mysql_delete
+MDEV-15873:
+=~ Assertion \`precision > 0'
+=~ decimal_bin_size
+=~ Field_new_decimal::create_from_item
+=~ Item::create_tmp_field
+=~ create_tmp_table
+=~ Item_func_group_concat::setup
+=~ EXPLAIN
+=~ Version: '10.2
 MDEV-15753:
 =~ Assertion \`thd->is_error()'
 =~ mysql_admin_table
@@ -1570,6 +1592,13 @@ MDEV-12251:
 =~ srv_get_meta_data_filename
 =~ row_quiesce_write_cfg|row_quiesce_table_complete
 =~ ha_innodb::external_lock
+MDEV-12059:
+=~ Assertion \`precision > 0'
+=~ decimal_bin_size
+=~ Field_new_decimal::create_from_item
+=~ create_tmp_table
+=~  OVER
+=~ Version: '10.2|Version: '10.3|Version: '10.4|Version: '10.5
 MDEV-11740:
 =~ Assertion \`pos != (~(my_off_t) 0)' failed
 =~ my_seek
@@ -2047,8 +2076,6 @@ MDEV-16184:
 =~ nest->counter > 0
 MDEV-16171:
 =~ in setup_table_map
-MDEV-15873:
-=~ precision > 0
 MDEV-15802:
 =~ Item::delete_self
 ### DRAFT
@@ -2143,8 +2170,6 @@ MDEV-12978:
 =~ log_calc_max_ages
 MDEV-12329:
 =~ 1024U, trx, rec, block
-MDEV-12059:
-=~ precision > 0
 MDEV-11783:
 =~ checksum_length == f->ptr
 MDEV-9137:
