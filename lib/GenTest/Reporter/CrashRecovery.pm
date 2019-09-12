@@ -248,7 +248,6 @@ sub report {
 				"ANALYZE TABLE `$database`.`$table`",
 				"OPTIMIZE TABLE `$database`.`$table`",
 				"REPAIR TABLE `$database`.`$table` EXTENDED",
-				"ALTER TABLE `$database`.`$table` ENGINE = $engine"
 			) {
 				say("Executing $sql.");
 				my $sth = $dbh->prepare($sql);
