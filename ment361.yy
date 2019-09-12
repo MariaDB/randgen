@@ -1,0 +1,8 @@
+query_init:
+    CREATE TABLE IF NOT EXISTS t1 (f INT);
+
+query:
+    DROP VIEW IF EXISTS v1
+    | CREATE VIEW v1 AS SELECT * FROM t1
+    | CREATE VIEW v1 AS SELECT * FROM v1
+;
