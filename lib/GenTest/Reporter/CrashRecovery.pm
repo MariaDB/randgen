@@ -54,7 +54,9 @@ sub monitor {
 	my $pid = $reporter->serverInfo('pid');
 
 	if (time() > $reporter->testEnd() - 19) {
-		say("Sending SIGKILL to server with pid $pid in order to force a recovery.");
+		say("##########################################################################");
+		say("Sending SIGKILL to server with pid $pid in order to force a recovery");
+		say("##########################################################################");
 		kill(9, $pid);
 		return STATUS_SERVER_KILLED;
 	} else {
@@ -83,12 +85,14 @@ sub report {
 		# Server is still running, kill it. Again.
 		$dbh_prev->disconnect();
 
-		say("Sending SIGKILL to server with pid $pid in order to force a recovery.");
+		say("##########################################################################");
+		say("Sending SIGKILL to server with pid $pid in order to force a recovery");
+		say("##########################################################################");
 		kill(9, $pid);
 		sleep(5);
 	}
 
-	my $server = $reporter->properties->servers->[0];
+	my $server = $reporter->properties->servers->[1];
 	say("Copying datadir... (interrupting the copy operation may cause investigation problems later)");
 	if (osWindows()) {
 		system("xcopy \"$datadir\" \"$orig_datadir\" /E /I /Q");
@@ -98,7 +102,9 @@ sub report {
 	move($server->errorlog, $server->errorlog.'_orig');
 	unlink("$datadir/core*");	# Remove cores from any previous crash
 
-	say("Attempting database recovery using the server ...");
+	say("##########################################################################");
+	say("Attempting database recovery...");
+	say("##########################################################################");
 
 	$server->setStartDirty(1);
 	my $recovery_status = $server->startServer();
@@ -144,7 +150,9 @@ sub report {
 	# Phase 2 - server is now running, so we execute various statements in order to verify table consistency
 	#
 
-	say("Testing database consistency");
+	say("##########################################################################");
+	say("Checking database consistency");
+	say("##########################################################################");
 
 	my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
 	foreach my $database (@$databases) {
