@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20578:
+=~ error 126 when executing undo undo_key_delete
+=~ Aria engine: Undo phase failed
+=~ Version: '10.2|Version: '10.3|Version: '10.4|Version: '10.5
 MDEV-20563:
 =~ Assertion \`update->n_fields < ulint(table->n_cols + table->n_v_cols)'
 =~ upd_node_t::make_versioned_helper
@@ -1001,8 +1005,9 @@ MDEV-18216:
 =~ Field::set_default
 =~ CREATE.*VIEW
 MDEV-18203:
-=~ error 126 when executing undo undo_key_insert|error 126 when executing undo undo_key_delete
+=~ error 126 when executing undo undo_key_insert
 =~ Aria engine: Undo phase failed
+=~ Version: '10\.5|Version: '10\.4
 MDEV-18200:
 =~ InnoDB: Operating system error number 2 in a file operation
 =~ InnoDB: File .*: 'open' returned OS error 71
