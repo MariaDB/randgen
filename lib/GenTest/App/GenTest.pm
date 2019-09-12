@@ -372,14 +372,14 @@ sub reportResults {
         say("Server deadlock reported, initiating analysis...");
         @report_results = $reporter_manager->report(REPORTER_TYPE_DEADLOCK | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
     } elsif ($total_status == STATUS_SERVER_KILLED) {
+        $total_status = STATUS_OK;
         @report_results = $reporter_manager->report(REPORTER_TYPE_SERVER_KILLED | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
     } else {
         @report_results = $reporter_manager->report(REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
     }
-        
+
     my $report_status = shift @report_results;
     $total_status = $report_status if $report_status > $total_status;
-    $total_status = STATUS_OK if $total_status == STATUS_SERVER_KILLED;
 
     $self->reportXMLIncidents($total_status, \@report_results);
         
