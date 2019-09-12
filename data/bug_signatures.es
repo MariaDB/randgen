@@ -8,6 +8,11 @@ MENT-368:
 =~ Assertion \`inline_mysql_file_tell(.*, file, (myf) (0)) == base_pos+ (16 + 5\*8 + 6\*4 + 11\*2 + 6 + 5\*2 + 1 + 16)'
 =~ maria_create
 =~ create_internal_tmp_table
+MENT-361:
+=~ AddressSanitizer: heap-use-after-free
+=~ filter_query_type
+=~ log_statement
+=~ Prepared_statement
 MENT-360:
 =~ AddressSanitizer: heap-use-after-free|signal 11
 =~ strmake_root

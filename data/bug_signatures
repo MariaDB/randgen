@@ -109,7 +109,7 @@ MDEV-20476:
 =~ Assertion \`!"wrong page type"'
 =~ row_log_table_low
 =~ row_upd_clust_rec
-=~ Prepared_statement::execute
+=~ ha_innobase::update_row
 MDEV-20471:
 =~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
 =~ tdc_remove_table
@@ -437,7 +437,7 @@ MDEV-19609:
 MDEV-19596:
 =~ Assertion \`inited==NONE'
 =~ handler::ha_index_read_idx_map
-=~ Delayed_insert::handle_inserts
+=~ Delayed_insert.*handle_inserts
 MDEV-19576:
 =~ Got error 175 when executing record redo_index|Got error 175 when executing undo undo_row_insert
 =~ Aria engine: Redo phase failed|Aria engine: Undo phase failed
@@ -511,6 +511,14 @@ MDEV-19361:
 =~ Item_func_mul::int_op
 =~ Item_func_hybrid_field_type::val_int_from_int_op
 =~ TABLE::update_virtual_fields
+=~ Version: '10\.4|Version: '10\.5
+MDEV-19361:
+=~ Assertion \`marked_for_read()'
+=~ Field_bit::val_int
+=~ Field::store_field
+=~ TABLE::update_virtual_fields
+=~ record_should_be_deleted
+=~ Version: '10\.4|Version: '10\.5
 MDEV-19348:
 =~ InnoDB: Database page corruption on disk or a failed file read of tablespace .* page .* You may have to recover from a backup
 =~ InnoDB: Failed to read file .* at offset .* Page read from tablespace is corrupted
@@ -867,7 +875,7 @@ MDEV-18461:
 =~ _ma_update_at_original_place
 ### DRAFT
 MDEV-18460:
-=~ signal 11
+=~ signal 11|AddressSanitizer: SEGV
 =~ tdc_create_key
 =~ THD::create_tmp_table_def_key
 =~ THD::open_temporary_table
@@ -1360,17 +1368,23 @@ MDEV-16932:
 =~ build_frm_image
 =~ mysql_create_frm_image
 =~ mysql_alter_table
+# MDEV-16929:
+# =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+# =~ open_normal_and_derived_tables
+# =~ mysql_test_create_view|mysql_test_select|mysql_test_create_table
+# =~ check_prepared_statement
+# =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY
+# MDEV-16929:
+# =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+# =~ open_normal_and_derived_tables
+# =~ mysql_table_grant
+# =~ KILL_SERVER|KILL_CONNECTION
 MDEV-16929:
-=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
-=~ open_normal_and_derived_tables
-=~ mysql_test_create_view|mysql_test_select|mysql_test_create_table
-=~ check_prepared_statement
-=~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY
-MDEV-16929:
-=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
-=~ open_normal_and_derived_tables
-=~ mysql_table_grant
+=~ \`thd->transaction.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ close_thread_tables
+=~ mysqld_show_create
 =~ KILL_SERVER|KILL_CONNECTION
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-16887:
 =~ Assertion \`n_idx > 0'
 =~ trx_undo_log_v_idx
