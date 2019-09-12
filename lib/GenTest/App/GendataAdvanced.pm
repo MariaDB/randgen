@@ -453,12 +453,14 @@ sub gen_table {
                             ];
     }
 
+    $engine = 'Aria';
     my @engines= ($engine ? split /,/, $engine : '');
     foreach my $e (@engines)
     {
       my $name = ( $e eq $engine ? $basename : $basename . '_'.$e );
+      my $transactional= 'TRANSACTIONAL=1';
 
-      say("Creating ".$executor->getName()." table $name, size $size rows, engine $e .");
+      say("Creating ".$executor->getName()." table $name, size $size rows, engine $e $transactional");
 
       ### This variant is needed due to
       ### http://bugs.mysql.com/bug.php?id=47125
@@ -479,13 +481,13 @@ sub gen_table {
               . ($coldef->[3] ? " $coldef->[3]" : '')  # zerofill
               . ($coldef->[4] ? " $coldef->[4]" : '')  # nullability
               . (defined $coldef->[5] ? " DEFAULT $coldef->[5]" : '')   # default
-              . (defined $coldef->[6] ? " $coldef->[6]" : '') # virtual
-              . ($coldef->[7] ? " $coldef->[7]" : '')  # invisible
-              . ($coldef->[8] ? " $coldef->[8]" : '')  # compressed
+              . ('') # virtual
+              . ('')  # invisible
+              . ('')  # compressed
               . ",\n";
       };
       $create_stmt .= "PRIMARY KEY(pk)\n";
-      $create_stmt .= ")" . ($e ne '' ? " ENGINE=$e" : "");
+      $create_stmt .= ")" . ($e ne '' ? " ENGINE=$e $transactional" : "");
       $executor->execute($create_stmt);
 
       if (defined $views) {
