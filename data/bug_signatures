@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20597:
+=~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF) \|\| (((Item_ref \*) item)->ref_type() == Item_ref::REF)))'
+=~ get_corresponding_field_pair
+=~ pushdown_from_having_into_where
+=~ Version: '10.4|Version: '10.5
 MDEV-20578:
 =~ error 126 when executing undo undo_key_delete
 =~ Aria engine: Undo phase failed
