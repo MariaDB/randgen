@@ -11,7 +11,6 @@ MDEV-20597:
 =~ Version: '10.4|Version: '10.5
 MDEV-20578:
 =~ error 126 when executing undo undo_key_delete
-=~ Aria engine: Undo phase failed
 =~ Version: '10.2|Version: '10.3|Version: '10.4|Version: '10.5
 MDEV-20563:
 =~ Assertion \`update->n_fields < ulint(table->n_cols + table->n_v_cols)'
@@ -774,8 +773,9 @@ MDEV-18783:
 =~ tc_purge|tc_remove_table
 =~ run_backup_stage|close_thread_tables
 MDEV-18780:
-=~ Assertion \`col->prtype == prtype'
+=~ Assertion \`col->prtype == prtype'|Assertion \`!((col->prtype ^ prtype) & ~(16384U\|32768U))'
 =~ innobase_rename_or_enlarge_column_try
+=~ Version: '10\.4|Version: '10\.5
 MDEV-18776:
 =~ Assertion \`0' failed
 =~ mysql_execute_command
@@ -1463,6 +1463,12 @@ MDEV-16242:
 =~ Slave worker thread retried transaction
 =~ Can't find record
 =~ rocksdb
+# DRAFT
+MDEV-16208:
+=~ Assertion \`lock_get_wait(other_lock)'
+=~ lock_rec_queue_validate
+=~ lock_clust_rec_read_check_and_lock
+=~ row_search_mvcc
 MDEV-16128:
 =~ signal 11
 =~ Item_func::print_op
@@ -1652,7 +1658,7 @@ MDEV-10945:
 =~ Status: KILL_BAD_DATA
 =~ Version: '10\.1|Version: '10\.0|Version: '5\.5
 MDEV-10748:
-=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: heap-buffer-overflow
 =~ ha_maria::implicit_commit
 =~ trans_commit_implicit
 MDEV-10466:
