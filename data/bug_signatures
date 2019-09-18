@@ -4,11 +4,33 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20622:
+=~ signal 11|AddressSanitizer: SEGV
+=~ embedding_sjm
+=~ eliminate_item_equal
+=~ substitute_for_best_equal_field
+=~ Version: '10.4|Version: '10.5
+MDEV-20620:
+=~ AddressSanitizer: use-after-poison
+=~ tree_insert
+=~ copy_to_tree
+=~ tree_walk_left_root_right
+=~ Item_func_group_concat
+=~ Version: '10.1
+MDEV-20619:
+=~ AddressSanitizer: heap-use-after-free
+=~ my_strnncollsp_simple|my_strnncoll_binary
+=~ Arg_comparator::compare
+=~ SQL_SELECT::skip_record
+=~ Version: '10.2|Version: '10.3|Version: '10.4|Version: '10.5
 MDEV-20597:
 =~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF) \|\| (((Item_ref \*) item)->ref_type() == Item_ref::REF)))'
 =~ get_corresponding_field_pair
 =~ pushdown_from_having_into_where
 =~ Version: '10.4|Version: '10.5
+MDEV-20595:
+=~ Assertion \`0 < sel && sel <= 2\.0'
+=~ table_cond_selectivity
 MDEV-20578:
 =~ error 126 when executing undo undo_key_delete
 =~ Version: '10.2|Version: '10.3|Version: '10.4|Version: '10.5
@@ -61,7 +83,7 @@ MDEV-20515:
 =~ Version: '10.3|Version: '10.4|Version: '10.5
 MDEV-20510:
 =~ signal 11|AddressSanitizer: SEGV
-=~ my_strcasecmp_utf8
+=~ my_strcasecmp_utf8.*
 =~ lex_string_cmp
 =~ mysql_write_frm
 =~ fast_alter_partition_table
@@ -1011,7 +1033,6 @@ MDEV-18216:
 =~ CREATE.*VIEW
 MDEV-18203:
 =~ error 126 when executing undo undo_key_insert
-=~ Aria engine: Undo phase failed
 =~ Version: '10\.5|Version: '10\.4
 MDEV-18200:
 =~ InnoDB: Operating system error number 2 in a file operation
@@ -1238,7 +1259,7 @@ MDEV-17844:
 MDEV-17843:
 =~ Assertion \`page_rec_is_leaf(rec)'
 =~ lock_rec_queue_validate
-=~ innodb_show_status|SHOW ENGINE INNODB STATUS
+=~ innodb_show_status|SHOW ENGINE INNODB STATUS|SHOW ENGINE InnoDB STATUS
 MDEV-17842:
 =~ Assertion \`((copy & 0x00000003) == 0x02)'
 =~ pfs_lock::allocated_to_free

@@ -22,6 +22,9 @@ MENT-341:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ mysql_create_or_drop_trigger|mysql_drop_view|mysql_create_view|Sql_cmd_create_table|mysql_rm_table|mysql_load|mysql_alter_table|Sql_cmd_truncate_table|mysql_rename_tables|mysql_create_db|FLUSH
 =~ my_ok
+MENT-328:
+=~ mariabackup: File '.*seq.*MAI' not found (Errcode: 2 "No such file or directory")
+=~ Error on aria table file open .*seq.*MAI
 MENT-319:
 =~ Assertion \`backup_flush_ticket == 0'
 =~ backup_start
