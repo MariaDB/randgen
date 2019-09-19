@@ -316,6 +316,12 @@ MDEV-20114:
 =~ signal 11|AddressSanitizer: SEGV
 =~ dict_col_t::detach
 =~ dict_index_t::detach_columns
+MDEV-20090:
+=~ Assertion \`pos < index->n_def'
+=~ dict_index_get_nth_field
+=~ row_purge_parse_undo_rec
+=~ srv_task_execute
+=~ Version: '10\.4|Version: '10\.5
 MDEV-20066:
 =~ InnoDB: Failing assertion: !cursor->index->is_committed()
 =~ row_ins_sec_index_entry_by_modify
@@ -1807,11 +1813,6 @@ TODO-842:
 =~ stored_field_make_mm_leaf
 =~ calculate_cond_selectivity_for_table
 TODO-842:
-=~ Assertion \`pos < index->n_def'
-=~ dict_index_get_nth_field
-=~ dict_index_get_nth_col|dict_field_get_col
-=~ row_purge_parse_undo_rec
-TODO-842:
 =~ Assertion \`inited==NONE'
 =~ handler::ha_index_init
 =~ check_duplicate_long_entry_key
@@ -2005,10 +2006,6 @@ MDEV-18146:
 =~ btr_page_reorganize_low
 MDEV-18146:
 =~ merge_page, index
-MDEV-18141:
-=~ REPLACE INTO .* Can't find record in
-=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
-=~ log-bin|log_bin
 #
 # Not fixed, but I don't want it to match
 # MDEV-18065:
