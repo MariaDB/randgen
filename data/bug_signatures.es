@@ -39,57 +39,14 @@ MENT-189:
 =~ backup_file_op_fail
 =~ fil_name_parse
 =~ recv_parse_or_apply_log_rec_body
-MDEV-20360:
-=~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), part_id)'
-=~ ha_partition::part_records
-=~ partition_info::vers_set_hist_part
-=~ Version: '10\.3|Version: '10\.4
-MDEV-19304:
-=~ signal 11|AddressSanitizer: SEGV on unknown address
-=~ row_sel_field_store_in_mysql_format_func|row_sel_store_mysql_rec
-=~ row_search_mvcc
-MDEV-19304:
-=~ AddressSanitizer: unknown-crash on address
-=~ my_timestamp_from_binary
-=~ Field_timestampf::get_timestamp
-=~ Column_definition::Column_definition|TABLE::validate_default_values_of_unset_fields
-MDEV-19304:
-=~ AddressSanitizer: SEGV on unknown address|signal 11
-=~ calc_row_difference
-=~ handler::ha_update_row
-MDEV-19304:
-=~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
-=~ compare_record
-=~ mysql_update
-MDEV-19304:
-=~ AddressSanitizer: unknown-crash|AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
-=~ create_tmp_table
-=~ select_unit::create_result_table
-=~ mysql_derived_prepare
-MDEV-19304:
-=~ signal 11
-=~ handler::ha_write_row
-=~ ha_partition::write_row
-=~ write_record
-MDEV-19304:
-=~ Version: '10\.5|Version: '10\.4|Version: '10\.3
-=~ AddressSanitizer: SEGV|signal 6|signal 11
-=~ ha_partition::try_semi_consistent_read
-=~ mysql_update
-MDEV-19301:
-=~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
-=~ Version: '10\.5|Version: '10\.4
-=~ Datetime_truncation_not_needed::Datetime_truncation_not_needed
-=~ Item_func_nullif::date_op
-=~ Type_handler_temporal_result::Item_func_hybrid_field_type_get_date
-MDEV-19166:
-=~ Assertion \`!is_zero_datetime()'
-=~ Timestamp_or_zero_datetime::tv
-=~ Item_cache_timestamp::to_datetime
-MDEV-19127:
-=~ Assertion \`row_start_field'
-=~ vers_prepare_keys
-=~ mysql_create_frm_image
+#
+# Fixed in the next release
+#
+MDEV-17939:
+=~ Assertion \`++loop_count < 2'
+=~ trx_undo_report_rename
+=~ fts_drop_table|my_xpath_parse_EqualityExpr
+=~ mysql_alter_table|Alter_info::vers_prohibited
 
 ##############################################################################
 # Weak matches

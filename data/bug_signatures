@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20640:
+=~ InnoDB: tried to purge non-delete-marked record in index
+=~ Assertion \`0'
+=~ row_purge_remove_sec_if_poss_leaf
+=~ que_thr_step
+MDEV-20639:
+=~ AddressSanitizer: SEGV
+=~ get_prefix
+=~ find_body
+=~ Field_timestamp::conversion_depends_on_sql_mode
+=~ Version: '10.4|Version: '10.5
 MDEV-20622:
 =~ signal 11|AddressSanitizer: SEGV
 =~ embedding_sjm
@@ -72,9 +83,6 @@ MDEV-20518:
 =~ closefrm
 =~ tc_purge
 =~ run_backup_stage
-MDEV-20517:
-=~ Assertion \`!is_expensive()'
-=~ Item::value_depends_on_sql_mode_const_item
 MDEV-20515:
 =~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), part_id)'
 =~ ha_partition::rnd_pos
@@ -130,11 +138,6 @@ MDEV-20484:
 =~ Field_blob::store_field
 =~ innobase_get_computed_value
 =~ Version: '10.3
-MDEV-20479:
-=~ Assertion \`pos < table->n_def'
-=~ dict_table_get_nth_col
-=~ check_col_exists_in_indexes
-=~ Version: '10\.4|Version: '10\.5
 MDEV-20476:
 =~ Assertion \`!"wrong page type"'
 =~ row_log_table_low
@@ -167,10 +170,6 @@ MDEV-20422:
 =~ InnoDB: Failing assertion: field->prefix_len > 0
 =~ row_search_with_covering_prefix
 =~ row_search_mvcc
-MDEV-20417:
-=~ Assertion \`(m_ptr == __null) == item->null_value'
-=~ VDec::VDec
-=~ Version: '10\.4|Version: '10\.5
 MDEV-20410:
 =~ pure virtual method called
 =~ set_properties
@@ -184,10 +183,6 @@ MDEV-20395:
 =~ Assertion \`!found'
 =~ remove_ptr_from_dynarray
 =~ handle_grant_struct
-MDEV-20376:
-=~ Assertion \`file->trn == 0 \|\| file->trn == &dummy_transaction_object'
-=~ ha_maria::close
-=~ ha_partition::close
 MDEV-20370:
 =~ Assertion \`mtr->get_log_mode() == MTR_LOG_NO_REDO'
 =~ page_cur_insert_rec_write_log
@@ -196,29 +191,6 @@ MDEV-20366:
 =~ check_change_password
 =~ sp_instr_stmt::exec_core
 =~ Version: '10\.5
-MDEV-20363:
-=~ Assertion \`is_unsigned() == attr\.unsigned_flag'
-=~ Type_handler_longlong::make_table_field
-=~ Version: '10\.5
-MDEV-20360:
-=~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), part_id)'
-=~ ha_partition::part_records
-=~ partition_info::vers_set_hist_part
-=~ Version: '10\.5
-MDEV-20358:
-=~ AddressSanitizer: use-after-poison
-=~ Item_ident::print
-=~ Item::print_for_table_def
-=~ Virtual_column_info::print
-MDEV-20349:
-=~ Assertion \`to_len >= 8'
-=~ convert_to_printable
-=~ String::append_semi_hex
-MDEV-20347:
-=~ AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow
-=~ String::c_ptr|Binary_string::c_ptr
-=~ partition_info::prune_partition_bitmaps
-=~ ha_partition::change_partitions_to_open|ha_partition::open
 MDEV-20338:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_fields
@@ -226,13 +198,6 @@ MDEV-20338:
 =~ sp_instr_stmt::exec_core
 =~ versioning
 =~ Version: '10\.4\.|Version: '10\.5\.
-# Fix merged into 10.3/10.4, but not yet in 10.5
-MDEV-20320:
-=~ Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id
-MDEV-20320:
-=~ InnoDB: Refusing to load .* (id=.*, flags=.*); dictionary contains id=.*, flags=.*
-=~ InnoDB: Operating system error number 2 in a file operation
-=~ InnoDB: Could not find a valid tablespace file for .*
 MDEV-20313:
 =~ For transactional Aria BASE TABLE ROW_FORMAT=Page .* : error : Found .* keys of .*
 MDEV-20237:
@@ -322,10 +287,6 @@ MDEV-20090:
 =~ row_purge_parse_undo_rec
 =~ srv_task_execute
 =~ Version: '10\.4|Version: '10\.5
-MDEV-20066:
-=~ InnoDB: Failing assertion: !cursor->index->is_committed()
-=~ row_ins_sec_index_entry_by_modify
-=~ row_update_for_mysql
 MDEV-20015:
 =~ Assertion \`!in_use->is_error()'
 =~ update_virtual_field
@@ -377,11 +338,6 @@ MDEV-19718:
 =~ Assertion \`rownr == 0 && new_page'
 =~ _ma_apply_redo_insert_row_head_or_tail
 =~ run_redo_phase
-MDEV-19717:
-=~ AddressSanitizer: heap-use-after-free
-=~ ha_maria::info
-=~ ha_sequence::info
-=~ get_schema_tables_record
 MDEV-19680:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'
 =~ Field_.*::val_.*
@@ -487,7 +443,6 @@ MDEV-19536:
 =~ AddressSanitizer: heap-use-after-free|signal 11|Invalid read of size
 =~ is_temporary_table|Index_stat::set_full_table_name|Stat_table::Stat_table|statistics_for_tables_is_needed
 =~ read_statistics_for_tables_if_needed
-=~ fill_schema_table_by_open
 MDEV-19536:
 =~ signal 11
 =~ read_statistics_for_tables_if_needed
@@ -555,15 +510,6 @@ MDEV-19361:
 =~ TABLE::update_virtual_fields
 =~ record_should_be_deleted
 =~ Version: '10\.4|Version: '10\.5
-MDEV-19348:
-=~ InnoDB: Database page corruption on disk or a failed file read of tablespace .* page .* You may have to recover from a backup
-=~ InnoDB: Failed to read file .* at offset .* Page read from tablespace is corrupted
-=~ mariabackup: innodb_init() returned 39 (Data structure corruption)
-MDEV-19348:
-=~ InnoDB: Encrypted page .* in file .* looks corrupted; key_version=
-=~ InnoDB: Failed to read file .* at offset .*: Table is encrypted but decrypt failed
-=~ InnoDB: Plugin initialization aborted with error Data structure corruption
-=~ mariabackup: innodb_init() returned 39 (Data structure corruption)
 MDEV-19318:
 =~ Assertion \`!(length < share->base\.min_block_length)'
 =~ _ma_scan_block_record
@@ -606,11 +552,6 @@ MDEV-19261:
 =~ trx_undo_rec_get_partial_row
 =~ row_purge_parse_undo_rec
 =~ Version: '10\.1
-MDEV-19254:
-=~ signal 11|AddressSanitizer: SEGV on unknown address|AddressSanitizer: heap-use-after-free
-=~ maria_status
-=~ ha_maria::info
-=~ ha_partition
 MDEV-19225:
 =~ InnoDB: InnoDB FTS: Doc ID cannot be 0
 MDEV-19216:
@@ -643,8 +584,7 @@ MDEV-19194:
 MDEV-19190:
 =~ Assertion \`part_share->auto_inc_initialized'
 =~ ha_partition::get_auto_increment
-=~ TABLE::update_generated_fields|PROFILING::fill_statistics_info
-=~ TABLE::period_make_insert|update_portion_of_time|wait_for_commit::remove_from_list
+=~ TABLE.*update_generated_fields|PROFILING.*fill_statistics_info
 MDEV-19189:
 =~ AddressSanitizer: memcpy-param-overlap: memory ranges
 =~ fill_alter_inplace_info
@@ -1069,17 +1009,17 @@ MDEV-18156:
 MDEV-18153:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Assertion \`0'|Assertion \`btr_validate_index(index, 0)'|Assertion \`btr_validate_index(index, 0, false)'
-=~ Version: '10\.5|Version: '10\.4
+=~ Version: '10\.4
 =~ row_upd_sec_index_entry
 MDEV-18153:
 =~ Index for table .* is corrupt; try to repair it
 =~ Got an error from thread_id=.*
 =~ MySQL thread id .*, OS thread handle .*, query id .* Reading file
-=~ Version: '10\.5|Version: '10\.4
+=~ Version: '10\.4
 MDEV-18153:
 =~ Index for table .* is corrupt; try to repair it
 =~ mysqld: Table .* is marked as crashed and should be repaired
-=~ Version: '10\.5|Version: '10\.4
+=~ Version: '10\.4
 MDEV-18151:
 =~ Assertion \`0'
 =~ Protocol::end_statement
@@ -1176,10 +1116,6 @@ MDEV-18042:
 =~ mysql_alter_table
 =~ Sql_cmd_alter_table::execute
 =~ Query .*: ALTER.* TABLE .* DATE NOT NULL|Query .*: ALTER TABLE .* DATETIME NOT NULL
-MDEV-18018:
-=~ signal 11|AddressSanitizer: heap-use-after-free
-=~ TABLE_LIST::reinit_before_use
-=~ sp_head::execute|Prepared_statement::execute
 MDEV-18013:
 =~ Assertion \`share->now_transactional'
 =~ flush_log_for_bitmap
@@ -1189,16 +1125,6 @@ MDEV-18003:
 =~ Assertion \`grantee->counter > 0'
 =~ merge_role_privileges
 =~ traverse_role_graph_up
-MDEV-17998:
-=~ Assertion \`!table->pos_in_locked_tables'
-=~ tc_release_table
-=~ unlink_all_closed_tables
-=~ Status: KILL_SERVER|Status: KILL_TIMEOUT
-MDEV-17998:
-=~ AddressSanitizer: heap-use-after-free
-=~ find_table_for_mdl_upgrade
-=~ open_tables_check_upgradable_mdl
-=~ mysql_alter_table
 MDEV-17991:
 =~ Out of memory
 =~ Lex_input_stream::body_utf8_start
@@ -1221,11 +1147,6 @@ MDEV-17951:
 =~ close_thread_tables
 =~ Query_log_event::do_apply_event
 # The alternative is due to the broken stack trace
-MDEV-17939:
-=~ Assertion \`++loop_count < 2'
-=~ trx_undo_report_rename
-=~ fts_drop_table|my_xpath_parse_EqualityExpr
-=~ mysql_alter_table|Alter_info::vers_prohibited
 MDEV-17936:
 =~ signal 11|AddressSanitizer: heap-use-after-free
 =~ Field::is_null
@@ -1279,11 +1200,6 @@ MDEV-17782:
 =~ decimal_bin_size: Assertion \`scale <= precision'
 =~ my_decimal_get_binary_size
 =~ calc_group_buffer
-MDEV-17717:
-=~ Assertion \`!table->pos_in_locked_tables'
-=~ tc_release_table
-=~ unlink_all_closed_tables
-=~ RocksDB
 MDEV-17699:
 =~ AddressSanitizer: use-after-poison
 =~ base_list_iterator::next_fast
@@ -1395,16 +1311,6 @@ MDEV-16940:
 =~ unsafe_key_update
 =~ mysql_multi_update_prepare
 =~ sp_head::execute
-MDEV-16932:
-=~ AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow
-=~ my_well_formed_char_length_utf8|lex_string_cmp|my_strcasecmp_utf8
-=~ mysql_prepare_create_table
-=~ sp_head::execute|Prepared_statement::execute
-MDEV-16932:
-=~ signal 11
-=~ build_frm_image
-=~ mysql_create_frm_image
-=~ mysql_alter_table
 # MDEV-16929:
 # =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 # =~ open_normal_and_derived_tables
@@ -1510,11 +1416,6 @@ MDEV-15977:
 =~ Assertion \`! thd->in_sub_stmt' failed
 =~ SEQUENCE::read_initial_values
 =~ open_table_from_share
-MDEV-15955:
-=~ Assertion \`field_types == 0 \|\| field_types[field_pos] == MYSQL_TYPE_LONGLONG'
-=~ Version: '10\.1|Version: '10\.0|Version: '5\.5
-=~ Protocol_text::store_longlong
-=~ end_send_group
 ### DRAFT
 MDEV-15949:
 =~ InnoDB: Failing assertion: space->n_pending_ops == 0
@@ -1570,11 +1471,6 @@ MDEV-15464:
 =~ Assertion \`purge_sys\.purge_queue\.empty() \|\| purge_sys\.purge_queue\.top() != m_rsegs'
 =~ TrxUndoRsegsIterator::set_next
 =~ trx_purge_choose_next_log
-MDEV-15458:
-=~ AddressSanitizer: heap-buffer-overflow
-=~ in heap_scan
-=~ in handler::ha_rnd_next
-=~ in READ_RECORD::read_record
 MDEV-15401:
 =~ Item_direct_view_ref::used_tables() const: Assertion \`fixed' failed
 =~ Item_func_nullif::update_used_tables
@@ -2057,8 +1953,6 @@ MDEV-17897:
 =~ block->frame
 MDEV-17895:
 =~ trx->dict_operation != TRX_DICT_OP_NONE
-MDEV-17838:
-=~ in Item_field::rename_fields_processor
 MDEV-17834:
 =~ row_upd_build_difference_binary
 MDEV-17814:
@@ -2097,8 +1991,6 @@ MDEV-17225:
 =~ log_descriptor\.bc\.buffer->prev_last_lsn
 MDEV-17217:
 =~ in make_sortkey
-MDEV-17187:
-=~ failed, the table has missing foreign key indexes
 MDEV-17054:
 =~ InnoDB needs charset 0 for doing a comparison, but MySQL cannot find that charset
 MDEV-17054:
