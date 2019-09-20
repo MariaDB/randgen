@@ -42,6 +42,12 @@ MENT-189:
 #
 # Fixed in the next release
 #
+MDEV-20320:
+=~ Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id
+MDEV-20320:
+=~ InnoDB: Refusing to load .* (id=.*, flags=.*); dictionary contains id=.*, flags=.*
+=~ InnoDB: Operating system error number 2 in a file operation
+=~ InnoDB: Could not find a valid tablespace file for .*
 MDEV-17939:
 =~ Assertion \`++loop_count < 2'
 =~ trx_undo_report_rename
