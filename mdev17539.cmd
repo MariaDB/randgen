@@ -1,0 +1,1 @@
+perl ./runall-trials.pl --trials=10 --output='Protocol::end_statement' --grammar=mdev17539.yy --scenario=Restart --ps-protocol --threads=6 --duration=200 --gendata-advanced --vardir=/dev/shm/vardir2 --basedir=$1
