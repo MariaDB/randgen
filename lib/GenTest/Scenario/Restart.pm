@@ -114,7 +114,7 @@ sub run {
 
   $gentest= $self->prepareGentest(1,
     {
-      duration => $self->getTestDuration,
+      duration => $self->[SCENARIO_RESTART_INTERVAL] + 5,
       dsn => [$server->dsn($self->getProperty('database'))],
       servers => [$server],
     },
@@ -225,6 +225,8 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
     return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+  } else {
+    say("Success");
   }
 
   return $self->finalize($status,[]);
