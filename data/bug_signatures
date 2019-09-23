@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20643:
+=~ signal 11|AddressSanitizer: SEGV
+=~ find_table_in_list
+=~ find_table_in_global_list
+=~ find_dup_table
 MDEV-20640:
 =~ InnoDB: tried to purge non-delete-marked record in index
 =~ Assertion \`0'
@@ -143,6 +148,14 @@ MDEV-20476:
 =~ row_log_table_low
 =~ row_upd_clust_rec
 =~ ha_innobase::update_row
+MDEV-20475:
+=~ Assertion \`flushed_lsn == log_get_lsn()'
+=~ srv_prepare_to_delete_redo_log_files
+=~ innobase_start_or_create_for_mysql
+MDEV-20474:
+=~ Assertion \`!recv_no_log_write'
+=~ log_pad_current_log_block
+=~ log_scrub
 MDEV-20471:
 =~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
 =~ tdc_remove_table
@@ -628,7 +641,6 @@ MDEV-19130:
 MDEV-19092:
 =~ Assertion \`foreign->referenced_index != __null'|signal 11|Assertion \`new_index != __null'|InnoDB: Failing assertion: new_index != __null
 =~ dict_mem_table_col_rename_low
-=~ innobase_rename_or_enlarge_columns_cache
 MDEV-19091:
 =~ Assertion \`args[0] == args[2] \|\| thd->stmt_arena->is_stmt_execute()'
 =~ Item_func_nullif::fix_length_and_dec
@@ -1093,7 +1105,7 @@ MDEV-18046:
 =~ Table_map_log_event::Table_map_log_event
 =~ mysql_show_binlog_events
 MDEV-18046:
-=~ signal 11
+=~ signal 11|signal 7
 =~ my_bitmap_free
 =~ Update_rows_log_event::~Update_rows_log_event
 =~ mysql_show_binlog_events
@@ -1120,7 +1132,6 @@ MDEV-18013:
 =~ Assertion \`share->now_transactional'
 =~ flush_log_for_bitmap
 =~ pagecache_fwrite
-=~ _ma_flush_table_files
 MDEV-18003:
 =~ Assertion \`grantee->counter > 0'
 =~ merge_role_privileges
@@ -1238,6 +1249,11 @@ MDEV-17556:
 =~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
 =~ handler::ha_reset
 =~ close_thread_tables
+MDEV-17539:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ Status: KILL_SERVER
+=~ Version: '10\.1|Version: '10\.2|Version: '10\.3
 MDEV-17464:
 =~ InnoDB: Operating system error number 2 in a file operation
 =~ InnoDB: Cannot rename file '.*/.*\.ibd' to '.*/.*\.ibd'
@@ -1245,7 +1261,7 @@ MDEV-17464:
 MDEV-17361:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ Query_arena::set_query_arena
-=~ THD::set_n_backup_active_arena
+=~ THD::set_n_backup_active_arena|multi_update::send_data
 =~ Field::set_default
 MDEV-17275:
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table_list->db, table_list->table_name, MDL_SHARED)'
@@ -1972,9 +1988,6 @@ MDEV-17582:
 =~ THD::~THD()
 =~ Version: '10\.1
 =~ Status: KILL_CONNECTION
-MDEV-17539:
-=~ Assertion \`0'
-=~ Protocol::end_statement
 MDEV-17538:
 =~ == UNALLOCATED_PAGE
 MDEV-17485:
