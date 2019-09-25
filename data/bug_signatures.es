@@ -18,10 +18,6 @@ MENT-360:
 =~ strmake_root
 =~ Query_arena::strmake
 =~ mysqld_list_processes
-MENT-341:
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ mysql_create_or_drop_trigger|mysql_drop_view|mysql_create_view|Sql_cmd_create_table|mysql_rm_table|mysql_load|mysql_alter_table|Sql_cmd_truncate_table|mysql_rename_tables|mysql_create_db|FLUSH
-=~ my_ok
 MENT-328:
 =~ mariabackup: File '.*seq.*MAI' not found (Errcode: 2 "No such file or directory")
 =~ Error on aria table file open .*seq.*MAI
@@ -48,6 +44,12 @@ MENT-189:
 #
 # Fixed in the next release
 #
+MDEV-20495:
+=~ Assertion \`precision > 0'
+=~ decimal_bin_size
+=~ Type_handler::make_and_init_table_field
+=~ Item_func::create_field_for_create_select
+=~ select_create::create_table_from_items
 MDEV-20320:
 =~ Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id
 MDEV-20320:
@@ -59,6 +61,15 @@ MDEV-17939:
 =~ trx_undo_report_rename
 =~ fts_drop_table|my_xpath_parse_EqualityExpr
 =~ mysql_alter_table|Alter_info::vers_prohibited
+MDEV-19647:
+=~ Assertion \`find(table)'
+=~ dict_sys_t::prevent_eviction
+=~ fts_optimize_add_table
+=~ dict_load_columns
+MDEV-19189:
+=~ AddressSanitizer: memcpy-param-overlap: memory ranges
+=~ fill_alter_inplace_info
+=~ mysql_alter_table
 
 ##############################################################################
 # Weak matches
