@@ -553,6 +553,10 @@ MDEV-19306:
 =~ Assertion \`marked_for_read()'
 =~ field_conv_incompatible
 =~ TABLE::update_virtual_fields
+MDEV-19305:
+=~ InnoDB: Datafile '.*' is corrupted\. Cannot determine the space ID from the first 64 pages
+=~ InnoDB: Tablespace .* was not found at .*
+=~ scenario=CrashUpgrade
 MDEV-19303:
 =~ Conditional jump or move depends on uninitialised value
 =~ mi_rrnd|maria_rrnd
@@ -1312,6 +1316,15 @@ MDEV-17091:
 =~ Assertion \`old_part_id == m_last_part'
 =~ ha_partition::update_row
 =~ mysql_update|Update_rows_log_event::do_exec_row|mysql_multi_update|mysql_load|mysql_delete
+MDEV-17071:
+=~ signal 11
+=~ TABLE_LIST::get_tablenr
+=~ st_select_lex::save_leaf_tables
+=~ mysql_insert
+MDEV-17071:
+=~ ERROR: AddressSanitizer: use-after-poison
+=~ write_record
+=~ mysql_insert
 MDEV-17019:
 =~ signal 11
 =~ multi_delete::~multi_delete
