@@ -1525,13 +1525,6 @@ MDEV-15282:
 =~ Assertion \`recv_sys->mlog_checkpoint_lsn <= recv_sys->recovered_lsn'
 =~ recv_parse_log_recs
 =~ recv_recovery_from_checkpoint_start
-MDEV-15013:
-=~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE \|\| (prebuilt->table->no_rollback() && trx->state == TRX_STATE_NOT_STARTED)'
-=~ row_search_mvcc
-MDEV-15013:
-=~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE'
-=~ row_search_mvcc
-=~ QUICK_RANGE_SELECT::get_next_prefix
 MDEV-15011:
 =~ Version: '10\.2|Version: '10\.1|Version: '10\.0|Version: '5\.5
 =~ AddressSanitizer: heap-buffer-overflow|signal 11
