@@ -4,6 +4,36 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20666:
+=~ Version: '10.3|Version: '10.4|Version: '10.5
+=~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE \|\| (prebuilt->table->no_rollback() && trx->state == TRX_STATE_NOT_STARTED)'
+=~ row_search_mvcc
+=~ ha_innobase::index_read
+MDEV-20666:
+=~ Version: '10.2
+=~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE'
+=~ row_search_mvcc
+=~ ha_innobase::index_read
+MDEV-20666:
+=~ Version: '10.1
+=~ InnoDB: Failing assertion: prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE
+=~ row_search_for_mysql
+=~ ha_innobase::index_read
+MDEV-20666:
+=~ Version: '5.5
+=~ InnoDB: Failing assertion: prebuilt->sql_stat_start \|\| trx->conc_state == 1
+=~ row_search_for_mysql
+=~ ha_innobase::index_read
+MDEV-20663:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ mysql_update
+=~ UPDATE .* FOR PORTION
+MDEV-20661:
+=~ Assertion \`btr_validate_index(index, 0)'
+=~ row_upd_sec_index_entry
+=~ ha_innobase::delete_row
+=~ DELETE HISTORY
 MDEV-20643:
 =~ signal 11|AddressSanitizer: SEGV
 =~ find_table_in_list
@@ -45,7 +75,7 @@ MDEV-20597:
 =~ pushdown_from_having_into_where
 =~ Version: '10.4|Version: '10.5
 MDEV-20595:
-=~ Assertion \`0 < sel && sel <= 2\.0'
+=~ Assertion \`0 < sel && sel <= 2\.0'|Assertion \`0 < sel && sel <= 1\.0'
 =~ table_cond_selectivity
 MDEV-20578:
 =~ error 126 when executing undo undo_key_delete
@@ -151,7 +181,7 @@ MDEV-20476:
 MDEV-20475:
 =~ Assertion \`flushed_lsn == log_get_lsn()'
 =~ srv_prepare_to_delete_redo_log_files
-=~ innobase_start_or_create_for_mysql
+=~ innobase_start_or_create_for_mysql|innodb_init
 MDEV-20474:
 =~ Assertion \`!recv_no_log_write'
 =~ log_pad_current_log_block
@@ -303,7 +333,7 @@ MDEV-20090:
 MDEV-20015:
 =~ Assertion \`!in_use->is_error()'
 =~ update_virtual_field
-=~ compute_vcols
+=~ compute_vcols|innobase_get_computed_value
 MDEV-19984:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
 =~ do_copy_null|do_outer_field_null
@@ -1385,7 +1415,7 @@ MDEV-16659:
 =~ _ma_ck_real_delete
 =~ ha_maria::delete_row
 MDEV-16635:
-=~ signal 11
+=~ signal 11|AddressSanitizer: SEGV
 =~ open_table
 =~ open_and_lock_tables
 =~ sequence_insert
@@ -1827,6 +1857,12 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
+MDEV-20661:
+=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE (info_bits=.* fields):
+=~ versioning
+MDEV-20661:
+=~ failed: 126: Index for table './test/t1.MYI' is corrupt; try to repair it
+=~ versioning
 MDEV-20554:
 =~ Index for table .* is corrupt; try to repair it
 =~ scrub
@@ -1852,7 +1888,6 @@ MDEV-20441:
 =~ Version: '10.3|Version: '10.4|Version: '10.5
 MDEV-19745:
 =~ Backup did not finish in due time
-=~ log scanned up to
 MDEV-19320:
 =~ UPDATE.* 1032 Can't find record in|DELETE.* 1032 Can't find record in|SELECT SETVAL.* 1032 Can't find record in|SELECT.* 1032 Can't find record in|INSERT.* 1032 Can't find record in
 =~ sequence
