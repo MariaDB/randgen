@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20680:
+=~ signal 11|AddressSanitizer: SEGV
+=~ ha_partition::compare_number_of_records
+=~ check_duplicate_long_entries_update
 MDEV-20666:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE \|\| (prebuilt->table->no_rollback() && trx->state == TRX_STATE_NOT_STARTED)'
 =~ row_search_mvcc
@@ -182,7 +186,6 @@ MDEV-20474:
 =~ Assertion \`!recv_no_log_write'
 =~ log_pad_current_log_block
 =~ log_scrub
-=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-20471:
 =~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
 =~ tdc_remove_table
@@ -539,7 +542,6 @@ MDEV-19361:
 =~ Version: '10\.4|Version: '10\.5
 MDEV-19361:
 =~ Assertion \`marked_for_read()'
-=~ Field_bit::val_int
 =~ Field::store_field
 =~ TABLE::update_virtual_fields
 =~ record_should_be_deleted
@@ -765,7 +767,7 @@ MDEV-18794:
 =~ read_keys_and_merge_scans
 MDEV-18783:
 =~ AddressSanitizer: heap-use-after-free|signal 11
-=~ tree_search_next|hp_rb_make_key|tree_search_edge|check_one_key|check_one_rb_key
+=~ tree_search_next|hp_rb_make_key|tree_search_edge|check_one_key|check_one_rb_key|heap_check_heap
 =~ tc_purge|tc_remove_table
 =~ run_backup_stage|close_thread_tables
 MDEV-18780:
@@ -1293,11 +1295,6 @@ MDEV-17177:
 =~ Item::delete_self
 =~ Query_arena::free_items
 =~ THD::cleanup_after_query
-MDEV-17166:
-=~ signal 11|AddressSanitizer: SEGV on unknown address
-=~ heap_check_heap
-=~ heap_close
-=~ tc_purge
 MDEV-17120:
 =~ signal 11
 =~ push_back
@@ -1336,7 +1333,7 @@ MDEV-17004:
 =~ Version: '10\.1|Version: '10\.0
 MDEV-16994:
 =~ signal 11|Assertion \`!alloced \|\| !Ptr \|\| !Alloced_length \|\| (Alloced_length >= (str_length + 1))'
-=~ String::c_ptr|base_list_iterator::next|String::length
+=~ String::c_ptr|base_list_iterator::next|String::length|TRUNCATE PARTITION
 =~ partition_info::prune_partition_bitmaps
 =~ open_and_process_table
 MDEV-16985:
