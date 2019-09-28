@@ -401,8 +401,9 @@ MDEV-19674:
 =~ TABLE_LIST::view_check_option
 =~ multi_update::do_updates
 MDEV-19672:
-=~ MariaDB Audit Plugin version .* STARTED
 =~ safe_mutex: Trying to lock mutex at .*, when the mutex was already locked at .*
+=~ safe_mutex_lock
+=~ update_syslog_facility
 MDEV-19663:
 =~ Got error 127 when reading table .*
 =~ Table .* is marked as crashed and should be repaired
@@ -1170,6 +1171,20 @@ MDEV-17978:
 =~ signal 11
 =~ mysqld_show_create_get_fields
 =~ Query .*: SHOW CREATE SEQUENCE
+MDEV-17976:
+=~ Assertion \`lock->magic_n == 22643'
+=~ rw_lock_validate
+MDEV-17976:
+=~ signal 11
+=~ dict_table_is_comp
+=~ rec_get_offsets_func
+MDEV-17976:
+=~ InnoDB: Failing assertion: my_atomic_addlint(&(block)->n_pointers, 0) == 0
+=~ btr0sea\.cc line
+=~ btr_search_build_page_hash_index
+MDEV-17976:
+=~ Assertion \`index'
+=~ rec_get_offsets_func
 MDEV-17974:
 =~ signal 11|AddressSanitizer: use-after-poison
 =~ sp_process_definer
@@ -1983,10 +1998,6 @@ MDEV-17999:
 =~ Invalid roles_mapping table entry user
 MDEV-17977:
 =~ Count >= rest_length
-MDEV-17976:
-=~ lock->magic_n == 22643
-MDEV-17976:
-=~ rec_get_offsets_func
 MDEV-17971:
 =~ Field_iterator_table::set
 MDEV-17971:
