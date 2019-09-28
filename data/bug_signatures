@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20691:
+=~ signal 11|AddressSanitizer: SEGV
+=~ TABLE::insert_portion_of_time
+=~ mysql_delete
+=~ sp_head::execute
+MDEV-20689:
+=~ Assertion \`!check_datetime_range(ltime)'
+=~ TIME_to_longlong_datetime_packed
+=~ Version: '10\.2|Version: '10\.3
 MDEV-20680:
 =~ signal 11|AddressSanitizer: SEGV
 =~ ha_partition::compare_number_of_records
@@ -732,10 +741,9 @@ MDEV-18882:
 =~ Item_func_make_set::val_str
 =~ copy_fields
 MDEV-18875:
-=~ Assertion \`thd->transaction.stmt.ha_list == __null \|\| trans == &thd->transaction.stmt'
+=~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction\.stmt'
 =~ ha_rollback_trans
-=~ mysql_trans_commit_alter_copy_data|trans_commit_implicit
-=~ ADD PERIOD|add period|LOCK TABLE
+=~ mysql_trans_commit_alter_copy_data|trans_commit
 MDEV-18865:
 =~ Assertion \`t->first->versioned_by_id()'
 =~ innodb_prepare_commit_versioned
