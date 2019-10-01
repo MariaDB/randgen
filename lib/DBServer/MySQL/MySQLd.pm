@@ -1006,7 +1006,8 @@ sub checkDatabaseIntegrity {
                 last CHECKOUTPUT;
               }
               # MDEV-20313: Transactional Aria table stays corrupt after crash-recovery
-              elsif (not $repair_done and $table_attributes{$tname}->[1] eq 'Aria'
+              elsif ( not $repair_done
+                        and $table_attributes{$tname}->[1] eq 'Aria'
                         and $table_attributes{$tname}->[3] =~ /transactional=1/
                         and $table_attributes{$tname}->[2] eq 'Page'
                         and $msg_text =~ /Found \d+ keys of \d+/ ) {
@@ -1017,12 +1018,13 @@ sub checkDatabaseIntegrity {
                 redo CHECKTABLE;
               }
               # MDEV-17913: Encrypted transactional Aria tables remain corrupt after crash recovery,
-              elsif (defined $self->serverVariable('aria_encrypt_tables')
+              elsif ( not $repair_done
+                        and defined $self->serverVariable('aria_encrypt_tables')
                         and $self->serverVariable('aria_encrypt_tables') eq 'ON'
-                        and not $repair_done and $table_attributes{$tname}->[1] eq 'Aria'
+                        and $table_attributes{$tname}->[1] eq 'Aria'
                         and $table_attributes{$tname}->[3] =~ /transactional=1/
                         and $table_attributes{$tname}->[2] eq 'Page'
-                        and $msg_text =~ /Checksum for key:  \d+ doesn't match checksum for records|Record at: \d+:\d+  Can\'t find key for index:  \d+/ ) {
+                        and $msg_text =~ /Checksum for key:  \d+ doesn't match checksum for records|Record at: \d+:\d+  Can\'t find key for index:  \d+|Record-count is not ok; found \d+  Should be: \d+|Key \d+ doesn\'t point at same records as key \d+|Page at \d+ is not delete marked/ ) {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 sayWarning("... ignoring due to known bug MDEV-17913, trying to repair");
                 $dbh->do("REPAIR TABLE $tname");
