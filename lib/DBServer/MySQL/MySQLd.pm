@@ -1005,14 +1005,29 @@ sub checkDatabaseIntegrity {
                 sayWarning("... ignoring inconsistency for the MERGE table");
                 last CHECKOUTPUT;
               }
-              # MDEV-20313
-              elsif ( $table_attributes{$tname}->[1] eq 'Aria'
+              # MDEV-20313: Transactional Aria table stays corrupt after crash-recovery
+              elsif (not $repair_done and $table_attributes{$tname}->[1] eq 'Aria'
                         and $table_attributes{$tname}->[3] =~ /transactional=1/
                         and $table_attributes{$tname}->[2] eq 'Page'
                         and $msg_text =~ /Found \d+ keys of \d+/ ) {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
-                sayWarning("... ignoring due to known bug MDEV-20313");
-                last CHECKOUTPUT;
+                sayWarning("... ignoring due to known bug MDEV-20313, trying to repair");
+                $dbh->do("REPAIR TABLE $tname");
+                $repair_done= 1;
+                redo CHECKTABLE;
+              }
+              # MDEV-17913: Encrypted transactional Aria tables remain corrupt after crash recovery,
+              elsif (defined $self->serverVariable('aria_encrypt_tables')
+                        and $self->serverVariable('aria_encrypt_tables') eq 'ON'
+                        and not $repair_done and $table_attributes{$tname}->[1] eq 'Aria'
+                        and $table_attributes{$tname}->[3] =~ /transactional=1/
+                        and $table_attributes{$tname}->[2] eq 'Page'
+                        and $msg_text =~ /Checksum for key:  \d+ doesn't match checksum for records|Record at: \d+:\d+  Can\'t find key for index:  \d+/ ) {
+                sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
+                sayWarning("... ignoring due to known bug MDEV-17913, trying to repair");
+                $dbh->do("REPAIR TABLE $tname");
+                $repair_done= 1;
+                redo CHECKTABLE;
               } elsif (! $foreign_key_check_workaround and $msg_text =~ /Table .* doesn't exist in engine/) {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 sayWarning("... possible foreign key check problem. Trying to turn off FOREIGN_KEY_CHECKS and retry");
