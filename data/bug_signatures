@@ -112,7 +112,7 @@ MDEV-20557:
 MDEV-20554:
 =~ Assertion \`fil_page_get_type(page_align(rec)) == 17855'|InnoDB: Failing assertion: fil_page_get_type(page_align(rec)) == 17855
 =~ row_log_table_low
-=~ ha_innobase::update_row
+=~ ha_innobase::update_row|ha_innobase::write_row
 =~ Version: '10\.1|Version: '10\.2
 MDEV-20545:
 =~ Assertion \`col\.vers_sys_end()'
@@ -1154,7 +1154,7 @@ MDEV-18042:
 =~ signal 11|AddressSanitizer: SEGV
 =~ mysql_alter_table
 =~ Sql_cmd_alter_table::execute
-=~ Query .*: ALTER.* TABLE .* DATE NOT NULL|Query .*: ALTER TABLE .* DATETIME NOT NULL
+=~ Query .*: ALTER.* TABLE .* DATE NOT NULL|Query .*: ALTER.* TABLE .* DATETIME NOT NULL
 MDEV-18013:
 =~ Assertion \`share->now_transactional'
 =~ flush_log_for_bitmap
