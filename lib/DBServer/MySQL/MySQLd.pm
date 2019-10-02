@@ -996,6 +996,36 @@ sub checkDatabaseIntegrity {
                 $table_attributes{"$database.$table"}= $dbh->selectrow_arrayref("SELECT TABLE_TYPE, ENGINE, ROW_FORMAT, CREATE_OPTIONS FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database' AND TABLE_NAME='$table'");
               }
               my $tname="$database.$table";
+              my $engine= $table_attributes{$tname}->[1];
+              unless ($engine) {
+                  # Something is wrong, table's info was not retrieved from I_S
+                  # Try to find out from the file system first (glob because the table can be partitioned)
+                  if (glob "$self->datadir/$database/$table*.MAD") {
+                      # Could happen as a part of
+                      # MDEV-17913: Encrypted transactional Aria tables remain corrupt after crash recovery
+                      $engine= 'Aria';
+                      if (not $repair_done
+                            and defined $self->serverVariable('aria_encrypt_tables')
+                            and $self->serverVariable('aria_encrypt_tables') eq 'ON'
+                          ) {
+                        sayWarning("Aria table `$database`.`$table` was not loaded, : $msg_type : $msg_text");
+                        sayWarning("... ignoring due to known bug MDEV-20313, trying to repair");
+                        $dbh->do("REPAIR TABLE $tname");
+                        $repair_done= 1;
+                        redo CHECKTABLE;
+                      }
+                  } elsif (glob "$self->datadir/$database/$table*.MYD") {
+                      $engine= 'MyISAM';
+                  } elsif (glob "$self->datadir/$database/$table*.ibd") {
+                      $engine= 'InnoDB';
+                  } elsif (glob "$self->datadir/$database/$table*.CSV") {
+                      $engine= 'CSV';
+                  } else {
+                      $engine= 'N/A';
+                  }
+                  sayError("Table $tname wasn't loaded properly by engine $engine");
+                  last CHECKOUTPUT;
+              }
               my $attrs= $table_attributes{$tname}->[1]." ".$table_attributes{$tname}->[0]." ROW_FORMAT=".$table_attributes{$tname}->[2];
               if ($table_attributes{$tname}->[1] eq 'Aria') {
                 $attrs= ($table_attributes{$tname}->[3] =~ /transactional=1/ ? "transactional $attrs" : "non-transactional $attrs");
@@ -1017,7 +1047,7 @@ sub checkDatabaseIntegrity {
                 $repair_done= 1;
                 redo CHECKTABLE;
               }
-              # MDEV-17913: Encrypted transactional Aria tables remain corrupt after crash recovery,
+              # MDEV-17913: Encrypted transactional Aria tables remain corrupt after crash recovery
               elsif ( not $repair_done
                         and defined $self->serverVariable('aria_encrypt_tables')
                         and $self->serverVariable('aria_encrypt_tables') eq 'ON'
