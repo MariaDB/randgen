@@ -1054,7 +1054,7 @@ sub checkDatabaseIntegrity {
                         and $table_attributes{$tname}->[1] eq 'Aria'
                         and $table_attributes{$tname}->[3] =~ /transactional=1/
                         and $table_attributes{$tname}->[2] eq 'Page'
-                        and $msg_text =~ /Checksum for key:  \d+ doesn't match checksum for records|Record at: \d+:\d+  Can\'t find key for index:  \d+|Record-count is not ok; found \d+  Should be: \d+|Key \d+ doesn\'t point at same records as key \d+|Page at \d+ is not delete marked/ ) {
+                        and $msg_text =~ /Checksum for key:  \d+ doesn't match checksum for records|Record at: \d+:\d+  Can\'t find key for index:  \d+|Record-count is not ok; found \d+  Should be: \d+|Key \d+ doesn\'t point at same records as key \d+|Page at \d+ is not delete marked|Key in wrong position at page/ ) {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 sayWarning("... ignoring due to known bug MDEV-17913, trying to repair");
                 $dbh->do("REPAIR TABLE $tname");
