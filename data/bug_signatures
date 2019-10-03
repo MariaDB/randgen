@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20737:
+=~ mysqld: failed to decrypt .*  rc: .*  dstlen: .*  size: .*
+=~ Got error 192 when executing record redo_insert_row_blobs
+=~ mysqld: Aria engine: Redo phase failed
 MDEV-20691:
 =~ signal 11|AddressSanitizer: SEGV
 =~ TABLE::insert_portion_of_time
