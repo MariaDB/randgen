@@ -39,12 +39,12 @@ sub transform {
 	} elsif ($orig_query =~ m{\SELECT\s+(DISTINCT|DISTINCTROW)}io) {
 		# Add STRAIGHT_JOIN after DISTINCT|DISTINCTROW
 
-                $orig_query =~ s{SELECT\s+(DISTINCT|DISTINCTROW)}{SELECT $1 STRAIGHT_JOIN}sgio;
+                $orig_query =~ s{SELECT\s+(DISTINCT|DISTINCTROW)}{SELECT $1 STRAIGHT_JOIN}sio;
                 return $orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 	} else {
 		# Add STRAIGHT_JOIN immediately after SELECT
 
-		$orig_query =~ s{SELECT(\W)}{SELECT STRAIGHT_JOIN $1}sgio;
+		$orig_query =~ s{SELECT[\s\(]}{SELECT STRAIGHT_JOIN $1}sio;
 		return $orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 	}
 }
