@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20754:
+=~ Assertion \`precision > 0'
+=~ decimal_bin_size
+=~ DISTINCT.*DEFAULT.*ROLLUP
+MDEV-20750:
+=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ open_normal_and_derived_tables
+=~ Prepared_statement::prepare|sp_head::execute
+=~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT
 MDEV-20737:
 =~ mysqld: failed to decrypt .*  rc: .*  dstlen: .*  size: .*
 =~ Got error 192 when executing record redo_insert_row_blobs
@@ -1352,7 +1361,7 @@ MDEV-17071:
 MDEV-17019:
 =~ signal 11
 =~ multi_delete::~multi_delete
-=~ Prepared_statement::execute
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-17004:
 =~ InnoDB: Assertion failure in thread .* in file ha_innodb.cc line
 =~ innobase_get_fts_charset
@@ -1379,24 +1388,19 @@ MDEV-16940:
 # MDEV-16929:
 # =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 # =~ open_normal_and_derived_tables
-# =~ mysql_test_create_view|mysql_test_select|mysql_test_create_table
-# =~ check_prepared_statement
-# =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY
-# MDEV-16929:
-# =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
-# =~ open_normal_and_derived_tables
 # =~ mysql_table_grant
 # =~ KILL_SERVER|KILL_CONNECTION
 MDEV-16929:
 =~ \`thd->transaction.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_thread_tables
 =~ mysqld_show_create
-=~ KILL_SERVER|KILL_CONNECTION
+=~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-16887:
 =~ Assertion \`n_idx > 0'
 =~ trx_undo_log_v_idx
 =~ trx_undo_report_row_operation
+# Was fixed in 10.2+ in scope of another bug, not backported to 10.1
 MDEV-16794:
 =~ Assertion \`thd->transaction\.stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
