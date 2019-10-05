@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MENT-416:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ mysql_alter_table
+=~ RENAME
+=~ Version: '10\.2
 MENT-368:
 =~ Assertion \`inline_mysql_file_tell(.*, file, (myf) (0)) == base_pos+ (16 + 5\*8 + 6\*4 + 11\*2 + 6 + 5\*2 + 1 + 16)'
 =~ maria_create

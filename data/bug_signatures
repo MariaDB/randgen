@@ -944,10 +944,10 @@ MDEV-18389:
 =~ InnoDB indexes are inconsistent with what defined in \.frm for table
 =~ ha_innobase::index_type
 =~ fill_schema_table_by_open
-### DRAFT
 MDEV-18381:
-=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: SEGV
+=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: SEGV|signal 11
 =~ ha_innobase::store_lock
+=~ mysql_lock_abort_for_thread
 =~ THD::notify_shared_lock
 MDEV-18371:
 =~ Conditional jump or move depends on uninitialised value|signal 11|AddressSanitizer: SEGV
