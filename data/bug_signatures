@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20762:
+=~ signal 11|AddressSanitizer: SEGV
+=~ Item_field::type_handler
+=~ Temporal_with_date::make_from_item
+=~ TABLE::insert_portion_of_time
+=~ sp_head::execute
+MDEV-20761:
+=~ signal 11|AddressSanitizer: SEGV
+=~ base_list_iterator::next
+=~ TABLE_LIST::change_refs_to_fields
+=~ find_dup_table
+=~ sp_head::execute
 MDEV-20755:
 =~ InnoDB: Database page corruption on disk or a failed file read of tablespace
 =~ Failed to read file .* at offset .*: Page read from tablespace is corrupted
