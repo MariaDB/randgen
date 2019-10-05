@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20755:
+=~ InnoDB: Database page corruption on disk or a failed file read of tablespace
+=~ Failed to read file .* at offset .*: Page read from tablespace is corrupted
+=~ mariabackup: innodb_init() returned 39
+=~ innodb-encrypt
 MDEV-20754:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
