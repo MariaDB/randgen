@@ -1000,6 +1000,8 @@ sub checkDatabaseIntegrity {
               unless ($engine) {
                   # Something is wrong, table's info was not retrieved from I_S
                   # Try to find out from the file system first (glob because the table can be partitioned)
+                  say("Checking $self->datadir/$database for the presence of $table data files");
+                  system("ls $self->datadir/$database/$table.*");
                   if (glob "$self->datadir/$database/$table*.MAD") {
                       # Could happen as a part of
                       # MDEV-17913: Encrypted transactional Aria tables remain corrupt after crash recovery
@@ -1054,7 +1056,7 @@ sub checkDatabaseIntegrity {
                         and $table_attributes{$tname}->[1] eq 'Aria'
                         and $table_attributes{$tname}->[3] =~ /transactional=1/
                         and $table_attributes{$tname}->[2] eq 'Page'
-                        and $msg_text =~ /Checksum for key:  \d+ doesn't match checksum for records|Record at: \d+:\d+  Can\'t find key for index:  \d+|Record-count is not ok; found \d+  Should be: \d+|Key \d+ doesn\'t point at same records as key \d+|Page at \d+ is not delete marked|Key in wrong position at page/ ) {
+                        and $msg_text =~ /Checksum for key:  \d+ doesn't match checksum for records|Record at: \d+:\d+  Can\'t find key for index:  \d+|Record-count is not ok; found \d+  Should be: \d+|Key \d+ doesn\'t point at same records as key \d+|Page at \d+ is not delete marked|Key in wrong position at page|Page at \d+ is not marked for index \d+/ ) {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 sayWarning("... ignoring due to known bug MDEV-17913, trying to repair");
                 $dbh->do("REPAIR TABLE $tname");
