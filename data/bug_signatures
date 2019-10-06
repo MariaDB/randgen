@@ -1456,7 +1456,7 @@ MDEV-16635:
 =~ sequence_insert
 =~ mysql_create_table_no_lock
 MDEV-16549:
-=~ Assertion \`context' failed|signal 11
+=~ Assertion \`context' failed|signal 11|AddressSanitizer: SEGV
 =~ Item_direct_view_ref.*fix_fields
 =~ mysql_handle_single_derived
 MDEV-16539:
