@@ -32,7 +32,7 @@ MDEV-20750:
 =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT
 MDEV-20737:
 =~ mysqld: failed to decrypt .*  rc: .*  dstlen: .*  size: .*
-=~ Got error 192 when executing record redo_insert_row_blobs
+=~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail
 =~ mysqld: Aria engine: Redo phase failed
 MDEV-20691:
 =~ signal 11|AddressSanitizer: SEGV
@@ -1436,11 +1436,6 @@ MDEV-16745:
 =~ Assertion \`thd->transaction\.stmt\.is_empty()'
 =~ Prepared_statement::prepare|Sql_cmd_alter_table::execute
 =~ KILL_CONNECTION|KILL_SERVER
-MDEV-16745:
-=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
-=~ close_thread_tables
-=~ mysqld_show_create
-=~ KILL_SERVER|KILL_CONNECTION
 MDEV-16699:
 =~ AddressSanitizer: heap-use-after-free|signal 11
 =~ my_strnncoll_binary
