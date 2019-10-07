@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20765:
+=~ Assertion \`type\.vers_sys_end()'
+=~ dfield_t::vers_history_row
+=~ row_ins_check_foreign_constraint
+=~ Version: '10\.4|Version: '10\.5
+MDEV-20763:
+=~ Assertion \`btr_validate_index(index, 0)'
+=~ row_upd_sec_index_entry
+=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-20762:
 =~ signal 11|AddressSanitizer: SEGV
 =~ Item_field::type_handler
@@ -1885,6 +1895,9 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
+MDEV-20763:
+=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE|Index for table .* is corrupt; try to repair it
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-20661:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE (info_bits=.* fields):
 =~ versioning
@@ -1916,6 +1929,7 @@ MDEV-20441:
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-19745:
 =~ Backup did not finish in due time
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-19320:
 =~ UPDATE.* 1032 Can't find record in|DELETE.* 1032 Can't find record in|SELECT SETVAL.* 1032 Can't find record in|SELECT.* 1032 Can't find record in|INSERT.* 1032 Can't find record in
 =~ sequence
