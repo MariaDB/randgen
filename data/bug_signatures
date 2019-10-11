@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20812:
+=~ signal 11|AddressSanitizer: SEGV
+=~ row_ins_foreign_report_err
+=~ row_ins_sec_index_entry
+=~ row_upd_sec_index_entry
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-20788:
+=~ Assertion \`page_rec_is_infimum(rec) \|\| !(rec_get_info_bits(page + offs, comp) & 0x10UL)'
+=~ page_rec_get_next_low
 MDEV-20771:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
@@ -140,7 +149,7 @@ MDEV-20597:
 =~ pushdown_from_having_into_where
 =~ Version: '10\.4|Version: '10\.5
 MDEV-20595:
-=~ Assertion \`0 < sel && sel <= 2\.0'|Assertion \`0 < sel && sel <= 1\.0'
+=~ Assertion \`0 < sel && sel <= 2\.0'|Assertion \`0 < sel && sel <= 1\.0'|Assertion \`0\.0 < sel && sel <= 1\.0'
 =~ table_cond_selectivity
 MDEV-20578:
 =~ error 126 when executing undo undo_key_delete
@@ -437,7 +446,6 @@ MDEV-19720:
 =~ JOIN::save_explain_data
 =~ JOIN::build_explain
 MDEV-19718:
-=~ Aria engine: starting recovery
 =~ Assertion \`rownr == 0 && new_page'
 =~ _ma_apply_redo_insert_row_head_or_tail
 =~ run_redo_phase
@@ -485,8 +493,6 @@ MDEV-19619:
 =~ Assertion \`tmp != ((long long) 0x8000000000000000LL)'
 =~ TIME_from_longlong_datetime_packed
 =~ Field_datetimef::get_TIME
-=~ get_field_default_value
-=~ fill_schema_table_by_open
 MDEV-19619:
 =~ signal 11
 =~ create_tmp_table
@@ -1387,7 +1393,7 @@ MDEV-17091:
 MDEV-17091:
 =~ Assertion \`old_part_id == m_last_part'
 =~ ha_partition::update_row
-=~ mysql_update|Update_rows_log_event::do_exec_row|mysql_multi_update|mysql_load|mysql_delete
+=~ mysql_update|Update_rows_log_event::do_exec_row|mysql_multi_update|mysql_load|mysql_delete|write_record
 MDEV-17071:
 =~ signal 11
 =~ TABLE_LIST::get_tablenr
