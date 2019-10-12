@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20818:
+=~ Assertion \`length <= column->length'
+=~ write_block_record
+=~ _ma_write_init_block_record
+=~ encrypt-tmp-disk-tables|encrypt_tmp_disk_tables
+=~ Version: '10\.5
+MDEV-20816:
+=~ Assertion \`maybe_null \|\| !null_value'
+=~ Item_func_round::time_op
+=~ Type_handler_time_common::Item_func_hybrid_field_type_get_date
+=~ Version: '10\.4|Version: '10\.5
 MDEV-20814:
 =~ Assertion \`index->is_instant()'
 =~ rec_init_offsets
@@ -752,6 +763,10 @@ MDEV-19091:
 =~ Assertion \`args[0] == args[2] \|\| thd->stmt_arena->is_stmt_execute()'
 =~ Item_func_nullif::fix_length_and_dec
 =~ Item_func::fix_fields
+MDEV-19075:
+=~ Assertion \`length <= column->length'
+=~ write_block_record
+=~ _ma_write_init_block_record
 MDEV-19067:
 =~ AddressSanitizer: heap-use-after-free
 =~ ha_maria::store_lock
@@ -1429,7 +1444,7 @@ MDEV-17004:
 =~ ADD FULLTEXT
 =~ Version: '10\.1|Version: '10\.0
 MDEV-16994:
-=~ signal 11|Assertion \`!alloced \|\| !Ptr \|\| !Alloced_length \|\| (Alloced_length >= (str_length + 1))'
+=~ signal 11|Assertion \`!alloced \|\| !Ptr \|\| !Alloced_length \|\| (Alloced_length >= (str_length + 1))'|AddressSanitizer: SEGV
 =~ String::c_ptr|base_list_iterator::next|String::length|TRUNCATE PARTITION
 =~ partition_info::prune_partition_bitmaps
 =~ open_and_process_table
@@ -1929,6 +1944,9 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
+MDEV-20818:
+=~ Table '(temporary)' is marked as crashed and should be repaired
+=~ Version: '10\.5
 MDEV-20763:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE|Index for table .* is corrupt; try to repair it
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
