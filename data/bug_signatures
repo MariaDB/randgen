@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20813:
+=~ Assertion \`!srv_safe_truncate \|\| !newest_lsn \|\| fil_page_get_type(page)'
+=~ buf_flush_init_for_writing
+=~ buf_flush_write_block_low
+=~ Version: '10\.2
+MDEV-20813:
+=~ Assertion \`!newest_lsn \|\| fil_page_get_type(page)'
+=~ buf_flush_init_for_writing
+=~ buf_flush_write_block_low
+=~ Version: '10\.3
 MDEV-20812:
 =~ signal 11|AddressSanitizer: SEGV
 =~ row_ins_foreign_report_err
