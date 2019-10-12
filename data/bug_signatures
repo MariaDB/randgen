@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20814:
+=~ Assertion \`index->is_instant()'
+=~ rec_init_offsets
+=~ que_run_threads
+=~ srv_start
+=~ Version: '10\.3|Version: '10\.4
 MDEV-20813:
 =~ Assertion \`!srv_safe_truncate \|\| !newest_lsn \|\| fil_page_get_type(page)'
 =~ buf_flush_init_for_writing
@@ -843,7 +849,7 @@ MDEV-18794:
 =~ ha_partition::cmp_ref
 =~ read_keys_and_merge_scans
 MDEV-18783:
-=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: unknown-crash
 =~ tree_search_next|hp_rb_make_key|tree_search_edge|check_one_key|check_one_rb_key|heap_check_heap
 =~ tc_purge|tc_remove_table
 =~ run_backup_stage|close_thread_tables
