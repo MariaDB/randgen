@@ -1619,6 +1619,12 @@ MDEV-15282:
 =~ Assertion \`recv_sys->mlog_checkpoint_lsn <= recv_sys->recovered_lsn'
 =~ recv_parse_log_recs
 =~ recv_recovery_from_checkpoint_start
+MDEV-15256:
+=~ signal 11|AddressSanitizer: SEGV
+=~ msort_with_tmp|__GI_qsort|qsort_r|cmp_sec_link|make_lock_and_pin
+=~ flush_cached_blocks
+=~ flush_pagecache_blocks_with_filter
+=~ ma_checkpoint_background
 MDEV-15011:
 =~ AddressSanitizer: heap-buffer-overflow|signal 11
 =~ decimal2bin
