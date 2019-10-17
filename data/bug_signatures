@@ -229,7 +229,7 @@ MDEV-20510:
 MDEV-20501:
 =~ Assertion \`maybe_null \|\| !null_value'
 =~ Item_func_round::date_op
-=~ Type_handler_temporal_result.*Item_func_hybrid_field_type_val_real
+=~ Type_handler_temporal_result
 =~ Version: '10\.4
 MDEV-20498:
 =~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type == 1'
@@ -1260,20 +1260,6 @@ MDEV-17978:
 =~ signal 11
 =~ mysqld_show_create_get_fields
 =~ Query .*: SHOW CREATE SEQUENCE
-MDEV-17976:
-=~ Assertion \`lock->magic_n == 22643'
-=~ rw_lock_validate
-MDEV-17976:
-=~ signal 11
-=~ dict_table_is_comp
-=~ rec_get_offsets_func
-MDEV-17976:
-=~ InnoDB: Failing assertion: my_atomic_addlint(&(block)->n_pointers, 0) == 0
-=~ btr0sea\.cc line
-=~ btr_search_build_page_hash_index
-MDEV-17976:
-=~ Assertion \`index'
-=~ rec_get_offsets_func
 MDEV-17974:
 =~ signal 11|AddressSanitizer: use-after-poison
 =~ sp_process_definer
@@ -1303,7 +1289,7 @@ MDEV-17896:
 =~ purge_tables|close_all_tables_for_name|tdc_release_share
 MDEV-17891:
 =~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction.stmt.modified_non_trans_table'
-=~ select_insert::abort_result_set
+=~ select_insert::abort_result_set|mysql_insert
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-17891:
 =~ The table .* is full|Warning: Enabling keys got errno 121
@@ -1341,6 +1327,11 @@ MDEV-17782:
 =~ decimal_bin_size: Assertion \`scale <= precision'
 =~ my_decimal_get_binary_size
 =~ calc_group_buffer
+MDEV-17711:
+=~ Assertion \`arena_for_set_stmt== 0'
+=~ set_arena_for_set_stmt
+=~ mysql_execute_command
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-17699:
 =~ AddressSanitizer: use-after-poison
 =~ base_list_iterator::next_fast
@@ -1687,7 +1678,7 @@ MDEV-13444:
 =~ Version: '10\.2|Version: '10\.1
 MDEV-12967:
 =~ signal 11
-=~ dict_index_is_spatial
+=~ dict_index_is_spatial|dict_index_t::is_spatial
 =~ btr_scrub_free_page
 =~ fil_crypt_rotate_page
 MDEV-12251:
@@ -2107,8 +2098,6 @@ MDEV-17814:
 MDEV-17760:
 =~ table->read_set, field_index
 =~ Version: '10\.1|Version: '10\.0|Version: '5\.5
-MDEV-17711:
-=~ arena_for_set_stmt== 0
 MDEV-17665:
 =~ share->page_type == PAGECACHE_LSN_PAGE
 MDEV-17583:
