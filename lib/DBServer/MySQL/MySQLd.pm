@@ -966,11 +966,12 @@ sub checkDatabaseIntegrity {
       my $tabl_ref = $dbh->selectcol_arrayref("SHOW FULL TABLES", { Columns=>[1,2] });
       # 1178 is ER_CHECK_NOT_IMPLEMENTED
       my %tables = @$tabl_ref;
+      # table => true
+      my %repair_done= ();
       CHECKTABLE:
       foreach my $table (sort keys %tables) {
         # Should not do CHECK etc., and especially ALTER, on a view
         next CHECKTABLE if $tables{$table} eq 'VIEW';
-        my $repair_done= 0;
 #        say("Verifying table: $database.$table:");
         my $check = $dbh->selectcol_arrayref("CHECK TABLE `$database`.`$table` EXTENDED", { Columns=>[3,4] });
         if ($dbh->err() > 0) {
@@ -1006,14 +1007,14 @@ sub checkDatabaseIntegrity {
                       # Could happen as a part of
                       # MDEV-17913: Encrypted transactional Aria tables remain corrupt after crash recovery
                       $engine= 'Aria';
-                      if (not $repair_done
+                      if (not $repair_done{$table}
                             and defined $self->serverVariable('aria_encrypt_tables')
                             and $self->serverVariable('aria_encrypt_tables') eq 'ON'
                           ) {
                         sayWarning("Aria table `$database`.`$table` was not loaded, : $msg_type : $msg_text");
                         sayWarning("... ignoring due to known bug MDEV-20313, trying to repair");
                         $dbh->do("REPAIR TABLE $tname");
-                        $repair_done= 1;
+                        $repair_done{$table}= 1;
                         redo CHECKTABLE;
                       }
                   } elsif (glob "$self->datadir/$database/$table*.MYD") {
@@ -1038,7 +1039,7 @@ sub checkDatabaseIntegrity {
                 last CHECKOUTPUT;
               }
               # MDEV-20313: Transactional Aria table stays corrupt after crash-recovery
-              elsif ( not $repair_done
+              elsif ( not $repair_done{$table}
                         and $table_attributes{$tname}->[1] eq 'Aria'
                         and $table_attributes{$tname}->[3] =~ /transactional=1/
                         and $table_attributes{$tname}->[2] eq 'Page'
@@ -1046,11 +1047,11 @@ sub checkDatabaseIntegrity {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 sayWarning("... ignoring due to known bug MDEV-20313, trying to repair");
                 $dbh->do("REPAIR TABLE $tname");
-                $repair_done= 1;
+                $repair_done{$table}= 1;
                 redo CHECKTABLE;
               }
               # MDEV-17913: Encrypted transactional Aria tables remain corrupt after crash recovery
-              elsif ( not $repair_done
+              elsif ( not $repair_done{$table}
                         and defined $self->serverVariable('aria_encrypt_tables')
                         and $self->serverVariable('aria_encrypt_tables') eq 'ON'
                         and $table_attributes{$tname}->[1] eq 'Aria'
@@ -1060,7 +1061,7 @@ sub checkDatabaseIntegrity {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 sayWarning("... ignoring due to known bug MDEV-17913, trying to repair");
                 $dbh->do("REPAIR TABLE $tname");
-                $repair_done= 1;
+                $repair_done{$table}= 1;
                 redo CHECKTABLE;
               } elsif (! $foreign_key_check_workaround and $msg_text =~ /Table .* doesn't exist in engine/) {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
@@ -1068,11 +1069,11 @@ sub checkDatabaseIntegrity {
                 $dbh->do("SET FOREIGN_KEY_CHECKS= 0");
                 $foreign_key_check_workaround= 1;
                 redo CHECKTABLE;
-              } elsif (not $repair_done and ($table_attributes{$tname}->[1] eq 'Aria' and $table_attributes{$tname}->[3] !~ /transactional=1/ or $table_attributes{$tname}->[1] eq 'MyISAM')) {
+              } elsif (not $repair_done{$table} and ($table_attributes{$tname}->[1] eq 'Aria' and $table_attributes{$tname}->[3] !~ /transactional=1/ or $table_attributes{$tname}->[1] eq 'MyISAM')) {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 sayWarning("... non-transactional table may be corrupt after crash recovery, trying to repair");
                 $dbh->do("REPAIR TABLE $tname");
-                $repair_done= 1;
+                $repair_done{$table}= 1;
                 redo CHECKTABLE;
               } else {
                 sayError("For $attrs `$database`.`$table` : $msg_type : $msg_text");
