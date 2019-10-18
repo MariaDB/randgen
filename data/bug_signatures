@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20861:
+=~ Assertion \`ikey_\.type != kTypeDeletion && ikey_\.type != kTypeSingleDeletion'
+=~ rocksdb::CompactionIterator::PrepareOutput
 MDEV-20818:
 =~ Assertion \`length <= column->length'
 =~ write_block_record
