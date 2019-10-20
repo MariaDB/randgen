@@ -40,6 +40,12 @@ MDEV-20812:
 =~ row_ins_sec_index_entry
 =~ row_upd_sec_index_entry
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-20812:
+=~ Assertion \`mysql_table'
+=~ innobase_get_computed_value
+=~ row_update_cascade_for_mysql
+=~ row_ins_foreign_check_on_constraint
+=~ Version: '10\.4|Version: '10\.5
 MDEV-20788:
 =~ Assertion \`page_rec_is_infimum(rec) \|\| !(rec_get_info_bits(page + offs, comp) & 0x10UL)'
 =~ page_rec_get_next_low
