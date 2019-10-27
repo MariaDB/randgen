@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20901:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ my_ok
+=~ CREATE.*EVENT
+=~ KILL_QUERY|KILL_SERVER|KILL_CONNECTION
 MDEV-20861:
 =~ Assertion \`ikey_\.type != kTypeDeletion && ikey_\.type != kTypeSingleDeletion'
 =~ rocksdb::CompactionIterator::PrepareOutput
@@ -327,6 +333,11 @@ MDEV-20410:
 =~ create_view_field
 =~ find_field_in_view
 =~ find_field_in_tables
+MDEV-20410:
+=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ create_view_field
+=~ Multiupdate_prelocking_strategy::handle_end
+=~ sp_instr_stmt::execute
 MDEV-20395:
 =~ Assertion \`!found'
 =~ remove_ptr_from_dynarray
