@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20903:
+=~ Assertion \`dict_index_is_clust(index)'
+=~ row_ins_index_entry_set_vals
+=~ row_update_vers_insert
+=~ row_ins_foreign_check_on_constraint
 MDEV-20901:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
@@ -1528,7 +1533,7 @@ MDEV-16635:
 MDEV-16549:
 =~ Assertion \`context' failed|signal 11|AddressSanitizer: SEGV
 =~ Item_direct_view_ref.*fix_fields
-=~ mysql_handle_single_derived
+=~ mysql_derived_optimize
 MDEV-16539:
 =~ mysqld got exception|signal 11
 =~ mark_tmp_table_as_free_for_reuse
