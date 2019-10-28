@@ -53,9 +53,7 @@ MENT-189:
 MDEV-20495:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
-=~ Type_handler::make_and_init_table_field
-=~ Item_func::create_field_for_create_select
-=~ select_create::create_table_from_items
+=~ select_create::create_table_from_items|Field_new_decimal::create_from_item
 MDEV-20320:
 =~ Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id
 MDEV-20320:
@@ -76,6 +74,11 @@ MDEV-19189:
 =~ AddressSanitizer: memcpy-param-overlap: memory ranges
 =~ fill_alter_inplace_info
 =~ mysql_alter_table
+MDEV-18451:
+=~ signal 11|AddressSanitizer: SEGV on unknown address
+=~ maria_create_trn_for_mysql
+=~ _ma_setup_live_state
+=~ trans_commit_implicit
 
 ##############################################################################
 # Weak matches

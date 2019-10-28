@@ -263,14 +263,6 @@ MDEV-20497:
 =~ mysql_update
 =~ sp_instr_stmt::execute|sp_head::execute_procedure
 =~ versioning
-# Fixed in 5.5-10.3, not yet in 10.4+
-MDEV-20495:
-=~ Assertion \`precision > 0'
-=~ decimal_bin_size
-=~ Type_handler::make_and_init_table_field
-=~ Item_func::create_field_for_create_select|Item_result_field::create_tmp_field_ex
-=~ select_create::create_table_from_items
-=~ Version: '10\.4|Version: '10\.5
 MDEV-20494:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ fast_end_partition
@@ -1014,11 +1006,19 @@ MDEV-18457:
 =~ _ma_check_bitmap
 =~ set_page_bits
 =~ _ma_write_init_block_record
+# Only fixed in 10.2+!
 MDEV-18451:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ maria_create_trn_for_mysql
 =~ _ma_setup_live_state
 =~ trans_commit_implicit
+=~ Version: '10\.1
+# Only fixed in 10.2+!
+MDEV-18451:
+=~ AddressSanitizer: heap-use-after-free
+=~ ha_maria::implicit_commit
+=~ trans_commit_implicit
+=~ Version: '10\.1
 MDEV-18449:
 =~ AddressSanitizer: heap-use-after-free
 =~ my_strnncollsp_simple
