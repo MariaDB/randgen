@@ -623,15 +623,6 @@ MDEV-19418:
 =~ group_concat_key_cmp_with_order
 =~ tree_walk_left_root_right
 =~ Item_func_group_concat::repack_tree
-MDEV-19406:
-=~ Assertion \`marked_for_write_or_computed()'|Assertion \`is_stat_field \|\| !table \|\| (!table->write_set \|\| bitmap_is_set(table->write_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength))) \|\| (table->vcol_set && bitmap_is_set(table->vcol_set, field_index))'
-=~ Field_date_common::store_TIME_with_warning
-=~ Field::do_field_temporal
-=~ multi_update::do_updates
-MDEV-19406:
-=~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
-=~ handler::ha_reset
-=~ close_thread_table
 MDEV-19400:
 =~ Assertion \`!table->s->tmp_table'
 =~ wait_while_table_is_used
@@ -1197,6 +1188,11 @@ MDEV-18069:
 =~ MDL_ticket::has_stronger_or_equal_type|inline_mysql_prlock_wrlock
 =~ MDL_context::upgrade_shared_lock
 =~ run_backup_stage|backup_flush
+MDEV-18069:
+=~ signal 11
+=~ MDL_lock::Ticket_list::clear_bit_if_not_in_list
+=~ MDL_context::upgrade_shared_lock
+=~ backup_flush
 MDEV-18068:
 =~ Assertion \`this == ticket->get_ctx()'
 =~ MDL_context::release_lock
@@ -2212,8 +2208,6 @@ MDEV-15470:
 =~ TABLE::mark_columns_used_by_index_no_reset
 MDEV-15468:
 =~ table_events_waits_common::make_row
-MDEV-15329:
-=~ in dict_table_check_for_dup_indexes
 MDEV-15255:
 =~ m_lock_type == 2
 MDEV-15255:

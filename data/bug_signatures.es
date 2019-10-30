@@ -60,6 +60,15 @@ MDEV-20320:
 =~ InnoDB: Refusing to load .* (id=.*, flags=.*); dictionary contains id=.*, flags=.*
 =~ InnoDB: Operating system error number 2 in a file operation
 =~ InnoDB: Could not find a valid tablespace file for .*
+MDEV-19406:
+=~ Assertion \`marked_for_write_or_computed()'|Assertion \`is_stat_field \|\| !table \|\| (!table->write_set \|\| bitmap_is_set(table->write_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength))) \|\| (table->vcol_set && bitmap_is_set(table->vcol_set, field_index))'
+=~ Field_date_common::store_TIME_with_warning
+=~ Field::do_field_temporal
+=~ multi_update::do_updates
+MDEV-19406:
+=~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
+=~ handler::ha_reset
+=~ close_thread_table
 MDEV-17939:
 =~ Assertion \`++loop_count < 2'
 =~ trx_undo_report_rename
