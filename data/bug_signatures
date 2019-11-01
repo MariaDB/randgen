@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20945:
+=~ signal 11
+=~ hog_lock_types_bitmap
+=~ remove_ticket
+=~ backup_unlock
+MDEV-20945:
+=~ Assertion \`ticket->m_duration == MDL_EXPLICIT'
+=~ MDL_context::release_lock
+=~ backup_unlock
+MDEV-20944:
+=~ AddressSanitizer: heap-use-after-free
+=~ my_strnncollsp_simple
+=~ Item::temporal_precision
+=~ Item_temporal_typecast::fix_length_and_dec
 MDEV-20903:
 =~ Assertion \`dict_index_is_clust(index)'
 =~ row_ins_index_entry_set_vals
@@ -832,7 +846,6 @@ MDEV-18900:
 =~ AddressSanitizer: heap-use-after-free
 =~ my_strnncoll_binary
 =~ Item_func_min_max::val_str
-=~ end_send_group|AGGR_OP::put_record|make_sortkey
 MDEV-18882:
 =~ AddressSanitizer: heap-use-after-free
 =~ Binary_string::copy|String::copy
@@ -996,7 +1009,6 @@ MDEV-18457:
 =~ Assertion \`(bitmap->map + (bitmap->full_head_size/6\*6)) <= full_head_end'
 =~ _ma_check_bitmap
 =~ set_page_bits
-=~ _ma_write_init_block_record
 # Only fixed in 10.2+!
 MDEV-18451:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
@@ -1335,10 +1347,6 @@ MDEV-17843:
 =~ Assertion \`page_rec_is_leaf(rec)'
 =~ lock_rec_queue_validate
 =~ innodb_show_status|SHOW ENGINE INNODB STATUS|SHOW ENGINE InnoDB STATUS
-MDEV-17842:
-=~ Assertion \`((copy & 0x00000003) == 0x02)'
-=~ pfs_lock::allocated_to_free
-=~ drop_table_share
 MDEV-17818:
 =~ signal 11
 =~ parse_vcol_defs
@@ -1544,6 +1552,13 @@ MDEV-16397:
 =~ LOAD DATA.* INFILE .* Can't find record in
 =~ sequence
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-16292:
+=~ signal 11
+=~ Item_func::print
+=~ Item::print_item_w_name
+=~ mysql_create_view
+=~ ROLLUP
+=~ Version: '5\.5|Version: '10\.1|Version: '10\.2
 MDEV-16242:
 =~ Slave worker thread retried transaction
 =~ Can't find record
@@ -1555,7 +1570,7 @@ MDEV-16208:
 =~ lock_clust_rec_read_check_and_lock
 =~ row_search_mvcc
 MDEV-16128:
-=~ signal 11
+=~ signal 11|AddressSanitizer: heap-use-after-free
 =~ Item_func::print_op
 =~ mysql_select
 =~ Prepared_statement::execute|sp_instr_stmt::execute
@@ -1702,6 +1717,10 @@ MDEV-12967:
 =~ dict_index_is_spatial|dict_index_t::is_spatial
 =~ btr_scrub_free_page
 =~ fil_crypt_rotate_page
+MDEV-12330:
+=~ Assertion \`((copy & 0x00000003) == 0x02)'
+=~ pfs_lock::allocated_to_free
+=~ drop_table_share
 MDEV-12251:
 =~ InnoDB: Failing assertion: table->data_dir_path
 =~ srv_get_meta_data_filename
@@ -2175,8 +2194,6 @@ MDEV-16407:
 =~ in MDL_key::mdl_key_init
 MDEV-16407:
 =~ Error: Freeing overrun buffer
-MDEV-16292:
-=~ Item_func::print
 MDEV-16184:
 =~ nest->counter > 0
 MDEV-16171:
