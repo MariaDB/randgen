@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20971:
+=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ in list_delete
+=~ in heap_close
+=~ in purge_tables
+MDEV-20971:
+=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ in list_add
+=~ in heap_open
+=~ in open_table
+MDEV-20971:
+=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ in thr_lock
+=~ in thr_multi_lock
+=~ in lock_tables
 MDEV-20945:
 =~ signal 11
 =~ hog_lock_types_bitmap
@@ -778,6 +793,10 @@ MDEV-19130:
 =~ handler::update_auto_increment
 =~ TABLE::update_generated_fields
 =~ TABLE::period_make_insert|update_portion_of_time
+MDEV-19114:
+=~ Assertion \`n_fields > 0'
+=~ rec_offs_set_n_fields
+=~ row_purge_remove_sec_if_poss_leaf
 MDEV-19092:
 =~ Assertion \`foreign->referenced_index != __null'|signal 11|Assertion \`new_index != __null'|InnoDB: Failing assertion: new_index != __null
 =~ dict_mem_table_col_rename_low
