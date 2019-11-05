@@ -19,6 +19,11 @@ MDEV-20971:
 =~ in thr_lock
 =~ in thr_multi_lock
 =~ in lock_tables
+MDEV-20971:
+=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ in thr_unlock
+=~ in thr_multi_unlock
+=~ in close_all_tables_for_name
 MDEV-20945:
 =~ signal 11
 =~ hog_lock_types_bitmap
