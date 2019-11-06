@@ -50,6 +50,31 @@ MENT-189:
 #
 # Fixed in the next release
 #
+MDEV-20814:
+=~ Assertion \`index->is_instant()'
+=~ rec_init_offsets
+=~ que_run_threads
+=~ srv_start
+=~ Version: '10\.3|Version: '10\.4
+MDEV-20813:
+=~ Assertion \`!srv_safe_truncate \|\| !newest_lsn \|\| fil_page_get_type(page)'
+=~ buf_flush_init_for_writing
+=~ buf_flush_write_block_low
+=~ Version: '10\.2
+MDEV-20813:
+=~ Assertion \`!newest_lsn \|\| fil_page_get_type(page)'
+=~ buf_flush_init_for_writing
+=~ buf_flush_write_block_low
+=~ Version: '10\.3
+MDEV-20788:
+=~ Assertion \`page_rec_is_infimum(rec) \|\| !(rec_get_info_bits(page + offs, comp) & 0x10UL)'
+=~ page_rec_get_next_low
+MDEV-20639:
+=~ AddressSanitizer: SEGV
+=~ get_prefix
+=~ find_body
+=~ Field_timestamp::conversion_depends_on_sql_mode
+=~ Version: '10\.4|Version: '10\.5
 MDEV-20495:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
@@ -60,6 +85,20 @@ MDEV-20320:
 =~ InnoDB: Refusing to load .* (id=.*, flags=.*); dictionary contains id=.*, flags=.*
 =~ InnoDB: Operating system error number 2 in a file operation
 =~ InnoDB: Could not find a valid tablespace file for .*
+MDEV-20090:
+=~ Assertion \`pos < index->n_def'
+=~ dict_index_get_nth_field
+=~ row_purge_parse_undo_rec
+=~ srv_task_execute
+=~ Version: '10\.4|Version: '10\.5
+MDEV-19536:
+=~ AddressSanitizer: heap-use-after-free|signal 11|Invalid read of size
+=~ is_temporary_table|Index_stat::set_full_table_name|Stat_table::Stat_table|statistics_for_tables_is_needed
+=~ read_statistics_for_tables_if_needed
+MDEV-19536:
+=~ signal 11
+=~ read_statistics_for_tables_if_needed
+=~ fill_schema_table_by_open
 MDEV-19406:
 =~ Assertion \`marked_for_write_or_computed()'|Assertion \`is_stat_field \|\| !table \|\| (!table->write_set \|\| bitmap_is_set(table->write_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength))) \|\| (table->vcol_set && bitmap_is_set(table->vcol_set, field_index))'
 =~ Field_date_common::store_TIME_with_warning
@@ -83,11 +122,53 @@ MDEV-19189:
 =~ AddressSanitizer: memcpy-param-overlap: memory ranges
 =~ fill_alter_inplace_info
 =~ mysql_alter_table
+MDEV-18546:
+=~ AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow
+=~ innobase_get_computed_value
+=~ row_vers_build_clust_v_col
+MDEV-18546:
+=~ InnoDB: tried to purge non-delete-marked record in index
+=~ signal 11
+=~ row_vers_build_clust_v_col
+=~ row_vers_old_has_index_entry
 MDEV-18451:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ maria_create_trn_for_mysql
 =~ _ma_setup_live_state
 =~ trans_commit_implicit
+MDEV-18069:
+=~ signal 11
+=~ MDL_lock::incompatible_granted_types_bitmap
+=~ MDL_ticket::has_stronger_or_equal_type|MDL_ticket::is_incompatible_when_granted
+=~ run_backup_stage
+MDEV-18069:
+=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ MDL_ticket::has_stronger_or_equal_type|inline_mysql_prlock_wrlock
+=~ MDL_context::upgrade_shared_lock
+=~ run_backup_stage|backup_flush
+MDEV-18069:
+=~ signal 11
+=~ MDL_lock::Ticket_list::clear_bit_if_not_in_list
+=~ MDL_context::upgrade_shared_lock
+=~ backup_flush
+MDEV-18068:
+=~ Assertion \`this == ticket->get_ctx()'
+=~ MDL_context::release_lock
+MDEV-18067:
+=~ Assertion \`ticket->m_duration == MDL_EXPLICIT'|AddressSanitizer: heap-use-after-free
+=~ MDL_context::release_lock
+=~ backup_end
+MDEV-18067:
+=~ signal 11
+=~ backup_end
+=~ run_backup_stage|THD::cleanup|unlink_thd
+MDEV-18067:
+=~ signal 11
+=~ I_P_List
+=~ MDL_lock.*Ticket_list.*clear_bit_if_not_in_list|MDL_lock.*Ticket_list.*remove_ticket
+=~ MDL_context.*upgrade_shared_lock
+MDEV-17333:
+=~ next_insert_id >= auto_inc_interval_for_cur_row\.minimum
 
 ##############################################################################
 # Weak matches

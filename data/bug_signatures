@@ -41,6 +41,10 @@ MDEV-20944:
 =~ my_strnncollsp_simple
 =~ Item::temporal_precision
 =~ Item_temporal_typecast::fix_length_and_dec
+MDEV-20940:
+=~ Assertion \`templ->mysql_col_len == len'
+=~ row_sel_field_store_in_mysql_format_func
+=~ ha_partition
 MDEV-20903:
 =~ Assertion \`dict_index_is_clust(index)'
 =~ row_ins_index_entry_set_vals
@@ -55,33 +59,12 @@ MDEV-20901:
 MDEV-20861:
 =~ Assertion \`ikey_\.type != kTypeDeletion && ikey_\.type != kTypeSingleDeletion'
 =~ rocksdb::CompactionIterator::PrepareOutput
-MDEV-20818:
-=~ Assertion \`length <= column->length'
-=~ write_block_record
-=~ _ma_write_init_block_record
-=~ encrypt-tmp-disk-tables|encrypt_tmp_disk_tables
-=~ Version: '10\.5
 MDEV-20816:
 =~ Assertion \`maybe_null \|\| !null_value'
 =~ Item_func_round::time_op
 =~ Type_handler_time_common::Item_func_hybrid_field_type_get_date
 =~ Version: '10\.4|Version: '10\.5
-MDEV-20814:
-=~ Assertion \`index->is_instant()'
-=~ rec_init_offsets
-=~ que_run_threads
-=~ srv_start
-=~ Version: '10\.3|Version: '10\.4
-MDEV-20813:
-=~ Assertion \`!srv_safe_truncate \|\| !newest_lsn \|\| fil_page_get_type(page)'
-=~ buf_flush_init_for_writing
-=~ buf_flush_write_block_low
-=~ Version: '10\.2
-MDEV-20813:
-=~ Assertion \`!newest_lsn \|\| fil_page_get_type(page)'
-=~ buf_flush_init_for_writing
-=~ buf_flush_write_block_low
-=~ Version: '10\.3
+# Not merged yet to 10.5
 MDEV-20812:
 =~ signal 11|AddressSanitizer: SEGV
 =~ row_ins_foreign_report_err
@@ -94,9 +77,6 @@ MDEV-20812:
 =~ row_update_cascade_for_mysql
 =~ row_ins_foreign_check_on_constraint
 =~ Version: '10\.4|Version: '10\.5
-MDEV-20788:
-=~ Assertion \`page_rec_is_infimum(rec) \|\| !(rec_get_info_bits(page + offs, comp) & 0x10UL)'
-=~ page_rec_get_next_low
 MDEV-20771:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
@@ -202,12 +182,6 @@ MDEV-20640:
 =~ Assertion \`0'
 =~ row_purge_remove_sec_if_poss_leaf
 =~ que_thr_step
-MDEV-20639:
-=~ AddressSanitizer: SEGV
-=~ get_prefix
-=~ find_body
-=~ Field_timestamp::conversion_depends_on_sql_mode
-=~ Version: '10\.4|Version: '10\.5
 MDEV-20622:
 =~ signal 11|AddressSanitizer: SEGV
 =~ embedding_sjm
@@ -474,12 +448,6 @@ MDEV-20114:
 =~ signal 11|AddressSanitizer: SEGV
 =~ dict_col_t::detach
 =~ dict_index_t::detach_columns
-MDEV-20090:
-=~ Assertion \`pos < index->n_def'
-=~ dict_index_get_nth_field
-=~ row_purge_parse_undo_rec
-=~ srv_task_execute
-=~ Version: '10\.4|Version: '10\.5
 MDEV-20015:
 =~ Assertion \`!in_use->is_error()'
 =~ update_virtual_field
@@ -625,14 +593,6 @@ MDEV-19555:
 =~ Diagnostics_area::sql_errno
 =~ ha_rollback_trans
 =~ Sql_cmd_check_table::execute
-MDEV-19536:
-=~ AddressSanitizer: heap-use-after-free|signal 11|Invalid read of size
-=~ is_temporary_table|Index_stat::set_full_table_name|Stat_table::Stat_table|statistics_for_tables_is_needed
-=~ read_statistics_for_tables_if_needed
-MDEV-19536:
-=~ signal 11
-=~ read_statistics_for_tables_if_needed
-=~ fill_schema_table_by_open
 MDEV-19526:
 =~ Assertion \`((val << shift) & mask) == (val << shift)'
 =~ rec_set_bit_field_2
@@ -877,7 +837,6 @@ MDEV-18882:
 =~ AddressSanitizer: heap-use-after-free
 =~ Binary_string::copy|String::copy
 =~ Item_func_make_set::val_str
-=~ copy_fields
 MDEV-18875:
 =~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction\.stmt'
 =~ ha_rollback_trans
@@ -911,6 +870,7 @@ MDEV-18794:
 =~ Assertion \`!m_innodb' failed
 =~ ha_partition::cmp_ref
 =~ read_keys_and_merge_scans
+# Not merged to 10.5 yet
 MDEV-18783:
 =~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: unknown-crash
 =~ tree_search_next|hp_rb_make_key|tree_search_edge|check_one_key|check_one_rb_key|heap_check_heap
@@ -986,15 +946,6 @@ MDEV-18550:
 =~ InnoDB: Failing assertion: success
 =~ fil_node_open_file
 =~ xb_load_single_table_tablespace
-MDEV-18546:
-=~ AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow
-=~ innobase_get_computed_value
-=~ row_vers_build_clust_v_col
-MDEV-18546:
-=~ InnoDB: tried to purge non-delete-marked record in index
-=~ signal 11
-=~ row_vers_build_clust_v_col
-=~ row_vers_old_has_index_entry
 # DRAFT
 MDEV-18500:
 =~ (block)->n_pointers == 0
@@ -1149,6 +1100,7 @@ MDEV-18250:
 =~ dirname_length
 =~ innobase_basename
 =~ sync_arr_fill_sys_semphore_waits_table
+# Not merged to 10.5 yet
 MDEV-18244:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ ha_innobase::update_thd
@@ -1189,6 +1141,8 @@ MDEV-18156:
 =~ Assertion \`btr_validate_index(index, 0, false)'|Assertion \`0'
 =~ row_upd_sec_index_entry
 =~ row_update_for_mysql
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
+# Only fixed in 10.5!
 MDEV-18153:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Assertion \`0'|Assertion \`btr_validate_index(index, 0)'|Assertion \`btr_validate_index(index, 0, false)'
@@ -1217,37 +1171,6 @@ MDEV-18082:
 =~ Diagnostics_area::disable_status
 =~ Prepared_statement::prepare
 =~ EXPLAIN
-MDEV-18069:
-=~ signal 11
-=~ MDL_lock::incompatible_granted_types_bitmap
-=~ MDL_ticket::has_stronger_or_equal_type|MDL_ticket::is_incompatible_when_granted
-=~ run_backup_stage
-MDEV-18069:
-=~ AddressSanitizer: heap-use-after-free|signal 11
-=~ MDL_ticket::has_stronger_or_equal_type|inline_mysql_prlock_wrlock
-=~ MDL_context::upgrade_shared_lock
-=~ run_backup_stage|backup_flush
-MDEV-18069:
-=~ signal 11
-=~ MDL_lock::Ticket_list::clear_bit_if_not_in_list
-=~ MDL_context::upgrade_shared_lock
-=~ backup_flush
-MDEV-18068:
-=~ Assertion \`this == ticket->get_ctx()'
-=~ MDL_context::release_lock
-MDEV-18067:
-=~ Assertion \`ticket->m_duration == MDL_EXPLICIT'|AddressSanitizer: heap-use-after-free
-=~ MDL_context::release_lock
-=~ backup_end
-MDEV-18067:
-=~ signal 11
-=~ backup_end
-=~ run_backup_stage|THD::cleanup|unlink_thd
-MDEV-18067:
-=~ signal 11
-=~ I_P_List
-=~ MDL_lock.*Ticket_list.*clear_bit_if_not_in_list|MDL_lock.*Ticket_list.*remove_ticket
-=~ MDL_context.*upgrade_shared_lock
 MDEV-18047:
 =~ index->magic_n == 76789786|Assertion \`pos < index->n_def'|AddressSanitizer: heap-use-after-free
 =~ dict_index_get_nth_field|dict_index_get_nth_col
@@ -1343,6 +1266,7 @@ MDEV-17912:
 =~ failed to decrypt .*  rc: -1  dstlen: 0  size: .*
 =~ Got error 192 when executing record .*
 =~ Aria engine: Redo phase failed
+# Not merged to 10.2+ yet
 MDEV-17896:
 =~ Assertion \`pfs->get_refcount() > 0'
 =~ release_table_share|tdc_delete_share_from_hash
@@ -1777,6 +1701,7 @@ MDEV-10945:
 =~ Diagnostics_area::set_ok_status
 =~ Status: KILL_BAD_DATA
 =~ Version: '10\.1|Version: '10\.0|Version: '5\.5
+# Not merged to 10.5 yet
 MDEV-10748:
 =~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: heap-buffer-overflow
 =~ ha_maria::implicit_commit
@@ -2008,9 +1933,6 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
-MDEV-20818:
-=~ Table '(temporary)' is marked as crashed and should be repaired
-=~ Version: '10\.5
 MDEV-20763:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE|Index for table .* is corrupt; try to repair it
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
@@ -2103,8 +2025,6 @@ MDEV-18157:
 MDEV-18156:
 =~ Index for table .* is corrupt; try to repair it
 =~ Version: '10\.2|Version: '10\.3|Version: '10\.4
-MDEV-18147:
-=~ templ->mysql_col_len >= len
 MDEV-18146:
 =~ field_ref + 12U
 MDEV-18146:
@@ -2185,8 +2105,6 @@ MDEV-17356:
 =~ table->read_set, field_index
 MDEV-17344:
 =~ Prepared_statement::~Prepared_statement
-MDEV-17333:
-=~ next_insert_id >= auto_inc_interval_for_cur_row\.minimum
 MDEV-17225:
 =~ log_descriptor\.bc\.buffer->prev_last_lsn
 MDEV-17217:
