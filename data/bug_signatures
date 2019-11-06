@@ -4,26 +4,29 @@
 # Strong matches
 ##############################################################################
 
+MDEV-20984:
+=~ Assertion \`args[0]->type_handler()->mysql_timestamp_type() == MYSQL_TIMESTAMP_DATETIME'
+=~ Item_func_round::date_op
+=~ Type_handler_temporal_result::Item_func_hybrid_field_type_get_date
 MDEV-20971:
-=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: SEGV
 =~ in list_delete
 =~ in heap_close
-=~ in purge_tables
 MDEV-20971:
-=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: SEGV
 =~ in list_add
 =~ in heap_open
 =~ in open_table
 MDEV-20971:
-=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: SEGV
 =~ in thr_lock
 =~ in thr_multi_lock
 =~ in lock_tables
 MDEV-20971:
-=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: SEGV
 =~ in thr_unlock
 =~ in thr_multi_unlock
-=~ in close_all_tables_for_name
+=~ in close_all_tables_for_name|close_thread_tables
 MDEV-20945:
 =~ signal 11
 =~ hog_lock_types_bitmap
