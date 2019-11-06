@@ -49,12 +49,14 @@ use DBServer::MySQL::MySQLd;
 
 # Leave first 50 values for the parent Scenario
 use constant SCENARIO_RESTART_INTERVAL  => 51;
+use constant SCENARIO_SHUTDOWN_TIMEOUT  => 52;
 
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
 
   $self->[SCENARIO_RESTART_INTERVAL]= $self->getProperty('scenario-restart-interval') || 30;
+  $self->[SCENARIO_SHUTDOWN_TIMEOUT]= $self->getProperty('scenario-shutdown-timeout') || 120;
   if (!$self->getTestType) {
     $self->setTestType('normal');
   }
@@ -168,7 +170,7 @@ sub run {
       $status= $server->kill;
     } else {
       $self->printStep("Stopping the server");
-      $status= $server->stopServer;
+      $status= $server->stopServer($self->[SCENARIO_SHUTDOWN_TIMEOUT]);
     }
     
     if ($status != STATUS_OK) {
@@ -220,7 +222,7 @@ sub run {
   #####
   $self->printStep("Stopping the server");
 
-  $status= $server->stopServer;
+  $status= $server->stopServer($self->[SCENARIO_SHUTDOWN_TIMEOUT]);
 
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
