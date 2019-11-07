@@ -121,10 +121,12 @@ MDEV-20754:
 =~ decimal_bin_size
 =~ DISTINCT.*DEFAULT.*ROLLUP
 MDEV-20750:
-=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'|Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ open_normal_and_derived_tables
 =~ Prepared_statement::prepare|sp_head::execute
+=~ sequence
 =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-20737:
 =~ mysqld: failed to decrypt .*  rc: .*  dstlen: .*  size: .*
 =~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail
@@ -912,7 +914,8 @@ MDEV-18694:
 =~ mysql_socket\.fd != -1
 =~ Protocol
 =~ send_error|send_ok
-=~ KILL_SERVER
+=~ KILL_SERVER|Server shutdown in progress
+=~ Version: '10\.1|Version: '10\.2|Version: '10\.3
 MDEV-18693:
 =~ AddressSanitizer: heap-use-after-free|signal 11
 =~ _ma_remove_table_from_trnman
@@ -986,7 +989,6 @@ MDEV-18460:
 MDEV-18457:
 =~ Assertion \`(bitmap->map + (bitmap->full_head_size/6\*6)) <= full_head_end'
 =~ _ma_check_bitmap
-=~ set_page_bits
 # Only fixed in 10.2+!
 MDEV-18451:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
@@ -1432,11 +1434,6 @@ MDEV-16940:
 =~ unsafe_key_update
 =~ mysql_multi_update_prepare
 =~ sp_head::execute
-# MDEV-16929:
-# =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
-# =~ open_normal_and_derived_tables
-# =~ mysql_table_grant
-# =~ KILL_SERVER|KILL_CONNECTION
 MDEV-16929:
 =~ \`thd->transaction.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_thread_tables
@@ -1636,6 +1633,11 @@ MDEV-14854:
 =~ transid_store_packed
 =~ _ma_make_key
 =~ ha_maria::write_row
+MDEV-14656:
+=~ signal 6
+=~ Got error 22 when trying to lock mutex LOCK_event_queue
+=~ Event_queue::drop_schema_events
+=~ mysql_rm_db
 MDEV-14642:
 =~ Assertion \`table->s->db_create_options == part_table->s->db_create_options'
 =~ compare_table_with_partition
