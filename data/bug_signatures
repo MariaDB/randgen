@@ -4,6 +4,8 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21011:
+=~ For .* SYSTEM VERSIONED .* : error : Found a misplaced row
 MDEV-20984:
 =~ Assertion \`args[0]->type_handler()->mysql_timestamp_type() == MYSQL_TIMESTAMP_DATETIME'
 =~ Item_func_round::date_op
@@ -1659,7 +1661,7 @@ MDEV-14420:
 MDEV-13644:
 =~ void ilink::assert_linked(): Assertion \`prev != 0 && next != 0'
 =~ unlink_not_visible_thd
-=~ Status: KILL_SERVER
+=~ Status: KILL_SERVER|innobase_destroy_background_thd
 MDEV-13444:
 =~ InnoDB: Failing assertion: mtflush_io != NULL
 =~ buf_mtflu_io_thread_exit
