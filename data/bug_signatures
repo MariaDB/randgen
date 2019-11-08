@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21016:
+=~ AddressSanitizer: heap-use-after-free
+=~ trx_update_mod_tables_timestamp
+=~ rollback_inplace_alter_table
+=~ versioning
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21016:
+=~ \`mysql\`\.\`transaction_registry\` does not exist
+=~ AddressSanitizer: heap-use-after-free
+=~ mysql_inplace_alter_table
+=~ versioning
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21011:
 =~ For .* SYSTEM VERSIONED .* : error : Found a misplaced row
 MDEV-21007:
