@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21027:
+=~ Assertion \`part_share->auto_inc_initialized \|\| !can_use_for_auto_inc_init()'
+=~ ha_partition::set_auto_increment_if_higher
+=~ ha_partition::write_row
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21017:
+=~ \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ Sql_cmd_create_table_like::execute
+=~ Version: '10\.4|Version: '10\.5
+=~ application_periods
 MDEV-21016:
 =~ AddressSanitizer: heap-use-after-free
 =~ trx_update_mod_tables_timestamp
@@ -550,7 +561,6 @@ MDEV-19622:
 MDEV-19621:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ ha_innobase::commit_inplace_alter_table
-=~ handler::ha_commit_inplace_alter_table
 =~ mysql_inplace_alter_table
 MDEV-19619:
 =~ AddressSanitizer: heap-use-after-free
@@ -998,7 +1008,6 @@ MDEV-18461:
 =~ Assertion \`undo_lsn == ((LSN)1) \|\| head_length == row_pos->length'
 =~ write_block_record
 =~ _ma_update_at_original_place
-### DRAFT
 MDEV-18460:
 =~ signal 11|AddressSanitizer: SEGV
 =~ tdc_create_key
@@ -1062,7 +1071,6 @@ MDEV-18366:
 MDEV-18361:
 =~ Assertion \`0'
 =~ row_log_table_apply_ops
-=~ commit_try_rebuild
 =~ Sql_cmd_alter_table::execute
 MDEV-18335:
 =~ Assertion \`!error \|\| error == 137' failed
@@ -1155,6 +1163,11 @@ MDEV-18166:
 =~ field_conv_incompatible
 =~ TABLE::update_virtual_fields
 =~ Version: '10\.5|Version: '10\.4|Version: '10\.3|Version: '10\.2
+MDEV-18157:
+=~ signal 11|AddressSanitizer: SEGV
+=~ Explain_node::print_explain_for_children
+=~ Show_explain_request::call_in_target_thread
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 # Only fixed in 10.5!
 MDEV-18156:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
@@ -1746,7 +1759,7 @@ MDEV-5628:
 =~ mysql_update
 =~ ( SELECT 
 TODO-842:
-=~ signal 11|AddressSanitizer: use-after-poison
+=~ signal 11|AddressSanitizer: use-after-poison|AddressSanitizer: heap-buffer-overflow
 =~ mem_heap_dup
 =~ row_log_table_get_pk_col
 =~ row_upd_step
@@ -2038,8 +2051,6 @@ MDEV-18168:
 MDEV-18158:
 =~ Can't find record in
 =~ view
-MDEV-18157:
-=~ Explain_node::print_explain_for_children
 #
 # Only fixed in 10.5!
 MDEV-18156:

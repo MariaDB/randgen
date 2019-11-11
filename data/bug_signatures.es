@@ -4,6 +4,44 @@
 # Strong matches
 ##############################################################################
 
+MENT-438:
+=~ signal 11
+=~ MDL_lock::incompatible_granted_types_bitmap
+=~ MDL_ticket::has_stronger_or_equal_type|MDL_ticket::is_incompatible_when_granted
+=~ run_backup_stage
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ MDL_ticket::has_stronger_or_equal_type|inline_mysql_prlock_wrlock
+=~ MDL_context::upgrade_shared_lock
+=~ run_backup_stage|backup_flush
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ signal 11
+=~ MDL_lock::Ticket_list::clear_bit_if_not_in_list
+=~ MDL_context::upgrade_shared_lock
+=~ backup_flush
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ Assertion \`this == ticket->get_ctx()'
+=~ MDL_context::release_lock
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ Assertion \`ticket->m_duration == MDL_EXPLICIT'|AddressSanitizer: heap-use-after-free
+=~ MDL_context::release_lock
+=~ backup_end
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ signal 11
+=~ backup_end
+=~ run_backup_stage|THD::cleanup|unlink_thd
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ signal 11
+=~ I_P_List
+=~ MDL_lock.*Ticket_list.*clear_bit_if_not_in_list|MDL_lock.*Ticket_list.*remove_ticket
+=~ MDL_context.*upgrade_shared_lock
+=~ Version: '10\.2|Version: '10\.3
 MENT-416:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
@@ -136,37 +174,6 @@ MDEV-18451:
 =~ maria_create_trn_for_mysql
 =~ _ma_setup_live_state
 =~ trans_commit_implicit
-MDEV-18069:
-=~ signal 11
-=~ MDL_lock::incompatible_granted_types_bitmap
-=~ MDL_ticket::has_stronger_or_equal_type|MDL_ticket::is_incompatible_when_granted
-=~ run_backup_stage
-MDEV-18069:
-=~ AddressSanitizer: heap-use-after-free|signal 11
-=~ MDL_ticket::has_stronger_or_equal_type|inline_mysql_prlock_wrlock
-=~ MDL_context::upgrade_shared_lock
-=~ run_backup_stage|backup_flush
-MDEV-18069:
-=~ signal 11
-=~ MDL_lock::Ticket_list::clear_bit_if_not_in_list
-=~ MDL_context::upgrade_shared_lock
-=~ backup_flush
-MDEV-18068:
-=~ Assertion \`this == ticket->get_ctx()'
-=~ MDL_context::release_lock
-MDEV-18067:
-=~ Assertion \`ticket->m_duration == MDL_EXPLICIT'|AddressSanitizer: heap-use-after-free
-=~ MDL_context::release_lock
-=~ backup_end
-MDEV-18067:
-=~ signal 11
-=~ backup_end
-=~ run_backup_stage|THD::cleanup|unlink_thd
-MDEV-18067:
-=~ signal 11
-=~ I_P_List
-=~ MDL_lock.*Ticket_list.*clear_bit_if_not_in_list|MDL_lock.*Ticket_list.*remove_ticket
-=~ MDL_context.*upgrade_shared_lock
 MDEV-17333:
 =~ next_insert_id >= auto_inc_interval_for_cur_row\.minimum
 
