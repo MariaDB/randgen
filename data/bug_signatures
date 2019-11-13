@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21045:
+=~ AddressSanitizer: use-after-poison
+=~ mem_heap_dup
+=~ row_log_table_get_pk_col
+=~ row_update_for_mysql
+MDEV-21028:
+=~ signal 11|AddressSanitizer: SEGV
+=~ Query_arena::set_query_arena
+=~ THD::set_n_backup_active_arena
+=~ Field::set_default
 MDEV-21027:
 =~ Assertion \`part_share->auto_inc_initialized \|\| !can_use_for_auto_inc_init()'
 =~ ha_partition::set_auto_increment_if_higher
@@ -1759,11 +1769,6 @@ MDEV-5628:
 =~ mysql_update
 =~ ( SELECT 
 TODO-842:
-=~ signal 11|AddressSanitizer: use-after-poison|AddressSanitizer: heap-buffer-overflow
-=~ mem_heap_dup
-=~ row_log_table_get_pk_col
-=~ row_upd_step
-TODO-842:
 =~ InnoDB: Failing assertion: err == DB_SUCCESS
 =~ JOIN_CACHE::join_records
 =~ rbt_eject_node
@@ -1797,11 +1802,6 @@ TODO-842:
 =~ Time_zone_system::gmt_sec_to_TIME
 =~ Temporal_with_date::Temporal_with_date
 =~ Arg_comparator::compare_datetime
-TODO-842:
-=~ AddressSanitizer: SEGV on unknown address
-=~ Query_arena::set_query_arena
-=~ Field::set_default
-=~ Item::remove_eq_conds
 TODO-842:
 =~ AddressSanitizer: heap-buffer-overflow
 =~ update_const_equal_items
@@ -1956,11 +1956,6 @@ TODO-842:
 =~ Field_timestampf::set_max
 =~ TABLE::vers_update_fields
 =~ fill_record_n_invoke_before_triggers
-TODO-842:
-=~ AddressSanitizer: SEGV|signal 11
-=~ Query_arena::set_query_arena
-=~ Field::set_default
-=~ VDec::VDec
 
 ##############################################################################
 # Weak matches
