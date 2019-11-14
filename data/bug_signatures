@@ -1674,6 +1674,9 @@ MDEV-14854:
 =~ transid_store_packed
 =~ _ma_make_key
 =~ ha_maria::write_row
+MDEV-14711:
+=~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'
+=~ buf_page_get_gen
 MDEV-14656:
 =~ signal 6
 =~ Got error 22 when trying to lock mutex LOCK_event_queue
@@ -1700,7 +1703,7 @@ MDEV-14420:
 MDEV-13644:
 =~ void ilink::assert_linked(): Assertion \`prev != 0 && next != 0'
 =~ unlink_not_visible_thd
-=~ Status: KILL_SERVER|innobase_destroy_background_thd
+=~ Status: KILL_SERVER|innobase_destroy_background_thd|destroy_thd
 MDEV-13444:
 =~ InnoDB: Failing assertion: mtflush_io != NULL
 =~ buf_mtflu_io_thread_exit
@@ -2249,8 +2252,6 @@ MDEV-14836:
 =~ m_status == DA_ERROR
 MDEV-14833:
 =~ trx->error_state == DB_SUCCESS
-MDEV-14711:
-=~ fix_block->page\.file_page_was_freed
 MDEV-14643:
 =~ cursor->index->is_committed
 MDEV-14264:
