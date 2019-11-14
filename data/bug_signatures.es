@@ -76,6 +76,11 @@ MENT-319:
 =~ backup_start
 MENT-264:
 =~ Error on file .*\.M.*I open during .*seq.* table copy
+MENT-263:
+=~ server_audit2
+=~ Assertion \`global_status_var\.global_memory_used == 0'
+=~ mysqld_exit
+=~ Version: '10\.4
 MENT-189:
 =~ InnoDB: Failing assertion: opt_no_lock
 =~ recv_parse_log_recs

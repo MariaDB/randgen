@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21056:
+=~ Assertion \`global_status_var\.global_memory_used == 0'
+=~ mysqld_exit
+=~ mysqld_main
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21045:
 =~ AddressSanitizer: use-after-poison
 =~ mem_heap_dup
