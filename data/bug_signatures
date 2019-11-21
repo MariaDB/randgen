@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21102:
+=~ signal 11|AddressSanitizer: SEGV
+=~ JOIN_CACHE::write_record_data
+=~ JOIN_CACHE::put_record
+=~ mysql_explain_union
+MDEV-21066:
+=~ AddressSanitizer: heap-use-after-free
+=~ ha_maria::implicit_commit
+=~ trans_commit_implicit
+=~ Version: '10\.1
 MDEV-21056:
 =~ Assertion \`global_status_var\.global_memory_used == 0'
 =~ mysqld_exit
@@ -523,7 +533,7 @@ MDEV-19840:
 =~ trans_rollback_implicit|trans_rollback_stmt
 =~ Version: '10\.4|Version: '10\.5
 MDEV-19817:
-=~ signal 11
+=~ signal 11|AddressSanitizer: SEGV
 =~ unsafe_key_update
 =~ Multiupdate_prelocking_strategy::handle_end
 MDEV-19817:
@@ -1752,11 +1762,6 @@ MDEV-10945:
 =~ Diagnostics_area::set_ok_status
 =~ Status: KILL_BAD_DATA
 =~ Version: '10\.1|Version: '10\.0|Version: '5\.5
-# Not merged to 10.5 yet
-MDEV-10748:
-=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: heap-buffer-overflow
-=~ ha_maria::implicit_commit
-=~ trans_commit_implicit
 MDEV-10466:
 =~ SEL_ARG::store_min
 =~ ror_scan_selectivity
@@ -1893,7 +1898,7 @@ TODO-842:
 =~ row_merge_read_clustered_index
 =~ ha_innobase::inplace_alter_table
 TODO-842:
-=~ AddressSanitizer: use-after-poison|AddressSanitizer: heap-use-after-free
+=~ AddressSanitizer: use-after-poison|AddressSanitizer: heap-use-after-free|AddressSanitizer: unknown-crash
 =~ ShowStatus::GetCount::operator
 =~ innodb_show_mutex_status
 =~ innobase_show_status
