@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21120:
+=~ Could not stop the server
+=~ --mysqld=--log-bin
+=~ signal 6
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21102:
 =~ signal 11|AddressSanitizer: SEGV
 =~ JOIN_CACHE::write_record_data
@@ -1092,7 +1097,7 @@ MDEV-18366:
 =~ signal 11
 =~ row_sel_field_store_in_mysql_format_func
 =~ row_search_mvcc
-=~ rr_sequential
+=~ handler::ha_rnd_next
 MDEV-18361:
 =~ Assertion \`0'
 =~ row_log_table_apply_ops
@@ -1463,10 +1468,6 @@ MDEV-17071:
 =~ ERROR: AddressSanitizer: use-after-poison
 =~ write_record
 =~ mysql_insert
-MDEV-17019:
-=~ signal 11
-=~ multi_delete::~multi_delete
-=~ Prepared_statement::execute|sp_head::execute
 MDEV-17004:
 =~ InnoDB: Assertion failure in thread .* in file ha_innodb.cc line
 =~ innobase_get_fts_charset
@@ -1515,6 +1516,10 @@ MDEV-16788:
 =~ my_strcasecmp_utf8
 =~ handle_if_exists_options
 =~ Sql_cmd_alter_table::execute
+MDEV-16755:
+=~ signal 11
+=~ multi_delete::~multi_delete
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-16745:
 =~ Assertion \`thd->transaction\.stmt\.is_empty()'
 =~ Prepared_statement::prepare|Sql_cmd_alter_table::execute
