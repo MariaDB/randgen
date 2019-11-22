@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21127:
+=~ Assertion \`(size_t)(ptr - buf) < MAX_TEXT - 4'
+=~ key_text::key_text
+=~ Version: '10\.5
 MDEV-21120:
 =~ Could not stop the server
 =~ --mysqld=--log-bin
@@ -15,7 +19,7 @@ MDEV-21102:
 =~ JOIN_CACHE::put_record
 =~ mysql_explain_union
 MDEV-21066:
-=~ AddressSanitizer: heap-use-after-free
+=~ AddressSanitizer: heap-use-after-free|signal 11
 =~ ha_maria::implicit_commit
 =~ trans_commit_implicit
 =~ Version: '10\.1
@@ -121,7 +125,7 @@ MDEV-20861:
 MDEV-20816:
 =~ Assertion \`maybe_null \|\| !null_value'
 =~ Item_func_round::time_op
-=~ Type_handler_time_common::Item_func_hybrid_field_type_get_date
+=~ Type_handler_time_common::Item_func_hybrid_field_type
 =~ Version: '10\.4|Version: '10\.5
 # Not merged yet to 10.5
 MDEV-20812:
@@ -1051,12 +1055,6 @@ MDEV-18451:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ maria_create_trn_for_mysql
 =~ _ma_setup_live_state
-=~ trans_commit_implicit
-=~ Version: '10\.1
-# Only fixed in 10.2+!
-MDEV-18451:
-=~ AddressSanitizer: heap-use-after-free
-=~ ha_maria::implicit_commit
 =~ trans_commit_implicit
 =~ Version: '10\.1
 MDEV-18449:
@@ -2208,8 +2206,6 @@ MDEV-15484:
 =~ element->m_flush_tickets\.is_empty
 MDEV-15482:
 =~ Type_std_attributes::set
-MDEV-15481:
-=~ I_P_List_null_counter, I_P_List_fast_push_back
 MDEV-15470:
 =~ TABLE::mark_columns_used_by_index_no_reset
 MDEV-15468:

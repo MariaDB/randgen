@@ -8,7 +8,6 @@ MENT-438:
 =~ signal 11
 =~ MDL_lock::incompatible_granted_types_bitmap
 =~ MDL_ticket::has_stronger_or_equal_type|MDL_ticket::is_incompatible_when_granted
-=~ run_backup_stage
 =~ Version: '10\.2|Version: '10\.3
 MENT-438:
 =~ AddressSanitizer: heap-use-after-free|signal 11
@@ -23,7 +22,7 @@ MENT-438:
 =~ backup_flush
 =~ Version: '10\.2|Version: '10\.3
 MENT-438:
-=~ Assertion \`this == ticket->get_ctx()'
+=~ Assertion \`this == ticket->get_ctx()'|clear_bit_if_not_in_list
 =~ MDL_context::release_lock
 =~ Version: '10\.2|Version: '10\.3
 MENT-438:
