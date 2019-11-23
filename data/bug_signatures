@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21138:
+=~ Assertion \`col->ord_part'|Assertion \`f\.col->ord_part'
+=~ row_build_index_entry_low
+=~ row_update_vers_insert
+=~ row_ins_foreign_check_on_constraint
+MDEV-21137:
+=~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'
+=~ buf_page_get_gen
+=~ btr_copy_blob_prefix
+=~ fts_parallel_tokenization
 MDEV-21135:
 =~ InnoDB: Failing assertion: thr_get_trx(thr)->error_state == DB_SUCCESS
 =~ que_run_threads
@@ -36,6 +46,7 @@ MDEV-21056:
 =~ mysqld_exit
 =~ mysqld_main
 =~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
+# Not merged to 10.4 yet
 MDEV-21045:
 =~ AddressSanitizer: use-after-poison
 =~ mem_heap_dup
@@ -79,25 +90,6 @@ MDEV-20984:
 =~ Assertion \`args[0]->type_handler()->mysql_timestamp_type() == MYSQL_TIMESTAMP_DATETIME'
 =~ Item_func_round::date_op
 =~ Type_handler_temporal_result::Item_func_hybrid_field_type_get_date
-MDEV-20971:
-=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: SEGV
-=~ in list_delete
-=~ in heap_close
-MDEV-20971:
-=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: SEGV
-=~ in list_add
-=~ in heap_open
-=~ in open_table
-MDEV-20971:
-=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: SEGV
-=~ in thr_lock
-=~ in thr_multi_lock
-=~ in lock_tables
-MDEV-20971:
-=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: SEGV
-=~ in thr_unlock
-=~ in thr_multi_unlock
-=~ in close_all_tables_for_name|close_thread_tables
 MDEV-20945:
 =~ signal 11
 =~ hog_lock_types_bitmap
@@ -134,19 +126,6 @@ MDEV-20816:
 =~ Assertion \`maybe_null \|\| !null_value'
 =~ Item_func_round::time_op
 =~ Type_handler_time_common::Item_func_hybrid_field_type
-=~ Version: '10\.4|Version: '10\.5
-# Not merged yet to 10.5
-MDEV-20812:
-=~ signal 11|AddressSanitizer: SEGV
-=~ row_ins_foreign_report_err
-=~ row_ins_sec_index_entry
-=~ row_upd_sec_index_entry
-=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
-MDEV-20812:
-=~ Assertion \`mysql_table'
-=~ innobase_get_computed_value
-=~ row_update_cascade_for_mysql
-=~ row_ins_foreign_check_on_constraint
 =~ Version: '10\.4|Version: '10\.5
 MDEV-20771:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
@@ -947,12 +926,6 @@ MDEV-18794:
 =~ Assertion \`!m_innodb' failed
 =~ ha_partition::cmp_ref
 =~ read_keys_and_merge_scans
-# Not merged to 10.5 yet
-MDEV-18783:
-=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: unknown-crash
-=~ tree_search_next|hp_rb_make_key|tree_search_edge|check_one_key|check_one_rb_key|heap_check_heap
-=~ tc_purge|tc_remove_table
-=~ run_backup_stage|close_thread_tables
 MDEV-18780:
 =~ Assertion \`col->prtype == prtype'|Assertion \`!((col->prtype ^ prtype) & ~(16384U\|32768U))'
 =~ innobase_rename_or_enlarge_column_try
@@ -1169,12 +1142,6 @@ MDEV-18250:
 =~ dirname_length
 =~ innobase_basename
 =~ sync_arr_fill_sys_semphore_waits_table
-# Not merged to 10.5 yet
-MDEV-18244:
-=~ signal 11|AddressSanitizer: SEGV on unknown address
-=~ ha_innobase::update_thd
-=~ ha_innobase::info_low
-=~ ha_partition::update_next_auto_inc_val|ha_partition::update_row|a_partition::write_row
 MDEV-18216:
 =~ signal 11|AddressSanitizer: SEGV
 =~ Query_arena::set_query_arena
@@ -1340,11 +1307,6 @@ MDEV-17912:
 =~ failed to decrypt .*  rc: -1  dstlen: 0  size: .*
 =~ Got error 192 when executing record .*
 =~ Aria engine: Redo phase failed
-# Not merged to 10.2+ yet
-MDEV-17896:
-=~ Assertion \`pfs->get_refcount() > 0'
-=~ release_table_share|tdc_delete_share_from_hash
-=~ purge_tables|close_all_tables_for_name|tdc_release_share
 MDEV-17891:
 =~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction.stmt.modified_non_trans_table'
 =~ select_insert::abort_result_set|mysql_insert
