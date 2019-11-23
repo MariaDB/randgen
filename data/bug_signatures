@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21135:
+=~ InnoDB: Failing assertion: thr_get_trx(thr)->error_state == DB_SUCCESS
+=~ que_run_threads
+=~ fts_eval_sql
+MDEV-21129:
+=~ AddressSanitizer: use-after-poison
+=~ sp_get_geometry_mbr
+=~ _mi_make_key|_ma_sp_make_key
 MDEV-21127:
 =~ Assertion \`(size_t)(ptr - buf) < MAX_TEXT - 4'
 =~ key_text::key_text
@@ -356,6 +364,11 @@ MDEV-20484:
 =~ signal 11
 =~ String::realloc_raw
 =~ Field_blob::store_field
+=~ innobase_get_computed_value
+=~ Version: '10\.3
+MDEV-20484:
+=~ Assertion \`data \|\| !len'
+=~ mem_heap_dup
 =~ innobase_get_computed_value
 =~ Version: '10\.3
 MDEV-20476:
