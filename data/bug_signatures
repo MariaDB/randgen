@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21146:
+=~ Assertion \`m_lock_type == 2'
+=~ handler::ha_drop_table
+=~ free_tmp_table
+=~ mysql_derived_prepare
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ versioning
+MDEV-21144:
+=~ signal 11|AddressSanitizer: SEGV
+=~ check_fields
+=~ mysql_update
+=~ sp_head::execute
+=~ Version: '10\.4|Version: '10\.5
+=~ versioning
 MDEV-21138:
 =~ Assertion \`col->ord_part'|Assertion \`f\.col->ord_part'
 =~ row_build_index_entry_low
@@ -1601,7 +1615,7 @@ MDEV-15589:
 =~ innobase_wsrep_set_checkpoint
 MDEV-15534:
 =~ Assertion \`m_lock_type == 2'
-=~ handler::ha_drop_table
+=~ handler.*ha_drop_table
 =~ free_tmp_table
 =~ sp_instr_stmt::exec_core
 MDEV-15534:
