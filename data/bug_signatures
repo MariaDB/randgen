@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21147:
+=~ Assertion \`marked_for_read()'
+=~ Field_.*val_
+=~ Item_direct_ref::val_.*
+=~ Version: '10\.4|Version: '10\.5
+MDEV-21147:
+=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
+=~ Field_.*val_
+=~ Item_direct_ref::val_.*
+=~ Version: '10\.3
 MDEV-21146:
 =~ Assertion \`m_lock_type == 2'
 =~ handler::ha_drop_table
