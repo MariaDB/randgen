@@ -39,6 +39,18 @@ MDEV-21146:
 =~ mysql_derived_prepare
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 =~ versioning
+MDEV-21146:
+=~ signal 11|AddressSanitizer:
+=~ mi_extra|ha_maria::extra
+=~ close_thread_tables
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ versioning
+MDEV-21146:
+=~ Failing assertion: prebuilt->magic_n == ROW_PREBUILT_ALLOCATED
+=~ row_update_prebuilt_trx
+=~ ha_innobase::update_thd
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ versioning
 MDEV-21144:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_fields
