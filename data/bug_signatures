@@ -22,6 +22,31 @@ MDEV-21155:
 =~ Prepared_statement::prepare
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 =~ versioning
+MDEV-21155:
+=~ AddressSanitizer: heap-use-after-free
+=~ relink_trn_used_instances
+=~ ha_maria::implicit_commit
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ versioning
+MDEV-21155:
+=~ Assertion \`m_lock_type == 2'
+=~ handler::ha_drop_table
+=~ free_tmp_table
+=~ mysql_derived_prepare
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ versioning
+MDEV-21155:
+=~ signal 11|AddressSanitizer:
+=~ mi_extra|ha_maria::extra
+=~ close_thread_tables
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ versioning
+MDEV-21155:
+=~ Failing assertion: prebuilt->magic_n == ROW_PREBUILT_ALLOCATED
+=~ row_update_prebuilt_trx
+=~ ha_innobase::update_thd
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ versioning
 MDEV-21147:
 =~ Assertion \`marked_for_read()'
 =~ Field_.*val_
@@ -32,25 +57,6 @@ MDEV-21147:
 =~ Field_.*val_
 =~ Item_direct_ref::val_.*
 =~ Version: '10\.3
-MDEV-21146:
-=~ Assertion \`m_lock_type == 2'
-=~ handler::ha_drop_table
-=~ free_tmp_table
-=~ mysql_derived_prepare
-=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
-=~ versioning
-MDEV-21146:
-=~ signal 11|AddressSanitizer:
-=~ mi_extra|ha_maria::extra
-=~ close_thread_tables
-=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
-=~ versioning
-MDEV-21146:
-=~ Failing assertion: prebuilt->magic_n == ROW_PREBUILT_ALLOCATED
-=~ row_update_prebuilt_trx
-=~ ha_innobase::update_thd
-=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
-=~ versioning
 MDEV-21144:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_fields
