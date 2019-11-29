@@ -126,7 +126,7 @@ _basics_blob_column_type:
 
 # TODO: add other spatial and what not
 _basics_special_column_type:
-  { @column_types= ( 'SET(\'\', \'Africa\', \'North America\', \'South America\', \'Asia\', \'Antarctica\', \'Australia\', \'Europe\')', 'ENUM(\'\', \'Africa\', \'North America\', \'South America\', \'Asia\', \'Antarctica\', \'Australia\', \'Europe\')', 'JSON', 'YEAR', 'GEOMETRY' ); $last_column_type= $prng->arrayElement(\@column_types) } ;
+  { @column_types= ( 'SET(\'\', \'Africa\', \'North America\', \'South America\', \'Asia\', \'Antarctica\', \'Australia\', \'Europe\')', 'ENUM(\'\', \'Africa\', \'North America\', \'South America\', \'Asia\', \'Antarctica\', \'Australia\', \'Europe\')', 'JSON', 'YEAR', 'GEOMETRY', 'INET6' ); $last_column_type= $prng->arrayElement(\@column_types) } ;
 
 _basics_column_attributes:
   _basics_column_zerofill _basics_base_or_virtual_column_attributes;
@@ -177,6 +177,7 @@ _basics_prepare_type_dependent_value:
     elsif ($last_column_type =~ /DATE/) { $last_type_value= "'2000-01-01'" }
     elsif ($last_column_type =~ /TIME/) { $last_type_value= "'00:00:00'" }
     elsif ($last_column_type =~ /GEOMETRY/) { $last_type_value= "POINT(0,0)" }
+    elsif ($last_column_type =~ /INET6/) { $last_type_value= "'::'" }
     ; ''
   }
 ;
@@ -190,6 +191,7 @@ _basics_column_default:
     elsif ($last_column_type =~ /DATE/) { @defaults= (@defaults, "'2000-01-01'") }
     elsif ($last_column_type =~ /TIME/) { @defaults= (@defaults, "'00:00:00'") }
     elsif ($last_column_type =~ /GEOMETRY/) { @defaults= (@defaults, "POINT(0,0)") }
+    elsif ($last_column_type =~ /INET6/) { @defaults= (@defaults, "'::'") }
     ; ($prng->int(0,1) and scalar(@defaults) and $last_column_type ne 'SERIAL' and ! $last_autoincrement ) ? 'DEFAULT '.$prng->arrayElement(\@defaults) : ''
   }
 ;
