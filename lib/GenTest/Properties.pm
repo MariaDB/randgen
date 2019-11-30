@@ -230,7 +230,8 @@ sub init {
               'multi-master',
               'annotate-rules',
               'restart-timeout',
-              'ps-protocol'
+              'ps-protocol',
+              'partitions',
       ]
   );
 
@@ -281,6 +282,7 @@ sub init {
   $gentestProps->property('vcols',$props->{vcols}) if $props->{vcols};
   $gentestProps->property('views',$props->{views}) if $props->{views};
   $gentestProps->property('xml-output',$props->{xml_output}) if defined $props->{xml_output};
+  $gentestProps->property('partitions',$props->{partitions}) if defined $props->{partitions};
 
   # In case of multi-master topology (e.g. Galera with multiple "masters"),
   # we don't want to compare results after each query.
