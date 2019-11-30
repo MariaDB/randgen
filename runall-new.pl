@@ -128,6 +128,10 @@ my $opt_result = GetOptions(
     'mysqld3=s@' => \${$props->{mysqld_options}}[3],
     'no_mask|no-mask' => \$no_mask,
     'notnull' => \$props->{notnull},
+    'partitions'   => \${$props->{partitions}}[0],
+    'partitions1'  => \${$props->{partitions}}[1],
+    'partitions2'  => \${$props->{partitions}}[2],
+    'partitions3'  => \${$props->{partitions}}[3],
     'ps_protocol|ps-protocol' => \$props->{ps_protocol},
     'queries=s' => \$props->{queries},
     'querytimeout=i' => \$props->{querytimeout},
@@ -332,12 +336,14 @@ foreach my $i (1..3) {
     ${$props->{vcols}}[$i] = ${$props->{vcols}}[0] if ${$props->{vcols}}[$i] eq '';
     ${$props->{views}}[$i] = ${$props->{views}}[0] if ${$props->{views}}[$i] eq '';
     ${$props->{engine}}[$i] ||= ${$props->{engine}}[0];
+    ${$props->{partitions}}[$i] = ${$props->{partitions}}[0] if ${$props->{partitions}}[$i] eq '';
 }
 
 shift @{$props->{debug_server}};
 shift @{$props->{vcols}};
 shift @{$props->{views}};
 shift @{$props->{engine}};
+shift @{$props->{partitions}};
 
 my $client_basedir;
 
