@@ -1118,6 +1118,11 @@ sub execute {
     return $result;
 }
 
+sub serverVariable {
+    my ($executor, $variable_name)= @_;
+    return $executor->dbh()->selectrow_array('SELECT @@'.$variable_name);
+}
+
 sub version {
     my $executor = shift;
     my $ver= $executor->serverVersion;
