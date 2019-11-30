@@ -525,7 +525,7 @@ sub doGenData {
                vcols => (defined $self->config->property('vcols') ? ${$self->config->property('vcols')}[$i] : undef),
                views => (defined $self->config->views ? ${$self->config->views}[$i] : undef),
                engine => (defined $self->config->engine ? ${$self->config->engine}[$i] : undef),
-               partitions => $self->config->partitions,
+               partitions => (defined $self->config->partitions ? ${$self->config->partitions}[$i] : undef),
                sqltrace=> $self->config->sqltrace,
                notnull => $self->config->notnull,
                rows => $self->config->rows,
