@@ -132,13 +132,14 @@ sub run {
         $rows = GDS_DEFAULT_ROWS;
     }
 
+    my $res= STATUS_OK;
     foreach my $i (0..$#$names) {
         my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i], $prng);
-        return $gen_table_result if $gen_table_result != STATUS_OK;
+        $res= $gen_table_result if $gen_table_result > $res;
     }
 
     $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if $executor->type == DB_MYSQL;
-    return STATUS_OK;
+    return $res;
 }
 
 sub random_null {
@@ -168,8 +169,8 @@ sub random_enum_type {
 sub random_blob_type {
     return $prng->arrayElement(['TINYBLOB','TINYTEXT','BLOB','TEXT','MEDIUMBLOB', 'MEDIUMTEXT', 'LONGBLOB', 'LONGTEXT']);
 }
-sub random_pk_variation {
-    return $prng->uint16(0,1) ? 'INTEGER AUTO_INCREMENT' : 'SERIAL';
+sub random_autoinc_variation {
+    return ('INTEGER AUTO_INCREMENT', 'SERIAL', 'BIGINT')[$prng->uint16(0,2)];
 }
 sub random_or_predefined_vcol_kind {
     return ($_[0]->vcols() eq '' ? ($prng->uint16(0,1) ? '/*!50701 STORED */ /*!100000 PERSISTENT */' : 'VIRTUAL') : $_[0]->vcols());
@@ -196,13 +197,13 @@ sub gen_table {
 
     my $engine = $self->engine();
     my $views = $self->views();
-    
     my ($nullable, $precision);
-    
-    # column_name => [ type, length, unsigned, zerofill, nullability, default, virtual, invisible ]
 
+    my $res= STATUS_OK;
+
+    # column_name => [ type, length, unsigned, zerofill, nullability, default, virtual, invisible ]
     my %columns = (
-        pk      => [    random_pk_variation(),
+        id      => [    random_autoinc_variation(),
                         undef,
                         undef,
                         undef,
@@ -333,8 +334,13 @@ sub gen_table {
                         undef
                     ],
     );
+
+    # If `id` column is auto-increment, it must be a part of the primary key (or unique key)
+    my $col= $columns{id};
+    my $has_autoinc= $col->[0] =~ /AUTO_INCREMENT/;
+    my %pk_columns= ($has_autoinc ? (id => 1) : ());
     
-    # TODO: add actual functions
+    # TODO: add actual functions for virtual columns
 
     if ($self->vcols) {
         $columns{vcol_bit}= [   'BIT',
@@ -472,15 +478,16 @@ sub gen_table {
       ### http://bugs.mysql.com/bug.php?id=47125
 
       $executor->execute("DROP TABLE /*! IF EXISTS */ $name");
-      my $create_stmt = "CREATE TABLE $name ( \n";
+      my $create_stmt = "CREATE TABLE $name (";
       my @column_list = ();
-      my $columns= $prng->shuffleArray([sort keys %columns]);
-      foreach my $c (@$columns) {
+#      my $columns= $prng->shuffleArray([sort keys %columns]);
+      my @columns= ();
+      foreach my $c (sort keys %columns) {
           my $coldef= $columns{$c};
-          unless ($c eq 'pk' or defined $coldef->[6]) {
+          unless (($c eq 'id' and ($has_autoinc)) or defined $coldef->[6]) {
               push @column_list, $c;
           }
-          $create_stmt .=
+          push @columns, 
               "$c $coldef->[0]"         # type
               . ($coldef->[1] ? "($coldef->[1])" : '') # length
               . ($coldef->[2] ? " $coldef->[2]" : '')  # unsigned
@@ -490,16 +497,52 @@ sub gen_table {
               . (defined $coldef->[6] ? " $coldef->[6]" : '') # virtual
               . ($coldef->[7] ? " $coldef->[7]" : '')  # invisible
               . ($coldef->[8] ? " $coldef->[8]" : '')  # compressed
-              . ",\n";
+          ;
       };
-      $create_stmt .= "PRIMARY KEY(pk)\n";
+      my $create_table_columns= $prng->shuffleArray(\@columns);
+      $create_stmt.= join ', ', @$create_table_columns;
+
+      my $cols= undef;
+      # Create PK for 90% of tables
+      if ($prng->uint16(0,9))
+      {
+          my $num_of_columns_in_pk= $prng->uint16(1,4);
+          $cols= $prng->shuffleArray([sort keys %columns]);
+          foreach my $c (@$cols) {
+            last if scalar(keys %pk_columns) >= $num_of_columns_in_pk;
+            next if $pk_columns{$c};
+            if ($columns{$c}->[0] =~ /BLOB|TEXT/) {
+                $c= $c.'('.$prng->uint16(1,32).')';
+            }
+            $pk_columns{$c}= 1;
+          }
+          # For InnoDB and HEAP (TODO: and probably some other engines, but not MyISAM or Aria)
+          # the auto-increment column has to be the first one in the primary key
+          if ($has_autoinc and ($e =~ /InnoDB|MEMORY|HEAP/i or $e eq '' and $executor->serverVariable('default_storage_engine')))
+          {
+              delete $pk_columns{id};
+              if (scalar(keys %pk_columns)) {
+                  $cols= $prng->shuffleArray([sort keys %pk_columns]);
+                  unshift @$cols, 'id';
+              } else {
+                  $cols= ['id'];
+              }
+          } else {
+                $cols= $prng->shuffleArray([sort keys %pk_columns]);
+          }
+          $create_stmt.= ', PRIMARY KEY('.(join ',', @$cols).")";
+      }
+      elsif ($has_autoinc) {
+          $create_stmt.= ", UNIQUE(id)";
+      }
       $create_stmt .= ")" . ($e ne '' ? " ENGINE=$e" : "");
 
       # partition 50% tables (if requested at all)
       if ($self->partitions and $prng->uint16(0,1))
       {
           my $partition_type= $self->random_partition_type();
-          $create_stmt.= 'PARTITION BY ' .$partition_type.'(pk) ';
+          my $partition_column= (scalar(keys %pk_columns) ? $prng->arrayElement([sort keys %pk_columns]) : 'id');
+          $create_stmt.= ' PARTITION BY ' .$partition_type.'('.$partition_column.') ';
 
           if ($partition_type eq 'KEY' or $partition_type eq 'HASH') {
               $create_stmt.= 'PARTITIONS '.$prng->uint16(1,20);
@@ -533,7 +576,11 @@ sub gen_table {
           }
       }
 
-      $executor->execute($create_stmt);
+      $res= $executor->execute($create_stmt);
+      if ($res->status != STATUS_OK) {
+          sayError("Failed to create table $name");
+          return $res->status;
+      }
 
       if (defined $views) {
           if ($views ne '') {
@@ -666,9 +713,12 @@ sub gen_table {
 
           ## We do one insert per 500 rows for speed
           if ($row % 500 == 0 || $row == $size) {
-              my $insert_result = $executor->execute("
+              $res = $executor->execute("
               INSERT IGNORE INTO $name (" . join(",",@column_list).") VALUES" . join(",",@values));
-              return $insert_result->status() if $insert_result->status() != STATUS_OK;
+              if ($res->status() != STATUS_OK) {
+                  sayError("Insert into table $name didn't succeed");
+                  return $res->status();
+              }
               @values = ();
           }
       }
