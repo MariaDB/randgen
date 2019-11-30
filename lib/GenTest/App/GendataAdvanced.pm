@@ -40,6 +40,7 @@ use constant GDS_ROWS => 5;
 use constant GDS_VARCHAR_LENGTH => 6;
 use constant GDS_VCOLS => 7;
 use constant GDS_EXECUTOR_ID => 8;
+use constant GDS_PARTITIONS => 9;
 
 use constant GDS_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
 use constant GDS_DEFAULT_NAMES => ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9'];
@@ -59,6 +60,7 @@ sub new {
         'varchar_length' => GDS_VARCHAR_LENGTH,
         'vcols' => GDS_VCOLS,
         'executor_id' => GDS_EXECUTOR_ID,
+        'partitions' => GDS_PARTITIONS,
     },@_);
 
     if (not defined $self->[GDS_DSN]) {
@@ -94,6 +96,10 @@ sub sqltrace {
 
 sub rows {
     return $_[0]->[GDS_ROWS];
+}
+
+sub partitions {
+    return $_[0]->[GDS_PARTITIONS];
 }
 
 sub varcharLength {
@@ -174,6 +180,9 @@ sub random_invisible {
 sub random_compressed {
     return $prng->uint16(0,1) ? undef : '/*!100302 COMPRESSED */' ;
 }
+sub random_partition_type {
+    return $prng->arrayElement(['HASH','KEY','RANGE','LIST']);
+}
 
 
 sub gen_table {
@@ -186,7 +195,6 @@ sub gen_table {
     my $varchar_length = $self->varcharLength();
 
     my $engine = $self->engine();
-    my $vcols = $self->vcols();
     my $views = $self->views();
     
     my ($nullable, $precision);
@@ -328,7 +336,7 @@ sub gen_table {
     
     # TODO: add actual functions
 
-    if (defined $vcols) {
+    if ($self->vcols) {
         $columns{vcol_bit}= [   'BIT',
                                 $prng->uint16(0,64),
                                 undef,
@@ -486,6 +494,45 @@ sub gen_table {
       };
       $create_stmt .= "PRIMARY KEY(pk)\n";
       $create_stmt .= ")" . ($e ne '' ? " ENGINE=$e" : "");
+
+      # partition 50% tables (if requested at all)
+      if ($self->partitions and $prng->uint16(0,1))
+      {
+          my $partition_type= $self->random_partition_type();
+          $create_stmt.= 'PARTITION BY ' .$partition_type.'(pk) ';
+
+          if ($partition_type eq 'KEY' or $partition_type eq 'HASH') {
+              $create_stmt.= 'PARTITIONS '.$prng->uint16(1,20);
+          } elsif ($partition_type eq 'RANGE') {
+              my @parts= ();
+              my $part_count= $prng->uint16(1,20);
+              my $part_max_value= -1;
+              my $max_value= $size || 1;
+              for (my $i= 1; $i<$part_count; $i++) {
+                  last if $part_max_value >= $max_value;
+                  $part_max_value= $prng->uint16($part_max_value+1,$max_value);
+                  push @parts, 'PARTITION p'.$i.' VALUES LESS THAN ('.$part_max_value.')';
+              }
+              push @parts, 'PARTITION pmax VALUES LESS THAN (MAXVALUE)';
+              $create_stmt.= '('.(join ',',@parts).')';
+          } elsif ($partition_type eq 'LIST') {
+              my @vals= ();
+              foreach my $i (0..($size*10 || 1)) {
+                  push @vals, $i;
+              }
+              my @parts= ();
+              my $n= 1;
+              while (scalar(@vals)) {
+                  my $part_val_count= $prng->uint16(1,scalar(@vals));
+                  my $shuffled_vals= $prng->shuffleArray(\@vals);
+                  my @part_vals= splice(@$shuffled_vals,0,$part_val_count);
+                  @vals= @$shuffled_vals;
+                  push @parts, 'PARTITION p'.$n++.' VALUES IN ('.(join ',', @part_vals).')';
+              }
+              $create_stmt.= '('.(join ',',@parts).')';
+          }
+      }
+
       $executor->execute($create_stmt);
 
       if (defined $views) {
