@@ -202,6 +202,10 @@ sub gen_table {
     my $res= STATUS_OK;
 
     # column_name => [ type, length, unsigned, zerofill, nullability, default, virtual, invisible ]
+
+    # Columns of different types are created with different probability.
+
+    # id column is always created
     my %columns = (
         id      => [    random_autoinc_variation(),
                         undef,
@@ -212,259 +216,346 @@ sub gen_table {
                         undef,
                         random_invisible(),
                         undef
-                    ],
-        col_bit => [    'BIT',
-                        $prng->uint16(0,64),
-                        undef,
-                        undef,
-                        $nullable = random_null(),
-                        ( $nullable eq 'NULL' ? undef : '0' ),
-                        undef,
-                        random_invisible(),
-                        undef
-                    ],
-        col_int => [    random_int_type(),
-                        $prng->uint16(0,64),
-                        random_unsigned(),
-                        random_zerofill(),
-                        $nullable = random_null(),
-                        ( $nullable eq 'NULL' ? undef : '0' ),
-                        undef,
-                        random_invisible(),
-                        undef
-                    ],
-        col_dec => [    'DECIMAL',
-                        $precision = $prng->uint16(0,65) . ',' . $prng->uint16(0,$precision),
-                        random_unsigned(),
-                        random_zerofill(),
-                        $nullable = random_null(),
-                        ( $nullable eq 'NULL' ? undef : '0' ),
-                        undef,
-                        random_invisible(),
-                        undef
-                    ],
-        col_date => [   'DATE',
-                        undef,
-                        undef,
-                        undef,
-                        $nullable = random_null(),
-                        ( $nullable eq 'NULL' ? undef : "'1900-01-01'" ),
-                        undef,
-                        random_invisible(),
-                        undef
-                    ],
-        col_datetime => ['DATETIME',
-                        $prng->uint16(0,6),
-                        undef,
-                        undef,
-                        $nullable = random_null(),
-                        ( $nullable eq 'NULL' ? undef : "'1900-01-01 00:00:00'" ),
-                        undef,
-                        random_invisible(),
-                        undef
-                    ],
-        col_timestamp => ['TIMESTAMP',
-                        $prng->uint16(0,6),
-                        undef,
-                        undef,
-                        $nullable = random_null(),
-                        ( $nullable eq 'NULL' ? undef : "'1971-01-01 00:00:00'" ),
-                        undef,
-                        random_invisible(),
-                        undef
-                    ],
-        col_time    => ['TIME',
-                        $prng->uint16(0,6),
-                        undef,
-                        undef,
-                        $nullable = random_null(),
-                        ( $nullable eq 'NULL' ? undef : "'00:00:00'" ),
-                        undef,
-                        random_invisible(),
-                        undef
-                    ],
-        col_year    => ['YEAR',
-                        undef,
-                        undef,
-                        undef,
-                        $nullable = random_null(),
-                        ( $nullable eq 'NULL' ? undef : "'1970'" ),
-                        undef,
-                        random_invisible(),
-                        undef
-                    ],
-        col_char => [   random_char_type(),
-                        $prng->uint16(0,255),
-                        undef,
-                        undef,
-                        $nullable = random_null(),
-                        ( $nullable eq 'NULL' ? undef : "''" ),
-                        undef,
-                        random_invisible(),
-                        undef
-                    ],
-        col_varchar => [random_varchar_type(),
-                        $prng->uint16(0,4096),
-                        undef,
-                        undef,
-                        $nullable = random_null(),
-                        ( $nullable eq 'NULL' ? undef : "''" ),
-                        undef,
-                        random_invisible(),
-                        random_compressed()
-                    ],
-        col_blob => [   random_blob_type(),
-                        undef,
-                        undef,
-                        undef,
-                        $nullable = random_null(),
-                        ( $nullable eq 'NULL' ? undef : "''" ),
-                        undef,
-                        random_invisible(),
-                        random_compressed()
-                    ],
-        col_enum => [   random_enum_type(),
-                        undef,
-                        undef,
-                        undef,
-                        $nullable = random_null(),
-                        ( $nullable eq 'NULL' ? undef : "''" ),
-                        undef,
-                        random_invisible(),
-                        undef
-                    ],
+                    ]
     );
+    # Bit columns are buggy and thus not very interesting. 10%
+    if (!$prng->uint16(0,9)) {
+        $columns{col_bit} = [   'BIT',
+                                $prng->uint16(0,64),
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : '0' ),
+                                undef,
+                                random_invisible(),
+                                undef
+                            ]
+    }
+    # Int columns are common and important. 90%
+    if ($prng->uint16(0,9)) {
+        $columns{col_int} = [   random_int_type(),
+                                $prng->uint16(0,64),
+                                random_unsigned(),
+                                random_zerofill(),
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : '0' ),
+                                undef,
+                                random_invisible(),
+                                undef
+                            ]
+    }
+
+    # Decimal columns are relatively common. 25%
+    if (!$prng->uint16(0,3)) {
+        $columns{col_dec} = [   'DECIMAL',
+                                $precision = $prng->uint16(0,65) . ',' . $prng->uint16(0,$precision),
+                                random_unsigned(),
+                                random_zerofill(),
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : '0' ),
+                                undef,
+                                random_invisible(),
+                                undef
+                            ]
+    }
+    # Date columns are relatively common. 33%
+    if (!$prng->uint16(0,2)) {
+        $columns{col_date} = [  'DATE',
+                                undef,
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : "'1900-01-01'" ),
+                                undef,
+                                random_invisible(),
+                                undef
+                            ]
+    }
+
+    # Datetime columns are fairly common and important. 50%
+    if ($prng->uint16(0,1)) {
+        $columns{col_datetime} = ['DATETIME',
+                                $prng->uint16(0,6),
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : "'1900-01-01 00:00:00'" ),
+                                undef,
+                                random_invisible(),
+                                undef
+                            ]
+    }
+
+    # Timestamp columns are fairly common and important. 50%
+    if ($prng->uint16(0,1)) {
+        $columns{col_timestamp} = ['TIMESTAMP',
+                                $prng->uint16(0,6),
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : "'1971-01-01 00:00:00'" ),
+                                undef,
+                                random_invisible(),
+                                undef
+                            ]
+    }
+
+    # Time columns are relatively common. 25%
+    if (!$prng->uint16(0,3)) {
+        $columns{col_time} = [ 'TIME',
+                                $prng->uint16(0,6),
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : "'00:00:00'" ),
+                                undef,
+                                random_invisible(),
+                                undef
+                            ]
+    }
+
+    # Year columns are relatively common. 20%
+    if (!$prng->uint16(0,4)) {
+        $columns{col_year} = [  'YEAR',
+                                undef,
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : "'1970'" ),
+                                undef,
+                                random_invisible(),
+                                undef
+                            ]
+    }
+
+    # Char columns are common and important. 75%
+    if ($prng->uint16(0,3)) {
+        $columns{col_char} = [ random_char_type(),
+                                $prng->uint16(0,255),
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : "''" ),
+                                undef,
+                                random_invisible(),
+                                undef
+                            ]
+    }
+
+    # Varchar columns are common and important. 90%
+    if ($prng->uint16(0,9)) {
+        $columns{col_varchar} = [random_varchar_type(),
+                                $prng->uint16(0,4096),
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : "''" ),
+                                undef,
+                                random_invisible(),
+                                random_compressed()
+                            ]
+    }
+
+    # Blob columns are relatively common. 33%
+    if (!$prng->uint16(0,2)) {
+        $columns{col_blob} = [ random_blob_type(),
+                                undef,
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : "''" ),
+                                undef,
+                                random_invisible(),
+                                random_compressed()
+                            ]
+    }
+
+    # Enum columns are relatively common. 20%
+    if (!$prng->uint16(0,4)) {
+        $columns{col_enum} = [  random_enum_type(),
+                                undef,
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : "''" ),
+                                undef,
+                                random_invisible(),
+                                undef
+                            ]
+    }
+
+    # TODO: Add JSON and INET6
 
     # If `id` column is auto-increment, it must be a part of the primary key (or unique key)
     my $col= $columns{id};
     my $has_autoinc= $col->[0] =~ /AUTO_INCREMENT/;
     my %pk_columns= ($has_autoinc ? (id => 1) : ());
-    
-    # TODO: add actual functions for virtual columns
 
-    if ($self->vcols) {
-        $columns{vcol_bit}= [   'BIT',
-                                $prng->uint16(0,64),
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                'AS (col_bit) '.$self->random_or_predefined_vcol_kind(),
-                                random_invisible(),
-                                undef
-                            ];
-        $columns{vcol_int}= [   random_int_type(),
-                                $prng->uint16(0,64),
-                                undef,
-                                random_zerofill(),
-                                undef,
-                                undef,
-                                'AS (col_int) '.$self->random_or_predefined_vcol_kind(),
-                                random_invisible(),
-                                undef
-                            ];
-        my $precision = $prng->uint16(0,65);
-        my $scale = $prng->uint16(0,($precision<=38?$precision:38));
-        $columns{vcol_dec}= [   'DECIMAL',
-                                "$precision,$scale",
-                                undef,
-                                random_zerofill(),
-                                undef,
-                                undef,
-                                'AS (col_dec) '.$self->random_or_predefined_vcol_kind(),
-                                random_invisible(),
-                                undef
-                            ];
-        $columns{vcol_date}= [  'DATE',
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                'AS (col_date) '.$self->random_or_predefined_vcol_kind(),
-                                random_invisible(),
-                                undef
-                            ];
-        $columns{vcol_datetime}= ['DATETIME',
-                                $prng->uint16(0,6),
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                'AS (col_datetime) '.$self->random_or_predefined_vcol_kind(),
-                                random_invisible(),
-                                undef
-                            ];
-        $columns{vcol_timestamp}= ['TIMESTAMP',
-                                $prng->uint16(0,6),
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                'AS (col_timestamp) '.$self->random_or_predefined_vcol_kind(),
-                                random_invisible(),
-                                undef
-                            ];
-        $columns{vcol_time}= [  'TIME',
-                                $prng->uint16(0,6),
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                'AS (col_time) '.$self->random_or_predefined_vcol_kind(),
-                                random_invisible(),
-                                undef
-                            ];
-        $columns{vcol_year}= [  'YEAR',
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                'AS (col_year) '.$self->random_or_predefined_vcol_kind(),
-                                random_invisible(),
-                                undef
-                            ];
-        $columns{vcol_char}= [  random_char_type(),
-                                $prng->uint16(0,255),
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                'AS (col_char) '.$self->random_or_predefined_vcol_kind(),
-                                random_invisible(),
-                                undef
-                            ];
-        $columns{vcol_varchar}= [random_varchar_type(),
-                                $prng->uint16(0,4096),
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                'AS (col_varchar) '.$self->random_or_predefined_vcol_kind(),
-                                random_invisible(),
-                                undef
-                            ];
-        $columns{vcol_blob}= [  random_blob_type(),
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                'AS (col_blob) '.$self->random_or_predefined_vcol_kind(),
-                                random_invisible(),
-                                undef
-                            ];
-        $columns{vcol_enum}= [  random_enum_type(),
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                undef,
-                                'AS (col_enum) '.$self->random_or_predefined_vcol_kind(),
-                                random_invisible(),
-                                undef
-                            ];
+    if ($self->vcols)
+    {
+        # TODO: add actual functions for virtual columns
+
+        # For simplicity, we keep the same probability as corresponding base columns have,
+        # but the virtual column can only exist if the base column does.
+        # So, 10% probability for virtual bit column means in fact 1%, etc.
+
+        if ($columns{col_bit} and !$prng->uint16(0,9)) {
+            $columns{vcol_bit}= [   'BIT',
+                                    $prng->uint16(0,64),
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_bit) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
+        if ($columns{col_int} and $prng->uint16(0,9)) {
+            $columns{vcol_int}= [   random_int_type(),
+                                    $prng->uint16(0,64),
+                                    undef,
+                                    random_zerofill(),
+                                    undef,
+                                    undef,
+                                    'AS (col_int) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
+        if ($columns{col_dec} and !$prng->uint16(0,3)) {
+            my $precision = $prng->uint16(0,65);
+            my $scale = $prng->uint16(0,($precision<=38?$precision:38));
+            $columns{vcol_dec}= [   'DECIMAL',
+                                    "$precision,$scale",
+                                    undef,
+                                    random_zerofill(),
+                                    undef,
+                                    undef,
+                                    'AS (col_dec) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
+        if ($columns{col_date} and !$prng->uint16(0,2)) {
+            $columns{vcol_date}= [  'DATE',
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_date) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
+        if ($columns{col_datetime} and $prng->uint16(0,1)) {
+            $columns{vcol_datetime}= ['DATETIME',
+                                    $prng->uint16(0,6),
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_datetime) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
+        if ($columns{col_timestamp} and $prng->uint16(0,1)) {
+            $columns{vcol_timestamp}= ['TIMESTAMP',
+                                    $prng->uint16(0,6),
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_timestamp) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
+        if ($columns{col_time} and !$prng->uint16(0,3)) {
+            $columns{vcol_time}= [  'TIME',
+                                    $prng->uint16(0,6),
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_time) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
+        if ($columns{col_year} and !$prng->uint16(0,4)) {
+            $columns{vcol_year}= [  'YEAR',
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_year) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
+        if ($columns{col_char} and $prng->uint16(0,3)) {
+            $columns{vcol_char}= [  random_char_type(),
+                                    $prng->uint16(0,255),
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_char) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
+        if ($columns{col_varchar} and $prng->uint16(0,9)) {
+            $columns{vcol_varchar}= [random_varchar_type(),
+                                    $prng->uint16(0,4096),
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_varchar) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
+        if ($columns{col_blob} and !$prng->uint16(0,2)) {
+            $columns{vcol_blob}= [  random_blob_type(),
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_blob) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
+        if ($columns{col_enum} and !$prng->uint16(0,4)) {
+            $columns{vcol_enum}= [  random_enum_type(),
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_enum) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
     }
 
     my @engines= ($engine ? split /,/, $engine : '');
