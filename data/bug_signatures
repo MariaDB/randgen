@@ -57,13 +57,6 @@ MDEV-21147:
 =~ Field_.*val_
 =~ Item_direct_ref::val_.*
 =~ Version: '10\.3
-MDEV-21144:
-=~ signal 11|AddressSanitizer: SEGV
-=~ check_fields
-=~ mysql_update
-=~ sp_head::execute
-=~ Version: '10\.4|Version: '10\.5
-=~ versioning
 MDEV-21138:
 =~ Assertion \`col->ord_part'|Assertion \`f\.col->ord_part'
 =~ row_build_index_entry_low
@@ -379,13 +372,6 @@ MDEV-20498:
 =~ handler::ha_write_row
 =~ ha_partition::copy_partitions
 =~ fast_alter_partition_table
-MDEV-20497:
-=~ AddressSanitizer: SEGV on unknown address|signal 11
-=~ Item_field::used_tables
-=~ Item::const_item
-=~ mysql_update
-=~ sp_instr_stmt::execute|sp_head::execute_procedure
-=~ versioning
 MDEV-20494:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ fast_end_partition
@@ -933,6 +919,27 @@ MDEV-18947:
 =~ pagecache_fwrite
 =~ flush_cached_blocks
 =~ flush_pagecache_blocks_with_filter
+MDEV-18929:
+=~ signal 11|AddressSanitizer: SEGV
+=~ insert_portion_of_time
+=~ mysql_delete
+=~ sp_head::execute
+=~ Version: '10\.4|Version: '10\.5
+=~ versioning
+MDEV-18929:
+=~ signal 11|AddressSanitizer: SEGV
+=~ check_fields
+=~ mysql_update
+=~ sp_head::execute
+=~ Version: '10\.4|Version: '10\.5
+=~ versioning
+MDEV-18929:
+=~ AddressSanitizer: SEGV on unknown address|signal 11
+=~ Item_field::used_tables
+=~ Item::const_item
+=~ mysql_update
+=~ sp_instr_stmt::execute|sp_head::execute_procedure
+=~ versioning
 MDEV-18925:
 =~ AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
 =~ Item_exists_subselect::is_top_level_item|Item_in_optimizer::is_top_level_item
