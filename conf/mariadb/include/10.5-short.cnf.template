@@ -1,0 +1,81 @@
+############################################################
+# Selected InnoDB options and values which are likely
+# to be used and should not conflict when picked randomly
+
+# 10.5 version
+
+############################################################
+#### Both for the bootstrap and for the server
+############################################################
+
+[mariadb]
+innodb_checksum_algorithm                                    [ innodb , crc32 , none , strict_innodb , strict_crc32 , strict_none ]
+innodb_page_size                                             [ 4K , 8K , 16K , 32K , 64K ]
+
+############################################################
+#### For the server but not bootstrap
+############################################################
+
+[mysql.runtime]
+
+innodb_adaptive_flushing                                     [ ON , OFF ]
+innodb_adaptive_hash_index                                   [ ON , OFF ]
+innodb_autoinc_lock_mode                                     [ 0 .. 2 ]
+innodb_buffer_pool_size                                      [ 256M , 1G , 2G ]
+innodb_change_buffering                                      [ inserts , none , deletes , purges , changes , all ]
+innodb_default_row_format                                    [ DYNAMIC , COMPACT , REDUNDANT ]
+innodb_doublewrite                                           [ ON , OFF ]
+innodb_fast_shutdown                                         [ 0 .. 2 ]
+innodb_log_checksums                                         [ OFF , ON ]
+innodb_log_compressed_pages                                  [ OFF , ON ]
+innodb_optimize_point_storage                                [ OFF , ON ]
+innodb_page_cleaners                                         [ 1 .. 64 ]
+innodb_purge_threads                                         [ 1 .. 32 ]
+innodb_read_io_threads                                       [ 1 .. 64 ]
+innodb_rollback_on_timeout                                   [ OFF , ON ]
+innodb_stats_auto_recalc                                     [ ON , OFF ]
+innodb_stats_on_metadata                                     [ OFF , ON ]
+innodb_stats_persistent                                      [ ON , OFF ]
+innodb_status_output                                         [ OFF , ON ]
+innodb_strict_mode                                           [ OFF , ON ]
+innodb_table_locks                                           [ ON , OFF ]
+innodb_undo_log_truncate                                     [ OFF , ON ]
+innodb_undo_logs                                             [ 0 .. 128 ]
+innodb_use_native_aio                                        [ ON , OFF ]
+innodb_write_io_threads                                      [ 1 .. 64 ]
+
+
+[mariadb.runtime]
+
+alter_algorithm                                              [ DEFAULT , COPY , INPLACE , NOCOPY , INSTANT ]
+analyze_sample_percentage                                    [ 0 .. 100 ]
+big_tables                                                   [ 0 .. 1 ]
+character_set_server                                         [ latin1 , utf8 , ut8mb4 ]
+default_tmp_storage_engine                                   [ InnoDB , MyISAM , Aria , HEAP , InnoDB , MyISAM , Aria , InnoDB , MyISAM , Aria ]
+eq_range_index_dive_limit                                    [ 0 , 1 , 10 , 100 , 200 , 1000 , 10000 ]
+event_scheduler                                              [ OFF , ON ]
+expensive_subquery_limit                                     [ 0 .. 10000 ]
+explicit_defaults_for_timestamp                              [ 0 , 1 ]
+histogram_size                                               [ 0 .. 255 ]
+histogram_type                                               [ DOUBLE_PREC_HB , SINGLE_PREC_HB ]
+join_cache_level                                             [ 0 .. 8 ]
+lower_case_table_names                                       [ 0 , 1 ]
+max_rowid_filter_size                                        [ 1024 .. 1048576 ]
+mysql56_temporal_format                                      [ ON , ON , ON , OFF ]
+optimizer_selectivity_sampling_limit                         [ 10 .. 1000 ]
+optimizer_trace                                              [ enabled=off , enabled=on , enabled=default ]
+profiling                                                    [ 0 , 1 ]
+query_cache_type                                             [ 0 , 1 , 2 ]
+session_track_transaction_info                               [ OFF , ON ]
+skip_external_locking                                        [ OFF , ON ]
+standard_compliant_cte                                       [ ON , OFF ]
+tx_isolation                                                 [ READ-COMMITTED , REPEATABLE-READ ]
+
+innodb_compression_algorithm                                 [ none , zlib ]
+innodb_compression_default                                   [ OFF , ON ]
+innodb_defragment                                            [ OFF , ON ]
+innodb_lock_schedule_algorithm                               [ VATS , FCFS ]
+innodb_log_optimize_ddl                                      [ OFF , ON ]
+innodb_prefix_index_cluster_optimization                     [ OFF , ON ]
+innodb_stats_traditional                                     [ OFF , ON ]
+innodb_use_atomic_writes                                     [ OFF , ON ]
