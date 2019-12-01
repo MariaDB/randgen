@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21184:
+=~ Assertion \`used_tables_cache == 0'
+=~ Item_func::fix_fields
+=~ make_cond_for_table_from_pred
+=~ Version: '10\.4|Version: '10\.5
 MDEV-21155:
 =~ Assertion \`!m_file'
 =~ ha_partition::setup_engine_array
@@ -940,6 +945,10 @@ MDEV-18929:
 =~ mysql_update
 =~ sp_instr_stmt::execute|sp_head::execute_procedure
 =~ versioning
+MDEV-18929:
+=~ Assertion \`!table_list->vers_conditions\.is_set() \|\| !\*conds \|\| thd->stmt_arena->is_stmt_execute()'
+=~ mysql_prepare_delete
+=~ sp_instr_stmt::execute|sp_head::execute_procedure
 MDEV-18925:
 =~ AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
 =~ Item_exists_subselect::is_top_level_item|Item_in_optimizer::is_top_level_item
@@ -1542,6 +1551,17 @@ MDEV-16887:
 =~ trx_undo_log_v_idx
 =~ trx_undo_report_row_operation
 # Was fixed in 10.2+ in scope of another bug, not backported to 10.1
+MDEV-16808:
+=~ Assertion \`0'
+=~ Field_blob_compressed::new_key_field
+=~ store_key::store_key
+=~ create_ref_for_key
+MDEV-16808:
+=~ signal 11
+=~ cp_buffer_from_ref
+=~ JOIN_CACHE_HASHED::put_record
+=~ evaluate_join_record
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-16794:
 =~ Assertion \`thd->transaction\.stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
