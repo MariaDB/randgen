@@ -176,10 +176,10 @@ sub random_or_predefined_vcol_kind {
     return ($_[0]->vcols() eq '' ? ($prng->uint16(0,1) ? '/*!50701 STORED */ /*!100000 PERSISTENT */' : 'VIRTUAL') : $_[0]->vcols());
 }
 sub random_invisible {
-    return $prng->uint16(0,3) ? undef : '/*!100303 INVISIBLE */' ;
+    return $prng->uint16(0,5) ? undef : '/*!100303 INVISIBLE */' ;
 }
 sub random_compressed {
-    return $prng->uint16(0,1) ? undef : '/*!100302 COMPRESSED */' ;
+    return $prng->uint16(0,5) ? undef : '/*!100302 COMPRESSED */' ;
 }
 sub random_partition_type {
     return $prng->arrayElement(['HASH','KEY','RANGE','LIST']);
@@ -227,7 +227,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : '0' ),
                                 undef,
-                                random_invisible(),
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
                             ]
     }
@@ -240,7 +240,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : '0' ),
                                 undef,
-                                random_invisible(),
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
                             ]
     }
@@ -254,7 +254,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : '0' ),
                                 undef,
-                                random_invisible(),
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
                             ]
     }
@@ -267,7 +267,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "'1900-01-01'" ),
                                 undef,
-                                random_invisible(),
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
                             ]
     }
@@ -281,7 +281,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "'1900-01-01 00:00:00'" ),
                                 undef,
-                                random_invisible(),
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
                             ]
     }
@@ -295,7 +295,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "'1971-01-01 00:00:00'" ),
                                 undef,
-                                random_invisible(),
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
                             ]
     }
@@ -309,7 +309,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "'00:00:00'" ),
                                 undef,
-                                random_invisible(),
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
                             ]
     }
@@ -323,7 +323,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "'1970'" ),
                                 undef,
-                                random_invisible(),
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
                             ]
     }
@@ -337,7 +337,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
-                                random_invisible(),
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
                             ]
     }
@@ -351,7 +351,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
-                                random_invisible(),
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 random_compressed()
                             ]
     }
@@ -365,7 +365,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
-                                random_invisible(),
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 random_compressed()
                             ]
     }
@@ -379,7 +379,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
-                                random_invisible(),
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
                             ]
     }
@@ -571,7 +571,6 @@ sub gen_table {
       $executor->execute("DROP TABLE /*! IF EXISTS */ $name");
       my $create_stmt = "CREATE TABLE $name (";
       my @column_list = ();
-#      my $columns= $prng->shuffleArray([sort keys %columns]);
       my @columns= ();
       foreach my $c (sort keys %columns) {
           my $coldef= $columns{$c};
@@ -590,16 +589,17 @@ sub gen_table {
               . ($coldef->[8] ? " $coldef->[8]" : '')  # compressed
           ;
       };
-      my $create_table_columns= $prng->shuffleArray(\@columns);
-      $create_stmt.= join ', ', @$create_table_columns;
+      my @create_table_columns= @columns;
+      $prng->shuffleArray(\@create_table_columns);
+      $create_stmt.= join ', ', @create_table_columns;
 
-      my $cols= undef;
       # Create PK for 90% of tables
       if ($prng->uint16(0,9))
       {
           my $num_of_columns_in_pk= $prng->uint16(1,4);
-          $cols= $prng->shuffleArray([sort keys %columns]);
-          foreach my $c (@$cols) {
+          my @cols= sort keys %columns;
+          $prng->shuffleArray(\@cols);
+          foreach my $c (@cols) {
             last if scalar(keys %pk_columns) >= $num_of_columns_in_pk;
             next if $pk_columns{$c};
             if ($columns{$c}->[0] =~ /BLOB|TEXT/) {
@@ -613,15 +613,17 @@ sub gen_table {
           {
               delete $pk_columns{id};
               if (scalar(keys %pk_columns)) {
-                  $cols= $prng->shuffleArray([sort keys %pk_columns]);
-                  unshift @$cols, 'id';
+                  @cols= sort keys %pk_columns;
+                  $prng->shuffleArray(\@cols);
+                  unshift @cols, 'id';
               } else {
-                  $cols= ['id'];
+                  @cols= ('id');
               }
           } else {
-                $cols= $prng->shuffleArray([sort keys %pk_columns]);
+              @cols= sort keys %pk_columns;
+              $prng->shuffleArray(\@cols);
           }
-          $create_stmt.= ', PRIMARY KEY('.(join ',', @$cols).")";
+          $create_stmt.= ', PRIMARY KEY('.(join ',', @cols).")";
       }
       elsif ($has_autoinc) {
           $create_stmt.= ", UNIQUE(id)";
@@ -658,9 +660,10 @@ sub gen_table {
               my $n= 1;
               while (scalar(@vals)) {
                   my $part_val_count= $prng->uint16(1,scalar(@vals));
-                  my $shuffled_vals= $prng->shuffleArray(\@vals);
-                  my @part_vals= splice(@$shuffled_vals,0,$part_val_count);
-                  @vals= @$shuffled_vals;
+                  my @shuffled_vals= @vals;
+                  $prng->shuffleArray(\@shuffled_vals);
+                  my @part_vals= splice(@shuffled_vals,0,$part_val_count);
+                  @vals= @shuffled_vals;
                   push @parts, 'PARTITION p'.$n++.' VALUES IN ('.(join ',', @part_vals).')';
               }
               $create_stmt.= '('.(join ',',@parts).')';
@@ -681,12 +684,19 @@ sub gen_table {
           }
       }
 
-      my $number_of_indexes= $prng->uint16(2,8);
-      foreach (1..$number_of_indexes) {
-          my $number_of_columns= $prng->uint16(1,4);
+      # The limit for the number of indexes is purely arbitrary, there is no secret wisdom
+      my $number_of_indexes= $prng->uint16(0,scalar(keys %columns)*2);
+
+      foreach (1..$number_of_indexes)
+      {
+          my $number_of_columns= $prng->uint16(1,scalar(keys %columns));
           # TODO: make it conditional depending on the version -- keys %columns vs @column_list
-          my $cols= $prng->shuffleArray([sort keys %columns]);
-          my @cols= @$cols[1..$number_of_columns];
+          my @cols=();
+          foreach my $c (sort keys %columns) {
+              push @cols, $c;
+          }
+          $prng->shuffleArray(\@cols);
+          @cols= @cols[0..$number_of_columns-1];
           foreach my $i (0..$#cols) {
               my $c= $cols[$i];
               my $tp= $columns{$c}->[0];
