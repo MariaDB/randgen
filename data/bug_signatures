@@ -639,51 +639,6 @@ MDEV-19621:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ ha_innobase::commit_inplace_alter_table
 =~ mysql_inplace_alter_table
-MDEV-19619:
-=~ AddressSanitizer: heap-use-after-free
-=~ Field_longlong::val_int
-=~ ha_innobase::write_row
-=~ read_sep_field
-=~ mysql_load
-MDEV-19619:
-=~ Assertion \`tmp != ((long long) 0x8000000000000000LL)'
-=~ TIME_from_longlong_datetime_packed
-=~ Field_datetimef::get_TIME
-MDEV-19619:
-=~ signal 11
-=~ create_tmp_table
-=~ select_unit::create_result_table
-=~ open_normal_and_derived_tables
-=~ fill_schema_table_by_open
-MDEV-19619:
-=~ signal 11
-=~ String::copy
-=~ get_field_default_value
-=~ get_schema_column_record
-=~ fill_schema_table_by_open
-MDEV-19619:
-=~ signal 11
-=~ Field::is_null_in_record
-=~ create_tmp_table
-=~ select_unit::create_result_table
-=~ open_normal_and_derived_tables
-MDEV-19619:
-=~ signal 11
-=~ row_sel_field_store_in_mysql_format_func
-=~ row_search_mvcc
-=~ ha_innobase::index_read
-=~ READ_RECORD::read_record
-MDEV-19619:
-=~ Assertion \`prebuilt->mysql_prefix_len <= prebuilt->mysql_row_len'
-=~ row_sel_dequeue_cached_row_for_mysql
-=~ row_search_mvcc
-=~ ha_innobase::general_fetch
-MDEV-19619:
-=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
-=~ Assertion \`btr_validate_index(index, 0, false)'
-=~ row_upd_sec_index_entry
-=~ ha_innobase::delete_row
-=~ read_sep_field
 MDEV-19609:
 =~ Slave SQL: Error 'You have an error in your SQL syntax .* near 'TYPE=
 =~ CREATE TABLE
