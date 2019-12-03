@@ -58,6 +58,11 @@ MDEV-21147:
 =~ Item_direct_ref::val_.*
 =~ Version: '10\.4|Version: '10\.5
 MDEV-21147:
+=~ signal 11|AddressSanitizer
+=~ Item_cond::fix_fields
+=~ TABLE_LIST::prep_where
+=~ sp_instr_stmt::exec_core
+MDEV-21147:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
 =~ Field_.*val_
 =~ Item_direct_ref::val_.*
@@ -1907,11 +1912,6 @@ TODO-842:
 =~ row_update_vers_insert
 =~ row_update_cascade_for_mysql
 =~ row_ins_foreign_check_on_constraint
-TODO-842:
-=~ InnoDB: Failing assertion: thr_get_trx(thr)->error_state == DB_SUCCESS
-=~ que_run_threads
-=~ fts_eval_sql
-=~ fts_config_set_value
 TODO-842:
 =~ AddressSanitizer: heap-use-after-free
 =~ innobase_get_computed_value
