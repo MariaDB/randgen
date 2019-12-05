@@ -1787,6 +1787,9 @@ MDEV-10945:
 =~ Diagnostics_area::set_ok_status
 =~ Status: KILL_BAD_DATA
 =~ Version: '10\.1|Version: '10\.0|Version: '5\.5
+MDEV-10826:
+=~ Assertion \`thd->get_stmt_da()->is_eof()'
+=~ Query_cache::end_of_result
 MDEV-10466:
 =~ SEL_ARG::store_min
 =~ ror_scan_selectivity
