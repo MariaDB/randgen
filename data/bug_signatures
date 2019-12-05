@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21233:
+=~ Assertion \`m_extra_cache'
+=~ ha_partition::late_extra_cache
+=~ mysql_multi_update
+=~ versioning
 MDEV-21184:
 =~ Assertion \`used_tables_cache == 0'
 =~ Item_func::fix_fields
