@@ -56,21 +56,7 @@ sub new {
     $self->printTitle('Crash upgrade/downgrade');
   }
 
-  if (not defined $self->getProperty('grammar')) {
-    $self->setProperty('grammar', 'conf/mariadb/oltp.yy');
-  }
-  if (not defined $self->getProperty('gendata')) {
-    $self->setProperty('gendata', 'conf/mariadb/innodb_upgrade.zz');
-  }
-  if (not defined $self->getProperty('gendata1')) {
-    $self->setProperty('gendata1', $self->getProperty('gendata'));
-  }
-  if (not defined $self->getProperty('gendata-advanced1')) {
-    $self->setProperty('gendata-advanced1', $self->getProperty('gendata-advanced'));
-  }
-  if (not defined $self->getProperty('threads')) {
-    $self->setProperty('threads', 4);
-  }
+  $self->setProperty('gendata', undef);
   
   return $self;
 }

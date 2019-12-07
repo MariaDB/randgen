@@ -1,0 +1,1 @@
+perl ./runall-new.pl --basedir1=$1 --basedir2=$2 --grammar=conf/mariadb/oltp-transactional.yy --scenario=CrashUpgrade --duration=30 --mysqld=--innodb-page-size=4K --gendata-advanced --seed=1575712507 --threads=1 --vardir1=/dev/shm/vardir-mdev21246
