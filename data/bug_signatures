@@ -4,6 +4,46 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21259:
+=~ Assertion \`w != NORMAL \|\| mach_read_from_4(ptr) != val'
+=~ mtr_t::write
+=~ btr_free_externally_stored_field
+=~ Version: '10\.5
+MDEV-21247:
+=~ AddressSanitizer: use-after-poison
+=~ create_tmp_table
+=~ select_unit::create_result_table
+=~ mysql_handle_single_derived
+MDEV-21246:
+=~ Assertion \`rec == page_rec_get_next_const(((page_align(rec)) + page_get_infimum_offset(page_align(rec))))'
+=~ btr_set_min_rec_mark
+=~ recv_recover_page
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
+=~ CrashUpgrade
+MDEV-21246:
+=~ Assertion \`page_rec_is_infimum(rec) \|\| !(rec_get_info_bits(page + offs, comp) & 0x10UL)'
+=~ page_rec_get_next_low
+=~ recv_recover_page
+=~ Version: '10\.5
+=~ CrashUpgrade
+MDEV-21245:
+=~ Assertion \`0'
+=~ row_sel_convert_mysql_key_to_innobase
+=~ ha_innobase::records_in_range
+=~ check_quick_select
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21242:
+=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
+=~ Field_.*::val_.*
+=~ Protocol_text::store
+=~ vcols
+=~ Version: '10\.2|Version: '10\.3
+MDEV-21242:
+=~ Assertion \`marked_for_read()'
+=~ Field_.*::val_.*
+=~ Protocol_text::store
+=~ vcols
+=~ Version: '10\.4|Version: '10\.5
 MDEV-21233:
 =~ Assertion \`m_extra_cache'
 =~ ha_partition::late_extra_cache
@@ -1376,7 +1416,7 @@ MDEV-17843:
 =~ lock_rec_queue_validate
 =~ innodb_show_status|SHOW ENGINE INNODB STATUS|SHOW ENGINE InnoDB STATUS
 MDEV-17818:
-=~ signal 11
+=~ signal 11|AddressSanitizer: SEGV
 =~ parse_vcol_defs
 =~ open_table_from_share
 =~ open_temporary_table
@@ -1474,7 +1514,7 @@ MDEV-17091:
 =~ ha_partition::update_row
 =~ mysql_update|Update_rows_log_event::do_exec_row|mysql_multi_update|mysql_load|mysql_delete|write_record
 MDEV-17071:
-=~ signal 11
+=~ signal 11|AddressSanitizer:
 =~ TABLE_LIST::get_tablenr
 =~ st_select_lex::save_leaf_tables
 =~ mysql_insert
@@ -1482,6 +1522,11 @@ MDEV-17071:
 =~ ERROR: AddressSanitizer: use-after-poison
 =~ write_record
 =~ mysql_insert
+MDEV-17071:
+=~ AddressSanitizer: use-after-poison
+=~ base_list_iterator::next_fast
+=~ List_iterator_fast
+=~ st_select_lex::save_leaf_tables
 MDEV-17004:
 =~ InnoDB: Assertion failure in thread .* in file ha_innodb.cc line
 =~ innobase_get_fts_charset
