@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21278:
+=~ Assertion \`is_unsigned() == attr\.unsigned_flag'
+=~ Type_handler_int_result::make_table_field
+=~ create_tmp_field
+=~ Version: '10\.5
+MDEV-21278:
+=~ Assertion \`field\.is_sane()'
+=~ Protocol_text::store_field_metadata
+=~ select_send::send_result_set_metadata
+=~ Version: '10\.5
 MDEV-21259:
 =~ Assertion \`w != NORMAL \|\| mach_read_from_4(ptr) != val'
 =~ mtr_t::write
@@ -759,6 +769,11 @@ MDEV-19361:
 =~ TABLE::update_virtual_fields
 =~ record_should_be_deleted
 =~ Version: '10\.4|Version: '10\.5
+MDEV-19338:
+=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
+=~ InnoDB: Failing assertion: !cursor->index->is_committed()|Assertion \`btr_validate_index(index, 0)'
+=~ row_ins_sec_index_entry_by_modify|row_upd_sec_index_entry
+=~ vcols|Version: '10\.4|Version: '10\.5
 MDEV-19318:
 =~ Assertion \`!(length < share->base\.min_block_length)'
 =~ _ma_scan_block_record
