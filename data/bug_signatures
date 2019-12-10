@@ -10,10 +10,11 @@ MDEV-21259:
 =~ btr_free_externally_stored_field
 =~ Version: '10\.5
 MDEV-21247:
-=~ AddressSanitizer: use-after-poison
+=~ AddressSanitizer:
 =~ create_tmp_table
 =~ select_unit::create_result_table
 =~ mysql_handle_single_derived
+=~ Version: '10\.3
 MDEV-21246:
 =~ Assertion \`rec == page_rec_get_next_const(((page_align(rec)) + page_get_infimum_offset(page_align(rec))))'
 =~ btr_set_min_rec_mark
@@ -1470,8 +1471,8 @@ MDEV-17556:
 MDEV-17539:
 =~ Assertion \`0'
 =~ Protocol::end_statement
-=~ Status: KILL_SERVER
-=~ Version: '10\.1|Version: '10\.2|Version: '10\.3
+=~ Status: KILL_SERVER|server shutdown has apparently failed
+=~ ps-protocol
 MDEV-17464:
 =~ InnoDB: Operating system error number 2 in a file operation
 =~ InnoDB: Cannot rename file '.*/.*\.ibd' to '.*/.*\.ibd'
