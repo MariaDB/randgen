@@ -41,6 +41,11 @@ MENT-438:
 =~ MDL_lock.*Ticket_list.*clear_bit_if_not_in_list|MDL_lock.*Ticket_list.*remove_ticket
 =~ MDL_context.*upgrade_shared_lock
 =~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ signal 6
+=~ futex_fatal_error
+=~ MDL_lock::remove_ticket
+=~ backup_end
 MENT-416:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
