@@ -97,6 +97,11 @@ MENT-189:
 #
 # Fixed in the next release
 #
+MDEV-18460:
+=~ signal 11|AddressSanitizer: SEGV
+=~ tdc_create_key
+=~ THD::create_tmp_table_def_key
+=~ THD::open_temporary_table
 
 ##############################################################################
 # Weak matches
