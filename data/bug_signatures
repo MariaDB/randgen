@@ -4,12 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21384:
+=~ Assertion \`marked_for_read()'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
+=~ Field_.*::val_.*
+=~ Item_direct_ref::val_.*
 MDEV-21373:
 =~ AddressSanitizer:
 =~ tree_search_next|hp_rb_var_key_length|ha_key_cmp
 =~ check_one_rb_key
 =~ heap_check_heap
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21307:
+=~ Assertion \`cache_mngr->trx_cache\.empty() && cache_mngr->stmt_cache\.empty()'
+=~ binlog_close_connection
+=~ plugin_foreach_with_mask
 MDEV-21278:
 =~ Assertion \`is_unsigned() == attr\.unsigned_flag'
 =~ Type_handler_int_result::make_table_field
@@ -1135,11 +1143,6 @@ MDEV-18461:
 =~ Assertion \`undo_lsn == ((LSN)1) \|\| head_length == row_pos->length'
 =~ write_block_record
 =~ _ma_update_at_original_place
-MDEV-18460:
-=~ signal 11|AddressSanitizer: SEGV
-=~ tdc_create_key
-=~ THD::create_tmp_table_def_key
-=~ THD::open_temporary_table
 MDEV-18457:
 =~ Assertion \`(bitmap->map + (bitmap->full_head_size/6\*6)) <= full_head_end'
 =~ _ma_check_bitmap
