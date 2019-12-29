@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21405:
+=~ Assertion \`(flags & ulint(~BTR_KEEP_IBUF_BITMAP)) == BTR_NO_LOCKING_FLAG'
+=~ btr_cur_pessimistic_insert
+=~ Version: '10\.3
+MDEV-21398:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ THD::raise_condition
+=~ my_message_sql
+=~ KILL_QUERY|KILL_TIMEOUT|KILL_SERVER
 MDEV-21384:
 =~ Assertion \`marked_for_read()'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
 =~ Field_.*::val_.*
@@ -858,7 +868,7 @@ MDEV-19198:
 =~ mysql_create_like_table
 =~ mysql_execute_command
 MDEV-19194:
-=~ signal 11
+=~ signal handler called|signal 11
 =~ fk_prepare_copy_alter_table
 =~ mysql_alter_table
 MDEV-19194:
@@ -1316,7 +1326,7 @@ MDEV-18151:
 MDEV-18088:
 =~ Assertion \`share->in_trans == 0'
 =~ maria_close
-=~ Locked_tables_list::reopen_tables|close_all_tables_for_name|alter_close_table
+=~ Locked_tables_list::reopen_tables|close_all_tables_for_name|alter_close_table|intern_close_table
 MDEV-18082:
 =~ Assertion \`! is_set()' failed
 =~ Diagnostics_area::disable_status
@@ -1459,7 +1469,7 @@ MDEV-17711:
 =~ mysql_execute_command
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-17699:
-=~ AddressSanitizer: use-after-poison
+=~ AddressSanitizer:
 =~ base_list_iterator::next_fast
 =~ substitute_for_best_equal_field
 =~ JOIN::optimize_stage2
