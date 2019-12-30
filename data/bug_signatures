@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21406:
+=~ Assertion \`tmp != ((long long) 0x8000000000000000LL)'
+=~ TIME_from_longlong_datetime_packed
+=~ Item_func_ifnull
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21406:
+=~ Assertion \`is_valid_value_slow()'
+=~ Datetime::Datetime
+=~ str_op_with_null_check
+=~ Version: '10\.4
 MDEV-21405:
 =~ Assertion \`(flags & ulint(~BTR_KEEP_IBUF_BITMAP)) == BTR_NO_LOCKING_FLAG'
 =~ btr_cur_pessimistic_insert
