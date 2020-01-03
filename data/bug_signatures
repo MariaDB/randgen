@@ -48,6 +48,10 @@ MDEV-21373:
 =~ check_one_rb_key
 =~ heap_check_heap
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21329:
+=~ InnoDB: Failing assertion: lock->lock_word\.load(std::memory_order_relaxed) == X_LOCK_DECR|InnoDB: Failing assertion: lock->lock_word == X_LOCK_DECR|InnoDB: Failing assertion: my_atomic_load32_explicit(&lock->lock_word, MY_MEMORY_ORDER_RELAXED) == X_LOCK_DECR
+=~ KILL_SERVER|fts_cache_destroy
+=~ =~ Version: '10\.2|Version: '10\.3|Version: '10\.4
 MDEV-21307:
 =~ Assertion \`cache_mngr->trx_cache\.empty() && cache_mngr->stmt_cache\.empty()'
 =~ binlog_close_connection
