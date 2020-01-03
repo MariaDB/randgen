@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21415:
+=~ Assertion \`inited == RND'
+=~ handler::ha_rnd_pos
+=~ QUICK_ROR_INTERSECT_SELECT
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21414:
+=~ AddressSanitizer:
+=~ Field_blob::cmp
+=~ myrocks::ha_rocksdb::find_icp_matching_index_rec
+MDEV-21413:
+=~ AddressSanitizer:
+=~ ha_maria::info
+=~ get_schema_tables_record
+=~ Version: '10\.1|Version: '10\.3
 MDEV-21406:
 =~ Assertion \`tmp != ((long long) 0x8000000000000000LL)'
 =~ TIME_from_longlong_datetime_packed
@@ -1557,7 +1571,7 @@ MDEV-17120:
 MDEV-17091:
 =~ Assertion \`part_id == m_last_part'
 =~ ha_partition::delete_row
-=~ mysql_delete
+=~ mysql_delete|multi_delete
 MDEV-17091:
 =~ Assertion \`old_part_id == m_last_part'
 =~ ha_partition::update_row
