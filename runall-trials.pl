@@ -79,7 +79,12 @@ push @ARGV, "--vardir=$vardir" if defined $vardir;
 push @ARGV, "--vardir1=$vardir1" if defined $vardir1;
 push @ARGV, "--vardir2=$vardir2" if defined $vardir2;
 
-my $comb_str = join(' ', @ARGV);		
+my $comb_str = join(' ', @ARGV);
+
+# Counter-intuitively, 0 is returned when trials did NOT reproduce the issue,
+# and 1 is returned when the issue was reproduced.
+# TODO: change it some time in future (but take care of other tools which use it as is)
+my $trials_result= 0;
 
 foreach my $trial_id (1..$trials) {
 
@@ -100,53 +105,53 @@ foreach my $trial_id (1..$trials) {
 	}
 
 	say("$command");
+    system($command);
 
-	my $result = system($command) >> 8;
+	my $result= ($? >> 8);
 	my $result_name = status2text($result);
 	say("Trial $trial_id ended with exit status $result_name ($result)");
-	unless (check_for_desired_result($result_name)) {
-		next;
-	}
-	exit($result) if not defined $force;
+	if (check_for_desired_result($result_name)) {
+		$trials_result= 1;
+	} else {
+        next;
+    }
+	exit(1) if not defined $force;
 
-	$max_result = $result if $result > $max_result;
-
-	if ($result > 0) {
-		# Storing vardirs for the failure
-		foreach my $v ($vardir,$vardir1,$vardir2) {
-			next unless defined $v;
-			# Remove trailing slashes
-			$v =~ s/[\/\\]+$//;
-			my $from = $v;
-			my $to = $v.'_trial'.$trial_id;
-			say("Copying $from to $to");
-			remove_tree($to) if (-e $to);
-			remove_tree($to.'_slave') if (-e $to.'_slave');
-			if (osWindows()) {
-				system("xcopy \"$from\" \"$to\" /E /I /Q");
-				system("xcopy \"$from"."_slave\" \"$to"."_slave\" /E /I /Q") if -e $from.'_slave';
-				open(OUT, ">$to/command");
-				print OUT $command;
-				close(OUT);
-			} elsif ($command =~ m{--mem}) {
-				system("cp -r /dev/shm/var $to");
-				open(OUT, ">$to/command");
-				print OUT $command;
-				close(OUT);
-			} else {
-				system("cp -r $from $to");
-				system("cp -r $from"."_slave $to"."_slave") if -e $from.'_slave';
-				open(OUT, ">$to/command");
-				print OUT $command;
-				close(OUT);
-			}
-		}
-	}
+    # If we are here, trials are run with --force and check for desired result returned success
+    # Storing vardirs for the failure
+    foreach my $v ($vardir,$vardir1,$vardir2) {
+        next unless defined $v;
+        # Remove trailing slashes
+        $v =~ s/[\/\\]+$//;
+        my $from = $v;
+        my $to = $v.'_trial'.$trial_id;
+        say("Copying $from to $to");
+        remove_tree($to) if (-e $to);
+        remove_tree($to.'_slave') if (-e $to.'_slave');
+        if (osWindows()) {
+            system("xcopy \"$from\" \"$to\" /E /I /Q");
+            system("xcopy \"$from"."_slave\" \"$to"."_slave\" /E /I /Q") if -e $from.'_slave';
+            open(OUT, ">$to/command");
+            print OUT $command;
+            close(OUT);
+        } elsif ($command =~ m{--mem}) {
+            system("cp -r /dev/shm/var $to");
+            open(OUT, ">$to/command");
+            print OUT $command;
+            close(OUT);
+        } else {
+            system("cp -r $from $to");
+            system("cp -r $from"."_slave $to"."_slave") if -e $from.'_slave';
+            open(OUT, ">$to/command");
+            print OUT $command;
+            close(OUT);
+        }
+    }
 }
 
-say("$0 will exit with exit status ".status2text($max_result)."($max_result)");
+say("$0 will exit with exit status ".($trials_result ? 'REPRODUCED':'FAILED TO REPRODUCE')." ($trials_result)");
 unlink($output_file);
-exit($max_result);
+exit($trials_result);
 
 sub check_for_desired_result {
 	my $resname = shift;
@@ -191,6 +196,14 @@ sub check_for_desired_result {
             return 0;
         }
     }
+    my $line= "Trials succeeded at reproducing the problem: exit status $resname";
+    if ($exit_status_matches) {
+        $line.= ' matches one of desired exit codes';
+    }
+    if ($output) {
+        $line.= ", output \'$output\' has been found";
+    }
+    say($line);
     return 1;
 }
 
