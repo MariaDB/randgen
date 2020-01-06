@@ -75,7 +75,7 @@ use constant MYSQLD_DEFAULT_PORT =>  19300;
 use constant MYSQLD_DEFAULT_DATABASE => "test";
 use constant MYSQLD_WINDOWS_PROCESS_STILLALIVE => 259;
 
-my $default_shutdown_timeout= 60;
+my $default_shutdown_timeout= 300;
 
 sub new {
     my $class = shift;
