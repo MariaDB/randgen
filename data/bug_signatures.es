@@ -97,6 +97,10 @@ MENT-189:
 #
 # Fixed in the next release
 #
+MDEV-18875:
+=~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction\.stmt'
+=~ ha_rollback_trans
+=~ mysql_trans_commit_alter_copy_data|trans_commit
 MDEV-18460:
 =~ signal 11|AddressSanitizer: SEGV
 =~ tdc_create_key

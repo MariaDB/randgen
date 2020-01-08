@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21446:
+=~ Assertion \`!prebuilt->index->is_primary()'
+=~ row_search_idx_cond_check
+=~ row_search_mvcc
 MDEV-21428:
 =~ InnoDB: Failing assertion: prebuilt->template_type == ROW_MYSQL_WHOLE_ROW
 =~ row_update_for_mysql
@@ -496,7 +500,7 @@ MDEV-20501:
 =~ Assertion \`maybe_null \|\| !null_value'
 =~ Item_func_round::date_op
 =~ Type_handler_temporal_result
-=~ Version: '10\.4
+=~ Version: '10\.4|Version: '10\.5
 MDEV-20498:
 =~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type == 1'
 =~ handler::ha_write_row
@@ -1013,31 +1017,6 @@ MDEV-18947:
 =~ pagecache_fwrite
 =~ flush_cached_blocks
 =~ flush_pagecache_blocks_with_filter
-MDEV-18929:
-=~ signal 11|AddressSanitizer: SEGV
-=~ insert_portion_of_time
-=~ mysql_delete
-=~ sp_head::execute
-=~ Version: '10\.4|Version: '10\.5
-=~ versioning
-MDEV-18929:
-=~ signal 11|AddressSanitizer: SEGV
-=~ check_fields
-=~ mysql_update
-=~ sp_head::execute
-=~ Version: '10\.4|Version: '10\.5
-=~ versioning
-MDEV-18929:
-=~ AddressSanitizer: SEGV on unknown address|signal 11
-=~ Item_field::used_tables
-=~ Item::const_item
-=~ mysql_update
-=~ sp_instr_stmt::execute|sp_head::execute_procedure
-=~ versioning
-MDEV-18929:
-=~ Assertion \`!table_list->vers_conditions\.is_set() \|\| !\*conds \|\| thd->stmt_arena->is_stmt_execute()'
-=~ mysql_prepare_delete
-=~ sp_instr_stmt::execute|sp_head::execute_procedure
 MDEV-18925:
 =~ AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
 =~ Item_exists_subselect::is_top_level_item|Item_in_optimizer::is_top_level_item
@@ -1058,10 +1037,6 @@ MDEV-18882:
 =~ AddressSanitizer: heap-use-after-free
 =~ Binary_string::copy|String::copy
 =~ Item_func_make_set::val_str
-MDEV-18875:
-=~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction\.stmt'
-=~ ha_rollback_trans
-=~ mysql_trans_commit_alter_copy_data|trans_commit
 MDEV-18865:
 =~ Assertion \`t->first->versioned_by_id()'
 =~ innodb_prepare_commit_versioned
@@ -1308,9 +1283,6 @@ MDEV-18216:
 =~ THD::set_n_backup_active_arena
 =~ Field::set_default
 =~ CREATE.*VIEW
-MDEV-18203:
-=~ error 126 when executing undo undo_key_insert
-=~ Version: '10\.4|Version: '10\.5
 MDEV-18200:
 =~ InnoDB: Operating system error number 2 in a file operation
 =~ InnoDB: File .*: 'open' returned OS error 71
@@ -1606,7 +1578,7 @@ MDEV-17071:
 =~ write_record
 =~ mysql_insert
 MDEV-17071:
-=~ AddressSanitizer: use-after-poison
+=~ AddressSanitizer:|signal 11
 =~ base_list_iterator::next_fast
 =~ List_iterator_fast
 =~ st_select_lex::save_leaf_tables
@@ -2161,10 +2133,6 @@ MDEV-20484:
 MDEV-20476:
 =~ Index for table .* is corrupt; try to repair it
 =~ scrub
-MDEV-20441:
-=~ is marked as crashed and should be repaired
-=~ versioning
-=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-19745:
 =~ Backup did not finish in due time
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
@@ -2172,8 +2140,6 @@ MDEV-19320:
 =~ UPDATE.* 1032 Can't find record in|DELETE.* 1032 Can't find record in|SELECT SETVAL.* 1032 Can't find record in|SELECT.* 1032 Can't find record in|INSERT.* 1032 Can't find record in
 =~ sequence
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
-MDEV-18929:
-=~ Slave SQL: Error 'Table .* is not system-versioned' on query
 MDEV-18805:
 =~ Found too many records; Can't continue
 =~ Number of rows changed from
