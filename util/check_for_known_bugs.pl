@@ -71,6 +71,7 @@ if ($ENV{TRAVIS} eq 'true') {
 }
 my $test_result= (defined $ENV{TEST_RESULT} and $ENV{TEST_RESULT} !~ /\s/) ? $ENV{TEST_RESULT} : 'N/A';
 my $server_branch= $ENV{SERVER_BRANCH} || 'N/A';
+my $server_revno= $ENV{SERVER_REVNO} || 'N/A';
 my $test_line= $ENV{SYSTEM_DEFINITIONNAME} || $ENV{TRAVIS_BRANCH} || $ENV{TEST_ALIAS} || 'N/A';
 
 system("rm -rf /tmp/MDEV-* /tmp/MENT-* /tmp/TODO-*");
@@ -220,7 +221,7 @@ sub register_result
     my $type= shift; # strong, weak or no_match
     if (my $dbh= connect_to_db()) {
         if ($type eq 'no_match') {
-            my $query= "INSERT INTO regression.result (ci, test_id, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\', \'no_match\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')";
+            my $query= "INSERT INTO regression.result (ci, test_id, match_type, test_result, url, server_branch, server_revno, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\', \'no_match\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
             $dbh->do($query);
         }
         else {
@@ -234,7 +235,7 @@ sub register_result
                     $fixdate= "'$fixed_mdevs{$j}'";
                     $match_type= 'fixed';
                 }
-                my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')";
+                my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_revno, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
                 $dbh->do($query);
             }
         }
