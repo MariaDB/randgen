@@ -366,8 +366,9 @@ MDEV-20750:
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-20737:
 =~ mysqld: failed to decrypt .*  rc: .*  dstlen: .*  size: .*
-=~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail
+=~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail|Got error 126 when executing undo undo_key_insert
 =~ mysqld: Aria engine: Redo phase failed
+=~ aria-encrypt-tables
 MDEV-20691:
 =~ signal 11|AddressSanitizer: SEGV
 =~ TABLE::insert_portion_of_time
