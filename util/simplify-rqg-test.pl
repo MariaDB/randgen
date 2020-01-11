@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Copyright (c) 2008-2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2019, MariaDB Corporation
+# Copyright (c) 2020, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -38,17 +38,16 @@ use Time::HiRes;
 # which will still reproduce a desired outcome.
 #
 
-my ($trials, $storage_prefix);
-my @exit_status;
-my @expected_output;
+my $storage_prefix;
 my $mtr_thread= 500;
+my $expected_output;
+my $seed= 1;
 
 GetOptions(
-    'trials=i' => \$trials,
-    'exit_status|exit-status=s@' => \@exit_status,
-    'output=s@' => \@expected_output,
     'workdir=s' => \$storage_prefix,
     'mtr_thread|mtr-thread=i' => \$mtr_thread,
+    'output=s' => \$expected_output,
+    'seed=i' => \$seed,
 );
 
 unless (defined $storage_prefix) {
@@ -70,53 +69,176 @@ say "Vardir: $vardir";
 say "Grammar storage: $storage";
 say "MTR build thread: $mtr_thread";
 
-my $exit_status_values= '';
-map { $exit_status_values.= "--exit-status=".$_." " } (@exit_status);
+my @transformation_validators= ();
+my @transformers= ();
+my @simplifiable_options= ();
+my @grammars= ();
+my $grammar;
 
-my @mysqld_options;
-my @rqg_options;
-my @grammars;
-my @validators;
-my @transformers;
-my @reporters;
-my @gendata_options;
-my $threads= 2;
-my $duration= 400;
+my $iteration= 0;
 
-foreach my $o (@ARGV) {
-    if ($o =~ /^--mysqld\d?=/) {
-        push @mysqld_options, $o;
-    } elsif ($o =~ /^(?:--grammar|--redefine)1?=(.+)/) {
+my $rqgcmd_base =
+    "perl runall-trials.pl ".
+    "--vardir=$vardir ".
+    "--mtr-build-thread=$mtr_thread ".
+    "--seed=$seed "
+;
+
+$rqgcmd_base.= " --output=\"$expected_output\"" if $expected_output;
+
+foreach my $opt (@ARGV)
+{
+    # Some options will be kept as is
+    if ($opt =~ /^--grammar=(.*)/) {
+        $grammar= $1;
+    } elsif ($opt =~ /^--redefine=(.*)/) {
         push @grammars, $1;
-    } elsif ($o =~ /^--reporters=(.*)/) {
-        my @r= split(/,/,$1);
-        push @reporters, @r;
-    } elsif ($o =~ /^--transformers=(.*)/) {
-        my @t= split(/,/,$1);
-        push @transformers, @t;
-    } elsif ($o =~ /^--validators=(.*)/) {
-        my @v= split(/,/,$1);
-        push @validators, @v;
-    } elsif ($o =~ /^--gendata|^--skip[-_]gendata/) {
-        push @gendata_options, $o;
-    } elsif ($o =~ /^--duration=(\d+)/) {
-        $duration= $1;
-    } elsif ($o =~ /^--threads=(\d+)/) {
-        $threads= $1;
-    } elsif ($o !~ /^--(?:vardir|mtr[-_]build[-_]thread)/) {
-        # Vardir and mtr-build-thread are replaced by own values,
-        # everything else is passed over to trials
-        push @rqg_options, $o;
+    } elsif ($opt =~ /^(--mysqld\d?)=--(.*)/) {
+        my ($left, $right)= ($1, $2);
+        if ($right !~ /^loose-/) {
+            $right= 'loose-'.$right;
+        }
+        push @simplifiable_options, "$left=--$right";
+    } elsif ($opt =~ /^--(basedir\d?|vardir\d+|duration|queries|threads|exit[-_]status|trials)=/) {
+        $rqgcmd_base.= " $opt";
+    } elsif ($opt =~ /--transformers=(.*)/) {
+        my @vals= split /,/, $1;
+        @transformers= (@transformers, @vals);
+    } elsif ($opt =~ /--validators=(.*)/) {
+        my @vals= split /,/, $1;
+        foreach my $v (@vals) {
+            if ($v =~ /Transformer/) {
+                push @transformation_validators, $v;
+            } else {
+                push @simplifiable_options, "--validators=$v";
+            }
+        }
+    } elsif ($opt =~ /--reporters=(.*)/) {
+        my @vals= split /,/, $1;
+        foreach my $v (@vals) {
+            if ($v eq 'Deadlock') {
+                $rqgcmd_base.= " --reporters=$v";
+            } else {
+                push @simplifiable_options, "--reporters=$v";
+            }
+        }
+    } else {
+        push @simplifiable_options, $opt;
     }
 }
 
-unless (scalar @grammars) {
-    croak("No grammars defined");
+unless ($grammar) {
+    croak("No grammar defined");
 }
 
-unless ("@grammars" =~ 'basics.yy') {
-    push @grammars, 'conf/mariadb/basics.yy';
+say("########################################");
+say("### Running command line simplification");
+say("");
+
+# At this point @grammars contains redefines, if any,
+# and $grammar contains the main grammar
+
+if (scalar @grammars)
+{
+    say("-----");
+    say("Redefines to be simplified: @grammars");
+
+    my @preserved_redefines= ();
+    my $cmd= "$rqgcmd_base --grammar=$grammar";
+    map { $cmd.= " --transformers=$_" } @transformers if scalar(@transformers);
+    map { $cmd.= " --validators=$_" } @transformation_validators if scalar(@transformation_validators);
+    $cmd.= " @simplifiable_options";
+    
+    for (my $i=0; $i<=$#grammars; $i++) {
+        say("Trying to remove redefine $grammars[$i]");
+        my @new_grammars= ($i < $#grammars ? (@preserved_redefines, @grammars[$i+1..$#grammars]) : (@preserved_redefines));
+        my $new_cmd= $cmd;
+        map { $new_cmd.= " --redefine=$_" } @new_grammars if scalar(@new_grammars);
+        $new_cmd.= " > ${storage}/${iteration}.log";
+        say($new_cmd);
+        # runall-trials returns 1 if the failure was reproduced, and 0 otherwise
+        my $res= system($new_cmd);
+        if ($res) {
+            say("Redefine $grammars[$i] can be removed");
+        } else {
+            say("Redefine $grammars[$i] has to be preserved");
+            push @preserved_redefines, $grammars[$i];
+        }
+        $iteration++;
+    }
+    @grammars= @preserved_redefines;
 }
+
+if (scalar @transformers)
+{
+    say("-----");
+    say("Transformers to be simplified: @transformers");
+    say("Transformation validators to be taken into account: @transformation_validators");
+
+    my @preserved_transformers= ();
+    my $cmd= "$rqgcmd_base --grammar=$grammar";
+    map { $cmd.= " --redefine=$_" } @grammars if scalar(@grammars);
+    $cmd.= " @simplifiable_options";
+
+    for (my $i=0; $i<=$#transformers; $i++) {
+        say("Trying to remove transformer $transformers[$i]");
+        my @new_transformers= ($i < $#transformers ? (@preserved_transformers, @transformers[$i+1..$#transformers]) : (@preserved_transformers));
+        my $new_cmd= $cmd;
+        map { $new_cmd.= " --transformers=$_" } @new_transformers if scalar(@new_transformers);
+        map { $new_cmd.= " --validators=$_" } @transformation_validators if scalar(@new_transformers);
+        $new_cmd.= " > ${storage}/${iteration}.log";
+        say($new_cmd);
+        # runall-trials returns 1 if the failure was reproduced, and 0 otherwise
+        my $res= system($new_cmd);
+        if ($res) {
+            say("Transformer $transformers[$i] can be removed");
+        } else {
+            say("Transformer $transformers[$i] has to be preserved");
+            push @preserved_transformers, $transformers[$i];
+        }
+        $iteration++;
+    }
+    if (scalar @preserved_transformers) {
+        map { $rqgcmd_base.= " --transformers=$_" } @preserved_transformers;
+        map { $rqgcmd_base.= " --validators=$_" } @transformation_validators;
+    }
+}
+
+if (scalar @simplifiable_options)
+{
+    say("-----");
+    say("Options to be simplified: @simplifiable_options");
+
+    my @preserved_options= ();
+    my $cmd= "$rqgcmd_base --grammar=$grammar";
+    map { $cmd.= " --redefine=$_" } @grammars if scalar(@grammars);
+
+    for (my $i=0; $i<=$#simplifiable_options; $i++) {
+        say("Trying to remove option $simplifiable_options[$i]");
+        my $new_cmd= "$cmd @preserved_options @simplifiable_options[$i+1..$#simplifiable_options]";
+        $new_cmd.= " > ${storage}/${iteration}.log";
+        say($new_cmd);
+        # runall-trials returns 1 if the failure was reproduced, and 0 otherwise
+        my $res= system($new_cmd);
+        if ($res) {
+            say("Option $simplifiable_options[$i] can be removed");
+        } else {
+            say("Option $simplifiable_options[$i] has to be preserved");
+            push @preserved_options, $simplifiable_options[$i];
+        }
+        $iteration++;
+    }
+    $rqgcmd_base.= " @preserved_options";
+}
+
+say("Command line simplification finished, final set of options (excluding grammars):");
+say("$rqgcmd_base");
+
+say("####################################");
+say("### Running grammar simplification");
+say("");
+
+@grammars= ($grammar, @grammars);
 
 my $grammar = GenTest::Grammar->new(
     grammar_files => [ @grammars ],
@@ -129,8 +251,6 @@ my $initial_grammar = $grammar->toString();
 
 my $errfile = $vardir . '/mysql.err';
 my $general_log = $vardir . '/mysql.log';
-
-my $iteration;
 
 my $simplifier = GenTest::Simplifier::Grammar->new(
     grammar_flags => +GRAMMAR_FLAG_COMPACT_RULES,
@@ -149,34 +269,7 @@ my $simplifier = GenTest::Simplifier::Grammar->new(
         my $current_rqg_log = $storage . '/' . $iteration . '.log';
         my $start_time = Time::HiRes::time();
 
-        my $rqgcmd =
-            "perl runall-trials.pl ".
-            "$exit_status_values ".
-            "--output=\"".$expected_output[0]."\" ".
-            "--trials=$trials ".
-            "--grammar=$current_grammar ".
-            "--duration=$duration ".
-            "--threads=$threads ".
-            "--vardir=$vardir ".
-            "--mtr-build-thread=$mtr_thread ".
-            "@rqg_options ".
-            "@gendata_options ".
-            "@rqg_options ".
-            "@mysqld_options "
-        ;
-
-        if (scalar @transformers) {
-            $rqgcmd.= '--transformers='.join(',', @transformers).' ';
-        }
-        if (scalar @validators) {
-            $rqgcmd.= '--validators='.join(',', @validators).' ';
-        }
-        if (scalar @reporters) {
-            $rqgcmd.= '--reporters='.join(',', @reporters).' ';
-        }
-
-        $rqgcmd.= " >$current_rqg_log 2>&1";
-
+        my $rqgcmd= "$rqgcmd_base --grammar=$current_grammar >$current_rqg_log 2>&1";
         say($rqgcmd);
         my $rqg_status = system($rqgcmd);
         $rqg_status = $rqg_status >> 8;
@@ -184,53 +277,16 @@ my $simplifier = GenTest::Simplifier::Grammar->new(
         my $end_time = Time::HiRes::time();
         my $duration = $end_time - $start_time;
 
-        unless (scalar @exit_status) {
-            @exit_status= (+STATUS_ANY_ERROR);
-        }
-
         say("rqg_status = $rqg_status; duration = $duration");
 
-        foreach my $desired_status_code (@exit_status)
-        {
-            return ORACLE_ISSUE_NO_LONGER_REPEATABLE
-                if ($rqg_status == STATUS_ENVIRONMENT_FAILURE && 
-                    $desired_status_code != STATUS_ENVIRONMENT_FAILURE);
-
-            if (($rqg_status == $desired_status_code) ||
-                (($rqg_status != 0) && ($desired_status_code == STATUS_ANY_ERROR))) {
-                # The current log (to be scanned for @expected_output) is in $current_rqg_log 
-
-                open (my $my_logfile,'<'.$current_rqg_log)
-                    or croak "unable to open $current_rqg_log : $!";
-
-                # If open (above) did not fail than size determination must be successful.
-                my @filestats = stat($current_rqg_log);
-                my $filesize = $filestats[7];
-
-                seek($my_logfile, -$filesize, 2) or croak "Could not seek $filesize bytes backwards from the 
-                end of the file '$current_rqg_log' (which is $filesize bytes long). Error: $!\n";
-                read($my_logfile, my $rqgtest_output, $filesize);
-
-                # Every element of @expected_output must be found in $rqgtest_output.
-                my $success = 1;
-                foreach my $expected_output (@expected_output) {
-                    if ($rqgtest_output =~ m{$expected_output}sio) {
-                        say ("#####################");
-                        say ("###### Found pattern:  $expected_output ######");
-                    } else {
-                        say ("###### Not found pattern:  $expected_output ######");
-                        $success = 0;
-                        last;
-                    }
-                }
-                if ($success) {
-                    say ("###### SUCCESS with $current_grammar ######");
-                    say ("#####################");
-                    system("cp $general_log $storage/mysql.log.$iteration");
-                    return ORACLE_ISSUE_STILL_REPEATABLE;
-                }
-            } # End of check if the output matches given string patterns
-        } # End of loop over desired_status_codes
+        # runall-trials.pl returns 1 if the failure was reproduced
+        # and 0 otherwise
+        if ($rqg_status) {
+            say ("###### SUCCESS with $current_grammar ######");
+            say ("#####################");
+            system("cp $general_log $storage/mysql.log.$iteration");
+            return ORACLE_ISSUE_STILL_REPEATABLE;
+        }
         return ORACLE_ISSUE_NO_LONGER_REPEATABLE;
     }
     );
