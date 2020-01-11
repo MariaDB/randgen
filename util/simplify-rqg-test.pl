@@ -221,7 +221,7 @@ if (scalar @simplifiable_options)
         # runall-trials returns 1 if the failure was reproduced, and 0 otherwise
         my $res= system($new_cmd);
         if ($res) {
-            say("Option $simplifiable_options[$i] can be removed");
+            say ("###### SUCCESS with cmd $iteration: option $simplifiable_options[$i] can be removed ######");
         } else {
             say("Option $simplifiable_options[$i] has to be preserved");
             push @preserved_options, $simplifiable_options[$i];
