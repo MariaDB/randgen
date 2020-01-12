@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21460:
+=~ Assertion \`! is_set()'
+=~ Diagnostics_area::set_ok_status
+=~ mysql_load
+=~ Version: '10\.1
 MDEV-21446:
 =~ Assertion \`!prebuilt->index->is_primary()'
 =~ row_search_idx_cond_check
