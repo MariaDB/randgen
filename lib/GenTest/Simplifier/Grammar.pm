@@ -51,24 +51,21 @@ sub new {
 sub simplify {
 	my ($simplifier, $initial_grammar_string) = @_;
 
-    # Due to the importance of the initial run, we will try it twice before giving up
 	if ($simplifier->oracle($initial_grammar_string) == ORACLE_ISSUE_NO_LONGER_REPEATABLE) {
-        if ($simplifier->oracle($initial_grammar_string) == ORACLE_ISSUE_NO_LONGER_REPEATABLE) {
-            carp("Error: Initial grammar failed to reproduce the same issue.
-            This may be a configuration issue or a non-repeatability issue.
-            Configuration issue: check the run output log above; it may highlight a problem.
-            If the configuration is correct, then check these suggestions for non-repeatability:
-            * Increase the duration of the run ('duration')
-            * Increase the number of trials ('trials'): this helps for sporadic issues
-            * Double check the seed and mask values ('seed' and 'mask')
-            * Vary the seed value ('seed')
-            Various config (simplifier setup, grammar, ...) and non-repeatability issues may result in this error.
-            Also, check the grammar for the existence of 'thread1:' clauses (besides 'query:'). At the moment,
-            simplify-grammar.pl is unable to deal with these type of clauses. It may thus help to move any rules
-            from such a 'thread1:' clause to the 'query:' clause, and see if the issue is still repeatable.
-            ");
-            return undef;
-        }
+        carp("Error: Initial grammar failed to reproduce the same issue.
+        This may be a configuration issue or a non-repeatability issue.
+        Configuration issue: check the run output log above; it may highlight a problem.
+        If the configuration is correct, then check these suggestions for non-repeatability:
+        * Increase the duration of the run ('duration')
+        * Increase the number of trials ('trials'): this helps for sporadic issues
+        * Double check the seed and mask values ('seed' and 'mask')
+        * Vary the seed value ('seed')
+        Various config (simplifier setup, grammar, ...) and non-repeatability issues may result in this error.
+        Also, check the grammar for the existence of 'thread1:' clauses (besides 'query:'). At the moment,
+        simplify-grammar.pl is unable to deal with these type of clauses. It may thus help to move any rules
+        from such a 'thread1:' clause to the 'query:' clause, and see if the issue is still repeatable.
+        ");
+        return undef;
 	}
 	
 	my $grammar_string = $initial_grammar_string;
