@@ -146,11 +146,11 @@ say($cmd);
 # runall-trials returns 1 if the failure was reproduced, and 0 otherwise
 my $res= system($cmd);
 if ($res) {
-    say("Initial run failed to reproduce the issue, giving up");
-    exit 1;
-} else {
     say("###### SUCCESS with cmd $iteration: initial run reproduced the issue");
     $iteration++;
+} else {
+    say("Initial run failed to reproduce the issue, giving up");
+    exit 1;
 }
 
 say("########################################");
