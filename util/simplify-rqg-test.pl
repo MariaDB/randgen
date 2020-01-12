@@ -128,7 +128,29 @@ foreach my $opt (@ARGV)
 }
 
 unless ($grammar) {
-    croak("No grammar defined");
+    say("No grammar defined");
+    exit 1;
+}
+
+say("###########################");
+say("### Running initial trials");
+say("");
+
+my $cmd= "$rqgcmd_base --grammar=$grammar";
+map { $cmd.= " --transformers=$_" } @transformers if scalar(@transformers);
+map { $cmd.= " --validators=$_" } @transformation_validators if scalar(@transformation_validators);
+map { $cmd.= " --redefine=$_" } @grammars if scalar(@grammars);
+$cmd.= " @simplifiable_options";
+$cmd.= " > ${storage}/${iteration}.log";
+say($cmd);
+# runall-trials returns 1 if the failure was reproduced, and 0 otherwise
+my $res= system($cmd);
+if ($res) {
+    say("Initial run failed to reproduce the issue, giving up");
+    exit 1;
+} else {
+    say("###### SUCCESS with cmd $iteration: initial run reproduced the issue");
+    $iteration++;
 }
 
 say("########################################");
@@ -159,7 +181,7 @@ if (scalar @grammars)
         # runall-trials returns 1 if the failure was reproduced, and 0 otherwise
         my $res= system($new_cmd);
         if ($res) {
-            say("Redefine $grammars[$i] can be removed");
+            say("###### SUCCESS with cmd $iteration: redefine $grammars[$i] can be removed");
         } else {
             say("Redefine $grammars[$i] has to be preserved");
             push @preserved_redefines, $grammars[$i];
@@ -191,7 +213,7 @@ if (scalar @transformers)
         # runall-trials returns 1 if the failure was reproduced, and 0 otherwise
         my $res= system($new_cmd);
         if ($res) {
-            say("Transformer $transformers[$i] can be removed");
+            say("###### SUCCESS with cmd $iteration: transformer $transformers[$i] can be removed");
         } else {
             say("Transformer $transformers[$i] has to be preserved");
             push @preserved_transformers, $transformers[$i];
@@ -289,7 +311,7 @@ my $simplifier = GenTest::Simplifier::Grammar->new(
         }
         return ORACLE_ISSUE_NO_LONGER_REPEATABLE;
     }
-    );
+);
 
 my $simplified_grammar = $simplifier->simplify($initial_grammar);
 
