@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MENT-614:
+=~ AddressSanitizer:
+=~ Single_line_formatting_helper::on_add_str
+=~ get_quick_record_count
+=~ Version: '10\.3
 MENT-438:
 =~ signal 11
 =~ MDL_lock::incompatible_granted_types_bitmap
@@ -61,11 +66,6 @@ MENT-361:
 =~ filter_query_type
 =~ log_statement
 =~ Prepared_statement
-MENT-360:
-=~ AddressSanitizer: heap-use-after-free|signal 11
-=~ strmake_root
-=~ Query_arena::strmake
-=~ mysqld_list_processes
 MENT-328:
 =~ mariabackup: File '.*seq.*MAI' not found (Errcode: 2 "No such file or directory")
 =~ Error on aria table file open .*seq.*MAI
@@ -79,7 +79,7 @@ MENT-319:
 =~ Assertion \`backup_flush_ticket == 0'
 =~ backup_start
 MENT-264:
-=~ Error on file .*\.M.*I open during .*seq.* table copy
+=~ Error on file .*\.M.* open during .* table copy
 MENT-263:
 =~ server_audit2
 =~ Assertion \`global_status_var\.global_memory_used == 0'
@@ -97,16 +97,11 @@ MENT-189:
 #
 # Fixed in the next release
 #
-MDEV-18875:
-=~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction\.stmt'
-=~ ha_rollback_trans
-=~ mysql_trans_commit_alter_copy_data|trans_commit
-MDEV-18460:
-=~ signal 11|AddressSanitizer: SEGV
-=~ tdc_create_key
-=~ THD::create_tmp_table_def_key
-=~ THD::open_temporary_table
 
 ##############################################################################
 # Weak matches
 ##############################################################################
+
+#
+# Fixed in the next release
+#
