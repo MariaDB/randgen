@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21470:
+=~ AddressSanitizer:
+=~ my_hash_sort_bin
+=~ calc_hash_for_unique
+=~ TABLE::update_virtual_fields
+=~ Version: '10\.4|Version: '10\.5
 MDEV-21460:
 =~ Assertion \`! is_set()'
 =~ Diagnostics_area::set_ok_status
@@ -370,10 +376,16 @@ MDEV-20750:
 =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-20737:
-=~ mysqld: failed to decrypt .*  rc: .*  dstlen: .*  size: .*
+=~ mysqld: failed to decrypt .*  rc: .*  dstlen: .*  size: .*|MAI has wrong LSN
 =~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail|Got error 126 when executing undo undo_key_insert
 =~ mysqld: Aria engine: Redo phase failed
 =~ aria-encrypt-tables
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-20737:
+=~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail|Got error 126 when executing undo undo_key_insert
+=~ mysqld: Aria engine: Redo phase failed
+=~ aria-encrypt-tables
+=~ Version: '10\.2
 MDEV-20691:
 =~ signal 11|AddressSanitizer: SEGV
 =~ TABLE::insert_portion_of_time
@@ -2108,6 +2120,9 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
+MDEV-21470:
+=~ Can't find record in
+=~ Version: '10\.4|Version: '10\.5
 MDEV-21373:
 =~ Index for table .* is corrupt; try to repair it
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
