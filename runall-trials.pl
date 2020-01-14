@@ -81,9 +81,6 @@ push @ARGV, "--vardir2=$vardir2" if defined $vardir2;
 
 my $comb_str = join(' ', @ARGV);
 
-# Counter-intuitively, 0 is returned when trials did NOT reproduce the issue,
-# and 1 is returned when the issue was reproduced.
-# TODO: change it some time in future (but take care of other tools which use it as is)
 my $trials_result= 0;
 
 foreach my $trial_id (1..$trials) {
@@ -155,26 +152,8 @@ exit($trials_result);
 
 sub check_for_desired_result {
 	my $resname = shift;
-    my $exit_status_matches= 0;
-	if (scalar @exit_status) {
-		foreach (@exit_status) {
-			if ($resname eq $_) {
-                $exit_status_matches= 1;
-                last;
-            }
-		}
-        unless ($exit_status_matches) {
-            say("Exit status $resname is not on the list of desired status codes (@exit_status), it will be ignored");
-            return 0;
-        }
-	}
-	else {
-		# No desired codes, anything except for STATUS_OK will do
-		if ($resname eq 'STATUS_OK') {
-            say("Exit status STATUS_OK and the list of desired status codes is empty, result will be ignored");
-            return 0;
-        }
-	}
+
+    # NOTE: subroutine returns 1 if the goal was achieved, and 0 otherwise
 
     if ($output) {
         unless (open(OUTFILE, "$output_file")) {
@@ -196,8 +175,29 @@ sub check_for_desired_result {
             return 0;
         }
     }
+
+	if (scalar @exit_status) {
+        my $exit_status_matches= 0;
+		foreach (@exit_status) {
+			if ($resname eq $_) {
+                $exit_status_matches= 1;
+                last;
+            }
+		}
+        unless ($exit_status_matches) {
+            say("Exit status $resname is not on the list of desired status codes (@exit_status), it will be ignored");
+            return 0;
+        }
+	}
+    elsif (not $output and $resname eq 'STATUS_OK') {
+        say("Exit status STATUS_OK and the list of desired status codes is empty, result will be ignored");
+        return 0;
+    }
+
+    # If we are here, we have achieved the goal, we just need to produce a proper log message
+
     my $line= "Trials succeeded at reproducing the problem: exit status $resname";
-    if ($exit_status_matches) {
+    if (scalar @exit_status) {
         $line.= ' matches one of desired exit codes';
     }
     if ($output) {
