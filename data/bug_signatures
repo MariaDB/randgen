@@ -531,7 +531,7 @@ MDEV-20494:
 =~ versioning
 =~ Version: '10\.4|Version: '10\.5
 MDEV-20484:
-=~ signal 11|AddressSanitizer: unknown-crash
+=~ signal 11|AddressSanitizer:
 =~ mem_heap_dup
 =~ dfield_dup
 =~ innobase_get_computed_value
@@ -1497,6 +1497,10 @@ MDEV-17782:
 =~ decimal_bin_size: Assertion \`scale <= precision'
 =~ my_decimal_get_binary_size
 =~ calc_group_buffer
+MDEV-17749:
+=~ Assertion \`thd->transaction.stmt\.is_empty()'
+=~ Locked_tables_list::unlock_locked_tables
+=~ mysql_alter_table
 MDEV-17711:
 =~ Assertion \`arena_for_set_stmt== 0'
 =~ set_arena_for_set_stmt
