@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21496:
+=~ InnoDB: Failing assertion: trx->dict_operation_lock_mode == RW_X_LATCH
+=~ row_mysql_unlock_data_dictionary
+=~ ha_innobase::truncate
+=~ Downgrade
+=~ Version: '10\.2
+MDEV-21485:
+=~ AddressSanitizer:|Assertion \`pos < index->n_def'
+=~ dfield_get_len|dict_index_get_nth_field
+=~ rec_get_converted_size_comp_prefix_low
+=~ Version: '10\.4|Version: '10\.5
+MDEV-21478:
+=~ Assertion \`col->len == sizeof(doc_id_t)'
+=~ dict_load_columns
 MDEV-21470:
 =~ AddressSanitizer:
 =~ my_hash_sort_bin
@@ -19,6 +33,10 @@ MDEV-21446:
 =~ Assertion \`!prebuilt->index->is_primary()'
 =~ row_search_idx_cond_check
 =~ row_search_mvcc
+MDEV-21440:
+=~ Assertion \`translog_is_LSN_chunk(page[page_offset])'
+=~ translog_read_record_header_from_buffer
+=~ maria_apply_log
 MDEV-21428:
 =~ InnoDB: Failing assertion: prebuilt->template_type == ROW_MYSQL_WHOLE_ROW
 =~ row_update_for_mysql
@@ -70,7 +88,7 @@ MDEV-21373:
 MDEV-21329:
 =~ InnoDB: Failing assertion: lock->lock_word\.load(std::memory_order_relaxed) == X_LOCK_DECR|InnoDB: Failing assertion: lock->lock_word == X_LOCK_DECR|InnoDB: Failing assertion: my_atomic_load32_explicit(&lock->lock_word, MY_MEMORY_ORDER_RELAXED) == X_LOCK_DECR
 =~ KILL_SERVER|fts_cache_destroy
-=~ =~ Version: '10\.2|Version: '10\.3|Version: '10\.4
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
 MDEV-21307:
 =~ Assertion \`cache_mngr->trx_cache\.empty() && cache_mngr->stmt_cache\.empty()'
 =~ binlog_close_connection
@@ -288,13 +306,13 @@ MDEV-20750:
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-20737:
 =~ mysqld: failed to decrypt .*  rc: .*  dstlen: .*  size: .*|MAI has wrong LSN
-=~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail|Got error 126 when executing undo undo_key_insert
+=~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail|Got error 126 when executing undo undo_key_insert|Got error 127 when executing undo undo_row_update
 =~ Aria engine: Redo phase failed|Aria engine: Undo phase failed
 =~ aria-encrypt-tables
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-20737:
 =~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail|Got error 126 when executing undo undo_key_insert
-=~ mysqld: Aria engine: Redo phase failed
+=~ mysqld: Aria engine: Redo phase failed|Aria engine: Undo phase failed
 =~ aria-encrypt-tables
 =~ Version: '10\.2
 MDEV-20691:
@@ -701,7 +719,7 @@ MDEV-19596:
 =~ handler::ha_index_read_idx_map
 =~ Delayed_insert.*handle_inserts
 MDEV-19576:
-=~ Got error 175 when executing record redo_index|Got error 175 when executing undo undo_row_insert
+=~ Got error 175 when executing record redo_index|Got error 175 when executing undo undo_row_insert| Got error 175 when executing record redo_purge_row_head
 =~ Aria engine: Redo phase failed|Aria engine: Undo phase failed
 =~ Aria recovery failed
 MDEV-19555:
@@ -1314,12 +1332,12 @@ MDEV-17912:
 =~ Got error 192 when executing record .*
 =~ Aria engine: Redo phase failed
 MDEV-17891:
-=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction.stmt.modified_non_trans_table'
+=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'
 =~ select_insert::abort_result_set|mysql_insert
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-17891:
 =~ The table .* is full|Warning: Enabling keys got errno 121
-=~ Assertion \`transactional_table \|\| !(info.copied \|\| info.deleted) \|\| thd->transaction.stmt.modified_non_trans_table'
+=~ Assertion \`transactional_table \|\| !(info\.copied \|\| info\.deleted) \|\| thd->transaction\.stmt\.modified_non_trans_table'
 =~ mysql_load
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-17890:
@@ -1964,6 +1982,8 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
+MDEV-21478:
+=~ Table .* contains .* user defined columns in InnoDB, but .* columns in MariaDB
 MDEV-21471:
 =~ Version: '10\.4|Version: '10\.5
 =~ is marked as crashed and should be repaired
@@ -2012,7 +2032,7 @@ MDEV-18805:
 =~ Found too many records; Can't continue
 =~ Number of rows changed from
 MDEV-18805:
-=~ signal 11
+=~ signal 11|AddressSanitizer:
 =~ Field::is_null_in_record
 =~ Column_definition::Column_definition
 =~ Create_field::Create_field
