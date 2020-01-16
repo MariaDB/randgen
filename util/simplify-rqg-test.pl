@@ -99,8 +99,10 @@ foreach my $opt (@ARGV)
             $right= 'loose-'.$right;
         }
         push @simplifiable_options, "$left=--$right";
-    } elsif ($opt =~ /^--(basedir\d?|vardir\d+|duration|queries|threads|exit[-_]status|trials)=/) {
+    } elsif ($opt =~ /^--(basedir\d?|duration|queries|threads|exit[-_]status|trials)=/) {
         $rqgcmd_base.= " $opt";
+    } elsif ($opt =~ /^--(vardir\d?|seed|mtr[-_]build[-_]thread)=/) {
+        # vardir, mtr-build-thread and seed are overridden anyway, skipping them completely
     } elsif ($opt =~ /--transformers=(.*)/) {
         my @vals= split /,/, $1;
         @transformers= (@transformers, @vals);
@@ -162,7 +164,6 @@ say("");
 
 if (scalar @grammars)
 {
-    say("-----");
     say("Redefines to be simplified: @grammars");
 
     my @preserved_redefines= ();
@@ -172,6 +173,7 @@ if (scalar @grammars)
     $cmd.= " @simplifiable_options";
     
     for (my $i=0; $i<=$#grammars; $i++) {
+        say("-----");
         say("Trying to remove redefine $grammars[$i]");
         my @new_grammars= ($i < $#grammars ? (@preserved_redefines, @grammars[$i+1..$#grammars]) : (@preserved_redefines));
         my $new_cmd= $cmd;
@@ -203,6 +205,7 @@ if (scalar @transformers)
     $cmd.= " @simplifiable_options";
 
     for (my $i=0; $i<=$#transformers; $i++) {
+        say("-----");
         say("Trying to remove transformer $transformers[$i]");
         my @new_transformers= ($i < $#transformers ? (@preserved_transformers, @transformers[$i+1..$#transformers]) : (@preserved_transformers));
         my $new_cmd= $cmd;
@@ -236,6 +239,7 @@ if (scalar @simplifiable_options)
     map { $cmd.= " --redefine=$_" } @grammars if scalar(@grammars);
 
     for (my $i=0; $i<=$#simplifiable_options; $i++) {
+        say("-----");
         say("Trying to remove option $simplifiable_options[$i]");
         my $new_cmd= "$cmd @preserved_options @simplifiable_options[$i+1..$#simplifiable_options]";
         $new_cmd.= " > ${storage}/${iteration}.log";
