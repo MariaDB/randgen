@@ -88,15 +88,18 @@ sub simplify {
 
         say("-----------------------");
         say("Starting ".($d==0 ? "first" : "second")." descend");
-		$simplifier->descend('query');
-
-		foreach my $rule (keys %{$simplifier->[SIMPLIFIER_GRAMMAR_OBJ]->rules()}) {
-            next if $rule =~ /^(?:query|thread\d+)(?:_init)?(?:_add)?$/;
-			if (not exists $simplifier->[SIMPLIFIER_RULES_VISITED]->{$rule}) {
-				say("Rule $rule is not referenced any more. Removing from grammar.");
-				$simplifier->[SIMPLIFIER_GRAMMAR_OBJ]->deleteRule($rule);
-			}
-		}
+        foreach my $rule (keys %{$simplifier->[SIMPLIFIER_GRAMMAR_OBJ]->rules()}) {
+            if ($rule =~ /^(?:query|thread\d+)(?:_init)?(?:_add)?$/) {
+                $simplifier->descend($rule);
+            }
+        }
+        foreach my $rule (keys %{$simplifier->[SIMPLIFIER_GRAMMAR_OBJ]->rules()}) {
+            next if ($rule =~ /^(?:query|thread\d+)(?:_init)?(?:_add)?$/);
+            if (not exists $simplifier->[SIMPLIFIER_RULES_VISITED]->{$rule}) {
+                say("Rule $rule is not referenced any more. Removing from grammar.");
+                $simplifier->[SIMPLIFIER_GRAMMAR_OBJ]->deleteRule($rule);
+            }
+        }
 
 		$grammar_string = $simplifier->[SIMPLIFIER_GRAMMAR_OBJ]->toString();
 	}

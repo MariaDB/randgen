@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MENT-614:
+=~ AddressSanitizer:
+=~ Single_line_formatting_helper::on_add_str
+=~ get_quick_record_count
+=~ Version: '10\.3
 MENT-438:
 =~ signal 11
 =~ MDL_lock::incompatible_granted_types_bitmap

@@ -171,7 +171,7 @@ sub check_for_desired_result {
         }
         close(OUTFILE);
         unless ($output_matches) {
-            say("Output did not match the pattern $output, result will be ignored");
+            say("Output did not match the pattern \'$output\', result will be ignored");
             return 0;
         }
     }
