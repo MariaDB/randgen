@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21507:
+=~ is marked as crashed and should be repaired
+=~ engine=Aria|default-storage-engine=aria
+=~ Version: '10\.1
 MDEV-21502:
 =~ AddressSanitizer:
 =~ maria_write
@@ -1436,6 +1440,11 @@ MDEV-17223:
 =~ Assertion \`thd->killed != 0'
 =~ ha_maria::enable_indexes
 =~ handler::ha_end_bulk_insert
+MDEV-17217:
+=~ Assertion \`0'
+=~ in make_sortkey
+=~ find_all_keys
+=~ filesort
 MDEV-17177:
 =~ signal 11|AddressSanitizer: use-after-poison
 =~ Item_func_in::cleanup
@@ -1732,8 +1741,7 @@ MDEV-14420:
 =~ recv_recover_page
 MDEV-13644:
 =~ void ilink::assert_linked(): Assertion \`prev != 0 && next != 0'
-=~ unlink_not_visible_thd
-=~ Status: KILL_SERVER|innobase_destroy_background_thd|destroy_thd
+=~ Status: KILL_SERVER|innobase_destroy_background_thd|destroy_thd|unlink_not_visible_thd
 MDEV-13444:
 =~ InnoDB: Failing assertion: mtflush_io != NULL
 =~ buf_mtflu_io_thread_exit
@@ -2152,8 +2160,6 @@ MDEV-17344:
 =~ Prepared_statement::~Prepared_statement
 MDEV-17225:
 =~ log_descriptor\.bc\.buffer->prev_last_lsn
-MDEV-17217:
-=~ in make_sortkey
 MDEV-17054:
 =~ InnoDB needs charset 0 for doing a comparison, but MySQL cannot find that charset
 MDEV-17054:
