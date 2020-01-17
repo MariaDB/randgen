@@ -5,7 +5,7 @@
 ##############################################################################
 
 MDEV-21507:
-=~ is marked as crashed and should be repaired
+=~ is marked as crashed and should be repaired|Incorrect key file for table
 =~ engine=Aria|default-storage-engine=aria
 =~ Version: '10\.1
 MDEV-21502:
@@ -93,6 +93,13 @@ MDEV-21373:
 =~ tree_search_next|hp_rb_var_key_length|ha_key_cmp
 =~ check_one_rb_key
 =~ heap_check_heap
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21342:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ my_ok
+=~ mysql_update
+=~ versioning
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21329:
 =~ InnoDB: Failing assertion: lock->lock_word\.load(std::memory_order_relaxed) == X_LOCK_DECR|InnoDB: Failing assertion: lock->lock_word == X_LOCK_DECR|InnoDB: Failing assertion: my_atomic_load32_explicit(&lock->lock_word, MY_MEMORY_ORDER_RELAXED) == X_LOCK_DECR
