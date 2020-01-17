@@ -105,6 +105,11 @@ MDEV-21329:
 =~ InnoDB: Failing assertion: lock->lock_word\.load(std::memory_order_relaxed) == X_LOCK_DECR|InnoDB: Failing assertion: lock->lock_word == X_LOCK_DECR|InnoDB: Failing assertion: my_atomic_load32_explicit(&lock->lock_word, MY_MEMORY_ORDER_RELAXED) == X_LOCK_DECR
 =~ KILL_SERVER|fts_cache_destroy
 =~ Version: '10\.2|Version: '10\.3|Version: '10\.4
+MDEV-21310:
+=~ Assertion \`part_share->auto_inc_initialized'
+=~ ha_partition::get_auto_increment
+=~ ha_partition::write_row
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21307:
 =~ Assertion \`cache_mngr->trx_cache\.empty() && cache_mngr->stmt_cache\.empty()'
 =~ binlog_close_connection
@@ -2002,6 +2007,10 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
+MDEV-21310:
+=~ insert.* into .* partition
+=~ Out of range value for column
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21478:
 =~ Table .* contains .* user defined columns in InnoDB, but .* columns in MariaDB
 MDEV-21471:
