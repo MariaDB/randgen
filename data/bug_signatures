@@ -15,7 +15,7 @@ MDEV-21502:
 =~ Version: '10\.2|Version: '10\.3
 MDEV-21496:
 =~ InnoDB: Failing assertion: trx->dict_operation_lock_mode == RW_X_LATCH
-=~ row_mysql_unlock_data_dictionary
+=~ row_mysql_unlock_data_dictionary|row_mysql_lock_data_dictionary_func
 =~ ha_innobase::truncate
 =~ Downgrade
 =~ Version: '10\.2
@@ -53,7 +53,7 @@ MDEV-21428:
 =~ Version: '10\.4|Version: '10\.5
 =~ versioning
 MDEV-21419:
-=~ InnoDB: Trying to load index \`FTS_INDEX_TABLE_IND` for table .*, but the index tree has been freed!
+=~ InnoDB: Trying to load index \`FTS_INDEX_TABLE_IND\` for table .*, but the index tree has been freed!
 =~ signal 11|AddressSanitizer:
 =~ dict_load_table_one
 =~ fts_drop_table
@@ -327,7 +327,7 @@ MDEV-20750:
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-20737:
 =~ mysqld: failed to decrypt .*  rc: .*  dstlen: .*  size: .*|MAI has wrong LSN
-=~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail|Got error 126 when executing undo undo_key_insert|Got error 127 when executing undo undo_row_update
+=~ Got error .* when executing .*
 =~ Aria engine: Redo phase failed|Aria engine: Undo phase failed
 =~ aria-encrypt-tables
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
