@@ -38,7 +38,7 @@ sub transform {
   return STATUS_WONT_HANDLE if $orig_query !~ m{SELECT}sio;
 	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|GRANT|REVOKE)}sio
 	        || $orig_query =~ m{LIMIT}io
-		|| $orig_query =~ m{(COUNT|SUM|AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE)\s*\(}io;
+		|| $orig_query =~ m{(COUNT|SUM|AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE|GROUP_CONCAT)\s*\(}io;
 
 	if ($orig_query =~ m{SELECT\s+DISTINCT}io) {
 		$orig_query =~ s{SELECT\s+DISTINCT}{SELECT }io;
