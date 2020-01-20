@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21540:
+=~ signal 11|AddressSanitizer:
+=~ handle_pre_scan
+=~ check_duplicate_long_entry_key
+=~ mysql_change_partitions
+MDEV-21540:
+=~ Assertion \`inited==NONE'
+=~ handler::ha_index_init
+=~ check_duplicate_long_entry_key
+=~ ha_partition::change_partitions
+MDEV-21539:
+=~ Assertion \`!((new_col->prtype ^ col->prtype) & ~256U)'
+=~ row_log_table_apply_convert_mrec
+=~ row_log_table_apply_op
+=~ mysql_alter_table
 MDEV-21507:
 =~ is marked as crashed and should be repaired|Incorrect key file for table
 =~ engine=Aria|default-storage-engine=aria
@@ -1946,11 +1961,6 @@ TODO-842:
 =~ fts_index_cache_init
 =~ fts_sync_table
 TODO-842:
-=~ Assertion \`!((new_col->prtype ^ col->prtype) & ~256U)'
-=~ row_log_table_apply_convert_mrec
-=~ row_log_table_apply_op
-=~ mysql_alter_table
-TODO-842:
 =~ Assertion \`mutex->__data\.__owner == 0'
 =~ Datafile::Datafile
 TODO-842:
@@ -2288,6 +2298,9 @@ MDEV-14833:
 =~ trx->error_state == DB_SUCCESS
 MDEV-14643:
 =~ cursor->index->is_committed
+MDEV-14349:
+=~ STATUS_LENGTH_MISMATCH
+=~ Transformed query: .* GenTest::Transform::ExecuteAsView.* ANY|Transformed query: .* GenTest::Transform::ExecuteAsView.* SOME|Transformed query: .* GenTest::Transform::ExecuteAsView.* ALL
 MDEV-14264:
 =~ binlog_cache_data::reset
 MDEV-14040:
@@ -2300,5 +2313,8 @@ MDEV-11783:
 =~ checksum_length == f->ptr
 MDEV-9137:
 =~ in _ma_ck_real_write_btree
+MDEV-7600:
+=~ STATUS_LENGTH_MISMATCH_SELECT
+=~ Transformed query: .* GenTest::Transform::ExecuteAsPreparedT.* ANY|Transformed query: .* GenTest::Transform::ExecuteAsPreparedT.* SOME|Transformed query: .* GenTest::Transform::ExecuteAsPreparedT.* ALL
 MDEV-5924:
 =~ Query_cache::register_all_tables
