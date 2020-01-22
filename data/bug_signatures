@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21555:
+=~ InnoDB: foreign constraints: secondary index is out of sync
+=~ Assertion \`!"secondary index is out of sync"'
+=~ dict_index_t::vers_history_row
+=~ row_upd_check_references_constraints
+MDEV-21550:
+=~ Assertion \`!table->fts->in_queue'
+=~ fts_optimize_remove_table
+=~ row_drop_table_for_mysql
 MDEV-21540:
 =~ signal 11|AddressSanitizer:
 =~ handle_pre_scan
@@ -1838,11 +1847,6 @@ TODO-842:
 =~ InnoDB: Failing assertion: err == DB_SUCCESS
 =~ JOIN_CACHE::join_records
 =~ rbt_eject_node
-TODO-842:
-=~ InnoDB: foreign constraints: secondary index is out of sync
-=~ Assertion \`!"secondary index is out of sync"'
-=~ dict_index_t::vers_history_row
-=~ row_upd_check_references_constraints
 TODO-842:
 =~ InnoDB: Failing assertion: s_latch == rw_lock_own(&index->lock, 352)
 =~ row_ins_scan_sec_index_for_duplicate
