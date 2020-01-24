@@ -78,7 +78,6 @@ sub new {
 		"--wsrep_sst_method=rsync", 
 		"--innodb_autoinc_lock_mode=2", 
 		"--default-storage-engine=InnoDB", 
-		"--innodb_locks_unsafe_for_binlog=1",
 		"--binlog-format=row"
 	);
 

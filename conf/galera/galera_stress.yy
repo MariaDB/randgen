@@ -64,7 +64,7 @@ join_list:
 insert_replace:
 	i_r INTO _table (`pk`) VALUES (NULL) |
 	i_r INTO _table ( _field_no_pk , _field_no_pk ) VALUES ( value , value ) , ( value , value ) |
-	i_r INTO _table ( _field_no_pk ) SELECT _field_key FROM _table AS X where ORDER BY _field_list LIMIT large_digit;
+	i_r INTO _table ( _field_no_pk ) SELECT _field_key FROM _table AS X where;
 
 i_r:
 	INSERT ignore |
@@ -75,15 +75,12 @@ ignore:
 	IGNORE ;
 
 update:
-	UPDATE ignore _table AS X SET _field_no_pk = value where ORDER BY _field_list LIMIT large_digit ;
+	UPDATE ignore _table AS X SET _field_no_pk = value where;
 
 # We use a smaller limit on DELETE so that we delete less than we insert
 
 delete:
-	DELETE ignore FROM _table where_delete ORDER BY _field_list LIMIT small_digit ;
-
-order_by:
-	| ORDER BY X . _field_key ;
+	DELETE ignore FROM _table where_delete;
 
 # Use an index at all times
 where:
