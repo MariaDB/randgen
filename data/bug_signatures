@@ -4,6 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21576:
+=~ Assertion \`table->vers_start != table->vers_end'|Assertion \`t'|Assertion \`t->mysql_col_len == 8'
+=~ row_insert_for_mysql
+=~ Version: '10\.4|Version: '10\.5
+MDEV-21564:
+=~ Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| (!purge_sys.enabled() && (srv_is_being_started \|\| trx_rollback_is_active \|\| srv_force_recovery >= SRV_FORCE_NO_BACKGROUND)) \|\| ((trx->mysql_thd \|\| trx->internal) && srv_fast_shutdown)'
+=~ trx_purge_add_undo_to_history
+=~ trx_write_serialisation_history
+=~ fts_optimize_words|dict_table_close
+MDEV-21561:
+=~ Assertion \`bitmap_is_subset(&m_part_info->read_partitions, &m_part_info->lock_partitions)'
+=~ ha_partition::start_stmt
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21555:
 =~ InnoDB: foreign constraints: secondary index is out of sync
 =~ Assertion \`!"secondary index is out of sync"'
@@ -350,13 +363,13 @@ MDEV-20750:
 =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-20737:
-=~ mysqld: failed to decrypt .*  rc: .*  dstlen: .*  size: .*|MAI has wrong LSN
+=~ mysqld: failed to decrypt .*  rc: .*  dstlen: .*  size: .*|MA.* has wrong LSN
 =~ Got error .* when executing .*
 =~ Aria engine: Redo phase failed|Aria engine: Undo phase failed
 =~ aria-encrypt-tables
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-20737:
-=~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail|Got error 126 when executing undo undo_key_insert
+=~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail|Got error 126 when executing undo undo_key_insert|Got error 134 when executing undo undo_row_update
 =~ mysqld: Aria engine: Redo phase failed|Aria engine: Undo phase failed
 =~ aria-encrypt-tables
 =~ Version: '10\.2
@@ -1097,7 +1110,7 @@ MDEV-18654:
 MDEV-18643:
 =~ FATAL ERROR: .* failed to execute query BACKUP .*: Deadlock found when trying to get lock; try restarting transaction|FATAL ERROR: .* failed to execute query BACKUP .*: Lock wait timeout exceeded; try restarting transaction
 MDEV-18624:
-=~ AddressSanitizer: heap-use-after-free
+=~ AddressSanitizer: heap-use-after-free|signal 11
 =~ mysql_derived_prepare
 =~ mysql_multi_update_prepare
 =~ sp_instr_stmt::exec_core
@@ -1984,11 +1997,6 @@ TODO-842:
 =~ field_unpack
 =~ key_unpack
 =~ print_keydup_error
-TODO-842:
-=~ Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| (!purge_sys.enabled() && (srv_is_being_started \|\| trx_rollback_is_active \|\| srv_force_recovery >= SRV_FORCE_NO_BACKGROUND)) \|\| ((trx->mysql_thd \|\| trx->internal) && srv_fast_shutdown)'
-=~ trx_purge_add_undo_to_history
-=~ trx_write_serialisation_history
-=~ fts_optimize_words
 TODO-842:
 =~ Assertion \`!ldate->neg'
 =~ mix_date_and_time_complex
