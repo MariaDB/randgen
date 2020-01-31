@@ -4,15 +4,24 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21617:
+=~ Assertion \`binlog_table_maps == 0'
+=~ THD::reset_for_next_command
+=~ bb-10.5-monty
+MDEV-21589:
+=~ AddressSanitizer: memcpy-param-overlap
+=~ Static_binary_string::q_append|String::append
+=~ Item_func_concat_ws::val_str
 MDEV-21576:
 =~ Assertion \`table->vers_start != table->vers_end'|Assertion \`t'|Assertion \`t->mysql_col_len == 8'
 =~ row_insert_for_mysql
 =~ Version: '10\.4|Version: '10\.5
+# Not merged up yet
 MDEV-21564:
 =~ Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| (!purge_sys.enabled() && (srv_is_being_started \|\| trx_rollback_is_active \|\| srv_force_recovery >= SRV_FORCE_NO_BACKGROUND)) \|\| ((trx->mysql_thd \|\| trx->internal) && srv_fast_shutdown)'
 =~ trx_purge_add_undo_to_history
 =~ trx_write_serialisation_history
-=~ fts_optimize_words|dict_table_close
+=~ fts_optimize_words|dict_table_close|kill_server
 MDEV-21561:
 =~ Assertion \`bitmap_is_subset(&m_part_info->read_partitions, &m_part_info->lock_partitions)'
 =~ ha_partition::start_stmt
@@ -21,7 +30,8 @@ MDEV-21555:
 =~ InnoDB: foreign constraints: secondary index is out of sync
 =~ Assertion \`!"secondary index is out of sync"'
 =~ dict_index_t::vers_history_row
-=~ row_upd_check_references_constraints
+=~ row_upd_check_references_constraints|row_ins_check_foreign_constraint
+# Not merged up yet
 MDEV-21550:
 =~ Assertion \`!table->fts->in_queue'
 =~ fts_optimize_remove_table
@@ -36,11 +46,6 @@ MDEV-21540:
 =~ handler::ha_index_init
 =~ check_duplicate_long_entry_key
 =~ ha_partition::change_partitions
-MDEV-21539:
-=~ Assertion \`!((new_col->prtype ^ col->prtype) & ~256U)'
-=~ row_log_table_apply_convert_mrec
-=~ row_log_table_apply_op
-=~ mysql_alter_table
 MDEV-21507:
 =~ is marked as crashed and should be repaired|Incorrect key file for table
 =~ engine=Aria|default-storage-engine=aria
@@ -50,17 +55,13 @@ MDEV-21502:
 =~ maria_write
 =~ ha_maria::write_row
 =~ Version: '10\.2|Version: '10\.3
+# Fixed in 10.2.20, but affects downgrade to 10.2.19
 MDEV-21496:
 =~ InnoDB: Failing assertion: trx->dict_operation_lock_mode == RW_X_LATCH
 =~ row_mysql_unlock_data_dictionary|row_mysql_lock_data_dictionary_func
 =~ ha_innobase::truncate
 =~ Downgrade
-=~ Version: '10\.2
-MDEV-21485:
-=~ AddressSanitizer:|Assertion \`pos < index->n_def'
-=~ dfield_get_len|dict_index_get_nth_field
-=~ rec_get_converted_size_comp_prefix_low
-=~ Version: '10\.4|Version: '10\.5
+=~ Version: '10\.2\.19
 MDEV-21478:
 =~ Assertion \`col->len == sizeof(doc_id_t)'
 =~ dict_load_columns
@@ -186,16 +187,6 @@ MDEV-21242:
 =~ Field_.*::val_.*
 =~ Protocol_text::store
 =~ vcols
-=~ Version: '10\.4|Version: '10\.5
-MDEV-21233:
-=~ Assertion \`m_extra_cache'
-=~ ha_partition::late_extra_cache
-=~ mysql_multi_update
-=~ versioning
-MDEV-21184:
-=~ Assertion \`used_tables_cache == 0'
-=~ Item_func::fix_fields
-=~ make_cond_for_table_from_pred
 =~ Version: '10\.4|Version: '10\.5
 MDEV-21138:
 =~ Assertion \`col->ord_part'|Assertion \`f\.col->ord_part'
@@ -394,7 +385,7 @@ MDEV-20666:
 MDEV-20666:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE'
 =~ row_search_mvcc
-=~ ha_innobase::index_read
+=~ ha_innobase::index_read|a_innobase::index_next_same
 =~ Version: '10\.2
 MDEV-20666:
 =~ InnoDB: Failing assertion: prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE
@@ -628,11 +619,6 @@ MDEV-20235:
 =~ Out of memory; check if mysqld or some other process uses all available memory
 =~ DISTINCT VARIANCE.* GROUP BY .* ORDER BY .*BENCHMARK .* failed: 5: Out of memory (Needed .* bytes)
 =~ Version: '10\.1\.
-MDEV-20252:
-=~ signal 11|AddressSanitizer: SEGV on unknown address
-=~ handler_index_cond_check
-=~ row_search_idx_cond_check
-=~ JOIN_TAB_SCAN::open
 MDEV-20207:
 =~ Assertion \`! is_set()'
 =~ Diagnostics_area::set_eof_status
@@ -686,6 +672,10 @@ MDEV-20114:
 =~ signal 11|AddressSanitizer: SEGV
 =~ dict_col_t::detach
 =~ dict_index_t::detach_columns
+MDEV-20038:
+=~ Assertion \`rw_lock_own(dict_index_get_lock(index), RW_LOCK_S)'
+=~ btr_cur_search_to_nth_level_func
+=~ row_ins_sec_index_entry
 MDEV-20015:
 =~ Assertion \`!in_use->is_error()'
 =~ update_virtual_field
@@ -2099,8 +2089,6 @@ MDEV-18421:
 =~ foreign->foreign_table
 MDEV-18414:
 =~ Value_source::Converter_strntod::Converter_strntod
-MDEV-18343:
-=~ Mutex RW_LOCK_LIST created sync0debug\.cc
 MDEV-18322:
 =~ wrong page type
 MDEV-18291:
