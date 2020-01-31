@@ -79,7 +79,7 @@ MENT-319:
 =~ Assertion \`backup_flush_ticket == 0'
 =~ backup_start
 MENT-264:
-=~ Error on file .*\.M.* open during .*seq.* table copy
+=~ Error on file .*\.M.* open during .* table copy
 MENT-263:
 =~ server_audit2
 =~ Assertion \`global_status_var\.global_memory_used == 0'

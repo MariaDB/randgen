@@ -4,9 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21619:
+=~ signal 11
+=~ my_datetime_to_str
+=~ Datetime::to_string|my_TIME_to_str
+=~ Item::print_value
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21619:
+=~ Assertion \`fsp <= 6'|Assertion \`digits <= 6'
+=~ my_mmssff_to_str|my_datetime_to_str
+=~ my_TIME_to_str
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21617:
 =~ Assertion \`binlog_table_maps == 0'
-=~ THD::reset_for_next_command
+=~ THD::reset_for_next_command|THD::binlog_query
 =~ bb-10.5-monty
 MDEV-21589:
 =~ AddressSanitizer: memcpy-param-overlap
@@ -285,7 +296,7 @@ MDEV-20940:
 =~ row_sel_field_store_in_mysql_format_func
 =~ ha_partition
 MDEV-20903:
-=~ Assertion \`dict_index_is_clust(index)'
+=~ Assertion \`(index)->is_clust()'|Assertion \`dict_index_is_clust(index)'
 =~ row_ins_index_entry_set_vals
 =~ row_update_vers_insert
 =~ row_ins_foreign_check_on_constraint
