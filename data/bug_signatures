@@ -209,6 +209,9 @@ MDEV-21137:
 =~ buf_page_get_gen
 =~ btr_copy_blob_prefix
 =~ fts_parallel_tokenization
+MDEV-21137:
+=~ InnoDB: Flagged corruption of .* in table .* in CHECK TABLE; Wrong count
+=~ For InnoDB SYSTEM VERSIONED .* : error : Corrupt
 MDEV-21135:
 =~ InnoDB: Failing assertion: thr_get_trx(thr)->error_state == DB_SUCCESS
 =~ que_run_threads
