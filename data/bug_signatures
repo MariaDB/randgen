@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21635:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'|Assertion \`! is_set()'
+=~ Diagnostics_area::set_ok_status
+=~ my_ok
+=~ mysql_update
+=~ Version: '5\.5|Version: '10\.1|Version: '10\.2
+MDEV-21633:
+=~ Assertion \`tmp >= 0'
+=~ best_access_path
+=~ best_extension_by_limited_search
+=~ Version: '10\.4|Version: '10\.5
 MDEV-21630:
 =~ signal 11|AddressSanitizer:
 =~ mysql_derived_prepare
@@ -85,7 +96,7 @@ MDEV-21496:
 =~ InnoDB: Failing assertion: trx->dict_operation_lock_mode == RW_X_LATCH
 =~ row_mysql_unlock_data_dictionary|row_mysql_lock_data_dictionary_func
 =~ ha_innobase::truncate
-=~ Downgrade
+=~ CrashUpgrade
 =~ Version: '10\.2\.19
 MDEV-21478:
 =~ Assertion \`col->len == sizeof(doc_id_t)'
@@ -906,6 +917,11 @@ MDEV-19273:
 MDEV-19273:
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->db\.str, table->table_name\.str, MDL_SHARED)'
 =~ mysql_rm_table_no_locks
+MDEV-19273:
+=~ signal 11|AddressSanitizer
+=~ I_P_List
+=~ MDL_lock::Ticket_list::remove_ticket
+=~ MDL_context::release_lock
 MDEV-19261:
 =~ InnoDB: Failing assertion: dfield->type\.mtype == 0 \|\| dfield->len == len
 =~ trx_undo_rec_get_partial_row
@@ -1113,8 +1129,8 @@ MDEV-18696:
 MDEV-18694:
 =~ mysql_socket\.fd != -1
 =~ Protocol
-=~ send_error|send_ok
-=~ KILL_SERVER|Server shutdown in progress
+=~ send_error|send_ok|send_eof
+=~ KILL_SERVER|Server shutdown in progress|Forcing close of thread
 =~ Version: '10\.1|Version: '10\.2|Version: '10\.3
 MDEV-18693:
 =~ AddressSanitizer: heap-use-after-free|signal 11
