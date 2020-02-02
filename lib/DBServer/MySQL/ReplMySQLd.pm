@@ -195,6 +195,10 @@ sub slave {
     return $_[0]->[REPLMYSQLD_SLAVE];
 }
 
+sub error_logs {
+    return ( $_[0]->[REPLMYSQLD_MASTER_VARDIR].'/mysql.err', $_[0]->[REPLMYSQLD_SLAVE_VARDIR].'/mysql.err' );
+}
+
 sub mode {
     return $_[0]->[REPLMYSQLD_MODE];
 }
