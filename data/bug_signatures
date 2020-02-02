@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21630:
+=~ signal 11|AddressSanitizer:
+=~ mysql_derived_prepare
+=~ Multiupdate_prelocking_strategy::handle_end
+=~ sp_instr_stmt::exec_core
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21627:
 =~ Assertion \`inited == NONE \|\| update_handler != this'
 =~ handler::ha_write_row

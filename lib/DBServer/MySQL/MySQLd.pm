@@ -220,6 +220,10 @@ sub basedir {
     return $_[0]->[MYSQLD_BASEDIR];
 }
 
+sub error_logs {
+    return ( $_[0]->[MYSQLD_VARDIR].'/mysql.err' );
+}
+
 sub clientBindir {
     return $_[0]->[MYSQLD_CLIENT_BINDIR];
 }
