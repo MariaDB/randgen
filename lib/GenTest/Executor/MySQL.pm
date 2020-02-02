@@ -857,7 +857,12 @@ sub execute {
       while ($query =~ s/\/\*\!1\d{5}/\/\*\!99999/g) {};
     }
 
-    $query .= ' /* QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId() . ' */ ';
+    my $qno_comment= '/* QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId() . ' */';
+    if ($query =~ /CREATE /) {
+        $query =~ s/CREATE/CREATE $qno_comment /;
+    } else {
+        $query .= " $qno_comment";
+    }
 
     $execution_flags = $execution_flags | $executor->flags();
 
