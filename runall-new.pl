@@ -688,22 +688,44 @@ if (($gentest_result == STATUS_OK) && ( ($props->{rpl_mode} && $props->{rpl_mode
 
 sub stopServers {
     my $status = shift;
+    my $res= DBSTATUS_OK;
+    my @errlogs;
     if ($skip_shutdown) {
         say("Server shutdown is skipped upon request");
         return;
     }
     say("Stopping server(s)...");
     if ($props->{rpl_mode} ne '') {
-        $rplsrv->stopServer($status);
+        $res= $rplsrv->stopServer($status);
+        @errlogs= $rplsrv->error_logs;
     } else {
         foreach my $srv (@{$props->{server}}) {
             if ($srv) {
-                $srv->stopServer;
+                my $r= $srv->stopServer;
+                $res= $r if $r > $res;
+                push @errlogs, $srv->error_logs if $r != DBSTATUS_OK;
             }
         }
     }
+    if ($res != DBSTATUS_OK) {
+        foreach my $log (@errlogs) {
+            if (open(ERRLOG, $log)) {
+                my @errlog= ();
+                my $maxsize= 200;
+                while (<ERRLOG>) {
+                    shift @errlog if scalar(@errlog) >= $maxsize;
+                    push @errlog, $_;
+                }
+                say("The last 200 lines from $log :");
+                print(@errlog);
+                close(ERRLOG);
+            } else {
+                sayError("Couldn't open $log for reading");
+            }
+        }
+    }
+    return $res;
 }
-
 
 sub help {
     
@@ -792,7 +814,11 @@ EOF
 
 sub exit_test {
     my $status = shift;
-    stopServers($status);
+    my $res= stopServers($status);
+    if ($status == STATUS_OK and $res != DBSTATUS_OK) {
+        say("Setting status to DBSTATUS_FAILURE due to a problem upon server shutdown");
+        $status= DBSTATUS_FAILURE;
+    }
     say("[$$] $0 will exit with exit status ".status2text($status). " ($status)");
     safe_exit($status);
 }
