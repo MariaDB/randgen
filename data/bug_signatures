@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21641:
+=~ For .* BASE TABLE .* error : Found a misplaced row
+=~ For .* BASE TABLE .* error : Partition p2 returned error
+=~ versioning
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21637:
+=~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
+=~ Datetime_truncation_not_needed::Datetime_truncation_not_needed
+=~ Version: '10\.4|Version: '10\.5
 MDEV-21635:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'|Assertion \`! is_set()'
 =~ Diagnostics_area::set_ok_status
