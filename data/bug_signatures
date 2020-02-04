@@ -4,6 +4,38 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21665:
+=~ signal 11|AddressSanitizer:
+=~ my_qsort2
+=~ Filesort_buffer::sort_buffer
+=~ mysql_update
+=~ Version: '10\.5
+MDEV-21658:
+=~ Assertion \`log->blobs'
+=~ row_log_table_apply_update
+=~ ha_innobase::inplace_alter_table
+=~ Version: '10\.4|Version: '10\.5
+MDEV-21658:
+=~ Assertion \`extra_size \|\| !is_instant'
+=~ row_log_table_apply_op
+=~ ha_innobase::inplace_alter_table
+=~ Version: '10\.4|Version: '10\.5
+MDEV-21650:
+=~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction\.stmt'
+=~ ha_rollback_trans
+=~ ha_commit_trans
+=~ Version: '10\.4|Version: '10\.5
+MDEV-21648:
+=~ AddressSanitizer:
+=~ memmove
+=~ Binary_string::copy|String::copy
+=~ Item_copy_string::copy
+MDEV-21645:
+=~ AddressSanitizer:|signal 11
+=~ innobase_get_computed_value
+=~ row_merge_read_clustered_index
+=~ ha_innobase::inplace_alter_table
+=~ Version: '10\.4|Version: '10\.5
 MDEV-21641:
 =~ For .* BASE TABLE .* error : Found a misplaced row
 =~ For .* BASE TABLE .* error : Partition p2 returned error
@@ -1954,11 +1986,6 @@ TODO-842:
 =~ trx_undo_commit_cleanup
 =~ trx_rollback_resurrected
 TODO-842:
-=~ Assertion \`log->blobs'
-=~ row_log_table_apply_update
-=~ row_log_table_apply_op
-=~ ha_innobase::inplace_alter_table
-TODO-842:
 =~ AddressSanitizer: heap-use-after-free
 =~ row_ins_check_foreign_constraint
 =~ row_ins_index_entry
@@ -2000,11 +2027,6 @@ TODO-842:
 =~ row_update_vers_insert
 =~ row_update_cascade_for_mysql
 =~ row_ins_foreign_check_on_constraint
-TODO-842:
-=~ AddressSanitizer: heap-use-after-free
-=~ innobase_get_computed_value
-=~ row_merge_read_clustered_index
-=~ ha_innobase::inplace_alter_table
 TODO-842:
 =~ AddressSanitizer: use-after-poison|AddressSanitizer: heap-use-after-free|AddressSanitizer: unknown-crash
 =~ ShowStatus::GetCount::operator
