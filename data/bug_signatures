@@ -1308,6 +1308,11 @@ MDEV-18325:
 =~ InnoDB: Error: page
 =~ InnoDB: is in the future! Current system log sequence number
 =~ Version: '10\.1
+MDEV-18303:
+=~ AddressSanitizer:
+=~ Field::eq
+=~ compute_part_of_sort_key_for_equals
+=~ Version: '10\.1
 MDEV-18293:
 =~ signal 11|AddressSanitizer: SEGV
 =~ row_sel_sec_rec_is_for_clust_rec
