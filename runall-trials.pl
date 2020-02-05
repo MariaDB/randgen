@@ -156,20 +156,23 @@ sub check_for_desired_result {
     # NOTE: subroutine returns 1 if the goal was achieved, and 0 otherwise
 
     if ($output) {
-        unless (open(OUTFILE, "$output_file")) {
-            sayError("Could not open $output_file for reading: $!");
-            say("Cannot check if output matches the pattern, result will be ignored");
-            unlink($output_file);
-            return 0;
-        }
         my $output_matches= 0;
-        while (<OUTFILE>) {
-            if (/$output/) {
-                $output_matches= 1;
-                last;
+       FL:
+        foreach my $f ($output_file, "$vardir/mysql.err") {
+            unless (open(OUTFILE, "$f")) {
+                sayError("Could not open $f for reading: $!");
+                say("Cannot check if output matches the pattern, result will be ignored");
+                return 0;
             }
+            while (<OUTFILE>) {
+                if (/$output/) {
+                    $output_matches= 1;
+                    close(OUTFILE);
+                    last FL;
+                }
+            }
+            close(OUTFILE);
         }
-        close(OUTFILE);
         unless ($output_matches) {
             say("Output did not match the pattern \'$output\', result will be ignored");
             return 0;
