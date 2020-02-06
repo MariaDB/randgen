@@ -4,6 +4,48 @@
 # Strong matches
 ##############################################################################
 
+MENT-438:
+=~ signal 11
+=~ MDL_lock::incompatible_granted_types_bitmap
+=~ MDL_ticket::has_stronger_or_equal_type|MDL_ticket::is_incompatible_when_granted
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ MDL_ticket::has_stronger_or_equal_type|inline_mysql_prlock_wrlock
+=~ MDL_context::upgrade_shared_lock
+=~ run_backup_stage|backup_flush
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ signal 11
+=~ MDL_lock::Ticket_list::clear_bit_if_not_in_list
+=~ MDL_context::upgrade_shared_lock
+=~ backup_flush
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ Assertion \`this == ticket->get_ctx()'|clear_bit_if_not_in_list
+=~ MDL_context::release_lock
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ Assertion \`ticket->m_duration == MDL_EXPLICIT'|AddressSanitizer: heap-use-after-free
+=~ MDL_context::release_lock
+=~ backup_end
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ signal 11
+=~ backup_end
+=~ run_backup_stage|THD::cleanup|unlink_thd
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ signal 11
+=~ I_P_List
+=~ MDL_lock.*Ticket_list.*clear_bit_if_not_in_list|MDL_lock.*Ticket_list.*remove_ticket
+=~ MDL_context.*upgrade_shared_lock
+=~ Version: '10\.2|Version: '10\.3
+MENT-438:
+=~ signal 6
+=~ futex_fatal_error
+=~ MDL_lock::remove_ticket
+=~ backup_end
 MENT-416:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
@@ -38,6 +80,11 @@ MENT-319:
 =~ backup_start
 MENT-264:
 =~ Error on file .*\.M.*I open during .*seq.* table copy
+MENT-263:
+=~ server_audit2
+=~ Assertion \`global_status_var\.global_memory_used == 0'
+=~ mysqld_exit
+=~ Version: '10\.4
 MENT-189:
 =~ InnoDB: Failing assertion: opt_no_lock
 =~ recv_parse_log_recs
@@ -50,44 +97,15 @@ MENT-189:
 #
 # Fixed in the next release
 #
-MDEV-20495:
-=~ Assertion \`precision > 0'
-=~ decimal_bin_size
-=~ select_create::create_table_from_items|Field_new_decimal::create_from_item
-MDEV-20320:
-=~ Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id
-MDEV-20320:
-=~ InnoDB: Refusing to load .* (id=.*, flags=.*); dictionary contains id=.*, flags=.*
-=~ InnoDB: Operating system error number 2 in a file operation
-=~ InnoDB: Could not find a valid tablespace file for .*
-MDEV-19406:
-=~ Assertion \`marked_for_write_or_computed()'|Assertion \`is_stat_field \|\| !table \|\| (!table->write_set \|\| bitmap_is_set(table->write_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength))) \|\| (table->vcol_set && bitmap_is_set(table->vcol_set, field_index))'
-=~ Field_date_common::store_TIME_with_warning
-=~ Field::do_field_temporal
-=~ multi_update::do_updates
-MDEV-19406:
-=~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
-=~ handler::ha_reset
-=~ close_thread_table
-MDEV-17939:
-=~ Assertion \`++loop_count < 2'
-=~ trx_undo_report_rename
-=~ fts_drop_table|my_xpath_parse_EqualityExpr
-=~ mysql_alter_table|Alter_info::vers_prohibited
-MDEV-19647:
-=~ Assertion \`find(table)'
-=~ dict_sys_t::prevent_eviction
-=~ fts_optimize_add_table
-=~ dict_load_columns
-MDEV-19189:
-=~ AddressSanitizer: memcpy-param-overlap: memory ranges
-=~ fill_alter_inplace_info
-=~ mysql_alter_table
-MDEV-18451:
-=~ signal 11|AddressSanitizer: SEGV on unknown address
-=~ maria_create_trn_for_mysql
-=~ _ma_setup_live_state
-=~ trans_commit_implicit
+MDEV-18875:
+=~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction\.stmt'
+=~ ha_rollback_trans
+=~ mysql_trans_commit_alter_copy_data|trans_commit
+MDEV-18460:
+=~ signal 11|AddressSanitizer: SEGV
+=~ tdc_create_key
+=~ THD::create_tmp_table_def_key
+=~ THD::open_temporary_table
 
 ##############################################################################
 # Weak matches
