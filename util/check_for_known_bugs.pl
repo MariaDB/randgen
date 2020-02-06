@@ -71,6 +71,7 @@ if ($ENV{TRAVIS} eq 'true') {
 }
 my $test_result= (defined $ENV{TEST_RESULT} and $ENV{TEST_RESULT} !~ /\s/) ? $ENV{TEST_RESULT} : 'N/A';
 my $server_branch= $ENV{SERVER_BRANCH} || 'N/A';
+my $server_revno= $ENV{SERVER_REVNO} || 'N/A';
 my $test_line= $ENV{SYSTEM_DEFINITIONNAME} || $ENV{TRAVIS_BRANCH} || $ENV{TEST_ALIAS} || 'N/A';
 
 system("rm -rf /tmp/MDEV-* /tmp/MENT-* /tmp/TODO-*");
@@ -220,28 +221,23 @@ sub register_result
     my $type= shift; # strong, weak or no_match
     if (my $dbh= connect_to_db()) {
         if ($type eq 'no_match') {
-                my $query= "INSERT INTO regression.result (ci, test_id, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\', \'no_match\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')";
-                print "Running query: $query\n";
-                $dbh->do($query);
-            }
+            my $query= "INSERT INTO regression.result (ci, test_id, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\', \'no_match\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
+            $dbh->do($query);
         }
         else {
             foreach my $j (keys %found_mdevs) {
-                my $fixdate= defined $fixed_mdevs{$j} ? "'$fixed_mdevs{$j}'" : 'NULL';
-                my $draft= $draft_mdevs{$j} || 0;
-                my $match_type= ($fixdate ne 'NULL' ? 'fixed' : ($draft ? 'draft' : $type));
-                my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$test_line\')";
-                print "ci: $ci\n";
-                print "test_id: $ENV{TEST_ID}\n";
-                print "JIRA: $j\n";
-                print "fixdate: $fixdate\n";
-                print "match_type: $match_type\n";
-                print "test result: $test_result\n";
-                print "URL: $page_url\n";
-                print "branch: $server_branch\n";
-                print "test line: $test_line\n";
-                print "Running query: $query\n";
+                my $fixdate= 'NULL';
+                my $match_type= $type;
+                if ($draft_mdevs{$j}) {
+                    $match_type= 'draft';
+                }
+                if (defined $fixed_mdevs{$j}) {
+                    $fixdate= "'$fixed_mdevs{$j}'";
+                    $match_type= 'fixed';
+                }
+                my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
                 $dbh->do($query);
+            }
         }
     }
 }
