@@ -165,7 +165,8 @@ my $config = GenTest::Properties->new(
               'multi-master',
               'annotate-rules',
               'ps-protocol',
-              'restart-timeout'],
+              'restart-timeout',
+              'partitions'],
     help => \&help);
 
 help() if !$opt_result || $config->help;
