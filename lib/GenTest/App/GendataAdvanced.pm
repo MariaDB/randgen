@@ -631,14 +631,20 @@ sub gen_table {
       $create_stmt .= ")" . ($e ne '' ? " ENGINE=$e" : "");
 
       # partition 50% tables (if requested at all)
+      $res= $executor->execute($create_stmt);
+      if ($res->status != STATUS_OK) {
+          sayError("Failed to create table $name: " . $res->errstr);
+          return $res->status;
+      }
+
       if ($self->partitions and $prng->uint16(0,1))
       {
           my $partition_type= $self->random_partition_type();
           my $partition_column= (scalar(keys %pk_columns) ? $prng->arrayElement([sort keys %pk_columns]) : 'id');
-          $create_stmt.= ' PARTITION BY ' .$partition_type.'('.$partition_column.') ';
+          my $part_stmt.= 'ALTER TABLE ' . $name . ' PARTITION BY ' .$partition_type.'('.$partition_column.') ';
 
           if ($partition_type eq 'KEY' or $partition_type eq 'HASH') {
-              $create_stmt.= 'PARTITIONS '.$prng->uint16(1,20);
+              $part_stmt.= 'PARTITIONS '.$prng->uint16(1,20);
           } elsif ($partition_type eq 'RANGE') {
               my @parts= ();
               my $part_count= $prng->uint16(1,20);
@@ -650,7 +656,7 @@ sub gen_table {
                   push @parts, 'PARTITION p'.$i.' VALUES LESS THAN ('.$part_max_value.')';
               }
               push @parts, 'PARTITION pmax VALUES LESS THAN (MAXVALUE)';
-              $create_stmt.= '('.(join ',',@parts).')';
+              $part_stmt.= '('.(join ',',@parts).')';
           } elsif ($partition_type eq 'LIST') {
               my @vals= ();
               foreach my $i (0..($size*10 || 1)) {
@@ -666,14 +672,14 @@ sub gen_table {
                   @vals= @shuffled_vals;
                   push @parts, 'PARTITION p'.$n++.' VALUES IN ('.(join ',', @part_vals).')';
               }
-              $create_stmt.= '('.(join ',',@parts).')';
+              $part_stmt.= '('.(join ',',@parts).')';
           }
-      }
-
-      $res= $executor->execute($create_stmt);
-      if ($res->status != STATUS_OK) {
-          sayError("Failed to create table $name: " . $res->errstr);
-          return $res->status;
+          $res= $executor->execute($part_stmt);
+          if ($res->status == STATUS_OK) {
+              say("Table $name has been partitioned by $partition_type($partition_column)");
+          } else {
+              sayError("Failed to partition table $name by $partition_type($partition_column): " . $res->errstr);
+          }
       }
 
       if (defined $views) {
