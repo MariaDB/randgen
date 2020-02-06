@@ -672,7 +672,7 @@ sub gen_table {
 
       $res= $executor->execute($create_stmt);
       if ($res->status != STATUS_OK) {
-          sayError("Failed to create table $name");
+          sayError("Failed to create table $name: " . $res->errstr);
           return $res->status;
       }
 
