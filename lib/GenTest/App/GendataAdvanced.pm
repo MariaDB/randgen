@@ -563,7 +563,7 @@ sub gen_table {
     {
       my $name = ( $e eq $engine ? $basename : $basename . '_'.$e );
 
-      say("Creating ".$executor->getName()." table $name, size $size rows, engine $e .");
+      say("Creating ".$executor->getName()." table $name, size $size rows, " . ($e eq '' ? "default engine" : "engine $e"));
 
       ### This variant is needed due to
       ### http://bugs.mysql.com/bug.php?id=47125
