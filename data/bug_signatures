@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21680:
+=~ Assertion \`!table->pos_in_locked_tables'
+=~ tc_release_table
+=~ Version: '10\.1
 MDEV-21665:
 =~ signal 11|AddressSanitizer:
 =~ my_qsort2
