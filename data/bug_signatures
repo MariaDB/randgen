@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21688:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ mysql_alter_table
+=~ DROP SYSTEM VERSIONING
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21683:
+=~ signal 11|AddressSanitizer:
+=~ get_quick_keys
+=~ TRP_RANGE::make_quick
+=~ get_quick_record_count
+=~ Version: '10\.5
 MDEV-21680:
 =~ Assertion \`!table->pos_in_locked_tables'
 =~ tc_release_table
