@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21690:
+=~ LeakSanitizer: detected memory leaks
+=~ mem_heap_create_block_func
+=~ dict_mem_foreign_create
+=~ Version: '10\.5
 MDEV-21688:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
@@ -54,7 +59,7 @@ MDEV-21645:
 =~ Version: '10\.4|Version: '10\.5
 MDEV-21641:
 =~ For .* BASE TABLE .* error : Found a misplaced row
-=~ For .* BASE TABLE .* error : Partition p2 returned error
+=~ For .* BASE TABLE .* error : Partition .* returned error
 =~ versioning
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21637:
@@ -2115,6 +2120,10 @@ TODO-842:
 # Weak matches
 ##############################################################################
 
+MDEV-21694:
+=~ For .* BASE TABLE .* error : Found a misplaced row
+=~ For .* BASE TABLE .* error : Partition .* returned error
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21310:
 =~ insert.* into .* partition
 =~ Out of range value for column
