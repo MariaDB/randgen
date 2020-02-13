@@ -136,6 +136,7 @@ sub search_files_for_matches
       my $matches_info= '';
 
       my $mdev;
+      my $nickname;
       my $pattern;
       my $signature_does_not_match= 0;
       my $signature_lines_found= 0;
@@ -147,7 +148,7 @@ sub search_files_for_matches
           # If we have already found a pattern which does not match, don't check this signature further
           next if $signature_does_not_match;
           # Don't check other MDEV signatures if one was already found
-          next if $found_mdevs{$mdev};
+          next if defined $found_mdevs{$mdev};
           $pattern= $1;
           chomp $pattern;
           $pattern=~ s/(\"|\?|\!|\(|\)|\[|\]|\&|\^|\~|\+|\/)/\\$1/g;
@@ -155,11 +156,13 @@ sub search_files_for_matches
         # MDEV line starts a new signature
         elsif(/^\s*(MDEV-\d+|MENT-\d+|TODO-\d+):\s*(.*)/) {
           my $new_mdev= $1;
+          my $new_nickname= $2;
           # Process the previous result, if there was any
           if ($signature_lines_found and not $signature_does_not_match) {
-            process_found_mdev($mdev, \$matches_info);
+            process_found_mdev($mdev, $nickname, \$matches_info);
           }
           $mdev= $new_mdev;
+          $nickname= $new_nickname;
           $signature_lines_found= 0;
           $signature_does_not_match= 0;
           next;
@@ -177,7 +180,7 @@ sub search_files_for_matches
       }
       # Process last signature
       if ($signature_lines_found and not $signature_does_not_match) {
-        process_found_mdev($mdev, \$matches_info);
+        process_found_mdev($mdev, $nickname, \$matches_info);
       }
       # Don't go through last choice files if matches were found in the main set
       return $matches_info if $matches_info;
@@ -228,14 +231,16 @@ sub register_result
             foreach my $j (keys %found_mdevs) {
                 my $fixdate= 'NULL';
                 my $match_type= $type;
+                my $notes= $j;
                 if ($draft_mdevs{$j}) {
                     $match_type= 'draft';
+                    $notes= $found_mdevs{$j}.' - '.$j;
                 }
                 if (defined $fixed_mdevs{$j}) {
                     $fixdate= "'$fixed_mdevs{$j}'";
                     $match_type= 'fixed';
                 }
-                my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$j\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
+                my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$notes\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
                 $dbh->do($query);
             }
         }
@@ -244,13 +249,16 @@ sub register_result
 
 sub process_found_mdev
 {
-  my ($mdev, $info_ref)= @_;
+  my ($mdev, $nickname, $info_ref)= @_;
 
-  $found_mdevs{$mdev}= 1;
+  $found_mdevs{$mdev}= $nickname;
 
   if ($mdev =~ /^(?:MENT|TODO)-/) {
       # No point trying to retrieve information
-      $$info_ref .= "$mdev\n";
+      $$info_ref .= "$mdev: $nickname\n";
+      if ($mdev =~ /^TODO-/) {
+          $draft_mdevs{$mdev}= 1;
+      }
   }
   else {
       unless (-e "/tmp/$mdev.resolution") {
@@ -283,7 +291,7 @@ sub process_found_mdev
         $summary= $1;
       }
 
-      if ($mdev =~ /TODO/ or $summary =~ /^[\(\[]?draft/i) {
+      if ($summary =~ /^[\(\[]?draft/i) {
         $draft_mdevs{$mdev}= 1;
       }
 
@@ -298,7 +306,7 @@ sub process_found_mdev
       my $affectsVersions= `cat /tmp/$mdev.affectsVersions`;
       my @affected = ($affectsVersions =~ /\"name\":\"(.*?)\"/g);
 
-      $$info_ref .= "$mdev: $summary\n";
+      $$info_ref .= "$mdev: $nickname\n$summary\n";
 
       if ($resolution eq 'FIXED') {
         my $fixVersions= `cat /tmp/$mdev.fixVersions`;
