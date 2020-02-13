@@ -7,7 +7,7 @@
 MDEV-21690:
 =~ LeakSanitizer: detected memory leaks
 =~ mem_heap_create_block_func
-=~ dict_mem_foreign_create
+=~ dict_mem_foreign_create|mem_heap_add_block
 =~ Version: '10\.5
 MDEV-21688:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
@@ -1256,7 +1256,7 @@ MDEV-18461:
 =~ Assertion \`undo_lsn == ((LSN)1) \|\| head_length == row_pos->length'
 =~ write_block_record
 =~ _ma_update_at_original_place
-MDEV-18457:
+MDEV-18457: [bitmap->full_head_size]
 =~ Assertion \`(bitmap->map + (bitmap->full_head_size/6\*6)) <= full_head_end'
 =~ _ma_check_bitmap
 # Only fixed in 10.2+!
@@ -1342,7 +1342,7 @@ MDEV-18291:
 =~ std::__cxx11::_List_base|std::_List_base
 =~ dict_table_remove_from_cache|dict_sys_t::remove
 =~ ha_delete_table|ha_innobase_inplace_ctx::~ha_innobase_inplace_ctx|Sql_cmd_truncate_table::handler_truncate|row_merge_drop_table
-MDEV-18286:
+MDEV-18286: [pagecache->cnt_for_resize_op == 0]
 =~ Assertion \`pagecache->cnt_for_resize_op == 0'
 =~ check_pagecache_is_cleaned_up
 =~ plugin_shutdown
@@ -1957,164 +1957,169 @@ MDEV-5628:
 =~ Diagnostics_area::set_ok_status
 =~ mysql_update
 =~ ( SELECT 
-TODO-842:
+TODO-842: [err == DB_SUCCESS]
 =~ InnoDB: Failing assertion: err == DB_SUCCESS
 =~ JOIN_CACHE::join_records
 =~ rbt_eject_node
-TODO-842:
+TODO-842: [s_latch == rw_lock_own]
 =~ InnoDB: Failing assertion: s_latch == rw_lock_own(&index->lock, 352)
 =~ row_ins_scan_sec_index_for_duplicate
 =~ mysql_load
 =~ Version: '10\.1
-TODO-842:
+TODO-842: [sym_node->table]
 =~ InnoDB: Failing assertion: sym_node->table != NULL
 =~ pars_retrieve_table_def
 =~ fts_sync_index
 =~ Version: '10\.1
-TODO-842:
+TODO-842: [Field_timestamp_with_dec::sort_string]
 =~ AddressSanitizer: heap-buffer-overflow
 =~ Field_timestamp_with_dec::sort_string
 =~ Field::make_sort_key
 =~ Bounded_queue
-TODO-842:
+TODO-842: [mem_heap_create_block_func]
 =~ LeakSanitizer: detected memory leaks
 =~ mem_heap_create_block_func
 =~ mem_heap_add_block
 =~ dtuple_create_with_vcol
-TODO-842:
+TODO-842: [Time_zone_system::gmt_sec_to_TIME]
 =~ signal 11
 =~ Time_zone_system::gmt_sec_to_TIME
 =~ Temporal_with_date::Temporal_with_date
 =~ Arg_comparator::compare_datetime
-TODO-842:
+TODO-842: [update_const_equal_items]
 =~ AddressSanitizer: heap-buffer-overflow
 =~ update_const_equal_items
 =~ join_read_const_table
 =~ make_join_statistics
 =~ mysql_multi_update
-TODO-842:
+TODO-842: [i <= max_n_fields]
 =~ InnoDB: Failing assertion: !index->n_def \|\| i <= max_n_fields|Assertion \`!index->n_def \|\| i <= max_n_fields'
 =~ rem0rec\.cc
 =~ rec_offs_validate
-TODO-842:
+TODO-842: [== MYSQL_TYPE_TIME]
 =~ Assertion \`Item_cache_temporal::field_type() == MYSQL_TYPE_TIME'
 =~ Item_cache_temporal::val_time_packed
 =~ Item_func_between::val_int
-TODO-842:
+TODO-842: [s_latch == rw_lock_own]
 =~ InnoDB: Failing assertion: s_latch == rw_lock_own(&index->lock, 352)
 =~ row_ins_scan_sec_index_for_duplicate
 =~ row_ins_index_entry
 =~ Version: '10\.1
-TODO-842:
+TODO-842: [undo->state == 3]
 =~ InnoDB: Page .* log sequence number .* is in the future! Current system log sequence number .*
 =~ InnoDB: Your database may be corrupt or you may have copied the InnoDB tablespace but not the InnoDB log files
 =~ Assertion \`undo->state == 3'
 =~ trx_undo_commit_cleanup
 =~ trx_rollback_resurrected
-TODO-842:
+TODO-842: [row_ins_check_foreign_constraint]
 =~ AddressSanitizer: heap-use-after-free
 =~ row_ins_check_foreign_constraint
 =~ row_ins_index_entry
 =~ Version: '10\.1
-TODO-842:
+TODO-842: [mi_extra]
 =~ AddressSanitizer: SEGV|signal 11
 =~ mi_extra
 =~ ha_partition::loop_extra_alter
 =~ wait_while_table_is_used
 =~ fast_alter_partition_table
-TODO-842:
+TODO-842: [ib_vector_size]
 =~ AddressSanitizer: heap-use-after-free
 =~ ib_vector_size
 =~ fts_cache_append_deleted_doc_ids
 =~ init_ftfuncs
-TODO-842:
+TODO-842: [== page_type]
 =~ Assertion \`(uint) (res->buff[7] & 7) == page_type'
 =~ get_head_or_tail_page
 =~ allocate_and_write_block_record
 =~ maria_write
-TODO-842:
+TODO-842: [mysql_multi_update_prepare]
 =~ signal 11
 =~ lock_tables_check
 =~ mysql_multi_update_prepare
 =~ Version: '10\.1
-TODO-842:
+TODO-842: [Field_blob_compressed::get_key_image]
 =~ Assertion \`0'
 =~ Field_blob_compressed::get_key_image
 =~ stored_field_make_mm_leaf
 =~ calculate_cond_selectivity_for_table
-TODO-842:
+TODO-842: [inited==NONE]
 =~ Assertion \`inited==NONE'
 =~ handler::ha_index_init
 =~ check_duplicate_long_entry_key
 =~ ha_partition::copy_partitions
-TODO-842:
+TODO-842: [row_ins_step]
 =~ Conditional jump or move depends on uninitialised value
 =~ row_ins_step
 =~ row_update_vers_insert
 =~ row_update_cascade_for_mysql
 =~ row_ins_foreign_check_on_constraint
-TODO-842:
+TODO-842: [ShowStatus::GetCount::operator]
 =~ AddressSanitizer: use-after-poison|AddressSanitizer: heap-use-after-free|AddressSanitizer: unknown-crash
 =~ ShowStatus::GetCount::operator
 =~ innodb_show_mutex_status
 =~ innobase_show_status
-TODO-842:
+TODO-842: [m_freed]
 =~ Assertion \`!m_freed'
 =~ OSMutex::enter
 =~ fil_space_crypt_close_tablespace
 =~ fil_delete_tablespace
 =~ fts_drop_tables
-TODO-842:
+TODO-842: [index_cache->words == NULL]
 =~ InnoDB: Failing assertion: index_cache->words == NULL
 =~ fts_index_cache_init
 =~ fts_sync_table
-TODO-842:
+TODO-842: [mutex->__data.__owner == 0 / Datafile::Datafile]
 =~ Assertion \`mutex->__data\.__owner == 0'
 =~ Datafile::Datafile
-TODO-842:
+TODO-842: [page_header_get_field]
 =~ InnoDB: Failing assertion: page_offset(rec) <= page_header_get_field(page, PAGE_HEAP_TOP)
 =~ ha_innobase::prepare_inplace_alter_table
-TODO-842:
+TODO-842: [Page read from tablespace is corrupted]
 =~ InnoDB: Database page corruption on disk or a failed file read of tablespace
 =~ InnoDB: Page may be a freshly allocated page
 =~ Page read from tablespace is corrupted
-TODO-842:
+TODO-842: [new_col->mtype == col->mtype]
 =~ Assertion \`new_col->mtype == col->mtype'
 =~ row_log_table_apply_convert_mrec
 =~ row_log_table_apply_op
 =~ ha_innobase::inplace_alter_table
-TODO-842:
+TODO-842: [marked_for_read]
 =~ Assertion \`marked_for_read()'
 =~ field_unpack
 =~ key_unpack
 =~ print_keydup_error
-TODO-842:
+TODO-842: [ldate->neg]
 =~ Assertion \`!ldate->neg'
 =~ mix_date_and_time_complex
 =~ stored_field_cmp_to_item
-TODO-842:
+TODO-842: [index_cache->words == NULL]
 =~ InnoDB: Failing assertion: index_cache->words == NULL
 =~ row_log_table_apply_delete
 =~ pfs_rw_lock_sx_lock_func
-TODO-842:
+TODO-842: [pfs_rw_lock_s_unlock_func]
 =~ InnoDB: Database page corruption on disk or a failed file read of tablespace
 =~ signal 11
 =~ pfs_rw_lock_s_unlock_func
 =~ buf_page_get_zip
 =~ btr_copy_zblob_prefix
-TODO-842:
+TODO-842: [mutex->__data.__owner == 0 / row_sel_store_mysql_field]
 =~ Assertion \`mutex->__data\.__owner == 0'
 =~ __pthread_mutex_lock
 =~ row_sel_store_mysql_field
-TODO-842:
+TODO-842: [error_state == DB_SUCCESS]
 =~ InnoDB: Failing assertion: thr_get_trx(thr)->error_state == DB_SUCCESS
 =~ MYSQL_BIN_LOG::do_binlog_recovery
 =~ mem_heap_free_heap_top
-TODO-842:
+TODO-842: [Field_timestampf::set_max]
 =~ AddressSanitizer: use-after-poison
 =~ Field_timestampf::set_max
 =~ TABLE::vers_update_fields
 =~ fill_record_n_invoke_before_triggers
+TODO-842: [thd->transaction.stmt.is_empty() || / GRANT / KILL_SERVER]
+=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ open_normal_and_derived_tables
+=~ mysql_table_grant
+=~ KILL_SERVER
 
 ##############################################################################
 # Weak matches
