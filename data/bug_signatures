@@ -2120,6 +2120,13 @@ TODO-842: [thd->transaction.stmt.is_empty() || / GRANT / KILL_SERVER]
 =~ open_normal_and_derived_tables
 =~ mysql_table_grant
 =~ KILL_SERVER
+TODO-842: [status_var.local_memory_used == 0]
+=~ THD::~THD
+=~ KILL_SERVER
+TODO-842: [Forcing close of thread]
+=~ Forcing close of thread .* user:
+=~ STATUS_SERVER_DEADLOCKED|INTERNAL_ERROR
+=~ mysqld got signal 6
 
 ##############################################################################
 # Weak matches
