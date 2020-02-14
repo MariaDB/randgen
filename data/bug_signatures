@@ -1354,7 +1354,7 @@ MDEV-18285:
 MDEV-18274:
 =~ Assertion \`!!new_clustered == (innobase_need_rebuild(ha_alter_info, old_table) \|\| add_fts_doc_id)'
 =~ prepare_inplace_alter_table_dict
-MDEV-18260:
+MDEV-18260: [was_changed]
 =~ Assertion \`!was_changed \|\| (block->status & 64) \|\| (block->status & 32)'
 =~ pagecache_unlock_by_link
 MDEV-18259:
@@ -1697,7 +1697,7 @@ MDEV-16755:
 =~ signal 11
 =~ multi_delete::~multi_delete
 =~ Prepared_statement::execute|sp_head::execute
-MDEV-16745:
+MDEV-16745: [thd->transaction.stmt.is_empty / KILL_SERVER]
 =~ Assertion \`thd->transaction\.stmt\.is_empty()'
 =~ Prepared_statement::prepare
 =~ KILL_CONNECTION|KILL_SERVER
@@ -1789,7 +1789,7 @@ MDEV-15873:
 =~ Item_func_group_concat::setup
 =~ EXPLAIN
 =~ Version: '10\.2
-MDEV-15753:
+MDEV-15753: [thd->is_error]
 =~ Assertion \`thd->is_error()'
 =~ mysql_admin_table
 =~ Status: KILL_TIMEOUT|Status: KILL_SERVER
@@ -1867,7 +1867,7 @@ MDEV-14854:
 MDEV-14711:
 =~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'
 =~ buf_page_get_gen
-MDEV-14656:
+MDEV-14656: [Got error 22 when trying to lock mutex]
 =~ signal 6
 =~ Got error 22 when trying to lock mutex LOCK_event_queue
 =~ Event_queue::drop_schema_events
@@ -2127,6 +2127,15 @@ TODO-842: [Forcing close of thread]
 =~ Forcing close of thread .* user:
 =~ STATUS_SERVER_DEADLOCKED|INTERNAL_ERROR
 =~ mysqld got signal 6
+TODO-842: [new_table_id.empty]
+=~ Assertion \`!new_table_id\.empty()'
+=~ ddl_log::process_recopy
+=~ mariabackup
+=~ xtrabackup_backup_func
+TODO-842: [InnoDB: Trying to read page number]
+=~ InnoDB: Trying to read page number
+=~ fil_report_invalid_page_access
+=~ xtrabackup_prepare_func
 
 ##############################################################################
 # Weak matches
@@ -2249,7 +2258,7 @@ MDEV-18063:
 =~ Version: '10\.1
 MDEV-18062:
 =~ ha_innobase::innobase_get_index
-MDEV-18058:
+MDEV-18058: [trx0i_s.cc line]
 =~ Assertion failure in file .*trx0i_s\.cc line
 MDEV-18054:
 =~ ret > 0
