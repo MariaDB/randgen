@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21744:
+=~ Assertion \`!rec_offs_nth_sql_null(offsets, n)'
+=~ btr_cur_upd_rec_in_place
+=~ btr_cur_upd_rec_in_place
+=~ Version: '10\.5
 MDEV-21690:
 =~ LeakSanitizer: detected memory leaks
 =~ mem_heap_create_block_func
@@ -1724,7 +1729,7 @@ MDEV-16549:
 =~ Assertion \`context' failed|signal 11|AddressSanitizer: SEGV
 =~ Item_direct_view_ref.*fix_fields
 =~ mysql_derived_optimize
-MDEV-16539:
+MDEV-16539: [THD::mark_tmp_table_as_free_for_reuse]
 =~ mysqld got exception|signal 11
 =~ mark_tmp_table_as_free_for_reuse
 =~ unlock_locked_tables
@@ -1870,8 +1875,7 @@ MDEV-14711:
 MDEV-14656: [Got error 22 when trying to lock mutex]
 =~ signal 6
 =~ Got error 22 when trying to lock mutex LOCK_event_queue
-=~ Event_queue::drop_schema_events
-=~ mysql_rm_db
+=~ Event_queue::drop_schema_events|Event_queue::drop_event
 MDEV-14642:
 =~ Assertion \`table->s->db_create_options == part_table->s->db_create_options'
 =~ compare_table_with_partition
