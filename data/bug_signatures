@@ -4,9 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21748:
+=~ AddressSanitizer:|signal 11
+=~ void PageBulk::insertPage
+=~ BtrBulk::insert
+=~ row_merge_insert_index_tuples
+=~ Version: '10\.5
+MDEV-21746:
+=~ Assertion \`strcmp(share->unique_file_name,filename) \|\| share->last_version'
+=~ test_if_reopen
+=~ mi_open
+=~ QUICK_RANGE_SELECT::init_ror_merged_scan
+=~ Version: '10\.1
 MDEV-21744:
 =~ Assertion \`!rec_offs_nth_sql_null(offsets, n)'
-=~ btr_cur_upd_rec_in_place
 =~ btr_cur_upd_rec_in_place
 =~ Version: '10\.5
 MDEV-21690:
