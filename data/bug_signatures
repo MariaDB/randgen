@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21757:
+=~ Assertion \`purpose == FIL_TYPE_TABLESPACE'
+=~ fil_space_t::modify_check
+=~ fseg_free_page_low
+=~ Version: '10\.5
+MDEV-21755:
+=~ Assertion \`0'
+=~ add_to_locked_mutex
+=~ maria_close
+=~ Version: '10\.2|Version: '10\.3
+MDEV-21754:
+=~ Assertion \`file->trn == trn'
+=~ ha_maria::start_stmt
+=~ check_lock_and_start_stmt
+=~ Version: '10\.2|Version: '10\.3
 MDEV-21748:
 =~ AddressSanitizer:|signal 11
 =~ void PageBulk::insertPage
@@ -696,6 +711,10 @@ MDEV-20410:
 =~ create_view_field
 =~ Multiupdate_prelocking_strategy::handle_end
 =~ sp_instr_stmt::execute
+MDEV-20410:
+=~ pure virtual method called
+=~ find_field_in_table_ref
+=~ mysql_multi_update_prepare
 MDEV-20395:
 =~ Assertion \`!found'
 =~ remove_ptr_from_dynarray
