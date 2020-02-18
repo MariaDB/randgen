@@ -314,7 +314,7 @@ sub gen_table {
                             ]
     }
 
-    # Year columns are relatively common. 20%
+    # Year columns aren't very common. 20%
     if (!$prng->uint16(0,4)) {
         $columns{col_year} = [  'YEAR',
                                 undef,
@@ -378,6 +378,20 @@ sub gen_table {
                                 undef,
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "''" ),
+                                undef,
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef
+                            ]
+    }
+
+    # INET6 columns shoudn't be very common, but they're new. 20% for now
+    if (!$prng->uint16(0,4)) {
+        $columns{col_inet6} = [ 'INET6',
+                                undef,
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : "'::'" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
@@ -552,6 +566,19 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_enum) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
+        if ($columns{col_inet6} and !$prng->uint16(0,4)) {
+            $columns{vcol_inet6}= [ 'INET6',
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_inet6) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
                                     undef
                                 ];
@@ -811,6 +838,13 @@ sub gen_table {
                       $val = "'".$prng->text($length)."'";
                   } else {
                       $val = $prng->uint16(0,5) ? "'".$prng->text($length)."'" : "NULL";
+                  }
+              }
+              elsif ($c->[0] eq 'INET6') {
+                  if ($c->[4] eq 'NOT NULL') {
+                      $val = $prng->inet6();
+                  } else {
+                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->inet6();
                   }
               }
               push @row_values, $val;

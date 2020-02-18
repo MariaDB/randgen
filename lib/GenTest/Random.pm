@@ -31,6 +31,7 @@ require Exporter;
 	FIELD_TYPE_YEAR
 	FIELD_TYPE_BLOB
   FIELD_TYPE_TEXT
+  FIELD_TYPE_INET6
 	FIELD_TYPE_DICT
 	FIELD_TYPE_DIGIT
 	FIELD_TYPE_LETTER
@@ -116,6 +117,7 @@ use constant FIELD_TYPE_JSONPAIR    => 27;
 use constant FIELD_TYPE_JSONOBJECT  => 28;
 
 use constant FIELD_TYPE_TEXT  => 29;
+use constant FIELD_TYPE_INET6  => 30;
 
 use constant ASCII_RANGE_START		=> 97;
 use constant ASCII_RANGE_END		=> 122;
@@ -178,6 +180,7 @@ my %name2type = (
 	'year'			=> FIELD_TYPE_YEAR,
 	'enum'			=> FIELD_TYPE_ENUM,
 	'set'			=> FIELD_TYPE_SET,
+    'inet6'         => FIELD_TYPE_INET6,
 	'null'			=> FIELD_TYPE_NULL,
 	'letter'		=> FIELD_TYPE_LETTER,
 	'digit'			=> FIELD_TYPE_DIGIT,
@@ -341,6 +344,18 @@ sub hex {
 	my ($prng, $length) = @_;
 	$length = 4 if not defined $length;
 	return '0x'.join ('', map { (0..9,'A'..'F')[$prng->int(0,15)] } (1..$prng->int(1,$length)) );
+}
+
+sub inet6 {
+    my $prng = shift;
+    my $num_parts= $prng->uint16(1,8);
+    my @parts= ($num_parts == 8 ? () : (':'));
+    foreach (1..(8-scalar(@parts))) {
+        push @parts, join ('', map { (0..9,'a'..'f')[$prng->int(0,15)] } (1..$prng->int(1,4)));
+    }
+    my $res= join ':', @{$prng->shuffleArray(\@parts)};
+    $res=~ s/:::/::/;
+    return "'$res'";
 }
 
 sub date {
@@ -622,7 +637,7 @@ sub fieldType {
 
 	$field_def =~ s{ }{_}o;
 	$field_def =~ s{^_}{}o;
-	my ($field_base_type) = $field_def =~ m{^([A-Za-z]*)}o;
+	my ($field_base_type) = $field_def =~ m{^([A-Za-z0-9]*)}o;
 	my ($field_full_type) = $field_def =~ m{^([A-Za-z_]*)}o;
 	my ($orig_field_length) = $field_def =~ m{\((.*?)\)}o;
 	my $field_length = (defined $orig_field_length ? $orig_field_length : 1);
@@ -654,6 +669,8 @@ sub fieldType {
 		return $rand->enum();
 	} elsif ($field_type == FIELD_TYPE_SET) {
 		return $rand->set();
+	} elsif ($field_type == FIELD_TYPE_INET6) {
+		return $rand->inet6();
 	} elsif ($field_type == FIELD_TYPE_BLOB) {
 		return $rand->file("$cwd/data/blobs");
 	} elsif ($field_type == FIELD_TYPE_NULL) {
@@ -704,7 +721,7 @@ sub isFieldType {
 	my ($rand, $field_def) = @_;
 	return undef if not defined $field_def;
 
-	my ($field_name) = $field_def =~ m{^(?:_|)([A-Za-z]*)}o;
+	my ($field_name) = $field_def =~ m{^(?:_|)([A-Za-z0-9]*)}o;
 
 	if (exists $name2type{$field_name}) {
 		return $name2type{$field_name};
