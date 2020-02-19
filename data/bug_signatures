@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21779:
+=~ Assertion \`!memcmp(insert_buf, rec - extra_size, rec_size)'
+=~ page_cur_insert_rec_low
+=~ page_cur_tuple_insert
+=~ Version: '10\.5
 MDEV-21757:
 =~ Assertion \`purpose == FIL_TYPE_TABLESPACE'
 =~ fil_space_t::modify_check
