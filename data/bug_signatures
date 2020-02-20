@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21792:
+=~ signal 8|AddressSanitizer: FPE
+=~ dict_index_add_to_cache
+=~ create_index
+=~ Version: '10\.4|Version: '10\.5
+MDEV-21789:
+=~ Assertion \`precision > 0'
+=~ decimal_bin_size
+=~ GROUP BY.*IFNULL
+=~ Version: '5\.5|Version: '10\.1|Version: '10\.2
 MDEV-21779:
 =~ Assertion \`!memcmp(insert_buf, rec - extra_size, rec_size)'
 =~ page_cur_insert_rec_low
@@ -1745,6 +1755,11 @@ MDEV-16699:
 =~ AddressSanitizer: heap-use-after-free|signal 11
 =~ my_strnncoll_binary
 =~ Field_blob::cmp
+MDEV-16698:
+=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ Field_longstr::uncompress
+=~ dump_leaf_key
+=~ Item_func_group_concat::val_str
 MDEV-16664:
 =~ InnoDB: Failing assertion: !other_lock \|\| wsrep_thd_is_BF(lock->trx->mysql_thd, FALSE) \|\| wsrep_thd_is_BF(other_lock->trx->mysql_thd, FALSE)
 =~ lock_rec_queue_validate
@@ -2180,6 +2195,11 @@ TODO-842: [InnoDB: Trying to read page number]
 # Weak matches
 ##############################################################################
 
+MDEV-21781: [GenTest::Transform::EnableOptimizations]
+=~ Transformed query: .* GenTest::Transform::EnableOptimizations
+=~ Version: '10\.5
+MDEV-21756: [GenTest::Transform::StraightJoin]
+=~ Transformed query: .* GenTest::Transform::StraightJoin
 MDEV-21694:
 =~ For .* BASE TABLE .* error : Found a misplaced row
 =~ For .* BASE TABLE .* error : Partition .* returned error
