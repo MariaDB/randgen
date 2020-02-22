@@ -622,7 +622,7 @@ if ($props->{rpl_mode} ne '') {
     }
 
     if ($props->{compatibility} and $props->{compatibility} gt $min_version) {
-        say("Warning: minimal server version $min_version is lower than the required compatibility level $props->{compatibility}. Unexpected syntax errors may occur");
+        sayWarning("Minimal server version $min_version is lower than the required compatibility level $props->{compatibility}. Unexpected syntax errors may occur");
     } elsif (not $props->{compatibility}) {
         $props->{compatibility}= $min_version;
     }
