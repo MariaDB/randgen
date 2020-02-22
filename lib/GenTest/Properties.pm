@@ -253,7 +253,7 @@ sub init {
   $gentestProps->property('mask',$props->{mask}) if (exists $props->{mask});
   $gentestProps->property('mask-level',$props->{mask_level}) if defined $props->{mask_level};
   $gentestProps->property('metadata',(defined $props->{metadata} ? $props->{metadata} : 1)); # By default metadata is loaded
-  $gentestProps->property('multi-master',1) if $props->{'multi_master'};
+  $gentestProps->property('multi-master',1) if $props->{'multi-master'};
   $gentestProps->property('notnull',$props->{notnull}) if defined $props->{notnull};
   $gentestProps->property('ps-protocol',1) if $props->{ps_protocol};
   $gentestProps->property('querytimeout',$props->{querytimeout}) if defined $props->{querytimeout};
@@ -289,7 +289,7 @@ sub init {
   # Instead, we want to run the flow independently and only compare dumps at the end.
   # If GenTest gets 'multi-master' property, it won't run ResultsetComparator
 
-  $gentestProps->property('multi_master',1) if (defined $props->{galera} and scalar(@{$props->{dsns}})>1);
+  $gentestProps->property('multi-master',1) if (defined $props->{galera} and scalar(@{$props->{dsns}})>1);
 
   return $gentestProps;
 }
