@@ -96,6 +96,7 @@ my $opt_result = GetOptions(
     'basedir1=s' => \${$props->{basedir}}[1],
     'basedir2=s' => \${$props->{basedir}}[2],
     'basedir3=s' => \${$props->{basedir}}[3],
+    'compatibility=s' => \$props->{compatibility},
     'debug' => \$debug,
     'debug-server' => \${$props->{debug_server}}[0],
     'debug-server1' => \${$props->{debug_server}}[1],
@@ -477,6 +478,12 @@ if (scalar @ARGV) {
 # Start servers. Use rpl_alter if replication is needed.
 #
 
+if ($props->{compatibility}) {
+    if ($props->{compatibility}=~ /([0-9]+)\.([0-9]+)\.([0-9]+)/) {
+        $props->{compatibility}= sprintf("%02d%02d%02d",int($1),int($2),int($3));
+    }
+}
+
 my $rplsrv;
 
 if ($props->{rpl_mode} ne '') {
@@ -500,6 +507,9 @@ if ($props->{rpl_mode} ne '') {
     );
     
     my $status = $rplsrv->startServer();
+    unless ($props->{compatibility}) {
+        $props->{compatibility}= $rplsrv->versionNumeric;
+    }
     
     if ($status > DBSTATUS_OK) {
         stopServers($status);
@@ -549,6 +559,9 @@ if ($props->{rpl_mode} ne '') {
         sayError("Could not start Galera cluster");
         exit_test(STATUS_ENVIRONMENT_FAILURE);
     }
+    unless ($props->{compatibility}) {
+        $props->{compatibility}= $rplsrv->versionNumeric;
+    }
 
     my $galera_topology = $props->{galera};
     my $i = 0;
@@ -562,6 +575,7 @@ if ($props->{rpl_mode} ne '') {
 
 } else {
 
+    my $min_version= '999999';
     foreach my $server_id (1..3) {
         next unless ${$props->{basedir}}[$server_id];
         
@@ -589,6 +603,8 @@ if ($props->{rpl_mode} ne '') {
             sayError("Could not start all servers");
             exit_test(STATUS_CRITICAL_FAILURE);
         }
+        my $ver= ${$props->{server}}[$server_id]->versionNumeric;
+        $min_version= $ver if $ver lt $min_version;
         
         if ( ($server_id == 0) || ($props->{rpl_mode} eq '') ) {
             $dsns[$server_id] = ${$props->{server}}[$server_id]->dsn($database,$user);
@@ -604,8 +620,14 @@ if ($props->{rpl_mode} ne '') {
           }
         }
     }
-}
 
+    if ($props->{compatibility} and $props->{compatibility} gt $min_version) {
+        say("Warning: minimal server version $min_version is lower than the required compatibility level $props->{compatibility}. Unexpected syntax errors may occur");
+    } elsif (not $props->{compatibility}) {
+        $props->{compatibility}= $min_version;
+    }
+}
+say("Server version compatibility: $props->{compatibility}");
 
 #
 # Wait for user interaction before continuing, allowing the user to attach 
@@ -808,6 +830,9 @@ $0 - Run a complete random query generation test, including server start with re
     --wait-for-debugger: Pause and wait for keypress after server startup to allow attaching a debugger to the server process.
     --restart-timeout: If the server has gone away, do not fail immediately, but wait to see if it restarts (it might be a part of the test)
     --[no]metadata   : Load metadata after data generation before the test flow. On by default, to turn off, run with --nometadata
+    --compatibility  : Server version which syntax should be compatible with, in the form of x.y.z (e.g. 10.3.22) or NNNNNN (100322).
+                       It is not guaranteed that all resulting queries will comply with the requirement, only those which come
+                       from the generation mechanisms aware of the option.
     --help      : This help message
 
     If you specify --basedir1 and --basedir2 or --vardir1 and --vardir2, two servers will be started and the results from the queries

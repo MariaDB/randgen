@@ -38,6 +38,7 @@ use constant GALERA_MYSQLD_GENERAL_LOG => 7;
 use constant GALERA_MYSQLD_DEBUG_SERVER => 8;
 use constant GALERA_MYSQLD_NODE_COUNT => 9;
 use constant GALERA_MYSQLD_NODES => 10;
+use constant GALERA_MYSQLD_MINIMAL_VERSION => 11;
 
 use constant GALERA_DEFAULT_LISTEN_PORT =>  4800;
 
@@ -131,6 +132,15 @@ sub nodes {
 	return $_[0]->[GALERA_MYSQLD_NODES];
 }
 
+sub version {
+    return $_[0]->[GALERA_MYSQLD_MINIMAL_VERSION];
+}
+
+sub versionNumeric {
+    $_[0]->[GALERA_MYSQLD_MINIMAL_VERSION] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)/;
+    return sprintf("%02d%02d%02d",int($1),int($2),int($3));
+}
+
 sub startServer {
 	my ($self) = @_;
 	# Path to Galera scripts is needed for SST 
@@ -141,6 +151,7 @@ sub startServer {
 		my $node_dbh = $self->nodes->[$n]->dbh;
 		my (undef, $cluster_size) = $node_dbh->selectrow_array("SHOW STATUS LIKE 'wsrep_cluster_size'");
 		say("Cluster size after starting node $n: $cluster_size");
+        $self->[GALERA_MYSQLD_MINIMAL_VERSION]= $self->nodes->[$n]->version if (not defined $self->[GALERA_MYSQLD_MINIMAL_VERSION] or $self->versionNumeric gt $self->nodes->[$n]->versionNumeric);
 	}
 	return DBSTATUS_OK;
 }

@@ -203,6 +203,16 @@ sub mode {
     return $_[0]->[REPLMYSQLD_MODE];
 }
 
+sub version {
+    my $self= shift;
+    return $self->master->version;
+}
+
+sub versionNumeric {
+    my $self= shift;
+    return $self->master->versionNumeric;
+}
+
 sub startServer {
     my ($self) = @_;
 
