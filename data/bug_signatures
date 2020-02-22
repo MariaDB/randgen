@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21799:
+=~ Assertion \`is_storage_available(tuple - packed_tuple, 0)'
+=~ myrocks::Rdb_key_def::pack_record
+=~ myrocks::ha_rocksdb::update_write_row
+MDEV-21798:
+=~ Assertion \`0'
+=~ row_sel_convert_mysql_key_to_innobase
+=~ ha_innobase::index_read
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21792:
 =~ signal 8|AddressSanitizer: FPE
 =~ dict_index_add_to_cache
@@ -476,7 +485,7 @@ MDEV-20762:
 =~ signal 11|AddressSanitizer: SEGV
 =~ Item_field::type_handler
 =~ Temporal_with_date::make_from_item
-=~ TABLE::insert_portion_of_time
+=~ TABLE::insert_portion_of_time|cut_fields_for_portion_of_time
 =~ sp_head::execute
 MDEV-20761:
 =~ signal 11|AddressSanitizer: SEGV
@@ -1691,8 +1700,8 @@ MDEV-17004:
 MDEV-16994:
 =~ signal 11|Assertion \`!alloced \|\| !Ptr \|\| !Alloced_length \|\| (Alloced_length >= (str_length + 1))'|AddressSanitizer: SEGV
 =~ String::c_ptr|base_list_iterator::next|String::length|TRUNCATE PARTITION
-=~ partition_info::prune_partition_bitmaps
-=~ open_and_process_table
+=~ partition_info::prune_partition_bitmaps|partition_info::set_partition_bitmaps
+=~ Version: '10\.1|Version: '10\.2
 MDEV-16985:
 =~ Assertion \`strcmp(share->unique_file_name,filename) \|\| share->last_version'
 =~ test_if_reopen
