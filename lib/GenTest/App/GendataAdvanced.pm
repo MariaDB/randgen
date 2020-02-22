@@ -41,6 +41,7 @@ use constant GDS_VARCHAR_LENGTH => 6;
 use constant GDS_VCOLS => 7;
 use constant GDS_EXECUTOR_ID => 8;
 use constant GDS_PARTITIONS => 9;
+use constant GDS_COMPATIBILITY => 10;
 
 use constant GDS_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
 use constant GDS_DEFAULT_NAMES => ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9'];
@@ -61,6 +62,7 @@ sub new {
         'vcols' => GDS_VCOLS,
         'executor_id' => GDS_EXECUTOR_ID,
         'partitions' => GDS_PARTITIONS,
+        'compatibility' => GDS_COMPATIBILITY,
     },@_);
 
     if (not defined $self->[GDS_DSN]) {
@@ -108,6 +110,10 @@ sub varcharLength {
 
 sub executor_id {
     return $_[0]->[GDS_EXECUTOR_ID] || '';
+}
+
+sub compatibility {
+    return $_[0]->[GDS_COMPATIBILITY];
 }
 
 sub run {
@@ -384,8 +390,9 @@ sub gen_table {
                             ]
     }
 
+    # INET6 data type was introduced in 10.5.0
     # INET6 columns shoudn't be very common, but they're new. 20% for now
-    if (!$prng->uint16(0,4)) {
+    if ($self->compatibility ge '100500' and !$prng->uint16(0,4)) {
         $columns{col_inet6} = [ 'INET6',
                                 undef,
                                 undef,
@@ -398,7 +405,7 @@ sub gen_table {
                             ]
     }
 
-    # TODO: Add JSON and INET6
+    # TODO: Add JSON
 
     # If `id` column is auto-increment, it must be a part of the primary key (or unique key)
     my $col= $columns{id};
