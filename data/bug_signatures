@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21812:
+=~ Assertion \`marked_for_write_or_computed()'
+=~ Field_new_decimal::store_value
+=~ Rows_log_event::unpack_current_row
+=~ Version: '10\.4|Version: '10\.5
+MDEV-21812:
+=~ Assertion \`!table \|\| (!table->write_set \|\| bitmap_is_set(table->write_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength))) \|\| (table->vcol_set && bitmap_is_set(table->vcol_set, field_index))'
+=~ Field_new_decimal::store_value
+=~ Rows_log_event::unpack_current_row
+=~ Version: '10\.2|Version: '10\.3
+MDEV-21812:
+=~ Assertion \`is_stat_field \|\| !table \|\| (!table->write_set \|\| bitmap_is_set(table->write_set, field_index) \|\| (table->vcol_set && bitmap_is_set(table->vcol_set, field_index)))'
+=~ Field_new_decimal::store_value
+=~ Rows_log_event::unpack_current_row
+=~ Version: '10\.1
 MDEV-21799:
 =~ Assertion \`is_storage_available(tuple - packed_tuple, 0)'
 =~ myrocks::Rdb_key_def::pack_record
