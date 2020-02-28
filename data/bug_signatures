@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21837: [status_var.local_memory_used == 0]
+=~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
+=~ THD::~THD
+=~ KILL_SERVER|KILL_CONNECTION
+MDEV-21837: [status_var.local_memory_used == 0]
+=~ Assertion \`status_var\.local_memory_used == 0'
+=~ THD::~THD()
+=~ KILL_SERVER|Status: KILL_CONNECTION
+=~ Version: '10\.1
+MDEV-21834:
+=~ signal 11|AddressSanitizer:
+=~ key_copy
+=~ a_myisam::get_auto_increment
+=~ ha_myisam::write_row
+=~ Version: '10\.4|Version: '10\.5
 MDEV-21831:
 =~ Assertion \`length == pack_length()'
 =~ Field_inet6::sort_string
@@ -925,7 +940,7 @@ MDEV-19680:
 =~ Item_direct_ref::val_.*
 MDEV-19674:
 =~ Assertion \`marked_for_read()'
-=~ Field_newdate::get_TIME|Field_timestampf::val_native|Field_datetimef::get_TIME
+=~ Field_.*::get_.*|Field_.*::val_.*
 =~ TABLE::verify_constraints
 =~ TABLE_LIST::view_check_option
 =~ multi_update::do_updates
@@ -1730,6 +1745,12 @@ MDEV-16994:
 =~ String::c_ptr|base_list_iterator::next|String::length|TRUNCATE PARTITION
 =~ partition_info::prune_partition_bitmaps|partition_info::set_partition_bitmaps
 =~ Version: '10\.1|Version: '10\.2
+MDEV-16994:
+=~ signal 11
+=~ I_P_List_adapter
+=~ Warning_info::remove_marked_sql_conditions
+=~ sp_head::execute_procedure
+=~ Version: '10\.2
 MDEV-16985:
 =~ Assertion \`strcmp(share->unique_file_name,filename) \|\| share->last_version'
 =~ test_if_reopen
@@ -1980,6 +2001,11 @@ MDEV-14420:
 =~ Assertion failure in file .*log0recv\.cc line
 =~ recv_parse_or_apply_log_rec_body
 =~ recv_recover_page
+MDEV-14119:
+=~ Assertion \`cmp_rec_rec(rec, old_rec, offsets, old_offsets, m_index) > 0'
+=~ PageBulk::insert
+=~ row_merge_insert_index_tuples
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-13644:
 =~ void ilink::assert_linked(): Assertion \`prev != 0 && next != 0'
 =~ Status: KILL_SERVER|innobase_destroy_background_thd|destroy_thd|unlink_not_visible_thd
@@ -2211,9 +2237,6 @@ TODO-842: [thd->transaction.stmt.is_empty() || / GRANT / KILL_SERVER]
 =~ open_normal_and_derived_tables
 =~ mysql_table_grant
 =~ KILL_SERVER
-TODO-842: [status_var.local_memory_used == 0]
-=~ THD::~THD
-=~ KILL_SERVER
 TODO-842: [Forcing close of thread]
 =~ Forcing close of thread .* user:
 =~ STATUS_SERVER_DEADLOCKED|INTERNAL_ERROR
@@ -2393,11 +2416,6 @@ MDEV-17665:
 =~ share->page_type == PAGECACHE_LSN_PAGE
 MDEV-17583:
 =~ next_mrec == next_mrec_end
-MDEV-17582:
-=~ Assertion \`status_var\.local_memory_used == 0'
-=~ THD::~THD()
-=~ Status: KILL_CONNECTION
-=~ Version: '10\.1
 MDEV-17538:
 =~ == UNALLOCATED_PAGE
 MDEV-17485:
