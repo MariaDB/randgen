@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21850:
+=~ AddressSanitizer:
+=~ page_cur_insert_rec_low
+=~ page_cur_tuple_insert
+=~ Version: '10\.5
+MDEV-21848:
+=~ signal 11|AddressSanitizer:
+=~ handle_if_exists_options
+=~ mysql_alter_table
 MDEV-21847:
 =~ InnoDB: Encrypted page .* in file .* looks corrupted; key_version=1
 =~ signal 11
