@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21847:
+=~ InnoDB: Encrypted page .* in file .* looks corrupted; key_version=1
+=~ signal 11
+=~ mach_read_from_4
+=~ trx_rseg_mem_restore
+MDEV-21845:
+=~ InnoDB: Failing assertion: index->space == page_get_space_id(page)
+=~ btr_validate_level
+=~ ha_innobase::check
+=~ MariaBackupIncremental
+MDEV-21839:
+=~ signal 11
+=~ Load_log_event::copy_log_event
+=~ mysql_show_binlog_events
+=~ SHOW BINLOG EVENTS FROM
 MDEV-21837: [status_var.local_memory_used == 0]
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ THD::~THD
@@ -62,8 +77,8 @@ MDEV-21798:
 =~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21792:
 =~ signal 8|AddressSanitizer: FPE
-=~ dict_index_add_to_cache
-=~ create_index
+=~ dict_index_add_to_cache|os_file_create_simple_func
+=~ create_index|prep_alter_part_table
 =~ Version: '10\.4|Version: '10\.5
 MDEV-21789:
 =~ Assertion \`precision > 0'
@@ -786,6 +801,11 @@ MDEV-20410:
 =~ pure virtual method called
 =~ find_field_in_table_ref
 =~ mysql_multi_update_prepare
+MDEV-20410:
+=~ signal 11|pure virtual method called
+=~ create_view_field|__cxa_pure_virtual
+=~ find_field_in_table_ref
+=~ check_insert_fields
 MDEV-20395:
 =~ Assertion \`!found'
 =~ remove_ptr_from_dynarray
@@ -1023,6 +1043,11 @@ MDEV-19400:
 =~ MDL_context::upgrade_shared_lock
 =~ wait_while_table_is_used
 =~ mysql_rm_table_no_locks
+MDEV-19400:
+=~ signal 11
+=~ wait_while_table_is_used
+=~ mysql_rm_table_no_locks
+=~ SEQUENCE
 MDEV-19394:
 =~ InnoDB: checksum mismatch in tablespace
 =~ InnoDB: Operating system error number 2 in a file operation
@@ -1253,6 +1278,11 @@ MDEV-18805:
 =~ strmake_root
 =~ Query_arena::strmake
 =~ Column_definition::Column_definition
+MDEV-18805:
+=~ signal 11|AddressSanitizer:
+=~ Field::is_null_in_record
+=~ Column_definition::Column_definition
+=~ Create_field::Create_field
 MDEV-18802:
 =~ Assertion \`table->stat_initialized' failed
 =~ dict_stats_update_if_needed
@@ -2318,11 +2348,6 @@ MDEV-19320:
 MDEV-18805:
 =~ Found too many records; Can't continue
 =~ Number of rows changed from
-MDEV-18805:
-=~ signal 11|AddressSanitizer:
-=~ Field::is_null_in_record
-=~ Column_definition::Column_definition
-=~ Create_field::Create_field
 MDEV-18459:
 =~ fil_op_write_log
 MDEV-18458:
@@ -2331,7 +2356,7 @@ MDEV-18454:
 =~ ReadView::check_trx_id_sanity
 MDEV-18453:
 =~ rec_get_deleted_flag
-MDEV-18421:
+MDEV-18421: [foreign->foreign_table]
 =~ foreign->foreign_table
 MDEV-18414:
 =~ Value_source::Converter_strntod::Converter_strntod
@@ -2414,7 +2439,7 @@ MDEV-17760:
 =~ Version: '10\.1|Version: '10\.0|Version: '5\.5
 MDEV-17665:
 =~ share->page_type == PAGECACHE_LSN_PAGE
-MDEV-17583:
+MDEV-17583: [next_mrec == next_mrec_end]
 =~ next_mrec == next_mrec_end
 MDEV-17538:
 =~ == UNALLOCATED_PAGE
