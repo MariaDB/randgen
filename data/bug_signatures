@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21866:
+=~ Assertion \`!result'
+=~ convert_const_to_int
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-21850:
 =~ AddressSanitizer:
 =~ page_cur_insert_rec_low
@@ -50,7 +54,7 @@ MDEV-21831:
 MDEV-21830:
 =~ Assertion \`share->in_trans == 0'
 =~ maria_close
-=~ ha_partition::close
+=~ ha_partition::close|tc_remove_table
 MDEV-21830:
 =~ signal 11|AddressSanitizer:
 =~ ha_maria::implicit_commit
@@ -242,7 +246,7 @@ MDEV-21576:
 =~ Version: '10\.4|Version: '10\.5
 # Not merged up yet
 MDEV-21564:
-=~ Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| (!purge_sys.enabled() && (srv_is_being_started \|\| trx_rollback_is_active \|\| srv_force_recovery >= SRV_FORCE_NO_BACKGROUND)) \|\| ((trx->mysql_thd \|\| trx->internal) && srv_fast_shutdown)'
+=~ Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| (!purge_sys\.enabled() && (srv_is_being_started \|\| trx_rollback_is_active \|\| srv_force_recovery >= SRV_FORCE_NO_BACKGROUND)) \|\| ((trx->mysql_thd \|\| trx->internal) && srv_fast_shutdown)'|Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| ((srv_is_being_started \|\| trx_rollback_or_clean_is_active) && purge_sys->state == PURGE_STATE_INIT) \|\| (srv_force_recovery >= SRV_FORCE_NO_BACKGROUND && purge_sys->state == PURGE_STATE_DISABLED) \|\| ((trx->in_mysql_trx_list \|\| trx->internal) && srv_fast_shutdown)'
 =~ trx_purge_add_undo_to_history
 =~ trx_write_serialisation_history
 =~ fts_optimize_words|dict_table_close|kill_server
@@ -986,7 +990,7 @@ MDEV-19631:
 =~ Assertion \`0'
 =~ st_select_lex_unit::optimize
 =~ mysql_explain_union
-=~ Prepared_statement::execute
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-19622:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'|Assertion \`marked_for_read()'
 =~ ha_partition::set_auto_increment_if_higher
