@@ -857,11 +857,13 @@ sub execute {
       while ($query =~ s/\/\*\!1\d{5}/\/\*\!99999/g) {};
     }
 
-    my $qno_comment= '/* QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId() . ' */';
-    if ($query =~ /CREATE /) {
+    my $qno_comment= 'QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId();
+    if ($query =~ /\/\*(?:!?\d+)?\s*CREATE /) {
         $query =~ s/CREATE/CREATE $qno_comment /;
+    } elsif ($query =~ /CREATE /) {
+        $query =~ s/CREATE/CREATE \/\* $qno_comment \*\/ /;
     } else {
-        $query .= " $qno_comment";
+        $query .= " /* $qno_comment */";
     }
 
     $execution_flags = $execution_flags | $executor->flags();
