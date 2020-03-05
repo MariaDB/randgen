@@ -345,23 +345,12 @@ sub normalizeGrants {
   # were changed to backquotes:
   # Old: GRANT USAGE ON *.* TO 'zxa'
   # New: GRANT USAGE ON *.* TO `zxa`
-  # We will change all single quotes to backquotes. It can affect, for example, names which themselves contain single quotes,
-  # but it shouldn't be important for comparison.
-  # The initial goal of MDEV was to fix roles which were not quoted at all:
-  # GRANT role-1 TO 'u0'@'localhost'
-  # We will quote them.
+  # For comparison, we will remove all double quotes, single quotes and backquotes.
+  # It is not perfect, as it can change the actual identifiers, but will suffice for now
 
   foreach my $u (keys %$old_grants) {
-    $old_grants->{$u} =~ s/\'/\`/g;
-    if ($old_grants->{$u} =~ s/GRANT (\w.*?) TO/GRANT \`$1\` TO/g) {
-      say("Adjusted old grants for $u to quote role names: $old_grants->{$u}");
-    }
-  }
-  foreach my $u (keys %$new_grants) {
-    $new_grants->{$u} =~ s/\'/\`/g;
-    if ($new_grants->{$u} =~ s/GRANT (\w.*?) TO/GRANT \`$1\` TO/g) {
-      say("Adjusted new grants for $u to quote role names: $new_grants->{$u}");
-    }
+    $old_grants->{$u} =~ s/[\'\"\`]//g;
+    $new_grants->{$u} =~ s/[\'\"\`]//g;
   }
 
 }
