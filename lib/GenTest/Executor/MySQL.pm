@@ -858,13 +858,14 @@ sub execute {
     }
 
     my $qno_comment= 'QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId();
-    if ($query =~ /\/\*(?:!?\d+)?\s*CREATE /) {
-        $query =~ s/CREATE/CREATE $qno_comment /;
-    } elsif ($query =~ /CREATE /) {
-        $query =~ s/CREATE/CREATE \/\* $qno_comment \*\/ /;
-    } else {
-        $query .= " /* $qno_comment */";
-    }
+    # If a query starts with an executable comment, we'll put QNO right after the executable comment
+    if ($query =~ s/^\s*(\/\*\!.*?\*\/)/$1 \/\* $qno_comment \*\//) {}
+    # If a query starts with a non-executable comment, we'll put QNO into this comment
+    elsif ($query =~ s/^\s*\/\*(.*?)\*\//\/\* $qno_comment $1 \*\//) {}
+    # Otherwise we'll put QNO comment after the first token (it should be a keyword specifying the operation)
+    elsif ($query =~ s/^\s*(\w+)/$1 \/\* $qno_comment \*\//) {}
+    # Finally, if it's something else that we didn't expect, we'll add QNO at the end of the query
+    else { $query .= " /* $qno_comment */" };
 
     $execution_flags = $execution_flags | $executor->flags();
 
