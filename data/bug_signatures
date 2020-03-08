@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21892:
+=~ Assertion \`index != clust_index \|\| row_get_rec_trx_id(rec, index, offsets)'
+=~ row_search_mvcc
+=~ Version: '10\.5
 MDEV-21866:
 =~ Assertion \`!result'
 =~ convert_const_to_int
@@ -64,6 +68,11 @@ MDEV-21822:
 =~ Version: '10\.5
 =~ trx_commit_in_memory
 =~ innobase_commit_low
+MDEV-21821:
+=~ AddressSanitizer:
+=~ myrocks::Rdb_transaction::on_commit
+=~ myrocks::Rdb_transaction_impl::commit_no_binlog
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21812:
 =~ Assertion \`marked_for_write_or_computed()'
 =~ Field_new_decimal::store_value
