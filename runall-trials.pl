@@ -156,9 +156,19 @@ sub check_for_desired_result {
     # NOTE: subroutine returns 1 if the goal was achieved, and 0 otherwise
 
     if ($output) {
+        my @output_files= ($output_file);
+        if ($vardir and -e "$vardir/mysql.err") {
+            push @output_files, "$vardir/mysql.err";
+        }
+        if ($vardir1 and (not $vardir or $vardir1 ne $vardir) and -e "$vardir1/mysql.err") {
+            push @output_files, "$vardir1/mysql.err";
+        }
+        if ($vardir2 and (not $vardir or $vardir2 ne $vardir) and -e "$vardir2/mysql.err") {
+            push @output_files, "$vardir2/mysql.err";
+        }
         my $output_matches= 0;
        FL:
-        foreach my $f ($output_file, "$vardir/mysql.err") {
+        foreach my $f (@output_files) {
             unless (open(OUTFILE, "$f")) {
                 sayError("Could not open $f for reading: $!");
                 say("Cannot check if output matches the pattern, result will be ignored");
