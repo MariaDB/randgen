@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21906:
+=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ flush_tables
+=~ Version: '10\.1
 MDEV-21893:
 =~ Assertion \`log_block_get_start_lsn(lsn, log_block_get_hdr_no(buf)) == lsn'
 =~ log_crypt
