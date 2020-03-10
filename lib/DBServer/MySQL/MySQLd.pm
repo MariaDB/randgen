@@ -807,9 +807,8 @@ sub dumpSchema {
 }
 
 # There are some known expected differences in dump structure between
-# pre-10.2 and 10.2+ versions.
-# We need to normalize the dumps to avoid false positives while comparing them.
-# For now, we'll re-format to 10.1 style.
+# older and newer versions.
+# We need to "normalize" the dumps to avoid false positives while comparing them.
 # Optionally, we can also remove AUTOINCREMENT=N clauses.
 # The old file is stored in <filename_orig>.
 sub normalizeDump {
@@ -881,11 +880,33 @@ sub normalizeDump {
     close(DUMP2);
   }
 
+  if ($self->versionNumeric() gt '100501') {
+    say("normalizeDump removes /* mariadb-5.3 */ comments for version ".$self->versionNumeric);
+    move($file, $file.'.tmp5');
+    open(DUMP1,$file.'.tmp5');
+    open(DUMP2,">$file");
+    while (<DUMP1>) {
+      # MDEV-19906 started writing /* mariadb-5.3 */ comment
+      #   for old temporal data types
+      if (s/ \/\* mariadb-5.3 \*\///g) {}
+      print DUMP2 $_;
+    }
+    close(DUMP1);
+    close(DUMP2);
+  }
+
+
   if (-e $file.'.tmp1') {
     move($file.'.tmp1',$file.'.orig');
 #    unlink($file.'.tmp2') if -e $file.'.tmp2';
   } elsif (-e $file.'.tmp2') {
     move($file.'.tmp2',$file.'.orig');
+  } elsif (-e $file.'.tmp3') {
+    move($file.'.tmp3',$file.'.orig');
+  } elsif (-e $file.'.tmp4') {
+    move($file.'.tmp4',$file.'.orig');
+  } elsif (-e $file.'.tmp5') {
+    move($file.'.tmp5',$file.'.orig');
   }
 }
 
