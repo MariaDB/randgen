@@ -1,4 +1,4 @@
-#  Copyright (c) 2018, MariaDB
+#  Copyright (c) 2018, 2020, MariaDB Corporation
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -54,6 +54,7 @@ alttcol_item:
     alttcol_add_column | alttcol_add_column | alttcol_add_column
   | alttcol_alter_column
   | alttcol_change_column | alttcol_change_column
+  | alttcol_rename_column | alttcol_rename_column
   | alttcol_modify_column | alttcol_modify_column
   | alttcol_drop_column
 ;
@@ -70,6 +71,10 @@ alttcol_alter_column:
 
 alttcol_change_column:
     CHANGE alttcol_column_word alttcol_if_exists alttcol_col_name alttcol_col_name alttcol_add_definition alttcol_location
+;
+
+alttcol_rename_column:
+    /* compatibility 10.5.2 */ RENAME COLUMN alttcol_if_exists alttcol_col_name TO alttcol_col_name
 ;
 
 alttcol_modify_column:
