@@ -836,7 +836,7 @@ sub execute {
     my @compats= $query=~ /\/\*\s*compatibility\s+([\d\.]+)\s*\*\//g;
     foreach my $c (@compats) {
         unless ($executor->is_compatible($c)) {
-            say("The query requires at least $c version, not compatible with this test run");
+            # The query is not compatible with this test run
             return GenTest::Result->new(
                         query       => $query,
                         status      => STATUS_SKIP,
