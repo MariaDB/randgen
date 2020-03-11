@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights
 # reserved.
-# Copyright (c) 2018, 2019 MariaDB Corporation
+# Copyright (c) 2018, 2020 MariaDB Corporation
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -232,6 +232,7 @@ sub init {
               'restart-timeout',
               'ps-protocol',
               'partitions',
+              'compatibility',
       ]
   );
 
@@ -283,6 +284,7 @@ sub init {
   $gentestProps->property('views',$props->{views}) if $props->{views};
   $gentestProps->property('xml-output',$props->{xml_output}) if defined $props->{xml_output};
   $gentestProps->property('partitions',$props->{partitions}) if defined $props->{partitions};
+  $gentestProps->property('compatibility',$props->{compatibility}) if defined $props->{compatibility};
 
   # In case of multi-master topology (e.g. Galera with multiple "masters"),
   # we don't want to compare results after each query.

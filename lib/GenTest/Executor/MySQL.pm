@@ -1,6 +1,7 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Use is subject to license terms.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2020, MariaDB Corporation
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -830,6 +831,25 @@ sub reportError {
 sub execute {
     my ($executor, $query, $execution_flags) = @_;
     $execution_flags= 0 unless defined $execution_flags;
+
+    # First check the query for compatibility markers
+    my @compats= $query=~ /\/\*\s*compatibility\s+([\d\.]+)\s*\*\//g;
+    foreach my $c (@compats) {
+        unless ($executor->is_compatible($c)) {
+            say("The query requires at least $c version, not compatible with this test run");
+            return GenTest::Result->new(
+                        query       => $query,
+                        status      => STATUS_SKIP,
+                        err         => 0,
+                        errstr      => 'Not compatible',
+                        sqlstate    => undef,
+                        start_time  => undef,
+                        end_time    => undef,
+                        performance => undef
+                   );
+
+        }
+    }
 
     # Process "reverse executable comments" -- imitation of feature MDEV-7381
     # Syntax is /*!!nnnnnn ... */.

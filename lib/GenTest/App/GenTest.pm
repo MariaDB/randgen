@@ -2,7 +2,7 @@
 
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2016, 2019 MariaDB Corporation Ab.
+# Copyright (c) 2016, 2020 MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -466,7 +466,8 @@ sub workerProcess {
         properties =>  $self->config,
         filters => $self->queryFilters(),
         end_time => $self->[GT_TEST_END],
-        restart_timeout => $self->config->property('restart-timeout')
+        restart_timeout => $self->config->property('restart-timeout'),
+        compatibility => $self->config->property('compatibility'),
     );
 
     if (not defined $mixer) {

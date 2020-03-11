@@ -1,5 +1,6 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2020, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -70,6 +71,7 @@ use constant EXECUTOR_CURRENT_USER	    => 22;
 use constant EXECUTOR_SERVER_VERSION    => 23;
 use constant EXECUTOR_SERVER_VERSION_MAJOR => 24;
 use constant EXECUTOR_SERVER_VERSION_NUMERIC => 25;
+use constant EXECUTOR_COMPATIBILITY => 26;
 
 use constant FETCH_METHOD_AUTO		=> 0;
 use constant FETCH_METHOD_STORE_RESULT	=> 1;
@@ -84,21 +86,22 @@ my %global_schema_cache;
 1;
 
 sub new {
-	my $class = shift;
-	
-	my $executor = $class->SUPER::new({
-		'dsn'	=> EXECUTOR_DSN,
-		'dbh'	=> EXECUTOR_DBH,
-		'channel' => EXECUTOR_CHANNEL,
-		'sqltrace' => EXECUTOR_SQLTRACE,
-		'no-err-filter' => EXECUTOR_NO_ERR_FILTER,
-		'fetch_method' => EXECUTOR_FETCH_METHOD,
-		'end_time' => EXECUTOR_END_TIME
-	}, @_);
+    my $class = shift;
 
-	$executor->[EXECUTOR_FETCH_METHOD] = FETCH_METHOD_AUTO if not defined $executor->[EXECUTOR_FETCH_METHOD];
-    
-	return $executor;
+    my $executor = $class->SUPER::new({
+        'dsn'	=> EXECUTOR_DSN,
+        'dbh'	=> EXECUTOR_DBH,
+        'channel' => EXECUTOR_CHANNEL,
+        'sqltrace' => EXECUTOR_SQLTRACE,
+        'no-err-filter' => EXECUTOR_NO_ERR_FILTER,
+        'fetch_method' => EXECUTOR_FETCH_METHOD,
+        'end_time' => EXECUTOR_END_TIME,
+        'compatibility' => EXECUTOR_COMPATIBILITY,
+    }, @_);
+
+    $executor->[EXECUTOR_FETCH_METHOD] = FETCH_METHOD_AUTO if not defined $executor->[EXECUTOR_FETCH_METHOD];
+
+    return $executor;
 }
 
 sub newFromDSN {
@@ -133,7 +136,6 @@ sub sendError {
     my ($self, $msg) = @_;
     $self->channel->send($msg);
 }
-
 
 sub dbh {
 	return $_[0]->[EXECUTOR_DBH];
@@ -247,10 +249,21 @@ sub setServerNumericVersion {
     $_[0]->[EXECUTOR_SERVER_VERSION_NUMERIC] = $_[1];
 }
 
+sub setCompatibility {
+    $_[0]->[EXECUTOR_COMPATIBILITY] = $_[1];
+}
+
 sub serverNumericVersion {
     return $_[0]->[EXECUTOR_SERVER_VERSION_NUMERIC];
 }
 
+sub is_compatible {
+    my $requirement= $_[1];
+    if ($requirement =~ /([0-9]+)\.([0-9]+)(?:\.([0-9]+))?/) {
+        $requirement= sprintf("%02d%02d%02d",int($1),int($2),int($3||0));
+    }
+    return $_[0]->[EXECUTOR_COMPATIBILITY] ge $requirement;
+}
 
 sub type {
 	my ($self) = @_;

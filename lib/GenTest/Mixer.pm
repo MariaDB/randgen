@@ -1,5 +1,5 @@
 # Copyright (c) 2008,2011 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2019, MariaDB Corporation Ab.
+# Copyright (c) 2019, 2020, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -37,33 +37,36 @@ use constant MIXER_FILTERS	=> 3;
 use constant MIXER_PROPERTIES	=> 4;
 use constant MIXER_END_TIME	=> 5;
 use constant MIXER_RESTART_TIMEOUT => 6;
+use constant MIXER_COMPATIBILITY => 7;
 
 my %rule_status;
 
 1;
 
 sub new {
-	my $class = shift;
+    my $class = shift;
 
-	my $mixer = $class->SUPER::new({
-		'generator'	=> MIXER_GENERATOR,
-		'executors'	=> MIXER_EXECUTORS,
-		'validators'	=> MIXER_VALIDATORS,
-		'properties'	=> MIXER_PROPERTIES,
-		'filters'	=> MIXER_FILTERS,
-		'end_time'	=> MIXER_END_TIME,
-		'restart_timeout' => MIXER_RESTART_TIMEOUT
-	}, @_);
+    my $mixer = $class->SUPER::new({
+        'generator'	=> MIXER_GENERATOR,
+        'executors'	=> MIXER_EXECUTORS,
+        'validators'	=> MIXER_VALIDATORS,
+        'properties'	=> MIXER_PROPERTIES,
+        'filters'	=> MIXER_FILTERS,
+        'end_time'	=> MIXER_END_TIME,
+        'restart_timeout' => MIXER_RESTART_TIMEOUT,
+        'compatibility' => MIXER_COMPATIBILITY
+    }, @_);
 
-	foreach my $executor (@{$mixer->executors()}) {
-		if ($mixer->end_time()) {
-			return undef if time() > $mixer->end_time();
-			$executor->set_end_time($mixer->end_time());
-		}
-		my $init_result = $executor->init();
-		return undef if $init_result > STATUS_OK;
-    $executor->cacheMetaData();
-	}
+    foreach my $executor (@{$mixer->executors()}) {
+        if ($mixer->end_time()) {
+            return undef if time() > $mixer->end_time();
+            $executor->set_end_time($mixer->end_time());
+        }
+        $executor->setCompatibility($mixer->[MIXER_COMPATIBILITY]);
+        my $init_result = $executor->init();
+        return undef if $init_result > STATUS_OK;
+        $executor->cacheMetaData();
+    }
 
 	my @validators;
 	my %validators;
