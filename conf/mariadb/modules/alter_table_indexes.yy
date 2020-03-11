@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, MariaDB
+#  Copyright (c) 2019, 2020, MariaDB Corporation
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ alttind_list:
 
 # Can't put it on the list, as ORDER BY should always go last
 alttind_order_by:
-  | | | | | | | | | | , ORDER BY alttind_column_list ;
+  | | | | | | | | | | , ORDER BY alttind_column_name_list ;
 
 alttind_item_alg_lock:
   alttind_item alttind_algorithm alttind_lock
@@ -60,6 +60,8 @@ alttind_item:
   | alttind_drop_index | alttind_drop_index | alttind_drop_index | alttind_drop_index
   | alttind_drop_pk
   | alttind_drop_constraint | alttind_drop_constraint
+  | alttind_rename_index | alttind_rename_index | alttind_rename_index
+  | alttind_rename_index | alttind_rename_index | alttind_rename_index
   | alttind_enable_disable_keys
 ;
 
@@ -69,6 +71,10 @@ alttind_add_index:
 
 alttind_drop_index:
   DROP alttind_index_word alttind_if_exists alttind_ind_name_or_col_name
+;
+
+alttind_rename_index:
+  /* compatibility 10.5.2 */ RENAME alttind_index_word alttind_if_exists alttind_ind_name_or_col_name TO alttind_ind_name_or_col_name
 ;
 
 alttind_drop_constraint:
@@ -140,8 +146,13 @@ alttind_asc_desc_optional:
 ;
  
 alttind_column_list:
-    alttind_column_item| alttind_column_item | alttind_column_item 
+    alttind_column_item | alttind_column_item | alttind_column_item 
   | alttind_column_item, alttind_column_list
+;
+
+alttind_column_name_list:
+    alttind_column_name | alttind_column_name | alttind_column_name
+  | alttind_column_name, alttind_column_name_list
 ;
 
 alttind_if_not_exists:
