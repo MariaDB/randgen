@@ -353,14 +353,15 @@ sub normalizeGrants {
     $new_grants->{$u} =~ s/[\'\"\`]//g;
   }
 
-  # MDEV-21743: In 10.5.2+ SUPER is split up, new grants are introduced, and also some minor
-  # reshuffling is done
+  # MDEV-21743: In 10.5.2+ new grants were introduced, SUPER was prepared for further splitting up,
+  # REPLICATION CLIENT renamed to BINLOG MONITOR and some minor reshuffling was done
 
   if ($old_server->versionNumeric lt '100502' and $new_server->versionNumeric ge '100502') {
     foreach my $u (keys %$new_grants) {
       if ($old_grants->{$u} =~ / SUPER(?:,| ON)/) {
         $old_grants->{$u} =~ s/ ON \*\.\*/, SET USER, FEDERATED ADMIN, CONNECTION ADMIN, READ_ONLY ADMIN, REPLICATION SLAVE ADMIN, BINLOG ADMIN ON \*\.\*/;
       }
+      $old_grants->{$u} =~ s/REPLICATION CLIENT/BINLOG MONITOR/;
       if ($old_grants->{$u} =~ / REPLICATION SLAVE(?:,| ON)/) {
         if ($old_grants->{$u} =~ s/ BINLOG ADMIN/ REPLICATION MASTER ADMIN, BINLOG ADMIN/) {}
         else { $old_grants->{$u} =~ s/ ON \*\.\*/, REPLICATION MASTER ADMIN ON \*\.\*/ };
