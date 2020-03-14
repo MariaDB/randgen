@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21941:
+=~ Assertion \`0'
+=~ get_fieldno_by_name
+=~ mysql_alter_table
+=~ Version: '10\.5
+MDEV-21936:
+=~ Assertion \`!btr_search_own_any(RW_LOCK_S)'
+=~ btr_search_drop_page_hash_index
+=~ buf_block_try_discard_uncompressed
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21927:
+=~ RocksDB: Failed to get column family flags from cf id
+=~ signal 6
+=~ myrocks::Rdb_drop_index_thread::run
 MDEV-21906:
 =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ flush_tables
@@ -1462,7 +1476,7 @@ MDEV-18381:
 MDEV-18371:
 =~ Conditional jump or move depends on uninitialised value|signal 11|AddressSanitizer: SEGV
 =~ cmp_key_rowid_part_id
-=~ QUICK_RANGE_SELECT::get_next
+=~ ha_partition::handle_ordered_index_scan
 MDEV-18370:
 =~ Failing assertion: lsn % OS_FILE_LOG_BLOCK_SIZE == LOG_BLOCK_HDR_SIZE
 =~ log_pad_current_log_block
