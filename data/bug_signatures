@@ -293,7 +293,7 @@ MDEV-21555:
 =~ row_upd_check_references_constraints|row_ins_check_foreign_constraint
 # Not merged up yet
 MDEV-21550:
-=~ Assertion \`!table->fts->in_queue'
+=~ Assertion \`!table->fts->in_queue'|InnoDB: Failing assertion: !table->fts->in_queue
 =~ fts_optimize_remove_table
 =~ row_drop_table_for_mysql
 MDEV-21540:
