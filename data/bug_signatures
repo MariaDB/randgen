@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21946:
+=~ signal 11|AddressSanitizer:
+=~ store_length
+=~ Type_handler_string_result::make_sort_key_part
+=~ Version: '10\.5
+MDEV-21945:
+=~ Assertion \`w == OPT'
+=~ mtr_t::write_type
+=~ trx_purge_add_undo_to_history
+=~ Version: '10\.5
 MDEV-21941:
 =~ Assertion \`0'
 =~ get_fieldno_by_name
