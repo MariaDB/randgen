@@ -1121,9 +1121,10 @@ MDEV-19361:
 =~ Version: '10\.4|Version: '10\.5
 MDEV-19338:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
-=~ InnoDB: Failing assertion: !cursor->index->is_committed()|Assertion \`btr_validate_index(index, 0)'
+=~ Assertion \`btr_validate_index(index, 0)'
 =~ row_ins_sec_index_entry_by_modify|row_upd_sec_index_entry
-=~ vcols|Version: '10\.4|Version: '10\.5
+=~ vcols
+=~ Version: '10\.4|Version: '10\.5
 MDEV-19318:
 =~ Assertion \`!(length < share->base\.min_block_length)'
 =~ _ma_scan_block_record
@@ -2396,6 +2397,11 @@ MDEV-20476:
 MDEV-19745:
 =~ Backup did not finish in due time
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+# I want to see it happen, even if it can be a strong match
+MDEV-19338:
+=~ InnoDB: Failing assertion: !cursor->index->is_committed()
+=~ vcols
+=~ Version: '10\.4|Version: '10\.5
 MDEV-19320:
 =~ UPDATE.* 1032 Can't find record in|DELETE.* 1032 Can't find record in|SELECT SETVAL.* 1032 Can't find record in|SELECT.* 1032 Can't find record in|INSERT.* 1032 Can't find record in
 =~ sequence
