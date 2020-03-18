@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21974:
+=~ InnoDB: Over 95 percent of the buffer pool is occupied by lock heaps
+=~ in buf_LRU_check_size_of_non_data_objects
+=~ locks-10.4-extra
 MDEV-21946:
 =~ signal 11|AddressSanitizer:
 =~ store_length
