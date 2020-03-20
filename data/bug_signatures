@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21987:
+=~ Assertion failure in file .*lock0lock\.cc line
+=~ DeadlockChecker::check_and_resolve
+=~ row_search_mvcc
+=~ Version: '10\.4|Version: '10\.5
+MDEV-21987:
+=~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE \|\| (prebuilt->table->no_rollback() && trx->state == TRX_STATE_NOT_STARTED)'
+=~ row_search_mvcc
+=~ Version: '10\.4|Version: '10\.5
 MDEV-21974:
 =~ InnoDB: Over 95 percent of the buffer pool is occupied by lock heaps
 =~ in buf_LRU_check_size_of_non_data_objects
@@ -2217,7 +2226,7 @@ TODO-842: [undo->state == 3]
 TODO-842: [row_ins_check_foreign_constraint]
 =~ AddressSanitizer: heap-use-after-free
 =~ row_ins_check_foreign_constraint
-=~ row_ins_index_entry
+=~ row_ins_index_entry|row_ins_sec_index_entry
 =~ Version: '10\.1
 TODO-842: [mi_extra]
 =~ AddressSanitizer: SEGV|signal 11
@@ -2322,7 +2331,7 @@ TODO-842: [thd->transaction.stmt.is_empty() || / GRANT / KILL_SERVER]
 =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ open_normal_and_derived_tables
 =~ mysql_table_grant
-=~ KILL_SERVER
+=~ KILL_SERVER|KILL_TIMEOUT
 TODO-842: [Forcing close of thread]
 =~ Forcing close of thread .* user:
 =~ STATUS_SERVER_DEADLOCKED|INTERNAL_ERROR
@@ -2554,7 +2563,7 @@ MDEV-15657:
 =~ file->inited == handler::NONE
 MDEV-15656:
 =~ is_last_prefix <= 0
-MDEV-15653:
+MDEV-15653: [lock_word <= 0x20000000]
 =~ lock_word <= 0x20000000
 MDEV-15533:
 =~ log->blobs
