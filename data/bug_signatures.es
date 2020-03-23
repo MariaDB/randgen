@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MENT-668:
+=~ AddressSanitizer:
+=~ strnlen
+=~ vprint_msg_to_blackbox
+=~ sql_print_information_bb
+=~ Version: '10\.5
 MENT-614:
 =~ AddressSanitizer:
 =~ Single_line_formatting_helper::on_add_str

@@ -4,6 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-21996:
+=~ signal 11|AddressSanitizer:
+=~ Item_func_nextval::update_table
+=~ Temporal_with_date::make_from_item
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21995:
+=~ signal 11|AddressSanitizer:
+=~ Item_field::real_type_handler
+=~ join_type_handlers_for_tvc
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-21994:
+=~ Assertion \`!thd \|\| thd->locked_tables_mode \|\| !thd->mdl_context\.has_locks() \|\| thd->handler_tables_hash\.records \|\| thd->ull_hash\.records \|\| thd->global_read_lock\.is_acquired() \|\| thd->current_backup_stage != BACKUP_FINISHED'
+=~ reload_acl_and_cache
 MDEV-21987:
 =~ Assertion failure in file .*lock0lock\.cc line
 =~ DeadlockChecker::check_and_resolve
