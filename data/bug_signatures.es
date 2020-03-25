@@ -6,9 +6,9 @@
 
 MENT-668:
 =~ AddressSanitizer:
-=~ strnlen
 =~ vprint_msg_to_blackbox
 =~ sql_print_information_bb
+=~ Delayed_insert
 =~ Version: '10\.5
 MENT-614:
 =~ AddressSanitizer:

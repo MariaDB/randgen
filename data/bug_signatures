@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22031:
+=~ Assertion `bpage->in_page_hash'
+=~ buf_pool_watch_set
+=~ row_purge
+=~ Version: '10\.5
+MDEV-22027:
+=~ Assertion \`oldest_lsn >= log_sys\.last_checkpoint_lsn'
+=~ log_checkpoint
+=~ Version: '10\.5
 MDEV-21996:
 =~ signal 11|AddressSanitizer:
 =~ Item_func_nextval::update_table
