@@ -5,7 +5,7 @@
 ##############################################################################
 
 MDEV-22031:
-=~ Assertion `bpage->in_page_hash'
+=~ Assertion \`bpage->in_page_hash'
 =~ buf_pool_watch_set
 =~ row_purge
 =~ Version: '10\.5
