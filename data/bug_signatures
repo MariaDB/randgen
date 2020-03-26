@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22051:
+=~ WSREP: Server paused at:
+=~ Assertion \`0'
+=~ Protocol::end_statement
 MDEV-22031:
 =~ Assertion \`bpage->in_page_hash'
 =~ buf_pool_watch_set
