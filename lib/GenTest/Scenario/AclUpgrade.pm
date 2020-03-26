@@ -362,10 +362,10 @@ sub normalizeGrants {
         $old_grants->{$u} =~ s/ ON \*\.\*/, SET USER, FEDERATED ADMIN, CONNECTION ADMIN, READ_ONLY ADMIN, REPLICATION SLAVE ADMIN, BINLOG ADMIN, BINLOG REPLAY ON \*\.\*/;
       }
       $old_grants->{$u} =~ s/REPLICATION CLIENT/BINLOG MONITOR/;
-      if ($old_grants->{$u} =~ / REPLICATION SLAVE(?:,| ON)/) {
-        if ($old_grants->{$u} =~ s/ BINLOG ADMIN/ REPLICATION MASTER ADMIN, BINLOG ADMIN/) {}
-        else { $old_grants->{$u} =~ s/ ON \*\.\*/, REPLICATION MASTER ADMIN ON \*\.\*/ };
-      }
+#      if ($old_grants->{$u} =~ / REPLICATION SLAVE(?:,| ON)/) {
+#        if ($old_grants->{$u} =~ s/ BINLOG ADMIN/ REPLICATION MASTER ADMIN, BINLOG ADMIN/) {}
+#        else { $old_grants->{$u} =~ s/ ON \*\.\*/, REPLICATION MASTER ADMIN ON \*\.\*/ };
+#      }
     }
   }
 
