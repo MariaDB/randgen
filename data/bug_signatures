@@ -8,6 +8,7 @@ MDEV-22051:
 =~ WSREP: Server paused at:
 =~ Assertion \`0'
 =~ Protocol::end_statement
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22031:
 =~ Assertion \`bpage->in_page_hash'
 =~ buf_pool_watch_set
@@ -215,6 +216,10 @@ MDEV-21744:
 =~ Assertion \`!rec_offs_nth_sql_null(offsets, n)'
 =~ btr_cur_upd_rec_in_place
 =~ Version: '10\.5
+MDEV-21697:
+=~ Assertion \`!wsrep_has_changes(thd) \|\| (thd->lex->sql_command == SQLCOM_CREATE_TABLE && !thd->is_current_stmt_binlog_format_row())'
+=~ wsrep_commit_empty
+=~ Version: '10\.4|Version: '10\.5
 MDEV-21690:
 =~ LeakSanitizer: detected memory leaks
 =~ mem_heap_create_block_func
@@ -1356,6 +1361,10 @@ MDEV-18882:
 =~ AddressSanitizer: heap-use-after-free
 =~ Binary_string::copy|String::copy
 =~ Item_func_make_set::val_str
+MDEV-18848:
+=~ Assertion \`client_state\.transaction()\.active()'
+=~ wsrep_thd_append_key
+=~ Version: '10\.4|Version: '10\.5
 MDEV-18833:
 =~ Assertion \`thd->is_error() \|\| kill_errno \|\| thd->killed == ABORT_QUERY'
 =~ filesort
