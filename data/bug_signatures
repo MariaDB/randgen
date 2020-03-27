@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22063:
+=~ Assertion \`0'
+=~ wsrep::transaction::before_rollback
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22062:
 =~ Assertion \`!table->file->keyread_enabled()'
 =~ close_thread_table
