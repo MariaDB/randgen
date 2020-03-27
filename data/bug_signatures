@@ -4,6 +4,32 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22062:
+=~ Assertion \`!table->file->keyread_enabled()'
+=~ close_thread_table
+=~ Version: '10\.5
+MDEV-22061:
+=~ was not found on update: TUPLE
+=~ Failing assertion: !cursor->index->is_committed()
+=~ row_ins_sec_index_entry_by_modify
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ versioning
+MDEV-22061:
+=~ was not found on update: TUPLE
+=~ Assertion \`btr_validate_index(index, 0, false)'
+=~ row_upd_sec_index_entry
+=~ Version: '10\.3
+=~ versioning
+MDEV-22061:
+=~ was not found on update: TUPLE
+=~ Assertion \`btr_validate_index(index, 0)'
+=~ row_upd_sec_index_entry
+=~ Version: '10\.4|Version: '10\.5
+=~ versioning
+MDEV-22055:
+=~ Assertion \`active() == false'
+=~ wsrep::transaction::start_transaction
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22051:
 =~ WSREP: Server paused at:
 =~ Assertion \`0'
