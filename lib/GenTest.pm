@@ -20,7 +20,7 @@
 package GenTest;
 use base 'Exporter';
 
-@EXPORT = ('say', 'sayError', 'sayFile', 'tmpdir', 'safe_exit', 'trace',
+@EXPORT = ('say', 'sayError', 'sayFile', 'tmpdir', 'safe_exit', 'traceForMTR',
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp', 
            'rqg_debug', 'unix2winPath',
