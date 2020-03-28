@@ -171,7 +171,9 @@ sub traceForMTR {
     my ($conid, @lines)= @_;
     my $prefix= '[sqltrace] ['.time().'] '.sprintf("%7s",'['.$conid.']');
     foreach my $l (@lines) {
+        next if $l =~ /^\s*$/;
         chomp $l;
+        $l =~ s/\n//g;
         my $delimiter= ($l =~ /;/ ? '--delimiter $$$' : '');
         print "$prefix $delimiter\n" if $delimiter;
         print "$prefix $l\n";
