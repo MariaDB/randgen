@@ -230,6 +230,8 @@ if (not defined $scenario and not defined $props->{grammar}) {
     exit 1;
 }
 
+$props->{sqltrace}= 'TraceForMTR' unless defined $props->{sqltrace};
+
 if (defined $props->{sqltrace}) {
     # --sqltrace may have a string value (optional). 
     # Allowed values for --sqltrace:
