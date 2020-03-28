@@ -20,7 +20,7 @@
 package GenTest;
 use base 'Exporter';
 
-@EXPORT = ('say', 'sayError', 'sayFile', 'tmpdir', 'safe_exit', 'trace',
+@EXPORT = ('say', 'sayError', 'sayFile', 'tmpdir', 'safe_exit', 'traceForMTR',
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp', 
            'rqg_debug', 'unix2winPath',
@@ -171,7 +171,9 @@ sub traceForMTR {
     my ($conid, @lines)= @_;
     my $prefix= '[sqltrace] ['.time().'] '.sprintf("%7s",'['.$conid.']');
     foreach my $l (@lines) {
+        next if $l =~ /^\s*$/;
         chomp $l;
+        $l =~ s/\n//g;
         my $delimiter= ($l =~ /;/ ? '--delimiter $$$' : '');
         print "$prefix $delimiter\n" if $delimiter;
         print "$prefix $l\n";
