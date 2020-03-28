@@ -121,10 +121,10 @@ sub next {
 	my $global = $generator->globalFrame();
 
 	sub expand {
-		my ($rule_counters, $rule_invariants, @sentence) = @_;
+		my ($chain,$rule_counters, $rule_invariants, @sentence) = @_;
+        $chain= [] if not defined $chain;
 		my $item_nodash;
 		my $orig_item;
-
 		if ($#sentence > GENERATOR_MAX_LENGTH) {
 			say("Sentence is now longer than ".GENERATOR_MAX_LENGTH()." symbols. Possible endless loop in grammar. Aborting.");
 			return undef;
@@ -133,9 +133,9 @@ sub next {
 		for (my $pos = 0; $pos <= $#sentence; $pos++) {
 			$orig_item = $sentence[$pos];
 
-			next if not defined $orig_item;
-			next if $orig_item eq ' ';
-			next if $orig_item eq uc($orig_item);
+			pop @$chain && next if not defined $orig_item;
+			pop @$chain && next if $orig_item eq ' ';
+			pop @$chain && next if $orig_item eq uc($orig_item);
 
 			my $item = $orig_item;
 			my $invariant = 0;
@@ -148,23 +148,28 @@ sub next {
 			if (exists $grammar_rules->{$item}) {
 
 				if (++($rule_counters->{$orig_item}) > GENERATOR_MAX_OCCURRENCES) {
+                    foreach my $k (keys %$rule_counters) {
+                    }
 					say("Rule $orig_item occured more than ".GENERATOR_MAX_OCCURRENCES()." times. Possible endless loop in grammar. Aborting.");
-					return undef;
+					croak();
 				}
 
 				if ($invariant) {
-					@{$rule_invariants->{$item}} = expand($rule_counters,$rule_invariants,($item)) unless defined $rule_invariants->{$item};
+					@{$rule_invariants->{$item}} = expand(undef,$rule_counters,$rule_invariants,($item)) unless defined $rule_invariants->{$item};
 					@expansion = @{$rule_invariants->{$item}};
 				} else {
-					@expansion = expand($rule_counters,$rule_invariants,@{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]->[
+                    push @$chain, "\t".$item."\n";
+                    my @resolve= @{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]->[
 						$prng->uint16(0, $#{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]})
-					]});
+					]};
+					@expansion = expand($chain,$rule_counters,$rule_invariants,@resolve);
 
 				}
 				if ($generator->[GENERATOR_ANNOTATE_RULES]) {
-					@expansion = ("/* rule: $item */ ", @expansion);
+					@expansion = ("/* rule: $item */", @expansion);
 				}
 			} else {
+                pop @$chain;
 				if (
 					(substr($item, 0, 1) eq '{') &&
 					(substr($item, -1, 1) eq '}')
@@ -289,8 +294,22 @@ sub next {
 						$item = $prng->arrayElement($charsets);
 					} elsif ($item eq '_data') {
 						$item = $prng->file($cwd."/data");
+					} elsif ($item eq '_identifier' or $item eq '_name') {
+						$item = $prng->identifier();
+                        # Unquoted identifier can start with $. We don't want it to be expanded.
+                        # The mask will be removed later
+                        $item =~ s/^\$/######IDENTIFIER######\$/;
+					} elsif ($item eq '_identifier_quoted' or $item eq '_name_quoted') {
+						$item = $prng->identifier_quoted();
+					} elsif ($item eq '_identifier_unquoted' or $item eq '_name_unquoted') {
+						$item = $prng->unquoted_quoted();
+                        # Unquoted identifier can start with $. We don't want it to be expanded.
+                        # The mask will be removed later
+                        $item =~ s/^\$/######IDENTIFIER######\$/;
 					} elsif ( defined $field_type and
 						(($field_type == FIELD_TYPE_NUMERIC) ||
+						 ($field_type == FIELD_TYPE_FLOAT) ||
+						 ($field_type == FIELD_TYPE_YEAR) ||
 						 ($field_type == FIELD_TYPE_BLOB))
 					) {
 						$item = $prng->fieldType($item);
@@ -361,11 +380,14 @@ sub next {
 		}
 	}
     
-	my @sentence = expand(\%rule_counters,\%rule_invariants,($starting_rule));
+	my @sentence = expand(undef,\%rule_counters,\%rule_invariants,($starting_rule));
 
 	$generator->[GENERATOR_SEQ_ID]++;
 
 	my $sentence = join ('', map { defined $_ ? $_ : '' } @sentence);
+
+    $sentence =~ s/######IDENTIFIER######\$/\$/g;
+
 	# Remove extra spaces while we are here
 	while ($sentence =~ s/\.\s/\./s) {};
 	while ($sentence =~ s/\s([\.,])/$1/s) {};
@@ -378,6 +400,8 @@ sub next {
 	# If the semicolon is inside a string literal, ignore it. 
 	# Otherwise, split it into individual statements so that the error and the result set from each statement
 	# can be examined
+
+    my @sentences= ();
 
 	if (
 		# Stored procedures of all sorts
@@ -428,22 +452,20 @@ sub next {
 				(index($sentence, 'END') > -1 )
 			)
 	) {
-		return [ $sentence ];
+		push @sentences, $sentence;
 	} elsif (index($sentence, ';') > -1) {
 
-		my @sentences;
-
 		# We want to split the sentence into separate statements, but we do not want 
-		# to split literals if a semicolon happens to be inside. 
+		# to split literals or quoted identifiers if a semicolon happens to be inside. 
 		# I am sure it could be done much smarter; feel free to improve it.
 		# For now, we do the following:
-		# - store and mask all literals (inside single or double quote marks);
+		# - store and mask all literals (inside single, double, or back quote marks);
 		# - replace remaining semicolons with something expectedly unique;
 		# - restore the literals;
 		# - split the sentence, not by the semicolon, but by the unique substitution
 		# Do not forget that there can also be escaped quote marks, which are not literal boundaries
 
-		if (index($sentence, "'") > -1 or index($sentence, '"') > -1) {
+		if (index($sentence, "'") > -1 or index($sentence, '"') > -1 or index($sentence, '`') > -1) {
 			# Store literals in single quotes
 			my @singles = ( $sentence =~ /(?<!\\)(\'.*?(?<!\\)\')/g );
 			# Mask these literals 
@@ -452,9 +474,17 @@ sub next {
 			my @doubles = ( $sentence =~ /(?<!\\)(\".*?(?<!\\)\")/g );
 			# Mask these literals 
 			$sentence =~ s/(?<!\\)\".*?(?<!\\)\"/######DOUBLES######/g;
+			# Store identifiers in back quotes
+			my @backs = ( $sentence =~ /(?<!\\)(\`.*?(?<!\\)\`)/g );
+			# Mask these identifiers
+			$sentence =~ s/(?<!\\)\`.*?(?<!\\)\`/######BACKS######/g;
 			# Replace remaining semicolons
 			$sentence =~ s/;/######SEMICOLON######/g;
 
+			# Restore identifiers in back quotes
+			while ( $sentence =~ s/######BACKS######/$backs[0]/ ) {
+				shift @backs;
+			}
 			# Restore literals in double quotes
 			while ( $sentence =~ s/######DOUBLES######/$doubles[0]/ ) {
 				shift @doubles;
@@ -469,10 +499,17 @@ sub next {
 		else {
 			@sentences = split (';', $sentence);
 		}
-		return \@sentences;
 	} else {
-		return [ $sentence ];
+		push @sentences, $sentence;
 	}
+
+    if ($generator->[GENERATOR_ANNOTATE_RULES]) {
+        for (my $i=0; $i <= $#sentences; $i++) {
+            say("Annotated sentence: $sentences[$i]");
+            $sentences[$i] =~ s/\/\* rule: \w+ \*\///g;
+        }
+    }
+	return \@sentences;
 }
 
 1;

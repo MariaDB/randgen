@@ -21,6 +21,7 @@ require Exporter;
 @ISA = qw(GenTest);
 @EXPORT = qw(
 	FIELD_TYPE_NUMERIC
+	FIELD_TYPE_FLOAT
 	FIELD_TYPE_STRING
 	FIELD_TYPE_DATE
 	FIELD_TYPE_TIME
@@ -42,6 +43,10 @@ require Exporter;
 	FIELD_TYPE_HEX
 	FIELD_TYPE_QUID
 	FIELD_TYPE_JSON
+
+    FIELD_TYPE_IDENTIFIER
+    FIELD_TYPE_IDENTIFIER_UNQUOTED
+    FIELD_TYPE_IDENTIFIER_QUOTED
 );
 
 #RV 15/9/14 - Disabled permanently as bugs reported with maxigen
@@ -119,6 +124,10 @@ use constant FIELD_TYPE_JSONOBJECT  => 28;
 use constant FIELD_TYPE_TEXT  => 29;
 use constant FIELD_TYPE_INET6  => 30;
 
+use constant FIELD_TYPE_IDENTIFIER          => 31;
+use constant FIELD_TYPE_IDENTIFIER_UNQUOTED => 32;
+use constant FIELD_TYPE_IDENTIFIER_QUOTED   => 33;
+
 use constant ASCII_RANGE_START		=> 97;
 use constant ASCII_RANGE_END		=> 122;
 
@@ -163,8 +172,8 @@ my %name2type = (
 	'fixed'			=> FIELD_TYPE_NUMERIC,
 	'char'			=> FIELD_TYPE_STRING,
 	'varchar'		=> FIELD_TYPE_STRING,
-	'binary'		=> FIELD_TYPE_BLOB,
-	'varbinary'		=> FIELD_TYPE_BLOB,
+	'binary'		=> FIELD_TYPE_ASCII,
+	'varbinary'		=> FIELD_TYPE_ASCII,
 	'tinyblob'		=> FIELD_TYPE_BLOB,
 	'blob'			=> FIELD_TYPE_BLOB,
 	'mediumblob'		=> FIELD_TYPE_BLOB,
@@ -197,7 +206,14 @@ my %name2type = (
 	'jsonvalue'     => FIELD_TYPE_JSONVALUE,
 	'jsonarray'     => FIELD_TYPE_JSONARRAY,
 	'jsonpair'      => FIELD_TYPE_JSONPAIR,
-	'jsonobject'    => FIELD_TYPE_JSONOBJECT
+	'jsonobject'    => FIELD_TYPE_JSONOBJECT,
+
+    'identifier'    => FIELD_TYPE_IDENTIFIER,
+    'identifier_unquoted'    => FIELD_TYPE_IDENTIFIER_UNQUOTED,
+    'identifier_quoted'      => FIELD_TYPE_IDENTIFIER_QUOTED,
+    'name'          => FIELD_TYPE_IDENTIFIER,
+    'name_unquoted' => FIELD_TYPE_IDENTIFIER_UNQUOTED,
+    'name_quoted'   => FIELD_TYPE_IDENTIFIER_QUOTED
 );
 
 my $cwd = cwd();
@@ -217,6 +233,8 @@ my %name2range = (
         'double'        => [-999999999999999999999999999999999999999999999999999999999999999999999999999999999, 999999999999999999999999999999999999999999999999999999999999999999999999999999999],
         'double_nano'   => [-0.00000000000000000000000000000000000000000000000000000000000000000001, 0.00000000000000000000000000000000000000000000000000000000000000000001],
 
+        'float_unsigned'        => [0, 18446744073709551615],
+        'double_unsigned'       => [0, 999999999999999999999999999999999999999999999999999999999999999999999999999999999],
         'tinyint_unsigned'      => [0, 255],
         'tinyint_positive'      => [1, 255],
         'smallint_unsigned'     => [0, 65535],
@@ -232,6 +250,8 @@ my %name2range = (
 );
 
 my $prng_class;
+
+my @id_chars= qw($ _ A B C D E F G H I J K L M N O P Q R S T U V W Z Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9);
 
 1;
 
@@ -300,6 +320,41 @@ sub uint16 {
     update_generator($_[0]);
     return $_[1] +
         ((($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF) % ($_[2] - $_[1] + 1));
+}
+
+sub identifier {
+    return $_[0]->uint16(0,2) ? $_[0]->identifier_unquoted() : $_[0]->identifier_quoted();
+}
+
+### Unquoted identifier
+sub identifier_unquoted {
+    my $length= ( $_[0]->uint16(0,20) ? $_[0]->uint16(1,8) : $_[0]->uint16(1,64) );
+    my @val= ();
+    for (my $i=0; $i<$length; $i++) {
+        my $c= $id_chars[$_[0]->uint16(0,$#id_chars)];
+        push @val, $c;
+    }
+    # Unquoted identifier cannot consist only of digits
+    if ("@val" =~ /^\d+$/) {
+        $val[$_[0]->uint16(0,$#val)]= $id_chars[$_[0]->uint16(0,53)];
+    }
+    return join '', @val;
+}
+
+### Quoted identifier
+# TODO: make it unicode
+#       or at least less simple:
+#sub identifier_quoted {
+#    my $length= ( $_[0]->uint16(0,20) ? $_[0]->uint16(1,8) : $_[0]->uint16(1,64) );
+#    my $val= '';
+#    for (my $i=0; $i<$length; $i++) {
+#        my $c= chr($_[0]->uint16(32, 126));
+#        $val.= ($c ne '`' ? $c : '``');
+#    }
+#    return "`$val`";
+#}
+sub identifier_quoted {
+    return '`'.($_[0]->identifier_unquoted()).'`';
 }
 
 ### Signed 64-bit integer of any range.

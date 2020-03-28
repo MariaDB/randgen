@@ -1,0 +1,20 @@
+#  'mdev21995' => sub { $_ =~ m{VALUES\s*\(\s*(?:IGNORE|DEFAULT)}s },
+# RESTART only works in ALTER SEQUENCE, not in CREATE SEQUENCE
+# CYCLE is only supported for RECURSIVE CTE
+# By some magic names like `t1`.1a or .1a cause syntax error, while t1.1a doesn't and `t1`. 1a doesn't.
+#     TODO: The filter for this is way too strict, needs to be changed
+$rules = {
+  'shutdown' => sub { $_ =~ m{SHUTDOWN}s },
+  'mdev21994' => sub { $_ =~ m{BACKUP}s },
+  'losing_privileges'  => sub { $_ =~ m{rqg|CURRENT_USER}s },
+  'mdev21995' => sub { $_ =~ m{VALUES}s },
+  'mdev21996' => sub { $_ =~ m{PURGE.*(?:SETVAL|NEXTVAL|NEXT VALUE|LASTVAL|PREVIOUS VALUE|LAST VALUE)}s },
+  'raise' => sub { $_ =~ m{RAISE}s },
+  'kill' => sub { $_ =~ m{KILL}s },
+  'ER_PARTITION_ENTRY_ERROR' => sub { $_ =~ m{^\s*(?:\/\*[^!].*?\*\/\s*)*PARTITION}s },
+  'mdev22002' => sub { $_ =~ m{TEMPORARY\s+SEQUENCE}s },
+  'sequence_restart' => sub { $_ =~ m{CREATE\s+(?:OR\s+REPLACE\s+)?SEQUENCE[^;]+RESTART}s },
+  'cycle_non_recursive' => sub { $_ =~ m{WITH\.*CYCLE}s and $_ !~ m{WITH\s+RECURSIVE}s },
+  'back_quote_and_dot' => sub { $_ =~ m{\W\.\d}s },
+}
+
