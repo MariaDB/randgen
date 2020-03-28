@@ -1,6 +1,7 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights
 # reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2020, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +20,7 @@
 package GenTest;
 use base 'Exporter';
 
-@EXPORT = ('say', 'sayError', 'sayFile', 'tmpdir', 'safe_exit', 
+@EXPORT = ('say', 'sayError', 'sayFile', 'tmpdir', 'safe_exit', 'trace',
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp', 
            'rqg_debug', 'unix2winPath',
@@ -164,6 +165,18 @@ sub sayFile {
     }
     close FILE;
     say("----------------------------------");
+}
+
+sub traceForMTR {
+    my ($conid, @lines)= @_;
+    my $prefix= '[sqltrace] ['.time().'] '.sprintf("%7s",'['.$conid.']');
+    foreach my $l (@lines) {
+        chomp $l;
+        my $delimiter= ($l =~ /;/ ? '--delimiter $$$' : '');
+        print "$prefix $delimiter\n" if $delimiter;
+        print "$prefix $l\n";
+        print "$prefix --delimiter ;\n" if $delimiter;
+    }
 }
 
 sub tmpdir {

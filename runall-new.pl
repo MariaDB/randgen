@@ -2,7 +2,7 @@
 
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2019, MariaDB Corporation Ab.
+# Copyright (c) 2019, 2020, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -234,7 +234,8 @@ if (defined $props->{sqltrace}) {
     # --sqltrace may have a string value (optional). 
     # Allowed values for --sqltrace:
     my %sqltrace_legal_values = (
-        'MarkErrors'    => 1  # Prefixes invalid SQL statements for easier post-processing
+        'MarkErrors'    => 1,  # Prefixes invalid SQL statements for easier post-processing
+        'TraceForMTR'     => 2,  # Make it similar to the general log, but more usable for reproducing via MTR
     );
     
     if (length($props->{sqltrace}) > 0) {

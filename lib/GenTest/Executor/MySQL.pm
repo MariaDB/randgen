@@ -921,14 +921,12 @@ sub execute {
 
     # Write query to log before execution so it's sure to get there
     if ($executor->sqltrace) {
-        if ($query =~ m{(procedure|function)}sgio) {
-            $trace_query = "DELIMITER |\n$query|\nDELIMITER ";
-        } else {
-            $trace_query = $query;
-        }
+         $trace_query = $query;
         # MarkErrors logging can only be done post-execution
         if ($executor->sqltrace eq 'MarkErrors') {
             $trace_me = 1;   # Defer logging
+        } elsif ($executor->sqltrace eq 'TraceForMTR') {
+            traceForMTR($executor->connectionId,$trace_query);
         } else {
             print "$trace_query;\n";
         }
