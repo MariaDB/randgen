@@ -17,7 +17,7 @@
 # Re-defining grammar for SYSTEM VERSIONING testing
 
 query_add:
-  vers_query
+  vers_query | vers_query | vers_query | vers_query
 ;
 
 vers_query:
@@ -68,7 +68,6 @@ vers_with_without_system_versioning:
 
 vers_change_variable:
     SET vers_session_global TRANSACTION ISOLATION LEVEL vers_tx_isolation_value
-  | SET vers_session_global `system_versioning_innodb_algorithm_simple` = vers_on_off
   | SET vers_session_global `system_versioning_alter_history`= vers_alter_history_value
   | SET vers_session_global `system_versioning_asof` = vers_as_of_value
 ;
@@ -211,6 +210,8 @@ vers_partitioning_definition:
     vers_partition_list ,
     PARTITION ver_pn CURRENT
   )
+  | PARTITION BY system_time LIMIT { $prng->int(990,10000) } AUTO
+  | PARTITION BY system_time vers_partitioning_interval_or_limit AUTO
 ;
 
 vers_partitioning_interval_or_limit:
