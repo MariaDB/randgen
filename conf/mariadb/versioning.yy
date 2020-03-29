@@ -17,7 +17,7 @@
 # Re-defining grammar for SYSTEM VERSIONING testing
 
 query_add:
-  vers_query
+  vers_query | vers_query | vers_query | vers_query
 ;
 
 vers_query:
@@ -223,6 +223,8 @@ vers_partitioning_definition:
 
 vers_partition_number_optional:
   | PARTITIONS { $prng->int(1,20) }
+  | PARTITION BY system_time LIMIT { $prng->int(990,10000) } /*! 100800 AUTO */
+  | PARTITION BY system_time vers_partitioning_interval_or_limit /*! 100800 AUTO */
 ;
 
 vers_partitioning_interval_or_limit:
