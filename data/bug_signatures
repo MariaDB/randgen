@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22075:
+=~ signal 11|AddressSanitizer
+=~ wsrep_should_replicate_ddl_iterate
+=~ mysql_create_view
 MDEV-22063:
 =~ Assertion \`0'
 =~ wsrep::transaction::before_rollback
