@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22077:
+=~ Assertion \`table->no_key read \|\| !table->covering_keys\.is_set(tab->index) \|\| table->file->keyread == tab->index'
+=~ join_read_first
+=~ Upgrade
+=~ Version: '10\.5
+MDEV-22076:
+=~ InnoDB: tried to purge non-delete-marked record in index
+=~ InnoDB: Failing assertion: !cursor->index->is_committed()
+=~ row_ins_sec_index_entry_by_modify|
+=~ xa\.yy
+MDEV-22076:
+=~ InnoDB: tried to purge non-delete-marked record in index
+=~ Assertion \`0'
+=~ row_purge_remove_sec_if_poss_leaf
+=~ xa\.yy
 MDEV-22075:
 =~ signal 11|AddressSanitizer
 =~ wsrep_should_replicate_ddl_iterate
@@ -52,6 +67,12 @@ MDEV-22027:
 =~ Assertion \`oldest_lsn >= log_sys\.last_checkpoint_lsn'
 =~ log_checkpoint
 =~ Version: '10\.5
+MDEV-22002:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ TEMPORARY
+=~ xa\.yy
+=~ sequence
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21996:
 =~ signal 11|AddressSanitizer:
 =~ Item_func_nextval::update_table
@@ -1360,7 +1381,6 @@ MDEV-19014:
 MDEV-19011:
 =~ Assertion \`file->s->base\.reclength < file->s->vreclength'
 =~ ha_myisam::setup_vcols_for_repair
-=~ ha_myisam::enable_indexes|ha_myisam::optimize|Sql_cmd_check_table|handler::ha_analyze
 MDEV-18980:
 =~ Assertion \`join->best_read < double(1\.79769313486231570814527423731704357e+308L)'
 =~ greedy_search

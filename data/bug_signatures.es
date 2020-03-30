@@ -4,7 +4,12 @@
 # Strong matches
 ##############################################################################
 
-MENT-668:
+MENT-675:
+=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt'
+=~ mysql_execute_command
+=~ versioning
+=~ Version: '10\.5
+MENT-668: [vprint_msg_to_blackbox]
 =~ AddressSanitizer:
 =~ vprint_msg_to_blackbox
 =~ sql_print_information_bb
