@@ -5,7 +5,7 @@
 ##############################################################################
 
 MDEV-22077:
-=~ Assertion \`table->no_key read \|\| !table->covering_keys\.is_set(tab->index) \|\| table->file->keyread == tab->index'
+=~ Assertion \`table->no_keyread \|\| !table->covering_keys\.is_set(tab->index) \|\| table->file->keyread == tab->index'
 =~ join_read_first
 =~ Upgrade
 =~ Version: '10\.5
