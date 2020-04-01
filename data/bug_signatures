@@ -4,15 +4,29 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22105:
+=~ Assertion \`(&(&thd->LOCK_thd_data)->m_mutex)->count > 0 && pthread_equal(pthread_self(), (&(&thd->LOCK_thd_data)->m_mutex)->thread)'
+=~ wsrep_thd_is_aborting
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22104:
+=~ Assertion \`m_psi_batch_mode == PSI_BATCH_MODE_NONE'
+=~ handler::ha_close
+=~ JOIN_CACHE
+=~ Version: '10\.5
+MDEV-22099:
+=~ AddressSanitizer:
+=~ _ma_record_pos
+=~ maria_records_in_range
+=~ DsMrr_impl::dsmrr_info_const
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22077:
 =~ Assertion \`table->no_keyread \|\| !table->covering_keys\.is_set(tab->index) \|\| table->file->keyread == tab->index'
 =~ join_read_first
-=~ Upgrade
 =~ Version: '10\.5
 MDEV-22076:
 =~ InnoDB: tried to purge non-delete-marked record in index
 =~ InnoDB: Failing assertion: !cursor->index->is_committed()
-=~ row_ins_sec_index_entry_by_modify|
+=~ row_ins_sec_index_entry_by_modify
 =~ xa\.yy
 MDEV-22076:
 =~ InnoDB: tried to purge non-delete-marked record in index
@@ -456,7 +470,7 @@ MDEV-21440:
 MDEV-21428:
 =~ InnoDB: Failing assertion: prebuilt->template_type == ROW_MYSQL_WHOLE_ROW
 =~ row_update_for_mysql
-=~ sp_instr_stmt::execute
+=~ ha_innobase::delete_row
 =~ Version: '10\.4|Version: '10\.5
 =~ versioning
 MDEV-21419:
@@ -824,10 +838,15 @@ MDEV-20563:
 =~ row_update_for_mysql
 =~ ha_innobase::delete_row
 MDEV-20563:
-=~ signal 11
+=~ signal 11|AddressSanitizer
 =~ row_upd_del_mark_clust_rec
 =~ row_upd_clust_step
 =~ ha_innobase::delete_row
+=~ versioning
+MDEV-20563:
+=~ signal 11|AddressSanitizer
+=~ wsrep_row_upd_index_is_foreign
+=~ row_upd_clust_step
 =~ versioning
 MDEV-20557:
 =~ Assertion \`thd'|signal 11
@@ -1833,7 +1852,7 @@ MDEV-17678:
 MDEV-17622:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_read
-=~ _ma_scan_block_record
+=~ _ma_scan_block_record|_ma_write_init_block_record
 MDEV-17619:
 =~ Index file is crashed|Table is crashed and last repair failed|Incorrect key file for table|Table .* is marked as crashed and last (automatic?) repair failed
 =~ full_text|FULLTEXT
