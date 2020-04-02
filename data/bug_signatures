@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22113:
+=~ signal 11|AddressSanitizer|Assertion \`next_insert_id == 0'
+=~ handler::ha_external_lock
+=~ Version: '10\.5
 MDEV-22105:
 =~ Assertion \`(&(&thd->LOCK_thd_data)->m_mutex)->count > 0 && pthread_equal(pthread_self(), (&(&thd->LOCK_thd_data)->m_mutex)->thread)'
 =~ wsrep_thd_is_aborting
