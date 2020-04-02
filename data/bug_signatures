@@ -512,7 +512,7 @@ MDEV-21398:
 =~ Diagnostics_area::set_error_status
 =~ THD::raise_condition
 =~ my_message_sql
-=~ KILL_QUERY|KILL_TIMEOUT|KILL_SERVER
+=~ KILL_QUERY|KILL_TIMEOUT|KILL_SERVER|ABORT_QUERY
 MDEV-21373:
 =~ AddressSanitizer:
 =~ tree_search_next|hp_rb_var_key_length|ha_key_cmp
@@ -2457,6 +2457,26 @@ TODO-842: [InnoDB: Trying to read page number]
 =~ InnoDB: Trying to read page number
 =~ fil_report_invalid_page_access
 =~ xtrabackup_prepare_func
+TODO-842: [wsrep::transaction::before_rollback - state]
+=~ Assertion \`state() == s_executing \|\| state() == s_preparing \|\| state() == s_prepared \|\| state() == s_must_abort \|\| state() == s_aborting \|\| state() == s_cert_failed \|\| state() == s_must_replay'
+=~ wsrep::transaction::before_rollback
+TODO-842: [safe_mutex: Trying to lock mutex at wsrep_mutex]
+=~ safe_mutex: Trying to lock mutex at .*wsrep_mutex.* when the mutex was already locked at
+=~ Wsrep_mutex::lock
+TODO-842: [rpl_sql_thread_info::cached_charset_compare]
+=~ signal 11|AddressSanitizer
+=~ rpl_sql_thread_info::cached_charset_compare
+=~ wsrep_apply_events
+TODO-842: [wsrep - lock_sys.mutex.is_owned]
+=~ Assertion \`(lock_sys\.mutex\.is_owned())'
+=~ lock_trx_handle_wait_low
+=~ ha_kill_query
+=~ wsrep_on
+TODO-842: [Found wrong usage of mutex]
+=~ safe_mutex: Found wrong usage of mutex 'LOCK_thd_data' and 'THR_LOCK_myisam'
+=~ SERVER_DEADLOCKED
+=~ signal 11
+=~ wsrep_on
 
 ##############################################################################
 # Weak matches
