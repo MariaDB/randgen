@@ -4,70 +4,6 @@
 # Strong matches
 ##############################################################################
 
-MENT-675:
-=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt'
-=~ mysql_execute_command
-=~ versioning
-=~ Version: '10\.5
-MENT-668: [vprint_msg_to_blackbox]
-=~ AddressSanitizer:
-=~ vprint_msg_to_blackbox
-=~ sql_print_information_bb
-=~ Delayed_insert
-=~ Version: '10\.5
-MENT-614:
-=~ AddressSanitizer:
-=~ Single_line_formatting_helper::on_add_str
-=~ get_quick_record_count
-=~ Version: '10\.3
-MENT-438:
-=~ signal 11
-=~ MDL_lock::incompatible_granted_types_bitmap
-=~ MDL_ticket::has_stronger_or_equal_type|MDL_ticket::is_incompatible_when_granted
-=~ Version: '10\.2|Version: '10\.3
-MENT-438:
-=~ AddressSanitizer: heap-use-after-free|signal 11
-=~ MDL_ticket::has_stronger_or_equal_type|inline_mysql_prlock_wrlock
-=~ MDL_context::upgrade_shared_lock
-=~ run_backup_stage|backup_flush
-=~ Version: '10\.2|Version: '10\.3
-MENT-438:
-=~ signal 11
-=~ MDL_lock::Ticket_list::clear_bit_if_not_in_list
-=~ MDL_context::upgrade_shared_lock
-=~ backup_flush
-=~ Version: '10\.2|Version: '10\.3
-MENT-438:
-=~ Assertion \`this == ticket->get_ctx()'|clear_bit_if_not_in_list
-=~ MDL_context::release_lock
-=~ Version: '10\.2|Version: '10\.3
-MENT-438:
-=~ Assertion \`ticket->m_duration == MDL_EXPLICIT'|AddressSanitizer: heap-use-after-free
-=~ MDL_context::release_lock
-=~ backup_end
-=~ Version: '10\.2|Version: '10\.3
-MENT-438:
-=~ signal 11
-=~ backup_end
-=~ run_backup_stage|THD::cleanup|unlink_thd
-=~ Version: '10\.2|Version: '10\.3
-MENT-438:
-=~ signal 11
-=~ I_P_List
-=~ MDL_lock.*Ticket_list.*clear_bit_if_not_in_list|MDL_lock.*Ticket_list.*remove_ticket
-=~ MDL_context.*upgrade_shared_lock
-=~ Version: '10\.2|Version: '10\.3
-MENT-438:
-=~ signal 6
-=~ futex_fatal_error
-=~ MDL_lock::remove_ticket
-=~ backup_end
-MENT-416:
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ Diagnostics_area::set_ok_status
-=~ mysql_alter_table
-=~ RENAME
-=~ Version: '10\.2
 MENT-368:
 =~ Assertion \`inline_mysql_file_tell(.*, file, (myf) (0)) == base_pos+ (16 + 5\*8 + 6\*4 + 11\*2 + 6 + 5\*2 + 1 + 16)'
 =~ maria_create
@@ -108,6 +44,62 @@ MENT-189:
 #
 # Fixed in the next release
 #
+
+MDEV-21850:
+=~ AddressSanitizer:
+=~ page_cur_insert_rec_low
+=~ page_cur_tuple_insert
+=~ Version: '10\.5
+# Currently in 10.5e due to rebase, but not in 10.4e yet
+MDEV-21792:
+=~ signal 8|AddressSanitizer: FPE
+=~ dict_index_add_to_cache|os_file_create_simple_func
+=~ create_index|prep_alter_part_table
+=~ Version: '10\.4
+# Currently in 10.5e due to rebase, but not in 10.4e yet
+MDEV-20370:
+=~ Assertion \`mtr->get_log_mode() == MTR_LOG_NO_REDO'
+=~ page_cur_insert_rec_write_log
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
+# Currently in 10.5e due to rebase, but not in 10.4e yet
+MDEV-21658:
+=~ Assertion \`log->blobs'
+=~ row_log_table_apply_update
+=~ ha_innobase::inplace_alter_table
+=~ Version: '10\.4
+# Currently in 10.5e due to rebase, but not in 10.4e yet
+MDEV-21658:
+=~ Assertion \`extra_size \|\| !is_instant'
+=~ row_log_table_apply_op
+=~ ha_innobase::inplace_alter_table
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
+# Currently in 10.5e due to rebase, but not in 10.4e yet
+MDEV-21645:
+=~ AddressSanitizer:|signal 11
+=~ innobase_get_computed_value
+=~ row_merge_read_clustered_index
+=~ ha_innobase::inplace_alter_table
+=~ Version: '10\.4
+# Currently in 10.5e due to rebase, but not in 10.4e yet
+MDEV-21564:
+=~ Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| (!purge_sys\.enabled() && (srv_is_being_started \|\| trx_rollback_is_active \|\| srv_force_recovery >= SRV_FORCE_NO_BACKGROUND)) \|\| ((trx->mysql_thd \|\| trx->internal) && srv_fast_shutdown)'|Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| ((srv_is_being_started \|\| trx_rollback_or_clean_is_active) && purge_sys->state == PURGE_STATE_INIT) \|\| (srv_force_recovery >= SRV_FORCE_NO_BACKGROUND && purge_sys->state == PURGE_STATE_DISABLED) \|\| ((trx->in_mysql_trx_list \|\| trx->internal) && srv_fast_shutdown)'
+=~ trx_purge_add_undo_to_history
+=~ trx_write_serialisation_history
+=~ fts_optimize_words|dict_table_close|kill_server
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
+# Currently in 10.5e due to rebase, but not in 10.4e yet
+MDEV-21550:
+=~ Assertion \`!table->fts->in_queue'|InnoDB: Failing assertion: !table->fts->in_queue
+=~ fts_optimize_remove_table
+=~ row_drop_table_for_mysql
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
+# Currently in 10.5e due to rebase, but not in 10.4e yet
+MDEV-17844:
+=~ Assertion \`ulint(rec) == offsets[2]'
+=~ rec_offs_validate
+=~ page_zip_write_trx_id_and_roll_ptr
+=~ row_undo
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
 
 ##############################################################################
 # Weak matches

@@ -9,10 +9,6 @@ MDEV-22128:
 =~ do_rename|rename_tables
 =~ wsrep_mysql_parse
 =~ Version: '10\.5
-MDEV-22113:
-=~ signal 11|AddressSanitizer|Assertion \`next_insert_id == 0'
-=~ handler::ha_external_lock
-=~ Version: '10\.5
 MDEV-22105:
 =~ Assertion \`(&(&thd->LOCK_thd_data)->m_mutex)->count > 0 && pthread_equal(pthread_self(), (&(&thd->LOCK_thd_data)->m_mutex)->thread)'
 =~ wsrep_thd_is_aborting
@@ -81,11 +77,6 @@ MDEV-22051:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ Version: '10\.4|Version: '10\.5
-MDEV-22031:
-=~ Assertion \`bpage->in_page_hash'
-=~ buf_pool_watch_set
-=~ row_purge
-=~ Version: '10\.5
 MDEV-22027:
 =~ Assertion \`oldest_lsn >= log_sys\.last_checkpoint_lsn'
 =~ log_checkpoint
@@ -127,11 +118,6 @@ MDEV-21946:
 =~ store_length
 =~ Type_handler_string_result::make_sort_key_part
 =~ Version: '10\.5
-MDEV-21945:
-=~ Assertion \`w == OPT'
-=~ mtr_t::write_type
-=~ trx_purge_add_undo_to_history
-=~ Version: '10\.5
 MDEV-21941:
 =~ Assertion \`0'
 =~ get_fieldno_by_name
@@ -150,24 +136,10 @@ MDEV-21906:
 =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ flush_tables
 =~ Version: '10\.1
-MDEV-21893:
-=~ Assertion \`log_block_get_start_lsn(lsn, log_block_get_hdr_no(buf)) == lsn'
-=~ log_crypt
-=~ recv_find_max_checkpoint
-=~ Version: '10\.5
-MDEV-21892:
-=~ Assertion \`index != clust_index \|\| row_get_rec_trx_id(rec, index, offsets)'
-=~ row_search_mvcc
-=~ Version: '10\.5
 MDEV-21866:
 =~ Assertion \`!result'
 =~ convert_const_to_int
 =~ Prepared_statement::execute|sp_head::execute
-MDEV-21850:
-=~ AddressSanitizer:
-=~ page_cur_insert_rec_low
-=~ page_cur_tuple_insert
-=~ Version: '10\.5
 MDEV-21848:
 =~ signal 11|AddressSanitizer:
 =~ handle_if_exists_options
@@ -248,21 +220,11 @@ MDEV-21798:
 =~ row_sel_convert_mysql_key_to_innobase
 =~ ha_innobase::index_read
 =~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
-MDEV-21792:
-=~ signal 8|AddressSanitizer: FPE
-=~ dict_index_add_to_cache|os_file_create_simple_func
-=~ create_index|prep_alter_part_table
-=~ Version: '10\.4|Version: '10\.5
 MDEV-21789:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
 =~ GROUP BY.*IFNULL
 =~ Version: '5\.5|Version: '10\.1|Version: '10\.2
-MDEV-21779:
-=~ Assertion \`!memcmp(insert_buf, rec - extra_size, rec_size)'
-=~ page_cur_insert_rec_low
-=~ page_cur_tuple_insert
-=~ Version: '10\.5
 MDEV-21757:
 =~ Assertion \`purpose == FIL_TYPE_TABLESPACE'
 =~ fil_space_t::modify_check
@@ -278,63 +240,26 @@ MDEV-21754:
 =~ ha_maria::start_stmt
 =~ check_lock_and_start_stmt
 =~ Version: '10\.2|Version: '10\.3
-MDEV-21748:
-=~ AddressSanitizer:|signal 11
-=~ void PageBulk::insertPage
-=~ BtrBulk::insert
-=~ row_merge_insert_index_tuples
-=~ Version: '10\.5
 MDEV-21746:
 =~ Assertion \`strcmp(share->unique_file_name,filename) \|\| share->last_version'
 =~ test_if_reopen
 =~ mi_open
 =~ QUICK_RANGE_SELECT::init_ror_merged_scan
 =~ Version: '10\.1
-MDEV-21744:
-=~ Assertion \`!rec_offs_nth_sql_null(offsets, n)'
-=~ btr_cur_upd_rec_in_place
-=~ Version: '10\.5
 MDEV-21697:
 =~ Assertion \`!wsrep_has_changes(thd) \|\| (thd->lex->sql_command == SQLCOM_CREATE_TABLE && !thd->is_current_stmt_binlog_format_row())'
 =~ wsrep_commit_empty
 =~ Version: '10\.4|Version: '10\.5
-MDEV-21690:
-=~ LeakSanitizer: detected memory leaks
-=~ mem_heap_create_block_func
-=~ dict_mem_foreign_create|mem_heap_add_block
-=~ Version: '10\.5
 MDEV-21688:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ mysql_alter_table
 =~ DROP SYSTEM VERSIONING
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
-MDEV-21683:
-=~ signal 11|AddressSanitizer:
-=~ get_quick_keys
-=~ TRP_RANGE::make_quick
-=~ get_quick_record_count
-=~ Version: '10\.5
 MDEV-21680:
 =~ Assertion \`!table->pos_in_locked_tables'
 =~ tc_release_table
 =~ Version: '10\.1
-MDEV-21665:
-=~ signal 11|AddressSanitizer:
-=~ my_qsort2
-=~ Filesort_buffer::sort_buffer
-=~ mysql_update
-=~ Version: '10\.5
-MDEV-21658:
-=~ Assertion \`log->blobs'
-=~ row_log_table_apply_update
-=~ ha_innobase::inplace_alter_table
-=~ Version: '10\.4|Version: '10\.5
-MDEV-21658:
-=~ Assertion \`extra_size \|\| !is_instant'
-=~ row_log_table_apply_op
-=~ ha_innobase::inplace_alter_table
-=~ Version: '10\.4|Version: '10\.5
 MDEV-21650:
 =~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction\.stmt'
 =~ ha_rollback_trans
@@ -345,12 +270,6 @@ MDEV-21648:
 =~ memmove
 =~ Binary_string::copy|String::copy
 =~ Item_copy_string::copy
-MDEV-21645:
-=~ AddressSanitizer:|signal 11
-=~ innobase_get_computed_value
-=~ row_merge_read_clustered_index
-=~ ha_innobase::inplace_alter_table
-=~ Version: '10\.4|Version: '10\.5
 MDEV-21641:
 =~ For .* BASE TABLE .* error : Found a misplaced row
 =~ For .* BASE TABLE .* error : Partition .* returned error
@@ -377,10 +296,6 @@ MDEV-21630:
 =~ Multiupdate_prelocking_strategy::handle_end
 =~ sp_instr_stmt::exec_core
 =~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
-MDEV-21627:
-=~ Assertion \`inited == NONE \|\| update_handler != this'
-=~ handler::ha_write_row
-=~ b-10.5-monty
 MDEV-21619:
 =~ signal 11
 =~ my_datetime_to_str
@@ -396,10 +311,6 @@ MDEV-21617:
 =~ Assertion \`binlog_table_maps == 0'
 =~ THD::reset_for_next_command|THD::binlog_query
 =~ bb-10.5-monty
-MDEV-21608:
-=~ Assertion \`n_ext == dtuple_get_n_ext(dtuple)'
-=~ rec_get_converted_size
-=~ btr_cur_optimistic_insert
 MDEV-21589:
 =~ AddressSanitizer: memcpy-param-overlap
 =~ Static_binary_string::q_append|String::append
@@ -409,11 +320,6 @@ MDEV-21576:
 =~ row_insert_for_mysql
 =~ Version: '10\.4|Version: '10\.5
 # Not merged up yet
-MDEV-21564:
-=~ Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| (!purge_sys\.enabled() && (srv_is_being_started \|\| trx_rollback_is_active \|\| srv_force_recovery >= SRV_FORCE_NO_BACKGROUND)) \|\| ((trx->mysql_thd \|\| trx->internal) && srv_fast_shutdown)'|Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| ((srv_is_being_started \|\| trx_rollback_or_clean_is_active) && purge_sys->state == PURGE_STATE_INIT) \|\| (srv_force_recovery >= SRV_FORCE_NO_BACKGROUND && purge_sys->state == PURGE_STATE_DISABLED) \|\| ((trx->in_mysql_trx_list \|\| trx->internal) && srv_fast_shutdown)'
-=~ trx_purge_add_undo_to_history
-=~ trx_write_serialisation_history
-=~ fts_optimize_words|dict_table_close|kill_server
 MDEV-21561:
 =~ Assertion \`bitmap_is_subset(&m_part_info->read_partitions, &m_part_info->lock_partitions)'
 =~ ha_partition::start_stmt
@@ -424,10 +330,6 @@ MDEV-21555:
 =~ dict_index_t::vers_history_row
 =~ row_upd_check_references_constraints|row_ins_check_foreign_constraint
 # Not merged up yet
-MDEV-21550:
-=~ Assertion \`!table->fts->in_queue'|InnoDB: Failing assertion: !table->fts->in_queue
-=~ fts_optimize_remove_table
-=~ row_drop_table_for_mysql
 MDEV-21540:
 =~ signal 11|AddressSanitizer:
 =~ handle_pre_scan
@@ -991,9 +893,6 @@ MDEV-20395:
 =~ Assertion \`!found'
 =~ remove_ptr_from_dynarray
 =~ handle_grant_struct
-MDEV-20370:
-=~ Assertion \`mtr->get_log_mode() == MTR_LOG_NO_REDO'
-=~ page_cur_insert_rec_write_log
 MDEV-20366:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_change_password
@@ -1045,10 +944,6 @@ MDEV-20195:
 MDEV-20194:
 =~ check.*Warning.*Row size too large (> .*)\. Changing some columns to TEXT or BLOB or using ROW_FORMAT=DYNAMIC or ROW_FORMAT=COMPRESSED may help\. In current row format, BLOB prefix of .* bytes is stored inline
 =~ InnoDB: Cannot add field .* in table .* because after adding it, the row size is .* which is greater than maximum allowed size (.*) for a record on index leaf page
-MDEV-20191:
-=~ Assertion \`index\.fields[i]\.col->same_format( \*oindex\.fields[i]\.col)'
-=~ dict_table_t::prepare_instant
-=~ ha_innobase_inplace_ctx::prepare_instant
 MDEV-20154:
 =~ Assertion \`len <= col->len \|\| ((col->mtype) == 5 \|\| (col->mtype) == 14)'
 =~ row_merge_buf_add
@@ -1372,6 +1267,7 @@ MDEV-19114:
 =~ Assertion \`n_fields > 0'
 =~ rec_offs_set_n_fields
 =~ row_purge_remove_sec_if_poss_leaf
+# Not merged up yet
 MDEV-19092:
 =~ Assertion \`foreign->referenced_index != __null'|signal 11|Assertion \`new_index != __null'|InnoDB: Failing assertion: new_index != __null
 =~ dict_mem_table_col_rename_low
@@ -1388,11 +1284,6 @@ MDEV-19067:
 =~ ha_maria::store_lock
 =~ get_lock_data
 =~ mysql_lock_tables
-MDEV-19066:
-=~ AddressSanitizer: use-after-poison|AddressSanitizer: unknown-crash
-=~ innobase_build_col_map
-=~ prepare_inplace_alter_table_dict
-=~ mysql_recreate_table|mysql_alter_table
 MDEV-19038:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ calc_row_difference
@@ -1824,11 +1715,6 @@ MDEV-17869:
 =~ AddressSanitizer: use-after-poison
 =~ Item_change_list::rollback_item_tree_changes
 =~ Prepared_statement::cleanup_stmt|sp_lex_keeper::reset_lex_and_exec_core
-MDEV-17844:
-=~ Assertion \`ulint(rec) == offsets[2]'
-=~ rec_offs_validate
-=~ page_zip_write_trx_id_and_roll_ptr
-=~ row_undo
 # The alternative is due to the broken stack trace
 MDEV-17843:
 =~ Assertion \`page_rec_is_leaf(rec)'
@@ -1912,6 +1798,7 @@ MDEV-17217:
 =~ in make_sortkey
 =~ find_all_keys
 =~ filesort
+# Not merged up yet
 MDEV-17177:
 =~ signal 11|AddressSanitizer: use-after-poison
 =~ Item_func_in::cleanup
@@ -1928,10 +1815,12 @@ MDEV-17120:
 =~ multi_update::prepare
 =~ JOIN::prepare
 =~ sp_instr_stmt::execute
+# Not merged up yet
 MDEV-17091:
 =~ Assertion \`part_id == m_last_part'
 =~ ha_partition::delete_row
 =~ mysql_delete|multi_delete
+# Not merged up yet
 MDEV-17091:
 =~ Assertion \`old_part_id == m_last_part'
 =~ ha_partition::update_row
@@ -2267,6 +2156,7 @@ MDEV-10945:
 MDEV-10826:
 =~ Assertion \`thd->get_stmt_da()->is_eof()'
 =~ Query_cache::end_of_result
+# Not merged up yet
 MDEV-10466:
 =~ SEL_ARG::store_min
 =~ ror_scan_selectivity
@@ -2709,8 +2599,6 @@ MDEV-15533:
 =~ log->blobs
 MDEV-15493:
 =~ lock_trx_table_locks_remove
-MDEV-15490:
-=~ in trx_update_mod_tables_timestamp
 MDEV-15486:
 =~ String::needs_conversion
 MDEV-15484:
@@ -2793,5 +2681,6 @@ MDEV-9137:
 MDEV-7600:
 =~ STATUS_LENGTH_MISMATCH_SELECT
 =~ Transformed query: .* GenTest::Transform::ExecuteAsPreparedT.* ANY|Transformed query: .* GenTest::Transform::ExecuteAsPreparedT.* SOME|Transformed query: .* GenTest::Transform::ExecuteAsPreparedT.* ALL
+# Not merged up yet
 MDEV-5924:
 =~ Query_cache::register_all_tables
