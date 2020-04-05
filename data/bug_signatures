@@ -4,10 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22149:
+=~ Assertion \`!table->pos_in_locked_tables'
+=~ tc_release_table
+=~ handle_alter_part_error
+=~ fast_alter_partition_table
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22128:
 =~ signal 11|AddressSanitizer
 =~ do_rename|rename_tables
-=~ wsrep_mysql_parse
+=~ wsrep_on
 =~ Version: '10\.5
 MDEV-22105:
 =~ Assertion \`(&(&thd->LOCK_thd_data)->m_mutex)->count > 0 && pthread_equal(pthread_self(), (&(&thd->LOCK_thd_data)->m_mutex)->thread)'
@@ -2352,9 +2358,9 @@ TODO-842: [InnoDB: Trying to read page number]
 =~ InnoDB: Trying to read page number
 =~ fil_report_invalid_page_access
 =~ xtrabackup_prepare_func
-TODO-842: [wsrep::transaction::before_rollback - state]
+TODO-842: [wsrep::transaction::before - state]
 =~ Assertion \`state() == s_executing \|\| state() == s_preparing \|\| state() == s_prepared \|\| state() == s_must_abort \|\| state() == s_aborting \|\| state() == s_cert_failed \|\| state() == s_must_replay'
-=~ wsrep::transaction::before_rollback
+=~ wsrep::transaction::before_rollback|wsrep::transaction::before_commit
 TODO-842: [safe_mutex: Trying to lock mutex at wsrep_mutex]
 =~ safe_mutex: Trying to lock mutex at .*wsrep_mutex.* when the mutex was already locked at
 =~ Wsrep_mutex::lock
