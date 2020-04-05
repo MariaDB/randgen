@@ -358,8 +358,11 @@ sub normalizeGrants {
 
   if ($old_server->versionNumeric lt '100502' and $new_server->versionNumeric ge '100502') {
     foreach my $u (keys %$new_grants) {
-      if ($old_grants->{$u} =~ / SUPER(?:,| ON)/) {
+      # MDEV-22152: As of 10.5.2, REPLICATION MASTER ADMIN is only given to users which have both SUPER and REPLICATION SLAVE
+      if ($old_grants->{$u} =~ / SUPER(?:,| ON)/ and $old_grants->{$u} =~ / REPLICATION SLAVE(?:,| ON)/) {
         $old_grants->{$u} =~ s/ ON \*\.\*/, SET USER, FEDERATED ADMIN, CONNECTION ADMIN, READ_ONLY ADMIN, REPLICATION SLAVE ADMIN, REPLICATION MASTER ADMIN, BINLOG ADMIN, BINLOG REPLAY ON \*\.\*/;
+      } elsif ($old_grants->{$u} =~ / SUPER(?:,| ON)/) {
+        $old_grants->{$u} =~ s/ ON \*\.\*/, SET USER, FEDERATED ADMIN, CONNECTION ADMIN, READ_ONLY ADMIN, REPLICATION SLAVE ADMIN, BINLOG ADMIN, BINLOG REPLAY ON \*\.\*/;
       }
       $old_grants->{$u} =~ s/REPLICATION CLIENT/BINLOG MONITOR/;
 #      if ($old_grants->{$u} =~ / REPLICATION SLAVE(?:,| ON)/) {
