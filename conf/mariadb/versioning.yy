@@ -1,4 +1,4 @@
-#  Copyright (c) 2017, MariaDB
+#  Copyright (c) 2017, 2020, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ query_add:
 ;
 
 vers_query:
-    query | query | query
+    query
   | vers_ia_query | vers_ia_query | vers_ia_query
   | vers_alter | vers_alter | vers_alter | vers_alter | vers_alter | vers_alter | vers_alter | vers_alter
   | vers_alter | vers_alter | vers_alter | vers_alter | vers_alter | vers_alter | vers_alter | vers_alter
@@ -68,7 +68,6 @@ vers_with_without_system_versioning:
 
 vers_change_variable:
     SET vers_session_global TRANSACTION ISOLATION LEVEL vers_tx_isolation_value
-  | SET vers_session_global `system_versioning_innodb_algorithm_simple` = vers_on_off
   | SET vers_session_global `system_versioning_alter_history`= vers_alter_history_value
   | SET vers_session_global `system_versioning_asof` = vers_as_of_value
 ;
@@ -211,6 +210,12 @@ vers_partitioning_definition:
     vers_partition_list ,
     PARTITION ver_pn CURRENT
   )
+  # MDEV-19903
+  | /* compatibility 10.5.0 */ PARTITION BY SYSTEM_TIME vers_partition_number_optional
+;
+
+vers_partition_number_optional:
+  | PARTITIONS _digit
 ;
 
 vers_partitioning_interval_or_limit:
