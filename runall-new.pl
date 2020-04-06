@@ -478,13 +478,9 @@ if (scalar @ARGV) {
 # Start servers. Use rpl_alter if replication is needed.
 #
 
-if ($props->{compatibility}) {
-    if ($props->{compatibility}=~ /([0-9]+)\.([0-9]+)\.([0-9]+)/) {
-        $props->{compatibility}= sprintf("%02d%02d%02d",int($1),int($2),int($3));
-    }
-}
-
 my $rplsrv;
+my $version;
+my $min_version_numeric= '999999';
 
 if ($props->{rpl_mode} ne '') {
 
@@ -507,9 +503,8 @@ if ($props->{rpl_mode} ne '') {
     );
     
     my $status = $rplsrv->startServer();
-    unless ($props->{compatibility}) {
-        $props->{compatibility}= $rplsrv->versionNumeric;
-    }
+    $version= $rplsrv->version;
+    $min_version_numeric= $rplsrv->versionNumeric;
     
     if ($status > DBSTATUS_OK) {
         stopServers($status);
@@ -559,9 +554,8 @@ if ($props->{rpl_mode} ne '') {
         sayError("Could not start Galera cluster");
         exit_test(STATUS_ENVIRONMENT_FAILURE);
     }
-    unless ($props->{compatibility}) {
-        $props->{compatibility}= $rplsrv->versionNumeric;
-    }
+    $version= $rplsrv->version;
+    $min_version_numeric= $rplsrv->versionNumeric;
 
     my $galera_topology = $props->{galera};
     my $i = 0;
@@ -575,7 +569,6 @@ if ($props->{rpl_mode} ne '') {
 
 } else {
 
-    my $min_version= '999999';
     foreach my $server_id (1..3) {
         next unless ${$props->{basedir}}[$server_id];
         
@@ -604,7 +597,10 @@ if ($props->{rpl_mode} ne '') {
             exit_test(STATUS_CRITICAL_FAILURE);
         }
         my $ver= ${$props->{server}}[$server_id]->versionNumeric;
-        $min_version= $ver if $ver lt $min_version;
+        if ($ver lt $min_version_numeric) {
+            $min_version_numeric= $ver;
+            $version= ${$props->{server}}[$server_id]->version;
+        }
         
         if ( ($server_id == 0) || ($props->{rpl_mode} eq '') ) {
             $dsns[$server_id] = ${$props->{server}}[$server_id]->dsn($database,$user);
@@ -620,14 +616,22 @@ if ($props->{rpl_mode} ne '') {
           }
         }
     }
-
-    if ($props->{compatibility} and $props->{compatibility} gt $min_version) {
-        sayWarning("Minimal server version $min_version is lower than the required compatibility level $props->{compatibility}. Unexpected syntax errors may occur");
-    } elsif (not $props->{compatibility}) {
-        $props->{compatibility}= $min_version;
-    }
 }
-say("Server version compatibility: $props->{compatibility}");
+
+$props->{compatibility}= $version unless defined ($props->{compatibility});
+
+if ($props->{compatibility}=~ /([0-9]+)\.([0-9]+)\.([0-9]+)-([0-9]+)/) {
+    $props->{compatibility}= sprintf("%02d%02d%02de",int($1),int($2),int($3));
+}
+elsif ($props->{compatibility}=~ /([0-9]+)\.([0-9]+)\.([0-9]+)/) {
+    $props->{compatibility}= sprintf("%02d%02d%02d",int($1),int($2),int($3));
+}
+
+if ($props->{compatibility} gt $min_version_numeric) {
+    sayWarning("Minimal server version $min_version_numeric is lower than the required compatibility level $props->{compatibility}. Unexpected syntax errors may occur");
+}
+
+say("Server version $version; version compatibility: $props->{compatibility}");
 
 #
 # Wait for user interaction before continuing, allowing the user to attach 

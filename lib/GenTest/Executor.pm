@@ -259,9 +259,12 @@ sub serverNumericVersion {
 
 sub is_compatible {
     my $requirement= $_[1];
-    if ($requirement =~ /([0-9]+)\.([0-9]+)(?:\.([0-9]+))?/) {
+    if ($requirement =~ /([0-9]+)\.([0-9]+)\.([0-9]+)(?:-[0-9]+|e)/) {
+        $requirement= sprintf("%02d%02d%02de",int($1),int($2),int($3||0));
+    } elsif ($requirement =~ /([0-9]+)\.([0-9]+)(?:\.([0-9]+))?/) {
         $requirement= sprintf("%02d%02d%02d",int($1),int($2),int($3||0));
     }
+    return 0 if ($requirement =~ /e$/ and $_[0]->[EXECUTOR_COMPATIBILITY] !~ /e$/);
     return $_[0]->[EXECUTOR_COMPATIBILITY] ge $requirement;
 }
 

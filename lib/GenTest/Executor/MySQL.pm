@@ -833,13 +833,21 @@ sub execute {
     $execution_flags= 0 unless defined $execution_flags;
 
     # First check the query for compatibility markers
-    my @compats= $query=~ /\/\*\s*compatibility\s+([\d\.]+)\s*\*\//g;
-    foreach my $c (@compats) {
-        unless ($executor->is_compatible($c)) {
+    my @compat_requirements= $query=~ /\/\*\s*compatibility\s+([\d\.]+(?:e|-[0-9]+)?(?:,[\d\.]+(?:e|-[0-9]+)?)*)\s*\*\//g;
+    foreach my $cr (@compat_requirements) {
+        my @cr= split /,/, $cr;
+        my $compat= 0;
+        foreach my $c (@cr) {
+            $compat= $executor->is_compatible($c);
+            last if $compat;
+        }
+        unless ($compat) {
+            my $err_type= STATUS_SKIP;
             # The query is not compatible with this test run
+            $executor->[EXECUTOR_STATUS_COUNTS]->{$err_type}++;
             return GenTest::Result->new(
                         query       => $query,
-                        status      => STATUS_SKIP,
+                        status      => $err_type,
                         err         => 0,
                         errstr      => 'Not compatible',
                         sqlstate    => undef,
@@ -1259,11 +1267,12 @@ sub DESTROY {
     my $executor = shift;
     $executor->disconnect();
 
+    say("-----------------------");
+    say("Statistics for Executor ".$executor->dsn());
     if (
         (rqg_debug()) &&
         (defined $executor->[EXECUTOR_STATUS_COUNTS])
     ) {
-        say("Statistics for Executor ".$executor->dsn());
         use Data::Dumper;
         $Data::Dumper::Sortkeys = 1;
         say("Rows returned:");
@@ -1278,6 +1287,7 @@ sub DESTROY {
 #        print Dumper $executor->[EXECUTOR_EXPLAIN_QUERIES];
     }
     say("Statuses: ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } sort keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
+    say("-----------------------");
 }
 
 sub currentSchema {
