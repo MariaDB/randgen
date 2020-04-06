@@ -4,9 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22161:
+=~ AddressSanitizer:
+=~ create_tmp_table
+=~ JOIN::create_postjoin_aggr_table
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-22154:
 =~ safe_mutex: Trying to lock mutex at .*/sql/wsrep_mutex\.h|safe_mutex: Trying to lock mutex at .*/sql/sql_parse\.cc|safe_mutex: Trying to lock mutex at .*/sql/repl_failsafe\.cc|safe_mutex: Trying to lock mutex at .*/sql/sql_show\.cc
-=~ when the mutex was already locked at *sql/sql_parse\.cc, line
+=~ when the mutex was already locked at .*/sql/sql_parse\.cc, line
 =~ wsrep_mysql_parse
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22149:
@@ -854,6 +859,11 @@ MDEV-20474:
 MDEV-20471:
 =~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
 =~ tdc_remove_table
+=~ Version: '10\.3|Version: '10\.4
+MDEV-20471:
+=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
+=~ tdc_remove_table
+=~ Version: '10\.5
 MDEV-20464:
 =~ signal 8|AddressSanitizer: FPE
 =~ row_search_with_covering_prefix
