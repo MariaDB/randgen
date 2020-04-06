@@ -859,7 +859,6 @@ MDEV-20474:
 MDEV-20471:
 =~ Assertion \`remove_type == TDC_RT_REMOVE_UNUSED \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
 =~ tdc_remove_table
-=~ Version: '10\.3|Version: '10\.4
 MDEV-20471:
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
 =~ tdc_remove_table
@@ -916,7 +915,8 @@ MDEV-20395:
 =~ handle_grant_struct
 MDEV-20366:
 =~ signal 11|AddressSanitizer: SEGV
-=~ check_change_password
+=~ change_password
+=~ set_var_password
 =~ sp_instr_stmt::exec_core
 =~ Version: '10\.5
 MDEV-20338:
@@ -2374,7 +2374,7 @@ TODO-842: [InnoDB: Trying to read page number]
 =~ fil_report_invalid_page_access
 =~ xtrabackup_prepare_func
 TODO-842: [wsrep::transaction::before - state]
-=~ Assertion \`state() == s_executing \|\| state() == s_preparing \|\| state() == s_prepared \|\| state() == s_must_abort \|\| state() == s_aborting \|\| state() == s_cert_failed \|\| state() == s_must_replay'
+=~ Assertion \`state() == s_executing \|\| state() == s_preparing \|\| state() == s_prepared \|\| state() == s_must_abort \|\| state() == s_aborting \|\| state() == s_cert_failed \|\| state() == s_must_replay'|Assertion \`state() == s_executing \|\| state() == s_prepared \|\| state() == s_committing \|\| state() == s_must_abort \|\| state() == s_replaying'
 =~ wsrep::transaction::before_rollback|wsrep::transaction::before_commit
 TODO-842: [rpl_sql_thread_info::cached_charset_compare]
 =~ signal 11|AddressSanitizer
