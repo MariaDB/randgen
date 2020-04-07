@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22178:
+=~ Assertion \`info->alias\.str'
+=~ partition_info::check_partition_info
+=~ mysql_alter_table
+=~ Version: '10\.5
+MDEV-22172:
+=~ Assertion \`inited == NONE \|\| lookup_handler != this'
+=~ handler::ha_write_row
+=~ vers_insert_history_row
+=~ Version: '10\.5
 MDEV-22161:
 =~ AddressSanitizer:
 =~ create_tmp_table
