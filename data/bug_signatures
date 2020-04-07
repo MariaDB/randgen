@@ -4,10 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22185:
+=~ Assertion \`inited==NONE'
+=~ handler::ha_index_init
+=~ handler::check_duplicate_long_entry_key
+=~ Version: '10\.5
 MDEV-22178:
 =~ Assertion \`info->alias\.str'
 =~ partition_info::check_partition_info
-=~ mysql_alter_table
+=~ versioning
+=~ PARTITIONS 1
 =~ Version: '10\.5
 MDEV-22172:
 =~ Assertion \`inited == NONE \|\| lookup_handler != this'
@@ -22,7 +28,7 @@ MDEV-22161:
 MDEV-22154:
 =~ safe_mutex: Trying to lock mutex at .*/sql/wsrep_mutex\.h|safe_mutex: Trying to lock mutex at .*/sql/sql_parse\.cc|safe_mutex: Trying to lock mutex at .*/sql/repl_failsafe\.cc|safe_mutex: Trying to lock mutex at .*/sql/sql_show\.cc
 =~ when the mutex was already locked at .*/sql/sql_parse\.cc, line
-=~ wsrep_mysql_parse
+=~ wsrep_on
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22149:
 =~ Assertion \`!table->pos_in_locked_tables'
@@ -50,6 +56,10 @@ MDEV-22099:
 =~ maria_records_in_range
 =~ DsMrr_impl::dsmrr_info_const
 =~ Version: '10\.4|Version: '10\.5
+MDEV-22097:
+=~ InnoDB: Not applying DELETE_ROW_FORMAT_REDUNDANT
+=~ mariabackup: innodb_init() returned 39 (Data structure corruption)
+=~ Version: '10\.5
 MDEV-22077:
 =~ Assertion \`table->no_keyread \|\| !table->covering_keys\.is_set(tab->index) \|\| table->file->keyread == tab->index'
 =~ join_read_first
@@ -267,7 +277,7 @@ MDEV-21754:
 =~ check_lock_and_start_stmt
 =~ Version: '10\.2|Version: '10\.3
 MDEV-21746:
-=~ Assertion \`strcmp(share->unique_file_name,filename) \|\| share->last_version'
+=~ Assertion \`strcmp(share->unique_file_name,filename) \|\| share->last_version'|Assertion \`__extension__ .* \|\| share->last_version'
 =~ test_if_reopen
 =~ mi_open
 =~ QUICK_RANGE_SELECT::init_ror_merged_scan
@@ -2408,6 +2418,10 @@ TODO-842: [wsrep::transaction::after_rollback]
 # Weak matches
 ##############################################################################
 
+MDEV-22185: [Can't find record in]
+=~ Can't find record in
+=~ DATABASE_CORRUPTION
+=~ Version: '10\.5
 MDEV-21781: [GenTest::Transform::EnableOptimizations]
 =~ Transformed query: .* GenTest::Transform::EnableOptimizations
 =~ Version: '10\.5
