@@ -15,8 +15,8 @@
 
 query_add:
     # MENT-599
-    /* compatibility 10.5.2 */ SET GLOBAL innodb_purge_threads = { $prng->int(0,33) } |
+    /* compatibility 10.5.2-0 */ SET GLOBAL innodb_purge_threads = { $prng->int(0,33) } |
     # MENT-661
-    /* compatibility 10.5.2 */ SET GLOBAL innodb_read_io_threads = { $prng->int(0,65) } |
-    /* compatibility 10.5.2 */ SET GLOBAL innodb_write_io_threads = { $prng->int(0,65) }
+    /* compatibility 10.5.2-0 */ SET GLOBAL innodb_read_io_threads = { $prng->int(0,65) } |
+    /* compatibility 10.5.2-0 */ SET GLOBAL innodb_write_io_threads = { $prng->int(0,65) }
 ;
