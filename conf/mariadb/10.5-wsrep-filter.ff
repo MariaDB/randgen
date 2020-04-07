@@ -6,4 +6,5 @@ $rules = {
   'mdev22051'   => sub { $_ =~ m{FLUSH\s+TABLE.*(?:WITH|EXPORT)}s },
   'mdev22055'   => sub { $_ =~ m{(?:COMMIT|ROLLBACK).*AND\s+CHAIN}s },
   'sequences'   => sub { $_ =~ m{SEQUENCE}s },
+  'mdev22075_22128'   => sub { $_ =~ m{VIEW}s },
 }
