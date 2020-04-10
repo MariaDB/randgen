@@ -44,7 +44,9 @@ MENT-189:
 #
 # Fixed in the next release
 #
-
+MDEV-21899:
+=~ Not applying DELETE_ROW_FORMAT_DYNAMIC due to corruption on
+=~ Version: '10\.5
 MDEV-21850:
 =~ AddressSanitizer:
 =~ page_cur_insert_rec_low

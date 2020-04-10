@@ -22,7 +22,7 @@ MDEV-22178:
 MDEV-22172:
 =~ Assertion \`inited == NONE \|\| lookup_handler != this'
 =~ handler::ha_write_row
-=~ vers_insert_history_row
+=~ vers_insert_history_row|update_portion_of_time
 =~ Version: '10\.5
 MDEV-22161:
 =~ AddressSanitizer:
@@ -227,7 +227,7 @@ MDEV-21830:
 =~ ha_maria::implicit_commit
 =~ ha_commit_trans
 MDEV-21822:
-=~ Failing assertion: UT_LIST_GET_LEN(trx->lock.trx_locks) == 0
+=~ Failing assertion: UT_LIST_GET_LEN(trx->lock\.trx_locks) == 0
 =~ Version: '10\.5
 =~ trx_commit_in_memory
 =~ innobase_commit_low
@@ -1422,8 +1422,8 @@ MDEV-18776:
 =~ mysql_execute_command
 =~ SET STATEMENT
 MDEV-18770:
-=~ AddressSanitizer: memcpy-param-overlap|AddressSanitizer: heap-use-after-free
-=~ my_strnxfrm_8bit_bin
+=~ AddressSanitizer: memcpy-param-overlap|AddressSanitizer: heap-use-after-free|signal 11
+=~ my_strnxfrm_8bit_bin|my_fill_8bit
 =~ make_sortkey
 =~ create_sort_index|find_all_keys
 MDEV-18756:
