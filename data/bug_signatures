@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22216:
+=~ Assertion \`xid_seqno > wsrep_seqno'
+=~ trx_rseg_update_wsrep_checkpoint
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22185:
 =~ Assertion \`inited==NONE'
 =~ handler::ha_index_init
