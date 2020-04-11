@@ -4,12 +4,29 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22223:
+=~ TrxHandleMaster::lock
+=~ wsrep::transaction::replay
+=~ wsrep::client_state::after_statement
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22223:
+=~ Assertion \`state() == s_executing \|\| state() == s_prepared \|\| state() == s_committing \|\| state() == s_must_abort \|\| state() == s_replaying'
+=~ wsrep::transaction::before_commit
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22222:
+=~ Assertion \`state() == s_executing \|\| state() == s_preparing \|\| state() == s_prepared \|\| state() == s_must_abort \|\| state() == s_aborting \|\| state() == s_cert_failed \|\| state() == s_must_replay'
+=~ wsrep::transaction::before_rollback
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22218:
+=~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
+=~ row_update_for_mysql
+=~ Version: '10\.5
 MDEV-22216:
 =~ Assertion \`xid_seqno > wsrep_seqno'
 =~ trx_rseg_update_wsrep_checkpoint
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22185:
-=~ Assertion \`inited==NONE'
+=~ Assertion \`inited==NONE'|AddressSanitizer
 =~ handler::ha_index_init
 =~ handler::check_duplicate_long_entry_key
 =~ Version: '10\.5
@@ -230,7 +247,6 @@ MDEV-21822:
 =~ Failing assertion: UT_LIST_GET_LEN(trx->lock\.trx_locks) == 0
 =~ Version: '10\.5
 =~ trx_commit_in_memory
-=~ innobase_commit_low
 MDEV-21821:
 =~ AddressSanitizer:
 =~ myrocks::Rdb_transaction::on_commit
@@ -1359,6 +1375,10 @@ MDEV-18947:
 =~ pagecache_fwrite
 =~ flush_cached_blocks
 =~ flush_pagecache_blocks_with_filter
+MDEV-18935:
+=~ Assertion \`state() == s_executing \|\| state() == s_committing \|\| state() == s_must_abort \|\| state() == s_replaying'
+=~ wsrep::transaction::before_commit
+=~ Version: '10\.4|Version: '10\.5
 MDEV-18925:
 =~ AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
 =~ Item_exists_subselect::is_top_level_item|Item_in_optimizer::is_top_level_item
@@ -2397,9 +2417,6 @@ TODO-842: [InnoDB: Trying to read page number]
 =~ InnoDB: Trying to read page number
 =~ fil_report_invalid_page_access
 =~ xtrabackup_prepare_func
-TODO-842: [wsrep::transaction::before - state]
-=~ Assertion \`state() == s_executing \|\| state() == s_preparing \|\| state() == s_prepared \|\| state() == s_must_abort \|\| state() == s_aborting \|\| state() == s_cert_failed \|\| state() == s_must_replay'|Assertion \`state() == s_executing \|\| state() == s_prepared \|\| state() == s_committing \|\| state() == s_must_abort \|\| state() == s_replaying'
-=~ wsrep::transaction::before_rollback|wsrep::transaction::before_commit
 TODO-842: [rpl_sql_thread_info::cached_charset_compare]
 =~ signal 11|AddressSanitizer
 =~ rpl_sql_thread_info::cached_charset_compare
