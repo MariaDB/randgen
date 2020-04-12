@@ -4,7 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22227:
+=~ Assertion \`state_ == s_exec'
+=~ wsrep::client_state::start_transaction
+=~ wsrep_bf_abort
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22223:
+=~ signal 11|AddressSanitizer
 =~ TrxHandleMaster::lock
 =~ wsrep::transaction::replay
 =~ wsrep::client_state::after_statement
