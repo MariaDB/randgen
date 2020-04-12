@@ -20,11 +20,7 @@
 
 query:
     dml | dml | dml | dml | dml | dml | dml |
-    trx | set_sql_mode
-;
-
-set_sql_mode:
-  SET SQL_MODE='' | SET SQL_MODE=DEFAULT | SET SQL_MODE=@@global.sql_mode
+    trx
 ;
 
 trx:
