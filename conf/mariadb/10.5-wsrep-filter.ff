@@ -7,4 +7,5 @@ $rules = {
   'mdev22055'   => sub { $_ =~ m{(?:COMMIT|ROLLBACK).*AND\s+CHAIN}s },
   'sequences'   => sub { $_ =~ m{SEQUENCE}s },
   'mdev22075_22128'   => sub { $_ =~ m{VIEW}s },
+  'mdev22052'   => sub { $_ =~ m{(?:LOCK|BACKUP)}s },
 }
