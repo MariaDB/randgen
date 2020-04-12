@@ -1149,7 +1149,7 @@ MDEV-19526:
 =~ Assertion \`((val << shift) & mask) == (val << shift)'
 =~ rec_set_bit_field_2
 MDEV-19522:
-=~ Assertion \`val <= 4294967295u'
+=~ Assertion \`val <= 4294967295u'|InnoDB: Failing assertion: val <= 4294967295u
 =~ fts_encode_int
 =~ fts_cache_node_add_positions
 =~ fts_commit_table
