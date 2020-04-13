@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22232:
+=~ signal 11|AddressSanitizer
+=~ rpl_sql_thread_info::cached_charset_compare
+=~ wsrep_apply_events
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22227:
 =~ Assertion \`state_ == s_exec'
 =~ wsrep::client_state::start_transaction
@@ -140,6 +145,10 @@ MDEV-22051:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ Version: '10\.4|Version: '10\.5
+MDEV-22048:
+=~ Assertion \`binlog_table_maps == 0 \|\| locked_tables_mode == LTM_LOCK_TABLES'
+=~ reset_for_next_command
+=~ Version: '10\.5
 MDEV-22027:
 =~ Assertion \`oldest_lsn >= log_sys\.last_checkpoint_lsn'
 =~ log_checkpoint
@@ -443,7 +452,7 @@ MDEV-21440:
 MDEV-21428:
 =~ InnoDB: Failing assertion: prebuilt->template_type == ROW_MYSQL_WHOLE_ROW
 =~ row_update_for_mysql
-=~ ha_innobase::delete_row
+=~ ha_innobase::delete_row|ha_innobase::update_row
 =~ Version: '10\.4|Version: '10\.5
 =~ versioning
 MDEV-21419:
@@ -1578,7 +1587,7 @@ MDEV-18381:
 MDEV-18371:
 =~ Conditional jump or move depends on uninitialised value|signal 11|AddressSanitizer: SEGV
 =~ cmp_key_rowid_part_id
-=~ ha_partition::handle_ordered_index_scan
+=~ ha_partition::handle_ordered_index_scan|ha_partition::handle_ordered_next
 MDEV-18370:
 =~ Failing assertion: lsn % OS_FILE_LOG_BLOCK_SIZE == LOG_BLOCK_HDR_SIZE
 =~ log_pad_current_log_block
@@ -2423,10 +2432,6 @@ TODO-842: [InnoDB: Trying to read page number]
 =~ InnoDB: Trying to read page number
 =~ fil_report_invalid_page_access
 =~ xtrabackup_prepare_func
-TODO-842: [rpl_sql_thread_info::cached_charset_compare]
-=~ signal 11|AddressSanitizer
-=~ rpl_sql_thread_info::cached_charset_compare
-=~ wsrep_apply_events
 TODO-842: [wsrep - lock_sys.mutex.is_owned]
 =~ Assertion \`(lock_sys\.mutex\.is_owned())'
 =~ lock_trx_handle_wait_low
