@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22262:
+=~ signal 11|AddressSanitizer
+=~ handler::ha_table_flags|ha_partition::info|ha_partition::compare_number_of_records
+=~ ha_partition::open
+=~ check_duplicate_long_entries_update
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22232:
 =~ signal 11|AddressSanitizer
 =~ rpl_sql_thread_info::cached_charset_compare
@@ -397,7 +403,7 @@ MDEV-21561:
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21555:
 =~ InnoDB: foreign constraints: secondary index is out of sync
-=~ Assertion \`!"secondary index is out of sync"'
+=~ Assertion \`!"secondary index is out of sync"'|Assertion \`"secondary index is out of sync" == 0'
 =~ dict_index_t::vers_history_row
 =~ row_upd_check_references_constraints|row_ins_check_foreign_constraint
 # Not merged up yet
