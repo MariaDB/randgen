@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22279:
+=~ Assertion \`false'
+=~ set_field_mdl_type
+=~ table_metadata_locks::read_row_values
+=~ Version: '10\.5
+MDEV-22277:
+=~ LeakSanitizer: detected memory leaks
+=~ mem_heap_create_block_func
+=~ innobase_get_foreign_key_info
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22275:
 =~ Assertion \`global_status_var\.global_memory_used == 0'
 =~ mysqld_exit
