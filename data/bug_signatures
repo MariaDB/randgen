@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22275:
+=~ Assertion \`global_status_var\.global_memory_used == 0'
+=~ mysqld_exit
+MDEV-22275:
+=~ LeakSanitizer: detected memory leaks
+=~ my_malloc
 MDEV-22262:
 =~ signal 11|AddressSanitizer
 =~ handler::ha_table_flags|ha_partition::info|ha_partition::compare_number_of_records

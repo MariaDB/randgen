@@ -32,17 +32,6 @@ MENT-263:
 =~ Assertion \`global_status_var\.global_memory_used == 0'
 =~ mysqld_exit
 =~ Version: '10\.4
-# Not pushed to 10.5-enterprise yet
-MENT-189:
-=~ InnoDB: Failing assertion: opt_no_lock
-=~ backup_file_op_fail
-=~ xtrabackup_copy_log
-=~ Version: '10\.5
-MENT-189:
-=~ Failing assertion: opt_no_lock
-=~ backup_file_op_fail
-=~ fil_name_parse
-=~ recv_parse_or_apply_log_rec_body
 #
 # Fixed in the next release
 #
