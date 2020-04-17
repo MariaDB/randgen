@@ -1,0 +1,15 @@
+$tables = {
+        engines => [ 'InnoDB' ],
+        pk => [ 'int' ],
+        rows => [ 1 ]
+};
+
+$fields = {
+        types => [ 'int', 'char(12)' ],
+        indexes => [ undef, 'key' ],
+};
+
+$data = {
+        numbers => [ 'digit', 'null', undef ],
+        strings => [ 'letter', 'english', 'char(12)' ]
+}
