@@ -4,6 +4,29 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22332:
+=~ Assertion \`mtr_started == mtr\.is_active()'
+=~ row_merge_read_clustered_index
+=~ Version: '10\.5
+MDEV-22284:
+=~ signal 11|AddressSanitizer
+=~ _ma_keylength_part
+=~ ha_maria::index_read_idx_map
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-22284:
+=~ Assertion \`info->last_key\.keyinfo == key->keyinfo'
+=~ _ma_search_no_save
+=~ ha_maria::index_read_idx_map
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-22283:
+=~ signal 11|AddressSanitizer
+=~ key_copy
+=~ write_record
+=~ mysql_insert
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22283::
+=~ Aria table .* is in use (most likely by a MERGE table)
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22279:
 =~ Assertion \`false'
 =~ set_field_mdl_type
@@ -24,7 +47,7 @@ MDEV-22262:
 =~ signal 11|AddressSanitizer
 =~ handler::ha_table_flags|ha_partition::info|ha_partition::compare_number_of_records
 =~ ha_partition::open
-=~ check_duplicate_long_entries_update
+=~ check_duplicate_long_entries_update|handler::create_lookup_handler|clone_handler_for_update
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22232:
 =~ signal 11|AddressSanitizer
@@ -764,7 +787,7 @@ MDEV-20689:
 =~ Version: '10\.2|Version: '10\.3
 MDEV-20680:
 =~ signal 11|AddressSanitizer: SEGV
-=~ ha_partition::compare_number_of_records
+=~ ha_partition::compare_number_of_records|clone_handler_for_update
 =~ check_duplicate_long_entries_update
 MDEV-20666:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE \|\| (prebuilt->table->no_rollback() && trx->state == TRX_STATE_NOT_STARTED)'
@@ -1091,6 +1114,10 @@ MDEV-19977:
 =~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'
 =~ lock_rec_lock
 =~ read_stored_values
+MDEV-19973:
+=~ Assertion \`state() == s_committing'
+=~ wsrep::transaction::ordered_commit
+=~ Version: '10\.4|Version: '10\.5
 MDEV-19848:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_vcol_forward_refs
