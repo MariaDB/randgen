@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22339:
+=~ Assertion \`str_length < len'
+=~ Binary_string::realloc_raw
+=~ mysql_lock_abort_for_thread
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22332:
 =~ Assertion \`mtr_started == mtr\.is_active()'
 =~ row_merge_read_clustered_index
