@@ -39,25 +39,17 @@ ddl: base_table_ddl | base_table_ddl | base_table_ddl |
 rand_val:
 	{ $rand_val = $prng->int(0,100) / 100 } ;
 
-
 kill_query:
-        COMMIT ; own_id ; COMMIT; KILL QUERY @kill_id ; COMMIT ;
-
-own_id:
-        SET @kill_id = CONNECTION_ID();
+        SET @kill_id = CONNECTION_ID() ; KILL QUERY @kill_id ;
 
 ddl:
-        COMMIT; CREATE TABLE IF NOT EXISTS galera_parent(a int not null primary key, b int , c int,key(b)) engine=innodb;
-	CREATE TABLE IF NOT EXISTS galera_child(a int not null primary key, b int, c int, FOREIGN KEY (b) references galera_parent(b) ON UPDATE CASCADE ON DELETE CASCADE) engine=innodb;
-	INSERT INTO galera_parent VALUES (1,1,1),(2,2,2),(3,3,3),(4,4,4),(5,5,5),(6,6,6);
-	INSERT INTO galera_child VALUES (1,1,1),(2,2,2),(3,2,2)(4,4,4),(5,2,5),(6,3,3),(7,6,6);
-	UPDATE galera_parent set b = b + 100 where b = 2;
-	DELETE galera_parent where b = 102;
-	OPTIMIZE TABLE galera_child;
-	ANALYZE TABLE galera_parent;
-	TRUNCATE TABLE galera_child;
-	DROP TABLE IF EXISTS galera_child;
-	DROP TABLE IF EXISTS galera_parent; COMMIT;
+        TRUNCATE TABLE _table | ANALYZE TABLE _table | OPTIMIZE TABLE _table |
+	ALTER TABLE _table RENAME TO _table | 
+        ALTER TABLE _table ADD COLUMN _field |
+	ALTER TABLE _table DROP COLUMN _field |
+	ALTER TABLE _table ADD KEY _field (_field) |
+	ALTER TABLE _table DROP KEY _field |
+	ALTER TABLE _table RENAME COLUMN _field TO _field ;
 
 transaction:
 	START TRANSACTION |
