@@ -212,3 +212,7 @@ MDEV-20494:
 =~ mysqld: Incorrect information in file: .*
 =~ versioning
 =~ Version: '10\.4|Version: '10\.5
+MDEV-21899:
+=~ InnoDB: Not applying .* due to corruption on
+=~ InnoDB: Set innodb_force_recovery=1 to ignore corruption
+=~ Version: '10\.5

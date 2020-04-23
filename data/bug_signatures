@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22358:
+=~ Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| (!purge_sys\.enabled() && (srv_is_being_started \|\| trx_rollback_is_active \|\| srv_force_recovery >= SRV_FORCE_NO_BACKGROUND)) \|\| ((trx->mysql_thd \|\| trx->internal) && srv_fast_shutdown)'
+=~ trx_purge_add_undo_to_history
+MDEV-22250:
+=~ InnoDB: Failing assertion: opt_no_lock
+=~ xtrabackup\.cc line
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22356:
+=~ AddressSanitizer:
+=~ _ma_get_status
+=~ thr_multi_lock
+=~ Version: '10\.1
 MDEV-22339:
 =~ Assertion \`str_length < len'
 =~ Binary_string::realloc_raw
