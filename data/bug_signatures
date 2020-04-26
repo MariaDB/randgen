@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22370:
+=~ safe_mutex: Trying to lock uninitialized mutex at .*/sql/rpl_parallel\.cc, line 470
+=~ rpl_pause_for_ftwrl
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22358:
 =~ Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| (!purge_sys\.enabled() && (srv_is_being_started \|\| trx_rollback_is_active \|\| srv_force_recovery >= SRV_FORCE_NO_BACKGROUND)) \|\| ((trx->mysql_thd \|\| trx->internal) && srv_fast_shutdown)'
 =~ trx_purge_add_undo_to_history
@@ -1316,7 +1320,7 @@ MDEV-19202:
 =~ dict_col_t::name
 =~ rollback_instant
 MDEV-19202:
-=~ Assertion \`n'
+=~ Assertion \`n'|AddressSanitizer
 =~ find_old_col_no
 =~ dict_table_t::rollback_instant
 MDEV-19198:
