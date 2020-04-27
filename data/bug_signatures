@@ -12,6 +12,11 @@ MDEV-22370:
 =~ safe_mutex: Trying to lock uninitialized mutex at .*/sql/rpl_parallel\.cc, line 470|Got error 22 when trying to lock mutex LOCK_rpl_thread_pool
 =~ rpl_pause_for_ftwrl|rpl_unpause_after_ftwrl
 =~ Version: '10\.4|Version: '10\.5
+MDEV-22369:
+=~ Assertion \`err == DB_SUCCESS'
+=~ btr_block_get_func
+=~ dict_load_columns
+=~ Version: '10\.5
 MDEV-22358:
 =~ Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| (!purge_sys\.enabled() && (srv_is_being_started \|\| trx_rollback_is_active \|\| srv_force_recovery >= SRV_FORCE_NO_BACKGROUND)) \|\| ((trx->mysql_thd \|\| trx->internal) && srv_fast_shutdown)'
 =~ trx_purge_add_undo_to_history
@@ -2197,7 +2202,7 @@ MDEV-14711:
 =~ buf_page_get_gen
 MDEV-14656: [Got error 22 when trying to lock mutex]
 =~ signal 6
-=~ Got error 22 when trying to lock mutex LOCK_event_queue
+=~ Got error 22 when trying to lock mutex LOCK_event_queue|safe_mutex: Trying to lock uninitialized mutex at .*sql/event_queue.cc
 =~ Event_queue::drop_schema_events|Event_queue::drop_event
 MDEV-14642:
 =~ Assertion \`table->s->db_create_options == part_table->s->db_create_options'
