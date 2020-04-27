@@ -4,9 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22375:
+=~ Assertion \`(engine->uncacheable() & ~8) \|\| ! engine->is_executed() \|\| with_recursive_reference'
+=~ Item_in_subselect
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22370:
-=~ safe_mutex: Trying to lock uninitialized mutex at .*/sql/rpl_parallel\.cc, line 470
-=~ rpl_pause_for_ftwrl
+=~ safe_mutex: Trying to lock uninitialized mutex at .*/sql/rpl_parallel\.cc, line 470|Got error 22 when trying to lock mutex LOCK_rpl_thread_pool
+=~ rpl_pause_for_ftwrl|rpl_unpause_after_ftwrl
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22358:
 =~ Assertion \`srv_undo_sources \|\| trx->undo_no == 0 \|\| (!purge_sys\.enabled() && (srv_is_being_started \|\| trx_rollback_is_active \|\| srv_force_recovery >= SRV_FORCE_NO_BACKGROUND)) \|\| ((trx->mysql_thd \|\| trx->internal) && srv_fast_shutdown)'
