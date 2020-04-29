@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22413:
+=~ Assertion \`old_part_id == m_last_part'
+=~ ha_partition::update_row
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ versioning
 MDEV-22375:
 =~ Assertion \`(engine->uncacheable() & ~8) \|\| ! engine->is_executed() \|\| with_recursive_reference'
 =~ Item_in_subselect
@@ -143,11 +148,6 @@ MDEV-22149:
 =~ handle_alter_part_error
 =~ fast_alter_partition_table
 =~ Version: '10\.4|Version: '10\.5
-MDEV-22128:
-=~ signal 11|AddressSanitizer
-=~ do_rename|rename_tables
-=~ wsrep_on
-=~ Version: '10\.5
 MDEV-22105:
 =~ Assertion \`(&(&thd->LOCK_thd_data)->m_mutex)->count > 0 && pthread_equal(pthread_self(), (&(&thd->LOCK_thd_data)->m_mutex)->thread)'
 =~ wsrep_thd_is_aborting
@@ -1679,10 +1679,12 @@ MDEV-18291:
 =~ std::__cxx11::_List_base|std::_List_base
 =~ dict_table_remove_from_cache|dict_sys_t::remove
 =~ ha_delete_table|ha_innobase_inplace_ctx::~ha_innobase_inplace_ctx|Sql_cmd_truncate_table::handler_truncate|row_merge_drop_table
+# Not merged to 10.5 yet
 MDEV-18286: [pagecache->cnt_for_resize_op == 0]
 =~ Assertion \`pagecache->cnt_for_resize_op == 0'
 =~ check_pagecache_is_cleaned_up
 =~ plugin_shutdown
+=~ Version: '10\.5
 MDEV-18285:
 =~ Assertion \`! is_set()' failed
 =~ Diagnostics_area::disable_status
@@ -1933,17 +1935,6 @@ MDEV-17120:
 =~ multi_update::prepare
 =~ JOIN::prepare
 =~ sp_instr_stmt::execute
-# Not merged up yet
-MDEV-17091:
-=~ Assertion \`part_id == m_last_part'
-=~ ha_partition::delete_row
-=~ mysql_delete|multi_delete
-# Not merged to 10.5 yet
-MDEV-17091:
-=~ Assertion \`old_part_id == m_last_part'
-=~ ha_partition::update_row
-=~ mysql_update|Update_rows_log_event::do_exec_row|mysql_multi_update|mysql_load|mysql_delete|write_record
-=~ Version: '10\.5
 MDEV-17071:
 =~ signal 11|AddressSanitizer:
 =~ TABLE_LIST::get_tablenr
@@ -2202,7 +2193,7 @@ MDEV-14711:
 =~ buf_page_get_gen
 MDEV-14656: [Got error 22 when trying to lock mutex]
 =~ signal 6
-=~ Got error 22 when trying to lock mutex LOCK_event_queue|safe_mutex: Trying to lock uninitialized mutex at .*sql/event_queue.cc
+=~ Got error 22 when trying to lock mutex LOCK_event_queue|safe_mutex: Trying to lock uninitialized mutex at .*sql/event_queue\.cc
 =~ Event_queue::drop_schema_events|Event_queue::drop_event
 MDEV-14642:
 =~ Assertion \`table->s->db_create_options == part_table->s->db_create_options'

@@ -193,6 +193,16 @@ MDEV-10466:
 =~ SEL_ARG::store_min
 =~ ror_scan_selectivity
 =~ SQL_SELECT::test_quick_select
+MDEV-22128:
+=~ signal 11|AddressSanitizer
+=~ do_rename|rename_tables
+=~ wsrep_on
+=~ Version: '10\.5
+# Not merged to 10.5 yet
+MDEV-18286: [pagecache->cnt_for_resize_op == 0]
+=~ Assertion \`pagecache->cnt_for_resize_op == 0'
+=~ check_pagecache_is_cleaned_up
+=~ plugin_shutdown
 
 ##############################################################################
 # Weak matches
