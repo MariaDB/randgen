@@ -4,9 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22426:
+=~ signal 8|AddressSanitizer: FPE
+=~ maria_create
+=~ CHAR(0)
+MDEV-22424:
+=~ signal 11|AddressSanitizer|signal 6
+=~ handler::check_duplicate_long_entry_key|Assertion \`inited == NONE \|\| lookup_handler != this'
+=~ TABLE::period_make_insert
+=~ update_portion_of_time
+=~ Version: '10\.5
 MDEV-22413:
-=~ Assertion \`old_part_id == m_last_part'
-=~ ha_partition::update_row
+=~ Assertion \`old_part_id == m_last_part'|Assertion \`part_id == m_last_part'
+=~ ha_partition::update_row|ha_partition::delete_row
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 =~ versioning
 MDEV-22375:
@@ -117,9 +127,9 @@ MDEV-22216:
 =~ trx_rseg_update_wsrep_checkpoint
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22185:
-=~ Assertion \`inited==NONE'|AddressSanitizer
-=~ handler::ha_index_init
-=~ handler::check_duplicate_long_entry_key
+=~ Assertion \`inited==NONE'|AddressSanitizer|InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
+=~ handler::ha_index_init|row_update_for_mysql
+=~ handler::check_duplicate_long_entry_key|handler::ha_check_overlaps|update_portion_of_time
 =~ Version: '10\.5
 MDEV-22178:
 =~ Assertion \`info->alias\.str'
@@ -2194,7 +2204,7 @@ MDEV-14711:
 MDEV-14656: [Got error 22 when trying to lock mutex]
 =~ signal 6
 =~ Got error 22 when trying to lock mutex LOCK_event_queue|safe_mutex: Trying to lock uninitialized mutex at .*sql/event_queue\.cc
-=~ Event_queue::drop_schema_events|Event_queue::drop_event
+=~ KILL_SERVER
 MDEV-14642:
 =~ Assertion \`table->s->db_create_options == part_table->s->db_create_options'
 =~ compare_table_with_partition
