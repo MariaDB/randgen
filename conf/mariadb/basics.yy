@@ -50,9 +50,13 @@ _basics_create_trigger_clause:
 ;
 
 _basics_insert_ignore_replace_clause:
-  INSERT _basics_ignore_80pct |
-  REPLACE | REPLACE | REPLACE | REPLACE
+  INSERT _basics_delayed_5pct _basics_ignore_80pct |
+  REPLACE _basics_delayed_5pct | REPLACE _basics_delayed_5pct |
+  REPLACE _basics_delayed_5pct | REPLACE _basics_delayed_5pct
 ;
+
+_basics_delayed_5pct:
+  | | | | | | | | | | | | | | | | | | | DELAYED ;
 
 _basics_ignore_80pct:
   | IGNORE | IGNORE | IGNORE | IGNORE ;
@@ -201,9 +205,9 @@ _basics_column_check_constraint_10pct:
 
 _basics_simple_check_constraint:
   CHECK (TRUE) |
-  CHECK ( { $last_field } ) |
-  CHECK ( { $last_field } IS NOT NULL ) |
-  CHECK ( { $last_field } IS NULL OR { $last_field } )
+  CHECK ( { '`'.$last_field.'`' } ) |
+  CHECK ( { '`'.$last_field.'`' } IS NOT NULL ) |
+  CHECK ( { '`'.$last_field.'`' } IS NULL OR { '`'.$last_field.'`' } )
 ;
 
 _basics_column_zerofill:
