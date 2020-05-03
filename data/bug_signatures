@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22442: [wsrep - lock_sys.mutex.is_owned]
+=~ Assertion \`(lock_sys\.mutex\.is_owned())'
+=~ lock_trx_handle_wait_low
+=~ ha_kill_query
+=~ wsrep_on
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22440: [thd->transaction.stmt.is_empty() || / GRANT / KILL_SERVER]
 =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ open_normal_and_derived_tables
@@ -2488,11 +2494,6 @@ TODO-842: [InnoDB: Trying to read page number]
 =~ InnoDB: Trying to read page number
 =~ fil_report_invalid_page_access
 =~ xtrabackup_prepare_func
-TODO-842: [wsrep - lock_sys.mutex.is_owned]
-=~ Assertion \`(lock_sys\.mutex\.is_owned())'
-=~ lock_trx_handle_wait_low
-=~ ha_kill_query
-=~ wsrep_on
 TODO-842: [Found wrong usage of mutex]
 =~ safe_mutex: Found wrong usage of mutex 'LOCK_thd_data' and 'THR_LOCK_myisam'
 =~ SERVER_DEADLOCKED
