@@ -4,6 +4,23 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22440: [thd->transaction.stmt.is_empty() || / GRANT / KILL_SERVER]
+=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ open_normal_and_derived_tables
+=~ mysql_table_grant
+=~ KILL_SERVER|KILL_TIMEOUT
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-22435:
+=~ signal|AddressSanitizer
+=~ TABLE_SHARE::init_from_sql_statement_string
+=~ discover_assisted
+=~ Version: '10\.4|Version: '10\.5
+=~ versioning
+MDEV-22430:
+=~ Assertion \`ha_info->ht() != binlog_hton'
+=~ MYSQL_BIN_LOG::unlog_xa_prepare
+=~ trans_xa_prepare
+=~ Version: '10\.5
 MDEV-22426:
 =~ signal 8|AddressSanitizer: FPE
 =~ maria_create
@@ -1893,6 +1910,9 @@ MDEV-17596:
 =~ Assertion \`block->page\.flush_observer == __null \|\| block->page\.flush_observer == observer'
 =~ buf_flush_note_modification
 =~ add_dirty_page_to_flush_list
+MDEV-17583: [next_mrec == next_mrec_end]
+=~ next_mrec == next_mrec_end
+=~ row_log_table_apply_ops
 MDEV-17580:
 =~ Diagnostics_area::set_ok_status.*Assertion \`! is_set()'
 =~ mysql_alter_table
@@ -2455,11 +2475,6 @@ TODO-842: [Field_timestampf::set_max]
 =~ Field_timestampf::set_max
 =~ TABLE::vers_update_fields
 =~ fill_record_n_invoke_before_triggers
-TODO-842: [thd->transaction.stmt.is_empty() || / GRANT / KILL_SERVER]
-=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
-=~ open_normal_and_derived_tables
-=~ mysql_table_grant
-=~ KILL_SERVER|KILL_TIMEOUT
 TODO-842: [Forcing close of thread]
 =~ Forcing close of thread .* user:
 =~ STATUS_SERVER_DEADLOCKED|INTERNAL_ERROR
@@ -2648,8 +2663,6 @@ MDEV-17760:
 =~ Version: '10\.1|Version: '10\.0|Version: '5\.5
 MDEV-17665:
 =~ share->page_type == PAGECACHE_LSN_PAGE
-MDEV-17583: [next_mrec == next_mrec_end]
-=~ next_mrec == next_mrec_end
 MDEV-17538:
 =~ == UNALLOCATED_PAGE
 MDEV-17485:
