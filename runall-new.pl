@@ -2,7 +2,7 @@
 
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2019, MariaDB Corporation Ab.
+# Copyright (c) 2019, 2020, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -145,6 +145,7 @@ my $opt_result = GetOptions(
     'restart_timeout|restart-timeout=i' => \$props->{restart_timeout},
     'rows=s' => \$props->{rows},
     'rpl_mode|rpl-mode=s' => \$props->{rpl_mode},
+    'rr!' => \$props->{rr},
     'scenario:s' => \$scenario,
     'seed=s' => \$props->{seed},
     'short_column_names|short-column-names' => \$props->{short_column_names},
@@ -496,6 +497,7 @@ if ($props->{rpl_mode} ne '') {
                                                valgrind => $props->{valgrind},
                                                valgrind_options => \@valgrind_options,
                                                general_log => 1,
+                                               rr => $props->{rr},
                                                start_dirty => $props->{start_dirty},
                                                use_gtid => $use_gtid,
                                                config => $cnf_array_ref,
@@ -542,6 +544,7 @@ if ($props->{rpl_mode} ne '') {
         valgrind => $props->{valgrind},
         valgrind_options => \@valgrind_options,
         general_log => 1,
+        rr => $props->{rr},
         start_dirty => $props->{start_dirty},
         node_count => length($props->{galera})
     );
@@ -579,6 +582,7 @@ if ($props->{rpl_mode} ne '') {
                                                            start_dirty => $props->{start_dirty},
                                                            valgrind => $props->{valgrind},
                                                            valgrind_options => \@valgrind_options,
+                                                           rr => $props->{rr},
                                                            server_options => ${$props->{mysqld_options}}[$server_id],
                                                            general_log => 1,
                                                            config => $cnf_array_ref,
@@ -814,6 +818,7 @@ $0 - Run a complete random query generation test, including server start with re
     --mask-level: Grammar mask level. Passed to gentest.pl
     --notnull   : Generate all fields with NOT NULL
     --rows      : No of rows. Passed to gentest.pl
+    --rr        : Run the server under rr record, if available
     --sqltrace  : Print all generated SQL statements. 
                   Optional: Specify --sqltrace=MarkErrors to mark invalid statements.
     --varchar-length: length of strings. passed to gentest.pl

@@ -67,6 +67,7 @@ use constant MYSQLD_USER => 28;
 use constant MYSQLD_MAJOR_VERSION => 29;
 use constant MYSQLD_CLIENT_BINDIR => 30;
 use constant MYSLQD_SERVER_VARIABLES => 31;
+use constant MYSQLD_RR => 32;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -90,10 +91,13 @@ sub new {
                                    'general_log' => MYSQLD_GENERAL_LOG,
                                    'valgrind' => MYSQLD_VALGRIND,
                                    'valgrind_options' => MYSQLD_VALGRIND_OPTIONS,
+                                   'rr' => MYSQLD_RR,
                                    'config' => MYSQLD_CONFIG_CONTENTS,
                                    'user' => MYSQLD_USER},@_);
     
     croak "No valgrind support on windows" if osWindows() and $self->[MYSQLD_VALGRIND];
+    croak "No rr support on windows" if osWindows() and $self->[MYSQLD_RR];
+    croak "No cannot use both rr and valgrind at once" if $self->[MYSQLD_RR] and $self->[MYSQLD_VALGRIND];
     
     if (not defined $self->[MYSQLD_VARDIR]) {
         $self->[MYSQLD_VARDIR] = "mysql-test/var";
@@ -489,7 +493,10 @@ sub startServer {
     # (before the server is considered hanging)
     my $startup_timeout= 600;
     
-    if ($self->[MYSQLD_VALGRIND]) {
+    if ($self->[MYSQLD_RR]) {
+        $command = "rr record ".$command;
+    }
+    elsif ($self->[MYSQLD_VALGRIND]) {
         my $val_opt ="";
         $start_wait_timeout= 60;
         $startup_timeout= 1200;

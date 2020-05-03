@@ -1,4 +1,5 @@
 # Copyright (C) 2013 Monty Program Ab
+# Copyright (C) 2020 MariaDB
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -39,6 +40,7 @@ use constant GALERA_MYSQLD_DEBUG_SERVER => 8;
 use constant GALERA_MYSQLD_NODE_COUNT => 9;
 use constant GALERA_MYSQLD_NODES => 10;
 use constant GALERA_MYSQLD_MINIMAL_VERSION => 11;
+use constant GALERA_MYSQLD_RR => 12;
 
 use constant GALERA_DEFAULT_LISTEN_PORT =>  4800;
 
@@ -59,6 +61,7 @@ sub new {
 		'start_dirty' => GALERA_MYSQLD_START_DIRTY,
 		'valgrind' => GALERA_MYSQLD_VALGRIND,
 		'valgrind_options' => GALERA_MYSQLD_VALGRIND_OPTIONS,
+		'rr' => GALERA_MYSQLD_RR,
 		'node_count' => GALERA_MYSQLD_NODE_COUNT,
 		'nodes' => GALERA_MYSQLD_NODES
 	},@_);
@@ -118,7 +121,8 @@ sub new {
 			general_log => $self->[GALERA_MYSQLD_GENERAL_LOG],
 			start_dirty => $self->[GALERA_MYSQLD_START_DIRTY],
 			valgrind => $self->[GALERA_MYSQLD_VALGRIND],
-			valgrind_options => $self->[GALERA_MYSQLD_VALGRIND_OPTIONS]
+			valgrind_options => $self->[GALERA_MYSQLD_VALGRIND_OPTIONS],
+			rr => $self->[GALERA_MYSQLD_RR],
 		);
         
 		if (not defined $self->nodes->[$i]) {
