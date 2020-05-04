@@ -229,6 +229,10 @@ app_periods_period_name:
   app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
   app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
   app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
+  app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
+  app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
+  app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
+  app_periods_valid_period_name | app_periods_valid_period_name | app_periods_valid_period_name |
   app_periods_invalid_period_name
 ;
 
@@ -275,10 +279,13 @@ app_periods_constraint_definition:
 ;
 
 app_periods_unique_key:
-  UNIQUE app_periods_new_index_name_optional (app_periods_existing_column_list) ;
+  UNIQUE app_periods_new_index_name_optional (app_periods_existing_column_list) |
+  /* compatibility 10.5.3 */ UNIQUE app_periods_new_index_name_optional (app_periods_existing_column_list, app_periods_period_name WITHOUT OVERLAPS);
+
 
 app_periods_primary_key:
-  PRIMARY KEY (app_periods_existing_column_list) ;
+  PRIMARY KEY (app_periods_existing_column_list) |
+  /* compatibility 10.5.3 */ PRIMARY KEY (app_periods_existing_column_list, app_periods_period_name WITHOUT OVERLAPS);
 
 app_periods_foreign_key:
   CONSTRAINT app_periods_new_index_name_optional FOREIGN KEY (app_periods_random_column_name) REFERENCES app_periods_table (app_periods_random_column_name) ;
