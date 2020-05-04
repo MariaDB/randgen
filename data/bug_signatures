@@ -2502,11 +2502,6 @@ TODO-842: [InnoDB: Trying to read page number]
 =~ InnoDB: Trying to read page number
 =~ fil_report_invalid_page_access
 =~ xtrabackup_prepare_func
-TODO-842: [Found wrong usage of mutex]
-=~ safe_mutex: Found wrong usage of mutex 'LOCK_thd_data' and 'THR_LOCK_myisam'
-=~ SERVER_DEADLOCKED
-=~ signal 11
-=~ wsrep_on
 TODO-842: [wsrep::transaction::after_rollback]
 =~ Assertion \`state() == s_aborting \|\| state() == s_must_replay'
 =~ wsrep::transaction::after_rollback
