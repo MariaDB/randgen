@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22460:
+=~ safe_mutex: Found wrong usage of mutex 'LOCK_thd_data' and 'THR_LOCK_myisam'
+=~ wsrep_on
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22458:
+=~ safe_mutex: Found wrong usage of mutex 'LOCK_thd_data' and 'share->intern_lock'|safe_mutex: Found wrong usage of mutex 'LOCK_thd_data' and 'lock->mutex'
+=~ wsrep_on
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22442: [wsrep - lock_sys.mutex.is_owned]
 =~ Assertion \`(lock_sys\.mutex\.is_owned())'
 =~ lock_trx_handle_wait_low
@@ -152,7 +160,7 @@ MDEV-22216:
 MDEV-22185:
 =~ Assertion \`inited==NONE'|AddressSanitizer|InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
 =~ handler::ha_index_init|row_update_for_mysql
-=~ handler::check_duplicate_long_entry_key|handler::ha_check_overlaps|update_portion_of_time
+=~ handler::check_duplicate_long_entry_key|handler::ha_check_overlaps|update_portion_of_time|ha_partition::update_row
 =~ Version: '10\.5
 MDEV-22178:
 =~ Assertion \`info->alias\.str'
