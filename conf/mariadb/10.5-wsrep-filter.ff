@@ -8,4 +8,5 @@ $rules = {
   'sequences'   => sub { $_ =~ m{SEQUENCE}s },
   'mdev22075_22128'   => sub { $_ =~ m{VIEW}s },
   'mdev22052'   => sub { $_ =~ m{(?:LOCK|BACKUP)}s },
+  'mdev22154_22458_22460' => sub { $_ =~ m{(?:SHOW.*EXPLAIN)}s },
 }
