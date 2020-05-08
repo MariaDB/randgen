@@ -531,7 +531,8 @@ sub doGenData {
                notnull => $self->config->notnull,
                rows => $self->config->rows,
                varchar_length => $self->config->property('varchar-length'),
-               executor_id => $i
+               executor_id => $i,
+               compatibility => $self->config->property('compatibility'),
             )->run();
             say("GendataAdvanced finished with result ".status2text($gendata_result));
         }
