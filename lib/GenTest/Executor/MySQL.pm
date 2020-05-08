@@ -895,6 +895,16 @@ sub execute {
     # Finally, if it's something else that we didn't expect, we'll add QNO at the end of the query
     else { $query .= " /* $qno_comment */" };
 
+    # Check for execution flags in query comments. They can, for example,
+    # indicate that a query is intentionally invalid, and the error
+    # doesn't need to be reported.
+    # The format for it is /* EXECUTOR_FLAG_SILENT */, currently only this flag is supported in queries
+
+    if ($query =~ s/\/\*\s*EXECUTOR_FLAG_SILENT\s*\*\///g) {
+        $execution_flags |= EXECUTOR_FLAG_SILENT;
+    }
+
+    # Add global flags if any are set
     $execution_flags = $execution_flags | $executor->flags();
 
     # Filter out any /*executor */ comments that do not pertain to this particular Executor/DBI
