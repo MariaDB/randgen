@@ -740,9 +740,16 @@ sub gen_table {
           foreach my $i (0..$#cols) {
               my $c= $cols[$i];
               my $tp= $columns{$c}->[0];
-              if ($tp eq 'TINYBLOB' or $tp eq 'TINYTEXT' or $tp eq 'BLOB' or $tp eq 'TEXT' or $tp eq 'MEDIUMBLOB' or $tp eq 'MEDIUMTEXT' or $tp eq 'LONGBLOB' or $tp eq 'LONGTEXT' or $tp eq 'CHAR' or $tp eq 'VARCHAR' or $tp eq 'BINARY' or $tp eq 'VARBINARY') {
-                  my $length= ( $columns{$c}->[1] and $columns{$c}->[1] < 64 ) ? $columns{$c}->[1] : 64;
-                  $cols[$i] = "$c($length)";
+              if ($tp eq 'TINYBLOB' or $tp eq 'TINYTEXT' or $tp eq 'BLOB' or $tp eq 'TEXT' or $tp eq 'MEDIUMBLOB' or $tp eq 'MEDIUMTEXT' or $tp eq 'LONGBLOB' or $tp eq 'LONGTEXT' or $tp eq 'CHAR' or $tp eq 'VARCHAR' or $tp eq 'BINARY' or $tp eq 'VARBINARY')
+              {
+                  # Starting from 10.4.3, long unique blobs are allowed.
+                  # For a non-unique index the column will be auto-sized by the server (with a warning)
+                  if ($self->compatibility ge '100403' and $prng->uint16(0,1)) {
+                    $cols[$i] = $c;
+                  } else {
+                    my $length= ( $columns{$c}->[1] and $columns{$c}->[1] < 64 ) ? $columns{$c}->[1] : 64;
+                    $cols[$i] = "$c($length)";
+                  }
               }
           }
           $executor->execute("ALTER TABLE $name ADD " . ($prng->uint16(0,5) ? 'INDEX' : 'UNIQUE') . "(". join(',',@cols) . ")");
