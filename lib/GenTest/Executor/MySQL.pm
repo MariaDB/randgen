@@ -130,6 +130,7 @@ use constant  ER_FILSORT_ABORT                                  => 1028;
 use constant  ER_GET_ERRNO                                      => 1030;
 use constant  ER_ILLEGAL_HA                                     => 1031;
 use constant  ER_KEY_NOT_FOUND                                  => 1032;
+use constant  ER_NOT_FORM_FILE                                  => 1033;
 use constant  ER_NOT_KEYFILE                                    => 1034;
 use constant  ER_OPEN_AS_READONLY                               => 1036;
 use constant  ER_OUTOFMEMORY                                    => 1037;
@@ -252,6 +253,8 @@ use constant  ER_TRG_ON_VIEW_OR_TEMP_TABLE                      => 1361;
 use constant  ER_NO_DEFAULT_FOR_FIELD                           => 1364;
 use constant  ER_TRUNCATED_WRONG_VALUE_FOR_FIELD                => 1366;
 use constant  ER_NO_BINARY_LOGGING                              => 1381;
+use constant  ER_VIEW_NO_INSERT_FIELD_LIST                      => 1394;
+use constant  ER_VIEW_DELETE_MERGE_VIEW                         => 1395;
 use constant  ER_CANNOT_USER                                    => 1396;
 use constant  ER_XAER_NOTA                                      => 1397;
 use constant  ER_XAER_RMFAIL                                    => 1399;
@@ -307,12 +310,14 @@ use constant  ER_CANT_CHANGE_TX_ISOLATION                       => 1568;
 use constant  ER_EVENTS_DB_ERROR                                => 1577;
 use constant  ER_XA_RBDEADLOCK                                  => 1614;
 use constant  ER_NEED_REPREPARE                                 => 1615;
+use constant  ER_DELAYED_NOT_SUPPORTED                          => 1616;
 use constant  ER_DUP_SIGNAL_SET                                 => 1641;
 use constant  ER_SIGNAL_EXCEPTION                               => 1644;
 use constant  ER_RESIGNAL_WITHOUT_ACTIVE_HANDLER                => 1645;
 use constant  ER_SIGNAL_BAD_CONDITION_TYPE                      => 1646;
 use constant  ER_BACKUP_RUNNING                                 => 1651;
 use constant  ER_FIELD_TYPE_NOT_ALLOWED_AS_PARTITION_FIELD      => 1659;
+use constant  ER_PARTITION_FIELDS_TOO_LONG                      => 1660;
 use constant  ER_BINLOG_STMT_MODE_AND_ROW_ENGINE                => 1665;
 use constant  ER_BACKUP_SEND_DATA1                              => 1670;
 use constant  ER_INSIDE_TRANSACTION_PREVENTS_SWITCH_BINLOG_FORMAT => 1679;
@@ -496,6 +501,7 @@ my %err2type = (
     ER_DBACCESS_DENIED_ERROR()                          => STATUS_SEMANTIC_ERROR,
     ER_DB_CREATE_EXISTS()                               => STATUS_SEMANTIC_ERROR,
     ER_DB_DROP_EXISTS()                                 => STATUS_SEMANTIC_ERROR,
+    ER_DELAYED_NOT_SUPPORTED()                          => STATUS_SEMANTIC_ERROR,
     ER_DISK_FULL()                                      => STATUS_ENVIRONMENT_FAILURE,
     ER_DROP_LAST_PARTITION()                            => STATUS_SEMANTIC_ERROR,
     ER_DROP_PARTITION_NON_EXISTENT()                    => STATUS_SEMANTIC_ERROR,
@@ -583,6 +589,7 @@ my %err2type = (
     ER_NON_INSERTABLE_TABLE()                           => STATUS_SEMANTIC_ERROR,
     ER_NON_UNIQ_ERROR()                                 => STATUS_SEMANTIC_ERROR,
     ER_NON_UPDATABLE_TABLE()                            => STATUS_SEMANTIC_ERROR,
+    ER_NOT_FORM_FILE()                                  => STATUS_DATABASE_CORRUPTION,
     ER_NOT_KEYFILE()                                    => STATUS_DATABASE_CORRUPTION,
     ER_NOT_SEQUENCE()                                   => STATUS_SEMANTIC_ERROR,
     ER_NOT_SUPPORTED_YET()                              => STATUS_UNSUPPORTED,
@@ -609,6 +616,7 @@ my %err2type = (
     ER_PARSE_ERROR()                                    => STATUS_SYNTAX_ERROR, # Don't mask syntax errors, fix them instead
     ER_PARTITION_CLAUSE_ON_NONPARTITIONED()             => STATUS_SEMANTIC_ERROR,
     ER_PARTITION_EXCHANGE_PART_TABLE()                  => STATUS_SEMANTIC_ERROR,
+    ER_PARTITION_FIELDS_TOO_LONG()                      => STATUS_SEMANTIC_ERROR,
     ER_PARTITION_INSTEAD_OF_SUBPARTITION()              => STATUS_SEMANTIC_ERROR,
     ER_PARTITION_MAXVALUE_ERROR()                       => STATUS_SEMANTIC_ERROR,
     ER_PARTITION_MGMT_ON_NONPARTITIONED()               => STATUS_SEMANTIC_ERROR,
@@ -714,7 +722,9 @@ my %err2type = (
     ER_VERS_TEMPORARY()                                 => STATUS_SEMANTIC_ERROR,
     ER_VERS_WRONG_PARTS()                               => STATUS_SEMANTIC_ERROR,
     ER_VERSIONING_REQUIRED()                            => STATUS_SEMANTIC_ERROR,
+    ER_VIEW_DELETE_MERGE_VIEW()                         => STATUS_SEMANTIC_ERROR,
     ER_VIEW_INVALID()                                   => STATUS_SEMANTIC_ERROR,
+    ER_VIEW_NO_INSERT_FIELD_LIST()                      => STATUS_SEMANTIC_ERROR,
     ER_VIEW_SELECT_DERIVED()                            => STATUS_SEMANTIC_ERROR,
     ER_VIEW_SELECT_TMPTABLE()                           => STATUS_SEMANTIC_ERROR,
     ER_VIRTUAL_COLUMN_FUNCTION_IS_NOT_ALLOWED()         => STATUS_SEMANTIC_ERROR,
@@ -787,6 +797,7 @@ sub init {
     #
 
     $dbh->do("SET optimizer_switch=(SELECT variable_value FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES WHERE VARIABLE_NAME='optimizer_switch')");
+    $dbh->do("SET TIMESTAMP=".Time::HiRes::time());
 
     $executor->defaultSchema($executor->currentSchema());
 
@@ -831,6 +842,10 @@ sub reportError {
 sub execute {
     my ($executor, $query, $execution_flags) = @_;
     $execution_flags= 0 unless defined $execution_flags;
+
+    if ($query =~ s/\/\*\s*EXECUTOR_FLAG_SILENT\s*\*\///g) {
+        $execution_flags |= EXECUTOR_FLAG_SILENT;
+    }
 
     # First check the query for compatibility markers
     my @compat_requirements= $query=~ /\/\*\s*compatibility\s+([\d\.]+(?:e|-[0-9]+)?(?:,[\d\.]+(?:e|-[0-9]+)?)*)\s*\*\//g;
@@ -899,10 +914,6 @@ sub execute {
     # indicate that a query is intentionally invalid, and the error
     # doesn't need to be reported.
     # The format for it is /* EXECUTOR_FLAG_SILENT */, currently only this flag is supported in queries
-
-    if ($query =~ s/\/\*\s*EXECUTOR_FLAG_SILENT\s*\*\///g) {
-        $execution_flags |= EXECUTOR_FLAG_SILENT;
-    }
 
     # Add global flags if any are set
     $execution_flags = $execution_flags | $executor->flags();
