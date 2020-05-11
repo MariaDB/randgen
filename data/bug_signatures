@@ -4,6 +4,25 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22525:
+=~ signal 11|AddressSanitizer: SEGV
+=~ check_vcol_forward_refs
+=~ Delayed_insert::get_local_table
+=~ Version: '10\.4
+MDEV-22521:
+=~ signal 11|AddressSanitizer|Assertion \`user'
+=~ traverse_role_graph_up
+=~ propagate_role_grants
+=~ mysql_grant
+MDEV-22520:
+=~ Assertion \`gathered_length == thd->lex->comment\.length'
+=~ binlog_defragment
+=~ mysql_client_binlog_statement
+MDEV-22509:
+=~ signal 11|AddressSanitizer
+=~ Field::maybe_null
+=~ Field_inet6::store_inet6_null_with_warn
+=~ read_statistics_for_table
 MDEV-22460:
 =~ safe_mutex: Found wrong usage of mutex 'LOCK_thd_data' and 'THR_LOCK_myisam'
 =~ wsrep_on
@@ -55,7 +74,7 @@ MDEV-22375:
 =~ Item_in_subselect
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22370:
-=~ safe_mutex: Trying to lock uninitialized mutex at .*/sql/rpl_parallel\.cc, line 470|Got error 22 when trying to lock mutex LOCK_rpl_thread_pool
+=~ safe_mutex: Trying to lock uninitialized mutex at .*/sql/rpl_parallel\.cc|Got error 22 when trying to lock mutex LOCK_rpl_thread_pool
 =~ rpl_pause_for_ftwrl|rpl_unpause_after_ftwrl
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22369:
@@ -1158,6 +1177,7 @@ MDEV-19848:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_vcol_forward_refs
 =~ Delayed_insert::get_local_table
+=~ Version: '10\.5
 MDEV-19840:
 =~ Assertion \`m_status == DA_ERROR'
 =~ Diagnostics_area::sql_errno
