@@ -185,7 +185,7 @@ sub random_invisible {
     return $prng->uint16(0,5) ? undef : '/*!100303 INVISIBLE */' ;
 }
 sub random_compressed {
-    return $prng->uint16(0,5) ? undef : '/*!100302 COMPRESSED */' ;
+    return $prng->uint16(0,9) ? undef : '/*!100302 COMPRESSED */' ;
 }
 sub random_partition_type {
     return $prng->arrayElement(['HASH','KEY','RANGE','LIST']);
@@ -207,7 +207,7 @@ sub gen_table {
 
     my $res= STATUS_OK;
 
-    # column_name => [ type, length, unsigned, zerofill, nullability, default, virtual, invisible ]
+    # column_name => [ type, length, unsigned, zerofill, nullability, default, virtual, invisible, compressed ]
 
     # Columns of different types are created with different probability.
 
@@ -626,6 +626,7 @@ sub gen_table {
       my @create_table_columns= @columns;
       $prng->shuffleArray(\@create_table_columns);
       $create_stmt.= join ', ', @create_table_columns;
+      my $pk_stmt= '';
 
       # Create PK for 90% of tables
       if ($prng->uint16(0,9))
@@ -634,6 +635,7 @@ sub gen_table {
           my @cols= sort keys %columns;
           $prng->shuffleArray(\@cols);
           foreach my $c (@cols) {
+            next if defined $columns{$c}->[8]; # Compressed columns cannot be in an index
             last if scalar(keys %pk_columns) >= $num_of_columns_in_pk;
             next if $pk_columns{$c};
             if ($columns{$c}->[0] =~ /BLOB|TEXT/) {
@@ -657,20 +659,33 @@ sub gen_table {
               @cols= sort keys %pk_columns;
               $prng->shuffleArray(\@cols);
           }
-          $create_stmt.= ', PRIMARY KEY('.(join ',', @cols).")";
+          if ($has_autoinc) {
+            # If there is an auto-increment column, we have to add PRIMARY KEY right away in the CREATE statement
+            $create_stmt.= ', PRIMARY KEY('.(join ',', @cols).")";
+          } else {
+            # Otherwise, it is always better to add it separately, since it can fail
+            $pk_stmt= "ALTER TABLE $name ADD PRIMARY KEY (".(join ',', @cols).")";
+          }
       }
       elsif ($has_autoinc) {
           $create_stmt.= ", UNIQUE(id)";
       }
       $create_stmt .= ")" . ($e ne '' ? " ENGINE=$e" : "");
 
-      # partition 50% tables (if requested at all)
       $res= $executor->execute($create_stmt);
       if ($res->status != STATUS_OK) {
           sayError("Failed to create table $name: " . $res->errstr);
           return $res->status;
       }
 
+      if ($pk_stmt) {
+          $res= $executor->execute($pk_stmt);
+          if ($res->status != STATUS_OK) {
+              sayError("Failed to add primary key to table $name: " . $res->errstr);
+          }
+      }
+
+      # partition 50% tables (if requested at all). Not all of them will succeed
       if ($self->partitions and $prng->uint16(0,1))
       {
           my $partition_type= $self->random_partition_type();
@@ -739,6 +754,7 @@ sub gen_table {
           @cols= @cols[0..$number_of_columns-1];
           foreach my $i (0..$#cols) {
               my $c= $cols[$i];
+              next if defined $columns{$c}->[8]; # Compressed columns cannot be in an index
               my $tp= $columns{$c}->[0];
               if ($tp eq 'TINYBLOB' or $tp eq 'TINYTEXT' or $tp eq 'BLOB' or $tp eq 'TEXT' or $tp eq 'MEDIUMBLOB' or $tp eq 'MEDIUMTEXT' or $tp eq 'LONGBLOB' or $tp eq 'LONGTEXT' or $tp eq 'CHAR' or $tp eq 'VARCHAR' or $tp eq 'BINARY' or $tp eq 'VARBINARY')
               {
