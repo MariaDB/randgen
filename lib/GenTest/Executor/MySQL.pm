@@ -1271,7 +1271,7 @@ sub explain {
 # Until then it should be fine
 sub is_query_explainable {
     my ($executor, $query) = @_;
-    if ( $executor->versionMajor > 5.5 ) {
+    if ( $executor->majorVersion > 5.5 ) {
         return $query =~ /^\s*(?:SELECT|UPDATE|DELETE|INSERT)/i;
     } else {
         return $query =~ /^\s*SELECT/;
