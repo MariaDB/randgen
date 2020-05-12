@@ -1,5 +1,5 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2016, MariaDB Corporation
+# Copyright (c) 2016, 2020, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -256,12 +256,34 @@ sub parseFromString {
 
         my $components_string = $rules{$rule_name};
         
-		my @component_strings = split (m{\|}, $components_string);
+		my @orig_component_strings = split (m{\|}, $components_string);
+
+        # Check for ==FACTOR:N== directives and adjust probabilities
+        my $multiplier= 1;
+        my %component_factors= ();
+        my @modified_component_strings= ();
+        for (my $i=0; $i<=$#orig_component_strings; $i++) {
+            my $c= $orig_component_strings[$i];
+            if ($c =~ s{^\s*==FACTOR:([\d+\.]+)==\s*}{}sgio) {
+                push @modified_component_strings, $c;
+                $component_factors{$i}= $1;
+                $multiplier= int(1/$1) if $1 > 0 and $multiplier < int(1/$1);
+            }
+        }
+
+        my @component_strings= ();
+        for (my $i=0; $i<=$#modified_component_strings; $i++) {
+            my $count= (defined $component_factors{$i} ? $component_factors{$i} : 1) * $multiplier;
+            foreach (1..$count) {
+                push @component_strings, $modified_component_strings[$i];
+            }
+        }
+
 		my @components;
 		my %components;
 
 		foreach my $component_string (@component_strings) {
-			# Remove leading whitespace
+			# Remove leading and trailing whitespace
 			$component_string =~ s{^\s+}{}sgio;
 			$component_string =~ s{\s+$}{}sgio;
 		
