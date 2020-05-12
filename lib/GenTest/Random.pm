@@ -359,11 +359,11 @@ sub inet6 {
 }
 
 sub date {
-	my $prng = shift;
-	return sprintf('%04d-%02d-%02d',
-                   $prng->uint16(1971,2035),
-                   $prng->uint16(1,12),
-                   $prng->uint16(1,28));
+    my ($prng, $ts) = @_;
+    # Something between 1960-01-01 and 2040-01-01 should be enough
+    $ts= $prng->int(-2208994789,2208981600) if not defined $ts;
+    my (undef,undef,undef,$mday,$mon,$year,undef,undef,undef)= localtime($ts);
+    return sprintf('%04d-%02d-%02d',$year+1900,$mon+1,$mday);
 }
 
 sub year {
@@ -386,15 +386,10 @@ sub datetime {
 }
 
 sub timestamp {
-	my $prng = shift;
-	return sprintf('%04d%02d%02d%02d%02d%02d.%06d',
-                   $prng->uint16(1971,2035),
-                   $prng->uint16(1,12),
-                   $prng->uint16(1,28),
-                   $prng->uint16(0,23),
-                   $prng->uint16(0,59),
-                   $prng->uint16(0,59),
-                   $prng->uint16(0,999999));
+    my ($prng, $ts) = @_;
+    $ts= $prng->int(0,2147483647) if not defined $ts;
+    my ($sec,$min,$hour,$mday,$mon,$year,undef,undef,undef)= localtime($ts);
+    return sprintf('%04d%02d%02d%02d%02d%02d.%06d',$year+1900,$mon+1,$mday,$hour,$min,$sec,$prng->uint16(0,999999));
 }
 
 sub enum {
