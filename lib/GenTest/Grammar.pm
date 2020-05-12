@@ -265,10 +265,10 @@ sub parseFromString {
         for (my $i=0; $i<=$#orig_component_strings; $i++) {
             my $c= $orig_component_strings[$i];
             if ($c =~ s{^\s*==FACTOR:([\d+\.]+)==\s*}{}sgio) {
-                push @modified_component_strings, $c;
                 $component_factors{$i}= $1;
                 $multiplier= int(1/$1) if $1 > 0 and $multiplier < int(1/$1);
             }
+            push @modified_component_strings, $c;
         }
 
         my @component_strings= ();
