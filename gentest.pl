@@ -30,6 +30,7 @@ use GenTest::Properties;
 use GenTest::Constants;
 use GenTest::App::GenTest;
 
+$| = 1;
 my $logger;
 eval
 {
@@ -106,6 +107,7 @@ my $opt_result = GetOptions($options,
                             'querytimeout=i',
                             'annotate-rules',
                             'annotate_rules',
+                            'partitions',
                             'ps-protocol');
 backwardCompatability($options);
 my $config = GenTest::Properties->new(
