@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22540:
+=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'
+=~ mysql_load|mysql_insert
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-22525:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_vcol_forward_refs
