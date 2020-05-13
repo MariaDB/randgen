@@ -4,8 +4,32 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22553:
+=~ Assertion \`info->lastpos == (~ (my_off_t) 0)'
+=~ mi_rkey
+=~ Mrr_simple_index_reader
+=~ QUICK_RANGE_SELECT
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22551:
+=~ signal 11|AddressSanitizer
+=~ skip_trailing_space
+=~ charset_info_st::hash_sort
+=~ collect_statistics_for_table
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22551:
+=~ Assertion \`marked_for_read()'
+=~ Field_blob::val_str
+=~ TABLE::update_virtual_fields
+=~ collect_statistics_for_table
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22548:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ DELETE.*IGNORE
+=~ versioning|application_periods
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22540:
-=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'
+=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !(info\.copied \|\| info\.deleted) \|\| thd->transaction\.stmt\.modified_non_trans_table'
 =~ mysql_load|mysql_insert
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-22525:
