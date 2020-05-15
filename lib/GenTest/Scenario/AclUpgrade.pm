@@ -194,7 +194,10 @@ sub run {
   }
 
   #####
-  if ($old_server->majorVersion ne $new_server->majorVersion) {
+  if (($old_server->majorVersion ne $new_server->majorVersion)
+    # In 10.4.13, new owner of mysql.user was introduced
+    or ($old_server->versionNumeric lt '100413' and $new_server->versionNumeric ge '100413'))
+  {
     $self->printStep("Running mysql_upgrade");
     $status= $new_server->upgradeDb;
     if ($status != STATUS_OK) {
@@ -312,6 +315,16 @@ sub normalizeGrants {
     foreach my $u (keys %$old_grants) {
       if ($old_grants->{$u} =~ s/(SUPER[ ,\w]*?) ON \*\.\*/$1, DELETE HISTORY ON \*\.\*/) {
         say("Adjusted old grants for $u to have DELETE HISTORY: $old_grants->{$u}");
+      }
+    }
+  }
+
+  # MDEV-19650: In 10.4.13+ and 10.5.3+ new user mariadb.sys@localhost was added
+
+  if ($old_server->versionNumeric lt '100413' and $new_server->versionNumeric ge '100413') {
+    foreach my $u (keys %$new_grants) {
+      if ($u eq '`mariadb.sys`@`localhost`') {
+          delete $new_grants->{$u};
       }
     }
   }
