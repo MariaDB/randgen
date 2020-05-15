@@ -2573,6 +2573,10 @@ TODO-842: [long semaphore wait]
 =~ Mutex DICT_SYS created|Mutex BUF_POOL created
 =~ signal 11|signal 6
 =~ will exit with exit status STATUS_SERVER_DEADLOCKED
+TODO-842: [thd->in_sub_stmt]
+=~ Assertion \`! thd->in_sub_stmt'
+=~ trans_rollback_stmt
+=~ wsrep::client_state::after_statement
 
 ##############################################################################
 # Weak matches
