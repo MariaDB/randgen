@@ -4,6 +4,22 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22576:
+=~ Assertion \`false'
+=~ set_field_lock_type
+=~ table_table_handles::read_row_values
+=~ Version: '10\.5
+MDEV-22564:
+=~ Assertion \`marked_for_write_or_computed()'
+=~ handler::update_auto_increment
+=~ vers_insert_history_row
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22562:
+=~ Assertion \`next_insert_id == 0'
+=~ handler::ha_external_lock
+=~ mysql_unlock_tables
+=~ Version: '10\.4|Version: '10\.5
+=~ application_periods
 MDEV-22553:
 =~ Assertion \`info->lastpos == (~ (my_off_t) 0)'
 =~ mi_rkey
@@ -26,8 +42,8 @@ MDEV-22548:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ DELETE.*IGNORE
-=~ versioning|application_periods
 =~ Version: '10\.4|Version: '10\.5
+=~ application_periods
 MDEV-22540:
 =~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !(info\.copied \|\| info\.deleted) \|\| thd->transaction\.stmt\.modified_non_trans_table'
 =~ mysql_load|mysql_insert
@@ -62,7 +78,6 @@ MDEV-22458:
 MDEV-22442: [wsrep - lock_sys.mutex.is_owned]
 =~ Assertion \`(lock_sys\.mutex\.is_owned())'
 =~ lock_trx_handle_wait_low
-=~ ha_kill_query
 =~ wsrep_on
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22440: [thd->transaction.stmt.is_empty() || / GRANT / KILL_SERVER]
@@ -177,7 +192,7 @@ MDEV-22256:
 =~ Field_timestamp_with_dec::sort_string
 =~ Field::make_sort_key_part
 MDEV-22232:
-=~ signal 11|AddressSanitizer
+=~ signal handler|AddressSanitizer
 =~ rpl_sql_thread_info::cached_charset_compare
 =~ wsrep_apply_events
 =~ Version: '10\.4|Version: '10\.5
@@ -397,9 +412,9 @@ MDEV-21830:
 =~ ha_maria::implicit_commit
 =~ ha_commit_trans
 MDEV-21822:
-=~ Failing assertion: UT_LIST_GET_LEN(trx->lock\.trx_locks) == 0
+=~ Failing assertion: UT_LIST_GET_LEN(trx->lock\.trx_locks) == 0|Failing assertion: UT_LIST_GET_LEN(lock\.trx_locks) == 0
 =~ Version: '10\.5
-=~ trx_commit_in_memory
+=~ trx_commit_in_memory|trx_t::commit_in_memory
 MDEV-21821:
 =~ AddressSanitizer:
 =~ myrocks::Rdb_transaction::on_commit
@@ -2553,6 +2568,11 @@ TODO-842: [InnoDB: Trying to read page number]
 TODO-842: [wsrep::transaction::after_rollback]
 =~ Assertion \`state() == s_aborting \|\| state() == s_must_replay'
 =~ wsrep::transaction::after_rollback
+TODO-842: [long semaphore wait]
+=~ InnoDB: A long semaphore wait
+=~ Mutex DICT_SYS created|Mutex BUF_POOL created
+=~ signal 11|signal 6
+=~ will exit with exit status STATUS_SERVER_DEADLOCKED
 
 ##############################################################################
 # Weak matches
