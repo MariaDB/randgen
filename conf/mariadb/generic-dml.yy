@@ -14,12 +14,11 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-
 # Very generic DML which should work with most gendata patterns,
 # mainly to serve as a placeholder to run with various redefines
 
-query:
-    dml | dml | dml | dml | dml | dml | dml |
+query_add:
+    ==FACTOR:9== dml |
     trx
 ;
 
@@ -30,21 +29,19 @@ trx:
 
 dml:
     select | 
-    update | update | update | 
+    ==FACTOR:3== update |
     delete |
-    insert | insert
+    ==FACTOR:2== insert
 ;
 
 insert:
     insert_op INTO _table ( _field ) VALUES ( data_value ) |
-    insert_op INTO _table ( _field, _field )  VALUES ( data_value, data_value ) |
-    insert_op INTO _table ( _field, _field ) VALUES ( data_value, data_value ) |
-    insert_op INTO _table () VALUES () |
-    insert_op INTO _table () VALUES (),(),(),() |
+    insert_op INTO _table ( _field, _next_field ) VALUES ( data_value, data_value ) |
+    insert_op INTO _table () VALUES _basics_empty_values_list
 ;
 
 insert_op:
-  INSERT IGNORE | REPLACE
+  INSERT _basics_delayed_5pct _basics_ignore_80pct | REPLACE
 ;
 
 data_value:
@@ -52,13 +49,14 @@ data_value:
 ;
 
 update:
-    UPDATE IGNORE _table SET _field = data_value ORDER BY _field LIMIT 1
+    UPDATE _basics_ignore_80pct _table SET _field = data_value ORDER BY _field LIMIT _digit
 ;
 
 delete:
-    DELETE FROM _table ORDER BY _field LIMIT 1
+    DELETE FROM _table ORDER BY _field LIMIT _digit
 ;
 
 select:
-    SELECT _field FROM _table ORDER BY _field LIMIT 1
+    SELECT _field FROM _table ORDER BY _field LIMIT _tinyint_unsigned |
+    SELECT * FROM _table ORDER BY _field LIMIT _tinyint_unsigned
 ;
