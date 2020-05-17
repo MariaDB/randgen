@@ -1,4 +1,4 @@
-#  Copyright (c) 2018, MariaDB
+#  Copyright (c) 2018, 2020, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ alt_create:
 ;
 
 alt_rename_multi:
-    DROP TABLE IF EXISTS { $tmp_tbl= 'tmp_rename_'.abs($$) } ; RENAME TABLE alt_table_name TO $tmp_tbl, $tmp_tbl TO { $my_last_table }
+    DROP TABLE IF EXISTS { $tmp_tbl= 'tmp_rename_'.abs($$) } ; RENAME TABLE alt_own_table_name TO $tmp_tbl, $tmp_tbl TO { $my_last_table }
 ;
 
 alt_dml:
@@ -89,7 +89,7 @@ alt_alter_item:
   | alt_drop_column | alt_drop_column
   | alt_drop_index | alt_drop_index
   | FORCE alt_lock alt_algorithm
-  | RENAME TO alt_table_name
+  | RENAME TO alt_own_table_name
 ;
 
 # Can't put it on the list, as ORDER BY should always go last
@@ -228,9 +228,12 @@ alt_truncate:
 ;
 
 alt_table_name:
-    { $my_last_table = 't'.$prng->int(1,10) }
-  | { $my_last_table = 't'.$prng->int(1,10) }
-  | _table { $my_last_table = $last_table; '' }
+    _table { $my_last_table = $last_table; '' }
+  | alt_own_table_name
+;
+
+alt_own_table_name:
+    { $my_last_table = 'alt_t'.$prng->int(1,10) }
 ;
 
 alt_col_name:
@@ -365,11 +368,11 @@ alt_default_optional_int_or_auto_increment:
 ;
 
 alt_create_or_replace:
-  CREATE OR REPLACE alt_temporary TABLE alt_table_name (alt_col_name_and_definition_list) alt_table_flags
+  CREATE OR REPLACE alt_temporary TABLE alt_own_table_name (alt_col_name_and_definition_list) alt_table_flags
 ;
 
 alt_create_or_replace_sequence:
-  /*!100303 CREATE OR REPLACE SEQUENCE alt_table_name */
+  /* compatibility 10.3.3 */ CREATE OR REPLACE SEQUENCE alt_own_table_name
 ;
 
 alt_col_name_and_definition_list:
@@ -405,7 +408,7 @@ alt_row_format_optional:
 ;
 
 alt_create_like:
-  CREATE alt_temporary TABLE alt_table_name LIKE _table
+  CREATE alt_temporary TABLE alt_own_table_name LIKE _table
 ;
 
 alt_insert:
