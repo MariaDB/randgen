@@ -797,7 +797,7 @@ sub init {
     #
 
     $dbh->do("SET optimizer_switch=(SELECT variable_value FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES WHERE VARIABLE_NAME='optimizer_switch')");
-    $dbh->do("SET TIMESTAMP=".Time::HiRes::time());
+#    $dbh->do("SET TIMESTAMP=".Time::HiRes::time());
 
     $executor->defaultSchema($executor->currentSchema());
 
