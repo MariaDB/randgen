@@ -1,6 +1,7 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights
 # reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2020, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +20,8 @@
 package GenTest;
 use base 'Exporter';
 
-@EXPORT = ('say', 'sayError', 'sayFile', 'tmpdir', 'safe_exit', 
+@EXPORT = ('say', 'sayError', 'sayWarning', 'sayDebug', 'sayFile',
+           'tmpdir', 'safe_exit',
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp', 
            'rqg_debug', 'unix2winPath',
@@ -106,6 +108,8 @@ sub new {
 
 sub say {
 	my $text = shift;
+    my $level= shift; # ERROR or DEBUG or Warning or nothing
+    $level= ($level ? '['.$level.']' : '');
 
 	# Suppress warnings "Wide character in print". 
 	# We already know that our UTFs in some grammars are ugly.
@@ -117,41 +121,28 @@ sub say {
             if (defined $logger) {
                 $logger->info("[$$] ".$line);
             } else {
-                print "# ".isoTimestamp()." [$$] $line\n";
+                print "# ".isoTimestamp()." [$$]$level $line\n";
             }
         }
     } else {
         if (defined $logger) {
             $logger->info("[$$] ".$text);
         } else {
-            print "# ".isoTimestamp()." [$$] $text\n";
+            print "# ".isoTimestamp()." [$$]$level $text\n";
         }
     }
 }
 
 sub sayError {
-	my $text = shift;
+    say(@_, 'ERROR');
+}
 
-	# Suppress warnings "Wide character in print". 
-	# We already know that our UTFs in some grammars are ugly.
-	no warnings 'layer';
+sub sayWarning {
+    say(@_, 'Warning');
+}
 
-    defaultLogging();
-    if ($text =~ m{[\r\n]}sio) {
-        foreach my $line (split (m{[\r\n]}, $text)) {
-            if (defined $logger) {
-                $logger->error("[$$] ".$line);
-            } else {
-                print STDERR "# ".isoTimestamp()." [$$][ERROR] $line\n";
-            }
-        }
-    } else {
-        if (defined $logger) {
-            $logger->error("[$$] ".$text);
-        } else {
-            print STDERR "# ".isoTimestamp()." [$$][ERROR] $text\n";
-        }
-    }
+sub sayDebug {
+#    say(@_, 'DEBUG') if rqg_debug();
 }
 
 sub sayFile {
