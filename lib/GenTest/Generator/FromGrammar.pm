@@ -116,6 +116,7 @@ sub next {
 	my $last_field;
 	my $last_table;
 	my $last_database;
+    my $last_field_list_length;
     
 	my $stack = GenTest::Stack::Stack->new();
 	my $global = $generator->globalFrame();
@@ -244,6 +245,7 @@ sub next {
 					} elsif ($item eq '_field_list') {
 						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
 						$item = '`'.join('`,`', @$fields).'`';
+                        $last_field_list_length= scalar(@$fields);
 					} elsif ($item eq '_field_count') {
 						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
 						$item = $#$fields + 1;
@@ -267,6 +269,13 @@ sub next {
 						my $fields_unindexed = $executors->[0]->metaColumnsIndexTypeNot('indexed',$last_table, $last_database);
                         $last_field = $prng->arrayElement($fields_unindexed);
 						$item = '`'.$last_field.'`';
+					} elsif ($item =~ /^_field_list\((\d+)\)/) {
+                        # Partial field list of a given length (or less, if there are not enough columns)
+                        $last_field_list_length= $1;
+						my $f = $executors->[0]->metaColumns($last_table, $last_database);
+                        $last_field_list_length= scalar(@$f) if scalar(@$f) < $last_field_list_length;
+                        my @fields= @{$prng->shuffleArray($f)}[0..$last_field_list_length-1];
+						$item = '`'.join('`,`',@fields).'`';
 					} elsif ($item =~ /^_field_([a-z]+)/) {
 						my $fields = $executors->[0]->metaColumnsDataType($1,$last_table, $last_database);
                         $last_field = $prng->arrayElement($fields);
