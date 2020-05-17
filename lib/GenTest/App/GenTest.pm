@@ -479,6 +479,10 @@ sub workerProcess {
 
     foreach my $i (1..$self->config->queries) {
         my $query_result = $mixer->next();
+        if ($i == 1) {
+            # Re-caching metadata after *_init queries, as they often create structures
+            $executors[0]->cacheMetaData(1);
+        }
         $worker_result = $query_result if $query_result > $worker_result && $query_result > STATUS_TEST_FAILURE;
 
         if ($query_result > STATUS_CRITICAL_FAILURE) {
