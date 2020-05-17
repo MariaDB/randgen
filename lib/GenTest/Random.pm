@@ -531,11 +531,11 @@ sub json_value {
 	} elsif ($value_type == JSON_VALUE_NUMBER) {
 		return $prng->int();
 	} elsif ($value_type == JSON_VALUE_TRUE) {
-		return 'true';
+		return '"true"';
 	} elsif ($value_type == JSON_VALUE_FALSE) {
-		return 'false';
+		return '"false"';
 	} elsif ($value_type == JSON_VALUE_NULL) {
-		return 'NULL';
+		return '"null"';
 	}
 }
 
@@ -574,15 +574,15 @@ sub jsonpath {
 
 	my $path= '$';
 	my $num_of_legs = $prng->uint16(0,4);
-	foreach (1..$num_of_legs) {
-		$path .= $prng->json_pathleg();
+	foreach (1..$num_of_legs-1) {
+		$path .= $prng->json_pathleg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_DBLASTER, JSON_PATHLEG_MEMBER]));
 	}
 	return $path;
 }
 
 sub json_pathleg {
 	my $prng = shift;
-	my $pathleg_type= $prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_DBLASTER, JSON_PATHLEG_MEMBER]);
+	my $pathleg_type= shift;
 
 	if ($pathleg_type == JSON_PATHLEG_DBLASTER) {
 		return '**';
