@@ -25,7 +25,7 @@ _basics_inbuilt_engine_weighted:
     ; $last_table_engine= $prng->arrayElement(\@engines) } ;
 
 _basics_main_engine_weighted:
-  { @engines=qw(InnoDB InnoDB MyISAM Aria)
+  { @engines=qw(InnoDB InnoDB InnoDB InnoDB MyISAM MyISAM MyISAM Aria)
     ; $last_table_engine= $prng->arrayElement(\@engines) } ;
 
 _basics_inbuilt_engine_clause_50pct:
@@ -58,8 +58,14 @@ _basics_insert_ignore_replace_clause:
 _basics_delayed_5pct:
   | | | | | | | | | | | | | | | | | | | DELAYED ;
 
+_basics_ignore_33pct:
+  | | IGNORE ;
+
 _basics_ignore_80pct:
   | IGNORE | IGNORE | IGNORE | IGNORE ;
+
+_basics_replace_80pct:
+  | REPLACE | REPLACE | REPLACE | REPLACE ;
 
 _basics_create_table_clause_with_optional_if_not_exists:
   CREATE _basics_temporary_5pct TABLE _basics_if_not_exists_95pct ;
@@ -106,6 +112,9 @@ _basics_or_replace_95pct:
   OR REPLACE | OR REPLACE | OR REPLACE | OR REPLACE | OR REPLACE |
 ;
 
+_basics_wait_nowait_40pct:
+  | | | WAIT _digit | NOWAIT ;
+
 # TODO: add virtual
 _basics_column_type:
   _basics_num_column_type | _basics_num_column_type | _basics_num_column_type | _basics_num_column_type |
@@ -136,10 +145,8 @@ _basics_column_attributes:
   _basics_column_zerofill _basics_base_or_virtual_column_attributes;
 
 _basics_base_or_virtual_column_attributes:
-  _basics_base_column_attributes | _basics_base_column_attributes | _basics_base_column_attributes |
-  _basics_base_column_attributes | _basics_base_column_attributes | _basics_base_column_attributes |
-  _basics_base_column_attributes | _basics_base_column_attributes | _basics_base_column_attributes |
-  _basics_virtual_column_attributes
+    ==FACTOR:49== _basics_base_column_attributes
+  |               _basics_virtual_column_attributes
 ;
 
 _basics_base_column_attributes:
@@ -185,6 +192,9 @@ _basics_prepare_type_dependent_value:
     ; ''
   }
 ;
+
+_basics_type_dependent_value:
+    _basics_prepare_type_dependent_value { $last_type_value } ;
 
 _basics_column_default:
   { @defaults= ($last_nullable eq 'NOT NULL' or $last_column_type eq 'SERIAL' or $last_column_type =~ /TIMESTAMP/ and $last_nullable ne 'NULL') ? () : ('NULL')
@@ -233,6 +243,17 @@ _basics_table_partitioning:
 _basics_hash_or_key:
   HASH | KEY ;
 
+_basics_unique_10pct:
+    ==FACTOR:9==
+  | UNIQUE
+;
+
+_basics_returning_5pct:
+    ==FACTOR:38==
+  | RETURNING *
+  | RETURNING _field
+;
+
 _basics_interval:
   _basics_small_interval | _basics_big_interval ;
 
@@ -243,7 +264,7 @@ _basics_big_interval:
   DAY | WEEK | MONTH | YEAR ;
 
 _basics_table_options:
-  _basics_table_option | _basics_table_options _basics_table_option ;
+  | | _basics_table_option | _basics_table_options _basics_table_option ;
 
 # TODO: Extend
 _basics_table_option:
@@ -274,21 +295,27 @@ _basics_row_format:
 _basics_alter_table_element:
   FORCE | FORCE | FORCE | FORCE | FORCE | FORCE |
   ENGINE=_basics_inbuilt_engine_weighted |
-  ALGORITHM=_basics_alter_table_algorithm | ALGORITHM=_basics_alter_table_algorithm |
-  LOCK=_basics_alter_table_lock
+  _basics_alter_table_algorithm | _basics_alter_table_algorithm |
+  _basics_alter_table_lock
 ;
 
+_basics_online_10pct:
+  | | | | | | | | | ONLINE ;
+
 _basics_alter_table_algorithm:
-  DEFAULT | INPLACE | COPY | NOCOPY | INSTANT ;
+  ALGORITHM=DEFAULT | ALGORITHM=INPLACE | ALGORITHM=COPY | ALGORITHM=NOCOPY /* compatibility 10.3.7 */ | ALGORITHM=INSTANT /* compatibility 10.3.7 */ ;
 
 _basics_alter_table_lock:
-  DEFAULT | NONE | SHARED | EXCLUSIVE ;
+  LOCK=DEFAULT | LOCK=NONE | LOCK=SHARED | LOCK=EXCLUSIVE ;
 
 _basics_base_table_or_view_90_10pct:
   _basetable | _basetable | _basetable | _basetable | _basetable | _basetable | _basetable | _basetable | _basetable | _view ;
 
 _basics_limit_50pct:
   | LIMIT _digit ;
+
+_basics_limit_90pct:
+  | ==FACTOR:9== LIMIT _digit ;
 
 _basics_order_by_50pct:
   | ORDER BY 1 ;
@@ -352,6 +379,12 @@ _basics_explain_analyze:
   ANALYZE _basics_format_json_50pct
 ;
 
+_basics_comparison_operator:
+    = | != | < | > | >= | <= ;
+
+_basics_logical_operator:
+    AND | OR ;
+
 _basics_extended_50pct:
   | EXTENDED ;
 
@@ -369,3 +402,22 @@ _basics_off_on:
 
 _basics_10pct_off_90pct_on:
     OFF | ON | ON | ON | ON | ON | ON | ON | ON | ON ;
+
+_basics_empty_values_list:
+    () | (),_basics_empty_values_list | (),_basics_empty_values_list ;
+
+_basics_any_value:
+      _basics_value_for_numeric_column | _basics_value_for_char_column ;
+
+_basics_value_set:
+    { $basic_values=['NULL','DEFAULT',$prng->int(0,99),$prng->int(0,99),$prng->int(0,99),"'".$prng->text(8)."'","'".$prng->string(1)."'","'".$prng->string(1)."'","'".$prng->string(1)."'"]; @vals=(); $val_count= $prng->int(1,10) unless defined $val_count; foreach(1..$val_count) { push @vals, $prng->arrayElement($basic_values) }; '('.(join ',', @vals).')' } ;
+
+#  | _int_unsigned disabled due to MDEV-19130
+_basics_value_for_numeric_column:
+    NULL | NULL | DEFAULT | _digit | _tinyint | _tinyint_unsigned | _smallint_unsigned ;
+
+_basics_value_for_char_column:
+    NULL | NULL | DEFAULT | '' | _char(1) | _english ;
+
+_basics_reload_metadata:
+    { $executors->[0]->cacheMetaData(1); '' };
