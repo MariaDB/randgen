@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22619:
+=~ Assertion \`trnman_has_locked_tables(trn) > 0'
+=~ ha_maria::external_lock
+=~ handler::ha_external_unlock
+=~ mark_used_tables_as_free_for_reuse
+=~ Version: '10\.5
+=~ application_periods
+MDEV-22608:
+=~ AddressSanitizer|signal 11
+=~ Field_bit::key_cmp
+=~ TABLE::check_period_overlaps
 MDEV-22601:
 =~ Assertion \`0'
 =~ Protocol::end_statement
