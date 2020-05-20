@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22639:
+=~ Assertion \`inited != NONE'
+=~ handler::ha_check_overlaps
+=~ multi_update::send_data
 MDEV-22619:
 =~ Assertion \`trnman_has_locked_tables(trn) > 0'
 =~ ha_maria::external_lock
@@ -63,7 +67,7 @@ MDEV-22551:
 MDEV-22548:
 =~ Assertion \`0'
 =~ Protocol::end_statement
-=~ DELETE.*IGNORE
+=~ IGNORE
 =~ Version: '10\.4|Version: '10\.5
 =~ application_periods
 MDEV-22540:
@@ -241,11 +245,6 @@ MDEV-22216:
 =~ Assertion \`xid_seqno > wsrep_seqno'
 =~ trx_rseg_update_wsrep_checkpoint
 =~ Version: '10\.4|Version: '10\.5
-MDEV-22185:
-=~ Assertion \`inited==NONE'|AddressSanitizer|InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
-=~ handler::ha_index_init|row_update_for_mysql
-=~ handler::check_duplicate_long_entry_key|handler::ha_check_overlaps|update_portion_of_time|ha_partition::update_row
-=~ Version: '10\.5
 MDEV-22178:
 =~ Assertion \`info->alias\.str'
 =~ partition_info::check_partition_info
@@ -928,7 +927,7 @@ MDEV-20666:
 MDEV-20666:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE'
 =~ row_search_mvcc
-=~ ha_innobase::index_read|a_innobase::index_next_same
+=~ ha_innobase::index_read|ha_innobase::index_next_same|ha_innobase::rnd_next
 =~ Version: '10\.2
 MDEV-20666:
 =~ InnoDB: Failing assertion: prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE
@@ -2274,6 +2273,16 @@ MDEV-15256:
 =~ flush_cached_blocks
 =~ flush_pagecache_blocks_with_filter
 =~ ma_checkpoint_background
+MDEV-15164:
+=~ Assertion \`ikey_\.type == kTypeValue'
+=~ rocksdb::CompactionIterator::NextFromInput
+=~ rocksdb::DBImpl::BackgroundCompaction
+MDEV-15161:
+=~ signal 11|AddressSanitizer
+=~ in get_addon_fields
+=~ Sort_param::init_for_filesort
+=~ AGGR_OP::end_send
+=~ Version: '10\.1|Version: '10\.2|Version: '10\.0|Version: '10\.3
 MDEV-15011:
 =~ AddressSanitizer: heap-buffer-overflow|signal 11
 =~ decimal2bin
@@ -2588,6 +2597,9 @@ TODO-842: [thd->in_sub_stmt]
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_rollback_stmt
 =~ wsrep::client_state::after_statement
+TODO-842: [wsrep::transaction::before_prepare]
+=~ Assertion \`state() == s_executing \|\| state() == s_must_abort \|\| state() == s_replaying'
+=~ wsrep::transaction::before_prepare
 
 ##############################################################################
 # Weak matches
@@ -2598,10 +2610,6 @@ MDEV-22601: [Can't find record in]
 =~ DATABASE_CORRUPTION
 =~ sequence
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
-MDEV-22185: [Can't find record in]
-=~ Can't find record in
-=~ DATABASE_CORRUPTION
-=~ Version: '10\.5
 MDEV-21781: [GenTest::Transform::EnableOptimizations]
 =~ Transformed query: .* GenTest::Transform::EnableOptimizations
 =~ Version: '10\.5
@@ -2831,10 +2839,6 @@ MDEV-15255:
 =~ sequence_insert
 MDEV-15226:
 =~ Could not get index information for Index Number
-MDEV-15164:
-=~ ikey_\.type == kTypeValue
-MDEV-15161:
-=~ in get_addon_fields
 MDEV-15011:
 =~ signal 11
 =~ _mi_read_rnd_static_record
