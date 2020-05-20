@@ -25,10 +25,10 @@ xa_query:
     XA xa_start_begin xa_xid xa_opt_join_resume { $active_xa{$last_xid}= 1 ; '' }
   | XA END xa_xid_active xa_opt_suspend_opt_for_migrate { $idle_xa{$last_xid}= 1; delete $active_xa{$last_xid}; '' }
   | XA PREPARE xa_xid_idle { $prepared_xa{$last_xid}= 1; delete $idle_xa{$last_xid}; '' }
-  | XA COMMIT xa_xid_idle ONE PHASE { delete $idle_xa{$last_xid}; '' }
-  | XA COMMIT xa_xid_prepared { delete $idle_xa{$last_xid}; '' }
+#  | XA COMMIT xa_xid_idle ONE PHASE { delete $idle_xa{$last_xid}; '' }
+#  | XA COMMIT xa_xid_prepared { delete $idle_xa{$last_xid}; '' }
   | XA ROLLBACK xa_xid_prepared { delete $prepared_xa{$last_xid}; '' }
-  | XA RECOVER
+#  | XA RECOVER
 ;
 
 # Not supported

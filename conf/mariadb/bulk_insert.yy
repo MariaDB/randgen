@@ -5,6 +5,7 @@ query_add:
 bulk_insert_load:
     INSERT INTO _table SELECT * FROM _table
   | SELECT * FROM _table INTO OUTFILE { "'load_$last_table'" } ; LOAD DATA INFILE { "'load_$last_table'" } bulk_replace_ignore INTO TABLE { $last_table }
+  | DELETE FROM _table LIMIT _digit
 ;
 
 bulk_replace_ignore:

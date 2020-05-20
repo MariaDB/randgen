@@ -24,13 +24,13 @@ thread1:
 	modify ;			# Issue DDL that are reflected in INFORMATION_SCHEMA
 
 query:
-	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select |
-	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select |
-	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select |
-	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select_join |
-	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select_join |
-	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select_join |
-	show ;
+	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select ;
+#	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select |
+#	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select |
+#	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select_join |
+#	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select_join |
+#	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select_join ;
+#	show ;
 
 show:
 #	SHOW BINARY LOGS |
@@ -75,33 +75,33 @@ modify:
 #	character_sets |
 #	collations |
 #	collation_character_set_applicability |
-	columns |
-	column_privileges |
+	columns ;
+#	column_privileges |
 #	engines |
-	events |
+#	events |
 #	files |
 #	global_status |
 #	global_variables |
-	key_column_usage |
-	parameters |
-	partitions |
+#	key_column_usage |
+#	parameters |
+#	partitions |
 #	plugins |
 #	processlist |
 #	profiling |
 #	referential_constraints |
 #	routines |		# same as parameters
-	schemata |
-	schema_privileges |
+#	schemata |
+#	schema_privileges |
 #	session_status |
 #	session_variables |
 #	statistics |
-	tables |
+#	tables |
 #	tablespaces |
-	table_constraints |
-	table_privileges |
-	triggers |
-	user_privileges |
-	views ;
+#	table_constraints |
+#	table_privileges |
+#	triggers |
+#	user_privileges |
+#	views ;
 
 columns:
 	ALTER TABLE _table ADD COLUMN _letter INTEGER |

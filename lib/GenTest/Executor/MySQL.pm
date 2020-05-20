@@ -258,6 +258,7 @@ use constant  ER_VIEW_DELETE_MERGE_VIEW                         => 1395;
 use constant  ER_CANNOT_USER                                    => 1396;
 use constant  ER_XAER_NOTA                                      => 1397;
 use constant  ER_XAER_RMFAIL                                    => 1399;
+use constant  ER_XAER_OUTSIDE                                   => 1400;
 use constant  ER_NONEXISTING_PROC_GRANT                         => 1403;
 use constant  ER_DATA_TOO_LONG                                  => 1406;
 use constant  ER_SP_DUP_HANDLER                                 => 1413;
@@ -750,6 +751,7 @@ my %err2type = (
     ER_XA_RBDEADLOCK()                                  => STATUS_SEMANTIC_ERROR,
     ER_XAER_DUPID()                                     => STATUS_SEMANTIC_ERROR,
     ER_XAER_NOTA()                                      => STATUS_SEMANTIC_ERROR,
+    ER_XAER_OUTSIDE()                                   => STATUS_SEMANTIC_ERROR,
     ER_XAER_RMFAIL()                                    => STATUS_SEMANTIC_ERROR,
     
     WARN_DATA_TRUNCATED()                               => STATUS_SEMANTIC_ERROR,
