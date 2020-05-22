@@ -372,17 +372,22 @@ sub year {
 }
 
 sub time {
-	my $prng = shift;
-	return sprintf('%02d:%02d:%02d.%06d',
+	my ($prng, $ts) = @_;
+    if (defined $ts) {
+        my ($sec,$min,$hour,undef,undef,undef,undef,undef,undef)= localtime($ts);
+        return sprintf('%02d:%02d:%02d',$hour,$min,$sec);
+    } else {
+        return sprintf('%02d:%02d:%02d.%06d',
                    $prng->uint16(0,23),
                    $prng->uint16(0,59),
                    $prng->uint16(0,59),
                    $prng->uint16(0,999999));
+    }
 }
 
 sub datetime {
-	my $prng = shift;
-	return $prng->date()." ".$prng->time();
+	my ($prng, $ts) = @_;
+	return $prng->date($ts)." ".$prng->time($ts);
 }
 
 sub timestamp {
