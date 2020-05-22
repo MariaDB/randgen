@@ -4,6 +4,37 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22667:
+=~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
+=~ row_update_for_mysql
+=~ ha_partition::delete_row
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22667:
+=~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), m_last_part)'
+=~ ha_partition::position
+=~ multi_delete::send_data
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22660:
+=~ signal|AddressSanitizer
+=~ Type_handler_hybrid_field_type::type_handler|Assertion \`row_end'
+=~ is_versioning_timestamp|Vers_type_timestamp::check_sys_fields|Vers_parse_info::check_sys_fields
+=~ mysql_alter_table
+MDEV-22648:
+=~ AddressSanitizer
+=~ Field_blob::cmp_binary
+=~ Field::cmp_binary_offset
+=~ multi_update
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22647:
+=~ safe_mutex: Trying to lock mutex at .*sql_plugin\.cc, line .*, when the mutex was already locked at .*sys_vars_shared.h
+=~ sync_dynamic_session_variables
+=~ get_loc_info
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-22647:
+=~ Assertion \`!check_audit_mask(mysql_global_audit_mask, event_class_mask)'
+=~ mysql_audit_acquire_plugins
+=~ my_message_sql
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-22639:
 =~ Assertion \`inited != NONE'
 =~ handler::ha_check_overlaps
@@ -245,6 +276,11 @@ MDEV-22216:
 =~ Assertion \`xid_seqno > wsrep_seqno'
 =~ trx_rseg_update_wsrep_checkpoint
 =~ Version: '10\.4|Version: '10\.5
+MDEV-22206:
+=~ InnoDB: Failing assertion: heap_no == ULINT_UNDEFINED
+=~ trx/trx0i_s\.cc line
+=~ add_trx_relevant_locks_to_cache
+=~ Version: '10\.5
 MDEV-22178:
 =~ Assertion \`info->alias\.str'
 =~ partition_info::check_partition_info
@@ -973,6 +1009,10 @@ MDEV-20619:
 =~ Arg_comparator::compare
 =~ SQL_SELECT::skip_record
 =~ Version: '10\.2|Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-20618:
+=~ Assertion \`btr_validate_index(index, 0)'
+=~ row_upd_sec_index_entry
+=~ ha_innobase::delete_row
 MDEV-20597:
 =~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF) \|\| (((Item_ref \*) item)->ref_type() == Item_ref::REF)))'
 =~ get_corresponding_field_pair
@@ -1591,7 +1631,6 @@ MDEV-18848:
 MDEV-18833:
 =~ Assertion \`thd->is_error() \|\| kill_errno \|\| thd->killed == ABORT_QUERY'
 =~ filesort
-=~ create_sort_index
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-18826:
 =~ signal 11
@@ -2605,6 +2644,9 @@ TODO-842: [wsrep::transaction::before_prepare]
 # Weak matches
 ##############################################################################
 
+MDEV-22667: [Index is corrupt; try to repair it]
+=~ Index for table .*#P#.* is corrupt; try to repair it
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22601: [Can't find record in]
 =~ Can't find record in
 =~ DATABASE_CORRUPTION
