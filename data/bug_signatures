@@ -4,6 +4,34 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22676:
+=~ InnoDB: Failing assertion: result != FTS_INVALID
+=~ fts_trx_row_get_new_state
+=~ row_fts_update_or_delete
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22675:
+=~ Assertion \`offset < table->s->reclength'
+=~ dump_leaf_key
+=~ Item_func_group_concat
+MDEV-22674:
+=~ signal|AddressSanitizer
+=~ compare_bin
+=~ ha_key_cmp
+=~ _ma_bin_search
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22674:
+=~ AddressSanitizer
+=~ _ma_dpointer
+=~ _ma_make_key
+=~ sort_key_read
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22674:
+=~ Assertion \`!info->s->have_versioning \|\| info->s->lock_key_trees'
+=~ restore_table_state_after_repair
+MDEV-22674:
+=~ Assertion \`thd->killed != 0'
+=~ ha_maria::enable_indexes
+=~ select_insert::abort_result_set
 MDEV-22667:
 =~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
 =~ row_update_for_mysql
@@ -2649,7 +2677,7 @@ MDEV-22667: [Index is corrupt; try to repair it]
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22601: [Can't find record in]
 =~ Can't find record in
-=~ DATABASE_CORRUPTION
+=~ will exit with exit status STATUS_DATABASE_CORRUPTION
 =~ sequence
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21781: [GenTest::Transform::EnableOptimizations]
@@ -2682,6 +2710,7 @@ MDEV-20763:
 MDEV-20661:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE (info_bits=.* fields):
 =~ versioning
+=~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-20661:
 =~ failed: 126: Index for table './test/t1.MYI' is corrupt; try to repair it
 =~ versioning
