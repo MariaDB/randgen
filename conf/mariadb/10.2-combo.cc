@@ -20,7 +20,7 @@ $combinations = [ $grammars,
     --redefine=conf/mariadb/general-workarounds.yy
     --redefine=conf/mariadb/alter_table.yy
     --redefine=conf/mariadb/bulk_insert.yy
-    --redefine=conf/mariadb/event.yy
+    --redefine=conf/mariadb/modules/event.yy
     --redefine=conf/mariadb/instant_add.yy
     --redefine=conf/mariadb/sp.yy
     --mysqld=--log_output=FILE
