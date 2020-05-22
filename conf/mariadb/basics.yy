@@ -139,7 +139,7 @@ _basics_blob_column_type:
 
 # TODO: add other spatial and what not
 _basics_special_column_type:
-  { @column_types= ( 'SET(\'\', \'Africa\', \'North America\', \'South America\', \'Asia\', \'Antarctica\', \'Australia\', \'Europe\')', 'ENUM(\'\', \'Africa\', \'North America\', \'South America\', \'Asia\', \'Antarctica\', \'Australia\', \'Europe\')', 'JSON', 'YEAR', 'GEOMETRY', 'INET6' ); $last_column_type= $prng->arrayElement(\@column_types) } ;
+  { @column_types= ( 'SET(\'\', \'Africa\', \'North America\', \'South America\', \'Asia\', \'Antarctica\', \'Australia\', \'Europe\')', 'ENUM(\'\', \'Africa\', \'North America\', \'South America\', \'Asia\', \'Antarctica\', \'Australia\', \'Europe\')', 'JSON', 'YEAR', 'GEOMETRY', '/*!100500 INET6 *//*!!100500 CHAR(39) */' ); $last_column_type= $prng->arrayElement(\@column_types) } ;
 
 _basics_column_attributes:
   _basics_column_zerofill _basics_base_or_virtual_column_attributes;
@@ -209,6 +209,9 @@ _basics_column_default:
     ; ($prng->int(0,1) and scalar(@defaults) and $last_column_type ne 'SERIAL' and ! $last_autoincrement ) ? 'DEFAULT '.$prng->arrayElement(\@defaults) : ''
   }
 ;
+
+_basics_not_33pct:
+  | | NOT ;
 
 _basics_column_check_constraint_10pct:
   | | | | | | | | | _basics_simple_check_constraint ;

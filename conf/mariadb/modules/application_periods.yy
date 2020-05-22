@@ -148,9 +148,9 @@ app_periods_unique_key_for_simple_table:
 ##############
 
 app_periods_dml:
-      ==FACTOR:10== app_periods_insert_replace INTO app_periods_own_table app_periods_insert_values _basics_order_by_limit_50pct _basics_returning_5pct
-    |               INSERT _basics_ignore_33pct INTO app_periods_own_table app_periods_insert_values ON DUPLICATE KEY UPDATE _field = _basics_value_for_numeric_column _basics_returning_5pct
-    |               INSERT _basics_ignore_33pct INTO app_periods_own_table app_periods_insert_values ON DUPLICATE KEY UPDATE app_period_valid_period_boundaries_update _basics_returning_5pct
+      ==FACTOR:10== app_periods_insert_replace INTO app_periods_own_table app_periods_insert_values _basics_order_by_limit_50pct /*!100500 _basics_returning_5pct */
+    |               INSERT _basics_ignore_33pct INTO app_periods_own_table app_periods_insert_values ON DUPLICATE KEY UPDATE _field = _basics_value_for_numeric_column /*!100500 _basics_returning_5pct */
+    |               INSERT _basics_ignore_33pct INTO app_periods_own_table app_periods_insert_values ON DUPLICATE KEY UPDATE app_period_valid_period_boundaries_update /*!100500 _basics_returning_5pct */
     | ==FACTOR:10== UPDATE _basics_ignore_80pct app_periods_own_table app_periods_optional_for_portion SET app_periods_update_values app_period_optional_where_clause app_periods_optional_order_by_limit
     | ==FACTOR:5==  UPDATE _basics_ignore_80pct app_periods_own_table SET app_period_valid_period_boundaries_update app_period_optional_where_clause app_periods_optional_order_by_limit
     |               UPDATE _basics_ignore_80pct app_periods_own_table alias1 { $t1= $last_table; '' } NATURAL JOIN app_periods_any_table alias2 { $t2= $last_table; '' } SET { $last_table= $t1; '' } alias1._field = { $last_table= $t2; '' } alias2._field app_period_optional_where_clause app_periods_optional_order_by_limit
@@ -158,7 +158,8 @@ app_periods_dml:
     | ==FACTOR:2==  DELETE _basics_ignore_80pct FROM app_periods_own_table app_periods_optional_for_portion app_period_optional_where_clause app_periods_optional_order_by_limit _basics_returning_5pct
     | ==FACTOR:0.2== DELETE _basics_ignore_80pct alias1.* FROM app_periods_own_table alias1, app_periods_any_table alias2
     | ==FACTOR:0.2== DELETE _basics_ignore_80pct alias2.* FROM app_periods_any_table alias1, app_periods_own_table alias2
-    | ==FACTOR:0.5== SELECT * INTO OUTFILE { $fname= '_data_'.time(); "'$fname'" } FROM app_periods_own_table app_period_optional_where_clause ; LOAD DATA INFILE { "'$fname'" } app_periods_optional_ignore_replace INTO TABLE { $last_table }
+    # Error silenced due to expected "No such file or directory" errors if the previous SELECT didn't work
+    | ==FACTOR:0.1== SELECT * INTO OUTFILE { $fname= '_data_'.time(); "'$fname'" } FROM app_periods_own_table app_period_optional_where_clause ; LOAD DATA INFILE { "'$fname'" } app_periods_optional_ignore_replace INTO TABLE { $last_table } /* EXECUTOR_FLAG_SILENT */
     |                SELECT * FROM app_periods_own_table app_period_optional_where_clause app_periods_optional_order_by_limit
     |                SELECT * FROM app_periods_any_table WHERE _field IN ( SELECT _field FROM app_periods_own_table app_period_optional_where_clause app_periods_optional_order_by_limit )
     | ==FACTOR:0.2== DELETE HISTORY FROM app_periods_any_table
@@ -364,7 +365,7 @@ app_periods_foreign_key:
 app_periods_alter:
     ==FACTOR:19== ALTER TABLE app_periods_dynamic_table app_periods_alter_table_list
   |               ALTER TABLE app_periods_dynamic_table app_periods_partitioning_definition
-  | _basics_reload_metadata
+  | ==FACTOR:0.01== _basics_reload_metadata
 ;
 
 app_periods_alter_table_list:
