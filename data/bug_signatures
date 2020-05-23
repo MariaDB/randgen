@@ -4,6 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22677:
+=~ signal|AddressSanitizer
+=~ ha_partition::open
+=~ ha_heap::clone
+=~ handler::create_lookup_handler
+=~ Version: '10\.5
+=~ application_periods
 MDEV-22676:
 =~ InnoDB: Failing assertion: result != FTS_INVALID
 =~ fts_trx_row_get_new_state
@@ -2048,7 +2055,7 @@ MDEV-17711:
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-17678:
 =~ AddressSanitizer: heap-use-after-free|signal 11
-=~ Field::val_str|Field::is_null|ErrConvString::ptr
+=~ Field::val_str|Field::is_null|ErrConvString::ptr|my_datetime_packed_from_binary
 =~ field_unpack
 =~ print_keydup_error
 =~ ha_myisam::enable_indexes
