@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22681: [wsrep::transaction::before_prepare]
+=~ Assertion \`state() == s_executing \|\| state() == s_must_abort \|\| state() == s_replaying'
+=~ wsrep::transaction::before_prepare
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22681:
+=~ signal|AddressSanitizer
+=~ galera::ReplicatorSMM::CommitOrder::CommitOrder
+=~ wsrep::transaction::ordered_commit
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22677:
 =~ signal|AddressSanitizer
 =~ ha_partition::open
@@ -2671,9 +2680,6 @@ TODO-842: [thd->in_sub_stmt]
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_rollback_stmt
 =~ wsrep::client_state::after_statement
-TODO-842: [wsrep::transaction::before_prepare]
-=~ Assertion \`state() == s_executing \|\| state() == s_must_abort \|\| state() == s_replaying'
-=~ wsrep::transaction::before_prepare
 
 ##############################################################################
 # Weak matches
