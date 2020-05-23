@@ -411,7 +411,7 @@ app_periods_system_versioning:
 
 app_periods_add_drop_period:
     ==FACTOR:4== ADD PERIOD _basics_if_not_exists_95pct FOR app_periods_period_name ( app_periods_existing_column_name, app_periods_existing_column_name )
-  |              DROP PERIOD _basics_if_exists_95pct FOR app_periods_dynamic_table
+  |              DROP PERIOD _basics_if_exists_95pct FOR app_periods_period_name
 ;
 
 app_periods_update_list:
