@@ -2,6 +2,9 @@ our ($encryption, $grammars);
 require 'conf/mariadb/include/encryption_on_off';
 require 'conf/mariadb/include/combo.grammars';
 
+# Disabled to the amount of bugs
+#  --redefine=conf/mariadb/modules/application_periods.yy
+
 $combinations = [
   [
   '
@@ -24,7 +27,6 @@ $combinations = [
   --redefine=conf/mariadb/versioning.yy
   --redefine=conf/mariadb/sequences.yy
   --redefine=conf/mariadb/modules/locks-10.4-extra.yy
-  --redefine=conf/mariadb/modules/application_periods.yy
   --redefine=conf/mariadb/modules/optimizer_trace.yy
   --mysqld=--server-id=111
   --mysqld=--log_output=FILE
