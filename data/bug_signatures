@@ -2091,6 +2091,11 @@ MDEV-17619:
 =~ Index file is crashed|Table is crashed and last repair failed|Incorrect key file for table|Table .* is marked as crashed and last (automatic?) repair failed
 =~ full_text|FULLTEXT
 =~ Version: '10\.1
+MDEV-17616:
+=~ AddressSanitizer:
+=~ subselect_engine::calc_const_tables
+=~ ubselect_single_select_engine::upper_select_const_tables
+=~ Version: '5\.5|Version: '10\.1|Version: '10\.2
 MDEV-17596:
 =~ Assertion \`block->page\.flush_observer == __null \|\| block->page\.flush_observer == observer'
 =~ buf_flush_note_modification
@@ -2849,8 +2854,6 @@ MDEV-17971:
 =~ Field_iterator_table::set
 MDEV-17971:
 =~ Field_iterator_table_ref::set_field_iterator
-MDEV-17962:
-=~ setup_jtbm_semi_joins
 MDEV-17897:
 =~ block->frame
 MDEV-17895:
