@@ -23,10 +23,8 @@ acl_create_user:
   | CREATE /*!100103 acl_or_replace */ USER acl_user_specification_list /*!100200 acl_require acl_with */ /*!100403 acl_password_expire */
 ;
 
-# MDEV-17941 - ALTER USER IF EXISTS does not work
-#   ALTER USER acl_if_exists acl_user_specification_list acl_require acl_with
 acl_alter_user:
-  /*!100200 ALTER */ /*!!100200 CREATE */ USER acl_user_specification_list /*!100200 acl_require acl_with */ /*!100403 acl_password_expire */
+  /* compatibility 10.2.0 */ ALTER USER acl_if_exists acl_user_specification_list acl_require acl_with /*!100403 acl_password_expire */
 ;
 
 acl_drop_user:
