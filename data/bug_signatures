@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22703:
+=~ signal|AddressSanitizer
+=~ rec_convert_dtuple_to_rec_comp|rec_convert_dtuple_to_rec_old
+=~ page_cur_tuple_insert
+=~ row_ins_index_entry_step
 MDEV-22695:
 =~ signal|AddressSanitizer
 =~ heap_rnext
@@ -117,9 +122,19 @@ MDEV-22601:
 =~ sequence
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-22600:
-=~ Assertion \`prebuilt->mysql_prefix_len <= prebuilt->mysql_row_len'|AddressSanitizer
+=~ Assertion \`prebuilt->mysql_prefix_len <= prebuilt->mysql_row_len'|AddressSanitizer|signal
 =~ row_sel_dequeue_cached_row_for_mysql|row_sel_store_mysql_field
 =~ row_search_mvcc
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-22600:
+=~ AddressSanitizer|signal
+=~ row_mysql_store_col_in_innobase_format
+=~ row_insert_for_mysql
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22600:
+=~ AddressSanitizer|signal
+=~ Field::is_null_in_record
+=~ calc_row_difference
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-22576:
 =~ Assertion \`false'
