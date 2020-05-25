@@ -214,69 +214,6 @@ sub run {
         sayFile("$vardir/mbackup_prepare_${b}.log");
         return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
       }
-
-      #####
-      $self->printStep("Restoring backup #$b");
-      system("rm -rf ".$server->datadir);
-      $cmd= "$mbackup --copy-back --target-dir=${mbackup_target}_${b} --datadir=".$server->datadir." --user=".$server->user." 2>$vardir/mbackup_restore_${b}.log";
-      say($cmd);
-      system($cmd);
-      $status= $? >> 8;
-
-      if ($status != STATUS_OK) {
-        sayError("Backup restore failed");
-        sayFile("$vardir/mbackup_restore_${b}.log");
-        return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-      }
-
-
-      #####
-      $self->printStep("Restarting the server");
-
-      $status= $server->startServer;
-
-      if ($status != STATUS_OK) {
-        sayError("Server failed to start after backup restoration");
-        # Error log might indicate known bugs which will affect the exit code
-        $status= $self->checkErrorLog($server);
-        # ... but even if it's a known error, we cannot proceed without the server
-        return $self->finalize($status,[$server]);
-      }
-
-      #####
-      $self->printStep("Checking the server error log for errors after restart");
-
-      $status= $self->checkErrorLog($server);
-
-      if ($status != STATUS_OK) {
-        # Error log can show known errors. We want to update 
-        # the global status, but don't want to exit prematurely
-        $self->setStatus($status);
-        if ($status > STATUS_CUSTOM_OUTCOME) {
-          sayError("Found errors in the log, restart has apparently failed");
-          return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-        }
-      }
-
-      #####
-      $self->printStep("Checking the database state after restore and restart");
-
-      $status= $server->checkDatabaseIntegrity;
-
-      if ($status != STATUS_OK) {
-        sayError("Database appears to be corrupt after restoring the backup");
-        return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-      }
-
-      #####
-      $self->printStep("Stopping the server");
-
-      $status= $server->stopServer;
-
-      if ($status != STATUS_OK) {
-        sayError("Server shutdown failed");
-        return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-      }
   }
 
   return $self->finalize($status,[]);
