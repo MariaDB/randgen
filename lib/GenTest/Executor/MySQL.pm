@@ -797,6 +797,7 @@ sub init {
     $executor->setPort($port);
 
     $executor->version();
+    $executor->datadir();
 
     #
     # Hack around bug 35676, optiimzer_switch must be set sesson-wide in order to have effect
@@ -1038,6 +1039,10 @@ sub execute {
     my $result;
     if (defined $err) {            # Error on EXECUTE
 
+        if (-e $executor->datadir.'/expected_shutdown' and ($err == 1053 or $err == 2006)) {
+            $execution_flags |= EXECUTOR_FLAG_SILENT;
+        }
+
         if ($err_type == STATUS_SYNTAX_ERROR) {
             $executor->[EXECUTOR_ERROR_COUNTS]->{$errstr}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
             $err_type= undef;
@@ -1068,7 +1073,7 @@ sub execute {
                 say("Executor::MySQL::execute: Successfully reconnected after getting " . status2text($err_type));
                 $err_type = STATUS_SEMANTIC_ERROR;
                 $executor->setDbh($dbh);
-            } else {
+            } elsif (! -e $executor->datadir.'/expected_shutdown') {
                 sayError("Executor::MySQL::execute: Failed to reconnect after getting " . status2text($err_type));
             }
 
@@ -1200,6 +1205,12 @@ sub version {
         $executor->setServerMajorVersion($1);
     }
     return $ver;
+}
+
+sub datadir {
+    my $executor= shift;
+    $executor->[EXECUTOR_DATADIR]= $executor->serverVariable('datadir') unless defined $executor->[EXECUTOR_DATADIR];
+    return $executor->[EXECUTOR_DATADIR];
 }
 
 sub versionNumeric {

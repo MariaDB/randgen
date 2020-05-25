@@ -486,7 +486,7 @@ sub workerProcess {
         $worker_result = $query_result if $query_result > $worker_result && $query_result > STATUS_TEST_FAILURE;
 
         if ($query_result > STATUS_CRITICAL_FAILURE) {
-				say("GenTest: Server crash or critical failure (". status2text($query_result) . ") reported, the child will be stopped");
+            #say("GenTest: Server crash or critical failure (". status2text($query_result) . ") reported, the child will be stopped");
             undef $mixer;	# so that destructors are called
             $self->stopChild($query_result);
         }

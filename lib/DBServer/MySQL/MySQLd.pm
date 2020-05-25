@@ -646,6 +646,8 @@ sub startServer {
     } else {
         exec("$command >> \"$errorlog\"  2>&1") || croak("Could not start mysql server");
     }
+    unlink($self->datadir.'/expected_shutdown');
+    say("Expected server downtime ends");
 
     return ($self->waitForServerToStart && $self->dbh) ? DBSTATUS_OK : DBSTATUS_FAILURE;
 }
@@ -659,6 +661,8 @@ sub kill {
         $self->[MYSQLD_SERVERPID]= get_pid_from_file($self->pidfile);
     }
 
+    open(F,'>'.$self->datadir.'/expected_shutdown') && close(F);
+    say("Expected server downtime starts");
     if (defined $self->serverpid and $self->serverpid =~ /^\d+$/) {
         kill KILL => $self->serverpid;
         my $sleep_time= 0.2;
@@ -684,6 +688,8 @@ sub term {
     my ($self) = @_;
 
     my $res;
+    open(F,'>'.$self->datadir.'/expected_shutdown') && close(F);
+    say("Expected server downtime starts");
     if (defined $self->serverpid) {
         kill TERM => $self->serverpid;
         my $sleep_time= 0.2;
@@ -957,6 +963,8 @@ sub stopServer {
         ## stale (happens i.e. with mdl_stability/valgrind runs)
         my $dbh = $self->dbh();
         # Need to check if $dbh is defined, in case the server has crashed
+        open(F,'>'.$self->datadir.'/expected_shutdown') && close(F);
+        say("Expected server downtime starts");
         if (defined $dbh) {
             $res = $dbh->func('shutdown','127.0.0.1','root','admin');
             if (!$res) {
