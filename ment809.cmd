@@ -1,0 +1,1 @@
+perl ./runall-trials.pl --basedir=$1 --duration=60 --threads=4 --skip-gendata --gendata-advanced --engine=Aria --scenario=MariaBackupFull --grammar=./ment808.yy --mtr-build-thread=51 --seed=1 --trials=10 --output="Got error 127 when executing|Got error 175 when executing" --vardir=/dev/shm/ment809
