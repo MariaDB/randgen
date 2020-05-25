@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22695:
+=~ signal|AddressSanitizer
+=~ heap_rnext
+=~ ha_heap::index_next
+=~ QUICK_RANGE_SELECT
 MDEV-22686:
 =~ Assertion \`trn'
 =~ ha_maria::start_stmt
@@ -1261,8 +1266,6 @@ MDEV-20235:
 =~ create_tmp_table
 =~ Version: '10\.1\.
 MDEV-20235:
-=~ mysqld: Out of memory (Needed .* bytes)
-=~ Out of memory; check if mysqld or some other process uses all available memory
 =~ DISTINCT VARIANCE.* GROUP BY .* ORDER BY .*BENCHMARK .* failed: 5: Out of memory (Needed .* bytes)
 =~ Version: '10\.1\.
 MDEV-20207:

@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MENT-809:
+=~ mariabackup: Aria engine: starting recovery
+=~ Got error 127 when executing|Got error 175 when executing
+MENT-808:
+=~ signal|AddressSanitizer|\`page_offset != 0 && page_offset <= page_length && page_length + length <= max_page_size'|\`page_offset - length <= page_length'|\`page_offset >= keypage_header && page_offset <= page_length'|\`page_offset != 0 && page_offset + length <= page_length'
+=~ mariabackup
+=~ exec_REDO_LOGREC_REDO_INDEX
+=~ display_and_apply_record
+=~ maria_apply_log
 MENT-368:
 =~ Assertion \`inline_mysql_file_tell(.*, file, (myf) (0)) == base_pos+ (16 + 5\*8 + 6\*4 + 11\*2 + 6 + 5\*2 + 1 + 16)'
 =~ maria_create
