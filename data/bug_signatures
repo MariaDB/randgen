@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22714:
+=~ Assertion \`index->table->is_instant()'
+=~ btr_cur_upd_rec_in_place
+=~ multi_update
+=~ Version: '10\.5
+=~ application_periods
 MDEV-22703:
 =~ signal|AddressSanitizer
 =~ rec_convert_dtuple_to_rec_comp|rec_convert_dtuple_to_rec_old
@@ -2723,14 +2729,21 @@ TODO-842: [thd->in_sub_stmt]
 # Weak matches
 ##############################################################################
 
+MDEV-22714: [Index is corrupt; try to repair it]
+=~ 126: Index for table .* is corrupt; try to repair it|1032: Can't find record in
+=~ Version: '10\.5
+=~ will exit with exit status STATUS_DATABASE_CORRUPTION
+=~ application_periods
 MDEV-22667: [Index is corrupt; try to repair it]
 =~ Index for table .*#P#.* is corrupt; try to repair it
 =~ Version: '10\.4|Version: '10\.5
+=~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-22601: [Can't find record in]
 =~ Can't find record in
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 =~ sequence
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-21781: [GenTest::Transform::EnableOptimizations]
 =~ Transformed query: .* GenTest::Transform::EnableOptimizations
 =~ Version: '10\.5
