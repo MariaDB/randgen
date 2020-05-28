@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22746:
+=~ Assertion \`(&(&pagecache->cache_lock)->m_mutex)->count > 0 && pthread_equal(pthread_self(), (&(&pagecache->cache_lock)->m_mutex)->thread)'
+=~ dec_counter_for_resize_op
+=~ Version: '10\.5
+MDEV-22732:
+=~ AddressSanitizer|signal
+=~ create_tmp_table
+=~ multi_update::initialize_tables
+=~ JOIN::optimize_stage2
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-22714:
 =~ Assertion \`index->table->is_instant()'
 =~ btr_cur_upd_rec_in_place
@@ -1654,7 +1664,7 @@ MDEV-19067:
 =~ get_lock_data
 =~ mysql_lock_tables
 MDEV-19038:
-=~ signal 11|AddressSanitizer: SEGV on unknown address
+=~ signal 11|AddressSanitizer:
 =~ calc_row_difference
 =~ ha_innobase::update_row
 =~ mysql_update
