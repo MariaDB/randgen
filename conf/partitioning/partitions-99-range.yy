@@ -67,7 +67,7 @@ init_db:
 	create_tables ; insert_tables ;  cache_index ; load_index ;
 
 create_tables:
-	create_10 ; create_10 ; create_10 ; create_10 ; create_10 ; create_10 ; create_nop_4 ;
+	create_10 ; create_10 ; create_10 ; create_nop_4 ;
 
 create_10:
 	create ; create ; create ; create ; create ; create ; create ; create ; create ; create ;
