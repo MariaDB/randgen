@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22751:
+=~ signal|AddressSanitizer
+=~ dict_acquire_mdl_shared
+=~ row_purge
+=~ Version: '10\.5
 MDEV-22746:
 =~ Assertion \`(&(&pagecache->cache_lock)->m_mutex)->count > 0 && pthread_equal(pthread_self(), (&(&pagecache->cache_lock)->m_mutex)->thread)'
 =~ dec_counter_for_resize_op
@@ -292,7 +297,7 @@ MDEV-22339:
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22284:
 =~ signal 11|AddressSanitizer
-=~ _ma_keylength_part
+=~ _ma_keylength_part|_ma_row_pos_from_key|memcpy|_ma_search_no_save
 =~ ha_maria::index_read_idx_map
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-22284:
