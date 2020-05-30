@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22757:
+=~ Assertion \`!binlog \|\| exist_hton_without_prepare'
+=~ MYSQL_BIN_LOG::unlog_xa_prepare
+=~ Version: '10\.5
+MDEV-22754:
+=~ Assertion \`!result'
+=~ convert_const_to_int
+=~ convert_const_compared_to_int_field
+=~ optimize_inner
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-22753:
+=~ signal|AddressSanitizer
+=~ handler::ha_check_overlaps
+=~ handler::ha_write_row
 MDEV-22751:
 =~ signal|AddressSanitizer
 =~ dict_acquire_mdl_shared
@@ -2133,7 +2147,7 @@ MDEV-17619:
 MDEV-17616:
 =~ AddressSanitizer:
 =~ subselect_engine::calc_const_tables
-=~ ubselect_single_select_engine::upper_select_const_tables
+=~ upper_select_const_tables
 =~ Version: '5\.5|Version: '10\.1|Version: '10\.2
 MDEV-17596:
 =~ Assertion \`block->page\.flush_observer == __null \|\| block->page\.flush_observer == observer'
