@@ -17,7 +17,7 @@ MDEV-22754:
 MDEV-22753:
 =~ signal|AddressSanitizer
 =~ handler::ha_check_overlaps
-=~ handler::ha_write_row
+=~ handler::ha_write_row|ha_update_row
 MDEV-22751:
 =~ signal|AddressSanitizer
 =~ dict_acquire_mdl_shared
@@ -279,6 +279,11 @@ MDEV-22413:
 =~ ha_partition::update_row|ha_partition::delete_row
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 =~ versioning
+MDEV-22385:
+=~ Assertion \`0'
+=~ stored_field_cmp_to_item
+=~ convert_const_to_int
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22375:
 =~ Assertion \`(engine->uncacheable() & ~8) \|\| ! engine->is_executed() \|\| with_recursive_reference'
 =~ Item_in_subselect
