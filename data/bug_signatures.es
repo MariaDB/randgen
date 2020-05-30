@@ -110,10 +110,6 @@ MDEV-22332:
 =~ Assertion \`mtr_started == mtr\.is_active()'
 =~ row_merge_read_clustered_index
 =~ Version: '10\.5
-MDEV-22218:
-=~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
-=~ row_update_for_mysql
-=~ Version: '10\.5
 MDEV-22139:
 =~ InnoDB: Not applying DELETE_ROW_FORMAT_REDUNDANT
 =~ mariabackup: innodb_init() returned 39 (Data structure corruption)
