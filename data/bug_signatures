@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22758:
+=~ Assertion \`!item->null_value'
+=~ Type_handler_inet6::make_sort_key_part
 MDEV-22757:
 =~ Assertion \`!binlog \|\| exist_hton_without_prepare'
 =~ MYSQL_BIN_LOG::unlog_xa_prepare
@@ -169,7 +172,7 @@ MDEV-22600:
 MDEV-22600:
 =~ AddressSanitizer|signal
 =~ Field::is_null_in_record
-=~ calc_row_difference
+=~ calc_row_difference|Column_definition::Column_definition
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-22576:
 =~ Assertion \`false'
@@ -242,6 +245,10 @@ MDEV-22458:
 =~ safe_mutex: Found wrong usage of mutex 'LOCK_thd_data' and 'share->intern_lock'|safe_mutex: Found wrong usage of mutex 'LOCK_thd_data' and 'lock->mutex'
 =~ wsrep_on
 =~ Version: '10\.4|Version: '10\.5
+MDEV-22445:
+=~ InnoDB: Assertion failure in file .*innobase/trx/trx0trx\.cc
+=~ trx_start_if_not_started_xa_low
+=~ ha_innobase::init_table_handle_for_HANDLER
 MDEV-22442: [wsrep - lock_sys.mutex.is_owned]
 =~ Assertion \`(lock_sys\.mutex\.is_owned())'
 =~ lock_trx_handle_wait_low
@@ -440,11 +447,6 @@ MDEV-22099:
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22076:
 =~ InnoDB: tried to purge non-delete-marked record in index
-=~ InnoDB: Failing assertion: !cursor->index->is_committed()
-=~ row_ins_sec_index_entry_by_modify
-=~ xa\.yy
-MDEV-22076:
-=~ InnoDB: tried to purge non-delete-marked record in index
 =~ Assertion \`0'
 =~ row_purge_remove_sec_if_poss_leaf
 =~ xa\.yy
@@ -452,12 +454,6 @@ MDEV-22063:
 =~ Assertion \`0'
 =~ wsrep::transaction::before_rollback
 =~ Version: '10\.4|Version: '10\.5
-MDEV-22061:
-=~ was not found on update: TUPLE
-=~ Failing assertion: !cursor->index->is_committed()
-=~ row_ins_sec_index_entry_by_modify
-=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
-=~ versioning
 MDEV-22061:
 =~ was not found on update: TUPLE
 =~ Assertion \`btr_validate_index(index, 0, false)'
@@ -2763,6 +2759,10 @@ TODO-842: [thd->in_sub_stmt]
 # Weak matches
 ##############################################################################
 
+MDEV-22759: [cursor->index->is_committed - HASH?]
+=~ Record in index .* was not found on update: TUPLE
+=~ Failing assertion: !cursor->index->is_committed()
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22714: [Index is corrupt; try to repair it]
 =~ 126: Index for table .* is corrupt; try to repair it|1032: Can't find record in
 =~ Version: '10\.5
@@ -2778,6 +2778,17 @@ MDEV-22601: [Can't find record in]
 =~ sequence
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
+MDEV-22076: [cursor->index->is_committed - XA]
+=~ InnoDB: tried to purge non-delete-marked record in index
+=~ InnoDB: Failing assertion: !cursor->index->is_committed()
+=~ row_ins_sec_index_entry_by_modify
+=~ xa\.yy
+MDEV-22061: [cursor->index->is_committed - Versioning]
+=~ was not found on update: TUPLE
+=~ Failing assertion: !cursor->index->is_committed()
+=~ row_ins_sec_index_entry_by_modify
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+=~ versioning
 MDEV-21781: [GenTest::Transform::EnableOptimizations]
 =~ Transformed query: .* GenTest::Transform::EnableOptimizations
 =~ Version: '10\.5
@@ -2833,7 +2844,7 @@ MDEV-19745:
 =~ Backup did not finish in due time
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 # I want to see it happen, even if it can be a strong match
-MDEV-19338:
+MDEV-19338: [cursor->index->is_committed - Vcols]
 =~ InnoDB: Failing assertion: !cursor->index->is_committed()
 =~ vcols
 =~ Version: '10\.4|Version: '10\.5
@@ -3048,7 +3059,7 @@ MDEV-14836:
 =~ m_status == DA_ERROR
 MDEV-14833:
 =~ trx->error_state == DB_SUCCESS
-MDEV-14643:
+MDEV-14643: [cursor->index->is_committed]
 =~ cursor->index->is_committed
 MDEV-14349:
 =~ STATUS_LENGTH_MISMATCH
