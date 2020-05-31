@@ -231,11 +231,10 @@ sub register_result
             foreach my $j (keys %found_mdevs) {
                 my $fixdate= 'NULL';
                 my $match_type= $type;
-                my $notes= $j;
                 if ($draft_mdevs{$j}) {
                     $match_type= 'draft';
-                    $notes= $found_mdevs{$j}.' - '.$j;
                 }
+                my $notes= ($type eq 'strong' ? $j : $found_mdevs{$j}.' - '.$j);
                 if (defined $fixed_mdevs{$j}) {
                     $fixdate= "'$fixed_mdevs{$j}'";
                     $match_type= 'fixed';
