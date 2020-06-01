@@ -110,7 +110,7 @@ MDEV-22674:
 MDEV-22667:
 =~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
 =~ row_update_for_mysql
-=~ ha_partition::delete_row
+=~ ha_partition::delete_row|handler::ha_delete_row
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22667:
 =~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), m_last_part)'
