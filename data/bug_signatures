@@ -4,6 +4,33 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22816:
+=~ Assertion \`node->space == fil_system\.sys_space'
+=~ fil_aio_callback
+=~ tpool::task_group::execute
+=~ Version: '10\.5
+MDEV-22782:
+=~ AddressSanitizer
+=~ trx_t::commit_state|trx_commit_in_memory
+=~ trx_commit_low
+=~ dict_stats_update
+=~ Version: '10\.2|Version: '10\.3
+MDEV-22782:
+=~ AddressSanitizer
+=~ trx_t::is_wsrep
+=~ innobase_commit_low
+=~ Version: '10\.2|Version: '10\.3
+MDEV-22782:
+=~ AddressSanitizer
+=~ innobase_trx_init
+=~ innobase_trx_allocate
+=~ Version: '10\.2|Version: '10\.3
+MDEV-22772:
+=~ signal|AddressSanitizer
+=~ Item_null_result::field_type
+=~ cast_to_int_type
+=~ ROLLUP
+=~ Version: '10\.1|Version: '10\.2
 MDEV-22758:
 =~ Assertion \`!item->null_value'
 =~ Type_handler_inet6::make_sort_key_part
@@ -119,8 +146,8 @@ MDEV-22667:
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22660:
 =~ signal|AddressSanitizer
-=~ Type_handler_hybrid_field_type::type_handler|Assertion \`row_end'
-=~ is_versioning_timestamp|Vers_type_timestamp::check_sys_fields|Vers_parse_info::check_sys_fields
+=~ Assertion \`row_end'|is_versioning_timestamp|Vers_type_timestamp::check_sys_fields|Vers_parse_info::check_sys_fields
+=~ Table_scope_and_contents_source_st::check_fields
 =~ mysql_alter_table
 MDEV-22648:
 =~ AddressSanitizer
@@ -173,6 +200,11 @@ MDEV-22600:
 =~ AddressSanitizer|signal
 =~ Field::is_null_in_record
 =~ calc_row_difference|Column_definition::Column_definition
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-22600:
+=~ signal|AddressSanitizer
+=~ TABLE::init
+=~ open_table|open_temporary_table
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-22576:
 =~ Assertion \`false'
@@ -649,7 +681,7 @@ MDEV-21680:
 =~ tc_release_table
 =~ Version: '10\.1
 MDEV-21650:
-=~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction\.stmt'
+=~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction.*stmt'
 =~ ha_rollback_trans
 =~ ha_commit_trans
 =~ Version: '10\.4|Version: '10\.5
@@ -2318,6 +2350,11 @@ MDEV-16635:
 =~ open_and_lock_tables
 =~ sequence_insert
 =~ mysql_create_table_no_lock
+MDEV-16554:
+=~ InnoDB: Assertion failure in file .*que0que\.cc line
+=~ que_graph_free_recursive
+=~ row_prebuilt_free
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-16549:
 =~ Assertion \`context' failed|signal 11|AddressSanitizer: SEGV
 =~ Item_direct_view_ref.*fix_fields
@@ -2391,6 +2428,10 @@ MDEV-15753: [thd->is_error]
 =~ Assertion \`thd->is_error()'
 =~ mysql_admin_table
 =~ Status: KILL_TIMEOUT|Status: KILL_SERVER
+MDEV-15656:
+=~ Assertion \`is_last_prefix <= 0'
+=~ QUICK_GROUP_MIN_MAX_SELECT::get_next
+=~ rr_quick
 MDEV-15589:
 =~ Assertion \`xid_seqno > trx_sys_cur_xid_seqno'
 =~ trx_sys_update_wsrep_checkpoint
@@ -2471,7 +2512,7 @@ MDEV-14854:
 =~ Assertion \`trid >= info->s->state\.create_trid'
 =~ transid_store_packed
 =~ _ma_make_key
-=~ ha_maria::write_row
+=~ ha_maria::write_row|ha_maria::update_row
 MDEV-14711:
 =~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'
 =~ buf_page_get_gen
@@ -2550,12 +2591,10 @@ MDEV-10945:
 MDEV-10826:
 =~ Assertion \`thd->get_stmt_da()->is_eof()'
 =~ Query_cache::end_of_result
-# Not merged to 10.5 yet
-MDEV-10466:
-=~ SEL_ARG::store_min
-=~ ror_scan_selectivity
-=~ SQL_SELECT::test_quick_select
-=~ Version: '10\.5
+MDEV-10826:
+=~ signal|AddressSanitizer
+=~ Query_cache::double_linked_list_exclude
+=~ Query_cache::free_query
 MDEV-8089:
 =~ Apc_target::make_apc_call
 =~ fill_show_explain
@@ -2993,8 +3032,6 @@ MDEV-15802:
 =~ Item::delete_self
 MDEV-15657:
 =~ file->inited == handler::NONE
-MDEV-15656:
-=~ is_last_prefix <= 0
 MDEV-15653: [lock_word <= 0x20000000]
 =~ lock_word <= 0x20000000
 MDEV-15533:
