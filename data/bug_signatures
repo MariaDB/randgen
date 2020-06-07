@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22827:
+=~ InnoDB: Failing assertion: purge_sys->n_stop == 0
+=~ srv_purge_coordinator_suspend
+MDEV-22825:
+=~ signal|AddressSanitizer
+=~ Bitmap<64u>::merge
+=~ add_key_field
+=~ update_ref_and_keys
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22819:
+=~ Assertion \`ix > 0'
+=~ read_to_buffer
+=~ merge_buffers
+=~ Version: '10\.5
 MDEV-22816:
 =~ Assertion \`node->space == fil_system\.sys_space'
 =~ fil_aio_callback
@@ -906,6 +920,12 @@ MDEV-21242:
 =~ Protocol_text::store
 =~ vcols
 =~ Version: '10\.4|Version: '10\.5
+MDEV-21218:
+=~ signal|AddressSanitizer
+=~ Item_equal_iterator<List_iterator_fast, Item>::get_curr_field
+=~ Item_equal::contains
+=~ eliminate_item_equal
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-21138:
 =~ Assertion \`col->ord_part'|Assertion \`f\.col->ord_part'
 =~ row_build_index_entry_low
