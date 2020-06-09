@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22836:
+=~ signal|AddressSanitizer
+=~ err_conv
+=~ ErrBuff::set_str
+=~ Item_char_typecast::check_truncation_with_warn
+=~ Version: '10\.5
+MDEV-22832:
+=~ AddressSanitizer: global-buffer-overflow
+=~ QUICK_GROUP_MIN_MAX_SELECT::add_range
+=~ TRP_GROUP_MIN_MAX::make_quick
+=~ get_quick_record_count
 MDEV-22827:
 =~ InnoDB: Failing assertion: purge_sys->n_stop == 0
 =~ srv_purge_coordinator_suspend
@@ -27,7 +38,7 @@ MDEV-22782:
 =~ AddressSanitizer
 =~ trx_t::commit_state|trx_commit_in_memory
 =~ trx_commit_low
-=~ dict_stats_update
+=~ dict_stats_update|dict_stats_delete
 =~ Version: '10\.2|Version: '10\.3
 MDEV-22782:
 =~ AddressSanitizer
