@@ -4,6 +4,26 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22873:
+=~ Assertion \`len == ref_length'|AddressSanitizer
+=~ ha_innobase::position
+=~ find_all_keys
+=~ Version: '10\.5
+MDEV-22867:
+=~ Assertion \`instant\.n_core_fields == n_core_fields'
+=~ dict_index_t::instant_add_field
+=~ innobase_instant_try
+=~ Version: '10\.5
+MDEV-22866:
+=~ signal|AddressSanitizer
+=~ JOIN::fix_all_splittings_in_plan
+=~ not_null_range_scan=on
+=~ Version: '10\.5
+MDEV-22866:
+=~ Assertion \`join->best_read < double(1\.79769313486231570815e+308L)'
+=~ greedy_search
+=~ not_null_range_scan=on
+=~ Version: '10\.5
 MDEV-22832:
 =~ AddressSanitizer: global-buffer-overflow
 =~ QUICK_GROUP_MIN_MAX_SELECT::add_range
@@ -1796,12 +1816,12 @@ MDEV-18200:
 =~ InnoDB: Cannot open datafile for read-only: .* OS error: 71
 =~ InnoDB: Could not find a valid tablespace file for .*
 MDEV-18166:
-=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
+=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'|\`marked_for_read()'
 =~ Field_varstring::val_str|Field_datetimef::get_TIME|Field_blob::val_str|Field_long::val_int
 =~ Item::save_in_field|Item_field::save_in_field
 =~ TABLE::update_virtual_fields
 MDEV-18166:
-=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'
+=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'|\`marked_for_read()'
 =~ field_conv_incompatible
 =~ TABLE::update_virtual_fields
 =~ Version: '10\.5|Version: '10\.4|Version: '10\.3|Version: '10\.2
@@ -1947,7 +1967,6 @@ MDEV-17678:
 MDEV-17622:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_read
-=~ _ma_scan_block_record|_ma_write_init_block_record
 MDEV-17619:
 =~ Index file is crashed|Table is crashed and last repair failed|Incorrect key file for table|Table .* is marked as crashed and last (automatic?) repair failed
 =~ full_text|FULLTEXT
@@ -1993,6 +2012,12 @@ MDEV-17361:
 =~ Query_arena.*set_query_arena
 =~ set_n_backup_active_arena|multi_update.*send_data
 =~ Field.*set_default
+MDEV-17356:
+=~ Assertion \`!table \|\| !table->read_set \|\| bitmap_is_set(table->read_set, field_index)'
+=~ Field_.*::val_.*
+=~ field_conv_incompatible
+=~ TABLE::update_virtual_fields
+=~ Version: '10\.4|Version: '10\.5
 MDEV-17275:
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table_list->db, table_list->table_name, MDL_SHARED)'
 =~ get_table_share
@@ -2754,8 +2779,6 @@ MDEV-17485:
 =~ Operating system error number 80 in a file operation
 MDEV-17466:
 =~ dfield2->type\.mtypex
-MDEV-17356:
-=~ table->read_set, field_index
 MDEV-17344:
 =~ Prepared_statement::~Prepared_statement
 MDEV-17225:
