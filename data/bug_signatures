@@ -4,7 +4,24 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22886:
+=~ AddressSanitizer
+=~ my_convert
+=~ sql_strmake_with_convert
+=~ Item::set_name
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-22885:
+=~ Assertion \`0'
+=~ Item::val_native
+=~ Type_handler_timestamp_common
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22881:
+=~ signal|AddressSanitizer|Invalid read of size
+=~ Item_ident::print|append_identifier
+=~ pack_vcols
+=~ Version: '10\.5
 MDEV-22873:
+=~ has a primary key in InnoDB data dictionary, but not in MariaDB
 =~ Assertion \`len == ref_length'|AddressSanitizer
 =~ ha_innobase::position
 =~ find_all_keys
@@ -44,7 +61,7 @@ MDEV-22782:
 =~ AddressSanitizer
 =~ trx_t::commit_state|trx_commit_in_memory
 =~ trx_commit_low
-=~ dict_stats_update|dict_stats_delete
+=~ dict_stats
 =~ Version: '10\.2|Version: '10\.3
 MDEV-22782:
 =~ AddressSanitizer
@@ -627,7 +644,7 @@ MDEV-21635:
 MDEV-21633:
 =~ Assertion \`tmp >= 0'
 =~ best_access_path
-=~ best_extension_by_limited_search
+=~ best_extension_by_limited_search|optimize_straight_join
 =~ Version: '10\.4|Version: '10\.5
 MDEV-21630:
 =~ signal 11|AddressSanitizer:
@@ -841,6 +858,10 @@ MDEV-21102:
 =~ JOIN_CACHE::write_record_data
 =~ JOIN_CACHE::put_record
 =~ mysql_explain_union
+MDEV-21085:
+=~ Assertion \`info->last_key\.keyinfo == key->keyinfo'
+=~ _ma_search_no_save
+=~ maria_rkey
 MDEV-21066:
 =~ AddressSanitizer: heap-use-after-free|signal 11
 =~ ha_maria::implicit_commit
@@ -1949,6 +1970,11 @@ MDEV-17782:
 =~ decimal_bin_size: Assertion \`scale <= precision'
 =~ my_decimal_get_binary_size
 =~ calc_group_buffer
+MDEV-17760:
+=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'
+=~ Field_bit::val_.*
+=~ ROLLUP
+=~ Version: '10\.1|Version: '10\.0|Version: '5\.5
 MDEV-17749:
 =~ Assertion \`thd->transaction.stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
@@ -2228,6 +2254,7 @@ MDEV-15753: [thd->is_error]
 =~ Assertion \`thd->is_error()'
 =~ mysql_admin_table
 =~ Status: KILL_TIMEOUT|Status: KILL_SERVER
+=~ Version: '10\.1|Version: '10\.2|Version: '10\.3
 MDEV-15656:
 =~ Assertion \`is_last_prefix <= 0'
 =~ QUICK_GROUP_MIN_MAX_SELECT::get_next
@@ -2593,6 +2620,10 @@ TODO-842: [thd->in_sub_stmt]
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_rollback_stmt
 =~ wsrep::client_state::after_statement
+TODO-842: [part_id == m_last_part]
+=~ Assertion \`part_id == m_last_part'
+=~ multi_delete::do_table_deletes
+=~ Version: '10\.4|Version: '10\.5
 
 ##############################################################################
 # Weak matches
@@ -2651,6 +2682,8 @@ MDEV-21373:
 =~ Index for table .* is corrupt; try to repair it
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
+MDEV-21085: [Expected more data in file]
+=~ Got error 175 "File too short; Expected more data in file" from storage engine Aria
 MDEV-20763:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE|Index for table .* is corrupt; try to repair it
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
@@ -2768,9 +2801,6 @@ MDEV-17834:
 =~ row_upd_build_difference_binary
 MDEV-17814:
 =~ is_current_stmt_binlog_format_row
-MDEV-17760:
-=~ table->read_set, field_index
-=~ Version: '10\.1|Version: '10\.0|Version: '5\.5
 MDEV-17665:
 =~ share->page_type == PAGECACHE_LSN_PAGE
 MDEV-17538:
