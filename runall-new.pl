@@ -179,10 +179,34 @@ my $opt_result = GetOptions(
     'xml-output=s'    => \$props->{xml_output},
 );
 
+# Given that we use pass_through, it would be some very unexpected error
 if (!$opt_result) {
     print STDERR "\nERROR: Error occured while reading options\n\n";
     help();
     exit 1;
+}
+
+my @unknown_options= ();
+if (! $scenario and scalar(@ARGV)) {
+  # Without scenario mode, be strict about GetOpts -- return error
+  # if there were unknown options on the command line
+  @unknown_options= @ARGV;
+}
+elsif ($scenario) {
+    # In the scenario mode, let unknown --scenario-xx options pass through,
+    # but fail upon any other ones
+    foreach my $o (@ARGV) {
+        if ($o =~ /^--(scenario[^=]+)(?:=(.*))?$/) {
+            $props->{$1}= $2;
+        } else {
+            push @unknown_options, $o;
+        }
+    }
+}
+
+if (scalar(@unknown_options)) {
+  print STDERR "\nERROR: Unknown options: @unknown_options\n\n";
+  exit 1;
 }
 
 if ( osWindows() && !$props->{debug} )
@@ -407,45 +431,6 @@ if ($cmd =~ /--seed=/) {
 say("Final command line: \nperl $cmd");
 
 if (defined $scenario) {
-  # Scenario mode.
-
-  # Different scenarios can expect different options. Besides,
-  # some options can be defined per server, and different scenarios can
-  # define them differently. So, here we just want to store all of them
-  # and pass over to the scenario. Since we don't know how many servers
-  # the given scenario runs, it's impossible to put it all in GetOptions,
-  # thus we will parse them manually
-
-  foreach my $o (@ARGV) {
-    if ($o =~ /^--(?:loose[-_])?mysqld=(\S+)$/) {
-      if (not defined $props->{mysqld}) {
-        @{$props->{mysqld}}= ();
-      }
-      push @{$props->{mysqld}}, $1;
-    }
-    elsif ($o =~ /^--(?:loose[-_])?(mysqld\d+)=(\S+)$/) {
-      if (not defined $props->{$1}) {
-        @{$props->{$1}}= ();
-      }
-      push @{$props->{$1}}, $2;
-    }
-    elsif ($o =~ /^--([-_\w]+)=(\S+)$/) {
-      my $opt=$1;
-      $opt =~ s/_/-/g;
-      $props->{$opt}= $2;
-    }
-    elsif ($o =~ /^--skip-([-_\w]+)$/) {
-      my $opt=$1;
-      $opt =~ s/_/-/g;
-      $props->{$opt}= 0;
-    }
-    elsif ($o =~ /^--([-_\w]+)$/) {
-      my $opt=$1;
-      $opt =~ s/_/-/g;
-      $props->{$opt}= 1;
-    }
-  }
-
   my $cp= my $class= "GenTest::Scenario::$scenario";
   $cp =~ s/::/\//g;
   require "$cp.pm";
@@ -456,14 +441,6 @@ if (defined $scenario) {
   my $status= $sc->run();
   say("[$$] $0 will exit with exit status ".status2text($status). " ($status)\n");
   safe_exit($status);
-}
-
-# Without scenario mode, be strict about GetOpts -- return error
-# if there were unknown options on the command line
-
-if (scalar @ARGV) {
-  print STDERR "\nERROR: Unknown options: @ARGV\n\n";
-  exit 1;
 }
 
 #

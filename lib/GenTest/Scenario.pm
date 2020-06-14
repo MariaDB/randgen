@@ -47,12 +47,6 @@ sub new {
   if (defined $scenario->getProperty('scenario-type')) {
     $scenario->setTestType($scenario->getProperty('scenario-type'));
   }
-  if (!defined $scenario->getProperty('database')) {
-    $scenario->setProperty('database','test');
-  }
-  if (!defined $scenario->getProperty('user')) {
-    $scenario->setProperty('user','root');
-  }
 
   return $scenario;
 }
@@ -108,15 +102,6 @@ sub prepareServer {
   if (!exists $opts->{general_log}) {
     $opts->{general_log}= 1;
   }
-  if (!exists $opts->{valgrind}) {
-    $opts->{valgrind}= $self->getProperty('valgrind');
-  }
-  if (!defined $opts->{port}) {
-    $opts->{port}= ${$self->getProperty('port')}[$server_num] || ${$self->getProperty('port')}[0];
-  }
-  if (!defined $opts->{user}) {
-    $opts->{user}= $self->getProperty('user');
-  }
   if (!defined $opts->{basedir}) {
     $opts->{basedir}= ${$self->getProperty('basedir')}[$server_num] || ${$self->getProperty('basedir')}[0];
   }
@@ -130,6 +115,8 @@ sub prepareServer {
                       port => $opts->{port},
                       start_dirty => $opts->{start_dirty},
                       valgrind => $opts->{valgrind},
+                      valgrind_options => \@{$opts->{valgrind_options}},
+                      rr => $opts->{rr},
                       server_options => \@server_options,
                       general_log => $opts->{general_log},
                       user => $opts->{user}
