@@ -238,10 +238,12 @@ sub run {
 
     $self->[GT_LOG_FILES_TO_REPORT] = \@log_files_to_report;
 
-    if (defined $self->config->filter) {
-       $self->[GT_QUERY_FILTERS] = [ GenTest::Filter::Regexp->new(
-           file => $self->config->filter
-       ) ];
+    if (scalar(@{$self->config->filters})) {
+        my @filters= ();
+        foreach my $f (@{$self->config->filters}) {
+            push @filters, GenTest::Filter::Regexp->new(file => $f);
+        }
+        $self->[GT_QUERY_FILTERS]= \@filters;
     }
     
     say("Starting ".$self->config->threads." processes, ".

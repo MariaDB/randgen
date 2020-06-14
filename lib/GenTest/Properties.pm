@@ -209,7 +209,7 @@ sub init {
               'vcols',
               'views',
               'start-dirty',
-              'filter',
+              'filters',
               'notnull',
               'short_column_names',
               'strict_fields',
@@ -240,7 +240,7 @@ sub init {
   $gentestProps->property('dsn',$props->{dsns}) if $props->{dsns};
   $gentestProps->property('duration',$props->{duration}) if defined $props->{duration};
   $gentestProps->property('engine',$props->{engine}) if $props->{engine};
-  $gentestProps->property('filter',$props->{filter}) if defined $props->{filter};
+  $gentestProps->property('filters',$props->{filters}) if defined $props->{filters};
   $gentestProps->property('freeze_time',$props->{freeze_time}) if defined $props->{freeze_time};
   $gentestProps->property('gendata',$props->{gendata}) if exists $props->{gendata};
   $gentestProps->property('gendata-advanced',1) if defined $props->{gendata_advanced};

@@ -106,7 +106,7 @@ my $opt_result = GetOptions(
     'engine1=s' => \${$props->{engine}}[1],
     'engine2=s' => \${$props->{engine}}[2],
     'engine3=s' => \${$props->{engine}}[3],
-    'filter=s'    => \$props->{filter},
+    'filter=s@'    => \@{$props->{filters}},
     'freeze_time' => \$props->{freeze_time},
     'galera=s' => \$props->{galera},
     'genconfig:s' => \$props->{genconfig},
@@ -791,7 +791,7 @@ $0 - Run a complete random query generation test, including server start with re
     --views     : Generate views. Optionally specify view type (algorithm) as option value. Passed to gentest.pl.
                   Different values can be provided to servers through --views1 | --views2 | --views3
     --valgrind  : Passed to gentest.pl
-    --filter    : Passed to gentest.pl
+    --filter    : Suppress queries which match given patterns. Multiple filters can be provided
     --mem       : Passed to mtr
     --mtr-build-thread:  Value used for MTR_BUILD_THREAD when servers are started and accessed
     --debug     : Debug mode
