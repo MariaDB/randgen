@@ -45,7 +45,6 @@ use constant REPLMYSQLD_SLAVE => 9;
 use constant REPLMYSQLD_VALGRIND => 10;
 use constant REPLMYSQLD_VALGRIND_OPTIONS => 11;
 use constant REPLMYSQLD_GENERAL_LOG => 12;
-use constant REPLMYSQLD_DEBUG_SERVER => 13;
 use constant REPLMYSQLD_USE_GTID => 14;
 use constant REPLMYSQLD_SLAVE_BASEDIR => 15;
 use constant REPLMYSQLD_CONFIG_CONTENTS => 16;
@@ -60,7 +59,6 @@ sub new {
                                    'slave' => REPLMYSQLD_SLAVE,
                                    'master_basedir' => REPLMYSQLD_MASTER_BASEDIR,
                                    'slave_basedir' => REPLMYSQLD_SLAVE_BASEDIR,
-                                   'debug_server' => REPLMYSQLD_DEBUG_SERVER,
                                    'master_vardir' => REPLMYSQLD_MASTER_VARDIR,
                                    'master_port' => REPLMYSQLD_MASTER_PORT,
                                    'slave_vardir' => REPLMYSQLD_SLAVE_VARDIR,
@@ -143,7 +141,6 @@ sub new {
         $self->[REPLMYSQLD_MASTER] = 
         DBServer::MySQL::MySQLd->new(basedir => $self->[REPLMYSQLD_MASTER_BASEDIR],
                                      vardir => $self->[REPLMYSQLD_MASTER_VARDIR],
-                                     debug_server => $self->[REPLMYSQLD_DEBUG_SERVER],                
                                      port => $self->[REPLMYSQLD_MASTER_PORT],
                                      server_options => \@master_options,
                                      general_log => $self->[REPLMYSQLD_GENERAL_LOG],
@@ -172,7 +169,6 @@ sub new {
         $self->[REPLMYSQLD_SLAVE] = 
         DBServer::MySQL::MySQLd->new(basedir => $self->[REPLMYSQLD_SLAVE_BASEDIR],
                                      vardir => $self->[REPLMYSQLD_SLAVE_VARDIR],
-                                     debug_server => $self->[REPLMYSQLD_DEBUG_SERVER],                
                                      port => $self->[REPLMYSQLD_SLAVE_PORT],
                                      server_options => \@slave_options,
                                      general_log => $self->[REPLMYSQLD_GENERAL_LOG],

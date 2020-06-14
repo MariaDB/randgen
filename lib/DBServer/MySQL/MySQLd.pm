@@ -57,7 +57,6 @@ use constant MYSQLD_DUMPER => 19;
 use constant MYSQLD_SOURCEDIR => 20;
 use constant MYSQLD_GENERAL_LOG => 21;
 use constant MYSQLD_WINDOWS_PROCESS_EXITCODE => 22;
-use constant MYSQLD_DEBUG_SERVER => 22;
 use constant MYSQLD_SERVER_TYPE => 23;
 use constant MYSQLD_VALGRIND_SUPPRESSION_FILE => 24;
 use constant MYSQLD_TMPDIR => 25;
@@ -84,7 +83,6 @@ sub new {
     my $self = $class->SUPER::new({'basedir' => MYSQLD_BASEDIR,
                                    'sourcedir' => MYSQLD_SOURCEDIR,
                                    'vardir' => MYSQLD_VARDIR,
-                                   'debug_server' => MYSQLD_DEBUG_SERVER,
                                    'port' => MYSQLD_PORT,
                                    'server_options' => MYSQLD_SERVER_OPTIONS,
                                    'start_dirty' => MYSQLD_START_DIRTY,
@@ -119,39 +117,11 @@ sub new {
 
     $self->[MYSQLD_DATADIR] = $self->[MYSQLD_VARDIR]."/data";
     
-    # Use mysqld-debug server if --debug-server option used.
-    if ($self->[MYSQLD_DEBUG_SERVER]) {
-        # Catch excpetion, dont exit contine search for other mysqld if debug.
-        eval{
-            $self->[MYSQLD_MYSQLD] = $self->_find([$self->basedir],
-                                                  osWindows()?["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"]:["sql","libexec","bin","sbin"],
-                                                  osWindows()?"mysqld-debug.exe":"mysqld-debug");
-        };
-        # If mysqld-debug server is not found, use mysqld server if built as debug.        
-        if (!$self->[MYSQLD_MYSQLD]) {
-            $self->[MYSQLD_MYSQLD] = $self->_find([$self->basedir],
-                                                  osWindows()?["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"]:["sql","libexec","bin","sbin"],
-                                                  osWindows()?"mysqld.exe":"mysqld");     
-            if ($self->[MYSQLD_MYSQLD] && $self->serverType($self->[MYSQLD_MYSQLD]) !~ /Debug/) {
-                croak "--debug-server needs a mysqld debug server, the server found is $self->[MYSQLD_SERVER_TYPE]"; 
-            }
-        }
-    }else {
-        # If mysqld server is found use it.
-        eval {
-            $self->[MYSQLD_MYSQLD] = $self->_find([$self->basedir],
-                                                  osWindows()?["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"]:["sql","libexec","bin","sbin"],
-                                                  osWindows()?"mysqld.exe":"mysqld");
-        };
-        # If mysqld server is not found, use mysqld-debug server.
-        if (!$self->[MYSQLD_MYSQLD]) {
-            $self->[MYSQLD_MYSQLD] = $self->_find([$self->basedir],
-                                                  osWindows()?["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"]:["sql","libexec","bin","sbin"],
-                                                  osWindows()?"mysqld-debug.exe":"mysqld-debug");
-        }
-        
-        $self->serverType($self->[MYSQLD_MYSQLD]);
-    }
+    $self->[MYSQLD_MYSQLD] = $self->_find([$self->basedir],
+                                          osWindows()?["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"]:["sql","libexec","bin","sbin"],
+                                          osWindows()?"mysqld.exe":"mysqld");
+
+    $self->serverType($self->[MYSQLD_MYSQLD]);
 
     $self->[MYSQLD_BOOT_SQL] = [];
 
@@ -494,7 +464,7 @@ sub startServer {
     my $startup_timeout= 600;
     
     if ($self->[MYSQLD_RR]) {
-        $command = "rr record ".$command;
+        $command = "rr record --output-trace-dir=".$self->vardir."rr_profile ".$command;
     }
     elsif ($self->[MYSQLD_VALGRIND]) {
         my $val_opt ="";
@@ -1203,6 +1173,7 @@ sub checkErrorLogForErrors {
       or $_ =~ /InnoDB: Deleting persistent statistics for table/so
       or $_ =~ /InnoDB: Unable to rename statistics from/so
       or $_ =~ /ib_buffer_pool' for reading: No such file or directory/so
+      or $_ =~ /has or is referenced in foreign key constraints which are not compatible with the new table definition/so
     ;
 
     # MDEV-20320

@@ -109,9 +109,6 @@ sub new {
     if ($self->config->views and not ref $self->config->views eq 'ARRAY') {
         $self->config->views([ split /,/, $self->config->views ]);
     }
-    if ($self->config->debug_server and not ref $self->config->debug_server eq 'ARRAY') {
-        $self->config->debug_server([ split /,/, $self->config->debug_server ]);
-    }
     if ($self->config->servers and not ref $self->config->servers eq 'ARRAY') {
         $self->config->servers([ split /,/, $self->config->servers ]);
     }
@@ -724,7 +721,6 @@ sub initReporters {
                 test_start => $self->[GT_TEST_START],
                 test_end => $self->[GT_TEST_END],
                 test_duration => $self->config->duration,
-                debug_server => (defined $self->config->debug_server ? ${$self->config->debug_server}[$i] : undef),
                 properties => $self->config
             });
 

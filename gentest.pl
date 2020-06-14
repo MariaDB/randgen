@@ -43,7 +43,6 @@ my $DEFAULT_THREADS = 10;
 my $DEFAULT_QUERIES = 1000;
 my $DEFAULT_DURATION = 3600;
 my $DEFAULT_DSN = 'dbi:mysql:host=127.0.0.1:port=9306:user=root:database=test';
-my @debug_server;
 
 my @ARGV_saved = @ARGV;
 
@@ -161,7 +160,6 @@ my $config = GenTest::Properties->new(
               'logfile',
               'logconf',
               'report-tt-logdir',
-              'debug_server',
               'querytimeout',
               'servers',
               'multi-master',
@@ -184,8 +182,6 @@ if (defined $config->logfile && defined $logger) {
 
 say("Starting: $0 ".join(" ", @ARGV_saved));
 
-# Pass debug server.
-$config->debug_server(\@debug_server) if @debug_server;
 $ENV{RQG_DEBUG} = 1 if defined $config->debug;
 $config->property('gendata-advanced',1) if defined $options->{'gendata_advanced'} || defined $options->{'gendata-advanced'};
 my $gentest = GenTest::App::GenTest->new(config => $config);
@@ -271,14 +267,6 @@ sub backwardCompatability {
         }
         $options->{dsn} = \@dsns;
     }
-    
-    # debug server options array is constructed. 
-    if (defined $options->{debug_server}) {
-        push (@debug_server,1);
-    } else {
-        # hack to workaround, Getopt seems to undef not defined values.
-        push (@debug_server,undef);
-    }    
     
     if (grep (/,/,@{$options->{reporters}})) {
         my $newreporters = [];

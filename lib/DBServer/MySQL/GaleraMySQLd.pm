@@ -36,7 +36,6 @@ use constant GALERA_MYSQLD_SERVER_OPTIONS => 4;
 use constant GALERA_MYSQLD_VALGRIND => 5;
 use constant GALERA_MYSQLD_VALGRIND_OPTIONS => 6;
 use constant GALERA_MYSQLD_GENERAL_LOG => 7;
-use constant GALERA_MYSQLD_DEBUG_SERVER => 8;
 use constant GALERA_MYSQLD_NODE_COUNT => 9;
 use constant GALERA_MYSQLD_NODES => 10;
 use constant GALERA_MYSQLD_MINIMAL_VERSION => 11;
@@ -53,7 +52,6 @@ sub new {
 	my $class = shift;
 	my $self = $class->SUPER::new({
 		'basedir' => GALERA_MYSQLD_BASEDIR,
-		'debug_server' => GALERA_MYSQLD_DEBUG_SERVER,
 		'parent_vardir' => GALERA_MYSQLD_PARENT_VARDIR,
 		'first_port' => GALERA_MYSQLD_FIRST_PORT,
 		'server_options' => GALERA_MYSQLD_SERVER_OPTIONS,
@@ -115,7 +113,6 @@ sub new {
 		$self->nodes->[$i] = DBServer::MySQL::MySQLd->new(
 			basedir => $self->[GALERA_MYSQLD_BASEDIR],
 			vardir => $vardir,
-			debug_server => $self->[GALERA_MYSQLD_DEBUG_SERVER],                
 			port => $port,
 			server_options => \@node_options,
 			general_log => $self->[GALERA_MYSQLD_GENERAL_LOG],

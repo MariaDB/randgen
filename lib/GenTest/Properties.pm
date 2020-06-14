@@ -224,7 +224,6 @@ sub init {
               'report-xml-tt-dest',
               'logfile',
               'logconf',
-              'debug_server',
               'report-tt-logdir',
               'servers',
               'multi-master',
@@ -238,7 +237,6 @@ sub init {
 
   $gentestProps->property('annotate-rules',$props->{annotate_rules}) if defined $props->{annotate_rules};
   $gentestProps->property('debug',1) if defined $props->{debug};
-  $gentestProps->property('debug_server',$props->{debug_server}) if $props->{debug_server};
   $gentestProps->property('dsn',$props->{dsns}) if $props->{dsns};
   $gentestProps->property('duration',$props->{duration}) if defined $props->{duration};
   $gentestProps->property('engine',$props->{engine}) if $props->{engine};

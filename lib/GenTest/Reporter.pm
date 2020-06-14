@@ -75,7 +75,6 @@ sub new {
 		test_start => REPORTER_TEST_START,
 		test_end => REPORTER_TEST_END,
 		test_duration => REPORTER_TEST_DURATION,
-		debug_server => REPORTER_SERVER_DEBUG,
 		properties => REPORTER_PROPERTIES
 	}, @_);
 

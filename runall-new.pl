@@ -95,10 +95,11 @@ my $opt_result = GetOptions(
     'basedir3=s' => \${$props->{basedir}}[3],
     'compatibility=s' => \$props->{compatibility},
     'debug' => \$props->{debug},
-    'debug-server' => \${$props->{debug_server}}[0],
-    'debug-server1' => \${$props->{debug_server}}[1],
-    'debug-server2' => \${$props->{debug_server}}[2],
-    'debug-server3' => \${$props->{debug_server}}[3],
+    # Compatibility option, not used
+    'debug-server' => \$deprecated->{debug_server},
+    'debug-server1' => \$deprecated->{debug_server},
+    'debug-server2' => \$deprecated->{debug_server},
+    'debug-server3' => \$deprecated->{debug_server},
     'default-database|default_database=s' => \$props->{database},
     'duration=i' => \$props->{duration},
     'engine=s' => \${$props->{engine}}[0],
@@ -342,7 +343,7 @@ ${$props->{vardir}}[0] ||= ${$props->{vardir}}[1];
 
 # Now sort out other options that can be set differently for different servers:
 # - mysqld_options
-# - debug_server
+# - debug_server (deprecated)
 # - views
 # - engine
 # values[0] are those that are applied to all servers.
@@ -356,14 +357,12 @@ foreach my $i (1..3) {
             ? ( @{${$props->{mysqld_options}}[0]}, @{${$props->{mysqld_options}}[$i]} )
             : @{${$props->{mysqld_options}}[0]}
     );
-    ${$props->{debug_server}}[$i] = ${$props->{debug_server}}[0] if ${$props->{debug_server}}[$i] eq '';
     ${$props->{vcols}}[$i] = ${$props->{vcols}}[0] if ${$props->{vcols}}[$i] eq '';
     ${$props->{views}}[$i] = ${$props->{views}}[0] if ${$props->{views}}[$i] eq '';
     ${$props->{engine}}[$i] ||= ${$props->{engine}}[0];
     ${$props->{partitions}}[$i] = ${$props->{partitions}}[0] if ${$props->{partitions}}[$i] eq '';
 }
 
-shift @{$props->{debug_server}};
 shift @{$props->{vcols}};
 shift @{$props->{views}};
 shift @{$props->{engine}};
@@ -456,7 +455,6 @@ if ($props->{rpl_mode} ne '') {
     $rplsrv = DBServer::MySQL::ReplMySQLd->new(master_basedir => ${$props->{basedir}}[1],
                                                slave_basedir => ${$props->{basedir}}[2],
                                                master_vardir => ${$props->{vardir}}[1],
-                                               debug_server => ${$props->{debug_server}}[1],
                                                master_port => ${$props->{port}}[1],
                                                slave_vardir => ${$props->{vardir}}[2],
                                                slave_port => ${$props->{port}}[2],
@@ -506,7 +504,6 @@ if ($props->{rpl_mode} ne '') {
     $rplsrv = DBServer::MySQL::GaleraMySQLd->new(
         basedir => ${$props->{basedir}}[0],
         parent_vardir => ${$props->{vardir}}[0],
-        debug_server => ${$props->{debug_server}}[1],
         first_port => ${$props->{port}}[1],
         server_options => ${$props->{mysqld_options}}[1],
         valgrind => $props->{valgrind},
@@ -545,7 +542,6 @@ if ($props->{rpl_mode} ne '') {
         
         ${$props->{server}}[$server_id] = DBServer::MySQL::MySQLd->new(basedir => ${$props->{basedir}}[$server_id],
                                                            vardir => ${$props->{vardir}}[$server_id],
-                                                           debug_server => ${$props->{debug_server}}[$server_id],
                                                            port => ${$props->{port}}[$server_id],
                                                            start_dirty => $props->{start_dirty},
                                                            valgrind => $props->{valgrind},
@@ -743,7 +739,7 @@ $0 - Run a complete random query generation test, including server start with re
     --basedir   : Specifies the base directory of the stand-alone MySQL installation;
     --mysqld    : Options passed to the MySQL server
     --vardir    : Optional. (default \$basedir/mysql-test/var);
-    --debug-server: Use mysqld-debug server
+    --debug-server: Use mysqld-debug server (deprecated)
 
     Options related to two MySQL servers
 
@@ -752,8 +748,8 @@ $0 - Run a complete random query generation test, including server start with re
     --mysqld    : Options passed to both MySQL servers
     --mysqld1   : Options passed to the first MySQL server
     --mysqld2   : Options passed to the second MySQL server
-    --debug-server1: Use mysqld-debug server for MySQL server1
-    --debug-server2: Use mysqld-debug server for MySQL server2
+    --debug-server1: Use mysqld-debug server for MySQL server1 (deprecated)
+    --debug-server2: Use mysqld-debug server for MySQL server2 (deprecated)
     --vardir1   : Optional. (default \$basedir1/mysql-test/var);
     --vardir2   : Optional. (default \$basedir2/mysql-test/var);
 
