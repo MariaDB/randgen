@@ -72,21 +72,18 @@ use GenTest::Constants;
 use DBI;
 use Cwd;
 
-my $database = 'test';
-my $user = 'rqg';
+my ($help,
+    $props, $deprecated,
+    $wait_debugger, $skip_shutdown, $store_binaries,
+    $skip_gendata, # Legacy to be kept for now, too many configs assume gendata by default
+    $scenario);
+
 my @dsns;
-
-my ($help, $debug,
-    $mem,
-    @valgrind_options,
-    $no_mask,
-    $wait_debugger,
-    $skip_gendata, $skip_shutdown, $use_gtid,
-    $scenario, $store_binaries, $props);
-
-my $default_threads= 10;
-my $default_queries= 100000000;
-my $default_duration= 600;
+$props->{user}= 'rqg';
+$props->{database}= 'test';
+$props->{threads}= 10;
+$props->{queries}= 100000000;
+$props->{duration}= 600;
 
 my @ARGV_saved = @ARGV;
 
@@ -97,12 +94,12 @@ my $opt_result = GetOptions(
     'basedir2=s' => \${$props->{basedir}}[2],
     'basedir3=s' => \${$props->{basedir}}[3],
     'compatibility=s' => \$props->{compatibility},
-    'debug' => \$debug,
+    'debug' => \$props->{debug},
     'debug-server' => \${$props->{debug_server}}[0],
     'debug-server1' => \${$props->{debug_server}}[1],
     'debug-server2' => \${$props->{debug_server}}[2],
     'debug-server3' => \${$props->{debug_server}}[3],
-    'default-database|default_database=s' => \$database,
+    'default-database|default_database=s' => \$props->{database},
     'duration=i' => \$props->{duration},
     'engine=s' => \${$props->{engine}}[0],
     'engine1=s' => \${$props->{engine}}[1],
@@ -120,14 +117,16 @@ my $opt_result = GetOptions(
     'logfile=s' => \$props->{logfile},
     'mask=i' => \$props->{mask},
     'mask-level|mask_level=i' => \$props->{mask_level},
-    'mem' => \$mem,
+    # Compatibility option, not used
+    'mem' => \$deprecated->{mem},
     'metadata!' => \$props->{metadata},
     'mtr-build-thread=i' => \$props->{build_thread},
     'mysqld=s@' => \${$props->{mysqld_options}}[0],
     'mysqld1=s@' => \${$props->{mysqld_options}}[1],
     'mysqld2=s@' => \${$props->{mysqld_options}}[2],
     'mysqld3=s@' => \${$props->{mysqld_options}}[3],
-    'no_mask|no-mask' => \$no_mask,
+    # Compatibility option, not used (no-mask is default unless mask was defined)
+    'no_mask|no-mask' => \$deprecated->{no_mask},
     'notnull' => \$props->{notnull},
     'partitions'   => \${$props->{partitions}}[0],
     'partitions1'  => \${$props->{partitions}}[1],
@@ -159,9 +158,9 @@ my $opt_result = GetOptions(
     'testname=s'        => \$props->{testname},
     'threads=i' => \$props->{threads},
     'transformers=s@' => \@{$props->{transformers}},
-    'use_gtid|use-gtid=s' => \$use_gtid,
+    'use_gtid|use-gtid=s' => \$props->{use_gtid},
     'valgrind!'    => \$props->{valgrind},
-    'valgrind_options=s@'    => \@valgrind_options,
+    'valgrind_options|valgrind-options=s@'    => \@{$props->{valgrind_options}},
     'validators=s@' => \@{$props->{validators}},
     'vardir=s' => \${$props->{vardir}}[0],
     'vardir1=s' => \${$props->{vardir}}[1],
@@ -186,7 +185,7 @@ if (!$opt_result) {
     exit 1;
 }
 
-if ( osWindows() && !$debug )
+if ( osWindows() && !$props->{debug} )
 {
     require Win32::API;
     my $errfunc = Win32::API->new('kernel32', 'SetErrorMode', 'I', 'I');
@@ -201,7 +200,6 @@ if (defined $props->{logfile} && defined $logger) {
         setLogConf($props->{logconf});
     }
 }
-
 
 if ($help) {
     help();
@@ -356,15 +354,13 @@ foreach my $path ("${$props->{basedir}}[0]/client/RelWithDebInfo", "${$props->{b
     }
 }
 
-my $cnf_array_ref;
-
 if ($props->{genconfig}) {
     unless (-e $props->{genconfig}) {
         croak("ERROR: Specified config template $props->{genconfig} does not exist");
     }
-    $cnf_array_ref = GenTest::App::GenConfig->new(spec_file => $props->{genconfig},
+    $props->{cnf_array_ref} = GenTest::App::GenConfig->new(spec_file => $props->{genconfig},
                                                seed => $props->{seed},
-                                               debug => $debug
+                                               debug => $props->{debug}
     );
 }
 
@@ -392,15 +388,10 @@ if ($#{$props->{redefine}} == 0 and ${$props->{redefine}}[0] =~ m/,/) {
 
 # Some more adjustments
 
-$props->{debug}= $debug;
 $props->{dsns}= \@dsns;
-$props->{duration}= $default_duration unless defined $props->{duration};
 $props->{gendata}= '' unless exists $props->{gendata} and defined $props->{gendata} and scalar @{$props->{gendata}};
-$props->{queries}= $default_queries unless defined $props->{queries};
-$props->{threads}= $default_threads unless defined $props->{threads};
 
 delete $props->{gendata} if $skip_gendata;
-delete $props->{mask} if $no_mask;
 
 # Push the number of "worker" threads into the environment.
 # lib/GenTest/Generator/FromGrammar.pm will generate a corresponding grammar element.
@@ -495,13 +486,13 @@ if ($props->{rpl_mode} ne '') {
                                                mode => $props->{rpl_mode},
                                                server_options => ${$props->{mysqld_options}}[1],
                                                valgrind => $props->{valgrind},
-                                               valgrind_options => \@valgrind_options,
+                                               valgrind_options => \@{$props->{valgrind_options}},
                                                general_log => 1,
                                                rr => $props->{rr},
                                                start_dirty => $props->{start_dirty},
-                                               use_gtid => $use_gtid,
-                                               config => $cnf_array_ref,
-                                               user => $user
+                                               use_gtid => $props->{use_gtid},
+                                               config => $props->{cnf_array_ref},
+                                               user => $props->{user}
     );
     
     my $status = $rplsrv->startServer();
@@ -520,7 +511,7 @@ if ($props->{rpl_mode} ne '') {
         croak("Could not start replicating server pair");
     }
     
-    $dsns[0] = $rplsrv->master->dsn($database,$user);
+    $dsns[0] = $rplsrv->master->dsn($props->{database},$props->{user});
     $dsns[1] = undef; ## passed to gentest. No dsn for slave!
     ${$props->{server}}[0] = $rplsrv->master;
     ${$props->{server}}[1] = $rplsrv->slave;
@@ -542,7 +533,7 @@ if ($props->{rpl_mode} ne '') {
         first_port => ${$props->{port}}[1],
         server_options => ${$props->{mysqld_options}}[1],
         valgrind => $props->{valgrind},
-        valgrind_options => \@valgrind_options,
+        valgrind_options => \@{$props->{valgrind_options}},
         general_log => 1,
         rr => $props->{rr},
         start_dirty => $props->{start_dirty},
@@ -564,7 +555,7 @@ if ($props->{rpl_mode} ne '') {
     my $i = 0;
     while ($galera_topology =~ s/^(\w)//) {
         if (lc($1) eq 'm') {
-            $dsns[$i] = $rplsrv->nodes->[$i]->dsn($database,$user);
+            $dsns[$i] = $rplsrv->nodes->[$i]->dsn($props->{database},$props->{user});
         }
         ${$props->{server}}[$i] = $rplsrv->nodes->[$i];
         $i++;
@@ -581,12 +572,12 @@ if ($props->{rpl_mode} ne '') {
                                                            port => ${$props->{port}}[$server_id],
                                                            start_dirty => $props->{start_dirty},
                                                            valgrind => $props->{valgrind},
-                                                           valgrind_options => \@valgrind_options,
+                                                           valgrind_options => \@{$props->{valgrind_options}},
                                                            rr => $props->{rr},
                                                            server_options => ${$props->{mysqld_options}}[$server_id],
                                                            general_log => 1,
-                                                           config => $cnf_array_ref,
-                                                           user => $user);
+                                                           config => $props->{cnf_array_ref},
+                                                           user => $props->{user});
         
         my $status = ${$props->{server}}[$server_id]->startServer;
         
@@ -607,7 +598,7 @@ if ($props->{rpl_mode} ne '') {
         }
         
         if ( ($server_id == 0) || ($props->{rpl_mode} eq '') ) {
-            $dsns[$server_id] = ${$props->{server}}[$server_id]->dsn($database,$user);
+            $dsns[$server_id] = ${$props->{server}}[$server_id]->dsn($props->{database},$props->{user});
         }
 
         # For backward compatibility, check that no multiple engines were requested
@@ -682,7 +673,7 @@ if (($gentest_result == STATUS_OK) && ( ($props->{rpl_mode} && $props->{rpl_mode
     foreach my $i (1..$#{$props->{server}}) {
         $dump_files[$i] = tmpdir()."server_".abs($$)."_".$i.".dump";
       
-        my $dump_result = ${$props->{server}}[$i]->dumpdb($database,$dump_files[$i]);
+        my $dump_result = ${$props->{server}}[$i]->dumpdb($props->{database},$dump_files[$i]);
         exit_test($dump_result >> 8) if $dump_result > 0;
     }
   
@@ -802,9 +793,9 @@ $0 - Run a complete random query generation test, including server start with re
                   The test flow will be executed on each "master". "Slaves" will only be updated through Galera replication
     --engine    : Table engine to use when creating tables with gendata (default no ENGINE in CREATE TABLE);
                   Different values can be provided to servers through --engine1 | --engine2 | --engine3
-    --threads   : Number of threads to spawn (default $default_threads);
-    --queries   : Number of queries to execute per thread (default $default_queries);
-    --duration  : Duration of the test in seconds (default $default_duration seconds);
+    --threads   : Number of threads to spawn (default $props->{default_threads});
+    --queries   : Number of queries to execute per thread (default $props->{default_queries});
+    --duration  : Duration of the test in seconds (default $props->{duration} seconds);
     --validator : The validators to use
     --reporter  : The reporters to use
     --transformer: The transformers to use (turns on --validator=transformer). Accepts comma separated list
