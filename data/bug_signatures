@@ -4,6 +4,22 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22899:
+=~ Assertion \`field->col->is_binary() \|\| field->prefix_len % field->col->mbmaxlen == 0'
+=~ dict_index_add_to_cache
+=~ create_index_dict
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22899:
+=~ InnoDB: Failing assertion: !(prefix_len % mbmaxlen)
+=~ dtype_validate
+=~ row_merge_read_clustered_index
+=~ Version: '10\.4|Version: '10\.5
+MDEV-22890:
+=~ FATAL.* InnoDB: .* Deadlock Detected
+=~ Thread .* has waited at row0sel\.cc line
+=~ Thread .* has waited at row0quiesce\.cc line
+=~ Thread .* has waited at btr0cur\.cc line
+=~ Version: '10\.5
 MDEV-22886:
 =~ AddressSanitizer
 =~ my_convert
@@ -79,6 +95,10 @@ MDEV-22772:
 =~ cast_to_int_type
 =~ ROLLUP
 =~ Version: '10\.1|Version: '10\.2
+MDEV-22771:
+=~ Assertion \`c\.same_type(\*o)'|Assertion \`fields[i]\.same(instant\.fields[i])'
+=~ dict_table_t::instant_column
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22757:
 =~ Assertion \`!binlog \|\| exist_hton_without_prepare'
 =~ MYSQL_BIN_LOG::unlog_xa_prepare
@@ -163,7 +183,7 @@ MDEV-22667:
 MDEV-22667:
 =~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), m_last_part)'
 =~ ha_partition::position
-=~ multi_delete::send_data
+=~ multi_delete::send_data|multi_update::send_data
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22660:
 =~ signal|AddressSanitizer
@@ -1940,7 +1960,7 @@ MDEV-17912:
 =~ Got error 192 when executing record .*
 =~ Aria engine: Redo phase failed
 MDEV-17891:
-=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'
+=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction.*stmt\.modified_non_trans_table'
 =~ select_insert::abort_result_set|mysql_insert
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-17891:
