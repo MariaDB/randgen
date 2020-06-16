@@ -4,9 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22918:
+=~ InnoDB: Plugin initialization aborted with error Generic error
+=~ mariabackup: innodb_init() returned 11 (Generic error)
+=~ Version: '10\.4
 MDEV-22915:
 =~ Assertion \`binlog_table_maps == 0 \|\| locked_tables_mode == LTM_LOCK_TABLES'
 =~ reset_for_next_command
+=~ Version: '10\.5
+MDEV-22913:
+=~ error: can't open
+=~ Error: xtrabackup_apply_delta(): failed to apply
 =~ Version: '10\.5
 MDEV-22911:
 =~ LeakSanitizer: detected memory leaks

@@ -47,6 +47,11 @@ MDEV-18286: [pagecache->cnt_for_resize_op == 0]
 =~ check_pagecache_is_cleaned_up
 =~ plugin_shutdown
 =~ Version: '10\.2|Version: '10\.3
+# Only 10.5 CS, but also 10.4 ES
+MDEV-22913:
+=~ error: can't open
+=~ Error: xtrabackup_apply_delta(): failed to apply
+=~ Version: '10\.4
 
 ##########
 # Fixed in the next release
