@@ -1,0 +1,3 @@
+query:
+  CREATE OR REPLACE TABLE { 't'.$prng->int(1,9) } (b BIT) ENGINE=InnoDB ROW_FORMAT COMPRESSED;
+

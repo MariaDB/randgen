@@ -1,0 +1,1 @@
+perl ./runall-trials.pl --basedir=$1 --trials=5 --skip-gendata --duration=150 --threads=4 --scenario=MariaBackupIncremental --grammar=mdev22913.yy --vardir=/dev/shm/var_mdev22913 --output="Error: xtrabackup_apply_delta"
