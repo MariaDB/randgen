@@ -112,6 +112,10 @@ MDEV-22051:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ Version: '10\.5
+MDEV-22048:
+=~ Assertion \`binlog_table_maps == 0 \|\| locked_tables_mode == LTM_LOCK_TABLES'
+=~ reset_for_next_command
+=~ Version: '10\.5
 MDEV-22027:
 =~ Assertion \`oldest_lsn >= log_sys\.last_checkpoint_lsn'
 =~ log_checkpoint

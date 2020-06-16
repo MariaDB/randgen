@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22915:
+=~ Assertion \`binlog_table_maps == 0 \|\| locked_tables_mode == LTM_LOCK_TABLES'
+=~ reset_for_next_command
+=~ Version: '10\.5
+MDEV-22911:
+=~ LeakSanitizer: detected memory leaks
+=~ ut_allocator
+=~ mem_heap_create_block_func
+=~ Version: '10\.5
 MDEV-22899:
 =~ Assertion \`field->col->is_binary() \|\| field->prefix_len % field->col->mbmaxlen == 0'
 =~ dict_index_add_to_cache
@@ -495,10 +504,6 @@ MDEV-22055:
 =~ Assertion \`active() == false'
 =~ wsrep::transaction::start_transaction
 =~ Version: '10\.4|Version: '10\.5
-MDEV-22048:
-=~ Assertion \`binlog_table_maps == 0 \|\| locked_tables_mode == LTM_LOCK_TABLES'
-=~ reset_for_next_command
-=~ Version: '10\.5
 MDEV-21996:
 =~ signal 11|AddressSanitizer:
 =~ Item_func_nextval::update_table
