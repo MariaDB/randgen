@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22927:
+=~ Assertion Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'
+=~ lock_rec_lock
+=~ read_stored_values
+=~ SEQUENCE
+=~ Version: '10\.5
 MDEV-22918:
 =~ InnoDB: Plugin initialization aborted with error Generic error
 =~ mariabackup: innodb_init() returned 11 (Generic error)
@@ -305,7 +311,7 @@ MDEV-22548:
 =~ Version: '10\.4|Version: '10\.5
 =~ application_periods
 MDEV-22540:
-=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !(info\.copied \|\| info\.deleted) \|\| thd->transaction\.stmt\.modified_non_trans_table'
+=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction.*stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !changed \|\| thd->transaction.*stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !(info\.copied \|\| info\.deleted) \|\| thd->transaction.*stmt\.modified_non_trans_table'
 =~ mysql_load|mysql_insert
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-22525:
@@ -345,7 +351,7 @@ MDEV-22442: [wsrep - lock_sys.mutex.is_owned]
 =~ wsrep_on
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22440: [thd->transaction.stmt.is_empty() || / GRANT / KILL_SERVER]
-=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ Assertion \`thd->transaction.*stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ open_normal_and_derived_tables
 =~ mysql_table_grant
 =~ KILL_SERVER|KILL_TIMEOUT
@@ -538,7 +544,7 @@ MDEV-21927:
 =~ signal 6
 =~ myrocks::Rdb_drop_index_thread::run
 MDEV-21906:
-=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ Assertion \`thd->transaction.*stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ flush_tables
 =~ Version: '10\.1
 MDEV-21866:
@@ -639,7 +645,6 @@ MDEV-21746:
 =~ Assertion \`strcmp(share->unique_file_name,filename) \|\| share->last_version'|Assertion \`__extension__ .* \|\| share->last_version'
 =~ test_if_reopen
 =~ mi_open
-=~ QUICK_RANGE_SELECT::init_ror_merged_scan
 =~ Version: '10\.1
 MDEV-21697:
 =~ Assertion \`!wsrep_has_changes(thd) \|\| (thd->lex->sql_command == SQLCOM_CREATE_TABLE && !thd->is_current_stmt_binlog_format_row())'
@@ -650,7 +655,7 @@ MDEV-21680:
 =~ tc_release_table
 =~ Version: '10\.1
 MDEV-21650:
-=~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction.*stmt'
+=~ Assertion \`thd->transaction.*stmt\.ha_list == __null \|\| trans == &thd->transaction.*stmt'
 =~ ha_rollback_trans
 =~ ha_commit_trans
 =~ Version: '10\.4|Version: '10\.5
@@ -1013,7 +1018,7 @@ MDEV-20754:
 =~ decimal_bin_size
 =~ DISTINCT.*DEFAULT.*ROLLUP
 MDEV-20750:
-=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'|Assertion \`thd->transaction\.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'|Assertion \`thd->transaction\.stmt\.is_empty()'|Assertion \`thd->transaction\.stmt\.is_empty()'
+=~ Assertion \`thd->transaction.*stmt.*is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'|Assertion \`thd->transaction.*stmt.*is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'|Assertion \`thd->transaction.*stmt.*is_empty()'|Assertion \`thd->transaction.*stmt.*is_empty()'
 =~ Prepared_statement::prepare|sp_head::execute
 =~ sequence
 =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT
@@ -1949,6 +1954,10 @@ MDEV-17991:
 =~ Out of memory
 =~ Lex_input_stream::body_utf8_start
 =~ MYSQLparse
+MDEV-17977:
+=~ Assertion \`Count >= rest_length'
+=~ _my_b_write
+=~ Log_event_writer::write_internal
 MDEV-17974:
 =~ signal 11|AddressSanitizer: use-after-poison
 =~ sp_process_definer
@@ -1959,7 +1968,7 @@ MDEV-17964:
 =~ add_role_user_mapping_action
 =~ rebuild_role_grants|mysql_create_user
 MDEV-17951:
-=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ Assertion \`thd->transaction.*stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_thread_tables
 =~ Query_log_event::do_apply_event
 # The alternative is due to the broken stack trace
@@ -1978,7 +1987,7 @@ MDEV-17891:
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-17891:
 =~ The table .* is full|Warning: Enabling keys got errno 121
-=~ Assertion \`transactional_table \|\| !(info\.copied \|\| info\.deleted) \|\| thd->transaction\.stmt\.modified_non_trans_table'
+=~ Assertion \`transactional_table \|\| !(info\.copied \|\| info\.deleted) \|\| thd->transaction.*stmt\.modified_non_trans_table'
 =~ mysql_load
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-17890:
@@ -2168,7 +2177,7 @@ MDEV-16808:
 =~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 # Not fixed in 10.1!
 MDEV-16794:
-=~ Assertion \`thd->transaction\.stmt\.is_empty()'
+=~ Assertion \`thd->transaction.*stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
 =~ mysql_inplace_alter_table
 =~ Version: '10\.1|Version: '10\.0
@@ -2662,6 +2671,11 @@ TODO-842: [part_id == m_last_part]
 # Weak matches
 ##############################################################################
 
+MDEV-22927: [Can't find record]
+=~ 1032 Can't find record in
+=~ will exit with exit status STATUS_DATABASE_CORRUPTION
+=~ sequence
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-22759: [cursor->index->is_committed - HASH?]
 =~ Record in index .* was not found on update: TUPLE
 =~ Failing assertion: !cursor->index->is_committed()
@@ -2820,8 +2834,6 @@ MDEV-18017:
 # It doesn't matter much, don't flag it
 #MDEV-17999:
 #=~ Invalid roles_mapping table entry user
-MDEV-17977:
-=~ Count >= rest_length
 MDEV-17971:
 =~ Field_iterator_table::set
 MDEV-17971:
