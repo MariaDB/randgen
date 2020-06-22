@@ -64,10 +64,6 @@ MDEV-22816:
 MDEV-22758:
 =~ Assertion \`!item->null_value'
 =~ Type_handler_inet6::make_sort_key_part
-MDEV-22753:
-=~ signal|AddressSanitizer
-=~ handler::ha_check_overlaps
-=~ handler::ha_write_row|ha_update_row
 MDEV-22751:
 =~ signal|AddressSanitizer
 =~ dict_acquire_mdl_shared
@@ -168,14 +164,6 @@ MDEV-20015:
 =~ Assertion \`!in_use->is_error()'
 =~ update_virtual_field
 =~ compute_vcols|innobase_get_computed_value
-MDEV-19977:
-=~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'
-=~ lock_rec_lock
-=~ read_stored_values
-MDEV-19977:
-=~ Failing assertion: UT_LIST_GET_LEN(trx->lock\.trx_locks) == 0|Failing assertion: UT_LIST_GET_LEN(lock\.trx_locks) == 0
-=~ Version: '10\.5
-=~ trx_commit_in_memory|trx_t::commit_in_memory
 MDEV-19622:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record[0] && ptr < table->record[0] + table->s->reclength)))'|Assertion \`marked_for_read()'
 =~ ha_partition::set_auto_increment_if_higher
@@ -191,7 +179,6 @@ MDEV-18794:
 MDEV-18457: [bitmap->full_head_size]
 =~ Assertion \`(bitmap->map + (bitmap->full_head_size/6\*6)) <= full_head_end'
 =~ _ma_check_bitmap
-
 
 ##############################################################################
 # Weak matches

@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-22973:
+=~ Assertion \`records_are_comparable(table)'
+=~ compare_record
+=~ multi_update::do_updates
+=~ versioning
+=~ Version: '10\.3|Version: '10\.4
+MDEV-22970:
+=~ Assertion \`!m_freed_pages'
+=~ mtr_t::init
+=~ fsp_init_file_page
+=~ Version: '10\.5
 MDEV-22927:
 =~ Assertion Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'
 =~ lock_rec_lock
