@@ -494,7 +494,7 @@ sub startServer {
     my $startup_timeout= 600;
     
     if ($self->[MYSQLD_RR]) {
-        $command = "rr record ".$command;
+        $command = "rr record --output-trace-dir=".$self->[MYSQLD_VARDIR]."/rr-profile ".$command;
     }
     elsif ($self->[MYSQLD_VALGRIND]) {
         my $val_opt ="";
