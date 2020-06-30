@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23026:
+=~ Assertion \`!rw_lock_own(lock, RW_LOCK_S)'
+=~ rw_lock_sx_lock_func
+=~ pfs_rw_lock_sx_lock_func
+=~ open_purge_table
+=~ Version: '10\.5
+MDEV-23026:
+=~ Assertion \`!rw_lock_own_flagged(lock, RW_LOCK_FLAG_X \| RW_LOCK_FLAG_S)'
+=~ rw_lock_s_lock_func
+=~ pfs_rw_lock_s_lock_func
+=~ open_purge_table
+=~ Version: '10\.5
 MDEV-22973:
 =~ Assertion \`records_are_comparable(table)'
 =~ compare_record
