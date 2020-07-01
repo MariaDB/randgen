@@ -27,6 +27,10 @@ MDEV-22970:
 =~ mtr_t::init
 =~ fsp_init_file_page
 =~ Version: '10\.5
+MDEV-22942:
+=~ InnoDB: Failing assertion: page_offset(rec) <= page_header_get_field(page, PAGE_HEAP_TOP)
+=~ page_rec_check
+=~ page_rec_is_supremum
 MDEV-22927:
 =~ Assertion Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'
 =~ lock_rec_lock
@@ -62,7 +66,7 @@ MDEV-22899:
 =~ Version: '10\.4|Version: '10\.5
 MDEV-22890:
 =~ FATAL.* InnoDB: .* Deadlock Detected
-=~ Thread .* has waited at row0sel\.cc line
+=~ Thread .* has waited at row0sel\.cc line|Thread .* has waited at row0row\.cc line
 =~ Thread .* has waited at row0quiesce\.cc line
 =~ Thread .* has waited at btr0cur\.cc line
 =~ Version: '10\.5
@@ -86,7 +90,7 @@ MDEV-22873:
 =~ has a primary key in InnoDB data dictionary, but not in MariaDB
 =~ Assertion \`len == ref_length'|AddressSanitizer
 =~ ha_innobase::position
-=~ find_all_keys
+=~ find_all_keys|mysql_update
 =~ Version: '10\.5
 MDEV-22867:
 =~ Assertion \`instant\.n_core_fields == n_core_fields'
@@ -123,7 +127,6 @@ MDEV-22782:
 =~ AddressSanitizer
 =~ trx_t::commit_state|trx_commit_in_memory
 =~ trx_commit_low
-=~ dict_stats
 =~ Version: '10\.2|Version: '10\.3
 MDEV-22782:
 =~ AddressSanitizer
@@ -1391,6 +1394,12 @@ MDEV-19631:
 =~ st_select_lex_unit::optimize
 =~ mysql_explain_union
 =~ Prepared_statement::execute|sp_head::execute
+# Only fixed in 10.2+
+MDEV-19622:
+=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'|
+=~ ha_partition::set_auto_increment_if_higher
+=~ ha_partition::update_row
+=~ Version: '10\.1\.
 MDEV-19621:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ ha_innobase::commit_inplace_alter_table
