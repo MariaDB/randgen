@@ -125,19 +125,18 @@ MDEV-22819:
 =~ Version: '10\.5
 MDEV-22782:
 =~ AddressSanitizer
-=~ trx_t::commit_state|trx_commit_in_memory
+=~ trx_t::commit_state|trx_commit_in_memory|trx_t::commit_in_memory
 =~ trx_commit_low
-=~ Version: '10\.2|Version: '10\.3
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
 MDEV-22782:
 =~ AddressSanitizer
-=~ trx_t::is_wsrep
-=~ innobase_commit_low
-=~ Version: '10\.2|Version: '10\.3
+=~ trx_t::is_wsrep|innobase_commit_low
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
 MDEV-22782:
 =~ AddressSanitizer
 =~ innobase_trx_init
 =~ innobase_trx_allocate
-=~ Version: '10\.2|Version: '10\.3
+=~ Version: '10\.2|Version: '10\.3|Version: '10\.4
 MDEV-22772:
 =~ signal|AddressSanitizer
 =~ Item_null_result::field_type
