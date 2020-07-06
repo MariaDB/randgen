@@ -1522,7 +1522,7 @@ MDEV-19273:
 =~ MDL_context::upgrade_shared_lock
 =~ wait_while_table_is_used
 MDEV-19273:
-=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->db\.str, table->table_name\.str, MDL_SHARED)'
+=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->db\.str, table->table_name\.str, MDL_SHARED)'|Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db\.str, table_name\.str, MDL_SHARED)'
 =~ mysql_rm_table_no_locks
 MDEV-19273:
 =~ signal 11|AddressSanitizer
@@ -1550,7 +1550,7 @@ MDEV-19202:
 =~ find_old_col_no
 =~ dict_table_t::rollback_instant
 MDEV-19198:
-=~ Assertion \`(create_info->tmp_table()) \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->db.str, table->table_name\.str, MDL_EXCLUSIVE)'|Assertion \`(create_info->tmp_table()) \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->db, table->table_name, MDL_EXCLUSIVE)'|Assertion \`(create_info->options & 1) \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->db, table->table_name, MDL_EXCLUSIVE)'
+=~ Assertion \`(create_info->tmp_table()) \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->db\.str, table->table_name\.str, MDL_EXCLUSIVE)'|Assertion \`(create_info->tmp_table()) \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->db, table->table_name, MDL_EXCLUSIVE)'|Assertion \`(create_info->options & 1) \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->db, table->table_name, MDL_EXCLUSIVE)'|Assertion \`(create_info->tmp_table()) \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db\.str, table_name\.str, MDL_EXCLUSIVE)'
 =~ mysql_create_like_table
 =~ mysql_execute_command
 MDEV-19194:
