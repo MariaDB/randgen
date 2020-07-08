@@ -126,7 +126,6 @@ MDEV-22819:
 MDEV-22782:
 =~ AddressSanitizer
 =~ trx_t::commit_state|trx_commit_in_memory|trx_t::commit_in_memory
-=~ trx_commit_low
 =~ Version: '10\.2|Version: '10\.3|Version: '10\.4
 MDEV-22782:
 =~ AddressSanitizer
@@ -2121,6 +2120,9 @@ MDEV-17275:
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table_list->db, table_list->table_name, MDL_SHARED)'
 =~ get_table_share
 =~ get_table_share_with_discover
+MDEV-17225:
+=~ Assertion \`log_descriptor\.bc\.buffer->prev_last_lsn == ((LSN)0)'
+=~ translog_flush_buffers
 MDEV-17223:
 =~ Assertion \`thd->killed != 0'
 =~ ha_maria::enable_indexes
@@ -2887,8 +2889,6 @@ MDEV-17466:
 =~ dfield2->type\.mtypex
 MDEV-17344:
 =~ Prepared_statement::~Prepared_statement
-MDEV-17225:
-=~ log_descriptor\.bc\.buffer->prev_last_lsn
 MDEV-17054:
 =~ InnoDB needs charset 0 for doing a comparison, but MySQL cannot find that charset
 MDEV-17054:
