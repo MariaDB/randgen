@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23146:
+=~ Assertion \`prebuilt->m_read_virtual_key'
+=~ row_sel_store_mysql_rec
+=~ row_search_mvcc
+=~ Version: '10\.5
 MDEV-23145:
 =~ signal|AddressSanitizer
 =~ handler::update_global_table_stats
@@ -100,6 +105,11 @@ MDEV-22885:
 =~ Item::val_native
 =~ Type_handler_timestamp_common
 =~ Version: '10\.4|Version: '10\.5
+MDEV-22883:
+=~ Assertion \`!parse_error \|\| lex\.sphead == 0'
+=~ Table_triggers_list::check_n_load
+=~ open_table_entry_fini
+=~ Version: '10\.5
 MDEV-22881:
 =~ signal|AddressSanitizer|Invalid read of size
 =~ Item_ident::print|append_identifier
@@ -419,6 +429,10 @@ MDEV-22426:
 =~ signal 8|AddressSanitizer: FPE
 =~ maria_create
 =~ CHAR(0)
+MDEV-22390:
+=~ Assertion \`m_next_rec_ptr >= m_rawmem'
+=~ Filesort_buffer::spaceleft
+=~ SORT_INFO::isfull
 MDEV-22385:
 =~ Assertion \`0'
 =~ stored_field_cmp_to_item
@@ -473,7 +487,7 @@ MDEV-22257:
 =~ row_upd_clust_rec
 MDEV-22256:
 =~ Assertion \`length == pack_length()'
-=~ Field_timestamp_with_dec::sort_string
+=~ Field_timestamp_with_dec::sort_string|Field_inet6::sort_string
 =~ Field::make_sort_key_part
 MDEV-22255:
 =~ Assertion \`id'
