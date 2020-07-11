@@ -2235,7 +2235,7 @@ MDEV-16940:
 =~ mysql_multi_update_prepare
 =~ sp_head::execute
 MDEV-16929:
-=~ \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ \`thd->transaction.*stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_thread_tables
 =~ mysqld_show_create
 =~ sequence
