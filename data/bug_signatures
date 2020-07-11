@@ -377,6 +377,9 @@ MDEV-22525:
 =~ check_vcol_forward_refs
 =~ Delayed_insert::get_local_table
 =~ Version: '10\.4
+MDEV-22524:
+=~ Trying to unlock mutex LOCK_global_system_variables
+=~ allocate_and_write_block_record
 MDEV-22521:
 =~ signal 11|AddressSanitizer|Assertion \`user'
 =~ traverse_role_graph_up
