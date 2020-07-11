@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23149:
+=~ signal|AddressSanitizer
+=~ err_conv
+=~ ErrConvString::ptr
+=~ Item_char_typecast::check_truncation_with_warn
 MDEV-23146:
 =~ Assertion \`prebuilt->m_read_virtual_key'
 =~ row_sel_store_mysql_rec
@@ -28,6 +33,16 @@ MDEV-23126:
 =~ signal|AddressSanitizer
 =~ Query_cache_block::query
 =~ Query_cache::invalidate_query_block_list
+MDEV-23115:
+=~ Assertion \`purge <= 1'
+=~ trx_rseg_mem_restore
+=~ plugin_initialize
+=~ Version: '10\.5|Version: '10\.6
+MDEV-23054:
+=~ Assertion \`!item->null_value'
+=~ Type_handler_inet6::make_sort_key_part
+=~ make_sortkey
+=~ Version: '10\.5|Version: '10\.6
 MDEV-23026:
 =~ Assertion \`!rw_lock_own(lock, RW_LOCK_S)'
 =~ rw_lock_sx_lock_func
@@ -108,7 +123,7 @@ MDEV-22885:
 MDEV-22883:
 =~ Assertion \`!parse_error \|\| lex\.sphead == 0'
 =~ Table_triggers_list::check_n_load
-=~ open_table_entry_fini
+=~ get_all_tables
 =~ Version: '10\.5|Version: '10\.6
 MDEV-22881:
 =~ signal|AddressSanitizer|Invalid read of size
@@ -1330,6 +1345,15 @@ MDEV-20395:
 =~ Assertion \`!found'
 =~ remove_ptr_from_dynarray
 =~ handle_grant_struct
+MDEV-20325:
+=~ Assertion \`outer_context \|\| !\*from_field \|\| \*from_field == not_found_field'|Assertion \`!derived->is_excluded()'
+=~ Item_field::fix_outer_field|TABLE_LIST::set_check_materialized
+=~ sp_head::execute|Prepared_statement::execute
+MDEV-20325:
+=~ signal|AddressSanitizer
+=~ st_select_lex::mark_as_dependent
+=~ Item_field::fix_outer_field
+=~ sp_head::execute|Prepared_statement::execute
 MDEV-20313:
 =~ For transactional Aria BASE TABLE ROW_FORMAT=Page .* : error : Found .* keys of .*
 MDEV-20237:
