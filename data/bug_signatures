@@ -2134,6 +2134,12 @@ MDEV-17749:
 =~ Assertion \`thd->transaction.*stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
 =~ mysql_alter_table|reload_acl_and_cache
+MDEV-17749:
+=~ signal|AddressSanitizer
+=~ TABLE::default_column_bitmaps
+=~ handler::ha_reset
+=~ THD::mark_tmp_table_as_free_for_reuse
+=~ Version: '10\.2|Version: '10\.3
 MDEV-17711:
 =~ Assertion \`arena_for_set_stmt== 0'
 =~ set_arena_for_set_stmt
