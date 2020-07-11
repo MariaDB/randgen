@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23145:
+=~ signal|AddressSanitizer
+=~ handler::update_global_table_stats
+=~ close_thread_table
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
+MDEV-23145:
+=~ Assertion \`inited == NONE \|\| table->open_by_handler'
+=~ handler::ha_external_lock
+=~ close_system_tables
+=~ Version: '10\.3|Version: '10\.4|Version: '10\.5
 MDEV-23127:
 =~ signal|AddressSanitizer
 =~ Query_cache::double_linked_list_exclude|Assertion \`table_block_data->m_cached_query_count >= 0'
@@ -132,6 +142,11 @@ MDEV-22819:
 =~ read_to_buffer
 =~ merge_buffers
 =~ Version: '10\.5
+MDEV-22805:
+=~ signal|AddressSanitizer|Assertion \`thd->lex->sql_command == SQLCOM_UPDATE'
+=~ Multiupdate_prelocking_strategy::handle_end
+=~ mysql_multi_update_prepare
+=~ Version: '10\.4|Version: '10\.5
 MDEV-22782:
 =~ AddressSanitizer
 =~ trx_t::commit_state|trx_commit_in_memory|trx_t::commit_in_memory
@@ -452,10 +467,18 @@ MDEV-22262:
 =~ ha_partition::open
 =~ check_duplicate_long_entries_update|handler::create_lookup_handler|clone_handler_for_update
 =~ Version: '10\.4|Version: '10\.5
+MDEV-22257:
+=~ Assertion \`trx_id > 0 \|\| (flags & BTR_KEEP_SYS_FLAG)'
+=~ btr_cur_optimistic_update
+=~ row_upd_clust_rec
 MDEV-22256:
 =~ Assertion \`length == pack_length()'
 =~ Field_timestamp_with_dec::sort_string
 =~ Field::make_sort_key_part
+MDEV-22255:
+=~ Assertion \`id'
+=~ trx_write_trx_id
+=~ row_insert_for_mysql
 MDEV-22232:
 =~ signal handler|AddressSanitizer
 =~ rpl_sql_thread_info::cached_charset_compare
@@ -2195,7 +2218,7 @@ MDEV-16940:
 =~ mysql_multi_update_prepare
 =~ sp_head::execute
 MDEV-16929:
-=~ \`thd->transaction.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_thread_tables
 =~ mysqld_show_create
 =~ sequence
@@ -2425,7 +2448,7 @@ MDEV-14854:
 =~ _ma_make_key
 =~ ha_maria::write_row|ha_maria::update_row
 MDEV-14711:
-=~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'
+=~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'|Assertion \`mode == 16 \|\| mode == 12 \|\| fix_block->page\.status != buf_page_t::FREED'
 =~ buf_page_get_gen
 MDEV-14656: [Got error 22 when trying to lock mutex]
 =~ signal 6
