@@ -133,7 +133,7 @@ MDEV-22883:
 =~ Assertion \`!parse_error \|\| lex\.sphead == 0'
 =~ Table_triggers_list::check_n_load
 =~ get_all_tables
-=~ Version: '10\.[5-9]
+=~ Version: '10\.[2-9]
 MDEV-22881:
 =~ signal|AddressSanitizer|Invalid read of size
 =~ Item_ident::print|append_identifier
@@ -2288,7 +2288,7 @@ MDEV-16929:
 =~ close_thread_tables
 =~ mysqld_show_create
 =~ sequence
-=~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT
+=~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT|close failed in file object destructor
 =~ Version: '10\.[3-9]
 MDEV-16887:
 =~ Assertion \`n_idx > 0'
