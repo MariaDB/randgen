@@ -151,7 +151,7 @@ sub search_files_for_matches
           next if defined $found_mdevs{$mdev};
           $pattern= $1;
           chomp $pattern;
-          $pattern=~ s/(\"|\?|\!|\(|\)|\[|\]|\&|\^|\~|\+|\/)/\\$1/g;
+          $pattern=~ s/(\"|\?|\!|\(|\)|\&|\^|\~|\+|\/)/\\$1/g;
         }
         # MDEV line starts a new signature
         elsif(/^\s*(MDEV-\d+|MENT-\d+|TODO-\d+):\s*(.*)/) {
