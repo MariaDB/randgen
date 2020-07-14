@@ -4,6 +4,22 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23173:
+=~ Assertion \`length < 249'
+=~ Transaction_state_tracker::store
+=~ net_send_ok
+MDEV-23172:
+=~ Assertion \`0'
+=~ my_mbcharlen_utf16
+=~ READ_INFO::read_field
+=~ mysql_load
+=~ Version: '10\.1
+MDEV-23171:
+=~ AddressSanitizer
+=~ strend
+=~ get_one_variable
+=~ fill_variables
+=~ Version: '10\.2
 MDEV-23151:
 =~ Assertion \`i < get_width()'
 =~ Histogram::get_value
@@ -539,6 +555,11 @@ MDEV-22227:
 =~ Assertion \`state_ == s_exec'
 =~ wsrep::client_state::start_transaction
 =~ wsrep_bf_abort
+=~ Version: '10\.[4-9]
+MDEV-22266:
+=~ Assertion \`m_status == DA_ERROR'
+=~ Diagnostics_area::sql_errno
+=~ fill_schema_table_by_open
 =~ Version: '10\.[4-9]
 MDEV-22223:
 =~ signal 11|AddressSanitizer
@@ -2513,6 +2534,11 @@ MDEV-14854:
 =~ transid_store_packed
 =~ _ma_make_key
 =~ ha_maria::write_row|ha_maria::update_row
+MDEV-14836:
+=~ Assertion \`m_status == DA_ERROR'
+=~ Diagnostics_area::sql_errno
+=~ fill_schema_table_by_open
+=~ LIMIT ROWS EXAMINED
 MDEV-14711:
 =~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'|Assertion \`mode == 16 \|\| mode == 12 \|\| fix_block->page\.status != buf_page_t::FREED'
 =~ buf_page_get_gen
@@ -3085,8 +3111,6 @@ MDEV-14846:
 =~ prebuilt->trx, TRX_STATE_ACTIVE
 MDEV-14846:
 =~ state == TRX_STATE_FORCED_ROLLBACK
-MDEV-14836:
-=~ m_status == DA_ERROR
 MDEV-14833:
 =~ trx->error_state == DB_SUCCESS
 MDEV-14643: [cursor->index->is_committed]
