@@ -19,7 +19,7 @@ query_add:
 ;
 
 dynvar_set_session:
-    SET SESSION dynvar_session_variable ;
+    SET dynvar_session_variable ;
 
 dynvar_set_global:
     SET GLOBAL dynvar_global_variable ;
@@ -209,7 +209,7 @@ dynvar_session_variable:
   | UNIQUE_CHECKS= dynvar_boolean
   | UPDATABLE_VIEWS_WITH_LIMIT= dynvar_boolean
   | USE_STAT_TABLES= { $prng->arrayElement(['NEVER','PREFERABLY','COMPLEMENTARY','COMPLEMENTARY_FOR_QUERIES /* compatibility 10.4.1 */','PREFERABLY_FOR_QUERIES /* compatibility 10.4.1 */']) }
-  | WAIT_TIMEOUT= { $prng->arrayElement([0,3600]) }
+# | WAIT_TIMEOUT= { $prng->arrayElement([0,3600]) }
   | WSREP_CAUSAL_READS= dynvar_boolean
   | WSREP_DIRTY_READS= dynvar_boolean
   | WSREP_GTID_SEQ_NO= { $prng->int(0,18446744073709551615) } /* compatibility 10.5.1 */
