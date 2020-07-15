@@ -4,6 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23184:
+=~ AddressSanitizer|signal
+=~ THD::killed_errno
+=~ THD::send_kill_message
+=~ fill_record_n_invoke_before_triggers
+=~ Version: '10\.1
+MDEV-23182:
+=~ signal|AddressSanitizer
+=~ Item::fix_fields_if_needed|Item::check_is_evaluable_expression_or_error
+=~ fix_fields_for_tvc
+=~ table_value_constr::prepare
+=~ Prepared_statement
+=~ Version: '10\.[3-9]
 MDEV-23173:
 =~ Assertion \`length < 249'
 =~ Transaction_state_tracker::store
@@ -11,8 +24,7 @@ MDEV-23173:
 MDEV-23172:
 =~ Assertion \`0'
 =~ my_mbcharlen_utf16
-=~ READ_INFO::read_field
-=~ mysql_load
+=~ READ_INFO::read_field|READ_INFO::next_line
 =~ Version: '10\.1
 MDEV-23171:
 =~ AddressSanitizer
@@ -316,6 +328,12 @@ MDEV-22667:
 =~ ha_partition::position
 =~ multi_delete::send_data|multi_update::send_data
 =~ Version: '10\.[4-9]
+MDEV-22662:
+=~ Assertion \`fixed == 0'
+=~ Item_func::fix_fields
+=~ fix_fields_for_tvc
+=~ table_value_constr::prepare
+=~ Version: '10\.[3-9]
 MDEV-22660:
 =~ signal|AddressSanitizer
 =~ Assertion \`row_end'|is_versioning_timestamp|Vers_type_timestamp::check_sys_fields|Vers_parse_info::check_sys_fields
@@ -2155,6 +2173,17 @@ MDEV-17818:
 =~ parse_vcol_defs
 =~ open_table_from_share
 =~ open_temporary_table
+MDEV-17783:
+=~ AddressSanitizer: stack-buffer-overflow|signal
+=~ table_cond_selectivity
+=~ best_extension_by_limited_search
+=~ greedy_search
+MDEV-17783:
+=~ signal handler called
+=~ table_cond_selectivity
+=~ 0x0000000000000002
+=~ 0x3ff0000000000000
+=~ Version: '10\.[4-9]
 MDEV-17782:
 =~ decimal_bin_size: Assertion \`scale <= precision'
 =~ my_decimal_get_binary_size
@@ -2326,7 +2355,7 @@ MDEV-16808:
 =~ store_key::store_key
 =~ create_ref_for_key
 MDEV-16808:
-=~ signal 11
+=~ signal 11|AddressSanitizer
 =~ cp_buffer_from_ref
 =~ JOIN_CACHE_HASHED::put_record
 =~ evaluate_join_record
