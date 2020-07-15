@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23188:
+=~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|mariadbd: /data/src/10.5/sql/sql_select.cc:18198: void Create_tmp_table::add_field(TABLE*, Field*, uint, bool): Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
+=~ create_tmp_table|Create_tmp_table::add_field
+=~ JOIN::create_postjoin_aggr_table
+=~ Version: '10\.[3-9]
 MDEV-23184:
 =~ AddressSanitizer|signal
 =~ THD::killed_errno
@@ -161,6 +166,11 @@ MDEV-22883:
 =~ Assertion \`!parse_error \|\| lex\.sphead == 0'
 =~ Table_triggers_list::check_n_load
 =~ get_all_tables
+=~ Version: '10\.[2-9]
+MDEV-22883:
+=~ AddressSanitizer|signal
+=~ Trigger::get_trigger_info
+=~ get_schema_triggers_record
 =~ Version: '10\.[2-9]
 MDEV-22881:
 =~ signal|AddressSanitizer|Invalid read of size
@@ -2181,7 +2191,6 @@ MDEV-17783:
 MDEV-17783:
 =~ signal handler called
 =~ table_cond_selectivity
-=~ 0x0000000000000002
 =~ 0x3ff0000000000000
 =~ Version: '10\.[4-9]
 MDEV-17782:
