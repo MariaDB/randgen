@@ -234,7 +234,7 @@ sub register_result
                 if ($draft_mdevs{$j}) {
                     $match_type= 'draft';
                 }
-                my $notes= ($type eq 'strong' ? $j : $found_mdevs{$j}.' - '.$j);
+                my $notes= ($match_type eq 'strong' ? $j : $found_mdevs{$j}.' - '.$j);
                 if (defined $fixed_mdevs{$j}) {
                     $fixdate= "'$fixed_mdevs{$j}'";
                     $match_type= 'fixed';
