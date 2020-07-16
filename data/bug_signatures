@@ -5,15 +5,13 @@
 ##############################################################################
 
 MDEV-23188:
-=~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|mariadbd: /data/src/10.5/sql/sql_select.cc:18198: void Create_tmp_table::add_field(TABLE*, Field*, uint, bool): Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
+=~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
 =~ create_tmp_table|Create_tmp_table::add_field
 =~ JOIN::create_postjoin_aggr_table
 =~ Version: '10\.[3-9]
 MDEV-23184:
 =~ AddressSanitizer|signal
 =~ THD::killed_errno
-=~ THD::send_kill_message
-=~ fill_record_n_invoke_before_triggers
 =~ Version: '10\.1
 MDEV-23182:
 =~ signal|AddressSanitizer
