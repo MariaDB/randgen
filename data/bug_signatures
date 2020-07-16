@@ -7,7 +7,6 @@
 MDEV-23188:
 =~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
 =~ create_tmp_table|Create_tmp_table::add_field
-=~ JOIN::create_postjoin_aggr_table
 =~ Version: '10\.[3-9]
 MDEV-23184:
 =~ AddressSanitizer|signal
@@ -569,9 +568,8 @@ MDEV-22256:
 =~ Field_timestamp_with_dec::sort_string|Field_inet6::sort_string
 =~ Field::make_sort_key_part
 MDEV-22255:
-=~ Assertion \`id'
+=~ Assertion \`id'|Assertion \`id > 0'
 =~ trx_write_trx_id
-=~ row_insert_for_mysql
 MDEV-22232:
 =~ signal handler|AddressSanitizer
 =~ rpl_sql_thread_info::cached_charset_compare
@@ -2474,7 +2472,6 @@ MDEV-15878:
 =~ Assertion \`table->file->stats\.records > 0 \|\| error'
 =~ join_read_const_table
 =~ JOIN::optimize
-=~ mysql_select|mysql_update|mysql_delete
 MDEV-15873:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
