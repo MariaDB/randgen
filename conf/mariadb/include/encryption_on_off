@@ -1,18 +1,10 @@
 # RQG_HOME must be defined in the environment. But it has to be defined anyway,
 # or the include file won't be found
 
+$encryption_options= '--mysqld=--innodb-encrypt-tables --mysqld=--innodb-encrypt-log --mysqld=--innodb-encryption-threads=4 --mysqld=--aria-encrypt-tables=1 --mysqld=--encrypt-tmp-disk-tables=1 --mysqld=--encrypt-binlog --mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/data/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management';
+
 $encryption = 
   [
     '',
-    '
-    --mysqld=--innodb-encrypt-tables
-    --mysqld=--innodb-encrypt-log
-    --mysqld=--innodb-encryption-threads=4
-    --mysqld=--aria-encrypt-tables=1
-    --mysqld=--encrypt-tmp-disk-tables=1
-    --mysqld=--encrypt-binlog
-    --mysqld=--file-key-management
-    --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/data/file_key_management_keys.txt
-    --mysqld=--plugin-load-add=file_key_management
-    '
+    $encryption_options
   ];
