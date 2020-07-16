@@ -15,11 +15,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-thread1:
-	ddl ;			# Issue DDL that are reflected in INFORMATION_SCHEMA and cause PERFORMANCE_SCHEMA events
-
-
 query:
+    ddl |
 	dml |
 	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select |
 	update_settings |

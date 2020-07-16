@@ -20,10 +20,8 @@
 query_init:
 	SELECT _field FROM _table ;	# Populate the RQG metadata caches from the start of the start of the test
 
-thread1:
-	modify ;			# Issue DDL that are reflected in INFORMATION_SCHEMA
-
 query:
+    modify |
 	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select |
 	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select |
 	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select |
