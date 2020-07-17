@@ -8,6 +8,11 @@ MDEV-23188:
 =~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
 =~ create_tmp_table|Create_tmp_table::add_field
 =~ Version: '10\.[3-9]
+MDEV-23187:
+=~ Assertion \`0'
+=~ json_find_path
+=~ Item_func_json_value::val_str
+=~ Protocol::send_result_set_row
 MDEV-23184:
 =~ AddressSanitizer|signal
 =~ THD::killed_errno
@@ -61,7 +66,7 @@ MDEV-23145:
 MDEV-23145:
 =~ Assertion \`inited == NONE \|\| table->open_by_handler'
 =~ handler::ha_external_lock
-=~ close_system_tables
+=~ close_system_tables|close_thread_tables
 =~ Version: '10\.[3-9]
 MDEV-23127:
 =~ signal|AddressSanitizer
@@ -2262,6 +2267,11 @@ MDEV-17464:
 =~ InnoDB: Operating system error number 2 in a file operation
 =~ InnoDB: Cannot rename file '.*/.*\.ibd' to '.*/.*\.ibd'
 =~ 1025: Error on rename of
+MDEV-17435:
+=~ signal|AddressSanitizer
+=~ st_select_lex::get_free_table_map
+=~ mysql_derived_merge
+=~ sp_head::execute
 MDEV-17361:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ Query_arena.*set_query_arena
@@ -2507,6 +2517,10 @@ MDEV-15534:
 =~ InnoDB: Failing assertion: prebuilt->magic_n == ROW_PREBUILT_ALLOCATED
 =~ row_update_prebuilt_trx
 =~ ha_innobase::external_lock
+MDEV-15533:
+=~ Assertion \`log->blobs'
+=~ row_log_table_apply_update
+=~ mysql_alter_table
 MDEV-15471:
 =~ Assertion \`new_clustered == ctx->need_rebuild()'
 =~ ha_innobase::commit_inplace_alter_table
@@ -3090,8 +3104,6 @@ MDEV-15657:
 =~ file->inited == handler::NONE
 MDEV-15653: [lock_word <= 0x20000000]
 =~ lock_word <= 0x20000000
-MDEV-15533:
-=~ log->blobs
 MDEV-15493:
 =~ lock_trx_table_locks_remove
 MDEV-15486:
