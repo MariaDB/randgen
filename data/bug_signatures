@@ -12,7 +12,6 @@ MDEV-23187:
 =~ Assertion \`0'
 =~ json_find_path
 =~ Item_func_json_value::val_str
-=~ Protocol::send_result_set_row
 MDEV-23184:
 =~ AddressSanitizer|signal
 =~ THD::killed_errno
