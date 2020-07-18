@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23204:
+=~ signal|AddressSanitizer|Assertion \`bit < (map)->n_bits'
+=~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan
+=~ JOIN_TAB_SCAN_MRR::next
+=~ JOIN_CACHE::join_matching_records
+=~ Version: '10\.[3-9]
+MDEV-23202:
+=~ signal|AddressSanitizer
+=~ maria_status
+=~ ha_maria::info|TABLE_LIST::fetch_number_of_rows
+=~ sp_instr_stmt::exec_core
 MDEV-23188:
 =~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
 =~ create_tmp_table|Create_tmp_table::add_field
@@ -1267,7 +1278,6 @@ MDEV-20595:
 MDEV-20563:
 =~ Assertion \`update->n_fields < ulint(table->n_cols + table->n_v_cols)'
 =~ upd_node_t::make_versioned_helper
-=~ row_update_for_mysql
 =~ ha_innobase::delete_row
 MDEV-20563:
 =~ signal 11|AddressSanitizer
@@ -1925,6 +1935,15 @@ MDEV-18461:
 =~ Assertion \`undo_lsn == ((LSN)1) \|\| head_length == row_pos->length'
 =~ write_block_record
 =~ _ma_update_at_original_place
+MDEV-18459:
+=~ Assertion \`strchr(path, '/') != __null'
+=~ fil_op_write_log
+=~ fil_name_write
+MDEV-18458:
+=~ signal
+=~ EVP_MD_CTX_cleanup
+=~ md5_result
+=~ mysql_create_view
 # Only fixed in 10.2+!
 MDEV-18451:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
@@ -2223,6 +2242,10 @@ MDEV-17678:
 =~ field_unpack
 =~ print_keydup_error
 =~ ha_myisam::enable_indexes
+MDEV-17665: [share->page_type == PAGECACHE_LSN_PAGE]
+=~ Assertion \`!share \|\| share->page_type == PAGECACHE_LSN_PAGE'
+=~ maria_flush_log_for_page
+=~ flush_cached_blocks
 MDEV-17622:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_read
@@ -2520,6 +2543,10 @@ MDEV-15533:
 =~ Assertion \`log->blobs'
 =~ row_log_table_apply_update
 =~ mysql_alter_table
+MDEV-15494:
+=~ InnoDB: Assertion failure.*trx0roll.cc line
+=~ trx_rollback_last_sql_stat_for_mysql
+=~ innobase_rollback
 MDEV-15471:
 =~ Assertion \`new_clustered == ctx->need_rebuild()'
 =~ ha_innobase::commit_inplace_alter_table
@@ -2883,7 +2910,7 @@ MDEV-22927: [Can't find record]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 =~ sequence
 =~ Version: '10\.[3-9]
-MDEV-22759: [cursor->index->is_committed - HASH?]
+MDEV-22759: [cursor->index->is_committed - HASH]
 =~ Record in index .* was not found on update: TUPLE
 =~ Failing assertion: !cursor->index->is_committed()
 =~ Version: '10\.[4-9]
@@ -2913,10 +2940,10 @@ MDEV-22061: [cursor->index->is_committed - Versioning]
 =~ row_ins_sec_index_entry_by_modify
 =~ Version: '10\.[3-9]
 =~ versioning
-MDEV-21781: [GenTest::Transform::EnableOptimizations]
+MDEV-21781: [EnableOptimizations]
 =~ Transformed query: .* GenTest::Transform::EnableOptimizations
 =~ Version: '10\.[5-9]
-MDEV-21756: [GenTest::Transform::StraightJoin]
+MDEV-21756: [StraightJoin]
 =~ Transformed query: .* GenTest::Transform::StraightJoin
 MDEV-21694:
 =~ For .* BASE TABLE .* error : Found a misplaced row
@@ -2970,10 +2997,6 @@ MDEV-19338: [cursor->index->is_committed - Vcols]
 =~ InnoDB: Failing assertion: !cursor->index->is_committed()
 =~ vcols
 =~ Version: '10\.[4-9]
-MDEV-18459:
-=~ fil_op_write_log
-MDEV-18458:
-=~ EVP_MD_CTX_cleanup
 MDEV-18454:
 =~ ReadView::check_trx_id_sanity
 MDEV-18453:
@@ -3053,8 +3076,6 @@ MDEV-17834:
 =~ row_upd_build_difference_binary
 MDEV-17814:
 =~ is_current_stmt_binlog_format_row
-MDEV-17665:
-=~ share->page_type == PAGECACHE_LSN_PAGE
 MDEV-17538:
 =~ == UNALLOCATED_PAGE
 MDEV-17485:
