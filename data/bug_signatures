@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23215:
+=~ signal|AddressSanitizer
+=~ my_hash_first|flush_simple_key_cache_blocks
+=~ close_system_tables
+=~ Version: '10\.[1-3]
+MDEV-23215:
+=~ safe_mutex: Trying to destroy a mutex keycache->cache_lock that was locked at .*mf_keycache\.c
+=~ repartition_key_cache
+=~ Version: '10\.[1-3]
+MDEV-23213:
+=~ signal|AddressSanitizer
+=~ maria_status|ha_heap::info
+=~ opt_sum_query
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-23212:
 =~ Assertion `0'
 =~ Protocol::end_statement
@@ -764,7 +778,7 @@ MDEV-21831:
 MDEV-21830:
 =~ Assertion \`share->in_trans == 0'
 =~ maria_close
-=~ ha_partition::close|tc_remove_table
+=~ ha_partition::close|tc_remove_table|closefrm
 MDEV-21830:
 =~ signal 11|AddressSanitizer:
 =~ ha_maria::implicit_commit
@@ -1172,7 +1186,7 @@ MDEV-20762:
 =~ signal 11|AddressSanitizer: SEGV
 =~ Item_field::type_handler
 =~ Temporal_with_date::make_from_item
-=~ TABLE::insert_portion_of_time|cut_fields_for_portion_of_time
+=~ TABLE::insert_portion_of_time|cut_fields_for_portion_of_time|update_portion_of_time
 =~ sp_head::execute
 MDEV-20761:
 =~ signal 11|AddressSanitizer: SEGV
@@ -1949,6 +1963,11 @@ MDEV-18458:
 =~ EVP_MD_CTX_cleanup
 =~ md5_result
 =~ mysql_create_view
+# Only fixed in 10.2+!
+MDEV-18457:
+=~ Assertion \`(bitmap->map + (bitmap->full_head_size/6\*6)) <= full_head_end'
+=~ _ma_check_bitmap
+=~ Version: '10\.1
 # Only fixed in 10.2+!
 MDEV-18451:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
