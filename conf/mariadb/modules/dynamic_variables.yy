@@ -332,7 +332,8 @@ dynvar_global_variable:
   | innodb_dict_stats_disabled_debug= dynvar_boolean
   | innodb_disable_resize_buffer_pool_debug= dynvar_boolean
   | innodb_disable_sort_file_cache= dynvar_boolean
-  | innodb_disallow_writes= dynvar_boolean
+  # This will make everything stop
+# | innodb_disallow_writes= dynvar_boolean
   | innodb_encryption_rotate_key_age= { $prng->arrayElement([0,1,2,100,1000,10000,100000]) }
   | innodb_encryption_rotation_iops= { $prng->arrayElement([0,1,2,100,1000,10000]) }
   | innodb_encryption_threads= { $prng->arrayElement([0,1,2,4,8]) }
