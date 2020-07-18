@@ -43,7 +43,7 @@ dynvar_session_variable:
   | autocommit= dynvar_boolean
   | auto_increment_increment= { $prng->arrayElement([1,1,1,1,2,2,2,3,3,65535]) }
   | auto_increment_offset= { $prng->arrayElement([1,1,1,1,2,2,2,3,3,65534,65535]) }
-  # TODO: big_tables is deprecated in 10.5.0
+# TODO: big_tables is deprecated in 10.5.0
   | big_tables= dynvar_boolean
   | binlog_annotate_row_events= dynvar_boolean
   | binlog_direct_non_transactional_updates= dynvar_boolean
@@ -208,7 +208,8 @@ dynvar_session_variable:
   | thread_pool_priority= { $prng->arrayElement(['DEFAULT','high','low','auto']) }
 # | TIMESTAMP # Tempting, but causes problems, especially with versioning
   | time_zone= { sprintf("'%s%02d:%02d'",$prng->arrayElement(['+','-']),$prng->int(0,12),$prng->int(0,59)) }
-  | tmp_disk_table_size= { $prng->arrayElement(['DEFAULT',1024,8388608,18446744073709551615]) }
+# Very low values disabled due to MDEV-23212
+  | tmp_disk_table_size= { $prng->arrayElement(['DEFAULT',65536,8388608,18446744073709551615]) }
 # | TMP_MEMORY_TABLE_SIZE # == tmp_table_size
   | tmp_table_size= { $prng->arrayElement(['DEFAULT',0,1024,4194304,16777216,4294967295]) }
   | transaction_alloc_block_size= { $prng->arrayElement(['DEFAULT',1024,8192,16384,65536]) }
@@ -287,34 +288,34 @@ dynvar_global_variable:
   | innodb_adaptive_hash_index= dynvar_boolean
   | innodb_adaptive_max_sleep_delay= { $prng->arrayElement([0,1000,10000,100000,1000000]) }
   | innodb_autoextend_increment= { $prng->int(1,1000) }
-  # Debug variable
+# Debug variable
   | innodb_background_drop_list_empty= dynvar_boolean
-  # Deprecated since 10.5.2
+# Deprecated since 10.5.2
   | innodb_background_scrub_data_check_interval= { $prng->arrayElement([1,10,60,300]) }
-  # Deprecated since 10.5.2
+# Deprecated since 10.5.2
   | innodb_background_scrub_data_compressed= dynvar_boolean
-  # Deprecated since 10.5.2
+# Deprecated since 10.5.2
   | innodb_background_scrub_data_interval= { $prng->arrayElement([10,100,300]) }
-  # Deprecated since 10.5.2
+# Deprecated since 10.5.2
   | innodb_background_scrub_data_uncompressed= dynvar_boolean
   | innodb_buffer_pool_dump_at_shutdown= dynvar_boolean
   | innodb_buffer_pool_dump_pct= { $prng->int(1,100) }
   | innodb_buffer_pool_evict= { $prng->arrayElement(["''","'uncompressed'"]) }
   | innodb_buffer_pool_filename= 'ibbpool'
-  # Debug variable
+# Debug variable
   | innodb_buffer_pool_load_pages_abort= { $prng->arrayElement([1,100,1000,100000]) }
   | innodb_buffer_pool_size= { $prng->arrayElement([67108864,268435456,1073741824,2147483648]) }
   | innodb_buf_dump_status_frequency= { $prng->arrayElement([10,50,99]) }
-  # Debug variable
+# Debug variable
   | innodb_buf_flush_list_now= dynvar_boolean
   | innodb_change_buffering= { $prng->arrayElement(['inserts','none','deletes','purges','changes','all']) }
-  # Debug variable, 2 causes intentional crash
+# Debug variable, 2 causes intentional crash
 # | innodb_change_buffering_debug
   | innodb_change_buffer_max_size= { $prng->int(0,50) }
-  # Skipping strict values to avoid aborts
+# Skipping strict values to avoid aborts
   | innodb_checksum_algorithm= { $prng->arrayElement(['full_crc32','crc32','innodb','none']) }
   | innodb_cmp_per_index_enabled= dynvar_boolean
-  # Can't really be set to non-default at runtime
+# Can't really be set to non-default at runtime
 # | innodb_commit_concurrency
   | innodb_compression_algorithm= { $prng->arrayElement(['none','zlib','lz4','lzo','lzma','bzip2','snappy']) }
   | innodb_compression_failure_threshold_pct= { $prng->int(0,100) }
@@ -332,7 +333,7 @@ dynvar_global_variable:
   | innodb_dict_stats_disabled_debug= dynvar_boolean
   | innodb_disable_resize_buffer_pool_debug= dynvar_boolean
   | innodb_disable_sort_file_cache= dynvar_boolean
-  # This will make everything stop
+# This will make everything stop
 # | innodb_disallow_writes= dynvar_boolean
   | innodb_encryption_rotate_key_age= { $prng->arrayElement([0,1,2,100,1000,10000,100000]) }
   | innodb_encryption_rotation_iops= { $prng->arrayElement([0,1,2,100,1000,10000]) }
@@ -390,7 +391,7 @@ dynvar_global_variable:
   | innodb_read_ahead_threshold= { $prng->int(0,64) }
   | innodb_replication_delay= { $prng->arrayElement([1,100,1000,10000]) }
 # | innodb_saved_page_number_debug
-  # Deprecated since 10.5.2
+# Deprecated since 10.5.2
   | innodb_scrub_log_speed= { $prng->arrayElement([1,2,16,1024]) }
 # | innodb_simulate_comp_failures
   | innodb_spin_wait_delay= { $prng->arrayElement([1,2,16,1024]) }
@@ -539,9 +540,9 @@ dynvar_global_variable:
 # | wsrep_sst_receive_address       global
 # | wsrep_start_position    global
 # | wsrep_strict_ddl        global
-  # MENT-599
+# MENT-599
   | innodb_purge_threads= { $prng->int(0,33) } /* compatibility 10.5.2-0 */
-  # MENT-661
+# MENT-661
   | innodb_read_io_threads= { $prng->int(0,65) } /* compatibility 10.5.2-0 */
   | innodb_write_io_threads= { $prng->int(0,65) } /* compatibility 10.5.2-0 */
   | net_buffer_length= { $prng->arrayElement([1024,4096,16384,65536,1048576]) }
