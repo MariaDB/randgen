@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23212:
+=~ Assertion `0'
+=~ Protocol::end_statement
+=~ INFORMATION_SCHEMA.*ALL_PLUGINS
+=~ Version: '10\.[2-9]
 MDEV-23204:
 =~ signal|AddressSanitizer|Assertion \`bit < (map)->n_bits'
 =~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan
@@ -32,7 +37,7 @@ MDEV-23182:
 =~ Item::fix_fields_if_needed|Item::check_is_evaluable_expression_or_error
 =~ fix_fields_for_tvc
 =~ table_value_constr::prepare
-=~ Prepared_statement
+=~ Prepared_statement|sp_head::execute
 =~ Version: '10\.[3-9]
 MDEV-23173:
 =~ Assertion \`length < 249'
@@ -2115,7 +2120,7 @@ MDEV-18082:
 =~ Prepared_statement::prepare
 =~ EXPLAIN
 MDEV-18047:
-=~ index->magic_n == 76789786|Assertion \`pos < index->n_def'|AddressSanitizer: heap-use-after-free
+=~ index->magic_n == 76789786|Assertion \`pos < index->n_def'|InnoDB: Failing assertion: pos < index->n_def|AddressSanitizer: heap-use-after-free
 =~ dict_index_get_nth_field|dict_index_get_nth_col
 =~ dict_foreign_qualify_index
 =~ innobase_update_foreign_try
