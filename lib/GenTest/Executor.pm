@@ -377,7 +377,7 @@ sub cacheMetaData {
 
         # The parameter serves as "redo" flag for getSchemaMetaData
         my $metadata= $self->getSchemaMetaData($global_schema_cache{$self->dsn()});
-        if (! $metadata) {
+        if (! $metadata || $#$metadata < 0) {
             if ($redo) {
                 sayError("Failed to re-cache schema metadata");
                 return;
