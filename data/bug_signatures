@@ -4,10 +4,24 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23219:
+=~ Assertion \`(length % 4) == 0'
+=~ my_well_formed_len_utf32
+=~ Item_func_group_concat::add
+=~ Version: '10\.1
+MDEV-23218:
+=~ InnoDB: Clustered record for sec rec not found index
+=~ Assertion \`0'
+=~ Row_sel_get_clust_rec_for_mysql::operator
+=~ row_search_mvcc
+=~ Version: '10\.[4-9]
+MDEV-23218:
+=~ InnoDB: Flagged corruption of .* in CHECK TABLE; Wrong count
+=~ Version: '10\.[4-9]
 MDEV-23215:
 =~ signal|AddressSanitizer
 =~ my_hash_first|flush_simple_key_cache_blocks
-=~ close_system_tables
+=~ close_system_tables|close_thread_tables
 =~ Version: '10\.[1-3]
 MDEV-23215:
 =~ safe_mutex: Trying to destroy a mutex keycache->cache_lock that was locked at .*mf_keycache\.c
@@ -19,10 +33,15 @@ MDEV-23213:
 =~ opt_sum_query
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-23212:
-=~ Assertion `0'
+=~ Assertion \`0'
 =~ Protocol::end_statement
 =~ INFORMATION_SCHEMA.*ALL_PLUGINS
 =~ Version: '10\.[2-9]
+MDEV-23210:
+=~ Assertion \`(length % 4) == 0'
+=~ my_lengthsp_utf32
+=~ charset_info_st::lengthsp
+=~ Column_definition::prepare_interval_field
 MDEV-23204:
 =~ signal|AddressSanitizer|Assertion \`bit < (map)->n_bits'
 =~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan
@@ -2630,6 +2649,27 @@ MDEV-15011:
 =~ sysmalloc: Assertion \`(old_top == initial_top (av) && old_size == 0) \|\| ((unsigned long) (old_size) >= MINSIZE && prev_inuse (old_top) && ((unsigned long) old_end & (pagesize - 1)) == 0)'
 =~ ilink::operator new
 =~ Version: '10\.[0-2]|Version: '5\.5
+MDEV-15011:
+=~ signal 11
+=~ _mi_read_rnd_static_record
+=~ mi_scan
+=~ find_all_keys
+=~ Version: '10\.[0-2]|Version: '5\.5
+MDEV-15011:
+=~ signal|AddressSanitizer
+=~ test_if_reopen
+=~ mi_create|mi_open
+=~ Version: '10\.[0-2]|Version: '5\.5
+MDEV-15011:
+=~ Freeing overrun buffer  sql/opt_range\.cc:.*, sql/rpl_record\.cc:.*
+=~ signal 11
+=~ Version: '10\.[0-2]|Version: '5\.5
+MDEV-15011:
+=~ signal 11
+=~ _db_enter_
+=~ handler::ha_rnd_next
+=~ find_all_keys
+=~ Version: '10\.[0-2]|Version: '5\.5
 ### Only fixed in 10.2+
 MDEV-14996:
 =~ Assertion \`!thd->get_stmt_da()->is_sent() \|\| thd->killed == KILL_CONNECTION'
@@ -3176,37 +3216,6 @@ MDEV-15255:
 =~ sequence_insert
 MDEV-15226:
 =~ Could not get index information for Index Number
-MDEV-15011:
-=~ signal 11
-=~ _mi_read_rnd_static_record
-=~ mi_scan
-=~ find_all_keys
-=~ Version: '10\.[0-2]|Version: '5\.5
-MDEV-15011:
-=~ test_if_reopen
-=~ mi_create
-=~ ha_myisam::create
-=~ Version: '10\.[0-2]|Version: '5\.5
-MDEV-15011:
-=~ Freeing overrun buffer  sql/opt_range\.cc:.*, sql/rpl_record\.cc:.*
-=~ signal 11
-=~ Version: '10\.[0-2]|Version: '5\.5
-MDEV-15011:
-=~ signal 11
-=~ _db_enter_
-=~ handler::ha_rnd_next
-=~ find_all_keys
-=~ Version: '10\.[0-2]|Version: '5\.5
-MDEV-15011:
-=~ signal 11
-=~ JOIN::exec_inner
-=~ mysql_select
-=~ Version: '10\.[0-2]|Version: '5\.5
-MDEV-15011:
-=~ signal 11
-=~ test_if_reopen
-=~ mi_open
-=~ Version: '10\.[0-2]|Version: '5\.5
 MDEV-15011:
 =~ Error in \`.*/mysqld': malloc(): memory corruption:
 =~ Version: '10\.[0-2]|Version: '5\.5
