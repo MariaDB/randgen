@@ -19,7 +19,7 @@ MDEV-23213:
 =~ opt_sum_query
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-23212:
-=~ Assertion `0'
+=~ Assertion \`0'
 =~ Protocol::end_statement
 =~ INFORMATION_SCHEMA.*ALL_PLUGINS
 =~ Version: '10\.[2-9]
