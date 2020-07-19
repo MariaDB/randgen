@@ -1,6 +1,5 @@
 thread1_init_add:
-    INSTALL SONAME 'ha_federatedx' 
-  ; CREATE DATABASE fed_db
+    CREATE DATABASE fed_db
   ; fed_create_federated_table
   ; fed_create_federated_table
   ; fed_create_federated_table
