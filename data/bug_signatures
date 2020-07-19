@@ -283,6 +283,11 @@ MDEV-22771:
 =~ Assertion \`c\.same_type(\*o)'|Assertion \`fields\[i\]\.same(instant\.fields\[i\])'
 =~ dict_table_t::instant_column
 =~ Version: '10\.[4-9]
+MDEV-22768:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ THD::raise_condition
+=~ my_error|my_message
 MDEV-22757:
 =~ Assertion \`!binlog \|\| exist_hton_without_prepare'
 =~ MYSQL_BIN_LOG::unlog_xa_prepare
@@ -2255,6 +2260,11 @@ MDEV-17749:
 =~ handler::ha_reset
 =~ THD::mark_tmp_table_as_free_for_reuse
 =~ Version: '10\.[2-3]
+MDEV-17729:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ THD::raise_condition
+=~ push_warning
 MDEV-17711:
 =~ Assertion \`arena_for_set_stmt== 0'
 =~ set_arena_for_set_stmt
