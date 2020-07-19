@@ -118,6 +118,8 @@ json_func:
 	| JSON_UNQUOTE( _jsonvalue )
 	| JSON_VALID( json_valid_arg )
 	| JSON_VALUE( json_text_arg, _jsonpath )
+    | JSON_ARRAYAGG( _field ) /* compatibility 10.5.0 */
+    | JSON_OBJECTAGG( _jsonkey, json_valid_arg ) /* compatibility 10.5.0 */
 ;
 
 json_optional_path:
