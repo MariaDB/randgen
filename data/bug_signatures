@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23219:
+=~ Assertion \`(length % 4) == 0'
+=~ my_well_formed_len_utf32
+=~ Item_func_group_concat::add
+=~ Version: '10\.1
+MDEV-23218:
+=~ InnoDB: Clustered record for sec rec not found index
+=~ Assertion \`0'
+=~ Row_sel_get_clust_rec_for_mysql::operator
+=~ row_search_mvcc
+=~ Version: '10\.[4-9]
+MDEV-23218:
+=~ InnoDB: Flagged corruption of .* in CHECK TABLE; Wrong count
+=~ Version: '10\.[4-9]
 MDEV-23215:
 =~ signal|AddressSanitizer
 =~ my_hash_first|flush_simple_key_cache_blocks
@@ -23,6 +37,11 @@ MDEV-23212:
 =~ Protocol::end_statement
 =~ INFORMATION_SCHEMA.*ALL_PLUGINS
 =~ Version: '10\.[2-9]
+MDEV-23210:
+=~ Assertion \`(length % 4) == 0'
+=~ my_lengthsp_utf32
+=~ charset_info_st::lengthsp
+=~ Column_definition::prepare_interval_field
 MDEV-23204:
 =~ signal|AddressSanitizer|Assertion \`bit < (map)->n_bits'
 =~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan
