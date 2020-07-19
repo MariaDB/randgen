@@ -46,7 +46,9 @@ sub transform {
 
 	return [
 		"( $orig_query ) EXCEPT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_DISTINCT */",
-		"( $orig_query ) EXCEPT ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
+		"( $orig_query ) EXCEPT ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
+		"/* compatibility 10.5.2 */ ( $orig_query ) EXCEPT ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_DISTINCT */",
+		"/* compatibility 10.5.2 */ ( $orig_query ) EXCEPT ALL ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
 	];
 }
 
