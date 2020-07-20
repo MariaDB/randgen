@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23239:
+=~ InnoDB: Failing assertion: ((list)\.init == UT_LIST_INITIALISED)
+=~ ut_list_remove
+=~ trx_commit_in_memory
+=~ Version: '10\.[3-9]
+MDEV-23235:
+=~ Assertion \`part_id == m_last_part'
+=~ ha_partition::delete_row
+=~ Version: '10\.[4-9]
 MDEV-23219:
 =~ Assertion \`(length % 4) == 0'
 =~ my_well_formed_len_utf32
@@ -2970,10 +2979,6 @@ TODO-842: [thd->in_sub_stmt]
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_rollback_stmt
 =~ wsrep::client_state::after_statement
-TODO-842: [part_id == m_last_part]
-=~ Assertion \`part_id == m_last_part'
-=~ multi_delete::do_table_deletes
-=~ Version: '10\.[4-9]
 
 ##############################################################################
 # Weak matches
