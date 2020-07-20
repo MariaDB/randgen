@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23241:
+=~ Assertion \`lock->trx->dict_operation != TRX_DICT_OP_NONE'
+=~ lock_check_dict_lock
+=~ commit_in_memory
+=~ Version: '10\.[4-9]
+MDEV-23240:
+=~ Assertion \`!table->is_temporary()'
+=~ lock_check_dict_lock
+=~ commit_in_memory
+=~ Version: '10\.[4-9]
 MDEV-23239:
 =~ InnoDB: Failing assertion: ((list)\.init == UT_LIST_INITIALISED)
 =~ ut_list_remove
@@ -2521,6 +2531,18 @@ MDEV-16500:
 =~ innobase_get_col_names
 =~ Sql_cmd_alter_table::execute
 =~ Version: '10\.1
+MDEV-16407:
+=~ Error: Freeing overrun buffer
+=~ signal|AddressSanitizer
+=~ in MDL_key::mdl_key_init
+=~ Table_triggers_list::add_tables_and_routines_for_triggers
+=~ Version: '10\.[3-9]
+MDEV-16407:
+=~ signal|AddressSanitizer
+=~ free_root
+=~ sp_head::operator delete
+=~ Table_triggers_list
+=~ Version: '10\.[3-9]
 MDEV-16397:
 =~ LOAD DATA.* INFILE .* Can't find record in
 =~ sequence
@@ -2781,6 +2803,12 @@ MDEV-10826:
 =~ signal|AddressSanitizer
 =~ Query_cache::double_linked_list_exclude
 =~ Query_cache::free_query
+MDEV-9137:
+=~ signal|AddressSanitizer
+=~ w_search
+=~ in _ma_ck_real_write_btree
+=~ _ma_ft_store
+=~ Version: '10\.1
 MDEV-8089:
 =~ Apc_target::make_apc_call
 =~ fill_show_explain
@@ -3189,10 +3217,6 @@ MDEV-16501:
 =~ ->coll->strcasecmp
 MDEV-16501:
 =~ in dict_mem_table_col_rename
-MDEV-16407:
-=~ in MDL_key::mdl_key_init
-MDEV-16407:
-=~ Error: Freeing overrun buffer
 MDEV-16184:
 =~ nest->counter > 0
 MDEV-16171:
@@ -3245,8 +3269,6 @@ MDEV-12329:
 =~ 1024U, trx, rec, block
 MDEV-11783:
 =~ checksum_length == f->ptr
-MDEV-9137:
-=~ in _ma_ck_real_write_btree
 MDEV-7600:
 =~ STATUS_LENGTH_MISMATCH_SELECT
 =~ Transformed query: .* GenTest::Transform::ExecuteAsPreparedT.* ANY|Transformed query: .* GenTest::Transform::ExecuteAsPreparedT.* SOME|Transformed query: .* GenTest::Transform::ExecuteAsPreparedT.* ALL
