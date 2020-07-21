@@ -41,8 +41,7 @@ sub transform {
 
 	return [ [
 		"SET \@switch_saved = \@\@optimizer_switch",
-		"SET SESSION optimizer_switch = REPLACE( \@\@optimizer_switch, '=on', '=off' )",
-		"SET SESSION optimizer_switch = 'in_to_exists=on'",
+		"SET SESSION optimizer_switch = REPLACE(REPLACE( \@\@optimizer_switch, '=on', '=off' ), 'in_to_exists=off', 'in_to_exists=on')",
 		"$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" ],
 		[ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=\@switch_saved" ]
 	];
