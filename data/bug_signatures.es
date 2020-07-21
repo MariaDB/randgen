@@ -55,6 +55,118 @@ MDEV-22913:
 ##########
 # Fixed in the next release
 ##########
+
+MDEV-20661:
+=~ Assertion \`btr_validate_index(index, 0)'
+=~ row_upd_sec_index_entry
+=~ ha_innobase::delete_row
+=~ DELETE HISTORY
+MDEV-12059:
+=~ Assertion \`precision > 0'
+=~ decimal_bin_size
+=~ Field_new_decimal::create_from_item
+=~ create_tmp_table
+=~  OVER
+=~ Version: '10\.[2-9]
+MDEV-18371:
+=~ Conditional jump or move depends on uninitialised value|signal 11|AddressSanitizer: SEGV
+=~ cmp_key_rowid_part_id
+=~ ha_partition::handle_ordered_index_scan|ha_partition::handle_ordered_next
+MDEV-21619:
+=~ signal 11
+=~ my_datetime_to_str
+=~ Datetime::to_string|my_TIME_to_str
+=~ Item::print_value
+=~ Version: '10\.[2-9]
+MDEV-21619:
+=~ Assertion \`fsp <= 6'|Assertion \`digits <= 6'
+=~ my_mmssff_to_str|my_datetime_to_str
+=~ my_TIME_to_str
+=~ Version: '10\.[2-9]
+MDEV-22222:
+=~ Assertion \`state() == s_executing \|\| state() == s_preparing \|\| state() == s_prepared \|\| state() == s_must_abort \|\| state() == s_aborting \|\| state() == s_cert_failed \|\| state() == s_must_replay'
+=~ wsrep::transaction::before_rollback
+=~ Version: '10\.[4-9]
+MDEV-22370:
+=~ safe_mutex: Trying to lock uninitialized mutex at .*/sql/rpl_parallel\.cc|Got error 22 when trying to lock mutex LOCK_rpl_thread_pool
+=~ rpl_pause_for_ftwrl|rpl_unpause_after_ftwrl
+=~ Version: '10\.[4-9]
+MDEV-22390:
+=~ Assertion \`m_next_rec_ptr >= m_rawmem'
+=~ Filesort_buffer::spaceleft
+=~ SORT_INFO::isfull
+MDEV-22520:
+=~ Assertion \`gathered_length == thd->lex->comment\.length'
+=~ binlog_defragment
+=~ mysql_client_binlog_statement
+MDEV-22553:
+=~ Assertion \`info->lastpos == (~ (my_off_t) 0)'
+=~ mi_rkey
+=~ Mrr_simple_index_reader
+=~ QUICK_RANGE_SELECT
+=~ Version: '10\.[4-9]
+MDEV-22771:
+=~ Assertion \`c\.same_type(\*o)'|Assertion \`fields\[i\]\.same(instant\.fields\[i\])'
+=~ dict_table_t::instant_column
+=~ Version: '10\.[4-9]
+MDEV-22866:
+=~ signal|AddressSanitizer
+=~ JOIN::fix_all_splittings_in_plan
+=~ not_null_range_scan=on
+=~ Version: '10\.[5-9]
+MDEV-22866:
+=~ Assertion \`join->best_read < double(1\.79769313486231570815e+308L)'
+=~ greedy_search
+=~ not_null_range_scan=on
+=~ Version: '10\.[5-9]
+MDEV-22890:
+=~ FATAL.* InnoDB: .* Deadlock Detected
+=~ Thread .* has waited at row0sel\.cc line|Thread .* has waited at row0row\.cc line
+=~ Thread .* has waited at row0quiesce\.cc line
+=~ Thread .* has waited at btr0cur\.cc line
+=~ Version: '10\.[5-9]
+MDEV-22899:
+=~ Assertion \`field->col->is_binary() \|\| field->prefix_len % field->col->mbmaxlen == 0'
+=~ dict_index_add_to_cache
+=~ create_index_dict
+=~ Version: '10\.[4-9]
+MDEV-22899:
+=~ InnoDB: Failing assertion: !(prefix_len % mbmaxlen)
+=~ dtype_validate
+=~ row_merge_read_clustered_index
+=~ Version: '10\.[4-9]
+MDEV-22970:
+=~ Assertion \`!m_freed_pages'
+=~ mtr_t::init
+=~ fsp_init_file_page
+=~ Version: '10\.[5-9]
+MDEV-23241:
+=~ Assertion \`lock->trx->dict_operation != TRX_DICT_OP_NONE'
+=~ lock_check_dict_lock
+=~ commit_in_memory
+=~ Version: '10\.[4-9]
+MDEV-23240:
+=~ Assertion \`!table->is_temporary()'
+=~ lock_check_dict_lock
+=~ commit_in_memory
+=~ Version: '10\.[4-9]
+MDEV-23239:
+=~ InnoDB: Failing assertion: ((list)\.init == UT_LIST_INITIALISED)
+=~ ut_list_remove
+=~ trx_commit_in_memory
+=~ Version: '10\.[3-9]
+MDEV-22061:
+=~ was not found on update: TUPLE
+=~ Assertion \`btr_validate_index(index, 0, false)'
+=~ row_upd_sec_index_entry
+=~ Version: '10\.3
+=~ versioning
+MDEV-22061:
+=~ was not found on update: TUPLE
+=~ Assertion \`btr_validate_index(index, 0)'
+=~ row_upd_sec_index_entry
+=~ Version: '10\.[4-9]
+=~ versioning
 MDEV-22816:
 =~ Assertion \`node->space == fil_system\.sys_space'
 =~ fil_aio_callback
@@ -178,6 +290,9 @@ MDEV-18794:
 MDEV-18457: [bitmap->full_head_size]
 =~ Assertion \`(bitmap->map + (bitmap->full_head_size/6\*6)) <= full_head_end'
 =~ _ma_check_bitmap
+MDEV-19745:
+=~ Backup did not finish in due time
+=~ Version: '10\.[3-9]
 
 ##############################################################################
 # Weak matches
@@ -186,8 +301,24 @@ MDEV-18457: [bitmap->full_head_size]
 ##########
 # Fixed in the next release
 ##########
+
 MDEV-19320:
 =~ UPDATE.* 1032 Can't find record in|DELETE.* 1032 Can't find record in|SELECT SETVAL.* 1032 Can't find record in|SELECT.* 1032 Can't find record in|INSERT.* 1032 Can't find record in
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 =~ sequence
 =~ Version: '10\.[3-5]
+MDEV-22061: [cursor->index->is_committed - Versioning]
+=~ was not found on update: TUPLE
+=~ Failing assertion: !cursor->index->is_committed()
+=~ row_ins_sec_index_entry_by_modify
+=~ Version: '10\.[3-9]
+=~ versioning
+MDEV-20661:
+=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE (info_bits=.* fields):
+=~ versioning
+=~ will exit with exit status STATUS_DATABASE_CORRUPTION
+MDEV-20661:
+=~ failed: 126: Index for table './test/t1.MYI' is corrupt; try to repair it
+=~ versioning
+MDEV-5924:
+=~ Query_cache::register_all_tables

@@ -4,21 +4,6 @@
 # Strong matches
 ##############################################################################
 
-MDEV-23241:
-=~ Assertion \`lock->trx->dict_operation != TRX_DICT_OP_NONE'
-=~ lock_check_dict_lock
-=~ commit_in_memory
-=~ Version: '10\.[4-9]
-MDEV-23240:
-=~ Assertion \`!table->is_temporary()'
-=~ lock_check_dict_lock
-=~ commit_in_memory
-=~ Version: '10\.[4-9]
-MDEV-23239:
-=~ InnoDB: Failing assertion: ((list)\.init == UT_LIST_INITIALISED)
-=~ ut_list_remove
-=~ trx_commit_in_memory
-=~ Version: '10\.[3-9]
 MDEV-23235:
 =~ Assertion \`part_id == m_last_part'
 =~ ha_partition::delete_row
@@ -40,7 +25,7 @@ MDEV-23218:
 MDEV-23215:
 =~ signal|AddressSanitizer
 =~ my_hash_first|flush_simple_key_cache_blocks
-=~ close_system_tables|close_thread_tables
+=~ close_system_tables|close_thread_tables|ha_partition::extra
 =~ Version: '10\.[1-3]
 MDEV-23215:
 =~ safe_mutex: Trying to destroy a mutex keycache->cache_lock that was locked at .*mf_keycache\.c
@@ -172,11 +157,6 @@ MDEV-22973:
 =~ multi_update::do_updates
 =~ versioning
 =~ Version: '10\.[3-4]
-MDEV-22970:
-=~ Assertion \`!m_freed_pages'
-=~ mtr_t::init
-=~ fsp_init_file_page
-=~ Version: '10\.[5-9]
 MDEV-22942:
 =~ InnoDB: Failing assertion: page_offset(rec) <= page_header_get_field(page, PAGE_HEAP_TOP)
 =~ page_rec_check
@@ -199,27 +179,6 @@ MDEV-22913:
 =~ error: can't open
 =~ Error: xtrabackup_apply_delta(): failed to apply
 =~ Version: '10\.[5-9]
-MDEV-22911:
-=~ LeakSanitizer: detected memory leaks
-=~ ut_allocator
-=~ mem_heap_create_block_func
-=~ Version: '10\.[5-9]
-MDEV-22899:
-=~ Assertion \`field->col->is_binary() \|\| field->prefix_len % field->col->mbmaxlen == 0'
-=~ dict_index_add_to_cache
-=~ create_index_dict
-=~ Version: '10\.[4-9]
-MDEV-22899:
-=~ InnoDB: Failing assertion: !(prefix_len % mbmaxlen)
-=~ dtype_validate
-=~ row_merge_read_clustered_index
-=~ Version: '10\.[4-9]
-MDEV-22890:
-=~ FATAL.* InnoDB: .* Deadlock Detected
-=~ Thread .* has waited at row0sel\.cc line|Thread .* has waited at row0row\.cc line
-=~ Thread .* has waited at row0quiesce\.cc line
-=~ Thread .* has waited at btr0cur\.cc line
-=~ Version: '10\.[5-9]
 MDEV-22886:
 =~ AddressSanitizer
 =~ my_convert
@@ -241,31 +200,11 @@ MDEV-22883:
 =~ Trigger::get_trigger_info
 =~ get_schema_triggers_record
 =~ Version: '10\.[2-9]
-MDEV-22881:
-=~ signal|AddressSanitizer|Invalid read of size
-=~ Item_ident::print|append_identifier
-=~ pack_vcols
-=~ Version: '10\.[5-9]
 MDEV-22873:
 =~ has a primary key in InnoDB data dictionary, but not in MariaDB
 =~ Assertion \`len == ref_length'|AddressSanitizer
 =~ ha_innobase::position
 =~ find_all_keys|mysql_update
-=~ Version: '10\.[5-9]
-MDEV-22867:
-=~ Assertion \`instant\.n_core_fields == n_core_fields'
-=~ dict_index_t::instant_add_field
-=~ innobase_instant_try
-=~ Version: '10\.[5-9]
-MDEV-22866:
-=~ signal|AddressSanitizer
-=~ JOIN::fix_all_splittings_in_plan
-=~ not_null_range_scan=on
-=~ Version: '10\.[5-9]
-MDEV-22866:
-=~ Assertion \`join->best_read < double(1\.79769313486231570815e+308L)'
-=~ greedy_search
-=~ not_null_range_scan=on
 =~ Version: '10\.[5-9]
 MDEV-22856:
 =~ Assertion \`!str \|\| str != Ptr'
@@ -288,11 +227,6 @@ MDEV-22825:
 =~ add_key_field
 =~ update_ref_and_keys
 =~ Version: '10\.[4-9]
-MDEV-22819:
-=~ Assertion \`ix > 0'
-=~ read_to_buffer
-=~ merge_buffers
-=~ Version: '10\.[5-9]
 MDEV-22805:
 =~ signal|AddressSanitizer|Assertion \`thd->lex->sql_command == SQLCOM_UPDATE'
 =~ Multiupdate_prelocking_strategy::handle_end
@@ -317,10 +251,6 @@ MDEV-22772:
 =~ cast_to_int_type
 =~ ROLLUP
 =~ Version: '10\.[1-2]
-MDEV-22771:
-=~ Assertion \`c\.same_type(\*o)'|Assertion \`fields\[i\]\.same(instant\.fields\[i\])'
-=~ dict_table_t::instant_column
-=~ Version: '10\.[4-9]
 MDEV-22768:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
@@ -496,12 +426,6 @@ MDEV-22562:
 =~ mysql_unlock_tables
 =~ Version: '10\.[4-9]
 =~ application_periods
-MDEV-22553:
-=~ Assertion \`info->lastpos == (~ (my_off_t) 0)'
-=~ mi_rkey
-=~ Mrr_simple_index_reader
-=~ QUICK_RANGE_SELECT
-=~ Version: '10\.[4-9]
 MDEV-22551:
 =~ signal 11|AddressSanitizer
 =~ skip_trailing_space
@@ -537,10 +461,6 @@ MDEV-22521:
 =~ traverse_role_graph_up
 =~ propagate_role_grants
 =~ mysql_grant
-MDEV-22520:
-=~ Assertion \`gathered_length == thd->lex->comment\.length'
-=~ binlog_defragment
-=~ mysql_client_binlog_statement
 MDEV-22509:
 =~ signal 11|AddressSanitizer
 =~ Field::maybe_null
@@ -584,10 +504,6 @@ MDEV-22426:
 =~ signal 8|AddressSanitizer: FPE
 =~ maria_create
 =~ CHAR(0)
-MDEV-22390:
-=~ Assertion \`m_next_rec_ptr >= m_rawmem'
-=~ Filesort_buffer::spaceleft
-=~ SORT_INFO::isfull
 MDEV-22385:
 =~ Assertion \`0'
 =~ stored_field_cmp_to_item
@@ -596,10 +512,6 @@ MDEV-22385:
 MDEV-22375:
 =~ Assertion \`(engine->uncacheable() & ~8) \|\| ! engine->is_executed() \|\| with_recursive_reference'
 =~ Item_in_subselect
-=~ Version: '10\.[4-9]
-MDEV-22370:
-=~ safe_mutex: Trying to lock uninitialized mutex at .*/sql/rpl_parallel\.cc|Got error 22 when trying to lock mutex LOCK_rpl_thread_pool
-=~ rpl_pause_for_ftwrl|rpl_unpause_after_ftwrl
 =~ Version: '10\.[4-9]
 MDEV-22250:
 =~ InnoDB: Failing assertion: opt_no_lock
@@ -672,10 +584,6 @@ MDEV-22223:
 =~ Assertion \`state() == s_executing \|\| state() == s_prepared \|\| state() == s_committing \|\| state() == s_must_abort \|\| state() == s_replaying'
 =~ wsrep::transaction::before_commit
 =~ Version: '10\.[4-9]
-MDEV-22222:
-=~ Assertion \`state() == s_executing \|\| state() == s_preparing \|\| state() == s_prepared \|\| state() == s_must_abort \|\| state() == s_aborting \|\| state() == s_cert_failed \|\| state() == s_must_replay'
-=~ wsrep::transaction::before_rollback
-=~ Version: '10\.[4-9]
 MDEV-22216:
 =~ Assertion \`xid_seqno > wsrep_seqno'
 =~ trx_rseg_update_wsrep_checkpoint
@@ -731,18 +639,6 @@ MDEV-22063:
 =~ Assertion \`0'
 =~ wsrep::transaction::before_rollback
 =~ Version: '10\.[4-9]
-MDEV-22061:
-=~ was not found on update: TUPLE
-=~ Assertion \`btr_validate_index(index, 0, false)'
-=~ row_upd_sec_index_entry
-=~ Version: '10\.3
-=~ versioning
-MDEV-22061:
-=~ was not found on update: TUPLE
-=~ Assertion \`btr_validate_index(index, 0)'
-=~ row_upd_sec_index_entry
-=~ Version: '10\.[4-9]
-=~ versioning
 MDEV-22055:
 =~ Assertion \`active() == false'
 =~ wsrep::transaction::start_transaction
@@ -814,10 +710,6 @@ MDEV-21834:
 =~ a_myisam::get_auto_increment
 =~ ha_myisam::write_row
 =~ Version: '10\.[4-9]
-MDEV-21831:
-=~ Assertion \`length == pack_length()'
-=~ Field_inet6::sort_string
-=~ myrocks::Rdb_key_def::pack_with_make_sort_key
 MDEV-21830:
 =~ Assertion \`share->in_trans == 0'
 =~ maria_close
@@ -918,17 +810,6 @@ MDEV-21630:
 =~ mysql_derived_prepare
 =~ Multiupdate_prelocking_strategy::handle_end
 =~ sp_instr_stmt::exec_core
-=~ Version: '10\.[2-9]
-MDEV-21619:
-=~ signal 11
-=~ my_datetime_to_str
-=~ Datetime::to_string|my_TIME_to_str
-=~ Item::print_value
-=~ Version: '10\.[2-9]
-MDEV-21619:
-=~ Assertion \`fsp <= 6'|Assertion \`digits <= 6'
-=~ my_mmssff_to_str|my_datetime_to_str
-=~ my_TIME_to_str
 =~ Version: '10\.[2-9]
 MDEV-21589:
 =~ AddressSanitizer: memcpy-param-overlap
@@ -1291,11 +1172,6 @@ MDEV-20666:
 =~ row_search_for_mysql
 =~ ha_innobase::index_read
 =~ Version: '5.5
-MDEV-20661:
-=~ Assertion \`btr_validate_index(index, 0)'
-=~ row_upd_sec_index_entry
-=~ ha_innobase::delete_row
-=~ DELETE HISTORY
 MDEV-20643:
 =~ signal 11|AddressSanitizer: SEGV
 =~ find_table_in_list
@@ -1940,10 +1816,6 @@ MDEV-18693:
 =~ _ma_remove_table_from_trnman
 =~ wait_while_table_is_used
 =~ reload_acl_and_cache
-MDEV-18654:
-=~ InnoDB: Failing assertion: sym_node->table != NULL
-=~ pars_retrieve_table_def
-=~ pars_insert_statement
 MDEV-18643:
 =~ FATAL ERROR: .* failed to execute query BACKUP .*: Deadlock found when trying to get lock; try restarting transaction|FATAL ERROR: .* failed to execute query BACKUP .*: Lock wait timeout exceeded; try restarting transaction
 MDEV-18624:
@@ -2044,10 +1916,6 @@ MDEV-18381:
 =~ ha_innobase::store_lock
 =~ mysql_lock_abort_for_thread
 =~ THD::notify_shared_lock
-MDEV-18371:
-=~ Conditional jump or move depends on uninitialised value|signal 11|AddressSanitizer: SEGV
-=~ cmp_key_rowid_part_id
-=~ ha_partition::handle_ordered_index_scan|ha_partition::handle_ordered_next
 MDEV-18370:
 =~ Failing assertion: lsn % OS_FILE_LOG_BLOCK_SIZE == LOG_BLOCK_HDR_SIZE
 =~ log_pad_current_log_block
@@ -2772,13 +2640,6 @@ MDEV-12251:
 =~ srv_get_meta_data_filename
 =~ row_quiesce_write_cfg|row_quiesce_table_complete
 =~ ha_innodb::external_lock
-MDEV-12059:
-=~ Assertion \`precision > 0'
-=~ decimal_bin_size
-=~ Field_new_decimal::create_from_item
-=~ create_tmp_table
-=~  OVER
-=~ Version: '10\.[2-9]
 MDEV-11740:
 =~ Assertion \`pos != (~(my_off_t) 0)' failed
 =~ my_seek
@@ -3041,12 +2902,6 @@ MDEV-22076: [cursor->index->is_committed - XA]
 =~ InnoDB: Failing assertion: !cursor->index->is_committed()
 =~ row_ins_sec_index_entry_by_modify
 =~ xa\.yy
-MDEV-22061: [cursor->index->is_committed - Versioning]
-=~ was not found on update: TUPLE
-=~ Failing assertion: !cursor->index->is_committed()
-=~ row_ins_sec_index_entry_by_modify
-=~ Version: '10\.[3-9]
-=~ versioning
 MDEV-21781: [EnableOptimizations]
 =~ Transformed query: .* GenTest::Transform::EnableOptimizations
 =~ Version: '10\.[5-9]
@@ -3076,13 +2931,6 @@ MDEV-20763:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE|Index for table .* is corrupt; try to repair it
 =~ Version: '10\.[3-9]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
-MDEV-20661:
-=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE (info_bits=.* fields):
-=~ versioning
-=~ will exit with exit status STATUS_DATABASE_CORRUPTION
-MDEV-20661:
-=~ failed: 126: Index for table './test/t1.MYI' is corrupt; try to repair it
-=~ versioning
 MDEV-20554:
 =~ Index for table .* is corrupt; try to repair it
 =~ scrub
@@ -3096,9 +2944,6 @@ MDEV-20484:
 MDEV-20476:
 =~ Index for table .* is corrupt; try to repair it
 =~ scrub
-MDEV-19745:
-=~ Backup did not finish in due time
-=~ Version: '10\.[3-9]
 # I want to see it happen, even if it can be a strong match
 MDEV-19338: [cursor->index->is_committed - Vcols]
 =~ InnoDB: Failing assertion: !cursor->index->is_committed()
@@ -3273,5 +3118,3 @@ MDEV-7600:
 =~ STATUS_LENGTH_MISMATCH_SELECT
 =~ Transformed query: .* GenTest::Transform::ExecuteAsPreparedT.* ANY|Transformed query: .* GenTest::Transform::ExecuteAsPreparedT.* SOME|Transformed query: .* GenTest::Transform::ExecuteAsPreparedT.* ALL
 # Commit lost (repeatedly)
-MDEV-5924:
-=~ Query_cache::register_all_tables
