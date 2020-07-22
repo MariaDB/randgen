@@ -4,6 +4,27 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23265:
+=~ Assertion \`!expl_lock \|\| expl_lock->trx == arg->impl_trx'
+=~ lock_rec_other_trx_holds_expl_callback
+=~ rw_trx_hash_t::debug_iterator
+=~ Version: '10\.[4-9]
+MDEV-23259:
+=~ Assertion \`param\.sort_length != 0'
+=~ filesort
+=~ create_sort_index
+=~ Version: '10\.1
+MDEV-23258:
+=~ InnoDB: Failing assertion: 0
+=~ row_sel_convert_mysql_key_to_innobase
+=~ ha_innodb::index_read
+=~ Version: '10\.1
+MDEV-23248:
+=~ AddressSanitizer|signal
+=~ mi_extra
+=~ ha_partition::loop_extra_alter
+=~ fast_alter_partition_table
+=~ Version: '10\.[3-9]
 MDEV-23235:
 =~ Assertion \`part_id == m_last_part'
 =~ ha_partition::delete_row
@@ -2386,8 +2407,8 @@ MDEV-16554:
 =~ row_prebuilt_free
 =~ Version: '10\.[3-9]
 MDEV-16549:
-=~ Assertion \`context' failed|signal 11|AddressSanitizer: SEGV
-=~ Item_direct_view_ref.*fix_fields
+=~ Assertion \`context'|signal 11|AddressSanitizer: SEGV
+=~ Item_direct_view_ref.*fix_fields|Item_field::fix_fields
 =~ mysql_derived_optimize|mysql_handle_single_derived
 MDEV-16539: [THD::mark_tmp_table_as_free_for_reuse]
 =~ mysqld got exception|signal 11
@@ -2573,7 +2594,7 @@ MDEV-15011:
 MDEV-14996:
 =~ Assertion \`!thd->get_stmt_da()->is_sent() \|\| thd->killed == KILL_CONNECTION'
 =~ int ha_maria::external_lock
-=~ Status: KILL_CONNECTION|Status: KILL_SERVER
+=~ Status: KILL_CONNECTION|Status: KILL_SERVER|unlink_thd
 =~ Version: '10\.1
 MDEV-14865:
 =~ Assertion \`share->now_transactional == share->base\.born_transactional'
@@ -2639,7 +2660,7 @@ MDEV-12251:
 =~ InnoDB: Failing assertion: table->data_dir_path
 =~ srv_get_meta_data_filename
 =~ row_quiesce_write_cfg|row_quiesce_table_complete
-=~ ha_innodb::external_lock
+=~ ha_innodb::external_lock|ha_innobase::external_lock
 MDEV-11740:
 =~ Assertion \`pos != (~(my_off_t) 0)' failed
 =~ my_seek
@@ -2744,12 +2765,6 @@ TODO-842: [row_ins_check_foreign_constraint]
 =~ row_ins_check_foreign_constraint
 =~ row_ins_index_entry|row_ins_sec_index_entry
 =~ Version: '10\.1
-TODO-842: [mi_extra]
-=~ AddressSanitizer: SEGV|signal 11
-=~ mi_extra
-=~ ha_partition::loop_extra_alter
-=~ wait_while_table_is_used
-=~ fast_alter_partition_table
 TODO-842: [ib_vector_size]
 =~ AddressSanitizer: heap-use-after-free
 =~ ib_vector_size
