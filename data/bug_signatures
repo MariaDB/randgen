@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23276:
+=~ signal|AddressSanitizer|Assertion \`mutex->__data\.__owner == 0'
+=~ simple_key_cache_read|simple_key_cache_write
+=~ _mi_fetch_keypage|_mi_write_keypage
+MDEV-23276:
+=~ mutex keycache->cache_lock.*mf_keycache\.c
+=~ signal
+=~ end_simple_key_cache
+=~ repartition_key_cache
+MDEV-23275:
+=~ Assertion \`strncmp(str->ptr() + str->length() - 5, "cast(", 5) == 0'
+=~ Item_dyncol_get::print
 MDEV-23265:
 =~ Assertion \`!expl_lock \|\| expl_lock->trx == arg->impl_trx'
 =~ lock_rec_other_trx_holds_expl_callback
@@ -2326,7 +2338,6 @@ MDEV-16985:
 =~ Assertion \`strcmp(share->unique_file_name,filename) \|\| share->last_version'
 =~ test_if_reopen
 =~ mi_open
-=~ open_table_from_share
 MDEV-16962:
 =~ Assertion \`!error \|\| !ot_ctx.can_recover_from_failed_open()'
 =~ open_purge_table
