@@ -136,7 +136,7 @@ dynvar_session_variable:
   | max_session_mem_used= { $prng->arrayElement([8192,1048576,4294967295,9223372036854775807,18446744073709551615]) }
   | max_sort_length= { $prng->arrayElement([8,512,1024,2048,4096,65535,1048576,8388608]) }
   | max_sp_recursion_depth= { $prng->int(0,255) }
-  | max_statement_time= { $prng->arrayElement(['DEFAULT',0,1]) }
+  | max_statement_time= { $prng->arrayElement(['DEFAULT',1,10]) }
 # | MAX_TMP_TABLES # Said to be unused
 # | MAX_USER_CONNECTIONS # Dynamic conditionally
   | min_examined_row_limit= { $prng->arrayElement([0,1,1024,1048576,4294967295]) }
