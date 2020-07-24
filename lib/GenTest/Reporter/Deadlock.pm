@@ -53,7 +53,7 @@ sub monitor {
 
 	if ($actual_test_duration > ACTUAL_TEST_DURATION_MULTIPLIER * $reporter->testDuration()) {
 		say("Actual test duration ($actual_test_duration seconds) is more than ".(ACTUAL_TEST_DURATION_MULTIPLIER)." times the desired duration (".$reporter->testDuration()." seconds)");
-		return STATUS_SERVER_DEADLOCKED;
+		return STATUS_INTERNAL_ERROR;
 	}
 
 	if (osWindows()) {
