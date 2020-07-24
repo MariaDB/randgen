@@ -1410,7 +1410,7 @@ MDEV-20235:
 =~ create_tmp_table
 =~ Version: '10\.1\.
 MDEV-20235:
-=~ DISTINCT VARIANCE.* GROUP BY .* ORDER BY .*BENCHMARK .* failed: 5: Out of memory (Needed .* bytes)
+=~ DISTINCT VAR.* GROUP BY .* ORDER BY .*BENCHMARK .* failed: 5: Out of memory (Needed .* bytes)
 =~ Version: '10\.1\.
 MDEV-20207:
 =~ Assertion \`! is_set()'
