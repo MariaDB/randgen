@@ -2527,6 +2527,10 @@ MDEV-15533:
 =~ Assertion \`log->blobs'
 =~ row_log_table_apply_update
 =~ mysql_alter_table
+MDEV-15532:
+=~ Assertion \`!log->same_pk'|InnoDB: Failing assertion: !log->same_pk
+=~ row_log_table_apply_delete
+=~ Version: '10\.[0-2]
 MDEV-15494:
 =~ InnoDB: Assertion failure.*trx0roll.cc line
 =~ trx_rollback_last_sql_stat_for_mysql
