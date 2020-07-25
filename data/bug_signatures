@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23286:
+=~ Assertion \`field->type_handler() == this'
+=~ Type_handler_inet6::stored_field_cmp_to_item
+=~ stored_field_cmp_to_item
 MDEV-23276:
 =~ signal|AddressSanitizer|Assertion \`mutex->__data\.__owner == 0'
 =~ simple_key_cache_read|simple_key_cache_write
@@ -104,7 +108,6 @@ MDEV-23184:
 =~ Version: '10\.1
 MDEV-23182:
 =~ signal|AddressSanitizer
-=~ Item::fix_fields_if_needed|Item::check_is_evaluable_expression_or_error
 =~ fix_fields_for_tvc
 =~ table_value_constr::prepare
 =~ Prepared_statement|sp_head::execute
@@ -893,10 +896,10 @@ MDEV-21478:
 =~ Assertion \`col->len == sizeof(doc_id_t)'
 =~ dict_load_columns
 MDEV-21470:
-=~ AddressSanitizer:
+=~ AddressSanitizer|signal
 =~ my_hash_sort_bin
 =~ calc_hash_for_unique
-=~ TABLE::update_virtual_fields
+=~ TABLE::update_virtual_field
 =~ Version: '10\.[4-9]
 MDEV-21460:
 =~ Assertion \`! is_set()'
@@ -948,8 +951,8 @@ MDEV-21406:
 =~ str_op_with_null_check
 =~ Version: '10\.4
 MDEV-21373:
-=~ AddressSanitizer:
-=~ tree_search_next|hp_rb_var_key_length|ha_key_cmp
+=~ AddressSanitizer|signal
+=~ tree_search_next|hp_rb_var_key_length|ha_key_cmp|hp_rb_make_key
 =~ check_one_rb_key
 =~ heap_check_heap
 =~ Version: '10\.[3-9]
@@ -1211,7 +1214,6 @@ MDEV-20643:
 =~ find_table_in_global_list
 =~ find_dup_table
 MDEV-20640:
-=~ InnoDB: tried to purge non-delete-marked record in index
 =~ Assertion \`0'
 =~ row_purge_remove_sec_if_poss_leaf
 =~ que_thr_step
@@ -2524,7 +2526,7 @@ MDEV-15534:
 =~ row_update_prebuilt_trx
 =~ ha_innobase::external_lock
 MDEV-15533:
-=~ Assertion \`log->blobs'
+=~ Assertion \`log->blobs'|InnoDB: Failing assertion: log->blobs
 =~ row_log_table_apply_update
 =~ mysql_alter_table
 MDEV-15532:
@@ -2928,7 +2930,6 @@ MDEV-22601: [Can't find record in]
 =~ Version: '10\.[3-9]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-22076: [cursor->index->is_committed - XA]
-=~ InnoDB: tried to purge non-delete-marked record in index
 =~ InnoDB: Failing assertion: !cursor->index->is_committed()
 =~ row_ins_sec_index_entry_by_modify
 =~ xa\.yy
