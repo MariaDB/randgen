@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23294:
+=~ Assertion \`!table \|\| table->in_use == _current_thd()'
+=~ Item_func_hash::val_int
+=~ TABLE::update_virtual_field
+=~ Version: '10\.[4-9]
 MDEV-23286:
 =~ Assertion \`field->type_handler() == this'
 =~ Type_handler_inet6::stored_field_cmp_to_item
