@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23296:
+=~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == type \|\| (block->type == PAGECACHE_PLAIN_PAGE && type == PAGECACHE_LSN_PAGE)'
+=~ pagecache_write_part
+=~ _ma_write_keypage
+MDEV-23295:
+=~ Assertion \`fields\[i\]\.same(instant\.fields\[i\])'
+=~ dict_index_t::instant_add_field
+=~ Version: '10\.[4-9]
 MDEV-23294:
 =~ Assertion \`!table \|\| table->in_use == _current_thd()'
 =~ Item_func_hash::val_int
@@ -110,6 +118,11 @@ MDEV-23187:
 MDEV-23184:
 =~ AddressSanitizer|signal
 =~ THD::killed_errno
+=~ Version: '10\.1
+MDEV-23184:
+=~ Assertion `m_status == DA_ERROR'
+=~ Diagnostics_area::sql_errno
+=~ fill_schema_table_by_open
 =~ Version: '10\.1
 MDEV-23182:
 =~ signal|AddressSanitizer
@@ -471,7 +484,6 @@ MDEV-22551:
 =~ signal 11|AddressSanitizer
 =~ skip_trailing_space
 =~ charset_info_st::hash_sort
-=~ collect_statistics_for_table
 =~ Version: '10\.[4-9]
 MDEV-22551:
 =~ Assertion \`marked_for_read()'
@@ -863,6 +875,10 @@ MDEV-21589:
 =~ AddressSanitizer: memcpy-param-overlap
 =~ Static_binary_string::q_append|String::append
 =~ Item_func_concat_ws::val_str
+MDEV-21579:
+=~ Assertion \`ordered_index_usage == ordered_index_order_by'
+=~ JOIN::optimize_distinct
+=~ JOIN::make_aggr_tables_info
 MDEV-21576:
 =~ Assertion \`table->vers_start != table->vers_end'|Assertion \`t'|Assertion \`t->mysql_col_len == 8'
 =~ row_insert_for_mysql
