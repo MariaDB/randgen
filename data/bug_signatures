@@ -519,6 +519,13 @@ MDEV-22445:
 =~ InnoDB: Assertion failure in file .*innobase/trx/trx0trx\.cc
 =~ trx_start_if_not_started_xa_low
 =~ ha_innobase::init_table_handle_for_HANDLER
+MDEV-22444:
+=~ signal|AddressSanitizer
+=~ Field_iterator_table::create_item
+=~ Field_iterator_table_ref::create_item
+=~ insert_fields
+=~ setup_wild
+=~ Version: '10\.[3-9]
 MDEV-22442: [wsrep - lock_sys.mutex.is_owned]
 =~ Assertion \`(lock_sys\.mutex\.is_owned())'
 =~ lock_trx_handle_wait_low
@@ -1469,7 +1476,7 @@ MDEV-19840:
 =~ Diagnostics_area::sql_errno
 =~ ha_rollback_trans
 =~ trans_rollback_implicit|trans_rollback_stmt
-=~ Version: '10\.[4-9]
+=~ Version: '10\.[3-9]
 MDEV-19817:
 =~ signal 11|AddressSanitizer: SEGV
 =~ unsafe_key_update
@@ -2382,6 +2389,11 @@ MDEV-16794:
 =~ Locked_tables_list::unlock_locked_tables
 =~ mysql_inplace_alter_table
 =~ Version: '10\.[0-1]
+MDEV-16789:
+=~ signal|AddressSanitizer
+=~ insert_fields
+=~ setup_wild
+=~ sp_head::execute
 MDEV-16788:
 =~ Assertion \`ls->length < 0xFFFFFFFFL && ((ls->length == 0 && !ls->str) \|\| ls->length == strlen(ls->str))'
 =~ String::q_append|Static_binary_string::q_append
@@ -2995,8 +3007,6 @@ MDEV-18414:
 =~ Value_source::Converter_strntod::Converter_strntod
 MDEV-18322:
 =~ wrong page type
-MDEV-18291:
-=~ ha_innobase_inplace_ctx::
 MDEV-18213:
 =~ Error: failed to execute query BACKUP STAGE BLOCK_COMMIT: Deadlock found when trying to get lock
 MDEV-18209:
@@ -3078,8 +3088,6 @@ MDEV-17054:
 =~ in innobase_get_fts_charset
 MDEV-17053:
 =~ sync_check_iterate
-MDEV-16789:
-=~ in insert_fields
 MDEV-16788:
 =~ signal 11
 =~ build_frm_image
