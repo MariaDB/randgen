@@ -46,7 +46,7 @@ MDEV-23259:
 MDEV-23258:
 =~ InnoDB: Failing assertion: 0
 =~ row_sel_convert_mysql_key_to_innobase
-=~ ha_innodb::index_read
+=~ ha_innodb::index_read|ha_innobase::index_read
 =~ Version: '10\.1
 MDEV-23248:
 =~ AddressSanitizer|signal
@@ -573,9 +573,9 @@ MDEV-22375:
 =~ Assertion \`(engine->uncacheable() & ~8) \|\| ! engine->is_executed() \|\| with_recursive_reference'
 =~ Item_in_subselect
 =~ Version: '10\.[4-9]
-MDEV-22250:
-=~ InnoDB: Failing assertion: opt_no_lock
-=~ xtrabackup\.cc line
+MDEV-22365:
+=~ Assertion \`!col->mbmaxlen \|\| len >= col->mbminlen \* (fixed_len / col->mbmaxlen)'
+=~ row_merge_buf_add
 =~ Version: '10\.[4-9]
 MDEV-22356:
 =~ AddressSanitizer:
@@ -633,6 +633,10 @@ MDEV-22266:
 =~ Assertion \`m_status == DA_ERROR'
 =~ Diagnostics_area::sql_errno
 =~ fill_schema_table_by_open
+=~ Version: '10\.[4-9]
+MDEV-22250:
+=~ InnoDB: Failing assertion: opt_no_lock
+=~ xtrabackup\.cc line
 =~ Version: '10\.[4-9]
 MDEV-22223:
 =~ signal 11|AddressSanitizer
@@ -2008,6 +2012,10 @@ MDEV-18334:
 =~ Assertion \`len <= field->col->len || ((field->col->mtype) == 5 || (field->col->mtype) == 14) || (field->col->len == 0 && field->col->mtype == 1)' failed
 =~ rec_get_converted_size_comp_prefix_low
 =~ row_upd_step
+MDEV-18334:
+=~ Assertion \`!col->mbmaxlen \|\| len >= col->mbminlen \* fixed_len / col->mbmaxlen'
+=~ rec_get_converted_size_comp_prefix_low
+=~ row_undo
 MDEV-18325:
 =~ InnoDB: Error: page
 =~ InnoDB: is in the future! Current system log sequence number
