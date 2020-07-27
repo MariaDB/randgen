@@ -2245,10 +2245,24 @@ MDEV-17678:
 =~ field_unpack
 =~ print_keydup_error
 =~ ha_myisam::enable_indexes
-MDEV-17665: [share->page_type == PAGECACHE_LSN_PAGE]
+MDEV-17665:
 =~ Assertion \`!share \|\| share->page_type == PAGECACHE_LSN_PAGE'
 =~ maria_flush_log_for_page
 =~ flush_cached_blocks
+MDEV-17665:
+=~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
+=~ pagecache_read
+MDEV-17665:
+=~ Assertion \`type != PAGECACHE_READ_UNKNOWN_PAGE'
+=~ pagecache_fwrite
+=~ flush_cached_blocks
+MDEV-17665:
+=~ Assertion \`0'
+=~ pagecache_file_no_dirty_page
+=~ maria_repair_by_sort
+MDEV-17665:
+=~ Assertion \`share->lock_key_trees'
+=~ _ma_setup_live_state
 MDEV-17622:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_read
