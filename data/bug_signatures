@@ -138,7 +138,7 @@ MDEV-23184:
 =~ THD::killed_errno
 =~ Version: '10\.1
 MDEV-23184:
-=~ Assertion `m_status == DA_ERROR'
+=~ Assertion \`m_status == DA_ERROR'
 =~ Diagnostics_area::sql_errno
 =~ fill_schema_table_by_open
 =~ Version: '10\.1
