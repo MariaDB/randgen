@@ -4,6 +4,24 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23315:
+=~ signal|AddressSanitizer
+=~ subselect_single_select_engine::exec
+=~ Item_func_conv_charset::val
+=~ Prepared_statement::execute|sp_head::execute
+=~ Version: '10\.[4-9]
+MDEV-23315:
+=~ Assertion \`(st_select_lex\*)join->select_lex == this'|AddressSanitizer
+=~ subselect_single_select_engine::prepare
+=~ st_select_lex::cleanup
+=~ Prepared_statement::execute|sp_head::execute
+=~ Version: '10\.[4-9]
+MDEV-23305:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ MDL_context::acquire_lock
+=~ ha_maria_implicit_commit
+=~ Version: '10\.4
 MDEV-23296:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == type \|\| (block->type == PAGECACHE_PLAIN_PAGE && type == PAGECACHE_LSN_PAGE)'
 =~ pagecache_write_part
@@ -2217,7 +2235,6 @@ MDEV-17783:
 =~ signal handler called
 =~ table_cond_selectivity
 =~ 0x3ff0000000000000
-=~ Version: '10\.[4-9]
 MDEV-17782:
 =~ decimal_bin_size: Assertion \`scale <= precision'
 =~ my_decimal_get_binary_size
@@ -2230,7 +2247,6 @@ MDEV-17760:
 MDEV-17749:
 =~ Assertion \`thd->transaction.*stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
-=~ mysql_alter_table|reload_acl_and_cache
 MDEV-17749:
 =~ signal|AddressSanitizer
 =~ TABLE::default_column_bitmaps

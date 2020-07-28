@@ -56,6 +56,10 @@ MDEV-22913:
 # Fixed in the next release
 ##########
 
+MDEV-22390:
+=~ Assertion \`n < m_size'|Assertion \`m_next_rec_ptr >= m_rawmem'|signal|AddressSanitizer
+=~ Filesort_buffer
+=~ create_sort_index
 MDEV-20661:
 =~ Assertion \`btr_validate_index(index, 0)'
 =~ row_upd_sec_index_entry
