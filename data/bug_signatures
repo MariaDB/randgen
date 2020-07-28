@@ -2975,6 +2975,12 @@ TODO-842: [thd->in_sub_stmt]
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_rollback_stmt
 =~ wsrep::client_state::after_statement
+TODO-842: [m_status == DA_OK_BULK - LOCK]
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ my_ok
+=~ LOCK.*TABLES
+=~ Version: '10\.[4-9]
 
 ##############################################################################
 # Weak matches

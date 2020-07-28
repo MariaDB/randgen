@@ -51,6 +51,14 @@ MDEV-22913:
 =~ error: can't open
 =~ Error: xtrabackup_apply_delta(): failed to apply
 =~ Version: '10\.4
+# Only in 10.4+ CS, but also in 10.2+ ES
+TODO-842: [m_status == DA_OK_BULK - LOCK]
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ my_ok
+=~ LOCK.*TABLES
+=~ Version: '10\.[2-9]
+
 
 ##########
 # Fixed in the next release
