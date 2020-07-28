@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23316:
+=~ Assertion \`m_status == DA_ERROR'
+=~ Diagnostics_area::sql_errno
+=~ fill_schema_table_by_open
 MDEV-23315:
 =~ signal|AddressSanitizer
 =~ subselect_single_select_engine::exec
@@ -651,7 +655,7 @@ MDEV-22266:
 =~ Assertion \`m_status == DA_ERROR'
 =~ Diagnostics_area::sql_errno
 =~ fill_schema_table_by_open
-=~ Version: '10\.[4-9]
+=~ Version: '10\.[5-9]
 MDEV-22250:
 =~ InnoDB: Failing assertion: opt_no_lock
 =~ xtrabackup\.cc line
