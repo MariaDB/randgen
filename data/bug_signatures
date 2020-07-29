@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23318:
+=~ Assertion \`cache_empty(keycache)'
+=~ prepare_resize_simple_key_cache
+=~ resize_simple_key_cache
+=~ Version: '10\.[4-9]
 MDEV-23316:
 =~ Assertion \`m_status == DA_ERROR'
 =~ Diagnostics_area::sql_errno
@@ -324,7 +329,7 @@ MDEV-22782:
 MDEV-22772:
 =~ signal|AddressSanitizer
 =~ Item_null_result::field_type
-=~ cast_to_int_type
+=~ cast_to_int_type|Item::get_date_with_conversion
 =~ ROLLUP
 =~ Version: '10\.[1-2]
 MDEV-22768:
