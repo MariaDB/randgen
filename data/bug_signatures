@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23332:
+=~ signal|AddressSanitizer
+=~ btr_search_drop_page_hash_index
+=~ buf_page_create|buf_LRU_free_page
+=~ Version: '10\.[2-4]
+MDEV-23330:
+=~ signal|AddressSanitizer
+=~ my_strnncoll_binary
+=~ SORT_FIELD_ATTR::compare_packed_varstrings
+=~ filesort
+=~ Version: '10\.[5-9]
 MDEV-23318:
 =~ Assertion \`cache_empty(keycache)'
 =~ prepare_resize_simple_key_cache
@@ -102,7 +113,7 @@ MDEV-23218:
 MDEV-23215:
 =~ signal|AddressSanitizer
 =~ my_hash_first|flush_simple_key_cache_blocks
-=~ close_system_tables|close_thread_tables|ha_partition::extra
+=~ close_system_tables|close_thread_tables|ha_partition::extra|close_cached_tables
 =~ Version: '10\.[1-3]
 MDEV-23215:
 =~ safe_mutex: Trying to destroy a mutex keycache->cache_lock that was locked at .*mf_keycache\.c
@@ -2288,7 +2299,7 @@ MDEV-17665:
 MDEV-17665:
 =~ Assertion \`type != PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_fwrite
-=~ flush_cached_blocks
+=~ flush_cached_blocks|write_block_record
 MDEV-17665:
 =~ Assertion \`0'
 =~ pagecache_file_no_dirty_page
