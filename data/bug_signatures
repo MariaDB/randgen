@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23345:
+=~ Assertion \`not_redundant() == old\.not_redundant()'
+=~ dict_table_t::prepare_instant
+=~ mysql_inplace_alter_table
+=~ Version: '10\.4
 MDEV-23334:
 =~ signal|AddressSanitizer|Assertion \`bits <= REC_STATUS_COLUMNS_ADDED'|Assertion \`bits <= REC_STATUS_INSTANT'
 =~ rec_get_status
@@ -123,7 +128,6 @@ MDEV-23215:
 =~ signal|AddressSanitizer
 =~ my_hash_first|flush_simple_key_cache_blocks
 =~ close_system_tables|close_thread_tables|ha_partition::extra|close_cached_tables
-=~ Version: '10\.[1-3]
 MDEV-23215:
 =~ safe_mutex: Trying to destroy a mutex keycache->cache_lock that was locked at .*mf_keycache\.c
 =~ repartition_key_cache
@@ -252,6 +256,11 @@ MDEV-23026:
 =~ pfs_rw_lock_s_lock_func
 =~ open_purge_table
 =~ Version: '10\.[5-9]
+MDEV-23011:
+=~ signal|AddressSanitizer
+=~ row_create_prebuilt
+=~ ha_innobase::open
+=~ open_and_process_table
 MDEV-22973:
 =~ Assertion \`records_are_comparable(table)'
 =~ compare_record
@@ -663,6 +672,16 @@ MDEV-22256:
 =~ Assertion \`length == pack_length()'
 =~ Field_timestamp_with_dec::sort_string|Field_inet6::sort_string
 =~ Field::make_sort_key_part
+MDEV-22256:
+=~ Assertion \`length == pack_length()'
+=~ Field_inet6::sort_string
+=~ create_sort_index
+=~ Version: '10\.[5-9]
+MDEV-22256:
+=~ Assertion \`Inet6::binary_length() == sort_field->length'
+=~ Type_handler_inet6::make_sort_key_part
+=~ create_sort_index
+=~ Version: '10\.[5-9]
 MDEV-22255:
 =~ Assertion \`id'|Assertion \`id > 0'
 =~ trx_write_trx_id
@@ -1196,7 +1215,7 @@ MDEV-20861:
 =~ rocksdb::CompactionIterator::PrepareOutput
 MDEV-20816:
 =~ Assertion \`maybe_null \|\| !null_value'
-=~ Item_func_round::time_op
+=~ Item_func_.*::time_op
 =~ Type_handler_time_common::Item_func_hybrid_field_type
 =~ Version: '10\.[4-9]
 MDEV-20771:
@@ -2171,7 +2190,7 @@ MDEV-18047:
 =~ index->magic_n == 76789786|Assertion \`pos < index->n_def'|InnoDB: Failing assertion: pos < index->n_def|AddressSanitizer: heap-use-after-free
 =~ dict_index_get_nth_field|dict_index_get_nth_col
 =~ dict_foreign_qualify_index
-=~ innobase_update_foreign_try
+=~ innobase_update_foreign
 MDEV-18047:
 =~ got signal 11|got signal 7
 =~ dict_foreign_qualify_index
