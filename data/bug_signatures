@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23334:
+=~ signal|AddressSanitizer|Assertion \`bits <= REC_STATUS_COLUMNS_ADDED'|Assertion \`bits <= REC_STATUS_INSTANT'
+=~ rec_get_status
+=~ innobase_rec_to_mysql
+=~ Version: '10\.[3-9]
+MDEV-23333:
+=~ Assertion \`field_types == 0 \|\| field_types[field_pos] == MYSQL_TYPE_LONGLONG'
+=~ Protocol_text::store_longlong
+=~ Version: '10\.2
 MDEV-23332:
 =~ signal|AddressSanitizer
 =~ btr_search_drop_page_hash_index
@@ -307,7 +316,7 @@ MDEV-22846:
 =~ handler_index_cond_check
 =~ row_search_idx_cond_check
 =~ rr_sequential
-=~ Version: '10\.[5-9]
+=~ Version: '10\.[4-9]
 MDEV-22832:
 =~ AddressSanitizer: global-buffer-overflow
 =~ QUICK_GROUP_MIN_MAX_SELECT::add_range
@@ -521,7 +530,7 @@ MDEV-22562:
 MDEV-22551:
 =~ signal 11|AddressSanitizer
 =~ skip_trailing_space
-=~ charset_info_st::hash_sort
+=~ my_hash_sort_simple
 =~ Version: '10\.[4-9]
 MDEV-22551:
 =~ Assertion \`marked_for_read()'
@@ -2299,7 +2308,7 @@ MDEV-17665:
 MDEV-17665:
 =~ Assertion \`type != PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_fwrite
-=~ flush_cached_blocks|write_block_record
+=~ flush_cached_blocks|write_block_record|write_record
 MDEV-17665:
 =~ Assertion \`0'
 =~ pagecache_file_no_dirty_page
@@ -2760,6 +2769,11 @@ MDEV-12967:
 =~ dict_index_is_spatial|dict_index_t::is_spatial
 =~ btr_scrub_free_page
 =~ fil_crypt_rotate_page
+MDEV-12967:
+=~ Assertion \`type == MLOG_FILE_NAME \|\| type == MLOG_FILE_DELETE \|\| type == MLOG_FILE_CREATE2 \|\| type == MLOG_FILE_RENAME2 \|\| type == MLOG_INDEX_LOAD \|\| type == MLOG_FILE_WRITE_CRYPT_DATA \|\| mtr->is_named_space(space_id)'
+=~ mlog_write_initial_log_record_low
+=~ fil_space_crypt_t::write_page0
+=~ Version: '10\.[1-4]
 MDEV-12330:
 =~ Assertion \`((copy & 0x00000003) == 0x02)'
 =~ pfs_lock::allocated_to_free
@@ -2995,7 +3009,7 @@ TODO-842: [m_status == DA_OK_BULK - LOCK]
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ my_ok
-=~ LOCK.*TABLES
+=~ LOCK.*TABLE
 =~ Version: '10\.[4-9]
 
 ##############################################################################

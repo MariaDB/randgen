@@ -64,9 +64,20 @@ TODO-842: [m_status == DA_OK_BULK - LOCK]
 # Fixed in the next release
 ##########
 
+MDEV-15880:
+=~ InnoDB: Failing assertion: table->n_rec_locks == 0
+=~ dict_sys_t::remove
+=~ trx_t::commit
+=~ Version: '10\.[3-9]
+MDEV-15880:
+=~ signal|AddressSanitizer
+=~ lock_check_dict_lock
+=~ trx_t::release_locks
+=~ trx_commit
+=~ Version: '10\.[3-9]
 MDEV-22390:
 =~ Assertion \`n < m_size'|Assertion \`m_next_rec_ptr >= m_rawmem'|signal|AddressSanitizer
-=~ Filesort_buffer
+=~ Filesort_buffer|filesort
 =~ create_sort_index
 MDEV-20661:
 =~ Assertion \`btr_validate_index(index, 0)'
