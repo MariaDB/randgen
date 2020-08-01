@@ -141,7 +141,8 @@ dynvar_session_variable:
 # | MAX_USER_CONNECTIONS # Dynamic conditionally
   | min_examined_row_limit= { $prng->arrayElement([0,1,1024,1048576,4294967295]) }
   | mrr_buffer_size= { $prng->arrayElement([8192,65535,262144,1048576]) }
-  | myisam_repair_threads= { $prng->int(1,10) }
+# Too many problems: MDEV-23294, MDEV-23318, MDEV-23363, MDEV-23364, ...
+# | myisam_repair_threads= { $prng->int(1,10) }
   | myisam_sort_buffer_size= { $prng->arrayElement([131072,1048576,268434432]) }
   | myisam_stats_method= { $prng->arrayElement(['nulls_equal','nulls_unequal','nulls_ignored']) }
 # | NET_BUFFER_LENGTH # Doesn't seem to be dynamic
