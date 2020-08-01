@@ -382,7 +382,8 @@ dynvar_global_variable:
   | innodb_online_alter_log_max_size= { $prng->arrayElement([65536,33554432,268435456]) }
   | innodb_optimize_fulltext_only= dynvar_boolean
   | innodb_page_cleaners= { $prng->int(1,8) }
-  | innodb_page_cleaner_disabled_debug= dynvar_boolean
+# Makes server stall
+# | innodb_page_cleaner_disabled_debug= dynvar_boolean
   | innodb_prefix_index_cluster_optimization= dynvar_boolean
   | innodb_print_all_deadlocks= dynvar_boolean
   | innodb_purge_batch_size= { $prng->arrayElement([1,2,10,100,1000]) }
