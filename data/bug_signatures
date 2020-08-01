@@ -4,6 +4,23 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23364:
+=~ signal|AddressSanitizer
+=~ Field::is_null
+=~ Protocol::send_result_set_row
+=~ select_result_sink::send_data_with_check
+=~ Version: '10\.[4-9]
+MDEV-23363:
+=~ signal|AddressSanitizer|Assertion \`length < 0xFFFFFFFFL'
+=~ String::copy|Field::is_null
+=~ get_field_default_value
+=~ get_schema_column_record
+=~ Version: '10\.4
+MDEV-23356:
+=~ Found index .* whose column info does not match that of MariaDB
+=~ InnoDB: Failing assertion: field->col->mtype == type|AddressSanitizer|signal
+=~ row_sel_convert_mysql_key_to_innobase
+=~ Version: '10\.[5-9]
 MDEV-23345:
 =~ Assertion \`not_redundant() == old\.not_redundant()'
 =~ dict_table_t::prepare_instant
@@ -66,7 +83,7 @@ MDEV-23295:
 =~ Version: '10\.[4-9]
 MDEV-23294:
 =~ Assertion \`!table \|\| table->in_use == _current_thd()'
-=~ Item_func_hash::val_int
+=~ Item_func_.*
 =~ TABLE::update_virtual_field
 =~ Version: '10\.[4-9]
 MDEV-23286:
@@ -127,7 +144,7 @@ MDEV-23218:
 MDEV-23215:
 =~ signal|AddressSanitizer
 =~ my_hash_first|flush_simple_key_cache_blocks
-=~ close_system_tables|close_thread_tables|ha_partition::extra|close_cached_tables
+=~ close_system_tables|close_thread_tables|ha_partition::extra|close_cached_tables|intern_close_table|purge_tables
 MDEV-23215:
 =~ safe_mutex: Trying to destroy a mutex keycache->cache_lock that was locked at .*mf_keycache\.c
 =~ repartition_key_cache
@@ -685,6 +702,10 @@ MDEV-22256:
 MDEV-22255:
 =~ Assertion \`id'|Assertion \`id > 0'
 =~ trx_write_trx_id
+MDEV-22255:
+=~ Assertion \`val > 0'
+=~ row_upd_index_entry_sys_field
+=~ Version: '10\.[2-3]
 MDEV-22232:
 =~ signal handler|AddressSanitizer
 =~ rpl_sql_thread_info::cached_charset_compare
