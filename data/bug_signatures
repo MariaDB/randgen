@@ -1215,7 +1215,7 @@ MDEV-21017:
 MDEV-21016:
 =~ AddressSanitizer: heap-use-after-free
 =~ trx_update_mod_tables_timestamp
-=~ trx_commit_in_memory
+=~ trx_commit_in_memory|trx_t::commit_in_memory
 =~ versioning
 =~ Version: '10\.[3-9]
 MDEV-21016:
@@ -3077,6 +3077,10 @@ TODO-842: [m_status == DA_OK_BULK - LOCK-ALTER-COMMIT]
 =~ my_ok
 =~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: COMMIT|Query .*: FLUSH
 =~ Version: '10\.4
+TODO-842: [PROFILING]
+=~ signal
+=~ free_memory
+=~ PROFILING::finish_current_query_impl
 
 ##############################################################################
 # Weak matches
