@@ -4,6 +4,22 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23388:
+=~ Assertion \`args\[0\]->decimals == 0'
+=~ Item_func_round::fix_arg_int
+=~ Type_handler_date_common
+=~ Version: '10\.[4-9]
+MDEV-23385:
+=~ signal|AddressSanitizer
+=~ Item_in_subselect::inject_in_to_exists_cond
+=~ JOIN::choose_tableless_subquery_plan
+=~ sp_instr_stmt::exec_core
+=~ Version: '10\.[1-3]
+MDEV-23384:
+=~ signal|AddressSanitizer
+=~ subselect_indexsubquery_engine::print
+=~ With_element::print
+=~ Json_writer::add_str
 MDEV-23383:
 =~ signal|AddressSanitizer
 =~ JOIN_CACHE::get_offset
@@ -32,10 +48,10 @@ MDEV-23356:
 =~ row_sel_convert_mysql_key_to_innobase
 =~ Version: '10\.[5-9]
 MDEV-23345:
-=~ Assertion \`not_redundant() == old\.not_redundant()'
+=~ Assertion \`not_redundant() == old\.not_redundant()'|Assertion \`((flags & ((~(~0U << 1)) << ((0 + 1) + 4))) >> ((0 + 1) + 4)) == ((old\.flags & ((~(~0U << 1)) << ((0 + 1) + 4))) >> ((0 + 1) + 4))'
 =~ dict_table_t::prepare_instant
 =~ mysql_inplace_alter_table
-=~ Version: '10\.4
+=~ Version: '10\.[4-9]
 MDEV-23334:
 =~ signal|AddressSanitizer|Assertion \`bits <= REC_STATUS_COLUMNS_ADDED'|Assertion \`bits <= REC_STATUS_INSTANT'
 =~ rec_get_status
@@ -1979,7 +1995,7 @@ MDEV-18693:
 =~ AddressSanitizer: heap-use-after-free|signal 11
 =~ _ma_remove_table_from_trnman
 =~ wait_while_table_is_used
-=~ reload_acl_and_cache
+=~ Version: '10\.[1-3]
 MDEV-18643:
 =~ FATAL ERROR: .* failed to execute query BACKUP .*: Deadlock found when trying to get lock; try restarting transaction|FATAL ERROR: .* failed to execute query BACKUP .*: Lock wait timeout exceeded; try restarting transaction
 MDEV-18624:
@@ -2708,7 +2724,7 @@ MDEV-15256:
 =~ msort_with_tmp|__GI_qsort|qsort_r|cmp_sec_link|make_lock_and_pin
 =~ flush_cached_blocks
 =~ flush_pagecache_blocks_with_filter
-=~ ma_checkpoint_background
+=~ ma_checkpoint_background|run_backup_stage
 MDEV-15164:
 =~ Assertion \`ikey_\.type == kTypeValue'
 =~ rocksdb::CompactionIterator::NextFromInput
@@ -3055,12 +3071,12 @@ TODO-842: [thd->in_sub_stmt]
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_rollback_stmt
 =~ wsrep::client_state::after_statement
-TODO-842: [m_status == DA_OK_BULK - LOCK]
+TODO-842: [m_status == DA_OK_BULK - LOCK-ALTER-COMMIT]
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ my_ok
-=~ LOCK.*TABLE
-=~ Version: '10\.[4-9]
+=~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: COMMIT|Query .*: FLUSH
+=~ Version: '10\.4
 
 ##############################################################################
 # Weak matches
