@@ -1763,12 +1763,6 @@ MDEV-19361:
 =~ TABLE::update_virtual_fields
 =~ record_should_be_deleted
 =~ Version: '10\.[4-9]
-MDEV-19338:
-=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
-=~ Assertion \`btr_validate_index(index, 0)'
-=~ row_ins_sec_index_entry_by_modify|row_upd_sec_index_entry
-=~ vcols
-=~ Version: '10\.[4-9]
 MDEV-19318:
 =~ Assertion \`!(length < share->base\.min_block_length)'
 =~ _ma_scan_block_record
@@ -3089,7 +3083,7 @@ TODO-842: [m_status == DA_OK_BULK - LOCK-ALTER-COMMIT]
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ my_ok
-=~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: COMMIT|Query .*: FLUSH
+=~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: .*COMMIT|Query .*: FLUSH
 =~ Version: '10\.4
 TODO-842: [PROFILING]
 =~ signal
@@ -3170,11 +3164,6 @@ MDEV-20484:
 MDEV-20476:
 =~ Index for table .* is corrupt; try to repair it
 =~ scrub
-# I want to see it happen, even if it can be a strong match
-MDEV-19338: [cursor->index->is_committed - Vcols]
-=~ InnoDB: Failing assertion: !cursor->index->is_committed()
-=~ vcols
-=~ Version: '10\.[4-9]
 MDEV-18454:
 =~ ReadView::check_trx_id_sanity
 MDEV-18453:

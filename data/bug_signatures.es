@@ -64,6 +64,16 @@ TODO-842: [m_status == DA_OK_BULK - LOCK]
 # Fixed in the next release
 ##########
 
+MDEV-19338:
+=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
+=~ Assertion \`btr_validate_index(index, 0)'
+=~ row_ins_sec_index_entry_by_modify|row_upd_sec_index_entry
+=~ vcols
+=~ Version: '10\.[4-9]
+MDEV-19338: [cursor->index->is_committed - Vcols]
+=~ InnoDB: Failing assertion: !cursor->index->is_committed()
+=~ vcols
+=~ Version: '10\.[4-9]
 MDEV-15880:
 =~ InnoDB: Failing assertion: table->n_rec_locks == 0
 =~ dict_sys_t::remove
