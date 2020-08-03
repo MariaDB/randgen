@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23383:
+=~ signal|AddressSanitizer
+=~ JOIN_CACHE::get_offset
+=~ JOIN_CACHE::get_rec_ref
+=~ JOIN_CACHE_BNL::read_next_candidate_for_match
+MDEV-23365:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ Sql_cmd_truncate_table::execute
+=~ Version: '10\.[1-2]
 MDEV-23364:
 =~ signal|AddressSanitizer
 =~ Field::is_null
@@ -1189,7 +1199,7 @@ MDEV-21017:
 MDEV-21016:
 =~ AddressSanitizer: heap-use-after-free
 =~ trx_update_mod_tables_timestamp
-=~ rollback_inplace_alter_table
+=~ trx_commit_in_memory
 =~ versioning
 =~ Version: '10\.[3-9]
 MDEV-21016:
@@ -2347,7 +2357,7 @@ MDEV-17665:
 =~ pagecache_read
 MDEV-17665:
 =~ Assertion \`type != PAGECACHE_READ_UNKNOWN_PAGE'
-=~ pagecache_fwrite
+=~ pagecache_fwrite|pagecache_write_part
 =~ flush_cached_blocks|write_block_record|write_record
 MDEV-17665:
 =~ Assertion \`0'
