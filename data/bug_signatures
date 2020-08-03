@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23391:
+=~ signal|AddressSanitizer
+=~ close_thread_table
+=~ drop_open_table
+=~ select_create::abort_result_set
+MDEV-23391:
+=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
+=~ close_thread_table
+=~ Locked_tables_list::unlock_locked_tables
+=~ select_create::abort_result_set
+MDEV-23390:
+=~ signal|AddressSanitizer
+=~ myrocks::ha_rocksdb::update_stats
+=~ ha_partition::info
 MDEV-23388:
 =~ Assertion \`args\[0\]->decimals == 0'
 =~ Item_func_round::fix_arg_int
