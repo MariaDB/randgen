@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23408:
+=~ Assertion \`!alias_arg \|\| strlen(alias_arg->str) == alias_arg->length'
+=~ TABLE_LIST::init_one_table
+=~ Locked_tables_list::init_locked_tables
+=~ Version: '10\.[3-9]
 MDEV-23391:
 =~ signal|AddressSanitizer
 =~ close_thread_table
@@ -695,6 +700,11 @@ MDEV-22356:
 =~ _ma_get_status
 =~ thr_multi_lock
 =~ Version: '10\.1
+MDEV-22333:
+=~ Assertion \`len <= fixed_len'
+=~ rec_get_converted_size_comp_prefix_low
+=~ row_ins_index_entry
+=~ Version: '10\.[4-9]
 MDEV-22284:
 =~ signal 11|AddressSanitizer
 =~ _ma_keylength_part|_ma_row_pos_from_key|memcpy|_ma_search_no_save
@@ -2382,7 +2392,7 @@ MDEV-17665:
 MDEV-17665:
 =~ Assertion \`type != PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_fwrite|pagecache_write_part
-=~ flush_cached_blocks|write_block_record|write_record
+=~ flush_cached_blocks|write_block_record|write_record|_ma_write_keypage
 MDEV-17665:
 =~ Assertion \`0'
 =~ pagecache_file_no_dirty_page
@@ -3094,6 +3104,8 @@ TODO-842: [PROFILING]
 # Weak matches
 ##############################################################################
 
+MDEV-23398: [marked as crashed and last (automatic?) repair failed]
+=~ failed: 144: Table .* is marked as crashed and last (automatic?) repair failed
 MDEV-22927: [Can't find record]
 =~ 1032 Can't find record in
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
