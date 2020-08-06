@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23414:
+=~ Assertion \`res->charset() == item->collation\.collation'
+=~ Type_handler_string_result::make_packed_sort_key_part
+=~ Version: '10\.[5-9]
 MDEV-23408:
 =~ Assertion \`!alias_arg \|\| strlen(alias_arg->str) == alias_arg->length'
 =~ TABLE_LIST::init_one_table
