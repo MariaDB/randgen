@@ -136,12 +136,13 @@ dynvar_session_variable:
   | max_session_mem_used= { $prng->arrayElement([8192,1048576,4294967295,9223372036854775807,18446744073709551615]) }
   | max_sort_length= { $prng->arrayElement([8,512,1024,2048,4096,65535,1048576,8388608]) }
   | max_sp_recursion_depth= { $prng->int(0,255) }
-  | max_statement_time= { $prng->arrayElement(['DEFAULT',0,1]) }
+  | max_statement_time= { $prng->arrayElement(['DEFAULT',1,10]) }
 # | MAX_TMP_TABLES # Said to be unused
 # | MAX_USER_CONNECTIONS # Dynamic conditionally
   | min_examined_row_limit= { $prng->arrayElement([0,1,1024,1048576,4294967295]) }
   | mrr_buffer_size= { $prng->arrayElement([8192,65535,262144,1048576]) }
-  | myisam_repair_threads= { $prng->int(1,10) }
+# Too many problems: MDEV-23294, MDEV-23318, MDEV-23363, MDEV-23364, ...
+# | myisam_repair_threads= { $prng->int(1,10) }
   | myisam_sort_buffer_size= { $prng->arrayElement([131072,1048576,268434432]) }
   | myisam_stats_method= { $prng->arrayElement(['nulls_equal','nulls_unequal','nulls_ignored']) }
 # | NET_BUFFER_LENGTH # Doesn't seem to be dynamic
@@ -382,7 +383,8 @@ dynvar_global_variable:
   | innodb_online_alter_log_max_size= { $prng->arrayElement([65536,33554432,268435456]) }
   | innodb_optimize_fulltext_only= dynvar_boolean
   | innodb_page_cleaners= { $prng->int(1,8) }
-  | innodb_page_cleaner_disabled_debug= dynvar_boolean
+# Makes server stall
+# | innodb_page_cleaner_disabled_debug= dynvar_boolean
   | innodb_prefix_index_cluster_optimization= dynvar_boolean
   | innodb_print_all_deadlocks= dynvar_boolean
   | innodb_purge_batch_size= { $prng->arrayElement([1,2,10,100,1000]) }
