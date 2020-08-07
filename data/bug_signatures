@@ -7,7 +7,7 @@
 MDEV-23415:
 =~ Assertion \`dec_length <= str_length'|signal|AddressSanitizer
 =~ Item_func_format::val_str_ascii
-=~ Protocol::send_result_set_row
+=~ Item_func::val_str_from_val_str_ascii
 =~ Version: '10\.[4-9]
 MDEV-23414:
 =~ Assertion \`res->charset() == item->collation\.collation'
