@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23415:
+=~ Assertion \`dec_length <= str_length'|signal|AddressSanitizer
+=~ Item_func_format::val_str_ascii
+=~ Item_func::val_str_from_val_str_ascii
+=~ Version: '10\.[4-9]
+MDEV-23414:
+=~ Assertion \`res->charset() == item->collation\.collation'
+=~ Type_handler_string_result::make_packed_sort_key_part
+=~ Version: '10\.[5-9]
 MDEV-23408:
 =~ Assertion \`!alias_arg \|\| strlen(alias_arg->str) == alias_arg->length'
 =~ TABLE_LIST::init_one_table
@@ -17,7 +26,7 @@ MDEV-23391:
 MDEV-23391:
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
 =~ close_thread_table
-=~ Locked_tables_list::unlock_locked_tables
+=~ Locked_tables_list::unlock_locked_tables|drop_open_table
 =~ select_create::abort_result_set
 MDEV-23390:
 =~ signal|AddressSanitizer
@@ -1887,7 +1896,7 @@ MDEV-19130:
 =~ TABLE::update_generated_fields
 =~ TABLE::period_make_insert|update_portion_of_time
 MDEV-19091:
-=~ Assertion \`args\[0\] == args\[2\] \|\| thd->stmt_arena->is_stmt_execute()'
+=~ Assertion \`args\[0\] == args\[2\] \|\| thd->stmt_arena->is_stmt_execute()'|AddressSanitizer
 =~ Item_func_nullif::fix_length_and_dec
 =~ Item_func::fix_fields
 MDEV-19075:
@@ -2357,6 +2366,17 @@ MDEV-17760:
 =~ Field_bit::val_.*
 =~ ROLLUP
 =~ Version: '10\.[0-1]|Version: '5\.5
+MDEV-17754:
+=~ AddressSanitizer|signal
+=~ _ma_block_start_trans
+=~ thr_multi_lock
+=~ mysql_lock_tables
+=~ open_and_lock_tables
+MDEV-17754:
+=~ signal|AddressSanitizer
+=~ l_find
+=~ initialize_bucket
+=~ lf_hash_search
 MDEV-17749:
 =~ Assertion \`thd->transaction.*stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
@@ -2716,6 +2736,17 @@ MDEV-15533:
 MDEV-15532:
 =~ Assertion \`!log->same_pk'|InnoDB: Failing assertion: !log->same_pk
 =~ row_log_table_apply_delete
+=~ Version: '10\.[0-2]
+MDEV-15532:
+=~ Assertion \`err_key < ha_alter_info->key_count'
+=~ alter_rebuild_apply_log
+=~ Version: '10\.[0-2]
+MDEV-15532:
+=~ signal|AddressSanitizer
+=~ Field::is_null
+=~ field_unpack
+=~ print_keydup_error
+=~ alter_rebuild_apply_log
 =~ Version: '10\.[0-2]
 MDEV-15494:
 =~ InnoDB: Assertion failure.*trx0roll.cc line
