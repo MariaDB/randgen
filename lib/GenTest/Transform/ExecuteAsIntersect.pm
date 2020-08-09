@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (C) 2017 MariaDB Corporatin Ab
+# Copyright (C) 2017, 2020 MariaDB Corporatin Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,9 @@ sub transform {
 
 	return [
 		"( $orig_query ) INTERSECT ( $orig_query ) /* TRANSFORM_OUTCOME_DISTINCT */",
-		"( $orig_query ) INTERSECT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
+		"( $orig_query ) INTERSECT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
+		"/* compatibility 10.5.2 */ ( $orig_query ) INTERSECT ALL ( $orig_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+		"/* compatibility 10.5.2 */ ( $orig_query ) INTERSECT ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
 	];
 }
 
