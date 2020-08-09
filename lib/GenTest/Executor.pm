@@ -274,7 +274,7 @@ sub type {
 	if (ref($self) eq "GenTest::Executor::JavaDB") {
 		return DB_JAVADB;
 	} elsif (ref($self) eq "GenTest::Executor::MySQL") {
-		return DB_MYSQL;
+		return $self->serverName eq 'MariaDB' ? DB_MARIADB : DB_MYSQL;
 	} elsif (ref($self) eq "GenTest::Executor::Drizzle") {
 		return DB_DRIZZLE;
 	} elsif (ref($self) eq "GenTest::Executor::Postgres") {
@@ -294,7 +294,7 @@ sub type {
 	}
 }
 
-my @dbid = ("Unknown","Dummy", "MySQL","Postgres","JavaDB","Drizzle");
+my @dbid = ("Unknown","Dummy","MySQL","Postgres","JavaDB","Drizzle","MariaDB");
 
 sub getName {
     my ($self) = @_;

@@ -82,6 +82,7 @@ require Exporter;
 	DB_POSTGRES
 	DB_JAVADB
 	DB_DRIZZLE
+    DB_MARIADB
 
 	DEFAULT_MTR_BUILD_THREAD
 
@@ -155,6 +156,7 @@ use constant DB_MYSQL		=> 2;
 use constant DB_POSTGRES	=> 3;
 use constant DB_JAVADB		=> 4;
 use constant DB_DRIZZLE		=> 5;
+use constant DB_MARIADB		=> 6;
 
 use constant DEFAULT_MTR_BUILD_THREAD => 930; ## Legacy...
 

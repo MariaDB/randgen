@@ -1277,6 +1277,10 @@ sub majorVersion {
     return $_[0]->serverMajorVersion;
 }
 
+sub serverName {
+    return ($_[0]->serverVersion =~ /mariadb/i ? 'MariaDB' : 'MySQL');
+}
+
 sub slaveInfo {
     my $executor = shift;
     my $slave_info = $executor->dbh()->selectrow_arrayref("SHOW SLAVE HOSTS");

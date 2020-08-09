@@ -70,7 +70,7 @@ sub monitor {
 		my $slave_host = $reporter->serverInfo('slave_host');
 		my $slave_port = $reporter->serverInfo('slave_port');
 		$slave_dsn = 'dbi:mysql:host='.$slave_host.':port='.$slave_port.':user=root';
-		$reporter->properties->servers->[1]->addServerOptions(['--skip-slave-start']);
+		$reporter->properties->server_specific->{2}->{server}->addServerOptions(['--skip-slave-start']);
 	}
 
 	$dbh = DBI->connect($slave_dsn);
@@ -81,7 +81,7 @@ sub monitor {
 
 	if (time() > $last_crash_time + $crash_interval) {
 		$last_crash_time = time();
-		my $pid = $reporter->properties->servers->[1]->serverpid();
+		my $pid = $reporter->properties->server_specific->{2}->{server}->serverpid();
 		say("Sending SIGKILL to server with pid $pid in order to force crash recovery");
 		kill(9, $pid);
 		sleep(2);
@@ -139,8 +139,8 @@ sub restart {
 	$first_reporter = $reporter if not defined $first_reporter;
 	return STATUS_OK if $reporter ne $first_reporter;
 
-	my $master_port = $reporter->properties->servers->[0]->port();
-	my $server = $reporter->properties->servers->[1];
+	my $master_port = $reporter->properties->server_specific->{1}->{server}->port();
+	my $server = $reporter->properties->server_specific->{2}->{server};
 	$server->setStartDirty(1);
 	my $errlog = $server->errorlog();
 	move($errlog,"$errlog.$restart_count"); # Rotate error log

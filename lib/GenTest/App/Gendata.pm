@@ -1,5 +1,6 @@
 # Copyright (C) 2009, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2020, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -83,7 +84,6 @@ use constant GD_EXECUTOR_ID => 13;
 
 sub new {
     my $class = shift;
-    
     my $self = $class->SUPER::new({
         'spec_file' => GD_SPEC,
         'debug' => GD_DEBUG,
@@ -206,9 +206,9 @@ sub run {
         croak "Unable to load $spec_file: $@" if $@;
     }
 
+    say("Running Gendata from file $spec_file");
+
     $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if $executor->type == DB_MYSQL;
-    $executor->execute("SET DEFAULT_STORAGE_ENGINE='".$self->engine()."'") 
-        if $self->engine() ne '' and ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE) and $self->engine !~ /,/;
 
     if (defined $schemas) {
         push(@schema_perms, @$schemas);
@@ -469,12 +469,6 @@ sub run {
         my $table = $tables[$table_id];
         my @table_copy = @$table;
         my @fields_copy = @fields;
-        
-        if (uc($table->[TABLE_ENGINE]) eq 'FALCON') {
-            @fields_copy =  grep {
-                !($_->[FIELD_TYPE] =~ m{blob|text}io && $_->[FIELD_INDEX] ne '')
-            } @fields ;
-        }
         
         say("Creating ".$executor->getName().
             " table: $schema.$table_copy[TABLE_NAME]; engine: $table_copy[TABLE_ENGINE]; rows: $table_copy[TABLE_ROW] .");

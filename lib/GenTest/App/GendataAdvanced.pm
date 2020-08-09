@@ -118,6 +118,8 @@ sub compatibility {
 
 sub run {
     my ($self) = @_;
+
+    say("Running GendataAdvanced");
     
     $prng = GenTest::Random->new( seed => 0 );
 

@@ -25,8 +25,7 @@ use GenTest;
 use GenTest::BzrInfo;
 use DBI;
 
-use constant BUILDINFO_DSNS     => 0;
-use constant BUILDINFO_SERVERS  => 1;
+use constant BUILDINFO_SERVER_SPECIFIC  => 0;
 
 use constant BUILDINFO_SERVER_VERSION   => 0;
 use constant BUILDINFO_SERVER_PACKAGE   => 1;
@@ -40,14 +39,13 @@ sub new {
     my $class = shift;
 
     my $buildinfo = $class->SUPER::new({
-        dsns    => BUILDINFO_DSNS
+        server_specific => BUILDINFO_SERVER_SPECIFIC
     }, @_);
 
-    $buildinfo->[BUILDINFO_SERVERS] = [];
-
-    foreach my $id (0..$#{$buildinfo->[BUILDINFO_DSNS]})
+    foreach my $s (keys %{$buildinfo->[BUILDINFO_SERVER_SPECIFIC]})
     {
-        my $dsn = $buildinfo->[BUILDINFO_DSNS]->[$id];
+        my $spec= $buildinfo->[BUILDINFO_SERVER_SPECIFIC]->{$s};
+        my $dsn = $spec->{dsn};
         next if $dsn eq '';
         my $dbh = DBI->connect($dsn);
 
@@ -137,8 +135,6 @@ sub new {
         $sth->finish();
 
         $dbh->disconnect();
-
-        $buildinfo->[BUILDINFO_SERVERS]->[$id] = $server;
     }
 
     return $buildinfo;
@@ -160,15 +156,16 @@ sub xml {
     $writer->dataElement('name','MySQL');
     $writer->startTag('builds');
 
-    foreach my $id (0..$#{$buildinfo->[BUILDINFO_DSNS]})
+    foreach my $s (sort keys %{$buildinfo->[BUILDINFO_SERVER_SPECIFIC]})
     {
-        my $server = $buildinfo->[BUILDINFO_SERVERS]->[$id];
+        my $spec= $buildinfo->[BUILDINFO_SERVER_SPECIFIC]->{$s};
+        my $server = $spec->{server};
         next if not defined $server;
 
         # Note that the order of these tags (sequence) is significant.
         # Commented tags are part of XML spec but not implemented here yet.
 
-        $writer->startTag('build', id => $id);
+        $writer->startTag('build', id => $s);
         $writer->dataElement('version', $server->[BUILDINFO_SERVER_VERSION]);
         $writer->dataElement('tree', $server->[BUILDINFO_SERVER_TREE]) if defined $server->[BUILDINFO_SERVER_TREE];
         $writer->dataElement('revision', $server->[BUILDINFO_SERVER_REVISION]) if defined $server->[BUILDINFO_SERVER_REVISION];
@@ -187,9 +184,10 @@ sub xml {
 
     $writer->startTag('binaries'); # --> <software> = <program>
 
-    foreach my $id (0..$#{$buildinfo->[BUILDINFO_DSNS]})
+    foreach my $s (keys %{$buildinfo->[BUILDINFO_SERVER_SPECIFIC]})
     {
-        my $server = $buildinfo->[BUILDINFO_SERVERS]->[$id];
+        my $spec= $buildinfo->[BUILDINFO_SERVER_SPECIFIC]->{$s};
+        my $server = $spec->{server};
         next if not defined $server;
 
         $writer->startTag('program');

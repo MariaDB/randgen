@@ -139,34 +139,32 @@ sub report {
 				$consistency_status = STATUS_DATABASE_CORRUPTION;
 			}
 
-			if (lc($engine) ne 'falcon') {
-				foreach my $sql (
-					"CHECK TABLE `$database`.`$table` EXTENDED",
-					"ANALYZE TABLE `$database`.`$table`",
-					"OPTIMIZE TABLE `$database`.`$table`",
-					"REPAIR TABLE `$database`.`$table` EXTENDED",
-					"ALTER TABLE `$database`.`$table` ENGINE = $engine"
-				) {
-					say("Executing $sql.");
-					my $sth = $dbh->prepare($sql);
-					if (defined $sth) {
-						$sth->execute();
+			foreach my $sql (
+				"CHECK TABLE `$database`.`$table` EXTENDED",
+				"ANALYZE TABLE `$database`.`$table`",
+				"OPTIMIZE TABLE `$database`.`$table`",
+				"REPAIR TABLE `$database`.`$table` EXTENDED",
+				"ALTER TABLE `$database`.`$table` ENGINE = $engine"
+			) {
+				say("Executing $sql.");
+				my $sth = $dbh->prepare($sql);
+				if (defined $sth) {
+					$sth->execute();
 
-						return STATUS_DATABASE_CORRUPTION if $dbh->err() > 0 && $dbh->err() != 1178;
-						if ($sth->{NUM_OF_FIELDS} > 0) {
-							my $result = Dumper($sth->fetchall_arrayref());
-							next if $result =~ m{is not BASE TABLE}sio;	# Do not process VIEWs
-							if ($result =~ m{error|corrupt|repaired|invalid|crashed}sio) {
-								print $result;
-								return STATUS_DATABASE_CORRUPTION
-							}
-						};
+					return STATUS_DATABASE_CORRUPTION if $dbh->err() > 0 && $dbh->err() != 1178;
+					if ($sth->{NUM_OF_FIELDS} > 0) {
+						my $result = Dumper($sth->fetchall_arrayref());
+						next if $result =~ m{is not BASE TABLE}sio;	# Do not process VIEWs
+						if ($result =~ m{error|corrupt|repaired|invalid|crashed}sio) {
+							print $result;
+							return STATUS_DATABASE_CORRUPTION
+						}
+					};
 
-						$sth->finish();
-					} else {
-						say("Prepare failed: ".$dbh->errrstr());
-						return STATUS_DATABASE_CORRUPTION;
-					}
+					$sth->finish();
+				} else {
+					say("Prepare failed: ".$dbh->errrstr());
+					return STATUS_DATABASE_CORRUPTION;
 				}
 			}
 		}

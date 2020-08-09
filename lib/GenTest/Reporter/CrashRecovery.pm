@@ -92,7 +92,7 @@ sub report {
 		sleep(5);
 	}
 
-	my $server = $reporter->properties->servers->[1];
+	my $server = $reporter->properties->server_specific->{1}->{server};
 	say("Copying datadir... (interrupting the copy operation may cause investigation problems later)");
 	if (osWindows()) {
 		system("xcopy \"$datadir\" \"$orig_datadir\" /E /I /Q");

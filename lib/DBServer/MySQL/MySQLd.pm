@@ -1,5 +1,5 @@
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved. 
-# Copyright (c) 2013, 2017, MariaDB
+# Copyright (c) 2013, 2020, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -179,9 +179,9 @@ sub new {
                                "--tmpdir=".$self->tmpdir];    
 
     if ($self->[MYSQLD_START_DIRTY]) {
-        say("Using existing data for MySQL " .$self->version ." at ".$self->datadir);
+        say("Using existing data for server " .$self->version ." at ".$self->datadir);
     } else {
-        say("Creating MySQL " . $self->version . " database at ".$self->datadir);
+        say("Creating " . $self->version . " database at ".$self->datadir);
         if ($self->createMysqlBase != DBSTATUS_OK) {
             croak("FATAL ERROR: Bootstrap failed, cannot proceed!");
         }
@@ -485,7 +485,7 @@ sub startServer {
         seek $errlog_fh, 0, 1;
     }
 
-    say("Starting MySQL ".$self->version.": $command");
+    say("Starting server ".$self->version.": $command");
 
     $self->[MYSQLD_AUXPID] = fork();
     if ($self->[MYSQLD_AUXPID]) {
@@ -751,7 +751,7 @@ sub dumper {
 
 sub dumpdb {
     my ($self,$database, $file) = @_;
-    say("Dumping MySQL server ".$self->version." data on port ".$self->port);
+    say("Dumping server ".$self->version." data on port ".$self->port);
     my $dump_command = '"'.$self->dumper.
                              "\" --hex-blob --skip-triggers --compact ".
                              "--order-by-primary --skip-extended-insert ".
@@ -768,7 +768,7 @@ sub dumpdb {
 
 sub dumpSchema {
     my ($self,$database, $file) = @_;
-    say("Dumping MySQL server ".$self->version." schema on port ".$self->port);
+    say("Dumping server ".$self->version." schema on port ".$self->port);
     my $dump_command = '"'.$self->dumper.
                              "\" --hex-blob --compact ".
                              "--order-by-primary --skip-extended-insert ".
@@ -931,8 +931,14 @@ sub stopServer {
             $res = $dbh->func('shutdown','127.0.0.1','root','admin');
             if (!$res) {
                 ## If shutdown fails, we want to know why:
-                say("Shutdown failed due to ".$dbh->err.":".$dbh->errstr);
-                $res= DBSTATUS_FAILURE;
+                if ($dbh->err == 1064) {
+                    say("Shutdown command is not supported, sending SIGTERM instead");
+                    $res= $self->term;
+                }
+                if (!$res) {
+                    say("Shutdown failed due to ".$dbh->err.":".$dbh->errstr);
+                    $res= DBSTATUS_FAILURE;
+                }
             }
         }
         if (!$self->waitForServerToStop($shutdown_timeout)) {
@@ -1383,7 +1389,7 @@ sub majorVersion {
 sub printInfo {
     my($self) = @_;
 
-    say("MySQL Version: ". $self->version);
+    say("Server version: ". $self->version);
     say("Binary: ". $self->binary);
     say("Type: ". $self->serverType($self->binary));
     say("Datadir: ". $self->datadir);

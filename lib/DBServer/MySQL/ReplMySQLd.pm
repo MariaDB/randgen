@@ -231,8 +231,6 @@ sub startServer {
     
 	$slave_dbh->do("STOP SLAVE");
 
-#	$slave_dbh->do("SET GLOBAL storage_engine = '$engine'") if defined $engine;
-
 	my $master_use_gtid = ( 
 		defined $self->[REPLMYSQLD_USE_GTID] 
 		? ', MASTER_USE_GTID = ' . $self->[REPLMYSQLD_USE_GTID] 

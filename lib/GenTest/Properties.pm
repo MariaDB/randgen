@@ -212,6 +212,8 @@ sub init {
               'filters',
               'notnull',
               'short_column_names',
+              'server_specific',
+              'number_of_servers',
               'strict_fields',
               'freeze_time',
               'valgrind',
@@ -237,7 +239,6 @@ sub init {
 
   $gentestProps->property('annotate-rules',$props->{annotate_rules}) if defined $props->{annotate_rules};
   $gentestProps->property('debug',1) if defined $props->{debug};
-  $gentestProps->property('dsn',$props->{dsns}) if $props->{dsns};
   $gentestProps->property('duration',$props->{duration}) if defined $props->{duration};
   $gentestProps->property('engine',$props->{engine}) if $props->{engine};
   $gentestProps->property('filters',$props->{filters}) if defined $props->{filters};
@@ -254,6 +255,7 @@ sub init {
   $gentestProps->property('metadata',(defined $props->{metadata} ? $props->{metadata} : 1)); # By default metadata is loaded
   $gentestProps->property('multi-master',1) if $props->{'multi-master'};
   $gentestProps->property('notnull',$props->{notnull}) if defined $props->{notnull};
+  $gentestProps->property('number_of_servers',$props->{number_of_servers});
   $gentestProps->property('ps-protocol',1) if $props->{ps_protocol};
   $gentestProps->property('querytimeout',$props->{querytimeout}) if defined $props->{querytimeout};
   $gentestProps->property('redefine',$props->{redefine}) if $props->{redefine};
@@ -266,7 +268,7 @@ sub init {
   $gentestProps->property('rows',$props->{rows}) if defined $props->{rows};
   $gentestProps->property('rpl_mode',$props->{rpl_mode}) if defined $props->{rpl_mode};
   $gentestProps->property('seed',$props->{seed}) if defined $props->{seed};
-  $gentestProps->property('servers',$props->{server}) if $props->{server};
+  $gentestProps->property('server_specific',$props->{server_specific}) if $props->{server_specific};
   $gentestProps->property('short_column_names',$props->{short_column_names}) if defined $props->{short_column_names};
   $gentestProps->property('skip-recursive-rules',$props->{skip_recursive_rules});
   $gentestProps->property('sqltrace',$props->{sqltrace}) if $props->{sqltrace};
@@ -289,7 +291,7 @@ sub init {
   # Instead, we want to run the flow independently and only compare dumps at the end.
   # If GenTest gets 'multi-master' property, it won't run ResultsetComparator
 
-  $gentestProps->property('multi-master',1) if (defined $props->{galera} and scalar(@{$props->{dsns}})>1);
+  $gentestProps->property('multi-master',1) if (defined $props->{galera} and $props->{number_of_servers} > 1);
 
   return $gentestProps;
 }
