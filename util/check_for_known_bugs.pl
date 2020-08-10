@@ -76,6 +76,13 @@ my $test_line= $ENV{SYSTEM_DEFINITIONNAME} || $ENV{TRAVIS_BRANCH} || $ENV{TEST_A
 
 system("rm -rf /tmp/MDEV-* /tmp/MENT-* /tmp/TODO-*");
 
+#my $server_version= ;
+my @server_version= ();
+if (`grep -m 1 "^Version: '" @files @last_choice_files` =~ /^Version: '(\d+)\.(\d+)\.(\d+)/s) {
+  @server_version= ($1, $2, $3);
+  print "Server version: ".join('.',@server_version)."\n";
+}
+
 my $strong= 0;
 
 foreach my $f (@signature_files) {
@@ -103,6 +110,7 @@ foreach my $f (@signature_files) {
 my %fixed_mdevs= ();
 my %draft_mdevs= ();
 my %found_mdevs= ();
+my %fixed_in_future= ();
 
 my $match_info;
 
@@ -202,6 +210,9 @@ sub print_result {
     foreach my $m (sort keys %fixed_mdevs) {
       print "\n--- ATTENTION! FOUND FIXED MDEV: -----\n";
       print "\t$m - $fixed_mdevs{$m}\n";
+      if ($fixed_in_future{$m}) {
+        print "The fix version is in the future\n";
+      }
     }
     print "--------------------------------------\n";
   }
@@ -235,12 +246,13 @@ sub register_result
                     $match_type= 'draft';
                 }
                 my $notes= ($match_type eq 'strong' ? $j : $found_mdevs{$j}.' - '.$j);
-                if (defined $fixed_mdevs{$j}) {
+                if (defined $fixed_mdevs{$j} and not defined $fixed_in_future{$j}) {
                     $fixdate= "'$fixed_mdevs{$j}'";
                     $match_type= 'fixed';
                 }
                 my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$notes\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
                 $dbh->do($query);
+print "$query\n";
             }
         }
     }
@@ -311,6 +323,12 @@ sub process_found_mdev
         my $fixVersions= `cat /tmp/$mdev.fixVersions`;
         my @versions = ($fixVersions =~ /\"name\":\"(.*?)\"/g);
         $$info_ref .= "Fix versions: @versions ($resolutiondate)\n";
+        foreach my $v (@versions) {
+          $v =~ /(\d+)\.(\d+)\.(\d+)/;
+          if ($1 == $server_version[0] and $2 == $server_version[1] and $3 > $server_version[2]) {
+            $fixed_in_future{$mdev}= 1;
+          }
+        }
       }
       else {
         $$info_ref .= "RESOLUTION: $resolution". ($resolutiondate ? " ($resolutiondate)" : "") . "\n";
