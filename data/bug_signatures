@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23439:
+=~ Assertion \`size == space->size'
+=~ buf_read_ahead_random
+=~ buf_page_get_gen
 MDEV-23415:
 =~ Assertion \`dec_length <= str_length'|signal|AddressSanitizer
 =~ Item_func_format::val_str_ascii
