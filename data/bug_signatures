@@ -4,6 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23443:
+=~ AddressSanitizer|signal
+=~ my_scan_weight_utf8mb3_general_ci|my_strnncollsp_simple
+=~ my_ci_strnncollsp
+=~ ha_compare_text
+=~ mysql_union
+=~ Version: '10\.[5-9]
 MDEV-23439:
 =~ Assertion \`size == space->size'
 =~ buf_read_ahead_random
@@ -220,8 +227,7 @@ MDEV-23212:
 MDEV-23210:
 =~ Assertion \`(length % 4) == 0'
 =~ my_lengthsp_utf32
-=~ charset_info_st::lengthsp
-=~ Column_definition::prepare_interval_field
+=~ charset_info_st
 MDEV-23204:
 =~ signal|AddressSanitizer|Assertion \`bit < (map)->n_bits'
 =~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan
