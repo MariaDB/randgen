@@ -5,7 +5,7 @@
 ##############################################################################
 
 MDEV-23444:
-=~ Assertion `precision > 0'
+=~ Assertion \`precision > 0'
 =~ decimal_bin_size
 =~ Item_sum_avg::create_tmp_field
 MDEV-23443:
