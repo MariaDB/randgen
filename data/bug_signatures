@@ -4,9 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23444:
+=~ Assertion `precision > 0'
+=~ decimal_bin_size
+=~ Item_sum_avg::create_tmp_field
 MDEV-23443:
 =~ AddressSanitizer|signal
-=~ my_scan_weight_utf8mb3_general_ci|my_strnncollsp_simple
+=~ my_scan_weight_utf8mb3_general_ci|my_strnncollsp_simple|my_scan_weight_ucs2_general_ci
 =~ my_ci_strnncollsp
 =~ ha_compare_text
 =~ mysql_union
