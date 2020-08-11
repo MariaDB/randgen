@@ -252,7 +252,6 @@ sub register_result
                 }
                 my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$notes\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
                 $dbh->do($query);
-print "$query\n";
             }
         }
     }
@@ -262,6 +261,7 @@ sub process_found_mdev
 {
   my ($mdev, $nickname, $info_ref)= @_;
 
+  $nickname =~ s/([\'\"])/\\$1/g;
   $found_mdevs{$mdev}= $nickname;
 
   if ($mdev =~ /^(?:MENT|TODO)-/) {
