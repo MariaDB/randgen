@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23453:
+=~ signal|AddressSanitizer
+=~ Item_field::type_handler
+=~ Temporal_with_date::make_from_item
+=~ sp_head::execute
+MDEV-23452:
+=~ Assertion \`buf_page_get_io_fix(bpage) == BUF_IO_NONE'
+=~ buf_page_set_sticky
+=~ fsp_page_create
+=~ Version: '10\.[2-4]
+MDEV-23447:
+=~ signal|AddressSanitizer
+=~ fil_system_t::keyrotate_next
+=~ fil_crypt_find_space_to_rotate
 MDEV-23444:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
@@ -234,7 +248,7 @@ MDEV-23210:
 =~ charset_info_st
 MDEV-23204:
 =~ signal|AddressSanitizer|Assertion \`bit < (map)->n_bits'
-=~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan
+=~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan|DsMrr_impl::dsmrr_next
 =~ JOIN_TAB_SCAN_MRR::next
 =~ JOIN_CACHE::join_matching_records
 =~ Version: '10\.[3-9]
@@ -752,7 +766,7 @@ MDEV-22262:
 =~ signal 11|AddressSanitizer
 =~ handler::ha_table_flags|ha_partition::info|ha_partition::compare_number_of_records
 =~ ha_partition::open
-=~ check_duplicate_long_entries_update|handler::create_lookup_handler|clone_handler_for_update
+=~ check_duplicate_long_entries_update|handler::create_lookup_handler|clone_handler_for_update|ha_partition::clone
 =~ Version: '10\.[4-9]
 MDEV-22257:
 =~ Assertion \`trx_id > 0 \|\| (flags & BTR_KEEP_SYS_FLAG)'
