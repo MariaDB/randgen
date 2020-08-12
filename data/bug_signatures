@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23463:
+=~ fil_page_compress
+=~ buf_page_encrypt_before_write
+=~ sp_head::execute
+=~ Version: '10\.[2-4]
+MDEV-23456:
+=~ Assertion \`type == MLOG_FILE_NAME \|\| type == MLOG_FILE_DELETE \|\| type == MLOG_FILE_CREATE2 \|\| type == MLOG_FILE_RENAME2 \|\| type == MLOG_INDEX_LOAD \|\| type == MLOG_TRUNCATE \|\| type == MLOG_FILE_WRITE_CRYPT_DATA \|\| mtr->is_named_space(space_id)'
+=~ mlog_write_initial_log_record_low
+=~ Version: '10\.[2-4]
 MDEV-23453:
 =~ signal|AddressSanitizer
 =~ Item_field::type_handler
@@ -33,11 +42,6 @@ MDEV-23439:
 =~ Assertion \`size == space->size'
 =~ buf_read_ahead_random
 =~ buf_page_get_gen
-MDEV-23415:
-=~ Assertion \`dec_length <= str_length'|signal|AddressSanitizer
-=~ Item_func_format::val_str_ascii
-=~ Item_func::val_str_from_val_str_ascii
-=~ Version: '10\.[4-9]
 MDEV-23414:
 =~ Assertion \`res->charset() == item->collation\.collation'
 =~ Type_handler_string_result::make_packed_sort_key_part
