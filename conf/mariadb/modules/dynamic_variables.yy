@@ -180,7 +180,6 @@ dynvar_session_variable:
   | server_id= { $prng->int(1,1000) }
   | session_track_schema= dynvar_boolean
   | session_track_state_change= dynvar_boolean
-# Disabled due to MDEV-22524
   | session_track_system_variables= dynvar_session_track_system_variables_value
   | session_track_transaction_info= { $prng->arrayElement(['OFF','STATE','CHARACTERISTICS']) }
   | session_track_user_variables= dynvar_boolean
@@ -362,7 +361,8 @@ dynvar_global_variable:
   | innodb_io_capacity= { $prng->arrayElement([100,500,1000]) }
   | innodb_io_capacity_max= { $prng->arrayElement([100,1000,5000]) }
   | innodb_limit_optimistic_insert_debug= { $prng->arrayElement([1,10,100,1000,10000]) }
-  | innodb_log_checksums= dynvar_boolean
+# Disabled due to MDEV-23474
+# | innodb_log_checksums= dynvar_boolean
   | innodb_log_compressed_pages= dynvar_boolean
   | innodb_log_optimize_ddl= dynvar_boolean
   | innodb_log_write_ahead_size= { $prng->arrayElement([512,1024,10000,16384]) }
