@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23472:
+=~ AddressSanitizer|signal
+=~ LatchCounter::Count::reset
+=~ innodb_monitor_set_option
+=~ Version: '10\.[5-9]
+MDEV-23470:
+=~ InnoDB: Failing assertion: cmp < 0
+=~ row_ins_check_foreign_constraint
+=~ row_ins_index_entry
+=~ Version: '10\.[2-3]
 MDEV-23463:
 =~ fil_page_compress
 =~ buf_page_encrypt_before_write
@@ -2867,7 +2877,6 @@ MDEV-14865:
 MDEV-14854:
 =~ Assertion \`trid >= info->s->state\.create_trid'
 =~ transid_store_packed
-=~ _ma_make_key
 =~ ha_maria::write_row|ha_maria::update_row
 MDEV-14836:
 =~ Assertion \`m_status == DA_ERROR'
