@@ -610,7 +610,7 @@ MDEV-22608:
 MDEV-22601:
 =~ Assertion \`0'
 =~ Protocol::end_statement
-=~ Can't find record in
+=~ Can't find record in|Невозможно найти запись в
 =~ sequence
 =~ Version: '10\.[3-9]
 MDEV-22600:
@@ -2704,7 +2704,7 @@ MDEV-16292:
 =~ Version: '5\.5|Version: '10\.[1-2]
 MDEV-16242:
 =~ Slave worker thread retried transaction
-=~ Can't find record
+=~ Can't find record|Невозможно найти запись в
 =~ rocksdb
 MDEV-16208:
 =~ Assertion \`lock_get_wait(other_lock)'
@@ -3197,7 +3197,7 @@ MDEV-22667: [Index is corrupt; try to repair it]
 =~ Version: '10\.[4-9]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-22601: [Can't find record in]
-=~ Can't find record in
+=~ Can't find record in|Невозможно найти запись в
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 =~ sequence
 =~ Version: '10\.[3-9]
@@ -3222,7 +3222,7 @@ MDEV-21310:
 MDEV-21478:
 =~ Table .* contains .* user defined columns in InnoDB, but .* columns in MariaDB
 MDEV-21470:
-=~ Can't find record in
+=~ Can't find record in|Невозможно найти запись в
 =~ Version: '10\.[4-9]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-21373:
@@ -3274,7 +3274,7 @@ MDEV-18168:
 =~ signal 11
 =~ general_log_write
 MDEV-18158:
-=~ Can't find record in
+=~ Can't find record in|Невозможно найти запись в
 =~ view
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 #
