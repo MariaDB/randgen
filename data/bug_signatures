@@ -1253,9 +1253,9 @@ MDEV-21129:
 =~ sp_get_geometry_mbr
 =~ _mi_make_key|_ma_sp_make_key
 MDEV-21120:
-=~ Could not stop the server
-=~ --mysqld=--log-bin
+=~ Could not stop the server|STATUS_INTERNAL_ERROR
 =~ signal 6
+=~ MYSQL_BIN_LOG::stop_background_thread
 =~ Version: '10\.[2-9]
 MDEV-21102:
 =~ signal 11|AddressSanitizer: SEGV
@@ -1362,12 +1362,6 @@ MDEV-20763:
 =~ row_upd_sec_index_entry
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Version: '10\.[3-9]
-MDEV-20762:
-=~ signal 11|AddressSanitizer: SEGV
-=~ Item_field::type_handler
-=~ Temporal_with_date::make_from_item
-=~ TABLE::insert_portion_of_time|cut_fields_for_portion_of_time|update_portion_of_time
-=~ sp_head::execute
 MDEV-20761:
 =~ signal 11|AddressSanitizer: SEGV
 =~ base_list_iterator::next
@@ -1648,7 +1642,7 @@ MDEV-20207:
 MDEV-20195:
 =~ Assertion \`0'
 =~ ha_partition::handle_unordered_next
-=~ ha_partition::index_next
+=~ ha_partition::index_next|ha_partition::multi_range_read_next
 MDEV-20194:
 =~ check.*Warning.*Row size too large (> .*)\. Changing some columns to TEXT or BLOB or using ROW_FORMAT=DYNAMIC or ROW_FORMAT=COMPRESSED may help\. In current row format, BLOB prefix of .* bytes is stored inline
 =~ InnoDB: Cannot add field .* in table .* because after adding it, the row size is .* which is greater than maximum allowed size (.*) for a record on index leaf page
@@ -2870,6 +2864,11 @@ MDEV-14996:
 =~ int ha_maria::external_lock
 =~ Status: KILL_CONNECTION|Status: KILL_SERVER|unlink_thd
 =~ Version: '10\.1
+MDEV-14894: [remove_from_locked_mutex]
+=~ signal
+=~ free_memory
+=~ remove_from_locked_mutex
+=~ my_hash_iterate
 MDEV-14865:
 =~ Assertion \`share->now_transactional == share->base\.born_transactional'
 =~ maria_close
@@ -3171,6 +3170,16 @@ TODO-842: [PROFILING]
 =~ signal
 =~ free_memory
 =~ PROFILING::finish_current_query_impl
+TODO-842: [rw_lock_debug_create]
+=~ signal
+=~ rw_lock_debug_create
+=~ pfs_rw_lock_s_lock_func
+=~ dict_create_index_tree_step
+TODO-842: [precision > 0]
+=~ Assertion \`precision > 0'
+=~ decimal_bin_size
+=~ calc_group_buffer
+=~ mysql_select
 
 ##############################################################################
 # Weak matches
