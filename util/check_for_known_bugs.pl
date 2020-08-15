@@ -250,8 +250,11 @@ sub register_result
                     $fixdate= "'$fixed_mdevs{$j}'";
                     $match_type= 'fixed';
                 }
-                my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$notes\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
-                $dbh->do($query);
+                # Only register matches to fixed items if there is no better choice
+                if ($match_type ne 'fixed' or scalar(keys %fixed_mdevs) == scalar(keys %found_mdevs)) {
+                    my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$notes\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
+                    $dbh->do($query);
+                }
             }
         }
     }
