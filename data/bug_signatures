@@ -224,6 +224,12 @@ MDEV-23235:
 =~ Assertion \`part_id == m_last_part'
 =~ ha_partition::delete_row
 =~ Version: '10\.[4-9]
+MDEV-23226:
+=~ Assertion \`inited == RND'
+=~ handler::ha_rnd_next
+=~ select_unit_ext::send_eof
+=~ mysql_union
+=~ Version: '10\.[5-9]
 MDEV-23219:
 =~ Assertion \`(length % 4) == 0'
 =~ my_well_formed_len_utf32
