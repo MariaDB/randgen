@@ -162,10 +162,6 @@ sub run {
     $queries =~ s{M}{000000}so;
     $self->config->property('queries', $queries);
 
-    foreach my $i ($self->config->number_of_servers+1..scalar(keys %{$self->config->server_specific})) {
-        delete $self->config->server_specific->{$i};
-    }
-
     say("-------------------------------\nConfiguration");
     $self->config->printProps;
 
