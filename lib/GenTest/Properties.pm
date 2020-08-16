@@ -48,9 +48,10 @@ use constant PROPS_DEFAULTS => 1; ## Default values
 use constant PROPS_OPTIONS => 2;  ## Legal options to check for
 use constant PROPS_HELP => 3;     ## Help text
 use constant PROPS_LEGAL => 4;    ## List of legal properies
-use constant PROPS_LEGAL_HASH => 5; ## Hash of legal propertis
+use constant PROPS_LEGAL_HASH => 5; ## Hash of legal properties
 use constant PROPS_REQUIRED => 6; ## Required properties
 use constant PROPS_PROPS => 7;    ## the actual properties
+use constant PROPS_HASH_BACKUP => 8; ## Initial hash to use as a backup
 
 1;
 
@@ -68,11 +69,6 @@ sub AUTOLOAD {
     ## Avoid catching DESTRY et.al. (no intercepted calls to methods
     ## starting with an uppercase letter)
     return unless $name =~ /[^A-Z]/;
-    
-    if (defined $self->[PROPS_LEGAL_HASH]) {
-        croak("Illegal property '$name' caught by AUTOLOAD ") 
-            if not $self->[PROPS_LEGAL_HASH]->{$name};
-    }
     
     $self->[PROPS_PROPS]->{$name} = $arg if defined $arg;
     return $self->[PROPS_PROPS]->{$name};
@@ -234,8 +230,26 @@ sub init {
               'ps-protocol',
               'partitions',
               'compatibility',
+              'user',
+              'database',
       ]
   );
+
+  $gentestProps->setPropertiesFromHash($props);
+  $gentestProps->backupProperties();
+  return $gentestProps;
+}
+
+sub backupProperties {
+  $_[0]->[PROPS_HASH_BACKUP]= { %{$_[0]->[PROPS_PROPS]} };
+}
+
+sub restoreProperties {
+  $_[0]->setPropertiesFromHash($_[0]->[PROPS_HASH_BACKUP]);
+}
+
+sub setPropertiesFromHash {
+  my ($gentestProps, $props)= @_;
 
   $gentestProps->property('annotate-rules',$props->{annotate_rules}) if defined $props->{annotate_rules};
   $gentestProps->property('debug',1) if defined $props->{debug};
@@ -285,6 +299,9 @@ sub init {
   $gentestProps->property('xml-output',$props->{xml_output}) if defined $props->{xml_output};
   $gentestProps->property('partitions',$props->{partitions}) if defined $props->{partitions};
   $gentestProps->property('compatibility',$props->{compatibility}) if defined $props->{compatibility};
+  $gentestProps->property('database',$props->{database}) if defined $props->{database};
+  $gentestProps->property('user',$props->{user}) if defined $props->{user};
+  $gentestProps->property('vardir',$props->{vardir}) if defined $props->{vardir};
 
   # In case of multi-master topology (e.g. Galera with multiple "masters"),
   # we don't want to compare results after each query.
@@ -305,11 +322,6 @@ sub init {
 sub property {
     my ($self, $name, $arg) = @_;
 
-    if (defined $self->[PROPS_LEGAL_HASH]) {
-        croak("Illegal property '$name' caught by AUTOLOAD ") 
-            if not $self->[PROPS_LEGAL_HASH]->{$name};
-    }
-    
     $self->[PROPS_PROPS]->{$name} = $arg if defined $arg;
     return $self->[PROPS_PROPS]->{$name};
     
