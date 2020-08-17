@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2018 MariaDB Corporation Ab
+# Copyright (C) 2017, 2020 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,12 +14,11 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-
 ########################################################################
 #
 # The module implements a normal upgrade scenario with focus on ACL.
 #
-# The difference with the usual Upgrade test is that instead of
+# The difference with the NormalUpgrade test is that instead of
 # comparing the raw database dumps before and after upgrade,
 # we will compare the output of SHOW GRANT statements and such.
 # There is no point comparing the structure and contents of system
@@ -31,7 +30,7 @@
 package GenTest::Scenario::AclUpgrade;
 
 require Exporter;
-@ISA = qw(GenTest::Scenario);
+@ISA = qw(GenTest::Scenario::Upgrade);
 
 use strict;
 use DBI;
@@ -40,6 +39,7 @@ use GenTest::App::GenTest;
 use GenTest::Properties;
 use GenTest::Constants;
 use GenTest::Scenario;
+use GenTest::Scenario::Upgrade;
 use Data::Dumper;
 use File::Copy;
 use File::Compare;
@@ -50,55 +50,26 @@ sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
 
-  if (!defined ${$self->getProperty('basedir')}[2] or (${$self->getProperty('basedir')}[1] eq ${$self->getProperty('basedir')}[2])) {
-    $self->printTitle('ACL - normal restart');
+  if ($self->old_server_options()->{basedir} eq $self->new_server_options()->{basedir}) {
+    $self->printTitle('ACL - Normal restart');
   }
   else {
-    $self->printTitle('ACL - normal upgrade/downgrade');
+    $self->printTitle('ACL - Normal upgrade/downgrade');
   }
-
-  if (not defined $self->getProperty('grammar')) {
-    $self->setProperty('grammar', 'conf/mariadb/modules/acl.yy');
-  }
-  if (not defined $self->getProperty('threads')) {
-    $self->setProperty('threads', 4);
-  }
-
   return $self;
 }
 
 sub run {
   my $self= shift;
-  my ($status, $old_server, $new_server, $gentest);
+  my ($status, $old_server, $new_server);
   my ($old_grants, $new_grants);
 
   $status= STATUS_OK;
 
-  # We can initialize both servers right away, because the second one
-  # runs with start_dirty, so it won't bootstrap
-
-  $old_server= $self->prepareServer(1,
-    {
-      vardir => ${$self->getProperty('vardir')}[0],
-      port => ${$self->getProperty('port')}[0],
-      valgrind => 0,
-    }
-  );
-  $new_server= $self->prepareServer(2,
-    {
-      vardir => ${$self->getProperty('vardir')}[0],
-      port => ${$self->getProperty('port')}[0],
-      start_dirty => 1
-    }
-  );
-
-  say("-- Old server info: --");
-  say($old_server->version());
-  $old_server->printServerOptions();
-  say("-- New server info: --");
-  say($new_server->version());
-  $new_server->printServerOptions();
-  say("----------------------");
+  #####
+  # Prepare servers
+  
+  ($old_server, $new_server)= $self->prepare_servers();
 
   #####
   $self->printStep("Starting the old server");
@@ -111,17 +82,20 @@ sub run {
   }
 
   #####
+  $self->printStep("Generating data on the old server");
+
+  $status= $self->generate_data();
+  
+  if ($status != STATUS_OK) {
+    sayError("Data generation on the old server failed");
+    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+  }
+
+  #####
   $self->printStep("Running test flow on the old server");
 
-  $gentest= $self->prepareGentest(1,
-    {
-      duration => int($self->getTestDuration * 2 / 3),
-      dsn => [$old_server->dsn($self->getProperty('database'))],
-      servers => [$old_server],
-    }
-  );
-
-  $status= $gentest->run();
+  $self->setProperty('duration',int($self->getProperty('duration')/3));
+  $status= $self->run_test_flow();
 
   if ($status != STATUS_OK) {
     sayError("Test flow on the old server failed");
@@ -168,6 +142,9 @@ sub run {
   #####
   $self->printStep("Starting the new server");
 
+  # Point server_specific to the new server
+  $self->switch_to_new_server();
+
   $status= $new_server->startServer;
 
   if ($status != STATUS_OK) {
@@ -194,9 +171,10 @@ sub run {
   }
 
   #####
-  if (($old_server->majorVersion ne $new_server->majorVersion)
-    # In 10.4.13, new owner of mysql.user was introduced
-    or ($old_server->versionNumeric lt '100413' and $new_server->versionNumeric ge '100413'))
+  if ( ($old_server->majorVersion ne $new_server->majorVersion)
+        # Follow-up for MDEV-14637 which changed the structure of InnoDB stat tables in 10.2.17 / 10.3.9
+        or ($old_server->versionNumeric lt '100217' and $new_server->versionNumeric ge '100217' )
+        or ($old_server->versionNumeric lt '100309' and $new_server->versionNumeric ge '100309' ) )
   {
     $self->printStep("Running mysql_upgrade");
     $status= $new_server->upgradeDb;
@@ -218,7 +196,7 @@ sub run {
     sayError("Database appears to be corrupt after upgrade");
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
   }
-
+  
   #####
   $self->printStep("Getting ACL info from the new server");
 
@@ -233,10 +211,6 @@ sub run {
   #####
   $self->printStep("Normalizing ACL data");
   $self->normalizeGrants($old_server, $new_server, $old_grants, $new_grants);
-
-#  foreach my $u (keys %$old_grants) {
-#    say("$u: $old_grants->{$u}");
-#  }
 
   #####
   $self->printStep("Comparing ACL data before and after upgrade");
@@ -268,16 +242,8 @@ sub run {
   #####
   $self->printStep("Running test flow on the new server");
 
-  $gentest= $self->prepareGentest(2,
-    {
-      duration => int($self->getTestDuration / 3),
-      dsn => [$new_server->dsn($self->getProperty('database'))],
-      servers => [$new_server],
-      'start-dirty' => 1,
-    },
-    my $skip_gendata=1
-  );
-  $status= $gentest->run();
+  $self->setProperty('duration',int($self->getProperty('duration')/3));
+  $status= $self->run_test_flow();
 
   if ($status != STATUS_OK) {
     sayError("Test flow on the new server failed");
@@ -486,7 +452,5 @@ sub collectAclData {
 
   return ($res, \%grants);
 }
-
-
 
 1;

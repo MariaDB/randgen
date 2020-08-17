@@ -76,7 +76,7 @@ my ($help,
     $props, $deprecated,
     $wait_debugger, $skip_shutdown, $store_binaries,
     $skip_gendata, # Legacy to be kept for now, too many configs assume gendata by default
-    $scenario);
+    $scenario, %scenario_options);
 
 $props->{user}= 'rqg';
 $props->{database}= 'test';
@@ -181,7 +181,7 @@ my $opt_result = GetOptions(
 
 # Given that we use pass_through, it would be some very unexpected error
 if (!$opt_result) {
-    print STDERR "\nERROR: Error occured while reading options\n\n";
+    print STDERR "\nERROR: Error occured while reading options: $!\n\n";
     help();
     exit 1;
 }
@@ -196,8 +196,8 @@ elsif ($scenario) {
     # In the scenario mode, let unknown --scenario-xx options pass through,
     # but fail upon any other ones
     foreach my $o (@ARGV) {
-        if ($o =~ /^--(scenario[^=]+)(?:=(.*))?$/) {
-            $props->{$1}= $2;
+        if ($o =~ /^--scenario-([^=]+)(?:=(.*))?$/) {
+            $scenario_options{$1}= $2;
         } else {
             push @unknown_options, $o;
         }
@@ -613,6 +613,8 @@ if ($wait_debugger) {
     my $keypress = <STDIN>;
 }
 
+my $config = GenTest::Properties->init($props);
+
 #######
 # Scenario variant
 #######
@@ -620,10 +622,7 @@ if (defined $scenario) {
   my $cp= my $class= "GenTest::Scenario::$scenario";
   $cp =~ s/::/\//g;
   require "$cp.pm";
-  my $sc= $class->new(
-      properties => $props
-  );
-
+  my $sc= $class->new(properties => $config, scenario_options => \%scenario_options);
   my $status= $sc->run();
   say("[$$] $0 will exit with exit status ".status2text($status). " ($status)\n");
   safe_exit($status);
@@ -632,8 +631,7 @@ if (defined $scenario) {
 #######
 # Non-scenario (GenTest) variant
 #######
-my $gentestProps = GenTest::Properties->init($props);
-my $gentest = GenTest::App::GenTest->new(config => $gentestProps);
+my $gentest = GenTest::App::GenTest->new(config => $config);
 my $gentest_result = $gentest->run();
 say("GenTest exited with exit status ".status2text($gentest_result)." ($gentest_result)");
 

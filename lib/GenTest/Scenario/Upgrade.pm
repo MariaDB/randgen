@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2018 MariaDB Corporation Ab
+# Copyright (C) 2017, 2020 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,12 +17,7 @@
 
 ########################################################################
 #
-# The module implements a normal upgrade scenario.
-#
-# This is the simplest form of upgrade. The test starts the old server,
-# executes some flow on it, shuts down the server, starts the new one
-# on the same datadir, runs mysql_upgrade if necessary, performs a basic
-# data check and executes some more flow.
+# The module implements the core functions for server upgrade scenarios
 #
 ########################################################################
 
@@ -47,56 +42,39 @@ use DBServer::MySQL::MySQLd;
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
+  my $srvspec= $self->getProperty('server_specific');
+  # Use common vardir if it was provided
+  $srvspec->{1}->{vardir}= $self->getProperty('vardir') || $srvspec->{1}->{vardir};
 
-  if (!defined ${$self->getProperty('basedir')}[2] or (${$self->getProperty('basedir')}[1] eq ${$self->getProperty('basedir')}[2])) {
-    $self->printTitle('Normal restart');
+  if ($self->getProperty('number_of_servers') == 1) {
+    $srvspec->{2}= $srvspec->{1};
+  } else {
+    $srvspec->{2}->{vardir}= $srvspec->{1}->{vardir};
+    $srvspec->{2}->{port}= $srvspec->{1}->{port};
+    $srvspec->{2}->{database}= $srvspec->{1}->{database};
   }
-  else {
-    $self->printTitle('Normal upgrade/downgrade');
-  }
+  $self->setProperty('server_specific',$srvspec);
+  $self->setProperty('number_of_servers',1);
 
-  if (not defined $self->getProperty('grammar')) {
-    $self->setProperty('grammar', 'conf/mariadb/oltp.yy');
-  }
-  if (not defined $self->getProperty('gendata')) {
-    $self->setProperty('gendata', 'conf/mariadb/innodb_upgrade.zz');
-  }
-  if (not defined $self->getProperty('gendata1')) {
-    $self->setProperty('gendata1', $self->getProperty('gendata'));
-  }
-  if (not defined $self->getProperty('gendata-advanced1')) {
-    $self->setProperty('gendata-advanced1', $self->getProperty('gendata-advanced'));
-  }
-  if (not defined $self->getProperty('threads')) {
-    $self->setProperty('threads', 4);
-  }
-  
   return $self;
 }
 
-sub run {
-  my $self= shift;
-  my ($status, $old_server, $new_server, $gentest, $databases, %table_autoinc);
+sub old_server_options {
+  return $_[0]->getProperty('server_specific')->{1};
+}
 
-  $status= STATUS_OK;
+sub new_server_options {
+  return $_[0]->getProperty('server_specific')->{2};
+}
+
+sub prepare_servers {
+  my $self= shift;
 
   # We can initialize both servers right away, because the second one
   # runs with start_dirty, so it won't bootstrap
-  
-  $old_server= $self->prepareServer(1,
-    {
-      vardir => ${$self->getProperty('vardir')}[0],
-      port => ${$self->getProperty('port')}[0],
-      valgrind => 0,
-    }
-  );
-  $new_server= $self->prepareServer(2,
-    {
-      vardir => ${$self->getProperty('vardir')}[0],
-      port => ${$self->getProperty('port')}[0],
-      start_dirty => 1
-    }
-  );
+
+  my $old_server= $self->prepareServer(1);
+  my $new_server= $self->prepareServer(2, my $start_dirty= 1);
 
   say("-- Old server info: --");
   say($old_server->version());
@@ -106,235 +84,24 @@ sub run {
   $new_server->printServerOptions();
   say("----------------------");
 
-  #####
-  $self->printStep("Starting the old server");
+  $self->setServerSpecific(2,'dsn',$self->getServerSpecific(1,'dsn'));
 
-  $status= $old_server->startServer;
+  $self->backupProperties();
 
-  if ($status != STATUS_OK) {
-    sayError("Old server failed to start");
-    return $self->finalize(STATUS_TEST_FAILURE,[]);
-  }
-  
-  #####
-  $self->printStep("Generating data on the old server");
-
-  $gentest= $self->prepareGentest(1,
-    {
-      duration => 3600,
-      dsn => [$old_server->dsn($self->getProperty('database'))],
-      servers => [$old_server],
-      queries => 0,
-      threads => 1,
-      reporters => 'None'
-    }
-  );
-
-  $status= $gentest->run();
-  
-  if ($status != STATUS_OK) {
-    sayError("Data generation on the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
-  }
-
-  #####
-  $self->printStep("Running test flow on the old server");
-
-  $gentest= $self->prepareGentest(1,
-    {
-      duration => int($self->getTestDuration / 3),
-      dsn => [$old_server->dsn($self->getProperty('database'))],
-      servers => [$old_server],
-      'start-dirty' => 1,
-    },
-    my $skip_gendata=1
-  );
-
-  $status= $gentest->run();
-
-  if ($status != STATUS_OK) {
-    sayError("Test flow on the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
-  }
-
-  #####
-  $self->printStep("Dumping databases from the old server");
-  
-  $databases= join ' ', $old_server->nonSystemDatabases();
-  $old_server->dumpSchema($databases, $old_server->vardir.'/server_schema_old.dump');
-  $old_server->normalizeDump($old_server->vardir.'/server_schema_old.dump', 'remove_autoincs');
-  $old_server->dumpdb($databases, $old_server->vardir.'/server_data_old.dump');
-  $old_server->normalizeDump($old_server->vardir.'/server_data_old.dump');
-  $table_autoinc{'old'}= $old_server->collectAutoincrements();
-   
-  #####
-  $self->printStep("Stopping the old server");
-
-  $status= $old_server->stopServer;
-
-  if ($status != STATUS_OK) {
-    sayError("Shutdown of the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
-  }
-
-  #####
-  $self->printStep("Checking the old server log for fatal errors after shutdown");
-
-  $status= $self->checkErrorLog($old_server, {CrashOnly => 1});
-
-  if ($status != STATUS_OK) {
-    sayError("Found fatal errors in the log, old server shutdown has apparently failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
-  }
-
-  #####
-  $self->printStep("Backing up data directory from the old server");
-
-  $old_server->backupDatadir($old_server->datadir."_orig");
-  move($old_server->errorlog, $old_server->errorlog.'_orig');
-
-  #####
-  $self->printStep("Starting the new server");
-
-  $status= $new_server->startServer;
-
-  if ($status != STATUS_OK) {
-    sayError("New server failed to start");
-    # Error log might indicate known bugs which will affect the exit code
-    $status= $self->checkErrorLog($new_server);
-    # ... but even if it's a known error, we cannot proceed without the server
-    return $self->finalize($status,[$new_server]);
-  }
-
-  #####
-  $self->printStep("Checking the server error log for errors after upgrade");
-
-  $status= $self->checkErrorLog($new_server);
-
-  if ($status != STATUS_OK) {
-    # Error log can show known errors. We want to update
-    # the global status, but don't want to exit prematurely
-    $self->setStatus($status);
-    sayError("Found errors in the log after upgrade");
-    if ($status > STATUS_CUSTOM_OUTCOME) {
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
-    }
-  }
-
-  #####
-  if ( ($old_server->majorVersion ne $new_server->majorVersion)
-        # Follow-up for MDEV-14637 which changed the structure of InnoDB stat tables in 10.2.17 / 10.3.9
-        or ($old_server->versionNumeric lt '100217' and $new_server->versionNumeric ge '100217' )
-        or ($old_server->versionNumeric lt '100309' and $new_server->versionNumeric ge '100309' ) )
-  {
-    $self->printStep("Running mysql_upgrade");
-    $status= $new_server->upgradeDb;
-    if ($status != STATUS_OK) {
-      sayError("mysql_upgrade failed");
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
-    }
-  }
-  else {
-    $self->printStep("mysql_upgrade is skipped, as servers have the same major version");
-  }
-
-  #####
-  $self->printStep("Checking the database state after upgrade");
-
-  $status= $new_server->checkDatabaseIntegrity;
-
-  if ($status != STATUS_OK) {
-    sayError("Database appears to be corrupt after upgrade");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
-  }
-  
-  #####
-  $self->printStep("Dumping databases from the new server");
-  
-  $new_server->dumpSchema($databases, $new_server->vardir.'/server_schema_new.dump');
-  $new_server->normalizeDump($new_server->vardir.'/server_schema_new.dump', 'remove_autoincs');
-  $new_server->dumpdb($databases, $new_server->vardir.'/server_data_new.dump');
-  $new_server->normalizeDump($new_server->vardir.'/server_data_new.dump');
-  $table_autoinc{'new'} = $new_server->collectAutoincrements();
-
-  #####
-  $self->printStep("Running test flow on the new server");
-
-  $gentest= $self->prepareGentest(2,
-    {
-      duration => int($self->getTestDuration / 3),
-      dsn => [$new_server->dsn($self->getProperty('database'))],
-      servers => [$new_server],
-      'start-dirty' => 1,
-    },
-    my $skip_gendata=1
-  );
-  $status= $gentest->run();
-
-  if ($status != STATUS_OK) {
-    sayError("Test flow on the new server failed");
-    #####
-    $self->printStep("Checking the server error log for known errors");
-
-    if ($self->checkErrorLog($new_server) == STATUS_CUSTOM_OUTCOME) {
-      $status= STATUS_CUSTOM_OUTCOME;
-    }
-
-    $self->setStatus($status);
-    return $self->finalize($status,[$new_server])
-  }
-
-  #####
-  $self->printStep("Stopping the new server");
-
-  $status= $new_server->stopServer;
-
-  if ($status != STATUS_OK) {
-    sayError("Shutdown of the new server failed");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
-  }
-
-  #####
-  $self->printStep("Comparing databases before and after upgrade");
-  
-  $status= compare($new_server->vardir.'/server_schema_old.dump', $new_server->vardir.'/server_schema_new.dump');
-  if ($status != STATUS_OK) {
-    sayError("Database structures differ after upgrade");
-    system('diff -u '.$new_server->vardir.'/server_schema_old.dump'.' '.$new_server->vardir.'/server_schema_new.dump');
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
-  }
-  else {
-    say("Structure dumps appear to be identical");
-  }
-  
-  $status= compare($new_server->vardir.'/server_data_old.dump', $new_server->vardir.'/server_data_new.dump');
-  if ($status != STATUS_OK) {
-    sayError("Data differs after upgrade");
-    system('diff -u '.$new_server->vardir.'/server_data_old.dump'.' '.$new_server->vardir.'/server_data_new.dump');
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
-  }
-  else {
-    say("Data dumps appear to be identical");
-  }
-  
-  $status= $self->_compare_autoincrements($table_autoinc{old}, $table_autoinc{new});
-  if ($status != STATUS_OK) {
-    # Comaring auto-increments can show known errors. We want to update 
-    # the global status, but don't want to exit prematurely
-    $self->setStatus($status);
-    sayError("Auto-increment data differs after upgrade");
-    if ($status > STATUS_CUSTOM_OUTCOME) {
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
-    }
-  }
-  else {
-    say("Auto-increment data appears to be identical");
-  }
-
-  return $self->finalize($status,[]);
+  return ($old_server, $new_server);
 }
 
-sub _compare_autoincrements {
+sub switch_to_new_server {
+  my $self= shift;
+  my $srvspec= $self->getProperty('server_specific');
+  $srvspec->{1}= $self->new_server_options();
+  $self->setProperty('server_specific',$srvspec);
+  if ($self->scenarioOptions()->{grammar2}) {
+    $self->setProperty('grammar',$self->scenarioOptions()->{grammar2});
+  }
+}
+
+sub compare_autoincrements {
   my ($self, $old_autoinc, $new_autoinc)= @_;
 #	say("Comparing auto-increment data between old and new servers...");
 

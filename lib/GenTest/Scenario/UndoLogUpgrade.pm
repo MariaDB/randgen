@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2018 MariaDB Corporation Ab
+# Copyright (C) 2017, 2020 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 # (maybe it will be later decided that other values of
 # innodb-change-buffering need to be tried as well).
 #
-# When 2/3 of test duration has passed, the module will execute
+# When half of test duration has passed, the module will execute
 # step 2, crash and restart the old server with innodb-force-recovery=3.
 #
 # If it works, the module will continue operation and execute step 3 --
@@ -50,7 +50,7 @@
 package GenTest::Scenario::UndoLogUpgrade;
 
 require Exporter;
-@ISA = qw(GenTest::Scenario);
+@ISA = qw(GenTest::Scenario::Upgrade);
 
 use strict;
 use DBI;
@@ -59,6 +59,7 @@ use GenTest::App::GenTest;
 use GenTest::Properties;
 use GenTest::Constants;
 use GenTest::Scenario;
+use GenTest::Scenario::Upgrade;
 use Data::Dumper;
 use File::Copy;
 use File::Compare;
@@ -68,81 +69,41 @@ use DBServer::MySQL::MySQLd;
 
 sub new {
   my $class= shift;
-  my $scenario= $class->SUPER::new(@_);
+  my $self= $class->SUPER::new(@_);
 
-  if (!defined ${$scenario->getProperty('basedir')}[2] or (${$scenario->getProperty('basedir')}[1] eq ${$scenario->getProperty('basedir')}[2])) {
-    $scenario->printTitle('Undo log recovery');
+  if ($self->old_server_options()->{basedir} eq $self->new_server_options()->{basedir}) {
+    $self->printTitle('Undo log recovery');
   }
   else {
-    $scenario->printTitle('Undo log upgrade');
+    $self->printTitle('Undo log upgrade/downgrade');
   }
 
-  if (not defined $scenario->getProperty('grammar')) {
-    $scenario->setProperty('grammar', 'conf/mariadb/oltp.yy');
+  my @mysqld_options= @{$self->old_server_options()->{mysqld_options}};
+  if ( "@mysqld_options" !~ /innodb[-_]change[-_]buffering=/) {
+    push @mysqld_options, '--loose-innodb-change-buffering=none';
+    $self->setServerSpecific(1,'mysqld_options',\@mysqld_options);
   }
-  if (not defined $scenario->getProperty('gendata')) {
-    $scenario->setProperty('gendata', 'conf/mariadb/innodb_upgrade.zz');
-  }
-  if (not defined $scenario->getProperty('gendata1')) {
-    $scenario->setProperty('gendata1', $scenario->getProperty('gendata'));
-  }
-  if (not defined $scenario->getProperty('gendata-advanced1')) {
-    $scenario->setProperty('gendata-advanced1', $scenario->getProperty('gendata-advanced'));
-  }
-  if (not defined $scenario->getProperty('threads')) {
-    $scenario->setProperty('threads', 4);
+  @mysqld_options= @{$self->new_server_options()->{mysqld_options}};
+  if ( "@mysqld_options" !~ /innodb[-_]change[-_]buffering=/) {
+    push @mysqld_options, '--loose-innodb-change-buffering=none';
+    $self->setServerSpecific(2,'mysqld_options',\@mysqld_options);
   }
 
-  # Set innodb-change-buffering=none if it's there is no value
-  # for the option in the settings
-  my @mysqld_options= ();
-  if ($scenario->getProperty('mysqld1')) {
-    @mysqld_options= @{$scenario->getProperty('mysqld1')};
-  }
-  if ("@mysqld_options" !~ /innodb[-_]change[-_]buffering=/) {
-    if ($scenario->getProperty('mysqld')) {
-      @mysqld_options= @{$scenario->getProperty('mysqld')};
-    }
-    if ("@mysqld_options" !~ /innodb[-_]change[-_]buffering=/) {
-      push @mysqld_options, '--loose-innodb-change-buffering=none';
-      $scenario->setProperty('mysqld', [ @mysqld_options ]);
-    }
-  }
+  $self->backupProperties();
 
-  return $scenario;
+  return $self;
 }
 
 sub run {
   my $self= shift;
-  my ($status, $old_server, $new_server, $gentest);
+  my ($status, $old_server, $new_server, $databases, %table_autoinc);
 
   $status= STATUS_OK;
 
-  # We can initialize both servers right away, because the second one
-  # runs with start_dirty, so it won't bootstrap
+  #####
+  # Prepare servers
   
-  $old_server= $self->prepareServer(1,
-    {
-      vardir => ${$self->getProperty('vardir')}[0],
-      port => ${$self->getProperty('port')}[0],
-      valgrind => 0,
-    }
-  );
-  $new_server= $self->prepareServer(2, 
-    {
-      vardir => ${$self->getProperty('vardir')}[0],
-      port => ${$self->getProperty('port')}[0],
-      start_dirty => 1
-    }
-  );
-
-  say("-- Old server info: --");
-  say($old_server->version());
-  $old_server->printServerOptions();
-  say("-- New server info: --");
-  say($new_server->version());
-  $new_server->printServerOptions();
-  say("----------------------");
+  ($old_server, $new_server)= $self->prepare_servers();
 
   #####
   $self->printStep("Starting the old server");
@@ -157,18 +118,7 @@ sub run {
   #####
   $self->printStep("Generating data on the old server");
 
-  $gentest= $self->prepareGentest(1,
-    {
-      duration => 3600,
-      dsn => [$old_server->dsn($self->getProperty('database'))],
-      servers => [$old_server],
-      queries => 0,
-      threads => 1,
-      reporters => 'None'
-    }
-  );
-
-  $status= $gentest->run();
+  $status= $self->generate_data();
 
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
@@ -183,13 +133,13 @@ sub run {
     sayError("Failed to fork for running the test flow");
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$old_server]);
   }
-  
+
   # The child will be running the test flow. The parent will be running
   # the server and then killing it, and while waiting, will be monitoring
   # the status of the test flow to notice if it exits prematurely.
   
   if ($gentest_pid > 0) {
-    my $timeout= $self->getTestDuration / 3;
+    my $timeout= int($self->getProperty('duration')/2);
     foreach (1..$timeout) {
       if (waitpid($gentest_pid, WNOHANG) == 0) {
         sleep 1;
@@ -201,24 +151,15 @@ sub run {
     }
   }
   else {
-    $gentest= $self->prepareGentest(1,
-      {
-        duration => int($self->getTestDuration * 2 / 3),
-        dsn => [$old_server->dsn($self->getProperty('database'))],
-        servers => [$old_server],
-        'start-dirty' => 1,
-      },
-      my $skip_gendata=1
-    );
-    my $res= $gentest->run();
+    my $res= $self->run_test_flow();
     exit $res;
   }
-  
+
   if ($status != STATUS_OK) {
     sayError("Test flow on the old server failed");
     return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
   }
-  
+
   #####
   $self->printStep("Killing the old server");
 
@@ -252,7 +193,7 @@ sub run {
   #####
   $self->printStep("Restarting the old server with innodb-force-recovery");
 
-  $old_server->setStartDirty(1);
+  $self->setServerSpecific(1,'start_dirty',1);
   $old_server->addServerOptions(['--innodb-force-recovery=3']);
 
   $status= $old_server->startServer;
@@ -276,6 +217,8 @@ sub run {
     return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
   }
 
+  $self->restoreProperties();
+
   #####
   $self->printStep("Backing up data directory from the old server again");
 
@@ -284,6 +227,9 @@ sub run {
 
   #####
   $self->printStep("Starting the new server");
+
+  # Point server_specific to the new server
+  $self->switch_to_new_server();
 
   $status= $new_server->startServer;
 
@@ -301,13 +247,30 @@ sub run {
   $status= $self->checkErrorLog($new_server);
 
   if ($status != STATUS_OK) {
-    # Error log can show known errors. We want to update 
+    # Error log can show known errors. We want to update
     # the global status, but don't want to exit prematurely
     $self->setStatus($status);
+    sayError("Found errors in the log after upgrade");
     if ($status > STATUS_CUSTOM_OUTCOME) {
-      sayError("Found errors in the log, upgrade has apparently failed");
       return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
     }
+  }
+
+  #####
+  if ( ($old_server->majorVersion ne $new_server->majorVersion)
+        # Follow-up for MDEV-14637 which changed the structure of InnoDB stat tables in 10.2.17 / 10.3.9
+        or ($old_server->versionNumeric lt '100217' and $new_server->versionNumeric ge '100217' )
+        or ($old_server->versionNumeric lt '100309' and $new_server->versionNumeric ge '100309' ) )
+  {
+    $self->printStep("Running mysql_upgrade");
+    $status= $new_server->upgradeDb;
+    if ($status != STATUS_OK) {
+      sayError("mysql_upgrade failed");
+      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+    }
+  }
+  else {
+    $self->printStep("mysql_upgrade is skipped, as servers have the same major version");
   }
 
   #####
@@ -321,15 +284,22 @@ sub run {
   }
   
   #####
-  if ($old_server->majorVersion ne $new_server->majorVersion) {
-    $self->printStep("Running mysql_upgrade");
-    $status= $new_server->upgradeDb;
-    if ($status != STATUS_OK) {
-      sayError("mysql_upgrade failed");
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+  $self->printStep("Running test flow on the new server");
+
+  $self->setProperty('duration',int($self->getProperty('duration')/3));
+  $status= $self->run_test_flow();
+
+  if ($status != STATUS_OK) {
+    sayError("Test flow on the new server failed");
+    #####
+    $self->printStep("Checking the server error log for known errors");
+
+    if ($self->checkErrorLog($new_server) == STATUS_CUSTOM_OUTCOME) {
+      $status= STATUS_CUSTOM_OUTCOME;
     }
-  } else {
-    $self->printStep("mysql_upgrade is skipped, as servers have the same major version");
+
+    $self->setStatus($status);
+    return $self->finalize($status,[$new_server])
   }
 
   #####
@@ -339,7 +309,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Shutdown of the new server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$new_server]);
+    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
   }
 
   return $self->finalize($status,[]);
