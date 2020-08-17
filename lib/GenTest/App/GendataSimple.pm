@@ -104,6 +104,8 @@ sub executor_id {
 sub run {
     my ($self) = @_;
 
+    say("Running GendataSimple");
+
     my $prng = GenTest::Random->new( seed => 0 );
 
     my $executor = GenTest::Executor->newFromDSN($self->dsn());

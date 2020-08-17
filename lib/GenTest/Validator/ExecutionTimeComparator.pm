@@ -593,7 +593,7 @@ sub DESTROY {
         MAX_DEVIATION.'% of mean): '.$unstable_queries) if defined $have_statistics_mod  and MIN_SAMPLES > 0;
     say("Queries suitable for execution time comparison: $total_queries");
     say("Queries with different EXPLAIN plans: $different_plans") if ($skip_explain == 0);
-    say("Notable execution times for basedir0 and basedir1, respectively:"); 
+    say("Notable execution times for basedirs, respectively:");
     print Dumper \@execution_times;
     foreach my $ratio (sort keys %execution_ratios) {
         print "ratio = $ratio; queries = ".scalar(@{$execution_ratios{$ratio}}).":\n";

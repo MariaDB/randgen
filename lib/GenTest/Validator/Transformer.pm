@@ -267,7 +267,7 @@ sub transform {
 	print TESTFILE $test;
 	close (TESTFILE);
 	
-	say("MySQL test dumped to $testfile");
+	say("MTR test dumped to $testfile");
 
     my $translator = GenTest::Translator::Mysqldump2javadb->new();
     my $javadbtest = $translator->translate($test);

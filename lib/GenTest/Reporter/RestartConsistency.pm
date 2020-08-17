@@ -1,4 +1,4 @@
-# Copyright (C) 2016 MariaDB Corporation Ab
+# Copyright (C) 2016, 2020 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ sub report {
 
     my $engine = $reporter->serverVariable('storage_engine');
 
-    my $server = $reporter->properties->servers->[0];
+    my $server = $reporter->properties->server_specific->{1}->{server};
     say("Copying datadir... (interrupting the copy operation may cause investigation problems later)");
     if (osWindows()) {
         system("xcopy \"$datadir\" \"$orig_datadir\" /E /I /Q");
@@ -164,7 +164,7 @@ sub dump_database {
     # Suffix is "before" or "after" (restart)
     my ($reporter, $dbh, $suffix) = @_;
     my $port = $reporter->serverVariable('port');
-    $vardir = $reporter->properties->servers->[0]->vardir() unless defined $vardir;
+    $vardir = $reporter->properties->server_specific->{1}->{vardir} unless defined $vardir;
     
 	my @all_databases = @{$dbh->selectcol_arrayref("SHOW DATABASES")};
 	my $databases_string = join(' ', grep { $_ !~ m{^(mysql|information_schema|performance_schema)$}sgio } @all_databases );

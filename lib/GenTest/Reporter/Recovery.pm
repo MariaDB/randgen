@@ -315,8 +315,6 @@ sub report {
 			);
 		};
 
-		push @mysqld_options, '--loose-skip-pbxt' if lc($engine) ne 'pbxt';
-
 		foreach my $plugin (@$plugins) {
 			push @mysqld_options, '--plugin-load='.$plugin->[0].'='.$plugin->[1];
 		};

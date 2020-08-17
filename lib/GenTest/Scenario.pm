@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2018 MariaDB Corporation Ab
+# Copyright (C) 2017, 2020 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -26,11 +26,13 @@ use GenTest;
 use GenTest::Constants;
 use Data::Dumper;
 
-use constant SCENARIO_PROPERTIES      => 1;
-use constant SCENARIO_CURRENT_BASEDIR => 2;
-use constant SCENARIO_TYPE            => 3;
-use constant SCENARIO_DETECTED_BUGS   => 4;
-use constant SCENARIO_GLOBAL_RESULT   => 5;
+use constant SC_TEST_PROPERTIES        => 1;
+use constant SC_CURRENT_BASEDIR        => 2;
+use constant SC_TYPE                   => 3;
+use constant SC_DETECTED_BUGS          => 4;
+use constant SC_GLOBAL_RESULT          => 5;
+use constant SC_SCENARIO_OPTIONS       => 6;
+use constant SC_PROPERTIES_BACKUP      => 7;
 
 1;
 
@@ -38,16 +40,17 @@ sub new {
   my $class = shift;
 
   my $scenario = $class->SUPER::new({
-      properties => SCENARIO_PROPERTIES
+      properties => SC_TEST_PROPERTIES,
+      scenario_options => SC_SCENARIO_OPTIONS
   }, @_);
 
-  $scenario->[SCENARIO_DETECTED_BUGS] = {};
-  $scenario->[SCENARIO_GLOBAL_RESULT] = STATUS_OK;
+  $scenario->[SC_DETECTED_BUGS] = {};
+  $scenario->[SC_GLOBAL_RESULT] = STATUS_OK;
 
-  if (defined $scenario->getProperty('scenario-type')) {
-    $scenario->setTestType($scenario->getProperty('scenario-type'));
+  if ($scenario->[SC_SCENARIO_OPTIONS] and defined $scenario->[SC_SCENARIO_OPTIONS]->{type}) {
+    $scenario->setTestType($scenario->[SC_SCENARIO_OPTIONS]->{type});
   }
-
+  $scenario->backupProperties();
   return $scenario;
 }
 
@@ -55,12 +58,16 @@ sub run {
   die "Default scenario run() called.";
 }
 
+sub backupProperties {
+  $_[0]->[SC_TEST_PROPERTIES]->backupProperties();
+}
+
 sub getTestType {
-  return $_[0]->[SCENARIO_TYPE];
+  return $_[0]->[SC_TYPE];
 }
 
 sub setTestType {
-  $_[0]->[SCENARIO_TYPE]= $_[1];
+  $_[0]->[SC_TYPE]= $_[1];
 }
 
 sub getTestDuration {
@@ -72,57 +79,88 @@ sub setTestDuration {
 }
 
 sub getProperties {
-  return $_[0]->[SCENARIO_PROPERTIES];
+  return $_[0]->[SC_TEST_PROPERTIES];
 }
 
 sub getProperty {
-  return $_[0]->[SCENARIO_PROPERTIES]->{$_[1]};
+  return $_[0]->[SC_TEST_PROPERTIES]->property($_[1]);
 }
 
 sub setProperty {
-  $_[0]->[SCENARIO_PROPERTIES]->{$_[1]}= $_[2];
+  $_[0]->[SC_TEST_PROPERTIES]->property($_[1], $_[2]);
+}
+
+sub unsetProperty {
+  $_[0]->[SC_TEST_PROPERTIES]->unsetProperty($_[1]);
+}
+
+sub restoreProperties {
+  $_[0]->[SC_TEST_PROPERTIES]->restoreProperties();
+}
+
+sub scenarioOptions {
+  return $_[0]->[SC_SCENARIO_OPTIONS];
+}
+
+sub setServerSpecific {
+  my ($self, $srvnum, $option, $value)= @_;
+  $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{$option}= $value;
+}
+
+sub getServerSpecific {
+  my ($self, $srvnum, $option)= @_;
+  return $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{$option};
+}
+
+sub generate_data {
+  my $self= shift;
+  $self->setProperty('duration',3600);
+  $self->setProperty('queries',0);
+  $self->setProperty('threads',1);
+  $self->setProperty('reporters','None');
+  my $gentest= GenTest::App::GenTest->new(config => $self->getProperties());
+  my $status= $gentest->run();
+  $self->restoreProperties();
+  return $status;
+}
+
+sub run_test_flow {
+  my $self= shift;
+  $self->unsetProperty('gendata');
+  $self->unsetProperty('gendata-advanced');
+  my $gentest= GenTest::App::GenTest->new(config => $self->getProperties());
+  my $status= $gentest->run();
+  $self->restoreProperties();
+  return $status;
 }
 
 # Scenario can run (consequently or simultaneously) an arbitrary
 # number of servers. Each server might potentially have different set
-# of options. $server_num indicates which options should be used
+# of options. $srvnum indicates which options should be used
 
 sub prepareServer {
-  my ($self, $server_num, $opts)= @_;
+  my ($self, $srvnum, $start_dirty)= @_;
 
-  my @server_options= ();
-  # "Zero" options are applied to all servers
-  if (${$self->getProperty('mysqld_options')}[$server_num]) {
-    push @server_options, @{${$self->getProperty('mysqld_options')}[$server_num]};
-  }
-
-  if (!exists $opts->{start_dirty}) {
-    $opts->{start_dirty}= 0;
-  }
-  if (!exists $opts->{general_log}) {
-    $opts->{general_log}= 1;
-  }
-  if (!defined $opts->{basedir}) {
-    $opts->{basedir}= ${$self->getProperty('basedir')}[$server_num] || ${$self->getProperty('basedir')}[0];
-  }
-  if (!defined $opts->{vardir}) {
-    $opts->{vardir}= ${$self->getProperty('vardir')}[$server_num] || ${$self->getProperty('vardir')}[0];
-  }
-
-  return DBServer::MySQL::MySQLd->new(
-                      basedir => $opts->{basedir},
-                      vardir => $opts->{vardir},
-                      port => $opts->{port},
-                      start_dirty => $opts->{start_dirty},
-                      valgrind => $opts->{valgrind},
-                      valgrind_options => \@{$opts->{valgrind_options}},
-                      rr => $opts->{rr},
-                      server_options => \@server_options,
-                      general_log => $opts->{general_log},
-                      user => $opts->{user}
+  my $server= DBServer::MySQL::MySQLd->new(
+                      basedir => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{basedir},
+                      vardir => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{vardir},
+                      port => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{port},
+                      start_dirty => $start_dirty || 0,
+                      valgrind => $self->[SC_TEST_PROPERTIES]->valgrind,
+                      valgrind_options => ($self->[SC_TEST_PROPERTIES]->valgrind_options ? \@{$self->[SC_TEST_PROPERTIES]->valgrind_options} : []),
+                      rr => $self->[SC_TEST_PROPERTIES]->rr,
+                      server_options => [ @{$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{mysqld_options}} ],
+                      general_log => 1,
+                      config => $self->[SC_TEST_PROPERTIES]->cnf_array_ref,
+                      user => $self->[SC_TEST_PROPERTIES]->user
               );
-  
+
+  $self->setServerSpecific(1,'dsn',$server->dsn($self->getProperty('database'),$self->getProperty('user')));
+  $self->setServerSpecific($srvnum,'server',$server);
+  return $server;
 }
+
+
 
 # Scenario can run (consequently or simultaneously) an arbitrary
 # number of test flows. Each flow might potentially have different set
@@ -134,28 +172,33 @@ sub prepareServer {
 #  my $gentestProps = GenTest::Properties->init($props);
 
 sub prepareGentest {
-  my ($self, $gentest_num, $opts, $skip_gendata)= @_;
+  my ($self, $gentest_num, $opts)= @_;
   
-  my $props= $self->getProperties;
-  foreach my $p (keys %$props) {
-    if ($p =~ /^([-\w]+)$gentest_num/) {
-      $props->{$1}= $props->{$p};
-    }
-    if ($skip_gendata and $p =~ /^gendata/) {
-      delete $props->{$p};
-    }
-  }
+  my $config= $self->getProperties;
+#  foreach my $p (keys %$props) {
+#    if ($p =~ /^([-\w]+)$gentest_num/) {
+#      $props->{$1}= $props->{$p};
+#    }
+#    if ($skip_gendata and $p =~ /^gendata/) {
+#      delete $props->{$p};
+#    }
+#  }
 
-  my $config= GenTest::Properties->init($self->getProperties);
+#  my $config= GenTest::Properties->init($self->getProperties);
 
-  foreach my $o (keys %$opts) {
-    $config->property($o, $opts->{$o});
-  }
+#  foreach my $o (keys %$opts) {
+#    $config->property($o, $opts->{$o});
+#  }
 
 #  if (not $config->property('gendata') and not $config->property('gendata-advanced') and not $config->property('grammar')) {
 #    say("Neither gendata nor grammar are configured for this gentest, skipping");
 #    return undef;
 #  }
+
+# my $gentestProps = GenTest::Properties->init($props);
+# my $gentest = GenTest::App::GenTest->new(config => $gentestProps);
+# my $gentest_result = $gentest->run();
+# say("GenTest exited with exit status ".status2text($gentest_result)." ($gentest_result)");
 
   # Set hard defaults for missing values
 #  $config->property('database', 'test') if !defined $config->property('database');
@@ -164,7 +207,7 @@ sub prepareGentest {
 #  $config->property('queries', '1000M') if !defined $config->property('queries');
 #  $config->property('reporters', ['Backtrace', 'Deadlock']) if !defined $config->property('reporters');
 #  $config->property('user', 'root') if !defined $config->property('user');
-  $config->property('strict_fields', 1);
+#  $config->property('strict_fields', 1);
 
   # gendata and gendata-advanced will only be used if they specified
   # explicitly for this run
@@ -180,12 +223,12 @@ sub prepareGentest {
 
 sub addDetectedBug {
   my ($self, $bugnum)= @_;
-  $self->[SCENARIO_DETECTED_BUGS]->{$bugnum}= (defined $self->[SCENARIO_DETECTED_BUGS]->{$bugnum} ? $self->[SCENARIO_DETECTED_BUGS]->{$bugnum} + 1 : 1);
+  $self->[SC_DETECTED_BUGS]->{$bugnum}= (defined $self->[SC_DETECTED_BUGS]->{$bugnum} ? $self->[SC_DETECTED_BUGS]->{$bugnum} + 1 : 1);
 }
 
 sub detectedBugs {
   my $self= shift;
-  return $self->[SCENARIO_DETECTED_BUGS];
+  return $self->[SC_DETECTED_BUGS];
 }
 
 # Check and parse the error log up to this point,
@@ -269,15 +312,15 @@ sub checkErrorLog {
 
 sub setStatus {
   my ($self, $res)= @_;
-  if ($res > $self->[SCENARIO_GLOBAL_RESULT]) {
-    $self->[SCENARIO_GLOBAL_RESULT]= $res;
+  if ($res > $self->[SC_GLOBAL_RESULT]) {
+    $self->[SC_GLOBAL_RESULT]= $res;
   }
-  return $self->[SCENARIO_GLOBAL_RESULT];
+  return $self->[SC_GLOBAL_RESULT];
 }
 
 sub getStatus {
   my $self= shift;
-  return $self->[SCENARIO_GLOBAL_RESULT];
+  return $self->[SC_GLOBAL_RESULT];
 }
 
 sub finalize {

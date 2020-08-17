@@ -58,7 +58,7 @@ sub status {
 	$first_reporter = $reporter if not defined $first_reporter;
 	return STATUS_OK if $reporter ne $first_reporter;
 
-    my $server = $reporter->properties->servers->[1];
+    my $server = $reporter->properties->server_specific->{1}->{server};
     my $dbh = DBI->connect($server->dsn());
 
 	if ($dbh) {

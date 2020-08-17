@@ -1,4 +1,5 @@
 # Copyright (C) 2013 Monty Program Ab
+# Copyright (C) 2020 MariaDB
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -46,11 +47,11 @@ sub report {
 	$first_reporter = $reporter if not defined $first_reporter;
 	return STATUS_OK if $reporter ne $first_reporter;
 
-	my $server = $reporter->properties->servers->[0];
+	my $server = $reporter->properties->server_specific->{1}->{server};
 	my $status;
-	my $vardir = $server->vardir();
-	my $datadir = $server->datadir();
-	my $port = $server->port();
+	my $vardir = $server->vardir;
+	my $datadir = $server->datadir;
+	my $port = $server->port;
 
 	my $client = DBServer::MySQL::MySQLd::_find(undef,
 		[$reporter->serverVariable('basedir')],
@@ -158,7 +159,7 @@ sub report {
 
 sub dump_all {
 	my ($reporter, $dbh, $dumpfile) = @_;
-	my $server = $reporter->properties->servers->[0];
+	my $server = $reporter->properties->server_specific->{1}->{server};
 
 	my @all_databases = @{$dbh->selectcol_arrayref("SHOW DATABASES")};
 	my $databases_string = join(' ', grep { $_ !~ m{^(mysql|information_schema|performance_schema)$}sgio } @all_databases );

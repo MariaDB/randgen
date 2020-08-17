@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2020 MariaDB Corporation Ab
+# Copyright (C) 2020 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,15 +17,16 @@
 
 ########################################################################
 #
-# The module implements a crash recovery/upgrade scenario.
+# The module implements a normal restart/upgrade scenario.
 #
-# The test starts the old server, kills the server, starts the new one
+# This is the simplest form of upgrade. The test starts the old server,
+# executes some flow on it, shuts down the server, starts the new one
 # on the same datadir, runs mysql_upgrade if necessary, performs a basic
 # data check and executes some more flow.
 #
 ########################################################################
 
-package GenTest::Scenario::CrashUpgrade;
+package GenTest::Scenario::NormalUpgrade;
 
 require Exporter;
 @ISA = qw(GenTest::Scenario::Upgrade);
@@ -41,7 +42,6 @@ use GenTest::Scenario::Upgrade;
 use Data::Dumper;
 use File::Copy;
 use File::Compare;
-use POSIX;
 
 use DBServer::MySQL::MySQLd;
 
@@ -50,10 +50,10 @@ sub new {
   my $self= $class->SUPER::new(@_);
 
   if ($self->old_server_options()->{basedir} eq $self->new_server_options()->{basedir}) {
-    $self->printTitle('Crash recovery');
+    $self->printTitle('Normal restart');
   }
   else {
-    $self->printTitle('Crash upgrade/downgrade');
+    $self->printTitle('Normal upgrade/downgrade');
   }
   return $self;
 }
@@ -92,32 +92,8 @@ sub run {
   #####
   $self->printStep("Running test flow on the old server");
 
-  my $gentest_pid= fork();
-  if (not defined $gentest_pid) {
-    sayError("Failed to fork for running the test flow");
-    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$old_server]);
-  }
-
-  # The child will be running the test flow. The parent will be running
-  # the server and then killing it, and while waiting, will be monitoring
-  # the status of the test flow to notice if it exits prematurely.
-  
-  if ($gentest_pid > 0) {
-    my $timeout= int($self->getProperty('duration')/3);
-    foreach (1..$timeout) {
-      if (waitpid($gentest_pid, WNOHANG) == 0) {
-        sleep 1;
-      } 
-      else {
-        $status= $? >> 8;
-        last;
-      }
-    }
-  }
-  else {
-    my $res= $self->run_test_flow();
-    exit $res;
-  }
+  $self->setProperty('duration',int($self->getProperty('duration')/3));
+  $status= $self->run_test_flow();
 
   if ($status != STATUS_OK) {
     sayError("Test flow on the old server failed");
@@ -125,21 +101,27 @@ sub run {
   }
 
   #####
-  $self->printStep("Killing the old server");
-
-  $status= $old_server->kill;
+  $self->printStep("Dumping databases from the old server");
   
+  $databases= join ' ', $old_server->nonSystemDatabases();
+  $old_server->dumpSchema($databases, $old_server->vardir.'/server_schema_old.dump');
+  $old_server->normalizeDump($old_server->vardir.'/server_schema_old.dump', 'remove_autoincs');
+  $old_server->dumpdb($databases, $old_server->vardir.'/server_data_old.dump');
+  $old_server->normalizeDump($old_server->vardir.'/server_data_old.dump');
+  $table_autoinc{'old'}= $old_server->collectAutoincrements();
+   
+  #####
+  $self->printStep("Stopping the old server");
+
+  $status= $old_server->stopServer;
+
   if ($status != STATUS_OK) {
-    sayError("Could not kill the old server");
+    sayError("Shutdown of the old server failed");
     return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
   }
 
-  # We don't care about the result of gentest after killing the server,
-  # but we need to ensure that the process exited
-  waitpid($gentest_pid, 0);
-
   #####
-  $self->printStep("Checking the old server log for fatal errors after killing");
+  $self->printStep("Checking the old server log for fatal errors after shutdown");
 
   $status= $self->checkErrorLog($old_server, {CrashOnly => 1});
 
@@ -213,6 +195,15 @@ sub run {
   }
   
   #####
+  $self->printStep("Dumping databases from the new server");
+  
+  $new_server->dumpSchema($databases, $new_server->vardir.'/server_schema_new.dump');
+  $new_server->normalizeDump($new_server->vardir.'/server_schema_new.dump', 'remove_autoincs');
+  $new_server->dumpdb($databases, $new_server->vardir.'/server_data_new.dump');
+  $new_server->normalizeDump($new_server->vardir.'/server_data_new.dump');
+  $table_autoinc{'new'} = $new_server->collectAutoincrements();
+
+  #####
   $self->printStep("Running test flow on the new server");
 
   $self->setProperty('duration',int($self->getProperty('duration')/3));
@@ -239,6 +230,43 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Shutdown of the new server failed");
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+  }
+
+  #####
+  $self->printStep("Comparing databases before and after upgrade");
+  
+  $status= compare($new_server->vardir.'/server_schema_old.dump', $new_server->vardir.'/server_schema_new.dump');
+  if ($status != STATUS_OK) {
+    sayError("Database structures differ after upgrade");
+    system('diff -u '.$new_server->vardir.'/server_schema_old.dump'.' '.$new_server->vardir.'/server_schema_new.dump');
+    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+  }
+  else {
+    say("Structure dumps appear to be identical");
+  }
+  
+  $status= compare($new_server->vardir.'/server_data_old.dump', $new_server->vardir.'/server_data_new.dump');
+  if ($status != STATUS_OK) {
+    sayError("Data differs after upgrade");
+    system('diff -u '.$new_server->vardir.'/server_data_old.dump'.' '.$new_server->vardir.'/server_data_new.dump');
+    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+  }
+  else {
+    say("Data dumps appear to be identical");
+  }
+  
+  $status= $self->compare_autoincrements($table_autoinc{old}, $table_autoinc{new});
+  if ($status != STATUS_OK) {
+    # Comaring auto-increments can show known errors. We want to update 
+    # the global status, but don't want to exit prematurely
+    $self->setStatus($status);
+    sayError("Auto-increment data differs after upgrade");
+    if ($status > STATUS_CUSTOM_OUTCOME) {
+      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+    }
+  }
+  else {
+    say("Auto-increment data appears to be identical");
   }
 
   return $self->finalize($status,[]);

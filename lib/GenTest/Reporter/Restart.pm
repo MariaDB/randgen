@@ -52,7 +52,7 @@ sub monitor {
 	# Do not restart in the first 20 seconds after the test flow started
 	return STATUS_OK if (time() < $reporter->reporterStartTime() + 20);
 
-	my $server= $reporter->properties->servers->[0] || $reporter->properties->servers->[1];
+	my $server= $reporter->properties->server_specific->{1}->{server};
 	my $status= STATUS_OK;
 
 	# First, check that the server is still available 

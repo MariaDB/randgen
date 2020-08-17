@@ -97,18 +97,6 @@ sub new {
     if ($self->config->redefine and "@{$self->config->redefine}" !~ /basics.yy/) {
         push @{$self->config->redefine}, 'conf/mariadb/basics.yy';
     }
-    if ($self->config->engine and not ref $self->config->engine eq 'ARRAY') {
-        $self->config->engine([ split /,/, $self->config->engine ]);
-    }
-    if ($self->config->dsn and not ref $self->config->dsn eq 'ARRAY') {
-        $self->config->dsn([ split /,/, $self->config->dsn ]);
-    }
-    if ($self->config->vcols and not ref $self->config->vcols eq 'ARRAY') {
-        $self->config->vcols([ split /,/, $self->config->vcols ]);
-    }
-    if ($self->config->views and not ref $self->config->views eq 'ARRAY') {
-        $self->config->views([ split /,/, $self->config->views ]);
-    }
     if ($self->config->servers and not ref $self->config->servers eq 'ARRAY') {
         $self->config->servers([ split /,/, $self->config->servers ]);
     }
@@ -196,13 +184,13 @@ sub run {
 
     # Cache metadata and other info that may be needed later
     my @log_files_to_report;
-    foreach my $i (0..2) {
-        next unless $self->config->dsn->[$i];
-        if ($self->config->property('ps-protocol') and $self->config->dsn->[$i] !~ /mysql_server_prepare/) {
-          $self->config->dsn->[$i] .= ';mysql_server_prepare=1';
+    foreach my $i (1..$self->config->number_of_servers) {
+        next unless $self->config->server_specific->{$i}->{dsn};
+        if ($self->config->property('ps-protocol') and $self->config->server_specific->{$i}->{dsn} !~ /mysql_server_prepare/) {
+          $self->config->server_specific->{$i}->{dsn} .= ';mysql_server_prepare=1';
         }
-        next if $self->config->dsn->[$i] !~ m{mysql}sio;
-        my $metadata_executor = GenTest::Executor->newFromDSN($self->config->dsn->[$i], osWindows() ? undef : $self->channel());
+        next if $self->config->server_specific->{$i}->{dsn} !~ m{mysql}sio;
+        my $metadata_executor = GenTest::Executor->newFromDSN($self->config->server_specific->{$i}->{dsn}, osWindows() ? undef : $self->channel());
         $metadata_executor->init();
         if ($self->config->metadata and defined $metadata_executor->dbh()) {
           $metadata_executor->cacheMetaData();
@@ -450,9 +438,9 @@ sub workerProcess {
     $self->generator()->setThreadId($worker_id);
 
     my @executors;
-    foreach my $i (0..2) {
-        next unless $self->config->dsn->[$i];
-        my $executor = GenTest::Executor->newFromDSN($self->config->dsn->[$i], osWindows() ? undef : $self->channel());
+    foreach my $i (1..$self->config->number_of_servers) {
+        next unless $self->config->server_specific->{$i}->{dsn};
+        my $executor = GenTest::Executor->newFromDSN($self->config->server_specific->{$i}->{dsn}, osWindows() ? undef : $self->channel());
         $executor->sqltrace($self->config->sqltrace);
         $executor->setId($i);
         push @executors, $executor;
@@ -518,18 +506,17 @@ sub doGenData {
 
     return STATUS_OK if defined $self->config->property('start-dirty');
 
-    my $i = -1;
-    foreach my $dsn (@{$self->config->dsn}) {
-        $i++;
-        next unless $dsn;
+    foreach my $i (sort keys %{$self->config->server_specific}) {
+        next unless $self->config->server_specific->{$i}->{dsn};
         my $gendata_result;
+
         if (defined $self->config->property('gendata-advanced')) {
             $gendata_result = GenTest::App::GendataAdvanced->new(
-               dsn => $dsn,
-               vcols => (defined $self->config->property('vcols') ? ${$self->config->property('vcols')}[$i] : undef),
-               views => (defined $self->config->views ? ${$self->config->views}[$i] : undef),
-               engine => (defined $self->config->engine ? ${$self->config->engine}[$i] : undef),
-               partitions => (defined $self->config->partitions ? ${$self->config->partitions}[$i] : undef),
+               dsn => $self->config->server_specific->{$i}->{dsn},
+               engine => $self->config->server_specific->{$i}->{engine},
+               partitions => $self->config->server_specific->{$i}->{partitions},
+               vcols => $self->config->server_specific->{$i}->{vcols},
+               views => $self->config->server_specific->{$i}->{views},
                sqltrace=> $self->config->sqltrace,
                notnull => $self->config->notnull,
                rows => $self->config->rows,
@@ -542,40 +529,43 @@ sub doGenData {
 
         # Contrary to the obvious, we will use the *best* result code --
         # if at least one of data generations succeeded, it means we have some data and can proceed
-        if (defined $self->config->gendata and $self->config->gendata eq '' or $self->config->gendata eq '1') {
-            my $res = GenTest::App::GendataSimple->new(
-               dsn => $dsn,
-               vcols => (defined $self->config->property('vcols') ? ${$self->config->property('vcols')}[$i] : undef),
-               views => (defined $self->config->views ? ${$self->config->views}[$i] : undef),
-               engine => (defined $self->config->engine ? ${$self->config->engine}[$i] : undef),
-               sqltrace=> $self->config->sqltrace,
-               notnull => $self->config->notnull,
-               rows => $self->config->rows,
-               varchar_length => $self->config->property('varchar-length'),
-               executor_id => $i
-            )->run();
-            say("GendataSimple finished with result ".status2text($res));
-            $gendata_result= STATUS_OK if $res == STATUS_OK;
-        } elsif ($self->config->gendata()) {
-          foreach my $gendata (@{$self->config->gendata()})
-          {
-            my $res = GenTest::App::Gendata->new(
-               spec_file => $gendata,
-               dsn => $dsn,
-               engine => (defined $self->config->engine ? ${$self->config->engine}[$i] : undef),
-               seed => $self->config->seed(),
-               debug => $self->config->debug,
-               rows => $self->config->rows,
-               views => (defined $self->config->views ? ${$self->config->views}[$i] : undef),
-               varchar_length => $self->config->property('varchar-length'),
-               sqltrace => $self->config->sqltrace,
-               short_column_names => $self->config->short_column_names,
-               strict_fields => $self->config->strict_fields,
-               notnull => $self->config->notnull,
-               executor_id => $i
-            )->run();
-            say("Gendata $gendata finished with result ".status2text($res));
-            $gendata_result= STATUS_OK if $res == STATUS_OK;
+        if (defined $self->config->gendata) {
+            my @gd= @{$self->config->gendata};
+            foreach my $gendata (@gd) {
+             if ($gendata eq '') {
+                my $res = GenTest::App::GendataSimple->new(
+                   dsn => $self->config->server_specific->{$i}->{dsn},
+                   engine => $self->config->server_specific->{$i}->{engine},
+                   vcols => $self->config->server_specific->{$i}->{vcols},
+                   views => $self->config->server_specific->{$i}->{views},
+                   sqltrace=> $self->config->sqltrace,
+                   notnull => $self->config->notnull,
+                   rows => $self->config->rows,
+                   varchar_length => $self->config->property('varchar-length'),
+                   executor_id => $i
+                )->run();
+                say("GendataSimple finished with result ".status2text($res));
+                $gendata_result= STATUS_OK if $res == STATUS_OK;
+            }
+            else {
+              my $res = GenTest::App::Gendata->new(
+                   spec_file => $gendata,
+                   dsn => $self->config->server_specific->{$i}->{dsn},
+                   engine => $self->config->server_specific->{$i}->{engine},
+                   views => $self->config->server_specific->{$i}->{views},
+                   seed => $self->config->seed(),
+                   debug => $self->config->debug,
+                   rows => $self->config->rows,
+                   varchar_length => $self->config->property('varchar-length'),
+                   sqltrace => $self->config->sqltrace,
+                   short_column_names => $self->config->short_column_names,
+                   strict_fields => $self->config->strict_fields,
+                   notnull => $self->config->notnull,
+                   executor_id => $i
+              )->run();
+              say("Gendata $gendata finished with result ".status2text($res));
+              $gendata_result= STATUS_OK if $res == STATUS_OK;
+            }
           }
         }
             
@@ -666,9 +656,9 @@ sub isMySQLCompatible {
 
     my $is_mysql_compatible = 1;
 
-    foreach my $i (0..2) {
-        next if $self->config->dsn->[$i] eq '';
-        $is_mysql_compatible = 0 if ($self->config->dsn->[$i] !~ m{mysql|drizzle}sio);
+    foreach my $i (1..$self->config->number_of_servers) {
+        next if $self->config->server_specific->{$i}->{dsn} eq '';
+        $is_mysql_compatible = 0 if ($self->config->server_specific->{$i}->{dsn} !~ m{mysql|drizzle}sio);
     }
     return $is_mysql_compatible;
 }
@@ -711,15 +701,14 @@ sub initReporters {
     }
 
     say("Reporters: ".($#{$self->config->reporters} > -1 ? join(', ', @{$self->config->reporters}) : "(none)"));
-    
+
     my $reporter_manager = GenTest::ReporterManager->new();
-    
-    # pass option debug server to the reporter, for detecting the binary type.
-    foreach my $i (0..2) {
-        next unless $self->config->dsn->[$i];
+
+    foreach my $i (1..$self->config->number_of_servers) {
+        next unless $self->config->server_specific->{$i}->{dsn};
         foreach my $reporter (@{$self->config->reporters}) {
             my $add_result = $reporter_manager->addReporter($reporter, {
-                dsn => $self->config->dsn->[$i],
+                dsn => $self->config->server_specific->{$i}->{dsn},
                 test_start => $self->[GT_TEST_START],
                 test_end => $self->[GT_TEST_END],
                 test_duration => $self->config->duration,
@@ -744,9 +733,9 @@ sub initValidators {
         # we don't want to compare results after each query.
 
         unless ($self->config->property('multi-master')) {
-            if ($self->config->dsn->[3] ne '') {
+            if ($self->config->server_specific->{3}->{dsn} ne '') {
                 push @{$self->config->validators}, 'ResultsetComparator3';
-            } elsif ($self->config->dsn->[2] ne '') {
+            } elsif ($self->config->server_specific->{2}->{dsn} ne '') {
                 push @{$self->config->validators}, 'ResultsetComparator';
             }
         }        
@@ -789,7 +778,7 @@ sub initValidators {
 }
 
 sub copyLogFiles {
-    my ($self, $logdir, $dsns) = @_;
+    my ($self, $logdir, $dsn) = @_;
     ## Do this only when tt-logging is enabled
     if (-e $self->config->property('report-tt-logdir')) {
         mkpath($logdir) if ! -e $logdir;
@@ -816,7 +805,7 @@ sub initXMLReport {
     my $buildinfo;
     if (defined $self->config->property('xml-output')) {
         $buildinfo = GenTest::XML::BuildInfo->new(
-            dsns => $self->config->dsn
+            dsn => $self->config->server_specific->{1}->{dsn}
         );
     }
     
@@ -914,7 +903,7 @@ sub reportXMLIncidents {
 
         if (defined $self->config->logfile && defined 
             $self->config->property('report-tt-logdir')) {
-            $self->copyLogFiles($self->XMLTest->logdir(), $self->config->dsn);
+            $self->copyLogFiles($self->XMLTest->logdir(), $self->config->server_specific->{1}->{dsn});
         }
     }
 }

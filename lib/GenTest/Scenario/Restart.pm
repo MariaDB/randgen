@@ -1,4 +1,4 @@
-# Copyright (C) 2017 MariaDB Corporation Ab
+# Copyright (C) 2017, 2020 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,24 +47,15 @@ use POSIX;
 
 use DBServer::MySQL::MySQLd;
 
-# Leave first 50 values for the parent Scenario
-use constant SCENARIO_RESTART_INTERVAL  => 51;
-use constant SCENARIO_SHUTDOWN_TIMEOUT  => 52;
-
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
 
-  $self->[SCENARIO_RESTART_INTERVAL]= $self->getProperty('scenario-restart-interval') || 30;
-  $self->[SCENARIO_SHUTDOWN_TIMEOUT]= $self->getProperty('scenario-shutdown-timeout') || 120;
   if (!$self->getTestType) {
     $self->setTestType('normal');
   }
-  if (not defined $self->getProperty('threads')) {
-    $self->setProperty('threads', 1);
-  }
 
-  $self->printTitle($self->getTestType." restart ($self->[SCENARIO_RESTART_INTERVAL] sec)");
+  $self->printTitle($self->getTestType." restart");
 
   return $self;
 }
@@ -75,17 +66,7 @@ sub run {
 
   $status= STATUS_OK;
 
-  $server= $self->prepareServer(1,
-    {
-      vardir => ${$self->getProperty('vardir')}[0],
-      port => ${$self->getProperty('port')}[0],
-      valgrind => 0,
-    }
-  );
-
-  say("-- Server info: --");
-  say($server->version());
-  $server->printServerOptions();
+  $server= $self->prepareServer(1);
 
   #####
   $self->printStep("Starting the server");
@@ -100,34 +81,21 @@ sub run {
   #####
   $self->printStep("Generating test data");
 
-  $gentest= $self->prepareGentest(1,
-    {
-      duration => $self->getTestDuration,
-      dsn => [$server->dsn($self->getProperty('database'))],
-      servers => [$server],
-    }
-  );
-  $status= $gentest->doGenData();
-
+  $status= $self->generate_data();
+  
   if ($status != STATUS_OK) {
-    sayError("Could not generate the test data");
-    return $self->finalize($status,[$server]);
+    sayError("Data generation on the old server failed");
+    return $self->finalize(STATUS_TEST_FAILURE,[$server]);
   }
 
-  $gentest= $self->prepareGentest(1,
-    {
-      duration => $self->[SCENARIO_RESTART_INTERVAL] + 5,
-      dsn => [$server->dsn($self->getProperty('database'))],
-      servers => [$server],
-    },
-    my $skip_gendata=1
-  );
-
-  my $test_end=time() + $self->getTestDuration;
+  #####
+  my $test_end=time() + $self->getProperty('duration');
+  my $restart_interval= $self->scenarioOptions->{restart_interval} || 30;
+  my $shutdown_timeout= $self->scenarioOptions->{shutdown_timeout} || 120;
 
   while ( ( my $remaining_time= $test_end - time() ) > 0 )
   {
-    my $timeout= ( $remaining_time > $self->[SCENARIO_RESTART_INTERVAL] ? $self->[SCENARIO_RESTART_INTERVAL] : $remaining_time );
+    my $timeout= ( $remaining_time > $restart_interval ? $restart_interval : $remaining_time );
 
     #####
     $self->printStep("Running test flow (for $timeout sec)");
@@ -154,7 +122,7 @@ sub run {
       }
     }
     else {
-      my $res= $gentest->run();
+      my $res= $self->run_test_flow();
       exit $res;
     }
     
@@ -170,7 +138,7 @@ sub run {
       $status= $server->kill;
     } else {
       $self->printStep("Stopping the server");
-      $status= $server->stopServer($self->[SCENARIO_SHUTDOWN_TIMEOUT]);
+      $status= $server->stopServer($shutdown_timeout);
     }
     
     if ($status != STATUS_OK) {
@@ -180,6 +148,7 @@ sub run {
 
     # We don't care about the result of gentest after stopping the server,
     # but we need to ensure that the process exited
+    kill(-9, $gentest_pid);
     waitpid($gentest_pid, 0);
 
     #####
@@ -222,7 +191,7 @@ sub run {
   #####
   $self->printStep("Stopping the server");
 
-  $status= $server->stopServer($self->[SCENARIO_SHUTDOWN_TIMEOUT]);
+  $status= $server->stopServer($shutdown_timeout);
 
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");

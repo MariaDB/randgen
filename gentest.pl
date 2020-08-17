@@ -157,6 +157,8 @@ my $config = GenTest::Properties->new(
               'short_column_names',
               'freeze_time',
               'strict_fields',
+              'server_specific',
+              'number_of_servers',
               'logfile',
               'logconf',
               'report-tt-logdir',
