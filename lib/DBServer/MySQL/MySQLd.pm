@@ -617,7 +617,12 @@ sub startServer {
         exec("$command >> \"$errorlog\"  2>&1") || croak("Could not start mysql server");
     }
 
-    return ($self->waitForServerToStart && $self->dbh) ? DBSTATUS_OK : DBSTATUS_FAILURE;
+    if ($self->waitForServerToStart && $self->dbh) {
+        $self->serverVariables();
+        return DBSTATUS_OK;
+    } else {
+        return DBSTATUS_FAILURE;
+    }
 }
 
 sub kill {
