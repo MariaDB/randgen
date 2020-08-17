@@ -235,7 +235,7 @@ sub run {
     $field_perms[FIELD_SQLS] = $fields->{sqls} || [ ];
     $field_perms[FIELD_INDEX_SQLS] = $fields->{index_sqls} || [ ];
     $field_perms[FIELD_TYPE] = $fields->{types} || [ 'int', 'varchar', 'date', 'time', 'datetime' ];
-    if (not ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE or $executor->type==DB_DUMMY)) {
+    if (not ($executor->type == DB_MYSQL or $executor->type == DB_MARIADB or $executor->type == DB_DRIZZLE or $executor->type==DB_DUMMY)) {
         my @datetimestuff = grep(/date|time/,@{$fields->{types}});
         if ($#datetimestuff > -1) {
             croak "Dates and times are severly broken. Cannot be used for other than MySQL/Drizzle";

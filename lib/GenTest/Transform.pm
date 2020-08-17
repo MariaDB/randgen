@@ -178,7 +178,7 @@ sub transformExecuteValidate {
                 # We have logic in place to take care of this below.
                 #
                 if ( 
-                    ($executor->type() == DB_MYSQL) && 
+                    ($executor->type() == DB_MYSQL || $executor->type() == DB_MARIADB) &&
                     (exists $mysql_grouping_errors{$part_result->err()}) 
                 ){
                     if (rqg_debug()) {

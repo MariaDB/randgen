@@ -133,7 +133,7 @@ sub run {
     $executor->execute("CREATE TABLE DUMMY (I INTEGER)");
     $executor->execute("INSERT INTO DUMMY VALUES(0)");
     
-    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if $executor->type == DB_MYSQL;
+    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
     return STATUS_OK;
 }
 
@@ -154,7 +154,7 @@ sub gen_table {
     foreach my $e (@engines)
     {
       my $name = ( $e eq $engine ? $basename : $basename . '_'.$e );
-      if (($executor->type == DB_MYSQL) || ($executor->type == DB_DRIZZLE))
+      if (($executor->type == DB_MYSQL) || ($executor->type == DB_MARIADB) || ($executor->type == DB_DRIZZLE))
       {
         # For backward compatibility, only extend names
         # if multiple engines were provided

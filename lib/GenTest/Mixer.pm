@@ -124,7 +124,7 @@ sub next {
 
     if ($mixer->properties->freeze_time) {
         foreach my $ex (@$executors) {
-            if ($ex->type == DB_MYSQL) {
+            if ($ex->type == DB_MYSQL || $ex->type == DB_MARIADB) {
                 $ex->execute("SET TIMESTAMP=0");
                 $ex->execute("SET TIMESTAMP=UNIX_TIMESTAMP(NOW())");
             } else {

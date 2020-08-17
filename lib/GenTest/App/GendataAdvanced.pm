@@ -124,7 +124,7 @@ sub run {
     $prng = GenTest::Random->new( seed => 0 );
 
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
-    if ($executor->type != DB_MYSQL) {
+    if ($executor->type != DB_MYSQL && $executor->type != DB_MARIADB) {
         die "Only MySQL executor type is supported\n";
     }
     $executor->sqltrace($self->sqltrace);
@@ -146,7 +146,7 @@ sub run {
         $res= $gen_table_result if $gen_table_result > $res;
     }
 
-    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if $executor->type == DB_MYSQL;
+    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
     return $res;
 }
 

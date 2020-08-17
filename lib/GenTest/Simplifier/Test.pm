@@ -97,7 +97,7 @@ sub simplify {
     my $useHash = 1;
 	foreach my $i (0,1) {
 		if (defined $executors->[$i]) {
-            $useHash = 0 if $executors->[$i]->type() != DB_MYSQL;
+            $useHash = 0 if $executors->[$i]->type() != DB_MYSQL && $executors->[$i]->type() != DB_MARIADB;
         }
     }
 
@@ -113,7 +113,10 @@ sub simplify {
 	}
 	$test .= "\n";
 
-	if (defined $executors->[1] and $executors->[0]->type() == DB_MYSQL and $executors->[1]->type() == DB_MYSQL) {
+	if (defined $executors->[1]
+      and ($executors->[0]->type() == DB_MYSQL || $executors->[0]->type() == DB_MARIADB)
+      and ($executors->[1]->type() == DB_MYSQL || $executors->[1]->type() == DB_MARIADB)
+    ) {
 		foreach my $optimizer_variable (@optimizer_variables) {
 			my @optimizer_values;
 			foreach my $i (0..1) {
