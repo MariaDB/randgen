@@ -4,11 +4,54 @@
 # Strong matches
 ##############################################################################
 
-MDEV-23415:
-=~ Assertion \`dec_length <= str_length'|signal|AddressSanitizer
-=~ Item_func_format::val_str_ascii
-=~ Item_func::val_str_from_val_str_ascii
-=~ Version: '10\.[4-9]
+MDEV-23472:
+=~ AddressSanitizer|signal
+=~ LatchCounter::Count::reset
+=~ innodb_monitor_set_option
+=~ Version: '10\.[5-9]
+MDEV-23470:
+=~ InnoDB: Failing assertion: cmp < 0
+=~ row_ins_check_foreign_constraint
+=~ row_ins_index_entry
+=~ Version: '10\.[2-3]
+MDEV-23463:
+=~ fil_page_compress
+=~ buf_page_encrypt_before_write
+=~ sp_head::execute
+=~ Version: '10\.[2-4]
+MDEV-23456:
+=~ Assertion \`type == MLOG_FILE_NAME \|\| type == MLOG_FILE_DELETE \|\| type == MLOG_FILE_CREATE2 \|\| type == MLOG_FILE_RENAME2 \|\| type == MLOG_INDEX_LOAD \|\| type == MLOG_TRUNCATE \|\| type == MLOG_FILE_WRITE_CRYPT_DATA \|\| mtr->is_named_space(space_id)'
+=~ mlog_write_initial_log_record_low
+=~ Version: '10\.[2-4]
+MDEV-23453:
+=~ signal|AddressSanitizer
+=~ Item_field::type_handler
+=~ Temporal_with_date::make_from_item
+=~ sp_head::execute
+MDEV-23452:
+=~ Assertion \`buf_page_get_io_fix(bpage) == BUF_IO_NONE'
+=~ buf_page_set_sticky
+=~ fsp_page_create
+=~ Version: '10\.[2-4]
+MDEV-23447:
+=~ signal|AddressSanitizer
+=~ fil_system_t::keyrotate_next
+=~ fil_crypt_find_space_to_rotate
+MDEV-23444:
+=~ Assertion \`precision > 0'
+=~ decimal_bin_size
+=~ Item_sum_avg::create_tmp_field
+MDEV-23443:
+=~ AddressSanitizer|signal
+=~ my_scan_weight_utf8mb3_general_ci|my_strnncollsp_simple|my_scan_weight_ucs2_general_ci
+=~ my_ci_strnncollsp
+=~ ha_compare_text
+=~ mysql_union
+=~ Version: '10\.[5-9]
+MDEV-23439:
+=~ Assertion \`size == space->size'
+=~ buf_read_ahead_random
+=~ buf_page_get_gen
 MDEV-23414:
 =~ Assertion \`res->charset() == item->collation\.collation'
 =~ Type_handler_string_result::make_packed_sort_key_part
@@ -181,6 +224,12 @@ MDEV-23235:
 =~ Assertion \`part_id == m_last_part'
 =~ ha_partition::delete_row
 =~ Version: '10\.[4-9]
+MDEV-23226:
+=~ Assertion \`inited == RND'
+=~ handler::ha_rnd_next
+=~ select_unit_ext::send_eof
+=~ mysql_union
+=~ Version: '10\.[5-9]
 MDEV-23219:
 =~ Assertion \`(length % 4) == 0'
 =~ my_well_formed_len_utf32
@@ -216,11 +265,10 @@ MDEV-23212:
 MDEV-23210:
 =~ Assertion \`(length % 4) == 0'
 =~ my_lengthsp_utf32
-=~ charset_info_st::lengthsp
-=~ Column_definition::prepare_interval_field
+=~ charset_info_st
 MDEV-23204:
 =~ signal|AddressSanitizer|Assertion \`bit < (map)->n_bits'
-=~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan
+=~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan|DsMrr_impl::dsmrr_next
 =~ JOIN_TAB_SCAN_MRR::next
 =~ JOIN_CACHE::join_matching_records
 =~ Version: '10\.[3-9]
@@ -568,7 +616,7 @@ MDEV-22608:
 MDEV-22601:
 =~ Assertion \`0'
 =~ Protocol::end_statement
-=~ Can't find record in
+=~ Can't find record in|Невозможно найти запись в
 =~ sequence
 =~ Version: '10\.[3-9]
 MDEV-22600:
@@ -738,7 +786,7 @@ MDEV-22262:
 =~ signal 11|AddressSanitizer
 =~ handler::ha_table_flags|ha_partition::info|ha_partition::compare_number_of_records
 =~ ha_partition::open
-=~ check_duplicate_long_entries_update|handler::create_lookup_handler|clone_handler_for_update
+=~ check_duplicate_long_entries_update|handler::create_lookup_handler|clone_handler_for_update|ha_partition::clone
 =~ Version: '10\.[4-9]
 MDEV-22257:
 =~ Assertion \`trx_id > 0 \|\| (flags & BTR_KEEP_SYS_FLAG)'
@@ -1211,9 +1259,9 @@ MDEV-21129:
 =~ sp_get_geometry_mbr
 =~ _mi_make_key|_ma_sp_make_key
 MDEV-21120:
-=~ Could not stop the server
-=~ --mysqld=--log-bin
+=~ Could not stop the server|STATUS_INTERNAL_ERROR
 =~ signal 6
+=~ MYSQL_BIN_LOG::stop_background_thread
 =~ Version: '10\.[2-9]
 MDEV-21102:
 =~ signal 11|AddressSanitizer: SEGV
@@ -1320,12 +1368,6 @@ MDEV-20763:
 =~ row_upd_sec_index_entry
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Version: '10\.[3-9]
-MDEV-20762:
-=~ signal 11|AddressSanitizer: SEGV
-=~ Item_field::type_handler
-=~ Temporal_with_date::make_from_item
-=~ TABLE::insert_portion_of_time|cut_fields_for_portion_of_time|update_portion_of_time
-=~ sp_head::execute
 MDEV-20761:
 =~ signal 11|AddressSanitizer: SEGV
 =~ base_list_iterator::next
@@ -1606,7 +1648,7 @@ MDEV-20207:
 MDEV-20195:
 =~ Assertion \`0'
 =~ ha_partition::handle_unordered_next
-=~ ha_partition::index_next
+=~ ha_partition::index_next|ha_partition::multi_range_read_next
 MDEV-20194:
 =~ check.*Warning.*Row size too large (> .*)\. Changing some columns to TEXT or BLOB or using ROW_FORMAT=DYNAMIC or ROW_FORMAT=COMPRESSED may help\. In current row format, BLOB prefix of .* bytes is stored inline
 =~ InnoDB: Cannot add field .* in table .* because after adding it, the row size is .* which is greater than maximum allowed size (.*) for a record on index leaf page
@@ -2662,7 +2704,7 @@ MDEV-16292:
 =~ Version: '5\.5|Version: '10\.[1-2]
 MDEV-16242:
 =~ Slave worker thread retried transaction
-=~ Can't find record
+=~ Can't find record|Невозможно найти запись в
 =~ rocksdb
 MDEV-16208:
 =~ Assertion \`lock_get_wait(other_lock)'
@@ -2828,6 +2870,11 @@ MDEV-14996:
 =~ int ha_maria::external_lock
 =~ Status: KILL_CONNECTION|Status: KILL_SERVER|unlink_thd
 =~ Version: '10\.1
+MDEV-14894: [remove_from_locked_mutex]
+=~ signal
+=~ free_memory
+=~ remove_from_locked_mutex
+=~ my_hash_iterate
 MDEV-14865:
 =~ Assertion \`share->now_transactional == share->base\.born_transactional'
 =~ maria_close
@@ -2835,7 +2882,6 @@ MDEV-14865:
 MDEV-14854:
 =~ Assertion \`trid >= info->s->state\.create_trid'
 =~ transid_store_packed
-=~ _ma_make_key
 =~ ha_maria::write_row|ha_maria::update_row
 MDEV-14836:
 =~ Assertion \`m_status == DA_ERROR'
@@ -3130,6 +3176,16 @@ TODO-842: [PROFILING]
 =~ signal
 =~ free_memory
 =~ PROFILING::finish_current_query_impl
+TODO-842: [rw_lock_debug_create]
+=~ signal
+=~ rw_lock_debug_create
+=~ pfs_rw_lock_s_lock_func
+=~ dict_create_index_tree_step
+TODO-842: [precision > 0]
+=~ Assertion \`precision > 0'
+=~ decimal_bin_size
+=~ calc_group_buffer
+=~ mysql_select
 
 ##############################################################################
 # Weak matches
@@ -3156,7 +3212,7 @@ MDEV-22667: [Index is corrupt; try to repair it]
 =~ Version: '10\.[4-9]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-22601: [Can't find record in]
-=~ Can't find record in
+=~ Can't find record in|Невозможно найти запись в
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 =~ sequence
 =~ Version: '10\.[3-9]
@@ -3181,7 +3237,7 @@ MDEV-21310:
 MDEV-21478:
 =~ Table .* contains .* user defined columns in InnoDB, but .* columns in MariaDB
 MDEV-21470:
-=~ Can't find record in
+=~ Can't find record in|Невозможно найти запись в
 =~ Version: '10\.[4-9]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-21373:
@@ -3233,7 +3289,7 @@ MDEV-18168:
 =~ signal 11
 =~ general_log_write
 MDEV-18158:
-=~ Can't find record in
+=~ Can't find record in|Невозможно найти запись в
 =~ view
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 #
