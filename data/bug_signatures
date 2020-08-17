@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23500:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ my_ok
+=~ multi_update::send_eof
+MDEV-23499:
+=~ Assertion \`c\.same_type(\*o)'
+=~ dict_table_t::instant_column
+=~ Version: '10\.[4-9]
 MDEV-23472:
 =~ AddressSanitizer|signal
 =~ LatchCounter::Count::reset
