@@ -28,7 +28,7 @@ $combinations = [
   # Encryption
     $encryption,
   [
-    '--scenario=Upgrade --duration=180',
+    '--scenario=NormalUpgrade --duration=180',
     '--scenario=UndoLogUpgrade --duration=300',
   ],
 ];

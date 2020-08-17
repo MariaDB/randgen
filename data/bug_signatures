@@ -274,7 +274,6 @@ MDEV-23212:
 MDEV-23210:
 =~ Assertion \`(length % 4) == 0'
 =~ my_lengthsp_utf32
-=~ charset_info_st
 MDEV-23204:
 =~ signal|AddressSanitizer|Assertion \`bit < (map)->n_bits'
 =~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan|DsMrr_impl::dsmrr_next
