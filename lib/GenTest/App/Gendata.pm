@@ -208,7 +208,7 @@ sub run {
 
     say("Running Gendata from file $spec_file");
 
-    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if $executor->type == DB_MYSQL;
+    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
 
     if (defined $schemas) {
         push(@schema_perms, @$schemas);
@@ -495,7 +495,7 @@ sub run {
         my @field_sqls = join(",\n", map { $_->[FIELD_SQL] } grep { $_->[FIELD_SQL] ne '' } @fields_copy);
  
         my @index_fields;
-        if ($executor->type() == DB_MYSQL || $executor->type() == DB_DRIZZLE) {
+        if ($executor->type() == DB_MYSQL || $executor->type() == DB_MARIADB || $executor->type() == DB_DRIZZLE) {
             @index_fields = grep { $_->[FIELD_INDEX_SQL] ne '' } @fields_copy;
         } else {
             ## Just keep the primary keys.....
@@ -512,12 +512,13 @@ sub run {
 
         $executor->execute("CREATE TABLE `$table->[TABLE_NAME]` (\n".join(",\n/*Indices*/\n", grep { defined $_ } (@field_sqls, $index_sqls) ).") ".$table->[TABLE_SQL]);
         
-        if (not ($executor->type() == DB_MYSQL || 
+        if (not ($executor->type() == DB_MYSQL ||
+                 $executor->type() == DB_MARIADB || 
                  $executor->type() == DB_DRIZZLE)) {
             @index_fields = grep { $_->[FIELD_INDEX_SQL] ne '' } @fields_copy;
             foreach my $idx (@index_fields) {
                 my $key_sql = $idx->[FIELD_INDEX_SQL];
-                if ($key_sql =~ m/^key \((`[a-z0-9_]*)/) {
+                if ($key_sql =~ m/^key \((`[a-z0-9_]*`)/) {
                     $executor->execute("CREATE INDEX idx_".
                                        $table->[TABLE_NAME]."_$1".
                                        " ON ".$table->[TABLE_NAME]."($1)");
@@ -544,7 +545,7 @@ sub run {
             }
         }
         
-        if ($executor->type == DB_MYSQL ) {
+        if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB ) {
             $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS");
             
             if ($table->[TABLE_ROW] > 100) {
@@ -562,7 +563,7 @@ sub run {
                 my $value;
                 my $quote = 0;
                 if ($field->[FIELD_TYPE] =~ m{auto_increment}sio) {
-                    if ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE) {
+                    if ($executor->type == DB_MYSQL or $executor->type == DB_MARIADB or $executor->type == DB_DRIZZLE) {
                         $value = undef;		# Trigger auto-increment by inserting NULLS for PK
                     } else {
                         $value = 'DEFAULT';
@@ -647,7 +648,7 @@ sub run {
                 say("# Progress: loaded $row_id out of $table->[TABLE_ROW] rows");
             }
         }
-        if ($executor->type == DB_MYSQL ) {
+        if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB) {
             $executor->execute("COMMIT");
             
             $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
@@ -655,7 +656,7 @@ sub run {
     }
     }
     
-    if ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE) {
+    if ($executor->type == DB_MYSQL or $executor->type == DB_MARIADB or $executor->type == DB_DRIZZLE) {
         $executor->execute("COMMIT");
     }
     
