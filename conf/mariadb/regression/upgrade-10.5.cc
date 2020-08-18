@@ -10,7 +10,6 @@ $combinations = [
   --no-mask
   --seed=time
   --grammar=conf/mariadb/oltp-transactional.yy
-  --grammar2=conf/mariadb/oltp_and_ddl.yy
   --gendata=conf/mariadb/innodb_upgrade.zz
   --gendata=conf/mariadb/innodb_upgrade_compression.zz
   --gendata-advanced
@@ -20,6 +19,7 @@ $combinations = [
   --mysqld=--loose-max-statement-time=20
   --mysqld=--lock-wait-timeout=10
   --mysqld=--innodb-lock-wait-timeout=5
+  --scenario-grammar2=conf/mariadb/oltp_and_ddl.yy
   '],
   # Compression
     $innodb_compression,
