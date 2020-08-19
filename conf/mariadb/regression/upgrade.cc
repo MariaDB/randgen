@@ -17,7 +17,7 @@ $combinations = [
   --reporters=Backtrace,ErrorLog,Deadlock
   --mysqld=--server-id=111
   --mysqld=--log_output=FILE
-  --mysqld=--max-statement-time=20
+  --mysqld=--loose-max-statement-time=20
   --mysqld=--lock-wait-timeout=10
   --mysqld=--innodb-lock-wait-timeout=5
   --scenario-grammar2=conf/mariadb/oltp_and_ddl.yy
