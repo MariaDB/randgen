@@ -123,7 +123,8 @@ sub run {
 
         $backup_num++;
         $self->printStep("Creating full backup #$backup_num");
-        $status= $self->run_mbackup_in_background("$mbackup --backup --target-dir=${mbackup_target}_${backup_num} --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
+        my $mbackup_command= ($self->getProperty('rr') ? "rr record --output-trace-dir=$vardir/rr_profile_backup_${backup_num} $mbackup" : $mbackup);
+        $status= $self->run_mbackup_in_background("$mbackup_command --backup --target-dir=${mbackup_target}_${backup_num} --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
 
         if ($status == STATUS_OK) {
             say("Backup #$backup_num finished successfully");
@@ -184,7 +185,8 @@ sub run {
         system("cp -r ${mbackup_target}_${b} ${mbackup_target}_${b}_before_prepare");
       }
 
-      $cmd= "$mbackup --use-memory=$buffer_pool_size --prepare --target-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
+      $cmd= ($self->getProperty('rr') ? "rr record --output-trace-dir=$vardir/rr_profile_prepare_$b $mbackup" : $mbackup)
+        . " --use-memory=$buffer_pool_size --prepare --target-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
       say($cmd);
       system($cmd);
       $status= $? >> 8;

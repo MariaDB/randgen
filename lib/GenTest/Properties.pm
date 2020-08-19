@@ -214,6 +214,7 @@ sub init {
               'freeze_time',
               'valgrind',
               'valgrind-xml',
+              'rr',
               'testname',
               'sqltrace',
               'querytimeout',
@@ -292,6 +293,7 @@ sub setPropertiesFromHash {
   $gentestProps->property('threads',$props->{threads}) if defined $props->{threads};
   $gentestProps->property('transformers',$props->{transformers}) if $props->{transformers};
   $gentestProps->property('valgrind',1) if $props->{valgrind};
+  $gentestProps->property('rr',1) if $props->{rr};
   $gentestProps->property('validators',$props->{validators}) if $props->{validators};
   $gentestProps->property('varchar-length',$props->{varchar_len}) if defined $props->{varchar_len};
   $gentestProps->property('vcols',$props->{vcols}) if $props->{vcols};
