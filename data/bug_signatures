@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23529:
+=~ Assertion \`!writer\.checksum_len \|\| writer\.remains == 0'
+=~ MYSQL_BIN_LOG::write_cache
+=~ MYSQL_BIN_LOG::write_transaction_to_binlog
 MDEV-23508:
 =~ Duplicate key .* for record at .* against new record at .*
 =~ STATUS_DATABASE_CORRUPTION
@@ -928,6 +932,11 @@ MDEV-21812:
 =~ Field_new_decimal::store_value
 =~ Rows_log_event::unpack_current_row
 =~ Version: '10\.1
+MDEV-21809:
+=~ signal|AddressSanitizer
+=~ Item_cond::get_mm_tree
+=~ prune_partitions
+=~ mysql_multi_update
 MDEV-21799:
 =~ Assertion \`is_storage_available(tuple - packed_tuple, 0)'
 =~ myrocks::Rdb_key_def::pack_record
