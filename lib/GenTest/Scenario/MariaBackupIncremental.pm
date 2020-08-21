@@ -135,7 +135,7 @@ sub run {
         } else {
             sayError("Backup #$backup_num failed: $status");
             sayFile("$vardir/mbackup_backup_${backup_num}.log");
-            return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+            return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
         }
 
         $backup_num++;
@@ -155,7 +155,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
-    return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+    return $self->finalize(STATUS_TEST_FAILURE,[$server]);
   }
 
   waitpid($gentest_pid, 0);
