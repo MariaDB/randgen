@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23541:
+=~ Assertion \`cost > 0\.0'
+=~ adjust_quick_cost
+=~ best_access_path
+=~ Version: '10\.[5-9]
 MDEV-23529:
 =~ Assertion \`!writer\.checksum_len \|\| writer\.remains == 0'
 =~ MYSQL_BIN_LOG::write_cache
@@ -51,9 +56,9 @@ MDEV-23444:
 =~ Item_sum_avg::create_tmp_field
 MDEV-23443:
 =~ AddressSanitizer|signal
-=~ my_scan_weight_utf8mb3_general_ci|my_strnncollsp_simple|my_scan_weight_ucs2_general_ci
-=~ my_ci_strnncollsp
-=~ ha_compare_text
+=~ _ma_unique_comp
+=~ maria_update
+=~ select_unit_ext::send_eof
 =~ mysql_union
 =~ Version: '10\.[5-9]
 MDEV-23408:
@@ -2212,7 +2217,7 @@ MDEV-18047:
 MDEV-18047:
 =~ AddressSanitizer: heap-use-after-free
 =~ dict_index_get_nth_field
-=~ innobase_update_foreign_try
+=~ innobase_update_foreign_try|dict_load_foreigns
 MDEV-18013:
 =~ Assertion \`share->now_transactional'
 =~ flush_log_for_bitmap
@@ -2621,8 +2626,9 @@ MDEV-15949:
 =~ fil_delete_tablespace
 MDEV-15912:
 =~ Failing assertion: purge_sys\.tail\.commit <= purge_sys\.rseg->last_commit
-=~ TrxUndoRsegsIterator::set_next
-=~ trx_purge_choose_next_log
+=~ scenario=.*Upgrade
+=~ Version: '10\.[0-1]
+=~ Version: '10\.[3-9]
 MDEV-15800:
 =~ Assertion \`next_insert_id >= auto_inc_interval_for_cur_row\.minimum()'
 =~ handler::update_auto_increment
