@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23562:
+=~ Assertion \`time_type == MYSQL_TIMESTAMP_DATETIME'
+=~ Datetime::is_valid_datetime_slow
+=~ vers_select_conds_t::init_from_sysvar
+=~ Version: '10\.[4-9]
+MDEV-23547:
+=~ InnoDB: Failing assertion: \*len
+=~ row_upd_ext_fetch
+=~ row_upd_index_replace_new_col_val
+=~ Version: '10\.[4-9]
 MDEV-23541:
 =~ Assertion \`cost > 0\.0'
 =~ adjust_quick_cost
