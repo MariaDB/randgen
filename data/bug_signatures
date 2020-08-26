@@ -342,6 +342,11 @@ MDEV-23115:
 =~ trx_rseg_mem_restore
 =~ plugin_initialize
 =~ Version: '10\.[5-9]
+MDEV-23045:
+=~ Assertion \`is_open()'
+=~ MYSQL_BIN_LOG::trx_group_commit_leader
+=~ MYSQL_BIN_LOG::write_transaction_to_binlog
+=~ Version: '10\.[5-9]
 MDEV-23026:
 =~ Assertion \`!rw_lock_own(lock, RW_LOCK_S)'
 =~ rw_lock_sx_lock_func
@@ -2965,11 +2970,6 @@ TODO-842: [Field_blob_compressed::get_key_image]
 =~ Field_blob_compressed::get_key_image
 =~ stored_field_make_mm_leaf
 =~ calculate_cond_selectivity_for_table
-TODO-842: [inited==NONE]
-=~ Assertion \`inited==NONE'
-=~ handler::ha_index_init
-=~ check_duplicate_long_entry_key
-=~ ha_partition::copy_partitions
 TODO-842: [row_ins_step]
 =~ Conditional jump or move depends on uninitialised value
 =~ row_ins_step
