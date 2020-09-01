@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23644:
+=~ InnoDB: Duplicate FTS_DOC_ID value on table
+=~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'
+=~ buf_page_get_low
+=~ btr_copy_blob_prefix
+=~ Version: '10\.[3-9]
+MDEV-23644:
+=~ Assertion \`!dfield_is_ext(row_field)'
+=~ row_ins_index_entry_set_vals
+=~ row_update_cascade_for_mysql
+=~ Version: '10\.[3-9]
 MDEV-23562:
 =~ Assertion \`time_type == MYSQL_TIMESTAMP_DATETIME'
 =~ Datetime::is_valid_datetime_slow
