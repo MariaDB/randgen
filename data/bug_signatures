@@ -4,6 +4,30 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23675:
+=~ Assertion \`pos < table->n_def'
+=~ dict_table_get_nth_col
+=~ row_ins_foreign_index_entry
+=~ Version: '10\.[4-9]
+MDEV-23666:
+=~ Assertion \`m_cpp_buf <= ptr && ptr <= m_cpp_buf + m_buf_length'
+=~ Lex_input_stream::body_utf8_append
+=~ Version: '10\.[3-9]
+MDEV-23665:
+=~ Assertion \`length <= 64'
+=~ PFS_variable_name_row::make_row
+=~ Version: '10\.[5-9]
+MDEV-23664:
+=~ Assertion \`(m_ptr == __null) == item->null_value'
+=~ VDec::VDec
+=~ Version: '10\.[4-9]
+MDEV-23654:
+=~ Assertion \`args\[0\]->max_length <= ((9 \* 9) + 2)'
+=~ Item_func_int_val::fix_length_and_dec_int_or_decimal
+=~ Version: '10\.[4-9]
+MDEV-23651:
+=~ InnoDB: Failing assertion: !space->referenced()
+=~ fil_delete_tablespace
 MDEV-23644:
 =~ InnoDB: Duplicate FTS_DOC_ID value on table
 =~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'
@@ -468,7 +492,7 @@ MDEV-22782:
 MDEV-22772:
 =~ signal|AddressSanitizer
 =~ Item_null_result::field_type
-=~ cast_to_int_type|Item::get_date_with_conversion
+=~ cast_to_int_type|Item::get_date_with_conversion|cmp_item_datetime::store_value
 =~ ROLLUP
 =~ Version: '10\.[1-2]
 MDEV-22768:
@@ -840,6 +864,10 @@ MDEV-22149:
 =~ handle_alter_part_error
 =~ fast_alter_partition_table
 =~ Version: '10\.[4-9]
+MDEV-22118:
+=~ Assertion \`nr != 0'
+=~ handler::update_auto_increment
+=~ handler::ha_write_row
 MDEV-22105:
 =~ Assertion \`(&(&thd->LOCK_thd_data)->m_mutex)->count > 0 && pthread_equal(pthread_self(), (&(&thd->LOCK_thd_data)->m_mutex)->thread)'
 =~ wsrep_thd_is_aborting
@@ -1754,7 +1782,7 @@ MDEV-19400:
 =~ wait_while_table_is_used
 =~ mysql_rm_table_no_locks
 MDEV-19400:
-=~ signal 11
+=~ signal 11|AddressSanitizer
 =~ wait_while_table_is_used
 =~ mysql_rm_table_no_locks
 =~ SEQUENCE
