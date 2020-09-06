@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23680:
+=~ Assertion \`data'
+=~ crcr32_calc_pclmulqdq
+=~ Version: '10\.[5-9]
+MDEV-23679:
+=~ signal|AddressSanitizer
+=~ base_list_iterator::next_fast
+=~ sp_instr_stmt::exec_core
+=~ Version: '10\.[3-9]
+=~ versioning
+MDEV-23676:
+=~ Assertion \`(((nr) % (1LL << 24)) % (int) log_10_int\[6 - dec\]) == 0'
+=~ my_time_packed_to_binary
+=~ Version: '10\.[4-9]
 MDEV-23675:
 =~ Assertion \`pos < table->n_def'
 =~ dict_table_get_nth_col
