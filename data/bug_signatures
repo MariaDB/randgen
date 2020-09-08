@@ -4,6 +4,23 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23687:
+=~ Assertion \`is_valid_value_slow()'
+=~ Datetime::Datetime
+=~ Item_datetime_typecast::get_date
+=~ Extract_source::Extract_source
+=~ Version: '10\.[4-9]
+MDEV-23686:
+=~ signal|AddressSanitizer
+=~ get_foreign_key_info
+=~ ha_innobase::get_parent_foreign_key_list
+=~ Lock_tables_prelocking_strategy::handle_table
+=~ Version: '10\.[1-2]
+MDEV-23685:
+=~ signal|AddressSanitizer
+=~ dict_col_get_no
+=~ dict_foreign_qualify_index
+=~ innobase_find_fk_index
 MDEV-23680:
 =~ Assertion \`data'
 =~ crcr32_calc_pclmulqdq
@@ -52,6 +69,11 @@ MDEV-23644:
 =~ Assertion \`!dfield_is_ext(row_field)'
 =~ row_ins_index_entry_set_vals
 =~ row_update_cascade_for_mysql
+=~ Version: '10\.[3-9]
+MDEV-23644:
+=~ Assertion \`!bpage->file_page_was_freed'
+=~ buf_page_get_zip
+=~ btr_rec_copy_externally_stored_field|btr_copy_externally_stored_field
 =~ Version: '10\.[3-9]
 MDEV-23562:
 =~ Assertion \`time_type == MYSQL_TIMESTAMP_DATETIME'
@@ -2633,6 +2655,9 @@ MDEV-16554:
 =~ que_graph_free_recursive
 =~ row_prebuilt_free
 =~ Version: '10\.[3-9]
+MDEV-16549:
+=~ Assertion \`context'
+=~ Item_direct_view_ref.*fix_fields|Item_field::fix_fields
 MDEV-16549:
 =~ Assertion \`context'|signal 11|AddressSanitizer: SEGV
 =~ Item_direct_view_ref.*fix_fields|Item_field::fix_fields
