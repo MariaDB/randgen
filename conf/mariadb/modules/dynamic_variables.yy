@@ -143,7 +143,8 @@ dynvar_session_variable:
   | mrr_buffer_size= { $prng->arrayElement([8192,65535,262144,1048576]) }
 # Too many problems: MDEV-23294, MDEV-23318, MDEV-23363, MDEV-23364, ...
 # | myisam_repair_threads= { $prng->int(1,10) }
-  | myisam_sort_buffer_size= { $prng->arrayElement([131072,1048576,268434432]) }
+# Too many problems with low values, removing 131072 from the array
+  | myisam_sort_buffer_size= { $prng->arrayElement([1048576,268434432]) }
   | myisam_stats_method= { $prng->arrayElement(['nulls_equal','nulls_unequal','nulls_ignored']) }
 # | NET_BUFFER_LENGTH # Doesn't seem to be dynamic
   | net_read_timeout= { $prng->int(10,60) }
@@ -186,7 +187,8 @@ dynvar_session_variable:
   | skip_parallel_replication= dynvar_boolean
   | skip_replication= dynvar_boolean
   | slow_query_log= dynvar_boolean
-  | sort_buffer_size= { $prng->arrayElement([16384,262144,1048576,2097152,4194304]) }
+# Too many problems with low values, removing 16384 from the array
+  | sort_buffer_size= { $prng->arrayElement([262144,1048576,2097152,4194304]) }
   | sql_auto_is_null= dynvar_boolean
   | sql_big_selects= dynvar_boolean
   | sql_buffer_result= dynvar_boolean
