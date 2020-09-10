@@ -40,6 +40,12 @@ MDEV-23675:
 =~ dict_table_get_nth_col
 =~ row_ins_foreign_index_entry
 =~ Version: '10\.[4-9]
+MDEV-23675:
+=~ AddressSanitizer|signal
+=~ dict_col_t::is_virtual
+=~ dict_table_get_col_name
+=~ row_ins_foreign_index_entry
+=~ Version: '10\.[4-9]
 MDEV-23666:
 =~ Assertion \`m_cpp_buf <= ptr && ptr <= m_cpp_buf + m_buf_length'
 =~ Lex_input_stream::body_utf8_append
@@ -339,7 +345,7 @@ MDEV-23204:
 =~ Version: '10\.[3-9]
 MDEV-23202:
 =~ signal|AddressSanitizer
-=~ maria_status
+=~ maria_status|heap_info
 =~ ha_maria::info|TABLE_LIST::fetch_number_of_rows
 =~ sp_instr_stmt::exec_core
 MDEV-23188:
