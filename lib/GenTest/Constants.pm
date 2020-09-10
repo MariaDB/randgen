@@ -102,6 +102,7 @@ use constant STATUS_EOF				=> 4;	# A module requested that the test is terminate
 
 use constant STATUS_WONT_HANDLE			=> 5;	# A module, e.g. a Validator refuses to handle certain query
 use constant STATUS_SKIP			=> 6;	# A Filter specifies that the query should not be processed further
+use constant STATUS_IGNORED_ERROR => 19; # Most likely a real error (maybe even important), but due to amount of known bugs or false positives it is untreatable
 
 use constant STATUS_UNSUPPORTED         => 20; # Error codes caused by certain functionality recognized as unsupported (NOT syntax errors)
 use constant STATUS_SYNTAX_ERROR		=> 21;
