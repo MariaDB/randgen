@@ -56,6 +56,16 @@ MDEV-23654:
 =~ Assertion \`args\[0\]->max_length <= ((9 \* 9) + 2)'
 =~ Item_func_int_val::fix_length_and_dec_int_or_decimal
 =~ Version: '10\.[4-9]
+MDEV-23652:
+=~ Assertion \`rec_trx_id != trx->id'
+=~ row_merge_read_clustered_index
+=~ ha_innobase::inplace_alter_table
+=~ Version: '10\.[3-9]
+MDEV-23652:
+=~ Assertion \`0'
+=~ ReadView::check_trx_id_sanity
+=~ lock_clust_rec_cons_read_sees
+=~ Version: '10\.[3-9]
 MDEV-23651:
 =~ InnoDB: Failing assertion: !space->referenced()
 =~ fil_delete_tablespace
@@ -1049,7 +1059,7 @@ MDEV-21789:
 MDEV-21755:
 =~ Assertion \`0'
 =~ add_to_locked_mutex
-=~ maria_close
+=~ maria_close|ma_commit
 =~ Version: '10\.[2-3]
 MDEV-21754:
 =~ Assertion \`file->trn == trn'
@@ -1841,8 +1851,6 @@ MDEV-19361:
 MDEV-19318:
 =~ Assertion \`!(length < share->base\.min_block_length)'
 =~ _ma_scan_block_record
-=~ rr_sequential
-=~ READ_RECORD::read_record
 MDEV-19306:
 =~ Assertion \`marked_for_read()'
 =~ field_conv_incompatible
@@ -2042,7 +2050,7 @@ MDEV-18776:
 =~ SET STATEMENT
 MDEV-18770:
 =~ AddressSanitizer: memcpy-param-overlap|AddressSanitizer: heap-use-after-free|signal 11
-=~ my_strnxfrm_8bit_bin|my_fill_8bit
+=~ my_strnxfrm_8bit_bin|my_fill_8bit|my_strnxfrm_8bit_nopad_bin
 =~ make_sortkey
 =~ create_sort_index|find_all_keys
 MDEV-18756:
@@ -2948,6 +2956,11 @@ MDEV-10826:
 =~ signal|AddressSanitizer
 =~ Query_cache::double_linked_list_exclude
 =~ Query_cache::free_query
+MDEV-10557:
+=~ Assertion \`thd->is_error() \|\| kill_errno \|\| thd->killed == ABORT_QUERY'
+=~ filesort
+=~ mysql_delete|create_sort_index
+=~ Version: '10\.[0-2]
 MDEV-9137:
 =~ signal|AddressSanitizer
 =~ w_search
