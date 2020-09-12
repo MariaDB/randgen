@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23724:
+=~ signal|AddressSanitizer|Assertion \`primary_file->inited == handler::INDEX \|\| (primary_file->inited == handler::RND && secondary_file && secondary_file->inited == handler::INDEX)'
+=~ DsMrr_impl::dsmrr_init
+=~ ha_partition::multi_range_read_init
+=~ Version: '10\.[3-9]
+MDEV-23722:
+=~ InnoDB: Failing assertion: result != FTS_INVALID
+=~ fts_trx_row_get_new_state
+=~ fts_trx_table_add_op
 MDEV-23687:
 =~ Assertion \`is_valid_value_slow()'
 =~ Datetime::Datetime
@@ -1500,6 +1509,11 @@ MDEV-20618:
 =~ Assertion \`btr_validate_index(index, 0)'
 =~ row_upd_sec_index_entry
 =~ ha_innobase::delete_row
+MDEV-20618:
+=~ signal|AddressSanitizer
+=~ row_sel_sec_rec_is_for_clust_rec
+=~ row_search_mvcc
+=~ ha_innobase::index_read
 MDEV-20597:
 =~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF) \|\| (((Item_ref \*) item)->ref_type() == Item_ref::REF)))'
 =~ get_corresponding_field_pair
@@ -2400,7 +2414,7 @@ MDEV-17783:
 MDEV-17783:
 =~ signal handler called
 =~ table_cond_selectivity
-=~ 0x3ff0000000000000
+=~ 0x3ff0000000000000|0x0001000100010001
 MDEV-17782:
 =~ decimal_bin_size: Assertion \`scale <= precision'
 =~ my_decimal_get_binary_size
