@@ -10,7 +10,7 @@ $combinations = [
   --engine=Aria
   --seed=time
   --redefine=conf/mariadb/bulk_insert.yy
-  --redefine2=conf/mariadb/alter_table.yy
+  --scenario-redefine2=conf/mariadb/alter_table.yy
   --scenario=CrashUpgrade
   --reporters=Backtrace,ErrorLog,Deadlock
   --mysqld=--server-id=111
@@ -26,7 +26,7 @@ $combinations = [
     '--grammar=conf/engines/engine_stress.yy --gendata=conf/engines/engine_stress.zz',
   ],
   [
-    '--gendata-advanced --vcols --default-storage-engine=Aria',
+    '--gendata-advanced --mysqld=--default-storage-engine=Aria',
     '--mysqld=--log_bin_trust_function_creators=1 --mysqld=--log-bin',
     '--mysqld=--aria_group_commit=hard --mysqld=--aria_group_commit_interval=1000000',
   ],
