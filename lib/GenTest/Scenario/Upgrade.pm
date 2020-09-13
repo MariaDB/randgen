@@ -99,6 +99,11 @@ sub switch_to_new_server {
   if ($self->scenarioOptions()->{grammar2}) {
     $self->setProperty('grammar',$self->scenarioOptions()->{grammar2});
   }
+  if ($self->scenarioOptions()->{redefine2}) {
+    my @redefines= @{$self->getProperty('redefine')};
+    push @redefines, $self->scenarioOptions()->{redefine2};
+    $self->setProperty('redefine',\@redefines);
+  }
 }
 
 sub compare_autoincrements {
