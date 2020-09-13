@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23728:
+=~ AddressSanitizer|signal
+=~ st_key::actual_rec_per_key
+=~ best_access_path
+=~ best_extension_by_limited_search
 MDEV-23724:
 =~ signal|AddressSanitizer|Assertion \`primary_file->inited == handler::INDEX \|\| (primary_file->inited == handler::RND && secondary_file && secondary_file->inited == handler::INDEX)'
 =~ DsMrr_impl::dsmrr_init
