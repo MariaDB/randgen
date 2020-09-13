@@ -255,6 +255,10 @@ MDEV-23305:
 =~ MDL_context::acquire_lock
 =~ ha_maria_implicit_commit
 =~ Version: '10\.4
+MDEV-23297:
+=~ Assertion \`info->dfile\.file == share->bitmap\.file\.file'
+=~ _ma_scan_init_block_record
+=~ maria_scan_init
 MDEV-23296:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == type \|\| (block->type == PAGECACHE_PLAIN_PAGE && type == PAGECACHE_LSN_PAGE)'
 =~ pagecache_write_part
@@ -2487,7 +2491,7 @@ MDEV-17619:
 =~ Version: '10\.1
 MDEV-17616:
 =~ AddressSanitizer:
-=~ subselect_engine::calc_const_tables
+=~ subselect_engine::calc_const_tables| Item_subselect::update_used_tables
 =~ upper_select_const_tables
 =~ Version: '5\.5|Version: '10\.[1-2]
 # Only fixed in 10.5!
