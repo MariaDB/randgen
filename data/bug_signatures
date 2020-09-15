@@ -184,7 +184,7 @@ MDEV-23391:
 =~ select_create::abort_result_set
 MDEV-23391:
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
-=~ close_thread_table
+=~ close_thread_table|TDC_element::flush
 =~ Locked_tables_list::unlock_locked_tables|drop_open_table
 =~ select_create::abort_result_set
 MDEV-23390:
@@ -2497,7 +2497,7 @@ MDEV-17619:
 MDEV-17616:
 =~ AddressSanitizer:
 =~ subselect_engine::calc_const_tables| Item_subselect::update_used_tables
-=~ upper_select_const_tables
+=~ Used_tables_and_const_cache::used_tables_and_const_cache_update_and_join
 =~ Version: '5\.5|Version: '10\.[1-2]
 # Only fixed in 10.5!
 MDEV-17596:
@@ -3193,6 +3193,11 @@ TODO-842: [PROFILING]
 =~ signal
 =~ free_memory
 =~ PROFILING::finish_current_query_impl
+TODO-842: [free_memory]
+=~ signal
+=~ free_memory
+=~ sf_free
+=~ delete_dynamic
 TODO-842: [rw_lock_debug_create]
 =~ signal
 =~ rw_lock_debug_create
