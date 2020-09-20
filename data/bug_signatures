@@ -110,6 +110,11 @@ MDEV-23644:
 =~ buf_page_get_zip
 =~ btr_rec_copy_externally_stored_field|btr_copy_externally_stored_field
 =~ Version: '10\.[3-9]
+MDEV-23644:
+=~ InnoDB: FIL_PAGE_TYPE=.* on BLOB read space .* page .* flags .*
+=~ ib::fatal::~fatal
+=~ btr_check_blob_fil_page_type
+=~ Version: '10\.[3-9]
 MDEV-23562:
 =~ Assertion \`time_type == MYSQL_TIMESTAMP_DATETIME'
 =~ Datetime::is_valid_datetime_slow
@@ -2343,13 +2348,9 @@ MDEV-18047:
 =~ dict_foreign_qualify_index
 =~ innobase_update_foreign
 MDEV-18047:
-=~ got signal 11|got signal 7
-=~ dict_foreign_qualify_index
-=~ innobase_update_foreign_try
-MDEV-18047:
-=~ AddressSanitizer: heap-use-after-free
-=~ dict_index_get_nth_field
-=~ innobase_update_foreign_try|dict_load_foreigns
+=~ got signal|AddressSanitizer
+=~ dict_foreign_qualify_index|dict_index_get_nth_field
+=~ innobase_update_foreign_try|dict_load_foreigns|innobase_update_foreign_cache
 MDEV-18013:
 =~ Assertion \`share->now_transactional'
 =~ flush_log_for_bitmap
