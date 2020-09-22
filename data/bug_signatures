@@ -3189,12 +3189,11 @@ TODO-842: [thd->in_sub_stmt]
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_rollback_stmt
 =~ wsrep::client_state::after_statement
-TODO-842: [m_status == DA_OK_BULK - LOCK-ALTER-COMMIT]
+TODO-842: [m_status == DA_OK_BULK - ignore for now]
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ my_ok
 =~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: .*COMMIT|Query .*: FLUSH
-=~ Version: '10\.4
 TODO-842: [PROFILING]
 =~ signal
 =~ free_memory
@@ -3204,6 +3203,10 @@ TODO-842: [free_memory]
 =~ free_memory
 =~ sf_free
 =~ delete_dynamic|closefrm|free_table_share|_ma_end_block_record
+TODO-842: [sf_malloc]
+=~ in abort|signal handler called
+=~ in sf_malloc
+=~ in init_alloc_root|in alloc_root
 TODO-842: [rw_lock_debug_create]
 =~ signal
 =~ rw_lock_debug_create
