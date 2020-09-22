@@ -3208,15 +3208,32 @@ TODO-842: [sf_malloc]
 =~ in sf_malloc
 =~ in init_alloc_root|in alloc_root
 TODO-842: [rw_lock_debug_create]
-=~ signal
+=~ signal handler called
 =~ rw_lock_debug_create
-=~ pfs_rw_lock_s_lock_func
-=~ dict_create_index_tree_step
+=~ pfs_rw_lock_s_lock_func|rw_lock_add_debug_info
 TODO-842: [precision > 0]
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
 =~ calc_group_buffer
 =~ mysql_select
+TODO-842: [m_status == DA_ERROR - ALTER]
+=~ Diagnostics_area::sql_errno
+=~ Sql_cmd_alter_table::execute
+TODO-842: [THD::binlog_write_row]
+=~ Assertion \`((__builtin_expect(((WSREP_ON_) != 0),0) && this->variables\.wsrep_on) && wsrep_emulate_bin_log) \|\| mysql_bin_log.is_open()'
+=~ THD::binlog_write_row|THD::binlog_update_row
+TODO-842: [lock_table_has]
+=~ Assertion \`lock_table_has(trx, index->table, LOCK_IX)'
+=~ lock_rec_insert_check_and_lock
+=~ btr_cur_ins_lock_and_undo
+TODO-842: [Backup did not finish in due time - semaphore]
+=~ Backup did not finish in due time
+=~ long semaphore wait
+=~ BACKUP_FAILURE
+TODO-842: [Backup did not finish in due time]
+=~ Backup did not finish in due time
+!~ long semaphore wait
+=~ BACKUP_FAILURE
 
 ##############################################################################
 # Weak matches
