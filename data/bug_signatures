@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23794:
+=~ signal|AddressSanitizer
+=~ bitmap_bits_set|bitmap_is_set
+=~ pack_row|max_row_length
+=~ THD::binlog_write_row
+=~ Version: '10\.[1-4]
 MDEV-23742:
 =~ AddressSanitizer|Conditional jump or move depends on uninitialised value
 =~ sys_var::val_str_nolock
@@ -3164,8 +3170,8 @@ TODO-842: [Field_timestampf::set_max]
 =~ Field_timestampf::set_max
 =~ TABLE::vers_update_fields
 =~ fill_record_n_invoke_before_triggers
-TODO-842: [Forcing close of thread]
-=~ Forcing close of thread .* user:
+TODO-842: [Hang on shutdown]
+=~ Forcing close of thread .* user:|Warning.*Thread .* (user : .*) did not exit
 =~ STATUS_SERVER_DEADLOCKED|INTERNAL_ERROR
 =~ mysqld got signal 6
 TODO-842: [new_table_id.empty]
@@ -3193,7 +3199,7 @@ TODO-842: [m_status == DA_OK_BULK - ignore for now]
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ my_ok
-=~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: .*COMMIT|Query .*: FLUSH
+=~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: .*COMMIT|Query .*: FLUSH|close failed in file object destructor
 TODO-842: [PROFILING]
 =~ signal
 =~ free_memory
@@ -3233,6 +3239,17 @@ TODO-842: [Backup did not finish in due time - semaphore]
 TODO-842: [Backup did not finish in due time]
 =~ Backup did not finish in due time
 !~ long semaphore wait
+=~ BACKUP_FAILURE
+TODO-842: [__errno_location with mariabackup]
+=~ Assertion \`readbytes != (size_t)-1 \|\| (\*__errno_location ()) != 9'
+=~ my_pread
+=~ mariabackup: Error on close of
+TODO-842: [Aria table must be zerofilled with mariabackup]
+=~ Error on aria table file open
+=~ error : Table is from another system and must be zerofilled or repaired to be usable on this system
+=~ BACKUP_FAILURE
+TODO-842: [mariabackup deadlock]
+=~ FATAL ERROR: .* failed to execute query FLUSH TABLES WITH READ LOCK: Deadlock found when trying to get lock; try restarting transaction
 =~ BACKUP_FAILURE
 
 ##############################################################################
