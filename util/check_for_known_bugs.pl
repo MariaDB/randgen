@@ -148,16 +148,18 @@ sub search_files_for_matches
       my $pattern;
       my $signature_does_not_match= 0;
       my $signature_lines_found= 0;
+      my $goal= '';
 
       foreach (@signatures) {
-        # Signature line starts with =~
+        # Signature line starts with =~ or !~
         # (TODO: in future maybe also !~ for anti-patterns)
-        if (/^\s*=~\s*(.*)/) {
+        if (/^\s*(=~|!~)\s*(.*)/) {
           # If we have already found a pattern which does not match, don't check this signature further
           next if $signature_does_not_match;
           # Don't check other MDEV signatures if one was already found
           next if defined $found_mdevs{$mdev};
-          $pattern= $1;
+          $goal= ($1 eq '=~' ? 'match' : 'nomatch');
+          $pattern= $2;
           chomp $pattern;
           $pattern=~ s/(\"|\?|\!|\(|\)|\&|\^|\~|\+|\/)/\\$1/g;
         }
@@ -180,7 +182,7 @@ sub search_files_for_matches
           next;
         }
         system("grep -h -E -e \"$pattern\" @files > /dev/null 2>&1");
-        if ($?) {
+        if (($goal eq 'match' and $?) or ($goal eq 'nomatch' and $? == 0)) {
           $signature_does_not_match= 1;
         } else {
           $signature_lines_found++;
