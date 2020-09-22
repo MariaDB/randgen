@@ -111,7 +111,7 @@ MDEV-23644:
 =~ btr_rec_copy_externally_stored_field|btr_copy_externally_stored_field
 =~ Version: '10\.[3-9]
 MDEV-23644:
-=~ InnoDB: FIL_PAGE_TYPE=.* on BLOB read space .* page .* flags .*
+=~ InnoDB: FIL_PAGE_TYPE=.* on BLOB read space .* page .*
 =~ ib::fatal::~fatal
 =~ btr_check_blob_fil_page_type
 =~ Version: '10\.[3-9]
@@ -193,7 +193,7 @@ MDEV-23391:
 =~ drop_open_table
 =~ select_create::abort_result_set
 MDEV-23391:
-=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
+=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_.*)'
 =~ close_thread_table|TDC_element::flush
 =~ Locked_tables_list::unlock_locked_tables|drop_open_table
 =~ select_create::abort_result_set
