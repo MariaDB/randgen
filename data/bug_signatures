@@ -4,6 +4,24 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23797:
+=~ signal|AddressSanitizer
+=~ create_internal_tmp_table
+=~ select_unit_ext::unfold_record
+=~ mysql_union
+=~ Version: '10\.[5-9]
+MDEV-23797:
+=~ free(): invalid size
+=~ free_tmp_table
+=~ st_select_lex_unit::cleanup
+=~ mysql_union
+=~ Version: '10\.[5-9]
+MDEV-23797:
+=~ Assertion \`inited == RND'
+=~ handler::ha_rnd_next
+=~ mysql_union
+=~ INTERSECT ALL
+=~ Version: '10\.[5-9]
 MDEV-23794:
 =~ signal|AddressSanitizer
 =~ bitmap_bits_set|bitmap_is_set
@@ -246,7 +264,7 @@ MDEV-23356:
 =~ row_sel_convert_mysql_key_to_innobase
 =~ Version: '10\.[5-9]
 MDEV-23333:
-=~ Assertion \`field_types == 0 \|\| field_types[field_pos] == MYSQL_TYPE_LONGLONG'
+=~ Assertion \`field_types == 0 \|\| field_types\[field_pos\] == MYSQL_TYPE_LONGLONG'
 =~ Protocol_text::store_longlong
 =~ Version: '10\.2
 MDEV-23318:
@@ -292,7 +310,10 @@ MDEV-23294:
 MDEV-23286:
 =~ Assertion \`field->type_handler() == this'
 =~ Type_handler_inet6::stored_field_cmp_to_item
-=~ stored_field_cmp_to_item
+MDEV-23286:
+=~ AddressSanitizer
+=~ Inet6::cmp
+=~ Type_handler_inet6::stored_field_cmp_to_item
 MDEV-23276:
 =~ signal|AddressSanitizer|Assertion \`mutex->__data\.__owner == 0'
 =~ simple_key_cache_read|simple_key_cache_write
@@ -3322,7 +3343,7 @@ MDEV-20493:
 =~ in Protocol::send_result_set_row
 =~ in select_send::send_data
 =~ in Prepared_statement::execute
-MDEV-20484:
+MDEV-20484: [Record was not found on update: TUPLE]
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Version: '10\.3
 MDEV-20476:
