@@ -85,7 +85,7 @@ MDEV-23675:
 =~ Version: '10\.[4-9]
 MDEV-23675:
 =~ AddressSanitizer|signal
-=~ dict_col_t::is_virtual
+=~ dict_col_t::is_virtual|dict_col_t::name
 =~ dict_table_get_col_name
 =~ row_ins_foreign_index_entry
 =~ Version: '10\.[4-9]
@@ -3223,7 +3223,7 @@ TODO-842: [m_status == DA_OK_BULK - ignore for now]
 =~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: .*COMMIT|Query .*: FLUSH|close failed in file object destructor
 TODO-842: [PROFILING]
 =~ signal
-=~ free_memory
+=~ free_memory|_int_free
 =~ PROFILING::finish_current_query_impl
 TODO-842: [free_memory]
 =~ signal
