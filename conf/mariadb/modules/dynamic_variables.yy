@@ -181,7 +181,8 @@ dynvar_session_variable:
   | server_id= { $prng->int(1,1000) }
   | session_track_schema= dynvar_boolean
   | session_track_state_change= dynvar_boolean
-  | session_track_system_variables= dynvar_session_track_system_variables_value
+# Disabled due to MDEV-22524 (countless deadlocks)
+#  | session_track_system_variables= dynvar_session_track_system_variables_value
   | session_track_transaction_info= { $prng->arrayElement(['OFF','STATE','CHARACTERISTICS']) }
   | session_track_user_variables= dynvar_boolean
   | skip_parallel_replication= dynvar_boolean
