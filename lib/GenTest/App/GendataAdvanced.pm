@@ -610,7 +610,10 @@ sub gen_table {
       my @columns= ();
       foreach my $c (sort keys %columns) {
           my $coldef= $columns{$c};
-          unless (($c eq 'id' and ($has_autoinc)) or defined $coldef->[6]) {
+          # Virtual columns are not inserted into
+          # Auto-increment columns are usually skipped (90%),
+          # but sometimes used, mainly to get non-consequent unordered values
+          unless (defined $coldef->[6] or ($c eq 'id' and ($has_autoinc) and $prng->uint16(0,9))) {
               push @column_list, $c;
           }
           push @columns, 
@@ -843,7 +846,9 @@ sub gen_table {
                   $val = $prng->datetime();
                   my $val_date_only = $prng->date();
 
-                  if ($c->[4] eq 'NOT NULL') {
+                  # Don't try to insert NULLs into TIMESTAMP columns, it may end up as a current timestamp
+                  # due to non-standard behavior of TIMESTAMP columns
+                  if ($c->[4] eq 'NOT NULL' or $c->[0] eq 'TIMESTAMP') {
                       $val = ($val, $val, $val, $val, $val, $val, $val, $val_date_only." 00:00:00", $val_date_only." 00:00:00", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
                   } else {
                       $val = ($val, $val, $val, $val, $val, $val, $val_date_only." 00:00:00", $val_date_only." 00:00:00", "NULL", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
