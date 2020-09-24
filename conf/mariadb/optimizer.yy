@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014 SkySQL Ab
-# Copyright (c) 2015 MariaDB Corporation Ab
+# Copyright (c) 2015, 2020 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -50,7 +50,7 @@ query_init:
 	{ $total_dur = 0; "" };
 
 query:
-	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } explain_extended main_select ;
+	{ @nonaggregates = () ; @select_fields = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } explain_extended simple_select ;
 
 main_select:
 	simple_select | simple_select | simple_select | simple_select |
@@ -79,15 +79,15 @@ loose_select_list:
 	loose_select_item , loose_select_list ;
 
 loose_select_item:
-	_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-	_field_int AS { my $f = "ifield".++$ifields ; push @nonaggregates , $f ; $f } |
-	_field_char AS { my $f = "cfield".++$cfields ; push @nonaggregates , $f ; $f } ;
+	_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; push @select_fields, $last_field ; $f } |
+	_field_int AS { my $f = "ifield".++$ifields ; push @nonaggregates , $f ; push @select_fields, $last_field ; $f } |
+	_field_char AS { my $f = "cfield".++$cfields ; push @nonaggregates , $f ; push @select_fields, $last_field ; $f } ;
 	
 ################################################################################
 
 mixed_select:
 	SELECT distinct straight_join select_option select_list
-	FROM join_list
+	FROM table_references
 	where_clause
 	group_by_clause 
 	having_clause
@@ -95,7 +95,7 @@ mixed_select:
 
 simple_select:
 	SELECT distinct straight_join select_option simple_select_list
-	FROM join_list
+	FROM table_references
 	where_clause
 	optional_group_by 
 	having_clause
@@ -103,11 +103,13 @@ simple_select:
 
 aggregate_select:
 	SELECT distinct straight_join select_option aggregate_select_list
-	FROM join_list
+	FROM table_references
 	where_clause
 	optional_group_by 
 	having_clause
 	order_by_clause ;
+
+################################################################################
 
 explain_extended:	
 	| | | | | | | | | explain_extended2 ;
@@ -127,14 +129,14 @@ select_list:
 
 simple_select_list:
 	nonaggregate_select_item |
-	nonaggregate_select_item , simple_select_list |
 	nonaggregate_select_item , simple_select_list ;
 
 aggregate_select_list:
 	aggregate_select_item | aggregate_select_item |
 	aggregate_select_item, aggregate_select_list ;
 
-join_list:
+table_references:
+  new_table_item | new_table_item | new_table_item |
 ################################################################################
 # this limits us to 2 and 3 table joins / can use it if we hit
 # too many mega-join conditions which take too long to run
@@ -143,18 +145,6 @@ join_list:
 	( new_table_item join_type ( ( new_table_item join_type new_table_item ON (join_condition_list ) ) ) ON (join_condition_list ) ) |
 	( new_table_item , new_table_item ) |
 	( new_table_item , new_table_item , new_table_item ) ;
-
-
-join_list_disabled:
-################################################################################
-# preventing deep join nesting for run time / table access methods are more
-# important here - join.yy can provide deeper join coverage
-# Enabling this / swapping out with join_list above can produce some
-# time-consuming queries.
-################################################################################
-
-	new_table_item |
-	( new_table_item join_type join_list ON (join_condition_list ) ) ;
 
 join_type:
 	INNER JOIN | left_right outer JOIN |
@@ -204,7 +194,7 @@ where_list:
 
 
 generic_where_list:
-	where_item |
+	==FACTOR:5== where_item |
 	( where_item and_or where_item ) |
 	( where_list and_or where_item ) ;
 
@@ -249,6 +239,8 @@ subquery_type:
 	general_subquery | special_subquery ;
 
 general_subquery:
+  existing_table_item . { $prng->arrayElement(\@select_fields) or $last_field } not IN int_single_value_subquery |
+  existing_table_item . { $prng->arrayElement(\@select_fields) or $last_field } not IN char_single_value_subquery |
 	existing_table_item . _field_int arithmetic_operator  int_single_value_subquery  |
 	existing_table_item . _field_char arithmetic_operator char_single_value_subquery |
 	existing_table_item . _field_int membership_operator  int_single_member_subquery  |
@@ -373,24 +365,24 @@ char_double_member_subquery:
 
 int_correlated_subquery:
 	( SELECT distinct select_option subquery_table_one_two . _field_int AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" }
-	  FROM subquery_join_list 
+	  FROM subquery_table_references
 	  correlated_subquery_where_clause ) ;
 
 char_correlated_subquery:
 	( SELECT distinct select_option subquery_table_one_two . _field_char AS { $sq_cfields = 1; "SQ".$subquery_idx."_cfield1" }
-	  FROM subquery_join_list 
+	  FROM subquery_table_references
 	  correlated_subquery_where_clause ) ;
 
 int_scalar_correlated_subquery:
 	 ( SELECT distinct select_option aggregate subquery_table_one_two . _field_int ) AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" }
-	  FROM subquery_join_list 
+	  FROM subquery_table_references
 	  correlated_subquery_where_clause ) |
 	 ( SELECT distinct select_option aggregate table_one_two . _field_int ) AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" }
-	  FROM subquery_join_list 
+	  FROM subquery_table_references
 	  subquery_where_clause ) ; 
 
 subquery_body:
-	  FROM subquery_join_list
+	  FROM subquery_table_references
 	  subquery_where_clause ;
 
 subquery_where_clause:
@@ -428,10 +420,9 @@ subquery_where_item:
    existing_subquery_table_item . _field_char arithmetic_operator existing_subquery_table_item . _field_char |
    child_subquery ;
 
-subquery_join_list:
-   subquery_new_table_item  |  subquery_new_table_item  |
+subquery_table_references:
+   ==FACTOR:10== subquery_new_table_item  |
    ( subquery_new_table_item , subquery_new_table_item ) |
-   ( subquery_new_table_item join_type subquery_new_table_item ON (subquery_join_condition_item ) ) |
    ( subquery_new_table_item join_type subquery_new_table_item ON (subquery_join_condition_item ) ) |
    ( subquery_new_table_item join_type ( subquery_new_table_item join_type subquery_new_table_item ON (subquery_join_condition_item )  ) ON (subquery_join_condition_item ) ) ;
 
@@ -555,21 +546,21 @@ char_double_member_child_subquery:
 
 int_correlated_child_subquery:
 	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { $c_sq_ifields=1; "C_SQ".$child_subquery_idx."_ifield1" }
-	  FROM child_subquery_join_list 
+	  FROM child_subquery_table_references
 	  correlated_child_subquery_where_clause ) ;
 
 int_correlated_with_top_child_subquery:
 	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { $c_sq_ifields=1; "C_SQ".$child_subquery_idx."_ifield1" }
-	  FROM child_subquery_join_list 
+	  FROM child_subquery_table_references
 	  correlated_with_top_child_subquery_where_clause ) ;
 
 char_correlated_child_subquery:
 	( SELECT distinct select_option child_subquery_table_one_two . _field_char AS { $c_sq_cfields=1; "C_SQ".$child_subquery_idx."_cfield1" }
-	  FROM child_subquery_join_list 
+	  FROM child_subquery_table_references
 	  correlated_child_subquery_where_clause ) ;
 
 child_subquery_body:
-	  FROM child_subquery_join_list
+	  FROM child_subquery_table_references
 	  child_subquery_where_clause ;
 
 child_subquery_where_clause:
@@ -609,7 +600,7 @@ child_subquery_where_item:
    existing_child_subquery_table_item . _field_int arithmetic_operator existing_child_subquery_table_item . _field_int |
    existing_child_subquery_table_item . _field_char arithmetic_operator existing_child_subquery_table_item . _field_char ;
 
-child_subquery_join_list:
+child_subquery_table_references:
 	child_subquery_new_table_item  |  child_subquery_new_table_item  |
    ( child_subquery_new_table_item join_type child_subquery_new_table_item ON (child_subquery_join_condition_item ) ) |
    ( child_subquery_new_table_item join_type child_subquery_new_table_item ON (child_subquery_join_condition_item ) ) |
@@ -750,14 +741,14 @@ having_subquery:
 
 order_by_clause:
 	|
-	ORDER BY total_order_by limit |
-	ORDER BY partial_order_by |
-	order_by_anon;
-
+	ORDER BY total_order_by asc_desc limit |
+	ORDER BY partial_order_by asc_desc ;
 # TODO: Uncomment after MDEV-9513 and MDEV-9514 are fixed
+#	order_by_anon;
+
 order_by_anon:
-#	ORDER BY 1 | ORDER BY 2 | ORDER BY 2, 1 | ORDER BY RAND();
-#	ORDER BY 1 | ORDER BY RAND()
+	ORDER BY 1 | ORDER BY 2 | ORDER BY 2, 1 | ORDER BY RAND();
+	ORDER BY 1 | ORDER BY RAND()
 ;
 
 partial_order_by:
@@ -766,8 +757,8 @@ partial_order_by:
 total_order_by:
 	{ join(', ', shuffle ( (map { "field".$_ } 1..$fields), (map { "ifield".$_ } 1..$ifields), (map { "cfield".$_ } 1..$cfields) ) ) };
 
-desc:
-	ASC | | DESC ; 
+asc_desc:
+	ASC | | | DESC ;
 
 
 limit:
@@ -795,15 +786,15 @@ primitive_select_item:
 nonaggregate_select_item:
 	_tinyint AS { my $f = "ifield".++$ifields ; push @nonaggregates , $f ; $f } |
 	_char AS { my $f = "cfield".++$cfields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field_int_indexed AS { my $f = "ifield".++$ifields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field_char_indexed AS { my $f = "cfield".++$cfields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field_int_indexed AS { my $f = "ifield".++$ifields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field_char_indexed AS { my $f = "cfield".++$cfields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field_int AS { my $f = "ifield".++$ifields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field_char AS { my $f = "cfield".++$cfields ; push @nonaggregates , $f ; $f } ;
+	table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; push @select_fields, $last_field ; $f } |
+	table_one_two . _field_int_indexed AS { my $f = "ifield".++$ifields ; push @nonaggregates , $f ; push @select_fields, $last_field ; $f } |
+	table_one_two . _field_char_indexed AS { my $f = "cfield".++$cfields ; push @nonaggregates , $f ; push @select_fields, $last_field ; $f } |
+	table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; push @select_fields, $last_field ; $f } |
+	table_one_two . _field_int_indexed AS { my $f = "ifield".++$ifields ; push @nonaggregates , $f ; push @select_fields, $last_field ; $f } |
+	table_one_two . _field_char_indexed AS { my $f = "cfield".++$cfields ; push @nonaggregates , $f ; push @select_fields, $last_field ; $f } |
+	table_one_two . _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; push @select_fields, $last_field ; $f } |
+	table_one_two . _field_int AS { my $f = "ifield".++$ifields ; push @nonaggregates , $f ; push @select_fields, $last_field ; $f } |
+	table_one_two . _field_char AS { my $f = "cfield".++$cfields ; push @nonaggregates , $f ; push @select_fields, $last_field ; $f } ;
 
 aggregate_select_item:
 	aggregate table_one_two . _field ) AS { "field".++$fields } |
@@ -870,6 +861,7 @@ aggregate_separator:
 # reference tables / fields that aren't present in the query and that we keep
 # track of what we have added.  You shouldn't need to touch these ever
 ################################################################################
+
 new_table_item:
 	_table AS { "alias".++$tables } | _table AS { "alias".++$tables } | _table AS { "alias".++$tables } |
 	( from_subquery ) AS { "alias".++$tables } ;
