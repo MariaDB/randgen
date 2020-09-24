@@ -57,8 +57,7 @@ MDEV-23686:
 =~ signal|AddressSanitizer
 =~ get_foreign_key_info
 =~ ha_innobase::get_parent_foreign_key_list
-=~ Lock_tables_prelocking_strategy::handle_table
-=~ Version: '10\.[1-2]
+=~ prelocking_strategy::handle_table
 MDEV-23685:
 =~ signal|AddressSanitizer
 =~ dict_col_get_no
@@ -672,10 +671,9 @@ MDEV-22674:
 =~ Version: '10\.[4-9]
 MDEV-22674:
 =~ AddressSanitizer
-=~ _ma_dpointer
 =~ _ma_make_key
 =~ sort_key_read
-=~ Version: '10\.[4-9]
+=~ find_all_keys
 MDEV-22674:
 =~ Assertion \`!info->s->have_versioning \|\| info->s->lock_key_trees'
 =~ restore_table_state_after_repair
@@ -3220,7 +3218,7 @@ TODO-842: [m_status == DA_OK_BULK - ignore for now]
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ my_ok
-=~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: .*COMMIT|Query .*: FLUSH|close failed in file object destructor
+=~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: .*COMMIT|Query .*: FLUSH|close failed in file object destructor|Query .*: .*RESET.* QUERY CACHE
 TODO-842: [PROFILING]
 =~ signal
 =~ free_memory|_int_free
@@ -3261,17 +3259,38 @@ TODO-842: [Backup did not finish in due time]
 =~ Backup did not finish in due time
 !~ long semaphore wait
 =~ BACKUP_FAILURE
-TODO-842: [__errno_location with mariabackup]
+TODO-842: [mariabackup - __errno_location with]
 =~ Assertion \`readbytes != (size_t)-1 \|\| (\*__errno_location ()) != 9'
 =~ my_pread
 =~ mariabackup: Error on close of
-TODO-842: [Aria table must be zerofilled with mariabackup]
-=~ Error on aria table file open
-=~ error : Table is from another system and must be zerofilled or repaired to be usable on this system
 =~ BACKUP_FAILURE
-TODO-842: [mariabackup deadlock]
+TODO-842: [mariabackup - deadlock]
 =~ FATAL ERROR: .* failed to execute query FLUSH TABLES WITH READ LOCK: Deadlock found when trying to get lock; try restarting transaction
 =~ BACKUP_FAILURE
+TODO-842: [mariabackup - previously opened tablespace]
+=~ Attempted to open a previously opened tablespace. Previous tablespace
+=~ BACKUP_FAILURE
+TODO-842: [mariabackup - Aria must be zerofilled]
+=~ For transactional Aria .* : error : Table is from another system and must be zerofilled
+=~ BACKUP_FAILURE
+TODO-842: [mariabackup - Aria redo error 127]
+=~ Got error 127 when executing record redo_insert_row_head
+=~ Aria engine: Redo phase failed
+=~ BACKUP_FAILURE
+TODO-842: [hang on shutdown - mysql_rm_table_no_locks]
+=~ Thread .* did not exit
+=~ tdc_remove_table
+=~ mysql_rm_table_no_locks
+=~ INTERNAL_ERROR
+TODO-842: [table->get_ref_count]
+=~ InnoDB: Failing assertion: table->get_ref_count() == 0
+=~ row_merge_drop_table
+=~ ha_innobase::commit_inplace_alter_table
+TODO-842: [Binary_string::realloc_raw]
+=~ AddressSanitizer
+=~ Binary_string::realloc_raw
+=~ Field_blob::store_field
+=~ Version: '10\.[4-9]
 
 ##############################################################################
 # Weak matches
