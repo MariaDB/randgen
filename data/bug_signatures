@@ -4,6 +4,27 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23812:
+=~ signal|AddressSanitizer
+=~ get_constant_key_infix
+=~ get_best_group_min_max
+=~ SQL_SELECT::test_quick_select
+MDEV-23809:
+=~ signal|AddressSanitizer
+=~ JOIN_CACHE::free
+=~ st_join_table::cleanup
+=~ JOIN::destroy
+=~ Version: '10\.2
+MDEV-23809:
+=~ AddressSanitizer: use-after-poison
+=~ JOIN::make_aggr_tables_info
+=~ Version: '10\.2
+MDEV-23809:
+=~ signal|AddressSanitizer
+=~ copy_fields
+=~ end_write
+=~ sub_select_postjoin_aggr
+=~ Version: '10\.2
 MDEV-23797:
 =~ signal|AddressSanitizer
 =~ create_internal_tmp_table
@@ -886,8 +907,6 @@ MDEV-22279:
 MDEV-22277:
 =~ LeakSanitizer: detected memory leaks
 =~ mem_heap_create_block_func
-=~ innobase_get_foreign_key_info
-=~ Version: '10\.[4-9]
 MDEV-22262:
 =~ signal 11|AddressSanitizer
 =~ handler::ha_table_flags|ha_partition::info|ha_partition::compare_number_of_records
@@ -3061,11 +3080,6 @@ TODO-842: [Field_timestamp_with_dec::sort_string]
 =~ Field_timestamp_with_dec::sort_string
 =~ Field::make_sort_key
 =~ Bounded_queue
-TODO-842: [mem_heap_create_block_func]
-=~ LeakSanitizer: detected memory leaks
-=~ mem_heap_create_block_func
-=~ mem_heap_add_block
-=~ dtuple_create_with_vcol
 TODO-842: [Time_zone_system::gmt_sec_to_TIME]
 =~ signal 11
 =~ Time_zone_system::gmt_sec_to_TIME
