@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23836:
+=~ Assertion `! is_set() || m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ my_message_sql
+=~ THD::send_kill_message
+=~ Version: '10\.[5-9]
 MDEV-23828:
 =~ Assertion \`0'
 =~ subselect_hash_sj_engine::init
@@ -398,7 +404,7 @@ MDEV-23218:
 MDEV-23215:
 =~ signal|AddressSanitizer
 =~ my_hash_first|flush_simple_key_cache_blocks
-=~ close_system_tables|close_thread_tables|ha_partition::extra|close_cached_tables|intern_close_table|purge_tables
+=~ close_system_tables|close_thread_tables|ha_partition::extra|close_cached_tables|intern_close_table|purge_tables|copy_data_between_tables
 MDEV-23215:
 =~ safe_mutex: Trying to destroy a mutex keycache->cache_lock that was locked at .*mf_keycache\.c
 =~ repartition_key_cache
@@ -507,6 +513,11 @@ MDEV-23115:
 =~ Assertion \`purge <= 1'
 =~ trx_rseg_mem_restore
 =~ plugin_initialize
+=~ Version: '10\.[5-9]
+MDEV-23073:
+=~ LeakSanitizer: detected memory leaks
+=~ trx_savepoint_for_mysql
+=~ trans_savepoint
 =~ Version: '10\.[5-9]
 MDEV-23045:
 =~ Assertion \`is_open()'
@@ -630,7 +641,7 @@ MDEV-22768:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
 =~ THD::raise_condition
-=~ my_error|my_message
+=~ sql_set_variables
 MDEV-22757:
 =~ Assertion \`!binlog \|\| exist_hton_without_prepare'
 =~ MYSQL_BIN_LOG::unlog_xa_prepare
@@ -3250,7 +3261,7 @@ TODO-842: [free_memory]
 =~ signal
 =~ free_memory
 =~ sf_free
-=~ delete_dynamic|closefrm|free_table_share|_ma_end_block_record
+=~ delete_dynamic|closefrm|free_table_share|_ma_end_block_record|info_remove_lock|acl_reload
 TODO-842: [sf_malloc]
 =~ in abort|signal handler called
 =~ in sf_malloc
@@ -3327,6 +3338,30 @@ TODO-842: [mariabackup - error 188]
 =~ error : Partition .* returned error
 =~ error : Unknown - internal error 188 during operation
 =~ BACKUP_FAILURE
+TODO-842: [fts_is_sync_needed]
+=~ signal|AddressSanitizer
+=~ fts_is_sync_needed
+=~ fts_optimize_callback
+=~ tpool::task_group::execute
+TODO-842: [maxcount > 0]
+=~ Assertion \`maxcount > 0'
+=~ merge_buffers
+=~ _ma_create_index_by_sort
+TODO-842: [upgrade from 5.5 problem]
+=~ innobase_start_or_create_for_mysql
+=~ Old server failed to restart
+=~ Version: '5\.5
+=~ TEST_FAILURE
+TODO-842: [create_sort_index]
+=~ signal 11|AddressSanitizer
+=~ create_sort_index
+=~ JOIN::exec_inner
+=~ Version: '10\.1
+TODO-842: [MDL_ticket::create]
+=~ signal handler called
+=~ in malloc
+=~ MDL_ticket::create
+=~ open_table_get_mdl_lock
 
 ##############################################################################
 # Weak matches
