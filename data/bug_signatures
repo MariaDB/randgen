@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23828:
+=~ Assertion \`0'
+=~ subselect_hash_sj_engine::init
+=~ Item_in_subselect::setup_mat_engine
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-23812:
 =~ signal|AddressSanitizer
 =~ get_constant_key_infix
@@ -193,9 +198,8 @@ MDEV-23499:
 =~ Version: '10\.[4-9]
 MDEV-23472:
 =~ AddressSanitizer|signal
-=~ LatchCounter::Count::reset
+=~ LatchCounter::Count::reset|LatchCounter::disable
 =~ innodb_monitor_set_option
-=~ Version: '10\.[5-9]
 MDEV-23470:
 =~ InnoDB: Failing assertion: cmp < 0
 =~ row_ins_check_foreign_constraint
@@ -2792,9 +2796,14 @@ MDEV-16208:
 =~ lock_clust_rec_read_check_and_lock
 =~ row_search_mvcc
 MDEV-16128:
-=~ signal 11|AddressSanitizer: heap-use-after-free
+=~ signal 11|AddressSanitizer
 =~ Item_func::print_op
 =~ mysql_select
+=~ Prepared_statement::execute|sp_instr_stmt::execute
+MDEV-16128:
+=~ signal 11|AddressSanitizer
+=~ Item_func::fix_fields|Item_cond::fix_fields
+=~ setup_without_group
 =~ Prepared_statement::execute|sp_instr_stmt::execute
 MDEV-16128:
 =~ pure virtual method called
@@ -3232,7 +3241,7 @@ TODO-842: [m_status == DA_OK_BULK - ignore for now]
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ my_ok
-=~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: .*COMMIT|Query .*: FLUSH|close failed in file object destructor|Query .*: .*RESET.* QUERY CACHE
+=~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: .*COMMIT|Query .*: FLUSH|close failed in file object destructor|Query .*: .*RESET.* QUERY CACHE|Status: KILL_TIMEOUT|Status: KILL_QUERY
 TODO-842: [PROFILING]
 =~ signal
 =~ free_memory|_int_free
@@ -3305,6 +3314,19 @@ TODO-842: [Binary_string::realloc_raw]
 =~ Binary_string::realloc_raw
 =~ Field_blob::store_field
 =~ Version: '10\.[4-9]
+TODO-842: [LeakSanitizer - rec_copy_prefix_to_buf_old]
+=~ LeakSanitizer: detected memory leaks
+=~ rec_copy_prefix_to_buf_old
+=~ INTERNAL_ERROR
+TODO-842: [LeakSanitizer - trx_savepoint_for_mysql]
+=~ LeakSanitizer: detected memory leaks
+=~ trx_savepoint_for_mysql
+=~ innobase_savepoint
+=~ INTERNAL_ERROR
+TODO-842: [mariabackup - error 188]
+=~ error : Partition .* returned error
+=~ error : Unknown - internal error 188 during operation
+=~ BACKUP_FAILURE
 
 ##############################################################################
 # Weak matches
