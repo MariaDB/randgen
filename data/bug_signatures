@@ -4,12 +4,32 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23841:
+=~ Warning: Memory not freed
+=~ LeakSanitizer: detected memory leaks
+=~ innodb_monitor_validate
+MDEV-23838:
+=~ Assertion \`0'
+=~ Item_func_round::native_op
+=~ Arg_comparator::min_max_update_field_native
+=~ Version: '10\.[4-9]
+MDEV-23837:
+=~ AddressSanitizer|valgrind
+=~ malloc
+=~ JOIN_CACHE::alloc_buffer
+=~ JOIN_CACHE_HASHED::init
+=~ Version: '10\.[4-9]
 MDEV-23836:
 =~ Assertion `! is_set() || m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
 =~ my_message_sql
 =~ THD::send_kill_message
 =~ Version: '10\.[5-9]
+MDEV-23835:
+=~ InnoDB: Failing assertion: bpage->buf_fix_count == 0
+=~ buf_relocate
+=~ fsp_header_init
+=~ Version: '10\.[2-4]
 MDEV-23828:
 =~ Assertion \`0'
 =~ subselect_hash_sj_engine::init
@@ -1951,8 +1971,9 @@ MDEV-19318:
 =~ _ma_scan_block_record
 MDEV-19306:
 =~ Assertion \`marked_for_read()'
-=~ field_conv_incompatible
 =~ TABLE::update_virtual_fields
+=~ save_in_field
+=~ Version: '10\.[4-9]
 MDEV-19305:
 =~ InnoDB: Datafile '.*' is corrupted\. Cannot determine the space ID from the first 64 pages
 =~ InnoDB: Tablespace .* was not found at .*
