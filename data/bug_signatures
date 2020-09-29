@@ -352,7 +352,7 @@ MDEV-23305:
 =~ Diagnostics_area::set_error_status
 =~ MDL_context::acquire_lock
 =~ ha_maria_implicit_commit
-=~ Version: '10\.4\.[0-9]*-MariaDB
+=~ Version: '10\.4
 MDEV-23297:
 =~ Assertion \`info->dfile\.file == share->bitmap\.file\.file'
 =~ _ma_scan_init_block_record
@@ -2760,8 +2760,10 @@ MDEV-16755:
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-16699:
 =~ AddressSanitizer: heap-use-after-free|signal 11
-=~ my_strnncoll_binary
+=~ my_strnncoll_binary|my_strnncollsp_simple
 =~ Field_blob::cmp
+=~ group_concat_key_cmp_with_order
+=~ Version: '10\.[3-9]
 MDEV-16698:
 =~ AddressSanitizer: heap-use-after-free|signal 11
 =~ Field_longstr::uncompress
