@@ -6,10 +6,13 @@
 
 MDEV-23843:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
-=~ Diagnostics_area::set_error_status
 =~ MDL_context::acquire_lock
 =~ THD::binlog_query
-=~ Version: '10\.4\.[0-9]*-MariaDB
+=~ Version: '10\.[4-9]\.[0-9]*-MariaDB
+MDEV-23843:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ Version: '10\.[4-9]\.[0-9]*-MariaDB
 MDEV-23841:
 =~ Warning: Memory not freed
 =~ LeakSanitizer: detected memory leaks
