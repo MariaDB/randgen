@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23843:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ MDL_context::acquire_lock
+=~ THD::binlog_query
+=~ Version: '10\.4\.[0-9]*-MariaDB
 MDEV-23841:
 =~ Warning: Memory not freed
 =~ LeakSanitizer: detected memory leaks
@@ -20,7 +26,7 @@ MDEV-23837:
 =~ JOIN_CACHE_HASHED::init
 =~ Version: '10\.[4-9]
 MDEV-23836:
-=~ Assertion \`! is_set() || m_can_overwrite_status'
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
 =~ my_message_sql
 =~ THD::send_kill_message
@@ -343,7 +349,7 @@ MDEV-23305:
 =~ Diagnostics_area::set_error_status
 =~ MDL_context::acquire_lock
 =~ ha_maria_implicit_commit
-=~ Version: '10\.4
+=~ Version: '10\.4\.[0-9]*-MariaDB
 MDEV-23297:
 =~ Assertion \`info->dfile\.file == share->bitmap\.file\.file'
 =~ _ma_scan_init_block_record
