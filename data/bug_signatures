@@ -20,7 +20,7 @@ MDEV-23837:
 =~ JOIN_CACHE_HASHED::init
 =~ Version: '10\.[4-9]
 MDEV-23836:
-=~ Assertion `! is_set() || m_can_overwrite_status'
+=~ Assertion \`! is_set() || m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
 =~ my_message_sql
 =~ THD::send_kill_message
