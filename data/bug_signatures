@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23850:
+=~ signal 8
+=~ decimal2bin
+=~ Type_handler_decimal_result::make_sort_key
+MDEV-23850:
+=~ AddressSanitizer|Assertion \`scale <= precision'
+=~ decimal_bin_size
+=~ my_decimal_get_binary_size
+=~ calc_group_buffer
 MDEV-23843:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ MDL_context::acquire_lock
