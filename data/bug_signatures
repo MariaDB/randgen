@@ -28,7 +28,7 @@ MDEV-23841:
 =~ innodb_monitor_validate
 MDEV-23838:
 =~ Assertion \`0'
-=~ Item_func_round::native_op
+=~ Item_func_.*::native_op
 =~ Arg_comparator::min_max_update_field_native
 =~ Version: '10\.[4-9]
 MDEV-23837:
@@ -297,7 +297,7 @@ MDEV-23385:
 =~ signal|AddressSanitizer
 =~ Item_in_subselect::inject_in_to_exists_cond
 =~ JOIN::choose_tableless_subquery_plan
-=~ sp_instr_stmt::exec_core
+=~ sp_instr_stmt::exec_core|Prepared_statement::execute
 =~ Version: '10\.[1-3]
 MDEV-23384:
 =~ signal|AddressSanitizer
