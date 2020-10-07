@@ -4,6 +4,65 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23898:
+=~ AddressSanitizer|signal
+=~ THD::is_error
+=~ TABLE::verify_constraints
+=~ select_insert::send_data
+=~ Version: '10\.[3-9]
+=~ sequences
+MDEV-23898:
+=~ AddressSanitizer|signal
+=~ THD::is_error
+=~ ha_myisam::enable_indexes
+=~ select_insert::prepare_eof
+=~ Version: '10\.[3-9]
+=~ sequences
+MDEV-23898:
+=~ AddressSanitizer|signal
+=~ handler::increment_statistics
+=~ handler::ha_rnd_next
+=~ rr_sequential
+=~ Version: '10\.[3-9]
+=~ sequences
+MDEV-23898:
+=~ Assertion \`thd->lock == 0'
+=~ lock_tables
+=~ sp_head::execute_trigger
+=~ Version: '10\.[3-9]
+=~ sequences
+MDEV-23898:
+=~ Assertion \`inited == NONE \|\| table->open_by_handler'
+=~ handler::ha_external_lock
+=~ sp_head::execute_trigger
+=~ Version: '10\.[3-9]
+=~ sequences
+MDEV-23897:
+=~ AddressSanitizer|signal
+=~ lock_grant_and_move_on_page
+=~ lock_rec_dequeue_from_page
+=~ lock_release
+MDEV-23896:
+=~ AddressSanitizer|Invalid read of size|signal
+=~ same_index_prefix
+=~ get_best_index_intersect
+=~ SQL_SELECT::test_quick_select
+=~ Version: '10\.[5-9]
+MDEV-23895:
+=~ AddressSanitizer|Invalid write of size|signal
+=~ Item_func_rpad::val_str
+=~ Item_str_func::val_int
+MDEV-23895:
+=~ invalid size|invalid next size
+=~ malloc_printerr
+=~ alloc_root
+=~ Warning_info::push_warning
+=~ Value_source
+MDEV-23895:
+=~ invalid size|invalid next size
+=~ l_find
+=~ lf_hash_search_using_hash_value
+=~ MDL_map::find_or_insert
 MDEV-23850:
 =~ signal 8
 =~ decimal2bin
@@ -35,7 +94,7 @@ MDEV-23837:
 =~ AddressSanitizer|valgrind
 =~ malloc
 =~ JOIN_CACHE::alloc_buffer
-=~ JOIN_CACHE_HASHED::init
+=~ JOIN_CACHE_HASHED::init|JOIN_CACHE_BNL::init
 =~ Version: '10\.[4-9]
 MDEV-23836:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
