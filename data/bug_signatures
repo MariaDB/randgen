@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-23984:
+=~ Assertion \`((Item_result_field\*)item)->result_field'
+=~ create_tmp_field
+=~ Version: '10\.[2-3]
+MDEV-23984:
+=~ Assertion \`result_field'
+=~ Item_result_field::get_tmp_field_src
+=~ Version: '10\.[4-9]
 MDEV-23956:
 =~ signal|AddressSanitizer
 =~ myrocks::ha_rocksdb::index_first
@@ -1950,7 +1958,7 @@ MDEV-19720:
 =~ make_range_rowid_filters
 =~ JOIN::optimize_stage2
 MDEV-19720:
-=~ signal 11
+=~ signal 11|AddressSanitizer
 =~ st_join_table::save_explain_data
 =~ JOIN::save_explain_data
 =~ JOIN::build_explain
