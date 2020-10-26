@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24026:
+=~ InnoDB: Failing assertion: os_total_large_mem_allocated >= size
+=~ os_mem_free_large
+=~ wf_incremental_deinit
 MDEV-23984:
 =~ Assertion \`((Item_result_field\*)item)->result_field'
 =~ create_tmp_field
@@ -563,8 +567,8 @@ MDEV-23204:
 MDEV-23202:
 =~ signal|AddressSanitizer
 =~ maria_status|heap_info
-=~ ha_maria::info|TABLE_LIST::fetch_number_of_rows
-=~ sp_instr_stmt::exec_core
+=~ ha_maria::info|TABLE_LIST::fetch_number_of_rows|ha_heap::info
+=~ sp_instr_stmt::exec_core|Prepared_statement::execute
 MDEV-23188:
 =~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
 =~ create_tmp_table|Create_tmp_table::add_field
@@ -1373,6 +1377,10 @@ MDEV-21540:
 =~ handler::ha_index_init
 =~ check_duplicate_long_entry_key
 =~ ha_partition::change_partitions
+MDEV-21516:
+=~ Assertion \`lock_rec_find_set_bit(lock) == ((ulint)(-1))'
+=~ lock_rec_free_all_from_discard_page_low
+=~ trx_rollback
 MDEV-21507:
 =~ is marked as crashed and should be repaired|Incorrect key file for table
 =~ engine=Aria|default-storage-engine=aria
@@ -1515,6 +1523,18 @@ MDEV-21138:
 MDEV-21138:
 =~ InnoDB: Flagged corruption of .* in table .* in CHECK TABLE; Wrong count
 =~ For InnoDB SYSTEM VERSIONED .* : error : Corrupt
+MDEV-21138:
+=~ InnoDB: Failing assertion: buf != field_ref_zero
+=~ row_merge_buf_add
+=~ InnoDB: Duplicate FTS_DOC_ID value on table
+=~ Version: '10\.[3-9]
+=~ versioning
+MDEV-21138:
+=~ InnoDB: InnoDB: FIL_PAGE_TYPE=.* on BLOB read space .* page .* flags .*
+=~ btr_check_blob_fil_page_type
+=~ InnoDB: Duplicate FTS_DOC_ID value on table
+=~ Version: '10\.[3-9]
+=~ versioning
 MDEV-21135:
 =~ InnoDB: Failing assertion: thr_get_trx(thr)->error_state == DB_SUCCESS
 =~ que_run_threads
