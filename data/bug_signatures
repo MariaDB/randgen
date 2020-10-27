@@ -2403,6 +2403,10 @@ MDEV-18441:
 =~ Assertion \`tables_opened == 1'
 =~ Sql_cmd_alter_table::execute
 =~ ADD .*FOREIGN KEY
+MDEV-18421:
+=~ signal|AddressSanitizer|Assertion \`foreign->foreign_table != __null'
+=~ init_fts_doc_id_for_ref
+=~ row_update_for_mysql
 MDEV-18418:
 =~ Assertion \`mdl_ticket->m_type == MDL_SHARED_UPGRADABLE \|\| mdl_ticket->m_type == MDL_SHARED_NO_WRITE \|\| mdl_ticket->m_type == MDL_SHARED_NO_READ_WRITE'
 =~ MDL_context::upgrade_shared_lock
@@ -2944,10 +2948,10 @@ MDEV-16397:
 =~ sequence
 =~ Version: '10\.[3-9]
 MDEV-16292:
-=~ signal 11
-=~ Item_func::print
+=~ signal 11|AddressSanitizer
+=~ Item_func::print|Item_ref::print
 =~ Item::print_item_w_name
-=~ mysql_create_view
+=~ mysql_create_view|Prepared_statement::execute
 =~ ROLLUP
 =~ Version: '5\.5|Version: '10\.[1-2]
 MDEV-16242:
@@ -3596,8 +3600,6 @@ MDEV-18454:
 =~ ReadView::check_trx_id_sanity
 MDEV-18453:
 =~ rec_get_deleted_flag
-MDEV-18421: [foreign->foreign_table]
-=~ foreign->foreign_table
 MDEV-18414:
 =~ Value_source::Converter_strntod::Converter_strntod
 MDEV-18322:
