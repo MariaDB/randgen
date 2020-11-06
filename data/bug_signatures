@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24095:
+=~ AddressSanitizer|signal
+=~ json_path_parts_compare
+=~ Item_func_json_extract::read_json
+=~ Version: '10\.[5-9]
+MDEV-24049:
+=~ InnoDB: Failing assertion: node->is_open()
+=~ fil_space_t::flush_low
+=~ fil_space_t::flush
+=~ Version: '10\.[5-9]
 MDEV-24026:
 =~ InnoDB: Failing assertion: os_total_large_mem_allocated >= size
 =~ os_mem_free_large
@@ -365,6 +375,10 @@ MDEV-23444:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
 =~ Item_sum_avg::create_tmp_field
+MDEV-23444:
+=~ AddressSanitizer:
+=~ bin2decimal
+=~ Field_new_decimal::val_decimal
 MDEV-23443:
 =~ AddressSanitizer|signal
 =~ _ma_unique_comp
@@ -464,6 +478,8 @@ MDEV-23297:
 =~ Assertion \`info->dfile\.file == share->bitmap\.file\.file'
 =~ _ma_scan_init_block_record
 =~ maria_scan_init
+MDEV-23297:
+=~ signal|AddressSanitizer
 MDEV-23296:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == type \|\| (block->type == PAGECACHE_PLAIN_PAGE && type == PAGECACHE_LSN_PAGE)'
 =~ pagecache_write_part
@@ -566,8 +582,8 @@ MDEV-23204:
 =~ Version: '10\.[3-9]
 MDEV-23202:
 =~ signal|AddressSanitizer
-=~ maria_status|heap_info
-=~ ha_maria::info|TABLE_LIST::fetch_number_of_rows|ha_heap::info
+=~ maria_status|heap_info|heap_scan_init
+=~ ha_maria::info|TABLE_LIST::fetch_number_of_rows|ha_heap::info|ha_heap::rnd_init
 =~ sp_instr_stmt::exec_core|Prepared_statement::execute
 MDEV-23188:
 =~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
@@ -676,7 +692,7 @@ MDEV-23011:
 =~ signal|AddressSanitizer
 =~ row_create_prebuilt
 =~ ha_innobase::open
-=~ open_and_process_table
+=~ open_and_process_table|open_table_from_share
 MDEV-22973:
 =~ Assertion \`records_are_comparable(table)'
 =~ compare_record
