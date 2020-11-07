@@ -561,7 +561,7 @@ dynvar_default_regex_flags_value:
           EXTRA
           MULTILINE
           UNGREEDY
-        ); $length=$prng->int(0,scalar(@flags)); "'" . (join ',', @{$prng->shuffleArray(\@flags)}[0..$length]) . "'"
+        ); $length=$prng->int(0,scalar(@flags)); "'" . (join ',', @{$prng->shuffleArray(\@flags)}[0..$length-1]) . "'"
     }
 ;
 
@@ -599,7 +599,7 @@ dynvar_sql_mode_value:
           STRICT_ALL_TABLES
           STRICT_TRANS_TABLES
           TIME_ROUND_FRACTIONAL
-        ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length]) . "'"
+        ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
     }
 ;
 
@@ -616,7 +616,7 @@ dynvar_log_slow_filter_value:
           query_cache_miss
           tmp_table
           tmp_table_on_disk
-        ); $length=$prng->int(0,scalar(@filters)); "'" . (join ',', @{$prng->shuffleArray(\@filters)}[0..$length]) . "'"
+        ); $length=$prng->int(0,scalar(@filters)); "'" . (join ',', @{$prng->shuffleArray(\@filters)}[0..$length-1]) . "'"
     }
 ;
 
@@ -625,7 +625,7 @@ dynvar_log_slow_verbosity_value:
           query_plan
           innodb
           explain
-        ); $length=$prng->int(0,scalar(@vals)); "'" . (join ',', @{$prng->shuffleArray(\@vals)}[0..$length]) . "'"
+        ); $length=$prng->int(0,scalar(@vals)); "'" . (join ',', @{$prng->shuffleArray(\@vals)}[0..$length-1]) . "'"
     }
 ;
 
@@ -634,7 +634,7 @@ dynvar_old_mode_value:
           NO_DUP_KEY_WARNINGS_WITH_IGNORE
           NO_PROGRESS_INFO
           ZERO_DATE_TIME_CAST
-        ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length]) . "'"
+        ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
     }
 ;
 
@@ -676,14 +676,14 @@ dynvar_optimizer_switch_value:
             rowid_filter
             condition_pushdown_from_having
             not_null_range_scan
-        ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', map {$_.'='.$prng->arrayElement(['on','off'])} @{$prng->shuffleArray(\@modes)}[0..$length]) . "'"
+        ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', map {$_.'='.$prng->arrayElement(['on','off'])} @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
     }
 ;
 
 dynvar_session_track_system_variables_value:
     { @vars= keys %{$executors->[0]->serverVariables()}
       ; $length=$prng->int(0,scalar(@vars)/2)
-      ; "'" . (join ',', @{$prng->shuffleArray(\@vars)}[0..$length]) . "'"
+      ; "'" . (join ',', @{$prng->shuffleArray(\@vars)}[0..$length-1]) . "'"
     }
 # Disabled due to MDEV-22524
 #  | '*'
@@ -698,7 +698,7 @@ dynvar_recover_options_value:
           NORMAL
           FORCE
           OFF
-        ); $length=$prng->int(0,scalar(@filters)); "'" . (join ',', @{$prng->shuffleArray(\@filters)}[0..$length]) . "'"
+        ); $length=$prng->int(0,scalar(@filters)); "'" . (join ',', @{$prng->shuffleArray(\@filters)}[0..$length-1]) . "'"
     }
 ;
 
@@ -710,7 +710,7 @@ dynvar_engines_list_value:
           Aria
           MEMORY
           CSV
-        ); $length=$prng->int(0,scalar(@filters)); "'" . (join ',', @{$prng->shuffleArray(\@filters)}[0..$length]) . "'"
+        ); $length=$prng->int(0,scalar(@filters)); "'" . (join ',', @{$prng->shuffleArray(\@filters)}[0..$length-1]) . "'"
     }
 ;
 
