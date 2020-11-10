@@ -478,8 +478,6 @@ MDEV-23297:
 =~ Assertion \`info->dfile\.file == share->bitmap\.file\.file'
 =~ _ma_scan_init_block_record
 =~ maria_scan_init
-MDEV-23297:
-=~ signal|AddressSanitizer
 MDEV-23296:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == type \|\| (block->type == PAGECACHE_PLAIN_PAGE && type == PAGECACHE_LSN_PAGE)'
 =~ pagecache_write_part
