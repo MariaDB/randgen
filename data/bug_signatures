@@ -126,7 +126,7 @@ MDEV-23843:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ MDL_context::acquire_lock
 =~ THD::binlog_query|ha_maria_implicit_commit
-=~ Version: '10\.[4-9]\.[0-9]*-MariaDB
+=~ Version: '10\.[4-9]
 MDEV-23843:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
