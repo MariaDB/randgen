@@ -50,12 +50,13 @@ query_init:
 	{ $total_dur = 0; "" };
 
 query:
-	{ @nonaggregates = () ; @select_fields = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } explain_extended simple_select ;
+	{ @nonaggregates = () ; @select_fields = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } explain_extended main_select ;
 
 main_select:
-	simple_select | simple_select | simple_select | simple_select |
-	mixed_select |  mixed_select |  mixed_select |  mixed_select  | 
-	aggregate_select | loose_scan ;
+  ==FACTOR:10== simple_select |
+  ==FACTOR:5==  mixed_select |
+    aggregate_select |
+    loose_scan ;
 
 ################################################################################
 # The loose* rules listed below are to hit the 'Using index for group-by'
@@ -111,11 +112,11 @@ aggregate_select:
 
 ################################################################################
 
-explain_extended:	
-	| | | | | | | | | explain_extended2 ;
+explain_extended:
+  ==FACTOR:0.01== EXPLAIN |
+  ==FACTOR:0.04== EXPLAIN EXTENDED |
+    ;
 
-explain_extended2: | | | | EXPLAIN | EXPLAIN EXTENDED ; 
-	   
 distinct: DISTINCT | | | | | | | | | ;
 
 select_option:  | | | | | | | | | | | SQL_SMALL_RESULT ;
@@ -124,7 +125,6 @@ straight_join:  | | | | | | | | | | | | | | | | | | | | | STRAIGHT_JOIN ;
 
 select_list:
 	new_select_item |
-	new_select_item , select_list |
 	new_select_item , select_list ;
 
 simple_select_list:
@@ -132,32 +132,25 @@ simple_select_list:
 	nonaggregate_select_item , simple_select_list ;
 
 aggregate_select_list:
-	aggregate_select_item | aggregate_select_item |
-	aggregate_select_item, aggregate_select_list ;
+  ==FACTOR:2== aggregate_select_item |
+    aggregate_select_item, aggregate_select_list ;
 
 table_references:
-  new_table_item | new_table_item | new_table_item |
-################################################################################
-# this limits us to 2 and 3 table joins / can use it if we hit
-# too many mega-join conditions which take too long to run
-################################################################################
-	( new_table_item join_type new_table_item ON (join_condition_list ) ) |
-	( new_table_item join_type ( ( new_table_item join_type new_table_item ON (join_condition_list ) ) ) ON (join_condition_list ) ) |
-	( new_table_item , new_table_item ) |
-	( new_table_item , new_table_item , new_table_item ) ;
+  ==FACTOR:3== new_table_item |
+    ( new_table_item join_type new_table_item ON (join_condition_list ) ) |
+  ==FACTOR:0.5== ( new_table_item join_type ( ( new_table_item join_type new_table_item ON (join_condition_list ) ) ) ON (join_condition_list ) ) |
+    ( new_table_item , new_table_item ) |
+  ==FACTOR:0.2== ( new_table_item , new_table_item , new_table_item ) ;
 
 join_type:
-	INNER JOIN | left_right outer JOIN |
-	INNER JOIN | left_right outer JOIN |
-	INNER JOIN | left_right outer JOIN |
-	INNER JOIN | left_right outer JOIN |
-	INNER JOIN | left_right outer JOIN |
-	STRAIGHT_JOIN ;  
+  ==FACTOR:5== INNER JOIN |
+  ==FACTOR:5== left_right outer JOIN |
+    STRAIGHT_JOIN ;  
 
 join_condition_list:
-	join_condition_item | 
-	( join_condition_item ) and_or ( join_condition_list ) |
-	( current_table_item  . _field_pk arithmetic_operator previous_table_item . _field_int ) AND (current_table_item  . _field_pk arithmetic_operator previous_table_item . _field_int ) ;	
+  ==FACTOR:2== join_condition_item | 
+    ( join_condition_item ) and_or ( join_condition_list ) |
+    ( current_table_item  . _field_pk arithmetic_operator previous_table_item . _field_int ) AND (current_table_item  . _field_pk arithmetic_operator previous_table_item . _field_int ) ;
 
 join_condition_item:
 	current_table_item . _field_int_indexed = previous_table_item . _field_int on_subquery |
@@ -180,23 +173,20 @@ outer:
 	| OUTER ;
 
 where_clause:
-	WHERE where_subquery |
-	WHERE where_list |
- 	WHERE ( where_subquery ) and_or where_list |
- 	WHERE ( where_subquery ) and_or where_list ;
-
+  ==FACTOR:2== WHERE where_list |
+    WHERE where_subquery |
+    WHERE ( where_subquery ) and_or where_list ;
 
 where_list:
-	generic_where_list |
-	range_predicate1_list | range_predicate2_list |
-	range_predicate1_list and_or generic_where_list |
-	range_predicate2_list and_or generic_where_list ; 
-
+  ==FACTOR:2== generic_where_list |
+    range_predicate1_list | range_predicate2_list |
+    range_predicate1_list and_or generic_where_list |
+    range_predicate2_list and_or generic_where_list ; 
 
 generic_where_list:
-	==FACTOR:5== where_item |
-	( where_item and_or where_item ) |
-	( where_list and_or where_item ) ;
+  ==FACTOR:5== where_item |
+    ( where_item and_or where_item ) |
+    ( where_list and_or where_item ) ;
 
 not:
 	| | | NOT;
@@ -208,24 +198,19 @@ degenerate_where_item:
 	_char[invariant] NOT LIKE _char[invariant] ;
 
 where_item:
-	real_where_item |
-	real_where_item |
-	real_where_item |
-	real_where_item |
-	real_where_item |
-	degenerate_where_item ;
+  ==FACTOR:10== real_where_item |
+    degenerate_where_item ;
 
 real_where_item:
-	where_subquery  |  
+  where_subquery  |  
 	existing_table_item . _field_char arithmetic_operator _char  |
 	existing_table_item . _field_char arithmetic_operator existing_table_item . _field_char |
 	existing_table_item . _field arithmetic_operator value  |
 	existing_table_item . _field arithmetic_operator existing_table_item . _field |
 	alias1 . _field IS not NULL |
-	alias1 . _field_pk IS not NULL |
-	alias1 . _field_pk arithmetic_operator existing_table_item . _field  |
+	alias1 . _field arithmetic_operator existing_table_item . _field  |
 	alias1 . _field_int arithmetic_operator existing_table_item . _field_int  |
-	alias1 . _field_indexed arithmetic_operator value AND ( alias1 . _field_char LIKE '%a%' OR alias1._field_char LIKE '%b%') ;
+  ==FACTOR:0.1== alias1 . _field_indexed arithmetic_operator value AND ( alias1 . _field_char LIKE '%a%' OR alias1._field_char LIKE '%b%') ;
 
 
 ################################################################################
