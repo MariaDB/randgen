@@ -8,7 +8,7 @@ MDEV-24220:
 =~ signal|AddressSanitizer
 =~ base_list_iterator::next|TABLE_LIST::is_recursive_with_table
 =~ st_select_lex::cleanup
-=~ sp_instr_stmt::execute
+=~ sp_instr_stmt::execute|Prepared_statement::execute
 MDEV-24095:
 =~ AddressSanitizer|signal
 =~ json_path_parts_compare
@@ -2658,7 +2658,7 @@ MDEV-17818:
 =~ open_temporary_table
 MDEV-17783:
 =~ AddressSanitizer: stack-buffer-overflow|signal
-=~ table_cond_selectivity
+=~ table_cond_selectivity|best_access_path
 =~ best_extension_by_limited_search
 =~ greedy_search
 MDEV-17783:
