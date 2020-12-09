@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24349:
+=~ AddressSanitizer|signal
+=~ get_quote_char_for_identifier|Item::print_item_w_name
+=~ st_select_lex::print
+=~ Version: '10\.[4-9]
 MDEV-24220:
 =~ signal|AddressSanitizer
 =~ base_list_iterator::next|TABLE_LIST::is_recursive_with_table
