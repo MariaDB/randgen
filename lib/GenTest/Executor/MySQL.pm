@@ -956,6 +956,13 @@ sub execute {
       while ($query =~ s/\/\*\!1\d{5}/\/\*\!99999/g) {};
     }
 
+    # Filter out any /*executor */ comments that do not pertain to this particular Executor/DBI
+    if (index($query, 'executor') > -1) {
+        my $executor_id = $executor->id();
+        $query =~ s{/\*executor$executor_id (.*?) \*/}{$1}sg;
+        $query =~ s{/\*executor.*?\*/}{}sgo;
+    }
+
     my $qno_comment= 'QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId();
     # If a query starts with an executable comment, we'll put QNO right after the executable comment
     if ($query =~ s/^\s*(\/\*\!.*?\*\/)/$1 \/\* $qno_comment \*\//) {}
@@ -973,13 +980,6 @@ sub execute {
 
     # Add global flags if any are set
     $execution_flags = $execution_flags | $executor->flags();
-
-    # Filter out any /*executor */ comments that do not pertain to this particular Executor/DBI
-    if (index($query, 'executor') > -1) {
-        my $executor_id = $executor->id();
-        $query =~ s{/\*executor$executor_id (.*?) \*/}{$1}sg;
-        $query =~ s{/\*executor.*?\*/}{}sgo;
-    }
 
     my $dbh = $executor->dbh();
 
