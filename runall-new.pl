@@ -464,7 +464,7 @@ if ($props->{rpl_mode} ne '') {
                                                slave_vardir => $props->{server_specific}->{1}->{vardir}.'_slave',
                                                slave_port => $props->{server_specific}->{2}->{port},
                                                mode => $props->{rpl_mode},
-                                               server_options => $props->{server_specific}->{1}->{mysqld_options},
+                                               server_options => [ $props->{server_specific}->{1}->{mysqld_options}, $props->{server_specific}->{2}->{mysqld_options} ],
                                                valgrind => $props->{valgrind},
                                                valgrind_options => \@{$props->{valgrind_options}},
                                                general_log => 1,

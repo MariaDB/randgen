@@ -132,9 +132,9 @@ sub new {
              "--log-bin=mysql-bin",
              "--report-host=127.0.0.1",
              "--report_port=".$self->[REPLMYSQLD_MASTER_PORT]);
-        if (defined $self->[REPLMYSQLD_SERVER_OPTIONS]) {
+        if (defined $self->[REPLMYSQLD_SERVER_OPTIONS] and defined $self->[REPLMYSQLD_SERVER_OPTIONS]->[0]) {
             push(@master_options, 
-                 @{$self->[REPLMYSQLD_SERVER_OPTIONS]});
+                 @{$self->[REPLMYSQLD_SERVER_OPTIONS]->[0]});
         }
 
         
@@ -160,9 +160,9 @@ sub new {
              "--server_id=2",
              "--report-host=127.0.0.1",
              "--report_port=".$self->[REPLMYSQLD_SLAVE_PORT]);
-        if (defined $self->[REPLMYSQLD_SERVER_OPTIONS]) {
+        if (defined $self->[REPLMYSQLD_SERVER_OPTIONS] and defined $self->[REPLMYSQLD_SERVER_OPTIONS]->[1]) {
             push(@slave_options, 
-                 @{$self->[REPLMYSQLD_SERVER_OPTIONS]});
+                 @{$self->[REPLMYSQLD_SERVER_OPTIONS]->[1]});
         }
         
         
