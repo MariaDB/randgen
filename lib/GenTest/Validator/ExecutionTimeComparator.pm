@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014 SkySQL Ab
+# Copyright (c) 2020 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -62,10 +63,10 @@ use File::Basename;
 
 
 # Configurable constants:
-use constant MIN_DURATION   => 0.02;  # (seconds) Queries with shorter execution times are not processed.
+use constant MIN_DURATION   => 0.1;  # (seconds) Queries with shorter execution times are not processed.
 use constant MAX_DURATION   => 300;   # (seconds) Queries with longer execution times are not processed.
-use constant MIN_RATIO      => 1.5;   # Minimum speed-up or slow-down required in order to report a query
-use constant MAX_ROWS       => 200;   # Skip query if initial execution resulted in more than so many rows.
+use constant MIN_RATIO      => 1.3;   # Minimum speed-up or slow-down required in order to report a query
+use constant MAX_ROWS       => 20000;   # Skip query if initial execution resulted in more than so many rows.
 use constant MIN_SAMPLES    => 0;     # Minimum number of execution time samples to do for each query per server.
 use constant MAX_SAMPLES    => 0;     # Max number of execution time samples per query per server. Must be no less than MIN_SAMPLES.
 use constant MAX_DEVIATION  => 15;    # Percentage of mean below which we want the standard deviation to be (if statistics is used).
@@ -299,6 +300,8 @@ sub compareDurations {
             return STATUS_WONT_HANDLE;
     }
 
+    my $status= STATUS_OK;
+
     # We only do EXPLAIN checking once.
     my @explains;
     my @explains_to_print;
@@ -315,7 +318,6 @@ sub compareDurations {
 
         $different_plans++ if $explains[0] ne $explains[1];
     }
-
 
     # We prepare a file for output of per-query performance numbers.
     # Only do this if the file is not already open.
@@ -336,6 +338,7 @@ sub compareDurations {
     # Print both queries that became faster and those that became slower
     if ( ($ratio >= MIN_RATIO) || ($ratio <= (1/MIN_RATIO)) ) {
 
+        $status= STATUS_POSSIBLE_FAILURE;
         # First, print to the log...
         my $output = "ratio = $ratio; ".
                      "time0 = ".$times[0]." sec; ".
@@ -349,9 +352,9 @@ sub compareDurations {
 
         if (!$skip_explain) {
             if ($explains[0] ne $explains[1]) {
-                say("EXPLAIN on server 1:");
+                say("EXPLAIN on server 1 (".$executors->[0]->version()."):");
                 say($explains_to_print[0]);
-                say("EXPLAIN on server 2:");
+                say("EXPLAIN on server 2 (".$executors->[1]->version()."):");
                 say($explains_to_print[1]);
             } else {
                 say("EXPLAIN on both servers:");
@@ -380,7 +383,7 @@ sub compareDurations {
 
     push @{$execution_ratios{sprintf('%.1f', $ratio)}}, $query;
 
-    return STATUS_OK;
+    return $status;
 
 }
 
@@ -595,17 +598,19 @@ sub DESTROY {
     say("Queries with different EXPLAIN plans: $different_plans") if ($skip_explain == 0);
     say("Notable execution times for basedirs, respectively:");
     print Dumper \@execution_times;
+    my $ratio_output= '';
     foreach my $ratio (sort keys %execution_ratios) {
-        print "ratio = $ratio; queries = ".scalar(@{$execution_ratios{$ratio}}).":\n";
+        $ratio_output.= "ratio = $ratio; queries = ".scalar(@{$execution_ratios{$ratio}}).":\n";
         if (
             ($ratio <= (1 - (1 / MIN_RATIO) ) ) ||
             ($ratio >= MIN_RATIO)
         ) {
             foreach my $query (@{$execution_ratios{$ratio}}) {
-                print "$query\n";
+                $ratio_output.= "$query\n";
             }
         }
     }
+    print $ratio_output;
     if (scalar(@unstable_queries) > 0) {
         say("Unstable queries:");
         print Dumper \@unstable_queries;
