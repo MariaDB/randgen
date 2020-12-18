@@ -297,7 +297,7 @@ innodb_online_alter_log_max_size                           [ 65536 .. 2147483648
 innodb_open_files                                          [ 10 .. 20000 ]
 innodb_optimize_fulltext_only                              [ OFF , ON ]
 innodb_page_cleaners                                       [ 1 .. 64 ]
-innodb_page_cleaner_disabled_debug                         [ OFF , ON ]
+# innodb_page_cleaner_disabled_debug                         [ OFF , ON ]
 innodb_page_hash_locks                                     [ 1 .. 1024 ]
 innodb_prefix_index_cluster_optimization                   [ OFF , ON ]
 innodb_print_all_deadlocks                                 [ OFF , ON ]
