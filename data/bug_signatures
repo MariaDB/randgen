@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24434:
+=~ Assertion \`trx->in_rw_trx_list \|\| trx->state == TRX_STATE_NOT_STARTED \|\| trx->state == TRX_STATE_ACTIVE'
+=~ trx_sys_any_active_transactions
+=~ row_drop_tables_for_mysql_in_background
+MDEV-24381:
+=~ Assertion \`user_table->get_ref_count() == 1'
+=~ commit_try_rebuild
+=~ ha_innobase::commit_inplace_alter_table
+=~ Version: '10\.[2-4]
 MDEV-24349:
 =~ AddressSanitizer|signal
 =~ get_quote_char_for_identifier|Item::print_item_w_name
@@ -2629,7 +2638,7 @@ MDEV-17936:
 =~ signal 11|AddressSanitizer: heap-use-after-free
 =~ Field::is_null
 =~ Arg_comparator::compare
-=~ Prepared_statement::execute
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-17912:
 =~ failed to decrypt .*  rc: -1  dstlen: 0  size: .*
 =~ Got error 192 when executing record .*
