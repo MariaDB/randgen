@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24444:
+=~ AddressSanitizer|signal
+=~ Item_func_in::get_func_mm_tree
+=~ SQL_SELECT::test_quick_select
+=~ Version: '10\.[4-9]
 MDEV-24434:
 =~ Assertion \`trx->in_rw_trx_list \|\| trx->state == TRX_STATE_NOT_STARTED \|\| trx->state == TRX_STATE_ACTIVE'
 =~ trx_sys_any_active_transactions
