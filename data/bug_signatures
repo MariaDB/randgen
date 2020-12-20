@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24455:
+=~ Assertion \`!m_freed_space'
+=~ mtr_t::start
+=~ btr_free_externally_stored_field
+=~ Version: '10\.[5-9]
 MDEV-24444:
 =~ AddressSanitizer|signal
 =~ Item_func_in::get_func_mm_tree
