@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24503:
+=~ Assertion \`m_prebuilt->trx == thd_to_trx(m_user_thd)'
+=~ ha_innobase::is_read_only
+=~ ha_innobase::check_if_supported_inplace_alter
+=~ Version: '10\.[6-9]
+MDEV-24467:
+=~ Direct leak of|Memory not freed|blocks are definitely lost
+=~ Binary_string::real_alloc|String::real_alloc
+=~ Field_blob::store
+=~ TABLE::update_default_fields
 MDEV-24455:
 =~ Assertion \`!m_freed_space'
 =~ mtr_t::start
@@ -256,8 +266,8 @@ MDEV-23722:
 =~ fts_trx_table_add_op
 MDEV-23687:
 =~ Assertion \`is_valid_value_slow()'
-=~ Datetime::Datetime
-=~ Item_datetime_typecast::get_date
+=~ Datetime::Datetime|Date::Date
+=~ Item_datetime_typecast::get_date|Item_date_typecast::get_date
 =~ Extract_source::Extract_source
 =~ Version: '10\.[4-9]
 MDEV-23686:
@@ -631,7 +641,7 @@ MDEV-23184:
 =~ Version: '10\.1
 MDEV-23182:
 =~ signal|AddressSanitizer
-=~ fix_fields_for_tvc
+=~ fix_fields_for_tvc|join_type_handlers_for_tvc
 =~ table_value_constr::prepare
 =~ Prepared_statement|sp_head::execute
 =~ Version: '10\.[3-9]
@@ -2762,7 +2772,7 @@ MDEV-17619:
 MDEV-17616:
 =~ AddressSanitizer:
 =~ subselect_engine::calc_const_tables| Item_subselect::update_used_tables
-=~ Used_tables_and_const_cache::used_tables_and_const_cache_update_and_join
+=~ Prepared_statement::execute
 =~ Version: '5\.5|Version: '10\.[1-2]
 # Only fixed in 10.5!
 MDEV-17596:
