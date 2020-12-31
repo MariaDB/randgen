@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24508:
+=~ Assertion \`!strcmp(index->name, "FTS_DOC_ID_INDEX")'
+=~ ha_innobase::write_row
+=~ Version: '10\.[3-9]
 MDEV-24503:
 =~ Assertion \`m_prebuilt->trx == thd_to_trx(m_user_thd)'
 =~ ha_innobase::is_read_only
