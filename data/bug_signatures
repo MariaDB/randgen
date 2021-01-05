@@ -4,6 +4,25 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24522:
+=~ signal|AddressSanitizer
+=~ DsMrr_impl::dsmrr_next
+=~ QUICK_RANGE_SELECT::get_next
+=~ Version: '10\.[4-9]
+MDEV-24522:
+=~ Assertion \`inited==NONE'
+=~ check_duplicate_long_entry_key
+=~ vers_insert_history_row
+=~ Version: '10\.[4-9]
+MDEV-24521:
+=~ InnoDB: Flagged corruption of .* in table .* Partition .* in CHECK TABLE; Wrong count
+=~ For InnoDB SYSTEM VERSIONED .* : error : Partition .* returned error
+MDEV-24519:
+=~ signal|AddressSanitizer
+=~ Charset::set_charset
+=~ String::copy
+=~ Item::remove_eq_conds
+=~ Version: '10\.[4-9]
 MDEV-24508:
 =~ Assertion \`!strcmp(index->name, "FTS_DOC_ID_INDEX")'
 =~ ha_innobase::write_row
@@ -277,8 +296,7 @@ MDEV-23687:
 MDEV-23686:
 =~ signal|AddressSanitizer
 =~ get_foreign_key_info
-=~ ha_innobase::get_parent_foreign_key_list
-=~ prelocking_strategy::handle_table
+=~ ha_innobase::get_parent_foreign_key_list|ha_innobase::get_foreign_key_list
 MDEV-23685:
 =~ signal|AddressSanitizer
 =~ dict_col_get_no
@@ -558,7 +576,7 @@ MDEV-23259:
 =~ Assertion \`param\.sort_length != 0'
 =~ filesort
 =~ create_sort_index
-=~ Version: '10\.1
+=~ Version: '10\.[1-4]
 MDEV-23258:
 =~ InnoDB: Failing assertion: 0
 =~ row_sel_convert_mysql_key_to_innobase
@@ -624,7 +642,7 @@ MDEV-23204:
 MDEV-23202:
 =~ signal|AddressSanitizer
 =~ maria_status|heap_info|heap_scan_init
-=~ ha_maria::info|TABLE_LIST::fetch_number_of_rows|ha_heap::info|ha_heap::rnd_init
+=~ ha_maria::info|TABLE_LIST::fetch_number_of_rows|ha_heap::info|ha_heap::rnd_init|handler::ha_rnd_init
 =~ sp_instr_stmt::exec_core|Prepared_statement::execute
 MDEV-23188:
 =~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
@@ -925,6 +943,10 @@ MDEV-22662:
 =~ Item_func::fix_fields
 =~ fix_fields_for_tvc
 =~ table_value_constr::prepare
+=~ Version: '10\.[3-9]
+MDEV-22661:
+=~ Assertion \`time_type == MYSQL_TIMESTAMP_DATETIME'
+=~ Datetime::is_valid_datetime_slow
 =~ Version: '10\.[3-9]
 MDEV-22660:
 =~ signal|AddressSanitizer
@@ -1938,6 +1960,11 @@ MDEV-20410:
 =~ create_view_field|__cxa_pure_virtual
 =~ find_field_in_table_ref
 =~ check_insert_fields
+MDEV-20410:
+=~ Assertion \`thd == _current_thd()'
+=~ check_stack_overrun
+=~ Item_func::fix_fields
+=~ find_field_in_view
 MDEV-20395:
 =~ Assertion \`!found'
 =~ remove_ptr_from_dynarray
@@ -2183,6 +2210,11 @@ MDEV-19299:
 =~ my_strnncollsp_utf8_general_ci|my_strnncollsp_utf8
 =~ sortcmp
 =~ test_if_group_changed
+MDEV-19299:
+=~ AddressSanitizer
+=~ my_strnncollsp_simple
+=~ Item_func_min_max::val_str_native
+=~ Cached_item_str::cmp
 MDEV-19273:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ MDL_ticket::has_stronger_or_equal_type
@@ -2744,7 +2776,6 @@ MDEV-17711:
 =~ Version: '10\.[3-9]
 MDEV-17678:
 =~ AddressSanitizer: heap-use-after-free|signal 11
-=~ Field::val_str|Field::is_null|ErrConvString::ptr|my_datetime_packed_from_binary
 =~ field_unpack
 =~ print_keydup_error
 =~ ha_myisam::enable_indexes
