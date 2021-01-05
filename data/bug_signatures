@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24529:
+=~ Assertion \`0'
+=~ vers_select_conds_t::print
+=~ opt_trace_print_expanded_query
+=~ Version: '10\.[4-9]
 MDEV-24522:
 =~ signal|AddressSanitizer
 =~ DsMrr_impl::dsmrr_next
