@@ -15,11 +15,6 @@ MENT-368:
 =~ Assertion \`inline_mysql_file_tell(.*, file, (myf) (0)) == base_pos+ (16 + 5\*8 + 6\*4 + 11\*2 + 6 + 5\*2 + 1 + 16)'
 =~ maria_create
 =~ create_internal_tmp_table
-MENT-361:
-=~ AddressSanitizer: heap-use-after-free
-=~ filter_query_type
-=~ log_statement
-=~ Prepared_statement
 MENT-328:
 =~ mariabackup: File '.*seq.*MAI' not found (Errcode: 2 "No such file or directory")
 =~ Error on aria table file open .*seq.*MAI
@@ -63,42 +58,16 @@ TODO-842: [m_status == DA_OK_BULK - LOCK]
 # Fixed in the next release
 ##########
 
-MDEV-23463:
-=~ fil_page_compress
-=~ buf_page_encrypt_before_write
-=~ sp_head::execute
-=~ Version: '10\.[2-4]
-MDEV-23447:
-=~ signal|AddressSanitizer
-=~ fil_system_t::keyrotate_next
-=~ fil_crypt_find_space_to_rotate
-MDEV-23439:
-=~ Assertion \`size == space->size'
-=~ buf_read_ahead_random
-=~ buf_page_get_gen
-MDEV-23388:
-=~ Assertion \`args\[0\]->decimals == 0'
-=~ Item_func_round::fix_arg_int
-=~ Type_handler_date_common
-=~ Version: '10\.[4-9]
-MDEV-23054:
-=~ Assertion \`!item->null_value'
-=~ Type_handler_inet6::make_sort_key_part
-=~ make_sortkey
+MDEV-24455:
+=~ Assertion \`!m_freed_space'
+=~ mtr_t::start
+=~ btr_free_externally_stored_field
 =~ Version: '10\.[5-9]
-MDEV-19526:
-=~ Assertion \`((val << shift) & mask) == (val << shift)'
-=~ rec_set_bit_field_2
-MDEV-14836:
-=~ Assertion \`m_status == DA_ERROR'
-=~ Diagnostics_area::sql_errno
-=~ fill_schema_table_by_open
-=~ LIMIT ROWS EXAMINED
-MDEV-14119:
-=~ Assertion \`cmp_rec_rec(rec, old_rec, offsets, old_offsets, m_index) > 0'
-=~ PageBulk::insert
-=~ row_merge_insert_index_tuples
-=~ Version: '10\.[2-9]
+MDEV-24220:
+=~ signal|AddressSanitizer
+=~ base_list_iterator::next|TABLE_LIST::is_recursive_with_table
+=~ st_select_lex::cleanup
+=~ sp_instr_stmt::execute|Prepared_statement::execute
 
 
 ##############################################################################
