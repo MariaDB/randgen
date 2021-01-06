@@ -454,7 +454,7 @@ transaction:
 	start_transaction | commit | rollback |
 	start_transaction | commit | rollback |
 	SAVEPOINT savepoint_id | RELEASE SAVEPOINT savepoint_id | ROLLBACK work_or_empty TO savepoint_or_empty savepoint_id |
-	BEGIN work_or_empty | set_autocommit | kill_query_or_session | kill_query_or_session ;
+	set_autocommit | kill_query_or_session | kill_query_or_session ;
 	# No impact on mdl.cc , lock.cc ..... set_isolation_level ;
 
 savepoint_id:

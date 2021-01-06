@@ -195,7 +195,7 @@ alt_storage_optional:
   
 
 alt_transaction:
-    BEGIN
+    START TRANSACTION
   | SAVEPOINT sp
   | ROLLBACK TO SAVEPOINT sp
   | COMMIT

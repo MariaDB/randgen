@@ -60,7 +60,7 @@ ia_alter_item:
 ;
 
 ia_transaction:
-    BEGIN
+    START TRANSACTION
   | SAVEPOINT sp
   | ROLLBACK TO SAVEPOINT sp
   | COMMIT

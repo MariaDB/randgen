@@ -27,7 +27,7 @@ query:
 ;
 
 transaction:
-    BEGIN
+    START TRANSACTION
   | SAVEPOINT sp
   | ROLLBACK TO SAVEPOINT sp
   | COMMIT
