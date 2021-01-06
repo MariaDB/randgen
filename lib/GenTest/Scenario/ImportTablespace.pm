@@ -1,5 +1,5 @@
 # Copyright (C) 2021 MariaDB Corporation Ab
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
@@ -64,7 +64,7 @@ sub run {
 
   #####
   # Prepare servers
-  
+
   $server= $self->prepare_servers();
 
   #####
@@ -81,7 +81,7 @@ sub run {
   $self->printStep("Generating data");
 
   $status= $self->generate_data();
-  
+
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
     return $self->finalize(STATUS_TEST_FAILURE,[$server]);
@@ -100,7 +100,7 @@ sub run {
 
   #####
   $self->printStep("Dumping the data before discard/import");
-  
+
   $databases= join ' ', $server->nonSystemDatabases();
   $server->dumpSchema($databases, $server->vardir.'/server_schema_old.dump');
   $server->normalizeDump($server->vardir.'/server_schema_old.dump', 'remove_autoincs');
@@ -170,7 +170,7 @@ sub run {
 
   #####
   $self->printStep("Dumping the data after discard/import");
-  
+
   $databases= join ' ', $server->nonSystemDatabases();
   $server->dumpSchema($databases, $server->vardir.'/server_schema_new.dump');
   $server->normalizeDump($server->vardir.'/server_schema_new.dump', 'remove_autoincs');
@@ -181,7 +181,7 @@ sub run {
 
   #####
   $self->printStep("Comparing databases before and after discard/import");
-  
+
   $status= compare($server->vardir.'/server_schema_old.dump', $server->vardir.'/server_schema_new.dump');
   if ($status != STATUS_OK) {
     sayError("Database structures differ after upgrade");
@@ -191,7 +191,7 @@ sub run {
   else {
     say("Structure dumps appear to be identical");
   }
-  
+
   $status= compare($server->vardir.'/server_data_old.dump', $server->vardir.'/server_data_new.dump');
   if ($status != STATUS_OK) {
     sayError("Data differs after upgrade");
@@ -201,10 +201,10 @@ sub run {
   else {
     say("Data dumps appear to be identical");
   }
-  
+
   $status= $self->compare_autoincrements($table_autoinc{old}, $table_autoinc{new});
   if ($status != STATUS_OK) {
-    # Comaring auto-increments can show known errors. We want to update 
+    # Comaring auto-increments can show known errors. We want to update
     # the global status, but don't want to exit prematurely
     $self->setStatus($status);
     sayError("Auto-increment data differs after discard/import");
