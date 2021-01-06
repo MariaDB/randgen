@@ -1,4 +1,4 @@
-#  Copyright (c) 2017, 2020, MariaDB
+#  Copyright (c) 2017, 2021, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -73,7 +73,14 @@ vers_change_variable:
 ;
 
 vers_as_of_value:
-  vers_ia_systime | DEFAULT
+  ==FACTOR:5== DEFAULT |
+  NOW(6) |
+  NOW() |
+  CURRENT_TIMESTAMP |
+  DATE(NOW()) |
+  _timestamp |
+  _datetime |
+  _date
 ;
 
 vers_hide_value:
@@ -268,7 +275,14 @@ vers_ia_select:
 ;
 
 vers_ia_systime:
-  ALL | NOW(6) | NOW() | CURRENT_TIMESTAMP | DATE(NOW())
+  ==FACTOR:5== ALL |
+  NOW(6) |
+  NOW() |
+  CURRENT_TIMESTAMP |
+  DATE(NOW()) |
+  _timestamp |
+  _datetime |
+  _date
 ;
 
 vers_ia_alter:
