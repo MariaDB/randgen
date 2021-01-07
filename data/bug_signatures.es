@@ -63,12 +63,15 @@ MDEV-24455:
 =~ mtr_t::start
 =~ btr_free_externally_stored_field
 =~ Version: '10\.[5-9]
+MDEV-24442:
+=~ Assertion \`space->referenced()'
+=~ fil_crypt_space_needs_rotation
+=~ Version: '10\.[5-9]
 MDEV-24220:
 =~ signal|AddressSanitizer
 =~ base_list_iterator::next|TABLE_LIST::is_recursive_with_table
 =~ st_select_lex::cleanup
 =~ sp_instr_stmt::execute|Prepared_statement::execute
-
 
 ##############################################################################
 # Weak matches

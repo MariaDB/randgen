@@ -68,6 +68,11 @@ MDEV-24349:
 =~ get_quote_char_for_identifier|Item::print_item_w_name
 =~ st_select_lex::print
 =~ Version: '10\.[4-9]
+MDEV_24256:
+=~ signal|AddressSanitizer
+=~ SQL_SELECT::cleanup
+=~ JOIN::make_range_rowid_filters
+=~ Version: '10\.[5-9]
 MDEV-24095:
 =~ AddressSanitizer|signal
 =~ json_path_parts_compare
@@ -458,6 +463,12 @@ MDEV-23297:
 =~ Assertion \`info->dfile\.file == share->bitmap\.file\.file'
 =~ _ma_scan_init_block_record
 =~ maria_scan_init
+# Only fixed in 10.4+
+MDEV-23296:
+=~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == type \|\| (block->type == PAGECACHE_PLAIN_PAGE && type == PAGECACHE_LSN_PAGE)'
+=~ pagecache_write_part
+=~ _ma_write_keypage
+=~ Version: '10\.[1-3]
 MDEV-23294:
 =~ Assertion \`!table \|\| table->in_use == _current_thd()'
 =~ Item_func_.*
@@ -779,6 +790,24 @@ MDEV-22675:
 =~ Assertion \`offset < table->s->reclength'
 =~ dump_leaf_key
 =~ Item_func_group_concat
+# Only fixed in 10.4+
+MDEV-22674:
+=~ AddressSanitizer
+=~ _ma_make_key
+=~ sort_key_read
+=~ find_all_keys
+=~ Version: '10\.[1-3]
+# Only fixed in 10.4+
+MDEV-22674:
+=~ Assertion \`!info->s->have_versioning \|\| info->s->lock_key_trees'
+=~ restore_table_state_after_repair
+=~ Version: '10\.[1-3]
+# Only fixed in 10.4+
+MDEV-22674:
+=~ Assertion \`thd->killed != 0'
+=~ ha_maria::enable_indexes
+=~ select_insert::abort_result_set
+=~ Version: '10\.[1-3]
 MDEV-22667:
 =~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
 =~ row_update_for_mysql
@@ -2509,6 +2538,34 @@ MDEV-17678:
 =~ field_unpack
 =~ print_keydup_error
 =~ ha_myisam::enable_indexes
+# Only fixed in 10.4+
+MDEV-17665:
+=~ Assertion \`!share \|\| share->page_type == PAGECACHE_LSN_PAGE'
+=~ maria_flush_log_for_page
+=~ flush_cached_blocks
+=~ Version: '10\.[1-3]
+# Only fixed in 10.4+
+MDEV-17665:
+=~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
+=~ pagecache_read
+=~ Version: '10\.[1-3]
+# Only fixed in 10.4+
+MDEV-17665:
+=~ Assertion \`type != PAGECACHE_READ_UNKNOWN_PAGE'
+=~ pagecache_fwrite|pagecache_write_part
+=~ flush_cached_blocks|write_block_record|write_record|_ma_write_keypage
+=~ Version: '10\.[1-3]
+# Only fixed in 10.4+
+MDEV-17665:
+=~ Assertion \`0'
+=~ pagecache_file_no_dirty_page
+=~ maria_repair_by_sort
+=~ Version: '10\.[1-3]
+# Only fixed in 10.4+
+MDEV-17665:
+=~ Assertion \`share->lock_key_trees'
+=~ _ma_setup_live_state
+=~ Version: '10\.[1-3]
 MDEV-17622:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_read
