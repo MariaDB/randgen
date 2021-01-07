@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24545:
+=~ Assertion \`err != DB_DUPLICATE_KEY'
+=~ row_rename_table_for_mysql
+=~ sequences.yy
 MDEV-24532:
 =~ Assertion \`thd->transaction->stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
