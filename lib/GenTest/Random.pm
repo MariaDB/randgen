@@ -119,6 +119,8 @@ use constant FIELD_TYPE_JSONOBJECT  => 28;
 use constant FIELD_TYPE_TEXT  => 29;
 use constant FIELD_TYPE_INET6  => 30;
 
+use constant FIELD_TYPE_JSONPATH_NO_WILDCARD	=> 31;
+
 use constant ASCII_RANGE_START		=> 97;
 use constant ASCII_RANGE_END		=> 122;
 
@@ -197,7 +199,8 @@ my %name2type = (
 	'jsonvalue'     => FIELD_TYPE_JSONVALUE,
 	'jsonarray'     => FIELD_TYPE_JSONARRAY,
 	'jsonpair'      => FIELD_TYPE_JSONPAIR,
-	'jsonobject'    => FIELD_TYPE_JSONOBJECT
+	'jsonobject'    => FIELD_TYPE_JSONOBJECT,
+	'jsonpath_no_wildcard'		=> FIELD_TYPE_JSONPATH_NO_WILDCARD,
 );
 
 my $cwd = cwd();
@@ -576,11 +579,24 @@ sub json_value_type {
 
 sub jsonpath {
 	my $prng = shift;
-
+	my $num_of_legs = shift || $prng->uint16(0,4);
 	my $path= '$';
-	my $num_of_legs = $prng->uint16(0,4);
-	foreach (1..$num_of_legs-1) {
-		$path .= $prng->json_pathleg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_DBLASTER, JSON_PATHLEG_MEMBER]));
+	foreach (1..$num_of_legs) {
+    # Attach optional wildcard to the _previous_ element
+    $path .= '**' if ($prng->uint16(0,1)) and $path !~ /\*$/;
+		$path .= $prng->json_pathleg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_MEMBER]),1);
+	}
+	return $path;
+}
+
+# Some functions don't accept wild cards in JSON path
+sub jsonpath_no_wildcard {
+	my $prng = shift;
+	my $num_of_legs = shift || $prng->uint16(0,4);
+	my $path= '$';
+	foreach (1..$num_of_legs) {
+    # Attach optional wildcard to the _previous_ element
+		$path .= $prng->json_pathleg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_MEMBER]));
 	}
 	return $path;
 }
@@ -588,17 +604,18 @@ sub jsonpath {
 sub json_pathleg {
 	my $prng = shift;
 	my $pathleg_type= shift;
+  my $wildcards_allowed= shift;
 
-	if ($pathleg_type == JSON_PATHLEG_DBLASTER) {
-		return '**';
+	if ($pathleg_type == JSON_PATHLEG_DBLASTER and $wildcards_allowed) {
+		return '.**';
 	} elsif ($pathleg_type == JSON_PATHLEG_ARRAYLOC) {
-		my $ind= $prng->uint16(-1,8);
+		my $ind= $wildcards_allowed ? $prng->uint16(-1,8) : $prng->uint16(0,8);
 		return '[' . ( $ind < 0 ? '*' : $ind ) . ']';
 	} else { # MEMBER
 		my $key= $prng->json_key();
 		# Quoted string or identifier
 		$key = $prng->uint16(0,2) ? $key : '"'.$key.'"';
-		return '.' . ($prng->uint16(0,3) ? $key : '*');
+		return '.' . ((! $wildcards_allowed or $prng->uint16(0,3)) ? $key : '*');
 	}
 }
 
@@ -641,7 +658,7 @@ sub fieldType {
 	my ($field_full_type) = $field_def =~ m{^([A-Za-z_]*)}o;
 	my ($orig_field_length) = $field_def =~ m{\((.*?)\)}o;
 	my $field_length = (defined $orig_field_length ? $orig_field_length : 1);
-	my $field_type = $name2type{$field_base_type};
+	my $field_type = $name2type{$field_full_type} || $name2type{$field_base_type};
 
 	if ($field_type == FIELD_TYPE_DIGIT) {
 		return $rand->digit();
@@ -690,7 +707,9 @@ sub fieldType {
 	} elsif ($field_type == FIELD_TYPE_JSON) {
 		return $rand->json($orig_field_length);
 	} elsif ($field_type == FIELD_TYPE_JSONPATH) {
-		return $rand->jsonpath();
+		return $rand->jsonpath($field_length);
+	} elsif ($field_type == FIELD_TYPE_JSONPATH_NO_WILDCARD) {
+		return $rand->jsonpath_no_wildcard($field_length);
 	} elsif ($field_type == FIELD_TYPE_JSONKEY) {
 		return $rand->json_key();
 	} elsif ($field_type == FIELD_TYPE_JSONVALUE) {
