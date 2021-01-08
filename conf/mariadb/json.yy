@@ -95,25 +95,25 @@ json_text_arg:
 ;
 
 json_func:
-	  JSON_ARRAY_APPEND( json_text_arg, json_path_val_list )
-	| JSON_ARRAY_INSERT( json_text_arg, json_path_val_list )
+	  JSON_ARRAY_APPEND( json_text_arg, json_path_val_list_no_wildcard )
+	| JSON_ARRAY_INSERT( json_text_arg, json_path_val_list_no_wildcard )
 	| JSON_COMPACT( json_text_arg )
 	| JSON_CONTAINS( json_text_arg, json_contains_args )
-	| JSON_CONTAINS_PATH( json_text_arg, one_or_all, json_path_list )
+	| JSON_CONTAINS_PATH( json_text_arg, one_or_all, json_path_list_no_wildcard )
 	| JSON_DEPTH( json_text_arg )
 	| JSON_EXISTS( json_text_arg, _jsonpath )
 	| JSON_EXTRACT( json_text_arg, json_path_list )
-	| JSON_INSERT( json_text_arg, json_path_val_list )
-	| JSON_KEYS( json_text_arg json_optional_path )
-	| JSON_LENGTH( json_text_arg json_optional_path_list )
+	| JSON_INSERT( json_text_arg, json_path_val_list_no_wildcard )
+	| JSON_KEYS( json_text_arg json_optional_path_no_wildcard )
+	| JSON_LENGTH( json_text_arg json_optional_path_no_wildcard )
 	| JSON_MERGE( json_text_arg, json_doc_list )
 	| JSON_OBJECT( json_key_value_list )
 	| JSON_QUERY( json_text_arg, _jsonpath )
 	| JSON_QUOTE( _jsonvalue )
-	| JSON_REMOVE( json_text_arg, json_path_list )
-	| JSON_REPLACE( json_text_arg, json_path_val_list )
+	| JSON_REMOVE( json_text_arg, json_remove_path_list )
+	| JSON_REPLACE( json_text_arg, json_path_val_list_no_wildcard )
 	| JSON_SEARCH( json_text_arg, one_or_all, json_search_string json_search_args )
-	| JSON_SET( json_text_arg, json_path_val_list )
+	| JSON_SET( json_text_arg, json_path_val_list_no_wildcard )
 	| JSON_TYPE( _jsonvalue )
 	| JSON_UNQUOTE( _jsonvalue )
 	| JSON_VALID( json_valid_arg )
@@ -122,8 +122,8 @@ json_func:
     | JSON_OBJECTAGG( _jsonkey, json_valid_arg ) /* compatibility 10.5.0 */
 ;
 
-json_optional_path:
-	| , _jsonpath
+json_optional_path_no_wildcard:
+	| , _jsonpath_no_wildcard
 ;
 
 json_valid_arg:
@@ -143,27 +143,58 @@ one_or_all:
 ;
 
 json_key_value_list:
-	_jsonkey, _jsonvalue | _jsonkey, _jsonvalue, json_key_value_list
+	==FACTOR:3== _jsonkey, _jsonvalue |
+  _jsonkey, _jsonvalue, json_key_value_list
 ;
 
 json_doc_list:
-	json_text_arg | json_text_arg, json_doc_list
+	==FACTOR:3== json_text_arg |
+  json_text_arg, json_doc_list
 ;
 
 json_optional_path_list:
 	| , json_path_list
 ;
 
+json_optional_path_list_no_wildcard:
+	| , json_path_list_no_wildcard
+;
+
+# Path '$' is not allowed in JSON_REMOVE
+json_remove_path_item:
+  _jsonpath_no_wildcard(1) |
+  _jsonpath_no_wildcard(2) |
+  _jsonpath_no_wildcard(3) |
+  _jsonpath_no_wildcard(4)
+;
+
+json_remove_path_list:
+  ==FACTOR:3== json_remove_path_item |
+  json_remove_path_item, json_remove_path_list
+;
+
+json_path_list_no_wildcard:
+  ==FACTOR:3== _jsonpath_no_wildcard |
+  _jsonpath_no_wildcard, json_path_list_no_wildcard
+;
+
 json_path_list:
-	_jsonpath | _jsonpath, json_path_list
+	==FACTOR:3== _jsonpath |
+  _jsonpath, json_path_list
 ;
 
 json_contains_args:
-	_jsonvalue | _jsonvalue, _jsonpath
+	_jsonvalue | _jsonvalue, _jsonpath_no_wildcard
+;
+
+json_path_val_list_no_wildcard:
+  ==FACTOR:3== _jsonpath_no_wildcard, _jsonvalue |
+  json_path_val_list_no_wildcard, _jsonpath_no_wildcard, _jsonvalue
 ;
 
 json_path_val_list:
-	_jsonpath, _jsonvalue | json_path_val_list, _jsonpath, _jsonvalue
+	==FACTOR:3== _jsonpath, _jsonvalue |
+  json_path_val_list, _jsonpath, _jsonvalue
 ;
 
 json_escape_char:
