@@ -963,6 +963,12 @@ sub execute {
         $query =~ s{/\*executor.*?\*/}{}sgo;
     }
 
+    # Due to use of empty rules in stored procedure bodies and alike,
+    # the query can have a sequence of semicolons "; ;" or "BEGIN ; END"
+    # which will cause syntax error. We'll clean them up
+    while ($query =~ s/;\s*;/;/g) {}
+    while ($query =~ s/BEGIN\s*;END/BEGIN END/g) {}
+
     my $qno_comment= 'QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId();
     # If a query starts with an executable comment, we'll put QNO right after the executable comment
     if ($query =~ s/^\s*(\/\*\!.*?\*\/)/$1 \/\* $qno_comment \*\//) {}
