@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2016, MariaDB Corporation Ab.
+# Copyright (c) 2016, 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -157,7 +157,7 @@ sub transform {
 # TODO: Don't handle anything that looks like multi-statements for now
     return STATUS_WONT_HANDLE if $orig_query =~ m{;}sio;
 # TODO: 2nd part of UNION does not work for now
-    return STATUS_WONT_HANDLE if $orig_query =~ m{(?:GRANT\W|\sINTO\sOUTFILE|\sINTO\s\@|\WUNION\W)}sio;
+    return STATUS_WONT_HANDLE if $orig_query =~ m{(?:CREATE\s|GRANT\W|\sINTO\sOUTFILE|\sINTO\s\@|\WUNION\W)}sio;
     return STATUS_WONT_HANDLE if $orig_query !~ m{SELECT}sio;
 
     my $transformed_query = convert_selects_to_cte($orig_query, 1);
