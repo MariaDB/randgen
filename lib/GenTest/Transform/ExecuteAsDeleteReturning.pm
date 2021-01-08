@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014 SkySQL Ab
+# Copyright (c) 2021, MariaDB Corporation Ab.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -60,12 +61,19 @@ sub transform {
     my $cols= join ',', map { '`'.$_.'`' unless $_ =~ /\W/ } ( split /,/, $col_list );
 
 		return [
+      # Unlock tables prevents conflicting locks and should also take care
+      # of open transactions by performing implicit COMMIT
+      'UNLOCK TABLES',
+      'SET @tx_read_only.save= @@session.tx_read_only',
+      'SET SESSION tx_read_only= 0',
 			#Include database transforms creation DDL so that it appears in the simplified testcase.
 			"CREATE DATABASE IF NOT EXISTS transforms",
 			"DROP TABLE IF EXISTS $table_name",
 			"CREATE TABLE $table_name $orig_query",
 
-			"DELETE FROM $table_name RETURNING $cols /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"
+			"DELETE FROM $table_name RETURNING $cols /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+      "DROP TABLE IF EXISTS $table_name",
+    '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save'
 		];
 	} 
 	elsif ($orig_query =~ m{^\s*DELETE}sio )

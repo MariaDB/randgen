@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,6 +40,10 @@ sub transform {
 	my $table_name = 'transforms.insert_select_'.abs($$);
 
 	return [
+    # Unlock tables prevents conflicting locks and should also take care
+    'UNLOCK TABLES',
+    'SET @tx_read_only.save= @@session.tx_read_only',
+    'SET SESSION tx_read_only= 0',
 		#Include database transforms creation DDL so that it appears in the simplified testcase.
 		"CREATE DATABASE IF NOT EXISTS transforms",
 		"DROP TABLE IF EXISTS $table_name",
@@ -53,7 +58,8 @@ sub transform {
 
 		"REPLACE INTO $table_name $original_query",
 		"SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-		"DROP TABLE $table_name"
+		"DROP TABLE $table_name",
+    '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save'
 	];
 }
 

@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -54,6 +55,11 @@ sub transform {
 	return STATUS_WONT_HANDLE if $col_name =~ m{`}sgio;
 
 	return [
+    # Unlock tables prevents conflicting locks and should also take care
+    # of open transactions by performing implicit COMMIT
+    'UNLOCK TABLES',
+    'SET @tx_read_only.save= @@session.tx_read_only',
+    'SET SESSION tx_read_only= 0',
 		#Include database transforms creation DDL so that it appears in the simplified testcase.
 		"CREATE DATABASE IF NOT EXISTS transforms",
 		"DROP TABLE IF EXISTS $table_name",
@@ -83,6 +89,7 @@ sub transform {
 		"SELECT IF((ROW_COUNT() = ".$original_result->rows()." OR ROW_COUNT() = -1), 1, 0) /* TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE */",
 		"SELECT * FROM $table_name /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
 		"DROP TABLE IF EXISTS $table_name",
+    '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save'
 	];
 }
 
