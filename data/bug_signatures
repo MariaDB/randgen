@@ -68,7 +68,7 @@ MDEV-24349:
 =~ get_quote_char_for_identifier|Item::print_item_w_name
 =~ st_select_lex::print
 =~ Version: '10\.[4-9]
-MDEV_24256:
+MDEV-24256:
 =~ signal|AddressSanitizer
 =~ SQL_SELECT::cleanup
 =~ JOIN::make_range_rowid_filters
