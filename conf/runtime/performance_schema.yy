@@ -1,4 +1,5 @@
 # Copyright (C) 2010 Sun Microsystems, Inc. All rights reserved.
+# Copyright (c) 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -15,50 +16,50 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-query:
-    ddl |
-	dml |
-	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select |
-	update_settings |
-	truncate |
-	show_engine ;
+query_add:
+  ==FACTOR:0.1== perfschema_ddl |
+	perfschema_dml |
+	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } perfschema_select |
+	perfschema_update_settings |
+	==FACTOR:0.1== perfschema_truncate |
+	perfschema_show_engine ;
 
-yes_no:
+perfschema_yes_no:
 	'YES' | 'NO' ;
 
-enabled_timed:
+perfschema_enabled_timed:
 	ENABLED | TIMED ;
 
-update_settings:
-	update_consumers |
-	update_instruments |
-	update_timers ;
+perfschema_update_settings:
+	perfschema_update_consumers |
+	perfschema_update_instruments |
+	perfschema_update_timers ;
 
-update_consumers:
-	UPDATE performance_schema . setup_consumers SET enabled = yes_no WHERE name IN ( consumer_list ) |
-	UPDATE performance_schema . setup_consumers SET enabled = yes_no WHERE name LIKE consumer_category ;
+perfschema_update_consumers:
+	UPDATE performance_schema . setup_consumers SET enabled = perfschema_yes_no WHERE name IN ( perfschema_consumer_list ) |
+	UPDATE performance_schema . setup_consumers SET enabled = perfschema_yes_no WHERE name LIKE perfschema_consumer_category ;
 
-update_instruments:
-	UPDATE performance_schema . setup_instruments SET enabled_timed = yes_no WHERE NAME LIKE instrument_category |
-	UPDATE performance_schema . setup_instruments SET enabled_timed = yes_no ORDER BY RAND() LIMIT _digit ;
+perfschema_update_instruments:
+	UPDATE performance_schema . setup_instruments SET perfschema_enabled_timed = perfschema_yes_no WHERE NAME LIKE perfschema_instrument_category |
+	UPDATE performance_schema . setup_instruments SET perfschema_enabled_timed = perfschema_yes_no ORDER BY RAND() LIMIT _digit ;
 
-update_timers:
-	UPDATE performance_schema . setup_timers SET timer_name = timer_type ;
+perfschema_update_timers:
+	UPDATE performance_schema . setup_timers SET timer_name = perfschema_timer_type ;
 
-truncate:
-	TRUNCATE TABLE performance_schema . truncateable_table ;
+perfschema_truncate:
+	TRUNCATE TABLE performance_schema . perfschema_truncateable_table ;
 
-truncateable_table:
-	events_waits_current |
-	events_waits_history | events_waits_history_long |
-	events_waits_summary_by_event_name | events_waits_summary_by_instance | events_waits_summary_by_thread_by_event_name |
+perfschema_truncateable_table:
+	perfschema_events_waits_current |
+	perfschema_events_waits_history | perfschema_events_waits_history_long |
+	perfschema_events_waits_summary_by_event_name | perfschema_events_waits_summary_by_instance | perfschema_events_waits_summary_by_thread_by_event_name |
 	file_summary_by_event_name | file_summary_by_instance ;
 
-consumer_list:
-	consumer | 
-	consumer_list , consumer ;
+perfschema_consumer_list:
+	perfschema_consumer |
+	perfschema_consumer_list , perfschema_consumer ;
 
-consumer:
+perfschema_consumer:
 	'events_waits_current' |
 	'events_waits_history' |
 	'events_waits_history_long' |
@@ -68,111 +69,111 @@ consumer:
 	'file_summary_by_event_name' |
 	'file_summary_by_instance';
 
-consumer_category:
+perfschema_consumer_category:
 	'events%' | 'file%';
 
-instrument_category:
+perfschema_instrument_category:
 	'wait%' |
 	'wait/synch%' | 'wait/io%' |
 	'wait/synch/mutex/%' | 'wait/synch/rwlock%' | 'wait/synch/cond%' |
 	'%mysys%' | '%sql%' | '%myisam%' ;
 
-timer_type:
+perfschema_timer_type:
 	'CYCLE' | 'NANOSECOND' | 'MICROSECOND' | 'MILLISECOND' | 'TICK' ;
 
-show_engine:
+perfschema_show_engine:
 	SHOW ENGINE PERFORMANCE_SCHEMA STATUS ;
 
-ddl:
+perfschema_ddl:
 #	character_sets |
 #	collations |
 #	collation_character_set_applicability |
-	columns |
-	column_privileges |
+	perfschema_columns |
+	perfschema_column_privileges |
 #	engines |
-	events |
+	perfschema_events |
 #	files |
 #	global_status |
 #	global_variables |
-	key_column_usage |
-	parameters |
-	partitions |
+	perfschema_key_column_usage |
+	perfschema_parameters |
+	perfschema_partitions |
 #	plugins |
 #	processlist |
 #	profiling |
 #	referential_constraints |
-#	routines |		# same as parameters
-	schemata |
-	schema_privileges |
+#	routines |		# same as perfschema_parameters
+	perfschema_schemata |
+	perfschema_schema_privileges |
 #	session_status |
 #	session_variables |
 #	statistics |
-	tables |
-#	tablespaces |
-	table_constraints |
-	table_privileges |
-	triggers |
-	user_privileges |
-	views ;
+	perfschema_tables |
+#	perfschema_tablespaces |
+	perfschema_table_constraints |
+	perfschema_table_privileges |
+	perfschema_triggers |
+	perfschema_user_privileges |
+	perfschema_views ;
 
-columns:
+perfschema_columns:
 	ALTER TABLE _table ADD COLUMN _letter INTEGER DEFAULT NULL |
 	ALTER TABLE _table DROP COLUMN _letter ;
 
-column_privileges:
-	GRANT privilege_list ON _table TO 'someuser'@'somehost';
+perfschema_column_privileges:
+	GRANT perfschema_privilege_list ON _table TO 'someuser'@'somehost';
 
-events:
-	CREATE EVENT _letter ON SCHEDULE AT NOW() DO SET @a=@a |
-	DROP EVENT _letter ;
+perfschema_events:
+	CREATE EVENT _basics_if_not_exists_80pct _letter ON SCHEDULE AT NOW() DO SET @a=@a |
+	DROP EVENT _basics_if_exists_80pct _letter ;
 
-key_column_usage:
+perfschema_key_column_usage:
 	ALTER TABLE _table ADD KEY ( _letter ) |
 	ALTER TABLE _table DROP KEY _letter ;
 
-parameters:
-	CREATE PROCEDURE _letter ( procedure_parameter_list ) BEGIN SELECT COUNT(*) INTO @a FROM _table; END ; |
-	DROP PROCEDURE IF EXISTS _letter |
-	CREATE FUNCTION _letter ( function_parameter_list ) RETURNS INTEGER RETURN 1 |
-	DROP FUNCTION IF EXISTS _letter ;
+perfschema_parameters:
+	CREATE PROCEDURE _basics_if_not_exists_80pct _letter ( perfschema_procedure_parameter_list ) BEGIN SELECT COUNT(*) INTO @a FROM _table; END ; |
+	DROP PROCEDURE _basics_if_exists_80pct _letter |
+	CREATE FUNCTION _basics_if_not_exists_80pct _letter ( perfschema_function_parameter_list ) RETURNS INTEGER RETURN 1 |
+	DROP FUNCTION _basics_if_exists_80pct _letter ;
 
-partitions:
+perfschema_partitions:
 	ALTER TABLE _table PARTITION BY KEY() PARTITIONS _digit |
 	ALTER TABLE _table REMOVE PARTITIONING ;
 
-schemata:
-	CREATE DATABASE IF NOT EXISTS _letter |
-	DROP DATABASE IF EXISTS _letter ;
+perfschema_schemata:
+	CREATE DATABASE _basics_if_not_exists_80pct _letter |
+	DROP DATABASE _basics_if_exists_80pct _letter ;
 
-schema_privileges:
+perfschema_schema_privileges:
 	GRANT ALL PRIVILEGES ON _letter . * TO 'someuser'@'somehost' |
 	REVOKE ALL PRIVILEGES ON _letter . * FROM 'someuser'@'somehost' ; 
 
-tables:
-	CREATE TABLE _letter LIKE _table |
-	DROP TABLE _letter ;
+perfschema_tables:
+	CREATE TABLE _basics_if_not_exists_80pct _letter LIKE _table |
+	DROP TABLE _basics_if_exists_80pct _letter ;
 
-table_constraints:
+perfschema_table_constraints:
 	ALTER TABLE _table DROP PRIMARY KEY |
 	ALTER TABLE _table ADD PRIMARY KEY (`pk`) ;
 
-table_privileges:
+perfschema_table_privileges:
 	GRANT ALL PRIVILEGES ON test . _letter TO 'someuser'@'somehost' |
 	REVOKE ALL PRIVILEGES ON test . _letter FROM 'someuser'@'somehost' ;
 
-triggers:
-	CREATE TRIGGER _letter BEFORE INSERT ON _table FOR EACH ROW BEGIN INSERT INTO _table SELECT * FROM _table LIMIT 0 ; END ; |
-	DROP TRIGGER IF EXISTS _letter;
+perfschema_triggers:
+	CREATE TRIGGER _basics_if_not_exists_80pct _letter BEFORE INSERT ON _table FOR EACH ROW BEGIN INSERT INTO _table SELECT * FROM _table LIMIT 0 ; END ; |
+	DROP TRIGGER _basics_if_exists_80pct _letter;
 
-user_privileges:
-	GRANT admin_privilege_list ON * . * to 'someuser'@'somehost' |
-	REVOKE admin_privilege_list ON * . * FROM 'someuser'@'somehost' ;
+perfschema_user_privileges:
+	GRANT perfschema_admin_privilege_list ON * . * to 'someuser'@'somehost' |
+	REVOKE perfschema_admin_privilege_list ON * . * FROM 'someuser'@'somehost' ;
 
-admin_privilege_list:
-	admin_privilege |
-	admin_privilege , admin_privilege_list ;
+perfschema_admin_privilege_list:
+	perfschema_admin_privilege |
+	perfschema_admin_privilege , perfschema_admin_privilege_list ;
 
-admin_privilege:
+perfschema_admin_privilege:
 	CREATE USER |
 	PROCESS |
 	RELOAD |
@@ -184,120 +185,110 @@ admin_privilege:
 #	ALL PRIVILEGES |
 	USAGE ;
 
-views:
+perfschema_views:
 	CREATE OR REPLACE VIEW _letter AS SELECT * FROM _table |
 	DROP VIEW IF EXISTS _letter ;
 
-function_parameter_list:
+perfschema_function_parameter_list:
 	_letter INTEGER , _letter INTEGER ;
 
-procedure_parameter_list:
-	parameter |
-	parameter , procedure_parameter_list ;
+perfschema_procedure_parameter_list:
+	perfschema_parameter |
+	perfschema_parameter , perfschema_procedure_parameter_list ;
 
-parameter:
-	in_out _letter INT ;
+perfschema_parameter:
+	perfschema_in_out _letter INT ;
 
-in_out:
+perfschema_in_out:
 	IN | OUT ;
 	
 
-privilege_list:
-	privilege_item |
-	privilege_item , privilege_list ;
+perfschema_privilege_list:
+	perfschema_privilege_item |
+	perfschema_privilege_item , perfschema_privilege_list ;
 
-privilege_item:
-	privilege ( field_list );
+perfschema_privilege_item:
+	perfschema_privilege ( perfschema_field_list );
 
-privilege:
+perfschema_privilege:
 	INSERT | SELECT | UPDATE ;
 
-field_list:
+perfschema_field_list:
 	_field |
-	_field , field_list ;
+	_field , perfschema_field_list ;
 
-
-
-select:
+perfschema_select:
 	SELECT *
-	FROM join_list
-	where
-	group_by
-	having
-	order_by_limit
+	FROM perfschema_join_list
+	perfschema_where
+	perfschema_group_by
+	perfschema_having
+	perfschema_order_by_limit
 ;
 
-select_list:
-	new_select_item |
-	new_select_item , select_list ;
+perfschema_select_list:
+	perfschema_new_select_item |
+	perfschema_new_select_item , perfschema_select_list ;
 
-join_list:
-	new_table_item |
-	new_table_item |
-	new_table_item |
-	new_table_item |
-	(new_table_item join_type new_table_item ON ( current_table_item . _field = previous_table_item . _field ) ) ;
+perfschema_join_list:
+	perfschema_new_table_item |
+	perfschema_new_table_item |
+	perfschema_new_table_item |
+	perfschema_new_table_item |
+	(perfschema_new_table_item perfschema_join_type perfschema_new_table_item ON ( perfschema_current_table_item . _field = perfschema_previous_table_item . _field ) ) ;
 
-join_type:
-	INNER JOIN | left_right outer JOIN | STRAIGHT_JOIN ;  
+perfschema_join_type:
+	INNER JOIN | perfschema_left_right perfschema_outer JOIN | STRAIGHT_JOIN ;
 
-left_right:
+perfschema_left_right:
 	LEFT | RIGHT ;
 
-outer:
+perfschema_outer:
 	| OUTER ;
-where:
+
+perfschema_where:
 	|
-	WHERE where_list ;
+	WHERE perfschema_where_list ;
 
-where_list:
-	not where_item |
-	not (where_list AND where_item) |
-	not (where_list OR where_item) ;
+perfschema_where_list:
+	_basics_not_33pct perfschema_where_item |
+	_basics_not_33pct (perfschema_where_list AND perfschema_where_item) |
+	_basics_not_33pct (perfschema_where_list OR perfschema_where_item) ;
 
-not:
-	| | | NOT;
+perfschema_where_item:
+	perfschema_existing_table_item . _field IN ( _digit , _digit , _digit ) |
+	perfschema_existing_table_item . _field LIKE perfschema_instrument_category |
+	perfschema_existing_table_item . _field perfschema_sign perfschema_value |
+	perfschema_existing_table_item . _field perfschema_sign perfschema_existing_table_item . _field ;
 
-where_item:
-	existing_table_item . _field IN ( _digit , _digit , _digit ) |
-	existing_table_item . _field LIKE instrument_category |
-	existing_table_item . _field sign value |
-	existing_table_item . _field sign existing_table_item . _field ;
-
-group_by:
+perfschema_group_by:
 	{ scalar(@nonaggregates) > 0 ? " GROUP BY ".join (', ' , @nonaggregates ) : "" };
 
-having:
-	| HAVING having_list;
+perfschema_having:
+	| HAVING perfschema_having_list;
 
-having_list:
-	not having_item |
-	not (having_list AND having_item) |
-	not (having_list OR having_item) |
-	having_item IS not NULL ;
+perfschema_having_list:
+	_basics_not_33pct perfschema_having_item |
+	_basics_not_33pct (perfschema_having_list AND perfschema_having_item) |
+	_basics_not_33pct (perfschema_having_list OR perfschema_having_item) |
+	perfschema_having_item IS _basics_not_33pct NULL ;
 
-having_item:
-	existing_table_item . _field sign value ;
+perfschema_having_item:
+	perfschema_existing_table_item . _field perfschema_sign perfschema_value ;
 
-order_by_limit:
+perfschema_order_by_limit:
 	LIMIT _tinyint_unsigned	|
-#	ORDER BY order_by_list |
-	ORDER BY order_by_list LIMIT _tinyint_unsigned ;
+#	ORDER BY perfschema_order_by_list |
+	ORDER BY perfschema_order_by_list LIMIT _tinyint_unsigned ;
 
-total_order_by:
-	{ join(', ', map { "field".$_ } (1..$fields) ) };
+perfschema_order_by_list:
+	perfschema_order_by_item |
+	perfschema_order_by_item , perfschema_order_by_list ;
 
-order_by_list:
-	order_by_item |
-	order_by_item , order_by_list ;
+perfschema_order_by_item:
+	perfschema_existing_table_item . _field ;
 
-order_by_item:
-	existing_table_item . _field ;
-
-limit:
-	| LIMIT _digit | LIMIT _digit OFFSET _digit;
-
-new_select_item:
+perfschema_new_select_item:
 	nonaggregate_select_item |
 	nonaggregate_select_item |
 	aggregate_select_item;
@@ -317,39 +308,36 @@ table_one_two:
 aggregate:
 	COUNT( | SUM( | MIN( | MAX( ;
 
-new_table_item:
-	database . _table AS { $database_names[++$tables] = $last_database ; $table_names[$tables] = $last_table ; "table".$tables };
+perfschema_new_table_item:
+	perfschema_database . _table AS { $database_names[++$tables] = $last_database ; $table_names[$tables] = $last_table ; "table".$tables };
 
-database:
+perfschema_database:
 	{ $last_database = $prng->arrayElement(['mysql','test','INFORMATION_SCHEMA','performance_schema']); return $last_database };
 
-current_table_item:
+perfschema_current_table_item:
 	{ $last_database = $database_names[$tables] ; $last_table = $table_names[$tables] ; "table".$tables };
 
-previous_table_item:
+perfschema_previous_table_item:
 	{ $last_database = $database_names[$tables-1] ; $last_table = $table_names[$tables-1] ; "table".($tables - 1) };
 
-existing_table_item:
+perfschema_existing_table_item:
 	{ my $i = $prng->int(1,$tables) ; $last_database = $database_names[$i]; $last_table = $table_names[$i] ; "table".$i };
 
-existing_select_item:
-	{ "field".$prng->int(1,$fields) };
-
-sign:
+perfschema_sign:
 	= | > | < | != | <> | <= | >= ;
 	
-value:
+perfschema_value:
 	_digit | _char(2) | _datetime ;
 
-dml:
-        update | insert | delete ;
+perfschema_dml:
+        perfschema_update | perfschema_insert | perfschema_delete ;
 
-update:
-        UPDATE _table SET _field = value WHERE _field sign value ;
+perfschema_update:
+        UPDATE _table SET _field = perfschema_value WHERE _field perfschema_sign perfschema_value ;
 
-delete:
-        DELETE FROM _table WHERE _field sign value LIMIT _digit ;
+perfschema_delete:
+        DELETE FROM _table WHERE _field perfschema_sign perfschema_value LIMIT _digit ;
 
-insert:
+perfschema_insert:
         INSERT INTO _table ( `pk` ) VALUES  (NULL);
 
