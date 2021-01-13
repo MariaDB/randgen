@@ -4,6 +4,34 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24583:
+=~ AddressSanitizer|signal
+=~ create_tmp_table
+=~ select_union::create_result_table
+=~ Version: '10\.[2-4]
+MDEV-24583:
+=~ AddressSanitizer|signal
+=~ field_conv_memcpy
+=~ Create_tmp_table::finalize
+=~ select_unit::create_result_table
+=~ Version: '10\.[5-9]
+MDEV-24583:
+=~ Assertion \`prebuilt->mysql_prefix_len <= prebuilt->mysql_row_len'
+=~ row_sel_dequeue_cached_row_for_mysql
+=~ row_search_mvcc
+MDEV-24583:
+=~ InnoDB: Failing assertion: magic1 == ROW_PREBUILT_FETCH_MAGIC_N
+=~ row_prebuilt_free
+=~ ha_innobase::close
+MDEV-24583:
+=~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
+=~ Field::ptr_in_record
+=~ ha_innobase::position
+=~ Version: '10\.[5-9]
+MDEV-24570:
+=~ Found index .* whose column info does not match that of MariaDB
+=~ InnoDB indexes are inconsistent with what defined in \.frm for table .*
+=~ Version: '10\.[4-9]
 MDEV-24545:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
@@ -64,7 +92,7 @@ MDEV-24381:
 =~ ha_innobase::commit_inplace_alter_table
 =~ Version: '10\.[2-4]
 MDEV-24349:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal|Assertion \`name\.length == strlen(name\.str)'
 =~ get_quote_char_for_identifier|Item::print_item_w_name
 =~ st_select_lex::print
 =~ Version: '10\.[4-9]
