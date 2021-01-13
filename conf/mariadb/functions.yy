@@ -1,335 +1,320 @@
-query_init:
-	{ $tmp_table = 0; '' } ;
+query_init_add:
+   { $tmp_table = 0; '' } ;
 
-query:
-    select_or_explain_select
-  | select_or_explain_select
-  | select_or_explain_select
-  | select_or_explain_select
-  | select_or_explain_select
-  | select_or_explain_select
-  | prepare_execute
-  | { $tmp_table++; '' } create_and_drop
+query_add:
+    func_select_or_explain_select
+  | func_select_or_explain_select
+  | func_select_or_explain_select
+  | func_select_or_explain_select
+  | func_select_or_explain_select
+  | func_select_or_explain_select
+  | func_prepare_execute
+  | { $tmp_table++; '' } func_create_and_drop
 ;
 
-create_and_drop:
-   CREATE temporary TABLE { 'tmp'.$tmp_table } AS select ; DROP TABLE IF EXISTS { 'tmp'.$tmp_table } ; 
+func_create_and_drop:
+   CREATE _basics_temporary_50pct TABLE { 'tmp'.$tmp_table } AS func_select ; DROP TABLE IF EXISTS { 'tmp'.$tmp_table } ;
 
-prepare_execute:
-	SET @stmt = " select "; SET @stmt_create = CONCAT("CREATE TEMPORARY TABLE `ps` AS ", @stmt ); PREPARE stmt FROM @stmt_create ; EXECUTE stmt ; SET @stmt_ins = CONCAT("INSERT INTO `ps` ", @stmt) ; PREPARE stmt FROM @stmt_ins; EXECUTE stmt; EXECUTE stmt; DEALLOCATE PREPARE stmt; DROP TEMPORARY TABLE `ps`;
+func_prepare_execute:
+   SET @stmt = " func_select "; SET @stmt_create = CONCAT("CREATE TEMPORARY TABLE `ps` AS ", @stmt ); PREPARE stmt FROM @stmt_create ; EXECUTE stmt ; SET @stmt_ins = CONCAT("INSERT INTO `ps` ", @stmt) ; PREPARE stmt FROM @stmt_ins; EXECUTE stmt; EXECUTE stmt; DEALLOCATE PREPARE stmt; DROP TEMPORARY TABLE `ps`;
 
-temporary:
-   | TEMPORARY ;
+func_select_or_explain_select:
+   _basics_explain_analyze func_select;
 
-explain_extended:
-	| | | | | | | EXPLAIN extended ;
+func_select_list:
+   func_select_item AS { $num++; 'field'.$num } | func_select_item AS { $num++; 'field'.$num } , func_select_list ;
 
-extended:
-	| EXTENDED ;
-
-select_or_explain_select:
-   explain_extended select;
-
-select:
-   { $num = 0; '' } SELECT distinct select_list FROM _table where group_by_having_order_by_limit;
-
-select_list:
-   select_item AS { $num++; 'field'.$num } | select_item AS { $num++; 'field'.$num } , select_list ;
-
-distinct:
-   | DISTINCT ; 
-
-select_item:
-   func | aggregate_func
+func_select_item:
+   func_func | func_aggregate_func
 ;
 
-aggregate_func:
-   COUNT( func )  
-   | AVG( func )  
-   | SUM( func ) 
-   | MAX( func )  
-   | MIN( func ) 
-   | GROUP_CONCAT( func, func ) 
-   | BIT_AND( arg ) 
-	| BIT_COUNT( arg ) 
-	| BIT_LENGTH( arg ) 
-   | BIT_OR( arg ) 
-   | BIT_XOR( arg ) 
-	| STD( arg ) 
-	| STDDEV( arg ) 
-	| STDDEV_POP( arg ) 
-	| STDDEV_SAMP( arg ) 
-	| VAR_POP( arg )
-	| VAR_SAMP( arg )
-	| VARIANCE( arg )
+func_select:
+  { $num = 0; '' } SELECT _basics_distinct_50pct func_select_list FROM _table func_where func_group_by_having_order_by_limit ;
+
+func_aggregate_func:
+   COUNT( func_func )
+   | AVG( func_func )
+   | SUM( func_func )
+   | MAX( func_func )
+   | MIN( func_func )
+   | GROUP_CONCAT( func_func, func_func )
+   | BIT_AND( func_arg )
+   | BIT_COUNT( func_arg )
+   | BIT_LENGTH( func_arg )
+   | BIT_OR( func_arg )
+   | BIT_XOR( func_arg )
+   | STD( func_arg )
+   | STDDEV( func_arg )
+   | STDDEV_POP( func_arg )
+   | STDDEV_SAMP( func_arg )
+   | VAR_POP( func_arg )
+   | VAR_SAMP( func_arg )
+   | VARIANCE( func_arg )
 ;
 
-where:
-   | WHERE func ;
+func_where:
+   | WHERE func_func ;
 
-group_by_having_order_by_limit:
-	group_by_with_rollup having limit |
-	group_by having order_by limit 
+func_group_by_having_order_by_limit:
+   func_group_by_with_rollup func_having _basics_limit_50pct |
+   func_group_by func_having func_order_by _basics_limit_50pct
 ;
 
-group_by_with_rollup:
-   | GROUP BY func WITH ROLLUP | GROUP BY func, func WITH ROLLUP ;
+func_group_by_with_rollup:
+   | GROUP BY func_func WITH ROLLUP | GROUP BY func_func, func_func WITH ROLLUP ;
 
-group_by:
-   | GROUP BY func | GROUP BY func, func ;
+func_group_by:
+   | GROUP BY func_func | GROUP BY func_func, func_func ;
 
-having:
-   | HAVING func ;
+func_having:
+   | HAVING func_func ;
 
-order_by:
-   | ORDER BY func | ORDER BY func, func ;
+func_order_by:
+   | ORDER BY func_func | ORDER BY func_func, func_func ;
 
-limit:
-   | | | LIMIT _tinyint_unsigned ;
-
-func:
-  math_func |
-	arithm_oper | 
-	comparison_oper | 
-	logical_or_bitwise_oper | 
-	assign_oper | 
-	cast_oper | 
-	control_flow_func | 
-	str_func | 
-	date_func | 
-	encrypt_func | 
-	information_func |
-	xml_func |
-	misc_func
+func_func:
+  func_math_func |
+   func_arithm_oper |
+   func_comparison_oper |
+   func_logical_or_bitwise_oper |
+   func_assign_oper |
+   func_cast_oper |
+   func_control_flow_func |
+   func_str_func |
+   func_date_func |
+   func_encrypt_func |
+   func_information_func |
+   func_xml_func |
+   func_misc_func
 ;
 
-misc_func:
-	DEFAULT( _field ) |
-	GET_LOCK( arg_char , zero_or_almost ) |
+func_misc_func:
+   DEFAULT( _field ) |
+   GET_LOCK( func_arg_char , func_zero_or_almost ) |
 # TODO: provide reasonable IP
-	INET_ATON( arg ) |
-	INET_NTOA( arg ) |
-	IS_FREE_LOCK( arg_char ) |
-	IS_USED_LOCK( arg_char ) |
-	MASTER_POS_WAIT( 'log', _int_unsigned, zero_or_almost ) |
-	NAME_CONST( const_char_value, value ) |
-	RAND() | RAND( arg ) |
-	RELEASE_LOCK( arg_char ) |
-	SLEEP( zero_or_almost ) |
-	UUID_SHORT() |
-	UUID() |
+   INET_ATON( func_arg ) |
+   INET_NTOA( func_arg ) |
+   IS_FREE_LOCK( func_arg_char ) |
+   IS_USED_LOCK( func_arg_char ) |
+   MASTER_POS_WAIT( 'log', _int_unsigned, func_zero_or_almost ) |
+   NAME_CONST( func_const_char_value, func_value ) |
+   RAND() | RAND( func_arg ) |
+   RELEASE_LOCK( func_arg_char ) |
+   SLEEP( func_zero_or_almost ) |
+   UUID_SHORT() |
+   UUID() |
 # Changed due to MDEV-12172
-	/*!!100303 VALUES( _field ) */ /*!100303 VALUE( _field ) */
-;	
+   /*!!100303 VALUES( _field ) */ /*!100303 VALUE( _field ) */
+;
 
-zero_or_almost:
-	0 | 0.01 ;
+func_zero_or_almost:
+   0 | 0.01 ;
 
 # TODO: provide reasonable arguments to XML
 
-xml_func:
-	ExtractValue( value, xpath ) |
-	UpdateXML( value, xpath, value )
+func_xml_func:
+   ExtractValue( func_value, func_xpath ) |
+   UpdateXML( func_value, func_xpath, func_value )
 ;
 
-xpath:
-	{ @chars = ('a','b','c','d','e','/'); $length= int(rand(127)); $x= '/'; $xpath= '/'; foreach ( 1..$length ) { $x= ( ( $x eq '/' or $_ eq $length ) ? $chars[int(rand(scalar(@chars)-1))] : $chars[int(rand(scalar(@chars)))]); $xpath.= $x ; }; "'".$xpath."'" } ;
+func_xpath:
+   { @chars = ('a','b','c','d','e','/'); $length= int(rand(127)); $x= '/'; $xpath= '/'; foreach ( 1..$length ) { $x= ( ( $x eq '/' or $_ eq $length ) ? $chars[int(rand(scalar(@chars)-1))] : $chars[int(rand(scalar(@chars)))]); $xpath.= $x ; }; "'".$xpath."'" } ;
 
-information_func:
-	CHARSET( arg ) |
-	BENCHMARK( _digit, select_item ) |
-	COERCIBILITY( arg ) |
-	COLLATION( arg ) |
-	CONNECTION_ID() |
-	CURRENT_USER() | CURRENT_USER |
-	DATABASE() | SCHEMA() |
-	FOUND_ROWS() |
-	LAST_INSERT_ID() |
-	ROW_COUNT() |
-	SESSION_USER() | SYSTEM_USER() | USER() |
-	VERSION()
-;	
-
-control_flow_func:
-   CASE arg WHEN arg THEN arg END | CASE arg WHEN arg THEN arg WHEN arg THEN arg END | CASE arg WHEN arg THEN arg ELSE arg END |
-   IF( arg, arg, arg ) |
-   IFNULL( arg, arg ) |
-   NULLIF( arg, arg )
+func_information_func:
+   CHARSET( func_arg ) |
+   BENCHMARK( _digit, func_select_item ) |
+   COERCIBILITY( func_arg ) |
+   COLLATION( func_arg ) |
+   CONNECTION_ID() |
+   CURRENT_USER() | CURRENT_USER |
+   DATABASE() | SCHEMA() |
+   FOUND_ROWS() |
+   LAST_INSERT_ID() |
+   ROW_COUNT() |
+   SESSION_USER() | SYSTEM_USER() | USER() |
+   VERSION()
 ;
 
-cast_oper:
-   BINARY arg | CAST( arg AS type ) | CONVERT( arg, type ) | CONVERT( arg USING charset ) ;
+func_control_flow_func:
+   CASE func_arg WHEN func_arg THEN func_arg END | CASE func_arg WHEN func_arg THEN func_arg WHEN func_arg THEN func_arg END | CASE func_arg WHEN func_arg THEN func_arg ELSE func_arg END |
+   IF( func_arg, func_arg, func_arg ) |
+   IFNULL( func_arg, func_arg ) |
+   NULLIF( func_arg, func_arg )
+;
 
-charset:
-   utf8 | latin1 ;
+func_cast_oper:
+   BINARY func_arg | CAST( func_arg AS func_type ) | CONVERT( func_arg, func_type ) | CONVERT( func_arg USING func_charset ) ;
 
-type:
-   BINARY | BINARY(_digit) | CHAR | CHAR(_digit) | DATE | DATETIME | DECIMAL | DECIMAL(decimal_m) | DECIMAL(decimal_m,decimal_d) | SIGNED | TIME | UNSIGNED ;
+func_charset:
+   utf8 | latin1 | utf8mb4 ;
 
-decimal_m:
+func_type:
+   BINARY | BINARY(_digit) | CHAR | CHAR(_digit) | DATE | DATETIME | DECIMAL | DECIMAL(func_decimal_m) | DECIMAL(func_decimal_m,func_decimal_d) | SIGNED | TIME | UNSIGNED ;
+
+func_decimal_m:
     { $decimal_m = $prng->int(0,65) }
 ;
 
-decimal_d:
+func_decimal_d:
     { $decimal_d = $prng->int(0,$decimal_m) }
 ;
 
-encrypt_func:
-   AES_DECRYPT( arg, arg ) |
-   AES_ENCRYPT( arg, arg ) |
-   COMPRESS( arg ) |
-   DECODE( arg, arg ) |
-   DES_DECRYPT( arg ) | DES_DECRYPT( arg, arg ) |
-   DES_ENCRYPT( arg ) | DES_ENCRYPT( arg, arg ) |
-   ENCODE( arg, arg ) |
-   ENCRYPT( arg ) | ENCRYPT( arg, arg ) |
-   MD5( arg ) |
-   OLD_PASSWORD( arg ) | 
-   PASSWORD( arg ) |
-   SHA1( arg ) |
-   SHA( arg ) |
-   SHA2( arg, arg ) |
-   UNCOMPRESS( arg ) |
-   UNCOMPRESSED_LENGTH( arg ) 
+func_encrypt_func:
+   AES_DECRYPT( func_arg, func_arg ) |
+   AES_ENCRYPT( func_arg, func_arg ) |
+   COMPRESS( func_arg ) |
+   DECODE( func_arg, func_arg ) |
+   DES_DECRYPT( func_arg ) | DES_DECRYPT( func_arg, func_arg ) |
+   DES_ENCRYPT( func_arg ) | DES_ENCRYPT( func_arg, func_arg ) |
+   ENCODE( func_arg, func_arg ) |
+   ENCRYPT( func_arg ) | ENCRYPT( func_arg, func_arg ) |
+   MD5( func_arg ) |
+   OLD_PASSWORD( func_arg ) |
+   PASSWORD( func_arg ) |
+   SHA1( func_arg ) |
+   SHA( func_arg ) |
+   SHA2( func_arg, func_arg ) |
+   UNCOMPRESS( func_arg ) |
+   UNCOMPRESSED_LENGTH( func_arg )
 ;
 
-str_func:
-   ASCII( arg ) |
-   BIN( arg ) |
-   BIT_LENGTH( arg ) |
-   CHAR_LENGTH( arg ) | CHARACTER_LENGTH( arg ) | 
-   CHAR( arg ) | CHAR( arg USING charset ) |
-   CONCAT_WS( arg_list ) | 
-   CONCAT( arg ) | CONCAT( arg_list ) |
-   ELT( arg_list ) |
-   EXPORT_SET( arg, arg, arg ) | EXPORT_SET( arg, arg, arg, arg ) | EXPORT_SET( arg, arg, arg, arg, arg ) |
-   FIELD( arg_list ) |
-   FIND_IN_SET( arg, arg ) |
-   FORMAT( arg, arg ) | FORMAT( arg, arg, locale ) |
-   HEX( arg ) |
-   INSERT( arg, arg, arg, arg ) |
-   INSTR( arg, arg ) |
-   LCASE( arg ) |
-   LEFT( arg, arg ) |
-   LENGTH( arg ) |
-	arg not LIKE arg |
-   LOAD_FILE( arg ) |
-   LOCATE( arg, arg ) | LOCATE( arg, arg, arg ) |
-   LOWER( arg ) |
-   LPAD( arg, arg, arg ) |
-   LTRIM( arg ) |
-   MAKE_SET( arg_list ) |
-   MATCH( field_list ) AGAINST ( const_char_value search_modifier ) |
-   MID( arg, arg, arg ) |
-   OCT( arg ) |
-   OCTET_LENGTH( arg ) |
-   ORD( arg ) |
-   POSITION( arg IN arg ) |
-   QUOTE( arg ) |
+func_str_func:
+   ASCII( func_arg ) |
+   BIN( func_arg ) |
+   BIT_LENGTH( func_arg ) |
+   CHAR_LENGTH( func_arg ) | CHARACTER_LENGTH( func_arg ) |
+   CHAR( func_arg ) | CHAR( func_arg USING func_charset ) |
+   CONCAT_WS( func_arg_list ) |
+   CONCAT( func_arg ) | CONCAT( func_arg_list ) |
+   ELT( func_arg_list ) |
+   EXPORT_SET( func_arg, func_arg, func_arg ) | EXPORT_SET( func_arg, func_arg, func_arg, func_arg ) | EXPORT_SET( func_arg, func_arg, func_arg, func_arg, func_arg ) |
+   FIELD( func_arg_list ) |
+   FIND_IN_SET( func_arg, func_arg ) |
+   FORMAT( func_arg, func_arg ) | FORMAT( func_arg, func_arg, func_locale ) |
+   HEX( func_arg ) |
+   INSERT( func_arg, func_arg, func_arg, func_arg ) |
+   INSTR( func_arg, func_arg ) |
+   LCASE( func_arg ) |
+   LEFT( func_arg, func_arg ) |
+   LENGTH( func_arg ) |
+   func_arg _basics_not_33pct LIKE func_arg |
+   LOAD_FILE( func_arg ) |
+   LOCATE( func_arg, func_arg ) | LOCATE( func_arg, func_arg, func_arg ) |
+   LOWER( func_arg ) |
+   LPAD( func_arg, func_arg, func_arg ) |
+   LTRIM( func_arg ) |
+   MAKE_SET( func_arg_list ) |
+   MATCH( func_field_list ) AGAINST ( func_const_char_value func_search_modifier ) |
+   MID( func_arg, func_arg, func_arg ) |
+   OCT( func_arg ) |
+   OCTET_LENGTH( func_arg ) |
+   ORD( func_arg ) |
+   POSITION( func_arg IN func_arg ) |
+   QUOTE( func_arg ) |
 # TODO: provide reasonable patterns to REGEXP
-	arg not REGEXP arg | arg not RLIKE arg |
-   REPEAT( arg, arg ) |
-   REPLACE( arg, arg, arg ) |
-   REVERSE( arg ) |
-   RIGHT( arg, arg ) |
-   RPAD( arg, arg, arg ) |
-   RTRIM( arg ) |
-   SOUNDEX( arg ) |
-   arg SOUNDS LIKE arg |
-   SPACE( arg ) |
-   SUBSTR( arg, arg ) | SUBSTR( arg FROM arg ) | SUBSTR( arg, arg, arg ) | SUBSTR( arg FROM arg FOR arg ) |
-   SUBSTRING_INDEX( arg, arg, arg ) |
-   TRIM( arg ) | TRIM( trim_mode FROM arg ) | TRIM( trim_mode arg FROM arg ) | TRIM( arg FROM arg ) |
-   UCASE( arg ) |
-   UNHEX( arg ) |
-   UPPER( arg ) 
+   func_arg _basics_not_33pct REGEXP func_arg | func_arg _basics_not_33pct RLIKE func_arg |
+   REPEAT( func_arg, func_arg ) |
+   REPLACE( func_arg, func_arg, func_arg ) |
+   REVERSE( func_arg ) |
+   RIGHT( func_arg, func_arg ) |
+   RPAD( func_arg, func_arg, func_arg ) |
+   RTRIM( func_arg ) |
+   SOUNDEX( func_arg ) |
+   func_arg SOUNDS LIKE func_arg |
+   SPACE( func_arg ) |
+   SUBSTR( func_arg, func_arg ) | SUBSTR( func_arg FROM func_arg ) | SUBSTR( func_arg, func_arg, func_arg ) | SUBSTR( func_arg FROM func_arg FOR func_arg ) |
+   SUBSTRING_INDEX( func_arg, func_arg, func_arg ) |
+   TRIM( func_arg ) | TRIM( func_trim_mode FROM func_arg ) | TRIM( func_trim_mode func_arg FROM func_arg ) | TRIM( func_arg FROM func_arg ) |
+   UCASE( func_arg ) |
+   UNHEX( func_arg ) |
+   UPPER( func_arg )
 ;
 
-trim_mode:
+func_trim_mode:
    BOTH | LEADING | TRAILING ;
 
-search_modifier:
-	|
-	IN NATURAL LANGUAGE MODE |
-	IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION |
-	IN BOOLEAN MODE |
-	WITH QUERY EXPANSION 
+func_search_modifier:
+   |
+   IN NATURAL LANGUAGE MODE |
+   IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION |
+   IN BOOLEAN MODE |
+   WITH QUERY EXPANSION
 ;
 
-date_func:
-   ADDDATE( arg, INTERVAL arg unit1 ) | ADDDATE( arg, arg ) |
-   ADDTIME( arg, arg ) | 
-   CONVERT_TZ( arg, arg, arg ) |
+func_date_func:
+   ADDDATE( func_arg, INTERVAL func_arg func_unit1 ) | ADDDATE( func_arg, func_arg ) |
+   ADDTIME( func_arg, func_arg ) |
+   CONVERT_TZ( func_arg, func_arg, func_arg ) |
    CURDATE() | CURRENT_DATE() | CURRENT_DATE |
-   CURTIME() | CURRENT_TIME() | CURRENT_TIME | 
-	CURRENT_TIMESTAMP() | CURRENT_TIMESTAMP |
-   DATE( arg ) |
-   DATEDIFF( arg, arg ) |
-   DATE_ADD( arg, INTERVAL arg unit1 ) | DATE_SUB( arg, INTERVAL arg unit1 ) |
-   DATE_FORMAT( arg, arg ) |
-   DAY( arg ) | DAYOFMONTH( arg ) | 
-   DAYNAME( arg ) |
-   DAYOFWEEK( arg ) |
-   DAYOFYEAR( arg ) | 
-   EXTRACT( unit1 FROM arg ) |
-   FROM_DAYS( arg ) |
-   FROM_UNIXTIME( arg ) | FROM_UNIXTIME( arg, arg ) |
-   GET_FORMAT( get_format_type, get_format_format ) |
-   HOUR( arg ) |
-   LAST_DAY( arg ) |
+   CURTIME() | CURRENT_TIME() | CURRENT_TIME |
+   CURRENT_TIMESTAMP() | CURRENT_TIMESTAMP |
+   DATE( func_arg ) |
+   DATEDIFF( func_arg, func_arg ) |
+   DATE_ADD( func_arg, INTERVAL func_arg func_unit1 ) | DATE_SUB( func_arg, INTERVAL func_arg func_unit1 ) |
+   DATE_FORMAT( func_arg, func_arg ) |
+   DAY( func_arg ) | DAYOFMONTH( func_arg ) |
+   DAYNAME( func_arg ) |
+   DAYOFWEEK( func_arg ) |
+   DAYOFYEAR( func_arg ) |
+   EXTRACT( func_unit1 FROM func_arg ) |
+   FROM_DAYS( func_arg ) |
+   FROM_UNIXTIME( func_arg ) | FROM_UNIXTIME( func_arg, func_arg ) |
+   GET_FORMAT( func_get_format_type, func_get_format_format ) |
+   HOUR( func_arg ) |
+   LAST_DAY( func_arg ) |
    LOCALTIME() |
    LOCALTIMESTAMP() |
-   MAKEDATE( arg, arg ) |
-   MAKETIME( arg, arg, arg ) |
-   MICROSECOND( arg ) |
-   MINUTE( arg ) |
-   MONTH( arg ) |
-   MONTHNAME( arg ) |
+   MAKEDATE( func_arg, func_arg ) |
+   MAKETIME( func_arg, func_arg, func_arg ) |
+   MICROSECOND( func_arg ) |
+   MINUTE( func_arg ) |
+   MONTH( func_arg ) |
+   MONTHNAME( func_arg ) |
    NOW() |
-   PERIOD_ADD( arg, arg ) |
-   PERIOD_DIFF( arg, arg ) |
-   QUARTER( arg ) |
-   SECOND( arg ) |
-   SEC_TO_TIME( arg ) |
-   STR_TO_DATE( arg, arg ) |
-   SUBDATE( arg, arg ) |
-   SUBTIME( arg, arg ) |
+   PERIOD_ADD( func_arg, func_arg ) |
+   PERIOD_DIFF( func_arg, func_arg ) |
+   QUARTER( func_arg ) |
+   SECOND( func_arg ) |
+   SEC_TO_TIME( func_arg ) |
+   STR_TO_DATE( func_arg, func_arg ) |
+   SUBDATE( func_arg, func_arg ) |
+   SUBTIME( func_arg, func_arg ) |
    SYSDATE() |
-   TIME( arg ) |
-   TIMEDIFF( arg, arg ) |
-   TIMESTAMP( arg ) | TIMESTAMP( arg, arg ) |
-   TIMESTAMPADD( unit2, arg, arg ) |
-   TIMESTAMPDIFF( unit2, arg, arg ) |
-   TIME_FORMAT( arg, arg ) |
-   TIME_TO_SEC( arg ) |
-   TO_DAYS( arg ) |
-   TO_SECONDS( arg ) |
-   UNIX_TIMESTAMP( arg ) | UNIX_TIMESTAMP() |
+   TIME( func_arg ) |
+   TIMEDIFF( func_arg, func_arg ) |
+   TIMESTAMP( func_arg ) | TIMESTAMP( func_arg, func_arg ) |
+   TIMESTAMPADD( func_unit2, func_arg, func_arg ) |
+   TIMESTAMPDIFF( func_unit2, func_arg, func_arg ) |
+   TIME_FORMAT( func_arg, func_arg ) |
+   TIME_TO_SEC( func_arg ) |
+   TO_DAYS( func_arg ) |
+   TO_SECONDS( func_arg ) |
+   UNIX_TIMESTAMP( func_arg ) | UNIX_TIMESTAMP() |
    UTC_DATE() |
    UTC_TIME() |
    UTC_TIMESTAMP() |
-   WEEK( arg ) | WEEK( arg, week_mode ) |
-   WEEKDAY( arg ) |
-   WEEKOFYEAR( arg ) |
-   YEAR( arg ) |
-   YEARWEEK( arg ) | YEARWEEK( arg, week_mode ) 
+   WEEK( func_arg ) | WEEK( func_arg, func_week_mode ) |
+   WEEKDAY( func_arg ) |
+   WEEKOFYEAR( func_arg ) |
+   YEAR( func_arg ) |
+   YEARWEEK( func_arg ) | YEARWEEK( func_arg, func_week_mode )
 ;
 
-week_mode:
-   0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | arg ;
+func_week_mode:
+   0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | func_arg ;
 
-get_format_type:
+func_get_format_type:
    DATE | TIME | DATETIME ;
 
-get_format_format:
-   'EUR' | 'USA' | 'JIS' | 'ISO' | 'INTERNAL' | arg ;
+func_get_format_format:
+   'EUR' | 'USA' | 'JIS' | 'ISO' | 'INTERNAL' | func_arg ;
 
-unit1:
+func_unit1:
    MICROSECOND |
    SECOND |
    MINUTE |
    HOUR |
-   DAY | 
+   DAY |
    WEEK |
    MONTH |
    QUARTER |
@@ -344,124 +329,121 @@ unit1:
    DAY_SECOND |
    DAY_MINUTE |
    DAY_HOUR |
-   YEAR_MONTH 
+   YEAR_MONTH
 ;
 
-unit2:
+func_unit2:
    MICROSECOND |
    SECOND |
    MINUTE |
    HOUR |
    DAY |
    WEEK |
-   MONTH | 
+   MONTH |
    QUARTER |
    YEAR
 ;
 
-math_func:
-   ABS( arg ) | ACOS( arg ) | ASIN( arg ) | ATAN( arg ) | ATAN( arg, arg ) | ATAN2( arg, arg ) |
-   CEIL( arg ) | CEILING( arg ) | CONV( arg, _tinyint_unsigned, _tinyint_unsigned ) | COS( arg ) | COT( arg ) | CRC32( arg ) |
-   DEGREES( arg ) | 
-   EXP( arg ) | 
-   FLOOR( arg ) | 
-   FORMAT( arg, _digit ) | FORMAT( arg, format_second_arg, locale ) | 
-   HEX( arg ) | 
-   LN( arg ) | LOG( arg ) | LOG( arg, arg ) | LOG2( arg ) | LOG10( arg ) |
-   MOD( arg, arg ) | 
-   PI( ) | POW( arg, arg ) | POWER( arg, arg ) |
-   RADIANS( arg ) | RAND() | RAND( arg ) | ROUND( arg ) | ROUND( arg, arg ) | 
-   SIGN( arg ) | SIN( arg ) | SQRT( arg ) | 
-   TAN( arg ) | TRUNCATE( arg, truncate_second_arg ) ;
+func_math_func:
+   ABS( func_arg ) | ACOS( func_arg ) | ASIN( func_arg ) | ATAN( func_arg ) | ATAN( func_arg, func_arg ) | ATAN2( func_arg, func_arg ) |
+   CEIL( func_arg ) | CEILING( func_arg ) | CONV( func_arg, _tinyint_unsigned, _tinyint_unsigned ) | COS( func_arg ) | COT( func_arg ) | CRC32( func_arg ) |
+   DEGREES( func_arg ) |
+   EXP( func_arg ) |
+   FLOOR( func_arg ) |
+   FORMAT( func_arg, _digit ) | FORMAT( func_arg, func_format_second_arg, func_locale ) |
+   HEX( func_arg ) |
+   LN( func_arg ) | LOG( func_arg ) | LOG( func_arg, func_arg ) | LOG2( func_arg ) | LOG10( func_arg ) |
+   MOD( func_arg, func_arg ) |
+   PI( ) | POW( func_arg, func_arg ) | POWER( func_arg, func_arg ) |
+   RADIANS( func_arg ) | RAND() | RAND( func_arg ) | ROUND( func_arg ) | ROUND( func_arg, func_arg ) |
+   SIGN( func_arg ) | SIN( func_arg ) | SQRT( func_arg ) |
+   TAN( func_arg ) | TRUNCATE( func_arg, func_truncate_second_arg ) ;
 
-arithm_oper:
-   arg + arg | 
-   arg - arg | 
-   - arg |
-   arg * arg |
-   arg / arg |
-   arg DIV arg | 
-   arg MOD arg |
-   arg % arg 
+func_arithm_oper:
+   func_arg + func_arg |
+   func_arg - func_arg |
+   - func_arg |
+   func_arg * func_arg |
+   func_arg / func_arg |
+   func_arg DIV func_arg |
+   func_arg MOD func_arg |
+   func_arg % func_arg
 ;
 
-logical_or_bitwise_oper:
-   NOT arg | ! arg | ~ arg |
-   arg AND arg | arg && arg | arg & arg |
-   arg OR arg | arg | arg |
-   arg XOR arg | arg ^ arg |
-	arg << arg | arg >> arg 
+func_logical_or_bitwise_oper:
+   NOT func_arg | ! func_arg | ~ func_arg |
+   func_arg AND func_arg | func_arg && func_arg | func_arg & func_arg |
+   func_arg OR func_arg | func_arg | func_arg |
+   func_arg XOR func_arg | func_arg ^ func_arg |
+   func_arg << func_arg | func_arg >> func_arg
 ;
 
-assign_oper:
-   @A := arg ;
-   
-comparison_oper:
-   arg = arg |
-   arg <=> arg |
-   arg != arg |
-   arg <> arg |
-   arg <= arg |
-   arg < arg |
-   arg >= arg |
-   arg > arg |
-   arg IS not bool_value |
-   arg not BETWEEN arg AND arg |
-   COALESCE( arg_list ) |
-   GREATEST( arg_list ) |
-   arg not IN ( arg_list ) |
-   ISNULL( arg ) | 
-   INTERVAL( arg_list ) |
-   LEAST( arg_list ) |
-	arg not LIKE arg |
-	STRCMP( arg, arg )
-; 
+func_assign_oper:
+   @A := func_arg ;
 
-not:
-	| NOT ;
+func_comparison_oper:
+   func_arg = func_arg |
+   func_arg <=> func_arg |
+   func_arg != func_arg |
+   func_arg <> func_arg |
+   func_arg <= func_arg |
+   func_arg < func_arg |
+   func_arg >= func_arg |
+   func_arg > func_arg |
+   func_arg IS _basics_not_33pct func_bool_value |
+   func_arg _basics_not_33pct BETWEEN func_arg AND func_arg |
+   COALESCE( func_arg_list ) |
+   GREATEST( func_arg_list ) |
+   func_arg _basics_not_33pct IN ( func_arg_list ) |
+   ISNULL( func_arg ) |
+   INTERVAL( func_arg_list ) |
+   LEAST( func_arg_list ) |
+   func_arg _basics_not_33pct LIKE func_arg |
+   STRCMP( func_arg, func_arg )
+;
 
-arg_list:
-   arg_list_2 | arg_list_3 | arg_list_5 | arg_list_10 | arg, arg_list ;
+func_arg_list:
+   func_arg_list_2 | func_arg_list_3 | func_arg_list_5 | func_arg_list_10 | func_arg, func_arg_list ;
 
-arg_list_2:
-   arg, arg ;
+func_arg_list_2:
+   func_arg, func_arg ;
 
-arg_list_3:
-   arg, arg, arg ;
+func_arg_list_3:
+   func_arg, func_arg, func_arg ;
 
-arg_list_5:
-   arg, arg, arg, arg, arg ;
+func_arg_list_5:
+   func_arg, func_arg, func_arg, func_arg, func_arg ;
 
-arg_list_10:
-   arg, arg, arg, arg, arg, arg, arg, arg, arg, arg ;
+func_arg_list_10:
+   func_arg, func_arg, func_arg, func_arg, func_arg, func_arg, func_arg, func_arg, func_arg, func_arg ;
 
 
-field_list:
-	_field | field_list , _field ;
+func_field_list:
+   _field | func_field_list , _field ;
 
-format_second_arg:
-   truncate_second_arg ;
+func_format_second_arg:
+   func_truncate_second_arg ;
 
-truncate_second_arg:
-   _digit | _digit | _tinyint_unsigned | arg ;
+func_truncate_second_arg:
+   _digit | _digit | _tinyint_unsigned | func_arg ;
 
-arg:
-   _field | value | ( func ) ;
+func_arg:
+   _field | func_value | ( func_func ) ;
 
-arg_char:
+func_arg_char:
   _field_char | _char(1) | _english | _string(16) | NULL
 ;
 
-const_char_value:
+func_const_char_value:
   _char(1) | _english | _string(16) | ''
 ;
 
-value:
+func_value:
    _bigint | _smallint | _int_usigned | _char(1) | _char(256) | _datetime | _date | _time | NULL ;
 
-bool_value:
+func_bool_value:
    TRUE | FALSE | UNKNOWN | NULL ;
 
-locale:
+func_locale:
    'en_US' | 'de_DE' ;
 
