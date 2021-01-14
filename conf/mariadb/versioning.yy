@@ -587,9 +587,8 @@ vers_ia_column_list:
   vers_ia_col_name | vers_ia_col_name, vers_ia_column_list
 ;
 
-# Disabled due to MDEV-11071
 vers_ia_temporary:
-#  | | | | TEMPORARY
+  | | | | TEMPORARY
 ;
 
 vers_ia_flush:
