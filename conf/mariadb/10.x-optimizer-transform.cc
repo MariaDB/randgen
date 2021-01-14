@@ -10,11 +10,10 @@ $combinations = [
 		--redefine=conf/mariadb/analyze-tables-at-start.yy
 		--mysqld=--log-output=FILE
 		--querytimeout=30
+		--mysqld=--slow_query_log
+		--mysqld=--long_query_time=0.000001
+		--mysqld=--log_slow_verbosity=query_plan,explain
 	'], 
-# NOTE: Disabled due to MDEV-6439
-#		--mysqld=--slow_query_log
-#		--mysqld=--long_query_time=0.000001
-#		--mysqld=--log_slow_verbosity=query_plan,explain
 	[
 		'--validator=TransformerNoComparator --grammar=conf/mariadb/multi_update.yy --gendata=conf/mariadb/multi_update.zz',
 		'--validator=TransformerLight --grammar=conf/mariadb/optimizer.yy --gendata=conf/mariadb/optimizer.zz',
