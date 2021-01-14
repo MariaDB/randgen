@@ -1,3 +1,18 @@
+#  Copyright (c) 2021, MariaDB Corporation Ab
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; version 2 of the License.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
+
 query_add:
   seq_query
 ;
@@ -72,18 +87,16 @@ seq_drop_list:
   seq_name | seq_name | seq_name, seq_drop_list
 ;
 
-# Due to MDEV-14762, TEMPORARY sequences are disabled
 seq_temporary:
-#  | | | TEMPORARY
+  | | | TEMPORARY
 ;
 
 seq_set_val:
   SELECT SETVAL(seq_name, seq_start_value)
 ;
 
-# Due to MDEV-14761, cannot have more than one MINVALUE / MAXVALUE
 seq_alter:
-  { $min_defined= 0; $max_defined= 0; '' } ALTER SEQUENCE seq_if_exists_optional seq_name seq_alter_list
+  ALTER SEQUENCE seq_if_exists_optional seq_name seq_alter_list
 ;
 
 seq_if_exists_optional:
@@ -98,12 +111,11 @@ seq_insert:
   INSERT INTO seq_name VALUES (seq_start_value, seq_start_value, seq_end_value, seq_start_value, seq_increment_value, _tinyint_unsigned, seq_zero_or_one, seq_zero_or_one)
 ;
 
-# Due to MDEV-14761, cannot have more than one MINVALUE / MAXVALUE
 seq_alter_element:
     RESTART seq_with_or_equal_optional seq_start_value 
   | seq_increment
-  | seq_min_if_not_defined
-  | seq_max_if_not_defined
+  | seq_min
+  | seq_max
   | seq_start_with
 ;
 
@@ -150,16 +162,6 @@ seq_engine:
 
 seq_engine_optional:
   | | | seq_engine
-;
-
-# Due to MDEV-14761, cannot have more than one MINVALUE / MAXVALUE
-
-seq_min_if_not_defined:
-  { if (! $min_defined) { $min_defined= 1; seq_min } else { '' } }
-;
-
-seq_max_if_not_defined:
-  { if (! $max_defined) { $max_defined= 1; seq_max } else { '' } }
 ;
 
 seq_min:
