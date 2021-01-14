@@ -569,11 +569,9 @@ vers_ia_col_location:
   | | | | | FIRST | AFTER ia_col_name
 ;
 
-# MDEV-14694 - ALTER COLUMN does not accept IF EXISTS
-# vers_ia_if_exists
 vers_ia_alter_column:
-    ALTER COLUMN vers_ia_col_name SET DEFAULT vers_ia_default_val
-  | ALTER COLUMN vers_ia_col_name DROP DEFAULT
+    ALTER COLUMN ia_if_exists vers_ia_col_name SET DEFAULT vers_ia_default_val
+  | ALTER COLUMN ia_if_exists vers_ia_col_name DROP DEFAULT
 ;
 
 vers_ia_if_exists:
