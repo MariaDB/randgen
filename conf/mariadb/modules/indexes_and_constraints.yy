@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, 2020, MariaDB Corporation
+#  Copyright (c) 2019, 2021, MariaDB Corporation Ab
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -89,9 +89,8 @@ ind_constr_drop_index:
   DROP ind_constr_index_word _basics_if_exists_80pct ind_constr_ind_name_or_col_name
 ;
 
-# TODO: REMOVE SILENT FLAG!
 ind_constr_rename_index:
-  /* EXECUTOR_FLAG_SILENT */ /* compatibility 10.5.2 */ RENAME ind_constr_index_word _basics_if_exists_80pct ind_constr_ind_name_or_col_name TO ind_constr_ind_name_or_col_name
+  /* compatibility 10.5.2 */ RENAME ind_constr_index_word _basics_if_exists_80pct ind_constr_ind_name_or_col_name TO ind_constr_ind_name_or_col_name
 ;
 
 ind_constr_drop_constraint:
