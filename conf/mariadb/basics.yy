@@ -92,6 +92,9 @@ _basics_global_or_session_optional:
 _basics_temporary_5pct:
   | | | | | | | | | | | | | | | | | | | TEMPORARY ;
 
+_basics_temporary_50pct:
+  | TEMPORARY ;
+
 _basics_if_exists_80pct:
   | IF EXISTS | IF EXISTS | IF EXISTS | IF EXISTS ;
 
@@ -336,8 +339,6 @@ _basics_view_algorithm_50pct:
   | ALGORITHM=MERGE | ALGORITHM=TEMPTABLE ;
 
 ;
-# NO_ZERO_DATE is disabled due to MDEV-18042
-# TRADITIONAL is disabled due to MDEV-18042
 # MAXDB is disabled due to MDEV-18864
 _basics_sql_mode_list:
   { @modes= qw(
@@ -362,6 +363,7 @@ _basics_sql_mode_list:
       NO_KEY_OPTIONS
       NO_TABLE_OPTIONS
       NO_UNSIGNED_SUBTRACTION
+      NO_ZERO_DATE
       NO_ZERO_IN_DATE
       ONLY_FULL_GROUP_BY
       ORACLE
@@ -373,6 +375,7 @@ _basics_sql_mode_list:
       STRICT_ALL_TABLES
       STRICT_TRANS_TABLES
       TIME_ROUND_FRACTIONAL
+      TRADITIONAL
     ); $length=$prng->int(1,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length]) . "'"
   }
 ;
@@ -381,6 +384,9 @@ _basics_explain_analyze:
   EXPLAIN _basics_explain_modifier |
   ANALYZE _basics_format_json_50pct
 ;
+
+_basics_distinct_50pct:
+  | DISTINCT ;
 
 _basics_comparison_operator:
     = | != | < | > | >= | <= ;
@@ -410,7 +416,14 @@ _basics_empty_values_list:
     () | (),_basics_empty_values_list | (),_basics_empty_values_list ;
 
 _basics_any_value:
-      _basics_value_for_numeric_column | _basics_value_for_char_column ;
+  _bit | _bool | _boolean | _tinyint | _smallint | _mediumint | _int | _integer | _bigint |
+  _float | _double | _decimal | _dec | _numeric | _fixed |
+  _char | _varchar | _binary | _varbinary |
+  _tinyblob | _blob | _mediumblob | _longblob | _tinytext | _text | _mediumtext | _longtext |
+  _date | _time | _datetime | _timestamp | _year |
+  _enum | _set |
+  _null | _letter | _digit | _data | _ascii | _string | _empty | _hex | _quid |
+  _json | _jsonpath | _jsonkey | _jsonvalue | _jsonarray | _jsonpair | _jsonobject | _jsonpath_no_wildcard ;
 
 _basics_value_set:
     { $basic_values=['NULL','DEFAULT',$prng->int(0,99),$prng->int(0,99),$prng->int(0,99),"'".$prng->text(8)."'","'".$prng->string(1)."'","'".$prng->string(1)."'","'".$prng->string(1)."'"]; @vals=(); $val_count= $prng->int(1,10) unless defined $val_count; foreach(1..$val_count) { push @vals, $prng->arrayElement($basic_values) }; '('.(join ',', @vals).')' } ;
