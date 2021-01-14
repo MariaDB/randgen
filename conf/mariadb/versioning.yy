@@ -221,9 +221,8 @@ vers_partitioning_definition:
   | /* compatibility 10.5.0 */ PARTITION BY SYSTEM_TIME vers_partition_number_optional
 ;
 
-# MDEV-22178 - assertion failure with 1 partition
 vers_partition_number_optional:
-  | PARTITIONS { $prng->int(2,20) }
+  | PARTITIONS { $prng->int(1,20) }
 ;
 
 vers_partitioning_interval_or_limit:
