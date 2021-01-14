@@ -118,8 +118,7 @@ $fields = {
             "`c09` BIGINT COMMENT 'X'",
             "`c10` BIGINT COMMENT 'Y'",
             "`c11` VARCHAR(64) AS (CONCAT(`c09`,' ',`c10`)) PERSISTENT",
-# To work around MDEV-18084, comment the next line
-#            "`c12` VARCHAR(64) AS (CONCAT(`c09`,' ',`c10`)) VIRTUAL",
+            "`c12` VARCHAR(64) AS (CONCAT(`c09`,' ',`c10`)) VIRTUAL",
         ],
         index_sqls => [
             "PRIMARY KEY (`id`)",
