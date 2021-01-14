@@ -406,17 +406,8 @@ vers_ia_ind_name:
 ;
 
 vers_ia_col_name_and_definition:
-    vers_ia_real_col_name_and_definition
-  | vers_ia_real_col_name_and_definition
-  | vers_ia_real_col_name_and_definition
-  | vers_ia_real_col_name_and_definition
-  | vers_ia_real_col_name_and_definition
-  | vers_ia_real_col_name_and_definition
-  | vers_ia_real_col_name_and_definition
-  | vers_ia_real_col_name_and_definition
-  | vers_ia_real_col_name_and_definition
-# TODO: re-enable when virtual columns start working
-#  | vers_ia_virt_col_name_and_definition
+   ==FACTOR:50== vers_ia_real_col_name_and_definition
+  | vers_ia_virt_col_name_and_definition
 ;
 
 vers_ia_virt_col_name_and_definition:
@@ -479,21 +470,18 @@ vers_ia_optional_default_int_or_auto_increment:
   | vers_ia_optional_auto_increment
 ;
 
-#vers_ia_column_definition:
-#  vers_ia_data_type vers_ia_null vers_ia_default vers_ia_optional_auto_increment vers_ia_inline_key vers_ia_comment vers_ia_compressed
-#;
-
 vers_ia_create:
     CREATE vers_ia_replace_or_if_not_exists vers_ia_table_name (vers_col_list) vers_engine vers_ia_table_flags vers_partitioning_optional
   | CREATE vers_ia_replace_or_if_not_exists vers_ia_table_name (vers_col_list_with_period , PERIOD FOR SYSTEM_TIME ( vers_col_start, vers_col_end )) vers_engine vers_ia_table_flags vers_partitioning_optional
   | CREATE vers_ia_replace_or_if_not_exists vers_ia_table_name LIKE vers_existing_table
 ;
 
-# MDEV-14669 -- cannot use virtual columns with/without system versioning
-
+# MDEV-14670 (permanent) - cannot use virtual columns with/without system versioning
 vers_col_list:
     vers_ia_real_col_name_and_definition vers_with_without_system_versioning 
   | vers_ia_real_col_name_and_definition vers_with_without_system_versioning, vers_col_list
+  | vers_ia_col_name_and_definition
+  | vers_ia_col_name_and_definition, vers_col_list
 ;
 
 vers_col_type:
@@ -570,8 +558,8 @@ vers_ia_col_location:
 ;
 
 vers_ia_alter_column:
-    ALTER COLUMN ia_if_exists vers_ia_col_name SET DEFAULT vers_ia_default_val
-  | ALTER COLUMN ia_if_exists vers_ia_col_name DROP DEFAULT
+    ALTER COLUMN vers_ia_if_exists vers_ia_col_name SET DEFAULT vers_ia_default_val
+  | ALTER COLUMN vers_ia_if_exists vers_ia_col_name DROP DEFAULT
 ;
 
 vers_ia_if_exists:
