@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24585:
+=~ Assertion \`je->s\.cs == nice_js->charset()'
+=~ json_nice
+=~ Item_func_json_insert::val_str
 MDEV-24583:
 =~ AddressSanitizer|signal
 =~ create_tmp_table
