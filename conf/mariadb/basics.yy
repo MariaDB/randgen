@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, MariaDB
+#  Copyright (c) 2019, 2021, MariaDB Corporation Ab
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -339,7 +339,7 @@ _basics_view_algorithm_50pct:
   | ALGORITHM=MERGE | ALGORITHM=TEMPTABLE ;
 
 ;
-# MAXDB is disabled due to MDEV-18864
+# MAXDB is disabled permanently due to MDEV-18864
 _basics_sql_mode_list:
   { @modes= qw(
       ALLOW_INVALID_DATES
@@ -428,9 +428,8 @@ _basics_any_value:
 _basics_value_set:
     { $basic_values=['NULL','DEFAULT',$prng->int(0,99),$prng->int(0,99),$prng->int(0,99),"'".$prng->text(8)."'","'".$prng->string(1)."'","'".$prng->string(1)."'","'".$prng->string(1)."'"]; @vals=(); $val_count= $prng->int(1,10) unless defined $val_count; foreach(1..$val_count) { push @vals, $prng->arrayElement($basic_values) }; '('.(join ',', @vals).')' } ;
 
-#  | _int_unsigned disabled due to MDEV-19130
 _basics_value_for_numeric_column:
-    NULL | NULL | DEFAULT | _digit | _tinyint | _tinyint_unsigned | _smallint_unsigned ;
+    NULL | NULL | DEFAULT | _digit | _tinyint | _tinyint_unsigned | _smallint_unsigned | _int_unsigned;
 
 _basics_value_for_char_column:
     NULL | NULL | DEFAULT | '' | _char(1) | _english ;
