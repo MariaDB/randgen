@@ -29,7 +29,7 @@ sql_mode_session_or_global:
 sql_mode_value:
   sql_mode_list | '' | DEFAULT
 ;
-# MAXDB is disabled due to MDEV-18864
+# MAXDB is disabled permanently due to MDEV-18864
 # EMPTY_STRING_IS_NULL is disabled due to MDEV-18918
 # ORACLE mode invokes the whole different syntax, it needs to be tested separately
 sql_mode_list:
