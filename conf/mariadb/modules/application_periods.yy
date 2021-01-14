@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, 2020, MariaDB
+#  Copyright (c) 2019, 2021, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -462,12 +462,8 @@ app_periods_partitioning_definition:
 app_periods_partitioning_by_system_time:
       app_periods_partition_condition_opt (app_periods_system_partition_list)
     | /* compatibility 10.5.0 */ app_periods_partition_condition_opt
-    | /* compatibility 10.5.0 */ app_periods_partition_condition_opt PARTITIONS app_periods_partition_count
+    | /* compatibility 10.5.0 */ app_periods_partition_condition_opt PARTITIONS _tinyint_unsigned
 ;
-
-# TODO: Replace with _tinyint_unsigned or alike and remove after MDEV-22178 has been fixed
-app_periods_partition_count:
-    { $prng->int(2,64) } ;
 
 app_periods_partition_condition_opt:
     | INTERVAL _smallint_unsigned _basics_interval | LIMIT _smallint_unsigned ;
