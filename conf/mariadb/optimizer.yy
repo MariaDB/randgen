@@ -727,14 +727,11 @@ having_subquery:
 order_by_clause:
 	|
 	ORDER BY total_order_by asc_desc limit |
-	ORDER BY partial_order_by asc_desc ;
-# TODO: Uncomment after MDEV-9513 and MDEV-9514 are fixed
-#	order_by_anon;
+	ORDER BY partial_order_by asc_desc |
+	order_by_anon;
 
 order_by_anon:
-	ORDER BY 1 | ORDER BY 2 | ORDER BY 2, 1 | ORDER BY RAND();
-	ORDER BY 1 | ORDER BY RAND()
-;
+	ORDER BY 1 | ORDER BY 2 | ORDER BY 2, 1;
 
 partial_order_by:
    { join(', ', (shuffle ( (map { "field".$_ } 1..$fields), (map { "ifield".$_ } 1..$ifields), (map { "cfield".$_ } 1..$cfields) ))[0..int(rand($fields+$ifields+$cfields))] ) };
