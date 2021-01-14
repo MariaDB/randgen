@@ -99,7 +99,7 @@ mdev7978_auth_option:
       IDENTIFIED BY mdev7978_password
     | IDENTIFIED BY PASSWORD mdev7978_password_hash
     | IDENTIFIED WITH mdev7978_auth_plugin
-# Currently not supported, MDEV-11180
+# Not supported (MDEV-11180 closed as "Won't fix")
 #    | IDENTIFIED WITH mdev7978_auth_plugin BY mdev7978_password
     | IDENTIFIED WITH mdev7978_auth_plugin AS mdev7978_password_hash
 ;
