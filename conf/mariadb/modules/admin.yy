@@ -1,4 +1,4 @@
-#  Copyright (c) 2018, MariaDB
+#  Copyright (c) 2018, 2021, MariaDB Corporation Ab
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -120,8 +120,7 @@ admin_show:
   | /*!100305 SHOW CREATE PACKAGE admin_package_name */
   | /*!100305 SHOW CREATE PACKAGE BODY admin_package_name */
   | SHOW CREATE PROCEDURE _letter
-# Disabled due to MDEV-17978
-#  | SHOW CREATE SEQUENCE admin_sequence_name
+  | SHOW CREATE SEQUENCE admin_sequence_name
   | SHOW CREATE TABLE _table
   | SHOW CREATE TRIGGER _letter
   | SHOW CREATE USER admin_user_name
