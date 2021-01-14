@@ -29,8 +29,6 @@ sql_mode_session_or_global:
 sql_mode_value:
   sql_mode_list | '' | DEFAULT
 ;
-# NO_ZERO_DATE is disabled due to MDEV-18042
-# TRADITIONAL is disabled due to MDEV-18042
 # MAXDB is disabled due to MDEV-18864
 # EMPTY_STRING_IS_NULL is disabled due to MDEV-18918
 # ORACLE mode invokes the whole different syntax, it needs to be tested separately
@@ -57,6 +55,7 @@ sql_mode_list:
       NO_KEY_OPTIONS
       NO_TABLE_OPTIONS
       NO_UNSIGNED_SUBTRACTION
+      NO_ZERO_DATE
       NO_ZERO_IN_DATE
       ONLY_FULL_GROUP_BY
       PAD_CHAR_TO_FULL_LENGTH
@@ -67,6 +66,7 @@ sql_mode_list:
       STRICT_ALL_TABLES
       STRICT_TRANS_TABLES
       TIME_ROUND_FRACTIONAL
+      TRADITIONAL
     ); $length=$prng->int(1,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length]) . "'"
   }
 ;
