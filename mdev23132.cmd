@@ -1,1 +1,1 @@
-perl ./runall-new.pl --threads=5 --duration=600 --mysqld=--max-statement-time=5 --mysqld=--lock-wait-timeout=3 --grammar=mdev23132.yy --skip-gendata --seed=1610588500 --vardir1=/dev/shm/var_mdev23132 --basedir1=$1
+perl ./runall-trials.pl --trials=5 --threads=5 --duration=300 --mysqld=--max-statement-time=5 --mysqld=--lock-wait-timeout=3 --grammar=mdev23132.yy --skip-gendata --seed=1610588500 --vardir1=/dev/shm/var_mdev23132 --basedir1=$1
