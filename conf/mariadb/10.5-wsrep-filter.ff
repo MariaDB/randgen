@@ -3,8 +3,6 @@ $rules = {
   'mdev17974_1' => sub { $_ =~ m{(?:CREATE\s+.*PROCEDURE|PREPARE).*CREATE\s+.*ROLE.*WITH\s+ADMIN}s },
   'mdev18003_1' => sub { $_ =~ m{CREATE\s+(?:OR\s+REPLACE|IF\s+NOT\s+EXISTS)\s*ROLE.*WITH\s+ADMIN}s },
   'vcols'       => sub { $_ =~ m{VIRTUAL|PERSISTENT|STORED|GENERATED\s+ALWAYS}s },
-  'mdev22051'   => sub { $_ =~ m{FLUSH\s+TABLE.*(?:WITH|EXPORT)}s },
-  'mdev22055'   => sub { $_ =~ m{(?:COMMIT|ROLLBACK).*AND\s+CHAIN}s },
   'sequences'   => sub { $_ =~ m{SEQUENCE}s },
   'mdev22052'   => sub { $_ =~ m{(?:LOCK|BACKUP)}s },
   'mdev22154_22458_22460' => sub { $_ =~ m{(?:SHOW.*EXPLAIN)}s },
