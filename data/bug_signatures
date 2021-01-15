@@ -72,6 +72,11 @@ MDEV-24519:
 =~ String::copy
 =~ Item::remove_eq_conds
 =~ Version: '10\.[4-9]
+MDEV-24511:
+=~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
+=~ Field::ptr_in_record
+=~ Column_definition::Column_definition
+=~ Version: '10\.[5-9]
 MDEV-24508:
 =~ Assertion \`!strcmp(index->name, "FTS_DOC_ID_INDEX")'
 =~ ha_innobase::write_row
@@ -663,6 +668,16 @@ MDEV-23145:
 =~ handler::ha_external_lock
 =~ close_system_tables|close_thread_tables
 =~ Version: '10\.[3-9]
+MDEV-23132:
+=~ Assertion \`trn->locked_tables == 0 && trn->used_instances == 0'
+=~ trnman_end_trn
+=~ Sp_handler::db_find_routine
+=~ Version: '10\.[5-9]
+MDEV-23132:
+=~ signal|AddressSanitizer
+=~ reset_thd_trn|_ma_reset_trn_for_table
+=~ ma_commit|maria_commit
+=~ Sp_handler::db_find_routine
 MDEV-23127:
 =~ signal|AddressSanitizer
 =~ Query_cache::double_linked_list_exclude|Assertion \`table_block_data->m_cached_query_count >= 0'
