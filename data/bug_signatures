@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24625:
+=~ Could not use .* for logging (error 2)\. Turning logging off
+=~ Could not use .* for logging (error 0)\. Turning logging off
+=~ Assertion \`((__builtin_expect(((WSREP_ON_) != 0),0) && this->variables\.wsrep_on) && wsrep_emulate_bin_log) \|\| mysql_bin_log\.is_open()'|Assertion \`Count >= rest_length'|Assertion \`is_open()'
+=~ THD::binlog_update_row|THD::binlog_write_row|_my_b_write|MYSQL_BIN_LOG::trx_group_commit_leader
 MDEV-24620:
 =~ AddressSanitizer|signal
 =~ rec_init_offsets_comp_ordinary
@@ -3353,9 +3358,6 @@ TODO-842: [precision > 0]
 TODO-842: [m_status == DA_ERROR - ALTER]
 =~ Diagnostics_area::sql_errno
 =~ Sql_cmd_alter_table::execute
-TODO-842: [THD::binlog_write_row]
-=~ Assertion \`((__builtin_expect(((WSREP_ON_) != 0),0) && this->variables\.wsrep_on) && wsrep_emulate_bin_log) \|\| mysql_bin_log.is_open()'
-=~ THD::binlog_write_row|THD::binlog_update_row
 TODO-842: [lock_table_has]
 =~ Assertion \`lock_table_has(trx, index->table, LOCK_IX)'
 =~ lock_rec_insert_check_and_lock
