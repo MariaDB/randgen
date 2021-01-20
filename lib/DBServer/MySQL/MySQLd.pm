@@ -371,6 +371,7 @@ sub createMysqlBase  {
         push(@$boot_options, @{$self->[MYSQLD_SERVER_OPTIONS]});
     }
     push @$boot_options, "--skip-log-bin";
+    push @$boot_options, "--loose-enforce-storage-engine=";
     push @$boot_options, "--loose-innodb-encrypt-tables=OFF";
     push @$boot_options, "--loose-innodb-encrypt-log=OFF";
     # Workaround for MENT-350
