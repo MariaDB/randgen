@@ -1,7 +1,7 @@
 our ($encryption, $innodb_pagesizes, $innodb_compression);
-require 'conf/mariadb/include/encryption_on_off';
-require 'conf/mariadb/include/innodb_pagesize';
-require 'conf/mariadb/include/innodb_compression';
+require "$ENV{RQG_HOME}/conf/mariadb/include/encryption_on_off";
+require "$ENV{RQG_HOME}/conf/mariadb/include/innodb_pagesize";
+require "$ENV{RQG_HOME}/conf/mariadb/include/innodb_compression";
 
 $combinations = [
   [

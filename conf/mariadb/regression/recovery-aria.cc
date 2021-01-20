@@ -1,5 +1,5 @@
 our ($encryption);
-require 'conf/mariadb/include/encryption_on_off';
+require "$ENV{RQG_HOME}/conf/mariadb/include/encryption_on_off";
 
 $combinations = [
   [
