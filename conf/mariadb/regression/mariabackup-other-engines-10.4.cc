@@ -1,5 +1,5 @@
 our $mariabackup_scenarios;
-require 'conf/mariadb/include/mariabackup-10.4.scenarios';
+require "$ENV{RQG_HOME}/conf/mariadb/include/mariabackup-10.4.scenarios";
 
 $combinations = [
   [
