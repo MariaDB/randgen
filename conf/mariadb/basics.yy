@@ -58,6 +58,12 @@ _basics_insert_ignore_replace_clause:
 _basics_delayed_5pct:
   | | | | | | | | | | | | | | | | | | | DELAYED ;
 
+_basics_left_right:
+  LEFT | RIGHT ;
+
+_basics_outer_50pct:
+  | OUTER ;
+
 _basics_ignore_33pct:
   | | IGNORE ;
 
