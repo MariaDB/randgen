@@ -72,6 +72,12 @@ MDEV-24220:
 =~ base_list_iterator::next|TABLE_LIST::is_recursive_with_table
 =~ st_select_lex::cleanup
 =~ sp_instr_stmt::execute|Prepared_statement::execute
+MDEV-23632:
+=~ AddressSanitizer|signal
+=~ row_mysql_store_col_in_innobase_format
+=~ innobase_get_computed_value
+=~ row_merge_buf_add
+=~ Version: '10\.[3-9]
 
 ##############################################################################
 # Weak matches
