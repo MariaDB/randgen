@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24633:
+=~ AddressSanitizer|signal
+=~ my_mb_wc_latin1
+=~ get_first_nonspace
+=~ Item_func_json_merge_patch
 MDEV-24625:
 =~ Could not use .* for logging (error 2)\. Turning logging off
 =~ Could not use .* for logging (error 0)\. Turning logging off
@@ -1439,7 +1444,6 @@ MDEV-21413:
 MDEV-21406:
 =~ Assertion \`tmp != ((long long) 0x8000000000000000LL)'
 =~ TIME_from_longlong_datetime_packed
-=~ Item_func_ifnull
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-21406:
 =~ Assertion \`is_valid_value_slow()'
@@ -2831,7 +2835,7 @@ MDEV-16694:
 =~ signal|AddressSanitizer
 =~ multi_update::initialize_tables
 =~ mysql_explain_union
-=~ return_zero_rows
+=~ select_describe
 MDEV-16664:
 =~ InnoDB: Failing assertion: !other_lock \|\| wsrep_thd_is_BF(lock->trx->mysql_thd, FALSE) \|\| wsrep_thd_is_BF(other_lock->trx->mysql_thd, FALSE)
 =~ lock_rec_queue_validate
