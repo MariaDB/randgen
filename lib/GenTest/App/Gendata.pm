@@ -185,11 +185,6 @@ sub run {
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
     $executor->init();
 
-#  
-# The specification file is actually a perl script, so we read it by
-# eval()-ing it
-#  
-    
     my ($tables, $fields, $data, $schemas);  # Specification as read
                                              # from the spec file.
     my (@table_perms, @field_perms, @data_perms, @schema_perms);	# Specification
@@ -200,10 +195,34 @@ sub run {
                                                                     # substituted
 
     if ($spec_file ne '') {
-        open(CONF , $spec_file) or croak "unable to open specification file '$spec_file': $!";
+        #
+        # Usually the specification file is actually a perl script (all those .zz),
+        #  so we read it by eval()-ing it
+        #
+        open(CONF , $spec_file) or croak "unable to open gendata file '$spec_file': $!";
         read(CONF, my $spec_text, -s $spec_file);
-        eval ($spec_text);
-        croak "Unable to load $spec_file: $@" if $@;
+        close(CONF);
+
+        unless (eval ($spec_text))
+        {
+          my $perl_errors= $@;
+          say("Could not evaluate $spec_file as Perl, trying to feed it to the server as SQL");
+          my $client = DBServer::MySQL::MySQLd::_find(undef,
+                  [$executor->serverVariable('basedir')],
+                  osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
+                  osWindows()?("mariadb.exe","mysql.exe"):("mariadb","mysql")
+          );
+          # ... but if it turns out to be something else, we'll try to interpret it
+          # as an SQL file (e.g. a dump) and feed it directly to the server
+          if ($client and
+              system("$client -uroot --protocol=tcp --port=".$executor->port()." ".$executor->defaultSchema()." < $spec_file") == STATUS_OK)
+          {
+            say("Loaded SQL file $spec_file");
+            return STATUS_OK;
+          } else {
+            croak "Unable to load $spec_file: $perl_errors";
+          }
+        }
     }
 
     say("Running Gendata from file $spec_file");
