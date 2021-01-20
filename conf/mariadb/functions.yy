@@ -1,22 +1,28 @@
+# Copyright (c) 2021, MariaDB Corporation Ab.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# 51 Franklin Street, Suite 500, Boston, MA 02110-1335 USA
+
 query_init_add:
    { $tmp_table = 0; '' } ;
 
 query_add:
-    func_select_or_explain_select
-  | func_select_or_explain_select
-  | func_select_or_explain_select
-  | func_select_or_explain_select
-  | func_select_or_explain_select
-  | func_select_or_explain_select
-  | func_prepare_execute
+    ==FACTOR:9== func_select_or_explain_select
   | { $tmp_table++; '' } func_create_and_drop
 ;
 
 func_create_and_drop:
    CREATE _basics_temporary_50pct TABLE { 'tmp'.$tmp_table } AS func_select ; DROP TABLE IF EXISTS { 'tmp'.$tmp_table } ;
-
-func_prepare_execute:
-   SET @stmt = " func_select "; SET @stmt_create = CONCAT("CREATE TEMPORARY TABLE `ps` AS ", @stmt ); PREPARE stmt FROM @stmt_create ; EXECUTE stmt ; SET @stmt_ins = CONCAT("INSERT INTO `ps` ", @stmt) ; PREPARE stmt FROM @stmt_ins; EXECUTE stmt; EXECUTE stmt; DEALLOCATE PREPARE stmt; DROP TEMPORARY TABLE `ps`;
 
 func_select_or_explain_select:
    _basics_explain_analyze func_select;
@@ -29,7 +35,7 @@ func_select_item:
 ;
 
 func_select:
-  { $num = 0; '' } SELECT _basics_distinct_50pct func_select_list FROM _table func_where func_group_by_having_order_by_limit ;
+  { $num = 0; '' } /* _table */ SELECT _basics_distinct_50pct func_select_list FROM { $last_table } func_where func_group_by_having_order_by_limit ;
 
 func_aggregate_func:
    COUNT( func_func )
@@ -67,7 +73,7 @@ func_group_by:
    | GROUP BY func_func | GROUP BY func_func, func_func ;
 
 func_having:
-   | HAVING func_func ;
+   | HAVING { 'field' . $prng->int(1,$num) } _basics_comparison_operator _basics_any_value ;
 
 func_order_by:
    | ORDER BY func_func | ORDER BY func_func, func_func ;
