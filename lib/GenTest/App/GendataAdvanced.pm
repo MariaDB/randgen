@@ -414,7 +414,7 @@ sub gen_table {
     my $has_autoinc= $col->[0] =~ /AUTO_INCREMENT/;
     my %pk_columns= ($has_autoinc ? (id => 1) : ());
 
-    if ($self->vcols)
+    if (defined $self->vcols)
     {
         # TODO: add actual functions for virtual columns
 
