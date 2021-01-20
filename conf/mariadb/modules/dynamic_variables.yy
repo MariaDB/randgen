@@ -14,17 +14,22 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 thread1_init_add:
-    SET GLOBAL dynvar_set_global_list ;
+    dynvar_initial_settings;
 
 query_add:
     ==FACTOR:0.01==   SET SESSION dynvar_session_variable
   | ==FACTOR:0.001== SET GLOBAL dynvar_global_variable_runtime
 ;
 
-dynvar_set_global_list:
-                   dynvar_global_variable
-  | ==FACTOR:0.1== dynvar_charset_variable
-  | ==FACTOR:2==   dynvar_global_variable, dynvar_set_global_list
+dynvar_initial_settings:
+  dynvar_global_setting /* initial setting */ |
+  ==FACTOR:10== dynvar_global_setting /* initial setting */ ; dynvar_initial_settings
+;
+
+dynvar_global_setting:
+  ==FACTOR:100== SET GLOBAL dynvar_global_variable |
+                 SET NAMES _charset_name |
+  ==FACTOR:0.1== SET GLOBAL dynvar_charset_variable
 ;
 
 dynvar_global_variable_runtime:
@@ -32,6 +37,11 @@ dynvar_global_variable_runtime:
   | INNODB_BUFFER_POOL_LOAD_ABORT= dynvar_boolean
   | INNODB_BUFFER_POOL_LOAD_NOW= dynvar_boolean
   | INNODB_LOG_CHECKPOINT_NOW= dynvar_boolean
+  | BINLOG_COMMIT_WAIT_COUNT= { $prng->arrayElement([1,10,100]) }
+  | BINLOG_COMMIT_WAIT_USEC= { $prng->arrayElement([0,1000,1000000,10000000]) }
+  | RPL_SEMI_SYNC_MASTER_ENABLED= dynvar_boolean
+  | RPL_SEMI_SYNC_SLAVE_ENABLED= dynvar_boolean
+  | USERSTAT= dynvar_boolean
 ;
 
 dynvar_charset_variable:
@@ -134,7 +144,7 @@ dynvar_session_variable:
   | LOG_SLOW_SLAVE_STATEMENTS= dynvar_boolean
   | LOG_SLOW_VERBOSITY= dynvar_log_slow_verbosity_value
   | LOG_WARNINGS= { $prng->int(0,20) }
-  | LONG_QUERY_TIME= { $prng->int(0,600) }
+  | LONG_QUERY_TIME= { $prng->int(0,30) }
   | LOW_PRIORITY_UPDATES= dynvar_boolean
 # | MAX_ALLOWED_PACKET # Dynamic conditionally
   | MAX_DELAYED_THREADS= { $prng->arrayElement([0,20,'DEFAULT']) }
@@ -144,8 +154,7 @@ dynvar_session_variable:
   | MAX_JOIN_SIZE= { $prng->arrayElement(['DEFAULT',1,65535,18446744073709551615]) }
   | MAX_LENGTH_FOR_SORT_DATA= { $prng->arrayElement(['DEFAULT',4,1024,1048576,8388608]) }
   | MAX_RECURSIVE_ITERATIONS= { $prng->arrayElement(['DEFAULT',0,1,1048576,4294967295]) }
-# Disabled due to MDEV-22524
-# | MAX_RELAY_LOG_SIZE= { $prng->arrayElement([0,4096,1048576,16777216]) }
+  | MAX_RELAY_LOG_SIZE= { $prng->arrayElement([0,4096,1048576,16777216]) }
   | MAX_ROWID_FILTER_SIZE= { $prng->arrayElement([1024,4096,65536,131072,1048576]) }
   | MAX_SEEKS_FOR_KEY= { $prng->arrayElement([1,4096,1048576,4294967295]) }
 # Too many problems
@@ -177,7 +186,7 @@ dynvar_session_variable:
   | OPTIMIZER_SEARCH_DEPTH= { $prng->int(0,63) }
   | OPTIMIZER_SELECTIVITY_SAMPLING_LIMIT= { $prng->arrayElement([10,50,100,1000,10000]) }
   | OPTIMIZER_SWITCH= dynvar_optimizer_switch_value
-  | OPTIMIZER_TRACE= { "'enabled=".{ $prng->arrayElement(['on','off','default']) }."'" } /* compatibility 10.4.3 */
+  | OPTIMIZER_TRACE= { "'enabled=".$prng->arrayElement(['on','off','default']) ."'" } /* compatibility 10.4.3 */
   | OPTIMIZER_TRACE_MAX_MEM_SIZE= { $prng->arrayElement([1,16384,1048576,8388608]) } /* compatibility 10.4.3 */
   | OPTIMIZER_USE_CONDITION_SELECTIVITY= { $prng->int(1,5) }
   | PRELOAD_BUFFER_SIZE= { $prng->arrayElement([1024,8192,32768,1048576]) }
@@ -200,10 +209,10 @@ dynvar_session_variable:
   | SERVER_ID= { $prng->int(1,1000) }
   | SESSION_TRACK_SCHEMA= dynvar_boolean
   | SESSION_TRACK_STATE_CHANGE= dynvar_boolean
-# Disabled due to MDEV-22524 (countless deadlocks)
-#  | session_track_system_variables= dynvar_session_track_system_variables_value
+  | SESSION_TRACK_SYSTEM_VARIABLES= dynvar_session_track_system_variables_value
   | SESSION_TRACK_TRANSACTION_INFO= { $prng->arrayElement(['OFF','STATE','CHARACTERISTICS']) }
-  | SESSION_TRACK_USER_VARIABLES= dynvar_boolean
+  # Disabled due to MDEV-16470 (functionality is disabled)
+# | SESSION_TRACK_USER_VARIABLES= dynvar_boolean
   | SKIP_PARALLEL_REPLICATION= dynvar_boolean
   | SKIP_REPLICATION= dynvar_boolean
   | SLOW_QUERY_LOG= dynvar_boolean
@@ -245,12 +254,11 @@ dynvar_session_variable:
   | WSREP_CAUSAL_READS= dynvar_boolean
   | WSREP_DIRTY_READS= dynvar_boolean
   | WSREP_GTID_SEQ_NO= { $prng->int(0,18446744073709551615) } /* compatibility 10.5.1 */
-# Disabled due to MDEV-22443
-# | WSREP_ON= dynvar_boolean
+  | WSREP_ON= dynvar_boolean
   | WSREP_OSU_METHOD= { $prng->arrayElement(['TOI','RSU']) }
   | WSREP_RETRY_AUTOCOMMIT= { $prng->int(0,10000) }
   | WSREP_SYNC_WAIT= { $prng->int(0,15) }
-# Disabled due to MDEV-22148
+# Disabled due to MDEV-24596
 # | WSREP_TRX_FRAGMENT_SIZE= { $prng->arrayElement(['DEFAULT',0,1,16384,1048576]) }
   | WSREP_TRX_FRAGMENT_UNIT= { $prng->arrayElement(['bytes',"'rows'",'segments']) }
 ;
@@ -258,8 +266,7 @@ dynvar_session_variable:
 dynvar_global_variable:
     ARIA_CHECKPOINT_INTERVAL= { $prng->int(0,300) }
   | ARIA_CHECKPOINT_LOG_ACTIVITY= { $prng->arrayElement([0,1024,8192,16384,65536,1048576,4194304,16777216]) }
-# Disabled due to MDEV-18496
-# | ARIA_ENCRYPT_TABLES= dynvar_boolean
+  | ARIA_ENCRYPT_TABLES= dynvar_boolean
   | ARIA_GROUP_COMMIT= { $prng->arrayElement(['none','hard','soft']) }
   | ARIA_GROUP_COMMIT_INTERVAL= { $prng->arrayElement([0,1000,1000000,10000000,60000000]) }
   | ARIA_LOG_FILE_SIZE= { $prng->arrayElement([65536,1048576,134217728,1073741824]) }
@@ -273,8 +280,10 @@ dynvar_global_variable:
   | AUTOMATIC_SP_PRIVILEGES= dynvar_boolean
   | BINLOG_CACHE_SIZE= { $prng->arrayElement([4096,16384,1048576]) }
   | BINLOG_CHECKSUM= { $prng->arrayElement(['CRC32','NONE']) }
-  | BINLOG_COMMIT_WAIT_COUNT= { $prng->arrayElement([1,10,100]) }
-  | BINLOG_COMMIT_WAIT_USEC= { $prng->arrayElement([0,1000,1000000,10000000]) }
+  # Moved to runtime
+  # | BINLOG_COMMIT_WAIT_COUNT= { $prng->arrayElement([1,10,100]) }
+  # Moved to runtime
+  # | BINLOG_COMMIT_WAIT_USEC= { $prng->arrayElement([0,1000,1000000,10000000]) }
   | BINLOG_FILE_CACHE_SIZE= { $prng->arrayElement([8192,65536,1048576]) }
   | BINLOG_ROW_METADATA= { $prng->arrayElement(['NO_LOG','MINIMAL','FULL']) } /* compatibility 10.5.0 */
   | BINLOG_STMT_CACHE_SIZE= { $prng->arrayElement([4096,65536,1048576]) }
@@ -287,13 +296,16 @@ dynvar_global_variable:
   | DELAYED_QUEUE_SIZE= { $prng->arrayElement([10,100,10000]) }
   | DELAY_KEY_WRITE= { $prng->arrayElement(['ON','OFF','ALL']) }
   | DISCONNECT_ON_EXPIRED_PASSWORD= dynvar_boolean
+  # Moved to startup options
 # | ENCRYPT_TMP_DISK_TABLES
-# | EVENT_SCHEDULER
+  | EVENT_SCHEDULER
   | EXPIRE_LOGS_DAYS= { $prng->int(0,99) }
   | EXTRA_MAX_CONNECTIONS= { $prng->int(1,10) }
   | FLUSH= dynvar_boolean
   | FLUSH_TIME= { $prng->arrayElement([1,30,300]) }
+  # Unlikely used in practice
 # | FT_BOOLEAN_SYNTAX
+  # Pre-defined in tests
 # | GENERAL_LOG
 # | GENERAL_LOG_FILE
   | GTID_BINLOG_STATE= ''
@@ -383,8 +395,7 @@ dynvar_global_variable:
   | INNODB_IO_CAPACITY= { $prng->arrayElement([100,500,1000]) }
   | INNODB_IO_CAPACITY_MAX= { $prng->arrayElement([100,1000,5000]) }
   | INNODB_LIMIT_OPTIMISTIC_INSERT_DEBUG= { $prng->arrayElement([1,10,100,1000,10000]) }
-# Disabled due to MDEV-23474
-# | innodb_log_checksums= dynvar_boolean
+  | INNODB_LOG_CHECKSUMS= dynvar_boolean
   | INNODB_LOG_COMPRESSED_PAGES= dynvar_boolean
   | INNODB_LOG_OPTIMIZE_DDL= dynvar_boolean
   | INNODB_LOG_WRITE_AHEAD_SIZE= { $prng->arrayElement([512,1024,10000,16384]) }
@@ -411,8 +422,12 @@ dynvar_global_variable:
   | INNODB_PRINT_ALL_DEADLOCKS= dynvar_boolean
   | INNODB_PURGE_BATCH_SIZE= { $prng->arrayElement([1,2,10,100,1000]) }
   | INNODB_PURGE_RSEG_TRUNCATE_FREQUENCY= { $prng->arrayElement([1,2,10,64]) }
+# MENT-599
+  | INNODB_PURGE_THREADS= { $prng->int(0,33) } /* compatibility 10.5.2-0 */
   | INNODB_RANDOM_READ_AHEAD= dynvar_boolean
   | INNODB_READ_AHEAD_THRESHOLD= { $prng->int(0,64) }
+# MENT-661
+  | INNODB_READ_IO_THREADS= { $prng->int(0,65) } /* compatibility 10.5.2-0 */
   | INNODB_REPLICATION_DELAY= { $prng->arrayElement([1,100,1000,10000]) }
 # | innodb_saved_page_number_debug
 # Deprecated since 10.5.2
@@ -437,6 +452,8 @@ dynvar_global_variable:
 # | innodb_trx_rseg_n_slots_debug
   | INNODB_UNDO_LOGS= { $prng->int(0,128) }
   | INNODB_UNDO_LOG_TRUNCATE= dynvar_boolean
+# MENT-661
+  | INNODB_WRITE_IO_THREADS= { $prng->int(0,65) } /* compatibility 10.5.2-0 */
   | KEY_BUFFER_SIZE= { $prng->arrayElement([8,1024,1048576,16777216]) }
   | KEY_CACHE_AGE_THRESHOLD= { $prng->arrayElement([100,500,1000,10000]) }
   | KEY_CACHE_BLOCK_SIZE= { $prng->arrayElement([512,2048,4096,16384]) }
@@ -461,6 +478,8 @@ dynvar_global_variable:
   | MYISAM_MAX_SORT_FILE_SIZE= { $prng->arrayElement([0,1,1024,1048576,33554432,268435456,1073741824]) }
   | MYISAM_USE_MMAP= dynvar_boolean
   | MYSQL56_TEMPORAL_FORMAT= dynvar_boolean
+# MENT-661
+  | NET_BUFFER_LENGTH= { $prng->arrayElement([1024,4096,16384,65536,1048576]) }
   | PROXY_PROTOCOL_NETWORKS= '*' /* compatibility 10.3.1 */
   | QUERY_CACHE_LIMIT= { $prng->arrayElement([0,1,8,1024,1048576,4294967295]) }
   | QUERY_CACHE_MIN_RES_UNIT= { $prng->arrayElement([0,1,8,1024,1048576,4294967295]) }
@@ -477,13 +496,15 @@ dynvar_global_variable:
   | REPLICATE_WILD_DO_TABLE= 'test.%,mysql.%'
   | REPLICATE_WILD_IGNORE_TABLE= 'mysql.%'
 # | require_secure_transport
-  | RPL_SEMI_SYNC_MASTER_ENABLED= dynvar_boolean
+  # Moved to runtime
+# | RPL_SEMI_SYNC_MASTER_ENABLED= dynvar_boolean
   | RPL_SEMI_SYNC_MASTER_TIMEOUT= { $prng->arrayElement([0,1,1000,100000]) }
   | RPL_SEMI_SYNC_MASTER_TRACE_LEVEL= { $prng->arrayElement([1,16,32,64]) }
   | RPL_SEMI_SYNC_MASTER_WAIT_NO_SLAVE= dynvar_boolean
   | RPL_SEMI_SYNC_MASTER_WAIT_POINT= { $prng->arrayElement(['AFTER_COMMIT','AFTER_SYNC']) }
   | RPL_SEMI_SYNC_SLAVE_DELAY_MASTER= dynvar_boolean
-  | RPL_SEMI_SYNC_SLAVE_ENABLED= dynvar_boolean
+  # Moved to runtime
+# | RPL_SEMI_SYNC_SLAVE_ENABLED= dynvar_boolean
   | RPL_SEMI_SYNC_SLAVE_KILL_CONN_TIMEOUT= { $prng->arrayElement([0,1,10,100]) }
   | RPL_SEMI_SYNC_SLAVE_TRACE_LEVEL= { $prng->arrayElement([1,16,32,64]) }
   | SECURE_AUTH= dynvar_boolean
@@ -525,7 +546,9 @@ dynvar_global_variable:
   | THREAD_POOL_PRIO_KICKUP_TIMER= { $prng->arrayElement([0,1,2,128,500,10000]) }
   | THREAD_POOL_SIZE= { $prng->int(1,128) }
   | THREAD_POOL_STALL_LIMIT= { $prng->arrayElement([10,100,1000,10000]) }
-  | USERSTAT= dynvar_boolean
+  # Moved to runtime
+# | USERSTAT= dynvar_boolean
+  # Galera is not normally used
 # | wsrep_auto_increment_control    global
 # | wsrep_certification_rules       global
 # | wsrep_certify_nonpk     global
@@ -564,12 +587,6 @@ dynvar_global_variable:
 # | wsrep_sst_receive_address       global
 # | wsrep_start_position    global
 # | wsrep_strict_ddl        global
-# MENT-599
-  | INNODB_PURGE_THREADS= { $prng->int(0,33) } /* compatibility 10.5.2-0 */
-# MENT-661
-  | INNODB_READ_IO_THREADS= { $prng->int(0,65) } /* compatibility 10.5.2-0 */
-  | INNODB_WRITE_IO_THREADS= { $prng->int(0,65) } /* compatibility 10.5.2-0 */
-  | NET_BUFFER_LENGTH= { $prng->arrayElement([1024,4096,16384,65536,1048576]) }
 ;
 
 dynvar_default_regex_flags_value:
@@ -696,7 +713,16 @@ dynvar_optimizer_switch_value:
             rowid_filter
             condition_pushdown_from_having
             not_null_range_scan
-        ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', map {$_.'='.$prng->arrayElement(['on','off'])} @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
+        ); $length=$prng->int(0,scalar(@modes))
+        ; $switch= (join ',', map {$_.'='.$prng->arrayElement(['on','off'])} @{$prng->shuffleArray(\@modes)}[0..$length-1])
+        ; if ($switch =~ /materialization=off/) {
+            if ($switch =~ /in_to_exists=off/) { $switch =~ s/in_to_exists=off/in_to_exists=on/ }
+            elsif ($switch !~ /in_to_exists/) { $switch .= ',in_to_exists=on' }
+          } elsif ($switch =~ /in_to_exists=off/) {
+            if ($switch =~ /materialization=off/) { $switch =~ s/materialization=off/materialization=on/ }
+            elsif ($switch !~ /materialization/) { $switch .= ',materialization=on' }
+          }
+        ; "'" . $switch . "'"
     }
 ;
 
@@ -705,8 +731,7 @@ dynvar_session_track_system_variables_value:
       ; $length=$prng->int(0,scalar(@vars)/2)
       ; "'" . (join ',', @{$prng->shuffleArray(\@vars)}[0..$length-1]) . "'"
     }
-# Disabled due to MDEV-22524
-#  | '*'
+  | '*'
   | DEFAULT
 ;
 
