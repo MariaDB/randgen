@@ -1,6 +1,6 @@
 our ($encryption_options, $grammars);
-require 'conf/mariadb/include/encryption_on_off';
-require 'conf/mariadb/include/combo.grammars';
+require "$ENV{RQG_HOME}/conf/mariadb/include/encryption_on_off";
+require "$ENV{RQG_HOME}/conf/mariadb/include/combo.grammars";
 
 $combinations = [
   [
