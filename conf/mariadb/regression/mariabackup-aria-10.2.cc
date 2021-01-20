@@ -1,6 +1,6 @@
 our ($encryption, $mariabackup_scenarios);
-require 'conf/mariadb/include/encryption_on_off';
-require 'conf/mariadb/include/mariabackup.scenarios';
+require "$ENV{RQG_HOME}/conf/mariadb/include/encryption_on_off";
+require "$ENV{RQG_HOME}/conf/mariadb/include/mariabackup.scenarios";
 
 $combinations = [
   [
