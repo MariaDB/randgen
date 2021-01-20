@@ -2,6 +2,7 @@
 
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -20,8 +21,6 @@
 
 use strict;
 use lib 'lib';
-use lib "$ENV{RQG_HOME}";
-use lib "$ENV{RQG_HOME}/lib";
 use Carp;
 #use List::Util 'shuffle';
 use Cwd;
@@ -122,7 +121,7 @@ if (@ARGV) {
   say("Unrecognized options will be passed to the runner: @ARGV");
 }
 
-if ($seed eq 'time') {
+if (not defined $seed or $seed eq 'time') {
   $seed = time();
 }
 
@@ -164,26 +163,24 @@ if (not defined $threads) {
     $logToStd = 0;
 }
 
+if (not defined $trials) {
+  $trials= 1;
+}
+
 say("Using workdir=".$workdir);
 
-my $comb_count = $#$combinations + 1;
-
-my $total = 1;
 my $thread_id;
-if ($exhaustive) {
-    foreach my $comb_id (0..($comb_count-1)) {
-        $total *= $#{$combinations->[$comb_id]}+1;
-    }
-    if (defined $trials) {
-        if ($trials < $total) {
-            say("You specified --run-all-combinations-once, which gives $total combinations, but then limited the same with --trials=$trials");
-        } else {
-            $trials = $total;
-        }
-    } else {
-        $trials = $total;
-    }
-}
+#if ($exhaustive) {
+#    if (defined $trials) {
+#        if ($trials < scalar(@combinations)) {
+#            say("You specified --run-all-combinations-once, which gives ".scalar(@combinations)." combinations, but then limited the same with --trials=$trials");
+#        } else {
+#            $trials = scalar(@combinations);
+#        }
+#    } else {
+#        $trials = scalar(@combinations);
+#    }
+#}
 
 my %pids;
 for my $i (1..$threads) {
@@ -194,7 +191,7 @@ for my $i (1..$threads) {
         make_path($workdir);
         
         if ($exhaustive) {
-            doExhaustive(0);
+            doExhaustive();
         } else {
             doRandom();
         }
@@ -238,46 +235,147 @@ if ($thread_id > 0) {
 
 ## ----------------------------------------------------
 
+sub pickOne
+{
+  my ($group)= @_;
+  my $opt= [];
+  $opt->[0]= '';
+  $prng->shuffleArray($group);
+  foreach my $element (@$group) {
+    if (ref $element eq '') {
+      # Regular scalar element, adding to options
+      $opt->[1].= ' '.$element;
+      last;
+    }
+    elsif (ref $element eq 'ARRAY') {
+      # Group of alternatives, need to pick one option
+      my $combo= pickOne($element);
+      $opt->[1].= ' '.$combo->[1];
+      if ($combo->[0]) {
+        $opt->[0]= ($opt->[0] ? $opt->[0].'-'.$combo->[0] : $combo->[0]);
+      }
+    }
+    elsif (ref $element eq 'HASH') {
+      # Exclusives only combine with regular alternatives,
+      # But not with other exclusives on the same level.
+      # So, we'll keep them separate instead of combining right away,
+      # and will only do it after the loop is finished
+      my @keys= sort keys %$element;
+      $prng->shuffleArray(\@keys);
+      my $o= shift @keys;
+      $opt->[0]= ($opt->[0] ? $opt->[0].'-'.$o : $o);
+      my $combo= pickOne($element->{$o});
+      $opt->[1].= ' '.$combo->[1];
+      last;
+    }
+  }
+  return $opt;
+}
+
+sub flattenCombinations
+{
+  my ($name, $group)= @_;
+  my @alts= ();
+  my @exclusives= ();
+  foreach my $g (@$group) {
+    if (ref $g eq '') {
+      # Regular scalar element, adding to alternatives
+      push @alts, [ $name || '', $g ];
+    }
+    elsif (ref $g eq 'ARRAY') {
+      # Group of alternatives,
+      # need a cartesian product with all previous combinations
+      my $set= flattenCombinations($name, $g);
+      my @new_alts= ();
+      if (scalar(@alts)) {
+        foreach my $a (@alts) {
+          foreach my $e (@$set) {
+            my $name= ($a->[0] ? ($e->[0] ? $a->[0].'-'.$e->[0] : $a->[0]) : ($e->[0] || ''));
+            push @new_alts, [ $name, $a->[1].' '.$e->[1] ];
+          }
+        }
+      } else {
+        @new_alts= @$set;
+      }
+      @alts= @new_alts;
+    }
+    elsif (ref $g eq 'HASH') {
+      # Exclusives only combine with regular alternatives,
+      # But not with other exclusives on the same level.
+      # So, we'll keep them separate instead of combining right away,
+      # and will only do it after the loop is finished
+      foreach my $e (sort keys %$g) {
+        push @exclusives, [ $e, flattenCombinations($name, $g->{$e}) ];
+      }
+    }
+  }
+  if (scalar(@exclusives)) {
+    my @new_alts= ();
+    foreach my $e (@exclusives) {
+      foreach my $c (@{$e->[1]}) {
+        if (scalar(@alts)) {
+          foreach my $a (@alts) {
+            my $name= $e->[0];
+            if ($a->[0]) {
+              $name= $a->[0].'-'.$name;
+            }
+            if ($c->[0]) {
+              $name= $name.'-'.$c->[0];
+            }
+            push @new_alts, [$name, $c->[1]];
+          }
+        } else {
+          my $name= $e->[0];
+          if ($c->[0]) {
+            $name.= '-'.$c->[0];
+          }
+          push @new_alts, [$name, $c->[1]];
+        }
+      }
+    }
+    @alts= @new_alts;
+  }
+  return \@alts;
+}
+
 my $trial_counter = 0;
 
 sub doExhaustive {
-    my ($level,@idx) = @_;
-    if ($level < $comb_count) {
-        my @alts;
-        foreach my $i (0..$#{$combinations->[$level]}) {
-            push @alts, $i;
-        }
-        $prng->shuffleArray(\@alts) if !$noshuffle;
-        
-        foreach my $alt (@alts) {
-            push @idx, $alt;
-            doExhaustive($level+1,@idx) if $trial_counter < $trials;
-            pop @idx;
-        }
-    } else {
-        $trial_counter++;
-        my @comb;
-        foreach my $i (0 .. $#idx) {
-            push @comb, $combinations->[$i]->[$idx[$i]];
-        }
-        my $comb_str = join(' ', @comb);
-        next if $trial_counter < $start_combination;
-        doCombination($trial_counter,$comb_str,"combination");
-    }
+  my $flattened= flattenCombinations('',$combinations,[]);
+  my @combinations= ();
+  # Beautify the names
+  my $num= scalar(@$flattened);
+  my $len= 1;
+  while (($num=int($num/10)) >= 1) {
+    $len++;
+  }
+  my $n= 0;
+  foreach my $e (@$flattened) {
+    $n++;
+    my $k= $e->[0];
+    while ( $k=~ s/(?:\-\d+|\d+\-)//g ) {};
+    $k= sprintf("%0${len}d-$k", $n);
+    $k=~ s/\-$//;
+    push @combinations, [$k, $e->[1]]
+  }
+
+  unless ($noshuffle) {
+    $prng->shuffleArray(\@combinations);
+  }
+  foreach my $e (@combinations) {
+    $trial_counter++;
+    doCombination($trial_counter,$e->[1],"combination ".$e->[0]);
+  }
 }
 
 ## ----------------------------------------------------
 
 sub doRandom {
-    foreach my $trial_id (1..$trials) {
-        my @comb;
-        foreach my $comb_id (0..($comb_count-1)) {
-            my $n = $prng->uint16(0, $#{$combinations->[$comb_id]});
-            $comb[$comb_id] = $combinations->[$comb_id]->[$n];
-        }
-        my $comb_str = join(' ', @comb);        
-        doCombination($trial_id,$comb_str,"random trial");
-    }
+#  $prng->shuffleArray(\@combinations);
+  foreach my $trial_id (1..$trials) {
+    my $c= pickOne($combinations);
+    doCombination($trial_id,$c->[1],"random trial ".$c->[0]);
+  }
 }
 
 ## ----------------------------------------------------
