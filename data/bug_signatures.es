@@ -65,7 +65,7 @@ MDEV-24455:
 =~ Version: '10\.[5-9]
 MDEV-24442:
 =~ Assertion \`space->referenced()'
-=~ fil_crypt_space_needs_rotation
+=~ fil_crypt_space_needs_rotation|fil_delete_tablespace
 =~ Version: '10\.[5-9]
 MDEV-24220:
 =~ signal|AddressSanitizer

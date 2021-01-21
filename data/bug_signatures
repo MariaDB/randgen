@@ -44,7 +44,6 @@ MDEV-24583:
 MDEV-24583:
 =~ AddressSanitizer|signal
 =~ field_conv_memcpy
-=~ Create_tmp_table::finalize
 =~ select_unit::create_result_table
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24583:
@@ -67,7 +66,7 @@ MDEV-24570:
 MDEV-24545:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
-=~ sequences\.yy|admin\.yy
+=~ sequences\.yy|admin\.yy|alter_table\.yy
 MDEV-24532:
 =~ Assertion \`thd->transaction->stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
@@ -1950,7 +1949,6 @@ MDEV-19680:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'
 =~ Field_.*::val_.*
 =~ Item_direct_view_ref::val_.*
-=~ init_sum_functions|init_tmptable_sum_functions
 MDEV-19680:
 =~ Assertion \`marked_for_read()'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
 =~ Field_.*::val_.*
