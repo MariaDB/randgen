@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24646:
+=~ AddressSanitizer|signal
+=~ Field_blob::pack
+=~ THD::binlog_update_row
+=~ Version: '10\.3|Server version: 10\.3
 MDEV-24644:
 =~ AddressSanitizer|signal
 =~ check_key_in_list
