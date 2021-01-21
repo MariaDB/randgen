@@ -19,7 +19,7 @@ MDEV-24640:
 =~ marked as crashed and should be repaired|Failed to flush data or index file|Protocol::end_statement(): Assertion \`0'|Diagnostics_area::set_ok_status(ulonglong, ulonglong, const char\*): Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'|Assertion \`! is_set() \|\| m_can_overwrite_status'
 MDEV-24633:
 =~ AddressSanitizer|signal
-=~ my_mb_wc_latin1
+=~ my_mb_wc_.*
 =~ get_first_nonspace
 =~ Item_func_json_merge_patch
 MDEV-24625:
@@ -43,14 +43,8 @@ MDEV-24585:
 =~ Item_func_json_insert::val_str
 MDEV-24583:
 =~ AddressSanitizer|signal
-=~ create_tmp_table
-=~ select_union::create_result_table
-=~ Version: '10\.[2-4]|Server version: 10\.[2-4]
-MDEV-24583:
-=~ AddressSanitizer|signal
-=~ field_conv_memcpy
-=~ select_unit::create_result_table
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ create_tmp_table|field_conv_memcpy
+=~ select_union::create_result_table|select_unit::create_result_table
 MDEV-24583:
 =~ Assertion \`prebuilt->mysql_prefix_len <= prebuilt->mysql_row_len'
 =~ row_sel_dequeue_cached_row_for_mysql
