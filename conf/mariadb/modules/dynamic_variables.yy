@@ -266,7 +266,8 @@ dynvar_session_variable:
 dynvar_global_variable:
     ARIA_CHECKPOINT_INTERVAL= { $prng->int(0,300) }
   | ARIA_CHECKPOINT_LOG_ACTIVITY= { $prng->arrayElement([0,1024,8192,16384,65536,1048576,4194304,16777216]) }
-  | ARIA_ENCRYPT_TABLES= dynvar_boolean
+# Disabled due to MDEV-24640
+# | ARIA_ENCRYPT_TABLES= dynvar_boolean
   | ARIA_GROUP_COMMIT= { $prng->arrayElement(['none','hard','soft']) }
   | ARIA_GROUP_COMMIT_INTERVAL= { $prng->arrayElement([0,1000,1000000,10000000,60000000]) }
   | ARIA_LOG_FILE_SIZE= { $prng->arrayElement([65536,1048576,134217728,1073741824]) }
