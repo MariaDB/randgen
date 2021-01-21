@@ -4,9 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24644:
+=~ AddressSanitizer|signal
+=~ check_key_in_list
+=~ Item_func_json_keys::val_str
+=~ Item_func_group_concat::add
 MDEV-24640:
 =~ Unknown key id 1. Can't continue!
-=~ marked as crashed and should be repaired|Failed to flush data or index file|Protocol::end_statement(): Assertion \`0'|Diagnostics_area::set_ok_status(ulonglong, ulonglong, const char\*): Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ marked as crashed and should be repaired|Failed to flush data or index file|Protocol::end_statement(): Assertion \`0'|Diagnostics_area::set_ok_status(ulonglong, ulonglong, const char\*): Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'|Assertion \`! is_set() \|\| m_can_overwrite_status'
 MDEV-24633:
 =~ AddressSanitizer|signal
 =~ my_mb_wc_latin1
