@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24640:
+=~ Unknown key id 1. Can't continue!
+=~ marked as crashed and should be repaired|Failed to flush data or index file|Protocol::end_statement(): Assertion \`0'|Diagnostics_area::set_ok_status(ulonglong, ulonglong, const char\*): Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 MDEV-24633:
 =~ AddressSanitizer|signal
 =~ my_mb_wc_latin1
