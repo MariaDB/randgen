@@ -362,6 +362,8 @@ sub collectAclData {
   my $has_roles= ($server->versionNumeric ge '1000');
 
   $dbh->do("FLUSH PRIVILEGES");
+  # Needed due to MDEV-24657
+  $dbh->do("SET NAMES utf8");
 
   my $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user";
 
