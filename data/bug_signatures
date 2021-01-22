@@ -2965,7 +2965,7 @@ MDEV-15912:
 MDEV-15800:
 =~ Assertion \`next_insert_id >= auto_inc_interval_for_cur_row\.minimum()'
 =~ handler::update_auto_increment
-=~ mysql_load|select_insert::send_data|mysql_update|mysql_insert
+=~ mysql_load|select_insert::send_data|mysql_update|mysql_insert|TABLE::period_make_insert
 MDEV-15878:
 =~ Assertion \`table->file->stats\.records > 0 \|\| error'
 =~ join_read_const_table
