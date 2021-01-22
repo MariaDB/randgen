@@ -14,6 +14,15 @@ MDEV-24656:
 =~ Field::is_null_in_record
 =~ TABLE::validate_default_values_of_unset_fields
 =~ mysql_load
+MDEV-24656:
+=~ Assertion \`n < tuple->n_fields'
+=~ dtuple_get_nth_field
+=~ mysql_load
+MDEV-24656:
+=~ AddressSanitizer|signal
+=~ row_mysql_store_col_in_innobase_format
+=~ row_insert_for_mysql
+=~ mysql_load
 MDEV-24655:
 =~ AddressSanitizer|signal
 =~ Field::cmp_binary_offset|READ of size
