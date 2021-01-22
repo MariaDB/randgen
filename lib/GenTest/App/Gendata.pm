@@ -199,11 +199,11 @@ sub run {
         # Usually the specification file is actually a perl script (all those .zz),
         #  so we read it by eval()-ing it
         #
-        open(CONF , $spec_file) or croak "unable to open gendata file '$spec_file': $!";
-        read(CONF, my $spec_text, -s $spec_file);
-        close(CONF);
-
-        unless (eval ($spec_text))
+        my $eval_res= ($self->debug()
+                       ? eval { require $spec_file }
+                       : eval { local $SIG{__WARN__} = sub {}; require $spec_file }
+                      );
+        unless ($eval_res)
         {
           my $perl_errors= $@;
           say("Could not evaluate $spec_file as Perl, trying to feed it to the server as SQL");
