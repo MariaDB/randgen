@@ -802,7 +802,7 @@ sub normalizeDump {
     open(DUMP1,$file.'.tmp1');
     open(DUMP2,">$file");
     while (<DUMP1>) {
-      if (s/AUTO_INCREMENT=\d+//) {};
+      if (s/ AUTO_INCREMENT=\d+//) {};
       print DUMP2 $_;
     }
     close(DUMP1);
