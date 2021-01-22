@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24656:
+=~ InnoDB: Data field type 0, len 0
+=~ ib::fatal::~fatal
+=~ dtuple_check_typed
+=~ mysql_load
+MDEV-24655:
+=~ AddressSanitizer|signal
+=~ Field::cmp_binary_offset|READ of size
+=~ compare_record
+=~ mysql_update
+MDEV-24655:
+=~ AddressSanitizer|signal
+=~ row_sel_store_mysql_field_func
+=~ row_sel_store_mysql_rec
+=~ mysql_update
 MDEV-24646:
 =~ AddressSanitizer|signal
 =~ Field_blob::pack
