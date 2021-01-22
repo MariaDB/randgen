@@ -9,6 +9,11 @@ MDEV-24656:
 =~ ib::fatal::~fatal
 =~ dtuple_check_typed
 =~ mysql_load
+MDEV-24656:
+=~ AddressSanitizer|signal
+=~ Field::is_null_in_record
+=~ TABLE::validate_default_values_of_unset_fields
+=~ mysql_load
 MDEV-24655:
 =~ AddressSanitizer|signal
 =~ Field::cmp_binary_offset|READ of size
