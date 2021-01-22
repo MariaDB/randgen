@@ -506,7 +506,7 @@ sub doGenData {
 
     return STATUS_OK if defined $self->config->property('start-dirty');
 
-    foreach my $i (sort keys %{$self->config->server_specific}) {
+    foreach my $i (1..$self->config->number_of_servers) {
         next unless $self->config->server_specific->{$i}->{dsn};
         my $gendata_result;
 
