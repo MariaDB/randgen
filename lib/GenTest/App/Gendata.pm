@@ -204,8 +204,8 @@ sub run {
         #  so we read it by eval()-ing it
         #
         my $eval_res= ($self->debug()
-                       ? eval { $spec_text }
-                       : eval { local $SIG{__WARN__} = sub {}; $spec_text }
+                       ? eval ( $spec_text )
+                       : eval { local $SIG{__WARN__} = sub {}; eval ( $spec_text ) }
                       );
         unless ($eval_res)
         {
