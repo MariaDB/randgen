@@ -430,9 +430,7 @@ if ($#{$props->{redefine}} == 0 and ${$props->{redefine}}[0] =~ m/,/) {
 
 # Some more adjustments
 
-@{$props->{gendata}}= ('') unless defined $props->{gendata} and scalar @{$props->{gendata}};
-
-delete $props->{gendata} if $skip_gendata;
+@{$props->{gendata}}= ('') unless (defined $props->{gendata} and scalar @{$props->{gendata}} or $skip_gendata);
 
 # Push the number of "worker" threads into the environment.
 # lib/GenTest/Generator/FromGrammar.pm will generate a corresponding grammar element.
