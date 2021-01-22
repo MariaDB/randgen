@@ -50,10 +50,10 @@ $combinations = [
         "--grammar=conf/optimizer/outer_join.yy --gendata=conf/optimizer/outer_join.zz",
         "--grammar=conf/optimizer/range_access2.yy --gendata=conf/optimizer/range_access2.zz",
         "--grammar=conf/optimizer/range_access.yy --gendata=conf/optimizer/range_access.zz",
-        "--grammar=conf/optimizer/updateable_views.yy --skip-gendata --mysqld=--init-file=$ENV{RQG_HOME}/conf/optimizer/updateable_views.init",
-        "--grammar=conf/dbt3/dbt3-dml.yy --skip-gendata --mysqld=--init-file=$ENV{RQG_HOME}/conf/dbt3/dbt3-s0.001.dump",
-        "--grammar=conf/dbt3/dbt3-joins.yy --skip-gendata --mysqld=--init-file=$ENV{RQG_HOME}/conf/dbt3/dbt3-s0.001.dump",
-        "--grammar=conf/dbt3/dbt3-ranges.yy --skip-gendata --mysqld=--init-file=$ENV{RQG_HOME}/conf/dbt3/dbt3-s0.001.dump",
+        "--grammar=conf/optimizer/updateable_views.yy --gendata=$ENV{RQG_HOME}/conf/optimizer/updateable_views.init",
+        "--grammar=conf/dbt3/dbt3-dml.yy --gendata=$ENV{RQG_HOME}/conf/dbt3/dbt3-s0.001.dump",
+        "--grammar=conf/dbt3/dbt3-joins.yy --gendata=$ENV{RQG_HOME}/conf/dbt3/dbt3-s0.001.dump",
+        "--grammar=conf/dbt3/dbt3-ranges.yy --gendata=$ENV{RQG_HOME}/conf/dbt3/dbt3-s0.001.dump",
       ],
       ##### Generic grammars with various gendata
       gendata => [
@@ -160,17 +160,14 @@ $combinations = [
           '--gendata=conf/optimizer/outer_join.zz',
           '--gendata=conf/optimizer/range_access.zz',
           '--gendata=conf/backup/invariant.zz',
+          "--gendata=$ENV{RQG_HOME}/conf/osm/osm-schema.sql",
+          "--gendata=$ENV{RQG_HOME}/conf/osm/andorra.sql",
+          "--gendata=$ENV{RQG_HOME}/conf/smf/smf2.sql",
+          "--gendata=$ENV{RQG_HOME}/conf/mariadb/world.sql",
+          "--gendata=$ENV{RQG_HOME}/conf/optimizer/world.sql",
         ],
       ],
     }
-  ],
-  ##### Init files
-  [ '', '', '', '', '', '', '', '', '', '',
-    "--mysqld=--init-file=$ENV{RQG_HOME}/conf/osm/osm-schema.sql",
-    "--mysqld=--init-file=$ENV{RQG_HOME}/conf/osm/andorra.sql",
-    "--mysqld=--init-file=$ENV{RQG_HOME}/conf/smf/smf2.sql",
-    "--mysqld=--init-file=$ENV{RQG_HOME}/conf/mariadb/world.sql",
-    "--mysqld=--init-file=$ENV{RQG_HOME}/conf/optimizer/world.sql",
   ],
   ##### Transformers
   [ {
