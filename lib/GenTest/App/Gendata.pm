@@ -194,14 +194,18 @@ sub run {
                                                                     # been
                                                                     # substituted
 
+
     if ($spec_file ne '') {
+        open(CONF , $spec_file) or croak "unable to open gendata file '$spec_file': $!";
+        read(CONF, my $spec_text, -s $spec_file);
+        close(CONF);
         #
         # Usually the specification file is actually a perl script (all those .zz),
         #  so we read it by eval()-ing it
         #
         my $eval_res= ($self->debug()
-                       ? eval { require $spec_file }
-                       : eval { local $SIG{__WARN__} = sub {}; require $spec_file }
+                       ? eval { $spec_text }
+                       : eval { local $SIG{__WARN__} = sub {}; $spec_text }
                       );
         unless ($eval_res)
         {
