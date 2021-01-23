@@ -1,5 +1,6 @@
 # Copyright (c) 2008,2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -134,7 +135,7 @@ sub transform {
 	my $original_result = $results->[0];
 	my $original_query = $original_result->query();
 
-	my ($transform_outcome, $transformed_queries, $transformed_results) = $transformer->transformExecuteValidate($original_query, $original_result, $executor);
+	my ($transform_outcome, $transformed_queries, $transformed_results, $cleanup_block) = $transformer->transformExecuteValidate($original_query, $original_result, $executor);
 
 	if (
 		($transform_outcome > STATUS_CRITICAL_FAILURE) ||
@@ -179,6 +180,7 @@ sub transform {
 	say("EXPLAIN diff:");
 	say(GenTest::Comparator::dumpDiff(@orig_explains));
 	say("------- END OF TRANSFORM ISSUE -------");
+  GenTest::Transform::cleanup($executor, $cleanup_block);
 
 	return $transform_outcome;
 }

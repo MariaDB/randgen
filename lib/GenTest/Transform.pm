@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013 Monty Program Ab.
-# Copyright (c) 2016 MariaDB Corporation Ab.
+# Copyright (c) 2016, 2021 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -133,7 +133,7 @@ sub transformExecuteValidate {
     } else {
         push @$transform_blocks, $cleanup_block;
         $cleanup_block = undef;
-    } 
+    }
 
     foreach my $transform_block (@$transform_blocks) {
         my @transformed_queries = @$transform_block;
@@ -236,7 +236,7 @@ sub transformExecuteValidate {
 
         cleanup($executor, $cleanup_block);
         if ($transform_outcome != STATUS_OK) {
-            return ($transform_outcome, \@transformed_queries, \@transformed_results);
+            return ($transform_outcome, \@transformed_queries, \@transformed_results, $cleanup_block);
         }
         elsif ($transform_outcome == STATUS_OK) {
             # To expose transformed queries when a transformation was successfull 
