@@ -4,11 +4,25 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24664:
+=~ Assertion \`! is_set()'
+=~ Diagnostics_area::set_eof_status
+=~ Explain_query::send_explain
+=~ Prepared_statement::execute
 MDEV-24663:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ ANALYZE.*SELECT
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-24662:
+=~ Assertion \`found'
+=~ buf_page_get_low
+=~ fil_crypt_complete_rotate_space
+=~ Version: '10\.[2-3]|Server version: 10\.[2-3]
+MDEV-24662:
+=~ Assertion \`scrub_data->scrubbing'
+=~ btr_scrub_complete_space
+=~ Version: '10\.[2-3]|Server version: 10\.[2-3]
 MDEV-24656:
 =~ InnoDB: Data field type 0, len 0
 =~ ib::fatal::~fatal|ib::error_or_warn::~error_or_warn
