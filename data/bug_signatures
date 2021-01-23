@@ -709,7 +709,7 @@ MDEV-23145:
 MDEV-23132:
 =~ Assertion \`trn->locked_tables == 0 && trn->used_instances == 0'
 =~ trnman_end_trn
-=~ Sp_handler::db_find_routine
+=~ handler::ha_external_lock
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-23132:
 =~ signal|AddressSanitizer
