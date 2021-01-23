@@ -168,19 +168,10 @@ sub run {
     my $gendata_result = $self->doGenData();
     return $gendata_result if $gendata_result != STATUS_OK;
 
-    $self->[GT_TEST_START] = time();
-    $self->[GT_TEST_END] = $self->[GT_TEST_START] + $self->config->duration;
-
     $self->[GT_CHANNEL] = GenTest::IPC::Channel->new();
 
     my $init_generator_result = $self->initGenerator();
     return $init_generator_result if $init_generator_result != STATUS_OK;
-
-    my $init_reporters_result = $self->initReporters();
-    return $init_reporters_result if $init_reporters_result != STATUS_OK;
-
-    my $init_validators_result = $self->initValidators();
-    return $init_validators_result if $init_validators_result != STATUS_OK;
 
     # Cache metadata and other info that may be needed later
     my @log_files_to_report;
@@ -224,7 +215,15 @@ sub run {
         undef $metadata_executor;
     }
 
+    $self->[GT_TEST_START] = time();
+    $self->[GT_TEST_END] = $self->[GT_TEST_START] + $self->config->duration;
     $self->[GT_LOG_FILES_TO_REPORT] = \@log_files_to_report;
+
+    my $init_reporters_result = $self->initReporters();
+    return $init_reporters_result if $init_reporters_result != STATUS_OK;
+
+    my $init_validators_result = $self->initValidators();
+    return $init_validators_result if $init_validators_result != STATUS_OK;
 
     if (scalar(@{$self->config->filters})) {
         my @filters= ();
