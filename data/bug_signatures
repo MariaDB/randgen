@@ -141,11 +141,6 @@ MDEV-24467:
 =~ Binary_string::real_alloc|String::real_alloc
 =~ Field_blob::store
 =~ TABLE::update_default_fields
-MDEV-24444:
-=~ AddressSanitizer|signal
-=~ Item_func_in::get_func_mm_tree
-=~ SQL_SELECT::test_quick_select
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
 MDEV-24434:
 =~ Assertion \`trx->in_rw_trx_list \|\| trx->state == TRX_STATE_NOT_STARTED \|\| trx->state == TRX_STATE_ACTIVE'
 =~ trx_sys_any_active_transactions
@@ -396,6 +391,7 @@ MDEV-23676:
 =~ Assertion \`(((nr) % (1LL << 24)) % (int) log_10_int\[6 - dec\]) == 0'
 =~ my_time_packed_to_binary
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+# Not merged up yet
 MDEV-23666:
 =~ Assertion \`m_cpp_buf <= ptr && ptr <= m_cpp_buf + m_buf_length'
 =~ Lex_input_stream::body_utf8_append
@@ -421,27 +417,6 @@ MDEV-23652:
 =~ Assertion \`0'
 =~ ReadView::check_trx_id_sanity
 =~ lock_clust_rec_cons_read_sees
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-23644:
-=~ InnoDB: Duplicate FTS_DOC_ID value on table
-=~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'
-=~ buf_page_get_low
-=~ btr_copy_blob_prefix
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-23644:
-=~ Assertion \`!dfield_is_ext(row_field)'
-=~ row_ins_index_entry_set_vals
-=~ row_update_cascade_for_mysql
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-23644:
-=~ Assertion \`!bpage->file_page_was_freed'
-=~ buf_page_get_zip
-=~ btr_rec_copy_externally_stored_field|btr_copy_externally_stored_field
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-23644:
-=~ InnoDB: FIL_PAGE_TYPE=.* on BLOB read space .* page .*
-=~ ib::fatal::~fatal
-=~ btr_check_blob_fil_page_type
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-23541:
 =~ Assertion \`cost > 0\.0'
@@ -1018,10 +993,6 @@ MDEV-22548:
 =~ IGNORE
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 =~ application_periods
-MDEV-22540:
-=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction.*stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !changed \|\| thd->transaction.*stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !(info\.copied \|\| info\.deleted) \|\| thd->transaction.*stmt\.modified_non_trans_table'
-=~ mysql_load|mysql_insert
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22525:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_vcol_forward_refs
@@ -1164,12 +1135,6 @@ MDEV-22216:
 =~ Assertion \`xid_seqno > wsrep_seqno'
 =~ trx_rseg_update_wsrep_checkpoint
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-22178:
-=~ Assertion \`info->alias\.str'
-=~ partition_info::check_partition_info
-=~ versioning
-=~ PARTITIONS 1
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-22172:
 =~ Assertion \`inited == NONE \|\| lookup_handler != this'
 =~ handler::ha_write_row
@@ -1210,11 +1175,6 @@ MDEV-22099:
 =~ maria_records_in_range
 =~ DsMrr_impl::dsmrr_info_const
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-22076:
-=~ InnoDB: tried to purge non-delete-marked record in index
-=~ Assertion \`0'
-=~ row_purge_remove_sec_if_poss_leaf
-=~ xa\.yy
 MDEV-22063:
 =~ Assertion \`0'
 =~ wsrep::transaction::before_rollback
@@ -1440,6 +1400,7 @@ MDEV-21496:
 =~ ha_innobase::truncate
 =~ CrashUpgrade
 =~ Version: '10\.2\.19
+# Not merged up yet
 MDEV-21478:
 =~ Assertion \`col->len == sizeof(doc_id_t)'
 =~ dict_load_columns
@@ -1491,6 +1452,10 @@ MDEV-21373:
 =~ check_one_rb_key
 =~ heap_check_heap
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-21373:
+=~ Index for table .* is corrupt; try to repair it
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-21310:
 =~ Assertion \`part_share->auto_inc_initialized'
 =~ ha_partition::get_auto_increment
@@ -1542,31 +1507,6 @@ MDEV-21218:
 =~ Item_equal::contains
 =~ eliminate_item_equal
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-21138:
-=~ Assertion \`col->ord_part'|Assertion \`f\.col->ord_part'
-=~ row_build_index_entry_low
-=~ row_update_vers_insert
-=~ row_ins_foreign_check_on_constraint
-MDEV-21138:
-=~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'
-=~ buf_page_get_gen
-=~ btr_copy_blob_prefix
-=~ fts_parallel_tokenization
-MDEV-21138:
-=~ InnoDB: Flagged corruption of .* in table .* in CHECK TABLE; Wrong count
-=~ For InnoDB SYSTEM VERSIONED .* : error : Corrupt
-MDEV-21138:
-=~ InnoDB: Failing assertion: buf != field_ref_zero
-=~ row_merge_buf_add
-=~ InnoDB: Duplicate FTS_DOC_ID value on table
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ versioning
-MDEV-21138:
-=~ InnoDB: InnoDB: FIL_PAGE_TYPE=.* on BLOB read space .* page .* flags .*
-=~ btr_check_blob_fil_page_type
-=~ InnoDB: Duplicate FTS_DOC_ID value on table
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ versioning
 MDEV-21135:
 =~ InnoDB: Failing assertion: thr_get_trx(thr)->error_state == DB_SUCCESS
 =~ que_run_threads
@@ -1665,6 +1605,7 @@ MDEV-20765:
 =~ dfield_t::vers_history_row
 =~ row_ins_check_foreign_constraint
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+# Not merged up yet
 MDEV-20763:
 =~ Assertion \`btr_validate_index(index, 0)'
 =~ row_upd_sec_index_entry
@@ -1725,6 +1666,7 @@ MDEV-20666:
 =~ row_search_for_mysql
 =~ ha_innobase::index_read
 =~ Version: '5.5
+# Not merged up yet
 MDEV-20643:
 =~ signal 11|AddressSanitizer: SEGV
 =~ find_table_in_list
@@ -1787,6 +1729,11 @@ MDEV-20498:
 =~ handler::ha_write_row
 =~ ha_partition::copy_partitions
 =~ fast_alter_partition_table
+MDEV-20493:
+=~ signal
+=~ in Protocol::send_result_set_row
+=~ in select_send::send_data
+=~ in Prepared_statement::execute
 MDEV-20484:
 =~ signal 11|AddressSanitizer:
 =~ mem_heap_dup
@@ -2113,19 +2060,6 @@ MDEV-19299:
 =~ my_strnncollsp_simple
 =~ Item_func_min_max::val_str_native
 =~ Cached_item_str::cmp
-MDEV-19273:
-=~ signal 11|AddressSanitizer: SEGV on unknown address
-=~ MDL_ticket::has_stronger_or_equal_type
-=~ MDL_context::upgrade_shared_lock
-=~ wait_while_table_is_used
-MDEV-19273:
-=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->db\.str, table->table_name\.str, MDL_SHARED)'|Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db\.str, table_name\.str, MDL_SHARED)'
-=~ mysql_rm_table_no_locks
-MDEV-19273:
-=~ signal 11|AddressSanitizer
-=~ I_P_List
-=~ MDL_lock::Ticket_list::remove_ticket
-=~ MDL_context::release_lock
 MDEV-19261:
 =~ InnoDB: Failing assertion: dfield->type\.mtype == 0 \|\| dfield->len == len
 =~ trx_undo_rec_get_partial_row
@@ -2590,15 +2524,6 @@ MDEV-17912:
 =~ failed to decrypt .*  rc: -1  dstlen: 0  size: .*
 =~ Got error 192 when executing record .*
 =~ Aria engine: Redo phase failed
-MDEV-17891:
-=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction.*stmt\.modified_non_trans_table'
-=~ select_insert::abort_result_set|mysql_insert
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-17891:
-=~ The table .* is full|Warning: Enabling keys got errno 121
-=~ Assertion \`transactional_table \|\| !(info\.copied \|\| info\.deleted) \|\| thd->transaction.*stmt\.modified_non_trans_table'
-=~ mysql_load
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-17890:
 =~ InnoDB: Record in index .* was not found on update: TUPLE
 =~ Assertion \`0'|signal 11
@@ -2811,6 +2736,7 @@ MDEV-16985:
 MDEV-16962:
 =~ Assertion \`!error \|\| !ot_ctx.can_recover_from_failed_open()'
 =~ open_purge_table
+# Not merged up yet
 MDEV-16940:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ unsafe_key_update
@@ -3005,25 +2931,6 @@ MDEV-15534:
 =~ InnoDB: Failing assertion: prebuilt->magic_n == ROW_PREBUILT_ALLOCATED
 =~ row_update_prebuilt_trx
 =~ ha_innobase::external_lock
-MDEV-15533:
-=~ Assertion \`log->blobs'|InnoDB: Failing assertion: log->blobs
-=~ row_log_table_apply_update
-=~ mysql_alter_table
-MDEV-15532:
-=~ Assertion \`!log->same_pk'|InnoDB: Failing assertion: !log->same_pk
-=~ row_log_table_apply_delete
-=~ Version: '10\.[0-2]
-MDEV-15532:
-=~ Assertion \`err_key < ha_alter_info->key_count'
-=~ alter_rebuild_apply_log
-=~ Version: '10\.[0-2]
-MDEV-15532:
-=~ signal|AddressSanitizer
-=~ Field::is_null
-=~ field_unpack
-=~ print_keydup_error
-=~ alter_rebuild_apply_log
-=~ Version: '10\.[0-2]
 MDEV-15494:
 =~ InnoDB: Assertion failure.*trx0roll.cc line
 =~ trx_rollback_last_sql_stat_for_mysql
@@ -3507,10 +3414,6 @@ MDEV-22601: [Can't find record in]
 =~ sequence
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
-MDEV-22076: [cursor->index->is_committed - XA]
-=~ InnoDB: Failing assertion: !cursor->index->is_committed()
-=~ row_ins_sec_index_entry_by_modify
-=~ xa\.yy
 MDEV-21781: [EnableOptimizations]
 =~ Transformed query: .* GenTest::Transform::EnableOptimizations
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
@@ -3524,14 +3427,12 @@ MDEV-21310:
 =~ insert.* into .* partition
 =~ Out of range value for column
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+# Not merged up yet
 MDEV-21478:
 =~ Table .* contains .* user defined columns in InnoDB, but .* columns in MariaDB
-MDEV-21373:
-=~ Index for table .* is corrupt; try to repair it
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-21085: [Expected more data in file]
 =~ Got error 175 "File too short; Expected more data in file" from storage engine Aria
+# Not merged up yet
 MDEV-20763:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE|Index for table .* is corrupt; try to repair it
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
@@ -3539,10 +3440,6 @@ MDEV-20763:
 MDEV-20554:
 =~ Index for table .* is corrupt; try to repair it
 =~ scrub
-MDEV-20493:
-=~ in Protocol::send_result_set_row
-=~ in select_send::send_data
-=~ in Prepared_statement::execute
 MDEV-20484: [Record was not found on update: TUPLE]
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ Version: '10\.3

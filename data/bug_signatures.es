@@ -63,6 +63,11 @@ MDEV-24455:
 =~ mtr_t::start
 =~ btr_free_externally_stored_field
 =~ Version: '10\.[5-9]
+MDEV-24444:
+=~ AddressSanitizer|signal
+=~ Item_func_in::get_func_mm_tree
+=~ SQL_SELECT::test_quick_select
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
 MDEV-24442:
 =~ Assertion \`space->referenced()'
 =~ fil_crypt_space_needs_rotation|fil_delete_tablespace
@@ -72,12 +77,118 @@ MDEV-24220:
 =~ base_list_iterator::next|TABLE_LIST::is_recursive_with_table
 =~ st_select_lex::cleanup
 =~ sp_instr_stmt::execute|Prepared_statement::execute
+MDEV-23644:
+=~ InnoDB: Duplicate FTS_DOC_ID value on table
+=~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'
+=~ buf_page_get_low
+=~ btr_copy_blob_prefix
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-23644:
+=~ Assertion \`!dfield_is_ext(row_field)'
+=~ row_ins_index_entry_set_vals
+=~ row_update_cascade_for_mysql
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-23644:
+=~ Assertion \`!bpage->file_page_was_freed'
+=~ buf_page_get_zip
+=~ btr_rec_copy_externally_stored_field|btr_copy_externally_stored_field
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-23644:
+=~ InnoDB: FIL_PAGE_TYPE=.* on BLOB read space .* page .*
+=~ ib::fatal::~fatal
+=~ btr_check_blob_fil_page_type
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-23632:
 =~ AddressSanitizer|signal
 =~ row_mysql_store_col_in_innobase_format
 =~ innobase_get_computed_value
 =~ row_merge_buf_add
 =~ Version: '10\.[3-9]
+MDEV-22540:
+=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction.*stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !changed \|\| thd->transaction.*stmt\.modified_non_trans_table'|Assertion \`transactional_table \|\| !(info\.copied \|\| info\.deleted) \|\| thd->transaction.*stmt\.modified_non_trans_table'
+=~ mysql_load|mysql_insert
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-22076: [cursor->index->is_committed - XA]
+=~ InnoDB: Failing assertion: !cursor->index->is_committed()
+=~ row_ins_sec_index_entry_by_modify
+=~ xa\.yy
+MDEV-22076:
+=~ InnoDB: tried to purge non-delete-marked record in index
+=~ Assertion \`0'
+=~ row_purge_remove_sec_if_poss_leaf
+=~ xa\.yy
+MDEV-21138:
+=~ Assertion \`col->ord_part'|Assertion \`f\.col->ord_part'
+=~ row_build_index_entry_low
+=~ row_update_vers_insert
+=~ row_ins_foreign_check_on_constraint
+MDEV-21138:
+=~ Assertion \`mode == 16 \|\| mode == 12 \|\| !fix_block->page\.file_page_was_freed'
+=~ buf_page_get_gen
+=~ btr_copy_blob_prefix
+=~ fts_parallel_tokenization
+MDEV-21138:
+=~ InnoDB: Flagged corruption of .* in table .* in CHECK TABLE; Wrong count
+=~ For InnoDB SYSTEM VERSIONED .* : error : Corrupt
+MDEV-21138:
+=~ InnoDB: Failing assertion: buf != field_ref_zero
+=~ row_merge_buf_add
+=~ InnoDB: Duplicate FTS_DOC_ID value on table
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ versioning
+MDEV-21138:
+=~ InnoDB: InnoDB: FIL_PAGE_TYPE=.* on BLOB read space .* page .* flags .*
+=~ btr_check_blob_fil_page_type
+=~ InnoDB: Duplicate FTS_DOC_ID value on table
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ versioning
+MDEV-22178:
+=~ Assertion \`info->alias\.str'
+=~ partition_info::check_partition_info
+=~ versioning
+=~ PARTITIONS 1
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-19273:
+=~ signal 11|AddressSanitizer: SEGV on unknown address
+=~ MDL_ticket::has_stronger_or_equal_type
+=~ MDL_context::upgrade_shared_lock
+=~ wait_while_table_is_used
+MDEV-19273:
+=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->db\.str, table->table_name\.str, MDL_SHARED)'|Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db\.str, table_name\.str, MDL_SHARED)'
+=~ mysql_rm_table_no_locks
+MDEV-19273:
+=~ signal 11|AddressSanitizer
+=~ I_P_List
+=~ MDL_lock::Ticket_list::remove_ticket
+=~ MDL_context::release_lock
+MDEV-17891:
+=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction.*stmt\.modified_non_trans_table'
+=~ select_insert::abort_result_set|mysql_insert
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-17891:
+=~ The table .* is full|Warning: Enabling keys got errno 121
+=~ Assertion \`transactional_table \|\| !(info\.copied \|\| info\.deleted) \|\| thd->transaction.*stmt\.modified_non_trans_table'
+=~ mysql_load
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-15533:
+=~ Assertion \`log->blobs'|InnoDB: Failing assertion: log->blobs
+=~ row_log_table_apply_update
+=~ mysql_alter_table
+MDEV-15532:
+=~ Assertion \`!log->same_pk'|InnoDB: Failing assertion: !log->same_pk
+=~ row_log_table_apply_delete
+=~ Version: '10\.[0-2]
+MDEV-15532:
+=~ Assertion \`err_key < ha_alter_info->key_count'
+=~ alter_rebuild_apply_log
+=~ Version: '10\.[0-2]
+MDEV-15532:
+=~ signal|AddressSanitizer
+=~ Field::is_null
+=~ field_unpack
+=~ print_keydup_error
+=~ alter_rebuild_apply_log
+=~ Version: '10\.[0-2]
 
 ##############################################################################
 # Weak matches
