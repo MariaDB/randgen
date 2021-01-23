@@ -6,7 +6,7 @@
 
 MDEV-24656:
 =~ InnoDB: Data field type 0, len 0
-=~ ib::fatal::~fatal
+=~ ib::fatal::~fatal|ib::error_or_warn::~error_or_warn
 =~ dtuple_check_typed
 =~ mysql_load
 MDEV-24656:
@@ -1923,11 +1923,11 @@ MDEV-19718:
 MDEV-19680:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'
 =~ Field_.*::val_.*
-=~ Item_direct_view_ref::val_.*
+=~ Item_direct_view_ref::val_.*|st_select_lex::print
 MDEV-19680:
 =~ Assertion \`marked_for_read()'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
 =~ Field_.*::val_.*
-=~ Item_direct_ref::val_.*
+=~ Item_direct_ref::val_.*|st_select_lex::print
 MDEV-19674:
 =~ Assertion \`marked_for_read()'
 =~ Field_.*::get_.*|Field_.*::val_.*
