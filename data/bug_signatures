@@ -4,11 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24663:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ ANALYZE.*SELECT
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24656:
 =~ InnoDB: Data field type 0, len 0
 =~ ib::fatal::~fatal|ib::error_or_warn::~error_or_warn
 =~ dtuple_check_typed
-=~ mysql_load
+=~ mysql_load|row_insert_for_mysql
 MDEV-24656:
 =~ AddressSanitizer|signal
 =~ Field::is_null_in_record
@@ -978,7 +983,7 @@ MDEV-22562:
 =~ handler::ha_external_lock
 =~ mysql_unlock_tables
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-=~ application_periods
+=~ application_periods|versioning
 MDEV-22551:
 =~ signal 11|AddressSanitizer
 =~ skip_trailing_space
@@ -1925,7 +1930,7 @@ MDEV-19718:
 =~ run_redo_phase
 MDEV-19680:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'
-=~ Field_.*::val_.*
+=~ Field_.*::val_.*|Field_.*::get_.*
 =~ Item_direct_view_ref::val_.*|st_select_lex::print
 MDEV-19680:
 =~ Assertion \`marked_for_read()'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
