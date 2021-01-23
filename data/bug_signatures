@@ -121,6 +121,9 @@ MDEV-24522:
 MDEV-24521:
 =~ InnoDB: Flagged corruption of .* in table .* Partition .* in CHECK TABLE; Wrong count
 =~ For InnoDB SYSTEM VERSIONED .* : error : Partition .* returned error
+MDEV-24521:
+=~ InnoDB: Flagged corruption of \`FTS_DOC_ID_INDEX\` in table .* in CHECK TABLE; Wrong count
+=~ For InnoDB SYSTEM VERSIONED ROW_FORMAT=Dynamic .* : error : Corrupt
 MDEV-24519:
 =~ signal|AddressSanitizer
 =~ Charset::set_charset
