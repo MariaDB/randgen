@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24665:
+=~ AddressSanitizer|signal
+=~ my_timestamp_from_binary|Field_newdate::get_TIME
+=~ Field::validate_value_in_record_with_warn
+=~ TABLE::validate_default_values_of_unset_fields
+MDEV-24665:
+=~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
+=~ Field::ptr_in_record
+=~ Field::validate_value_in_record_with_warn
+=~ TABLE::validate_default_values_of_unset_fields
 MDEV-24664:
 =~ Assertion \`! is_set()'
 =~ Diagnostics_area::set_eof_status
