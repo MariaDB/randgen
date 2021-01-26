@@ -1184,6 +1184,10 @@ MDEV-22255:
 =~ Assertion \`val > 0'
 =~ row_upd_index_entry_sys_field
 =~ Version: '10\.[2-3]
+MDEV-22255:
+=~ Assertion \`thr_get_trx(thr)->id \|\| index->table->no_rollback()'
+=~ row_ins_index_entry
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-22232:
 =~ signal handler|AddressSanitizer
 =~ rpl_sql_thread_info::cached_charset_compare
