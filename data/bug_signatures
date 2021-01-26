@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24693:
+=~ LeakSanitizer: detected memory leaks
+=~ Direct leak
+=~ mem_heap_create_block_func
+=~ fts_optimize_create_msg
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24683:
 =~ AddressSanitizer|signal
 =~ Binary_string::copy
@@ -1731,7 +1737,7 @@ MDEV-20666:
 =~ InnoDB: Failing assertion: prebuilt->sql_stat_start \|\| trx->conc_state == 1
 =~ row_search_for_mysql
 =~ ha_innobase::index_read
-=~ Version: '5.5
+=~ Version: '5\.5
 # Not merged up yet
 MDEV-20643:
 =~ signal 11|AddressSanitizer: SEGV
@@ -1742,6 +1748,18 @@ MDEV-20640:
 =~ Assertion \`0'
 =~ row_purge_remove_sec_if_poss_leaf
 =~ que_thr_step
+=~ Version: '10\.3
+MDEV-20640:
+=~ signal
+=~ rec_init_offsets_comp_ordinary
+=~ purge_node_t::validate_pcur
+=~ row_purge_del_mark
+=~ Version: '10\.3
+MDEV-20640:
+=~ Assertion \`node->validate_pcur()'
+=~ row_purge_reposition_pcur
+=~ row_purge_del_mark
+=~ Version: '10\.3
 MDEV-20622:
 =~ signal 11|AddressSanitizer: SEGV
 =~ embedding_sjm
