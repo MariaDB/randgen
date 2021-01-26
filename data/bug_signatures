@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24700:
+=~ Assertion \`"lock not found" == 0'
+=~ lock_table_x_unlock
+=~ trx_t::rollback
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-24695:
+=~ Assertion \`mach_read_from_4(frame + 4U) == block\.page\.id()\.page_no()'
+=~ log_phys_t::apply
+=~ recv_recover_page
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24693:
 =~ LeakSanitizer: detected memory leaks
 =~ Direct leak
@@ -1696,7 +1706,8 @@ MDEV-20761:
 MDEV-20754:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
-=~ DISTINCT.*DEFAULT.*ROLLUP
+=~ my_decimal_get_binary_size
+=~ DISTINCT.*DEFAULT.*ROLLUP|GROUP BY|ORDER BY
 MDEV-20750:
 =~ Assertion \`thd->transaction.*stmt.*is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'|Assertion \`thd->transaction.*stmt.*is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'|Assertion \`thd->transaction.*stmt.*is_empty()'|Assertion \`thd->transaction.*stmt.*is_empty()'
 =~ Prepared_statement::prepare|sp_head::execute
