@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24683:
+=~ AddressSanitizer|signal
+=~ Binary_string::copy
+=~ user_var_entry::val_str
+=~ table_uvar_by_thread::materialize
+MDEV-24680:
+=~ InnoDB: Failing assertion: cmp < 0
+=~ row_ins_check_foreign_constraint
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24665:
 =~ AddressSanitizer|signal
 =~ my_timestamp_from_binary|Field_newdate::get_TIME
@@ -18,6 +27,7 @@ MDEV-24664:
 =~ Assertion \`! is_set()'
 =~ Diagnostics_area::set_eof_status
 =~ Explain_query::send_explain
+=~ EXPLAIN.*DELETE
 =~ Prepared_statement::execute
 MDEV-24663:
 =~ Assertion \`0'
@@ -46,7 +56,7 @@ MDEV-24656:
 MDEV-24656:
 =~ Assertion \`n < tuple->n_fields'
 =~ dtuple_get_nth_field
-=~ mysql_load
+=~ mysql_load|row_insert_for_mysql
 MDEV-24656:
 =~ AddressSanitizer|signal
 =~ row_mysql_store_col_in_innobase_format
@@ -116,6 +126,30 @@ MDEV-24583:
 =~ Field::ptr_in_record
 =~ ha_innobase::position
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-24583:
+=~ signal|AddressSanitizer
+=~ THD::is_error
+=~ evaluate_join_record
+=~ mysql_select
+MDEV-24583:
+=~ InnoDB: Failing assertion: thr->magic_n == QUE_THR_MAGIC_N
+=~ que_thr_move_to_run_state_for_mysql
+=~ mysql_delete
+MDEV-24583:
+=~ signal|AddressSanitizer
+=~ Index_statistics::avg_frequency_is_inited
+=~ set_statistics_for_table
+=~ mysql_delete
+MDEV-24583:
+=~ AddressSanitizer
+=~ Field::set_default
+=~ save_in_field_default_value
+=~ fill_record_n_invoke_before_triggers
+MDEV-24583:
+=~ AddressSanitizer|signal
+=~ Field::set_notnull
+=~ TABLE::update_virtual_field
+=~ innobase_get_computed_value
 MDEV-24570:
 =~ Found index .* whose column info does not match that of MariaDB
 =~ InnoDB indexes are inconsistent with what defined in \.frm for table .*
@@ -952,9 +986,9 @@ MDEV-22660:
 =~ mysql_alter_table
 MDEV-22648:
 =~ AddressSanitizer
-=~ Field_blob::cmp_binary
+=~ Field_blob::cmp|Field::cmp_offset
 =~ Field::cmp_binary_offset
-=~ multi_update
+=~ multi_update|handler::check_duplicate_long_entry_key
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22647:
 =~ safe_mutex: Trying to lock mutex at .*sql_plugin\.cc, line .*, when the mutex was already locked at .*sys_vars_shared.h
@@ -2568,7 +2602,7 @@ MDEV-17869:
 MDEV-17843:
 =~ Assertion \`page_rec_is_leaf(rec)'
 =~ lock_rec_queue_validate
-=~ innodb_show_status|SHOW ENGINE INNODB STATUS|SHOW ENGINE InnoDB STATUS
+=~ innodb_show_status|SHOW ENGINE INNODB STATUS|SHOW ENGINE InnoDB STATUS|srv_monitor_task
 MDEV-17818:
 =~ signal 11|AddressSanitizer: SEGV
 =~ parse_vcol_defs
