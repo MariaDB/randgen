@@ -117,10 +117,10 @@ admin_show:
   | SHOW CREATE admin_db_or_schema admin_db_name
   | SHOW CREATE EVENT _letter
   | SHOW CREATE FUNCTION _letter
-  | /*!100305 SHOW CREATE PACKAGE admin_package_name */
-  | /*!100305 SHOW CREATE PACKAGE BODY admin_package_name */
+  | SHOW CREATE PACKAGE admin_package_name  /* compatibility 10.3.5 */
+  | SHOW CREATE PACKAGE BODY admin_package_name /* compatibility 10.3.5 */
   | SHOW CREATE PROCEDURE _letter
-  | SHOW CREATE SEQUENCE admin_sequence_name
+  | SHOW CREATE SEQUENCE admin_sequence_name /* compatibility 10.3.5 */
   | SHOW CREATE TABLE _table
   | SHOW CREATE TRIGGER _letter
   | SHOW CREATE USER admin_user_name
@@ -140,8 +140,8 @@ admin_show:
 #  | SHOW LOCALES # Plugin locales
   | SHOW MASTER STATUS
   | SHOW OPEN TABLES admin_from_in_db admin_show_like_or_where
-  | /*!100305 SHOW PACKAGE BODY STATUS admin_show_like_or_where */
-  | /*!100305 SHOW PACKAGE STATUS admin_show_like_or_where */
+  | SHOW PACKAGE BODY STATUS admin_show_like_or_where /* compatibility 10.3.5 */
+  | SHOW PACKAGE STATUS admin_show_like_or_where /* compatibility 10.3.5 */
   | SHOW PLUGINS
 #  | SHOW PLUGINS SONAME <soname>
   | SHOW PRIVILEGES
