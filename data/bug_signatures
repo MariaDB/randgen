@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24713:
+=~ Assertion \`index->table->not_redundant()'|Assertion \`dict_table_is_comp(index->table)'
+=~ row_merge_buf_add
+=~ row_merge_read_clustered_index
 MDEV-24710:
 =~ Conditional jump or move depends on uninitialised value|Assertion \`len <= col->len \|\| ((col->mtype) == 5 \|\| (col->mtype) == 14) \|\| (col->len == 0 && col->mtype == 1)'
 =~ rec_get_converted_size_comp_prefix_low
@@ -45,7 +49,6 @@ MDEV-24695:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24693:
 =~ LeakSanitizer: detected memory leaks
-=~ Direct leak
 =~ mem_heap_create_block_func
 =~ fts_optimize_create_msg
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
@@ -951,6 +954,11 @@ MDEV-22768:
 =~ Diagnostics_area::set_error_status
 =~ THD::raise_condition
 =~ sql_set_variables
+MDEV-22759:
+=~ InnoDB: Record in index .* was not found on update|InnoDB: tried to purge non-delete-marked record in index .*: tuple:
+=~ Assertion `0'
+=~ row_upd_sec_index_entry|row_purge_remove_sec_if_poss_leaf
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22757:
 =~ Assertion \`!binlog \|\| exist_hton_without_prepare'
 =~ MYSQL_BIN_LOG::unlog_xa_prepare
@@ -3528,6 +3536,12 @@ MDEV-22927: [Can't find record]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 =~ sequence
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-22759: [Record in index was not found on update]
+=~ InnoDB: Record in index .* was not found on update
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-22759: [tried to purge non-delete-marked]
+=~ InnoDB: tried to purge non-delete-marked record in index .*: tuple:
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22759: [cursor->index->is_committed - HASH]
 =~ Record in index .* was not found on update: TUPLE
 =~ Failing assertion: !cursor->index->is_committed()
