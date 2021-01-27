@@ -215,6 +215,7 @@ $combinations = [
           '--scenario=MariaBackupFull',
           '--scenario=MariaBackupIncremental',
         ],
+        # Default zlib
         [ '', '', '', '', '', '', '', '',
           '--mysqld=--innodb-compression-algorithm=none',
           '--mysqld=--innodb-compression-algorithm=zlib'
@@ -225,6 +226,7 @@ $combinations = [
         # Default OFF
         [ '', '', '', '', '', '', $innodb_encryption ],
      ##### Read-only variables (InnoDB)
+        # Default 8
         [ '', '', '', '', '', '', '',
           '--mysqld=--innodb-adaptive-hash-index-parts=1',
           '--mysqld=--innodb-adaptive-hash-index-parts=64',

@@ -180,7 +180,6 @@ $combinations = [
         [ '', '--transformers=ExecuteAsExcept' ],
         [ '', '--transformers=ExecuteAsExecuteImmediate' ],
         [ '', '', '--transformers=ExecuteAsFunctionTwice' ],
-        [ '', '', '', '--transformers=ExecuteAsInsertReturning' ],
         [ '', '--transformers=ExecuteAsInsertSelect' ],
         [ '', '--transformers=ExecuteAsIntersect' ],
         [ '', '', '--transformers=ExecuteAsPreparedThrice' ],
@@ -260,12 +259,12 @@ $combinations = [
           '--mysqld=--innodb-log-buffer-size=1M',
           '--mysqld=--innodb-log-buffer-size=128M',
         ],
-        # Default ~96M
+        # Default 50M
         [ '', '', '', '', '', '', '', '',
           '--mysqld=--innodb-log-file-size=16M',
           '--mysqld=--innodb-log-file-size=256M',
         ],
-        # Default 2000
+        # Default 0
         [ '', '', '', '', '', '', '', '',
           '--mysqld=--innodb-open-files=200',
           '--mysqld=--innodb-open-files=10000',
@@ -381,9 +380,6 @@ $combinations = [
      --mysqld=--performance-schema-consumer-events-statements-current=ON
      --mysqld=--performance-schema-consumer-events-statements-history=ON
      --mysqld=--performance-schema-consumer-events-statements-history-long=ON
-     --mysqld=--performance-schema-consumer-events-transactions-current=ON
-     --mysqld=--performance-schema-consumer-events-transactions-history=ON
-     --mysqld=--performance-schema-consumer-events-transactions-history-long=ON
      --mysqld=--performance-schema-consumer-events-waits-current=ON
      --mysqld=--performance-schema-consumer-events-waits-history=ON
      --mysqld=--performance-schema-consumer-events-waits-history-long=ON
