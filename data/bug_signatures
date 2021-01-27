@@ -50,7 +50,7 @@ MDEV-24695:
 MDEV-24693:
 =~ LeakSanitizer: detected memory leaks
 =~ mem_heap_create_block_func
-=~ fts_optimize_create_msg
+=~ fts_optimize_create_msg|fts_trx_create
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24683:
 =~ AddressSanitizer|signal
