@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24714:
+=~ AddressSanitizer|signal
+=~ strmake
+=~ innobase_strnxfrm
+=~ fts_select_index_by_range
+MDEV-24714:
+=~ signal
+=~ table_name_t::dblen|memcpy
+=~ fts_get_table_name
+=~ fts_sync_index
+MDEV-24714:
+=~ signal
+=~ __stack_chk_fail
+=~ fts_sync_index
 MDEV-24713:
 =~ Assertion \`index->table->not_redundant()'|Assertion \`dict_table_is_comp(index->table)'
 =~ row_merge_buf_add
