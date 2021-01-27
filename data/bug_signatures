@@ -4,6 +4,35 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24710:
+=~ Conditional jump or move depends on uninitialised value|Assertion \`len <= col->len \|\| ((col->mtype) == 5 \|\| (col->mtype) == 14) \|\| (col->len == 0 && col->mtype == 1)'
+=~ rec_get_converted_size_comp_prefix_low
+=~ row_ins_index_entry
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-24710:
+=~ Conditional jump or move depends on uninitialised value
+=~ _mi_rec_pack
+=~ _mi_write_dynamic_record
+=~ ha_myisam::write_row
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-24710:
+=~ Error: Freeing overrun buffer .*mi_close\.c
+=~ Allocated at .*mi_open\.c
+=~ corrupted size vs. prev_size
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-24710:
+=~ Conditional jump or move depends on uninitialised value|Assertion \`length <= column->length'
+=~ _ma_write_init_block_record
+=~ ha_maria::write_row
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-24708:
+=~ Assertion \`field->type\.mbmaxlen > 1'
+=~ row_merge_buf_redundant_convert
+=~ ha_innobase::inplace_alter_table
+MDEV-24707:
+=~ Assertion \`!auto_increment_field_not_null'
+=~ TABLE::init
+=~ THD::open_temporary_table
 MDEV-24700:
 =~ Assertion \`"lock not found" == 0'
 =~ lock_table_x_unlock
@@ -846,7 +875,7 @@ MDEV-22973:
 =~ versioning
 =~ Version: '10\.[3-4]
 MDEV-22927:
-=~ Assertion Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'
+=~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'
 =~ lock_rec_lock
 =~ read_stored_values
 =~ SEQUENCE
@@ -893,7 +922,7 @@ MDEV-22873:
 MDEV-22856:
 =~ Assertion \`!str \|\| str != Ptr'
 =~ String::copy
-=~ Item_str_ascii_func::val_str
+=~ Item_str_ascii_func::val_str|String::set_ascii
 MDEV-22846:
 =~ signal|AddressSanitizer
 =~ handler_index_cond_check
@@ -1003,7 +1032,7 @@ MDEV-22660:
 MDEV-22648:
 =~ AddressSanitizer
 =~ Field_blob::cmp|Field::cmp_offset
-=~ Field::cmp_binary_offset
+=~ Field::cmp_binary_offset|Field::cmp_offset
 =~ multi_update|handler::check_duplicate_long_entry_key
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22647:
