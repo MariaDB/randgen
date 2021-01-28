@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24727:
+=~ Assertion \`rw_lock_own(&dict_operation_lock, RW_LOCK_X)'
+=~ dict_table_remove_from_cache_low
+=~ trx_commit
+=~ Version: '10\.3|Server version: 10\.3
+MDEV-24727:
+=~ Assertion \`rw_lock_own(&latch, RW_LOCK_X)'
+=~ dict_sys_t::assert_locked
+=~ trx_t::commit
+=~ Version: '10\.[4-5]|Server version: 10\.[4-5]
+MDEV-24726:
+=~ Assertion \`0'
+=~ Field_varstring_compressed::key_cmp
+=~ key_cmp_if_same
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24724:
 =~ Assertion \`templ->mbmaxlen > templ->mbminlen \|\| templ->mysql_col_len == len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0)'
 =~ row_sel_field_store_in_mysql_format_func
@@ -408,7 +423,7 @@ MDEV-23850:
 =~ AddressSanitizer|Assertion \`scale <= precision'
 =~ decimal_bin_size
 =~ my_decimal_get_binary_size
-=~ calc_group_buffer
+=~ calc_group_buffer|sortlength
 MDEV-23843:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ MDL_context::acquire_lock
