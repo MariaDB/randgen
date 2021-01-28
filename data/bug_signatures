@@ -212,6 +212,11 @@ MDEV-24583:
 =~ Field::set_notnull
 =~ TABLE::update_virtual_field
 =~ innobase_get_computed_value
+MDEV-24583:
+=~ AddressSanitizer|signal
+=~ innobase_get_computed_value
+=~ row_upd_store_v_row
+=~ row_upd_del_mark_clust_rec
 MDEV-24570:
 =~ Found index .* whose column info does not match that of MariaDB
 =~ InnoDB indexes are inconsistent with what defined in \.frm for table .*
