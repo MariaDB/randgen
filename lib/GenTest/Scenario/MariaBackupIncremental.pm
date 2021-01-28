@@ -102,43 +102,56 @@ sub run {
   if ($gentest_pid > 0)
   {
     $end_time= time() + $self->getProperty('duration');
+    # Test flow can finish (successfully) before end_time, e.g.
+    # due to the exceeded number of queries.
+    my $test_flow_finished= 0;
 
-
+  BACKUPLOOP:
     while (time() < $end_time - $interval_between_backups)
     {
+      if (not $test_flow_finished) {
         foreach (1..$interval_between_backups) {
           if (waitpid($gentest_pid, WNOHANG) == 0) {
             sleep 1;
           }
           else {
             $status= $? >> 8;
+            $test_flow_finished= 1;
             if ($status != STATUS_OK) {
               sayError("Test flow before the backup failed");
               return $self->finalize(STATUS_TEST_FAILURE,[$server]);
             } else {
                 last;
+                say("Test flow finished, take the backup now");
             }
           }
         }
+      } elsif ($backup_num < 2) {
+        say("The test flow has finished, but we need at least 2 backups for the test");
+        sleep($interval_between_backups);
+      } else {
+        # If the test is finished and we have 2 backups, we can stop
+        last BACKUPLOOP;
+      }
 
-        my $mbackup_command= ($self->getProperty('rr') ? "rr record --output-trace-dir=$vardir/rr_profile_backup_${backup_num} $mbackup" : $mbackup);
-        if ($backup_num == 0)
-        {
-            $self->printStep("Creating initial full backup");
-            $status= $self->run_mbackup_in_background("$mbackup_command --backup --target-dir=${mbackup_target}_0 --protocol=tcp --port=".$server->port." --user=".$server->user." > $vardir/mbackup_backup_0.log", $end_time);
-        } else {
-            $self->printStep("Creating incremental backup #$backup_num");
-            $status= $self->run_mbackup_in_background("$mbackup_command --backup --target-dir=${mbackup_target}_${backup_num} --incremental-basedir=${mbackup_target}_".($backup_num-1)." --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
-        }
-        if ($status == STATUS_OK) {
-            say("Backup #$backup_num finished successfully");
-        } else {
-            sayError("Backup #$backup_num failed: $status");
-            sayFile("$vardir/mbackup_backup_${backup_num}.log");
-            return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-        }
+      my $mbackup_command= ($self->getProperty('rr') ? "rr record --output-trace-dir=$vardir/rr_profile_backup_${backup_num} $mbackup" : $mbackup);
+      if ($backup_num == 0)
+      {
+          $self->printStep("Creating initial full backup");
+          $status= $self->run_mbackup_in_background("$mbackup_command --backup --target-dir=${mbackup_target}_0 --protocol=tcp --port=".$server->port." --user=".$server->user." > $vardir/mbackup_backup_0.log", $end_time);
+      } else {
+          $self->printStep("Creating incremental backup #$backup_num");
+          $status= $self->run_mbackup_in_background("$mbackup_command --backup --target-dir=${mbackup_target}_${backup_num} --incremental-basedir=${mbackup_target}_".($backup_num-1)." --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
+      }
+      if ($status == STATUS_OK) {
+          say("Backup #$backup_num finished successfully");
+      } else {
+          sayError("Backup #$backup_num failed: $status");
+          sayFile("$vardir/mbackup_backup_${backup_num}.log");
+          return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+      }
 
-        $backup_num++;
+      $backup_num++;
     }
   }
   else {
