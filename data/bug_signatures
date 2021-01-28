@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24724:
+=~ Assertion \`templ->mbmaxlen > templ->mbminlen \|\| templ->mysql_col_len == len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0)'
+=~ row_sel_field_store_in_mysql_format_func
+=~ ha_innobase::index_read
 MDEV-24714:
 =~ AddressSanitizer|signal
 =~ strmake
@@ -66,6 +70,11 @@ MDEV-24693:
 =~ mem_heap_create_block_func
 =~ fts_optimize_create_msg|fts_trx_create
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-24686:
+=~ AddressSanitizer|signal
+=~ sortcmp_lex_string
+=~ event_basic_identifier_equal
+=~ Event_queue
 MDEV-24683:
 =~ AddressSanitizer|signal
 =~ Binary_string::copy
@@ -779,7 +788,7 @@ MDEV-23188:
 MDEV-23187:
 =~ Assertion \`0'
 =~ json_find_path
-=~ Item_func_json_value::val_str
+=~ Item_func_json_value::val_str|Item_func_json_array_append::val_str
 MDEV-23184:
 =~ AddressSanitizer|signal
 =~ THD::killed_errno
@@ -975,7 +984,7 @@ MDEV-22768:
 =~ sql_set_variables
 MDEV-22759:
 =~ InnoDB: Record in index .* was not found on update|InnoDB: tried to purge non-delete-marked record in index .*: tuple:
-=~ Assertion `0'
+=~ Assertion \`0'
 =~ row_upd_sec_index_entry|row_purge_remove_sec_if_poss_leaf
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22757:
@@ -2937,7 +2946,7 @@ MDEV-16755:
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-16699:
 =~ AddressSanitizer: heap-use-after-free|signal 11
-=~ my_strnncoll_binary|my_strnncollsp_simple
+=~ my_strnncoll_binary|my_strnncollsp_.*
 =~ Field_blob::cmp
 =~ group_concat_key_cmp_with_order
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
