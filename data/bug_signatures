@@ -3230,7 +3230,7 @@ MDEV-13444:
 =~ Version: '10\.[1-2]
 # Only fixed in 10.5!
 MDEV-12967:
-=~ signal 11
+=~ signal 11|AddressSanitizer
 =~ dict_index_is_spatial|dict_index_t::is_spatial
 =~ btr_scrub_free_page
 =~ fil_crypt_rotate_page

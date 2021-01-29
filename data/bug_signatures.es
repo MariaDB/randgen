@@ -72,6 +72,11 @@ MDEV-24442:
 =~ Assertion \`space->referenced()'
 =~ fil_crypt_space_needs_rotation|fil_delete_tablespace
 =~ Version: '10\.[5-9]
+MDEV-24442:
+=~ InnoDB: Failing assertion: !space->referenced()
+=~ fil_delete_tablespace
+=~ row_drop_table_for_mysql
+=~ Version: '10\.[5-9]
 MDEV-24220:
 =~ signal|AddressSanitizer
 =~ base_list_iterator::next|TABLE_LIST::is_recursive_with_table
