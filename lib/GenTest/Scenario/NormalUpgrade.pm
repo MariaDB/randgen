@@ -106,7 +106,8 @@ sub run {
   $databases= join ' ', $old_server->nonSystemDatabases();
   $old_server->dumpSchema($databases, $old_server->vardir.'/server_schema_old.dump');
   $old_server->normalizeDump($old_server->vardir.'/server_schema_old.dump', 'remove_autoincs');
-  $old_server->dumpdb($databases, $old_server->vardir.'/server_data_old.dump');
+  # Skip heap tables' data on the old server, as it won't be preserved
+  $old_server->dumpdb($databases, $old_server->vardir.'/server_data_old.dump',my $skip_heap_tables=1);
   $old_server->normalizeDump($old_server->vardir.'/server_data_old.dump');
   $table_autoinc{'old'}= $old_server->collectAutoincrements();
    
@@ -199,6 +200,7 @@ sub run {
   
   $new_server->dumpSchema($databases, $new_server->vardir.'/server_schema_new.dump');
   $new_server->normalizeDump($new_server->vardir.'/server_schema_new.dump', 'remove_autoincs');
+  # No need to skip heap tables' data on the new server, they should be empty
   $new_server->dumpdb($databases, $new_server->vardir.'/server_data_new.dump');
   $new_server->normalizeDump($new_server->vardir.'/server_data_new.dump');
   $table_autoinc{'new'} = $new_server->collectAutoincrements();

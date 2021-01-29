@@ -756,12 +756,21 @@ sub dumper {
 }
 
 sub dumpdb {
-    my ($self,$database, $file) = @_;
+    my ($self,$database,$file,$skip_heap_tables) = @_;
+    if ($skip_heap_tables) {
+      my @heap_tables= @{$self->dbh->selectcol_arrayref(
+          "select concat(table_schema,'.',table_name) from ".
+          "information_schema.tables where engine='MEMORY' and table_schema!='information_schema'"
+        )
+      };
+      $skip_heap_tables= join ' ', map {'--ignore-table-data='.$_} @heap_tables;
+    }
     say("Dumping server ".$self->version." data on port ".$self->port);
     my $dump_command = '"'.$self->dumper.
                              "\" --hex-blob --skip-triggers --compact ".
                              "--order-by-primary --skip-extended-insert ".
                              "--no-create-info --host=127.0.0.1 ".
+                             "$skip_heap_tables ".
                              "--port=".$self->port.
                              " -uroot $database";
     # --no-tablespaces option was introduced in version 5.1.14.

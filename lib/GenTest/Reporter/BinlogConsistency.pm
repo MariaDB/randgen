@@ -166,7 +166,7 @@ sub dump_all {
 
 	# no-create-info is needed because some table options don't survive server restart (e.g. AUTO_INCREMENT for InnoDB tables)
 	# force is needed e.g. for views which reference invalid tables
-	my $dump_result = $server->dumpdb($databases_string, $dumpfile);
+	my $dump_result = $server->dumpdb($databases_string, $dumpfile, my $skip_heap_tables=1);
 
 	# We don't check "real" mysqldump exit code, because it might be bad due to view problems etc.,
 	# but we still want to continue. But if sort fails, that's really bad because it must mean the file doesn't exist,
