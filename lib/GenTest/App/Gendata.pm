@@ -217,9 +217,12 @@ sub run {
                   osWindows()?("mariadb.exe","mysql.exe"):("mariadb","mysql")
           );
           # ... but if it turns out to be something else, we'll try to interpret it
-          # as an SQL file (e.g. a dump) and feed it directly to the server
+          # as an SQL file (e.g. a dump) and feed it directly to the server.
+          # Run with --force in case of partial errors (e.g. some values don't work with the current server charset).
+          # If it turns out that nothing is loaded at all, it will be a pointless test,
+          # but such things should be caught at test implementation stage
           if ($client and
-              system("$client -uroot --protocol=tcp --port=".$executor->port()." ".$executor->defaultSchema()." < $spec_file") == STATUS_OK)
+              system("$client --force -uroot --protocol=tcp --port=".$executor->port()." ".$executor->defaultSchema()." < $spec_file") == STATUS_OK)
           {
             say("Loaded SQL file $spec_file");
             return STATUS_OK;
