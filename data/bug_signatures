@@ -328,6 +328,10 @@ MDEV-24249:
 =~ Assertion \`!page \|\| fil_page_type_is_index(page_type)'
 =~ recv_parse_or_apply_log_rec_body
 =~ recv_recover_page
+MDEV-24179:
+=~ Assertion \`m_status == DA_ERROR \|\| m_status == DA_OK \|\| m_status == DA_OK_BULK'
+=~ Diagnostics_area::message
+=~ fill_schema_table_by_open
 MDEV-24095:
 =~ AddressSanitizer|signal
 =~ json_path_parts_compare
