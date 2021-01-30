@@ -360,8 +360,12 @@ $combinations = [
     [ '--mysqld=--plugin-load-add=query_cache_info', '', '', '', '' ],
     [ '--mysqld=--plugin-load-add=simple_password_check', '', '', '', '' ],
   ],
-  ##### PS protocol
-  [ '--ps-protocol --filter=conf/mariadb/need-reconnect.ff', '', '', '', '' ],
+  ##### PS protocol and low values of max-prepared-stmt-count
+  [ '--ps-protocol --filter=conf/mariadb/need-reconnect.ff',
+    '', '', '', '', '', '', '', '', '', '',
+    '--mysqld=--max-prepared-stmt-count=0',
+    '--mysqld=--max-prepared-stmt-count=1',
+  ],
   ##### Encryption
   [ '', '', '', '', $general_encryption ],
   ##### Binary logging

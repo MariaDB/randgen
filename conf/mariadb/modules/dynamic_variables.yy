@@ -473,7 +473,8 @@ dynvar_global_variable:
 # | max_connections
 # | max_connect_errors
   | MAX_PASSWORD_ERRORS= { $prng->arrayElement([128,1024,1048576]) }
-  | MAX_PREPARED_STMT_COUNT= { $prng->arrayElement([0,1,1024,1048576]) }
+  # Low values interfere with --ps-protocol mode, moving 0 and 1 to startup options
+  | MAX_PREPARED_STMT_COUNT= { $prng->arrayElement([1024,8192,65528,1048576]) }
   | MAX_WRITE_LOCK_COUNT= { $prng->arrayElement([0,1,1024,1048576]) }
   | MYISAM_DATA_POINTER_SIZE= { $prng->int(2,7) }
   | MYISAM_MAX_SORT_FILE_SIZE= { $prng->arrayElement([0,1,1024,1048576,33554432,268435456,1073741824]) }
