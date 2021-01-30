@@ -363,7 +363,8 @@ sub collectAclData {
 
   $dbh->do("FLUSH PRIVILEGES");
   # Needed due to MDEV-24657
-  $dbh->do("SET NAMES utf8");
+  $dbh->do('SET character_set_connection= @@character_set_server');
+  $dbh->do('SET collation_connection= @@collation_server');
 
   my $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user";
 
