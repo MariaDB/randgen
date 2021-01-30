@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24743:
+=~ Assertion \`nr >= 0\.0'
+=~ Item_std_field::val_real
+=~ Protocol::send_result_set_row
+MDEV-24742:
+=~ signal|AddressSanitizer
+=~ String::numchars
+=~ in_string::set
+=~ Item_func::fix_fields
+MDEV-24741:
+=~ AddressSanitizer|signal
+=~ String::realloc_raw
+=~ AGGR_OP::put_record
+=~ Prepared_statement::execute
+=~ Version: '10\.[2-3]|Server version: 10\.[2-3]
 MDEV-24739:
 =~ Assertion \`root->weight >= (1 + (key->next_key_part ? key->next_key_part->weight : 0))'
 =~ SEL_ARG::tree_delete
@@ -2313,7 +2328,7 @@ MDEV-19131:
 =~ Assertion \`table->versioned(VERS_TRX_ID) \|\| (table->versioned() && table->s->table_category == TABLE_CATEGORY_TEMPORARY)'
 =~ Field_vers_trx_id::get_date
 MDEV-19091:
-=~ Assertion \`args\[0\] == args\[2\] \|\| thd->stmt_arena->is_stmt_execute()'|AddressSanitizer
+=~ Assertion \`args\[0\] == args\[2\] \|\| thd->stmt_arena->is_stmt_execute()'|AddressSanitizer|signal
 =~ Item_func_nullif::fix_length_and_dec
 =~ Item_func::fix_fields
 MDEV-19075:
