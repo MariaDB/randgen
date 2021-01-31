@@ -203,14 +203,15 @@ $combinations = [
           '--engine=InnoDB,MyISAM,Aria,HEAP,RocksDB --mysqld=--plugin-load-add=ha_rocksdb'
         ],
         [ '', '', '', '', '', '', '', '', '', '', '',
-          '--scenario=NormalUpgrade', '--scenario=NormalUpgrade',
+          '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
+          '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
           '--scenario=AclUpgrade'
         ],
       ],
       innodb => [
         [ '--engine=InnoDB' ],
         [ '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-          '--scenario=NormalUpgrade',
+          '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
           '--scenario=CrashUpgrade',
           '--scenario=UndoLogUpgrade',
           '--scenario=MariaBackupFull',
