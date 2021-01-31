@@ -46,7 +46,6 @@ MDEV-24726:
 MDEV-24724:
 =~ Assertion \`templ->mbmaxlen > templ->mbminlen \|\| templ->mysql_col_len == len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0)'|Assertion \`len \* templ->mbmaxlen >= templ->mysql_col_len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0) \|\| templ->rec_field_is_prefix'
 =~ row_sel_field_store_in_mysql_format_func
-=~ ha_innobase::index_read
 MDEV-24714:
 =~ AddressSanitizer|signal
 =~ strmake
