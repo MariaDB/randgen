@@ -420,7 +420,7 @@ sub createMysqlBase  {
     }
     # Protect the work account from password expiration
     if ($self->versionNumeric() gt '100403') {
-        print BOOT "UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user = '".$self->user."';\n";
+        print BOOT "UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root');\n";
     }
     close BOOT;
 
@@ -780,6 +780,7 @@ sub dumpdb {
     if ($self->_notOlderThan(5,1,14)) {
         $dump_command = $dump_command . " --no-tablespaces";
     }
+    say($dump_command);
     my $dump_result = system("$dump_command | sort > $file");
     return $dump_result;
 }
@@ -797,6 +798,7 @@ sub dumpSchema {
     if ($self->_notOlderThan(5,1,14)) {
         $dump_command = $dump_command . " --no-tablespaces";
     }
+    say($dump_command);
     my $dump_result = system("$dump_command > $file");
     return $dump_result;
 }
