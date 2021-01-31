@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24748:
+=~ Assertion \`err != DB_SUCCESS \|\| btr_validate_index(m_index, __null, false) == DB_SUCCESS'
+=~ BtrBulk::finish
+=~ row_merge_read_clustered_index
+MDEV-24748:
+=~ [ERROR] InnoDB: Field .* len is .*, should be .*; COMPACT RECORD
 MDEV-24743:
 =~ Assertion \`nr >= 0\.0'
 =~ Item_std_field::val_real
