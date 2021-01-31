@@ -16,7 +16,6 @@ MDEV-24742:
 MDEV-24741:
 =~ AddressSanitizer|signal
 =~ String::realloc_raw
-=~ AGGR_OP::put_record
 =~ Prepared_statement::execute
 =~ Version: '10\.[2-3]|Server version: 10\.[2-3]
 MDEV-24739:
@@ -39,7 +38,7 @@ MDEV-24726:
 =~ key_cmp_if_same
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24724:
-=~ Assertion \`templ->mbmaxlen > templ->mbminlen \|\| templ->mysql_col_len == len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0)'
+=~ Assertion \`templ->mbmaxlen > templ->mbminlen \|\| templ->mysql_col_len == len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0)'|Assertion \`len \* templ->mbmaxlen >= templ->mysql_col_len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0) \|\| templ->rec_field_is_prefix'
 =~ row_sel_field_store_in_mysql_format_func
 =~ ha_innobase::index_read
 MDEV-24714:
@@ -109,6 +108,15 @@ MDEV-24686:
 =~ sortcmp_lex_string
 =~ event_basic_identifier_equal
 =~ Event_queue
+MDEV-24686:
+=~ AddressSanitizer|signal
+=~ Event_queue::get_top_for_execution_if_time
+=~ Event_scheduler::run
+MDEV-24686:
+=~ AddressSanitizer|signal
+=~ event_queue_element_compare_q
+=~ queue_insert
+=~ Event_queue::update_event
 MDEV-24683:
 =~ AddressSanitizer|signal
 =~ Binary_string::copy
@@ -2982,8 +2990,8 @@ MDEV-16755:
 =~ multi_delete::~multi_delete
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-16699:
-=~ AddressSanitizer: heap-use-after-free|signal 11
-=~ my_strnncoll_binary|my_strnncollsp_.*
+=~ AddressSanitizer|signal 11
+=~ my_strnncoll.*|my_uca_strnncollsp_.*
 =~ Field_blob::cmp
 =~ group_concat_key_cmp_with_order
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
