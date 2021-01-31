@@ -372,8 +372,11 @@ sub createMysqlBase  {
     }
     push @$boot_options, "--skip-log-bin";
     push @$boot_options, "--loose-enforce-storage-engine=";
-    push @$boot_options, "--loose-innodb-encrypt-tables=OFF";
-    push @$boot_options, "--loose-innodb-encrypt-log=OFF";
+    #push @$boot_options, "--loose-innodb-encrypt-tables=OFF";
+    #push @$boot_options, "--loose-innodb-encrypt-log=OFF";
+    # Set max-prepared-stmt-count to a sufficient value to facilitate bootstrap
+    # even if it's otherwse set to 0 for the server
+    push @$boot_options, "--max-prepared-stmt-count=1024";
     # Workaround for MENT-350
     if ($self->_notOlderThan(10,4,6)) {
         push @$boot_options, "--loose-server-audit-logging=OFF";
