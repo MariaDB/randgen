@@ -800,6 +800,10 @@ sub dumpSchema {
     }
     say($dump_command);
     my $dump_result = system("$dump_command > $file");
+    if ($dump_result != 0) {
+      system($self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SHOW FULL PROCESSLIST'");
+      system($self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO'");
+    }
     return $dump_result;
 }
 
