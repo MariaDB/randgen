@@ -241,19 +241,34 @@ sub register_result
             $dbh->do($query);
         }
         else {
-            foreach my $j (keys %found_mdevs) {
+            # First check if there were strong non-draft non-fixed matches.
+            # If they exist, we will only register them.
+            # Otherwise, we will register everything
+            my %mdevs_to_register= ();
+            if ($type eq 'strong') {
+              foreach my $j (keys %found_mdevs) {
+                if (not $draft_mdevs{$j} and not defined $fixed_mdevs{$j}) {
+                  $mdevs_to_register{$j}= $found_mdevs{$j};
+                }
+              }
+            }
+            if (scalar(keys %mdevs_to_register) == 0) {
+              %mdevs_to_register= %found_mdevs;
+            }
+ 
+            foreach my $j (keys %mdevs_to_register) {
                 my $fixdate= 'NULL';
                 my $match_type= $type;
                 if ($draft_mdevs{$j}) {
                     $match_type= 'draft';
                 }
-                my $notes= ($match_type eq 'strong' ? $j : $found_mdevs{$j}.' - '.$j);
+                my $notes= ($match_type eq 'strong' ? $j : $mdevs_to_register{$j}.' - '.$j);
                 if (defined $fixed_mdevs{$j} and not defined $fixed_in_future{$j}) {
                     $fixdate= "'$fixed_mdevs{$j}'";
                     $match_type= 'fixed';
                 }
                 # Only register matches to fixed items if there is no better choice
-                if ($match_type ne 'fixed' or scalar(keys %fixed_mdevs) == scalar(keys %found_mdevs)) {
+                if ($match_type ne 'fixed' or scalar(keys %fixed_mdevs) == scalar(keys %mdevs_to_register)) {
                     my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$notes\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
                     $dbh->do($query);
                 }
