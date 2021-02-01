@@ -272,14 +272,14 @@ sub run {
     # We are the parent process, wait for for all spawned processes to terminate
     my $total_status = STATUS_OK;
     my $reporter_died = 0;
-        
+
     ## Parent thread does not use channel
     $self->channel()->close;
 
-    # Worker & Reporter processes that were spawned.
-    my @spawned_pids = (keys %worker_pids, $reporter_pid);
-    
     OUTER: while (1) {
+        # Remaining Worker & Reporter processes that were spawned and haven't ended yet.
+        my @spawned_pids = (keys %worker_pids, $reporter_pid);
+
         # Wait for processes to complete, i.e only processes spawned by workers & reporters. 
         foreach my $spawned_pid (@spawned_pids) {
             my $child_pid = waitpid($spawned_pid, WNOHANG);
@@ -287,18 +287,21 @@ sub run {
             my $child_exit_status = $? > 0 ? ($? >> 8) : 0;
 
             $total_status = $child_exit_status if $child_exit_status > $total_status;
-            say("Process with pid $child_pid ended with status ".status2text($child_exit_status));
             
             if ($child_pid == $reporter_pid) {
+                say("Process with pid $child_pid (reporter) ended with status ".status2text($child_exit_status));
                 $reporter_died = 1;
                 last OUTER;
+            } elsif ($child_pid == -1) {
+                say("Process with pid $spawned_pid ".($spawned_pid == $reporter_pid ? '(reporter)' : '(worker)')." no longer exists");
+                last OUTER;
             } else {
+                say("Process with pid $child_pid (worker) ended with status ".status2text($child_exit_status));
                 delete $worker_pids{$child_pid};
             }
             
             last OUTER if $child_exit_status >= STATUS_CRITICAL_FAILURE;
             last OUTER if keys %worker_pids == 0;
-            last OUTER if $child_pid == -1;
         }
         sleep 5;
     }
