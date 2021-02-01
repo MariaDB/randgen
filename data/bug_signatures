@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24757:
+=~ AddressSanitizer|signal
+=~ queues_fill_table
+=~ get_schema_tables_result
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24754:
 =~ AddressSanitizer|signal
 =~ dict_v_col_t
@@ -906,7 +911,6 @@ MDEV-23145:
 MDEV-23132:
 =~ Assertion \`trn->locked_tables == 0 && trn->used_instances == 0'
 =~ trnman_end_trn
-=~ handler::ha_external_lock
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-23132:
 =~ signal|AddressSanitizer
@@ -3565,19 +3569,9 @@ TODO-842: [table->get_ref_count]
 =~ InnoDB: Failing assertion: table->get_ref_count() == 0
 =~ row_merge_drop_table
 =~ ha_innobase::commit_inplace_alter_table
-TODO-842: [Binary_string::realloc_raw]
-=~ AddressSanitizer
-=~ Binary_string::realloc_raw
-=~ Field_blob::store_field
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 TODO-842: [LeakSanitizer - rec_copy_prefix_to_buf_old]
 =~ LeakSanitizer: detected memory leaks
 =~ rec_copy_prefix_to_buf_old
-=~ INTERNAL_ERROR
-TODO-842: [LeakSanitizer - trx_savepoint_for_mysql]
-=~ LeakSanitizer: detected memory leaks
-=~ trx_savepoint_for_mysql
-=~ innobase_savepoint
 =~ INTERNAL_ERROR
 TODO-842: [mariabackup - error 188]
 =~ error : Partition .* returned error
