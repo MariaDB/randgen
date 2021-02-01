@@ -2357,7 +2357,7 @@ MDEV-19038:
 =~ signal 11|AddressSanitizer:
 =~ calc_row_difference
 =~ ha_innobase::update_row
-=~ mysql_update
+=~ mysql_update|mysql_multi_update
 MDEV-19020:
 =~ AddressSanitizer: heap-use-after-free
 =~ strxnmov
@@ -3735,6 +3735,10 @@ MDEV-17897:
 =~ block->frame
 MDEV-17895:
 =~ trx->dict_operation != TRX_DICT_OP_NONE
+MDEV-17890: [cursor->index->is_committed - vcols]
+=~ Record in index .* was not found on update: TUPLE
+=~ Failing assertion: !cursor->index->is_committed()
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
 MDEV-17834:
 =~ row_upd_build_difference_binary
 MDEV-17814:
