@@ -447,7 +447,8 @@ dynvar_global_variable:
   | INNODB_STATUS_OUTPUT= dynvar_boolean
   | INNODB_STATUS_OUTPUT_LOCKS= dynvar_boolean
   | INNODB_SYNC_SPIN_LOOPS= { $prng->arrayElement([0,1,2,10,100,1000]) }
-  | INNODB_THREAD_CONCURRENCY= { $prng->int(1,8) }
+# Disabled due to MDEV-24759 (and it's deprecated in 10.5)
+#  | INNODB_THREAD_CONCURRENCY= { $prng->int(1,8) }
   | INNODB_THREAD_SLEEP_DELAY= { $prng->arrayElement([0,100,1000,100000]) }
 # | innodb_trx_purge_view_update_only_debug
 # | innodb_trx_rseg_n_slots_debug
