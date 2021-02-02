@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24764:
+=~ Assertion \`field->type\.mbminlen == 1'
+=~ row_merge_buf_redundant_convert
+=~ row_merge_read_clustered_index
 MDEV-24758:
 =~ AddressSanitizer|signal
 =~ page_cur_insert_rec_low
@@ -149,7 +153,7 @@ MDEV-24680:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24665:
 =~ AddressSanitizer|signal
-=~ my_timestamp_from_binary|Field_newdate::get_TIME
+=~ my_timestamp_from_binary|Field_newdate::get_TIME|Field_datetimef::get_TIME
 =~ Field::validate_value_in_record_with_warn
 =~ TABLE::validate_default_values_of_unset_fields
 MDEV-24665:
@@ -343,7 +347,7 @@ MDEV-24508:
 MDEV-24467:
 =~ Direct leak of|Memory not freed|blocks are definitely lost
 =~ Binary_string::real_alloc|String::real_alloc
-=~ Field_blob::store
+=~ Field_.*::store
 =~ TABLE::update_default_fields
 MDEV-24434:
 =~ Assertion \`trx->in_rw_trx_list \|\| trx->state == TRX_STATE_NOT_STARTED \|\| trx->state == TRX_STATE_ACTIVE'
@@ -2735,6 +2739,11 @@ MDEV-17974:
 =~ sp_process_definer
 =~ mysql_create_user
 =~ Prepared_statement::execute|sp_head::execute
+MDEV-17971:
+=~ Assertion \`table_ref->table \|\| table_ref->view'|signal|AddressSanitizer
+=~ Field_iterator_table_ref::set_field_iterator|Field_iterator_table::set
+=~ insert_fields
+=~ setup_wild
 MDEV-17964:
 =~ Assertion \`status == 0'
 =~ add_role_user_mapping_action
@@ -2815,7 +2824,7 @@ MDEV-17711:
 =~ mysql_execute_command
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-17678:
-=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ AddressSanitizer|signal 11
 =~ field_unpack
 =~ print_keydup_error
 =~ ha_myisam::enable_indexes
@@ -3732,10 +3741,6 @@ MDEV-18017:
 # It doesn't matter much, don't flag it
 #MDEV-17999:
 #=~ Invalid roles_mapping table entry user
-MDEV-17971:
-=~ Field_iterator_table::set
-MDEV-17971:
-=~ Field_iterator_table_ref::set_field_iterator
 MDEV-17897:
 =~ block->frame
 MDEV-17895:
