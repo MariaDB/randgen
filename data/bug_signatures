@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24758:
+=~ AddressSanitizer|signal
+=~ page_cur_insert_rec_low
+=~ page_cur_tuple_insert
+=~ btr_cur_optimistic_insert
+=~ Version: '10\.3|Server version: 10\.3
 MDEV-24757:
 =~ AddressSanitizer|signal
 =~ queues_fill_table
