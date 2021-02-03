@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24778:
+=~ Assertion \`dstlen >= srclen \* cs->casedn_multiply'
+=~ my_casedn_ujis
+=~ innobase_fts_casedn_str
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-24777:
+=~ AddressSanitizer: memcpy-param-overlap
+=~ copy_if_not_alloced
+=~ Protocol::send_result_set_row
 MDEV-24764:
 =~ Assertion \`field->type\.mbminlen == 1'
 =~ row_merge_buf_redundant_convert
@@ -663,6 +672,10 @@ MDEV-23453:
 =~ Item_field::type_handler
 =~ Temporal_with_date::make_from_item
 =~ sp_head::execute
+MDEV-23449:
+=~ Assertion \`sl->join == 0'
+=~ reinit_stmt_before_use
+=~ Prepared_statement::execute
 MDEV-23444:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
