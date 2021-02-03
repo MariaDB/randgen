@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24780:
+=~ InnoDB: Trying to read page number .* in space .*
+=~ fil_report_invalid_page_access
+=~ buf_read_page_low
+=~ Version: '10\.4|Server version: 10\.4
+MDEV-24779:
+=~ Assertion \`sl->join == 0'
+=~ reinit_stmt_before_use
+=~ Prepared_statement::execute
 MDEV-24778:
 =~ Assertion \`dstlen >= srclen \* cs->casedn_multiply'
 =~ my_casedn_ujis
@@ -672,10 +681,6 @@ MDEV-23453:
 =~ Item_field::type_handler
 =~ Temporal_with_date::make_from_item
 =~ sp_head::execute
-MDEV-23449:
-=~ Assertion \`sl->join == 0'
-=~ reinit_stmt_before_use
-=~ Prepared_statement::execute
 MDEV-23444:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
