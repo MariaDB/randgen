@@ -190,7 +190,7 @@ MDEV-24656:
 =~ AddressSanitizer|signal
 =~ Field::is_null_in_record
 =~ TABLE::validate_default_values_of_unset_fields
-=~ mysql_load
+=~ mysql_load|mysql_insert
 MDEV-24656:
 =~ Assertion \`n < tuple->n_fields'
 =~ dtuple_get_nth_field
@@ -380,6 +380,16 @@ MDEV-24179:
 =~ Assertion \`m_status == DA_ERROR \|\| m_status == DA_OK \|\| m_status == DA_OK_BULK'
 =~ Diagnostics_area::message
 =~ fill_schema_table_by_open
+MDEV-24174:
+=~ The table .* is full
+=~ signal|AddressSanitizer
+=~ mi_extra
+=~ ha_partition::loop_extra_alter
+=~ Version: '10\.2|Server version: 10\.2
+MDEV-24174:
+=~ Assertion \`i == (uint16) (\*((uint16 \*) (part_rec_buf_ptr)))'
+=~ ha_partition::handle_ordered_index_scan
+=~ Version: '10\.2|Server version: 10\.2
 MDEV-24095:
 =~ AddressSanitizer|signal
 =~ json_path_parts_compare
@@ -946,6 +956,11 @@ MDEV-23073:
 =~ trx_savepoint_for_mysql
 =~ trans_savepoint
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-23047:
+=~ Assertion \`tmp_table->file->stats\.records == 1'
+=~ subselect_hash_sj_engine::exec
+=~ Item_cache_wrapper::cache
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-23045:
 =~ Assertion \`is_open()'
 =~ MYSQL_BIN_LOG::trx_group_commit_leader
@@ -1136,8 +1151,7 @@ MDEV-22660:
 =~ mysql_alter_table
 MDEV-22648:
 =~ AddressSanitizer
-=~ Field_blob::cmp|Field::cmp_offset
-=~ Field::cmp_binary_offset|Field::cmp_offset
+=~ Field_blob::cmp|Field::cmp_offset|Field::cmp_binary_offset|Field_blob::cmp_prefix
 =~ multi_update|handler::check_duplicate_long_entry_key
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22647:
@@ -1660,7 +1674,6 @@ MDEV-21413:
 MDEV-21406:
 =~ Assertion \`tmp != ((long long) 0x8000000000000000LL)'
 =~ TIME_from_longlong_datetime_packed
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-21406:
 =~ Assertion \`is_valid_value_slow()'
 =~ Datetime::Datetime
