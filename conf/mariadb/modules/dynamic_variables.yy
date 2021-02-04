@@ -477,6 +477,7 @@ dynvar_global_variable:
   # Low values interfere with --ps-protocol mode, moving 0 and 1 to startup options
   | MAX_PREPARED_STMT_COUNT= { $prng->arrayElement([1024,8192,65528,1048576]) }
   | MAX_WRITE_LOCK_COUNT= { $prng->arrayElement([0,1,1024,1048576]) }
+# Moved to startup settings due to MDEV-24174
   | MYISAM_DATA_POINTER_SIZE= { $prng->int(2,7) }
   | MYISAM_MAX_SORT_FILE_SIZE= { $prng->arrayElement([0,1,1024,1048576,33554432,268435456,1073741824]) }
   | MYISAM_USE_MMAP= dynvar_boolean

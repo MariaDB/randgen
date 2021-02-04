@@ -409,6 +409,11 @@ $combinations = [
     '--mysqld=--max-digest-length=64',
     '--mysqld=--max-digest-length=1M',
   ],
+  # Default 6
+  [ '', '', '', '', '', '', '', '', '', '', '',
+    '--mysqld=--myisam-data-pointer-size=2',
+    '--mysqld=--myisam-data-pointer-size=7',
+  ],
   # Default NO
   [ '', '', '', '', '', '', '', '',
     '--mysqld=--secure-timestamp=SUPER',

@@ -397,7 +397,7 @@ $combinations = [
      --mysqld=--performance-schema-consumer-statements-digest=ON
      --redefine=conf/runtime/performance_schema.yy"
   ],
-  ##### Read-only variables (general)
+  ##### Read-only variables (general, MyISAM)
   # Default OFF
   [ '', '', '', '', '--mysqld=--explicit-defaults-for-timestamp=on' ],
   # Default OFF
@@ -414,6 +414,11 @@ $combinations = [
     '--mysqld=--max-digest-length=0',
     '--mysqld=--max-digest-length=64',
     '--mysqld=--max-digest-length=1M',
+  ],
+  # Default 6
+  [ '', '', '', '', '', '', '', '', '', '', '',
+    '--mysqld=--myisam-data-pointer-size=2',
+    '--mysqld=--myisam-data-pointer-size=7',
   ],
   # Default NO
   [ '', '', '', '', '', '', '', '',
