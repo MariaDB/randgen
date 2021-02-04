@@ -409,9 +409,9 @@ $combinations = [
     '--mysqld=--max-digest-length=64',
     '--mysqld=--max-digest-length=1M',
   ],
-  # Default 6
+  # Default 6; 2 is too low, affects bootstrap
   [ '', '', '', '', '', '', '', '', '', '', '',
-    '--mysqld=--myisam-data-pointer-size=2',
+    '--mysqld=--myisam-data-pointer-size=3',
     '--mysqld=--myisam-data-pointer-size=7',
   ],
   # Default NO
