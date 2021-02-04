@@ -1,5 +1,6 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -224,6 +225,10 @@ sub next {
 						$item = $ENV{RQG_THREADS};
 					} elsif (($item eq '_database') || ($item eq '_db') || ($item eq '_schema')) {
 						my $databases = $executors->[0]->metaSchemas();
+						$last_database = $prng->arrayElement($databases);
+						$item = '`'.$last_database.'`';
+					} elsif (($item eq '_user_database') || ($item eq '_user_db') || ($item eq '_user_schema')) {
+						my $databases = $executors->[0]->metaSchemas(my $non_system=1);
 						$last_database = $prng->arrayElement($databases);
 						$item = '`'.$last_database.'`';
 					} elsif ($item eq '_table') {

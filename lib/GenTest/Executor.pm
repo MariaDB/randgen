@@ -1,6 +1,6 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020, MariaDB Corporation
+# Copyright (c) 2020, 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -437,7 +437,7 @@ sub cacheMetaData {
 }
 
 sub metaSchemas {
-    my ($self) = @_;
+    my ($self, $non_system) = @_;
     if (not defined $self->[EXECUTOR_META_CACHE]->{SCHEMAS}) {
         my $schemas = [sort keys %{$self->[EXECUTOR_SCHEMA_METADATA]}];
         if (not defined $schemas or $#$schemas < 0) {
@@ -446,7 +446,15 @@ sub metaSchemas {
         };
         $self->[EXECUTOR_META_CACHE]->{SCHEMAS} = $schemas;
     }
-    return $self->[EXECUTOR_META_CACHE]->{SCHEMAS};
+    if ($non_system) {
+      my @schemas= ();
+      foreach my $s (@{$self->[EXECUTOR_META_CACHE]->{SCHEMAS}}) {
+        push @schemas, $s unless $s =~ /^(?:mysql|performance_schema|information_schema|sys_schema)$/i;
+      }
+      return \@schemas;
+    } else {
+      return $self->[EXECUTOR_META_CACHE]->{SCHEMAS};
+    }
 }
 
 sub metaTables {
