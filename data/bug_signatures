@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24786:
+=~ Assertion \`!have_x()'
+=~ sux_lock<srw>::s_lock()
+=~ with srw = ssux_lock_low
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-24782:
 =~ AddressSanitizer|signal
 =~ Field::pack_int
@@ -2416,7 +2421,7 @@ MDEV-19038:
 =~ signal 11|AddressSanitizer:
 =~ calc_row_difference
 =~ ha_innobase::update_row
-=~ mysql_update|mysql_multi_update
+=~ mysql_update|mysql_multi_update|mysql_load
 MDEV-19020:
 =~ AddressSanitizer: heap-use-after-free
 =~ strxnmov
