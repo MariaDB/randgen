@@ -2,7 +2,7 @@
 
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2016, 2020 MariaDB Corporation
+# Copyright (c) 2016, 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -644,7 +644,8 @@ sub initGenerator {
         varchar_length => $self->config->property('varchar-length'),
         mask => $self->config->mask,
         mask_level => $self->config->property('mask-level'),
-        annotate_rules => $self->config->property('annotate-rules')
+        annotate_rules => $self->config->property('annotate-rules'),
+        vardir => $self->config->vardir
     );
 
     if (not defined $self->generator()) {

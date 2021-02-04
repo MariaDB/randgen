@@ -1,4 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
+# Copyright (c) 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,6 +41,7 @@ require Exporter;
 	GENERATOR_GLOBAL_FRAME
 	GENERATOR_PARTICIPATING_RULES
 	GENERATOR_ANNOTATE_RULES
+  GENERATOR_VARDIR
 );
 
 use strict;
@@ -58,7 +60,8 @@ use constant GENERATOR_VARCHAR_LENGTH	=> 10;
 use constant GENERATOR_MASKED_GRAMMAR	=> 11;
 use constant GENERATOR_GLOBAL_FRAME	=> 12;
 use constant GENERATOR_PARTICIPATING_RULES => 13;       # Stores the list of rules used in the last generated query
-use constant GENERATOR_ANNOTATE_RULES => 14; 
+use constant GENERATOR_ANNOTATE_RULES => 14;
+use constant GENERATOR_VARDIR => 15;
 
 sub new {
 	my $class = shift;
@@ -72,7 +75,8 @@ sub new {
 		'mask'			=> GENERATOR_MASK,
 		'mask_level'		=> GENERATOR_MASK_LEVEL,
 		'varchar_length'	=> GENERATOR_VARCHAR_LENGTH,
-		'annotate_rules'	=> GENERATOR_ANNOTATE_RULES
+		'annotate_rules'	=> GENERATOR_ANNOTATE_RULES,
+    'vardir'          => GENERATOR_VARDIR
 	}, @_);
 
 	return $generator;
@@ -112,6 +116,10 @@ sub maskLevel {
 
 sub maskedGrammar {
 	return $_[0]->[GENERATOR_MASKED_GRAMMAR];
+}
+
+sub vardir {
+  return $_[0]->[GENERATOR_VARDIR];
 }
 
 sub setSeed {
