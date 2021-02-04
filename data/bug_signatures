@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24782:
+=~ AddressSanitizer|signal
+=~ Field::pack_int
+=~ THD::binlog_update_row
+=~ pack_row
 MDEV-24780:
 =~ InnoDB: Trying to read page number .* in space .*
 =~ fil_report_invalid_page_access
@@ -1056,6 +1061,10 @@ MDEV-22856:
 =~ Assertion \`!str \|\| str != Ptr'
 =~ String::copy
 =~ Item_str_ascii_func::val_str|String::set_ascii
+MDEV-22855:
+=~ Assertion \`!field->prefix_len \|\| field->fixed_len == field->prefix_len'
+=~ btr_node_ptr_max_size
+=~ btr_cur_search_to_nth_level_func
 MDEV-22846:
 =~ signal|AddressSanitizer
 =~ handler_index_cond_check
@@ -3652,6 +3661,12 @@ TODO-842: [MDL_ticket::create]
 # Weak matches
 ##############################################################################
 
+# myisam_data_pointer_size has been moved to non-dynamic test settings,
+# so it should not be happening anymore
+MDEV-24174: [myisam_data_pointer_size - partition]
+=~ signal|AddressSanitizer
+=~ find_all_keys
+=~ copy_data_between_tables
 MDEV-23398: [marked as crashed and last (automatic?) repair failed]
 =~ failed: 144: Table .* is marked as crashed and last (automatic?) repair failed
 MDEV-22927: [Can't find record]
