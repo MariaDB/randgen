@@ -14,7 +14,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 query_init_add:
-  SELECT * INTO OUTFILE 'load_data_anon' FROM _table ;
+  { %bulk_load_files=(); '' } SELECT NULL INTO OUTFILE 'load_data_anon';
 
 # Don't be too greedy, or the data will grow huge
 query_add:
@@ -29,22 +29,31 @@ bulk_insert_load:
   # Select from any table into the same table
   | _basics_insert_ignore_replace_clause INTO _table SELECT * FROM { $last_table }
 
-  # Load a random file into a table. High chance of wrong field types/count,
+  # Load a file into a random table. High chance of wrong field types/count,
   # but it's not as critical for LOAD as it is for INSERT
-  | /* _user_db . _table */ LOAD DATA INFILE { $f= (-e "$generator->vardir/data/$last_database/load_$last_table" ? "load_$last_table" : 'load_data_anon'); "'$f'" } bulk_replace_ignore INTO TABLE _table
+  | LOAD DATA INFILE bulk_existing_datafile_name bulk_replace_ignore INTO TABLE _table
 
   # Load an existing file from a table into the same table (or a generic load file).
   # Also fair chance of wrong field types/count, as the table could have been altered since
-
-  # Load a random file into a table. High chance of wrong field types/count,
-  # but it's not as critical for LOAD as it is for INSERT
-  | /* _user_db . _table */ LOAD DATA INFILE { $f= (-e "$generator->vardir/data/$last_database/load_$last_table" ? "load_$last_table" : 'load_data_anon'); "'$f'" } bulk_replace_ignore INTO TABLE { $last_table }
+  | LOAD DATA INFILE bulk_existing_datafile_name bulk_replace_ignore INTO TABLE { $last_table }
 
   # Create a load file and load it into the same table
-  | /* _user_db . _table */ { $f= "load_$last_table"; unlink $generator->vardir."/data/$last_database/$f"; '' }
-      SELECT * INTO OUTFILE { "'$f'" } FROM { $last_table }
-    ; LOAD DATA INFILE { "'$f'" } bulk_replace_ignore INTO TABLE { $last_table }
+  | SELECT * INTO OUTFILE bulk_new_datafile_name FROM { $last_table } bulk_store_datafile_num
+    ; LOAD DATA INFILE { "'$fname'" } bulk_replace_ignore INTO TABLE { $last_table }
 ;
+
+bulk_existing_datafile_name:
+  /* _user_db . _table */ { $fnum= $bulk_load_files{"$last_database.$last_table"}; $fname= ($fnum ? "load_${last_table}_".$prng->int(1,$fnum) : 'load_data_anon'); "'$fname'" };
+
+bulk_last_datafile_name:
+  { -e "$generator->vardir/data/$last_database/$fname" ? "'$fname'" : "'load_data_anon'" };
+
+bulk_new_datafile_name:
+  /* _user_db . _table */ { $fnum= ($bulk_load_files{"$last_database.$last_table"} or 0) + 1; $fname= "load_${last_table}_${fnum}"; "'$fname'" };
+
+bulk_store_datafile_num:
+  { if (-e $generator->vardir."/data/$last_database/load_${last_table}_${fnum}") { $bulk_load_files{"$last_database.$last_table"}= $fnum }; '' };
+
 
 bulk_replace_ignore:
   REPLACE | IGNORE
