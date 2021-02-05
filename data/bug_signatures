@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24787:
+=~ signal|AddressSanitizer
+=~ Item_ref::field_type
+=~ check_group_min_max_predicates
+=~ test_if_skip_sort_order
 MDEV-24786:
 =~ Assertion \`!have_x()'
 =~ sux_lock<srw>::s_lock()
@@ -31,7 +36,7 @@ MDEV-24778:
 MDEV-24777:
 =~ AddressSanitizer: memcpy-param-overlap
 =~ copy_if_not_alloced
-=~ Protocol::send_result_set_row
+=~ Item_func_encode::val_str
 MDEV-24764:
 =~ Assertion \`field->type\.mbminlen == 1'
 =~ row_merge_buf_redundant_convert
@@ -53,7 +58,7 @@ MDEV-24754:
 =~ ha_innobase_inplace_ctx
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24748:
-=~ Assertion \`err != DB_SUCCESS \|\| btr_validate_index(m_index, __null, false) == DB_SUCCESS'
+=~ Assertion \`err != DB_SUCCESS \|\| btr_validate_index(m_index, __null.*) == DB_SUCCESS'
 =~ BtrBulk::finish
 =~ row_merge_read_clustered_index
 MDEV-24748:
@@ -169,7 +174,7 @@ MDEV-24686:
 =~ AddressSanitizer|signal
 =~ event_queue_element_compare_q
 =~ queue_insert
-=~ Event_queue::update_event
+=~ Event_queue::update_event|Event_queue::create_event
 MDEV-24683:
 =~ AddressSanitizer|signal
 =~ Binary_string::copy
@@ -1184,7 +1189,7 @@ MDEV-22660:
 MDEV-22648:
 =~ AddressSanitizer
 =~ Field_blob::cmp|Field::cmp_offset|Field::cmp_binary_offset|Field_blob::cmp_prefix
-=~ multi_update|handler::check_duplicate_long_entry_key
+=~ multi_update|check_duplicate_long_entry_key
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22647:
 =~ safe_mutex: Trying to lock mutex at .*sql_plugin\.cc, line .*, when the mutex was already locked at .*sys_vars_shared.h
@@ -2911,7 +2916,7 @@ MDEV-17619:
 MDEV-17616:
 =~ AddressSanitizer:
 =~ subselect_engine::calc_const_tables| Item_subselect::update_used_tables
-=~ Prepared_statement::execute
+=~ Prepared_statement::execute|sp_head::execute
 =~ Version: '5\.5|Version: '10\.[1-2]
 # Only fixed in 10.5!
 MDEV-17596:
