@@ -38,10 +38,11 @@ json_insert:
   ; SET SQL_MODE=DEFAULT
 ;
 
+# TODO: vcols
 json_alter:
 	  ALTER TABLE `tmp` ADD json_index_type INDEX ( json_key_field json_key_length )
 	| ALTER TABLE `tmp` DROP INDEX json_key_field
-	| ==FACTOR:0.05== ALTER TABLE `tmp` json_column_op `vfld` TEXT AS ( json_vcol_expression ) json_virt_persist
+#	| ==FACTOR:0.05== ALTER TABLE `tmp` json_column_op `vfld` TEXT AS ( json_vcol_expression ) json_virt_persist
 	| ALTER TABLE `tmp` MODIFY `fld` json_fld_type
 ;
 

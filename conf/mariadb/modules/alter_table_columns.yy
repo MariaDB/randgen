@@ -98,7 +98,7 @@ alttcol_add_definition:
   | alttcol_text_type alttcol_null alttcol_optional_default_char alttcol_invisible alttcol_check_constraint
   | alttcol_text_type alttcol_null alttcol_optional_default_char alttcol_invisible alttcol_check_constraint
   | alttcol_enum_type alttcol_null alttcol_optional_default alttcol_invisible alttcol_check_constraint
-# TODO: re-enable when virtual columns start working
+# TODO: vcols: re-enable when virtual columns start working
 #  | alttcol_virt_col_definition alttcol_virt_type alttcol_invisible alttcol_check_constraint
   | alttcol_geo_type alttcol_null alttcol_geo_optional_default alttcol_invisible alttcol_check_constraint
 ;

@@ -153,9 +153,10 @@ _basics_special_column_type:
 _basics_column_attributes:
   _basics_column_zerofill _basics_base_or_virtual_column_attributes;
 
+# TODO: vcols
 _basics_base_or_virtual_column_attributes:
     ==FACTOR:49== _basics_base_column_attributes
-  |               _basics_virtual_column_attributes
+#  |               _basics_virtual_column_attributes
 ;
 
 _basics_base_column_attributes:

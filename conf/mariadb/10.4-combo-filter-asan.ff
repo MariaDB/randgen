@@ -1,3 +1,4 @@
+# TODO: vcols
 $rules = {
   'mdev18151_1' => sub { $_ =~ m{GRANT.*IDENTIFIED.+(?:VIA|WITH)}s },
   'mdev17974_1' => sub { $_ =~ m{(?:CREATE\s+.*PROCEDURE|PREPARE).*CREATE\s+.*ROLE.*WITH\s+ADMIN}s },

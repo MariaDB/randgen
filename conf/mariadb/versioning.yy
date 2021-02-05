@@ -405,9 +405,10 @@ vers_ia_ind_name:
   { $last_index = 'ind'.$prng->int(1,10) }
 ;
 
+# TODO: vcols
 vers_ia_col_name_and_definition:
    ==FACTOR:50== vers_ia_real_col_name_and_definition
-  | vers_ia_virt_col_name_and_definition
+#  | vers_ia_virt_col_name_and_definition
 ;
 
 vers_ia_virt_col_name_and_definition:

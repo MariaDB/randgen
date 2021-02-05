@@ -104,6 +104,10 @@ $tables = {
                     ]
 };
 
+# TODO: vcols
+#            "`c11` VARCHAR(64) AS (CONCAT(`c09`,' ',`c10`)) PERSISTENT",
+#            "`c12` VARCHAR(64) AS (CONCAT(`c09`,' ',`c10`)) VIRTUAL",
+
 $fields = {
         sqls => [
             "`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT",
@@ -117,8 +121,6 @@ $fields = {
             "`c08` TEXT DEFAULT ''",
             "`c09` BIGINT COMMENT 'X'",
             "`c10` BIGINT COMMENT 'Y'",
-            "`c11` VARCHAR(64) AS (CONCAT(`c09`,' ',`c10`)) PERSISTENT",
-            "`c12` VARCHAR(64) AS (CONCAT(`c09`,' ',`c10`)) VIRTUAL",
         ],
         index_sqls => [
             "PRIMARY KEY (`id`)",
