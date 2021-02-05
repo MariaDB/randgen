@@ -1918,6 +1918,10 @@ MDEV-20689:
 =~ Assertion \`!check_datetime_range(ltime)'
 =~ TIME_to_longlong_datetime_packed
 =~ Version: '10\.[2-3]
+MDEV-20682:
+=~ Assertion \`fixed == 1'
+=~ Item_cond_or::val_int|Item_cond_and::val_int
+=~ JOIN::optimize
 MDEV-20680:
 =~ signal 11|AddressSanitizer: SEGV
 =~ ha_partition::compare_number_of_records|clone_handler_for_update
