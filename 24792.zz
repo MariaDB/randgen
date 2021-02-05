@@ -1,0 +1,20 @@
+$tables = {
+  pk => [undef,'int','int auto_increment'],
+  partitions => [ undef ],
+  engines => ['InnoDB'],
+  rows => [150],
+};
+
+$fields = {
+  types => ['varchar','int'],
+  indexes => [undef,'key'],
+  null => [undef,'not null'],
+  default => [undef,'default null'],
+  charsets => ['utf8','latin1']
+};
+
+$data = {
+  numbers => ['digit','null',undef],
+  strings => ['varchar(1024)','varchar(1024)','english','letter'],
+  blobs => ['letter','data','english'],
+}
