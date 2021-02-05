@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24792:
+=~ Assertion \`!newest_lsn \|\| fil_page_get_type(page)'
+=~ buf_flush_init_for_writing
+=~ mariabackup
+=~ Version: '10\.4|Server version: 10\.4
 MDEV-24787:
 =~ signal|AddressSanitizer
 =~ Item_ref::field_type
