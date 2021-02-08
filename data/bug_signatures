@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24808:
+=~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type != 2'
+=~ handler::ha_index_read_map
+=~ ha_partition
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-24804:
+=~ Assertion \`is_preparing_xa(thd)'
+=~ MYSQL_BIN_LOG::unlog_xa_prepare
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24792:
 =~ Assertion \`!newest_lsn \|\| fil_page_get_type(page)'
 =~ buf_flush_init_for_writing
