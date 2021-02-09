@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24822:
+=~ LeakSanitizer: detected memory leaks
+=~ Indirect leak
+=~ mem_heap_create_block_func
+=~ fts_trx_create
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24819:
 =~ AddressSanitizer|crash
 =~ row_mysql_store_col_in_innobase_format
