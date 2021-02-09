@@ -4,6 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24819:
+=~ AddressSanitizer|crash
+=~ row_mysql_store_col_in_innobase_format
+=~ row_sel_convert_mysql_key_to_innobase
+=~ QUICK_RANGE_SELECT::get_next_prefix
+=~ QUICK_GROUP_MIN_MAX_SELECT::next_prefix
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24811:
 =~ Assertion \`find(table)'
 =~ dict_sys_t::remove
