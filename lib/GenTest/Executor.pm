@@ -253,6 +253,10 @@ sub setCompatibility {
     $_[0]->[EXECUTOR_COMPATIBILITY] = $_[1];
 }
 
+sub compatibility {
+    return $_[0]->[EXECUTOR_COMPATIBILITY];
+}
+
 sub serverNumericVersion {
     return $_[0]->[EXECUTOR_SERVER_VERSION_NUMERIC];
 }

@@ -845,6 +845,9 @@ sub init {
 
     $executor->version();
     $executor->serverVariables();
+    if (not defined $executor->compatibility()) {
+      $executor->setCompatibility($executor->serverNumericVersion());
+    }
 
     #
     # Hack around bug 35676, optiimzer_switch must be set sesson-wide in order to have effect
