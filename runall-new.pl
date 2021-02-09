@@ -583,8 +583,8 @@ $props->{compatibility}= $version unless defined ($props->{compatibility});
 if ($props->{compatibility}=~ /([0-9]+)\.([0-9]+)\.([0-9]+)-([0-9]+)/) {
     $props->{compatibility}= sprintf("%02d%02d%02de",int($1),int($2),int($3));
 }
-elsif ($props->{compatibility}=~ /([0-9]+)\.([0-9]+)\.([0-9]+)/) {
-    $props->{compatibility}= sprintf("%02d%02d%02d",int($1),int($2),int($3));
+elsif ($props->{compatibility}=~ /([0-9]+)\.([0-9]+)(?:\.([0-9]+))?/) {
+    $props->{compatibility}= sprintf("%02d%02d%02d",int($1),int($2),int($3||0));
 }
 
 if ($props->{compatibility} gt $min_version_numeric) {
