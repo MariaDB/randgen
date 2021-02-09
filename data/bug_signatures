@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24811:
+=~ Assertion \`find(table)'
+=~ dict_sys_t::remove
+=~ trx_update_mod_tables_timestamp
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-24811:
+=~ Assertion ``str'
+=~ ut_fold_string
+=~ dict_table_remove_from_cache_low
+=~ trx_update_mod_tables_timestamp
+=~ Version: '10\.3|Server version: 10\.3
 MDEV-24808:
 =~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type != 2'
 =~ handler::ha_index_read_map
@@ -2843,6 +2854,11 @@ MDEV-17843:
 =~ Assertion \`page_rec_is_leaf(rec)'
 =~ lock_rec_queue_validate
 =~ innodb_show_status|SHOW ENGINE INNODB STATUS|SHOW ENGINE InnoDB STATUS|srv_monitor_task
+MDEV-17834:
+=~ AddressSanitizer|signal
+=~ row_upd_build_difference_binary
+=~ row_ins_index_entry
+=~ vcols
 MDEV-17818:
 =~ signal 11|AddressSanitizer: SEGV
 =~ parse_vcol_defs
@@ -3823,8 +3839,6 @@ MDEV-17890: [cursor->index->is_committed - vcols]
 =~ Record in index .* was not found on update: TUPLE
 =~ Failing assertion: !cursor->index->is_committed()
 =~ Version: '10\.[2-9]|Server version: 10\.[2-9]
-MDEV-17834:
-=~ row_upd_build_difference_binary
 MDEV-17814:
 =~ is_current_stmt_binlog_format_row
 MDEV-17538:
