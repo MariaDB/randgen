@@ -67,6 +67,7 @@ use constant MYSQLD_MAJOR_VERSION => 29;
 use constant MYSQLD_CLIENT_BINDIR => 30;
 use constant MYSLQD_SERVER_VARIABLES => 31;
 use constant MYSQLD_RR => 32;
+use constant MYSLQD_CONFIG_VARIABLES => 33;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -1272,6 +1273,55 @@ sub serverVariables {
         $self->[MYSLQD_SERVER_VARIABLES] = \%vars;
     }
     return $self->[MYSLQD_SERVER_VARIABLES];
+}
+
+# Store variables which were set through config or command line
+sub storeConfigVariables {
+    my $self = shift;
+    if (not keys %{$self->[MYSLQD_CONFIG_VARIABLES]}) {
+        my $dbh = $self->dbh;
+        return undef if not defined $dbh;
+        my $sth = $dbh->prepare("SELECT variable_name, global_value FROM information_schema.system_variables WHERE global_value_origin = 'CONFIG'");
+        $sth->execute();
+        my %vars = ();
+        while (my $array_ref = $sth->fetchrow_arrayref()) {
+            $vars{$array_ref->[0]} = $array_ref->[1];
+        }
+        $sth->finish();
+        $self->[MYSLQD_CONFIG_VARIABLES] = \%vars;
+    }
+    if (keys %{$self->[MYSLQD_CONFIG_VARIABLES]}) {
+      say("Server variables set through config or command-line options:");
+      foreach my $v (keys %{$self->[MYSLQD_CONFIG_VARIABLES]}) {
+        say("\t$v: ".${$self->[MYSLQD_CONFIG_VARIABLES]}{$v});
+      }
+    }
+}
+
+# Restore dynamic variables which were set through config or command line
+# but modified during test execution
+# (can be needed for different purposes, e.g. for data consistency checks before/after restart)
+sub restoreConfigVariables {
+    my $self = shift;
+    if ($self->[MYSLQD_CONFIG_VARIABLES]) {
+        my $dbh = $self->dbh;
+        return undef if not defined $dbh;
+        my $sth = $dbh->prepare("SELECT variable_name, global_value FROM information_schema.system_variables WHERE global_value_origin = 'SQL' AND read_only = 'NO'");
+        $sth->execute();
+        my %vars = ();
+        while (my $array_ref = $sth->fetchrow_arrayref()) {
+            $vars{$array_ref->[0]} = $array_ref->[1];
+        }
+        foreach my $var (keys %vars) {
+          my $val= (defined ${$self->[MYSLQD_CONFIG_VARIABLES]}{$var} ? ${$self->[MYSLQD_CONFIG_VARIABLES]}{$var} : 'DEFAULT');
+          if($val ne $vars{$var}) {
+            $val = "'".$val."'" unless ($val =~ /^(?:\d+|NULL|DEFAULT)$/);
+            say("Restoring $var: ".$vars{$var}." => $val");
+            $sth = $dbh->prepare("SET GLOBAL $var = $val");
+            $sth->execute();
+          }
+        }
+    }
 }
 
 sub serverVariable {

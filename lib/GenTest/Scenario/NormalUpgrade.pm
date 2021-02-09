@@ -78,6 +78,7 @@ sub run {
     sayError("Old server failed to start");
     return $self->finalize(STATUS_TEST_FAILURE,[]);
   }
+  $old_server->storeConfigVariables();
 
   #####
   $self->printStep("Generating data on the old server");
@@ -103,6 +104,8 @@ sub run {
   #####
   $self->printStep("Dumping databases from the old server");
   
+  $old_server->restoreConfigVariables();
+
   $databases= join ' ', $old_server->nonSystemDatabases();
   $old_server->dumpSchema($databases, $old_server->vardir.'/server_schema_old.dump');
   $old_server->normalizeDump($old_server->vardir.'/server_schema_old.dump', 'remove_autoincs');
