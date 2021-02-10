@@ -222,7 +222,7 @@ sub print_result {
 
 sub connect_to_db {
   if (defined $ENV{DB_USER}) {
-    my $dbh= DBI->connect("dbi:mysql:host=$ENV{DB_HOST}:port=$ENV{DB_PORT}",$ENV{DB_USER}, $ENV{DBP}, { RaiseError => 1 } );
+    my $dbh= DBI->connect("dbi:mysql:host=$ENV{DB_HOST}:port=$ENV{DB_PORT}:mysql_local_infile=1",$ENV{DB_USER}, $ENV{DBP}, { RaiseError => 1 } );
     if ($dbh) {
       return $dbh;
     } else {
@@ -236,8 +236,13 @@ sub register_result
 {
     my $type= shift; # strong, weak or no_match
     if (my $dbh= connect_to_db()) {
+        unlink('/tmp/test_result_digest');
+        foreach my $f (@files) {
+          system("cat $f >> /tmp/test_result_digest");
+        }
         if ($type eq 'no_match') {
-            my $query= "INSERT INTO regression.result (ci, test_id, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\', \'no_match\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
+#            my $query= "INSERT INTO regression.result (ci, test_id, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\', \'no_match\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
+            my $query= "LOAD DATA LOCAL INFILE '/tmp/test_result_digest' INTO TABLE regression.result FIELDS TERMINATED BY 'xxxxxthisxxlinexxxshouldxxneverxxeverxxappearxxinxxanyxxfilexxxxxxxxxxxxxxxxxxxxxxxx' ESCAPED BY '' LINES TERMINATED BY 'XXXTHISXXLINEXXSHOULDXXNEVERXXEVERXXAPPEARXXINXXANYXXFILEXXXXXXXXXXXXXXXXXXXX' (digest) SET ci = '$ci', test_id = '$ENV{TEST_ID}', match_type = 'no_match', test_result = '$test_result', url = $page_url, server_branch = '$server_branch', server_rev = '$server_revno', test_info = '$test_line'";
             $dbh->do($query);
         }
         else {
@@ -269,11 +274,13 @@ sub register_result
                 }
                 # Only register matches to fixed items if there is no better choice
                 if ($match_type ne 'fixed' or scalar(keys %fixed_mdevs) == scalar(keys %mdevs_to_register)) {
-                    my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$notes\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
+#                    my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$notes\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
+                    my $query= "LOAD DATA LOCAL INFILE '/tmp/test_result_digest' INTO TABLE regression.result FIELDS TERMINATED BY 'xxxxxthisxxlinexxxshouldxxneverxxeverxxappearxxinxxanyxxfilexxxxxxxxxxxxxxxxxxxxxxxx' ESCAPED BY '' LINES TERMINATED BY 'XXXTHISXXLINEXXSHOULDXXNEVERXXEVERXXAPPEARXXINXXANYXXFILEXXXXXXXXXXXXXXXXXXXX' (digest) SET ci = '$ci', test_id = '$ENV{TEST_ID}', notes = '$notes', fixdate = $fixdate, match_type = 'no_match', test_result = '$test_result', url = $page_url, server_branch = '$server_branch', server_rev = '$server_revno', test_info = '$test_line'";
                     $dbh->do($query);
                 }
             }
         }
+        unlink('/tmp/test_result_digest');
     }
 }
 
