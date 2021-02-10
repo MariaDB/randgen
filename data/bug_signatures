@@ -3215,6 +3215,11 @@ MDEV-16128:
 =~ Item_func::convert_const_compared_to_int_field|Item_func::check_argument_types_like_args0
 =~ setup_without_group
 =~ Prepared_statement::execute|sp_instr_stmt::execute
+MDEV-16128:
+=~ signal|AddressSanitizer
+=~ Item_func::print_args
+=~ Item_in_optimizer::print
+=~ Prepared_statement::execute|sp_instr_stmt::execute
 MDEV-15949:
 =~ InnoDB: Failing assertion: space->n_pending_ops == 0
 =~ fil_delete_tablespace
