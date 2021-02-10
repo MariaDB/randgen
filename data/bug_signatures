@@ -1133,7 +1133,7 @@ MDEV-22825:
 MDEV-22772:
 =~ signal|AddressSanitizer
 =~ Item_null_result::field_type
-=~ cast_to_int_type|Item::get_date_with_conversion|cmp_item_datetime::store_value
+=~ cast_to_int_type|Item::get_date_with_conversion|cmp_item_datetime::store_value|Item::val_int_unsigned_typecast
 =~ ROLLUP
 =~ Version: '10\.[1-2]
 MDEV-22768:
@@ -1856,7 +1856,7 @@ MDEV-21016:
 =~ AddressSanitizer: heap-use-after-free
 =~ trx_update_mod_tables_timestamp
 =~ trx_commit_in_memory|trx_t::commit_in_memory
-=~ versioning
+=~ versioning|application_periods
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-21016:
 =~ \`mysql\`\.\`transaction_registry\` does not exist
