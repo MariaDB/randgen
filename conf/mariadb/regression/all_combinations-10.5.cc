@@ -192,6 +192,8 @@ $combinations = [
     }
   ],
   ##### Engines and engine=specific options
+  # RocksDB is disabled because upstream has not been updated (no JIRA yet)
+  #  '--engine=InnoDB,MyISAM,Aria,HEAP,RocksDB --mysqld=--plugin-load-add=ha_rocksdb'
   [
     {
       engines => [
@@ -199,8 +201,7 @@ $combinations = [
           '--engine=Aria --mysqld=--default-storage-engine=Aria',
           '--engine=InnoDB,MyISAM',
           '--engine=MyISAM --mysqld=--default-storage-engine=MyISAM',
-          '--engine=InnoDB,MyISAM,Aria',
-          '--engine=InnoDB,MyISAM,Aria,HEAP,RocksDB --mysqld=--plugin-load-add=ha_rocksdb'
+          '--engine=InnoDB,MyISAM,Aria,HEAP'
         ],
         [ '', '', '', '', '', '', '', '', '', '', '',
           '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
