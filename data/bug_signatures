@@ -4,6 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24839:
+=~ Assertion \`!table->file->keyread_enabled()'
+=~ close_thread_table
+MDEV-24839:
+=~ LeakSanitizer: detected memory leaks
+=~ JOIN_CACHE::alloc_buffer
+=~ Item_singlerow_subselect
 MDEV-24822:
 =~ LeakSanitizer: detected memory leaks
 =~ Indirect leak
