@@ -134,7 +134,7 @@ sub run {
         last BACKUPLOOP;
       }
 
-      my $mbackup_command= ($self->getProperty('rr') ? "rr record --output-trace-dir=$vardir/rr_profile_backup_${backup_num} $mbackup" : $mbackup);
+      my $mbackup_command= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup_${backup_num} $mbackup" : $mbackup);
       if ($backup_num == 0)
       {
           $self->printStep("Creating initial full backup");
@@ -208,7 +208,7 @@ sub run {
   # The option is only needed and supported in 10.1
   my $apply_log_only_option= ($server->versionNumeric() ge '100200' ? '' : '--apply-log-only');
 
-  $cmd= ($self->getProperty('rr') ? "rr record --output-trace-dir=$vardir/rr_profile_prepare_0 $mbackup" : $mbackup)
+  $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_0 $mbackup" : $mbackup)
     . " --prepare --use-memory=$buffer_pool_size $apply_log_only_option --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --user=".$server->user." 2>$vardir/mbackup_prepare_0.log";
   say($cmd);
   system($cmd);
@@ -224,7 +224,7 @@ sub run {
   foreach my $b (1..$backup_num-1) {
       $self->printStep("Preparing incremental backup #${b}");
 
-      $cmd= ($self->getProperty('rr') ? "rr record --output-trace-dir=$vardir/rr_profile_prepare_$b $mbackup" : $mbackup)
+      $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_$b $mbackup" : $mbackup)
         . " --prepare --use-memory=$buffer_pool_size $apply_log_only_option --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --incremental-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
       say($cmd);
       system($cmd);
