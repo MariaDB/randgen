@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24861:
+=~ Assertion \`trx->rsegs\.m_redo\.rseg'
+=~ innodb_prepare_commit_versioned
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-24839:
 =~ Assertion \`!table->file->keyread_enabled()'
 =~ close_thread_table
@@ -1806,8 +1810,7 @@ MDEV-21245:
 =~ Version: '10\.[2-9]|Server version: 10\.[2-9]
 MDEV-21242:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
-=~ Field_.*::val_.*
-=~ Protocol_text::store
+=~ Field_.*::val_.*|Field_*::get_*
 =~ vcols
 =~ Version: '10\.[2-3]
 MDEV-21242:
