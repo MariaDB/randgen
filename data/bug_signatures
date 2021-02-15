@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24863:
+=~ InnoDB: Failing assertion: index == cursor->index
+=~ btr_search_update_hash_on_delete
+=~ row_purge
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24861:
 =~ Assertion \`trx->rsegs\.m_redo\.rseg'
 =~ innodb_prepare_commit_versioned
@@ -429,8 +434,8 @@ MDEV-24508:
 MDEV-24467:
 =~ Direct leak of|Memory not freed|blocks are definitely lost
 =~ Binary_string::real_alloc|String::real_alloc
-=~ Field_.*::store
-=~ TABLE::update_default_fields
+=~ Field_.*::store|Field_.*::val_.*
+=~ TABLE::update_default_fields|TABLE::update_virtual_fields
 MDEV-24434:
 =~ Assertion \`trx->in_rw_trx_list \|\| trx->state == TRX_STATE_NOT_STARTED \|\| trx->state == TRX_STATE_ACTIVE'
 =~ trx_sys_any_active_transactions
