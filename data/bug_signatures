@@ -386,7 +386,12 @@ MDEV-24570:
 MDEV-24545:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
-=~ sequences\.yy|admin\.yy|alter_table\.yy
+=~ sequences\.yy|alter_table\.yy
+MDEV-24545:
+=~ InnoDB: (1) Table rename would cause two FOREIGN KEY constraints to have the same internal name in case-insensitive comparison
+=~ InnoDB: (2) Table .* exists in the InnoDB internal data dictionary though MySQL is trying to rename table .* to it
+=~ InnoDB: If table .* is a temporary table .* then it can be that there are still queries running on the table
+=~ sequences\.yy|alter_table\.yy
 MDEV-24532:
 =~ Assertion \`thd->transaction->stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
@@ -1053,6 +1058,10 @@ MDEV-23045:
 =~ MYSQL_BIN_LOG::trx_group_commit_leader
 =~ MYSQL_BIN_LOG::write_transaction_to_binlog
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-23041:
+=~ signal|AddressSanitizer
+=~ Item_func_set_user_var::update_hash
+=~ TABLE::update_default_fields
 MDEV-23026:
 =~ Assertion \`!rw_lock_own(lock, RW_LOCK_S)'
 =~ rw_lock_sx_lock_func
@@ -2881,7 +2890,7 @@ MDEV-17869:
 MDEV-17843:
 =~ Assertion \`page_rec_is_leaf(rec)'
 =~ lock_rec_queue_validate
-=~ innodb_show_status|SHOW ENGINE INNODB STATUS|SHOW ENGINE InnoDB STATUS|srv_monitor_task
+=~ innodb_show_status|SHOW ENGINE INNODB STATUS|SHOW ENGINE InnoDB STATUS|srv_monitor_task|srv_printf_innodb_monitor
 MDEV-17834:
 =~ AddressSanitizer|signal
 =~ row_upd_build_difference_binary
