@@ -8,6 +8,11 @@ MDEV-24898:
 =~ signal|AddressSanitizer
 =~ st_select_lex::next_select
 =~ Item_subselect::is_expensive
+MDEV-24877:
+=~ LeakSanitizer: detected memory leaks
+=~ Indirect leak
+=~ create_tmp_table
+=~ multi_update::initialize_tables
 MDEV-24876:
 =~ InnoDB: Failing assertion: lock->lock_word == X_LOCK_DECR
 =~ fts_cache_destroy
@@ -3761,6 +3766,9 @@ TODO-842: [MDL_ticket::create]
 # Weak matches
 ##############################################################################
 
+MDEV-24877:
+=~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
+=~ THD::~THD
 # myisam_data_pointer_size has been moved to non-dynamic test settings,
 # so it should not be happening anymore
 MDEV-24174: [myisam_data_pointer_size - partition]
