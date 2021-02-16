@@ -78,8 +78,8 @@ system("rm -rf /tmp/MDEV-* /tmp/MENT-* /tmp/TODO-*");
 
 #my $server_version= ;
 my @server_version= ();
-if (`grep -m 1 "^Version: '" @files @last_choice_files` =~ /^Version: '(\d+)\.(\d+)\.(\d+)/s) {
-  @server_version= ($1, $2, $3);
+if (`grep -m 1 "^Version: '" @files @last_choice_files` =~ /^Version: '(\d+)\.(\d+)\.(\d+)(?:-(\d+))?/s) {
+  @server_version= ($1, $2, $3, $4);
   print "Server version: ".join('.',@server_version)."\n";
 }
 
@@ -350,9 +350,23 @@ sub process_found_mdev
         my $fixVersions= `cat /tmp/$mdev.fixVersions`;
         my @versions = ($fixVersions =~ /\"name\":\"(.*?)\"/g);
         $$info_ref .= "Fix versions: @versions ($resolutiondate)\n";
-        foreach my $v (@versions) {
+        foreach my $v (sort @versions) {
           $v =~ /(\d+)\.(\d+)\.(\d+)/;
-          if ($1 == $server_version[0] and $2 == $server_version[1] and $3 > $server_version[2]) {
+          if (
+            # If minor fix version is higher than minor server version,
+            # the fix is most likely not in the branch yet
+            ($1 == $server_version[0] and $2 == $server_version[1] and $3 > $server_version[2])
+            # If minor fix version is the same as the server version
+            # and there is a 4th component in the server version (ES),
+            # the can be not in the branch yet. If it is, the entry
+            # should already be removed from bug signatures
+            or ($1 == $server_version[0] and $2 == $server_version[1] and $3 == $server_version[2] and defined $server_version[3])
+            # If minor fix version is the same as the server version
+            # and there is a lower major fix version,
+            # it's quite possible that the bug has been fixed in the lowest version,
+            # but not merged up yet
+            or ($1 == $server_version[0] and $2 == $server_version[1] and $3 == $server_version[2] and $v ne $versions[0])
+          ) {
             $fixed_in_future{$mdev}= 1;
           }
         }
