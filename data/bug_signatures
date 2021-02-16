@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24898:
+=~ signal|AddressSanitizer
+=~ st_select_lex::next_select
+=~ Item_subselect::is_expensive
+MDEV-24876:
+=~ InnoDB: Failing assertion: lock->lock_word == X_LOCK_DECR
+=~ fts_cache_destroy
+=~ has or is referenced in foreign key constraints which are not compatible with the new table definition
+=~ Version: '10\.[2-5]|Server version: 10\.[2-5]
+MDEV-24876:
+=~ safe_mutex: Trying to destroy a mutex cache->lock that was locked at .*fts0fts\.cc, line .* at .*fts0fts\.cc, line .*
+=~ fts_cache_destroy
+=~ has or is referenced in foreign key constraints which are not compatible with the new table definition
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-24863:
 =~ InnoDB: Failing assertion: index == cursor->index
 =~ btr_search_update_hash_on_delete
