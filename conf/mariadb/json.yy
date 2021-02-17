@@ -75,12 +75,12 @@ json_index_type:
 ;
 
 json_delete:
-  DELETE FROM { $json_table_field= 'fld'; $last_table = 'tmp' } json_where LIMIT 1
+  DELETE FROM { $json_table_field= 'fld'; 'tmp' } json_where LIMIT 1
 ;
 
 json_update:
     SET SQL_MODE=REPLACE(REPLACE(@@sql_mode,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
-  ; UPDATE { $last_table = 'tmp' } SET { $json_table_field= 'fld' } = json_func_returning_json ORDER BY fld LIMIT _digit
+  ; UPDATE `tmp` SET { $json_table_field= 'fld' } = json_func_returning_json ORDER BY fld LIMIT _digit
   ; SET SQL_MODE=DEFAULT
 ;
 
