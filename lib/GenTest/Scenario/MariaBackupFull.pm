@@ -1,4 +1,4 @@
-# Copyright (C) 2019, 2020 MariaDB Corporation Ab
+# Copyright (C) 2019, 2021 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -98,6 +98,7 @@ sub run {
   # the status of the test flow to notice if it exits prematurely.
   
   my $backup_num= 0;
+  $buffer_pool_size= $server->serverVariable('innodb_buffer_pool_size') * 2;
 
   if ($gentest_pid > 0)
   {
@@ -146,6 +147,29 @@ sub run {
           sayFile("$vardir/mbackup_backup_${backup_num}.log");
           return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
       }
+
+      $self->printStep("Preparing backup #$backup_num");
+
+      say("Storing the backup before prepare attempt...");
+      if (osWindows()) {
+        system("xcopy ${mbackup_target}_${backup_num} ${mbackup_target}_${backup_num}_before_prepare /E /I /Q");
+      } else {
+        system("cp -r ${mbackup_target}_${backup_num} ${mbackup_target}_${backup_num}_before_prepare");
+      }
+
+      $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_$backup_num $mbackup" : $mbackup)
+        . " --use-memory=$buffer_pool_size --prepare --target-dir=${mbackup_target}_${backup_num} --user=".$server->user." 2>$vardir/mbackup_prepare_${backup_num}.log";
+      say($cmd);
+      system($cmd);
+      $status= $? >> 8;
+
+      if ($status == STATUS_OK) {
+          say("Prepare #$backup_num finished successfully");
+      } else {
+        sayError("Backup preparing failed");
+        sayFile("$vardir/mbackup_prepare_${backup_num}.log");
+        return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+      }
     }
   }
   else {
@@ -177,38 +201,16 @@ sub run {
     return $self->finalize(STATUS_TEST_FAILURE,[$server]);
   }
 
+# If we have reached this far, backups and prepares succeeded,
+# now we are trying to start server on each of prepared backups
+
   #####
   $self->printStep("Backing up data directory before restart");
 
   $server->backupDatadir($server->datadir."_orig");
   move($server->errorlog, $server->errorlog.'_orig');
-  # We'll need it for --prepare (--use-memory)
-  # Due to MDEV-19176, a bigger value is required
-  $buffer_pool_size= $server->serverVariable('innodb_buffer_pool_size') * 2;
 
   foreach my $b (1..$backup_num) {
-
-      #####
-      $self->printStep("Preparing backup #$b");
-
-      say("Storing the backup before prepare attempt...");
-      if (osWindows()) {
-        system("xcopy ${mbackup_target}_${b} ${mbackup_target}_${b}_before_prepare /E /I /Q");
-      } else {
-        system("cp -r ${mbackup_target}_${b} ${mbackup_target}_${b}_before_prepare");
-      }
-
-      $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_$b $mbackup" : $mbackup)
-        . " --use-memory=$buffer_pool_size --prepare --target-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
-      say($cmd);
-      system($cmd);
-      $status= $? >> 8;
-
-      if ($status != STATUS_OK) {
-        sayError("Backup preparing failed");
-        sayFile("$vardir/mbackup_prepare_${b}.log");
-        return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-      }
 
       #####
       $self->printStep("Restoring backup #$b");
@@ -223,7 +225,6 @@ sub run {
         sayFile("$vardir/mbackup_restore_${b}.log");
         return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
       }
-
 
       #####
       $self->printStep("Restarting the server");
