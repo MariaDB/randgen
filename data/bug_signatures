@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24907:
+=~ signal|AddressSanitizer
+=~ Item_field::replace_equal_field
+=~ Item_in_optimizer::transform
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-24906:
+=~ AddressSanitizer|signal
+=~ QUICK_GROUP_MIN_MAX_SELECT::next_min_in_range
+=~  QUICK_GROUP_MIN_MAX_SELECT::get_next
+=~ rr_quick
 MDEV-24905:
 =~ Assertion \`!m\.first->second\.is_bulk_insert()'
 =~ trx_undo_report_row_operation
@@ -15,8 +25,8 @@ MDEV-24899:
 =~ Temporal::
 MDEV-24898:
 =~ signal|AddressSanitizer
-=~ st_select_lex::next_select
 =~ Item_subselect::is_expensive
+=~ Item_args::walk_args
 MDEV-24877:
 =~ LeakSanitizer: detected memory leaks
 =~ Indirect leak
@@ -419,6 +429,7 @@ MDEV-24545:
 =~ InnoDB: (1) Table rename would cause two FOREIGN KEY constraints to have the same internal name in case-insensitive comparison
 =~ InnoDB: (2) Table .* exists in the InnoDB internal data dictionary though MySQL is trying to rename table .* to it
 =~ InnoDB: If table .* is a temporary table .* then it can be that there are still queries running on the table
+!~ Version: '.*-debug
 =~ sequences\.yy|alter_table\.yy
 MDEV-24532:
 =~ Assertion \`thd->transaction->stmt\.is_empty()'
