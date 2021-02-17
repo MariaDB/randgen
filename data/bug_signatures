@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24905:
+=~ Assertion \`!m\.first->second\.is_bulk_insert()'
+=~ trx_undo_report_row_operation
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-24899:
+=~ signal|AddressSanitizer
+=~ get_suffix
+=~ find_body
+=~ Temporal::
 MDEV-24898:
 =~ signal|AddressSanitizer
 =~ st_select_lex::next_select
