@@ -267,6 +267,11 @@ MDEV-24686:
 =~ event_queue_element_compare_q
 =~ queue_insert
 =~ Event_queue::update_event|Event_queue::create_event
+MDEV-24686:
+=~ AddressSanitizer|signal
+=~ event_basic_identifier_equal
+=~ Event_queue::find_n_remove_event
+=~ Event_queue::drop_event
 MDEV-24683:
 =~ AddressSanitizer|signal
 =~ Binary_string::copy
@@ -281,11 +286,24 @@ MDEV-24665:
 =~ my_timestamp_from_binary|Field_newdate::get_TIME|Field_datetimef::get_TIME
 =~ Field::validate_value_in_record_with_warn
 =~ TABLE::validate_default_values_of_unset_fields
+=~ vcols
 MDEV-24665:
 =~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
 =~ Field::ptr_in_record
 =~ Field::validate_value_in_record_with_warn
 =~ TABLE::validate_default_values_of_unset_fields
+=~ vcols
+MDEV-24665:
+=~ AddressSanitizer|signal
+=~ Field_.*::val_.*
+=~ Column_definition::Column_definition
+=~ mysql_prepare_alter_table
+=~ vcols
+MDEV-24665:
+=~ Assertion \`tmp != ((long long) 0x8000000000000000LL)'
+=~ TIME_from_longlong_datetime_packed
+=~ Column_definition::Column_definition
+-~ vcols
 MDEV-24664:
 =~ Assertion \`! is_set()'
 =~ Diagnostics_area::set_eof_status
@@ -3786,7 +3804,7 @@ TODO-842: [MDL_ticket::create]
 # Weak matches
 ##############################################################################
 
-MDEV-24877:
+MDEV-24877: [debug_assert_on_not_freed_memory]
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ THD::~THD
 # myisam_data_pointer_size has been moved to non-dynamic test settings,
