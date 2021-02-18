@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24909:
+=~ STATUS_SERVER_DEADLOCKED
+=~ Deadlock reporter detected dead query: .*JSON_
 MDEV-24907:
 =~ signal|AddressSanitizer
 =~ Item_field::replace_equal_field
@@ -1708,10 +1711,15 @@ MDEV-21650:
 =~ ha_commit_trans
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-21648:
-=~ AddressSanitizer:
+=~ AddressSanitizer|signal
 =~ memmove
 =~ Binary_string::copy|String::copy
 =~ Item_copy_string::copy
+MDEV-21648:
+=~ AddressSanitizer|signal
+=~ my_utf16_uni
+=~ my_copy_fix_mb
+=~ String_copier::well_formed_copy
 MDEV-21641:
 =~ For .* BASE TABLE .* error : Found a misplaced row
 =~ For .* BASE TABLE .* error : Partition .* returned error
