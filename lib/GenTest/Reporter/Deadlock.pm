@@ -1,4 +1,5 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2021 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -25,19 +26,22 @@ use GenTest;
 use GenTest::Constants;
 use GenTest::Result;
 use GenTest::Reporter;
+use GenTest::Reporter::Backtrace;
 use GenTest::Executor::MySQL;
 
 use DBI;
 use Data::Dumper;
 use POSIX;
 
-use constant PROCESSLIST_PROCESS_TIME		=> 5;
-use constant PROCESSLIST_PROCESS_INFO		=> 7;
+use constant PROCESSLIST_PROCESS_COMMAND => 4;
+use constant PROCESSLIST_PROCESS_TIME    => 5;
+use constant PROCESSLIST_PROCESS_INFO    => 7;
 
 # The time, in seconds, we will wait for a connect before we declare the server hanged
 use constant CONNECT_TIMEOUT_THRESHOLD		=> 20;
 
 # Minimum lifetime of a query before it is considered suspicios
+# (may be overridden later if test duration is less than this)
 use constant QUERY_LIFETIME_THRESHOLD		=> 600;	# Seconds
 
 # Number of suspicious queries required before a deadlock is declared
@@ -92,24 +96,35 @@ sub monitor_nonthreaded {
 	my $processlist = $dbh->selectall_arrayref("SHOW FULL PROCESSLIST");
 	alarm (0);
 
-	my $stalled_queries = 0;
+  my $lifetime_threshold= ($reporter->testDuration() > QUERY_LIFETIME_THRESHOLD
+                            ? QUERY_LIFETIME_THRESHOLD
+                            : $reporter->testDuration());
+	my $stalled_queries= 0;
+  my $dead_queries= 0;
 
 	foreach my $process (@$processlist) {
 		if (
 			($process->[PROCESSLIST_PROCESS_INFO] ne '') &&
-			($process->[PROCESSLIST_PROCESS_TIME] > QUERY_LIFETIME_THRESHOLD)
+			($process->[PROCESSLIST_PROCESS_TIME] > $lifetime_threshold)
 		) {
-			$stalled_queries++;
-#			say("Stalled query: ".$process->[PROCESSLIST_PROCESS_INFO]);
-		}
+        $stalled_queries++;
+        if ($process->[PROCESSLIST_PROCESS_COMMAND] eq 'Killed') {
+          sayError("Deadlock reporter detected dead query: ".$process->[PROCESSLIST_PROCESS_INFO]);
+          $dead_queries++;
+        } else {
+          sayError("Deadlock reporter detected Stalled query: ".$process->[PROCESSLIST_PROCESS_INFO]);
+        }
+      }
 	}
 
-	if ($stalled_queries >= STALLED_QUERY_COUNT_THRESHOLD) {
-		say("$stalled_queries stalled queries detected, declaring deadlock at DSN $dsn.");
+	if ($stalled_queries >= STALLED_QUERY_COUNT_THRESHOLD or $dead_queries > 0) {
+		say("$stalled_queries stalled queries / $dead_queries dead queries detected, declaring deadlock at DSN $dsn.");
 
-		foreach my $status_query (
-			"SHOW PROCESSLIST",
-			"SHOW ENGINE INNODB STATUS"
+    foreach my $status_query (
+      "SHOW FULL PROCESSLIST",
+      "INSTALL SONAME 'metadata_lock_info'",
+      "SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO",
+      "SHOW ENGINE INNODB STATUS"
 			# "SHOW OPEN TABLES" - disabled due to bug #46433
 		) {
 			say("Executing $status_query:");
@@ -117,6 +132,7 @@ sub monitor_nonthreaded {
 			print Dumper $status_result;
 		}
 
+    $reporter->killServer();
 		return STATUS_SERVER_DEADLOCKED;
 	} else {
 		return STATUS_OK;
@@ -197,6 +213,7 @@ sub dbh_thread {
 	return GenTest::Executor::MySQL::errorType($DBI::err) if not defined $processlist;
 
 	my $stalled_queries = 0;
+  my $dead_queries = 0;
 
 	foreach my $process (@$processlist) {
 		if (
@@ -210,6 +227,7 @@ sub dbh_thread {
 	if ($stalled_queries >= STALLED_QUERY_COUNT_THRESHOLD) {
 		say("$stalled_queries stalled queries detected, declaring deadlock at DSN $dsn.");
 		print Dumper $processlist;
+    $reporter->killServer();
 		return STATUS_SERVER_DEADLOCKED;
 	} else {
 		return STATUS_OK;
@@ -231,6 +249,11 @@ sub callbackReport {
 }
 
 sub nativeReport {
+  # Everything should already be done by now
+  return STATUS_OK;
+}
+
+sub killServer {
 
 	my $reporter = shift;
 	my $server_pid = $reporter->serverInfo('pid');
@@ -250,7 +273,6 @@ sub nativeReport {
 
 		say("Killing mysqld with pid $server_pid with SIGSEGV in order to capture core.");
 		kill(11, $server_pid);
-		sleep(20);
 	}
 
 	return STATUS_OK;

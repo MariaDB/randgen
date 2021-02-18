@@ -1,4 +1,5 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2021 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -48,30 +49,39 @@ sub nativeReport {
 	say("bindir is $bindir");
 
 	my $pid = $reporter->serverInfo('pid');
-	my $core = <$datadir/core*>;
-	$core = </cores/core.$pid> if $^O eq 'darwin';
-	$core = <$datadir/vgcore*> if defined $reporter->properties->valgrind;
-	$core = File::Spec->rel2abs($core);
-	(-f $core) ? say("core is $core") : say("WARNING: Core file not found!");
+	my $core;
+  $core = </cores/core.$pid> if $^O eq 'darwin';
+  $core = <$datadir/vgcore*> if defined $reporter->properties->valgrind;
 
 	my @commands;
 
-	if (osWindows()) {
-		$bindir =~ s{/}{\\}sgio;
-		my $cdb_cmd = "!sym prompts off; !analyze -v; .ecxr; !for_each_frame dv /t;~*k;q";
-		push @commands, 'cdb -i "'.$bindir.'" -y "'.$bindir.';srv*C:\\cdb_symbols*http://msdl.microsoft.com/download/symbols" -z "'.$datadir.'\mysqld.dmp" -lines -c "'.$cdb_cmd.'"';
-    } elsif (osSolaris()) {
-        ## We don't want to run gdb on solaris since it may core-dump
-        ## if the executable was generated with SunStudio.
+  if (osWindows()) {
+    $bindir =~ s{/}{\\}sgio;
+    my $cdb_cmd = "!sym prompts off; !analyze -v; .ecxr; !for_each_frame dv /t;~*k;q";
+    push @commands, 'cdb -i "'.$bindir.'" -y "'.$bindir.';srv*C:\\cdb_symbols*http://msdl.microsoft.com/download/symbols" -z "'.$datadir.'\mysqld.dmp" -lines -c "'.$cdb_cmd.'"';
+  } else {
+      # Coredump may be not created yet, waiting for a while
+      foreach (1..30) {
+        sleep(1);
+        last if (defined $core);
+        $core = <$datadir/core*>;
+      }
+      if (-f $core) {
+        $core = File::Spec->rel2abs($core);
+        say("core is $core");
 
-        ## 1) First try to do it with dbx. dbx should work for both
-        ## Sunstudio and GNU CC. This is a bit complicated since we
-        ## need to first ask dbx which threads we have, and then dump
-        ## the stack for each thread.
+        if (osSolaris()) {
+          ## We don't want to run gdb on solaris since it may core-dump
+          ## if the executable was generated with SunStudio.
 
-        ## The code below is "inspired by MTR
-        `echo | dbx - $core 2>&1` =~ m/Corefile specified executable: "([^"]+)"/;
-        if ($1) {
+          ## 1) First try to do it with dbx. dbx should work for both
+          ## Sunstudio and GNU CC. This is a bit complicated since we
+          ## need to first ask dbx which threads we have, and then dump
+          ## the stack for each thread.
+
+          ## The code below is "inspired by MTR
+          `echo | dbx - $core 2>&1` =~ m/Corefile specified executable: "([^"]+)"/;
+          if ($1) {
             ## We do apparently have a working dbx
 
             # First, identify all threads
@@ -84,22 +94,22 @@ sub nativeReport {
             my $traces = join("; ",map{"where ".$_} @threads);
 
             push @commands, "echo \"$traces\" | dbx $binary $core";
-        } elsif ($core) {
+          } else {
             ## We'll attempt pstack and c++filt which should allways
             ## work and show all threads. c++filt from SunStudio
             ## should even be able to demangle GNU CC-compiled
-                ## executables.
+            ## executables.
             push @commands, "pstack $core | c++filt";
+          }
         } else {
-            say ("No core available");
+            ## Assume all other systems are gdb-"friendly" ;-)
+            push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace.gdb";
+            push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace-all.gdb";
         }
-	} else {
-        ## Assume all other systems are gdb-"friendly" ;-)
-        if (-f $core) {
-          push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace.gdb";
-          push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace-all.gdb";
-        }
-	}
+      } else {
+          say("WARNING: Core file $core not found!");
+      }
+  }
 
 	my @debugs;
 
