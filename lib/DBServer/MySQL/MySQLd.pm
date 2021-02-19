@@ -776,7 +776,7 @@ sub dumpdb {
                              "--no-create-info --host=127.0.0.1 ".
                              "$skip_heap_tables ".
                              "--port=".$self->port.
-                             " -uroot $database";
+                             " -uroot --databases $database";
     # --no-tablespaces option was introduced in version 5.1.14.
     if ($self->_notOlderThan(5,1,14)) {
         $dump_command = $dump_command . " --no-tablespaces";
@@ -794,7 +794,7 @@ sub dumpSchema {
                              "--order-by-primary --skip-extended-insert ".
                              "--no-data --host=127.0.0.1 ".
                              "--port=".$self->port.
-                             " -uroot $database";
+                             " -uroot --databases $database";
     # --no-tablespaces option was introduced in version 5.1.14.
     if ($self->_notOlderThan(5,1,14)) {
         $dump_command = $dump_command . " --no-tablespaces";
