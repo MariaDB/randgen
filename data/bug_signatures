@@ -356,6 +356,12 @@ MDEV-24655:
 =~ row_sel_store_mysql_field_func
 =~ row_sel_store_mysql_rec
 =~ mysql_update
+MDEV-24655:
+=~ AddressSanitizer|signal
+=~ Field::is_null_in_record
+=~ create_tmp_table
+=~ setup_sj_materialization_part1
+=~ make_outerjoin_info
 MDEV-24646:
 =~ AddressSanitizer|signal
 =~ Field_blob::pack
