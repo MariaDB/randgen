@@ -323,6 +323,7 @@ $combinations = [
   ],
   ##### Redefines
   [
+    [ '--redefine=conf/mariadb/all_selects.yy', '', '' ],
     [ '--redefine=conf/mariadb/alter_table.yy', '', '', '', '' ],
     [ '--redefine=conf/mariadb/bulk_insert.yy', '' ],
     [ '--redefine=conf/mariadb/federated.yy --mysqld=--plugin-load-add=ha_federatedx', '', '', '', '', '', '', '', '', '' ],
