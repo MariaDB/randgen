@@ -948,12 +948,15 @@ sub stopServer {
 
     if ($shutdown_timeout and defined $self->[MYSQLD_DBH]) {
         say("Stopping server on port ".$self->port);
+        $SIG{'ALRM'} = sub { sayWarning("Could not execute shutdown command in time"); };
         ## Use dbh routine to ensure reconnect in case connection is
         ## stale (happens i.e. with mdl_stability/valgrind runs)
+        alarm($shutdown_timeout);
         my $dbh = $self->dbh();
         # Need to check if $dbh is defined, in case the server has crashed
         if (defined $dbh) {
             $res = $dbh->func('shutdown','127.0.0.1','root','admin');
+            alarm(0);
             if (!$res) {
                 ## If shutdown fails, we want to know why:
                 if ($dbh->err == 1064) {
