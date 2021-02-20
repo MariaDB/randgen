@@ -186,6 +186,9 @@ sub next {
 					$item = eval("no strict;\n".$item.";\n");	# Variable
 				} else {
 					my $field_type = (substr($item, 0, 1) eq '_' ? $prng->isFieldType(substr($item, 1)) : undef);
+          if ($last_table =~ /\`?(.+)\`?\s*\.\`?(.+)\`?/) {
+            ($last_database,$last_table)= ($1,$2);
+          }
 
 					if ($item eq '_letter') {
 						$item = $prng->letter();
