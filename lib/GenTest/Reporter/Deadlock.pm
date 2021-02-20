@@ -55,10 +55,11 @@ sub monitor {
 
 	my $actual_test_duration = time() - $reporter->testStart();
 
-	if ($actual_test_duration > ACTUAL_TEST_DURATION_MULTIPLIER * $reporter->testDuration()) {
-		say("Actual test duration ($actual_test_duration seconds) is more than ".(ACTUAL_TEST_DURATION_MULTIPLIER)." times the desired duration (".$reporter->testDuration()." seconds)");
-		return STATUS_INTERNAL_ERROR;
-	}
+  if ($actual_test_duration > ACTUAL_TEST_DURATION_MULTIPLIER * $reporter->testDuration()) {
+    sayError("Actual test duration ($actual_test_duration seconds) is more than ".(ACTUAL_TEST_DURATION_MULTIPLIER)." times the desired duration (".$reporter->testDuration()." seconds)");
+    $reporter->killServer();
+    return STATUS_TEST_FAILURE;
+  }
 
 	if (osWindows()) {
 		return $reporter->monitor_threaded();
@@ -112,7 +113,7 @@ sub monitor_nonthreaded {
           sayError("Deadlock reporter detected dead query: ".$process->[PROCESSLIST_PROCESS_INFO]);
           $dead_queries++;
         } else {
-          sayError("Deadlock reporter detected Stalled query: ".$process->[PROCESSLIST_PROCESS_INFO]);
+          sayError("Deadlock reporter detected stalled query: ".$process->[PROCESSLIST_PROCESS_INFO]);
         }
       }
 	}
