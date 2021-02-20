@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24929:
+=~ signal|AddressSanitizer
+=~ thr_unlock
+=~ thr_multi_unlock
+=~ JOIN::optimize
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-24929:
+=~ signal|AddressSanitizer
+=~ get_schema_tables_result
+=~ JOIN::exec
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24909:
 =~ STATUS_SERVER_DEADLOCKED
 =~ Deadlock reporter detected dead query: .*JSON_
