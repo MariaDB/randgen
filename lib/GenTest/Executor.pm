@@ -789,6 +789,11 @@ sub metaColumnInfo {
 ################### Public interface to be used from grammars
 ##
 
+sub databases {
+    my ($self, @args) = @_;
+    return $self->metaSchemas(@args);
+}
+
 sub tables {
     my ($self, @args) = @_;
     return $self->metaTables(@args);
