@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24931:
+=~ Assertion \`prefix_size <= width'
+=~ Bitmap<width>::is_prefix
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24929:
 =~ signal|AddressSanitizer
 =~ thr_unlock
@@ -172,7 +176,6 @@ MDEV-24748:
 MDEV-24743:
 =~ Assertion \`nr >= 0\.0'
 =~ Item_std_field::val_real
-=~ Protocol::send_result_set_row
 MDEV-24742:
 =~ signal|AddressSanitizer
 =~ String::numchars
