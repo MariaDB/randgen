@@ -80,6 +80,8 @@ sub monitor_nonthreaded {
 	# manner does not work for some reason -- the read() call from the server gets restarted instead
 
 	sigaction SIGALRM, new POSIX::SigAction sub {
+                sayError("Deadlock reporter encountered imeout upon attempt to connect to the database");
+                $reporter->killServer();
                 exit (STATUS_SERVER_DEADLOCKED);
 	} or die "Error setting SIGALRM handler: $!\n";
 
