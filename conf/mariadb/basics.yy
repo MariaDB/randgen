@@ -429,7 +429,7 @@ _basics_any_value:
   _tinyblob | _blob | _mediumblob | _longblob | _tinytext | _text | _mediumtext | _longtext |
   _date | _time | _datetime | _timestamp | _year |
   _enum | _set |
-  _null | _letter | _digit | _data | _ascii | _string | _empty | _hex | _quid |
+  _null | _digit | _data | _ascii | _string | _empty | _hex | _quid |
   _json | _jsonpath | _jsonkey | _jsonvalue | _jsonarray | _jsonpair | _jsonobject | _jsonpath_no_wildcard ;
 
 _basics_value_set:
