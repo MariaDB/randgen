@@ -577,6 +577,15 @@ MDEV-24174:
 =~ Assertion \`i == (uint16) (\*((uint16 \*) (part_rec_buf_ptr)))'
 =~ ha_partition::handle_ordered_index_scan
 =~ Version: '10\.2|Server version: 10\.2
+MDEV-24112:
+=~ Assertion `cur_step->type & JSON_PATH_KEY'
+=~ json_find_path
+=~ Item_func_json_array_append::val_str
+MDEV-24112:
+=~ signal|AddressSanitizer
+=~ json_read_string_const_chr
+=~ json_find_path
+=~ Item_func_json_array_append::val_str
 MDEV-24095:
 =~ AddressSanitizer|signal
 =~ json_path_parts_compare
@@ -978,7 +987,7 @@ MDEV-23275:
 =~ Assertion \`strncmp(str->ptr() + str->length() - 5, "cast(", 5) == 0'
 =~ Item_dyncol_get::print
 MDEV-23265:
-=~ Assertion \`!expl_lock \|\| expl_lock->trx == arg->impl_trx'
+=~ Assertion \`!expl_lock \|\| expl_lock->trx == arg->impl_trx'|Assertion \`!expl_lock \|\| expl_lock->trx == &arg->impl_trx'
 =~ lock_rec_other_trx_holds_expl_callback
 =~ rw_trx_hash_t::debug_iterator
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
