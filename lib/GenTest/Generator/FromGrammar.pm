@@ -186,7 +186,15 @@ sub next {
 					$item = eval("no strict;\n".$item.";\n");	# Variable
 				} else {
 					my $field_type = (substr($item, 0, 1) eq '_' ? $prng->isFieldType(substr($item, 1)) : undef);
-          if ($last_table =~ /\`?(.+)\`?\s*\.\`?(.+)\`?/) {
+
+          if (not $last_table) {
+            # If we unset $last_table in a grammar, Executor will always use the first one
+            # from the list for all _field rules and alike. We want it to be random still.
+            # For _table rules and alike, it will be adjusted later
+            $last_table = $prng->arrayElement($executors->[0]->metaTables($last_database));
+          } elsif ($last_table =~ /\`?(.+)\`?\s*\.\`?(.+)\`?/) {
+            # If a grammar set $last_table to a fully-qualified name, we want to split it
+            # for further use
             ($last_database,$last_table)= ($1,$2);
           }
 
