@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24933:
+=~ Assertion \`is_valid_time_slow()'
+=~ Time::valid_MYSQL_TIME_to_valid_value
+=~ Time::make_from_item
+=~ Version: '10\.3|Server version: 10\.3
 MDEV-24931:
 =~ Assertion \`prefix_size <= width'
 =~ Bitmap<width>::is_prefix
@@ -390,7 +395,7 @@ MDEV-24640:
 =~ marked as crashed and should be repaired|Failed to flush data or index file|Protocol::end_statement(): Assertion \`0'|Diagnostics_area::set_ok_status(ulonglong, ulonglong, const char\*): Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'|Assertion \`! is_set() \|\| m_can_overwrite_status'
 MDEV-24633:
 =~ AddressSanitizer|signal
-=~ my_mb_wc_.*
+=~ my_mb_wc_.*|my_utf8_uni
 =~ get_first_nonspace
 =~ Item_func_json_merge_patch
 MDEV-24625:
@@ -2071,7 +2076,6 @@ MDEV-20680:
 MDEV-20666:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE \|\| (prebuilt->table->no_rollback() && trx->state == TRX_STATE_NOT_STARTED)'
 =~ row_search_mvcc
-=~ ha_innobase::index_read
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-20666:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE'
