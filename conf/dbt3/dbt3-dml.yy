@@ -5,7 +5,7 @@
 #
 
 query_init:
-	START TRANSACTION ; AUTOCOMMIT OFF ; SET AUTOCOMMIT = OFF ;
+	SET AUTOCOMMIT = OFF ;
 
 query:
 	transaction_body ; commit_rollback ;
