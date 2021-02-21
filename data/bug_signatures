@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24934:
+=~ AddressSanitizer|signal
+=~ my_longlong10_to_str_8bit|fmt_number
+=~ Item_dyncol_get::val_str
+=~ Item_char_typecast::val_str
 MDEV-24933:
 =~ Assertion \`is_valid_time_slow()'
 =~ Time::valid_MYSQL_TIME_to_valid_value
