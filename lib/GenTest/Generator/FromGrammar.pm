@@ -267,8 +267,9 @@ sub next {
 						$item = $#$fields + 1;
 					} elsif ($item eq '_field_next') {
 						# Pick the next field that has not been picked recently and increment the $field_pos counter
+						# (if there is more than one field in the table
 						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
-						$item = '`'.$fields->[$field_pos++ % $#$fields].'`';
+						$item = '`'.($#$fields ? $fields->[$field_pos++ % $#$fields] : $fields->[0]).'`';
 					} elsif ($item eq '_field_pk') {
 						my $fields = $executors->[0]->metaColumnsIndexType('primary',$last_table, $last_database);
                         $last_field = $fields->[0];
