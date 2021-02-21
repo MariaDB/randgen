@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24935:
+=~ AddressSanitizer|signal
+=~ Field_iterator_natural_join::next
+=~ mark_common_columns
+=~ setup_natural_join_row_types
 MDEV-24934:
 =~ AddressSanitizer|signal
 =~ my_longlong10_to_str_8bit|fmt_number
