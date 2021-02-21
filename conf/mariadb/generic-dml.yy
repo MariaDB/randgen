@@ -36,7 +36,7 @@ dml:
 
 insert:
     insert_op INTO _table ( _field ) VALUES ( data_value ) |
-    insert_op INTO _table ( _field, _next_field ) VALUES ( data_value, data_value ) |
+    insert_op INTO _table ( _field, _field_next ) VALUES ( data_value, data_value ) |
     insert_op INTO _table () VALUES _basics_empty_values_list
 ;
 
