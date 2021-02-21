@@ -19,7 +19,7 @@ query_init_add:
    { $all_selects_databases= $executors->[0]->databases(); '' };
 
 query_add:
-  { @aliases= (); $non_agg_fields= 0; $agg_fields= 0; $last_db_save= $last_database; '' } all_selects_query { $last_database= $last_db_save; '' };
+  { @aliases= (); $non_agg_fields= 0; $agg_fields= 0; '' } all_selects_query { $last_database= undef; $last_table= undef; '' };
 
 all_selects_query:
   SELECT all_selects_select_list
@@ -58,7 +58,7 @@ all_selects_from_list:
   # have already been picked should be there
 
   # Comma-separated list (simple JOIN)
-#  all_selects_prepare_list_of_tables { join ',', @{$prng->shuffleArray(\@list_of_tables)} } |
+  all_selects_prepare_list_of_tables { join ',', @{$prng->shuffleArray(\@list_of_tables)} } |
 
   # JOIN list (with optional ON clauses)
   all_selects_prepare_list_of_tables { $joined_tables_num=0; $last_join_type= '' } all_selects_join_list
