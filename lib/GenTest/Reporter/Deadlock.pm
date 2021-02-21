@@ -57,8 +57,7 @@ sub monitor {
 
   if ($actual_test_duration > ACTUAL_TEST_DURATION_MULTIPLIER * $reporter->testDuration()) {
     sayError("Actual test duration ($actual_test_duration seconds) is more than ".(ACTUAL_TEST_DURATION_MULTIPLIER)." times the desired duration (".$reporter->testDuration()." seconds)");
-    $reporter->killServer();
-    return STATUS_TEST_FAILURE;
+    return STATUS_SERVER_DEADLOCKED;
   }
 
 	if (osWindows()) {
@@ -80,12 +79,11 @@ sub monitor_nonthreaded {
 	# manner does not work for some reason -- the read() call from the server gets restarted instead
 
 	sigaction SIGALRM, new POSIX::SigAction sub {
-                sayError("Deadlock reporter encountered imeout upon attempt to connect to the database");
-                $reporter->killServer();
+                sayError("Deadlock reporter encountered a timeout upon connecting to the database");
                 exit (STATUS_SERVER_DEADLOCKED);
 	} or die "Error setting SIGALRM handler: $!\n";
 
-	my $prev_alarm1 = alarm (CONNECT_TIMEOUT_THRESHOLD);
+	alarm (CONNECT_TIMEOUT_THRESHOLD);
 	$dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => CONNECT_TIMEOUT_THRESHOLD * 2} );
 
 	if (defined GenTest::Executor::MySQL::errorType($DBI::err)) {
@@ -95,6 +93,13 @@ sub monitor_nonthreaded {
 		alarm (0);
 		return STATUS_UNKNOWN_ERROR;
 	}
+
+	sigaction SIGALRM, new POSIX::SigAction sub {
+                sayError("Deadlock reporter encountered a timeout upon running SHOW FULL PROCESSLIST");
+                exit (STATUS_SERVER_DEADLOCKED);
+	} or die "Error setting SIGALRM handler: $!\n";
+
+	alarm (CONNECT_TIMEOUT_THRESHOLD);
 
 	my $processlist = $dbh->selectall_arrayref("SHOW FULL PROCESSLIST");
 	alarm (0);
@@ -120,26 +125,32 @@ sub monitor_nonthreaded {
       }
 	}
 
-	if ($stalled_queries >= STALLED_QUERY_COUNT_THRESHOLD or $dead_queries > 0) {
-		say("$stalled_queries stalled queries / $dead_queries dead queries detected, declaring deadlock at DSN $dsn.");
+  if ($stalled_queries >= STALLED_QUERY_COUNT_THRESHOLD or $dead_queries > 0) {
+    say("$stalled_queries stalled queries / $dead_queries dead queries detected, declaring deadlock at DSN $dsn.");
+
+    sigaction SIGALRM, new POSIX::SigAction sub {
+                sayError("Deadlock reporter encountered a timeout upon performing deadlock diagnostics");
+                exit (STATUS_SERVER_DEADLOCKED);
+    } or die "Error setting SIGALRM handler: $!\n";
+
+    alarm(CONNECT_TIMEOUT_THRESHOLD);
 
     foreach my $status_query (
       "SHOW FULL PROCESSLIST",
       "INSTALL SONAME 'metadata_lock_info'",
       "SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO",
       "SHOW ENGINE INNODB STATUS"
-			# "SHOW OPEN TABLES" - disabled due to bug #46433
-		) {
-			say("Executing $status_query:");
-			my $status_result = $dbh->selectall_arrayref($status_query);
-			print Dumper $status_result;
-		}
-
-    $reporter->killServer();
-		return STATUS_SERVER_DEADLOCKED;
-	} else {
-		return STATUS_OK;
-	}
+      # "SHOW OPEN TABLES" - disabled due to bug #46433
+    ) {
+        say("Executing $status_query:");
+        my $status_result = $dbh->selectall_arrayref($status_query);
+        print Dumper $status_result;
+    }
+    alarm(0);
+    return STATUS_SERVER_DEADLOCKED;
+  } else {
+    return STATUS_OK;
+  }
 }
 
 sub monitor_threaded {
@@ -230,7 +241,6 @@ sub dbh_thread {
 	if ($stalled_queries >= STALLED_QUERY_COUNT_THRESHOLD) {
 		say("$stalled_queries stalled queries detected, declaring deadlock at DSN $dsn.");
 		print Dumper $processlist;
-    $reporter->killServer();
 		return STATUS_SERVER_DEADLOCKED;
 	} else {
 		return STATUS_OK;
@@ -252,8 +262,8 @@ sub callbackReport {
 }
 
 sub nativeReport {
-  # Everything should already be done by now
-  return STATUS_OK;
+  $_[0]->killServer();
+  return STATUS_SERVER_DEADLOCKED;
 }
 
 sub killServer {

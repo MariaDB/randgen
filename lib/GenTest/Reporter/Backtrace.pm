@@ -40,15 +40,14 @@ sub nativeReport {
 	my $reporter = shift;
 
 	my $datadir = $reporter->serverVariable('datadir');
-	say("datadir is $datadir");
-
 	my $binary = $reporter->serverInfo('binary');
-	say("binary is $binary");
-
 	my $bindir = $reporter->serverInfo('bindir');
-	say("bindir is $bindir");
-
 	my $pid = $reporter->serverInfo('pid');
+	say("datadir: $datadir");
+	say("binary: $binary");
+	say("bindir: $bindir");
+	say("pid: $pid");
+
 	my $core;
   $core = </cores/core.$pid> if $^O eq 'darwin';
   $core = <$datadir/vgcore*> if defined $reporter->properties->valgrind;
@@ -62,52 +61,55 @@ sub nativeReport {
   } else {
       # Coredump may be not created yet, waiting for a while
       foreach (1..30) {
+        if (defined $core and -f $core) {
+          $core = File::Spec->rel2abs($core);
+          say("core is $core");
+          last;
+        }
         sleep(1);
-        last if (defined $core);
         $core = <$datadir/core*>;
       }
-      if (-f $core) {
-        $core = File::Spec->rel2abs($core);
-        say("core is $core");
+      if (-f $core and osSolaris()) {
+        ## We don't want to run gdb on solaris since it may core-dump
+        ## if the executable was generated with SunStudio.
 
-        if (osSolaris()) {
-          ## We don't want to run gdb on solaris since it may core-dump
-          ## if the executable was generated with SunStudio.
+        ## 1) First try to do it with dbx. dbx should work for both
+        ## Sunstudio and GNU CC. This is a bit complicated since we
+        ## need to first ask dbx which threads we have, and then dump
+        ## the stack for each thread.
 
-          ## 1) First try to do it with dbx. dbx should work for both
-          ## Sunstudio and GNU CC. This is a bit complicated since we
-          ## need to first ask dbx which threads we have, and then dump
-          ## the stack for each thread.
+        ## The code below is "inspired by MTR
+        `echo | dbx - $core 2>&1` =~ m/Corefile specified executable: "([^"]+)"/;
+        if ($1) {
+          ## We do apparently have a working dbx
 
-          ## The code below is "inspired by MTR
-          `echo | dbx - $core 2>&1` =~ m/Corefile specified executable: "([^"]+)"/;
-          if ($1) {
-            ## We do apparently have a working dbx
+          # First, identify all threads
+          my @threads = `echo threads | dbx $binary $core 2>&1` =~ m/t@\d+/g;
 
-            # First, identify all threads
-            my @threads = `echo threads | dbx $binary $core 2>&1` =~ m/t@\d+/g;
+          ## Then we make a command for each thread (It would be
+          ## more efficient and get nicer output to have all
+          ## commands in one dbx-batch, TODO!)
 
-            ## Then we make a command for each thread (It would be
-            ## more efficient and get nicer output to have all
-            ## commands in one dbx-batch, TODO!)
+          my $traces = join("; ",map{"where ".$_} @threads);
 
-            my $traces = join("; ",map{"where ".$_} @threads);
-
-            push @commands, "echo \"$traces\" | dbx $binary $core";
-          } else {
-            ## We'll attempt pstack and c++filt which should allways
-            ## work and show all threads. c++filt from SunStudio
-            ## should even be able to demangle GNU CC-compiled
-            ## executables.
-            push @commands, "pstack $core | c++filt";
-          }
+          push @commands, "echo \"$traces\" | dbx $binary $core";
         } else {
-            ## Assume all other systems are gdb-"friendly" ;-)
-            push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace.gdb";
-            push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace-all.gdb";
+          ## We'll attempt pstack and c++filt which should allways
+          ## work and show all threads. c++filt from SunStudio
+          ## should even be able to demangle GNU CC-compiled
+          ## executables.
+          push @commands, "pstack $core | c++filt";
         }
+      } elsif (-f $core) {
+          ## Assume all other systems are gdb-"friendly" ;-)
+          push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace.gdb";
+          push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace-all.gdb";
+      } elsif (kill(0,$pid) == 0) {
+          say("The process $pid is still alive. Taking stack traces from the running server");
+          push @commands, "gdb --batch --se=$binary $pid --command=backtrace.gdb";
+          push @commands, "gdb --batch --se=$binary $pid --command=backtrace-all.gdb";
       } else {
-          say("WARNING: Core file $core not found!");
+        say("WARNING: New core file $core nore process $pid were found!");
       }
   }
 
