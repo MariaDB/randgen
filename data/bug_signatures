@@ -115,7 +115,7 @@ MDEV-24811:
 =~ trx_update_mod_tables_timestamp
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-24811:
-=~ Assertion ``str'
+=~ Assertion \`str'
 =~ ut_fold_string
 =~ dict_table_remove_from_cache_low
 =~ trx_update_mod_tables_timestamp
@@ -583,7 +583,7 @@ MDEV-24174:
 =~ ha_partition::handle_ordered_index_scan
 =~ Version: '10\.2|Server version: 10\.2
 MDEV-24112:
-=~ Assertion `cur_step->type & JSON_PATH_KEY'
+=~ Assertion \`cur_step->type & JSON_PATH_KEY'
 =~ json_find_path
 =~ Item_func_json_array_append::val_str
 MDEV-24112:
