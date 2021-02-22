@@ -1,3 +1,5 @@
+# Copyright (c) 2021, MariaDB Corporation
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
@@ -26,29 +28,99 @@ use GenTest::Executor::MySQL;
 
 use DBI;
 
+my ($first_mem, $max_mem, $first_cpu, $max_cpu);
+
 sub monitor {
-	my $reporter = shift;
+  my $reporter= shift;
+  my $pid= $reporter->serverInfo('pid');
+#  system('ps -Ffyl -p '.$reporter->serverInfo('pid'));
+  my $res= get_top_output($pid);
+  if (defined $res) {
+    my ($mem, $cpu)= @$res;
+    if (not defined $first_mem) {
+      $first_mem= $mem;
+      $reporter->[0]= $mem;
+      $max_mem= $mem;
+      say("MemoryUsage monitor for pid $pid: First recorded memory usage: ".format_mem_value($first_mem));
+    } elsif ($mem > $max_mem) {
+      sayWarning("MemoryUsage monitor for pid $pid: New maximim memory usage: ".format_mem_value($mem)." (started from ".format_mem_value($first_mem).")");
+      $max_mem= $mem;
+    }
+    if (not defined $first_cpu) {
+      $first_cpu= $cpu;
+      $max_cpu= $cpu;
+    } elsif ($cpu > $max_cpu) {
+      $max_cpu= $cpu;
+    }
+  }
 
-	system('ps -Ffyl -p '.$reporter->serverInfo('pid'));
+#  my $dsn = $reporter->dsn();
+#  my $dbh = DBI->connect($dsn);
+#
+#  if (defined $dbh) {
+#    my ($total_rows, $total_data, $total_indexes) = $dbh->selectrow_array("
+#      SELECT SUM(TABLE_ROWS) , SUM(DATA_LENGTH) , SUM(INDEX_LENGTH)
+#      FROM INFORMATION_SCHEMA.TABLES
+#      WHERE TABLE_SCHEMA NOT IN ('information_schema','mysql','performance_schema')
+#    ");
 
-	my $dsn = $reporter->dsn();
-	my $dbh = DBI->connect($dsn);
+#    say("Total_rows: $total_rows; total_data: $total_data; total_indexes: $total_indexes");
+#  }
+  return STATUS_OK;
+}
 
-	if (defined $dbh) {
-		my ($total_rows, $total_data, $total_indexes) = $dbh->selectrow_array("
-			SELECT SUM(TABLE_ROWS) , SUM(DATA_LENGTH) , SUM(INDEX_LENGTH)
-			FROM INFORMATION_SCHEMA.TABLES
-			WHERE TABLE_SCHEMA NOT IN ('information_schema','mysql','performance_schema')
-		");
+sub report {
+  my $reporter= shift;
+  my $pid= $reporter->serverInfo('pid');
+  my $res= get_top_output($pid);
+  if (defined $res) {
+    my ($mem, $cpu)= @$res;
+    say("MemoryUsage monitor for pid $pid: Final recorded memory usage: ".format_mem_value($mem));
+  }
+  return STATUS_OK;
+}
 
-		say("Total_rows: $total_rows; total_data: $total_data; total_indexes: $total_indexes");	
-	}
+sub get_top_output {
+  my $pid= shift;
+  my ($mem, $unit, $cpu);
+  if (open(TOP, 'top -b -n 1 -p '.$pid.' |')) {
+    while (<TOP>) {
+      # Skipping everything but the process for now, but may parse more in future
+      next unless /^$pid/;
+      # PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+      if (/$pid\s+\w+\s+\d+\s+\d+\s+[\d\.]+[kmbg]?\s+([\d\.]+)([kmbg]?)\s+[\d\.]+[kmbg]?\s+\w\s+([\d\.]+)/) {
+#        say("MemoryUsage (top output): in if: $_");
+        ($mem, $unit, $cpu)= ($1, $2, $3);
+        if ($unit eq 'm' or $unit eq 'M') {
+          $mem*= 1024*1024;
+        } elsif ($unit eq 'g' or $unit eq 'G') {
+          $mem*= 1024*1024*1024;
+        } elsif ($unit eq 't' or $unit eq 'T') {
+          $mem*= 1024*1024*1024*1024;
+        }
+      }
+    }
+    close(TOP);
+    return [$mem, $cpu];
+  } else {
+    logError("MemoryUsage monitor could not run top for pid $pid");
+    return undef;
+  }
+}
 
-	return STATUS_OK;
+sub format_mem_value {
+  my $mem= shift;
+  my @units= ('KiB','MiB','GiB','TiB','PiB');
+  my $unit= 0;
+  while ($mem > 1024) {
+    $mem /= 1024;
+    $unit++;
+  }
+  return sprintf("%.1f ",$mem).($units[$unit] || ' <in unknown units>');
 }
 
 sub type {
-        return REPORTER_TYPE_PERIODIC ;
+  return REPORTER_TYPE_PERIODIC | REPORTER_TYPE_ALWAYS;
 }
 
 1;
