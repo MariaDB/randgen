@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24942:
+=~ AddressSanitizer|signal
+=~ _ma_write_blob_record
+=~ handler::ha_write_tmp_row
+=~ DEFAULT
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24935:
 =~ AddressSanitizer|signal
 =~ Field_iterator_natural_join::next
