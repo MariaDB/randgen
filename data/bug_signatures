@@ -60,6 +60,11 @@ MDEV-24898:
 =~ signal|AddressSanitizer
 =~ Item_subselect::is_expensive
 =~ Item_args::walk_args
+MDEV-24898:
+=~ signal|AddressSanitizer
+=~ TABLE_LIST::is_recursive_with_table
+=~ st_select_lex::cleanup
+=~ Prepared_statement::execute
 MDEV-24877:
 =~ LeakSanitizer: detected memory leaks
 =~ Indirect leak
