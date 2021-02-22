@@ -7,7 +7,7 @@ $combinations = [
   ['
     --duration=350
     --seed=time
-    --reporters=Backtrace,ErrorLog,Deadlock
+    --reporters=Backtrace,ErrorLog,Deadlock,MemoryUsage
     --mysqld=--log_output=FILE
     --mysqld=--max-statement-time=30
     --mysqld=--lock-wait-timeout=10
