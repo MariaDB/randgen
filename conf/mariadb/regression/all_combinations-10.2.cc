@@ -28,7 +28,7 @@ $combinations = [
   [
     {
       ##### Grammars which require specific gendata
-      grammars => [
+      specific => [
         '--grammar=conf/runtime/metadata_stability.yy --gendata=conf/runtime/metadata_stability.zz',
         '--grammar=conf/engines/many_indexes.yy --gendata=conf/engines/many_indexes.zz',
         '--grammar=conf/partitioning/partition_pruning.yy --gendata=conf/partitioning/partition_pruning.zz',
@@ -56,7 +56,7 @@ $combinations = [
         "--grammar=conf/dbt3/dbt3-ranges.yy --gendata=$ENV{RQG_HOME}/conf/dbt3/dbt3-s0.001.dump",
       ],
       ##### Generic grammars with various gendata
-      gendata => [
+      generic => [
         [ '--short-column-names' ],
         ##### GendataSimple, GendataAdvanced
         [ '--gendata',
