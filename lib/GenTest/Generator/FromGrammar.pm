@@ -314,7 +314,7 @@ sub next {
 						my $charsets = $executors->[0]->metaCharactersets();
 						$item = $prng->arrayElement($charsets);
 					} elsif ($item eq '_data') {
-						$item = $prng->file($cwd."/data");
+						$item = $prng->file($cwd."/data/blobs");
 					} elsif ( defined $field_type and
 						(($field_type == FIELD_TYPE_NUMERIC) ||
 						 ($field_type == FIELD_TYPE_BLOB))
