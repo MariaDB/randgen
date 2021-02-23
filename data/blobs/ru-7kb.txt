@@ -1,0 +1,67 @@
+Настройка репликации
+
+Данная инструкция replication включает шаги для master и для slave серверов.
+
+MariaDB 10.0 ввел репликацию с global transaction IDs. Оно имеет ряд преимуществ, поэтому эту функцию рекомендуется использовать для MariaDB 10.0. Данная инструкция описывает устаревший стиль репликации.
+
+Конфигурация master
+Включите binary logging. Смотрите Activating the Binary Log и Binary log formats для получения деталей.
+Задайте для master уникальный server_id. Также у всех slave должен быть указан server_id. Для этого введите число от 1 до 232-1, это число должно быть уникальным для каждого сервера группы репликации.
+Укажите уникальное название для ваших журналов репликации --log-basename. Если это не указывать, то тогда будет использоваться название хоста и в дальнейшем могут возникнуть проблемы, если это название хоста будет изменено.
+Для slave серверов необходимо выставить права на соединение и запуск репликации. Обычно для этого создается выделенный пользователь на slave и указываются для него права только на репликацию (REPLICATION SLAVE права).
+Пример
+Добавьте в файл my.cnf:
+
+[mariadb]
+log-bin
+server_id=1
+log-basename=master1
+Выполните в командной строке SQL:
+
+GRANT REPLICATION SLAVE ON *.* TO replication_user;
+Проверка настроек
+Есть несколько вариантов установки опций, которые могут повлиять на репликацию. Проверьте следующие настройки опций, чтобы в дальнейшем избежать проблем.
+
+skip-networking. Если skip-networking=1, то сервер будет ограничивать подключения только к localhost, а удаленные slave не смогут соединиться.
+bind-address. Также, если адрес сервера прослушивает соединения TCP/IP 127.0.0.1 (localhost), удаленные slave не смогут соединиться.
+Конфигурация slave
+Задайте для slave уникальный server_id. У всех серверов, вне зависимости master или slave, должен быть указан server_id. Для этого введите число от 1 до 232-1, это число должно быть уникальным для каждого сервера группы репликации. Сервера должны быть перезапущены для того, чтобы изменения вступили в силу.
+Получение координат binary log на master
+Теперь вам необходимо предотвратить любые изменения данных для того чтобы получить текущую позицию в binary log. Это необходимо для того, чтобы задать всем slave позицию начала репликации данных.
+
+На master, заблокируйте все таблицы выполнив FLUSH TABLES WITH READ LOCK. Поддерживайте эту сессию запущенной иначе блокировка будет снята.
+Получите текущую позицию binary log выполнив SHOW MASTER STATUS:
+SHOW MASTER STATUS;
++--------------------+----------+--------------+------------------+
+| File               | Position | Binlog_Do_DB | Binlog_Ignore_DB |
++--------------------+----------+--------------+------------------+
+| mariadb-bin.000096 |      568 |              |                  |
++--------------------+----------+--------------+------------------+
+Запишите данные поля File и Position. Если binary log только что был включен, то поля будут пустые.
+Теперь, когда таблицы еще заблокированы, скопируйте данные с master на slave. О том, как это сделать, вы можете прочитать в Backup, Restore and Import.
+После того как данные будут получены, вы можете снять блокировку на master выполнив UNLOCK TABLES.
+UNLOCK TABLES;
+Запуск slave
+После того как данные были импортированы, вы можете запустить репликацию. Для начала запустите CHANGE MASTER TO, убедившись в том, что MASTER_LOG_FILE и MASTER_LOG_POS соответствую полям выведенными ранее командой SHOW MASTER STATUS. Например:
+CHANGE MASTER TO
+  MASTER_HOST='master.domain.com',
+  MASTER_USER='replication_user',
+  MASTER_PASSWORD='bigs3cret',
+  MASTER_PORT=3306,
+  MASTER_LOG_FILE='mariadb-bin.000096',
+  MASTER_LOG_POS=568,
+  MASTER_CONNECT_RETRY=10;
+Если вы запускаете slave со свежим master который только что был настроен на запуск репликации, то в этом случае вам не нужно указывать MASTER_LOG_FILE и MASTER_LOG_POS.
+
+Теперь запустите slave с помощью команды START SLAVE:
+START SLAVE;
+Репликация с MySQL master на MariaDB slave
+Репликация с MySQL 5.5 на MariaDB 5.5+ работает.
+Репликация с MySQL 5.6 без GTID на MariaDB 10+ работает.
+Репликация с MySQL 5.6 с GTID, binlog_rows_query_log_events и ignorable events works starting from MariaDB 10.0.22 and MariaDB 10.1.8. In this case MariaDB will remove the MySQL GTIDs and other unneeded events and instead adds its own GTIDs.
+Использование global transaction id (GTID)
+MariaDB starting with 10.0
+Обратите внимание, что в MariaDB 10.0 введен global transaction IDs (GTIDs) для репликации. Как правило, это рекомендуется использовать (GTIDs) для MariaDB 10.0, так как имеет ряд преимуществ. Все что требуется, так это добавить MASTER_USE_GTID опцию в оператор CHANGE MASTER, например:
+
+CHANGE MASTER TO MASTER_USE_GTID = current_pos
+Смотрите полное описание Global Transaction ID.

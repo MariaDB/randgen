@@ -1,0 +1,24 @@
+Concurrent Inserts
+
+MyISAM存储引擎支持并发插入。该特性使得执行INSERT操作的时候允许同时SELECT，并减少锁争抢行为。
+
+(译注：并发插入总是将数据插入到表的尾部，并发插入大致有几种情况：insert into ... values(),(),()...、insert...select、create table...select、load data，实际上单值插入insert into ...vales()也可以是并发插入。是否为并发插入操作依赖于下面的系统变量的设置。多数情况下并发插入效率要高的多，它减少了锁争抢以及寻找页面中的空闲空间的时间，因为它总是插入在表的最尾部。)
+
+是否允许使用并发插入，取决于系统变量concurrent_insert的值：
+
+NEVER (0) 表示禁用并发插入。
+AUTO (1) 表示只有在目标表上没有空闲数据块(指的是在上一次执行OPTIMIZE TABLE语句后没有删除过表中的数据。译注：optimize table会整理数据文件中的碎片，也就是说表的数据文件中没有任何空洞)的时候才允许并发插入。这是默认值。
+ALWAYS (2) 总是允许并发插入。
+如果使用了二进制日志binary log，CREATE TABLE ... SELECT和INSERT ... SELECT语句无法使用并发插入，它们会转换为普通的插入操作，会逐行记录日志。这些语句会获取一个目标表上的读锁，因此向这些表中并发插入数据的操作需要等待锁释放。这样一来，日志就能作为安全恢复数据的来源。
+
+基于行复制的slave服务器无法使用并发插入(见binary log formats)。
+
+如果INSERT语句包含了HIGH_PRIORITY子句，无法使用并发插入。如果使用并发插入，一般无需去定义DELAYED相关的属性INSERT ... DELAYED。
+
+当LOAD DATA INFILE指定了CONCURRENT关键字时且系统变量concurrent_insert未指定为NEVER时，它也将使用并发插入。这可能会降低一点插入的速度(即使没有其他会话访问该表)，但是却减少了资源争抢，因为load data的时候，可以同时从表中读取数据。
+
+如果使用了READ LOCAL锁，LOCK TABLES允许无冲突的并发插入。如果省略LOCAL关键字，则无法使用并发插入。
+
+注意
+是否启用并发插入是在表被打开的时候决定的。如果你更改了concurrent_insert变量的值，它不会影响已打开的表，而是只对还未打开的表生效。如果你想对当前已打开或已缓存的表也立即生效，可以在设置了该变量后使用FLUSH TABLES语句刷新表。
+

@@ -1,0 +1,23 @@
+MySQL에서 MariaDB로 업그레이드 하기!
+MariaDB 와 MySQL 비교를 살펴보고, MySQL를 업그레이드 하려한다면 MariaDB도 고려해보자.
+
+윈도우즈를 사용하고 있다면, 윈도우즈에서 MariaDB 업그레이드 하기를 살펴보면 된다.
+매우 오래된 버전의 MySQL을 업그레이드 하려고 한다면, MySQL 5.0(혹은 더 예전버전)으로 부터 업그레이드하기를 본다.
+동일한 버전(예: 5.1)의 MySQL을 제거하고 MariaDB를 설치하는 것은 좋은 방법이다. 덤프dump와 데이터베이스를 복구할 필요가 없다. 만약, 업그레이드를 하려한다면 사전에 여러분의 데이터에 관한 백업을 준비하는 것을 권장한다.
+(MySQL을 사용하고 있다면)mysql_upgrade을 실행하여 업그레이드할 수 있다. 이를 위해서는 여러분의 MySQL 특권privilege를 보장받고 이벤트 테이블은 MariaDB에서 사용하는 새로운 필드들이 추가된다. 추가로, 여러분이 MariaDB 패키지를 사용하고 있다면, mysql_upgrade는 항상 자동적으로 실행된다.
+mysql_upgrade가 실행된 후에는 변경사항들을 적용할 수 있도록 MariaDB가 재시작될 것이다.
+오래된 클라이언트와 커넥터들(PHP, Perl, Python, Java, 기타)은 별도의 작업(재컴파일할 필요가 없다)을 하지 않아도 동작할 것이다. 이것이 가능한 이유는 MariaDB와 MySQL은 동일한 클라이언트 프로토콜을 사용하고 있으며, 클라이언트 라이브러리는 양쪽에 호환성을 가진다. 그렇기 때문에 여러분이 기존의 MySQL 커넥터 패키지를 MariaDB에서 사용하고자 할 때에도 사용가능하다.
+my.conf 업데이트하기
+기존 MySQL의 모든 옵션항목(my.cnf file)들은 MariaDB에서도 정상적으로 동작한다.
+
+그러나 MaraiDB는 MySQL보다 더 많은 기능들을 가지고 있다, 그렇기 때문에 여러분의 my.cnf 파일 변경에 대해서 어느정도 고려해야 한다.
+
+MaraiDB는 내부 임시 파일 처리를 위해, MyISAM 대신에, Aria storage engine을 기본적으로 사용한다. 만약 임시 파일들을 가지고 있다면, key-buffer-size에 값과 동일한 값을 aria-pagecache-buffer-size 항목을 추가하고 지정해주어야 한다.
+만약 MyISAM 테이블을 사용하지 않는다면, key-buffer-size의 설정값을 '64K' 등의 매우 낮은 값으로 설정할 수 있다.
+또 다른 고려사항들.
+MariaDB는 LGPL 버전의 C connector 와 Java connector 을 제공한다. 만약 여러분이 이 커넥터를 이용하여 MariaDB 혹은 MySQL을 지원하는 애플리케이션을 출시하려한다면 이에 대해서 고려해야한다(사용한 라이센스와 관련된 문제가 발생할 수 있다).
+여러분은 TokuDB storage engine 혹은 MaraiDB에서 제공하는 new storage engines를 사용할지도 고려해봐야한다.
+참고사항
+MariaDB의 다양한 새로운 기능들을 살펴보자.
+더 많은 정보를 찾아보고 싶다면 MariaDB 얻기, 업그레이드, 설치 페이지를 살펴보자.
+MySQL 에서 MariaDB로 업그레이드하는 설명영상도 있다.
