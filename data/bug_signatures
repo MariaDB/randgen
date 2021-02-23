@@ -4,6 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24958:
+=~ signal|AddressSanitizer
+=~ my_strtod_int
+=~ Value_source::Converter_strntod::Converter_strntod
+=~ Field_blob::val_real
+=~ DEFAULT
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-24958:
+=~ signal|AddressSanitizer
+=~ my_strnncoll_binary|my_strnncollsp_simple
+=~ Arg_comparator::compare_string
+=~ DEFAULT
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24942:
 =~ AddressSanitizer|signal
 =~ _ma_write_blob_record
