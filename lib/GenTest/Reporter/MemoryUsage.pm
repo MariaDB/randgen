@@ -41,7 +41,7 @@ sub monitor {
       $first_mem= $mem;
       $reporter->[0]= $mem;
       $max_mem= $mem;
-      say("MemoryUsage monitor for pid $pid: First recorded memory usage: ".format_mem_value($first_mem));
+      say("MemoryUsage monitor for pid $pid: First recorded memory usage: ".format_mem_value($first_mem)." ($first_mem)");
     } elsif ($mem > $max_mem) {
       sayWarning("MemoryUsage monitor for pid $pid: New maximim memory usage: ".format_mem_value($mem)." (started from ".format_mem_value($first_mem).")");
       $max_mem= $mem;
@@ -87,9 +87,9 @@ sub get_top_output {
     while (<TOP>) {
       # Skipping everything but the process for now, but may parse more in future
       next unless /^$pid/;
+      say("MemoryUsage (top output): in if: $_");
       # PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
       if (/$pid\s+\w+\s+\d+\s+\d+\s+[\d\.]+[kmbg]?\s+([\d\.]+)([kmbg]?)\s+[\d\.]+[kmbg]?\s+\w\s+([\d\.]+)/) {
-#        say("MemoryUsage (top output): in if: $_");
         ($mem, $unit, $cpu)= ($1, $2, $3);
         if ($unit eq 'm' or $unit eq 'M') {
           $mem*= 1024*1024;
