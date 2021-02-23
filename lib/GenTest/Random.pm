@@ -204,6 +204,7 @@ my %name2type = (
 );
 
 my $cwd = cwd();
+my $data_location= "$cwd/data/blobs";
 
 # Min and max values for integer data types
 
@@ -689,7 +690,7 @@ sub fieldType {
 	} elsif ($field_type == FIELD_TYPE_INET6) {
 		return $rand->inet6();
 	} elsif ($field_type == FIELD_TYPE_BLOB) {
-		return $rand->file("$cwd/data/blobs");
+		return $rand->file($data_location);
 	} elsif ($field_type == FIELD_TYPE_NULL) {
 		return undef;
 	} elsif ($field_type == FIELD_TYPE_ASCII) {
@@ -734,6 +735,10 @@ sub file {
 
 	return "LOAD_FILE('".$prng->arrayElement($data_dirs{$dir})."')";
 
+}
+
+sub dataLocation {
+  return "'".$data_location."'";
 }
 
 sub isFieldType {

@@ -33,6 +33,7 @@ use GenTest::Executor;
 use GenTest::QueryPerformance;
 use Time::HiRes;
 use Digest::MD5;
+use GenTest::Random;
 
 use constant RARE_QUERY_THRESHOLD    => 5;
 use constant MAX_ROWS_THRESHOLD        => 7000000;
@@ -878,6 +879,7 @@ sub init {
 
     $executor->setConnectionId($cidref->[0]);
     $executor->setCurrentUser($dbh->selectrow_arrayref("SELECT CURRENT_USER()")->[0]);
+    $dbh->do('SELECT '.GenTest::Random::dataLocation().' AS DATA_LOCATION');
 
     say("Executor initialized. id: ".$executor->id()."; default schema: ".$executor->defaultSchema()."; connection ID: ".$executor->connectionId()) if rqg_debug();
 
