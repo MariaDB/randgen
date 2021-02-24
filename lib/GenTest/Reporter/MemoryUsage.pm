@@ -87,7 +87,7 @@ sub get_top_output {
     while (<TOP>) {
       say("MemoryUsage (line from top output): $_");
       # Skipping everything but the process for now, but may parse more in future
-      next unless /^$pid/;
+      next unless /^\s*$pid/;
       # PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
       if (/$pid\s+\w+\s+\d+\s+\d+\s+[\d\.]+[kmbgt]?\s+([\d\.]+)([kmbgt]?)\s+[\d\.]+[kmbgt]?\s+\w\s+([\d\.]+)/) {
         ($mem, $unit, $cpu)= ($1, $2, $3);
