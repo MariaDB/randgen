@@ -28,7 +28,7 @@ use GenTest::Executor::MySQL;
 
 use DBI;
 
-my ($first_mem, $max_mem, $first_cpu, $max_cpu);
+my ($first_mem, $max_mem, $first_cpu, $max_cpu, $max_mem_pct);
 
 sub monitor {
   my $reporter= shift;
@@ -36,15 +36,17 @@ sub monitor {
 #  system('ps -Ffyl -p '.$reporter->serverInfo('pid'));
   my $res= get_top_output($pid);
   if (defined $res) {
-    my ($mem, $cpu)= @$res;
+    my ($mem, $cpu, $mem_pct)= @$res;
     if (not defined $first_mem) {
       $first_mem= $mem;
       $reporter->[0]= $mem;
       $max_mem= $mem;
-      say("MemoryUsage monitor for pid $pid: First recorded memory usage: ".format_mem_value($first_mem)." ($first_mem)");
+      $max_mem_pct= $mem_pct;
+      say("MemoryUsage monitor for pid $pid: First recorded memory usage: ".format_mem_value($first_mem)." / ${max_mem_pct}%");
     } elsif ($mem > $max_mem) {
-      sayWarning("MemoryUsage monitor for pid $pid: New maximim memory usage: ".format_mem_value($mem)." (started from ".format_mem_value($first_mem).")");
       $max_mem= $mem;
+      $max_mem_pct= $mem_pct;
+      sayWarning("MemoryUsage monitor for pid $pid: New maximim memory usage: ".format_mem_value($mem)." / ${max_mem_pct}% (started from ".format_mem_value($first_mem).")");
     }
     if (not defined $first_cpu) {
       $first_cpu= $cpu;
@@ -74,23 +76,23 @@ sub report {
   my $pid= $reporter->serverInfo('pid');
   my $res= get_top_output($pid);
   if (defined $res) {
-    my ($mem, $cpu)= @$res;
-    say("MemoryUsage monitor for pid $pid: Final recorded memory usage: ".format_mem_value($mem));
+    my ($mem, $cpu, $mem_pct)= @$res;
+    say("MemoryUsage monitor for pid $pid: Final recorded memory usage: ".format_mem_value($mem). " / ${mem_pct}%");
   }
   return STATUS_OK;
 }
 
 sub get_top_output {
   my $pid= shift;
-  my ($mem, $unit, $cpu);
+  my ($mem, $unit, $cpu, $mem_pct);
   if (open(TOP, 'top -b -n 1 -p '.$pid.' |')) {
     while (<TOP>) {
 #      say("MemoryUsage (line from top output): $_");
       # Skipping everything but the process for now, but may parse more in future
       next unless /^\s*$pid/;
       # PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
-      if (/$pid\s+\w+\s+\d+\s+\d+\s+[\d\.]+[kmbgt]?\s+([\d\.]+)([kmbgt]?)\s+[\d\.]+[kmbgt]?\s+\w\s+([\d\.]+)/) {
-        ($mem, $unit, $cpu)= ($1, $2, $3);
+      if (/$pid\s+\w+\s+\d+\s+\d+\s+[\d\.]+[kmbgt]?\s+([\d\.]+)([kmbgt]?)\s+[\d\.]+[kmbgt]?\s+\w\s+([\d\.]+)\s+([\d\.]+)/) {
+        ($mem, $unit, $cpu, $mem_pct)= ($1, $2, $3, $4);
         if ($unit eq 'm' or $unit eq 'M') {
           $mem*= 1024*1024;
         } elsif ($unit eq 'g' or $unit eq 'G') {
@@ -101,7 +103,7 @@ sub get_top_output {
       }
     }
     close(TOP);
-    return [$mem, $cpu];
+    return [$mem, $cpu, $mem_pct];
   } else {
     logError("MemoryUsage monitor could not run top for pid $pid");
     return undef;
