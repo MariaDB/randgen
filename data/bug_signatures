@@ -1177,6 +1177,10 @@ MDEV-23132:
 =~ reset_thd_trn|_ma_reset_trn_for_table
 =~ ma_commit|maria_commit
 =~ Sp_handler::db_find_routine
+MDEV-23132:
+=~ Assertion \`file->trn_next == 0 && file->trn_prev == 0'
+=~ ha_maria::close
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-23127:
 =~ signal|AddressSanitizer
 =~ Query_cache::double_linked_list_exclude|Assertion \`table_block_data->m_cached_query_count >= 0'
@@ -3300,8 +3304,7 @@ MDEV-16699:
 MDEV-16698:
 =~ AddressSanitizer: heap-use-after-free|signal 11
 =~ Field_longstr::uncompress
-=~ dump_leaf_key
-=~ Item_func_group_concat::val_str
+=~ Field_blob_compressed::val_str
 MDEV-16694:
 =~ signal|AddressSanitizer
 =~ multi_update::initialize_tables
@@ -3899,6 +3902,10 @@ TODO-842: [MDL_ticket::create]
 # Weak matches
 ##############################################################################
 
+MDEV-24972: [MyISAM unique blobs]
+=~ Table .* is marked as crashed and should be repaired 
+=~ will exit with exit status STATUS_DATABASE_CORRUPTION
+=~ Version: '10\.4|Server version: 10\.4
 MDEV-24877: [debug_assert_on_not_freed_memory]
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ THD::~THD
