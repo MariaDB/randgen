@@ -16,7 +16,10 @@ $combinations = [
   ##### Views
   [ '--views', '--views=MERGE', '--views=TEMPTABLE', '', '', '' ],
   ##### Virtual columns
-  [ '--vcols', '--vcols=VIRTUAL', '--vcols=STORED', '--vcols=STORED', '', '', '', '', '', '' ],
+  [
+   '--vcols', '--vcols=VIRTUAL', '--vcols=STORED', '--vcols=STORED',
+   '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
+  ],
   ##### Threads and number of queries
   [
     '--threads=1 --queries=100000',

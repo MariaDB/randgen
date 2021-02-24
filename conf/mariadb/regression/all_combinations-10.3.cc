@@ -16,7 +16,10 @@ $combinations = [
   ##### Views
   [ '--views', '--views=MERGE', '--views=TEMPTABLE', '', '', '' ],
   ##### Virtual columns
-  [ '--vcols', '--vcols=VIRTUAL', '--vcols=STORED', '--vcols=STORED', '', '', '', '', '', '' ],
+  [
+   '--vcols', '--vcols=VIRTUAL', '--vcols=STORED', '--vcols=STORED',
+   '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
+  ],
   ##### Threads and number of queries
   [
     '--threads=1 --queries=100000',
@@ -328,7 +331,7 @@ $combinations = [
     [ '--redefine=conf/mariadb/federated.yy --mysqld=--plugin-load-add=ha_federatedx', '', '', '', '', '', '', '', '', '' ],
     [ '--redefine=conf/mariadb/functions.yy', '', '', '', '' ],
     [ '--redefine=conf/mariadb/json.yy', '', '', '', '' ],
-    [ '--redefine=conf/mariadb/sequences.yy', '', '', '', '', '', '', '', '', '' ],
+    [ '--redefine=conf/mariadb/sequences.yy', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
     [ '--redefine=conf/mariadb/sp.yy', '', '', '', '' ],
     [ '--redefine=conf/mariadb/versioning.yy', '', '', '', '', '', '', '', '', '' ],
     [ '--redefine=conf/mariadb/xa.yy', '', '', '', '', '', '', '', '', '' ],
