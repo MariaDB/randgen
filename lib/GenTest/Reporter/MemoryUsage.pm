@@ -85,9 +85,9 @@ sub get_top_output {
   my ($mem, $unit, $cpu);
   if (open(TOP, 'top -b -n 1 -p '.$pid.' |')) {
     while (<TOP>) {
+      say("MemoryUsage (line from top output): $_");
       # Skipping everything but the process for now, but may parse more in future
       next unless /^$pid/;
-      say("MemoryUsage (top output): in if: $_");
       # PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
       if (/$pid\s+\w+\s+\d+\s+\d+\s+[\d\.]+[kmbg]?\s+([\d\.]+)([kmbg]?)\s+[\d\.]+[kmbg]?\s+\w\s+([\d\.]+)/) {
         ($mem, $unit, $cpu)= ($1, $2, $3);
