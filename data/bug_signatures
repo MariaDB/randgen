@@ -14,12 +14,12 @@ MDEV-24958:
 MDEV-24958:
 =~ signal|AddressSanitizer
 =~ my_strnncoll_binary|my_strnncollsp_simple
-=~ Arg_comparator::compare_string
+=~ Arg_comparator::compare
 =~ DEFAULT
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24958:
 =~ signal|AddressSanitizer
-=~ Binary_string::copy
+=~ Binary_string::copy|String::copy
 =~ Item_cache_str::cache_value
 =~ DEFAULT
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
@@ -31,7 +31,7 @@ MDEV-24958:
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24942:
 =~ AddressSanitizer|signal
-=~ _ma_write_blob_record
+=~ _ma_write_blob_record|write_block_record
 =~ handler::ha_write_tmp_row
 =~ DEFAULT
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
