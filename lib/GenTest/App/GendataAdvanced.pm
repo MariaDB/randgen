@@ -364,8 +364,8 @@ sub gen_table {
                             ]
     }
 
-    # Blob columns are relatively common. 33%
-    if (!$prng->uint16(0,2)) {
+    # Blob columns are relatively common, but currently buggy. 33% => 10$
+    if (!$prng->uint16(0,9)) {
         $columns{col_blob} = [ random_blob_type(),
                                 undef,
                                 undef,
