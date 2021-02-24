@@ -1,4 +1,5 @@
 # Copyright (c) 2008,2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2021, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -416,15 +417,32 @@ sub text {
   # If length is not defined, stick with the shortest text length
   $len= 255 unless defined $len;
   my $str= '';
-  while (my $remainder= $len - length($str)) {
-    my $word= $prng->fromDictionary('english');
-    if (length($word) < $remainder) {
-      $str .= "$word ";
+  if ($len > 255) {
+    my $f= $prng->file();
+    my $fsize= (-s $f);
+    my $tsize= $fsize;
+    my $repeat= 1;
+    while ($tsize < $len) {
+      $repeat++;
+      $tsize+= $fsize;
     }
-    else {
-      chop $str if $str;
-      last;
+    $str= ($repeat == 1 ? "LOAD_FILE('$f')" : "REPEAT(LOAD_FILE('$f'),$repeat)");
+    if ($tsize > $len) {
+      my $pos= $prng->int(1,$tsize-$len+1);
+      $str= "SUBSTR($str,$pos,$len)";
     }
+  } else {
+    while (my $remainder= $len - length($str)) {
+      my $word= $prng->dictionaryWord('english');
+      if (length($word) < $remainder) {
+        $str .= "$word ";
+      }
+      else {
+        chop $str if $str;
+        last;
+      }
+    }
+    $str= "'".$str."'";
   }
   return $str;
 }
@@ -435,38 +453,55 @@ sub string {
 	my ($prng, $len) = @_;
 
 	$len = defined $len ? $len : ($prng->[RANDOM_VARCHAR_LENGTH] || 1);
+  my $str;
 
 	# If the length is 0 or negative, return a zero-length string
-	return '' if $len <= 0;
+	if ($len <= 0) {
+    $str= '';
+  } elsif ($len == 1) {
+    $str= chr($prng->uint16(ASCII_RANGE_START, ASCII_RANGE_END));
+  } else {
+    # We store a random string of length RANDOM_STRBUF_SIZE which we fill with
+    # random bytes. Each time a new string is requested, we shift the
+    # string one byte right and generate a new string at the beginning
+    # of the string.
 
-	# If the length is 1, just return one random character
-        return chr($prng->uint16(ASCII_RANGE_START, ASCII_RANGE_END)) if $len == 1;
+    if (not defined $prng->[RANDOM_STRBUF]) {
+      $prng->[RANDOM_STRBUF] = join('', map{ chr($prng->uint16(ASCII_RANGE_START, ASCII_RANGE_END)) } (1..RANDOM_STRBUF_SIZE) );
+    } else {
+      $prng->[RANDOM_STRBUF] = substr($prng->[RANDOM_STRBUF], 1).chr($prng->uint16(ASCII_RANGE_START, ASCII_RANGE_END));
+    }
 
-	# We store a random string of length RANDOM_STRBUF_SIZE which we fill with
-	# random bytes. Each time a new string is requested, we shift the
-	# string one byte right and generate a new string at the beginning
-	# of the string.
+    my $actual_length = $prng->uint16(1,$len);
+    my $str;
 
-	if (not defined $prng->[RANDOM_STRBUF]) {
-		$prng->[RANDOM_STRBUF] = join('', map{ chr($prng->uint16(ASCII_RANGE_START, ASCII_RANGE_END)) } (1..RANDOM_STRBUF_SIZE) );
-	} else {
-		$prng->[RANDOM_STRBUF] = substr($prng->[RANDOM_STRBUF], 1).chr($prng->uint16(ASCII_RANGE_START, ASCII_RANGE_END));
-	}
+    if ($actual_length <= RANDOM_STRBUF_SIZE) {
+      ## If the wanted length fit in the buffer, just return a slice of it.
+      $str= substr($prng->[RANDOM_STRBUF], 0, $actual_length);
+    } else {
+      ## Otherwise wil fill repeatedly from the buffer
+      my $res;
+      while ($actual_length > RANDOM_STRBUF_SIZE){
+        $res .= $prng->[RANDOM_STRBUF];
+        $actual_length -= RANDOM_STRBUF_SIZE;
+      }
+      $str= $res.substr($prng->[RANDOM_STRBUF], $actual_length);
+    }
+  }
+  return $str;
+}
 
-	my $actual_length = $prng->uint16(1,$len);
-
-	if ($actual_length <= RANDOM_STRBUF_SIZE) {
-		## If the wanted length fit in the buffer, just return a slice of it.
-		return substr($prng->[RANDOM_STRBUF], 0, $actual_length);
-	} else {
-		## Otherwise wil fill repeatedly from the buffer
-		my $res;
-		while ($actual_length > RANDOM_STRBUF_SIZE){
-			$res .= $prng->[RANDOM_STRBUF];
-			$actual_length -= RANDOM_STRBUF_SIZE;
-		}
-		return $res.substr($prng->[RANDOM_STRBUF], $actual_length);
-	}
+sub quotedString {
+	my ($prng, $len) = @_;
+  my $str= $prng->string($len);
+  if (index($str,"'") == -1) {
+    return "'".$str."'";
+  } elsif (index($str,'"') == -1) {
+    return '"'.$str.'"';
+  } else {
+    $str=~ s/(['"])/\\$1/g;
+    return "'".$str."'";
+  }
 }
 
 
@@ -550,8 +585,7 @@ sub json_value {
 
 sub json_key {
 	my $prng = shift;
-	my $key = $prng->fromDictionary('english');
-	$key =~ s/'//g;
+	my $key = $prng->dictionaryWord('english');
 	return $key;
 }
 
@@ -670,7 +704,7 @@ sub fieldType {
 	} elsif ($field_type == FIELD_TYPE_FLOAT) {
 		return $rand->float(@{$name2range{$field_full_type}});
 	} elsif ($field_type == FIELD_TYPE_STRING) {
-		return $rand->string($field_length);
+		return $rand->quotedString($field_length);
 	} elsif ($field_type == FIELD_TYPE_TEXT) {
 		return $rand->text($field_length);
 	} elsif ($field_type == FIELD_TYPE_DATE) {
@@ -690,11 +724,11 @@ sub fieldType {
 	} elsif ($field_type == FIELD_TYPE_INET6) {
 		return $rand->inet6();
 	} elsif ($field_type == FIELD_TYPE_BLOB) {
-		return $rand->file($data_location);
+		return $rand->loadFile($data_location);
 	} elsif ($field_type == FIELD_TYPE_NULL) {
 		return undef;
 	} elsif ($field_type == FIELD_TYPE_ASCII) {
-		return $rand->string($field_length, [0, 255]);
+		return $rand->quotedString($field_length, [0, 255]);
 	} elsif ($field_type == FIELD_TYPE_EMPTY) {
 		return '';
 	} elsif ($field_type == FIELD_TYPE_HEX) {
@@ -728,12 +762,17 @@ sub fieldType {
 
 sub file {
 	my ($prng, $dir) = @_;
+  $dir = $data_location unless $dir;
 	if (not exists $data_dirs{$dir}) {
 		my @files = <$dir/*>;
 		$data_dirs{$dir} = \@files;
 	}
+  return $prng->arrayElement($data_dirs{$dir});
+}
 
-	return "LOAD_FILE('".$prng->arrayElement($data_dirs{$dir})."')";
+sub loadFile {
+	my ($prng, $dir) = @_;
+	return "LOAD_FILE('".$prng->file($dir)."')";
 
 }
 
@@ -765,7 +804,7 @@ sub isFieldType {
 	}
 }
 
-sub fromDictionary {
+sub dictionaryWord {
 	my ($rand, $dict_name) = @_;
 
 	if (not exists $dict_data{$dict_name}) {
@@ -778,6 +817,12 @@ sub fromDictionary {
 	}
 
 	return $rand->arrayElement($dict_data{$dict_name});
+}
+
+sub fromDictionary {
+	my ($rand, $dict_name) = @_;
+
+	return "'".$rand->dictionaryWord($dict_name)."'";
 }
 
 sub shuffleArray {

@@ -1,4 +1,5 @@
 # Copyright (C) 2009 Sun Microsystems, Inc. All rights reserved.
+# Copyright (c) 2021, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -345,9 +346,9 @@ sub gen_table {
       my $rnd_varchar;
 
       if (defined $self->[GDS_NOTNULL]) {
-        $rnd_varchar = "'".$prng->string($varchar_length)."'";
+        $rnd_varchar = $prng->quotedString($varchar_length);
       } else {
-        $rnd_varchar = $prng->uint16(0,9) == 9 ? "NULL" : "'".$prng->string($varchar_length)."'";
+        $rnd_varchar = $prng->uint16(0,9) == 9 ? "NULL" : $prng->quotedString($varchar_length);
       }
 
       push(@values, "($rnd_int1, $rnd_int2, $rnd_date, $rnd_date, $rnd_time, $rnd_time, $rnd_datetime, $rnd_datetime, $rnd_varchar, $rnd_varchar)");

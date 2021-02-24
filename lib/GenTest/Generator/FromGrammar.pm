@@ -321,17 +321,6 @@ sub next {
 					} elsif ($field_type) {
                         $item = substr($item,1);
 						$item = $prng->fieldType($item);
-						if (
-							(substr($item, -1) eq '`') ||
-							(substr($item, 0, 2) eq "b'") ||
-							(substr($item, 0, 2) eq '0x')
-						) {
-							# Do not quote, quotes are already present or not needed
-						} elsif (index($item, "'") > -1) {
-							$item = '"'.$item.'"';
-						} else {
-							$item = "'".$item."'";
-						}
 					}
 
 					# If the grammar initially contained a ` , restore it. This allows

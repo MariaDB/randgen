@@ -1,5 +1,5 @@
 # Copyright (C) 2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2016 MariaDB Corporation Ab
+# Copyright (c) 2016,2021 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -859,9 +859,9 @@ sub gen_table {
               {
                   my $length= $prng->uint16(0,9) == 9 ? $prng->uint16(0,$c->[1]) : $prng->uint16(0,8);
                   if ($c->[4] eq 'NOT NULL') {
-                      $val = "'".$prng->string($length)."'";
+                      $val = $prng->quotedString($length);
                   } else {
-                      $val = $prng->uint16(0,9) == 9 ? "NULL" : "'".$prng->string($length)."'";
+                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->quotedString($length);
                   }
               }
               elsif ($c->[0] =~ /(TINY|MEDIUM|LONG)?TEXT/)
@@ -872,9 +872,9 @@ sub gen_table {
                   }
                   my $length= $prng->uint16(0,$maxlength);
                   if ($c->[4] eq 'NOT NULL') {
-                      $val = "'".$prng->text($length)."'";
+                      $val = $prng->text($length);
                   } else {
-                      $val = $prng->uint16(0,5) ? "'".$prng->text($length)."'" : "NULL";
+                      $val = $prng->uint16(0,5) ? $prng->text($length) : "NULL";
                   }
               }
               elsif ($c->[0] eq 'INET6') {
