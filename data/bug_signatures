@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-24988:
+=~ AddressSanitizer|signal
+=~ MyCTX::update
+=~ my_aes_crypt_update
+=~ Cached_item_str
+MDEV-24986:
+=~ Assertion \`key_buff_elements && cur_key_idx < key_buff_elements'|AddressSanitizer|signal
+=~ Ordered_key::add_key
+=~ subselect_hash_sj_engine
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24958:
 =~ signal|AddressSanitizer
 =~ my_strtod_int
@@ -1926,7 +1936,7 @@ MDEV-21414:
 MDEV-21413:
 =~ AddressSanitizer:
 =~ ha_maria::info
-=~ get_schema_tables_record
+=~ get_schema_tables_record|get_schema_key_column_usage_record
 =~ Version: '10\.1|Version: '10\.3
 MDEV-21406:
 =~ Assertion \`tmp != ((long long) 0x8000000000000000LL)'
@@ -2640,7 +2650,7 @@ MDEV-19075:
 =~ write_block_record
 =~ _ma_write_init_block_record
 MDEV-19067:
-=~ AddressSanitizer: heap-use-after-free
+=~ AddressSanitizer|signal
 =~ ha_maria::store_lock
 =~ get_lock_data
 =~ mysql_lock_tables
