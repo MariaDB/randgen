@@ -94,11 +94,11 @@ sub get_top_output {
       if (/$pid\s+\w+\s+\d+\s+\d+\s+[\d\.]+[kmbgt]?\s+([\d\.]+)([kmbgt]?)\s+[\d\.]+[kmbgt]?\s+\w\s+([\d\.]+)\s+([\d\.]+)/) {
         ($mem, $unit, $cpu, $mem_pct)= ($1, $2, $3, $4);
         if ($unit eq 'm' or $unit eq 'M') {
-          $mem*= 1024*1024;
+          $mem*= 1024;
         } elsif ($unit eq 'g' or $unit eq 'G') {
-          $mem*= 1024*1024*1024;
+          $mem*= 1024*1024;
         } elsif ($unit eq 't' or $unit eq 'T') {
-          $mem*= 1024*1024*1024*1024;
+          $mem*= 1024*1024*1024;
         }
       }
     }
