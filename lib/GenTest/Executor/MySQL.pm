@@ -1478,8 +1478,8 @@ sub getSchemaMetaData {
                "table_rows ".
          "FROM information_schema.tables INNER JOIN ".
               "information_schema.columns USING(table_schema,table_name) ".
-
-          "WHERE table_name <> 'DUMMY'";
+          # Workaround for MDEV-24975 -- don't use OPTIMIZER_TRACE table in queries
+          "WHERE table_name <> 'DUMMY' AND table_name <> 'OPTIMIZER_TRACE'";
     # Do not reload metadata for system tables
     if ($redo) {
       $query.= " AND table_schema NOT IN ('performance_schema','information_schema','mysql')";
