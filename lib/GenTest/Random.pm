@@ -402,7 +402,7 @@ sub time {
 
 sub datetime {
 	my ($prng, $ts) = @_;
-	return "'".$prng->date($ts)." ".$prng->time($ts)."'";
+	return "'".$prng->unquotedDate($ts)." ".$prng->unquotedTime($ts)."'";
 }
 
 sub timestamp {
