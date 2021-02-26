@@ -433,7 +433,7 @@ _basics_any_value:
   _json | _jsonpath | _jsonkey | _jsonvalue | _jsonarray | _jsonpair | _jsonobject | _jsonpath_no_wildcard ;
 
 _basics_value_set:
-    { $basic_values=['NULL','DEFAULT',$prng->int(0,99),$prng->int(0,99),$prng->int(0,99),"'".$prng->text(8)."'","'".$prng->string(1)."'","'".$prng->string(1)."'","'".$prng->string(1)."'"]; @vals=(); $val_count= $prng->int(1,10) unless defined $val_count; foreach(1..$val_count) { push @vals, $prng->arrayElement($basic_values) }; '('.(join ',', @vals).')' } ;
+    { $basic_values=['NULL','DEFAULT',$prng->int(0,99),$prng->int(0,99),$prng->int(0,99),$prng->text(8),$prng->string(1),$prng->string(1),$prng->string(1)]; @vals=(); $val_count= $prng->int(1,10) unless defined $val_count; foreach(1..$val_count) { push @vals, $prng->arrayElement($basic_values) }; '('.(join ',', @vals).')' } ;
 
 _basics_value_for_numeric_column:
     NULL | NULL | DEFAULT | _digit | _tinyint | _tinyint_unsigned | _smallint_unsigned | _int_unsigned;

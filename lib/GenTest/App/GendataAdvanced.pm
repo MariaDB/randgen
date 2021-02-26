@@ -859,9 +859,9 @@ sub gen_table {
               {
                   my $length= $prng->uint16(0,9) == 9 ? $prng->uint16(0,$c->[1]) : $prng->uint16(0,8);
                   if ($c->[4] eq 'NOT NULL') {
-                      $val = $prng->quotedString($length);
+                      $val = $prng->string($length);
                   } else {
-                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->quotedString($length);
+                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->string($length);
                   }
               }
               elsif ($c->[0] =~ /(TINY|MEDIUM|LONG)?TEXT/)

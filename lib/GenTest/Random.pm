@@ -342,7 +342,7 @@ sub positive_digit {
 }
 
 sub letter {
-	return $_[0]->string(1);
+	return $_[0]->unquotedString(1);
 }
 
 sub hex {
@@ -363,7 +363,7 @@ sub inet6 {
     return "'$res'";
 }
 
-sub date {
+sub unquotedDate {
     my ($prng, $ts) = @_;
     # Something between 1960-01-01 and 2040-01-01 should be enough
     $ts= $prng->int(-2208994789,2208981600) if not defined $ts;
@@ -371,12 +371,17 @@ sub date {
     return sprintf('%04d-%02d-%02d',$year+1900,$mon+1,$mday);
 }
 
+sub date {
+    my ($prng, $ts) = @_;
+    return "'".$prng->unquotedDate($ts)."'";
+}
+
 sub year {
 	my $prng = shift;
 	return $prng->uint16(1971,2035);
 }
 
-sub time {
+sub unquotedTime {
 	my ($prng, $ts) = @_;
     if (defined $ts) {
         my ($sec,$min,$hour,undef,undef,undef,undef,undef,undef)= localtime($ts);
@@ -390,9 +395,14 @@ sub time {
     }
 }
 
+sub time {
+	my ($prng, $ts) = @_;
+  return "'".$prng->unquotedTime($ts)."'";
+}
+
 sub datetime {
 	my ($prng, $ts) = @_;
-	return $prng->date($ts)." ".$prng->time($ts);
+	return "'".$prng->date($ts)." ".$prng->time($ts)."'";
 }
 
 sub timestamp {
@@ -447,7 +457,7 @@ sub text {
   return $str;
 }
 
-sub string {
+sub unquotedString {
 	use integer;
 
 	my ($prng, $len) = @_;
@@ -491,9 +501,9 @@ sub string {
   return $str;
 }
 
-sub quotedString {
+sub string {
 	my ($prng, $len) = @_;
-  my $str= $prng->string($len);
+  my $str= $prng->unquotedString($len);
   if (index($str,"'") == -1) {
     return "'".$str."'";
   } elsif (index($str,'"') == -1) {
@@ -527,7 +537,7 @@ sub json {
 	$len = defined $len ? $len : $prng->uint16(0,64);
 
 	# If the length is 0 or negative, return a zero-length string
-	return '' if $len <= 0;
+	return "''" if $len <= 0;
 
     return $prng->json_struct($len-1);
 }
@@ -548,7 +558,7 @@ sub json_array {
 	foreach (1..$len) {
 		push @contents, $prng->json_value();
 	}
-	return '[' . join(',', @contents) . ']';
+	return "'".'[' . join(',', @contents) . ']'."'";
 }
 
 sub json_object {
@@ -558,7 +568,7 @@ sub json_object {
 	foreach (1..$len) {
 		push @contents, $prng->json_pair();
 	}
-	return '{' . join(',', @contents) . '}';
+	return "'".'{' . join(',', @contents) . '}'."'";
 }
 
 sub json_value {
@@ -571,7 +581,7 @@ sub json_value {
 	} elsif ($value_type == JSON_VALUE_ARRAY) {
 		return $prng->json_array($prng->uint16(0,16));
 	} elsif ($value_type == JSON_VALUE_STRING) {
-		return '"'.$prng->string($prng->uint16(0,64)).'"';
+		return $prng->string($prng->uint16(0,64));
 	} elsif ($value_type == JSON_VALUE_NUMBER) {
 		return $prng->int();
 	} elsif ($value_type == JSON_VALUE_TRUE) {
@@ -621,7 +631,7 @@ sub jsonpath {
     $path .= '**' if ($prng->uint16(0,1)) and $path !~ /\*$/;
 		$path .= $prng->json_pathleg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_MEMBER]),1);
 	}
-	return $path;
+	return "'".$path."'";
 }
 
 # Some functions don't accept wild cards in JSON path
@@ -698,13 +708,13 @@ sub fieldType {
 	if ($field_type == FIELD_TYPE_DIGIT) {
 		return $rand->digit();
 	} elsif ($field_type == FIELD_TYPE_LETTER) {
-		return $rand->string(1);
+		return $rand->unquotedString(1);
 	} elsif ($field_type == FIELD_TYPE_NUMERIC) {
 		return $rand->int(@{$name2range{$field_full_type}});
 	} elsif ($field_type == FIELD_TYPE_FLOAT) {
 		return $rand->float(@{$name2range{$field_full_type}});
 	} elsif ($field_type == FIELD_TYPE_STRING) {
-		return $rand->quotedString($field_length);
+		return $rand->string($field_length);
 	} elsif ($field_type == FIELD_TYPE_TEXT) {
 		return $rand->text($field_length);
 	} elsif ($field_type == FIELD_TYPE_DATE) {
@@ -728,7 +738,7 @@ sub fieldType {
 	} elsif ($field_type == FIELD_TYPE_NULL) {
 		return undef;
 	} elsif ($field_type == FIELD_TYPE_ASCII) {
-		return $rand->quotedString($field_length, [0, 255]);
+		return $rand->string($field_length, [0, 255]);
 	} elsif ($field_type == FIELD_TYPE_EMPTY) {
 		return '';
 	} elsif ($field_type == FIELD_TYPE_HEX) {
