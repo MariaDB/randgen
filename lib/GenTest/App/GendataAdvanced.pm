@@ -329,7 +329,7 @@ sub gen_table {
                                 undef,
                                 undef,
                                 $nullable = random_null(),
-                                ( $nullable eq 'NULL' ? undef : "'1970'" ),
+                                ( $nullable eq 'NULL' ? undef : "1970" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
@@ -831,29 +831,28 @@ sub gen_table {
               elsif ($c->[0] eq 'DATE') {
                   # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
 
-                  $val = "'".$prng->date()."'";
+                  $val = $prng->date();
                   $val = ($val, $val, $val, $val, $val, $val, $val, $val, "NULL", "'1900-01-01'")[$prng->uint16(0,9)];
               }
               elsif ($c->[0] eq 'TIME') {
                   # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
 
-                  $val = "'".$prng->time()."'";
+                  $val = $prng->time();
                   $val = ($val, $val, $val, $val, $val, $val, $val, $val, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
               }
               elsif ($c->[0] eq 'DATETIME' or $c->[0] eq 'TIMESTAMP') {
               # 10% NULLS, 10% "1900-01-01 00:00:00', 20% date + " 00:00:00"
 
                   $val = $prng->datetime();
-                  my $val_date_only = $prng->date();
+                  my $val_date_only = $prng->unquotedDate();
 
                   # Don't try to insert NULLs into TIMESTAMP columns, it may end up as a current timestamp
                   # due to non-standard behavior of TIMESTAMP columns
                   if ($c->[4] eq 'NOT NULL' or $c->[0] eq 'TIMESTAMP') {
-                      $val = ($val, $val, $val, $val, $val, $val, $val, $val_date_only." 00:00:00", $val_date_only." 00:00:00", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
+                      $val = ($val, $val, $val, $val, $val, $val, $val, "'".$val_date_only." 00:00:00'", "'".$val_date_only." 00:00:00'", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
                   } else {
-                      $val = ($val, $val, $val, $val, $val, $val, $val_date_only." 00:00:00", $val_date_only." 00:00:00", "NULL", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
+                      $val = ($val, $val, $val, $val, $val, $val, "'".$val_date_only." 00:00:00'", "'".$val_date_only." 00:00:00'", "NULL", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
                   }
-                  $val = "'".$val."'" if not $val eq "NULL";
               }
               elsif ($c->[0] eq 'CHAR' or $c->[0] eq 'VARCHAR' or $c->[0] eq 'BINARY' or $c->[0] eq 'VARBINARY' or $c->[0] eq 'TINYBLOB' or $c->[0] eq 'BLOB' or $c->[0] eq 'MEDIUMBLOB' or $c->[0] eq 'LONGBLOB')
               {

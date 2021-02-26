@@ -321,12 +321,12 @@ sub gen_table {
 
       # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
 
-      my $rnd_date = "'".$prng->date()."'";
+      my $rnd_date = $prng->date();
 
       if (not defined $self->[GDS_NOTNULL]) {
         $rnd_date = ($rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, "NULL", "'1900-01-01'")[$prng->uint16(0,9)];
           }
-      my $rnd_time = "'".$prng->time()."'";
+      my $rnd_time = $prng->time();
       if (not defined $self->[GDS_NOTNULL]) {
         $rnd_time = ($rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
           }
@@ -334,14 +334,13 @@ sub gen_table {
       # 10% NULLS, 10% "1900-01-01 00:00:00', 20% date + " 00:00:00"
 
       my $rnd_datetime = $prng->datetime();
-      my $rnd_datetime_date_only = $prng->date();
+      my $rnd_datetime_round_date = "'".$prng->unquotedDate()." 00:00:00'";
 
       if (defined $self->[GDS_NOTNULL]) {
-        $rnd_datetime = ($rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime_date_only." 00:00:00", $rnd_datetime_date_only." 00:00:00", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
+        $rnd_datetime = ($rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime_round_date, $rnd_datetime_round_date, "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
       } else {
-        $rnd_datetime = ($rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime_date_only." 00:00:00", $rnd_datetime_date_only." 00:00:00", "NULL", '1900-01-01 00:00:00')[$prng->uint16(0,9)];
+        $rnd_datetime = ($rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime_round_date, $rnd_datetime_round_date, "NULL", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
       }
-      $rnd_datetime = "'".$rnd_datetime."'" if not $rnd_datetime eq "NULL";
 
       my $rnd_varchar;
 
