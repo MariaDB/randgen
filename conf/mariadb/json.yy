@@ -14,6 +14,12 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
+####################################
+# Reference material
+# https://www.json.org/json-en.html
+# https://www.crockford.com/mckeeman.html
+####################################
+
 query_init_add:
     SET SQL_MODE=REPLACE(REPLACE(@@sql_mode,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
   ; json_create
@@ -146,10 +152,10 @@ json_func_other:
 	| JSON_EXISTS( json_text_arg, _jsonpath )
 	| JSON_EXTRACT( json_text_arg, json_path_list )
 	| JSON_LENGTH( json_text_arg json_optional_path_no_wildcard )
-	| JSON_QUOTE( _jsonvalue )
+	| JSON_QUOTE( _json )
 	| JSON_SEARCH( json_text_arg, json_one_or_all, json_search_string json_search_args )
-	| JSON_TYPE( _jsonvalue )
-	| JSON_UNQUOTE( _jsonvalue )
+	| JSON_TYPE( _json )
+	| JSON_UNQUOTE( _json )
 	| JSON_VALID( json_valid_arg )
 	| JSON_VALUE( json_text_arg, _jsonpath )
 ;
@@ -159,10 +165,10 @@ json_optional_path_no_wildcard:
 ;
 
 json_value_list:
-  _jsonvalue | _jsonvalue, json_value_list ;
+  _json | _json, json_value_list ;
 
 json_valid_arg:
-	json_text_arg | _jsonvalue | _jsonkey | _jsonpair | _jsonarray | _jsonpath | { $last_json_field or 'fld' }
+	json_text_arg | _json | _jsonkey | _jsonpath | { $last_json_field or 'fld' }
 ;
 
 json_search_string:
@@ -178,8 +184,8 @@ json_one_or_all:
 ;
 
 json_key_value_list:
-	==FACTOR:3== _jsonkey, _jsonvalue |
-  _jsonkey, _jsonvalue, json_key_value_list
+	==FACTOR:3== _jsonkey, _json |
+  _jsonkey, _json, json_key_value_list
 ;
 
 json_doc_list:
@@ -219,17 +225,17 @@ json_path_list:
 ;
 
 json_contains_args:
-	_jsonvalue | _jsonvalue, _jsonpath_no_wildcard
+	_json | _json, _jsonpath_no_wildcard
 ;
 
 json_path_val_list_no_wildcard:
-  ==FACTOR:3== _jsonpath_no_wildcard, _jsonvalue |
-  json_path_val_list_no_wildcard, _jsonpath_no_wildcard, _jsonvalue
+  ==FACTOR:3== _jsonpath_no_wildcard, _json |
+  json_path_val_list_no_wildcard, _jsonpath_no_wildcard, _json
 ;
 
 json_path_val_list:
-	==FACTOR:3== _jsonpath, _jsonvalue |
-  json_path_val_list, _jsonpath, _jsonvalue
+	==FACTOR:3== _jsonpath, _json |
+  json_path_val_list, _jsonpath, _json
 ;
 
 json_escape_char:
@@ -237,4 +243,4 @@ json_escape_char:
 ;
 
 json_any_value:
-  _basics_any_value | `fld` | _field | _jsonvalue ;
+  _basics_any_value | `fld` | _field | _json ;

@@ -88,13 +88,10 @@ use constant FIELD_TYPE_DATETIME	=> 6;
 use constant FIELD_TYPE_TIMESTAMP	=> 7;
 use constant FIELD_TYPE_YEAR		=> 8;
 
-#use constant FIELD_TYPE_ENUM		=> 9; unused
-#use constant FIELD_TYPE_SET		=> 10; unused
 use constant FIELD_TYPE_BLOB		=> 11;
 
 use constant FIELD_TYPE_DIGIT		=> 12;
 use constant FIELD_TYPE_LETTER		=> 13;
-#use constant FIELD_TYPE_NULL		=> 14; unused
 use constant FIELD_TYPE_DICT		=> 15;
 use constant FIELD_TYPE_ASCII		=> 16;
 use constant FIELD_TYPE_EMPTY		=> 17;
@@ -109,10 +106,6 @@ use constant FIELD_TYPE_FLOAT		=> 21;
 use constant FIELD_TYPE_JSON		=> 22;
 use constant FIELD_TYPE_JSONPATH	=> 23;
 use constant FIELD_TYPE_JSONKEY     => 24;
-use constant FIELD_TYPE_JSONVALUE   => 25;
-use constant FIELD_TYPE_JSONARRAY   => 26;
-use constant FIELD_TYPE_JSONPAIR    => 27;
-use constant FIELD_TYPE_JSONOBJECT  => 28;
 
 use constant FIELD_TYPE_TEXT  => 29;
 use constant FIELD_TYPE_INET6  => 30;
@@ -193,10 +186,6 @@ my %name2type = (
 	'json'			=> FIELD_TYPE_JSON,
 	'jsonpath'		=> FIELD_TYPE_JSONPATH,
 	'jsonkey'       => FIELD_TYPE_JSONKEY,
-	'jsonvalue'     => FIELD_TYPE_JSONVALUE,
-	'jsonarray'     => FIELD_TYPE_JSONARRAY,
-	'jsonpair'      => FIELD_TYPE_JSONPAIR,
-	'jsonobject'    => FIELD_TYPE_JSONOBJECT,
 	'jsonpath_no_wildcard'		=> FIELD_TYPE_JSONPATH_NO_WILDCARD,
 );
 
@@ -479,7 +468,6 @@ sub unquotedString {
     }
 
     my $actual_length = $prng->uint16(1,$len);
-    my $str;
 
     if ($actual_length <= RANDOM_STRBUF_SIZE) {
       ## If the wanted length fit in the buffer, just return a slice of it.
@@ -517,9 +505,8 @@ sub string {
 # For JSON, we'll use terminology from here (to some extent):
 # http://www.json.org/
 # "structure" is either a OBJECT '{}', or ARRAY '[]'
-# "member" is what OBJECT consists of -- a PAIR string:value
-# VALUE is what ARRAY consists of, and also it's the right part of PAIR:
-#  a string, or a number, or an OBJECT, or an ARRAY, or 'true', or 'false', or NULL
+# "value" is what ARRAY consists of, and also it's the right part of PAIR:
+#    string, or number, or OBJECT, or ARRAY, or 'true', or 'false', or 'null'
 
 sub json {
 	# Length here will be a number of structures on the 1st + 2nd level. That is,
@@ -542,65 +529,74 @@ sub json_doc {
 	my ($prng, $len) = @_;
 	return "'". (
 		$prng->arrayElement([JSON_STRUCT_ARRAY, JSON_STRUCT_OBJECT]) == JSON_STRUCT_ARRAY
-		? $prng->json_array($len)
-		: $prng->json_object($len)
+		? $prng->jsonArray($len)
+		: $prng->jsonObject($len)
 	) ."'";
 }
 
-sub json_array {
+# [ <[value [, value ...]]> ]
+sub jsonArray {
 	my ($prng, $len) = @_;
+  $len= $prng->uint16(0,8) unless defined $len;
 
 	my @contents = ();
 	foreach (1..$len) {
-		push @contents, $prng->json_value();
+		push @contents, $prng->jsonValue();
 	}
 	return '[' . join(',', @contents) . ']';
 }
 
-sub json_object {
+# { <[string : value [, string : value ... ]]> }
+sub jsonObject {
 	my ($prng, $len) = @_;
+  $len= $prng->uint16(0,8) unless defined $len;
 
 	my @contents = ();
 	foreach (1..$len) {
-		push @contents, $prng->json_pair();
+		push @contents, $prng->jsonPair();
 	}
 	return '{' . join(',', @contents) . '}';
 }
 
-sub json_value {
+sub jsonValue {
 	my $prng = shift;
 
-	my $value_type= $prng->json_value_type();
+	my $value_type= $prng->jsonValueType();
 
 	if ($value_type == JSON_VALUE_OBJECT) {
-		return $prng->json_object($prng->uint16(0,8));
+		return $prng->jsonObject($prng->uint16(0,8));
 	} elsif ($value_type == JSON_VALUE_ARRAY) {
-		return $prng->json_array($prng->uint16(0,16));
+		return $prng->jsonArray($prng->uint16(0,16));
 	} elsif ($value_type == JSON_VALUE_STRING) {
-		return '"'.$prng->unquotedString($prng->uint16(0,64)).'"';
+		return $prng->jsonString();
 	} elsif ($value_type == JSON_VALUE_NUMBER) {
-		return $prng->int();
+		return $prng->urand();
 	} elsif ($value_type == JSON_VALUE_TRUE) {
-		return '"true"';
+		return 'true';
 	} elsif ($value_type == JSON_VALUE_FALSE) {
-		return '"false"';
+		return 'false';
 	} elsif ($value_type == JSON_VALUE_NULL) {
-		return '"null"';
+		return 'null';
 	}
 }
 
-sub json_key {
-	my $prng = shift;
-	my $key = '"'.$prng->dictionaryWord('english').'"';
-	return $key;
+sub jsonString {
+  my ($prng, $len)= @_;
+  $len= $prng->uint16(0,64) unless defined $len;
+  return '"'.$prng->unquotedString($len).'"';
 }
 
-sub json_pair {
+sub jsonKey {
 	my $prng = shift;
-	return $prng->json_key() . ': ' . $prng->json_value();
+	return $prng->jsonString();
 }
 
-sub json_value_type {
+sub jsonPair {
+	my $prng = shift;
+	return $prng->jsonString() . ': ' . $prng->jsonValue();
+}
+
+sub jsonValueType {
 	my $prng = shift;
 	return $prng->arrayElement([
 		JSON_VALUE_OBJECT,
@@ -618,31 +614,31 @@ sub json_value_type {
 # For JSON Path, we'll use syntax from here:
 # https://dev.mysql.com/doc/refman/5.7/en/json-path-syntax.html
 
-sub jsonpath {
+sub jsonPath {
 	my $prng = shift;
 	my $num_of_legs = shift || $prng->uint16(0,4);
 	my $path= '$';
 	foreach (1..$num_of_legs) {
     # Attach optional wildcard to the _previous_ element
     $path .= '**' if ($prng->uint16(0,1)) and $path !~ /\*$/;
-		$path .= $prng->json_pathleg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_MEMBER]),1);
+		$path .= $prng->jsonPathLeg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_MEMBER]),1);
 	}
 	return "'".$path."'";
 }
 
 # Some functions don't accept wild cards in JSON path
-sub jsonpath_no_wildcard {
+sub jsonPathNoWildcard {
 	my $prng = shift;
 	my $num_of_legs = shift || $prng->uint16(0,4);
 	my $path= '$';
 	foreach (1..$num_of_legs) {
     # Attach optional wildcard to the _previous_ element
-		$path .= $prng->json_pathleg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_MEMBER]));
+		$path .= $prng->jsonPathLeg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_MEMBER]));
 	}
 	return "'".$path."'";
 }
 
-sub json_pathleg {
+sub jsonPathLeg {
 	my $prng = shift;
 	my $pathleg_type= shift;
   my $wildcards_allowed= shift;
@@ -653,9 +649,8 @@ sub json_pathleg {
 		my $ind= $wildcards_allowed ? $prng->uint16(-1,8) : $prng->uint16(0,8);
 		return '[' . ( $ind < 0 ? '*' : $ind ) . ']';
 	} else { # MEMBER
-		my $key= $prng->json_key();
+		my $key= $prng->jsonKey();
 		# Quoted string or identifier
-		$key = $prng->uint16(0,2) ? $key : '"'.$key.'"';
 		return '.' . ((! $wildcards_allowed or $prng->uint16(0,3)) ? $key : '*');
 	}
 }
@@ -746,19 +741,11 @@ sub fieldType {
 	} elsif ($field_type == FIELD_TYPE_JSON) {
 		return $rand->json($orig_field_length);
 	} elsif ($field_type == FIELD_TYPE_JSONPATH) {
-		return $rand->jsonpath($field_length);
+		return $rand->jsonPath($field_length);
 	} elsif ($field_type == FIELD_TYPE_JSONPATH_NO_WILDCARD) {
-		return $rand->jsonpath_no_wildcard($field_length);
+		return $rand->jsonPathNoWildcard($field_length);
 	} elsif ($field_type == FIELD_TYPE_JSONKEY) {
-		return $rand->json_key();
-	} elsif ($field_type == FIELD_TYPE_JSONVALUE) {
-		return $rand->json_value();
-	} elsif ($field_type == FIELD_TYPE_JSONARRAY) {
-		return $rand->json_array();
-	} elsif ($field_type == FIELD_TYPE_JSONPAIR) {
-		return $rand->json_pair();
-	} elsif ($field_type == FIELD_TYPE_JSONOBJECT) {
-		return $rand->json_object();
+		return $rand->jsonKey();
 	} else {
 		croak ("unknown field type $field_def");
 	}
