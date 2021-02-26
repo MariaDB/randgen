@@ -27,8 +27,6 @@ require Exporter;
 	FIELD_TYPE_TIME
 	FIELD_TYPE_DATETIME
 	FIELD_TYPE_TIMESTAMP
-	FIELD_TYPE_ENUM
-	FIELD_TYPE_SET
 	FIELD_TYPE_YEAR
 	FIELD_TYPE_BLOB
   FIELD_TYPE_TEXT
@@ -36,7 +34,6 @@ require Exporter;
 	FIELD_TYPE_DICT
 	FIELD_TYPE_DIGIT
 	FIELD_TYPE_LETTER
-	FIELD_TYPE_NULL
 	FIELD_TYPE_ASCII
 	FIELD_TYPE_EMPTY
 
@@ -91,13 +88,13 @@ use constant FIELD_TYPE_DATETIME	=> 6;
 use constant FIELD_TYPE_TIMESTAMP	=> 7;
 use constant FIELD_TYPE_YEAR		=> 8;
 
-use constant FIELD_TYPE_ENUM		=> 9;
-use constant FIELD_TYPE_SET		=> 10;
+#use constant FIELD_TYPE_ENUM		=> 9; unused
+#use constant FIELD_TYPE_SET		=> 10; unused
 use constant FIELD_TYPE_BLOB		=> 11;
 
 use constant FIELD_TYPE_DIGIT		=> 12;
 use constant FIELD_TYPE_LETTER		=> 13;
-use constant FIELD_TYPE_NULL		=> 14;
+#use constant FIELD_TYPE_NULL		=> 14; unused
 use constant FIELD_TYPE_DICT		=> 15;
 use constant FIELD_TYPE_ASCII		=> 16;
 use constant FIELD_TYPE_EMPTY		=> 17;
@@ -181,10 +178,9 @@ my %name2type = (
 	'datetime'		=> FIELD_TYPE_DATETIME,
 	'timestamp'		=> FIELD_TYPE_TIMESTAMP,
 	'year'			=> FIELD_TYPE_YEAR,
-	'enum'			=> FIELD_TYPE_ENUM,
-	'set'			=> FIELD_TYPE_SET,
+#	'enum'			=> FIELD_TYPE_ENUM,
+#	'set'			=> FIELD_TYPE_SET,
     'inet6'         => FIELD_TYPE_INET6,
-	'null'			=> FIELD_TYPE_NULL,
 	'letter'		=> FIELD_TYPE_LETTER,
 	'digit'			=> FIELD_TYPE_DIGIT,
 	'data'			=> FIELD_TYPE_BLOB,
@@ -412,15 +408,15 @@ sub timestamp {
     return sprintf('%04d%02d%02d%02d%02d%02d.%06d',$year+1900,$mon+1,$mday,$hour,$min,$sec,$prng->uint16(0,999999));
 }
 
-sub enum {
-	my $prng = shift;
-	return $prng->letter();
-}
-
-sub set {
-	my $prng = shift;
-	return join(',', map { $prng->letter() } (0..$prng->digit() ) );
-}
+#sub enum {
+#	my $prng = shift;
+#	return $prng->letter();
+#}
+#
+#sub set {
+#	my $prng = shift;
+#	return join(',', map { $prng->letter() } (0..$prng->digit() ) );
+#}
 
 sub text {
   my ($prng, $len)= @_;
@@ -539,16 +535,16 @@ sub json {
 	# If the length is 0 or negative, return a zero-length string
 	return "''" if $len <= 0;
 
-    return $prng->json_struct($len-1);
+  return $prng->json_doc($len-1);
 }
 
-sub json_struct {
+sub json_doc {
 	my ($prng, $len) = @_;
-	return (
+	return "'". (
 		$prng->arrayElement([JSON_STRUCT_ARRAY, JSON_STRUCT_OBJECT]) == JSON_STRUCT_ARRAY
 		? $prng->json_array($len)
 		: $prng->json_object($len)
-	);
+	) ."'";
 }
 
 sub json_array {
@@ -558,7 +554,7 @@ sub json_array {
 	foreach (1..$len) {
 		push @contents, $prng->json_value();
 	}
-	return "'".'[' . join(',', @contents) . ']'."'";
+	return '[' . join(',', @contents) . ']';
 }
 
 sub json_object {
@@ -568,7 +564,7 @@ sub json_object {
 	foreach (1..$len) {
 		push @contents, $prng->json_pair();
 	}
-	return "'".'{' . join(',', @contents) . '}'."'";
+	return '{' . join(',', @contents) . '}';
 }
 
 sub json_value {
@@ -581,7 +577,7 @@ sub json_value {
 	} elsif ($value_type == JSON_VALUE_ARRAY) {
 		return $prng->json_array($prng->uint16(0,16));
 	} elsif ($value_type == JSON_VALUE_STRING) {
-		return $prng->string($prng->uint16(0,64));
+		return '"'.$prng->unquotedString($prng->uint16(0,64)).'"';
 	} elsif ($value_type == JSON_VALUE_NUMBER) {
 		return $prng->int();
 	} elsif ($value_type == JSON_VALUE_TRUE) {
@@ -595,13 +591,13 @@ sub json_value {
 
 sub json_key {
 	my $prng = shift;
-	my $key = $prng->dictionaryWord('english');
+	my $key = '"'.$prng->dictionaryWord('english').'"';
 	return $key;
 }
 
 sub json_pair {
 	my $prng = shift;
-	return '"'. $prng->json_key() . '": ' . $prng->json_value();
+	return $prng->json_key() . ': ' . $prng->json_value();
 }
 
 sub json_value_type {
@@ -643,7 +639,7 @@ sub jsonpath_no_wildcard {
     # Attach optional wildcard to the _previous_ element
 		$path .= $prng->json_pathleg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_MEMBER]));
 	}
-	return $path;
+	return "'".$path."'";
 }
 
 sub json_pathleg {
@@ -669,9 +665,9 @@ sub json_pathleg {
 sub quid {
 	my $prng = shift;
 
-	return pack("c*", map {
+	return "'". pack("c*", map {
 		$prng->uint16(65,90);
-                } (1..5));
+                } (1..5)) ."'";
 }
 
 sub bit {
@@ -727,20 +723,18 @@ sub fieldType {
 		return $rand->datetime();
 	} elsif ($field_type == FIELD_TYPE_TIMESTAMP) {
 		return $rand->timestamp();
-	} elsif ($field_type == FIELD_TYPE_ENUM) {
-		return $rand->enum();
-	} elsif ($field_type == FIELD_TYPE_SET) {
-		return $rand->set();
+#	} elsif ($field_type == FIELD_TYPE_ENUM) {
+#		return $rand->enum();
+#	} elsif ($field_type == FIELD_TYPE_SET) {
+#		return $rand->set();
 	} elsif ($field_type == FIELD_TYPE_INET6) {
 		return $rand->inet6();
 	} elsif ($field_type == FIELD_TYPE_BLOB) {
 		return $rand->loadFile($data_location);
-	} elsif ($field_type == FIELD_TYPE_NULL) {
-		return undef;
 	} elsif ($field_type == FIELD_TYPE_ASCII) {
 		return $rand->string($field_length, [0, 255]);
 	} elsif ($field_type == FIELD_TYPE_EMPTY) {
-		return '';
+		return "''";
 	} elsif ($field_type == FIELD_TYPE_HEX) {
 		return $rand->hex($field_length);
 	} elsif ($field_type == FIELD_TYPE_QUID) {

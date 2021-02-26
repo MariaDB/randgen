@@ -423,14 +423,14 @@ _basics_empty_values_list:
     () | (),_basics_empty_values_list | (),_basics_empty_values_list ;
 
 _basics_any_value:
+  NULL |
   _bit | _bool | _boolean | _tinyint | _smallint | _mediumint | _int | _integer | _bigint |
   _float | _double | _decimal | _dec | _numeric | _fixed |
   _char | _varchar | _binary | _varbinary |
   _tinyblob | _blob | _mediumblob | _longblob | _tinytext | _text | _mediumtext | _longtext |
   _date | _time | _datetime | _timestamp | _year |
-  _enum | _set |
-  _null | _digit | _data | _ascii | _string | _empty | _hex | _quid |
-  _json | _jsonpath | _jsonkey | _jsonvalue | _jsonarray | _jsonpair | _jsonobject | _jsonpath_no_wildcard ;
+  _digit | _data | _ascii | _string | _empty | _hex | _quid |
+  _json | _jsonpath | _jsonkey | _jsonpath_no_wildcard ;
 
 _basics_value_set:
     { $basic_values=['NULL','DEFAULT',$prng->int(0,99),$prng->int(0,99),$prng->int(0,99),$prng->text(8),$prng->string(1),$prng->string(1),$prng->string(1)]; @vals=(); $val_count= $prng->int(1,10) unless defined $val_count; foreach(1..$val_count) { push @vals, $prng->arrayElement($basic_values) }; '('.(join ',', @vals).')' } ;
