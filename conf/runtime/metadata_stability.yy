@@ -112,8 +112,10 @@ view_ddl:
 	pick_view_name create_view | pick_view_name create_view | pick_view_name create_view |
         pick_view_name alter_view | pick_view_name drop_view ; create_view ;
 
+# Fully-qualified so that it could be used in view definitions
+# across different databases (e.g. for transformers
 pick_function_name:
-	{ $function_name = 'func_'.$prng->int(1,3) ; return undef } ;
+	{ $function_name = ($last_database or $executors->[0]->defaultSchema()).'.func_'.$prng->int(1,3) ; return undef } ;
 
 pick_procedure_name:
 	{ $procedure_name = 'proc_'.$prng->int(1,3) ; return undef } ;
@@ -123,13 +125,13 @@ pick_table_name:
 	{ $table_name = 'table_'.$prng->int(1,3) ; return undef } ;
 
 pick_trigger_name:
-	{ $trigger_name = 'trigger_'.$prng->int(1..9) ; return undef } ;
+	{ $trigger_name = 'trigger_'.$prng->int(1,9) ; return undef } ;
 
 pick_view_name:
-	{ $view_name = 'view_'.$prng->int(1..3) ; return undef } ;
+	{ $view_name = 'view_'.$prng->int(1,3); return undef } ;
 
 function_name:
-	{ 'func_'.$prng->int(1,3) } ;
+	{ ($last_database or $executors->[0]->defaultSchema()).'.func_'.$prng->int(1,3) } ;
 
 procedure_name:
 	{ 'proc_'.$prng->int(1,3) } ;
