@@ -1,4 +1,4 @@
-# Copyright (C) 2020 MariaDB Corporation.
+# Copyright (C) 2020,2021 MariaDB Corporation.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,15 +96,15 @@ event_schedule:
 
 event_execution_time:
     # Almost always in the future
-    ==FACTOR:499== { $ts= $prng->int(time(),2147483647); "'".$prng->datetime($ts)."'" }
-  |                { $ts= $prng->int(0,2147483647); "'".$prng->datetime($ts)."'" }
+    ==FACTOR:499== { $ts= $prng->int(time(),2147483647); $prng->datetime($ts) }
+  |                { $ts= $prng->int(0,2147483647); $prng->datetime($ts) }
 ;
 
 event_optional_starts:
-  | | | | | | | | | { $ts= $prng->int(0,2147483647); $start= $prng->datetime($ts); "STARTS '$start'" } event_optional_interval_plus ;
+  | | | | | | | | | { $ts= $prng->int(0,2147483647); $start= $prng->datetime($ts); "STARTS $start" } event_optional_interval_plus ;
 
 event_optional_ends:
-  | | | | | | | | | { $end= $prng->datetime($prng->int($ts,2147483647)); "ENDS '$end'" } event_optional_interval_plus ;
+  | | | | | | | | | { $end= $prng->datetime($prng->int($ts,2147483647)); "ENDS $end" } event_optional_interval_plus ;
 
 event_optional_interval_plus:
   | | | | | | | | | + INTERVAL event_interval ;
