@@ -1,4 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2021 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,7 +41,7 @@ sub transform {
 	my @var_variables;
 
 	# Do not match partial dates, timestamps, etc.
-	if ($new_query =~ m{\s+(\d+)(\s|\)|,|;)}) {
+	if ($new_query =~ m{\s+(\d+)(?:\s|\)|,|;)}) {
 		$new_query =~ s{\s+(\d+)\s}{
 		    $var_counter++;
 		    push @var_variables, '@var'.$var_counter." = $1";
@@ -48,7 +49,7 @@ sub transform {
 		}sgexi;
 	}
 
-	$new_query =~ s{\s+'(.+?)'}{
+	$new_query =~ s{\s+'(.*?)'}{
 		$var_counter++;
 		push @var_variables, '@var'.$var_counter." = '$1'";
 		' @var'.$var_counter.' ';
