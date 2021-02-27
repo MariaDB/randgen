@@ -219,16 +219,16 @@ app_periods_value_list_1:
 ;
 
 app_period_valid_period_boundaries:
-    { $ts= $prng->int(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->int($ts,2147483647)); "'$start','$end'" };
+    { $ts= $prng->int(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->int($ts,2147483647)); "$start,$end" };
 
 app_period_valid_period_boundaries_update:
-   { $ts= $prng->int(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->int($ts,2147483647)); "`s` = '$start', `e` = '$end'" };
+   { $ts= $prng->int(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->int($ts,2147483647)); "`s` = $start, `e` = $end" };
 
 app_period_valid_period_boundaries_between:
-    { $ts= $prng->int(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->int($ts,2147483647)); "BETWEEN '$start' AND '$end'" };
+    { $ts= $prng->int(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->int($ts,2147483647)); "BETWEEN $start AND $end" };
 
 app_period_valid_portion_boundaries:
-   { $ts= $prng->int(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->int($ts,2147483647)); "FROM '$start' TO '$end'" };
+   { $ts= $prng->int(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->int($ts,2147483647)); "FROM $start TO $end" };
 
 app_period_where_condition:
     `s` app_period_valid_period_boundaries_between
