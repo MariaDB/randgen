@@ -18,7 +18,7 @@ query_init_add:
   UPDATE mysql.proc SET definer = 'root@localhost'; FLUSH TABLES; FLUSH PRIVILEGES; 
 
 query_add:
-  { $prev_db= $last_database; $prev_tb= $last_table; '' } infoschema_query { $last_database= $prev_db; $last_table= $prev_tb; '' } ;
+  infoschema_query { $last_database= undef; $last_table= undef; '' } ;
 
 infoschema_query:
   ==FACTOR:10== { @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } infoschema_select_or_select_join |

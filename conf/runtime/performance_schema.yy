@@ -17,6 +17,9 @@
 # USA
 
 query_add:
+  perfschema_query { $last_database= undef; $last_table= undef; '' };
+
+perfschema_query:
   ==FACTOR:0.1== perfschema_ddl |
 	perfschema_dml |
 	{ @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } perfschema_select |
