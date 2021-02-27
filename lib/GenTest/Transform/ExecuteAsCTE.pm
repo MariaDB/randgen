@@ -16,6 +16,16 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
+#######
+# NOTE: The transformer can sometimes produce syntactically incorrect
+#       queries expectedly. For example, this query is accepted by MariaDB,
+#       even though it's probably against the standard:
+#         select 1 from dual where exists ((select 2 from dual))
+#       but this one is not, because it is against the standard:
+#         select 1 from dual where exists ((with cte as (select 2 from dual) select * from cte))
+#       see https://jira.mariadb.org/browse/MDEV-10060
+#######
+
 package GenTest::Transform::ExecuteAsCTE;
 
 require Exporter;
@@ -29,10 +39,12 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 # Expression in round brackets
+# b'..' and x'xxx' (bit-value and hex-value literals) are a special case
+# of single-quote use, they can be split because spaces are not allowed there
 my $single_quotes_template =
     qr{
         (
-            \'
+            [bx]?\'
                 (                       # group 1 - inside quotes
                     (?:
                         (?> [^']+ )    # non-quotes
