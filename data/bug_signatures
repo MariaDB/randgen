@@ -4,10 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25012:
+=~ signal|AddressSanitizer|Assertion \`name'
+=~ find_field_in_tables
+=~ Item_str_func::fix_fields
 MDEV-25010:
 =~ Assertion \`!lock_sys_t::get_first(receiver_cell, receiver_id, receiver_heap_no)'
 =~ lock_rec_move
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+# Not yet merged to 10.6
+MDEV-24997:
+=~ Assertion \`mtr->is_named_space(page_id\.space())'
+=~ ibuf_bitmap_page_set_bits
+=~ ibuf_reset_bitmap
+=~ =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-24988:
 =~ AddressSanitizer|signal
 =~ MyCTX::update
