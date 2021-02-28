@@ -44,11 +44,7 @@ sub transform {
 		$orig_query .= " LIMIT 1 ";
 	}
 
-	if ($orig_query =~ m{TOTAL_ORDERING}sio) {
-		return $orig_query." /* TRANSFORM_OUTCOME_FIRST_ROW */";
-	} else {
-		return $orig_query." /* TRANSFORM_OUTCOME_SINGLE_ROW */";
-	}
+  return $orig_query." /* TRANSFORM_OUTCOME_SINGLE_ROW */";
 }
 
 1;
