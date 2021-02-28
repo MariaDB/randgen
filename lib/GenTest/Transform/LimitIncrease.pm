@@ -1,4 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2021 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -30,9 +31,11 @@ use GenTest::Constants;
 sub transform {
 	my ($class, $orig_query) = @_;
 
-	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-		|| $orig_query =~ m{OFFSET}sio;
+  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  return STATUS_WONT_HANDLE
+    if $orig_query !~ m{SELECT}
+      || $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|INSERT|REPLACE|CREATE)}sio
+      || $orig_query =~ m{OFFSET}sio;
 
 	if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 4294836225}sio) {
 		return $orig_query." /* TRANSFORM_OUTCOME_SUPERSET */";
