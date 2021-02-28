@@ -358,6 +358,7 @@ sub doExhaustive {
     $k=~ s/\-$//;
     push @combinations, [$k, $e->[1]]
   }
+  $trials= scalar(@combinations);
 
   unless ($noshuffle) {
     $prng->shuffleArray(\@combinations);
@@ -384,7 +385,7 @@ sub doCombination {
 
     return if (($trial_id -1) % $threads +1) != $thread_id;
     say("#============================================================");
-    say("[$thread_id] Running $comment ".$trial_id."/".$trials);
+    say("[$thread_id] Running $comment (".$trial_id."/".$trials.")");
 	my $mask = $prng->uint16(0, 65535);
 
     my $runall = $new?"runall-new.pl":"runall.pl";
