@@ -386,24 +386,24 @@ MDEV-24665:
 =~ my_timestamp_from_binary|Field_newdate::get_TIME|Field_datetimef::get_TIME
 =~ Field::validate_value_in_record_with_warn
 =~ TABLE::validate_default_values_of_unset_fields
-=~ vcols
+=~ vcols|FeatureUsage detected virtual columns
 MDEV-24665:
 =~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
 =~ Field::ptr_in_record
 =~ Field::validate_value_in_record_with_warn
 =~ TABLE::validate_default_values_of_unset_fields
-=~ vcols
+=~ vcols|FeatureUsage detected virtual columns
 MDEV-24665:
 =~ AddressSanitizer|signal
 =~ Field_.*::val_.*
 =~ Column_definition::Column_definition
 =~ mysql_prepare_alter_table
-=~ vcols
+=~ vcols|FeatureUsage detected virtual columns
 MDEV-24665:
 =~ Assertion \`tmp != ((long long) 0x8000000000000000LL)'
 =~ TIME_from_longlong_datetime_packed
 =~ Column_definition::Column_definition
--~ vcols
+-~ vcols|FeatureUsage detected virtual columns
 MDEV-24664:
 =~ Assertion \`! is_set()'
 =~ Diagnostics_area::set_eof_status
@@ -548,13 +548,13 @@ MDEV-24570:
 MDEV-24545:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
-=~ sequences\.yy|alter_table\.yy
+=~ sequences\.yy|alter_table\.yy|FeatureUsage detected sequences
 MDEV-24545:
 =~ InnoDB: (1) Table rename would cause two FOREIGN KEY constraints to have the same internal name in case-insensitive comparison
 =~ InnoDB: (2) Table .* exists in the InnoDB internal data dictionary though MySQL is trying to rename table .* to it
 =~ InnoDB: If table .* is a temporary table .* then it can be that there are still queries running on the table
 !~ Version: '.*-debug
-=~ sequences\.yy|alter_table\.yy
+=~ sequences\.yy|alter_table\.yy|FeatureUsage detected sequences
 MDEV-24532:
 =~ Assertion \`thd->transaction->stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
@@ -696,33 +696,33 @@ MDEV-23898:
 =~ TABLE::verify_constraints
 =~ select_insert::send_data
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ sequences
+=~ sequences|FeatureUsage detected sequences
 MDEV-23898:
 =~ AddressSanitizer|signal
 =~ THD::is_error
 =~ ha_myisam::enable_indexes
 =~ select_insert::prepare_eof
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ sequences
+=~ sequences|FeatureUsage detected sequences
 MDEV-23898:
 =~ AddressSanitizer|signal
 =~ handler::increment_statistics
 =~ handler::ha_rnd_next
 =~ rr_sequential
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ sequences
+=~ sequences|FeatureUsage detected sequences
 MDEV-23898:
 =~ Assertion \`thd->lock == 0'
 =~ lock_tables
 =~ sp_head::execute_trigger
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ sequences
+=~ sequences|FeatureUsage detected sequences
 MDEV-23898:
 =~ Assertion \`inited == NONE \|\| table->open_by_handler'
 =~ handler::ha_external_lock
 =~ sp_head::execute_trigger
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ sequences
+=~ sequences|FeatureUsage detected sequences
 MDEV-23896:
 =~ AddressSanitizer|Invalid read of size|signal
 =~ same_index_prefix
@@ -872,7 +872,7 @@ MDEV-23679:
 =~ base_list_iterator::next_fast
 =~ sp_instr_stmt::exec_core
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ versioning
+=~ versioning|FeatureUsage detected system-versioned
 MDEV-23676:
 =~ Assertion \`(((nr) % (1LL << 24)) % (int) log_10_int\[6 - dec\]) == 0'
 =~ my_time_packed_to_binary
@@ -1259,7 +1259,7 @@ MDEV-22973:
 =~ Assertion \`records_are_comparable(table)'
 =~ compare_record
 =~ multi_update::do_updates
-=~ versioning
+=~ versioning|FeatureUsage detected system-versioned
 =~ Version: '10\.[3-4]
 MDEV-22927:
 =~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'
@@ -1481,7 +1481,7 @@ MDEV-22562:
 =~ handler::ha_external_lock
 =~ mysql_unlock_tables
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-=~ application_periods|versioning
+=~ application_periods|versioning|FeatureUsage detected system-versioned|FeatureUsage detected application periods
 MDEV-22551:
 =~ signal 11|AddressSanitizer
 =~ skip_trailing_space
@@ -1498,7 +1498,7 @@ MDEV-22548:
 =~ Protocol::end_statement
 =~ IGNORE
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-=~ application_periods
+=~ application_periods|FeatureUsage detected application periods
 MDEV-22525:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_vcol_forward_refs
@@ -1535,7 +1535,7 @@ MDEV-22435:
 =~ TABLE_SHARE::init_from_sql_statement_string
 =~ discover_assisted
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-=~ versioning
+=~ versioning|FeatureUsage detected system-versioned
 MDEV-22430:
 =~ Assertion \`ha_info->ht() != binlog_hton'
 =~ MYSQL_BIN_LOG::unlog_xa_prepare
@@ -1839,7 +1839,7 @@ MDEV-21648:
 MDEV-21641:
 =~ For .* BASE TABLE .* error : Found a misplaced row
 =~ For .* BASE TABLE .* error : Partition .* returned error
-=~ versioning
+=~ versioning|FeatureUsage detected system-versioned
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-21637:
 =~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
@@ -1937,7 +1937,7 @@ MDEV-21428:
 =~ row_update_for_mysql
 =~ ha_innobase::delete_row|ha_innobase::update_row
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-=~ versioning
+=~ versioning|FeatureUsage detected system-versioned
 MDEV-21415:
 =~ Assertion \`inited == RND'
 =~ handler::ha_rnd_pos
@@ -2006,13 +2006,13 @@ MDEV-21245:
 MDEV-21242:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
 =~ Field_.*::val_.*|Field_*::get_*
-=~ vcols
+=~ vcols|FeatureUsage detected virtual columns
 =~ Version: '10\.[2-3]
 MDEV-21242:
 =~ Assertion \`marked_for_read()'
 =~ Field_.*::val_.*
 =~ Protocol_text::store
-=~ vcols
+=~ vcols|FeatureUsage detected virtual columns
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-21218:
 =~ signal|AddressSanitizer
@@ -2061,13 +2061,13 @@ MDEV-21016:
 =~ AddressSanitizer: heap-use-after-free
 =~ trx_update_mod_tables_timestamp
 =~ trx_commit_in_memory|trx_t::commit_in_memory
-=~ versioning|application_periods
+=~ versioning|application_periods|FeatureUsage detected system-versioned|FeatureUsage detected application periods
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-21016:
 =~ \`mysql\`\.\`transaction_registry\` does not exist
 =~ AddressSanitizer: heap-use-after-free
 =~ mysql_inplace_alter_table
-=~ versioning
+=~ versioning|FeatureUsage detected system-versioned
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-21007:
 =~ Assertion \`auto_increment_value'
@@ -3075,7 +3075,7 @@ MDEV-17834:
 =~ AddressSanitizer|signal
 =~ row_upd_build_difference_binary
 =~ row_ins_index_entry
-=~ vcols
+=~ vcols|FeatureUsage detected virtual columns
 MDEV-17818:
 =~ signal 11|AddressSanitizer: SEGV
 =~ parse_vcol_defs
@@ -3930,6 +3930,7 @@ MDEV-24972: [MyISAM unique blobs]
 =~ Table .* is marked as crashed and should be repaired 
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 =~ Version: '10\.4|Server version: 10\.4
+=~ FeatureUsage detected unique blobs
 MDEV-24877: [debug_assert_on_not_freed_memory]
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ THD::~THD
@@ -4067,6 +4068,7 @@ MDEV-17890: [cursor->index->is_committed - vcols]
 =~ Record in index .* was not found on update: TUPLE
 =~ Failing assertion: !cursor->index->is_committed()
 =~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+=~ FeatureUsage detected virtual columns
 MDEV-17814:
 =~ is_current_stmt_binlog_format_row
 MDEV-17538:
