@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25010:
+=~ Assertion \`!lock_sys_t::get_first(receiver_cell, receiver_id, receiver_heap_no)'
+=~ lock_rec_move
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-24988:
 =~ AddressSanitizer|signal
 =~ MyCTX::update
@@ -476,7 +480,7 @@ MDEV-24620:
 MDEV-24619:
 =~ Assertion \`0'
 =~ Item::val_native
-=~ Type_handler_inet6::Item_val_native_with_conversion
+=~ Type_handler_inet6::Item_val_native_with_conversion|Inet6_null::Inet6_null
 MDEV-24585:
 =~ Assertion \`je->s\.cs == nice_js->charset()'
 =~ json_nice
