@@ -95,8 +95,12 @@ sub monitor_nonthreaded {
 	} or die "Error setting SIGALRM handler: $!\n";
 
 	alarm (CONNECT_TIMEOUT_THRESHOLD);
-	$dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => CONNECT_TIMEOUT_THRESHOLD * 2} );
-
+  # Due to MDEV-24998, connect here sometimes returns error 2013
+  # falsely indicating server crash. To avoid it, we will try twice before giving up
+  unless ($dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => CONNECT_TIMEOUT_THRESHOLD * 2} )) {
+    logWarning("Deadlock report got error ".$DBI::err." upon connecting to $dsn. Trying again");
+    $dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => CONNECT_TIMEOUT_THRESHOLD * 2} );
+  }
 	if (defined GenTest::Executor::MySQL::errorType($DBI::err)) {
 		alarm (0);
 		return GenTest::Executor::MySQL::errorType($DBI::err);
