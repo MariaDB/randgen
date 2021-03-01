@@ -29,7 +29,6 @@ use GenTest::Executor::MySQL;
 use DBI;
 use Data::Dumper;
 use POSIX;
-use Try::Tiny;
 
 my $dbh;
 my $server_version;
@@ -140,14 +139,17 @@ sub check_system_var {
 
 sub getval {
   my ($reporter, $query)= @_;
-  try {
-    if ($dbh= $reporter->refresh_dbh()) {
-      return $dbh->selectrow_arrayref($query)->[0];
+  my $res;
+  if ($dbh= $reporter->refresh_dbh()) {
+    eval {
+        $res= $dbh->selectrow_arrayref($query)->[0];
+        # Can't return res from here, because if it's 0, the "or" block will be executed
+        1;
+    } or do {
+      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.")");
     }
-  } catch {
-    sayWarning("FeatureUsage: $_");
-    return undef;
   }
+  return $res;
 }
 
 sub refresh_dbh {
