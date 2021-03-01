@@ -104,12 +104,12 @@ sub nativeReport {
           ## Assume all other systems are gdb-"friendly" ;-)
           push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace.gdb";
           push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace-all.gdb";
-      } elsif (kill(0,$pid) == 0) {
+      } elsif (kill(0,$pid)) {
           say("The process $pid is still alive. Taking stack traces from the running server");
-          push @commands, "gdb --batch --se=$binary $pid --command=backtrace.gdb";
-          push @commands, "gdb --batch --se=$binary $pid --command=backtrace-all.gdb";
+          push @commands, "gdb --batch --se=$binary -p $pid --command=backtrace.gdb";
+          push @commands, "gdb --batch --se=$binary -p $pid --command=backtrace-all.gdb";
       } else {
-        say("WARNING: New core file $core nore process $pid were found!");
+        sayWarning("Neither core file $core nor process $pid were found!");
       }
   }
 
