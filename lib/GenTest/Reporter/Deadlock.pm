@@ -33,6 +33,7 @@ use DBI;
 use Data::Dumper;
 use POSIX;
 
+use constant PROCESSLIST_PROCESS_ID      => 0;
 use constant PROCESSLIST_PROCESS_COMMAND => 4;
 use constant PROCESSLIST_PROCESS_TIME    => 5;
 use constant PROCESSLIST_PROCESS_INFO    => 7;
@@ -40,8 +41,8 @@ use constant PROCESSLIST_PROCESS_INFO    => 7;
 # The time, in seconds, we will wait for a connect before we declare the server hanged
 use constant CONNECT_TIMEOUT_THRESHOLD		=> 20;
 
-# Minimum lifetime of a query before it is considered suspicios
-# (may be overridden later if test duration is less than this)
+# Maximum lifetime of a query before it is considered suspicios
+# (hard default, may be overridden later)
 use constant QUERY_LIFETIME_THRESHOLD		=> 600;	# Seconds
 
 # Number of suspicious queries required before a deadlock is declared
@@ -50,8 +51,18 @@ use constant STALLED_QUERY_COUNT_THRESHOLD	=> 5;
 # Number of times the actual test duration is allowed to exceed the desired one
 use constant ACTUAL_TEST_DURATION_MULTIPLIER	=> 2;
 
+# Set actual query time limit to a slighly lower value than test duration
+my $lifetime_threshold;
+
 sub monitor {
 	my $reporter = shift;
+
+  # Set actual query time limit to a slighly lower value than test duration
+  unless (defined $lifetime_threshold) {
+    $lifetime_threshold= ($reporter->testDuration() * 0.8 > QUERY_LIFETIME_THRESHOLD
+                          ? QUERY_LIFETIME_THRESHOLD
+                          : int($reporter->testDuration() * 0.8))
+  }
 
 	my $actual_test_duration = time() - $reporter->testStart();
 
@@ -104,10 +115,12 @@ sub monitor_nonthreaded {
 	my $processlist = $dbh->selectall_arrayref("SHOW FULL PROCESSLIST");
 	alarm (0);
 
-  my $lifetime_threshold= ($reporter->testDuration() > QUERY_LIFETIME_THRESHOLD
-                            ? QUERY_LIFETIME_THRESHOLD
-                            : $reporter->testDuration());
+  # Stalled queries are those which have been in the process list too long (in any state)
 	my $stalled_queries= 0;
+  # A query which stays in killed state too long is an indication of a problem,
+  # even if there is only one. But killed queries can take some time to finalize
+  # and disappear from the processlist, so we'll give it some extra time
+  # before declaring a deadlock
   my $dead_queries= 0;
 
 	foreach my $process (@$processlist) {
@@ -115,18 +128,16 @@ sub monitor_nonthreaded {
 			($process->[PROCESSLIST_PROCESS_INFO] ne '') &&
 			($process->[PROCESSLIST_PROCESS_TIME] > $lifetime_threshold)
 		) {
+        sayWarning("Deadlock reporter detected stalled query: (".$process->[PROCESSLIST_PROCESS_COMMAND].") (".$process->[PROCESSLIST_PROCESS_TIME]." sec): ".$process->[PROCESSLIST_PROCESS_INFO]);
         $stalled_queries++;
-        if ($process->[PROCESSLIST_PROCESS_COMMAND] eq 'Killed') {
-          sayError("Deadlock reporter detected dead query: ".$process->[PROCESSLIST_PROCESS_INFO]);
+        if (($process->[PROCESSLIST_PROCESS_COMMAND] eq 'Killed') && $process->[PROCESSLIST_PROCESS_TIME] > $lifetime_threshold * 1.5) {
           $dead_queries++;
-        } else {
-          sayError("Deadlock reporter detected stalled query: ".$process->[PROCESSLIST_PROCESS_INFO]);
         }
-      }
-	}
+    }
+  }
 
   if ($stalled_queries >= STALLED_QUERY_COUNT_THRESHOLD or $dead_queries > 0) {
-    say("$stalled_queries stalled queries / $dead_queries dead queries detected, declaring deadlock at DSN $dsn.");
+    sayError("$stalled_queries stalled queries / $dead_queries dead queries detected, declaring deadlock at DSN $dsn.");
 
     sigaction SIGALRM, new POSIX::SigAction sub {
                 sayError("Deadlock reporter encountered a timeout upon performing deadlock diagnostics");
@@ -135,9 +146,9 @@ sub monitor_nonthreaded {
 
     alarm(CONNECT_TIMEOUT_THRESHOLD);
 
+    $dbh->do("INSTALL SONAME 'metadata_lock_info'");
     foreach my $status_query (
       "SHOW FULL PROCESSLIST",
-      "INSTALL SONAME 'metadata_lock_info'",
       "SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO",
       "SHOW ENGINE INNODB STATUS"
       # "SHOW OPEN TABLES" - disabled due to bug #46433
