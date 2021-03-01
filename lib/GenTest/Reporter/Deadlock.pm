@@ -137,7 +137,7 @@ sub monitor_nonthreaded {
   }
 
   if ($stalled_queries >= STALLED_QUERY_COUNT_THRESHOLD or $dead_queries > 0) {
-    sayError("$stalled_queries stalled queries / $dead_queries dead queries detected, declaring deadlock at DSN $dsn.");
+    sayError("Deadlock reporter: $stalled_queries stalled queries / $dead_queries dead queries detected, declaring deadlock at DSN $dsn.");
 
     sigaction SIGALRM, new POSIX::SigAction sub {
                 sayError("Deadlock reporter encountered a timeout upon performing deadlock diagnostics");
