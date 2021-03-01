@@ -8,7 +8,7 @@ MENT-809:
 =~ mariabackup: Aria engine: starting recovery
 =~ Got error 127 when executing|Got error 175 when executing
 MENT-808:
-=~ signal|AddressSanitizer|\`page_offset != 0 && page_offset <= page_length && page_length + length <= max_page_size'|\`page_offset - length <= page_length'|\`page_offset >= keypage_header && page_offset <= page_length'|\`page_offset != 0 && page_offset + length <= page_length'
+=~ signal [16]|AddressSanitizer|\`page_offset != 0 && page_offset <= page_length && page_length + length <= max_page_size'|\`page_offset - length <= page_length'|\`page_offset >= keypage_header && page_offset <= page_length'|\`page_offset != 0 && page_offset + length <= page_length'
 =~ maria_apply_log
 =~ BACKUP_FAILURE
 MENT-368:
@@ -64,7 +64,7 @@ MDEV-24455:
 =~ btr_free_externally_stored_field
 =~ Version: '10\.[5-9]
 MDEV-24444:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Item_func_in::get_func_mm_tree
 =~ SQL_SELECT::test_quick_select
 =~ Version: '10\.[2-9]|Server version: 10\.[2-9]
@@ -78,7 +78,7 @@ MDEV-24442:
 =~ row_drop_table_for_mysql
 =~ Version: '10\.[5-9]
 MDEV-24220:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ base_list_iterator::next|TABLE_LIST::is_recursive_with_table
 =~ st_select_lex::cleanup
 =~ sp_instr_stmt::execute|Prepared_statement::execute
@@ -104,7 +104,7 @@ MDEV-23644:
 =~ btr_check_blob_fil_page_type
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-23632:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ row_mysql_store_col_in_innobase_format
 =~ innobase_get_computed_value
 =~ row_merge_buf_add
@@ -188,7 +188,7 @@ MDEV-15532:
 =~ alter_rebuild_apply_log
 =~ Version: '10\.[0-2]
 MDEV-15532:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Field::is_null
 =~ field_unpack
 =~ print_keydup_error

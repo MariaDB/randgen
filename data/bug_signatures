@@ -5,7 +5,7 @@
 ##############################################################################
 
 MDEV-25012:
-=~ signal|AddressSanitizer|Assertion \`name'
+=~ signal [16]|AddressSanitizer|Assertion \`name'
 =~ find_field_in_tables
 =~ Item_str_func::fix_fields
 MDEV-25010:
@@ -19,53 +19,53 @@ MDEV-24997:
 =~ ibuf_reset_bitmap
 =~ =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-24988:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ MyCTX::update
 =~ my_aes_crypt_update
 =~ Cached_item_str
 MDEV-24986:
-=~ Assertion \`key_buff_elements && cur_key_idx < key_buff_elements'|AddressSanitizer|signal
+=~ Assertion \`key_buff_elements && cur_key_idx < key_buff_elements'|AddressSanitizer|signal [16]
 =~ Ordered_key::add_key
 =~ subselect_hash_sj_engine
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24958:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ my_strtod_int
 =~ Value_source::Converter_strntod::Converter_strntod
 =~ Field_blob::val_real
 =~ DEFAULT
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24958:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ my_strnncoll_binary|my_strnncollsp_simple
 =~ Arg_comparator::compare
 =~ DEFAULT
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24958:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Binary_string::copy|String::copy
 =~ Item_cache_str::cache_value
 =~ DEFAULT
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24958:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ str_to_datetime_or_date_or_time
 =~ Temporal::ascii_to_datetime_or_date_or_time
 =~ DEFAULT
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24942:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ _ma_write_blob_record|write_block_record
 =~ handler::ha_write_tmp_row
 =~ DEFAULT
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24935:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Field_iterator_natural_join::next
 =~ mark_common_columns
 =~ setup_natural_join_row_types
 MDEV-24934:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ my_longlong10_to_str_8bit|fmt_number
 =~ Item_dyncol_get::val_str
 =~ Item_char_typecast::val_str
@@ -79,30 +79,30 @@ MDEV-24931:
 =~ Bitmap<width>::is_prefix
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24929:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ thr_unlock
 =~ thr_multi_unlock
 =~ JOIN::optimize
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24929:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ get_schema_tables_result
 =~ JOIN::exec
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24925:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Item_subselect::init_expr_cache_tracker
 =~ Item_singlerow_subselect::expr_cache_insert_transformer
 MDEV-24909:
 =~ STATUS_SERVER_DEADLOCKED
 =~ Deadlock reporter detected dead query: .*JSON_
 MDEV-24907:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Item_field::replace_equal_field
 =~ Item_in_optimizer::transform
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-24906:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ QUICK_GROUP_MIN_MAX_SELECT::next_min_in_range
 =~  QUICK_GROUP_MIN_MAX_SELECT::get_next
 =~ rr_quick
@@ -111,16 +111,16 @@ MDEV-24905:
 =~ trx_undo_report_row_operation
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-24899:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ get_suffix
 =~ find_body
 =~ Temporal::
 MDEV-24898:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Item_subselect::is_expensive
 =~ Item_args::walk_args
 MDEV-24898:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ TABLE_LIST::is_recursive_with_table
 =~ st_select_lex::cleanup
 =~ Prepared_statement::execute
@@ -194,7 +194,7 @@ MDEV-24792:
 =~ mariabackup
 =~ Version: '10\.4|Server version: 10\.4
 MDEV-24787:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Item_ref::field_type
 =~ check_group_min_max_predicates
 =~ test_if_skip_sort_order
@@ -204,7 +204,7 @@ MDEV-24786:
 =~ with srw = ssux_lock_low
 =~ Version: '10\.6|Server version: 10\.6
 MDEV-24782:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Field::pack_int
 =~ THD::binlog_update_row
 =~ pack_row
@@ -231,22 +231,22 @@ MDEV-24764:
 =~ row_merge_buf_redundant_convert
 =~ row_merge_read_clustered_index
 MDEV-24763:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ dict_stats_try_drop_table
 =~ innobase_reload_table
 MDEV-24758:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ page_cur_insert_rec_low
 =~ page_cur_tuple_insert
 =~ btr_cur_optimistic_insert
 =~ Version: '10\.3|Server version: 10\.3
 MDEV-24757:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ queues_fill_table
 =~ get_schema_tables_result
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24754:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ dict_v_col_t
 =~ ha_innobase_inplace_ctx
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
@@ -260,12 +260,12 @@ MDEV-24743:
 =~ Assertion \`nr >= 0\.0'
 =~ Item_std_field::val_real
 MDEV-24742:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ String::numchars
 =~ in_string::set
 =~ Item_func::fix_fields
 MDEV-24741:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ String::realloc_raw
 =~ Prepared_statement::execute
 =~ Version: '10\.[2-3]|Server version: 10\.[2-3]
@@ -292,17 +292,17 @@ MDEV-24724:
 =~ Assertion \`templ->mbmaxlen > templ->mbminlen \|\| templ->mysql_col_len == len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0)'|Assertion \`len \* templ->mbmaxlen >= templ->mysql_col_len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0) \|\| templ->rec_field_is_prefix'
 =~ row_sel_field_store_in_mysql_format_func
 MDEV-24714:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ strmake
 =~ innobase_strnxfrm
 =~ fts_select_index_by_range
 MDEV-24714:
-=~ signal
+=~ signal [16]
 =~ table_name_t::dblen|memcpy
 =~ fts_get_table_name
 =~ fts_sync_index
 MDEV-24714:
-=~ signal
+=~ signal [16]
 =~ __stack_chk_fail
 =~ fts_sync_index
 MDEV-24713:
@@ -354,26 +354,26 @@ MDEV-24693:
 =~ fts_optimize_create_msg|fts_trx_create
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24686:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ sortcmp_lex_string
 =~ event_basic_identifier_equal
 =~ Event_queue
 MDEV-24686:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Event_queue::get_top_for_execution_if_time
 =~ Event_scheduler::run
 MDEV-24686:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ event_queue_element_compare_q
 =~ queue_insert
 =~ Event_queue::update_event|Event_queue::create_event
 MDEV-24686:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ event_basic_identifier_equal
 =~ Event_queue::find_n_remove_event
 =~ Event_queue::drop_event
 MDEV-24683:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Binary_string::copy
 =~ user_var_entry::val_str
 =~ table_uvar_by_thread::materialize
@@ -382,7 +382,7 @@ MDEV-24680:
 =~ row_ins_check_foreign_constraint
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24665:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ my_timestamp_from_binary|Field_newdate::get_TIME|Field_datetimef::get_TIME
 =~ Field::validate_value_in_record_with_warn
 =~ TABLE::validate_default_values_of_unset_fields
@@ -394,7 +394,7 @@ MDEV-24665:
 =~ TABLE::validate_default_values_of_unset_fields
 =~ vcols|FeatureUsage detected virtual columns
 MDEV-24665:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Field_.*::val_.*
 =~ Column_definition::Column_definition
 =~ mysql_prepare_alter_table
@@ -430,7 +430,7 @@ MDEV-24656:
 =~ dtuple_check_typed
 =~ mysql_load|row_insert_for_mysql
 MDEV-24656:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Field::is_null_in_record
 =~ TABLE::validate_default_values_of_unset_fields
 =~ mysql_load|mysql_insert
@@ -439,40 +439,40 @@ MDEV-24656:
 =~ dtuple_get_nth_field
 =~ mysql_load|row_insert_for_mysql
 MDEV-24656:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ row_mysql_store_col_in_innobase_format
 =~ row_insert_for_mysql
 =~ mysql_load
 MDEV-24655:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Field::cmp_binary_offset|READ of size
 =~ compare_record
 =~ mysql_update
 MDEV-24655:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ row_sel_store_mysql_field_func
 =~ row_sel_store_mysql_rec
 =~ mysql_update
 MDEV-24655:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Field::is_null_in_record
 =~ create_tmp_table
 =~ setup_sj_materialization_part1
 =~ make_outerjoin_info
 MDEV-24646:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Field_blob::pack
 =~ THD::binlog_update_row
 =~ Version: '10\.3|Server version: 10\.3
 MDEV-24644:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ check_key_in_list
 =~ Item_func_json_keys::val_str
 MDEV-24640:
 =~ Unknown key id 1. Can't continue!
 =~ marked as crashed and should be repaired|Failed to flush data or index file|Protocol::end_statement(): Assertion \`0'|Diagnostics_area::set_ok_status(ulonglong, ulonglong, const char\*): Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'|Assertion \`! is_set() \|\| m_can_overwrite_status'
 MDEV-24633:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ my_mb_wc_.*|my_utf8_uni
 =~ get_first_nonspace
 =~ Item_func_json_merge_patch
@@ -482,7 +482,7 @@ MDEV-24625:
 =~ Assertion \`((__builtin_expect(((WSREP_ON_) != 0),0) && this->variables\.wsrep_on) && wsrep_emulate_bin_log) \|\| mysql_bin_log\.is_open()'|Assertion \`Count >= rest_length'|Assertion \`is_open()'||Assertion \`((thd && (__builtin_expect(((WSREP_ON_) != 0),0) && thd->variables\.wsrep_on)) && wsrep_emulate_bin_log) \|\| mysql_bin_log\.is_open()'
 =~ THD::binlog_update_row|THD::binlog_write_row|THD::binlog_delete_row|_my_b_write|MYSQL_BIN_LOG::trx_group_commit_leader|MYSQL_BIN_LOG::flush_and_set_pending_rows_event
 MDEV-24620:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ rec_init_offsets_comp_ordinary
 =~ rec_copy_prefix_to_dtuple
 =~ dict_index_build_data_tuple
@@ -496,7 +496,7 @@ MDEV-24585:
 =~ json_nice
 =~ Item_func_json_insert::val_str
 MDEV-24583:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ create_tmp_table|field_conv_memcpy
 =~ select_union::create_result_table|select_unit::create_result_table
 MDEV-24583:
@@ -513,7 +513,7 @@ MDEV-24583:
 =~ ha_innobase::position
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24583:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ THD::is_error
 =~ evaluate_join_record
 =~ mysql_select
@@ -522,7 +522,7 @@ MDEV-24583:
 =~ que_thr_move_to_run_state_for_mysql
 =~ mysql_delete
 MDEV-24583:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Index_statistics::avg_frequency_is_inited
 =~ set_statistics_for_table
 =~ mysql_delete
@@ -532,12 +532,12 @@ MDEV-24583:
 =~ save_in_field_default_value
 =~ fill_record_n_invoke_before_triggers
 MDEV-24583:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Field::set_notnull
 =~ TABLE::update_virtual_field
 =~ innobase_get_computed_value
 MDEV-24583:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ innobase_get_computed_value
 =~ row_upd_store_v_row
 =~ row_upd_del_mark_clust_rec
@@ -569,7 +569,7 @@ MDEV-24529:
 =~ opt_trace_print_expanded_query
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-24522:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ DsMrr_impl::dsmrr_next
 =~ QUICK_RANGE_SELECT::get_next
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
@@ -585,7 +585,7 @@ MDEV-24521:
 =~ InnoDB: Flagged corruption of \`FTS_DOC_ID_INDEX\` in table .* in CHECK TABLE; Wrong count
 =~ For InnoDB SYSTEM VERSIONED ROW_FORMAT=Dynamic .* : error : Corrupt
 MDEV-24519:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Charset::set_charset
 =~ String::copy
 =~ Item::remove_eq_conds
@@ -614,7 +614,7 @@ MDEV-24381:
 =~ ha_innobase::commit_inplace_alter_table
 =~ Version: '10\.[2-4]
 MDEV-24349:
-=~ AddressSanitizer|signal|Assertion \`name\.length == strlen(name\.str)'
+=~ AddressSanitizer|signal [16]|Assertion \`name\.length == strlen(name\.str)'
 =~ get_quote_char_for_identifier|Item::print_item_w_name
 =~ st_select_lex::print
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
@@ -623,7 +623,7 @@ MDEV-24283:
 =~ ha_partition::handle_ordered_index_scan
 =~ ha_partition::common_first_last
 MDEV-24256:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ SQL_SELECT::cleanup
 =~ JOIN::make_range_rowid_filters
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
@@ -637,7 +637,7 @@ MDEV-24179:
 =~ fill_schema_table_by_open
 MDEV-24174:
 =~ The table .* is full
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ mi_extra
 =~ ha_partition::loop_extra_alter
 =~ Version: '10\.2|Server version: 10\.2
@@ -650,12 +650,12 @@ MDEV-24112:
 =~ json_find_path
 =~ Item_func_json_array_append::val_str
 MDEV-24112:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ json_read_string_const_chr
 =~ json_find_path
 =~ Item_func_json_array_append::val_str
 MDEV-24095:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ json_path_parts_compare
 =~ Item_func_json_extract::read_json
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
@@ -668,12 +668,12 @@ MDEV-23984:
 =~ Item_result_field::get_tmp_field_src
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-23956:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ myrocks::ha_rocksdb::index_first
 =~ myrocks::ha_rocksdb::inplace_populate_sk
 MDEV-23952:
 =~ RocksDB: Failed to get column family info from index id
-=~ signal 6
+=~ signal [16]
 =~ myrocks::Rdb_dict_manager::log_start_drop_index
 MDEV-23949:
 =~ Assertion \`0'
@@ -691,21 +691,21 @@ MDEV-23919:
 =~ Version: '10\.[3-4]
 !~ Prepared_statement::execute|sp_head::execute
 MDEV-23898:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ THD::is_error
 =~ TABLE::verify_constraints
 =~ select_insert::send_data
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 =~ sequences|FeatureUsage detected sequences
 MDEV-23898:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ THD::is_error
 =~ ha_myisam::enable_indexes
 =~ select_insert::prepare_eof
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 =~ sequences|FeatureUsage detected sequences
 MDEV-23898:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ handler::increment_statistics
 =~ handler::ha_rnd_next
 =~ rr_sequential
@@ -724,13 +724,13 @@ MDEV-23898:
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 =~ sequences|FeatureUsage detected sequences
 MDEV-23896:
-=~ AddressSanitizer|Invalid read of size|signal
+=~ AddressSanitizer|Invalid read of size|signal [16]
 =~ same_index_prefix
 =~ get_best_index_intersect
 =~ SQL_SELECT::test_quick_select
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-23895:
-=~ AddressSanitizer|Invalid write of size|signal
+=~ AddressSanitizer|Invalid write of size|signal [16]
 =~ Item_func_rpad::val_str
 =~ Item_str_func::val_int
 MDEV-23895:
@@ -794,12 +794,12 @@ MDEV-23828:
 =~ Item_in_subselect::setup_mat_engine
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-23812:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ get_constant_key_infix
 =~ get_best_group_min_max
 =~ SQL_SELECT::test_quick_select
 MDEV-23809:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ JOIN_CACHE::free
 =~ st_join_table::cleanup
 =~ JOIN::destroy
@@ -809,7 +809,7 @@ MDEV-23809:
 =~ JOIN::make_aggr_tables_info
 =~ Version: '10\.2
 MDEV-23809:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ copy_fields
 =~ end_write
 =~ sub_select_postjoin_aggr
@@ -819,7 +819,7 @@ MDEV-23800:
 =~ convert_const_to_int
 =~ Item_func::convert_const_compared_to_int_field
 MDEV-23797:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ create_internal_tmp_table
 =~ select_unit_ext::unfold_record
 =~ mysql_union
@@ -837,7 +837,7 @@ MDEV-23797:
 =~ INTERSECT ALL
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-23794:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ bitmap_bits_set|bitmap_is_set
 =~ pack_row|max_row_length
 =~ THD::binlog_write_row
@@ -848,12 +848,12 @@ MDEV-23742:
 =~ store_value_ptr
 =~ Version: '10\.2
 MDEV-23728:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ st_key::actual_rec_per_key
 =~ best_access_path
 =~ best_extension_by_limited_search
 MDEV-23724:
-=~ signal|AddressSanitizer|Assertion \`primary_file->inited == handler::INDEX \|\| (primary_file->inited == handler::RND && secondary_file && secondary_file->inited == handler::INDEX)'
+=~ signal [16]|AddressSanitizer|Assertion \`primary_file->inited == handler::INDEX \|\| (primary_file->inited == handler::RND && secondary_file && secondary_file->inited == handler::INDEX)'
 =~ DsMrr_impl::dsmrr_init
 =~ ha_partition::multi_range_read_init|ha_innobase::multi_range_read_init
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
@@ -864,11 +864,11 @@ MDEV-23687:
 =~ Extract_source::Extract_source
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-23686:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ get_foreign_key_info
 =~ ha_innobase::get_parent_foreign_key_list|ha_innobase::get_foreign_key_list
 MDEV-23679:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ base_list_iterator::next_fast
 =~ sp_instr_stmt::exec_core
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
@@ -923,7 +923,7 @@ MDEV-23500:
 =~ my_ok
 =~ multi_update::send_eof
 MDEV-23453:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Item_field::type_handler
 =~ Temporal_with_date::make_from_item
 =~ sp_head::execute
@@ -936,7 +936,7 @@ MDEV-23444:
 =~ bin2decimal
 =~ Field_new_decimal::val_decimal
 MDEV-23443:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ _ma_unique_comp
 =~ maria_update
 =~ select_unit_ext::send_eof
@@ -948,7 +948,7 @@ MDEV-23408:
 =~ Locked_tables_list::init_locked_tables
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-23391:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ close_thread_table
 =~ drop_open_table
 =~ select_create::abort_result_set
@@ -958,22 +958,22 @@ MDEV-23391:
 =~ Locked_tables_list::unlock_locked_tables|drop_open_table
 =~ select_create::abort_result_set
 MDEV-23390:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ myrocks::ha_rocksdb::update_stats
 =~ ha_partition::info
 MDEV-23385:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Item_in_subselect::inject_in_to_exists_cond
 =~ JOIN::choose_tableless_subquery_plan
 =~ sp_instr_stmt::exec_core|Prepared_statement::execute
 =~ Version: '10\.[1-3]
 MDEV-23384:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ subselect_indexsubquery_engine::print
 =~ With_element::print
 =~ Json_writer::add_str
 MDEV-23383:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ JOIN_CACHE::get_offset
 =~ JOIN_CACHE::get_rec_ref
 =~ JOIN_CACHE_BNL::read_next_candidate_for_match
@@ -983,13 +983,13 @@ MDEV-23365:
 =~ Sql_cmd_truncate_table::execute
 =~ Version: '10\.[1-2]
 MDEV-23364:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Field::is_null
 =~ Protocol::send_result_set_row
 =~ select_result_sink::send_data_with_check
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-23363:
-=~ signal|AddressSanitizer|Assertion \`length < 0xFFFFFFFFL'
+=~ signal [16]|AddressSanitizer|Assertion \`length < 0xFFFFFFFFL'
 =~ String::copy|Field::is_null
 =~ get_field_default_value
 =~ get_schema_column_record
@@ -1003,7 +1003,7 @@ MDEV-23316:
 =~ Diagnostics_area::sql_errno
 =~ fill_schema_table_by_open
 MDEV-23315:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ subselect_single_select_engine::exec
 =~ Item_func_conv_charset::val
 =~ Prepared_statement::execute|sp_head::execute
@@ -1043,12 +1043,12 @@ MDEV-23286:
 =~ Inet6::cmp
 =~ Type_handler_inet6::stored_field_cmp_to_item
 MDEV-23276:
-=~ signal|AddressSanitizer|Assertion \`mutex->__data\.__owner == 0'
+=~ signal [16]|AddressSanitizer|Assertion \`mutex->__data\.__owner == 0'
 =~ simple_key_cache_read|simple_key_cache_write
 =~ _mi_fetch_keypage|_mi_write_keypage
 MDEV-23276:
 =~ mutex keycache->cache_lock.*mf_keycache\.c
-=~ signal
+=~ signal [16]
 =~ end_simple_key_cache
 =~ repartition_key_cache
 MDEV-23275:
@@ -1094,7 +1094,7 @@ MDEV-23218:
 =~ InnoDB: Flagged corruption of .* in CHECK TABLE; Wrong count
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-23215:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ my_hash_first|flush_simple_key_cache_blocks
 =~ close_system_tables|close_thread_tables|ha_partition::extra|close_cached_tables|intern_close_table|purge_tables|copy_data_between_tables
 MDEV-23215:
@@ -1102,7 +1102,7 @@ MDEV-23215:
 =~ repartition_key_cache
 =~ Version: '10\.[1-3]
 MDEV-23213:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ maria_status|ha_heap::info
 =~ opt_sum_query
 =~ Prepared_statement::execute|sp_head::execute
@@ -1115,13 +1115,13 @@ MDEV-23210:
 =~ Assertion \`(length % 4) == 0'
 =~ my_lengthsp_utf32
 MDEV-23204:
-=~ signal|AddressSanitizer|Assertion \`bit < (map)->n_bits'
+=~ signal [16]|AddressSanitizer|Assertion \`bit < (map)->n_bits'
 =~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan|DsMrr_impl::dsmrr_next
 =~ JOIN_TAB_SCAN_MRR::next
 =~ JOIN_CACHE::join_matching_records
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-23202:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ maria_status|heap_info|heap_scan_init
 =~ ha_maria::info|TABLE_LIST::fetch_number_of_rows|ha_heap::info|ha_heap::rnd_init|handler::ha_rnd_init
 =~ sp_instr_stmt::exec_core|Prepared_statement::execute
@@ -1134,7 +1134,7 @@ MDEV-23187:
 =~ json_find_path
 =~ Item_func_json_value::val_str|Item_func_json_array_append::val_str
 MDEV-23184:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ THD::killed_errno
 =~ Version: '10\.1
 MDEV-23184:
@@ -1143,7 +1143,7 @@ MDEV-23184:
 =~ fill_schema_table_by_open
 =~ Version: '10\.1
 MDEV-23182:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ fix_fields_for_tvc|join_type_handlers_for_tvc
 =~ table_value_constr::prepare
 =~ Prepared_statement|sp_head::execute
@@ -1173,7 +1173,7 @@ MDEV-23150:
 =~ my_strtoll10_mb2
 =~ Converter_strtoll10_with_warn
 MDEV-23149:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ err_conv
 =~ ErrConvString::ptr
 =~ Item_char_typecast::check_truncation_with_warn
@@ -1183,7 +1183,7 @@ MDEV-23146:
 =~ row_search_mvcc
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-23145:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ handler::update_global_table_stats
 =~ close_thread_table
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
@@ -1197,7 +1197,7 @@ MDEV-23132:
 =~ trnman_end_trn
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-23132:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ reset_thd_trn|_ma_reset_trn_for_table
 =~ ma_commit|maria_commit
 =~ Sp_handler::db_find_routine
@@ -1206,12 +1206,12 @@ MDEV-23132:
 =~ ha_maria::close
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-23127:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Query_cache::double_linked_list_exclude|Assertion \`table_block_data->m_cached_query_count >= 0'
 =~ Query_cache::unlink_table
 =~ Query_cache::invalidate_query_block_list
 MDEV-23126:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Query_cache_block::query
 =~ Query_cache::invalidate_query_block_list
 MDEV-23115:
@@ -1235,7 +1235,7 @@ MDEV-23045:
 =~ MYSQL_BIN_LOG::write_transaction_to_binlog
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-23041:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Item_func_set_user_var::update_hash
 =~ TABLE::update_default_fields
 MDEV-23026:
@@ -1251,7 +1251,7 @@ MDEV-23026:
 =~ open_purge_table
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-23011:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ row_create_prebuilt
 =~ ha_innobase::open
 =~ open_and_process_table|open_table_from_share
@@ -1296,7 +1296,7 @@ MDEV-22883:
 =~ get_all_tables
 =~ Version: '10\.[2-9]|Server version: 10\.[2-9]
 MDEV-22883:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Trigger::get_trigger_info
 =~ get_schema_triggers_record
 =~ Version: '10\.[2-9]|Server version: 10\.[2-9]
@@ -1315,7 +1315,7 @@ MDEV-22855:
 =~ btr_node_ptr_max_size
 =~ btr_cur_search_to_nth_level_func
 MDEV-22846:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ handler_index_cond_check
 =~ row_search_idx_cond_check
 =~ rr_sequential
@@ -1326,13 +1326,13 @@ MDEV-22832:
 =~ TRP_GROUP_MIN_MAX::make_quick
 =~ get_quick_record_count
 MDEV-22825:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Bitmap<64u>::merge
 =~ add_key_field
 =~ update_ref_and_keys
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22772:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Item_null_result::field_type
 =~ cast_to_int_type|Item::get_date_with_conversion|cmp_item_datetime::store_value|Item::val_int_unsigned_typecast
 =~ ROLLUP
@@ -1358,18 +1358,18 @@ MDEV-22754:
 =~ optimize_inner
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22732:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ create_tmp_table
 =~ multi_update::initialize_tables
 =~ JOIN::optimize_stage2
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22703:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ rec_convert_dtuple_to_rec_comp|rec_convert_dtuple_to_rec_old
 =~ page_cur_tuple_insert
 =~ row_ins_index_entry_step
 MDEV-22695:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ heap_rnext
 =~ ha_heap::index_next
 =~ QUICK_RANGE_SELECT
@@ -1421,7 +1421,7 @@ MDEV-22661:
 =~ Datetime::is_valid_datetime_slow
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22660:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Assertion \`row_end'|is_versioning_timestamp|Vers_type_timestamp::check_sys_fields|Vers_parse_info::check_sys_fields
 =~ Table_scope_and_contents_source_st::check_fields
 =~ mysql_alter_table
@@ -1447,22 +1447,22 @@ MDEV-22601:
 =~ sequence
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22600:
-=~ Assertion \`prebuilt->mysql_prefix_len <= prebuilt->mysql_row_len'|AddressSanitizer|signal
+=~ Assertion \`prebuilt->mysql_prefix_len <= prebuilt->mysql_row_len'|AddressSanitizer|signal [16]
 =~ row_sel_dequeue_cached_row_for_mysql|row_sel_store_mysql_field
 =~ row_search_mvcc
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22600:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ row_mysql_store_col_in_innobase_format
 =~ row_insert_for_mysql
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22600:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ Field::is_null_in_record
 =~ calc_row_difference|Column_definition::Column_definition
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22600:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ TABLE::init
 =~ open_table|open_temporary_table
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
@@ -1513,7 +1513,7 @@ MDEV-22445:
 =~ trx_start_if_not_started_xa_low
 =~ ha_innobase::init_table_handle_for_HANDLER
 MDEV-22444:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Field_iterator_table::create_item
 =~ Field_iterator_table_ref::create_item
 =~ insert_fields
@@ -1531,7 +1531,7 @@ MDEV-22440: [thd->transaction.stmt.*is_empty() || / GRANT / KILL_SERVER]
 =~ KILL_SERVER|KILL_TIMEOUT|KILL_QUERY
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22435:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ TABLE_SHARE::init_from_sql_statement_string
 =~ discover_assisted
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
@@ -1780,7 +1780,7 @@ MDEV-21812:
 =~ Rows_log_event::unpack_current_row
 =~ Version: '10\.1
 MDEV-21809:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Item_cond::get_mm_tree
 =~ prune_partitions
 =~ mysql_multi_update
@@ -1827,12 +1827,12 @@ MDEV-21650:
 =~ ha_commit_trans
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-21648:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ memmove
 =~ Binary_string::copy|String::copy
 =~ Item_copy_string::copy
 MDEV-21648:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ my_utf16_uni
 =~ my_copy_fix_mb
 =~ String_copier::well_formed_copy
@@ -1961,7 +1961,7 @@ MDEV-21406:
 =~ str_op_with_null_check
 =~ Version: '10\.4|Server version: 10\.4
 MDEV-21373:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ tree_search_next|hp_rb_var_key_length|ha_key_cmp|hp_rb_make_key
 =~ check_one_rb_key
 =~ heap_check_heap
@@ -2015,7 +2015,7 @@ MDEV-21242:
 =~ vcols|FeatureUsage detected virtual columns
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-21218:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Item_equal_iterator<List_iterator_fast, Item>::get_curr_field
 =~ Item_equal::contains
 =~ eliminate_item_equal
@@ -2195,7 +2195,7 @@ MDEV-20640:
 =~ que_thr_step
 =~ Version: '10\.3
 MDEV-20640:
-=~ signal
+=~ signal [16]
 =~ rec_init_offsets_comp_ordinary
 =~ purge_node_t::validate_pcur
 =~ row_purge_del_mark
@@ -2259,7 +2259,7 @@ MDEV-20498:
 =~ ha_partition::copy_partitions
 =~ fast_alter_partition_table
 MDEV-20493:
-=~ signal
+=~ signal [16]
 =~ in Protocol::send_result_set_row
 =~ in select_send::send_data
 =~ in Prepared_statement::execute
@@ -2353,7 +2353,7 @@ MDEV-20325:
 =~ Item_field::fix_outer_field|TABLE_LIST::set_check_materialized
 =~ sp_head::execute|Prepared_statement::execute
 MDEV-20325:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ st_select_lex::mark_as_dependent
 =~ Item_field::fix_outer_field
 =~ sp_head::execute|Prepared_statement::execute
@@ -2656,7 +2656,7 @@ MDEV-19131:
 =~ Assertion \`table->versioned(VERS_TRX_ID) \|\| (table->versioned() && table->s->table_category == TABLE_CATEGORY_TEMPORARY)'
 =~ Field_vers_trx_id::get_date
 MDEV-19091:
-=~ Assertion \`args\[0\] == args\[2\] \|\| thd->stmt_arena->is_stmt_execute()'|AddressSanitizer|signal
+=~ Assertion \`args\[0\] == args\[2\] \|\| thd->stmt_arena->is_stmt_execute()'|AddressSanitizer|signal [16]
 =~ Item_func_nullif::fix_length_and_dec
 =~ Item_func::fix_fields
 MDEV-19075:
@@ -2664,7 +2664,7 @@ MDEV-19075:
 =~ write_block_record
 =~ _ma_write_init_block_record
 MDEV-19067:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ ha_maria::store_lock
 =~ get_lock_data
 =~ mysql_lock_tables
@@ -2819,7 +2819,7 @@ MDEV-18459:
 =~ fil_op_write_log
 =~ fil_name_write
 MDEV-18458:
-=~ signal
+=~ signal [16]
 =~ EVP_MD_CTX_cleanup
 =~ md5_result
 =~ mysql_create_view
@@ -2845,7 +2845,7 @@ MDEV-18441:
 =~ Sql_cmd_alter_table::execute
 =~ ADD .*FOREIGN KEY
 MDEV-18421:
-=~ signal|AddressSanitizer|Assertion \`foreign->foreign_table != __null'
+=~ signal [16]|AddressSanitizer|Assertion \`foreign->foreign_table != __null'
 =~ init_fts_doc_id_for_ref
 =~ row_update_for_mysql
 MDEV-18418:
@@ -2856,17 +2856,17 @@ MDEV-18418:
 =~ Assertion \`mdl_ticket->m_type == MDL_SHARED_UPGRADABLE \|\| mdl_ticket->m_type == MDL_SHARED_NO_WRITE \|\| mdl_ticket->m_type == MDL_SHARED_NO_READ_WRITE \|\| mdl_ticket->m_type == MDL_SHARED_READ \|\| mdl_ticket->m_type == MDL_SHARED_WRITE'
 =~ MDL_context::upgrade_shared_lock
 MDEV-18414:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ my_strtod_int
 =~ Value_source::Converter_strntod::Converter_strntod
 =~ create_sort_index|TABLE::update_virtual_fields
 MDEV-18414:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ ha_partition::return_top_record
 =~ handler::multi_range_read_next
 =~ find_all_keys
 MDEV-18414:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ SORT_FIELD_ATTR::pack_sort_string|my_strnxfrm_simple_internal
 =~ make_packed_sortkey|make_sortkey
 =~ create_sort_index
@@ -2876,7 +2876,7 @@ MDEV-18389:
 =~ ha_innobase::index_type
 =~ fill_schema_table_by_open
 MDEV-18381:
-=~ AddressSanitizer: heap-use-after-free|signal 11|AddressSanitizer: SEGV|signal 11
+=~ AddressSanitizer|signal 11
 =~ ha_innobase::store_lock
 =~ mysql_lock_abort_for_thread
 =~ THD::notify_shared_lock
@@ -2994,7 +2994,7 @@ MDEV-18151:
 =~ IDENTIFIED.*WITH|IDENTIFIED.*VIA
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-18099:
-=~ Assertion \`!rw_lock_own(dict_operation_lock, RW_LOCK_S)'
+=~ Assertion \`!rw_lock_own(dict_operation_lock, RW_LOCK_S)'|Assertion \`!rw_lock_own(&dict_operation_lock, RW_LOCK_S)'
 =~ row_purge
 MDEV-18082:
 =~ Assertion \`! is_set()' failed
@@ -3007,7 +3007,7 @@ MDEV-18047:
 =~ dict_foreign_qualify_index
 =~ innobase_update_foreign
 MDEV-18047:
-=~ got signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ dict_foreign_qualify_index|dict_index_get_nth_field
 =~ innobase_update_foreign_try|dict_load_foreigns|innobase_update_foreign_cache
 MDEV-18013:
@@ -3036,7 +3036,7 @@ MDEV-17974:
 =~ mysql_create_user
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-17971:
-=~ Assertion \`table_ref->table \|\| table_ref->view'|signal|AddressSanitizer
+=~ Assertion \`table_ref->table \|\| table_ref->view'|signal [16]|AddressSanitizer
 =~ Field_iterator_table_ref::set_field_iterator|Field_iterator_table::set
 =~ insert_fields
 =~ setup_wild
@@ -3072,7 +3072,7 @@ MDEV-17843:
 =~ lock_rec_queue_validate
 =~ innodb_show_status|SHOW ENGINE INNODB STATUS|SHOW ENGINE InnoDB STATUS|srv_monitor_task|srv_printf_innodb_monitor
 MDEV-17834:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ row_upd_build_difference_binary
 =~ row_ins_index_entry
 =~ vcols|FeatureUsage detected virtual columns
@@ -3082,7 +3082,7 @@ MDEV-17818:
 =~ open_table_from_share
 =~ open_temporary_table
 MDEV-17783:
-=~ AddressSanitizer: stack-buffer-overflow|signal
+=~ AddressSanitizer: stack-buffer-overflow|signal [16]
 =~ table_cond_selectivity|best_access_path
 =~ best_extension_by_limited_search
 =~ greedy_search
@@ -3100,13 +3100,13 @@ MDEV-17760:
 =~ ROLLUP
 =~ Version: '10\.[0-1]|Version: '5\.5
 MDEV-17754:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal [16]
 =~ _ma_block_start_trans
 =~ thr_multi_lock
 =~ mysql_lock_tables
 =~ open_and_lock_tables
 MDEV-17754:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ l_find
 =~ initialize_bucket
 =~ lf_hash_search
@@ -3114,7 +3114,7 @@ MDEV-17749:
 =~ Assertion \`thd->transaction.*stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
 MDEV-17749:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ TABLE::default_column_bitmaps
 =~ handler::ha_reset
 =~ THD::mark_tmp_table_as_free_for_reuse
@@ -3203,7 +3203,7 @@ MDEV-17464:
 =~ InnoDB: Cannot rename file '.*/.*\.ibd' to '.*/.*\.ibd'
 =~ 1025: Error on rename of
 MDEV-17435:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ st_select_lex::get_free_table_map
 =~ mysql_derived_merge
 =~ sp_head::execute
@@ -3311,7 +3311,7 @@ MDEV-16794:
 =~ mysql_inplace_alter_table
 =~ Version: '10\.[0-1]
 MDEV-16789:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ insert_fields
 =~ setup_wild
 =~ sp_head::execute
@@ -3330,7 +3330,7 @@ MDEV-16698:
 =~ Field_longstr::uncompress
 =~ Field_blob_compressed::val_str
 MDEV-16694:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ multi_update::initialize_tables
 =~ mysql_explain_union
 =~ select_describe
@@ -3373,12 +3373,12 @@ MDEV-16500:
 =~ Version: '10\.1
 MDEV-16407:
 =~ Error: Freeing overrun buffer
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ in MDL_key::mdl_key_init
 =~ Table_triggers_list::add_tables_and_routines_for_triggers
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-16407:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ free_root
 =~ sp_head::operator delete
 =~ Table_triggers_list
@@ -3419,7 +3419,7 @@ MDEV-16128:
 =~ setup_without_group
 =~ Prepared_statement::execute|sp_instr_stmt::execute
 MDEV-16128:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Item_func::print_args
 =~ Item_in_optimizer::print
 =~ Prepared_statement::execute|sp_instr_stmt::execute
@@ -3530,7 +3530,7 @@ MDEV-15011:
 =~ find_all_keys
 =~ Version: '10\.[0-2]|Version: '5\.5
 MDEV-15011:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ test_if_reopen
 =~ mi_create|mi_open
 =~ Version: '10\.[0-2]|Version: '5\.5
@@ -3551,7 +3551,7 @@ MDEV-14996:
 =~ Status: KILL_CONNECTION|Status: KILL_SERVER|unlink_thd
 =~ Version: '10\.1
 MDEV-14894: [remove_from_locked_mutex]
-=~ signal
+=~ signal [16]
 =~ free_memory
 =~ remove_from_locked_mutex
 =~ my_hash_iterate
@@ -3635,7 +3635,7 @@ MDEV-10826:
 =~ Assertion \`thd->get_stmt_da()->is_eof()'
 =~ Query_cache::end_of_result
 MDEV-10826:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ Query_cache::double_linked_list_exclude
 =~ Query_cache::free_query
 MDEV-10557:
@@ -3644,7 +3644,7 @@ MDEV-10557:
 =~ mysql_delete|create_sort_index|mysql_update
 =~ Version: '10\.[0-2]
 MDEV-9137:
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ w_search
 =~ in _ma_ck_real_write_btree
 =~ _ma_ft_store
@@ -3814,7 +3814,7 @@ TODO-842: [wsrep::transaction::after_rollback]
 TODO-842: [long semaphore wait]
 =~ InnoDB: A long semaphore wait
 =~ Mutex DICT_SYS created|Mutex BUF_POOL created
-=~ signal 11|signal 6
+=~ signal [16]
 =~ will exit with exit status STATUS_SERVER_DEADLOCKED|will exit with exit status STATUS_INTERNAL_ERROR
 TODO-842: [thd->in_sub_stmt]
 =~ Assertion \`! thd->in_sub_stmt'
@@ -3826,11 +3826,11 @@ TODO-842: [m_status == DA_OK_BULK - ignore for now]
 =~ my_ok
 =~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: .*COMMIT|Query .*: FLUSH|close failed in file object destructor|Query .*: .*RESET.* QUERY CACHE|Status: KILL_TIMEOUT|Status: KILL_QUERY
 TODO-842: [PROFILING]
-=~ signal
+=~ signal [16]
 =~ free_memory|_int_free
 =~ PROFILING::finish_current_query_impl
 TODO-842: [free_memory]
-=~ signal
+=~ signal [16]
 =~ free_memory
 =~ sf_free
 =~ delete_dynamic|closefrm|free_table_share|_ma_end_block_record|info_remove_lock|acl_reload
@@ -3898,7 +3898,7 @@ TODO-842: [mariabackup - error 188]
 =~ error : Unknown - internal error 188 during operation
 =~ BACKUP_FAILURE
 TODO-842: [fts_is_sync_needed]
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ fts_is_sync_needed
 =~ fts_optimize_callback
 =~ tpool::task_group::execute
@@ -3927,7 +3927,7 @@ TODO-842: [MDL_ticket::create]
 ##############################################################################
 
 MDEV-24972: [MyISAM unique blobs]
-=~ Table .* is marked as crashed and should be repaired 
+=~ Table .* is marked as crashed and should be repaired
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 =~ Version: '10\.4|Server version: 10\.4
 =~ FeatureUsage detected unique blobs
@@ -3937,7 +3937,7 @@ MDEV-24877: [debug_assert_on_not_freed_memory]
 # myisam_data_pointer_size has been moved to non-dynamic test settings,
 # so it should not be happening anymore
 MDEV-24174: [myisam_data_pointer_size - partition]
-=~ signal|AddressSanitizer
+=~ signal [16]|AddressSanitizer
 =~ find_all_keys
 =~ copy_data_between_tables
 MDEV-23398: [marked as crashed and last (automatic?) repair failed]
