@@ -35,6 +35,7 @@ my $server_version;
 
 my %usage_check= (
   app_periods => \&check_for_app_periods,
+  compressed_cols => \^check_for_compressed_cols,
   gis => \&check_for_gis,
   perfschema => \&check_for_perfschema,
   sequences => \&check_for_sequences,
@@ -89,6 +90,14 @@ sub check_for_vcols {
   my $reporter= shift;
   if ($features_used{vcols}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE IS_GENERATED='ALWAYS'")) {
     say("FeatureUsage detected virtual columns in the database");
+  }
+}
+
+sub check_for_compressed_cols {
+  return if $server_version lt '1003';
+  my $reporter= shift;
+  if ($features_used{compressed_cols}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_TYPE LIKE '%COMPRESSED%'")) {
+    say("FeatureUsage detected compressed columns in the database");
   }
 }
 
