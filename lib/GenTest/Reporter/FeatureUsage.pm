@@ -29,6 +29,7 @@ use GenTest::Executor::MySQL;
 use DBI;
 use Data::Dumper;
 use POSIX;
+use Try::Tiny;
 
 my $dbh;
 my $server_version;
@@ -66,47 +67,29 @@ sub report {
   return STATUS_OK;
 }
 
-sub refresh_dbh {
-  my $reporter= shift;
-  unless ($dbh) {
-    $dbh = DBI->connect($reporter->dsn());
-    unless ($dbh) {
-      sayError("FeatureUsage reporter could not connect to the server. Status will be set to STATUS_INTERNAL_ERROR");
-      return undef;
-    }
-  }
-  return $dbh;
-}
-
 ##########
 # Checkers
 
 sub check_for_sequences {
   return if $server_version lt '1003';
   my $reporter= shift;
-  if ($dbh= $reporter->refresh_dbh()) {
-    if ($features_used{sequences}= $dbh->selectrow_arrayref("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='SEQUENCE'")->[0]) {
-      say("FeatureUsage detected sequences in the database");
-    }
+  if ($features_used{sequences}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='SEQUENCE'")) {
+    say("FeatureUsage detected sequences in the database");
   }
 }
 
 sub check_for_unique_blobs {
   return if $server_version lt '1004';
   my $reporter= shift;
-  if ($dbh= $reporter->refresh_dbh()) {
-    if ($features_used{unique_blobs}= $dbh->selectrow_arrayref("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS constr JOIN INFORMATION_SCHEMA.STATISTICS stat ON ( constr.TABLE_SCHEMA = stat.TABLE_SCHEMA AND constr.TABLE_NAME = stat.TABLE_NAME AND constr.CONSTRAINT_NAME = stat.INDEX_NAME) JOIN INFORMATION_SCHEMA.COLUMNS cols ON ( stat.TABLE_SCHEMA = cols.TABLE_SCHEMA AND stat.TABLE_NAME = cols.TABLE_NAME AND stat.COLUMN_NAME = cols.COLUMN_NAME ) where constr.CONSTRAINT_TYPE = 'UNIQUE' AND stat.INDEX_TYPE = 'HASH' AND cols.DATA_TYPE in ('varchar','varbinary','tinyblob','mediumblob','blob','longblob','tinytext','mediumtext','text','longtext')")->[0]) {
-      say("FeatureUsage detected unique blobs in the database");
-    }
+  if ($features_used{unique_blobs}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS constr JOIN INFORMATION_SCHEMA.STATISTICS stat ON ( constr.TABLE_SCHEMA = stat.TABLE_SCHEMA AND constr.TABLE_NAME = stat.TABLE_NAME AND constr.CONSTRAINT_NAME = stat.INDEX_NAME) JOIN INFORMATION_SCHEMA.COLUMNS cols ON ( stat.TABLE_SCHEMA = cols.TABLE_SCHEMA AND stat.TABLE_NAME = cols.TABLE_NAME AND stat.COLUMN_NAME = cols.COLUMN_NAME ) where constr.CONSTRAINT_TYPE = 'UNIQUE' AND stat.INDEX_TYPE = 'HASH' AND cols.DATA_TYPE in ('varchar','varbinary','tinyblob','mediumblob','blob','longblob','tinytext','mediumtext','text','longtext')")) {
+    say("FeatureUsage detected unique blobs in the database");
   }
 }
 
 sub check_for_vcols {
   my $reporter= shift;
-  if ($dbh= $reporter->refresh_dbh()) {
-    if ($features_used{vcols}= $dbh->selectrow_arrayref("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE IS_GENERATED='ALWAYS'")->[0]) {
-      say("FeatureUsage detected virtual columns in the database");
-    }
+  if ($features_used{vcols}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE IS_GENERATED='ALWAYS'")) {
+    say("FeatureUsage detected virtual columns in the database");
   }
 }
 
@@ -147,16 +130,36 @@ sub check_for_perfschema {
 
 sub check_status_var {
   my ($reporter, $var)= @_;
-  if ($dbh= $reporter->refresh_dbh()) {
-    return $dbh->selectrow_arrayref("SELECT VARIABLE_VALUE FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE VARIABLE_NAME='".$var."'")->[0];
-  }
+  return $reporter->getval("SELECT VARIABLE_VALUE FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE VARIABLE_NAME='".$var."'");
 }
 
 sub check_system_var {
   my ($reporter, $var)= @_;
-  if ($dbh= $reporter->refresh_dbh()) {
-    return $dbh->selectrow_arrayref("SELECT IF(VARIABLE_VALUE = 'OFF',0,1) FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES WHERE VARIABLE_NAME='".$var."'")->[0];
+  return $reporter->getval("SELECT IF(VARIABLE_VALUE = 'OFF',0,1) FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES WHERE VARIABLE_NAME='".$var."'");
+}
+
+sub getval {
+  my ($reporter, $query)= @_;
+  try {
+    if ($dbh= $reporter->refresh_dbh()) {
+      return $dbh->selectrow_arrayref($query)->[0];
+    }
+  } catch {
+    sayWarning("FeatureUsage: $_");
+    return undef;
   }
+}
+
+sub refresh_dbh {
+  my $reporter= shift;
+  unless ($dbh) {
+    $dbh = DBI->connect($reporter->dsn(), undef, undef, { RaiseError => 1, PrintError => 0 });
+    unless ($dbh) {
+      sayError("FeatureUsage reporter could not connect to the server. Status will be set to STATUS_INTERNAL_ERROR");
+      return undef;
+    }
+  }
+  return $dbh;
 }
 
 # End of checkers/helpers
