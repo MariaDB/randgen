@@ -8,7 +8,7 @@ MDEV-25028:
 =~ Assertion \`sl->join == 0'
 =~ reinit_stmt_before_use
 =~ Prepared_statement::execute
-=~ INSERT.*RETURNING|REPLACE.*RETURNING
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25028:
 =~ AddressSanitizer|signal 11
 =~ base_list_iterator::next
