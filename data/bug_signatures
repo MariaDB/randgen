@@ -118,7 +118,7 @@ MDEV-24925:
 MDEV-24909:
 =~ STATUS_SERVER_DEADLOCKED
 =~ Deadlock reporter:.* declaring deadlock at DSN
-=~ Deadlock reporter detected stalled query .*JSON_
+=~ Deadlock reporter detected stalled query: .*JSON_
 MDEV-24907:
 =~ signal [16]|AddressSanitizer
 =~ Item_field::replace_equal_field
@@ -3354,9 +3354,9 @@ MDEV-16699:
 =~ FeatureUsage detected compressed columns
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-16698:
-=~ AddressSanitizer: heap-use-after-free|signal 11
+=~ AddressSanitizer|signal 11
 =~ Field_longstr::uncompress
-=~ Field_blob_compressed::val_str
+=~ Field_blob_compressed::val_.*
 MDEV-16694:
 =~ signal [16]|AddressSanitizer
 =~ multi_update::initialize_tables
@@ -3394,6 +3394,10 @@ MDEV-16539: [THD::mark_tmp_table_as_free_for_reuse]
 =~ mark_tmp_table_as_free_for_reuse
 =~ unlock_locked_tables
 =~ Status: KILL_TIMEOUT|Status: KILL_SERVER
+MDEV-16501:
+=~ InnoDB: Failing assertion: !strcmp(from, s)
+=~ dict_mem_table_col_rename
+=~ Version: '10\.[0-1]
 MDEV-16500:
 =~ Assertion \`user_table->n_def > table->s->fields'
 =~ innobase_get_col_names
@@ -4114,10 +4118,6 @@ MDEV-16728:
 =~ Slave SQL: Error 'ALGORITHM=INPLACE is not supported for this operation. Try ALGORITHM=COPY' on query
 MDEV-16523:
 =~ level_and_file\.second->being_compacted
-MDEV-16501:
-=~ ->coll->strcasecmp
-MDEV-16501:
-=~ in dict_mem_table_col_rename
 MDEV-16184:
 =~ nest->counter > 0
 MDEV-16171:
