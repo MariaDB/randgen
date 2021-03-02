@@ -45,6 +45,11 @@ MDEV-24986:
 =~ Ordered_key::add_key
 =~ subselect_hash_sj_engine
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-24972: [MyISAM unique blobs]
+=~ Table .* is marked as crashed and should be repaired
+=~ will exit with exit status STATUS_DATABASE_CORRUPTION
+=~ Version: '10\.4|Server version: 10\.4
+=~ FeatureUsage detected unique blobs
 MDEV-24958:
 =~ signal [16]|AddressSanitizer
 =~ my_strtod_int
@@ -3945,11 +3950,6 @@ TODO-842: [MDL_ticket::create]
 # Weak matches
 ##############################################################################
 
-MDEV-24972: [MyISAM unique blobs]
-=~ Table .* is marked as crashed and should be repaired
-=~ will exit with exit status STATUS_DATABASE_CORRUPTION
-=~ Version: '10\.4|Server version: 10\.4
-=~ FeatureUsage detected unique blobs
 MDEV-24877: [debug_assert_on_not_freed_memory]
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ THD::~THD
