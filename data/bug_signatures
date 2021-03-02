@@ -4,6 +4,23 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25028:
+=~ Assertion \`sl->join == 0'
+=~ reinit_stmt_before_use
+=~ Prepared_statement::execute
+=~ INSERT.*RETURNING|REPLACE.*RETURNING
+MDEV-25028:
+=~ AddressSanitizer|signal 11
+=~ base_list_iterator::next
+=~ st_select_lex::cleanup
+=~ Prepared_statement::execute
+=~ INSERT.*RETURNING|REPLACE.*RETURNING
+MDEV-25021:
+=~  Assertion \`0'
+=~ Protocol::end_statement
+=~ DELETE.*IGNORE|UPDATE.*IGNORE
+=~ FeatureUsage detected foreign keys
+=~ FeatureUsage detected multi update/delete
 MDEV-25012:
 =~ signal [16]|AddressSanitizer|Assertion \`name'
 =~ find_field_in_tables
