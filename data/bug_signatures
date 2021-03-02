@@ -152,6 +152,10 @@ MDEV-24877:
 =~ Indirect leak
 =~ create_tmp_table
 =~ multi_update::initialize_tables
+MDEV-24877:
+=~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
+=~ THD::~THD
+=~ FeatureUsage detected multi update/delete
 MDEV-24876:
 =~ InnoDB: Failing assertion: lock->lock_word == X_LOCK_DECR
 =~ fts_cache_destroy
@@ -571,13 +575,13 @@ MDEV-24570:
 MDEV-24545:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
-=~ sequences\.yy|alter_table\.yy|FeatureUsage detected sequences
+=~ FeatureUsage detected sequences
 MDEV-24545:
 =~ InnoDB: (1) Table rename would cause two FOREIGN KEY constraints to have the same internal name in case-insensitive comparison
 =~ InnoDB: (2) Table .* exists in the InnoDB internal data dictionary though MySQL is trying to rename table .* to it
 =~ InnoDB: If table .* is a temporary table .* then it can be that there are still queries running on the table
 !~ Version: '.*-debug
-=~ sequences\.yy|alter_table\.yy|FeatureUsage detected sequences
+=~ FeatureUsage detected sequences
 MDEV-24532:
 =~ Assertion \`thd->transaction->stmt\.is_empty()'
 =~ Locked_tables_list::unlock_locked_tables
@@ -719,33 +723,33 @@ MDEV-23898:
 =~ TABLE::verify_constraints
 =~ select_insert::send_data
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ sequences|FeatureUsage detected sequences
+=~ FeatureUsage detected sequences
 MDEV-23898:
 =~ AddressSanitizer|signal [16]
 =~ THD::is_error
 =~ ha_myisam::enable_indexes
 =~ select_insert::prepare_eof
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ sequences|FeatureUsage detected sequences
+=~ FeatureUsage detected sequences
 MDEV-23898:
 =~ AddressSanitizer|signal [16]
 =~ handler::increment_statistics
 =~ handler::ha_rnd_next
 =~ rr_sequential
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ sequences|FeatureUsage detected sequences
+=~ FeatureUsage detected sequences
 MDEV-23898:
 =~ Assertion \`thd->lock == 0'
 =~ lock_tables
 =~ sp_head::execute_trigger
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ sequences|FeatureUsage detected sequences
+=~ FeatureUsage detected sequences
 MDEV-23898:
 =~ Assertion \`inited == NONE \|\| table->open_by_handler'
 =~ handler::ha_external_lock
 =~ sp_head::execute_trigger
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ sequences|FeatureUsage detected sequences
+=~ FeatureUsage detected sequences
 MDEV-23896:
 =~ AddressSanitizer|Invalid read of size|signal [16]
 =~ same_index_prefix
@@ -1467,7 +1471,7 @@ MDEV-22601:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ Can't find record in|Невозможно найти запись в
-=~ sequence
+=~ FeatureUsage detected sequences
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22600:
 =~ Assertion \`prebuilt->mysql_prefix_len <= prebuilt->mysql_row_len'|AddressSanitizer|signal [16]
@@ -2161,7 +2165,7 @@ MDEV-20754:
 MDEV-20750:
 =~ Assertion \`thd->transaction.*stmt.*is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'|Assertion \`thd->transaction.*stmt.*is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'|Assertion \`thd->transaction.*stmt.*is_empty()'|Assertion \`thd->transaction.*stmt.*is_empty()'
 =~ Prepared_statement::prepare|sp_head::execute
-=~ sequence
+=~ FeatureUsage detected sequences
 =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-20737:
@@ -2562,7 +2566,7 @@ MDEV-19400:
 =~ signal 11|AddressSanitizer
 =~ wait_while_table_is_used
 =~ mysql_rm_table_no_locks
-=~ SEQUENCE
+=~ FeatureUsage detected sequences
 MDEV-19394:
 =~ InnoDB: checksum mismatch in tablespace
 =~ InnoDB: Operating system error number 2 in a file operation
@@ -3308,7 +3312,7 @@ MDEV-16929:
 =~ \`thd->transaction.*stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_thread_tables
 =~ mysqld_show_create
-=~ sequence
+=~ FeatureUsage detected sequences
 =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT|close failed in file object destructor
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-16887:
@@ -3409,7 +3413,7 @@ MDEV-16407:
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-16397:
 =~ LOAD DATA.* INFILE .* Can't find record in
-=~ sequence
+=~ FeatureUsage detected sequences
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-16292:
 =~ signal 11|AddressSanitizer
@@ -3950,9 +3954,6 @@ TODO-842: [MDL_ticket::create]
 # Weak matches
 ##############################################################################
 
-MDEV-24877: [debug_assert_on_not_freed_memory]
-=~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
-=~ THD::~THD
 # myisam_data_pointer_size has been moved to non-dynamic test settings,
 # so it should not be happening anymore
 MDEV-24174: [myisam_data_pointer_size - partition]
@@ -3964,7 +3965,7 @@ MDEV-23398: [marked as crashed and last (automatic?) repair failed]
 MDEV-22927: [Can't find record]
 =~ 1032 Can't find record in
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
-=~ sequence
+=~ FeatureUsage detected sequences
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22759: [Record in index was not found on update]
 =~ InnoDB: Record in index .* was not found on update
@@ -3983,7 +3984,7 @@ MDEV-22667: [Index is corrupt; try to repair it]
 MDEV-22601: [Can't find record in]
 =~ Can't find record in|Невозможно найти запись в
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
-=~ sequence
+=~ FeatureUsage detected sequences
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-21781: [EnableOptimizations]
