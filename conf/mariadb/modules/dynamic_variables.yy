@@ -39,6 +39,7 @@ dynvar_global_variable_runtime:
   | INNODB_LOG_CHECKPOINT_NOW= dynvar_boolean
   | BINLOG_COMMIT_WAIT_COUNT= { $prng->arrayElement([1,10,100]) }
   | BINLOG_COMMIT_WAIT_USEC= { $prng->arrayElement([0,1000,1000000,10000000]) }
+  | LOG_SLOW_SLAVE_STATEMENTS= dynvar_boolean
   | RPL_SEMI_SYNC_MASTER_ENABLED= dynvar_boolean
   | RPL_SEMI_SYNC_SLAVE_ENABLED= dynvar_boolean
   | USERSTAT= dynvar_boolean
@@ -141,7 +142,6 @@ dynvar_session_variable:
   | LOG_SLOW_DISABLED_STATEMENTS= { $prng->arrayElement(["''",'sp','slave',"'slave,sp'"]) }
   | LOG_SLOW_FILTER= dynvar_log_slow_filter_value
   | LOG_SLOW_RATE_LIMIT= { $prng->int(1,1000) }
-  | LOG_SLOW_SLAVE_STATEMENTS= dynvar_boolean
   | LOG_SLOW_VERBOSITY= dynvar_log_slow_verbosity_value
   | LOG_WARNINGS= { $prng->int(0,20) }
   | LONG_QUERY_TIME= { $prng->int(0,30) }
