@@ -36,7 +36,9 @@ my $server_version;
 my %usage_check= (
   app_periods => \&check_for_app_periods,
   compressed_cols => \&check_for_compressed_cols,
+  fk => \&check_for_fk,
   gis => \&check_for_gis,
+  multi_upd_del => \&check_for_multi_upd_del,
   perfschema => \&check_for_perfschema,
   sequences => \&check_for_sequences,
   unique_blobs => \&check_for_unique_blobs,
@@ -75,6 +77,13 @@ sub check_for_sequences {
   my $reporter= shift;
   if ($features_used{sequences}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='SEQUENCE'")) {
     say("FeatureUsage detected sequences in the database");
+  }
+}
+
+sub check_for_fk {
+  my $reporter= shift;
+  if ($features_used{fk}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS")) {
+    say("FeatureUsage detected foreign keys in the database");
   }
 }
 
@@ -130,6 +139,12 @@ sub check_for_gis {
 sub check_for_perfschema {
   if ($features_used{perfschema}= $_[0]->check_system_var('performance_schema')) {
     say("FeatureUsage detected performance schema enabled");
+  }
+}
+
+sub check_for_multi_upd_del {
+  if ($features_used{multi_upd_del}= ( $_[0]->check_status_var('Com_delete_multi') or $_[0]->check_status_var('Com_update_multi')) ) {
+    say("FeatureUsage detected multi update/delete");
   }
 }
 
