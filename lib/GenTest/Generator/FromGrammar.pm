@@ -34,8 +34,8 @@ use Cwd;
 use List::Util qw(shuffle); # For some grammars
 use Time::HiRes qw(time);
 
-use constant GENERATOR_MAX_OCCURRENCES	=> 3500;
-use constant GENERATOR_MAX_LENGTH	=> 10000;
+use constant GENERATOR_MAX_OCCURRENCES	=> 10000;
+use constant GENERATOR_MAX_LENGTH	=> 10000000;
 
 my $field_pos;
 my $cwd = cwd();
