@@ -1,5 +1,5 @@
-our ($encryption, $grammars);
-require "$ENV{RQG_HOME}/conf/mariadb/include/encryption_on_off";
+our ($encryption_combinations, $grammars);
+require "$ENV{RQG_HOME}/conf/mariadb/include/parameter_presets";
 require "$ENV{RQG_HOME}/conf/mariadb/include/combo.grammars";
 
 # Disabled to the amount of bugs
@@ -37,7 +37,7 @@ $combinations = [
   # Combo
     $grammars,
   # Encryption
-    $encryption,
+    $encryption_combinations,
   [
     '',
     '--ps-protocol --filter=conf/mariadb/need-reconnect.ff',

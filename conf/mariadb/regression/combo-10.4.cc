@@ -1,5 +1,5 @@
-our ($encryption_options, $grammars);
-require "$ENV{RQG_HOME}/conf/mariadb/include/encryption_on_off";
+our ($all_encryption_options, $grammars);
+require "$ENV{RQG_HOME}/conf/mariadb/include/parameter_presets";
 require "$ENV{RQG_HOME}/conf/mariadb/include/combo.grammars";
 
 $combinations = [
@@ -40,7 +40,7 @@ $combinations = [
     '--redefine=conf/mariadb/modules/dynamic_variables.yy',
     '--ps-protocol --filter=conf/mariadb/need-reconnect.ff',
     '--redefine=conf/mariadb/modules/dynamic_variables.yy --validators=TransformerNoComparator --transformers=ExecuteAsCTE,ExecuteAsExecuteImmediate,ExecuteAsDeleteReturning,ExecuteAsInsertSelect,ExecuteAsUnion,ExecuteAsUpdateDelete,ExecuteAsView,ExecuteAsPreparedTwice,ExecuteAsIntersect,ExecuteAsExcept,EnableOptimizations',
-    $encryption_options
+    $all_encryption_options
   ],
   [
     '',

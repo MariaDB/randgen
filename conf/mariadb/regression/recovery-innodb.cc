@@ -1,8 +1,6 @@
-our ($encryption, $recovery_scenarios, $innodb_pagesizes, $innodb_compression);
-require "$ENV{RQG_HOME}/conf/mariadb/include/encryption_on_off";
+our ($encryption_combinations, $recovery_scenarios, $innodb_pagesize_combinations, $innodb_compression_combinations);
+require "$ENV{RQG_HOME}/conf/mariadb/include/parameter_presets";
 require "$ENV{RQG_HOME}/conf/mariadb/include/recovery.scenarios";
-require "$ENV{RQG_HOME}/conf/mariadb/include/innodb_pagesize";
-require "$ENV{RQG_HOME}/conf/mariadb/include/innodb_compression";
 
 $combinations = [
   [
@@ -23,11 +21,11 @@ $combinations = [
   --scenario-grammar2=conf/mariadb/oltp_and_ddl.yy
   '],
   # Compression
-    $innodb_compression,
+    $innodb_compression_combinations,
   # Pagesize
-    $innodb_pagesizes,
+    $innodb_pagesize_combinations,
   # Encryption
-    $encryption,
+    $encryption_combinations,
   # Scenarios
     $recovery_scenarios,
 ];

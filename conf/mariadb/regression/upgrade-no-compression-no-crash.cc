@@ -1,6 +1,5 @@
-our ($encryption, $innodb_pagesizes, $innodb_compression);
-require "$ENV{RQG_HOME}/conf/mariadb/include/encryption_on_off";
-require "$ENV{RQG_HOME}/conf/mariadb/include/innodb_pagesize";
+our ($encryption_combinations, $innodb_pagesize_combinations, $innodb_compression_combinations);
+require "$ENV{RQG_HOME}/conf/mariadb/include/parameter_presets";
 
 $combinations = [
   [
@@ -20,11 +19,11 @@ $combinations = [
   --scenario-grammar2=conf/mariadb/oltp_and_ddl.yy
   '],
   # Compression
-    $innodb_compression,
+    $innodb_compression_combinations,
   # Pagesize
-    $innodb_pagesizes,
+    $innodb_pagesize_combinations,
   # Encryption
-    $encryption,
+    $encryption_combinations,
   [
     '--scenario=NormalUpgrade --duration=180',
     '--scenario=UndoLogUpgrade --duration=300',

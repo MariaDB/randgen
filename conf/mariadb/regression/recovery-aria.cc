@@ -1,5 +1,5 @@
-our ($encryption);
-require "$ENV{RQG_HOME}/conf/mariadb/include/encryption_on_off";
+our ($encryption_combinations);
+require "$ENV{RQG_HOME}/conf/mariadb/include/parameter_presets";
 
 $combinations = [
   [
@@ -31,5 +31,5 @@ $combinations = [
     '--mysqld=--aria_group_commit=hard --mysqld=--aria_group_commit_interval=1000000',
   ],
   # Encryption
-    $encryption,
+    $encryption_combinations,
 ];

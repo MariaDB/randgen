@@ -1,0 +1,38 @@
+# RQG_HOME must be defined in the environment. But it has to be defined anyway,
+# or the include file won't be found
+
+#########################
+# Server option presets
+#########################
+
+# Data-at-rest encryption
+
+$all_encryption_options= '--mysqld=--innodb-encrypt-tables --mysqld=--innodb-encrypt-log --mysqld=--innodb-encryption-threads=4 --mysqld=--aria-encrypt-tables=1 --mysqld=--encrypt-tmp-disk-tables=1 --mysqld=--encrypt-binlog --mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/data/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management';
+
+$innodb_encryption_options= '--mysqld=--innodb-encrypt-tables --mysqld=--innodb-encrypt-log --mysqld=--innodb-encryption-threads=4 --mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/data/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management';
+
+
+#########################
+# Combinations
+#########################
+
+$encryption_combinations = 
+  [
+    '',
+    $all_encryption_options,
+  ];
+
+$innodb_compression_combinations = 
+  [
+    '--mysqld=--innodb-compression-algorithm=none',
+    '--mysqld=--innodb-compression-algorithm=zlib',
+  ];
+
+$innodb_pagesize_combinations = 
+  [
+    '--mysqld=--innodb-page-size=4K',
+    '--mysqld=--innodb-page-size=8K',
+    '--mysqld=--innodb-page-size=16K',
+    '--mysqld=--innodb-page-size=32K',
+    '--mysqld=--innodb-page-size=64K'
+  ];
