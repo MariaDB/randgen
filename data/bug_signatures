@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25038:
+=~ signal 11|AddressSanitizer
+=~ _ma_remove_table_from_trnman
+=~ wait_while_table_is_used
+=~ Version: '10\.[2-3]|Server version: 10\.[2-3]
 MDEV-25035:
 =~ _db_return_
 =~ JOIN::cleanup
