@@ -656,7 +656,7 @@ MDEV-24467:
 =~ Direct leak of|Memory not freed|blocks are definitely lost
 =~ Binary_string::real_alloc|String::real_alloc
 =~ Field_.*::store|Field_.*::val_.*
-=~ TABLE::update_default_fields|TABLE::update_virtual_fields
+=~ FeatureUsage detected delayed inserts
 MDEV-24434:
 =~ Assertion \`trx->in_rw_trx_list \|\| trx->state == TRX_STATE_NOT_STARTED \|\| trx->state == TRX_STATE_ACTIVE'
 =~ trx_sys_any_active_transactions
@@ -1396,8 +1396,8 @@ MDEV-22768:
 =~ THD::raise_condition
 =~ sql_set_variables
 MDEV-22759:
-=~ InnoDB: Record in index .* was not found on update|InnoDB: tried to purge non-delete-marked record in index .*: tuple:
-=~ Assertion \`0'
+=~ InnoDB: Record in index .* was not found on update|InnoDB: tried to purge non-delete-marked record in index .*: tuple:|FeatureUsage detected unique blobs
+=~ Assertion \`0'|Failing assertion: !cursor->index->is_committed()
 =~ row_upd_sec_index_entry|row_purge_remove_sec_if_poss_leaf
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22757:
@@ -4002,10 +4002,6 @@ MDEV-22759: [Record in index was not found on update]
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22759: [tried to purge non-delete-marked]
 =~ InnoDB: tried to purge non-delete-marked record in index .*: tuple:
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-22759: [cursor->index->is_committed - HASH]
-=~ Record in index .* was not found on update: TUPLE
-=~ Failing assertion: !cursor->index->is_committed()
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22667: [Index is corrupt; try to repair it]
 =~ Index for table .*#P#.* is corrupt; try to repair it
