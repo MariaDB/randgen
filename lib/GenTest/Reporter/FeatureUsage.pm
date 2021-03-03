@@ -36,6 +36,7 @@ my $server_version;
 my %usage_check= (
   app_periods => \&check_for_app_periods,
   compressed_cols => \&check_for_compressed_cols,
+  delayed_insert => \&check_for_delayed_insert,
   fk => \&check_for_fk,
   gis => \&check_for_gis,
   multi_upd_del => \&check_for_multi_upd_del,
@@ -145,6 +146,12 @@ sub check_for_perfschema {
 sub check_for_multi_upd_del {
   if ($features_used{multi_upd_del}= ( $_[0]->check_status_var('Com_delete_multi') or $_[0]->check_status_var('Com_update_multi')) ) {
     say("FeatureUsage detected multi update/delete");
+  }
+}
+
+sub check_for_delayed_insert {
+  if ($features_used{delayed_insert}= $_[0]->check_status_var('Delayed_writes')) {
+    say("FeatureUsage detected delayed inserts");
   }
 }
 
