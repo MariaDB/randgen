@@ -1,6 +1,5 @@
-my $innodb_encryption= '--mysqld=--innodb-encrypt-tables --mysqld=--innodb-encrypt-log --mysqld=--innodb-encryption-threads=4 --mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/data/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management';
-
-my $general_encryption= '--mysqld=--encrypt-tmp-disk-tables=1 --mysqld=--encrypt-tmp-files=1 --mysqld=--encrypt-binlog --mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/data/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management';
+our ($non_innodb_encryption_options, $innodb_encryption_options);
+require "$ENV{RQG_HOME}/conf/mariadb/include/parameter_presets";
 
 $combinations = [
   ##### Common options
@@ -229,7 +228,7 @@ $combinations = [
           '--mysqld=--enforce-storage-engine=InnoDB'
         ],
         # Default OFF
-        [ '', '', '', '', '', '', $innodb_encryption ],
+        [ '', '', '', '', '', '', $innodb_encryption_options ],
      ##### Read-only variables (InnoDB)
         # Default 8
         [ '', '', '', '', '', '', '',
@@ -370,7 +369,7 @@ $combinations = [
     '--mysqld=--max-prepared-stmt-count=1',
   ],
   ##### Encryption
-  [ '', '', '', '', $general_encryption ],
+  [ '', '', '', '', $non_innodb_encryption_options ],
   ##### Binary logging
   [ '', '',
     [
