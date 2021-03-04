@@ -4,6 +4,23 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25058:
+=~ signal 11|AddressSanitizer
+=~ cmp_data
+=~ cmp_dtuple_rec_with_match_low
+=~ QUICK_RANGE_SELECT::get_next_prefix
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-25057:
+=~ signal 11|AddressSanitizer|Assertion \`n_fields < dtuple_get_n_fields(entry)'
+=~ dtuple_convert_big_rec
+=~ btr_cur_optimistic_insert
+=~ innobase_instant_try
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-25056:
+=~ signal [16]|AddressSanitizer
+=~ Protocol::net_store_data
+=~ Protocol_text::store
+=~ Protocol::send_result_set_row
 MDEV-25052:
 =~ signal 11|AddressSanitizer
 =~ Locked_tables_list::mark_table_for_reopen
