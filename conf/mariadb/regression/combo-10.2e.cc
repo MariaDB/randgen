@@ -1,4 +1,4 @@
-our ($encryption_combinations, $grammars);
+our ($encryption_combinations, $grammars_basic);
 require "$ENV{RQG_HOME}/conf/mariadb/include/parameter_presets";
 require "$ENV{RQG_HOME}/conf/mariadb/include/combo.grammars";
 
@@ -29,7 +29,7 @@ $combinations = [
   --mysqld=--innodb-lock-wait-timeout=5
   '],
   # Combo
-    $grammars,
+    $grammars_basic,
   # Encryption
     $encryption_combinations,
   [
