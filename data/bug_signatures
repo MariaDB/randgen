@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25052:
+=~ signal 11|AddressSanitizer
+=~ Locked_tables_list::mark_table_for_reopen
+=~ TABLE::mark_table_for_reopen
+=~ mysql_prepare_alter_table
+=~ Version: '10\.2]|Server version: 10\.2
+MDEV-25050:
+=~ LeakSanitizer: detected memory leaks|Warning: Memory not freed
+=~ create_file
+=~ select_export::prepare
 MDEV-25038:
 =~ signal 11|AddressSanitizer
 =~ _ma_remove_table_from_trnman
@@ -70,7 +80,7 @@ MDEV-24958:
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24958:
 =~ signal [16]|AddressSanitizer
-=~ my_strnncoll_binary|my_strnncollsp_simple
+=~ my_strnncoll_binary|my_strnncollsp_simple|Field_longstr::uncompress
 =~ Arg_comparator::compare
 =~ DEFAULT
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
@@ -1063,8 +1073,8 @@ MDEV-23315:
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-23315:
 =~ Assertion \`(st_select_lex\*)join->select_lex == this'|AddressSanitizer
-=~ subselect_single_select_engine::prepare
 =~ st_select_lex::cleanup
+=~ subselect_single_select_engine::prepare
 =~ Prepared_statement::execute|sp_head::execute
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-23305:
@@ -3449,7 +3459,6 @@ MDEV-16292:
 =~ signal 11|AddressSanitizer
 =~ Item_func::print|Item_ref::print
 =~ Item::print_item_w_name
-=~ mysql_create_view|Prepared_statement::execute
 =~ ROLLUP
 =~ Version: '5\.5|Version: '10\.[1-2]
 MDEV-16242:
