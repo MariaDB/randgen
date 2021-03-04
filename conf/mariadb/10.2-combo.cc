@@ -1,10 +1,10 @@
-our $grammars;
+our $grammars_basic;
 require "$ENV{RQG_HOME}/conf/mariadb/include/combo.grammars";
 
 # XA removed due to the amount of bugs
 #    --redefine=conf/mariadb/xa.yy
 
-$combinations = [ $grammars,
+$combinations = [ $grammars_basic,
   [
   '
     --no-mask
