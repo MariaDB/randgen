@@ -1,4 +1,6 @@
-our ($encryption_combinations, $mariabackup_scenarios, $innodb_pagesize_combinations, $innodb_compression_combinations);
+use strict;
+
+our ($innodb_encryption_options, $mariabackup_scenarios, $innodb_pagesize_combinations, $innodb_compression_combinations);
 require "$ENV{RQG_HOME}/conf/mariadb/include/parameter_presets";
 require "$ENV{RQG_HOME}/conf/mariadb/include/mariabackup.scenarios";
 
@@ -22,12 +24,9 @@ $combinations = [
   --mysqld=--loose-innodb-lock-wait-timeout=5
   --mysqld=--loose-debug_assert_on_not_freed_memory=0
   '],
-  # Compression
-    $innodb_compression_combinations,
-  # Pagesize
-    $innodb_pagesize_combinations,
-  # Encryption
-    $encryption_combinations,
+  [ @$innodb_compression_combinations ],
+  [ @$innodb_pagesize_combinations ],
+  [ '', $innodb_encryption_options ],
   # Scenarios (DML-only, DDL+DML)
     $mariabackup_scenarios,
 ];

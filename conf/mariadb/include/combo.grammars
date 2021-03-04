@@ -1,5 +1,11 @@
-$grammars_basic=
-[
+####
+# Legend:
+# - $xxxx should be an array ref of strings,
+#   to be used as a full or partial set of combinations
+#   within an array ref in a combinations config
+# - $optional_xxxx should be an array ref of array refs
+
+$grammars_basic= [
   '--grammar=conf/runtime/metadata_stability.yy --gendata=conf/runtime/metadata_stability.zz',
   '--grammar=conf/runtime/performance_schema.yy  --mysqld=--performance-schema --gendata-advanced --mysqld=--performance-schema=on',
   '--grammar=conf/runtime/information_schema.yy --gendata-advanced',
@@ -27,8 +33,7 @@ $grammars_basic=
   '--grammar=conf/mariadb/range_access.yy --gendata=conf/optimizer/range_access.zz',
 ];
 
-$grammars_specific_gendata=
-[
+$grammars_specific_gendata= [
   '--grammar=conf/runtime/metadata_stability.yy --gendata=conf/runtime/metadata_stability.zz',
   '--grammar=conf/engines/many_indexes.yy --gendata=conf/engines/many_indexes.zz',
   '--grammar=conf/partitioning/partition_pruning.yy --gendata=conf/partitioning/partition_pruning.zz',
@@ -56,8 +61,7 @@ $grammars_specific_gendata=
   "--grammar=conf/dbt3/dbt3-ranges.yy --gendata=$ENV{RQG_HOME}/conf/dbt3/dbt3-s0.001.dump",
 ];
 
-$grammars_any_gendata=
-[
+$grammars_any_gendata= [
   '--grammar=conf/mariadb/optimizer.yy',
   '--grammar=conf/mariadb/oltp-transactional.yy',
   '--grammar=conf/mariadb/oltp_and_ddl.yy',
@@ -66,8 +70,7 @@ $grammars_any_gendata=
   '--grammar=conf/partitioning/partitions.yy',
 ];
 
-$gendata_files=
-[
+$gendata_files= [
   '--gendata=conf/engines/maria/maria.zz',
   '--gendata=conf/engines/engine_stress.zz',
   '--gendata=conf/engines/falcon/falcon_pagesize2K.zz',
@@ -161,3 +164,48 @@ $gendata_files=
   "--gendata=$ENV{RQG_HOME}/conf/mariadb/world.sql",
   "--gendata=$ENV{RQG_HOME}/conf/optimizer/world.sql",
 ];
+
+$optional_redefines_102= [
+  [ '--redefine=conf/mariadb/all_selects.yy', '', '' ],
+  [ '--redefine=conf/mariadb/alter_table.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/bulk_insert.yy', '' ],
+  [ '--redefine=conf/mariadb/federated.yy --mysqld=--plugin-load-add=ha_federatedx', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/functions.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/json.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/sp.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/xa.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/acl.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/admin.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/alter_table_columns.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/alter_table_indexes.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/disks.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/dynamic_variables.yy', '' ],
+  [ '--redefine=conf/mariadb/modules/event.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/foreign_keys.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/indexes_and_constraints.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/information_schema.yy', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/locales.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/locks.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/metadata_lock_info.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/parser_changes.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/query_response_time.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/server_audit.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/sql_errlog.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/userstat.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/user_variables.yy', '', '', '', '', '', '', '', '', '' ],
+];
+
+$optional_redefines_103= [
+  @$optional_redefines_102,
+  [ '--redefine=conf/mariadb/sequences.yy', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/versioning.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/optimizer_trace.yy', '', '', '' ],
+];
+
+$optional_redefines_104= [
+  @$optional_redefines_103,
+  [ '--redefine=conf/mariadb/modules/application_periods.yy', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/locks-10.4-extra.yy', '', '', '', '' ],
+];
+
+$optional_redefines_105= [ @$optional_redefines_104 ];

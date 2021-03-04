@@ -1,4 +1,6 @@
-our ($encryption_combinations, $mariabackup_scenarios);
+use strict;
+
+our ($aria_encryption_options, $mariabackup_scenarios);
 require "$ENV{RQG_HOME}/conf/mariadb/include/parameter_presets";
 require "$ENV{RQG_HOME}/conf/mariadb/include/mariabackup-10.4.scenarios";
 
@@ -23,7 +25,7 @@ $combinations = [
   --mysqld=--loose-debug_assert_on_not_freed_memory=0
   '],
   # Encryption
-    $encryption_combinations,
+  [ '', $aria_encryption_options ],
   # Scenarios (DML-only, DDL+DML)
     $mariabackup_scenarios,
 ];

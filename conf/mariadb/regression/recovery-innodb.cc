@@ -1,4 +1,6 @@
-our ($encryption_combinations, $recovery_scenarios, $innodb_pagesize_combinations, $innodb_compression_combinations);
+use strict;
+
+our ($innodb_encryption_options, $recovery_scenarios, $innodb_pagesize_combinations, $innodb_compression_combinations);
 require "$ENV{RQG_HOME}/conf/mariadb/include/parameter_presets";
 require "$ENV{RQG_HOME}/conf/mariadb/include/recovery.scenarios";
 
@@ -20,12 +22,9 @@ $combinations = [
   --mysqld=--innodb-lock-wait-timeout=5
   --scenario-grammar2=conf/mariadb/oltp_and_ddl.yy
   '],
-  # Compression
-    $innodb_compression_combinations,
-  # Pagesize
-    $innodb_pagesize_combinations,
-  # Encryption
-    $encryption_combinations,
+  [ @$innodb_compression_combinations ],
+  [ @$innodb_pagesize_combinations ],
+  [ '', $innodb_encryption_options ],
   # Scenarios
     $recovery_scenarios,
 ];

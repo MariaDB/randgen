@@ -1,10 +1,12 @@
-our $grammars_basic;
+use strict;
+
+our ($grammars_basic);
 require "$ENV{RQG_HOME}/conf/mariadb/include/combo.grammars";
 
 # XA removed due to the amount of bugs
 #    --redefine=conf/mariadb/xa.yy
 
-$combinations = [ $grammars_basic,
+$combinations = [
   [
   '
     --no-mask
@@ -29,7 +31,8 @@ $combinations = [ $grammars_basic,
     --mysqld=--loose-debug_assert_on_not_freed_memory=0
     --mysqld=--lock-wait-timeout=10
     --mysqld=--innodb-lock-wait-timeout=5
-  '], 
+  '],
+  [ @$grammars_basic ],
   [
     '--engine=InnoDB --mysqld=--innodb-buffer-pool-size=2G',
     '--engine=InnoDB --mysqld=--innodb-buffer-pool-size=2G --mysqld=--ignore-builtin-innodb --mysqld=--plugin-load-add=ha_innodb.so',

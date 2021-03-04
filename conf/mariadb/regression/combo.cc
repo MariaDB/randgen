@@ -1,3 +1,5 @@
+use strict;
+
 our ($all_encryption_options, $grammars_basic);
 require "$ENV{RQG_HOME}/conf/mariadb/include/parameter_presets";
 require "$ENV{RQG_HOME}/conf/mariadb/include/combo.grammars";
@@ -29,8 +31,7 @@ $combinations = [
   --mysqld=--lock-wait-timeout=10
   --mysqld=--innodb-lock-wait-timeout=5
   '],
-  # Combo
-    $grammars_basic,
+  [ @$grammars_basic ],
   [
     '--redefine=conf/mariadb/modules/dynamic_variables.yy',
     '--ps-protocol --filter=conf/mariadb/need-reconnect.ff',
