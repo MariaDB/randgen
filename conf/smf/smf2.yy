@@ -2921,7 +2921,7 @@ SELECT `data`, filetype
 			INNER JOIN smf_members AS mem ON (mem.id_member = m.id_member)
 		WHERE m.id_member != 0
 			|
-	SELECT RAND()|
+	SELECT RAND(_int_unsigned)|
 	SELECT c.name AS cat_name, c.id_cat, b.id_board, b.name AS board_name, b.child_level
 		FROM smf_boards AS b
 			LEFT JOIN smf_categories AS c ON (c.id_cat = b.id_cat)|

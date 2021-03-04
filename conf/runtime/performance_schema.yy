@@ -44,7 +44,7 @@ perfschema_update_consumers:
 
 perfschema_update_instruments:
 	UPDATE performance_schema . setup_instruments SET perfschema_enabled_timed = perfschema_yes_no WHERE NAME LIKE perfschema_instrument_category |
-	UPDATE performance_schema . setup_instruments SET perfschema_enabled_timed = perfschema_yes_no ORDER BY RAND() LIMIT _digit ;
+	UPDATE performance_schema . setup_instruments SET perfschema_enabled_timed = perfschema_yes_no ORDER BY RAND(_int_unsigned) LIMIT _digit ;
 
 perfschema_update_timers:
 	UPDATE performance_schema . setup_timers SET timer_name = perfschema_timer_type ;

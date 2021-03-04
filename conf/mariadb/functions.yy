@@ -104,7 +104,7 @@ func_misc_func:
    IS_USED_LOCK( func_arg_char ) |
    MASTER_POS_WAIT( 'log', _int_unsigned, func_zero_or_almost ) |
    NAME_CONST( func_const_char_value, func_value ) |
-   RAND() | RAND( func_arg ) |
+   RAND(_int_unsigned) | RAND( func_arg ) |
    RELEASE_LOCK( func_arg_char ) |
    SLEEP( func_zero_or_almost ) |
    UUID_SHORT() |
@@ -361,7 +361,7 @@ func_math_func:
    LN( func_arg ) | LOG( func_arg ) | LOG( func_arg, func_arg ) | LOG2( func_arg ) | LOG10( func_arg ) |
    MOD( func_arg, func_arg ) |
    PI( ) | POW( func_arg, func_arg ) | POWER( func_arg, func_arg ) |
-   RADIANS( func_arg ) | RAND() | RAND( func_arg ) | ROUND( func_arg ) | ROUND( func_arg, func_arg ) |
+   RADIANS( func_arg ) | RAND(_int_unsigned) | RAND( func_arg ) | ROUND( func_arg ) | ROUND( func_arg, func_arg ) |
    SIGN( func_arg ) | SIN( func_arg ) | SQRT( func_arg ) |
    TAN( func_arg ) | TRUNCATE( func_arg, func_truncate_second_arg ) ;
 

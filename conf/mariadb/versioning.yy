@@ -145,8 +145,8 @@ vers_select:
   | SELECT * from vers_existing_table WHERE row_end IN (SELECT row_start FROM vers_existing_table)
   | SELECT * from vers_existing_table WHERE row_start IN (SELECT row_end FROM vers_existing_table)
   | SELECT * from vers_existing_table WHERE row_end IN (SELECT row_end FROM vers_existing_table)
-  | SELECT row_start FROM vers_existing_table ORDER BY RAND() LIMIT 1 INTO @trx_user_var
-  | SELECT row_end FROM vers_existing_table ORDER BY RAND() LIMIT 1 INTO @trx_user_var
+  | SELECT row_start FROM vers_existing_table ORDER BY RAND(_int_unsigned) LIMIT 1 INTO @trx_user_var
+  | SELECT row_end FROM vers_existing_table ORDER BY RAND(_int_unsigned) LIMIT 1 INTO @trx_user_var
 ;
 
 vers_comparison_operator:

@@ -51,9 +51,9 @@ rand_event:
 	rand_event_dml ;
 
 rand_event_dml:
-	INSERT INTO _table ( _field ) VALUES ( RAND () ) |
-	UPDATE _table SET _field = RAND() where ORDER BY RAND () limit |
-	DELETE FROM _table WHERE _field < RAND() limit ;
+	INSERT INTO _table ( _field ) VALUES ( RAND (_int_unsigned) ) |
+	UPDATE _table SET _field = RAND(_int_unsigned) where ORDER BY RAND (_int_unsigned) limit |
+	DELETE FROM _table WHERE _field < RAND(_int_unsigned) limit ;
 
 user_var_event:
 	SET @a = value ; user_var_dml ; 

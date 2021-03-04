@@ -20,16 +20,16 @@ query:
 	insert | update | select | delete | transaction ;
 
 select:
-	SELECT _data , _field FROM _table ORDER BY RAND() LIMIT 1;
+	SELECT _data , _field FROM _table ORDER BY RAND(_int_unsigned) LIMIT 1;
 
 insert:
 	INSERT INTO _table ( _field ) VALUES ( _data ) ;
 
 update:
-	UPDATE _table SET _field = _data ORDER BY RAND() LIMIT 1 ;
+	UPDATE _table SET _field = _data ORDER BY RAND(_int_unsigned) LIMIT 1 ;
 
 delete:
-	DELETE FROM _table WHERE _field = _data ORDER BY RAND () LIMIT 1 ;
+	DELETE FROM _table WHERE _field = _data ORDER BY RAND (_int_unsigned) LIMIT 1 ;
 
 transaction:
 	START TRANSACTION | COMMIT | ROLLBACK ;
