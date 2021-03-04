@@ -46,6 +46,9 @@ alttcol_list:
 alttcol_order_by:
   | | | | | | | | | | , ORDER BY alttcol_column_list ;
 
+alttcol_column_list:
+  _field | _field, alttcol_column_list ;
+
 alttcol_item_alg_lock:
   alttcol_item alttcol_algorithm alttcol_lock
 ;
