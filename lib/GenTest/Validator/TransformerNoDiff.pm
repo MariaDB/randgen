@@ -47,42 +47,14 @@ sub configure {
 
     my $list = $props->transformers;
 
-    if (defined $list and $#{$list} >= 0) {
-        @transformer_names = @$list;
-    } else {
-        @transformer_names = (
-            'DisableChosenPlan',
-            'ConvertSubqueriesToViews',
-            'ConvertLiteralsToSubqueries',
-            'ConvertLiteralsToVariables',
-            'ConvertTablesToDerived',
-            'Count',
-            'DisableIndexes',
-            'Distinct',
-            'ExecuteAsPreparedTwice',
-            'ExecuteAsSPTwice',
-            'ExecuteAsFunctionTwice',
-            'ExecuteAsView',
-            'ExecuteAsInsertSelect',
-            'ExecuteAsSelectItem',
-            'ExecuteAsUnion',
-            'ExecuteAsUpdateDelete',
-            'ExecuteAsWhereSubquery',
-            'ExecuteAsTrigger',
-            'ExecuteAsDerived',
-            'Having',
-            'InlineSubqueries',
-            'InlineVirtualColumns',
-            'LimitDecrease',
-            'LimitIncrease',
-            'OrderBy',
-            'RemoveIndexHints',
-            'StraightJoin',
-            'SelectOption'
-            );
-    }
+	if (defined $list and $#{$list} >= 0) {
+		@transformer_names = @$list;
+	} else {
+		sayWarning("No transformers were defined to be run by TransformerNoDiff validator");
+    return;
+	}
 
-	say("Transformer Validator will use the following Transformers: ".join(', ', @transformer_names));
+	say("TransformerNoDiff validator will use the following transformers: ".join(', ', @transformer_names));
 
 	foreach my $transformer_name (@transformer_names) {
 		eval ("require GenTest::Transform::'".$transformer_name) or croak $@;

@@ -44,11 +44,11 @@ sub configure {
 	if (defined $list and $#{$list} >= 0) {
 		@transformer_names = @$list;
 	} else {
-		sayWarning("No transformers were defined to be run by TransformerNoComparator");
+		sayWarning("No transformers were defined to be run by TransformerNoComparator validator");
     return;
 	}
 
-	say("TransformerNoComparator Validator will use the following Transformers: ".join(', ', @transformer_names));
+	say("TransformerNoComparator validator will use the following transformers: ".join(', ', @transformer_names));
 
 	foreach my $transformer_name (@transformer_names) {
 		eval ("require GenTest::Transform::'".$transformer_name) or croak $@;
