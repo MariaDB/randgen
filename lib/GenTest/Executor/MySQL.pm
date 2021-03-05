@@ -1040,7 +1040,9 @@ sub execute {
     }
 
     my $start_time = Time::HiRes::time();
-    my $sth = $dbh->prepare($query);
+    # Combination of mysql_server_prepare and mysql_multi_statements
+    # still causes troubles (syntax errors), both with mysql and MariaDB drivers
+    my $sth = (index($query,";") == -1) ? $dbh->prepare($query) : $dbh->prepare($query, { mysql_server_prepare => 0 });
 
     if (not defined $sth) {            # Error on PREPARE
         my $errstr_prepare = $executor->normalizeError($dbh->errstr());
