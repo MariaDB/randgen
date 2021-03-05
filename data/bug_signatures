@@ -4,6 +4,22 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25060:
+=~ AddressSanitizer|Invalid write of size
+=~ _mi_put_key_in_record
+=~ chk_key
+=~ ha_myisam::repair
+=~ FeatureUsage detected virtual columns
+MDEV-25060:
+=~ Error: Freeing overrun buffer.* myisam/mi_close.* myisam/ha_myisam
+=~ Allocated at .* myisam/mi_open.* myisam/mi_open.* myisam/ha_myisam
+=~ FeatureUsage detected virtual columns
+MDEV-25060:
+=~ signal 11
+=~ lf_hash_insert
+=~ find_or_create_file
+=~ mi_open
+=~ FeatureUsage detected virtual columns
 MDEV-25058:
 =~ signal 11|AddressSanitizer
 =~ cmp_data
