@@ -91,7 +91,7 @@ sub get_top_output {
       # Skipping everything but the process for now, but may parse more in future
       next unless /^\s*$pid/;
       # PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
-      if (/$pid\s+\w+\s+\d+\s+\d+\s+[\d\.]+[kmbgt]?\s+([\d\.]+)([kmbgt]?)\s+[\d\.]+[kmbgt]?\s+\w\s+([\d\.]+)\s+([\d\.]+)/) {
+      if (/$pid\s+\w+\s+\d+\s+\d+\s+[\d\.]+[kmbgtp]?\s+([\d\.]+)([kmbgtp]?)\s+[\d\.]+[kmbgtp]?\s+\w\s+([\d\.]+)\s+([\d\.]+)/) {
         ($mem, $unit, $cpu, $mem_pct)= ($1, $2, $3, $4);
         if ($unit eq 'm' or $unit eq 'M') {
           $mem*= 1024;
@@ -99,6 +99,9 @@ sub get_top_output {
           $mem*= 1024*1024;
         } elsif ($unit eq 't' or $unit eq 'T') {
           $mem*= 1024*1024*1024;
+        }
+        } elsif ($unit eq 'p' or $unit eq 'P') {
+          $mem*= 1024*1024*1024*1024;
         }
       }
     }
