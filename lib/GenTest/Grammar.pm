@@ -273,7 +273,7 @@ sub parseFromString {
 
         my @component_strings= ();
         for (my $i=0; $i<=$#modified_component_strings; $i++) {
-            my $count= (defined $component_factors{$i} ? $component_factors{$i} : 1) * $multiplier;
+            my $count= int ((defined $component_factors{$i} ? $component_factors{$i} : 1) * $multiplier) || 1;
             foreach (1..$count) {
                 push @component_strings, $modified_component_strings[$i];
             }
