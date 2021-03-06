@@ -73,11 +73,25 @@ $perfschema_options_102= "
 $perfschema_options_103= $perfschema_options_102;
 $perfschema_options_104= $perfschema_options_103;
 
+# Other new perfschema variables in 10.5:
+# PERFORMANCE_SCHEMA_EVENTS_TRANSACTIONS_HISTORY_LONG_SIZE
+# PERFORMANCE_SCHEMA_EVENTS_TRANSACTIONS_HISTORY_SIZE
+# PERFORMANCE_SCHEMA_MAX_INDEX_STAT
+# PERFORMANCE_SCHEMA_MAX_MEMORY_CLASSES
+# PERFORMANCE_SCHEMA_MAX_METADATA_LOCKS
+# PERFORMANCE_SCHEMA_MAX_PREPARED_STATEMENTS_INSTANCES
+# PERFORMANCE_SCHEMA_MAX_PROGRAM_INSTANCES
+# PERFORMANCE_SCHEMA_MAX_SQL_TEXT_LENGTH
+# PERFORMANCE_SCHEMA_MAX_STATEMENT_STACK
+# PERFORMANCE_SCHEMA_MAX_TABLE_LOCK_STAT
+
 $perfschema_options_105= $perfschema_options_104.'
   --mysqld=--performance-schema-consumer-events-transactions-current=ON
   --mysqld=--performance-schema-consumer-events-transactions-history=ON
   --mysqld=--performance-schema-consumer-events-transactions-history-long=ON
 ';
+
+$perfschema_options_106= $perfschema_options_105;
 
 #########################
 # Server option combinations
@@ -171,6 +185,8 @@ $optional_variators_105= [
   [ '', '', '', '--transformers=ExecuteAsInsertReturning' ],
 ];
 
+$optional_variators_106= [ @$optional_variators_105 ];
+
 # RocksDB is disabled because upstream has not been updated (no JIRA yet)
 #  '--engine=InnoDB,MyISAM,Aria,HEAP,RocksDB --mysqld=--plugin-load-add=ha_rocksdb'
 $basic_engine_combinations_102= [
@@ -183,6 +199,7 @@ $basic_engine_combinations_102= [
 $basic_engine_combinations_103= [ @$basic_engine_combinations_102 ];
 $basic_engine_combinations_104= [ @$basic_engine_combinations_103 ];
 $basic_engine_combinations_105= [ @$basic_engine_combinations_104 ];
+$basic_engine_combinations_106= [ @$basic_engine_combinations_105 ];
 
 $non_crash_scenario_combinations_102= [
   '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
@@ -192,6 +209,7 @@ $non_crash_scenario_combinations_102= [
 $non_crash_scenario_combinations_103= [ @$non_crash_scenario_combinations_102 ];
 $non_crash_scenario_combinations_104= [ @$non_crash_scenario_combinations_103 ];
 $non_crash_scenario_combinations_105= [ @$non_crash_scenario_combinations_104 ];
+$non_crash_scenario_combinations_106= [ @$non_crash_scenario_combinations_105 ];
 
 $scenario_combinations_102= [
   '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
@@ -204,12 +222,26 @@ $scenario_combinations_102= [
 $scenario_combinations_103= [ @$scenario_combinations_102 ];
 $scenario_combinations_104= [ @$scenario_combinations_103 ];
 $scenario_combinations_105= [ @$scenario_combinations_104 ];
+$scenario_combinations_106= [ @$scenario_combinations_105 ];
+
+#############
+# InnoDB vars
+#############
 
 $optional_innodb_variables_102= [
   # Default zlib
   [ '', '', '', '', '', '', '', '',
     '--mysqld=--innodb-compression-algorithm=none',
     '--mysqld=--innodb-compression-algorithm=zlib'
+  ],
+  # Default in 10.2 crc32, in 10.5 full_crc32
+  [ '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+    '--mysqld=--innodb-checksum-algorithm=none',
+    '--mysqld=--innodb-checksum-algorithm=innodb',
+    '--mysqld=--innodb-checksum-algorithm=crc32',
+    '--mysqld=--innodb-checksum-algorithm=strict_none',
+    '--mysqld=--innodb-checksum-algorithm=strict_innodb',
+    '--mysqld=--innodb-checksum-algorithm=strict_crc32',
   ],
   [ '', '', '', '', '', '', '', '', '',
     '--mysqld=--enforce-storage-engine=InnoDB'
@@ -242,8 +274,9 @@ $optional_innodb_variables_102= [
     '--mysqld=--innodb-flush-method=O_DIRECT_NO_FSYNC',
   ],
   # Default fcfs
+  # Removed in 10.6.0
   [ '', '', '', '',
-    '--mysqld=--innodb-lock-schedule-algorithm=vats'
+    '--mysqld=--loose-innodb-lock-schedule-algorithm=vats'
   ],
   # Default 16M
   [ '', '', '', '', '', '', '', '',
@@ -283,9 +316,10 @@ $optional_innodb_variables_102= [
     '--mysqld=--innodb-sort-buffer-size=64M',
   ],
   # Default 1
+  # Removed in 10.6.0
   [ '', '', '', '',
-    '--mysqld=--innodb-sync-array-size=8',
-    '--mysqld=--innodb-sync-array-size=128',
+    '--mysqld=--loose-innodb-sync-array-size=8',
+    '--mysqld=--loose-innodb-sync-array-size=128',
   ],
   # Default 0
   [ '', '', '', '', '', '', '',
@@ -309,8 +343,38 @@ $optional_innodb_variables_102= [
 ];
 
 $optional_innodb_variables_103= [ @$optional_innodb_variables_102 ];
-$optional_innodb_variables_104= [ @$optional_innodb_variables_103 ];
+$optional_innodb_variables_104= [ @$optional_innodb_variables_103,
+  # Some values are already in 10.2 variables,
+  # we only add new ones
+  [
+    '--mysqld=--innodb-checksum-algorithm=full_crc32',
+    '--mysqld=--innodb-checksum-algorithm=strict_full_crc32',
+  ],
+];
 $optional_innodb_variables_105= [ @$optional_innodb_variables_104 ];
+$optional_innodb_variables_106= [ @$optional_innodb_variables_105 ];
+
+#############
+# Aria vars
+#############
+
+$optional_aria_variables_102= [
+  # Default 8192;
+  # min in 10.3 == 1024, in 10.4+ == 4096
+  [ '', '', '', '', '', '', '', '', '', '', '', '',
+    '--mysqld=--aria-block-size=4096',
+    '--mysqld=--aria-block-size=32768'
+  ],
+];
+
+$optional_aria_variables_103= [ @$optional_aria_variables_102 ];
+$optional_aria_variables_104= [ @$optional_aria_variables_103 ];
+$optional_aria_variables_105= [ @$optional_aria_variables_104 ];
+$optional_aria_variables_106= [ @$optional_aria_variables_105 ];
+
+#############
+# Other vars
+#############
 
 $optional_plugins_102= [
   [ '--mysqld=--plugin-load-add=ha_archive', '', '', '', '', '', '', '', '', '' ],
@@ -322,6 +386,7 @@ $optional_plugins_102= [
 $optional_plugins_103= [ @$optional_plugins_102 ];
 $optional_plugins_104= [ @$optional_plugins_103 ];
 $optional_plugins_105= [ @$optional_plugins_104 ];
+$optional_plugins_106= [ @$optional_plugins_105 ];
 
 $binlog_combinations= [
   [ '--mysqld=--log-bin --mysqld=--log_bin_trust_function_creators=1' ],
@@ -379,14 +444,22 @@ $optional_server_variables_103= [
   @$optional_server_variables_102,
   # Default NO
   [ '', '', '', '', '', '', '', '',
-    '--mysqld=--secure-timestamp=SUPER',
+    '--mysqld=--secure-timestamp=NO',
     '--mysqld=--secure-timestamp=REPLICATION',
+    '--mysqld=--secure-timestamp=SUPER',
     '--mysqld=--secure-timestamp=YES',
+  ],
+  # Default in 10.3: 1213,1205
+  # Default in 10.4: 1158,1159,1160,1161,1205,1213,1429,2013,12701
+  [ '', '', '', '', '', '', '', '',
+    '--mysqld=--slave-transaction-retry-errors=""',
+    '--mysqld=--slave-transaction-retry-errors="1213,1205"',
   ],
 ];
 
 $optional_server_variables_104= [ @$optional_server_variables_103 ];
 $optional_server_variables_105= [ @$optional_server_variables_104 ];
+$optional_server_variables_106= [ @$optional_server_variables_105 ];
 
 # Default depends on the build/system, so in addition to the default,
 # we'll also add extra utf8 with presumably most common collations
@@ -745,3 +818,4 @@ $optional_charsets_102= [
 $optional_charsets_103= [ @$optional_charsets_102 ];
 $optional_charsets_104= [ @$optional_charsets_103 ];
 $optional_charsets_105= [ @$optional_charsets_104 ];
+$optional_charsets_106= [ @$optional_charsets_105 ];
