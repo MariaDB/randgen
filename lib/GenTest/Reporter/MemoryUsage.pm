@@ -99,7 +99,6 @@ sub get_top_output {
           $mem*= 1024*1024;
         } elsif ($unit eq 't' or $unit eq 'T') {
           $mem*= 1024*1024*1024;
-        }
         } elsif ($unit eq 'p' or $unit eq 'P') {
           $mem*= 1024*1024*1024*1024;
         }
