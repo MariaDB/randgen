@@ -28,8 +28,8 @@ dynvar_initial_settings:
 
 dynvar_global_setting:
   ==FACTOR:100== SET GLOBAL dynvar_global_variable |
-                 SET NAMES _charset_name |
-  ==FACTOR:0.1== SET GLOBAL dynvar_charset_variable
+  ==FACTOR:0.1== SET NAMES _charset_name |
+  ==FACTOR:0.001== SET GLOBAL dynvar_charset_variable
 ;
 
 dynvar_global_variable_runtime:
@@ -39,9 +39,11 @@ dynvar_global_variable_runtime:
   | INNODB_LOG_CHECKPOINT_NOW= dynvar_boolean
   | BINLOG_COMMIT_WAIT_COUNT= { $prng->arrayElement([1,10,100]) }
   | BINLOG_COMMIT_WAIT_USEC= { $prng->arrayElement([0,1000,1000000,10000000]) }
+  | LOG_QUERIES_NOT_USING_INDEXES= dynvar_boolean
+  | LOG_SLOW_ADMIN_STATEMENTS= dynvar_boolean
   | LOG_SLOW_SLAVE_STATEMENTS= dynvar_boolean
-  | RPL_SEMI_SYNC_MASTER_ENABLED= dynvar_boolean
-  | RPL_SEMI_SYNC_SLAVE_ENABLED= dynvar_boolean
+  | RPL_SEMI_SYNC_MASTER_ENABLED= dynvar_boolean /* compatibility 10.3 */
+  | RPL_SEMI_SYNC_SLAVE_ENABLED= dynvar_boolean /* compatibility 10.3 */
   | USERSTAT= dynvar_boolean
 ;
 
@@ -86,10 +88,10 @@ dynvar_session_variable:
 #  | COLLATION_CONNECTION= _collation_name
 #  | COLLATION_DATABASE= _collation_name
 #  | COLLATION_SERVER= _collation_name
-  | COLUMN_COMPRESSION_THRESHOLD= { $prng->arrayElement([0,8,100,1024,65535]) }
-  | COLUMN_COMPRESSION_ZLIB_LEVEL= { $prng->int(1,9) }
-  | COLUMN_COMPRESSION_ZLIB_STRATEGY= { $prng->arrayElement(['DEFAULT_STRATEGY','FILTERED','HUFFMAN_ONLY','RLE','FIXED']) }
-  | COLUMN_COMPRESSION_ZLIB_WRAP= dynvar_boolean
+  | COLUMN_COMPRESSION_THRESHOLD= { $prng->arrayElement([0,8,100,1024,65535]) } /* compatibility 10.3.2 */
+  | COLUMN_COMPRESSION_ZLIB_LEVEL= { $prng->int(1,9) } /* compatibility 10.3.2 */
+  | COLUMN_COMPRESSION_ZLIB_STRATEGY= { $prng->arrayElement(['DEFAULT_STRATEGY','FILTERED','HUFFMAN_ONLY','RLE','FIXED']) } /* compatibility 10.3.2 */
+  | COLUMN_COMPRESSION_ZLIB_WRAP= dynvar_boolean /* compatibility 10.3.2 */
   | COMPLETION_TYPE= { $prng->arrayElement([0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,2]) }
   | DEADLOCK_SEARCH_DEPTH_LONG= { $prng->int(0,33) }
   | DEADLOCK_SEARCH_DEPTH_SHORT= { $prng->int(0,32) }
@@ -114,20 +116,20 @@ dynvar_session_variable:
   | HISTOGRAM_SIZE= { $prng->int(0,255) }
   | HISTOGRAM_TYPE= { $prng->arrayElement(['SINGLE_PREC_HB','DOUBLE_PREC_HB']) }
 # | IDENTITY= { $prng->int(0,4294967295) } # == last_insert_id
-  | IDLE_READONLY_TRANSACTION_TIMEOUT= { $prng->arrayElement([0,3600]) }
-  | IDLE_TRANSACTION_TIMEOUT= { $prng->arrayElement([0,3600]) }
-  | IDLE_WRITE_TRANSACTION_TIMEOUT= { $prng->arrayElement([0,3600]) }
+  | IDLE_READONLY_TRANSACTION_TIMEOUT= { $prng->arrayElement([0,3600]) } /* compatibility 10.3.0 */
+  | IDLE_TRANSACTION_TIMEOUT= { $prng->arrayElement([0,3600]) } /* compatibility 10.3.0 */
+  | IDLE_WRITE_TRANSACTION_TIMEOUT= { $prng->arrayElement([0,3600]) } /* compatibility 10.3.0 */
   | INNODB_COMPRESSION_DEFAULT= dynvar_boolean
   | INNODB_DEFAULT_ENCRYPTION_KEY_ID= { $prng->int(1,10) }
   | INNODB_FT_ENABLE_STOPWORD= dynvar_boolean
 # | innodb_ft_user_stopword_table= { $prng->arrayElement(["''","'test/stop'","'test/t1'"]) }
-  | INNODB_LOCK_WAIT_TIMEOUT= { $prng->arrayElement(['DEFAULT',0,1]) }
+  | INNODB_LOCK_WAIT_TIMEOUT= { $prng->arrayElement(['DEFAULT','1', '0 /* compatibility 10.3 */']) }
   | INNODB_STRICT_MODE= dynvar_boolean
   | INNODB_TABLE_LOCKS= dynvar_boolean
   | INNODB_TMPDIR= DEFAULT
   | INSERT_ID= { $prng->int(0,4294967295) }
-  | INTERACTIVE_TIMEOUT= { $prng->arrayElement(['DEFAULT',0,1]) }
-  | IN_PREDICATE_CONVERSION_THRESHOLD= { $prng->arrayElement([0,1,2,100,1000,65536,4294967295]) }
+  | INTERACTIVE_TIMEOUT= { $prng->arrayElement(['DEFAULT',1,30]) }
+  | IN_PREDICATE_CONVERSION_THRESHOLD= { $prng->arrayElement([0,1,2,100,1000,65536,4294967295]) } /* compatibility 10.3.18 */
   | JOIN_BUFFER_SIZE= { $prng->arrayElement([128,1024,65536,131072,262144]) }
   | JOIN_BUFFER_SPACE_LIMIT= { $prng->arrayElement([2048,16384,131072,1048576,2097152]) }
   | JOIN_CACHE_LEVEL= { $prng->int(0,8) }
@@ -135,13 +137,17 @@ dynvar_session_variable:
   | LAST_INSERT_ID= { $prng->int(0,4294967295) }
   | LC_MESSAGES= { $prng->arrayElement(['en_US','en_GB','fi_FI','ru_RU','zh_CN']) }
   | LC_TIME_NAMES= { $prng->arrayElement(['en_US','en_GB','fi_FI','ru_RU','zh_CN']) }
-  | LOCK_WAIT_TIMEOUT= { $prng->arrayElement(['DEFAULT',0,1]) }
-  | LOG_DISABLED_STATEMENTS= { $prng->arrayElement(["''",'sp','slave',"'slave,sp'"]) }
-  | LOG_QUERIES_NOT_USING_INDEXES= dynvar_boolean
-  | LOG_SLOW_ADMIN_STATEMENTS= dynvar_boolean
-  | LOG_SLOW_DISABLED_STATEMENTS= { $prng->arrayElement(["''",'sp','slave',"'slave,sp'"]) }
+  | LOCK_WAIT_TIMEOUT= { $prng->arrayElement(['DEFAULT','1','0 /* compatibility 10.3 */']) }
+  | LOG_DISABLED_STATEMENTS= { $prng->arrayElement(["''",'sp','slave',"'slave,sp'"]) } /* compatibility 10.3.1 */
+# Was global in 10.2
+  | LOG_QUERIES_NOT_USING_INDEXES= dynvar_boolean /* compatibility 10.3.1 */
+# Was global in 10.2
+  | LOG_SLOW_ADMIN_STATEMENTS= dynvar_boolean /* compatibility 10.3.1 */
+  | LOG_SLOW_DISABLED_STATEMENTS= dynvar_log_slow_disabled_statements_value /* compatibility 10.3.1 */
   | LOG_SLOW_FILTER= dynvar_log_slow_filter_value
   | LOG_SLOW_RATE_LIMIT= { $prng->int(1,1000) }
+# Was global in 10.2
+  | LOG_SLOW_SLAVE_STATEMENTS= dynvar_boolean /* compatibility 10.3.1 */
   | LOG_SLOW_VERBOSITY= dynvar_log_slow_verbosity_value
   | LOG_WARNINGS= { $prng->int(0,20) }
   | LONG_QUERY_TIME= { $prng->int(0,30) }
@@ -149,17 +155,18 @@ dynvar_session_variable:
 # | MAX_ALLOWED_PACKET # Dynamic conditionally
   | MAX_DELAYED_THREADS= { $prng->arrayElement([0,20,'DEFAULT']) }
   | MAX_ERROR_COUNT= { $prng->arrayElement([0,1,64,65535]) }
-  | MAX_HEAP_TABLE_SIZE= { $prng->arrayElement([16384,65535,1048576,16777216]) }
+  | MAX_HEAP_TABLE_SIZE= { $prng->arrayElement([16384,65536,1048576,16777216]) }
 # | MAX_INSERT_DELAYED_THREADS # == max_delayed_threads
   | MAX_JOIN_SIZE= { $prng->arrayElement(['DEFAULT',1,65535,18446744073709551615]) }
   | MAX_LENGTH_FOR_SORT_DATA= { $prng->arrayElement(['DEFAULT',4,1024,1048576,8388608]) }
   | MAX_RECURSIVE_ITERATIONS= { $prng->arrayElement(['DEFAULT',0,1,1048576,4294967295]) }
-  | MAX_RELAY_LOG_SIZE= { $prng->arrayElement([0,4096,1048576,16777216]) }
-  | MAX_ROWID_FILTER_SIZE= { $prng->arrayElement([1024,4096,65536,131072,1048576]) }
+# 0 can only be set at startup
+  | MAX_RELAY_LOG_SIZE= { $prng->arrayElement([4096,1048576,16777216]) }
+  | MAX_ROWID_FILTER_SIZE= { $prng->arrayElement([1024,4096,65536,131072,1048576]) } /* compatibility 10.4.3 */
   | MAX_SEEKS_FOR_KEY= { $prng->arrayElement([1,4096,1048576,4294967295]) }
 # Too many problems
 #  | MAX_SESSION_MEM_USED= { $prng->arrayElement([8192,1048576,4294967295,9223372036854775807,18446744073709551615]) }
-  | MAX_SORT_LENGTH= { $prng->arrayElement([8,512,1024,2048,4096,65535,1048576,8388608]) }
+  | MAX_SORT_LENGTH= { $prng->arrayElement([64,512,1024,2048,4096,65535,1048576,8388608]) }
 # Limited instead of max 255, to fit into the default thread_stack
   | MAX_SP_RECURSION_DEPTH= { $prng->int(0,25) }
   | MAX_STATEMENT_TIME= { $prng->arrayElement(['DEFAULT',1,10]) }
@@ -177,13 +184,15 @@ dynvar_session_variable:
   | NET_RETRY_COUNT= { $prng->int(1,100) }
   | NET_WRITE_TIMEOUT= { $prng->int(20,90) }
   | OLD= dynvar_boolean
-# | OLD_ALTER_TABLE # == from 10.3.7 same as alter_algorithm
+# == from 10.3.7 same as alter_algorithm
+  | OLD_ALTER_TABLE = dynvar_boolean /* incompatibility 10.3.7 */
+  | OLD_ALTER_TABLE= { $prng->arrayElement(['DEFAULT','COPY','INPLACE','NOCOPY','INSTANT']) } /* compatibility 10.3.7 */
   | OLD_MODE= dynvar_old_mode_value
 # Old passwords cause an error due to secure-auth mode or
 # due to the absence of mysql_old_password plugin
 # | OLD_PASSWORDS= dynvar_boolean
   | OPTIMIZER_PRUNE_LEVEL= dynvar_boolean
-  | OPTIMIZER_SEARCH_DEPTH= { $prng->int(0,63) }
+  | OPTIMIZER_SEARCH_DEPTH= { $prng->int(0,62) }
   | OPTIMIZER_SELECTIVITY_SAMPLING_LIMIT= { $prng->arrayElement([10,50,100,1000,10000]) }
   | OPTIMIZER_SWITCH= dynvar_optimizer_switch_value
   | OPTIMIZER_TRACE= { "'enabled=".$prng->arrayElement(['on','off','default']) ."'" } /* compatibility 10.4.3 */
@@ -203,7 +212,7 @@ dynvar_session_variable:
   | RAND_SEED1= { $prng->int(0,18446744073709551615) }
   | RAND_SEED2= { $prng->int(0,18446744073709551615) }
   | RANGE_ALLOC_BLOCK_SIZE= { $prng->arrayElement([4096,8192,16384,1048576]) }
-  | READ_BUFFER_SIZE= { $prng->arrayElement([8200,16384,131072,1048576]) }
+  | READ_BUFFER_SIZE= { $prng->arrayElement([8192,16384,131072,1048576]) }
   | READ_RND_BUFFER_SIZE= { $prng->arrayElement([8200,65536,262144,1048576]) }
   | ROWID_MERGE_BUFF_SIZE= { $prng->arrayElement([0,65536,1048576,8388608]) }
   | SERVER_ID= { $prng->int(1,1000) }
@@ -221,7 +230,7 @@ dynvar_session_variable:
   | SQL_AUTO_IS_NULL= dynvar_boolean
   | SQL_BIG_SELECTS= dynvar_boolean
   | SQL_BUFFER_RESULT= dynvar_boolean
-  | SQL_IF_EXISTS= dynvar_boolean
+  | SQL_IF_EXISTS= dynvar_boolean /* compatibility 10.5.2 */
   | SQL_LOG_BIN= dynvar_boolean
 # | SQL_LOG_OFF
   | SQL_MODE= dynvar_sql_mode_value
@@ -233,16 +242,16 @@ dynvar_session_variable:
   | SQL_WARNINGS= dynvar_boolean
   | STANDARD_COMPLIANT_CTE= dynvar_boolean
 # | STORAGE_ENGINE # Deprecated
-  | SYSTEM_VERSIONING_ALTER_HISTORY= { $prng->arrayElement(['ERROR','KEEP']) }
-  | SYSTEM_VERSIONING_ASOF= { $prng->arrayElement(['DEFAULT',"'1970-01-01 00:00:00'","'2020-01-01 00:00:00'","'2050-01-01 00:00:00'"]) }
-  | TCP_NODELAY= dynvar_boolean
+  | SYSTEM_VERSIONING_ALTER_HISTORY= { $prng->arrayElement(['ERROR','KEEP']) } /* compatibility 10.3.4 */
+  | SYSTEM_VERSIONING_ASOF= { $prng->arrayElement(['DEFAULT',"'1970-01-01 00:00:00'","'2020-01-01 00:00:00'","'2050-01-01 00:00:00'"]) } /* compatibility 10.3.4 */
+  | TCP_NODELAY= dynvar_boolean /* compatibility 10.4.0 */
   | THREAD_POOL_PRIORITY= { $prng->arrayElement(['DEFAULT','high','low','auto']) }
 # | TIMESTAMP # Tempting, but causes problems, especially with versioning
   | TIME_ZONE= { sprintf("'%s%02d:%02d'",$prng->arrayElement(['+','-']),$prng->int(0,12),$prng->int(0,59)) }
 # Very low values disabled due to MDEV-23212
   | TMP_DISK_TABLE_SIZE= { $prng->arrayElement(['DEFAULT',65536,8388608,18446744073709551615]) }
 # | TMP_MEMORY_TABLE_SIZE # == tmp_table_size
-  | TMP_TABLE_SIZE= { $prng->arrayElement(['DEFAULT',0,1024,4194304,16777216,4294967295]) }
+  | TMP_TABLE_SIZE= { $prng->arrayElement(['DEFAULT',1024,4194304,16777216,4294967295],'0 /* compatibility 10.5.0 */') }
   | TRANSACTION_ALLOC_BLOCK_SIZE= { $prng->arrayElement(['DEFAULT',1024,8192,16384,65536]) }
   | TRANSACTION_PREALLOC_SIZE= { $prng->arrayElement(['DEFAULT',1024,8192,16384,65536]) }
   | TX_ISOLATION= { $prng->arrayElement(["'READ-UNCOMMITTED'","'READ-COMMITTED'","'REPEATABLE-READ'","'SERIALIZABLE'"]) }
@@ -253,14 +262,15 @@ dynvar_session_variable:
 # | WAIT_TIMEOUT= { $prng->arrayElement([0,3600]) }
   | WSREP_CAUSAL_READS= dynvar_boolean
   | WSREP_DIRTY_READS= dynvar_boolean
-  | WSREP_GTID_SEQ_NO= { $prng->int(0,18446744073709551615) } /* compatibility 10.5.1 */
+# Internal server usage, doesn't seem to be settable
+# | WSREP_GTID_SEQ_NO= { $prng->int(0,18446744073709551615) } /* compatibility 10.5.1 */
   | WSREP_ON= dynvar_boolean
   | WSREP_OSU_METHOD= { $prng->arrayElement(['TOI','RSU']) }
   | WSREP_RETRY_AUTOCOMMIT= { $prng->int(0,10000) }
   | WSREP_SYNC_WAIT= { $prng->int(0,15) }
-# Disabled due to MDEV-24596
-# | WSREP_TRX_FRAGMENT_SIZE= { $prng->arrayElement(['DEFAULT',0,1,16384,1048576]) }
-  | WSREP_TRX_FRAGMENT_UNIT= { $prng->arrayElement(['bytes',"'rows'",'segments']) }
+# These only work when Galera is configured
+#  | WSREP_TRX_FRAGMENT_SIZE= { $prng->arrayElement(['DEFAULT',0,1,16384,1048576]) } /* compatibility 10.4.2 */
+#  | WSREP_TRX_FRAGMENT_UNIT= { $prng->arrayElement(['bytes',"'rows'",'segments']) } /* compatibility 10.4.2 */
 ;
 
 dynvar_global_variable:
@@ -281,38 +291,34 @@ dynvar_global_variable:
   | AUTOMATIC_SP_PRIVILEGES= dynvar_boolean
   | BINLOG_CACHE_SIZE= { $prng->arrayElement([4096,16384,1048576]) }
   | BINLOG_CHECKSUM= { $prng->arrayElement(['CRC32','NONE']) }
-  # Moved to runtime
-  # | BINLOG_COMMIT_WAIT_COUNT= { $prng->arrayElement([1,10,100]) }
-  # Moved to runtime
-  # | BINLOG_COMMIT_WAIT_USEC= { $prng->arrayElement([0,1000,1000000,10000000]) }
-  | BINLOG_FILE_CACHE_SIZE= { $prng->arrayElement([8192,65536,1048576]) }
+  | BINLOG_FILE_CACHE_SIZE= { $prng->arrayElement([8192,65536,1048576]) } /* compatibility 10.3.3 */
   | BINLOG_ROW_METADATA= { $prng->arrayElement(['NO_LOG','MINIMAL','FULL']) } /* compatibility 10.5.0 */
   | BINLOG_STMT_CACHE_SIZE= { $prng->arrayElement([4096,65536,1048576]) }
   | CONCURRENT_INSERT= { $prng->arrayElement(['AUTO','NEVER','ALWAYS']) }
 # | CONNECT_TIMEOUT
   | DEBUG_BINLOG_FSYNC_SLEEP= { $prng->arrayElement([1000,500000,1000000]) }
-  | DEFAULT_PASSWORD_LIFETIME= { $prng->arrayElement([150,300,600]) }
+  | DEFAULT_PASSWORD_LIFETIME= { $prng->arrayElement([150,300,600]) } /* compatibility 10.4.3 */
   | DELAYED_INSERT_LIMIT= { $prng->arrayElement([1,50,1000,10000]) }
   | DELAYED_INSERT_TIMEOUT= { $prng->arrayElement([10,100,600]) }
   | DELAYED_QUEUE_SIZE= { $prng->arrayElement([10,100,10000]) }
   | DELAY_KEY_WRITE= { $prng->arrayElement(['ON','OFF','ALL']) }
-  | DISCONNECT_ON_EXPIRED_PASSWORD= dynvar_boolean
-  # Moved to startup options
+  | DISCONNECT_ON_EXPIRED_PASSWORD= dynvar_boolean /* compatibility 10.4.3 */
+# Moved to startup options
 # | ENCRYPT_TMP_DISK_TABLES
-  | EVENT_SCHEDULER
+  | EVENT_SCHEDULER= dynvar_boolean
   | EXPIRE_LOGS_DAYS= { $prng->int(0,99) }
   | EXTRA_MAX_CONNECTIONS= { $prng->int(1,10) }
   | FLUSH= dynvar_boolean
   | FLUSH_TIME= { $prng->arrayElement([1,30,300]) }
-  # Unlikely used in practice
+# Unlikely used in practice
 # | FT_BOOLEAN_SYNTAX
-  # Pre-defined in tests
+# Pre-defined in tests
 # | GENERAL_LOG
 # | GENERAL_LOG_FILE
   | GTID_BINLOG_STATE= ''
   | GTID_CLEANUP_BATCH_SIZE= { $prng->int(0,10000) } /* compatibility 10.4.1 */
   | GTID_IGNORE_DUPLICATES= dynvar_boolean
-  | GTID_POS_AUTO_ENGINES= dynvar_engines_list_value
+  | GTID_POS_AUTO_ENGINES= dynvar_engines_list_value /* compatibility 10.3.1 */
   | GTID_SLAVE_POS= ''
   | GTID_STRICT_MODE= dynvar_boolean
   | HOST_CACHE_SIZE= { $prng->arrayElement([0,1,2,10,16,100,1024]) }
@@ -321,24 +327,23 @@ dynvar_global_variable:
   | INNODB_ADAPTIVE_FLUSHING= dynvar_boolean
   | INNODB_ADAPTIVE_FLUSHING_LWM= { $prng->int(0,70) }
   | INNODB_ADAPTIVE_HASH_INDEX= dynvar_boolean
-  | INNODB_ADAPTIVE_MAX_SLEEP_DELAY= { $prng->arrayElement([0,1000,10000,100000,1000000]) }
+  | INNODB_ADAPTIVE_MAX_SLEEP_DELAY= { $prng->arrayElement([0,1000,10000,100000,1000000]) } /* incompatibility 10.6.0 */
   | INNODB_AUTOEXTEND_INCREMENT= { $prng->int(1,1000) }
 # Debug variable
   | INNODB_BACKGROUND_DROP_LIST_EMPTY= dynvar_boolean
 # Deprecated since 10.5.2
-  | INNODB_BACKGROUND_SCRUB_DATA_CHECK_INTERVAL= { $prng->arrayElement([1,10,60,300]) }
+  | INNODB_BACKGROUND_SCRUB_DATA_CHECK_INTERVAL= { $prng->arrayElement([1,10,60,300]) } /* incompatibility 10.6.0 */
 # Deprecated since 10.5.2
-  | INNODB_BACKGROUND_SCRUB_DATA_COMPRESSED= dynvar_boolean
+  | INNODB_BACKGROUND_SCRUB_DATA_COMPRESSED= dynvar_boolean /* incompatibility 10.6.0 */
 # Deprecated since 10.5.2
-  | INNODB_BACKGROUND_SCRUB_DATA_INTERVAL= { $prng->arrayElement([10,100,300]) }
+  | INNODB_BACKGROUND_SCRUB_DATA_INTERVAL= { $prng->arrayElement([10,100,300]) } /* incompatibility 10.6.0 */
 # Deprecated since 10.5.2
-  | INNODB_BACKGROUND_SCRUB_DATA_UNCOMPRESSED= dynvar_boolean
+  | INNODB_BACKGROUND_SCRUB_DATA_UNCOMPRESSED= dynvar_boolean /* incompatibility 10.6.0 */
   | INNODB_BUFFER_POOL_DUMP_AT_SHUTDOWN= dynvar_boolean
   | INNODB_BUFFER_POOL_DUMP_PCT= { $prng->int(1,100) }
   | INNODB_BUFFER_POOL_EVICT= { $prng->arrayElement(["''","'uncompressed'"]) }
   | INNODB_BUFFER_POOL_FILENAME= 'ibbpool'
-# Debug variable
-  | INNODB_BUFFER_POOL_LOAD_PAGES_ABORT= { $prng->arrayElement([1,100,1000,100000]) }
+  | INNODB_BUFFER_POOL_LOAD_PAGES_ABORT= { $prng->arrayElement([1,100,1000,100000]) } /* compatibility 10.3.0 */
   | INNODB_BUFFER_POOL_SIZE= { $prng->arrayElement([67108864,268435456,1073741824,2147483648]) }
   | INNODB_BUF_DUMP_STATUS_FREQUENCY= { $prng->arrayElement([10,50,99]) }
 # Debug variable
@@ -347,17 +352,18 @@ dynvar_global_variable:
 # Debug variable, 2 causes intentional crash
 # | INNODB_CHANGE_BUFFERING_DEBUG
   | INNODB_CHANGE_BUFFER_MAX_SIZE= { $prng->int(0,50) }
-# Skipping strict values to avoid aborts
-  | INNODB_CHECKSUM_ALGORITHM= { $prng->arrayElement(['full_crc32','crc32','innodb','none']) }
+# Skipping strict values to avoid aborts (moving to startup variables)
+  | INNODB_CHECKSUM_ALGORITHM= { $prng->arrayElement(['crc32','innodb','none','full_crc32 /* compatibility 10.4.3 */']) }
   | INNODB_CMP_PER_INDEX_ENABLED= dynvar_boolean
-# Can't really be set to non-default at runtime
+# Can't really be set to non-default at runtime, and deprecated/removed anyway
 # | innodb_commit_concurrency
   | INNODB_COMPRESSION_ALGORITHM= { $prng->arrayElement(['none','zlib','lz4','lzo','lzma','bzip2','snappy']) }
   | INNODB_COMPRESSION_FAILURE_THRESHOLD_PCT= { $prng->int(0,100) }
   | INNODB_COMPRESSION_LEVEL= { $prng->int(1,9) }
   | INNODB_COMPRESSION_PAD_PCT_MAX= { $prng->int(0,75) }
-  | INNODB_CONCURRENCY_TICKETS= { $prng->arrayElement([1,2,10,100,1000,10000,100000]) }
+  | INNODB_CONCURRENCY_TICKETS= { $prng->arrayElement([1,2,10,100,1000,10000,100000]) } /* incompatibility 10.6.0 */
   | INNODB_DEADLOCK_DETECT= dynvar_boolean
+  | INNODB_DEADLOCK_REPORT= { $prng->arrayElement(['off','basic','full']) } /* compatibility 10.6.0 */
   | INNODB_DEFAULT_ROW_FORMAT= { $prng->arrayElement(['redundant','compact','dynamic']) }
   | INNODB_DEFRAGMENT= dynvar_boolean
   | INNODB_DEFRAGMENT_FILL_FACTOR= { $prng->arrayElement([0.7,0.8,0.9,1]) }
@@ -374,8 +380,8 @@ dynvar_global_variable:
   | INNODB_ENCRYPTION_ROTATION_IOPS= { $prng->arrayElement([0,1,2,100,1000,10000]) }
   | INNODB_ENCRYPTION_THREADS= { $prng->arrayElement([0,1,2,4,8]) }
 # | INNODB_ENCRYPT_TABLES
-  | INNODB_EVICT_TABLES_ON_COMMIT_DEBUG= dynvar_boolean
-  | INNODB_FAST_SHUTDOWN= { $prng->int(0,3) }
+  | INNODB_EVICT_TABLES_ON_COMMIT_DEBUG= dynvar_boolean  /* compatibility 10.3.18 */
+  | INNODB_FAST_SHUTDOWN= { $prng->arrayElement([0,1,2,'3 /* compatibility 10.3.6 */']) }
   | INNODB_FILE_PER_TABLE= dynvar_boolean
   | INNODB_FILL_FACTOR= { $prng->int(10,100) }
 # | INNODB_FIL_MAKE_PAGE_DIRTY_DEBUG
@@ -390,16 +396,17 @@ dynvar_global_variable:
   | INNODB_FT_NUM_WORD_OPTIMIZE= { $prng->arrayElement([0,1,2,10,1000,10000]) }
   | INNODB_FT_RESULT_CACHE_LIMIT= { $prng->arrayElement([1000000,10000000,100000000,1000000000,4000000000]) }
 # | innodb_ft_server_stopword_table
-  | INNODB_IDLE_FLUSH_PCT= { $prng->int(0,100) }
+  | INNODB_IDLE_FLUSH_PCT= { $prng->int(0,100) } /* incompatibility 10.5.9 */
   | INNODB_IMMEDIATE_SCRUB_DATA_UNCOMPRESSED= dynvar_boolean
-  | INNODB_INSTANT_ALTER_COLUMN_ALLOWED= { $prng->arrayElement(['never','add_last','add_drop_reorder']) }
+  | INNODB_INSTANT_ALTER_COLUMN_ALLOWED= { $prng->arrayElement(['never','add_last','add_drop_reorder /* compatibility 10.4.13 */']) } /* compatibility 10.3.23 */
   | INNODB_IO_CAPACITY= { $prng->arrayElement([100,500,1000]) }
   | INNODB_IO_CAPACITY_MAX= { $prng->arrayElement([100,1000,5000]) }
   | INNODB_LIMIT_OPTIMISTIC_INSERT_DEBUG= { $prng->arrayElement([1,10,100,1000,10000]) }
-  | INNODB_LOG_CHECKSUMS= dynvar_boolean
-  | INNODB_LOG_COMPRESSED_PAGES= dynvar_boolean
-  | INNODB_LOG_OPTIMIZE_DDL= dynvar_boolean
+  | INNODB_LOG_CHECKSUMS= dynvar_boolean /* incompatibility 10.6.0 */
+  | INNODB_LOG_COMPRESSED_PAGES= dynvar_boolean /* incompatibility 10.6.0 */
+  | INNODB_LOG_OPTIMIZE_DDL= dynvar_boolean /* incompatibility 10.6.0 */
   | INNODB_LOG_WRITE_AHEAD_SIZE= { $prng->arrayElement([512,1024,10000,16384]) }
+  | INNODB_LRU_FLUSH_SIZE= { $prng->arrayElement([1,8,32,128,256]) } /* compatibility 10.5 */
   | INNODB_LRU_SCAN_DEPTH= { $prng->arrayElement([100,512,2048,16384]) }
 # | innodb_master_thread_disabled_debug
   | INNODB_MAX_DIRTY_PAGES_PCT= { $prng->int(0,99) }
@@ -416,7 +423,7 @@ dynvar_global_variable:
   | INNODB_OLD_BLOCKS_TIME= { $prng->arrayElement([0,100,10000,100000]) }
   | INNODB_ONLINE_ALTER_LOG_MAX_SIZE= { $prng->arrayElement([65536,33554432,268435456]) }
   | INNODB_OPTIMIZE_FULLTEXT_ONLY= dynvar_boolean
-  | INNODB_PAGE_CLEANERS= { $prng->int(1,8) }
+  | INNODB_PAGE_CLEANERS= { $prng->int(1,8) } /* compatibility 10.3.3 */ /* incompatibility 10.6.0 */
 # Makes server stall
 # | innodb_page_cleaner_disabled_debug= dynvar_boolean
   | INNODB_PREFIX_INDEX_CLUSTER_OPTIMIZATION= dynvar_boolean
@@ -429,10 +436,11 @@ dynvar_global_variable:
   | INNODB_READ_AHEAD_THRESHOLD= { $prng->int(0,64) }
 # MENT-661
   | INNODB_READ_IO_THREADS= { $prng->int(0,65) } /* compatibility 10.5.2-0 */
-  | INNODB_REPLICATION_DELAY= { $prng->arrayElement([1,100,1000,10000]) }
+  | INNODB_READ_ONLY_COMPRESSED= dynvar_boolean /* compatibility 10.6.0 */
+  | INNODB_REPLICATION_DELAY= { $prng->arrayElement([1,100,1000,10000]) } /* incompatibility 10.6.0 */
 # | innodb_saved_page_number_debug
 # Deprecated since 10.5.2
-  | INNODB_SCRUB_LOG_SPEED= { $prng->arrayElement([1,2,16,1024]) }
+  | INNODB_SCRUB_LOG_SPEED= { $prng->arrayElement([1,2,16,1024]) } /* incompatibility 10.6.0 */
 # | innodb_simulate_comp_failures
   | INNODB_SPIN_WAIT_DELAY= { $prng->arrayElement([1,2,16,1024]) }
   | INNODB_STATS_AUTO_RECALC= dynvar_boolean
@@ -447,12 +455,12 @@ dynvar_global_variable:
   | INNODB_STATUS_OUTPUT= dynvar_boolean
   | INNODB_STATUS_OUTPUT_LOCKS= dynvar_boolean
   | INNODB_SYNC_SPIN_LOOPS= { $prng->arrayElement([0,1,2,10,100,1000]) }
-# Disabled due to MDEV-24759 (and it's deprecated in 10.5)
+# Disabled due to MDEV-24759 (and it's deprecated in 10.5, removed in 10.6)
 #  | INNODB_THREAD_CONCURRENCY= { $prng->int(1,8) }
-  | INNODB_THREAD_SLEEP_DELAY= { $prng->arrayElement([0,100,1000,100000]) }
+  | INNODB_THREAD_SLEEP_DELAY= { $prng->arrayElement([0,100,1000,100000]) } /* incompatibility 10.6.0 */
 # | innodb_trx_purge_view_update_only_debug
 # | innodb_trx_rseg_n_slots_debug
-  | INNODB_UNDO_LOGS= { $prng->int(0,128) }
+  | INNODB_UNDO_LOGS= { $prng->int(0,128) } /* incompatibility 10.6.0 */
   | INNODB_UNDO_LOG_TRUNCATE= dynvar_boolean
 # MENT-661
   | INNODB_WRITE_IO_THREADS= { $prng->int(0,65) } /* compatibility 10.5.2-0 */
@@ -473,8 +481,8 @@ dynvar_global_variable:
   | MAX_BINLOG_STMT_CACHE_SIZE= { $prng->arrayElement([1048576,16777216,1073741824]) }
 # | max_connections
 # | max_connect_errors
-  | MAX_PASSWORD_ERRORS= { $prng->arrayElement([128,1024,1048576]) }
-  # Low values interfere with --ps-protocol mode, moving 0 and 1 to startup options
+  | MAX_PASSWORD_ERRORS= { $prng->arrayElement([128,1024,1048576]) } /* compatibility 10.4.2 */
+# Low values interfere with --ps-protocol mode, moving 0 and 1 to startup options
   | MAX_PREPARED_STMT_COUNT= { $prng->arrayElement([1024,8192,65528,1048576]) }
   | MAX_WRITE_LOCK_COUNT= { $prng->arrayElement([0,1,1024,1048576]) }
 # Moved to startup settings due to MDEV-24174
@@ -484,6 +492,7 @@ dynvar_global_variable:
   | MYSQL56_TEMPORAL_FORMAT= dynvar_boolean
 # MENT-661
   | NET_BUFFER_LENGTH= { $prng->arrayElement([1024,4096,16384,65536,1048576]) }
+  | OPTIMIZER_MAX_SEL_ARG_WEIGHT= { $prng->arrayElement([0,1,10,100,1000,10000,50000,100000]) } /* compatibility 10.5.9 */
   | PROXY_PROTOCOL_NETWORKS= '*' /* compatibility 10.3.1 */
   | QUERY_CACHE_LIMIT= { $prng->arrayElement([0,1,8,1024,1048576,4294967295]) }
   | QUERY_CACHE_MIN_RES_UNIT= { $prng->arrayElement([0,1,8,1024,1048576,4294967295]) }
@@ -499,18 +508,14 @@ dynvar_global_variable:
   | REPLICATE_IGNORE_TABLE= 'test.dummy'
   | REPLICATE_WILD_DO_TABLE= 'test.%,mysql.%'
   | REPLICATE_WILD_IGNORE_TABLE= 'mysql.%'
-# | require_secure_transport
-  # Moved to runtime
-# | RPL_SEMI_SYNC_MASTER_ENABLED= dynvar_boolean
-  | RPL_SEMI_SYNC_MASTER_TIMEOUT= { $prng->arrayElement([0,1,1000,100000]) }
-  | RPL_SEMI_SYNC_MASTER_TRACE_LEVEL= { $prng->arrayElement([1,16,32,64]) }
-  | RPL_SEMI_SYNC_MASTER_WAIT_NO_SLAVE= dynvar_boolean
-  | RPL_SEMI_SYNC_MASTER_WAIT_POINT= { $prng->arrayElement(['AFTER_COMMIT','AFTER_SYNC']) }
-  | RPL_SEMI_SYNC_SLAVE_DELAY_MASTER= dynvar_boolean
-  # Moved to runtime
-# | RPL_SEMI_SYNC_SLAVE_ENABLED= dynvar_boolean
-  | RPL_SEMI_SYNC_SLAVE_KILL_CONN_TIMEOUT= { $prng->arrayElement([0,1,10,100]) }
-  | RPL_SEMI_SYNC_SLAVE_TRACE_LEVEL= { $prng->arrayElement([1,16,32,64]) }
+# | require_secure_transport /* compatibility 10.5 */
+  | RPL_SEMI_SYNC_MASTER_TIMEOUT= { $prng->arrayElement([0,1,1000,100000]) } /* compatibility 10.3 */
+  | RPL_SEMI_SYNC_MASTER_TRACE_LEVEL= { $prng->arrayElement([1,16,32,64]) } /* compatibility 10.3 */
+  | RPL_SEMI_SYNC_MASTER_WAIT_NO_SLAVE= dynvar_boolean /* compatibility 10.3 */
+  | RPL_SEMI_SYNC_MASTER_WAIT_POINT= { $prng->arrayElement(['AFTER_COMMIT','AFTER_SYNC']) } /* compatibility 10.3 */
+  | RPL_SEMI_SYNC_SLAVE_DELAY_MASTER= dynvar_boolean /* compatibility 10.3 */
+  | RPL_SEMI_SYNC_SLAVE_KILL_CONN_TIMEOUT= { $prng->arrayElement([0,1,10,100]) } /* compatibility 10.3 */
+  | RPL_SEMI_SYNC_SLAVE_TRACE_LEVEL= { $prng->arrayElement([1,16,32,64]) } /* compatibility 10.3 */
   | SECURE_AUTH= dynvar_boolean
   | SLAVE_COMPRESSED_PROTOCOL= dynvar_boolean
   | SLAVE_DDL_EXEC_MODE= { $prng->arrayElement(['IDEMPOTENT','STRICT']) }
@@ -522,10 +527,10 @@ dynvar_global_variable:
   | SLAVE_PARALLEL_MODE= { $prng->arrayElement(['conservative','optimistic','none','aggressive','minimal']) }
   | SLAVE_PARALLEL_THREADS= { $prng->int(1,8) }
 # | slave_parallel_workers # Same as slave_parallel_threads
-  | SLAVE_RUN_TRIGGERS_FOR_RBR= { $prng->arrayElement(['NO','YES','LOGGING','ENFORCE']) }
+  | SLAVE_RUN_TRIGGERS_FOR_RBR= { $prng->arrayElement(['NO','YES','LOGGING','ENFORCE /* compatibility 10.5.2 */']) }
   | SLAVE_SQL_VERIFY_CHECKSUM= dynvar_boolean
   | SLAVE_TRANSACTION_RETRIES= { $prng->int(0,1000) }
-  | SLAVE_TRANSACTION_RETRY_INTERVAL= { $prng->arrayElement([1,2,10,60,300]) }
+  | SLAVE_TRANSACTION_RETRY_INTERVAL= { $prng->arrayElement([1,2,10,60,300]) } /* compatibility 10.3.3 */
   | SLAVE_TYPE_CONVERSIONS= { $prng->arrayElement(['ALL_LOSSY','ALL_NON_LOSSY']) }
   | SLOW_LAUNCH_TIME= { $prng->int(0,300) }
 # | slow_query_log_file
@@ -538,21 +543,19 @@ dynvar_global_variable:
   | SYNC_RELAY_LOG_INFO= { $prng->arrayElement([0,1,100,100000]) }
 # | table_definition_cache
   | TABLE_OPEN_CACHE= { $prng->arrayElement([1,2,10,100]) }
-  | TCP_KEEPALIVE_INTERVAL= { $prng->int(1,300) }
-  | TCP_KEEPALIVE_PROBES= { $prng->int(1,300) }
-  | TCP_KEEPALIVE_TIME= { $prng->int(1,300) }
+  | TCP_KEEPALIVE_INTERVAL= { $prng->int(1,300) } /* compatibility 10.3.3 */
+  | TCP_KEEPALIVE_PROBES= { $prng->int(1,300) } /* compatibility 10.3.3 */
+  | TCP_KEEPALIVE_TIME= { $prng->int(1,300) } /* compatibility 10.3.3 */
   | THREAD_CACHE_SIZE= { $prng->arrayElement([1,2,8,128]) }
-  | THREAD_POOL_DEDICATED_LISTENER= dynvar_boolean
-  | THREAD_POOL_EXACT_STATS= dynvar_boolean
+  | THREAD_POOL_DEDICATED_LISTENER= dynvar_boolean /* compatibility 10.5.0 */
+  | THREAD_POOL_EXACT_STATS= dynvar_boolean /* compatibility 10.5.0 */
   | THREAD_POOL_IDLE_TIMEOUT= { $prng->int(0,300) }
   | THREAD_POOL_MAX_THREADS= { $prng->arrayElement([1,2,128,500,1000]) }
   | THREAD_POOL_OVERSUBSCRIBE= { $prng->int(1,16) }
   | THREAD_POOL_PRIO_KICKUP_TIMER= { $prng->arrayElement([0,1,2,128,500,10000]) }
   | THREAD_POOL_SIZE= { $prng->int(1,128) }
   | THREAD_POOL_STALL_LIMIT= { $prng->arrayElement([10,100,1000,10000]) }
-  # Moved to runtime
-# | USERSTAT= dynvar_boolean
-  # Galera is not normally used
+# Galera is not normally used in tests
 # | wsrep_auto_increment_control    global
 # | wsrep_certification_rules       global
 # | wsrep_certify_nonpk     global
@@ -566,11 +569,12 @@ dynvar_global_variable:
 # | wsrep_forced_binlog_format      global
 # | wsrep_gtid_domain_id    global
 # | wsrep_gtid_mode global
-# | wsrep_ignore_apply_errors       global
+# | wsrep_ignore_apply_errors       global /* compatibility 10.4 */
 # | wsrep_load_data_splitting       global
 # | wsrep_log_conflicts     global
 # | wsrep_max_ws_rows       global
 # | wsrep_max_ws_size       global
+# | WSREP_MODE /* compatibility 10.6.0 */
 # | wsrep_mysql_replication_bundle  global
 # | wsrep_node_address      global
 # | wsrep_node_incoming_address     global
@@ -584,65 +588,104 @@ dynvar_global_variable:
 # | wsrep_slave_fk_checks   global
 # | wsrep_slave_threads     global
 # | wsrep_slave_uk_checks   global
+# | WSREP_SR_STORE /* compatibility 10.4 */
 # | wsrep_sst_auth  global
 # | wsrep_sst_donor global
 # | wsrep_sst_donor_rejects_queries global
 # | wsrep_sst_method        global
 # | wsrep_sst_receive_address       global
 # | wsrep_start_position    global
-# | wsrep_strict_ddl        global
+# | wsrep_strict_ddl        global /* compatibility 10.5 */
+# | WSREP_TRX_FRAGMENT_SIZE /* compatibility 10.4 */
+# | WSREP_TRX_FRAGMENT_UNIT /* compatibility 10.4 */
 ;
+
+# EXTENDED_MORE added in 10.5
 
 dynvar_default_regex_flags_value:
     { @flags= qw(
           DOTALL
           DUPNAMES
           EXTENDED
+          EXTENDED_MORE
           EXTRA
           MULTILINE
           UNGREEDY
-        ); $length=$prng->int(0,scalar(@flags)); "'" . (join ',', @{$prng->shuffleArray(\@flags)}[0..$length-1]) . "'"
+        ); $length=$prng->int(0,scalar(@flags))
+        ; $val= "'" . (join ',', @{$prng->shuffleArray(\@flags)}[0..$length-1]) . "'"
+        ; if (index($val,'EXTENDED_MORE') > -1) { $val.= '/* compatibility 10.5 */' }
+        ; $val
     }
 ;
 
-# Causes problems, specifically QUOTE() does not work properly
-#          MSSQL
+# 10.2: REAL_AS_FLOAT,PIPES_AS_CONCAT,ANSI_QUOTES,IGNORE_SPACE,IGNORE_BAD_TABLE_OPTIONS,ONLY_FULL_GROUP_BY,NO_UNSIGNED_SUBTRACTION,NO_DIR_IN_CREATE,POSTGRESQL,ORACLE,MSSQL,DB2,MAXDB,NO_KEY_OPTIONS,NO_TABLE_OPTIONS,NO_FIELD_OPTIONS,MYSQL323,MYSQL40,ANSI,NO_AUTO_VALUE_ON_ZERO,NO_BACKSLASH_ESCAPES,STRICT_TRANS_TABLES,STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ALLOW_INVALID_DATES,ERROR_FOR_DIVISION_BY_ZERO,TRADITIONAL,NO_AUTO_CREATE_USER,HIGH_NOT_PRECEDENCE,NO_ENGINE_SUBSTITUTION,PAD_CHAR_TO_FULL_LENGTH
+# 10.3: + EMPTY_STRING_IS_NULL,SIMULTANEOUS_ASSIGNMENT
+# 10.4: + TIME_ROUND_FRACTIONAL
+
+# MSSQL causes problems, specifically QUOTE() does not work properly.
+# MAXDB is disabled due to MDEV-18864
+# EMPTY_STRING_IS_NULL should be used in specific ORACLE mode tests,
+#   otherwise it will cause endless semantic problems
+#   (NULL being inserted into non-null column, etc.)
+
+dynvar_all_sql_modes:
+  { @modes= (
+        'REAL_AS_FLOAT',
+        'PIPES_AS_CONCAT',
+        'ANSI_QUOTES',
+        'IGNORE_SPACE',
+        'IGNORE_BAD_TABLE_OPTIONS',
+        'ONLY_FULL_GROUP_BY',
+        'NO_UNSIGNED_SUBTRACTION',
+        'NO_DIR_IN_CREATE',
+        'POSTGRESQL',
+        'ORACLE',
+  #     'MSSQL',
+        'DB2',
+  #     'MAXDB',
+        'NO_KEY_OPTIONS',
+        'NO_TABLE_OPTIONS',
+        'NO_FIELD_OPTIONS',
+        'MYSQL323',
+        'MYSQL40',
+        'ANSI',
+        'NO_AUTO_VALUE_ON_ZERO',
+        'NO_BACKSLASH_ESCAPES',
+        'STRICT_TRANS_TABLES',
+        'STRICT_ALL_TABLES',
+        'NO_ZERO_IN_DATE',
+        'NO_ZERO_DATE',
+        'ALLOW_INVALID_DATES',
+        'ERROR_FOR_DIVISION_BY_ZERO',
+        'TRADITIONAL',
+        'NO_AUTO_CREATE_USER',
+        'HIGH_NOT_PRECEDENCE',
+        'NO_ENGINE_SUBSTITUTION',
+        'PAD_CHAR_TO_FULL_LENGTH',
+  #     'EMPTY_STRING_IS_NULL',
+        'SIMULTANEOUS_ASSIGNMENT',
+        'TIME_ROUND_FRACTIONAL',
+    ); ''
+  }
+;
+
+dynvar_sql_mode_compatibility_markers:
+  { if (index($val,'TIME_ROUND_FRACTIONAL') > -1) { $val.= ' /* compatibility 10.4 */' }
+    elsif ((index($val,'EMPTY_STRING_IS_NULL') > -1) or (index($val, 'SIMULTANEOUS_ASSIGNMENT') > -1)) { $val .= ' /* compatibility 10.3 */' }
+    ; $val }
+;
+
 dynvar_sql_mode_value:
     DEFAULT
-    | { @modes= qw(
-          ALLOW_INVALID_DATES
-          ANSI
-          ANSI_QUOTES
-          DB2
-          EMPTY_STRING_IS_NULL
-          ERROR_FOR_DIVISION_BY_ZERO
-          HIGH_NOT_PRECEDENCE
-          IGNORE_BAD_TABLE_OPTIONS
-          IGNORE_SPACE
-          MYSQL323
-          MYSQL40
-          NO_AUTO_CREATE_USER
-          NO_AUTO_VALUE_ON_ZERO
-          NO_BACKSLASH_ESCAPES
-          NO_DIR_IN_CREATE
-          NO_ENGINE_SUBSTITUTION
-          NO_FIELD_OPTIONS
-          NO_KEY_OPTIONS
-          NO_TABLE_OPTIONS
-          NO_UNSIGNED_SUBTRACTION
-          NO_ZERO_IN_DATE
-          ONLY_FULL_GROUP_BY
-          PAD_CHAR_TO_FULL_LENGTH
-          PIPES_AS_CONCAT
-          POSTGRESQL
-          REAL_AS_FLOAT
-          SIMULTANEOUS_ASSIGNMENT
-          STRICT_ALL_TABLES
-          STRICT_TRANS_TABLES
-          TIME_ROUND_FRACTIONAL
-        ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
-    }
+    | dynvar_all_sql_modes
+      { $length=$prng->int(0,scalar(@modes))
+      ; $val= "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
+      ; ''
+    } dynvar_sql_mode_compatibility_markers
 ;
+
+# 10.2: admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk
+# 10.3: + filesort_priority_queue,not_using_index
 
 dynvar_log_slow_filter_value:
     DEFAULT
@@ -653,12 +696,20 @@ dynvar_log_slow_filter_value:
           filesort_priority_queue
           full_join
           full_scan
+          not_using_index
           query_cache
           query_cache_miss
           tmp_table
           tmp_table_on_disk
-        ); $length=$prng->int(0,scalar(@filters)); "'" . (join ',', @{$prng->shuffleArray(\@filters)}[0..$length-1]) . "'"
-    }
+        ); $length=$prng->int(0,scalar(@filters))
+        ; $val= "'" . (join ',', @{$prng->shuffleArray(\@filters)}[0..$length-1]) . "'"
+        ; if ((index($val,'filesort_priority_queue') > -1) or (index($val,'not_using_index') > -1)) { $val.= ' /* compatibility 10.3.1 */' }
+        ; $val
+      }
+;
+
+dynvar_log_slow_disabled_statements_value:
+    { @values= qw(admin call slave sp) ; $length= $prng->int(0,scalar(@values)); "'" . (join ',', @{$prng->shuffleArray(\@values)}[0..$length-1]) . "'" }
 ;
 
 dynvar_log_slow_verbosity_value:
@@ -679,8 +730,13 @@ dynvar_old_mode_value:
     }
 ;
 
-dynvar_optimizer_switch_value:
-    { @modes= qw(
+# 10.2:  index_merge,index_merge_union,index_merge_sort_union,index_merge_intersection,index_merge_sort_intersection,engine_condition_pushdown,index_condition_pushdown,derived_merge,derived_with_keys,firstmatch,loosescan,materialization,in_to_exists,semijoin,partial_match_rowid_merge,partial_match_table_scan,subquery_cache,mrr,mrr_cost_based,mrr_sort_keys,outer_join_with_cache,semijoin_with_cache,join_cache_incremental,join_cache_hashed,join_cache_bka,optimize_join_buffer_size,table_elimination,extended_keys,exists_to_in,orderby_uses_equalities,condition_pushdown_for_derived
+# 10.3: + split_materialized
+# 10.4: + condition_pushdown_for_subquery,rowid_filter,condition_pushdown_from_having
+# 10.5: + not_null_range_scan
+
+dynvar_all_optimizer_switches:
+  { @modes= qw(
             index_merge
             index_merge_union
             index_merge_sort_union
@@ -717,7 +773,20 @@ dynvar_optimizer_switch_value:
             rowid_filter
             condition_pushdown_from_having
             not_null_range_scan
-        ); $length=$prng->int(0,scalar(@modes))
+    ); ''
+  };
+
+dynvar_optimizer_switch_compatibility_markers:
+  { if (index($val,'not_null_range_scan') > -1) { $val.= ' /* compatibility 10.5 */' }
+    elsif ((index($val,'condition_pushdown_for_subquery') > -1) or (index($val,'rowid_filter') > -1) or (index($val,'condition_pushdown_from_having') > -1)) { $val.= ' /* compatibility 10.4 */' }
+    elsif (index($val,'split_materialized') > -1) { $val.= ' /* compatibility 10.3.4 */' }
+    ; $val }
+  ;
+
+dynvar_optimizer_switch_value:
+    DEFAULT
+    | dynvar_all_optimizer_switches
+    { $length=$prng->int(0,scalar(@modes))
         ; $switch= (join ',', map {$_.'='.$prng->arrayElement(['on','off'])} @{$prng->shuffleArray(\@modes)}[0..$length-1])
         ; if ($switch =~ /materialization=off/) {
             if ($switch =~ /in_to_exists=off/) { $switch =~ s/in_to_exists=off/in_to_exists=on/ }
@@ -726,8 +795,9 @@ dynvar_optimizer_switch_value:
             if ($switch =~ /materialization=off/) { $switch =~ s/materialization=off/materialization=on/ }
             elsif ($switch !~ /materialization/) { $switch .= ',materialization=on' }
           }
-        ; "'" . $switch . "'"
-    }
+        ; $val= "'" . $switch . "'"
+        ; ''
+    } dynvar_optimizer_switch_compatibility_markers
 ;
 
 dynvar_session_track_system_variables_value:
