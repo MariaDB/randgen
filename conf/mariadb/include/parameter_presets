@@ -239,8 +239,9 @@ $optional_innodb_variables_102= [
     '--mysqld=--innodb-checksum-algorithm=none',
     '--mysqld=--innodb-checksum-algorithm=innodb',
     '--mysqld=--innodb-checksum-algorithm=crc32',
-    '--mysqld=--innodb-checksum-algorithm=strict_none',
-    '--mysqld=--innodb-checksum-algorithm=strict_innodb',
+# Disabled due to MDEV-25083
+#    '--mysqld=--innodb-checksum-algorithm=strict_none',
+#    '--mysqld=--innodb-checksum-algorithm=strict_innodb',
     '--mysqld=--innodb-checksum-algorithm=strict_crc32',
   ],
   [ '', '', '', '', '', '', '', '', '',
@@ -265,8 +266,11 @@ $optional_innodb_variables_102= [
   [ '', '', '', '',
     '--mysqld=--skip-innodb-doublewrite',
   ],
-  # <no default value>
-  [ '', '', '', '', '', '', '', '',
+  # No default in 10.2
+  # Default fsync in 10.3.7
+  # Default O_DIRECT in 10.6.0
+  [ '', '', '', '', '', '', '', '', '', '', '', '',
+    '--mysqld=--innodb-flush-method=fsync',
     '--mysqld=--innodb-flush-method=O_DSYNC',
     '--mysqld=--innodb-flush-method=littlesync',
     '--mysqld=--innodb-flush-method=nosync',
