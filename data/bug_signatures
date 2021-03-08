@@ -4,6 +4,24 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25087:
+=~ AddressSanitizer: stack-overflow|SIGSEGV
+=~ row_ins_check_foreign_constraint
+=~ row_upd_check_references_constraints
+=~ row_upd_sec_index_entry
+=~ thread-stack=|thread_stack=
+MDEV-25084:
+=~ Assertion \`fixed'
+=~ Item_func_or_sum::with_subquery
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-25084:
+=~ Assertion \`i->is_fixed()'
+=~ Item_copy::Item_copy
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-25083:
+=~ InnoDB: Database page corruption on disk or a failed file read|Cannot create log file because data files are corrupt
+=~ MariaBackup
+=~ strict_none|strict_innodb
 MDEV-25069:
 =~ Assertion \`root->weight >= (1 + (key->next_key_part ? key->next_key_part->weight : 0))'
 =~ SEL_ARG::tree_delete
@@ -239,6 +257,11 @@ MDEV-24861:
 =~ Assertion \`trx->rsegs\.m_redo\.rseg'
 =~ innodb_prepare_commit_versioned
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-24859:
+=~ Assertion \`static_cast<ins_node_t\*>(thr->run_node)->bulk_insert'
+=~ trx_undo_report_row_operation
+=~ btr_cur_ins_lock_and_undo
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-24839:
 =~ Assertion \`!table->file->keyread_enabled()'
 =~ close_thread_table
@@ -442,7 +465,6 @@ MDEV-24693:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24686:
 =~ AddressSanitizer|signal [16]
-=~ sortcmp_lex_string
 =~ event_basic_identifier_equal
 =~ Event_queue
 MDEV-24686:
