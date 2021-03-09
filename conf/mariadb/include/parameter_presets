@@ -439,7 +439,9 @@ $optional_server_variables_102= [
   ],
   # Default 299008 (machine/build-dependent?)
   [ '', '', '', '', '', '', '', '',
-    '--mysqld=--thread-stack=131072',
+# Disabled due to MDEV-25087
+#   '--mysqld=--thread-stack=131072',
+    '--mysqld=--thread-stack=512K',
     '--mysqld=--thread-stack=1M',
   ],
 ];
