@@ -38,6 +38,7 @@ use constant MIXER_PROPERTIES	=> 4;
 use constant MIXER_END_TIME	=> 5;
 use constant MIXER_RESTART_TIMEOUT => 6;
 use constant MIXER_COMPATIBILITY => 7;
+use constant MIXER_VARIATORS	=> 8;
 
 my %rule_status;
 
@@ -50,11 +51,12 @@ sub new {
         'generator'	=> MIXER_GENERATOR,
         'executors'	=> MIXER_EXECUTORS,
         'validators'	=> MIXER_VALIDATORS,
+        'variators'	=> MIXER_VARIATORS,
         'properties'	=> MIXER_PROPERTIES,
         'filters'	=> MIXER_FILTERS,
         'end_time'	=> MIXER_END_TIME,
         'restart_timeout' => MIXER_RESTART_TIMEOUT,
-        'compatibility' => MIXER_COMPATIBILITY
+        'compatibility' => MIXER_COMPATIBILITY,
     }, @_);
 
     foreach my $executor (@{$mixer->executors()}) {
@@ -113,7 +115,23 @@ sub new {
 		return undef if not defined $validator->init($mixer->executors());
 	}
 
-	return $mixer;
+  my @variators= ();
+  foreach my $vn (@{$mixer->[MIXER_VARIATORS]}) {
+      eval ("require GenTest::Transform::'".$vn) or croak $@;
+      my $variator = ('GenTest::Transform::'.$vn)->new();
+      push @variators, $variator;
+  }
+  $mixer->[MIXER_VARIATORS] = [ @variators ];
+
+  return $mixer;
+}
+
+sub variate_and_execute {
+  my ($self, $executor, $query)= @_;
+  foreach my $v (@{$self->[MIXER_VARIATORS]}) {
+    $query= $v->variate($query);
+  }
+  return ($query ? $executor->execute($query) : STATUS_OK);
 }
 
 sub next {
@@ -167,7 +185,7 @@ sub next {
 
       EXECUTE_QUERY:
 		foreach my $executor (@$executors) {
-			my $execution_result = $executor->execute($query);
+			my $execution_result = $mixer->variate_and_execute($executor,$query);
 			
 			# If the server has crashed but we expect server restarts during the test, we will wait and retry
 			if (($execution_result->status() == STATUS_SERVER_CRASHED 

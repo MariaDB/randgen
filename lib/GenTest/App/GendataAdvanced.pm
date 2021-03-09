@@ -1,5 +1,5 @@
 # Copyright (C) 2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2016,2021 MariaDB Corporation Ab
+# Copyright (c) 2016, 2021 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -42,6 +42,8 @@ use constant GDS_VCOLS => 7;
 use constant GDS_EXECUTOR_ID => 8;
 use constant GDS_PARTITIONS => 9;
 use constant GDS_COMPATIBILITY => 10;
+use constant GDS_VARIATORS => 11;
+use constant GDS_SEED => 12;
 
 use constant GDS_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
 use constant GDS_DEFAULT_NAMES => ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9'];
@@ -63,12 +65,23 @@ sub new {
         'executor_id' => GDS_EXECUTOR_ID,
         'partitions' => GDS_PARTITIONS,
         'compatibility' => GDS_COMPATIBILITY,
+        'variators' => GDS_VARIATORS,
+        'seed' => GDS_SEED,
     },@_);
 
     if (not defined $self->[GDS_DSN]) {
         $self->[GDS_DSN] = GDS_DEFAULT_DSN;
     }
-        
+
+    my @variators= ();
+    foreach my $vn (@{$self->[GDS_VARIATORS]}) {
+        eval ("require GenTest::Transform::'".$vn) or croak $@;
+        my $variator = ('GenTest::Transform::'.$vn)->new();
+        $variator->setSeed($self->[GDS_SEED]);
+        push @variators, $variator;
+    }
+    $self->[GDS_VARIATORS] = [ @variators ];
+
     return $self;
 }
 
@@ -121,7 +134,7 @@ sub run {
 
     say("Running GendataAdvanced");
     
-    $prng = GenTest::Random->new( seed => 0 );
+    $prng = GenTest::Random->new( seed => $self->[GDS_SEED] );
 
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
     if ($executor->type != DB_MYSQL && $executor->type != DB_MARIADB) {
@@ -146,7 +159,7 @@ sub run {
         $res= $gen_table_result if $gen_table_result > $res;
     }
 
-    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
+    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
     return $res;
 }
 
@@ -193,6 +206,14 @@ sub random_partition_type {
     return $prng->arrayElement(['HASH','KEY','RANGE','LIST']);
 }
 
+sub variate_and_execute {
+  my ($self, $executor, $query)= @_;
+  foreach my $v (@{$self->[GDS_VARIATORS]}) {
+    # 1 stands for "it's gendata, variate with caution"
+    $query= $v->variate($query,1);
+  }
+  return ($query ? $executor->execute($query) : STATUS_OK);
+}
 
 sub gen_table {
     my ($self, $executor, $basename, $size, $prng) = @_;
@@ -604,7 +625,7 @@ sub gen_table {
       ### This variant is needed due to
       ### http://bugs.mysql.com/bug.php?id=47125
 
-      $executor->execute("DROP TABLE /*! IF EXISTS */ $name");
+      $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ $name");
       my $create_stmt = "CREATE TABLE $name (";
       my @column_list = ();
       my @columns= ();
@@ -677,14 +698,14 @@ sub gen_table {
       }
       $create_stmt .= ")" . ($e ne '' ? " ENGINE=$e" : "");
 
-      $res= $executor->execute($create_stmt);
+      $res= $self->variate_and_execute($executor,$create_stmt);
       if ($res->status != STATUS_OK) {
           sayError("Failed to create table $name: " . $res->errstr);
           return $res->status;
       }
 
       if ($pk_stmt) {
-          $res= $executor->execute($pk_stmt);
+          $res= $self->variate_and_execute($executor,$pk_stmt);
           if ($res->status != STATUS_OK) {
               sayError("Failed to add primary key to table $name: " . $res->errstr);
           }
@@ -728,7 +749,7 @@ sub gen_table {
               }
               $part_stmt.= '('.(join ',',@parts).')';
           }
-          $res= $executor->execute($part_stmt);
+          $res= $self->variate_and_execute($executor,$part_stmt);
           if ($res->status == STATUS_OK) {
               say("Table $name has been partitioned by $partition_type($partition_column)");
           } else {
@@ -738,9 +759,9 @@ sub gen_table {
 
       if (defined $views) {
           if ($views ne '') {
-              $executor->execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
+              $self->variate_and_execute($executor,"CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
           } else {
-              $executor->execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
+              $self->variate_and_execute($executor,'CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
           }
       }
 
@@ -773,12 +794,12 @@ sub gen_table {
                   }
               }
           }
-          $executor->execute("ALTER TABLE $name ADD " . ($prng->uint16(0,5) ? 'INDEX' : 'UNIQUE') . "(". join(',',@cols) . ")");
+          $self->variate_and_execute($executor,"ALTER TABLE $name ADD " . ($prng->uint16(0,5) ? 'INDEX' : 'UNIQUE') . "(". join(',',@cols) . ")");
       }
 
       my @values;
 
-      $executor->execute("START TRANSACTION");
+      $self->variate_and_execute($executor,"START TRANSACTION");
       foreach my $row (1..$size)
       {
           my @row_values = ();
@@ -890,8 +911,7 @@ sub gen_table {
 
           ## We do one insert per 500 rows for speed
           if ($row % 500 == 0 || $row == $size) {
-              $res = $executor->execute("
-              INSERT IGNORE INTO $name (" . join(",",@column_list).") VALUES" . join(",",@values));
+              $res = $self->variate_and_execute($executor,"INSERT IGNORE INTO $name (" . join(",",@column_list).") VALUES" . join(",",@values));
               if ($res->status() != STATUS_OK) {
                   sayError("Insert into table $name didn't succeed");
                   return $res->status();
@@ -899,7 +919,7 @@ sub gen_table {
               @values = ();
           }
       }
-      $executor->execute("COMMIT");
+      $self->variate_and_execute($executor,"COMMIT");
     }
     return STATUS_OK;
 }

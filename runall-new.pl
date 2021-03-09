@@ -2,7 +2,7 @@
 
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2019, 2020, MariaDB Corporation Ab.
+# Copyright (c) 2019, 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -162,6 +162,7 @@ my $opt_result = GetOptions(
     'valgrind!'    => \$props->{valgrind},
     'valgrind_options|valgrind-options=s@'    => \@{$props->{valgrind_options}},
     'validators=s@' => \@{$props->{validators}},
+    'variators=s@' => \@{$props->{variators}},
     'vardir=s' => \$props->{vardir},
     'vardir1=s' => \$props->{server_specific}->{1}->{vardir},
     'vardir2=s' => \$props->{server_specific}->{2}->{vardir},
@@ -421,6 +422,11 @@ foreach my $r (@{$props->{reporters}}) {
 ## For backward compatability
 if ($#{$props->{transformers}} == 0 and ${$props->{transformers}}[0] =~ m/,/) {
     @{$props->{transformers}} = split(/,/,${$props->{transformers}}[0]);
+}
+
+## For uniformity
+if ($#{$props->{variators}} == 0 and ${$props->{variators}}[0] =~ m/,/) {
+    @{$props->{variators}} = split(/,/,${$props->{variators}}[0]);
 }
 
 ## For uniformity
@@ -786,9 +792,10 @@ $0 - Run a complete random query generation test, including server start with re
     --threads   : Number of threads to spawn (default $props->{default_threads});
     --queries   : Number of queries to execute per thread (default $props->{default_queries});
     --duration  : Duration of the test in seconds (default $props->{duration} seconds);
-    --validator : The validators to use
+    --validator(s) : The validators to use
     --reporter  : The reporters to use
-    --transformer: The transformers to use (turns on --validator=transformer). Accepts comma separated list
+    --transformer(s): The transformers to use (turns on --validator=transformer). Accepts comma separated list
+    --variator(s): Variators to use. Accepts comma separated list
     --querytimeout: The timeout to use for the QueryTimeout reporter 
     --gendata   : Generate data option. Passed to gentest.pl / GenTest. Takes a data template (.zz file)
                   as an optional argument. Without an argument, indicates the use of GendataSimple (default)

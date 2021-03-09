@@ -40,6 +40,8 @@ use constant GDS_ROWS => 5;
 use constant GDS_VARCHAR_LENGTH => 6;
 use constant GDS_VCOLS => 7;
 use constant GDS_EXECUTOR_ID => 8;
+use constant GDS_VARIATORS => 9;
+use constant GDS_SEED => 10;
 
 use constant GDS_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
 use constant GDS_DEFAULT_NAMES => ['A', 'B', 'C', 'D', 'E', 'AA', 'BB', 'CC', 'DD'];
@@ -52,17 +54,28 @@ sub new {
         'engine' => GDS_ENGINE,
         'views' => GDS_VIEWS,
         'sqltrace' => GDS_SQLTRACE,
-	'notnull' => GDS_NOTNULL,
-	'rows' => GDS_ROWS,
+        'notnull' => GDS_NOTNULL,
+        'rows' => GDS_ROWS,
         'varchar_length' => GDS_VARCHAR_LENGTH,
         'vcols' => GDS_VCOLS,
-        'executor_id' => GDS_EXECUTOR_ID
+        'executor_id' => GDS_EXECUTOR_ID,
+        'variators' => GDS_VARIATORS,
+        'seed' => GDS_SEED,
     },@_);
 
     if (not defined $self->[GDS_DSN]) {
         $self->[GDS_DSN] = GDS_DEFAULT_DSN;
     }
-        
+
+    my @variators= ();
+    foreach my $vn (@{$self->[GDS_VARIATORS]}) {
+        eval ("require GenTest::Transform::'".$vn) or croak $@;
+        my $variator = ('GenTest::Transform::'.$vn)->new();
+        $variator->setSeed($self->[GDS_SEED]);
+        push @variators, $variator;
+    }
+    $self->[GDS_VARIATORS] = [ @variators ];
+
     return $self;
 }
 
@@ -102,12 +115,21 @@ sub executor_id {
     return $_[0]->[GDS_EXECUTOR_ID] || '';
 }
 
+sub variate_and_execute {
+  my ($self, $executor, $query)= @_;
+  foreach my $v (@{$self->[GDS_VARIATORS]}) {
+    # 1 stands for "it's gendata, variate with caution"
+    $query= $v->variate($query,1);
+  }
+  return ($query ? $executor->execute($query) : STATUS_OK);
+}
+
 sub run {
     my ($self) = @_;
 
     say("Running GendataSimple");
 
-    my $prng = GenTest::Random->new( seed => 0 );
+    my $prng = GenTest::Random->new( seed => $self->[GDS_SEED] );
 
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
     $executor->sqltrace($self->sqltrace);
@@ -130,11 +152,11 @@ sub run {
     
     # Need to create a dummy supdstituion for non-protable DUAL
     
-    $executor->execute("DROP TABLE /*! IF EXISTS */ DUMMY");
-    $executor->execute("CREATE TABLE DUMMY (I INTEGER)");
-    $executor->execute("INSERT INTO DUMMY VALUES(0)");
+    $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ DUMMY");
+    $self->variate_and_execute($executor,"CREATE TABLE DUMMY (I INTEGER)");
+    $self->variate_and_execute($executor,"INSERT INTO DUMMY VALUES(0)");
     
-    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
+    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
     return STATUS_OK;
 }
 
@@ -165,10 +187,10 @@ sub gen_table {
         ### This variant is needed due to
         ### http://bugs.mysql.com/bug.php?id=47125
 
-        $executor->execute("DROP TABLE /*! IF EXISTS */ $name");
+        $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ $name");
         if ($vcols) {
-            $executor->execute("
-            CREATE TABLE $name (
+            $self->variate_and_execute($executor,
+            "CREATE TABLE $name (
                 pk INTEGER AUTO_INCREMENT,
                 col_int_nokey INTEGER $nullability,
                 col_int_key INTEGER AS (col_int_nokey * 2) $vcols,
@@ -196,8 +218,8 @@ sub gen_table {
                                # joining such tables on PK does not produce only 1-to-1 matches.
                 );
         } else {
-            $executor->execute("
-            CREATE TABLE $name (
+            $self->variate_and_execute($executor,
+            "CREATE TABLE $name (
                 pk INTEGER AUTO_INCREMENT,
                 col_int_nokey INTEGER $nullability,
                 col_int_key INTEGER,
@@ -229,41 +251,41 @@ sub gen_table {
         say("Creating ".$executor->getName()." table $name, size $size rows");
     
         my $increment_size = (length($name) > 1 ? (length($name) * 5) : 1);
-		$executor->execute("DROP TABLE /*! IF EXISTS */ $name");
-        $executor->execute("DROP SEQUENCE ".$name."_seq");
-        $executor->execute("CREATE SEQUENCE ".$name."_seq INCREMENT 1 START $increment_size");
-		$executor->execute("
-		CREATE TABLE $name (
-			pk INTEGER DEFAULT nextval('".$name."_seq') NOT NULL,
-			col_int_nokey INTEGER $nullability,
-			col_int_key INTEGER $nullability,
+        $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ $name");
+        $self->variate_and_execute($executor,"DROP SEQUENCE ".$name."_seq");
+        $self->variate_and_execute($executor,"CREATE SEQUENCE ".$name."_seq INCREMENT 1 START $increment_size");
+        $self->variate_and_execute($executor,
+        "CREATE TABLE $name (
+          pk INTEGER DEFAULT nextval('".$name."_seq') NOT NULL,
+          col_int_nokey INTEGER $nullability,
+          col_int_key INTEGER $nullability,
 
-			col_date_key DATE $nullability,
-			col_date_nokey DATE $nullability,
+          col_date_key DATE $nullability,
+          col_date_nokey DATE $nullability,
 
-			col_time_key TIME $nullability,
-			col_time_nokey TIME $nullability,
+          col_time_key TIME $nullability,
+          col_time_nokey TIME $nullability,
 
-			col_datetime_key DATETIME $nullability,
-			col_datetime_nokey DATETIME $nullability,
+          col_datetime_key DATETIME $nullability,
+          col_datetime_nokey DATETIME $nullability,
 
-			col_varchar_key VARCHAR($varchar_length) $nullability,
-			col_varchar_nokey VARCHAR($varchar_length) $nullability,
+          col_varchar_key VARCHAR($varchar_length) $nullability,
+          col_varchar_nokey VARCHAR($varchar_length) $nullability,
 
-			PRIMARY KEY (pk))");
+          PRIMARY KEY (pk))");
 
-		$executor->execute("CREATE INDEX ".$name."_int_key ON $name(col_int_key)");
-		$executor->execute("CREATE INDEX ".$name."_date_key ON $name(col_date_key)");
-		$executor->execute("CREATE INDEX ".$name."_time_key ON $name(col_time_key)");
-		$executor->execute("CREATE INDEX ".$name."_datetime_key ON $name(col_datetime_key)");
-		$executor->execute("CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key, col_int_key)");
+        $self->variate_and_execute($executor,"CREATE INDEX ".$name."_int_key ON $name(col_int_key)");
+        $self->variate_and_execute($executor,"CREATE INDEX ".$name."_date_key ON $name(col_date_key)");
+        $self->variate_and_execute($executor,"CREATE INDEX ".$name."_time_key ON $name(col_time_key)");
+        $self->variate_and_execute($executor,"CREATE INDEX ".$name."_datetime_key ON $name(col_datetime_key)");
+        $self->variate_and_execute($executor,"CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key, col_int_key)");
 
     } else {
         say("Creating ".$executor->getName()." table $name, size $size rows");
 
-		$executor->execute("DROP TABLE /*! IF EXISTS */ $name");
-		$executor->execute("
-		CREATE TABLE $name (
+		$self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ $name");
+		$self->variate_and_execute($executor,
+		"CREATE TABLE $name (
 			pk INTEGER AUTO_INCREMENT,
 			col_int_nokey INTEGER $nullability,
 			col_int_key INTEGER $nullability,
@@ -286,18 +308,18 @@ sub gen_table {
 						   # joining such tables on PK does not produce only 1-to-1 matches.
 			);
 		
-		$executor->execute("CREATE INDEX ".$name."_int_key ON $name(col_int_key)");
-		$executor->execute("CREATE INDEX ".$name."_date_key ON $name(col_date_key)");
-		$executor->execute("CREATE INDEX ".$name."_time_key ON $name(col_time_key)");
-		$executor->execute("CREATE INDEX ".$name."_datetime_key ON $name(col_datetime_key)");
-		$executor->execute("CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key, col_int_key)");
+		$self->variate_and_execute($executor,"CREATE INDEX ".$name."_int_key ON $name(col_int_key)");
+		$self->variate_and_execute($executor,"CREATE INDEX ".$name."_date_key ON $name(col_date_key)");
+		$self->variate_and_execute($executor,"CREATE INDEX ".$name."_time_key ON $name(col_time_key)");
+		$self->variate_and_execute($executor,"CREATE INDEX ".$name."_datetime_key ON $name(col_datetime_key)");
+		$self->variate_and_execute($executor,"CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key, col_int_key)");
     };
 
     if (defined $views) {
       if ($views ne '') {
-        $executor->execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
+        $self->variate_and_execute($executor,"CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
       } else {
-        $executor->execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
+        $self->variate_and_execute($executor,'CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
       }
     }
 
@@ -354,8 +376,8 @@ sub gen_table {
 
       ## We do one insert per 500 rows for speed
       if ($row % 500 == 0 || $row == $size) {
-        my $insert_result = $executor->execute("
-        INSERT /*! IGNORE */ INTO $name (
+        my $insert_result = $self->variate_and_execute($executor,
+        "INSERT /*! IGNORE */ INTO $name (
           col_int_key, col_int_nokey,
           col_date_key, col_date_nokey,
           col_time_key, col_time_nokey,

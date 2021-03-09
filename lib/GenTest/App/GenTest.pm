@@ -456,7 +456,8 @@ sub workerProcess {
         filters => $self->queryFilters(),
         end_time => $self->[GT_TEST_END],
         restart_timeout => $self->config->property('restart-timeout'),
-        compatibility => $self->config->property('compatibility'),
+        compatibility => $self->config->compatibility,
+        variators => $self->config->variators,
     );
 
     if (not defined $mixer) {
@@ -519,12 +520,14 @@ sub doGenData {
                partitions => $self->config->server_specific->{$i}->{partitions},
                vcols => $self->config->server_specific->{$i}->{vcols},
                views => $self->config->server_specific->{$i}->{views},
+               seed => $self->config->seed(),
                sqltrace=> $self->config->sqltrace,
                notnull => $self->config->notnull,
                rows => $self->config->rows,
                varchar_length => $self->config->property('varchar-length'),
                executor_id => $i,
-               compatibility => $self->config->property('compatibility'),
+               compatibility => $self->config->compatibility,
+               variators => $self->config->variators,
             )->run();
             say("GendataAdvanced finished with result ".status2text($gendata_result));
         }
@@ -540,11 +543,13 @@ sub doGenData {
                    engine => $self->config->server_specific->{$i}->{engine},
                    vcols => $self->config->server_specific->{$i}->{vcols},
                    views => $self->config->server_specific->{$i}->{views},
+                   seed => $self->config->seed(),
                    sqltrace=> $self->config->sqltrace,
                    notnull => $self->config->notnull,
                    rows => $self->config->rows,
                    varchar_length => $self->config->property('varchar-length'),
-                   executor_id => $i
+                   executor_id => $i,
+                   variators => $self->config->variators,
                 )->run();
                 say("GendataSimple finished with result ".status2text($res));
                 $gendata_result= STATUS_OK if $res == STATUS_OK;
@@ -563,7 +568,8 @@ sub doGenData {
                    short_column_names => $self->config->short_column_names,
                    strict_fields => $self->config->strict_fields,
                    notnull => $self->config->notnull,
-                   executor_id => $i
+                   executor_id => $i,
+                   variators => $self->config->variators,
               )->run();
               say("Gendata $gendata finished with result ".status2text($res));
               $gendata_result= STATUS_OK if $res == STATUS_OK;

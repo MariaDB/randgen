@@ -28,10 +28,13 @@ use lib 'lib';
 use GenTest;
 use GenTest::Constants;
 use GenTest::Executor::MySQL;
+use GenTest::Random;
 use Data::Dumper;
 
 use constant TRANSFORMER_QUERIES_PROCESSED   => 0;
 use constant TRANSFORMER_QUERIES_TRANSFORMED => 1;
+use constant TRANSFORMER_SEED => 2;
+use constant TRANSFORMER_RANDOM => 3;
 
 use constant TRANSFORM_OUTCOME_EXACT_MATCH           => 1001;
 use constant TRANSFORM_OUTCOME_UNORDERED_MATCH       => 1002;
@@ -97,6 +100,21 @@ my %mysql_grouping_errors = (
 
 # List of encountered errors that we want to suppress later in the test run.
 my %suppressed_errors = ();
+
+sub setSeed {
+  $_[0]->[TRANSFORMER_SEED]= $_[1];
+}
+
+sub seed {
+  return $_[0]->[TRANSFORMER_SEED];
+}
+
+sub random {
+  unless ($_[0]->[TRANSFORMER_RANDOM]) {
+    $_[0]->[TRANSFORMER_RANDOM]= GenTest::Random->new(seed => $_[0]->[TRANSFORMER_SEED]);
+  }
+  return $_[0]->[TRANSFORMER_RANDOM];
+}
 
 sub transformExecuteValidate {
     my ($transformer, $original_query, $original_result, $executor, $skip_result_validations) = @_;
@@ -263,6 +281,11 @@ sub cleanup {
             $executor->execute($cleanup_query_part);
         }
     }
+}
+
+# Default non-op variator
+sub variate {
+  return $_[1];
 }
 
 sub validate {

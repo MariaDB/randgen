@@ -1,6 +1,6 @@
 # Copyright (C) 2009, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020, MariaDB Corporation Ab.
+# Copyright (c) 2020, 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -81,6 +81,7 @@ use constant GD_NOTNULL => 10;
 use constant GD_SHORT_COLUMN_NAMES => 11;
 use constant GD_STRICT_FIELDS => 12;
 use constant GD_EXECUTOR_ID => 13;
+use constant GD_VARIATORS => 14;
 
 sub new {
     my $class = shift;
@@ -98,6 +99,7 @@ sub new {
         'strict_fields' => GD_STRICT_FIELDS,	
         'server_id' => GD_SERVER_ID,
         'executor_id' => GD_EXECUTOR_ID,
+        'variators' => GD_VARIATORS,
         'sqltrace' => GD_SQLTRACE},@_);
 
     if (not defined $self->[GD_SEED]) {
@@ -106,7 +108,16 @@ sub new {
         $self->[GD_SEED] = time();
         say("Converting --seed=time to --seed=".$self->[GD_SEED]);
     }
-    
+
+    my @variators= ();
+    foreach my $vn (@{$self->[GD_VARIATORS]}) {
+        eval ("require GenTest::Transform::'".$vn) or croak $@;
+        my $variator = ('GenTest::Transform::'.$vn)->new();
+        $variator->setSeed($self->[GD_SEED]);
+        push @variators, $variator;
+    }
+    $self->[GD_VARIATORS] = [ @variators ];
+
     return $self;
 }
 
@@ -172,6 +183,15 @@ sub executor_id {
     return $_[0]->[GD_EXECUTOR_ID] || '';
 }
 
+sub variate_and_execute {
+  my ($self, $executor, $query)= @_;
+  foreach my $v (@{$self->[GD_VARIATORS]}) {
+    # 1 stands for "it's gendata, variate with caution"
+    $query= $v->variate($query,1);
+  }
+  return ($query ? $executor->execute($query) : STATUS_OK);
+}
+
 sub run {
     my ($self) = @_;
 
@@ -234,7 +254,7 @@ sub run {
 
     say("Running Gendata from file $spec_file");
 
-    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
+    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
 
     if (defined $schemas) {
         push(@schema_perms, @$schemas);
@@ -486,7 +506,7 @@ sub run {
     }	
 
     foreach my $schema (@schema_perms) {
-        $executor->execute("CREATE SCHEMA /*!IF NOT EXISTS*/ $schema");
+        $self->variate_and_execute($executor,"CREATE SCHEMA /*!IF NOT EXISTS*/ $schema");
         $executor->sqltrace($self->sqltrace);
         $executor->setId($self->executor_id);
         $executor->currentSchema($schema);
@@ -514,7 +534,7 @@ sub run {
         
         $prng->shuffleArray(\@fields_copy);
         
-        $executor->execute("DROP TABLE /*! IF EXISTS*/ $table->[TABLE_NAME]");
+        $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS*/ $table->[TABLE_NAME]");
         
         # Compose the CREATE TABLE statement by joining all fields and indexes and appending the table options
         # Skip undefined fields. 
@@ -536,7 +556,7 @@ sub run {
         
         my $index_sqls = $#index_fields > -1 ? join(",\n", map { $_->[FIELD_INDEX_SQL] } @index_fields) : undef;
 
-        $executor->execute("CREATE TABLE `$table->[TABLE_NAME]` (\n".join(",\n/*Indices*/\n", grep { defined $_ } (@field_sqls, $index_sqls) ).") ".$table->[TABLE_SQL]);
+        $self->variate_and_execute($executor,"CREATE TABLE `$table->[TABLE_NAME]` (\n".join(",\n/*Indices*/\n", grep { defined $_ } (@field_sqls, $index_sqls) ).") ".$table->[TABLE_SQL]);
         
         if (not ($executor->type() == DB_MYSQL ||
                  $executor->type() == DB_MARIADB || 
@@ -545,7 +565,7 @@ sub run {
             foreach my $idx (@index_fields) {
                 my $key_sql = $idx->[FIELD_INDEX_SQL];
                 if ($key_sql =~ m/^key \((`[a-z0-9_]*`)/) {
-                    $executor->execute("CREATE INDEX idx_".
+                    $self->variate_and_execute($executor,"CREATE INDEX idx_".
                                        $table->[TABLE_NAME]."_$1".
                                        " ON ".$table->[TABLE_NAME]."($1)");
                 }
@@ -564,19 +584,19 @@ sub run {
 		}
 
 		if ($table_perms[TABLE_VIEWS]->[$view_id] ne '') {
-	                $executor->execute("CREATE OR REPLACE ALGORITHM=".uc($table_perms[TABLE_VIEWS]->[$view_id])." VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
+	                $self->variate_and_execute($executor,"CREATE OR REPLACE ALGORITHM=".uc($table_perms[TABLE_VIEWS]->[$view_id])." VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
 		} else {
-	                $executor->execute("CREATE OR REPLACE VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
+	                $self->variate_and_execute($executor,"CREATE OR REPLACE VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
 		}
             }
         }
         
         if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB ) {
-            $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS");
+            $self->variate_and_execute($executor,"ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS");
             
             if ($table->[TABLE_ROW] > 100) {
-                $executor->execute("SET AUTOCOMMIT=OFF");
-                $executor->execute("START TRANSACTION");
+                $self->variate_and_execute($executor,"SET AUTOCOMMIT=OFF");
+                $self->variate_and_execute($executor,"START TRANSACTION");
             }
         }
         
@@ -664,26 +684,26 @@ sub run {
                 (($row_id % 50) == 0) ||
                 ($row_id == $table->[TABLE_ROW])
                 ) {
-                my $insert_result = $executor->execute("INSERT /*! IGNORE */ INTO $table->[TABLE_NAME] VALUES ".join(', ', @row_buffer));
+                my $insert_result= $self->variate_and_execute($executor,"INSERT /*! IGNORE */ INTO $table->[TABLE_NAME] VALUES ".join(', ', @row_buffer));
                 return $insert_result->status() if $insert_result->status() >= STATUS_CRITICAL_FAILURE;
                 @row_buffer = ();
             }
             
             if (($row_id % 10000) == 0) {
-                $executor->execute("COMMIT");
+                $self->variate_and_execute($executor,"COMMIT");
                 say("# Progress: loaded $row_id out of $table->[TABLE_ROW] rows");
             }
         }
         if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB) {
-            $executor->execute("COMMIT");
+            $self->variate_and_execute($executor,"COMMIT");
             
-            $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
+            $self->variate_and_execute($executor,"ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
         }
     }
     }
     
     if ($executor->type == DB_MYSQL or $executor->type == DB_MARIADB or $executor->type == DB_DRIZZLE) {
-        $executor->execute("COMMIT");
+        $self->variate_and_execute($executor,"COMMIT");
     }
     
     if (
@@ -692,8 +712,8 @@ sub run {
         ) {
         foreach my $merge_id (0..$#{$table_perms[TABLE_MERGES]}) {
             my $merge_name = 'merge_'.$merge_id;
-            $executor->execute("CREATE TABLE `$merge_name` LIKE `".$myisam_tables[0]."`");
-            $executor->execute("ALTER TABLE `$merge_name` ENGINE=MERGE UNION(".join(',',@myisam_tables).") ".uc($table_perms[TABLE_MERGES]->[$merge_id]));
+            $self->variate_and_execute($executor,"CREATE TABLE `$merge_name` LIKE `".$myisam_tables[0]."`");
+            $self->variate_and_execute($executor,"ALTER TABLE `$merge_name` ENGINE=MERGE UNION(".join(',',@myisam_tables).") ".uc($table_perms[TABLE_MERGES]->[$merge_id]));
         }
     }
 

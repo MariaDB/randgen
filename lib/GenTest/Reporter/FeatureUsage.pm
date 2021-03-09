@@ -14,6 +14,13 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
+#######################################
+# IMPORTANT NOTE:
+# Log records from this reporter are used for automatic bug recognition;
+# do not change the wording or logging format unless absolutely
+# necessary!
+#######################################
+
 package GenTest::Reporter::FeatureUsage;
 
 require Exporter;
