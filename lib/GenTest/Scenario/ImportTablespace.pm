@@ -119,7 +119,7 @@ sub run {
   mkdir($tablespace_backup_dir);
   my %table_definitions;
 
-  my $tables = $dbh->selectcol_arrayref("select `name` from information_schema.innodb_sys_tablespaces where name not like 'mysql/%' and name not like '%#%'");
+  my $tables = $dbh->selectcol_arrayref("select `name` from information_schema.innodb_sys_tablespaces where name != 'innodb_system' and name not like 'mysql/%' and name not like '%#%'");
   foreach my $tpath (@$tables) {
     $tpath =~ /^(.*)\/(.*)/;
     my ($tschema, $tname)= ($1, $2);
