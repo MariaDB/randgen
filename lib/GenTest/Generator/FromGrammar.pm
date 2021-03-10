@@ -184,6 +184,8 @@ sub next {
 					}
 				} elsif (substr($item, 0, 1) eq '$') {
 					$item = eval("no strict;\n".$item.";\n");	# Variable
+        } elsif (index($item,'__') == 0) {
+            $item= $prng->auto(substr($item,2));
 				} else {
 					my $field_type = (substr($item, 0, 1) eq '_' ? $prng->isFieldType(substr($item, 1)) : undef);
 

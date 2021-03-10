@@ -827,4 +827,57 @@ sub shuffleArray {
 	return $array;
 }
 
+#######################
+#
+# Auto rule
+#
+# Examples (double underscore has already been stripped)
+# __not => NOT
+# __not(50) => NOT with 50% probability, otherwise ''
+# __not(30) => NOT with 30% probability, otherwise ''
+# __on_x_off => ON or OFF, each with 50% probability
+# __on_x_off(80) => ON with 80% probability, otherwise OFF
+# __on_x_off(80,10) => ON with 80% probability, OFF with 10% probability, otherwise nothing
+# __1_x_2_x_3_x_4 => 1 or 2 or 3 or 4, each with 25% probability
+# __1_x_2_x_3_x_4(80) => 1 with 80% probability, otherwise 2 or 3 or 4 each with equal probability
+# To summarize:
+# - if no probability is provided, one of the items will be returned with equal probability
+# - if there are less probabilities than items, the rest of the items will equally split
+#   remaining probability, and one of the items will be returned
+# - if probability for every item is provided, and its sums up to less than 100%,
+#   then an empty value can be returned with remaining probability
+# We won't check that the sum of probabilities is <= 100
+
+sub auto {
+  my ($rand, $rule)= @_;
+  my @probabilities= ();
+  if ($rule =~ s/\(([\d,]+)\)$//) {
+    @probabilities= split /,/, $1;
+  }
+  my @items= split /_x_/, $rule;
+
+  if (scalar(@probabilities) < scalar(@items)) {
+    my $filler;
+    if (scalar(@probabilities) == 0) {
+      $filler= int(100/scalar(@items));
+    } else {
+      my $s= 0;
+      foreach my $p (@probabilities) { $s+= $p };
+      $filler= $s / (scalar(@items) - scalar(probabilities));
+    }
+    foreach my $i ($#probabilities+1..$#items) {
+      $probabilities[$i]= $filler;
+    }
+    # To avoid rounding errors
+    $p[$#probabilities]+= 1;
+  }
+
+  my $r= $rand->uint16(1,100);
+  foreach my $i (0..$#items) {
+    return uc($items[$i]) if $r <= $probabilities[$i];
+    $r-= $probabilities[$i];
+  }
+  return '';
+}
+
 1;
