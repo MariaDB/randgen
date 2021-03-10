@@ -356,7 +356,12 @@ $optional_innodb_variables_104= [ @$optional_innodb_variables_103,
   ],
 ];
 $optional_innodb_variables_105= [ @$optional_innodb_variables_104 ];
-$optional_innodb_variables_106= [ @$optional_innodb_variables_105 ];
+$optional_innodb_variables_106= [ @$optional_innodb_variables_105,
+  [ '','','','','','','','','','','','','','','',
+    '--mysqld=--innodb-read-only-compressed=on',
+    '--mysqld=--innodb-read-only-compressed=off',
+  ],
+];
 
 #############
 # Aria vars

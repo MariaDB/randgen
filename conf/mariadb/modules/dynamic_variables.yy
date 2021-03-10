@@ -37,6 +37,7 @@ dynvar_global_variable_runtime:
   | INNODB_BUFFER_POOL_LOAD_ABORT= dynvar_boolean
   | INNODB_BUFFER_POOL_LOAD_NOW= dynvar_boolean
   | INNODB_LOG_CHECKPOINT_NOW= dynvar_boolean
+  | INNODB_READ_ONLY_COMPRESSED= dynvar_boolean /* compatibility 10.6.0 */
   | BINLOG_COMMIT_WAIT_COUNT= { $prng->arrayElement([1,10,100]) }
   | BINLOG_COMMIT_WAIT_USEC= { $prng->arrayElement([0,1000,1000000,10000000]) }
   | LOG_QUERIES_NOT_USING_INDEXES= dynvar_boolean
