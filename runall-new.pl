@@ -237,6 +237,18 @@ if (not defined $scenario and not defined $props->{grammar}) {
     exit 1;
 }
 
+my $git_rev= `cd $ENV{RQG_HOME} && git log -1 --pretty=%h`;
+# Apparently git command succeeded
+if ($git_rev) {
+  chomp $git_rev;
+  my $git_diff=`cd $ENV{RQG_HOME} && git diff`;
+  say("RQG git revision $git_rev".($git_diff ? ' with local changes:' : ''));
+  print $git_diff if $git_diff;
+  say("###############################################################");
+} else {
+  sayWarning("Could not get RQG git revision");
+}
+
 say("Starting \n# $0 \\ \n# ".join(" \\ \n# ", @ARGV_saved));
 
 # Originally it was done in Gendata, but we want the same seed for all components
