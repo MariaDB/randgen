@@ -452,7 +452,7 @@ if ($cmd =~ /--seed=/) {
 say("Final command line: \nperl $cmd");
 foreach my $s (sort keys %{$props->{server_specific}} ) {
   if ($props->{server_specific}->{$s}->{mysqld_options} and scalar(@{$props->{server_specific}->{$s}->{mysqld_options}})) {
-    say("Final options for server $s, MTR style: ".join(' ', map {'--mysqld='.$_} (@{$props->{server_specific}->{$s}->{mysqld_options}})));
+    say("Final options for server $s, MTR style:\n".join(' ', map {'--mysqld='.$_} (@{$props->{server_specific}->{$s}->{mysqld_options}})));
   }
 }
 
