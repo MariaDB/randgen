@@ -1267,7 +1267,7 @@ sub execute {
     }
 
     if ( (rqg_debug()) && (! ($execution_flags & EXECUTOR_FLAG_SILENT)) ) {
-        if ($query =~ m{^\s*select}sio) {
+        if ($query =~ m{^\s*(?:select|insert|replace|delete|update)}sio) {
             $executor->explain($query);
 
             if ($result->status() != STATUS_SKIP) {
@@ -1362,12 +1362,12 @@ sub explain {
     my @explain_fragments;
 
     while (my $explain_row = $sth_output->fetchrow_hashref()) {
+
         push @explain_fragments, "select_type: ".($explain_row->{select_type} || '(empty)');
-
         push @explain_fragments, "type: ".($explain_row->{type} || '(empty)');
-
         push @explain_fragments, "partitions: ".$explain_row->{table}.":".$explain_row->{partitions} if defined $explain_row->{partitions};
-
+        push @explain_fragments, "possible_keys: ".$explain_row->{possible_keys};
+        push @explain_fragments, "key: ".$explain_row->{key};
         push @explain_fragments, "ref: ".$explain_row->{ref};
 
         foreach my $extra_item (split('; ', ($explain_row->{Extra} || '(empty)')) ) {
