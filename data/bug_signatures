@@ -4,6 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25109:
+=~ signal|AddressSanitizer
+=~ my_casedn_str_utf8|my_casedn_str_utf8mb3
+=~ sp_name::sp_name
+=~ Sp_handler::sp_load_for_information_schema
+=~ store_schema_proc
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-25087:
 =~ AddressSanitizer: stack-overflow|SIGSEGV
 =~ row_ins_check_foreign_constraint
@@ -208,8 +215,8 @@ MDEV-24907:
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-24906:
 =~ AddressSanitizer|signal [16]
-=~ QUICK_GROUP_MIN_MAX_SELECT::next_min_in_range
-=~  QUICK_GROUP_MIN_MAX_SELECT::get_next
+=~ QUICK_GROUP_MIN_MAX_SELECT::next_min
+=~ QUICK_GROUP_MIN_MAX_SELECT::get_next
 =~ rr_quick
 MDEV-24905:
 =~ Assertion \`!m\.first->second\.is_bulk_insert()'
@@ -474,7 +481,6 @@ MDEV-24686:
 MDEV-24686:
 =~ AddressSanitizer|signal [16]
 =~ event_queue_element_compare_q
-=~ queue_insert
 =~ Event_queue::update_event|Event_queue::create_event
 MDEV-24686:
 =~ AddressSanitizer|signal [16]
