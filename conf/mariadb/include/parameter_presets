@@ -347,14 +347,19 @@ $optional_innodb_variables_102= [
 ];
 
 $optional_innodb_variables_103= [ @$optional_innodb_variables_102 ];
-$optional_innodb_variables_104= [ @$optional_innodb_variables_103,
-  # Some values are already in 10.2 variables,
-  # we only add new ones
-  [
-    '--mysqld=--innodb-checksum-algorithm=full_crc32',
-    '--mysqld=--innodb-checksum-algorithm=strict_full_crc32',
-  ],
-];
+$optional_innodb_variables_104= [ @$optional_innodb_variables_103 ];
+#
+# 'full_crc32' checksum algorithm was added in 10.4
+#
+foreach my $o (@$optional_innodb_variables_104) {
+  foreach my $i (0..$#$o) {
+    if ($o->[$i] =~ /^--mysqld=--innodb-checksum-algorithm/) {
+      $o= [ @$o, '--mysqld=--innodb-checksum-algorithm=full_crc32', '--mysqld=--innodb-checksum-algorithm=strict_full_crc32' ];
+      last;
+    }
+  }
+}
+
 $optional_innodb_variables_105= [ @$optional_innodb_variables_104 ];
 $optional_innodb_variables_106= [ @$optional_innodb_variables_105,
   [ '','','','','','','','','','','','','','','',
@@ -362,6 +367,19 @@ $optional_innodb_variables_106= [ @$optional_innodb_variables_105,
     '--mysqld=--innodb-read-only-compressed=off',
   ],
 ];
+
+#
+# 'none' and 'innodb' checksum algorithms were removed from 10.6
+#
+foreach my $o (@$optional_innodb_variables_106) {
+  foreach my $i (0..$#$o) {
+    if ( ($o->[$i] eq '--mysqld=--innodb-checksum-algorithm=innodb')
+      or ($o->[$i] eq '--mysqld=--innodb-checksum-algorithm=none')
+      or ($o->[$i] eq '--mysqld=--innodb-checksum-algorithm=strict_none')
+      or ($o->[$i] eq '--mysqld=--innodb-checksum-algorithm=strict_innodb')
+    ) { $o->[$i]= '' }
+  }
+}
 
 #############
 # Aria vars
