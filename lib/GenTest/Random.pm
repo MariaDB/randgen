@@ -36,10 +36,12 @@ require Exporter;
 	FIELD_TYPE_LETTER
 	FIELD_TYPE_ASCII
 	FIELD_TYPE_EMPTY
+  FIELD_TYPE_DATATYPE
 
 	FIELD_TYPE_HEX
 	FIELD_TYPE_QUID
 	FIELD_TYPE_JSON
+  FIELD_TYPE_JSON_TABLE
 
   FIELD_TYPE_IDENTIFIER
   FIELD_TYPE_IDENTIFIER_UNQUOTED
@@ -111,6 +113,7 @@ use constant FIELD_TYPE_FLOAT		=> 21;
 use constant FIELD_TYPE_JSON		=> 22;
 use constant FIELD_TYPE_JSONPATH	=> 23;
 use constant FIELD_TYPE_JSONKEY     => 24;
+use constant FIELD_TYPE_JSON_TABLE     => 25;
 
 use constant FIELD_TYPE_TEXT  => 29;
 use constant FIELD_TYPE_INET6  => 30;
@@ -120,6 +123,7 @@ use constant FIELD_TYPE_JSONPATH_NO_WILDCARD	=> 31;
 use constant FIELD_TYPE_IDENTIFIER          => 32;
 use constant FIELD_TYPE_IDENTIFIER_UNQUOTED => 33;
 use constant FIELD_TYPE_IDENTIFIER_QUOTED   => 34;
+use constant FIELD_TYPE_DATATYPE     => 35;
 
 use constant ASCII_RANGE_START		=> 97;
 use constant ASCII_RANGE_END		=> 122;
@@ -203,6 +207,8 @@ my %name2type = (
   'name'          => FIELD_TYPE_IDENTIFIER,
   'name_unquoted' => FIELD_TYPE_IDENTIFIER_UNQUOTED,
   'name_quoted'   => FIELD_TYPE_IDENTIFIER_QUOTED,
+  'json_table'    => FIELD_TYPE_JSON_TABLE,
+  'datatype'      => FIELD_TYPE_DATATYPE,
 );
 
 my $cwd = cwd();
@@ -676,6 +682,79 @@ sub jsonPathLeg {
 	}
 }
 
+#JSON_TABLE(
+#    expr,
+#    path COLUMNS (column_list)
+#)   [AS] alias
+#
+#column_list:
+#    column[, column][, ...]
+#
+#column:
+#    name FOR ORDINALITY
+#    |  name type PATH string path [on_empty] [on_error]
+#    |  name type EXISTS PATH string path
+#    |  NESTED [PATH] path COLUMNS (column_list)
+#
+#on_empty:
+#    {NULL | DEFAULT json_string | ERROR} ON EMPTY
+#
+#on_error:
+#    {NULL | DEFAULT json_string | ERROR} ON ERROR
+
+sub jsonTable {
+  my $prng= shift;
+  my $json_table= 'JSON_TABLE(';
+  # TODO: add other variants of expr: JSON function, variable
+  # CONVERT needed for MySQL
+  $json_table.= ($prng->uint16(0,2) ? $prng->json() : 'CONVERT(LOAD_FILE("/data/extra_data/0'.$prng->uint16(1,3).'.json") USING utf8mb4)');
+  $json_table.= ', ';
+  $json_table.= $prng->jsonPath();
+  $json_table.= ' '.$prng->jsonTableColumnList().') AS '.$prng->letter();
+  return $json_table;
+}
+
+sub jsonTableColumnList {
+  my $prng= shift;
+
+  sub on_empty_on_error {
+    my $r= $prng->uint16(1,3);
+    if ($r == 1) {
+      return ' NULL';
+    } elsif ($r == 2) {
+      return ' ERROR';
+    } else {
+      return ' DEFAULT '.$prng->jsonString();
+    }
+  }
+  # TODO: allow more columns
+  my $colnum= $prng->uint16(1,10);
+  my @cols= ();
+  foreach my $c (1..$colnum) {
+    my $coltype= $prng->uint16(1,100);
+    # 15% ORDINALITY
+    # 40% PATH
+    # 40% EXISTS
+    # 5% NESTED
+    my $col= '';
+    if ($coltype <= 15) {
+      $col= 'col'.$c.' FOR ORDINALITY';
+    } elsif ($coltype <= 55) {
+      # TODO: make it any type
+      $col= 'col'.$c.' '.$prng->dataType().' PATH '.$prng->jsonPath();
+      $col.= ($prng->uint16(0,1) ? on_empty_on_error().' ON EMPTY' : '');
+      $col.= ($prng->uint16(0,1) ? on_empty_on_error().' ON ERROR' : '');
+    } elsif ($coltype <= 95) {
+      # TODO: make it any type, preferably int-like
+      $col= 'col'.$c.' '.$prng->dataType().' EXISTS PATH '.$prng->jsonPath();
+    } else {
+    $col= 'NESTED PATH '.$prng->jsonPath().' '.$prng->jsonTableColumnList();
+    }
+    push @cols, $col;
+  }
+  return 'COLUMNS ('.(join ', ', @cols).')';
+}
+
 #-- END OF JSON -----------------------------
 
 sub quid {
@@ -800,6 +879,10 @@ sub fieldType {
 		return $rand->identifierQuoted();
 	} elsif ($field_type == FIELD_TYPE_IDENTIFIER_UNQUOTED) {
 		return $rand->identifierUnquoted();
+  } elsif ($field_type == FIELD_TYPE_JSON_TABLE) {
+    return $rand->jsonTable();
+  } elsif ($field_type == FIELD_TYPE_DATATYPE) {
+    return $rand->dataType($field_length);
 	} else {
 		croak ("unknown field type $field_def");
 	}
@@ -849,19 +932,26 @@ sub isFieldType {
 	}
 }
 
+sub loadDictionary {
+  my $dict_name = shift;
+
+  if (not exists $dict_data{$dict_name}) {
+    my $dict_file = $ENV{RQG_HOME} ne '' ? $ENV{RQG_HOME}."/dict/$dict_name.txt" : "dict/$dict_name.txt";
+
+    open (DICT, $dict_file) or warn "# Unable to load $dict_file: $!";
+    my @dict_data = map { chop; $_ } <DICT>;
+    close DICT;
+    foreach my $i (0..$#dict_data) {
+      $dict_data[$i] =~ s/[^\\](['"])/\\$1/g;
+    }
+    $dict_data{$dict_name} = \@dict_data;
+  }
+  return $dict_data{$dict_name};
+}
+
 sub dictionaryWord {
-	my ($rand, $dict_name) = @_;
-
-	if (not exists $dict_data{$dict_name}) {
-		my $dict_file = $ENV{RQG_HOME} ne '' ? $ENV{RQG_HOME}."/dict/$dict_name.txt" : "dict/$dict_name.txt";
-
-		open (DICT, $dict_file) or warn "# Unable to load $dict_file: $!";
-		my @dict_data = map { chop; $_ } <DICT>;
-		close DICT;
-		$dict_data{$dict_name} = \@dict_data;
-	}
-
-	return $rand->arrayElement($dict_data{$dict_name});
+  my ($rand, $dict_name) = @_;
+  return $rand->arrayElement(loadDictionary($dict_name));
 }
 
 sub fromDictionary {
@@ -879,6 +969,249 @@ sub shuffleArray {
 	        @$array[$i,$j] = @$array[$j,$i];
 	}
 	return $array;
+}
+
+#######################
+# Data types
+#
+# TINYINT SMALLINT MEDIUMINT INT INTEGER BIGINT INT1 INT2 INT3 INT4 INT8
+# DECIMAL DEC NUMERIC FIXED
+# BOOLEAN BOOL
+# FLOAT DOUBLE -DOUBLE PRECISION-
+# BIT
+# CHAR VARCHAR BINARY -CHAR BYTE- VARBINARY
+# TINYBLOB BLOB MEDIUMBLOB LONGBLOB
+# TINYTEXT TEXT MEDIUMTEXT LONGTEXT
+# JSON
+# INET6
+# ENUM SET
+# DATE TIME DATETIME TIMESTAMP YEAR
+# POINT LINESTRING POLYGON MULTIPOINT MULTILINESTRING MULTIPOLYGON GEOMETRYCOLLECTION GEOMETRY
+
+sub dataType {
+  my $prng= shift;
+  # By priority, asc
+  my $metatypes = [
+    \&jsonType,
+#    \&geometryType,
+#    \&inet6Type,
+    \&bitType,
+    \&boolType,
+#    \&enumSetType,
+    \&floatType,
+    \&blobType,
+    \&decimalType,
+    \&temporalType,
+    \&varcharType,
+    \&charType,
+    \&intType,
+  ];
+  my $f= $metatypes->[int(sqrt($prng->uint16(0,scalar(@$metatypes)**2-1)))];
+  return $prng->${f};
+}
+
+sub geometryType {
+  my $prng= shift;
+  my $geo_types= [
+    'POINT',
+    'LINESTRING',
+    'POLYGON',
+    'MULTIPOINT',
+    'MULTILINESTRING',
+    'MULTIPOLYGON',
+    'GEOMETRYCOLLECTION',
+    'GEOMETRY',
+  ];
+  return $prng->arrayElement($geo_types);
+}
+
+sub temporalType {
+  my $prng= shift;
+  my $temp_types= [
+    'DATE',
+    'TIME',
+    'DATETIME',
+    'TIMESTAMP',
+    'YEAR',
+  ];
+  my $type= $prng->arrayElement($temp_types);
+  if ($type ne 'DATE' and $type ne 'YEAR' and $prng->uint16(0,1)) {
+    my $ms= ($prng->uint16(0,1) ? 6 : $prng->uint16(0,6));
+    $type.= '('.$ms.')';
+  } elsif ($type eq 'YEAR' and not $prng->uint16(0,9)) {
+    $type.= '(4)';
+  }
+  return $type;
+}
+
+sub enumSetType {
+  my $prng= shift;
+  my ($type, $length, $valtype);
+  if ($prng->uint16(0,2)) {
+    $type= 'ENUM';
+    $length= ($prng->uint16(0,4) ? $prng->uint16(1,8) :($prng->uint16(0,9) ? $prng->uint16(1,64) : ($prng->uint16(0,99) ? $prng->uint16(1,255) : $prng->uint16(65535))));
+  } else {
+    $type= 'SET';
+    $length= ($prng->uint16(0,4) ? $prng->uint16(1,8) : $prng->uint16(1,64));
+  }
+  my $vals= loadDictionary(($length <= 50 ? 'states' : 'towns'));
+  $prng->shuffleArray($vals);
+  my $value_list= join ', ', map {"'".$_."'"} @{$vals}[0..$length-1];
+  return $type.'('.$value_list.')';
+}
+
+sub inet6Type {
+  return 'INET6';
+}
+
+sub jsonType {
+  return 'JSON';
+}
+
+sub blobType {
+  my $prng= shift;
+  my $blob_types= [
+    'TINYTEXT',
+    'TINYBLOB',
+    'TEXT',
+    'BLOB',
+    'MEDIUMTEXT',
+    'MEDIUMBLOB',
+    'LONGTEXT',
+    'LONGBLOB',
+  ];
+  my $type= $prng->arrayElement($blob_types);
+  # 20% of BLOB and TEXT with length
+  if (($type eq 'BLOB' or $type eq 'TEXT') and not $prng->uint16(0,4)) {
+    my $length= 1;
+    if ($prng->uint16(0,4)) {
+      $length= $prng->uint16(0,255);
+    } elsif ($prng->uint16(0,4)) {
+      $length= $prng->uint16(0,65535);
+    } elsif ($prng->uint16(0,4)) {
+      $length= $prng->uint16(0,16777215);
+    } else {
+      $length= $prng->uint16(0,4294967295);
+    }
+    $type.= '('.$length.')';
+  }
+  return $type;
+}
+
+sub varcharType {
+  my $prng= shift;
+  my $type= '';
+  if ($prng->uint16(0,4)) {
+    $type= 'VARCHAR';
+    $type= 'NATIONAL '.$type unless $prng->uint16(0,99);
+  } else {
+    $type= 'VARBINARY';
+  }
+  $type= $type.'('.($prng->uint16(0,9) ? $prng->uint16(4,64) : ($prng->uint16(0,19) ? $prng->uint16(1,4096) : $prng->uint16(0,65532))).')';
+  return $type;
+}
+
+sub charType {
+  my $prng= shift;
+  my $type= '';
+  my $length= '('.($prng->uint16(0,4) ? $prng->uint16(1,16) : $prng->uint16(0,255)).')';
+  if ($prng->uint16(0,4)) {
+    $type= 'CHAR';
+    $type= 'NATIONAL '.$type unless $prng->uint16(0,99);
+    $type.= $length if $prng->uint16(0,9);
+  } elsif ($prng->uint16(0,49)) {
+    $type= 'BINARY';
+    $type.= $length if $prng->uint16(0,9);
+  } else {
+    $type= 'CHAR BYTE';
+  }
+  return $type;
+}
+
+sub bitType {
+  my $prng= shift;
+  # 66% with M
+  if ($prng->uint16(0,2)) {
+    return 'BIT('.$prng->uint16(0,64).')';
+  } else {
+    return 'BIT';
+  }
+}
+
+sub floatType {
+  my $prng= shift;
+  my $float_types= [
+    'FLOAT',
+    'DOUBLE',
+    'DOUBLE PRECISION',
+  ];
+  my $type= $prng->arrayElement($float_types);
+  # 80% with M
+  if ($prng->uint16(0,4)) {
+    my $m= $prng->uint16(0,255);
+    $type.= '('.$m;
+    # 50% with D for FLOAT, 100% for DOUBLE
+    if ($type ne 'FLOAT' or $prng->uint16(0,1)) {
+      my $n= $prng->uint16(0,($m < 30 ? $m : 30));
+      $type.= ','.$n.')';
+    } else {
+      $type.= ')';
+    }
+  }
+  return $type;
+}
+
+sub boolType {
+  my $prng= shift;
+  return ($prng->uint16(0,1) ? 'BOOL' : 'BOOLEAN');
+}
+
+sub decimalType {
+  my $prng= shift;
+  my $dec_types= [
+    'DECIMAL',
+    'DEC',
+    'NUMERIC',
+    'FIXED',
+  ];
+  my $type= $prng->arrayElement($dec_types);
+  # 80% with M
+  if ($prng->uint16(0,4)) {
+    my $m= $prng->uint16(0,65);
+    $type.= '('.$m;
+    # 66% with D
+    if ($prng->uint16(0,2)) {
+      my $n= $prng->uint16(0,($m < 38 ? $m : 38));
+      $type.= ','.$n.')';
+    } else {
+      $type.= ')';
+    }
+  }
+  return $type;
+}
+
+sub intType {
+  my $prng= shift;
+  my $int_types= [
+    'TINYINT',
+    'SMALLINT',
+    'MEDIUMINT',
+    # Main type
+    'INT','INT','INT','INT','INT','INT','INT','INT','INT',
+    'INTEGER',
+    'BIGINT',
+    'INT1',
+    'INT2',
+    'INT3',
+    'INT4',
+    'INT8',
+  ];
+  my $type= $prng->arrayElement($int_types);
+  # 20% with length
+  if (not $prng->uint16(0,4)) {
+    $type.= '('.$prng->uint16(0,16).')';
+  }
+  return $type;
 }
 
 #######################
