@@ -329,7 +329,10 @@ sub intersect_arrays {
 sub shorten_message {
   my $msg= shift;
   if (length($msg) > 8191) {
-    $msg= substr($msg,0,2000).' <...> '.substr($msg,-512);
+    my ($prefix, $suffix) = (substr($msg,0,2000),substr($msg,-512));
+    if (substr($prefix,1999) eq '\\') { chop $prefix };
+    if (substr($suffix,0,1) eq "'" or substr($suffix,0,1) eq '"') { $suffix= substr($suffix,1) };
+    $msg= $prefix.' <...> '.$suffix;
   }
   return $msg;
 }
