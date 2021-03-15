@@ -1,5 +1,5 @@
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved. 
-# Copyright (c) 2013, 2020, MariaDB
+# Copyright (c) 2013, 2021, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -414,6 +414,7 @@ sub createMysqlBase  {
         print BOOT "UPDATE tmp_user SET `User` = '". $self->user ."';\n";
         print BOOT "INSERT INTO $usertable SELECT * FROM tmp_user;\n";
         print BOOT "DROP TABLE tmp_user;\n";
+        print BOOT "UPDATE proxies_priv SET Timestamp = NOW();\n"; # This is for MySQL, it has '0000-00-00' there and next CREATE doesn't work
         print BOOT "CREATE TABLE tmp_proxies AS SELECT * FROM proxies_priv WHERE `User`='root' AND `Host`='localhost';\n";
         print BOOT "UPDATE tmp_proxies SET `User` = '". $self->user . "';\n";
         print BOOT "INSERT INTO proxies_priv SELECT * FROM tmp_proxies;\n";
@@ -422,6 +423,9 @@ sub createMysqlBase  {
     # Protect the work account from password expiration
     if ($self->versionNumeric() gt '100403') {
         print BOOT "UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root');\n";
+    }
+    if ($self->_isMySQL and not $self->_olderThan(5,8,0)) {
+      print BOOT "UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE user in('".$self->user."', 'root');\n";
     }
     close BOOT;
 
@@ -445,7 +449,7 @@ sub startServer {
                                          $self->[MYSQLD_STDOPTS],
                                          ["--core-file",
                                           "--datadir=".$self->datadir,  # Could not add to STDOPTS, because datadir could have changed
-                                          "--max-allowed-packet=128Mb",	# Allow loading bigger blobs
+                                          "--max-allowed-packet=1G",	# Allow loading bigger blobs
                                           "--port=".$self->port,
                                           "--socket=".$self->socketfile,
                                           "--pid-file=".$self->pidfile],
@@ -509,6 +513,13 @@ sub startServer {
             $errlog_update= ( (stat($errorlog))[9] > $errlog_last_update_time);
             if ($errlog_update) {
               say("Pid file " . $self->pidfile . " does not exist and timeout hasn't passed yet, but the error log has already been updated");
+              # MySQL 8.0 is slow at creating pid file
+              if ($self->_isMySQL()) {
+                for (1..10) {
+                  last if -f $self->pidfile;
+                  sleep 1;
+                }
+              }
               last;
             } else {
               say("Pid file hasn't been found yet, waiting");
@@ -1374,7 +1385,8 @@ sub dsn {
         ":user=".
         $self->[MYSQLD_USER].
         ":database=".$database.
-        ":mysql_local_infile=1";
+        ":mysql_local_infile=1".
+        ":max_allowed_packet=1G";
 }
 
 sub dbh {
