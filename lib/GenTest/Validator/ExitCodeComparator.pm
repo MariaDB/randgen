@@ -109,7 +109,6 @@ sub validate {
          )
        )
     {
-#        say(logLine($executors,$results) . ". Ignoring the difference, since the syntax/unsupported error happened on an older version");
 
         # If one of the servers succeeded executing the statement, and the statement modifies the data,
         # the servers will diverge, we will have to ignore most of failures after that
@@ -117,7 +116,7 @@ sub validate {
               and ($results->[0]->query =~ /(?:INSERT|UPDATE|DELETE|REPLACE|ALTER|CREATE|DROP|RENAME|TRUNCATE|LOAD|CALL)/i)
            )
         {
-            say("WARNING: " . logLine($executors,$results) . "\nMost of the validation will further be skipped");
+            logResult($executors, $results, "WARNING", "Most of the validation will further be skipped");
             $garbage_in= 1;
         }
         return STATUS_WONT_HANDLE;
@@ -128,8 +127,8 @@ sub validate {
     # (and even then there likely to be false positives)
     if ( $executors->[0]->majorVersion != $executors->[1]->majorVersion ) {
         if ($results->[0]->status() != $results->[1]->status) {
-            sayError(logLine($executors,$results));
-            return STATUS_ERROR_MISMATCH;
+          logResult($executors, $results);
+          return STATUS_ERROR_MISMATCH;
         } else {
 #            say(logLine($executors,$results) . ". Ignoring the difference, since the status is the same, and major versions are different");
             return STATUS_WONT_HANDLE;
@@ -139,14 +138,26 @@ sub validate {
     # For the same major version, we'll try for now return an error on any error code mismatch
     # and see how it goes. Probably there will be way too many false positives
     else {
-        sayError(logLine($executors,$results));
-        return STATUS_ERROR_MISMATCH;
+      logResult($executors, $results);
+      return STATUS_ERROR_MISMATCH;
     }
 }
 
-sub logLine {
-    my ($executors, $results)= @_;
-    return "For query " . $results->[0]->query . ":\n    " . $executors->[0]->version . ": " . ( $results->[0]->err ? status2text($results->[0]->status) . ": " . $results->[0]->err . " (" . $results->[0]->errstr . ")" : "OK" ) . "\n    ". $executors->[1]->version . ": " . ( $results->[1]->err ? status2text($results->[1]->status) . ": " . $results->[1]->err . " (" . $results->[1]->errstr . ")" : "OK" );
+sub logResult {
+    my ($executors, $results, $level, $more_text)= @_;
+    my $line=
+      "---------- EXIT CODE COMPARISON ISSUE START ------------\n".
+      "For query " . $results->[0]->query . ":\n".
+      "    " . $executors->[0]->version . ": " . ( $results->[0]->err ? status2text($results->[0]->status) . ": " . $results->[0]->err . " (" . $results->[0]->errstr . ")" : "OK" )."\n".
+      "    " . $executors->[1]->version . ": " . ( $results->[1]->err ? status2text($results->[1]->status) . ": " . $results->[1]->err . " (" . $results->[1]->errstr . ")" : "OK" )."\n"
+    ;
+    $line.= "\n".$more_text if $more_text;
+    $line.= "\n"."----------- EXIT CODE COMPARISON ISSUE END -------------";
+    if ($level eq 'WARNING') {
+      sayWarning($line);
+    } else {
+      sayError($line);
+    }
 }
 
 1;
