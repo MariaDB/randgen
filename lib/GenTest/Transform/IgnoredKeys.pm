@@ -1,4 +1,4 @@
-# Copyright (c) 2020, 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -14,6 +14,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
+
+########################################################################
+# Module for MDEV-7317 (Make an index ignorable to the optimizer)
+########################################################################
 
 package GenTest::Transform::IgnoredKeys;
 
@@ -43,7 +47,7 @@ sub variate {
         $self->random->uint16(0,1) ? ''
         : $self->random->uint16(0,1) ? ' IGNORE' : ' NOT IGNORE'
       );
-      $query.= $1.$2.$ignore;
+      $query.= $1.$2."/*!100601 $ignore */";
     }
   } elsif ($orig_query =~ /ALTER\s+TABLE/s) {
     while ($orig_query =~ s/^(.*?)(ADD\s+(?:SPATIAL(?:\s+(?:KEY|INDEX))|UNIQUE(?:\s+(?:KEY|INDEX))|FULLTEXT(?:\s+(?:KEY|INDEX))|KEY|INDEX).*?\(.*?[^\d]\))//is) {
@@ -51,7 +55,7 @@ sub variate {
         $self->random->uint16(0,1) ? ''
         : $self->random->uint16(0,1) ? ' IGNORE' : ' NOT IGNORE'
       );
-      $query.= $1.$2.$ignore;
+      $query.= $1.$2."/*!100601 $ignore */";
     }
   } elsif ($orig_query =~ /CREATE\s+(?:OR\s+REPLACE\s+)?\w?\s*INDEX/s) {
     my $ignore= (
@@ -59,7 +63,7 @@ sub variate {
       : $self->random->uint16(0,2) ? ' IGNORE' : ' NOT IGNORE'
     );
     if ($ignore and $orig_query =~ /^(.*)((?:ALGORITHM|LOCK).*)/is) {
-      $orig_query.= $1.$ignore.' '.$2;
+      $orig_query.= $1."/*!100601 $ignore */".' '.$2;
     } else {
       $orig_query.= $ignore;
     }
