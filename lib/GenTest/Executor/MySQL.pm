@@ -1,7 +1,7 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Use is subject to license terms.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020, MariaDB Corporation
+# Copyright (c) 2020,2021 MariaDB Corporation
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -491,6 +491,10 @@ use constant  ER_PERIOD_CONSTRAINT_DROP                         => 4158;
 
 use constant  ER_UNKNOWN_DATA_TYPE                              => 4161;
 
+#--- 10.6 errors ---
+
+use constant  ER_JSON_TABLE_ERROR_ON_FIELD                      => 4174;
+
 my %err2type = (
 
     CR_COMMANDS_OUT_OF_SYNC() => STATUS_ENVIRONMENT_FAILURE,
@@ -636,6 +640,7 @@ my %err2type = (
     ER_JSON_DOCUMENT_TOO_DEEP()                         => STATUS_SEMANTIC_ERROR,
     ER_JSON_KEY_TOO_BIG()                               => STATUS_SEMANTIC_ERROR,
     ER_JSON_VALUE_TOO_BIG()                             => STATUS_SEMANTIC_ERROR,
+    ER_JSON_TABLE_ERROR_ON_FIELD()                      => STATUS_SEMANTIC_ERROR,
     ER_JSON_USED_AS_KEY()                               => STATUS_SEMANTIC_ERROR,
     ER_JSON_VACUOUS_PATH()                              => STATUS_SEMANTIC_ERROR,
     ER_IT_IS_A_VIEW()                                   => STATUS_SEMANTIC_ERROR,
@@ -1063,6 +1068,8 @@ sub execute {
     # which will cause syntax error. We'll clean them up
     while ($query =~ s/;\s*;/;/g) {}
     while ($query =~ s/(PROCEDURE.*)BEGIN\s*;/${1}BEGIN /g) {}
+    # Or occasionaly "x AS alias1 AS alias2"
+    while ($query =~ s/AS\s+\w+\s+(AS\s+\w+)/$1/g) {}
 
     my $qno_comment= 'QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId();
     # If a query starts with an executable comment, we'll put QNO right after the executable comment
