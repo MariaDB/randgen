@@ -128,6 +128,8 @@ my $opt_result = GetOptions(
     # Compatibility option, not used (no-mask is default unless mask was defined)
     'no_mask|no-mask' => \$deprecated->{no_mask},
     'notnull' => \$props->{notnull},
+    'parser=s' => \$props->{parser},
+    'parser-mode|parser_mode=s' => \$props->{parser_mode},
     'partitions'   => \$props->{partitions},
     'partitions1'  => \$props->{server_specific}->{1}->{partitions},
     'partitions2'  => \$props->{server_specific}->{2}->{partitions},
@@ -231,10 +233,15 @@ if ($help) {
     exit 0;
 }
 
-if (not defined $scenario and not defined $props->{grammar}) {
+if (not defined $scenario and not defined $props->{grammar} and not defined $props->{parser}) {
     print STDERR "\nERROR: Grammar file is not defined\n\n";
     help();
     exit 1;
+} elsif (defined $props->{parser}) {
+  $props->{generator}= 'FromParser';
+  if (defined $props->{grammar} or defined scalar(@{$props->{redefine}})) {
+    sayWarning("Parser will be used, grammar/redefines will be ignored");
+  }
 }
 
 my $git_rev= `cd $ENV{RQG_HOME} && git log -1 --pretty=%h`;

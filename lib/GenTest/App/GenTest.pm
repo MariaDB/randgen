@@ -102,7 +102,6 @@ sub new {
     }
 
     croak ("Need config") if not defined $self->config;
-
     return $self;
 }
 
@@ -651,7 +650,9 @@ sub initGenerator {
         mask => $self->config->mask,
         mask_level => $self->config->property('mask-level'),
         annotate_rules => $self->config->property('annotate-rules'),
-        vardir => $self->config->vardir
+        vardir => $self->config->vardir,
+        parser => $self->config->parser,
+        parser_mode => $self->config->parser_mode,
     );
 
     if (not defined $self->generator()) {

@@ -234,6 +234,8 @@ sub init {
               'compatibility',
               'user',
               'database',
+              'parser',
+              'parser_mode',
       ]
   );
 
@@ -261,7 +263,7 @@ sub setPropertiesFromHash {
   $gentestProps->property('freeze_time',$props->{freeze_time}) if defined $props->{freeze_time};
   $gentestProps->property('gendata',$props->{gendata}) if exists $props->{gendata};
   $gentestProps->property('gendata-advanced',1) if defined $props->{gendata_advanced};
-  $gentestProps->property('generator','FromGrammar') if not defined $gentestProps->property('generator');
+  $gentestProps->property('generator',($props->{generator} || 'FromGrammar'));
   $gentestProps->property('grammar',$props->{grammar});
   $gentestProps->property('queries',$props->{queries}) if defined $props->{queries};
   $gentestProps->property('logconf',$props->{logconf}) if defined $props->{logconf};
@@ -272,6 +274,8 @@ sub setPropertiesFromHash {
   $gentestProps->property('multi-master',1) if $props->{'multi-master'};
   $gentestProps->property('notnull',$props->{notnull}) if defined $props->{notnull};
   $gentestProps->property('number_of_servers',$props->{number_of_servers});
+  $gentestProps->property('parser',$props->{parser});
+  $gentestProps->property('parser_mode',$props->{parser_mode});
   $gentestProps->property('ps-protocol',1) if $props->{ps_protocol};
   $gentestProps->property('querytimeout',$props->{querytimeout}) if defined $props->{querytimeout};
   $gentestProps->property('redefine',$props->{redefine}) if $props->{redefine};

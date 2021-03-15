@@ -1,0 +1,7 @@
+$rules = {
+  'shutdown' => sub { $_ =~ m{SHUTDOWN}s },
+  'release' => sub { $_ =~ m{(?:COMMIT|ROLLBACK).*RELEASE}s },
+  'loop' => sub { $_ =~ m{LOOP\W}s },
+  'atomic' => sub { $_ =~ m{\!\s*ATOMIC}s },
+  'kill' => sub { $_ =~ m{KILL}s },
+}

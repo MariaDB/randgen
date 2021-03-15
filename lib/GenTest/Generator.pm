@@ -42,6 +42,8 @@ require Exporter;
 	GENERATOR_PARTICIPATING_RULES
 	GENERATOR_ANNOTATE_RULES
   GENERATOR_VARDIR
+  GENERATOR_PARSER
+  GENERATOR_PARSER_MODE
 );
 
 use strict;
@@ -62,6 +64,8 @@ use constant GENERATOR_GLOBAL_FRAME	=> 12;
 use constant GENERATOR_PARTICIPATING_RULES => 13;       # Stores the list of rules used in the last generated query
 use constant GENERATOR_ANNOTATE_RULES => 14;
 use constant GENERATOR_VARDIR => 15;
+use constant GENERATOR_PARSER => 16;
+use constant GENERATOR_PARSER_MODE => 17;
 
 sub new {
 	my $class = shift;
@@ -76,7 +80,9 @@ sub new {
 		'mask_level'		=> GENERATOR_MASK_LEVEL,
 		'varchar_length'	=> GENERATOR_VARCHAR_LENGTH,
 		'annotate_rules'	=> GENERATOR_ANNOTATE_RULES,
-    'vardir'          => GENERATOR_VARDIR
+    'vardir'          => GENERATOR_VARDIR,
+    'parser'          => GENERATOR_PARSER,
+    'parser_mode'          => GENERATOR_PARSER_MODE,
 	}, @_);
 
 	return $generator;
@@ -120,6 +126,18 @@ sub maskedGrammar {
 
 sub vardir {
   return $_[0]->[GENERATOR_VARDIR];
+}
+
+sub parser {
+  return $_[0]->[GENERATOR_PARSER];
+}
+
+sub parserMode {
+  return $_[0]->[GENERATOR_PARSER_MODE];
+}
+
+sub setParserMode {
+  $_[0]->[GENERATOR_PARSER_MODE]= $_[1];
 }
 
 sub setSeed {
