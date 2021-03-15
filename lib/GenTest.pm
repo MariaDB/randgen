@@ -142,7 +142,7 @@ sub sayWarning {
 }
 
 sub sayDebug {
-#    say(@_, 'DEBUG') if rqg_debug();
+    say(@_, 'DEBUG') if rqg_debug();
 }
 
 sub sayFile {
