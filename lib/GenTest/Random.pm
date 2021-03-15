@@ -40,6 +40,11 @@ require Exporter;
 	FIELD_TYPE_HEX
 	FIELD_TYPE_QUID
 	FIELD_TYPE_JSON
+
+  FIELD_TYPE_IDENTIFIER
+  FIELD_TYPE_IDENTIFIER_UNQUOTED
+  FIELD_TYPE_IDENTIFIER_QUOTED
+
 );
 
 #RV 15/9/14 - Disabled permanently as bugs reported with maxigen
@@ -111,6 +116,10 @@ use constant FIELD_TYPE_TEXT  => 29;
 use constant FIELD_TYPE_INET6  => 30;
 
 use constant FIELD_TYPE_JSONPATH_NO_WILDCARD	=> 31;
+
+use constant FIELD_TYPE_IDENTIFIER          => 32;
+use constant FIELD_TYPE_IDENTIFIER_UNQUOTED => 33;
+use constant FIELD_TYPE_IDENTIFIER_QUOTED   => 34;
 
 use constant ASCII_RANGE_START		=> 97;
 use constant ASCII_RANGE_END		=> 122;
@@ -187,6 +196,13 @@ my %name2type = (
 	'jsonpath'		=> FIELD_TYPE_JSONPATH,
 	'jsonkey'       => FIELD_TYPE_JSONKEY,
 	'jsonpath_no_wildcard'		=> FIELD_TYPE_JSONPATH_NO_WILDCARD,
+
+  'identifier'    => FIELD_TYPE_IDENTIFIER,
+  'identifierUnquoted'    => FIELD_TYPE_IDENTIFIER_UNQUOTED,
+  'identifierQuoted'      => FIELD_TYPE_IDENTIFIER_QUOTED,
+  'name'          => FIELD_TYPE_IDENTIFIER,
+  'name_unquoted' => FIELD_TYPE_IDENTIFIER_UNQUOTED,
+  'name_quoted'   => FIELD_TYPE_IDENTIFIER_QUOTED,
 );
 
 my $cwd = cwd();
@@ -220,6 +236,10 @@ my %name2range = (
         'bigint_unsigned'       => [0, 18446744073709551615],
         'bigint_positive'       => [1, 18446744073709551615]
 );
+
+# Don't use $ for now, it confuses RQG
+#my @id_chars= qw($ _ A B C D E F G H I J K L M N O P Q R S T U V W Z Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9);
+my @id_chars= qw(_ A B C D E F G H I J K L M N O P Q R S T U V W Z Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9);
 
 my $prng_class;
 
@@ -288,6 +308,7 @@ sub uint16 {
     use integer;
     # urand() is manually inlined for efficiency
     update_generator($_[0]);
+    if (not defined $_[2]) { croak("HERE") };
     return $_[1] +
         ((($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF) % ($_[2] - $_[1] + 1));
 }
@@ -671,6 +692,33 @@ sub bit {
 	return 'b\''.join ('', map { $prng->int(0,1) } (1..$prng->int(1,$length)) ).'\'';
 }
 
+sub identifier {
+    return $_[0]->uint16(0,2) ? $_[0]->identifierUnquoted() : $_[0]->identifierQuoted();
+}
+
+### Unquoted identifier
+sub identifierUnquoted {
+    my $length= ( $_[0]->uint16(0,20) ? $_[0]->uint16(1,8) : $_[0]->uint16(1,64) );
+    my @val= ();
+    for (my $i=0; $i<$length; $i++) {
+        my $c= $id_chars[$_[0]->uint16(0,$#id_chars)];
+        push @val, $c;
+    }
+    # Unquoted identifier cannot consist only of digits
+    my $res= join '', @val;
+    if ($res =~ /^\d+$/) {
+        my $i= $_[0]->uint16(0,length($res)-1);
+        $res= substr($res,0,$i-1).$id_chars[$_[0]->uint16(0,53)].substr($res,$i+1);
+    } elsif ($res =~ s/^(\d+e)\d/${1}e/i) {
+      # Misinterpreted as a float value
+    }
+    return $res;
+}
+
+sub identifierQuoted {
+    return '`'.($_[0]->identifierUnquoted()).'`';
+}
+
 #
 # Return a random array element from an array reference
 #
@@ -746,6 +794,12 @@ sub fieldType {
 		return $rand->jsonPathNoWildcard($field_length);
 	} elsif ($field_type == FIELD_TYPE_JSONKEY) {
 		return $rand->jsonKey();
+	} elsif ($field_type == FIELD_TYPE_IDENTIFIER) {
+		return $rand->identifier();
+	} elsif ($field_type == FIELD_TYPE_IDENTIFIER_QUOTED) {
+		return $rand->identifierQuoted();
+	} elsif ($field_type == FIELD_TYPE_IDENTIFIER_UNQUOTED) {
+		return $rand->identifierUnquoted();
 	} else {
 		croak ("unknown field type $field_def");
 	}
