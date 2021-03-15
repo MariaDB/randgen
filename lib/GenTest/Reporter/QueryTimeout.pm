@@ -38,11 +38,15 @@ use constant DEFAULT_QUERY_LIFETIME_THRESHOLD	=> 20;	# Seconds
 # We check this once and store the value (or the default) in this variable.
 my $q_l_t;
 
+my ($dsn, $dbh);
+
 sub monitor {
 	my $reporter = shift;
 
-	my $dsn = $reporter->dsn();
-	my $dbh = DBI->connect($dsn);
+  unless (defined $dbh) {
+    $dsn = $reporter->dsn();
+    $dbh = DBI->connect($dsn);
+  }
 
 	if (defined GenTest::Executor::MySQL::errorType($DBI::err)) {
 	  say("QueryTimeout:: DBI returned error ".$DBI::err." (".$DBI::errstr."), errorType ".GenTest::Executor::MySQL::errorType($DBI::err));
