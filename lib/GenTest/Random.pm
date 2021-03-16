@@ -314,7 +314,9 @@ sub uint16 {
     use integer;
     # urand() is manually inlined for efficiency
     update_generator($_[0]);
-    if (not defined $_[2]) { croak("HERE") };
+    if (not defined $_[2]) {
+      sayError("Second parameter not defined in uint16");
+    }
     return $_[1] +
         ((($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF) % ($_[2] - $_[1] + 1));
 }
