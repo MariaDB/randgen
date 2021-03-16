@@ -456,6 +456,14 @@ $optional_server_variables_102= [
     '--mysqld=--table-open-cache-instances=1',
     '--mysqld=--table-open-cache-instances=64',
   ],
+  # Default query_cache_type is OFF and size is 1M
+  # but type is set to ON automatically if size is configured explicitly
+  [ '', '', '', '', '', '', '', '', '', '',
+    '--mysqld=--query-cache-type=1',
+    '--mysqld=--query-cache-type=2',
+    '--mysqld=--query-cache-size=128K',
+    '--mysqld=--query-cache-size=4M',
+  ],
   # Default one-thread-per-connection (on Linux)
   [ '', '', '',
     '--mysqld=--thread-handling=pool-of-threads',
