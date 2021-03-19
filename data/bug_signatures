@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25206:
+=~ signal 11|AddressSanitizer
+=~ Item_field::fix_outer_field
+=~ Item::fix_fields_if_needed
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-25109:
 =~ signal|AddressSanitizer
 =~ my_casedn_str_utf8|my_casedn_str_utf8mb3
