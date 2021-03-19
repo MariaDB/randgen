@@ -153,12 +153,13 @@ sub new {
                                                              osWindows()?["share/mysql-test","mysql-test"]:["share/mysql-test","mysql-test"],
                                                              "valgrind.supp")
     };
-    
-    foreach my $file ("mysql_system_tables.sql", 
-                      "mysql_performance_tables.sql",
-                      "mysql_system_tables_data.sql", 
-                      "mysql_test_data_timezone.sql",
-                      "fill_help_tables.sql") {
+
+    foreach my $file ('mysql_system_tables.sql',
+                      'mysql_performance_tables.sql',
+                      'mysql_system_tables_data.sql',
+                      'fill_help_tables.sql',
+                      'maria_add_gis_sp_bootstrap.sql',
+                      'mysql_sys_schema.sql') {
         my $script = 
              eval { $self->_find(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir],
                           ["scripts","share/mysql","share"], $file) };
