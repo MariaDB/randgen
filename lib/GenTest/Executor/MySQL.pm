@@ -493,7 +493,7 @@ use constant  ER_UNKNOWN_DATA_TYPE                              => 4161;
 
 #--- 10.6 errors ---
 
-use constant  ER_JSON_TABLE_ERROR_ON_FIELD                      => 4174;
+use constant  ER_JSON_TABLE_ERROR_ON_FIELD                      => 4175;
 
 my %err2type = (
 
