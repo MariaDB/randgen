@@ -35,6 +35,7 @@ use constant TRANSFORMER_QUERIES_PROCESSED   => 0;
 use constant TRANSFORMER_QUERIES_TRANSFORMED => 1;
 use constant TRANSFORMER_SEED => 2;
 use constant TRANSFORMER_RANDOM => 3;
+use constant TRANSFORMER_EXECUTOR => 4;
 
 use constant TRANSFORM_OUTCOME_EXACT_MATCH           => 1001;
 use constant TRANSFORM_OUTCOME_UNORDERED_MATCH       => 1002;
@@ -95,7 +96,8 @@ my %mysql_grouping_errors = (
     2013 => 'CR_SERVER_LOST',
     # Sequence numbers are used on every call, they can run out during
     # transformations even if the original query went all right
-    4084 => 'ER_SEQUENCE_RUN_OUT'
+    4084 => 'ER_SEQUENCE_RUN_OUT',
+    4175 => 'ER_JSON_TABLE_ERROR_ON_FIELD',
 );
 
 # List of encountered errors that we want to suppress later in the test run.
@@ -491,6 +493,14 @@ sub isRowsExaminedObeyed {
     }
 }
 
+sub executor {
+  my ($self, $executor)= @_;
+  if ($executor) {
+    $self->[TRANSFORMER_EXECUTOR]= $executor;
+  } else {
+    return $self->[TRANSFORMER_EXECUTOR];
+  }
+}
 
 sub name {
     my $transformer = shift;
