@@ -1,0 +1,782 @@
+{
+  "meta" : {
+    "view" : {
+      "id" : "q8sd-9bib",
+      "name" : "Designated Scenic Byways",
+      "assetType" : "dataset",
+      "attribution" : "New York State Department of Transportation",
+      "attributionLink" : "https://www.dot.ny.gov/display/programs/scenic-byways",
+      "averageRating" : 0,
+      "category" : "Transportation",
+      "createdAt" : 1360878507,
+      "description" : "The New York State Scenic Byways program was created in 1992 by the State Legislature. The program encourages both economic development and resource conservation, recognizing that each of these aspects of a byway must be fostered to ensure the success of the other. This dataset is a listing of all designated State and National Scenic Byways in New York State with Scenic Byway Corridor Management Plans: Includes location, length, route description, designation and website. Information is current as of the publication date.",
+      "displayType" : "table",
+      "downloadCount" : 1539,
+      "hideFromCatalog" : false,
+      "hideFromDataJson" : false,
+      "indexUpdatedAt" : 1560189614,
+      "newBackend" : true,
+      "numberOfComments" : 0,
+      "oid" : 2677464,
+      "provenance" : "official",
+      "publicationAppendEnabled" : false,
+      "publicationDate" : 1362153094,
+      "publicationGroup" : 677837,
+      "publicationStage" : "published",
+      "rowClass" : "",
+      "rowsUpdatedAt" : 1362152554,
+      "rowsUpdatedBy" : "nas8-ebt2",
+      "tableId" : 707422,
+      "totalTimesRated" : 0,
+      "viewCount" : 2726,
+      "viewLastModified" : 1560189590,
+      "viewType" : "tabular",
+      "approvals" : [ {
+        "reviewedAt" : 1362153094,
+        "reviewedAutomatically" : true,
+        "state" : "approved",
+        "submissionId" : 995322,
+        "submissionObject" : "public_audience_request",
+        "submissionOutcome" : "change_audience",
+        "submittedAt" : 1362153094,
+        "workflowId" : 2254,
+        "submissionDetails" : {
+          "permissionType" : "READ"
+        },
+        "submissionOutcomeApplication" : {
+          "failureCount" : 0,
+          "status" : "success"
+        },
+        "submitter" : {
+          "id" : "xzik-pf59",
+          "displayName" : "NY Open Data"
+        }
+      } ],
+      "columns" : [ {
+        "id" : -1,
+        "name" : "sid",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":sid",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "id",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":id",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "position",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":position",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "created_at",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":created_at",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "created_meta",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":created_meta",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "updated_at",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":updated_at",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "updated_meta",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":updated_meta",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "meta",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":meta",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : 47787275,
+        "name" : "Scenic Byway",
+        "dataTypeName" : "text",
+        "description" : "Name of Scenic Byway.",
+        "fieldName" : "scenic_byway",
+        "position" : 1,
+        "renderTypeName" : "text",
+        "tableColumnId" : 7858463,
+        "width" : 226,
+        "cachedContents" : {
+          "largest" : "WNY Southtowns Scenic Byway",
+          "non_null" : 28,
+          "null" : "0",
+          "top" : [ {
+            "item" : "Dude Ranch Trail/First Wilderness Byway",
+            "count" : "1"
+          }, {
+            "item" : "High Peaks Scenic Byway",
+            "count" : "1"
+          }, {
+            "item" : "Adirondack Trail",
+            "count" : "1"
+          }, {
+            "item" : "Cayuga Lake Scenic Byway",
+            "count" : "1"
+          }, {
+            "item" : "Central Adirondack Trail",
+            "count" : "1"
+          }, {
+            "item" : "Lakes to Locks Passage",
+            "count" : "1"
+          }, {
+            "item" : "Scenic Route 90 Byway",
+            "count" : "1"
+          }, {
+            "item" : "Seneca Lake Scenic Byway",
+            "count" : "1"
+          }, {
+            "item" : "Black River Trail",
+            "count" : "1"
+          }, {
+            "item" : "Bronx River Parkway",
+            "count" : "1"
+          }, {
+            "item" : "Palisades Parkway",
+            "count" : "1"
+          }, {
+            "item" : "Roosevelt-Marcy Trail",
+            "count" : "1"
+          }, {
+            "item" : "Maple Traditions Byway (pending legislation)",
+            "count" : "1"
+          }, {
+            "item" : "Mountain Cloves Scenic Byway (pending legislation)",
+            "count" : "1"
+          }, {
+            "item" : "Historic Parkways of Long Island ",
+            "count" : "1"
+          }, {
+            "item" : "North Fork Trail",
+            "count" : "1"
+          }, {
+            "item" : "Durham Valley Scenic Byway",
+            "count" : "1"
+          }, {
+            "item" : "Revolutionary Trail",
+            "count" : "1"
+          }, {
+            "item" : "Southern Adirondack Trail",
+            "count" : "1"
+          }, {
+            "item" : "Upper Delaware Scenic Byway",
+            "count" : "1"
+          } ],
+          "smallest" : "Adirondack Trail",
+          "not_null" : "28",
+          "cardinality" : "28"
+        },
+        "format" : {
+          "align" : "left"
+        }
+      }, {
+        "id" : 47787276,
+        "name" : "Approximate Length (Miles)",
+        "dataTypeName" : "number",
+        "description" : "Approximate total length of the byway measured in miles.",
+        "fieldName" : "approximate_length_miles",
+        "position" : 2,
+        "renderTypeName" : "number",
+        "tableColumnId" : 7858464,
+        "width" : 188,
+        "cachedContents" : {
+          "largest" : "454",
+          "non_null" : 28,
+          "average" : "92.53571428571429",
+          "null" : "0",
+          "top" : [ {
+            "item" : "40",
+            "count" : "2"
+          }, {
+            "item" : "89",
+            "count" : "1"
+          }, {
+            "item" : "29",
+            "count" : "1"
+          }, {
+            "item" : "38",
+            "count" : "1"
+          }, {
+            "item" : "18",
+            "count" : "1"
+          }, {
+            "item" : "168",
+            "count" : "1"
+          }, {
+            "item" : "36",
+            "count" : "1"
+          }, {
+            "item" : "71",
+            "count" : "1"
+          }, {
+            "item" : "454",
+            "count" : "1"
+          }, {
+            "item" : "50",
+            "count" : "1"
+          }, {
+            "item" : "179",
+            "count" : "1"
+          }, {
+            "item" : "84",
+            "count" : "1"
+          }, {
+            "item" : "112",
+            "count" : "1"
+          }, {
+            "item" : "53",
+            "count" : "1"
+          }, {
+            "item" : "158",
+            "count" : "1"
+          }, {
+            "item" : "41",
+            "count" : "1"
+          }, {
+            "item" : "153",
+            "count" : "1"
+          }, {
+            "item" : "109",
+            "count" : "1"
+          }, {
+            "item" : "95",
+            "count" : "1"
+          }, {
+            "item" : "87",
+            "count" : "1"
+          } ],
+          "smallest" : "13",
+          "not_null" : "28",
+          "sum" : "2591",
+          "cardinality" : "27"
+        },
+        "format" : {
+          "precisionStyle" : "standard",
+          "noCommas" : "false",
+          "align" : "right"
+        }
+      }, {
+        "id" : 47787277,
+        "name" : "Region",
+        "dataTypeName" : "text",
+        "description" : "The region of New York State the byway serves.",
+        "fieldName" : "region",
+        "position" : 3,
+        "renderTypeName" : "text",
+        "tableColumnId" : 7858465,
+        "width" : 191,
+        "cachedContents" : {
+          "largest" : "Thousand Islands Seaway",
+          "non_null" : 28,
+          "null" : "0",
+          "top" : [ {
+            "item" : "Adirondacks",
+            "count" : "9"
+          }, {
+            "item" : "Hudson Valley",
+            "count" : "3"
+          }, {
+            "item" : "Long Island",
+            "count" : "2"
+          }, {
+            "item" : "Central New York",
+            "count" : "2"
+          }, {
+            "item" : "Catskills",
+            "count" : "2"
+          }, {
+            "item" : "Finger Lakes",
+            "count" : "2"
+          }, {
+            "item" : "Delaware River/Catskills",
+            "count" : "1"
+          }, {
+            "item" : "HudsonValley",
+            "count" : "1"
+          }, {
+            "item" : "Greater Niagara",
+            "count" : "1"
+          }, {
+            "item" : "Thousand Islands Seaway",
+            "count" : "1"
+          }, {
+            "item" : "Great Lakes/ Canadian Border",
+            "count" : "1"
+          }, {
+            "item" : "Capital-Saratoga",
+            "count" : "1"
+          }, {
+            "item" : "Champlain and Hudson Valleys",
+            "count" : "1"
+          }, {
+            "item" : "Finger lakes",
+            "count" : "1"
+          } ],
+          "smallest" : "Adirondacks",
+          "not_null" : "28",
+          "cardinality" : "14"
+        },
+        "format" : {
+          "align" : "left"
+        }
+      }, {
+        "id" : 47787278,
+        "name" : "Connects",
+        "dataTypeName" : "text",
+        "description" : "The city, village or towns connected by the byway.",
+        "fieldName" : "connects",
+        "position" : 4,
+        "renderTypeName" : "text",
+        "tableColumnId" : 7858466,
+        "width" : 213,
+        "cachedContents" : {
+          "largest" : "Westchester and Columbia Counties",
+          "non_null" : 28,
+          "null" : "0",
+          "top" : [ {
+            "item" : "Southhold to Orient Point",
+            "count" : "1"
+          }, {
+            "item" : "Bronxville and Valhalla",
+            "count" : "1"
+          }, {
+            "item" : "Ripley and Massena",
+            "count" : "1"
+          }, {
+            "item" : "Rome and Dexter",
+            "count" : "1"
+          }, {
+            "item" : "Herkimer/Little Falls and Speculator",
+            "count" : "1"
+          }, {
+            "item" : "Loop around Cayuga Lake",
+            "count" : "1"
+          }, {
+            "item" : "Lake Placid and The Northway",
+            "count" : "1"
+          }, {
+            "item" : "Rome and Glens Falls",
+            "count" : "1"
+          }, {
+            "item" : "Hancock to Port Jervis",
+            "count" : "1"
+          }, {
+            "item" : "Lowville and Ogdensburg",
+            "count" : "1"
+          }, {
+            "item" : "Canadian Border and Waterford",
+            "count" : "1"
+          }, {
+            "item" : "Keeseveille and Sackets Harbor",
+            "count" : "1"
+          }, {
+            "item" : "Scenectady and Waterford",
+            "count" : "1"
+          }, {
+            "item" : "Westchester and Columbia Counties",
+            "count" : "1"
+          }, {
+            "item" : "Long Lake and North Creek",
+            "count" : "1"
+          }, {
+            "item" : "Homer and Montezuma",
+            "count" : "1"
+          }, {
+            "item" : "Fonda and Malone",
+            "count" : "1"
+          }, {
+            "item" : "Watkins Glen to Lodi",
+            "count" : "1"
+          }, {
+            "item" : "Loop in Lake George Region ",
+            "count" : "1"
+          }, {
+            "item" : "Hunter, HainesFalls, Tannersville",
+            "count" : "1"
+          } ],
+          "smallest" : "Albany and Port Ontario",
+          "not_null" : "28",
+          "cardinality" : "28"
+        },
+        "format" : {
+          "align" : "left"
+        }
+      }, {
+        "id" : 47787279,
+        "name" : "Primary Designation",
+        "dataTypeName" : "text",
+        "description" : "The primary designation of the byway.",
+        "fieldName" : "primary_designation",
+        "position" : 5,
+        "renderTypeName" : "text",
+        "tableColumnId" : 7858467,
+        "width" : 328,
+        "cachedContents" : {
+          "largest" : "State Scenic Byway",
+          "non_null" : 28,
+          "null" : "0",
+          "top" : [ {
+            "item" : "State Scenic Byway",
+            "count" : "25"
+          }, {
+            "item" : "National Scenic Byway (National Designation)",
+            "count" : "2"
+          }, {
+            "item" : "All-American Road (National Designation)",
+            "count" : "1"
+          } ],
+          "smallest" : "All-American Road (National Designation)",
+          "not_null" : "28",
+          "cardinality" : "3"
+        },
+        "format" : {
+          "align" : "left"
+        }
+      }, {
+        "id" : 47787280,
+        "name" : "Secondary Designation",
+        "dataTypeName" : "text",
+        "description" : "The secondary designation of the byway (where applicable).",
+        "fieldName" : "secondary_designation",
+        "position" : 6,
+        "renderTypeName" : "text",
+        "tableColumnId" : 7858468,
+        "width" : 288,
+        "cachedContents" : {
+          "largest" : "State Scenic Byway",
+          "non_null" : 20,
+          "null" : "8",
+          "top" : [ {
+            "item" : " ",
+            "count" : "17"
+          }, {
+            "item" : "State Scenic Byway",
+            "count" : "3"
+          } ],
+          "smallest" : " ",
+          "not_null" : "20",
+          "cardinality" : "2"
+        },
+        "format" : {
+          "align" : "left"
+        }
+      }, {
+        "id" : 47787281,
+        "name" : "Tertiary Designation",
+        "dataTypeName" : "text",
+        "description" : "The tertiary designation of the byway (where applicable).",
+        "fieldName" : "tertiary_designation",
+        "position" : 7,
+        "renderTypeName" : "text",
+        "tableColumnId" : 7858469,
+        "width" : 297,
+        "cachedContents" : {
+          "largest" : " ",
+          "non_null" : 19,
+          "null" : "9",
+          "top" : [ {
+            "item" : " ",
+            "count" : "19"
+          } ],
+          "smallest" : " ",
+          "not_null" : "19",
+          "cardinality" : "1"
+        },
+        "format" : {
+          "align" : "left"
+        }
+      }, {
+        "id" : 47787282,
+        "name" : "For more information (URL)",
+        "dataTypeName" : "url",
+        "description" : "URL of website with more information about the designated\nscenic byway.",
+        "fieldName" : "for_more_information_url",
+        "position" : 8,
+        "renderTypeName" : "url",
+        "tableColumnId" : 7858470,
+        "width" : 483,
+        "cachedContents" : {
+          "largest" : {
+            "url" : "https://www.dot.ny.gov/display/programs/scenic-byways/southern-adirondack-trail"
+          },
+          "non_null" : 28,
+          "null" : 0,
+          "top" : [ {
+            "item" : {
+              "url" : "http://www.seawaytrail.com/"
+            },
+            "count" : 20
+          }, {
+            "item" : {
+              "url" : "http://www.lakestolocks.org/"
+            },
+            "count" : 19
+          }, {
+            "item" : {
+              "url" : "http://www.adirondackscenicbyways.org/byway/adirondack-trail.html"
+            },
+            "count" : 18
+          }, {
+            "item" : {
+              "url" : "http://www.tughill.org/about/tug-hill-commission/projects/black-river-projects/black-river-trail-scenic-byway/"
+            },
+            "count" : 17
+          }, {
+            "item" : {
+              "url" : "http://www.fingerlakes.org/things-to-do/attractions/wineries-more/cayuga-lake-scenic-byway"
+            },
+            "count" : 16
+          }, {
+            "item" : {
+              "url" : "http://www.adirondackscenicbyways.org/byway/central-adirondack-trail.html"
+            },
+            "count" : 15
+          }, {
+            "item" : {
+              "url" : "https://www.dot.ny.gov/display/programs/scenic-byways/dude-ranch-trail"
+            },
+            "count" : 14
+          }, {
+            "item" : {
+              "url" : "https://www.dot.ny.gov/display/programs/scenic-byways/military-trail"
+            },
+            "count" : 13
+          }, {
+            "item" : {
+              "url" : "http://www.northfork.org/"
+            },
+            "count" : 12
+          }, {
+            "item" : {
+              "url" : "http://www.adirondackscenicbyways.org/byway/olympic-trail.html"
+            },
+            "count" : 11
+          }, {
+            "item" : {
+              "url" : "https://www.dot.ny.gov/display/programs/scenic-byways/revolutionary-byway"
+            },
+            "count" : 10
+          }, {
+            "item" : {
+              "url" : "http://www.adirondackscenicbyways.org/"
+            },
+            "count" : 9
+          }, {
+            "item" : {
+              "url" : "https://www.dot.ny.gov/display/programs/scenic-byways/southern-adirondack-trail"
+            },
+            "count" : 8
+          }, {
+            "item" : {
+              "url" : "http://www.upperdelawarescenicbyway.org/"
+            },
+            "count" : 7
+          }, {
+            "item" : {
+              "url" : "https://www.dot.ny.gov/display/programs/scenic-byways/route-90"
+            },
+            "count" : 6
+          }, {
+            "item" : {
+              "url" : "https://www.dot.ny.gov/display/programs/scenic-byways/high-peaks-byway-rte-73"
+            },
+            "count" : 5
+          }, {
+            "item" : {
+              "url" : "http://mohawktowpath.homestead.com/"
+            },
+            "count" : 4
+          }, {
+            "item" : {
+              "url" : "http://www.nyroute20.com/"
+            },
+            "count" : 3
+          }, {
+            "item" : {
+              "url" : "http://www.mtnscenicbyway.org/"
+            },
+            "count" : 2
+          }, {
+            "item" : {
+              "url" : "http://wnyssb.org/"
+            },
+            "count" : 1
+          } ],
+          "smallest" : {
+            "url" : "http://durhamvalley.com/scenic_byway.html"
+          }
+        },
+        "format" : {
+          "align" : "left"
+        },
+        "subColumnTypes" : [ "url", "description" ]
+      } ],
+      "grants" : [ {
+        "inherited" : false,
+        "type" : "viewer",
+        "flags" : [ "public" ]
+      } ],
+      "metadata" : {
+        "rdfSubject" : "0",
+        "rdfClass" : "",
+        "attachments" : [ {
+          "filename" : "NYSDOT_DesignatedScenicByways_Benefits_Research.pdf",
+          "assetId" : "",
+          "blobId" : "35E971C6-921C-4B0B-8648-D0BA580F8A5E",
+          "name" : "NYSDOT_DesignatedScenicByways_Benefits_Research.pdf"
+        }, {
+          "filename" : "NYSDOT_DesignatedScenic_Byways_Overview.pdf",
+          "assetId" : "",
+          "blobId" : "11F3D685-DBC9-4277-9C96-21FDB586985E",
+          "name" : "NYSDOT_DesignatedScenic_Byways_Overview.pdf"
+        }, {
+          "filename" : "NYSDOT_DesignatedScenicByways_DataDictionary.pdf",
+          "assetId" : "",
+          "blobId" : "05DF14B0-9A81-4D8C-91BA-4D3A4C8D7929",
+          "name" : "NYSDOT_DesignatedScenicByways_DataDictionary.pdf"
+        } ],
+        "custom_fields" : {
+          "Dataset Summary" : {
+            "Posting Frequency" : "As needed",
+            "Organization" : "Landscape Architecture Bureau",
+            "Contact Information" : "ScenicByways@dot.ny.gov",
+            "Time Period" : "Present",
+            "Coverage" : "Statewide",
+            "Granularity" : "Designated Scenic Byway ",
+            "Units" : "Designated Scenic Byway ",
+            "Dataset Owner" : "Landscape Architecture Bureau ",
+            "Data Frequency" : "Updated on an as needed basis with new designations of scenic byways, or changes to existing scenic byways"
+          },
+          "Common Core" : {
+            "Contact Email" : "opendata@its.ny.gov",
+            "Contact Name" : "Open Data NY",
+            "Publisher" : "State of New York"
+          },
+          "Additional Resources" : {
+            "See Also " : "Scenic Byways Advisory Board - https://www.dot.ny.gov/display/programs/scenic-byways/organizers/advisory-board",
+            "See Also" : "National Scenic Byways Online - http://www.byways.org/"
+          },
+          "Disclaimers" : {
+            "Limitations" : "Information is current as of the publication date. "
+          },
+          "Notes" : {
+            "Notes" : "In New York State, there are several types of types of corridors that fall under the Scenic Byways Program. State Scenic Byways are transportation corridors that are of particular statewide interest. They are representative of a region's scenic, recreational, cultural, natural, historic or archaeological significance. National Scenic Byways are transporatation corridors of particular nationwide interest. National Scenic Byways are designated by the United States Department of Transportation's Federal Highway Administration. For more information on the National Scenic Byways Program, and byways across the country, visit National Scenic Byways Online The Program is administered by the Landscape Architecture Bureau of the New York State Department of Transportation; it is guided and implemented by the Scenic Byways Advisory Board that includes a number of state agencies as well as members of the motoring public, tourism associations and organizations interested in preserving scenic quality. "
+          },
+          "Dataset Information" : {
+            "Agency" : "Transportation, Department of"
+          }
+        },
+        "rowIdentifier" : "0",
+        "availableDisplayTypes" : [ "table", "fatrow", "page" ],
+        "renderTypeConfig" : {
+          "visible" : {
+            "table" : true
+          }
+        }
+      },
+      "owner" : {
+        "id" : "xzik-pf59",
+        "displayName" : "NY Open Data",
+        "profileImageUrlLarge" : "/api/users/xzik-pf59/profile_images/LARGE",
+        "profileImageUrlMedium" : "/api/users/xzik-pf59/profile_images/THUMB",
+        "profileImageUrlSmall" : "/api/users/xzik-pf59/profile_images/TINY",
+        "screenName" : "NY Open Data",
+        "type" : "interactive",
+        "flags" : [ "mayBeStoriesCoOwner" ]
+      },
+      "query" : {
+        "orderBys" : [ {
+          "ascending" : true,
+          "expression" : {
+            "columnId" : 47787277,
+            "type" : "column"
+          }
+        }, {
+          "ascending" : true,
+          "expression" : {
+            "columnId" : 47787275,
+            "type" : "column"
+          }
+        } ]
+      },
+      "rights" : [ "read" ],
+      "tableAuthor" : {
+        "id" : "mwxm-zess",
+        "displayName" : "Lindsey Krough",
+        "profileImageUrlLarge" : "/api/users/mwxm-zess/profile_images/LARGE",
+        "profileImageUrlMedium" : "/api/users/mwxm-zess/profile_images/THUMB",
+        "profileImageUrlSmall" : "/api/users/mwxm-zess/profile_images/TINY",
+        "screenName" : "Lindsey Krough",
+        "type" : "interactive"
+      },
+      "tags" : [ "scenic byways", "national scenic byways", "new york state scenic byways", "cmp", "corridor management plan", "scenic roads", "all american road" ],
+      "flags" : [ "default", "ownerMayBeContacted", "restorable", "restorePossibleForType" ]
+    }
+  },
+  "data" : [ [ "row-5crd_6b3f_3y4i", "00000000-0000-0000-E069-4FECDB22F74E", 0, 1560451418, null, 1560451418, null, "{ }", "Great Lakes Seaway Trail", "454", "Great Lakes/ Canadian Border", "Ripley and Massena", "National Scenic Byway (National Designation)", "State Scenic Byway", " ", [ "http://www.seawaytrail.com/", null ] ]
+, [ "row-h9yx_mzjg_4s2q", "00000000-0000-0000-A09C-34A7A1148705", 0, 1560451418, null, 1560451418, null, "{ }", "Lakes to Locks Passage", "225", "Champlain and Hudson Valleys", "Canadian Border and Waterford", "All-American Road (National Designation)", "State Scenic Byway", null, [ "http://www.lakestolocks.org/", null ] ]
+, [ "row-utuv~gy8p.eas9", "00000000-0000-0000-47AE-C76ABC2B5BE3", 0, 1560451418, null, 1560451418, null, "{ }", "Adirondack Trail", "179", "Adirondacks", "Fonda and Malone", "State Scenic Byway", " ", " ", [ "http://www.adirondackscenicbyways.org/byway/adirondack-trail.html", null ] ]
+, [ "row-22hk~dfii_skqe", "00000000-0000-0000-7DC5-30164E54661A", 0, 1560451418, null, 1560451418, null, "{ }", "Black River Trail", "95", "Adirondacks", "Rome and Dexter", "State Scenic Byway", " ", " ", [ "http://www.tughill.org/about/tug-hill-commission/projects/black-river-projects/black-river-trail-scenic-byway/", null ] ]
+, [ "row-au5f-9exd~5hwm", "00000000-0000-0000-4630-50C5ECE5A68F", 0, 1560451418, null, 1560451418, null, "{ }", "Cayuga Lake Scenic Byway", "87", "Finger Lakes", "Loop around Cayuga Lake", "State Scenic Byway", " ", " ", [ "http://www.fingerlakes.org/things-to-do/attractions/wineries-more/cayuga-lake-scenic-byway", null ] ]
+, [ "row-9zb6-w7xw_csgx", "00000000-0000-0000-6A93-6EB7D6D1B408", 0, 1560451418, null, 1560451418, null, "{ }", "Central Adirondack Trail", "153", "Adirondacks", "Rome and Glens Falls", "State Scenic Byway", " ", " ", [ "http://www.adirondackscenicbyways.org/byway/central-adirondack-trail.html", null ] ]
+, [ "row-qguv.tyr2~qdsy", "00000000-0000-0000-4539-19094568FA69", 0, 1560451418, null, 1560451418, null, "{ }", "Dude Ranch Trail/First Wilderness Byway", "40", "Adirondacks", "Loop in Lake George Region ", "State Scenic Byway", " ", " ", [ "https://www.dot.ny.gov/display/programs/scenic-byways/dude-ranch-trail", null ] ]
+, [ "row-9xze.ecpt.k6bx", "00000000-0000-0000-2145-FE9196A3E8D0", 0, 1560451418, null, 1560451418, null, "{ }", "Military Trail/North Country Byway", "84", "Adirondacks", "Rouses Point and Massena", "State Scenic Byway", " ", " ", [ "https://www.dot.ny.gov/display/programs/scenic-byways/military-trail", null ] ]
+, [ "row-9avu-h6bm-7axn", "00000000-0000-0000-7770-3C95B9E7FE96", 0, 1560451418, null, 1560451418, null, "{ }", "North Fork Trail", "36", "Long Island", "Southhold to Orient Point", "State Scenic Byway", " ", " ", [ "http://www.northfork.org/", null ] ]
+, [ "row-6wd3-vigx-bgn6", "00000000-0000-0000-FB9E-D948649E3352", 0, 1560451418, null, 1560451418, null, "{ }", "Olympic Trail", "168", "Adirondacks", "Keeseveille and Sackets Harbor", "State Scenic Byway", " ", " ", [ "http://www.adirondackscenicbyways.org/byway/olympic-trail.html", null ] ]
+, [ "row-u8ht_wpre.nhuz", "00000000-0000-0000-7852-8F9964B6F976", 0, 1560451418, null, 1560451418, null, "{ }", "Revolutionary Trail", "158", "Central New York", "Albany and Port Ontario", "State Scenic Byway", " ", " ", [ "https://www.dot.ny.gov/display/programs/scenic-byways/revolutionary-byway", null ] ]
+, [ "row-p7uj-z8zt-rjab", "00000000-0000-0000-DF80-A25B4A371A96", 0, 1560451418, null, 1560451418, null, "{ }", "Roosevelt-Marcy Trail", "40", "Adirondacks", "Long Lake and North Creek", "State Scenic Byway", " ", " ", [ "http://www.adirondackscenicbyways.org/", null ] ]
+, [ "row-ysqw~pkiz_bxzh", "00000000-0000-0000-D2D0-211F8D394C54", 0, 1560451418, null, 1560451418, null, "{ }", "Southern Adirondack Trail", "112", "Adirondacks", "Herkimer/Little Falls and Speculator", "State Scenic Byway", " ", " ", [ "https://www.dot.ny.gov/display/programs/scenic-byways/southern-adirondack-trail", null ] ]
+, [ "row-s5vg.idjk-ruvi", "00000000-0000-0000-3927-756A0361F05D", 0, 1560451418, null, 1560451418, null, "{ }", "Upper Delaware Scenic Byway", "53", "Delaware River/Catskills", "Hancock to Port Jervis", "State Scenic Byway", " ", " ", [ "http://www.upperdelawarescenicbyway.org/", null ] ]
+, [ "row-qznr-ax9t_eq2i", "00000000-0000-0000-9BD7-44ABD2EFEF8B", 0, 1560451418, null, 1560451418, null, "{ }", "Scenic Route 90 Byway", "50", "Finger Lakes", "Homer and Montezuma", "State Scenic Byway", " ", " ", [ "https://www.dot.ny.gov/display/programs/scenic-byways/route-90", null ] ]
+, [ "row-tt3v-mnqc.hj5t", "00000000-0000-0000-49B0-11B502D7135B", 0, 1560451418, null, 1560451418, null, "{ }", "High Peaks Scenic Byway", "30", "Adirondacks", "Lake Placid and The Northway", "State Scenic Byway", " ", " ", [ "https://www.dot.ny.gov/display/programs/scenic-byways/high-peaks-byway-rte-73", null ] ]
+, [ "row-ipn9-pkrn_em24", "00000000-0000-0000-7CD0-B8CB2BD011D8", 0, 1560451418, null, 1560451418, null, "{ }", "Mohawk Towpath Byway", "29", "Capital-Saratoga", "Scenectady and Waterford", "National Scenic Byway (National Designation)", "State Scenic Byway", " ", [ "http://mohawktowpath.homestead.com/", null ] ]
+, [ "row-bvnq_pnbv_racp", "00000000-0000-0000-2322-36EF77035C59", 0, 1560451418, null, 1560451418, null, "{ }", "Route 20 Scenic Byway", "109", "Central New York", "Duanesburg to Lafayette", "State Scenic Byway", " ", " ", [ "http://www.nyroute20.com/", null ] ]
+, [ "row-jt5a.sey4~n4gh", "00000000-0000-0000-B7A4-F3EA32EDC0B6", 0, 1560451418, null, 1560451418, null, "{ }", "Shawangunk Mountains Scenic Byway", "89", "Hudson Valley", "Loop in New Paltz area", "State Scenic Byway", " ", " ", [ "http://www.mtnscenicbyway.org/", null ] ]
+, [ "row-4uev-kvmb~a7y8", "00000000-0000-0000-19E8-B81DB47D3065", 0, 1560451418, null, 1560451418, null, "{ }", "WNY Southtowns Scenic Byway", "72", "Greater Niagara", "Orchard Park and Springville Loop", "State Scenic Byway", " ", " ", [ "http://wnyssb.org/", null ] ]
+, [ "row-fe2y.297u~tsus", "00000000-0000-0000-936D-F332EA320A2F", 0, 1560451418, null, 1560451418, null, "{ }", "Maple Traditions Byway (pending legislation)", "71", "Thousand Islands Seaway", "Lowville and Ogdensburg", "State Scenic Byway", null, null, [ "http://www.tughill.org/about/tug-hill-commission/projects/maple-traditions-scenic-byway/", null ] ]
+, [ "row-sq8c.ita6.zrih", "00000000-0000-0000-C209-EAFFEBE68322", 0, 1560451418, null, 1560451418, null, "{ }", "Seneca Lake Scenic Byway", "18", "Finger lakes", "Watkins Glen to Lodi", "State Scenic Byway", null, null, [ "http://home.htva.net/~townofhector/scenicbyway.html", null ] ]
+, [ "row-cxxt_rkje~7as6", "00000000-0000-0000-01CE-0A3158237143", 0, 1560451418, null, 1560451418, null, "{ }", "Durham Valley Scenic Byway", "15", "Catskills", "Loop in Greene County", "State Scenic Byway", null, null, [ "http://durhamvalley.com/scenic_byway.html", null ] ]
+, [ "row-vnif_bxcj.wtsd", "00000000-0000-0000-FA3A-31C0E0AC693C", 0, 1560451418, null, 1560451418, null, "{ }", "Mountain Cloves Scenic Byway (pending legislation)", "41", "Catskills", "Hunter, HainesFalls, Tannersville", "State Scenic Byway", null, null, [ "http://www.townofhuntergov.com/", null ] ]
+, [ "row-a4sd.udwu-r9dv", "00000000-0000-0000-4BBD-A69FD7705F0A", 0, 1560451418, null, 1560451418, null, "{ }", "Historic Parkways of Long Island ", "38", "Long Island", "Nassau and Suffolk Counties", "State Scenic Byway", null, null, [ "https://www.dot.ny.gov/display/programs/scenic-byways/Long-Island-Parkways-CMP", null ] ]
+, [ "row-z8m4.f962~site", "00000000-0000-0000-3104-FB795044A235", 0, 1560451418, null, 1560451418, null, "{ }", "Taconic State Parkway", "105", "HudsonValley", "Westchester and Columbia Counties", "State Scenic Byway", null, null, [ "https://www.dot.ny.gov/display/programs/scenic-byways/parkways-no-detailed-info", null ] ]
+, [ "row-8d4p~7awi-b46a", "00000000-0000-0000-CA68-44817CDFB59D", 0, 1560451418, null, 1560451418, null, "{ }", "Bronx River Parkway", "13", "Hudson Valley", "Bronxville and Valhalla", "State Scenic Byway", null, null, [ "http://www.bronx-river.com/index.htm", null ] ]
+, [ "row-efan~224z_7sad", "00000000-0000-0000-F72F-887F6E34B01D", 0, 1560451418, null, 1560451418, null, "{ }", "Palisades Parkway", "27", "Hudson Valley", "Orange and Rockland Counties", "State Scenic Byway", null, null, [ "http://www.njpalisades.org/byway.htm", null ] ]
+ ]
+}
