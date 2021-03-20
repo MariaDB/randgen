@@ -524,7 +524,14 @@ sub metaViews {
 sub metaColumns {
     my ($self, $table, $schema) = @_;
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-    
+
+    if (index($table,'.') > -1) {
+      # If table is a fully-qualified name, split it into table and schema
+      # and ignore the provided schema name
+      if ($table=~ /`?([^`]*)`?\s*\.\s*`?([^`]*)`?/) {
+        ($table, $schema)= ($1, $2);
+      }
+    }
     $schema = $self->defaultSchema if not defined $schema;
     $table = $self->metaTables($schema)->[0] if not defined $table;
     
