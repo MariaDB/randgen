@@ -213,6 +213,7 @@ my %name2type = (
 
 my $cwd = cwd();
 my $data_location= "$cwd/data/blobs";
+my @json_files= glob("$data_location/*.json");
 
 # Min and max values for integer data types
 
@@ -538,20 +539,37 @@ sub string {
 #    string, or number, or OBJECT, or ARRAY, or 'true', or 'false', or 'null'
 
 sub json {
-	# Length here will be a number of structures on the 1st + 2nd level. That is,
-	# length <= 0: empty string (invalid JSON)
-	# length == 1: '[]' or '{}'
-	# length == 2: '["a"]' or '[{}]' or '{"a":"b"}'
-	# etc.
+  my ($prng, $len) = @_;
 
-	my ($prng, $len) = @_;
+  # IMPORTANT:
+	# Length here is a number of structures on the 1st level,
+  # not the length of the resulting string as one could think
+  # That is,
+	# length < 0: empty string or NULL (invalid JSON)
+	# length == 0: '[]' or '{}'
+	# length == 1: '["a"]' or '[{}]' or '{"a":"b"}' or '{"a":[1,2,3,4]}'
+	# length == 2: '["a","b"]' or '{"a":"b","c":"d"}' or ...
+  # etc.
 
-	$len = defined $len ? $len : $prng->uint16(0,64);
-
-	# If the length is 0 or negative, return a zero-length string
-	return "''" if $len <= 0;
-
-  return $prng->json_doc($len-1);
+  if (defined $len and $len < 0) {
+    # If the length is negative, return an empty string
+    # (assuming it was requested intentionally, as it's an invalid value)
+    return ($prng->uint16(0,1) ? "''" : 'NULL');
+  } elsif (defined $len) {
+    return $prng->json_doc($len);
+  } else {
+    # If length isn't defined, we will either use a random value
+    # or load a JSON file
+    if (scalar(@json_files) and $prng->uint16(0,2)) {
+      my $f= $prng->arrayElement(\@json_files);
+      # TODO: randomize charset? or leave it to the grammar /variator
+#      return "CONVERT(LOAD_FILE('$f') USING utf8)";
+      return "LOAD_FILE('$f')";
+    } else {
+      $len = $prng->uint16(0,64);
+      return $prng->json_doc($len);
+    }
+  }
 }
 
 sub json_doc {
@@ -706,18 +724,23 @@ sub jsonPathLeg {
 
 sub jsonTable {
   my $prng= shift;
+  my $number_of_columns= shift;
+  my $alias= shift || $prng->letter();
   my $json_table= 'JSON_TABLE(';
   # TODO: add other variants of expr: JSON function, variable
   # CONVERT needed for MySQL
-  $json_table.= ($prng->uint16(0,2) ? $prng->json() : 'CONVERT(LOAD_FILE("/data/extra_data/0'.$prng->uint16(1,3).'.json") USING utf8mb4)');
+  $json_table.= $prng->json();
   $json_table.= ', ';
   $json_table.= $prng->jsonPath();
-  $json_table.= ' '.$prng->jsonTableColumnList().') AS '.$prng->letter();
+  $json_table.= ' '.$prng->jsonTableColumnList($number_of_columns).') AS '.$alias;
   return $json_table;
 }
 
 sub jsonTableColumnList {
   my $prng= shift;
+  # TODO: maybe more columns
+  my $colnum= shift || $prng->uint16(1,10);
+  my $start_col= shift || 1;
 
   sub on_empty_on_error {
     my $r= $prng->uint16(1,3);
@@ -729,10 +752,9 @@ sub jsonTableColumnList {
       return ' DEFAULT '.$prng->jsonString();
     }
   }
-  # TODO: allow more columns
-  my $colnum= $prng->uint16(1,10);
   my @cols= ();
-  foreach my $c (1..$colnum) {
+  my $c= $start_col;
+  while ($c < $colnum + $start_col) {
     my $coltype= $prng->uint16(1,100);
     # 15% ORDINALITY
     # 40% PATH
@@ -740,17 +762,21 @@ sub jsonTableColumnList {
     # 5% NESTED
     my $col= '';
     if ($coltype <= 15) {
-      $col= 'col'.$c.' FOR ORDINALITY';
+      $col= 'col'.($c++).' FOR ORDINALITY';
     } elsif ($coltype <= 55) {
       # TODO: make it any type
-      $col= 'col'.$c.' '.$prng->dataType().' PATH '.$prng->jsonPath();
+      $col= 'col'.($c++).' '.$prng->dataType().' PATH '.$prng->jsonPath();
       $col.= ($prng->uint16(0,1) ? on_empty_on_error().' ON EMPTY' : '');
       $col.= ($prng->uint16(0,1) ? on_empty_on_error().' ON ERROR' : '');
     } elsif ($coltype <= 95) {
       # TODO: make it any type, preferably int-like
-      $col= 'col'.$c.' '.$prng->dataType().' EXISTS PATH '.$prng->jsonPath();
+      $col= 'col'.($c++).' '.$prng->dataType().' EXISTS PATH '.$prng->jsonPath();
+    } elsif ($c < $colnum) {
+      my $nested_colnum= $prng->uint16(1,$colnum-$c);
+      $col= 'NESTED PATH '.$prng->jsonPath().' '.$prng->jsonTableColumnList($nested_colnum, $c);
+      $c+= $nested_colnum;
     } else {
-    $col= 'NESTED PATH '.$prng->jsonPath().' '.$prng->jsonTableColumnList();
+      redo;
     }
     push @cols, $col;
   }
