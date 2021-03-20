@@ -32,6 +32,7 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub variate {
+  # Don't need executor or (for now) gendata_flag
   my ($self, $query) = @_;
   return $query if $query !~ /SELECT/;
 

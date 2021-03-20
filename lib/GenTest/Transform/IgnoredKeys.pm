@@ -29,6 +29,7 @@ use GenTest::Constants;
 
 sub variate {
   # gendata flag is not important here, we will variate either way
+  # Don't need the executor, either
   my ($self, $orig_query) = @_;
 
   # We variate (by adding an optional [NOT] IGNORED):
