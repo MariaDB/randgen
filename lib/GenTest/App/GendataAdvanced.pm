@@ -210,7 +210,7 @@ sub variate_and_execute {
   my ($self, $executor, $query)= @_;
   foreach my $v (@{$self->[GDS_VARIATORS]}) {
     # 1 stands for "it's gendata, variate with caution"
-    $query= $v->variate($query,1);
+    $query= $v->variate($query,$executor,1);
   }
   return ($query ? $executor->execute($query) : STATUS_OK);
 }
