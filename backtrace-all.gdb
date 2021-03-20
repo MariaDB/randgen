@@ -15,5 +15,6 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-set print elements 0
+# Sometimes takes too long, e.g. with long JSON documents
+# set print elements 0
 thread apply all backtrace
