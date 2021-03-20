@@ -126,14 +126,6 @@ sub new {
   return $mixer;
 }
 
-sub variate_and_execute {
-  my ($self, $executor, $query)= @_;
-  foreach my $v (@{$self->[MIXER_VARIATORS]}) {
-    $query= $v->variate($query);
-  }
-  return ($query ? $executor->execute($query) : STATUS_OK);
-}
-
 sub next {
 	my $mixer = shift;
 
@@ -165,6 +157,14 @@ sub next {
 	query: foreach my $query (@$queries) {
 		next if $query =~ m{^\s*$}o;
 
+    foreach my $v (@{$mixer->[MIXER_VARIATORS]}) {
+      # TODO: For now an executor is needed for getting metadata.
+      # Maybe it can be changed later, when we make Metadata collection
+      # a separate activity
+      $query= $v->variate($query, $executors->[0]);
+    }
+    next unless $query;
+
 		if ($mixer->end_time() && (time() > $mixer->end_time())) {
 			say("Mixer: We have already exceeded time specified by --duration=x; exiting now.");
 			last;
@@ -185,7 +185,7 @@ sub next {
 
       EXECUTE_QUERY:
 		foreach my $executor (@$executors) {
-			my $execution_result = $mixer->variate_and_execute($executor,$query);
+			my $execution_result = $executor->execute($query);
 			
 			# If the server has crashed but we expect server restarts during the test, we will wait and retry
 			if (($execution_result->status() == STATUS_SERVER_CRASHED 
