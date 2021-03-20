@@ -1066,7 +1066,8 @@ sub execute {
     # Due to use of empty rules in stored procedure bodies and alike,
     # the query can have a sequence of semicolons "; ;" or "BEGIN ; ..."
     # which will cause syntax error. We'll clean them up
-    while ($query =~ s/;\s*;/;/g) {}
+    while ($query =~ s/^\s*;//gs) {}
+    while ($query =~ s/;\s*;/;/gs) {}
     while ($query =~ s/(PROCEDURE.*)BEGIN\s*;/${1}BEGIN /g) {}
     # Or occasionaly "x AS alias1 AS alias2"
     while ($query =~ s/AS\s+\w+\s+(AS\s+\w+)/$1/g) {}
