@@ -85,7 +85,7 @@ json_delete:
 ;
 
 json_update:
-    SET SQL_MODE=REPLACE(REPLACE(@@sql_mode,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
+    SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
   ; UPDATE `tmp` SET { $json_table_field= 'fld' } = json_func_returning_json ORDER BY fld LIMIT _digit
   ; SET SQL_MODE=DEFAULT
 ;
