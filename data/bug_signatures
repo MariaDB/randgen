@@ -1686,6 +1686,10 @@ MDEV-22375:
 =~ Assertion \`(engine->uncacheable() & ~8) \|\| ! engine->is_executed() \|\| with_recursive_reference'
 =~ Item_in_subselect
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-22368:
+=~ Assertion \`field_max_length <= m_return_field_def.length \|\| m_return_field_def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && m_return_field_def\.length == 8 && (m_return_field_def\.pack_flag & (1024U\|2048U)))'
+=~ Item_func_sp::fix_fields
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22365:
 =~ Assertion \`!col->mbmaxlen \|\| len >= col->mbminlen \* (fixed_len / col->mbmaxlen)'
 =~ row_merge_buf_add
