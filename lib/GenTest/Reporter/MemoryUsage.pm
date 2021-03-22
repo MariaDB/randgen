@@ -109,7 +109,7 @@ sub get_top_output {
     if (defined $mem) {
       return [$mem, $cpu, $mem_pct];
     } else {
-      logWarning("MemoryUsage monitor got empty output for pid $pid");
+      sayWarning("MemoryUsage monitor got empty output for pid $pid");
       return undef;
     }
   } else {
