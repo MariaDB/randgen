@@ -1372,7 +1372,7 @@ MDEV-23045:
 MDEV-23041:
 =~ signal [16]|AddressSanitizer
 =~ Item_func_set_user_var::update_hash
-=~ TABLE::update_default_fields
+=~ TABLE::update_default_fields|end_write_group
 MDEV-23026:
 =~ Assertion \`!rw_lock_own(lock, RW_LOCK_S)'|Assertion \`!rw_lock_own_flagged(lock, RW_LOCK_FLAG_X \| RW_LOCK_FLAG_S)'
 =~ rw_lock_sx_lock_func|rw_lock_s_lock_func
