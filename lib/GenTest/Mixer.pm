@@ -108,7 +108,7 @@ sub new {
 		}
 	}
 
-	my @validators = (@prerequisites, @validators);
+	@validators = (@prerequisites, @validators);
 	$mixer->setValidators(\@validators);
 
 	foreach my $validator (@validators) {
