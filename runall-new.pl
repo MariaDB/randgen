@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-#################### FOR THE MOMENT THIS SCRIPT IS FOR TESTING PURPOSES
+########################################################################
 
 
 unless (defined $ENV{RQG_HOME}) {
@@ -31,6 +31,8 @@ unless (defined $ENV{RQG_HOME}) {
 use Getopt::Long qw( :config pass_through );
 
 use lib 'lib';
+# This can cause "uninitialized" errors, but we need it in case
+# the script is called from outside the RQG basedir
 use lib "$ENV{RQG_HOME}/lib";
 use Carp;
 use strict;
@@ -150,7 +152,7 @@ my $opt_result = GetOptions(
     'scenario:s' => \$scenario,
     'seed=s' => \$props->{seed},
     'short_column_names|short-column-names' => \$props->{short_column_names},
-    'skip_recursive_rules|skip-recursive-rules' > \$props->{skip_recursive_rules},
+    'skip_recursive_rules|skip-recursive-rules' => \$props->{skip_recursive_rules},
     'skip_gendata|skip-gendata' => \$skip_gendata,
     'skip_shutdown|skip-shutdown' => \$skip_shutdown,
     'sqltrace:s' => \$props->{sqltrace},
