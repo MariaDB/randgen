@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights
 # reserved.
-# Copyright (c) 2018, 2020 MariaDB Corporation
+# Copyright (c) 2018, 2021 MariaDB Corporation
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -384,24 +384,10 @@ sub printHelp {
 ## Global print method
 sub printProps {
     my ($self) = @_;
-    _printProps($self->[PROPS_PROPS]);
-}
-
-## Internal print method
-sub _printProps {
-    my ($props,$indent) = @_;
-    $indent = 1 if not defined $indent;
-    my $x = join(" ", map {undef} (1..$indent*3));
-    foreach my $p (sort keys %$props) {
-        if (UNIVERSAL::isa($props->{$p},"HASH")) {
-            say ($x .$p." => ");
-            _printProps($props->{$p}, $indent+1);
-	} elsif  (UNIVERSAL::isa($props->{$p},"ARRAY")) {
-        say ($x .$p." => ['".join("', '",@{$props->{$p}})."']");
-        } else {
-            say ($x.$p." => ".$props->{$p});
-        }
-    }
+    $Data::Dumper::Maxdepth= 3;
+    $Data::Dumper::Sortkeys= 1;
+    $Data::Dumper::Ident= 0;
+    say Dumper $self->[PROPS_PROPS];
 }
 
 ## Remove proerties set to defined
