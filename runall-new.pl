@@ -485,7 +485,7 @@ my $rplsrv;
 my $version;
 my $min_version_numeric= '999999';
 
-if ($props->{rpl_mode} ne '') {
+if ($props->{rpl_mode}) {
 
     $rplsrv = DBServer::MySQL::ReplMySQLd->new(master_basedir => $props->{server_specific}->{1}->{basedir},
                                                slave_basedir => $props->{server_specific}->{2}->{basedir},
@@ -526,7 +526,7 @@ if ($props->{rpl_mode} ne '') {
     $props->{server_specific}->{1}->{server}= $rplsrv->master;
     $props->{server_specific}->{2}->{server}= $rplsrv->slave;
 
-} elsif ($props->{galera} ne '') {
+} elsif ($props->{galera}) {
 
     if (osWindows()) {
         croak("Galera is not supported on Windows (yet)");
@@ -742,7 +742,7 @@ sub stopServers {
         return;
     }
     say("Stopping server(s)...");
-    if ($props->{rpl_mode} ne '') {
+    if ($props->{rpl_mode}) {
         $res= $rplsrv->stopServer($status);
         @errlogs= $rplsrv->error_logs;
     } else {
