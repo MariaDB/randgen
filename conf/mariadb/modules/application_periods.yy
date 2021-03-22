@@ -57,6 +57,9 @@ query_init_add:
 ;
 
 query_add:
+  { $col_number= 0; $inds= 1; $period_added= 0; '' } app_periods_query;
+
+app_periods_query:
     ==FACTOR:20==  app_periods_dml
   |                app_periods_ddl
   |                app_periods_admin_table
@@ -82,7 +85,7 @@ app_periods_create_simple_with_period_runtime:
 app_periods_create_table:
       app_periods_create_table_clause app_periods_dynamic_table LIKE app_periods_any_table
     | app_periods_create_table_clause app_periods_dynamic_table AS SELECT * FROM app_periods_any_table
-    | app_periods_create_table_clause app_periods_dynamic_table { @cols= (); $inds= 1; $period_added= 0; '' } (app_periods_create_definition) _basics_main_engine_clause_50pct _basics_table_options app_periods_partitioning_definition
+    | app_periods_create_table_clause app_periods_dynamic_table (app_periods_create_definition) _basics_main_engine_clause_50pct _basics_table_options app_periods_partitioning_definition
 ;
 
 app_periods_create_table_clause:
@@ -115,10 +118,10 @@ app_periods_own_table:
     app_periods_static_table | app_periods_dynamic_table ;
 
 app_periods_static_table:
-    { $last_table= 'app_periods_t'.$prng->int(1,10) };
+    { $last_table= 'app_periods_t'.$prng->uint16(1,10) };
 
 app_periods_dynamic_table:
-    { $last_table= 'app_periods_t'.$prng->int(11,15) };
+    { $last_table= 'app_periods_t'.$prng->uint16(11,15) };
 
 #
 # PERIOD definitions
@@ -219,16 +222,16 @@ app_periods_value_list_1:
 ;
 
 app_period_valid_period_boundaries:
-    { $ts= $prng->int(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->int($ts,2147483647)); "$start,$end" };
+    { $ts= $prng->uint16(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->uint16($ts,2147483647)); "$start,$end" };
 
 app_period_valid_period_boundaries_update:
-   { $ts= $prng->int(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->int($ts,2147483647)); "`s` = $start, `e` = $end" };
+   { $ts= $prng->uint16(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->uint16($ts,2147483647)); "`s` = $start, `e` = $end" };
 
 app_period_valid_period_boundaries_between:
-    { $ts= $prng->int(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->int($ts,2147483647)); "BETWEEN $start AND $end" };
+    { $ts= $prng->uint16(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->uint16($ts,2147483647)); "BETWEEN $start AND $end" };
 
 app_period_valid_portion_boundaries:
-   { $ts= $prng->int(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->int($ts,2147483647)); "FROM $start TO $end" };
+   { $ts= $prng->uint16(0,2147483647); $start= $prng->date($ts); $end= $prng->date($prng->uint16($ts,2147483647)); "FROM $start TO $end" };
 
 app_period_where_condition:
     `s` app_period_valid_period_boundaries_between
@@ -297,10 +300,10 @@ app_periods_index_definition:
   app_periods_new_index_name_optional (app_periods_existing_column_list) app_periods_index_type_opt;
 
 app_periods_new_column_name:
-  { $last_field= 'c'.(scalar(@cols)+1); push @cols, $last_field; '`'.$last_field.'`' } ;
+  { $last_field= 'c'.(++$col_number); '`'.$last_field.'`' } ;
 
 app_periods_existing_column_name:
-  { $last_field= scalar(@cols) ? $prng->arrayElement(\@cols) : 'c'.$prng->int(1,$max_cols); '`'.$last_field.'`' } ;
+  { $last_field= ($col_number ? $prng->uint16(1,$col_number) : 'c0'); '`'.$last_field.'`' } ;
 
 app_periods_existing_column_list:
     ==FACTOR:5== app_periods_existing_column_name
@@ -327,10 +330,10 @@ app_periods_new_index_name_optional:
   | { $last_index_name= 'ind'.$inds++ } ;
 
 app_periods_random_index_name:
-  { 'ind'.$prng->int(1,$inds) } ;
+  { 'ind'.$prng->uint16(1,$inds) } ;
 
 app_periods_random_column_name:
-  { $last_field= ( $prng->int(0,10) ? ( $prng->int(0,10) ? 'c'.$prng->int(1,$max_cols) : 's' ) : 'e' ); '`'.$last_field.'`' } ;
+  { $last_field= ( $prng->uint16(0,10) ? ( $prng->uint16(0,10) ? 'c'.$prng->uint16(1,$col_number) : 's' ) : 'e' ); '`'.$last_field.'`' } ;
 
 app_periods_index_type_opt:
     ==FACTOR:3==
@@ -423,7 +426,7 @@ app_periods_update_list:
 ;
 
 app_periods_period_type:
-  { $periodtype= $prng->arrayElement(['TIMESTAMP','TIMESTAMP('.$prng->int(0,6).')','DATETIME','DATETIME('.$prng->int(0,6).')','DATE']) }
+  { $periodtype= $prng->arrayElement(['TIMESTAMP','TIMESTAMP('.$prng->uint16(0,6).')','DATETIME','DATETIME('.$prng->uint16(0,6).')','DATE']) }
 ;
 
 app_periods_period_boundary_literal:
@@ -442,7 +445,7 @@ app_periods_time_value:
   DATE_SUB(_timestamp, INTERVAL _positive_digit _basics_interval) |
   DATE_SUB(_timestamp, INTERVAL _positive_digit _basics_interval) |
   DATE_SUB(NOW(), INTERVAL _positive_digit _basics_interval) |
-  { $tm = time - $prng->int(-100,100); '' } app_periods_period_boundary_literal |
+  { $tm = time - $prng->uint16(-100,100); '' } app_periods_period_boundary_literal |
   @tm | @tm1 | @tm2 | @tm | @tm1 | @tm2 | @tm | @tm1 | @tm2 |
   # Invalid for UPDATE FOR PORTION
   SYSDATE() |
@@ -472,6 +475,6 @@ app_periods_system_partition_list:
     PARTITION { 'p'.($part=1) } HISTORY, app_periods_system_extra_history_partitions_opt PARTITION pn CURRENT;
 
 app_periods_system_extra_history_partitions_opt:
-    { $parts=''; $part_count= $prng->int(0,12); foreach(1..$part_count) { $parts.= 'PARTITION p'.$_.' HISTORY, ' }; $parts };
+    { $parts=''; $part_count= $prng->uint16(0,12); foreach(1..$part_count) { $parts.= 'PARTITION p'.$_.' HISTORY, ' }; $parts };
 
 
