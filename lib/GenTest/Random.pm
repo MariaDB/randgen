@@ -756,22 +756,24 @@ sub jsonTable {
   return $json_table;
 }
 
+sub jsonOnEmptyOnError {
+  my $prng= shift;
+  my $r= $prng->uint16(1,3);
+  if ($r == 1) {
+    return ' NULL';
+  } elsif ($r == 2) {
+    return ' ERROR';
+  } else {
+    return ' DEFAULT '.$prng->jsonString();
+  }
+}
+
 sub jsonTableColumnList {
   my $prng= shift;
   # TODO: maybe more columns
   my $colnum= shift || $prng->uint16(1,10);
   my $start_col= shift || 1;
 
-  sub on_empty_on_error {
-    my $r= $prng->uint16(1,3);
-    if ($r == 1) {
-      return ' NULL';
-    } elsif ($r == 2) {
-      return ' ERROR';
-    } else {
-      return ' DEFAULT '.$prng->jsonString();
-    }
-  }
   my @cols= ();
   my $c= $start_col;
   while ($c < $colnum + $start_col) {
@@ -786,8 +788,8 @@ sub jsonTableColumnList {
     } elsif ($coltype <= 55) {
       # TODO: make it any type
       $col= 'col'.($c++).' '.$prng->dataType().' PATH '.$prng->jsonPath();
-      $col.= ($prng->uint16(0,1) ? on_empty_on_error().' ON EMPTY' : '');
-      $col.= ($prng->uint16(0,1) ? on_empty_on_error().' ON ERROR' : '');
+      $col.= ($prng->uint16(0,1) ? $prng->jsonOnEmptyOnError().' ON EMPTY' : '');
+      $col.= ($prng->uint16(0,1) ? $prng->jsonOnEmptyOnError().' ON ERROR' : '');
     } elsif ($coltype <= 95) {
       # TODO: make it any type, preferably int-like
       $col= 'col'.($c++).' '.$prng->dataType().' EXISTS PATH '.$prng->jsonPath();
