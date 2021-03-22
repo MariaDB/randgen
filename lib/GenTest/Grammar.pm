@@ -120,7 +120,7 @@ sub parseFromString {
 			my $include_string;
 			my $include_file = $1;
 		        open (IF, $1) or die "Unable to open include file $include_file: $!";
-		        read (IF, my $include_string, -s $include_file) or die "Unable to open $include_file: $!";
+		        read (IF, $include_string, -s $include_file) or die "Unable to open $include_file: $!";
 			$include_string;
 	}}mie) {};
 
