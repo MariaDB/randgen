@@ -337,7 +337,7 @@ sub int {
         $rand = ($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF;
     }
     if (not defined $_[2]) {
-      croak("Second parameter not defined in uint16");
+      sayError("Second parameter not defined in uint16");
     }
     return int($_[1] + (($rand / 0x10000) * ($_[2] - $_[1] + 1)));
 }
