@@ -169,10 +169,6 @@ sub setCurrentUser {
 	$_[0]->[EXECUTOR_CURRENT_USER] = $_[1];
 }
 
-sub setDbh {
-	$_[0]->[EXECUTOR_DBH] = $_[1];
-}
-
 sub sqltrace {
     my ($self, $sqltrace) = @_;
     $self->[EXECUTOR_SQLTRACE] = $sqltrace if defined $sqltrace;
