@@ -291,7 +291,7 @@ sub killServer {
 		($^O eq 'MSWin32') ||
 		($^O eq 'MSWin64')
         ) {
-		my $cdb_command = "cdb -p $server_pid -c \".dump /m $datadir\mysqld.dmp;q\"";
+		my $cdb_command = "cdb -p $server_pid -c \".dump /m $datadir\\mysqld.dmp;q\"";
 		say("Executing $cdb_command");
 		system($cdb_command);
 	} else {
