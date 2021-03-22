@@ -87,7 +87,7 @@ my @errors = (
     "Duplicate condition information item '.*?'",
     "Undefined CONDITION: .*?",
     "Incorrect .*? value '.*?'",
-    "Recursive limit \d+ (as set by the max_sp_recursion_depth variable) was exceeded for routine .*?",
+    "Recursive limit \\d+ (as set by the max_sp_recursion_depth variable) was exceeded for routine .*?",
         "There is no such grant defined for user '.*?' on host '.*?' on table '.*?'",
     "There is no such grant defined for user '.*?' on host '.*?'",
     "'.*?' is not a .*?",
@@ -1167,7 +1167,7 @@ sub execute {
       $err_type= $err2type{$err} || STATUS_OK;
       if ($err == ER_GET_ERRNO) {
           my ($se_err) = $sth->errstr() =~ m{^Got error\s+(\d+)\s+from storage engine}sgio;
-          $err_type = STATUS_OK if (defined $acceptable_se_errors{$se_err});
+          $err_type = STATUS_OK if (defined $se_err and defined $acceptable_se_errors{$se_err});
       }
     }
     $executor->[EXECUTOR_STATUS_COUNTS]->{$err_type}++;
