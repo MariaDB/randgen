@@ -859,7 +859,7 @@ sub normalizeDump {
     close(DUMP2);
   }
   if ($self->versionNumeric() le '100100') {
-    say("normalizeDump patches PERSISTENT NULL etc. for version ".$self->versionNumeric)." (MDEV-5614)";
+    say("normalizeDump patches PERSISTENT NULL etc. for version ".$self->versionNumeric()." (MDEV-5614)");
     move($file, $file.'.tmp3');
     open(DUMP1,$file.'.tmp3');
     open(DUMP2,">$file");
