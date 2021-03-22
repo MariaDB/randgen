@@ -104,7 +104,7 @@ sub extractFromFiles {
         $grammar->[GRAMMAR_STRING] .= $grammar_string;
     }
     
-    return $grammar->[GRAMMAR_STRING];
+    return STATUS_OK;
 
 #	return $grammar->parseFromString($grammar_string);
 }
