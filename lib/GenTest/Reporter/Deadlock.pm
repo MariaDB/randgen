@@ -129,7 +129,7 @@ sub monitor_nonthreaded {
 
 	foreach my $process (@$processlist) {
 		if (
-			($process->[PROCESSLIST_PROCESS_INFO] ne '') &&
+			($process->[PROCESSLIST_PROCESS_INFO]) &&
 			($process->[PROCESSLIST_PROCESS_TIME] > $lifetime_threshold)
 		) {
         sayWarning("Deadlock reporter detected stalled query: (".$process->[PROCESSLIST_PROCESS_COMMAND].") (".$process->[PROCESSLIST_PROCESS_TIME]." sec): ".$process->[PROCESSLIST_PROCESS_INFO]);

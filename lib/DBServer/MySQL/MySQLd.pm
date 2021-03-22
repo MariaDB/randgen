@@ -724,9 +724,9 @@ sub crash {
 
 sub corefile {
     my ($self) = @_;
-
-    ## Unix variant
-    return $self->datadir."/core.".$self->serverpid;
+    # It can end up being named differently, depending on system settings,
+    # it's just the best guess
+    return $self->datadir."/core";
 }
 
 sub upgradeDb {
