@@ -519,17 +519,54 @@ sub metaViews {
     
 }
 
-sub metaColumns {
+# Internal (for now) function. It takes a table name and tries to return
+# an existing tables for it when there is any leeway.
+# - if the name is fully-qualified, it returns it as a pair ($table, $schema)
+# - if the schema name is provided in the separate parameter, it tries
+#   to find the table there first, but if there is none, it returns any
+#   table with the requested name as a pair ($table, $schema)
+# - if the schema name is not provided, it returns any table with the
+#   requested name ($table, $schema)
+# - if nothing is found, it returns undef and lets the caller decide what to do
+sub _metaFindTable {
     my ($self, $table, $schema) = @_;
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
     if (index($table,'.') > -1) {
       # If table is a fully-qualified name, split it into table and schema
       # and ignore the provided schema name
       if ($table=~ /`?([^`]*)`?\s*\.\s*`?([^`]*)`?/) {
-        ($table, $schema)= ($1, $2);
+        return ($2, $1);
       }
     }
+    $table=~ s/^`(.*)`$/$1/;
+    if (defined $schema) {
+      $schema=~ s/^`(.*)`$/$1/;
+      if (
+        (exists $meta->{$schema} and exists $meta->{$schema}->{table} and exists $meta->{$schema}->{table}->{$table})
+        or
+        (exists $meta->{$schema} and exists $meta->{$schema}->{view} and exists $meta->{$schema}->{view}->{$table})
+      ) {
+        return ($table, $schema);
+      }
+    }
+    # If we are here, either schema was not defined, or we didn't find
+    # the table in it
+    foreach my $s (sort keys %$meta) {
+      foreach my $t (sort keys %{$meta->{$s}->{table}}, sort keys %{$meta->{$s}->{view}}) {
+        if ($t eq $table) {
+          return ($t, $s);
+        }
+      }
+    }
+    sayWarning("metaFindTable: Could not find table $table in any schema");
+    return undef;
+}
+
+sub metaColumns {
+    my ($self, $requested_table, $requested_schema) = @_;
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+
+    my ($table, $schema)= $self->_metaFindTable($requested_table,$requested_schema);
     $schema = $self->defaultSchema if not defined $schema;
     $table = $self->metaTables($schema)->[0] if not defined $table;
     
