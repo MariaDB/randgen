@@ -1,5 +1,5 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2016, 2020, MariaDB Corporation
+# Copyright (c) 2016, 2021, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,7 @@ use GenTest::Grammar::Rule;
 use GenTest::Random;
 
 use Data::Dumper;
+use Carp;
 
 use constant GRAMMAR_RULES	=> 0;
 use constant GRAMMAR_FILES	=> 1;
@@ -197,7 +198,6 @@ sub parseFromString {
 
 	foreach my $rule_string (@rule_strings) {
 		my ($rule_name, $components_string) = $rule_string =~ m{^(.*?)\s*:(.*)$}sio;
-
 		$rule_name =~ s{[\r\n]}{}gsio;
 		$rule_name =~ s{^\s*}{}gsio;
 
@@ -307,6 +307,7 @@ sub parseFromString {
 
 			if (
 				(exists $components{$component_string}) &&
+        (defined $grammar->[GRAMMAR_FLAGS]) &&
 				($grammar->[GRAMMAR_FLAGS] & GRAMMAR_FLAG_COMPACT_RULES)
 			) {
 				next;
@@ -318,6 +319,7 @@ sub parseFromString {
 
 			if (
 				(grep { $_ eq $rule_name } @component_parts) &&
+        (defined $grammar->[GRAMMAR_FLAGS]) &&
 				($grammar->[GRAMMAR_FLAGS] & GRAMMAR_FLAG_SKIP_RECURSIVE_RULES)
 			) {
 				say("Skipping recursive production in rule '$rule_name'.") if rqg_debug();
@@ -336,13 +338,13 @@ sub parseFromString {
 			my $code_start;
 
 			while (1) {
-				if ($component_parts[$pos] =~ m{\{}so) {
+				if (defined $component_parts[$pos] and $component_parts[$pos] =~ m{\{}so) {
 					$code_start = $pos if $nesting_level == 0;	# Code segment starts here
 					my $bracket_count = ($component_parts[$pos] =~ tr/{//);
 					$nesting_level = $nesting_level + $bracket_count;
 				}
 				
-				if ($component_parts[$pos] =~ m{\}}so) {
+				if (defined $component_parts[$pos] and $component_parts[$pos] =~ m{\}}so) {
 					my $bracket_count = ($component_parts[$pos] =~ tr/}//);
 					$nesting_level = $nesting_level - $bracket_count;
 					if ($nesting_level == 0) {
