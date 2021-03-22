@@ -141,7 +141,7 @@ sub parseFromString {
 
 	$grammar_string = $grammar_string."\n";
 
-	my @rule_strings = split (";\s*[\r\n]+", $grammar_string);
+	my @rule_strings = split (";[ \t]*[\r\n]+", $grammar_string);
 
 	my %rules;
 
