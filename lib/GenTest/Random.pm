@@ -1300,7 +1300,7 @@ sub auto {
     } else {
       my $s= 0;
       foreach my $p (@probabilities) { $s+= $p };
-      $filler= $s / (scalar(@items) - scalar(probabilities));
+      $filler= $s / (scalar(@items) - scalar(@probabilities));
     }
     foreach my $i ($#probabilities+1..$#items) {
       $probabilities[$i]= $filler;
