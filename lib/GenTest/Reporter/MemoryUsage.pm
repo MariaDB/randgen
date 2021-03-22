@@ -25,6 +25,7 @@ use GenTest::Constants;
 use GenTest::Result;
 use GenTest::Reporter;
 use GenTest::Executor::MySQL;
+use Carp;
 
 use DBI;
 
@@ -105,7 +106,12 @@ sub get_top_output {
       }
     }
     close(TOP);
-    return [$mem, $cpu, $mem_pct];
+    if (defined $mem) {
+      return [$mem, $cpu, $mem_pct];
+    } else {
+      logWarning("MemoryUsage monitor got empty output for pid $pid");
+      return undef;
+    }
   } else {
     logError("MemoryUsage monitor could not run top for pid $pid");
     return undef;
