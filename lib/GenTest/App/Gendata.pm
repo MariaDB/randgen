@@ -258,7 +258,7 @@ sub run {
 
     if (defined $schemas) {
         push(@schema_perms, @$schemas);
-        $executor->defaultSchema(@schema_perms[0]);
+        $executor->defaultSchema($schema_perms[0]);
     } else {
         push(@schema_perms, $executor->defaultSchema());
     }
@@ -717,7 +717,7 @@ sub run {
         }
     }
 
-    $executor->currentSchema(@schema_perms[0]);
+    $executor->currentSchema($schema_perms[0]);
     return STATUS_OK;
 }
 
