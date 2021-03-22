@@ -37,6 +37,7 @@ require Exporter;
 	FIELD_TYPE_ASCII
 	FIELD_TYPE_EMPTY
   FIELD_TYPE_DATATYPE
+  FIELD_TYPE_FIXED
 
 	FIELD_TYPE_HEX
 	FIELD_TYPE_QUID
@@ -124,6 +125,7 @@ use constant FIELD_TYPE_IDENTIFIER          => 32;
 use constant FIELD_TYPE_IDENTIFIER_UNQUOTED => 33;
 use constant FIELD_TYPE_IDENTIFIER_QUOTED   => 34;
 use constant FIELD_TYPE_DATATYPE     => 35;
+use constant FIELD_TYPE_FIXED => 36;
 
 use constant ASCII_RANGE_START		=> 97;
 use constant ASCII_RANGE_END		=> 122;
@@ -163,10 +165,10 @@ my %name2type = (
 	'float'			=> FIELD_TYPE_FLOAT,
 	'double'		=> FIELD_TYPE_FLOAT,
 	'double precision'	=> FIELD_TYPE_FLOAT,
-	'decimal'		=> FIELD_TYPE_NUMERIC,
-	'dec'			=> FIELD_TYPE_NUMERIC,
-	'numeric'		=> FIELD_TYPE_NUMERIC,
-	'fixed'			=> FIELD_TYPE_NUMERIC,
+	'decimal'		=> FIELD_TYPE_FIXED,
+	'dec'			=> FIELD_TYPE_FIXED,
+	'numeric'		=> FIELD_TYPE_FIXED,
+	'fixed'			=> FIELD_TYPE_FIXED,
 	'char'			=> FIELD_TYPE_STRING,
 	'varchar'		=> FIELD_TYPE_STRING,
 	'binary'		=> FIELD_TYPE_BLOB,
@@ -316,7 +318,7 @@ sub uint16 {
     # urand() is manually inlined for efficiency
     update_generator($_[0]);
     if (not defined $_[2]) {
-      sayError("Second parameter not defined in uint16");
+      croak("Second parameter not defined in uint16");
     }
     return $_[1] +
         ((($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF) % ($_[2] - $_[1] + 1));
@@ -334,6 +336,9 @@ sub int {
         # to ensure the division below becomes correct.
         $rand = ($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF;
     }
+    if (not defined $_[2]) {
+      croak("Second parameter not defined in uint16");
+    }
     return int($_[1] + (($rand / 0x10000) * ($_[2] - $_[1] + 1)));
 }
 
@@ -346,6 +351,21 @@ sub float {
 	# to ensure the division below becomes correct.
 	$rand = ($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF;
 	return $_[1] + (($rand / 0x10000) * ($_[2] - $_[1] + 1));
+}
+
+### Decimal/numeric value of any allowed length
+# TODO: There must be a better way to do it
+sub fixed {
+  my $prng= shift;
+  my $d= $prng->uint16(1,65);
+  my $m= $prng->uint16(0,($d > 38 ? $d : 38));
+  my $res= '';
+  foreach (1..$d) { $res.= $prng->uint16(0,9) };
+  if ($m) {
+    $res.= '.';
+    foreach (1..$m) { $res.= $prng->uint16(0,9) };
+  }
+  return ($prng->uint16(0,5) ? $res : '-'.$res);
 }
 
 sub digit {
@@ -857,6 +877,8 @@ sub fieldType {
 		return $rand->unquotedString(1);
 	} elsif ($field_type == FIELD_TYPE_NUMERIC) {
 		return $rand->int(@{$name2range{$field_full_type}});
+	} elsif ($field_type == FIELD_TYPE_FIXED) {
+		return $rand->fixed();
 	} elsif ($field_type == FIELD_TYPE_FLOAT) {
 		return $rand->float(@{$name2range{$field_full_type}});
 	} elsif ($field_type == FIELD_TYPE_STRING) {
