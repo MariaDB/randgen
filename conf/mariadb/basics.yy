@@ -345,7 +345,6 @@ _basics_offset_10pct:
 _basics_view_algorithm_50pct:
   | ALGORITHM=MERGE | ALGORITHM=TEMPTABLE ;
 
-;
 # MAXDB is disabled permanently due to MDEV-18864
 _basics_sql_mode_list:
   { @modes= qw(
