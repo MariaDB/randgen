@@ -1327,12 +1327,13 @@ sub execute {
             $executor->explain($query);
 
             if ($result->status() != STATUS_SKIP) {
-                my $row_group = $result->rows() > 100 ? '>100' : ($result->rows() > 10 ? ">10" : sprintf("%5d",$sth->rows()) );
+                my $row_group = ((not defined $result->rows()) ? 'undef' : ($result->rows() > 100 ? '>100' : ($result->rows() > 10 ? ">10" : sprintf("%5d",$sth->rows()))));
                 $executor->[EXECUTOR_RETURNED_ROW_COUNTS]->{$row_group}++;
             }
-        } elsif ($query =~ m{^\s*(update|delete|insert|replace)}sio) {
-            my $row_group = $affected_rows > 100 ? '>100' : ($affected_rows > 10 ? ">10" : sprintf("%5d",$affected_rows) );
-            $executor->[EXECUTOR_AFFECTED_ROW_COUNTS]->{$row_group}++;
+            if ($query =~ m{^\s*(update|delete|insert|replace)}sio) {
+                my $row_group = ((not defined $affected_rows) ? 'undef' : ($affected_rows > 100 ? '>100' : ($affected_rows > 10 ? ">10" : sprintf("%5d",$affected_rows))));
+                $executor->[EXECUTOR_AFFECTED_ROW_COUNTS]->{$row_group}++;
+            }
         }
     }
 
@@ -1422,9 +1423,9 @@ sub explain {
         push @explain_fragments, "select_type: ".($explain_row->{select_type} || '(empty)');
         push @explain_fragments, "type: ".($explain_row->{type} || '(empty)');
         push @explain_fragments, "partitions: ".$explain_row->{table}.":".$explain_row->{partitions} if defined $explain_row->{partitions};
-        push @explain_fragments, "possible_keys: ".$explain_row->{possible_keys};
-        push @explain_fragments, "key: ".$explain_row->{key};
-        push @explain_fragments, "ref: ".$explain_row->{ref};
+        push @explain_fragments, "possible_keys: ".(defined $explain_row->{possible_keys} ? $explain_row->{possible_keys} : '');
+        push @explain_fragments, "key: ".(defined $explain_row->{key} ? $explain_row->{key} : '');
+        push @explain_fragments, "ref: ".(defined $explain_row->{ref} ? $explain_row->{ref} : '');
 
         foreach my $extra_item (split('; ', ($explain_row->{Extra} || '(empty)')) ) {
             $extra_item =~ s{0x.*?\)}{%d\)}sgio;
