@@ -263,7 +263,7 @@ sub new {
 	}, @_ );
 
 
-	$prng->setSeed($prng->seed() > 0 ? $prng->seed() : 1);
+	$prng->setSeed($prng->seed() ? $prng->seed() : 1);
 
 #	say("Initializing PRNG with seed '".$prng->seed()."' ...");
 

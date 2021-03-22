@@ -66,7 +66,7 @@ sub new {
 
 	$generator->[GENERATOR_SEQ_ID] = 0;
 
-    if ($generator->mask() > 0) {
+    if ($generator->mask()) {
         my $grammar = $generator->grammar();
         my $top = $grammar->topGrammar($generator->maskLevel(),
                                        "thread".$generator->threadId(),

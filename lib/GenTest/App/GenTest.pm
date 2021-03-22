@@ -697,9 +697,9 @@ sub initReporters {
         if ($self->isMySQLCompatible()) {
             $self->config->reporters(['ErrorLog', 'Backtrace']) unless scalar(@{$self->config->reporters});
             push @{$self->config->reporters}, 'ValgrindXMLErrors' if (defined $self->config->property('valgrind-xml'));
-            push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode ne '' and $self->config->rpl_mode !~ /nosync/;
+            push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode and $self->config->rpl_mode !~ /nosync/;
             push @{$self->config->reporters}, 'ReplicationSlaveStatus' 
-                if $self->config->rpl_mode ne '' && $self->isMySQLCompatible();
+                if $self->config->rpl_mode && $self->isMySQLCompatible();
         }
     } else {
         ## Remove the "None" reporter
@@ -743,9 +743,9 @@ sub initValidators {
         # we don't want to compare results after each query.
 
         unless ($self->config->property('multi-master')) {
-            if ($self->config->server_specific->{3}->{dsn} ne '') {
+            if ($self->config->server_specific->{3}->{dsn}) {
                 push @{$self->config->validators}, 'ResultsetComparator3';
-            } elsif ($self->config->server_specific->{2}->{dsn} ne '') {
+            } elsif ($self->config->server_specific->{2}->{dsn}) {
                 push @{$self->config->validators}, 'ResultsetComparator';
             }
         }        
@@ -837,7 +837,7 @@ sub initXMLReport {
     $self->[GT_XML_TEST] = GenTest::XML::Test->new(
         id => time(),
         name => $test_suite_name,  # NOTE: Consider changing to test (or test case) name when suites are supported.
-        logdir => $self->config->property('report-tt-logdir').'/'.$test_suite_name.isoUTCSimpleTimestamp,
+        logdir => ($self->config->property('report-tt-logdir') ? $self->config->property('report-tt-logdir').'/'.$test_suite_name.isoUTCSimpleTimestamp : ''),
         attributes => {
             engine => $self->config->engine,
             gendata => $self->config->gendata,
