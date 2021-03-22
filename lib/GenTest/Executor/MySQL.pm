@@ -698,7 +698,7 @@ my %err2type = (
     ER_OUTOFMEMORY2()                                   => STATUS_ENVIRONMENT_FAILURE,
     ER_OUT_OF_RESOURCES()                               => STATUS_ENVIRONMENT_FAILURE,
     ER_OUT_OF_SORTMEMORY()                              => STATUS_SEMANTIC_ERROR,
-    ER_PARSE_ERROR()                                    => STATUS_SYNTAX_ERROR, # Don't mask syntax errors, fix them instead
+    ER_PARSE_ERROR()                                    => STATUS_SYNTAX_ERROR, # Syntax errors are treated separately upon execution
     ER_PARTITION_CLAUSE_ON_NONPARTITIONED()             => STATUS_SEMANTIC_ERROR,
     ER_PARTITION_EXCHANGE_PART_TABLE()                  => STATUS_SEMANTIC_ERROR,
     ER_PARTITION_FIELDS_TOO_LONG()                      => STATUS_SEMANTIC_ERROR,
@@ -1170,7 +1170,7 @@ sub execute {
           $err_type = STATUS_OK if (defined $acceptable_se_errors{$se_err});
       }
     }
-    $executor->[EXECUTOR_STATUS_COUNTS]->{$err_type}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+    $executor->[EXECUTOR_STATUS_COUNTS]->{$err_type}++;
     my $mysql_info = $dbh->{'mysql_info'};
     $mysql_info= '' unless defined $mysql_info;
     my ($matched_rows, $changed_rows) = $mysql_info =~ m{^Rows matched:\s+(\d+)\s+Changed:\s+(\d+)}sgio;
@@ -1195,12 +1195,8 @@ sub execute {
     }
 
     my $result;
-    if (defined $err) {            # Error on EXECUTE
-
-        if ($err_type == STATUS_SYNTAX_ERROR) {
-            $executor->[EXECUTOR_ERROR_COUNTS]->{$errstr}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
-            $err_type= undef;
-        }
+    if (defined $err)
+    {  # Error on EXECUTE
         if (
             ($err_type == STATUS_SKIP) ||
             ($err_type == STATUS_UNSUPPORTED) ||
@@ -1233,7 +1229,8 @@ sub execute {
 
             my $query_for_print= shorten_message($query);
             say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":"")) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
-        } elsif (not ($execution_flags & EXECUTOR_FLAG_SILENT)) {
+        } elsif (not ($execution_flags & EXECUTOR_FLAG_SILENT) or (defined $err_type and $err_type == STATUS_SYNTAX_ERROR)) {
+            # Always print syntax errors, even with the silent flag
             $executor->[EXECUTOR_ERROR_COUNTS]->{$sth->errstr()}++;
             my $query_for_print= shorten_message($query);
             say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
