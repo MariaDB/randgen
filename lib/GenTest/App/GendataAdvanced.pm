@@ -276,8 +276,10 @@ sub gen_table {
 
     # Decimal columns are relatively common. 25%
     if (!$prng->uint16(0,3)) {
+        my $precision = $prng->uint16(0,65);
+        my $scale = $prng->uint16(0,($precision<=38?$precision:38));
         $columns{col_dec} = [   'DECIMAL',
-                                $precision = $prng->uint16(0,65) . ',' . $prng->uint16(0,$precision),
+                                "$precision,$scale",
                                 random_unsigned(),
                                 random_zerofill(),
                                 $nullable = random_null(),
