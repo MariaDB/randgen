@@ -452,7 +452,7 @@ const_char_value:
 ;
 
 value:
-   _bigint | _smallint | _int_usigned | _char(1) | _char(256) | _datetime | _date | _time | NULL ;
+   _bigint | _smallint | _int_unsigned | _char(1) | _char(256) | _datetime | _date | _time | NULL ;
 
 bool_value:
    TRUE | FALSE | UNKNOWN | NULL ;
