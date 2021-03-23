@@ -227,6 +227,8 @@ my %name2range = (
         'mediumint'     => [-8388608, 8388607],
         'int'           => [-2147483648, 2147483647],
         'integer'       => [-2147483648, 2147483647],
+        'int_signed'    => [-2147483648, 2147483647],
+        'integer_signed' => [-2147483648, 2147483647],
         'bigint'        => [-9223372036854775808, 9223372036854775807],
         'float'         => [-9223372036854775808, 9223372036854775807],
         'double'        => [-999999999999999999999999999999999999999999999999999999999999999999999999999999999, 999999999999999999999999999999999999999999999999999999999999999999999999999999999],
@@ -319,6 +321,7 @@ sub uint16 {
     update_generator($_[0]);
     if (not defined $_[2]) {
       sayError("Second parameter not defined in uint16");
+      croak("");
     }
     return $_[1] +
         ((($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF) % ($_[2] - $_[1] + 1));
@@ -337,7 +340,8 @@ sub int {
         $rand = ($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF;
     }
     if (not defined $_[2]) {
-      sayError("Second parameter not defined in uint16");
+      sayError("Second parameter not defined in int");
+      croak("");
     }
     return int($_[1] + (($rand / 0x10000) * ($_[2] - $_[1] + 1)));
 }
