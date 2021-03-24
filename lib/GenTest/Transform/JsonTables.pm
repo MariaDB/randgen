@@ -287,7 +287,7 @@ sub parse_query
       }
       elsif ($table_name and $token =~ /^(.*?)(,)?$/) {
         # Found the alias, we'll use it for the JSON table
-        $select.= $self->json_table_to_append($table_name, $1).$2;
+        $select.= $self->json_table_to_append($table_name, $1).($2 || '');
         $table_name= '';
       }
       # Identifier, assuming table name, still a chance for later alias
@@ -362,7 +362,7 @@ sub json_table_to_append
       } else {
         my $reftable= $encountered_aliases{$refalias};
         $reftable =~ s/`//g;
-        my $fields= $self->executor()->metaColumns($encountered_aliases{$reftable});
+        my $fields= $self->executor()->metaColumns($reftable);
         if ($fields and scalar(@$fields)) {
           $jdoc= $refalias.'.'.$self->random->arrayElement($fields);
         }
@@ -378,11 +378,10 @@ sub json_table_to_append
       $jdoc= $self->random->json();
       if (substr($jdoc,0,9) eq 'LOAD_FILE' and $self->random->uint16(0,1)) {
         my $charsets= $self->executor()->metaCharactersets();
-        # DISABLED due to MDEV-25188, MDEV-25192
-#        if ($charsets and scalar(@$charsets)) {
-#          my $charset= $self->random->arrayElement($charsets);
-#          $jdoc= 'CONVERT('.$jdoc.' USING '.$charset.')';
-#        }
+        if ($charsets and scalar(@$charsets)) {
+          my $charset= $self->random->arrayElement($charsets);
+          $jdoc= 'CONVERT('.$jdoc.' USING '.$charset.')';
+        }
       }
     }
     my $jtable= 'JSON_TABLE('.$jdoc.', '.$self->random->jsonPath().' '.$self->random->jsonTableColumnList($colnum).') AS '.$alias;
