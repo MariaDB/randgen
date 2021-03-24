@@ -404,7 +404,8 @@ sub run {
             ($field_copy[FIELD_TYPE] =~ m{set|enum}sio) &&
             ($field_copy[FIELD_TYPE] !~ m{\(}sio )
             ) {
-            $field_copy[FIELD_TYPE] .= " (".join(',', map { "'$_'" } ('a'..'z') ).")";
+            #$field_copy[FIELD_TYPE] .= " (".join(',', map { "'$_'" } ('a'..'z') ).")";
+            $field_copy[FIELD_TYPE] .= $prng->enumSetTypeValues();
         }
         
         if (
