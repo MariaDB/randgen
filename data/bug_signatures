@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25243:
+=~ signal 11|AddressSanitizer
+=~ Item_func_sp::execute_impl
+=~ fill_record
+=~ Version: '10\.2|Server version: 10\.2
+MDEV-25243:
+=~ signal 11|AddressSanitizer
+=~ sp_head::daccess
+=~ Item_sp::execute_impl
+=~ fill_record
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-25242:
 =~ signal 11|AddressSanitizer
 =~ check_grant
