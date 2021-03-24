@@ -1,4 +1,5 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2021 MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -34,6 +35,7 @@ use strict;
 use GenTest;
 use GenTest::Result;
 use GenTest::Random;
+use GenTest::Constants;
 use DBI;
 use File::Find;
 use File::Spec;
@@ -205,6 +207,10 @@ sub monitor {
 
 sub report {
 	die "Default report() called.";
+}
+
+sub init {
+  return STATUS_OK;
 }
 
 sub dsn {

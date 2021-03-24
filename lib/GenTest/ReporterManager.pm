@@ -1,4 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
+# Copyright (c) 2021 MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -80,6 +81,9 @@ sub addReporter {
 				sayError("Reporter could not be added. Status will be set to ENVIRONMENT_FAILURE");
 				return STATUS_ENVIRONMENT_FAILURE;
 		}
+    if (not $reporter->init() == STATUS_OK) {
+      return STATUS_ENVIRONMENT_FAILURE;
+    }
 	}
 
 	push @{$manager->[MANAGER_REPORTERS]}, $reporter;
