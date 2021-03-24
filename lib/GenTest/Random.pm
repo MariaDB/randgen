@@ -321,7 +321,6 @@ sub uint16 {
     update_generator($_[0]);
     if (not defined $_[2]) {
       sayError("Second parameter not defined in uint16");
-      croak("");
     }
     return $_[1] +
         ((($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF) % ($_[2] - $_[1] + 1));
@@ -341,7 +340,6 @@ sub int {
     }
     if (not defined $_[2]) {
       sayError("Second parameter not defined in int");
-      croak("");
     }
     return int($_[1] + (($rand / 0x10000) * ($_[2] - $_[1] + 1)));
 }
