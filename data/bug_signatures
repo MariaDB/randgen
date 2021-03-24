@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25242:
+=~ signal 11|AddressSanitizer
+=~ check_grant
+=~ table_stats_fill
+=~ get_schema_tables_result
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25206:
 =~ signal 11|AddressSanitizer
 =~ Item_field::fix_outer_field
@@ -194,17 +200,6 @@ MDEV-24931:
 =~ Assertion \`prefix_size <= width'
 =~ Bitmap<width>::is_prefix
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-24929:
-=~ signal [16]|AddressSanitizer
-=~ thr_unlock
-=~ thr_multi_unlock
-=~ JOIN::optimize
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24929:
-=~ signal [16]|AddressSanitizer
-=~ get_schema_tables_result
-=~ JOIN::exec
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24925:
 =~ signal [16]|AddressSanitizer
 =~ Item_subselect::init_expr_cache_tracker
@@ -1608,7 +1603,7 @@ MDEV-22562:
 =~ Assertion \`next_insert_id == 0'
 =~ handler::ha_external_lock
 =~ mysql_unlock_tables
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 =~ application_periods|versioning|FeatureUsage detected system-versioned|FeatureUsage detected application periods
 MDEV-22551:
 =~ signal 11|AddressSanitizer
