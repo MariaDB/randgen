@@ -65,6 +65,11 @@ my %query_cache;
 sub init {
   my $reporter= shift;
   sayDebug("MetadataReload initialization");
+  # This is for scenarios, where servers get restart, reporters re-initialized, etc.
+  if ($dbh) {
+    $dbh->disconnect();
+    $dbh= undef;
+  }
   $test_end= time() + $reporter->testDuration();
   $reporter->loadNonSystemSchemata();
   return $reporter->loadSystemSchemata();
@@ -140,6 +145,7 @@ sub loadNonSystemSchemata {
 sub dbh {
   my $reporter= shift;
   unless ($dbh) {
+    sayDebug("MetadataReload: dbh not defined, reconnecting");
     my $dsn = $reporter->dsn();
     unless ($dbh = DBI->connect($dsn), undef, undef, {mysql_connect_timeout => METADATA_RELOAD_INTERVAL, PrintError => 0, RaiseError => 0}) {
       # Try to connect twice, due to MDEV-24998
@@ -150,7 +156,9 @@ sub dbh {
         return undef;
       }
     }
+    sayDebug("MetadataReload: dbh presumably reconnected");
     $dbh->do('/*!100108 SET @@max_statement_time= '.METADATA_QUERY_TIMEOUT.' */');
+    sayDebug("After setting max_statement_time: ".$dbh->err);
     $dbh->do('SET @@lock_wait_timeout= '.METADATA_QUERY_TIMEOUT);
   }
   return $dbh;
