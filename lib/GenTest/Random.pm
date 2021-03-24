@@ -1098,6 +1098,15 @@ sub temporalType {
   return $type;
 }
 
+sub enumSetTypeValues {
+  my ($prng, $length)= @_;
+  $length= $prng->uint16(2,16) unless defined $length;
+  my $vals= loadDictionary(($length <= 50 ? 'states' : 'towns'));
+  $prng->shuffleArray($vals);
+  my $value_list= join ', ', map {"'".$_."'"} @{$vals}[0..$length-1];
+  return $type.'('.$value_list.')';
+}
+
 sub enumSetType {
   my $prng= shift;
   my ($type, $length, $valtype);
@@ -1108,10 +1117,7 @@ sub enumSetType {
     $type= 'SET';
     $length= ($prng->uint16(0,4) ? $prng->uint16(1,8) : $prng->uint16(1,64));
   }
-  my $vals= loadDictionary(($length <= 50 ? 'states' : 'towns'));
-  $prng->shuffleArray($vals);
-  my $value_list= join ', ', map {"'".$_."'"} @{$vals}[0..$length-1];
-  return $type.'('.$value_list.')';
+  return $prng->enumSetTypeValues($length);
 }
 
 sub inet6Type {
