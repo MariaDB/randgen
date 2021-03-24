@@ -181,6 +181,7 @@ sub run {
         }
         next if $self->config->server_specific->{$i}->{dsn} !~ m{mysql}sio;
         my $metadata_executor = GenTest::Executor->newFromDSN($self->config->server_specific->{$i}->{dsn}, osWindows() ? undef : $self->channel());
+        $metadata_executor->setVardir($self->config->vardir);
         $metadata_executor->init();
         if ($self->config->metadata and defined $metadata_executor->dbh()) {
           $metadata_executor->cacheMetaData();
@@ -444,6 +445,7 @@ sub workerProcess {
         my $executor = GenTest::Executor->newFromDSN($self->config->server_specific->{$i}->{dsn}, osWindows() ? undef : $self->channel());
         $executor->sqltrace($self->config->sqltrace);
         $executor->setId($i);
+        $executor->setVardir($self->config->vardir);
         push @executors, $executor;
     }
 
@@ -527,6 +529,7 @@ sub doGenData {
                executor_id => $i,
                compatibility => $self->config->compatibility,
                variators => $self->config->variators,
+               vardir => $self->config->vardir,
             )->run();
             say("GendataAdvanced finished with result ".status2text($gendata_result));
         }
@@ -549,6 +552,7 @@ sub doGenData {
                    varchar_length => $self->config->property('varchar-length'),
                    executor_id => $i,
                    variators => $self->config->variators,
+                   vardir => $self->config->vardir,
                 )->run();
                 say("GendataSimple finished with result ".status2text($res));
                 $gendata_result= STATUS_OK if $res == STATUS_OK;
@@ -569,6 +573,7 @@ sub doGenData {
                    notnull => $self->config->notnull,
                    executor_id => $i,
                    variators => $self->config->variators,
+                   vardir => $self->config->vardir,
               )->run();
               say("Gendata $gendata finished with result ".status2text($res));
               $gendata_result= STATUS_OK if $res == STATUS_OK;

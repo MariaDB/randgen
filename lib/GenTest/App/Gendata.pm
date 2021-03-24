@@ -82,6 +82,7 @@ use constant GD_SHORT_COLUMN_NAMES => 11;
 use constant GD_STRICT_FIELDS => 12;
 use constant GD_EXECUTOR_ID => 13;
 use constant GD_VARIATORS => 14;
+use constant GD_VARDIR => 15;
 
 sub new {
     my $class = shift;
@@ -100,7 +101,9 @@ sub new {
         'server_id' => GD_SERVER_ID,
         'executor_id' => GD_EXECUTOR_ID,
         'variators' => GD_VARIATORS,
-        'sqltrace' => GD_SQLTRACE},@_);
+        'sqltrace' => GD_SQLTRACE,
+        'vardir' => GD_VARDIR,
+      },@_);
 
     if (not defined $self->[GD_SEED]) {
         $self->[GD_SEED] = 1;
@@ -203,6 +206,9 @@ sub run {
         );
 
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
+    $executor->sqltrace($self->sqltrace);
+    $executor->setId($self->executor_id);
+    $executor->setVardir($self->[GD_VARDIR]);
     $executor->init();
 
     my ($tables, $fields, $data, $schemas);  # Specification as read

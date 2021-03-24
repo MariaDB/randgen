@@ -44,6 +44,7 @@ use constant GDS_PARTITIONS => 9;
 use constant GDS_COMPATIBILITY => 10;
 use constant GDS_VARIATORS => 11;
 use constant GDS_SEED => 12;
+use constant GDS_VARDIR => 13;
 
 use constant GDS_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
 use constant GDS_DEFAULT_NAMES => ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9'];
@@ -67,6 +68,7 @@ sub new {
         'compatibility' => GDS_COMPATIBILITY,
         'variators' => GDS_VARIATORS,
         'seed' => GDS_SEED,
+        'vardir' => GDS_VARDIR,
     },@_);
 
     if (not defined $self->[GDS_DSN]) {
@@ -142,6 +144,7 @@ sub run {
     }
     $executor->sqltrace($self->sqltrace);
     $executor->setId($self->executor_id);
+    $executor->setVardir($self->[GDS_VARDIR]);
     $executor->init();
 
     my $names = GDS_DEFAULT_NAMES;

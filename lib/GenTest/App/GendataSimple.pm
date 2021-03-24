@@ -42,6 +42,7 @@ use constant GDS_VCOLS => 7;
 use constant GDS_EXECUTOR_ID => 8;
 use constant GDS_VARIATORS => 9;
 use constant GDS_SEED => 10;
+use constant GDS_VARDIR => 11;
 
 use constant GDS_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
 use constant GDS_DEFAULT_NAMES => ['A', 'B', 'C', 'D', 'E', 'AA', 'BB', 'CC', 'DD'];
@@ -61,6 +62,7 @@ sub new {
         'executor_id' => GDS_EXECUTOR_ID,
         'variators' => GDS_VARIATORS,
         'seed' => GDS_SEED,
+        'vardir' => GDS_VARDIR,
     },@_);
 
     if (not defined $self->[GDS_DSN]) {
@@ -134,6 +136,7 @@ sub run {
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
     $executor->sqltrace($self->sqltrace);
     $executor->setId($self->executor_id);
+    $executor->setVardir($self->[GDS_VARDIR]);
     $executor->init();
     
     my $names = GDS_DEFAULT_NAMES;
