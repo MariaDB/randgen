@@ -705,7 +705,7 @@ sub initReporters {
             push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode and $self->config->rpl_mode !~ /nosync/;
             push @{$self->config->reporters}, 'ReplicationSlaveStatus' 
                 if $self->config->rpl_mode && $self->isMySQLCompatible();
-            push @{$self->config->reporters}, 'MetadataReload';
+            push @{$self->config->reporters}, 'MetadataReload' unless "@{$self->config->reporters}" =~ /MetadataReload/;
         }
     } else {
         ## Remove the "None" reporter
