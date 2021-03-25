@@ -18,7 +18,7 @@ MDEV-25243:
 MDEV-25242:
 =~ signal 11|AddressSanitizer
 =~ check_grant
-=~ table_stats_fill
+=~ table_stats_fill|index_stats_fill
 =~ get_schema_tables_result
 MDEV-25206:
 =~ signal 11|AddressSanitizer
