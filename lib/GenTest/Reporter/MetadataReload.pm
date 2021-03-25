@@ -57,11 +57,6 @@ my $system_schemata= "'mysql','information_schema','performance_schema','sys'";
 # (we don't want these tables be tampered with)
 my $exempt_schemata= "'transforms'";
 
-# Internal "query cache". If metadata loading ends with a lock wait timeout,
-# we will use the result from the cache instead.
-my %query_cache;
-
-
 sub init {
   my $reporter= shift;
   sayDebug("MetadataReload initialization");
@@ -88,8 +83,8 @@ sub loadSystemSchemata {
   my $clause= "table_schema IN ($system_schemata) AND table_name != 'OPTIMIZER_TRACE'";
   my $schemata= $reporter->reload($clause);
   if ($schemata) {
-#    $schemata->{INFORMATION_SCHEMA}= $schemata->{information_schema};
     local $Data::Dumper::Maxdepth= 0;
+    local $Data::Dumper::Sortkeys= 1;
     $reporter->writeToFile('metadata_system.info',Dumper($schemata));
     return STATUS_OK;
   } else {
@@ -100,42 +95,21 @@ sub loadSystemSchemata {
 
 sub loadNonSystemSchemata {
   my $reporter= shift;
-
-  my $meta= {};
-  my $dbh= $reporter->dbh();
-  unless ($dbh) {
-    return ($reloaded_before ? STATUS_OK : STATUS_ENVIRONMENT_FAILURE);
-  }
-  my $query=
-    "SELECT table_schema, table_name FROM information_schema.tables ".
-    "WHERE table_schema NOT IN ($system_schemata,$exempt_schemata) and table_name != 'DUMMY'";
-
-  my $tables= $dbh->selectall_arrayref($query);
-  unless ($tables) {
-    return ($reloaded_before ? STATUS_OK : STATUS_ENVIRONMENT_FAILURE);
-  }
-  foreach my $row (@$tables) {
-    return STATUS_OK if time() > $test_end;
-    my ($schema, $table) = @$row;
-    my $meta_schema_table= $reporter->reload("table_schema = '$schema' AND table_name = '$table'");
-    # The table may not exist anymore, we won't make a big deal out of it
-    if ($meta_schema_table and $meta_schema_table->{$schema}) {
-      my $type= (keys %{$meta_schema_table->{$schema}})[0];
-      $meta->{$schema}={} if not exists $meta->{$schema};
-      $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
-      $meta->{$schema}->{$type}->{$table}= { %{$meta_schema_table->{$schema}->{$type}->{$table}} };
-    }
-  }
-  if ($meta) {
+  my $clause= "table_schema NOT IN ($system_schemata,$exempt_schemata) and table_name != 'DUMMY'";
+  my $schemata= $reporter->reload($clause);
+  if ($schemata) {
     local $Data::Dumper::Maxdepth= 0;
     local $Data::Dumper::Sortkeys= 1;
-    my $dump= Dumper($meta);
+    my $dump= Dumper($schemata);
     if (defined $last_md5 and md5_hex($dump) eq $last_md5) {
       sayDebug("MetadataReload: MD5 checksum hasn't changed, not re-writing the file");
     } else {
       $reporter->writeToFile('metadata.info',$dump);
     }
+  } else {
+    sayError("MetadataReload failed to load non-system schemata");
   }
+
   $last_reload= time();
   $reloaded_before++;
   sayDebug("MetadataReload: Finished reloading metadata. Number of reloads: $reloaded_before");
@@ -171,69 +145,99 @@ sub reload {
   unless ($dbh) {
     return undef;
   }
-  my $query=
-      "SELECT DISTINCT ".
-             "table_schema, ".
-             "table_name, ".
-             "CASE WHEN table_type = 'BASE TABLE' THEN 'table' ".
-                  "WHEN table_type = 'SYSTEM VERSIONED' THEN 'table' ".
-                  "WHEN table_type = 'SEQUENCE' THEN 'table' ".
-                  "WHEN table_type = 'VIEW' THEN 'view' ".
-                  "WHEN table_type = 'SYSTEM VIEW' then 'view' ".
-                  "ELSE 'misc' END AS table_type, ".
-             "column_name, ".
-             "CASE WHEN column_key = 'PRI' THEN 'primary' ".
-                  "WHEN column_key IN ('MUL','UNI') THEN 'indexed' ".
-                  "ELSE 'ordinary' END AS column_key, ".
-             "CASE WHEN data_type IN ('bit','tinyint','smallint','mediumint','int','bigint') THEN 'int' ".
-                  "WHEN data_type IN ('float','double') THEN 'float' ".
-                  "WHEN data_type IN ('decimal') THEN 'decimal' ".
-                  "WHEN data_type IN ('datetime','timestamp') THEN 'timestamp' ".
-                  "WHEN data_type IN ('char','varchar','binary','varbinary') THEN 'char' ".
-                  "WHEN data_type IN ('tinyblob','blob','mediumblob','longblob') THEN 'blob' ".
-                  "WHEN data_type IN ('tinytext','text','mediumtext','longtext') THEN 'blob' ".
-                  "ELSE data_type END AS data_type_normalized, ".
-             "data_type, ".
-             "character_maximum_length, ".
-             "table_rows ".
-       "FROM information_schema.tables INNER JOIN ".
-            "information_schema.columns USING(table_schema,table_name)".
-       ($clause ? " WHERE $clause" : "");
+  my $table_query=
+      "SELECT table_schema, table_name, table_type ".
+      "FROM information_schema.tables".
+      ($clause ? " WHERE $clause" : "");
+  my $column_query=
+      "SELECT table_schema, table_name, column_name, column_key, ".
+             "data_type, character_maximum_length ".
+      "FROM information_schema.columns".
+      ($clause ? " WHERE $clause" : "");
 
   sayDebug("MetadataReload: Starting reading metadata with condition \"$clause\"");
-  my $metadata;
-  if (($dbh->err == ER_LOCK_WAIT_TIMEOUT or $dbh->err == ER_STATEMENT_TIMEOUT) and exists $query_cache{$clause}) {
-    sayWarning("MetadataReload: query timed out, using the previously cached result");
-    $metadata= [ @{$query_cache{$clause}} ];
-  } elsif ($dbh->err) {
+
+  my ($table_metadata, $column_metadata);
+  $table_metadata= $dbh->selectall_arrayref($table_query);
+  if (not $dbh->err and $table_metadata) {
+    $column_metadata= $dbh->selectall_arrayref($column_query);
+    sayDebug("MetadataReload: Finished reading metadata");
+  }
+  if ($dbh->err or not $table_metadata or not $column_metadata) {
     sayError("MetadataReload: Failed to retrieve metadata with condition \"$clause\": " . $dbh->err . " " . $dbh->errstr);
     return undef;
-  } else {
-    $metadata = $dbh->selectall_arrayref($query);
-    sayDebug("MetadataReload: Finished reading metadata with condition \"$clause\"");
-    $query_cache{$clause}= [ @$metadata ] if ($metadata);
   }
 
-  my $meta = {};
+  my $meta= {};
+  my %tabletype= ();
 
-  foreach my $row (@$metadata) {
-    my ($schema, $table, $type, $col, $key, $metatype, $realtype, $maxlength) = @$row;
-    $meta->{$schema}={} if not exists $meta->{$schema};
-    $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
-    $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
-    $meta->{$schema}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
-    if ($schema eq 'information_schema') {
-      $schema= uc($schema);
+  foreach my $row (@$table_metadata) {
+    my ($schema, $table, $type) = @$row;
+    if (
+      $type eq 'BASE TABLE' or
+      $type eq 'SYSTEM VERSIONED' or
+      $type eq 'SEQUENCE'
+    ) { $type= 'table' }
+    elsif (
+      $type eq 'VIEW' or
+      $type eq 'SYSTEM VIEW'
+    ) { $type= 'view' }
+    else { $type= 'misc' };
+    if (lc($schema) eq 'information_schema') {
+      $meta->{information_schema}={} if not exists $meta->{information_schema};
+      $meta->{information_schema}->{$type}={} if not exists $meta->{information_schema}->{$type};
+      $meta->{information_schema}->{$type}->{$table}={} if not exists $meta->{information_schema}->{$type}->{$table};
+      $tabletype{'information_schema.'.$table}= $type;
+      $meta->{INFORMATION_SCHEMA}={} if not exists $meta->{INFORMATION_SCHEMA};
+      $meta->{INFORMATION_SCHEMA}->{$type}={} if not exists $meta->{INFORMATION_SCHEMA}->{$type};
+      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}={} if not exists $meta->{INFORMATION_SCHEMA}->{$type}->{$table};
+      $tabletype{'INFORMATION_SCHEMA.'.$table}= $type;
+    } else {
       $meta->{$schema}={} if not exists $meta->{$schema};
       $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
       $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
-      $meta->{$schema}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
+      $tabletype{$schema.'.'.$table}= $type;
     }
-    elsif ($schema eq 'INFORMATION_SCHEMA') {
-      $schema= lc($schema);
-      $meta->{$schema}={} if not exists $meta->{$schema};
-      $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
-      $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
+  }
+
+  foreach my $row (@$column_metadata) {
+    my ($schema, $table, $col, $key, $realtype, $maxlength) = @$row;
+    my $metatype= lc($realtype);
+    if (
+      $metatype eq 'bit' or
+      $metatype eq 'tinyint' or
+      $metatype eq 'smallint' or
+      $metatype eq 'mediumint' or
+      $metatype eq 'bigint'
+    ) { $metatype= 'int' }
+    elsif (
+      $metatype eq 'double'
+    ) { $metatype= 'float' }
+    elsif (
+      $metatype eq 'datetime'
+    ) { $metatype= 'timestamp' }
+    elsif (
+      $metatype eq 'varchar' or
+      $metatype eq 'binary' or
+      $metatype eq 'varbinary'
+    ) { $metatype= 'char' }
+    elsif (
+      $metatype eq 'tinyblob' or
+      $metatype eq 'mediumblob' or
+      $metatype eq 'longblob' or
+      $metatype eq 'tinytext' or
+      $metatype eq 'mediumtext' or
+      $metatype eq 'longtext'
+    ) { $metatype= 'blob' };
+
+    if ($key eq 'PRI') { $key= 'primary' }
+    elsif ($key eq 'MUL' or $key eq 'UNI') { $key= 'indexed' }
+    else { $key= 'ordinary' };
+    my $type= $tabletype{$schema.'.'.$table};
+    if (lc($schema) eq 'information_schema') {
+      $meta->{information_schema}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
+      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
+    } else {
       $meta->{$schema}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
     }
   }
