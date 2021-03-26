@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25261:
+=~ Assertion \`arg1_int >= 0'|Assertion \`arg2_int >= 0'
+=~ Item_func_additive_op::result_precision
+=~ Item_num_op::fix_length_and_dec
 MDEV-25243:
 =~ signal 11|AddressSanitizer
 =~ Item_func_sp::execute_impl
@@ -732,7 +736,6 @@ MDEV-24519:
 MDEV-24511:
 =~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
 =~ Field::ptr_in_record
-=~ Column_definition::Column_definition
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24508:
 =~ Assertion \`!strcmp(index->name, "FTS_DOC_ID_INDEX")'
@@ -2572,6 +2575,11 @@ MDEV-19817:
 =~ Item_field::used_tables
 =~ setup_fields_with_no_wrap
 =~ Multiupdate_prelocking_strategy::handle_end
+MDEV-19817:
+=~ signal 11|AddressSanitizer
+=~ Item_field::used_tables
+=~ Item_direct_view_ref::used_tables
+=~ Used_tables_and_const_cache::used_tables_and_const_cache_join
 MDEV-19720:
 =~ Assertion \`sel->quick'
 =~ make_range_rowid_filters
