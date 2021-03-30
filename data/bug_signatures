@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25290:
+=~ signal 11|AddressSanitizer
+=~ Locked_tables_list::mark_table_for_reopen
+=~ TABLE::mark_table_for_reopen
+=~ mysql_prepare_alter_table
+=~ Version: '10\.[3-4]|Server version: 10\.[3-4]
 MDEV-25261:
 =~ Assertion \`arg1_int >= 0'|Assertion \`arg2_int >= 0'
 =~ Item_func_additive_op::result_precision
@@ -1351,7 +1357,6 @@ MDEV-23127:
 =~ signal [16]|AddressSanitizer
 =~ Query_cache::double_linked_list_exclude|Assertion \`table_block_data->m_cached_query_count >= 0'
 =~ Query_cache::unlink_table
-=~ Query_cache::invalidate_query_block_list
 MDEV-23126:
 =~ signal [16]|AddressSanitizer
 =~ Query_cache_block::query
