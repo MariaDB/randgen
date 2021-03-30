@@ -204,7 +204,7 @@ sub run {
   $new_server->dumpSchema($databases, $new_server->vardir.'/server_schema_new.dump');
   $new_server->normalizeDump($new_server->vardir.'/server_schema_new.dump', 'remove_autoincs');
   # No need to skip heap tables' data on the new server, they should be empty
-  $new_server->dumpdb($databases, $new_server->vardir.'/server_data_new.dump');
+  $new_server->dumpdb($databases, $new_server->vardir.'/server_data_new.dump',my $skip_heap_tables=1);
   $new_server->normalizeDump($new_server->vardir.'/server_data_new.dump');
   $table_autoinc{'new'} = $new_server->collectAutoincrements();
 
