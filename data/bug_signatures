@@ -4,6 +4,25 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25314:
+=~ Assertion \`trx\.is_wsrep()'
+=~ wsrep_is_BF_lock_timeout
+=~ row_mysql_handle_errors
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-25313:
+=~ Assertion \`pending == log_requests\.start\.load(std::memory_order_relaxed)'
+=~ log_flush_notify_and_unlock
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-25313:
+=~ signal 11|AddressSanitizer
+=~ MYSQL_BIN_LOG::mark_xid_done
+=~ binlog_background_thread
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-25311:
+=~ signal 11|AddressSanitizer
+=~ Json_writer_object::add
+=~ sel_arg_and_weight_heuristic
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25290:
 =~ signal 11|AddressSanitizer
 =~ Locked_tables_list::mark_table_for_reopen
@@ -1891,9 +1910,13 @@ MDEV-21837: [status_var.local_memory_used == 0]
 =~ Version: '10\.1
 MDEV-21834:
 =~ signal 11|AddressSanitizer:
-=~ key_copy
-=~ a_myisam::get_auto_increment
-=~ ha_myisam::write_row
+=~ key_copy|Field_varstring::get_key_image
+=~ ha_myisam::get_auto_increment
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV_21834:
+=~ Assertion \`marked_for_read()'
+=~ Field_varstring::val_str
+=~ Item_func_hash::val_int
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-21830:
 =~ Assertion \`share->in_trans == 0'
