@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25327:
+=~ InnoDB: Failing assertion: !cursor->index->is_committed
+=~ row_ins_sec_index_entry_by_modify
+=~ ha_innobase::write_row
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ FeatureUsage detected system-versioned
+MDEV-25327:
+=~ Assertion \`!strcmp(index->name, "FTS_DOC_ID_INDEX")'
+=~ row_ins
+=~ ha_innobase::write_row
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ FeatureUsage detected system-versioned
 MDEV-25314:
 =~ Assertion \`trx\.is_wsrep()'
 =~ wsrep_is_BF_lock_timeout
