@@ -451,6 +451,7 @@ sub startServer {
                                          ["--core-file",
                                           "--datadir=".$self->datadir,  # Could not add to STDOPTS, because datadir could have changed
                                           "--max-allowed-packet=1G",	# Allow loading bigger blobs
+                                          "--loose-innodb-ft-min-token-size=10", # Workaround for MDEV-25324
                                           "--port=".$self->port,
                                           "--socket=".$self->socketfile,
                                           "--pid-file=".$self->pidfile],
