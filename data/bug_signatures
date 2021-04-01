@@ -7,7 +7,6 @@
 MDEV-25314:
 =~ Assertion \`trx\.is_wsrep()'
 =~ wsrep_is_BF_lock_timeout
-=~ row_mysql_handle_errors
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25313:
 =~ Assertion \`pending == log_requests\.start\.load(std::memory_order_relaxed)'
