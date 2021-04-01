@@ -1924,7 +1924,7 @@ MDEV-21834:
 =~ key_copy|Field_varstring::get_key_image
 =~ ha_myisam::get_auto_increment
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV_21834:
+MDEV-21834:
 =~ Assertion \`marked_for_read()'
 =~ Field_varstring::val_str
 =~ Item_func_hash::val_int
