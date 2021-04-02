@@ -779,7 +779,7 @@ MDEV-24511:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24508:
 =~ Assertion \`!strcmp(index->name, "FTS_DOC_ID_INDEX")'
-=~ ha_innobase::write_row
+=~ ha_innobase::write_row|ha_innobase::update_row
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24467:
 =~ Direct leak of|Memory not freed|blocks are definitely lost
@@ -4011,11 +4011,11 @@ TODO-842: [thd->in_sub_stmt]
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_rollback_stmt
 =~ wsrep::client_state::after_statement
-TODO-842: [m_status == DA_OK_BULK - ignore for now]
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ Diagnostics_area::set_ok_status
-=~ my_ok
-=~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: .*COMMIT|Query .*: FLUSH|close failed in file object destructor|Query .*: .*RESET.* QUERY CACHE|Status: KILL_TIMEOUT|Status: KILL_QUERY
+#TODO-842: [m_status == DA_OK_BULK - ignore for now]
+#=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+#=~ Diagnostics_area::set_ok_status
+#=~ my_ok
+#=~ Query .*: LOCK.*TABLE|Query .*: UNLOCK|Query .*: ALTER|Query .*: .*COMMIT|Query .*: FLUSH|close failed in file object destructor|Query .*: .*RESET.* QUERY CACHE|Status: KILL_TIMEOUT|Status: KILL_QUERY
 TODO-842: [PROFILING]
 =~ signal [16]
 =~ free_memory|_int_free
