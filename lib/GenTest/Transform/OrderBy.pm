@@ -35,6 +35,7 @@ sub transform {
 	my @selects = $original_query =~ m{(SELECT)}sgio;
 
 	return STATUS_WONT_HANDLE if $original_query !~ m{^\s*SELECT}sio;
+  return STATUS_WONT_HANDLE if $original_query =~ m{LIMIT\s+(?:\d+\s*,\s*)?0}sio;
 	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
 	#          - CONCAT() in ORDER BY queries, which require more complex regexes below for correct behavior
 	#          - INTO, because there will be nothing to compare
