@@ -6,8 +6,8 @@
 
 MDEV-25332:
 =~ STATUS_SERVER_DEADLOCKED|STATUS_TEST_FAILURE
-=~ Deadlock reporter:.* declaring deadlock at DSN|Actual test duration .* is more than .* times the desired duration
-=~ Deadlock reporter detected stalled query: .*ANALYZE FORMAT=JSON
+=~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
+=~ Deadlock reporter: Stalled query: .*ANALYZE FORMAT=JSON
 MDEV-25327:
 =~ InnoDB: Failing assertion: !cursor->index->is_committed
 =~ row_ins_sec_index_entry_by_modify
@@ -259,8 +259,8 @@ MDEV-24925:
 =~ Item_singlerow_subselect::expr_cache_insert_transformer
 MDEV-24909:
 =~ STATUS_SERVER_DEADLOCKED|STATUS_TEST_FAILURE
-=~ Deadlock reporter:.* declaring deadlock at DSN|Actual test duration .* is more than .* times the desired duration
-=~ Deadlock reporter detected stalled query: .*JSON_
+=~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
+=~ Deadlock reporter: Stalled query: .*JSON_
 MDEV-24907:
 =~ signal [16]|AddressSanitizer
 =~ Item_field::replace_equal_field
