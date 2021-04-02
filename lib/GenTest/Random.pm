@@ -953,8 +953,9 @@ sub file {
 }
 
 sub loadFile {
-	my ($prng, $dir) = @_;
-	return "LOAD_FILE('".$prng->file($dir)."')";
+  my ($prng, $dir) = @_;
+  $dir= $data_location unless $dir;
+  return "LOAD_FILE('".$prng->file($dir)."')";
 
 }
 
