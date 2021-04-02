@@ -837,7 +837,7 @@ sub gen_table {
                   if ($c->[4] eq 'NOT NULL') {
                       $val = "'".$prng->arrayElement('','a','b','c','d','e','f','foo','bar')."'";
                   } else {
-                      $val = $prng->uint16(0,9) == 9 ? "NULL" : "'".$prng->arrayElement('','a','b','c','d','e','f','foo','bar')."'";
+                      $val = $prng->uint16(0,9) == 9 ? "NULL" : "'".$prng->arrayElement(['','a','b','c','d','e','f','foo','bar'])."'";
                   }
               }
               elsif ($c->[0] eq 'FLOAT' or $c->[0] eq 'DOUBLE' or $c->[0] eq 'DECIMAL') {
@@ -880,14 +880,25 @@ sub gen_table {
                       $val = ($val, $val, $val, $val, $val, $val, "'".$val_date_only." 00:00:00'", "'".$val_date_only." 00:00:00'", "NULL", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
                   }
               }
-              elsif ($c->[0] eq 'CHAR' or $c->[0] eq 'VARCHAR' or $c->[0] eq 'BINARY' or $c->[0] eq 'VARBINARY' or $c->[0] eq 'TINYBLOB' or $c->[0] eq 'BLOB' or $c->[0] eq 'MEDIUMBLOB' or $c->[0] eq 'LONGBLOB')
+              elsif ($c->[0] eq 'CHAR' or $c->[0] eq 'VARCHAR' or $c->[0] eq 'BINARY' or $c->[0] eq 'VARBINARY')
               {
-                  my $length= $prng->uint16(0,9) == 9 ? $prng->uint16(0,$c->[1]) : $prng->uint16(0,8);
-                  if ($c->[4] eq 'NOT NULL') {
-                      $val = $prng->string($length);
+                  if ($c->[4] ne 'NOT NULL' and $prng->uint16(0,9) == 0) {
+                    $val= "NULL";
                   } else {
-                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->string($length);
+                    my $length= $prng->uint16(0,9) == 9 ? $prng->uint16(0,$c->[1]) : $prng->uint16(0,8);
+                    $val = $prng->string($length);
                   }
+              }
+              elsif ($c->[0] =~ /(TINY|MEDIUM|LONG)?BLOB/)
+              {
+                if ($c->[4] ne 'NOT NULL' and $prng->uint16(0,5) == 0) {
+                  $val= "NULL";
+                } elsif ($prng->uint16(0,1)) {
+                  $val= $prng->loadFile();
+                } else {
+                  my $length= $prng->uint16(0,64);
+                  $val= $prng->string($length);
+                }
               }
               elsif ($c->[0] =~ /(TINY|MEDIUM|LONG)?TEXT/)
               {
