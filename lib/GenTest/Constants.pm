@@ -1,5 +1,6 @@
 # Copyright (c) 2008,2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013 Monty Program Ab.
+# Copyright (c) 2021 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -70,6 +71,7 @@ require Exporter;
 	STATUS_UPGRADE_FAILURE
 	STATUS_DATABASE_CORRUPTION
 	STATUS_SERVER_DEADLOCKED
+  STATUS_SERVER_SHUTDOWN_FAILURE
 	STATUS_VALGRIND_FAILURE
 	STATUS_ALARM
 
@@ -93,60 +95,58 @@ require Exporter;
 
 use strict;
 
-use constant STATUS_OK				=> 0; ## Suitable for exit code
-use constant STATUS_INTERNAL_ERROR		=> 1;   # Apparently seen with certain Perl coding errors; check RQG log carefully for exact error
-use constant STATUS_UNKNOWN_ERROR		=> 2;
+use constant STATUS_OK                       =>  0; ## Suitable for exit code
 
-use constant STATUS_ANY_ERROR			=> 3;	# Used in util/simplify* to not differentiate based on error code
+use constant STATUS_INTERNAL_ERROR           =>  1;   # Apparently seen with certain Perl coding errors; check RQG log carefully for exact error
+use constant STATUS_UNKNOWN_ERROR            =>  2;
+use constant STATUS_ANY_ERROR                =>  3; # Used in util/simplify* to not differentiate based on error code
 
-use constant STATUS_EOF				=> 4;	# A module requested that the test is terminated without failure
+use constant STATUS_EOF                      =>  4; # A module requested that the test is terminated without failure
 
-use constant STATUS_WONT_HANDLE			=> 5;	# A module, e.g. a Validator refuses to handle certain query
-use constant STATUS_SKIP			=> 6;	# A Filter specifies that the query should not be processed further
-use constant STATUS_IGNORED_ERROR => 19; # Most likely a real error (maybe even important), but due to amount of known bugs or false positives it is untreatable
+use constant STATUS_WONT_HANDLE              =>  5; # A module, e.g. a Validator refuses to handle certain query
+use constant STATUS_SKIP                     =>  6; # A Filter specifies that the query should not be processed further
+use constant STATUS_IGNORED_ERROR            => 19; # Most likely a real error (maybe even important), but due to amount of known bugs or false positives it is untreatable
 
-use constant STATUS_UNSUPPORTED         => 20; # Error codes caused by certain functionality recognized as unsupported (NOT syntax errors)
-use constant STATUS_SYNTAX_ERROR		=> 21;
-use constant STATUS_SEMANTIC_ERROR		=> 22;	# Errors caused by the randomness of the test, e.g. dropping a non-existing table
-use constant STATUS_TRANSACTION_ERROR		=> 23;	# Lock wait timeouts, deadlocks, duplicate keys, etc.
+use constant STATUS_UNSUPPORTED              => 20; # Error codes caused by certain functionality recognized as unsupported (NOT syntax errors)
+use constant STATUS_SYNTAX_ERROR             => 21;
+use constant STATUS_SEMANTIC_ERROR           => 22; # Errors caused by the randomness of the test, e.g. dropping a non-existing table
+use constant STATUS_TRANSACTION_ERROR        => 23; # Lock wait timeouts, deadlocks, duplicate keys, etc.
 
-use constant STATUS_TEST_FAILURE		=> 24;	# Boundary between genuine errors and false positives due to randomness
+use constant STATUS_TEST_FAILURE             => 24; # Boundary between genuine errors and false positives due to randomness
 
-use constant STATUS_SELECT_REDUCTION		=> 5;	# A coefficient to substract from error codes in order to make them non-fatal
+use constant STATUS_SELECT_REDUCTION         =>  5; # A coefficient to substract from error codes in order to make them non-fatal
 
-use constant STATUS_REQUIREMENT_UNMET_SELECT	=> 25;
-use constant STATUS_ERROR_MISMATCH_SELECT	=> 26;	# A SELECT query caused those erros, however the test can continue
-use constant STATUS_LENGTH_MISMATCH_SELECT	=> 27;	# since the database has not been modified
-use constant STATUS_CONTENT_MISMATCH_SELECT		=> 28;	# 
-use constant STATUS_SCHEMA_MISMATCH		=> 29;	#
-use constant STATUS_REQUIREMENT_UNMET		=> 30;
-use constant STATUS_ERROR_MISMATCH		=> 31;	# A DML statement caused those errors, and the test can not continue
-use constant STATUS_LENGTH_MISMATCH		=> 32;	# because the databases are in an unknown inconsistent state
-use constant STATUS_CONTENT_MISMATCH		=> 33;	#
+use constant STATUS_REQUIREMENT_UNMET_SELECT => 25;
+use constant STATUS_ERROR_MISMATCH_SELECT    => 26; # A SELECT query caused those erros, however the test can continue
+use constant STATUS_LENGTH_MISMATCH_SELECT   => 27; # since the database has not been modified
+use constant STATUS_CONTENT_MISMATCH_SELECT  => 28;
+use constant STATUS_SCHEMA_MISMATCH          => 29;
+use constant STATUS_REQUIREMENT_UNMET        => 30;
+use constant STATUS_ERROR_MISMATCH           => 31; # A DML statement caused those errors, and the test can not continue
+use constant STATUS_LENGTH_MISMATCH          => 32; # because the databases are in an unknown inconsistent state
+use constant STATUS_CONTENT_MISMATCH         => 33;
+use constant STATUS_CUSTOM_OUTCOME           => 36; # Used for things such as signaling an EXPLAIN hit from the ExplainMatch Validator
 
-use constant STATUS_POSSIBLE_FAILURE   => 60;
+use constant STATUS_POSSIBLE_FAILURE         => 60;
+
+use constant STATUS_SERVER_SHUTDOWN_FAILURE  => 90;
+use constant STATUS_DATABASE_CORRUPTION      => 96; # Database corruption errors are often bogus, but still important to look at
 
 # Higher-priority errors
+use constant STATUS_CRITICAL_FAILURE         => 100; # Boundary between critical and non-critical errors
 
-use constant STATUS_CRITICAL_FAILURE		=> 100;	# Boundary between critical and non-critical errors
+use constant STATUS_SERVER_KILLED            => 101; # Willfull killing of the server, will not be reported as a crash
+use constant STATUS_SERVER_DEADLOCKED        => 102;
+use constant STATUS_REPLICATION_FAILURE      => 103;
+use constant STATUS_UPGRADE_FAILURE          => 104;
+use constant STATUS_RECOVERY_FAILURE         => 105;
+use constant STATUS_BACKUP_FAILURE           => 106;
+use constant STATUS_SERVER_CRASHED           => 107;
+use constant STATUS_VALGRIND_FAILURE         => 108;
+use constant STATUS_ENVIRONMENT_FAILURE      => 109; # A failure in the environment or the grammar file
+use constant STATUS_ALARM                    => 110; # A module, e.g. a Reporter, raises an alarm with critical severity
 
-use constant STATUS_ENVIRONMENT_FAILURE		=> 110;	# A failure in the environment or the grammar file
-use constant STATUS_PERL_FAILURE		=> 255; # Perl died for some reason
-
-use constant STATUS_CUSTOM_OUTCOME		=> 36;	# Used for things such as signaling an EXPLAIN hit from the ExplainMatch Validator
-
-use constant STATUS_SERVER_CRASHED		=> 101;
-
-use constant STATUS_SERVER_KILLED		=> 102;	# Willfull killing of the server, will not be reported as a crash
-
-use constant STATUS_REPLICATION_FAILURE		=> 103;
-use constant STATUS_UPGRADE_FAILURE         => 104;
-use constant STATUS_RECOVERY_FAILURE		=> 105;
-use constant STATUS_DATABASE_CORRUPTION		=> 96; # Database corruption errors are often bogus, but still important to look at
-use constant STATUS_SERVER_DEADLOCKED		=> 107;
-use constant STATUS_BACKUP_FAILURE		=> 108;
-use constant STATUS_VALGRIND_FAILURE		=> 109;
-use constant STATUS_ALARM			=> 110; # A module, e.g. a Reporter, raises an alarm with critical severity
+use constant STATUS_PERL_FAILURE             => 255; # Perl died for some reason
 
 use constant ORACLE_ISSUE_STILL_REPEATABLE	=> 2;
 use constant ORACLE_ISSUE_NO_LONGER_REPEATABLE	=> 3;
