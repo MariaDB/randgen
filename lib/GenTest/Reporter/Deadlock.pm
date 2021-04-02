@@ -145,7 +145,7 @@ sub monitor_nonthreaded {
 			($process->[PROCESSLIST_PROCESS_INFO]) &&
 			($process->[PROCESSLIST_PROCESS_TIME] > $lifetime_threshold)
 		) {
-        sayWarning("Deadlock reporter: Stalled query: (".$process->[PROCESSLIST_PROCESS_COMMAND].") (".$process->[PROCESSLIST_PROCESS_TIME]." sec): ".$process->[PROCESSLIST_PROCESS_INFO]);
+        sayError("Deadlock reporter: Stalled query: (".$process->[PROCESSLIST_PROCESS_COMMAND].") (".$process->[PROCESSLIST_PROCESS_TIME]." sec): ".$process->[PROCESSLIST_PROCESS_INFO]);
         $stalled_queries++;
         if (($process->[PROCESSLIST_PROCESS_COMMAND] eq 'Killed') && $process->[PROCESSLIST_PROCESS_TIME] > $lifetime_threshold * 1.5) {
           $dead_queries++;
