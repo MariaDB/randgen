@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25332:
+=~ STATUS_SERVER_DEADLOCKED|STATUS_TEST_FAILURE
+=~ Deadlock reporter:.* declaring deadlock at DSN|Actual test duration .* is more than .* times the desired duration
+=~ Deadlock reporter detected stalled query: .*ANALYZE FORMAT=JSON
 MDEV-25327:
 =~ InnoDB: Failing assertion: !cursor->index->is_committed
 =~ row_ins_sec_index_entry_by_modify
