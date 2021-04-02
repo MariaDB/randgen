@@ -104,10 +104,10 @@ MDEV-25067:
 =~ Prepared_statement::execute
 =~ FeatureUsage detected multi update/delete
 MDEV-25060:
-=~ AddressSanitizer|Invalid write of size
+=~ AddressSanitizer|Invalid write of size|signal 11
 =~ _mi_put_key_in_record
 =~ chk_key
-=~ ha_myisam::repair
+=~ ha_myisam::repair|ha_myisam::analyze
 =~ FeatureUsage detected virtual columns
 MDEV-25060:
 =~ Error: Freeing overrun buffer.* myisam/mi_close.* myisam/ha_myisam
