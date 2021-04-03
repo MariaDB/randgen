@@ -7,7 +7,7 @@
 MDEV-25332:
 =~ STATUS_SERVER_DEADLOCKED|STATUS_TEST_FAILURE
 =~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
-=~ Deadlock reporter: Stalled query: .*ANALYZE FORMAT=JSON
+=~ Deadlock reporter: Stalled query: .*ANALYZE.*FORMAT=JSON
 MDEV-25327:
 =~ InnoDB: Failing assertion: !cursor->index->is_committed
 =~ row_ins_sec_index_entry_by_modify
@@ -1857,11 +1857,6 @@ MDEV-21496:
 =~ ha_innobase::truncate
 =~ CrashUpgrade
 =~ Version: '10\.2\.19
-MDEV-21460:
-=~ Assertion \`! is_set()'
-=~ Diagnostics_area::set_ok_status
-=~ mysql_load
-=~ Version: '10\.1
 MDEV-21446:
 =~ Assertion \`!prebuilt->index->is_primary()'
 =~ row_search_idx_cond_check
@@ -2392,9 +2387,6 @@ MDEV-19672:
 =~ safe_mutex: Trying to lock mutex at .*, when the mutex was already locked at .*
 =~ safe_mutex_lock
 =~ update_syslog_facility
-MDEV-19663:
-=~ Got error 127 when reading table .*
-=~ Table .* is marked as crashed and should be repaired
 MDEV-19631:
 =~ Assertion \`0'
 =~ st_select_lex_unit::optimize
@@ -3089,11 +3081,6 @@ MDEV-17596:
 MDEV-17583: [next_mrec == next_mrec_end]
 =~ next_mrec == next_mrec_end
 =~ row_log_table_apply_ops
-MDEV-17580:
-=~ Diagnostics_area::set_ok_status.*Assertion \`! is_set()'
-=~ mysql_alter_table
-=~ ADD CHECK
-=~ Version: '10\.[0-1]
 # Only fixed in 10.2+
 MDEV-17576:
 =~ Assertion \`share->reopen == 1'
@@ -3532,10 +3519,6 @@ MDEV-11566:
 =~ get_store_key
 =~ get_best_combination
 =~ Version: '10\.[0-2]|Version: '5\.5
-MDEV-10945:
-=~ Diagnostics_area::set_ok_status
-=~ Status: KILL_BAD_DATA
-=~ Version: '10\.[0-1]|Version: '5\.5
 MDEV-10826:
 =~ Assertion \`thd->get_stmt_da()->is_eof()'
 =~ Query_cache::end_of_result
