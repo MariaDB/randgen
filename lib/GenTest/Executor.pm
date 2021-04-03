@@ -74,7 +74,9 @@ use constant EXECUTOR_SERVER_VERSION_NUMERIC => 25;
 use constant EXECUTOR_COMPATIBILITY => 26;
 use constant EXECUTOR_VARDIR => 27;
 use constant EXECUTOR_META_FILE_SIZE => 28;
-use constant EXECUTOR_META_LAST_CHECK => 29;
+use constant EXECUTOR_META_LOCATION => 29;
+use constant EXECUTOR_META_LAST_CHECK => 30;
+use constant EXECUTOR_META_LAST_LOAD_OK => 31;
 
 use constant FETCH_METHOD_AUTO		=> 0;
 use constant FETCH_METHOD_STORE_RESULT	=> 1;
@@ -388,7 +390,10 @@ sub getCollationMetaData {
 # Returns metadata if loaded, empty hashref if chose not to load, and undef in case of an error
 sub loadMetaDataFromFile {
   my ($self, $file, $file_size_ref)= @_;
-  $file= $self->serverVariable('datadir').'/'.$file;
+  if (not defined $self->[EXECUTOR_META_LOCATION]) {
+    $self->[EXECUTOR_META_LOCATION]= $self->serverVariable('datadir').'/';
+  }
+  $file= $self->[EXECUTOR_META_LOCATION].$file;
   if (-e $file) {
     my $filesize= (-s $file);
     if ($file_size_ref and defined $$file_size_ref and ($filesize == $$file_size_ref)) {
@@ -444,21 +449,24 @@ sub cacheMetaData {
     }
   }
 
-  if (not defined $self->[EXECUTOR_META_LAST_CHECK]
-      or time() > $self->[EXECUTOR_META_LAST_CHECK] + EXECUTOR_META_RELOAD_INTERVAL)
+  if (not defined $self->[EXECUTOR_META_LAST_CHECK] # Very first attempt
+      or (not $self->[EXECUTOR_META_LAST_LOAD_OK] and time() > $self->[EXECUTOR_META_LAST_CHECK] + int(EXECUTOR_META_RELOAD_INTERVAL/5)) # Last load failed
+      or time() > $self->[EXECUTOR_META_LAST_CHECK] + EXECUTOR_META_RELOAD_INTERVAL # Reload interval exceeded
+  )
   {
+    $self->[EXECUTOR_META_LAST_LOAD_OK]= 0;
     # Non-system schema metadata is reloaded periodically
     $non_system_meta= $self->loadMetaDataFromFile('metadata.info', \$self->[EXECUTOR_META_FILE_SIZE]);
     if ($non_system_meta and scalar(%$non_system_meta)) {
       sayDebug("Executor has loaded non-system metadata");
-      $self->[EXECUTOR_META_LAST_CHECK]= time();
+      $self->[EXECUTOR_META_LAST_LOAD_OK]= 1;
     } elsif ($non_system_meta) {
       sayDebug("Executor has kept old non-system metadata");
-      $self->[EXECUTOR_META_LAST_CHECK]= time();
       $non_system_meta= undef;
     } else {
       sayWarning("Executor has not loaded non-system metadata");
     }
+    $self->[EXECUTOR_META_LAST_CHECK]= time();
   }
 
   my $all_meta;
@@ -489,7 +497,7 @@ sub cacheMetaData {
   if ($all_meta) {
     $self->[EXECUTOR_SCHEMA_METADATA]= $all_meta;
     $self->[EXECUTOR_META_CACHE] = {};
-    say("Executor has reloaded metadata");
+    sayDebug("Executor has reloaded metadata");
   }
 }
 
