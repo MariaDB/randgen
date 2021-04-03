@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25334:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ MDL_context::acquire_lock
+=~ MYSQL_BIN_LOG::write
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-25332:
 =~ STATUS_SERVER_DEADLOCKED|STATUS_TEST_FAILURE
 =~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
