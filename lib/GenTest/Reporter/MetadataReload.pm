@@ -74,7 +74,54 @@ sub monitor {
   if ($reloaded_before and time() < $last_reload + METADATA_RELOAD_INTERVAL or time() > $test_end) {
     return STATUS_OK;
   }
+  $_[0]->restoreBrokenViews();
   return $_[0]->loadNonSystemSchemata();
+}
+
+sub restoreBrokenViews {
+  my $reporter= shift;
+  my $dbh= $reporter->dbh();
+  unless ($dbh) {
+    return;
+  }
+  # We don't need ROW_FORMAT here, but it makes the query open tables rather than frm only
+  my $broken_views= $dbh->selectall_arrayref("SELECT table_schema, table_name, row_format FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_COMMENT LIKE '%references invalid table%'");
+  if ($broken_views) {
+    my $datadir= $reporter->serverVariable('datadir');
+    foreach my $v (@$broken_views) {
+      my ($schema, $view)= @$v;
+      my $recreate_query;
+      my $algorithm= 'UNDEFINED';
+      if (open(VIEW, "$datadir/$schema/$view.frm")) {
+        while (<VIEW>) {
+          if (/^algorithm=(\d+)/) {
+            $algorithm= ($1 == 1 ? 'MERGE' : ($1 == 2 ? 'TEMPTABLE' : 'UNDEFINED'));
+          } elsif (/^source=(.*)/) {
+            $recreate_query= $1;
+            chomp $recreate_query;
+            last;
+          }
+        }
+        close(VIEW);
+      } else {
+        sayWarning("MetadataReload: Couldn't open $datadir/$schema/$view.frm for reading: $!, dropping the view");
+      }
+      if ($recreate_query) {
+        $dbh->do('CREATE OR REPLACE ALGORITHM='.$algorithm.' VIEW `'.$schema.'`.`'.$view.'` AS '.$recreate_query);
+        if ($dbh->err) {
+          sayWarning("MetadataReload: Could not restore broken view $schema.$view: ".$dbh->errstr);
+          $dbh->do('DROP VIEW IF EXISTS `'.$schema.'`.`'.$view.'`');
+          if ($dbh->err) {
+            sayWarning("MetadataReload: Failed to drop broken view $schema.$view");
+          } else {
+            say("MetadataReload: Dropped broken view $schema.$view");
+          }
+        } else {
+          say("MetadataReload: Restored broken view $schema.$view");
+        }
+      }
+    }
+  }
 }
 
 sub loadSystemSchemata {
@@ -121,10 +168,10 @@ sub dbh {
   unless ($dbh) {
     sayDebug("MetadataReload: dbh not defined, reconnecting");
     my $dsn = $reporter->dsn();
-    unless ($dbh = DBI->connect($dsn), undef, undef, {mysql_connect_timeout => METADATA_RELOAD_INTERVAL, PrintError => 0, RaiseError => 0}) {
+    unless ($dbh = DBI->connect($dsn, undef, undef, {mysql_connect_timeout => METADATA_RELOAD_INTERVAL, PrintError => 0, RaiseError => 0})) {
       # Try to connect twice, due to MDEV-24998
       sayWarning("MetadataReload got error ".$DBI::err." upon connecting to $dsn. Trying again");
-      $dbh = DBI->connect($dsn, undef, undef, {mysql_connect_timeout => METADATA_RELOAD_INTERVAL, PrintError => 0, RaiseError => 0} );
+      $dbh = DBI->connect($dsn, undef, undef, {mysql_connect_timeout => METADATA_RELOAD_INTERVAL, PrintError => 0, RaiseError => 0});
       unless ($dbh) {
         sayError("MetadataReload failed to connect to the database");
         return undef;
