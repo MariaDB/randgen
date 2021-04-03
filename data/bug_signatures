@@ -1236,7 +1236,7 @@ MDEV-22973:
 =~ versioning|FeatureUsage detected system-versioned
 =~ Version: '10\.[3-4]
 MDEV-22927:
-=~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'
+=~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'|Assertion \`((0x7 \| 8U) & mode) == LOCK_S \|\| ((0x7 \| 8U) & mode) == LOCK_X'
 =~ lock_rec_lock
 =~ read_stored_values
 =~ SEQUENCE
