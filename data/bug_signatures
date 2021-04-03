@@ -20,19 +20,6 @@ MDEV-25327:
 =~ ha_innobase::write_row
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 =~ FeatureUsage detected system-versioned
-MDEV-25314:
-=~ Assertion \`trx\.is_wsrep()'
-=~ wsrep_is_BF_lock_timeout
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-25313:
-=~ Assertion \`pending == log_requests\.start\.load(std::memory_order_relaxed)'
-=~ log_flush_notify_and_unlock
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-25313:
-=~ signal 11|AddressSanitizer
-=~ MYSQL_BIN_LOG::mark_xid_done
-=~ binlog_background_thread
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25311:
 =~ signal 11|AddressSanitizer
 =~ Json_writer_object::add
@@ -63,11 +50,6 @@ MDEV-25242:
 =~ check_grant
 =~ table_stats_fill|index_stats_fill
 =~ get_schema_tables_result
-MDEV-25206:
-=~ signal 11|AddressSanitizer
-=~ Item_field::fix_outer_field
-=~ Item::fix_fields_if_needed
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-25109:
 =~ signal|AddressSanitizer
 =~ my_casedn_str_utf8|my_casedn_str_utf8mb3
@@ -93,10 +75,6 @@ MDEV-25083:
 =~ InnoDB: Database page corruption on disk or a failed file read|Cannot create log file because data files are corrupt
 =~ MariaBackup
 =~ strict_none|strict_innodb
-MDEV-25069:
-=~ Assertion \`root->weight >= (1 + (key->next_key_part ? key->next_key_part->weight : 0))'
-=~ SEL_ARG::tree_delete
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25067:
 =~ AddressSanitizer|signal 11
 =~ eliminate_tables
@@ -125,12 +103,6 @@ MDEV-25058:
 =~ cmp_dtuple_rec_with_match_low
 =~ QUICK_RANGE_SELECT::get_next_prefix
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-25057:
-=~ signal 11|AddressSanitizer|Assertion \`n_fields < dtuple_get_n_fields(entry)'
-=~ dtuple_convert_big_rec
-=~ btr_cur_optimistic_insert
-=~ innobase_instant_try
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-25056:
 =~ signal [16]|AddressSanitizer
 =~ Protocol::net_store_data
@@ -183,11 +155,6 @@ MDEV-25010:
 =~ lock_rec_move
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 # Not yet merged to 10.6
-MDEV-24997:
-=~ Assertion \`mtr->is_named_space(page_id\.space())'
-=~ ibuf_bitmap_page_set_bits
-=~ ibuf_reset_bitmap
-=~ =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-24988:
 =~ AddressSanitizer|signal [16]
 =~ MyCTX::update
@@ -203,37 +170,6 @@ MDEV-24972: [MyISAM unique blobs]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 =~ Version: '10\.4|Server version: 10\.4
 =~ FeatureUsage detected unique blobs
-MDEV-24958:
-=~ signal [16]|AddressSanitizer
-=~ my_strtod_int
-=~ Value_source::Converter_strntod::Converter_strntod
-=~ Field_blob::val_real
-=~ DEFAULT
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24958:
-=~ signal [16]|AddressSanitizer
-=~ my_strnncoll_binary|my_strnncollsp_simple|Field_longstr::uncompress
-=~ Arg_comparator::compare
-=~ DEFAULT
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24958:
-=~ signal [16]|AddressSanitizer
-=~ Binary_string::copy|String::copy
-=~ Item_cache_str::cache_value
-=~ DEFAULT
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24958:
-=~ signal [16]|AddressSanitizer
-=~ str_to_datetime_or_date_or_time
-=~ Temporal::ascii_to_datetime_or_date_or_time
-=~ DEFAULT
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24942:
-=~ AddressSanitizer|signal [16]
-=~ _ma_write_blob_record|write_block_record
-=~ handler::ha_write_tmp_row
-=~ DEFAULT
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24935:
 =~ AddressSanitizer|signal [16]
 =~ Field_iterator_natural_join::next
@@ -308,20 +244,6 @@ MDEV-24876:
 =~ fts_cache_destroy
 =~ has or is referenced in foreign key constraints which are not compatible with the new table definition
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-24863:
-=~ InnoDB: Failing assertion: index == cursor->index
-=~ btr_search_update_hash_on_delete
-=~ row_purge
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-24861:
-=~ Assertion \`trx->rsegs\.m_redo\.rseg'
-=~ innodb_prepare_commit_versioned
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-24859:
-=~ Assertion \`static_cast<ins_node_t\*>(thr->run_node)->bulk_insert'
-=~ trx_undo_report_row_operation
-=~ btr_cur_ins_lock_and_undo
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-24839:
 =~ Assertion \`!table->file->keyread_enabled()'
 =~ close_thread_table
@@ -342,17 +264,6 @@ MDEV-24819:
 =~ QUICK_RANGE_SELECT::get_next_prefix
 =~ QUICK_GROUP_MIN_MAX_SELECT::next_prefix
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-24811:
-=~ Assertion \`find(table)'
-=~ dict_sys_t::remove
-=~ trx_update_mod_tables_timestamp
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-24811:
-=~ Assertion \`str'
-=~ ut_fold_string
-=~ dict_table_remove_from_cache_low
-=~ trx_update_mod_tables_timestamp
-=~ Version: '10\.3|Server version: 10\.3
 MDEV-24808:
 =~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type != 2'
 =~ handler::ha_index_read_map
@@ -362,35 +273,22 @@ MDEV-24804:
 =~ Assertion \`is_preparing_xa(thd)'
 =~ MYSQL_BIN_LOG::unlog_xa_prepare
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-24792:
-=~ Assertion \`!newest_lsn \|\| fil_page_get_type(page)'
-=~ buf_flush_init_for_writing
-=~ mariabackup
-=~ Version: '10\.4|Server version: 10\.4
 MDEV-24787:
 =~ signal [16]|AddressSanitizer
 =~ Item_ref::field_type
 =~ check_group_min_max_predicates
 =~ test_if_skip_sort_order
-MDEV-24786:
-=~ Assertion \`!have_x()'
-=~ sux_lock<srw>::s_lock()
-=~ with srw = ssux_lock_low
-=~ Version: '10\.6|Server version: 10\.6
 MDEV-24782:
 =~ AddressSanitizer|signal [16]
 =~ Field::pack_int
 =~ THD::binlog_update_row
 =~ pack_row
+# Won't be fixed, stays here forever!
 MDEV-24780:
 =~ InnoDB: Trying to read page number .* in space .*
 =~ fil_report_invalid_page_access
 =~ buf_read_page_low
 =~ Version: '10\.4|Server version: 10\.4
-MDEV-24779:
-=~ Assertion \`sl->join == 0'
-=~ reinit_stmt_before_use
-=~ Prepared_statement::execute
 MDEV-24778:
 =~ Assertion \`dstlen >= srclen \* cs->casedn_multiply'
 =~ my_casedn_ujis
@@ -404,32 +302,12 @@ MDEV-24764:
 =~ Assertion \`field->type\.mbminlen == 1'
 =~ row_merge_buf_redundant_convert
 =~ row_merge_read_clustered_index
-MDEV-24763:
-=~ signal [16]|AddressSanitizer
-=~ dict_stats_try_drop_table
-=~ innobase_reload_table
 MDEV-24758:
 =~ AddressSanitizer|signal [16]
 =~ page_cur_insert_rec_low
 =~ page_cur_tuple_insert
 =~ btr_cur_optimistic_insert
 =~ Version: '10\.3|Server version: 10\.3
-MDEV-24757:
-=~ AddressSanitizer|signal [16]
-=~ queues_fill_table
-=~ get_schema_tables_result
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-24754:
-=~ AddressSanitizer|signal [16]
-=~ dict_v_col_t
-=~ ha_innobase_inplace_ctx
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-24748:
-=~ Assertion \`err != DB_SUCCESS \|\| btr_validate_index(m_index, __null.*) == DB_SUCCESS'
-=~ BtrBulk::finish
-=~ row_merge_read_clustered_index
-MDEV-24748:
-=~ [ERROR] InnoDB: Field .* len is .*, should be .*; COMPACT RECORD
 MDEV-24743:
 =~ Assertion \`nr >= 0\.0'
 =~ Item_std_field::val_real
@@ -479,27 +357,6 @@ MDEV-24713:
 =~ Assertion \`index->table->not_redundant()'|Assertion \`dict_table_is_comp(index->table)'
 =~ row_merge_buf_add
 =~ row_merge_read_clustered_index
-MDEV-24710:
-=~ Conditional jump or move depends on uninitialised value|Assertion \`len <= col->len \|\| ((col->mtype) == 5 \|\| (col->mtype) == 14) \|\| (col->len == 0 && col->mtype == 1)'
-=~ rec_get_converted_size_comp_prefix_low
-=~ row_ins_index_entry
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24710:
-=~ Conditional jump or move depends on uninitialised value
-=~ _mi_rec_pack
-=~ _mi_write_dynamic_record
-=~ ha_myisam::write_row
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24710:
-=~ Error: Freeing overrun buffer .*mi_close\.c
-=~ Allocated at .*mi_open\.c
-=~ corrupted size vs. prev_size
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24710:
-=~ Conditional jump or move depends on uninitialised value|Assertion \`length <= column->length'
-=~ _ma_write_init_block_record
-=~ ha_maria::write_row
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24708:
 =~ Assertion \`field->type\.mbmaxlen > 1'
 =~ row_merge_buf_redundant_convert
@@ -508,21 +365,6 @@ MDEV-24707:
 =~ Assertion \`!auto_increment_field_not_null'
 =~ TABLE::init
 =~ THD::open_temporary_table
-MDEV-24700:
-=~ Assertion \`"lock not found" == 0'
-=~ lock_table_x_unlock
-=~ trx_t::rollback
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-24695:
-=~ Assertion \`mach_read_from_4(frame + 4U) == block\.page\.id()\.page_no()'
-=~ log_phys_t::apply
-=~ recv_recover_page
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-24693:
-=~ LeakSanitizer: detected memory leaks
-=~ mem_heap_create_block_func
-=~ fts_optimize_create_msg|fts_trx_create
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24686:
 =~ AddressSanitizer|signal [16]
 =~ event_basic_identifier_equal
@@ -572,12 +414,6 @@ MDEV-24665:
 =~ TIME_from_longlong_datetime_packed
 =~ Column_definition::Column_definition
 -~ vcols|FeatureUsage detected virtual columns
-MDEV-24664:
-=~ Assertion \`! is_set()'
-=~ Diagnostics_area::set_eof_status
-=~ Explain_query::send_explain
-=~ EXPLAIN.*DELETE
-=~ Prepared_statement::execute
 MDEV-24663:
 =~ Assertion \`0'
 =~ Protocol::end_statement
@@ -738,28 +574,10 @@ MDEV-24545:
 =~ InnoDB: If table .* is a temporary table .* then it can be that there are still queries running on the table
 !~ Version: '.*-debug
 =~ FeatureUsage detected sequences
-MDEV-24532:
-=~ Assertion \`thd->transaction->stmt\.is_empty()'
-=~ Locked_tables_list::unlock_locked_tables
-=~ InnoDB: Table .* contains .* user defined columns in InnoDB, but .* columns in MariaDB
-MDEV-24532:
-=~ DATABASE_CORRUPTION
-=~ InnoDB: Table .* contains .* user defined columns in InnoDB, but .* columns in MariaDB
-=~ Table .* is marked as crashed and should be repaired|Table .* doesn't exist in engine
 MDEV-24529:
 =~ Assertion \`0'
 =~ vers_select_conds_t::print
 =~ opt_trace_print_expanded_query
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-24522:
-=~ signal [16]|AddressSanitizer
-=~ DsMrr_impl::dsmrr_next
-=~ QUICK_RANGE_SELECT::get_next
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-24522:
-=~ Assertion \`inited==NONE'
-=~ check_duplicate_long_entry_key
-=~ vers_insert_history_row
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-24521:
 =~ InnoDB: Flagged corruption of .* in table .* Partition .* in CHECK TABLE; Wrong count
@@ -767,12 +585,6 @@ MDEV-24521:
 MDEV-24521:
 =~ InnoDB: Flagged corruption of \`FTS_DOC_ID_INDEX\` in table .* in CHECK TABLE; Wrong count
 =~ For InnoDB SYSTEM VERSIONED ROW_FORMAT=Dynamic .* : error : Corrupt
-MDEV-24519:
-=~ signal [16]|AddressSanitizer
-=~ Charset::set_charset
-=~ String::copy
-=~ Item::remove_eq_conds
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-24511:
 =~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
 =~ Field::ptr_in_record
@@ -813,10 +625,6 @@ MDEV-24249:
 =~ Assertion \`!page \|\| fil_page_type_is_index(page_type)'
 =~ recv_parse_or_apply_log_rec_body
 =~ recv_recover_page
-MDEV-24179:
-=~ Assertion \`m_status == DA_ERROR \|\| m_status == DA_OK \|\| m_status == DA_OK_BULK'
-=~ Diagnostics_area::message
-=~ fill_schema_table_by_open
 MDEV-24174:
 =~ The table .* is full
 =~ signal [16]|AddressSanitizer
@@ -935,15 +743,6 @@ MDEV-23850:
 =~ decimal_bin_size
 =~ my_decimal_get_binary_size
 =~ calc_group_buffer|sortlength
-MDEV-23843:
-=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
-=~ MDL_context::acquire_lock
-=~ THD::binlog_query|ha_maria_implicit_commit
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-23843:
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ Diagnostics_area::set_ok_status
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-23841:
 =~ Warning: Memory not freed
 =~ LeakSanitizer: detected memory leaks
@@ -1059,11 +858,6 @@ MDEV-23676:
 =~ Assertion \`(((nr) % (1LL << 24)) % (int) log_10_int\[6 - dec\]) == 0'
 =~ my_time_packed_to_binary
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-# Not merged up yet
-MDEV-23666:
-=~ Assertion \`m_cpp_buf <= ptr && ptr <= m_cpp_buf + m_buf_length'
-=~ Lex_input_stream::body_utf8_append
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-23665:
 =~ Assertion \`length <= 64'
 =~ PFS_variable_name_row::make_row
@@ -1537,11 +1331,6 @@ MDEV-22732:
 =~ multi_update::initialize_tables
 =~ JOIN::optimize_stage2
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-22703:
-=~ signal [16]|AddressSanitizer
-=~ rec_convert_dtuple_to_rec_comp|rec_convert_dtuple_to_rec_old
-=~ page_cur_tuple_insert
-=~ row_ins_index_entry_step
 MDEV-22695:
 =~ signal [16]|AddressSanitizer
 =~ heap_rnext
@@ -1650,12 +1439,6 @@ MDEV-22564:
 =~ handler::update_auto_increment
 =~ vers_insert_history_row
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-22562:
-=~ Assertion \`next_insert_id == 0'
-=~ handler::ha_external_lock
-=~ mysql_unlock_tables
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ application_periods|versioning|FeatureUsage detected system-versioned|FeatureUsage detected application periods
 MDEV-22551:
 =~ signal 11|AddressSanitizer
 =~ skip_trailing_space
@@ -1819,20 +1602,11 @@ MDEV-22250:
 =~ InnoDB: Failing assertion: opt_no_lock
 =~ xtrabackup\.cc line
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-22216:
-=~ Assertion \`xid_seqno > wsrep_seqno'
-=~ trx_rseg_update_wsrep_checkpoint
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22172:
 =~ Assertion \`inited == NONE \|\| lookup_handler != this'
 =~ handler::ha_write_row
 =~ vers_insert_history_row|update_portion_of_time
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-22161:
-=~ AddressSanitizer:
-=~ create_tmp_table
-=~ JOIN::create_postjoin_aggr_table
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22154:
 =~ safe_mutex: Trying to lock mutex at .*/sql/wsrep_mutex\.h|safe_mutex: Trying to lock mutex at .*/sql/sql_parse\.cc|safe_mutex: Trying to lock mutex at .*/sql/repl_failsafe\.cc|safe_mutex: Trying to lock mutex at .*/sql/sql_show\.cc
 =~ when the mutex was already locked at .*/sql/sql_parse\.cc, line
@@ -1980,11 +1754,6 @@ MDEV-21789:
 =~ decimal_bin_size
 =~ GROUP BY.*IFNULL
 =~ Version: '5\.5|Version: '10\.[1-2]
-MDEV-21755:
-=~ Assertion \`0'
-=~ add_to_locked_mutex
-=~ maria_close|ma_commit
-=~ Version: '10\.[2-3]
 MDEV-21754:
 =~ Assertion \`file->trn == trn'
 =~ ha_maria::start_stmt
@@ -1995,10 +1764,6 @@ MDEV-21746:
 =~ test_if_reopen
 =~ mi_open
 =~ Version: '10\.1
-MDEV-21697:
-=~ Assertion \`!wsrep_has_changes(thd) \|\| (thd->lex->sql_command == SQLCOM_CREATE_TABLE && !thd->is_current_stmt_binlog_format_row())'
-=~ wsrep_commit_empty
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-21680:
 =~ Assertion \`!table->pos_in_locked_tables'
 =~ tc_release_table
@@ -2085,11 +1850,6 @@ MDEV-21507:
 =~ is marked as crashed and should be repaired|Incorrect key file for table
 =~ engine=Aria|default-storage-engine=aria
 =~ Version: '10\.1
-MDEV-21502:
-=~ AddressSanitizer:
-=~ maria_write
-=~ ha_maria::write_row
-=~ Version: '10\.[2-3]
 # Fixed in 10.2.20, but affects downgrade to 10.2.19
 MDEV-21496:
 =~ InnoDB: Failing assertion: trx->dict_operation_lock_mode == RW_X_LATCH
@@ -2097,10 +1857,6 @@ MDEV-21496:
 =~ ha_innobase::truncate
 =~ CrashUpgrade
 =~ Version: '10\.2\.19
-# Not merged up yet
-MDEV-21478:
-=~ Assertion \`col->len == sizeof(doc_id_t)'
-=~ dict_load_columns
 MDEV-21460:
 =~ Assertion \`! is_set()'
 =~ Diagnostics_area::set_ok_status
@@ -2161,12 +1917,6 @@ MDEV-21307:
 =~ Assertion \`cache_mngr->trx_cache\.empty() && cache_mngr->stmt_cache\.empty()'
 =~ binlog_close_connection
 =~ plugin_foreach_with_mask
-MDEV-21247:
-=~ AddressSanitizer:
-=~ create_tmp_table
-=~ select_unit::create_result_table
-=~ mysql_handle_single_derived
-=~ Version: '10\.3
 MDEV-21246:
 =~ Assertion \`rec == page_rec_get_next_const(((page_align(rec)) + page_get_infimum_offset(page_align(rec))))'
 =~ btr_set_min_rec_mark
@@ -2300,12 +2050,6 @@ MDEV-20765:
 =~ dfield_t::vers_history_row
 =~ row_ins_check_foreign_constraint
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-# Not merged up yet
-MDEV-20763:
-=~ Assertion \`btr_validate_index(index, 0)'
-=~ row_upd_sec_index_entry
-=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-20761:
 =~ signal 11|AddressSanitizer: SEGV
 =~ base_list_iterator::next
@@ -2365,12 +2109,6 @@ MDEV-20666:
 =~ row_search_for_mysql
 =~ ha_innobase::index_read
 =~ Version: '5\.5
-# Not merged up yet
-MDEV-20643:
-=~ signal 11|AddressSanitizer: SEGV
-=~ find_table_in_list
-=~ find_table_in_global_list
-=~ find_dup_table
 MDEV-20640:
 =~ Assertion \`0'
 =~ row_purge_remove_sec_if_poss_leaf
@@ -2846,10 +2584,6 @@ MDEV-19091:
 =~ Assertion \`args\[0\] == args\[2\] \|\| thd->stmt_arena->is_stmt_execute()'|AddressSanitizer|signal [16]
 =~ Item_func_nullif::fix_length_and_dec
 =~ Item_func::fix_fields
-MDEV-19075:
-=~ Assertion \`length <= column->length'
-=~ write_block_record
-=~ _ma_write_init_block_record
 MDEV-19067:
 =~ AddressSanitizer|signal [16]
 =~ ha_maria::store_lock
@@ -2885,11 +2619,6 @@ MDEV-18947:
 =~ pagecache_fwrite
 =~ flush_cached_blocks
 =~ flush_pagecache_blocks_with_filter
-MDEV-18925:
-=~ AddressSanitizer: heap-buffer-overflow|AddressSanitizer: use-after-poison
-=~ Item_exists_subselect::is_top_level_item|Item_in_optimizer::is_top_level_item
-=~ st_select_lex::update_used_tables
-=~ JOIN::optimize
 MDEV-18918:
 =~ Slave SQL: Error 'Invalid default value for .*
 =~ NOT NULL DEFAULT ''
@@ -2956,11 +2685,6 @@ MDEV-18694:
 =~ Protocol
 =~ send_error|send_ok|send_eof
 =~ KILL_SERVER|Server shutdown in progress|Forcing close of thread
-=~ Version: '10\.[1-3]
-MDEV-18693:
-=~ AddressSanitizer: heap-use-after-free|signal 11
-=~ _ma_remove_table_from_trnman
-=~ wait_while_table_is_used
 =~ Version: '10\.[1-3]
 MDEV-18643:
 =~ FATAL ERROR: .* failed to execute query BACKUP .*: Deadlock found when trying to get lock; try restarting transaction|FATAL ERROR: .* failed to execute query BACKUP .*: Lock wait timeout exceeded; try restarting transaction
@@ -3376,10 +3100,6 @@ MDEV-17576:
 =~ maria_extra
 =~ mysql_alter_table|mysql_create_or_drop_trigger
 =~ Version: '10\.1
-MDEV-17556:
-=~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
-=~ handler::ha_reset
-=~ close_thread_tables|select_insert::~select_insert
 MDEV-17539:
 =~ Assertion \`0'
 =~ Protocol::end_statement
@@ -3462,12 +3182,6 @@ MDEV-16985:
 MDEV-16962:
 =~ Assertion \`!error \|\| !ot_ctx.can_recover_from_failed_open()'
 =~ open_purge_table
-# Not merged up yet
-MDEV-16940:
-=~ signal 11|AddressSanitizer: SEGV on unknown address
-=~ unsafe_key_update
-=~ mysql_multi_update_prepare
-=~ sp_head::execute
 MDEV-16929:
 =~ \`thd->transaction.*stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_thread_tables
@@ -4159,16 +3873,8 @@ MDEV-21310:
 =~ insert.* into .* partition
 =~ Out of range value for column
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-# Not merged up yet
-MDEV-21478:
-=~ Table .* contains .* user defined columns in InnoDB, but .* columns in MariaDB
 MDEV-21085: [Expected more data in file]
 =~ Got error 175 "File too short; Expected more data in file" from storage engine Aria
-# Not merged up yet
-MDEV-20763:
-=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE|Index for table .* is corrupt; try to repair it
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-20554:
 =~ Index for table .* is corrupt; try to repair it
 =~ scrub
@@ -4190,8 +3896,6 @@ MDEV-18209:
 =~ Enabling keys got errno 0 on
 MDEV-18187:
 =~ error 192 when executing record redo_index_new_page
-MDEV-18171:
-=~ _ma_write_blob_record
 MDEV-18170:
 =~ pcur\.old_rec_buf
 MDEV-18169:
@@ -4310,8 +4014,6 @@ MDEV-14846:
 =~ state == TRX_STATE_FORCED_ROLLBACK
 MDEV-14833:
 =~ trx->error_state == DB_SUCCESS
-MDEV-14643: [cursor->index->is_committed]
-=~ cursor->index->is_committed
 MDEV-14349:
 =~ STATUS_LENGTH_MISMATCH
 =~ Transformed query: .* GenTest::Transform::ExecuteAsView.* ANY|Transformed query: .* GenTest::Transform::ExecuteAsView.* SOME|Transformed query: .* GenTest::Transform::ExecuteAsView.* ALL
