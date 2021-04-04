@@ -1345,7 +1345,7 @@ sub execute {
 sub serverVariables {
     my $executor= shift;
     if (not keys %{$executor->[EXECUTOR_MYSQL_SERVER_VARIABLES]}) {
-        my $sth = $executor->dbh()->prepare("/*!100102 SET STATEMENT SQL_SELECT_LIMIT= 100000 FOR */ SHOW VARIABLES");
+        my $sth = $executor->dbh()->prepare("SHOW VARIABLES");
         $sth->execute();
         my %vars = ();
         while (my $array_ref = $sth->fetchrow_arrayref()) {
@@ -1359,14 +1359,14 @@ sub serverVariables {
 
 sub serverVariable {
     my ($executor, $variable_name)= @_;
-    return $executor->dbh()->selectrow_array('/*!100102 SET STATEMENT SQL_SELECT_LIMIT= 1 FOR */ SELECT @@'.$variable_name);
+    return $executor->dbh()->selectrow_array('SELECT @@'.$variable_name);
 }
 
 sub version {
     my $executor = shift;
     my $ver= $executor->serverVersion;
     unless ($ver) {
-        $ver= $executor->dbh()->selectrow_array("/*!100102 SET STATEMENT SQL_SELECT_LIMIT= 1 FOR */ SELECT VERSION()");
+        $ver= $executor->dbh()->selectrow_array("SELECT VERSION()");
         $executor->setServerVersion($ver);
         $ver =~ /([0-9]+)\.([0-9]+)\.([0-9]+)/;
         $executor->setServerNumericVersion(sprintf("%02d%02d%02d",int($1),int($2),int($3)));
