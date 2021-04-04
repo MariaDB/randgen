@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25335:
+=~ Assertion \`!is_arena_for_set_stmt()'
+=~ LEX::free_set_stmt_mem_root
+=~ Prepared_statement
+=~ delete_statement_as_hash_key
+=~ Version: '10\.2|Server version: 10\.2
 MDEV-25334:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
