@@ -29,7 +29,7 @@ use Carp;
 
 use DBI;
 
-my ($first_mem, $max_mem, $first_cpu, $max_cpu, $max_mem_pct);
+my ($first_mem, $max_mem, $first_cpu, $max_cpu, $max_mem_pct, $last_reported_mem);
 
 sub monitor {
   my $reporter= shift;
@@ -44,10 +44,14 @@ sub monitor {
       $max_mem= $mem;
       $max_mem_pct= $mem_pct;
       say("MemoryUsage monitor for pid $pid: First recorded memory usage: ".format_mem_value($first_mem)." / ${max_mem_pct}%");
+      $last_reported_mem= $first_mem;
     } elsif ($mem > $max_mem) {
+      if (defined $last_reported_mem and $mem > $last_reported_mem * 1.1) {
+        sayWarning("MemoryUsage monitor for pid $pid: memory usage has grown over 10% since the last report: ".format_mem_value($mem)." / ${max_mem_pct}% (started from ".format_mem_value($first_mem).")");
+        $last_reported_mem= $mem;
+      }
       $max_mem= $mem;
       $max_mem_pct= $mem_pct;
-      sayWarning("MemoryUsage monitor for pid $pid: New maximim memory usage: ".format_mem_value($mem)." / ${max_mem_pct}% (started from ".format_mem_value($first_mem).")");
     }
     if (not defined $first_cpu) {
       $first_cpu= $cpu;
