@@ -1007,12 +1007,12 @@ MDEV-23305:
 =~ Diagnostics_area::set_error_status
 =~ MDL_context::acquire_lock
 =~ ha_maria_implicit_commit
-=~ FeatureUsage detected backup locks
+=~ FeatureUsage detected backup stages
 =~ Version: '10\.4|Server version: 10\.4
 MDEV-23305:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
-=~ FeatureUsage detected backup locks
+=~ FeatureUsage detected backup stages
 =~ Version: '10\.4|Server version: 10\.4
 MDEV-23297:
 =~ Assertion \`info->dfile\.file == share->bitmap\.file\.file'
