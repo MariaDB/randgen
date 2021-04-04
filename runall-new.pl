@@ -21,6 +21,29 @@
 
 ########################################################################
 
+# We do this initial fork in order to detach from the process group
+# which the script was started with. It is important, for example,
+# if we later decide to signal the whole processgroup --
+# while the subprocesses here would handle the signal as needed,
+# possible piped processes outside would also receive the signal,
+# and we don't want that.
+my $pid= fork();
+if ($pid) {
+  exit;
+} elsif (defined $pid) {
+  setpgrp;
+} else {
+  die "Couldn't fork: $!\n";
+}
+# SIGUSR1 will be sent when a server is going to be temporarily shutdown,
+# so that components that receive 2013 or can't connect wouldn't abort.
+# The generic handler will be inherited by every process, to ensure that
+# none dies because of the signal. Those processes which need special
+# action upon it will redefine the handler.
+# TODO:
+# It is set temporarily to write it as an error, to see how it affects
+# different test setups. To be changed to normal "say"
+$SIG{USR1} = sub { sayError("Caught SIGUSR1. Ignoring") };
 
 unless (defined $ENV{RQG_HOME}) {
   use File::Basename qw(dirname);
@@ -47,6 +70,7 @@ use DBServer::MySQL::MySQLd;
 use DBServer::MySQL::ReplMySQLd;
 use DBServer::MySQL::GaleraMySQLd;
 
+$Carp::Verbose= 1;
 $| = 1;
 my $logger;
 eval
