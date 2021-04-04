@@ -42,6 +42,7 @@ my $server_version;
 
 my %usage_check= (
   app_periods => \&check_for_app_periods,
+  backup_stages => \&check_for_backup_stages,
   compressed_cols => \&check_for_compressed_cols,
   delayed_insert => \&check_for_delayed_insert,
   fk => \&check_for_fk,
@@ -63,7 +64,7 @@ sub monitor {
       $server_version= sprintf("%02d%02d",$1, $2);
     }
   }
-  foreach my $f (keys %usage_check) {
+  foreach my $f (sort keys %usage_check) {
     next if $features_used{$f};
     my $func= $usage_check{$f};
     $reporter->$func;
@@ -159,6 +160,12 @@ sub check_for_multi_upd_del {
 sub check_for_delayed_insert {
   if ($features_used{delayed_insert}= $_[0]->check_status_var('Delayed_writes')) {
     say("FeatureUsage detected delayed inserts");
+  }
+}
+
+sub check_for_backup_stages {
+  if ($features_used{backup_stages}= $_[0]->check_status_var('Com_backup')) {
+    say("FeatureUsage detected backup stages");
   }
 }
 
