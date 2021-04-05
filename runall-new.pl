@@ -29,7 +29,8 @@
 # and we don't want that.
 my $pid= fork();
 if ($pid) {
-  exit;
+  wait();
+  exit ($? >> 8);
 } elsif (defined $pid) {
   setpgrp;
 } else {
