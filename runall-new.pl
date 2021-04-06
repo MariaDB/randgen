@@ -27,15 +27,15 @@
 # while the subprocesses here would handle the signal as needed,
 # possible piped processes outside would also receive the signal,
 # and we don't want that.
-my $pid= fork();
-if ($pid) {
-  wait();
-  exit ($? >> 8);
-} elsif (defined $pid) {
-  setpgrp;
-} else {
-  die "Couldn't fork: $!\n";
-}
+##my $pid= fork();
+##if ($pid) {
+##  wait();
+##  exit ($? >> 8);
+##} elsif (defined $pid) {
+##  setpgrp;
+##} else {
+##  die "Couldn't fork: $!\n";
+##}
 # SIGUSR1 will be sent when a server is going to be temporarily shutdown,
 # so that components that receive 2013 or can't connect wouldn't abort.
 # The generic handler will be inherited by every process, to ensure that
