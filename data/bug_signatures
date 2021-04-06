@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25350:
+=~ Assertion \`!table->file->keyread_enabled()'
+=~ close_thread_table
+=~ Query .*: INSERT.*RETURNING|Query .*: REPLACE.*RETURNING
 MDEV-25335:
 =~ Assertion \`!is_arena_for_set_stmt()'
 =~ LEX::free_set_stmt_mem_root
