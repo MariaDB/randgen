@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25360:
+=~ Assertion \`col_nr < table\.n_def'|signal 11|AddressSanitizer
+=~ dict_col_t::name
+=~ ha_innobase_inplace_ctx::instant_column
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-25350:
 =~ Assertion \`!table->file->keyread_enabled()'
 =~ close_thread_table
@@ -913,7 +918,7 @@ MDEV-23500:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ my_ok
-=~ multi_update::send_eof
+=~ multi_update::send_eof|multi_delete::send_eof
 MDEV-23453:
 =~ signal [16]|AddressSanitizer
 =~ Item_field::type_handler
@@ -1011,12 +1016,12 @@ MDEV-23305:
 =~ Diagnostics_area::set_error_status
 =~ MDL_context::acquire_lock
 =~ ha_maria_implicit_commit
-=~ FeatureUsage detected backup stages
 =~ Version: '10\.4|Server version: 10\.4
 MDEV-23305:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ FeatureUsage detected backup stages
+=~ FeatureUsage detected Aria
 =~ Version: '10\.4|Server version: 10\.4
 MDEV-23297:
 =~ Assertion \`info->dfile\.file == share->bitmap\.file\.file'
