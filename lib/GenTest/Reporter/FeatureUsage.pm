@@ -42,6 +42,7 @@ my $server_version;
 
 my %usage_check= (
   app_periods => \&check_for_app_periods,
+  aria_tables => \&check_for_aria_tables,
   backup_stages => \&check_for_backup_stages,
   compressed_cols => \&check_for_compressed_cols,
   delayed_insert => \&check_for_delayed_insert,
@@ -86,6 +87,13 @@ sub check_for_sequences {
   my $reporter= shift;
   if ($features_used{sequences}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='SEQUENCE'")) {
     say("FeatureUsage detected sequences in the database");
+  }
+}
+
+sub check_for_aria_tables {
+  my $reporter= shift;
+  if ($features_used{aria_tables}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='Aria' and TABLE_SCHEMA NOT IN ('mysql','information_schema','sys')")) {
+    say("FeatureUsage detected Aria user tables in the database");
   }
 }
 
