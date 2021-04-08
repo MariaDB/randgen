@@ -590,6 +590,11 @@ MDEV-24583:
 =~ Column_statistics_collected::add
 =~ Sql_cmd_analyze_table
 =~ FeatureUsage detected virtual columns
+MDEV-24583:
+=~ AddressSanitizer|signal 11
+=~ Query_arena::strmake
+=~ Column_definition::Column_definition
+=~ FeatureUsage detected virtual columns
 MDEV-24570:
 =~ Found index .* whose column info does not match that of MariaDB
 =~ InnoDB indexes are inconsistent with what defined in \.frm for table .*
@@ -1029,7 +1034,6 @@ MDEV-23305:
 MDEV-23305:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
-=~ FeatureUsage detected backup stages
 =~ FeatureUsage detected Aria
 =~ Version: '10\.4|Server version: 10\.4
 MDEV-23297:
