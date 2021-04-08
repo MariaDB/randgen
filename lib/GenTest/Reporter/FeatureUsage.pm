@@ -61,8 +61,9 @@ my %features_used = ();
 sub monitor {
   my $reporter = shift;
   unless (defined $server_version) {
-    if ($reporter->serverVariable('version') =~ /^(\d+)\.(\d+)/) {
+    if ($reporter->serverVariable('version') =~ /^(\d+)\.(\d+)\.\d+(-\d+)?/) {
       $server_version= sprintf("%02d%02d",$1, $2);
+      $server_version.= 'e' if defined $3;
     }
   }
   foreach my $f (sort keys %usage_check) {
@@ -172,6 +173,7 @@ sub check_for_delayed_insert {
 }
 
 sub check_for_backup_stages {
+  return if $server_version lt '1004' and $server_version ne '1002e' and $server_version ne '1003e';
   if ($features_used{backup_stages}= $_[0]->check_status_var('Com_backup')) {
     say("FeatureUsage detected backup stages");
   }
