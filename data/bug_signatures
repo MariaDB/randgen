@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25365:
+=~ signal 11|AddressSanitizer|STATUS_SERVER_DEADLOCKED
+=~ Query_cache::move_by_type
+=~ Query_cache::pack_cache
+=~ reload_acl_and_cache
+MDEV-25364:
+=~ Assertion \`old_part_id == m_last_part'
+=~ ha_partition::update_row
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-25360:
 =~ Assertion \`col_nr < table\.n_def'|signal 11|AddressSanitizer
 =~ dict_col_t::name
