@@ -109,10 +109,52 @@ my $parens_template =
 # or something in round brackets
 my $part_select_template = qr{$parens_template|$comment_template|$executable_comment_template|$single_quotes_template|$double_quotes_template|[^();'" ]+|;}xi;
 
+my $tmp_table_prefix= 'json_table_transformation_';
+
 my %replaced_aliases= ();
 my %encountered_aliases= ();
 
-sub parse_query 
+my @json_table_definitions= ();
+
+sub parse_query_for_transformation
+{
+  my $self= shift;
+  my $tmp_query= shift;
+  my $new_query= '';
+
+  while ($tmp_query =~ s/^\s*($part_select_template)//xi) {
+    my $token= $1;
+    unless (uc($token) eq 'JSON_TABLE') {
+      $new_query.= " $token";
+      next;
+    }
+    # If we have found JSON_TABLE, we now want to extract its whole
+    # definition. For this we just want "something in round brackets"
+    # followed by "AS <alias>"
+    # TODO: parse JSON_TABLE definitions recursively, in case there are
+    # inner JSON_TABLEs
+    # TODO: Allow comments before/between AS ...
+    if ($tmp_query =~ s/^\s*($parens_template)//xi) {
+      my $def= $1;
+      if ($tmp_query=~ s/^\s*AS\s+(\w+|\`.*?\`)//xi) {
+        $new_query.= ' '.$tmp_table_prefix.scalar(@json_table_definitions).' AS '.$1;
+        push @json_table_definitions, $def;
+      } else {
+        sayError("Failed to find JSON_TABLE alias in the query part $tmp_query");
+        return undef;
+      }
+    } else {
+      sayError("Failed to extract JSON_TABLE definition from the query part $tmp_query");
+      return undef;
+    }
+  }
+  if ($tmp_query =~ /^\s*$/x) {
+    $new_query.= " $tmp_query";
+  }
+  return $new_query;
+}
+
+sub parse_query_for_variation
 {
   my $self= shift;
   my $tmp_query= shift;
@@ -141,6 +183,7 @@ sub parse_query
   }
 
   # Parse the query or query fragment
+  # TODO: shouldn't it be /^\s* ...?
   while ($tmp_query =~ s/\s*($part_select_template)//xi)
   {
     my $token = $1;
@@ -201,7 +244,7 @@ sub parse_query
       }
       # If we are in partition pruning, the contents of the brackets should be
       # a list of partitions, so for our purpose it doesn't count as a part of FROM
-      my $res = ' (' . $self->parse_query($sq, ($in_from && not $in_partition_pruning)) . ')';
+      my $res = ' (' . $self->parse_query_for_variation($sq, ($in_from && not $in_partition_pruning)) . ')';
       $in_partition_pruning= 0;
       append_token($res, \$new_query, \$select);
     }
@@ -440,23 +483,68 @@ sub variate {
 
   $self->executor($executor) if $executor;
 
-  sayDebug("JsonTables is processing query $orig_query");
+  sayDebug("JsonTables variator is processing query $orig_query");
 
   # Reset
   %replaced_aliases= ();
   %encountered_aliases= ();
 
-  my $query= $self->parse_query($orig_query);
+  my $query= $self->parse_query_for_variation($orig_query);
 
   if (scalar keys(%replaced_aliases)) {
     $query= $self->replace_columns($query);
   }
-  # Workaround for MDEV-25138 (JSON_TABLE ())
-  # and other potentially harmful spaces between function names and brackets
+  # Remove potentially harmful spaces between function names and brackets
   $query=~ s/(\w)\s+\(/$1\(/g;
 
-  sayDebug("JsonTables is returning query $query");
+  sayDebug("JsonTables variator is returning query $query");
   return $query;
+}
+
+sub transform {
+  my ($self, $orig_query, $executor) = @_;
+
+  $self->allowedErrors(
+    { 1054 => 'ER_BAD_FIELD_ERROR' }
+  );
+
+  # For transformation we only need SELECTs which have JSON_TABLE
+  # and can (at least hypothetically) return a result set
+  return STATUS_WONT_HANDLE
+    if ( ($orig_query !~ /^\s*SELECT\W/si)
+      or ($orig_query !~ /\WJSON_TABLE\W/si)
+      or ($orig_query =~ /\WINTO\W/si)
+    );
+
+  # Reset
+  @json_table_definitions= ();
+
+  my $query= $self->parse_query_for_transformation($orig_query);
+  # Remove potentially harmful spaces between function names and brackets
+  $query=~ s/(\w)\s+\(/$1\(/g;
+  sayDebug("JsonTables transformer is processing query $orig_query");
+  if (defined $query and scalar(@json_table_definitions)) {
+    my @queries= (
+      'SET @sql_mode.save= @@sql_mode',
+      'SET SQL_MODE=REPLACE(REPLACE(@@sql_mode,'."'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')"
+    );
+    foreach my $i (0..$#json_table_definitions) {
+      my $def= $json_table_definitions[$i];
+      push @queries, "DROP TEMPORARY TABLE IF EXISTS ${tmp_table_prefix}${i}";
+      # We do it in two steps, because it's possible that the original query
+      # has an impossible condition and thus works, even if JSON_TABLE in general doesn't
+      # (for example, it has invalid values for arguments).
+      # So, we make sure that the temporary table is created first,
+      # and then populate it on the "best effort" basis
+      push @queries, "CREATE TEMPORARY TABLE ${tmp_table_prefix}${i} SELECT * FROM JSON_TABLE $def AS jt LIMIT 0";
+      push @queries, "INSERT IGNORE INTO ${tmp_table_prefix}${i} SELECT * FROM JSON_TABLE $def AS jt /* TRANSFORM_OUTCOME_ANY */";
+    }
+    push @queries, $query. ' /* TRANSFORM_OUTCOME_UNORDERED_MATCH */';
+    push @queries, '/* TRANSFORM_CLEANUP */ SET sql_mode= @sql_mode.save';
+    return \@queries;
+  } else {
+    return STATUS_WONT_HANDLE;
+  }
 }
 
 1;
