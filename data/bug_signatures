@@ -68,7 +68,7 @@ MDEV-25261:
 MDEV-25243:
 =~ signal 11|AddressSanitizer
 =~ Item_func_sp::execute_impl
-=~ fill_record
+=~ fill_record|evaluate_join_record
 =~ Version: '10\.2|Server version: 10\.2
 MDEV-25243:
 =~ signal 11|AddressSanitizer
