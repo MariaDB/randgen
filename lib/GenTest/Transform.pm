@@ -36,6 +36,7 @@ use constant TRANSFORMER_QUERIES_TRANSFORMED => 1;
 use constant TRANSFORMER_SEED => 2;
 use constant TRANSFORMER_RANDOM => 3;
 use constant TRANSFORMER_EXECUTOR => 4;
+use constant TRANSFORMER_ALLOWED_ERRORS => 5;
 
 use constant TRANSFORM_OUTCOME_EXACT_MATCH           => 1001;
 use constant TRANSFORM_OUTCOME_UNORDERED_MATCH       => 1002;
@@ -164,13 +165,25 @@ sub transformExecuteValidate {
 
         foreach my $transformed_query_part (@transformed_queries) {
             my $part_result = $executor->execute($transformed_query_part);
-            
+
+            my $partial_transform_outcome;
+
+            foreach my $potential_outcome (keys %transform_outcomes) {
+                if ($transformed_query_part =~ m{$potential_outcome}s) {
+                    $partial_transform_outcome = $transform_outcomes{$potential_outcome};
+                    last;
+                }
+            }
+
             if ($part_result->status() == STATUS_SKIP) {
                 # During query transformations skipping only some parts of the transformed queries
                 # due to errors leads to simplificatoin of such queries.
                 # Completely skipping such transformed queries is better.
                 $transform_outcome = STATUS_OK;
                 last;
+            } elsif ($partial_transform_outcome == TRANSFORM_OUTCOME_ANY) {
+              # "Best effort" auxiliary query which shouldn't affect the outcome
+              $transform_outcome = STATUS_OK unless defined $transform_outcome;
             } elsif (
                 ($part_result->status() == STATUS_SYNTAX_ERROR) || 
                 ($part_result->status() == STATUS_SEMANTIC_ERROR) ||
@@ -197,9 +210,12 @@ sub transformExecuteValidate {
                 # continue the test even if such errors occur.
                 # We have logic in place to take care of this below.
                 #
+                my $allowed= $transformer->allowedErrors();
                 if ( 
                     ($executor->type() == DB_MYSQL || $executor->type() == DB_MARIADB) &&
-                    (exists $mysql_grouping_errors{$part_result->err()}) 
+                    ( (exists $mysql_grouping_errors{$part_result->err()})
+                      || (defined $allowed and exists $allowed->{$part_result->err()})
+                    )
                 ){
                     if (rqg_debug()) {
                         say("Ignoring transform ".ref($transformer)." that failed with the error: ".$part_result->errstr());
@@ -216,14 +232,16 @@ sub transformExecuteValidate {
                     cleanup($executor, $cleanup_block);
                     return STATUS_OK;
                 }
-                say("---------- TRANSFORM ISSUE ----------");
-                say("Transform ".ref($transformer)." failed: ".$part_result->err()." ".$part_result->errstr().
-                    "; RQG Status: ".status2text($part_result->status())." (".$part_result->status().")");
-                say("Offending query is: $transformed_query_part;");
-                say("Original query is: $original_query;");
+                # We do it in one "say" because we want it as solid as possible
+                say(
+                  "---------- TRANSFORM ISSUE ----------"."\n".
+                  ref($transformer).": Transformation error: ".$part_result->err()." ".$part_result->errstr().
+                    "; RQG Status: ".status2text($part_result->status())." (".$part_result->status().")"."\n".
+                  "Offending query is: $transformed_query_part;"."\n".
+                  "Original query is: $original_query;"."\n".
 #                say("ERROR: Possible syntax or semantic error caused by code in transformer ".ref($transformer).
 #                    ". Not handling this particular transform any further: Please fix the transformer code so as to handle the query shown above correctly.");
-                say("-------------------------------------");
+                  "-------------------------------------");
                 cleanup($executor, $cleanup_block);
                 return STATUS_WONT_HANDLE;
             } elsif ($skip_result_validations) {
@@ -235,7 +253,7 @@ sub transformExecuteValidate {
                 cleanup($executor, $cleanup_block);
                 return $part_result->status();
             } elsif (defined $part_result->data()) {
-                my $part_outcome = $transformer->validate($original_result, $part_result);
+                my $part_outcome = $transformer->validate($original_result, $part_result, $partial_transform_outcome);
                 $transform_outcome = $part_outcome if (($part_outcome > $transform_outcome) || (! defined $transform_outcome));
                 push @transformed_results, $part_result if ($part_outcome != STATUS_WONT_HANDLE) && ($part_outcome != STATUS_OK);
             }
@@ -291,18 +309,9 @@ sub variate {
 }
 
 sub validate {
-    my ($transformer, $original_result, $transformed_result) = @_;
+    my ($transformer, $original_result, $transformed_result, $transform_outcome) = @_;
 
     my $transformed_query = $transformed_result->query();
-
-    my $transform_outcome;
-
-    foreach my $potential_outcome (keys %transform_outcomes) {
-        if ($transformed_query =~ m{$potential_outcome}s) {
-            $transform_outcome = $transform_outcomes{$potential_outcome};
-            last;
-        }
-    }
 
     if ($transform_outcome == TRANSFORM_OUTCOME_SINGLE_ROW) {
         return $transformer->isSingleRow($original_result, $transformed_result);
@@ -324,6 +333,9 @@ sub validate {
         return $transformer->isRowsExaminedObeyed($transformed_query, $transformed_result); 
         } elsif ($transform_outcome == TRANSFORM_OUTCOME_SUBSET) {
                 return $transformer->isSuperset($transformed_result, $original_result);
+    } elsif ($transform_outcome == TRANSFORM_OUTCOME_ANY) {
+      # "Best effort" query, shouldn't affect the outcome
+        return STATUS_OK;
     } else {
         return STATUS_WONT_HANDLE;
     }
@@ -499,6 +511,15 @@ sub executor {
     $self->[TRANSFORMER_EXECUTOR]= $executor;
   } else {
     return $self->[TRANSFORMER_EXECUTOR];
+  }
+}
+
+sub allowedErrors {
+  my ($self, $errref)= @_;
+  if ($errref) {
+    $self->[TRANSFORMER_ALLOWED_ERRORS]= { %$errref };
+  } else {
+    return $self->[TRANSFORMER_ALLOWED_ERRORS];
   }
 }
 
