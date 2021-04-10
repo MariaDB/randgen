@@ -15,17 +15,25 @@
 
 
 query_add:
-  locks_query |
-  query | query | query | query | query | query | query | query | query |
-  query | query | query | query | query | query | query | query | query
-;
+  ==FACTOR:0.05== locks_query ;
 
 locks_query:
-  locks_lock_tables | locks_lock_tables |
+  locks_lock_tables |
   locks_flush |
-  locks_unlock_tables | locks_unlock_tables | locks_unlock_tables |
-  locks_unlock_tables | locks_unlock_tables | locks_unlock_tables
+  locks_locking_select_optional_trx |
+  ==FACTOR:6== locks_unlock_tables
 ;
+
+locks_locking_select_optional_trx:
+  START TRANSACTION ; locks_locking_select ; __commit_x_rollback |
+  locks_locking_select
+;
+
+locks_locking_select:
+  SELECT * FROM _table __for_update_x_lock_in_share_mode locks_optional_wait locks_optional_skip_locked ;
+
+locks_optional_skip_locked:
+  | /*!100600 SKIP LOCKED */;
 
 locks_lock_tables:
   LOCK locks_table_or_tables locks_locking_list locks_optional_wait
