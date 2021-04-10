@@ -1322,7 +1322,11 @@ sub auto {
 
   my $r= $rand->uint16(1,100);
   foreach my $i (0..$#items) {
-    return uc($items[$i]) if $r <= $probabilities[$i];
+    if ($r <= $probabilities[$i]) {
+      my $item= $items[$i];
+      $item=~ s/_([^_])/ $1/g;
+      return uc($item) ;
+    }
     $r-= $probabilities[$i];
   }
   return '';
