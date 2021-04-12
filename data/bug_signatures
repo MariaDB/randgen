@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25385:
+=~ Assertion \`file != ((void \*)0)'|signal 11|AddressSanitizer
+=~ translog_sync_files
+=~ translog_flush
+=~ maria_flush_log_for_page
 MDEV-25365:
 =~ signal 11|AddressSanitizer|STATUS_SERVER_DEADLOCKED
 =~ Query_cache::move_by_type
@@ -1804,6 +1809,11 @@ MDEV-21746:
 =~ test_if_reopen
 =~ mi_open
 =~ Version: '10\.1
+MDEV-21694:
+=~ For .* BASE TABLE .* error : Found a misplaced row
+=~ For .* BASE TABLE .* error : Partition .* returned error
+=~ FeatureUsage detected virtual columns
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-21680:
 =~ Assertion \`!table->pos_in_locked_tables'
 =~ tc_release_table
@@ -3888,10 +3898,6 @@ MDEV-21781: [EnableOptimizations]
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-21756: [StraightJoin]
 =~ Transformed query: .* GenTest::Transform::StraightJoin
-MDEV-21694:
-=~ For .* BASE TABLE .* error : Found a misplaced row
-=~ For .* BASE TABLE .* error : Partition .* returned error
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-21310:
 =~ insert.* into .* partition
 =~ Out of range value for column
