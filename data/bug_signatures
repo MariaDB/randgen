@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25396:
+=~ InnoDB: Failing assertion: m_prebuilt->trx == thd_to_trx(m_user_thd)
+=~ ha_innobase::change_active_index
+=~ ha_innobase::rnd_init
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25385:
 =~ Assertion \`file != ((void \*)0)'|signal 11|AddressSanitizer
 =~ translog_sync_files
@@ -618,7 +623,7 @@ MDEV-24529:
 =~ Assertion \`0'
 =~ vers_select_conds_t::print
 =~ opt_trace_print_expanded_query
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.3\.[0-9]*-[0-9]*|Server version: 10\.3\.[0-9]*-[0-9]*
 MDEV-24521:
 =~ InnoDB: Flagged corruption of .* in table .* Partition .* in CHECK TABLE; Wrong count
 =~ For InnoDB SYSTEM VERSIONED .* : error : Partition .* returned error
