@@ -4,6 +4,22 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25440:
+=~ Assertion \`cmp_rec_rec(rec, old_rec, offsets, old_offsets, m_index) > 0'
+=~ PageBulk::insert
+=~ row_merge_insert_index_tuples
+MDEV-25439:
+=~ AddressSanitizer|signal 11
+=~ my_strtod_int
+=~ Value_source::Converter_strntod::Converter_strntod
+=~ Item_default_value
+=~ Version: '10\.2|Server version: 10\.2
+MDEV-25438:
+=~ Assertion \`last_pos == 0 \|\| pos > last_pos'
+=~ fts_cache_node_add_positions
+=~ row_fts_insert_tuple
+=~ fts_parallel_merge
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-25396:
 =~ InnoDB: Failing assertion: m_prebuilt->trx == thd_to_trx(m_user_thd)
 =~ ha_innobase::change_active_index
@@ -1095,6 +1111,11 @@ MDEV-23258:
 =~ row_sel_convert_mysql_key_to_innobase
 =~ ha_innodb::index_read|ha_innobase::index_read
 =~ Version: '10\.1
+MDEV-23256:
+=~ AddressSanitizer|signal 11
+=~ Query_cache::unlink_table
+=~ Query_cache::register_all_tables
+=~ Query_cache::store_query
 MDEV-23235:
 =~ Assertion \`part_id == m_last_part'
 =~ ha_partition::delete_row
