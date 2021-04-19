@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25457:
+=~ signal 11|AddressSanitizer
+=~ row_undo_mod_clust_low
+=~ trx_rollback_to_savepoint_low
 MDEV-25440:
 =~ Assertion \`cmp_rec_rec(rec, old_rec, offsets, old_offsets, m_index) > 0'
 =~ PageBulk::insert
