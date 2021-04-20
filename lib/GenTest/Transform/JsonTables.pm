@@ -422,7 +422,7 @@ sub json_table_to_append
       if (substr($jdoc,0,9) eq 'LOAD_FILE' and $self->random->uint16(0,1)) {
         my $charsets= $self->executor()->metaCharactersets();
         if ($charsets and scalar(@$charsets)) {
-          my $charset= $self->random->arrayElement($charsets);
+          my $charset= $self->random->arrayElement(['utf8mb4','utf8mb3','latin1']);
           $jdoc= 'CONVERT('.$jdoc.' USING '.$charset.')';
         }
       }
