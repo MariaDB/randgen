@@ -360,7 +360,7 @@ sub float {
 sub fixed {
   my $prng= shift;
   my $d= $prng->uint16(1,65);
-  my $m= $prng->uint16(0,($d > 38 ? $d : 38));
+  my $m= $prng->uint16(0,($d > 30 ? $d : 30));
   my $res= '';
   foreach (1..$d) { $res.= $prng->uint16(0,9) };
   if ($m) {
@@ -760,14 +760,7 @@ sub jsonTable {
 
 sub jsonOnEmptyOnError {
   my $prng= shift;
-  my $r= $prng->uint16(1,3);
-  if ($r == 1) {
-    return ' NULL';
-  } elsif ($r == 2) {
-    return ' ERROR';
-  } else {
-    return ' DEFAULT '.$prng->jsonString();
-  }
+  return ' NULL';
 }
 
 sub jsonTableColumnList {
@@ -1146,13 +1139,13 @@ sub blobType {
   if (($type eq 'BLOB' or $type eq 'TEXT') and not $prng->uint16(0,4)) {
     my $length= 1;
     if ($prng->uint16(0,4)) {
-      $length= $prng->uint16(0,255);
+      $length= $prng->uint16(1,255);
     } elsif ($prng->uint16(0,4)) {
-      $length= $prng->uint16(0,65535);
+      $length= $prng->uint16(1,65535);
     } elsif ($prng->uint16(0,4)) {
-      $length= $prng->uint16(0,16777215);
+      $length= $prng->uint16(1,16777215);
     } else {
-      $length= $prng->uint16(0,4294967295);
+      $length= $prng->uint16(1,4294967295);
     }
     $type.= '('.$length.')';
   }
@@ -1168,14 +1161,14 @@ sub varcharType {
   } else {
     $type= 'VARBINARY';
   }
-  $type= $type.'('.($prng->uint16(0,9) ? $prng->uint16(4,64) : ($prng->uint16(0,19) ? $prng->uint16(1,4096) : $prng->uint16(0,65532))).')';
+  $type= $type.'('.($prng->uint16(0,9) ? $prng->uint16(4,64) : ($prng->uint16(0,19) ? $prng->uint16(1,4096) : $prng->uint16(1,65532))).')';
   return $type;
 }
 
 sub charType {
   my $prng= shift;
   my $type= '';
-  my $length= '('.($prng->uint16(0,4) ? $prng->uint16(1,16) : $prng->uint16(0,255)).')';
+  my $length= '('.($prng->uint16(0,4) ? $prng->uint16(1,16) : $prng->uint16(1,255)).')';
   if ($prng->uint16(0,4)) {
     $type= 'CHAR';
     $type= 'NATIONAL '.$type unless $prng->uint16(0,99);
@@ -1193,7 +1186,7 @@ sub bitType {
   my $prng= shift;
   # 66% with M
   if ($prng->uint16(0,2)) {
-    return 'BIT('.$prng->uint16(0,64).')';
+    return 'BIT('.$prng->uint16(1,64).')';
   } else {
     return 'BIT';
   }
@@ -1209,7 +1202,7 @@ sub floatType {
   my $type= $prng->arrayElement($float_types);
   # 80% with M
   if ($prng->uint16(0,4)) {
-    my $m= $prng->uint16(0,255);
+    my $m= $prng->uint16(1,255);
     $type.= '('.$m;
     # 50% with D for FLOAT, 100% for DOUBLE
     if ($type ne 'FLOAT' or $prng->uint16(0,1)) {
@@ -1238,11 +1231,11 @@ sub decimalType {
   my $type= $prng->arrayElement($dec_types);
   # 80% with M
   if ($prng->uint16(0,4)) {
-    my $m= $prng->uint16(0,65);
+    my $m= $prng->uint16(1,65);
     $type.= '('.$m;
     # 66% with D
     if ($prng->uint16(0,2)) {
-      my $n= $prng->uint16(0,($m < 38 ? $m : 38));
+      my $n= $prng->uint16(0,($m < 30 ? $m : 30));
       $type.= ','.$n.')';
     } else {
       $type.= ')';
@@ -1270,7 +1263,7 @@ sub intType {
   my $type= $prng->arrayElement($int_types);
   # 20% with length
   if (not $prng->uint16(0,4)) {
-    $type.= '('.$prng->uint16(0,16).')';
+    $type.= '('.$prng->uint16(1,16).')';
   }
   return $type;
 }
