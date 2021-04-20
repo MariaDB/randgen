@@ -127,7 +127,7 @@ sub restoreBrokenViews {
 sub loadSystemSchemata {
   my $reporter= shift;
   # Workaround for MDEV-24975 -- don't use OPTIMIZER_TRACE table in queries
-  my $clause= "table_schema IN ($system_schemata) AND table_name != 'OPTIMIZER_TRACE'";
+  my $clause= "table_schema IN ('mysql') AND table_name = 'plugin'";
   my $schemata= $reporter->reload($clause);
   if ($schemata) {
     local $Data::Dumper::Maxdepth= 0;
