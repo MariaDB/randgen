@@ -68,6 +68,22 @@ sub validate {
     # when t exists and x doesn't. Older versions would return ER_NO_SUCH_TABLE for x,
     # but 10.4+ succeeds with a warning that t already exists
 
+    my %ignored_errors= (
+      1074 => 1,
+      1425 => 1,
+      1439 => 1,
+      1525 => 1,
+      3013 => 1,
+      3141 => 1,
+      3144 => 1,
+      3665 => 1
+    );
+
+    return STATUS_OK if ( $results->[0]->status == STATUS_OK
+                            and $results->[1]->err
+                            and exists $ignored_errors{$results->[1]->err}
+                        );
+
     return STATUS_OK if ( ( $results->[0]->err == 1146
                             and $executors->[0]->versionNumeric lt '1004'
                             and $results->[1]->status == STATUS_OK
