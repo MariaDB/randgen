@@ -1104,6 +1104,8 @@ sub execute {
     while ($query =~ s/^\s*;//gs) {}
     while ($query =~ s/;\s*;/;/gs) {}
     while ($query =~ s/(PROCEDURE.*)BEGIN\s*;/${1}BEGIN /g) {}
+    while ($query =~ s/EXPLAIN\s+EXTENDED/EXPLAIN/g) {}
+    while ($query =~ s/(UNION\s+[^\)]+)ORDER\s+BY\s+[,\d\s]+\)/$1\)/g) {}
     # Or occasionaly "x AS alias1 AS alias2"
     while ($query =~ s/AS\s+\w+\s+(AS\s+\w+)/$1/g) {}
 
