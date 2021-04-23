@@ -14,14 +14,16 @@ atomic_drop:
 
 atomic_create:
   CREATE atomic_or_replace TRIGGER atomic_trigger_name atomic_before_after atomic_op ON atomic_table_name FOR EACH ROW UPDATE atomic_table_name SET _field = _field LIMIT 1 |
-  CREATE atomic_or_replace atomic_temporary TABLE atomic_own_table_name LIKE atomic_table_name |
-  CREATE atomic_or_replace atomic_temporary TABLE atomic_own_table_name AS SELECT * FROM atomic_table_name |
+#  CREATE atomic_or_replace atomic_temporary TABLE atomic_own_table_name LIKE atomic_table_name |
+  CREATE atomic_temporary TABLE IF NOT EXISTS atomic_own_table_name LIKE atomic_table_name |
+#  CREATE atomic_or_replace atomic_temporary TABLE atomic_own_table_name AS SELECT * FROM atomic_table_name |
+  CREATE atomic_temporary TABLE IF NOT EXISTS atomic_own_table_name AS SELECT * FROM atomic_table_name |
   CREATE atomic_or_replace VIEW atomic_own_view_name AS SELECT * FROM atomic_table_name |
   ==FACTOR:0.1== CREATE atomic_or_replace DATABASE atomic_db_name |
 ;
 
 atomic_rename:
-  RENAME TABLE atomic_rename_list
+  RENAME TABLE atomic_rename_list |
   ALTER TABLE atomic_own_table_name RENAME TO atomic_own_table_name
 ;
 
