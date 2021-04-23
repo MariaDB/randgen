@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25490:
+=~ LeakSanitizer: detected memory leaks
+=~ Create_tmp_table::start
+=~ subselect_union_engine::prepare
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25457:
 =~ signal 11|AddressSanitizer
 =~ row_undo_mod_clust_low
@@ -1361,7 +1366,6 @@ MDEV-22846:
 =~ signal [16]|AddressSanitizer
 =~ handler_index_cond_check
 =~ row_search_idx_cond_check
-=~ rr_sequential
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22832:
 =~ AddressSanitizer: global-buffer-overflow
@@ -2910,6 +2914,17 @@ MDEV-18285:
 MDEV-18274:
 =~ Assertion \`!!new_clustered == (innobase_need_rebuild(ha_alter_info, old_table) \|\| add_fts_doc_id)'
 =~ prepare_inplace_alter_table_dict
+=~ FeatureUsage detected GIS columns
+MDEV-18274:
+=~ Assertion \`!ctx->online \|\| num_fts_index == 0'
+=~ prepare_inplace_alter_table_dict
+=~ FeatureUsage detected GIS columns
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-18274:
+=~ Assertion \`0'
+=~ prepare_inplace_alter_table_dict
+=~ FeatureUsage detected GIS columns
+=~ Version: '10\.2|Server version: 10\.2
 MDEV-18260: [was_changed]
 =~ Assertion \`!was_changed \|\| (block->status & 64) \|\| (block->status & 32)'
 =~ pagecache_unlock_by_link
@@ -3894,6 +3909,9 @@ TODO-842: [MDL_ticket::create]
 # Weak matches
 ##############################################################################
 
+MDEV-25490: [INSERT RETURNING]
+=~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 # myisam_data_pointer_size has been moved to non-dynamic test settings,
 # so it should not be happening anymore
 MDEV-24174: [myisam_data_pointer_size - partition]
