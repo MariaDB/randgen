@@ -1,0 +1,4 @@
+# TODO: vcols
+$rules = {
+  'mdev18151_1' => sub { $_ =~ m{PARTITION}s },
+}

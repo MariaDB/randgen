@@ -12,7 +12,7 @@ require "$ENV{RQG_HOME}/conf/mariadb/include/combo.grammars";
 
 $combinations = [
   [ $common_options ], # seed, reporters, timeouts
-  [ '--scenario=AtomicDDL --scenario-grammar2=atomic.yy' ],
+  [ '--scenario=AtomicDDL --scenario-grammar2=atomic.yy --filter=atomic.ff' ],
   [ '--duration=250' ],
   [ @$threads_low_combinations ],
   [ @$views_combinations, '', '', '' ],
