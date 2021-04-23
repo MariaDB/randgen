@@ -153,7 +153,6 @@ $auto_gendata_combinations= [
   '--gendata',
   '--gendata --notnull',
   '--gendata-advanced',
-  '--gendata-advanced --partitions',
   '--skip-gendata --gendata-advanced',
 ];
 
