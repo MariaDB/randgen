@@ -130,7 +130,7 @@ dynvar_session_variable:
   | INNODB_TMPDIR= DEFAULT
   | INSERT_ID= { $prng->int(0,4294967295) }
   | INTERACTIVE_TIMEOUT= { $prng->arrayElement(['DEFAULT',1,30]) }
-  | IN_PREDICATE_CONVERSION_THRESHOLD= { $prng->arrayElement([0,1,2,100,1000,65536,4294967295]) } /* compatibility 10.3.18 */
+  | IN_PREDICATE_CONVERSION_THRESHOLD= { $prng->arrayElement([0,1,2,5,10,20,50,100,1000,65536,4294967295]) } /* compatibility 10.3.18 */
   | JOIN_BUFFER_SIZE= { $prng->arrayElement([128,1024,65536,131072,262144]) }
   | JOIN_BUFFER_SPACE_LIMIT= { $prng->arrayElement([2048,16384,131072,1048576,2097152]) }
   | JOIN_CACHE_LEVEL= { $prng->int(0,8) }

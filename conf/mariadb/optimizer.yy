@@ -669,7 +669,16 @@ range_predicate2_item:
 # 'field' IN (list_of_items)
 ################################################################################
 number_list:
+  ==FACTOR:20== number_list_normal |
+  number_list_long
+;
+
+number_list_normal:
 	_tinyint_unsigned | number_list, _tinyint_unsigned ;
+
+number_list_long:
+  { $length= $prng->uint16(100,1100); my @nums=(); foreach (1..$length) { push @nums, $prng->uint16(0,32767) }; join ', ', @nums }
+;
 
 char_list:
 	_char | 'USA' | char_list , _char | char_list , 'USA' ;
