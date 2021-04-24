@@ -9,6 +9,9 @@ MDEV-25490:
 =~ Create_tmp_table::start
 =~ subselect_union_engine::prepare
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-25474:
+=~ InnoDB: Failing assertion: ib_table->stat_initialized
+=~ ha_innobase::info_low
 MDEV-25457:
 =~ signal 11|AddressSanitizer
 =~ row_undo_mod_clust_low
@@ -560,6 +563,10 @@ MDEV-24619:
 =~ Assertion \`0'
 =~ Item::val_native
 =~ Type_handler_inet6::Item_val_native_with_conversion|Inet6_null::Inet6_null
+MDEV-24610:
+=~ Assertion \`auto_increment_value'
+=~ ha_partition::info
+=~ ha_partition::update_next_auto_inc_val
 MDEV-24585:
 =~ Assertion \`je->s\.cs == nice_js->charset()'
 =~ json_nice
