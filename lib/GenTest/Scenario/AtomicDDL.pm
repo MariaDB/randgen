@@ -214,7 +214,7 @@ sub run {
   #####
   $self->printStep("Running test flow on the restarted server");
 
-  $self->setProperty('duration',int($self->getProperty('duration')/3));
+  $self->setProperty('duration',int($self->getProperty('duration')/4));
   $status= $self->run_test_flow();
 
   if ($status != STATUS_OK) {
