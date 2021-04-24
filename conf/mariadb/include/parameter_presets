@@ -116,7 +116,7 @@ $innodb_pagesize_combinations= [
 
 $common_options= '
   --seed=time
-  --reporters=Backtrace,ErrorLog,Deadlock,MemoryUsage,FeatureUsage
+  --reporters=Backtrace,ErrorLog,MemoryUsage,FeatureUsage
   --mysqld=--log_output=FILE
   --mysqld=--max-statement-time=30
   --mysqld=--lock-wait-timeout=10
@@ -158,30 +158,23 @@ $auto_gendata_combinations= [
 
 # Variators are transformers which are run without result comparison
 $optional_variators_102= [
-  [ '', '--transformers=EnableOptimizations' ],
-  [ '', '--transformers=ExecuteAsCTE' ],
   [ '', '', '', '--transformers=ExecuteAsDeleteReturning' ],
-  [ '', '--transformers=ExecuteAsDerived' ],
   [ '', '--transformers=ExecuteAsExecuteImmediate' ],
   [ '', '', '--transformers=ExecuteAsFunctionTwice' ],
   [ '', '--transformers=ExecuteAsInsertSelect' ],
   [ '', '', '--transformers=ExecuteAsPreparedThrice' ],
   [ '', '--transformers=ExecuteAsUpdateDelete' ],
-  [ '', '--transformers=ExecuteAsUnion' ],
   [ '', '--transformers=ExecuteAsView' ],
 ];
 
 $optional_variators_103= [
-  @$optional_variators_102,
-  [ '', '--transformers=ExecuteAsExcept' ],
-  [ '', '--transformers=ExecuteAsIntersect' ],
+  @$optional_variators_102
 ];
 
 $optional_variators_104= [ @$optional_variators_103 ];
 
 $optional_variators_105= [
-  @$optional_variators_104,
-  [ '', '', '', '--transformers=ExecuteAsInsertReturning' ],
+  @$optional_variators_104
 ];
 
 $optional_variators_106= [ @$optional_variators_105 ];
