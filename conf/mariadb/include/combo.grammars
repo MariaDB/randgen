@@ -170,7 +170,7 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/bulk_insert.yy', '' ],
   [ '--redefine=conf/mariadb/federated.yy --mysqld=--plugin-load-add=ha_federatedx', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/functions.yy', '', '', '', '' ],
-  [ '--redefine=conf/mariadb/json.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/json.yy', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/sp.yy', '', '', '', '' ],
   [ '--redefine=conf/mariadb/xa.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/acl.yy', '', '', '', '', '', '', '', '', '' ],
