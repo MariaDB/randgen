@@ -185,7 +185,11 @@ $optional_variators_105= [
   [ '', '', '', '--transformers=ExecuteAsInsertReturning' ],
 ];
 
-$optional_variators_106= [ @$optional_variators_105 ];
+$optional_variators_106= [
+  @$optional_variators_105,
+  [ '', '', '', '--variators=JsonTables' ],
+  [ '', '', '', '--variators=OffsetFetch' ],
+];
 
 # RocksDB is disabled because upstream has not been updated (no JIRA yet)
 #  '--engine=InnoDB,MyISAM,Aria,HEAP,RocksDB --mysqld=--plugin-load-add=ha_rocksdb'
