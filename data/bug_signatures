@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25555:
+=~ signal|AddressSanitizer
+=~ tree_record_pos
+=~ hp_rb_records_in_range
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-25523:
+=~ Assertion \`using_unique_constraint \|\| group_buff <= param->group_buff + param->group_length'
+=~ create_tmp_table
+=~ Version: '10\.2|Server version: 10\.2
 MDEV-25490:
 =~ LeakSanitizer: detected memory leaks
 =~ Create_tmp_table::start
@@ -3165,6 +3174,7 @@ MDEV-17665:
 MDEV-17622:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_read
+=~ Version: '10\.[2-3]|Server version: 10\.[2-3]
 MDEV-17619:
 =~ Index file is crashed|Table is crashed and last repair failed|Incorrect key file for table|Table .* is marked as crashed and last (automatic?) repair failed
 =~ full_text|FULLTEXT
