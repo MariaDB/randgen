@@ -91,7 +91,8 @@ json_update:
 ;
 
 json_select:
-  /* _table _field { $json_table_field = $last_field } */ SELECT json_select_item AS fld FROM { $last_table } json_where LIMIT _digit
+  ==FACTOR:3== /* _table _field { $json_table_field = $last_field } */ SELECT json_select_item AS fld FROM { $last_table } json_where LIMIT _digit |
+  SELECT { $col= $prng->uint16(1,20); $json_table_field = 'col'.$col; '' } json_select_item FROM { $prng->jsonTable($prng->uint16($col,25)) } /* compatibility 10.6.0 */
 ;
 
 json_select_item:
