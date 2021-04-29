@@ -508,10 +508,12 @@ use constant  ER_UNKNOWN_DATA_TYPE                              => 4161;
 
 use constant  ER_PK_INDEX_CANT_BE_IGNORED                       => 4174;
 
-use constant  ER_JSON_TABLE_ERROR_ON_FIELD                      => 4175;
-use constant  ER_JSON_TABLE_ALIAS_REQUIRED                      => 4176;
-use constant  ER_JSON_TABLE_SCALAR_EXPECTED                     => 4177;
-use constant  ER_JSON_TABLE_MULTIPLE_MATCHES                    => 4178;
+use constant  ER_BINLOG_UNSAFE_SKIP_LOCKED                      => 4175;
+
+use constant  ER_JSON_TABLE_ERROR_ON_FIELD                      => 4176;
+use constant  ER_JSON_TABLE_ALIAS_REQUIRED                      => 4177;
+use constant  ER_JSON_TABLE_SCALAR_EXPECTED                     => 4178;
+use constant  ER_JSON_TABLE_MULTIPLE_MATCHES                    => 4179;
 
 my %err2type = (
 
@@ -541,6 +543,7 @@ my %err2type = (
     ER_BASE64_DECODE_ERROR()                            => STATUS_SEMANTIC_ERROR,
     ER_BINLOG_STMT_MODE_AND_ROW_ENGINE()                => STATUS_SEMANTIC_ERROR,
     ER_BINLOG_UNSAFE_ROUTINE()                          => STATUS_SEMANTIC_ERROR,
+    ER_BINLOG_UNSAFE_SKIP_LOCKED()                      => STATUS_SEMANTIC_ERROR,
     ER_BLOB_FIELD_IN_PART_FUNC_ERROR()                  => STATUS_SEMANTIC_ERROR,
     ER_BLOB_KEY_WITHOUT_LENGTH()                        => STATUS_SEMANTIC_ERROR,
     ER_CANNOT_USER()                                    => STATUS_SEMANTIC_ERROR,
