@@ -1,4 +1,5 @@
 # TODO: vcols
 $rules = {
   'mdev18151_1' => sub { $_ =~ m{PARTITION}s },
+  'mdev16694_1' => sub { $_ =~ m{EXPLAIN.*UPDATE}s },
 }

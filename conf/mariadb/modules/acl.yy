@@ -6,7 +6,7 @@ acl:
     acl_create_user | acl_create_user | acl_create_user
   | acl_alter_user | acl_alter_user | acl_alter_user | acl_alter_user
   | acl_drop_user
-  | acl_grant
+#  | acl_grant
   | acl_rename_user
   | acl_revoke
   | acl_set_password

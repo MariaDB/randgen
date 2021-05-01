@@ -35,7 +35,7 @@ plugin_server_audit_var:
 #    SERVER_AUDIT_MODE = plugin_server_audit_mostly_0 |
 #    SERVER_AUDIT_OUTPUT_TYPE = plugin_server_audit_output |
     SERVER_AUDIT_QUERY_LOG_LIMIT = { $prng->int(0,1024*1024*1024) } |
-    SERVER_AUDIT_SYSLOG_FACILITY = plugin_server_audit_facility |
+#    SERVER_AUDIT_SYSLOG_FACILITY = plugin_server_audit_facility |
 #    SERVER_AUDIT_SYSLOG_IDENT = plugin_server_audit_string |
     SERVER_AUDIT_SYSLOG_INFO = plugin_server_audit_string
 #    SERVER_AUDIT_SYSLOG_PRIORITY = plugin_server_audit_priority

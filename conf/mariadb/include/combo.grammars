@@ -39,7 +39,7 @@ $grammars_specific_gendata= [
   '--grammar=conf/mariadb/oltp-transactional.yy --gendata=conf/mariadb/oltp.zz',
   '--grammar=conf/mariadb/oltp.yy --gendata=conf/mariadb/oltp.zz',
   '--grammar=conf/runtime/alter_online.yy --gendata=conf/runtime/alter_online.zz',
-  '--grammar=conf/dyncol/dyncol_dml.yy --gendata=conf/dyncol/dyncol_dml.zz',
+#  '--grammar=conf/dyncol/dyncol_dml.yy --gendata=conf/dyncol/dyncol_dml.zz',
   "--grammar=conf/optimizer/multi_update_delete.yy --gendata",
   "--grammar=conf/optimizer/updateable_views.yy --gendata=$ENV{RQG_HOME}/conf/optimizer/updateable_views.init",
   "--grammar=conf/dbt3/dbt3-dml.yy --gendata=$ENV{RQG_HOME}/conf/dbt3/dbt3-s0.001.dump",
