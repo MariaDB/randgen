@@ -2,7 +2,9 @@ query_add:
   atomic_drop |
   atomic_create |
   atomic_rename |
-  alt_query
+  alt_query |
+  alttind_query |
+  ==FACTOR:0.1== atomic_backup_stages
 ;
 
 atomic_drop:
@@ -68,7 +70,7 @@ alt_query:
   | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter
   | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter
   | alt_rename_multi
-  | alt_alter_partitioning
+#  | alt_alter_partitioning
   | alt_flush
   | alt_optimize
   | alt_lock_unlock_table
@@ -734,4 +736,169 @@ alt_compressed:
 
 _alt_value:
   NULL | _digit | '' | _char(1)
+;
+
+alttind_query:
+  ALTER alttind_online alttind_ignore TABLE _table /*!100301 alttind_wait */ alttind_list_with_optional_order_by
+;
+
+alttind_online:
+  | | | ONLINE
+;
+
+alttind_ignore:
+  | | IGNORE
+;
+
+alttind_wait:
+  | | | WAIT _digit | NOWAIT
+;
+
+alttind_list_with_optional_order_by:
+  alttind_list alttind_order_by
+;
+
+alttind_list:
+  alttind_item_alg_lock | alttind_item_alg_lock | alttind_item_alg_lock, alttind_list
+;
+
+# Can't put it on the list, as ORDER BY should always go last
+alttind_order_by:
+  | | | | | | | | | | , ORDER BY alttind_column_name_list ;
+
+alttind_item_alg_lock:
+  alttind_item alttind_algorithm alttind_lock
+;
+
+# Spatial indexes, fulltext indexes and foreign keys are in separate modules
+
+alttind_item:
+    alttind_add_index | alttind_add_index | alttind_add_index | alttind_add_index
+  | alttind_add_index | alttind_add_index | alttind_add_index | alttind_add_index
+  | alttind_add_pk | alttind_add_pk 
+  | alttind_add_unique | alttind_add_unique | alttind_add_unique
+  | alttind_drop_index | alttind_drop_index | alttind_drop_index | alttind_drop_index
+  | alttind_drop_pk
+  | alttind_drop_constraint | alttind_drop_constraint
+  | alttind_rename_index | alttind_rename_index | alttind_rename_index
+  | alttind_rename_index | alttind_rename_index | alttind_rename_index
+  | alttind_enable_disable_keys
+;
+
+alttind_add_index:
+  ADD alttind_index_word alttind_if_not_exists alttind_ind_name_optional alttind_ind_type_optional ( alttind_column_list ) alttind_option_list
+;
+
+alttind_drop_index:
+  DROP alttind_index_word alttind_if_exists alttind_ind_name_or_col_name
+;
+
+alttind_rename_index:
+  /* compatibility 10.5.2 */ RENAME alttind_index_word alttind_if_exists alttind_ind_name_or_col_name TO alttind_ind_name_or_col_name
+;
+
+alttind_drop_constraint:
+  DROP CONSTRAINT alttind_if_exists alttind_ind_name_or_col_name
+;
+
+alttind_add_pk:
+  ADD alttind_constraint_word_optional PRIMARY KEY alttind_ind_type_optional ( alttind_column_list ) alttind_option_list
+;
+
+alttind_drop_pk:
+  DROP PRIMARY KEY
+;
+
+alttind_enable_disable_keys:
+  ENABLE KEYS | DISABLE KEYS
+;
+
+alttind_add_unique:
+  ADD alttind_constraint_word_optional UNIQUE alttind_index_word_optional alttind_ind_name_optional alttind_ind_type_optional ( alttind_column_list ) alttind_option_list
+;
+
+alttind_ind_name_or_col_name:
+  alttind_ind_name | alttind_ind_name | alttind_ind_name | _field
+;
+
+alttind_ind_type_optional:
+  | | USING alttind_ind_type
+;
+
+alttind_ind_type:
+    BTREE | BTREE | BTREE | BTREE | BTREE | BTREE | BTREE | BTREE
+  | HASH | HASH | HASH | HASH
+  | RTREE
+;
+
+alttind_option_list:
+  | | | | alttind_ind_option | alttind_ind_option | alttind_ind_option alttind_option_list
+;
+
+alttind_ind_option:
+  KEY_BLOCK_SIZE = _smallint_unsigned | COMMENT _english
+;
+
+alttind_column_name:
+  _field | _letter
+;
+
+alttind_index_word:
+  INDEX | KEY
+;
+
+alttind_index_word_optional:
+  | alttind_index_word
+;
+
+alttind_constraint_word_optional:
+  | | | CONSTRAINT | CONSTRAINT _letter
+;
+
+alttind_column_item:
+    alttind_column_name alttind_asc_desc_optional
+  | alttind_column_name alttind_asc_desc_optional 
+  | alttind_column_name(_tinyint_unsigned) alttind_asc_desc_optional
+;
+
+alttind_asc_desc_optional:
+  | | | | | ASC | DESC
+;
+ 
+alttind_column_list:
+    alttind_column_item | alttind_column_item | alttind_column_item 
+  | alttind_column_item, alttind_column_list
+;
+
+alttind_column_name_list:
+    alttind_column_name | alttind_column_name | alttind_column_name
+  | alttind_column_name, alttind_column_name_list
+;
+
+alttind_if_not_exists:
+  | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS
+;
+
+alttind_if_exists:
+  | IF EXISTS | IF EXISTS | IF EXISTS | IF EXISTS
+;
+
+alttind_ind_name_optional:
+  | alttind_ind_name | alttind_ind_name | alttind_ind_name
+;
+
+alttind_ind_name:
+  { 'ind'.$prng->int(1,9) } | _letter
+;
+
+alttind_algorithm:
+  | | | | , ALGORITHM=DEFAULT | , ALGORITHM=INPLACE | , ALGORITHM=COPY | /*!100307 , ALGORITHM=NOCOPY */ | /*!100307 , ALGORITHM=INSTANT */
+;
+
+alttind_lock:
+  | | | | , LOCK=DEFAULT | , LOCK=NONE | , LOCK=SHARED | , LOCK=EXCLUSIVE
+;
+  
+atomic_backup_stages:
+  BACKUP STAGE START ; SELECT SLEEP(1) ; BACKUP STAGE FLUSH ; SELECT SLEEP(1) ; BACKUP STAGE BLOCK_DDL ; SELECT SLEEP(1) ; BACKUP STAGE BLOCK_COMMIT ; SELECT SLEEP(1) ; BACKUP STAGE END
 ;

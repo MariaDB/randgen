@@ -90,7 +90,7 @@ sub run {
   #####
   $self->printStep("Running initial test flow");
 
-  $self->setProperty('duration',int($self->getProperty('duration')/3));
+  $self->setProperty('duration',int($self->getProperty('duration')/5));
   $status= $self->run_test_flow();
 
   if ($status != STATUS_OK) {
