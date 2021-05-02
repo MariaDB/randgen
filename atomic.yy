@@ -4,6 +4,9 @@ query_add:
   atomic_rename |
   alt_query |
   alttind_query |
+  ia_query |
+  seq_query |
+  ==FACTOR:0.1== xa_query |
   ==FACTOR:0.1== atomic_backup_stages
 ;
 
@@ -90,7 +93,7 @@ alt_dml:
     alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert
   | alt_update | alt_update
   | alt_delete | alt_truncate
-;  
+;
 
 alt_alter:
   ALTER alt_online_optional alt_ignore_optional TABLE alt_table_name alt_wait_optional alt_alter_list_with_optional_order_by
@@ -222,7 +225,7 @@ alt_eq_optional:
 ;
 
 alt_engine:
-  InnoDB | InnoDB | InnoDB | InnoDB | MyISAM | MyISAM | Aria | Aria | Memory
+  InnoDB | InnoDB | InnoDB | InnoDB | MyISAM | MyISAM | Aria | Aria | Memory | RocksDB | Unknown
 ;
 
 alt_default_optional:
@@ -233,7 +236,7 @@ alt_storage_optional:
 # Disabled due to MDEV-14860
 #  | | STORAGE
 ;
-  
+
 
 alt_transaction:
     START TRANSACTION
@@ -285,8 +288,7 @@ alt_col_name:
   | alt_timestamp_col_name
   | alt_text_col_name
   | alt_enum_col_name
-# TODO: re-enable when virtual columns start working
-#  | alt_virt_col_name
+  | alt_virt_col_name
   | _field
 ;
 
@@ -338,20 +340,19 @@ alt_ind_name:
 ;
 
 alt_col_name_and_definition:
-    alt_bit_col_name alt_bit_type alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
-  | alt_int_col_name alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
-  | alt_int_col_name alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
-  | alt_int_col_name alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
-  | alt_num_col_name alt_num_type alt_unsigned alt_zerofill alt_null alt_optional_default alt_invisible_optional alt_check_optional
-  | alt_temporal_col_name alt_temporal_type alt_null alt_optional_default alt_invisible_optional alt_check_optional
-  | alt_timestamp_col_name alt_timestamp_type alt_null alt_optional_default_or_current_timestamp alt_invisible_optional alt_check_optional
-  | alt_text_col_name alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
-  | alt_text_col_name alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
-  | alt_text_col_name alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
-  | alt_enum_col_name alt_enum_type alt_null alt_optional_default alt_invisible_optional alt_check_optional
-# TODO: vcols: re-enable when virtual columns start working
-#  | alt_virt_col_name alt_virt_col_definition alt_virt_type alt_invisible_optional alt_check_optional
-  | alt_geo_col_name alt_geo_type alt_null alt_geo_optional_default alt_invisible_optional alt_check_optional
+    alt_bit_col_name alt_bit_type alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional alt_col_versioning_optional
+  | alt_int_col_name alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional alt_col_versioning_optional
+  | alt_int_col_name alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional alt_col_versioning_optional
+  | alt_int_col_name alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional alt_col_versioning_optional
+  | alt_num_col_name alt_num_type alt_unsigned alt_zerofill alt_null alt_optional_default alt_invisible_optional alt_check_optional alt_col_versioning_optional
+  | alt_temporal_col_name alt_temporal_type alt_null alt_optional_default alt_invisible_optional alt_check_optional alt_col_versioning_optional
+  | alt_timestamp_col_name alt_timestamp_type alt_null alt_optional_default_or_current_timestamp alt_invisible_optional alt_check_optional alt_col_versioning_optional
+  | alt_text_col_name alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional alt_col_versioning_optional
+  | alt_text_col_name alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional alt_col_versioning_optional
+  | alt_text_col_name alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional alt_col_versioning_optional
+  | alt_enum_col_name alt_enum_type alt_null alt_optional_default alt_invisible_optional alt_check_optional alt_col_versioning_optional
+  | alt_virt_col_name alt_virt_col_definition alt_virt_type alt_invisible_optional alt_check_optional alt_col_versioning_optional
+  | alt_geo_col_name alt_geo_type alt_null alt_geo_optional_default alt_invisible_optional alt_check_optional alt_col_versioning_optional
 ;
 
 
@@ -472,7 +473,7 @@ alt_insert_values:
 alt_non_empty_value_list:
   (_alt_value) | (_alt_value),alt_non_empty_value_list
 ;
- 
+
 alt_empty_value_list:
   () | (),alt_empty_value_list
 ;
@@ -547,7 +548,7 @@ alt_algorithm:
 alt_lock:
   | | , LOCK=NONE | , LOCK=SHARED | , LOCK=EXCLUSIVE | , LOCK=DEFAULT
 ;
-  
+
 alt_data_type:
     alt_bit_type
   | alt_enum_type
@@ -599,7 +600,7 @@ alt_geo_type:
 
 alt_null:
   | NULL | NOT NULL ;
-  
+
 alt_optional_default:
   | DEFAULT alt_default_val
 ;
@@ -630,10 +631,10 @@ alt_geo_optional_default:
 alt_optional_auto_increment:
   | | | | | | AUTO_INCREMENT
 ;
-  
+
 alt_inline_key:
   | | | alt_index ;
-  
+
 alt_index:
     alt_index_or_key
   | alt_constraint_optional PRIMARY KEY
@@ -697,7 +698,7 @@ alt_index_or_key:
 alt_optional_index_or_key:
   | alt_index_or_key
 ;
-  
+
 alt_key_column:
     alt_bit_col_name
   | alt_int_col_name
@@ -730,7 +731,7 @@ alt_any_key:
 alt_comment:
   COMMENT alt_eq_optional _english
 ;
-  
+
 alt_compressed:
   | | | | | | COMPRESSED ;
 
@@ -775,7 +776,7 @@ alttind_item_alg_lock:
 alttind_item:
     alttind_add_index | alttind_add_index | alttind_add_index | alttind_add_index
   | alttind_add_index | alttind_add_index | alttind_add_index | alttind_add_index
-  | alttind_add_pk | alttind_add_pk 
+  | alttind_add_pk | alttind_add_pk
   | alttind_add_unique | alttind_add_unique | alttind_add_unique
   | alttind_drop_index | alttind_drop_index | alttind_drop_index | alttind_drop_index
   | alttind_drop_pk
@@ -857,16 +858,16 @@ alttind_constraint_word_optional:
 
 alttind_column_item:
     alttind_column_name alttind_asc_desc_optional
-  | alttind_column_name alttind_asc_desc_optional 
+  | alttind_column_name alttind_asc_desc_optional
   | alttind_column_name(_tinyint_unsigned) alttind_asc_desc_optional
 ;
 
 alttind_asc_desc_optional:
   | | | | | ASC | DESC
 ;
- 
+
 alttind_column_list:
-    alttind_column_item | alttind_column_item | alttind_column_item 
+    alttind_column_item | alttind_column_item | alttind_column_item
   | alttind_column_item, alttind_column_list
 ;
 
@@ -898,7 +899,747 @@ alttind_algorithm:
 alttind_lock:
   | | | | , LOCK=DEFAULT | , LOCK=NONE | , LOCK=SHARED | , LOCK=EXCLUSIVE
 ;
-  
+
 atomic_backup_stages:
   BACKUP STAGE START ; SELECT SLEEP(1) ; BACKUP STAGE FLUSH ; SELECT SLEEP(1) ; BACKUP STAGE BLOCK_DDL ; SELECT SLEEP(1) ; BACKUP STAGE BLOCK_COMMIT ; SELECT SLEEP(1) ; BACKUP STAGE END
+;
+
+ia_query:
+    ia_create_or_replace
+  | ia_create_like
+  | ia_truncate
+  | ia_alter | ia_alter | ia_alter | ia_alter | ia_alter | ia_alter | ia_alter | ia_alter | ia_alter
+  | ia_flush
+  | ia_optimize
+  | ia_lock_unlock_table
+  | ia_transaction
+;
+
+ia_alter:
+  ALTER TABLE ia_table_name ia_alter_list
+;
+
+ia_alter_list:
+  ia_alter_item | ia_alter_item, ia_alter_list
+;
+
+ia_alter_item:
+    ia_add_column | ia_add_column | ia_add_column | ia_add_column | ia_add_column | ia_add_column
+  | ia_modify_column
+  | ia_change_column
+  | ia_alter_column
+  | ia_add_index | ia_add_index | ia_add_index
+  | ia_drop_column | ia_drop_column
+  | ia_drop_index | ia_drop_index
+  | ia_change_row_format
+  | FORCE ia_lock ia_algorithm
+  | ENGINE=InnoDB
+;
+
+ia_transaction:
+    START TRANSACTION
+  | SAVEPOINT sp
+  | ROLLBACK TO SAVEPOINT sp
+  | COMMIT
+  | ROLLBACK
+;
+
+ia_lock_unlock_table:
+    FLUSH TABLE ia_table_name FOR EXPORT
+  | LOCK TABLE ia_table_name READ
+  | LOCK TABLE ia_table_name WRITE
+  | SELECT * FROM ia_table_name FOR UPDATE
+  | UNLOCK TABLES
+  | UNLOCK TABLES
+  | UNLOCK TABLES
+  | UNLOCK TABLES
+;
+
+ia_alter_partitioning:
+    ALTER TABLE ia_table_name PARTITION BY HASH(ia_col_name)
+  | ALTER TABLE ia_table_name PARTITION BY KEY(ia_col_name)
+  | ALTER TABLE ia_table_name REMOVE PARTITIONING
+;
+
+ia_delete:
+  DELETE FROM ia_table_name LIMIT _digit
+;
+
+ia_truncate:
+  TRUNCATE TABLE ia_table_name
+;
+
+ia_table_name:
+    { $my_last_table = 't'.$prng->int(1,20) }
+  | { $my_last_table = 't'.$prng->int(1,20) }
+  | { $my_last_table = 't'.$prng->int(1,20) }
+  | _table
+;
+
+ia_col_name:
+    ia_int_col_name
+  | ia_num_col_name
+  | ia_temporal_col_name
+  | ia_timestamp_col_name
+  | ia_text_col_name
+  | ia_enum_col_name
+# TODO: re-enable when virtual columns start working
+#  | ia_virt_col_name
+  | _field
+;
+
+ia_bit_col_name:
+  { $last_column = 'bcol'.$prng->int(1,10) }
+;
+
+
+ia_int_col_name:
+    { $last_column = 'icol'.$prng->int(1,10) }
+  | { $last_column = 'icol'.$prng->int(1,10) }
+  | { $last_column = 'icol'.$prng->int(1,10) }
+  | _field_int
+;
+
+ia_num_col_name:
+    { $last_column = 'ncol'.$prng->int(1,10) }
+;
+
+ia_virt_col_name:
+    { $last_column = 'vcol'.$prng->int(1,10) }
+;
+
+ia_temporal_col_name:
+    { $last_column = 'tcol'.$prng->int(1,10) }
+;
+
+ia_timestamp_col_name:
+    { $last_column = 'tscol'.$prng->int(1,10) }
+;
+
+ia_geo_col_name:
+    { $last_column = 'geocol'.$prng->int(1,10) }
+;
+
+ia_text_col_name:
+    { $last_column = 'scol'.$prng->int(1,10) }
+  | { $last_column = 'scol'.$prng->int(1,10) }
+  | { $last_column = 'scol'.$prng->int(1,10) }
+  | _field_char
+;
+
+ia_enum_col_name:
+    { $last_column = 'ecol'.$prng->int(1,10) }
+;
+
+ia_ind_name:
+  { $last_index = 'ind'.$prng->int(1,10) }
+;
+
+ia_col_name_and_definition:
+    ia_bit_col_name ia_bit_type ia_null ia_default_optional_int_or_auto_increment
+  | ia_int_col_name ia_int_type ia_unsigned ia_zerofill ia_null ia_default_optional_int_or_auto_increment
+  | ia_int_col_name ia_int_type ia_unsigned ia_zerofill ia_null ia_default_optional_int_or_auto_increment
+  | ia_int_col_name ia_int_type ia_unsigned ia_zerofill ia_null ia_default_optional_int_or_auto_increment
+  | ia_num_col_name ia_num_type ia_unsigned ia_zerofill ia_null ia_optional_default
+  | ia_temporal_col_name ia_temporal_type ia_null ia_optional_default
+  | ia_timestamp_col_name ia_timestamp_type ia_null ia_optional_default_or_current_timestamp
+  | ia_text_col_name ia_text_type ia_null ia_optional_default_char
+  | ia_text_col_name ia_text_type ia_null ia_optional_default_char
+  | ia_text_col_name ia_text_type ia_null ia_optional_default_char
+  | ia_enum_col_name ia_enum_type ia_null ia_optional_default
+# TODO: vcols: re-enable when virtual columns start working
+#  | ia_virt_col_name ia_virt_col_definition ia_virt_type
+  | ia_geo_col_name ia_geo_type ia_null ia_geo_optional_default
+;
+
+ia_virt_col_definition:
+    ia_int_type AS ( ia_int_col_name + _digit )
+  | ia_num_type AS ( ia_num_col_name + _digit )
+  | ia_temporal_type AS ( ia_temporal_col_name )
+  | ia_timestamp_type AS ( ia_timestamp_col_name )
+  | ia_text_type AS ( SUBSTR(ia_text_col_name, _digit, _digit ) )
+  | ia_enum_type AS ( ia_enum_col_name )
+  | ia_geo_type AS ( ia_geo_col_name )
+;
+
+ia_virt_type:
+  STORED | VIRTUAL
+;
+
+ia_optional_default_or_current_timestamp:
+  | DEFAULT ia_default_or_current_timestamp_val
+;
+
+ia_default_or_current_timestamp_val:
+    '1970-01-01'
+  | CURRENT_TIMESTAMP
+  | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  | 0
+;
+
+
+ia_unsigned:
+  | | UNSIGNED
+;
+
+ia_zerofill:
+  | | | | ZEROFILL
+;
+
+ia_default_optional_int_or_auto_increment:
+  ia_optional_default_int | ia_optional_default_int | ia_optional_default_int | ia_optional_auto_increment
+;
+
+ia_create_or_replace:
+  CREATE OR REPLACE ia_temporary TABLE ia_table_name (ia_col_name_and_definition) ia_table_flags
+;
+
+ia_table_flags:
+  ia_row_format ia_encryption ia_compression
+;
+
+ia_encryption:
+;
+
+ia_compression:
+;
+
+ia_change_row_format:
+  ROW_FORMAT=COMPACT | ROW_FORMAT=COMPRESSED | ROW_FORMAT=DYNAMIC | ROW_FORMAT=REDUNDANT
+;
+
+ia_row_format:
+  | ia_change_row_format | ia_change_row_format
+;
+
+ia_create_like:
+  CREATE ia_temporary TABLE ia_table_name LIKE _table
+;
+
+ia_insert:
+  ia_insert_select | ia_insert_values
+;
+
+ia_update:
+  UPDATE ia_table_name SET ia_col_name = DEFAULT LIMIT 1;
+
+ia_insert_select:
+  INSERT INTO ia_table_name ( ia_col_name ) SELECT ia_col_name FROM ia_table_name
+;
+
+ia_insert_values:
+    INSERT INTO ia_table_name () VALUES ia_empty_value_list
+  | INSERT INTO ia_table_name (ia_col_name) VALUES ia_non_empty_value_list
+;
+
+ia_non_empty_value_list:
+  (_ia_value) | (_ia_value),ia_non_empty_value_list
+;
+
+ia_empty_value_list:
+  () | (),ia_empty_value_list
+;
+
+ia_add_column:
+    ADD COLUMN ia_if_not_exists ia_col_name_and_definition ia_col_location ia_algorithm ia_lock
+  | ADD COLUMN ia_if_not_exists ( ia_add_column_list ) ia_algorithm ia_lock
+;
+
+ia_col_location:
+  | | | | | FIRST | AFTER ia_col_name
+;
+
+ia_add_column_list:
+  ia_col_name_and_definition | ia_col_name_and_definition, ia_add_column_list
+;
+
+ia_modify_column:
+  MODIFY COLUMN ia_if_exists ia_col_name_and_definition ia_col_location ia_algorithm ia_lock
+;
+
+ia_change_column:
+  CHANGE COLUMN ia_if_exists ia_col_name ia_col_name_and_definition ia_algorithm ia_lock
+;
+
+# MDEV-14694 - only fixed in 10.3.5 - ALTER COLUMN does not accept IF EXISTS
+ia_alter_column:
+    ALTER COLUMN /*!100305 ia_if_exists */ ia_col_name SET DEFAULT ia_default_val
+  | ALTER COLUMN /*!100305 ia_if_exists */ ia_col_name DROP DEFAULT
+;
+
+ia_if_exists:
+  | IF EXISTS | IF EXISTS
+;
+
+ia_if_not_exists:
+  | IF NOT EXISTS | IF NOT EXISTS
+;
+
+ia_drop_column:
+  DROP COLUMN ia_if_exists ia_col_name ia_algorithm ia_lock
+;
+
+ia_add_index:
+  ADD ia_any_key ia_algorithm ia_lock
+;
+
+
+ia_drop_index:
+  DROP INDEX ia_ind_name | DROP PRIMARY KEY
+;
+
+ia_column_list:
+  ia_col_name | ia_col_name, ia_column_list
+;
+
+ia_temporary:
+  | | | | TEMPORARY
+;
+
+ia_flush:
+  FLUSH TABLES
+;
+
+ia_optimize:
+  OPTIMIZE TABLE ia_table_name
+;
+
+ia_algorithm:
+  | | , ALGORITHM=INPLACE | , ALGORITHM=COPY
+;
+
+ia_lock:
+  | | , LOCK=NONE | , LOCK=SHARED
+;
+
+ia_data_type:
+    ia_bit_type
+  | ia_enum_type
+  | ia_geo_type
+  | ia_int_type
+  | ia_int_type
+  | ia_int_type
+  | ia_int_type
+  | ia_num_type
+  | ia_temporal_type
+  | ia_timestamp_type
+  | ia_text_type
+  | ia_text_type
+  | ia_text_type
+  | ia_text_type
+;
+
+ia_bit_type:
+  BIT
+;
+
+ia_int_type:
+  INT | TINYINT | SMALLINT | MEDIUMINT | BIGINT
+;
+
+ia_num_type:
+  DECIMAL | FLOAT | DOUBLE
+;
+
+ia_temporal_type:
+  DATE | TIME | YEAR
+;
+
+ia_timestamp_type:
+  DATETIME | TIMESTAMP
+;
+
+ia_enum_type:
+  ENUM('foo','bar') | SET('foo','bar')
+;
+
+ia_text_type:
+  BLOB | TEXT | CHAR | VARCHAR(_smallint_unsigned) | BINARY | VARBINARY(_smallint_unsigned)
+;
+
+ia_geo_type:
+  POINT | LINESTRING | POLYGON | MULTIPOINT | MULTILINESTRING | MULTIPOLYGON | GEOMETRYCOLLECTION | GEOMETRY
+;
+
+ia_null:
+  | NULL | NOT NULL ;
+
+ia_optional_default:
+  | DEFAULT ia_default_val
+;
+
+ia_default_val:
+  NULL | ia_default_char_val | ia_default_int_val
+;
+
+ia_optional_default_char:
+  | DEFAULT ia_default_char_val
+;
+
+ia_default_char_val:
+  NULL | ''
+;
+
+ia_optional_default_int:
+  | DEFAULT ia_default_int_val
+;
+
+ia_default_int_val:
+  NULL | 0 | _digit
+;
+
+ia_geo_optional_default:
+  | DEFAULT ST_GEOMFROMTEXT('Point(1 1)') ;
+
+ia_optional_auto_increment:
+  | | | | | | AUTO_INCREMENT
+;
+
+ia_inline_key:
+  | | | ia_index ;
+
+ia_index:
+  KEY | PRIMARY KEY | UNIQUE ;
+
+ia_key_column:
+    ia_bit_col_name
+  | ia_int_col_name
+  | ia_int_col_name
+  | ia_int_col_name
+  | ia_num_col_name
+  | ia_enum_col_name
+  | ia_temporal_col_name
+  | ia_timestamp_col_name
+  | ia_text_col_name(_tinyint_positive)
+  | ia_text_col_name(_smallint_positive)
+;
+
+ia_key_column_list:
+  ia_key_column | ia_key_column, ia_key_column_list
+;
+
+ia_any_key:
+    ia_index(ia_key_column)
+  | ia_index(ia_key_column)
+  | ia_index(ia_key_column)
+  | ia_index(ia_key_column)
+  | ia_index(ia_key_column_list)
+  | ia_index(ia_key_column_list)
+  | FULLTEXT KEY(ia_text_col_name)
+  | SPATIAL INDEX(ia_geo_col_name)
+;
+
+ia_comment:
+  | | COMMENT 'comment';
+
+ia_compressed:
+  | | | | | | COMPRESSED ;
+
+_ia_value:
+  NULL | _digit | '' | _char(1)
+;
+
+xa_query:
+  ==FACTOR:10== xa_valid_sequence
+#  | xa_random
+;
+
+xa_valid_sequence:
+  xa_begin ; xa_opt_recover xa_query_sequence ; xa_opt_recover XA END { $last_xid } ; xa_opt_recover XA PREPARE { $last_xid } ; xa_opt_recover XA COMMIT { $last_xid } |
+  xa_begin ; xa_opt_recover xa_query_sequence ; xa_opt_recover XA END { $last_xid } ; xa_opt_recover XA COMMIT { $last_xid } ONE PHASE |
+  xa_begin ; xa_opt_recover xa_query_sequence ; xa_opt_recover XA END { $last_xid } ; xa_opt_recover XA PREPARE { $last_xid } ; xa_opt_recover XA ROLLBACK { $last_xid }
+;
+
+xa_opt_recover:
+  { $prng->uint16(0,3) ? 'XA RECOVER ;' : '' };
+
+xa_random:
+    xa_begin
+  | xa_end
+  | xa_prepare
+  | xa_commit_one_phase
+  | xa_commit
+  | xa_rollback
+  | XA RECOVER
+;
+
+xa_query_sequence:
+  ==FACTOR:2== query
+  | xa_query_sequence ; query
+;
+
+xa_begin:
+  XA xa_start_begin xa_xid xa_opt_join_resume { $active_xa{$last_xid}= 1 ; '' } ;
+
+xa_end:
+  XA END xa_xid_active xa_opt_suspend_opt_for_migrate { $idle_xa{$last_xid}= 1; delete $active_xa{$last_xid}; '' } ;
+
+xa_prepare:
+  XA PREPARE xa_xid_idle { $prepared_xa{$last_xid}= 1; delete $idle_xa{$last_xid}; '' } ;
+
+xa_commit:
+  XA COMMIT xa_xid_prepared { delete $idle_xa{$last_xid}; '' } ;
+
+xa_commit_one_phase:
+  XA COMMIT xa_xid_idle ONE PHASE { delete $idle_xa{$last_xid}; '' } ;
+
+xa_rollback:
+  XA ROLLBACK xa_xid_prepared { delete $prepared_xa{$last_xid}; '' } ;
+
+# Not supported
+xa_opt_suspend_opt_for_migrate:
+#  | SUSPEND xa_opt_for_migrade
+;
+
+xa_opt_for_migrade:
+  | FOR MIGRATE
+;
+
+xa_start_begin:
+  START | BEGIN
+;
+
+# Not supported
+xa_opt_join_resume:
+#  | JOIN | RESUME
+;
+
+xa_xid:
+  { $last_xid= "'xid".$prng->int(1,200)."'" }
+;
+
+xa_xid_active:
+  { $last_xid= (scalar(keys %active_xa) ? $prng->arrayElement([keys %active_xa]) : "'inactive_xid'"); $last_xid }
+;
+
+xa_xid_idle:
+  { $last_xid= (scalar(keys %idle_xa) ? $prng->arrayElement([keys %idle_xa]) : "'non_idle_xid'"); $last_xid }
+;
+
+xa_xid_prepared:
+  { $last_xid= (scalar(keys %prepared_xa) ? $prng->arrayElement([keys %prepared_xa]) : "'non_prepared_xid'"); $last_xid }
+;
+
+seq_query:
+    seq_create
+  | seq_show
+  | seq_next_val
+  | seq_prev_val
+  | seq_alter
+  | seq_set_val
+  | seq_drop
+  | seq_select
+  | seq_lock_unlock
+  | seq_rename
+  | seq_insert
+;
+
+seq_lock_unlock:
+    LOCK TABLE seq_lock_list
+  | UNLOCK TABLES
+  | UNLOCK TABLES
+  | UNLOCK TABLES
+;
+
+seq_rename:
+  RENAME TABLE seq_rename_list
+;
+
+seq_rename_list:
+  seq_name TO seq_name | seq_rename_list, seq_name TO seq_name
+;
+
+seq_lock_list:
+  seq_name seq_lock_type | seq_lock_list, seq_name seq_lock_type
+;
+
+seq_lock_type:
+  READ | WRITE
+;
+
+seq_select:
+  SELECT seq_select_list FROM seq_name
+;
+
+seq_select_list:
+  * | seq_select_field_list
+;
+
+seq_select_field_list:
+    seq_field
+  | seq_field, seq_select_field_list
+  | seq_field, seq_select_field_list
+;
+
+seq_field:
+    NEXT_NOT_CACHED_VALUE
+  | MINIMUM_VALUE
+  | MAXIMUM_VALUE
+  | START_VALUE
+  | INCREMENT
+  | CACHE_SIZE
+  | CYCLE_OPTION
+  | CYCLE_COUNT
+;
+
+seq_drop:
+  DROP seq_temporary SEQUENCE seq_if_exists_optional seq_drop_list
+;
+
+seq_drop_list:
+  seq_name | seq_name | seq_name, seq_drop_list
+;
+
+seq_temporary:
+  | | | TEMPORARY
+;
+
+seq_set_val:
+  SELECT SETVAL(seq_name, seq_start_value)
+;
+
+seq_alter:
+  ALTER SEQUENCE seq_if_exists_optional seq_name seq_alter_list
+;
+
+seq_if_exists_optional:
+  | IF EXISTS | IF EXISTS | IF EXISTS
+;
+
+seq_alter_list:
+  seq_alter_element | seq_alter_element seq_alter_list
+;
+
+seq_insert:
+  INSERT INTO seq_name VALUES (seq_start_value, seq_start_value, seq_end_value, seq_start_value, seq_increment_value, _tinyint_unsigned, seq_zero_or_one, seq_zero_or_one)
+;
+
+seq_alter_element:
+    RESTART seq_with_or_equal_optional seq_start_value
+  | seq_increment
+  | seq_min
+  | seq_max
+  | seq_start_with
+;
+
+seq_zero_or_one:
+  0 | 1
+;
+
+seq_next_val:
+    SELECT NEXT VALUE FOR seq_name
+  | SELECT NEXTVAL( seq_name )
+  | SET STATEMENT `sql_mode`=ORACLE FOR SELECT seq_name.nextval
+;
+
+seq_prev_val:
+    SELECT PREVIOUS VALUE FOR seq_name
+  | SELECT LASTVAL( seq_name )
+  | SET STATEMENT `sql_mode`=ORACLE FOR SELECT seq_name.currval
+;
+
+seq_create:
+  CREATE seq_or_replace_if_not_exists seq_name seq_start_with_optional seq_min_optional seq_max_optional seq_increment_optional seq_cache_optional seq_cycle_optional seq_engine_optional
+;
+
+seq_cache:
+    CACHE _tinyint_unsigned
+  | CACHE = _tinyint_unsigned
+;
+
+seq_cache_optional:
+  | | | seq_cache
+;
+
+seq_cycle:
+  NOCYCLE | CYCLE
+;
+
+seq_cycle_optional:
+  | | | seq_cycle
+;
+
+seq_engine:
+  ENGINE=InnoDB | ENGINE=MyISAM | ENGINE=Aria
+;
+
+seq_engine_optional:
+  | | | seq_engine
+;
+
+seq_min:
+    MINVALUE = seq_start_value
+  | MINVALUE seq_start_value
+  | NO MINVALUE
+  | NOMINVALUE
+;
+
+seq_min_optional:
+  | | seq_min
+;
+
+seq_max:
+    MAXVALUE = seq_end_value
+  | MAXVALUE seq_end_value
+  | NO MAXVALUE
+  | NOMAXVALUE
+;
+
+seq_max_optional:
+  | | seq_max
+;
+
+seq_show:
+    SHOW CREATE SEQUENCE seq_name
+  | SHOW CREATE TABLE seq_name
+  | SHOW TABLES
+;
+
+seq_or_replace_if_not_exists:
+  seq_temporary SEQUENCE | OR REPLACE seq_temporary SEQUENCE | seq_temporary SEQUENCE IF NOT EXISTS
+;
+
+seq_name:
+  { 'seq'.$prng->int(1,10) }
+;
+
+seq_or_table_name:
+    seq_name | seq_name | seq_name | seq_name | seq_name | seq_name
+  | _table
+;
+
+seq_start_with:
+    START seq_start_value
+  | START seq_with_or_equal_optional seq_start_value
+  | START seq_with_or_equal_optional seq_start_value
+;
+
+seq_with_or_equal_optional:
+  | WITH | =
+;
+
+seq_start_with_optional:
+  | | | seq_start_with
+;
+
+seq_start_value:
+  0 | _tinyint | _smallint_unsigned | _bigint
+;
+
+seq_end_value:
+  0 | _smallint_unsigned | _int_unsigned | _bigint
+;
+
+seq_increment:
+    INCREMENT BY seq_increment_value
+  | INCREMENT = seq_increment_value
+  | INCREMENT seq_increment_value
+;
+
+seq_increment_optional:
+  | | | seq_increment
+;
+
+seq_increment_value:
+  _positive_digit | _positive_digit | _positive_digit | _tinyint
 ;

@@ -14,6 +14,7 @@ $combinations = [
   [ $common_options ], # seed, reporters, timeouts
   [ '--scenario=AtomicDDL --scenario-grammar2=atomic.yy --filter=atomic.ff' ],
   [ '--duration=200' ],
+  [ @$binlog_combinations ],
   [ @$threads_low_combinations ],
   [ @$views_combinations, '', '', '' ],
   [ @$vcols_combinations, '--vcols=STORED',
@@ -64,14 +65,8 @@ $combinations = [
     '--mysqld=--max-prepared-stmt-count=0',
     '--mysqld=--max-prepared-stmt-count=1',
   ],
-  ##### Encryption
-  [ '', '', '', '', $non_innodb_encryption_options ],
-  ##### Binary logging
-  [ '', '',
-    [ @$binlog_combinations ],
-  ],
   ##### Performance schema
-  [ '', '', '',
+  [ '', '', '', '', '', '',
     $perfschema_options_106 . ' --redefine=conf/runtime/performance_schema.yy',
   ],
   ##### Startup variables (general)

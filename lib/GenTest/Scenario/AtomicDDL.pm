@@ -17,11 +17,7 @@
 
 ########################################################################
 #
-# The module implements a crash recovery/upgrade scenario.
-#
-# The test starts the old server, kills the server, starts the new one
-# on the same datadir, runs mysql_upgrade if necessary, performs a basic
-# data check and executes some more flow.
+# The module implements a crash recovery scenario for Atomic DDL
 #
 ########################################################################
 
@@ -56,7 +52,8 @@ sub new {
 
 sub run {
   my $self= shift;
-  my ($status, $server, $databases, %table_autoinc);
+  my ($status, $server, $binlog, $databases);
+  my ($datadir, $datadir_before_recovery, $datadir_restored_binlog, $datadir_recovered);
 
   my $prng = GenTest::Random->new( seed => $self->getProperty('seed') );
 
@@ -64,8 +61,14 @@ sub run {
 
   #####
   # Prepare servers
-  
+
   $server= $self->prepare_servers();
+  $datadir= $server->datadir;
+  $datadir_before_recovery= $datadir.'_before';
+  $datadir_restored_binlog= $datadir.'_restored_binlog';
+  $datadir_recovered= $datadir.'_recovered';
+
+  $server->backupDatadir($datadir_restored_binlog);
 
   #####
   $self->printStep("Starting the server");
@@ -77,20 +80,22 @@ sub run {
     return $self->finalize(STATUS_TEST_FAILURE,[]);
   }
 
+  $binlog= $server->serverVariable('log_bin_basename');
+
   #####
   $self->printStep("Generating data");
 
   $status= $self->generate_data();
-  
+
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
     return $self->finalize(STATUS_TEST_FAILURE,[$server]);
   }
 
   #####
-  $self->printStep("Running initial test flow");
-
-  $self->setProperty('duration',int($self->getProperty('duration')/5));
+  my $queries= $prng->uint16(5,200);
+  $self->printStep("Running $queries queries as initial test flow");
+  $self->setProperty('queries',$queries);
   $status= $self->run_test_flow();
 
   if ($status != STATUS_OK) {
@@ -111,6 +116,7 @@ sub run {
     sayError("Atomic DDL grammar is not specified (--scenario-grammar2)");
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
   }
+  $self->setProperty('queries',10000000);
 
   my $gentest_pid= fork();
   if (not defined $gentest_pid) {
@@ -121,7 +127,7 @@ sub run {
   # The child will be running DDL. The parent will be running
   # the server and then killing it, and while waiting, will be monitoring
   # the status of the test flow to notice if it exits prematurely.
-  
+
   if ($gentest_pid > 0) {
     foreach (1..$timeout) {
       if (waitpid($gentest_pid, WNOHANG) == 0) {
@@ -147,7 +153,7 @@ sub run {
   $self->printStep("Killing the server");
 
   $status= $server->kill;
-  
+
   if ($status != STATUS_OK) {
     sayError("Could not kill the server");
     return $self->finalize(STATUS_TEST_FAILURE,[$server]);
@@ -170,7 +176,7 @@ sub run {
   #####
   $self->printStep("Backing up data directory");
 
-  $server->backupDatadir($server->datadir."_orig");
+  $server->backupDatadir($datadir_before_recovery);
   move($server->errorlog, $server->errorlog.'_orig');
 
   #####
@@ -187,7 +193,7 @@ sub run {
   }
 
   #####
-  $self->printStep("Checking the server error log for errors after upgrade");
+  $self->printStep("Checking the server error log for errors after recovery");
 
   $status= $self->checkErrorLog($server);
 
@@ -197,7 +203,7 @@ sub run {
     $self->setStatus($status);
     sayError("Found errors in the log after restart");
     if ($status > STATUS_CUSTOM_OUTCOME) {
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
+      return $self->finalize(STATUS_RECOVERY_FAILURE,[$server]);
     }
   }
 
@@ -208,13 +214,23 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Database appears to be corrupt after restart");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
+    return $self->finalize(STATUS_RECOVERY_FAILURE,[$server]);
   }
-  
+
+  if ($binlog) {
+    #####
+    $self->printStep("Dumping databases for further binlog consistency check");
+
+    $databases= join ' ', $server->nonSystemDatabases();
+    $server->dumpSchema($databases, $server->vardir.'/server_schema_recovered.dump');
+    $server->normalizeDump($server->vardir.'/server_schema_recovered.dump', 'remove_autoincs');
+  }
+
   #####
   $self->printStep("Running test flow on the restarted server");
 
   $self->setProperty('duration',int($self->getProperty('duration')/4));
+  $self->setProperty('queries',$queries);
   $status= $self->run_test_flow();
 
   if ($status != STATUS_OK) {
@@ -237,8 +253,77 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
   }
+
+  if ($binlog) {
+    #####
+    move($datadir,$datadir_recovered);
+    # Move original datadir back to the initial name so that mysqlbinlog
+    # can find binary logs easier
+    move($datadir_before_recovery,$datadir);
+    # We previously copied the clean datadir into <datadir>_binlog
+    $self->printStep("Starting the server on a clean datadir for binlog consistency check");
+    $server->setDatadir($datadir_restored_binlog);
+#    $server= $self->prepare_servers();
+    $status= $server->startServer;
+
+    if ($status != STATUS_OK) {
+      sayError("The server failed to start");
+      return $self->finalize(STATUS_TEST_FAILURE,[]);
+    }
+
+    my $client = DBServer::MySQL::MySQLd::_find(undef,
+            [$server->serverVariable('basedir')],
+            osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
+            osWindows()?"mariadb.exe":"mariadb"
+    );
+    my $mysqlbinlog = DBServer::MySQL::MySQLd::_find(undef,
+            [$server->serverVariable('basedir')],
+            osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
+            osWindows()?"mariadb-binlog.exe":"mariadb-binlog"
+    );
+
+    $self->printStep("Feeding original binary logs to the new server");
+    my $cmd= "$mysqlbinlog $binlog.0* | $client --force -uroot --protocol=tcp --port=".$server->port;
+    say("Running $cmd");
+    system($cmd);
+    $status= $? >> 8;
+    move($datadir,$datadir_before_recovery);
+
+    if ($status != STATUS_OK) {
+      sayError("Binlog replay failed");
+      return $self->finalize(STATUS_RECOVERY_FAILURE,[]);
+    }
+
+    $self->printStep("Dumping databases after binlog replay");
+
+    $server->dumpSchema($databases, $server->vardir.'/server_schema_from_binlog.dump');
+    $server->normalizeDump($server->vardir.'/server_schema_from_binlog.dump', 'remove_autoincs');
+
+    #####
+    $self->printStep("Comparing schemata after data recovery and after binlog replay");
+
+    $status= compare($server->vardir.'/server_schema_recovered.dump', $server->vardir.'/server_schema_from_binlog.dump');
+    if ($status != STATUS_OK) {
+      sayError("Database structures differ");
+      system('diff -u '.$server->vardir.'/server_schema_recovered.dump'.' '.$server->vardir.'/server_schema_from_binlog.dump');
+      return $self->finalize(STATUS_RECOVERY_FAILURE,[$server]);
+    }
+    else {
+      say("Structure dumps appear to be identical");
+    }
+  }
+
+  #####
+  $self->printStep("Stopping the server");
+
+  $status= $server->stopServer;
+  if ($status != STATUS_OK) {
+    sayError("Server shutdown failed");
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
+  }
+
 
   return $self->finalize($status,[]);
 }
