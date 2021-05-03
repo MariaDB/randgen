@@ -777,7 +777,7 @@ sub dumpdb {
     if ($skip_heap_tables) {
       my @heap_tables= @{$self->dbh->selectcol_arrayref(
           "select concat(table_schema,'.',table_name) from ".
-          "information_schema.tables where engine='MEMORY' and table_schema!='information_schema'"
+          "information_schema.tables where engine='MEMORY' and table_schema not in ('information_schema','performance_schema','sys')"
         )
       };
       $skip_heap_tables= join ' ', map {'--ignore-table-data='.$_} @heap_tables;
@@ -1011,7 +1011,7 @@ sub checkDatabaseIntegrity {
 
   my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
   foreach my $database (@$databases) {
-      next if $database =~ m{^(information_schema|pbxt|performance_schema)$}sio;
+      next if $database =~ m{^(information_schema|pbxt|performance_schema|sys)$}sio;
       $dbh->do("USE $database");
       my $tabl_ref = $dbh->selectcol_arrayref("SHOW FULL TABLES", { Columns=>[1,2] });
       # 1178 is ER_CHECK_NOT_IMPLEMENTED

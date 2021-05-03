@@ -90,7 +90,7 @@ sub report {
 	}
 
 	my @all_databases = @{$master_dbh->selectcol_arrayref("SHOW DATABASES")};
-	my $databases_string = join(' ', grep { $_ !~ m{^(mysql|information_schema|performance_schema)$}sgio } @all_databases );
+	my $databases_string = join(' ', grep { $_ !~ m{^(mysql|information_schema|performance_schema|sys)$}sgio } @all_databases );
 	
 	my @dump_ports = ($master_port , $slave_port);
 	my @dump_files;
