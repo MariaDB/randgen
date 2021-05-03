@@ -300,7 +300,7 @@ sub run {
     );
 
     $self->printStep("Feeding original binary logs to the new server");
-    my $cmd= "$mysqlbinlog $datadir_restored_binlog/binlogs_to_replay/* | $client --force -uroot --comments --protocol=tcp --port=".$server->port;
+    my $cmd= "$mysqlbinlog $datadir_restored_binlog/binlogs_to_replay/* | $client --force -uroot --binary-mode --comments --protocol=tcp --port=".$server->port;
     say("Running $cmd");
     system($cmd);
     $status= $? >> 8;
