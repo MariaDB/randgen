@@ -81,7 +81,10 @@ sub run {
   }
 
   $binlog= $server->serverVariable('log_bin_basename');
-  $general_log_file= $server->datadir.'/'.$server->serverVariable('general_log_file');
+  $general_log_file= $server->serverVariable('general_log_file');
+  unless ($general_log_file =~ /(?:\/|\\)/) {
+    $general_log_file= $server->vardir.'/'.$general_log_file;
+  }
 
   #####
   $self->printStep("Generating data");
@@ -214,11 +217,11 @@ sub run {
   if ($binlog) {
     #####
     $self->printStep("Storing binary logs for further binlog consistency check");
-    mkdir($datadir_restored_binlog.'/binlogs_to_replay');
+    mkdir($server->vardir.'/binlogs_to_replay');
     if (osWindows()) {
-        system('xcopy "'.$binlog.'.0*" "'.$datadir_restored_binlog.'/binlogs_to_replay/ /E /I /Q');
+        system('xcopy "'.$binlog.'.0*" "'.$server->vardir.'/binlogs_to_replay/ /E /I /Q');
     } else {
-        system('cp -r '.$binlog.'.0* '.$datadir_restored_binlog.'/binlogs_to_replay/');
+        system('cp -r '.$binlog.'.0* '.$server->vardir.'/binlogs_to_replay/');
     }
 
     $self->printStep("Dumping databases for further binlog consistency check");
@@ -300,7 +303,7 @@ sub run {
     );
 
     $self->printStep("Feeding original binary logs to the new server");
-    my $cmd= "$mysqlbinlog $datadir_restored_binlog/binlogs_to_replay/* | $client --force -uroot --binary-mode --comments --protocol=tcp --port=".$server->port;
+    my $cmd= $mysqlbinlog.' '.$server->vardir."/binlogs_to_replay/* | $client --force -uroot --binary-mode --comments --protocol=tcp --port=".$server->port;
     say("Running $cmd");
     system($cmd);
     $status= $? >> 8;
