@@ -279,6 +279,7 @@ sub run {
     # We previously copied the clean datadir into <datadir>_binlog
     $self->printStep("Starting the server on a clean datadir for binlog consistency check");
     $server->setDatadir($datadir_restored_binlog);
+    $server->addServerOptions(['--secure-timestamp=NO']);
 #    $server= $self->prepare_servers();
     $status= $server->startServer;
 
