@@ -179,10 +179,10 @@ $optional_variators_105= [
 
 $optional_variators_106= [ @$optional_variators_105 ];
 
+#  '--engine=InnoDB,MyISAM,Aria,HEAP,RocksDB --mysqld=--plugin-load-add=ha_rocksdb',
 $basic_engine_combinations_102= [
   '--engine=Aria --mysqld=--default-storage-engine=Aria',
   '--engine=InnoDB,MyISAM',
-  '--engine=InnoDB,MyISAM,Aria,HEAP,RocksDB --mysqld=--plugin-load-add=ha_rocksdb',
   '--engine=MyISAM --mysqld=--default-storage-engine=MyISAM',
   '--engine=InnoDB,MyISAM,Aria,HEAP',
 ];

@@ -168,7 +168,7 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/modules/locks.yy', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/metadata_lock_info.yy', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/query_response_time.yy', '', '', '', '', '', '', '', '', '' ],
-  [ '--redefine=conf/mariadb/modules/server_audit.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/server_audit.yy --mysqld=--plugin-load-add=server_audit --mysqld=--server-audit-logging=on', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/sql_errlog.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/userstat.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/user_variables.yy', '', '', '', '', '', '', '', '', '' ],

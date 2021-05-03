@@ -13,8 +13,8 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
-query_init_add:
-    INSTALL SONAME 'server_audit' ; SET GLOBAL SERVER_AUDIT_LOGGING = ON ;
+#query_init_add:
+#    INSTALL SONAME 'server_audit' ; SET GLOBAL SERVER_AUDIT_LOGGING = ON ;
 
 query_add:
     query | query | query | query | query | query | SET GLOBAL plugin_server_audit_var ;
