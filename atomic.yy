@@ -6,8 +6,8 @@ query_add:
   alttind_query |
   ia_query |
   seq_query |
-  ==FACTOR:0.1== xa_query |
-  ==FACTOR:0.1== atomic_backup_stages
+  ==FACTOR:0.05== xa_query |
+  ==FACTOR:0.05== atomic_backup_stages
 ;
 
 atomic_drop:
@@ -901,7 +901,15 @@ alttind_lock:
 ;
 
 atomic_backup_stages:
-  BACKUP STAGE START ; SELECT SLEEP(1) ; BACKUP STAGE FLUSH ; SELECT SLEEP(1) ; BACKUP STAGE BLOCK_DDL ; SELECT SLEEP(1) ; BACKUP STAGE BLOCK_COMMIT ; SELECT SLEEP(1) ; BACKUP STAGE END
+  BACKUP STAGE START
+  ; SELECT SLEEP({int(1/$prng->uint16(1,100))})
+  ; BACKUP STAGE FLUSH
+  ; SELECT SLEEP({int(1/$prng->uint16(1,100))})
+  ; BACKUP STAGE BLOCK_DDL
+  ; SELECT SLEEP({int(1/$prng->uint16(1,100))})
+  ; BACKUP STAGE BLOCK_COMMIT
+  ; SELECT SLEEP({int(1/$prng->uint16(1,100))})
+  ; BACKUP STAGE END
 ;
 
 ia_query:
