@@ -52,7 +52,7 @@ sub new {
 
 sub run {
   my $self= shift;
-  my ($status, $server, $binlog, $databases);
+  my ($status, $server, $binlog, $databases, $general_log_file);
   my ($datadir, $datadir_before_recovery, $datadir_restored_binlog, $datadir_recovered);
 
   my $prng = GenTest::Random->new( seed => $self->getProperty('seed') );
@@ -64,7 +64,7 @@ sub run {
 
   $server= $self->prepare_servers();
   $datadir= $server->datadir;
-  $datadir_before_recovery= $datadir.'_before';
+  $datadir_before_recovery= $datadir.'_before_recovery';
   $datadir_restored_binlog= $datadir.'_restored_binlog';
   $datadir_recovered= $datadir.'_recovered';
 
@@ -81,6 +81,7 @@ sub run {
   }
 
   $binlog= $server->serverVariable('log_bin_basename');
+  $general_log_file= $server->datadir.'/'.$server->serverVariable('general_log_file');
 
   #####
   $self->printStep("Generating data");
@@ -93,7 +94,7 @@ sub run {
   }
 
   #####
-  my $queries= $prng->uint16(5,200);
+  my $queries= $prng->uint16(20,200);
   $self->printStep("Running $queries queries as initial test flow");
   $self->setProperty('queries',$queries);
   $status= $self->run_test_flow();
@@ -177,7 +178,10 @@ sub run {
   $self->printStep("Backing up data directory");
 
   $server->backupDatadir($datadir_before_recovery);
-  move($server->errorlog, $server->errorlog.'_orig');
+  move($server->errorlog, $server->errorlog.'_before_recovery');
+  if (-e $general_log_file) {
+    move($general_log_file, $general_log_file.'_before_recovery');
+  }
 
   #####
   $self->printStep("Restarting the server");
@@ -207,6 +211,24 @@ sub run {
     }
   }
 
+  if ($binlog) {
+    #####
+    $self->printStep("Storing binary logs for further binlog consistency check");
+    mkdir($datadir_restored_binlog.'/binlogs_to_replay');
+    if (osWindows()) {
+        system('xcopy "'.$binlog.'.0*" "'.$datadir_restored_binlog.'/binlogs_to_replay/ /E /I /Q');
+    } else {
+        system('cp -r '.$binlog.'.0* '.$datadir_restored_binlog.'/binlogs_to_replay/');
+    }
+
+    $self->printStep("Dumping databases for further binlog consistency check");
+
+    $databases= join ' ', $server->nonSystemDatabases();
+    $server->dumpSchema($databases, $server->vardir.'/server_schema_recovered.dump');
+    $server->normalizeDump($server->vardir.'/server_schema_recovered.dump', 'remove_autoincs');
+  }
+
+
   #####
   $self->printStep("Checking the database state after restart");
 
@@ -215,15 +237,6 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Database appears to be corrupt after restart");
     return $self->finalize(STATUS_RECOVERY_FAILURE,[$server]);
-  }
-
-  if ($binlog) {
-    #####
-    $self->printStep("Dumping databases for further binlog consistency check");
-
-    $databases= join ' ', $server->nonSystemDatabases();
-    $server->dumpSchema($databases, $server->vardir.'/server_schema_recovered.dump');
-    $server->normalizeDump($server->vardir.'/server_schema_recovered.dump', 'remove_autoincs');
   }
 
   #####
@@ -256,12 +269,13 @@ sub run {
     return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
   }
 
+  move($datadir,$datadir_recovered);
+
   if ($binlog) {
     #####
-    move($datadir,$datadir_recovered);
     # Move original datadir back to the initial name so that mysqlbinlog
     # can find binary logs easier
-    move($datadir_before_recovery,$datadir);
+#    move($datadir_before_recovery,$datadir);
     # We previously copied the clean datadir into <datadir>_binlog
     $self->printStep("Starting the server on a clean datadir for binlog consistency check");
     $server->setDatadir($datadir_restored_binlog);
@@ -285,11 +299,11 @@ sub run {
     );
 
     $self->printStep("Feeding original binary logs to the new server");
-    my $cmd= "$mysqlbinlog $binlog.0* | $client --force -uroot --protocol=tcp --port=".$server->port;
+    my $cmd= "$mysqlbinlog $datadir_restored_binlog/binlogs_to_replay/* | $client --force -uroot --protocol=tcp --port=".$server->port;
     say("Running $cmd");
     system($cmd);
     $status= $? >> 8;
-    move($datadir,$datadir_before_recovery);
+#    move($datadir,$datadir_before_recovery);
 
     if ($status != STATUS_OK) {
       sayError("Binlog replay failed");
