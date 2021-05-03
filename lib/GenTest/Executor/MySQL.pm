@@ -986,8 +986,9 @@ sub reportError {
         $self->sendError($msg) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
     } elsif (not defined $reported_errors{$errstr}) {
         my $query_for_print= shorten_message($query);
-        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text($err2type{$err} || -1) . "). Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
-        $reported_errors{$errstr}++;
+#        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text($err2type{$err} || -1) . "). Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text($err2type{$err} || -1) . ").");
+#        $reported_errors{$errstr}++;
     }
 }
 

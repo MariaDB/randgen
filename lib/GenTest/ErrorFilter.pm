@@ -54,9 +54,10 @@ sub run {
         if (defined $msg) {
             my ($query, $err, $errstr) = @$msg;
             if (not defined $self->[ERRORFILTER_CACHE]->{$err}) {
-                say("ErrorFilter: Query: $query failed: $err $errstr. Further errors of this kind will be suppressed.");
+#                say("ErrorFilter: Query: $query failed: $err $errstr. Further errors of this kind will be suppressed.");
+                say("ErrorFilter: Query: $query failed: $err $errstr");
             }
-            $self->[ERRORFILTER_CACHE]->{$err}++;
+#            $self->[ERRORFILTER_CACHE]->{$err}++;
         }
         sleep 1 if !$self->[ERRORFILTER_CHANNEL]->more;
     }
