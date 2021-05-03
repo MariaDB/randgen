@@ -2,4 +2,5 @@
 $rules = {
   'mdev18151_1' => sub { $_ =~ m{PARTITION}s },
   'mdev16694_1' => sub { $_ =~ m{EXPLAIN.*UPDATE}s },
+  'mdev25587_1' => sub { $_ =~ m{TEMPORARY}s },
 }
