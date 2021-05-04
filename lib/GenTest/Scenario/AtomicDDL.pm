@@ -213,6 +213,7 @@ sub run {
     }
   }
 
+  my $dump_result= STATUS_OK;
   if ($binlog) {
     #####
     $self->printStep("Storing binary logs for further binlog consistency check");
@@ -223,11 +224,14 @@ sub run {
         system('cp -r '.$binlog.'.0* '.$server->vardir.'/binlogs_to_replay/');
     }
 
+    #####
     $self->printStep("Dumping databases for further binlog consistency check");
 
     $databases= join ' ', $server->nonSystemDatabases();
-    $server->dumpSchema($databases, $server->vardir.'/server_schema_recovered.dump');
-    $server->normalizeDump($server->vardir.'/server_schema_recovered.dump', 'remove_autoincs');
+    $dump_result= $server->dumpSchema($databases, $server->vardir.'/server_schema_recovered.dump');
+    if ($dump_result == STATUS_OK) {
+      $server->normalizeDump($server->vardir.'/server_schema_recovered.dump', 'remove_autoincs');
+    }
   }
 
 
@@ -271,7 +275,10 @@ sub run {
     return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
   }
 
-  if ($binlog) {
+  if ($dump_result != STATUS_OK) {
+    sayError("Schema dump after recovery failed, skipping the binlog consistency check");
+    return $self->finalize(STATUS_RECOVERY_FAILURE,[]);
+  } elsif ($binlog) {
     #####
     $self->printStep("Starting the server on a clean datadir for binlog consistency check");
     $server->setDatadir($datadir_restored_binlog);
