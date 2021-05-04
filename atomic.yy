@@ -5,7 +5,7 @@ query_add:
   alt_query |
   alttind_query |
   ia_query |
-  seq_query |
+#  seq_query |
   ==FACTOR:0.05== xa_query |
   ==FACTOR:0.05== atomic_backup_stages
 ;
@@ -53,6 +53,10 @@ atomic_op:
 atomic_table_name:
   _table | atomic_own_table_name | atomic_own_view_name ;
 
+atomic_table_name_list:
+  atomic_table_name |
+  atomic_table_name, atomic_table_name_list ;
+
 atomic_temporary:
   |
   ==FACTOR:0.1== TEMPORARY ;
@@ -63,10 +67,15 @@ atomic_own_table_name:
 atomic_own_view_name:
   { 'vv'.$prng->int(1,20) } ;
 
+atomic_view_name:
+  _view |
+  ==FACTOR:3== atomic_own_view_name ;
+
 atomic_rename_list:
   atomic_table_name TO atomic_table_name | atomic_table_name TO atomic_table_name, atomic_rename_list ;
 
-
+atomic_view_name_list:
+  atomic_view_name | atomic_view_name, atomic_view_name_list ;
 
 alt_query:
     alt_create
