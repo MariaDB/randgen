@@ -241,26 +241,26 @@ sub run {
     return $self->finalize(STATUS_RECOVERY_FAILURE,[$server]);
   }
 
-  #####
-  $self->printStep("Running test flow on the restarted server");
-
-  $self->setProperty('duration',int($self->getProperty('duration')/4));
-  $self->setProperty('queries',$queries);
-  $status= $self->run_test_flow();
-
-  if ($status != STATUS_OK) {
-    sayError("Test flow after restart failed");
-    #####
-    $self->printStep("Checking the server error log for known errors");
-
-    if ($self->checkErrorLog($server) == STATUS_CUSTOM_OUTCOME) {
-      $status= STATUS_CUSTOM_OUTCOME;
-    }
-
-    $self->setStatus($status);
-    return $self->finalize($status,[$server])
-  }
-
+#  #####
+#  $self->printStep("Running test flow on the restarted server");
+#
+#  $self->setProperty('duration',int($self->getProperty('duration')/4));
+#  $self->setProperty('queries',$queries);
+#  $status= $self->run_test_flow();
+#
+#  if ($status != STATUS_OK) {
+#    sayError("Test flow after restart failed");
+#    #####
+#    $self->printStep("Checking the server error log for known errors");
+#
+#    if ($self->checkErrorLog($server) == STATUS_CUSTOM_OUTCOME) {
+#      $status= STATUS_CUSTOM_OUTCOME;
+#    }
+#
+#    $self->setStatus($status);
+#    return $self->finalize($status,[$server])
+#  }
+#
   #####
   $self->printStep("Stopping the server");
 
@@ -311,6 +311,7 @@ sub run {
 
     $self->printStep("Dumping databases after binlog replay");
 
+    $databases= join ' ', $server->nonSystemDatabases();
     $server->dumpSchema($databases, $server->vardir.'/server_schema_from_binlog.dump');
     $server->normalizeDump($server->vardir.'/server_schema_from_binlog.dump', 'remove_autoincs');
 
