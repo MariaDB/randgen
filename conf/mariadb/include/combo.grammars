@@ -176,7 +176,7 @@ $optional_redefines_102= [
 
 $optional_redefines_103= [
   @$optional_redefines_102,
-  [ '--redefine=conf/mariadb/sequences.yy', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
+#  [ '--redefine=conf/mariadb/sequences.yy', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/versioning.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/optimizer_trace.yy', '', '', '' ],
 ];
