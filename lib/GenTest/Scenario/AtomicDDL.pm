@@ -53,7 +53,7 @@ sub new {
 sub run {
   my $self= shift;
   my ($status, $server, $binlog, $databases, $general_log_file);
-  my ($datadir, $datadir_before_recovery, $datadir_restored_binlog, $datadir_recovered);
+  my ($datadir, $datadir_before_recovery, $datadir_restored_binlog);
 
   my $prng = GenTest::Random->new( seed => $self->getProperty('seed') );
 
@@ -66,7 +66,6 @@ sub run {
   $datadir= $server->datadir;
   $datadir_before_recovery= $datadir.'_before_recovery';
   $datadir_restored_binlog= $datadir.'_restored_binlog';
-  $datadir_recovered= $datadir.'_recovered';
 
   $server->backupDatadir($datadir_restored_binlog);
 
@@ -83,7 +82,7 @@ sub run {
   $binlog= $server->serverVariable('log_bin_basename');
   $general_log_file= $server->serverVariable('general_log_file');
   unless ($general_log_file =~ /(?:\/|\\)/) {
-    $general_log_file= $server->vardir.'/'.$general_log_file;
+    $general_log_file= $server->datadir.'/'.$general_log_file;
   }
 
   #####
@@ -272,18 +271,14 @@ sub run {
     return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
   }
 
-  move($datadir,$datadir_recovered);
-
   if ($binlog) {
     #####
-    # Move original datadir back to the initial name so that mysqlbinlog
-    # can find binary logs easier
-#    move($datadir_before_recovery,$datadir);
-    # We previously copied the clean datadir into <datadir>_binlog
     $self->printStep("Starting the server on a clean datadir for binlog consistency check");
     $server->setDatadir($datadir_restored_binlog);
     $server->addServerOptions(['--secure-timestamp=NO']);
-#    $server= $self->prepare_servers();
+    $server->addServerOptions(['--max-statement-time=0']);
+    $server->addServerOptions(['--general-log-file='.$general_log_file.'_binlog_recovered']);
+    $server->addServerOptions(['--log-error='.$server->errorlog.'_binlog_recovered']);
     $status= $server->startServer;
 
     if ($status != STATUS_OK) {
