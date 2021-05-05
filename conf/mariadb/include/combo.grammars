@@ -159,7 +159,7 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/modules/alter_table_columns.yy', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/alter_table_indexes.yy', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/disks.yy --mysqld=--plugin-load-add=disks', '', '', '', '', '', '', '', '', '' ],
-  [ '--redefine=conf/mariadb/modules/dynamic_variables.yy', '' ],
+#  [ '--redefine=conf/mariadb/modules/dynamic_variables.yy', '' ],
   [ '--redefine=conf/mariadb/modules/event.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/foreign_keys.yy', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/indexes_and_constraints.yy', '', '', '', '' ],
