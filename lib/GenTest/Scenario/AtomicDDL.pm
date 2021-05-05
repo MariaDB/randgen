@@ -241,9 +241,7 @@ sub run {
 
     $databases= join ' ', $server->nonSystemDatabases();
     $master_dump_result= $server->dumpSchema($databases, $server->vardir.'/server_schema_recovered.dump');
-    if ($master_dump_result == STATUS_OK) {
-      $server->normalizeDump($server->vardir.'/server_schema_recovered.dump', 'remove_autoincs');
-    }
+    $server->normalizeDump($server->vardir.'/server_schema_recovered.dump', 'remove_autoincs');
 
     #####
     $self->printStep("Starting the slave");
@@ -316,13 +314,18 @@ sub run {
   #####
   $self->printStep("Stopping the servers");
 
-  $status= $server->stopServer && $slave->stopServer;
+  $status= $slave->stopServer;
+  if ($status != STATUS_OK) {
+    sayError("Slave shutdown failed");
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server,$slave]);
+  }
+  $status= $server->stopServer;
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
     return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server,$slave]);
   }
 
-  return $self->finalize($status,[$server,$slave]);
+  return $self->finalize($status,[]);
 }
 
 1;
