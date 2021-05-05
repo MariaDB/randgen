@@ -1,6 +1,7 @@
-# TODO: vcols
 $rules = {
   'mdev18151_1' => sub { $_ =~ m{PARTITION}s },
   'mdev16694_1' => sub { $_ =~ m{EXPLAIN.*UPDATE}s },
+# Also MDEV-16909 and what not
   'mdev25587_1' => sub { $_ =~ m{TEMPORARY}s },
+  'mdev25595_1' => sub { $_ =~ m{CREATE.*OR\s+REPLACE.*TABLE.*SELECT}s },
 }
