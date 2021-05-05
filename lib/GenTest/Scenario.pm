@@ -107,9 +107,22 @@ sub setServerSpecific {
   $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{$option}= $value;
 }
 
+sub copyServerSpecific {
+  my ($self, $srvnum1, $srvnum2)= @_;
+  my %new_opts= ();
+  foreach my $o ( keys %{$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum1}} ) {
+    $new_opts{$o}= $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum1}->{$o};
+  }
+  $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum2}= { %new_opts };
+}
+
 sub getServerSpecific {
   my ($self, $srvnum, $option)= @_;
-  return $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{$option};
+  if ($option) {
+    return $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{$option};
+  } else {
+    return $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}
+  }
 }
 
 sub generate_data {
@@ -155,7 +168,7 @@ sub prepareServer {
                       user => $self->[SC_TEST_PROPERTIES]->user
               );
 
-  $self->setServerSpecific(1,'dsn',$server->dsn($self->getProperty('database'),$self->getProperty('user')));
+  $self->setServerSpecific($srvnum,'dsn',$server->dsn($self->getProperty('database'),$self->getProperty('user')));
   $self->setServerSpecific($srvnum,'server',$server);
   return $server;
 }

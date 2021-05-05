@@ -52,22 +52,38 @@ sub new {
 
 sub run {
   my $self= shift;
-  my ($status, $server, $binlog, $databases, $general_log_file);
-  my ($datadir, $datadir_before_recovery, $datadir_restored_binlog);
+  my ($status, $server, $slave, $databases, $general_log_file);
+  my ($datadir, $datadir_before_recovery);
 
   my $prng = GenTest::Random->new( seed => $self->getProperty('seed') );
 
   $status= STATUS_OK;
 
   #####
-  # Prepare servers
+  # Prepare server(s)
+  # If the test is running with binary log enabled, we will use replication
+  # for binlog consistency check. Otherwise the check will be skipped
 
-  $server= $self->prepare_servers();
+  my @mysqld_options= @{$self->getServerSpecific(1)->{mysqld_options}};
+
+  $server= $self->prepareServer(1);
+
+  if ("@mysqld_options" =~ /^--log[-_]bin/) {
+    $self->copyServerSpecific(1,2);
+    my $port= $self->getServerSpecific(1,'port') + 1;
+    $self->setServerSpecific(2,'port',$port);
+    $self->setServerSpecific(2,'vardir',$self->getServerSpecific(1,'vardir').'/slave');
+    my $dsn= $self->getServerSpecific(1,'dsn');
+    $dsn=~ s/port=\d+/port=$port/;
+    $self->setServerSpecific(2,'dsn',$dsn);
+
+    push @mysqld_options, '--server-id=999', '--secure-timestamp=REPLICATION';
+    $self->setServerSpecific(2,'mysqld_options',\@mysqld_options);
+    $slave= $self->prepareServer(2);
+  }
+
   $datadir= $server->datadir;
   $datadir_before_recovery= $datadir.'_before_recovery';
-  $datadir_restored_binlog= $datadir.'_restored_binlog';
-
-  $server->backupDatadir($datadir_restored_binlog);
 
   #####
   $self->printStep("Starting the server");
@@ -79,7 +95,6 @@ sub run {
     return $self->finalize(STATUS_TEST_FAILURE,[]);
   }
 
-  $binlog= $server->serverVariable('log_bin_basename');
   $general_log_file= $server->serverVariable('general_log_file');
   unless ($general_log_file =~ /(?:\/|\\)/) {
     $general_log_file= $server->datadir.'/'.$general_log_file;
@@ -213,27 +228,37 @@ sub run {
     }
   }
 
-  my $dump_result= STATUS_OK;
-  if ($binlog) {
+#  my $rpl_status= STATUS_OK;
+  my $master_dump_result= STATUS_OK;
+  my ($master_dbh, $slave_dbh);
+  if ($slave) {
     #####
-    $self->printStep("Storing binary logs for further binlog consistency check");
-    mkdir($server->vardir.'/binlogs_to_replay');
-    if (osWindows()) {
-        system('xcopy "'.$binlog.'.0*" "'.$server->vardir.'/binlogs_to_replay/ /E /I /Q');
-    } else {
-        system('cp -r '.$binlog.'.0* '.$server->vardir.'/binlogs_to_replay/');
-    }
-
-    #####
-    $self->printStep("Dumping databases for further binlog consistency check");
+    $self->printStep("Dumping databases for further replication consistency check");
 
     $databases= join ' ', $server->nonSystemDatabases();
-    $dump_result= $server->dumpSchema($databases, $server->vardir.'/server_schema_recovered.dump');
-    if ($dump_result == STATUS_OK) {
+    $master_dump_result= $server->dumpSchema($databases, $server->vardir.'/server_schema_recovered.dump');
+    if ($master_dump_result == STATUS_OK) {
       $server->normalizeDump($server->vardir.'/server_schema_recovered.dump', 'remove_autoincs');
     }
-  }
 
+    #####
+    $self->printStep("Starting the slave");
+    $status= $slave->startServer;
+
+    if ($status != STATUS_OK) {
+      sayError("Failed to start the slave");
+      return $self->finalize(STATUS_REPLICATION_FAILURE,[$server]);
+    }
+
+    $slave_dbh= $slave->dbh;
+    if ($slave_dbh) {
+      $slave_dbh->do("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=".$server->port.", MASTER_USER='root'");
+      $slave_dbh->do("START SLAVE");
+    } else {
+      sayError("Could not connect to the slave");
+      return $self->finalize(STATUS_RECOVERY_FAILURE,[$server,$slave]);
+    }
+  }
 
   #####
   $self->printStep("Checking the database state after restart");
@@ -242,29 +267,23 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Database appears to be corrupt after restart");
-    return $self->finalize(STATUS_RECOVERY_FAILURE,[$server]);
+    return $self->finalize(STATUS_RECOVERY_FAILURE,[$server,$slave]);
   }
 
-#  #####
-#  $self->printStep("Running test flow on the restarted server");
-#
-#  $self->setProperty('duration',int($self->getProperty('duration')/4));
-#  $self->setProperty('queries',$queries);
-#  $status= $self->run_test_flow();
-#
-#  if ($status != STATUS_OK) {
-#    sayError("Test flow after restart failed");
-#    #####
-#    $self->printStep("Checking the server error log for known errors");
-#
-#    if ($self->checkErrorLog($server) == STATUS_CUSTOM_OUTCOME) {
-#      $status= STATUS_CUSTOM_OUTCOME;
-#    }
-#
-#    $self->setStatus($status);
-#    return $self->finalize($status,[$server])
-#  }
-#
+  if ($slave) {
+    #####
+    $self->printStep("Replicating the data");
+    $master_dbh= $server->dbh;
+    my ($file, $pos) = $master_dbh->selectrow_array("SHOW MASTER STATUS");
+    say("Master status: $file/$pos. Waiting for the slave to catch up...");
+    my $wait_result = $slave_dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
+    if (not defined $wait_result) {
+      sayError("Replication failed");
+      return $self->finalize(STATUS_REPLICATION_FAILURE,[$server,$slave]);
+    }
+    $slave_dbh->do("STOP SLAVE");
+  }
+
   #####
   $self->printStep("Stopping the server");
 
@@ -272,81 +291,42 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server,$slave]);
   }
 
-  if ($dump_result != STATUS_OK) {
-    sayError("Schema dump after recovery failed, skipping the binlog consistency check");
-    return $self->finalize(STATUS_RECOVERY_FAILURE,[]);
-  } elsif ($binlog) {
+#  if ($master_dump_result != STATUS_OK) {
+#    sayError("Schema dump after recovery failed, skipping the binlog consistency check");
+#    return $self->finalize(STATUS_RECOVERY_FAILURE,[]);
     #####
-    $self->printStep("Starting the server on a clean datadir for binlog consistency check");
-    $server->setDatadir($datadir_restored_binlog);
-    $server->addServerOptions(['--secure-timestamp=NO']);
-    $server->addServerOptions(['--max-statement-time=0']);
-    $server->addServerOptions(['--general-log-file='.$general_log_file.'_binlog_recovered']);
-    $server->addServerOptions(['--log-error='.$server->errorlog.'_binlog_recovered']);
-    $status= $server->startServer;
+    $self->printStep("Dumping databases from the slave");
 
-    if ($status != STATUS_OK) {
-      sayError("The server failed to start");
-      return $self->finalize(STATUS_TEST_FAILURE,[]);
-    }
-
-    my $client = DBServer::MySQL::MySQLd::_find(undef,
-            [$server->serverVariable('basedir')],
-            osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-            osWindows()?"mariadb.exe":"mariadb"
-    );
-    my $mysqlbinlog = DBServer::MySQL::MySQLd::_find(undef,
-            [$server->serverVariable('basedir')],
-            osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-            osWindows()?"mariadb-binlog.exe":"mariadb-binlog"
-    );
-
-    $self->printStep("Feeding original binary logs to the new server");
-    my $cmd= $mysqlbinlog.' '.$server->vardir."/binlogs_to_replay/* | $client --force -uroot --binary-mode --comments --protocol=tcp --port=".$server->port;
-    say("Running $cmd");
-    system($cmd);
-    $status= $? >> 8;
-#    move($datadir,$datadir_before_recovery);
-
-    if ($status != STATUS_OK) {
-      sayError("Binlog replay failed");
-      return $self->finalize(STATUS_RECOVERY_FAILURE,[]);
-    }
-
-    $self->printStep("Dumping databases after binlog replay");
-
-    $databases= join ' ', $server->nonSystemDatabases();
-    $server->dumpSchema($databases, $server->vardir.'/server_schema_from_binlog.dump');
-    $server->normalizeDump($server->vardir.'/server_schema_from_binlog.dump', 'remove_autoincs');
+    $databases= join ' ', $slave->nonSystemDatabases();
+    $slave->dumpSchema($databases, $server->vardir.'/slave_schema.dump');
+    $slave->normalizeDump($server->vardir.'/slave_schema.dump', 'remove_autoincs');
 
     #####
-    $self->printStep("Comparing schemata after data recovery and after binlog replay");
+    $self->printStep("Comparing schemata on master and slave");
 
-    $status= compare($server->vardir.'/server_schema_recovered.dump', $server->vardir.'/server_schema_from_binlog.dump');
+    $status= compare($server->vardir.'/server_schema_recovered.dump', $server->vardir.'/slave_schema.dump');
     if ($status != STATUS_OK) {
       sayError("Database structures differ");
-      system('diff -u '.$server->vardir.'/server_schema_recovered.dump'.' '.$server->vardir.'/server_schema_from_binlog.dump');
-      return $self->finalize(STATUS_RECOVERY_FAILURE,[$server]);
+      system('diff -u '.$server->vardir.'/server_schema_recovered.dump'.' '.$server->vardir.'/slave_schema.dump');
+      return $self->finalize(STATUS_RECOVERY_FAILURE,[$server,$slave]);
     }
     else {
       say("Structure dumps appear to be identical");
     }
-  }
 
   #####
-  $self->printStep("Stopping the server");
+  $self->printStep("Stopping the servers");
 
-  $status= $server->stopServer;
+  $status= $server->stopServer && $slave->stopServer;
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server,$slave]);
   }
 
-
-  return $self->finalize($status,[]);
+  return $self->finalize($status,[$server,$slave]);
 }
 
 1;
