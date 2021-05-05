@@ -68,7 +68,7 @@ sub run {
 
   $server= $self->prepareServer(1);
 
-  if ("@mysqld_options" =~ /^--log[-_]bin/) {
+  if ("@mysqld_options" =~ /--log[-_]bin/) {
     $self->copyServerSpecific(1,2);
     my $port= $self->getServerSpecific(1,'port') + 1;
     $self->setServerSpecific(2,'port',$port);
@@ -77,7 +77,11 @@ sub run {
     $dsn=~ s/port=\d+/port=$port/;
     $self->setServerSpecific(2,'dsn',$dsn);
 
-    push @mysqld_options, '--server-id=999', '--secure-timestamp=REPLICATION';
+    push @mysqld_options,
+      '--server-id=999',
+      '--secure-timestamp=REPLICATION',
+      '--max-statement-time=0'
+    ;
     $self->setServerSpecific(2,'mysqld_options',\@mysqld_options);
     $slave= $self->prepareServer(2);
   }
@@ -278,25 +282,16 @@ sub run {
     say("Master status: $file/$pos. Waiting for the slave to catch up...");
     my $wait_result = $slave_dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
     if (not defined $wait_result) {
-      sayError("Replication failed");
+      if ($slave_dbh) {
+          my @slave_status = $slave_dbh->selectrow_array("SHOW SLAVE STATUS");
+          sayError("Slave SQL thread has stopped with error: ".$slave_status[37]);
+      } else {
+          sayError("Lost connection to the slave");
+      }
       return $self->finalize(STATUS_REPLICATION_FAILURE,[$server,$slave]);
     }
     $slave_dbh->do("STOP SLAVE");
-  }
 
-  #####
-  $self->printStep("Stopping the server");
-
-  $status= $server->stopServer;
-
-  if ($status != STATUS_OK) {
-    sayError("Server shutdown failed");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server,$slave]);
-  }
-
-#  if ($master_dump_result != STATUS_OK) {
-#    sayError("Schema dump after recovery failed, skipping the binlog consistency check");
-#    return $self->finalize(STATUS_RECOVERY_FAILURE,[]);
     #####
     $self->printStep("Dumping databases from the slave");
 
@@ -316,6 +311,7 @@ sub run {
     else {
       say("Structure dumps appear to be identical");
     }
+  }
 
   #####
   $self->printStep("Stopping the servers");
