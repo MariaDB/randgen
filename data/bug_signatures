@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25620:
+=~ InnoDB: Failing assertion: id != 0|Assertion \`dict_table_is_file_per_table(this)'
+=~ fil_rename_tablespace|dict_table_t::rename_tablespace
+=~ row_undo_ins_parse_undo_rec
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25555:
 =~ signal|AddressSanitizer
 =~ tree_record_pos
@@ -122,6 +127,16 @@ MDEV-25243:
 =~ sp_head::daccess
 =~ Item_sp::execute_impl
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-25243:
+=~ Assertion \`m_sp->agg_type() == GROUP_AGGREGATE \|\| (m_sp->agg_type() == NOT_AGGREGATE && !func_ctx)'
+=~ Item_sp::execute_impl
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-25243:
+=~ signal 11
+=~ sp_head::check_execute_access
+=~ Item_sp::execute_impl
+=~ end_write
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25242:
 =~ signal 11|AddressSanitizer
 =~ check_grant
@@ -453,7 +468,7 @@ MDEV-24686:
 MDEV-24686:
 =~ AddressSanitizer|signal [16]
 =~ event_queue_element_compare_q
-=~ Event_queue::update_event|Event_queue::create_event
+=~ Event_queue::update_event|Event_queue::create_event|Event_queue::drop_event
 MDEV-24686:
 =~ AddressSanitizer|signal [16]
 =~ event_basic_identifier_equal
