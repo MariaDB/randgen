@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25627:
+=~ signal 11|AddressSanitizer
+=~ get_prefix
+=~ find_body
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-25623:
+=~ Assertion \`trn->trid != 0'
+=~ write_hook_for_undo
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25620:
 =~ InnoDB: Failing assertion: id != 0|Assertion \`dict_table_is_file_per_table(this)'
 =~ fil_rename_tablespace|dict_table_t::rename_tablespace
@@ -1384,6 +1393,12 @@ MDEV-22873:
 =~ Assertion \`len == ref_length'|AddressSanitizer
 =~ ha_innobase::position
 =~ find_all_keys|mysql_update
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-22873:
+=~ AddressSanitizer|signal 11
+=~ ha_innobase::position
+=~ find_all_keys
+=~ filesort
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-22856:
 =~ Assertion \`!str \|\| str != Ptr'
