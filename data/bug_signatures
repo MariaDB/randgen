@@ -2389,6 +2389,12 @@ MDEV-20410:
 =~ check_stack_overrun
 =~ Item_func::fix_fields
 =~ find_field_in_view
+MDEV-20410:
+=~ signal|AddressSanitizer
+=~ Item_field::print
+=~ Item::print_parenthesised
+=~ Multiupdate_prelocking_strategy::handle_end
+=~ Version: '10\.[2-3]|Server version: 10\.[2-3]
 MDEV-20395:
 =~ Assertion \`!found'
 =~ remove_ptr_from_dynarray
