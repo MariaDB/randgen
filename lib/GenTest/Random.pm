@@ -1303,7 +1303,6 @@ sub auto {
     @probabilities= split /,/, $1;
   }
   my @items= split /_x_/, $rule;
-
   if (scalar(@probabilities) < scalar(@items)) {
     my $filler;
     if (scalar(@probabilities) == 0) {
@@ -1317,7 +1316,7 @@ sub auto {
       $probabilities[$i]= $filler;
     }
     # To avoid rounding errors
-    $p[$#probabilities]+= 1;
+    $probabilities[$#probabilities]+= 1;
   }
 
   my $r= $rand->uint16(1,100);
