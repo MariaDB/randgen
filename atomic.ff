@@ -4,4 +4,5 @@ $rules = {
 # Also MDEV-16909 and what not
   'mdev25587_1' => sub { $_ =~ m{TEMPORARY}s },
   'mdev25595_1' => sub { $_ =~ m{CREATE.*OR\s+REPLACE.*TABLE.*SELECT}s },
+  'mdev10912_1' => sub { $_ =~ m{CREATE.*OR\s+REPLACE.*TRIGGER}s },
 }

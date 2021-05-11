@@ -314,15 +314,17 @@ sub run {
   #####
   $self->printStep("Stopping the servers");
 
-  $status= $slave->stopServer;
-  if ($status != STATUS_OK) {
-    sayError("Slave shutdown failed");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server,$slave]);
+  if ($slave) {
+    $status= $slave->stopServer;
+    if ($status != STATUS_OK) {
+      sayError("Slave shutdown failed");
+      return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server,$slave]);
+    }
   }
   $status= $server->stopServer;
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server,$slave]);
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
   }
 
   return $self->finalize($status,[]);

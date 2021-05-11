@@ -12,9 +12,16 @@ require "$ENV{RQG_HOME}/conf/mariadb/include/combo.grammars";
 
 $combinations = [
   [ $common_options ], # seed, reporters, timeouts
-  [ '--scenario=AtomicDDL --scenario-grammar2=atomic.yy --filter=atomic.ff' ],
+  [
+    '--scenario=AtomicDDL --scenario-grammar2=atomic.yy --filter=atomic.ff',
+    '--scenario=AtomicDDL --scenario-grammar2=atomic.yy --filter=atomic.ff',
+    '--scenario=AtomicDDL --scenario-grammar2=atomic.yy --filter=atomic.ff',
+    '--scenario=CrashUpgrade',
+    '--scenario=MariaBackupFull',
+    '--scenario=MariaBackupIncremental',
+  ],
   [ '--duration=100' ],
-  [ @$binlog_combinations ],
+  [ @$binlog_combinations, '' ],
   [ @$threads_low_combinations ],
   [ @$views_combinations, '', '', '' ],
   [ @$vcols_combinations, '--vcols=STORED',
