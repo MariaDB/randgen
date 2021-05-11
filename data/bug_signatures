@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25651:
+=~ signal 11|AddressSanitizer|Assertion \`command <= SQLCOM_END'
+=~ THD::update_stats
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25627:
 =~ signal 11|AddressSanitizer
 =~ get_prefix
@@ -2492,6 +2496,10 @@ MDEV-19817:
 =~ Item_field::used_tables
 =~ Item_direct_view_ref::used_tables
 =~ Used_tables_and_const_cache::used_tables_and_const_cache_join
+MDEV-19817:
+=~ Assertion \`nj_col->table_ref->table == nj_col->table_field->field->table'
+=~ find_field_in_natural_join
+=~ mysql_multi_update
 MDEV-19720:
 =~ Assertion \`sel->quick'
 =~ make_range_rowid_filters
