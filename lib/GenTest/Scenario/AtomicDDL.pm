@@ -172,9 +172,9 @@ sub run {
   }
 
   #####
-  $self->printStep("Killing the server");
-
-  $status= $server->kill;
+  my $signal= $prng->arrayElement(['KILL','ABRT','SEGV']);
+  $self->printStep("Killing the server with $signal");
+  $status= $server->kill($signal);
 
   if ($status != STATUS_OK) {
     sayError("Could not kill the server");
@@ -186,14 +186,14 @@ sub run {
   waitpid($gentest_pid, 0);
 
   #####
-  $self->printStep("Checking the server log for fatal errors after killing");
+#  $self->printStep("Checking the server log for fatal errors after killing");
 
-  $status= $self->checkErrorLog($server, {CrashOnly => 1});
+#  $status= $self->checkErrorLog($server, {CrashOnly => 1});
 
-  if ($status != STATUS_OK) {
-    sayError("Found fatal errors in the log");
-    return $self->finalize(STATUS_TEST_FAILURE,[$server]);
-  }
+#  if ($status != STATUS_OK) {
+#    sayError("Found fatal errors in the log");
+#    return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+#  }
 
   #####
   $self->printStep("Backing up data directory");
