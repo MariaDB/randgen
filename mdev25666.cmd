@@ -1,0 +1,1 @@
+perl ./runall-trials.pl --trials=5 --threads=4 --queries=25000 --duration=300 --grammar=conf/mariadb/oltp_and_ddl.yy --short-column-names --scenario=MariaBackupFull --mysqld=--max-statement-time=30 --mysqld=--lock-wait-timeout=10 --mysqld=--innodb-lock-wait-timeout=5 --engine=InnoDB --mtr-build-thread=66 --seed=1620776356 --vardir1=/dev/shm/var_mdev25666 --basedir=$1
