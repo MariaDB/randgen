@@ -41,7 +41,7 @@ select_is:
 ddl:
     ALTER TABLE _table FORCE lock algorithm
   | ALTER TABLE _table row_format
-  | alter_partitioning
+#  | alter_partitioning
   | OPTIMIZE TABLE _table
   | TRUNCATE _table
 ;
