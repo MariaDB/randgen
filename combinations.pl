@@ -404,7 +404,6 @@ sub doCombination {
     }
 	$command .= " --gendata=$gendata " if $gendata ne '';
 	$command .= " --grammar=$grammar " if $grammar ne '';
-	$command .= " --seed=$seed " if $seed ne '';
 	$command .= " --testname=$testname " if $testname ne '';
 	$command .= " --xml-output=$xml_output " if $xml_output ne '';
 	$command .= " --report-xml-tt" if defined $report_xml_tt;
@@ -412,7 +411,10 @@ sub doCombination {
 	$command .= " --report-xml-tt-dest=$report_xml_tt_dest " if $report_xml_tt_dest ne '';
 
   my $tm= time();
-  $command =~ s/--seed=time/--seed=$tm/g;
+  if ($command =~ s/--seed=time/--seed=$tm/g) {}
+  elsif ($command !~ /--seed=/ and $seed ne '') {
+    $command .= " --seed=".($seed + $trial_id)." ";
+  }
 
 	$command.= " @ARGV";
 
