@@ -654,7 +654,6 @@ sub kill {
     }
 
     if (defined $self->serverpid and $self->serverpid =~ /^\d+$/) {
-        print "HERE: Running kill $signal on $self->serverpid\n";
         kill $signal => $self->serverpid;
         my $sleep_time= 0.2;
         my $waits = int($default_shutdown_timeout / $sleep_time);
