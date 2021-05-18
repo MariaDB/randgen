@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25677:
+=~ Assertion \`m_prebuilt->idx_cond_n_cols > 0'
+=~ ha_innobase::build_template
+=~ ha_innobase::change_active_index
+=~ QUICK_RANGE_SELECT::reset
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-25654:
+=~ Assertion \`limit >= trx_id'
+=~ purge_node_t::skip
+=~ row_purge_parse_undo_rec
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25651:
 =~ signal 11|AddressSanitizer|Assertion \`command <= SQLCOM_END'
 =~ THD::update_stats
