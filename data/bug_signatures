@@ -10,6 +10,9 @@ MDEV-25677:
 =~ ha_innobase::change_active_index
 =~ QUICK_RANGE_SELECT::reset
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-25662:
+=~ InnoDB: Expected tablespace id .* but found 0 in the file
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25654:
 =~ Assertion \`limit >= trx_id'
 =~ purge_node_t::skip
@@ -2091,7 +2094,6 @@ MDEV-21218:
 =~ Item_equal_iterator<List_iterator_fast, Item>::get_curr_field
 =~ Item_equal::contains
 =~ eliminate_item_equal
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-21135:
 =~ InnoDB: Failing assertion: thr_get_trx(thr)->error_state == DB_SUCCESS
 =~ que_run_threads

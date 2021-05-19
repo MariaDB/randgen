@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MENT-1199:
+=~ signal 11|AddressSanitizer
+=~ Sql_cmd_alter_table_exchange_partition::exchange_partition
+=~ Version: '10\.4
 MENT-809:
 =~ mariabackup: Aria engine: starting recovery
 =~ Got error 127 when executing|Got error 175 when executing
