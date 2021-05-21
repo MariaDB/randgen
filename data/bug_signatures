@@ -50,6 +50,10 @@ MDEV-25523:
 =~ Assertion \`using_unique_constraint \|\| group_buff <= param->group_buff + param->group_length'
 =~ create_tmp_table
 =~ Version: '10\.2|Server version: 10\.2
+MDEV-25506:
+=~ InnoDB: Operating system error number 2 in a file operation.
+=~ InnoDB: Cannot open datafile for read-only:.*FTS_.* OS error: 71
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25490:
 =~ LeakSanitizer: detected memory leaks
 =~ Create_tmp_table::start
@@ -749,6 +753,11 @@ MDEV-24283:
 =~ Assertion \`bitmap_is_set(&m_part_info->read_partitions, m_part_spec\.start_part)'
 =~ ha_partition::handle_ordered_index_scan
 =~ ha_partition::common_first_last
+MDEV-24262:
+=~ signal 11|AddressSanitizer
+=~ st_join_table::cleanup
+=~ JOIN::destroy
+=~ Query.*:.*GROUP_CONCAT
 MDEV-24256:
 =~ signal [16]|AddressSanitizer
 =~ SQL_SELECT::cleanup
@@ -807,6 +816,11 @@ MDEV-23948:
 =~ Assertion \`table->no_keyread \|\| !table->covering_keys\.is_set(tab->index) \|\| table->file->keyread == tab->index'
 =~ join_read_first
 =~ Version: '10\.4|Server version: 10\.4
+MDEV-23928:
+=~ Assertion \`maybe_null \|\| !null_value'|Assertion \`maybe_null() \|\| !null_value'
+=~ Item_func_ceiling::time_op
+=~ Item_func_hybrid_field_type::time_op_with_null_check
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-23919:
 =~ Assertion \`0'
 =~ subselect_hash_sj_engine::init
@@ -2176,7 +2190,7 @@ MDEV-20861:
 =~ Assertion \`ikey_\.type != kTypeDeletion && ikey_\.type != kTypeSingleDeletion'
 =~ rocksdb::CompactionIterator::PrepareOutput
 MDEV-20816:
-=~ Assertion \`maybe_null \|\| !null_value'
+=~ Assertion \`maybe_null \|\| !null_value'|Assertion \`maybe_null() \|\| !null_value'
 =~ Item_func_.*::time_op
 =~ Type_handler_time_common::Item_func_hybrid_field_type
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
@@ -2316,7 +2330,7 @@ MDEV-20518:
 =~ tc_purge
 =~ run_backup_stage
 MDEV-20501:
-=~ Assertion \`maybe_null \|\| !null_value'
+=~ Assertion \`maybe_null \|\| !null_value'|Assertion \`maybe_null() \|\| !null_value'
 =~ Item_func_round::date_op
 =~ Type_handler_temporal_result
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
