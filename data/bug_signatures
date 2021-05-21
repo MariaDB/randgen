@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25754:
+=~ AddressSanitizer|signal 11
+=~ Field_newdate::val_str
+=~ Item_func_concat_ws::val_str
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25677:
 =~ Assertion \`m_prebuilt->idx_cond_n_cols > 0'
 =~ ha_innobase::build_template
@@ -3379,7 +3384,6 @@ MDEV-16755:
 MDEV-16699:
 =~ AddressSanitizer|signal 11
 =~ my_strnncoll.*|my_uca_strnncollsp_.*
-=~ Field_blob::cmp
 =~ group_concat_key_cmp_with_order
 =~ FeatureUsage detected compressed columns
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
