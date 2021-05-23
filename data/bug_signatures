@@ -403,8 +403,8 @@ MDEV-24804:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24787:
 =~ signal [16]|AddressSanitizer
-=~ Item_ref::field_type
 =~ check_group_min_max_predicates
+=~ get_best_group_min_max
 =~ test_if_skip_sort_order
 MDEV-24782:
 =~ AddressSanitizer|signal [16]
@@ -3414,6 +3414,10 @@ MDEV-16664:
 =~ InnoDB: Failing assertion: !other_lock \|\| wsrep_thd_is_BF(lock->trx->mysql_thd, FALSE) \|\| wsrep_thd_is_BF(other_lock->trx->mysql_thd, FALSE)
 =~ lock_rec_queue_validate
 =~ row_search_mvcc
+MDEV-16664:
+=~ LeakSanitizer|Warning: Memory not freed
+=~ create_tmp_table|Unique::Unique
+=~ multi_delete::initialize_tables|multi_update::initialize_tables
 MDEV-16659:
 =~ Assertion \`anc_page->org_size == anc_page->size'
 =~ d_search
