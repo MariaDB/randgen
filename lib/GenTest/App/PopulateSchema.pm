@@ -176,7 +176,7 @@ sub run {
 
     if ($schema_file) {
         $tables = $executor->execute("SELECT CONCAT(TABLE_SCHEMA, '.', TABLE_NAME), CREATE_TIME FROM INFORMATION_SCHEMA.TABLES "
-                . "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema')")->data();
+                . "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema','sys')")->data();
         my %old_tables = ();
         foreach (@$tables) {
             $old_tables{$_->[0]} = $_->[1];
@@ -194,7 +194,7 @@ sub run {
         # for empty ones, we'll compare their creation time with the stored one
 
         $tables = $executor->execute("SELECT CONCAT(TABLE_SCHEMA, '.', TABLE_NAME), CREATE_TIME FROM INFORMATION_SCHEMA.TABLES "
-                . "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema') AND TABLE_ROWS = 0")->data();
+                . "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema','sys') AND TABLE_ROWS = 0")->data();
         foreach (@$tables) {
             push @tables_to_populate, $_->[0] unless defined $old_tables{$_->[0]} and $old_tables{$_->[0]} eq $_->[1];
         }
