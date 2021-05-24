@@ -1010,7 +1010,7 @@ sub checkDatabaseIntegrity {
 
   my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
   foreach my $database (@$databases) {
-      next if $database =~ m{^(information_schema|pbxt|performance_schema)$}sio;
+      next if $database =~ m{^(information_schema|pbxt|performance_schema|sys)$}sio;
       $dbh->do("USE $database");
       my $tabl_ref = $dbh->selectcol_arrayref("SHOW FULL TABLES", { Columns=>[1,2] });
       # 1178 is ER_CHECK_NOT_IMPLEMENTED
