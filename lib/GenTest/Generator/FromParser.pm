@@ -190,6 +190,8 @@ sub parseParser {
   $parserTokens{LEFT_PAREN_WITH}= '(' unless defined $parserTokens{LEFT_PAREN_WITH};
   $parserTokens{ORACLE_CONCAT_SYM}= $parserTokens{OR2_SYM} unless defined $parserTokens{ORACLE_CONCAT_SYM};
   $parserTokens{MYSQL_CONCAT_SYM}= $parserTokens{OR2_SYM} unless defined $parserTokens{MYSQL_CONCAT_SYM};
+  $parserTokens{PARSE_VCOL_EXPR}= '' ;#unless defined $parserTokens{PARSE_VCOL_EXPR};
+  $parserTokens{LEFT_PAREN_ALT}= '(' ;#unless defined $parserTokens{LEFT_PAREN_ALT};
 
   foreach my $r (keys %parserRules) {
     my $rule= $parserRules{$r};
