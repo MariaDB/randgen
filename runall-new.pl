@@ -590,8 +590,10 @@ if ($props->{rpl_mode}) {
     while ($galera_topology =~ s/^(\w)//) {
         if (lc($1) eq 'm') {
             $props->{server_specific}->{$i+1}->{dsn} = $rplsrv->nodes->[$i]->dsn($props->{database},$props->{user});
+        } else {
+            $props->{server_specific}->{$i+1}->{dsn} = undef;
         }
-        $props->{server_specific}->{$i+1}->{dsn} = $rplsrv->nodes->[$i];
+        $props->{server_specific}->{$i+1}->{server} = $rplsrv->nodes->[$i];
         $i++;
     }
 
@@ -694,7 +696,7 @@ say("GenTest exited with exit status ".status2text($gentest_result)." ($gentest_
 # otherwise if the test is replication/with two servers compare the 
 # server dumps for any differences else if there are no failures exit with success.
 
-if ( $gentest_result == STATUS_OK
+if ( 0 && $gentest_result == STATUS_OK
     && ( ($props->{rpl_mode} && $props->{rpl_mode} !~ /nosync/)
          || defined $props->{server_specific}->{2}->{basedir}
          || defined $props->{server_specific}->{3}->{basedir}
