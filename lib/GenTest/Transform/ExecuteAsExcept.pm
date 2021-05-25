@@ -45,12 +45,23 @@ sub transform {
         $orig_query_zero_limit.= ' LIMIT 0';
     }
 
-	return [
-		"( $orig_query ) EXCEPT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_DISTINCT */",
-		"( $orig_query ) EXCEPT ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
-		"/* compatibility 10.5.2 */ ( $orig_query ) EXCEPT ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-		"/* compatibility 10.5.2 */ ( $orig_query ) EXCEPT ALL ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
-	];
+  my @queries= (
+    "( $orig_query ) EXCEPT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_DISTINCT */",
+    "( $orig_query ) EXCEPT /*!100500 DISTINCT */ ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
+    "/* compatibility 10.5.2 */ ( $orig_query ) EXCEPT ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+    "/* compatibility 10.5.2 */ ( $orig_query ) EXCEPT ALL ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
+  );
+
+  if ($executor->serverVariable('sql_mode') =~ /oracle/i)
+  {
+    push @queries,
+      "/* compatibility 10.6.1 */ ( $orig_query ) MINUS DISTINCT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_DISTINCT */",
+      "/* compatibility 10.6.1 */ ( $orig_query ) MINUS ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
+      "/* compatibility 10.6.1 */ ( $orig_query ) MINUS ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+      "/* compatibility 10.6.1 */ ( $orig_query ) MINUS ALL ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
+  };
+
+	return \@queries;
 }
 
 1;
