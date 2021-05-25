@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25775:
+=~ AddressSanitizer|signal 11|Invalid read of size
+=~ String::copy
+=~ Item_cache_str::cache_value
+=~ Version: '10\.2|Server version: 10\.2
 MDEV-25754:
 =~ AddressSanitizer|signal 11
 =~ Field_newdate::val_str
