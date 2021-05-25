@@ -133,10 +133,8 @@ sub run {
 
   if ($self->scenarioOptions()->{grammar2}) {
     $self->setProperty('grammar',$self->scenarioOptions()->{grammar2});
-#    $self->unsetProperty('redefine');
   } else {
-    sayError("Atomic DDL grammar is not specified (--scenario-grammar2)");
-    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
+    sayWarning("Atomic DDL grammar is not specified (--scenario-grammar2), continuing with original ones");
   }
   $self->setProperty('queries',10000000);
 
