@@ -644,7 +644,8 @@ sub startServer {
 }
 
 sub kill {
-    my ($self) = @_;
+    my ($self, $signal) = @_;
+    $signal= 'KILL' unless defined $signal;
 
     my $pidfile= $self->pidfile;
 
@@ -653,7 +654,7 @@ sub kill {
     }
 
     if (defined $self->serverpid and $self->serverpid =~ /^\d+$/) {
-        kill KILL => $self->serverpid;
+        kill $signal => $self->serverpid;
         my $sleep_time= 0.2;
         my $waits = int($default_shutdown_timeout / $sleep_time);
         while ($self->running && $waits) {
@@ -777,7 +778,7 @@ sub dumpdb {
     if ($skip_heap_tables) {
       my @heap_tables= @{$self->dbh->selectcol_arrayref(
           "select concat(table_schema,'.',table_name) from ".
-          "information_schema.tables where engine='MEMORY' and table_schema!='information_schema'"
+          "information_schema.tables where engine='MEMORY' and table_schema not in ('information_schema','performance_schema','sys')"
         )
       };
       $skip_heap_tables= join ' ', map {'--ignore-table-data='.$_} @heap_tables;
@@ -815,6 +816,7 @@ sub dumpSchema {
     say($dump_command);
     my $dump_result = system("$dump_command > $file");
     if ($dump_result != 0) {
+      sayError("Dump failed, trying to collect some information");
       system($self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SHOW FULL PROCESSLIST'");
       system($self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO'");
     }
