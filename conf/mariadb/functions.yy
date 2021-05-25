@@ -107,6 +107,7 @@ func_misc_func:
    RAND(_int_unsigned) | RAND( func_arg ) |
    RELEASE_LOCK( func_arg_char ) |
    SLEEP( func_zero_or_almost ) |
+   SYS_GUID() /* compatibility 10.6.1 */ |
    UUID_SHORT() |
    UUID() |
 # Changed due to MDEV-12172
@@ -231,10 +232,23 @@ func_str_func:
    SUBSTR( func_arg, func_arg ) | SUBSTR( func_arg FROM func_arg ) | SUBSTR( func_arg, func_arg, func_arg ) | SUBSTR( func_arg FROM func_arg FOR func_arg ) |
    SUBSTRING_INDEX( func_arg, func_arg, func_arg ) |
    TRIM( func_arg ) | TRIM( func_trim_mode FROM func_arg ) | TRIM( func_trim_mode func_arg FROM func_arg ) | TRIM( func_arg FROM func_arg ) |
+   TO_CHAR( func_arg func_optional_to_char_fmt ) /* compatibility 10.6.1 */ |
    UCASE( func_arg ) |
    UNHEX( func_arg ) |
    UPPER( func_arg )
 ;
+
+func_optional_to_char_fmt:
+  | , func_to_char_fmt ;
+
+func_to_char_fmt:
+  { @fmt_elements=qw(YYYY YYY YY RRRR RR MM MON MONTH MI DD DY HH HH12 HH24 SS)
+    ; $n= $prng->uint16(0,20)
+    ; @special= (':','.','-','/',',',';',' ')
+    ; $str= ''
+    ; foreach (1..$n) { $str.= $prng->arrayElement(\@fmt_elements).$prng->arrayElement(\@special) }
+    ; "'".$str."'"
+  };
 
 func_trim_mode:
    BOTH | LEADING | TRAILING ;
@@ -248,6 +262,7 @@ func_search_modifier:
 ;
 
 func_date_func:
+   ADD_MONTHS( func_arg, _smallint ) /* compatibility 10.6.1 */ |
    ADDDATE( func_arg, INTERVAL func_arg func_unit1 ) | ADDDATE( func_arg, func_arg ) |
    ADDTIME( func_arg, func_arg ) |
    CONVERT_TZ( func_arg, func_arg, func_arg ) |
@@ -286,6 +301,8 @@ func_date_func:
    SUBDATE( func_arg, func_arg ) |
    SUBTIME( func_arg, func_arg ) |
    SYSDATE() |
+   # For ORACLE mode
+   SYSDATE /* compatibility 10.6.1 */ |
    TIME( func_arg ) |
    TIMEDIFF( func_arg, func_arg ) |
    TIMESTAMP( func_arg ) | TIMESTAMP( func_arg, func_arg ) |
