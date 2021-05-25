@@ -134,12 +134,15 @@ sub restart {
 	my $dbh = DBI->connect($server->dsn());
 	$restart_status = STATUS_DATABASE_CORRUPTION if not defined $dbh && $restart_status == STATUS_OK;
 
-	if ($restart_status > STATUS_OK) {
-		say("Restart has failed.");
-		return $restart_status;
-	}
+  if ($restart_status == STATUS_OK) {
+    $restart_status= $server->checkDatabaseIntegrity;
+  }
+  if ($restart_status > STATUS_OK) {
+    say("Restart has failed.");
+    return $restart_status;
+  }
 
-	return STATUS_OK;
+  return STATUS_OK;
 
 }
 
