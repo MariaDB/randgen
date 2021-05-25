@@ -28,6 +28,7 @@ use GenTest;
 use GenTest::Constants;
 use GenTest::Random;
 use GenTest::Executor;
+use GenTest::App::PopulateSchema;
 
 use Data::Dumper;
 
@@ -237,20 +238,23 @@ sub run {
         {
           my $perl_errors= $@;
           say("Could not evaluate $spec_file as Perl, trying to feed it to the server as SQL");
-          my $client = DBServer::MySQL::MySQLd::_find(undef,
-                  [$executor->serverVariable('basedir')],
-                  osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-                  osWindows()?("mariadb.exe","mysql.exe"):("mariadb","mysql")
-          );
           # ... but if it turns out to be something else, we'll try to interpret it
           # as an SQL file (e.g. a dump) and feed it directly to the server.
           # Run with --force in case of partial errors (e.g. some values don't work with the current server charset).
           # If it turns out that nothing is loaded at all, it will be a pointless test,
           # but such things should be caught at test implementation stage
-          if ($client and
-              system("$client --force -uroot --protocol=tcp --port=".$executor->port()." ".$executor->defaultSchema()." < $spec_file") == STATUS_OK)
+
+          my @populate_rows= (defined $self->rows() ? split(',', $self->rows()) : (100));
+          my $populate = GenTest::App::PopulateSchema->new(schema_file => $spec_file,
+                                               debug => $self->debug,
+                                               dsn => $self->dsn,
+                                               seed => $self->seed,
+                                               rows => \@populate_rows,
+                                               basedir => $executor->serverVariable('basedir'),
+          );
+          if ($populate->run() == STATUS_OK)
           {
-            say("Loaded SQL file $spec_file");
+            say("Loaded SQL file $spec_file and populated the tables");
             return STATUS_OK;
           } else {
             croak "Unable to load $spec_file: $perl_errors";

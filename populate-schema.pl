@@ -59,15 +59,15 @@ if ($table_list) {
 	@tables = split /,/, $table_list;
 }
 
+my @row_counts= (defined $rows ? split /,/, $rows : 100);
 my $app = GenTest::App::PopulateSchema->new(schema_file => $schema_file,
                                      debug => $debug,
                                      dsn => $dsn,
                                      seed => $seed,
-                                     rows => $rows,
-                                     server_id => $server_id,
+                                     rows => \@row_counts,
                                      basedir => $basedir,
                                      tables => \@tables,
-			);
+);
 
 
 my $status = $app->run();
