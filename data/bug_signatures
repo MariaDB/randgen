@@ -2271,7 +2271,7 @@ MDEV-20666:
 =~ ha_innobase::index_read
 =~ Version: '5\.5
 MDEV-20640:
-=~ Assertion \`0'
+=~ Assertion \`0'|AddressSanitizer
 =~ row_purge_remove_sec_if_poss_leaf
 =~ que_thr_step
 =~ Version: '10\.3
