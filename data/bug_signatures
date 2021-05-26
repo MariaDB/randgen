@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25784:
+=~ signal 11|AddressSanitizer
+=~ Table_function_json_table::print
+=~ sp_instr_freturn::print
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-25781:
+=~ AddressSanitizer|signal 11|Invalid read of size
+=~ SHA1_Update
+=~ Item_func_sha::
+=~ Item_result_field::save_in_result_field
+MDEV-25778:
+=~ Error: Freeing overrun buffer.*sql/item_strfunc
+=~ Error: Safemalloc overrun buffer.*sql/item_strfunc
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25775:
 =~ AddressSanitizer|signal 11|Invalid read of size
 =~ String::copy
@@ -1655,11 +1669,11 @@ MDEV-22440: [thd->transaction.stmt.*is_empty() || / GRANT / KILL_SERVER]
 =~ KILL_SERVER|KILL_TIMEOUT|KILL_QUERY
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22435:
-=~ signal [16]|AddressSanitizer
-=~ TABLE_SHARE::init_from_sql_statement_string
+=~ Assertion \`len'
+=~ extra2_write_len
 =~ discover_assisted
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-=~ versioning|FeatureUsage detected system-versioned
+=~ versioning|FeatureUsage detected system-versioned|FeatureUsage detected application periods
 MDEV-22430:
 =~ Assertion \`ha_info->ht() != binlog_hton'
 =~ MYSQL_BIN_LOG::unlog_xa_prepare
