@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25803:
+=~ AddressSanitizer|signal 11
+=~ skip_trailing_space|my_ismbchar
+=~ _mi_pack_key
+=~ ha_myisam::records_in_range
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25784:
 =~ signal 11|AddressSanitizer
 =~ Table_function_json_table::print
