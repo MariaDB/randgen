@@ -141,6 +141,12 @@ MDEV-25335:
 =~ Prepared_statement
 =~ delete_statement_as_hash_key
 =~ Version: '10\.2|Server version: 10\.2
+MDEV-25335:
+=~ LeakSanitizer: detected memory leaks
+=~ String::real_alloc
+=~ Item_string::Item_string
+=~ Prepared_statement::execute
+=~ Version: '10\.2|Server version: 10\.2
 MDEV-25334:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
