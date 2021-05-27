@@ -961,6 +961,8 @@ sub stopServer {
     $shutdown_timeout = $default_shutdown_timeout unless defined $shutdown_timeout;
     my $res;
 
+    my $shutdown_marker= 'SHUTDOWN_'.time();
+    $self->addErrorLogMarker($shutdown_marker);
     if ($shutdown_timeout and defined $self->[MYSQLD_DBH]) {
         say("Stopping server on port ".$self->port);
         $SIG{'ALRM'} = sub { sayWarning("Could not execute shutdown command in time"); };
@@ -998,6 +1000,10 @@ sub stopServer {
     } else {
         say("Shutdown timeout or dbh is not defined, killing the server");
         $res= $self->kill;
+    }
+    my ($crashes, undef)= $self->checkErrorLogForErrors($shutdown_marker);
+    if ($crashes and scalar(@$crashes)) {
+      $res= DBSTATUS_FAILURE;
     }
     return $res;
 }
@@ -1255,6 +1261,7 @@ sub checkErrorLogForErrors {
         or $_ =~ /segmentation fault/sio
         or $_ =~ /segfault/sio
         or $_ =~ /got\s+exception/sio
+        or $_ =~ /AddressSanitizer|LeakSanitizer/sio
     ) {
       say("------") unless $count++;
       say($_);

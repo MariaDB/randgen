@@ -897,8 +897,8 @@ sub exit_test {
     my $status = shift;
     my $res= stopServers($status);
     if ($status == STATUS_OK and $res != DBSTATUS_OK) {
-        say("Setting status to DBSTATUS_FAILURE due to a problem upon server shutdown");
-        $status= DBSTATUS_FAILURE;
+        say("Setting status to FAILURE due to a problem upon server shutdown");
+        $status= STATUS_SERVER_SHUTDOWN_FAILURE;
     }
     say("[$$] $0 will exit with exit status ".status2text($status). " ($status)");
     safe_exit($status);
