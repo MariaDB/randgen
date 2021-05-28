@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25814:
+=~ AddressSanitizer|signal 11
+=~ Query_cache::process_and_count_tables
+=~ Query_cache::is_cacheable
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-25813:
+=~ AddressSanitizer|signal 11
+=~ err_conv
+=~ ErrConvString::
+=~ field_unpack
 MDEV-25803:
 =~ AddressSanitizer|signal 11
 =~ skip_trailing_space|my_ismbchar
