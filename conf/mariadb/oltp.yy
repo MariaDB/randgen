@@ -1,72 +1,54 @@
-# Copyright (C) 2016 MariaDB Corporation.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; version 2 of the License.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
-# USA
-
-# Rough imitation of OLTP-read-write test (sysbench-like)
+query_init:
+  db ;
 
 query:
-    select | 
-    update |
+    db |
+    ==FACTOR:10== update |
     delete |
-    insert
+    ==FACTOR:2== insert
 ;
 
+db:
+  USE { $last_database = 'db1' } | USE { $last_database = 'db2' } ;
+
 insert:
-    INSERT IGNORE INTO _table ( _field_pk ) VALUES ( NULL ) |
-    INSERT IGNORE INTO _table ( _field_int ) VALUES ( _smallint_unsigned ) |
-    INSERT IGNORE INTO _table ( _field_char ) VALUES ( _string ) |
-    INSERT IGNORE INTO _table ( _field_pk, _field_int)  VALUES ( NULL, _int ) |
-    INSERT IGNORE INTO _table ( _field_pk, _field_char ) VALUES ( NULL, _string ) 
+    insert_op INTO _table ( _field ) VALUES ( data_value_or_default ) |
+    insert_op INTO _table ( _field, _field_next)  VALUES ( data_value_or_default, data_value_or_default ) |
+    insert_op INTO _table (_field) SELECT /* _table */ _field FROM { $last_table } opt_limit |
+    insert_op INTO _table SELECT * FROM { $last_table } opt_limit
+;
+
+opt_limit:
+  ==FACTOR:0.1== |
+  LIMIT _tinyint_unsigned |
+  ==FACTOR:0.2== LIMIT _smallint_unsigned
+;
+
+data_value_or_default:
+  ==FACTOR:5== val |
+  DEFAULT
+;
+
+val:
+  NULL | _smallint_unsigned | _string | 0 | '' |
+  ==FACTOR:10== { "'".$prng->uint16(0,50000)."'" }
+;
+
+insert_op:
+  ==FACTOR:4== INSERT IGNORE |
+  REPLACE
+;
+
+update_where_cond:
+  _field_pk = val | _field_pk <= val | _field_pk >= val | field_pk != val | _field_pk <=> val
 ;
 
 update:
-    index_update |
-    non_index_update
+    UPDATE IGNORE _table SET _field_no_pk = val WHERE update_where_cond |
+    UPDATE IGNORE _table SET _field_no_pk = val, _field_no_pk = val WHERE update_where_cond
 ;
 
 delete:
-    DELETE FROM _table WHERE _field_pk = _smallint_unsigned ;
-
-index_update:
-    UPDATE IGNORE _table SET _field_int_indexed = _field_int_indexed + 1 WHERE _field_pk = _smallint_unsigned ;
-
-# It relies on char fields being unindexed. 
-# If char fields happen to be indexed in the table spec, then this update can be indexed as well. No big harm though. 
-non_index_update:
-    UPDATE _table SET _field_char = _string WHERE _field_pk = _smallint_unsigned ;
-
-select:
-    point_select |
-    simple_range |
-    sum_range |
-    order_range |
-    distinct_range 
+    ==FACTOR:3== DELETE FROM _table WHERE update_where_cond ORDER BY _field_pk LIMIT _tinyint_unsigned |
+    DELETE FROM _table WHERE update_where_cond ORDER BY _field_pk LIMIT _smallint_unsigned
 ;
-
-point_select:
-    SELECT _field FROM _table WHERE _field_pk = _smallint_unsigned ;
-
-simple_range:
-    SELECT _field FROM _table WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ;
-
-sum_range:
-    SELECT SUM(_field) FROM _table WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ;
-
-order_range:
-    SELECT _field FROM _table WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ORDER BY _field ;
-
-distinct_range:
-    SELECT DISTINCT _field FROM _table WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ORDER BY _field ;
-

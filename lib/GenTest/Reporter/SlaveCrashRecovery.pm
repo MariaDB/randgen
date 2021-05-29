@@ -56,16 +56,31 @@ sub monitor {
     my $server= $reporter->properties->server_specific->{2}->{server};
 	$last_crash_time = $reporter->testStart() if not defined $last_crash_time;
 
-	if (time() > $last_crash_time + 30) {
-		$last_crash_time = time();
-		my $pid = $server->serverpid();
-		say("Sending SIGKILL to server with pid $pid in order to force a crash recovery");
-		kill(9, $pid);
-		sleep(3);
-		return restart($reporter);
-	} else {
-		return STATUS_OK;
-	}
+  my $dbh_prev = DBI->connect($server->dsn());
+  my $ibuf= 0;
+  if (defined $dbh_prev) {
+    my (undef, undef, $stat)= $dbh_prev->selectrow_array("SHOW ENGINE INNODB STATUS");
+    if ($stat =~ /Ibuf: size (\d+)/s) {
+      $ibuf= $1;
+      say("Ibuf size: $ibuf");
+      if ($ibuf > 1) {
+        my $pid = $server->serverpid();
+        say("Sending SIGTERM to slave with pid $pid");
+        kill(15, $pid);
+        while (kill 0, $pid) {
+          say("Waiting for $pid to exit...");
+          sleep 1;
+        }
+        my $res= restart($reporter);
+        $last_crash_time = time();
+        return $res;
+      } else {
+        return STATUS_OK;
+      }
+    } else {
+      say("Couldn't detect Ibuf size: $stat");
+    }
+  }
 }
 
 sub report {
@@ -83,20 +98,54 @@ sub restart {
 	my $server = $reporter->properties->server_specific->{2}->{server};
 
 	my $dbh_prev = DBI->connect($server->dsn());
-
 	if (defined $dbh_prev) {
 		$dbh_prev->disconnect();
 	}
 
 	$server->setStartDirty(1);
 
-	say("Trying to restart the server ...");
 
 	my $errlog = $server->errorlog();
 	move($errlog,"$errlog.$restart_count");
+  unless ($ENV{SKIP_DATADIR_BACKUP}) {
+    $server->backupDatadir($server->datadir.".$restart_count");
+  }
 
+  if (check_log("$errlog.$restart_count") != STATUS_OK) {
+    kill(15, $reporter->properties->server_specific->{1}->{server}->pid());
+    die("Found errors in the previous run");
+  }
+
+
+	say("Trying to restart the server ...");
 	my $restart_status = $server->startServer();
 
+  $restart_status= check_log($errlog);
+  
+	$restart_count++;
+	my $dbh = DBI->connect($server->dsn());
+
+	$restart_status = STATUS_DATABASE_CORRUPTION if not defined $dbh && $restart_status == STATUS_OK;
+
+  if ($restart_status == STATUS_OK and not $ENV{SKIP_CHECK_TABLE}) {
+    $restart_status= $server->checkDatabaseIntegrity;
+  }
+
+	if ($restart_status > STATUS_OK) {
+		say("Restart has failed.");
+		return $restart_status;
+	}
+
+  $dbh->do("START SLAVE");
+
+	return STATUS_OK;
+
+}
+
+sub check_log {
+  my $errlog= shift;
+  my $restart_status= STATUS_OK;
+  say("Checking error log $errlog for errors");
 	open(RESTART, $errlog);
 	while (<RESTART>) {
 		$_ =~ s{[\r\n]}{}siog;
@@ -108,8 +157,8 @@ sub restart {
 			say("Exception was caught");
 			$restart_status = STATUS_DATABASE_CORRUPTION;
 		} elsif ($_ =~ m{ready for connections}sio) {
-			say("Server restart was apparently successfull.") if $restart_status == STATUS_OK ;
-			last;
+#			say("Server restart was apparently successfull.") if $restart_status == STATUS_OK ;
+#			last;
 		} elsif ($_ =~ m{device full error|no space left on device}sio) {
 			say("No space left on device");
 			$restart_status = STATUS_ENVIRONMENT_FAILURE;
@@ -126,22 +175,17 @@ sub restart {
 			say("Restarting server has apparently crashed.");
 			$restart_status = STATUS_DATABASE_CORRUPTION;
 			last;
-		}
+		} elsif ( $_ =~ m{InnoDB: Unable to find a record to delete-mark|Flagged corruption|was not found on update: TUPLE}sio )
+      {
+        sayError("Corruption which we are looking for occurred");
+        $restart_status = STATUS_DATABASE_CORRUPTION;
+        last;
+    }
 	}
 	close(RESTART);
-
-	$restart_count++;
-	my $dbh = DBI->connect($server->dsn());
-	$restart_status = STATUS_DATABASE_CORRUPTION if not defined $dbh && $restart_status == STATUS_OK;
-
-	if ($restart_status > STATUS_OK) {
-		say("Restart has failed.");
-		return $restart_status;
-	}
-
-	return STATUS_OK;
-
+  return $restart_status;
 }
+
 
 sub type {
 	return REPORTER_TYPE_PERIODIC;

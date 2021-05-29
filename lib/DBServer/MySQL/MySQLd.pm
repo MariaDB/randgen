@@ -626,10 +626,12 @@ sub startServer {
         my $pid_from_file= get_pid_from_file($self->pidfile);
 
         $pid_from_file =~ s/.*?([0-9]+).*/$1/;
-        if ($pid and $pid != $pid_from_file) {
+        if ($pid and $pid_from_file and $pid != $pid_from_file) {
             say("WARNING: pid extracted from the error log ($pid) is different from the pid in the pidfile ($pid_from_file). Assuming the latter is correct");
+            $self->[MYSQLD_SERVERPID] = int($pid_from_file);
+        } else {
+          $self->[MYSQLD_SERVERPID] = int($pid);
         }
-        $self->[MYSQLD_SERVERPID] = int($pid_from_file);
         say("Server started with PID ".$self->[MYSQLD_SERVERPID]);
     } else {
         exec("$command >> \"$errorlog\"  2>&1") || croak("Could not start mysql server");
@@ -997,6 +999,8 @@ sub stopServer {
         say("Shutdown timeout or dbh is not defined, killing the server");
         $res= $self->kill;
     }
+    say("Also killing the server, just in case");
+    $res= $self->kill;
     return $res;
 }
 
@@ -1010,7 +1014,7 @@ sub checkDatabaseIntegrity {
 
   my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
   foreach my $database (@$databases) {
-      next if $database =~ m{^(information_schema|pbxt|performance_schema)$}sio;
+      next if $database =~ m{^(information_schema|pbxt|performance_schema|sys|mysql)$}sio;
       $dbh->do("USE $database");
       my $tabl_ref = $dbh->selectcol_arrayref("SHOW FULL TABLES", { Columns=>[1,2] });
       # 1178 is ER_CHECK_NOT_IMPLEMENTED
@@ -1148,7 +1152,7 @@ sub addErrorLogMarker {
   my $self= shift;
   my $marker= shift;
 
-    say("Adding marker $marker to the error log ".$self->errorlog);
+#    say("Adding marker $marker to the error log ".$self->errorlog);
   if (open(ERRLOG,">>".$self->errorlog)) {
     print ERRLOG "$marker\n";
     close (ERRLOG);

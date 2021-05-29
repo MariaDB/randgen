@@ -158,6 +158,7 @@ sub new {
         my @slave_options;
         push(@slave_options, 
              "--server_id=2",
+             "--read-only=on",
              "--report-host=127.0.0.1",
              "--report_port=".$self->[REPLMYSQLD_SLAVE_PORT]);
         if (defined $self->[REPLMYSQLD_SERVER_OPTIONS] and defined $self->[REPLMYSQLD_SERVER_OPTIONS]->[1]) {
@@ -241,6 +242,7 @@ sub startServer {
                    " MASTER_PORT = ".$self->master->port.",".
                    " MASTER_HOST = '127.0.0.1',".
                    " MASTER_USER = 'root',".
+                   " MASTER_DELAY = 10,".
                    " MASTER_CONNECT_RETRY = 1" . $master_use_gtid);
     
 	$slave_dbh->do("START SLAVE");
@@ -284,9 +286,9 @@ sub waitForSlaveSync {
 sub stopServer {
     my ($self, $status) = @_;
 
-    if ($status == DBSTATUS_OK) {
-        $self->waitForSlaveSync();
-    }
+#    if ($status == DBSTATUS_OK) {
+#        $self->waitForSlaveSync();
+#    }
     if ($self->slave->dbh) {
         $self->slave->dbh->do("STOP SLAVE");
     }

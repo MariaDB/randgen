@@ -49,9 +49,6 @@ sub monitor {
 	$first_reporter = $reporter if not defined $first_reporter;
 	return STATUS_OK if $reporter ne $first_reporter;
 
-	# Do not restart in the first 20 seconds after the test flow started
-	return STATUS_OK if (time() < $reporter->reporterStartTime() + 20);
-
 	my $server= $reporter->properties->server_specific->{1}->{server};
 	my $status= STATUS_OK;
 
@@ -64,6 +61,16 @@ sub monitor {
 		return STATUS_SERVER_CRASHED;
 	}
 
+  my (undef, undef, $stat)= $dbh->selectrow_array("SHOW ENGINE INNODB STATUS");
+  my $ibuf= 0;
+  if ($stat =~ /Ibuf: size (\d+)/s) {
+    $ibuf= $1;
+    say("Ibuf size: $ibuf");
+    if ($ibuf <= 1) {
+      return STATUS_OK;
+    }
+  }
+
   if ($server->stopServer($shutdown_timeout) != STATUS_OK) {
     say("Restart reporter failed to stop the server");
     return STATUS_ENVIRONMENT_FAILURE;
@@ -71,15 +78,17 @@ sub monitor {
 
   my ($crashes, $errors)= $server->checkErrorLogForErrors($restart_marker);
 
-  if (@$crashes) {
+  if ($crashes and scalar(@$crashes)) {
     return STATUS_SERVER_CRASHED;
-  } elsif (@$errors) {
+  } elsif ($errors and scalar(@$errors)) {
     return STATUS_DATABASE_CORRUPTION;
   }
 
   my $old_marker= $restart_marker;
   $restart_marker= 'RQG RESTART MARKER ' . (++$restart_count);
-  $server->backupDatadir($server->datadir.".$restart_count");
+  unless ($ENV{SKIP_DATADIR_BACKUP}) {
+    $server->backupDatadir($server->datadir.".$restart_count");
+  }
   $server->addErrorLogMarker($restart_marker);
 
 	say("Restart reporter: Restarting the server ...");
@@ -107,10 +116,12 @@ sub monitor {
 
 	$reporter->updatePid();
 
-  if ($server->checkDatabaseIntegrity > STATUS_OK) {
-    return STATUS_DATABASE_CORRUPTION;
-  } else {
-    say("Schema does not look corrupt");
+  unless ($ENV{SKIP_CHECK_TABLE}) {
+    if ($server->checkDatabaseIntegrity > STATUS_OK) {
+      return STATUS_DATABASE_CORRUPTION;
+    } else {
+      say("Schema does not look corrupt");
+    }
   }
 
 	return STATUS_OK;

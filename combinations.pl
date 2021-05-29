@@ -132,11 +132,7 @@ read(CONF, my $config_text, -s $config_file);
 eval ($config_text);
 croak "Unable to load $config_file: $@" if $@;
 
-if (!defined $servers) {
-    $servers = 1;
-    $servers = 2 if $basedirs[1] ne '';
-}
-
+$servers ||= ($basedirs[1] ne '' ? 2 : 1);
 croak "--servers may only be 1 or 2" if !($servers == 1 or $servers == 2);
 
 my $logToStd = !osWindows() && !$noLog;
@@ -399,12 +395,13 @@ sub doCombination {
 #	$command .= " --mask=$mask" if $comb_str !~ /-mask/;
 	$command .= " --mtr-build-thread=".($mtrbt+($thread_id-1)*2);
 	$command .= " --duration=$duration" if $duration ne '';
-    foreach my $s (1..$servers) {
-        $command .= " --basedir".$s."=".$basedirs[$s-1]." " if $basedirs[$s-1] ne '';
-    }
+  if ($servers == 1) {
+    $command .= " --basedir=".$basedirs[0]." ";
+  } else  {
+    $command .= " --basedir1=".$basedirs[0]." --basedir2=".($basedirs[1] || $basedirs[0])." ";
+  }
 	$command .= " --gendata=$gendata " if $gendata ne '';
 	$command .= " --grammar=$grammar " if $grammar ne '';
-	$command .= " --seed=$seed " if $seed ne '';
 	$command .= " --testname=$testname " if $testname ne '';
 	$command .= " --xml-output=$xml_output " if $xml_output ne '';
 	$command .= " --report-xml-tt" if defined $report_xml_tt;
@@ -412,13 +409,20 @@ sub doCombination {
 	$command .= " --report-xml-tt-dest=$report_xml_tt_dest " if $report_xml_tt_dest ne '';
 
   my $tm= time();
-  $command =~ s/--seed=time/--seed=$tm/g;
+  if ($command =~ s/--seed=time/--seed=$tm/g) {}
+  elsif ($command !~ /--seed=/ and $seed ne '') {
+    $command .= " --seed=".($seed + $trial_id)." ";
+  }
 
 	$command.= " @ARGV";
 
-    foreach my $s (1..$servers) {
-        $command .= " --vardir".$s."=$workdir/current".$s."_$thread_id " if $command !~ m{--mem}sio && $workdir ne '';
+  if ($command !~ m{--mem}sio && $workdir ne '') {
+    if ($servers == 1) {
+      $command .= " --vardir=$workdir/current1_$thread_id ";
+    } else {
+      $command .= " --vardir1=$workdir/current1_$thread_id --vardir2=$workdir/current2_$thread_id ";
     }
+  }
 	$command =~ s{[\t\r\n]}{ }sgio;
     if ($logToStd) {
         $command .= " 2>&1 | tee $workdir/trial".$trial_id.'.log';

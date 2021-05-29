@@ -87,7 +87,7 @@ use constant EXECUTOR_FLAG_PERFORMANCE	=> 2;
 use constant EXECUTOR_FLAG_HASH_DATA	=> 4;
 
 # Values
-use constant EXECUTOR_META_RELOAD_INTERVAL => 10;
+use constant EXECUTOR_META_RELOAD_INTERVAL => 100;
 
 my %system_schema_cache;
 
@@ -433,7 +433,7 @@ sub cacheMetaData {
         $coll->{$collation} = $charset;
     }
     $self->[EXECUTOR_COLLATION_METADATA] = $coll;
-    say("Executor has loaded collation metadata");
+#    say("Executor has loaded collation metadata");
   }
 
   my ($system_meta, $non_system_meta);
@@ -443,7 +443,7 @@ sub cacheMetaData {
     $system_meta= $self->loadMetaDataFromFile('metadata_system.info');
     if ($system_meta and scalar(keys %$system_meta)) {
       $system_schema_cache{$self->dsn()}= $system_meta;
-      say("Executor has loaded system metadata");
+#      say("Executor has loaded system metadata");
     } else {
       sayError("Executor failed to load system metadata");
     }
@@ -458,7 +458,7 @@ sub cacheMetaData {
     # Non-system schema metadata is reloaded periodically
     $non_system_meta= $self->loadMetaDataFromFile('metadata.info', \$self->[EXECUTOR_META_FILE_SIZE]);
     if ($non_system_meta and scalar(%$non_system_meta)) {
-      sayDebug("Executor has loaded non-system metadata");
+#      sayDebug("Executor has loaded non-system metadata");
       $self->[EXECUTOR_META_LAST_LOAD_OK]= 1;
     } elsif ($non_system_meta) {
       sayDebug("Executor has kept old non-system metadata");

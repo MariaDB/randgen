@@ -989,7 +989,7 @@ sub reportError {
         $self->sendError($msg) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
     } elsif (not defined $reported_errors{$errstr}) {
         my $query_for_print= shorten_message($query);
-        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text($err2type{$err} || -1) . "). Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text($err2type{$err} || -1) . "). Further errors of this kind will be suppressed.") if $err ne "1053" and not ($execution_flags & EXECUTOR_FLAG_SILENT);
         $reported_errors{$errstr}++;
     }
 }
@@ -1262,11 +1262,11 @@ sub execute {
                 $err_type = STATUS_SEMANTIC_ERROR;
                 $executor->setDbh($dbh);
             } else {
-                sayError("Executor::MySQL::execute: Failed to reconnect after getting " . status2text($err_type));
+#                sayError("Executor::MySQL::execute: Failed to reconnect after getting " . status2text($err_type));
             }
 
             my $query_for_print= shorten_message($query);
-            say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":"")) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+            say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":"")) if not ($execution_flags & EXECUTOR_FLAG_SILENT) and $err != 1053;
         } elsif (not ($execution_flags & EXECUTOR_FLAG_SILENT) or (defined $err_type and $err_type == STATUS_SYNTAX_ERROR)) {
             # Always print syntax errors, even with the silent flag
             $executor->[EXECUTOR_ERROR_COUNTS]->{$sth->errstr()}++;
@@ -1510,8 +1510,8 @@ sub DESTROY {
     my $executor = shift;
     $executor->disconnect();
 
-    say("-----------------------");
-    say("Statistics for Executor ".$executor->dsn());
+#    say("-----------------------");
+#    say("Statistics for Executor ".$executor->dsn());
     if (
         (rqg_debug()) &&
         (defined $executor->[EXECUTOR_STATUS_COUNTS])
@@ -1529,8 +1529,8 @@ sub DESTROY {
 #        say("Rare EXPLAIN items:");
 #        print Dumper $executor->[EXECUTOR_EXPLAIN_QUERIES];
     }
-    say("Statuses: ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } sort keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
-    say("-----------------------");
+#    say("Statuses: ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } sort keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
+#    say("-----------------------");
 }
 
 sub currentSchema {

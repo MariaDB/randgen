@@ -193,13 +193,13 @@ sub next {
 					or $execution_result->status() == STATUS_REPLICATION_FAILURE
 				 ) and $restart_timeout) 
 			{
-                say("Mixer: Server has gone away, waiting for $restart_timeout more seconds to see if it gets back")
-					if $restart_timeout == $mixer->restart_timeout() or $restart_timeout == 1;
+#                say("Mixer: Server has gone away, waiting for $restart_timeout more seconds to see if it gets back")
+#					if $restart_timeout == $mixer->restart_timeout() or $restart_timeout == 1;
                 while ($restart_timeout) {
                     sleep 1;
                     $restart_timeout--;
                     if ($executor->execute("SELECT 'Heartbeat'", EXECUTOR_FLAG_SILENT)->status() == STATUS_OK) {
-                        say("Mixer: Server is back, repeating the last query");
+#                        say("Mixer: Server is back, repeating the last query");
                         redo EXECUTE_QUERY;
                     }
                 }

@@ -24,28 +24,35 @@ query_add:
 
 trx:
   START TRANSACTION |
-  COMMIT
+  COMMIT |
+  ==FACTOR:0.2== ROLLBACK
 ;
 
 dml:
-    select | 
     ==FACTOR:3== update |
     delete |
     ==FACTOR:2== insert
 ;
 
 insert:
-    insert_op INTO _table ( _field ) VALUES ( data_value ) |
-    insert_op INTO _table ( _field, _field_next ) VALUES ( data_value, data_value ) |
-    insert_op INTO _table () VALUES _basics_empty_values_list
-;
+    insert_op INTO _table ( _field ) VALUES ( data_value_or_default ) |
+    insert_op INTO _table ( _field, _field_next ) VALUES ( data_value_or_default, data_value_or_default ) |
+    insert_op INTO _table () VALUES () |
+    insert_op INTO _table (_field) SELECT /* _table */ _field FROM _table LIMIT _tinyint_unsigned |
+    ==FACTOR:0.1== insert_op INTO _table SELECT * FROM { $last_table }
+;;
 
 insert_op:
-  INSERT _basics_delayed_5pct _basics_ignore_80pct | REPLACE
+  INSERT _basics_ignore_80pct | REPLACE
 ;
 
 data_value:
-  NULL | DEFAULT | _tinyint_unsigned | _english | _char(1) | ''
+  NULL | 0 | _tinyint_unsigned | _english | _char(1) | ''
+;
+
+data_value_or_default:
+  ==FACTOR:5== data_value |
+  DEFAULT
 ;
 
 update:

@@ -304,7 +304,7 @@ sub run {
     }
 
     foreach my $worker_pid (keys %worker_pids) {
-        say("Killing remaining worker process with pid $worker_pid...");
+#        say("Killing remaining worker process with pid $worker_pid...");
         kill(15, $worker_pid);
     }
         
@@ -312,7 +312,7 @@ sub run {
         # Wait for periodic process to return the status of its last execution
         Time::HiRes::sleep(1);
         say("Killing periodic reporting process with pid $reporter_pid...");
-        kill(15, $reporter_pid);
+        kill(9, $reporter_pid);
             
         if (osWindows()) {
             # We use sleep() + non-blocking waitpid() due to a bug in ActiveState Perl
@@ -695,7 +695,7 @@ sub initReporters {
         if ($self->isMySQLCompatible()) {
             $self->config->reporters(['ErrorLog', 'Backtrace']) unless scalar(@{$self->config->reporters});
             push @{$self->config->reporters}, 'ValgrindXMLErrors' if (defined $self->config->property('valgrind-xml'));
-            push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode and $self->config->rpl_mode !~ /nosync/;
+#            push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode and $self->config->rpl_mode !~ /nosync/;
             push @{$self->config->reporters}, 'ReplicationSlaveStatus' 
                 if $self->config->rpl_mode && $self->isMySQLCompatible();
             push @{$self->config->reporters}, 'MetadataReload' unless "@{$self->config->reporters}" =~ /MetadataReload/;
@@ -751,8 +751,8 @@ sub initValidators {
         push @{$self->config->validators}, 'MarkErrorLog' 
             if (defined $self->config->valgrind) && $self->isMySQLCompatible();
         
-        push @{$self->config->validators}, 'QueryProperties' 
-            if defined $self->grammar() && $self->grammar()->hasProperties() && $self->isMySQLCompatible();
+#        push @{$self->config->validators}, 'QueryProperties' 
+#            if defined $self->grammar() && $self->grammar()->hasProperties() && $self->isMySQLCompatible();
     } else {
         ## Remove the "None" validator
         foreach my $i (0..$#{$self->config->validators}) {

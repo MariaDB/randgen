@@ -40,7 +40,7 @@ use Data::Dumper;
 use Digest::MD5 qw(md5_hex);
 use POSIX;
 
-use constant METADATA_RELOAD_INTERVAL => 30;
+use constant METADATA_RELOAD_INTERVAL => 300;
 use constant METADATA_QUERY_TIMEOUT => 25;
 use constant ER_LOCK_WAIT_TIMEOUT => 1205;
 use constant ER_STATEMENT_TIMEOUT => 1969;

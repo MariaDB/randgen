@@ -275,7 +275,8 @@ my $git_rev= `cd $ENV{RQG_HOME} && git log -1 --pretty=%h`;
 # Apparently git command succeeded
 if ($git_rev) {
   chomp $git_rev;
-  my $git_diff=`cd $ENV{RQG_HOME} && git diff`;
+  my $git_diff;
+#  my $git_diff=`cd $ENV{RQG_HOME} && git diff`;
   say("RQG git revision $git_rev".($git_diff ? ' with local changes:' : ''));
   print $git_diff if $git_diff;
   say("###############################################################");
@@ -430,7 +431,7 @@ $props->{vardir} ||= $props->{server_specific}->{1}->{vardir};
 # If we don't have basedir at this point, something went wrong
 unless ($props->{basedir}) {
     print STDERR "\nERROR: Basedir is not defined\n\n";
-    help();
+#    help();
     exit 1;
 }
 
@@ -591,7 +592,7 @@ if ($props->{rpl_mode}) {
         if (lc($1) eq 'm') {
             $props->{server_specific}->{$i+1}->{dsn} = $rplsrv->nodes->[$i]->dsn($props->{database},$props->{user});
         }
-        $props->{server_specific}->{$i+1}->{dsn} = $rplsrv->nodes->[$i];
+        $props->{server_specific}->{$i+1}->{server} = $rplsrv->nodes->[$i];
         $i++;
     }
 
@@ -694,7 +695,7 @@ say("GenTest exited with exit status ".status2text($gentest_result)." ($gentest_
 # otherwise if the test is replication/with two servers compare the 
 # server dumps for any differences else if there are no failures exit with success.
 
-if ( $gentest_result == STATUS_OK
+if ( 0 && $gentest_result == STATUS_OK
     && ( ($props->{rpl_mode} && $props->{rpl_mode} !~ /nosync/)
          || defined $props->{server_specific}->{2}->{basedir}
          || defined $props->{server_specific}->{3}->{basedir}
