@@ -87,7 +87,7 @@ use constant EXECUTOR_FLAG_PERFORMANCE	=> 2;
 use constant EXECUTOR_FLAG_HASH_DATA	=> 4;
 
 # Values
-use constant EXECUTOR_META_RELOAD_INTERVAL => 100;
+use constant EXECUTOR_META_RELOAD_INTERVAL => 100000;
 
 my %system_schema_cache;
 
