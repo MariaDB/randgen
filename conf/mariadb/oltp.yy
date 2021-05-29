@@ -50,5 +50,5 @@ update:
 
 delete:
     ==FACTOR:3== DELETE FROM _table WHERE update_where_cond ORDER BY _field_pk LIMIT _tinyint_unsigned |
-    DELETE FROM _table WHERE update_where_cond ORDER BY _field_pk LIMIT _smallint_unsigned
+    DELETE FROM _table WHERE update_where_cond ORDER BY _field_pk LIMIT { $prng->uint16(100,1000) }
 ;
