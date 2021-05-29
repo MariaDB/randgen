@@ -50,6 +50,8 @@ my $restart_count = 0;
 sub monitor {
 	my $reporter = shift;
 
+  return STATUS_OK if time() < $reporter->testStart() + 30;
+
 	$first_reporter = $reporter if not defined $first_reporter;
 	return STATUS_OK if $reporter ne $first_reporter;
 
@@ -107,7 +109,7 @@ sub restart {
 
 	my $errlog = $server->errorlog();
 	move($errlog,"$errlog.$restart_count");
-  unless ($ENV{SKIP_DATADIR_BACKUP}) {
+  if ($ENV{DATADIR_BACKUP}) {
     $server->backupDatadir($server->datadir.".$restart_count");
   }
 
@@ -127,7 +129,7 @@ sub restart {
 
 	$restart_status = STATUS_DATABASE_CORRUPTION if not defined $dbh && $restart_status == STATUS_OK;
 
-  if ($restart_status == STATUS_OK and not $ENV{SKIP_CHECK_TABLE}) {
+  if ($restart_status == STATUS_OK and $ENV{CHECK_TABLE}) {
     $restart_status= $server->checkDatabaseIntegrity;
   }
 

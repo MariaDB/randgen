@@ -44,6 +44,8 @@ sub monitor {
 	my $reporter= shift;
   my $shutdown_timeout= shift;
 
+  return STATUS_OK if time() < $reporter->testStart() + 30;
+
   $shutdown_timeout = 120 unless defined $shutdown_timeout;
 
 	$first_reporter = $reporter if not defined $first_reporter;
@@ -86,7 +88,7 @@ sub monitor {
 
   my $old_marker= $restart_marker;
   $restart_marker= 'RQG RESTART MARKER ' . (++$restart_count);
-  unless ($ENV{SKIP_DATADIR_BACKUP}) {
+  if ($ENV{DATADIR_BACKUP}) {
     $server->backupDatadir($server->datadir.".$restart_count");
   }
   $server->addErrorLogMarker($restart_marker);
@@ -116,7 +118,7 @@ sub monitor {
 
 	$reporter->updatePid();
 
-  unless ($ENV{SKIP_CHECK_TABLE}) {
+  if ($ENV{CHECK_TABLE}) {
     if ($server->checkDatabaseIntegrity > STATUS_OK) {
       return STATUS_DATABASE_CORRUPTION;
     } else {
