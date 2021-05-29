@@ -63,15 +63,15 @@ sub monitor {
 		return STATUS_SERVER_CRASHED;
 	}
 
-  my (undef, undef, $stat)= $dbh->selectrow_array("SHOW ENGINE INNODB STATUS");
-  my $ibuf= 0;
-  if ($stat =~ /Ibuf: size (\d+)/s) {
-    $ibuf= $1;
-    say("Ibuf size: $ibuf");
-    if ($ibuf <= 1) {
-      return STATUS_OK;
-    }
-  }
+#  my (undef, undef, $stat)= $dbh->selectrow_array("SHOW ENGINE INNODB STATUS");
+#  my $ibuf= 0;
+#  if ($stat =~ /Ibuf: size (\d+)/s) {
+#    $ibuf= $1;
+#    say("Ibuf size: $ibuf");
+#    if ($ibuf <= 1) {
+#      return STATUS_OK;
+#    }
+#  }
 
   if ($server->stopServer($shutdown_timeout) != STATUS_OK) {
     say("Restart reporter failed to stop the server");
