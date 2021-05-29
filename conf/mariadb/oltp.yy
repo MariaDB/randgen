@@ -40,7 +40,7 @@ insert_op:
 ;
 
 update_where_cond:
-  _field_pk = val | _field_pk <= val | _field_pk >= val | field_pk != val | _field_pk <=> val
+  _field_pk = val | _field_pk <= val | _field_pk >= val | _field_pk != val | _field_pk <=> val
 ;
 
 update:
