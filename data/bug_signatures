@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25821:
+=~ Assertion \`Count >= rest_length'|signal 11|AddressSanitizer
+=~ _my_b_write
+=~ merge_buffers
+=~ QUICK_INDEX_MERGE_SELECT
+=~ Version: '10\.[2-3]|Server version: 10\.[2-3]
 MDEV-25814:
 =~ AddressSanitizer|signal 11
 =~ Query_cache::process_and_count_tables
