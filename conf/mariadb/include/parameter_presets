@@ -215,9 +215,7 @@ $non_crash_scenario_combinations_104= [ @$non_crash_scenario_combinations_103 ];
 $non_crash_scenario_combinations_105= [ @$non_crash_scenario_combinations_104 ];
 $non_crash_scenario_combinations_106= [ @$non_crash_scenario_combinations_105 ];
 
-$scenario_combinations_102= [
-  '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
-];
+$scenario_combinations_102= [ @$non_crash_scenario_combinations_102 ];
 
 $scenario_combinations_103= [ @$scenario_combinations_102 ];
 $scenario_combinations_104= [ @$scenario_combinations_103 ];
