@@ -217,8 +217,6 @@ $non_crash_scenario_combinations_106= [ @$non_crash_scenario_combinations_105 ];
 
 $scenario_combinations_102= [
   '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
-  '--scenario=MariaBackupFull',
-  '--scenario=MariaBackupIncremental',
 ];
 
 $scenario_combinations_103= [ @$scenario_combinations_102 ];
@@ -228,6 +226,8 @@ $scenario_combinations_106= [
   @$scenario_combinations_105,
   '--scenario=CrashUpgrade',
   '--scenario=UndoLogUpgrade',
+  '--scenario=MariaBackupFull',
+  '--scenario=MariaBackupIncremental',
 ];
 
 #############
