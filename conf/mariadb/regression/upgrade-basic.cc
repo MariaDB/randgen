@@ -14,9 +14,7 @@ $combinations = [
   --mysqld=--lock-wait-timeout=10
   --mysqld=--innodb-lock-wait-timeout=5
   --scenario-grammar2=conf/mariadb/oltp_and_ddl.yy
+  --scenario=NormalUpgrade
+  --duration=180
   '],
-  [
-    '--scenario=NormalUpgrade --duration=180',
-    '--scenario=UndoLogUpgrade --duration=300',
-  ],
 ];
