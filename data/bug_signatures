@@ -1701,7 +1701,7 @@ MDEV-22435:
 =~ extra2_write_len
 =~ discover_assisted
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-=~ versioning|FeatureUsage detected system-versioned|FeatureUsage detected application periods|application_periods.yy
+=~ versioning|FeatureUsage detected system-versioned|FeatureUsage detected application periods|application_periods\.yy
 MDEV-22430:
 =~ Assertion \`ha_info->ht() != binlog_hton'
 =~ MYSQL_BIN_LOG::unlog_xa_prepare
