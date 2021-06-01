@@ -852,7 +852,7 @@ sub normalizeDump {
       # `col_blob` blob NOT NULL DEFAULT ... => `col_blob` blob NOT NULL.
       s/(\s+(?:blob|text|mediumblob|mediumtext|longblob|longtext|tinyblob|tinytext)(?:\s*NOT\sNULL)?)\s*DEFAULT\s*(?:\d+|NULL|\'[^\']*\')\s*(.*)$/${1}${2}/;
       # `k` int(10) unsigned NOT NULL DEFAULT '0' => `k` int(10) unsigned NOT NULL DEFAULT 0
-      s/(DEFAULT\s+)(\d+)(.*)$/${1}\'${2}\'${3}/;
+      s/(DEFAULT\s+)([\.\d]+)(.*)$/${1}\'${2}\'${3}/;
       # DEFAULT current_timestamp() ON UPDATE current_timestamp() => DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       s/DEFAULT current_timestamp\(\)/DEFAULT CURRENT_TIMESTAMP/g;
       s/ON UPDATE current_timestamp\(\)/ON UPDATE CURRENT_TIMESTAMP/g;
