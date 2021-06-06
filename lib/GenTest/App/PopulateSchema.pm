@@ -68,7 +68,6 @@ use constant PS_DEBUG     => 1;
 use constant PS_DSN       => 2;
 use constant PS_SEED      => 3;
 use constant PS_ROWS      => 4;
-use constant PS_SERVER_ID => 5;
 use constant PS_SQLTRACE  => 6;
 use constant PS_BASEDIR   => 7;
 use constant PS_TABLES    => 8;
@@ -82,7 +81,6 @@ sub new {
         'dsn' => PS_DSN,
         'seed' => PS_SEED,
         'rows' => PS_ROWS,
-        'server_id' => PS_SERVER_ID,
         'sqltrace' => PS_SQLTRACE,
         'basedir' => PS_BASEDIR,
         'tables' => PS_TABLES,
@@ -129,10 +127,6 @@ sub rows {
 }
 
 
-sub server_id {
-    return $_[0]->[PS_SERVER_ID];
-}
-
 sub sqltrace {
     return $_[0]->[PS_SQLTRACE];
 }
@@ -176,7 +170,7 @@ sub run {
 
     if ($schema_file) {
         $tables = $executor->execute("SELECT CONCAT(TABLE_SCHEMA, '.', TABLE_NAME), CREATE_TIME FROM INFORMATION_SCHEMA.TABLES "
-                . "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema')")->data();
+                . "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema','sys')")->data();
         my %old_tables = ();
         foreach (@$tables) {
             $old_tables{$_->[0]} = $_->[1];
@@ -193,8 +187,8 @@ sub run {
         # (even if they are new, we consider them populated from the schema file);
         # for empty ones, we'll compare their creation time with the stored one
 
-        $tables = $executor->execute("SELECT CONCAT(TABLE_SCHEMA, '.', TABLE_NAME), CREATE_TIME FROM INFORMATION_SCHEMA.TABLES "
-                . "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema') AND TABLE_ROWS = 0")->data();
+        $tables = $executor->execute("SELECT CONCAT(TABLE_SCHEMA, '.', TABLE_NAME) AS t, CREATE_TIME FROM INFORMATION_SCHEMA.TABLES "
+                . "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema','sys') AND TABLE_ROWS = 0 ORDER BY t")->data();
         foreach (@$tables) {
             push @tables_to_populate, $_->[0] unless defined $old_tables{$_->[0]} and $old_tables{$_->[0]} eq $_->[1];
         }
@@ -205,11 +199,12 @@ sub run {
         @tables_to_populate = @$tables;
     }
 
-    say("Tables to populate: @tables_to_populate");
-
-    # TODO: be smarter about rows count
+    my @row_counts= ( $self->rows() && scalar(@{$self->rows()}) ? @{$self->rows()} : (100) );
+    say("Tables to populate: @tables_to_populate, row counts: @row_counts");
+    my $i= 0;
     foreach my $t (@tables_to_populate) {
-        populate_table($self, $executor, $t, $self->rows());
+        populate_table($self, $executor, $t, $row_counts[$i++]);
+        $i= 0 if $i > $#row_counts;
     }
 
     return STATUS_OK;

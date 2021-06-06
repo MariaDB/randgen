@@ -451,7 +451,7 @@ sub startServer {
                                          ["--core-file",
                                           "--datadir=".$self->datadir,  # Could not add to STDOPTS, because datadir could have changed
                                           "--max-allowed-packet=1G",	# Allow loading bigger blobs
-                                          "--loose-innodb-ft-min-token-size=10", # Workaround for MDEV-25324
+#                                          "--loose-innodb-ft-min-token-size=10", # Workaround for MDEV-25324
                                           "--port=".$self->port,
                                           "--socket=".$self->socketfile,
                                           "--pid-file=".$self->pidfile],
@@ -486,7 +486,7 @@ sub startServer {
         }
         $command = "valgrind --time-stamp=yes --leak-check=yes --suppressions=".$self->valgrind_suppressionfile." ".$val_opt." ".$command;
     }
-    $self->printInfo;
+#    $self->printInfo;
 
     my $errlog_fh;
     my $errlog_last_update_time= (stat($errorlog))[9] || 0;
@@ -514,7 +514,7 @@ sub startServer {
             Time::HiRes::sleep($wait_time);
             $errlog_update= ( (stat($errorlog))[9] > $errlog_last_update_time);
             if ($errlog_update) {
-              say("Pid file " . $self->pidfile . " does not exist and timeout hasn't passed yet, but the error log has already been updated");
+#              say("Pid file " . $self->pidfile . " does not exist and timeout hasn't passed yet, but the error log has already been updated");
               # MySQL 8.0 is slow at creating pid file
               if ($self->_isMySQL()) {
                 for (1..10) {
@@ -524,13 +524,13 @@ sub startServer {
               }
               last;
             } else {
-              say("Pid file hasn't been found yet, waiting");
+#              say("Pid file hasn't been found yet, waiting");
             }
         }
 
         if (-f $self->pidfile) {
             $pid= get_pid_from_file($self->pidfile);
-            say("Server created pid file with pid $pid");
+#            say("Server created pid file with pid $pid");
         } elsif (!$errlog_update) {
             sayError("Server has not started updating the error log withing $start_wait_timeout sec. timeout, and has not created pid file");
             sayFile($errorlog);
@@ -999,8 +999,8 @@ sub stopServer {
         say("Shutdown timeout or dbh is not defined, killing the server");
         $res= $self->kill;
     }
-    say("Also killing the server, just in case");
-    $res= $self->kill;
+#    say("Also killing the server, just in case");
+#    $res= $self->kill;
     return $res;
 }
 
@@ -1026,7 +1026,7 @@ sub checkDatabaseIntegrity {
         # Should not do CHECK etc., and especially ALTER, on a view
         next CHECKTABLE if $tables{$table} eq 'VIEW';
 #        say("Verifying table: $database.$table:");
-        my $check = $dbh->selectcol_arrayref("CHECK TABLE `$database`.`$table` EXTENDED", { Columns=>[3,4] });
+        my $check = $dbh->selectcol_arrayref("CHECK TABLE `$database`.`$table` QUICK", { Columns=>[3,4] });
         if ($dbh->err() > 0) {
           sayError("Got an error for table.$table: ".$dbh->err()." (".$dbh->errstr().")");
           # 1178 is ER_CHECK_NOT_IMPLEMENTED. It's not an error
@@ -1399,7 +1399,7 @@ sub dbh {
     my ($self) = @_;
     if (defined $self->[MYSQLD_DBH]) {
         if (!$self->[MYSQLD_DBH]->ping) {
-            say("Stale connection to ".$self->[MYSQLD_PORT].". Reconnecting");
+#            say("Stale connection to ".$self->[MYSQLD_PORT].". Reconnecting");
             $self->[MYSQLD_DBH] = DBI->connect($self->dsn("mysql"),
                                                undef,
                                                undef,

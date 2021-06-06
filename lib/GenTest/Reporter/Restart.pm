@@ -38,13 +38,12 @@ use DBServer::MySQL::MySQLd;
 
 my $first_reporter;
 my $restart_count= 0;
-my $restart_marker='';
 
 sub monitor {
 	my $reporter= shift;
   my $shutdown_timeout= shift;
 
-  return STATUS_OK if time() < $reporter->testStart() + 30;
+  return STATUS_OK if time() < $reporter->testStart() + 10;
 
   $shutdown_timeout = 120 unless defined $shutdown_timeout;
 
@@ -73,12 +72,13 @@ sub monitor {
 #    }
 #  }
 
+  $dbh->do("CREATE OR REPLACE FUNCTION mysql.resume_after_restart() RETURNS INT RETURN 0");
   if ($server->stopServer($shutdown_timeout) != STATUS_OK) {
     say("Restart reporter failed to stop the server");
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
-  my ($crashes, $errors)= $server->checkErrorLogForErrors($restart_marker);
+  my ($crashes, $errors)= $server->checkErrorLogForErrors();
 
   if ($crashes and scalar(@$crashes)) {
     return STATUS_SERVER_CRASHED;
@@ -86,26 +86,23 @@ sub monitor {
     return STATUS_DATABASE_CORRUPTION;
   }
 
-  my $old_marker= $restart_marker;
-  $restart_marker= 'RQG RESTART MARKER ' . (++$restart_count);
+  $restart_count++;
+
   if ($ENV{DATADIR_BACKUP}) {
     $server->backupDatadir($server->datadir.".$restart_count");
   }
-  $server->addErrorLogMarker($restart_marker);
 
-	say("Restart reporter: Restarting the server ...");
+	say('Restart reporter: Restarting the server (#'.$restart_count.')...');
 	my $status = $server->startServer();
 
 	return $status if $status > STATUS_OK;
 
-  # We intentionally check the error log from the same (old) marker again,
-  # because we might have missed something that was written on/after shutdown
-
-  my ($crashes, $errors)= $server->checkErrorLogForErrors($old_marker);
+  my ($crashes, $errors)= $server->checkErrorLogForErrors();
 
   if (@$crashes) {
     return STATUS_SERVER_CRASHED;
   } elsif (@$errors) {
+    $dbh->do("CREATE OR REPLACE FUNCTION mysql.resume_after_restart() RETURNS INT RETURN -1");
     return STATUS_DATABASE_CORRUPTION;
   }
 
@@ -120,9 +117,11 @@ sub monitor {
 
   if ($ENV{CHECK_TABLE}) {
     if ($server->checkDatabaseIntegrity > STATUS_OK) {
+      $dbh->do("CREATE OR REPLACE FUNCTION mysql.resume_after_restart() RETURNS INT RETURN -1");
       return STATUS_DATABASE_CORRUPTION;
     } else {
-      say("Schema does not look corrupt");
+      say("Schema does not look corrupt, resuming the test flow");
+      $dbh->do("CREATE OR REPLACE FUNCTION mysql.resume_after_restart() RETURNS INT RETURN 1");
     }
   }
 

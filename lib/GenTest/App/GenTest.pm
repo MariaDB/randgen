@@ -381,7 +381,7 @@ sub reportResults {
 sub stopChild {
     my ($self, $status) = @_;
 
-    say("GenTest: child $$ is being stopped with status " . status2text($status));
+#    say("GenTest: child $$ is being stopped with status " . status2text($status));
     croak "calling stopChild() for $$ without a \$status" if not defined $status;
 
     if (osWindows()) {
@@ -413,7 +413,7 @@ sub reportingProcess {
     while (1) {
         $reporter_status = $self->reporterManager()->monitor(REPORTER_TYPE_PERIODIC);
         last if $reporter_status > STATUS_CRITICAL_FAILURE or $reporter_killed == 1;
-        sleep(10);
+        sleep(20);
     }
 
     $self->stopChild($reporter_status);
@@ -470,7 +470,7 @@ sub workerProcess {
         $worker_result = $query_result if $query_result > $worker_result && $query_result > STATUS_TEST_FAILURE;
 
         if ($query_result > STATUS_CRITICAL_FAILURE) {
-				say("GenTest: Server crash or critical failure (". status2text($query_result) . ") reported, the child will be stopped");
+#				say("GenTest: Server crash or critical failure (". status2text($query_result) . ") reported, the child will be stopped");
             undef $mixer;	# so that destructors are called
             $self->stopChild($query_result);
         }

@@ -182,10 +182,12 @@ sub next {
 
 		my @execution_results;
 		my $restart_timeout = $mixer->restart_timeout();
+    my $execution_aborted= 0;
 
       EXECUTE_QUERY:
 		foreach my $executor (@$executors) {
 			my $execution_result = $executor->execute($query);
+      my $restart_timeout = $mixer->restart_timeout();
 			
 			# If the server has crashed but we expect server restarts during the test, we will wait and retry
 			if (($execution_result->status() == STATUS_SERVER_CRASHED 
@@ -198,9 +200,18 @@ sub next {
                 while ($restart_timeout) {
                     sleep 1;
                     $restart_timeout--;
-                    if ($executor->execute("SELECT 'Heartbeat'", EXECUTOR_FLAG_SILENT)->status() == STATUS_OK) {
-#                        say("Mixer: Server is back, repeating the last query");
+#                    if ($executor->execute("SELECT 'Heartbeat'", EXECUTOR_FLAG_SILENT)->status() == STATUS_OK) {
+                    my $res= $executor->execute("SELECT mysql.resume_after_restart()", EXECUTOR_FLAG_SILENT);
+                    if ($res->status() == STATUS_OK) {
+                      if ($res->data()->[0]->[0] == 1) {
+#                        say("Mixer: Server is back, resuming the test flow");
                         redo EXECUTE_QUERY;
+                      }
+                      elsif ($res->data()->[0]->[0] == -1) {
+#                        sayWarning("Mixer: Server said to abort execution");
+                        $execution_aborted= 1;
+                        last;
+                      }
                     }
                 }
             }
@@ -209,11 +220,12 @@ sub next {
 
 			# If one server has crashed, do not send the query to the second one in order to preserve consistency
 			if ($execution_result->status() > STATUS_CRITICAL_FAILURE) {
-				say("Mixer: Server crash or critical failure " . $execution_result->err() . " (". status2text($execution_result->status()) . ") reported at dsn ".$executor->dsn());
+        unless ($execution_aborted) {
+          say("Mixer: Server crash or critical failure " . $execution_result->err() . " (". status2text($execution_result->status()) . ") reported at dsn ".$executor->dsn());
+        }
 				last query;
 			}
 			
-			$restart_timeout = $mixer->restart_timeout();
 			next query if $execution_result->status() == STATUS_SKIP;
 		}
 		
