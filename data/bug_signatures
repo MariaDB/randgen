@@ -998,17 +998,19 @@ MDEV-23809:
 =~ JOIN_CACHE::free
 =~ st_join_table::cleanup
 =~ JOIN::destroy
-=~ Version: '10\.2
 MDEV-23809:
 =~ AddressSanitizer: use-after-poison
 =~ JOIN::make_aggr_tables_info
-=~ Version: '10\.2
 MDEV-23809:
 =~ signal [16]|AddressSanitizer
 =~ copy_fields
 =~ end_write
 =~ sub_select_postjoin_aggr
-=~ Version: '10\.2
+MDEV-23809:
+=~ signal 11|AddressSanitizer
+=~ evaluate_join_record
+=~ sub_select
+=~ DISTINCT
 MDEV-23800:
 =~ Assertion \`!result'
 =~ convert_const_to_int
