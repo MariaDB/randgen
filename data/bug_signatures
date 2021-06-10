@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25872:
+=~ InnoDB: Assertion failure
+=~ row_merge_read_clustered_index
+=~ ha_innobase::inplace_alter_table
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-25837:
 =~ Assertion \`thd->locked_tables_mode == LTM_NONE'
 =~ Locked_tables_list::init_locked_tables
@@ -80,7 +85,7 @@ MDEV-25627:
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-25623:
 =~ Assertion \`trn->trid != 0'
-=~ write_hook_for_undo
+=~ write_hook_for_undo|write_hook_for_redo
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25620:
 =~ InnoDB: Failing assertion: id != 0|Assertion \`dict_table_is_file_per_table(this)'
@@ -230,6 +235,11 @@ MDEV-25242:
 =~ check_grant
 =~ table_stats_fill|index_stats_fill
 =~ get_schema_tables_result
+MDEV-25214:
+=~ Assertion \`!node->is_open()'|signal 11
+=~ fil_node_open_file
+=~ fil_crypt_find_space_to_rotate
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25109:
 =~ signal|AddressSanitizer
 =~ my_casedn_str_utf8|my_casedn_str_utf8mb3
@@ -819,6 +829,11 @@ MDEV-24249:
 =~ Assertion \`!page \|\| fil_page_type_is_index(page_type)'
 =~ recv_parse_or_apply_log_rec_body
 =~ recv_recover_page
+MDEV-24210:
+=~ signal 11|AddressSanitizer
+=~ st_join_table::is_using_agg_loose_index_scan
+=~ JOIN::make_aggr_tables_info
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-24174:
 =~ The table .* is full
 =~ signal [16]|AddressSanitizer
@@ -1526,7 +1541,7 @@ MDEV-22768:
 =~ sql_set_variables
 MDEV-22759:
 =~ Assertion \`0'|Failing assertion: !cursor->index->is_committed()
-=~ row_upd_sec_index_entry|row_purge_remove_sec_if_poss_leaf|row_ins_sec_index_entry
+=~ row_upd_sec_index_entry|row_purge_remove_sec_if_poss_leaf|row_ins_sec_index_entry|ibuf_set_del_mark
 =~ FeatureUsage detected unique blobs
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22757:
@@ -2822,9 +2837,6 @@ MDEV-19014:
 =~ pure virtual method called|signal 11|AddressSanitizer: heap-use-after-free|AddressSanitizer: heap-buffer-overflow
 =~ Item_direct_view_ref::fix_fields|Field_iterator_view::create_item
 =~ sp_instr_stmt::exec_core
-MDEV-19011:
-=~ Assertion \`file->s->base\.reclength < file->s->vreclength'
-=~ ha_myisam::setup_vcols_for_repair
 MDEV-18980:
 =~ Assertion \`join->best_read < double(1\.79769313486231570814527423731704357e+308L)'
 =~ greedy_search
@@ -3549,7 +3561,7 @@ MDEV-16128:
 =~ setup_without_group
 =~ Prepared_statement::execute|sp_instr_stmt::execute
 MDEV-16128:
-=~ pure virtual method called
+=~ pure virtual method called|Item_field::type_handler
 =~ Item_func::convert_const_compared_to_int_field|Item_func::check_argument_types_like_args0
 =~ setup_without_group
 =~ Prepared_statement::execute|sp_instr_stmt::execute
