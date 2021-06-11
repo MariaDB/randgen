@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25896:
+=~ Assertion \`computed_weight == weight'
+=~ SEL_ARG::verify_weight
+=~ key_or_with_limit
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25872:
 =~ InnoDB: Assertion failure
 =~ row_merge_read_clustered_index
