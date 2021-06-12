@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25902:
+=~ Assertion \`err != DB_DUPLICATE_KEY'
+=~ row_rename_table_for_mysql
+=~ PARTITION
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25896:
 =~ Assertion \`computed_weight == weight'
 =~ SEL_ARG::verify_weight
@@ -792,7 +797,7 @@ MDEV-24521:
 MDEV-24511:
 =~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
 =~ Field::ptr_in_record
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-24508:
 =~ Assertion \`!strcmp(index->name, "FTS_DOC_ID_INDEX")'
 =~ ha_innobase::write_row|ha_innobase::update_row
