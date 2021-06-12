@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25903:
+=~ signal 11|AddressSanitizer
+=~ Explain_node::print_explain_for_children
+=~ Explain_select::print_explain
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-25902:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
