@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-25942:
+=~ Assertion \`!table\.n_waiting_or_granted_auto_inc_locks'
+=~ trx_t::drop_table
+=~ ha_innobase::delete_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-25923:
+=~ Assertion \`old_flags == ((my_flags & 0x10000U) ? 1 : 0)'
+=~ my_realloc
+=~ sort_get_next_record
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25903:
 =~ signal 11|AddressSanitizer
 =~ Explain_node::print_explain_for_children
