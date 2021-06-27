@@ -175,7 +175,10 @@ sub run {
   if ( ($old_server->majorVersion ne $new_server->majorVersion)
         # Follow-up for MDEV-14637 which changed the structure of InnoDB stat tables in 10.2.17 / 10.3.9
         or ($old_server->versionNumeric lt '100217' and $new_server->versionNumeric ge '100217' )
-        or ($old_server->versionNumeric lt '100309' and $new_server->versionNumeric ge '100309' ) )
+        or ($old_server->versionNumeric lt '100309' and $new_server->versionNumeric ge '100309' )
+        # Follow-up/workaround for MDEV-25866, CHECK errors on encrypted Aria tables
+        or ($new_server->serverVariable('aria_encrypt_tables') and $old_server->versionNumeric lt '100510' and $new_server->versionNumeric ge '100510' )
+     )
   {
     $self->printStep("Running mysql_upgrade");
     $status= $new_server->upgradeDb;
