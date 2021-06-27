@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26000:
+=~ signal 11|AddressSanitizer|Assertion \`cmp_items\[(uint)cmp_type\]'
+=~ Item_func_case::find_item
+=~ Item_func_in::create_array
+=~ Version: '10\.2|Server version: 10\.2
+MDEV-25964:
+=~ Assertion \`(have_max && !have_min) \|\| (have_max && have_min && (max_res == 0))'
+=~ QUICK_GROUP_MIN_MAX_SELECT::get_next
 MDEV-25942:
 =~ Assertion \`!table\.n_waiting_or_granted_auto_inc_locks'
 =~ trx_t::drop_table
@@ -98,7 +106,7 @@ MDEV-25654:
 =~ Assertion \`limit >= trx_id'
 =~ purge_node_t::skip
 =~ row_purge_parse_undo_rec
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-25651:
 =~ signal 11|AddressSanitizer|Assertion \`command <= SQLCOM_END'
 =~ THD::update_stats
@@ -2186,11 +2194,16 @@ MDEV-21246:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 =~ CrashUpgrade
 MDEV-21245:
+=~ InnoDB: Using a partial-field key prefix in search
 =~ Assertion \`0'
 =~ row_sel_convert_mysql_key_to_innobase
 =~ ha_innobase::records_in_range
 =~ check_quick_select
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+MDEV-21245:
+=~ InnoDB: Using a partial-field key prefix in search
+=~ ut_fold_binary
+=~ btr_search_guess_on_hash
+=~ btr_cur_search_to_nth_level_func
 MDEV-21242:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
 =~ Field_.*::val_.*|Field_*::get_*
@@ -2381,7 +2394,7 @@ MDEV-20640:
 =~ row_purge_del_mark
 =~ Version: '10\.3
 MDEV-20622:
-=~ signal 11|AddressSanitizer: SEGV
+=~ signal 11|AddressSanitizer
 =~ embedding_sjm
 =~ eliminate_item_equal
 =~ substitute_for_best_equal_field
@@ -2814,6 +2827,10 @@ MDEV-19190:
 =~ Assertion \`part_share->auto_inc_initialized'
 =~ ha_partition::get_auto_increment
 =~ TABLE.*update_generated_fields|PROFILING.*fill_statistics_info
+MDEV-19187:
+=~ Assertion \`!derived->first_select()->first_inner_unit() \|\| derived->first_select()->first_inner_unit()->with_element \|\| derived->first_select()->first_inner_unit()->first_select()-> exclude_from_table_unique_test' | Assertion \`!derived->first_select()->first_inner_unit() \|\| derived->first_select()->first_inner_unit()->first_select()-> exclude_from_table_unique_test'
+=~ TABLE_LIST::set_check_materialized
+=~ Item_func_set_user_var::fix_fields
 MDEV-19178:
 =~ Assertion \`m_sp == __null'|signal 11|AddressSanitizer: heap-use-after-free
 =~ create_view_field
