@@ -201,7 +201,7 @@ sub getval {
         # Can't return res from here, because if it's 0, the "or" block will be executed
         1;
     } or do {
-      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.")");
+      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for query $query");
     }
   }
   return $res;
