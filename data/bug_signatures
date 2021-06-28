@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26031:
+=~ signal 6
+=~ MYSQL_BIN_LOG::stop_background_thread
+=~ SERVER_SHUTDOWN_FAILURE
 MDEV-26000:
 =~ signal 11|AddressSanitizer|Assertion \`cmp_items\[(uint)cmp_type\]'
 =~ Item_func_case::find_item
