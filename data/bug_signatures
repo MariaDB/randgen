@@ -4,10 +4,25 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26054:
+=~ signal 11|AddressSanitizer
+=~ append_json_value_from_field
+=~ Item_func_json_arrayagg::get_str_from_field
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26052:
+=~ Assertion \`prebuilt->trx_id < table->def_trx_id'
+=~ row_get_prebuilt_insert_row
+=~ row_insert_for_mysql
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26035:
+=~ Assertion \`file->s->base\.reclength < file->s->vreclength \|\| !table->s->stored_fields'
+=~ ha_myisam::setup_vcols_for_repair
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-26031:
 =~ signal 6
 =~ MYSQL_BIN_LOG::stop_background_thread
 =~ SERVER_SHUTDOWN_FAILURE
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26000:
 =~ signal 11|AddressSanitizer|Assertion \`cmp_items\[(uint)cmp_type\]'
 =~ Item_func_case::find_item
