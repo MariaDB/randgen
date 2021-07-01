@@ -355,7 +355,7 @@ MDEV-25052:
 =~ Locked_tables_list::mark_table_for_reopen
 =~ TABLE::mark_table_for_reopen
 =~ mysql_prepare_alter_table
-=~ Version: '10\.2]|Server version: 10\.2
+=~ Version: '10\.2|Server version: 10\.2
 MDEV-25050:
 =~ LeakSanitizer: detected memory leaks|Warning: Memory not freed
 =~ create_file
