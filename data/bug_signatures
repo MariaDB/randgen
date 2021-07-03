@@ -390,11 +390,12 @@ MDEV-25038:
 =~ wait_while_table_is_used
 =~ Version: '10\.[2-3]|Server version: 10\.[2-3]
 MDEV-25035:
-=~ _db_return_
+=~ _db_return_|AddressSanitizer
 =~ JOIN::cleanup
 =~ st_select_lex::cleanup_all_joins
 =~ JOIN::join_free
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ REPLACE.*RETURNING|INSERT.*RETURNING
 MDEV-25028:
 =~ Assertion \`sl->join == 0'
 =~ reinit_stmt_before_use
