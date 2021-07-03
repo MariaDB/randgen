@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26087:
+=~ InnoDB: Failing assertion: table->quiesce == QUIESCE_START
+=~ row_quiesce_set_state
+=~ ha_innobase::external_lock
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26084:
 =~ Assertion \`false'
 =~ handler::get_foreign_dup_key
