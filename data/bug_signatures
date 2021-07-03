@@ -304,7 +304,7 @@ MDEV-25243:
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25243:
 =~ AddressSanitizer: heap-use-after-free
-=~ Item_func_sp::execute_impl
+=~ Item_func_sp::execute_impl|Item_sp::execute_impl
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25242:
 =~ signal 11|AddressSanitizer
