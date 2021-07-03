@@ -298,10 +298,9 @@ MDEV-25243:
 =~ end_write
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25243:
-=~ AddressSanitizer
+=~ AddressSanitizer: heap-use-after-free
 =~ Item_func_sp::execute_impl
-=~ JOIN_CACHE::join_matching_records
-=~ sub_select_cache
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25242:
 =~ signal 11|AddressSanitizer
 =~ check_grant
