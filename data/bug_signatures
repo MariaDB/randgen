@@ -180,7 +180,7 @@ MDEV-25506:
 MDEV-25490:
 =~ LeakSanitizer: detected memory leaks
 =~ Create_tmp_table::start
-=~ subselect_union_engine::prepare
+=~ subselect_union_engine::prepare|JOIN::make_aggr_tables_info
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25474:
 =~ InnoDB: Failing assertion: ib_table->stat_initialized
