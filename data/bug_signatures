@@ -5,12 +5,26 @@
 ##############################################################################
 
 MDEV-26217:
+=~ AddressSanitizer|signal
+=~ srw_mutex::wr_lock_try
+=~ dict_table_t::lock_mutex_trylock
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26217:
 =~ Assertion \`lock->trx == this'
 =~ trx_t::drop_table
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26217:
 =~ InnoDB: Failing assertion: list\.count > 0
 =~ ut_list_remove
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26217:
+=~ InnoDB: Failing assertion: table->n_rec_locks == 0
+=~ dict_sys_t::remove
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26217:
+=~ AddressSanitizer|signal
+=~ lock_rec_dequeue_from_page
+=~ lock_release_try
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26087:
 =~ InnoDB: Failing assertion: table->quiesce == QUIESCE_START
@@ -1494,7 +1508,7 @@ MDEV-23132:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-23127:
 =~ signal [16]|AddressSanitizer
-=~ Query_cache::double_linked_list_exclude|Assertion \`table_block_data->m_cached_query_count >= 0'
+=~ Query_cache::double_linked_list_exclude|Assertion \`table_block_data->m_cached_query_count >= 0'|Assertion \`table_block_data->m_cached_query_count == 0'
 =~ Query_cache::unlink_table
 MDEV-23126:
 =~ signal [16]|AddressSanitizer
