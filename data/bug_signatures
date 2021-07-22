@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26220:
+=~ signal|AddressSanitizer
+=~ Field::register_field_in_read_map
+=~ ha_partition::index_init
 MDEV-26217:
 =~ AddressSanitizer|signal
 =~ srw_mutex::wr_lock_try
