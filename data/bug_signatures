@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26217:
+=~ Assertion \`lock->trx == this'
+=~ trx_t::drop_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26217:
+=~ InnoDB: Failing assertion: list\.count > 0
+=~ ut_list_remove
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26087:
 =~ InnoDB: Failing assertion: table->quiesce == QUIESCE_START
 =~ row_quiesce_set_state
