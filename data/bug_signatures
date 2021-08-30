@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26508:
+=~ AddressSanitizer|signal 11
+=~ Item_default_value::walk
+=~ sp_instr_stmt::execute
+=~ Version: '10\.2|Server version: 10\.2
 MDEV-26220:
 =~ signal|AddressSanitizer
 =~ Field::register_field_in_read_map
