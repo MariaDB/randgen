@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26509:
+=~ AddressSanitizer|signal 11
+=~ strmake
+=~ Histogram_builder::next
+=~ Count_distinct_field::get_value_with_histogram
 MDEV-26508:
 =~ AddressSanitizer|signal 11
 =~ Item_default_value::walk
