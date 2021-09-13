@@ -160,8 +160,9 @@ $auto_gendata_combinations= [
 # Variators are transformers which are run without result comparison
 $optional_variators_102= [
   [ '', '--transformers=EnableOptimizations' ],
+  [ '', '', '', '--transformers=DisableOptimizations' ],
   [ '', '--transformers=ExecuteAsCTE' ],
-  [ '', '', '', '--transformers=ExecuteAsDeleteReturning' ],
+  [ '', '', '', '', '', '', '', '--transformers=ExecuteAsDeleteReturning' ],
   [ '', '--transformers=ExecuteAsDerived' ],
   [ '', '--transformers=ExecuteAsExecuteImmediate' ],
   [ '', '', '--transformers=ExecuteAsFunctionTwice' ],
@@ -182,7 +183,7 @@ $optional_variators_104= [ @$optional_variators_103 ];
 
 $optional_variators_105= [
   @$optional_variators_104,
-  [ '', '', '', '--transformers=ExecuteAsInsertReturning' ],
+  [ '', '', '', '', '', '', '', '', '--transformers=ExecuteAsInsertReturning' ],
 ];
 
 $optional_variators_106= [
