@@ -515,12 +515,10 @@ sub startServer {
             $errlog_update= ( (stat($errorlog))[9] > $errlog_last_update_time);
             if ($errlog_update) {
               say("Pid file " . $self->pidfile . " does not exist and timeout hasn't passed yet, but the error log has already been updated");
-              # MySQL 8.0 is slow at creating pid file
-              if ($self->_isMySQL()) {
-                for (1..10) {
-                  last if -f $self->pidfile;
-                  sleep 1;
-                }
+              # MySQL 8.0 and MariaDB 10.7 are slow at creating pid file
+              for (1..10) {
+                last if -f $self->pidfile;
+                sleep 1;
               }
               last;
             } else {
