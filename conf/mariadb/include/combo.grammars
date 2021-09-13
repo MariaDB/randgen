@@ -192,6 +192,7 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/modules/sql_errlog.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/userstat.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/user_variables.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/diagnostics.yy', '', '', '', '', '', '', '', '', '' ],
 ];
 
 $optional_redefines_103= [
