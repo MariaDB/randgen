@@ -129,6 +129,7 @@ json_func_returning_json:
   | JSON_MERGE( json_text_arg, json_doc_list )
   | JSON_MERGE_PATCH( json_text_arg, json_doc_list ) /* compatibility 10.2.25 */
   | JSON_MERGE_PRESERVE( json_text_arg, json_doc_list ) /* compatibility 10.2.25 */
+  | JSON_NORMALIZE( json_text_arg ) /* compatibililty 10.7.0 */
   | JSON_OBJECT( json_key_value_list )
   | JSON_OBJECTAGG( _jsonkey, json_valid_arg ) /* compatibility 10.5.0 */
   | JSON_QUERY( json_text_arg, _jsonpath )
@@ -150,6 +151,7 @@ json_func_other:
 	  JSON_CONTAINS( json_text_arg, json_contains_args )
 	| JSON_CONTAINS_PATH( json_text_arg, json_one_or_all, json_path_list_no_wildcard )
 	| JSON_DEPTH( json_text_arg )
+  | JSON_EQUALS( json_text_arg, json_text_arg ) /* compatibility 10.7.0 */
 	| JSON_EXISTS( json_text_arg, _jsonpath )
 	| JSON_EXTRACT( json_text_arg, json_path_list )
 	| JSON_LENGTH( json_text_arg json_optional_path_no_wildcard )
