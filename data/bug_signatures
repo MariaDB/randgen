@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26772:
+=~ Assertion \`err != DB_DUPLICATE_KEY'
+=~ row_rename_table_for_mysql
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26509:
 =~ AddressSanitizer|signal 11
 =~ strmake
