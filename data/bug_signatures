@@ -8,6 +8,11 @@ MDEV-26772:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26637:
+=~ AddressSanitizer|MemorySanitizer
+=~ my_strcoll_ascii_4bytes_found
+=~ my_hash_first_from_hash_value
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]
 MDEV-26594:
 =~ AddressSanitizer
 =~ Field_blob::get_key_image|Field_blob::get_key_image_itRAW
