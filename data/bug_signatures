@@ -8,6 +8,12 @@ MDEV-26772:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26594:
+=~ AddressSanitizer
+=~ Field_blob::get_key_image|Field_blob::get_key_image_itRAW
+=~ Field::stored_field_make_mm_leaf
+=~ calculate_cond_selectivity_for_table
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-26509:
 =~ AddressSanitizer|signal 11
 =~ strmake
