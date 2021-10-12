@@ -3248,16 +3248,6 @@ MDEV-18200:
 =~ InnoDB: If you are installing InnoDB, remember that you must create directories yourself, InnoDB does not create them
 =~ InnoDB: Cannot open datafile for read-only: .* OS error: 71
 =~ InnoDB: Could not find a valid tablespace file for .*
-MDEV-18166:
-=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'|\`marked_for_read()'
-=~ Field_varstring::val_str|Field_datetimef::get_TIME|Field_blob::val_str|Field_long::val_int
-=~ Item::save_in_field|Item_field::save_in_field
-=~ TABLE::update_virtual_fields
-MDEV-18166:
-=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'|\`marked_for_read()'
-=~ field_conv_incompatible
-=~ TABLE::update_virtual_fields
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
 MDEV-18157:
 =~ signal 11|AddressSanitizer: SEGV
 =~ Explain_node::print_explain_for_children
