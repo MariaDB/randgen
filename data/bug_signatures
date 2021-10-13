@@ -4,6 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26820:
+=~ Assertion \`marked_for_read()'
+=~ Field_.*::val_.*
+=~ Item_func_.*::val_str
+=~ TABLE::update_virtual_fields
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Query .*VALUE(
 MDEV-26772:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
@@ -1989,12 +1996,12 @@ MDEV-21834:
 =~ signal 11|AddressSanitizer:
 =~ key_copy|Field_varstring::get_key_image
 =~ ha_myisam::get_auto_increment
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.4|Server version: 10\.4
 MDEV-21834:
 =~ Assertion \`marked_for_read()'
 =~ Field_varstring::val_str
 =~ Item_func_hash::val_int
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.4|Server version: 10\.4
 MDEV-21830:
 =~ Assertion \`share->in_trans == 0'
 =~ maria_close
@@ -2634,7 +2641,7 @@ MDEV-20038:
 =~ btr_cur_search_to_nth_level_func
 =~ row_ins_sec_index_entry
 MDEV-19984:
-=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
+=~ Assertion \`marked_for_read()'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
 =~ do_copy_null|do_outer_field_null
 MDEV-19980:
 =~ Got error 22 when executing undo undo_row_insert
@@ -2680,14 +2687,17 @@ MDEV-19718:
 =~ Assertion \`rownr == 0 && new_page'
 =~ _ma_apply_redo_insert_row_head_or_tail
 =~ run_redo_phase
-MDEV-19680:
-=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'
-=~ Field_.*::val_.*|Field_.*::get_.*
-=~ Item_direct_view_ref::val_.*|st_select_lex::print
-MDEV-19680:
-=~ Assertion \`marked_for_read()'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
-=~ Field_.*::val_.*
-=~ Item_direct_ref::val_.*|st_select_lex::print
+#
+# The bug is open, but the failure is gone
+# MDEV-19680:
+# =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'
+# =~ Field_.*::val_.*|Field_.*::get_.*
+# =~ Item_direct_view_ref::val_.*|st_select_lex::print
+# MDEV-19680:
+# # =~ Assertion \`marked_for_read()'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
+# =~ Field_.*::val_.*
+# =~ Item_direct_ref::val_.*|st_select_lex::print
+#
 MDEV-19674:
 =~ Assertion \`marked_for_read()'
 =~ Field_.*::get_.*|Field_.*::val_.*
@@ -3403,12 +3413,6 @@ MDEV-17361:
 =~ Query_arena.*set_query_arena
 =~ set_n_backup_active_arena|multi_update.*send_data
 =~ Field.*set_default
-MDEV-17356:
-=~ Assertion \`!table \|\| !table->read_set \|\| bitmap_is_set(table->read_set, field_index)'
-=~ Field_.*::val_.*
-=~ field_conv_incompatible
-=~ TABLE::update_virtual_fields
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-17225:
 =~ Assertion \`log_descriptor\.bc\.buffer->prev_last_lsn == ((LSN)0)'|Assertion \`log_descriptor\.bc\.buffer->prev_last_lsn != ((LSN)0)'
 =~ translog_flush_buffers
