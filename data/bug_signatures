@@ -117,11 +117,6 @@ MDEV-25903:
 =~ Explain_node::print_explain_for_children
 =~ Explain_select::print_explain
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-25902:
-=~ Assertion \`err != DB_DUPLICATE_KEY'
-=~ row_rename_table_for_mysql
-=~ PARTITION
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25896:
 =~ Assertion \`computed_weight == weight'
 =~ SEL_ARG::verify_weight
@@ -821,72 +816,6 @@ MDEV-24585:
 =~ Assertion \`je->s\.cs == nice_js->charset()'
 =~ json_nice
 =~ Item_func_json_insert::val_str
-MDEV-24583:
-=~ AddressSanitizer|signal [16]
-=~ create_tmp_table|field_conv_memcpy
-=~ select_union::create_result_table|select_unit::create_result_table|create_postjoin_aggr_table
-=~ FeatureUsage detected virtual columns
-MDEV-24583:
-=~ Assertion \`prebuilt->mysql_prefix_len <= prebuilt->mysql_row_len'
-=~ row_sel_dequeue_cached_row_for_mysql
-=~ row_search_mvcc
-=~ FeatureUsage detected virtual columns
-MDEV-24583:
-=~ InnoDB: Failing assertion: magic1 == ROW_PREBUILT_FETCH_MAGIC_N
-=~ row_prebuilt_free
-=~ ha_innobase::close
-=~ FeatureUsage detected virtual columns
-MDEV-24583:
-=~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
-=~ Field::ptr_in_record
-=~ ha_innobase::position
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-=~ FeatureUsage detected virtual columns
-MDEV-24583:
-=~ signal [16]|AddressSanitizer
-=~ THD::is_error
-=~ evaluate_join_record
-=~ mysql_select
-=~ FeatureUsage detected virtual columns
-MDEV-24583:
-=~ InnoDB: Failing assertion: thr->magic_n == QUE_THR_MAGIC_N
-=~ que_thr_move_to_run_state_for_mysql
-=~ mysql_delete
-=~ FeatureUsage detected virtual columns
-MDEV-24583:
-=~ signal [16]|AddressSanitizer
-=~ Index_statistics::avg_frequency_is_inited
-=~ set_statistics_for_table
-=~ mysql_delete
-=~ FeatureUsage detected virtual columns
-MDEV-24583:
-=~ AddressSanitizer
-=~ Field::set_default
-=~ save_in_field_default_value
-=~ fill_record_n_invoke_before_triggers
-=~ FeatureUsage detected virtual columns
-MDEV-24583:
-=~ AddressSanitizer|signal [16]
-=~ Field::set_notnull
-=~ TABLE::update_virtual_field
-=~ innobase_get_computed_value
-MDEV-24583:
-=~ AddressSanitizer|signal [16]
-=~ innobase_get_computed_value
-=~ row_upd_store_v_row
-=~ row_upd_del_mark_clust_rec
-=~ FeatureUsage detected virtual columns
-MDEV-24583:
-=~ AddressSanitizer|signal 11
-=~ Field::update_max
-=~ Column_statistics_collected::add
-=~ Sql_cmd_analyze_table
-=~ FeatureUsage detected virtual columns
-MDEV-24583:
-=~ AddressSanitizer|signal 11
-=~ Query_arena::strmake
-=~ Column_definition::Column_definition
-=~ FeatureUsage detected virtual columns
 MDEV-24570:
 =~ Found index .* whose column info does not match that of MariaDB
 =~ InnoDB indexes are inconsistent with what defined in \.frm for table .*
@@ -2858,11 +2787,6 @@ MDEV-19361:
 MDEV-19318:
 =~ Assertion \`!(length < share->base\.min_block_length)'
 =~ _ma_scan_block_record
-MDEV-19306:
-=~ Assertion \`marked_for_read()'
-=~ TABLE::update_virtual_fields
-=~ save_in_field
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-19305:
 =~ InnoDB: Datafile '.*' is corrupted\. Cannot determine the space ID from the first 64 pages
 =~ InnoDB: Tablespace .* was not found at .*
