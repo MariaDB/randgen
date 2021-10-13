@@ -2772,18 +2772,6 @@ MDEV-19394:
 =~ InnoDB: checksum mismatch in tablespace
 =~ InnoDB: Operating system error number 2 in a file operation
 =~ fil_load_single_table_tablespace
-MDEV-19361:
-=~ Assertion \`marked_for_read()'
-=~ Item_func_mul::int_op
-=~ Item_func_hybrid_field_type::val_int_from_int_op
-=~ TABLE::update_virtual_fields
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-19361:
-=~ Assertion \`marked_for_read()'
-=~ Field::store_field
-=~ TABLE::update_virtual_fields
-=~ record_should_be_deleted
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-19318:
 =~ Assertion \`!(length < share->base\.min_block_length)'
 =~ _ma_scan_block_record
