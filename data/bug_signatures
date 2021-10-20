@@ -4,6 +4,24 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26862:
+=~ AddressSanitizer
+=~ _mi_rec_pack
+=~ _mi_write_blob_record
+=~ Version: '10\.2|Server version: 10\.2
+=~ FeatureUsage detected GIS columns
+MDEV-26862:
+=~ AddressSanitizer
+=~ rec_convert_dtuple_to_rec_comp
+=~ page_cur_tuple_insert
+=~ Version: '10\.2|Server version: 10\.2
+=~ FeatureUsage detected GIS columns
+MDEV-26862:
+=~ AddressSanitizer
+=~ write_block_record
+=~ _ma_write_init_block_record
+=~ Version: '10\.2|Server version: 10\.2
+=~ FeatureUsage detected GIS columns
 MDEV-26822:
 =~ AddressSanitizer|signal
 =~ Binary_string::copy
@@ -3556,7 +3574,7 @@ MDEV-16549:
 =~ Assertion \`context'
 =~ Item_direct_view_ref.*fix_fields|Item_field::fix_fields
 MDEV-16549:
-=~ Assertion \`context'|signal 11|AddressSanitizer: SEGV
+=~ Assertion \`context'|signal 11|AddressSanitizer: SEGV| Assertion \`field'
 =~ Item_direct_view_ref.*fix_fields|Item_field::fix_fields
 =~ mysql_derived_optimize|mysql_handle_single_derived
 MDEV-16539: [THD::mark_tmp_table_as_free_for_reuse]
