@@ -37,7 +37,7 @@ sub variate {
   return $query if $query !~ /SELECT/;
 
   my $offset_clause= ($self->random->uint16(0,1) ?
-    'OFFSET '.$self->random->uint16(0,100) : '');
+    'OFFSET '.$self->random->uint16(0,100).($self->random->uint16(0,1) ? ' ROW' : ' ROWS') : '');
   my $fetch_clause= 'FETCH '
     . ($self->random->uint16(0,1) ? 'FIRST ' : 'NEXT ')
     . $self->random->uint16(0,100)
