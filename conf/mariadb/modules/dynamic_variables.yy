@@ -238,7 +238,7 @@ dynvar_session_variable:
   | SQL_NOTES= dynvar_boolean
   | SQL_QUOTE_SHOW_CREATE= dynvar_boolean
   | SQL_SAFE_UPDATES= dynvar_boolean
-  | SQL_SELECT_LIMIT= { $prng->arrayElement([0,1,1024,18446744073709551615,'DEFAULT']) }
+#  | SQL_SELECT_LIMIT= { $prng->arrayElement([0,1,1024,18446744073709551615,'DEFAULT']) }
   | SQL_SLAVE_SKIP_COUNTER= { $prng->int(0,2) }
   | SQL_WARNINGS= dynvar_boolean
   | STANDARD_COMPLIANT_CTE= dynvar_boolean
@@ -381,7 +381,8 @@ dynvar_global_variable:
   | INNODB_ENCRYPTION_ROTATION_IOPS= { $prng->arrayElement([0,1,2,100,1000,10000]) }
   | INNODB_ENCRYPTION_THREADS= { $prng->arrayElement([0,1,2,4,8]) }
 # | INNODB_ENCRYPT_TABLES
-  | INNODB_EVICT_TABLES_ON_COMMIT_DEBUG= dynvar_boolean  /* compatibility 10.3.18 */
+# Disabled due to MDEV-26879
+# | INNODB_EVICT_TABLES_ON_COMMIT_DEBUG= dynvar_boolean  /* compatibility 10.3.18 */
   | INNODB_FAST_SHUTDOWN= { $prng->arrayElement([0,1,2,'3 /* compatibility 10.3.6 */']) }
   | INNODB_FILE_PER_TABLE= dynvar_boolean
   | INNODB_FILL_FACTOR= { $prng->int(10,100) }
