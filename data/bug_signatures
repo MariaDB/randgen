@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26891:
+=~ AddressSanitizer|signal
+=~ Field::register_field_in_read_map
+=~ TABLE::mark_auto_increment_column
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-26862:
 =~ AddressSanitizer
 =~ _mi_rec_pack
@@ -261,6 +266,11 @@ MDEV-25490:
 MDEV-25474:
 =~ InnoDB: Failing assertion: ib_table->stat_initialized
 =~ ha_innobase::info_low
+MDEV-25460:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ error_if_in_trans_or_substatement
+=~ binlog_format_check
+=~ sql_set_variables
 MDEV-25457:
 =~ signal 11|AddressSanitizer
 =~ row_undo_mod_clust_low
@@ -3774,6 +3784,9 @@ MDEV-14894: [remove_from_locked_mutex]
 =~ free_memory
 =~ remove_from_locked_mutex
 =~ my_hash_iterate
+MDEV-14890:
+=~ Assertion \`!(start_key == __null && end_key == __null)'
+=~ ha_federatedx::read_range_first
 MDEV-14865:
 =~ Assertion \`share->now_transactional == share->base\.born_transactional'
 =~ maria_close
