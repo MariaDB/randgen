@@ -49,7 +49,7 @@ sub transform {
 
     my @cols= map { '`'.$_.'`' unless $_ =~ /`/ } @{$original_result->columnNames()};
 
-    my $col_list = join ',', @{$original_result->columnNames()};
+    my $col_list = join ',', @cols;
     # INSERT/DELETE ... RETURNING does not work with aggregate functions
     return STATUS_WONT_HANDLE if $col_list =~ m{AVG|COUNT|MAX|MIN|GROUP_CONCAT|BIT_AND|BIT_OR|BIT_XOR|STD|SUM|VAR_POP|VAR_SAMP|VARIANCE}sgio;
 
