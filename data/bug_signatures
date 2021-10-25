@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26903:
+=~ Assertion \`ctx->trx->state == TRX_STATE_ACTIVE'
+=~ rollback_inplace_alter_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26891:
 =~ AddressSanitizer|signal
 =~ Field::register_field_in_read_map
