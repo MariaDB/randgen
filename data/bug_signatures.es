@@ -44,12 +44,6 @@ MDEV-24349:
 =~ get_quote_char_for_identifier|Item::print_item_w_name
 =~ st_select_lex::print
 =~ Version: '10\.3|Server version: 10\.3
-# Fixed in CS 10.4+, but affects ES 10.2-10.3
-MDEV-18286: [pagecache->cnt_for_resize_op == 0]
-=~ Assertion \`pagecache->cnt_for_resize_op == 0'
-=~ check_pagecache_is_cleaned_up
-=~ plugin_shutdown
-=~ Version: '10\.[2-3]
 # Only 10.5 CS, but also 10.4 ES
 MDEV-22913:
 =~ error: can't open

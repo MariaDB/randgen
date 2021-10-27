@@ -1155,6 +1155,10 @@ MDEV-23724:
 =~ DsMrr_impl::dsmrr_init
 =~ ha_partition::multi_range_read_init|ha_innobase::multi_range_read_init
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+# Commented because there is a need for rr trace or test case
+# MDEV-23721:
+# =~ Assertion \`node->table->is_temporary() \|\| lock_table_has_locks(node->table)'
+# =~ row_undo_ins
 MDEV-23687:
 =~ Assertion \`is_valid_value_slow()'
 =~ Datetime::Datetime|Date::Date
@@ -3164,6 +3168,12 @@ MDEV-18291:
 =~ std::__cxx11::_List_base|std::_List_base
 =~ dict_table_remove_from_cache|dict_sys_t::remove
 =~ ha_delete_table|ha_innobase_inplace_ctx::~ha_innobase_inplace_ctx|Sql_cmd_truncate_table::handler_truncate|row_merge_drop_table
+# Fixed in CS 10.4+, but affects 10.2 and possibly 10.3
+MDEV-18286: [pagecache->cnt_for_resize_op == 0]
+=~ Assertion \`pagecache->cnt_for_resize_op == 0'
+=~ check_pagecache_is_cleaned_up
+=~ plugin_shutdown
+=~ Version: '10\.[2-3]
 MDEV-18285:
 =~ Assertion \`! is_set()' failed
 =~ Diagnostics_area::disable_status
