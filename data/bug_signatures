@@ -58,6 +58,10 @@ MDEV-26594:
 =~ Field::stored_field_make_mm_leaf
 =~ calculate_cond_selectivity_for_table
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-26551:
+=~ InnoDB: Failing assertion: DICT_TF_HAS_DATA_DIR(table->flags)
+=~ dict_save_data_dir_path
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26509:
 =~ AddressSanitizer|signal 11
 =~ strmake
