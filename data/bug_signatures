@@ -920,7 +920,16 @@ MDEV-24349:
 =~ AddressSanitizer|signal [16]|Assertion \`name\.length == strlen(name\.str)'
 =~ get_quote_char_for_identifier|Item::print_item_w_name
 =~ st_select_lex::print
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ opt_trace_print_expanded_query
+MDEV-24349:
+=~ AddressSanitizer
+=~ get_hash_symbol
+=~ get_quote_char_for_identifier
+=~ opt_trace_print_expanded_query
+MDEV-24349:
+=~ check_column_name
+=~ st_select_lex::print
+=~ opt_trace_print_expanded_query
 MDEV-24283:
 =~ Assertion \`bitmap_is_set(&m_part_info->read_partitions, m_part_spec\.start_part)'
 =~ ha_partition::handle_ordered_index_scan
