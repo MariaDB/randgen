@@ -2322,7 +2322,6 @@ MDEV-21066:
 MDEV-21028:
 =~ signal 11|AddressSanitizer: SEGV
 =~ Query_arena::set_query_arena
-=~ THD::set_n_backup_active_arena
 =~ Field::set_default
 MDEV-21027:
 =~ Assertion \`part_share->auto_inc_initialized \|\| !can_use_for_auto_inc_init()'
