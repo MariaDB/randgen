@@ -515,6 +515,11 @@ MDEV-25010:
 =~ Assertion \`!lock_sys_t::get_first(receiver_cell, receiver_id, receiver_heap_no)'
 =~ lock_rec_move
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-25004:
+=~ InnoDB: Record in index \`FTS_DOC_ID_INDEX\` of table
+=~ Assertion \`0'
+=~ row_upd_sec_index_entry
+=~ DELETE.*HISTORY
 # Not yet merged to 10.6
 MDEV-24988:
 =~ AddressSanitizer|signal [16]
