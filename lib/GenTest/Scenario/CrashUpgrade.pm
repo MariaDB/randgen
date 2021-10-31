@@ -203,21 +203,6 @@ sub run {
   }
 
   #####
-  $self->printStep("Checking the server error log for errors after upgrade");
-
-  $status= $self->checkErrorLog($new_server);
-
-  if ($status != STATUS_OK) {
-    # Error log can show known errors. We want to update 
-    # the global status, but don't want to exit prematurely
-    $self->setStatus($status);
-    if ($status > STATUS_CUSTOM_OUTCOME) {
-      sayError("Found errors in the log, upgrade has apparently failed");
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
-    }
-  }
-  
-  #####
   $self->printStep("Checking the database state after upgrade");
 
   $status= $new_server->checkDatabaseIntegrity;
@@ -227,44 +212,6 @@ sub run {
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
   }
   
-  #####
-  if ($old_server->majorVersion ne $new_server->majorVersion) {
-    $self->printStep("Running mysql_upgrade");
-    $status= $new_server->upgradeDb;
-    if ($status != STATUS_OK) {
-      sayError("mysql_upgrade failed");
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
-    }
-  } else {
-    $self->printStep("mysql_upgrade is skipped, as servers have the same major version");
-  }
-
-  #####
-  $self->printStep("Running test flow on the new server");
-
-  $gentest= $self->prepareGentest(2,
-    {
-      duration => int($self->getTestDuration / 3),
-      dsn => [$new_server->dsn($self->getProperty('database'))],
-      servers => [$new_server],
-    },
-    my $skip_gendata=1
-  );
-  $status= $gentest->run();
-  
-  if ($status != STATUS_OK) {
-    sayError("Test flow on the new server failed");
-    #####
-    $self->printStep("Checking the server error log for known errors");
-
-    if ($self->checkErrorLog($new_server) == STATUS_CUSTOM_OUTCOME) {
-      $status= STATUS_CUSTOM_OUTCOME;
-    }
-
-    $self->setStatus($status);
-    return $self->finalize($status,[$new_server])
-  }
-
   #####
   $self->printStep("Stopping the new server");
 
