@@ -61,7 +61,6 @@ MDEV-26822:
 MDEV-26820:
 =~ Assertion \`marked_for_read()'
 =~ Field_.*::val_.*
-=~ Item_func_.*::val_str
 =~ TABLE::update_virtual_fields
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 =~ Query .*VALUE(
