@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26956:
+=~ LeakSanitizer: detected memory leaks
+=~ in trx_mod_table_time_t::start_bulk_insert
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]
+=~ FeatureUsage detected system-versioned
+=~ FeatureUsage detected application periods
 MDEV-26954:
 =~ InnoDB: Tablespace .* was not found at
 =~ InnoDB: Set innodb_force_recovery=1 to ignore this and to permanently lose all changes to the tablespace
