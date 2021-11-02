@@ -4,10 +4,6 @@
 # Strong matches
 ##############################################################################
 
-MENT-1199:
-=~ signal 11|AddressSanitizer
-=~ Sql_cmd_alter_table_exchange_partition::exchange_partition
-=~ Version: '10\.4
 MENT-809:
 =~ mariabackup: Aria engine: starting recovery
 =~ Got error 127 when executing|Got error 175 when executing
@@ -67,112 +63,113 @@ TODO-842: [m_status == DA_OK_BULK - LOCK]
 # Fixed in the next release
 ##########
 
-MDEV-24929:
+MDEV-26903:
+=~ Assertion \`ctx->trx->state == TRX_STATE_ACTIVE'
+=~ rollback_inplace_alter_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26772:
+=~ Assertion \`err != DB_DUPLICATE_KEY'
+=~ row_rename_table_for_mysql
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26220:
+=~ signal|AddressSanitizer
+=~ Field::register_field_in_read_map
+=~ ha_partition::index_init
+MDEV-25803:
+=~ AddressSanitizer|signal 11
+=~ skip_trailing_space|my_ismbchar
+=~ _mi_pack_key
+=~ ha_myisam::records_in_range
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-24742:
 =~ signal [16]|AddressSanitizer
-=~ thr_unlock
-=~ thr_multi_unlock
-=~ JOIN::optimize
+=~ String::numchars
+=~ in_string::set
+=~ Item_func::fix_fields
+MDEV-24619:
+=~ Assertion \`0'
+=~ Item::val_native
+=~ Type_handler_inet6::Item_val_native_with_conversion|Inet6_null::Inet6_null
+MDEV-24585:
+=~ Assertion \`je->s\.cs == nice_js->charset()'
+=~ json_nice
+=~ Item_func_json_insert::val_str
+MDEV-24467:
+=~ Direct leak of|Memory not freed|blocks are definitely lost
+=~ Binary_string::real_alloc|String::real_alloc
+=~ Field_.*::store|Field_.*::val_.*
+=~ FeatureUsage detected delayed inserts
+MDEV-23408:
+=~ Assertion \`!alias_arg \|\| strlen(alias_arg->str) == alias_arg->length'
+=~ TABLE_LIST::init_one_table
+=~ Locked_tables_list::init_locked_tables
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24929:
+MDEV-23391:
 =~ signal [16]|AddressSanitizer
-=~ get_schema_tables_result
-=~ JOIN::exec
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24811:
-=~ Assertion \`find(table)'
-=~ dict_sys_t::remove
-=~ trx_update_mod_tables_timestamp
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-24811:
-=~ Assertion \`str'
-=~ ut_fold_string
-=~ dict_table_remove_from_cache_low
-=~ trx_update_mod_tables_timestamp
-=~ Version: '10\.3|Server version: 10\.3
-MDEV-24792:
-=~ Assertion \`!newest_lsn \|\| fil_page_get_type(page)'
-=~ buf_flush_init_for_writing
-=~ mariabackup
-=~ Version: '10\.4|Server version: 10\.4
-MDEV-24779:
-=~ Assertion \`sl->join == 0'
-=~ reinit_stmt_before_use
-=~ Prepared_statement::execute
-MDEV-24763:
-=~ signal [16]|AddressSanitizer
-=~ dict_stats_try_drop_table
-=~ innobase_reload_table
-MDEV-24748:
-=~ Assertion \`err != DB_SUCCESS \|\| btr_validate_index(m_index, __null.*) == DB_SUCCESS'
-=~ BtrBulk::finish
-=~ row_merge_read_clustered_index
-MDEV-24748:
-=~ [ERROR] InnoDB: Field .* len is .*, should be .*; COMPACT RECORD
-MDEV-24710:
-=~ Conditional jump or move depends on uninitialised value|Assertion \`len <= col->len \|\| ((col->mtype) == 5 \|\| (col->mtype) == 14) \|\| (col->len == 0 && col->mtype == 1)'
-=~ rec_get_converted_size_comp_prefix_low
-=~ row_ins_index_entry
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24710:
-=~ Conditional jump or move depends on uninitialised value
-=~ _mi_rec_pack
-=~ _mi_write_dynamic_record
-=~ ha_myisam::write_row
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24710:
-=~ Error: Freeing overrun buffer .*mi_close\.c
-=~ Allocated at .*mi_open\.c
-=~ corrupted size vs. prev_size
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24710:
-=~ Conditional jump or move depends on uninitialised value|Assertion \`length <= column->length'
-=~ _ma_write_init_block_record
-=~ ha_maria::write_row
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-24664:
-=~ Assertion \`! is_set()'
-=~ Diagnostics_area::set_eof_status
-=~ Explain_query::send_explain
-=~ EXPLAIN.*DELETE
-=~ Prepared_statement::execute
-MDEV-24532:
-=~ Assertion \`thd->transaction->stmt\.is_empty()'
-=~ Locked_tables_list::unlock_locked_tables
-=~ InnoDB: Table .* contains .* user defined columns in InnoDB, but .* columns in MariaDB
-MDEV-24532:
-=~ DATABASE_CORRUPTION
-=~ InnoDB: Table .* contains .* user defined columns in InnoDB, but .* columns in MariaDB
-=~ Table .* is marked as crashed and should be repaired|Table .* doesn't exist in engine
-MDEV-24519:
-=~ signal [16]|AddressSanitizer
-=~ Charset::set_charset
-=~ String::copy
-=~ Item::remove_eq_conds
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-23843:
-=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
-=~ MDL_context::acquire_lock
-=~ THD::binlog_query|ha_maria_implicit_commit
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-23843:
+=~ close_thread_table
+=~ drop_open_table
+=~ select_create::abort_result_set
+MDEV-23391:
+=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_.*)'
+=~ close_thread_table|TDC_element::flush
+=~ Locked_tables_list::unlock_locked_tables|drop_open_table
+=~ select_create::abort_result_set
+MDEV-23365:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-22703:
+=~ Sql_cmd_truncate_table::execute
+=~ Version: '10\.[1-2]
+MDEV-22660:
 =~ signal [16]|AddressSanitizer
-=~ rec_convert_dtuple_to_rec_comp|rec_convert_dtuple_to_rec_old
-=~ page_cur_tuple_insert
-=~ row_ins_index_entry_step
-MDEV-22562:
-=~ Assertion \`next_insert_id == 0'
-=~ handler::ha_external_lock
-=~ mysql_unlock_tables
+=~ Assertion \`row_end'|is_versioning_timestamp|Vers_type_timestamp::check_sys_fields|Vers_parse_info::check_sys_fields
+=~ Table_scope_and_contents_source_st::check_fields
+=~ mysql_alter_table
+MDEV-22601:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ Can't find record in|Невозможно найти запись в
+=~ FeatureUsage detected sequences
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ application_periods|versioning|FeatureUsage detected system-versioned|FeatureUsage detected application periods
-MDEV-21697:
-=~ Assertion \`!wsrep_has_changes(thd) \|\| (thd->lex->sql_command == SQLCOM_CREATE_TABLE && !thd->is_current_stmt_binlog_format_row())'
-=~ wsrep_commit_empty
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-22445:
+=~ InnoDB: Assertion failure in file .*innobase/trx/trx0trx\.cc
+=~ trx_start_if_not_started_xa_low
+=~ ha_innobase::init_table_handle_for_HANDLER
+MDEV-22284:
+=~ signal 11|AddressSanitizer
+=~ _ma_keylength_part|_ma_row_pos_from_key|memcpy|_ma_search_no_save
+=~ ha_maria::index_read_idx_map
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-22284:
+=~ Assertion \`info->last_key\.keyinfo == key->keyinfo'
+=~ _ma_search_no_save
+=~ ha_maria::index_read_idx_map
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-22118:
+=~ Assertion \`nr != 0'
+=~ handler::update_auto_increment
+=~ handler::ha_write_row
+MDEV-21555:
+=~ InnoDB: foreign constraints: secondary index is out of sync
+=~ Assertion \`!"secondary index is out of sync"'|Assertion \`"secondary index is out of sync" == 0'
+=~ dict_index_t::vers_history_row
+=~ row_upd_check_references_constraints|row_ins_check_foreign_constraint
+MDEV-20131:
+=~ Assertion \`!pk->has_virtual()'
+=~ instant_alter_column_possible
+=~ ha_innobase::check_if_supported_inplace_alter
+MDEV-19522:
+=~ Assertion \`val <= 4294967295u'|InnoDB: Failing assertion: val <= 4294967295u
+=~ fts_encode_int
+=~ fts_cache_node_add_positions
+=~ fts_commit_table
+MDEV-19522:
+=~ InnoDB: Failing assertion: doc_id == src_node->last_doc_id
+=~ fts_optimize_node
+=~ ha_innobase::optimize
+MDEV-18734:
+=~ AddressSanitizer: heap-use-after-free|Invalid read of size
+=~ my_strnxfrm_simple_internal
+=~ Field_blob::sort_string
 
 
 ##############################################################################
@@ -183,3 +180,13 @@ MDEV-21697:
 # Fixed in the next release
 ##########
 
+MDEV-22601: [Can't find record in]
+=~ Can't find record in|Невозможно найти запись в
+=~ will exit with exit status STATUS_DATABASE_CORRUPTION
+=~ FeatureUsage detected sequences
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ will exit with exit status STATUS_DATABASE_CORRUPTION
+MDEV-14846:
+=~ prebuilt->trx, TRX_STATE_ACTIVE
+MDEV-14846:
+=~ state == TRX_STATE_FORCED_ROLLBACK
