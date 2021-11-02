@@ -269,9 +269,8 @@ dynvar_session_variable:
   | WSREP_OSU_METHOD= { $prng->arrayElement(['TOI','RSU']) }
   | WSREP_RETRY_AUTOCOMMIT= { $prng->int(0,10000) }
   | WSREP_SYNC_WAIT= { $prng->int(0,15) }
-# These only work when Galera is configured
-#  | WSREP_TRX_FRAGMENT_SIZE= { $prng->arrayElement(['DEFAULT',0,1,16384,1048576]) } /* compatibility 10.4.2 */
-#  | WSREP_TRX_FRAGMENT_UNIT= { $prng->arrayElement(['bytes',"'rows'",'segments']) } /* compatibility 10.4.2 */
+  | WSREP_TRX_FRAGMENT_SIZE= { $prng->arrayElement(['DEFAULT',0,1,16384,1048576]) } /* compatibility 10.4.2 */
+  | WSREP_TRX_FRAGMENT_UNIT= { $prng->arrayElement(['bytes',"'rows'",'segments']) } /* compatibility 10.4.2 */
 ;
 
 dynvar_global_variable:

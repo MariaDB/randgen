@@ -121,8 +121,7 @@ json_func_returning_json:
   | JSON_ARRAY_INSERT( json_text_arg, json_path_val_list_no_wildcard )
   | JSON_COMPACT( json_text_arg )
   | JSON_DETAILED( json_text_arg )
-  # MDEV-24585: Assertion failure when the argument produced by a function
-  # | JSON_INSERT( json_text_arg, json_path_val_list_no_wildcard )
+  | JSON_INSERT( json_text_arg, json_path_val_list_no_wildcard )
   | JSON_INSERT( _json, json_path_val_list_no_wildcard )
   | JSON_KEYS( json_text_arg json_optional_path_no_wildcard )
   | JSON_LOOSE( json_text_arg )
@@ -134,11 +133,9 @@ json_func_returning_json:
   | JSON_OBJECTAGG( _jsonkey, json_valid_arg ) /* compatibility 10.5.0 */
   | JSON_QUERY( json_text_arg, _jsonpath )
   | JSON_REMOVE( json_text_arg, json_remove_path_list )
-  # MDEV-24585: Assertion failure when the argument produced by a function
-  # | JSON_REPLACE( json_text_arg, json_path_val_list_no_wildcard )
+  | JSON_REPLACE( json_text_arg, json_path_val_list_no_wildcard )
   | JSON_REPLACE( _json, json_path_val_list_no_wildcard )
-  # MDEV-24585: Assertion failure when the argument produced by a function
-  # | JSON_SET( json_text_arg, json_path_val_list_no_wildcard )
+  | JSON_SET( json_text_arg, json_path_val_list_no_wildcard )
   | JSON_SET( _json, json_path_val_list_no_wildcard )
 ;
 
