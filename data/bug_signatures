@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26963:
+=~ Assertion \`je->s\.cs == nice_js->charset()'
+=~ json_nice
 MDEV-26956:
 =~ LeakSanitizer: detected memory leaks
 =~ in trx_mod_table_time_t::start_bulk_insert
