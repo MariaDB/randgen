@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26983:
+=~ signal|AddressSanitizer
+=~ buf_is_zeroes
+=~ page_zip_verify_checksum
+=~ xb_load_single_table_tablespace
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-26983:
+=~ Assertion \`fil_space_t::physical_size(flags) == info\.page_size'
+=~ xb_delta_open_matching_space
+=~ xtrabackup_apply_delta
+=~ Version: '10\.4|Server version: 10\.4
 MDEV-26979:
 =~ AddressSanitizer
 =~ dict_sys_t::find
@@ -2657,9 +2668,6 @@ MDEV-18602:
 =~ InnoDB: Failing assertion: !recv_no_log_write
 =~ mtr_commit
 =~ xtrabackup_prepare_func
-MDEV-18589:
-=~ Assertion \`fil_space_t::physical_size(flags) == info\.page_size' failed
-=~ xb_delta_open_matching_space
 MDEV-18581:
 =~ Assertion \`index->table == node->table'
 =~ row_purge_remove_sec_if_poss_leaf|row_purge_upd_exist_or_extern_func
