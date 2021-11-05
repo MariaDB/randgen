@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26979:
+=~ AddressSanitizer
+=~ dict_sys_t::find
+=~ dict_sys_t::allow_eviction
+=~ i_s_sys_tables_fill_table_stats
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26963:
 =~ Assertion \`je->s\.cs == nice_js->charset()'
 =~ json_nice
@@ -502,13 +508,6 @@ MDEV-24876:
 =~ fts_cache_destroy
 =~ has or is referenced in foreign key constraints which are not compatible with the new table definition
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-24839:
-=~ Assertion \`!table->file->keyread_enabled()'
-=~ close_thread_table
-MDEV-24839:
-=~ LeakSanitizer: detected memory leaks
-=~ JOIN_CACHE::alloc_buffer
-=~ Item_singlerow_subselect
 MDEV-24822:
 =~ LeakSanitizer: detected memory leaks
 =~ mem_heap_create_block_func
