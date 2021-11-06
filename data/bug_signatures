@@ -31,9 +31,14 @@ MDEV-26956:
 =~ FeatureUsage detected system-versioned
 =~ FeatureUsage detected application periods
 MDEV-26954:
+=~ has or is referenced in foreign key constraints which are not compatible
 =~ InnoDB: Tablespace .* was not found at
 =~ InnoDB: Set innodb_force_recovery=1 to ignore this and to permanently lose all changes to the tablespace
 =~ InnoDB: Plugin initialization aborted at .* with error Tablespace not found
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26954:
+=~ has or is referenced in foreign key constraints which are not compatible
+=~ InnoDB: Expected tablespace id .* but found .* in the file
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26953:
 =~ Assertion \`!str \|\| str != Ptr \|\| !is_alloced()'
