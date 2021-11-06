@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26986:
+=~ LeakSanitizer
+=~ Binary_string::real_alloc
+=~ Item_func_hash::val
+=~ TABLE::update_virtual_fields
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-26983:
 =~ signal|AddressSanitizer
 =~ buf_is_zeroes
@@ -37,7 +43,6 @@ MDEV-26954:
 =~ InnoDB: Plugin initialization aborted at .* with error Tablespace not found
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26954:
-=~ has or is referenced in foreign key constraints which are not compatible
 =~ InnoDB: Expected tablespace id .* but found .* in the file
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26953:
@@ -118,6 +123,15 @@ MDEV-26433:
 =~ dict_sys_t::remove
 =~ hton_drop_table
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-26402:
+=~ Assertion \`fixed == 1'
+=~ Item_.*::val_.*
+=~ Predicant_to_list_comparator::cmp
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-26402:
+=~ Item_field::used_tables
+=~ update_depend_map_for_order
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-26217:
 =~ AddressSanitizer|signal
 =~ srw_mutex::wr_lock_try
