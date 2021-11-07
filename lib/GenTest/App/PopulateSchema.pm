@@ -226,7 +226,9 @@ sub populate_table
 
 
     # We don't select virtual columns, because won't include them into the list at all
-    my $columns = $executor->execute("SELECT COLUMN_TYPE, COALESCE(COLUMN_DEFAULT,'NULL'), IS_NULLABLE, EXTRA, COLUMN_KEY, COLUMN_NAME "
+    # Position 4 is reserved for a flag indicating that the column is used
+    # in a single-column unique constraint. If it is, it will be set later
+    my $columns = $executor->execute("SELECT COLUMN_TYPE, COALESCE(COLUMN_DEFAULT,'NULL'), IS_NULLABLE, EXTRA, 0, COLUMN_NAME "
             . "FROM INFORMATION_SCHEMA.COLUMNS WHERE CONCAT(TABLE_SCHEMA,'.',TABLE_NAME) = '$table_name' "
             . "AND EXTRA NOT IN ('VIRTUAL GENERATED', 'STORED GENERATED') ORDER BY ORDINAL_POSITION")->data();
 
@@ -236,6 +238,15 @@ sub populate_table
 
     foreach my $c (@$columns) {
         push @column_list, '`'.$c->[5].'`';
+        my $unique= $executor->execute("SELECT constraint_name, max(ordinal_position) o "
+          . "FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS NATURAL JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE "
+          . "WHERE table_name ='$table_name' AND constraint_type in ('PRIMARY KEY','UNIQUE') "
+          . "AND column_name = '$c->[5]' HAVING o = 1")->data();
+        # If there are unique keys which only consist of this column,
+        # we will need to generate unique valus
+        if (scalar (@$unique)) {
+          $c->[4]= 1;
+        }
     }
 
     my $column_list = join ',', @column_list;
@@ -259,14 +270,13 @@ sub populate_table
         foreach (1..200) {
 
             foreach my $c (@$columns) {
-
                 my $val;
                 my $unique_ok = 0;
                 do {
                     my @possible_vals = ();
 
                     # only use defaults if not a part of a unique key
-                    if ( $c->[4] ne 'PRI' and $c->[4] ne 'UNI' ) {
+                    if ($c->[4] == 0) {
                         if ($c->[2] eq 'YES') {
                             push @possible_vals, 'NULL';
                         }
