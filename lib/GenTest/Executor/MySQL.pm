@@ -1359,7 +1359,7 @@ sub execute {
 
     $sth->finish();
 
-    if ($sth->{mysql_warning_count} > 0) {
+    if (defined $err or $sth->{mysql_warning_count} > 0) {
         eval {
             my $warnings = $dbh->selectall_arrayref("SHOW WARNINGS");
             $result->setWarnings($warnings);
