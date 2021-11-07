@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26987:
+=~ signal|AddressSanitizer
+=~ Explain_node::print_explain_json_for_children
+=~ Query .*ANALYZE.*FORMAT=JSON
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-26987:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ Query .*ANALYZE.*FORMAT=JSON
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-26986:
 =~ LeakSanitizer
 =~ Binary_string::real_alloc
@@ -154,6 +164,16 @@ MDEV-26217:
 =~ lock_rec_dequeue_from_page
 =~ lock_release_try
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26127:
+=~ Failing assertion: id != 0
+=~ dict_table_t::rename_tablespace
+=~ row_undo
+=~ Query .* PARTITION
+MDEV-26127:
+=~ Assertion \`err != DB_DUPLICATE_KEY'
+=~ row_rename_table_for_mysql
+=~ handler::ha_rename_partitions
+=~ Query .* PARTITION
 MDEV-26087:
 =~ InnoDB: Failing assertion: table->quiesce == QUIESCE_START
 =~ row_quiesce_set_state
@@ -375,6 +395,10 @@ MDEV-25214:
 =~ fil_node_open_file
 =~ fil_crypt_find_space_to_rotate
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-25119:
+=~ Assertion \`err != DB_DUPLICATE_KEY'
+=~ innobase_rename_table
+=~ Query .* PARTITION
 MDEV-25087:
 =~ AddressSanitizer: stack-overflow|SIGSEGV
 =~ row_ins_check_foreign_constraint
