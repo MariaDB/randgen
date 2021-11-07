@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-26992:
+=~ Assertion \`item->null_value'
+=~ Type_handler::Item_send_str
+=~ FixedBinTypeBundle
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]
 MDEV-26987:
 =~ signal|AddressSanitizer
 =~ Explain_node::print_explain_json_for_children
