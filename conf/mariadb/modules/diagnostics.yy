@@ -47,7 +47,7 @@ diag_cond_property_list:
       'TABLE_NAME',
       'COLUMN_NAME',
       'CURSOR_NAME',
-      'ERROR_INDEX /* compatibility 10.7.0 */'
+      'ROW_NUMBER /* compatibility 10.7.1 */'
     ); ''
   } diag_property_list;
 ;
