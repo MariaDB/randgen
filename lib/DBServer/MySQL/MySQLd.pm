@@ -945,7 +945,10 @@ sub collectAutoincrements {
       "ORDER BY ist.TABLE_SCHEMA, ist.TABLE_NAME, isc.COLUMN_NAME"
     );
   foreach my $t (@$autoinc_tables) {
-      $t->[3] = $self->dbh->selectrow_arrayref("SELECT IFNULL(MAX($t->[2]),0) FROM $t->[0]")->[0];
+    my $max_autoinc= $self->dbh->selectrow_arrayref("SELECT IFNULL(MAX($t->[2]),0) FROM $t->[0]");
+    if ($max_autoinc && (ref $max_autoinc eq 'ARRAY')) {
+      $t->[3] = $max_autoinc->[0];
+    }
   }
   return $autoinc_tables;
 }
