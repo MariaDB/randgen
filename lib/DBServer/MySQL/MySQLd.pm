@@ -510,20 +510,21 @@ sub startServer {
 
         # After we've launched server startup, we'll wait for max $start_wait_timeout seconds
         # for the server to start updating the error log
-        while (!-f $self->pidfile and time() < $wait_end ) {
+        while ((not $pid or kill(0,$pid)) and (not -f $self->pidfile) and (time() < $wait_end)) {
             Time::HiRes::sleep($wait_time);
             $errlog_update= ( (stat($errorlog))[9] > $errlog_last_update_time);
-            if ($errlog_update) {
-              say("Pid file " . $self->pidfile . " does not exist and timeout hasn't passed yet, but the error log has already been updated");
-              # MySQL 8.0 and MariaDB 10.7 are slow at creating pid file
-              for (1..10) {
-                last if -f $self->pidfile;
-                sleep 1;
+            if ($errlog_update and not $pid) {
+              $pid= `grep -E 'starting as process [0-9]*' $errorlog | tail -n 1 | sed -e 's/.*starting as process \\([0-9]*\\).*/\\1/'`;
+              if ($pid and $pid =~ /^\d+$/) {
+                say("Pid file " . $self->pidfile . " does not exist and timeout hasn't passed yet, but the error log has already been updated and contains pid $pid");
+              } elsif ($pid) {
+                sayWarning("Pid was detected wrongly: '$pid', discarding");
+                $pid= undef;
               }
-              last;
-            } else {
-              say("Pid file hasn't been found yet, waiting");
+            } elsif (not $pid) {
+              say("Neither pid file nor pid record in the error log have been found yet, waiting");
             }
+            sleep 1;
         }
 
         if (-f $self->pidfile) {
