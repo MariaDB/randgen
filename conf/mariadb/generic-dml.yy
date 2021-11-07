@@ -1,4 +1,4 @@
-# Copyright (C) 2018 MariaDB Corporation.
+# Copyright (C) 2018, 2021 MariaDB Corporation.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,45 +18,45 @@
 # mainly to serve as a placeholder to run with various redefines
 
 query_add:
-    ==FACTOR:9== dml |
-    trx
+    ==FACTOR:9== generic_dml_dml |
+    generic_dml_trx
 ;
 
-trx:
+generic_dml_trx:
   START TRANSACTION |
   COMMIT
 ;
 
-dml:
-    select | 
-    ==FACTOR:3== update |
-    delete |
-    ==FACTOR:2== insert
+generic_dml_dml:
+    generic_dml_select |
+    ==FACTOR:3== generic_dml_update |
+    generic_dml_delete |
+    ==FACTOR:2== generic_dml_insert
 ;
 
-insert:
-    insert_op INTO _table ( _field ) VALUES ( data_value ) |
-    insert_op INTO _table ( _field, _field_next ) VALUES ( data_value, data_value ) |
-    insert_op INTO _table () VALUES _basics_empty_values_list
+generic_dml_insert:
+    generic_dml_insert_op INTO _table ( _field ) VALUES ( generic_dml_data_value ) |
+    generic_dml_insert_op INTO _table ( _field, _field_next ) VALUES ( generic_dml_data_value, generic_dml_data_value ) |
+    generic_dml_insert_op INTO _table () VALUES _basics_empty_values_list
 ;
 
-insert_op:
+generic_dml_insert_op:
   INSERT _basics_delayed_5pct _basics_ignore_80pct | REPLACE
 ;
 
-data_value:
+generic_dml_data_value:
   NULL | DEFAULT | _tinyint_unsigned | _english | _char(1) | ''
 ;
 
-update:
-    UPDATE _basics_ignore_80pct _table SET _field = data_value ORDER BY _field LIMIT _digit
+generic_dml_update:
+    UPDATE _basics_ignore_80pct _table SET _field = generic_dml_data_value ORDER BY _field LIMIT _digit
 ;
 
-delete:
+generic_dml_delete:
     DELETE FROM _table ORDER BY _field LIMIT _digit
 ;
 
-select:
+generic_dml_select:
     SELECT _field FROM _table ORDER BY _field LIMIT _tinyint_unsigned |
     SELECT * FROM _table ORDER BY _field LIMIT _tinyint_unsigned
 ;
