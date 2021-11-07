@@ -74,6 +74,7 @@ require Exporter;
   STATUS_SERVER_SHUTDOWN_FAILURE
 	STATUS_VALGRIND_FAILURE
 	STATUS_ALARM
+        STATUS_HISTOGRAM_CORRUPTION
 
 	ORACLE_ISSUE_STILL_REPEATABLE
 	ORACLE_ISSUE_NO_LONGER_REPEATABLE
@@ -145,6 +146,8 @@ use constant STATUS_SERVER_CRASHED           => 107;
 use constant STATUS_VALGRIND_FAILURE         => 108;
 use constant STATUS_ENVIRONMENT_FAILURE      => 109; # A failure in the environment or the grammar file
 use constant STATUS_ALARM                    => 110; # A module, e.g. a Reporter, raises an alarm with critical severity
+
+use constant STATUS_HISTOGRAM_CORRUPTION     => 111; # Histogram corruption is a variation of database corruption
 
 use constant STATUS_PERL_FAILURE             => 255; # Perl died for some reason
 
