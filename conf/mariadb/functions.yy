@@ -213,6 +213,7 @@ func_str_func:
    MAKE_SET( func_arg_list ) |
    MATCH( func_field_list ) AGAINST ( func_const_char_value func_search_modifier ) |
    MID( func_arg, func_arg, func_arg ) |
+   NATURAL_SORT_KEY( func_arg ) /* compatibility 10.7.1 */ |
    OCT( func_arg ) |
    OCTET_LENGTH( func_arg ) |
    ORD( func_arg ) |
