@@ -33,7 +33,6 @@ MDEV-26983:
 =~ Version: '10\.4|Server version: 10\.4
 MDEV-26979:
 =~ AddressSanitizer
-=~ dict_sys_t::find
 =~ dict_sys_t::allow_eviction
 =~ i_s_sys_tables_fill_table_stats
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
@@ -3763,6 +3762,9 @@ TODO-842: [MDL_ticket::create]
 # Weak matches
 ##############################################################################
 
+MDEV-26990:
+=~ DDL_LOG: Got error .* when trying to execute action for entry .* of type .*
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25490: [INSERT RETURNING]
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
