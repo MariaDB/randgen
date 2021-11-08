@@ -101,18 +101,15 @@ sub run {
   }
 
   #####
-  $self->printStep("Checking view consistency");
+  $self->printStep("Checking view and merge table consistency");
   my $dbh= $old_server->dbh;
-  my $views= $dbh->selectcol_arrayref("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.views");
-  foreach my $v (@$views) {
-    $dbh->do("SELECT * FROM $v LIMIT 0");
-    if ($dbh->err()) {
-      sayWarning("View $v returns error ".$dbh->err());
-      if ($dbh->err() == 1356) {
-        say("Dropping view $v");
-        $dbh->do("DROP VIEW $v");
-      }
-    }
+  my $broken= $dbh->selectall_arrayref("select * from information_schema.tables where table_comment like 'Unable to open underlying table which is differently defined or of non-MyISAM type or%' or table_comment like '%references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them'");
+  foreach my $vt (@$broken) {
+    my $fullname= '`'.$vt->[1].'`.`'.$vt->[2].'`';
+    my $type= ($vt->[3] eq 'VIEW' ? 'view' : 'table');
+    my $err= $vt->[20];
+    sayWarning("Error $err for $type $fullname, dropping");
+    $dbh->do("DROP $type $fullname");
   }
 
   #####
