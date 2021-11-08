@@ -78,7 +78,6 @@ sub run {
     sayError("Old server failed to start");
     return $self->finalize(STATUS_TEST_FAILURE,[]);
   }
-  $old_server->storeConfigVariables();
 
   #####
   $self->printStep("Generating data on the old server");
@@ -102,15 +101,50 @@ sub run {
   }
 
   #####
-  $self->printStep("Dumping databases from the old server");
-  
-  $old_server->restoreConfigVariables();
+  $self->printStep("Checking view consistency");
+  my $dbh= $old_server->dbh;
+  my $views= $dbh->selectcol_arrayref("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.views");
+  foreach my $v (@$views) {
+    $dbh->do("SELECT * FROM $v LIMIT 0");
+    if ($dbh->err()) {
+      sayWarning("View $v returns error ".$dbh->err());
+      if ($dbh->err() == 1356) {
+        say("Dropping view $v");
+        $dbh->do("DROP VIEW $v");
+      }
+    }
+  }
+
+  #####
+  $self->printStep("Restarting the old server and dumping databases");
+
+  $status= $old_server->stopServer;
+
+  if ($status != STATUS_OK) {
+    sayError("Shutdown of the old server failed");
+    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+  }
+
+  $status= $old_server->startServer;
+
+  if ($status != STATUS_OK) {
+    sayError("Old server failed to restart");
+    return $self->finalize(STATUS_TEST_FAILURE,[]);
+  }
 
   $databases= join ' ', $old_server->nonSystemDatabases();
-  $old_server->dumpSchema($databases, $old_server->vardir.'/server_schema_old.dump');
+  $status= $old_server->dumpSchema($databases, $old_server->vardir.'/server_schema_old.dump');
+  if ($status != STATUS_OK) {
+    sayError("Schema dump on the old server failed, no point to continue");
+    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+  }
   $old_server->normalizeDump($old_server->vardir.'/server_schema_old.dump', 'remove_autoincs');
   # Skip heap tables' data on the old server, as it won't be preserved
-  $old_server->dumpdb($databases, $old_server->vardir.'/server_data_old.dump',my $skip_heap_tables=1);
+  $status= $old_server->dumpdb($databases, $old_server->vardir.'/server_data_old.dump',my $skip_heap_tables=1);
+  if ($status != STATUS_OK) {
+    sayError("Data dump on the old server failed, no point to continue");
+    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+  }
   $old_server->normalizeDump($old_server->vardir.'/server_data_old.dump');
   $table_autoinc{'old'}= $old_server->collectAutoincrements();
    
