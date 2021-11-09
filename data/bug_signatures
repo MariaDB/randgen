@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-27012:
+=~ Assertion \`key_info->key_part->field->flags & (1<< 30)'|signal|AddressSanitizer
+=~ setup_keyinfo_hash
+=~ mysql_prepare_alter_table
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-26992:
 =~ Assertion \`item->null_value'
 =~ Type_handler::Item_send_str
@@ -51,7 +56,6 @@ MDEV-26956:
 =~ FeatureUsage detected system-versioned
 =~ FeatureUsage detected application periods
 MDEV-26954:
-=~ has or is referenced in foreign key constraints which are not compatible
 =~ InnoDB: Tablespace .* was not found at
 =~ InnoDB: Set innodb_force_recovery=1 to ignore this and to permanently lose all changes to the tablespace
 =~ InnoDB: Plugin initialization aborted at .* with error Tablespace not found
@@ -168,6 +172,10 @@ MDEV-26217:
 =~ lock_rec_dequeue_from_page
 =~ lock_release_try
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26152:
+=~ InnoDB: Failing assertion: prebuilt->template_type == ROW_MYSQL_WHOLE_ROW
+=~ row_update_for_mysql
+=~ sp_instr_stmt::exec_core
 MDEV-26127:
 =~ Failing assertion: id != 0
 =~ dict_table_t::rename_tablespace
