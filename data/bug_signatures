@@ -9,6 +9,12 @@ MDEV-27012:
 =~ setup_keyinfo_hash
 =~ mysql_prepare_alter_table
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-27012:
+=~ signal|AddressSanitizer
+=~ key_copy
+=~ check_duplicate_long_entry_key
+=~ mysql_alter_table
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-26992:
 =~ Assertion \`item->null_value'
 =~ Type_handler::Item_send_str
