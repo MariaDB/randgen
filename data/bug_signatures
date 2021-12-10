@@ -4,6 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-27224:
+=~ AddressSanitizer|signal
+=~ rec_convert_dtuple_to_rec_comp
+=~ page_cur_tuple_insert
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ FeatureUsage detected unique blobs
+MDEV-27223:
+=~ AddressSanitizer|signal
+=~ my_strnncollsp_
+=~ Field_blob::cmp
+=~ check_duplicate_long_entry_key
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ FeatureUsage detected unique blobs
 MDEV-27216:
 =~ mysqld: Incorrect information in file:
 =~ Version: '10\.4|Server version: 10\.4
