@@ -4,14 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-27216:
+=~ mysqld: Incorrect information in file:
+=~ Version: '10\.4|Server version: 10\.4
 MDEV-27012:
 =~ Assertion \`key_info->key_part->field->flags & (1<< 30)'|signal|AddressSanitizer
 =~ setup_keyinfo_hash
 =~ mysql_prepare_alter_table
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-27012:
-=~ signal|AddressSanitizer
-=~ key_copy
+=~ signal|AddressSanitizer|InnoDB: Failing assertion: field->prefix_len > 0
 =~ check_duplicate_long_entry_key
 =~ mysql_alter_table
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
