@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-27225:
+=~ AddressSanitizer|signal
+=~ ha_maria::info
+=~ get_referential_constraints_record
+=~ get_all_tables
+=~ Version: '10\.3|Server version: 10\.3
 MDEV-27224:
 =~ AddressSanitizer|signal
 =~ rec_convert_dtuple_to_rec_comp
