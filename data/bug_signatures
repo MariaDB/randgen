@@ -26,6 +26,10 @@ MDEV-27223:
 MDEV-27216:
 =~ mysqld: Incorrect information in file:
 =~ Version: '10\.4|Server version: 10\.4
+MDEV-27015:
+=~ Assertion \`!is_null()'
+=~ FixedBinTypeBundle<FbtImpl>::Fbt FixedBinTypeBundle<FbtImpl>::Field_fbt::to_fbt() const \[with FbtImpl = Inet6\]
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]
 MDEV-27012:
 =~ Assertion \`key_info->key_part->field->flags & (1<< 30)'|signal|AddressSanitizer
 =~ setup_keyinfo_hash
@@ -128,6 +132,12 @@ MDEV-26862:
 =~ _ma_write_init_block_record
 =~ Version: '10\.2|Server version: 10\.2
 =~ FeatureUsage detected GIS columns
+MDEV-26835:
+=~ AddressSanitizer|signal
+=~ heap_rrnd
+=~ rr_from_pointers
+=~ READ_RECORD::read_record
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-26822:
 =~ AddressSanitizer|signal
 =~ Binary_string::copy
