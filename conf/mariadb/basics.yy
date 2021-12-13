@@ -442,3 +442,69 @@ _basics_value_for_char_column:
 
 _basics_reload_metadata:
     { $executors->[0]->cacheMetaData(1); '' };
+
+# MSSQL causes problems, specifically QUOTE() does not work properly.
+# MAXDB is disabled due to MDEV-18864
+# EMPTY_STRING_IS_NULL should be used in specific ORACLE mode tests,
+#   otherwise it will cause endless semantic problems
+#   (NULL being inserted into non-null column, etc.)
+
+
+# 10.2: REAL_AS_FLOAT,PIPES_AS_CONCAT,ANSI_QUOTES,IGNORE_SPACE,IGNORE_BAD_TABLE_OPTIONS,ONLY_FULL_GROUP_BY,NO_UNSIGNED_SUBTRACTION,NO_DIR_IN_CREATE,POSTGRESQL,ORACLE,MSSQL,DB2,MAXDB,NO_KEY_OPTIONS,NO_TABLE_OPTIONS,NO_FIELD_OPTIONS,MYSQL323,MYSQL40,ANSI,NO_AUTO_VALUE_ON_ZERO,NO_BACKSLASH_ESCAPES,STRICT_TRANS_TABLES,STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ALLOW_INVALID_DATES,ERROR_FOR_DIVISION_BY_ZERO,TRADITIONAL,NO_AUTO_CREATE_USER,HIGH_NOT_PRECEDENCE,NO_ENGINE_SUBSTITUTION,PAD_CHAR_TO_FULL_LENGTH
+# 10.3: + EMPTY_STRING_IS_NULL,SIMULTANEOUS_ASSIGNMENT
+# 10.4: + TIME_ROUND_FRACTIONAL
+
+_basics_all_sql_modes:
+  { @modes= (
+        'REAL_AS_FLOAT',
+        'PIPES_AS_CONCAT',
+        'ANSI_QUOTES',
+        'IGNORE_SPACE',
+        'IGNORE_BAD_TABLE_OPTIONS',
+        'ONLY_FULL_GROUP_BY',
+        'NO_UNSIGNED_SUBTRACTION',
+        'NO_DIR_IN_CREATE',
+        'POSTGRESQL',
+        'ORACLE',
+  #     'MSSQL',
+        'DB2',
+  #     'MAXDB',
+        'NO_KEY_OPTIONS',
+        'NO_TABLE_OPTIONS',
+        'NO_FIELD_OPTIONS',
+        'MYSQL323',
+        'MYSQL40',
+        'ANSI',
+        'NO_AUTO_VALUE_ON_ZERO',
+        'NO_BACKSLASH_ESCAPES',
+        'STRICT_TRANS_TABLES',
+        'STRICT_ALL_TABLES',
+        'NO_ZERO_IN_DATE',
+        'NO_ZERO_DATE',
+        'ALLOW_INVALID_DATES',
+        'ERROR_FOR_DIVISION_BY_ZERO',
+        'TRADITIONAL',
+        'NO_AUTO_CREATE_USER',
+        'HIGH_NOT_PRECEDENCE',
+        'NO_ENGINE_SUBSTITUTION',
+        'PAD_CHAR_TO_FULL_LENGTH',
+  #     'EMPTY_STRING_IS_NULL',
+        'SIMULTANEOUS_ASSIGNMENT',
+        'TIME_ROUND_FRACTIONAL',
+    ); ''
+  }
+;
+_basics_sql_mode_compatibility_markers:
+  { if (index($val,'TIME_ROUND_FRACTIONAL') > -1) { $val.= ' /* compatibility 10.4 */' }
+    elsif ((index($val,'EMPTY_STRING_IS_NULL') > -1) or (index($val, 'SIMULTANEOUS_ASSIGNMENT') > -1)) { $val .= ' /* compatibility 10.3 */' }
+    ; $val }
+;
+
+_basics_sql_mode_value:
+    DEFAULT
+    | _basics_all_sql_modes
+      { $length=$prng->int(0,scalar(@modes))
+      ; $val= "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
+      ; ''
+    } _basics_sql_mode_compatibility_markers
+;

@@ -234,7 +234,7 @@ dynvar_session_variable:
   | SQL_IF_EXISTS= dynvar_boolean /* compatibility 10.5.2 */
   | SQL_LOG_BIN= dynvar_boolean
 # | SQL_LOG_OFF
-  | SQL_MODE= dynvar_sql_mode_value
+  | SQL_MODE= _basics_sql_mode_value
   | SQL_NOTES= dynvar_boolean
   | SQL_QUOTE_SHOW_CREATE= dynvar_boolean
   | SQL_SAFE_UPDATES= dynvar_boolean
@@ -617,72 +617,6 @@ dynvar_default_regex_flags_value:
         ; if (index($val,'EXTENDED_MORE') > -1) { $val.= '/* compatibility 10.5 */' }
         ; $val
     }
-;
-
-# 10.2: REAL_AS_FLOAT,PIPES_AS_CONCAT,ANSI_QUOTES,IGNORE_SPACE,IGNORE_BAD_TABLE_OPTIONS,ONLY_FULL_GROUP_BY,NO_UNSIGNED_SUBTRACTION,NO_DIR_IN_CREATE,POSTGRESQL,ORACLE,MSSQL,DB2,MAXDB,NO_KEY_OPTIONS,NO_TABLE_OPTIONS,NO_FIELD_OPTIONS,MYSQL323,MYSQL40,ANSI,NO_AUTO_VALUE_ON_ZERO,NO_BACKSLASH_ESCAPES,STRICT_TRANS_TABLES,STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ALLOW_INVALID_DATES,ERROR_FOR_DIVISION_BY_ZERO,TRADITIONAL,NO_AUTO_CREATE_USER,HIGH_NOT_PRECEDENCE,NO_ENGINE_SUBSTITUTION,PAD_CHAR_TO_FULL_LENGTH
-# 10.3: + EMPTY_STRING_IS_NULL,SIMULTANEOUS_ASSIGNMENT
-# 10.4: + TIME_ROUND_FRACTIONAL
-
-# MSSQL causes problems, specifically QUOTE() does not work properly.
-# MAXDB is disabled due to MDEV-18864
-# EMPTY_STRING_IS_NULL should be used in specific ORACLE mode tests,
-#   otherwise it will cause endless semantic problems
-#   (NULL being inserted into non-null column, etc.)
-
-dynvar_all_sql_modes:
-  { @modes= (
-        'REAL_AS_FLOAT',
-        'PIPES_AS_CONCAT',
-        'ANSI_QUOTES',
-        'IGNORE_SPACE',
-        'IGNORE_BAD_TABLE_OPTIONS',
-        'ONLY_FULL_GROUP_BY',
-        'NO_UNSIGNED_SUBTRACTION',
-        'NO_DIR_IN_CREATE',
-        'POSTGRESQL',
-        'ORACLE',
-  #     'MSSQL',
-        'DB2',
-  #     'MAXDB',
-        'NO_KEY_OPTIONS',
-        'NO_TABLE_OPTIONS',
-        'NO_FIELD_OPTIONS',
-        'MYSQL323',
-        'MYSQL40',
-        'ANSI',
-        'NO_AUTO_VALUE_ON_ZERO',
-        'NO_BACKSLASH_ESCAPES',
-        'STRICT_TRANS_TABLES',
-        'STRICT_ALL_TABLES',
-        'NO_ZERO_IN_DATE',
-        'NO_ZERO_DATE',
-        'ALLOW_INVALID_DATES',
-        'ERROR_FOR_DIVISION_BY_ZERO',
-        'TRADITIONAL',
-        'NO_AUTO_CREATE_USER',
-        'HIGH_NOT_PRECEDENCE',
-        'NO_ENGINE_SUBSTITUTION',
-        'PAD_CHAR_TO_FULL_LENGTH',
-  #     'EMPTY_STRING_IS_NULL',
-        'SIMULTANEOUS_ASSIGNMENT',
-        'TIME_ROUND_FRACTIONAL',
-    ); ''
-  }
-;
-
-dynvar_sql_mode_compatibility_markers:
-  { if (index($val,'TIME_ROUND_FRACTIONAL') > -1) { $val.= ' /* compatibility 10.4 */' }
-    elsif ((index($val,'EMPTY_STRING_IS_NULL') > -1) or (index($val, 'SIMULTANEOUS_ASSIGNMENT') > -1)) { $val .= ' /* compatibility 10.3 */' }
-    ; $val }
-;
-
-dynvar_sql_mode_value:
-    DEFAULT
-    | dynvar_all_sql_modes
-      { $length=$prng->int(0,scalar(@modes))
-      ; $val= "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
-      ; ''
-    } dynvar_sql_mode_compatibility_markers
 ;
 
 # 10.2: admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk
