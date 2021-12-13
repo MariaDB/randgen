@@ -419,14 +419,29 @@ sub gen_table {
     }
 
     # INET6 data type was introduced in 10.5.0
-    # INET6 columns shoudn't be very common, but they're new. 20% for now
-    if ($self->compatibility ge '100500' and !$prng->uint16(0,4)) {
+    # INET6 columns shoudn't be very common. 10%
+    if ($self->compatibility ge '100500' and !$prng->uint16(0,9)) {
         $columns{col_inet6} = [ 'INET6',
                                 undef,
                                 undef,
                                 undef,
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "'::'" ),
+                                undef,
+                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef
+                            ]
+    }
+
+    # UUID data type was introduced in 10.7.1
+    # UUID columns shoudn't be very common, but they're new. 20% for now
+    if ($self->compatibility ge '100701' and !$prng->uint16(0,4)) {
+        $columns{col_uuid} = [ 'UUID',
+                                undef,
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : "'00000000000000000000000000000000'" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
@@ -606,7 +621,7 @@ sub gen_table {
                                 ];
         }
 
-        if ($columns{col_inet6} and !$prng->uint16(0,4)) {
+        if ($columns{col_inet6} and !$prng->uint16(0,9)) {
             $columns{vcol_inet6}= [ 'INET6',
                                     undef,
                                     undef,
@@ -614,6 +629,18 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_inet6) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+        if ($columns{col_uuid} and !$prng->uint16(0,4)) {
+            $columns{vcol_uuid}= [ 'UUID',
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_uuid) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
                                     undef
                                 ];

@@ -38,6 +38,7 @@ require Exporter;
 	FIELD_TYPE_EMPTY
   FIELD_TYPE_DATATYPE
   FIELD_TYPE_FIXED
+  FIELD_TYPE_UUID
 
 	FIELD_TYPE_HEX
 	FIELD_TYPE_QUID
@@ -127,6 +128,8 @@ use constant FIELD_TYPE_IDENTIFIER_QUOTED   => 34;
 use constant FIELD_TYPE_DATATYPE     => 35;
 use constant FIELD_TYPE_FIXED => 36;
 
+use constant FIELD_TYPE_UUID  => 37;
+
 use constant ASCII_RANGE_START		=> 97;
 use constant ASCII_RANGE_END		=> 122;
 
@@ -189,6 +192,7 @@ my %name2type = (
 #	'enum'			=> FIELD_TYPE_ENUM,
 #	'set'			=> FIELD_TYPE_SET,
     'inet6'         => FIELD_TYPE_INET6,
+    'uuid'         => FIELD_TYPE_UUID,
 	'letter'		=> FIELD_TYPE_LETTER,
 	'digit'			=> FIELD_TYPE_DIGIT,
 	'data'			=> FIELD_TYPE_BLOB,
@@ -398,6 +402,11 @@ sub inet6 {
     my $res= join ':', @{$prng->shuffleArray(\@parts)};
     $res=~ s/:::/::/;
     return "'$res'";
+}
+
+sub uuid {
+    my $prng = shift;
+    return $prng->hex(32);
 }
 
 sub unquotedDate {
@@ -905,6 +914,8 @@ sub fieldType {
 #		return $rand->set();
 	} elsif ($field_type == FIELD_TYPE_INET6) {
 		return $rand->inet6();
+	} elsif ($field_type == FIELD_TYPE_UUID) {
+		return $rand->uuid();
 	} elsif ($field_type == FIELD_TYPE_BLOB) {
 		return $rand->loadFile($data_location);
 	} elsif ($field_type == FIELD_TYPE_ASCII) {
@@ -1039,6 +1050,7 @@ sub shuffleArray {
 # TINYTEXT TEXT MEDIUMTEXT LONGTEXT
 # JSON
 # INET6
+# UUID
 # ENUM SET
 # DATE TIME DATETIME TIMESTAMP YEAR
 # POINT LINESTRING POLYGON MULTIPOINT MULTILINESTRING MULTIPOLYGON GEOMETRYCOLLECTION GEOMETRY
@@ -1050,6 +1062,7 @@ sub dataType {
     \&jsonType,
 #    \&geometryType,
 #    \&inet6Type,
+#    \&uuidType,
     \&bitType,
     \&boolType,
 #    \&enumSetType,
@@ -1123,6 +1136,10 @@ sub enumSetType {
 
 sub inet6Type {
   return 'INET6';
+}
+
+sub uuidType {
+  return 'UUID';
 }
 
 sub jsonType {

@@ -428,7 +428,7 @@ _basics_any_value:
   _char | _varchar | _binary | _varbinary |
   _tinyblob | _blob | _mediumblob | _longblob | _tinytext | _text | _mediumtext | _longtext |
   _date | _time | _datetime | _timestamp | _year |
-  _digit | _data | _ascii | _string | _empty | _hex | _quid |
+  _digit | _data | _ascii | _string | _empty | _hex | _quid | _uuid |
   _json | _jsonpath | _jsonkey | _jsonpath_no_wildcard ;
 
 _basics_value_set:
