@@ -4,6 +4,22 @@
 # Strong matches
 ##############################################################################
 
+MDEV-27244:
+=~ has no primary key in InnoDB data dictionary, but has one in MariaDB
+=~ dict_index_t::instant_add_field
+=~ Assertion \`type == instant\.type'
+=~ FeatureUsage detected system-versioned
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-27244:
+=~ has no primary key in InnoDB data dictionary, but has one in MariaDB
+=~ dict_table_t::prepare_instant
+=~ Assertion \`n_fields >= oindex\.n_fields'|Assertion \`index\.n_fields > oindex\.n_fields \|\| !not_redundant()'
+=~ FeatureUsage detected system-versioned
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+MDEV-27244:
+=~ Incompatible key or row definition between the MariaDB \.frm file and the information in the storage engine
+=~ FeatureUsage detected system-versioned
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-27225:
 =~ AddressSanitizer|signal
 =~ ha_maria::info
@@ -1696,7 +1712,6 @@ MDEV-22375:
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22368:
 =~ Assertion \`field_max_length <= m_return_field_def.length \|\| m_return_field_def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && m_return_field_def\.length == 8 && (m_return_field_def\.pack_flag & (1024U\|2048U)))'
-=~ Item_func_sp::fix_fields
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-22365:
 =~ Assertion \`!col->mbmaxlen \|\| len >= col->mbminlen \* (fixed_len / col->mbmaxlen)'
