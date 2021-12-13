@@ -14,6 +14,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
+# The reporter checks the basic health of calculated JSON histograms
+
 package GenTest::Reporter::JsonHistogram;
 
 require Exporter;
@@ -42,14 +44,14 @@ sub monitor {
   unless ($dbh) {
     $dbh = DBI->connect($reporter->dsn(), undef, undef, { RaiseError => 1, PrintError => 0 });
     unless ($dbh) {
-      sayError("JsonHistogram reporter could not connect to the server. Status will be set to STATUS_INTERNAL_ERROR");
+      sayError("JsonHistogram: reporter could not connect to the server. Status will be set to STATUS_INTERNAL_ERROR");
       return undef;
     }
   }
   if (not defined $histogram_size or $histogram_size >= 0) {
     my $vals= $dbh->selectrow_arrayref("SELECT GLOBAL_VALUE, GLOBAL_VALUE_ORIGIN FROM INFORMATION_SCHEMA.SYSTEM_VARIABLES WHERE VARIABLE_NAME = 'HISTOGRAM_SIZE'");
     if ($vals->[1] eq 'SQL') {
-      sayWarning("Global value of HISTOGRAM_SIZE has changed since startup, the size check is no longer applicable");
+      sayWarning("JsonHistogram: Global value of HISTOGRAM_SIZE has changed since startup, the size check is no longer applicable");
       $histogram_size= -1;
     }
     elsif (not defined $histogram_size) {
@@ -59,18 +61,37 @@ sub monitor {
 
   my $res= STATUS_OK;
   if ($histogram_size > 0) {
-    my $wrong_hist_size= $dbh->selectrow_arrayref("SELECT db_name, table_name, column_name, hist_size FROM mysql.column_stats WHERE hist_type = 'JSON_HB' AND hist_size > $histogram_size");
-    if ($wrong_hist_size) {
+    my $json_check= $dbh->selectall_arrayref("SELECT db_name, table_name, column_name, histogram, json_valid(histogram) FROM mysql.column_stats WHERE hist_type = 'JSON_HB'");
+    if ($json_check and scalar(@$json_check)) {
+      my ($valid_count, $invalid_count, $null_count)= (0,0,0);
+      foreach my $jc (@$json_check) {
+        if ($jc->[4] == 1) {
+          $valid_count++;
+        } elsif ($jc->[4] eq 'NULL') {
+          $null_count++;
+        } elsif ($jc->[4] == 0) {
+          sayError("JsonHistogram: Invalid JSON histogram for $jc->[0].$jc->[1].$jc->[2]: $jc->[3]" );
+          $invalid_count++;
+          $res= STATUS_HISTOGRAM_CORRUPTION;
+        } else {
+          sayError("JsonHistogram: Got an unexpected result of JSON_VALID(histogram): $jc->[4]");
+          $res= STATUS_TEST_FAILURE;
+        }
+      }
+      say("JsonHistogram: Checked ".($valid_count + $invalid_count + $null_count)." histograms. Valid: $valid_count, NULLs: $null_count, invalid: $invalid_count");
+    }
+    my $wrong_hist_size= $dbh->selectall_arrayref("SELECT db_name, table_name, column_name, hist_size FROM mysql.column_stats WHERE hist_type = 'JSON_HB' AND hist_size > $histogram_size");
+    if ($wrong_hist_size and scalar(@$wrong_hist_size)) {
       $res= STATUS_HISTOGRAM_CORRUPTION;
-      foreach (@$wrong_hist_size) {
-        sayError("Wrong histogram size for $wrong_hist_size->[0].$wrong_hist_size->[1].$wrong_hist_size->[2]: expected <= $histogram_size, found $wrong_hist_size->[3]" );
+      foreach my $wc (@$wrong_hist_size) {
+        sayError("Wrong histogram size for $wc->[0].$wc->[1].$wc->[2]: expected <= $histogram_size, found $wc->[3]" );
       }
     }
-    my $wrong_bucket_sizes= $dbh->selectrow_arrayref("SELECT db_name, table_name, column_name, SUM(sizes) total_size, JSON_EXTRACT(histogram,'\$.histogram_hb_v2[*].size') AS all_sizes FROM mysql.column_stats, JSON_TABLE(histogram,'\$.histogram_hb_v2[*].size' COLUMNS (sizes DECIMAL(65,38) PATH '\$')) jt WHERE hist_type = 'JSON_HB' GROUP BY db_name, table_name, column_name, all_sizes HAVING ABS(total_size-1) > 0.01");
-    if ($wrong_bucket_sizes) {
+    my $wrong_bucket_sizes= $dbh->selectall_arrayref("SELECT db_name, table_name, column_name, SUM(sizes) total_size, JSON_EXTRACT(histogram,'\$.histogram_hb_v2[*].size') AS all_sizes FROM mysql.column_stats, JSON_TABLE(histogram,'\$.histogram_hb_v2[*].size' COLUMNS (sizes DECIMAL(65,38) PATH '\$')) jt WHERE hist_type = 'JSON_HB' GROUP BY db_name, table_name, column_name, all_sizes HAVING ABS(total_size-1) > 0.01");
+    if ($wrong_bucket_sizes and scalar(@$wrong_bucket_sizes)) {
       $res= STATUS_HISTOGRAM_CORRUPTION;
-      foreach (@$wrong_bucket_sizes) {
-        sayError("Wrong total size for $wrong_bucket_sizes->[0].$wrong_bucket_sizes->[1].$wrong_bucket_sizes->[2]: $wrong_bucket_sizes->[4] (total size $wrong_bucket_sizes->[3])");
+      foreach my $wb (@$wrong_bucket_sizes) {
+        sayError("JsonHistogram: Wrong total size for $wb->[0].$wb->[1].$wb->[2]: $wb->[4] (total size $wb->[3])");
       }
     }
   }
