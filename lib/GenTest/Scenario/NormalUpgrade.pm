@@ -243,7 +243,21 @@ sub run {
   $table_autoinc{'new'} = $new_server->collectAutoincrements();
 
   #####
-  $self->printStep("Running test flow on the new server");
+  $self->printStep("Restarting the new server and running the rest of the test flow");
+
+  $status= $new_server->stopServer;
+
+  if ($status != STATUS_OK) {
+    sayError("Shutdown of the new server failed");
+    return $self->finalize(STATUS_TEST_FAILURE,[$new_server]);
+  }
+
+  $status= $new_server->startServer;
+
+  if ($status != STATUS_OK) {
+    sayError("New server failed to restart");
+    return $self->finalize(STATUS_TEST_FAILURE,[]);
+  }
 
   $self->setProperty('duration',int($self->getProperty('duration')/3));
   $status= $self->run_test_flow();

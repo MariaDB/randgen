@@ -774,6 +774,8 @@ sub dumper {
 
 sub dumpdb {
     my ($self,$database,$file,$skip_heap_tables) = @_;
+    my $dbh= $self->dbh;
+    $dbh->do('SET GLOBAL max_statement_time=0');
     if ($skip_heap_tables) {
       my @heap_tables= @{$self->dbh->selectcol_arrayref(
           "select concat(table_schema,'.',table_name) from ".
