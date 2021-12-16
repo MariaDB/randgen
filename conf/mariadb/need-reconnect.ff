@@ -1,4 +1,5 @@
 $rules = {
   'kill' => sub { $_ =~ m{KILL\s}s },
   'release' => sub { $_ =~ m{COMMIT.*RELEASE|ROLLBACK.*RELEASE}s },
+  'delay' => sub { $_ =~ m{DELAYED}s }
 }
