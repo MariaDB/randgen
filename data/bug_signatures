@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-27303:
+=~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
+=~ pagecache_read
+=~ _ma_scan_block_record
+=~ Version: '10\.8|Server version: 10\.8
+MDEV-27292:
+=~ Assertion \`!prebuilt->index->is_primary()'
+=~ row_search_idx_cond_check
+=~ row_search_mvcc
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-27244:
 =~ has no primary key in InnoDB data dictionary, but has one in MariaDB
 =~ dict_index_t::instant_add_field
@@ -44,7 +54,7 @@ MDEV-27216:
 =~ Version: '10\.4|Server version: 10\.4
 MDEV-27015:
 =~ Assertion \`!is_null()'
-=~ FixedBinTypeBundle<FbtImpl>::Fbt FixedBinTypeBundle<FbtImpl>::Field_fbt::to_fbt() const \[with FbtImpl = Inet6\]
+=~ FixedBinTypeBundle<.*>::Field_fbt::to_fbt() const \[.*\]
 =~ Version: '10\.[7-9]|Server version: 10\.[7-9]
 MDEV-27012:
 =~ Assertion \`key_info->key_part->field->flags & (1<< 30)'|signal|AddressSanitizer
@@ -2019,10 +2029,6 @@ MDEV-21496:
 =~ ha_innobase::truncate
 =~ CrashUpgrade
 =~ Version: '10\.2\.19
-MDEV-21446:
-=~ Assertion \`!prebuilt->index->is_primary()'
-=~ row_search_idx_cond_check
-=~ row_search_mvcc
 MDEV-21440:
 =~ Assertion \`translog_is_LSN_chunk(page\[page_offset\])'
 =~ translog_read_record_header_from_buffer
