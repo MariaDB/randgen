@@ -42,7 +42,7 @@ sub variate {
     while ($orig_query =~ s/^(.*?,\s*)((?:SPATIAL(?:\s+(?:KEY|INDEX))|UNIQUE(?:\s+(?:KEY|INDEX))|FULLTEXT(?:\s+(?:KEY|INDEX))|KEY|INDEX).*?\(.*?[^\d]\))//is) {
       my $ignore= (
         $self->random->uint16(0,1) ? ''
-        : $self->random->uint16(0,1) ? ' IGNORE' : ' NOT IGNORE'
+        : $self->random->uint16(0,1) ? ' IGNORED' : ' NOT IGNORED'
       );
       $query.= $1.$2.$ignore;
     }
@@ -50,14 +50,14 @@ sub variate {
     while ($orig_query =~ s/^(.*?)(ADD\s+(?:SPATIAL(?:\s+(?:KEY|INDEX))|UNIQUE(?:\s+(?:KEY|INDEX))|FULLTEXT(?:\s+(?:KEY|INDEX))|KEY|INDEX).*?\(.*?[^\d]\))//is) {
       my $ignore= (
         $self->random->uint16(0,1) ? ''
-        : $self->random->uint16(0,1) ? ' IGNORE' : ' NOT IGNORE'
+        : $self->random->uint16(0,1) ? ' IGNORED' : ' NOT IGNORED'
       );
       $query.= $1.$2.$ignore;
     }
   } elsif ($orig_query =~ /CREATE\s+(?:OR\s+REPLACE\s+)?\w?\s*INDEX/s) {
     my $ignore= (
       $self->random->uint16(0,3) ? ''
-      : $self->random->uint16(0,2) ? ' IGNORE' : ' NOT IGNORE'
+      : $self->random->uint16(0,2) ? ' IGNORED' : ' NOT IGNORED'
     );
     if ($ignore and $orig_query =~ /^(.*)((?:ALGORITHM|LOCK).*)/is) {
       $orig_query.= $1.$ignore.' '.$2;
