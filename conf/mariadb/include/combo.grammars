@@ -35,6 +35,7 @@ $grammars_basic= [
 $grammars_specific_gendata= [
   '--grammar=conf/runtime/metadata_stability.yy --gendata=conf/runtime/metadata_stability.zz',
   '--grammar=conf/engines/many_indexes.yy --gendata=conf/engines/many_indexes.zz',
+  '--grammar=conf/engines/innodb/full_text_search.yy --gendata=conf/engines/innodb/full_text_search.zz',
   '--grammar=conf/partitioning/partition_pruning.yy --gendata=conf/partitioning/partition_pruning.zz',
   '--grammar=conf/replication/replication.yy --gendata=conf/replication/replication-5.1.zz',
   '--grammar=conf/replication/replication-ddl_sql.yy --gendata=conf/replication/replication-ddl_data.zz',
