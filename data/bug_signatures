@@ -179,6 +179,10 @@ MDEV-26753:
 =~ Assertion \`state == TRX_STATE_PREPARED \|\| state == TRX_STATE_PREPARED_RECOVERED \|\| state == TRX_STATE_ACTIVE'
 =~ trx_t::commit_state
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26677:
+=~ RocksDB: Failed to get column family flags from CF with id
+=~ signal 6
+=~ myrocks::rdb_i_s_global_info_fill_table
 MDEV-26655:
 =~ Assertion \`page_dir_get_n_heap(new_page) == 2U'
 =~ PageBulk::init
