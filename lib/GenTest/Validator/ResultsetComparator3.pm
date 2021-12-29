@@ -1,4 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
+# Copyright (c) 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -35,8 +36,8 @@ use GenTest::Validator;
 
 sub compareTwo {
     my ($self, $q, $s1, $s2, $res1, $res2) = @_;
-    
-    my $outcome = GenTest::Comparator::compare($res1, $res2);
+
+    my $outcome = ($res1->query() =~ /OUTCOME_ORDERED_MATCH/ ? GenTest::Comparator::compare_as_ordered($res1, $res2) : GenTest::Comparator::compare_as_unordered($res1, $res2));
 
     if ($outcome == STATUS_LENGTH_MISMATCH) {
         if ($q =~ m{^\s*select}io) {

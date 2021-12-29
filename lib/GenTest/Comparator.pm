@@ -1,5 +1,6 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -24,6 +25,9 @@ use GenTest;
 use GenTest::Constants;
 use GenTest::Result;
 
+use constant COMPARISON_OUTCOME_UNORDERED_MATCH => 0;
+use constant COMPARISON_OUTCOME_ORDERED_MATCH   => 1;
+
 #
 # In order to compare two data sets that may be sorted differently, we convert each row into a string,
 # then sort the rows and convert them into one gigantic string. Such string representation is no longer
@@ -36,8 +40,8 @@ use GenTest::Result;
 
 1;
 
-sub compare {
-	my @resultsets = @_;
+sub _comparison {
+	my ($comparison_mode, @resultsets) = @_;
 
 	return STATUS_OK if $#resultsets == 0;
 
@@ -59,13 +63,34 @@ sub compare {
 			my $data1 = $resultset1->data();
 			my $data2 = $resultset2->data();
 			return STATUS_LENGTH_MISMATCH if $#$data1 != $#$data2;
-			my $data1_sorted = join('<row>', sort map { join('<col>', map { defined $_ ? ($_ != 0 ? sprintf("%.4f", $_) : $_) : 'NULL' } @$_) } @$data1);
-			my $data2_sorted = join('<row>', sort map { join('<col>', map { defined $_ ? ($_ != 0 ? sprintf("%.4f", $_) : $_) : 'NULL' } @$_) } @$data2);
+            my ($data1_sorted, $data2_sorted);
+            if ($comparison_mode == COMPARISON_OUTCOME_UNORDERED_MATCH) {
+                $data1_sorted = join('<row>', sort map { join('<col>', map { defined $_ ? ($_ != 0 ? sprintf("%.4f", $_) : $_) : 'NULL' } @$_) } @$data1);
+                $data2_sorted = join('<row>', sort map { join('<col>', map { defined $_ ? ($_ != 0 ? sprintf("%.4f", $_) : $_) : 'NULL' } @$_) } @$data2);
+            } else {
+                # Resultsets are already considered fully ordered
+                $data1_sorted = join('<row>', map { join('<col>', map { defined $_ ? ($_ != 0 ? sprintf("%.4f", $_) : $_) : 'NULL' } @$_) } @$data1);
+                $data2_sorted = join('<row>', map { join('<col>', map { defined $_ ? ($_ != 0 ? sprintf("%.4f", $_) : $_) : 'NULL' } @$_) } @$data2);
+            }
 			return STATUS_CONTENT_MISMATCH if $data1_sorted ne $data2_sorted;
 		}
 	}
 	return STATUS_OK;
 }
+
+# For backward compatibility, we keep "compare" a synonym of unordered comparison
+sub compare {
+    return _comparison( COMPARISON_OUTCOME_UNORDERED_MATCH, @_ );
+}
+
+sub compare_as_unordered {
+    return _comparison( COMPARISON_OUTCOME_UNORDERED_MATCH, @_ );
+}
+
+sub compare_as_ordered {
+    return _comparison( COMPARISON_OUTCOME_ORDERED_MATCH, @_ );
+}
+
 
 sub dumpDiff {
 	my @results = @_;
@@ -74,7 +99,7 @@ sub dumpDiff {
 
 	foreach my $i (0..1) {
 		return undef if not defined $results[$i] or not defined $results[$i]->data();
-		my $data_sorted = join("\n", sort map { join("\t", map { defined $_ ? $_ : "NULL" } @$_) } @{$results[$i]->data()});
+		my $data_sorted = join("\n", map { join("\t", map { defined $_ ? $_ : "NULL" } @$_) } @{$results[$i]->data()});
 		$data_sorted = $data_sorted."\n" if $data_sorted ne '';
 		$files[$i] = tmpdir()."/randgen".abs($$)."-".time()."-server".$i.".dump";
 		open (FILE, ">".$files[$i]);

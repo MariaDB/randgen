@@ -1,5 +1,6 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,7 +40,7 @@ use GenTest::Simplifier::Test;
 sub compareTwo {
     my ($self, $q, $s1, $s2, $res1, $res2) = @_;
     
-    my $outcome = GenTest::Comparator::compare($res1, $res2);
+    my $outcome = ($res1->query() =~ /OUTCOME_ORDERED_MATCH/ ? GenTest::Comparator::compare_as_ordered($res1, $res2) : GenTest::Comparator::compare_as_unordered($res1, $res2));
 
     if ($outcome == STATUS_LENGTH_MISMATCH) {
         if ($q =~ m{^\s*select}io) {
@@ -81,7 +82,7 @@ sub simplifyTwo {
             foreach my $executor (@executors) {
                 push @oracle_results, $executor->execute($oracle_query, 1);
             }
-            my $oracle_compare = GenTest::Comparator::compare($oracle_results[0], $oracle_results[1]);
+            my $oracle_compare = ($oracle_results[0]->query() =~ /OUTCOME_ORDERED_MATCH/ ? GenTest::Comparator::compare_as_ordered($oracle_results[0], $oracle_results[1]) : GenTest::Comparator::compare_as_unordered($oracle_results[0], $oracle_results[1]));
             if (
                 ($oracle_compare == STATUS_LENGTH_MISMATCH) ||
                 ($oracle_compare == STATUS_CONTENT_MISMATCH)

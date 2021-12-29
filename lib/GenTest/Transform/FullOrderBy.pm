@@ -56,7 +56,7 @@ sub variate {
   }
   $query.= ' ORDER BY '.( join ',', @{$self->random->shuffleArray(\@full_order_by)} );
   sayDebug("FullOrderBy: Original query [ $original_query ] ; Modified query [ $query ]");
-  return $query;
+  return $query.' /* OUTCOME_ORDERED_MATCH */';
 
 }
 

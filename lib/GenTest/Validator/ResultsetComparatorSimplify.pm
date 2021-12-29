@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2021, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -59,7 +60,7 @@ sub validate {
 	return STATUS_WONT_HANDLE if defined $results->[1]->warnings();
 
 	my $query = $results->[0]->query();
-	my $compare_outcome = GenTest::Comparator::compare($results->[0], $results->[1]);
+	my $compare_outcome = ($query =~ /OUTCOME_ORDERED_MATCH/ ? GenTest::Comparator::compare_as_ordered($results->[0], $results->[1]) : GenTest::Comparator::compare_as_unordered($results->[0], $results->[1]));
 
 	if ( ($compare_outcome == STATUS_LENGTH_MISMATCH) ||
 	     ($compare_outcome == STATUS_CONTENT_MISMATCH) 
@@ -99,7 +100,7 @@ sub validate {
 					push @oracle_results, $oracle_result;
 				}
 
-				my $oracle_compare = GenTest::Comparator::compare($oracle_results[0], $oracle_results[1]);
+                my $oracle_compare = ($oracle_results[0]->query() =~ /OUTCOME_ORDERED_MATCH/ ? GenTest::Comparator::compare_as_ordered($oracle_results[0], $oracle_results[1]) : GenTest::Comparator::compare_as_unordered($oracle_results[0], $oracle_results[1]));
 
 				#
 				# If both result sets are empty, we can not decide if the issue continues to be repeatable
