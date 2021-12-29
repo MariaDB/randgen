@@ -409,6 +409,70 @@ sub uuid {
     return $prng->hex(32);
 }
 
+sub spatial {
+    my $prng= shift;
+    my $tp= shift || $prng->geometryType();
+    if ($tp eq 'GEOMETRY') {
+        $tp= $prng->arrayElement(['POINT','LINESTRING','POLYGON','MULTIPOINT','MULTILINESTRING','MULTIPOLYGON','GEOMETRYCOLLECTION']);
+    }
+    return $tp."FromText('".$prng->spatial_text_value($tp)."')";
+}
+
+sub spatial_text_value {
+    my ($prng, $tp)= @_;
+    my $text= '';
+    if ($tp eq 'GEOMETRYCOLLECTION') {
+        my @geoms= ();
+        my $size= $prng->uint16(1,10);
+        foreach (1..$size) {
+            my $tp2= $prng->arrayElement(['POINT','LINESTRING','POLYGON','MULTIPOINT','MULTILINESTRING','MULTIPOLYGON']);
+#            print "HERE: Geoms: Creating geometry $tp2\n";
+            push @geoms, $prng->spatial_text_value($tp2);
+#            print "HERE: Geoms: @geoms\n";
+            return 'GeometryCollectionFromText(GEOMETRYCOLLECTION('.(join ',', @geoms).'))';
+        }
+    } else {
+        if ($tp eq 'POINT') {
+            return 'POINT('.$prng->spatial_xy().')';
+        } elsif ($tp eq 'LINESTRING' or $tp eq 'POLYGON' or $tp eq 'MULTIPOINT') {
+            my $point_num= $prng->uint16(1,8);
+            my @points= ();
+            foreach (1..$point_num) {
+              push @points, $prng->spatial_xy();
+            }
+            if ($tp eq 'POLYGON') {
+              push @points, $points[0];
+              return $tp.'(('.(join ',', @points).'))';
+            } else {
+                return $tp.'('.(join ',', @points).')';
+            }
+        } elsif ($tp eq 'MULTILINESTRING' or $tp eq 'MULTIPOLYGON' ) {
+            $part_num= $prng->uint16(1,6);
+            my @parts= ();
+            foreach (1..$part_num) {
+                my $point_num= $prng->uint16(1,8);
+                my @points= ();
+                foreach (1..$point_num) {
+                    push @points, $prng->spatial_xy();
+                }
+                if ($tp eq 'MULTIPOLYGON') {
+                    push @points, $points[0];
+                    push @parts, '(('.(join ',', @points).'))';
+                } else {
+                    push @parts, '('.(join ',', @points).')';
+                }
+            }
+            return $tp.'('.(join ',', @parts).')';
+        }
+        return 'NULL';
+    }
+}
+
+sub spatial_xy {
+    my $prng= shift;
+    return sprintf("%.2f %.2f",$prng->float(),$prng->float());
+}
+
 sub unquotedDate {
     my ($prng, $ts) = @_;
     # Something between 1960-01-01 and 2040-01-01 should be enough

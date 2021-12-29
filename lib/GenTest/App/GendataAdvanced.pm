@@ -173,7 +173,7 @@ sub random_unsigned {
     return $prng->uint16(0,1) ? 'UNSIGNED' : undef ;
 }
 sub random_zerofill {
-    return $prng->uint16(0,1) ? 'ZEROFILL' : undef ;
+    return $prng->uint16(0,9) ? undef : 'ZEROFILL' ;
 }
 sub random_int_type {
     return $prng->arrayElement(['TINYINT','SMALLINT','MEDIUMINT','INT','BIGINT']);
@@ -390,7 +390,7 @@ sub gen_table {
                             ]
     }
 
-    # Blob columns are relatively common, but currently buggy. 33% => 10$
+    # Blob columns are relatively common, but currently buggy. 33% => 10%
     if (!$prng->uint16(0,9)) {
         $columns{col_blob} = [ random_blob_type(),
                                 undef,
@@ -416,6 +416,21 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
                                 undef
                             ]
+    }
+
+    # Spatial columns are hopefully not very common and they are also painful. 10%
+    if (!$prng->uint16(0,9)) {
+		my $tp= $prng->geometryType();
+        $columns{col_spatial} = [  $tp,
+                                   undef,
+                                   undef,
+                                   undef,
+                                   $nullable = random_null(),
+                                   ( $nullable eq 'NULL' ? undef : $prng->spatial($tp) ),
+                                   undef,
+                                   ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                   undef
+                                ]
     }
 
     # INET6 data type was introduced in 10.5.0
@@ -621,6 +636,19 @@ sub gen_table {
                                 ];
         }
 
+        if ($columns{col_spatial} and !$prng->uint16(0,10)) {
+            $columns{vcol_spatial}= [  $prng->geometryType(),
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_spatial) '.$self->random_or_predefined_vcol_kind(),
+                                    random_invisible(),
+                                    undef
+                                ];
+        }
+
         if ($columns{col_inet6} and !$prng->uint16(0,9)) {
             $columns{vcol_inet6}= [ 'INET6',
                                     undef,
@@ -696,7 +724,7 @@ sub gen_table {
             next if defined $columns{$c}->[8]; # Compressed columns cannot be in an index
             last if scalar(keys %pk_columns) >= $num_of_columns_in_pk;
             next if $pk_columns{$c};
-            if ($columns{$c}->[0] =~ /BLOB|TEXT/) {
+            if ($columns{$c}->[0] =~ /BLOB|TEXT|POINT|LINESTRING|POLYGON|GEOMETRY/) {
                 $c= $c.'('.$prng->uint16(1,32).')';
             }
             $pk_columns{$c}= 1;
@@ -805,28 +833,45 @@ sub gen_table {
           my $number_of_columns= $prng->uint16(1,scalar(keys %columns));
           # TODO: make it conditional depending on the version -- keys %columns vs @column_list
           my @cols=();
+          my $text_only= 1;
           foreach my $c (sort keys %columns) {
               push @cols, $c;
+              $text_only= 0 if $columns{$c}->[0] !~ /BLOB|TEXT|CHAR|BINARY/;
           }
           $prng->shuffleArray(\@cols);
           @cols= @cols[0..$number_of_columns-1];
+          my $ind_type= $prng->uint16(0,5) ? 'INDEX' : 'UNIQUE';
+          if ($text_only and not $prng->uint16(0,3)) {
+              $ind_type= 'FULLTEXT';
+          }
           foreach my $i (0..$#cols) {
               my $c= $cols[$i];
               next if defined $columns{$c}->[8]; # Compressed columns cannot be in an index
               my $tp= $columns{$c}->[0];
-              if ($tp eq 'TINYBLOB' or $tp eq 'TINYTEXT' or $tp eq 'BLOB' or $tp eq 'TEXT' or $tp eq 'MEDIUMBLOB' or $tp eq 'MEDIUMTEXT' or $tp eq 'LONGBLOB' or $tp eq 'LONGTEXT' or $tp eq 'CHAR' or $tp eq 'VARCHAR' or $tp eq 'BINARY' or $tp eq 'VARBINARY')
-              {
+              if ($tp =~ /BLOB|TEXT|CHAR|BINARY|POINT|LINESTRING|POLYGON|GEOMETRY/) {
                   # Starting from 10.4.3, long unique blobs are allowed.
                   # For a non-unique index the column will be auto-sized by the server (with a warning)
-                  if ($self->compatibility ge '100403' and $prng->uint16(0,1)) {
+                  if ($ind_type eq 'FULLTEXT' or ($self->compatibility ge '100403' and $prng->uint16(0,1))) {
                     $cols[$i] = $c;
                   } else {
                     my $length= ( $columns{$c}->[1] and $columns{$c}->[1] < 64 ) ? $columns{$c}->[1] : 64;
                     $cols[$i] = "$c($length)";
                   }
               }
+              # DESC indexes: add ASC/DESC to the column with high probability
+              if ($prng->uint16(0,4)) {
+                $cols[$i].= ' DESC';
+              } elsif (!$prng->uint16(0,5)) {
+                $cols[$i].= ' ASC';
+              }
           }
-          $self->variate_and_execute($executor,"ALTER TABLE $name ADD " . ($prng->uint16(0,5) ? 'INDEX' : 'UNIQUE') . "(". join(',',@cols) . ")");
+          $self->variate_and_execute($executor,"ALTER TABLE $name ADD " . $ind_type . "(". join(',',@cols) . ")");
+      }
+      if ($columns{col_spatial} and $columns{col_spatial}->[4] eq 'NOT NULL' and not $prng->uint16(0,3)) {
+          $self->variate_and_execute($executor,"ALTER TABLE $name ADD SPATIAL(". 'col_spatial' . ")");
+      }
+      if ($columns{vcol_spatial} and $columns{vcol_spatial}->[4] eq 'NOT NULL' and not $prng->uint16(0,9)) {
+          $self->variate_and_execute($executor,"ALTER TABLE $name ADD SPATIAL(". 'vcol_spatial' . ")");
       }
 
       my @values;
@@ -945,6 +990,13 @@ sub gen_table {
                       $val = $prng->inet6();
                   } else {
                       $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->inet6();
+                  }
+              }
+              elsif ($c->[0] =~ /POINT|LINESTRING|POLYGON|GEOMETRY/) {
+                  if ($c->[4] eq 'NOT NULL') {
+                      $val = $prng->spatial($c->[0]);
+                  } else {
+                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->spatial($c->[0]);
                   }
               }
               push @row_values, $val;
