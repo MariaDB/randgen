@@ -37,10 +37,15 @@
 #           MySQL-specific syntax variants.
 ################################################################################
 
+query_init_add:
+    { $indexcount= 0; '' };
+
 # Run Select , DML , DDL , transactional statements
-query:
+query_add:
      select | select | select | select | select | update | delete | 
-     create_drop_index | transaction | insert | insert ;
+     create_drop_index | transaction | insert | insert |
+     ==FACTOR:0.1== fts_doc_id
+;
 
 # Add/Drop fulltext index 
 create_drop_index:
@@ -158,3 +163,9 @@ update:
  
 delete:
     DELETE FROM _table WHERE condition ;
+
+fts_doc_id:
+    ALTER TABLE _table ADD IF NOT EXISTS FTS_DOC_ID BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY |
+    ALTER TABLE _table DROP IF EXISTS FTS_DOC_ID |
+    ALTER TABLE _table DROP IF EXISTS PRIMARY KEY
+;
