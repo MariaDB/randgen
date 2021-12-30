@@ -99,7 +99,7 @@ MDEV-26983:
 =~ xtrabackup_apply_delta
 =~ Version: '10\.4|Server version: 10\.4
 MDEV-26979:
-=~ AddressSanitizer
+=~ AddressSanitizer|signal
 =~ dict_sys_t::allow_eviction
 =~ i_s_sys_tables_fill_table_stats
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
