@@ -40,7 +40,7 @@ sub variate {
   while ($query =~ s/(?:ORDER\s+BY|LIMIT|OFFSET|FETCH)\s+.*?[^\(\)]*$//) {};
   my $dbh= $executor->dbh();
   my $sth= $dbh->prepare("SELECT /* FullOrderBy column fetch */ * FROM ( $query ) FOBsq LIMIT 0");
-  if ($dbh->err) {
+  if ($sth->err) {
     sayDebug("FullOrderBy: Prepare of column fetch for $query returned an error: ".$sth->err." (".$sth->errstr."), variation skipped");
     return undef;
   }
