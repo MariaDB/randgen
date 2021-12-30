@@ -34,7 +34,7 @@ use GenTest::Constants;
 sub variate {
   # Don't need executor or (for now) gendata_flag
   my ($self, $query) = @_;
-  return $query if $query !~ /SELECT/;
+  return $query if $query !~ /^\s*(?:\/\*.*?\*\/\s*)?SELECT/;
 
   my $offset_clause= ($self->random->uint16(0,1) ?
     'OFFSET '.$self->random->uint16(0,100).($self->random->uint16(0,1) ? ' ROW' : ' ROWS') : '');
@@ -46,17 +46,35 @@ sub variate {
   ;
   my $clause= "/*!100601 $offset_clause $fetch_clause */";
 
+  my $suffix= '';
+  while (
+       $query =~ s/(INTO\s+OUTFILE\s+(?:\"[^"]*?\"|\'[^']*?\'))\s*$//
+    or $query =~ s/(\/\*.*?\*\/)\s*$//
+    or $query =~ s/(PROCEDURE\s+ANALYSE\s*\([^)]*?\))\s*$//
+  )
+  {
+    $suffix="$1 $suffix";
+  }
+  # SELECT in (redundant) brackets
+  my $n= 1;
+  while ($query =~ /^(.*?)(?:\(\s*){$n}\s*SELECT.*\)\s*$/) {
+    last if $1 =~ /SELECT/;
+    $query=~ s/\)\s*$//;
+    $suffix= ") $suffix";
+    $n++
+  }
+
   if ($query=~ s/LIMIT\s+\d+(?:\s+OFFSET\s+\d+|\s*,\s*\d+)?/$clause/) {}
   else {
     $query.= " $clause";
   }
-  return $query;
+  return $query.($suffix ? " $suffix" : '');
 }
 
 sub transform {
   my ($self, $orig_query) = @_;
   return STATUS_WONT_HANDLE if ($orig_query !~ /SELECT/ or
-    $orig_query =~ /(?:OUTFILE|INFILE|PROCESSLIST|INTO)/);
+    $orig_query =~ /(?:OUTFILE|INFILE|PROCESSLIST|INTO|PREPARE)/);
 
   my @queries= ();
   my $query= $orig_query;

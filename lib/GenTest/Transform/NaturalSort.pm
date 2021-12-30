@@ -75,7 +75,7 @@ sub modify_query {
   my @new_order_by_list;
 
   my $query_suffix= '';
-  if ($query =~ s/(LIMIT.*|\s*FOR\s+UPDATE.*)?$//) {
+  if ($query =~ s/(LIMIT.*|OFFSET.*|FETCH.*|\s*FOR\s+UPDATE.*)?$//) {
     $query_suffix= $1;
   }
   if ($query =~ s/^(.*)ORDER\s+BY\s+(.*?)$/$1/g) {
