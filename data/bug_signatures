@@ -653,7 +653,7 @@ MDEV-24822:
 =~ FeatureUsage detected XA transactions
 MDEV-24819:
 =~ AddressSanitizer|crash
-=~ row_mysql_store_col_in_innobase_format|_mi_pack_key|_ma_pack_key
+=~ row_mysql_store_col_in_innobase_format|_mi_pack_key|_ma_pack_key|row_sel_convert_mysql_key_to_innobase
 =~ handler::ha_index_read_map
 =~ QUICK_RANGE_SELECT::get_next_prefix
 =~ QUICK_GROUP_MIN_MAX_SELECT::next_prefix
