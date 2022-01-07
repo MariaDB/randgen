@@ -1,5 +1,8 @@
 # MDEV-13756 Implement descending index
 
+query_init_add:
+  { $ind=1; '' } ;
+
 query_add:
     desc_indexes_add
   | ==FACTOR:2== ALTER _basics_online_10pct TABLE _basetable DROP KEY IF EXISTS { 'ord_index_'.$prng->uint16(1,$ind).'_'.abs($$) } desc_indexes_algorithm_optional
@@ -10,7 +13,7 @@ query_add:
 ;
 
 desc_indexes_add:
-  ALTER TABLE _basetable ADD key_or_unique IF NOT EXISTS { 'ord_index_'.(++$ind).'_'.abs($$) } ( desc_indexes_field_list ) desc_indexes_algorithm_optional;
+  ALTER TABLE _basetable ADD key_or_unique IF NOT EXISTS { 'ord_index_'.($ind++).'_'.abs($$) } ( desc_indexes_field_list ) desc_indexes_algorithm_optional;
 
 desc_indexes_algorithm_optional:
   | , _basics_alter_table_algorithm ;
@@ -28,6 +31,5 @@ desc_indexes_field_list:
 ;
 
 desc_indexes_asc_desc:
-  |
-  ==FACTOR:5== DESC
+  | DESC | ASC
 ;
