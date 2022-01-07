@@ -293,13 +293,13 @@ sub parseFromString {
 			# Split this so that each identifier is separated from all syntax elements
 			# The identifier can start with a lowercase letter or an underscore , plus quotes
 
-			$component_string =~ s{([_a-z0-9'"`\{\}\$\[\]]+)}{|$1|}sgio;
+			$component_string =~ s{([_a-zA-Z0-9'"`\{\}\$\[\]]+)}{|$1|}sgio;
 
 			# Revert overzealous splitting that splits things like _varchar(32)
 			# or __on_off(33,33) into several tokens
 
 			$component_string =~ s{\|(\d+)\|,\|(\d+)\|}{\|$1,$2\|}sgo;
-			$component_string =~ s{([a-z0-9_]+)\|\(\|([,\d]+)\|\)}{$1($2)|}sgo;
+			$component_string =~ s{([a-zA-Z0-9_]+)\|\(\|([,\d]+)\|\)}{$1($2)|}sgo;
 
 			# Remove leading and trailing pipes
 			$component_string =~ s{^\|}{}sgio;
