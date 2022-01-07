@@ -241,9 +241,9 @@ sub populate_table
         my $unique= $executor->execute("SELECT constraint_name, max(ordinal_position) o "
           . "FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS NATURAL JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE "
           . "WHERE table_name ='$table_name' AND constraint_type in ('PRIMARY KEY','UNIQUE') "
-          . "AND column_name = '$c->[5]' HAVING o = 1")->data();
+          . "AND column_name = '$c->[5]' GROUP BY constraint_name HAVING o = 1")->data();
         # If there are unique keys which only consist of this column,
-        # we will need to generate unique valus
+        # we will need to generate unique values
         if (scalar (@$unique)) {
           $c->[4]= 1;
         }
