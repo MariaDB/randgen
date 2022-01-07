@@ -196,6 +196,8 @@ sub variate_and_execute {
   return ($query ? $executor->execute($query) : STATUS_OK);
 }
 
+
+
 sub run {
     my ($self) = @_;
 
@@ -205,6 +207,11 @@ sub run {
         seed => $self->seed(),
         varchar_length => $self->varchar_length()
         );
+
+    sub asc_desc_key {
+        my $asc_desc= $prng->uint16(0,2);
+        return ($asc_desc == 1 ? ' ASC' : ($asc_desc == 2 ? ' DESC' : ''));
+    }
 
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
     $executor->sqltrace($self->sqltrace);
@@ -441,7 +448,7 @@ sub run {
             ($field_copy[FIELD_INDEX] ne 'nokey') &&
             ($field_copy[FIELD_INDEX] ne '')
             ) {
-            $field->[FIELD_INDEX_SQL] = $field_copy[FIELD_INDEX]." (`$field_name` $key_len)";
+            $field->[FIELD_INDEX_SQL] = $field_copy[FIELD_INDEX]." (`$field_name`$key_len".asc_desc_key().")";
         }
         
         delete $field_copy[FIELD_INDEX]; # do not include FIELD_INDEX in the field description
@@ -535,7 +542,7 @@ sub run {
             $pk_field->[FIELD_NAME] = 'pk';
             $pk_field->[FIELD_TYPE] = $table_copy[TABLE_PK];
             $pk_field->[FIELD_INDEX] = 'primary key';
-            $pk_field->[FIELD_INDEX_SQL] = 'primary key (pk)';
+            $pk_field->[FIELD_INDEX_SQL] = 'primary key (pk'.asc_desc_key().')';
             $pk_field->[FIELD_SQL] = 'pk '.$table_copy[TABLE_PK];
             push @fields_copy, $pk_field;
         }
@@ -553,7 +560,7 @@ sub run {
  
         my @index_fields;
         if ($executor->type() == DB_MYSQL || $executor->type() == DB_MARIADB || $executor->type() == DB_DRIZZLE) {
-            @index_fields = grep { $_->[FIELD_INDEX_SQL] ne '' } @fields_copy;
+            @index_fields = grep { $_->[FIELD_INDEX_SQL] =~ s/DESC// if $table_copy[TABLE_ENGINE] =~ /rocksdb/i; $_->[FIELD_INDEX_SQL] ne '' } @fields_copy;
         } else {
             ## Just keep the primary keys.....
             @index_fields = grep { $_->[FIELD_INDEX_SQL] =~ m/primary/ } @fields_copy;

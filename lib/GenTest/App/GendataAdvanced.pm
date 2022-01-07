@@ -675,6 +675,14 @@ sub gen_table {
         }
     }
 
+    sub asc_desc_key {
+        # Parameter is the engine
+        # As of 10.8 RocksDB refuses to create DESC keys
+        return '' if lc($_[0]) eq 'rocksdb';
+        my $asc_desc= $prng->uint16(0,2);
+        return ($asc_desc == 1 ? ' ASC' : ($asc_desc == 2 ? ' DESC' : ''));
+    }
+
     my @engines= ($engine ? split /,/, $engine : '');
     foreach my $e (@engines)
     {
@@ -690,6 +698,8 @@ sub gen_table {
       my @column_list = ();
       my @columns= ();
       foreach my $c (sort keys %columns) {
+          # as of 10.8 RocksDB does not support geometry
+          next if $e =~ /rocksdb/i and $c =~ /spatial/i;
           my $coldef= $columns{$c};
           # Virtual columns are not inserted into
           # Auto-increment columns are usually skipped (90%),
@@ -747,10 +757,10 @@ sub gen_table {
           }
           if ($has_autoinc) {
             # If there is an auto-increment column, we have to add PRIMARY KEY right away in the CREATE statement
-            $create_stmt.= ', PRIMARY KEY('.(join ',', @cols).")";
+            $create_stmt.= ', PRIMARY KEY('.(join ',', map {$_ . asc_desc_key($e) } @cols).")";
           } else {
             # Otherwise, it is always better to add it separately, since it can fail
-            $pk_stmt= "ALTER TABLE $name ADD PRIMARY KEY (".(join ',', @cols).")";
+            $pk_stmt= "ALTER TABLE $name ADD PRIMARY KEY (".(join ',', map {$_ . asc_desc_key($e) } @cols).")";
           }
       }
       elsif ($has_autoinc) {
@@ -858,12 +868,8 @@ sub gen_table {
                     $cols[$i] = "$c($length)";
                   }
               }
-              # DESC indexes: add ASC/DESC to the column with high probability
-              if ($prng->uint16(0,4)) {
-                $cols[$i].= ' DESC';
-              } elsif (!$prng->uint16(0,5)) {
-                $cols[$i].= ' ASC';
-              }
+              # DESC indexes: add ASC/DESC to the column
+              $cols[$i].=asc_desc_key($e) if $ind_type ne 'FULLTEXT';
           }
           $self->variate_and_execute($executor,"ALTER TABLE $name ADD " . $ind_type . "(". join(',',@cols) . ")");
       }

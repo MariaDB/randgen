@@ -176,6 +176,14 @@ sub gen_table {
     my $vcols = $self->vcols();
     my $views = $self->views();
 
+    sub asc_desc_key {
+        # Parameter is the engine
+        # As of 10.8 RocksDB refuses to create DESC keys
+        return '' if lc($_[0]) eq 'rocksdb';
+        my $asc_desc= $prng->uint16(0,2);
+        return ($asc_desc == 1 ? ' ASC' : ($asc_desc == 2 ? ' DESC' : ''));
+    }
+
     my @engines= ($engine ? split /,/, $engine : '');
     foreach my $e (@engines)
     {
@@ -210,12 +218,12 @@ sub gen_table {
                 col_varchar_key VARCHAR($varchar_length) AS (CONCAT('virt-',col_varchar_nokey)) $vcols,
                 col_varchar_nokey VARCHAR($varchar_length) $nullability,
 
-                PRIMARY KEY (pk),
-                KEY (col_int_key),
-                KEY (col_date_key),
-                KEY (col_time_key),
-                KEY (col_datetime_key),
-                KEY (col_varchar_key, col_int_key)
+                PRIMARY KEY (pk".asc_desc_key($e)."),
+                KEY (col_int_key".asc_desc_key($e)."),
+                KEY (col_date_key".asc_desc_key($e)."),
+                KEY (col_time_key".asc_desc_key($e)."),
+                KEY (col_datetime_key".asc_desc_key($e)."),
+                KEY (col_varchar_key".asc_desc_key($e).", col_int_key".asc_desc_key($e).")
             ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
                                # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
                                # joining such tables on PK does not produce only 1-to-1 matches.
@@ -239,12 +247,12 @@ sub gen_table {
                 col_varchar_key VARCHAR($varchar_length),
                 col_varchar_nokey VARCHAR($varchar_length) $nullability,
 
-                PRIMARY KEY (pk),
-                KEY (col_int_key),
-                KEY (col_date_key),
-                KEY (col_time_key),
-                KEY (col_datetime_key),
-                KEY (col_varchar_key, col_int_key)
+                PRIMARY KEY (pk".asc_desc_key($e)."),
+                KEY (col_int_key".asc_desc_key($e)."),
+                KEY (col_date_key".asc_desc_key($e)."),
+                KEY (col_time_key".asc_desc_key($e)."),
+                KEY (col_datetime_key".asc_desc_key($e)."),
+                KEY (col_varchar_key".asc_desc_key($e).", col_int_key".asc_desc_key($e).")
             ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
                                # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
                                # joining such tables on PK does not produce only 1-to-1 matches.
