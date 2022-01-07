@@ -31,7 +31,11 @@ use GenTest::Constants;
 my $pattern = '^Error:|^ERROR|\[ERROR\]|allocated at line|missing DBUG_RETURN|^safe_mutex:|Invalid.*old.*table or database|InnoDB: Warning|InnoDB: Error:|InnoDB: Operating system error|Error while setting value|\[Warning\] Invalid';
 
 # Modify this to filter out false positive patern matches (will improve over time)
-my $reject_pattern = 'Lock wait timeout exceeded|Deadlock found when trying to get lock|innodb_log_block_size has been changed|Sort aborted:';
+my $reject_pattern =
+    'Lock wait timeout exceeded'.
+    '|Deadlock found when trying to get lock'.
+    '|innodb_log_block_size has been changed'.
+    '|Sort aborted:';
 
 # Path to error log. Is assigned first time monitor() is called.
 my $errorlog;
@@ -47,7 +51,7 @@ sub monitor {
         $errorlog = $reporter->serverInfo('errorlog');
         if ($errorlog eq '') {
             # Error log was not found. Report the issue and continue.
-            say("WARNING: Error log not found! ErrorLogAlarm Reporter does not work as intended!");
+            sayWarning("Error log not found! ErrorLogAlarm Reporter does not work as intended!");
             return STATUS_OK;
         } else {
             # INFO
@@ -61,7 +65,7 @@ sub monitor {
             # Case insensitive search required for (observed) programming 
             # incosistencies like "InnoDB: ERROR:" instead of "InnoDB: Error:"
             if(($line =~ m{$pattern}i) && ($line !~ m{$reject_pattern}i)) {
-                say("ALARM from ErrorLogAlarm reporter: Pattern '$pattern' was".
+                sayError("ErrorLogAlarm reporter: Pattern '$pattern' was".
                     " found in error log. Matching line was:");
                 say($line);
                 close LOG;
