@@ -4,6 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-27430:
+=~ Assertion \`field\.is_sane()'
+=~ Protocol_text::store_field_metadata
+=~ FeatureUsage detected system-versioned
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-27427:
+=~ AddressSanitizer|signal
+=~ get_full_part_id_from_key
+=~ QUICK_RANGE_SELECT::get_next_prefix
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-27422:
+=~ Assertion \`0'|Assertion \`pageno < ((1ULL) << 40)'|AddressSanitizer|signal
+=~ maria_rtree_insert|maria_rtree_delete
 MDEV-27303:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_read
@@ -614,7 +627,7 @@ MDEV-24933:
 =~ Version: '10\.3|Server version: 10\.3
 MDEV-24931:
 =~ Assertion \`prefix_size <= width'
-=~ Bitmap<width>::is_prefix
+=~ Bitmap<width>::is_prefix|Bitmap<64u>::is_prefix
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-24909:
 =~ STATUS_SERVER_DEADLOCKED|STATUS_TEST_FAILURE
@@ -1784,6 +1797,11 @@ MDEV-22250:
 =~ InnoDB: Failing assertion: opt_no_lock
 =~ xtrabackup\.cc line
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-22196:
+=~ AddressSanitizer|signal
+=~ String::copy
+=~ Cached_item_str::cmp
+=~ test_if_group_changed
 MDEV-22172:
 =~ Assertion \`inited == NONE \|\| lookup_handler != this'
 =~ handler::ha_write_row
