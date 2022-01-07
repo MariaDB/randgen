@@ -34,14 +34,21 @@ sub transform {
 sub variate {
   my ($self, $original_query, $executor) = @_;
   return $original_query if $original_query !~ m{^\s*SELECT}sio;
-  return $original_query if $original_query =~ m{(OUTFILE|PROCESSLIST|INTO)}sio;
+  return $original_query if $original_query =~ m{(OUTFILE|PROCESSLIST|INTO|GROUP_CONCAT)}sio;
   my $query= $original_query;
   $query =~ s/ORDER\s+BY\s+.*?(LIMIT|OFFSET|FETCH|FOR\s+UPDATE)/\1/;
   while ($query =~ s/(?:ORDER\s+BY|LIMIT|OFFSET|FETCH)\s+.*?[^\(\)]*$//) {};
   my $dbh= $executor->dbh();
+  if (!$dbh) {
+      sayError("FullOrderBy: couldn't establish connection");
+      return undef;
+  }
   my $sth= $dbh->prepare("SELECT /* FullOrderBy column fetch */ * FROM ( $query ) FOBsq LIMIT 0");
-  if ($sth->err) {
-    sayDebug("FullOrderBy: Prepare of column fetch for $query returned an error: ".$sth->err." (".$sth->errstr."), variation skipped");
+  if (!$sth) {
+      sayError("FullOrderBy: Couldn't prepare stmt: ".$dbh->err().": ".$dbh->errstr().". Original query: [ $query ]");
+      return undef;
+  } elsif ($sth->err) {
+    sayError("FullOrderBy: Prepare of column fetch for $query returned an error: ".$sth->err." (".$sth->errstr."), variation skipped");
     return undef;
   }
   $sth->execute();
