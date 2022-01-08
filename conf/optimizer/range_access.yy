@@ -91,22 +91,22 @@ new_tri_char_index:
   index_pre (tri_char_idx_field_list) ;
 
 dual_int_idx_field_list:
-  `pk`, `col_int_key`  { @idx_fields =("`pk`", "`col_int_key`") ; "" } |
-  `col_int_key` , `pk` { @idx_fields =("`col_int_key`", "`pk`") ; "" } | 
-  `col_int_key` , `col_int` { @idx_fields =("`col_int_key`", "`col_int`") ;  "" }  ;  
+  `pk` __asc_x_desc(33,33), `col_int_key` __asc_x_desc(33,33)  { @idx_fields =("`pk`", "`col_int_key`") ; "" } |
+  `col_int_key` __asc_x_desc(33,33), `pk` __asc_x_desc(33,33) { @idx_fields =("`col_int_key`", "`pk`") ; "" } | 
+  `col_int_key` __asc_x_desc(33,33), `col_int` __asc_x_desc(33,33) { @idx_fields =("`col_int_key`", "`col_int`") ;  "" }  ;  
 
 dual_char_idx_field_list:
-   `col_varchar_10_utf8`( small_length ) , `col_varchar_1024_utf8`( large_length ) {@idx_fields = ("`col_varchar_10_utf8`", "`col_varchar_1024_utf8`") ; "" } |
-   `col_varchar_1024_latin1`( large_length ) , `col_varchar_1024_utf8`( large_length ) {@idx_fields = ("`col_varchar_1024_latin1`", "`col_varchar_1024_utf8`") ; "" } ;
+   `col_varchar_10_utf8`( small_length ) __asc_x_desc(33,33), `col_varchar_1024_utf8`( large_length ) __asc_x_desc(33,33) {@idx_fields = ("`col_varchar_10_utf8`", "`col_varchar_1024_utf8`") ; "" } |
+   `col_varchar_1024_latin1`( large_length ) __asc_x_desc(33,33), `col_varchar_1024_utf8`( large_length ) __asc_x_desc(33,33) {@idx_fields = ("`col_varchar_1024_latin1`", "`col_varchar_1024_utf8`") ; "" } ;
 
 tri_int_idx_field_list:
-  `pk`, `col_int_key`, `col_int`  { @idx_fields =("`pk`", "`col_int_key`", "`col_int`") ; "" } |
-  `col_int_key` , `pk` , `col_int` { @idx_fields =("`col_int_key`", "`pk`", "`col_int`") ; "" } | 
-  `col_int_key` , `col_int`, `pk` { @idx_fields =("`col_int_key`", "`col_int`", "`pk`") ;  "" }  ;  
+  `pk` __asc_x_desc(33,33), `col_int_key` __asc_x_desc(33,33), `col_int` __asc_x_desc(33,33) { @idx_fields =("`pk`", "`col_int_key`", "`col_int`") ; "" } |
+  `col_int_key` __asc_x_desc(33,33), `pk` __asc_x_desc(33,33), `col_int` __asc_x_desc(33,33) { @idx_fields =("`col_int_key`", "`pk`", "`col_int`") ; "" } | 
+  `col_int_key` __asc_x_desc(33,33), `col_int` __asc_x_desc(33,33), `pk` __asc_x_desc(33,33) { @idx_fields =("`col_int_key`", "`col_int`", "`pk`") ;  "" }  ;  
 
 tri_char_idx_field_list:
-   `col_varchar_10_utf8`( small_length ) , `col_varchar_1024_utf8`( large_length ) , `col_varchar_1024_latin1`( random_length ) {@idx_fields = ("`col_varchar_10_utf8`", "`col_varchar_1024_utf8`", "`col_varchar_1024_latin1`") ; "" } |
-   `col_varchar_1024_latin1`( large_length ) , `col_varchar_1024_utf8`( large_length ), `col_varchar_10_utf8`( small_length ) {@idx_fields = ("`col_varchar_1024_latin1`", "`col_varchar_1024_utf8`", "`col_varchar_10_utf8`") ; "" } ;
+   `col_varchar_10_utf8`( small_length ) __asc_x_desc(33,33), `col_varchar_1024_utf8`( large_length ) __asc_x_desc(33,33), `col_varchar_1024_latin1`( random_length ) __asc_x_desc(33,33) {@idx_fields = ("`col_varchar_10_utf8`", "`col_varchar_1024_utf8`", "`col_varchar_1024_latin1`") ; "" } |
+   `col_varchar_1024_latin1`( large_length ) __asc_x_desc(33,33), `col_varchar_1024_utf8`( large_length ) __asc_x_desc(33,33), `col_varchar_10_utf8`( small_length ) __asc_x_desc(33,33) {@idx_fields = ("`col_varchar_1024_latin1`", "`col_varchar_1024_utf8`", "`col_varchar_10_utf8`") ; "" } ;
 
 ################################################################################
 # single index rules

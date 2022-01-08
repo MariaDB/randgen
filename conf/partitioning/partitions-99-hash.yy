@@ -93,14 +93,14 @@ create:
         CREATE TABLE if_not_exists table_name_part (
                 `col_int_nokey` INTEGER,
                 `col_int_key` INTEGER NOT NULL,
-                KEY (`col_int_key`)
+                KEY (`col_int_key` __asc_x_desc(33,33))
 	) ENGINE = engine /*!50100 partition */ ;
 
 create_nop:
         CREATE TABLE if_not_exists table_name_nopart (
                 `col_int_nokey` INTEGER,
                 `col_int_key` INTEGER NOT NULL,
-                KEY (`col_int_key`)
+                KEY (`col_int_key` __asc_x_desc(33,33))
 	) ENGINE = engine ;
 
 insert_part:
@@ -220,7 +220,7 @@ create_nopart:
         CREATE TABLE if_not_exists table_name_nopart (
                 `col_int_nokey` INTEGER,
                 `col_int_key` INTEGER NOT NULL,
-                KEY (`col_int_key`)
+                KEY (`col_int_key` __asc_x_desc(33,33))
         ) ENGINE = engine create_select ;
 
 table_name_letter:

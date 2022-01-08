@@ -438,14 +438,11 @@ ia_key_column:
 ;
 
 ia_key_column_list:
-  ia_key_column | ia_key_column, ia_key_column_list
+  ia_key_column __asc_x_desc(33,33) | ia_key_column __asc_x_desc(33,33), ia_key_column_list
 ;
 
 ia_any_key:
-    ia_index(ia_key_column)
-  | ia_index(ia_key_column)
-  | ia_index(ia_key_column)
-  | ia_index(ia_key_column)
+  ==FACTOR:4== ia_index(ia_key_column __asc_x_desc(33,33))
   | ia_index(ia_key_column_list)
   | ia_index(ia_key_column_list)
   | FULLTEXT KEY(ia_text_col_name)

@@ -131,7 +131,7 @@ perfschema_events:
 	DROP EVENT _basics_if_exists_80pct _letter ;
 
 perfschema_key_column_usage:
-	ALTER TABLE _table ADD KEY ( _letter ) |
+	ALTER TABLE _table ADD KEY ( _letter __asc_x_desc(33,33)) |
 	ALTER TABLE _table DROP KEY _letter ;
 
 perfschema_parameters:
@@ -158,7 +158,7 @@ perfschema_tables:
 
 perfschema_table_constraints:
 	ALTER TABLE _table DROP PRIMARY KEY |
-	ALTER TABLE _table ADD PRIMARY KEY (`pk`) ;
+	ALTER TABLE _table ADD PRIMARY KEY (`pk` __asc_x_desc(33,33)) ;
 
 perfschema_table_privileges:
 	GRANT ALL PRIVILEGES ON test . _letter TO 'someuser'@'somehost' |

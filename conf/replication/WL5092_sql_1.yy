@@ -29,11 +29,11 @@ pick_parameters:
 
 key_structure:
    # a) PRIMARY KEY exists, no UNIQUE INDEX
-	ADD PRIMARY KEY ( no_prefix_idx_not_null_columns )                                    | # a1) PK = NB
-	ADD PRIMARY KEY ( prefix_idx_not_null_columns (25))                                   | # a2) PK = partial B
-   ADD PRIMARY KEY ( no_prefix_idx_not_null_columns , no_prefix_idx_not_null_columns )   | # a3) PK = NB, NB
-	ADD PRIMARY KEY ( prefix_idx_not_null_columns (25), prefix_idx_not_null_columns (25)) | # a4) PK = partial B, partial B
-   ADD PRIMARY KEY ( no_prefix_idx_not_null_columns , prefix_idx_not_null_columns (25))  | # a5) PK = NB, partial B      
+	ADD PRIMARY KEY ( no_prefix_idx_not_null_columns __asc_x_desc(33,33))                                    | # a1) PK = NB
+	ADD PRIMARY KEY ( prefix_idx_not_null_columns (25) __asc_x_desc(33,33))                                   | # a2) PK = partial B
+   ADD PRIMARY KEY ( no_prefix_idx_not_null_columns __asc_x_desc(33,33), no_prefix_idx_not_null_columns __asc_x_desc(33,33))   | # a3) PK = NB, NB
+	ADD PRIMARY KEY ( prefix_idx_not_null_columns (25) __asc_x_desc(33,33), prefix_idx_not_null_columns (25) __asc_x_desc(33,33)) | # a4) PK = partial B, partial B
+   ADD PRIMARY KEY ( no_prefix_idx_not_null_columns __asc_x_desc(33,33), prefix_idx_not_null_columns (25) __asc_x_desc(33,33))  | # a5) PK = NB, partial B      
 	# b) UNIQUE INDEX exists, no PRIMARY KEY
 	#    Attention: In such a situation InnoDB clusters the table rows according to the first UNIQUE INDEX with NOT NULL found.
 	#               This means in case of InnoDB and UNIQUE INDEX with NOT NULL we check in fact what we already had in a).
@@ -41,11 +41,11 @@ key_structure:
 	#               This does not limit the coverage for storage engines like MyISAM (no clustering of rows at all) because
 	#               they generate the same physical key structure for PRIMARY KEY and UNIQUE INDEX NOT NULL.
 	#            clustered PRIMARY KEY.
-	ADD UNIQUE INDEX idx1 ( no_prefix_idx_null_columns )                                  | # b1) UI = NB
-	ADD UNIQUE INDEX idx1 ( prefix_idx_null_columns (25))                                 | # b2) UI = partial B
-	ADD UNIQUE INDEX idx1 ( no_prefix_idx_null_columns , no_prefix_idx_null_columns )     | # b3) UI = NB, NB
-   ADD UNIQUE INDEX idx1 ( prefix_idx_null_columns (25), prefix_idx_null_columns (25))   | # b4) UI = partial B, partial B
-	ADD UNIQUE INDEX idx1 ( no_prefix_idx_null_columns , prefix_idx_null_columns (25))    | # b5) UI = NB, partial B
+	ADD UNIQUE INDEX idx1 ( no_prefix_idx_null_columns __asc_x_desc(33,33))                                  | # b1) UI = NB
+	ADD UNIQUE INDEX idx1 ( prefix_idx_null_columns (25) __asc_x_desc(33,33))                                 | # b2) UI = partial B
+	ADD UNIQUE INDEX idx1 ( no_prefix_idx_null_columns __asc_x_desc(33,33), no_prefix_idx_null_columns __asc_x_desc(33,33))     | # b3) UI = NB, NB
+   ADD UNIQUE INDEX idx1 ( prefix_idx_null_columns (25) __asc_x_desc(33,33), prefix_idx_null_columns (25) __asc_x_desc(33,33))   | # b4) UI = partial B, partial B
+	ADD UNIQUE INDEX idx1 ( no_prefix_idx_null_columns __asc_x_desc(33,33), prefix_idx_null_columns (25) __asc_x_desc(33,33))    | # b5) UI = NB, partial B
 	# c) no PRIMARY KEY or UNIQUE INDEX exists
 	#    Some content within the ALTER TABLE is needed. Therefore I use COMMENT here.
    COMMENT 'no PRIMARY KEY or INDEX'                                                     | # c) no UI, no PK
@@ -53,11 +53,11 @@ key_structure:
 	# d1) Two UNIQUE INDEXes
    #     1. Every of them can be used to distinct one row from all others.
 	#     2. An optimizer might decide that merging both indexes is the best way when searching the rows.
-   ADD UNIQUE INDEX idx1 ( no_prefix_idx_null_columns ), ADD UNIQUE INDEX idx2 ( no_prefix_idx_null_columns ) |
+   ADD UNIQUE INDEX idx1 ( no_prefix_idx_null_columns __asc_x_desc(33,33)), ADD UNIQUE INDEX idx2 ( no_prefix_idx_null_columns __asc_x_desc(33,33)) |
 	# d2) two non UNIQUE INDEXes
    #     1. Under certain conditions one of them or both can be used to distinct one row from all others.
    #     2. An optimizer might decide that using one of them or both is the best way when searching the rows.
-   ADD INDEX idx1 ( no_prefix_idx_null_columns ), ADD UNIQUE INDEX idx2 ( no_prefix_idx_null_columns )        ;
+   ADD INDEX idx1 ( no_prefix_idx_null_columns __asc_x_desc(33,33)), ADD UNIQUE INDEX idx2 ( no_prefix_idx_null_columns __asc_x_desc(33,33))        ;
    
 prefix_idx_columns:
 	prefix_idx_not_null_columns |

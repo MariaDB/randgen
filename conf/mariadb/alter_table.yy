@@ -670,19 +670,14 @@ alt_key_column:
 ;
 
 alt_key_column_list:
-  alt_key_column | alt_key_column, alt_key_column_list
+  alt_key_column __asc_x_desc(33,33) | alt_key_column __asc_x_desc(33,33), alt_key_column_list
 ;
 
 alt_any_key:
-    alt_index(alt_key_column)
-  | alt_index(alt_key_column)
-  | alt_index(alt_key_column)
-  | alt_index(alt_key_column)
-  | alt_index(alt_key_column_list)
-  | alt_index(alt_key_column_list)
-  | FULLTEXT KEY(alt_text_col_name)
-  | FULLTEXT KEY(alt_text_col_name)
-#  | SPATIAL INDEX(alt_geo_col_name)
+  ==FACTOR:4== alt_index(alt_key_column __asc_x_desc(33,33)) |
+  ==FACTOR:2== alt_index(alt_key_column_list) |
+  FULLTEXT KEY(alt_text_col_name)
+# | SPATIAL INDEX(alt_geo_col_name)
 ;
 
 alt_comment:

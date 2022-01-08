@@ -97,11 +97,11 @@ app_periods_create_definition_for_simple_with_period:
   # Only period columns and period
       app_periods_full_period_definition
   # Period columns, period, auto-incremented primary key, optional WITHOUT OVERLAPS  
-    | `id` INT AUTO_INCREMENT, `f` VARCHAR(16), app_periods_full_period_definition, PRIMARY KEY(`id` app_periods_without_overlaps_opt)
+    | `id` INT AUTO_INCREMENT, `f` VARCHAR(16), app_periods_full_period_definition, PRIMARY KEY(`id` __asc_x_desc(33,33) app_periods_without_overlaps_opt)
   # Period columns, period, unique blob, optional primary/unique key on INT column with optional WITHOUT OVERLAPS  
     | `id` INT, `f` _basics_blob_column_type /*!100403 UNIQUE */, app_periods_full_period_definition app_periods_unique_key_for_simple_table_opt
   # Period columns, period, PK on VARCHAR, unique key on INT column with optional WITHOUT OVERLAPS  
-    | `id` VARCHAR(32), `f` INT,  app_periods_full_period_definition, PRIMARY KEY(`id`), UNIQUE(`f` app_periods_without_overlaps_opt)
+    | `id` VARCHAR(32), `f` INT,  app_periods_full_period_definition, PRIMARY KEY(`id` __asc_x_desc(33,33)), UNIQUE(`f` __asc_x_desc(33,33) app_periods_without_overlaps_opt)
 ;
 
 #
@@ -141,9 +141,9 @@ app_periods_unique_key_for_simple_table_opt:
     | , app_periods_unique_key_for_simple_table ;
 
 app_periods_unique_key_for_simple_table:
-      PRIMARY KEY (`id` app_periods_without_overlaps_opt)
-    | UNIQUE app_periods_new_index_name_optional (`id`)
-    | UNIQUE app_periods_new_index_name_optional (`id` app_periods_without_overlaps_opt)
+      PRIMARY KEY (`id` __asc_x_desc(33,33) app_periods_without_overlaps_opt)
+    | UNIQUE app_periods_new_index_name_optional (`id` __asc_x_desc(33,33))
+    | UNIQUE app_periods_new_index_name_optional (`id` __asc_x_desc(33,33) app_periods_without_overlaps_opt)
 ;
 
 ##############
@@ -174,7 +174,7 @@ app_periods_invalid:
       INSERT DELAYED _basics_ignore_80pct INTO app_periods_own_table app_periods_insert_values
     | CREATE OR REPLACE TABLE app_periods_t_invalid (a INT, s DATE, e DATE, PERIOD FOR p1(s,e), PERIOD FOR p2(s,e))
     | CREATE OR REPLACE TABLE app_periods_t_invalid (a INT, s DATE, e DATE, PERIOD FOR p1(s,e), PERIOD FOR p2(s,e))
-    | CREATE OR REPLACE TABLE app_periods_t_invalid (a INT, s DATE, e DATE, PERIOD FOR p1(s,e), PRIMARY KEY(a, p1 WITHOUT OVERLAPS, p1 WITHOUT OVERLAPS)
+    | CREATE OR REPLACE TABLE app_periods_t_invalid (a INT, s DATE, e DATE, PERIOD FOR p1(s,e), PRIMARY KEY(a __asc_x_desc(33,33), p1 WITHOUT OVERLAPS, p1 WITHOUT OVERLAPS)
 ;
 
 app_periods_insert_replace:
@@ -306,8 +306,8 @@ app_periods_existing_column_name:
   { $last_field= ($col_number ? $prng->uint16(1,$col_number) : 'c0'); '`'.$last_field.'`' } ;
 
 app_periods_existing_column_list:
-    ==FACTOR:5== app_periods_existing_column_name
-  |              app_periods_existing_column_name, app_periods_existing_column_list ;
+    ==FACTOR:5== app_periods_existing_column_name __asc_x_desc(33,33)
+  |              app_periods_existing_column_name __asc_x_desc(33,33), app_periods_existing_column_list ;
 
 app_periods_period_name:
     ==FACTOR:100== app_periods_valid_period_name
@@ -341,7 +341,7 @@ app_periods_index_type_opt:
 ;
 
 app_periods_index_type:
-    ==FACTOR:2== BTREE
+    ==FACTOR:3== BTREE
   |              HASH
 ;
     

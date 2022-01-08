@@ -113,7 +113,7 @@ index_list:
 	index_item , index_list;
 
 index_item:
-	_field ;
+	_field __asc_x_desc(33,33);
 
 index_length:
 	1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;

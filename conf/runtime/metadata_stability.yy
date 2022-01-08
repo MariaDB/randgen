@@ -143,7 +143,7 @@ create_procedure:
 	CREATE PROCEDURE $procedure_name (INOUT inout1 INT) procedure_body ;
 
 create_table:
-	CREATE temporary TABLE $table_name ( `col_int_key` INTEGER, KEY (`col_int_key`) ) select ;
+	CREATE temporary TABLE $table_name ( `col_int_key` INTEGER, KEY (`col_int_key` __asc_x_desc(33,33)) ) select ;
 
 create_view:
 	CREATE OR REPLACE ALGORITHM = view_algorithm VIEW $view_name AS select ;

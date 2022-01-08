@@ -109,7 +109,7 @@ events:
 	DROP EVENT _letter ;
 
 key_column_usage:
-	ALTER TABLE _table ADD KEY ( _letter ) |
+	ALTER TABLE _table ADD KEY ( _letter __asc_x_desc(33,33) ) |
 	ALTER TABLE _table DROP KEY _letter ;
 
 parameters:
@@ -136,7 +136,7 @@ tables:
 
 table_constraints:
 	ALTER TABLE _table DROP PRIMARY KEY |
-	ALTER TABLE _table ADD PRIMARY KEY (`pk`) ;
+	ALTER TABLE _table ADD PRIMARY KEY (`pk` __asc_x_desc(33,33)) ;
 
 table_privileges:
 	GRANT ALL PRIVILEGES ON test . _letter TO 'someuser'@'somehost' |

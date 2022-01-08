@@ -134,8 +134,8 @@ string_key:
 	`col_varchar_10_key` | `col_varchar_64_key` ;
 
 index_list:
-	index_item , index_item |
-	index_item , index_list;
+	index_item __asc_x_desc(33,33), index_item __asc_x_desc(33,33) |
+	index_item __asc_x_desc(33,33), index_list;
 
 index_item:
 	_field | _field |

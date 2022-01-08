@@ -134,8 +134,8 @@ string_key:
 	_field_char ;
 
 index_list:
-	index_item optional_desc , index_item optional_desc |
-	index_item optional_desc , index_list;
+	index_item  __asc_x_desc(33,33) , index_item  __asc_x_desc(33,33) |
+	index_item  __asc_x_desc(33,33) , index_list;
 
 index_item:
 	_field | _field |
@@ -146,6 +146,3 @@ index_length:
 
 index_hint:
 	;
-
-optional_desc:
-  | ASC | DESC;

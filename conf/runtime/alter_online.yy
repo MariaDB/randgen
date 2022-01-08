@@ -106,12 +106,12 @@ column_name_int:
    { $column_name_int= 'col3' } ;
 
 column_name_list:
-   column_name_int           |
-   column_name_int           |
-   column_name_int           |
-   column_name_int           |
-   col4(10)                  |
-   col4(10), column_name_int ;
+   column_name_int __asc_x_desc(33,33)           |
+   column_name_int __asc_x_desc(33,33)           |
+   column_name_int __asc_x_desc(33,33)           |
+   column_name_int __asc_x_desc(33,33)           |
+   col4(10) __asc_x_desc(33,33)                  |
+   col4(10) __asc_x_desc(33,33), column_name_int ;
 
 replace_column:
    ALTER TABLE t1 ADD COLUMN extra INT; UPDATE t1 SET extra = column_name_int ; ALTER TABLE t1 DROP COLUMN $column_name_int ; ALTER TABLE t1 CHANGE COLUMN extra $column_name_int INT ;

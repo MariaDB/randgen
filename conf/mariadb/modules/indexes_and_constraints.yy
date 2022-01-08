@@ -152,16 +152,12 @@ ind_constr_constraint_word_optional:
 ;
 
 ind_constr_column_item:
-    ind_constr_column_name ind_constr_asc_desc_optional
-  | ind_constr_column_name ind_constr_asc_desc_optional 
-  | ind_constr_column_name ind_constr_asc_desc_optional 
-  | ind_constr_column_name(_tinyint_unsigned) ind_constr_asc_desc_optional
+    ind_constr_column_name __asc_x_desc(33,33)
+  | ind_constr_column_name __asc_x_desc(33,33)
+  | ind_constr_column_name __asc_x_desc(33,33)
+  | ind_constr_column_name(_tinyint_unsigned) __asc_x_desc(33,33)
 ;
 
-ind_constr_asc_desc_optional:
-  | | | | | ASC | DESC
-;
- 
 ind_constr_column_list:
     ind_constr_column_item | ind_constr_column_item | ind_constr_column_item 
   | ind_constr_column_item, ind_constr_column_list

@@ -26,6 +26,9 @@
 # 
 # 10.5.3: MDEV-16978 (WITHOUT OVERLAPS)
 #         Some logic added/modified in CREATE UNIQUE and other places
+# 10.8.0 MDEV-13756 (DESC INDEXES)
+#         The syntax was already allowed, but some logic added for
+#         not ignoring it
 #
 ########################################################################
 
@@ -36,11 +39,18 @@ query_add:
 parser_changes_query:
     parser_changes_create_index
   | parser_changes_functions
+  | parser_changes_desc_keys
 ;
 
 parser_changes_create_index:
     CREATE OR REPLACE UNIQUE INDEX _letter ON `` (x) /* EXECUTOR_FLAG_SILENT */
   | CREATE OR REPLACE UNIQUE INDEX IF NOT EXISTS _letter ON _table (_field) /* EXECUTOR_FLAG_SILENT */
+;
+
+parser_changes_desc_keys:
+  | CREATE OR REPLACE __unique(20) INDEX _letter ON _table (_field __asc_x_desc(50,50)) /* EXECUTOR FLAG SILENT */
+  | CREATE OR REPLACE TABLE parser_changes_table (pk INT, a INT, b CHAR(16), PRIMARY KEY(pk __asc_x_desc(50,50), a __asc_x_desc(50,50)), KEY(a __asc_x_desc(50,50)), UNIQUE(b(8) __asc_x_desc(50,50)))
+  | ALTER TABLE IF EXISTS parser_changes_table DROP PRIMARY KEY; ALTER TABLE IF EXISTS parser_changes_table ADD PRIMARY KEY (pk __asc_x_desc(50,50)), ADD KEY(b __asc_x_desc(50,50))
 ;
 
 parser_changes_functions:

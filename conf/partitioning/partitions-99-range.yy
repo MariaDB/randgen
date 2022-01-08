@@ -94,14 +94,14 @@ create:
         CREATE TABLE if_not_exists table_name_part (
                 `col_int_nokey` INTEGER,
                 `col_int_key` INTEGER NOT NULL,
-                KEY (`col_int_key`)
+                KEY (`col_int_key` __asc_x_desc(33,33))
 	) ENGINE = engine /*!50100 partition */ ;
 
 create_nop:
         CREATE TABLE if_not_exists table_name_nopart (
                 `col_int_nokey` INTEGER,
                 `col_int_key` INTEGER NOT NULL,
-                KEY (`col_int_key`)
+                KEY (`col_int_key` __asc_x_desc(33,33))
 	) ENGINE = engine ;
 
 insert_part:
@@ -252,7 +252,7 @@ create_nopart:
         CREATE TABLE if_not_exists table_name_nopart (
                 `col_int_nokey` INTEGER,
                 `col_int_key` INTEGER NOT NULL,
-                KEY (`col_int_key`)
+                KEY (`col_int_key` __asc_x_desc(33,33))
         ) ENGINE = engine create_select ;
 
 table_name_letter:
@@ -292,7 +292,7 @@ partition_name_list:
 	part_list last_part_elem ;
 
 partition_name:
-	{ our $nb_part_list= $prng->int(0,$nb_parts) } ;
+	{ our $nb_part_list= $prng->int(0,$nb_parts); 'p'.$nb_part_list } ;
 
 
 enable_disable:

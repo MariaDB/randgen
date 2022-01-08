@@ -70,4 +70,4 @@ value:
 alter:
         ALTER TABLE _table DROP KEY letter |
         ALTER TABLE _table DROP KEY _field |
-        ALTER TABLE _table ADD KEY letter ( _field ) ;
+        ALTER TABLE _table ADD KEY letter ( _field __asc_x_desc(33,33)) ;

@@ -532,20 +532,20 @@ table_name:
 	does_not_exist           ;
 
 create_index:
-	CREATE INDEX { 'idx_base_myisam_'.abs($$) } ON { 't1_base_myisam_'.abs($$) } (col_tinyint) |
-	CREATE INDEX { 'idx_base_innodb_'.abs($$) } ON { 't1_base_innodb_'.abs($$) } (col_tinyint) |
-	CREATE INDEX { 'idx_base_myisam_'.abs($$) } ON { 't1_base_myisam_'.abs($$) } (col_tinyint) |
-	CREATE INDEX { 'idx_base_innodb_'.abs($$) } ON { 't1_base_innodb_'.abs($$) } (col_tinyint) |
+	CREATE INDEX { 'idx_base_myisam_'.abs($$) } ON { 't1_base_myisam_'.abs($$) } (col_tinyint __asc_x_desc(33,33)) |
+	CREATE INDEX { 'idx_base_innodb_'.abs($$) } ON { 't1_base_innodb_'.abs($$) } (col_tinyint __asc_x_desc(33,33)) |
+	CREATE INDEX { 'idx_base_myisam_'.abs($$) } ON { 't1_base_myisam_'.abs($$) } (col_tinyint __asc_x_desc(33,33)) |
+	CREATE INDEX { 'idx_base_innodb_'.abs($$) } ON { 't1_base_innodb_'.abs($$) } (col_tinyint __asc_x_desc(33,33)) |
 	#
 	# Please enable the next four lines if
 	#    Bug#49132 Replication failure on temporary table + DDL
 	# is fixed.
-	# CREATE INDEX { 'idx_temp_myisam_'.abs($$) } ON { 't1_temp_myisam_'.abs($$) } (col_tinyint) |
-	# CREATE INDEX { 'idx_temp_innodb_'.abs($$) } ON { 't1_temp_innodb_'.abs($$) } (col_tinyint) |
-	# CREATE INDEX { 'idx_temp_myisam_'.abs($$) } ON { 't1_temp_myisam_'.abs($$) } (col_tinyint) |
-	# CREATE INDEX { 'idx_temp_innodb_'.abs($$) } ON { 't1_temp_innodb_'.abs($$) } (col_tinyint) |
+	# CREATE INDEX { 'idx_temp_myisam_'.abs($$) } ON { 't1_temp_myisam_'.abs($$) } (col_tinyint __asc_x_desc(33,33)) |
+	# CREATE INDEX { 'idx_temp_innodb_'.abs($$) } ON { 't1_temp_innodb_'.abs($$) } (col_tinyint __asc_x_desc(33,33)) |
+	# CREATE INDEX { 'idx_temp_myisam_'.abs($$) } ON { 't1_temp_myisam_'.abs($$) } (col_tinyint __asc_x_desc(33,33)) |
+	# CREATE INDEX { 'idx_temp_innodb_'.abs($$) } ON { 't1_temp_innodb_'.abs($$) } (col_tinyint __asc_x_desc(33,33)) |
 	#
-	CREATE INDEX idx_will_fail ON does_not_exist (f1)                                  ;
+	CREATE INDEX idx_will_fail ON does_not_exist (f1 __asc_x_desc(33,33))                                  ;
 drop_index:
 	DROP INDEX { 'idx_base_myisam_'.abs($$) } ON { 't1_base_myisam_'.abs($$) } |
 	DROP INDEX { 'idx_base_innodb_'.abs($$) } ON { 't1_base_innodb_'.abs($$) } |

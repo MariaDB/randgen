@@ -711,14 +711,11 @@ vers_ia_key_column:
 ;
 
 vers_ia_key_column_list:
-  vers_ia_key_column | vers_ia_key_column, vers_ia_key_column_list
+  vers_ia_key_column __asc_x_desc(33,33) | vers_ia_key_column __asc_x_desc(33,33), vers_ia_key_column_list
 ;
 
 vers_ia_any_key:
-    vers_ia_index(vers_ia_key_column)
-  | vers_ia_index(vers_ia_key_column)
-  | vers_ia_index(vers_ia_key_column)
-  | vers_ia_index(vers_ia_key_column)
+  ==FACTOR:4== vers_ia_index(vers_ia_key_column __asc_x_desc(33,33))
   | vers_ia_index(vers_ia_key_column_list)
   | vers_ia_index(vers_ia_key_column_list)
   | FULLTEXT KEY(vers_ia_text_col_name)

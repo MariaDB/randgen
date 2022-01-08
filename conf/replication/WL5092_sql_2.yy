@@ -607,20 +607,20 @@ table_name:
 	does_not_exist               ;
 
 create_index:
-	CREATE INDEX { 'idx_base_nontrans_'.abs($$) } ON { 't1_base_nontrans_'.abs($$) } (col_tinyint_not_null) |
-	CREATE INDEX { 'idx_base_trans_'.abs($$) } ON { 't1_base_trans_'.abs($$) } (col_tinyint_not_null) |
-	CREATE INDEX { 'idx_base_nontrans_'.abs($$) } ON { 't1_base_nontrans_'.abs($$) } (col_tinyint_not_null) |
-	CREATE INDEX { 'idx_base_trans_'.abs($$) } ON { 't1_base_trans_'.abs($$) } (col_tinyint_not_null) |
+	CREATE INDEX { 'idx_base_nontrans_'.abs($$) } ON { 't1_base_nontrans_'.abs($$) } (col_tinyint_not_null __asc_x_desc(33,33)) |
+	CREATE INDEX { 'idx_base_trans_'.abs($$) } ON { 't1_base_trans_'.abs($$) } (col_tinyint_not_null __asc_x_desc(33,33)) |
+	CREATE INDEX { 'idx_base_nontrans_'.abs($$) } ON { 't1_base_nontrans_'.abs($$) } (col_tinyint_not_null __asc_x_desc(33,33)) |
+	CREATE INDEX { 'idx_base_trans_'.abs($$) } ON { 't1_base_trans_'.abs($$) } (col_tinyint_not_null __asc_x_desc(33,33)) |
 	#
 	# Please enable the next four lines if
 	#    Bug#49132 Replication failure on temporary table + DDL
 	# is fixed.
-	# CREATE INDEX { 'idx_temp_nontrans_'.abs($$) } ON { 't1_temp_nontrans_'.abs($$) } (col_tinyint_not_null) |
-	# CREATE INDEX { 'idx_temp_trans_'.abs($$) } ON { 't1_temp_trans_'.abs($$) } (col_tinyint_not_null) |
-	# CREATE INDEX { 'idx_temp_nontrans_'.abs($$) } ON { 't1_temp_nontrans_'.abs($$) } (col_tinyint_not_null) |
-	# CREATE INDEX { 'idx_temp_trans_'.abs($$) } ON { 't1_temp_trans_'.abs($$) } (col_tinyint_not_null) |
+	# CREATE INDEX { 'idx_temp_nontrans_'.abs($$) } ON { 't1_temp_nontrans_'.abs($$) } (col_tinyint_not_null __asc_x_desc(33,33)) |
+	# CREATE INDEX { 'idx_temp_trans_'.abs($$) } ON { 't1_temp_trans_'.abs($$) } (col_tinyint_not_null __asc_x_desc(33,33)) |
+	# CREATE INDEX { 'idx_temp_nontrans_'.abs($$) } ON { 't1_temp_nontrans_'.abs($$) } (col_tinyint_not_null __asc_x_desc(33,33)) |
+	# CREATE INDEX { 'idx_temp_trans_'.abs($$) } ON { 't1_temp_trans_'.abs($$) } (col_tinyint_not_null __asc_x_desc(33,33)) |
 	#
-	CREATE INDEX idx_will_fail ON does_not_exist (f1)                                  ;
+	CREATE INDEX idx_will_fail ON does_not_exist (f1 __asc_x_desc(33,33))                                  ;
 drop_index:
 	DROP INDEX { 'idx_base_nontrans_'.abs($$) } ON { 't1_base_nontrans_'.abs($$) } |
 	DROP INDEX { 'idx_base_trans_'.abs($$) } ON { 't1_base_trans_'.abs($$) } |
@@ -911,10 +911,10 @@ dml:
 # 	# --> Ensure that we have at least some "long string" columns with keys.
 #    #     As long as we do define a grammar element which contains all names of "non long string"
 # 	#     columns we cannot avoid that a fraction of the ADD INDEX/PRIMARY KEY statements fail.
-#    ( _field )                   |
-# 	( long_column (30))          |
-#    ( _field , _field )          |
-# 	( _field , long_column (30)) ;
+#    ( _field __asc_x_desc(33,33))                   |
+# 	( long_column (30) __asc_x_desc(33,33))          |
+#    ( _field __asc_x_desc(33,33), _field __asc_x_desc(33,33))          |
+# 	( _field __asc_x_desc(33,33), long_column (30) __asc_x_desc(33,33)) ;
 
 # long_column:
 #    col_tinytext_binary   |

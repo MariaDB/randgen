@@ -90,16 +90,16 @@ new_tri_char_index:
   index_pre (tri_char_idx_field_list) ;
 
 dual_int_idx_field_list:
-  _field_int, { push @idx_fields, $last_field; '' } _field_int { push @idx_fields, $last_field; '' } ;
+  _field_int __asc_x_desc(33,33), { push @idx_fields, $last_field; '' } _field_int __asc_x_desc(33,33) { push @idx_fields, $last_field; '' } ;
 
 dual_char_idx_field_list:
-  _field_char, { push @idx_fields, $last_field; '' } _field_char { push @idx_fields, $last_field; '' } ;
+  _field_char __asc_x_desc(33,33), { push @idx_fields, $last_field; '' } _field_char __asc_x_desc(33,33) { push @idx_fields, $last_field; '' } ;
 
 tri_int_idx_field_list:
-  _field_int, { push @idx_fields, $last_field; '' } _field_int, { push @idx_fields, $last_field; '' } _field_int { push @idx_fields, $last_field; '' } ;
+  _field_int __asc_x_desc(33,33), { push @idx_fields, $last_field; '' } _field_int __asc_x_desc(33,33), { push @idx_fields, $last_field; '' } _field_int __asc_x_desc(33,33) { push @idx_fields, $last_field; '' } ;
 
 tri_char_idx_field_list:
-  _field_char, { push @idx_fields, $last_field; '' } _field_char, { push @idx_fields, $last_field; '' } _field_char { push @idx_fields, $last_field; '' } ;
+  _field_char __asc_x_desc(33,33), { push @idx_fields, $last_field; '' } _field_char __asc_x_desc(33,33), { push @idx_fields, $last_field; '' } _field_char __asc_x_desc(33,33) { push @idx_fields, $last_field; '' } ;
 
 ################################################################################
 # single index rules
@@ -295,7 +295,7 @@ group_by_clause:
 
 order_by_clause:
 	| | |
-        ORDER BY total_order_by desc limit |
+        ORDER BY total_order_by __asc_x_desc(20,20) limit |
 	ORDER BY order_by_list  ;
 
 total_order_by:
@@ -306,10 +306,7 @@ order_by_list:
 	order_by_item  , order_by_list ;
 
 order_by_item:
-	existing_select_item desc ;
-
-desc:
-        ASC | | | | DESC ; 
+	existing_select_item __asc_x_desc(20,20);
 
 limit:
 	| | LIMIT limit_size | LIMIT limit_size OFFSET int_value;

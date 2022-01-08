@@ -22,11 +22,8 @@ key_or_unique:
 ;
 
 desc_indexes_init_field_list:
-  _field desc_indexes_init_asc_desc |
-  _field_char (_tinyint_unsigned) desc_indexes_init_asc_desc |
-  ==FACTOR:2== _field desc_indexes_init_asc_desc, desc_indexes_init_field_list
+  _field  __asc_x_desc(33,33) |
+  _field_char (_tinyint_unsigned)  __asc_x_desc(33,33) |
+  ==FACTOR:2== _field  __asc_x_desc(33,33), desc_indexes_init_field_list
 ;
 
-desc_indexes_init_asc_desc:
-  | DESC | ASC
-;

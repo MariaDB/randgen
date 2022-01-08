@@ -136,17 +136,13 @@ alttind_constraint_word_optional:
 ;
 
 alttind_column_item:
-    alttind_column_name alttind_asc_desc_optional
-  | alttind_column_name alttind_asc_desc_optional 
-  | alttind_column_name(_tinyint_unsigned) alttind_asc_desc_optional
+    alttind_column_name __asc_x_desc(33,33)
+  | alttind_column_name __asc_x_desc(33,33)
+  | alttind_column_name(_tinyint_unsigned) __asc_x_desc(33,33)
 ;
 
-alttind_asc_desc_optional:
-  | | | | | ASC | DESC
-;
- 
 alttind_column_list:
-    alttind_column_item | alttind_column_item | alttind_column_item 
+  ==FACTOR:3== alttind_column_item
   | alttind_column_item, alttind_column_list
 ;
 

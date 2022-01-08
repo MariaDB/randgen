@@ -29,14 +29,9 @@ thread1_init_add:
 #    ; UNLOCK TABLES
 ;
 
-thread1_add:
-      query | query | query | query | query | query | query
-    | query | query | query | query | query | query | query
-    | query | query | query | query | query | query | query
-    | query | query | query | query | query | query | query
-    | query | query | query | query | query | query | query
-    | rkr_add_key | rkr_add_key | rkr_drop_key
-    | rkr_analyze_tables
+query_add:
+    ==FACTOR:0.1== rkr_add_key |
+    ==FACTOR:0.01== rkr_analyze_tables
 ;
 
 rkr_analyze_tables:
@@ -71,7 +66,7 @@ rkr_add_autoinc_pk:
         ; ''
     } LOCK TABLE { $last_table } WRITE
     ; UPDATE { $last_table } SET _field_int = 0
-    ; ALTER TABLE { $last_table } MODIFY { $last_field } INT AUTO_INCREMENT PRIMARY KEY
+    ; ALTER TABLE { $last_table } MODIFY { $last_field } INT AUTO_INCREMENT, ADD PRIMARY KEY ($last_field  __asc_x_desc(33,33))
     ; UNLOCK TABLES
     { $primary_keys{$last_table} = 1; '' }
 ;
@@ -107,7 +102,7 @@ rkr_index_field_list:
 ;
 
 rkr_partially_covered_column:
-    rkr_unique_field rkr_index_length;
+    rkr_unique_field rkr_index_length __asc_x_desc(33,33);
 
 rkr_unique_field:
     { $tries = 0; $fields = $executors->[0]->metaColumns($last_table, $last_database); do { $last_field = $prng->arrayElement($fields); $tries++ } until ( not defined $index_fields{$last_field} or $tries >= @{$fields} ); $index_fields{$last_field} = 1; $item = '`'.$last_field.'`' } ;

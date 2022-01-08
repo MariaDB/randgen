@@ -91,19 +91,16 @@ new_tri_char_index:
   index_pre (tri_char_idx_field_list) ;
 
 dual_int_idx_field_list:
-  { @idx_fields= (); '' } _field_int { push @idx_fields, $last_field; '' } optional_desc , _field_int { push @idx_fields, $last_field; '' } optional_desc ;
+  { @idx_fields= (); '' } _field_int { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) , _field_int { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) ;
 
 dual_char_idx_field_list:
-  { @idx_fields= (); '' } _field_char { push @idx_fields, $last_field; '' } optional_desc , _field_char { push @idx_fields, $last_field; '' } optional_desc ;
+  { @idx_fields= (); '' } _field_char { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) , _field_char { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) ;
 
 tri_int_idx_field_list:
-  { @idx_fields= (); '' } _field_int { push @idx_fields, $last_field; '' } optional_desc , _field_int { push @idx_fields, $last_field; '' } optional_desc , _field_int { push @idx_fields, $last_field; '' } optional_desc ;
+  { @idx_fields= (); '' } _field_int { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) , _field_int { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) , _field_int { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) ;
 
 tri_char_idx_field_list:
-  { @idx_fields= (); '' } _field_char { push @idx_fields, $last_field; '' } optional_desc , _field_char { push @idx_fields, $last_field; '' } optional_desc , _field_char { push @idx_fields, $last_field; '' } optional_desc ;
-
-optional_desc:
-  | ASC | DESC;
+  { @idx_fields= (); '' } _field_char { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) , _field_char { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) , _field_char { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) ;
 
 ################################################################################
 # single index rules
