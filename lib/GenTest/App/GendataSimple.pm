@@ -131,8 +131,6 @@ sub run {
 
     say("Running GendataSimple");
 
-    my $prng = GenTest::Random->new( seed => $self->[GDS_SEED] );
-
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
     $executor->sqltrace($self->sqltrace);
     $executor->setId($self->executor_id);
@@ -149,7 +147,7 @@ sub run {
     }
 
     foreach my $i (0..$#$names) {
-        my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i], $prng);
+        my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i]);
         return $gen_table_result if $gen_table_result != STATUS_OK;
     }
     
@@ -163,8 +161,17 @@ sub run {
     return STATUS_OK;
 }
 
+sub asc_desc_key {
+    my ($asc_desc, $engine) = @_;
+    # As of 10.8 RocksDB refuses to create DESC keys
+    return '' if lc($engine) eq 'rocksdb';
+    return ($asc_desc == 1 ? ' ASC' : ($asc_desc == 2 ? ' DESC' : ''));
+}
+
 sub gen_table {
-	my ($self, $executor, $basename, $size, $prng) = @_;
+	my ($self, $executor, $basename, $size) = @_;
+
+    my $prng = GenTest::Random->new( seed => $self->[GDS_SEED] );
 
     my $nullability = defined $self->[GDS_NOTNULL] ? 'NOT NULL' : '/*! NULL */';  
     ### NULL is not a valid ANSI constraint, (but NOT NULL of course,
@@ -175,14 +182,6 @@ sub gen_table {
     my $engine = $self->engine();
     my $vcols = $self->vcols();
     my $views = $self->views();
-
-    sub asc_desc_key {
-        # Parameter is the engine
-        # As of 10.8 RocksDB refuses to create DESC keys
-        return '' if lc($_[0]) eq 'rocksdb';
-        my $asc_desc= $prng->uint16(0,2);
-        return ($asc_desc == 1 ? ' ASC' : ($asc_desc == 2 ? ' DESC' : ''));
-    }
 
     my @engines= ($engine ? split /,/, $engine : '');
     foreach my $e (@engines)
@@ -218,12 +217,12 @@ sub gen_table {
                 col_varchar_key VARCHAR($varchar_length) AS (CONCAT('virt-',col_varchar_nokey)) $vcols,
                 col_varchar_nokey VARCHAR($varchar_length) $nullability,
 
-                PRIMARY KEY (pk".asc_desc_key($e)."),
-                KEY (col_int_key".asc_desc_key($e)."),
-                KEY (col_date_key".asc_desc_key($e)."),
-                KEY (col_time_key".asc_desc_key($e)."),
-                KEY (col_datetime_key".asc_desc_key($e)."),
-                KEY (col_varchar_key".asc_desc_key($e).", col_int_key".asc_desc_key($e).")
+                PRIMARY KEY (pk".asc_desc_key($prng->uint16(0,2),$e)."),
+                KEY (col_int_key".asc_desc_key($prng->uint16(0,2),$e)."),
+                KEY (col_date_key".asc_desc_key($prng->uint16(0,2),$e)."),
+                KEY (col_time_key".asc_desc_key($prng->uint16(0,2),$e)."),
+                KEY (col_datetime_key".asc_desc_key($prng->uint16(0,2),$e)."),
+                KEY (col_varchar_key".asc_desc_key($prng->uint16(0,2),$e).", col_int_key".asc_desc_key($prng->uint16(0,2),$e).")
             ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
                                # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
                                # joining such tables on PK does not produce only 1-to-1 matches.
@@ -247,12 +246,12 @@ sub gen_table {
                 col_varchar_key VARCHAR($varchar_length),
                 col_varchar_nokey VARCHAR($varchar_length) $nullability,
 
-                PRIMARY KEY (pk".asc_desc_key($e)."),
-                KEY (col_int_key".asc_desc_key($e)."),
-                KEY (col_date_key".asc_desc_key($e)."),
-                KEY (col_time_key".asc_desc_key($e)."),
-                KEY (col_datetime_key".asc_desc_key($e)."),
-                KEY (col_varchar_key".asc_desc_key($e).", col_int_key".asc_desc_key($e).")
+                PRIMARY KEY (pk".asc_desc_key($prng->uint16(0,2),$e)."),
+                KEY (col_int_key".asc_desc_key($prng->uint16(0,2),$e)."),
+                KEY (col_date_key".asc_desc_key($prng->uint16(0,2),$e)."),
+                KEY (col_time_key".asc_desc_key($prng->uint16(0,2),$e)."),
+                KEY (col_datetime_key".asc_desc_key($prng->uint16(0,2),$e)."),
+                KEY (col_varchar_key".asc_desc_key($prng->uint16(0,2),$e).", col_int_key".asc_desc_key($prng->uint16(0,2),$e).")
             ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
                                # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
                                # joining such tables on PK does not produce only 1-to-1 matches.

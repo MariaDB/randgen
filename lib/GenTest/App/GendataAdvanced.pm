@@ -209,6 +209,13 @@ sub random_partition_type {
     return $prng->arrayElement(['HASH','KEY','RANGE','LIST']);
 }
 
+sub random_asc_desc_key {
+    my ($asc_desc, $engine)= @_;
+    # As of 10.8 RocksDB refuses to create DESC keys
+    return '' if lc($engine) eq 'rocksdb';
+    return ($asc_desc == 1 ? ' ASC' : ($asc_desc == 2 ? ' DESC' : ''));
+}
+
 sub variate_and_execute {
   my ($self, $executor, $query)= @_;
   foreach my $v (@{$self->[GDS_VARIATORS]}) {
@@ -675,14 +682,6 @@ sub gen_table {
         }
     }
 
-    sub asc_desc_key {
-        # Parameter is the engine
-        # As of 10.8 RocksDB refuses to create DESC keys
-        return '' if lc($_[0]) eq 'rocksdb';
-        my $asc_desc= $prng->uint16(0,2);
-        return ($asc_desc == 1 ? ' ASC' : ($asc_desc == 2 ? ' DESC' : ''));
-    }
-
     my @engines= ($engine ? split /,/, $engine : '');
     foreach my $e (@engines)
     {
@@ -757,10 +756,10 @@ sub gen_table {
           }
           if ($has_autoinc) {
             # If there is an auto-increment column, we have to add PRIMARY KEY right away in the CREATE statement
-            $create_stmt.= ', PRIMARY KEY('.(join ',', map {$_ . asc_desc_key($e) } @cols).")";
+            $create_stmt.= ', PRIMARY KEY('.(join ',', map {$_ . random_asc_desc_key($prng->uint16(0,2),$e) } @cols).")";
           } else {
             # Otherwise, it is always better to add it separately, since it can fail
-            $pk_stmt= "ALTER TABLE $name ADD PRIMARY KEY (".(join ',', map {$_ . asc_desc_key($e) } @cols).")";
+            $pk_stmt= "ALTER TABLE $name ADD PRIMARY KEY (".(join ',', map {$_ . random_asc_desc_key($prng->uint16(0,2),$e) } @cols).")";
           }
       }
       elsif ($has_autoinc) {
@@ -869,7 +868,7 @@ sub gen_table {
                   }
               }
               # DESC indexes: add ASC/DESC to the column
-              $cols[$i].=asc_desc_key($e) if $ind_type ne 'FULLTEXT';
+              $cols[$i].=random_asc_desc_key($prng->uint16(0,2),$e) if $ind_type ne 'FULLTEXT';
           }
           $self->variate_and_execute($executor,"ALTER TABLE $name ADD " . $ind_type . "(". join(',',@cols) . ")");
       }
