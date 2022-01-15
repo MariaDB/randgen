@@ -174,7 +174,8 @@ func_encrypt_func:
    DES_DECRYPT( func_arg ) | DES_DECRYPT( func_arg, func_arg ) |
    DES_ENCRYPT( func_arg ) | DES_ENCRYPT( func_arg, func_arg ) |
    ENCODE( func_arg, func_arg ) |
-   ENCRYPT( func_arg ) | ENCRYPT( func_arg, func_arg ) |
+# TODO: Restore when MDEV-27514 is fixed
+#  ENCRYPT( func_arg ) | ENCRYPT( func_arg, func_arg ) |
    MD5( func_arg ) |
    OLD_PASSWORD( func_arg ) |
    PASSWORD( func_arg ) |

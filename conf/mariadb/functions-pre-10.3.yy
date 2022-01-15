@@ -181,7 +181,8 @@ encrypt_func:
    DES_DECRYPT( arg ) | DES_DECRYPT( arg, arg ) |
    DES_ENCRYPT( arg ) | DES_ENCRYPT( arg, arg ) |
    ENCODE( arg, arg ) |
-   ENCRYPT( arg ) | ENCRYPT( arg, arg ) |
+#  TODO: Restore when MDEV-27514 is fixed
+#  ENCRYPT( arg ) | ENCRYPT( arg, arg ) |
    MD5( arg ) |
    OLD_PASSWORD( arg ) | 
    PASSWORD( arg ) |

@@ -174,8 +174,8 @@ crc32_encrypt_func:
    DES_DECRYPT( crc32_arg ) | DES_DECRYPT( crc32_arg, crc32_arg ) |
    DES_ENCRYPT( crc32_arg ) | DES_ENCRYPT( crc32_arg, crc32_arg ) |
    ENCODE( crc32_arg, crc32_arg ) |
-# Crash in Item_func_encrypt::val_str
-# ENCRYPT( crc32_arg ) | ENCRYPT( crc32_arg, crc32_arg ) |
+#  TODO: Restore when MDEV-27514 is fixed
+#  ENCRYPT( crc32_arg ) | ENCRYPT( crc32_arg, crc32_arg ) |
    MD5( crc32_arg ) |
    OLD_PASSWORD( crc32_arg ) |
    PASSWORD( crc32_arg ) |
