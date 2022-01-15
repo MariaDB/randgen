@@ -60,116 +60,52 @@ TODO-842: [m_status == DA_OK_BULK - LOCK]
 =~ Version: '10\.[2-9]
 
 ##########
-# Fixed in the next release
+# Fixed in the next release (10.2.42 / 10.3.33 / 10.4.23 / 10.5.14 / 10.6.6)
 ##########
 
-MDEV-26903:
-=~ Assertion \`ctx->trx->state == TRX_STATE_ACTIVE'
-=~ rollback_inplace_alter_table
+MDEV-27111:
+=~ InnoDB: Tablespace .* was not found at
+=~ InnoDB: Set innodb_force_recovery=1 to ignore this and to permanently lose all changes to the tablespace
+=~ InnoDB: Plugin initialization aborted at .* with error Tablespace not found
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-26772:
-=~ Assertion \`err != DB_DUPLICATE_KEY'
-=~ row_rename_table_for_mysql
+MDEV-27111:
+=~ InnoDB: Expected tablespace id .* but found .* in the file
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-26220:
+MDEV-25555:
 =~ signal|AddressSanitizer
-=~ Field::register_field_in_read_map
-=~ ha_partition::index_init
-MDEV-25803:
-=~ AddressSanitizer|signal 11
-=~ skip_trailing_space|my_ismbchar
-=~ _mi_pack_key
-=~ ha_myisam::records_in_range
+=~ tree_record_pos
+=~ hp_rb_records_in_range
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-24742:
+MDEV-23836:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ my_message_sql
+=~ THD::send_kill_message
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-23182:
 =~ signal [16]|AddressSanitizer
-=~ String::numchars
-=~ in_string::set
-=~ Item_func::fix_fields
-MDEV-24619:
-=~ Assertion \`0'
-=~ Item::val_native
-=~ Type_handler_inet6::Item_val_native_with_conversion|Inet6_null::Inet6_null
-MDEV-24585:
-=~ Assertion \`je->s\.cs == nice_js->charset()'
-=~ json_nice
-=~ Item_func_json_insert::val_str
-MDEV-24467:
-=~ Direct leak of|Memory not freed|blocks are definitely lost
-=~ Binary_string::real_alloc|String::real_alloc
-=~ Field_.*::store|Field_.*::val_.*
-=~ FeatureUsage detected delayed inserts
-MDEV-23408:
-=~ Assertion \`!alias_arg \|\| strlen(alias_arg->str) == alias_arg->length'
-=~ TABLE_LIST::init_one_table
-=~ Locked_tables_list::init_locked_tables
+=~ fix_fields_for_tvc|join_type_handlers_for_tvc
+=~ table_value_constr::prepare
+=~ Prepared_statement|sp_head::execute
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-23391:
-=~ signal [16]|AddressSanitizer
-=~ close_thread_table
-=~ drop_open_table
-=~ select_create::abort_result_set
-MDEV-23391:
-=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_.*)'
-=~ close_thread_table|TDC_element::flush
-=~ Locked_tables_list::unlock_locked_tables|drop_open_table
-=~ select_create::abort_result_set
-MDEV-23365:
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ Diagnostics_area::set_ok_status
-=~ Sql_cmd_truncate_table::execute
-=~ Version: '10\.[1-2]
-MDEV-22660:
-=~ signal [16]|AddressSanitizer
-=~ Assertion \`row_end'|is_versioning_timestamp|Vers_type_timestamp::check_sys_fields|Vers_parse_info::check_sys_fields
-=~ Table_scope_and_contents_source_st::check_fields
-=~ mysql_alter_table
-MDEV-22601:
-=~ Assertion \`0'
-=~ Protocol::end_statement
-=~ Can't find record in|Невозможно найти запись в
-=~ FeatureUsage detected sequences
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-22445:
-=~ InnoDB: Assertion failure in file .*innobase/trx/trx0trx\.cc
-=~ trx_start_if_not_started_xa_low
-=~ ha_innobase::init_table_handle_for_HANDLER
-MDEV-22284:
-=~ signal 11|AddressSanitizer
-=~ _ma_keylength_part|_ma_row_pos_from_key|memcpy|_ma_search_no_save
-=~ ha_maria::index_read_idx_map
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-22284:
-=~ Assertion \`info->last_key\.keyinfo == key->keyinfo'
-=~ _ma_search_no_save
-=~ ha_maria::index_read_idx_map
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-22118:
-=~ Assertion \`nr != 0'
-=~ handler::update_auto_increment
-=~ handler::ha_write_row
-MDEV-21555:
-=~ InnoDB: foreign constraints: secondary index is out of sync
-=~ Assertion \`!"secondary index is out of sync"'|Assertion \`"secondary index is out of sync" == 0'
-=~ dict_index_t::vers_history_row
-=~ row_upd_check_references_constraints|row_ins_check_foreign_constraint
-MDEV-20131:
-=~ Assertion \`!pk->has_virtual()'
-=~ instant_alter_column_possible
-=~ ha_innobase::check_if_supported_inplace_alter
-MDEV-19522:
-=~ Assertion \`val <= 4294967295u'|InnoDB: Failing assertion: val <= 4294967295u
-=~ fts_encode_int
-=~ fts_cache_node_add_positions
-=~ fts_commit_table
-MDEV-19522:
-=~ InnoDB: Failing assertion: doc_id == src_node->last_doc_id
-=~ fts_optimize_node
-=~ ha_innobase::optimize
-MDEV-18734:
-=~ AddressSanitizer: heap-use-after-free|Invalid read of size
-=~ my_strnxfrm_simple_internal
-=~ Field_blob::sort_string
+MDEV-22256:
+=~ Assertion \`length == pack_length()'
+=~ Field_timestamp_with_dec::sort_string|Field_inet6::sort_string
+=~ Field::make_sort_key_part
+MDEV-22256:
+=~ Assertion \`length == pack_length()'
+=~ Field_inet6::sort_string
+=~ create_sort_index
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-22256:
+=~ Assertion \`Inet6::binary_length() == sort_field->length'
+=~ Type_handler_inet6::make_sort_key_part
+=~ create_sort_index
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-21866:
+=~ Assertion \`!result'
+=~ convert_const_to_int
+=~ Prepared_statement::execute|sp_head::execute
 
 
 ##############################################################################
@@ -177,16 +113,6 @@ MDEV-18734:
 ##############################################################################
 
 ##########
-# Fixed in the next release
+# Fixed in the next release (10.2.42 / 10.3.33 / 10.4.23 / 10.5.14 / 10.6.6)
 ##########
 
-MDEV-22601: [Can't find record in]
-=~ Can't find record in|Невозможно найти запись в
-=~ will exit with exit status STATUS_DATABASE_CORRUPTION
-=~ FeatureUsage detected sequences
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-=~ will exit with exit status STATUS_DATABASE_CORRUPTION
-MDEV-14846:
-=~ prebuilt->trx, TRX_STATE_ACTIVE
-MDEV-14846:
-=~ state == TRX_STATE_FORCED_ROLLBACK
