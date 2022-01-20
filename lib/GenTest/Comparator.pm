@@ -107,7 +107,7 @@ sub dumpDiff {
 		close FILE;
 	}
 	
-	my $diff_cmd = "diff -u $files[0] $files[1]";
+	my $diff_cmd = "diff -a -u $files[0] $files[1]";
 
 	open (DIFF, "$diff_cmd|");
 	while (<DIFF>) {

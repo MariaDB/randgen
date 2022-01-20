@@ -46,7 +46,7 @@ sub validate {
 		return STATUS_UNKNOWN_ERROR if $mysqldump_result > 0;
 	}
 
-	my $diff_result = system("diff --unified $files[SERVER1_FILE_NAME] $files[SERVER2_FILE_NAME]");
+	my $diff_result = system("diff -a --unified $files[SERVER1_FILE_NAME] $files[SERVER2_FILE_NAME]");
 	$diff_result = $diff_result >> 8;
 	return STATUS_UNKNOWN_ERROR if $diff_result > 1;
 

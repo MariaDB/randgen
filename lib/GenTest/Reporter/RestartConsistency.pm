@@ -177,7 +177,7 @@ sub dump_database {
 
 sub compare_dumps {
 	say("Comparing SQL dumps between servers before and after restart...");
-	my $diff_result = system("diff -u $vardir/server_before.dump $vardir/server_after.dump");
+	my $diff_result = system("diff -a -u $vardir/server_before.dump $vardir/server_after.dump");
 	$diff_result = $diff_result >> 8;
 
 	if ($diff_result == 0) {

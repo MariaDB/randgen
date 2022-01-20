@@ -143,7 +143,7 @@ sub report {
 	}
 
 	say("Comparing SQL dumps between servers...");
-	$status = system("diff -u $vardir/vardir_orig/original.dump.sorted $vardir/restored.dump.sorted") >> 8;
+	$status = system("diff -a -u $vardir/vardir_orig/original.dump.sorted $vardir/restored.dump.sorted") >> 8;
 
 	unlink("$vardir/vardir_orig/original.dump.sorted");
 	unlink("$vardir/restored.dump.sorted");

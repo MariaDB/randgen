@@ -103,7 +103,7 @@ sub report {
 	}
 
 	say("Comparing SQL dumps between servers on ports $dump_ports[0] and $dump_ports[1] ...");
-	my $diff_result = system("diff -u $dump_files[0] $dump_files[1]");
+	my $diff_result = system("diff -a -u $dump_files[0] $dump_files[1]");
 	$diff_result = $diff_result >> 8;
 
 	foreach my $dump_file (@dump_files) {

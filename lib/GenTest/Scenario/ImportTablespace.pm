@@ -185,7 +185,7 @@ sub run {
   $status= compare($server->vardir.'/server_schema_old.dump', $server->vardir.'/server_schema_new.dump');
   if ($status != STATUS_OK) {
     sayError("Database structures differ after upgrade");
-    system('diff -u '.$server->vardir.'/server_schema_old.dump'.' '.$server->vardir.'/server_schema_new.dump');
+    system('diff -a -u '.$server->vardir.'/server_schema_old.dump'.' '.$server->vardir.'/server_schema_new.dump');
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
   }
   else {
@@ -195,7 +195,7 @@ sub run {
   $status= compare($server->vardir.'/server_data_old.dump', $server->vardir.'/server_data_new.dump');
   if ($status != STATUS_OK) {
     sayError("Data differs after upgrade");
-    system('diff -u '.$server->vardir.'/server_data_old.dump'.' '.$server->vardir.'/server_data_new.dump');
+    system('diff -a -u '.$server->vardir.'/server_data_old.dump'.' '.$server->vardir.'/server_data_new.dump');
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
   }
   else {
