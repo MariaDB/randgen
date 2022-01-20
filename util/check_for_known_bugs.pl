@@ -78,7 +78,7 @@ system("rm -rf /tmp/MDEV-* /tmp/MENT-* /tmp/TODO-*");
 
 #my $server_version= ;
 my @server_version= ();
-if (`grep -m 1 "^Version: '" @files @last_choice_files` =~ /^Version: '(\d+)\.(\d+)\.(\d+)(?:-(\d+))?/s) {
+if (`grep -a -m 1 "^Version: '" @files @last_choice_files` =~ /^Version: '(\d+)\.(\d+)\.(\d+)(?:-(\d+))?/s) {
   @server_version= ($1, $2, $3, $4);
   print "Server version: ".join('.',@server_version)."\n";
 }
@@ -181,7 +181,7 @@ sub search_files_for_matches
           # Skip anything that is not JIRA name or signature line
           next;
         }
-        system("grep -h -E -e \"$pattern\" @files > /dev/null 2>&1");
+        system("grep -a -h -E -e \"$pattern\" @files > /dev/null 2>&1");
         if (($goal eq 'match' and $?) or ($goal eq 'nomatch' and $? == 0)) {
           $signature_does_not_match= 1;
         } else {
