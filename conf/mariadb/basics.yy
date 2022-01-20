@@ -438,7 +438,7 @@ _basics_value_for_numeric_column:
     NULL | NULL | DEFAULT | _digit | _tinyint | _tinyint_unsigned | _smallint_unsigned | _int_unsigned;
 
 _basics_value_for_char_column:
-    NULL | NULL | DEFAULT | '' | _char(1) | _english ;
+    NULL | NULL | DEFAULT | '' | _char(1) | _word ;
 
 _basics_reload_metadata:
     { $executors->[0]->cacheMetaData(1); '' };

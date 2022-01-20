@@ -220,6 +220,7 @@ my %name2type = (
 my $cwd = cwd();
 my $data_location= "$cwd/data/blobs";
 my @json_files= glob("$data_location/*.json");
+my @dictionaries= qw(chinese croatian english german hebrew japanese thai vietnamese states);
 
 # Min and max values for integer data types
 
@@ -552,8 +553,9 @@ sub text {
       $str= "SUBSTR($str,$pos,$len)";
     }
   } else {
+    my $dict= $prng->arrayElement(\@dictionaries);
     while (my $remainder= $len - length($str)) {
-      my $word= $prng->dictionaryWord('english');
+      my $word= $prng->dictionaryWord($dict);
       if (length($word) < $remainder) {
         $str .= "$word ";
       }
@@ -991,7 +993,7 @@ sub fieldType {
 	} elsif ($field_type == FIELD_TYPE_QUID) {
 		return $rand->quid();
 	} elsif ($field_type == FIELD_TYPE_DICT) {
-		return $rand->fromDictionary($field_base_type);
+		return $rand->word($field_base_type);
 	} elsif ($field_type == FIELD_TYPE_BIT) {
 		return $rand->bit($field_length);
 	} elsif ($field_type == FIELD_TYPE_JSON) {
@@ -1084,9 +1086,9 @@ sub dictionaryWord {
   return $rand->arrayElement(loadDictionary($dict_name));
 }
 
-sub fromDictionary {
+sub word {
 	my ($rand, $dict_name) = @_;
-
+    $dict_name||= $rand->arrayElement(\@dictionaries);
 	return "'".$rand->dictionaryWord($dict_name)."'";
 }
 

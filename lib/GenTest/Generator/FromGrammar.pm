@@ -204,6 +204,8 @@ sub next {
 						$item = $prng->letter();
 					} elsif ($item eq '_digit') {
 						$item = $prng->digit();
+					} elsif ($item eq '_word') {
+						$item = $prng->word();
 					} elsif ($item eq '_positive_digit') {
 						$item = $prng->positive_digit();
 					} elsif ($item eq '_table') {

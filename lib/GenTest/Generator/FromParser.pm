@@ -320,7 +320,7 @@ sub convert_token {
     return $generator->prng->float;
   } elsif ($token eq '(text)') {
     # TODO: maybe need real "text"
-    return $generator->prng->fromDictionary('english');
+    return $generator->prng->word('english');
   } elsif ($token eq '(hostname)') {
     # TODO: replace with something hostname-ish
     return $generator->prng->identifier;
