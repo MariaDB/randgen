@@ -145,8 +145,9 @@ func_information_func:
 func_control_flow_func:
    CASE func_arg WHEN func_arg THEN func_arg END | CASE func_arg WHEN func_arg THEN func_arg WHEN func_arg THEN func_arg END | CASE func_arg WHEN func_arg THEN func_arg ELSE func_arg END |
    IF( func_arg, func_arg, func_arg ) |
-   IFNULL( func_arg, func_arg ) |
-   NULLIF( func_arg, func_arg )
+   IFNULL( func_arg, func_arg )
+   # TODO: Re-enable when MDEV-19091 is fixed
+   # NULLIF( func_arg, func_arg )
 ;
 
 func_cast_oper:

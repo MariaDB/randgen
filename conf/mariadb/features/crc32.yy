@@ -145,8 +145,9 @@ crc32_information_func:
 crc32_control_flow_func:
    CASE crc32_arg WHEN crc32_arg THEN crc32_arg END | CASE crc32_arg WHEN crc32_arg THEN crc32_arg WHEN crc32_arg THEN crc32_arg END | CASE crc32_arg WHEN crc32_arg THEN crc32_arg ELSE crc32_arg END |
    IF( crc32_arg, crc32_arg, crc32_arg ) |
-   IFNULL( crc32_arg, crc32_arg ) |
-   NULLIF( crc32_arg, crc32_arg )
+   IFNULL( crc32_arg, crc32_arg )
+   # TODO: Re-enable when MDEV-19091 is fixed
+#   NULLIF( crc32_arg, crc32_arg )
 ;
 
 crc32_cast_oper:
