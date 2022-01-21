@@ -372,7 +372,8 @@ func_unit2:
 
 func_math_func:
    ABS( func_arg ) | ACOS( func_arg ) | ASIN( func_arg ) | ATAN( func_arg ) | ATAN( func_arg, func_arg ) | ATAN2( func_arg, func_arg ) |
-   CEIL( func_arg ) | CEILING( func_arg ) | CONV( func_arg, _tinyint_unsigned, _tinyint_unsigned ) | COS( func_arg ) | COT( func_arg ) | CRC32( func_arg ) |
+   CEIL( func_arg ) | CEILING( func_arg ) | CONV( func_arg, _tinyint_unsigned, _tinyint_unsigned ) | COS( func_arg ) | COT( func_arg ) |
+   CRC32( func_arg ) | /* compatibility 10.8.0 */ CRC32( func_arg, func_arg ) | /* compatibility 10.8.0 */ CRC32C( func_arg ) | /* compatibility 10.8.0 */ CRC32C( func_arg, func_arg ) |
    DEGREES( func_arg ) |
    EXP( func_arg ) |
    FLOOR( func_arg ) |
