@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-27560:
+=~ Conditional jump or move depends on uninitialised value|MemorySanitizer
+=~ cmp_key_rowid_part_id
+=~ ha_partition::handle_ordered_next
 # Not merged into 10.4+ yet
 MDEV-27452:
 =~ Assertion \`dec == 6'|AddressSanitizer|signal
@@ -1563,6 +1567,10 @@ MDEV-22674:
 =~ ha_maria::enable_indexes
 =~ select_insert::abort_result_set
 =~ Version: '10\.[1-3]
+MDEV-22671:
+=~ MemorySanitizer
+=~ rocksdb::ThreadLocalPtr::StaticMeta::StaticMeta
+=~ __do_global_dtors_aux
 MDEV-22667:
 =~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
 =~ row_update_for_mysql
