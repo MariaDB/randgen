@@ -93,6 +93,7 @@ $perfschema_options_105= $perfschema_options_104.'
 
 $perfschema_options_106= $perfschema_options_105;
 $perfschema_options_107= $perfschema_options_106;
+$perfschema_options_108= $perfschema_options_107;
 
 #########################
 # Server option combinations
@@ -123,6 +124,11 @@ $common_options= '
   --mysqld=--lock-wait-timeout=10
   --mysqld=--innodb-lock-wait-timeout=5
 ';
+
+$common_options_108= [
+  $common_options,
+  [ '', '', '--reporters=JsonHistogram' ]
+];
 
 $ps_protocol_options= '--ps-protocol --filter=conf/mariadb/need-reconnect.ff';
 
@@ -202,6 +208,8 @@ $optional_variators_107= [
   [ '--variators=NaturalSort' ],
 ];
 
+$optional_variators_108= [ @$optional_variators_107 ];
+
 # RocksDB is disabled because upstream has not been updated (no JIRA yet)
 #  '--engine=InnoDB,MyISAM,Aria,HEAP,RocksDB --mysqld=--plugin-load-add=ha_rocksdb'
 $basic_engine_combinations_102= [
@@ -216,6 +224,7 @@ $basic_engine_combinations_104= [ @$basic_engine_combinations_103 ];
 $basic_engine_combinations_105= [ @$basic_engine_combinations_104 ];
 $basic_engine_combinations_106= [ @$basic_engine_combinations_105 ];
 $basic_engine_combinations_107= [ @$basic_engine_combinations_106 ];
+$basic_engine_combinations_108= [ @$basic_engine_combinations_107 ];
 
 $non_crash_scenario_combinations_102= [
   '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
@@ -227,6 +236,7 @@ $non_crash_scenario_combinations_104= [ @$non_crash_scenario_combinations_103 ];
 $non_crash_scenario_combinations_105= [ @$non_crash_scenario_combinations_104 ];
 $non_crash_scenario_combinations_106= [ @$non_crash_scenario_combinations_105 ];
 $non_crash_scenario_combinations_107= [ @$non_crash_scenario_combinations_106 ];
+$non_crash_scenario_combinations_108= [ @$non_crash_scenario_combinations_107 ];
 
 $scenario_combinations_102= [ @$non_crash_scenario_combinations_102 ];
 
@@ -241,6 +251,7 @@ $scenario_combinations_106= [
   '--scenario=MariaBackupIncremental',
 ];
 $scenario_combinations_107= [ @$scenario_combinations_106 ];
+$scenario_combinations_108= [ @$scenario_combinations_107 ];
 
 #############
 # InnoDB vars
@@ -398,6 +409,7 @@ foreach my $o (@$optional_innodb_variables_106) {
   }
 }
 $optional_innodb_variables_107= [ @$optional_innodb_variables_106 ];
+$optional_innodb_variables_108= [ @$optional_innodb_variables_107 ];
 
 #############
 # Aria vars
@@ -417,6 +429,7 @@ $optional_aria_variables_104= [ @$optional_aria_variables_103 ];
 $optional_aria_variables_105= [ @$optional_aria_variables_104 ];
 $optional_aria_variables_106= [ @$optional_aria_variables_105 ];
 $optional_aria_variables_107= [ @$optional_aria_variables_106 ];
+$optional_aria_variables_108= [ @$optional_aria_variables_107 ];
 
 #############
 # Other vars
@@ -441,6 +454,7 @@ $optional_plugins_107= [
   [ '', '', '', '--mysqld=--plugin-load-add=provider_lzo' ],
   [ '', '', '', '--mysqld=--plugin-load-add=provider_snappy' ],
 ];
+$optional_plugins_108= [ @$optional_plugins_107 ];
 
 $binlog_combinations= [
   [ '--mysqld=--log-bin --mysqld=--log_bin_trust_function_creators=1' ],
@@ -525,6 +539,7 @@ $optional_server_variables_104= [ @$optional_server_variables_103 ];
 $optional_server_variables_105= [ @$optional_server_variables_104 ];
 $optional_server_variables_106= [ @$optional_server_variables_105 ];
 $optional_server_variables_107= [ @$optional_server_variables_106 ];
+$optional_server_variables_108= [ @$optional_server_variables_107 ];
 
 # Default depends on the build/system, so in addition to the default,
 # we'll also add extra utf8 with presumably most common collations
@@ -885,3 +900,4 @@ $optional_charsets_104= [ @$optional_charsets_103 ];
 $optional_charsets_105= [ @$optional_charsets_104 ];
 $optional_charsets_106= [ @$optional_charsets_105 ];
 $optional_charsets_107= [ @$optional_charsets_106 ];
+$optional_charsets_108= [ @$optional_charsets_107 ];

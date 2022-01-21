@@ -115,7 +115,7 @@ dynvar_session_variable:
   | GTID_DOMAIN_ID= { $prng->int(0,5) }
   | GTID_SEQ_NO= { $prng->int(0,4294967295) }
   | HISTOGRAM_SIZE= { $prng->int(0,255) }
-  | HISTOGRAM_TYPE= { $prng->arrayElement(['SINGLE_PREC_HB','DOUBLE_PREC_HB']) }
+  | HISTOGRAM_TYPE= { $prng->arrayElement(['SINGLE_PREC_HB','DOUBLE_PREC_HB','JSON_HB /* compatibility 10.8.0 */']) }
 # | IDENTITY= { $prng->int(0,4294967295) } # == last_insert_id
   | IDLE_READONLY_TRANSACTION_TIMEOUT= { $prng->arrayElement([0,3600]) } /* compatibility 10.3.0 */
   | IDLE_TRANSACTION_TIMEOUT= { $prng->arrayElement([0,3600]) } /* compatibility 10.3.0 */

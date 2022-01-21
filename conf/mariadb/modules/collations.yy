@@ -1,5 +1,5 @@
 query_add:
-    ==FACTOR:0.1== SELECT CONCAT("SET NAMES '",CHARACTER_SET_NAME,"' COLLATE '",{ $coll= "'".$prng->arrayElement($executors->[0]->metaCollations())."'" },"'") INTO @setnames FROM INFORMATION_SCHEMA.COLLATIONS WHERE COLLATION_NAME = { $coll }
+    ==FACTOR:0.01== SELECT CONCAT("SET NAMES '",CHARACTER_SET_NAME,"' COLLATE '",{ $coll= "'".$prng->arrayElement($executors->[0]->metaCollations())."'" },"'") INTO @setnames FROM INFORMATION_SCHEMA.COLLATIONS WHERE COLLATION_NAME = { $coll }
     ; EXECUTE IMMEDIATE @setnames |
     collation_strings collation_comparison ;
 
