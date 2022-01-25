@@ -4,6 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-27621:
+=~ FATAL ERROR: .* Was only able to copy log from .* to .*, not .*; try increasing innodb_log_file_size
+=~ Version: '10\.[8-9]|Server version: 10\.[8-9]
+MDEV-27603:
+=~ AddressSanitizer
+=~ Gap_time_tracker::log_time
+=~ Exec_time_tracker::start_tracking
 MDEV-27560:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer
 =~ cmp_key_rowid_part_id
@@ -40,7 +47,7 @@ MDEV-27292:
 MDEV-27225:
 =~ AddressSanitizer|signal
 =~ ha_maria::info
-=~ get_referential_constraints_record
+=~ get_referential_constraints_record|get_schema_constraints_record
 =~ get_all_tables
 =~ Version: '10\.3|Server version: 10\.3
 MDEV-27224:
@@ -1145,7 +1152,7 @@ MDEV-23444:
 =~ bin2decimal
 =~ Field_new_decimal::val_decimal
 MDEV-23443:
-=~ AddressSanitizer|signal [16]
+=~ AddressSanitizer|MemorySanitizer|signal [16]
 =~ _ma_unique_comp
 =~ maria_update
 =~ select_unit_ext::send_eof
@@ -1170,7 +1177,6 @@ MDEV-23383:
 =~ signal [16]|AddressSanitizer
 =~ JOIN_CACHE::get_offset
 =~ JOIN_CACHE::get_rec_ref
-=~ JOIN_CACHE_BNL::read_next_candidate_for_match
 MDEV-23364:
 =~ signal [16]|AddressSanitizer
 =~ Field::is_null
@@ -2970,7 +2976,7 @@ MDEV-18013:
 MDEV-18003:
 =~ Assertion \`grantee->counter > 0'
 =~ merge_role_privileges
-=~ traverse_role_graph_up
+=~ traverse_role_graph
 MDEV-17991:
 =~ Out of memory
 =~ Lex_input_stream::body_utf8_start
@@ -3199,8 +3205,8 @@ MDEV-16808:
 =~ store_key::store_key
 =~ create_ref_for_key
 MDEV-16808:
-=~ signal 11|AddressSanitizer
-=~ cp_buffer_from_ref
+=~ signal|AddressSanitizer
+=~ cp_buffer_from_ref|store_key_field::copy_inner
 =~ JOIN_CACHE_HASHED::put_record
 =~ evaluate_join_record
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
