@@ -1,0 +1,1 @@
+perl ./runall-new.pl --seed=1642997037 --duration=350 --scenario=MariaBackupFull --engine=InnoDB  --gendata=mbackup.zz  --short-column-names --grammar=mbackup.yy --threads=1 --basedir=/data/bld/10.8-rel-nightly --vardir=/dev/shm/var_mdev27621
