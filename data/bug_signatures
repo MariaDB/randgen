@@ -277,6 +277,11 @@ MDEV-26035:
 =~ Assertion \`file->s->base\.reclength < file->s->vreclength \|\| !table->s->stored_fields'
 =~ ha_myisam::setup_vcols_for_repair
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-26006:
+=~ AddressSanitizer|READ of size
+=~ in_vector::find
+=~ Item_func_in::val_int
+=~ Version: '10\.2|Server version: 10\.2
 MDEV-26000:
 =~ signal 11|AddressSanitizer|Assertion \`cmp_items\[(uint)cmp_type\]'
 =~ Item_func_case::find_item
@@ -554,7 +559,7 @@ MDEV-25028:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-25028:
 =~ AddressSanitizer|signal 11
-=~ base_list_iterator::next
+=~ base_list_iterator::next|SQL_SELECT::cleanup
 =~ st_select_lex::cleanup
 =~ Prepared_statement::execute
 =~ INSERT.*RETURNING|REPLACE.*RETURNING
