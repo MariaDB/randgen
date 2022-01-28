@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014 SkySQL Ab
-# Copyright (c) 2015, 2020 MariaDB Corporation Ab
+# Copyright (c) 2015, 2021 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -299,6 +299,11 @@ int_double_member_subquery:
 	  double_subquery_group_by
 	  subquery_having ) |
 	( SELECT distinct select_option subquery_table_one_two . _field_int AS { "SQ".$subquery_idx."_ifield1" } , 
+	  subquery_table_one_two . _field_int AS { $sq_ifields = 2; "SQ".$subquery_idx."_ifield2" }
+	  subquery_body
+	  single_subquery_group_by
+	  subquery_having ) |
+	( SELECT distinct select_option aggregate subquery_table_one_two . _field_int ) AS { "SQ".$subquery_idx."_ifield1" } ,
 	  aggregate subquery_table_one_two . _field_int ) AS { $sq_ifields = 2; "SQ".$subquery_idx."_ifield2" }
 	  subquery_body 
 	  single_subquery_group_by
@@ -342,6 +347,11 @@ char_double_member_subquery:
 	 double_subquery_group_by
 	 subquery_having ) |
    ( SELECT distinct select_option subquery_table_one_two . _field_char AS { "SQ".$subquery_idx."_cfield1" } ,
+	 subquery_table_one_two . _field_char AS { $sq_cfields = 2; "SQ".$subquery_idx."_cfield2" }
+	 subquery_body
+	 single_subquery_group_by
+	 subquery_having ) |
+   ( SELECT distinct select_option aggregate subquery_table_one_two . _field_char ) AS { "SQ".$subquery_idx."_cfield1" } ,
 	 aggregate subquery_table_one_two . _field_char ) AS { $sq_cfields = 2; "SQ".$subquery_idx."_cfield2" }
 	 subquery_body
 	 single_subquery_group_by
@@ -484,12 +494,12 @@ int_single_value_child_subquery:
 	  child_subquery_body ) ;
 
 char_single_value_child_subquery:
-	( SELECT distinct select_option aggregate child_subquery_table_one_two . _field_char ) AS { $c_sq_cfields=1; "C_SQ".$child_subquery_idx."_cfield1" } 
+	( SELECT distinct select_option aggregate child_subquery_table_one_two . _field_char ) AS { $c_sq_cfields=1; "C_SQ".$child_subquery_idx."_cfield1" }
 	  child_subquery_body ) ;
    
 int_single_member_child_subquery:
 	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { $c_sq_ifields=1; "C_SQ".$child_subquery_idx."_ifield1" }
-	  child_subquery_body 
+	  child_subquery_body
 	  single_child_subquery_group_by
 	  child_subquery_having ) ;
 
@@ -497,14 +507,19 @@ int_single_union_child_subquery:
 	(  SELECT _digit  UNION all_distinct  SELECT _digit  )  ;
 
 int_double_member_child_subquery:
-	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { "C_SQ".$child_subquery_idx."_ifield1" } , 
+	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { "C_SQ".$child_subquery_idx."_ifield1" } ,
 	  child_subquery_table_one_two . _field_int AS { $c_sq_ifields=2; "C_SQ".$child_subquery_idx."_ifield2" }
-	  child_subquery_body 
+	  child_subquery_body
 	  double_child_subquery_group_by
 	  child_subquery_having ) |
-	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { "C_SQ".$child_subquery_idx."_ifield1" } , 
+	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { "C_SQ".$child_subquery_idx."_ifield1" } ,
+	  child_subquery_table_one_two . _field_int AS { $c_sq_ifields=2; "C_SQ".$child_subquery_idx."_ifield2" }
+	  child_subquery_body
+	  single_child_subquery_group_by
+	  child_subquery_having ) |
+	( SELECT distinct select_option aggregate child_subquery_table_one_two . _field_int ) AS { "C_SQ".$child_subquery_idx."_ifield1" } ,
 	  aggregate child_subquery_table_one_two . _field_int ) AS { $c_sq_ifields=2; "C_SQ".$child_subquery_idx."_ifield2" }
-	  child_subquery_body 
+	  child_subquery_body
 	  single_child_subquery_group_by
 	  child_subquery_having );
 
@@ -524,6 +539,11 @@ char_double_member_child_subquery:
 	 double_child_subquery_group_by
 	 child_subquery_having ) |
    ( SELECT distinct select_option child_subquery_table_one_two . _field_char AS { "C_SQ".$child_subquery_idx."_cfield1" } ,
+	 child_subquery_table_one_two . _field_char AS { $c_sq_cfields=2; "C_SQ".$child_subquery_idx."_cfield2" }
+	 child_subquery_body
+	 single_child_subquery_group_by
+	 child_subquery_having ) |
+   ( SELECT distinct select_option aggregate child_subquery_table_one_two . _field_char ) AS { "C_SQ".$child_subquery_idx."_cfield1" } ,
 	 aggregate child_subquery_table_one_two . _field_char ) AS { $c_sq_cfields=2; "C_SQ".$child_subquery_idx."_cfield2" }
 	 child_subquery_body
 	 single_child_subquery_group_by
