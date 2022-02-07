@@ -4,6 +4,33 @@
 # Strong matches
 ##############################################################################
 
+MDEV-27756:
+=~ signal|AddressSanitizer
+=~ SEL_ARG::tree_delete
+=~ and_range_trees
+=~ SQL_SELECT::test_quick_select
+MDEV-27683:
+=~ signal|AddressSanitizer
+=~ ha_partition::init_record_priority_queue
+=~ handler::ha_index_init
+=~ Version: '10\.[8-9]|Server version: 10\.[8-9]
+MDEV-27675:
+=~ InnoDB: Corruption of index|Assertion \`ret && btr_cur->low_match == n_fields'
+=~ rtr_page_get_father_node_ptr
+=~ row_insert_for_mysql
+MDEV-27674:
+=~ sig=8|Assertion failure
+=~ row_ins_cascade_calc_update_vec
+=~ row_ins_foreign_check_on_constraint
+MDEV-27670:
+=~ Assertion \`(cs->state & 0x20000) == 0'
+=~ my_strnncollsp_nchars_generic_8bit
+=~ cmp_whole_field
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+MDEV-27668:
+=~ Assertion \`item->type_handler()->is_traditional_scalar_type() \|\| item->type_handler() == type_handler()'
+=~ Field_inet6::can_optimize_keypart_ref
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-27621:
 =~ FATAL ERROR: .* Was only able to copy log from .* to .*, not .*; try increasing innodb_log_file_size
 =~ Version: '10\.[8-9]|Server version: 10\.[8-9]
@@ -34,6 +61,10 @@ MDEV-27427:
 MDEV-27422:
 =~ Assertion \`0'|Assertion \`pageno < ((1ULL) << 40)'|AddressSanitizer|signal
 =~ maria_rtree_insert|maria_rtree_delete
+MDEV-27422:
+=~ Assertion \`move_length <= ma_page->org_size - share->keypage_header'
+=~ _ma_log_delete
+=~ d_search
 MDEV-27303:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_read
@@ -272,6 +303,11 @@ MDEV-26074:
 =~ Assertion \`!is_thread_specific \|\| (mysqld_server_initialized && thd)'
 =~ my_malloc_size_cb_func
 =~ maria_ft_linearize
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-26057:
+=~ Assertion \`!vcol->v_indexes\.empty()'
+=~ trx_undo_log_v_idx
+=~ trx_undo_page_report
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26035:
 =~ Assertion \`file->s->base\.reclength < file->s->vreclength \|\| !table->s->stored_fields'
