@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-27840:
+=~ Assertion \`!is_v'
+=~ ha_innobase::build_template
+=~ QUICK_RANGE_SELECT
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-27756:
 =~ signal|AddressSanitizer
 =~ SEL_ARG::tree_delete
@@ -1590,8 +1595,7 @@ MDEV-22695:
 MDEV-22676:
 =~ InnoDB: Failing assertion: result != FTS_INVALID
 =~ fts_trx_row_get_new_state
-=~ row_fts_update_or_delete
-=~ Version: '10\.4|Server version: 10\.4
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22675:
 =~ Assertion \`offset < table->s->reclength'
 =~ dump_leaf_key
