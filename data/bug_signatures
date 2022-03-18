@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-27878:
+=~ Assertion \`got_name == named_item_expected()'
+=~ Json_writer::on_start_object
+=~ enforce_sel_arg_weight_limit
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-27840:
 =~ Assertion \`!is_v'
 =~ ha_innobase::build_template
