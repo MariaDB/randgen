@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28169:
+=~ AddressSanitizer|signal
+=~ dfield_dup
+=~ row_upd_index_replace_new_col_val
+=~ btr_cur_optimistic_update
+=~ FeatureUsage detected unique blobs
+MDEV-28169:
+=~ AddressSanitizer|signal
+=~ dfield_data_is_binary_equal
+=~ row_upd_build_difference_binary
+=~ row_ins_clust_index_entry_by_modify
+=~ FeatureUsage detected unique blobs
 MDEV-27878:
 =~ Assertion \`got_name == named_item_expected()'
 =~ Json_writer::on_start_object
@@ -75,16 +87,23 @@ MDEV-27422:
 =~ Assertion \`move_length <= ma_page->org_size - share->keypage_header'
 =~ _ma_log_delete
 =~ d_search
+# The bug report is 10.5+, but the failure can happen on 10.4 too, like MDEV-27292
+MDEV-27366:
+=~ signal|AddressSanitizer
+=~ handler_index_cond_check
+=~ row_search_idx_cond_check
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-27303:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_read
 =~ _ma_scan_block_record
 =~ Version: '10\.8|Server version: 10\.8
+# The bug report is 10.5+, but the failure can happen on 10.4 too 
 MDEV-27292:
 =~ Assertion \`!prebuilt->index->is_primary()'
 =~ row_search_idx_cond_check
 =~ row_search_mvcc
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-27225:
 =~ AddressSanitizer|signal
 =~ ha_maria::info
