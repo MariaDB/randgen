@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28268:
+=~ AddressSanitizer|signal
+=~ Expression_cache_tracker::fetch_current_stats
+=~ Explain_node::print_explain_json_for_children
 MDEV-28267:
 =~ AddressSanitizer|signal
 =~ Item_sp::func_name_cstring
