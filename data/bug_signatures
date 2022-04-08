@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28270:
+=~ AddressSanitizer|signal
+=~ l_find
+=~ lf_hash_search_using_hash_value
+=~ xid_cache_search
+=~ Version: '10\.[2-3]|Server version: 10\.[2-3]
+MDEV-28269:
+=~ maria_write: Assertion \`save_errno'
+=~ handler::ha_write_tmp_row
+=~ select_union::send_data
 MDEV-28268:
 =~ AddressSanitizer|signal
 =~ Expression_cache_tracker::fetch_current_stats
@@ -11,7 +21,6 @@ MDEV-28268:
 MDEV-28267:
 =~ AddressSanitizer|signal
 =~ Item_sp::func_name_cstring
-=~ write_item
 =~ Explain_table_access::print_explain_json
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-28169:
@@ -57,7 +66,6 @@ MDEV-27674:
 MDEV-27670:
 =~ Assertion \`(cs->state & 0x20000) == 0'
 =~ my_strnncollsp_nchars_generic_8bit
-=~ cmp_whole_field
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-27668:
 =~ Assertion \`item->type_handler()->is_traditional_scalar_type() \|\| item->type_handler() == type_handler()'
@@ -585,7 +593,7 @@ MDEV-25060:
 =~ AddressSanitizer|Invalid write of size|signal 11
 =~ _mi_put_key_in_record
 =~ chk_key
-=~ ha_myisam::repair|ha_myisam::analyze
+=~ ha_myisam::repair|ha_myisam::analyze|ha_myisam::check
 =~ FeatureUsage detected virtual columns
 MDEV-25060:
 =~ Error: Freeing overrun buffer.* myisam/mi_close.* myisam/ha_myisam
