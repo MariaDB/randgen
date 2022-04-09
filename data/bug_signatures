@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28274:
+=~ Assertion \`s <= READ_FIX'
+=~ buf_page_t::set_state
+=~ buf_read_page_low
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-28270:
 =~ AddressSanitizer|signal
 =~ l_find
