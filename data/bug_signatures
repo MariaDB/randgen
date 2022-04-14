@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28320:
+=~ Assertion \`0'
+=~ QUICK_ROR_UNION_SELECT::need_sorted_output
+=~ test_if_skip_sort_order
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-28319:
 =~ Assertion \`cur_step->type & JSON_PATH_KEY'
 =~ json_find_path
