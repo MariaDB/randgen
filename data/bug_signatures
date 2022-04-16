@@ -4,6 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28328:
+=~ Assertion \`rec_offs_any_extern(offsets)'|InnoDB: Failing assertion: rec_offs_nth_extern(offsets, n)|InnoDB: Failing assertion: op == BTR_STORE_UPDATE \|\| (field_ref\[BTR_EXTERN_LEN\] & BTR_EXTERN_INHERITED_FLAG) \|\| !memcmp(field_ref, field_ref_zero, BTR_EXTERN_FIELD_REF_SIZE)
+=~ btr_store_big_rec_extern_fields|btr_rec_get_field_ref_offs
+MDEV-28328:
+=~ InnoDB: Failing assertion: prebuilt->trx->isolation_level == TRX_ISO_READ_UNCOMMITTED
+=~ row_sel_store_mysql_field_func
+=~ row_search_mvcc
 MDEV-28326:
 =~ signal|AddressSanitizer
 =~ json_path_parts_compare
@@ -219,7 +226,7 @@ MDEV-26983:
 =~ Assertion \`fil_space_t::physical_size(flags) == info\.page_size'
 =~ xb_delta_open_matching_space
 =~ xtrabackup_apply_delta
-=~ Version: '10\.4|Server version: 10\.4
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-26979:
 =~ AddressSanitizer|signal
 =~ dict_sys_t::allow_eviction
