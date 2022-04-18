@@ -472,6 +472,10 @@ MDEV-25775:
 =~ String::copy
 =~ Item_cache_str::cache_value
 =~ Version: '10\.2|Server version: 10\.2
+MDEV-25696:
+=~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type != 2'
+=~ get_dup_key
+=~ open_table_from_share
 MDEV-25677:
 =~ Assertion \`m_prebuilt->idx_cond_n_cols > 0'
 =~ ha_innobase::build_template
