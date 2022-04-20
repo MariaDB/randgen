@@ -1,0 +1,20 @@
+$tables = {
+        names => ['t1'],
+        rows => [50],
+        partitions => [ undef ]
+};
+
+$fields = {
+        types => [ 'int', 'text' ],
+        indexes => [undef, 'key' ],
+        null => [undef, 'not null' ],
+        default => [undef, 'default null' ]
+};
+
+$data = {
+        numbers => [ 'digit', 'null', undef ],
+        strings => [ 'letter', 'english', 'quid' ],
+        enum => [ 'letter' ],
+        blobs => [ 'data' ],
+        temporals => ['date', 'year', 'null', undef ]
+}
