@@ -60,59 +60,51 @@ TODO-842: [m_status == DA_OK_BULK - LOCK]
 =~ Version: '10\.[2-9]
 
 ##########
-# Fixed in the next release (10.2.42 / 10.3.33 / 10.4.23 / 10.5.14 / 10.6.6)
+# Fixed in the next release (10.2.44 / 10.3.35 / 10.4.25 / 10.5.15 / 10.6.8)
 ##########
 
-MDEV-27111:
-=~ InnoDB: Tablespace .* was not found at
-=~ InnoDB: Set innodb_force_recovery=1 to ignore this and to permanently lose all changes to the tablespace
-=~ InnoDB: Plugin initialization aborted at .* with error Tablespace not found
+MDEV-28274:
+=~ Assertion \`s <= READ_FIX'
+=~ buf_page_t::set_state
+=~ buf_read_page_low
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-27111:
-=~ InnoDB: Expected tablespace id .* but found .* in the file
+MDEV-27668:
+=~ Assertion \`item->type_handler()->is_traditional_scalar_type() \|\| item->type_handler() == type_handler()'
+=~ Field_inet6::can_optimize_keypart_ref
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+MDEV-26551:
+=~ InnoDB: Failing assertion: DICT_TF_HAS_DATA_DIR(table->flags)
+=~ dict_save_data_dir_path
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-25555:
-=~ signal|AddressSanitizer
-=~ tree_record_pos
-=~ hp_rb_records_in_range
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-23836:
-=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
-=~ Diagnostics_area::set_error_status
-=~ my_message_sql
-=~ THD::send_kill_message
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-23182:
-=~ signal [16]|AddressSanitizer
-=~ fix_fields_for_tvc|join_type_handlers_for_tvc
-=~ table_value_constr::prepare
-=~ Prepared_statement|sp_head::execute
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-22256:
-=~ Assertion \`length == pack_length()'
-=~ Field_timestamp_with_dec::sort_string|Field_inet6::sort_string
-=~ Field::make_sort_key_part
-MDEV-22256:
-=~ Assertion \`length == pack_length()'
-=~ Field_inet6::sort_string
-=~ create_sort_index
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-22256:
-=~ Assertion \`Inet6::binary_length() == sort_field->length'
-=~ Type_handler_inet6::make_sort_key_part
-=~ create_sort_index
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-21866:
-=~ Assertion \`!result'
-=~ convert_const_to_int
+MDEV-25214:
+=~ Assertion \`!node->is_open()'|signal 11
+=~ fil_node_open_file
+=~ fil_crypt_find_space_to_rotate
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+MDEV-23210:
+=~ Assertion \`(length % 4) == 0'
+=~ my_lengthsp_utf32
+MDEV-22973:
+=~ Assertion \`records_are_comparable(table)'
+=~ compare_record
+=~ multi_update::do_updates
+=~ versioning|FeatureUsage detected system-versioned
+=~ Version: '10\.[3-4]
+MDEV-19631:
+=~ Assertion \`0'
+=~ st_select_lex_unit::optimize
+=~ mysql_explain_union
 =~ Prepared_statement::execute|sp_head::execute
-
+MDEV-17223:
+=~ Assertion \`thd->killed != 0'
+=~ ha_maria::enable_indexes
+=~ handler::ha_end_bulk_insert
 
 ##############################################################################
 # Weak matches
 ##############################################################################
 
 ##########
-# Fixed in the next release (10.2.42 / 10.3.33 / 10.4.23 / 10.5.14 / 10.6.6)
+# Fixed in the next release (10.2.44 / 10.3.35 / 10.4.25 / 10.5.15 / 10.6.8)
 ##########
 

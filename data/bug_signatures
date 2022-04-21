@@ -4,12 +4,14 @@
 # Strong matches
 ##############################################################################
 
+# Not merged up yet
 MDEV-28371:
 =~ Assertion \`fold == id\.fold()'
 =~ buf_flush_check_neighbor
 =~ fsp_page_create
 =~ btr_page_alloc
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+# Not merged up yet
 MDEV-28370:
 =~ LeakSanitizer
 =~ mem_heap_create_block_func
@@ -37,6 +39,7 @@ MDEV-28319:
 =~ json_find_path
 =~ ha_json_table::fill_column_values
 =~ Version: '10\.9|Server version: 10\.9
+# Not merged up yet
 MDEV-28317:
 =~ Assertion \`lock_table_has_locks(index->table)'
 =~ row_undo_mod_clust
@@ -52,17 +55,13 @@ MDEV-28315:
 =~ String::copy_aligned
 =~ field_conv_incompatible
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-28274:
-=~ Assertion \`s <= READ_FIX'
-=~ buf_page_t::set_state
-=~ buf_read_page_low
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-28270:
 =~ AddressSanitizer|signal
 =~ l_find
 =~ lf_hash_search_using_hash_value
 =~ xid_cache_search
 =~ Version: '10\.[2-3]|Server version: 10\.[2-3]
+# Not merged up yet
 MDEV-28269:
 =~ maria_write: Assertion \`save_errno'
 =~ handler::ha_write_tmp_row
@@ -71,6 +70,7 @@ MDEV-28268:
 =~ AddressSanitizer|signal
 =~ Expression_cache_tracker::fetch_current_stats
 =~ Explain_node::print_explain_json_for_children
+# Not merged up yet
 MDEV-28267:
 =~ AddressSanitizer|signal
 =~ Item_sp::func_name_cstring
@@ -103,11 +103,6 @@ MDEV-27756:
 =~ SEL_ARG::tree_delete
 =~ and_range_trees
 =~ SQL_SELECT::test_quick_select
-MDEV-27683:
-=~ signal|AddressSanitizer
-=~ ha_partition::init_record_priority_queue
-=~ handler::ha_index_init
-=~ Version: '10\.[8-9]|Server version: 10\.[8-9]
 MDEV-27675:
 =~ InnoDB: Corruption of index|Assertion \`ret && btr_cur->low_match == n_fields'
 =~ rtr_page_get_father_node_ptr
@@ -120,13 +115,6 @@ MDEV-27670:
 =~ Assertion \`(cs->state & 0x20000) == 0'
 =~ my_strnncollsp_nchars_generic_8bit
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-27668:
-=~ Assertion \`item->type_handler()->is_traditional_scalar_type() \|\| item->type_handler() == type_handler()'
-=~ Field_inet6::can_optimize_keypart_ref
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-27621:
-=~ FATAL ERROR: .* Was only able to copy log from .* to .*, not .*; try increasing innodb_log_file_size
-=~ Version: '10\.[8-9]|Server version: 10\.[8-9]
 MDEV-27616:
 =~ AddressSanitizer|signal
 =~ prepare_inplace_alter_table_dict
@@ -141,16 +129,6 @@ MDEV-27560:
 =~ cmp_key_rowid_part_id
 =~ ha_partition::handle_ordered_next
 # Not merged into 10.4+ yet
-MDEV-27452:
-=~ Assertion \`dec == 6'|AddressSanitizer|signal
-=~ Field_timestampf::set_max
-=~ TABLE::vers_update_fields
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-27430:
-=~ Assertion \`field\.is_sane()'
-=~ Protocol_text::store_field_metadata
-=~ FeatureUsage detected system-versioned
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-27427:
 =~ AddressSanitizer|signal
 =~ get_full_part_id_from_key
@@ -169,11 +147,6 @@ MDEV-27366:
 =~ handler_index_cond_check
 =~ row_search_idx_cond_check
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-27303:
-=~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
-=~ pagecache_read
-=~ _ma_scan_block_record
-=~ Version: '10\.8|Server version: 10\.8
 # The bug report is 10.5+, but the failure can happen on 10.4 too 
 MDEV-27292:
 =~ Assertion \`!prebuilt->index->is_primary()'
@@ -211,16 +184,6 @@ MDEV-26992:
 =~ Type_handler::Item_send_str
 =~ FixedBinTypeBundle
 =~ Version: '10\.[7-9]|Server version: 10\.[7-9]
-MDEV-26987:
-=~ signal|AddressSanitizer
-=~ Explain_node::print_explain_json_for_children
-=~ Query .*ANALYZE.*FORMAT=JSON
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-26987:
-=~ Assertion \`0'
-=~ Protocol::end_statement
-=~ Query .*ANALYZE.*FORMAT=JSON
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-26986:
 =~ LeakSanitizer
 =~ Binary_string::real_alloc
@@ -246,17 +209,6 @@ MDEV-26979:
 MDEV-26963:
 =~ Assertion \`je->s\.cs == nice_js->charset()'
 =~ json_nice
-MDEV-26956:
-=~ LeakSanitizer: detected memory leaks
-=~ in trx_mod_table_time_t::start_bulk_insert
-=~ Version: '10\.[7-9]|Server version: 10\.[7-9]
-=~ FeatureUsage detected system-versioned
-=~ FeatureUsage detected application periods
-MDEV-26953:
-=~ Assertion \`!str \|\| str != Ptr \|\| !is_alloced()'
-=~ String::copy
-=~ Item_func::val_str_from_val_str_ascii
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-26942:
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ my_malloc_size_cb_func
@@ -331,10 +283,6 @@ MDEV-26594:
 =~ Field::stored_field_make_mm_leaf
 =~ calculate_cond_selectivity_for_table
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-26551:
-=~ InnoDB: Failing assertion: DICT_TF_HAS_DATA_DIR(table->flags)
-=~ dict_save_data_dir_path
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26509:
 =~ AddressSanitizer|signal 11
 =~ strmake
@@ -524,16 +472,6 @@ MDEV-25490:
 =~ Create_tmp_table::start
 =~ subselect_union_engine::prepare|JOIN::make_aggr_tables_info
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-# Not merged into 10.3+ yet
-MDEV-25460:
-=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
-=~ error_if_in_trans_or_substatement
-=~ binlog_format_check
-=~ sql_set_variables
-MDEV-25440:
-=~ Assertion \`cmp_rec_rec(rec, old_rec, offsets, old_offsets, m_index) > 0'
-=~ PageBulk::insert
-=~ row_merge_insert_index_tuples
 MDEV-25439:
 =~ AddressSanitizer|signal 11
 =~ my_strtod_int
@@ -600,6 +538,7 @@ MDEV-25261:
 =~ Assertion \`arg1_int >= 0'|Assertion \`arg2_int >= 0'
 =~ Item_func_additive_op::result_precision
 =~ Item_num_op::fix_length_and_dec
+# Not merged up yet
 MDEV-25243:
 =~ signal 11|AddressSanitizer
 =~ Item_func_sp::execute_impl
@@ -623,11 +562,6 @@ MDEV-25243:
 MDEV-25243:
 =~ AddressSanitizer: heap-use-after-free
 =~ Item_func_sp::execute_impl|Item_sp::execute_impl
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-25214:
-=~ Assertion \`!node->is_open()'|signal 11
-=~ fil_node_open_file
-=~ fil_crypt_find_space_to_rotate
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-25119:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
@@ -767,10 +701,6 @@ MDEV-24931:
 =~ Assertion \`prefix_size <= width'
 =~ Bitmap<width>::is_prefix|Bitmap<64u>::is_prefix
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-24909:
-=~ STATUS_SERVER_DEADLOCKED|STATUS_TEST_FAILURE
-=~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
-=~ Deadlock reporter: Stalled query: .*JSON_
 MDEV-24907:
 =~ signal [16]|AddressSanitizer
 =~ Item_field::replace_equal_field
@@ -927,6 +857,7 @@ MDEV-24662:
 =~ buf_page_get_low
 =~ fil_crypt_complete_rotate_space
 =~ Version: '10\.[2-3]|Server version: 10\.[2-3]
+# Won't be fixed, stays here forever!
 MDEV-24662:
 =~ Assertion \`scrub_data->scrubbing'
 =~ btr_scrub_complete_space
@@ -962,6 +893,13 @@ MDEV-24610:
 #=~ Found index .* whose column info does not match that of MariaDB
 #=~ InnoDB indexes are inconsistent with what defined in \.frm for table .*
 #=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+# Not merged up yet
+MDEV-24560:
+=~ signal 11|AddressSanitizer
+=~ st_join_table::cleanup
+=~ JOIN::destroy
+=~ Query.*:.*GROUP_CONCAT
+# Not merged up yet
 MDEV-24529:
 =~ Assertion \`0'
 =~ vers_select_conds_t::print
@@ -1000,11 +938,6 @@ MDEV-24283:
 =~ Assertion \`bitmap_is_set(&m_part_info->read_partitions, m_part_spec\.start_part)'
 =~ ha_partition::handle_ordered_index_scan
 =~ ha_partition::common_first_last
-MDEV-24262:
-=~ signal 11|AddressSanitizer
-=~ st_join_table::cleanup
-=~ JOIN::destroy
-=~ Query.*:.*GROUP_CONCAT
 MDEV-24256:
 =~ signal [16]|AddressSanitizer
 =~ SQL_SELECT::cleanup
@@ -1473,9 +1406,6 @@ MDEV-23212:
 =~ Protocol::end_statement
 =~ INFORMATION_SCHEMA.*ALL_PLUGINS
 =~ Version: '10\.[2-9]|Server version: 10\.[2-9]
-MDEV-23210:
-=~ Assertion \`(length % 4) == 0'
-=~ my_lengthsp_utf32
 MDEV-23204:
 =~ signal [16]|AddressSanitizer|Assertion \`bit < (map)->n_bits'
 =~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan|DsMrr_impl::dsmrr_next
@@ -1589,12 +1519,6 @@ MDEV-23011:
 =~ row_create_prebuilt
 =~ ha_innobase::open
 =~ open_and_process_table|open_table_from_share
-MDEV-22973:
-=~ Assertion \`records_are_comparable(table)'
-=~ compare_record
-=~ multi_update::do_updates
-=~ versioning|FeatureUsage detected system-versioned
-=~ Version: '10\.[3-4]
 MDEV-22927:
 =~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'|Assertion \`((0x7 \| 8U) & mode) == LOCK_S \|\| ((0x7 \| 8U) & mode) == LOCK_X'
 =~ lock_rec_lock
@@ -1659,12 +1583,6 @@ MDEV-22856:
 MDEV-22855:
 =~ Assertion \`!field->prefix_len \|\| field->fixed_len == field->prefix_len'
 =~ btr_node_ptr_max_size
-# Not merged into 10.5+ yet
-MDEV-22846:
-=~ signal [16]|AddressSanitizer
-=~ handler_index_cond_check
-=~ row_search_idx_cond_check
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22832:
 =~ AddressSanitizer: global-buffer-overflow
 =~ QUICK_GROUP_MIN_MAX_SELECT::add_range
@@ -1827,11 +1745,6 @@ MDEV-22444:
 =~ insert_fields
 =~ setup_wild
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-22442: [wsrep - lock_sys.mutex.is_owned]
-=~ Assertion \`(lock_sys\.mutex\.is_owned())'
-=~ lock_trx_handle_wait_low
-=~ wsrep_on
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22440: [thd->transaction.stmt.*is_empty() || / GRANT / KILL_SERVER]
 =~ Assertion \`thd->transaction\.*stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ open_normal_and_derived_tables
@@ -1889,15 +1802,12 @@ MDEV-22262:
 =~ ha_partition::open
 =~ check_duplicate_long_entries_update|handler::create_lookup_handler|clone_handler_for_update|ha_partition::clone
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-22257:
-=~ Assertion \`trx_id > 0 \|\| (flags & BTR_KEEP_SYS_FLAG)'
-=~ btr_cur_optimistic_update
-=~ row_upd_clust_rec
 MDEV-22232:
 =~ signal handler|AddressSanitizer
 =~ rpl_sql_thread_info::cached_charset_compare
 =~ wsrep_apply_events
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+# Not merged up yet
 MDEV-22266:
 =~ Assertion \`m_status == DA_ERROR'
 =~ Diagnostics_area::sql_errno
@@ -1927,10 +1837,6 @@ MDEV-22149:
 =~ tc_release_table
 =~ handle_alter_part_error
 =~ fast_alter_partition_table
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-22105:
-=~ Assertion \`(&(&thd->LOCK_thd_data)->m_mutex)->count > 0 && pthread_equal(pthread_self(), (&(&thd->LOCK_thd_data)->m_mutex)->thread)'
-=~ wsrep_thd_is_aborting
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-22104:
 =~ Assertion \`m_psi_batch_mode == PSI_BATCH_MODE_NONE'
@@ -2075,12 +1981,6 @@ MDEV-21680:
 =~ Assertion \`!table->pos_in_locked_tables'
 =~ tc_release_table
 =~ Version: '10\.1
-# Not merged into 10.5+ yet
-MDEV-21650:
-=~ Assertion \`thd->transaction.*stmt\.ha_list == __null \|\| trans == &thd->transaction.*stmt'
-=~ ha_rollback_trans
-=~ ha_commit_trans
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-21648:
 =~ AddressSanitizer|signal [16]
 =~ memmove
@@ -2265,6 +2165,7 @@ MDEV-21066:
 =~ ha_maria::implicit_commit
 =~ trans_commit_implicit
 =~ Version: '10\.1
+# Not merged up yet
 MDEV-21028:
 =~ signal 11|AddressSanitizer: SEGV
 =~ Query_arena::set_query_arena
@@ -2324,12 +2225,6 @@ MDEV-20771:
 =~ mysql_update
 =~ rocksdb
 =~ Version: '10\.[2-9]|Server version: 10\.[2-9]
-MDEV-20770:
-=~ signal 11|AddressSanitizer: SEGV
-=~ JOIN::transform_in_predicates_into_in_subq
-=~ convert_join_subqueries_to_semijoins
-=~ sp_head::execute|Prepared_statement::execute
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-20765:
 =~ Assertion \`type\.vers_sys_end()'
 =~ dfield_t::vers_history_row
@@ -2555,17 +2450,6 @@ MDEV-20395:
 =~ Assertion \`!found'
 =~ remove_ptr_from_dynarray
 =~ handle_grant_struct
-# Not merged into 10.3+ yet
-MDEV-20325:
-=~ Assertion \`outer_context \|\| !\*from_field \|\| \*from_field == not_found_field'|Assertion \`!derived->is_excluded()'
-=~ Item_field::fix_outer_field|TABLE_LIST::set_check_materialized
-=~ sp_head::execute|Prepared_statement::execute
-# Not merged into 10.3+ yet
-MDEV-20325:
-=~ signal [16]|AddressSanitizer
-=~ st_select_lex::mark_as_dependent
-=~ Item_field::fix_outer_field
-=~ sp_head::execute|Prepared_statement::execute
 MDEV-20313:
 =~ For transactional Aria BASE TABLE ROW_FORMAT=Page .* : error : Found .* keys of .*
 MDEV-20237:
@@ -2600,6 +2484,7 @@ MDEV-20195:
 =~ Assertion \`0'
 =~ ha_partition::handle_unordered_next
 =~ ha_partition::index_next|ha_partition::multi_range_read_next
+# Not merged up yet
 MDEV-20194:
 =~ check.*Warning.*Row size too large (> .*)\. Changing some columns to TEXT or BLOB or using ROW_FORMAT=DYNAMIC or ROW_FORMAT=COMPRESSED may help\. In current row format, BLOB prefix of .* bytes is stored inline
 =~ InnoDB: Cannot add field .* in table .* because after adding it, the row size is .* which is greater than maximum allowed size (.*) for a record on index leaf page
@@ -2654,10 +2539,11 @@ MDEV-19720:
 =~ st_join_table::save_explain_data
 =~ JOIN::save_explain_data
 =~ JOIN::build_explain
-MDEV-19718:
-=~ Assertion \`rownr == 0 && new_page'
-=~ _ma_apply_redo_insert_row_head_or_tail
-=~ run_redo_phase
+# The bug is closed as incomplete, need a test case
+# MDEV-19718:
+# =~ Assertion \`rownr == 0 && new_page'
+# =~ _ma_apply_redo_insert_row_head_or_tail
+# =~ run_redo_phase
 #
 # The bug is open, but the failure is gone
 # MDEV-19680:
@@ -2679,11 +2565,6 @@ MDEV-19672:
 =~ safe_mutex: Trying to lock mutex at .*, when the mutex was already locked at .*
 =~ safe_mutex_lock
 =~ update_syslog_facility
-MDEV-19631:
-=~ Assertion \`0'
-=~ st_select_lex_unit::optimize
-=~ mysql_explain_union
-=~ Prepared_statement::execute|sp_head::execute
 MDEV-19609:
 =~ Slave SQL: Error 'You have an error in your SQL syntax .* near 'TYPE=
 =~ CREATE TABLE
@@ -2695,11 +2576,6 @@ MDEV-19576:
 =~ Got error 175 when executing record redo_index|Got error 175 when executing undo undo_row_insert| Got error 175 when executing record redo_purge_row_head
 =~ Aria engine: Redo phase failed|Aria engine: Undo phase failed
 =~ Aria recovery failed
-MDEV-19555:
-=~ Assertion \`m_status == DA_ERROR'
-=~ Diagnostics_area::sql_errno
-=~ ha_rollback_trans
-=~ Sql_cmd_check_table::execute
 MDEV-19520:
 =~ signal 11|AddressSanitizer: SEGV on unknown address
 =~ Item_func_not::fix_fields
@@ -2852,9 +2728,6 @@ MDEV-18947:
 =~ pagecache_fwrite
 =~ flush_cached_blocks
 =~ flush_pagecache_blocks_with_filter
-MDEV-18918:
-=~ Slave SQL: Error 'Invalid default value for .*
-=~ NOT NULL DEFAULT ''
 MDEV-18911:
 =~ Assertion \`(templ->is_virtual && !field) \|\| (field && field->prefix_len ? field->prefix_len == len : templ->mysql_col_len == len)'
 =~ row_sel_field_store_in_mysql_format_func
@@ -2867,11 +2740,6 @@ MDEV-18882:
 =~ AddressSanitizer: heap-use-after-free
 =~ Binary_string::copy|String::copy
 =~ Item_func_make_set::val_str
-# Not merged into 10.5+ yet
-MDEV-18848:
-=~ Assertion \`client_state\.transaction()\.active()'
-=~ wsrep_thd_append_key
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-18833:
 =~ Assertion \`thd->is_error() \|\| kill_errno \|\| thd->killed == ABORT_QUERY'
 =~ filesort
@@ -2996,11 +2864,6 @@ MDEV-18389:
 =~ InnoDB indexes are inconsistent with what defined in \.frm for table
 =~ ha_innobase::index_type
 =~ fill_schema_table_by_open
-MDEV-18381:
-=~ AddressSanitizer|signal 11
-=~ ha_innobase::store_lock
-=~ mysql_lock_abort_for_thread
-=~ THD::notify_shared_lock
 # Only fixed in 10.5!
 MDEV-18370:
 =~ Failing assertion: lsn % OS_FILE_LOG_BLOCK_SIZE == LOG_BLOCK_HDR_SIZE
@@ -3290,18 +3153,9 @@ MDEV-17435:
 =~ st_select_lex::get_free_table_map
 =~ mysql_derived_merge
 =~ sp_head::execute
-MDEV-17361:
-=~ signal 11|AddressSanitizer: SEGV on unknown address
-=~ Query_arena.*set_query_arena
-=~ set_n_backup_active_arena|multi_update.*send_data
-=~ Field.*set_default
 MDEV-17225:
 =~ Assertion \`log_descriptor\.bc\.buffer->prev_last_lsn == ((LSN)0)'|Assertion \`log_descriptor\.bc\.buffer->prev_last_lsn != ((LSN)0)'
 =~ translog_flush_buffers
-MDEV-17223:
-=~ Assertion \`thd->killed != 0'
-=~ ha_maria::enable_indexes
-=~ handler::ha_end_bulk_insert
 MDEV-17217:
 =~ Assertion \`0'
 =~ in make_sortkey
