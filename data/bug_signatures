@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28393:
+=~ signal|AddressSanitizer
+=~ TABLE::mark_default_fields_for_write
+=~ TABLE::mark_columns_needed_for_insert
+MDEV-28392:
+=~ Assertion \`(length % 4) == 0'
+=~ my_lengthsp_utf32
+=~ Field_enum::store
+=~ Field::load_data_set_value
 # Not merged up yet
 MDEV-28371:
 =~ Assertion \`fold == id\.fold()'
