@@ -17,7 +17,7 @@ MDEV-28393:
 MDEV-28392:
 =~ Assertion \`(length % 4) == 0'
 =~ my_lengthsp_utf32
-=~ Field_enum::store
+=~ Field_enum::store|Field_set::store
 =~ Field::load_data_set_value
 # Not merged up yet
 MDEV-28371:
