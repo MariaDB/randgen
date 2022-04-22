@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28396:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ error_if_in_trans_or_substatement
+=~ LEX::restore_set_statement_var
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
 MDEV-28393:
 =~ signal|AddressSanitizer
 =~ TABLE::mark_default_fields_for_write
