@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28400:
+=~ LeakSanitizer
+=~ trx_mod_table_time_t::start_bulk_insert
+=~ trx_undo_report_row_operation
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]
+MDEV-28399:
+=~ InnoDB: Assertion failure
+=~ dict_table_check_for_dup_indexes
+=~ ha_innobase::prepare_inplace_alter_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-28396:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
@@ -1615,6 +1625,12 @@ MDEV-22772:
 =~ cast_to_int_type|Item::get_date_with_conversion|cmp_item_datetime::store_value|Item::val_int_unsigned_typecast
 =~ ROLLUP
 =~ Version: '10\.[1-2]
+MDEV-22768:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ error_if_in_trans_or_substatement
+=~ LEX::restore_set_statement_var
+=~ --log-bin
 MDEV-22759:
 =~ Assertion \`0'|Failing assertion: !cursor->index->is_committed()
 =~ row_upd_sec_index_entry|row_purge_remove_sec_if_poss_leaf|row_ins_sec_index_entry|ibuf_set_del_mark
@@ -2642,6 +2658,12 @@ MDEV-19299:
 =~ my_strnncollsp_simple
 =~ Item_func_min_max::val_str_native
 =~ Cached_item_str::cmp
+MDEV-19299:
+=~ AddressSanitizer
+=~ my_scan_weight_utf8_general_ci|my_uca_scanner_next_no_contractions_utf8mb3
+=~ Item_func_min_max::val_str_native
+=~ copy_fields
+=~ Version: '10\.[2-5]|Server version: 10\.[2-5]
 MDEV-19261:
 =~ InnoDB: Failing assertion: dfield->type\.mtype == 0 \|\| dfield->len == len
 =~ trx_undo_rec_get_partial_row
