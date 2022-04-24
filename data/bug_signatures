@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28403:
+=~ AddressSanitizer
+=~ String::copy
+=~ get_field_default_value
+=~ get_schema_column_record
 MDEV-28402:
 =~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
 =~ Field::ptr_in_record
