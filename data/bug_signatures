@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28402:
+=~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
+=~ Field::ptr_in_record
+=~ create_tmp_table
+MDEV-28402:
+=~ AddressSanitizer
+=~ create_tmp_table
+=~ JOIN::create_postjoin_aggr_table
+=~ WITH ROLLUP
 MDEV-28400:
 =~ LeakSanitizer
 =~ trx_mod_table_time_t::start_bulk_insert
