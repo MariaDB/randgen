@@ -18,7 +18,7 @@ MDEV-28402:
 =~ Field::ptr_in_record
 =~ create_tmp_table
 MDEV-28402:
-=~ AddressSanitizer
+=~ AddressSanitizer|signal
 =~ create_tmp_table
 =~ JOIN::create_postjoin_aggr_table
 =~ WITH ROLLUP
@@ -45,8 +45,6 @@ MDEV-28393:
 MDEV-28392:
 =~ Assertion \`(length % 4) == 0'
 =~ my_lengthsp_utf32
-=~ Field_enum::store|Field_set::store
-=~ Field::load_data_set_value
 # Not merged up yet
 MDEV-28371:
 =~ Assertion \`fold == id\.fold()'
@@ -117,7 +115,7 @@ MDEV-28268:
 MDEV-28267:
 =~ AddressSanitizer|signal
 =~ Item_sp::func_name_cstring
-=~ Explain_table_access::print_explain_json
+=~ Explain_table_access::print_explain_json|Explain_query::print_explain_json
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-28169:
 =~ AddressSanitizer|signal
@@ -703,7 +701,7 @@ MDEV-25021:
 MDEV-25012:
 =~ signal [16]|AddressSanitizer|Assertion \`name'
 =~ find_field_in_tables
-=~ Item_str_func::fix_fields
+=~ Item_str_func::fix_fields|Item_func::fix_fields
 MDEV-25004:
 =~ InnoDB: Record in index \`FTS_DOC_ID_INDEX\` of table
 =~ Assertion \`0'
