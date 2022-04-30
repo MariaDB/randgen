@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28448:
+=~ Assertion \`this != last'
+=~ st_select_lex::mark_as_dependent
+=~ Item_field::fix_fields
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-28437:
 =~ Assertion \`!eliminated'
 =~ Item_subselect::exec
