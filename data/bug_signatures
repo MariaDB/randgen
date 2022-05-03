@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28466:
+=~ AddressSanitizer|signal
+=~ _mi_make_key|calc_row_difference
+=~ ha_myisam::update_row
+=~ FeatureUsage detected system-versioned tables
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
 MDEV-28449:
 =~ Assertion \`index->lock\.have_x() == has_index_lock'
 =~ row_log_apply_op
@@ -3301,8 +3307,7 @@ MDEV-16699:
 =~ AddressSanitizer|signal 11
 =~ my_strnncoll.*|my_uca_strnncollsp_.*
 =~ group_concat_key_cmp_with_order
-=~ FeatureUsage detected compressed columns
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ FeatureUsage detected compressed columns|FeatureUsage detected GIS columns
 MDEV-16698:
 =~ AddressSanitizer|signal 11
 =~ Field_longstr::uncompress
