@@ -32,8 +32,9 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub variate {
-  # Don't need executor or (for now) gendata_flag
-  my ($self, $query) = @_;
+  # Don't need (for now) gendata_flag
+  my ($self, $query, $executor) = @_;
+  return $query unless $executor->versionNumeric() >= 100601;
   return $query if $query !~ /^\s*(?:\/\*.*?\*\/\s*)?SELECT/;
 
   my $offset_clause= ($self->random->uint16(0,1) ?
@@ -44,7 +45,7 @@ sub variate {
     . ($self->random->uint16(0,1) ? ' ROW' : ' ROWS')
     . (($query =~ /ORDER BY/ and $self->random->uint16(0,1)) ? ' WITH TIES' : ' ONLY')
   ;
-  my $clause= "/*!100601 $offset_clause $fetch_clause */";
+  my $clause= "$offset_clause $fetch_clause";
 
   my $suffix= '';
   while (
