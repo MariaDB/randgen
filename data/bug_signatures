@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28567:
+=~ Assertion \`0'
+=~ open_tables
+=~ mysql_create_view
+=~ Version: '10\.9|Server version: 10\.9|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-28552:
+=~ Assertion \`inited==RND'
+=~ ha_partition::rnd_end
+=~ FeatureUsage detected system-versioned tables
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
 MDEV-28466:
 =~ AddressSanitizer|signal
 =~ _mi_make_key|calc_row_difference
@@ -312,7 +322,7 @@ MDEV-26835:
 MDEV-26822:
 =~ AddressSanitizer|signal
 =~ Binary_string::copy
-=~ Item_copy_string::copy
+=~ Item_copy_string::copy|cmp_item_sort_string::store_value
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]
 MDEV-26820:
 =~ Assertion \`marked_for_read()'
@@ -1513,7 +1523,7 @@ MDEV-23150:
 MDEV-23149:
 =~ signal [16]|AddressSanitizer
 =~ err_conv
-=~ ErrConvString::ptr
+=~ ErrConv.*::ptr
 =~ Item_char_typecast::check_truncation_with_warn
 MDEV-23146:
 =~ Assertion \`prebuilt->m_read_virtual_key'
@@ -2147,7 +2157,7 @@ MDEV-21414:
 MDEV-21413:
 =~ AddressSanitizer:
 =~ ha_maria::info
-=~ get_schema_tables_record|get_schema_key_column_usage_record
+=~ get_schema_tables_record|get_schema_key_column_usage_record|ha_partition::part_records
 =~ Version: '10\.1|Version: '10\.3
 MDEV-21406:
 =~ Assertion \`tmp != ((long long) 0x8000000000000000LL)'
@@ -4027,8 +4037,9 @@ MDEV-16184:
 =~ nest->counter > 0
 MDEV-16171:
 =~ in setup_table_map
-MDEV-15802:
-=~ Item::delete_self
+# Want to finish this draft
+# MDEV-15802:
+# =~ Item::delete_self
 MDEV-15657:
 =~ file->inited == handler::NONE
 MDEV-15653: [lock_word <= 0x20000000]
