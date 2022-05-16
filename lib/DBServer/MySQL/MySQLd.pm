@@ -817,6 +817,33 @@ sub dumpSchema {
     say($dump_command);
     my $dump_result = system("$dump_command > $file");
     if ($dump_result != 0) {
+      # MDEV-28577: There can be Federated tables with virtual columns, they make mysqldump fail
+
+      my $vcol_tables= $self->dbh->selectall_arrayref(
+          "SELECT DISTINCT CONCAT(ist.TABLE_SCHEMA,'.',ist.TABLE_NAME), ist.ENGINE ".
+          "FROM INFORMATION_SCHEMA.TABLES ist JOIN INFORMATION_SCHEMA.COLUMNS isc ON (ist.TABLE_SCHEMA = isc.TABLE_SCHEMA AND ist.TABLE_NAME = isc.TABLE_NAME) ".
+          "WHERE IS_GENERATED = 'ALWAYS'"
+        );
+
+      my $retry= 0;
+      foreach my $t (@$vcol_tables) {
+        if ($t->[1] eq 'FEDERATED') {
+          say("Dropping Federated table $t->[0] as it has virtual columns");
+          if ($self->dbh->do("DROP TABLE $t->[0]")) {
+            $retry= 1;
+          } else {
+            $retry= 0;
+            sayError("Failed to drop Federated table $t->[0] which contains virtual columns, mysqldump won't succeed: ".$self->dbh->err.": ".$self->dbh->errstr());
+            last;
+          }
+        }
+      }
+
+      if ($retry) {
+        say("Retrying mysqldump after dropping broken Federated tables");
+        return $self->dumpSchema($database, $file);
+      }
+
       sayError("Dump failed, trying to collect some information");
       system($self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SHOW FULL PROCESSLIST'");
       system($self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO'");
