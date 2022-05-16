@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28569:
+=~ Assertion \`ret'|InnoDB: Corruption of index
+=~ btr_cur_compress_if_useful
+=~ Version: '10\.[3-4]|Server version: 10\.[3-4]
+MDEV-28569:
+=~ Assertion \`len1 == DATA_MBR_LEN'|signal|AddressSanitizer
+=~ btr_cur_compress_if_useful
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28567:
 =~ Assertion \`0'
 =~ open_tables
