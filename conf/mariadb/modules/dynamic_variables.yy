@@ -64,8 +64,7 @@ dynvar_session_variable:
     ALTER_ALGORITHM= { $prng->arrayElement(['DEFAULT','COPY','INPLACE','NOCOPY','INSTANT']) } /* compatibility 10.3.7 */
   | ANALYZE_SAMPLE_PERCENTAGE= { $prng->int(0,100) } /* compatibility 10.4.3 */
   | ARIA_REPAIR_THREADS= { $prng->int(1,10) }
-# Disabled due to MDEV-22500
-# | ARIA_SORT_BUFFER_SIZE= { $prng->arrayElement([4096,16384,65536,1048576,134217728,268434432]) }
+  | ARIA_SORT_BUFFER_SIZE= { $prng->arrayElement([4096,16384,65536,1048576,134217728,268434432]) }
   | ARIA_STATS_METHOD= { $prng->arrayElement(['nulls_equal','nulls_unequal','nulls_ignored']) }
   | AUTOCOMMIT= dynvar_boolean
   | AUTO_INCREMENT_INCREMENT= { $prng->arrayElement([1,1,1,1,2,2,2,3,3,65535]) }
@@ -380,8 +379,7 @@ dynvar_global_variable:
   | INNODB_ENCRYPTION_ROTATION_IOPS= { $prng->arrayElement([0,1,2,100,1000,10000]) }
   | INNODB_ENCRYPTION_THREADS= { $prng->arrayElement([0,1,2,4,8]) }
 # | INNODB_ENCRYPT_TABLES
-# Disabled due to MDEV-26879
-# | INNODB_EVICT_TABLES_ON_COMMIT_DEBUG= dynvar_boolean  /* compatibility 10.3.18 */
+  | INNODB_EVICT_TABLES_ON_COMMIT_DEBUG= dynvar_boolean  /* compatibility 10.3.18 */
   | INNODB_FAST_SHUTDOWN= { $prng->arrayElement([0,1,2,'3 /* compatibility 10.3.6 */']) }
   | INNODB_FILE_PER_TABLE= dynvar_boolean
   | INNODB_FILL_FACTOR= { $prng->int(10,100) }
