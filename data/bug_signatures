@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28576:
+=~ Assertion \`!error'
+=~ ha_partition::delete_row
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28569:
 =~ Assertion \`ret'|InnoDB: Corruption of index
 =~ btr_cur_compress_if_useful
