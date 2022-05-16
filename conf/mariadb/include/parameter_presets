@@ -183,6 +183,7 @@ $optional_variators_102= [
   [ '', '--transformers=ExecuteAsView' ],
   [ '', '', '', '--variators=AnalyzeSelect' ],
   [ '', '', '', '--variators=FullOrderBy' ],
+  [ '', '', '', '--transformers=LimitRowsExamined' ],
 ];
 
 $optional_variators_103= [
