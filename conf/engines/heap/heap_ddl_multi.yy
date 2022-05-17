@@ -82,7 +82,9 @@ index_definition:
 	index_type ( index_column_list ) USING btree_hash ;
 
 btree_hash:
-	BTREE | HASH ;
+# Disabled due to MDEV-371 issues
+#    HASH |
+	BTREE ;
 
 index_type:
 	KEY | KEY | KEY | KEY | PRIMARY KEY ;

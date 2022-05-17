@@ -107,7 +107,8 @@ alttind_ind_type_optional:
 
 alttind_ind_type:
     BTREE | BTREE | BTREE | BTREE | BTREE | BTREE | BTREE | BTREE
-  | HASH | HASH | HASH | HASH
+# Disabled due to MDEV-371 issues
+#  | HASH | HASH | HASH | HASH
   | RTREE
 ;
 

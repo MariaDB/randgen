@@ -342,7 +342,8 @@ app_periods_index_type_opt:
 
 app_periods_index_type:
     ==FACTOR:3== BTREE
-  |              HASH
+# Disabled due to MDEV-371 issues
+#  |              HASH
 ;
     
 app_periods_constraint_definition:

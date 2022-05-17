@@ -1211,7 +1211,9 @@ idx_table_for_join:
        { $stack->push() ; my $x = $idx_table." AS alias".++$tables; $idx_table_alias = "alias".$tables; my @s=($x); $stack->pop(\@s); $x } ;
 
 index_type:
-  BTREE | HASH ;
+# Disabled due to MDEV-371 issues
+#  HASH |
+  BTREE ;
 
 index_table:
   _basetable { my $idx_table_candidate = $last_table ; $idx_table = $idx_table_candidate ; '' } ;

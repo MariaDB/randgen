@@ -263,7 +263,9 @@ outer:
 
 index_type:
   ==FACTOR:5== BTREE
-  | HASH ;
+# Disabled due to MDEV-371 issues
+#  | HASH
+;
 
 index_table:
   { my $idx_table_candidate = $prng->arrayElement($executors->[0]->tables()) ; $idx_table = $idx_table_candidate ; $idx_table } ;

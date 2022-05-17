@@ -613,7 +613,10 @@ tb_keydef:
 	key_or_index (c1(1)) ;
 
 hash_or_not:
-	| | | | | USING HASH | USING BTREE ;
+	| | | | |
+# Disabled due to MDEV-371 issues
+#    USING HASH |
+    USING BTREE ;
 
 vc_size:
 	1 | 2 | 32 | 64 | 1024 ;

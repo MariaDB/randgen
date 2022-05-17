@@ -268,7 +268,9 @@ outer:
 	| | | | OUTER ;
 
 index_type:
-  BTREE | HASH ;
+# Disabled due to MDEV-371 issues
+#  HASH |
+  BTREE ;
 
 index_table:
   { my $idx_table_candidate = $prng->arrayElement($executors->[0]->baseTables()) ; $idx_table = $idx_table_candidate ; $idx_table } ;
