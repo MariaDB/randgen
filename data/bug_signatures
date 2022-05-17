@@ -19,7 +19,7 @@ MDEV-28569:
 MDEV-28567:
 =~ Assertion \`0'
 =~ open_tables
-=~ mysql_create_view
+=~ mysql_create_view|execute_sqlcom_select
 =~ Version: '10\.9|Server version: 10\.9|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28552:
 =~ Assertion \`inited==RND'
@@ -3251,6 +3251,12 @@ MDEV-17435:
 MDEV-17225:
 =~ Assertion \`log_descriptor\.bc\.buffer->prev_last_lsn == ((LSN)0)'|Assertion \`log_descriptor\.bc\.buffer->prev_last_lsn != ((LSN)0)'
 =~ translog_flush_buffers
+# Only fixed in 10.3+
+MDEV-17223:
+=~ Assertion \`thd->killed != 0'
+=~ ha_maria::enable_indexes
+=~ handler::ha_end_bulk_insert
+=~ Version: '10\.2
 MDEV-17217:
 =~ Assertion \`0'
 =~ in make_sortkey
