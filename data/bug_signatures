@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28613:
+=~ LeakSanitizer
+=~ rec_copy_prefix_to_buf_old
+=~ btr_pcur_store_position
+=~ i_s_sys_indexes_fill_table
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-28610:
+=~ Assertion \`marked_for_read()'
+=~ field_conv_incompatible
+=~ TABLE::update_virtual_fields
+=~ FeatureUsage detected virtual columns
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28576:
 =~ Assertion \`!error'
 =~ ha_partition::delete_row
