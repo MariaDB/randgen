@@ -37,23 +37,23 @@ MDEV-28552:
 =~ Assertion \`inited==RND'
 =~ ha_partition::rnd_end
 =~ FeatureUsage detected system-versioned tables
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28466:
 =~ AddressSanitizer|signal
 =~ _mi_make_key|calc_row_difference
 =~ ha_myisam::update_row
 =~ FeatureUsage detected system-versioned tables
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28449:
 =~ Assertion \`index->lock\.have_x() == has_index_lock'
 =~ row_log_apply_op
 =~ ha_innobase::commit_inplace_alter_table
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28448:
 =~ Assertion \`this != last'
 =~ st_select_lex::mark_as_dependent
 =~ Item_field::fix_fields
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28437:
 =~ Assertion \`!eliminated'
 =~ Item_subselect::exec
@@ -80,18 +80,18 @@ MDEV-28400:
 =~ LeakSanitizer
 =~ trx_mod_table_time_t::start_bulk_insert
 =~ trx_undo_report_row_operation
-=~ Version: '10\.[7-9]|Server version: 10\.[7-9]
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28399:
 =~ InnoDB: Assertion failure
 =~ dict_table_check_for_dup_indexes
 =~ ha_innobase::prepare_inplace_alter_table
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28396:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
 =~ error_if_in_trans_or_substatement
 =~ LEX::restore_set_statement_var
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28393:
 =~ signal|AddressSanitizer
 =~ TABLE::mark_default_fields_for_write
@@ -105,13 +105,13 @@ MDEV-28371:
 =~ buf_flush_check_neighbor
 =~ fsp_page_create
 =~ btr_page_alloc
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 # Not merged up yet
 MDEV-28370:
 =~ LeakSanitizer
 =~ mem_heap_create_block_func
 =~ dict_load_indexes
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28328:
 =~ Assertion \`rec_offs_any_extern(offsets)'|InnoDB: Failing assertion: rec_offs_nth_extern(offsets, n)|InnoDB: Failing assertion: op == BTR_STORE_UPDATE \|\| (field_ref\[BTR_EXTERN_LEN\] & BTR_EXTERN_INHERITED_FLAG) \|\| !memcmp(field_ref, field_ref_zero, BTR_EXTERN_FIELD_REF_SIZE)
 =~ btr_store_big_rec_extern_fields|btr_rec_get_field_ref_offs
@@ -123,33 +123,33 @@ MDEV-28326:
 =~ signal|AddressSanitizer
 =~ json_path_parts_compare
 =~ Json_table_nested_path::scan_next
-=~ Version: '10\.9|Server version: 10\.9
+=~ Version: '10\.9|Server version: 10\.9|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28320:
 =~ Assertion \`0'
 =~ QUICK_ROR_UNION_SELECT::need_sorted_output
 =~ test_if_skip_sort_order
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28319:
 =~ Assertion \`cur_step->type & JSON_PATH_KEY'
 =~ json_find_path
 =~ ha_json_table::fill_column_values
-=~ Version: '10\.9|Server version: 10\.9
+=~ Version: '10\.9|Server version: 10\.9|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 # Not merged up yet
 MDEV-28317:
 =~ Assertion \`lock_table_has_locks(index->table)'
 =~ row_undo_mod_clust
 =~ trx_rollback_active
-=~ Version: '10\.[3-5]|Server version: 10\.[3-5]
+=~ Version: '10\.[3-5]|Server version: 10\.[3-5]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28317:
 =~ Assertion \`node->table->is_temporary() \|\| lock_table_has_locks(node->table)'
 =~ row_undo_mod
 =~ trx_rollback_active
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28315:
 =~ AddressSanitizer|signal
 =~ String::copy_aligned
 =~ field_conv_incompatible
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28270:
 =~ AddressSanitizer|signal
 =~ l_find
@@ -170,7 +170,7 @@ MDEV-28267:
 =~ AddressSanitizer|signal
 =~ Item_sp::func_name_cstring
 =~ Explain_table_access::print_explain_json|Explain_query::print_explain_json
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28169:
 =~ AddressSanitizer|signal
 =~ dfield_dup
@@ -187,12 +187,12 @@ MDEV-27878:
 =~ Assertion \`got_name == named_item_expected()'
 =~ Json_writer::on_start_object
 =~ enforce_sel_arg_weight_limit
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-27840:
 =~ Assertion \`!is_v'
 =~ ha_innobase::build_template
 =~ QUICK_RANGE_SELECT
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-27756:
 =~ signal|AddressSanitizer
 =~ SEL_ARG::tree_delete
@@ -209,12 +209,12 @@ MDEV-27674:
 MDEV-27670:
 =~ Assertion \`(cs->state & 0x20000) == 0'
 =~ my_strnncollsp_nchars_generic_8bit
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-27616:
 =~ AddressSanitizer|signal
 =~ prepare_inplace_alter_table_dict
 =~ ha_partition::prepare_inplace_alter_table
-=~ Version: '10\.[8-9]|Server version: 10\.[8-9]
+=~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-27603:
 =~ AddressSanitizer
 =~ Gap_time_tracker::log_time
@@ -228,7 +228,7 @@ MDEV-27427:
 =~ AddressSanitizer|signal
 =~ get_full_part_id_from_key
 =~ QUICK_RANGE_SELECT::get_next_prefix
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-27422:
 =~ Assertion \`0'|Assertion \`pageno < ((1ULL) << 40)'|AddressSanitizer|signal
 =~ maria_rtree_insert|maria_rtree_delete
@@ -241,13 +241,13 @@ MDEV-27366:
 =~ signal|AddressSanitizer
 =~ handler_index_cond_check
 =~ row_search_idx_cond_check
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 # The bug report is 10.5+, but the failure can happen on 10.4 too 
 MDEV-27292:
 =~ Assertion \`!prebuilt->index->is_primary()'
 =~ row_search_idx_cond_check
 =~ row_search_mvcc
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-27225:
 =~ AddressSanitizer|signal
 =~ ha_maria::info
@@ -258,14 +258,14 @@ MDEV-27224:
 =~ AddressSanitizer|signal
 =~ rec_convert_dtuple_to_rec_comp
 =~ page_cur_tuple_insert
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ FeatureUsage detected unique blobs
 MDEV-27223:
 =~ AddressSanitizer|signal
 =~ my_strnncollsp_
 =~ Field_blob::cmp
 =~ check_duplicate_long_entry_key
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ FeatureUsage detected unique blobs
 MDEV-27216:
 =~ mysqld: Incorrect information in file:
@@ -273,34 +273,34 @@ MDEV-27216:
 MDEV-27015:
 =~ Assertion \`!is_null()'
 =~ FixedBinTypeBundle<.*>::Field_fbt::to_fbt() const \[.*\]
-=~ Version: '10\.[7-9]|Server version: 10\.[7-9]
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26992:
 =~ Assertion \`item->null_value'
 =~ Type_handler::Item_send_str
 =~ FixedBinTypeBundle
-=~ Version: '10\.[7-9]|Server version: 10\.[7-9]
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26986:
 =~ LeakSanitizer
 =~ Binary_string::real_alloc
 =~ Item_func_hash::val
 =~ TABLE::update_virtual_fields
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26983:
 =~ signal|AddressSanitizer
 =~ buf_is_zeroes
 =~ page_zip_verify_checksum
 =~ xb_load_single_table_tablespace
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26983:
 =~ Assertion \`fil_space_t::physical_size(flags) == info\.page_size'
 =~ xb_delta_open_matching_space
 =~ xtrabackup_apply_delta
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26979:
 =~ AddressSanitizer|signal
 =~ dict_sys_t::allow_eviction
 =~ i_s_sys_tables_fill_table_stats
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26963:
 =~ Assertion \`je->s\.cs == nice_js->charset()'
 =~ json_nice
@@ -313,12 +313,12 @@ MDEV-26940:
 =~ Assertion \`0'
 =~ get_field_item_for_having
 =~ Item::transform
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26891:
 =~ AddressSanitizer|signal
 =~ Field::register_field_in_read_map
 =~ TABLE::mark_auto_increment_column
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26862:
 =~ AddressSanitizer
 =~ _mi_rec_pack
@@ -342,28 +342,28 @@ MDEV-26835:
 =~ heap_rrnd
 =~ rr_from_pointers
 =~ READ_RECORD::read_record
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26822:
 =~ AddressSanitizer|signal
 =~ Binary_string::copy
 =~ Item_copy_string::copy|cmp_item_sort_string::store_value
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26820:
 =~ Assertion \`marked_for_read()'
 =~ Field_.*::val_.*
 =~ TABLE::update_virtual_fields
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ Query .*VALUE(
 MDEV-26817:
 =~ AddressSanitizer|runtime error|signal
 =~ skip_key
 =~ json_valid
 =~ Item_func_json_.*::val_.*
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26753:
 =~ Assertion \`state == TRX_STATE_PREPARED \|\| state == TRX_STATE_PREPARED_RECOVERED \|\| state == TRX_STATE_ACTIVE'
 =~ trx_t::commit_state
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26677:
 =~ RocksDB: Failed to get column family flags from CF with id
 =~ signal 6
@@ -371,13 +371,13 @@ MDEV-26677:
 MDEV-26655:
 =~ Assertion \`page_dir_get_n_heap(new_page) == 2U'
 =~ PageBulk::init
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26594:
 =~ AddressSanitizer
 =~ Field_blob::get_key_image|Field_blob::get_key_image_itRAW
 =~ Field::stored_field_make_mm_leaf
 =~ calculate_cond_selectivity_for_table
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26509:
 =~ AddressSanitizer|signal 11
 =~ strmake
@@ -392,38 +392,38 @@ MDEV-26433:
 =~ InnoDB: Failing assertion: table->get_ref_count() == 0
 =~ dict_sys_t::remove
 =~ hton_drop_table
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26402:
 =~ Assertion \`fixed == 1'
 =~ Item_.*::val_.*
 =~ Predicant_to_list_comparator::cmp
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26402:
 =~ Item_field::used_tables
 =~ update_depend_map_for_order
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26217:
 =~ AddressSanitizer|signal
 =~ srw_mutex::wr_lock_try
 =~ dict_table_t::lock_mutex_trylock
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26217:
 =~ Assertion \`lock->trx == this'
 =~ trx_t::drop_table
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26217:
 =~ InnoDB: Failing assertion: list\.count > 0
 =~ ut_list_remove
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26217:
 =~ InnoDB: Failing assertion: table->n_rec_locks == 0
 =~ dict_sys_t::remove
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26217:
 =~ AddressSanitizer|signal
 =~ lock_rec_dequeue_from_page
 =~ lock_release_try
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26152:
 =~ InnoDB: Failing assertion: prebuilt->template_type == ROW_MYSQL_WHOLE_ROW
 =~ row_update_for_mysql
@@ -442,12 +442,12 @@ MDEV-26087:
 =~ InnoDB: Failing assertion: table->quiesce == QUIESCE_START
 =~ row_quiesce_set_state
 =~ ha_innobase::external_lock
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26084:
 =~ Assertion \`false'
 =~ handler::get_foreign_dup_key
 =~ ha_partition::print_error
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26076:
 =~ AddressSanitizer|signal 11
 =~ read_fixed_header
@@ -457,16 +457,16 @@ MDEV-26074:
 =~ Assertion \`!is_thread_specific \|\| (mysqld_server_initialized && thd)'
 =~ my_malloc_size_cb_func
 =~ maria_ft_linearize
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26057:
 =~ Assertion \`!vcol->v_indexes\.empty()'
 =~ trx_undo_log_v_idx
 =~ trx_undo_page_report
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26035:
 =~ Assertion \`file->s->base\.reclength < file->s->vreclength \|\| !table->s->stored_fields'
 =~ ha_myisam::setup_vcols_for_repair
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26006:
 =~ AddressSanitizer|READ of size
 =~ in_vector::find
@@ -484,17 +484,17 @@ MDEV-25923:
 =~ Assertion \`old_flags == ((my_flags & 0x10000U) ? 1 : 0)'
 =~ my_realloc
 =~ sort_get_next_record
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25903:
 =~ signal 11|AddressSanitizer
 =~ Explain_node::print_explain_for_children
 =~ Explain_select::print_explain
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25896:
 =~ Assertion \`computed_weight == weight'
 =~ SEL_ARG::verify_weight
 =~ key_or_with_limit|key_and_with_limit
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25821:
 =~ Assertion \`Count >= rest_length'|signal 11|AddressSanitizer
 =~ _my_b_write
@@ -505,7 +505,7 @@ MDEV-25814:
 =~ AddressSanitizer|signal 11
 =~ Query_cache::process_and_count_tables
 =~ Query_cache::is_cacheable
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25813:
 =~ AddressSanitizer|signal 11
 =~ err_conv
@@ -515,7 +515,7 @@ MDEV-25784:
 =~ signal 11|AddressSanitizer
 =~ Table_function_json_table::print
 =~ sp_instr_freturn::print
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25781:
 =~ AddressSanitizer|signal 11|Invalid read of size
 =~ SHA1_Update
@@ -535,12 +535,12 @@ MDEV-25677:
 =~ ha_innobase::build_template
 =~ ha_innobase::change_active_index
 =~ QUICK_RANGE_SELECT::reset
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25654:
 =~ Assertion \`limit >= trx_id'
 =~ purge_node_t::skip
 =~ row_purge_parse_undo_rec
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25643:
 =~ Assertion \`table->no_keyread \|\| !table->covering_keys\.is_set(tab->index) \|\| table->file->keyread == tab->index'
 =~ join_read_first
@@ -548,16 +548,16 @@ MDEV-25627:
 =~ signal 11|AddressSanitizer
 =~ get_prefix
 =~ find_body
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25623:
 =~ Assertion \`trn->trid != 0'
 =~ write_hook_for_undo|write_hook_for_redo
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25620:
 =~ InnoDB: Failing assertion: id != 0|Assertion \`dict_table_is_file_per_table(this)'
 =~ fil_rename_tablespace|dict_table_t::rename_tablespace
 =~ row_undo_ins_parse_undo_rec
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25523:
 =~ Assertion \`using_unique_constraint \|\| group_buff <= param->group_buff + param->group_length'
 =~ create_tmp_table
@@ -566,7 +566,7 @@ MDEV-25490:
 =~ LeakSanitizer: detected memory leaks
 =~ Create_tmp_table::start
 =~ subselect_union_engine::prepare|JOIN::make_aggr_tables_info
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25439:
 =~ AddressSanitizer|signal 11
 =~ my_strtod_int
@@ -578,12 +578,12 @@ MDEV-25438:
 =~ fts_cache_node_add_positions
 =~ row_fts_insert_tuple
 =~ fts_parallel_merge
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25396:
 =~ InnoDB: Failing assertion: m_prebuilt->trx == thd_to_trx(m_user_thd)
 =~ ha_innobase::change_active_index
 =~ ha_innobase::rnd_init
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25385:
 =~ Assertion \`file != ((void \*)0)'|signal 11|AddressSanitizer
 =~ translog_sync_files
@@ -597,7 +597,7 @@ MDEV-25365:
 MDEV-25364:
 =~ Assertion \`old_part_id == m_last_part'
 =~ ha_partition::update_row
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25350:
 =~ Assertion \`!table->file->keyread_enabled()'
 =~ close_thread_table
@@ -622,7 +622,7 @@ MDEV-25311:
 =~ signal 11|AddressSanitizer
 =~ Json_writer_object::add
 =~ sel_arg_and_weight_heuristic
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25290:
 =~ signal 11|AddressSanitizer
 =~ Locked_tables_list::mark_table_for_reopen
@@ -643,21 +643,21 @@ MDEV-25243:
 =~ signal 11|AddressSanitizer
 =~ sp_head::daccess
 =~ Item_sp::execute_impl
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25243:
 =~ Assertion \`m_sp->agg_type() == GROUP_AGGREGATE \|\| (m_sp->agg_type() == NOT_AGGREGATE && !func_ctx)'
 =~ Item_sp::execute_impl
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25243:
 =~ signal 11
 =~ sp_head::check_execute_access
 =~ Item_sp::execute_impl
 =~ end_write
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25243:
 =~ AddressSanitizer: heap-use-after-free
 =~ Item_func_sp::execute_impl|Item_sp::execute_impl
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25119:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ innobase_rename_table
@@ -671,11 +671,11 @@ MDEV-25087:
 MDEV-25084:
 =~ Assertion \`fixed'
 =~ Item_func_or_sum::with_subquery
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25084:
 =~ Assertion \`i->is_fixed()'
 =~ Item_copy::Item_copy
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25083:
 =~ InnoDB: Database page corruption on disk or a failed file read|Cannot create log file because data files are corrupt
 =~ MariaBackup
@@ -707,7 +707,7 @@ MDEV-25058:
 =~ cmp_data
 =~ cmp_dtuple_rec_with_match_low
 =~ QUICK_RANGE_SELECT::get_next_prefix
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25056:
 =~ signal [16]|AddressSanitizer
 =~ Protocol::net_store_data
@@ -733,13 +733,13 @@ MDEV-25035:
 =~ JOIN::cleanup
 =~ st_select_lex::cleanup_all_joins
 =~ JOIN::join_free
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ REPLACE.*RETURNING|INSERT.*RETURNING
 MDEV-25028:
 =~ Assertion \`sl->join == 0'
 =~ reinit_stmt_before_use
 =~ Prepared_statement::execute
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25028:
 =~ AddressSanitizer|signal 11
 =~ base_list_iterator::next|SQL_SELECT::cleanup
@@ -771,7 +771,7 @@ MDEV-24986:
 =~ Assertion \`key_buff_elements && cur_key_idx < key_buff_elements'|AddressSanitizer|signal [16]
 =~ Ordered_key::add_key
 =~ subselect_hash_sj_engine
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24972: [MyISAM unique blobs]
 =~ Table .* is marked as crashed and should be repaired
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
@@ -795,12 +795,12 @@ MDEV-24933:
 MDEV-24931:
 =~ Assertion \`prefix_size <= width'
 =~ Bitmap<width>::is_prefix|Bitmap<64u>::is_prefix
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24907:
 =~ signal [16]|AddressSanitizer
 =~ Item_field::replace_equal_field
 =~ Item_in_optimizer::transform
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24906:
 =~ AddressSanitizer|signal [16]
 =~ QUICK_GROUP_MIN_MAX_SELECT::next_min
@@ -820,12 +820,12 @@ MDEV-24876:
 =~ safe_mutex: Trying to destroy a mutex cache->lock that was locked at .*fts0fts\.cc, line .* at .*fts0fts\.cc, line .*
 =~ fts_cache_destroy
 =~ has or is referenced in foreign key constraints which are not compatible with the new table definition
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24822:
 =~ LeakSanitizer: detected memory leaks
 =~ mem_heap_create_block_func
 =~ fts_trx_create
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ FeatureUsage detected XA transactions
 MDEV-24819:
 =~ AddressSanitizer|crash
@@ -833,16 +833,16 @@ MDEV-24819:
 =~ handler::ha_index_read_map
 =~ QUICK_RANGE_SELECT::get_next_prefix
 =~ QUICK_GROUP_MIN_MAX_SELECT::next_prefix
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24808:
 =~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type != 2'
 =~ handler::ha_index_read_map
 =~ ha_partition
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24804:
 =~ Assertion \`is_preparing_xa(thd)'
 =~ MYSQL_BIN_LOG::unlog_xa_prepare
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24787:
 =~ signal [16]|AddressSanitizer
 =~ check_group_min_max_predicates
@@ -858,7 +858,7 @@ MDEV-24778:
 =~ Assertion \`dstlen >= srclen \* cs->casedn_multiply'
 =~ my_casedn_ujis
 =~ innobase_fts_casedn_str
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24777:
 =~ AddressSanitizer: memcpy-param-overlap
 =~ copy_if_not_alloced
@@ -889,7 +889,7 @@ MDEV-24726:
 =~ Assertion \`0'
 =~ Field_varstring_compressed::key_cmp
 =~ key_cmp_if_same
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24724:
 =~ Assertion \`templ->mbmaxlen > templ->mbminlen \|\| templ->mysql_col_len == len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0)'|Assertion \`len \* templ->mbmaxlen >= templ->mysql_col_len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0) \|\| templ->rec_field_is_prefix'
 =~ row_sel_field_store_in_mysql_format_func
@@ -940,12 +940,12 @@ MDEV-24683:
 MDEV-24680:
 =~ InnoDB: Failing assertion: cmp < 0
 =~ row_ins_check_foreign_constraint
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24663:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ ANALYZE.*SELECT
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 # Won't be fixed, stays here forever!
 MDEV-24662:
 =~ Assertion \`found'
@@ -987,7 +987,7 @@ MDEV-24610:
 #MDEV-24570:
 #=~ Found index .* whose column info does not match that of MariaDB
 #=~ InnoDB indexes are inconsistent with what defined in \.frm for table .*
-#=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+#=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 # Not merged up yet
 MDEV-24560:
 =~ signal 11|AddressSanitizer
@@ -999,7 +999,7 @@ MDEV-24529:
 =~ Assertion \`0'
 =~ vers_select_conds_t::print
 =~ opt_trace_print_expanded_query
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.3\.[0-9]*-[0-9]*|Server version: 10\.3\.[0-9]*-[0-9]*
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.3\.[0-9]*-[0-9]*|Server version: 10\.3\.[0-9]*-[0-9]*|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24521:
 =~ InnoDB: Flagged corruption of .* in table .* Partition .* in CHECK TABLE; Wrong count
 =~ For InnoDB SYSTEM VERSIONED .* : error : Partition .* returned error
@@ -1009,7 +1009,7 @@ MDEV-24521:
 MDEV-24508:
 =~ Assertion \`!strcmp(index->name, "FTS_DOC_ID_INDEX")'
 =~ ha_innobase::write_row|ha_innobase::update_row
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24381:
 =~ Assertion \`user_table->get_ref_count() == 1'
 =~ commit_try_rebuild
@@ -1037,7 +1037,7 @@ MDEV-24256:
 =~ signal [16]|AddressSanitizer
 =~ SQL_SELECT::cleanup
 =~ JOIN::make_range_rowid_filters
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24249:
 =~ Assertion \`!page \|\| fil_page_type_is_index(page_type)'
 =~ recv_parse_or_apply_log_rec_body
@@ -1046,7 +1046,7 @@ MDEV-24210:
 =~ signal 11|AddressSanitizer
 =~ st_join_table::is_using_agg_loose_index_scan
 =~ JOIN::make_aggr_tables_info
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24174:
 =~ The table .* is full
 =~ signal [16]|AddressSanitizer
@@ -1070,7 +1070,7 @@ MDEV-24095:
 =~ AddressSanitizer|signal [16]
 =~ json_path_parts_compare
 =~ Item_func_json_extract::read_json
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23984:
 =~ Assertion \`((Item_result_field\*)item)->result_field'
 =~ create_tmp_field
@@ -1078,7 +1078,7 @@ MDEV-23984:
 MDEV-23984:
 =~ Assertion \`result_field'
 =~ Item_result_field::get_tmp_field_src
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23956:
 =~ signal [16]|AddressSanitizer
 =~ myrocks::ha_rocksdb::index_first
@@ -1091,7 +1091,7 @@ MDEV-23949:
 =~ Assertion \`0'
 =~ virtual JOIN_CACHE::Match_flag JOIN_CACHE::get_match_flag_by_pos
 =~ JOIN_CACHE::skip_if_not_needed_match
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23948:
 =~ Assertion \`table->no_keyread \|\| !table->covering_keys\.is_set(tab->index) \|\| table->file->keyread == tab->index'
 =~ join_read_first
@@ -1100,7 +1100,7 @@ MDEV-23928:
 =~ Assertion \`maybe_null \|\| !null_value'|Assertion \`maybe_null() \|\| !null_value'
 =~ Item_func_ceiling::time_op
 =~ Item_func_hybrid_field_type::time_op_with_null_check
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23919:
 =~ Assertion \`0'
 =~ subselect_hash_sj_engine::init
@@ -1112,40 +1112,40 @@ MDEV-23898:
 =~ THD::is_error
 =~ TABLE::verify_constraints
 =~ select_insert::send_data
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ FeatureUsage detected sequences
 MDEV-23898:
 =~ AddressSanitizer|signal [16]
 =~ THD::is_error
 =~ ha_myisam::enable_indexes
 =~ select_insert::prepare_eof
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ FeatureUsage detected sequences
 MDEV-23898:
 =~ AddressSanitizer|signal [16]
 =~ handler::increment_statistics
 =~ handler::ha_rnd_next
 =~ rr_sequential
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ FeatureUsage detected sequences
 MDEV-23898:
 =~ Assertion \`thd->lock == 0'
 =~ lock_tables
 =~ sp_head::execute_trigger
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ FeatureUsage detected sequences
 MDEV-23898:
 =~ Assertion \`inited == NONE \|\| table->open_by_handler'
 =~ handler::ha_external_lock
 =~ sp_head::execute_trigger
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ FeatureUsage detected sequences
 MDEV-23896:
 =~ AddressSanitizer|Invalid read of size|signal [16]
 =~ same_index_prefix
 =~ get_best_index_intersect
 =~ SQL_SELECT::test_quick_select
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23895:
 =~ AddressSanitizer|Invalid write of size|signal [16]
 =~ Item_func_rpad::val_str
@@ -1178,13 +1178,13 @@ MDEV-23838:
 =~ Assertion \`0'
 =~ Item_func_.*::native_op
 =~ Arg_comparator::min_max_update_field_native
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23837:
 =~ AddressSanitizer|valgrind
 =~ malloc
 =~ JOIN_CACHE::alloc_buffer
 =~ JOIN_CACHE_HASHED::init|JOIN_CACHE_BNL::init
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23835:
 =~ InnoDB: Failing assertion: bpage->buf_fix_count == 0
 =~ buf_relocate
@@ -1227,19 +1227,19 @@ MDEV-23797:
 =~ create_internal_tmp_table
 =~ select_unit_ext::unfold_record
 =~ mysql_union
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23797:
 =~ free(): invalid size
 =~ free_tmp_table
 =~ st_select_lex_unit::cleanup
 =~ mysql_union
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23797:
 =~ Assertion \`inited == RND'
 =~ handler::ha_rnd_next
 =~ mysql_union
 =~ INTERSECT ALL
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23794:
 =~ signal [16]|AddressSanitizer
 =~ bitmap_bits_set|bitmap_is_set
@@ -1260,7 +1260,7 @@ MDEV-23724:
 =~ signal [16]|AddressSanitizer|Assertion \`primary_file->inited == handler::INDEX \|\| (primary_file->inited == handler::RND && secondary_file && secondary_file->inited == handler::INDEX)'
 =~ DsMrr_impl::dsmrr_init
 =~ ha_partition::multi_range_read_init|ha_innobase::multi_range_read_init
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 # Commented because there is a need for rr trace or test case
 # MDEV-23721:
 # =~ Assertion \`node->table->is_temporary() \|\| lock_table_has_locks(node->table)'
@@ -1270,7 +1270,7 @@ MDEV-23687:
 =~ Datetime::Datetime|Date::Date
 =~ Item_datetime_typecast::get_date|Item_date_typecast::get_date
 =~ Extract_source::Extract_source
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23686:
 =~ signal [16]|AddressSanitizer
 =~ get_foreign_key_info
@@ -1279,39 +1279,39 @@ MDEV-23679:
 =~ signal [16]|AddressSanitizer
 =~ base_list_iterator::next_fast
 =~ sp_instr_stmt::exec_core
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ versioning|FeatureUsage detected system-versioned
 MDEV-23676:
 =~ Assertion \`(((nr) % (1LL << 24)) % (int) log_10_int\[6 - dec\]) == 0'
 =~ my_time_packed_to_binary
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23665:
 =~ Assertion \`length <= 64'
 =~ PFS_variable_name_row::make_row
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23664:
 =~ Assertion \`(m_ptr == __null) == item->null_value'
 =~ VDec::VDec
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23654:
 =~ Assertion \`args\[0\]->max_length <= ((9 \* 9) + 2)'
 =~ Item_func_int_val::fix_length_and_dec_int_or_decimal
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23652:
 =~ Assertion \`rec_trx_id != trx->id'
 =~ row_merge_read_clustered_index
 =~ ha_innobase::inplace_alter_table
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23652:
 =~ Assertion \`0'
 =~ ReadView::check_trx_id_sanity
 =~ lock_clust_rec_cons_read_sees
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23541:
 =~ Assertion \`cost > 0\.0'
 =~ adjust_quick_cost
 =~ best_access_path
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23529:
 =~ Assertion \`!writer\.checksum_len \|\| writer\.remains == 0'
 =~ MYSQL_BIN_LOG::write_cache
@@ -1344,7 +1344,7 @@ MDEV-23443:
 =~ maria_update
 =~ select_unit_ext::send_eof
 =~ mysql_union
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23390:
 =~ signal [16]|AddressSanitizer
 =~ myrocks::ha_rocksdb::update_stats
@@ -1369,7 +1369,7 @@ MDEV-23364:
 =~ Field::is_null
 =~ Protocol::send_result_set_row
 =~ select_result_sink::send_data_with_check
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23363:
 =~ signal [16]|AddressSanitizer|Assertion \`length < 0xFFFFFFFFL'
 =~ String::copy|Field::is_null
@@ -1389,13 +1389,13 @@ MDEV-23315:
 =~ subselect_single_select_engine::exec
 =~ Item_func_conv_charset::val
 =~ Prepared_statement::execute|sp_head::execute
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23315:
 =~ Assertion \`(st_select_lex\*)join->select_lex == this'|AddressSanitizer
 =~ st_select_lex::cleanup
 =~ subselect_single_select_engine::prepare
 =~ Prepared_statement::execute|sp_head::execute
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 # Won't be fixed, will stay here forever!
 MDEV-23305:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
@@ -1423,7 +1423,7 @@ MDEV-23294:
 =~ Assertion \`!table \|\| table->in_use == _current_thd()'
 =~ Item_func_.*
 =~ TABLE::update_virtual_field
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23286:
 =~ Assertion \`field->type_handler() == this'
 =~ Type_handler_inet6::stored_field_cmp_to_item
@@ -1447,17 +1447,12 @@ MDEV-23265:
 =~ Assertion \`!expl_lock \|\| expl_lock->trx == arg->impl_trx'|Assertion \`!expl_lock \|\| expl_lock->trx == &arg->impl_trx'
 =~ lock_rec_other_trx_holds_expl_callback
 =~ rw_trx_hash_t::debug_iterator
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23259:
 =~ Assertion \`param\.sort_length != 0'
 =~ filesort
 =~ create_sort_index
 =~ Version: '10\.[1-4]
-MDEV-23258:
-=~ InnoDB: Failing assertion: 0
-=~ row_sel_convert_mysql_key_to_innobase
-=~ ha_innodb::index_read|ha_innobase::index_read
-=~ Version: '10\.1
 MDEV-23256:
 =~ AddressSanitizer|signal 11
 =~ Query_cache::unlink_table
@@ -1468,21 +1463,16 @@ MDEV-23226:
 =~ handler::ha_rnd_next
 =~ select_unit_ext::send_eof
 =~ mysql_union
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-23219:
-=~ Assertion \`(length % 4) == 0'
-=~ my_well_formed_len_utf32
-=~ Item_func_group_concat::add
-=~ Version: '10\.1
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23218:
 =~ InnoDB: Clustered record for sec rec not found index
 =~ Assertion \`0'
 =~ Row_sel_get_clust_rec_for_mysql::operator
 =~ row_search_mvcc
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23218:
 =~ InnoDB: Flagged corruption of .* in CHECK TABLE; Wrong count
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23215:
 =~ signal [16]|AddressSanitizer
 =~ my_hash_first|flush_simple_key_cache_blocks
@@ -1500,13 +1490,13 @@ MDEV-23212:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ INFORMATION_SCHEMA.*ALL_PLUGINS
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23204:
 =~ signal [16]|AddressSanitizer|Assertion \`bit < (map)->n_bits'
 =~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan|DsMrr_impl::dsmrr_next
 =~ JOIN_TAB_SCAN_MRR::next
 =~ JOIN_CACHE::join_matching_records
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23202:
 =~ signal [16]|AddressSanitizer
 =~ maria_status|heap_info|heap_scan_init
@@ -1515,7 +1505,7 @@ MDEV-23202:
 MDEV-23188:
 =~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
 =~ create_tmp_table|Create_tmp_table::add_field
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23187:
 =~ Assertion \`0'
 =~ json_find_path
@@ -1524,11 +1514,6 @@ MDEV-23173:
 =~ Assertion \`length < 249'
 =~ Transaction_state_tracker::store
 =~ net_send_ok
-MDEV-23172:
-=~ Assertion \`0'
-=~ my_mbcharlen_utf16
-=~ READ_INFO::read_field|READ_INFO::next_line
-=~ Version: '10\.1
 MDEV-23171:
 =~ AddressSanitizer
 =~ strend
@@ -1539,7 +1524,7 @@ MDEV-23151:
 =~ Assertion \`i < get_width()'
 =~ Histogram::get_value
 =~ get_column_range_cardinality
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23150:
 =~ Assertion \`(\*endptr - (const char \*) s) % 2 == 0'
 =~ my_strtoll10_mb2
@@ -1553,21 +1538,21 @@ MDEV-23146:
 =~ Assertion \`prebuilt->m_read_virtual_key'
 =~ row_sel_store_mysql_rec
 =~ row_search_mvcc
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23145:
 =~ signal [16]|AddressSanitizer
 =~ handler::update_global_table_stats
 =~ close_thread_table
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23145:
 =~ Assertion \`inited == NONE \|\| table->open_by_handler'
 =~ handler::ha_external_lock
 =~ close_system_tables|close_thread_tables
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23132:
 =~ Assertion \`trn->locked_tables == 0 && trn->used_instances == 0'
 =~ trnman_end_trn
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23132:
 =~ signal [16]|AddressSanitizer
 =~ reset_thd_trn|_ma_reset_trn_for_table
@@ -1576,7 +1561,7 @@ MDEV-23132:
 MDEV-23132:
 =~ Assertion \`file->trn_next == 0 && file->trn_prev == 0'
 =~ ha_maria::close
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23127:
 =~ signal [16]|AddressSanitizer
 =~ Query_cache::double_linked_list_exclude|Assertion \`table_block_data->m_cached_query_count >= 0'|Assertion \`table_block_data->m_cached_query_count == 0'
@@ -1589,22 +1574,22 @@ MDEV-23115:
 =~ Assertion \`purge <= 1'
 =~ trx_rseg_mem_restore
 =~ plugin_initialize
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23073:
 =~ LeakSanitizer: detected memory leaks
 =~ trx_savepoint_for_mysql
 =~ trans_savepoint
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23047:
 =~ Assertion \`tmp_table->file->stats\.records == 1'
 =~ subselect_hash_sj_engine::exec
 =~ Item_cache_wrapper::cache
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23045:
 =~ Assertion \`is_open()'
 =~ MYSQL_BIN_LOG::trx_group_commit_leader
 =~ MYSQL_BIN_LOG::write_transaction_to_binlog
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23041:
 =~ signal [16]|AddressSanitizer
 =~ Item_func_set_user_var::update_hash
@@ -1619,12 +1604,12 @@ MDEV-22927:
 =~ lock_rec_lock
 =~ read_stored_values
 =~ SEQUENCE|FeatureUsage detected sequences
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22927:
 =~ AddressSanitizer|signal
 =~ lock_mode_compatible
 =~ lock_rec_lock
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ FeatureUsage detected sequences
 MDEV-22918:
 =~ InnoDB: Plugin initialization aborted with error Generic error
@@ -1633,44 +1618,44 @@ MDEV-22918:
 MDEV-22915:
 =~ Assertion \`binlog_table_maps == 0 \|\| locked_tables_mode == LTM_LOCK_TABLES'
 =~ reset_for_next_command
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22913:
 =~ error: can't open
 =~ Error: xtrabackup_apply_delta(): failed to apply
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22886:
 =~ AddressSanitizer
 =~ my_convert
 =~ sql_strmake_with_convert
 =~ Item::set_name
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22885:
 =~ Assertion \`0'
 =~ Item::val_native
 =~ Type_handler_timestamp_common
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22883:
 =~ Assertion \`!parse_error \|\| lex\.sphead == 0'
 =~ Table_triggers_list::check_n_load
 =~ get_all_tables
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22883:
 =~ AddressSanitizer|signal [16]
 =~ Trigger::get_trigger_info
 =~ get_schema_triggers_record
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22873:
 =~ has a primary key in InnoDB data dictionary, but not in MariaDB
 =~ Assertion \`len == ref_length'|AddressSanitizer
 =~ ha_innobase::position
 =~ find_all_keys|mysql_update
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22873:
 =~ AddressSanitizer|signal 11
 =~ ha_innobase::position
 =~ find_all_keys
 =~ filesort
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22856:
 =~ Assertion \`!str \|\| str != Ptr'
 =~ String::copy
@@ -1688,7 +1673,7 @@ MDEV-22825:
 =~ Bitmap<64u>::merge
 =~ add_key_field
 =~ update_ref_and_keys
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22772:
 =~ signal [16]|AddressSanitizer
 =~ Item_null_result::field_type
@@ -1705,19 +1690,19 @@ MDEV-22759:
 =~ Assertion \`0'|Failing assertion: !cursor->index->is_committed()
 =~ row_upd_sec_index_entry|row_purge_remove_sec_if_poss_leaf|row_ins_sec_index_entry|ibuf_set_del_mark
 =~ FeatureUsage detected unique blobs
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22754:
 =~ Assertion \`!result'
 =~ convert_const_to_int
 =~ convert_const_compared_to_int_field
 =~ optimize_inner
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22732:
 =~ AddressSanitizer|signal [16]
 =~ create_tmp_table
 =~ multi_update::initialize_tables
 =~ JOIN::optimize_stage2
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22695:
 =~ signal [16]|AddressSanitizer
 =~ heap_rnext
@@ -1726,7 +1711,7 @@ MDEV-22695:
 MDEV-22676:
 =~ InnoDB: Failing assertion: result != FTS_INVALID
 =~ fts_trx_row_get_new_state
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22675:
 =~ Assertion \`offset < table->s->reclength'
 =~ dump_leaf_key
@@ -1757,78 +1742,78 @@ MDEV-22667:
 =~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
 =~ row_update_for_mysql
 =~ ha_partition::delete_row|handler::ha_delete_row
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22667:
 =~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), m_last_part)'
 =~ ha_partition::position
 =~ multi_delete::send_data|multi_update::send_data
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22662:
 =~ Assertion \`fixed == 0'
 =~ Item_func::fix_fields
 =~ fix_fields_for_tvc
 =~ table_value_constr::prepare
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22661:
 =~ Assertion \`time_type == MYSQL_TIMESTAMP_DATETIME'
 =~ Datetime::is_valid_datetime_slow
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22648:
 =~ AddressSanitizer
 =~ Field_blob::cmp|Field::cmp_offset|Field::cmp_binary_offset|Field_blob::cmp_prefix
 =~ multi_update|check_duplicate_long_entry_key
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22647:
 =~ safe_mutex: Trying to lock mutex at .*sql_plugin\.cc, line .*, when the mutex was already locked at .*sys_vars_shared.h
 =~ sync_dynamic_session_variables
 =~ get_loc_info
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22647:
 =~ Assertion \`!check_audit_mask(mysql_global_audit_mask, event_class_mask)'
 =~ mysql_audit_acquire_plugins
 =~ my_message_sql
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22600:
 =~ Assertion \`prebuilt->mysql_prefix_len <= prebuilt->mysql_row_len'|AddressSanitizer|signal [16]
 =~ row_sel_dequeue_cached_row_for_mysql|row_sel_store_mysql_field
 =~ row_search_mvcc
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22600:
 =~ AddressSanitizer|signal [16]
 =~ row_mysql_store_col_in_innobase_format
 =~ row_insert_for_mysql
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22600:
 =~ AddressSanitizer|signal [16]
 =~ Field::is_null_in_record
 =~ calc_row_difference|Column_definition::Column_definition
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22600:
 =~ signal [16]|AddressSanitizer
 =~ TABLE::init
 =~ open_table|open_temporary_table
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22576:
 =~ Assertion \`false'
 =~ set_field_lock_type
 =~ table_table_handles::read_row_values
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22551:
 =~ signal 11|AddressSanitizer
 =~ skip_trailing_space
 =~ my_hash_sort_simple
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22551:
 =~ Assertion \`marked_for_read()'
 =~ Field_blob::val_str
 =~ TABLE::update_virtual_fields
 =~ collect_statistics_for_table
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22548:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ IGNORE
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ application_periods|FeatureUsage detected application periods
 MDEV-22525:
 =~ signal 11|AddressSanitizer: SEGV
@@ -1838,25 +1823,25 @@ MDEV-22525:
 MDEV-22460:
 =~ safe_mutex: Found wrong usage of mutex 'LOCK_thd_data' and 'THR_LOCK_myisam'
 =~ wsrep_on
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22444:
 =~ signal [16]|AddressSanitizer
 =~ Field_iterator_table::create_item
 =~ Field_iterator_table_ref::create_item
 =~ insert_fields
 =~ setup_wild
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22440: [thd->transaction.stmt.*is_empty() || / GRANT / KILL_SERVER]
 =~ Assertion \`thd->transaction\.*stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ open_normal_and_derived_tables
 =~ mysql_table_grant
 =~ KILL_SERVER|KILL_TIMEOUT|KILL_QUERY
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22435:
 =~ Assertion \`len'
 =~ extra2_write_len
 =~ discover_assisted
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ versioning|FeatureUsage detected system-versioned|FeatureUsage detected application periods|application_periods\.yy
 MDEV-22426:
 =~ signal 8|AddressSanitizer: FPE
@@ -1865,59 +1850,54 @@ MDEV-22426:
 MDEV-22395:
 =~ Assertion \`templ->mbmaxlen > templ->mbminlen \|\| templ->mysql_col_len == len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0)'
 =~ row_sel_field_store_in_mysql_format_func
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22385:
 =~ Assertion \`0'
 =~ stored_field_cmp_to_item
 =~ convert_const_to_int
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22375:
 =~ Assertion \`(engine->uncacheable() & ~8) \|\| ! engine->is_executed() \|\| with_recursive_reference'
 =~ Item_in_subselect
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22368:
 =~ Assertion \`field_max_length <= m_return_field_def.length \|\| m_return_field_def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && m_return_field_def\.length == 8 && (m_return_field_def\.pack_flag & (1024U\|2048U)))'
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22365:
 =~ Assertion \`!col->mbmaxlen \|\| len >= col->mbminlen \* (fixed_len / col->mbmaxlen)'
 =~ row_merge_buf_add
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-22356:
-=~ AddressSanitizer:
-=~ _ma_get_status
-=~ thr_multi_lock
-=~ Version: '10\.1
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22333:
 =~ Assertion \`len <= fixed_len'
 =~ rec_get_converted_size_comp_prefix_low
 =~ row_ins_index_entry
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22279:
 =~ Assertion \`false'
 =~ set_field_mdl_type
 =~ table_metadata_locks::read_row_values
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22262:
 =~ signal 11|AddressSanitizer
 =~ handler::ha_table_flags|ha_partition::info|ha_partition::compare_number_of_records
 =~ ha_partition::open
 =~ check_duplicate_long_entries_update|handler::create_lookup_handler|clone_handler_for_update|ha_partition::clone
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22232:
 =~ signal handler|AddressSanitizer
 =~ rpl_sql_thread_info::cached_charset_compare
 =~ wsrep_apply_events
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 # Not merged up yet
 MDEV-22266:
 =~ Assertion \`m_status == DA_ERROR'
 =~ Diagnostics_area::sql_errno
 =~ fill_schema_table_by_open
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22250:
 =~ InnoDB: Failing assertion: opt_no_lock
 =~ xtrabackup\.cc line
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22196:
 =~ AddressSanitizer|signal
 =~ String::copy
@@ -1927,38 +1907,38 @@ MDEV-22172:
 =~ Assertion \`inited == NONE \|\| lookup_handler != this'
 =~ handler::ha_write_row
 =~ vers_insert_history_row|update_portion_of_time
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22154:
 =~ safe_mutex: Trying to lock mutex at .*/sql/wsrep_mutex\.h|safe_mutex: Trying to lock mutex at .*/sql/sql_parse\.cc|safe_mutex: Trying to lock mutex at .*/sql/repl_failsafe\.cc|safe_mutex: Trying to lock mutex at .*/sql/sql_show\.cc
 =~ when the mutex was already locked at .*/sql/sql_parse\.cc, line
 =~ wsrep_on
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22149:
 =~ Assertion \`!table->pos_in_locked_tables'
 =~ tc_release_table
 =~ handle_alter_part_error
 =~ fast_alter_partition_table
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22104:
 =~ Assertion \`m_psi_batch_mode == PSI_BATCH_MODE_NONE'
 =~ handler::ha_close
 =~ JOIN_CACHE
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22099:
 =~ AddressSanitizer:
 =~ _ma_record_pos
 =~ maria_records_in_range
 =~ DsMrr_impl::dsmrr_info_const
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22063:
 =~ Assertion \`0'
 =~ wsrep::transaction::before_rollback
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21996:
 =~ signal 11|AddressSanitizer:
 =~ Item_func_nextval::update_table
 =~ Temporal_with_date::make_from_item
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21994:
 =~ Assertion \`!thd \|\| thd->locked_tables_mode \|\| !thd->mdl_context\.has_locks() \|\| thd->handler_tables_hash\.records \|\| thd->ull_hash\.records \|\| thd->global_read_lock\.is_acquired() \|\| thd->current_backup_stage != BACKUP_FINISHED'
 =~ reload_acl_and_cache
@@ -1966,11 +1946,11 @@ MDEV-21987:
 =~ Assertion failure in file .*lock0lock\.cc line
 =~ DeadlockChecker::check_and_resolve
 =~ row_search_mvcc
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21987:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE \|\| (prebuilt->table->no_rollback() && trx->state == TRX_STATE_NOT_STARTED)'
 =~ row_search_mvcc
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21974:
 =~ InnoDB: Over 95 percent of the buffer pool is occupied by lock heaps
 =~ in buf_LRU_check_size_of_non_data_objects
@@ -1979,10 +1959,6 @@ MDEV-21927:
 =~ RocksDB: Failed to get column family flags from cf id
 =~ signal 6
 =~ myrocks::Rdb_drop_index_thread::run
-MDEV-21906:
-=~ Assertion \`thd->transaction.*stmt\.is_empty() \|\| thd->in_sub_stmt \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
-=~ flush_tables
-=~ Version: '10\.1
 MDEV-21848:
 =~ signal 11|AddressSanitizer:
 =~ handle_if_exists_options
@@ -2001,11 +1977,6 @@ MDEV-21837: [status_var.local_memory_used == 0]
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ THD::~THD
 =~ KILL_SERVER|KILL_CONNECTION
-MDEV-21837: [status_var.local_memory_used == 0]
-=~ Assertion \`status_var\.local_memory_used == 0'
-=~ THD::~THD()
-=~ KILL_SERVER|Status: KILL_CONNECTION
-=~ Version: '10\.1
 MDEV-21834:
 =~ signal 11|AddressSanitizer:
 =~ key_copy|Field_varstring::get_key_image
@@ -2028,22 +1999,17 @@ MDEV-21821:
 =~ AddressSanitizer:
 =~ myrocks::Rdb_transaction::on_commit
 =~ myrocks::Rdb_transaction_impl::commit_no_binlog
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21812:
 =~ Assertion \`marked_for_write_or_computed()'
 =~ Field_new_decimal::store_value
 =~ Rows_log_event::unpack_current_row
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21812:
 =~ Assertion \`!table \|\| (!table->write_set \|\| bitmap_is_set(table->write_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength))) \|\| (table->vcol_set && bitmap_is_set(table->vcol_set, field_index))'
 =~ Field_new_decimal::store_value
 =~ Rows_log_event::unpack_current_row
 =~ Version: '10\.[2-3]
-MDEV-21812:
-=~ Assertion \`is_stat_field \|\| !table \|\| (!table->write_set \|\| bitmap_is_set(table->write_set, field_index) \|\| (table->vcol_set && bitmap_is_set(table->vcol_set, field_index)))'
-=~ Field_new_decimal::store_value
-=~ Rows_log_event::unpack_current_row
-=~ Version: '10\.1
 MDEV-21809:
 =~ signal [16]|AddressSanitizer
 =~ Item_cond::get_mm_tree
@@ -2057,31 +2023,22 @@ MDEV-21798:
 =~ Assertion \`0'
 =~ row_sel_convert_mysql_key_to_innobase
 =~ ha_innobase::index_read
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21789:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
 =~ GROUP BY.*IFNULL
-=~ Version: '5\.5|Version: '10\.[1-2]
+=~ Version: '10\.[1-2]
 MDEV-21754:
 =~ Assertion \`file->trn == trn'
 =~ ha_maria::start_stmt
 =~ check_lock_and_start_stmt
 =~ Version: '10\.[2-3]
-MDEV-21746:
-=~ Assertion \`strcmp(share->unique_file_name,filename) \|\| share->last_version'|Assertion \`__extension__ .* \|\| share->last_version'
-=~ test_if_reopen
-=~ mi_open
-=~ Version: '10\.1
 MDEV-21694:
 =~ For .* BASE TABLE .* error : Found a misplaced row
 =~ For .* BASE TABLE .* error : Partition .* returned error
 =~ FeatureUsage detected virtual columns
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
-MDEV-21680:
-=~ Assertion \`!table->pos_in_locked_tables'
-=~ tc_release_table
-=~ Version: '10\.1
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21648:
 =~ AddressSanitizer|signal [16]
 =~ memmove
@@ -2096,28 +2053,28 @@ MDEV-21641:
 =~ For .* BASE TABLE .* error : Found a misplaced row
 =~ For .* BASE TABLE .* error : Partition .* returned error
 =~ versioning|FeatureUsage detected system-versioned
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21637:
 =~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
 =~ Datetime_truncation_not_needed::Datetime_truncation_not_needed
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21635:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'|Assertion \`! is_set()'
 =~ Diagnostics_area::set_ok_status
 =~ my_ok
 =~ mysql_update
-=~ Version: '5\.5|Version: '10\.[1-2]
+=~ Version: '10\.[1-2]
 MDEV-21633:
 =~ Assertion \`tmp >= 0'
 =~ best_access_path
 =~ best_extension_by_limited_search|optimize_straight_join
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21630:
 =~ signal 11|AddressSanitizer:
 =~ mysql_derived_prepare
 =~ Multiupdate_prelocking_strategy::handle_end
 =~ sp_instr_stmt::exec_core
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21589:
 =~ AddressSanitizer: memcpy-param-overlap
 =~ Static_binary_string::q_append|String::append
@@ -2129,11 +2086,11 @@ MDEV-21579:
 MDEV-21576:
 =~ Assertion \`table->vers_start != table->vers_end'|Assertion \`t'|Assertion \`t->mysql_col_len == 8'
 =~ row_insert_for_mysql
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21561:
 =~ Assertion \`bitmap_is_subset(&m_part_info->read_partitions, &m_part_info->lock_partitions)'
 =~ ha_partition::start_stmt
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21540:
 =~ signal 11|AddressSanitizer:
 =~ handle_pre_scan
@@ -2148,10 +2105,6 @@ MDEV-21516:
 =~ Assertion \`lock_rec_find_set_bit(lock) == ((ulint)(-1))'
 =~ lock_rec_free_all_from_discard_page_low
 =~ trx_rollback
-MDEV-21507:
-=~ is marked as crashed and should be repaired|Incorrect key file for table
-=~ engine=Aria|default-storage-engine=aria
-=~ Version: '10\.1
 # Fixed in 10.2.20, but affects downgrade to 10.2.19
 MDEV-21496:
 =~ InnoDB: Failing assertion: trx->dict_operation_lock_mode == RW_X_LATCH
@@ -2167,13 +2120,13 @@ MDEV-21428:
 =~ InnoDB: Failing assertion: prebuilt->template_type == ROW_MYSQL_WHOLE_ROW
 =~ row_update_for_mysql
 =~ ha_innobase::delete_row|ha_innobase::update_row
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ versioning|FeatureUsage detected system-versioned
 MDEV-21415:
 =~ Assertion \`inited == RND'
 =~ handler::ha_rnd_pos
 =~ QUICK_ROR_INTERSECT_SELECT
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21414:
 =~ AddressSanitizer:
 =~ Field_blob::cmp
@@ -2182,7 +2135,7 @@ MDEV-21413:
 =~ AddressSanitizer:
 =~ ha_maria::info
 =~ get_schema_tables_record|get_schema_key_column_usage_record|ha_partition::part_records
-=~ Version: '10\.1|Version: '10\.3
+=~ Version: '10\.3
 MDEV-21406:
 =~ Assertion \`tmp != ((long long) 0x8000000000000000LL)'
 =~ TIME_from_longlong_datetime_packed
@@ -2195,7 +2148,7 @@ MDEV-21310:
 =~ Assertion \`part_share->auto_inc_initialized'
 =~ ha_partition::get_auto_increment
 =~ ha_partition::write_row
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21307:
 =~ Assertion \`cache_mngr->trx_cache\.empty() && cache_mngr->stmt_cache\.empty()'
 =~ binlog_close_connection
@@ -2210,7 +2163,7 @@ MDEV-21246:
 =~ Assertion \`page_rec_is_infimum(rec) \|\| !(rec_get_info_bits(page + offs, comp) & 0x10UL)'
 =~ page_rec_get_next_low
 =~ recv_recover_page
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ CrashUpgrade
 MDEV-21245:
 =~ InnoDB: Using a partial-field key prefix in search
@@ -2225,7 +2178,7 @@ MDEV-21245:
 =~ btr_cur_search_to_nth_level_func
 MDEV-21242:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
-=~ Field_.*::val_.*|Field_*::get_*
+=~ Field_.*::val_.*|Field_.*::get_.*
 =~ vcols|FeatureUsage detected virtual columns
 =~ Version: '10\.[2-3]
 MDEV-21242:
@@ -2233,7 +2186,7 @@ MDEV-21242:
 =~ Field_.*::val_.*
 =~ Protocol_text::store
 =~ vcols|FeatureUsage detected virtual columns
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21218:
 =~ signal [16]|AddressSanitizer
 =~ Item_equal_iterator<List_iterator_fast, Item>::get_curr_field
@@ -2251,21 +2204,16 @@ MDEV-21120:
 =~ Could not stop the server|STATUS_INTERNAL_ERROR
 =~ signal 6
 =~ MYSQL_BIN_LOG::stop_background_thread
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21102:
 =~ signal 11|AddressSanitizer: SEGV
 =~ JOIN_CACHE::write_record_data
-=~ JOIN_CACHE::put_record
+=~ JOIN_CACHE.*::put_record
 =~ mysql_explain_union
 MDEV-21085:
 =~ Assertion \`info->last_key\.keyinfo == key->keyinfo'
 =~ _ma_search_no_save
 =~ maria_rkey
-MDEV-21066:
-=~ AddressSanitizer: heap-use-after-free|signal 11
-=~ ha_maria::implicit_commit
-=~ trans_commit_implicit
-=~ Version: '10\.1
 # Not merged up yet
 MDEV-21028:
 =~ signal 11|AddressSanitizer: SEGV
@@ -2275,23 +2223,23 @@ MDEV-21027:
 =~ Assertion \`part_share->auto_inc_initialized \|\| !can_use_for_auto_inc_init()'
 =~ ha_partition::set_auto_increment_if_higher
 =~ ha_partition::write_row
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21016:
 =~ AddressSanitizer: heap-use-after-free
 =~ trx_update_mod_tables_timestamp
 =~ trx_commit_in_memory|trx_t::commit_in_memory
 =~ versioning|application_periods|FeatureUsage detected system-versioned|FeatureUsage detected application periods
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21016:
 =~ \`mysql\`\.\`transaction_registry\` does not exist
 =~ AddressSanitizer: heap-use-after-free
 =~ mysql_inplace_alter_table
 =~ versioning|FeatureUsage detected system-versioned
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21007:
 =~ Assertion \`auto_increment_value'
 =~ ha_partition::update_next_auto_inc_val
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20944:
 =~ AddressSanitizer: heap-use-after-free
 =~ my_strnncollsp_simple
@@ -2319,18 +2267,18 @@ MDEV-20816:
 =~ Assertion \`maybe_null \|\| !null_value'|Assertion \`maybe_null() \|\| !null_value'
 =~ Item_func_.*::time_op
 =~ Type_handler_time_common::Item_func_hybrid_field_type
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20771:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ mysql_update
 =~ rocksdb
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20765:
 =~ Assertion \`type\.vers_sys_end()'
 =~ dfield_t::vers_history_row
 =~ row_ins_check_foreign_constraint
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20761:
 =~ signal 11|AddressSanitizer: SEGV
 =~ base_list_iterator::next
@@ -2347,13 +2295,13 @@ MDEV-20750:
 =~ Prepared_statement::prepare|sp_head::execute
 =~ FeatureUsage detected sequences
 =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20737:
 =~ mysqld: failed to decrypt .*  rc: .*  dstlen: .*  size: .*|MA.* has wrong LSN
 =~ Got error .* when executing .*
 =~ Aria engine: Redo phase failed|Aria engine: Undo phase failed
 =~ aria-encrypt-tables
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20737:
 =~ Got error 192 when executing record redo_insert_row_blobs|Got error 192 when executing record redo_new_row_tail|Got error 126 when executing undo undo_key_insert|Got error 134 when executing undo undo_row_update
 =~ mysqld: Aria engine: Redo phase failed|Aria engine: Undo phase failed
@@ -2374,26 +2322,16 @@ MDEV-20680:
 MDEV-20666:
 =~ Assertion \`prebuilt->sql_stat_start \|\| prebuilt->table->no_rollback()'
 =~ row_search_mvcc
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20666:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE \|\| (prebuilt->table->no_rollback() && trx->state == TRX_STATE_NOT_STARTED)'
 =~ row_search_mvcc
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20666:
 =~ Assertion \`prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE'
 =~ row_search_mvcc
 =~ ha_innobase::index_read|ha_innobase::index_next_same|ha_innobase::rnd_next
 =~ Version: '10\.2
-MDEV-20666:
-=~ InnoDB: Failing assertion: prebuilt->sql_stat_start \|\| trx->state == TRX_STATE_ACTIVE
-=~ row_search_for_mysql
-=~ ha_innobase::index_read
-=~ Version: '10\.1
-MDEV-20666:
-=~ InnoDB: Failing assertion: prebuilt->sql_stat_start \|\| trx->conc_state == 1
-=~ row_search_for_mysql
-=~ ha_innobase::index_read
-=~ Version: '5\.5
 MDEV-20640:
 =~ Assertion \`0'|AddressSanitizer
 =~ row_purge_remove_sec_if_poss_leaf
@@ -2415,25 +2353,18 @@ MDEV-20622:
 =~ embedding_sjm
 =~ eliminate_item_equal
 =~ substitute_for_best_equal_field
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
-MDEV-20620:
-=~ AddressSanitizer: use-after-poison
-=~ tree_insert
-=~ copy_to_tree
-=~ tree_walk_left_root_right
-=~ Item_func_group_concat
-=~ Version: '10\.1
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20619:
 =~ AddressSanitizer: heap-use-after-free
 =~ my_strnncollsp_simple|my_strnncoll_binary
 =~ Arg_comparator::compare
 =~ SQL_SELECT::skip_record
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20597:
 =~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF) \|\| (((Item_ref \*) item)->ref_type() == Item_ref::REF)))'
 =~ get_corresponding_field_pair
 =~ pushdown_from_having_into_where
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20595:
 =~ Assertion \`0 < sel && sel <= 2\.0'|Assertion \`0 < sel && sel <= 1\.0'|Assertion \`0\.0 < sel && sel <= 1\.0'
 =~ table_cond_selectivity
@@ -2457,7 +2388,7 @@ MDEV-20501:
 =~ Assertion \`maybe_null \|\| !null_value'|Assertion \`maybe_null() \|\| !null_value'
 =~ Item_func_round::date_op
 =~ Type_handler_temporal_result
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20498:
 =~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type == 1'
 =~ handler::ha_write_row
@@ -2497,7 +2428,7 @@ MDEV-20471:
 MDEV-20471:
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, db, table_name, MDL_EXCLUSIVE)'
 =~ tdc_remove_table
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-20460:
 =~ Assertion \`inited==INDEX'
 =~ opt_sum_query
@@ -2557,30 +2488,11 @@ MDEV-20237:
 =~ Assertion \`!page_rec_is_comp(clust_rec) \|\| rec_get_status(clust_rec) == REC_STATUS_ORDINARY'
 =~ fts_fetch_doc_from_rec
 =~ fts_add_doc_by_id
-MDEV-20235:
-=~ AddressSanitizer: use-after-poison
-=~ create_tmp_table
-=~ JOIN::exec_inner
-=~ Version: '10\.1\.
-MDEV-20235:
-=~ ERROR: AddressSanitizer failed to allocate
-=~ AddressSanitizer CHECK failed
-=~ create_tmp_table
-=~ Version: '10\.1\.
-MDEV-20235:
-=~ DISTINCT VAR.* GROUP BY .* ORDER BY .*BENCHMARK .* failed: 5: Out of memory (Needed .* bytes)
-=~ Version: '10\.1\.
 MDEV-20207:
 =~ Assertion \`! is_set()'
 =~ Diagnostics_area::set_eof_status
 =~ mysql_ha_read
 =~ mysql_execute_command
-MDEV-20207:
-=~ signal 11
-=~ Field_blob::get_key_image
-=~ key_copy
-=~ mysql_ha_read
-=~ Version: '5\.5\.
 MDEV-20195:
 =~ Assertion \`0'
 =~ ha_partition::handle_unordered_next
@@ -2606,13 +2518,13 @@ MDEV-19980:
 MDEV-19973:
 =~ Assertion \`state() == s_committing'
 =~ wsrep::transaction::ordered_commit
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-19840:
 =~ Assertion \`m_status == DA_ERROR'
 =~ Diagnostics_area::sql_errno
 =~ ha_rollback_trans
 =~ trans_rollback_implicit|trans_rollback_stmt
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-19817:
 =~ signal 11|AddressSanitizer: SEGV
 =~ unsafe_key_update
@@ -2734,11 +2646,6 @@ MDEV-19299:
 =~ Item_func_min_max::val_str_native
 =~ copy_fields
 =~ Version: '10\.[2-5]|Server version: 10\.[2-5]
-MDEV-19261:
-=~ InnoDB: Failing assertion: dfield->type\.mtype == 0 \|\| dfield->len == len
-=~ trx_undo_rec_get_partial_row
-=~ row_purge_parse_undo_rec
-=~ Version: '10\.1
 MDEV-19225:
 =~ InnoDB: InnoDB FTS: Doc ID cannot be 0
 MDEV-19216:
@@ -2791,12 +2698,12 @@ MDEV-19132:
 =~ signal 11
 =~ fix_all_splittings_in_plan
 =~ optimize_inner
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-19132:
 =~ Assertion \`join->best_read < double(1\.79769313486231570815e+308L)'
 =~ greedy_search
 =~ make_join_statistics
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-19131:
 =~ Assertion \`table->versioned(VERS_TRX_ID) \|\| (table->versioned() && table->s->table_category == TABLE_CATEGORY_TEMPORARY)'
 =~ Field_vers_trx_id::get_date
@@ -2850,7 +2757,7 @@ MDEV-18882:
 MDEV-18833:
 =~ Assertion \`thd->is_error() \|\| kill_errno \|\| thd->killed == ABORT_QUERY'
 =~ filesort
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-18826:
 =~ signal 11
 =~ l_find
@@ -2859,7 +2766,7 @@ MDEV-18826:
 MDEV-18780:
 =~ Assertion \`col->prtype == prtype'|Assertion \`!((col->prtype ^ prtype) & ~(16384U\|32768U))'
 =~ innobase_rename_or_enlarge_column_try
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-18776:
 =~ Assertion \`0' failed
 =~ mysql_execute_command
@@ -2945,10 +2852,6 @@ MDEV-18421:
 =~ init_fts_doc_id_for_ref
 =~ row_update_for_mysql
 MDEV-18418:
-=~ Assertion \`mdl_ticket->m_type == MDL_SHARED_UPGRADABLE \|\| mdl_ticket->m_type == MDL_SHARED_NO_WRITE \|\| mdl_ticket->m_type == MDL_SHARED_NO_READ_WRITE'
-=~ MDL_context::upgrade_shared_lock
-=~ Version: '10\.1
-MDEV-18418:
 =~ Assertion \`mdl_ticket->m_type == MDL_SHARED_UPGRADABLE \|\| mdl_ticket->m_type == MDL_SHARED_NO_WRITE \|\| mdl_ticket->m_type == MDL_SHARED_NO_READ_WRITE \|\| mdl_ticket->m_type == MDL_SHARED_READ \|\| mdl_ticket->m_type == MDL_SHARED_WRITE'
 =~ MDL_context::upgrade_shared_lock
 MDEV-18414:
@@ -2981,15 +2884,6 @@ MDEV-18361:
 =~ Assertion \`0'
 =~ row_log_table_apply_ops
 =~ Sql_cmd_alter_table::execute
-MDEV-18325:
-=~ InnoDB: Error: page
-=~ InnoDB: is in the future! Current system log sequence number
-=~ Version: '10\.1
-MDEV-18303:
-=~ AddressSanitizer:
-=~ Field::eq
-=~ compute_part_of_sort_key_for_equals
-=~ Version: '10\.1
 MDEV-18293:
 =~ signal 11|AddressSanitizer: SEGV
 =~ row_sel_sec_rec_is_for_clust_rec
@@ -3017,7 +2911,7 @@ MDEV-18274:
 =~ Assertion \`!ctx->online \|\| num_fts_index == 0'
 =~ prepare_inplace_alter_table_dict
 =~ FeatureUsage detected GIS columns
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-18274:
 =~ Assertion \`0'
 =~ prepare_inplace_alter_table_dict
@@ -3051,7 +2945,7 @@ MDEV-18157:
 =~ signal 11|AddressSanitizer: SEGV
 =~ Explain_node::print_explain_for_children
 =~ Show_explain_request::call_in_target_thread
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 # Only fixed in 10.5!
 MDEV-18156:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
@@ -3078,7 +2972,7 @@ MDEV-18151:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ IDENTIFIED.*WITH|IDENTIFIED.*VIA
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-18099:
 =~ Assertion \`!rw_lock_own(dict_operation_lock, RW_LOCK_S)'|Assertion \`!rw_lock_own(&dict_operation_lock, RW_LOCK_S)'
 =~ row_purge
@@ -3158,11 +3052,6 @@ MDEV-17782:
 =~ decimal_bin_size: Assertion \`scale <= precision'
 =~ my_decimal_get_binary_size
 =~ calc_group_buffer
-MDEV-17760:
-=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index))'
-=~ Field_bit::val_.*
-=~ ROLLUP
-=~ Version: '10\.[0-1]|Version: '5\.5
 MDEV-17754:
 =~ AddressSanitizer|signal [16]
 =~ _ma_block_start_trans
@@ -3190,7 +3079,7 @@ MDEV-17711:
 =~ Assertion \`arena_for_set_stmt== 0'
 =~ set_arena_for_set_stmt
 =~ mysql_execute_command
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-17678:
 =~ AddressSanitizer|signal 11
 =~ field_unpack
@@ -3228,15 +3117,11 @@ MDEV-17622:
 =~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
 =~ pagecache_read
 =~ Version: '10\.[2-3]|Server version: 10\.[2-3]
-MDEV-17619:
-=~ Index file is crashed|Table is crashed and last repair failed|Incorrect key file for table|Table .* is marked as crashed and last (automatic?) repair failed
-=~ full_text|FULLTEXT
-=~ Version: '10\.1
 MDEV-17616:
 =~ AddressSanitizer:
 =~ subselect_engine::calc_const_tables| Item_subselect::update_used_tables
 =~ Prepared_statement::execute|sp_head::execute
-=~ Version: '5\.5|Version: '10\.[1-2]
+=~ Version: '10\.[1-2]
 # Only fixed in 10.5!
 MDEV-17596:
 =~ Assertion \`block->page\.flush_observer == __null \|\| block->page\.flush_observer == observer'
@@ -3296,11 +3181,6 @@ MDEV-17071:
 =~ base_list_iterator::next_fast
 =~ List_iterator_fast
 =~ st_select_lex::save_leaf_tables
-MDEV-17004:
-=~ InnoDB: Assertion failure in thread .* in file ha_innodb.cc line
-=~ innobase_get_fts_charset
-=~ ADD FULLTEXT
-=~ Version: '10\.[0-1]
 MDEV-16994:
 =~ signal 11|Assertion \`!alloced \|\| !Ptr \|\| !Alloced_length \|\| (Alloced_length >= (str_length + 1))'|AddressSanitizer:
 =~ String::c_ptr|base_list_iterator::next|String::length|TRUNCATE PARTITION
@@ -3322,7 +3202,7 @@ MDEV-16929:
 =~ mysqld_show_create
 =~ FeatureUsage detected sequences
 =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT|close failed in file object destructor
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-16808:
 =~ Assertion \`0'
 =~ Field_blob_compressed::new_key_field
@@ -3333,7 +3213,7 @@ MDEV-16808:
 =~ cp_buffer_from_ref|store_key_field::copy_inner
 =~ JOIN_CACHE_HASHED::put_record
 =~ evaluate_join_record
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-16789:
 =~ signal [16]|AddressSanitizer
 =~ insert_fields
@@ -3398,23 +3278,23 @@ MDEV-16407:
 =~ signal [16]|AddressSanitizer
 =~ in MDL_key::mdl_key_init
 =~ Table_triggers_list::add_tables_and_routines_for_triggers
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-16407:
 =~ signal [16]|AddressSanitizer
 =~ free_root
 =~ sp_head::operator delete
 =~ Table_triggers_list
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-16397:
 =~ LOAD DATA.* INFILE .* Can't find record in
 =~ FeatureUsage detected sequences
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-16292:
 =~ signal 11|AddressSanitizer
 =~ Item_func::print|Item_ref::print
 =~ Item::print_item_w_name
 =~ ROLLUP
-=~ Version: '5\.5|Version: '10\.[1-2]
+=~ Version: '10\.[1-2]
 MDEV-16242:
 =~ Slave worker thread retried transaction
 =~ Can't find record|Невозможно найти запись в
@@ -3523,39 +3403,39 @@ MDEV-15011:
 =~ decimal2bin
 =~ my_decimal2binary
 =~ find_all_keys
-=~ Version: '10\.[0-2]|Version: '5\.5
+=~ Version: '10\.[0-2]
 MDEV-15011:
 =~ signal 11
 =~ push_back
 =~ MDL_lock::Ticket_list::add_ticket
 =~ MDL_context::try_acquire_lock_impl
-=~ Version: '10\.[0-2]|Version: '5\.5
+=~ Version: '10\.[0-2]
 MDEV-15011:
 =~ Error: Freeing overrun buffer
 =~ sysmalloc: Assertion \`(old_top == initial_top (av) && old_size == 0) \|\| ((unsigned long) (old_size) >= MINSIZE && prev_inuse (old_top) && ((unsigned long) old_end & (pagesize - 1)) == 0)'
 =~ ilink::operator new
-=~ Version: '10\.[0-2]|Version: '5\.5
+=~ Version: '10\.[0-2]
 MDEV-15011:
 =~ signal 11
 =~ _mi_read_rnd_static_record
 =~ mi_scan
 =~ find_all_keys
-=~ Version: '10\.[0-2]|Version: '5\.5
+=~ Version: '10\.[0-2]
 MDEV-15011:
 =~ signal [16]|AddressSanitizer
 =~ test_if_reopen
 =~ mi_create|mi_open
-=~ Version: '10\.[0-2]|Version: '5\.5
+=~ Version: '10\.[0-2]
 MDEV-15011:
 =~ Freeing overrun buffer  sql/opt_range\.cc:.*, sql/rpl_record\.cc:.*
 =~ signal 11
-=~ Version: '10\.[0-2]|Version: '5\.5
+=~ Version: '10\.[0-2]
 MDEV-15011:
 =~ signal 11
 =~ _db_enter_
 =~ handler::ha_rnd_next
 =~ find_all_keys
-=~ Version: '10\.[0-2]|Version: '5\.5
+=~ Version: '10\.[0-2]
 MDEV-14894: [remove_from_locked_mutex]
 =~ signal [16]
 =~ free_memory
@@ -3636,7 +3516,7 @@ MDEV-11739:
 MDEV-11566:
 =~ get_store_key
 =~ get_best_combination
-=~ Version: '10\.[0-2]|Version: '5\.5
+=~ Version: '10\.[0-2]
 MDEV-10826:
 =~ Assertion \`thd->get_stmt_da()->is_eof()'
 =~ Query_cache::end_of_result
@@ -3649,12 +3529,6 @@ MDEV-10557:
 =~ filesort
 =~ mysql_delete|create_sort_index|mysql_update
 =~ Version: '10\.[0-2]
-MDEV-9137:
-=~ signal [16]|AddressSanitizer
-=~ w_search
-=~ in _ma_ck_real_write_btree
-=~ _ma_ft_store
-=~ Version: '10\.1
 MDEV-8089:
 =~ Apc_target::make_apc_call
 =~ fill_show_explain
@@ -3663,16 +3537,6 @@ TODO-842: [err == DB_SUCCESS]
 =~ InnoDB: Failing assertion: err == DB_SUCCESS
 =~ JOIN_CACHE::join_records
 =~ rbt_eject_node
-TODO-842: [s_latch == rw_lock_own]
-=~ InnoDB: Failing assertion: s_latch == rw_lock_own(&index->lock, 352)
-=~ row_ins_scan_sec_index_for_duplicate
-=~ mysql_load
-=~ Version: '10\.1
-TODO-842: [sym_node->table]
-=~ InnoDB: Failing assertion: sym_node->table != NULL
-=~ pars_retrieve_table_def
-=~ fts_sync_index
-=~ Version: '10\.1
 TODO-842: [Field_timestamp_with_dec::sort_string]
 =~ AddressSanitizer: heap-buffer-overflow
 =~ Field_timestamp_with_dec::sort_string
@@ -3697,22 +3561,12 @@ TODO-842: [== MYSQL_TYPE_TIME]
 =~ Assertion \`Item_cache_temporal::field_type() == MYSQL_TYPE_TIME'
 =~ Item_cache_temporal::val_time_packed
 =~ Item_func_between::val_int
-TODO-842: [s_latch == rw_lock_own]
-=~ InnoDB: Failing assertion: s_latch == rw_lock_own(&index->lock, 352)
-=~ row_ins_scan_sec_index_for_duplicate
-=~ row_ins_index_entry
-=~ Version: '10\.1
 TODO-842: [undo->state == 3]
 =~ InnoDB: Page .* log sequence number .* is in the future! Current system log sequence number .*
 =~ InnoDB: Your database may be corrupt or you may have copied the InnoDB tablespace but not the InnoDB log files
 =~ Assertion \`undo->state == 3'
 =~ trx_undo_commit_cleanup
 =~ trx_rollback_resurrected
-TODO-842: [row_ins_check_foreign_constraint]
-=~ AddressSanitizer: heap-use-after-free
-=~ row_ins_check_foreign_constraint
-=~ row_ins_index_entry|row_ins_sec_index_entry
-=~ Version: '10\.1
 TODO-842: [ib_vector_size]
 =~ AddressSanitizer: heap-use-after-free
 =~ ib_vector_size
@@ -3723,11 +3577,6 @@ TODO-842: [== page_type]
 =~ get_head_or_tail_page
 =~ allocate_and_write_block_record
 =~ maria_write
-TODO-842: [mysql_multi_update_prepare]
-=~ signal 11
-=~ lock_tables_check
-=~ mysql_multi_update_prepare
-=~ Version: '10\.1
 TODO-842: [Field_blob_compressed::get_key_image]
 =~ Assertion \`0'
 =~ Field_blob_compressed::get_key_image
@@ -3912,16 +3761,6 @@ TODO-842: [maxcount > 0]
 =~ Assertion \`maxcount > 0'
 =~ merge_buffers
 =~ _ma_create_index_by_sort
-TODO-842: [upgrade from 5.5 problem]
-=~ innobase_start_or_create_for_mysql
-=~ Old server failed to restart
-=~ Version: '5\.5
-=~ TEST_FAILURE
-TODO-842: [create_sort_index]
-=~ signal 11|AddressSanitizer
-=~ create_sort_index
-=~ JOIN::exec_inner
-=~ Version: '10\.1
 TODO-842: [MDL_ticket::create]
 =~ signal handler called
 =~ in malloc
@@ -3934,10 +3773,10 @@ TODO-842: [MDL_ticket::create]
 
 MDEV-26990:
 =~ DDL_LOG: Got error .* when trying to execute action for entry .* of type .*
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25490: [INSERT RETURNING]
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 # myisam_data_pointer_size has been moved to non-dynamic test settings,
 # so it should not be happening anymore
 MDEV-24174: [myisam_data_pointer_size - partition]
@@ -3950,26 +3789,26 @@ MDEV-22927: [Can't find record]
 =~ 1032 Can't find record in
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 =~ FeatureUsage detected sequences
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22759: [Record in index was not found on update]
 =~ InnoDB: Record in index .* was not found on update
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22759: [tried to purge non-delete-marked]
 =~ InnoDB: tried to purge non-delete-marked record in index .*: tuple:
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22667: [Index is corrupt; try to repair it]
 =~ Index for table .*#P#.* is corrupt; try to repair it
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-21781: [EnableOptimizations]
 =~ Transformed query: .* GenTest::Transform::EnableOptimizations
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21756: [StraightJoin]
 =~ Transformed query: .* GenTest::Transform::StraightJoin
 MDEV-21310:
 =~ insert.* into .* partition
 =~ Out of range value for column
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21085: [Expected more data in file]
 =~ Got error 175 "File too short; Expected more data in file" from storage engine Aria
 MDEV-20554:
@@ -4017,9 +3856,6 @@ MDEV-18146:
 # Not fixed, but I don't want it to match
 # MDEV-18065:
 # =~ Fatal error: Can't open and lock privilege tables
-MDEV-18063:
-=~ Index for table .* is corrupt; try to repair it
-=~ Version: '10\.1
 MDEV-18062:
 =~ ha_innobase::innobase_get_index
 MDEV-18058: [trx0i_s.cc line]
@@ -4094,7 +3930,7 @@ MDEV-15226:
 =~ Could not get index information for Index Number
 MDEV-15011:
 =~ Error in \`.*/mysqld': malloc(): memory corruption:
-=~ Version: '10\.[0-2]|Version: '5\.5
+=~ Version: '10\.[0-2]
 MDEV-14833:
 =~ trx->error_state == DB_SUCCESS
 MDEV-14349:
