@@ -3744,10 +3744,6 @@ TODO-842: [table->get_ref_count]
 =~ InnoDB: Failing assertion: table->get_ref_count() == 0
 =~ row_merge_drop_table
 =~ ha_innobase::commit_inplace_alter_table
-TODO-842: [LeakSanitizer - rec_copy_prefix_to_buf_old]
-=~ LeakSanitizer: detected memory leaks
-=~ rec_copy_prefix_to_buf_old
-=~ INTERNAL_ERROR
 TODO-842: [mariabackup - error 188]
 =~ error : Partition .* returned error
 =~ error : Unknown - internal error 188 during operation
