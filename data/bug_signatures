@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28797:
+=~ Assertion \`page_rec_is_user_rec(rec)'
+=~ PageBulk::getSplitRec
+=~ ha_innobase::inplace_alter_table
+MDEV-28686:
+=~ Assertion \`0'
+=~ Type_handler_string_result::make_sort_key
+=~ create_sort_index
 MDEV-28685:
 =~ Assertion \`0'
 =~ _ma_keynr
@@ -569,6 +577,16 @@ MDEV-25620:
 =~ fil_rename_tablespace|dict_table_t::rename_tablespace
 =~ row_undo_ins_parse_undo_rec
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-25603:
+=~ Assertion \`templ->mysql_col_len == len'
+=~ row_sel_field_store_in_mysql_format_func
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+=~ FeatureUsage detected virtual columns
+MDEV-25603:
+=~ Assertion \`templ->mysql_null_bit_mask'
+=~ row_sel_store_mysql_field
+=~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+=~ FeatureUsage detected virtual columns
 MDEV-25523:
 =~ Assertion \`using_unique_constraint \|\| group_buff <= param->group_buff + param->group_length'
 =~ create_tmp_table
