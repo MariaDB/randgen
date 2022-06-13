@@ -26,6 +26,16 @@ MDEV-28797:
 =~ Failing assertion: i + PAGE_HEAP_NO_USER_LOW == n_heap
 =~ PageBulk::compress
 =~ ha_innobase::inplace_alter_table
+MDEV-28771:
+=~ Assertion \`table->in_use && tdc->flushed'
+=~ TABLE_SHARE::visit_subgraph
+=~ Wait_for_flush::accept_visitor
+=~ Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-28771:
+=~ signal|AddressSanitizer
+=~ rw_pr_rdlock
+=~ TABLE_SHARE::visit_subgraph
+=~ Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28686:
 =~ Assertion \`0'
 =~ Type_handler_string_result::make_sort_key
