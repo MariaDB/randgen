@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28887:
+=~ AddressSanitizer|signal
+=~ maria_status
+=~ ha_partition::part_records
+=~ partition_info::vers_check_limit
 MDEV-28886:
 =~ AddressSanitizer|signal
 =~ create_table_info_t::check_table_options
