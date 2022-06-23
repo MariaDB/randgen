@@ -4,6 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28934:
+=~ runtime error: downcast of address .* which does not point to an object of type 'Item_cond'
+=~ note: object is of type 'Item_equal'
+MDEV-28897:
+=~ Assertion \`table\.get_ref_count() <= 1'
+=~ trx_t::drop_table
+=~ ha_partition::truncate
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-28897:
+=~ Failing assertion: table->get_ref_count() == 0
+=~ dict_sys_t::remove
+=~ ha_partition::truncate
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28887:
 =~ AddressSanitizer|signal
 =~ maria_status
@@ -242,7 +255,7 @@ MDEV-28169:
 =~ AddressSanitizer|signal
 =~ dfield_dup
 =~ row_upd_index_replace_new_col_val
-=~ btr_cur_optimistic_update
+=~ btr_cur_.*_update
 =~ FeatureUsage detected unique blobs
 MDEV-28169:
 =~ AddressSanitizer|signal
@@ -1727,12 +1740,21 @@ MDEV-22873:
 =~ ha_innobase::position
 =~ find_all_keys|mysql_update
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+=~ FeatureUsage detected GIS columns
 MDEV-22873:
 =~ AddressSanitizer|signal 11
 =~ ha_innobase::position
 =~ find_all_keys
 =~ filesort
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+=~ FeatureUsage detected GIS columns
+MDEV-22873:
+=~ has a primary key in InnoDB data dictionary, but not in MariaDB
+=~ AddressSanitizer|signal 11
+=~ ha_innobase::position|key_copy
+=~ evaluate_join_record
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+=~ FeatureUsage detected GIS columns
 MDEV-22856:
 =~ Assertion \`!str \|\| str != Ptr'
 =~ String::copy
@@ -2389,7 +2411,7 @@ MDEV-20689:
 =~ TIME_to_longlong_datetime_packed
 =~ Version: '10\.[2-3]
 MDEV-20682:
-=~ Assertion \`fixed == 1'
+=~ Assertion \`fixed == 1'|Assertion \`fixed()'
 =~ Item_cond_or::val_int|Item_cond_and::val_int
 =~ JOIN::optimize
 MDEV-20680:
