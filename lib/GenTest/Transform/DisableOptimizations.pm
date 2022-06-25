@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014 SkySQL Ab
+# Copyright (c) 2022 MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,6 +40,25 @@ sub transform {
       or ($original_query =~ /(?:INTO|CREATE|INSERT.+SELECT)/is)
       or (! $skip_result_validations and $original_query =~ /INFORMATION_SCHEMA|PERFORMANCE_SCHEMA/is);
 
+  return modify_query($original_query);
+}
+
+sub variate {
+  my ($self, $original_query) = @_;
+
+  # Variate 5% queries
+  return $original_query if $self->random->uint16(0,19);
+
+  return $original_query if
+    ($original_query !~ /SELECT/)
+      or ($original_query =~ /(?:INTO|CREATE|INSERT.+SELECT)/is);
+
+  my $queries= modify_query($original_query);
+  return join ';', map { join ';', @$_ } @$queries;
+}
+
+sub modify_query {
+  my $original_query= shift;
   return [
     [ "SET \@switch_saved = \@\@optimizer_switch",
       "SET SESSION optimizer_switch = REPLACE(REPLACE( \@\@optimizer_switch, '=on', '=off' ), 'in_to_exists=off', 'in_to_exists=on')",

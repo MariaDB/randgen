@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2018, MariaDB Corporation.
+# Copyright (c) 2018, 2022 MariaDB Corporation.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -29,15 +29,31 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub transform {
-	my ($class, $orig_query) = @_;
+  my ($class, $orig_query) = @_;
 
-	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO\s|GRANT\s|REVOKE\s|SET\s)}sio;
-	return STATUS_WONT_HANDLE if $orig_query !~ m{^\s*SELECT}sio;
+  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO\s|GRANT\s|REVOKE\s|SET\s)}sio;
+  return STATUS_WONT_HANDLE if $orig_query !~ m{^\s*SELECT}sio;
 
-	$orig_query =~ s{SELECT (.*?) FROM ([^;]*)}{SELECT * FROM ( SELECT $1 FROM $2 ) AS DERIVED_TABLE }sio;
-	return $orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+  return modify_query($orig_query) ." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+}
 
+sub variate {
+  my ($self, $orig_query) = @_;
+
+  # Variate 10% queries
+  return $orig_query if $self->random->uint16(0,9);
+
+  return $orig_query if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO\s|GRANT\s|REVOKE\s|SET\s)}sio;
+  return $orig_query if $orig_query !~ m{^\s*SELECT}sio;
+
+  return modify_query($orig_query);
+}
+
+sub modify_query {
+  my $orig_query= shift;
+  $orig_query =~ s{SELECT (.*?) FROM ([^;]*)}{SELECT * FROM ( SELECT $1 FROM $2 ) AS DERIVED_TABLE }sio;
+  return $orig_query;
 }
 
 1;
