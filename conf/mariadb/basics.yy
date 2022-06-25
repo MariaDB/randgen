@@ -313,7 +313,8 @@ _basics_alter_table_element:
 ;
 
 _basics_online_10pct:
-  | | | | | | | | | ONLINE ;
+  |
+  ==FACTOR:4== ONLINE ;
 
 _basics_alter_table_algorithm:
   ALGORITHM=DEFAULT | ALGORITHM=INPLACE | ALGORITHM=COPY | ALGORITHM=NOCOPY /* compatibility 10.3.7 */ | ALGORITHM=INSTANT /* compatibility 10.3.7 */ ;
@@ -424,8 +425,10 @@ _basics_empty_values_list:
 _basics_any_value:
   NULL |
   _bit | _bool | _boolean | _tinyint | _smallint | _mediumint | _int | _integer | _bigint |
+  ==FACTOR:10== _smallint_unsigned |
   _float | _double | _decimal | _dec | _numeric | _fixed |
   _char | _varchar | _binary | _varbinary |
+  ==FACTOR:10== _word |
   _tinyblob | _blob | _mediumblob | _longblob | _tinytext | _text | _mediumtext | _longtext |
   _date | _time | _datetime | _timestamp | _year |
   _digit | _data | _ascii | _string | _empty | _hex | _quid | _uuid |
