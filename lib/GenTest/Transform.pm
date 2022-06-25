@@ -371,7 +371,10 @@ sub isDistinct {
     foreach my $row_ref (@{$transformed_result->data()}) {
         my $row = lc(join('<col>', @$row_ref));
         $transformed_rows->{$row}++;
-        return STATUS_LENGTH_MISMATCH if $transformed_rows->{$row} > 1;
+        if ($transformed_rows->{$row} > 1) {
+          say("ERROR: Non-distinct row: $row");
+          return STATUS_LENGTH_MISMATCH
+        }
     }
 
 
