@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, MariaDB
+#  Copyright (c) 2019, 2022 MariaDB Corporation Ab
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -13,11 +13,13 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
-query_init_add:
-    INSTALL SONAME 'query_response_time' ;
+#
+# The test should be run with
+# --mysqld=--plugin-load-add=query_response_time --mysqld=--loose-query-response-time
+#
 
 query_add:
-    query | query | query | query | query | query | plugin_query_response_time ;
+    ==FACTOR:0.1== plugin_query_response_time ;
 
 plugin_query_response_time:
     SHOW QUERY_RESPONSE_TIME | SHOW QUERY_RESPONSE_TIME | SHOW QUERY_RESPONSE_TIME |

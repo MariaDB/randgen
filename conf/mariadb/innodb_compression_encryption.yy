@@ -1,4 +1,4 @@
-# Copyright (C) 2016 MariaDB Corporation.
+# Copyright (C) 2016, 2022 MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,8 +16,11 @@
 
 # Rough imitation of OLTP-read-write test (sysbench-like)
 
-query_init:
-    INSTALL SONAME 'file_key_management';
+#
+# The test should be run with
+# --mysqld=--plugin-load-add=file_key_management --mysqld=--loose-file-key-management
+# (and probably with other file-key-management options)
+#
 
 query:
     create_or_replace | create_or_replace | create_or_replace |

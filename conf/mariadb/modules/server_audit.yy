@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, MariaDB
+#  Copyright (c) 2019, 2022, MariaDB Corporation Ab
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -13,11 +13,13 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
-query_init_add:
-    INSTALL SONAME 'server_audit' ; SET GLOBAL SERVER_AUDIT_LOGGING = ON ;
+#
+# The test should be run with
+# --mysqld=--plugin-load-add=server_audit --mysqld=--loose-server-audit --mysqld=--loose-server-audit-logging=on
+#
 
 query_add:
-    query | query | query | query | query | query | SET GLOBAL plugin_server_audit_var ;
+    ==FACTOR:0.05== SET GLOBAL plugin_server_audit_var ;
 
 plugin_server_audit_vars:
     plugin_server_audit_var | plugin_server_audit_var, plugin_server_audit_vars ;

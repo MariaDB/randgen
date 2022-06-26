@@ -21,6 +21,7 @@ $combinations = [
         --mysqld=--innodb_flush_method=O_DIRECT
         --mysqld=--innodb_doublewrite=0
         --mysqld=--plugin-load-add=file_key_management.so
+        --mysqld=--loose-file-key-management
         --mysqld=--loose-file-key-management-filename=$RQG_HOME/conf/mariadb/encryption_keys.txt
         --mysqld=--innodb-encryption-threads=4
     '], 

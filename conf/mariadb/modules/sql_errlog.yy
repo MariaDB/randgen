@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, MariaDB
+#  Copyright (c) 2019, 2022, MariaDB Corporation Ab
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -13,11 +13,13 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
-query_init_add:
-    INSTALL SONAME 'sql_errlog' ;
+#
+# The test should be run with
+# --mysqld=--plugin-load-add=sql_errlog --mysqld=--loose-sql-errlog
+#
 
 query_add:
-    query | query | query | query | query | query | SET GLOBAL plugin_sql_errlog_vars ;
+    ==FACTOR:0.05== SET GLOBAL plugin_sql_errlog_vars ;
 
 plugin_sql_errlog_vars:
     plugin_sql_errlog_var | plugin_sql_errlog_var | plugin_sql_errlog_var |
