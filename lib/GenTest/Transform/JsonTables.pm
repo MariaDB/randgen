@@ -1,4 +1,4 @@
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -163,6 +163,7 @@ sub parse_query_for_variation
   my $new_query= '';
   my $table_name= '';
   my $alias= '';
+  my $index_hints= '';
   my $select= '';
   # Context indicators
   my $skip_next_items= 0;
@@ -229,44 +230,67 @@ sub parse_query_for_variation
         $in_from= 0;
         $table_name= '';
         $alias= '';
+        $index_hints= '';
       }
     }
 
-    # Fragment in round brackets -- keep the brackets and process the contents
+    # Fragment in round brackets
     elsif ($token =~ /^\s*\((.*)\)\s*$/is) {
-      my $sq= $1;
-      # We can still be in "in_from" after this, but can't stay in table reference.
-      # Partition pruning would be an exception, but we have already ruled it out
-      # when PARTITION clause was encountered.
-      if ($table_name) {
-        $select.= $self->json_table_to_append($table_name);
-        $table_name= '';
+      if ($index_hints) {
+        # It must be a list of indexes in index hints, add it to hints
+        $index_hints.= " $token";
+      } else {
+        # Presumingly a subquery (or something else we haven't yet thought of)
+        #-- keep the brackets and process the contents
+        my $sq= $1;
+        # We can still be in "in_from" after this, but can't stay in table reference.
+        # Partition pruning would be an exception, but we have already ruled it out
+        # when PARTITION clause was encountered.
+        if ($table_name) {
+          $select.= $self->json_table_to_append($table_name, $alias, $index_hints);
+          $table_name= '';
+        }
+        $alias= '';
+        $index_hints= '';
+        # If we are in partition pruning, the contents of the brackets should be
+        # a list of partitions, so for our purpose it doesn't count as a part of FROM
+        my $res = ' (' . $self->parse_query_for_variation($sq, ($in_from && not $in_partition_pruning)) . ')';
+        $in_partition_pruning= 0;
+        append_token($res, \$new_query, \$select);
       }
-      # If we are in partition pruning, the contents of the brackets should be
-      # a list of partitions, so for our purpose it doesn't count as a part of FROM
-      my $res = ' (' . $self->parse_query_for_variation($sq, ($in_from && not $in_partition_pruning)) . ')';
-      $in_partition_pruning= 0;
-      append_token($res, \$new_query, \$select);
     }
 
     # FROM list ends, but SELECT doesn't yet
     # TODO: Is it even important?
     elsif ($token =~ /^(WHERE|HAVING|GROUP|ORDER|LIMIT)$/i) {
       if ($table_name) {
-        $select.= $self->json_table_to_append($table_name);
+        $select.= $self->json_table_to_append($table_name, $alias, $index_hints);
         $table_name= '';
       }
+      $alias= '';
+      $index_hints= '';
       $select.= " $token";
       $in_from= 0;
     }
     
     elsif ($inside_outer_from or ($select and $in_from))
     {
-      if ($token =~ /^(,|STRAIGHT_JOIN|NATURAL|LEFT|RIGHT|JOIN|ON|USING|INNER|OUTER|IGNORE|FORCE|USE)$/i) {
+      # Index hints should go to transformation along with the table.
+      # If the table is replaced by JSON, then index hints go away,
+      # otherwise they should be preserved
+      if ($token =~ /^(?:IGNORE|FORCE|USE)$/i) {
+        $index_hints.= " $token";
+      }
+      elsif ($index_hints and $token =~ /^(?:KEY|INDEX)$/i) {
+        $index_hints.= " $token";
+      }
+      elsif ($token =~ /^(,|STRAIGHT_JOIN|NATURAL|LEFT|RIGHT|JOIN|ON|USING|INNER|OUTER)$/i) {
         if ($table_name) {
-          $select.= $self->json_table_to_append($table_name);
+          $select.= $self->json_table_to_append($table_name, $alias, $index_hints);
           $table_name= '';
         }
+        $alias= '';
+        $index_hints= '';
         if ($token ne 'STRAIGHT_JOIN' and $token ne 'JOIN' and $token ne ',') {
           $in_from= 0;
         }
@@ -277,9 +301,11 @@ sub parse_query_for_variation
         # with JSON now, as it won't work anyway. So, we'll just return it
         # to SELECT
         if ($table_name) {
-          $select.= " $table_name";
+          $select.= " $table_name $alias $index_hints";
           $table_name= '';
         }
+        $alias= '';
+        $index_hints= '';
         append_token($token, \$new_query, \$select);
         # The flag is needed because otherwise the following partition list
         # will be interpeted as a part of FROM list
@@ -289,9 +315,11 @@ sub parse_query_for_variation
         # FOR in SELECT list is probably FOR SYSTEM_TIME ...
         # No point to wait for alias anymore, if there is a table, work it
         if ($table_name) {
-          $select.= $self->json_table_to_append($table_name);
+          $select.= $self->json_table_to_append($table_name, $alias, $index_hints);
           $table_name= '';
         }
+        $alias= '';
+        $index_hints= '';
         append_token($token, \$new_query, \$select);
         # Make a note that we are in SYSTEM_TIME clause now, it will help
         # parsing difficult ones, like FOR SYSTEM_TIME FROM .. TO
@@ -328,10 +356,18 @@ sub parse_query_for_variation
         $in_system_time= 0;
         append_token($token, \$new_query, \$select);
       }
-      elsif ($table_name and $token =~ /^(.*?)(,)?$/) {
-        # Found the alias, we'll use it for the JSON table
-        $select.= $self->json_table_to_append($table_name, $1).($2 || '');
+      elsif ($table_name and $token =~ /^(.*?),$/) {
+        # Found the alias, we'll use it for the JSON table;
+        # and since it is followed by comma, no need to look for index hints
+        $select.= $self->json_table_to_append($table_name, $1).',';
         $table_name= '';
+        $alias= '';
+        $index_hints= '';
+      }
+      elsif ($table_name and $token =~ /^(.*?)$/) {
+        # Found the alias, we'll use it for the JSON table;
+        # but there is still a chance for index hints
+        $alias= $1;
       }
       # Identifier, assuming table name, still a chance for later alias
       else {
@@ -359,9 +395,11 @@ sub parse_query_for_variation
   # Final fragment, in case we have something left
   if ($select or $inside_outer_from) {
     if ($table_name) {
-      $select.= $self->json_table_to_append($table_name);
+      $select.= $self->json_table_to_append($table_name, $alias, $index_hints);
       $table_name= '';
     }
+    $alias= '';
+    $index_hints= '';
     $new_query .= " $select";
   }
 
@@ -370,12 +408,12 @@ sub parse_query_for_variation
 
 sub json_table_to_append
 {
-  my ($self, $table_name, $alias)= @_;
+  my ($self, $table_name, $alias, $index_hints)= @_;
 
   # We don't want to convert DUAL or store it in encountered tables
   return ' DUAL' if $table_name eq 'DUAL';
 
-  $alias= $table_name unless defined $alias;
+  $alias= $table_name unless defined $alias and $alias != '';
   my $res= '';
 
   # We will replace REPLACEMENT_PROBABILITY_PCT % encountered tables
@@ -432,7 +470,7 @@ sub json_table_to_append
     $res= " $jtable";
   } else
   { # Not doing replacement, returning the original table
-    $res= ($table_name eq $alias ? " $table_name" : " $table_name AS $alias");
+    $res= ($table_name eq $alias ? " $table_name" : " $table_name AS $alias") . " $index_hints";
   }
   # Save the encountered alias for future references, regardless whether
   # replacement was performed or not
