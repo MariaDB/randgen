@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28950:
+=~ Assertion \`\*err == DB_SUCCESS'
+=~ btr_page_split_and_insert
+=~ btr_root_raise_and_insert
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28934:
 =~ runtime error: downcast of address .* which does not point to an object of type 'Item_cond'
 =~ note: object is of type 'Item_equal'
@@ -266,7 +271,6 @@ MDEV-28169:
 MDEV-27878:
 =~ Assertion \`got_name == named_item_expected()'
 =~ Json_writer::on_start_object
-=~ enforce_sel_arg_weight_limit
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-27840:
 =~ Assertion \`!is_v'
