@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2016, 2021, MariaDB Corporation Ab.
+# Copyright (c) 2016, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -159,22 +159,34 @@ sub convert_selects_to_cte
         $new_query .= " WITH cte$cte_count AS ( $select ) SELECT * FROM cte$cte_count ";
     }
 
+    # CTE doesn't like being in double parentheses, e.g. ((WITH cte (...) SELECT * FROM cte))
+    while ($new_query =~ s/\(($parens_template)\)/$1/) {};
     return $new_query;
 }
 
 sub transform {
-    my ($class, $orig_query, $executor) = @_;
-
-    return STATUS_WONT_HANDLE if $executor->versionNumeric() < 100201;
-# TODO: Don't handle anything that looks like multi-statements for now
-    return STATUS_WONT_HANDLE if $orig_query =~ m{;}sio;
-# TODO: 2nd part of UNION does not work for now
-    return STATUS_WONT_HANDLE if $orig_query =~ m{(?:CREATE\s|GRANT\W|\sINTO\sOUTFILE|\sINTO\s\@|\WUNION\W)}sio;
-    return STATUS_WONT_HANDLE if $orig_query !~ m{SELECT}sio;
-
+    my ($class, $orig_query) = @_;
+    return STATUS_WONT_HANDLE unless is_applicable($orig_query);
     my $transformed_query = convert_selects_to_cte($orig_query, 1);
     return $transformed_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 }
 
+sub variate {
+  my ($self, $query)= @_;
+  # Variate 10% queries
+  return $query if $self->random->uint16(0,9);
+  return $query unless is_applicable($query);
+  return convert_selects_to_cte($query, 1);
+}
+
+sub is_applicable {
+  my $orig_query= shift;
+# TODO: Don't handle anything that looks like multi-statements for now
+  return 0 if $orig_query =~ m{;}sio;
+# TODO: 2nd part of UNION does not work for now
+  return 0 if $orig_query =~ m{(?:CREATE\s|GRANT\W|\sINTO\sOUTFILE|\sINTO\s\@|\WUNION\W)}sio;
+  return 0 if $orig_query !~ m{SELECT}sio;
+  return 1;
+}
 
 1;
