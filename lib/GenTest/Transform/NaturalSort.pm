@@ -1,4 +1,4 @@
-# Copyright (c) 2021 MariaDB Corporation Ab
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -65,7 +65,8 @@ sub transform {
 
 sub variate {
   my ($self, $original_query, $executor, $gendata_flag) = @_;
-  return $original_query if $self->random->uint16(0,1);
+  # Variate 10% queries
+  return $original_query if $self->random->uint16(0,9);
   return $original_query if $original_query !~ m{^\s*SELECT}sio;
   return modify_query($original_query) || $original_query;
 }
@@ -82,14 +83,20 @@ sub modify_query {
     my @order_by_list= split /,/, $2;
     @new_order_by_list= ();
     foreach my $o (@order_by_list) {
-      if ($o =~ /NATURAL_SORT_KEY\s*\((.*)\)\s*/) {
+      if ($o =~ /NATURAL_SORT_KEY\s*\((.*)\)\s*/ || $o =~ /^\s*\d+\s*$/) {
         push @new_order_by_list, $o;
       } else {
         my $mod= '';
+        say("HERE: Order by element $o");
+        my $comment= '';
+        while ($o =~ s/(\/\*.*?\*\/)//) {
+          $comment.= $1;
+        }
         if ($o =~ s/(ASC|DESC)\s*$//) {
+          say("HERE: Order by modifier $mod for element $o");
           $mod= $1;
         }
-        push @new_order_by_list, "NATURAL_SORT_KEY($o) $mod ";
+        push @new_order_by_list, "NATURAL_SORT_KEY($o)".($mod ? " $mod" : '').($comment ? " $comment" : '');
       }
     }
   }

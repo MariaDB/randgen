@@ -1,4 +1,4 @@
-# Copyright (c) 2021 MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -33,11 +33,13 @@ use GenTest::Constants;
 sub variate {
   # Don't need executor or (for now) gendata_flag
   my ($self, $query) = @_;
+  # Variate 10% queries
+  return $query if $self->random->uint16(0,9);
   my $format= ($self->random->uint16(0,1) ? 'FORMAT=JSON' : '');
-  if ($query =~ /^\s*SELECT/) {
+  if ($query =~ /^\s*(?:SELECT|INSERT|UPDATE|DELETE|REPLACE)/) {
     return "ANALYZE $format $query";
   } elsif ($query =~ /^\s*EXPLAIN/) {
-    $query =~ s/^\s*EXPLAIN(?:.*EXTENDED)?/ANALYZE $format/;
+    $query =~ s/^\s*EXPLAIN(?:.*EXTENDED|.*FORMAT\s*=\s*JSON|.*PARTITIONS)?/ANALYZE $format/;
     return $query;
   } else {
     return $query;

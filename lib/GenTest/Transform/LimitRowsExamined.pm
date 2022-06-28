@@ -1,4 +1,5 @@
 # Copyright (C) 2013 Monty Program Ab
+# Copyright (C) 2022 MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -60,6 +61,7 @@ sub transform {
   # It the query does not contain LIMIT, we need to add LIMIT ROWS EXAMINED.
 
   return STATUS_WONT_HANDLE unless $orig_query =~ m{^\s*(?:CREATE|INSERT.*)?SELECT}si;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{FETCH\s+(?:FIRST|NEXT)}si;
 
   if ($orig_query =~ m{ROWS\s+EXAMINED\s+(\d+)}si) {
     return [

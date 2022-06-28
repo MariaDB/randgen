@@ -1,4 +1,4 @@
-# Copyright (c) 2021 MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,8 @@ use GenTest::Constants;
 sub variate {
   # Don't need (for now) gendata_flag
   my ($self, $query, $executor) = @_;
+  # Variate one out of 10 queries
+  return $query if $self->random->uint16(0,9);
   return $query unless $executor->versionNumeric() >= 100601;
   return $query if $query !~ /^\s*(?:\/\*.*?\*\/\s*)?SELECT/;
 
@@ -43,19 +45,21 @@ sub variate {
     . ($self->random->uint16(0,1) ? 'FIRST ' : 'NEXT ')
     . $self->random->uint16(0,100)
     . ($self->random->uint16(0,1) ? ' ROW' : ' ROWS')
-    . (($query =~ /ORDER BY/ and $self->random->uint16(0,1)) ? ' WITH TIES' : ' ONLY')
+    . (($query =~ /ORDER\s+BY/ and $self->random->uint16(0,1)) ? ' WITH TIES' : ' ONLY')
   ;
   my $clause= "$offset_clause $fetch_clause";
 
+  my $comment_end= qr/\*\//;
   my $suffix= '';
   while (
        $query =~ s/(INTO\s+OUTFILE\s+(?:\"[^"]*?\"|\'[^']*?\'))\s*$//
-    or $query =~ s/(\/\*.*?\*\/)\s*$//
+    or $query =~ s/(\/\*[^$comment_end]*\*\/)\s*$//
     or $query =~ s/(PROCEDURE\s+ANALYSE\s*\([^)]*?\))\s*$//
   )
   {
     $suffix="$1 $suffix";
   }
+
   # SELECT in (redundant) brackets
   my $n= 1;
   while ($query =~ /^(.*?)(?:\(\s*){$n}\s*SELECT.*\)\s*$/) {

@@ -1,4 +1,4 @@
-# Copyright (c) 2021 MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,7 @@ sub transform {
   return STATUS_WONT_HANDLE
     if $orig_query !~ m{SELECT}
       || $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|INSERT|REPLACE|CREATE)}sio
-      || $orig_query =~ m{OFFSET}sio;
+      || $orig_query =~ m{(?:OFFSET|FETCH)}sio;
 
   my $limit= int(rand(100));
 
