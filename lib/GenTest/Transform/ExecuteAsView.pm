@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -48,6 +49,19 @@ sub transform {
 		"SELECT * FROM transforms.view_".abs($$)."_temptable /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
 		"DROP VIEW transforms.view_".abs($$)."_merge , transforms.view_".abs($$)."_temptable"
 	];
+}
+
+sub variate {
+  my ($self, $query) = @_;
+  # Variate 10% queries
+  return $query if $self->random->uint16(0,9);
+  return $query if $query =~ /OUTFILE/i;
+  return $query if $query !~ /^\s*(?:SELECT|VALUES)/i;
+  my $alg= $self->random->arrayElement(['ALGORITHM=TEMPTABLE','ALGORITHM=MERGE','ALGORITHM=UNDEFINED','']);
+  my $vname= 'v_ExecuteAsView_'.abs($$);
+  return "CREATE OR REPLACE $alg VIEW $vname AS $query; "
+        ."SELECT * FROM $vname; "
+        ."DROP VIEW IF EXISTS $vname"
 }
 
 1;
