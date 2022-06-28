@@ -172,7 +172,7 @@ $optional_variators_102= [
   [ '', '--transformers=EnableOptimizations' ],
   [ '', '', '', '--transformers=DisableOptimizations' ],
   [ '', '--variators=ExecuteAsCTE' ],
-  [ '', '', '', '', '', '', '', '--transformers=ExecuteAsDeleteReturning' ],
+  [ '', '', '', '', '', '', '', '--variators=ExecuteAsDeleteReturning' ],
   [ '', '--transformers=ExecuteAsDerived' ],
   [ '', '--variators=ExecuteAsExecuteImmediate' ],
   [ '', '', '--transformers=ExecuteAsFunctionTwice' ],
@@ -196,7 +196,7 @@ $optional_variators_104= [ @$optional_variators_103 ];
 
 $optional_variators_105= [
   @$optional_variators_104,
-  [ '', '', '', '', '', '', '', '', '--transformers=ExecuteAsInsertReturning' ],
+  [ '', '', '', '', '', '', '', '', '--variators=ExecuteAsInsertReturning' ],
 ];
 
 $optional_variators_106= [

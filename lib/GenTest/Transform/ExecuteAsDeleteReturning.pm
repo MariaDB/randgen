@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014 SkySQL Ab
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022, MariaDB Corporation Ab.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -77,6 +77,14 @@ sub transform {
   {
     return [ "$orig_query RETURNING * /* TRANSFORM_OUTCOME_ANY */" ];
   }
+}
+
+sub variate {
+  my ($self, $query)= @_;
+  # Variate 10% queries
+  return $query if $self->random->uint16(0,9);
+  return $query unless $query =~ /DELETE/i;
+  return "$query RETURNING *";
 }
 
 1;
