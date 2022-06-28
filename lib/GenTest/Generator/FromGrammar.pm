@@ -379,6 +379,9 @@ sub next {
 	}
     
 	my @sentence = expand(\%rule_counters,\%rule_invariants,($starting_rule));
+	if ($generator->[GENERATOR_SEQ_ID] == 0) {
+      sayDebug("Starting rule ($starting_rule) expanded:\n@sentence");
+    }
 
 	$generator->[GENERATOR_SEQ_ID]++;
 
@@ -445,6 +448,9 @@ sub next {
 				(index($sentence, 'END') > -1 )
 			)
 	) {
+        if ($generator->[GENERATOR_SEQ_ID] == 1) {
+          sayDebug("Starting rule ($starting_rule) processed:\n$sentence");
+        }
 		return [ $sentence ];
 	} elsif (index($sentence, ';') > -1) {
 
@@ -486,8 +492,14 @@ sub next {
 		else {
 			@sentences = split (';', $sentence);
 		}
+        if ($generator->[GENERATOR_SEQ_ID] == 1) {
+          sayDebug("Starting rule ($starting_rule) processed:\n@sentence");
+        }
 		return \@sentences;
 	} else {
+        if ($generator->[GENERATOR_SEQ_ID] == 1) {
+          sayDebug("Starting rule ($starting_rule) processed:\n$sentence");
+        }
 		return [ $sentence ];
 	}
 }
