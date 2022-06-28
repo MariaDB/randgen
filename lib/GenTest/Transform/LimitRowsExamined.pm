@@ -49,9 +49,7 @@ use constant OVERHEAD_FOR_LOW_LIMITS  => 2000;
 use constant OVERHEAD_MULTIPLIER  => 2;
 
 my $show_status_query = "SELECT SUM(VARIABLE_VALUE) FROM INFORMATION_SCHEMA.SESSION_STATUS WHERE VARIABLE_NAME IN ('Handler_delete','Handler_read_first','Handler_read_key','Handler_read_next','Handler_read_prev','Handler_read_rnd','Handler_read_rnd_next','Handler_tmp_update','Handler_tmp_write','Handler_update','Handler_write')";
-
-sub transform {
-  my ($class, $orig_query) = @_;
+my $limit= MAX_LIMIT_ROWS_EXAMINED;
 
   # This transformation adds LIMIT ROWS EXAMINED clause if it's not there,
   # and then checks that a) the resultset is a subset of the original result,
@@ -60,8 +58,9 @@ sub transform {
   # If the query contains LIMIT, we need to add ROWS EXAMINED, but preserve the original LIMIT.
   # It the query does not contain LIMIT, we need to add LIMIT ROWS EXAMINED.
 
-  return STATUS_WONT_HANDLE unless $orig_query =~ m{^\s*(?:CREATE|INSERT.*)?SELECT}si;
-  return STATUS_WONT_HANDLE if $orig_query =~ m{FETCH\s+(?:FIRST|NEXT)}si;
+sub transform {
+  my ($self, $orig_query, $executor) = @_;
+  return STATUS_WONT_HANDLE unless $self->is_applicable($orig_query);
 
   if ($orig_query =~ m{ROWS\s+EXAMINED\s+(\d+)}si) {
     return [
@@ -71,35 +70,56 @@ sub transform {
     ];
   }
 
-  my $limit = int(rand(MAX_LIMIT_ROWS_EXAMINED));
-
-  if ($orig_query =~ m{ROWS\s+EXAMINED\s+(\d+)}si) {
-    $limit = $1;
-  }
-  else {
-    if    ($orig_query =~ s{(SELECT.+LIMIT\s+\d+s*,\s*\d+)}{$1 ROWS EXAMINED $limit}siog) {}
-    elsif ($orig_query =~ s{(SELECT.+LIMIT\s+\d+\s+OFFSET\s+\d+)}{$1 ROWS EXAMINED $limit}siog) {}
-    elsif ($orig_query =~ s{(SELECT.+LIMIT\s+\d+)}{$1 ROWS EXAMINED $limit}siog) {}
-    elsif ($orig_query =~ s{(SELECT.+)(PROCEDURE\s+\w+|INTO\s+OUTFILE|INTO\s+DUMPFILE|FOR\s+UPDATE|LOCK\s+IN\s+SHARE\s+MODE)}{$1 LIMIT ROWS EXAMINED $limit $2}sio) {}
-    else {$orig_query .= " LIMIT ROWS EXAMINED $limit"};
-  }
+  my $new_query= $self->modify_query($orig_query);
 
   $limit = ( $limit < OVERHEAD_FOR_LOW_LIMITS ? $limit + OVERHEAD_FOR_LOW_LIMITS : $limit * OVERHEAD_MULTIPLIER );
 
-  if ($orig_query =~ m{^\s*(?:CREATE|INSERT)}si) {
+  if ($new_query =~ m{^\s*(?:CREATE|INSERT)}si) {
                 return [
                         "FLUSH STATUS",
-                        $orig_query,
+                        $new_query,
                         $show_status_query . " /* TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED $limit */"
                 ];
   }
   else {
     return [
       "FLUSH STATUS",
-      $orig_query . " /* TRANSFORM_OUTCOME_SUBSET */",
+      $new_query . " /* TRANSFORM_OUTCOME_SUBSET */",
       $show_status_query . " /* TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED $limit */"
     ];
   }
+}
+
+sub variate {
+  my ($self, $query) = @_;
+  # Variate one out of 10 queries
+  return $query if $self->random->uint16(0,9);
+  return $query unless $self->is_applicable($query);
+  return $self->modify_query($query);
+}
+
+sub is_applicable {
+  my ($self, $query)= @_;
+  return 0 unless $query =~ m{^\s*(?:CREATE|INSERT.*)?SELECT}si;
+  return 0 if $query =~ m{FETCH\s+(?:FIRST|NEXT)}si;
+  return 1;
+}
+
+sub modify_query {
+  my ($self, $query)= @_;
+  return $query if $query =~ m{ROWS\s+EXAMINED}si;
+
+  if ($query =~ m{ROWS\s+EXAMINED\s+(\d+)}si) {
+    $limit = $1;
+  } else {
+    $limit = $self->random->uint16(0,MAX_LIMIT_ROWS_EXAMINED);
+    if    ($query =~ s{(SELECT.+LIMIT\s+\d+s*,\s*\d+)}{$1 ROWS EXAMINED $limit}siog) {}
+    elsif ($query =~ s{(SELECT.+LIMIT\s+\d+\s+OFFSET\s+\d+)}{$1 ROWS EXAMINED $limit}siog) {}
+    elsif ($query =~ s{(SELECT.+LIMIT\s+\d+)}{$1 ROWS EXAMINED $limit}siog) {}
+    elsif ($query =~ s{(SELECT.+)(PROCEDURE\s+\w+|INTO\s+OUTFILE|INTO\s+DUMPFILE|FOR\s+UPDATE|LOCK\s+IN\s+SHARE\s+MODE)}{$1 LIMIT ROWS EXAMINED $limit $2}sio) {}
+    else {$query .= " LIMIT ROWS EXAMINED $limit"};
+  }
+  return $query;
 }
 
 1;

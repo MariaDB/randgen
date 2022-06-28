@@ -183,7 +183,7 @@ $optional_variators_102= [
   [ '', '--transformers=ExecuteAsView' ],
   [ '', '', '', '--variators=AnalyzeSelect' ],
   [ '', '', '', '--variators=FullOrderBy' ],
-  [ '', '', '', '--transformers=LimitRowsExamined' ],
+  [ '', '', '', '--variators=LimitRowsExamined' ],
 ];
 
 $optional_variators_103= [
@@ -203,7 +203,7 @@ $optional_variators_106= [
   @$optional_variators_105,
   [ '', '', '', '--variators=JsonTables' ],
   [ '', '', '', '--variators=OffsetFetch' ],
-  [ '', '', '', '', '', '', '--transformers=Rownum' ],
+  [ '', '', '', '', '', '', '--variators=Rownum' ],
   [ '', '', '', '', '', '', '--variators=IgnoredKeys' ],
 ];
 

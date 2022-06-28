@@ -28,24 +28,27 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub transform {
-	my ($class, $orig_query) = @_;
+  return STATUS_WONT_HANDLE;
+}
 
-  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE
-    if $orig_query !~ m{SELECT}
-      || $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|INSERT|REPLACE|CREATE)}sio
-      || $orig_query =~ m{(?:OFFSET|FETCH)}sio;
+sub variate {
+  my ($self, $query, $executor) = @_;
+  return $query unless $executor->versionNumeric() >= 100601;
+  # Variate 10% queries
+  return $query if $self->random->uint16(0,9);
 
-  my $limit= int(rand(100));
+  my $limit= $self->random->uint16(0,100);
+  my $op= $self->random->arrayElement(['<','>','<=','>=','=']);
 
-	if (my ($orig_limit) = $orig_query =~ m{LIMIT (\d+)}sio) {
-		return STATUS_WONT_HANDLE if $orig_limit == 0;
-		$orig_query =~ s{LIMIT \d+}{LIMIT $limit}sio;
-	} else {
-		$orig_query .= " LIMIT $limit ";
-	}
+  if ($query =~ /\WWHERE\W/) {
+    my $logop= ($self->random->uint16(0,1) ? 'AND' : 'OR');
 
-  return $orig_query." /* TRANSFORM_OUTCOME_SINGLE_ROW */";
+    $query =~ s/(\W)WHERE(\W)/${1}WHERE ROWNUM() ${op} ${limit} $logop${2}/g;
+  } elsif ($query =~ /^\s*SELECT/ && $query !~ /INTO\s+OUTFILE/) {
+    $query = "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() ${op} ${limit}";
+  }
+
+  return $query;
 }
 
 1;
