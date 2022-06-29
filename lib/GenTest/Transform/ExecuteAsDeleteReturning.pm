@@ -83,7 +83,7 @@ sub variate {
   my ($self, $query)= @_;
   # Variate 10% queries
   return $query if $self->random->uint16(0,9);
-  return $query unless $query =~ /DELETE/i;
+  return $query unless $query =~ /^\s*DELETE/i;
   return "$query RETURNING *";
 }
 
