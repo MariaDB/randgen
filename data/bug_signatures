@@ -61,7 +61,7 @@ MDEV-28806:
 MDEV-28797:
 =~ Assertion \`page_rec_is_user_rec(rec)'
 =~ PageBulk::getSplitRec
-=~ ha_innobase::inplace_alter_table
+=~ ha_innobase::inplace_alter_table|Sql_cmd_optimize_table
 MDEV-28797:
 =~ Assertion \`n > 0'
 =~ PageBulk::copyOut
