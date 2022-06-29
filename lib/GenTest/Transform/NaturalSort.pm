@@ -87,13 +87,11 @@ sub modify_query {
         push @new_order_by_list, $o;
       } else {
         my $mod= '';
-        say("HERE: Order by element $o");
         my $comment= '';
         while ($o =~ s/(\/\*.*?\*\/)//) {
           $comment.= $1;
         }
         if ($o =~ s/(ASC|DESC)\s*$//) {
-          say("HERE: Order by modifier $mod for element $o");
           $mod= $1;
         }
         push @new_order_by_list, "NATURAL_SORT_KEY($o)".($mod ? " $mod" : '').($comment ? " $comment" : '');
