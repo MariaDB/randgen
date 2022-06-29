@@ -179,7 +179,7 @@ $optional_variators_102= [
   [ '', '--transformers=ExecuteAsInsertSelect' ],
   [ '', '', '--transformers=ExecuteAsPreparedThrice' ],
   [ '', '--transformers=ExecuteAsUpdateDelete' ],
-  [ '', '--transformers=ExecuteAsUnion' ],
+  [ '', '--variators=ExecuteAsUnion' ],
   [ '', '--variators=ExecuteAsView' ],
   [ '', '', '', '--variators=AnalyzeSelect' ],
   [ '', '', '', '--variators=FullOrderBy' ],
@@ -188,8 +188,8 @@ $optional_variators_102= [
 
 $optional_variators_103= [
   @$optional_variators_102,
-  [ '', '--transformers=ExecuteAsExcept' ],
-  [ '', '--transformers=ExecuteAsIntersect' ],
+  [ '', '--variators=ExecuteAsExcept' ],
+  [ '', '--variators=ExecuteAsIntersect' ],
 ];
 
 $optional_variators_104= [ @$optional_variators_103 ];

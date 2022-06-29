@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (C) 2017, 2020 MariaDB Corporatin Ab
+# Copyright (C) 2017, 2022 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -29,18 +29,18 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub transform {
-	my ($class, $orig_query, $executor) = @_;
-	
-	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO)}sio
-		|| $orig_query !~ m{^\s*SELECT}sio;
+  my ($class, $orig_query, $executor) = @_;
 
-	my $orig_query_zero_limit = $orig_query;
-	# We remove LIMIT/OFFSET if present in the (outer) query, because we are
-	# using LIMIT 0 instead
-	$orig_query_zero_limit =~ s{LIMIT\s+\d+(?:\s+OFFSET\s+\d+|\s*,\s*\d+)?}{}sio;
-	$orig_query_zero_limit =~ s{(?:OFFSET\s+\d+\s+ROWS?\s+)?FETCH\s+(?:FIRST|NEXT)\s+\d+\s+(?:ROW|ROWS)\s+(?:ONLY|WITH\s+TIES)}{}sio;
-	$orig_query_zero_limit =~ s{(FOR\s+UPDATE|LOCK\s+IN\s+(?:SHARE|EXCLUSIVE)\sMODE)}{LIMIT 0 $1}sio;
+  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO)}sio
+    || $orig_query !~ m{^\s*SELECT}sio;
+
+  my $orig_query_zero_limit = $orig_query;
+  # We remove LIMIT/OFFSET if present in the (outer) query, because we are
+  # using LIMIT 0 instead
+  $orig_query_zero_limit =~ s{LIMIT\s+\d+(?:\s+OFFSET\s+\d+|\s*,\s*\d+)?}{}sio;
+  $orig_query_zero_limit =~ s{(?:OFFSET\s+\d+\s+ROWS?\s+)?FETCH\s+(?:FIRST|NEXT)\s+\d+\s+(?:ROW|ROWS)\s+(?:ONLY|WITH\s+TIES)}{}sio;
+  $orig_query_zero_limit =~ s{(FOR\s+UPDATE|LOCK\s+IN\s+(?:SHARE|EXCLUSIVE)\sMODE)}{LIMIT 0 $1}sio;
     unless ($orig_query_zero_limit =~ /LIMIT\s+0/sio) {
         $orig_query_zero_limit.= ' LIMIT 0';
     }
@@ -61,7 +61,28 @@ sub transform {
       "/* compatibility 10.6.1 */ ( $orig_query ) MINUS ALL ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
   };
 
-	return \@queries;
+  return \@queries;
+}
+
+sub variate {
+  my ($self, $query, $executor) = @_;
+  # Variate 10% queries
+  return $query if $self->random->uint16(0,9);
+  return $query if $query =~ m{(OUTFILE|INFILE|INTO)}sio || $query !~ m{^\s*SELECT}sio;
+
+  my $except_word= 'EXCEPT'
+  my @except_modes= ('');
+  if ($executor->versionNumeric() >= 100601 && $executor->serverVariable('sql_mode') =~ /oracle/i && $self->random->uint16(0,1)) {
+    $except_word= 'MINUS';
+  }
+  if ($executor->versionNumeric() >= 100500) {
+    push @except_modes, 'DISTINCT';
+  }
+  if ($executor->versionNumeric() >= 100502) {
+    push @except_modes, 'ALL';
+  }
+  my $except_mode= $self->random->arrayElement(\@except_modes);
+  return "( $query ) $except_word $except_mode ( $query )";
 }
 
 1;
