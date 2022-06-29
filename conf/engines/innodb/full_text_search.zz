@@ -16,9 +16,10 @@
 
 
 $tables = {
-        rows => [100, 200, 300, 400],
+        rows => [2, 10, 100, 500],
         partitions => [ undef ],
-        engines => ['InnoDB'],
+        engines => ['InnoDB','MyISAM','Aria'],
+        pk => [ undef, 'int auto_increment' ]
 };
 
 $fields = {
