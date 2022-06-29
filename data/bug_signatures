@@ -1995,6 +1995,10 @@ MDEV-22262:
 =~ ha_partition::open
 =~ check_duplicate_long_entries_update|handler::create_lookup_handler|clone_handler_for_update|ha_partition::clone
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-22241:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ Query.*: .*LIMIT ROWS EXAMINED
 MDEV-22232:
 =~ signal handler|AddressSanitizer
 =~ rpl_sql_thread_info::cached_charset_compare
