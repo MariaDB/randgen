@@ -70,7 +70,7 @@ sub variate {
   return $query if $self->random->uint16(0,9);
   return $query if $query =~ m{(OUTFILE|INFILE|INTO)}sio || $query !~ m{^\s*SELECT}sio;
 
-  my $except_word= 'EXCEPT'
+  my $except_word= 'EXCEPT';
   my @except_modes= ('');
   if ($executor->versionNumeric() >= 100601 && $executor->serverVariable('sql_mode') =~ /oracle/i && $self->random->uint16(0,1)) {
     $except_word= 'MINUS';
