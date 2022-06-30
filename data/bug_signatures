@@ -15,6 +15,11 @@ MDEV-28978:
 =~ THD::binlog_for_noop_dml
 =~ Version: '10\.9|Server version: 10\.9|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ FeatureUsage detected system-versioned tables
+MDEV-28958:
+=~ signal|AddressSanitizer
+=~ Item::clear_extraction_flag
+=~ Item::check_pushable_cond
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28950:
 =~ Assertion \`\*err == DB_SUCCESS'
 =~ btr_page_split_and_insert
