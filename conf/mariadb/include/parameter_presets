@@ -215,12 +215,12 @@ $optional_variators_107= [
 $optional_variators_108= [ @$optional_variators_107 ];
 $optional_variators_109= [ @$optional_variators_108 ];
 
-# RocksDB is disabled because upstream has not been updated (no JIRA yet)
-#  '--engine=InnoDB,MyISAM,Aria,HEAP,RocksDB --mysqld=--plugin-load-add=ha_rocksdb'
 $basic_engine_combinations_102= [
+  '','','','',
   '--engine=Aria --mysqld=--default-storage-engine=Aria',
-  '--engine=InnoDB,MyISAM',
   '--engine=MyISAM --mysqld=--default-storage-engine=MyISAM',
+  '--engine=RocksDB --mysqld=--default-storage-engine=RocksDB --mysqld=--plugin-load-add=ha_rocksdb',
+  '--engine=InnoDB,MyISAM',
   '--engine=InnoDB,MyISAM,Aria,HEAP',
 ];
 
