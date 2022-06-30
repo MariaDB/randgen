@@ -512,6 +512,8 @@ sub variate {
   my ($self, $orig_query, $executor, $gendata_flag) = @_;
   # We won't touch gendata queries
   return $orig_query if $gendata_flag;
+  # Variate 10% queries
+  return $orig_query if $self->random->uint16(0,9);
   # Don't touch queries which already have JSON_TABLEs
   return $orig_query if $orig_query =~ /JSON_TABLE/i;
 
