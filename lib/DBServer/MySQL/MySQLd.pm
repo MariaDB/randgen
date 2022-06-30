@@ -379,6 +379,8 @@ sub createMysqlBase  {
     # Set max-prepared-stmt-count to a sufficient value to facilitate bootstrap
     # even if it's otherwse set to 0 for the server
     push @$boot_options, "--max-prepared-stmt-count=1024";
+    # Spider tends to hang on bootstrap (MDEV-22979)
+    push @$boot_options, "--loose-disable-spider";
     # Workaround for MENT-350
     if ($self->_notOlderThan(10,4,6)) {
         push @$boot_options, "--loose-server-audit-logging=OFF";

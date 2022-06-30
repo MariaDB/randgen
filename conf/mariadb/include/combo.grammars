@@ -169,7 +169,7 @@ $gendata_files= [
 
 $optional_redefines_102= [
   [ '--redefine=conf/mariadb/all_selects.yy', '', '' ],
-  [ '--redefine=conf/mariadb/alter_table.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/alter_table.yy', '' ],
   [ '--redefine=conf/mariadb/bulk_insert.yy', '' ],
   [ '--redefine=conf/mariadb/federated.yy --mysqld=--plugin-load-add=ha_federatedx', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/functions.yy', '', '', '', '' ],
@@ -178,8 +178,8 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/xa.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/acl.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/admin.yy', '', '', '', '' ],
-  [ '--redefine=conf/mariadb/modules/alter_table_columns.yy', '', '', '', '' ],
-  [ '--redefine=conf/mariadb/modules/alter_table_indexes.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/alter_table_columns.yy', '' ],
+  [ '--redefine=conf/mariadb/modules/alter_table_indexes.yy', '' ],
   [ '--redefine=conf/mariadb/modules/collations.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/disks.yy --mysqld=--plugin-load-add=disks --mysqld=--loose-disks', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/dynamic_variables.yy', '' ],
@@ -197,6 +197,7 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/modules/userstat.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/user_variables.yy --mysqld=--plugin-load-add=user_variables --mysqld=--loose-user-variables', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/diagnostics.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/spider.yy --mysqld=--plugin-load-add=ha_spider --mysqld=--loose-spider-same-server-link=on', '', '', '', '', '', '', '', '', '' ],
 ];
 
 $optional_redefines_103= [
