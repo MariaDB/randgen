@@ -4,6 +4,8 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28989:
+=~ Could not import tablespace for .*: 1808: Schema mismatch.* prefix mismatch
 MDEV-28988:
 =~ Assertion \`is_started()'
 =~ Ha_trx_info::is_trx_read_write
