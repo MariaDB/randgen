@@ -64,7 +64,8 @@ dynvar_session_variable:
     ALTER_ALGORITHM= { $prng->arrayElement(['DEFAULT','COPY','INPLACE','NOCOPY','INSTANT']) } /* compatibility 10.3.7 */
   | ANALYZE_SAMPLE_PERCENTAGE= { $prng->int(0,100) } /* compatibility 10.4.3 */
   | ARIA_REPAIR_THREADS= { $prng->int(1,10) }
-  | ARIA_SORT_BUFFER_SIZE= { $prng->arrayElement([4096,16384,65536,1048576,134217728,268434432]) }
+# TODO: 4096 disabled due to MDEV-28990
+  | ARIA_SORT_BUFFER_SIZE= { $prng->arrayElement([16384,65536,1048576,134217728,268434432]) }
   | ARIA_STATS_METHOD= { $prng->arrayElement(['nulls_equal','nulls_unequal','nulls_ignored']) }
   | AUTOCOMMIT= dynvar_boolean
   | AUTO_INCREMENT_INCREMENT= { $prng->arrayElement([1,1,1,1,2,2,2,3,3,65535]) }
