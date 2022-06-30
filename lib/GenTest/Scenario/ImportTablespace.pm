@@ -114,6 +114,7 @@ sub run {
   my $dbh= $server->dbh;
 
   $dbh->do("SET GLOBAL innodb_file_per_table= 1");
+  $dbh->do("SET foreign_key_checks= 0");
 
   my $tablespace_backup_dir= $server->vardir.'/tablespaces';
   mkdir($tablespace_backup_dir);
