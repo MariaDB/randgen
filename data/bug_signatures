@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28988:
+=~ Assertion \`is_started()'
+=~ Ha_trx_info::is_trx_read_write
+=~ Gtid_log_event::Gtid_log_event
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28978:
 =~ Assertion \`((WSREP_PROVIDER_EXISTS_ && this->variables\.wsrep_on) && wsrep_emulate_bin_log) \|\| mysql_bin_log\.is_open()'
 =~ THD::binlog_query
@@ -322,10 +327,23 @@ MDEV-27427:
 MDEV-27422:
 =~ Assertion \`0'|Assertion \`pageno < ((1ULL) << 40)'|AddressSanitizer|signal
 =~ maria_rtree_insert|maria_rtree_delete
+=~ FeatureUsage detected GIS columns
 MDEV-27422:
-=~ Assertion \`move_length <= ma_page->org_size - share->keypage_header'
+=~ Assertion \`move_length <= ma_page->org_size - share->keypage_header'|signal
 =~ _ma_log_delete
 =~ d_search
+=~ FeatureUsage detected GIS columns
+MDEV-27422:
+=~ AddressSanitizer|signal
+=~ remove_key
+=~ d_search
+=~ maria_delete
+=~ FeatureUsage detected GIS columns
+MDEV-27422:
+=~ Assertion \`offset + changed_length <= ma_page->size'
+=~ _ma_log_delete
+=~ d_search
+=~ FeatureUsage detected GIS columns
 # The bug report is 10.5+, but the failure can happen on 10.4 too, like MDEV-27292
 MDEV-27366:
 =~ signal|AddressSanitizer
