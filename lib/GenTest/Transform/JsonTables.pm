@@ -468,8 +468,8 @@ sub json_table_to_append
     my $jtable= 'JSON_TABLE('.$jdoc.', '.$self->random->jsonPath().' '.$self->random->jsonTableColumnList($colnum).') AS '.$alias;
     $replaced_aliases{$alias}= $colnum;
     $res= " $jtable";
-  } else
-  { # Not doing replacement, returning the original table
+  }
+  else { # Not doing replacement, returning the original table
     $res= ($table_name eq $alias ? " $table_name" : " $table_name AS $alias") . " $index_hints";
   }
   # Save the encountered alias for future references, regardless whether
@@ -489,7 +489,8 @@ sub replace_columns
     my $token= $1;
     if ($token =~ /^\s*\((.*)\)\s*$/is) {
       $query.= ' (' . $self->replace_columns($1) . ')';
-    } elsif ($token =~ /^(\`[^\`]+\`|\w+)\s*\.\s*(\`[^\`]+\`|\w+)$/) {
+    }
+    elsif ($token =~ /^(\`[^\`]+\`|\w+)\s*\.\s*(\`[^\`]+\`|\w+)$/) {
       # TODO: We can't meaningfully replace unqualified column names, unfortunately
       my ($alias, $colname)= ($1,$2);
       $alias=~ s/^\`(.*)\`$/$1/;
@@ -499,7 +500,8 @@ sub replace_columns
         $token =~ s/^(.*)$colname(\`?)$/$1${new_colname}$2/;
       }
       $query.= " $token";
-    } else {
+    }
+    else {
       $query.= " $token";
     }
   }
@@ -527,7 +529,10 @@ sub variate {
   %replaced_aliases= ();
   %encountered_aliases= ();
 
-  my $query= $self->parse_query_for_variation($orig_query);
+  my $query= $orig_query;
+  $query =~ s/\\'/=====ESCAPED_SINGLE_QUOTE=====/g;
+  $query =~ s/\\"/=====ESCAPED_DOUBLE_QUOTE=====/g;
+  $query= $self->parse_query_for_variation($query);
 
   if (scalar keys(%replaced_aliases)) {
     $query= $self->replace_columns($query);
@@ -535,6 +540,8 @@ sub variate {
   # Remove potentially harmful spaces between function names and brackets
   $query=~ s/(\w)\s+\(/$1\(/g;
 
+  $query =~ s/=====ESCAPED_SINGLE_QUOTE=====/\\'/g;
+  $query =~ s/=====ESCAPED_DOUBLE_QUOTE=====/\\"/g;
   sayDebug("JsonTables variator is returning query $query");
   return $query;
 }

@@ -165,10 +165,15 @@ sub convert_selects_to_cte
 }
 
 sub transform {
-    my ($class, $orig_query) = @_;
-    return STATUS_WONT_HANDLE unless is_applicable($orig_query);
-    my $transformed_query = convert_selects_to_cte($orig_query, 1);
-    return $transformed_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+  my ($class, $orig_query) = @_;
+  return STATUS_WONT_HANDLE unless is_applicable($orig_query);
+  my $transformed_query = $orig_query;
+  $transformed_query =~ s/\\'/=====ESCAPED_SINGLE_QUOTE=====/g;
+  $transformed_query =~ s/\\"/=====ESCAPED_DOUBLE_QUOTE=====/g;
+  $transformed_query = convert_selects_to_cte($transformed_query, 1);
+  $transformed_query =~ s/=====ESCAPED_SINGLE_QUOTE=====/\\'/g;
+  $transformed_query =~ s/=====ESCAPED_DOUBLE_QUOTE=====/\\"/g;
+  return $transformed_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 }
 
 sub variate {
@@ -176,7 +181,12 @@ sub variate {
   # Variate 10% queries
   return $query if $self->random->uint16(0,9);
   return $query unless is_applicable($query);
-  return convert_selects_to_cte($query, 1);
+  $query =~ s/\\'/=====ESCAPED_SINGLE_QUOTE=====/g;
+  $query =~ s/\\"/=====ESCAPED_DOUBLE_QUOTE=====/g;
+  $query = convert_selects_to_cte($query, 1);
+  $query =~ s/=====ESCAPED_SINGLE_QUOTE=====/\\'/g;
+  $query =~ s/=====ESCAPED_DOUBLE_QUOTE=====/\\"/g;
+  return $query;
 }
 
 sub is_applicable {
