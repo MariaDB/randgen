@@ -92,6 +92,10 @@ MDEV-28771:
 =~ rw_pr_rdlock
 =~ TABLE_SHARE::visit_subgraph
 =~ Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-28739:
+=~ safe_mutex: Trying to lock uninitialized mutex at.*sql_cache
+=~ Query_cache::invalidate_table
+=~ spider_sys_close_table
 MDEV-28686:
 =~ Assertion \`0'
 =~ Type_handler_string_result::make_sort_key
