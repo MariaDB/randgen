@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29002:
+=~ AddressSanitizer|signal
+=~ spider_conn_queue_and_merge_loop_check
+=~ spider_get_share
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28998:
 =~ AddressSanitizer|signal
 =~ spider_fields::free_conn_holder
