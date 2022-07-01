@@ -107,7 +107,21 @@ sub run {
   $server->dumpdb($databases, $server->vardir.'/server_data_old.dump');
   $server->normalizeDump($server->vardir.'/server_data_old.dump');
   $table_autoinc{'old'}= $server->collectAutoincrements();
-
+  # Workaround for MDEV-29001: adjust null-able columns which lost their DEFAULT NULL clause
+  my $file= $server->vardir.'/server_schema_old.dump';
+  move($file, $file.'.nulls');
+  open(DUMP1,$file.'.nulls');
+  open(DUMP2,">$file");
+  while (<DUMP1>) {
+    my $l= $_;
+    # Column definitions have identation in the dump and start with `
+    if ($l =~ /^\s+\`/ && $l !~ /(?:NOT NULL|DEFAULT)/) {
+      $l =~ s/(,?)$/ DEFAULT NULL${1}/;
+    }
+    print DUMP2 $l;
+  }
+  close(DUMP1);
+  close(DUMP2);
   #####
   $self->printStep("Storing tablespaces for InnoDB tables and dropping the tables");
 
@@ -120,7 +134,7 @@ sub run {
   mkdir($tablespace_backup_dir);
   my %table_definitions;
 
-  my $tables = $dbh->selectcol_arrayref("select `name` from information_schema.innodb_sys_tablespaces where name != 'innodb_system' and name not like 'mysql/%' and name not like '%#%'");
+  my $tables = $dbh->selectcol_arrayref("select ts.name from information_schema.innodb_sys_tablespaces ts join information_schema.tables t on ts.name = concat(t.table_schema,'/',t.table_name) where ts.name != 'innodb_system' and ts.name not like 'mysql/%' and ts.name not like '%#%' and t.table_type != 'SEQUENCE'");
   foreach my $tpath (@$tables) {
     $tpath =~ /^(.*)\/(.*)/;
     my ($tschema, $tname)= ($1, $2);
