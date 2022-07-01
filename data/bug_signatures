@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28996:
+=~ AddressSanitizer|signal
+=~ spider_string::q_append
+=~ spider_db_mbase_util::open_item_func
 MDEV-28989:
 =~ Could not import tablespace for .*: 1808: Schema mismatch.* prefix mismatch
 MDEV-28988:
@@ -500,6 +504,10 @@ MDEV-26594:
 =~ Field::stored_field_make_mm_leaf
 =~ calculate_cond_selectivity_for_table
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-26540:
+=~ Assertion \`inited==RND'
+=~ handler::ha_rnd_end
+=~ ha_partition::direct_delete_rows
 MDEV-26509:
 =~ AddressSanitizer|signal 11
 =~ strmake
