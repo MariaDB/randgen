@@ -197,7 +197,7 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/modules/userstat.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/user_variables.yy --mysqld=--plugin-load-add=user_variables --mysqld=--loose-user-variables', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/diagnostics.yy', '', '', '', '', '', '', '', '', '' ],
-  [ '--redefine=conf/mariadb/modules/spider.yy --mysqld=--plugin-load-add=ha_spider --mysqld=--loose-spider-same-server-link=on', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/spider.yy --mysqld=--plugin-load-add=ha_spider --mysqld=--loose-spider-same-server-link=on --mysqld=--spider_table_crd_thread_count=1 --mysqld=--spider_table_sts_thread_count=1', '', '', '', '', '', '', '', '', '' ],
 ];
 
 $optional_redefines_103= [
