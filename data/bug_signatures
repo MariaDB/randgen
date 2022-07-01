@@ -3934,6 +3934,14 @@ TODO-842: [MDL_ticket::create]
 =~ in malloc
 =~ MDL_ticket::create
 =~ open_table_get_mdl_lock
+TODO-842: [Common causes: marked_for_read]
+=~ marked_for_read
+=~ Item::save_in_field
+=~ TABLE::update_virtual_fields
+TODO-842: [Common causes: Diagnostics_area::set_ok_status]
+=~ Diagnostics_area::set_ok_status
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ mysql_insert
 
 ##############################################################################
 # Weak matches
