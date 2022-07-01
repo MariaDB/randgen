@@ -176,7 +176,6 @@ $optional_variators_102= [
   [ '', '--transformers=ExecuteAsDerived' ],
   [ '', '--variators=ExecuteAsExecuteImmediate' ],
   [ '', '', '--transformers=ExecuteAsFunctionTwice' ],
-  [ '', '--transformers=ExecuteAsInsertSelect' ],
   [ '', '', '--transformers=ExecuteAsPreparedThrice' ],
   [ '', '--transformers=ExecuteAsUpdateDelete' ],
   [ '', '--variators=ExecuteAsUnion' ],

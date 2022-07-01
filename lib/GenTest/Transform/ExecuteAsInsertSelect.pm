@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -61,6 +61,12 @@ sub transform {
 		"DROP TABLE $table_name",
     '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save'
 	];
+}
+
+# Not very important as a variator, we have plenty of INSERT .. SELECT in grammars
+sub variate {
+  my ($self, $query) = @_;
+  return $query;
 }
 
 1;
