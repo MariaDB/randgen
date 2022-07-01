@@ -107,22 +107,6 @@ sub run {
   $server->dumpdb($databases, $server->vardir.'/server_data_old.dump');
   $server->normalizeDump($server->vardir.'/server_data_old.dump');
   $table_autoinc{'old'}= $server->collectAutoincrements();
-  # Workaround for MDEV-29001: adjust null-able columns which lost their DEFAULT NULL clause
-  my $file= $server->vardir.'/server_schema_old.dump';
-  move($file, $file.'.nulls');
-  open(DUMP1,$file.'.nulls');
-  open(DUMP2,">$file");
-  while (<DUMP1>) {
-    my $l= $_;
-    # Column definitions have identation in the dump and start with `
-    if ($l =~ /^\s+\`/ && $l !~ /(?:NOT NULL|DEFAULT)/) {
-      $l =~ s/(,?)$/ DEFAULT NULL${1}/;
-    }
-    print DUMP2 $l;
-  }
-  close(DUMP1);
-  close(DUMP2);
-  #####
   $self->printStep("Storing tablespaces for InnoDB tables and dropping the tables");
 
   my $dbh= $server->dbh;
@@ -138,6 +122,7 @@ sub run {
   foreach my $tpath (@$tables) {
     $tpath =~ /^(.*)\/(.*)/;
     my ($tschema, $tname)= ($1, $2);
+    next if $tname =~ /^FTS_0000/;
     mkdir($tablespace_backup_dir.'/'.$tschema) unless (-d $tablespace_backup_dir.'/'.$tschema);
     $dbh->do("USE $tschema");
     $dbh->do("FLUSH TABLES `$tname` FOR EXPORT");
@@ -168,7 +153,15 @@ sub run {
     $tpath =~ /^(.*)\/(.*)/;
     my ($tschema, $tname)= ($1, $2);
     $dbh->do("USE $tschema");
-    $dbh->do($table_definitions{$tpath});
+    my $def= $table_definitions{$tpath};
+    $dbh->do($def);
+    # Workaround for MDEV-29001: adjust null-able columns which lost their DEFAULT NULL clause
+    while ($def =~ s/^(.*)?\n//) {
+      my $l= $1;
+      if ($l =~ /^\s+(\`.*?\`)/ && $l !~ /(?:NOT NULL|DEFAULT)/) {
+        $dbh->do("ALTER TABLE $tname ALTER COLUMN $1 DROP DEFAULT");
+      }
+    }
     $dbh->do("ALTER TABLE $tname DISCARD TABLESPACE");
     if ($dbh->err) {
       sayError("Could not discard tablespace for $tname: ".$dbh->err.": ".$dbh->errstr);
