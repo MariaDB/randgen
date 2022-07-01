@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-28998:
+=~ AddressSanitizer|signal
+=~ spider_fields::free_conn_holder
+=~ spider_fields::~spider_fields
+=~ Pushdown_query::~Pushdown_query
 MDEV-28996:
 =~ AddressSanitizer|signal
 =~ spider_string::q_append
