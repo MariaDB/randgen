@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29009:
+=~ Assertion \`dd_val >= last_val'
+=~ myrocks::ha_rocksdb::load_auto_incr_value_from_index
+MDEV-29008:
+=~ Assertion \`field'|signal|AddressSanitizer
+=~ spider_db_open_item_ident
+=~ spider_group_by_handler
+=~ Pushdown_query::execute
 MDEV-29002:
 =~ AddressSanitizer|signal
 =~ spider_conn_queue_and_merge_loop_check
@@ -503,7 +511,6 @@ MDEV-26753:
 MDEV-26677:
 =~ RocksDB: Failed to get column family flags from CF with id
 =~ signal 6
-=~ myrocks::rdb_i_s_global_info_fill_table
 MDEV-26655:
 =~ Assertion \`page_dir_get_n_heap(new_page) == 2U'
 =~ PageBulk::init
@@ -2188,7 +2195,7 @@ MDEV-21809:
 =~ prune_partitions
 =~ mysql_multi_update
 MDEV-21799:
-=~ Assertion \`is_storage_available(tuple - packed_tuple, 0)'
+=~ Assertion \`is_storage_available(tuple - packed_tuple, 0)'|Assertion \`is_storage_available(tuple - packed_tuple, pack_info->m_max_image_len)'
 =~ myrocks::Rdb_key_def::pack_record
 =~ myrocks::ha_rocksdb::update_write_row
 MDEV-21798:
