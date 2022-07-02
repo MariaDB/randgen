@@ -152,6 +152,10 @@ MDEV-28610:
 =~ TABLE::update_virtual_fields
 =~ FeatureUsage detected virtual columns
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-28580:
+=~ InnoDB: Failing assertion: fsize != os_offset_t(-1)
+=~ fil_space_extend_must_retry
+=~ dict_create_index_tree_step
 MDEV-28576:
 =~ Assertion \`!error'
 =~ ha_partition::delete_row
@@ -551,6 +555,8 @@ MDEV-26508:
 =~ Item_default_value::walk
 =~ sp_instr_stmt::execute
 =~ Version: '10\.2|Server version: 10\.2
+MDEV-26464:
+=~ Failing assertion: UT_LIST_GET_LEN(buf_pool->flush_list) == 0
 MDEV-26433:
 =~ InnoDB: Failing assertion: table->get_ref_count() == 0
 =~ dict_sys_t::remove
@@ -3955,7 +3961,7 @@ TODO-842: [Common causes: marked_for_read]
 TODO-842: [Common causes: Diagnostics_area::set_ok_status]
 =~ Diagnostics_area::set_ok_status
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ mysql_insert
+=~ mysql_insert|mysql_update
 
 ##############################################################################
 # Weak matches
