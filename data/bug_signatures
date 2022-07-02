@@ -737,6 +737,9 @@ MDEV-25603:
 =~ row_sel_store_mysql_field
 =~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ FeatureUsage detected virtual columns
+MDEV-25532:
+=~ Assertion \`part_id == m_last_part'
+=~ ha_partition::delete_row
 MDEV-25523:
 =~ Assertion \`using_unique_constraint \|\| group_buff <= param->group_buff + param->group_length'
 =~ create_tmp_table
