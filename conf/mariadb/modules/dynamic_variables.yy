@@ -426,7 +426,8 @@ dynvar_global_variable:
   | INNODB_PAGE_CLEANERS= { $prng->int(1,8) } /* compatibility 10.3.3 */ /* incompatibility 10.6.0 */
 # Makes server stall
 # | innodb_page_cleaner_disabled_debug= dynvar_boolean
-  | INNODB_PREFIX_INDEX_CLUSTER_OPTIMIZATION= dynvar_boolean
+# Deprecated in 10.10.0
+  | INNODB_PREFIX_INDEX_CLUSTER_OPTIMIZATION= dynvar_boolean /* incompatibility 10.10.0 */
   | INNODB_PRINT_ALL_DEADLOCKS= dynvar_boolean
   | INNODB_PURGE_BATCH_SIZE= { $prng->arrayElement([1,2,10,100,1000]) }
   | INNODB_PURGE_RSEG_TRUNCATE_FREQUENCY= { $prng->arrayElement([1,2,10,64]) }
