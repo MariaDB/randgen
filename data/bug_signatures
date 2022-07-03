@@ -3974,7 +3974,7 @@ TODO-842: [Common causes: marked_for_read]
 TODO-842: [Common causes: Diagnostics_area::set_ok_status]
 =~ Diagnostics_area::set_ok_status
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ mysql_insert|mysql_update
+=~ mysql_insert|mysql_update|mysql_alter_table
 
 ##############################################################################
 # Weak matches
