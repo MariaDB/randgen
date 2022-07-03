@@ -348,7 +348,8 @@ dynvar_global_variable:
   | INNODB_BUF_DUMP_STATUS_FREQUENCY= { $prng->arrayElement([10,50,99]) }
 # Debug variable
   | INNODB_BUF_FLUSH_LIST_NOW= dynvar_boolean
-  | INNODB_CHANGE_BUFFERING= { $prng->arrayElement(['inserts','none','deletes','purges','changes','all']) }
+# Deprecated since 10.9.0
+  | INNODB_CHANGE_BUFFERING= { $prng->arrayElement(['inserts','none','deletes','purges','changes','all']) } /* incompatibility 10.9.0 */
 # Debug variable, 2 causes intentional crash
 # | INNODB_CHANGE_BUFFERING_DEBUG
   | INNODB_CHANGE_BUFFER_MAX_SIZE= { $prng->int(0,50) }
