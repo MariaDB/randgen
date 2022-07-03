@@ -168,6 +168,7 @@ $gendata_files= [
 ];
 
 $optional_redefines_102= [
+  [ '--redefine=conf/engines/merge.yy', '', '', '', '' ],
   [ '--redefine=conf/mariadb/all_selects.yy', '', '' ],
   [ '--redefine=conf/mariadb/alter_table.yy', '' ],
   [ '--redefine=conf/mariadb/bulk_insert.yy', '' ],
@@ -181,6 +182,7 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/modules/alter_table_columns.yy', '' ],
   [ '--redefine=conf/mariadb/modules/alter_table_indexes.yy', '' ],
   [ '--redefine=conf/mariadb/modules/collations.yy', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/diagnostics.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/disks.yy --mysqld=--plugin-load-add=disks --mysqld=--loose-disks', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/dynamic_variables.yy', '' ],
   [ '--redefine=conf/mariadb/modules/event.yy', '', '', '', '', '', '', '', '', '' ],
@@ -193,11 +195,10 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/modules/parser_changes.yy', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/query_response_time.yy --mysqld=--plugin-load-add=query_response_time --mysqld=--loose-query-response-time', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/server_audit.yy --mysqld=--plugin-load-add=server_audit --mysqld=--loose-server-audit --mysqld=--loose-server-audit-logging=on', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/spider.yy --mysqld=--plugin-load-add=ha_spider --mysqld=--loose-spider-same-server-link=on --mysqld=--spider_table_crd_thread_count=1 --mysqld=--spider_table_sts_thread_count=1', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/sql_errlog.yy --mysqld=--plugin-load-add=sql_errlog --mysqld=--loose-sql-errlog', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/userstat.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/user_variables.yy --mysqld=--plugin-load-add=user_variables --mysqld=--loose-user-variables', '', '', '', '', '', '', '', '', '' ],
-  [ '--redefine=conf/mariadb/modules/diagnostics.yy', '', '', '', '', '', '', '', '', '' ],
-  [ '--redefine=conf/mariadb/modules/spider.yy --mysqld=--plugin-load-add=ha_spider --mysqld=--loose-spider-same-server-link=on --mysqld=--spider_table_crd_thread_count=1 --mysqld=--spider_table_sts_thread_count=1', '', '', '', '', '', '', '', '', '' ],
 ];
 
 $optional_redefines_103= [
