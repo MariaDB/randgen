@@ -102,11 +102,11 @@ sub run {
   $self->printStep("Dumping the data before discard/import");
 
   $databases= join ' ', $server->nonSystemDatabases();
-  $server->dumpSchema($databases, $server->vardir.'/server_schema_old.dump');
-  $server->normalizeDump($server->vardir.'/server_schema_old.dump', 'remove_autoincs');
+#  $server->dumpSchema($databases, $server->vardir.'/server_schema_old.dump');
+#  $server->normalizeDump($server->vardir.'/server_schema_old.dump', 'remove_autoincs');
   $server->dumpdb($databases, $server->vardir.'/server_data_old.dump');
   $server->normalizeDump($server->vardir.'/server_data_old.dump');
-  $table_autoinc{'old'}= $server->collectAutoincrements();
+#  $table_autoinc{'old'}= $server->collectAutoincrements();
   $self->printStep("Storing tablespaces for InnoDB tables and dropping the tables");
 
   my $dbh= $server->dbh;
@@ -180,25 +180,25 @@ sub run {
   $self->printStep("Dumping the data after discard/import");
 
   $databases= join ' ', $server->nonSystemDatabases();
-  $server->dumpSchema($databases, $server->vardir.'/server_schema_new.dump');
-  $server->normalizeDump($server->vardir.'/server_schema_new.dump', 'remove_autoincs');
+#  $server->dumpSchema($databases, $server->vardir.'/server_schema_new.dump');
+#  $server->normalizeDump($server->vardir.'/server_schema_new.dump', 'remove_autoincs');
   $server->dumpdb($databases, $server->vardir.'/server_data_new.dump');
   $server->normalizeDump($server->vardir.'/server_data_new.dump');
-  $table_autoinc{'new'}= $server->collectAutoincrements();
+#  $table_autoinc{'new'}= $server->collectAutoincrements();
 
 
   #####
-  $self->printStep("Comparing databases before and after discard/import");
+  $self->printStep("Comparing data before and after discard/import");
 
-  $status= compare($server->vardir.'/server_schema_old.dump', $server->vardir.'/server_schema_new.dump');
-  if ($status != STATUS_OK) {
-    sayError("Database structures differ after upgrade");
-    system('diff -a -u '.$server->vardir.'/server_schema_old.dump'.' '.$server->vardir.'/server_schema_new.dump');
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
-  }
-  else {
-    say("Structure dumps appear to be identical");
-  }
+#  $status= compare($server->vardir.'/server_schema_old.dump', $server->vardir.'/server_schema_new.dump');
+#  if ($status != STATUS_OK) {
+#    sayError("Database structures differ after upgrade");
+#    system('diff -a -u '.$server->vardir.'/server_schema_old.dump'.' '.$server->vardir.'/server_schema_new.dump');
+#    return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
+#  }
+#  else {
+#    say("Structure dumps appear to be identical");
+#  }
 
   $status= compare($server->vardir.'/server_data_old.dump', $server->vardir.'/server_data_new.dump');
   if ($status != STATUS_OK) {
@@ -210,19 +210,19 @@ sub run {
     say("Data dumps appear to be identical");
   }
 
-  $status= $self->compare_autoincrements($table_autoinc{old}, $table_autoinc{new});
-  if ($status != STATUS_OK) {
-    # Comaring auto-increments can show known errors. We want to update
-    # the global status, but don't want to exit prematurely
-    $self->setStatus($status);
-    sayError("Auto-increment data differs after discard/import");
-    if ($status > STATUS_CUSTOM_OUTCOME) {
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
-    }
-  }
-  else {
-    say("Auto-increment data appears to be identical");
-  }
+#  $status= $self->compare_autoincrements($table_autoinc{old}, $table_autoinc{new});
+#  if ($status != STATUS_OK) {
+#    # Comaring auto-increments can show known errors. We want to update
+#    # the global status, but don't want to exit prematurely
+#    $self->setStatus($status);
+#    sayError("Auto-increment data differs after discard/import");
+#    if ($status > STATUS_CUSTOM_OUTCOME) {
+#      return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
+#    }
+#  }
+#  else {
+#    say("Auto-increment data appears to be identical");
+#  }
 
   #####
   $self->printStep("Stopping the server");
