@@ -404,6 +404,7 @@ dynvar_global_variable:
   | INNODB_LIMIT_OPTIMISTIC_INSERT_DEBUG= { $prng->arrayElement([1,10,100,1000,10000]) }
   | INNODB_LOG_CHECKSUMS= dynvar_boolean /* incompatibility 10.6.0 */
   | INNODB_LOG_COMPRESSED_PAGES= dynvar_boolean /* incompatibility 10.6.0 */
+  | INNODB_LOG_FILE_SIZE= { $prng->arrayElement([4194304,16777216,100663296,268435456,'DEFAULT']) } / compatibility 10.9.0 */
   | INNODB_LOG_OPTIMIZE_DDL= dynvar_boolean /* incompatibility 10.6.0 */
   | INNODB_LOG_WRITE_AHEAD_SIZE= { $prng->arrayElement([512,1024,10000,16384]) }
   | INNODB_LRU_FLUSH_SIZE= { $prng->arrayElement([1,8,32,128,256]) } /* compatibility 10.5 */
