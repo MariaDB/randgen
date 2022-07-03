@@ -252,6 +252,11 @@ MDEV-28370:
 =~ mem_heap_create_block_func
 =~ dict_load_indexes
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-28352:
+=~ AddressSanitizer|signal
+=~ ha_spider::lock_tables
+=~ mysql_unlock_tables
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28328:
 =~ Assertion \`rec_offs_any_extern(offsets)'|InnoDB: Failing assertion: rec_offs_nth_extern(offsets, n)|InnoDB: Failing assertion: op == BTR_STORE_UPDATE \|\| (field_ref\[BTR_EXTERN_LEN\] & BTR_EXTERN_INHERITED_FLAG) \|\| !memcmp(field_ref, field_ref_zero, BTR_EXTERN_FIELD_REF_SIZE)
 =~ btr_store_big_rec_extern_fields|btr_rec_get_field_ref_offs
