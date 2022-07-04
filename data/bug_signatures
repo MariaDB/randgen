@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29027:
+=~ AddressSanitizer|signal
+=~ spider_db_free_result
+=~ fast_alter_partition_table
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29024:
 =~ Trying to lock mutex at .*/spider/spd_table\.cc, line .*, when the mutex was already locked at .*/spider/spd_table\.cc, line .* in thread
 =~ spider_free_share
@@ -11,7 +16,6 @@ MDEV-29018:
 =~ AddressSanitizer|signal
 =~ ha_spider::field_exchange
 =~ ha_spider::set_select_column_mode
-=~ ha_partition::rnd_init
 MDEV-29016:
 =~ LeakSanitizer
 =~ get_quick_select
@@ -944,7 +948,6 @@ MDEV-25035:
 MDEV-25028:
 =~ Assertion \`sl->join == 0'
 =~ reinit_stmt_before_use
-=~ Prepared_statement::execute
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-25028:
 =~ AddressSanitizer|signal 11
