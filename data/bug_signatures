@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29024:
+=~ Trying to lock mutex at .*/spider/spd_table\.cc, line .*, when the mutex was already locked at .*/spider/spd_table\.cc, line .* in thread
+=~ spider_free_share
 MDEV-29018:
 =~ AddressSanitizer|signal
 =~ ha_spider::field_exchange
@@ -1379,7 +1382,7 @@ MDEV-23841:
 =~ innodb_monitor_validate
 MDEV-23838:
 =~ Assertion \`0'
-=~ Item_func_.*::native_op
+=~ Item_func_.*::native_op|Item::val_native
 =~ Arg_comparator::min_max_update_field_native
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23837:
