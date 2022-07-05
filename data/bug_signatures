@@ -2240,7 +2240,6 @@ MDEV-21809:
 MDEV-21799:
 =~ Assertion \`is_storage_available(tuple - packed_tuple, 0)'|Assertion \`is_storage_available(tuple - packed_tuple, pack_info->m_max_image_len)'
 =~ myrocks::Rdb_key_def::pack_record
-=~ myrocks::ha_rocksdb::update_write_row
 MDEV-21798:
 =~ Assertion \`0'
 =~ row_sel_convert_mysql_key_to_innobase
@@ -3995,6 +3994,9 @@ TODO-842: [Common causes: ha_spider::~ha_spider]
 =~ signal|AddressSanitizer
 =~ spider_free_mem
 =~ ha_spider::~ha_spider
+TODO-842: [Common causes: Protocol::end_statement]
+=~ Assertion \`0'
+=~ Protocol::end_statement
 
 ##############################################################################
 # Weak matches
