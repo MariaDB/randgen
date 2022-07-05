@@ -939,7 +939,7 @@ sub init {
     } );
 
     if (not defined $dbh) {
-        say("connect() to dsn ".$executor->dsn()." failed: ".$DBI::errstr);
+        sayError("connect() to dsn ".$executor->dsn()." failed: ".$DBI::errstr);
         return STATUS_ENVIRONMENT_FAILURE;
     }
 
