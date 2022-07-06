@@ -249,7 +249,7 @@ sub run {
           # If it turns out that nothing is loaded at all, it will be a pointless test,
           # but such things should be caught at test implementation stage
 
-          my @populate_rows= (defined $self->rows() ? split(',', $self->rows()) : (100));
+          my @populate_rows= (defined $self->rows() ? split(',', $self->rows()) : (0));
           my $populate = GenTest::App::PopulateSchema->new(schema_file => $spec_file,
                                                debug => $self->debug,
                                                dsn => $self->dsn,
