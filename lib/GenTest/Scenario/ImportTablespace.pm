@@ -1,4 +1,4 @@
-# Copyright (C) 2021 MariaDB Corporation Ab
+# Copyright (C) 2021, 2022 MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -102,12 +102,11 @@ sub run {
   $self->printStep("Dumping the data before discard/import");
 
   $databases= join ' ', $server->nonSystemDatabases();
-#  $server->dumpSchema($databases, $server->vardir.'/server_schema_old.dump');
-#  $server->normalizeDump($server->vardir.'/server_schema_old.dump', 'remove_autoincs');
   $server->dumpdb($databases, $server->vardir.'/server_data_old.dump');
   $server->normalizeDump($server->vardir.'/server_data_old.dump');
-#  $table_autoinc{'old'}= $server->collectAutoincrements();
   $self->printStep("Storing tablespaces for InnoDB tables and dropping the tables");
+  # This is for information purposes
+  $server->dumpSchema($databases, $server->vardir.'/server_schema_old.dump');
 
   my $dbh= $server->dbh;
 
@@ -148,57 +147,61 @@ sub run {
 
   #####
   $self->printStep("Re-creating the tables and replacing tablespaces with the stored ones");
-
+  $dbh->do("SET FOREIGN_KEY_CHECKS= 0");
   foreach my $tpath (@$tables) {
     $tpath =~ /^(.*)\/(.*)/;
     my ($tschema, $tname)= ($1, $2);
     $dbh->do("USE $tschema");
     my $def= $table_definitions{$tpath};
     $dbh->do($def);
+    if ($dbh->err) {
+      sayError("Could not re-create table $tschema.$tname: ".$dbh->err.": ".$dbh->errstr);
+      $status= STATUS_DATABASE_CORRUPTION;
+      next;
+    }
     # Workaround for MDEV-29001: adjust null-able columns which lost their DEFAULT NULL clause
     while ($def =~ s/^(.*)?\n//) {
       my $l= $1;
       if ($l =~ /^\s+(\`.*?\`)/ && $l !~ /(?:NOT NULL|DEFAULT)/) {
-        $dbh->do("ALTER TABLE $tname ALTER COLUMN $1 DROP DEFAULT");
+        my $colname= $1;
+        $dbh->do("ALTER TABLE $tname ALTER COLUMN $colname DROP DEFAULT");
+        if ($dbh->err) {
+          sayError("Could not drop default from $tname.$colname : ".$dbh->err.": ".$dbh->errstr);
+          $status= STATUS_DATABASE_CORRUPTION;
+          next;
+        }
       }
     }
     $dbh->do("ALTER TABLE $tname DISCARD TABLESPACE");
     if ($dbh->err) {
       sayError("Could not discard tablespace for $tname: ".$dbh->err.": ".$dbh->errstr);
-      return $self->finalize(STATUS_DATABASE_CORRUPTION,[$server]);
+      $status= STATUS_DATABASE_CORRUPTION;
+      next;
     }
     copy("$tablespace_backup_dir/".$tpath.'.ibd', $server->datadir.'/'.$tpath.'.ibd');
     copy("$tablespace_backup_dir/".$tpath.'.cfg', $server->datadir.'/'.$tpath.'.cfg');
     $dbh->do("ALTER TABLE $tname IMPORT TABLESPACE");
     if ($dbh->err) {
       sayError("Could not import tablespace for $tname: ".$dbh->err.": ".$dbh->errstr);
-      return $self->finalize(STATUS_DATABASE_CORRUPTION,[$server]);
+      $status= STATUS_DATABASE_CORRUPTION;
     }
+  }
+  if ($status != STATUS_OK) {
+    return $self->finalize($status,[$server]);
   }
 
   #####
   $self->printStep("Dumping the data after discard/import");
 
   $databases= join ' ', $server->nonSystemDatabases();
-#  $server->dumpSchema($databases, $server->vardir.'/server_schema_new.dump');
-#  $server->normalizeDump($server->vardir.'/server_schema_new.dump', 'remove_autoincs');
   $server->dumpdb($databases, $server->vardir.'/server_data_new.dump');
   $server->normalizeDump($server->vardir.'/server_data_new.dump');
-#  $table_autoinc{'new'}= $server->collectAutoincrements();
+  # This is for information purposes
+  $server->dumpSchema($databases, $server->vardir.'/server_schema_new.dump');
 
 
   #####
   $self->printStep("Comparing data before and after discard/import");
-
-#  $status= compare($server->vardir.'/server_schema_old.dump', $server->vardir.'/server_schema_new.dump');
-#  if ($status != STATUS_OK) {
-#    sayError("Database structures differ after upgrade");
-#    system('diff -a -u '.$server->vardir.'/server_schema_old.dump'.' '.$server->vardir.'/server_schema_new.dump');
-#    return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
-#  }
-#  else {
-#    say("Structure dumps appear to be identical");
-#  }
 
   $status= compare($server->vardir.'/server_data_old.dump', $server->vardir.'/server_data_new.dump');
   if ($status != STATUS_OK) {
@@ -209,20 +212,6 @@ sub run {
   else {
     say("Data dumps appear to be identical");
   }
-
-#  $status= $self->compare_autoincrements($table_autoinc{old}, $table_autoinc{new});
-#  if ($status != STATUS_OK) {
-#    # Comaring auto-increments can show known errors. We want to update
-#    # the global status, but don't want to exit prematurely
-#    $self->setStatus($status);
-#    sayError("Auto-increment data differs after discard/import");
-#    if ($status > STATUS_CUSTOM_OUTCOME) {
-#      return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
-#    }
-#  }
-#  else {
-#    say("Auto-increment data appears to be identical");
-#  }
 
   #####
   $self->printStep("Stopping the server");
