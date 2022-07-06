@@ -195,7 +195,7 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/modules/parser_changes.yy', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/query_response_time.yy --mysqld=--plugin-load-add=query_response_time --mysqld=--loose-query-response-time', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/server_audit.yy --mysqld=--plugin-load-add=server_audit --mysqld=--loose-server-audit --mysqld=--loose-server-audit-logging=on', '', '', '', '', '', '', '', '', '' ],
-  [ '--redefine=conf/mariadb/modules/spider.yy --mysqld=--plugin-load-add=ha_spider --mysqld=--loose-spider-same-server-link=on --mysqld=--spider_table_crd_thread_count=1 --mysqld=--spider_table_sts_thread_count=1', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/spider.yy --mysqld=--plugin-load-add=ha_spider --mysqld=--loose-spider-same-server-link=on --mysqld=--spider_table_crd_thread_count=1 --mysqld=--spider_table_sts_thread_count=1', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/sql_errlog.yy --mysqld=--plugin-load-add=sql_errlog --mysqld=--loose-sql-errlog', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/userstat.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/user_variables.yy --mysqld=--plugin-load-add=user_variables --mysqld=--loose-user-variables', '', '', '', '', '', '', '', '', '' ],
@@ -211,7 +211,7 @@ $optional_redefines_103= [
 $optional_redefines_104= [
   @$optional_redefines_103,
   [ '--redefine=conf/mariadb/modules/application_periods.yy', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
-  [ '--redefine=conf/mariadb/modules/locks-10.4-extra.yy', '', '', '', '' ],
+  [ '--redefine=conf/mariadb/modules/locks-10.4-extra.yy', '', '', '', '', '', '', '' ],
 ];
 
 $optional_redefines_105= [ @$optional_redefines_104 ];
