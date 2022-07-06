@@ -1,6 +1,6 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020, 2021, MariaDB Corporation Ab.
+# Copyright (c) 2020, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -77,6 +77,9 @@ use constant EXECUTOR_META_FILE_SIZE => 28;
 use constant EXECUTOR_META_LOCATION => 29;
 use constant EXECUTOR_META_LAST_CHECK => 30;
 use constant EXECUTOR_META_LAST_LOAD_OK => 31;
+use constant EXECUTOR_META_RELOAD_INTERVAL => 32;
+use constant EXECUTOR_META_RELOAD_NOW => 33;
+use constant EXECUTOR_SERVICE_DBH => 34;
 
 use constant FETCH_METHOD_AUTO		=> 0;
 use constant FETCH_METHOD_STORE_RESULT	=> 1;
@@ -86,8 +89,9 @@ use constant EXECUTOR_FLAG_SILENT	=> 1;
 use constant EXECUTOR_FLAG_PERFORMANCE	=> 2;
 use constant EXECUTOR_FLAG_HASH_DATA	=> 4;
 
+use constant EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL => 60;
+
 # Values
-use constant EXECUTOR_META_RELOAD_INTERVAL => 10;
 
 my %system_schema_cache;
 
@@ -109,6 +113,7 @@ sub new {
     }, @_);
 
     $executor->[EXECUTOR_FETCH_METHOD] = FETCH_METHOD_AUTO if not defined $executor->[EXECUTOR_FETCH_METHOD];
+    $executor->[EXECUTOR_META_RELOAD_NOW] = 0;
 
     return $executor;
 }
@@ -137,6 +142,23 @@ sub newFromDSN {
 	}
 }
 
+sub setMetadataReloadInterval {
+  if (not defined $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] or $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] >= $_[1]) {
+    say("Metadata interval set to $_[1]");
+    $_[0]->[EXECUTOR_META_RELOAD_INTERVAL]= $_[1];
+  } else {
+    sayWarning("Metadata interval $_[1] is ignored, already set to ".$_[0]->[EXECUTOR_META_RELOAD_INTERVAL]);
+  }
+}
+
+sub forceMetadataReload {
+  $_[0]->[EXECUTOR_META_RELOAD_NOW]= 1;
+}
+
+sub metadataReloadInterval {
+  return (defined $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] ? $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] : EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL);
+}
+
 sub channel {
     return $_[0]->[EXECUTOR_CHANNEL];
 }
@@ -152,6 +174,14 @@ sub dbh {
 
 sub setDbh {
 	$_[0]->[EXECUTOR_DBH] = $_[1];
+}
+
+sub serviceDbh {
+	return $_[0]->[EXECUTOR_SERVICE_DBH];
+}
+
+sub setServiceDbh {
+	$_[0]->[EXECUTOR_SERVICE_DBH] = $_[1];
 }
 
 sub host {
@@ -386,37 +416,6 @@ sub getCollationMetaData {
 
 ########### Metadata routines
 
-# ATTENTION: changes the value of $$file_size_ref
-# Returns metadata if loaded, empty hashref if chose not to load, and undef in case of an error
-sub loadMetaDataFromFile {
-  my ($self, $file, $file_size_ref)= @_;
-  if (not defined $self->[EXECUTOR_META_LOCATION]) {
-    $self->[EXECUTOR_META_LOCATION]= $self->serverVariable('datadir').'/';
-  }
-  $file= $self->[EXECUTOR_META_LOCATION].$file;
-  if (-e $file) {
-    my $filesize= (-s $file);
-    if ($file_size_ref and defined $$file_size_ref and ($filesize == $$file_size_ref)) {
-      sayDebug("Executor checked that the size of $file is the same as provided for checking: $$file_size_ref. Skipping loading");
-      return {};
-    }
-    sayDebug("Executor is reloading metadata from file $file");
-    if (open(METADATA, $file)) {
-      read(METADATA, my $spec, -s $file);
-      close(METADATA);
-      my $VAR1;
-      $$file_size_ref= $filesize;
-      return eval($spec);
-    } else {
-      sayError("Executor couldn't open file $file for reading: $!");
-      return undef;
-    }
-  } else {
-    sayError("Executor couldn't find file $file");
-    return undef;
-  }
-}
-
 sub cacheMetaData {
   my $self= shift;
 
@@ -440,7 +439,7 @@ sub cacheMetaData {
 
   # System schema metadata is loaded only once
   if (not exists $system_schema_cache{$self->dsn()}) {
-    $system_meta= $self->loadMetaDataFromFile('metadata_system.info');
+    $system_meta= $self->loadMetaData('system');
     if ($system_meta and scalar(keys %$system_meta)) {
       $system_schema_cache{$self->dsn()}= $system_meta;
       say("Executor has loaded system metadata");
@@ -449,16 +448,18 @@ sub cacheMetaData {
     }
   }
 
-  if (not defined $self->[EXECUTOR_META_LAST_CHECK] # Very first attempt
-      or (not $self->[EXECUTOR_META_LAST_LOAD_OK] and time() > $self->[EXECUTOR_META_LAST_CHECK] + int(EXECUTOR_META_RELOAD_INTERVAL/5)) # Last load failed
-      or time() > $self->[EXECUTOR_META_LAST_CHECK] + EXECUTOR_META_RELOAD_INTERVAL # Reload interval exceeded
+  if ($self->[EXECUTOR_META_RELOAD_NOW]
+      or not defined $self->[EXECUTOR_META_LAST_CHECK] # Very first attempt
+      or (not $self->[EXECUTOR_META_LAST_LOAD_OK] and time() > $self->[EXECUTOR_META_LAST_CHECK] + int($self->metadataReloadInterval()/5)) # Last load failed
+      or time() > $self->[EXECUTOR_META_LAST_CHECK] + $self->metadataReloadInterval() # Reload interval exceeded
   )
   {
     $self->[EXECUTOR_META_LAST_LOAD_OK]= 0;
     # Non-system schema metadata is reloaded periodically
-    $non_system_meta= $self->loadMetaDataFromFile('metadata.info', \$self->[EXECUTOR_META_FILE_SIZE]);
+    $non_system_meta= $self->loadMetaData('non-system');
+
     if ($non_system_meta and scalar(%$non_system_meta)) {
-      sayDebug("Executor has loaded non-system metadata");
+      say("Executor has (re-)loaded non-system metadata");
       $self->[EXECUTOR_META_LAST_LOAD_OK]= 1;
     } elsif ($non_system_meta) {
       sayDebug("Executor has kept old non-system metadata");
@@ -467,6 +468,7 @@ sub cacheMetaData {
       sayWarning("Executor has not loaded non-system metadata");
     }
     $self->[EXECUTOR_META_LAST_CHECK]= time();
+    $self->[EXECUTOR_META_RELOAD_NOW] = 0;
   }
 
   my $all_meta;
@@ -524,20 +526,25 @@ sub metaSchemas {
 }
 
 sub metaTables {
-    my ($self, $schema) = @_;
+    my ($self, $schema, $forced) = @_;
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
-    $schema = $self->defaultSchema if not defined $schema;
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     my $cachekey = "TAB-$schema";
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey})
     {
         my $tables = [sort ( keys %{$meta->{$schema}->{table}}, keys %{$meta->{$schema}->{view}} )];
         if (not defined $tables or $#$tables < 0) {
+          if ($forced) {
             sayWarning "Schema '$schema' has no tables";
             $tables = [ 'non_existing_table' ];
-        };
+          } else {
+            $self->forceMetadataReload();
+            return $self->metaTables($schema, 1);
+          }
+        }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
@@ -548,7 +555,7 @@ sub metaBaseTables {
     my ($self, $schema) = @_;
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
-    $schema = $self->defaultSchema if not defined $schema;
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
 
     my $cachekey = "BASETAB-$schema";
 
@@ -568,7 +575,7 @@ sub metaViews {
     my ($self, $schema) = @_;
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
-    $schema = $self->defaultSchema if not defined $schema;
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
 
     my $cachekey = "VIEW-$schema";
 
@@ -628,12 +635,12 @@ sub _metaFindTable {
 }
 
 sub metaColumns {
-    my ($self, $requested_table, $requested_schema) = @_;
+    my ($self, $requested_table, $requested_schema, $forced) = @_;
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     my ($table, $schema)= $self->_metaFindTable($requested_table,$requested_schema);
-    $schema = $self->defaultSchema if not defined $schema;
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
     
     my $cachekey="COL-$schema-$table";
@@ -644,21 +651,24 @@ sub metaColumns {
             $cols = [sort keys %{$meta->{$schema}->{table}->{$table}}]
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $cols = [sort keys %{$meta->{$schema}->{view}->{$table}}]
-        } else {
+        } elsif ($forced) {
             sayWarning "In metaColumns: Table/view '$table' in schema '$schema' has no columns";
             return ['non_existing_column'];
-        } 
+        } else {
+            $self->forceMetadataReload();
+            return $self->metaColumns($requested_table, $requested_schema, 1);
+        }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }
 
 sub metaColumnsIndexType {
-    my ($self, $indextype, $table, $schema) = @_;
+    my ($self, $indextype, $table, $schema, $forced) = @_;
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
     
-    $schema = $self->defaultSchema if not defined $schema;
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
     
     my $cachekey="COL-$indextype-$schema-$table";
@@ -669,9 +679,12 @@ sub metaColumnsIndexType {
             $colref = $meta->{$schema}->{table}->{$table}
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $colref = $meta->{$schema}->{view}->{$table};
-        } else {
+        } elsif ($forced) {
             sayWarning "In metaColumnsIndexType: Table/view '$table' in schema '$schema' has no columns";
             return ['non_existing_column'];
+        } else {
+            $self->forceMetadataReload();
+            return $self->metaColumnsIndexType($indextype, $table, $schema, 1);
         }
 
         # If the table is a view, don't bother looking for indexed columns, fall back to ordinary
@@ -699,7 +712,7 @@ sub metaColumnsDataType {
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
     
-    $schema = $self->defaultSchema if not defined $schema;
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
     
     my $cachekey="COL-$datatype-$schema-$table";
@@ -731,7 +744,7 @@ sub metaColumnsDataIndexType {
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
     
-    $schema = $self->defaultSchema if not defined $schema;
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
     
     my $cachekey="COL-$datatype-$indextype-$schema-$table";
@@ -779,7 +792,7 @@ sub metaColumnsDataTypeIndexTypeNot {
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
     
-    $schema = $self->defaultSchema if not defined $schema;
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
     
     my $cachekey="COL-$datatype-$indextype-$schema-$table";
@@ -820,7 +833,7 @@ sub metaColumnsIndexTypeNot {
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
     
-    $schema = $self->defaultSchema if not defined $schema;
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
     
     my $cachekey="COLNOT-$indextype-$schema-$table";
@@ -881,7 +894,7 @@ sub metaColumnInfo {
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
-    $schema = $self->defaultSchema if not defined $schema;
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
 
     my $cachekey="COLINFO-$schema-$table";

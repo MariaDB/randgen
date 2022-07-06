@@ -945,6 +945,21 @@ sub init {
 
     $executor->setDbh($dbh);
 
+    my $service_dbh = DBI->connect($executor->dsn(), undef, undef, {
+        PrintError => 0,
+        RaiseError => 0,
+        AutoCommit => 1,
+        mysql_multi_statements => 1,
+        mysql_auto_reconnect => 1
+    } );
+
+    if (not defined $service_dbh) {
+        sayError("connect() to dsn ".$executor->dsn()." (service connection) failed: ".$DBI::errstr);
+        return STATUS_ENVIRONMENT_FAILURE;
+    }
+
+    $executor->setServiceDbh($service_dbh);
+
     my ($host) = $executor->dsn() =~ m/:host=([^:]+):/;
     $executor->setHost($host);
     my ($port) = $executor->dsn() =~ m/:port=([^:]+):/;
@@ -1664,6 +1679,119 @@ sub read_only {
     } else {
         return 0;
     }
+}
+
+sub loadMetaData {
+  # Type can be 'system' or 'non-system'
+  my ($self, $metadata_type)= @_;
+  my $system_schemata= "'mysql','information_schema','performance_schema','sys'";
+  my $exempt_schemata= "'transforms'";
+  my $clause;
+  if ($metadata_type eq 'system') {
+    $clause= "table_schema IN ($system_schemata)"
+  } elsif ($metadata_type eq 'non-system') {
+    $clause= "table_schema NOT IN ($system_schemata,$exempt_schemata) and table_name != 'DUMMY'"
+  } else {
+    sayError("Unknown metadata type requested: $metadata_type");
+    return undef;
+  }
+
+  my $table_query=
+      "SELECT table_schema, table_name, table_type ".
+      "FROM information_schema.tables WHERE $clause";
+  my $column_query=
+      "SELECT table_schema, table_name, column_name, column_key, ".
+             "data_type, character_maximum_length ".
+      "FROM information_schema.columns WHERE $clause";
+
+  sayDebug("Metadata reload: Starting reading $metadata_type metadata with condition \"$clause\"");
+
+  my ($table_metadata, $column_metadata);
+  my $dbh= $self->serviceDbh();
+  $table_metadata= $dbh->selectall_arrayref($table_query);
+  if (not $dbh->err and $table_metadata) {
+    $column_metadata= $dbh->selectall_arrayref($column_query);
+    sayDebug("MetadataReload: Finished reading metadata");
+  }
+  if ($dbh->err or not $table_metadata or not $column_metadata) {
+    sayError("MetadataReload: Failed to retrieve metadata with condition \"$clause\": " . $dbh->err . " " . $dbh->errstr);
+    return undef;
+  }
+
+  my $meta= {};
+  my %tabletype= ();
+
+  foreach my $row (@$table_metadata) {
+    my ($schema, $table, $type) = @$row;
+    if (
+      $type eq 'BASE TABLE' or
+      $type eq 'SYSTEM VERSIONED' or
+      $type eq 'SEQUENCE'
+    ) { $type= 'table' }
+    elsif (
+      $type eq 'VIEW' or
+      $type eq 'SYSTEM VIEW'
+    ) { $type= 'view' }
+    else { $type= 'misc' };
+    if (lc($schema) eq 'information_schema') {
+      $meta->{information_schema}={} if not exists $meta->{information_schema};
+      $meta->{information_schema}->{$type}={} if not exists $meta->{information_schema}->{$type};
+      $meta->{information_schema}->{$type}->{$table}={} if not exists $meta->{information_schema}->{$type}->{$table};
+      $tabletype{'information_schema.'.$table}= $type;
+      $meta->{INFORMATION_SCHEMA}={} if not exists $meta->{INFORMATION_SCHEMA};
+      $meta->{INFORMATION_SCHEMA}->{$type}={} if not exists $meta->{INFORMATION_SCHEMA}->{$type};
+      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}={} if not exists $meta->{INFORMATION_SCHEMA}->{$type}->{$table};
+      $tabletype{'INFORMATION_SCHEMA.'.$table}= $type;
+    } else {
+      $meta->{$schema}={} if not exists $meta->{$schema};
+      $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
+      $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
+      $tabletype{$schema.'.'.$table}= $type;
+    }
+  }
+
+  foreach my $row (@$column_metadata) {
+    my ($schema, $table, $col, $key, $realtype, $maxlength) = @$row;
+    my $metatype= lc($realtype);
+    if (
+      $metatype eq 'bit' or
+      $metatype eq 'tinyint' or
+      $metatype eq 'smallint' or
+      $metatype eq 'mediumint' or
+      $metatype eq 'bigint'
+    ) { $metatype= 'int' }
+    elsif (
+      $metatype eq 'double'
+    ) { $metatype= 'float' }
+    elsif (
+      $metatype eq 'datetime'
+    ) { $metatype= 'timestamp' }
+    elsif (
+      $metatype eq 'varchar' or
+      $metatype eq 'binary' or
+      $metatype eq 'varbinary'
+    ) { $metatype= 'char' }
+    elsif (
+      $metatype eq 'tinyblob' or
+      $metatype eq 'mediumblob' or
+      $metatype eq 'longblob' or
+      $metatype eq 'tinytext' or
+      $metatype eq 'mediumtext' or
+      $metatype eq 'longtext'
+    ) { $metatype= 'blob' };
+
+    if ($key eq 'PRI') { $key= 'primary' }
+    elsif ($key eq 'MUL' or $key eq 'UNI') { $key= 'indexed' }
+    else { $key= 'ordinary' };
+    my $type= $tabletype{$schema.'.'.$table};
+    if (lc($schema) eq 'information_schema') {
+      $meta->{information_schema}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
+      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
+    } else {
+      $meta->{$schema}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
+    }
+  }
+  return $meta;
 }
 
 1;
