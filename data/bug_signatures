@@ -1440,6 +1440,10 @@ MDEV-23809:
 =~ evaluate_join_record
 =~ sub_select
 =~ DISTINCT
+MDEV-23801:
+=~ Assertion \`index->table->instant \|\| block->page\.id\.page_no() != index->page'
+=~ btr_pcur_store_position
+=~ row_search_mvcc
 MDEV-23800:
 =~ Assertion \`!result'
 =~ convert_const_to_int
