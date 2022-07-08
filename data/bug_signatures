@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29066:
+=~ signal 8
+=~ spider_db_set_cardinarity
+=~ get_schema_stat_record
+=~ Version: '10\.4|Server version: 10\.4
 MDEV-29065:
 =~ Trying to lock uninitialized mutex at .*ha_myisam
 =~ ha_myisam::update_create_info
