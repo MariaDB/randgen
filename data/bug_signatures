@@ -4,6 +4,22 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29059:
+=~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
+=~ handler::ha_reset
+=~ close_thread_table
+=~ spider\.yy
+=~ Version: '10\.[3-4]|Server version: 10\.[3-4]
+MDEV-29059:
+=~ AddressSanitizer|signal
+=~ key_copy
+=~ write_record
+=~ spider\.yy
+MDEV-29058:
+=~ Assertion \`index->type == 32'
+=~ dict_index_build_internal_fts
+=~ dict_index_add_to_cache
+=~ Version: '10\.3|Server version: 10\.3
 MDEV-29047:
 =~ signal|AddressSanitizer
 =~ myrocks::Rdb_field_packing::get_field_in_table
@@ -462,6 +478,11 @@ MDEV-27223:
 MDEV-27216:
 =~ mysqld: Incorrect information in file:
 =~ Version: '10\.4|Server version: 10\.4
+MDEV-27052:
+=~ Failing assertion: state == TRX_STATE_NOT_STARTED \|\| (relaxed && thd_get_error_number(trx->mysql_thd))
+=~ trx_state_eq
+=~ rw_trx_hash_t::validate_element
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-27015:
 =~ Assertion \`!is_null()'
 =~ FixedBinTypeBundle<.*>::Field_fbt::to_fbt() const \[.*\]
@@ -608,6 +629,10 @@ MDEV-26402:
 =~ Item_field::used_tables
 =~ update_depend_map_for_order
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-26247:
+=~ signal|AddressSanitizer
+=~ spider_db_mbase_util::append_table
+=~ Pushdown_query::execute
 MDEV-26217:
 =~ AddressSanitizer|signal
 =~ srw_mutex::wr_lock_try
@@ -4002,8 +4027,8 @@ TODO-842: [MDL_ticket::create]
 =~ open_table_get_mdl_lock
 TODO-842: [Common causes: marked_for_read]
 =~ marked_for_read
-=~ Item::save_in_field
-=~ TABLE::update_virtual_fields
+=~ Item::save_in_field|Item_field::val_.*
+=~ TABLE::update_virtual_fields|Item::print_parenthesised
 TODO-842: [Common causes: Diagnostics_area::set_ok_status]
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
