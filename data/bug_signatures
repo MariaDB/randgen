@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29065:
+=~ Trying to lock uninitialized mutex at .*ha_myisam
+=~ ha_myisam::update_create_info
+=~ binlog_show_create_table
+=~ s3\.yy
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29059:
 =~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
 =~ handler::ha_reset
@@ -1537,7 +1543,7 @@ MDEV-23676:
 =~ my_time_packed_to_binary
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23665:
-=~ Assertion \`length <= 64'
+=~ Assertion \`length <= 64'|Assertion \`length <= sizeof(m_str)'
 =~ PFS_variable_name_row::make_row
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23664:
