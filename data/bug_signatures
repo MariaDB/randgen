@@ -4039,7 +4039,7 @@ TODO-842: [MDL_ticket::create]
 TODO-842: [Common causes: marked_for_read]
 =~ marked_for_read
 =~ Item::save_in_field|Item_field::val_.*
-=~ TABLE::update_virtual_fields|Item::print_parenthesised
+=~ TABLE::update_virtual_fields|Item::print_parenthesised|find_all_keys
 TODO-842: [Common causes: Diagnostics_area::set_ok_status]
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
