@@ -671,6 +671,12 @@ MDEV-26217:
 =~ lock_rec_dequeue_from_page
 =~ lock_release_try
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-26214:
+=~ AddressSanitizer|signal
+=~ Item_field::fix_outer_field|Item_ref::fix_fields
+=~ Item::fix_fields_if_needed
+=~ setup_without_group
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26152:
 =~ InnoDB: Failing assertion: prebuilt->template_type == ROW_MYSQL_WHOLE_ROW
 =~ row_update_for_mysql
@@ -1289,8 +1295,14 @@ MDEV-24349:
 =~ get_quote_char_for_identifier
 =~ opt_trace_print_expanded_query
 MDEV-24349:
+=~ AddressSanitizer|signal
 =~ check_column_name
 =~ st_select_lex::print
+=~ opt_trace_print_expanded_query
+MDEV-24349:
+=~ AddressSanitizer|signal
+=~ st_select_lex::print
+=~ With_element::print
 =~ opt_trace_print_expanded_query
 MDEV-24283:
 =~ Assertion \`bitmap_is_set(&m_part_info->read_partitions, m_part_spec\.start_part)'
