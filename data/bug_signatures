@@ -489,6 +489,11 @@ MDEV-27223:
 MDEV-27216:
 =~ mysqld: Incorrect information in file:
 =~ Version: '10\.4|Server version: 10\.4
+MDEV-27198:
+=~ Assertion \`!is_set() \|\| (m_status == DA_EOF_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_eof_status
+=~ Sql_cmd_analyze_table::execute|Sql_cmd_optimize_table::execute
+=~ spider\.yy
 MDEV-27052:
 =~ Failing assertion: state == TRX_STATE_NOT_STARTED \|\| (relaxed && thd_get_error_number(trx->mysql_thd))
 =~ trx_state_eq
@@ -4038,7 +4043,7 @@ TODO-842: [MDL_ticket::create]
 =~ open_table_get_mdl_lock
 TODO-842: [Common causes: marked_for_read]
 =~ marked_for_read
-=~ Item::save_in_field|Item_field::val_.*
+=~ Item::save_in_field|Item_field::val_.*|Field::store_field
 =~ TABLE::update_virtual_fields|Item::print_parenthesised|find_all_keys
 TODO-842: [Common causes: Diagnostics_area::set_ok_status]
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
