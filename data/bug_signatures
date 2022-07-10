@@ -677,6 +677,11 @@ MDEV-26214:
 =~ Item::fix_fields_if_needed
 =~ setup_without_group
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-26198:
+=~ Assertion \`0'
+=~ row_log_table_apply_op
+=~ ha_innobase::inplace_alter_table|handler::ha_commit_inplace_alter_table
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26152:
 =~ InnoDB: Failing assertion: prebuilt->template_type == ROW_MYSQL_WHOLE_ROW
 =~ row_update_for_mysql
