@@ -615,6 +615,8 @@ MDEV-26546:
 =~ Diagnostics_area::set_error_status
 =~ spider_mbase_handler::show_table_status
 =~ spider_get_sts
+MDEV-26541: [Spider does not work with UBSAN]
+=~ Can't open shared library .*ha_spider.so' (errno: .*, undefined symbol: _ZTI12ha_partition)
 MDEV-26540:
 =~ Assertion \`inited==RND'
 =~ handler::ha_rnd_end
@@ -2293,9 +2295,9 @@ MDEV-21830:
 =~ ha_maria::implicit_commit
 =~ ha_commit_trans
 MDEV-21821:
-=~ AddressSanitizer:
-=~ myrocks::Rdb_transaction::on_commit
+=~ AddressSanitizer:|signal
 =~ myrocks::Rdb_transaction_impl::commit_no_binlog
+=~ commit_one_phase_2
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21812:
 =~ Assertion \`marked_for_write_or_computed()'
