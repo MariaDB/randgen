@@ -468,7 +468,7 @@ _basics_all_sql_modes:
         'NO_UNSIGNED_SUBTRACTION',
         'NO_DIR_IN_CREATE',
         'POSTGRESQL',
-        'ORACLE',
+  #     'ORACLE',
   #     'MSSQL',
         'DB2',
   #     'MAXDB',
