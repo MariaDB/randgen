@@ -1,4 +1,4 @@
 $rules = {
-  # MDEV-24680
+  # MDEV-24680 and many more anti-uses
   'fk_checks'       => sub { $_ =~ m{SET.*FOREIGN_KEY_CHECKS}is },
 }
