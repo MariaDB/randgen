@@ -169,15 +169,12 @@ $auto_gendata_combinations= [
 
 # Variators are transformers which are run without result comparison
 $optional_variators_102= [
-  [ '', '--transformers=EnableOptimizations' ],
-  [ '', '', '', '--transformers=DisableOptimizations' ],
   [ '', '--variators=ExecuteAsCTE' ],
   [ '', '', '', '', '', '', '', '--variators=ExecuteAsDeleteReturning' ],
   [ '', '--transformers=ExecuteAsDerived' ],
   [ '', '--variators=ExecuteAsExecuteImmediate' ],
   [ '', '', '--transformers=ExecuteAsFunctionTwice' ],
   [ '', '', '--transformers=ExecuteAsPreparedThrice' ],
-  [ '', '--transformers=ExecuteAsUpdateDelete' ],
   [ '', '--variators=ExecuteAsUnion' ],
   [ '', '--variators=ExecuteAsView' ],
   [ '', '', '', '--variators=AnalyzeSelect' ],
