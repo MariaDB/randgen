@@ -1711,7 +1711,9 @@ sub loadMetaData {
   $table_metadata= $dbh->selectall_arrayref($table_query);
   if (not $dbh->err and $table_metadata) {
     $column_metadata= $dbh->selectall_arrayref($column_query);
-    sayDebug("MetadataReload: Finished reading metadata");
+    if (not $dbh->err and $column_metadata) {
+      sayDebug("MetadataReload: Finished reading metadata");
+    }
   }
   if ($dbh->err or not $table_metadata or not $column_metadata) {
     sayError("MetadataReload: Failed to retrieve metadata with condition \"$clause\": " . $dbh->err . " " . $dbh->errstr);
