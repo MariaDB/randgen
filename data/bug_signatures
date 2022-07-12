@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29088:
+=~ AddressSanitizer|signal
+=~ Item_field::fix_outer_field|Item_ref::fix_fields
+=~ Item::fix_fields_if_needed
+=~ setup_without_group
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29066:
 =~ signal 8
 =~ spider_db_set_cardinarity
@@ -673,12 +679,6 @@ MDEV-26217:
 =~ lock_rec_dequeue_from_page
 =~ lock_release_try
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-MDEV-26214:
-=~ AddressSanitizer|signal
-=~ Item_field::fix_outer_field|Item_ref::fix_fields
-=~ Item::fix_fields_if_needed
-=~ setup_without_group
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26198:
 =~ Assertion \`0'
 =~ row_log_table_apply_op
