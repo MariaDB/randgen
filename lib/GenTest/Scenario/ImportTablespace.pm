@@ -98,8 +98,19 @@ sub run {
     return $self->finalize(STATUS_TEST_FAILURE,[$server]);
   }
 
+  my $dbh= $server->dbh;
+
   #####
-  $self->printStep("Dumping the data before discard/import");
+  $self->printStep("Preparing to discard/import");
+  # Drop all non-InnoDB tables, it will make things simpler
+  my $non_innodb_tables = $dbh->selectcol_arrayref("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.tables where table_schema not in ('mysql','information_schema','performance_schema','sys') and engine != 'InnoDB'");
+  say("Dropping tables @$non_innodb_tables");
+  foreach my $t (@$non_innodb_tables) {
+    $dbh->do("DROP TABLE $t");
+  }
+
+  #####
+  $self->printStep("Dumping the remaining data before discard/import");
 
   $databases= join ' ', $server->nonSystemDatabases();
   $server->dumpdb($databases, $server->vardir.'/server_data_old.dump');
@@ -108,7 +119,6 @@ sub run {
   # This is for information purposes
   $server->dumpSchema($databases, $server->vardir.'/server_schema_old.dump');
 
-  my $dbh= $server->dbh;
 
   $dbh->do("SET GLOBAL innodb_file_per_table= 1");
   $dbh->do("SET foreign_key_checks= 0");
