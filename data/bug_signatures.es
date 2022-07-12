@@ -11,10 +11,6 @@ MENT-808:
 =~ signal [16]|AddressSanitizer|\`page_offset != 0 && page_offset <= page_length && page_length + length <= max_page_size'|\`page_offset - length <= page_length'|\`page_offset >= keypage_header && page_offset <= page_length'|\`page_offset != 0 && page_offset + length <= page_length'
 =~ maria_apply_log
 =~ BACKUP_FAILURE
-MENT-368:
-=~ Assertion \`inline_mysql_file_tell(.*, file, (myf) (0)) == base_pos+ (16 + 5\*8 + 6\*4 + 11\*2 + 6 + 5\*2 + 1 + 16)'
-=~ maria_create
-=~ create_internal_tmp_table
 MENT-328:
 =~ mariabackup: File '.*seq.*MAI' not found (Errcode: 2 "No such file or directory")
 =~ Error on aria table file open .*seq.*MAI
@@ -60,51 +56,54 @@ TODO-842: [m_status == DA_OK_BULK - LOCK]
 =~ Version: '10\.[2-9]
 
 ##########
-# Fixed in the next release (10.2.44 / 10.3.35 / 10.4.25 / 10.5.15 / 10.6.8)
+# Fixed in the next release (10.3.36 / 10.4.26 / 10.5.16 / 10.6.9)
 ##########
 
-MDEV-28274:
-=~ Assertion \`s <= READ_FIX'
-=~ buf_page_t::set_state
-=~ buf_read_page_low
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-27668:
-=~ Assertion \`item->type_handler()->is_traditional_scalar_type() \|\| item->type_handler() == type_handler()'
-=~ Field_inet6::can_optimize_keypart_ref
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]
-MDEV-26551:
-=~ InnoDB: Failing assertion: DICT_TF_HAS_DATA_DIR(table->flags)
-=~ dict_save_data_dir_path
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-25214:
-=~ Assertion \`!node->is_open()'|signal 11
-=~ fil_node_open_file
-=~ fil_crypt_find_space_to_rotate
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]
-MDEV-23210:
-=~ Assertion \`(length % 4) == 0'
-=~ my_lengthsp_utf32
-MDEV-22973:
-=~ Assertion \`records_are_comparable(table)'
-=~ compare_record
-=~ multi_update::do_updates
-=~ versioning|FeatureUsage detected system-versioned
-=~ Version: '10\.[3-4]
-MDEV-19631:
-=~ Assertion \`0'
-=~ st_select_lex_unit::optimize
-=~ mysql_explain_union
-=~ Prepared_statement::execute|sp_head::execute
-MDEV-17223:
-=~ Assertion \`thd->killed != 0'
-=~ ha_maria::enable_indexes
-=~ handler::ha_end_bulk_insert
+MDEV-28950:
+=~ Assertion \`\*err == DB_SUCCESS'
+=~ btr_page_split_and_insert
+=~ btr_root_raise_and_insert
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-28897:
+=~ Assertion \`table\.get_ref_count() <= 1'
+=~ trx_t::drop_table
+=~ ha_partition::truncate
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-28897:
+=~ Failing assertion: table->get_ref_count() == 0
+=~ dict_sys_t::remove
+=~ ha_partition::truncate
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-26979:
+=~ AddressSanitizer|signal
+=~ dict_sys_t::allow_eviction
+=~ i_s_sys_tables_fill_table_stats
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-26127:
+=~ Failing assertion: id != 0
+=~ dict_table_t::rename_tablespace
+=~ row_undo
+=~ Query .* PARTITION
+MDEV-26127:
+=~ Assertion \`err != DB_DUPLICATE_KEY'
+=~ row_rename_table_for_mysql
+=~ handler::ha_rename_partitions
+=~ Query .* PARTITION
+MDEV-21027:
+=~ Assertion \`part_share->auto_inc_initialized \|\| !can_use_for_auto_inc_init()'
+=~ ha_partition::set_auto_increment_if_higher
+=~ ha_partition::write_row
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-14642:
+=~ Assertion \`table->s->db_create_options == part_table->s->db_create_options'
+=~ compare_table_with_partition
+=~ Sql_cmd_alter_table_exchange_partition::exchange_partition
 
 ##############################################################################
 # Weak matches
 ##############################################################################
 
 ##########
-# Fixed in the next release (10.2.44 / 10.3.35 / 10.4.25 / 10.5.15 / 10.6.8)
+# Fixed in the next release (10.3.36 / 10.4.26 / 10.5.16 / 10.6.9)
 ##########
 
