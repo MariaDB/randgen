@@ -44,7 +44,7 @@ query_type:
   simple_select | simple_select | mixed_select | mixed_select | mixed_select | aggregate_select ;
 
 mixed_select:
-        { $stack->push() } SELECT distinct straight_join select_option select_list FROM join WHERE where_list group_by_clause having_clause order_by_clause { $stack->pop(undef) } ;
+        { $min_tables_to_join=1; $stack->push() } SELECT distinct straight_join select_option select_list FROM join WHERE where_list group_by_clause having_clause order_by_clause { $stack->pop(undef) } ;
 
 simple_select:
         { $stack->push() } SELECT distinct straight_join select_option simple_select_list FROM join WHERE where_list  optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
@@ -85,12 +85,12 @@ nonaggregate_select_item:
 
 aggregate_select_item:
         aggregate table_alias . int_field_name ) AS {"field".++$fields } ; 
-	
+
 join:
        { $stack->push() }      
        table_or_join 
        { $stack->set("left",$stack->get("result")); }
-       left_right outer JOIN table_or_join 
+       left_right outer JOIN table_or_join_count_control
        ON 
        join_condition ;
 
@@ -197,9 +197,12 @@ limit:
 # recommend 8 tables : 2 joins for smaller queries, 6:2 for larger ones
 ################################################################################
 
+table_or_join_count_control:
+  { $min_tables_to_join > 1 ? 'join' : 'table_or_join' };
+
 table_or_join:
-           table | table | table | table | table | 
-           table | table | table | join | join ;
+           ==FACTOR:8== { $min_tables_to_join--; '' } table |
+           ==FACTOR:2== join ;
 
 table_disabled:
 # We use the "AS alias" bit here so we can have unique aliases if we use the same table many times
@@ -232,11 +235,14 @@ char_indexed:
 
 
 table_alias:
-  alias1 | alias1 | alias1 | alias1 | alias1 | alias1 | alias1 | alias1 | alias1 | alias1 |
-  alias2 | alias2 | alias2 | alias2 | alias2 | alias2 | alias2 | alias2 | alias2 | other_table ;
+  ==FACTOR:10== alias1 |
+  ==FACTOR:9== { $min_tables_to_join=2 if $min_tables_to_join < 2; '/* min tables 2 */ alias2' } |
+  other_table ;
 
 other_table:
-  alias3 | alias3 | alias3 | alias3 | alias3 | alias4 | alias4 | alias5 ;
+  ==FACTOR:6== { $min_tables_to_join=3 if $min_tables_to_join < 3; '/* min tables 3 */ alias3' } |
+  ==FACTOR:2== { $min_tables_to_join=4 if $min_tables_to_join < 4; '/* min tables 4 */ alias4' } |
+  { $min_tables_to_join=5; '/* min tables 5 */ alias5' } ;
 
 existing_table_item:
 	{ "alias".$prng->int(1,$tables) };
