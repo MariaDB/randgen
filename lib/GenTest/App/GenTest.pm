@@ -306,14 +306,28 @@ sub run {
     foreach my $worker_pid (keys %worker_pids) {
         say("Killing remaining worker process with pid $worker_pid...");
         kill(15, $worker_pid);
+        foreach (1..5) {
+            last unless kill(0, $worker_pid);
+            sleep 1;
+        }
+        if (kill(0, $worker_pid)) {
+            kill(9, $worker_pid);
+        }
     }
-        
+
     if ($reporter_died == 0) {
         # Wait for periodic process to return the status of its last execution
         Time::HiRes::sleep(1);
         say("Killing periodic reporting process with pid $reporter_pid...");
         kill(15, $reporter_pid);
-            
+        foreach (1..5) {
+            last unless kill(0, $reporter_pid);
+            sleep 1;
+        }
+        if (kill(0, $reporter_pid)) {
+            kill(9, $reporter_pid);
+        }
+
         if (osWindows()) {
             # We use sleep() + non-blocking waitpid() due to a bug in ActiveState Perl
             Time::HiRes::sleep(1);
