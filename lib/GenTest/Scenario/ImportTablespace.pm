@@ -103,7 +103,12 @@ sub run {
   #####
   $self->printStep("Preparing to discard/import");
   # Drop all non-InnoDB tables, it will make things simpler
-  my $non_innodb_tables = $dbh->selectcol_arrayref("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.tables where table_schema not in ('mysql','information_schema','performance_schema','sys') and engine != 'InnoDB'");
+  my $non_innodb_tables = $dbh->selectcol_arrayref("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.tables where table_schema not in ('mysql','information_schema','performance_schema','sys') and table_type = 'VIEW'");
+  say("Dropping views @$non_innodb_tables");
+  foreach my $v (@$non_innodb_tables) {
+    $dbh->do("DROP VIEW $v");
+  }
+  $non_innodb_tables = $dbh->selectcol_arrayref("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.tables where table_schema not in ('mysql','information_schema','performance_schema','sys') and engine != 'InnoDB'");
   say("Dropping tables @$non_innodb_tables");
   foreach my $t (@$non_innodb_tables) {
     $dbh->do("DROP TABLE $t");
