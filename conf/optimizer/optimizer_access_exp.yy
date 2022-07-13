@@ -34,7 +34,7 @@
 ################################################################################
 
 query:
-  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } main_select ;
+  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $min_tables_to_join= 1; "" } main_select ;
 
 main_select:
   simple_select | mixed_select | mixed_select ;
@@ -80,10 +80,10 @@ table1_simple_select_list:
   { $cur_table='table1'; ""} special_simple_select_list ;
 
 table2_simple_select_list:
-  { $cur_table='table2'; ""} special_simple_select_list ;
+  { $min_tables_to_join= 2 if $min_tables_to_join < 2; $cur_table='table2'; ""} special_simple_select_list ;
 
 table3_simple_select_list:
-  { $cur_table='table3'; ""} special_simple_select_list ;
+  { $min_tables_to_join= 3 if $min_tables_to_join < 3; $cur_table='table3'; ""} special_simple_select_list ;
 
 special_simple_select_list:
 # NOTE: need to determine non-indexed fields so we
@@ -112,12 +112,14 @@ nonaggregate_select_item:
 aggregate_select_item:
         aggregate table_123 . aggregate_field ) AS { "field".++$fields } ; 
 
+table_or_join_count_control:
+  { $min_tables_to_join > 1 ? 'join' : 'table_or_join' };
 
 join:
        { $stack->push() }      
        table_or_join 
        { $stack->set("left",$stack->get("result")); }
-       left_right outer JOIN table_or_join 
+       left_right outer JOIN table_or_join_count_control
        ON 
        join_condition ;
 
@@ -141,15 +143,18 @@ char_condition:
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef }  ;
 
 table_or_join:
-           table | table | table | table | table | table | 
-           table | join ;
+   ==FACTOR:4== { $min_tables_to_join--; '' } table |
+   join ;
 
 table:
 # We use the "AS table" bit here so we can have unique aliases if we use the same table many times
-       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->tables())." AS table".++$tables;  my @s=($x); $stack->pop(\@s); $x } ;
+       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->tables())." AS table".++$tables; my @s=($x); $stack->pop(\@s); $x } ;
 
 table_123:
-  table1 | table1 | table2 | table2 | table3 ;
+  ==FACTOR:2== table1 |
+  ==FACTOR:2== { $min_tables_to_join=2 if $min_tables_to_join < 2; 'table2 /* min tables 2 */' } |
+  { $min_tables_to_join=3 if $min_tables_to_join < 3; 'table3 /* min tables 3 */' }
+;
 
 join_condition_operator:
   = | = | = | = | = | = | = | < | <= | > | >= ;
@@ -291,8 +296,8 @@ having_list:
 	(having_list and_or having_item)  ;
 
 having_item:
-	existing_table_item . int_field_name comparison_operator int_value |
-        existing_table_item . char_field_name comparison_operator char_value ;
+	{ 'field'.($prng->uint16(1,$fields)) } comparison_operator int_value |
+        { 'field'.($prng->uint16(1,$fields)) } comparison_operator char_value ;
 
 ################################################################################
 # We use the total_order_by rule when using the LIMIT operator to ensure that  #
