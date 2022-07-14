@@ -1,6 +1,6 @@
 # Copyright (c) 2008,2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -98,7 +98,7 @@ sub validate {
 		$max_transformer_status = $transformer_status if $transformer_status > $max_transformer_status;
 	}
 
-	return $max_transformer_status > STATUS_SELECT_REDUCTION ? $max_transformer_status - STATUS_SELECT_REDUCTION : $max_transformer_status;
+	return $max_transformer_status;
 }
 
 sub transform {

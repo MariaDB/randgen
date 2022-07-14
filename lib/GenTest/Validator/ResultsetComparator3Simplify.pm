@@ -1,6 +1,6 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -200,27 +200,8 @@ sub validate {
         
         $compare_result = $compare_1_3 if $compare_1_3 > $compare_result;
     }
-    
-    
-    #
-    # If the discrepancy is found on SELECT, we reduce the severity of
-    # the error so that the test can continue hopefully finding
-    # further errors in the same run or providing an indication as to
-    # how frequent the error is.
-    #
-    # If the discrepancy is on an UPDATE, then the servers have
-    # diverged and the test can not continue safely.
-    # 
 
-    # CAVEAT: This may cause false positives if one execution
-    # influences the following executions. Failures due to a previous
-    # failure have been seen.
-    
-    if ($query =~ m{^[\s/*!0-9]*(EXPLAIN|SELECT|ALTER|LOAD\s+INDEX|CACHE\s+INDEX)}io) {
-        return $compare_result - STATUS_SELECT_REDUCTION;
-    } else {
-        return $compare_result;
-    }
+    return $compare_result;
 }
 
 1;

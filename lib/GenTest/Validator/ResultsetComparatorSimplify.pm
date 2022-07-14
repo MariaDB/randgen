@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -164,18 +164,7 @@ sub validate {
 		say("---------- RESULT COMPARISON ISSUE END ------------");
 	}
 
-	#
-	# If the discrepancy is found on SELECT, we reduce the severity of the error so that the test can continue
-	# hopefully finding further errors in the same run or providing an indication as to how frequent the error is
-	#
-	# If the discrepancy is on an UPDATE, then the servers have diverged and the test can not continue safely.
-	# 
-
-        if ($query =~ m{^[\s/*!0-9]*(EXPLAIN|SELECT|ALTER|LOAD\s+INDEX|CACHE\s+INDEX)}io) {
-		return $compare_outcome - STATUS_SELECT_REDUCTION;
-	} else {
-		return $compare_outcome;
-	}
+	return $compare_outcome;
 }
 
 1;

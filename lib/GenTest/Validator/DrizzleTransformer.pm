@@ -75,7 +75,7 @@ sub validate {
 		$max_transformer_status = $transformer_status if $transformer_status > $max_transformer_status;
 	}
 
-	return $max_transformer_status > STATUS_SELECT_REDUCTION ? $max_transformer_status - STATUS_SELECT_REDUCTION : $max_transformer_status;
+	return $max_transformer_status;
 }
 
 sub transform {

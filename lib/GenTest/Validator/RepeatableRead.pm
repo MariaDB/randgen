@@ -72,7 +72,7 @@ sub validate {
 				print join("\n", sort map { join("\t", @$_) } @{$repeat_result->data()})."\n";
 			}
 
-			return $compare_outcome; # - STATUS_SELECT_REDUCTION;
+			return $compare_outcome;
 		}
 	}
 
