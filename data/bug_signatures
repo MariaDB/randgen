@@ -225,6 +225,10 @@ MDEV-28466:
 =~ ha_myisam::update_row
 =~ FeatureUsage detected system-versioned tables
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-28438:
+=~ Assertion \`thd->transaction.stmt\.is_empty() \|\| thd->in_sub_stmt'
+=~ mysql_execute_command
+=~ query-cache-size
 MDEV-28404:
 =~ STATUS_SERVER_DEADLOCKED|STATUS_TEST_FAILURE
 =~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
@@ -3772,7 +3776,7 @@ TODO-842: [MDL_ticket::create]
 TODO-842: [Common causes: marked_for_read]
 =~ marked_for_read
 =~ Item::save_in_field|Item_field::val_.*|Field::store_field
-=~ TABLE::update_virtual_fields|Item::print_parenthesised|find_all_keys
+=~ TABLE::update_virtual_fields|Item::print_parenthesised|find_all_keys|TABLE::verify_constraints
 TODO-842: [Common causes: Diagnostics_area::set_ok_status]
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
