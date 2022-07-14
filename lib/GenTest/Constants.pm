@@ -45,6 +45,7 @@ require Exporter;
 	STATUS_SYNTAX_ERROR
 	STATUS_SEMANTIC_ERROR
 	STATUS_TRANSACTION_ERROR
+	STATUS_CONTEXT_ERROR
 
 	STATUS_TEST_FAILURE
 
@@ -56,7 +57,6 @@ require Exporter;
 
 	STATUS_REQUIREMENT_UNMET
 	STATUS_ERROR_MISMATCH
-	STATUS_SCHEMA_MISMATCH
 	STATUS_LENGTH_MISMATCH
 	STATUS_CONTENT_MISMATCH
 
@@ -74,7 +74,6 @@ require Exporter;
   STATUS_SERVER_SHUTDOWN_FAILURE
 	STATUS_VALGRIND_FAILURE
 	STATUS_ALARM
-        STATUS_HISTOGRAM_CORRUPTION
 
 	ORACLE_ISSUE_STILL_REPEATABLE
 	ORACLE_ISSUE_NO_LONGER_REPEATABLE
@@ -121,7 +120,7 @@ use constant STATUS_REQUIREMENT_UNMET_SELECT => 25;
 use constant STATUS_ERROR_MISMATCH_SELECT    => 26; # A SELECT query caused those erros, however the test can continue
 use constant STATUS_LENGTH_MISMATCH_SELECT   => 27; # since the database has not been modified
 use constant STATUS_CONTENT_MISMATCH_SELECT  => 28;
-use constant STATUS_SCHEMA_MISMATCH          => 29;
+
 use constant STATUS_REQUIREMENT_UNMET        => 30;
 use constant STATUS_ERROR_MISMATCH           => 31; # A DML statement caused those errors, and the test can not continue
 use constant STATUS_LENGTH_MISMATCH          => 32; # because the databases are in an unknown inconsistent state
@@ -146,8 +145,6 @@ use constant STATUS_SERVER_CRASHED           => 107;
 use constant STATUS_VALGRIND_FAILURE         => 108;
 use constant STATUS_ENVIRONMENT_FAILURE      => 109; # A failure in the environment or the grammar file
 use constant STATUS_ALARM                    => 110; # A module, e.g. a Reporter, raises an alarm with critical severity
-
-use constant STATUS_HISTOGRAM_CORRUPTION     => 111; # Histogram corruption is a variation of database corruption
 
 use constant STATUS_PERL_FAILURE             => 255; # Perl died for some reason
 

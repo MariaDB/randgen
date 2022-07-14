@@ -1,4 +1,4 @@
-# Copyright (c) 2021 MariaDB Corporation Ab
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ sub monitor {
         } elsif ($jc->[4] == 0) {
           sayError("JsonHistogram: Invalid JSON histogram for $jc->[0].$jc->[1].$jc->[2]: $jc->[3]" );
           $invalid_count++;
-          $res= STATUS_HISTOGRAM_CORRUPTION;
+          $res= STATUS_DATABASE_CORRUPTION;
         } else {
           sayError("JsonHistogram: Got an unexpected result of JSON_VALID(histogram): $jc->[4]");
           $res= STATUS_TEST_FAILURE;
@@ -82,14 +82,14 @@ sub monitor {
     }
     my $wrong_hist_size= $dbh->selectall_arrayref("SELECT db_name, table_name, column_name, hist_size FROM mysql.column_stats WHERE hist_type = 'JSON_HB' AND hist_size > $histogram_size");
     if ($wrong_hist_size and scalar(@$wrong_hist_size)) {
-      $res= STATUS_HISTOGRAM_CORRUPTION;
+      $res= STATUS_DATABASE_CORRUPTION;
       foreach my $wc (@$wrong_hist_size) {
         sayError("Wrong histogram size for $wc->[0].$wc->[1].$wc->[2]: expected <= $histogram_size, found $wc->[3]" );
       }
     }
     my $wrong_bucket_sizes= $dbh->selectall_arrayref("SELECT db_name, table_name, column_name, SUM(sizes) total_size, JSON_EXTRACT(histogram,'\$.histogram_hb_v2[*].size') AS all_sizes FROM mysql.column_stats, JSON_TABLE(histogram,'\$.histogram_hb_v2[*].size' COLUMNS (sizes DECIMAL(65,38) PATH '\$')) jt WHERE hist_type = 'JSON_HB' GROUP BY db_name, table_name, column_name, all_sizes HAVING ABS(total_size-1) > 0.01");
     if ($wrong_bucket_sizes and scalar(@$wrong_bucket_sizes)) {
-      $res= STATUS_HISTOGRAM_CORRUPTION;
+      $res= STATUS_DATABASE_CORRUPTION;
       foreach my $wb (@$wrong_bucket_sizes) {
         sayError("JsonHistogram: Wrong total size for $wb->[0].$wb->[1].$wb->[2]: $wb->[4] (total size $wb->[3])");
       }
