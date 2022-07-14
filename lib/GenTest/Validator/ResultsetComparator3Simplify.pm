@@ -138,8 +138,8 @@ sub validate {
     return STATUS_OK if $#$results < 1;
 
     return STATUS_WONT_HANDLE 
-        if $results->[0]->status() == STATUS_SEMANTIC_ERROR || 
-           $results->[1]->status() == STATUS_SEMANTIC_ERROR;
+        if $results->[0]->status() != STATUS_OK ||
+           $results->[1]->status() != STATUS_OK;
     return STATUS_WONT_HANDLE if $results->[0]->query() =~ m{EXPLAIN}sio;
 
     ## Compare the two first resultsets
@@ -157,7 +157,7 @@ sub validate {
     if ($#$results > 1) {
         my $server3 = $executors->[2]->getName()." ".$executors->[2]->version();
 
-        return STATUS_WONT_HANDLE if $results->[2]->status() == STATUS_SEMANTIC_ERROR;
+        return STATUS_WONT_HANDLE if $results->[2]->status() != STATUS_OK;
 
         my $compare_1_3 = $self->compareTwo($query, $server1, $server3, $results->[0], $results->[2]);
 
@@ -165,7 +165,7 @@ sub validate {
         ## 3 too to see if there exists a minority
         if ($compare_1_2 > STATUS_OK or $compare_1_3 > STATUS_OK) {
 
-            return STATUS_WONT_HANDLE if $results->[2]->status() == STATUS_SEMANTIC_ERROR;
+            return STATUS_WONT_HANDLE if $results->[2]->status() != STATUS_OK;
             
             my $compare_2_3 = $self->compareTwo($query, $server2, $server3, $results->[1], $results->[2]);
 

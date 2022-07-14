@@ -1,4 +1,4 @@
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -48,10 +48,7 @@ sub validate {
   my ($comparator, $executors, $results) = @_;
 
   return STATUS_OK if $#$results != 1;
-
-  return STATUS_WONT_HANDLE if $results->[0]->status() == STATUS_SEMANTIC_ERROR || $results->[1]->status() == STATUS_SEMANTIC_ERROR;
-  return STATUS_WONT_HANDLE if $results->[0]->status() == STATUS_SYNTAX_ERROR;
-  return STATUS_ERROR_MISMATCH if $results->[1]->status() == STATUS_SYNTAX_ERROR;
+  return STATUS_WONT_HANDLE if $results->[0]->status() != STATUS_OK || $results->[1]->status() != STATUS_OK;
 
   my $query = $results->[0]->query();
   return STATUS_WONT_HANDLE if $query !~ m{ANALYZE.*FORMAT.*JSON.*}sio;

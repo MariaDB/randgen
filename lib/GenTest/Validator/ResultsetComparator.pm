@@ -35,9 +35,7 @@ sub validate {
 
 	return STATUS_OK if $#$results != 1;
 
-	return STATUS_WONT_HANDLE if $results->[0]->status() == STATUS_SEMANTIC_ERROR || $results->[1]->status() == STATUS_SEMANTIC_ERROR;
-	return STATUS_WONT_HANDLE if $results->[0]->status() == STATUS_SYNTAX_ERROR;
-	return STATUS_ERROR_MISMATCH if $results->[1]->status() == STATUS_SYNTAX_ERROR;
+	return STATUS_WONT_HANDLE if $results->[0]->status() != STATUS_OK || $results->[1]->status() != STATUS_OK;
 
 	my $query = $results->[0]->query();
     return STATUS_WONT_HANDLE if $query =~ m{skip\s+ResultsetComparator}sio;
