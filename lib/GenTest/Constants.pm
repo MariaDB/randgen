@@ -46,6 +46,8 @@ require Exporter;
 	STATUS_SEMANTIC_ERROR
 	STATUS_RUNTIME_ERROR
 	STATUS_CONTEXT_ERROR
+    STATUS_ACL_ERROR
+    STATUS_CONFIGURATION_ERROR
 
 	STATUS_TEST_FAILURE
 
@@ -103,17 +105,26 @@ use constant STATUS_IGNORED_ERROR            => 19; # Most likely a real error (
 
 use constant STATUS_UNSUPPORTED              => 20; # Error codes caused by certain functionality recognized as unsupported (NOT syntax errors)
 use constant STATUS_SYNTAX_ERROR             => 21;
+
+# Distinction between "semantic" and "runtime" errors is quite arbitrary.
+# In most general terms, "semantic" errors are those which happen due
+# to inaccuracies of random data/query generation and should be
+# preferably avoided, while "runtime" errors are those which will
+# inevitably happen in random testing and have to be tolerated.
+# However, there is a big overlap between the two
 use constant STATUS_SEMANTIC_ERROR           => 22; # Errors caused by the randomness of the test, e.g. dropping a non-existing table
-use constant STATUS_RUNTIME_ERROR            => 23; # Lock wait timeouts, deadlocks, duplicate keys, etc.
+use constant STATUS_CONFIGURATION_ERROR      => 23; # Missing engines, wrong startup options, etc, a special kind of semantic errors
+use constant STATUS_RUNTIME_ERROR            => 24; # Lock wait timeouts, deadlocks, duplicate keys, etc.
+use constant STATUS_ACL_ERROR                => 25; # Access denied etc., a special kind of runtime errors
 
-use constant STATUS_TEST_FAILURE             => 24; # Boundary between genuine errors and false positives due to randomness
+use constant STATUS_TEST_FAILURE             => 30; # Boundary between genuine errors and false positives due to randomness
 
-use constant STATUS_REQUIREMENT_UNMET        => 30;
-use constant STATUS_ERROR_MISMATCH           => 31; # A DML statement caused those errors, and the test can not continue
-use constant STATUS_LENGTH_MISMATCH          => 32; # because the databases are in an unknown inconsistent state
-use constant STATUS_CONTENT_MISMATCH         => 33;
-use constant STATUS_CUSTOM_OUTCOME           => 36; # Used for things such as signaling an EXPLAIN hit from the ExplainMatch Validator
+use constant STATUS_REQUIREMENT_UNMET        => 40;
+use constant STATUS_ERROR_MISMATCH           => 41; # A DML statement caused those errors, and the test can not continue
+use constant STATUS_LENGTH_MISMATCH          => 42; # because the databases are in an unknown inconsistent state
+use constant STATUS_CONTENT_MISMATCH         => 43;
 
+use constant STATUS_CUSTOM_OUTCOME           => 50; # Used for things such as signaling an EXPLAIN hit from the ExplainMatch Validator
 use constant STATUS_POSSIBLE_FAILURE         => 60;
 
 use constant STATUS_SERVER_SHUTDOWN_FAILURE  => 90;
