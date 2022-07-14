@@ -375,7 +375,7 @@ my %class2status = (
     "08" => STATUS_SEMANTIC_ERROR, # connection exception
     "22" => STATUS_SEMANTIC_ERROR, # data exception
     "23" => STATUS_SEMANTIC_ERROR, # integrity constraint violation
-    "25" => STATUS_TRANSACTION_ERROR, # invalid transaction state
+    "25" => STATUS_RUNTIME_ERROR,  # general query error state
     "42" => STATUS_SYNTAX_ERROR    # syntax error or access rule
                                    # violation
     

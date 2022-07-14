@@ -36,7 +36,7 @@ sub validate {
 	my $dsn = $executors->[0]->dsn();
 
 	foreach my $i (0..$#$results) {
-		if ($results->[$i]->status() == STATUS_TRANSACTION_ERROR) {
+		if ($results->[$i]->status() == STATUS_RUNTIME_ERROR) {
 #			say("Explicit rollback after query ".$results->[$i]->query());
 			$executors->[$i]->dbh()->do("ROLLBACK /* Explicit ROLLBACK after a ".$results->[$i]->errstr()." error. */ ");
 		}

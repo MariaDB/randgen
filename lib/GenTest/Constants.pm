@@ -1,6 +1,6 @@
 # Copyright (c) 2008,2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013 Monty Program Ab.
-# Copyright (c) 2021 MariaDB Corporation Ab
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,7 @@ require Exporter;
     STATUS_UNSUPPORTED
 	STATUS_SYNTAX_ERROR
 	STATUS_SEMANTIC_ERROR
-	STATUS_TRANSACTION_ERROR
+	STATUS_RUNTIME_ERROR
 	STATUS_CONTEXT_ERROR
 
 	STATUS_TEST_FAILURE
@@ -104,7 +104,7 @@ use constant STATUS_IGNORED_ERROR            => 19; # Most likely a real error (
 use constant STATUS_UNSUPPORTED              => 20; # Error codes caused by certain functionality recognized as unsupported (NOT syntax errors)
 use constant STATUS_SYNTAX_ERROR             => 21;
 use constant STATUS_SEMANTIC_ERROR           => 22; # Errors caused by the randomness of the test, e.g. dropping a non-existing table
-use constant STATUS_TRANSACTION_ERROR        => 23; # Lock wait timeouts, deadlocks, duplicate keys, etc.
+use constant STATUS_RUNTIME_ERROR            => 23; # Lock wait timeouts, deadlocks, duplicate keys, etc.
 
 use constant STATUS_TEST_FAILURE             => 24; # Boundary between genuine errors and false positives due to randomness
 

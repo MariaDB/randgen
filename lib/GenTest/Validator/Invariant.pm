@@ -76,7 +76,7 @@ sub validate {
       $inconsistent_state=1;
     }
 
-    if ($results->[$i]->status() == STATUS_TRANSACTION_ERROR) {
+    if ($results->[$i]->status() == STATUS_RUNTIME_ERROR) {
       #say("entering inconsistent state due to query".$results->[$i]->query());
       $inconsistent_state = 1;
     } elsif ($results->[$i]->query() =~ m{^\s*(COMMIT|START TRANSACTION|BEGIN)}sio) {

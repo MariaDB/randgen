@@ -1,7 +1,7 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Use is subject to license terms.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020,2021 MariaDB Corporation
+# Copyright (c) 2020,2022 MariaDB Corporation
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -569,7 +569,7 @@ my %err2type = (
     ER_CANT_UPDATE_USED_TABLE_IN_SF_OR_TRG()            => STATUS_SEMANTIC_ERROR,
     ER_CANT_UPDATE_WITH_READLOCK()                      => STATUS_SEMANTIC_ERROR,
     ER_CANT_USE_OPTION_HERE()                           => STATUS_SEMANTIC_ERROR,
-    ER_CHECKREAD()                                      => STATUS_TRANSACTION_ERROR,
+    ER_CHECKREAD()                                      => STATUS_RUNTIME_ERROR,
     ER_CHECK_NOT_IMPLEMENTED()                          => STATUS_SEMANTIC_ERROR,
     ER_CHECK_NO_SUCH_TABLE()                            => STATUS_SEMANTIC_ERROR,
     ER_COALESCE_ONLY_ON_HASH_PARTITION()                => STATUS_SEMANTIC_ERROR,
@@ -597,9 +597,9 @@ my %err2type = (
     ER_DROP_PARTITION_NON_EXISTENT()                    => STATUS_SEMANTIC_ERROR,
     ER_DUP_ARGUMENT()                                   => STATUS_SEMANTIC_ERROR,
     ER_DUP_CONSTRAINT_NAME()                            => STATUS_SEMANTIC_ERROR,
-    ER_DUP_ENTRY()                                      => STATUS_TRANSACTION_ERROR,
+    ER_DUP_ENTRY()                                      => STATUS_RUNTIME_ERROR,
     ER_DUP_FIELDNAME()                                  => STATUS_SEMANTIC_ERROR,
-    ER_DUP_KEY()                                        => STATUS_TRANSACTION_ERROR,
+    ER_DUP_KEY()                                        => STATUS_RUNTIME_ERROR,
     ER_DUP_KEYNAME()                                    => STATUS_SEMANTIC_ERROR,
     ER_DUP_SIGNAL_SET()                                 => STATUS_SEMANTIC_ERROR,
     ER_EMPTY_ROW_IN_TVC()                               => STATUS_SEMANTIC_ERROR,
@@ -693,9 +693,9 @@ my %err2type = (
     ER_KEY_DOES_NOT_EXITS()                             => STATUS_SEMANTIC_ERROR,
     ER_KEY_NOT_FOUND()                                  => STATUS_IGNORED_ERROR,
     ER_KEY_PART_0()                                     => STATUS_SEMANTIC_ERROR,
-    ER_LOCK_DEADLOCK()                                  => STATUS_TRANSACTION_ERROR,
+    ER_LOCK_DEADLOCK()                                  => STATUS_RUNTIME_ERROR,
     ER_LOCK_OR_ACTIVE_TRANSACTION()                     => STATUS_SEMANTIC_ERROR,
-    ER_LOCK_WAIT_TIMEOUT()                              => STATUS_TRANSACTION_ERROR,
+    ER_LOCK_WAIT_TIMEOUT()                              => STATUS_RUNTIME_ERROR,
     ER_MALFORMED_DEFINER()                              => STATUS_SEMANTIC_ERROR,
     ER_MISSING()                                        => STATUS_SEMANTIC_ERROR,
     ER_MIX_HANDLER_ERROR()                              => STATUS_SEMANTIC_ERROR,
@@ -827,7 +827,7 @@ my %err2type = (
     ER_TOO_LONG_KEY()                                   => STATUS_SEMANTIC_ERROR,
     ER_TOO_MANY_KEYS()                                  => STATUS_SEMANTIC_ERROR,
     ER_TOO_MANY_ROWS()                                  => STATUS_SEMANTIC_ERROR,
-    ER_TRANS_CACHE_FULL()                               => STATUS_SEMANTIC_ERROR, # or STATUS_TRANSACTION_ERROR
+    ER_TRANS_CACHE_FULL()                               => STATUS_SEMANTIC_ERROR,
     ER_TRG_ALREADY_EXISTS()                             => STATUS_SEMANTIC_ERROR,
     ER_TRG_DOES_NOT_EXIST()                             => STATUS_SEMANTIC_ERROR,
     ER_TRG_ON_VIEW_OR_TEMP_TABLE()                      => STATUS_SEMANTIC_ERROR,
@@ -1266,7 +1266,7 @@ sub execute {
             ($err_type == STATUS_SKIP) ||
             ($err_type == STATUS_UNSUPPORTED) ||
             ($err_type == STATUS_SEMANTIC_ERROR) ||
-            ($err_type == STATUS_TRANSACTION_ERROR)
+            ($err_type == STATUS_RUNTIME_ERROR)
         ) {
             $executor->[EXECUTOR_ERROR_COUNTS]->{$errstr}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
             $executor->reportError($query, $err, $errstr, $execution_flags);
