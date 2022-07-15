@@ -535,7 +535,7 @@ sub metaTables {
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey})
     {
-        my $tables = [sort ( keys %{$meta->{$schema}->{table}}, keys %{$meta->{$schema}->{view}} )];
+        my $tables = [sort ( keys %{$meta->{$schema}->{table}}, keys %{$meta->{$schema}->{view}}, keys %{$meta->{$schema}->{versioned}}, keys %{$meta->{$schema}->{sequence}} )];
         if (not defined $tables or $#$tables < 0) {
           if ($forced) {
             sayWarning "Schema '$schema' has no tables";
@@ -548,7 +548,6 @@ sub metaTables {
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-    
 }
 
 sub metaBaseTables {
@@ -560,7 +559,7 @@ sub metaBaseTables {
     my $cachekey = "BASETAB-$schema";
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $tables = [sort keys %{$meta->{$schema}->{table}}];
+        my $tables = [sort keys %{$meta->{$schema}->{table}}, keys %{$meta->{$schema}->{versioned}}];
         if (not defined $tables or $#$tables < 0) {
             sayWarning "Schema '$schema' has no base tables";
             $tables = [ '!non_existing_base_table' ];
@@ -568,7 +567,25 @@ sub metaBaseTables {
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-    
+}
+
+sub metaVersionedTables {
+    my ($self, $schema) = @_;
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+
+    my $cachekey = "VERSTAB-$schema";
+
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my $tables = [sort keys %{$meta->{$schema}->{versioned}}];
+        if (not defined $tables or $#$tables < 0) {
+            sayWarning "Schema '$schema' has no versioned tables";
+            $tables = [ '!non_existing_versioned_table' ];
+        }
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }
 
 sub metaViews {
@@ -617,6 +634,10 @@ sub _metaFindTable {
         (exists $meta->{$schema} and exists $meta->{$schema}->{table} and exists $meta->{$schema}->{table}->{$table})
         or
         (exists $meta->{$schema} and exists $meta->{$schema}->{view} and exists $meta->{$schema}->{view}->{$table})
+        or
+        (exists $meta->{$schema} and exists $meta->{$schema}->{versioned} and exists $meta->{$schema}->{versioned}->{$table})
+        or
+        (exists $meta->{$schema} and exists $meta->{$schema}->{sequence} and exists $meta->{$schema}->{sequence}->{$table})
       ) {
         return ($table, $schema);
       }
@@ -624,7 +645,7 @@ sub _metaFindTable {
     # If we are here, either schema was not defined, or we didn't find
     # the table in it
     foreach my $s (sort keys %$meta) {
-      foreach my $t (sort keys %{$meta->{$s}->{table}}, sort keys %{$meta->{$s}->{view}}) {
+      foreach my $t (sort keys %{$meta->{$s}->{table}}, keys %{$meta->{$s}->{view}}, keys %{$meta->{$s}->{versioned}}, keys %{$meta->{$s}->{sequence}}) {
         if ($t eq $table) {
           return ($t, $s);
         }
@@ -651,6 +672,10 @@ sub metaColumns {
             $cols = [sort keys %{$meta->{$schema}->{table}->{$table}}]
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $cols = [sort keys %{$meta->{$schema}->{view}->{$table}}]
+        } elsif ($meta->{$schema}->{versioned}->{$table}) {
+            $cols = [sort keys %{$meta->{$schema}->{versioned}->{$table}}]
+        } elsif ($meta->{$schema}->{sequence}->{$table}) {
+            $cols = [sort keys %{$meta->{$schema}->{sequence}->{$table}}]
         } elsif ($forced) {
             sayWarning "In metaColumns: Table/view '$table' in schema '$schema' has no columns";
             return ['!non_existing_column'];
@@ -679,6 +704,10 @@ sub metaColumnsIndexType {
             $colref = $meta->{$schema}->{table}->{$table}
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $colref = $meta->{$schema}->{view}->{$table};
+        } elsif ($meta->{$schema}->{versioned}->{$table}) {
+            $colref = $meta->{$schema}->{versioned}->{$table};
+        } elsif ($meta->{$schema}->{sequence}->{$table}) {
+            $colref = $meta->{$schema}->{sequence}->{$table};
         } elsif ($forced) {
             sayWarning "In metaColumnsIndexType: Table/view '$table' in schema '$schema' has no columns";
             return ['!non_existing_column'];
@@ -723,6 +752,10 @@ sub metaColumnsDataType {
             $colref = $meta->{$schema}->{table}->{$table};
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $colref = $meta->{$schema}->{view}->{$table};
+        } elsif ($meta->{$schema}->{versioned}->{$table}) {
+            $colref = $meta->{$schema}->{versioned}->{$table};
+        } elsif ($meta->{$schema}->{sequence}->{$table}) {
+            $colref = $meta->{$schema}->{sequence}->{$table};
         } else {
             sayWarning "In metaColumnsDataType: Table/view '$table' in schema '$schema' has no columns";
             return ['!non_existing_column'];
@@ -755,6 +788,10 @@ sub metaColumnsDataIndexType {
             $colref = $meta->{$schema}->{table}->{$table};
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $colref = $meta->{$schema}->{view}->{$table};
+        } elsif ($meta->{$schema}->{versioned}->{$table}) {
+            $colref = $meta->{$schema}->{versioned}->{$table};
+        } elsif ($meta->{$schema}->{sequence}->{$table}) {
+            $colref = $meta->{$schema}->{sequence}->{$table};
         } else {
             sayWarning "In metaColumnsDataIndexType: Table/view '$table' in schema '$schema' has no columns";
             return ['!non_existing_column'];
@@ -803,6 +840,10 @@ sub metaColumnsDataTypeIndexTypeNot {
             $colref = $meta->{$schema}->{table}->{$table};
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $colref = $meta->{$schema}->{view}->{$table};
+        } elsif ($meta->{$schema}->{versioned}->{$table}) {
+            $colref = $meta->{$schema}->{versioned}->{$table};
+        } elsif ($meta->{$schema}->{sequence}->{$table}) {
+            $colref = $meta->{$schema}->{sequence}->{$table};
         } else {
             sayWarning "In metaColumnsDataTypeIndexTypeNot: Table/view '$table' in schema '$schema' has no columns";
             return ['!non_existing_column'];
@@ -844,6 +885,10 @@ sub metaColumnsIndexTypeNot {
             $colref = $meta->{$schema}->{table}->{$table};
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $colref = $meta->{$schema}->{view}->{$table};
+        } elsif ($meta->{$schema}->{versioned}->{$table}) {
+            $colref = $meta->{$schema}->{versioned}->{$table};
+        } elsif ($meta->{$schema}->{sequence}->{$table}) {
+            $colref = $meta->{$schema}->{sequence}->{$table};
         } else {
             sayWarning "In metaColumnsIndexTypeNot: Table/view '$table' in schema '$schema' has no columns";
             return ['!non_existing_column'];
@@ -905,6 +950,10 @@ sub metaColumnInfo {
             $cols = $meta->{$schema}->{table}->{$table}
         } elsif ($meta->{$schema}->{view}->{$table}) {
             $cols = $meta->{$schema}->{view}->{$table}
+        } elsif ($meta->{$schema}->{versioned}->{$table}) {
+            $cols = $meta->{$schema}->{versioned}->{$table}
+        } elsif ($meta->{$schema}->{sequence}->{$table}) {
+            $cols = $meta->{$schema}->{sequence}->{$table}
         } else {
             sayWarning "In metaColumnInfo: Table '$table' in schema '$schema' has no columns";
         }
@@ -929,6 +978,11 @@ sub tables {
 sub baseTables {
     my ($self, @args) = @_;
     return $self->metaBaseTables(@args);
+}
+
+sub versionedTables {
+    my ($self, @args) = @_;
+    return $self->metaVersionedTables(@args);
 }
 
 sub tableColumns {

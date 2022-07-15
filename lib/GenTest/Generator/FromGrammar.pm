@@ -254,6 +254,10 @@ sub next {
 						my $tables = $executors->[0]->metaBaseTables($last_database);
 						$last_table = $prng->arrayElement($tables);
 						$item = '`'.$last_table.'`';
+					} elsif ($item eq '_versionedtable') {
+						my $tables = $executors->[0]->metaVersionedTables($last_database);
+						$last_table = $prng->arrayElement($tables);
+						$item = '`'.$last_table.'`';
 					} elsif ($item eq '_view') {
 						my $tables = $executors->[0]->metaViews($last_database);
 						$last_table = $prng->arrayElement($tables);

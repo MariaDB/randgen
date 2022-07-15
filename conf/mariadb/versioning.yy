@@ -1,4 +1,4 @@
-#  Copyright (c) 2017, 2021, MariaDB
+#  Copyright (c) 2017, 2022, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,12 @@
 
 # Re-defining grammar for SYSTEM VERSIONING testing
 
+# DDL-rich grammar requires frequent metadata reload
+query_init_add:
+  SET SYSTEM_VERSIONING_ALTER_HISTORY= vers_alter_history_value { $vers_tab_num=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' };
+
 query_add:
-  vers_query | vers_query | vers_query | vers_query
-;
+  vers_query ;
 
 vers_query:
     query
@@ -59,7 +62,7 @@ vers_with_system_versioning:
 ;
 
 vers_drop_table:
-  DROP TABLE vers_ia_if_exists vers_ia_table_name
+  DROP TABLE vers_ia_if_exists _versionedtable
 ;
 
 vers_with_without_system_versioning:
@@ -68,7 +71,7 @@ vers_with_without_system_versioning:
 
 vers_change_variable:
     SET vers_session_global TRANSACTION ISOLATION LEVEL vers_tx_isolation_value
-  | SET vers_session_global `system_versioning_alter_history`= vers_alter_history_value
+  | SET vers_session_global `SYSTEM_VERSIONING_ALTER_HISTORY`= vers_alter_history_value
   | SET vers_session_global `system_versioning_asof` = vers_as_of_value
 ;
 
@@ -96,7 +99,9 @@ vers_tx_isolation_value:
 ;
 
 vers_alter_history_value:
-  KEEP | ERROR | DEFAULT
+  ==FACTOR:20== KEEP |
+  ERROR |
+  DEFAULT
 ;
 
 vers_session_global:
@@ -109,9 +114,8 @@ vers_alter:
 ;
 
 vers_set_statement_alter_history:
-  | SET STATEMENT system_versioning_alter_history=KEEP FOR
-  | SET STATEMENT system_versioning_alter_history=KEEP FOR
-  | SET STATEMENT system_versioning_alter_history=KEEP FOR
+  ==FACTOR:20== |
+  SET STATEMENT SYSTEM_VERSIONING_ALTER_HISTORY= vers_alter_history_value FOR
 ;
 
 vers_alter_table_list:
@@ -339,12 +343,13 @@ vers_ia_truncate:
   TRUNCATE TABLE vers_existing_table
 ;
 
-vers_ia_table_name:
-    { $my_last_table = 't'.$prng->int(1,10) }
+vers_ia_new_table_name:
+    { $my_last_table = 't_vers_'.(++$vers_tab_num) }
 ;
 
 vers_existing_table:
-  vers_ia_table_name | _table
+  ==FACTOR:5== _versionedtable
+  | _table
 ;
 
 vers_ia_col_name:
@@ -474,9 +479,9 @@ vers_ia_optional_default_int_or_auto_increment:
 ;
 
 vers_ia_create:
-    CREATE vers_ia_replace_or_if_not_exists vers_ia_table_name (vers_col_list) vers_engine vers_ia_table_flags vers_partitioning_optional
-  | CREATE vers_ia_replace_or_if_not_exists vers_ia_table_name (vers_col_list_with_period , PERIOD FOR SYSTEM_TIME ( vers_col_start, vers_col_end )) vers_engine vers_ia_table_flags vers_partitioning_optional
-  | CREATE vers_ia_replace_or_if_not_exists vers_ia_table_name LIKE vers_existing_table
+    CREATE vers_ia_replace_or_if_not_exists vers_ia_new_table_name (vers_col_list) vers_engine vers_ia_table_flags vers_partitioning_optional
+  | CREATE vers_ia_replace_or_if_not_exists vers_ia_new_table_name (vers_col_list_with_period , PERIOD FOR SYSTEM_TIME ( vers_col_start, vers_col_end )) vers_engine vers_ia_table_flags vers_partitioning_optional
+  | CREATE vers_ia_replace_or_if_not_exists vers_ia_new_table_name LIKE vers_existing_table
 ;
 
 # MDEV-14670 (permanent) - cannot use virtual columns with/without system versioning

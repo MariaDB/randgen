@@ -1619,8 +1619,8 @@ sub getSchemaMetaData {
                      "ELSE table_schema END AS table_schema, ".
                "table_name, ".
                "CASE WHEN table_type = 'BASE TABLE' THEN 'table' ".
-                    "WHEN table_type = 'SYSTEM VERSIONED' THEN 'table' ".
-                    "WHEN table_type = 'SEQUENCE' THEN 'table' ".
+                    "WHEN table_type = 'SYSTEM VERSIONED' THEN 'versioned' ".
+                    "WHEN table_type = 'SEQUENCE' THEN 'sequence' ".
                     "WHEN table_type = 'VIEW' THEN 'view' ".
                     "WHEN table_type = 'SYSTEM VIEW' then 'view' ".
                     "ELSE 'misc' END AS table_type, ".
@@ -1725,11 +1725,9 @@ sub loadMetaData {
 
   foreach my $row (@$table_metadata) {
     my ($schema, $table, $type) = @$row;
-    if (
-      $type eq 'BASE TABLE' or
-      $type eq 'SYSTEM VERSIONED' or
-      $type eq 'SEQUENCE'
-    ) { $type= 'table' }
+    if    ($type eq 'BASE TABLE') { $type= 'table' }
+    elsif ($type eq 'SYSTEM VERSIONED') { $type = 'versioned' }
+    elsif ($type eq 'SEQUENCE') { $type = 'sequence' }
     elsif (
       $type eq 'VIEW' or
       $type eq 'SYSTEM VIEW'
