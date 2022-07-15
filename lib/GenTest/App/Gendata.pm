@@ -572,7 +572,11 @@ sub run {
         
         my $index_sqls = $#index_fields > -1 ? join(",\n", map { $_->[FIELD_INDEX_SQL] } @index_fields) : undef;
 
-        $self->variate_and_execute($executor,"CREATE TABLE `$table->[TABLE_NAME]` (\n".join(",\n/*Indices*/\n", grep { defined $_ } (@field_sqls, $index_sqls) ).") ".$table->[TABLE_SQL]);
+        my $res= $self->variate_and_execute($executor,"CREATE TABLE `$table->[TABLE_NAME]` (\n".join(",\n/*Indices*/\n", grep { defined $_ } (@field_sqls, $index_sqls) ).") ".$table->[TABLE_SQL]);
+        if (ref $res ne 'GenTest::Result' or $res->status() != STATUS_OK) {
+          sayError("Table creation failed");
+          next;
+        }
         
         if (not ($executor->type() == DB_MYSQL ||
                  $executor->type() == DB_MARIADB || 
