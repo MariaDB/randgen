@@ -1,5 +1,5 @@
 # Copyright (C) 2010 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -127,8 +127,8 @@ perfschema_column_privileges:
 	GRANT perfschema_privilege_list ON _table TO 'someuser'@'somehost';
 
 perfschema_events:
-	CREATE EVENT _basics_if_not_exists_80pct _letter ON SCHEDULE AT NOW() DO SET @a=@a |
-	DROP EVENT _basics_if_exists_80pct _letter ;
+	CREATE __or_replace_event_x_event_if_not_exists(90,5) _letter ON SCHEDULE AT NOW() DO SET @a=@a |
+	DROP EVENT _basics_if_exists_95pct _letter ;
 
 perfschema_key_column_usage:
 	ALTER TABLE _table ADD KEY ( _letter __asc_x_desc(33,33)) |
