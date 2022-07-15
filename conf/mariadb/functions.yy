@@ -458,7 +458,7 @@ func_arg:
    _field | func_value | ( func_func ) ;
 
 func_arg_char:
-  _field_char | _char(1) | _english | _string(16) | NULL
+  CAST(_field AS CHAR) | _char(1) | _english | _string(16) | NULL
 ;
 
 func_const_char_value:
