@@ -510,7 +510,7 @@ sub metaSchemas {
         my $schemas = [sort keys %{$self->[EXECUTOR_SCHEMA_METADATA]}];
         if (not defined $schemas or $#$schemas < 0) {
             sayWarning "No schemas found";
-            $schemas = [ 'non_existing_schema' ];
+            $schemas = [ '!non_existing_schema' ];
         };
         $self->[EXECUTOR_META_CACHE]->{SCHEMAS} = $schemas;
     }
@@ -539,7 +539,7 @@ sub metaTables {
         if (not defined $tables or $#$tables < 0) {
           if ($forced) {
             sayWarning "Schema '$schema' has no tables";
-            $tables = [ 'non_existing_table' ];
+            $tables = [ '!non_existing_table' ];
           } else {
             $self->forceMetadataReload();
             return $self->metaTables($schema, 1);
@@ -563,7 +563,7 @@ sub metaBaseTables {
         my $tables = [sort keys %{$meta->{$schema}->{table}}];
         if (not defined $tables or $#$tables < 0) {
             sayWarning "Schema '$schema' has no base tables";
-            $tables = [ 'non_existing_base_table' ];
+            $tables = [ '!non_existing_base_table' ];
         }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
     }
@@ -583,7 +583,7 @@ sub metaViews {
         my $tables = [sort keys %{$meta->{$schema}->{view}}];
         if (not defined $tables or $#$tables < 0) {
             sayWarning "Schema '$schema' has no views";
-            $tables = [ 'non_existing_view' ];
+            $tables = [ '!non_existing_view' ];
         }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
     }
@@ -653,7 +653,7 @@ sub metaColumns {
             $cols = [sort keys %{$meta->{$schema}->{view}->{$table}}]
         } elsif ($forced) {
             sayWarning "In metaColumns: Table/view '$table' in schema '$schema' has no columns";
-            return ['non_existing_column'];
+            return ['!non_existing_column'];
         } else {
             $self->forceMetadataReload();
             return $self->metaColumns($requested_table, $requested_schema, 1);
@@ -681,7 +681,7 @@ sub metaColumnsIndexType {
             $colref = $meta->{$schema}->{view}->{$table};
         } elsif ($forced) {
             sayWarning "In metaColumnsIndexType: Table/view '$table' in schema '$schema' has no columns";
-            return ['non_existing_column'];
+            return ['!non_existing_column'];
         } else {
             $self->forceMetadataReload();
             return $self->metaColumnsIndexType($indextype, $table, $schema, 1);
@@ -725,7 +725,7 @@ sub metaColumnsDataType {
             $colref = $meta->{$schema}->{view}->{$table};
         } else {
             sayWarning "In metaColumnsDataType: Table/view '$table' in schema '$schema' has no columns";
-            return ['non_existing_column'];
+            return ['!non_existing_column'];
         }
 
         my $cols = [sort grep {$colref->{$_}->[1] eq $datatype} keys %$colref];
@@ -757,7 +757,7 @@ sub metaColumnsDataIndexType {
             $colref = $meta->{$schema}->{view}->{$table};
         } else {
             sayWarning "In metaColumnsDataIndexType: Table/view '$table' in schema '$schema' has no columns";
-            return ['non_existing_column'];
+            return ['!non_existing_column'];
         }
 
         # If the table is a view, don't bother looking for indexed columns, fall back to ordinary
@@ -805,7 +805,7 @@ sub metaColumnsDataTypeIndexTypeNot {
             $colref = $meta->{$schema}->{view}->{$table};
         } else {
             sayWarning "In metaColumnsDataTypeIndexTypeNot: Table/view '$table' in schema '$schema' has no columns";
-            return ['non_existing_column'];
+            return ['!non_existing_column'];
         }
 
         # If the table is a view, don't bother looking for indexed columns, fall back to ordinary
@@ -846,7 +846,7 @@ sub metaColumnsIndexTypeNot {
             $colref = $meta->{$schema}->{view}->{$table};
         } else {
             sayWarning "In metaColumnsIndexTypeNot: Table/view '$table' in schema '$schema' has no columns";
-            return ['non_existing_column'];
+            return ['!non_existing_column'];
         }
 
         # If the table is a view, don't bother looking for indexed columns, fall back to ordinary
