@@ -104,7 +104,7 @@ use constant STATUS_SKIP                     =>  6; # A Filter specifies that th
 use constant STATUS_IGNORED_ERROR            => 19; # Most likely a real error (maybe even important), but due to amount of known bugs or false positives it is untreatable
 
 use constant STATUS_UNSUPPORTED              => 20; # Error codes caused by certain functionality recognized as unsupported (NOT syntax errors)
-use constant STATUS_SYNTAX_ERROR             => 21;
+use constant STATUS_SYNTAX_ERROR             => 21; # General parsing errors and specific errors indicating wrong syntax
 
 # Distinction between "semantic" and "runtime" errors is quite arbitrary.
 # In most general terms, "semantic" errors are those which happen due
