@@ -1208,8 +1208,8 @@ sub execute {
     my $sth = (index($query,";") == -1) ? $dbh->prepare($query) : $dbh->prepare($query, { mysql_server_prepare => 0 });
 
     if (not defined $sth) {            # Error on PREPARE
-        my $errstr_prepare = $executor->normalizeError($dbh->errstr());
-        $executor->[EXECUTOR_ERROR_COUNTS]->{$errstr_prepare}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+        #my $errstr_prepare = $executor->normalizeError($dbh->errstr());
+        $executor->[EXECUTOR_ERROR_COUNTS]->{$dbh->err}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
         return GenTest::Result->new(
             query        => $query,
             status        => $err2type{$dbh->err()} || STATUS_UNKNOWN_ERROR,
@@ -1268,7 +1268,7 @@ sub execute {
             ($err_type == STATUS_SEMANTIC_ERROR) ||
             ($err_type == STATUS_RUNTIME_ERROR)
         ) {
-            $executor->[EXECUTOR_ERROR_COUNTS]->{$errstr}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+            $executor->[EXECUTOR_ERROR_COUNTS]->{$err}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
             $executor->reportError($query, $err, $errstr, $execution_flags);
         } elsif (
             ($err_type == STATUS_SERVER_CRASHED) ||
@@ -1296,7 +1296,7 @@ sub execute {
             say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":"")) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
         } elsif (not ($execution_flags & EXECUTOR_FLAG_SILENT) or (defined $err_type and $err_type == STATUS_SYNTAX_ERROR)) {
             # Always print syntax errors, even with the silent flag
-            $executor->[EXECUTOR_ERROR_COUNTS]->{$sth->errstr()}++;
+            $executor->[EXECUTOR_ERROR_COUNTS]->{$sth->err()}++;
             my $query_for_print= shorten_message($query);
             say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
         }
