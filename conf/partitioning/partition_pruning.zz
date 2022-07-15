@@ -31,17 +31,17 @@ $tables = {
                           PARTITION p0 VALUES LESS THAN (2, 'b'),
                           PARTITION p1 VALUES LESS THAN (4, 'd'),
                           PARTITION p2 VALUES LESS THAN (10,'za'))",
-                          "RANGE COLUMNS(col_varchar_256_cp932, col_varchar_512_latin1)
+                          "RANGE COLUMNS(col_varchar_256_cp932, col_varchar_256_latin1)
                           SUBPARTITION BY HASH(YEAR(`col_datetime`))
                           SUBPARTITIONS 2 (
                           PARTITION p0 VALUES LESS THAN ('m','m'),
                           PARTITION p1 VALUES LESS THAN ('za','za'))",
-                          "RANGE COLUMNS(col_varchar_256_cp932, col_varchar_512_latin1)
+                          "RANGE COLUMNS(col_varchar_256_cp932, col_varchar_256_latin1)
                           SUBPARTITION BY KEY(col_date)
                           SUBPARTITIONS 4 (
                           PARTITION p0 VALUES LESS THAN ('m','m'),
                           PARTITION p1 VALUES LESS THAN ('za','za'))",
-                          "RANGE COLUMNS(col_varchar_256_utf8, col_varchar_512_utf8)
+                          "RANGE COLUMNS(col_varchar_5_utf8, col_varchar_512_utf8)
                           SUBPARTITION BY LINEAR KEY(`col_datetime`)
                           SUBPARTITIONS 2 (
                           PARTITION p0 VALUES LESS THAN ('m','m'),
