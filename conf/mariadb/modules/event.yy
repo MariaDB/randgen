@@ -35,11 +35,17 @@ existing_event_name:
     { 'ev_'.abs($$).'_'.$prng->int(1,$ev) } ;
 
 event_name:
-  { 'ev_'.abs($$).'_'.$ev }
+  ==FACTOR:10== event_name_new |
+  existing_event_name
 ;
 
+event_name_new:
+  { 'ev_'.abs($$).'_'.(++$ev) } ;
+
 event_create:
-  { $ev++; '' } CREATE event_definer_optional EVENT event_name ON SCHEDULE event_schedule event_optional_attributes DO event_body ;
+  CREATE _basics_or_replace_95pct event_definer_optional EVENT event_name ON SCHEDULE event_schedule event_optional_attributes DO event_body |
+  CREATE event_definer_optional EVENT _basics_if_not_exists_95pct event_name ON SCHEDULE event_schedule event_optional_attributes DO event_body
+;
 
 event_alter:
   { $event_action_count=0; '' } ALTER event_definer_optional EVENT existing_event_name event_alter_actions ;
