@@ -1016,7 +1016,7 @@ sub reportError {
         $self->sendError($msg) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
     } elsif (not defined $reported_errors{$errstr}) {
         my $query_for_print= shorten_message($query);
-        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text($err2type{$err} || -1) . "). Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text(errorType($err)) . "). Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
         $reported_errors{$errstr}++;
     }
 }
@@ -1212,7 +1212,7 @@ sub execute {
         $executor->[EXECUTOR_ERROR_COUNTS]->{$dbh->err}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
         return GenTest::Result->new(
             query        => $query,
-            status        => $err2type{$dbh->err()} || STATUS_UNKNOWN_ERROR,
+            status        => errorType($dbh->err()),
             err        => $dbh->err(),
             errstr         => $dbh->errstr(),
             sqlstate    => $dbh->state(),
@@ -1229,7 +1229,7 @@ sub execute {
     my $errstr = $executor->normalizeError($sth->errstr()) if defined $sth->errstr();
     my $err_type = STATUS_OK;
     if (defined $err) {
-      $err_type= $err2type{$err} || STATUS_OK;
+      $err_type= errorType($err);
       if ($err == ER_GET_ERRNO) {
           my ($se_err) = $sth->errstr() =~ m{^Got error\s+(\d+)\s+from storage engine}sgio;
           $err_type = STATUS_OK if (defined $se_err and defined $acceptable_se_errors{$se_err});
@@ -1343,7 +1343,7 @@ sub execute {
 
         # Do one extra check to catch 'query execution was interrupted' error
         if (defined $sth->err()) {
-            $result_status = $err2type{$sth->err()};
+            $result_status = errorType($sth->err());
             @data = ();
         } elsif ($row_count > MAX_ROWS_THRESHOLD) {
             my $query_for_print= shorten_message($query);
@@ -1575,6 +1575,7 @@ sub currentSchema {
 
 sub errorType {
     return undef if not defined $_[0];
+    return STATUS_OK if $_[0] == 0;
     return $err2type{$_[0]} || STATUS_UNKNOWN_ERROR ;
 }
 
