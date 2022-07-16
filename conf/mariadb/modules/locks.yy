@@ -21,7 +21,7 @@ locks_query:
   locks_lock_tables |
   locks_flush |
   locks_locking_select_optional_trx |
-  ==FACTOR:6== locks_unlock_tables
+  ==FACTOR:15== locks_unlock_tables
 ;
 
 locks_locking_select_optional_trx:

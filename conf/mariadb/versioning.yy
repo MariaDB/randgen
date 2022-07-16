@@ -326,7 +326,7 @@ vers_ia_lock_unlock_table:
   | LOCK TABLE vers_existing_table READ
   | LOCK TABLE vers_existing_table WRITE
   | SELECT * FROM vers_existing_table FOR UPDATE
-  | UNLOCK TABLES | UNLOCK TABLES | UNLOCK TABLES
+  | ==FACTOR:20== UNLOCK TABLES
 ;
 
 vers_ia_alter_partitioning:

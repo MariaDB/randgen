@@ -207,10 +207,7 @@ alt_lock_unlock_table:
   | LOCK TABLE alt_table_name READ
   | LOCK TABLE alt_table_name WRITE
   | SELECT * FROM alt_table_name FOR UPDATE
-  | UNLOCK TABLES
-  | UNLOCK TABLES
-  | UNLOCK TABLES
-  | UNLOCK TABLES
+  | ==FACTOR:20== UNLOCK TABLES
 ;
 
 alt_alter_partitioning:
