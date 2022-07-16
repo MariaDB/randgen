@@ -14,8 +14,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-thread1_init_add:
-  { $s3_doable=''; system("mc mb --ignore-existing local/rqg"); if ($? == 0) { $s3_doable = '!100501' }; '' } ;
+query_init_add:
+  { $s3_doable= $ENV{S3_DOABLE}; '' };
 
 query_add:
   ==FACTOR:0.01== { '/*'.$s3_doable.' ' } ALTER TABLE _table ENGINE=S3 */ |

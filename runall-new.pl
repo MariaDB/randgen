@@ -488,6 +488,16 @@ if ($#{$props->{redefine}} == 0 and ${$props->{redefine}}[0] =~ m/,/) {
 # lib/GenTest/Generator/FromGrammar.pm will generate a corresponding grammar element.
 $ENV{RQG_THREADS}= $props->{threads};
 
+# Pro-actively configure MinIO if it's installed and running
+# (it seems an overkill to start the server here, since it will be rarely needed)
+system("mc alias set local http://127.0.0.1:9000 minio minioadmin && ( mc rb --force local/rqg || true ) && mc mb local/rqg");
+if ($? == 0) {
+  say("S3 backend has been configured");
+  $ENV{S3_DOABLE}= '!100501';
+} else {
+  sayWarning("Could not configure S3 backend");
+  $ENV{S3_DOABLE}= '';
+}
 
 my $cmd = $0 . " " . join(" ", @ARGV_saved);
 if ($cmd =~ /--seed=/) {
