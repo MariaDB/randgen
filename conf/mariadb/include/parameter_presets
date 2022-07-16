@@ -278,9 +278,6 @@ $optional_innodb_variables_102= [
 #    '--mysqld=--innodb-checksum-algorithm=strict_innodb',
     '--mysqld=--innodb-checksum-algorithm=strict_crc32',
   ],
-  [ '', '', '', '', '', '', '', '', '',
-    '--mysqld=--enforce-storage-engine=InnoDB'
-  ],
   # Default OFF
   [ '', '', '', '', '', '', $innodb_encryption_options ],
   ##### Read-only variables (InnoDB)
@@ -523,6 +520,11 @@ $optional_server_variables_102= [
 #   '--mysqld=--thread-stack=131072',
     '--mysqld=--thread-stack=512K',
     '--mysqld=--thread-stack=1M',
+  ],
+  [ '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+    '--mysqld=--enforce-storage-engine=InnoDB',
+    '--mysqld=--enforce-storage-engine=MyISAM'
   ],
 ];
 
