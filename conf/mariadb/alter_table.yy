@@ -15,13 +15,33 @@
 
 
 query_init_add:
-   alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace ; alt_create_or_replace
-  ; alt_create_or_replace_sequence ; alt_create_or_replace_sequence
+  alt_create_with_redundancy ;
 ;
- 
+
+# Since some creation may fail, we can make two attempts for each view
+# for better chances that all tables are created.
+# Since it's "create if not exists", the redundancy is reasonably cheap.
+alt_create_with_redundancy:
+     { $table_name_to_use = 'alt_t1'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
+   ; { $table_name_to_use = 'alt_t2'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
+   ; { $table_name_to_use = 'alt_t3'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
+   ; { $table_name_to_use = 'alt_t4'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
+   ; { $table_name_to_use = 'alt_t5'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
+   ; { $table_name_to_use = 'alt_t6'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
+   ; { $table_name_to_use = 'alt_t7'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
+   ; { $table_name_to_use = 'alt_t8'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
+   ; { $table_name_to_use = 'alt_t9'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
+     { $table_name_to_use = '' }
+;
+
 query_add:
   alt_query
 ;
+
+alt_create_if_not_exists:
+  CREATE TABLE IF NOT EXISTS alt_own_table_name (alt_col_name_and_definition_list) alt_table_flags
+;
+
 
 alt_query:
     alt_create
@@ -230,7 +250,7 @@ alt_table_name:
 ;
 
 alt_own_table_name:
-    { $my_last_table = 'alt_t'.$prng->int(1,10) }
+    { $my_last_table = $table_name_to_use ? $table_name_to_use : 'alt_t'.$prng->int(1,9) }
 ;
 
 alt_col_name:
@@ -366,10 +386,6 @@ alt_default_optional_int_or_auto_increment:
 
 alt_create_or_replace:
   CREATE OR REPLACE alt_temporary TABLE alt_own_table_name (alt_col_name_and_definition_list) alt_table_flags
-;
-
-alt_create_or_replace_sequence:
-  /* compatibility 10.3.3 */ CREATE OR REPLACE SEQUENCE alt_own_table_name
 ;
 
 alt_col_name_and_definition_list:
