@@ -75,6 +75,7 @@ use constant GT_TEST_START => 9;
 use constant GT_TEST_END => 10;
 use constant GT_QUERY_FILTERS => 11;
 use constant GT_LOG_FILES_TO_REPORT => 12;
+use constant GT_EXECUTORS => 13;
 
 sub new {
     my $class = shift;
@@ -396,8 +397,12 @@ sub stopChild {
     my ($self, $status) = @_;
 
     say("GenTest: child $$ is being stopped with status " . status2text($status));
+    # Stopping executors explicitly to hopefully trigger statistics output
+    foreach my $executor (@{$self->[GT_EXECUTORS]}) {
+        $executor->disconnect;
+        undef $executor;
+    }
     croak "calling stopChild() for $$ without a \$status" if not defined $status;
-
     if (osWindows()) {
         exit $status;
     } else {
@@ -459,6 +464,7 @@ sub workerProcess {
         $executor->setVardir($self->config->vardir);
         push @executors, $executor;
     }
+    $self->[GT_EXECUTORS] = \@executors;
 
     my $mixer = GenTest::Mixer->new(
         generator => $self->generator(),
