@@ -8,8 +8,20 @@
 # we do not DROP individual views. Instead, we periodically drop all views as a block and start creating them again
 #
 
-init:
-	create ; create ; create ; create ; create ; create ; create ; create ;
+# Since there can be aggressive grammars which drop tables which we need,
+# we will make copies in a "private" database. The views themselves will
+# be created in the common database, it's okay if they are tampered with
+query_init:
+    CREATE DATABASE IF NOT EXISTS private_updateable_views
+    ; CREATE TABLE private_updateable_views.table_multipart LIKE table_multipart
+    # Here SET STATEMENT is needed because of MDEV-21618
+    ; SET STATEMENT enforce_storage_engine=NULL FOR CREATE TABLE private_updateable_views.table_partitioned LIKE table_partitioned
+    ; CREATE TABLE private_updateable_views.table_virtual LIKE table_virtual
+    ; SET STATEMENT enforce_storage_engine=NULL FOR CREATE TABLE private_updateable_views.table_standard LIKE table_standard
+    ; SET STATEMENT enforce_storage_engine=NULL FOR CREATE TABLE private_updateable_views.table_merge_child LIKE table_merge_child
+    ; SET STATEMENT enforce_storage_engine=NULL FOR CREATE TABLE private_updateable_views.table_merge LIKE table_merge
+    ; SET STATEMENT enforce_storage_engine=NULL ALTER TABLE private_updateable_views.table_merge UNION (private_updateable_views.table_standard, private_updateable_views.table_merge_child)
+    create_with_redundancy ;
 
 query:
 	dml | dml | dml | dml | dml |
@@ -19,13 +31,30 @@ dml:
 	select | select | insert | insert | update | delete ;
 
 dml_or_drop:
-	dml | dml | create | create | drop_all_views | truncate ;
+	dml | dml | create_or_replace | create_if_not_exists | drop_all_views | truncate ;
 
 drop_all_views:
-	DROP VIEW IF EXISTS view1 , view2 , view3 , view4 , view5 ; create ; create ; create ; create ;
+	DROP VIEW IF EXISTS view1 , view2 , view3 , view4 , view5 ; create_with_redundancy;
 
-create:
-	CREATE ALGORITHM = algorithm VIEW view_name AS select check_option ;
+# Since some creation may fail, we can make two attempts for each view
+# for better chances that all views are created.
+# Since it's "create if not exists" (mostly), the redundancy is reasonably cheap.
+# And we also won't use other views while creating, for simplicity.
+create_with_redundancy:
+    { $base_tables_only=1; '' }
+    ; { $view_to_create= 'view1'; '' } create_if_not_exists ; create_if_not_exists
+    ; { $view_to_create= 'view2'; '' } create_if_not_exists ; create_if_not_exists
+    ; { $view_to_create= 'view3'; '' } create_if_not_exists ; create_if_not_exists
+    ; { $view_to_create= 'view4'; '' } create_if_not_exists ; create_if_not_exists
+    ; { $view_to_create= 'view5'; '' } create_if_not_exists ; create_if_not_exists
+    { $base_tables_only=0; $view_to_create='' }
+;
+
+create_if_not_exists:
+	CREATE ALGORITHM = algorithm VIEW _basics_if_not_exists_95pct view_name AS select check_option ;
+
+create_or_replace:
+       CREATE _basics_or_replace_95pct VIEW view_name AS select check_option ;
 
 truncate:
 	TRUNCATE TABLE table_name ;
@@ -102,7 +131,8 @@ value_item:
 	field_name = value ;
 
 table_view_name:
-	table_name | table_name | view_name ;
+    ==FACTOR:3== table_name |
+    { $base_tables_only ? 'table_name' : 'view_name' } ;
 
 where:
 	|
@@ -135,10 +165,16 @@ cascaded_local:
 	CASCADED | LOCAL ;
 
 table_name:
-	table_merge | table_merge_child | table_multipart | table_partitioned | table_standard | table_virtual ;
+    private_updateable_views.table_merge |
+    private_updateable_views.table_merge_child |
+    private_updateable_views.table_multipart |
+    private_updateable_views.table_partitioned |
+    private_updateable_views.table_standard |
+    private_updateable_views.table_virtual
+;
 
 view_name:
-	view1 | view2 | view3 | view4 | view5 ;
+  { $view_to_create ? $view_to_create : 'view'.$prng->uint16(1,5) };
 
 algorithm:
 	MERGE | MERGE | MERGE | MERGE | MERGE |
