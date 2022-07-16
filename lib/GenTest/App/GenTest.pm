@@ -399,8 +399,10 @@ sub stopChild {
     say("GenTest: child $$ is being stopped with status " . status2text($status));
     # Stopping executors explicitly to hopefully trigger statistics output
     foreach my $executor (@{$self->[GT_EXECUTORS]}) {
-        $executor->disconnect;
-        undef $executor;
+        if ($executor) {
+            $executor->disconnect;
+            undef $executor;
+        }
     }
     croak "calling stopChild() for $$ without a \$status" if not defined $status;
     if (osWindows()) {
