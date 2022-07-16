@@ -141,7 +141,7 @@ sub loadSystemSchemata {
 
 sub loadNonSystemSchemata {
   my $reporter= shift;
-  my $clause= "table_schema NOT IN ($system_schemata,$exempt_schemata) and table_name != 'DUMMY'";
+  my $clause= "table_schema NOT IN ($system_schemata,$exempt_schemata) and table_schema NOT LIKE 'private_%' and table_name != 'DUMMY'";
   my $schemata= $reporter->reload($clause);
   if ($schemata) {
     local $Data::Dumper::Maxdepth= 0;

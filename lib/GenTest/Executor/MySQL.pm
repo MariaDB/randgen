@@ -1691,7 +1691,7 @@ sub loadMetaData {
   if ($metadata_type eq 'system') {
     $clause= "table_schema IN ($system_schemata)"
   } elsif ($metadata_type eq 'non-system') {
-    $clause= "table_schema NOT IN ($system_schemata,$exempt_schemata) and table_name != 'DUMMY'"
+    $clause= "table_schema NOT IN ($system_schemata,$exempt_schemata) and table_schema NOT LIKE 'private_%' and table_name != 'DUMMY'"
   } else {
     sayError("Unknown metadata type requested: $metadata_type");
     return undef;
