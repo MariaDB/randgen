@@ -176,7 +176,7 @@ my $opt_result = GetOptions(
     'rr!' => \$props->{rr},
     'scenario:s' => \$scenario,
     'seed=s' => \$props->{seed},
-    'short_column_names|short-column-names' => \$props->{short_column_names},
+    'short_column_names|short-column-names!' => \$props->{short_column_names},
     'skip_recursive_rules|skip-recursive-rules' => \$props->{skip_recursive_rules},
     'skip_gendata|skip-gendata' => \$skip_gendata,
     'skip_shutdown|skip-shutdown' => \$skip_shutdown,
