@@ -42,7 +42,7 @@ drop_all_views:
 # And we also won't use other views while creating, for simplicity.
 create_with_redundancy:
     { $base_tables_only=1; '' }
-    ; { $view_to_create= 'view1'; '' } create_if_not_exists ; create_if_not_exists
+      { $view_to_create= 'view1'; '' } create_if_not_exists ; create_if_not_exists
     ; { $view_to_create= 'view2'; '' } create_if_not_exists ; create_if_not_exists
     ; { $view_to_create= 'view3'; '' } create_if_not_exists ; create_if_not_exists
     ; { $view_to_create= 'view4'; '' } create_if_not_exists ; create_if_not_exists
@@ -60,15 +60,17 @@ truncate:
 	TRUNCATE TABLE table_name ;
 
 select:
-	select_single | select_single | select_single |
-	SELECT field1 , field2 , field3 , field4 FROM ( select_single ) AS select1 where |
-	( select_single ) UNION ( select_single ) ;
+    select_single | select_single | select_single |
+    SELECT field1 , field2 , field3 , field4 FROM ( select_single ) AS select1 where |
+    # Union view is not updateable
+    ==FACTOR:0.05== ( select_single ) UNION ( select_single )
+;
 
 select_single:
-	SELECT field1 , field2 , field3 , field4 FROM table_view_name where |
-	SELECT field1 , min(field2) as field2 , max(field3) as field3 , count(field4) as field4 FROM table_view_name where GROUP BY field1 |
-	SELECT a1_2 . field1 AS field1 , a1_2 . field2 AS field2 , a1_2 . field3 AS field3 , a1_2 . field4 AS field4 FROM join where_join |
-	SELECT a1_2 . field1 AS field1 , a1_2 . field2 AS field2 , a1_2 . field3 AS field3 , a1_2 . field4 AS field4 FROM comma_join where_comma_join ;
+    SELECT field1 , field2 , field3 , field4 FROM table_view_name where |
+    ==FACTOR:0.1== SELECT field1 , min(field2) as field2 , max(field3) as field3 , count(field4) as field4 FROM table_view_name where GROUP BY field1 |
+    SELECT a1_2 . field1 AS field1 , a1_2 . field2 AS field2 , a1_2 . field3 AS field3 , a1_2 . field4 AS field4 FROM join where_join |
+    SELECT a1_2 . field1 AS field1 , a1_2 . field2 AS field2 , a1_2 . field3 AS field3 , a1_2 . field4 AS field4 FROM comma_join where_comma_join ;
 
 a1_2:
 	a1 | a2 ;
