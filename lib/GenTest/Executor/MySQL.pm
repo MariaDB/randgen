@@ -1012,12 +1012,14 @@ sub reportError {
 
     my $msg = [$query,$err,$errstr];
 
-    if (defined $self->channel) {
-        $self->sendError($msg) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
-    } elsif (not defined $reported_errors{$errstr}) {
-        my $query_for_print= shorten_message($query);
-        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text(errorType($err)) . "). Further errors of this kind will be suppressed.") if not ($execution_flags & EXECUTOR_FLAG_SILENT);
-        $reported_errors{$errstr}++;
+    if (not ($execution_flags & EXECUTOR_FLAG_SILENT)) {
+      if (defined $self->channel) {
+          $self->sendError($msg);
+      } elsif (not defined $reported_errors{$errstr}) {
+          my $query_for_print= shorten_message($query);
+          say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text(errorType($err)) . "). Further errors of this kind will be suppressed.");
+          $reported_errors{$errstr}++;
+      }
     }
 }
 
@@ -1025,7 +1027,7 @@ sub execute {
     my ($executor, $query, $execution_flags) = @_;
     $execution_flags= 0 unless defined $execution_flags;
 
-    if ($query =~ s/\/\*\s*EXECUTOR_FLAG_SILENT\s*\*\///g) {
+    if (!rqg_debug() && $query =~ s/\/\*\s*EXECUTOR_FLAG_SILENT\s*\*\///g) {
         $execution_flags |= EXECUTOR_FLAG_SILENT;
     }
     #
@@ -1209,7 +1211,7 @@ sub execute {
 
     if (not defined $sth) {            # Error on PREPARE
         #my $errstr_prepare = $executor->normalizeError($dbh->errstr());
-        $executor->[EXECUTOR_ERROR_COUNTS]->{$dbh->err}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+        $executor->[EXECUTOR_ERROR_COUNTS]->{$dbh->err}++;
         return GenTest::Result->new(
             query        => $query,
             status        => errorType($dbh->err()),
@@ -1262,13 +1264,18 @@ sub execute {
     my $result;
     if (defined $err)
     {  # Error on EXECUTE
+        $executor->[EXECUTOR_ERROR_COUNTS]->{$err}++;
+        if ($execution_flags & EXECUTOR_FLAG_SILENT) {
+          $executor->[EXECUTOR_SILENT_ERRORS_COUNT] = $executor->[EXECUTOR_SILENT_ERRORS_COUNT] ? $executor->[EXECUTOR_SILENT_ERRORS_COUNT] + 1 : 1;
+        }
         if (
             ($err_type == STATUS_SKIP) ||
             ($err_type == STATUS_UNSUPPORTED) ||
             ($err_type == STATUS_SEMANTIC_ERROR) ||
+            ($err_type == STATUS_CONFIGURATION_ERROR) ||
+            ($err_type == STATUS_ACL_ERROR) ||
             ($err_type == STATUS_RUNTIME_ERROR)
         ) {
-            $executor->[EXECUTOR_ERROR_COUNTS]->{$err}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
             $executor->reportError($query, $err, $errstr, $execution_flags);
         } elsif (
             ($err_type == STATUS_SERVER_CRASHED) ||
@@ -1293,10 +1300,11 @@ sub execute {
             }
 
             my $query_for_print= shorten_message($query);
-            say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":"")) if not ($execution_flags & EXECUTOR_FLAG_SILENT);
-        } elsif (not ($execution_flags & EXECUTOR_FLAG_SILENT) or (defined $err_type and $err_type == STATUS_SYNTAX_ERROR)) {
-            # Always print syntax errors, even with the silent flag
-            $executor->[EXECUTOR_ERROR_COUNTS]->{$sth->err()}++;
+            if (not ($execution_flags & EXECUTOR_FLAG_SILENT)) {
+              say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
+            }
+        } elsif (not ($execution_flags & EXECUTOR_FLAG_SILENT)) {
+            # Always print syntax and uncategorized errors, unless specifically asked not to
             my $query_for_print= shorten_message($query);
             say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
         }
@@ -1323,7 +1331,7 @@ sub execute {
             end_time    => $end_time,
             performance    => $performance
         );
-        $executor->[EXECUTOR_ERROR_COUNTS]->{'(no error)'}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+        $executor->[EXECUTOR_ERROR_COUNTS]->{'(no error)'}++;
     } else {
         my @data;
         my %data_hash;
@@ -1375,7 +1383,7 @@ sub execute {
             performance    => $performance
         );
 
-        $executor->[EXECUTOR_ERROR_COUNTS]->{'(no error)'}++ if not ($execution_flags & EXECUTOR_FLAG_SILENT);
+        $executor->[EXECUTOR_ERROR_COUNTS]->{'(no error)'}++;
     }
 
     $sth->finish();
@@ -1553,6 +1561,9 @@ sub DESTROY {
         print Dumper $executor->[EXECUTOR_EXPLAIN_COUNTS];
         say("Errors:");
         print Dumper $executor->[EXECUTOR_ERROR_COUNTS];
+        if ($executor->[EXECUTOR_SILENT_ERRORS_COUNT]) {
+          say("Out of the above, ".$executor->[EXECUTOR_SILENT_ERRORS_COUNT]." errors had SILENT flag");
+        }
 #        say("Rare EXPLAIN items:");
 #        print Dumper $executor->[EXECUTOR_EXPLAIN_QUERIES];
     }
