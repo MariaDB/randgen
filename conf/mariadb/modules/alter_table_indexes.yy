@@ -157,11 +157,6 @@ alttind_algorithm_optional:
   alttind_algorithm
 ;
 
-alttind_lock_optional:
-  ==FACTOR:4== |
-  alttind_lock
-;
-
 alttind_algorithm:
   ==FACTOR:2== ALGORITHM=DEFAULT |
                ALGORITHM=INPLACE |
