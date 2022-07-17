@@ -53,9 +53,9 @@ perfschema_truncate:
 	TRUNCATE TABLE performance_schema . perfschema_truncateable_table ;
 
 perfschema_truncateable_table:
-	perfschema_events_waits_current |
-	perfschema_events_waits_history | perfschema_events_waits_history_long |
-	perfschema_events_waits_summary_by_event_name | perfschema_events_waits_summary_by_instance | perfschema_events_waits_summary_by_thread_by_event_name |
+	events_waits_current |
+	events_waits_history | events_waits_history_long |
+	events_waits_summary_by_event_name | events_waits_summary_by_instance | events_waits_summary_by_thread_by_event_name |
 	file_summary_by_event_name | file_summary_by_instance ;
 
 perfschema_consumer_list:
