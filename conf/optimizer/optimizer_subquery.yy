@@ -692,17 +692,17 @@ aggregate:
 # track of what we have added.  You shouldn't need to touch these ever         #
 ################################################################################
 new_table_item:
-	_table AS { "alias".++$tables } | _table AS { "alias".++$tables } | _table AS { "alias".++$tables } |
+	_table AS { "alias".++$tables } | opt_sq_table AS { "alias".++$tables } | opt_sq_table AS { "alias".++$tables } |
         ( from_subquery ) AS { "alias".++$tables } ;
 
 from_subquery:
        { $subquery_idx += 1 ; $subquery_tables=0 ; ""}  SELECT distinct select_option subquery_table_one_two . * subquery_body  ;
 
 subquery_new_table_item:
-        _table AS { "SQ".$subquery_idx."_alias".++$subquery_tables } ;
+        opt_sq_table AS { "SQ".$subquery_idx."_alias".++$subquery_tables } ;
 
 child_subquery_new_table_item:
-        _table AS { "C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables } ;      
+        opt_sq_table AS { "C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables } ;
 
 current_table_item:
 	{ "alias".$tables };
@@ -774,10 +774,15 @@ value:
 	_digit | _digit | _digit | _digit | _tinyint_unsigned|
         _char(1) | _char(1) | _char(1) | _char(2) | _char(2) | 'USA' ;
 
-_table:
-     A | B | C | BB | CC | B | C | BB | CC | 
-     CC | CC | CC | CC | CC |
-     C | C | C | C | C | D |  view ;
+opt_sq_table:
+     private_gendata_simple.A |
+     ==FACTOR:2== private_gendata_simple.B |
+     ==FACTOR:7== private_gendata_simple.C |
+     ==FACTOR:2== private_gendata_simple.BB |
+     ==FACTOR:7== private_gendata_simple.CC |
+     private_gendata_simple.D |
+     view
+;
 
 ################################################################################
 # Add a possibility for 'view' to occur at the end of the previous '_table' rule
@@ -785,7 +790,16 @@ _table:
 ################################################################################
 
 view:
-    view_A | view_AA | view_B | view_BB | view_C | view_CC | view_C | view_CC | view_D ;
+    private_gendata_simple.view_A |
+    private_gendata_simple.view_AA |
+    private_gendata_simple.view_B |
+    private_gendata_simple.view_BB |
+    private_gendata_simple.view_C |
+    private_gendata_simple.view_CC |
+    private_gendata_simple.view_C |
+    private_gendata_simple.view_CC |
+    private_gendata_simple.view_D
+;
 
 _field:
     int_field_name | char_field_name ;
