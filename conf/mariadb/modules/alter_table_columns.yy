@@ -1,4 +1,4 @@
-#  Copyright (c) 2018, 2020, MariaDB Corporation
+#  Copyright (c) 2018, 2022, MariaDB Corporation
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -13,13 +13,15 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
+query_init_add:
+  { $colnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
 
 query_add:
-  query | query | query | alttcol_query
+  ==FACTOR:0.1== alttcol_query
 ;
 
 alttcol_query:
-  ALTER alttcol_online alttcol_ignore TABLE _table /*!100301 alttcol_wait */ alttcol_list_with_optional_order_by
+  ALTER alttcol_online alttcol_ignore TABLE _basetable alttcol_wait alttcol_list_with_optional_order_by
 ;
 
 alttcol_online:
@@ -39,7 +41,8 @@ alttcol_list_with_optional_order_by:
 ;
 
 alttcol_list:
-  alttcol_item_alg_lock | alttcol_item_alg_lock | alttcol_item_alg_lock, alttcol_list
+  ==FACTOR:5== alttcol_item_alg_lock |
+  alttcol_item_alg_lock, alttcol_list
 ;
 
 # Can't put it on the list, as ORDER BY should always go last
@@ -54,38 +57,43 @@ alttcol_item_alg_lock:
 ;
 
 alttcol_item:
-    alttcol_add_column | alttcol_add_column | alttcol_add_column
-  | alttcol_alter_column
-  | alttcol_change_column | alttcol_change_column
-  | alttcol_rename_column | alttcol_rename_column
-  | alttcol_modify_column | alttcol_modify_column
-  | alttcol_drop_column
+  ==FACTOR:4== alttcol_add_column |
+               alttcol_alter_column |
+  ==FACTOR:2== alttcol_change_column |
+               alttcol_rename_column |
+  ==FACTOR:6== alttcol_modify_column |
+               alttcol_drop_column
 ;
 
 alttcol_add_column:
-    ADD alttcol_column_word alttcol_if_not_exists alttcol_col_name alttcol_add_definition alttcol_location
-  | ADD alttcol_column_word alttcol_if_not_exists ( alttcol_add_list )
+    ADD alttcol_column_word _basics_if_not_exists_95pct alttcol_col_new_name alttcol_add_definition alttcol_location
+  | ADD alttcol_column_word _basics_if_not_exists_95pct ( alttcol_add_list )
 ;
 
 alttcol_alter_column:
-    ALTER alttcol_column_word /*!100305 alttcol_if_exists */ alttcol_col_name SET DEFAULT alttcol_default_val
-  | ALTER alttcol_column_word /*!100305 alttcol_if_exists */ alttcol_col_name DROP DEFAULT
+    ALTER alttcol_column_word _basics_if_exists_95pct _field SET DEFAULT alttcol_default_val
+  | ALTER alttcol_column_word _basics_if_exists_95pct _field DROP DEFAULT
 ;
 
 alttcol_change_column:
-    CHANGE alttcol_column_word alttcol_if_exists alttcol_col_name alttcol_col_name alttcol_add_definition alttcol_location
+    CHANGE alttcol_column_word _basics_if_exists_95pct _field alttcol_new_or_existing_col_name alttcol_add_definition alttcol_location
 ;
 
 alttcol_rename_column:
-    /* compatibility 10.5.2 */ RENAME COLUMN alttcol_if_exists alttcol_col_name TO alttcol_col_name
+    /* compatibility 10.5.2 */ RENAME COLUMN _basics_if_exists_95pct _field TO alttcol_new_or_existing_col_name
 ;
 
 alttcol_modify_column:
-    MODIFY alttcol_column_word alttcol_if_exists alttcol_col_name alttcol_add_definition alttcol_location
+    MODIFY alttcol_column_word _basics_if_exists_95pct _field alttcol_add_definition alttcol_location
 ;
 
 alttcol_drop_column:
-    DROP alttcol_column_word alttcol_if_exists alttcol_col_name alttcol_restrict_cascade
+    DROP alttcol_column_word _basics_if_exists_95pct _field alttcol_restrict_cascade
+;
+
+alttcol_new_or_existing_col_name:
+  ==FACTOR:20== alttcol_col_new_name |
+  _field
 ;
 
 alttcol_add_definition:
@@ -136,20 +144,20 @@ alttcol_geo_type:
 ;
 
 alttcol_geo_optional_default:
-  | /*!100201 DEFAULT ST_GEOMFROMTEXT('Point(1 1)') */ ;
+  | DEFAULT ST_GEOMFROMTEXT('Point(1 1)') ;
 
 
 alttcol_virt_col_definition:
-    alttcol_int_type alttcol_generated_always AS ( alttcol_col_name )
-  | alttcol_int_type alttcol_generated_always AS ( alttcol_col_name + _digit )
-  | alttcol_num_type alttcol_generated_always AS ( alttcol_col_name + _digit )
-  | alttcol_num_type alttcol_generated_always AS ( alttcol_col_name + _digit )
-  | alttcol_temporal_type alttcol_generated_always AS ( alttcol_col_name )
-  | alttcol_timestamp_type alttcol_generated_always AS ( alttcol_col_name )
-  | alttcol_text_type alttcol_generated_always AS ( alttcol_col_name )
-  | alttcol_text_type alttcol_generated_always AS ( SUBSTR(alttcol_col_name, _digit, _digit ) )
-  | alttcol_enum_type alttcol_generated_always AS ( alttcol_col_name )
-  | alttcol_geo_type alttcol_generated_always AS ( alttcol_col_name )
+    alttcol_int_type alttcol_generated_always AS ( _field )
+  | alttcol_int_type alttcol_generated_always AS ( _field + _digit )
+  | alttcol_num_type alttcol_generated_always AS ( _field + _digit )
+  | alttcol_num_type alttcol_generated_always AS ( _field + _digit )
+  | alttcol_temporal_type alttcol_generated_always AS ( _field )
+  | alttcol_timestamp_type alttcol_generated_always AS ( _field )
+  | alttcol_text_type alttcol_generated_always AS ( _field )
+  | alttcol_text_type alttcol_generated_always AS ( SUBSTR_field, _digit, _digit ) )
+  | alttcol_enum_type alttcol_generated_always AS ( _field )
+  | alttcol_geo_type alttcol_generated_always AS ( _field )
 ;
 
 alttcol_null:
@@ -169,7 +177,7 @@ alttcol_generated_always:
 ;
 
 alttcol_virt_type:
-  | /*!100201 STORED */ /*!!100201 PERSISTENT */ | VIRTUAL
+  STORED | VIRTUAL
 ;
 
 alttcol_default_int_or_auto_increment:
@@ -185,7 +193,9 @@ alttcol_optional_default_int:
 ;
 
 alttcol_default_char_val:
-  NULL | '' | _char(1)
+  ==FACTOR:0.01== NULL |
+                  '' |
+                  _char(1)
 ;
 
 alttcol_optional_default_or_current_timestamp:
@@ -211,17 +221,17 @@ alttcol_optional_default_char:
 ;
 
 alttcol_invisible:
-  | | | | | | | /*!100303 INVISIBLE */
+  | | | | | | | INVISIBLE
 ;
 
 alttcol_check_constraint:
-  | | | | | | | /*!100201 CHECK (alttcol_check_constraint_expression) */
+  | | | | | | | CHECK (alttcol_check_constraint_expression)
 ;
 
 # TODO: extend
 alttcol_check_constraint_expression:
-    alttcol_col_name alttcol_operator alttcol_col_name
-  | alttcol_col_name alttcol_operator _digit
+    _field alttcol_operator _field
+  | _field alttcol_operator _digit
 ;
 
 alttcol_operator:
@@ -235,35 +245,31 @@ alttcol_alter_definition:
 
 # TODO: expand
 alttcol_default_val:
-  NULL | alttcol_default_char_val | alttcol_default_int_val
+  ==FACTOR:0.01== NULL |
+  alttcol_default_char_val |
+  alttcol_default_int_val
 ;
 
 alttcol_default_int_val:
-  NULL | 0 | 0 | 0 | _digit | _tinyint
+  ==FACTOR:0.01== NULL |
+  ==FACTOR:5==    0 |
+                  _digit |
+                  _tinyint
 ;
 
 alttcol_column_word:
   | COLUMN
 ;
 
-alttcol_if_not_exists:
-  | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS
-;
-
-alttcol_if_exists:
-  | IF EXISTS | IF EXISTS | IF EXISTS | IF EXISTS
-;
-
-alttcol_col_name:
-  _field | _letter
-;
+alttcol_col_new_name:
+  { 'alttcol'.(++$colnum) } ;
 
 alttcol_add_list:
-  alttcol_col_name alttcol_add_definition | alttcol_col_name alttcol_add_definition, alttcol_add_list
+  alttcol_col_new_name alttcol_add_definition | alttcol_col_new_name alttcol_add_definition, alttcol_add_list
 ;
 
 alttcol_location:
-  | | | | | FIRST | AFTER alttcol_col_name
+  | | | | | FIRST | AFTER _field
 ;
 
 alttcol_restrict_cascade:
@@ -271,10 +277,19 @@ alttcol_restrict_cascade:
 ;
 
 alttcol_algorithm:
-  | | | | , ALGORITHM=DEFAULT | , ALGORITHM=INPLACE | , ALGORITHM=COPY | /*!100307 , ALGORITHM=NOCOPY */ | /*!100307 , ALGORITHM=INSTANT */
+  ==FACTOR:10== |
+  ==FACTOR:2== , ALGORITHM=DEFAULT |
+               , ALGORITHM=INPLACE |
+  ==FACTOR:5== , ALGORITHM=COPY |
+               , ALGORITHM=NOCOPY |
+               , ALGORITHM=INSTANT
 ;
 
 alttcol_lock:
-  | | | | , LOCK=DEFAULT | , LOCK=NONE | , LOCK=SHARED | , LOCK=EXCLUSIVE
+  ==FACTOR:10== |
+  ==FACTOR:2== , LOCK=DEFAULT |
+               , LOCK=NONE |
+               , LOCK=SHARED |
+               , LOCK=EXCLUSIVE
 ;
   
