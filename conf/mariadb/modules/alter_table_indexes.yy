@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, 2020, MariaDB Corporation
+#  Copyright (c) 2019, 2022, MariaDB Corporation
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -13,13 +13,14 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
+query_init_add:
+  { $indnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
 
 query_add:
-  query | query | query | alttind_query
-;
+  alttind_query ;
 
 alttind_query:
-  ALTER alttind_online alttind_ignore TABLE _table /*!100301 alttind_wait */ alttind_list_with_optional_order_by
+  ALTER alttind_online alttind_ignore TABLE _basetable /*!100301 alttind_wait */ alttind_list_with_optional_order_by
 ;
 
 alttind_online:
@@ -53,32 +54,30 @@ alttind_item_alg_lock:
 # Spatial indexes, fulltext indexes and foreign keys are in separate modules
 
 alttind_item:
-    alttind_add_index | alttind_add_index | alttind_add_index | alttind_add_index
-  | alttind_add_index | alttind_add_index | alttind_add_index | alttind_add_index
-  | alttind_add_pk | alttind_add_pk 
-  | alttind_add_unique | alttind_add_unique | alttind_add_unique
-  | alttind_drop_index | alttind_drop_index | alttind_drop_index | alttind_drop_index
-  | alttind_drop_pk
-  | alttind_drop_constraint | alttind_drop_constraint
-  | alttind_rename_index | alttind_rename_index | alttind_rename_index
-  | alttind_rename_index | alttind_rename_index | alttind_rename_index
-  | alttind_enable_disable_keys
+  ==FACTOR:3==   alttind_add_index |
+                 alttind_add_pk |
+  ==FACTOR:2==   alttind_add_unique |
+  ==FACTOR:8==   alttind_drop_index |
+                 alttind_drop_pk |
+  ==FACTOR:6==   alttind_drop_constraint |
+  ==FACTOR:8==   alttind_rename_index |
+  ==FACTOR:0.1== alttind_enable_disable_keys
 ;
 
 alttind_add_index:
-  ADD alttind_index_word alttind_if_not_exists alttind_ind_name_optional alttind_ind_type_optional ( alttind_column_list ) alttind_option_list
+  ADD alttind_index_word _basics_if_not_exists_95pct alttind_ind_new_name_optional alttind_ind_type_optional ( alttind_column_list ) alttind_option_list
 ;
 
 alttind_drop_index:
-  DROP alttind_index_word alttind_if_exists alttind_ind_name_or_col_name
+  DROP alttind_index_word _basics_if_exists_95pct _index
 ;
 
 alttind_rename_index:
-  /* compatibility 10.5.2 */ RENAME alttind_index_word alttind_if_exists alttind_ind_name_or_col_name TO alttind_ind_name_or_col_name
+  /* compatibility 10.5.2 */ RENAME alttind_index_word _basics_if_exists_95pct _index TO alttind_ind_new_name
 ;
 
 alttind_drop_constraint:
-  DROP CONSTRAINT alttind_if_exists alttind_ind_name_or_col_name
+  DROP CONSTRAINT _basics_if_exists_95pct _index
 ;
 
 alttind_add_pk:
@@ -94,22 +93,19 @@ alttind_enable_disable_keys:
 ;
 
 alttind_add_unique:
-  ADD alttind_constraint_word_optional UNIQUE alttind_index_word_optional alttind_ind_name_optional alttind_ind_type_optional ( alttind_column_list ) alttind_option_list
-;
-
-alttind_ind_name_or_col_name:
-  alttind_ind_name | alttind_ind_name | alttind_ind_name | _field
+  ADD alttind_constraint_word_optional UNIQUE alttind_index_word_optional alttind_ind_new_name_optional alttind_ind_type_optional ( alttind_column_list ) alttind_option_list
 ;
 
 alttind_ind_type_optional:
-  | | USING alttind_ind_type
+  ==FACTOR:10== |
+  USING alttind_ind_type
 ;
 
 alttind_ind_type:
-    BTREE | BTREE | BTREE | BTREE | BTREE | BTREE | BTREE | BTREE
+    ==FACTOR:10== BTREE |
 # Disabled due to MDEV-371 issues
-#  | HASH | HASH | HASH | HASH
-  | RTREE
+#  HASH | HASH | HASH | HASH |
+  RTREE
 ;
 
 alttind_option_list:
@@ -118,10 +114,6 @@ alttind_option_list:
 
 alttind_ind_option:
   KEY_BLOCK_SIZE = _smallint_unsigned | COMMENT _english
-;
-
-alttind_column_name:
-  _field | _letter
 ;
 
 alttind_index_word:
@@ -137,9 +129,9 @@ alttind_constraint_word_optional:
 ;
 
 alttind_column_item:
-    alttind_column_name __asc_x_desc(33,33)
-  | alttind_column_name __asc_x_desc(33,33)
-  | alttind_column_name(_tinyint_unsigned) __asc_x_desc(33,33)
+    ==FACTOR:5== _field __asc_x_desc(33,33)
+  | _field_char(_tinyint_unsigned) __asc_x_desc(10,20)
+  | ==FACTOR:0.1== _field_blob(_tinyint_unsigned) __asc_x_desc(10,20)
 ;
 
 alttind_column_list:
@@ -148,24 +140,16 @@ alttind_column_list:
 ;
 
 alttind_column_name_list:
-    alttind_column_name | alttind_column_name | alttind_column_name
-  | alttind_column_name, alttind_column_name_list
+  _field |
+  _field, alttind_column_name_list
 ;
 
-alttind_if_not_exists:
-  | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS
+alttind_ind_new_name_optional:
+  | alttind_ind_new_name
 ;
 
-alttind_if_exists:
-  | IF EXISTS | IF EXISTS | IF EXISTS | IF EXISTS
-;
-
-alttind_ind_name_optional:
-  | alttind_ind_name | alttind_ind_name | alttind_ind_name
-;
-
-alttind_ind_name:
-  { 'ind'.$prng->int(1,9) } | _letter
+alttind_ind_new_name:
+  { 'ind'.(++$indnum) }
 ;
 
 alttind_algorithm:
