@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, 2021, MariaDB Corporation Ab
+#  Copyright (c) 2019, 2022, MariaDB Corporation Ab
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,8 +14,11 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 
+query_init_add:
+  { $indnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
+
 query_add:
-  ind_constr_query ;
+  ==FACTOR:0.1== ind_constr_query ;
 
 ind_constr_own_table:
   { 'ind_constr_t'.$prng->int(1,5) } ;

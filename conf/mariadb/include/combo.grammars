@@ -187,7 +187,6 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/modules/dynamic_variables.yy', '' ],
   [ '--redefine=conf/mariadb/modules/event.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/foreign_keys.yy', '', '', '', '' ],
-  [ '--redefine=conf/mariadb/modules/indexes_and_constraints.yy', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/information_schema.yy', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/locales.yy --mysqld=--plugin-load-add=locales --mysqld=--loose-locales', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/locks.yy', '', '', '', '' ],
