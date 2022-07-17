@@ -169,11 +169,11 @@ where_item:
         table1 . int_field_name arithmetic_operator existing_table_item . int_field_name  |
 	existing_table_item . char_field_name arithmetic_operator _char  |
         existing_table_item . char_field_name arithmetic_operator existing_table_item . char_field_name |
-        table1 . _field IS not NULL |
+        table1 .opt_sub_q_field IS not NULL |
         table1 . int_field_name arithmetic_operator existing_table_item . int_field_name  |
 	existing_table_item . char_field_name arithmetic_operator _char  |
         existing_table_item . char_field_name arithmetic_operator existing_table_item . char_field_name |
-        table1 . _field IS not NULL ;
+        table1 .opt_sub_q_field IS not NULL ;
 
 ################################################################################
 # subquery rules
@@ -632,10 +632,10 @@ new_select_item:
 nonaggregate_select_item:
         table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
         table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
+	table_one_two .opt_sub_q_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 aggregate_select_item:
-	aggregate table_one_two . _field ) AS { "field".++$fields };
+	aggregate table_one_two .opt_sub_q_field ) AS { "field".++$fields };
 
 select_subquery:
          { $subquery_idx += 1 ; $subquery_tables=0 ; ""} select_subquery_body;
@@ -677,17 +677,17 @@ aggregate:
 # track of what we have added.  You shouldn't need to touch these ever         #
 ################################################################################
 new_table_item:
-	_table AS { "table".++$tables } | _table AS { "table".++$tables } | _table AS { "table".++$tables } |
+	_table AS { "table".++$tables } | opt_sub_q_table AS { "table".++$tables } | opt_sub_q_table AS { "table".++$tables } |
         ( from_subquery ) AS { "table".++$tables } ;
 
 from_subquery:
        { $subquery_idx += 1 ; $subquery_tables=0 ; ""}  SELECT distinct select_option subquery_table_one_two . * subquery_body  ;
 
 subquery_new_table_item:
-        _table AS { "SUBQUERY".$subquery_idx."_t".++$subquery_tables } ;
+        opt_sub_q_table AS { "SUBQUERY".$subquery_idx."_t".++$subquery_tables } ;
 
 child_subquery_new_table_item:
-        _table AS { "CHILD_SUBQUERY".$child_subquery_idx."_t".++$child_subquery_tables } ;      
+        opt_sub_q_table AS { "CHILD_SUBQUERY".$child_subquery_idx."_t".++$child_subquery_tables } ;      
 
 current_table_item:
 	{ "table".$tables };
@@ -759,14 +759,14 @@ value:
 	_digit | _digit | _digit | _digit | _tinyint_unsigned|
         _char(2) | _char(2) | _char(2) | _char(2) | _char(2) ;
 
-_table:
+opt_sub_q_table:
   AA | AA | AA | BB | BB | BB |
   CC | CC | DD | small_table ;
 
 small_table:
   A | B | C | C | C | D | D | D ;
 
-_field:
+opt_sub_q_field:
     int_field_name | char_field_name ;
 
 _digit:

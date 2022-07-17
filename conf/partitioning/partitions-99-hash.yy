@@ -156,7 +156,7 @@ cache_name:
 	c1 | c2 | c3 | c4;
 
 select_explain:
-	EXPLAIN /*!50100 PARTITIONS */ SELECT _field FROM table_name_letter where ;
+	EXPLAIN /*!50100 PARTITIONS */ SELECT part_99_hash_field FROM table_name_letter where ;
 
 create_select:
 	SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM table_name_letter where ;
@@ -167,8 +167,8 @@ select:
 # WHERE clauses suitable for partition pruning
 where:
 	|                                      |
-	WHERE _field comparison_operator value |
-	WHERE _field BETWEEN value AND value   ;
+	WHERE part_99_hash_field comparison_operator value |
+	WHERE part_99_hash_field BETWEEN value AND value   ;
 
 comparison_operator:
         > | < | = | <> | != | >= | <= ;
@@ -181,10 +181,10 @@ insert_replace:
         INSERT | REPLACE ;
 
 update:
-        UPDATE dml_table_name SET _field = value WHERE _field = value ;
+        UPDATE dml_table_name SET part_99_hash_field = value WHERE part_99_hash_field = value ;
 
 delete:
-        DELETE FROM dml_table_name WHERE _field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
+        DELETE FROM dml_table_name WHERE part_99_hash_field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
 
 dml_table_name:
 	table_name_part_ext | table_name_part_ext | table_name_part_ext | table_name_part_ext |
@@ -203,7 +203,7 @@ table_name_part:
 value:
         _digit ;
 
-_field:
+part_99_hash_field:
         `col_int_nokey` | `col_int_nokey` ;
 
 create_sel:
@@ -247,7 +247,7 @@ alter_operation:
 	REMOVE PARTITIONING                                                 |
 	OPTIMIZE PARTITION partition_name_list                              |
 	ENGINE = engine                                                     |
-	ORDER BY _field                                                     |
+	ORDER BY part_99_hash_field                                                     |
 	TRUNCATE PARTITION partition_name_list		# can not be used in comparison tests against 5.0
 ;
 #	REORGANIZE PARTITION partition_name_list                            |
@@ -311,7 +311,7 @@ partition:
 
 subpartition:
 	|
-	SUBPARTITION BY linear HASH ( _field ) SUBPARTITIONS partition_count ;
+	SUBPARTITION BY linear HASH ( part_99_hash_field ) SUBPARTITIONS partition_count ;
 
 populate_digits:
 	{ @digits = @{$prng->shuffleArray([0..9])} ; return undef };
@@ -320,7 +320,7 @@ shift_digit:
 	{ shift @digits };
 
 partition_by_hash:
-	PARTITION BY linear HASH ( _field ) PARTITIONS partition_count;
+	PARTITION BY linear HASH ( part_99_hash_field ) PARTITIONS partition_count;
 
 linear:
 	| LINEAR;

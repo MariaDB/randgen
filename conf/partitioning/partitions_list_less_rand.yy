@@ -163,7 +163,7 @@ cache_name:
 # DML statements
 
 select_explain:
-	EXPLAIN /*!50100 PARTITIONS */ SELECT _field FROM table_name_letter where ;
+	EXPLAIN /*!50100 PARTITIONS */ SELECT part_list_less_rand_field FROM table_name_letter where ;
 
 create_select:
 	SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM table_name_letter where ;
@@ -174,8 +174,8 @@ select:
 # WHERE clauses suitable for partition pruning
 where:
 	|                                      |
-	WHERE _field comparison_operator value |
-	WHERE _field BETWEEN value AND value   ;
+	WHERE part_list_less_rand_field comparison_operator value |
+	WHERE part_list_less_rand_field BETWEEN value AND value   ;
 
 comparison_operator:
         > | < | = | <> | != | >= | <= ;
@@ -191,10 +191,10 @@ value:
         _digit ;
 
 update:
-        UPDATE dml_table_name SET _field = value WHERE _field = value ;
+        UPDATE dml_table_name SET part_list_less_rand_field = value WHERE part_list_less_rand_field = value ;
 
 delete:
-        DELETE FROM dml_table_name WHERE _field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
+        DELETE FROM dml_table_name WHERE part_list_less_rand_field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
  
 limit_rows:
 	1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
@@ -268,7 +268,7 @@ alter_operation:
 	REMOVE PARTITIONING                                                 |
 	OPTIMIZE PARTITION partition_name_list                              |
 	ENGINE = engine                                                     |
-	ORDER BY _field                                                     |
+	ORDER BY part_list_less_rand_field                                                     |
 	TRUNCATE PARTITION partition_name_list		# can not be used in comparison tests against 5.0
 ;
 #	REORGANIZE PARTITION partition_name_list                            |
@@ -303,7 +303,7 @@ partition:
 
 subpartition:
 	|
-	SUBPARTITION BY linear HASH ( _field ) SUBPARTITIONS partition_count ;
+	SUBPARTITION BY linear HASH ( part_list_less_rand_field ) SUBPARTITIONS partition_count ;
 
 linear:
 	| LINEAR ;
@@ -313,7 +313,7 @@ linear:
 
 partition_by_list:
 	{ our $nb_parts_var= $prng->int($nb_parts-9,$nb_parts); return undef }
-        PARTITION BY LIST ( _field ) ( list ) ;
+        PARTITION BY LIST ( part_list_less_rand_field ) ( list ) ;
 
 list:
 
@@ -325,7 +325,7 @@ list:
 partition_count:
 	{ return $prng->int(1,3) } ;
 
-_field:
+part_list_less_rand_field:
         `col_int_nokey` | `col_int_nokey` ;
 
 populate_digits:

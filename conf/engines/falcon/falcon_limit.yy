@@ -31,55 +31,55 @@ select:
 	SELECT select_item FROM join where order_by limit;
 
 select_item:
-	* | X . _field ;
+	* | X . falcon_limit_field ;
 
 join:
-	_table AS X | 
-	_big_table AS X LEFT JOIN _small_table AS Y USING ( _field ) ;
+	falcon_limit_table AS X | 
+	_big_table AS X LEFT JOIN _small_table AS Y USING ( falcon_limit_field ) ;
 
 where:
 	|
-	WHERE X . _field < value |
-	WHERE X . _field > value |
-	WHERE X . _field = value ;
+	WHERE X . falcon_limit_field < value |
+	WHERE X . falcon_limit_field > value |
+	WHERE X . falcon_limit_field = value ;
 
 where_delete:
 	|
-	WHERE _field < value |
-	WHERE _field > value |
-	WHERE _field = value ;
+	WHERE falcon_limit_field < value |
+	WHERE falcon_limit_field > value |
+	WHERE falcon_limit_field = value ;
 
 order_by:
-	ORDER BY X . _field ;
+	ORDER BY X . falcon_limit_field ;
 
 delete_order_by:
-	ORDER BY _field ;
+	ORDER BY falcon_limit_field ;
 
 limit:
 	LIMIT digit ;
 	
 insert:
-	INSERT INTO _table ( _field , _field ) VALUES ( value , value ) ;
+	INSERT INTO falcon_limit_table ( falcon_limit_field , falcon_limit_field ) VALUES ( value , value ) ;
 
 update:
-	UPDATE _table AS X SET _field = value where order_by limit ;
+	UPDATE falcon_limit_table AS X SET falcon_limit_field = value where order_by limit ;
 
 delete:
-	DELETE FROM _table where_delete delete_order_by LIMIT digit ;
+	DELETE FROM falcon_limit_table where_delete delete_order_by LIMIT digit ;
 
 transaction: START TRANSACTION | COMMIT | ROLLBACK ;
 
 alter:
-	ALTER TABLE _table DROP KEY letter |
-	ALTER TABLE _table DROP KEY _field |
-	ALTER TABLE _table ADD KEY letter ( _field ) ;
+	ALTER TABLE falcon_limit_table DROP KEY letter |
+	ALTER TABLE falcon_limit_table DROP KEY falcon_limit_field |
+	ALTER TABLE falcon_limit_table ADD KEY letter ( falcon_limit_field ) ;
 
 value:
 	' letter ' | digit | _date | _datetime | _time ;
 
 # Use only medimum - sized tables for this test
 
-_table:
+falcon_limit_table:
 	C | D | E ;
 
 _big_table:
@@ -90,6 +90,6 @@ _small_table:
 
 # Use only indexed fields:
 
-_field:
+falcon_limit_field:
 	`col_int_key` | `col_date_key` | `col_datetime_key` | `col_varchar_key` ;
 

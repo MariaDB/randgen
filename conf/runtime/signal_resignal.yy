@@ -146,7 +146,7 @@ drop_procedure1:
 # 	declare_variable  ;
 
 update:
-	UPDATE _table SET _field = value ;
+	UPDATE signal_resignal_table SET _field = value ;
 
 if:
 	IF variable_name = value THEN signal_resignal ; ELSEIF variable_name = value THEN signal_resignal ; ELSE signal_resignal ; END IF ;
@@ -298,5 +298,5 @@ number:
 	# We try to avoid numbers/digits that may be interpreted as actual error codes.
 	9000 | 9001 | 9002 | 9003 | 9004 | 9005 | 9006 | 9007 | 9008 | 9009 ;
 
-_table:
+signal_resignal_table:
 	B | C ;

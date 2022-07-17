@@ -60,7 +60,7 @@ cache_name:
 	c1 | c2 | c3 | c4;
 
 select_explain:
-	EXPLAIN PARTITIONS SELECT _field FROM table_name where ;
+	EXPLAIN PARTITIONS SELECT part_ddl_field FROM table_name where ;
 
 select:
 	SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM table_name where ;
@@ -68,8 +68,8 @@ select:
 # WHERE clauses suitable for partition pruning
 where:
 	| |
-	WHERE _field comparison_operator value |
-	WHERE _field BETWEEN value AND value ;
+	WHERE part_ddl_field comparison_operator value |
+	WHERE part_ddl_field BETWEEN value AND value ;
 
 comparison_operator:
 	> | < | = | <> | != | >= | <= ;
@@ -82,12 +82,12 @@ insert_replace:
 	INSERT | REPLACE ;
 
 update:
-	UPDATE table_name SET _field = value WHERE _field = value ;
+	UPDATE table_name SET part_ddl_field = value WHERE part_ddl_field = value ;
 
 delete:
-	DELETE FROM table_name WHERE _field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
+	DELETE FROM table_name WHERE part_ddl_field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
 
-_field:
+part_ddl_field:
 	`col_int_nokey` | `col_int_nokey` ;
 
 table_name:
@@ -116,7 +116,7 @@ alter:
 alter_operation:
 	ENGINE = engine |
 	enable_disable KEYS |
-	ORDER BY _field |
+	ORDER BY part_ddl_field |
 	partition |
 	ADD PARTITION (PARTITION p3 VALUES LESS THAN MAXVALUE) |
 	ADD PARTITION (PARTITION p3 VALUES LESS THAN MAXVALUE) |
@@ -163,10 +163,10 @@ partition:
 
 subpartition:
 	|
-	SUBPARTITION BY linear HASH ( _field ) SUBPARTITIONS partition_count ;
+	SUBPARTITION BY linear HASH ( part_ddl_field ) SUBPARTITIONS partition_count ;
 
 partition_by_range:
-	populate_ranges PARTITION BY RANGE ( _field ) subpartition (
+	populate_ranges PARTITION BY RANGE ( part_ddl_field ) subpartition (
 		PARTITION p0 VALUES LESS THAN ( shift_range ),
 		PARTITION p1 VALUES LESS THAN ( shift_range ),
 		PARTITION p2 VALUES LESS THAN ( shift_range ),
@@ -180,7 +180,7 @@ shift_range:
 	{ shift @ranges };
 
 partition_by_list:
-	populate_digits PARTITION BY LIST ( _field ) subpartition (
+	populate_digits PARTITION BY LIST ( part_ddl_field ) subpartition (
 		PARTITION p0 VALUES IN ( shift_digit, NULL ),
 		PARTITION p1 VALUES IN ( shift_digit, shift_digit, shift_digit ),
 		PARTITION p2 VALUES IN ( shift_digit, shift_digit, shift_digit ),
@@ -199,7 +199,7 @@ shift_digit:
 	{ shift @digits };
 
 partition_by_hash:
-	PARTITION BY linear HASH ( _field ) PARTITIONS partition_count;
+	PARTITION BY linear HASH ( part_ddl_field ) PARTITIONS partition_count;
 
 linear:
 	| LINEAR;

@@ -80,7 +80,7 @@ loose_select_list:
         loose_select_item , loose_select_list ;
 
 loose_select_item:
-        _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;                
+        opt_no_sq_port_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;                
         
 ################################################################################
 # The bulk of interesting things happen with this main rule                    #
@@ -177,7 +177,7 @@ where_item:
         existing_table_item . int_field_name arithmetic_operator int_value  |
         existing_table_item . char_field_name arithmetic_operator char_value  |
         table1 .`pk` IS not NULL |
-        table1 . _field IS not NULL |
+        table1 . opt_no_sq_port_field IS not NULL |
         table1 . int_indexed arithmetic_operator int_value AND ( table1 . char_field_name LIKE '%a%' OR table1.char_field_name LIKE '%b%') ;
 
 ################################################################################
@@ -299,10 +299,10 @@ new_select_item:
 nonaggregate_select_item:
         table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
         table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
+	table_one_two . opt_no_sq_port_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 aggregate_select_item:
-	aggregate table_one_two . _field ) AS { "field".++$fields };
+	aggregate table_one_two . opt_no_sq_port_field ) AS { "field".++$fields };
 
 ################################################################################
 # The combo_select_items are for 'spice' - we actually found                   #
@@ -324,7 +324,7 @@ aggregate:
 # track of what we have added.  You shouldn't need to touch these ever         #
 ################################################################################
 new_table_item:
-	_table AS { "table".++$tables };
+	opt_no_sq_port_table AS { "table".++$tables };
 
 current_table_item:
 	{ "table".$tables };
@@ -381,7 +381,7 @@ char_value:
 date_value:
         _date;
 
-_table:
+opt_no_sq_port_table:
      A | B | C | BB | CC | B | C | BB | CC | 
      C | C | C | C  | C  | C | C | C  | C  |
      CC | CC | CC | CC | CC | CC | CC | CC |
@@ -395,7 +395,7 @@ _table:
 view:
     view_A | view_B | view_C | view_BB | view_CC ;
 
-_field:
+opt_no_sq_port_field:
     int_field_name | char_field_name ;
 
 _digit:

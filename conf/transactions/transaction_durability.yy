@@ -32,25 +32,25 @@ dml:
 #| delete ;
 
 where:
-	WHERE _field sign value ;
-#	WHERE _field BETWEEN value AND value ;
+	WHERE trans_dur_field sign value ;
+#	WHERE trans_dur_field BETWEEN value AND value ;
 
 sign:
 	= | > | < | = | >= | <> | <= | != ;
 
 insert:
-	INSERT INTO _table ( _field , _field ) VALUES ( value , value ) ;
+	INSERT INTO _table ( trans_dur_field , trans_dur_field ) VALUES ( value , value ) ;
 
 update:
-	UPDATE _table AS X SET _field = value , _field = value , _field = value where ;
+	UPDATE _table AS X SET trans_dur_field = value , trans_dur_field = value , trans_dur_field = value where ;
 
 delete:
-	DELETE FROM _table WHERE _field = value ;
+	DELETE FROM _table WHERE trans_dur_field = value ;
 
 value:
 	_tinyint_unsigned ;
 
-_field:
+trans_dur_field:
 	`col_int_key` | `col_int_nokey` ;
 
 # | _english | _digit | _date | _datetime | _time ;

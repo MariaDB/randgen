@@ -25,10 +25,10 @@ select_item:
 	* | X . _field | COUNT( X . _field ) | COUNT( * ) ;
 
 join:
-	_table AS X | 
-	_table AS X LEFT JOIN _table AS Y ON ( X . _field = Y . _field ) ;
+	maria_stress_table AS X | 
+	maria_stress_table AS X LEFT JOIN maria_stress_table AS Y ON ( X . _field = Y . _field ) ;
 
-_table:
+maria_stress_table:
 	A | B | C | D ;	# Avoid using overly large tables, such as table E
 
 where:
@@ -50,13 +50,13 @@ limit:
 	| LIMIT digit ;
 	
 insert:
-	INSERT INTO _table ( _field , _field ) VALUES ( value , value ) ;
+	INSERT INTO maria_stress_table ( _field , _field ) VALUES ( value , value ) ;
 
 update:
-	UPDATE _table AS X SET _field = value where order_by limit ;
+	UPDATE maria_stress_table AS X SET _field = value where order_by limit ;
 
 delete:
-	DELETE FROM _table where_delete LIMIT digit ;
+	DELETE FROM maria_stress_table where_delete LIMIT digit ;
 
 transaction:
 	START TRANSACTION | COMMIT | ROLLBACK ;

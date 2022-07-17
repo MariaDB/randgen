@@ -60,7 +60,7 @@ select:
 	SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM _table where ;
 
 where:
-	| | WHERE _field sign value ;
+	| | WHERE part_wl4571_field sign value ;
 
 sign:
 	> | < | = | <> | != | >= | <= ;
@@ -73,12 +73,12 @@ insert_replace:
 	INSERT | REPLACE ;
 
 update:
-	UPDATE table_name SET _field = value WHERE _field = value ;
+	UPDATE table_name SET part_wl4571_field = value WHERE part_wl4571_field = value ;
 
 delete:
-	DELETE FROM table_name WHERE _field = value LIMIT _digit ;
+	DELETE FROM table_name WHERE part_wl4571_field = value LIMIT _digit ;
 
-_field:
+part_wl4571_field:
 	`col_int_nokey` | `col_int_nokey` ;
 
 table_name:
@@ -103,7 +103,7 @@ alter:
 alter_operation:
 	ENGINE = engine |
 	enable_disable KEYS |
-	ORDER BY _field |
+	ORDER BY part_wl4571_field |
 	DROP PARTITION partition_name_list |
 	partition |
 	ADD PARTITION (PARTITION p3 VALUES LESS THAN MAXVALUE) |
@@ -148,10 +148,10 @@ partition:
 
 subpartition:
 	|
-	SUBPARTITION BY linear HASH ( _field ) SUBPARTITIONS _digit ;
+	SUBPARTITION BY linear HASH ( part_wl4571_field ) SUBPARTITIONS _digit ;
 
 partition_by_range:
-	populate_ranges PARTITION BY RANGE ( _field ) subpartition (
+	populate_ranges PARTITION BY RANGE ( part_wl4571_field ) subpartition (
 		PARTITION p0 VALUES LESS THAN ( shift_range ),
 		PARTITION p1 VALUES LESS THAN ( shift_range ),
 		PARTITION p2 VALUES LESS THAN ( shift_range ),
@@ -165,7 +165,7 @@ shift_range:
 	{ shift @ranges };
 
 partition_by_list:
-	populate_digits PARTITION BY LIST ( _field ) subpartition (
+	populate_digits PARTITION BY LIST ( part_wl4571_field ) subpartition (
 		PARTITION p0 VALUES IN ( shift_digit, NULL ),
 		PARTITION p1 VALUES IN ( shift_digit, shift_digit, shift_digit ),
 		PARTITION p2 VALUES IN ( shift_digit, shift_digit, shift_digit ),
@@ -179,7 +179,7 @@ shift_digit:
 	{ shift @digits };
 
 partition_by_hash:
-	PARTITION BY linear HASH ( _field ) PARTITIONS _digit;
+	PARTITION BY linear HASH ( part_wl4571_field ) PARTITIONS _digit;
 
 linear:
 	| LINEAR;

@@ -80,7 +80,7 @@ loose_select_list:
         loose_select_item , loose_select_list ;
 
 loose_select_item:
-        _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;                
+        opt_no_sq_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;                
         
 ################################################################################
 # The bulk of interesting things happen with this main rule                    #
@@ -160,7 +160,7 @@ join_type:
 join_condition_list:
     join_condition_item | 
     ( join_condition_item ) and_or ( join_condition_item ) |
-    ( current_table_item  .`pk` arithmetic_operator previous_table_item . _field ) AND (current_table_item  .`pk` arithmetic_operator previous_table_item . _field ) ;    
+    ( current_table_item  .`pk` arithmetic_operator previous_table_item . opt_no_sq_field ) AND (current_table_item  .`pk` arithmetic_operator previous_table_item .opt_no_sq_field ) ;    
 
 join_condition_item:
      current_table_item . int_indexed = previous_table_item . int_field_name  |
@@ -203,15 +203,15 @@ not:
 # rnd_pos optimization                                                         #
 ################################################################################
 where_item:
-        alias1 .`pk` arithmetic_operator existing_table_item . _field  |
-        alias1 .`pk` arithmetic_operator existing_table_item . _field  |
-	existing_table_item . _field arithmetic_operator value  |
-        existing_table_item . _field arithmetic_operator existing_table_item . _field |
-        existing_table_item . _field arithmetic_operator value  |
-        existing_table_item . _field arithmetic_operator existing_table_item . _field |
+        alias1 .`pk` arithmetic_operator existing_table_item .opt_no_sq_field  |
+        alias1 .`pk` arithmetic_operator existing_table_item .opt_no_sq_field  |
+	existing_table_item .opt_no_sq_field arithmetic_operator value  |
+        existing_table_item .opt_no_sq_field arithmetic_operator existing_table_item .opt_no_sq_field |
+        existing_table_item .opt_no_sq_field arithmetic_operator value  |
+        existing_table_item .opt_no_sq_field arithmetic_operator existing_table_item .opt_no_sq_field |
         alias1 .`pk` IS not NULL |
-        alias1 . _field IS not NULL |
-        alias1 . _field_indexed arithmetic_operator value AND ( alias1 . char_field_name LIKE '%a%' OR alias1.char_field_name LIKE '%b%') ;
+        alias1 .opt_no_sq_field IS not NULL |
+        alias1 .opt_no_sq_field_indexed arithmetic_operator value AND ( alias1 . char_field_name LIKE '%a%' OR alias1.char_field_name LIKE '%b%') ;
 
 ################################################################################
 # The range_predicate_1* rules below are in place to ensure we hit the         #
@@ -339,10 +339,10 @@ new_select_item:
 nonaggregate_select_item:
         table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
         table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
+	table_one_two .opt_no_sq_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 aggregate_select_item:
-	aggregate table_one_two . _field ) AS { "field".++$fields };
+	aggregate table_one_two .opt_no_sq_field ) AS { "field".++$fields };
 
 ################################################################################
 # The combo_select_items are for 'spice' - we actually found                   #
@@ -364,7 +364,7 @@ aggregate:
 # track of what we have added.  You shouldn't need to touch these ever         #
 ################################################################################
 new_table_item:
-	_table AS { "alias".++$tables };
+	opt_no_sq_table AS { "alias".++$tables };
 
 current_table_item:
 	{ "alias".$tables };
@@ -412,7 +412,7 @@ value:
 	_digit | _digit | _digit | _digit | _tinyint_unsigned |
         _char(2) | _char(2) | _char(2) | _char(2) | _char(2) | 'USA' ;
 
-_table:
+opt_no_sq_table:
      A | B | C | BB | CC | B | C | BB | CC | 
      C | C | C | C  | C  | C | C | C  | C  |
      CC | CC | CC | CC | CC | CC | CC | CC |
@@ -426,7 +426,7 @@ _table:
 view:
     view_A | view_AA | view_B | view_BB | view_C | view_CC | view_C | view_CC | view_D ;
 
-_field:
+opt_no_sq_field:
     int_field_name | char_field_name ;
 
 _digit:

@@ -179,11 +179,11 @@ where_item:
         alias1 . int_field_name arithmetic_operator existing_table_item . int_field_name  |
 	existing_table_item . char_field_name arithmetic_operator _char  |
         existing_table_item . char_field_name arithmetic_operator existing_table_item . char_field_name |
-        alias1 . _field IS not NULL |
+        alias1 . opt_sq_field IS not NULL |
         alias1 . int_field_name arithmetic_operator existing_table_item . int_field_name  |
 	existing_table_item . char_field_name arithmetic_operator _char  |
         existing_table_item . char_field_name arithmetic_operator existing_table_item . char_field_name |
-        alias1 . _field IS not NULL ;
+        alias1 .opt_sq_port_field IS not NULL ;
 
 ################################################################################
 # subquery rules
@@ -647,10 +647,10 @@ new_select_item:
 nonaggregate_select_item:
         table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
         table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
+	table_one_two . opt_sq_port_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 aggregate_select_item:
-	aggregate table_one_two . _field ) AS { "field".++$fields };
+	aggregate table_one_two . opt_sq_port_field ) AS { "field".++$fields };
 
 select_subquery:
          { $subquery_idx += 1 ; $subquery_tables=0 ; ""} select_subquery_body;
@@ -801,7 +801,7 @@ view:
     private_gendata_simple.view_D
 ;
 
-_field:
+opt_sq_port_field:
     int_field_name | char_field_name ;
 
 _digit:

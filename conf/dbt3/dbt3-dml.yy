@@ -10,7 +10,7 @@ query_init:
 query:
 	transaction_body ; commit_rollback ;
 
-_table:
+db3_dml_table:
 	supplier | part | partsupp | customer | orders | lineitem | nation | region ;
 
 commit_rollback:

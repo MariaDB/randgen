@@ -163,7 +163,7 @@ cache_name:
 # DML statements
 
 select_explain:
-	EXPLAIN /*!50100 PARTITIONS */ SELECT _field FROM table_name_letter where ;
+	EXPLAIN /*!50100 PARTITIONS */ SELECT part_range_var_nb_field FROM table_name_letter where ;
 
 create_select:
 	SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM table_name_letter where ;
@@ -174,8 +174,8 @@ select:
 # WHERE clauses suitable for partition pruning
 where:
 	|                                      |
-	WHERE _field comparison_operator value |
-	WHERE _field BETWEEN value AND value   ;
+	WHERE part_range_var_nb_field comparison_operator value |
+	WHERE part_range_var_nb_field BETWEEN value AND value   ;
 
 comparison_operator:
         > | < | = | <> | != | >= | <= ;
@@ -191,10 +191,10 @@ value:
         _digit ;
 
 update:
-        UPDATE dml_table_name SET _field = value WHERE _field = value ;
+        UPDATE dml_table_name SET part_range_var_nb_field = value WHERE part_range_var_nb_field = value ;
 
 delete:
-        DELETE FROM dml_table_name WHERE _field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
+        DELETE FROM dml_table_name WHERE part_range_var_nb_field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
  
 limit_rows:
 	1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
@@ -284,7 +284,7 @@ alter_operation:
 	REMOVE PARTITIONING                                                 |
 	OPTIMIZE PARTITION partition_name_list                              |
 	ENGINE = engine                                                     |
-	ORDER BY _field                                                     |
+	ORDER BY part_range_var_nb_field                                                     |
 	TRUNCATE PARTITION partition_name_list		# can not be used in comparison tests against 5.0
 ;
 #	REORGANIZE PARTITION partition_name_list                            |
@@ -320,13 +320,13 @@ partition:
 
 subpartition:
 	|
-	SUBPARTITION BY linear HASH ( _field ) SUBPARTITIONS partition_count ;
+	SUBPARTITION BY linear HASH ( part_range_var_nb_field ) SUBPARTITIONS partition_count ;
 
 linear:
 	| LINEAR;
 
 partition_by_range:
-          range_elements { our $ind= 0; return undef } PARTITION BY RANGE ( _field ) (
+          range_elements { our $ind= 0; return undef } PARTITION BY RANGE ( part_range_var_nb_field ) (
           range_list
           PARTITION {"p".$ind++} VALUES LESS THAN MAXVALUE );
 
@@ -357,7 +357,7 @@ range_elem:
 partition_count:
 	{ return $prng->int(1,3) } ;
 
-_field:
+part_range_var_nb_field:
         `col_int_nokey` | `col_int_nokey` ;
 
 populate_digits:

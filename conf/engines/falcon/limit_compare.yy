@@ -36,24 +36,24 @@ select:
 
 where:
 	|
-	WHERE _field sign value |
-	WHERE _field BETWEEN value AND value ;
-#	WHERE _field IN ( value , value , value , value , value , value ) ;
+	WHERE limit_compare_field sign value |
+	WHERE limit_compare_field BETWEEN value AND value ;
+#	WHERE limit_compare_field IN ( value , value , value , value , value , value ) ;
 
 sign:
 	> | < | = | >= | <> | <= | != ;
 
 order_by:
-	ORDER BY _field , `pk` ;
+	ORDER BY limit_compare_field , `pk` ;
 
 limit:
 	LIMIT _digit | LIMIT _tinyint_unsigned | LIMIT 65535 ;
 
 insert:
-	INSERT INTO _table ( _field , _field ) VALUES ( value , value ) ;
+	INSERT INTO _table ( limit_compare_field , limit_compare_field ) VALUES ( value , value ) ;
 
 update:
-	UPDATE _table AS X SET _field = value where order_by limit;
+	UPDATE _table AS X SET limit_compare_field = value where order_by limit;
 
 delete:
 	DELETE FROM _table where order_by LIMIT digit ;
@@ -62,14 +62,14 @@ transaction: START TRANSACTION | COMMIT | ROLLBACK ;
 
 alter:
 	ALTER ONLINE TABLE _table DROP KEY letter |
-	ALTER ONLINE TABLE _table DROP KEY _field |
-	ALTER ONLINE TABLE _table ADD KEY letter ( _field ) |
-	ALTER ONLINE TABLE _table ADD KEY letter ( _field ) ;
+	ALTER ONLINE TABLE _table DROP KEY limit_compare_field |
+	ALTER ONLINE TABLE _table ADD KEY letter ( limit_compare_field ) |
+	ALTER ONLINE TABLE _table ADD KEY letter ( limit_compare_field ) ;
 
 value:
 	_english | _digit | _date | _datetime | _time ;
 
 # Use only indexed fields:
 
-_field:
+limit_compare_field:
 	`col_int_key` | `col_date_key` | `col_datetime_key` | `col_varchar_key` ;

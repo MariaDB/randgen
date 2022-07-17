@@ -157,7 +157,7 @@ cache_name:
 	c1 | c2 | c3 | c4;
 
 select_explain:
-	EXPLAIN /*!50100 PARTITIONS */ SELECT _field FROM table_name_letter where ;
+	EXPLAIN /*!50100 PARTITIONS */ SELECT partition_99_rg_field FROM table_name_letter where ;
 
 create_select:
 	SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM table_name_letter where ;
@@ -168,8 +168,8 @@ select:
 # WHERE clauses suitable for partition pruning
 where:
 	|                                      |
-	WHERE _field comparison_operator value |
-	WHERE _field BETWEEN value AND value   ;
+	WHERE partition_99_rg_field comparison_operator value |
+	WHERE partition_99_rg_field BETWEEN value AND value   ;
 
 comparison_operator:
         > | < | = | <> | != | >= | <= ;
@@ -182,10 +182,10 @@ insert_replace:
         INSERT | REPLACE ;
 
 update:
-        UPDATE dml_table_name SET _field = value WHERE _field = value ;
+        UPDATE dml_table_name SET partition_99_rg_field = value WHERE partition_99_rg_field = value ;
 
 delete:
-        DELETE FROM dml_table_name WHERE _field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
+        DELETE FROM dml_table_name WHERE partition_99_rg_field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
 
 dml_table_name:
 	table_name_part_ext | table_name_part_ext | table_name_part_ext | table_name_part_ext |
@@ -235,7 +235,7 @@ table_name_part:
 value:
         _digit ;
 
-_field:
+partition_99_rg_field:
         `col_int_nokey` | `col_int_nokey` ;
 
 create_sel:
@@ -277,7 +277,7 @@ alter_operation:
 	REMOVE PARTITIONING                                                 |
 	OPTIMIZE PARTITION partition_name_list                              |
 	ENGINE = engine                                                     |
-	ORDER BY _field                                                     |
+	ORDER BY partition_99_rg_field                                                     |
 	TRUNCATE PARTITION partition_name_list		# can not be used in comparison tests against 5.0
 ;
 #	REORGANIZE PARTITION partition_name_list                            |
@@ -310,7 +310,7 @@ partition:
 
 subpartition:
 	|
-	SUBPARTITION BY linear HASH ( _field ) SUBPARTITIONS partition_count ;
+	SUBPARTITION BY linear HASH ( partition_99_rg_field ) SUBPARTITIONS partition_count ;
 
 populate_digits:
 	{ @digits = @{$prng->shuffleArray([0..9])} ; return undef };
@@ -319,7 +319,7 @@ shift_digit:
 	{ shift @digits };
 
 partition_by_hash:
-	PARTITION BY linear HASH ( _field ) PARTITIONS partition_count;
+	PARTITION BY linear HASH ( partition_99_rg_field ) PARTITIONS partition_count;
 
 linear:
 	| LINEAR;
@@ -332,7 +332,7 @@ partition_hash_or_key:
 	KEY  ( field_name ) PARTITIONS partition_count ;
 
 partition_by_range:
-          range_elements { our $ind= 0; return undef } PARTITION BY RANGE ( _field ) (
+          range_elements { our $ind= 0; return undef } PARTITION BY RANGE ( partition_99_rg_field ) (
           range_list
           PARTITION {"p".$ind++} VALUES LESS THAN MAXVALUE );
 
