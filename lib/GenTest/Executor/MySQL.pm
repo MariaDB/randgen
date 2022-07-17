@@ -1704,21 +1704,26 @@ sub loadMetaData {
       "SELECT table_schema, table_name, column_name, column_key, ".
              "data_type, character_maximum_length ".
       "FROM information_schema.columns WHERE $clause";
+  my $index_query=
+      "SELECT table_schema, table_name, index_name, non_unique XOR 1 ".
+      "FROM information_schema.statistics WHERE $clause";
 
   sayDebug("Metadata reload: Starting reading $metadata_type metadata with condition \"$clause\"");
 
-  my ($table_metadata, $column_metadata);
+  my ($table_metadata, $column_metadata, $index_metadata);
   my $dbh= $self->serviceDbh();
   $table_metadata= $dbh->selectall_arrayref($table_query);
   if (not $dbh->err and $table_metadata) {
     $column_metadata= $dbh->selectall_arrayref($column_query);
-    if (not $dbh->err and $column_metadata) {
-      sayDebug("MetadataReload: Finished reading metadata");
+    if (not $dbh->err) {
+      $index_metadata= $dbh->selectall_arrayref($index_query);
     }
   }
   if ($dbh->err or not $table_metadata or not $column_metadata) {
     sayError("MetadataReload: Failed to retrieve metadata with condition \"$clause\": " . $dbh->err . " " . $dbh->errstr);
     return undef;
+  } else {
+    say("MetadataReload: Finished reading $metadata_type metadata: ".scalar(@$table_metadata)." tables, ".scalar(@$column_metadata)." columns, ".scalar(@$index_metadata)." indexes");
   }
 
   my $meta= {};
@@ -1738,15 +1743,21 @@ sub loadMetaData {
       $meta->{information_schema}={} if not exists $meta->{information_schema};
       $meta->{information_schema}->{$type}={} if not exists $meta->{information_schema}->{$type};
       $meta->{information_schema}->{$type}->{$table}={} if not exists $meta->{information_schema}->{$type}->{$table};
+      $meta->{information_schema}->{$type}->{$table}->{col}={} if not exists $meta->{information_schema}->{$type}->{$table}->{col};
+      $meta->{information_schema}->{$type}->{$table}->{key}={} if not exists $meta->{information_schema}->{$type}->{$table}->{key};
       $tabletype{'information_schema.'.$table}= $type;
       $meta->{INFORMATION_SCHEMA}={} if not exists $meta->{INFORMATION_SCHEMA};
       $meta->{INFORMATION_SCHEMA}->{$type}={} if not exists $meta->{INFORMATION_SCHEMA}->{$type};
       $meta->{INFORMATION_SCHEMA}->{$type}->{$table}={} if not exists $meta->{INFORMATION_SCHEMA}->{$type}->{$table};
+      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{col}={} if not exists $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{col};
+      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{key}={} if not exists $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{key};
       $tabletype{'INFORMATION_SCHEMA.'.$table}= $type;
     } else {
       $meta->{$schema}={} if not exists $meta->{$schema};
       $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
       $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
+      $meta->{$schema}->{$type}->{$table}->{col}={} if not exists $meta->{$schema}->{$type}->{$table}->{col};
+      $meta->{$schema}->{$type}->{$table}->{key}={} if not exists $meta->{$schema}->{$type}->{$table}->{key};
       $tabletype{$schema.'.'.$table}= $type;
     }
   }
@@ -1776,9 +1787,11 @@ sub loadMetaData {
       $metatype eq 'tinyblob' or
       $metatype eq 'mediumblob' or
       $metatype eq 'longblob' or
+      $metatype eq 'blob' or
       $metatype eq 'tinytext' or
       $metatype eq 'mediumtext' or
-      $metatype eq 'longtext'
+      $metatype eq 'longtext' or
+      $metatype eq 'text'
     ) { $metatype= 'blob' };
 
     if ($key eq 'PRI') { $key= 'primary' }
@@ -1786,12 +1799,25 @@ sub loadMetaData {
     else { $key= 'ordinary' };
     my $type= $tabletype{$schema.'.'.$table};
     if (lc($schema) eq 'information_schema') {
-      $meta->{information_schema}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
-      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
+      $meta->{information_schema}->{$type}->{$table}->{col}->{$col}= [$key,$metatype,$realtype,$maxlength];
+      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{col}->{$col}= [$key,$metatype,$realtype,$maxlength];
     } else {
-      $meta->{$schema}->{$type}->{$table}->{$col}= [$key,$metatype,$realtype,$maxlength];
+      $meta->{$schema}->{$type}->{$table}->{col}->{$col}= [$key,$metatype,$realtype,$maxlength];
     }
   }
+
+  foreach my $row (@$index_metadata) {
+    my ($schema, $table, $ind, $unique) = @$row;
+
+    my $type= $tabletype{$schema.'.'.$table};
+    if (lc($schema) eq 'information_schema') {
+      $meta->{information_schema}->{$type}->{$table}->{key}->{$ind}= [$unique];
+      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{key}->{$ind}= [$unique];
+    } else {
+      $meta->{$schema}->{$type}->{$table}->{key}->{$ind}= [$unique];
+    }
+  }
+
   return $meta;
 }
 

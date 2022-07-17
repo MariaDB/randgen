@@ -262,6 +262,10 @@ sub next {
 						my $tables = $executors->[0]->metaViews($last_database);
 						$last_table = $prng->arrayElement($tables);
 						$item = '`'.$last_table.'`';
+					} elsif ($item eq '_index') {
+						my $indexes = $executors->[0]->metaIndexes($last_table, $last_database);
+                        $last_field = $prng->arrayElement($indexes);
+						$item = '`'.$last_field.'`';
 					} elsif ($item eq '_field') {
 						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
                         $last_field = $prng->arrayElement($fields);
