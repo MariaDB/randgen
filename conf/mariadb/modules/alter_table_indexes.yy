@@ -17,7 +17,7 @@ query_init_add:
   { $indnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
 
 query_add:
-  alttind_query ;
+  ==FACTOR:0.1== alttind_query ;
 
 alttind_query:
   ALTER alttind_online alttind_ignore TABLE _basetable /*!100301 alttind_wait */ alttind_list_with_optional_order_by
@@ -149,7 +149,7 @@ alttind_ind_new_name_optional:
 ;
 
 alttind_ind_new_name:
-  { 'ind'.(++$indnum) }
+  { 'alttind'.(++$indnum) }
 ;
 
 alttind_algorithm:
