@@ -1,4 +1,4 @@
-#  Copyright (c) 2018, 2020, MariaDB
+#  Copyright (c) 2018, 2022, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -15,44 +15,20 @@
 
 
 query_init_add:
-  alt_create_with_redundancy ;
-;
+  { $tbnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
 
-# Since some creation may fail, we can make two attempts for each view
-# for better chances that all tables are created.
-# Since it's "create if not exists", the redundancy is reasonably cheap.
-alt_create_with_redundancy:
-     { $table_name_to_use = 'alt_t1'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
-   ; { $table_name_to_use = 'alt_t2'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
-   ; { $table_name_to_use = 'alt_t3'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
-   ; { $table_name_to_use = 'alt_t4'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
-   ; { $table_name_to_use = 'alt_t5'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
-   ; { $table_name_to_use = 'alt_t6'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
-   ; { $table_name_to_use = 'alt_t7'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
-   ; { $table_name_to_use = 'alt_t8'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
-   ; { $table_name_to_use = 'alt_t9'; '' } alt_create_if_not_exists ; alt_create_if_not_exists
-     { $table_name_to_use = '' }
-;
-
-query_add:
-  alt_query
-;
-
-alt_create_if_not_exists:
-  CREATE TABLE IF NOT EXISTS alt_own_table_name (alt_col_name_and_definition_list) alt_table_flags
-;
-
+query_add: 
+  ==FACTOR:0.1== alt_query ;
 
 alt_query:
     alt_create
-  | alt_dml | alt_dml | alt_dml
-  | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter
-  | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter | alt_alter
-  | alt_rename_multi
+  | ==FACTOR:0.1== alt_truncate
+  |==FACTOR:20== alt_alter
+  | ==FACTOR:0.1== alt_rename_multi
   | alt_alter_partitioning
   | alt_flush
   | alt_optimize
-  | alt_lock_unlock_table
+  | ==FACTOR:0.2== alt_lock_unlock_table
   | alt_transaction
 ;
 
@@ -62,21 +38,17 @@ alt_create:
 ;
 
 alt_rename_multi:
-    DROP TABLE IF EXISTS { $tmp_tbl= 'tmp_rename_'.abs($$) } ; RENAME TABLE alt_own_table_name TO $tmp_tbl, $tmp_tbl TO { $my_last_table }
+    DROP TABLE IF EXISTS { $tmp_tbl= 'tmp_rename_'.abs($$) } ;; RENAME TABLE _basetable TO { $tmp_tbl }, { $tmp_tbl } TO { $last_table }
 ;
 
-alt_dml:
-    alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert | alt_insert
-  | alt_update | alt_update
-  | alt_delete | alt_truncate
-;  
-
 alt_alter:
-  ALTER alt_online_optional alt_ignore_optional TABLE alt_table_name alt_wait_optional alt_alter_list_with_optional_order_by
+  ALTER alt_online_optional alt_ignore_optional TABLE _basics_if_exists_95pct _basetable alt_wait_optional alt_alter_list_with_optional_order_by
 ;
 
 alt_wait_optional:
-  | | | /*!100301 WAIT _digit */ | /*!100301 NOWAIT */
+  ==FACTOR:5== |
+  WAIT _digit |
+  NOWAIT
 ;
 
 alt_ignore_optional:
@@ -92,24 +64,25 @@ alt_alter_list_with_optional_order_by:
 ;
 
 alt_alter_list:
-  alt_alter_item | alt_alter_item | alt_alter_item, alt_alter_list
+  ==FACTOR:3== alt_alter_item |
+  alt_alter_item, alt_alter_list
 ;
 
 alt_alter_item:
-    alt_table_option
-  | alt_add_column
-  | alt_modify_column
-  | alt_change_column
-  | alt_alter_column
-  | alt_add_index | alt_add_index | alt_add_index
-  | alt_add_foreign_key | alt_add_foreign_key
-  | alt_drop_foreign_key
-  | alt_add_check_constraint | alt_add_check_constraint
-  | alt_drop_check_constraint
-  | alt_drop_column | alt_drop_column
-  | alt_drop_index | alt_drop_index
-  | FORCE alt_lock alt_algorithm
-  | RENAME TO alt_own_table_name
+    ==FACTOR:5==   alt_table_option
+  | ==FACTOR:2==   alt_add_column
+  | ==FACTOR:3==   alt_modify_column
+  |                alt_change_column
+  |                alt_alter_column
+  | ==FACTOR:2==   alt_add_index
+  | ==FACTOR:0.2== alt_add_foreign_key
+  | ==FACTOR:0.2== alt_drop_foreign_key
+  | ==FACTOR:0.5== alt_add_check_constraint
+  | ==FACTOR:0.5== alt_drop_check_constraint
+  | ==FACTOR:0.5== alt_drop_column
+  |                alt_drop_index
+  | ==FACTOR:4==   FORCE alt_lock alt_algorithm
+  | ==FACTOR:0.001== RENAME TO alt_new_or_existing_table_name
 ;
 
 # Can't put it on the list, as ORDER BY should always go last
@@ -212,7 +185,6 @@ alt_storage_optional:
 # Disabled due to MDEV-14860
 #  | | STORAGE
 ;
-  
 
 alt_transaction:
     START TRANSACTION
@@ -223,110 +195,59 @@ alt_transaction:
 ;
 
 alt_lock_unlock_table:
-    FLUSH TABLE alt_table_name FOR EXPORT
-  | LOCK TABLE alt_table_name READ
-  | LOCK TABLE alt_table_name WRITE
-  | SELECT * FROM alt_table_name FOR UPDATE
+    FLUSH TABLE _table FOR EXPORT
+  | LOCK TABLE _table READ
+  | LOCK TABLE _table WRITE
+  | SELECT * FROM _table FOR UPDATE
   | ==FACTOR:20== UNLOCK TABLES
 ;
 
 alt_alter_partitioning:
-    ALTER TABLE alt_table_name PARTITION BY HASH(alt_col_name)
-  | ALTER TABLE alt_table_name PARTITION BY KEY(alt_col_name)
-  | ALTER TABLE alt_table_name REMOVE PARTITIONING
-;
-
-alt_delete:
-  DELETE FROM alt_table_name LIMIT _digit
+    ALTER TABLE _basetable PARTITION BY HASH(_field)
+  | ALTER TABLE _basetable PARTITION BY KEY(_field)
+  | ALTER TABLE _basetable REMOVE PARTITIONING
 ;
 
 alt_truncate:
-  TRUNCATE TABLE alt_table_name
+  TRUNCATE TABLE _table
 ;
 
-alt_table_name:
-    _table { $my_last_table = $last_table; '' }
-  | alt_own_table_name
+alt_new_or_existing_table_name:
+  ==FACTOR:10== alt_new_table_name |
+  _basetable
 ;
 
-alt_own_table_name:
-    { $my_last_table = $table_name_to_use ? $table_name_to_use : 'alt_t'.$prng->int(1,9) }
+alt_new_table_name:
+    { $last_table = 'alt_t'.(++$tbnum) }
 ;
 
 alt_col_name:
-    alt_int_col_name
-  | alt_num_col_name
-  | alt_temporal_col_name
-  | alt_timestamp_col_name
-  | alt_text_col_name
-  | alt_enum_col_name
-# TODO: re-enable when virtual columns start working
-#  | alt_virt_col_name
-  | _field
+ { $new_col_next_num > 0 ? 'alt_new_col_name' : '_field' } ;
 ;
 
-alt_bit_col_name:
-  { $last_column = 'bcol'.$prng->int(1,10) }
+alt_new_col_name:
+  { 'altcol'.($new_col_next_num++) } ;
+
+alt_new_or_existing_col_name:
+  ==FACTOR:10== alt_new_col_name |
+  _field
 ;
-
-
-alt_int_col_name:
-    { $last_column = 'icol'.$prng->int(1,10) }
-  | { $last_column = 'icol'.$prng->int(1,10) }
-  | { $last_column = 'icol'.$prng->int(1,10) }
-  | _field_int
-;
-
-alt_num_col_name:
-    { $last_column = 'ncol'.$prng->int(1,10) }
-;
-
-alt_virt_col_name:
-    { $last_column = 'vcol'.$prng->int(1,10) }
-;
-
-alt_temporal_col_name:
-    { $last_column = 'tcol'.$prng->int(1,10) }
-;
-
-alt_timestamp_col_name:
-    { $last_column = 'tscol'.$prng->int(1,10) }
-;
-
-alt_geo_col_name:
-    { $last_column = 'geocol'.$prng->int(1,10) }
-;
-
-alt_text_col_name:
-    { $last_column = 'scol'.$prng->int(1,10) }
-  | { $last_column = 'scol'.$prng->int(1,10) }
-  | { $last_column = 'scol'.$prng->int(1,10) }
-  | _field_char
-;
-
-alt_enum_col_name:
-    { $last_column = 'ecol'.$prng->int(1,10) }
-;
-
-alt_ind_name:
-  { $last_index = 'ind'.$prng->int(1,10) }
-;
-
-alt_col_name_and_definition:
-    alt_bit_col_name alt_bit_type alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
-  | alt_int_col_name alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
-  | alt_int_col_name alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
-  | alt_int_col_name alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
-  | alt_num_col_name alt_num_type alt_unsigned alt_zerofill alt_null alt_optional_default alt_invisible_optional alt_check_optional
-  | alt_temporal_col_name alt_temporal_type alt_null alt_optional_default alt_invisible_optional alt_check_optional
-  | alt_timestamp_col_name alt_timestamp_type alt_null alt_optional_default_or_current_timestamp alt_invisible_optional alt_check_optional
-  | alt_text_col_name alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
-  | alt_text_col_name alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
-  | alt_text_col_name alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
-  | alt_enum_col_name alt_enum_type alt_null alt_optional_default alt_invisible_optional alt_check_optional
+  
+alt_col_definition:
+    alt_bit_type alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
+  | alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
+  | alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
+  | alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
+  | alt_num_type alt_unsigned alt_zerofill alt_null alt_optional_default alt_invisible_optional alt_check_optional
+  | alt_temporal_type alt_null alt_optional_default alt_invisible_optional alt_check_optional
+  | alt_timestamp_type alt_null alt_optional_default_or_current_timestamp alt_invisible_optional alt_check_optional
+  | alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
+  | alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
+  | alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
+  | alt_enum_type alt_null alt_optional_default alt_invisible_optional alt_check_optional
 # TODO: vcols: re-enable when virtual columns start working
-#  | alt_virt_col_name alt_virt_col_definition alt_virt_type alt_invisible_optional alt_check_optional
-  | alt_geo_col_name alt_geo_type alt_null alt_geo_optional_default alt_invisible_optional alt_check_optional
+#  | alt_virt_col_definition alt_virt_type alt_invisible_optional alt_check_optional
+  | alt_geo_type alt_null alt_geo_optional_default alt_invisible_optional alt_check_optional
 ;
 
 
@@ -338,22 +259,14 @@ alt_invisible_optional:
   | | | | /*!100303 INVISIBLE */
 ;
 
-alt_col_versioning_optional:
- | | | | | /*!100304 alt_with_without SYSTEM VERSIONING */
-;
-
-alt_with_without:
-  WITH | WITHOUT
-;
-
 alt_virt_col_definition:
-    alt_int_type AS ( alt_int_col_name + _digit )
-  | alt_num_type AS ( alt_num_col_name + _digit )
-  | alt_temporal_type AS ( alt_temporal_col_name )
-  | alt_timestamp_type AS ( alt_timestamp_col_name )
-  | alt_text_type AS ( SUBSTR(alt_text_col_name, _digit, _digit ) )
-  | alt_enum_type AS ( alt_enum_col_name )
-  | alt_geo_type AS ( alt_geo_col_name )
+    alt_int_type AS ( _field + _digit )
+  | alt_num_type AS ( _field + _digit )
+  | alt_temporal_type AS ( _field )
+  | alt_timestamp_type AS ( _field )
+  | alt_text_type AS ( SUBSTR(_field, _digit, _digit ) )
+  | alt_enum_type AS ( _field )
+  | alt_geo_type AS ( _field )
 ;
 
 alt_virt_type:
@@ -385,11 +298,12 @@ alt_default_optional_int_or_auto_increment:
 ;
 
 alt_create_or_replace:
-  CREATE OR REPLACE alt_temporary TABLE alt_own_table_name (alt_col_name_and_definition_list) alt_table_flags
+  { $new_col_next_num = 1; '' } CREATE OR REPLACE alt_temporary TABLE alt_new_or_existing_table_name (alt_col_name_and_definition_list) alt_table_flags { $new_col_next_num = 0; '' } 
 ;
 
 alt_col_name_and_definition_list:
-  alt_col_name_and_definition | alt_col_name_and_definition | alt_col_name_and_definition, alt_col_name_and_definition_list
+  alt_col_name alt_col_definition |
+  alt_col_name alt_col_definition, alt_col_name_and_definition_list
 ;
 
 alt_table_flags:
@@ -421,36 +335,12 @@ alt_row_format_optional:
 ;
 
 alt_create_like:
-  CREATE alt_temporary TABLE alt_own_table_name LIKE _table
-;
-
-alt_insert:
-  alt_insert_select | alt_insert_values
-;
-
-alt_update:
-  UPDATE alt_table_name SET alt_col_name = DEFAULT LIMIT 1;
-
-alt_insert_select:
-  INSERT INTO alt_table_name ( alt_col_name ) SELECT alt_col_name FROM alt_table_name
-;
-
-alt_insert_values:
-    INSERT INTO alt_table_name () VALUES alt_empty_value_list
-  | INSERT INTO alt_table_name (alt_col_name) VALUES alt_non_empty_value_list
-;
-
-alt_non_empty_value_list:
-  (_alt_value) | (_alt_value),alt_non_empty_value_list
-;
- 
-alt_empty_value_list:
-  () | (),alt_empty_value_list
+  CREATE alt_temporary TABLE alt_new_or_existing_table_name LIKE _basetable
 ;
 
 alt_add_column:
-    ADD alt_column_optional alt_if_not_exists alt_col_name_and_definition alt_col_location alt_algorithm alt_lock
-  | ADD alt_column_optional alt_if_not_exists ( alt_col_name_and_definition_list ) alt_algorithm alt_lock
+    ADD alt_column_optional _basics_if_not_exists_95pct alt_col_new_name alt_col_definition alt_col_location alt_algorithm alt_lock
+  | { $new_col_next_num = 1; '' } ADD alt_column_optional _basics_if_not_exists_95pct ( alt_col_name_and_definition_list ) alt_algorithm alt_lock { $new_col_next_num = 0; '' }
 ;
 
 alt_column_optional:
@@ -458,32 +348,24 @@ alt_column_optional:
 ;
 
 alt_col_location:
-  | | | | | FIRST | AFTER alt_col_name
+  | | | | | FIRST | AFTER _field
 ;
 
 alt_modify_column:
-  MODIFY COLUMN alt_if_exists alt_col_name_and_definition alt_col_location alt_algorithm alt_lock
+  MODIFY COLUMN _basics_if_exists_95pct _field alt_col_definition alt_col_location alt_algorithm alt_lock
 ;
 
 alt_change_column:
-  CHANGE COLUMN alt_if_exists alt_col_name alt_col_name_and_definition alt_algorithm alt_lock
+  CHANGE COLUMN _basics_if_exists_95pct _field alt_new_or_existing_col_name alt_col_definition alt_algorithm alt_lock
 ;
 
 alt_alter_column:
-    ALTER COLUMN /*!100305 alt_if_exists */ alt_col_name SET DEFAULT alt_default_val
-  | ALTER COLUMN alt_col_name DROP DEFAULT
-;
-
-alt_if_exists:
-  | IF EXISTS | IF EXISTS
-;
-
-alt_if_not_exists:
-  | IF NOT EXISTS | IF NOT EXISTS
+    ALTER COLUMN _basics_if_exists_95pct _field SET DEFAULT alt_default_val
+  | ALTER COLUMN _field DROP DEFAULT
 ;
 
 alt_drop_column:
-  DROP COLUMN alt_if_exists alt_col_name alt_algorithm alt_lock
+  DROP COLUMN _basics_if_exists_95pct _field alt_algorithm alt_lock
 ;
 
 alt_add_index:
@@ -492,11 +374,12 @@ alt_add_index:
 
 
 alt_drop_index:
-  DROP INDEX alt_ind_name | DROP PRIMARY KEY
+  DROP INDEX _index | DROP PRIMARY KEY
 ;
 
 alt_column_list:
-  alt_col_name | alt_col_name, alt_column_list
+  ==FACTOR:3== _field |
+  _field, alt_column_list
 ;
 
 alt_temporary:
@@ -508,15 +391,24 @@ alt_flush:
 ;
 
 alt_optimize:
-  OPTIMIZE TABLE alt_table_name
+  OPTIMIZE TABLE _basetable
 ;
 
 alt_algorithm:
-  | | , ALGORITHM=INPLACE | , ALGORITHM=COPY | , ALGORITHM=DEFAULT | /*!100307 , ALGORITHM=NOCOPY */ | /*!100307 , ALGORITHM=INSTANT */
+  ==FACTOR:10== |
+  ==FACTOR:2== , ALGORITHM=DEFAULT |
+               , ALGORITHM=INPLACE |
+  ==FACTOR:5== , ALGORITHM=COPY |
+               , ALGORITHM=NOCOPY |
+               , ALGORITHM=INSTANT
 ;
 
 alt_lock:
-  | | , LOCK=NONE | , LOCK=SHARED | , LOCK=EXCLUSIVE | , LOCK=DEFAULT
+  ==FACTOR:10== |
+  ==FACTOR:2== , LOCK=DEFAULT |
+               , LOCK=NONE |
+               , LOCK=SHARED |
+               , LOCK=EXCLUSIVE
 ;
   
 alt_data_type:
@@ -612,7 +504,7 @@ alt_index:
 ;
 
 alt_add_foreign_key:
-  ADD alt_constraint_optional FOREIGN KEY alt_index_name_optional (alt_column_or_list) REFERENCES alt_table_name (alt_column_or_list) alt_optional_on_delete alt_optional_on_update
+  ADD alt_constraint_optional FOREIGN KEY alt_index_name_optional (alt_column_list) REFERENCES _basetable (alt_column_list) alt_optional_on_delete alt_optional_on_update
 ;
 
 alt_add_check_constraint:
@@ -620,13 +512,13 @@ alt_add_check_constraint:
 ;
 
 alt_drop_check_constraint:
-  /*!100200 DROP CONSTRAINT alt_if_exists _letter */ /*!!100200 COMMENT 'Skipped DROP CONSTRAINT' */
+  /*!100200 DROP CONSTRAINT _basics_if_exists_95pct _letter */ /*!!100200 COMMENT 'Skipped DROP CONSTRAINT' */
 ;
 
 # TODO: extend
 alt_check_constraint_expression:
-    alt_col_name alt_operator alt_col_name
-  | alt_col_name alt_operator _digit
+  _field alt_operator _field |
+  _field alt_operator _digit
 ;
 
 alt_operator:
@@ -634,11 +526,7 @@ alt_operator:
 ;
 
 alt_drop_foreign_key:
-  DROP FOREIGN KEY alt_if_exists _letter
-;
-
-alt_column_or_list:
-  alt_col_name | alt_col_name | alt_col_name | alt_column_list
+  DROP FOREIGN KEY _basics_if_exists_95pct _letter
 ;
 
 alt_optional_on_delete:
@@ -683,14 +571,15 @@ alt_key_column:
 ;
 
 alt_key_column_list:
-  alt_key_column __asc_x_desc(33,33) | alt_key_column __asc_x_desc(33,33), alt_key_column_list
+  ==FACTOR:3== _field __asc_x_desc(10,20) |
+  _field __asc_x_desc(10,20), alt_key_column_list
 ;
 
 alt_any_key:
-  ==FACTOR:4== alt_index(alt_key_column __asc_x_desc(33,33)) |
+  ==FACTOR:4== alt_index(_field __asc_x_desc(10,20)) |
   ==FACTOR:2== alt_index(alt_key_column_list) |
-  FULLTEXT KEY(alt_text_col_name)
-# | SPATIAL INDEX(alt_geo_col_name)
+  ==FACTOR:0.1== FULLTEXT KEY(_field) |
+  ==FACTOR:0.0001== SPATIAL INDEX(_field)
 ;
 
 alt_comment:
