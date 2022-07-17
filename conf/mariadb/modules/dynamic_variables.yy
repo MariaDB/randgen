@@ -36,7 +36,10 @@ dynvar_global_variable_runtime:
     INNODB_BUFFER_POOL_DUMP_NOW= dynvar_boolean
   | INNODB_BUFFER_POOL_LOAD_ABORT= dynvar_boolean
   | INNODB_BUFFER_POOL_LOAD_NOW= dynvar_boolean
-  | INNODB_LOG_CHECKPOINT_NOW= dynvar_boolean
+# Undocumented debug-only variable which at least according to this commit comment
+# https://github.com/MariaDB/server/commit/0ba299da02
+# is known to cause raice conditions
+#  | INNODB_LOG_CHECKPOINT_NOW= dynvar_boolean
   | INNODB_READ_ONLY_COMPRESSED= dynvar_boolean /* compatibility 10.6.0 */
   | BINLOG_COMMIT_WAIT_COUNT= { $prng->arrayElement([1,10,100]) }
   | BINLOG_COMMIT_WAIT_USEC= { $prng->arrayElement([0,1000,1000000,10000000]) }
@@ -162,7 +165,8 @@ dynvar_session_variable:
   | MAX_LENGTH_FOR_SORT_DATA= { $prng->arrayElement(['DEFAULT',4,1024,1048576,8388608]) }
   | MAX_RECURSIVE_ITERATIONS= { $prng->arrayElement(['DEFAULT',0,1,1048576,4294967295]) }
 # 0 can only be set at startup
-  | MAX_RELAY_LOG_SIZE= { $prng->arrayElement([4096,1048576,16777216]) }
+# Most of the time not settable as there is no master connection
+  | ==FACTOR:0.1== MAX_RELAY_LOG_SIZE= { $prng->arrayElement([4096,1048576,16777216]) }
   | MAX_ROWID_FILTER_SIZE= { $prng->arrayElement([1024,4096,65536,131072,1048576]) } /* compatibility 10.4.3 */
   | MAX_SEEKS_FOR_KEY= { $prng->arrayElement([1,4096,1048576,4294967295]) }
 # Too many problems
@@ -239,12 +243,13 @@ dynvar_session_variable:
   | SQL_QUOTE_SHOW_CREATE= dynvar_boolean
   | SQL_SAFE_UPDATES= dynvar_boolean
 #  | SQL_SELECT_LIMIT= { $prng->arrayElement([0,1,1024,18446744073709551615,'DEFAULT']) }
-  | SQL_SLAVE_SKIP_COUNTER= { $prng->int(0,2) }
+# Most of the time not settable as there is no master connection
+  | ==FACTOR:0.1== SQL_SLAVE_SKIP_COUNTER= { $prng->int(0,2) }
   | SQL_WARNINGS= dynvar_boolean
   | STANDARD_COMPLIANT_CTE= dynvar_boolean
 # | STORAGE_ENGINE # Deprecated
   | SYSTEM_VERSIONING_ALTER_HISTORY= { $prng->arrayElement(['ERROR','KEEP']) } /* compatibility 10.3.4 */
-  | SYSTEM_VERSIONING_ASOF= { $prng->arrayElement(['DEFAULT',"'1970-01-01 00:00:00'","'2020-01-01 00:00:00'","'2050-01-01 00:00:00'"]) } /* compatibility 10.3.4 */
+  | SYSTEM_VERSIONING_ASOF= { $prng->arrayElement(['DEFAULT',"'".$prng->int(1970,2039)."-01-01 00:00:00'"]) } /* compatibility 10.3.4 */
   | TCP_NODELAY= dynvar_boolean /* compatibility 10.4.0 */
   | THREAD_POOL_PRIORITY= { $prng->arrayElement(['DEFAULT','high','low','auto']) }
 # | TIMESTAMP # Tempting, but causes problems, especially with versioning
@@ -265,12 +270,14 @@ dynvar_session_variable:
   | WSREP_DIRTY_READS= dynvar_boolean
 # Internal server usage, doesn't seem to be settable
 # | WSREP_GTID_SEQ_NO= { $prng->int(0,18446744073709551615) } /* compatibility 10.5.1 */
-  | WSREP_ON= dynvar_boolean
+# Not settable to ON without provider
+  | ==FACTOR:0.01== WSREP_ON= dynvar_boolean
   | WSREP_OSU_METHOD= { $prng->arrayElement(['TOI','RSU']) }
   | WSREP_RETRY_AUTOCOMMIT= { $prng->int(0,10000) }
   | WSREP_SYNC_WAIT= { $prng->int(0,15) }
-  | WSREP_TRX_FRAGMENT_SIZE= { $prng->arrayElement(['DEFAULT',0,1,16384,1048576]) } /* compatibility 10.4.2 */
-  | WSREP_TRX_FRAGMENT_UNIT= { $prng->arrayElement(['bytes',"'rows'",'segments']) } /* compatibility 10.4.2 */
+# These two don't seem settable, but let's keep them for now
+  | ==FACTOR:0.01== WSREP_TRX_FRAGMENT_SIZE= { $prng->arrayElement(['DEFAULT',0,1,16384,1048576]) } /* compatibility 10.4.2 */
+  | ==FACTOR:0.01== WSREP_TRX_FRAGMENT_UNIT= { $prng->arrayElement(['bytes',"'rows'",'segments']) } /* compatibility 10.4.2 */
 ;
 
 dynvar_global_variable:
