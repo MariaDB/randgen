@@ -146,6 +146,20 @@ sub run {
         $rows = GDS_DEFAULT_ROWS;
     }
 
+    say("GendataSimple is creating tables in default schema");
+    foreach my $i (0..$#$names) {
+        my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i]);
+        return $gen_table_result if $gen_table_result != STATUS_OK;
+    }
+
+    my $private_db= 'private_gendata_simple';
+    say("GendataSimple is creating tables in $private_db");
+    $executor->dbh->do("CREATE DATABASE IF NOT EXISTS $private_db");
+    if ($executor->dbh->err) {
+        sayError("Could not create database $private_db");
+        return STATUS_ENVIRONMENT_FAILURE;
+    }
+    $executor->dbh->do("USE $private_db");
     foreach my $i (0..$#$names) {
         my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i]);
         return $gen_table_result if $gen_table_result != STATUS_OK;
