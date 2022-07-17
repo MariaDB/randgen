@@ -20,15 +20,9 @@ query_add:
   ==FACTOR:0.1== alttind_query ;
 
 alttind_query:
-  ALTER alttind_online alttind_ignore TABLE _basetable /*!100301 alttind_wait */ alttind_list_with_optional_order_by
-;
-
-alttind_online:
-  | | | ONLINE
-;
-
-alttind_ignore:
-  | | IGNORE
+  ==FACTOR:10==  ALTER __online(20) __ignore(20) TABLE _basetable alttind_wait alttind_list_with_optional_order_by |
+                 CREATE _basics_or_replace_95pct __unique(20) INDEX alttind_ind_new_name alttind_ind_type_optional ON _basetable ( alttind_column_name_list ) _basics_wait_nowait_40pct alttind_option_list alttind_algorithm_optional alttind_lock_optional |
+  ==FACTOR:2==   DROP INDEX _basics_if_exists_95pct  /* _basetable */ _index ON { $last_table } _basics_wait_nowait_40pct
 ;
 
 alttind_wait:
@@ -40,28 +34,27 @@ alttind_list_with_optional_order_by:
 ;
 
 alttind_list:
-  alttind_item_alg_lock | alttind_item_alg_lock | alttind_item_alg_lock, alttind_list
+  ==FACTOR:3== alttind_item |
+  alttind_item, alttind_list
 ;
 
 # Can't put it on the list, as ORDER BY should always go last
 alttind_order_by:
   | | | | | | | | | | , ORDER BY alttind_column_name_list ;
 
-alttind_item_alg_lock:
-  alttind_item alttind_algorithm alttind_lock
-;
-
 # Spatial indexes, fulltext indexes and foreign keys are in separate modules
 
 alttind_item:
-  ==FACTOR:3==   alttind_add_index |
+  ==FACTOR:2==   alttind_add_index |
                  alttind_add_pk |
   ==FACTOR:2==   alttind_add_unique |
   ==FACTOR:8==   alttind_drop_index |
                  alttind_drop_pk |
   ==FACTOR:6==   alttind_drop_constraint |
   ==FACTOR:8==   alttind_rename_index |
-  ==FACTOR:0.1== alttind_enable_disable_keys
+  ==FACTOR:0.1== alttind_enable_disable_keys |
+                 alttind_algorithm |
+                 alttind_lock
 ;
 
 alttind_add_index:
@@ -113,7 +106,9 @@ alttind_option_list:
 ;
 
 alttind_ind_option:
-  KEY_BLOCK_SIZE = _smallint_unsigned | COMMENT _english
+  KEY_BLOCK_SIZE = _smallint_unsigned |
+  COMMENT _english |
+  USING alttind_ind_type
 ;
 
 alttind_index_word:
@@ -152,11 +147,32 @@ alttind_ind_new_name:
   { 'alttind'.(++$indnum) }
 ;
 
+alttind_lock_optional:
+  ==FACTOR:4== |
+  alttind_lock
+;
+
+alttind_algorithm_optional:
+  ==FACTOR:4== |
+  alttind_algorithm
+;
+
+alttind_lock_optional:
+  ==FACTOR:4== |
+  alttind_lock
+;
+
 alttind_algorithm:
-  | | | | , ALGORITHM=DEFAULT | , ALGORITHM=INPLACE | , ALGORITHM=COPY | /*!100307 , ALGORITHM=NOCOPY */ | /*!100307 , ALGORITHM=INSTANT */
+  ==FACTOR:2== ALGORITHM=DEFAULT |
+               ALGORITHM=INPLACE |
+  ==FACTOR:5== ALGORITHM=COPY |
+               ALGORITHM=NOCOPY |
+               ALGORITHM=INSTANT
 ;
 
 alttind_lock:
-  | | | | , LOCK=DEFAULT | , LOCK=NONE | , LOCK=SHARED | , LOCK=EXCLUSIVE
+  ==FACTOR:2== LOCK=DEFAULT |
+               LOCK=NONE |
+               LOCK=SHARED |
+               LOCK=EXCLUSIVE
 ;
-  
