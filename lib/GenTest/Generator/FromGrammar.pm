@@ -1,6 +1,6 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -398,12 +398,26 @@ sub next {
 
 	$generator->[GENERATOR_PARTICIPATING_RULES] = [ keys %rule_counters ];
 
+    # In new grammars, we will use ;; to indicate a delimiter in multi-statements
+    # (as opposed to single ; withing stored procedures and such).
+    # It will allow to use the syntax more freely.
+    # However, there are many legacy grammars so far, for which the old
+    # logic is preserved in elsif's below:
 	# If this is a BEGIN ... END block or alike, then send it to server without splitting.
 	# If the semicolon is inside a string literal, ignore it. 
 	# Otherwise, split it into individual statements so that the error and the result set from each statement
 	# can be examined
 
-	if (
+	if (index($sentence, ';;') > -1) {
+
+		my @sentences;
+
+		@sentences = split (';;', $sentence);
+        if ($generator->[GENERATOR_SEQ_ID] == 1) {
+          sayDebug("Starting rule ($starting_rule) processed:\n@sentence");
+        }
+		return \@sentences;
+	} elsif (
 		# Stored procedures of all sorts
 			( 
 				(index($sentence, 'CREATE') > -1 ) &&
