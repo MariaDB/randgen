@@ -119,8 +119,8 @@ $innodb_pagesize_combinations= [
 
 $common_options= '
   --seed=time
+  --queries=1000000
   --reporters=Backtrace,ErrorLog,Deadlock,MemoryUsage,FeatureUsage
-  --mysqld=--log_output=FILE
   --mysqld=--max-statement-time=30
   --mysqld=--lock-wait-timeout=10
   --mysqld=--innodb-lock-wait-timeout=5
@@ -152,11 +152,8 @@ $vcols_combinations= [
 ];
 
 $threads_low_combinations= [
-  '--threads=1 --queries=100000',
-  '--threads=2 --queries=50000',
-  '--threads=3 --queries=33333',
-  '--threads=4 --queries=25000',
-  '--threads=8 --queries=12500'
+  [ '--threads=1','--threads=2','--threads=3','--threads=4','--threads=6','--threads=8' ],
+  [ '--duration=180','--duration=200','--duration=250','--duration=300','--duration=350','--duration=600' ]
 ];
 
 $auto_gendata_combinations= [
@@ -436,7 +433,7 @@ $optional_aria_variables_108= [ @$optional_aria_variables_107 ];
 $optional_aria_variables_109= [ @$optional_aria_variables_108 ];
 
 #############
-# Other vars
+# Plugins
 #############
 
 $optional_plugins_102= [
@@ -461,6 +458,10 @@ $optional_plugins_107= [
 $optional_plugins_108= [ @$optional_plugins_107 ];
 $optional_plugins_109= [ @$optional_plugins_108 ];
 
+#############
+# Other vars
+#############
+
 $binlog_combinations= [
   [ '--mysqld=--log-bin --mysqld=--log_bin_trust_function_creators=1' ],
   [ '--mysqld=--binlog-format=row', '--mysqld=--binlog-format=mixed' ],
@@ -471,6 +472,8 @@ $optional_server_variables_102= [
   [ '', '', '', '', '--mysqld=--explicit-defaults-for-timestamp=on' ],
   # Default OFF
   [ '', '', '', '', '--mysqld=--large-pages=on' ],
+  # FILE by default, but allow also TABLE sometimes. We can't use NONE
+  [ '', '', '', '', '', '', '', '--mysqld=--log-output=FILE,TABLE' ],
   # Default 24K
   [ '', '', '', '', '', '', '', '',
     '--mysqld=--log-tc-size=12K',
