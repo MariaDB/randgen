@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29124:
+=~ AddressSanitizer|signal
+=~ st_select_lex::print
+=~ With_element::print
+=~ Prepared_statement::execute
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29122:
 =~ AddressSanitizer|signal
 =~ my_mb_wc_bin
@@ -878,7 +884,6 @@ MDEV-24988:
 =~ AddressSanitizer|signal [16]
 =~ MyCTX::update
 =~ my_aes_crypt_update
-=~ Cached_item_str
 MDEV-24986:
 =~ Assertion \`key_buff_elements && cur_key_idx < key_buff_elements'|AddressSanitizer|signal [16]
 =~ Ordered_key::add_key
@@ -2121,6 +2126,10 @@ MDEV-21809:
 MDEV-21799:
 =~ Assertion \`is_storage_available(tuple - packed_tuple, 0)'|Assertion \`is_storage_available(tuple - packed_tuple, pack_info->m_max_image_len)'
 =~ myrocks::Rdb_key_def::pack_record
+MDEV-21799:
+=~ signal|AddressSanitizer
+=~ myrocks::Rdb_key_def::pack_variable_format
+=~ myrocks::ha_rocksdb::update_write_indexes
 MDEV-21798:
 =~ Assertion \`0'
 =~ row_sel_convert_mysql_key_to_innobase
