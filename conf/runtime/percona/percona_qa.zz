@@ -18,11 +18,11 @@
 # Certain parts (c) Percona Inc
 
 $tables = {
-  pk => [undef,'int','int auto_increment'],
+  pk => [undef,'int','int auto_increment','varchar(8)'],
   partitions => [ undef ],
   engines => ['InnoDB'],
   rows => [100,500],
-  row_formats => ['DYNAMIC','COMPRESSED','DEFAULT']
+  row_formats => ['DYNAMIC','COMPRESSED']
 };
 
 $fields = {
