@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29138:
+=~ Assertion \`padding_bytes % fpi->space_xfrm_len == 0'
+=~ myrocks::Rdb_key_def::pack_with_varchar_space_pad
 MDEV-29136:
 =~ Assertion \`!share->no_status_updates'
 =~ _ma_mark_file_changed_now
@@ -3214,6 +3217,11 @@ MDEV-17464:
 =~ InnoDB: Operating system error number 2 in a file operation
 =~ InnoDB: Cannot rename file '.*/.*\.ibd' to '.*/.*\.ibd'
 =~ 1025: Error on rename of
+MDEV-17447:
+=~ AddressSanitizer|signal
+=~ Field_blob::pack
+=~ Write_rows_log_event::binlog_row_logging_function
+=~ FeatureUsage detected RocksDB tables
 MDEV-17435:
 =~ signal [16]|AddressSanitizer
 =~ st_select_lex::get_free_table_map
