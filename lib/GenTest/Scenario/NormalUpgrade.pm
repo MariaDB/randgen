@@ -1,4 +1,4 @@
-# Copyright (C) 2020 MariaDB Corporation Ab
+# Copyright (C) 2020, 2022 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,11 +45,19 @@ use File::Compare;
 
 use DBServer::MySQL::MySQLd;
 
+# True if the "old" and the "new" servers are the same ("restart" mode).
+# It will determine how we categorize errors before the restart:
+# if the server changes, then we are only really interested in the new one,
+# so all errors before that will be "TEST_FAILURE". If the server is
+# the same, then everything matters.
+my $same_server= 0;
+
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
 
   if ($self->old_server_options()->{basedir} eq $self->new_server_options()->{basedir}) {
+    $same_server= 1;
     $self->printTitle('Normal restart');
   }
   else {
@@ -76,7 +84,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Old server failed to start");
-    return $self->finalize(STATUS_TEST_FAILURE,[]);
+    return ($same_server ? $self->finalize($status,[]) : $self->finalize(STATUS_TEST_FAILURE,[]));
   }
 
   #####
@@ -86,7 +94,7 @@ sub run {
   
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
   }
 
   #####
@@ -97,7 +105,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Test flow on the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
   }
 
   #####
@@ -119,28 +127,28 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Shutdown of the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
   }
 
   $status= $old_server->startServer;
 
   if ($status != STATUS_OK) {
     sayError("Old server failed to restart");
-    return $self->finalize(STATUS_TEST_FAILURE,[]);
+    return ($same_server ? $self->finalize($status,[]) : $self->finalize(STATUS_TEST_FAILURE,[]));
   }
 
   $databases= join ' ', $old_server->nonSystemDatabases();
   $status= $old_server->dumpSchema($databases, $old_server->vardir.'/server_schema_old.dump');
   if ($status != STATUS_OK) {
     sayError("Schema dump on the old server failed, no point to continue");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
   }
   $old_server->normalizeDump($old_server->vardir.'/server_schema_old.dump', 'remove_autoincs');
   # Skip heap tables' data on the old server, as it won't be preserved
   $status= $old_server->dumpdb($databases, $old_server->vardir.'/server_data_old.dump',my $skip_heap_tables=1);
   if ($status != STATUS_OK) {
     sayError("Data dump on the old server failed, no point to continue");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
   }
   $old_server->normalizeDump($old_server->vardir.'/server_data_old.dump');
   $table_autoinc{'old'}= $old_server->collectAutoincrements();
@@ -152,7 +160,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Shutdown of the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
   }
 
   #####
@@ -162,7 +170,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Found fatal errors in the log, old server shutdown has apparently failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
   }
 
   #####
@@ -184,7 +192,7 @@ sub run {
     # Error log might indicate known bugs which will affect the exit code
     $status= $self->checkErrorLog($new_server);
     # ... but even if it's a known error, we cannot proceed without the server
-    return $self->finalize($status,[$new_server]);
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
   }
 
   #####
@@ -198,7 +206,7 @@ sub run {
     $self->setStatus($status);
     sayError("Found errors in the log after upgrade");
     if ($status > STATUS_CUSTOM_OUTCOME) {
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+      return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
     }
   }
 
@@ -215,7 +223,7 @@ sub run {
     $status= $new_server->upgradeDb;
     if ($status != STATUS_OK) {
       sayError("mysql_upgrade failed");
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+      return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
     }
   }
   else {
@@ -229,7 +237,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Database appears to be corrupt after upgrade");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
   }
   
   #####
@@ -249,14 +257,14 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Shutdown of the new server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$new_server]);
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$new_server]);
   }
 
   $status= $new_server->startServer;
 
   if ($status != STATUS_OK) {
     sayError("New server failed to restart");
-    return $self->finalize(STATUS_TEST_FAILURE,[]);
+    return $self->finalize(STATUS_RECOVERY_FAILURE,[]);
   }
 
   $self->setProperty('duration',int($self->getProperty('duration')/3));
@@ -282,7 +290,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Shutdown of the new server failed");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+    return $self->finalize($status,[$new_server]);
   }
 
   #####
@@ -292,7 +300,7 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Database structures differ after upgrade");
     system('diff -a -u '.$new_server->vardir.'/server_schema_old.dump'.' '.$new_server->vardir.'/server_schema_new.dump');
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
   }
   else {
     say("Structure dumps appear to be identical");
@@ -302,7 +310,7 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Data differs after upgrade");
     system('diff -a -u '.$new_server->vardir.'/server_data_old.dump'.' '.$new_server->vardir.'/server_data_new.dump');
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
   }
   else {
     say("Data dumps appear to be identical");
@@ -315,7 +323,7 @@ sub run {
     $self->setStatus($status);
     sayError("Auto-increment data differs after upgrade");
     if ($status > STATUS_CUSTOM_OUTCOME) {
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+      return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
     }
   }
   else {
