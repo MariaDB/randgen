@@ -1,4 +1,4 @@
-# Copyright (c) 2021 MariaDB Corporation Ab
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,6 +55,9 @@ my %usage_check= (
   vcols => \&check_for_vcols,
   versioning => \&check_for_versioning,
   xa => \&check_for_xa,
+  s3 => \&check_for_s3,
+  federated => \&check_for_federated,
+  spider => \&check_for_spider,
 );
 my %features_used = ();
 
@@ -82,6 +85,28 @@ sub report {
 
 ##########
 # Checkers
+
+sub check_for_spider {
+  my $reporter= shift;
+  if ($features_used{spider}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='SPIDER'")) {
+    say("FeatureUsage detected SPIDER tables in the database");
+  }
+}
+
+sub check_for_federated {
+  my $reporter= shift;
+  if ($features_used{federated}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='FEDERATED'")) {
+    say("FeatureUsage detected FEDERATED tables in the database");
+  }
+}
+
+sub check_for_s3 {
+  return if $server_version lt '1004';
+  my $reporter= shift;
+  if ($features_used{s3}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='S3'")) {
+    say("FeatureUsage detected S3 tables in the database");
+  }
+}
 
 sub check_for_sequences {
   return if $server_version lt '1003';
