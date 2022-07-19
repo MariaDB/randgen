@@ -1050,28 +1050,44 @@ sub checkDatabaseIntegrity {
   my $foreign_key_check_workaround= 0;
 
   my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
+  ALLDBCHECK:
   foreach my $database (@$databases) {
       next if $database =~ m{^(information_schema|pbxt|performance_schema|sys)$}sio;
-      $dbh->do("USE $database");
-      my $tabl_ref = $dbh->selectcol_arrayref("SHOW FULL TABLES", { Columns=>[1,2] });
+      my $tabl_ref = $dbh->selectall_arrayref("SELECT TABLE_NAME, TABLE_TYPE, ENGINE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database'");
       # 1178 is ER_CHECK_NOT_IMPLEMENTED
-      my %tables = @$tabl_ref;
+      my %tables=();
+      foreach (@$tabl_ref) {
+        my @tr= @$_;
+        $tables{$tr[0]} = [ $tr[1], $tr[2] ];
+      }
       # table => true
       my %repair_done= ();
+      # Mysterious loss of connection upon checks, will retry (once)
+      my $retried_lost_connection= 0;
       CHECKTABLE:
       foreach my $table (sort keys %tables) {
         # Should not do CHECK etc., and especially ALTER, on a view
-        next CHECKTABLE if $tables{$table} eq 'VIEW';
-#        say("Verifying table: $database.$table:");
+        next CHECKTABLE if $tables{$table}->[0] eq 'VIEW';
+        # S3 tables are ignored due to MDEV-29136
+        if ($tables{$table}->[1] eq 'S3') {
+          say("Check on S3 table $database.$table is skipped due to MDEV-29136");
+          next CHECKTABLE;
+        }
+        #say("Verifying table: $database.$table ($tables{$table}->[1]):");
         my $check = $dbh->selectcol_arrayref("CHECK TABLE `$database`.`$table` EXTENDED", { Columns=>[3,4] });
         if ($dbh->err() > 0) {
-          sayError("Got an error for table.$table: ".$dbh->err()." (".$dbh->errstr().")");
+          sayError("Got an error for table ${database}.${table}: ".$dbh->err()." (".$dbh->errstr().")");
           # 1178 is ER_CHECK_NOT_IMPLEMENTED. It's not an error
           $status= DBSTATUS_FAILURE unless ($dbh->err() == 1178);
           # Mysterious loss of connection upon checks
-          if ($dbh->err() == 2013) {
-            say("Trying again...");
-            redo CHECKTABLE;
+          if ($dbh->err() == 2013 || $dbh->err() == 2002) {
+            if ($retried_lost_connection) {
+              last ALLDBCHECK;
+            } else {
+              say("Trying again as sometimes the connection gets lost...");
+              $retried_lost_connection= 1;
+              redo CHECKTABLE;
+            }
           }
         }
         # CHECK as such doesn't return errors, even on corrupt tables, only prints them
