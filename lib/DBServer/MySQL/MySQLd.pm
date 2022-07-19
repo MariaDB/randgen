@@ -774,10 +774,30 @@ sub dumper {
     return $_[0]->[MYSQLD_DUMPER];
 }
 
+sub drop_broken {
+  my $self= shift;
+  my $dbh= $self->dbh;
+  say("Checking view and merge table consistency");
+  while (1) {
+    my $broken= $dbh->selectall_arrayref("select * from information_schema.tables where table_comment like 'Unable to open underlying table which is differently defined or of non-MyISAM type or%' or table_comment like '%references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them'");
+    last unless scalar(@$broken);
+    foreach my $vt (@$broken) {
+      my $fullname= '`'.$vt->[1].'`.`'.$vt->[2].'`';
+      my $type= ($vt->[3] eq 'VIEW' ? 'view' : 'table');
+      my $err= $vt->[20];
+      sayWarning("Error $err for $type $fullname, dropping");
+      $dbh->do("DROP $type $fullname");
+    }
+  }
+}
+
 sub dumpdb {
     my ($self,$database,$file,$skip_heap_tables) = @_;
     my $dbh= $self->dbh;
     $dbh->do('SET GLOBAL max_statement_time=0');
+
+    $self->drop_broken();
+
     if ($skip_heap_tables) {
       my @heap_tables= @{$self->dbh->selectcol_arrayref(
           "select concat(table_schema,'.',table_name) from ".
@@ -786,6 +806,7 @@ sub dumpdb {
       };
       $skip_heap_tables= join ' ', map {'--ignore-table-data='.$_} @heap_tables;
     }
+
     say("Dumping server ".$self->version." data on port ".$self->port);
     my $dump_command = '"'.$self->dumper.
                              "\" --hex-blob --skip-triggers --compact ".
@@ -805,6 +826,9 @@ sub dumpdb {
 
 sub dumpSchema {
     my ($self,$database, $file) = @_;
+
+    $self->drop_broken();
+
     say("Dumping server ".$self->version." schema on port ".$self->port);
     my $dump_command = '"'.$self->dumper.
                              "\" --hex-blob --compact ".
