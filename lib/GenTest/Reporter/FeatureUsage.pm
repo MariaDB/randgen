@@ -46,18 +46,19 @@ my %usage_check= (
   backup_stages => \&check_for_backup_stages,
   compressed_cols => \&check_for_compressed_cols,
   delayed_insert => \&check_for_delayed_insert,
+  federated => \&check_for_federated,
   fk => \&check_for_fk,
   gis => \&check_for_gis,
   multi_upd_del => \&check_for_multi_upd_del,
   perfschema => \&check_for_perfschema,
+  rocksdb => \&check_for_rocksdb,
+  s3 => \&check_for_s3,
   sequences => \&check_for_sequences,
+  spider => \&check_for_spider,
   unique_blobs => \&check_for_unique_blobs,
   vcols => \&check_for_vcols,
   versioning => \&check_for_versioning,
   xa => \&check_for_xa,
-  s3 => \&check_for_s3,
-  federated => \&check_for_federated,
-  spider => \&check_for_spider,
 );
 my %features_used = ();
 
@@ -85,6 +86,13 @@ sub report {
 
 ##########
 # Checkers
+
+sub check_for_rocksdb {
+  my $reporter= shift;
+  if ($features_used{spider}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='RocksDB'")) {
+    say("FeatureUsage detected RocksDB tables in the database");
+  }
+}
 
 sub check_for_spider {
   my $reporter= shift;
