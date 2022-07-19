@@ -109,18 +109,6 @@ sub run {
   }
 
   #####
-  $self->printStep("Checking view and merge table consistency");
-  my $dbh= $old_server->dbh;
-  my $broken= $dbh->selectall_arrayref("select * from information_schema.tables where table_comment like 'Unable to open underlying table which is differently defined or of non-MyISAM type or%' or table_comment like '%references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them'");
-  foreach my $vt (@$broken) {
-    my $fullname= '`'.$vt->[1].'`.`'.$vt->[2].'`';
-    my $type= ($vt->[3] eq 'VIEW' ? 'view' : 'table');
-    my $err= $vt->[20];
-    sayWarning("Error $err for $type $fullname, dropping");
-    $dbh->do("DROP $type $fullname");
-  }
-
-  #####
   $self->printStep("Restarting the old server and dumping databases");
 
   $status= $old_server->stopServer;
