@@ -234,17 +234,17 @@ sub parseFromString {
     }
     
     if (@query_init_adds) {
-        my $adds = join '; ', @query_init_adds;
-        $rules{'query_init'} = ( defined $rules{'query_init'} ? $rules{'query_init'} . '; ' . $adds : $adds );
+        my $adds = join ';; ', @query_init_adds;
+        $rules{'query_init'} = ( defined $rules{'query_init'} ? $rules{'query_init'} . ';; ' . $adds : $adds );
     }
 
     foreach my $tid (keys %thread_init_adds) {
-        my $adds = join '; ', @{$thread_init_adds{$tid}};
+        my $adds = join ';; ', @{$thread_init_adds{$tid}};
         $rules{'thread'.$tid.'_init'} = (
             defined $rules{'thread'.$tid.'_init'}
-                ? $rules{'thread'.$tid.'_init'} . '; ' . $adds
+                ? $rules{'thread'.$tid.'_init'} . ';; ' . $adds
                 : ( defined $rules{'query_init'}
-                    ? $rules{'query_init'} . '; ' . $adds
+                    ? $rules{'query_init'} . ';; ' . $adds
                     : $adds
                 )
         );
