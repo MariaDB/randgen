@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29144:
+=~ Could not import tablespace for .*: 1808: Schema mismatch (Number of indexes don't match
+=~ InnoDB: Discarding tablespace of table .*: Generic error
+=~ runall-new.pl will exit with exit status STATUS_DATABASE_CORRUPTION
+MDEV-29144:
+=~ InnoDB: Failing assertion: index != 0
+=~ row_import::set_root_by_name
+=~ ha_innobase::discard_or_import_tablespace
+MDEV-29144:
+=~ InnoDB: Failing assertion: table->get_ref_count() == 0
+=~ dict_table_remove_from_cache
+=~ ha_innobase::discard_or_import_tablespace
 MDEV-29138:
 =~ Assertion \`padding_bytes % fpi->space_xfrm_len == 0'
 =~ myrocks::Rdb_key_def::pack_with_varchar_space_pad
@@ -140,6 +152,8 @@ MDEV-28996:
 =~ spider_db_mbase_util::open_item_func
 MDEV-28989:
 =~ Could not import tablespace for .*: 1808: Schema mismatch.* prefix mismatch
+=~ InnoDB: Discarding tablespace of table .*: Generic error
+=~ runall-new.pl will exit with exit status STATUS_DATABASE_CORRUPTION
 MDEV-28988:
 =~ Assertion \`is_started()'
 =~ Ha_trx_info::is_trx_read_write
