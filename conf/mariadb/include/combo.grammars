@@ -95,7 +95,6 @@ $gendata_files= [
   '--gendata=conf/runtime/concurrency_1.zz',
   '--gendata=conf/runtime/percona/AL-19549.zz',
   '--gendata=conf/runtime/percona/percona_qa.zz',
-  '--gendata=conf/runtime/percona/percona_qa_parts.zz',
   '--gendata=conf/runtime/percona/AL-19549-part.zz',
   '--gendata=conf/runtime/percona/percona_qa_part.zz',
   '--gendata=conf/runtime/alter_online.zz',
