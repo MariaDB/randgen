@@ -2,7 +2,7 @@
 
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2019, 2021, MariaDB Corporation Ab.
+# Copyright (c) 2019, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -520,6 +520,8 @@ my $rplsrv;
 my $version;
 my $min_version_numeric= '999999';
 
+my $status= DBSTATUS_OK;
+
 if ($props->{rpl_mode}) {
 
     $rplsrv = DBServer::MySQL::ReplMySQLd->new(master_basedir => $props->{server_specific}->{1}->{basedir},
@@ -539,23 +541,32 @@ if ($props->{rpl_mode}) {
                                                config => $props->{cnf_array_ref},
                                                user => $props->{user}
     );
-    
-    my $status = $rplsrv->startServer();
-    $version= $rplsrv->version;
-    $min_version_numeric= $rplsrv->versionNumeric;
-    
+
+    if ($rplsrv) {
+        $status = $rplsrv->startServer();
+    } else {
+        sayError("Could not initialize the replication setup, aborting");
+        $status=DBSTATUS_FAILURE;
+    }
+
     if ($status > DBSTATUS_OK) {
         stopServers($status);
-        if (osWindows()) {
-            say(system("dir ".unix2winPath($rplsrv->master->datadir)));
-            say(system("dir ".unix2winPath($rplsrv->slave->datadir)));
-        } else {
-            say(system("ls -l ".$rplsrv->master->datadir));
-            say(system("ls -l ".$rplsrv->slave->datadir));
+        if ($rplsrv) {
+            if (osWindows()) {
+                say(system("dir ".unix2winPath($rplsrv->master->datadir)));
+                say(system("dir ".unix2winPath($rplsrv->slave->datadir)));
+            } else {
+                say(system("ls -l ".$rplsrv->master->datadir));
+                say(system("ls -l ".$rplsrv->slave->datadir));
+            }
         }
-        croak("Could not start replicating server pair");
+        sayError("Could not start replicating server pair");
+        exit_test(STATUS_CRITICAL_FAILURE);
     }
-    
+
+    $version= $rplsrv->version;
+    $min_version_numeric= $rplsrv->versionNumeric;
+
     $props->{server_specific}->{1}->{dsn}= $rplsrv->master->dsn($props->{database},$props->{user});
     $props->{server_specific}->{2}->{dsn}= undef; # No dsn for slave!
     $props->{server_specific}->{1}->{server}= $rplsrv->master;
@@ -583,14 +594,17 @@ if ($props->{rpl_mode}) {
         start_dirty => $props->{start_dirty},
         node_count => length($props->{galera})
     );
-    
-    my $status = $rplsrv->startServer();
+    if ($rplsrv) {
+        $status = $rplsrv->startServer();
+    } else {
+        sayError("Could not initialize the cluster, aborting");
+        $status= DBSTATUS_FAILURE;
+    }
     
     if ($status > DBSTATUS_OK) {
         stopServers($status);
-
         sayError("Could not start Galera cluster");
-        exit_test(STATUS_ENVIRONMENT_FAILURE);
+        exit_test(STATUS_CRITICAL_FAILURE);
     }
     $version= $rplsrv->version;
     $min_version_numeric= $rplsrv->versionNumeric;
@@ -612,6 +626,7 @@ if ($props->{rpl_mode}) {
     foreach my $server_id (1..$props->{number_of_servers}) {
         next unless $props->{server_specific}->{$server_id}->{basedir};
         
+        my $status= DBSTATUS_OK;
         $props->{server_specific}->{$server_id}->{server} = DBServer::MySQL::MySQLd->new(
                                                            basedir => $props->{server_specific}->{$server_id}->{basedir},
                                                            vardir => $props->{server_specific}->{$server_id}->{vardir},
@@ -623,16 +638,22 @@ if ($props->{rpl_mode}) {
                                                            server_options => $props->{server_specific}->{$server_id}->{mysqld_options},
                                                            general_log => 1,
                                                            config => $props->{cnf_array_ref},
-                                                           user => $props->{user});
-        
-        my $status = $props->{server_specific}->{$server_id}->{server}->startServer;
-        
+                                                           user => $props->{user}
+        );
+        if ($props->{server_specific}->{$server_id}->{server}) {
+            $status = $props->{server_specific}->{$server_id}->{server}->startServer;
+        } else {
+            sayError("Could not initialize server $server_id, aborting");
+            $status= DBSTATUS_FAILURE;
+        }
         if ($status > DBSTATUS_OK) {
             stopServers($status);
-            if (osWindows()) {
-                say(system("dir ".unix2winPath($props->{server_specific}->{$server_id}->{server}->datadir)));
-            } else {
-                say(system("ls -l ".$props->{server_specific}->{$server_id}->{server}->datadir));
+            if ($props->{server_specific}->{$server_id}->{server}) {
+                if (osWindows()) {
+                    say(system("dir ".unix2winPath($props->{server_specific}->{$server_id}->{server}->datadir)));
+                } else {
+                    say(system("ls -l ".$props->{server_specific}->{$server_id}->{server}->datadir));
+                }
             }
             sayError("Could not start all servers");
             exit_test(STATUS_CRITICAL_FAILURE);

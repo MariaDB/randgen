@@ -185,7 +185,8 @@ sub new {
     } else {
         say("Creating " . $self->version . " database at ".$self->datadir);
         if ($self->createMysqlBase != DBSTATUS_OK) {
-            croak("FATAL ERROR: Bootstrap failed, cannot proceed!");
+            sayError("FATAL ERROR: Bootstrap failed, cannot proceed!");
+            return undef;
         }
     }
 
