@@ -1,5 +1,5 @@
 query_add:
-  acl
+  ==FACTOR:0.1== acl
 ;
 
 acl:
@@ -267,8 +267,10 @@ acl_username:
 ;
 
 acl_short_name:
-    _letter | _letter | _letter | _letter | _letter | _letter | _letter
-  | _char(8) | '%'
+  ==FACTOR:8== _letter
+  | '%'
+  # Prevent damaging the current user
+  | { $shortname= $prng->unquotedString(8); ${shortname}.'@localhost' ne $executors->[0]->currentUser() and ${shortname} ne 'root' ? '`'.$shortname.'`' : '`'.$shortname.'_`' }
 ;
 
 acl_full_name:
