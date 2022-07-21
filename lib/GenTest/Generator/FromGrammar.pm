@@ -118,6 +118,7 @@ sub next {
 	my $last_table;
 	my $last_database;
     my $last_field_list_length;
+    my $last_item;
     
 	my $stack = GenTest::Stack::Stack->new();
 	my $global = $generator->globalFrame();
@@ -346,6 +347,7 @@ sub next {
 					}
 
 				}
+                $last_item= $item;
 				@expansion = ($item);
 			}
 			splice(@sentence, $pos, 1, @expansion);
