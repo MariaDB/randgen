@@ -89,7 +89,7 @@ sub report {
 
 sub check_for_rocksdb {
   my $reporter= shift;
-  if ($features_used{spider}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='RocksDB'")) {
+  if ($features_used{rockdsb}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='RocksDB'")) {
     say("FeatureUsage detected RocksDB tables in the database");
   }
 }
