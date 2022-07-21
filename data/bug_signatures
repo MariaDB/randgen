@@ -1738,6 +1738,10 @@ MDEV-23011:
 =~ row_create_prebuilt
 =~ ha_innobase::open
 =~ open_and_process_table|open_table_from_share
+MDEV-22943:
+=~ Assertion \`marked_for_read()'
+=~ handler::calculate_checksum
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22927:
 =~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'|Assertion \`((0x7 \| 8U) & mode) == LOCK_S \|\| ((0x7 \| 8U) & mode) == LOCK_X'
 =~ lock_rec_lock
