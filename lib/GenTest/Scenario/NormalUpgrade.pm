@@ -129,14 +129,14 @@ sub run {
   $status= $old_server->dumpSchema($databases, $old_server->vardir.'/server_schema_old.dump');
   if ($status != STATUS_OK) {
     sayError("Schema dump on the old server failed, no point to continue");
-    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+    return ($same_server ? $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
   }
   $old_server->normalizeDump($old_server->vardir.'/server_schema_old.dump', 'remove_autoincs');
   # Skip heap tables' data on the old server, as it won't be preserved
   $status= $old_server->dumpdb($databases, $old_server->vardir.'/server_data_old.dump',my $skip_heap_tables=1);
   if ($status != STATUS_OK) {
     sayError("Data dump on the old server failed, no point to continue");
-    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+    return ($same_server ? $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
   }
   $old_server->normalizeDump($old_server->vardir.'/server_data_old.dump');
   $table_autoinc{'old'}= $old_server->collectAutoincrements();
