@@ -451,6 +451,11 @@ MDEV-27052:
 =~ trx_state_eq
 =~ rw_trx_hash_t::validate_element
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-27027:
+=~ Assertion \`!param->got_error'
+=~ Table_triggers_list::change_table_name
+=~ ddl_log_execute_action
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 # Not merged up yet
 MDEV-27015:
 =~ Assertion \`!is_null()'
