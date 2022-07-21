@@ -17,6 +17,7 @@ $combinations = [
   [ @$vcols_combinations, '--vcols=STORED',
    '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
   ],
+  [ '--grammar=conf/mariadb/functions.yy' ],
 
   # Combinations of grammars and gendata
   [

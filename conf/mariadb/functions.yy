@@ -105,6 +105,7 @@ func_misc_func:
    MASTER_POS_WAIT( 'log', _int_unsigned, func_zero_or_almost ) |
    NAME_CONST( func_const_char_value, func_value ) |
    RAND(_int_unsigned) | RAND( func_arg ) |
+   ==FACTOR:100== RANDOM_BYTES( func_arg ) |
    RELEASE_LOCK( func_arg_char ) |
    SLEEP( func_zero_or_almost ) |
    SYS_GUID() /* compatibility 10.6.1 */ |
@@ -455,7 +456,9 @@ func_truncate_second_arg:
    _digit | _digit | _tinyint_unsigned | func_arg ;
 
 func_arg:
-   _field | func_value | ( func_func ) ;
+   _field | func_value | ( func_func ) |
+   ==FACTOR:0.1== (query)
+;
 
 func_arg_char:
   CAST(_field AS CHAR) | _char(1) | _english | _string(16) | NULL
