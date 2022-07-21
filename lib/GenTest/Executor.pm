@@ -519,7 +519,7 @@ sub metaSchemas {
     if ($non_system) {
       my @schemas= ();
       foreach my $s (@{$self->[EXECUTOR_META_CACHE]->{SCHEMAS}}) {
-        push @schemas, $s unless $s =~ /^(?:mysql|performance_schema|information_schema|sys_schema)$/i;
+        push @schemas, $s unless $s =~ /^(?:mysql|performance_schema|information_schema|sys_schema|sys)$/i;
       }
       return \@schemas;
     } else {
