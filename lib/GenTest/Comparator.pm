@@ -1,6 +1,6 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -65,14 +65,16 @@ sub _comparison {
 			return STATUS_LENGTH_MISMATCH if $#$data1 != $#$data2;
             my ($data1_sorted, $data2_sorted);
             if ($comparison_mode == COMPARISON_OUTCOME_UNORDERED_MATCH) {
-                $data1_sorted = join('<row>', sort map { join('<col>', map { defined $_ ? ($_ != 0 ? sprintf("%.4f", $_) : $_) : 'NULL' } @$_) } @$data1);
-                $data2_sorted = join('<row>', sort map { join('<col>', map { defined $_ ? ($_ != 0 ? sprintf("%.4f", $_) : $_) : 'NULL' } @$_) } @$data2);
+                $data1_sorted = join('<row>', sort map { join('<col>', map { defined $_ ? substr($_,0,32) : 'NULL' } @$_) } @$data1);
+                $data2_sorted = join('<row>', sort map { join('<col>', map { defined $_ ? substr($_,0,32) : 'NULL' } @$_) } @$data2);
             } else {
                 # Resultsets are already considered fully ordered
-                $data1_sorted = join('<row>', map { join('<col>', map { defined $_ ? ($_ != 0 ? sprintf("%.4f", $_) : $_) : 'NULL' } @$_) } @$data1);
-                $data2_sorted = join('<row>', map { join('<col>', map { defined $_ ? ($_ != 0 ? sprintf("%.4f", $_) : $_) : 'NULL' } @$_) } @$data2);
+                $data1_sorted = join('<row>', map { join('<col>', map { defined $_ ? substr($_,0,32) : 'NULL' } @$_) } @$data1);
+                $data2_sorted = join('<row>', map { join('<col>', map { defined $_ ? substr($_,0,32) : 'NULL' } @$_) } @$data2);
             }
-			return STATUS_CONTENT_MISMATCH if $data1_sorted ne $data2_sorted;
+            if ($data1_sorted ne $data2_sorted) {
+                return STATUS_CONTENT_MISMATCH;
+            }
 		}
 	}
 	return STATUS_OK;
