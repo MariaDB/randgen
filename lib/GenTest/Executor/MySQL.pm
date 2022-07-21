@@ -1320,6 +1320,7 @@ my %err2type = (
 
     ER_ABORTING_CONNECTION()                            => STATUS_RUNTIME_ERROR,
     ER_ACCESS_DENIED_CHANGE_USER_ERROR()                => STATUS_ACL_ERROR,
+    ER_ACCESS_DENIED_ERROR()                            => STATUS_ACL_ERROR,
     ER_ACCESS_DENIED_NO_PASSWORD_ERROR()                => STATUS_ACL_ERROR,
     ER_ACCOUNT_HAS_BEEN_LOCKED()                        => STATUS_ACL_ERROR,
     ER_ADD_PARTITION_NO_NEW_PARTITION()                 => STATUS_SEMANTIC_ERROR,
