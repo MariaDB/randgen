@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29157:
+=~ failed: 1041 Out of memory
+=~ Got error 128 when reading table
+=~ Feature usage detected S3 tables
+MDEV-29152:
+=~ Assertion \`0'
+=~ Type_handler_row::field_type
+=~ Item_func_tochar::
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29149:
 =~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
 =~ Datetime_truncation_not_needed::Datetime_truncation_not_needed
@@ -1732,7 +1741,11 @@ MDEV-23045:
 MDEV-23041:
 =~ signal [16]|AddressSanitizer
 =~ Item_func_set_user_var::update_hash
-=~ TABLE::update_default_fields|end_write_group
+=~ TABLE::update_default_fields|end_write_group|TABLE::update_virtual_fields|end_send_group
+MDEV-23041:
+=~ free_memory: Assertion \`irem->marker == .*'
+=~ Item_func_set_user_var::update_hash
+=~ TABLE::update_virtual_fields|TABLE::update_default_fields
 MDEV-23011:
 =~ signal [16]|AddressSanitizer
 =~ row_create_prebuilt
