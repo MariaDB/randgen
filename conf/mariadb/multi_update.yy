@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014 SkySQL Ab
-# Copyright (c) 2015 MariaDB Corporation Ab
+# Copyright (c) 2015, 2022 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -46,23 +46,25 @@
 # and stable queries that find bugs rather than wondering if our query is
 # dodgy.
 ################################################################################
-query_init:
+query_init_add:
 	{ $total_dur = 0; "" };
 
-query:
-	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } main_select ;
+query_add:
+	{ @nonaggregates = () ; %tables = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } multi_main_dml ;
 
-main_select:
-	simple_select | simple_select | simple_select | simple_select |
-	mixed_select |  mixed_select |  mixed_select |  mixed_select  | loose_scan ;
+multi_main_dml:
+    ==FACTOR:10== multi_main_update |
+    multi_loose_scan_update |
+    multi_store_data ;; multi_main_delete ;; multi_restore_data
+;
 
 ################################################################################
 # The loose* rules listed below are to hit the 'Using index for group-by'
 # optimization.  This optimization has some strict requirements, thus
 # we needed a separate query pattern to ensure we hit it.
 ################################################################################
-loose_scan:
-	UPDATE new_table_item
+multi_loose_scan_update:
+	UPDATE __ignore(50) new_table_item
 	SET table_one_two._field_int = _tinyint 
 	WHERE generic_where_list ;
 
@@ -83,23 +85,27 @@ loose_select_item:
 	
 ################################################################################
 
-mixed_select:
-	UPDATE join_list
+multi_store_data:
+    CREATE OR REPLACE TEMPORARY TABLE { 'multi_tmp1_'.abs($$) } AS SELECT * FROM _table { $tables{alias1} = $last_table }
+    ;; CREATE OR REPLACE TEMPORARY TABLE { 'multi_tmp2_'.abs($$) } AS SELECT * FROM _table { $tables{alias2} = $last_table }
+;
+
+multi_restore_data:
+    TRUNCATE { $tables{alias1} }
+  ;; INSERT INTO { $tables{alias1} } SELECT * FROM { 'multi_tmp1_'.abs($$) }
+  ;; TRUNCATE { $tables{alias2} }
+  ;; INSERT INTO { $tables{alias2} } SELECT * FROM { 'multi_tmp2_'.abs($$) }
+;
+
+multi_main_update:
+	UPDATE __ignore(50) join_list
 	SET table_one_two._field_int = _tinyint
 	where_clause;
 
-simple_select:
-	UPDATE join_list
-	SET table_one_two._field_int = _tinyint
-	where_clause;
-
-aggregate_select:
-	SELECT distinct straight_join select_option aggregate_select_list
-	FROM join_list
-	where_clause
-	optional_group_by 
-	having_clause
-	order_by_clause ;
+multi_main_delete:
+  DELETE __ignore(50) table_one_two FROM join_list where_clause |
+  DELETE __ignore(50) alias1, alias2 FROM join_list where_clause
+;
 
 explain_extended:	
 	| | | | | | | | | explain_extended2 ;
@@ -223,11 +229,11 @@ real_where_item:
 	existing_table_item . _field_char arithmetic_operator existing_table_item . _field_char |
 	existing_table_item . _field arithmetic_operator value  |
 	existing_table_item . _field arithmetic_operator existing_table_item . _field |
-	alias1 . _field IS not NULL |
-	alias1 . _field_pk IS not NULL |
-	alias1 . _field_pk arithmetic_operator existing_table_item . _field  |
-	alias1 . _field_int arithmetic_operator existing_table_item . _field_int  |
-	alias1 . _field_indexed arithmetic_operator value AND ( alias1 . _field_char LIKE '%a%' OR alias1._field_char LIKE '%b%') ;
+	{ $last_table = $tables{alias1}; 'alias1' } . _field IS not NULL |
+	{ $last_table = $tables{alias1}; 'alias1' } . _field_pk IS not NULL |
+	{ $last_table = $tables{alias1}; 'alias1' } . _field_pk arithmetic_operator existing_table_item . _field  |
+	{ $last_table = $tables{alias1}; 'alias1' } . _field_int arithmetic_operator existing_table_item . _field_int  |
+	{ $last_table = $tables{alias1}; 'alias1' } . _field_indexed arithmetic_operator value AND ( alias1 . _field_char LIKE '%a%' OR alias1._field_char LIKE '%b%') ;
 
 
 ################################################################################
@@ -650,12 +656,12 @@ range_predicate1_list:
 	( range_predicate1_item OR range_predicate1_list ) ;
 
 range_predicate1_item:
-	 alias1 . _field_int_indexed not BETWEEN _tinyint_unsigned[invariant] AND ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
-	 alias1 . _field_char_indexed arithmetic_operator _char[invariant]  |
-	 alias1 . _field_int_indexed not IN (number_list) |
-	 alias1 . _field_char_indexed not IN (char_list) |
-	 alias1 . _field_pk > _tinyint_unsigned[invariant] AND alias1 . _field_pk < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
-	 alias1 . _field_int_indexed > _tinyint_unsigned[invariant] AND alias1 . _field_int_indexed < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) ;
+	 { $last_table= $tables{alias1}; 'alias1' } . _field_int_indexed not BETWEEN _tinyint_unsigned[invariant] AND ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
+	 { $last_table= $tables{alias1}; 'alias1' } . _field_char_indexed arithmetic_operator _char[invariant]  |
+	 { $last_table= $tables{alias1}; 'alias1' } . _field_int_indexed not IN (number_list) |
+	 { $last_table= $tables{alias1}; 'alias1' } . _field_char_indexed not IN (char_list) |
+	 { $last_table= $tables{alias1}; 'alias1' } . _field_pk > _tinyint_unsigned[invariant] AND alias1 . _field_pk < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
+	 { $last_table= $tables{alias1}; 'alias1' } . _field_int_indexed > _tinyint_unsigned[invariant] AND alias1 . _field_int_indexed < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) ;
 
 ################################################################################
 # The range_predicate_2* rules below are in place to ensure we hit the
@@ -669,13 +675,13 @@ range_predicate2_list:
 	( range_predicate2_item and_or range_predicate2_list ) ;
 
 range_predicate2_item:
-	alias1 . _field_pk = _tinyint_unsigned |
-	alias1 . _field_int_indexed = _tinyint_unsigned |
-	alias1 . _field_char_indexed = _char |
-	alias1 . _field_int_indexed = _tinyint_unsigned |
-	alias1 . _field_char_indexed LIKE CONCAT( _char , '%') |
-	alias1 . _field_int_indexed = existing_table_item . _field_int_indexed |
-	alias1 . _field_char_indexed = existing_table_item . _field_char_indexed ;
+	{ $last_table= $tables{alias1}; 'alias1' } . _field_pk = _tinyint_unsigned |
+	{ $last_table= $tables{alias1}; 'alias1' } . _field_int_indexed = _tinyint_unsigned |
+	{ $last_table= $tables{alias1}; 'alias1' } . _field_char_indexed = _char |
+	{ $last_table= $tables{alias1}; 'alias1' } . _field_int_indexed = _tinyint_unsigned |
+	{ $last_table= $tables{alias1}; 'alias1' } . _field_char_indexed LIKE CONCAT( _char , '%') |
+	{ $last_table= $tables{alias1}; 'alias1' } . _field_int_indexed = existing_table_item . _field_int_indexed |
+	{ $last_table= $tables{alias1}; 'alias1' } . _field_char_indexed = existing_table_item . _field_char_indexed ;
 
 ################################################################################
 # The number and char_list rules are for creating WHERE conditions that test
@@ -852,44 +858,44 @@ aggregate_separator:
 # track of what we have added.  You shouldn't need to touch these ever
 ################################################################################
 new_table_item:
-   _table AS { "alias".++$tables } | _table AS { "alias".++$tables } | _table AS { "alias".++$tables } ;
+   { $alias="alias".++$tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($last_database)) if not defined $tables{$alias}; $tables{$alias} } AS { $alias } ;
 #	( from_subquery ) AS { "alias".++$tables } ;
 
 from_subquery:
 	   { $subquery_idx += 1 ; $subquery_tables=0 ; $sq_ifields = 0; $sq_cfields = 0; ""}  SELECT distinct select_option subquery_table_one_two . * subquery_body  ;
 
 subquery_new_table_item:
-	_table AS { "SQ".$subquery_idx."_alias".++$subquery_tables } ;
+   { $alias="SQ".$subquery_idx."_alias".++$subquery_tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($last_database)) if not defined $tables{$alias}; $tables{$alias} } AS { $alias } ;
 
 child_subquery_new_table_item:
-	_table AS { "C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables } ;	  
+   { $alias="C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($last_database)) if not defined $tables{$alias}; $tables{$alias} } AS { $alias } ;
 
 current_table_item:
-	{ "alias".$tables };
+	{ $alias = "alias".$tables; $last_table= $tables{$alias}; $alias };
 
 subquery_current_table_item:
-	{ "SQ".$subquery_idx."_alias".$subquery_tables } ;
+	{ $alias = "SQ".$subquery_idx."_alias".$subquery_tables; $last_table= $tables{$alias}; $alias } ;
 
 child_subquery_current_table_item:
-	{ "C_SQ".$child_subquery_idx."_alias".$child_subquery_tables } ;
+	{ $alias = "C_SQ".$child_subquery_idx."_alias".$child_subquery_tables; $last_table= $tables{$alias}; $alias } ;
 
 previous_table_item:
-	{ "alias".($tables - 1) };
+	{ $alias="alias".($tables - 1) ; $last_table= $tables{$alias}; $alias };
 
 subquery_previous_table_item:
-	{ "SQ".$subquery_idx."_alias".($subquery_tables-1) } ;
+	{ $alias= "SQ".$subquery_idx."_alias".($subquery_tables-1); $last_table= $tables{$alias}; $alias } ;
 
 child_subquery_previous_table_item:
-	{ "C_SQ".$child_subquery_idx."_alias".($child_subquery_tables-1) } ;
+	{ $alias= "C_SQ".$child_subquery_idx."_alias".($child_subquery_tables-1); $last_table= $tables{$alias}; $alias } ;
 
 existing_table_item:
-	{ "alias".$prng->int(1,$tables) };
+	{ $alias= "alias".$prng->int(1,$tables); $tables{$alias} = $prng->arrayElement($executors->[0]->metaTables($last_database)) if not defined $tables{$alias}; $last_table= $tables{$alias}; $alias };
 
 existing_subquery_table_item:
-	{ "SQ".$subquery_idx."_alias".$prng->int(1,$subquery_tables) } ;
+	{ $alias= "SQ".$subquery_idx."_alias".$prng->int(1,$subquery_tables); $tables{$alias} = $prng->arrayElement($executors->[0]->metaTables($last_database)) if not defined $tables{$alias}; $last_table= $tables{$alias}; $alias } ;
 
 existing_child_subquery_table_item:
-	{ "C_SQ".$child_subquery_idx."_alias".$prng->int(1,$child_subquery_tables) } ;
+	{ $alias="C_SQ".$child_subquery_idx."_alias".$prng->int(1,$child_subquery_tables); $tables{$alias} = $prng->arrayElement($executors->[0]->metaTables($last_database)) if not defined $tables{$alias}; $last_table= $tables{$alias}; $alias } ;
 
 existing_select_item:
 	{ $fields ? "field".$prng->int(1,$fields) : ( $ifields ? "ifield".$prng->int(1,$ifields) : "cfield".$prng->int(1,$cfields) ) };
