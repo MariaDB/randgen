@@ -248,7 +248,6 @@ sub read_engines {
       }
     }
   }
-  print Dumper %engines;
 }
 
 sub getval {
