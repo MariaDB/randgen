@@ -177,7 +177,7 @@ $optional_variators_102= [
   [ '', '', '--transformers=ExecuteAsPreparedThrice' ],
   [ '', '--variators=ExecuteAsUnion' ],
   [ '', '--variators=ExecuteAsView' ],
-  [ '', '', '', '--variators=AnalyzeSelect' ],
+  [ '', '', '', '--variators=AnalyzeOrExplain' ],
   [ '', '', '', '--variators=FullOrderBy' ],
   [ '', '', '', '--variators=LimitRowsExamined' ],
 ];

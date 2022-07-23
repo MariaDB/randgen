@@ -15,10 +15,9 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-# Simple variator to convert SELECT or EXPLAIN into ANALYZE SELECT
-# or into ANALYZE FORMAT=JSON SELECT
+# Simple variator to convert SELECT or DML into ANALYZE or EXPLAIN 
 
-package GenTest::Transform::AnalyzeSelect;
+package GenTest::Transform::AnalyzeOrExplain;
 
 require Exporter;
 @ISA = qw(GenTest GenTest::Transform);
