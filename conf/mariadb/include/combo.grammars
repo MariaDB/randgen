@@ -158,7 +158,6 @@ $gendata_files= [
   '--gendata=conf/optimizer/range_access2.zz',
   '--gendata=conf/optimizer/outer_join.zz',
   '--gendata=conf/optimizer/range_access.zz',
-  '--gendata=conf/backup/invariant.zz',
   "--gendata=$ENV{RQG_HOME}/conf/osm/osm-schema.sql",
   "--gendata=$ENV{RQG_HOME}/conf/osm/andorra.sql",
   "--gendata=$ENV{RQG_HOME}/conf/smf/smf2.sql",
