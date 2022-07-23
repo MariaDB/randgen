@@ -62,6 +62,10 @@ sub variate {
   if ($query =~ /UPDATE.*(?:UNION|INTERSECT|EXCEPT)/) {
     $cmd =~ s/EXPLAIN( EXTENDED| PARTITIONS)?/ANALYZE/;
   }
+  # and ANALYZE is disabled for INSERT DELAYED due to MDEV-29160
+  elsif ($query =~ /INSERT.*DELAYED/) {
+    $cmd =~ s/ANALYZE/EXPLAIN/;
+  }
   $query =~ s/^\s*?([\s\(]*(?:SELECT|UPDATE|DELETE|INSERT|REPLACE))/$cmd $1/;
   return $query;
 }
