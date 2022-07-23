@@ -157,12 +157,11 @@ sub run {
     }
 
     my $res= STATUS_OK;
+    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
     foreach my $i (0..$#$names) {
         my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i], $prng);
         $res= $gen_table_result if $gen_table_result > $res;
     }
-
-    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
     return $res;
 }
 

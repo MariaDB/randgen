@@ -213,9 +213,9 @@ $optional_variators_109= [ @$optional_variators_108 ];
 
 $basic_engine_combinations_102= [
   '','','','',
-  '--engine=Aria --mysqld=--default-storage-engine=Aria',
-  '--engine=MyISAM --mysqld=--default-storage-engine=MyISAM',
-  '--engine=RocksDB --mysqld=--default-storage-engine=RocksDB --mysqld=--plugin-load-add=ha_rocksdb',
+  '--engine=Aria --mysqld=--default-storage-engine=Aria --mysqld=--enforce-storage-engine=""',
+  '--engine=MyISAM --mysqld=--default-storage-engine=MyISAM --mysqld=--enforce-storage-engine=""',
+  '--engine=RocksDB --mysqld=--default-storage-engine=RocksDB --mysqld=--plugin-load-add=ha_rocksdb --mysqld=--enforce-storage-engine=""',
   '--engine=InnoDB,MyISAM',
   '--engine=InnoDB,MyISAM,Aria,HEAP',
 ];
@@ -529,8 +529,8 @@ $optional_server_variables_102= [
   ],
   [ '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
     '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-    '--mysqld=--enforce-storage-engine=InnoDB',
-    '--mysqld=--enforce-storage-engine=MyISAM'
+    '--mysqld=--enforce-storage-engine=InnoDB --mysqld=--default-storage-engine=InnoDB',
+    '--mysqld=--enforce-storage-engine=MyISAM --mysqld=--default-storage-engine=MyISAM'
   ],
 ];
 

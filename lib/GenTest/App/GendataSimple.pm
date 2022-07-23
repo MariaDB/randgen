@@ -171,7 +171,7 @@ sub run {
     $self->variate_and_execute($executor,"CREATE TABLE DUMMY (I INTEGER)");
     $self->variate_and_execute($executor,"INSERT INTO DUMMY VALUES(0)");
     
-    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION')") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
+    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
     return STATUS_OK;
 }
 
