@@ -121,9 +121,6 @@ $common_options= '
   --seed=time
   --queries=1000000
   --reporters=Backtrace,ErrorLog,Deadlock,MemoryUsage,FeatureUsage
-  --mysqld=--max-statement-time=30
-  --mysqld=--lock-wait-timeout=10
-  --mysqld=--innodb-lock-wait-timeout=5
 ';
 
 $common_options_108= [
@@ -153,7 +150,13 @@ $vcols_combinations= [
 
 $threads_low_combinations= [
   [ '--threads=1','--threads=2','--threads=3','--threads=4','--threads=6','--threads=8' ],
-  [ '--duration=180','--duration=200','--duration=250','--duration=300','--duration=350','--duration=600' ]
+  [ '--duration=180 --mysqld=--max-statement-time=20 --mysqld=--lock-wait-timeout=10 --mysqld=--innodb-lock-wait-timeout=5',
+    '--duration=200 --mysqld=--max-statement-time=20 --mysqld=--lock-wait-timeout=10 --mysqld=--innodb-lock-wait-timeout=5',
+    '--duration=250 --mysqld=--max-statement-time=25 --mysqld=--lock-wait-timeout=12 --mysqld=--innodb-lock-wait-timeout=10',
+    '--duration=300 --mysqld=--max-statement-time=30 --mysqld=--lock-wait-timeout=15 --mysqld=--innodb-lock-wait-timeout=10',
+    '--duration=350 --mysqld=--max-statement-time=35 --mysqld=--lock-wait-timeout=20 --mysqld=--innodb-lock-wait-timeout=10',
+    '--duration=600 --mysqld=--max-statement-time=60 --mysqld=--lock-wait-timeout=30 --mysqld=--innodb-lock-wait-timeout=15'
+  ]
 ];
 
 $auto_gendata_combinations= [
