@@ -35,15 +35,36 @@ sub variate {
   my ($self, $query) = @_;
   # Variate 10% queries
   return $query if $self->random->uint16(0,9);
-  my $format= ($self->random->uint16(0,1) ? 'FORMAT=JSON' : '');
-  if ($query =~ /^\s*(?:SELECT|INSERT|UPDATE|DELETE|REPLACE)/) {
-    return "ANALYZE $format $query";
-  } elsif ($query =~ /^\s*EXPLAIN/) {
-    $query =~ s/^\s*EXPLAIN(?:.*EXTENDED|.*FORMAT\s*=\s*JSON|.*PARTITIONS)?/ANALYZE $format/;
-    return $query;
+  return $query unless $query =~ /^[\s\(]*(?:SELECT|UPDATE|DELETE|INSERT|REPLACE)/;
+  # Should be
+  # - 40% ANALYZE FORMAT=JSON,
+  # - 30% EXPLAIN FORMAT=JSON,
+  # - 10% ANALYZE,
+  # - 10% EXPLAIN EXTENDED,
+  # - 5% EXPLAIN,
+  # - 5% EXPLAIN PARTITIONS
+  my $dice= $self->random->uint16(1,100);
+  my $cmd= '';
+  if ($dice > 60) {
+    $cmd= 'ANALYZE FORMAT=JSON';
+  } elsif ($dice > 30) {
+    $cmd= 'EXPLAIN FORMAT=JSON';
+  } elsif ($dice > 20) {
+    $cmd= 'ANALYZE';
+  } elsif ($dice > 10) {
+    $cmd= 'EXPLAIN EXTENDED';
+  } elsif ($dice > 5) {
+    $cmd= 'EXPLAIN PARTITIONS';
   } else {
-    return $query;
- }
+    $cmd= 'EXPLAIN'
+  }
+  # but EXPLAIN is disabled for UPDATE with UNIONs due to MDEV-16694,
+  # so the percentage is off
+  if ($query =~ /UPDATE.*(?:UNION|INTERSECT|EXCEPT)/) {
+    $cmd =~ s/EXPLAIN( EXTENDED| PARTITIONS)?/ANALYZE/;
+  }
+  $query =~ s/^\s*?([\s\(]*(?:SELECT|UPDATE|DELETE|INSERT|REPLACE))/$cmd $1/;
+  return $query;
 }
 
 sub transform {
