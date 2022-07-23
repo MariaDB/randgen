@@ -22,7 +22,12 @@ query_add:
 ;
 
 func_create_and_drop:
-   CREATE _basics_temporary_50pct TABLE { 'tmp'.$tmp_table } AS func_select ; DROP TABLE IF EXISTS { 'tmp'.$tmp_table } ;
+   CREATE _basics_temporary_50pct TABLE { 'functions_tmp_'.$tmp_table } AS func_select ;; DROP TABLE IF EXISTS { 'functions_tmp_'.$tmp_table } |
+   ==FACTOR:0.1== ALTER TABLE _table ADD COLUMN IF NOT EXISTS functions_vcol BLOB AS (func_func) |
+   ==FACTOR:0.1== ALTER TABLE _table ADD COLUMN IF NOT EXISTS functions_vcol BLOB DEFAULT (func_func) |
+   ==FACTOR:0.1== ALTER TABLE _table ADD COLUMN IF NOT EXISTS functions_vcol BLOB CHECK (func_func) |
+   ==FACTOR:0.3== ALTER TABLE _table DROP COLUMN IF EXISTS functions_vcol
+;
 
 func_select_or_explain_select:
    _basics_explain_analyze func_select;
