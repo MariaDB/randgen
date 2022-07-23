@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, 2021, MariaDB
+#  Copyright (c) 2019, 2022, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -35,8 +35,9 @@
 # Pre-create simple tables, to make sure they all exist
 #
 query_init_add:
-  # First 10 tables will remain static, only used for read operations
-    { $tnum= 1; '' } app_periods_create_simple_with_period_init
+    CREATE DATABASE IF NOT EXISTS { $last_database = 'app_periods' }
+  ; USE app_periods
+  ; { $tnum= 1; '' } app_periods_create_simple_with_period_init
   ; { $tnum++; '' } app_periods_create_simple_with_period_init
   ; { $tnum++; '' } app_periods_create_simple_with_period_init
   ; { $tnum++; '' } app_periods_create_simple_with_period_init
@@ -46,18 +47,16 @@ query_init_add:
   ; { $tnum++; '' } app_periods_create_simple_with_period_init
   ; { $tnum++; '' } app_periods_create_simple_with_period_init
   ; { $tnum++; '' } app_periods_create_simple_with_period_init
-  # Other 5 tables will be dynamic, can be ALTER-ed, re-created etc.
-  # But initially we create them in the same simple way
   ; { $tnum++; '' } app_periods_create_simple_with_period_init
   ; { $tnum++; '' } app_periods_create_simple_with_period_init
   ; { $tnum++; '' } app_periods_create_simple_with_period_init
   ; { $tnum++; '' } app_periods_create_simple_with_period_init
   ; { $tnum++; '' } app_periods_create_simple_with_period_init
-  ; SET system_versioning_alter_history= KEEP
+  ; SET system_versioning_alter_history= KEEP { $last_database= ''; $executors->[0]->forceMetadataReload(); $executors->[0]->setMetadataReloadInterval(10 + $generator->threadId()); '' }
 ;
 
 query_add:
-  { $col_number= 0; $inds= 1; $period_added= 0; '' } app_periods_query;
+  USE { $col_number= 0; $inds= 1; $period_added= 0; ''; $last_database= 'app_periods' } ; app_periods_query { $last_database = '' } ;
 
 app_periods_query:
     ==FACTOR:20==  app_periods_dml
@@ -73,7 +72,7 @@ app_periods_query:
 # _init variant does CREATE TABLE IF NOT EXISTS, to avoid re-creating the table multiple times
 #
 app_periods_create_simple_with_period_init:
-  CREATE TABLE IF NOT EXISTS { $last_table= 'app_periods_t'.$tnum } (app_periods_create_definition_for_simple_with_period) ;
+  CREATE TABLE IF NOT EXISTS { $last_table= 'app_periods.t'.$tnum } (app_periods_create_definition_for_simple_with_period) ;
 
 # _runtime variant does CREATE OR REPLACE, to avoid non-ops
 #
@@ -83,9 +82,9 @@ app_periods_create_simple_with_period_runtime:
 # More flexible table structures for re-creation at runtime
 #
 app_periods_create_table:
-      app_periods_create_table_clause app_periods_dynamic_table LIKE app_periods_any_table
-    | app_periods_create_table_clause app_periods_dynamic_table AS SELECT * FROM app_periods_any_table
-    | app_periods_create_table_clause app_periods_dynamic_table (app_periods_create_definition) _basics_main_engine_clause_50pct _basics_table_options app_periods_partitioning_definition
+      app_periods_create_table_clause app_periods_own_table LIKE app_periods_any_table
+    | app_periods_create_table_clause app_periods_own_table AS SELECT * FROM app_periods_any_table
+    | app_periods_create_table_clause app_periods_own_table (app_periods_create_definition) _basics_main_engine_clause_50pct _basics_table_options app_periods_partitioning_definition
 ;
 
 app_periods_create_table_clause:
@@ -109,19 +108,11 @@ app_periods_create_definition_for_simple_with_period:
 #
 
 app_periods_any_table:
-      ==FACTOR:5== app_periods_static_table
-    | ==FACTOR:4== app_periods_dynamic_table
-    |              _table
+  { $last_database= '' } _table { $last_database = 'app_periods'; '' }
 ;
 
 app_periods_own_table:
-    app_periods_static_table | app_periods_dynamic_table ;
-
-app_periods_static_table:
-    { $last_table= 'app_periods_t'.$prng->uint16(1,10) };
-
-app_periods_dynamic_table:
-    { $last_table= 'app_periods_t'.$prng->uint16(11,15) };
+    { $last_table= 'app_periods.t'.$prng->uint16(1,15) };
 
 #
 # PERIOD definitions
@@ -151,27 +142,27 @@ app_periods_unique_key_for_simple_table:
 ##############
 
 app_periods_dml:
-      ==FACTOR:10== app_periods_insert_replace INTO app_periods_own_table app_periods_insert_values _basics_order_by_limit_50pct /*!100500 _basics_returning_5pct */
-    |               INSERT _basics_ignore_33pct INTO app_periods_own_table app_periods_insert_values ON DUPLICATE KEY UPDATE _field = _basics_value_for_numeric_column /*!100500 _basics_returning_5pct */
-    |               INSERT _basics_ignore_33pct INTO app_periods_own_table app_periods_insert_values ON DUPLICATE KEY UPDATE app_period_valid_period_boundaries_update /*!100500 _basics_returning_5pct */
-    | ==FACTOR:10== UPDATE _basics_ignore_80pct app_periods_own_table app_periods_optional_for_portion SET app_periods_update_values app_period_optional_where_clause app_periods_optional_order_by_limit
-    | ==FACTOR:5==  UPDATE _basics_ignore_80pct app_periods_own_table SET app_period_valid_period_boundaries_update app_period_optional_where_clause app_periods_optional_order_by_limit
-    |               UPDATE _basics_ignore_80pct app_periods_own_table alias1 { $t1= $last_table; '' } NATURAL JOIN app_periods_any_table alias2 { $t2= $last_table; '' } SET { $last_table= $t1; '' } alias1._field = { $last_table= $t2; '' } alias2._field app_period_optional_where_clause app_periods_optional_order_by_limit
-    |               UPDATE _basics_ignore_80pct app_periods_any_table alias1  { $t1= $last_table; '' } NATURAL JOIN app_periods_own_table alias2 SET alias2._field = { $last_table= $t1; '' } alias1._field app_period_optional_where_clause
-    | ==FACTOR:2==  DELETE _basics_ignore_80pct FROM app_periods_own_table app_periods_optional_for_portion app_period_optional_where_clause app_periods_optional_order_by_limit _basics_returning_5pct
-    | ==FACTOR:0.2== DELETE _basics_ignore_80pct alias1.* FROM app_periods_own_table alias1, app_periods_any_table alias2
-    | ==FACTOR:0.2== DELETE _basics_ignore_80pct alias2.* FROM app_periods_any_table alias1, app_periods_own_table alias2
+      ==FACTOR:10== app_periods_insert_replace INTO _table app_periods_insert_values _basics_order_by_limit_50pct /*!100500 _basics_returning_5pct */
+    |               INSERT _basics_ignore_33pct INTO _table app_periods_insert_values ON DUPLICATE KEY UPDATE _field = _basics_value_for_numeric_column /*!100500 _basics_returning_5pct */
+    |               INSERT _basics_ignore_33pct INTO _table app_periods_insert_values ON DUPLICATE KEY UPDATE app_period_valid_period_boundaries_update /*!100500 _basics_returning_5pct */
+    | ==FACTOR:10== UPDATE _basics_ignore_80pct _table app_periods_optional_for_portion SET app_periods_update_values app_period_optional_where_clause app_periods_optional_order_by_limit
+    | ==FACTOR:5==  UPDATE _basics_ignore_80pct _table SET app_period_valid_period_boundaries_update app_period_optional_where_clause app_periods_optional_order_by_limit
+    |               UPDATE _basics_ignore_80pct _table alias1 { $t1= $last_table; '' } NATURAL JOIN app_periods_any_table alias2 { $t2= $last_table; '' } SET { $last_table= $t1; '' } alias1._field = { $last_table= $t2; '' } alias2._field app_period_optional_where_clause app_periods_optional_order_by_limit
+    |               UPDATE _basics_ignore_80pct app_periods_any_table alias1  { $t1= $last_table; '' } NATURAL JOIN _table alias2 SET alias2._field = { $last_table= $t1; '' } alias1._field app_period_optional_where_clause
+    | ==FACTOR:2==  DELETE _basics_ignore_80pct FROM _table app_periods_optional_for_portion app_period_optional_where_clause app_periods_optional_order_by_limit _basics_returning_5pct
+    | ==FACTOR:0.2== DELETE _basics_ignore_80pct alias1.* FROM _table alias1, app_periods_any_table alias2
+    | ==FACTOR:0.2== DELETE _basics_ignore_80pct alias2.* FROM app_periods_any_table alias1, _table alias2
     # Error silenced due to expected "No such file or directory" errors if the previous SELECT didn't work
-    | ==FACTOR:0.1== SELECT * INTO OUTFILE { $fname= '_data_'.time(); "'$fname'" } FROM app_periods_own_table app_period_optional_where_clause ; LOAD DATA INFILE { "'$fname'" } app_periods_optional_ignore_replace INTO TABLE { $last_table } /* EXECUTOR_FLAG_SILENT */
-    |                SELECT * FROM app_periods_own_table app_period_optional_where_clause app_periods_optional_order_by_limit
-    |                SELECT * FROM app_periods_any_table WHERE _field IN ( SELECT _field FROM app_periods_own_table app_period_optional_where_clause app_periods_optional_order_by_limit )
+    | ==FACTOR:0.1== SELECT * INTO OUTFILE { $fname= '_data_'.time(); "'$fname'" } FROM _table app_period_optional_where_clause ; LOAD DATA INFILE { "'$fname'" } app_periods_optional_ignore_replace INTO TABLE { $last_table } /* EXECUTOR_FLAG_SILENT */
+    |                SELECT * FROM _table app_period_optional_where_clause app_periods_optional_order_by_limit
+    |                SELECT * FROM app_periods_any_table WHERE _field IN ( SELECT _field FROM _table app_period_optional_where_clause app_periods_optional_order_by_limit )
     | ==FACTOR:0.2== DELETE HISTORY FROM app_periods_any_table
-    | ==FACTOR:0.2== TRUNCATE TABLE app_periods_own_table
+    | ==FACTOR:0.2== TRUNCATE TABLE _table
 ;
 
 # DELAYED is not supported for app-period tables
 app_periods_invalid:
-      INSERT DELAYED _basics_ignore_80pct INTO app_periods_own_table app_periods_insert_values
+      INSERT DELAYED _basics_ignore_80pct INTO _table app_periods_insert_values
     | CREATE OR REPLACE TABLE app_periods_t_invalid (a INT, s DATE, e DATE, PERIOD FOR p1(s,e), PERIOD FOR p2(s,e))
     | CREATE OR REPLACE TABLE app_periods_t_invalid (a INT, s DATE, e DATE, PERIOD FOR p1(s,e), PERIOD FOR p2(s,e))
     | CREATE OR REPLACE TABLE app_periods_t_invalid (a INT, s DATE, e DATE, PERIOD FOR p1(s,e), PRIMARY KEY(a __asc_x_desc(33,33), p1 WITHOUT OVERLAPS, p1 WITHOUT OVERLAPS)
@@ -261,19 +252,19 @@ app_periods_ddl:
 ;
 
 app_periods_create_drop_index:
-    CREATE _basics_or_replace_95pct INDEX app_periods_random_index_name ON app_periods_dynamic_table (app_periods_existing_column_list)
-  | CREATE _basics_or_replace_95pct UNIQUE INDEX app_periods_random_index_name ON app_periods_dynamic_table (app_periods_existing_column_list app_periods_without_overlaps_opt)
-  | CREATE INDEX _basics_if_not_exists_95pct app_periods_random_index_name ON app_periods_dynamic_table (app_periods_existing_column_list)
-  | CREATE UNIQUE INDEX _basics_if_not_exists_95pct app_periods_random_index_name ON app_periods_dynamic_table (app_periods_existing_column_list app_periods_without_overlaps_opt)
-  | DROP INDEX _basics_if_exists_95pct app_periods_random_index_name ON app_periods_dynamic_table
+    CREATE _basics_or_replace_95pct INDEX app_periods_random_index_name ON _table (app_periods_existing_column_list)
+  | CREATE _basics_or_replace_95pct UNIQUE INDEX app_periods_random_index_name ON _table (app_periods_existing_column_list app_periods_without_overlaps_opt)
+  | CREATE INDEX _basics_if_not_exists_95pct app_periods_random_index_name ON _table (app_periods_existing_column_list)
+  | CREATE UNIQUE INDEX _basics_if_not_exists_95pct app_periods_random_index_name ON _table (app_periods_existing_column_list app_periods_without_overlaps_opt)
+  | DROP INDEX _basics_if_exists_95pct app_periods_random_index_name ON _table
 ;
 
 app_periods_admin_table:
-    SHOW CREATE TABLE app_periods_own_table
-  | DESCRIBE app_periods_own_table
-  | SHOW INDEX IN app_periods_own_table
-  | ANALYZE TABLE app_periods_own_table
-  | CHECK TABLE app_periods_own_table EXTENDED
+    SHOW CREATE TABLE _table
+  | DESCRIBE _table
+  | SHOW INDEX IN _table
+  | ANALYZE TABLE _table
+  | CHECK TABLE _table EXTENDED
 ;
 
 app_periods_create_definition:
@@ -294,7 +285,7 @@ app_periods_table_element:
 ;
 
 app_periods_period_definition_random:
-  PERIOD FOR app_periods_period_name ( app_periods_existing_column_name, app_periods_existing_column_name ) ;
+  PERIOD FOR app_periods_period_name ( _field, _field ) ;
 
 app_periods_index_definition:
   app_periods_new_index_name_optional (app_periods_existing_column_list) app_periods_index_type_opt;
@@ -302,12 +293,9 @@ app_periods_index_definition:
 app_periods_new_column_name:
   { $last_field= 'c'.(++$col_number); '`'.$last_field.'`' } ;
 
-app_periods_existing_column_name:
-  { $last_field= ($col_number ? $prng->uint16(1,$col_number) : 'c0'); '`'.$last_field.'`' } ;
-
 app_periods_existing_column_list:
-    ==FACTOR:5== app_periods_existing_column_name __asc_x_desc(33,33)
-  |              app_periods_existing_column_name __asc_x_desc(33,33), app_periods_existing_column_list ;
+    ==FACTOR:5== _field __asc_x_desc(33,33)
+  |              _field __asc_x_desc(33,33), app_periods_existing_column_list ;
 
 app_periods_period_name:
     ==FACTOR:100== app_periods_valid_period_name
@@ -331,9 +319,6 @@ app_periods_new_index_name_optional:
 
 app_periods_random_index_name:
   { 'ind'.$prng->uint16(1,$inds) } ;
-
-app_periods_random_column_name:
-  { $last_field= ( $prng->uint16(0,10) ? ( $prng->uint16(0,10) ? 'c'.$prng->uint16(1,$col_number) : 's' ) : 'e' ); '`'.$last_field.'`' } ;
 
 app_periods_index_type_opt:
     ==FACTOR:3==
@@ -367,8 +352,8 @@ app_periods_foreign_key:
   CONSTRAINT app_periods_new_index_name_optional FOREIGN KEY (_field) REFERENCES app_periods_any_table (_field) ;
 
 app_periods_alter:
-    ==FACTOR:19== ALTER TABLE app_periods_dynamic_table app_periods_alter_table_list
-  |               ALTER TABLE app_periods_dynamic_table app_periods_partitioning_definition
+    ==FACTOR:19== ALTER TABLE _table app_periods_alter_table_list
+  |               ALTER TABLE _table app_periods_partitioning_definition
   | ==FACTOR:0.01== _basics_reload_metadata
 ;
 
@@ -402,7 +387,7 @@ app_periods_add_drop_column:
 
 app_periods_change_modify_column:
   MODIFY _basics_if_exists_95pct _field  _basics_column_specification |
-  CHANGE _basics_if_exists_95pct _field app_periods_random_column_name _basics_column_specification
+  CHANGE _basics_if_exists_95pct _field { $last_field.'_n' } _basics_column_specification
 ;
 
 app_periods_system_versioning:
@@ -414,16 +399,16 @@ app_periods_system_versioning:
 ;
 
 app_periods_add_drop_period:
-    ==FACTOR:4== ADD PERIOD _basics_if_not_exists_95pct FOR app_periods_period_name ( app_periods_existing_column_name, app_periods_existing_column_name )
+    ==FACTOR:4== ADD PERIOD _basics_if_not_exists_95pct FOR app_periods_period_name ( _field, _field )
   |              DROP PERIOD _basics_if_exists_95pct FOR app_periods_period_name
 ;
 
 app_periods_update_list:
-  app_periods_existing_column_name = app_periods_time_value |
-  app_periods_existing_column_name = app_periods_time_value |
-  app_periods_existing_column_name = app_periods_time_value |
   _field = app_periods_time_value |
-  app_periods_update_list , app_periods_existing_column_name = app_periods_time_value
+  _field = app_periods_time_value |
+  _field = app_periods_time_value |
+  _field = app_periods_time_value |
+  app_periods_update_list , _field = app_periods_time_value
 ;
 
 app_periods_period_type:
@@ -450,7 +435,7 @@ app_periods_time_value:
   @tm | @tm1 | @tm2 | @tm | @tm1 | @tm2 | @tm | @tm1 | @tm2 |
   # Invalid for UPDATE FOR PORTION
   SYSDATE() |
-  app_periods_existing_column_name
+  _field
 ;
 
 app_periods_partitioning_definition_opt:
@@ -459,7 +444,7 @@ app_periods_partitioning_definition_opt:
 ;
 
 app_periods_partitioning_definition:
-    ==FACTOR:9== PARTITION BY _basics_hash_or_key(app_periods_existing_column_name) PARTITIONS _positive_digit
+    ==FACTOR:9== PARTITION BY _basics_hash_or_key(_field) PARTITIONS _positive_digit
   |              PARTITION BY SYSTEM_TIME app_periods_partitioning_by_system_time
 ;
 
