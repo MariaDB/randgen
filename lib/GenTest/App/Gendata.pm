@@ -430,9 +430,10 @@ sub run {
             $field_copy[FIELD_TYPE] .= ' (1)';
         }
         
-        $field_copy[FIELD_CHARSET] = "/*+mysql: CHARACTER SET ".$field_copy[FIELD_CHARSET]."*/" if $field_copy[FIELD_CHARSET] ne '';
-        $field_copy[FIELD_COLLATION] = "/*mysql: COLLATE ".$field_copy[FIELD_COLLATION]."*/" if $field_copy[FIELD_COLLATION] ne '';
-        
+        if ($executor->type() == DB_MYSQL || $executor->type() == DB_MARIADB) {
+            $field_copy[FIELD_CHARSET] = "CHARACTER SET ".$field_copy[FIELD_CHARSET] if $field_copy[FIELD_CHARSET] ne '';
+            $field_copy[FIELD_COLLATION] = "COLLATE ".$field_copy[FIELD_COLLATION] if $field_copy[FIELD_COLLATION] ne '';
+        }
         my $key_len;
         
         if (
