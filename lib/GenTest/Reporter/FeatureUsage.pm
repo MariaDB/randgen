@@ -42,7 +42,7 @@ my $server_version;
 
 my %usage_check= (
   app_periods => \&check_for_app_periods,
-  aria_tables => \&check_for_aria_tables,
+  aria => \&check_for_aria,
   backup_stages => \&check_for_backup_stages,
   compressed_cols => \&check_for_compressed_cols,
   delayed_insert => \&check_for_delayed_insert,
@@ -61,6 +61,10 @@ my %usage_check= (
   xa => \&check_for_xa,
 );
 my %features_used = ();
+# To reduce the amount of I_S queries, on every cycle we'll re-fill
+# the hashes once
+my %engines= ();
+my %global_status= ();
 
 sub monitor {
   my $reporter = shift;
@@ -70,6 +74,8 @@ sub monitor {
       $server_version.= 'e' if defined $3;
     }
   }
+  %engines= ();
+  %global_status= ();
   foreach my $f (sort keys %usage_check) {
     next if $features_used{$f};
     my $func= $usage_check{$f};
@@ -88,32 +94,23 @@ sub report {
 # Checkers
 
 sub check_for_rocksdb {
-  my $reporter= shift;
-  if ($features_used{rocksdb}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='RocksDB'")) {
-    say("FeatureUsage detected RocksDB tables in the database");
-  }
+  $_[0]->check_for_engine('rocksdb');
 }
 
 sub check_for_spider {
-  my $reporter= shift;
-  if ($features_used{spider}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='SPIDER'")) {
-    say("FeatureUsage detected SPIDER tables in the database");
-  }
+  $_[0]->check_for_engine('spider');
 }
 
 sub check_for_federated {
-  my $reporter= shift;
-  if ($features_used{federated}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='FEDERATED'")) {
-    say("FeatureUsage detected FEDERATED tables in the database");
-  }
+  $_[0]->check_for_engine('federated');
 }
 
 sub check_for_s3 {
-  return if $server_version lt '1004';
-  my $reporter= shift;
-  if ($features_used{s3}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='S3'")) {
-    say("FeatureUsage detected S3 tables in the database");
-  }
+  $_[0]->check_for_engine('s3');
+}
+
+sub check_for_aria {
+  $_[0]->check_for_engine('aria');
 }
 
 sub check_for_sequences {
@@ -121,13 +118,6 @@ sub check_for_sequences {
   my $reporter= shift;
   if ($features_used{sequences}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='SEQUENCE'")) {
     say("FeatureUsage detected sequences in the database");
-  }
-}
-
-sub check_for_aria_tables {
-  my $reporter= shift;
-  if ($features_used{aria_tables}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='Aria' and TABLE_SCHEMA NOT IN ('mysql','information_schema','sys')")) {
-    say("FeatureUsage detected Aria user tables in the database");
   }
 }
 
@@ -215,14 +205,50 @@ sub check_for_backup_stages {
 ####
 # Helpers
 
-sub check_status_var {
-  my ($reporter, $var)= @_;
-  return $reporter->getval("SELECT VARIABLE_VALUE FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE VARIABLE_NAME='".$var."'");
+sub check_for_engine {
+  my $reporter= shift;
+  my $engine= shift;
+  $reporter->read_engines();
+  if ($features_used{$engine}=$engines{$engine}) {
+    say("FeatureUsage detected ".uc($engine)." tables in the database");
+  }
 }
 
 sub check_system_var {
   my ($reporter, $var)= @_;
   return $reporter->getval("SELECT IF(VARIABLE_VALUE = 'OFF',0,1) FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES WHERE VARIABLE_NAME='".$var."'");
+}
+
+sub check_status_var {
+  my ($reporter, $var)= @_;
+  if (scalar(keys %global_status) == 0) {
+    if ($dbh= $reporter->refresh_dbh()) {
+      eval {
+          %global_status= @{$dbh->selectcol_arrayref("SELECT VARIABLE_NAME, VARIABLE_VALUE FROM INFORMATION_SCHEMA.GLOBAL_STATUS", { Columns=>[1,2] })};
+          # Can't return res from here, because if it's 0, the "or" block will be executed
+          1;
+      } or do {
+        sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for GLOBAL STATUS query");
+      }
+    }
+  }
+  return $global_status{uc($var)};
+}
+
+sub read_engines {
+  my $reporter= shift;
+  if (scalar(keys %engines) == 0) {
+    if ($dbh= $reporter->refresh_dbh()) {
+      eval {
+          %engines= @{$dbh->selectcol_arrayref("SELECT lower(ENGINE), COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE IS NOT NULL AND TABLE_SCHEMA NOT IN ('mysql','information_schema','sys','performance_schema') GROUP BY ENGINE", { Columns=>[1,2] })};
+          # Can't return res from here, because if it's 0, the "or" block will be executed
+          1;
+      } or do {
+        sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for ENGINES query");
+      }
+    }
+  }
+  print Dumper %engines;
 }
 
 sub getval {
