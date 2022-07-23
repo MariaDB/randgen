@@ -39,8 +39,7 @@ MDEV-29136:
 MDEV-29127:
 =~ Assertion \`!return_error \|\| thd->is_error() \|\| thd->killed'
 =~ mysql_delete
-=~ FeatureUsage detected backup stages
-=~ ha_rocksdb
+=~ FeatureUsage detected RocksDB
 MDEV-29124:
 =~ AddressSanitizer|signal
 =~ st_select_lex::print
@@ -202,6 +201,12 @@ MDEV-28871:
 =~ Assertion \`cur_sj_inner_tables == 0'
 =~ JOIN::dbug_verify_sj_inner_tables
 =~ update_sj_state
+MDEV-28855:
+=~ signal|AddressSanitizer
+=~ dict_free_vc_templ
+=~ mysql_inplace_alter_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+=~ FeatureUsage detected virtual columns
 # Not merged up yet
 MDEV-28806:
 =~ Assertion \`flag == 1'
