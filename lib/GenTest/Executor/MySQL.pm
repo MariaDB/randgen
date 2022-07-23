@@ -1018,6 +1018,7 @@ use constant  ER_BAD_OPTION_VALUE                               => 1912; # Incor
 #   constant  ER_UNUSED_6                                       => 1913; # You should never see it
 #   constant  ER_UNUSED_7                                       => 1914; # You should never see it
 #   constant  ER_UNUSED_8                                       => 1915; # You should never see it
+# ...
 use constant  ER_CONNECTION_KILLED                              => 1927; # Connection was killed
 #   constant  ER_UNUSED_12                                      => 1928; # You should never see it
 use constant  ER_INSIDE_TRANSACTION_PREVENTS_SWITCH_SKIP_REPLICATION => 1929; # Cannot modify @@session.skip_replication inside a transaction
@@ -1293,7 +1294,9 @@ use constant  ER_PERIOD_FIELD_WRONG_ATTRIBUTES                  => 4155; # Perio
 use constant  ER_PERIOD_NOT_FOUND                               => 4156; # Period %`s is not found in table
 use constant  ER_PERIOD_COLUMNS_UPDATED                         => 4157; # Column %`s used in period %`s specified in update SET list
 use constant  ER_PERIOD_CONSTRAINT_DROP                         => 4158; # Can't DROP CONSTRAINT `%s`. Use DROP PERIOD `%s` for this
+# ...
 use constant  ER_UNKNOWN_DATA_TYPE                              => 4161; # Unknown data type: '%-.64s'
+# ...
 use constant  ER_PK_INDEX_CANT_BE_IGNORED                       => 4174; # A primary key cannot be marked as IGNORE
 use constant  ER_BINLOG_UNSAFE_SKIP_LOCKED                      => 4175; # SKIP LOCKED makes this statement unsafe
 use constant  ER_JSON_TABLE_ERROR_ON_FIELD                      => 4176; # Field '%s' can't be set for JSON_TABLE '%s'.
@@ -1924,7 +1927,7 @@ my %err2type = (
     ER_ORDER_WITH_PROC()                                => STATUS_SEMANTIC_ERROR,
     ER_OUTOFMEMORY()                                    => STATUS_ENVIRONMENT_FAILURE,
     ER_OUTOFMEMORY2()                                   => STATUS_ENVIRONMENT_FAILURE,
-    ER_OUT_OF_RESOURCES()                               => STATUS_ENVIRONMENT_FAILURE,
+    ER_OUT_OF_RESOURCES()                               => STATUS_DATABASE_CORRUPTION, # Demoted to non-critical due to MDEV-29157
     ER_OUT_OF_SORTMEMORY()                              => STATUS_CONFIGURATION_ERROR,
     ER_OVERLAPPING_KEYS()                               => STATUS_RUNTIME_ERROR,
     ER_PACKAGE_ROUTINE_FORWARD_DECLARATION_NOT_DEFINED() => STATUS_SEMANTIC_ERROR,
@@ -2928,7 +2931,7 @@ sub execute {
         }
     }
 
-    if ( (rqg_debug()) && (! ($execution_flags & EXECUTOR_FLAG_SILENT)) ) {
+    if (rqg_debug() && (! ($execution_flags & EXECUTOR_FLAG_SILENT))) {
         if ($query =~ m{^\s*(?:select|insert|replace|delete|update)}sio) {
             $executor->explain($query);
 
