@@ -17,7 +17,10 @@
 
 $tables = {
           names => ['PP_A', 'PP_B', 'PP_C', 'PP_D', 'PP_E', 'PP_F', 'PP_G', 'PP_H', 'PP_I', 'PP_J', 'PP_K', 'PP_L', 'PP_M',
-                    'PP_N', 'PP_O', 'PP_P', 'PP_Q', 'PP_R', 'PP_S', 'PP_T' , 'PP_U', 'PP_V', 'PP_W', 'PP_X', 'PP_Y', 'PP_Z'],
+                    'PP_N', 'PP_O', 'PP_P', 'PP_Q', 'PP_R', 'PP_S', 'PP_T' , 'PP_U', 'PP_V', 'PP_W', 'PP_X', 'PP_Y', 'PP_Z',
+                    'PP_AA', 'PP_BB', 'PP_CC', 'PP_DD', 'PP_EE', 'PP_FF', 'PP_GG', 'PP_HH', 'PP_II', 'PP_JJ', 'PP_KK', 'PP_LL', 'PP_MM',
+                    'PP_NN', 'PP_OO', 'PP_PP', 'PP_QQ', 'PP_RR', 'PP_SS', 'PP_TT', 'PP_UU', 'PP_VV', 'PP_WW', 'PP_XX', 'PP_YY', 'PP_ZZ',
+                   ],
           rows => [ 5000 ] ,
           engines => [ 'MyISAM', 'Innodb' ] ,
           pk => [ undef ] , 
