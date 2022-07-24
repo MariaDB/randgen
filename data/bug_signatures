@@ -3573,6 +3573,11 @@ MDEV-14656: [Got error 22 when trying to lock mutex]
 =~ signal 6
 =~ Got error 22 when trying to lock mutex LOCK_event_queue|safe_mutex: Trying to lock uninitialized mutex at .*sql/event_queue\.cc
 =~ KILL_SERVER
+MDEV-14574:
+=~ Assertion \`!join->select_lex->master_unit()->derived \|\| join->select_lex->master_unit()->derived->is_materialized_derived()'
+=~ JOIN::save_explain_data_intern
+=~ Version: '10\.[2-4]|Server version: 10\.[2-4]
+=~ Query.*:.*INSERT|Query.*:.*REPLACE
 MDEV-14557:
 =~ Assertion \`m_sp == __null'
 =~ Item_func_sp::init_result_field
