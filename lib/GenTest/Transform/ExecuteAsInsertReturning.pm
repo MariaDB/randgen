@@ -82,6 +82,7 @@ sub variate {
   # Variate 10% queries
   return $query if $self->random->uint16(0,9);
   return $query unless $query =~ /^\s*(?:INSERT|REPLACE)/i;
+  return $query if $query =~ /RETURNING/;
   return "$query RETURNING *";
 }
 

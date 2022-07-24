@@ -33,6 +33,8 @@ sub transform {
 
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO)}sio
+    # CTE do not work due to MDEV-15177 (closed as "won't fix")
+    || $orig_query =~ m{^\s*WITH}sio
     || $orig_query !~ m{^\s*SELECT}sio;
 
   # We remove LIMIT/OFFSET if present in the (outer) query, because we are
@@ -59,7 +61,8 @@ sub variate {
   # Variate 10% queries
   return $query if $self->random->uint16(0,9);
   my $union_type= $self->random->arrayElement(['','ALL','DISTINCT']);
-  return $query if $query =~ m{(OUTFILE|INFILE|INTO)}sio || $query !~ m{^\s*SELECT}sio;
+  # CTE do not work due to MDEV-15177 (closed as "won't fix")
+  return $query if $query =~ m{(OUTFILE|INFILE|INTO)}sio || $query !~ m{^\s*SELECT}sio || $query =~ m{^\s*WITH}sio;
   return "( $query ) UNION $union_type ( $query )";
 }
 

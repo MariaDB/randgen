@@ -102,17 +102,18 @@ my $part_select_template = qr{$parens_template|$comment_template|$single_quotes_
 sub convert_selects_to_cte 
 {
     my ($tmp_query, $cte_count) = @_;
-
+    sayDebug("In convert_selects_to_cte with $tmp_query");
     my $new_query = '';
     my $in_select = 0;
     my $select;
 
     # Parse the query or query fragment
     while ($tmp_query =~ s/\s*($part_select_template)//xi)
-    { 
+    {
         # Token here is either a part of the query without brackets, 
         # or something in round brackets
         my $token = $1;
+        sayDebug("Token: $1");
 
         # If the fragment starts with SELECT, we'll start collecting the complete SELECT
         # (we assume there had been no CTEs before transformation, 
@@ -124,11 +125,13 @@ sub convert_selects_to_cte
 
         # SELECT ends either by one of the words below, or by semicolon, 
         # or when the fragment ends
-        elsif ($token =~ /^(?:UNION|INTO|RETURNING|;)/) {
+        elsif ($token =~ /^(?:UNION|EXCEPT|INTERSECT|INTO|RETURNING|;)/) {
           if ($in_select) {
             $new_query .= " WITH cte$cte_count AS ( $select ) SELECT * FROM cte$cte_count " . $token ;
           }
           $in_select = 0;
+          # Due to MDEV-15177, we will stop converting after encountering UNION and such
+          last if ($token =~ /(?:UNION|EXCEPT|INTERSECT)/);
         }
 
         # Fragment in round brackets -- keep the brackets and process the contents
@@ -154,13 +157,32 @@ sub convert_selects_to_cte
         }
     };
 
+    sayDebug("Remaining part of tmp_query: $tmp_query");
+    sayDebug("New query: $new_query");
+
     # Final SELECT - if it ended by the query end
     if ($in_select) {
         $new_query .= " WITH cte$cte_count AS ( $select ) SELECT * FROM cte$cte_count ";
     }
 
-    # CTE doesn't like being in double parentheses, e.g. ((WITH cte (...) SELECT * FROM cte))
-    while ($new_query =~ s/\(($parens_template)\)/$1/) {};
+    sayDebug("New query after adding WITH: $new_query");
+
+    # CTE doesn't like being in its own parentheses, e.g.
+    # SELECT * FROM ((WITH cte (...) SELECT * FROM cte)) sq
+    # Note: parens_template already stores $1 and unknown number of other parts!!
+    while ($new_query =~ s/\($parens_template\)/$1/) {};
+
+    sayDebug("New query after removing double brackets: $new_query");
+
+    # ... or (WITH cte (...) SELECT * FROM cte)
+    # Note: parens_template already stores $1 and unknown number of other parts,
+    # so we can't rely on any $2... here
+    if ($new_query =~ s/^\s*$parens_template//) {
+      my $first= $1;
+      $first =~ s/^\s*\((\s*WITH.*)\)\s*$/$1/;
+      $new_query= ${first}.${new_query};
+    }
+    sayDebug("Returning from convert_selects_to_cte: $new_query");
     return $new_query;
 }
 
@@ -181,11 +203,13 @@ sub variate {
   # Variate 10% queries
   return $query if $self->random->uint16(0,9);
   return $query unless is_applicable($query);
+  sayDebug("ExecuteAsCTE: before: $query");
   $query =~ s/\\'/=====ESCAPED_SINGLE_QUOTE=====/g;
   $query =~ s/\\"/=====ESCAPED_DOUBLE_QUOTE=====/g;
   $query = convert_selects_to_cte($query, 1);
   $query =~ s/=====ESCAPED_SINGLE_QUOTE=====/\\'/g;
   $query =~ s/=====ESCAPED_DOUBLE_QUOTE=====/\\"/g;
+  sayDebug("ExecuteAsCTE: after: $query");
   return $query;
 }
 
