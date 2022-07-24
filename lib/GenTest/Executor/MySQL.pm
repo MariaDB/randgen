@@ -110,14 +110,15 @@ use constant SLAVE_INFO_HOST => 1;
 use constant SLAVE_INFO_PORT => 2;
 
 #
-# MySQL error codes
+# Error codes
 #
 
-use constant  ER_OUTOFMEMORY2                                      => 5; # returned by some storage engines
-use constant  ER_CRASHED1                                        => 126; # Index is corrupted
-use constant  ER_CRASHED2                                        => 145; # Table was marked as crashed and should be repaired
-use constant  ER_AUTOINCREMENT                                   => 167; # Failed to set row auto increment value
-use constant  ER_INCOMPATIBLE_FRM                                => 190; # Incompatible key or row definition between the MariaDB .frm file and the information in the storage engine
+use constant  ER_OUTOFMEMORY2                                   => 5; # returned by some storage engines
+use constant  ER_CRASHED1                                       => 126; # Index is corrupted
+use constant  ER_CRASHED2                                       => 145; # Table was marked as crashed and should be repaired
+use constant  HA_ERR_TABLE_DEF_CHANGED                          => 159; # The table changed in the storage engine
+use constant  ER_AUTOINCREMENT                                  => 167; # Failed to set row auto increment value
+use constant  ER_INCOMPATIBLE_FRM                               => 190; # Incompatible key or row definition between the MariaDB .frm file and the information in the storage engine
 
 use constant  ER_NISAMCHK                                       => 1001; # !!! NOT MAPPED !!! # isamchk
 use constant  ER_NO                                             => 1002; # !!! NOT MAPPED !!! # NO
@@ -2560,6 +2561,8 @@ my %err2type = (
     ER_ZLIB_Z_BUF_ERROR()                               => STATUS_ENVIRONMENT_FAILURE,
     ER_ZLIB_Z_DATA_ERROR()                              => STATUS_IGNORED_ERROR, # MDEV-16698, MDEV-16699
     ER_ZLIB_Z_MEM_ERROR()                               => STATUS_ENVIRONMENT_FAILURE,
+
+    HA_ERR_TABLE_DEF_CHANGED()                          => STATUS_RUNTIME_ERROR,
 
     WARN_COND_ITEM_TRUNCATED()                          => STATUS_RUNTIME_ERROR,
     WARN_DATA_TRUNCATED()                               => STATUS_RUNTIME_ERROR,
