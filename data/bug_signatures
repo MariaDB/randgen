@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29163:
+=~ signal|AddressSanitizer
+=~ spider_db_mbase_util::append_table
+=~ spider_create_group_by_handler
 MDEV-29157:
 =~ failed: 1041 Out of memory
 =~ Got error 128 when reading table
