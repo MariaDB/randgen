@@ -128,14 +128,14 @@ any_key:
 	int_key | string_key ;
 
 int_key:
-	_field_int ;
+	`pk` | `col_smallint_key` | `col_bigint_key` ;
 
 string_key:
-	_field_char ;
+	`col_varchar_10_key` | `col_varchar_64_key` ;
 
 index_list:
-	index_item  __asc_x_desc(33,33) , index_item  __asc_x_desc(33,33) |
-	index_item  __asc_x_desc(33,33) , index_list;
+	index_item __asc_x_desc(33,33), index_item __asc_x_desc(33,33) |
+	index_item __asc_x_desc(33,33), index_list;
 
 index_item:
 	_field | _field |
@@ -145,4 +145,5 @@ index_length:
 	1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 
 index_hint:
-	;
+	| | | 
+	FORCE KEY ( PRIMARY , `col_smallint_key` , `col_bigint_key` ,  `col_varchar_10_key` , `col_varchar_64_key` );

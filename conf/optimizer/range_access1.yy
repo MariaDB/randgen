@@ -37,6 +37,7 @@
 #        but this is more than a little tricky
 ################################################################################
 
+
 query:
   { $idx_table = '' ; @idx_fields = () ;  "" } query_type ;
 
@@ -90,16 +91,16 @@ new_tri_char_index:
   index_pre (tri_char_idx_field_list) ;
 
 dual_int_idx_field_list:
-  _field_int __asc_x_desc(33,33), { push @idx_fields, $last_field; '' } _field_int __asc_x_desc(33,33) { push @idx_fields, $last_field; '' } ;
+  { @idx_fields= (); '' } _field_int { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) , _field_int { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) ;
 
 dual_char_idx_field_list:
-  _field_char __asc_x_desc(33,33), { push @idx_fields, $last_field; '' } _field_char __asc_x_desc(33,33) { push @idx_fields, $last_field; '' } ;
+  { @idx_fields= (); '' } _field_char { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) , _field_char { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) ;
 
 tri_int_idx_field_list:
-  _field_int __asc_x_desc(33,33), { push @idx_fields, $last_field; '' } _field_int __asc_x_desc(33,33), { push @idx_fields, $last_field; '' } _field_int __asc_x_desc(33,33) { push @idx_fields, $last_field; '' } ;
+  { @idx_fields= (); '' } _field_int { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) , _field_int { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) , _field_int { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) ;
 
 tri_char_idx_field_list:
-  _field_char __asc_x_desc(33,33), { push @idx_fields, $last_field; '' } _field_char __asc_x_desc(33,33), { push @idx_fields, $last_field; '' } _field_char __asc_x_desc(33,33) { push @idx_fields, $last_field; '' } ;
+  { @idx_fields= (); '' } _field_char { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) , _field_char { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) , _field_char { push @idx_fields, $last_field; '' } __asc_x_desc(33,33) ;
 
 ################################################################################
 # single index rules
@@ -112,50 +113,43 @@ single_idx_where_list:
 
 
 single_int_idx_where_clause:
-   single_int_idx_where_list ;
+   { my @int_idx_fields = (); '' } /* _field_int */ { push @int_idx_fields, $last_field ; '' } /* _field_int */ { push @int_idx_fields, $last_field ; $int_idx_field = ("alias".$prng->int(1,$tables))." . ".$prng->arrayElement(\@int_idx_fields) ; "" } single_int_idx_where_list ;
 
 
 single_int_idx_where_list:
    single_int_idx_where_list or_and single_int_idx_where_item |
    single_int_idx_where_item | single_int_idx_where_item ;
 
-int_idx_field:
-    { $last_idx_field = "alias".$prng->int(1,$tables).'.' } _field_int { $last_idx_field .= $last_field; '' } ;
-
 single_int_idx_where_item:
-   int_idx_field greater_than _digit[invariant] AND { $last_idx_field } less_than ( _digit[invariant] + increment ) |
-   int_idx_field greater_than _digit[invariant] AND { $last_idx_field } less_than ( _digit[invariant] + increment ) |
-   int_idx_field greater_than _digit AND { $last_idx_field } less_than ( _digit[invariant] + int_value ) |
-   int_idx_field greater_than _digit[invariant] AND { $last_idx_field } less_than ( _digit + int_value ) |
-   int_idx_field greater_than _digit AND { $last_idx_field } less_than ( _digit + increment ) |
-   int_idx_field comparison_operator int_value |
-   int_idx_field not_equal int_value |
-   int_idx_field not IN (number_list) |
-   int_idx_field not BETWEEN _digit[invariant] AND (_digit[invariant] + int_value ) |
-   int_idx_field IS not NULL ;
+   { $int_idx_field } greater_than _digit[invariant] AND { $int_idx_field } less_than ( _digit[invariant] + increment ) |
+   { $int_idx_field } greater_than _digit[invariant] AND { $int_idx_field } less_than ( _digit[invariant] + increment ) |
+   { $int_idx_field } greater_than _digit AND { $int_idx_field } less_than ( _digit[invariant] + int_value ) |
+   { $int_idx_field } greater_than _digit[invariant] AND { $int_idx_field } less_than ( _digit + int_value ) |
+   { $int_idx_field } greater_than _digit AND { $int_idx_field } less_than ( _digit + increment ) |
+   { $int_idx_field } comparison_operator int_value |
+   { $int_idx_field } not_equal int_value |
+   { $int_idx_field } not IN (number_list) |
+   { $int_idx_field } not BETWEEN _digit[invariant] AND (_digit[invariant] + int_value ) |
+   { $int_idx_field } IS not NULL ;
 
 
 single_char_idx_where_clause:
-  single_char_idx_where_list ;
+  { my @char_idx_fields = (); '' } /* _field_char */ { push @char_idx_fields, $last_field ; '' } /* _field_char */ { push @char_idx_fields, $last_field ; $char_idx_field = ("alias".$prng->int(1,$tables))." . ".$prng->arrayElement(\@char_idx_fields) ; "" } single_char_idx_where_list ;
 
 single_char_idx_where_list:
   single_char_idx_where_list and_or single_char_idx_where_item |
   single_char_idx_where_item | single_char_idx_where_item ;
 
-char_idx_field:
-    { $last_idx_field = "alias".$prng->int(1,$tables).'.' } _field_char { $last_idx_field .= $last_field; '' } ;
-
-
 single_char_idx_where_item:
-  char_idx_field greater_than _char AND { $last_idx_field } less_than 'z' |
-  char_idx_field greater_than _char AND { $last_idx_field } less_than 'z' |
-  char_idx_field greater_than _char AND { $last_idx_field } less_than 'z' |
-  char_idx_field greater_than char_value AND { $last_idx_field } less_than char_value |
-  char_idx_field greater_than char_value AND { $last_idx_field } less_than 'zzzz' |
-  char_idx_field IS not NULL |
-  char_idx_field not IN (char_list) |
-  char_idx_field not LIKE ( char_pattern ) |
-  char_idx_field not BETWEEN _char AND 'z' ;
+  { $char_idx_field } greater_than _char AND { $char_idx_field } less_than 'z' |
+  { $char_idx_field } greater_than _char AND { $char_idx_field } less_than 'z' |
+  { $char_idx_field } greater_than _char AND { $char_idx_field } less_than 'z' |
+    { $char_idx_field } greater_than char_value AND { $char_idx_field } less_than char_value |
+  { $char_idx_field } greater_than char_value AND { $char_idx_field } less_than 'zzzz' |
+  { $char_idx_field } IS not NULL |
+  { $char_idx_field } not IN (char_list) |
+  { $char_idx_field } not LIKE ( char_pattern ) |
+  { $char_idx_field } not BETWEEN _char AND 'z' ;
 
 ################################################################################
 # multi-part index rules
@@ -268,12 +262,13 @@ outer:
 	| | | | OUTER ;
 
 index_type:
+  ==FACTOR:5== BTREE
 # Disabled due to MDEV-371 issues
-#  HASH |
-  BTREE ;
+#  | HASH
+;
 
 index_table:
-  { my $idx_table_candidate = $prng->arrayElement($executors->[0]->baseTables()) ; $idx_table = $idx_table_candidate ; $idx_table } ;
+  { my $idx_table_candidate = $prng->arrayElement($executors->[0]->tables()) ; $idx_table = $idx_table_candidate ; $idx_table } ;
 
 opt_where_list:
   | | | | and_or where_list ;
@@ -289,7 +284,7 @@ where_item:
   existing_table_item . char_field_name comparison_operator _char |
   existing_table_item . char_field_name comparison_operator existing_table_item . char_field_name |
   existing_table_item . _field IS not NULL |
-  existing_table_item . int_field_name IS not NULL |
+  existing_table_item . `pk` IS not NULL |
   single_idx_where_list ;
 
 group_by_clause:
@@ -297,7 +292,7 @@ group_by_clause:
 
 order_by_clause:
 	| | |
-        ORDER BY total_order_by __asc_x_desc(20,20) limit |
+        ORDER BY total_order_by desc limit |
 	ORDER BY order_by_list  ;
 
 total_order_by:
@@ -308,7 +303,10 @@ order_by_list:
 	order_by_item  , order_by_list ;
 
 order_by_item:
-	existing_select_item __asc_x_desc(20,20);
+	existing_select_item desc ;
+
+desc:
+        ASC | | | | DESC ; 
 
 limit:
 	| | LIMIT limit_size | LIMIT limit_size OFFSET int_value;
@@ -375,7 +373,7 @@ char_indexed:
    _field_char;
  
 char_field_name:
-   _field_char ; 
+   _field_char ;
 
 number_list:
    int_value | number_list, int_value ;
