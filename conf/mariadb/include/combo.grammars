@@ -68,7 +68,6 @@ $grammars_any_gendata= [
   '--grammar=conf/mariadb/generic-dml.yy',
   '--grammar=conf/mariadb/multi_update.yy',
   '--grammar=conf/partitioning/partitions.yy',
-  '--grammar=conf/mariadb/range_access1.yy',
   '--grammar=conf/mariadb/range_access2.yy',
 ];
 

@@ -27,6 +27,7 @@ $combinations = [
     --redefine=conf/mariadb/analyze-tables-at-start.yy
     --mysqld=--log-output=FILE
     --mysqld=--max-statement-time=30
+    --transformers=DisableOptimizations,EnableOptimizations,ExecuteAsDerived,ExecuteAsPreparedThrice,ExecuteAsView,ExecuteAsUnion,ExecuteAsExcept,ExecuteAsIntersect
   '], 
 # Some of legacy will duplicate the newer ones, but better safe than sorry
   [

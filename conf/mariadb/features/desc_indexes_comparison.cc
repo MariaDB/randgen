@@ -18,7 +18,6 @@ $combinations = [
   [
     '--grammar=conf/optimizer/range_access.yy --gendata=conf/optimizer/range_access.zz',
     '--grammar=conf/optimizer/range_access2.yy --gendata=conf/optimizer/range_access2.zz',
-    '--grammar=conf/mariadb/range_access1.yy --gendata-advanced --partitions',
     '--grammar=conf/mariadb/range_access2.yy --gendata-advanced --partitions',
     '--grammar=conf/mariadb/optimizer.yy --gendata-advanced --partitions',
     '--grammar=conf/mariadb/optimizer.yy --gendata --views',
