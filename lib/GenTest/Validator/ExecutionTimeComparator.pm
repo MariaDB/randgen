@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014 SkySQL Ab
-# Copyright (c) 2020 MariaDB Corporation Ab
+# Copyright (c) 2020, 2022 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -63,10 +63,11 @@ use File::Basename;
 
 
 # Configurable constants:
-use constant MIN_DURATION   => 0.1;  # (seconds) Queries with shorter execution times are not processed.
-use constant MAX_DURATION   => 300;   # (seconds) Queries with longer execution times are not processed.
-use constant MIN_RATIO      => 1.3;   # Minimum speed-up or slow-down required in order to report a query
-use constant MAX_ROWS       => 20000;   # Skip query if initial execution resulted in more than so many rows.
+use constant MIN_DURATION   => 1;     # (seconds) If both queries have shorter execution times, they are not processed.
+use constant MAX_DURATION   => 600;   # (seconds) If both queries have longer execution times, they are not processed.
+use constant MIN_RATIO      => 3;     # Minimum speed-up or slow-down required in order to report a query
+use constant MAX_ROWS       => 1000000;   # Skip query if initial execution resulted in more than so many rows.
+#
 use constant MIN_SAMPLES    => 0;     # Minimum number of execution time samples to do for each query per server.
 use constant MAX_SAMPLES    => 0;     # Max number of execution time samples per query per server. Must be no less than MIN_SAMPLES.
 use constant MAX_DEVIATION  => 15;    # Percentage of mean below which we want the standard deviation to be (if statistics is used).
@@ -209,7 +210,7 @@ sub validate {
     my $query = $results->[0]->query();
     $candidate_queries++;
 
-    if ($query !~ m{^\s*SELECT}sio) {
+    if ($query !~ m{^\s*(?:SELECT|ANALYZE.*SELECT)}sio) {
         $non_selects++;
         return STATUS_WONT_HANDLE;
     }
@@ -261,7 +262,7 @@ sub compareDurations {
     # We check for MAX_DURATION prior to repeating, to avoid wasting time.
     # If sampling is not enabled one might as well continue, but we
     # bail here anyway to have a consistent meaning of MAX_DURATION setting.
-    if ($time0 > MAX_DURATION || $time1 > MAX_DURATION) {
+    if ($time0 > MAX_DURATION && $time1 > MAX_DURATION) {
         $slow_queries++;
         return STATUS_WONT_HANDLE;
     }
@@ -307,13 +308,13 @@ sub compareDurations {
     my @explains_to_print;
     if ($skip_explain == 0) {
         foreach my $executor_id (0..1) {
-            my $explain_extended = $executors->[$executor_id]->dbh()->selectall_arrayref("EXPLAIN EXTENDED $query");
-            my $explain_warnings = $executors->[$executor_id]->dbh()->selectall_arrayref("SHOW WARNINGS");
-            $explains[$executor_id] = Dumper($explain_extended)."\n".Dumper($explain_warnings);
-            $explains_to_print[$executor_id] = join("\n", map { join("\t", map { defined $_ ? $_ : "NULL" } @$_) } @$explain_extended);
-            foreach my $w (@$explain_warnings) { 
-                $explains_to_print[$executor_id] .= "\n@$w";
-            }
+            my $last_query_cost= $executors->[$executor_id]->dbh()->selectrow_arrayref("show status like 'Last_query_cost'")->[1];
+            my $explain_extended = ( $query =~ /^[\s*\(]*ANALYZE/
+              ? $results->[$executor_id]->data()
+              : $executors->[$executor_id]->dbh()->selectall_arrayref("EXPLAIN EXTENDED $query")
+            );
+            $explains[$executor_id] = Dumper($explain_extended)."\n";
+            $explains_to_print[$executor_id] = "Last_query_cost=${last_query_cost}\n".join("\n", map { join("\t", map { defined $_ ? $_ : "NULL" } @$_) } @$explain_extended);
         }
 
         $different_plans++ if $explains[0] ne $explains[1];
@@ -340,9 +341,11 @@ sub compareDurations {
 
         $status= STATUS_POSSIBLE_FAILURE;
         # First, print to the log...
-        my $output = "ratio = $ratio; ".
-                     "time0 = ".$times[0]." sec; ".
-                     "time1 = ".$times[1]." sec; ";
+        my $output = sprintf("ratio = %.6f; ".
+                     "reversed = %.6f; ".
+                     "time0 = %.6f sec; ".
+                     "time1 = %.6f sec; ",
+                     $ratio, $reversed_ratio, $times[0], $times[1]);
         if (@relative_std_devs) {
             $output .= "rel_std_dev0: ".sprintf('%.2f', $relative_std_devs[0])."; ".
                        "rel_std_dev1: ".sprintf('%.2f', $relative_std_devs[1])."; ";
