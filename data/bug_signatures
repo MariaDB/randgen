@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29184:
+=~ Assertion \`0'
+=~ Item_row::illegal_method_call|Item::update_null_value|Type_handler_row::Item_update_null_value
+=~ Item::fix_fields_if_needed
 MDEV-29178:
 =~ Assertion \`sp > last_savepoint()'
 =~ federatedx_io_mysql::savepoint_set
@@ -17,7 +21,7 @@ MDEV-29163:
 MDEV-29157:
 =~ failed: 1041 Out of memory
 =~ Got error 128 when reading table
-=~ Feature usage detected S3 tables
+=~ Feature usage detected S3 tables|s3.yy
 MDEV-29152:
 =~ Assertion \`0'
 =~ Type_handler_row::field_type
@@ -264,6 +268,10 @@ MDEV-28685:
 =~ Partition .* returned error
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ aria-encrypt-tables|aria_encrypt_tables
+MDEV-28621:
+=~ Assertion \`!eliminated'
+=~ Item_subselect::exec
+=~ Item_singlerow_subselect::val_int
 MDEV-28613:
 =~ LeakSanitizer
 =~ rec_copy_prefix_to_buf_old
@@ -1588,6 +1596,10 @@ MDEV-23305:
 =~ Diagnostics_area::set_ok_status
 =~ FeatureUsage detected Aria
 =~ Version: '10\.4|Server version: 10\.4
+MDEV-23298:
+=~ Assertion \`table_list->prelocking_placeholder == TABLE_LIST::PRELOCK_NONE'
+=~ check_lock_and_start_stmt
+=~ select_create::create_table_from_items
 MDEV-23297:
 =~ Assertion \`info->dfile\.file == share->bitmap\.file\.file'
 =~ _ma_scan_init_block_record
@@ -2201,7 +2213,7 @@ MDEV-21809:
 =~ mysql_multi_update
 MDEV-21799:
 =~ Assertion \`is_storage_available(tuple - packed_tuple, 0)'|Assertion \`is_storage_available(tuple - packed_tuple, pack_info->m_max_image_len)'
-=~ myrocks::Rdb_key_def::pack_record
+=~ myrocks::Rdb_key_def::pack_record|myrocks::Rdb_key_def::pack_field
 MDEV-21799:
 =~ signal|AddressSanitizer
 =~ myrocks::Rdb_key_def::pack_variable_format
