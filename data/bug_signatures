@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29178:
+=~ Assertion \`sp > last_savepoint()'
+=~ federatedx_io_mysql::savepoint_set
+MDEV-29178:
+=~ signal|AddressSanitizer
+=~ federatedx_io_mysql::~federatedx_io_mysql
 MDEV-29163:
 =~ signal|AddressSanitizer
 =~ spider_db_mbase_util::append_table
