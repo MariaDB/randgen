@@ -105,6 +105,10 @@ MDEV-29059:
 =~ key_copy
 =~ write_record
 =~ spider\.yy
+MDEV-29059:
+=~ AddressSanitizer|signal
+=~ Static_binary_string::q_append
+=~ spider_db_mysql_util::append_column_value
 MDEV-29058:
 =~ Assertion \`index->type == 32'
 =~ dict_index_build_internal_fts
