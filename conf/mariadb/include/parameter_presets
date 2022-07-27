@@ -230,6 +230,10 @@ $basic_engine_combinations_109= [ @$basic_engine_combinations_108 ];
 
 $non_crash_scenario_combinations_102= [
   '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
+  '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
+  '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
+  '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
+  '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
   '--scenario=AclUpgrade',
   '--scenario=ImportTablespace --filter=conf/mariadb/regression/restrict_dynamic_vars.ff'
 ];

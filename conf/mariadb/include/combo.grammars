@@ -191,10 +191,11 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/modules/parser_changes.yy', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/query_response_time.yy --mysqld=--plugin-load-add=query_response_time --mysqld=--loose-query-response-time', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/server_audit.yy --mysqld=--plugin-load-add=server_audit --mysqld=--loose-server-audit --mysqld=--loose-server-audit-logging=on', '', '', '', '', '', '', '', '', '' ],
-  [ '--redefine=conf/engines/spider.yy --mysqld=--plugin-load-add=ha_spider --mysqld=--loose-spider-same-server-link=on --mysqld=--loose-spider_table_crd_thread_count=1 --mysqld=--loose-spider_table_sts_thread_count=1', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/engines/spider.yy --mysqld=--plugin-load-add=ha_spider --mysqld=--loose-spider-same-server-link=on --mysqld=--loose-spider_table_crd_thread_count=1 --mysqld=--loose-spider_table_sts_thread_count=1', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/sql_errlog.yy --mysqld=--plugin-load-add=sql_errlog --mysqld=--loose-sql-errlog', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/userstat.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/user_variables.yy --mysqld=--loose-user-variables', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/runtime/updates_deletes.yy', '', '', '' ],
 ];
 
 $optional_redefines_103= [
@@ -212,7 +213,7 @@ $optional_redefines_104= [
 
 $optional_redefines_105= [
   @$optional_redefines_104,
-  [ '--redefine=conf/engines/s3.yy --mysqld=--plugin-load-add=ha_s3 --mysqld=--s3=on --mysqld=--s3-host-name="127.0.0.1" --mysqld=--s3-protocol-version=Auto --mysqld=--s3-bucket=rqg --mysqld=--s3-access-key=minio --mysqld=--s3-secret-key=minioadmin --mysqld=--s3-region="" --mysqld=--s3-port=9000 --mysqld=--s3-use-http=on', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
+  [ '--redefine=conf/engines/s3.yy --mysqld=--plugin-load-add=ha_s3 --mysqld=--s3=on --mysqld=--s3-host-name="127.0.0.1" --mysqld=--s3-protocol-version=Auto --mysqld=--s3-bucket=rqg --mysqld=--s3-access-key=minio --mysqld=--s3-secret-key=minioadmin --mysqld=--s3-region="" --mysqld=--s3-port=9000 --mysqld=--s3-use-http=on', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
 ];
 
 
