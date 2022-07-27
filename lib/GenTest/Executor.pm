@@ -145,11 +145,13 @@ sub newFromDSN {
 }
 
 sub setMetadataReloadInterval {
-  if (not defined $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] or $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] >= $_[1]) {
-    say("Metadata interval set to $_[1]");
-    $_[0]->[EXECUTOR_META_RELOAD_INTERVAL]= $_[1];
+  # Variate the interval a bit to avoid reloading in all threads at once
+  my $interval= $_[1] + $_[0]->connectionId() % 10;
+  if (not defined $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] or $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] >= $interval) {
+    say("Metadata interval set to $interval for executor ".$_[0]->[EXECUTOR_ID]);
+    $_[0]->[EXECUTOR_META_RELOAD_INTERVAL]= $interval;
   } else {
-    sayWarning("Metadata interval $_[1] is ignored, already set to ".$_[0]->[EXECUTOR_META_RELOAD_INTERVAL]);
+    sayWarning("Metadata interval $interval is ignored for executor ".$_[0]->[EXECUTOR_ID].", already set to ".$_[0]->[EXECUTOR_META_RELOAD_INTERVAL]);
   }
 }
 
