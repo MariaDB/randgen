@@ -288,6 +288,11 @@ MDEV-28567:
 =~ open_tables
 =~ mysql_create_view|execute_sqlcom_select
 =~ Version: '10\.9|Server version: 10\.9|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-28566:
+=~ Assertion \`!expr->fixed()'
+=~ Virtual_column_info::fix_session_expr
+=~ TABLE::vcol_fix_expr
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28466:
 =~ AddressSanitizer|signal
 =~ _mi_make_key|calc_row_difference
