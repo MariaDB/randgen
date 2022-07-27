@@ -22,6 +22,16 @@ query_add:
   { @aliases= (); $non_agg_fields= 0; $agg_fields= 0; '' } all_selects_query { $last_database= undef; $last_table= undef; '' };
 
 all_selects_query:
+  ==FACTOR:4== all_selects_generated_query |
+  all_selects_extra_query
+;
+
+all_selects_extra_query:
+  # From table elimination task
+  { %extra_tables=(); '' } SELECT t1.* FROM _table { $extra_tables{t1}= $last_table; 't1' } LEFT JOIN (SELECT /* _table */ { $extra_tables{t11} = $last_table; '' } t11._field AS fld1, COUNT(*) AS cnt FROM { $extra_tables{t11} } t11 LEFT JOIN _table { $extra_tables{t12}= $last_table; 't12' } ON t12._field = { $last_table= $extra_tables{t11}; '' } t11._field GROUP BY fld1 ) sq ON sq.fld1= { $last_table= $extra_tables{t1}; '' } t1._field
+;
+
+all_selects_generated_query:
   SELECT all_selects_select_list
   FROM all_selects_from_list
   all_selects_optional_where_clause
