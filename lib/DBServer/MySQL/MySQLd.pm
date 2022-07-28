@@ -386,6 +386,8 @@ sub createMysqlBase  {
     if ($self->_notOlderThan(10,4,6)) {
         push @$boot_options, "--loose-server-audit-logging=OFF";
     }
+    # Workaround for MDEV-29197
+    push @$boot_options, "--loose-skip-s3";
 
     my $command;
 
