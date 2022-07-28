@@ -212,7 +212,8 @@ sub gen_table {
         ### http://bugs.mysql.com/bug.php?id=47125
 
         $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ $name");
-        if ($vcols) {
+        # RocksDB does not support virtual columns
+        if ($vcols and lc($engine) ne 'rocksdb') {
             $self->variate_and_execute($executor,
             "CREATE TABLE $name (
                 pk INTEGER AUTO_INCREMENT,

@@ -476,7 +476,8 @@ sub gen_table {
     my $has_autoinc= $col->[0] =~ /AUTO_INCREMENT/;
     my %pk_columns= ($has_autoinc ? (id => 1) : ());
 
-    if (defined $self->vcols)
+    # RocksDB does not support virtual columns
+    if (defined $self->vcols and lc($engine) ne 'rocksdb')
     {
         # TODO: add actual functions for virtual columns
 
