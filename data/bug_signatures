@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29214:
+=~ Assertion \`server->io_count == 0'
+=~ free_server
+=~ ha_federatedx::close
+MDEV-29214:
+=~ AddressSanitizer|signal
+=~ federatedx_txn::txn_commit|federatedx_txn::txn_rollback
+=~ trans_commit|trans_rollback
 MDEV-29184:
 =~ Assertion \`0'
 =~ Item_row::illegal_method_call|Item::update_null_value|Type_handler_row::Item_update_null_value
@@ -59,7 +67,6 @@ MDEV-29124:
 =~ st_select_lex::print
 =~ With_element::print
 =~ Prepared_statement::execute
-=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29122:
 =~ AddressSanitizer|signal
 =~ my_mb_wc_bin
@@ -271,7 +278,7 @@ MDEV-28685:
 MDEV-28621:
 =~ Assertion \`!eliminated'
 =~ Item_subselect::exec
-=~ Item_singlerow_subselect::val_int
+=~ Item_singlerow_subselect::val_
 MDEV-28613:
 =~ LeakSanitizer
 =~ rec_copy_prefix_to_buf_old
