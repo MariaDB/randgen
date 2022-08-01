@@ -57,7 +57,7 @@ MDEV-29138:
 MDEV-29136:
 =~ Assertion \`!share->no_status_updates'
 =~ _ma_mark_file_changed_now
-=~ Feature usage detected S3 tables
+=~ FeatureUsage detected S3 tables
 MDEV-29127:
 =~ Assertion \`!return_error \|\| thd->is_error() \|\| thd->killed'
 =~ mysql_delete
@@ -2405,7 +2405,7 @@ MDEV-21102:
 =~ signal 11|AddressSanitizer: SEGV
 =~ JOIN_CACHE::write_record_data
 =~ JOIN_CACHE.*::put_record
-=~ mysql_explain_union
+=~ Query.*:.*EXPLAIN
 MDEV-21085:
 =~ Assertion \`info->last_key\.keyinfo == key->keyinfo'
 =~ _ma_search_no_save
