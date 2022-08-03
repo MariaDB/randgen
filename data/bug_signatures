@@ -61,7 +61,7 @@ MDEV-29136:
 MDEV-29127:
 =~ Assertion \`!return_error \|\| thd->is_error() \|\| thd->killed'
 =~ mysql_delete
-=~ FeatureUsage detected RocksDB
+=~ FeatureUsage detected ROCKSDB
 MDEV-29124:
 =~ AddressSanitizer|signal
 =~ st_select_lex::print
@@ -318,6 +318,10 @@ MDEV-28566:
 =~ Virtual_column_info::fix_session_expr
 =~ TABLE::vcol_fix_expr
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-28510:
+=~ signal|AddressSanitizer
+=~ get_sort_by_table
+=~ JOIN::optimize
 MDEV-28466:
 =~ AddressSanitizer|signal
 =~ _mi_make_key|calc_row_difference
