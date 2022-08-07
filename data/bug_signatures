@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29242:
+=~ Assertion \`computed_weight == weight'
+=~ SEL_ARG::verify_weight
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29214:
 =~ Assertion \`server->io_count == 0'
 =~ free_server
@@ -405,6 +409,10 @@ MDEV-27840:
 =~ ha_innobase::build_template
 =~ QUICK_RANGE_SELECT
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-27769:
+=~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
+=~ Field::ptr_in_record
+=~ Column_definition::Column_definition
 MDEV-27756:
 =~ signal|AddressSanitizer
 =~ SEL_ARG::tree_delete
@@ -557,24 +565,6 @@ MDEV-26891:
 =~ Field::register_field_in_read_map
 =~ TABLE::mark_auto_increment_column
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-MDEV-26862:
-=~ AddressSanitizer
-=~ _mi_rec_pack
-=~ _mi_write_blob_record
-=~ Version: '10\.2|Server version: 10\.2
-=~ FeatureUsage detected GIS columns
-MDEV-26862:
-=~ AddressSanitizer
-=~ rec_convert_dtuple_to_rec_comp
-=~ page_cur_tuple_insert
-=~ Version: '10\.2|Server version: 10\.2
-=~ FeatureUsage detected GIS columns
-MDEV-26862:
-=~ AddressSanitizer
-=~ write_block_record
-=~ _ma_write_init_block_record
-=~ Version: '10\.2|Server version: 10\.2
-=~ FeatureUsage detected GIS columns
 MDEV-26835:
 =~ AddressSanitizer|signal
 =~ heap_rrnd
@@ -1686,6 +1676,10 @@ MDEV-23212:
 =~ Protocol::end_statement
 =~ INFORMATION_SCHEMA.*ALL_PLUGINS
 =~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-23211:
+=~ Assertion \`t->s->tmp_table \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, t->s->db\.str, t->s->table_name\.str, t->reginfo\.lock_type >= TL_WRITE_ALLOW_WRITE ? MDL_SHARED_WRITE : MDL_SHARED_READ)'
+=~ lock_tables_check
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23204:
 =~ signal [16]|AddressSanitizer|Assertion \`bit < (map)->n_bits'
 =~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan|DsMrr_impl::dsmrr_next
