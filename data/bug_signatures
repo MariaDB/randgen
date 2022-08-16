@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29314:
+=~ Assertion \`n_fields > n_cols'
+=~ dict_index_t::init_change_cols
+=~ mysql_inplace_alter_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29291:
+=~ Assertion \`!table->fts'
+=~ dict_table_can_be_evicted
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29273:
+=~ InnoDB: Operating system error number 9 in a file operation
+=~ 'close' returned OS error 209\. Cannot continue operation
+=~ got signal 6
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29242:
 =~ Assertion \`computed_weight == weight'
 =~ SEL_ARG::verify_weight
