@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29342:
+=~ InnoDB: (Duplicate key) writing word node to FTS auxiliary index table
+=~ InnoDB: Failing assertion: trx->error_state == DB_SUCCESS|Assertion \`thr->state == QUE_THR_COMPLETED'
+=~ fts_eval_sql
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29317:
+=~ Assertion \`sp && savepoint_next && *sp && *sp <= savepoint_level'
+=~ federatedx_txn::sp_release
 MDEV-29314:
 =~ Assertion \`n_fields > n_cols'
 =~ dict_index_t::init_change_cols
@@ -136,8 +144,8 @@ MDEV-29059:
 =~ spider\.yy
 MDEV-29059:
 =~ AddressSanitizer|signal
-=~ Static_binary_string::q_append
 =~ spider_db_mysql_util::append_column_value
+=~ ha_spider::index_read_map
 MDEV-29058:
 =~ Assertion \`index->type == 32'
 =~ dict_index_build_internal_fts
@@ -293,6 +301,10 @@ MDEV-28685:
 =~ Partition .* returned error
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ aria-encrypt-tables|aria_encrypt_tables
+MDEV-28683:
+=~ signal|AddressSanitizer
+=~ ha_spider::multi_range_read_next_first|ha_spider::rnd_next_internal|spider_db_connect
+=~ Version: '10\.4|Server version: 10\.4
 MDEV-28621:
 =~ Assertion \`!eliminated'
 =~ Item_subselect::exec
