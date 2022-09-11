@@ -4,6 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29510:
+=~ signal|AddressSanitizer
+=~ dfield_dup
+=~ row_upd_index_replace_new_col_vals_index_pos
+=~ btr_cur_optimistic_update
+MDEV-29510:
+=~ signal|AddressSanitizer
+=~ write_block_record
+=~ _ma_update_block_record2
+MDEV-29510:
+=~ signal|AddressSanitizer
+=~ _mi_rec_pack
+=~ _mi_update_blob_record
 MDEV-29459:
 =~ signal|AddressSanitizer
 =~ Field_blob::cmp_binary
