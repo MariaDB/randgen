@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29527:
+=~ signal|AddressSanitizer
+=~ ha_s3::discover_check_version
+=~ ha_partition::discover_check_version
+MDEV-29520:
+=~ signal|AddressSanitizer
+=~ rec_convert_dtuple_to_rec_comp
+=~ btr_cur_optimistic_insert
+=~ row_merge_spatial_rows
+=~ mysql_alter_table
 MDEV-29510:
 =~ signal|AddressSanitizer
 =~ dfield_dup
@@ -1460,9 +1470,10 @@ MDEV-23809:
 =~ sub_select
 =~ DISTINCT
 MDEV-23801:
-=~ Assertion \`index->table->instant \|\| block->page\.id\.page_no() != index->page'
+=~ Assertion \`index->table->instant \|\| block->page\.id\.page_no() != index->page'|Assertion \`block->page\.id\.page_no() != index->page'
 =~ btr_pcur_store_position
 =~ row_search_mvcc
+=~ Version: '10\.[3-4]|Server version: 10\.[3-4]
 MDEV-23800:
 =~ Assertion \`!result'
 =~ convert_const_to_int
@@ -3289,7 +3300,6 @@ MDEV-17754:
 MDEV-17711:
 =~ Assertion \`arena_for_set_stmt== 0'
 =~ set_arena_for_set_stmt
-=~ mysql_execute_command
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-17678:
 =~ AddressSanitizer|signal 11
