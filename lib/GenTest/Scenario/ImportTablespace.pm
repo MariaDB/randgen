@@ -162,7 +162,7 @@ sub run {
 
   #####
   $self->printStep("Re-creating the tables and replacing tablespaces with the stored ones");
-  $dbh->do("SET FOREIGN_KEY_CHECKS= 0");
+  $dbh->do('SET FOREIGN_KEY_CHECKS= 0, sql_mode= CONCAT(REPLACE(REPLACE(@@sql_mode,"STRICT_TRANS_TABLES",""),"STRICT_ALL_TABLES",""),",IGNORE_BAD_TABLE_OPTIONS")');
   foreach my $tpath (@$tables) {
     $tpath =~ /^(.*)\/(.*)/;
     my ($tschema, $tname)= ($1, $2);
@@ -204,6 +204,7 @@ sub run {
   if ($status != STATUS_OK) {
     return $self->finalize($status,[$server]);
   }
+  $dbh->do('SET sql_mode= DEFAULT');
 
   #####
   $self->printStep("Dumping the data after discard/import");
