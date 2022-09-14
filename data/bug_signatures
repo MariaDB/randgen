@@ -36,6 +36,10 @@ MDEV-29459:
 =~ Field_blob::cmp_binary
 =~ Field::cmp_binary_offset
 =~ FeatureUsage detected FEDERATED
+MDEV-29459:
+=~ signal|AddressSanitizer
+=~ String::append_for_single_quote
+=~ ha_federatedx::update_row
 MDEV-29457:
 =~ Assertion \`mode & BTR_MODIFY_LEAF'|Assertion \`!(mode & 8)'
 =~ row_undo_mod_del_unmark_sec_and_undo_update
