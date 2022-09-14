@@ -92,13 +92,13 @@ my $executable_comment_template =
 
 my $parens_template =
     qr{
-        (\s*
+        (?<parens_tmpl>\s*
             \(
                 (                       # group 1 - inside parens
                     (?:
                         (?> (?:$single_quotes_template|$double_quotes_template|$comment_template|[^()])+ )    # non-parens
                         |
-                        (?1)            # recurse to group 1
+                        (?&parens_tmpl) # recurse
                     )*
                 )
             \)
@@ -156,6 +156,8 @@ sub parse_query_for_transformation
 
 sub parse_query_for_variation
 {
+  sayDebug("Parsing query for variation: @_");
+
   my $self= shift;
   my $tmp_query= shift;
   my $inside_outer_from= shift;
@@ -187,6 +189,7 @@ sub parse_query_for_variation
   # TODO: shouldn't it be /^\s* ...?
   while ($tmp_query =~ s/\s*($part_select_template)//xi)
   {
+    sayDebug("Parsing cycle: $tmp_query");
     my $token = $1;
     if ($token =~ /^$executable_comment_template$/xi) {
       if ($token =~ /^\/\*\!(\d+)\s+(.*?)\s*\*\// and not $self->executor->is_compatible($1)) {
