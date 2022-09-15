@@ -33,7 +33,7 @@ sub variate {
   # Don't need executor or (for now) gendata_flag
   my ($self, $query) = @_;
   # Variate 10% queries
-  return $query if $self->random->uint16(0,9);
+  return $query if $self->random->uint16(0,1);
   return $query unless $query =~ /^[\s\(]*(?:SELECT|UPDATE|DELETE|INSERT|REPLACE)/;
   # Should be
   # - 40% ANALYZE FORMAT=JSON,
