@@ -7,7 +7,7 @@
 MDEV-29528:
 =~ signal|AddressSanitizer
 =~ s3_block_read
-=~ maria_ft_init_search
+=~ ha_maria::ft_init
 MDEV-29527:
 =~ signal|AddressSanitizer
 =~ ha_s3::discover_check_version
