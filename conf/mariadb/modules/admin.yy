@@ -26,7 +26,8 @@ admin_query:
 
 # ANALYZE or EXPLAIN on random query cause too many syntax errors
 admin_analyze_or_explain_query:
-    SHOW EXPLAIN FOR _tinyint_unsigned
+     SHOW EXPLAIN FOR _tinyint_unsigned
+   | SHOW admin_analyze_or_explain admin_format_json FOR { $prng->uint16($executors->[0]->connectionId()-10, $executors->[0]->connectionId()+10) } /* compatibility 10.9.1 */
 #  | admin_analyze_or_explain admin_format_json query
 #  | admin_analyze_or_explain admin_format_json query
 #  | admin_analyze_or_explain admin_format_json query
