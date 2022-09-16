@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29559:
+=~ Starting final batch to recover .* pages from redo log
+=~ Not applying INSERT_HEAP_DYNAMIC due to corruption on
+=~ InnoDB: Plugin initialization aborted at srv0start
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29557:
 =~ signal|Assertion \`tmp->nbackups == 0'
 =~ test_plugin_options
