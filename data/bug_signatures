@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29557:
+=~ signal|Assertion \`tmp->nbackups == 0'
+=~ test_plugin_options
+=~ mysql_install_plugin
 MDEV-29556:
 =~ signal|AddressSanitizer
 =~ crc32_z|crcr32_calc_pclmulqdq
