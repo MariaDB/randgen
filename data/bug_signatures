@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29556:
+=~ signal|AddressSanitizer
+=~ crc32_z|crcr32_calc_pclmulqdq
+=~ my_checksum
+=~ Item_func_crc32
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29528:
 =~ signal|AddressSanitizer
 =~ s3_block_read
