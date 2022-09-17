@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29560:
+=~ Assertion \`lock_table_has(trx, table, LOCK_IX)'
+=~ lock_trx_has_expl_x_lock
+=~ row_upd
 MDEV-29559:
 =~ Starting final batch to recover .* pages from redo log
 =~ Not applying INSERT_HEAP_DYNAMIC due to corruption on
@@ -70,7 +74,7 @@ MDEV-29342:
 =~ fts_eval_sql
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29317:
-=~ Assertion \`sp && savepoint_next && *sp && *sp <= savepoint_level'
+=~ Assertion \`sp && savepoint_next && \*sp && \*sp <= savepoint_level'
 =~ federatedx_txn::sp_release
 MDEV-29314:
 =~ Assertion \`n_fields > n_cols'
