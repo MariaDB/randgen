@@ -4,6 +4,8 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29561:
+=~ Could not re-create table .*: 1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'binary
 MDEV-29560:
 =~ Assertion \`lock_table_has(trx, table, LOCK_IX)'
 =~ lock_trx_has_expl_x_lock
@@ -337,7 +339,6 @@ MDEV-28806:
 MDEV-28797:
 =~ Assertion \`page_rec_is_user_rec(rec)'
 =~ PageBulk::getSplitRec
-=~ ha_innobase::inplace_alter_table|Sql_cmd_optimize_table
 MDEV-28797:
 =~ Assertion \`n > 0'
 =~ PageBulk::copyOut
@@ -491,8 +492,8 @@ MDEV-27878:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-27843:
 =~ Assertion \`index->table->persistent_autoinc'
-=~ btr_read_autoinc
-=~ ha_innobase::prepare_inplace_alter_table
+=~ btr_read_autoinc|btr_write_autoinc
+=~ ha_innobase::prepare_inplace_alter_table|ha_innobase::discard_or_import_tablespace
 =~ Version: '10\.[2-4]|Server version: 10\.[2-4]
 MDEV-27840:
 =~ Assertion \`!is_v'
