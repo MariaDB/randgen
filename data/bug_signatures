@@ -486,6 +486,10 @@ MDEV-28169:
 =~ row_upd_build_difference_binary
 =~ row_ins_clust_index_entry_by_modify
 =~ FeatureUsage detected unique blobs
+MDEV-28105:
+=~ Diagnostics_area::set_error_status
+=~ spider_mbase_handler::show_table_status
+=~ spider_get_sts
 MDEV-27878:
 =~ Assertion \`got_name == named_item_expected()'
 =~ Json_writer::on_start_object
@@ -692,15 +696,6 @@ MDEV-26594:
 =~ Field::stored_field_make_mm_leaf
 =~ calculate_cond_selectivity_for_table
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-MDEV-26546:
-=~ signal|AddressSanitizer
-=~ spider_db_connect
-=~ spider_mbase_handler::show_table_status
-=~ spider_get_sts
-MDEV-26546:
-=~ Diagnostics_area::set_error_status
-=~ spider_mbase_handler::show_table_status
-=~ spider_get_sts
 MDEV-26541: [Spider does not work with UBSAN]
 =~ Can't open shared library .*ha_spider.so' (errno: .*, undefined symbol: _ZTI12ha_partition)
 MDEV-26540:
