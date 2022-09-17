@@ -1,3 +1,6 @@
+query_init_add:
+     { @charsets= (); map { push @charsets, $_ if ($_ ne 'utf32' && $_ ne 'utf16' && $_ ne 'ucs2' && $_ ne 'utf16le') } @{$executors->[0]->metaCharactersets()}; '' };
+
 thread1_init_add:
      CREATE USER IF NOT EXISTS spider_user@'127.0.0.1' IDENTIFIED BY 'SpdrUs3r!pw'
   ;; GRANT ALL ON *.* TO spider_user@'127.0.0.1'
@@ -5,5 +8,6 @@ thread1_init_add:
   ;; FLUSH PRIVILEGES
 ;
 
+# Character set enforced due to MDEV-29562 (can't work with utf32/utf16/ucs2)
 query_add:
-  ==FACTOR:0.01== CREATE TABLE IF NOT EXISTS { $last_table = $prng->arrayElement($executors->[0]->metaTables($last_database)); $last_table.'_SPIDER' } LIKE { $last_table }; ALTER TABLE { $last_table.'_SPIDER' } ENGINE=SPIDER COMMENT = { '"wrapper '."'mysql', srv 's', table '".$last_table."'".'"' };
+  ==FACTOR:0.01== CREATE TABLE IF NOT EXISTS { $last_table = $prng->arrayElement($executors->[0]->metaTables($last_database)); $last_table.'_SPIDER' } LIKE { $last_table }; ALTER TABLE { $last_table.'_SPIDER' } ENGINE=SPIDER COMMENT = { '"wrapper '."'mysql', srv 's', table '".$last_table."'".'"' } CHARACTER SET { $prng->arrayElement(\@charsets) };
