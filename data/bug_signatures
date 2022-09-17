@@ -342,7 +342,6 @@ MDEV-28797:
 MDEV-28797:
 =~ Assertion \`n > 0'
 =~ PageBulk::copyOut
-=~ ha_innobase::inplace_alter_table
 MDEV-28797:
 =~ Failing assertion: i + PAGE_HEAP_NO_USER_LOW == n_heap
 =~ PageBulk::compress
@@ -2165,6 +2164,10 @@ MDEV-22333:
 =~ rec_get_converted_size_comp_prefix_low
 =~ row_ins_index_entry
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-22305:
+=~ signal|AddressSanitizer
+=~ myrocks::ha_rocksdb::info
+=~ open_table_from_share
 MDEV-22279:
 =~ Assertion \`false'
 =~ set_field_mdl_type
