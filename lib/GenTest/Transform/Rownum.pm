@@ -41,9 +41,7 @@ sub variate {
   my $op= $self->random->arrayElement(['<','>','<=','>=','=']);
 
   if ($query =~ /\WWHERE\W/) {
-    my $logop= ($self->random->uint16(0,1) ? 'AND' : 'OR');
-
-    $query =~ s/(\W)WHERE(\W)/${1}WHERE ROWNUM() ${op} ${limit} $logop${2}/g;
+    $query =~ s/(\W)WHERE(\W)/${1}WHERE ROWNUM() ${op} ${limit} AND${2}/g;
   } elsif ($query =~ /^\s*SELECT/ && $query !~ /INTO\s+OUTFILE/) {
     $query = "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() ${op} ${limit}";
   }
