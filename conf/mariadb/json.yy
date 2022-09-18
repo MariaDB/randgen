@@ -21,7 +21,7 @@
 ####################################
 
 query_init_add:
-    SET SQL_MODE=REPLACE(REPLACE(@@sql_mode,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
+    SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
   ; json_create
   ; SET SQL_MODE=DEFAULT
 ;
@@ -33,13 +33,13 @@ query_add:
 ;
 
 json_create:
-    SET SQL_MODE=REPLACE(REPLACE(@@sql_mode,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
+    SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
   ; CREATE OR REPLACE TABLE `tmp` ENGINE = _basics_inbuilt_engine_weighted AS json_select
   ; SET SQL_MODE=DEFAULT
 ;
 
 json_insert:
-    SET SQL_MODE=REPLACE(REPLACE(@@sql_mode,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
+    SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
   ; INSERT INTO `tmp` ( `fld` ) json_select
   ; SET SQL_MODE=DEFAULT
 ;
