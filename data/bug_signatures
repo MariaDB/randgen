@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29570:
+=~ LeakSanitizer
+=~ trx_mod_table_time_t::start_bulk_insert
+=~ ha_partition::write_row
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29561:
 =~ Could not re-create table .*: 1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'binary
 MDEV-29560:
@@ -679,7 +684,7 @@ MDEV-26820:
 MDEV-26817:
 =~ AddressSanitizer|runtime error|signal
 =~ skip_key
-=~ json_valid
+=~ json_scan_next
 =~ Item_func_json_.*::val_.*
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26677:
