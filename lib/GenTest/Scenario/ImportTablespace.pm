@@ -132,7 +132,7 @@ sub run {
   mkdir($tablespace_backup_dir);
   my %table_definitions;
 
-  my $tables = $dbh->selectcol_arrayref("select ts.name from information_schema.innodb_sys_tablespaces ts join information_schema.tables t on ts.name = concat(t.table_schema,'/',t.table_name) where ts.name != 'innodb_system' and ts.name not like 'mysql/%' and ts.name not like '%#%' and t.table_type != 'SEQUENCE'");
+  my $tables = $dbh->selectcol_arrayref("select ts.name from information_schema.innodb_sys_tablespaces ts join information_schema.tables t on BINARY ts.name = BINARY concat(t.table_schema,'/',t.table_name) where ts.name != 'innodb_system' and ts.name not like 'mysql/%' and ts.name not like '%#%' and t.table_type != 'SEQUENCE'");
   foreach my $tpath (@$tables) {
     $tpath =~ /^(.*)\/(.*)/;
     my ($tschema, $tname)= ($1, $2);
