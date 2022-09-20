@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29580:
+=~ Assertion \`!return_error \|\| thd->is_error() \|\| thd->killed'
+=~ mysql_delete
+=~ mysql_parse.*MATCH.*AGAINST|Query .*:.*MATCH.*AGAINST
+=~ FeatureUsage detected sequences
+MDEV-29580:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ dispatch_command.*MATCH.*AGAINST|Query .*:.*MATCH.*AGAINST
+=~ FeatureUsage detected sequences
 MDEV-29570:
 =~ LeakSanitizer
 =~ trx_mod_table_time_t::start_bulk_insert
@@ -37,7 +47,6 @@ MDEV-29528:
 MDEV-29527:
 =~ signal|AddressSanitizer
 =~ ha_s3::discover_check_version
-=~ ha_partition::discover_check_version
 MDEV-29520:
 =~ signal|AddressSanitizer
 =~ rec_convert_dtuple_to_rec_comp
@@ -82,7 +91,7 @@ MDEV-29342:
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29317:
 =~ Assertion \`sp && savepoint_next && \*sp && \*sp <= savepoint_level'
-=~ federatedx_txn::sp_release
+=~ federatedx_txn::sp_release|federatedx_txn::sp_rollback
 MDEV-29314:
 =~ Assertion \`n_fields > n_cols'
 =~ dict_index_t::init_change_cols
@@ -494,6 +503,12 @@ MDEV-28105:
 =~ Diagnostics_area::set_error_status
 =~ spider_mbase_handler::show_table_status
 =~ spider_get_sts
+MDEV-28024:
+=~ Assertion \`thd->transaction->stmt\.ha_list == __null \|\| trans == &thd->transaction->stmt'
+=~ ha_rollback_trans
+=~ ha_start_consistent_snapshot
+=~ FeatureUsage detected SPIDER
+=~ FeatureUsage detected ROCKSDB
 MDEV-27878:
 =~ Assertion \`got_name == named_item_expected()'
 =~ Json_writer::on_start_object
@@ -1173,7 +1188,6 @@ MDEV-24726:
 =~ Assertion \`0'
 =~ Field_varstring_compressed::key_cmp
 =~ key_cmp_if_same
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-24724:
 =~ Assertion \`templ->mbmaxlen > templ->mbminlen \|\| templ->mysql_col_len == len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0)'|Assertion \`len \* templ->mbmaxlen >= templ->mysql_col_len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0) \|\| templ->rec_field_is_prefix'
 =~ row_sel_field_store_in_mysql_format_func
@@ -3118,9 +3132,9 @@ MDEV-18441:
 =~ Sql_cmd_alter_table::execute
 =~ ADD .*FOREIGN KEY
 MDEV-18421:
-=~ signal [16]|AddressSanitizer|Assertion \`foreign->foreign_table != __null'
+=~ signal [16]|AddressSanitizer|Assertion \`foreign->foreign_table != __null'|Assertion \`foreign->foreign_table'
 =~ init_fts_doc_id_for_ref
-=~ row_update_for_mysql
+=~ ha_innobase::update_row|ha_innobase::delete_row
 MDEV-18418:
 =~ Assertion \`mdl_ticket->m_type == MDL_SHARED_UPGRADABLE \|\| mdl_ticket->m_type == MDL_SHARED_NO_WRITE \|\| mdl_ticket->m_type == MDL_SHARED_NO_READ_WRITE \|\| mdl_ticket->m_type == MDL_SHARED_READ \|\| mdl_ticket->m_type == MDL_SHARED_WRITE'
 =~ MDL_context::upgrade_shared_lock
