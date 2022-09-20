@@ -536,6 +536,11 @@ MDEV-27675:
 =~ InnoDB: Corruption of index|Assertion \`ret && btr_cur->low_match == n_fields'
 =~ rtr_page_get_father_node_ptr
 =~ row_insert_for_mysql
+MDEV-27675:
+=~ Assertion `offsets'|signal
+=~ rec_offs_n_fields|rec_get_info_bits
+=~ btr_root_raise_and_insert
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-27674:
 =~ sig=8|Assertion failure
 =~ row_ins_cascade_calc_update_vec
