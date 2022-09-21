@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29600:
+=~ LeakSanitizer
+=~ rec_copy_prefix_to_buf
+=~ btr_blob_log_check_t::check
 MDEV-29580:
 =~ Assertion \`!return_error \|\| thd->is_error() \|\| thd->killed'
 =~ mysql_delete
@@ -66,6 +70,11 @@ MDEV-29510:
 =~ signal|AddressSanitizer
 =~ _mi_rec_pack
 =~ _mi_update_blob_record
+MDEV-29502:
+=~ signal|AddressSanitizer
+=~ spider_db_mbase_row::append_to_str
+=~ Pushdown_query::execute
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29459:
 =~ signal|AddressSanitizer
 =~ Field_blob::cmp_binary
@@ -187,7 +196,6 @@ MDEV-29112:
 =~ AddressSanitizer|signal
 =~ dirname_length
 =~ s3_create_partitioning_metadata
-=~ cleanup_table_after_inplace_alter
 MDEV-29089:
 =~ AddressSanitizer|signal
 =~ key_restore
