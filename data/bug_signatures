@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29623:
+=~ Out of memory
+=~ FeatureUsage detected SPIDER
 MDEV-29600:
 =~ LeakSanitizer
 =~ rec_copy_prefix_to_buf
@@ -79,7 +82,7 @@ MDEV-29459:
 =~ signal|AddressSanitizer
 =~ Field_blob::cmp_binary
 =~ Field::cmp_binary_offset
-=~ FeatureUsage detected FEDERATED
+=~ FeatureUsage detected FEDERATED|ha_federatedx
 MDEV-29459:
 =~ signal|AddressSanitizer
 =~ String::append_for_single_quote
