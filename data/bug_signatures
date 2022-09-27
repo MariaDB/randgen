@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29636:
+=~ Assertion \`part_share->auto_inc_initialized \|\| !can_use_for_auto_inc_init()'
+=~ ha_partition::set_auto_increment_if_higher
+=~ ha_partition::write_row
 MDEV-29623:
 =~ Out of memory
 =~ FeatureUsage detected SPIDER
@@ -573,6 +577,10 @@ MDEV-27560:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer
 =~ cmp_key_rowid_part_id
 =~ ha_partition::handle_ordered_next
+MDEV-27551:
+=~ Operating system error number 2 in a file operation
+=~ Failed to validate first page of the file .*/FTS_000.*, error 62
+=~ MariaBackupFull|MariaBackupIncremental
 MDEV-27427:
 =~ AddressSanitizer|signal
 =~ get_full_part_id_from_key
@@ -1274,8 +1282,7 @@ MDEV-24662:
 MDEV-24646:
 =~ AddressSanitizer|signal [16]
 =~ Field_blob::pack
-=~ THD::binlog_update_row
-=~ Version: '10\.3|Server version: 10\.3
+=~ THD::binlog_update_row|THD::binlog_delete_row
 MDEV-24644:
 =~ AddressSanitizer|signal [16]
 =~ check_key_in_list
