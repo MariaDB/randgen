@@ -274,11 +274,6 @@ MDEV-29014:
 =~ handler::disable_pushed_rowid_filter
 =~ Item_in_subselect::exec
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-# Not merged up yet
-MDEV-29011:
-=~ signal|AddressSanitizer
-=~ spider_db_open_item_cond
-=~ XOR
 MDEV-29010:
 =~ Table .* contains unrecognizable instant ALTER metadata
 =~ Table .* does not exist in the InnoDB internal data dictionary|Assertion \`!table \|\| (ignore_err & \~DICT_ERR_IGNORE_FK_NOKEY) \|\| !table->is_readable() \|\| !table->corrupted'
@@ -342,29 +337,12 @@ MDEV-28886:
 =~ ha_innobase::create
 =~ ha_partition::truncate_partition
 =~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-# Not merged up yet
-MDEV-28871:
-=~ Assertion \`cur_sj_inner_tables == 0'
-=~ JOIN::dbug_verify_sj_inner_tables
-=~ update_sj_state
 MDEV-28855:
 =~ signal|AddressSanitizer
 =~ dict_free_vc_templ
 =~ mysql_inplace_alter_table
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 =~ FeatureUsage detected virtual columns
-# Not merged up yet
-MDEV-28806:
-=~ Assertion \`flag == 1'
-=~ row_build_index_entry_low
-=~ UndorecApplier::log_update
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-# Not merged up yet
-MDEV-28806:
-=~ signal
-=~ row_log_online_op
-=~ UndorecApplier::log_update
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28797:
 =~ Assertion \`page_rec_is_user_rec(rec)'
 =~ PageBulk::getSplitRec
@@ -430,12 +408,6 @@ MDEV-28569:
 =~ Assertion \`len1 == DATA_MBR_LEN'|signal|AddressSanitizer
 =~ btr_cur_compress_if_useful
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-# Not merged all way up yet
-MDEV-28567:
-=~ Assertion \`0'
-=~ open_tables
-=~ mysql_create_view|execute_sqlcom_select
-=~ Version: '10\.9|Server version: 10\.9|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28566:
 =~ Assertion \`!expr->fixed()'
 =~ Virtual_column_info::fix_session_expr
@@ -1839,7 +1811,7 @@ MDEV-23171:
 =~ Version: '10\.2
 MDEV-23151:
 =~ Assertion \`i < get_width()'
-=~ Histogram::get_value
+=~ Histogram::get_value|Histogram_binary::get_value
 =~ get_column_range_cardinality
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-23150:
@@ -2469,12 +2441,6 @@ MDEV-21406:
 =~ Datetime::Datetime
 =~ str_op_with_null_check
 =~ Version: '10\.4|Server version: 10\.4
-# Not merged up yet
-MDEV-21310:
-=~ Assertion \`part_share->auto_inc_initialized'
-=~ ha_partition::get_auto_increment
-=~ ha_partition::write_row
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21307:
 =~ Assertion \`cache_mngr->trx_cache\.empty() && cache_mngr->stmt_cache\.empty()'
 =~ binlog_close_connection
@@ -4094,11 +4060,6 @@ MDEV-21781: [EnableOptimizations]
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21756: [StraightJoin]
 =~ Transformed query: .* GenTest::Transform::StraightJoin
-# Not merged up yet
-MDEV-21310:
-=~ insert.* into .* partition
-=~ Out of range value for column
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21085: [Expected more data in file]
 =~ Got error 175 "File too short; Expected more data in file" from storage engine Aria
 MDEV-20554:
