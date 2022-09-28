@@ -783,7 +783,7 @@ sub drop_broken {
   say("Checking view and merge table consistency");
   while (1) {
     my $broken= $dbh->selectall_arrayref("select * from information_schema.tables where table_comment like 'Unable to open underlying table which is differently defined or of non-MyISAM type or%' or table_comment like '%references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them' or table_comment like 'Table % is differently defined or of non-MyISAM type or%'");
-    last unless scalar(@$broken);
+    last unless ($broken && scalar(@$broken));
     foreach my $vt (@$broken) {
       my $fullname= '`'.$vt->[1].'`.`'.$vt->[2].'`';
       my $type= ($vt->[3] eq 'VIEW' ? 'view' : 'table');
