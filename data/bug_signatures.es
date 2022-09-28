@@ -56,54 +56,66 @@ TODO-842: [m_status == DA_OK_BULK - LOCK]
 =~ Version: '10\.[2-9]
 
 ##########
-# Fixed in the next release (10.3.36 / 10.4.26 / 10.5.16 / 10.6.9)
+# Fixed in the next release (10.3.37 / 10.4.27 / 10.5.17 / 10.6.11)
 ##########
 
-MDEV-28950:
-=~ Assertion \`\*err == DB_SUCCESS'
-=~ btr_page_split_and_insert
-=~ btr_root_raise_and_insert
+MDEV-29561:
+=~ Could not re-create table .*: 1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'binary
+MDEV-29559:
+=~ Starting final batch to recover .* pages from redo log
+=~ Not applying INSERT_HEAP_DYNAMIC due to corruption on
+=~ InnoDB: Plugin initialization aborted at srv0start
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29520:
+=~ signal|AddressSanitizer
+=~ rec_convert_dtuple_to_rec_comp
+=~ btr_cur_optimistic_insert
+=~ row_merge_spatial_rows
+=~ mysql_alter_table
+MDEV-29314:
+=~ Assertion \`n_fields > n_cols'
+=~ dict_index_t::init_change_cols
+=~ mysql_inplace_alter_table
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-MDEV-28897:
-=~ Assertion \`table\.get_ref_count() <= 1'
-=~ trx_t::drop_table
-=~ ha_partition::truncate
+MDEV-29291:
+=~ Assertion \`!table->fts'
+=~ dict_table_can_be_evicted
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-MDEV-28897:
-=~ Failing assertion: table->get_ref_count() == 0
-=~ dict_sys_t::remove
-=~ ha_partition::truncate
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-MDEV-26979:
-=~ AddressSanitizer|signal
-=~ dict_sys_t::allow_eviction
-=~ i_s_sys_tables_fill_table_stats
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-MDEV-26127:
-=~ Failing assertion: id != 0
-=~ dict_table_t::rename_tablespace
-=~ row_undo
-=~ Query .* PARTITION
-MDEV-26127:
-=~ Assertion \`err != DB_DUPLICATE_KEY'
-=~ row_rename_table_for_mysql
-=~ handler::ha_rename_partitions
-=~ Query .* PARTITION
-MDEV-21027:
-=~ Assertion \`part_share->auto_inc_initialized \|\| !can_use_for_auto_inc_init()'
-=~ ha_partition::set_auto_increment_if_higher
-=~ ha_partition::write_row
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-MDEV-14642:
-=~ Assertion \`table->s->db_create_options == part_table->s->db_create_options'
-=~ compare_table_with_partition
-=~ Sql_cmd_alter_table_exchange_partition::exchange_partition
+MDEV-29008:
+=~ Assertion \`field'|signal|AddressSanitizer
+=~ spider_db_open_item_ident
+=~ spider_group_by_handler
+=~ Pushdown_query::execute
+MDEV-23801:
+=~ Assertion \`index->table->instant \|\| block->page\.id\.page_no() != index->page'|Assertion \`block->page\.id\.page_no() != index->page'
+=~ btr_pcur_store_position
+=~ row_search_mvcc
+=~ Version: '10\.[3-4]|Server version: 10\.[3-4]
+MDEV-22918:
+=~ InnoDB: Plugin initialization aborted with error Generic error
+=~ mariabackup: innodb_init() returned 11 (Generic error)
+=~ Version: '10\.4|Server version: 10\.4
+MDEV-22913:
+=~ error: can't open
+=~ Error: xtrabackup_apply_delta(): failed to apply
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-22647:
+=~ safe_mutex: Trying to lock mutex at .*sql_plugin\.cc, line .*, when the mutex was already locked at .*sys_vars_shared.h
+=~ sync_dynamic_session_variables
+=~ get_loc_info
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-22647:
+=~ Assertion \`!check_audit_mask(mysql_global_audit_mask, event_class_mask)'
+=~ mysql_audit_acquire_plugins
+=~ my_message_sql
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+
 
 ##############################################################################
 # Weak matches
 ##############################################################################
 
 ##########
-# Fixed in the next release (10.3.36 / 10.4.26 / 10.5.16 / 10.6.9)
+# Fixed in the next release (10.3.37 / 10.4.27 / 10.5.17 / 10.6.11)
 ##########
 
