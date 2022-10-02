@@ -26,10 +26,11 @@ use GenTest::Result;
 use GenTest::Reporter;
 use GenTest::Executor::MySQL;
 use Carp;
+use Data::Dumper;
 
 use DBI;
 
-my ($first_mem, $max_mem, $first_cpu, $max_cpu, $max_mem_pct, $last_reported_mem);
+my ($first_mem, $max_mem, $first_cpu, $max_cpu, $max_mem_pct, $last_reported_mem, $dbh, $memusage);
 
 sub monitor {
   my $reporter= shift;
@@ -52,6 +53,12 @@ sub monitor {
       }
       $max_mem= $mem;
       $max_mem_pct= $mem_pct;
+    }
+    if (rqg_debug()) {
+      say("MemoryUsage monitor for pid $pid: memory usage: ".format_mem_value($mem));
+      $dbh = DBI->connect($reporter->dsn()) unless $dbh;
+      $memusage= $dbh->selectall_arrayref("select event_name, sum_number_of_bytes_alloc, current_number_of_bytes_used, high_number_of_bytes_used from performance_schema.memory_summary_global_by_event_name order by current_number_of_bytes_used desc limit 5");
+      say(Dumper($memusage));
     }
     if (not defined $first_cpu) {
       $first_cpu= $cpu;
