@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29680:
+=~ AddressSanitizer|signal
+=~ myrocks::Rdb_transaction::on_commit
+=~ select_create::send_eof
+=~ Sql_cmd_create_table_like::execute
+=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 MDEV-29636:
 =~ Assertion \`part_share->auto_inc_initialized \|\| !can_use_for_auto_inc_init()'
 =~ ha_partition::set_auto_increment_if_higher
@@ -1526,6 +1532,10 @@ MDEV-23390:
 =~ signal [16]|AddressSanitizer
 =~ myrocks::ha_rocksdb::update_stats
 =~ ha_partition::info
+MDEV-23390:
+=~ signal|AddressSanitizer
+=~ myrocks::ha_rocksdb::check_uniqueness_and_lock
+=~ ha_partition::write_row
 MDEV-23385:
 =~ signal [16]|AddressSanitizer
 =~ Item_in_subselect::inject_in_to_exists_cond
@@ -2165,7 +2175,7 @@ MDEV-21830:
 MDEV-21821:
 =~ AddressSanitizer:|signal
 =~ myrocks::Rdb_transaction_impl::commit_no_binlog
-=~ commit_one_phase_2
+=~ commit_one_phase_2|ha_commit_trans
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21812:
 =~ Assertion \`marked_for_write_or_computed()'
