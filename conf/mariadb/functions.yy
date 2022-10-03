@@ -14,7 +14,7 @@
 # 51 Franklin Street, Suite 500, Boston, MA 02110-1335 USA
 
 query_init_add:
-   { $tmp_table = 0; '' } ;
+   { $tmp_table = 0; '' } CREATE FUNCTION IF NOT EXISTS MIN2(a BIGINT, b BIGINT) RETURNS BIGINT RETURN (a>b,b,a) ;
 
 query_add:
     ==FACTOR:9== func_select_or_explain_select
@@ -210,7 +210,7 @@ func_str_func:
    LOAD_FILE( func_arg ) |
    LOCATE( func_arg, func_arg ) | LOCATE( func_arg, func_arg, func_arg ) |
    LOWER( func_arg ) |
-   LPAD( func_arg, func_arg, func_arg ) |
+   LPAD( func_arg, MIN2( func_arg, 65536 ), func_arg ) |
    LTRIM( func_arg ) |
    MAKE_SET( func_arg_list ) |
    MATCH( func_field_list ) AGAINST ( func_const_char_value func_search_modifier ) |
@@ -223,15 +223,15 @@ func_str_func:
    QUOTE( func_arg ) |
 # TODO: provide reasonable patterns to REGEXP
    func_arg _basics_not_33pct REGEXP func_arg | func_arg _basics_not_33pct RLIKE func_arg |
-   REPEAT( func_arg, func_arg ) |
+   REPEAT( func_arg, MIN2( func_arg, 65536 ) ) |
    REPLACE( func_arg, func_arg, func_arg ) |
    REVERSE( func_arg ) |
    RIGHT( func_arg, func_arg ) |
-   RPAD( func_arg, func_arg, func_arg ) |
+   RPAD( func_arg, MIN2( func_arg, 65536 ), func_arg ) |
    RTRIM( func_arg ) |
    SOUNDEX( func_arg ) |
    func_arg SOUNDS LIKE func_arg |
-   SPACE( func_arg ) |
+   SPACE( MIN2( func_arg, 65536 ) ) |
    SUBSTR( func_arg, func_arg ) | SUBSTR( func_arg FROM func_arg ) | SUBSTR( func_arg, func_arg, func_arg ) | SUBSTR( func_arg FROM func_arg FOR func_arg ) |
    SUBSTRING_INDEX( func_arg, func_arg, func_arg ) |
    TRIM( func_arg ) | TRIM( func_trim_mode FROM func_arg ) | TRIM( func_trim_mode func_arg FROM func_arg ) | TRIM( func_arg FROM func_arg ) |
