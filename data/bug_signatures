@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29686:
+=~ Assertion \`slave == 0'
+=~ st_select_lex_node::attach_single
+=~ MYSQLparse
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29680:
 =~ AddressSanitizer|signal
 =~ myrocks::Rdb_transaction::on_commit
