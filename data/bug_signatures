@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29692:
+=~ Assertion \`(writeptr + (i \* size)) != local_frame'
+=~ fil_iterate
+=~ PageConverter::run
+=~ ha_innobase::discard_or_import_tablespace
 MDEV-29691:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
