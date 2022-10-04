@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29703:
+=~ Assertion \`unp_reader != nullptr'|signal|AddressSanitizer
+=~ myrocks::Rdb_key_def::unpack_simple_varchar_space_pad
+=~ myrocks::Rdb_key_field_iterator::next
+MDEV-29702:
+=~ For SPIDER BASE TABLE.*error : Partition .* returned error
+=~ For SPIDER BASE TABLE.*error : Upgrade required. Please do
+=~ STATUS_UPGRADE_FAILURE
 MDEV-29701:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
