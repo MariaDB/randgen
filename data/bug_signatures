@@ -4,6 +4,26 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29699:
+=~ Assertion \`!table_list->table \|\| frm\.str \|\| !atomic_replace'
+=~ select_create::create_table_from_items
+=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
+MDEV-29698:
+=~ signal|AddressSanitizer
+=~ check_mysql50_prefix
+=~ HA_CREATE_INFO::finalize_atomic_replace
+=~ mysql_create_like_table
+=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
+MDEV-29698:
+=~ Assertion \`is_atomic_replace()'
+=~ HA_CREATE_INFO::finalize_atomic_replace
+=~ Sql_cmd_create_table_like::execute
+=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
+MDEV-29697:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ Sql_cmd_create_table_like::execute
+=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.10|Server version: 10\.10
 MDEV-29692:
 =~ Assertion \`(writeptr + (i \* size)) != local_frame'
 =~ fil_iterate
