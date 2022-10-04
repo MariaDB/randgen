@@ -151,8 +151,8 @@ MDEV-29214:
 =~ trans_commit|trans_rollback
 MDEV-29197:
 =~ LeakSanitizer: detected memory leaks
-=~ unknown module
 =~ Direct leak
+=~ FeatureUsage detected S3
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29184:
 =~ Assertion \`0'
