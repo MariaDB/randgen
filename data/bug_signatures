@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29701:
+=~ Assertion \`err != DB_DUPLICATE_KEY'
+=~ row_rename_table_for_mysql
+=~ HA_CREATE_INFO::finalize_atomic_replace
+=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 MDEV-29699:
 =~ Assertion \`!table_list->table \|\| frm\.str \|\| !atomic_replace'
 =~ select_create::create_table_from_items
