@@ -31,7 +31,7 @@
 #  mysql-test/gentest/lib/Gentest/Reporter/BackupInterop.pm
 #
 #####################################################################
-query:
+query_add:
       create_table | create_view |
       create_procedure | create_function | 
       create_trigger | create_event ;

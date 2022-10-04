@@ -37,7 +37,7 @@
 # and stable queries that find bugs rather than wondering if our query is      #
 # dodgy.                                                                       #
 ################################################################################
-query:
+query_add:
    show_proclist | select_query | select_query | select_query ;
 
 show_proclist:

@@ -1,4 +1,4 @@
-query:
+query_add:
 	INSERT INTO _table ( _field ) VALUE ( datetime_expr ) |
 	INSERT INTO _table ( _field ) VALUE ( datetime_expr ) |
 	INSERT INTO _table ( _field ) VALUE ( datetime_expr ) |

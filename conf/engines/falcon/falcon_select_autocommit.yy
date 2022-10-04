@@ -15,5 +15,5 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-query:
+query_add:
 	SELECT `PK` FROM `C` WHERE `PK` = 1;

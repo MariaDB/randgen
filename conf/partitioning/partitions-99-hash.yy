@@ -59,7 +59,7 @@
 ##########################################################################
 # Initialization of tables with focus on partitioned tables.
 
-query_init:
+query_init_add:
 	init_db ;
 
 init_db:
@@ -112,7 +112,7 @@ insert_nop:
 ##########################################################################
 # Randomly executed SQL
 
-query:
+query_add:
 	exec_sql ;
 
 exec_sql:

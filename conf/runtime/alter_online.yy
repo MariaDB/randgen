@@ -20,13 +20,13 @@ start_delay:
    # This leads often to STATUS_ENVIRONMENT_ERROR though a crash happened.
    { sleep 5; return undef };
 
-query_init:
+query_init_add:
    start_delay SET AUTOCOMMIT = 0; create_table ; SET @fill_amount = (@@innodb_page_size / 2 ) + 1;
 
 create_table:
    CREATE TABLE IF NOT EXISTS t1 (col1 INT, col2 INT, col3 INT, col4 TEXT) ENGINE = InnoDB;
 
-query:
+query_add:
    ddl |
    dml ;
 

@@ -4,10 +4,10 @@
 # column that is being used .
 #
 
-query_init:
+query_init_add:
 	SET AUTOCOMMIT = OFF ;
 
-query:
+query_add:
 	transaction_body ; commit_rollback ;
 
 db3_dml_table:

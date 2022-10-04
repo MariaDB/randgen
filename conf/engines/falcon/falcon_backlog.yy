@@ -23,7 +23,7 @@ thread1:
 	SELECT * FROM _table WHERE where_cond |
 	SELECT SLEEP(60) ;
 
-query:
+query_add:
 	START TRANSACTION | COMMIT |
 	update | update | update | update | update | update | update | update | update | update | update | update |
 	update | update | update | update | update | update | update | update | update | update | update | update |

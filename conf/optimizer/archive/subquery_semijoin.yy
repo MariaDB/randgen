@@ -22,7 +22,7 @@
 #        above should be run first 
 ################################################################################
 
-query:
+query_add:
 	SELECT select_option outer_select_item
 	FROM outer_from
 	WHERE subquery_expression AND outer_condition_top

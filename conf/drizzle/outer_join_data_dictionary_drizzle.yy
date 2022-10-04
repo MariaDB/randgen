@@ -37,7 +37,7 @@
 ################################################################################
 
 
-query:
+query_add:
   normal_query | normal_query | normal_query | normal_query | data_dictionary ;
 
 data_dictionary:

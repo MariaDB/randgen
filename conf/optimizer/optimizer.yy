@@ -46,10 +46,10 @@
 # and stable queries that find bugs rather than wondering if our query is
 # dodgy.
 ################################################################################
-query_init:
+query_init_add:
 	{ $total_dur = 0; "" };
 
-query:
+query_add:
 	{ @nonaggregates = () ; @select_fields = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } explain_extended main_select ;
 
 main_select:

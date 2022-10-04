@@ -64,7 +64,7 @@
 # | TokuDB_locks                  | ACTIVE   | INFORMATION SCHEMA | ha_tokudb.so | GPL     |
 # | TokuDB_lock_waits             | ACTIVE   | INFORMATION SCHEMA | ha_tokudb.so | GPL     |
 
-query:
+query_add:
 	select | select | insert | insert | delete | delete | replace | update | transaction |
 	alter | views | set | flush | proc_func | outfile_infile | update_multi | kill_idle | query_cache |
 	ext_slow_query_log | user_stats | drop_create_table | table_comp | table_comp | optimize_table | 

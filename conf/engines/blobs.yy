@@ -16,7 +16,7 @@
 # USA
 
 
-query:
+query_add:
 	insert | update | select | delete | transaction ;
 
 select:

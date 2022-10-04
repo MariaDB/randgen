@@ -23,7 +23,7 @@
 ################################################################################
 
 
-query:
+query_add:
 	SELECT select_option outer_select_item
 	FROM outer_from
 	WHERE subquery_expression outer_logical_expr outer_condition_top

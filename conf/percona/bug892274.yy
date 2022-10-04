@@ -22,7 +22,7 @@
 # We are generating a fair number of invalid queries and we could tighten things up, however,
 # we have found a number of bugs with this grammar as it currently exists.
 
-query:
+query_add:
 	transaction | transaction | 
         normal_query | normal_query | normal_query ;
 

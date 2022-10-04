@@ -35,7 +35,7 @@
 # As they are, they fail, may want to try spaces; " a , a " 
 # Also, PURGE ARCHIVED LOGS TO cannot be added due to not having actual filename.
 
-query:
+query_add:
 	select | select | insert | insert | delete | delete | replace | update | transaction | i_s |
         alter | views | set | flush | proc_func | outfile_infile | update_multi | kill_idle | query_cache |
         ext_slow_query_log | user_stats | drop_create_table | optimize_table | bitmap | bitmap | archive_logs |

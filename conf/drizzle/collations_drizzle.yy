@@ -20,7 +20,7 @@
 # Need to update / fix this test
 # However, it does beat up UPDATE / DELETE ;
 
-query:
+query_add:
 	delete | insert | update ;
 
 xid_event:

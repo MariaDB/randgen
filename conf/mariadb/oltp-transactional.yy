@@ -16,7 +16,7 @@
 
 # Rough imitation of OLTP-read-write test (sysbench-like)
 
-query:
+query_add:
     dml | dml | dml | dml | dml | dml | dml |
     START TRANSACTION | COMMIT ;
 

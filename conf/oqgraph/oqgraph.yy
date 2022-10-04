@@ -1,4 +1,4 @@
-query:
+query_add:
 	insert | insert | insert | insert | insert |
 	update |
 # delete |

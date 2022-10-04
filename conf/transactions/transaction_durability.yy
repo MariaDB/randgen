@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-query:
+query_add:
 	lock ; START TRANSACTION ; dml ; dml ; SAVEPOINT A ; dml ; dml ; ROLLBACK TO SAVEPOINT A ; dml ; dml ; commit_rollback ; unlock ;
 
 lock:

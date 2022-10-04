@@ -54,7 +54,7 @@
 #                 table_alias_set
 ################################################################################
 
-query:
+query_add:
   { @table_alias_set = ("table1", "table1", "table1", "table1", "table2", "table2", "table2", "table3", "table4", "table5", "table1", "table1", "table2") ; "" }
   { @int_field_set = ("pk", "col_int", "col_int_key") ; "" } 
   { @nonaggregates = () ; $tables = 0 ; $fields = 0 ;  "" } query_type ;

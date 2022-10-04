@@ -199,10 +199,10 @@
 #           after transactional reads or writes inside a transaction.
 #
 
-query:
+query_add:
 	binlog_event ;
 
-query_init:
+query_init_add:
 	# We need to set "$pick_mode = 3" because of the following possible scenario
 	# Current GLOBAL BINLOG_FORMAT is probably STATEMENT.
 	# --> connect and initial SESSION BINLOG_FORMAT equals GLOBAL BINLOG_FORMAT (STATEMENT)

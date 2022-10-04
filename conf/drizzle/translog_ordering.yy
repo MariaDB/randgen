@@ -12,7 +12,7 @@
 #            UPDATE...
 # different states !
 
-query:
+query_add:
   query_type ; SELECT col_int FROM _table ;
 
 query_type:

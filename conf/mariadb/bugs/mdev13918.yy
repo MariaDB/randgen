@@ -1,4 +1,4 @@
-query_init:
+query_init_add:
   CREATE TABLE IF NOT EXISTS t1 (f INT) ENGINE=InnoDB;
 
 thread1:

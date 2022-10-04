@@ -23,10 +23,10 @@
 # 
 # Designed to be used with --gendata=conf/drizzle/drizzle.zz
 
-query_init:
+query_init_add:
   USE `data_dictionary` ;
 
-query:
+query_add:
   data_dictionary_select | show_command ;
 
 data_dictionary_select:

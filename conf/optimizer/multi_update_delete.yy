@@ -17,10 +17,10 @@
 #			  query timeout of 120 seconds.	                       # 
 ################################################################################
 
-query_init:
+query_init_add:
 	SET AUTOCOMMIT=OFF ;
 
-query:
+query_add:
         { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } main_query ;
 
 main_query:

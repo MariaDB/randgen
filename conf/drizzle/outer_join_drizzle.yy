@@ -37,7 +37,7 @@
 ################################################################################
 
 
-query:
+query_add:
   { @nonaggregates = () ; $tables = 0 ; $fields = 0 ;  "" } query_type ;
 
 query_type:

@@ -29,7 +29,7 @@
 #		database.
 #############################################################
 
-query_init:
+query_init_add:
 	{ $db= 0; $trx= "BEGIN"; undef } ; create_db ; create_db ; create_db ; create_db ;
 
 create_db:
@@ -42,7 +42,7 @@ copy_tables:
 	{ $next_db= join(',', @{$executors->[0]->tables()}); $next_db .= ','; $next_db =~ s/([a-zA-Z0-9_]+)\,/INSERT INTO test_$db.$1 SELECT * FROM $1;/g; $next_db } ; 
 	
 
-query:
+query_add:
 	trx_begin_end | 
 	trx_statement | 
 	trx_statement | 

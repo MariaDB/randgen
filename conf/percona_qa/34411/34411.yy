@@ -29,7 +29,7 @@
 # 5. Do not use the --engines option, storage engine assignent is done in percona_qa.zz
 
 # 80% focused feature testing, 20% general queries
-query:
+query_add:
 	i34411 | i34411 | i34411 | i34411 | query_mix ;
 
 i34411:

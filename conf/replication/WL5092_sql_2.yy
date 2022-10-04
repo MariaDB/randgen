@@ -256,7 +256,7 @@ safety_check:
 	# For faster execution set this grammar element to "empty".
 	# ;
 
-query:
+query_add:
 	maintain_table         |
 	binlog_format_sequence |
 	binlog_format_sequence |
@@ -301,7 +301,7 @@ reduce_nulls:
 pick_safe_template:
 	{ if ($pick_mode eq 'nontrans' or $pick_mode eq 'shift') {$tab='table300_myisam_int_autoinc'} elsif ($pick_mode eq 'trans') {$tab='table300_innodb_int_autoinc'} else {$tab=$prng->arrayElement(['table300_myisam_int_autoinc','table300_innodb_int_autoinc']) } return $tab};
 
-query_init:
+query_init_add:
 	# 1. We need to know our current SESSION BINLOG_FORMAT. We do this by simply setting the BINLOG_FORMAT.
 	# 2. Our working tables need some content
 	rand_session_binlog_format ; refresh_table ;  refresh_table ;  refresh_table ;  refresh_table ;  refresh_table ;  refresh_table ;  refresh_table ;  refresh_table ;

@@ -21,7 +21,7 @@
 # with some small adjustments.
 
 
-query:
+query_add:
 	transaction |
 	flush_logs |
 	select | select |

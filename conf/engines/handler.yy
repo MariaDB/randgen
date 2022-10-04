@@ -1,7 +1,7 @@
-query_init:
+query_init_add:
 	HANDLER _table OPEN AS alias1 ; HANDLER _table OPEN AS alias2 ; HANDLER _table OPEN AS alias3 ; HANDLER _table OPEN AS alias4 ;
 
-query:
+query_add:
 	handler | handler | handler | handler | handler |
 	handler | handler | handler | handler | handler |
 	handler | handler | handler | handler | handler |

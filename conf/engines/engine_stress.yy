@@ -29,7 +29,7 @@
 # table access methods. The grammars from conf/optimizer/optimizer* are more suitable for that.
 #
 
-query:
+query_add:
 	transaction |
 	select | select |
 	select | select |

@@ -1,4 +1,4 @@
-query:
+query_add:
 	{ $col = 1 ; return "" }
 	SELECT select_list
 	FROM _table

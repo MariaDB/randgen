@@ -221,7 +221,7 @@ safety_check:
 	# For faster execution set this grammar element to "empty".
 ;
 
-query:
+query_add:
 	binlog_format_sequence |
 	binlog_format_sequence |
 	binlog_format_sequence |

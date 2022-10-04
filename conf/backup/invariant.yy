@@ -94,10 +94,10 @@
 # [3] Performs BACKUP and RESTORE, and checks that the total account
 # balance is correct after restore.
 
-query_init:
+query_init_add:
   SET AUTOCOMMIT=OFF ; 
 
-query:
+query_add:
   commit_trans |
   commit_trans |
   commit_trans |

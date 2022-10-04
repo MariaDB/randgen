@@ -20,5 +20,5 @@
 # missed (especially with bigger tables).
 #
 
-query:
+query_add:
 	INSERT INTO _table VALUES ( _bit );

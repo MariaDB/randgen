@@ -1,7 +1,7 @@
-query_init:
+query_init_add:
 	{ $count = 0 ; return undef } CREATE SCHEMA test1; CREATE SCHEMA test2;
 
-query:
+query_add:
 	pick_parameters drop_table ; create_table ;
 
 drop_table:

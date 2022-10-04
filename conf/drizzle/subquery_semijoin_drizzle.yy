@@ -22,7 +22,7 @@
 
 # meant to be run with the gendata file: conf/drizzle/drizzle.zz
 
-query:
+query_add:
 	SELECT select_option outer_select_item
 	FROM outer_from
 	WHERE subquery_expression AND outer_condition_top

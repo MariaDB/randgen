@@ -8,7 +8,7 @@
 # This grammar goes together with the respective mysqld --init file that creates the tables
 #
 
-query:
+query_add:
 	insert | insert | insert |
 	select | delete | update ;
 

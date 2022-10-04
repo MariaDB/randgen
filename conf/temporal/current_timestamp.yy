@@ -29,7 +29,7 @@
 # 7. Make sure to use --mysqld=--default-time-zone=UTC option to RQG
 # 8. Do not use the --engines option, storage engine assignent is done in current_timestamp.zz
 
-query:
+query_add:
 	select | insert | insert | insert | delete | replace | update | transaction | 
 	wl_query | wl_query | wl_query | wl_query | wl_query | wl_query | wl_query |
 	wl_query | wl_query | wl_query | wl_query | wl_query | wl_query | wl_query ;

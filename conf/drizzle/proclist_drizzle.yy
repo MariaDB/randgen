@@ -1,4 +1,4 @@
-query:
+query_add:
   { $tables = 0 ; $fields = 0 ; "" } query_type ;
 
 query_type:

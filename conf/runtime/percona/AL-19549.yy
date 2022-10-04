@@ -30,7 +30,7 @@
 query_init_add:
     INSTALL SONAME 'query_response_time';
 
-query:
+query_add:
 	select | insert | insert | insert | delete | replace | update | transaction | alter | views | set |
 	proc_func | flush | outfile_infile | update_multi | p_query | p_query | p_query | p_l_query |
 	archive_logs | archive_logs | archive_logs | archive_logs | archive_logs | archive_logs | archive_logs |

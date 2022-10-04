@@ -18,7 +18,7 @@
 thread1:
 	dml ; SELECT SLEEP (10) ;
 
-query:
+query_add:
 	select | select | select | select | select |
 	select | select | select | select | select |
 	select | select | select | select | select |

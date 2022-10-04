@@ -17,10 +17,10 @@
 #  The joins on information schema tables resulted in high usage of temp space (> 350G) . The space consumtion is basically due to sorting temp table created during order by on 
 # joins involving tables like INNODB_BUFFER_PAGE . The current modification eliminates the order by on Joins and preserves sorting on projection queries with single table 
 
-query_init:
+query_init_add:
 	SELECT _field FROM _table ;	# Populate the RQG metadata caches from the start of the start of the test
 
-query:
+query_add:
   modify |
   ==FACTOR:3== { @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select { $last_database= undef; $last_table= undef; '' } |
 	==FACTOR:3== { @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select_join { $last_database= undef; $last_table= undef; '' } |

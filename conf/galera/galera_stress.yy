@@ -21,7 +21,7 @@
 # suitable for Galera testing
 #
 
-query:
+query_add:
 	transaction |
 	select | select |
 	select | select |

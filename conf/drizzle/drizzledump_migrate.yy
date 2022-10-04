@@ -27,7 +27,7 @@
 #        -Update grammar for use with other data type columns (mediumint, etc)
 #        -
 
-query:
+query_add:
   { $tables = 0 ;  "" } 
   DROP DATABASE IF EXISTS drizzledump_db ;  CREATE DATABASE drizzledump_db ;  USE drizzledump_db ; create_test_table_list ; SELECT 1 ;
 

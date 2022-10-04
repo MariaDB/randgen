@@ -21,10 +21,10 @@
 # See http://forge.mysql.com/wiki/RandomQueryGeneratorValidators for more info.
 #
 
-query_init:
+query_init_add:
 	START TRANSACTION ;
 
-query:
+query_add:
 	transaction |
 	select | select | call |
 	dml | dml |

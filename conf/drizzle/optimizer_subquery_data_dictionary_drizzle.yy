@@ -51,7 +51,7 @@
 # and stable queries that find bugs rather than wondering if our query is      #
 # dodgy.                                                                       #
 ################################################################################
-query:
+query_add:
   normal_query | normal_query | normal_query | normal_query | normal_query |
   data_dictionary ;
 

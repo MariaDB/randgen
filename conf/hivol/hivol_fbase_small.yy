@@ -1,7 +1,7 @@
-query_init:
+query_init_add:
   USE hivol ;
 
-query:
+query_add:
    { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; ""}
    fbase_query ;
 

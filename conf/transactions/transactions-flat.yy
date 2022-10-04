@@ -25,10 +25,10 @@
 # Rows beyond the 10th are just inserted and delted randomly because each row in that part of the table is self-contained
 #
 
-query_init:
+query_init_add:
 	SET AUTOCOMMIT=OFF ; START TRANSACTION ;
 
-query:
+query_add:
 	update_all1 | update_multi1 | update_one1 | update_between1 | insert_one1 | insert_multi1 | insert_select1 | replace1 | delete_one1 | delete_multi1 ;
 
 update_all1:

@@ -181,7 +181,7 @@
 
 
 # Section of easy changeable items with high impact on the test =============================================#
-query_init:
+query_init_add:
 	# Variant 1:
 	#    Advantage: Less failing (table does not exist ...) statements within the first phase of the test.
 	# init_basics : init_namespaces ; event_scheduler_on ; have_some_initial_objects ;
@@ -606,7 +606,7 @@ event_item:
 
 # Here starts the core of the test grammar ========================================================#
 
-query:
+query_add:
 	# handler disabled because of
 	#    Bug#54401 assert in Diagnostics_area::set_eof_status , HANDLER
 	# dml | dml | dml | dml | ddl | transaction | lock_unlock | lock_unlock | flush | handler ;

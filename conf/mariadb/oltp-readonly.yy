@@ -16,7 +16,7 @@
 
 # Rough imitation of OLTP-readonly test (sysbench-like)
 
-query:
+query_add:
     select 
 ;
 

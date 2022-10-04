@@ -1,7 +1,7 @@
-query_init:
+query_init_add:
 	{ $tmp_table = 0; '' } ;
 
-query:
+query_add:
     select_or_explain_select
   | select_or_explain_select
   | select_or_explain_select

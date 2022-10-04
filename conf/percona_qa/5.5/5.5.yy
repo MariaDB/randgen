@@ -29,7 +29,7 @@
 
 # Temp workaround: thread_pool |   removed from query: PS is not responding in many trials
 
-query:
+query_add:
 	select | insert | insert | insert | delete | replace | update | transaction | alter | views | set |
 	proc_func | flush | outfile_infile | update_multi | p_query | p_query | p_query | p_l_query | audit_plugin | binlog_event ; 
 

@@ -14,9 +14,9 @@
 # * --mysqld=--skip-log-slave-updates
 #
 
-query_init:
+query_init_add:
 	SET SQL_SAFE_UPDATES=1;
-query:
+query_add:
 	transaction;
 
 transaction:

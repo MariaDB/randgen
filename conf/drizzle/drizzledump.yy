@@ -20,7 +20,7 @@
 # the drizzledump validator will handle dumping, restoration
 # and validation of the tables restored from the dump
 
-query:
+query_add:
   { $tables = 0 ;  "" } 
   DROP DATABASE IF EXISTS drizzledump_db ; DROP DATABASE IF EXISTS drizzledump_db_restore ; CREATE DATABASE drizzledump_db ; CREATE DATABASE drizzledump_db_restore ; USE drizzledump_db ; create_test_table_list ; SELECT 1 ;
 

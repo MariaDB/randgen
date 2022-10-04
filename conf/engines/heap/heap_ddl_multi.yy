@@ -8,13 +8,13 @@
 # * Have concurrent operation by using mostly TEMPORARY or connection-specific tables
 #
 
-query_init:
+query_init_add:
 	{ $table_name = 'local_'.$generator->threadId().'_1' ; return undef; } create_definition_init ;	{ $table_name = 'local_'.$generator->threadId().'_2' ; return undef; } create_definition_init ; { $table_name = 'local_'.$generator->threadId().'_3' ; return undef; } create_definition_init ;
 
 create_definition_init:
 	create_definition SELECT short_value  AS f1 , short_value AS f2 , short_value AS f3 , short_value AS f4 , short_value AS f5 FROM DUAL ;
 
-query:
+query_add:
 	create_drop |
 	select | select | select | select |
 	insert | insert | insert | insert |

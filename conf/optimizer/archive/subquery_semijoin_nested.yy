@@ -22,7 +22,7 @@
 #        above should be run first 
 ################################################################################
 
-query:
+query_add:
 	SELECT select_option grandparent_select_items
 	FROM grandparent_from
 	grandparent_where 

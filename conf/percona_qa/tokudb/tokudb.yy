@@ -28,7 +28,7 @@
 # 4. You can use --short_column_names option to RQG to avoid overly long column names
 # 5. Do not use the --engines option, storage engine assignent is done in tokudb.zz*
 
-query_init:
+query_init_add:
 	set global default_storage_engine=TokuDB ; set session default_storage_engine=TokuDB ;
 
 # Temp workaround: i_s |            removed from query: to avoid I_S crashes ftm for tokudb testing 
@@ -36,7 +36,7 @@ query_init:
 # Temp workaround: inst_tokudb |    removed from query: due to deadlock bug MS #71236
 #                                   consider re-enabling at end of project, or delete altogether
 # Temp workaround: fake_changes |   removed from query: due to Percona feature WIP
-query:
+query_add:
 	select | select | insert | insert | delete | delete | replace | update | transaction | 
         alter | views | set | flush | proc_func | outfile_infile | update_multi | kill_idle | query_cache |
         ext_slow_query_log | user_stats | drop_create_table | table_comp | table_comp | optimize_table | 

@@ -324,7 +324,7 @@
 
 
 # Section of easy changeable rules with high impact on the test =============================================#
-query_init:
+query_init_add:
 	# Variant 1:
 	#    Advantage: Less failing (table does not exist ...) statements within the first phase of the test.
 	# init_basics1 : init_basics2 ; init_namespaces ; init_executor_table ; event_scheduler_on ; have_some_initial_objects ;
@@ -771,7 +771,7 @@ event_item:
 
 # Here starts the core of the test grammar ========================================================#
 
-query:
+query_add:
 	dml  | dml  | dml  | dml  |
    transaction | transaction |
    lock_unlock | lock_unlock |

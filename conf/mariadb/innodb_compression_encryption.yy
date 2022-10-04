@@ -22,7 +22,7 @@
 # (and probably with other file-key-management options)
 #
 
-query:
+query_add:
     create_or_replace | create_or_replace | create_or_replace |
     drop_table | drop_table |
     alter | alter | alter | alter | alter | alter | alter |

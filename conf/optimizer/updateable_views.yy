@@ -11,7 +11,7 @@
 # Since there can be aggressive grammars which drop tables which we need,
 # we will make copies in a "private" database. The views themselves will
 # be created in the common database, it's okay if they are tampered with
-query_init:
+query_init_add:
     CREATE DATABASE IF NOT EXISTS private_updateable_views
     ; CREATE TABLE private_updateable_views.table_multipart LIKE table_multipart
     # Here SET STATEMENT is needed because of MDEV-21618
@@ -23,7 +23,7 @@ query_init:
     ; SET STATEMENT enforce_storage_engine=NULL ALTER TABLE private_updateable_views.table_merge UNION (private_updateable_views.table_standard, private_updateable_views.table_merge_child)
     create_with_redundancy ;
 
-query:
+query_add:
 	dml | dml | dml | dml | dml |
 	dml | dml | dml | dml | dml_or_drop ;
 

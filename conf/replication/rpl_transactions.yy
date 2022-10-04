@@ -10,7 +10,7 @@
 #
 
 
-query:
+query_add:
 	99pct_chance_query | 99pct_chance_query | 99pct_chance_query | 99pct_chance_query | 99pct_chance_query |
 	99pct_chance_query | 99pct_chance_query | 99pct_chance_query | 99pct_chance_query | 10pct_chance_query ;
 

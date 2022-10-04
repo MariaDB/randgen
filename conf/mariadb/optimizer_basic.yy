@@ -18,7 +18,7 @@
 # USA
 
 
-query_init:
+query_init_add:
 	{ $query_count = 0; $total_dur = 0; %table_columns; %table_columns_by_type; "" } fetch_table_columns fetch_table_int_columns fetch_table_char_columns;
     
 fetch_table_columns:
@@ -33,7 +33,7 @@ fetch_table_char_columns:
 fetch_table_columns_by_type:
     { unless (%table_columns_by_type and $table_columns_by_type{$type}) { foreach $t (@{$executors->[0]->baseTables()}) { ${$table_columns_by_type{$type}}{$t} = $executors->[0]->metaColumnsDataType($type,$t,$last_database) } }; '' } ;
 
-query:
+query_add:
 	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } query_type ;
 
 #################################################################################

@@ -11,7 +11,7 @@
 init:
 	create ; create ; create ; create ; create ; create ; create ; create ;
 
-query:
+query_add:
 	dml | dml | dml | dml | dml |
 	dml | dml | dml | dml | dml_or_drop ;
 

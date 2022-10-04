@@ -15,10 +15,10 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-query_init:
+query_init_add:
 	SET GLOBAL TRANSACTION ISOLATION LEVEL REPEATABLE READ ; SET AUTOCOMMIT=OFF ;
 
-query:
+query_add:
 	transaction | insert | update | delete | select ;
 transaction:
 	START TRANSACTION | COMMIT | ROLLBACK | SAVEPOINT A | ROLLBACK TO SAVEPOINT A ;

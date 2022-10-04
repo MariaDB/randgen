@@ -9,6 +9,6 @@ thread1:
 
   SET GLOBAL key_cache_segments = _digit;
 
-query:
+query_add:
   SHOW GLOBAL STATUS;
 

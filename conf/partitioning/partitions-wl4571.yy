@@ -18,7 +18,7 @@
 # The functionality provided by this grammar has already been covered by the grammar partitions.yy
 # Retaining this grammar as it could prove to be useful in the future.
 
-query:
+query_add:
 	select | select | select | select | select | select |
 	select | select | select | select | select | select |
 	select | select | select | select | select | select |

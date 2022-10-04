@@ -33,7 +33,7 @@
 #
 #####################################################################
 
-query:
+query_add:
       server_operation ;
 
 server_operation:

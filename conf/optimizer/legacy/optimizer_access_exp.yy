@@ -33,7 +33,7 @@
 #        things like int_field, char_field, etc are correct for the gendata file
 ################################################################################
 
-query:
+query_add:
   { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } main_select ;
 
 main_select:
