@@ -253,6 +253,29 @@ _basics_table_partitioning:
   _basics_partition_by_system_time
 ;
 
+_basics_partition_by_hash_or_key:
+  PARTITION BY _basics_hash_or_key ( _field_indexed ) ;
+
+_basics_partition_by_value:
+# TODO: add
+;
+
+_basics_partition_by_system_time:
+  PARTITION BY SYSTEM_TIME _basics_versioning_partition_condition _basics_versioning_partition_list ;
+
+_basics_versioning_partition_condition:
+  |
+  INTERVAL _digit _basics_big_interval |
+  INTERVAL _smallint_unsigned _basics_small_interval |
+  LIMIT _smallint_unsigned ;
+
+_basics_versioning_partition_list:
+  ( PARTITION p1 HISTORY, PARTITION p2 HISTORY, PARTITION pn CURRENT ) ;
+
+_basics_partition_by_range:
+# TODO: add
+;
+
 _basics_hash_or_key:
   HASH | KEY ;
 
