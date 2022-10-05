@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29709:
+=~ Assertion \`!mdl_context\.has_locks()'
+=~ THD::cleanup
+=~ unlink_thd
+=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
+MDEV-29709:
+=~ Assertion \`!thd \|\| thd->locked_tables_mode \|\| !thd->mdl_context\.has_locks() \|\| thd->handler_tables_hash\.records \|\| thd->ull_hash\.records \|\| thd->global_read_lock\.is_acquired() \|\| thd->mdl_backup_lock \|\| thd->current_backup_stage != BACKUP_FINISHED'
+=~ reload_acl_and_cache
+=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 MDEV-29703:
 =~ Assertion \`unp_reader != nullptr'|signal|AddressSanitizer
 =~ myrocks::Rdb_key_def::unpack_simple_varchar_space_pad
@@ -2316,7 +2325,7 @@ MDEV-21576:
 =~ row_insert_for_mysql
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21561:
-=~ Assertion \`bitmap_is_subset(&m_part_info->read_partitions, &m_part_info->lock_partitions)'
+=~ Assertion \`bitmap_is_subset(&m_part_info->read_partitions, &m_part_info->lock_partitions)'|Assertion \`bitmap_is_subset(&m_part_info->lock_partitions, &m_locked_partitions)'
 =~ ha_partition::start_stmt
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21540:
