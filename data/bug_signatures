@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29716:
+=~ signal|AddressSanitizer
+=~ Protocol::valid_handler
+=~ _ma_check_print_msg
+=~ ha_maria::check_and_repair
+=~ Version: '10\.5|Server version: 10\.5
 MDEV-29709:
 =~ Assertion \`!mdl_context\.has_locks()'
 =~ THD::cleanup
