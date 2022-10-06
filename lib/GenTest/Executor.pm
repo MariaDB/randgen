@@ -156,6 +156,7 @@ sub setMetadataReloadInterval {
 }
 
 sub forceMetadataReload {
+  say("Forcing metadata reload");
   $_[0]->[EXECUTOR_META_RELOAD_NOW]= 1;
 }
 

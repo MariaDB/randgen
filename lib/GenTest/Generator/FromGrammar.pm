@@ -372,7 +372,12 @@ sub next {
 		} elsif (exists $grammar_rules->{"query_init"}) {
 			$starting_rule = "query_init";
 		}
-	}
+	} elsif ($generator->[GENERATOR_SEQ_ID] == 1) {
+        # Always reload metadata after the first rule, before expanding the next ones
+        say("Reloading metadata after the first rule was executed");
+        $executors->[0]->forceMetadataReload();
+        $executors->[0]->cacheMetaData();
+    }
 
 	## Apply mask if any
 	$grammar = $generator->[GENERATOR_MASKED_GRAMMAR] if defined $generator->[GENERATOR_MASKED_GRAMMAR];
