@@ -55,7 +55,7 @@ sub variate {
   my ($self, $query) = @_;
   # Variate 10% queries
   return $query if $self->random->uint16(0,9);
-  return $query if $query =~ /OUTFILE/i;
+  return $query if $query =~ /INTO/i;
   return $query if $query !~ /^\s*(?:SELECT|VALUES)/i;
   my $alg= $self->random->arrayElement(['ALGORITHM=TEMPTABLE','ALGORITHM=MERGE','ALGORITHM=UNDEFINED','']);
   my $vname= 'v_ExecuteAsView_'.abs($$);
