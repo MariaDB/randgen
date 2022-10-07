@@ -30,7 +30,11 @@ MDEV-29702:
 MDEV-29701:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
-=~ HA_CREATE_INFO::finalize_atomic_replace
+=~ HA_CREATE_INFO::finalize_atomic_replace|Sql_cmd_alter_table::execute
+=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
+MDEV-29701:
+=~ Failing assertion: table2 == NULL
+=~ ha_innobase::rename_table
 =~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 MDEV-29699:
 =~ Assertion \`!table_list->table \|\| frm\.str \|\| !atomic_replace'
