@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29748:
+=~ signal|AddressSanitizer
+=~ File_parser::parse
+=~ mariadb_view_version_get
+=~ open_table
+MDEV-29747:
+=~ signal|AddressSanitizer
+=~ check_key_in_view
+=~ mysql_multi_delete_prepare
+=~ Prepared_statement::execute
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29716:
 =~ signal|AddressSanitizer
 =~ Protocol::valid_handler
@@ -450,9 +461,10 @@ MDEV-28466:
 =~ FeatureUsage detected system-versioned tables
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28438:
-=~ Assertion \`thd->transaction.stmt\.is_empty() \|\| thd->in_sub_stmt'
+=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt'
 =~ mysql_execute_command
-=~ query-cache-size
+=~ Query.*:.*SELECT
+=~ query-cache-size|query-cache-type=1
 MDEV-28404:
 =~ STATUS_SERVER_DEADLOCKED|STATUS_TEST_FAILURE
 =~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
@@ -3421,6 +3433,12 @@ MDEV-16699:
 =~ my_strnncoll.*|my_uca_strnncollsp_.*
 =~ group_concat_key_cmp_with_order
 =~ FeatureUsage detected compressed columns|FeatureUsage detected GIS columns
+MDEV-16699:
+=~ AddressSanitizer|signal 11
+=~ Static_binary_string::q_append
+=~ dump_leaf_key
+=~ tree_walk_left_root_right
+=~ Item_func_group_concat::val_str
 MDEV-16698:
 =~ AddressSanitizer|signal 11
 =~ Field_longstr::uncompress
