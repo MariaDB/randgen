@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29749:
+=~ RocksDB: Schema mismatch
+=~ RocksDB: Problems validating data dictionary against
+=~ RocksDB: Failed to initialize DDL manager
+MDEV-29749:
+=~ LeakSanitizer
+=~ rocksdb::DBImpl::Open|myrocks::Rdb_ddl_manager::init
+=~ rocksdb_init_func
 MDEV-29748:
 =~ signal|AddressSanitizer
 =~ File_parser::parse
