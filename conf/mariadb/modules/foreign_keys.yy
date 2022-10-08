@@ -15,13 +15,12 @@
 
 
 query_add:
-  query | query | query | query | query | fk_query
+  fk_query
 ;
 
 fk_query:
-    fk_alter_table | fk_alter_table | fk_alter_table | fk_alter_table
-  | fk_alter_table | fk_alter_table | fk_alter_table | fk_alter_table
-  | fk_set_checks
+  fk_alter_table |
+  ==FACTOR:0.01== fk_set_checks
 ;
 
 fk_global_session:

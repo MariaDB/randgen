@@ -4,21 +4,49 @@
 # Strong matches
 ##############################################################################
 
+#MDEV-29793:
+#=~ Assertion \`share->now_transactional'
+#=~ translog_write_record
+#=~ _ma_tmp_disable_logging_for_table
+#=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
+#=~ Query.*:.*CREATE.*OR REPLACE
+#MDEV-29779:
+#=~ Assertion \`err != DB_DUPLICATE_KEY'
+#=~ row_rename_table_for_mysql
+#=~ HA_CREATE_INFO::finalize_atomic_replace
+#=~ Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29763:
+=~ Failed to store event comment|Failed to store event body
+=~ Error code 2 "No such file or directory" from storage engine
+=~ Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29749:
+=~ RocksDB: Schema mismatch
+=~ RocksDB: Problems validating data dictionary against
+=~ RocksDB: Failed to initialize DDL manager
+MDEV-29749:
+=~ LeakSanitizer
+=~ rocksdb::DBImpl::Open|myrocks::Rdb_ddl_manager::init
+=~ rocksdb_init_func
+MDEV-29748:
+=~ signal|AddressSanitizer
+=~ File_parser::parse
+=~ mariadb_view_version_get
+=~ open_table
+MDEV-29747:
+=~ signal|AddressSanitizer
+=~ check_key_in_view
+=~ mysql_multi_delete_prepare
+=~ Prepared_statement::execute
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29744:
+=~ safe_mutex: Found wrong usage of mutex 'LOCK_commit_ordered' and 'LOCK_global_system_variables'
+=~ log-bin
 MDEV-29716:
 =~ signal|AddressSanitizer
 =~ Protocol::valid_handler
 =~ _ma_check_print_msg
 =~ ha_maria::check_and_repair
 =~ Version: '10\.5|Server version: 10\.5
-MDEV-29709:
-=~ Assertion \`!mdl_context\.has_locks()'
-=~ THD::cleanup
-=~ unlink_thd
-=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
-MDEV-29709:
-=~ Assertion \`!thd \|\| thd->locked_tables_mode \|\| !thd->mdl_context\.has_locks() \|\| thd->handler_tables_hash\.records \|\| thd->ull_hash\.records \|\| thd->global_read_lock\.is_acquired() \|\| thd->mdl_backup_lock \|\| thd->current_backup_stage != BACKUP_FINISHED'
-=~ reload_acl_and_cache
-=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 MDEV-29703:
 =~ Assertion \`unp_reader != nullptr'|signal|AddressSanitizer
 =~ myrocks::Rdb_key_def::unpack_simple_varchar_space_pad
@@ -27,35 +55,6 @@ MDEV-29702:
 =~ For SPIDER BASE TABLE.*error : Partition .* returned error
 =~ For SPIDER BASE TABLE.*error : Upgrade required. Please do
 =~ STATUS_UPGRADE_FAILURE
-MDEV-29701:
-=~ Assertion \`err != DB_DUPLICATE_KEY'
-=~ row_rename_table_for_mysql
-=~ HA_CREATE_INFO::finalize_atomic_replace|Sql_cmd_alter_table::execute
-=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
-MDEV-29701:
-=~ Failing assertion: table2 == NULL
-=~ ha_innobase::rename_table
-=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
-MDEV-29699:
-=~ Assertion \`!table_list->table \|\| frm\.str \|\| !atomic_replace'
-=~ select_create::create_table_from_items
-=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
-MDEV-29698:
-=~ signal|AddressSanitizer
-=~ check_mysql50_prefix
-=~ HA_CREATE_INFO::finalize_atomic_replace
-=~ mysql_create_like_table
-=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
-MDEV-29698:
-=~ Assertion \`is_atomic_replace()'
-=~ HA_CREATE_INFO::finalize_atomic_replace
-=~ Sql_cmd_create_table_like::execute
-=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
-MDEV-29697:
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ Diagnostics_area::set_ok_status
-=~ Sql_cmd_create_table_like::execute
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.10|Server version: 10\.10
 MDEV-29692:
 =~ Assertion \`(writeptr + (i \* size)) != local_frame'
 =~ fil_iterate
@@ -72,13 +71,13 @@ MDEV-29686:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29680:
 =~ AddressSanitizer|signal
-=~ myrocks::Rdb_transaction::on_commit
+=~ myrocks::Rdb_transaction::on_commit|myrocks::Rdb_transaction_impl::prepare
 =~ select_create::send_eof
 =~ Sql_cmd_create_table_like::execute
 =~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 MDEV-29636:
 =~ Assertion \`part_share->auto_inc_initialized \|\| !can_use_for_auto_inc_init()'
-=~ ha_partition::set_auto_increment_if_higher
+=~ ha_partition::set_auto_increment_if_higher|ha_partition::get_auto_increment
 =~ ha_partition::write_row
 MDEV-29623:
 =~ Out of memory
@@ -104,7 +103,7 @@ MDEV-29570:
 =~ ha_partition::write_row
 =~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29560:
-=~ Assertion \`lock_table_has(trx, table, LOCK_IX)'
+=~ Assertion \`lock_table_has(trx, table, LOCK_IX)'|Assertion \`lock_table_has(&trx, &table, LOCK_IX)'
 =~ lock_trx_has_expl_x_lock
 =~ row_upd
 MDEV-29557:
@@ -450,9 +449,10 @@ MDEV-28466:
 =~ FeatureUsage detected system-versioned tables
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28438:
-=~ Assertion \`thd->transaction.stmt\.is_empty() \|\| thd->in_sub_stmt'
+=~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt'
 =~ mysql_execute_command
-=~ query-cache-size
+=~ Query.*:.*SELECT
+=~ query-cache-size|query-cache-type=1
 MDEV-28404:
 =~ STATUS_SERVER_DEADLOCKED|STATUS_TEST_FAILURE
 =~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
@@ -643,6 +643,11 @@ MDEV-27027:
 MDEV-26992:
 =~ Assertion \`item->null_value'
 =~ Type_handler::Item_send_str
+=~ FixedBinTypeBundle
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-26992:
+=~ Assertion \`value\.length() == FbtImpl::binary_length()'
+=~ Field_fbt::store_native
 =~ FixedBinTypeBundle
 =~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26986:
@@ -1584,6 +1589,11 @@ MDEV-23453:
 =~ Item_field::type_handler
 =~ Temporal_with_date::make_from_item
 =~ sp_head::execute
+MDEV-23448:
+=~ Assertion \`fd != -1'
+=~ my_seek
+=~ azrewind
+=~ ha_archive::read_data_header
 MDEV-23444:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
@@ -3421,6 +3431,12 @@ MDEV-16699:
 =~ my_strnncoll.*|my_uca_strnncollsp_.*
 =~ group_concat_key_cmp_with_order
 =~ FeatureUsage detected compressed columns|FeatureUsage detected GIS columns
+MDEV-16699:
+=~ AddressSanitizer|signal 11
+=~ Static_binary_string::q_append
+=~ dump_leaf_key
+=~ tree_walk_left_root_right
+=~ Item_func_group_concat::val_str
 MDEV-16698:
 =~ AddressSanitizer|signal 11
 =~ Field_longstr::uncompress

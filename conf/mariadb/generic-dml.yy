@@ -41,7 +41,7 @@ generic_dml_insert:
 ;
 
 generic_dml_insert_op:
-  INSERT _basics_delayed_5pct _basics_ignore_80pct | REPLACE
+  INSERT _basics_ignore_80pct | REPLACE
 ;
 
 generic_dml_data_value:

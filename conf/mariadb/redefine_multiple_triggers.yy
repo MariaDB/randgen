@@ -61,25 +61,24 @@ query_add:
 ;
 
 mdev6112_create_log_trigger:
-    /* QProp.ERROR_1099 QProp.ERROR_1100 */ mdev6112_create_clause test. mdev6112_trigger_name mdev6112_before_after INSERT ON test.tlog FOR EACH ROW mdev6112_precedes_follows INSERT INTO test.tlog2 VALUES ( NEW.`pk`, NOW(), NEW.`fld` );
+    mdev6112_create_clause test. mdev6112_trigger_name mdev6112_before_after INSERT ON test.tlog FOR EACH ROW mdev6112_precedes_follows INSERT INTO test.tlog2 VALUES ( NEW.`pk`, NOW(), NEW.`fld` );
 
 # While we are here, add something for MDEV-8605
 mdev6112_create_log2_trigger:
-    /* QProp.ERROR_1099 QProp.ERROR_1100 */ mdev6112_create_clause test. mdev6112_trigger_name BEFORE INSERT ON test.tlog2 FOR EACH ROW mdev6112_precedes_follows SET NEW.`val` = IFNULL(NEW.`val`,'');
+    mdev6112_create_clause test. mdev6112_trigger_name BEFORE INSERT ON test.tlog2 FOR EACH ROW mdev6112_precedes_follows SET NEW.`val` = IFNULL(NEW.`val`,'');
 
 mdev6112_create_trigger:
-    /* QProp.ERROR_1100 */ mdev6112_create_clause mdev6112_last_database . mdev6112_trigger_name mdev6112_before_after mdev6112_ins_upd_del ON /* QProp.ERROR_1361 QProp.ERROR_1347 */ mdev6112_table FOR EACH ROW mdev6112_precedes_follows INSERT INTO tlog (tbl,tp,op) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field );
+    mdev6112_create_clause mdev6112_last_database . mdev6112_trigger_name mdev6112_before_after mdev6112_ins_upd_del ON mdev6112_table FOR EACH ROW mdev6112_precedes_follows INSERT INTO tlog (tbl,tp,op) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field );
 
 mdev6112_trigger_name:
     # ER_SERVER_LOST can happen on any query if the connection is killed.
     # If it happens because the server crashes, we'll know about it anyway.
-    /* QProp.ERROR_2013 */ _letter;
+    _letter;
 
 mdev6112_table:
-    mdev6112_database . _table { ( lc($last_database) eq 'performance_schema' or lc($last_database) eq 'information_schema' ) ? '/* QProp.ERROR_1044 */' : ( lc($last_database) eq 'mysql' ? '/* QProp.ERROR_1465 */' : '' ) };
+    mdev6112_database . _table { ( lc($last_database) eq 'performance_schema' or lc($last_database) eq 'information_schema' ) ? '' : ( lc($last_database) eq 'mysql' ? '' : '' ) };
 
 mdev6112_database:
-      /* QProp.ERROR_1146 */
     | mdev6112_last_database
 ;
 
@@ -87,19 +86,19 @@ mdev6112_last_database:
     { $last_database or $last_database = 'test' } ;
 
 mdev6112_drop_trigger:
-      /* QProp.ERROR_1099 QProp.ERROR_1100 */ /* QProp.ERROR_1360 */ DROP TRIGGER mdev6112_trigger_name
-    | /* QProp.ERROR_1099 QProp.ERROR_1100 */ /* QProp.ERROR_1360 */ DROP TRIGGER IF EXISTS mdev6112_trigger_name
+      DROP TRIGGER mdev6112_trigger_name
+    | DROP TRIGGER IF EXISTS mdev6112_trigger_name
 ;
     
 mdev6112_create_clause:
-      /* QProp.ERROR_1359 QProp.ERROR_7 */ CREATE TRIGGER
-    | /* QProp.ERROR_1360 QProp.ERROR_7 */ CREATE OR REPLACE TRIGGER
-    | /* QProp.ERROR_1360 QProp.ERROR_7 */ CREATE OR REPLACE TRIGGER
-    | /* QProp.ERROR_7 */ CREATE TRIGGER IF NOT EXISTS
+      CREATE TRIGGER
+    | CREATE OR REPLACE TRIGGER
+    | CREATE OR REPLACE TRIGGER
+    | CREATE TRIGGER IF NOT EXISTS
 ;
     
 mdev6112_precedes_follows:
-    | | | | /* QProp.ERROR_4031 */ /*!100202 PRECEDES _letter */ | /* QProp.ERROR_4031 */ /*!100202 FOLLOWS _letter */ ;
+    | | | | /*!100202 PRECEDES _letter */ | /*!100202 FOLLOWS _letter */ ;
     
 mdev6112_before_after:
     { $tp = ($prng->int(0,1) ? 'BEFORE' : 'AFTER' ) };

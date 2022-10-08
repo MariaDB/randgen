@@ -242,35 +242,51 @@ sub next {
 					} elsif (($item eq '_database') || ($item eq '_db') || ($item eq '_schema')) {
 						my $databases = $executors->[0]->metaSchemas();
 						$last_database = $prng->arrayElement($databases);
-						$item = '`'.$last_database.'`';
+                        $item = $last_database;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif (($item eq '_user_database') || ($item eq '_user_db') || ($item eq '_user_schema')) {
 						my $databases = $executors->[0]->metaSchemas(my $non_system=1);
 						$last_database = $prng->arrayElement($databases);
-						$item = '`'.$last_database.'`';
+						$item = $last_database;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif ($item eq '_table') {
 						my $tables = $executors->[0]->metaTables($last_database);
 						$last_table = $prng->arrayElement($tables);
-						$item = '`'.$last_table.'`';
+						$item = $last_table;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif ($item eq '_basetable') {
 						my $tables = $executors->[0]->metaBaseTables($last_database);
 						$last_table = $prng->arrayElement($tables);
-						$item = '`'.$last_table.'`';
+						$item = $last_table;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif ($item eq '_versionedtable') {
 						my $tables = $executors->[0]->metaVersionedTables($last_database);
 						$last_table = $prng->arrayElement($tables);
-						$item = '`'.$last_table.'`';
+						$item = $last_table;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif ($item eq '_view') {
 						my $tables = $executors->[0]->metaViews($last_database);
 						$last_table = $prng->arrayElement($tables);
-						$item = '`'.$last_table.'`';
+						$item = $last_table;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif ($item eq '_index') {
 						my $indexes = $executors->[0]->metaIndexes($last_table, $last_database);
                         $last_field = $prng->arrayElement($indexes);
-						$item = '`'.$last_field.'`';
+						$item = $last_field;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif ($item eq '_field') {
 						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
                         $last_field = $prng->arrayElement($fields);
-						$item = '`'.$last_field.'`';
+						$item = $last_field;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif ($item eq '_field_list') {
 						my $fields = $executors->[0]->metaColumns($last_table, $last_database);
 						$item = '`'.join('`,`', @$fields).'`';
@@ -286,19 +302,27 @@ sub next {
 					} elsif ($item eq '_field_pk') {
 						my $fields = $executors->[0]->metaColumnsIndexType('primary',$last_table, $last_database);
                         $last_field = $fields->[0];
-						$item = '`'.$last_field.'`';
+						$item = $last_field;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif ($item eq '_field_no_pk') {
 						my $fields = $executors->[0]->metaColumnsIndexTypeNot('primary',$last_table, $last_database);
                         $last_field = $prng->arrayElement($fields);
-						$item = '`'.$last_field.'`';
+						$item = $last_field;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif (($item eq '_field_indexed') || ($item eq '_field_key')) {
 						my $fields_indexed = $executors->[0]->metaColumnsIndexType('indexed',$last_table, $last_database);
                         $last_field = $prng->arrayElement($fields_indexed);
-						$item = '`'.$last_field.'`';
+						$item = $last_field;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif (($item eq '_field_unindexed') || ($item eq '_field_nokey')) {
 						my $fields_unindexed = $executors->[0]->metaColumnsIndexTypeNot('indexed',$last_table, $last_database);
                         $last_field = $prng->arrayElement($fields_unindexed);
-						$item = '`'.$last_field.'`';
+						$item = $last_field;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif ($item =~ /^_field_list\((\d+)\)/) {
                         # Partial field list of a given length (or less, if there are not enough columns)
                         $last_field_list_length= $1;
@@ -309,11 +333,15 @@ sub next {
 					} elsif ($item =~ /^_field_([a-z]+)/) {
 						my $fields = $executors->[0]->metaColumnsDataType($1,$last_table, $last_database);
                         $last_field = $prng->arrayElement($fields);
-						$item = '`'.$last_field.'`';
+						$item = $last_field;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif ($item =~ /^_field_([a-z]+)_(?:indexed|key)/) {
 						my $fields = $executors->[0]->metaColumnsDataIndexType($1,'indexed',$last_table, $last_database);
                         $last_field = $prng->arrayElement($fields);
-						$item = '`'.$last_field.'`';
+						$item = $last_field;
+                        $item =~ s/\`/\`\`/g;
+						$item = '`'.$item.'`';
 					} elsif ($item eq '_collation') {
 						my $collations = $executors->[0]->metaCollations();
 						$item = '_'.$prng->arrayElement($collations);
@@ -326,6 +354,9 @@ sub next {
 					} elsif ($item eq '_charset_name') {
 						my $charsets = $executors->[0]->metaCharactersets();
 						$item = $prng->arrayElement($charsets);
+					} elsif ($item eq '_engine') {
+						my $engines = $executors->[0]->metaEngines();
+						$item = $prng->arrayElement($engines);
 					} elsif ( defined $field_type and
 						(($field_type == FIELD_TYPE_NUMERIC) ||
 						 ($field_type == FIELD_TYPE_BLOB))

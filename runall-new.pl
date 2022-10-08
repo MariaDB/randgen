@@ -277,7 +277,7 @@ if ($git_rev) {
   chomp $git_rev;
   my $git_diff=`cd $ENV{RQG_HOME} && git diff`;
   say("RQG git revision $git_rev".($git_diff ? ' with local changes:' : ''));
-  print $git_diff if $git_diff;
+#  print $git_diff if $git_diff;
   say("###############################################################");
 } else {
   sayWarning("Could not get RQG git revision");

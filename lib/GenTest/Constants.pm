@@ -128,7 +128,7 @@ use constant STATUS_CUSTOM_OUTCOME           => 50; # Used for things such as si
 use constant STATUS_POSSIBLE_FAILURE         => 60;
 
 use constant STATUS_SERVER_SHUTDOWN_FAILURE  => 90;
-use constant STATUS_DATABASE_CORRUPTION      => 96; # Database corruption errors are often bogus, but still important to look at
+use constant STATUS_DATABASE_CORRUPTION      => 126; # Database corruption errors are often bogus, but still important to look at
 
 # Higher-priority errors
 use constant STATUS_CRITICAL_FAILURE         => 100; # Boundary between critical and non-critical errors

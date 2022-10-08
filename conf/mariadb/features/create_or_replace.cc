@@ -1,7 +1,7 @@
 use strict;
 
 our ($non_innodb_encryption_options, $innodb_encryption_options, $aria_encryption_options, $all_encryption_options, $common_options_109, $ps_protocol_options, $perfschema_options_109);
-our ($grammars_any_gendata, $grammars_specific_gendata, $gendata_files, $auto_gendata_combinations, $optional_redefines_109);
+our ($grammars_any_gendata, $grammars_specific_gendata, $grammars_basic, $gendata_files, $auto_gendata_combinations, $optional_redefines_109);
 our ($views_combinations, $vcols_combinations, $threads_low_combinations, $binlog_combinations);
 our ($optional_variators_109, $basic_engine_combinations_109);
 our ($non_crash_scenario_combinations_109, $scenario_combinations_109);
@@ -12,7 +12,7 @@ require "$ENV{RQG_HOME}/conf/mariadb/include/combo.grammars";
 
 $combinations = [
   [ @$common_options_109 ], # seed, reporters, timeouts
-  [ '--redefine=conf/mariadb/features/create_or_replace.yy' ],
+  [ '--redefine=conf/mariadb/features/create_or_replace.yy', '--variators=CreateOrReplaceTable' ],
   [ @$threads_low_combinations ],
   [ @$views_combinations, '', '', '' ],
   [ @$vcols_combinations, '--vcols=STORED',
@@ -24,6 +24,9 @@ $combinations = [
     {
       specific =>
         [ @$grammars_specific_gendata ],
+
+      basic =>
+        [ @$grammars_basic ],
 
       generic => [
         [ @$grammars_any_gendata ],
@@ -46,6 +49,7 @@ $combinations = [
   ##### Engines and engine=specific options
   [
     {
+      acor => [ '--scenario=AtomicDDL', '--scenario=CrashUpgrade' ],
       engines => [
         [ @$basic_engine_combinations_109 ],
         [ @$non_crash_scenario_combinations_109,

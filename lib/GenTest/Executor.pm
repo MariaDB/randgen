@@ -82,6 +82,7 @@ use constant EXECUTOR_META_RELOAD_INTERVAL => 32;
 use constant EXECUTOR_META_RELOAD_NOW => 33;
 use constant EXECUTOR_SERVICE_DBH => 34;
 use constant EXECUTOR_SILENT_ERRORS_COUNT => 35;
+use constant EXECUTOR_ENGINE_METADATA => 36;
 
 use constant FETCH_METHOD_AUTO		=> 0;
 use constant FETCH_METHOD_STORE_RESULT	=> 1;
@@ -418,13 +419,17 @@ sub getCollationMetaData {
     return [[undef,undef]];
 }
 
+sub getEngineMetaData {
+    carp "getEngineMetaData not defined for ". (ref $_[0]);
+    return [[undef,undef]];
+}
 
 ########### Metadata routines
 
 sub cacheMetaData {
   my $self= shift;
 
-  # Collation metadata is loaded only once
+  # Collation and engine metadata is loaded only once
   if (not $self->[EXECUTOR_COLLATION_METADATA]) {
     my $meta= $self->getCollationMetaData();
     if ($meta) {
@@ -438,6 +443,20 @@ sub cacheMetaData {
     }
     $self->[EXECUTOR_COLLATION_METADATA] = $coll;
     say("Executor has loaded collation metadata");
+  }
+  if (not $self->[EXECUTOR_ENGINE_METADATA]) {
+    my $meta= $self->getEngineMetaData();
+    if ($meta) {
+    } else {
+      sayError("Executor failed to load engine metadata");
+    }
+    my $eng= {};
+    foreach my $row (@$meta) {
+        my ($engine) = @$row;
+        $eng->{$engine} = $1;
+    }
+    $self->[EXECUTOR_ENGINE_METADATA] = $eng;
+    say("Executor has loaded engine metadata");
   }
 
   my ($system_meta, $non_system_meta);
@@ -939,6 +958,19 @@ sub metaColumnsIndexTypeNot {
             return $self->metaColumns($table,$schema);
         }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+}
+
+sub metaEngines {
+    my ($self) = @_;
+
+    my $cachekey="ENGINES";
+
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my $eng = [sort keys %{$self->[EXECUTOR_ENGINE_METADATA]}];
+        croak "FATAL ERROR: No engines defined" if not defined $eng or $#$eng < 0;
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $eng;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }

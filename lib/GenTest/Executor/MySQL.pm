@@ -114,6 +114,7 @@ use constant SLAVE_INFO_PORT => 2;
 #
 
 use constant  ER_OUTOFMEMORY2                                   => 5; # returned by some storage engines
+#use constant  ER_ILLEGAL_SEEK                                   => 29;
 use constant  ER_CRASHED1                                       => 126; # Index is corrupted
 use constant  ER_CRASHED2                                       => 145; # Table was marked as crashed and should be repaired
 use constant  HA_ERR_TABLE_DEF_CHANGED                          => 159; # The table changed in the storage engine
@@ -1575,7 +1576,7 @@ my %err2type = (
     ER_CONNECTION_ALREADY_EXISTS()                      => STATUS_CRITICAL_FAILURE,
     ER_CONNECTION_ERROR()                               => STATUS_SERVER_CRASHED,
     ER_CONNECTION_KILLED()                              => STATUS_RUNTIME_ERROR,
-    ER_CONNECT_TO_FOREIGN_DATA_SOURCE()                 => STATUS_ENVIRONMENT_FAILURE,
+    ER_CONNECT_TO_FOREIGN_DATA_SOURCE()                 => STATUS_RUNTIME_ERROR,
     ER_CONNECT_TO_MASTER()                              => STATUS_REPLICATION_FAILURE,
     ER_CONN_HOST_ERROR()                                => STATUS_SERVER_CRASHED,
     ER_CONSECUTIVE_REORG_PARTITIONS()                   => STATUS_SEMANTIC_ERROR,
@@ -1782,6 +1783,7 @@ my %err2type = (
     ER_ILLEGAL_PARAMETER_DATA_TYPES2_FOR_OPERATION()    => STATUS_SEMANTIC_ERROR,
     ER_ILLEGAL_PARAMETER_DATA_TYPE_FOR_OPERATION()      => STATUS_SEMANTIC_ERROR,
     ER_ILLEGAL_REFERENCE()                              => STATUS_UNSUPPORTED,
+#    ER_ILLEGAL_SEEK()                                   => STATUS_DATABASE_CORRUPTION,
     ER_ILLEGAL_SUBQUERY_OPTIMIZER_SWITCHES()            => STATUS_SEMANTIC_ERROR,
     ER_ILLEGAL_VALUE_FOR_TYPE()                         => STATUS_RUNTIME_ERROR,
     ER_INCOMPATIBLE_FRM()                               => STATUS_DATABASE_CORRUPTION,
@@ -3343,6 +3345,17 @@ sub getCollationMetaData {
     return $self->dbh()->selectall_arrayref($query);
 }
 
+sub getEngineMetaData {
+    ## Return the result from a query with the following columns:
+    ## 1. Engine
+    ## <nothing else for now>
+    my ($self) = @_;
+    my $query =
+        "SELECT ENGINE FROM information_schema.engines WHERE SUPPORT IN ('YES','DEFAULT') AND ENGINE NOT IN ('PERFORMANCE_SCHEMA','SEQUENCE') ORDER BY ENGINE";
+
+    return $self->dbh()->selectall_arrayref($query);
+}
+
 sub read_only {
     my $executor = shift;
     my $dbh = $executor->dbh();
@@ -3404,6 +3417,9 @@ sub loadMetaData {
 
   foreach my $row (@$table_metadata) {
     my ($schema, $table, $type) = @$row;
+    if ($table =~ /sql-backup/) {
+        say("ERROR: Found sql-backup table");
+    }
     if    ($type eq 'BASE TABLE') { $type= 'table' }
     elsif ($type eq 'SYSTEM VERSIONED') { $type = 'versioned' }
     elsif ($type eq 'SEQUENCE') { $type = 'sequence' }
