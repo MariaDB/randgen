@@ -665,6 +665,11 @@ MDEV-26992:
 =~ Type_handler::Item_send_str
 =~ FixedBinTypeBundle
 =~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-26992:
+=~ Assertion \`value\.length() == FbtImpl::binary_length()'
+=~ Field_fbt::store_native
+=~ FixedBinTypeBundle
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-26986:
 =~ LeakSanitizer
 =~ Binary_string::real_alloc
