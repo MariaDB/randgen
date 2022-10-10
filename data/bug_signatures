@@ -123,7 +123,7 @@ MDEV-29570:
 =~ ha_partition::write_row
 =~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29560:
-=~ Assertion \`lock_table_has(trx, table, LOCK_IX)'
+=~ Assertion \`lock_table_has(trx, table, LOCK_IX)'|Assertion \`lock_table_has(&trx, &table, LOCK_IX)'
 =~ lock_trx_has_expl_x_lock
 =~ row_upd
 MDEV-29557:
