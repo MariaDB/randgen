@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29763:
+=~ Failed to store event comment|Failed to store event body
+=~ Error code 2 "No such file or directory" from storage engine
+=~ Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29749:
 =~ RocksDB: Schema mismatch
 =~ RocksDB: Problems validating data dictionary against
@@ -97,7 +101,7 @@ MDEV-29680:
 =~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 MDEV-29636:
 =~ Assertion \`part_share->auto_inc_initialized \|\| !can_use_for_auto_inc_init()'
-=~ ha_partition::set_auto_increment_if_higher
+=~ ha_partition::set_auto_increment_if_higher|ha_partition::get_auto_increment
 =~ ha_partition::write_row
 MDEV-29623:
 =~ Out of memory
