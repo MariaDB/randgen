@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29781:
+=~ signal|AddressSanitizer
+=~ ha_myisammrg::add_children_list
+=~ mysql_create_like_table
+=~ Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29779:
+=~ Assertion \`err != DB_DUPLICATE_KEY'
+=~ row_rename_table_for_mysql
+=~ HA_CREATE_INFO::finalize_atomic_replace
+=~ Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29763:
 =~ Failed to store event comment|Failed to store event body
 =~ Error code 2 "No such file or directory" from storage engine
@@ -95,7 +105,7 @@ MDEV-29686:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29680:
 =~ AddressSanitizer|signal
-=~ myrocks::Rdb_transaction::on_commit
+=~ myrocks::Rdb_transaction::on_commit|myrocks::Rdb_transaction_impl::prepare
 =~ select_create::send_eof
 =~ Sql_cmd_create_table_like::execute
 =~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
