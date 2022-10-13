@@ -68,6 +68,7 @@ use constant MYSQLD_CLIENT_BINDIR => 30;
 use constant MYSLQD_SERVER_VARIABLES => 31;
 use constant MYSQLD_RR => 32;
 use constant MYSLQD_CONFIG_VARIABLES => 33;
+use constant MYSQLD_CLIENT => 34;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -129,6 +130,10 @@ sub new {
     $self->[MYSQLD_DUMPER] = $self->_find([$self->basedir],
                                           osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
                                           osWindows()?"mysqldump.exe":"mysqldump");
+
+    $self->[MYSQLD_CLIENT] = $self->_find([$self->basedir],
+                                          osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
+                                          osWindows()?"mysql.exe":"mysql");
 
     $self->[MYSQLD_CLIENT_BINDIR] = dirname($self->[MYSQLD_DUMPER]);
 
@@ -777,6 +782,10 @@ sub dumper {
     return $_[0]->[MYSQLD_DUMPER];
 }
 
+sub client {
+    return $_[0]->[MYSQLD_CLIENT];
+}
+
 sub drop_broken {
   my $self= shift;
   my $dbh= $self->dbh;
@@ -794,38 +803,40 @@ sub drop_broken {
   }
 }
 
+# dumpdb is performed in two modes.
+# One is for comparison. In this case certain objects are disabled,
+# data and schema are dumped separately, and data is sorted.
+# Another one is for restoring the dump. In this case a "normal"
+# dump is perfomed, all together and without suppressions
+
 sub dumpdb {
-    my ($self,$database,$file,$skip_heap_tables) = @_;
+    my ($self,$database,$file,$for_restoring,$options) = @_;
     my $dbh= $self->dbh;
     $dbh->do('SET GLOBAL max_statement_time=0');
-
     $self->drop_broken();
 
-    if ($skip_heap_tables) {
+    my $dump_command= '"'.$self->dumper.'" --skip-dump-date -uroot --host=127.0.0.1 --port='.$self->port.($database ? " --databases $database" : ' --all-databases').' --hex-blob';
+    unless ($for_restoring) {
       my @heap_tables= @{$self->dbh->selectcol_arrayref(
           "select concat(table_schema,'.',table_name) from ".
           "information_schema.tables where engine='MEMORY' and table_schema not in ('information_schema','performance_schema','sys')"
         )
       };
-      $skip_heap_tables= join ' ', map {'--ignore-table-data='.$_} @heap_tables;
+      my $skip_heap_tables= join ' ', map {'--ignore-table-data='.$_} @heap_tables;
+      $dump_command.= " --compact --order-by-primary --skip-extended-insert --no-create-info $skip_heap_tables";
     }
+    $dump_command.= " $options";
 
-    say("Dumping server ".$self->version." data on port ".$self->port);
-    my $dump_command = '"'.$self->dumper.
-                             "\" --hex-blob --skip-triggers --compact ".
-                             "--order-by-primary --skip-extended-insert ".
-                             "--no-create-info --host=127.0.0.1 ".
-                             "$skip_heap_tables ".
-                             "--port=".$self->port.
-                             " -uroot --databases $database";
-    # --no-tablespaces option was introduced in version 5.1.14.
-    if ($self->_notOlderThan(5,1,14)) {
-        $dump_command = $dump_command . " --no-tablespaces";
-    }
+    say("Dumping server ".$self->version.($for_restoring ? " for restoring":" data for comparison")." on port ".$self->port);
     say($dump_command);
-    my $dump_result = system("$dump_command | sort > $file");
+    my $dump_result = ($for_restoring ?
+      system("$dump_command > $file") :
+      system("$dump_command | sort > $file")
+    );
     return $dump_result;
 }
+
+# dumpSchema is only performed for comparison
 
 sub dumpSchema {
     my ($self,$database, $file) = @_;
@@ -833,16 +844,12 @@ sub dumpSchema {
     $self->drop_broken();
 
     say("Dumping server ".$self->version." schema on port ".$self->port);
-    my $dump_command = '"'.$self->dumper.
-                             "\" --hex-blob --compact ".
-                             "--order-by-primary --skip-extended-insert ".
-                             "--no-data --host=127.0.0.1 ".
-                             "--port=".$self->port.
-                             " -uroot --databases $database";
-    # --no-tablespaces option was introduced in version 5.1.14.
-    if ($self->_notOlderThan(5,1,14)) {
-        $dump_command = $dump_command . " --no-tablespaces";
-    }
+    my $dump_options= ($database ? "--databases $database" : '--all-databases --add-drop-database');
+    my $dump_command = '"'.$self->dumper.'"'.
+                             "  --skip-dump-date --compact --no-tablespaces".
+                             " --no-data --host=127.0.0.1 -uroot".
+                             " --port=".$self->port.
+                             " $dump_options";
     say($dump_command);
     my $dump_result = system("$dump_command > $file");
     if ($dump_result != 0) {

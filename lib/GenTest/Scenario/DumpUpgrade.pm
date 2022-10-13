@@ -1,4 +1,4 @@
-# Copyright (C) 2020, 2022 MariaDB Corporation Ab
+# Copyright (C) 2022 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,16 +17,16 @@
 
 ########################################################################
 #
-# The module implements a normal restart/upgrade scenario.
+# The module implements a mysql dump recovery/upgrade scenario.
 #
-# This is the simplest form of upgrade. The test starts the old server,
-# executes some flow on it, shuts down the server, starts the new one
-# on the same datadir, runs mysql_upgrade if necessary, performs a basic
-# data check and executes some more flow.
+# This is the logical upgrade. The test starts the old server,
+# executes some flow on it, dumps the schema, shuts down the server,
+# starts the new one, loads the dump, runs mysql_upgrade if necessary,
+# compares the data before and after upgrade and executes some more flow.
 #
 ########################################################################
 
-package GenTest::Scenario::NormalUpgrade;
+package GenTest::Scenario::DumpUpgrade;
 
 require Exporter;
 @ISA = qw(GenTest::Scenario::Upgrade);
@@ -58,10 +58,10 @@ sub new {
 
   if ($self->old_server_options()->{basedir} eq $self->new_server_options()->{basedir}) {
     $same_server= 1;
-    $self->printTitle('Normal restart');
+    $self->printTitle('Dump recovery');
   }
   else {
-    $self->printTitle('Normal upgrade/downgrade');
+    $self->printTitle('Dump upgrade/downgrade');
   }
   return $self;
 }
@@ -76,6 +76,7 @@ sub run {
   # Prepare servers
   
   ($old_server, $new_server)= $self->prepare_servers();
+   $old_server->backupDatadir($old_server->datadir."_clean");
 
   #####
   $self->printStep("Starting the old server");
@@ -125,6 +126,14 @@ sub run {
     return ($same_server ? $self->finalize($status,[]) : $self->finalize(STATUS_TEST_FAILURE,[]));
   }
 
+  # Dump all databases for further restoring
+  $status= $old_server->dumpdb(undef, $old_server->vardir.'/all_db.dump',my $for_restoring=1,"--dump-history");
+  if ($status != STATUS_OK) {
+    sayError("Database dump on the old server failed, no point to continue");
+    return ($same_server ? $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+  }
+
+  # Dump non-system databases for further comparison
   $databases= join ' ', $old_server->nonSystemDatabases();
   $status= $old_server->dumpSchema($databases, $old_server->vardir.'/server_schema_old.dump');
   if ($status != STATUS_OK) {
@@ -162,10 +171,9 @@ sub run {
   }
 
   #####
-  $self->printStep("Backing up data directory from the old server");
-
-  $old_server->backupDatadir($old_server->datadir."_orig");
-  move($old_server->errorlog, $old_server->errorlog.'_orig');
+  $self->printStep("Backing up data directory from the old server and restoring clean datadir for the new server");
+  system ('mv '.$old_server->datadir.' '.$old_server->datadir.'_orig');
+  system ('mv '.$old_server->datadir.'_clean '.$old_server->datadir);
 
   #####
   $self->printStep("Starting the new server");
@@ -184,7 +192,19 @@ sub run {
   }
 
   #####
-  $self->printStep("Checking the server error log for errors after upgrade");
+  $self->printStep("Restoring the dump of all databases");
+  my $client_command= $new_server->client.' -uroot --host=127.0.0.1 --protocol=tcp --port='.$new_server->port;
+
+  system($client_command.' < '.$old_server->vardir.'/all_db.dump');
+  $status= $?;
+  if ($status != STATUS_OK) {
+    sayError("All databases' schema dump failed to load");
+    $status= $self->checkErrorLog($new_server);
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+
+  #####
+  $self->printStep("Checking the server error log for errors after dump reload");
 
   $status= $self->checkErrorLog($new_server);
 
@@ -284,8 +304,8 @@ sub run {
   #####
   $self->printStep("Comparing databases before and after upgrade");
   
-  $status= compare($new_server->vardir.'/server_schema_old.dump', $new_server->vardir.'/server_schema_new.dump');
-  if ($status != STATUS_OK) {
+  my $x_status= compare($new_server->vardir.'/server_schema_old.dump', $new_server->vardir.'/server_schema_new.dump');
+  if ($x_status != STATUS_OK) {
     sayError("Database structures differ after upgrade");
     system('diff -a -u '.$new_server->vardir.'/server_schema_old.dump'.' '.$new_server->vardir.'/server_schema_new.dump');
     return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
@@ -294,25 +314,25 @@ sub run {
     say("Structure dumps appear to be identical");
   }
   
-  $status= compare($new_server->vardir.'/server_data_old.dump', $new_server->vardir.'/server_data_new.dump');
-  if ($status != STATUS_OK) {
+  $x_status= compare($new_server->vardir.'/server_data_old.dump', $new_server->vardir.'/server_data_new.dump');
+  if ($x_status != STATUS_OK) {
     sayError("Data differs after upgrade");
     system('diff -a -u '.$new_server->vardir.'/server_data_old.dump'.' '.$new_server->vardir.'/server_data_new.dump');
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+#    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
   }
   else {
     say("Data dumps appear to be identical");
   }
   
-  $status= $self->compare_autoincrements($table_autoinc{old}, $table_autoinc{new});
-  if ($status != STATUS_OK) {
+  $x_status= $self->compare_autoincrements($table_autoinc{old}, $table_autoinc{new});
+  if ($x_status != STATUS_OK) {
     # Comaring auto-increments can show known errors. We want to update 
     # the global status, but don't want to exit prematurely
-    $self->setStatus($status);
+#    $self->setStatus($status);
     sayError("Auto-increment data differs after upgrade");
-    if ($status > STATUS_CUSTOM_OUTCOME) {
-      return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
-    }
+#    if ($status > STATUS_CUSTOM_OUTCOME) {
+#      return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+#    }
   }
   else {
     say("Auto-increment data appears to be identical");
