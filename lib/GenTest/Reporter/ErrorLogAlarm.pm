@@ -35,6 +35,15 @@ my $reject_pattern =
     'Lock wait timeout exceeded'.
     '|Deadlock found when trying to get lock'.
     '|innodb_log_block_size has been changed'.
+    '|Event Scheduler:'.
+    '|because after adding it, the row size is'.
+    '|referenced in foreign key constraints which are not compatible with the new table definition'.
+    '|open and lock privilege tables'.
+    '|Invalid roles_mapping table entry user'.
+    '|Error in Log_event::read_log_event'.
+    '|The table \'[^\(\)]+\' is full'.
+    '|Incorrect information in file: .*\#sql-alter-.*frm'. # MDEV-27216 and alike
+    '|Out of sort memory, consider increasing server sort buffer size'.
     '|Sort aborted:';
 
 # Path to error log. Is assigned first time monitor() is called.
@@ -65,9 +74,7 @@ sub monitor {
             # Case insensitive search required for (observed) programming 
             # incosistencies like "InnoDB: ERROR:" instead of "InnoDB: Error:"
             if(($line =~ m{$pattern}i) && ($line !~ m{$reject_pattern}i)) {
-                sayError("ErrorLogAlarm reporter: Pattern '$pattern' was".
-                    " found in error log. Matching line was:");
-                say($line);
+                sayError("ErrorLogAlarm reporter: Found a matching line: [ $line ]");
                 close LOG;
                 return STATUS_ALARM;
             }
