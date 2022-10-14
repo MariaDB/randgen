@@ -4,16 +4,22 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29793:
+=~ Assertion \`share->now_transactional'
+=~ translog_write_record
+=~ _ma_tmp_disable_logging_for_table
+=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
+=~ Query.*:.*CREATE.*OR REPLACE
 MDEV-29781:
 =~ signal|AddressSanitizer
 =~ ha_myisammrg::add_children_list
 =~ mysql_create_like_table
-=~ Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 MDEV-29779:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
 =~ HA_CREATE_INFO::finalize_atomic_replace
-=~ Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 MDEV-29763:
 =~ Failed to store event comment|Failed to store event body
 =~ Error code 2 "No such file or directory" from storage engine
