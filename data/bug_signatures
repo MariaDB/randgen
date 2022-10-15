@@ -43,6 +43,9 @@ MDEV-29747:
 =~ mysql_multi_delete_prepare
 =~ Prepared_statement::execute
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29744:
+=~ safe_mutex: Found wrong usage of mutex 'LOCK_commit_ordered' and 'LOCK_global_system_variables'
+=~ log-bin
 MDEV-29716:
 =~ signal|AddressSanitizer
 =~ Protocol::valid_handler
@@ -1629,6 +1632,11 @@ MDEV-23453:
 =~ Item_field::type_handler
 =~ Temporal_with_date::make_from_item
 =~ sp_head::execute
+MDEV-23448:
+=~ Assertion \`fd != -1'
+=~ my_seek
+=~ azrewind
+=~ ha_archive::read_data_header
 MDEV-23444:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
