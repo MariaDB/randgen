@@ -127,10 +127,9 @@ sub run {
   }
 
   # Dump all databases for further restoring
-  $status= $old_server->dumpdb(undef, $old_server->vardir.'/all_db.dump',my $for_restoring=1,"--dump-history");
+  $status= $old_server->dumpdb(undef, $old_server->vardir.'/all_db.dump',my $for_restoring=1,"--dump-history --force");
   if ($status != STATUS_OK) {
-    sayError("Database dump on the old server failed, no point to continue");
-    return ($same_server ? $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+    sayWarning("Database dump on the old server failed, but it was running with --force, so we will continue");
   }
 
   # Dump non-system databases for further comparison
@@ -318,7 +317,7 @@ sub run {
   if ($x_status != STATUS_OK) {
     sayError("Data differs after upgrade");
     system('diff -a -u '.$new_server->vardir.'/server_data_old.dump'.' '.$new_server->vardir.'/server_data_new.dump');
-#    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
   }
   else {
     say("Data dumps appear to be identical");
@@ -326,13 +325,10 @@ sub run {
   
   $x_status= $self->compare_autoincrements($table_autoinc{old}, $table_autoinc{new});
   if ($x_status != STATUS_OK) {
-    # Comaring auto-increments can show known errors. We want to update 
-    # the global status, but don't want to exit prematurely
-#    $self->setStatus($status);
     sayError("Auto-increment data differs after upgrade");
-#    if ($status > STATUS_CUSTOM_OUTCOME) {
-#      return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
-#    }
+    if ($status > STATUS_CUSTOM_OUTCOME) {
+      return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    }
   }
   else {
     say("Auto-increment data appears to be identical");
