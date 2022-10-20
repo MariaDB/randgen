@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29801:
+=~ AddressSanitizer|signal
+=~ trx_undo_report_row_operation
+=~ row_ins_clust_index_entry_low
 MDEV-29793:
 =~ Assertion \`share->now_transactional'
 =~ translog_write_record
@@ -228,7 +232,7 @@ MDEV-29184:
 =~ Item_row::illegal_method_call|Item::update_null_value|Type_handler_row::Item_update_null_value
 =~ Item::fix_fields_if_needed
 MDEV-29178:
-=~ Assertion \`sp > last_savepoint()'
+=~ Assertion \`sp > last_savepoint()'|federatedx_txn::sp_acquire
 =~ federatedx_io_mysql::savepoint_set
 MDEV-29178:
 =~ signal|AddressSanitizer
