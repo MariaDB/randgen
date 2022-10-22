@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29856:
+=~ AddressSanitizer|signal
+=~ rec_convert_dtuple_to_rec_comp
+=~ row_merge_spatial_rows
+=~ mysql_inplace_alter_table
 MDEV-29801:
 =~ AddressSanitizer|signal
 =~ trx_undo_report_row_operation
@@ -602,6 +607,11 @@ MDEV-27603:
 =~ AddressSanitizer
 =~ Gap_time_tracker::log_time
 =~ Exec_time_tracker::start_tracking
+MDEV-27562:
+=~ AddressSanitizer|signal|MemorySanitizer
+=~ join_read_key2
+=~ Expression_cache_tmptable::check_value(
+=~ mysql_multi_update
 MDEV-27560:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer
 =~ cmp_key_rowid_part_id
@@ -2060,7 +2070,7 @@ MDEV-22671:
 =~ __do_global_dtors_aux
 MDEV-22667:
 =~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
-=~ row_update_for_mysql
+=~ row_update_for_mysql|row_insert_for_mysql
 =~ ha_partition::delete_row|handler::ha_delete_row
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22667:
