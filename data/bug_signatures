@@ -4,11 +4,35 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29857:
+=~ AddressSanitizer|signal
+=~ myrocks::Rdb_key_def::pack_variable_format
+=~ myrocks::Rdb_key_def::pack_record
+MDEV-29857:
+=~ double free or corruption|invalid pointer
+=~ rocksdb::ReadableWriteBatch::~ReadableWriteBatch
+=~ myrocks::Rdb_transaction_impl::~Rdb_transaction_impl
 MDEV-29856:
 =~ AddressSanitizer|signal
 =~ rec_convert_dtuple_to_rec_comp
 =~ row_merge_spatial_rows
 =~ mysql_inplace_alter_table
+MDEV-29849:
+=~ Assertion \`lock->trx == this'
+=~ trx_t::drop_table
+=~ ha_innobase::truncate
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29849:
+=~ Assertion \`lock->trx == trx'
+=~ lock_release_on_rollback
+=~ ha_innobase::truncate
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29849:
+=~ Assertion \`mode == 16 \|\| mode == 12'
+=~ buf_page_get_low
+=~ row_ins_check_foreign_constraint
+=~ ha_innobase::delete_row
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29801:
 =~ AddressSanitizer|signal
 =~ trx_undo_report_row_operation
