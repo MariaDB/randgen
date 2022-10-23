@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29858:
+=~ debugger aborting because missing DBUG_RETURN or DBUG_VOID_RETURN macro in function "fill_schema_proc"
+=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 MDEV-29857:
 =~ AddressSanitizer|signal
 =~ myrocks::Rdb_key_def::pack_variable_format
