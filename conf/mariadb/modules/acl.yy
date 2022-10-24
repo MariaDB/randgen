@@ -271,6 +271,8 @@ acl_short_name:
   | '%'
   # Prevent damaging the current user
   | { $shortname= $prng->unquotedString(8); ${shortname}.'@localhost' ne $executors->[0]->currentUser() and ${shortname} ne 'root' ? '`'.$shortname.'`' : '`'.$shortname.'_`' }
+  | ==FACTOR:0.1== PUBLIC
+  | ==FACTOR:0.1== NONE
 ;
 
 acl_full_name:
