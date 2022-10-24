@@ -1019,6 +1019,21 @@ sub collectAutoincrements {
   return $autoinc_tables;
 }
 
+# XA transactions which haven't been either committed or rolled back
+# can further cause locking issues, so different scenarios may want to
+# rollback them before doing, for example, DROP TABLE
+
+sub rollbackXA {
+  my $self= shift;
+  my $xa_transactions= $self->dbh->selectcol_arrayref("XA RECOVER", { Columns => [4] });
+  if ($xa_transactions) {
+    foreach my $xa (@$xa_transactions) {
+      say("Rolling back XA transaction $xa");
+      $self->dbh->do("XA ROLLBACK '$xa'");
+    }
+  }
+}
+
 sub binary {
     return $_[0]->[MYSQLD_MYSQLD];
 }

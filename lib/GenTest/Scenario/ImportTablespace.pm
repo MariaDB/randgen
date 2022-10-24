@@ -113,6 +113,8 @@ sub run {
   foreach my $t (@$non_innodb_tables) {
     $dbh->do("DROP TABLE $t");
   }
+  say("Getting rid of stale XA transactions");
+  $server->rollbackXA();
 
   #####
   $self->printStep("Dumping the remaining data before discard/import");
@@ -156,6 +158,7 @@ sub run {
     $dbh->do("DROP TABLE $tname");
     if ($dbh->err) {
       sayError("Could not drop table $tname: ".$dbh->err.": ".$dbh->errstr);
+      sleep(3600);
       return $self->finalize(STATUS_DATABASE_CORRUPTION,[$server]);
     }
   }
