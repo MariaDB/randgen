@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29864:
+=~ AddressSanitizer|signal
+=~ Field_datetime_with_dec::sort_string
+=~ myrocks::ha_rocksdb::check_uniqueness_and_lock
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29858:
 =~ debugger aborting because missing DBUG_RETURN or DBUG_VOID_RETURN macro in function "fill_schema_proc"
 =~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
