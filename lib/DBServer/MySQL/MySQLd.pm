@@ -823,15 +823,15 @@ sub dumpdb {
         )
       };
       my $skip_heap_tables= join ' ', map {'--ignore-table-data='.$_} @heap_tables;
-      $dump_command.= " --compact --order-by-primary --skip-extended-insert --no-create-info $skip_heap_tables";
+      $dump_command.= " --compact --order-by-primary --skip-extended-insert --no-create-info --skip-triggers $skip_heap_tables";
     }
     $dump_command.= " $options";
 
     say("Dumping server ".$self->version.($for_restoring ? " for restoring":" data for comparison")." on port ".$self->port);
     say($dump_command);
     my $dump_result = ($for_restoring ?
-      system("$dump_command > $file") :
-      system("$dump_command | sort > $file")
+      system("$dump_command 2>&1 1>$file") :
+      system("$dump_command | sort 2>&1 1>$file")
     );
     return $dump_result;
 }
@@ -851,7 +851,7 @@ sub dumpSchema {
                              " --port=".$self->port.
                              " $dump_options";
     say($dump_command);
-    my $dump_result = system("$dump_command > $file");
+    my $dump_result = system("$dump_command 2>&1 1>$file");
     if ($dump_result != 0) {
       # MDEV-28577: There can be Federated tables with virtual columns, they make mysqldump fail
 
