@@ -3,7 +3,7 @@ use strict;
 our ($non_innodb_encryption_options, $innodb_encryption_options, $common_options, $ps_protocol_options, $perfschema_options_103);
 our ($grammars_any_gendata, $grammars_specific_gendata, $gendata_files, $auto_gendata_combinations, $optional_redefines_103);
 our ($views_combinations, $vcols_combinations, $threads_low_combinations, $binlog_combinations);
-our ($optional_variators_103, $basic_engine_combinations_103);
+our ($optional_variators_103, $basic_engine_combinations_103, $extra_engine_combinations_103);
 our ($non_crash_scenario_combinations_103, $scenario_combinations_103);
 our ($optional_innodb_variables_103, $optional_plugins_103, $optional_server_variables_103, $optional_charsets_103);
 
@@ -46,7 +46,7 @@ $combinations = [
   [
     {
       engines => [
-        [ @$basic_engine_combinations_103 ],
+        [ @$basic_engine_combinations_103, @$extra_engine_combinations_103 ],
         [ @$non_crash_scenario_combinations_103,
           '', '', '', '', '', '', '', '', '', '', ''
         ],

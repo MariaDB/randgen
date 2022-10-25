@@ -95,6 +95,7 @@ $perfschema_options_106= $perfschema_options_105;
 $perfschema_options_107= $perfschema_options_106;
 $perfschema_options_108= $perfschema_options_107;
 $perfschema_options_109= $perfschema_options_108;
+$perfschema_options_110= $perfschema_options_109;
 
 #########################
 # Server option combinations
@@ -129,6 +130,7 @@ $common_options_108= [
 ];
 
 $common_options_109= $common_options_108;
+$common_options_110= $common_options_109;
 
 $ps_protocol_options= '--ps-protocol --filter=conf/mariadb/need-reconnect.ff';
 
@@ -210,12 +212,12 @@ $optional_variators_107= [
 
 $optional_variators_108= [ @$optional_variators_107 ];
 $optional_variators_109= [ @$optional_variators_108 ];
+$optional_variators_110= [ @$optional_variators_109 ];
 
 $basic_engine_combinations_102= [
   '','','','',
   '--engine=Aria --mysqld=--default-storage-engine=Aria --mysqld=--enforce-storage-engine=""',
   '--engine=MyISAM --mysqld=--default-storage-engine=MyISAM --mysqld=--enforce-storage-engine=""',
-  '--engine=RocksDB --mysqld=--default-storage-engine=RocksDB --mysqld=--plugin-load-add=ha_rocksdb --mysqld=--enforce-storage-engine=""',
   '--engine=InnoDB,MyISAM',
   '--engine=InnoDB,MyISAM,Aria,HEAP',
 ];
@@ -227,6 +229,20 @@ $basic_engine_combinations_106= [ @$basic_engine_combinations_105 ];
 $basic_engine_combinations_107= [ @$basic_engine_combinations_106 ];
 $basic_engine_combinations_108= [ @$basic_engine_combinations_107 ];
 $basic_engine_combinations_109= [ @$basic_engine_combinations_108 ];
+$basic_engine_combinations_110= [ @$basic_engine_combinations_109 ];
+
+$extra_engine_combinations_103= [
+  '','','','',
+  '--engine=RocksDB --mysqld=--default-storage-engine=RocksDB --mysqld=--plugin-load-add=ha_rocksdb --mysqld=--enforce-storage-engine=""',
+];
+
+$extra_engine_combinations_104= [ @$extra_engine_combinations_103 ];
+$extra_engine_combinations_105= [ @$extra_engine_combinations_104 ];
+$extra_engine_combinations_106= [ @$extra_engine_combinations_105 ];
+$extra_engine_combinations_107= [ @$extra_engine_combinations_106 ];
+$extra_engine_combinations_108= [ @$extra_engine_combinations_107 ];
+$extra_engine_combinations_109= [ @$extra_engine_combinations_108 ];
+$extra_engine_combinations_110= [ @$extra_engine_combinations_109 ];
 
 $non_crash_scenario_combinations_102= [
   '--scenario=NormalUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
@@ -245,6 +261,7 @@ $non_crash_scenario_combinations_106= [ @$non_crash_scenario_combinations_105 ];
 $non_crash_scenario_combinations_107= [ @$non_crash_scenario_combinations_106 ];
 $non_crash_scenario_combinations_108= [ @$non_crash_scenario_combinations_107 ];
 $non_crash_scenario_combinations_109= [ @$non_crash_scenario_combinations_108 ];
+$non_crash_scenario_combinations_110= [ @$non_crash_scenario_combinations_109 ];
 
 $scenario_combinations_102= [ @$non_crash_scenario_combinations_102 ];
 
@@ -261,6 +278,7 @@ $scenario_combinations_106= [
 $scenario_combinations_107= [ @$scenario_combinations_106 ];
 $scenario_combinations_108= [ @$scenario_combinations_107 ];
 $scenario_combinations_109= [ @$scenario_combinations_108 ];
+$scenario_combinations_110= [ @$scenario_combinations_109 ];
 
 #############
 # InnoDB vars
@@ -417,6 +435,7 @@ foreach my $o (@$optional_innodb_variables_106) {
 $optional_innodb_variables_107= [ @$optional_innodb_variables_106 ];
 $optional_innodb_variables_108= [ @$optional_innodb_variables_107 ];
 $optional_innodb_variables_109= [ @$optional_innodb_variables_108 ];
+$optional_innodb_variables_110= [ @$optional_innodb_variables_109 ];
 
 #############
 # Aria vars
@@ -438,6 +457,7 @@ $optional_aria_variables_106= [ @$optional_aria_variables_105 ];
 $optional_aria_variables_107= [ @$optional_aria_variables_106 ];
 $optional_aria_variables_108= [ @$optional_aria_variables_107 ];
 $optional_aria_variables_109= [ @$optional_aria_variables_108 ];
+$optional_aria_variables_110= [ @$optional_aria_variables_109 ];
 
 #############
 # Plugins
@@ -464,6 +484,7 @@ $optional_plugins_107= [
 ];
 $optional_plugins_108= [ @$optional_plugins_107 ];
 $optional_plugins_109= [ @$optional_plugins_108 ];
+$optional_plugins_110= [ @$optional_plugins_109 ];
 
 #############
 # Other vars
@@ -569,6 +590,8 @@ $optional_server_variables_109= [ @$optional_server_variables_108,
     ['','--mysqld=--loose-hashicorp-key-management-caching-enabled=OFF'],
     ['','--mysqld=--loose-hashicorp-key-cache-timeout=0', '--mysqld=--loose-hashicorp-key-cache-timeout=9223372036854775807', '--mysqld=--loose-hashicorp-key-cache-timeout=1'],
 ];
+
+$optional_server_variables_110= [ @$optional_server_variables_109 ];
 
 
 # Default depends on the build/system, so in addition to the default,
@@ -932,3 +955,4 @@ $optional_charsets_106= [ @$optional_charsets_105 ];
 $optional_charsets_107= [ @$optional_charsets_106 ];
 $optional_charsets_108= [ @$optional_charsets_107 ];
 $optional_charsets_109= [ @$optional_charsets_108 ];
+$optional_charsets_110= [ @$optional_charsets_109 ];
