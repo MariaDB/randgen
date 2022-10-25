@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29873:
+=~ MemorySanitizer
+=~ bcmp
+=~ prep_alter_part_table
+=~ FeatureUsage detected system-versioned tables
+=~ Version: '10\.9|Server version: 10\.9|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29872:
+=~ MemorySanitizer|Conditional jump or move depends on uninitialised value
+=~ TABLE::vers_switch_partition
+=~ Delayed_insert
+=~ Version: '10\.9|Server version: 10\.9|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29864:
 =~ AddressSanitizer|signal
 =~ Field_datetime_with_dec::sort_string
@@ -648,6 +659,10 @@ MDEV-27560:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer
 =~ cmp_key_rowid_part_id
 =~ ha_partition::handle_ordered_next
+MDEV-27565:
+=~ MemorySanitizer|Conditional jump or move depends on uninitialised value
+=~ my_b_encr_write
+=~ Log_event_writer::write_internal
 MDEV-27551:
 =~ Operating system error number 2 in a file operation
 =~ Failed to validate first page of the file .*/FTS_000.*, error 62
