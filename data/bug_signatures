@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29886:
+=~ Assertion \`!index->table->is_temporary()'
+=~ trx_undo_prev_version_build
+=~ ha_innobase::check
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29873:
 =~ MemorySanitizer
 =~ bcmp
