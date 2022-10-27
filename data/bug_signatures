@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV=29901:
+=~ Uninitialised byte|MemorySanitizer: use-of-uninitialized-value
+=~ my_b_write
+=~ create_sort_index
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29886:
 =~ Assertion \`!index->table->is_temporary()'
 =~ trx_undo_prev_version_build
@@ -636,7 +641,7 @@ MDEV-27675:
 MDEV-27675:
 =~ Assertion \`offsets'|signal
 =~ rec_offs_n_fields|rec_get_info_bits
-=~ btr_root_raise_and_insert
+=~ btr_root_raise_and_insert|btr_page_split_and_insert
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-27674:
 =~ sig=8|Assertion failure
@@ -3551,7 +3556,7 @@ MDEV-16698:
 =~ Field_longstr::uncompress
 =~ Field_blob_compressed::val_.*
 MDEV-16694:
-=~ signal [16]|AddressSanitizer
+=~ signal [16]|AddressSanitizer|MemorySanitizer
 =~ multi_update::initialize_tables
 =~ mysql_explain_union
 =~ select_describe
