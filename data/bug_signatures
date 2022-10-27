@@ -4,10 +4,10 @@
 # Strong matches
 ##############################################################################
 
-MDEV=29904:
+MDEV-29904:
 =~ SPIDER plugin initialization failed.*Unknown storage engine 'Aria'
 =~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-MDEV=29901:
+MDEV-29901:
 =~ Uninitialised byte|MemorySanitizer: use-of-uninitialized-value
 =~ my_b_write
 =~ create_sort_index
