@@ -5,8 +5,10 @@
 ##############################################################################
 
 MDEV-29904:
-=~ SPIDER plugin initialization failed.*Unknown storage engine 'Aria'
+=~ SPIDER plugin initialization failed.*Unknown storage engine 'Aria'|SPIDER plugin initialization failed at 'drop procedure mysql\.spider_fix_one_table'
 =~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29904:
+
 MDEV-29901:
 =~ Uninitialised byte|MemorySanitizer: use-of-uninitialized-value
 =~ my_b_write
