@@ -4,11 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29913:
+=~ Assertion \`thd->stmt_arena != thd->progress\.arena'
+=~ thd_progress_init
+=~ row_merge_bulk_t::write_to_table
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29904:
 =~ SPIDER plugin initialization failed.*Unknown storage engine 'Aria'|SPIDER plugin initialization failed at 'drop procedure mysql\.spider_fix_one_table'
 =~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-MDEV-29904:
-
 MDEV-29901:
 =~ Uninitialised byte|MemorySanitizer: use-of-uninitialized-value
 =~ my_b_write
@@ -668,12 +671,12 @@ MDEV-27603:
 MDEV-27562:
 =~ AddressSanitizer|signal|MemorySanitizer
 =~ join_read_key2
-=~ Expression_cache_tmptable::check_value(
+=~ Expression_cache_tmptable::check_value|create_sort_index
 =~ mysql_multi_update
 MDEV-27560:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer
 =~ cmp_key_rowid_part_id
-=~ ha_partition::handle_ordered_next
+=~ ha_partition::handle_ordered
 MDEV-27565:
 =~ MemorySanitizer|Conditional jump or move depends on uninitialised value
 =~ my_b_encr_write
