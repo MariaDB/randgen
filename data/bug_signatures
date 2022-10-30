@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29916:
+=~ Assertion \`is_valid_time_slow()'
+=~ Time::valid_MYSQL_TIME_to_valid_value
+=~ TABLE::update_virtual_fields
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29915:
 =~ Assertion \`trn'
 =~ ha_maria::start_stmt
