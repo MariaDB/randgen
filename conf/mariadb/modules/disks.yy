@@ -14,10 +14,16 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #
-# The test should be run with
+# The grammar should be used with
 # --mysqld=--plugin-load-add=disks --mysqld=--loose-disks
 #
 
 query_add:
-    ==FACTOR:0.05== SELECT * FROM INFORMATION_SCHEMA.DISKS
+    ==FACTOR:0.05== disks_query
+;
+
+disks_query:
+  SUM(Total) > SUM(Available), SUM(Total)>SUM(Used) FROM INFORMATION_SCHEMA.DISKS |
+  SELECT * FROM INFORMATION_SCHEMA.DISKS |
+  SHOW CREATE TABLE INFORMATION_SCHEMA.DISKS
 ;
