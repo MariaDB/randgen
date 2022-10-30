@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29915:
+=~ Assertion \`trn'
+=~ ha_maria::start_stmt
+=~ check_lock_and_start_stmt
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29913:
 =~ Assertion \`thd->stmt_arena != thd->progress\.arena'
 =~ thd_progress_init
