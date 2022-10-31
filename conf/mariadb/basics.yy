@@ -194,11 +194,11 @@ _basics_prepare_type_dependent_value:
     ;  if ($last_column_type =~ /INT/) { $last_type_value= 0 }
     elsif ($last_column_type =~ /DOUBLE/ or $last_column_type =~ /FLOAT/) { $last_type_value= 0.0 }
     elsif ($last_column_type =~ /CHAR/ or $last_column_type =~ /BINARY/ or $last_column_type =~ /BLOB/ or $last_column_type =~ /TEXT/ or $last_column_type =~ /SET/ or $last_column_type =~ /ENUM/ or $last_column_type =~ /JSON/) { $last_type_value= "''" }
-    elsif ($last_column_type =~ /TIMESTAMP/ or $last_column_type =~ /DATETIME/) { $last_type_value= "'2000-01-01 00:00:00'" }
-    elsif ($last_column_type =~ /DATE/) { $last_type_value= "'2000-01-01'" }
-    elsif ($last_column_type =~ /TIME/) { $last_type_value= "'00:00:00'" }
+    elsif ($last_column_type =~ /TIMESTAMP/ or $last_column_type =~ /DATETIME/) { $last_type_value= $prng->datetime() }
+    elsif ($last_column_type =~ /DATE/) { $last_type_value= $prng->date() }
+    elsif ($last_column_type =~ /TIME/) { $last_type_value= $prng->time() }
     elsif ($last_column_type =~ /GEOMETRY/) { $last_type_value= "POINT(0,0)" }
-    elsif ($last_column_type =~ /INET6/) { $last_type_value= "'::'" }
+    elsif ($last_column_type =~ /INET6/) { $last_type_value= $prng->inet6() }
     ; ''
   }
 ;
@@ -211,11 +211,11 @@ _basics_column_default:
     ;  if ($last_column_type =~ /INT/) { @defaults= (@defaults, 0) }
     elsif ($last_column_type =~ /DOUBLE/ or $last_column_type =~ /FLOAT/) { @defaults= (@defaults, '0.0') }
     elsif ($last_column_type =~ /CHAR/ or $last_column_type =~ /BINARY/ or $last_column_type =~ /BLOB/ or $last_column_type =~ /TEXT/ or $last_column_type =~ /SET/ or $last_column_type =~ /ENUM/ or $last_column_type =~ /JSON/) { @defaults= (@defaults, "''") }
-    elsif ($last_column_type =~ /TIMESTAMP/ or $last_column_type =~ /DATETIME/) { @defaults= (@defaults, "'2000-01-01 00:00:00'", 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP') }
-    elsif ($last_column_type =~ /DATE/) { @defaults= (@defaults, "'2000-01-01'") }
-    elsif ($last_column_type =~ /TIME/) { @defaults= (@defaults, "'00:00:00'") }
+    elsif ($last_column_type =~ /TIMESTAMP/ or $last_column_type =~ /DATETIME/) { @defaults= (@defaults, $prng->datetime(), 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP') }
+    elsif ($last_column_type =~ /DATE/) { @defaults= (@defaults, $prng->date()) }
+    elsif ($last_column_type =~ /TIME/) { @defaults= (@defaults, $prng->time()) }
     elsif ($last_column_type =~ /GEOMETRY/) { @defaults= (@defaults, "POINT(0,0)") }
-    elsif ($last_column_type =~ /INET6/) { @defaults= (@defaults, "'::'") }
+    elsif ($last_column_type =~ /INET6/) { @defaults= (@defaults, $prng->inet6()) }
     ; ($prng->int(0,1) and scalar(@defaults) and $last_column_type ne 'SERIAL' and ! $last_autoincrement ) ? 'DEFAULT '.$prng->arrayElement(\@defaults) : ''
   }
 ;

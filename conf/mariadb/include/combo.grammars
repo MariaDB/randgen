@@ -177,6 +177,7 @@ $optional_redefines_102= [
   [ '--redefine=conf/mariadb/modules/acl.yy', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/admin.yy', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/alter_table_columns.yy', '' ],
+  [ '--redefine=conf/mariadb/modules/alter_table_data_types.yy', '' ],
   [ '--redefine=conf/mariadb/modules/alter_table_indexes.yy', '' ],
   [ '--redefine=conf/mariadb/modules/collations.yy', '', '', '', '', '', '', '', '', '' ],
   [ '--redefine=conf/mariadb/modules/diagnostics.yy', '', '', '', '', '', '', '', '', '' ],
@@ -212,13 +213,7 @@ $optional_redefines_104= [
   [ '--redefine=conf/mariadb/modules/locks-10.4-extra.yy', '', '', '', '', '', '', '' ],
 ];
 
-$optional_redefines_105= [
-  @$optional_redefines_104,
-  [ '--redefine=conf/engines/s3.yy --mysqld=--plugin-load-add=ha_s3 --mysqld=--s3=on --mysqld=--s3-host-name="127.0.0.1" --mysqld=--s3-protocol-version=Auto --mysqld=--s3-bucket=rqg --mysqld=--s3-access-key=minio --mysqld=--s3-secret-key=minioadmin --mysqld=--s3-region="" --mysqld=--s3-port=9000 --mysqld=--s3-use-http=on',
-  '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
-];
-
-
+$optional_redefines_105= [ @$optional_redefines_104 ];
 $optional_redefines_106= [ @$optional_redefines_105 ];
 $optional_redefines_107= [ @$optional_redefines_106 ];
 $optional_redefines_108= [ @$optional_redefines_107 ];

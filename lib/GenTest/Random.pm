@@ -361,18 +361,21 @@ sub float {
 }
 
 ### Decimal/numeric value of any allowed length
-# TODO: There must be a better way to do it
-sub fixed {
-  my $prng= shift;
-  my $d= $prng->uint16(1,65);
-  my $m= $prng->uint16(0,($d > 38 ? $d : 38));
-  my $res= '';
-  foreach (1..$d) { $res.= $prng->uint16(0,9) };
-  if ($m) {
-    $res.= '.';
-    foreach (1..$m) { $res.= $prng->uint16(0,9) };
+sub fixed_unsigned {
+  my ($prng, $m, $d)= @_;
+  unless (defined $m) {
+    $d= $prng->uint16(0,38);
+    $m= $prng->uint16($d,65);
   }
-  return ($prng->uint16(0,5) ? $res : '-'.$res);
+  my $res1= $prng->int(0,10**($m-$d));
+  my $res2= defined $d ? $res.= '.'.$prng->int(0,10**$d) : '';
+  return sprintf("%.10g",$res1.'.'.$res2);
+}
+
+sub fixed {
+  my ($prng, $m, $d)= @_;
+  my $res= $prng->fixed_unsigned($m, $d);
+  return ($prng->uint16(0,2) ? $res : '-'.$res);
 }
 
 sub digit {
@@ -407,7 +410,7 @@ sub inet6 {
 
 sub uuid {
     my $prng = shift;
-    return $prng->hex(32);
+    return "'" . join ('', map { (0..9,'A'..'F')[$prng->int(0,15)] } (1..32) ) . "'";
 }
 
 sub spatial {
