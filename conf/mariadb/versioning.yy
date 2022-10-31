@@ -24,7 +24,10 @@ query_init_add:
   ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init
   ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init
   ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init
-  { $executors->[0]->forceMetadataReload(); '' }
+  ;; vers_create_table_with_visible_columns
+  ;; vers_create_simple_table
+  ;; CREATE OR REPLACE VIEW vers_view_1 AS SELECT * FROM `vers_table_visible_columns`
+  ;; CREATE OR REPLACE VIEW vers_view_2 AS SELECT * FROM `vers_simple_table`
   ;; SET ENFORCE_STORAGE_ENGINE=DEFAULT
 ;
 
@@ -33,45 +36,36 @@ vers_create_init:
   | { $new_col_next_num= 1; '' } CREATE TABLE IF NOT EXISTS vers_new_table_name (vers_col_list_with_period , PERIOD FOR SYSTEM_TIME ( { $period_start } , { $period_end } )) vers_engine vers_table_flags vers_partitioning_optional
 ;
 
-query_add:
-  { $new_col_next_num= 0; '' } vers_query ;
+vers_create_view:
+  CREATE OR REPLACE VIEW vers_view_name AS SELECT * FROM _versionedtable WHERE _field _basics_comparison_operator _basics_any_value ;
 
-vers_query:
-    ==FACTOR:15== vers_alter
-  | ==FACTOR:20== vers_select
-  | ==FACTOR:0.5== vers_change_variable
-  | ==FACTOR:0.5== vers_delete_history
-  | vers_tx_history
-  | vers_show_table
-  | ==FACTOR:0.1== vers_drop_table
+vers_create_simple_table:
+  CREATE OR REPLACE TABLE `vers_simple_table` (a INT) WITH SYSTEM VERSIONING;
+
+vers_create_table_with_visible_columns:
+  CREATE OR REPLACE TABLE `vers_table_visible_columns` (`a` INT, `row_start` TIMESTAMP(6) AS ROW START, `row_end` TIMESTAMP(6) AS ROW END, PERIOD FOR SYSTEM_TIME(`row_start`,`row_end`)) WITH SYSTEM VERSIONING
+;
+
+query_add:
+  { $new_col_next_num= 0; '' } vers_fix_timestamp ;; vers_query ;; SET timestamp= 0 ;
+
+vers_fix_timestamp:
+  ==FACTOR:100== |
+  SET timestamp= @@timestamp |
+  SET timestamp= @@timestamp { '+'.$prng->uint16(-10000000,10000000) } |
+  SET timestamp= UNIX_TIMESTAMP(_datetime)
 ;
 
 vers_query:
     ==FACTOR:5== { $new_col_next_num= 1; '' } vers_create
-  | ==FACTOR:20== vers_insert
-  | ==FACTOR:5== vers_update
-  | ==FACTOR:0.1== vers_delete
-  | ==FACTOR:0.5== vers_truncate
-  | ==FACTOR:0.5== vers_delete
+  | ==FACTOR:0.5== vers_insert_history /* compatibility 10.11.0 */
+  | ==FACTOR:0.5== vers_delete_history
+  | ==FACTOR:0.05== vers_change_variable
   | ==FACTOR:15== vers_alter
   | ==FACTOR:2== vers_alter_partitioning
-  | ==FACTOR:0.1== vers_flush
-  | ==FACTOR:0.1== vers_optimize
-  | ==FACTOR:0.5== vers_lock_unlock_table
-  | ==FACTOR:1== vers_transaction
   | ==FACTOR:5== vers_select
-;
-
-vers_show_table:
-    SHOW CREATE TABLE vers_existing_table
-  | DESC vers_existing_table
-  | SHOW INDEX IN vers_existing_table
-  | SHOW TABLE STATUS LIKE { "'".$last_table."'" }
-  | SHOW COLUMNS IN vers_existing_table
-  | SHOW FULL COLUMNS IN vers_existing_table
-  | SHOW FIELDS IN vers_existing_table
-  | SHOW FULL FIELDS IN vers_existing_table
-  | SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = { "'".$last_table."'" }
+  | ==FACTOR:0.5== vers_tx_history
+  | ==FACTOR:0.1== vers_create_view
 ;
 
 vers_engine:
@@ -87,18 +81,14 @@ vers_with_system_versioning:
   ==FACTOR:20== WITH SYSTEM VERSIONING
 ;
 
-vers_drop_table:
-  DROP TABLE vers_if_exists _versionedtable
-;
-
 vers_with_without_system_versioning:
   | | | | | | WITH SYSTEM VERSIONING | WITHOUT SYSTEM VERSIONING
 ;
 
 vers_change_variable:
-    SET vers_session_global TRANSACTION ISOLATION LEVEL vers_tx_isolation_value
-  | SET vers_session_global `SYSTEM_VERSIONING_ALTER_HISTORY`= vers_alter_history_value
+    SET vers_session_global `SYSTEM_VERSIONING_ALTER_HISTORY`= vers_alter_history_value
   | SET vers_session_global `system_versioning_asof` = vers_as_of_value
+  | SET SYSTEM_VERSIONING_INSERT_HISTORY= __on_x_off(80) /* compatibility 10.11.0 */
 ;
 
 vers_as_of_value:
@@ -110,18 +100,6 @@ vers_as_of_value:
   _timestamp |
   _datetime |
   _date
-;
-
-vers_hide_value:
-  AUTO | IMPLICIT | FULL | NEVER
-;
-
-vers_on_off:
-  ON | OFF
-;
-
-vers_tx_isolation_value:
-  READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SERIALIZABLE
 ;
 
 vers_alter_history_value:
@@ -144,22 +122,17 @@ vers_set_statement_alter_history:
   SET STATEMENT SYSTEM_VERSIONING_ALTER_HISTORY= vers_alter_history_value FOR
 ;
 
+vers_set_statement_insert_history:
+  ==FACTOR:20== |
+  SET STATEMENT SYSTEM_VERSIONING_INSERT_HISTORY= __on_x_off FOR
+;
+
 vers_alter_list:
   vers_alter_item | vers_alter_item, vers_alter_list
 ;
 
 vers_alter_item:
-    ==FACTOR:5==    vers_add_column
-  | ==FACTOR:3==    vers_modify_column
-  | ==FACTOR:0.3==  vers_change_column
-  | ==FACTOR:0.5==  vers_alter_column
-  | ==FACTOR:3==    vers_add_index
-  | ==FACTOR:0.2==  vers_drop_column
-  | ==FACTOR:0.5==  vers_drop_index
-  |                 vers_change_row_format
-  |                 FORCE
-  |                 ENGINE=InnoDB
-  | ==FACTOR:0.05== DROP SYSTEM VERSIONING
+    ==FACTOR:0.05== DROP SYSTEM VERSIONING
   |                 ADD SYSTEM VERSIONING
   |                 ADD PERIOD FOR SYSTEM_TIME(vers_col_start, vers_col_end)
   | ==FACTOR:0.5==  vers_add_drop_sys_column
@@ -229,10 +202,6 @@ vers_col_end:
   ==FACTOR:100== { $period_end = '`row_end`' }
 ;
 
-vers_or_replace_if_not_exists:
-  | OR REPLACE | IF NOT EXISTS
-;
-
 vers_partitioning:
     vers_partitioning_definition
   | vers_partitioning_definition
@@ -289,57 +258,26 @@ vers_interval:
 
 ####################################################
 
-vers_systime:
-  ==FACTOR:5== ALL |
-  NOW(6) |
-  NOW() |
-  CURRENT_TIMESTAMP |
-  DATE(NOW()) |
-  _timestamp |
-  _datetime |
-  _date
-;
-
-vers_transaction:
-    ==FACTOR:3== START TRANSACTION
-  | SAVEPOINT sp
-  | ROLLBACK TO SAVEPOINT sp
-  | ==FACTOR:3== COMMIT
-  | ==FACTOR:2== ROLLBACK
-  | SET AUTOCOMMIT=OFF
-  | SET AUTOCOMMIT=ON
-;
-
-vers_lock_unlock_table:
-    FLUSH TABLE vers_existing_table FOR EXPORT
-  | LOCK TABLE vers_existing_table READ
-  | LOCK TABLE vers_existing_table WRITE
-  | SELECT * FROM vers_existing_table FOR UPDATE
-  | ==FACTOR:20== UNLOCK TABLES
-;
-
 vers_alter_partitioning:
     ALTER TABLE vers_existing_table PARTITION BY HASH(_field)
   | ALTER TABLE vers_existing_table PARTITION BY KEY(_field)
   | ALTER TABLE vers_existing_table REMOVE PARTITIONING
 ;
 
-vers_delete:
-  DELETE FROM vers_existing_table LIMIT _digit
-;
-
-vers_truncate:
-  TRUNCATE TABLE vers_existing_table
-;
-
 vers_new_table_name:
-    { $my_last_table = 't_vers_'.(++$vers_tab_num) }
+    { $my_last_table = 't_vers_'.abs($$).'_'.(++$vers_tab_num) }
 ;
 
 vers_existing_table:
-  ==FACTOR:20== _versionedtable
+  ==FACTOR:30== _versionedtable
   | _table
+  | vers_view_name
+  | { $last_table = '`vers_simple_table`' }
+  | { $last_table = '`vers_table_visible_columns`' }
 ;
+
+vers_view_name:
+  { $last_table = '`vers_view_'.$prng->uint16(1,2).'`' } ;
 
 vers_existing_or_new_table_name:
   ==FACTOR:10== vers_existing_table |
@@ -354,10 +292,6 @@ vers_col_new_name:
 
 vers_virt_col_new_name:
   { 'vcol'.($new_col_next_num++) } ;
-
-vers_ind_name:
-  { $last_index = 'ind'.$prng->int(1,10) }
-;
 
 # TODO: vcols
 vers_col_name_and_definition:
@@ -384,10 +318,6 @@ vers_virt_col_definition:
   | vers_text_type AS ( SUBSTR(vers_col_name, _digit, _digit ) )
   | vers_enum_type AS ( vers_col_name )
   | vers_geo_type AS ( vers_col_name )
-;
-
-vers_virt_type:
-  STORED | VIRTUAL
 ;
 
 vers_optional_default_or_current_timestamp:
@@ -474,49 +404,36 @@ vers_row_format:
   | vers_change_row_format | vers_change_row_format
 ;
 
-vers_insert:
-  vers_insert_select | vers_insert_values
+vers_insert_history:
+  vers_set_statement_insert_history vers_insert_ignore_replace INTO vers_existing_table ( _field, vers_col_start, vers_col_end ) VALUES vers_history_value_list |
+  vers_set_statement_insert_history vers_insert_ignore_replace INTO vers_existing_table ( _field, vers_col_start, vers_col_end ) SELECT _field, vers_col_start, vers_col_end FROM { $last_table } |
+  vers_set_statement_insert_history vers_insert_ignore_replace INTO vers_existing_table SELECT * FROM { $last_table } |
+  vers_set_statement_insert_history vers_insert_ignore_replace INTO `vers_simple_table` (a, row_start, row_end) VALUES vers_history_value_list |
+  vers_set_statement_insert_history vers_insert_ignore_replace INTO `vers_simple_table` VALUES vers_history_value_list |
+  vers_set_statement_insert_history vers_insert_ignore_replace INTO `vers_table_visible_columns` VALUES vers_history_value_list
 ;
 
-vers_update:
-  UPDATE vers_existing_table SET _field = DEFAULT LIMIT 1;
-
-vers_insert_select:
-  INSERT INTO vers_existing_table ( _field ) SELECT /* vers_existing_table */ _field FROM { $last_table }
-;
-
-vers_insert_values:
-    INSERT INTO vers_existing_table () VALUES vers_empty_value_list
-  | INSERT INTO vers_existing_table (_field) VALUES vers_non_empty_value_list
-;
+vers_insert_ignore_replace:
+  INSERT __ignore(80) | REPLACE ;
 
 vers_non_empty_value_list:
   (_vers_value) | (_vers_value),vers_non_empty_value_list
 ;
+
+vers_history_value_list:
+  vers_history_values | vers_history_values , vers_history_value_list ;
+
+vers_history_values:
+  # Valid range historical data
+  ==FACTOR:10==  (_vers_value, { $ts=$prng->uint16(0,2147483645); $prng->datetime($ts) . ', '. $prng->datetime($ts+$prng->uint16($ts+1,2147483646)) } ) |
+  # Valid range actual data
+  ==FACTOR:5==   (_vers_value, { $ts=$prng->uint16(0,2147483646); $prng->datetime($ts) . ', '. "'2036-01-19 00:00:00.000000'" } ) |
+  # Possibly invalid range
+  ==FACTOR:0.5== (_vers_value, { $ts=$prng->uint16(0,2147483647); $prng->datetime($ts) . ', '. $prng->datetime($ts) } )
+;
  
 vers_empty_value_list:
   () | (),vers_empty_value_list
-;
-
-vers_add_column:
-  ADD COLUMN vers_if_not_exists vers_col_name_and_definition vers_col_location vers_algorithm vers_lock
-;
-
-vers_modify_column:
-  MODIFY COLUMN vers_if_exists vers_col_name_and_definition vers_col_location vers_algorithm vers_lock
-;
-
-vers_change_column:
-  CHANGE COLUMN vers_if_exists _field vers_col_name_and_definition vers_algorithm vers_lock
-;
-
-vers_col_location:
-  | | | | | FIRST | AFTER _field
-;
-
-vers_alter_column:
-    ALTER COLUMN vers_if_exists _field SET DEFAULT vers_default_val
-  | ALTER COLUMN vers_if_exists _field DROP DEFAULT
 ;
 
 vers_if_exists:
@@ -527,19 +444,6 @@ vers_if_not_exists:
   | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS 
 ;
 
-vers_drop_column:
-  DROP COLUMN vers_if_exists _field vers_algorithm vers_lock
-;
-
-vers_add_index:
-  ADD vers_any_key vers_algorithm vers_lock
-;
-
-
-vers_drop_index:
-  DROP INDEX vers_ind_name | DROP PRIMARY KEY
-;
-
 vers_column_list:
   vers_col_name | vers_col_name, vers_column_list
 ;
@@ -547,14 +451,6 @@ vers_column_list:
 vers_temporary:
   ==FACTOR:50== |
   TEMPORARY
-;
-
-vers_flush:
-  FLUSH TABLES
-;
-
-vers_optimize:
-  OPTIMIZE TABLE vers_existing_table
 ;
 
 vers_algorithm:
@@ -649,31 +545,11 @@ vers_optional_geo_default:
   | DEFAULT ST_GEOMFROMTEXT('Point(1 1)') ;
 
 vers_optional_auto_increment:
-  | | | | | | AUTO_INCREMENT ;
-  
-vers_inline_key:
-  | | | vers_index ;
-  
-vers_index:
-  KEY | PRIMARY KEY | UNIQUE ;
+  | | | | | | AUTO_INCREMENT KEY;
   
 vers_key_column_list:
   _field __asc_x_desc(33,33) | _field __asc_x_desc(33,33), vers_key_column_list
 ;
-
-vers_any_key:
-  ==FACTOR:4== vers_index(_field __asc_x_desc(33,33))
-  | vers_index(vers_key_column_list)
-  | vers_index(vers_key_column_list)
-  | FULLTEXT KEY(vers_text_col_name)
-#  | SPATIAL INDEX(vers_geo_col_name)
-;
-
-vers_comment:
-  | | COMMENT 'comment';
-  
-vers_compressed:
-  | | | | | | COMPRESSED ;
 
 _vers_value:
   NULL | _digit | '' | _char(1)
