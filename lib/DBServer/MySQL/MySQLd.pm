@@ -976,6 +976,21 @@ sub normalizeDump {
     close(DUMP2);
   }
 
+  # MDEV-29446 added default COLLATE clause to SHOW CREATE.
+  # in 10.3.37, 10.4.27, 10.5.18, 10.6.11, 10.7.7, 10.8.6, 10.9.4, 10.10.2.
+  # We can't know whether it was a part of the original definition or not,
+  # so we have to remove it unconditionally.
+  say("normalizeDump removes COLLATE clause from table and other definitions definitions");
+  move($file, $file.'.tmp6');
+  open(DUMP1,$file.'.tmp6');
+  open(DUMP2,">$file");
+  while (<DUMP1>) {
+    if (s/ COLLATE[= ]\w+//g) {}
+    print DUMP2 $_;
+  }
+  close(DUMP1);
+  close(DUMP2);
+
 
   if (-e $file.'.tmp1') {
     move($file.'.tmp1',$file.'.orig');
@@ -988,6 +1003,8 @@ sub normalizeDump {
     move($file.'.tmp4',$file.'.orig');
   } elsif (-e $file.'.tmp5') {
     move($file.'.tmp5',$file.'.orig');
+  } elsif (-e $file.'.tmp6') {
+    move($file.'.tmp6',$file.'.orig');
   }
 }
 
