@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29932:
+=~ AddressSanitizer|signal
+=~ Virtual_column_info::need_refix
+=~ close_thread_table
+=~ handle_delayed_insert
+MDEV-29931:
+=~ Assertion \`fixed'
+=~ Item_real_func::val_decimal|Item_func_pow::val_real
+=~ Item_func_from_unixtime::get_date
+=~ TABLE::update_default_fields
 MDEV-29916:
 =~ Assertion \`is_valid_time_slow()'
 =~ Time::valid_MYSQL_TIME_to_valid_value
