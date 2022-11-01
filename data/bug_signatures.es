@@ -59,6 +59,10 @@ TODO-842: [m_status == DA_OK_BULK - LOCK]
 # Fixed in the next release (10.3.37 / 10.4.27 / 10.5.17 / 10.6.11)
 ##########
 
+MDEV-29600:
+=~ LeakSanitizer
+=~ rec_copy_prefix_to_buf
+=~ btr_blob_log_check_t::check
 MDEV-29561:
 =~ Could not re-create table .*: 1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'binary
 MDEV-29559:

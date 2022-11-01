@@ -205,11 +205,6 @@ MDEV-29636:
 MDEV-29623:
 =~ Out of memory
 =~ FeatureUsage detected SPIDER
-# Not merged up yet
-MDEV-29600:
-=~ LeakSanitizer
-=~ rec_copy_prefix_to_buf
-=~ btr_blob_log_check_t::check
 MDEV-29580:
 =~ Assertion \`!return_error \|\| thd->is_error() \|\| thd->killed'
 =~ mysql_delete
@@ -220,11 +215,6 @@ MDEV-29580:
 =~ Protocol::end_statement
 =~ dispatch_command.*MATCH.*AGAINST|Query .*:.*MATCH.*AGAINST
 =~ FeatureUsage detected sequences
-MDEV-29570:
-=~ LeakSanitizer
-=~ trx_mod_table_time_t::start_bulk_insert
-=~ ha_partition::write_row
-=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29560:
 =~ Assertion \`lock_table_has(trx, table, LOCK_IX)'|Assertion \`lock_table_has(&trx, &table, LOCK_IX)'
 =~ lock_trx_has_expl_x_lock
