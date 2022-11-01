@@ -557,7 +557,7 @@ MDEV-28569:
 =~ btr_cur_compress_if_useful
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28566:
-=~ Assertion \`!expr->fixed()'
+=~ Assertion \`!expr->fixed()'|Assertion \`!expr->is_fixed()'
 =~ Virtual_column_info::fix_session_expr
 =~ TABLE::vcol_fix_expr
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
