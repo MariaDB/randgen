@@ -10,7 +10,7 @@ MDEV-29932:
 =~ close_thread_table
 =~ handle_delayed_insert
 MDEV-29931:
-=~ Assertion \`fixed'
+=~ Assertion \`fixed'|Assertion \`fixed()'
 =~ Item_real_func::val_decimal|Item_func_pow::val_real
 =~ Item_func_from_unixtime::get_date
 =~ TABLE::update_default_fields
