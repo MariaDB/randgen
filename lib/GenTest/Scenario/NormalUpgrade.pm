@@ -238,40 +238,40 @@ sub run {
   $new_server->normalizeDump($new_server->vardir.'/server_data_new.dump');
   $table_autoinc{'new'} = $new_server->collectAutoincrements();
 
-  #####
-  $self->printStep("Restarting the new server and running the rest of the test flow");
-
-  $status= $new_server->stopServer;
-
-  if ($status != STATUS_OK) {
-    sayError("Shutdown of the new server failed");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$new_server]);
-  }
-
-  $status= $new_server->startServer;
-
-  if ($status != STATUS_OK) {
-    sayError("New server failed to restart");
-    return $self->finalize(STATUS_RECOVERY_FAILURE,[]);
-  }
-
-  $self->setProperty('duration',int($self->getProperty('duration')/3));
-  $status= $self->run_test_flow();
-
-  if ($status != STATUS_OK) {
-    sayError("Test flow on the new server failed");
-    #####
-    $self->printStep("Checking the server error log for known errors");
-
-    if ($self->checkErrorLog($new_server) == STATUS_CUSTOM_OUTCOME) {
-      $status= STATUS_CUSTOM_OUTCOME;
-    }
-
-    $self->setStatus($status);
-    return $self->finalize($status,[$new_server])
-  }
-
-  #####
+#  #####
+#  $self->printStep("Restarting the new server and running the rest of the test flow");
+#
+#  $status= $new_server->stopServer;
+#
+#  if ($status != STATUS_OK) {
+#    sayError("Shutdown of the new server failed");
+#    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$new_server]);
+#  }
+#
+#  $status= $new_server->startServer;
+#
+#  if ($status != STATUS_OK) {
+#    sayError("New server failed to restart");
+#    return $self->finalize(STATUS_RECOVERY_FAILURE,[]);
+#  }
+#
+#  $self->setProperty('duration',int($self->getProperty('duration')/3));
+#  $status= $self->run_test_flow();
+#
+#  if ($status != STATUS_OK) {
+#    sayError("Test flow on the new server failed");
+#    #####
+#    $self->printStep("Checking the server error log for known errors");
+#
+#    if ($self->checkErrorLog($new_server) == STATUS_CUSTOM_OUTCOME) {
+#      $status= STATUS_CUSTOM_OUTCOME;
+#    }
+#
+#    $self->setStatus($status);
+#    return $self->finalize($status,[$new_server])
+#  }
+#
+#  #####
   $self->printStep("Stopping the new server");
 
   $status= $new_server->stopServer;

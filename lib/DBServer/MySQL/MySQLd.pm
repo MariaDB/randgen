@@ -750,7 +750,7 @@ sub upgradeDb {
     '"'.$mysql_upgrade.'" --host=127.0.0.1 --port='.$self->port.' -uroot';
   my $upgrade_log= $self->datadir.'/mysql_upgrade.log';
   say("Running mysql_upgrade:\n  $upgrade_command");
-  my $res= system("$upgrade_command > $upgrade_log");
+  my $res= system("$upgrade_command > $upgrade_log 2>&1");
   if ($res == DBSTATUS_OK) {
     # mysql_upgrade can return exit code 0 even if user tables are corrupt,
     # so we don't trust the exit code, we should also check the actual output
@@ -774,6 +774,9 @@ sub upgradeDb {
       sayError("Could not find $upgrade_log");
       $res= DBSTATUS_FAILURE;
     }
+  } else {
+    sayError("mysql_upgrade returned non-okay status");
+    sayFile($upgrade_log) if (-e $upgrade_log);
   }
   return $res;
 }
