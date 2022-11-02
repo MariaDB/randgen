@@ -1,4 +1,4 @@
-# Copyright (C) 2019, 2020 MariaDB Corporation Ab
+# Copyright (C) 2019, 2022 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ sub run {
   
   #####
 
-  unless ($mbackup= $self->mbackup_binary) {
+  unless ($mbackup= $server->mariabackup) {
     sayError("Could not find MariaBackup binary");
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
   }

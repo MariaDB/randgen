@@ -1,5 +1,5 @@
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved. 
-# Copyright (c) 2013, 2021, MariaDB
+# Copyright (c) 2013, 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -69,6 +69,7 @@ use constant MYSLQD_SERVER_VARIABLES => 31;
 use constant MYSQLD_RR => 32;
 use constant MYSLQD_CONFIG_VARIABLES => 33;
 use constant MYSQLD_CLIENT => 34;
+use constant MARIABACKUP => 35;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -134,6 +135,11 @@ sub new {
     $self->[MYSQLD_CLIENT] = $self->_find([$self->basedir],
                                           osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
                                           osWindows()?"mysql.exe":"mysql");
+
+    $self->[MARIABACKUP]= $self->_find([$self->basedir],
+                            osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
+                            osWindows()?"mariabackup.exe":"mariabackup"
+                          );
 
     $self->[MYSQLD_CLIENT_BINDIR] = dirname($self->[MYSQLD_DUMPER]);
 
@@ -786,7 +792,11 @@ sub dumper {
 }
 
 sub client {
-    return $_[0]->[MYSQLD_CLIENT];
+  return $_[0]->[MYSQLD_CLIENT];
+}
+
+sub mariabackup {
+  return $_[0]->[MARIABACKUP];
 }
 
 sub drop_broken {

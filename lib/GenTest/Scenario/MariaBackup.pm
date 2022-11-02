@@ -1,4 +1,4 @@
-# Copyright (C) 2019, 2020 MariaDB Corporation Ab
+# Copyright (C) 2019, 2022 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,7 +39,6 @@ use POSIX;
 
 use DBServer::MySQL::MySQLd;
 
-use constant MARIABACKUP_BINARY => 50;
 use constant MARIABACKUP_BACKUP_INTERVAL => 51;
 
 sub new {
@@ -50,18 +49,10 @@ sub new {
   return $self;
 }
 
-sub mbackup_binary {
-  return $_[0]->[MARIABACKUP_BINARY];
-}
-
 sub prepare_server {
   my $self= shift;
 
   my $server= $self->prepareServer(1);
-  $self->[MARIABACKUP_BINARY]= $server->_find([$server->basedir],
-                            osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-                            osWindows()?"mariabackup.exe":"mariabackup"
-                          );
   say("-- Server info: --");
   say($server->version());
   $server->printServerOptions();
