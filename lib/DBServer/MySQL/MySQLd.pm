@@ -817,6 +817,16 @@ sub dumpdb {
     my $dbh= $self->dbh;
     $dbh->do('SET GLOBAL max_statement_time=0');
     $self->drop_broken();
+    if ($for_restoring) {
+      # Workaround for MDEV-29936 (unique ENUM/SET with invalid values cause problems)
+      my $enums= $self->dbh->selectall_arrayref(
+        "select table_schema, table_name, column_name from information_schema.columns ".
+        "where (column_type like 'enum%' or column_type like 'set%') and column_key in ('PRI','UNI')"
+      );
+      foreach my $e (@$enums) {
+        $self->dbh->do("delete from $e->[0].$e->[1] where $e->[2] = 0 /* dropping enums with invalid values */");
+      }
+    }
 
     my $dump_command= '"'.$self->dumper.'" --skip-dump-date -uroot --host=127.0.0.1 --port='.$self->port.($database ? " --databases $database" : ' --all-databases').' --hex-blob';
     unless ($for_restoring) {
