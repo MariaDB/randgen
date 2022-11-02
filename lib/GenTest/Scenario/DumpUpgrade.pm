@@ -127,7 +127,11 @@ sub run {
   }
 
   # Dump all databases for further restoring
-  $status= $old_server->dumpdb(undef, $old_server->vardir.'/all_db.dump',my $for_restoring=1,"--dump-history --force");
+  if ($old_server->versionNumeric gt '101100') {
+    $status= $old_server->dumpdb(undef, $old_server->vardir.'/all_db.dump',my $for_restoring=1,"--dump-history --force");
+  } else {
+    $status= $old_server->dumpdb(undef, $old_server->vardir.'/all_db.dump',my $for_restoring=1);
+  }
   if ($status != STATUS_OK) {
     sayWarning("Database dump on the old server failed, but it was running with --force, so we will continue");
   }
