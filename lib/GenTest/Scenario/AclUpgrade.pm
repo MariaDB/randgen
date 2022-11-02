@@ -18,7 +18,7 @@
 #
 # The module implements a normal upgrade scenario with focus on ACL.
 #
-# The difference with the NormalUpgrade test is that instead of
+# The difference with the LiveUpgrade test is that instead of
 # comparing the raw database dumps before and after upgrade,
 # we will compare the output of SHOW GRANT statements and such.
 # There is no point comparing the structure and contents of system

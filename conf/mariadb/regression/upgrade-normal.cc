@@ -20,7 +20,7 @@ $combinations = [
   --mysqld=--loose-max-statement-time=20
   --mysqld=--lock-wait-timeout=10
   --mysqld=--innodb-lock-wait-timeout=5
-  --scenario=NormalUpgrade
+  --scenario=LiveUpgrade
   --scenario-grammar2=conf/mariadb/oltp_and_ddl.yy
   '],
   [ @$innodb_compression_combinations ],

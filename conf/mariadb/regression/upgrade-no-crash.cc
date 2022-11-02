@@ -25,7 +25,7 @@ $combinations = [
   [ @$innodb_pagesize_combinations ],
   [ '', $all_encryption_options ],
   [
-    '--scenario=NormalUpgrade --duration=180',
+    '--scenario=LiveUpgrade --duration=180',
     '--scenario=UndoLogUpgrade --duration=300',
   ],
 ];

@@ -17,7 +17,7 @@
 
 ########################################################################
 #
-# The module implements a normal restart/upgrade scenario.
+# The module implements a normal restart/live upgrade scenario.
 #
 # This is the simplest form of upgrade. The test starts the old server,
 # executes some flow on it, shuts down the server, starts the new one
@@ -26,7 +26,7 @@
 #
 ########################################################################
 
-package GenTest::Scenario::NormalUpgrade;
+package GenTest::Scenario::LiveUpgrade;
 
 require Exporter;
 @ISA = qw(GenTest::Scenario::Upgrade);
@@ -61,7 +61,7 @@ sub new {
     $self->printTitle('Normal restart');
   }
   else {
-    $self->printTitle('Normal upgrade/downgrade');
+    $self->printTitle('Live upgrade/downgrade');
   }
   return $self;
 }
