@@ -484,8 +484,9 @@ sub post_upgrade {
   }
 
   $self->printStep("Comparing ACL data after $type upgrade");
-  GenTest::Scenario::AclUpgrade::normalizeGrants(undef,$old_server, $new_server, $old_grants, $new_grants);
-  $post_upgrade_status= GenTest::Scenario::AclUpgrade::compareAclData(undef,$old_grants,$new_grants);
+  my $old_grants_copy= { %$old_grants };
+  GenTest::Scenario::AclUpgrade::normalizeGrants(undef,$old_server, $new_server, $old_grants_copy, $new_grants);
+  $post_upgrade_status= GenTest::Scenario::AclUpgrade::compareAclData(undef,$old_grants_copy,$new_grants);
 
   if ($post_upgrade_status != STATUS_OK) {
     sayError("ACL info collection or comparison after $type upgrade failed");
