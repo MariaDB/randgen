@@ -6,7 +6,7 @@ require "$ENV{RQG_HOME}/conf/mariadb/include/parameter_presets";
 $combinations = [
   [
   '
-  --threads=4
+  --threads=2
   --duration=120
   --no-mask
   --seed=time
