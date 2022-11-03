@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2020 MariaDB Corporation Ab
+# Copyright (C) 2017, 2022 MariaDB Corporation Ab
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -216,29 +216,12 @@ sub run {
   $self->normalizeGrants($old_server, $new_server, $old_grants, $new_grants);
 
   #####
+
   $self->printStep("Comparing ACL data before and after upgrade");
+  $status= $self->compareAclData();
 
-  foreach my $u (sort keys %$old_grants) {
-    if (not exists $new_grants->{$u}) {
-      sayError("User/role $u disappeared from the user table after upgrade");
-      $status= STATUS_UPGRADE_FAILURE;
-    }
-    elsif ($new_grants->{$u} ne $old_grants->{$u}) {
-      sayError("Grants for user/role $u changed after upgrade:\nOld: $old_grants->{$u}\nNew: $new_grants->{$u}");
-      $status= STATUS_UPGRADE_FAILURE;
-    }
-  }
-
-  foreach my $u (sort keys %$new_grants) {
-    if (not exists $old_grants->{$u}) {
-      sayError("User/role $u appeared in the user table after upgrade");
-      $status= STATUS_UPGRADE_FAILURE;
-    }
-  }
-
-  if ($status == STATUS_OK) {
-    say("Comparison didn't reveal any discrepancies");
-  } else {
+  if ($status != STATUS_OK) {
+    sayError("ACL data differs before and after upgrade");
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
   }
 
@@ -346,7 +329,7 @@ sub normalizeGrants {
       } elsif ($old_grants->{$u} =~ / SUPER(?:,| ON)/) {
         $old_grants->{$u} =~ s/ ON \*\.\*/, SET USER, FEDERATED ADMIN, CONNECTION ADMIN, READ_ONLY ADMIN, REPLICATION SLAVE ADMIN, BINLOG ADMIN, BINLOG REPLAY ON \*\.\*/;
       }
-      $old_grants->{$u} =~ s/REPLICATION CLIENT/BINLOG MONITOR/;
+      $old_grants->{$u} =~ s/REPLICATION CLIENT/BINLOG MONITOR, SLAVE MONITOR/;
 #      if ($old_grants->{$u} =~ / REPLICATION SLAVE(?:,| ON)/) {
 #        if ($old_grants->{$u} =~ s/ BINLOG ADMIN/ REPLICATION MASTER ADMIN, BINLOG ADMIN/) {}
 #        else { $old_grants->{$u} =~ s/ ON \*\.\*/, REPLICATION MASTER ADMIN ON \*\.\*/ };
@@ -354,6 +337,36 @@ sub normalizeGrants {
     }
   }
 
+}
+
+sub compareAclData {
+  my ($self, $old_grants, $new_grants)= @_;
+
+  my $compare_status= STATUS_OK;
+  foreach my $u (sort keys %$old_grants) {
+    if (not exists $new_grants->{$u}) {
+      sayError("User/role $u disappeared from the user table after upgrade");
+      $compare_status= STATUS_UPGRADE_FAILURE;
+    }
+    elsif ($new_grants->{$u} ne $old_grants->{$u}) {
+      sayError("Grants for user/role $u changed after upgrade:\nOld: $old_grants->{$u}\nNew: $new_grants->{$u}");
+      $compare_status= STATUS_UPGRADE_FAILURE;
+    }
+  }
+
+  foreach my $u (sort keys %$new_grants) {
+    if (not exists $old_grants->{$u}) {
+      sayError("User/role $u appeared in the user table after upgrade");
+      $compare_status= STATUS_UPGRADE_FAILURE;
+    }
+  }
+
+  if ($compare_status == STATUS_OK) {
+    say("ACL comparison didn't reveal any discrepancies");
+  } else {
+    sayError("ACL comparison revealed discrepancies");
+  }
+  return $compare_status;
 }
 
 sub collectAclData {
