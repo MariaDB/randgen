@@ -1,0 +1,487 @@
+# Copyright (C) 2022 MariaDB Corporation Ab
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+
+########################################################################
+#
+# The module implements a combination of different types of upgrades
+# and corresponding checks
+# - live upgrade
+# - mysqldump upgrade
+# - mariabackup upgrade
+#
+# The test starts the old server, dumps the schema and data,
+# creates a full backup, and shuts down the server.
+# Then it starts the new one on the old datadir, runs mysql_upgrade
+# if necessary, checks the tables, dumps the schema and data;
+# Then it starts the new server again on a clean datadir,
+# loads the dump from the old server runs mysql_upgrade if necessary,
+# dumps the schema and data;
+# Then it starts the new server again on a clean datadir,
+# restores mariabackup backup, dumps the schema and data;
+# Then it compares all new dumps to the old one.
+#
+########################################################################
+
+package GenTest::Scenario::NormalUpgrades;
+
+require Exporter;
+@ISA = qw(GenTest::Scenario::Upgrade);
+
+use strict;
+use DBI;
+use GenTest;
+use GenTest::App::GenTest;
+use GenTest::Properties;
+use GenTest::Constants;
+use GenTest::Scenario;
+use GenTest::Scenario::Upgrade;
+use Data::Dumper;
+use File::Copy;
+use File::Compare;
+use GenTest::Scenario::AclUpgrade;
+
+use DBServer::MySQL::MySQLd;
+
+# True if the "old" and the "new" servers are the same ("restart" mode).
+# It will determine how we categorize errors before the restart:
+# if the server changes, then we are only really interested in the new one,
+# so all errors before that will be "TEST_FAILURE". If the server is
+# the same, then everything matters.
+my $same_server= 0;
+
+my ($status, $old_server, $new_server, $databases, $vardir, $old_grants);
+
+sub new {
+  my $class= shift;
+  my $self= $class->SUPER::new(@_);
+
+  if ($self->old_server_options()->{basedir} eq $self->new_server_options()->{basedir}) {
+    $same_server= 1;
+    $self->printTitle('Normal recovery');
+  }
+  else {
+    $self->printTitle('Normal upgrades/downgrades');
+  }
+  return $self;
+}
+
+sub run {
+  my $self= shift;
+
+  $status= STATUS_OK;
+
+  #####
+  # Prepare servers
+  
+  ($old_server, $new_server)= $self->prepare_servers();
+   $old_server->backupDatadir($old_server->datadir."_clean");
+  $vardir=$old_server->vardir;
+
+  #####
+  $self->printStep("Starting the old server");
+
+  $status= $old_server->startServer;
+
+  if ($status != STATUS_OK) {
+    sayError("Old server failed to start");
+    return ($same_server ? $self->finalize($status,[]) : $self->finalize(STATUS_TEST_FAILURE,[]));
+  }
+
+  #####
+  $self->printStep("Generating data on the old server");
+
+  $status= $self->generate_data();
+  
+  if ($status != STATUS_OK) {
+    sayError("Data generation on the old server failed");
+    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+  }
+
+  #####
+  $self->printStep("Running test flow on the old server");
+
+  $self->setProperty('duration',int($self->getProperty('duration')/2));
+  $status= $self->run_test_flow();
+
+  if ($status != STATUS_OK) {
+    sayError("Test flow on the old server failed");
+    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+  }
+
+  #####
+  $self->printStep("Restarting the old server and dumping databases");
+
+  $status= $old_server->stopServer;
+
+  if ($status != STATUS_OK) {
+    sayError("Shutdown of the old server failed");
+    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+  }
+
+  $status= $old_server->startServer;
+
+  if ($status != STATUS_OK) {
+    sayError("Old server failed to restart");
+    return ($same_server ? $self->finalize($status,[]) : $self->finalize(STATUS_TEST_FAILURE,[]));
+  }
+
+  # Dump all databases for further restoring
+  if ($old_server->versionNumeric gt '101100') {
+    $status= $old_server->dumpdb(undef, $vardir.'/all_db.dump',my $for_restoring=1,"--dump-history --force");
+  } else {
+    $status= $old_server->dumpdb(undef, $vardir.'/all_db.dump',my $for_restoring=1);
+  }
+  if ($status != STATUS_OK) {
+    sayWarning("Database dump on the old server failed, but it was running with --force, so we will continue");
+  }
+
+  # Dump non-system databases for further comparison
+  $databases= join ' ', $old_server->nonSystemDatabases();
+  $status= $old_server->dumpSchema($databases, $vardir.'/server_schema_old.dump');
+  if ($status != STATUS_OK) {
+    sayError("Schema dump on the old server failed, no point to continue");
+    return ($same_server ? $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+  }
+  $old_server->normalizeDump($vardir.'/server_schema_old.dump', 'remove_autoincs');
+  # Skip heap tables' data on the old server, as it won't be preserved
+  $status= $old_server->dumpdb($databases, $vardir.'/server_data_old.dump');
+  if ($status != STATUS_OK) {
+    sayError("Data dump on the old server failed, no point to continue");
+    return ($same_server ? $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+  }
+  $old_server->normalizeDump($vardir.'/server_data_old.dump');
+
+  #####
+  $self->printStep("Creating full backup with MariaBackup");
+
+  my $mbackup;
+  my $buffer_pool_size= $old_server->serverVariable('innodb_buffer_pool_size') * 2;
+
+  unless ($mbackup= $old_server->mariabackup()) {
+    sayError("Could not find MariaBackup binary for the old server");
+    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$old_server]);
+  }
+
+  my $mbackup_command= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup $mbackup" : $mbackup);
+  $status= system("$mbackup_command --backup --target-dir=$vardir/mbackup --protocol=tcp --port=".$old_server->port." --user=".$old_server->user." >$vardir/mbackup_backup.log 2>&1");
+
+  if ($status == STATUS_OK) {
+      say("MariaBackup ran finished successfully");
+  } else {
+      sayError("MariaBackup failed: $status");
+      sayFile("$vardir/mbackup_backup.log");
+      return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+  }
+
+  $self->printStep("Preparing backup");
+
+  say("Storing the backup before prepare attempt...");
+  if (osWindows()) {
+    system("xcopy $vardir/mbackup $vardir/mbackup_before_prepare /E /I /Q");
+  } else {
+    system("cp -r $vardir/mbackup $vardir/mbackup_before_prepare");
+  }
+
+  my $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare $mbackup" : $mbackup)
+    . " --use-memory=".($buffer_pool_size * 2)." --prepare --target-dir=$vardir/mbackup --user=".$old_server->user." 2>$vardir/mbackup_prepare.log 2>&1";
+  say($cmd);
+  system($cmd);
+  $status= $? >> 8;
+
+  if ($status == STATUS_OK) {
+      say("Prepare of backup finished successfully");
+  } else {
+    sayError("Backup preparing failed");
+    sayFile("$vardir/mbackup_prepare.log");
+    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+  }
+
+  #####
+  $self->printStep("Getting ACL info from the old server");
+
+  ($status, $old_grants)= GenTest::Scenario::AclUpgrade::collectAclData(undef,$old_server);
+
+  if ($status != STATUS_OK) {
+    sayError("ACL info collection from the old server failed");
+    $status= STATUS_TEST_FAILURE if $status < STATUS_TEST_FAILURE;
+    return $self->finalize($status,[$old_server]);
+  }
+
+  #####
+  $self->printStep("Stopping the old server");
+
+  $status= $old_server->stopServer;
+
+  if ($status != STATUS_OK) {
+    sayError("Shutdown of the old server failed");
+    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+  }
+
+  #####
+  $self->printStep("Checking the old server log for fatal errors after shutdown");
+
+  $status= $self->checkErrorLog($old_server, {CrashOnly => 1});
+
+  if ($status != STATUS_OK) {
+    sayError("Found fatal errors in the log, old server shutdown has apparently failed");
+    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+  }
+  # Back up data directory from the old server
+  system ('cp -r '.$old_server->datadir.' '.$old_server->datadir.'_orig');
+
+  ######################################################################
+
+  # Point server_specific to the new server
+  $self->switch_to_new_server();
+
+  #######################
+  # Live upgrade
+  #######################
+
+  #####
+  $self->printStep("LIVE UPGRADE: Starting the new server on the old datadir");
+
+  $status= $self->start_for_upgrade('live');
+
+  if ($status != STATUS_OK) {
+    sayError("New server failed to start for live upgrade");
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+
+  $status= $self->post_upgrade('live');
+
+  if ($status != STATUS_OK) {
+    sayError("Live upgrade failed");
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+
+  # Back up data directory from the live upgrade
+  system ('mv '.$new_server->datadir.' '.$new_server->datadir.'_live_upgrade');
+
+  #######################
+  # Dump upgrade
+  #######################
+
+  #####
+  $self->printStep("DUMP UPGRADE: Starting the new server on clean datadir for mysqldump upgrade");
+
+  # Restore clean datadir for mysqldump upgrade
+  system ('mv '.$old_server->datadir.'_clean '.$new_server->datadir);
+
+  $status= $self->start_for_upgrade('dump');
+
+  if ($status != STATUS_OK) {
+    sayError("New server failed to restart for mysqldump upgrade");
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+
+  #####
+  $self->printStep("Restoring the dump of all databases");
+  my $client_command= $new_server->client.' -uroot --host=127.0.0.1 --protocol=tcp --port='.$new_server->port;
+
+  $status= system($client_command.' < '.$vardir.'/all_db.dump');
+  if ($status != STATUS_OK) {
+    sayError("All databases' schema dump failed to load");
+    $status= $self->checkErrorLog($new_server);
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+
+  $status= $self->post_upgrade('dump');
+
+  if ($status != STATUS_OK) {
+    sayError("Dump upgrade failed");
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+
+  # Back up data directory from the live upgrade
+  system ('mv '.$new_server->datadir.' '.$new_server->datadir.'_dump_upgrade');
+
+  #######################
+  # MariaBackup upgrade
+  #######################
+
+  $self->printStep("BACKUP UPGRADE: Starting the new server on restored mariabackup backup");
+
+  unless ($mbackup= $new_server->mariabackup()) {
+    sayError("Could not find MariaBackup binary for the new server");
+    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$new_server]);
+  }
+
+  $self->printStep("Restoring mariabackup");
+  system("rm -rf ".$new_server->datadir);
+  $cmd= "$mbackup --copy-back --target-dir=$vardir/mbackup --datadir=".$new_server->datadir." --user=".$new_server->user." > $vardir/mbackup_restore.log 2>&1";
+  say($cmd);
+  $status= system($cmd);
+  if ($status != STATUS_OK) {
+    sayError("Backup failed to restore");
+    sayFile("$vardir/mbackup_restore.log");
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+
+  $status= $self->start_for_upgrade('mariabackup');
+
+  if ($status != STATUS_OK) {
+    sayError("New server failed to restart upon mariabackup upgrade");
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+
+  $status= $self->post_upgrade('mariabackup');
+
+  if ($status != STATUS_OK) {
+    sayError("MariaBackup upgrade failed");
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+
+  return $self->finalize($status,[]);
+}
+
+######################################
+# Checks performed after each upgrade
+######################################
+
+sub start_for_upgrade {
+  my ($self, $type)= @_;
+
+  my $start_status= $new_server->startServer;
+
+  if ($start_status != STATUS_OK) {
+    sayError("New server failed to start upon $type upgrade");
+    # Error log might indicate known bugs which will affect the exit code
+    $start_status= $self->checkErrorLog($new_server);
+    # ... but even if it's a known error, we cannot proceed without the server
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+
+  return $start_status;
+}
+
+sub post_upgrade {
+  my ($self, $type)= @_;
+
+  my $post_upgrade_status= STATUS_OK;
+
+  #####
+  $self->printStep("Checking the server error log for errors after $type upgrade");
+
+  $post_upgrade_status= $self->checkErrorLog($new_server);
+
+  if ($post_upgrade_status != STATUS_OK) {
+    # Error log can show known errors. We want to update
+    # the global status, but don't want to exit prematurely
+    $self->setStatus($post_upgrade_status);
+    sayError("Found errors in the log after upgrade");
+    if ($post_upgrade_status > STATUS_CUSTOM_OUTCOME) {
+      return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    }
+  }
+
+  #####
+  if ( ($old_server->majorVersion ne $new_server->majorVersion)
+        # Follow-up for MDEV-14637 which changed the structure of InnoDB stat tables in 10.2.17 / 10.3.9
+        or ($old_server->versionNumeric lt '100217' and $new_server->versionNumeric ge '100217' )
+        or ($old_server->versionNumeric lt '100309' and $new_server->versionNumeric ge '100309' )
+        # Follow-up/workaround for MDEV-25866, CHECK errors on encrypted Aria tables
+        or ($new_server->serverVariable('aria_encrypt_tables') and $old_server->versionNumeric lt '100510' and $new_server->versionNumeric ge '100510' )
+     )
+  {
+    $self->printStep("Running mysql_upgrade after $type upgrade");
+    $post_upgrade_status= $new_server->upgradeDb;
+    if ($post_upgrade_status != STATUS_OK) {
+      sayError("mysql_upgrade failed");
+      return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    }
+  }
+  else {
+    $self->printStep("mysql_upgrade is skipped, as servers have the same major version");
+  }
+
+  #####
+  $self->printStep("Checking the database state after $type upgrade");
+
+  $post_upgrade_status= $new_server->checkDatabaseIntegrity;
+
+  if ($post_upgrade_status != STATUS_OK) {
+    sayError("Database appears to be corrupt after $type upgrade");
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+  
+  #####
+  $self->printStep("Dumping databases from the new server after $type upgrade");
+  
+  $new_server->dumpSchema($databases, $vardir.'/server_schema_'.$type.'_upgrade.dump');
+  $new_server->normalizeDump($vardir.'/server_schema_'.$type.'_upgrade.dump', 'remove_autoincs');
+  $new_server->dumpdb($databases, $vardir.'/server_data_'.$type.'_upgrade.dump');
+  $new_server->normalizeDump($vardir.'/server_data_'.$type.'_upgrade.dump');
+
+  #####
+  $self->printStep("Getting ACL info from the new server after $type upgrade");
+  my $new_grants;
+  ($post_upgrade_status, $new_grants)= GenTest::Scenario::AclUpgrade::collectAclData(undef,$new_server);
+
+  if ($post_upgrade_status != STATUS_OK) {
+    sayError("ACL info collection from the new server after $type upgrade failed");
+    $post_upgrade_status= STATUS_TEST_FAILURE if $post_upgrade_status < STATUS_TEST_FAILURE;
+    return $self->finalize($post_upgrade_status,[$new_server]);
+  }
+
+  #####
+  $self->printStep("Shutting down the new server after $type upgrade");
+
+  $post_upgrade_status= $new_server->stopServer;
+
+  if ($post_upgrade_status != STATUS_OK) {
+    sayError("Shutdown of the new server after $type upgrade failed");
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$new_server]);
+  }
+
+  #####
+  $self->printStep("Comparing databases before and after $type upgrade");
+  
+  $post_upgrade_status= compare($vardir.'/server_schema_old.dump', $vardir.'/server_schema_'.$type.'_upgrade.dump');
+  if ($post_upgrade_status != STATUS_OK) {
+    sayError("Database structures differ after $type upgrade");
+    system('diff -a -u '.$vardir.'/server_schema_old.dump'.' '.$vardir.'/server_schema_'.$type.'_upgrade.dump');
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+  else {
+    say("Structure dumps appear to be identical after $type upgrade");
+  }
+  
+  $post_upgrade_status= compare($vardir.'/server_data_old.dump', $vardir.'/server_data_'.$type.'_upgrade.dump');
+  if ($post_upgrade_status != STATUS_OK) {
+    sayError("Data differs after $type upgrade");
+    system('diff -a -u '.$vardir.'/server_data_old.dump'.' '.$vardir.'/server_data_'.$type.'_upgrade.dump');
+    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+  }
+  else {
+    say("Data dumps appear to be identical after $type upgrade");
+  }
+
+  $self->printStep("Comparing ACL data after $type upgrade");
+  GenTest::Scenario::AclUpgrade::normalizeGrants(undef,$old_server, $new_server, $old_grants, $new_grants);
+  $post_upgrade_status= GenTest::Scenario::AclUpgrade::compareAclData(undef,$old_grants,$new_grants);
+
+  if ($post_upgrade_status != STATUS_OK) {
+    sayError("ACL info collection or comparison after $type upgrade failed");
+    $post_upgrade_status= STATUS_TEST_FAILURE if $post_upgrade_status < STATUS_TEST_FAILURE;
+    return $self->finalize($post_upgrade_status,[$new_server]);
+  }
+
+  return $post_upgrade_status;
+}
+
+1;
