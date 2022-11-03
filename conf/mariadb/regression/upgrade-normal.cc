@@ -7,7 +7,7 @@ $combinations = [
   [
   '
   --threads=4
-  --duration=180
+  --duration=120
   --no-mask
   --seed=time
   --grammar=conf/mariadb/oltp-transactional.yy
@@ -20,8 +20,7 @@ $combinations = [
   --mysqld=--loose-max-statement-time=20
   --mysqld=--lock-wait-timeout=10
   --mysqld=--innodb-lock-wait-timeout=5
-  --scenario=LiveUpgrade
-  --scenario-grammar2=conf/mariadb/oltp_and_ddl.yy
+  --scenario=NormalUpgrades
   '],
   [ @$innodb_compression_combinations ],
   [ @$innodb_pagesize_combinations ],
