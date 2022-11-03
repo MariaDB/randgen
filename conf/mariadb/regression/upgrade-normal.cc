@@ -10,7 +10,8 @@ $combinations = [
   --duration=120
   --no-mask
   --seed=time
-  --grammar=conf/mariadb/oltp-transactional.yy
+  --grammar=conf/mariadb/oltp_and_ddl.yy
+  --redefine=conf/mariadb/modules/acl.yy
   --gendata=conf/mariadb/innodb_upgrade.zz
   --gendata=conf/mariadb/innodb_upgrade_compression.zz
   --gendata-advanced
