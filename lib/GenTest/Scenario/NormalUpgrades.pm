@@ -176,6 +176,11 @@ sub run {
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$old_server]);
   }
 
+  if ($old_server->versionNumeric lt '100500') {
+    # Workaround for MDEV-29943 (MariaBackup may lose a DML operation)
+    # Adding a sleep period to avoid the race condition
+    sleep(5);
+  }
   my $mbackup_command= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup $mbackup" : $mbackup);
   $status= system("$mbackup_command --backup --target-dir=$vardir/mbackup --protocol=tcp --port=".$old_server->port." --user=".$old_server->user." >$vardir/mbackup_backup.log 2>&1");
 
@@ -240,8 +245,9 @@ sub run {
     sayError("Found fatal errors in the log, old server shutdown has apparently failed");
     return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
   }
-  # Back up data directory from the old server
+  # Back up data directory and error log from the old server
   system ('cp -r '.$old_server->datadir.' '.$old_server->datadir.'_orig');
+  system ('mv '.$old_server->errorlog.' '.$old_server->errorlog.'_orig');
 
   ######################################################################
 
@@ -271,6 +277,7 @@ sub run {
 
   # Back up data directory from the live upgrade
   system ('mv '.$new_server->datadir.' '.$new_server->datadir.'_live_upgrade');
+  system ('mv '.$new_server->errorlog.' '.$new_server->errorlog.'_live_upgrade');
 
   #######################
   # Dump upgrade
@@ -309,6 +316,7 @@ sub run {
 
   # Back up data directory from the live upgrade
   system ('mv '.$new_server->datadir.' '.$new_server->datadir.'_dump_upgrade');
+  system ('mv '.$new_server->errorlog.' '.$new_server->errorlog.'_dump_upgrade');
 
   #######################
   # MariaBackup upgrade
@@ -345,6 +353,10 @@ sub run {
     sayError("MariaBackup upgrade failed");
     return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
   }
+
+  # Back up data directory from the mariabackup upgrade
+  system ('mv '.$new_server->datadir.' '.$new_server->datadir.'mbackup_upgrade');
+  system ('mv '.$new_server->errorlog.' '.$new_server->errorlog.'_mbackup_upgrade');
 
   return $self->finalize($status,[]);
 }
