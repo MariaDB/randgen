@@ -834,9 +834,30 @@ sub dumpdb {
         "where (column_type like 'enum%' or column_type like 'set%') and column_key in ('PRI','UNI')"
       );
       foreach my $e (@$enums) {
-        $self->dbh->do("delete from $e->[0].$e->[1] where $e->[2] = 0 /* dropping enums with invalid values */");
+        $self->dbh->do("delete ignore from $e->[0].$e->[1] where $e->[2] = 0 /* dropping enums with invalid values */");
       }
-    }
+      # Workaround for MDEV-29941 (spatial columns in primary keys cause problems)
+      # We can't just drop PK because it may also contain auto-increment columns.
+      # And we can't just drop the spatial column because it's not allowed when it participates in PK.
+      # So we will first find out if there are other columns in PK. If not, we'll just drop the PK.
+      # Otherwise, we'll try to re-create it but without the spatial column.
+      # POINT is not affected
+      my $spatial_pk= $self->dbh->selectall_arrayref(
+        "select table_schema, table_name, column_name from information_schema.columns ".
+        "where column_type in ('linestring','polygon','multipoint','multistring','multipolygon','geometrycollection','geometry') and column_key = 'PRI'"
+      );
+      foreach my $c (@$spatial_pk) {
+        my @pk= $self->dbh->selectrow_array(
+          "select group_concat(if(sub_part is not null,concat(column_name,'(',sub_part,')'),column_name)) from information_schema.statistics ".
+          "where table_schema = '$c->[0]' and table_name = '$c->[1]' and index_name = 'PRIMARY' and column_name != '$c->[2]' order by seq_in_index"
+        );
+        if (@pk) {
+          $self->dbh->do("alter ignore table $c->[0].$c->[1] drop primary key, add primary key ($pk[0]) /* re-creating primary key containing spatial columns */");
+        } else {
+          $self->dbh->do("alter ignore table $c->[0].$c->[1] drop primary key /* dropping primary key containing spatial columns */");
+        }
+      }
+    } # End of $for_restoring
 
     my $dump_command= '"'.$self->dumper.'" --skip-dump-date -uroot --host=127.0.0.1 --port='.$self->port.($database ? " --databases $database" : ' --all-databases').' --hex-blob';
     unless ($for_restoring) {
