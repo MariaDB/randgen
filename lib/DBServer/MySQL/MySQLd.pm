@@ -851,7 +851,7 @@ sub dumpdb {
           "select group_concat(if(sub_part is not null,concat(column_name,'(',sub_part,')'),column_name)) from information_schema.statistics ".
           "where table_schema = '$c->[0]' and table_name = '$c->[1]' and index_name = 'PRIMARY' and column_name != '$c->[2]' order by seq_in_index"
         );
-        if (@pk) {
+        if (@pk and $pk[0] ne '') {
           $self->dbh->do("alter ignore table $c->[0].$c->[1] drop primary key, add primary key ($pk[0]) /* re-creating primary key containing spatial columns */");
         } else {
           $self->dbh->do("alter ignore table $c->[0].$c->[1] drop primary key /* dropping primary key containing spatial columns */");
