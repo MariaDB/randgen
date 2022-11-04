@@ -254,6 +254,8 @@ sub run {
   # Point server_specific to the new server
   $self->switch_to_new_server();
 
+  my @upgrade_errors;
+
   #######################
   # Live upgrade
   #######################
@@ -265,19 +267,23 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("New server failed to start for live upgrade");
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    push @upgrade_errors, "LIVE upgrade failed: new server failed to start for upgrade";
+    goto LIVE_UPGRADE_END;
   }
 
   $status= $self->post_upgrade('live');
 
   if ($status != STATUS_OK) {
     sayError("Live upgrade failed");
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    push @upgrade_errors, "LIVE upgrade failed";
+    goto LIVE_UPGRADE_END;
   }
 
+LIVE_UPGRADE_END:
   # Back up data directory from the live upgrade
   system ('mv '.$new_server->datadir.' '.$new_server->datadir.'_live_upgrade');
   system ('mv '.$new_server->errorlog.' '.$new_server->errorlog.'_live_upgrade');
+  $self->setStatus($status);
 
   #######################
   # Dump upgrade
@@ -293,7 +299,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("New server failed to restart for mysqldump upgrade");
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    push @upgrade_errors, "DUMP upgrade failed: new server failed to start for upgrade";
+    goto DUMP_UPGRADE_END;
   }
 
   #####
@@ -304,19 +311,23 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("All databases' schema dump failed to load");
     $status= $self->checkErrorLog($new_server);
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    push @upgrade_errors, "DUMP upgrade failed: all databases' schema dump failed to load";
+    goto DUMP_UPGRADE_END;
   }
 
   $status= $self->post_upgrade('dump');
 
   if ($status != STATUS_OK) {
     sayError("Dump upgrade failed");
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    push @upgrade_errors, "DUMP upgrade failed";
+    goto DUMP_UPGRADE_END;
   }
 
+DUMP_UPGRADE_END:
   # Back up data directory from the live upgrade
   system ('mv '.$new_server->datadir.' '.$new_server->datadir.'_dump_upgrade');
   system ('mv '.$new_server->errorlog.' '.$new_server->errorlog.'_dump_upgrade');
+  $self->setStatus($status);
 
   #######################
   # MariaBackup upgrade
@@ -337,28 +348,34 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Backup failed to restore");
     sayFile("$vardir/mbackup_restore.log");
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    push @upgrade_errors, "MARIABACKUP upgrade failed: backup failed to restore";
+    goto MBACKUP_UPGRADE_END;
   }
 
   $status= $self->start_for_upgrade('mariabackup');
 
   if ($status != STATUS_OK) {
     sayError("New server failed to restart upon mariabackup upgrade");
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    push @upgrade_errors, "MARIABACKUP upgrade failed: server failed to restart";
+    goto MBACKUP_UPGRADE_END;
   }
 
   $status= $self->post_upgrade('mariabackup');
 
   if ($status != STATUS_OK) {
     sayError("MariaBackup upgrade failed");
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    push @upgrade_errors, "MARIABACKUP upgrade failed";
+    goto MBACKUP_UPGRADE_END;
   }
 
+MBACKUP_UPGRADE_END:
   # Back up data directory from the mariabackup upgrade
   system ('mv '.$new_server->datadir.' '.$new_server->datadir.'mbackup_upgrade');
   system ('mv '.$new_server->errorlog.' '.$new_server->errorlog.'_mbackup_upgrade');
 
-  return $self->finalize($status,[]);
+UPGRADE_END:
+  foreach (@upgrade_errors) { sayError($_) };
+  return $self->finalize($status,[$new_server]);
 }
 
 ######################################
