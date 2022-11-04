@@ -627,6 +627,7 @@ sub startServer {
             sayFile($errorlog);
             if ($pid and not kill(0, $pid)) {
                 sayError("Server disappeared after having started with pid $pid");
+                system("ps -ef | grep $self->port");
             } elsif ($pid) {
                 sayError("Timeout $startup_timeout has passed and the server still has not created the pid file, assuming it has hung, sending final SIGABRT to pid $pid...");
                 kill 'ABRT', $pid;
