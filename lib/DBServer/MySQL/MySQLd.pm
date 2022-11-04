@@ -844,7 +844,7 @@ sub dumpdb {
       # POINT is not affected
       my $spatial_pk= $self->dbh->selectall_arrayref(
         "select table_schema, table_name, column_name from information_schema.columns ".
-        "where column_type in ('linestring','polygon','multipoint','multistring','multipolygon','geometrycollection','geometry') and column_key = 'PRI'"
+        "where column_type in ('linestring','polygon','multipoint','multilinestring','multipolygon','geometrycollection','geometry') and column_key = 'PRI'"
       );
       foreach my $c (@$spatial_pk) {
         my @pk= $self->dbh->selectrow_array(
