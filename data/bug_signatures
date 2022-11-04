@@ -503,8 +503,8 @@ MDEV-28797:
 =~ PageBulk::copyOut
 MDEV-28797:
 =~ Failing assertion: i + PAGE_HEAP_NO_USER_LOW == n_heap
-=~ PageBulk::compress
-=~ ha_innobase::inplace_alter_table
+=~ mysql_alter_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28739:
 =~ safe_mutex: Trying to lock uninitialized mutex at.*sql_cache
 =~ Query_cache::invalidate_table
