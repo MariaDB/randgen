@@ -330,10 +330,12 @@ sub normalizeGrants {
         $old_grants->{$u} =~ s/ ON \*\.\*/, SET USER, FEDERATED ADMIN, CONNECTION ADMIN, READ_ONLY ADMIN, REPLICATION SLAVE ADMIN, BINLOG ADMIN, BINLOG REPLAY ON \*\.\*/;
       }
       $old_grants->{$u} =~ s/REPLICATION CLIENT/BINLOG MONITOR, SLAVE MONITOR/;
-#      if ($old_grants->{$u} =~ / REPLICATION SLAVE(?:,| ON)/) {
+      if ($old_grants->{$u} =~ / REPLICATION SLAVE(?:,| ON)/ and $old_grants->{$u} !~ /SLAVE MONITOR/) {
+        # Workaround for MDEV-23610 fix: SLAVE MONITOR is added to REPLICATION SLAVE-grantees
+        $old_grants->{$u} =~ s/ ON \*\.\*/, SLAVE_MONITOR \*\.\*/;
 #        if ($old_grants->{$u} =~ s/ BINLOG ADMIN/ REPLICATION MASTER ADMIN, BINLOG ADMIN/) {}
 #        else { $old_grants->{$u} =~ s/ ON \*\.\*/, REPLICATION MASTER ADMIN ON \*\.\*/ };
-#      }
+      }
     }
   }
 
