@@ -16,7 +16,7 @@ MDEV-29932:
 =~ handle_delayed_insert
 MDEV-29931:
 =~ Assertion \`fixed'|Assertion \`fixed()'
-=~ Item_real_func::val_decimal|Item_func_pow::val_real
+=~ Item_real_func::val_decimal|Item_func_pow::val_real|Item_func_hybrid_field_type::val_
 =~ Item_func_from_unixtime::get_date
 =~ TABLE::update_default_fields
 MDEV-29916:
