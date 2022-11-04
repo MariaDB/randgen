@@ -319,7 +319,7 @@ sub normalizeGrants {
   }
 
   # MDEV-21743: In 10.5.2+ new grants were introduced, SUPER was prepared for further splitting up,
-  # REPLICATION CLIENT renamed to BINLOG MONITOR and some minor reshuffling was done
+  # and some other reshuffling was done
 
   if ($old_server->versionNumeric lt '100502' and $new_server->versionNumeric ge '100502') {
     foreach my $u (keys %$new_grants) {
@@ -331,10 +331,12 @@ sub normalizeGrants {
       }
       if ($old_grants->{$u} =~ /REPLICATION CLIENT/ or $old_grants->{$u} =~ / REPLICATION SLAVE(?:,| ON)/) {
         # Workaround for MDEV-23610 fix: SLAVE MONITOR is added to REPLICATION SLAVE-grantees
-        $old_grants->{$u} =~ s/ ON \*\.\*/, SLAVE_MONITOR ON \*\.\*/;
+        $old_grants->{$u} =~ s/ ON \*\.\*/, SLAVE MONITOR ON \*\.\*/;
 #        if ($old_grants->{$u} =~ s/ BINLOG ADMIN/ REPLICATION MASTER ADMIN, BINLOG ADMIN/) {}
 #        else { $old_grants->{$u} =~ s/ ON \*\.\*/, REPLICATION MASTER ADMIN ON \*\.\*/ };
       }
+      # REPLICATION CLIENT renamed to BINLOG MONITOR
+      $old_grants->{$u} =~ s/REPLICATION CLIENT/BINLOG MONITOR/;
     }
   }
 
