@@ -310,6 +310,7 @@ LIVE_UPGRADE_END:
   $status= system($client_command.' < '.$vardir.'/all_db.dump');
   if ($status != STATUS_OK) {
     sayError("All databases' schema dump failed to load");
+    $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
     $status= $self->checkErrorLog($new_server);
     push @upgrade_errors, "DUMP upgrade failed: all databases' schema dump failed to load";
     goto DUMP_UPGRADE_END;
@@ -346,6 +347,7 @@ DUMP_UPGRADE_END:
   say($cmd);
   $status= system($cmd);
   if ($status != STATUS_OK) {
+    $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
     sayError("Backup failed to restore");
     sayFile("$vardir/mbackup_restore.log");
     push @upgrade_errors, "MARIABACKUP upgrade failed: backup failed to restore";
