@@ -679,7 +679,7 @@ sub kill {
         unless ($waits) {
             sayError("Unable to kill process ".$self->serverpid);
         } else {
-            say("Killed process ".$self->serverpid);
+            say("Killed process ".$self->serverpid." with $signal");
         }
     }
 
@@ -1515,16 +1515,23 @@ sub serverVariable {
 
 sub running {
     my($self) = @_;
-    if ($self->serverpid and $self->serverpid =~ /^\d+$/) {
-        ## Check if the child process is active.
-        return kill(0,$self->serverpid);
-    } elsif (-f $self->pidfile) {
-        my $pid= get_pid_from_file($self->pidfile);
-        if ($pid and $pid =~ /^\d+$/) {
-          return kill(0,$pid);
-        }
+    my $pid= $self->serverpid;
+    unless ($pid and $pid =~ /^\d+$/) {
+      if (-f $self->pidfile) {
+        $pid= get_pid_from_file($self->pidfile);
+      }
+    }
+    if ($pid and $pid =~ /^\d+$/) {
+      if (osWindows()) {
+        return kill(0,$pid)
+      } else {
+        # It looks like in some cases the process may be not responding
+        # to ping but is still not quite dead
+        return ! system("ls /proc/$pid > /dev/null 2>&1")
+      }
     } else {
-        return 0;
+      sayWarning("PID not found");
+      return 0;
     }
 }
 
