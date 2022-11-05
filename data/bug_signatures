@@ -502,6 +502,10 @@ MDEV-28797:
 =~ Assertion \`n > 0'
 =~ PageBulk::copyOut
 MDEV-28797:
+=~ signal|AddressSanitizer
+=~ PageBulk::insert
+=~ BtrBulk::pageSplit
+MDEV-28797:
 =~ Failing assertion: i + PAGE_HEAP_NO_USER_LOW == n_heap
 =~ mysql_alter_table
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
