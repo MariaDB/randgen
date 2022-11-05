@@ -23,8 +23,9 @@ acl_create_user:
   | CREATE /*!100103 acl_or_replace */ USER acl_user_specification_list /*!100200 acl_require acl_with */ /*!100403 acl_password_expire */
 ;
 
+# IF EXISTS was broken until 10.3.23 / 10.4.13
 acl_alter_user:
-  /* compatibility 10.2.0 */ ALTER USER acl_if_exists acl_user_specification_list acl_require acl_with /*!100403 acl_password_expire */
+  /* compatibility 10.2.0 */ ALTER USER /*!100413 acl_if_exists */ acl_user_specification_list acl_require acl_with /*!100403 acl_password_expire */
 ;
 
 acl_drop_user:
@@ -125,18 +126,6 @@ acl_opt_table:
 
 acl_opt_routine:
   FUNCTION | PROCEDURE
-;
-
-acl_grant_target_user:
-  acl_username acl_authentication_option /*!100200 acl_require acl_with */
-;
-
-acl_priv_type:
-  | acl_global_privilege
-  | acl_database_privilege
-  | acl_table_privilege
-  | acl_column_privilege
-  | acl_routine_privilege
 ;
 
 acl_all_privileges:
@@ -276,8 +265,10 @@ acl_short_name:
 ;
 
 acl_full_name:
-  acl_short_name@localhost | acl_short_name@localhost | acl_short_name@localhost | acl_short_name@localhost | acl_short_name@localhost | 
-  ''@localhost
+  ==FACTOR:3== acl_short_name@localhost |
+  ==FACTOR:3== acl_short_name@'%' |
+  ''@localhost |
+  acl_short_name@acl_host
 ;
 
 acl_host:
