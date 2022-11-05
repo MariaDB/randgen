@@ -1,35 +1,58 @@
+# Copyright (C) 2018, 2022 MariaDB Corporation Ab
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+########################################################################
+#
+# ACL actions
+#
+########################################################################
+
 query_add:
   ==FACTOR:0.1== acl
 ;
 
 acl:
-    acl_create_user | acl_create_user | acl_create_user
-  | acl_alter_user | acl_alter_user | acl_alter_user | acl_alter_user
-  | acl_drop_user
-  | acl_grant
+    ==FACTOR:4== acl_create_user
+  | ==FACTOR:4== acl_alter_user
+  | ==FACTOR:0.5== acl_drop_user
+  | ==FACTOR:8== acl_grant
   | acl_rename_user
-  | acl_revoke
-  | acl_set_password
-  | acl_create_role | acl_create_role | acl_create_role
-  | acl_drop_role
-  | /*!100005 acl_set_role */ | /*!100101 acl_set_default_role */
+  | ==FACTOR:5== acl_revoke
+  | ==FACTOR:0.5== acl_set_password
+  | ==FACTOR:4== acl_create_role
+  | ==FACTOR:0.5== acl_drop_role
+  | ==FACTOR:3== acl_set_role
+  | ==FACTOR:2== acl_set_default_role
   | acl_show_grants
   # MDEV-7597 - Expiration of user passwords (10.4.3)
   | /*!100403 acl_password_expiration_variables */
 ;
 
 acl_create_user:
-  CREATE USER /*!100103 acl_if_not_exists */ acl_user_specification_list /*!100200 acl_require acl_with */ /*!100403 acl_password_expire */
-  | CREATE /*!100103 acl_or_replace */ USER acl_user_specification_list /*!100200 acl_require acl_with */ /*!100403 acl_password_expire */
+  CREATE USER __if_not_exists(80) acl_user_specification_list acl_require acl_with /*!100403 acl_password_expire */
+  | CREATE __or_replace(90) USER acl_user_specification_list acl_require acl_with /*!100403 acl_password_expire */
 ;
 
 # IF EXISTS was broken until 10.3.23 / 10.4.13
 acl_alter_user:
-  /* compatibility 10.2.0 */ ALTER USER /*!100413 acl_if_exists */ acl_user_specification_list acl_require acl_with /*!100403 acl_password_expire */
+  ALTER USER /*!100413 __if_exists(80) */ acl_user_specification_list acl_require acl_with /*!100403 acl_password_expire */
 ;
 
 acl_drop_user:
-  DROP USER /*!100103 acl_if_exists */ acl_username_list
+  DROP USER __if_exists(80) acl_username_list
 ;
 
 acl_rename_user:
@@ -38,23 +61,23 @@ acl_rename_user:
 
 acl_set_password:
     SET PASSWORD FOR acl_username = PASSWORD(acl_password)
-  | SET PASSWORD FOR acl_username = /*!!050706 OLD_PASSWORD(acl_password) */ /*!100000 OLD_PASSWORD(acl_password) */ /*!50706 PASSWORD(acl_password) */
+  | SET PASSWORD FOR acl_username = /*!!050706 OLD_PASSWORD(acl_password) */ OLD_PASSWORD(acl_password) /*!50706 PASSWORD(acl_password) */
   | SET PASSWORD FOR acl_username = acl_password_hash
   # Can't change password for the current user, it will cause troubles
   | SET PASSWORD = ''
 ;
 
 acl_create_role:
-    CREATE /*!100005 ROLE */ /*!!100005 USER */ /*!100103 acl_if_not_exists */ acl_short_name acl_with_admin
-  | CREATE /*!100103 acl_or_replace */ /*!100005 ROLE */ /*!!100005 USER */ acl_short_name acl_with_admin
+    CREATE ROLE __if_not_exists(80) acl_short_name acl_with_admin
+  | CREATE __or_replace(90) ROLE acl_short_name acl_with_admin
 ;
 
 acl_drop_role:
-  DROP /*!100005 ROLE */ /*!!100005 USER */ /*!100103 acl_if_exists */ acl_role_list
+  DROP ROLE __if_exists(80) acl_role_list
 ;
 
 acl_with_admin:
-  | | | /*!100005 WITH ADMIN acl_role_admin */
+  | | | WITH ADMIN acl_role_admin
 ;
 
 acl_role_admin:
@@ -79,7 +102,7 @@ acl_show_grants:
 ;
 
 acl_grant:
-  GRANT acl_grant_variation TO acl_username acl_authentication_option /*!100200 acl_require acl_with */
+  GRANT acl_grant_variation TO acl_username acl_authentication_option acl_require acl_with
 ;
 
 acl_revoke:
@@ -87,20 +110,20 @@ acl_revoke:
 ;
 
 acl_grant_variation:
-    acl_all_privileges ON acl_opt_priv_level_any
+    ALL __privileges(50) ON acl_opt_priv_level_any
 
   | acl_global_privilege_list ON acl_opt_priv_level_all
   
   | acl_database_privilege_list ON acl_opt_priv_level_all
   | acl_database_privilege_list ON acl_opt_priv_level_wildcard
 
-  | acl_table_privilege_list ON acl_opt_table acl_opt_priv_level_any
+  | acl_table_privilege_list ON __table(50) acl_opt_priv_level_any
   
-  | acl_column_privilege_list ON acl_opt_table acl_opt_priv_level_exact
+  | acl_column_privilege_list ON __table(50) acl_opt_priv_level_exact
   
   | acl_routine_privilege_list ON acl_opt_priv_level_all
   | acl_routine_privilege_list ON acl_opt_priv_level_wildcard
-  | acl_routine_privilege_list ON acl_opt_routine acl_opt_priv_level_exact
+  | acl_routine_privilege_list ON __function_x_procedure acl_opt_priv_level_exact
   
 ;
 
@@ -113,23 +136,15 @@ acl_opt_priv_level_all:
 ;
 
 acl_opt_priv_level_wildcard:
-  test.* | _letter.*
+    ==FACTOR:10== test.*
+  | _letter.*
 ;
 
 acl_opt_priv_level_exact:
-  test._table | _letter._letter | _table | _letter
-;
-
-acl_opt_table:
-  | TABLE
-;
-
-acl_opt_routine:
-  FUNCTION | PROCEDURE
-;
-
-acl_all_privileges:
-  ALL | ALL PRIVILEGES
+    ==FACTOR:10== test._table
+  | ==FACTOR:10== _table
+  | _letter._letter
+  | _letter
 ;
 
 acl_global_privilege:
@@ -217,18 +232,6 @@ acl_target_user:
   | | | FOR acl_username
 ;
 
-acl_or_replace:
-  | | OR REPLACE
-;
-
-acl_if_not_exists:
-  | | | IF NOT EXISTS
-;
-
-acl_if_exists:
-  | | | IF EXISTS
-;
-
 acl_user_specification_list:
   acl_user_specification | acl_user_specification, acl_user_specification_list
 ;
@@ -279,11 +282,11 @@ acl_authentication_option:
   | | | | | |
   | IDENTIFIED BY acl_password 
   | IDENTIFIED BY PASSWORD acl_password_hash
-  | IDENTIFIED acl_via_with acl_authentication_plugin
-  | IDENTIFIED acl_via_with acl_authentication_plugin acl_using_as acl_authentication_string
+  | IDENTIFIED __via_x_with acl_authentication_plugin
+  | IDENTIFIED __via_x_with acl_authentication_plugin __using_x_as acl_authentication_string
   # MDEV-12321 - authentication plugin: SET PASSWORD support (10.4.0)
   # TODO: wrap it up in /*!100400 ... */ after comparative testing with 10.3 is finished
-  | IDENTIFIED acl_via_with acl_authentication_plugin acl_optional_password_for_plugin
+  | IDENTIFIED __via_x_with acl_authentication_plugin acl_optional_password_for_plugin
 ;
 
 acl_optional_password_for_plugin:
@@ -313,16 +316,8 @@ acl_password_hash:
   { "'*" . join ('', map { (0..9,'A'..'F')[$prng->int(0,15)] } (1..40) ) . "'" }
 ;
 
-acl_via_with:
-  /*!100000 VIA */ /*!!100000 WITH */ | WITH
-;
-
 acl_authentication_plugin:
   ed25519 | gssapi | pam | unix_socket | named_pipe
-;
-
-acl_using_as:
-  /*!100000 USING */ /*!!100000 AS */ | AS
 ;
 
 acl_authentication_string:
@@ -330,15 +325,11 @@ acl_authentication_string:
 ;
 
 acl_require:
-  | | | REQUIRE acl_require_exclusive_option | REQUIRE acl_tls_option_list
+  | | | REQUIRE __none_x_ssl_x_x509 | REQUIRE acl_tls_option_list
 ;
 
 acl_tls_option_list:
   acl_tls_option | acl_tls_option AND acl_tls_option_list
-;
-
-acl_require_exclusive_option:
-  NONE | SSL | X509
 ;
 
 acl_tls_option:
