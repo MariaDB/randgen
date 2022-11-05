@@ -3553,7 +3553,10 @@ MDEV-16808:
 =~ cp_buffer_from_ref|store_key_field::copy_inner
 =~ JOIN_CACHE_HASHED::put_record
 =~ evaluate_join_record
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-16808:
+=~ Assertion \`length > 0'
+=~ create_ref_for_key
+=~ JOIN::get_best_combination
 MDEV-16789:
 =~ signal [16]|AddressSanitizer
 =~ insert_fields
