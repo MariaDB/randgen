@@ -307,22 +307,33 @@ sub normalizeGrants {
   }
 
   # MDEV-20076: In 10.3.23 / 10.4.13 / 10.5.2 single quotes in SHOW GRANTS
-  # were changed to backquotes:
+  # were changed to backticks:
   # Old: GRANT USAGE ON *.* TO 'zxa'
   # New: GRANT USAGE ON *.* TO `zxa`
-  # For comparison, we will remove all double quotes, single quotes and backquotes.
-  # It is not perfect, as it can change the actual identifiers, but will suffice for now
+  # And ORACLE mode uses double quotes.
+  # We will replace single and double quotes with backticks
+  # where it is surrounding identifiers, e.g. 'foo' => `foo` and 'foo'@'%' => `foo`@`%`,
+  # and will remove all quotes elsewhere, e.g. in GRANT `rolename` TO ..
 
   foreach my $u (keys %$old_grants) {
-    $old_grants->{$u} =~ s/[\'\"\`]//g;
-    $new_grants->{$u} =~ s/[\'\"\`]//g;
+    my ($username, $host);
+    if ($u =~ /^`(.*)`@`(.*)`$/) {
+      ($username, $host)= ($1, $2);
+      $old_grants->{$u} =~ s/['"]$username['"]\@['"]$host['"]/`$username`@`$host`/;
+      $new_grants->{$u} =~ s/['"]$username['"]\@['"]$host['"]/`$username`@`$host`/;
+    } elsif ($u =~ /^`(.*)`$/) {
+      ($username, $host)= ($1, '');
+      $old_grants->{$u} =~ s/['"]$username['"]/`$username`/;
+      $new_grants->{$u} =~ s/['"]$username['"]/`$username`/;
+    }
+    $old_grants->{$u} =~ s/GRANT [`'"](.*?)[`'"] TO/GRANT $1 TO/;
+    $new_grants->{$u} =~ s/GRANT [`'"](.*?)[`'"] TO/GRANT $1 TO/;
   }
 
-  # MDEV-21743: In 10.5.2+ new grants were introduced, SUPER was prepared for further splitting up,
-  # and some other reshuffling was done
-
-  if ($old_server->versionNumeric lt '100502' and $new_server->versionNumeric ge '100502') {
-    foreach my $u (keys %$new_grants) {
+  foreach my $u (keys %$new_grants) {
+    # MDEV-21743: In 10.5.2+ new grants were introduced, SUPER was prepared for further splitting up,
+    # and some other reshuffling was done
+    if ($old_server->versionNumeric lt '100502' and $new_server->versionNumeric ge '100502') {
       # MDEV-22152: As of 10.5.2, REPLICATION MASTER ADMIN is only given to users which have both SUPER and REPLICATION SLAVE
       if ($old_grants->{$u} =~ / SUPER(?:,| ON)/ and $old_grants->{$u} =~ / REPLICATION SLAVE(?:,| ON)/) {
         $old_grants->{$u} =~ s/ ON \*\.\*/, SET USER, FEDERATED ADMIN, CONNECTION ADMIN, READ_ONLY ADMIN, REPLICATION SLAVE ADMIN, REPLICATION MASTER ADMIN, BINLOG ADMIN, BINLOG REPLAY ON \*\.\*/;
@@ -337,6 +348,10 @@ sub normalizeGrants {
       }
       # REPLICATION CLIENT renamed to BINLOG MONITOR
       $old_grants->{$u} =~ s/REPLICATION CLIENT/BINLOG MONITOR/;
+    }
+    # Until 10.3.28, 10.4.18 and 10.5.9 GRANT OPTION was missing for roles (MDEV-24289)
+    if ($u !~ /.`@`./ and (($old_server->versionNumeric lt '100328') or ($old_server->versionNumeric ge '100400' and $old_server->versionNumeric lt '100418') or ($old_server->versionNumeric ge '100500' and $old_server->versionNumeric lt '100509'))) {
+      $new_grants->{$u} =~ s/ WITH GRANT OPTION//;
     }
   }
 
@@ -378,18 +393,13 @@ sub collectAclData {
 
   say("Collecting user names");
   my $dbh= $server->dbh;
-  my $has_roles= ($server->versionNumeric ge '1000');
 
   $dbh->do("FLUSH PRIVILEGES");
   # Needed due to MDEV-24657
   $dbh->do('SET character_set_connection= @@character_set_server');
   $dbh->do('SET collation_connection= @@collation_server');
 
-  my $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user";
-
-  if ($has_roles) {
-    $query.= " WHERE is_role = 'N'";
-  }
+  my $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user WHERE is_role = 'N'";
   my $users= $dbh->selectcol_arrayref($query);
   if ($dbh->err() > 0) {
     sayError("Couldn't fetch users, error: ".$dbh->err()." (".$dbh->errstr().")");
@@ -401,19 +411,14 @@ sub collectAclData {
   }
 
   my $roles= [];
-  if ($has_roles) {
-    $roles= $dbh->selectcol_arrayref("SELECT CONCAT('`',user,'`') FROM mysql.user WHERE is_role = 'Y'");
-    if ($dbh->err() > 0) {
-      sayError("Couldn't fetch roles, error: ".$dbh->err()." (".$dbh->errstr().")");
-      $roles= [];
-      $res= STATUS_DATABASE_CORRUPTION;
-    }
-    else {
-      say("Found ".scalar(@$roles)." roles");
-    }
+  $roles= $dbh->selectcol_arrayref("SELECT CONCAT('`',user,'`') FROM mysql.user WHERE is_role = 'Y'");
+  if ($dbh->err() > 0) {
+    sayError("Couldn't fetch roles, error: ".$dbh->err()." (".$dbh->errstr().")");
+    $roles= [];
+    $res= STATUS_DATABASE_CORRUPTION;
   }
   else {
-    say("Server doesn't know anything about roles");
+    say("Found ".scalar(@$roles)." roles");
   }
 
   # Before 10.4, there could be users identified via a plugin, but also having
