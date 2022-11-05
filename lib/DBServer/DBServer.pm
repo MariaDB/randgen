@@ -19,7 +19,7 @@
 package DBServer::DBServer;
 use base 'Exporter';
 
-@EXPORT = ('say', 'sayError', 'sayWarning', 'sayFile', 'tmpdir', 'safe_exit',
+@EXPORT = ('say', 'sayError', 'sayWarning', 'sayFile', 'sayDebug', 'tmpdir', 'safe_exit',
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp',
            'DBSTATUS_OK','DBSTATUS_FAILURE');
@@ -123,6 +123,10 @@ sub sayError {
 
 sub sayWarning {
     say(@_, 'Warning');
+}
+
+sub sayDebug {
+    say(@_, 'DEBUG') if ($ENV{RQG_DEBUG});
 }
 
 sub sayFile {

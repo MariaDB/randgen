@@ -1163,6 +1163,7 @@ sub checkDatabaseIntegrity {
   my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
   ALLDBCHECK:
   foreach my $database (@$databases) {
+      my $db_status= DBSTATUS_OK;
       next if $database =~ m{^(information_schema|pbxt|performance_schema|sys)$}sio;
       my $tabl_ref = $dbh->selectall_arrayref("SELECT TABLE_NAME, TABLE_TYPE, ENGINE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database'");
       # 1178 is ER_CHECK_NOT_IMPLEMENTED
@@ -1189,7 +1190,7 @@ sub checkDatabaseIntegrity {
         if ($dbh->err() > 0) {
           sayError("Got an error for table ${database}.${table}: ".$dbh->err()." (".$dbh->errstr().")");
           # 1178 is ER_CHECK_NOT_IMPLEMENTED. It's not an error
-          $status= DBSTATUS_FAILURE unless ($dbh->err() == 1178);
+          $db_status= DBSTATUS_FAILURE unless ($dbh->err() == 1178);
           # Mysterious loss of connection upon checks
           if ($dbh->err() == 2013 || $dbh->err() == 2002) {
             if ($retried_lost_connection) {
@@ -1294,13 +1295,19 @@ sub checkDatabaseIntegrity {
                 redo CHECKTABLE;
               } else {
                 sayError("For $attrs `$database`.`$table` : $msg_type : $msg_text");
-                $status= DBSTATUS_FAILURE;
+                $db_status= DBSTATUS_FAILURE;
               }
             } else {
-              say("For table `$database`.`$table` : $msg_type : $msg_text");
+              sayDebug("For table `$database`.`$table` : $msg_type : $msg_text");
             }
           }
         }
+      }
+      $status= $db_status if $db_status > $status;
+      if ($db_status == DBSTATUS_OK) {
+        say("Check for database $database OK");
+      } else {
+        sayError("Check for database $database failed");
       }
   }
   if ($status > DBSTATUS_OK) {
