@@ -353,6 +353,10 @@ sub normalizeGrants {
     if ($u !~ /.`@`./ and (($old_server->versionNumeric lt '100328') or ($old_server->versionNumeric ge '100400' and $old_server->versionNumeric lt '100418') or ($old_server->versionNumeric ge '100500' and $old_server->versionNumeric lt '100509'))) {
       $new_grants->{$u} =~ s/ WITH GRANT OPTION//;
     }
+    # In 10.11.1 SUPER and READ_ONLY ADMIN were separated (MDEV-29596)
+    if ($old_server->versionNumeric lt '101101' and $new_server->versionNumeric ge '101101' and $old_grants->{$u} =~ /SUPER/ and $old_grants->{$u} !~ /READ_ONLY ADMIN/) {
+      $new_grants->{$u} =~ s/, READ_ONLY ADMIN//;
+    }
   }
 
 }
