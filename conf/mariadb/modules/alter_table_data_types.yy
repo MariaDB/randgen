@@ -78,7 +78,7 @@ data_types_column_definition:
   { $m= $prng->uint16(0,255); '' } TINYBLOB data_types_nullable DEFAULT { @defaults=("''","REPEAT(".$prng->string(1).",$m)"); push @defaults,$prng->string($m) if $m < 64; push @defaults, 'NULL' if $null; $prng->arrayElement(\@defaults) } |
   { $m= $prng->uint16(0,255); '' } TINYTEXT data_types_nullable DEFAULT { @defaults=("''","REPEAT(".$prng->string(1).",$m)"); push @defaults,$prng->string($m) if $m < 64; push @defaults, 'NULL' if $null; $prng->arrayElement(\@defaults) } |
 # Enum and set
-  ENUM({ $m= ($prng->uint16(0,100) ? $prng->uint16(1,32) : $prng->uint16(1,65535)); join ',', @enum_vals[0..$m-1] }) data_types_nullable DEFAULT { @defaults=("'1'","'$m'",1,$m,"'".$prng->uint16(1,$m)."'"); push @defaults, 'NULL' if $null; $prng->arrayElement(\@defaults) } |
+  ENUM({ $m= ($prng->uint16(0,1000) ? $prng->uint16(1,32) : $prng->uint16(1,65535)); join ',', @enum_vals[0..$m-1] }) data_types_nullable DEFAULT { @defaults=("'1'","'$m'",1,$m,"'".$prng->uint16(1,$m)."'"); push @defaults, 'NULL' if $null; $prng->arrayElement(\@defaults) } |
   SET({ $m= $prng->uint16(1,64); join ',', @enum_vals[0..$m-1] }) data_types_nullable DEFAULT { @defaults=("'1'","'$m'",1,$m, "'".(join ',',(1..$m))."'" ,"'".$prng->uint16(1,$m)."'"); push @defaults, 'NULL' if $null; $prng->arrayElement(\@defaults) } |
 # Special strings
   /* compatibility 10.5.0 */ INET6 data_types_nullable DEFAULT { @defaults=("'::'","'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'",$prng->inet6); push @defaults, 'NULL' if $null; $prng->arrayElement(\@defaults) } |
