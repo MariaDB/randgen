@@ -164,7 +164,7 @@ MDEV-29703:
 =~ myrocks::Rdb_key_def::unpack_simple_varchar_space_pad
 =~ myrocks::Rdb_key_field_iterator::next
 MDEV-29702:
-=~ For SPIDER BASE TABLE.*error : Partition .* returned error
+=~ For SPIDER BASE TABLE.*error : Partition .* returned error|For SPIDER BASE TABLE.*error : Subpartition .* returned error
 =~ For SPIDER BASE TABLE.*error : Upgrade required. Please do
 =~ STATUS_UPGRADE_FAILURE
 MDEV-29701:
