@@ -102,136 +102,145 @@ sub run {
 
   #####
   $self->printStep("Preparing to discard/import");
-  # Drop all non-InnoDB tables, it will make things simpler
-  my $non_innodb_tables = $dbh->selectcol_arrayref("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.tables where table_schema not in ('mysql','information_schema','performance_schema','sys') and table_type = 'VIEW'");
-  say("Dropping views @$non_innodb_tables");
-  foreach my $v (@$non_innodb_tables) {
-    $dbh->do("DROP VIEW $v");
-  }
-  $non_innodb_tables = $dbh->selectcol_arrayref("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.tables where table_schema not in ('mysql','information_schema','performance_schema','sys') and engine != 'InnoDB'");
-  say("Dropping tables @$non_innodb_tables");
-  foreach my $t (@$non_innodb_tables) {
-    $dbh->do("DROP TABLE $t");
-  }
+  $dbh->do("SET max_statement_time=0");
+
   say("Getting rid of stale XA transactions");
   $server->rollbackXA();
 
+  my $non_system_databases= join ',', map { "'$_'" } ($server->nonSystemDatabases());
+
+  # Drop all non-InnoDB tables, it will make things simpler
+  my $not_interesting_tables = $dbh->selectcol_arrayref("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.tables where table_schema in ($non_system_databases) and table_type = 'VIEW'");
+  say("Dropping views @$not_interesting_tables");
+  foreach my $v (@$not_interesting_tables) {
+    $dbh->do("DROP VIEW $v");
+  }
+  $not_interesting_tables = $dbh->selectcol_arrayref("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.tables where table_schema in ($non_system_databases) and engine != 'InnoDB'");
+  say("Dropping non-innodb tables @$not_interesting_tables");
+  foreach my $t (@$not_interesting_tables) {
+    $dbh->do("DROP TABLE $t");
+  }
+  # Drop also partitioned tables, mainly because we don't know how to import their tablespaces
+  $not_interesting_tables = $dbh->selectcol_arrayref("select distinct concat('`',table_schema,'`.`',table_name,'`') from information_schema.partitions where partition_name is not null and table_schema in ($non_system_databases)");
+  say("Dropping partitioned tables @$not_interesting_tables");
+  foreach my $t (@$not_interesting_tables) {
+    $dbh->do("DROP TABLE $t");
+  }
+
   #####
-  $self->printStep("Dumping the remaining data before discard/import");
-
-  $databases= join ' ', $server->nonSystemDatabases();
-  $server->dumpdb($databases, $server->vardir.'/server_data_old.dump');
-  $server->normalizeDump($server->vardir.'/server_data_old.dump');
-  $self->printStep("Storing tablespaces for InnoDB tables and dropping the tables");
-  # This is for information purposes
-  $server->dumpSchema($databases, $server->vardir.'/server_schema_old.dump');
-
+  $self->printStep("Creating copies of tables and importing tablespaces");
 
   $dbh->do("SET GLOBAL innodb_file_per_table= 1");
-  $dbh->do("SET foreign_key_checks= 0");
   # Workaround for MDEV-29960, and anyway mysqldump does it too
   $dbh->do("SET NAMES utf8");
 
-  my $tablespace_backup_dir= $server->vardir.'/tablespaces';
-  mkdir($tablespace_backup_dir);
-  my %table_definitions;
+  my $tables = $dbh->selectcol_arrayref("select ts.name from information_schema.innodb_sys_tablespaces ts ".
+    "join information_schema.tables t on BINARY ts.name = BINARY concat(t.table_schema,'/',t.table_name) ".
+    "where ts.name != 'innodb_system' and ts.name not like 'mysql/%' and ts.name not like '%#%' and t.table_type != 'SEQUENCE' and ts.name not like '%/FTS_0000%'");
 
-  my $tables = $dbh->selectcol_arrayref("select ts.name from information_schema.innodb_sys_tablespaces ts join information_schema.tables t on BINARY ts.name = BINARY concat(t.table_schema,'/',t.table_name) where ts.name != 'innodb_system' and ts.name not like 'mysql/%' and ts.name not like '%#%' and t.table_type != 'SEQUENCE'");
+  my %databases= ();
   foreach my $tpath (@$tables) {
     $tpath =~ /^(.*)\/(.*)/;
     my ($tschema, $tname)= ($1, $2);
-    next if $tname =~ /^FTS_0000/;
-    mkdir($tablespace_backup_dir.'/'.$tschema) unless (-d $tablespace_backup_dir.'/'.$tschema);
-    $dbh->do("USE $tschema");
-    $dbh->do("FLUSH TABLES `$tname` FOR EXPORT");
-    if ($dbh->err) {
-      sayError("Could not flush table $tname for export: ".$dbh->err.": ".$dbh->errstr);
-      return $self->finalize(STATUS_DATABASE_CORRUPTION,[$server]);
-    }
-    my $tdef = $dbh->selectcol_arrayref("SHOW CREATE TABLE `$tname`", { Columns=>[2] });
-    $table_definitions{$tpath}= $tdef->[0];
-    if ($dbh->err) {
-      sayError("Could not run SHOW CREATE TABLE $tname: ".$dbh->err.": ".$dbh->errstr);
-      return $self->finalize(STATUS_DATABASE_CORRUPTION,[$server]);
-    }
-    copy($server->datadir.'/'.$tpath.'.ibd', $tablespace_backup_dir.'/'.$tschema.'/');
-    copy($server->datadir.'/'.$tpath.'.cfg', $tablespace_backup_dir.'/'.$tschema.'/');
-    $dbh->do("UNLOCK TABLES");
-    $dbh->do("DROP TABLE $tname");
-    if ($dbh->err) {
-      sayError("Could not drop table $tname: ".$dbh->err.": ".$dbh->errstr);
-      sleep(3600);
-      return $self->finalize(STATUS_DATABASE_CORRUPTION,[$server]);
-    }
-  }
+    $databases{$tschema}= 1;
 
-  #####
-  $self->printStep("Re-creating the tables and replacing tablespaces with the stored ones");
-  $dbh->do('SET FOREIGN_KEY_CHECKS= 0, ENFORCE_STORAGE_ENGINE= NULL, sql_mode= CONCAT(REPLACE(REPLACE(@@sql_mode,"STRICT_TRANS_TABLES",""),"STRICT_ALL_TABLES",""),",IGNORE_BAD_TABLE_OPTIONS")');
-  foreach my $tpath (@$tables) {
-    $tpath =~ /^(.*)\/(.*)/;
-    my ($tschema, $tname)= ($1, $2);
-    $dbh->do("USE $tschema");
-    my $def= $table_definitions{$tpath};
-    $dbh->do($def);
-    if ($dbh->err) {
-      sayError("Could not re-create table $tschema.$tname: ".$dbh->err.": ".$dbh->errstr);
-      $status= STATUS_DATABASE_CORRUPTION;
-      next;
-    }
-    # Workaround for MDEV-29001: adjust null-able columns which lost their DEFAULT NULL clause
-    while ($def =~ s/^(.*)?\n//) {
-      my $l= $1;
-      if ($l =~ /^\s+(\`.*?\`)/ && $l !~ /(?:NOT NULL|DEFAULT)/) {
-        my $colname= $1;
-        $dbh->do("ALTER TABLE $tname ALTER COLUMN $colname DROP DEFAULT");
-        if ($dbh->err) {
-          sayError("Could not drop default from $tname.$colname : ".$dbh->err.": ".$dbh->errstr);
-          $status= STATUS_DATABASE_CORRUPTION;
-          next;
-        }
+    # Workaround for MDEV-29966 -- invalid default prevents ALTER or CREATE .. LIKE
+    ALTERFORCE:
+    $dbh->do("ALTER TABLE ${tschema}.${tname} FORCE");
+    say("Result of ALTER TABLE $tname FORCE: ".($dbh->err ? $dbh->err.' '.$dbh->errstr : 'OK'));
+    if ($dbh->err == 1067 and $dbh->errstr =~ /Invalid default value for '(.*)'/) {
+      $dbh->do("ALTER TABLE ${tschema}.${tname} ALTER `$1` DROP DEFAULT");
+      if ($dbh->err) {
+        sayError("Failed to drop invalid default from ${tschema}.${tname}.${1}: ".$dbh->err." ".$dbh->errstr);
+        $status= STATUS_DATABASE_CORRUPTION;
+        next;
+      } else {
+        goto ALTERFORCE;
       }
-    }
-    $dbh->do("ALTER TABLE $tname DISCARD TABLESPACE");
-    if ($dbh->err) {
-      sayError("Could not discard tablespace for $tname: ".$dbh->err.": ".$dbh->errstr);
+    } elsif ($dbh->err) {
+      sayError("Failed to run ALTER .. FORCE on ${tschema}.${tname}: ".$dbh->err." ".$dbh->errstr);
       $status= STATUS_DATABASE_CORRUPTION;
       next;
     }
-    copy("$tablespace_backup_dir/".$tpath.'.ibd', $server->datadir.'/'.$tpath.'.ibd');
-    copy("$tablespace_backup_dir/".$tpath.'.cfg', $server->datadir.'/'.$tpath.'.cfg');
-    $dbh->do("ALTER TABLE $tname IMPORT TABLESPACE");
+
+    my $tschema_import = $tschema.'_import';
+    $dbh->do("CREATE DATABASE IF NOT EXISTS `$tschema_import`");
     if ($dbh->err) {
-      sayError("Could not import tablespace for $tname: ".$dbh->err.": ".$dbh->errstr);
+      sayError("Could not create database ${tschema_import}: ".$dbh->err.": ".$dbh->errstr);
       $status= STATUS_DATABASE_CORRUPTION;
+      next;
+    }
+    $dbh->do("CREATE TABLE `${tschema_import}`.`$tname` LIKE `$tschema`.`$tname`");
+    if ($dbh->err) {
+      sayError("Could not create table ${tschema_import}.$tname: ".$dbh->err.": ".$dbh->errstr);
+      $status= STATUS_DATABASE_CORRUPTION;
+      next;
+    }
+    $dbh->do("ALTER TABLE `${tschema_import}`.`$tname` DISCARD TABLESPACE");
+    if ($dbh->err) {
+      sayError("Could not discard tablespace of table ${tschema_import}.$tname: ".$dbh->err.": ".$dbh->errstr);
+      $status= STATUS_DATABASE_CORRUPTION;
+      next;
+    }
+
+    $dbh->do("FLUSH TABLE `$tschema`.`$tname` FOR EXPORT");
+    if ($dbh->err) {
+      sayError("Could not flush table $tschema.$tname for export: ".$dbh->err.": ".$dbh->errstr);
+      $status= STATUS_DATABASE_CORRUPTION;
+      next;
+    }
+    copy($server->datadir.'/'.$tpath.'.ibd', $server->datadir.'/'.${tschema_import}.'/');
+    copy($server->datadir.'/'.$tpath.'.cfg', $server->datadir.'/'.${tschema_import}.'/');
+    $dbh->do("UNLOCK TABLES");
+    if ($dbh->err) {
+      sayError("Could not unlock tables: ".$dbh->err.": ".$dbh->errstr);
+      return $self->finalize($status,[$server]);
+    }
+    $dbh->do("ALTER TABLE `${tschema_import}`.`$tname` IMPORT TABLESPACE");
+    if ($dbh->err) {
+      sayError("Could not import tablespace of table ${tschema_import}.$tname: ".$dbh->err.": ".$dbh->errstr);
+      $status= STATUS_DATABASE_CORRUPTION;
+      next;
     }
   }
+
   if ($status != STATUS_OK) {
-    return $self->finalize($status,[$server]);
-  }
-  $dbh->do('SET sql_mode= DEFAULT');
-
-  #####
-  $self->printStep("Dumping the data after discard/import");
-
-  $databases= join ' ', $server->nonSystemDatabases();
-  $server->dumpdb($databases, $server->vardir.'/server_data_new.dump');
-  $server->normalizeDump($server->vardir.'/server_data_new.dump');
-  # This is for information purposes
-  $server->dumpSchema($databases, $server->vardir.'/server_schema_new.dump');
-
-
-  #####
-  $self->printStep("Comparing data before and after discard/import");
-
-  $status= compare($server->vardir.'/server_data_old.dump', $server->vardir.'/server_data_new.dump');
-  if ($status != STATUS_OK) {
-    sayError("Data differs after upgrade");
-    system('diff -a -u '.$server->vardir.'/server_data_old.dump'.' '.$server->vardir.'/server_data_new.dump');
+    sayError("Tablespace import failed");
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
   }
-  else {
-    say("Data dumps appear to be identical");
+
+  foreach my $db (keys %databases) {
+
+    #####
+    $self->printStep("Dumping data from $db and ${db}_import");
+
+    $server->dumpdb([ $db ], $server->vardir."/server_data_${db}.dump",0,'--no-create-db');
+    $server->normalizeDump($server->vardir."/server_data_${db}.dump");
+
+    $server->dumpdb([ $db.'_import' ], $server->vardir."/server_data_${db}_import.dump",0,'--no-create-db');
+    $server->normalizeDump($server->vardir."/server_data_${db}_import.dump");
+
+    # This is for information purposes
+    $server->dumpSchema([ $db ], $server->vardir."/server_schema_${db}.dump");
+    $server->dumpSchema([ $db.'_import' ], $server->vardir."/server_scheam_${db}_import.dump");
+
+    #####
+    $self->printStep("Comparing data from $db vs ${db}_import");
+
+    $status= compare($server->vardir."/server_data_${db}.dump", $server->vardir."/server_data_${db}_import.dump");
+    if ($status != STATUS_OK) {
+      sayError("Data in ${db} and {$db}_import differs");
+      system('diff -a -u '.$server->vardir."/server_data_${db}.dump".' '.$server->vardir."/server_data_${db}_import.dump");
+      $status= STATUS_DATABASE_CORRUPTION;
+    }
+    else {
+      say("Data in $db and ${db}_import dumps appear to be identical");
+    }
+  }
+
+  if ($status != STATUS_OK) {
+    sayError("Data comparison failed");
+    return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
   }
 
   #####
