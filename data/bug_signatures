@@ -7,14 +7,17 @@
 MDEV-29958:
 =~ STATUS_SERVER_DEADLOCKED
 =~ Deadlock reporter: Stalled query: (Killed).* ENUM(
+MDEV-29954:
+=~ InnoDB: Flagged corruption of .* in table .* in CHECK TABLE-check index|InnoDB: Flagged corruption of .* in table .* in CHECK TABLE; Wrong count
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29933:
 =~ AddressSanitizer|signal
 =~ maria_rkey
 =~ handler::ha_index_read_map
 =~ join_read_always_key
 MDEV-29932:
-=~ AddressSanitizer|signal
-=~ Virtual_column_info::need_refix
+=~ AddressSanitizer|signal|Assertion \`need_refix()'
+=~ Virtual_column_info::need_refix|Virtual_column_info::cleanup_session_expr
 =~ close_thread_table
 =~ handle_delayed_insert
 MDEV-29931:
