@@ -222,12 +222,14 @@ sub run {
 
   my $master_dump_result= STATUS_OK;
   my ($master_dbh, $slave_dbh);
+  my @databases;
+
   if ($slave) {
     #####
     $self->printStep("Dumping databases for further replication consistency check");
 
-    $databases= join ' ', $server->nonSystemDatabases();
-    $master_dump_result= $server->dumpSchema($databases, $server->vardir.'/server_schema_recovered.dump');
+    @databases= $server->nonSystemDatabases();
+    $master_dump_result= $server->dumpSchema(\@databases, $server->vardir.'/server_schema_recovered.dump');
     $server->normalizeDump($server->vardir.'/server_schema_recovered.dump', 'remove_autoincs');
 
     #####
@@ -280,8 +282,8 @@ sub run {
     #####
     $self->printStep("Dumping databases from the slave");
 
-    $databases= join ' ', $slave->nonSystemDatabases();
-    $slave->dumpSchema($databases, $server->vardir.'/slave_schema.dump');
+    @databases= $slave->nonSystemDatabases();
+    $slave->dumpSchema(\@databases, $server->vardir.'/slave_schema.dump');
     $slave->normalizeDump($server->vardir.'/slave_schema.dump', 'remove_autoincs');
 
     #####

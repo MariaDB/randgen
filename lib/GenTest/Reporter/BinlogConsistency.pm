@@ -161,12 +161,11 @@ sub dump_all {
 	my ($reporter, $dbh, $dumpfile) = @_;
 	my $server = $reporter->properties->server_specific->{1}->{server};
 
-	my @all_databases = @{$dbh->selectcol_arrayref("SHOW DATABASES")};
-	my $databases_string = join(' ', grep { $_ !~ m{^(mysql|information_schema|performance_schema|sys)$}sgio } @all_databases );
+	my @databases= $server->nonSystemDatabases();
 
 	# no-create-info is needed because some table options don't survive server restart (e.g. AUTO_INCREMENT for InnoDB tables)
 	# force is needed e.g. for views which reference invalid tables
-	my $dump_result = $server->dumpdb($databases_string, $dumpfile);
+	my $dump_result = $server->dumpdb(\@databases, $dumpfile);
 
 	# We don't check "real" mysqldump exit code, because it might be bad due to view problems etc.,
 	# but we still want to continue. But if sort fails, that's really bad because it must mean the file doesn't exist,

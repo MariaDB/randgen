@@ -862,7 +862,13 @@ sub dumpdb {
       }
     } # End of $for_restoring
 
-    my $dump_command= '"'.$self->dumper.'" --skip-dump-date -uroot --host=127.0.0.1 --port='.$self->port.($database ? " --databases $database" : ' --all-databases').' --hex-blob';
+    my $databases= '--all-databases';
+    if ($database && scalar(@$database) > 1) {
+      $databases= "--databases @$database";
+    } elsif ($database) {
+      $databases= "$database->[0]";
+    }
+    my $dump_command= '"'.$self->dumper.'" --skip-dump-date -uroot --host=127.0.0.1 --port='.$self->port.' --hex-blob '.$databases;
     unless ($for_restoring) {
       my @heap_tables= @{$self->dbh->selectcol_arrayref(
           "select concat(table_schema,'.',table_name) from ".
@@ -890,13 +896,18 @@ sub dumpSchema {
 
     $self->drop_broken();
 
-    say("Dumping server ".$self->version." schema on port ".$self->port);
-    my $dump_options= ($database ? "--databases $database" : '--all-databases --add-drop-database');
+    my $databases= '--all-databases --add-drop-database';
+    if ($database && scalar(@$database) > 1) {
+      $databases= "--databases @$database";
+    } elsif ($database) {
+      $databases= "$database->[0]";
+    }
+
     my $dump_command = '"'.$self->dumper.'"'.
                              "  --skip-dump-date --compact --no-tablespaces".
                              " --no-data --host=127.0.0.1 -uroot".
                              " --port=".$self->port.
-                             " $dump_options";
+                             " $databases";
     say($dump_command);
     my $dump_result = system("$dump_command 2>&1 1>$file");
     if ($dump_result != 0) {
@@ -1162,6 +1173,7 @@ sub checkDatabaseIntegrity {
   my $status= DBSTATUS_OK;
   my $foreign_key_check_workaround= 0;
 
+  $dbh->do("SET max_statement_time= 0");
   my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
   ALLDBCHECK:
   foreach my $database (@$databases) {

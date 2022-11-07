@@ -150,15 +150,15 @@ sub run {
   }
 
   # Dump non-system databases for further comparison
-  $databases= join ' ', $old_server->nonSystemDatabases();
-  $status= $old_server->dumpSchema($databases, $vardir.'/server_schema_old.dump');
+  my @databases= $old_server->nonSystemDatabases();
+  $status= $old_server->dumpSchema(\@databases, $vardir.'/server_schema_old.dump');
   if ($status != STATUS_OK) {
     sayError("Schema dump on the old server failed, no point to continue");
     return ($same_server ? $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
   }
   $old_server->normalizeDump($vardir.'/server_schema_old.dump', 'remove_autoincs');
   # Skip heap tables' data on the old server, as it won't be preserved
-  $status= $old_server->dumpdb($databases, $vardir.'/server_data_old.dump');
+  $status= $old_server->dumpdb(\@databases, $vardir.'/server_data_old.dump');
   if ($status != STATUS_OK) {
     sayError("Data dump on the old server failed, no point to continue");
     return ($same_server ? $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
@@ -452,10 +452,12 @@ sub post_upgrade {
   
   #####
   $self->printStep("Dumping databases from the new server after $type upgrade");
+
+  my @databases= $new_server->nonSystemDatabases();
   
-  $new_server->dumpSchema($databases, $vardir.'/server_schema_'.$type.'_upgrade.dump');
+  $new_server->dumpSchema(\@databases, $vardir.'/server_schema_'.$type.'_upgrade.dump');
   $new_server->normalizeDump($vardir.'/server_schema_'.$type.'_upgrade.dump', 'remove_autoincs');
-  $new_server->dumpdb($databases, $vardir.'/server_data_'.$type.'_upgrade.dump');
+  $new_server->dumpdb(\@databases, $vardir.'/server_data_'.$type.'_upgrade.dump');
   $new_server->normalizeDump($vardir.'/server_data_'.$type.'_upgrade.dump');
 
   #####

@@ -125,15 +125,15 @@ sub run {
     return ($same_server ? $self->finalize($status,[]) : $self->finalize(STATUS_TEST_FAILURE,[]));
   }
 
-  $databases= join ' ', $old_server->nonSystemDatabases();
-  $status= $old_server->dumpSchema($databases, $old_server->vardir.'/server_schema_old.dump');
+  my @databases= $old_server->nonSystemDatabases();
+  $status= $old_server->dumpSchema(\@databases, $old_server->vardir.'/server_schema_old.dump');
   if ($status != STATUS_OK) {
     sayError("Schema dump on the old server failed, no point to continue");
     return ($same_server ? $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
   }
   $old_server->normalizeDump($old_server->vardir.'/server_schema_old.dump', 'remove_autoincs');
   # Skip heap tables' data on the old server, as it won't be preserved
-  $status= $old_server->dumpdb($databases, $old_server->vardir.'/server_data_old.dump');
+  $status= $old_server->dumpdb(\@databases, $old_server->vardir.'/server_data_old.dump');
   if ($status != STATUS_OK) {
     sayError("Data dump on the old server failed, no point to continue");
     return ($same_server ? $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
@@ -231,10 +231,10 @@ sub run {
   #####
   $self->printStep("Dumping databases from the new server");
   
-  $new_server->dumpSchema($databases, $new_server->vardir.'/server_schema_new.dump');
+  $new_server->dumpSchema(\@databases, $new_server->vardir.'/server_schema_new.dump');
   $new_server->normalizeDump($new_server->vardir.'/server_schema_new.dump', 'remove_autoincs');
   # No need to skip heap tables' data on the new server, they should be empty
-  $new_server->dumpdb($databases, $new_server->vardir.'/server_data_new.dump');
+  $new_server->dumpdb(\@databases, $new_server->vardir.'/server_data_new.dump');
   $new_server->normalizeDump($new_server->vardir.'/server_data_new.dump');
   $table_autoinc{'new'} = $new_server->collectAutoincrements();
 
