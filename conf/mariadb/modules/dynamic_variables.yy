@@ -361,7 +361,7 @@ dynvar_global_variable:
 # | INNODB_CHANGE_BUFFERING_DEBUG
   | INNODB_CHANGE_BUFFER_MAX_SIZE= { $prng->int(0,50) }
 # Skipping strict values to avoid aborts (moving to startup variables)
-  | INNODB_CHECKSUM_ALGORITHM= { $prng->arrayElement(['crc32','innodb','none','full_crc32 /* compatibility 10.4.3 */']) }
+  | INNODB_CHECKSUM_ALGORITHM= IF(@@innodb_checksum_algorithm like 'strict%', @@innodb_checksum_algorithm, { $prng->arrayElement(['crc32','innodb','none','full_crc32 /* compatibility 10.4.3 */']) })
   | INNODB_CMP_PER_INDEX_ENABLED= dynvar_boolean
 # Can't really be set to non-default at runtime, and deprecated/removed anyway
 # | innodb_commit_concurrency
