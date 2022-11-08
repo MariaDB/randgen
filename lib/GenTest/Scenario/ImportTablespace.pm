@@ -214,10 +214,10 @@ sub run {
     #####
     $self->printStep("Dumping data from $db and ${db}_import");
 
-    $server->dumpdb([ $db ], $server->vardir."/server_data_${db}.dump",0,'--no-create-db');
+    $server->dumpdb([ $db ], $server->vardir."/server_data_${db}.dump",0,'--no-create-db --skip-triggers');
     $server->normalizeDump($server->vardir."/server_data_${db}.dump");
 
-    $server->dumpdb([ $db.'_import' ], $server->vardir."/server_data_${db}_import.dump",0,'--no-create-db');
+    $server->dumpdb([ $db.'_import' ], $server->vardir."/server_data_${db}_import.dump",0,'--no-create-db --skip-triggers');
     $server->normalizeDump($server->vardir."/server_data_${db}_import.dump");
 
     # This is for information purposes
