@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29978:
+=~ InnoDB: Unable to flag corruption of .* in table .*#sql-temptable-.* in CHECK TABLE-check index
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29977:
 =~ LeakSanitizer
 =~ rec_copy_prefix_to_buf
