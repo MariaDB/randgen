@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29977:
+=~ LeakSanitizer
+=~ rec_copy_prefix_to_buf
+=~ btr_blob_log_check_t::check
+=~ row_log_table_apply_update
 MDEV-29958:
 =~ STATUS_SERVER_DEADLOCKED
 =~ Deadlock reporter: Stalled query: (Killed).* ENUM(
@@ -574,7 +579,6 @@ MDEV-28569:
 MDEV-28566:
 =~ Assertion \`!expr->fixed()'|Assertion \`!expr->is_fixed()'
 =~ Virtual_column_info::fix_session_expr
-=~ TABLE::vcol_fix_expr
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-28510:
 =~ signal|AddressSanitizer
