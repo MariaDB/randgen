@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-29992:
+=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
+=~ row_upd_sec_index_entry
+=~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29992:
+=~ Got error '126 .*Index is corrupted
+=~ Index for table .* is corrupt; try to repair it
+=~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+MDEV-29992:
+=~ Index for table .* is corrupt; try to repair it
+=~ Got an error from thread_id
+=~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29978:
 =~ InnoDB: Unable to flag corruption of .* in table .*#sql-temptable-.* in CHECK TABLE-check index
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
@@ -426,7 +438,6 @@ MDEV-29059:
 MDEV-29047:
 =~ signal|AddressSanitizer
 =~ myrocks::Rdb_field_packing::get_field_in_table
-=~ myrocks::Rdb_key_def::pack_record
 =~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29027:
 =~ AddressSanitizer|signal
@@ -2114,6 +2125,7 @@ MDEV-22768:
 =~ --log-bin
 MDEV-22759:
 =~ Assertion \`0'|Failing assertion: !cursor->index->is_committed()
+=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE|InnoDB: tried to purge non-delete-marked record in index .* of table .*: tuple: TUPLE
 =~ row_upd_sec_index_entry|row_purge_remove_sec_if_poss_leaf|row_ins_sec_index_entry|ibuf_set_del_mark
 =~ FeatureUsage detected unique blobs
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
@@ -2336,7 +2348,6 @@ MDEV-22149:
 MDEV-22104:
 =~ Assertion \`m_psi_batch_mode == PSI_BATCH_MODE_NONE'
 =~ handler::ha_close
-=~ JOIN_CACHE
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22099:
 =~ AddressSanitizer:
@@ -4153,12 +4164,6 @@ MDEV-22927: [Can't find record]
 =~ will exit with exit status STATUS_DATABASE_CORRUPTION
 =~ FeatureUsage detected sequences
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-MDEV-22759: [Record in index was not found on update]
-=~ InnoDB: Record in index .* was not found on update
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-MDEV-22759: [tried to purge non-delete-marked]
-=~ InnoDB: tried to purge non-delete-marked record in index .*: tuple:
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22667: [Index is corrupt; try to repair it]
 =~ Index for table .*#P#.* is corrupt; try to repair it
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
