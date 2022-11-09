@@ -343,14 +343,16 @@ sub normalizeGrants {
       # REPLICATION CLIENT renamed to BINLOG MONITOR
       $old_grants->{$u} =~ s/REPLICATION CLIENT/BINLOG MONITOR/;
     }
-    if ($old_server->versionNumeric lt '100509' and $new_server->versionNumeric ge '100509') {
-      if ($old_grants->{$u} =~ /REPLICATION CLIENT/ or $old_grants->{$u} =~ / REPLICATION SLAVE(?:,| ON)/) {
-        # Workaround for MDEV-23610 fix: SLAVE MONITOR is added to REPLICATION SLAVE-grantees
+    if ($old_server->versionNumeric lt '100509' and $new_server->versionNumeric ge '100509' and $old_grants->{$u} !~ /SLAVE MONITOR/) {
+      # Workaround for MDEV-23610 fix: SLAVE MONITOR is added to REPLICATION SLAVE and REPLICATION CLIENT (a.k.a BINLOG MONITOR) grantees,
+      # and for upgrade from 10.5.0-10.5.8 also to REPLICATION SLAVE ADMIN
+      if ( ($old_server->versionNumeric gt '100500' and $old_grants->{$u} =~ /REPLICATION SLAVE ADMIN/)
+         or ($old_grants->{$u} =~ /(?:REPLICATION CLIENT|REPLICATION SLAVE,|REPLICATION SLAVE ON|BINLOG MONITOR)/) )
+      {
         $old_grants->{$u} =~ s/ ON \*\.\*/, SLAVE MONITOR ON \*\.\*/;
-#        if ($old_grants->{$u} =~ s/ BINLOG ADMIN/ REPLICATION MASTER ADMIN, BINLOG ADMIN/) {}
-#        else { $old_grants->{$u} =~ s/ ON \*\.\*/, REPLICATION MASTER ADMIN ON \*\.\*/ };
       }
     }
+
     # Until 10.3.28, 10.4.18 and 10.5.9 GRANT OPTION was missing for roles (MDEV-24289)
     if ($u !~ /.`@`./ and (($old_server->versionNumeric lt '100328') or ($old_server->versionNumeric ge '100400' and $old_server->versionNumeric lt '100418') or ($old_server->versionNumeric ge '100500' and $old_server->versionNumeric lt '100509'))) {
       $new_grants->{$u} =~ s/ WITH GRANT OPTION//;
