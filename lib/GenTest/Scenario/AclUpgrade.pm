@@ -347,8 +347,10 @@ sub normalizeGrants {
       # Workaround for MDEV-23610 fix: SLAVE MONITOR is added
       #   for upgrade from 10.5.2-10.5.8 to REPLICATION SLAVE ADMIN grantees
       #   for upgrade from before 10.5.2 to REPLICATION CLIENT (a.k.a BINLOG MONITOR) and REPLICATION SLAVE grantees
+      #     (but don't give it to REPLICATION SLAVE ADMIN which cannot come from the older version but which we previously added to SUPER users;
+      #      due to MDEV-29650, simple pre-10.5.2 SUPER users don't get SLAVE MONITOR)
       if ( ($old_server->versionNumeric ge '100502' and $old_grants->{$u} =~ /REPLICATION SLAVE ADMIN/)
-         or ($old_server->versionNumeric lt '100502' and $old_grants->{$u} =~ /(?:REPLICATION CLIENT|BINLOG MONITOR|REPLICATION SLAVE)/)
+         or ($old_server->versionNumeric lt '100502' and $old_grants->{$u} =~ /(?:REPLICATION CLIENT|BINLOG MONITOR|REPLICATION SLAVE ON|REPLICATION SLAVE,)/)
       ) {
         $old_grants->{$u} =~ s/ ON \*\.\*/, SLAVE MONITOR ON \*\.\*/;
       }
