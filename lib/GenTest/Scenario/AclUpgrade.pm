@@ -344,13 +344,12 @@ sub normalizeGrants {
       $old_grants->{$u} =~ s/REPLICATION CLIENT/BINLOG MONITOR/;
     }
     if ($old_server->versionNumeric lt '100509' and $new_server->versionNumeric ge '100509' and $old_grants->{$u} !~ /SLAVE MONITOR/) {
-      # Workaround for MDEV-23610 fix: SLAVE MONITOR is added to REPLICATION SLAVE grantees,
-      #   and for upgrade from 10.5.2-10.5.8 also to REPLICATION SLAVE ADMIN
-      #   or for upgrade from before 10.5.2 also to REPLICATION CLIENT (a.k.a BINLOG MONITOR)
+      # Workaround for MDEV-23610 fix: SLAVE MONITOR is added
+      #   for upgrade from 10.5.2-10.5.8 to REPLICATION SLAVE ADMIN grantees
+      #   for upgrade from before 10.5.2 to REPLICATION CLIENT (a.k.a BINLOG MONITOR) and REPLICATION SLAVE grantees
       if ( ($old_server->versionNumeric ge '100502' and $old_grants->{$u} =~ /REPLICATION SLAVE ADMIN/)
-         or ($old_server->versionNumeric lt '100502' and $old_grants->{$u} =~ /(?:REPLICATION CLIENT|BINLOG MONITOR)/)
-         or ($old_grants->{$u} =~ /(?:REPLICATION SLAVE,|REPLICATION SLAVE ON)/) )
-      {
+         or ($old_server->versionNumeric lt '100502' and $old_grants->{$u} =~ /(?:REPLICATION CLIENT|BINLOG MONITOR|REPLICATION SLAVE)/)
+      ) {
         $old_grants->{$u} =~ s/ ON \*\.\*/, SLAVE MONITOR ON \*\.\*/;
       }
     }
