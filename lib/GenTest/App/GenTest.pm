@@ -2,7 +2,7 @@
 
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2016, 2021, MariaDB Corporation Ab.
+# Copyright (c) 2016, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -249,8 +249,6 @@ sub run {
         $errorfilter_p->start($self->config->servers);
     }
 
-    my $reporter_pid = $self->reportingProcess();
-    
     ### Start worker children ###
 
     my %worker_pids;
@@ -273,14 +271,14 @@ sub run {
 
     # We are the parent process, wait for for all spawned processes to terminate
     my $total_status = STATUS_OK;
-    my $reporter_died = 0;
+    my $reporter_status = STATUS_OK;
 
     ## Parent thread does not use channel
     $self->channel()->close;
 
     OUTER: while (1) {
         # Remaining Worker & Reporter processes that were spawned and haven't ended yet.
-        my @spawned_pids = (keys %worker_pids, $reporter_pid);
+        my @spawned_pids = (keys %worker_pids);
 
         # Wait for processes to complete, i.e only processes spawned by workers & reporters. 
         foreach my $spawned_pid (@spawned_pids) {
@@ -290,12 +288,8 @@ sub run {
 
             $total_status = $child_exit_status if $child_exit_status > $total_status;
             
-            if ($child_pid == $reporter_pid) {
-                say("Process with pid $child_pid (reporter) ended with status ".status2text($child_exit_status));
-                $reporter_died = 1;
-                last OUTER;
-            } elsif ($child_pid == -1) {
-                say("Process with pid $spawned_pid ".($spawned_pid == $reporter_pid ? '(reporter)' : '(worker)')." no longer exists");
+            if ($child_pid == -1) {
+                say("Process with pid $spawned_pid (worker) no longer exists");
                 last OUTER;
             } else {
                 say("Process with pid $child_pid (worker) ended with status ".status2text($child_exit_status));
@@ -305,7 +299,13 @@ sub run {
             last OUTER if $child_exit_status >= STATUS_CRITICAL_FAILURE;
             last OUTER if keys %worker_pids == 0;
         }
-        sleep 5;
+        $reporter_status = $self->reporterManager()->monitor(REPORTER_TYPE_PERIODIC);
+        $total_status= $reporter_status if $reporter_status > $total_status;
+        if ($reporter_status > STATUS_CRITICAL_FAILURE) {
+          sayError("Reporters returned a critical failure, aborting");
+          last;
+        }
+        sleep 10;
     }
 
     foreach my $worker_pid (keys %worker_pids) {
@@ -320,34 +320,6 @@ sub run {
         }
     }
 
-    if ($reporter_died == 0) {
-        # Wait for periodic process to return the status of its last execution
-        Time::HiRes::sleep(1);
-        say("Killing periodic reporting process with pid $reporter_pid...");
-        kill(15, $reporter_pid);
-        foreach (1..5) {
-            last unless kill(0, $reporter_pid);
-            sleep 1;
-        }
-        if (kill(0, $reporter_pid)) {
-            kill(9, $reporter_pid);
-        }
-
-        if (osWindows()) {
-            # We use sleep() + non-blocking waitpid() due to a bug in ActiveState Perl
-            Time::HiRes::sleep(1);
-            waitpid($reporter_pid, &POSIX::WNOHANG() );
-        } else {
-            waitpid($reporter_pid, 0);
-        }
-            
-        if ($? > -1 ) {
-            my $reporter_status = $? > 0 ? $? >> 8 : 0;
-            say("For pid $reporter_pid reporter status " . status2text($reporter_status));
-            $total_status = $reporter_status if $reporter_status > $total_status;
-        }
-    }
-        
     $errorfilter_p->kill();
 
     my $gentest_result= $self->reportResults($total_status);
@@ -414,34 +386,6 @@ sub stopChild {
     } else {
         safe_exit($status);
     }
-}
-
-sub reportingProcess {
-    my $self = shift;
-
-    my $reporter_pid = fork();
-
-    if ($reporter_pid != 0) {
-        return $reporter_pid;
-    }
-
-    my $reporter_killed = 0;
-    local $SIG{TERM} = sub { $reporter_killed = 1 };
-
-    ## Reporter process does not use channel
-    $self->channel()->close();
-
-    Time::HiRes::sleep(($self->config->threads + 1) / 10);
-    say("Started periodic reporting process...");
-
-    my $reporter_status= STATUS_OK;
-    while (1) {
-        $reporter_status = $self->reporterManager()->monitor(REPORTER_TYPE_PERIODIC);
-        last if $reporter_status > STATUS_CRITICAL_FAILURE or $reporter_killed == 1;
-        sleep(10);
-    }
-
-    $self->stopChild($reporter_status);
 }
 
 sub workerProcess {
