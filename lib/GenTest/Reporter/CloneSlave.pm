@@ -44,6 +44,8 @@ my $client_basedir;
 use constant MINIMUM_BINLOG_COUNT	=> 10;
 use constant MINIMUM_BINLOG_SIZE	=> 1000000;
 
+my ($mysqld_pid, $mysqld_real_pid);
+
 sub monitor {
 	my $reporter = shift;
 
@@ -69,7 +71,10 @@ sub monitor {
 	        }
 	}
 
-	die "can't determine client_basedir; basedir = $basedir" if not defined $client_basedir;
+    if (not defined $client_basedir) {
+	  sayError("can't determine client_basedir; basedir = $basedir");
+      return STATUS_ENVIRONMENT_FAILURE;
+    }
 
 	my $pid = $reporter->serverInfo('pid');
 	my $binary = $reporter->serverInfo('binary');
@@ -102,6 +107,7 @@ sub monitor {
 		'--relay-log=clonedslave-relay',
 		'--general_log_file="'.$slave_datadir.'/clonedslave.log"',
 		'--log_error="'.$slave_datadir.'/clonedslave.err"',
+		'--pid-file="'.$slave_datadir.'/clonedslave.pid"',
 		'--datadir="'.$slave_datadir.'"',
 		'--port='.$slave_port,
 		'--loose-plugin-dir='.$plugin_dir,
@@ -117,7 +123,11 @@ sub monitor {
 	my $mysqld_command = $binary.' '.join(' ', @mysqld_options).' 2>&1';
 	say("Starting a new mysqld for the cloned slave.");
 	say("$mysqld_command.");
-	my $mysqld_pid = open2(\*RDRFH, \*WTRFH, $mysqld_command);
+	$mysqld_pid = open2(\*RDRFH, \*WTRFH, $mysqld_command);
+    if (!$mysqld_pid) {
+      sayError("Could not determine server pid after starting the clone");
+      return STATUS_ENVIRONMENT_FAILURE;
+    }
 
 	my $slave_dbh;
 
@@ -128,8 +138,13 @@ sub monitor {
 		last if $slave_dbh->ping();
 	}
 
+    $mysqld_real_pid=`cat $slave_datadir/clonedslave.pid`;
+    chomp $mysqld_real_pid;
+    say("Started clone with pid $mysqld_pid / $mysqld_real_pid");
+
 	if (not defined $slave_dbh) {
 		say("ERROR: Could not connect to slave on port $slave_port. Status will be set to ENVIRONMENT_FAILURE");
+        kill(9,$mysqld_pid, $mysqld_real_pid);
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 
@@ -145,6 +160,7 @@ sub monitor {
 	system($mysqldump_command);
 	if ($? != 0) {
 		say("ERROR: mysqldump returned error code $?. Status will be set to ENVIRONMENT_FAILURE");
+        kill(9,$mysqld_pid, $mysqld_real_pid);
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 	say("Mysqldump done.");
@@ -155,6 +171,7 @@ sub monitor {
 	system($mysql_command);
 	if ($? != 0) {
 		say("ERROR: Attempt to restore the dump returned error code $?. Status will be set to ENVIRONMENT_FAILURE");
+        kill(9,$mysqld_pid, $mysqld_real_pid);
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
 	say("Mysql done.");
@@ -186,12 +203,16 @@ sub report {
 	        }
 	}
 
-	die "can't determine client_basedir; basedir = $basedir" if not defined $client_basedir;
+    if (not defined $client_basedir) {
+	  sayError ("can't determine client_basedir; basedir = $basedir");
+      kill(9,$mysqld_pid, $mysqld_real_pid);
+      return STATUS_ENVIRONMENT_FAILURE;
+    }
 
 	my $master_port = $reporter->serverVariable('port');
 	my $slave_port = $master_port + 4;
 	my $master_dbh = DBI->connect($reporter->dsn());
-	my $slave_dbh = DBI->connect("dbi:mysql:user=root:host=127.0.0.1:port=".$slave_port, undef, undef, { RaiseError => 1 } );
+	my $slave_dbh = DBI->connect("dbi:mysql:user=root:host=127.0.0.1:port=".$slave_port, undef, undef, { RaiseError => 0 } );
 
 	say("Issuing START SLAVE on the cloned slave.");
 	$slave_dbh->do("START SLAVE");
@@ -210,6 +231,7 @@ sub report {
                         my $intermediate_wait_result = $slave_dbh->selectrow_array("SELECT MASTER_POS_WAIT('$intermediate_binlog_file', $intermediate_binlog_pos)");
                         if (not defined $intermediate_wait_result) {
                                 say("Intermediate MASTER_POS_WAIT('$intermediate_binlog_file', $intermediate_binlog_pos) failed on cloned slave on port $slave_port.");
+                                kill(9,$mysqld_pid, $mysqld_real_pid);
                                 return STATUS_REPLICATION_FAILURE;
                         }
                         $intermediate_binlog_pos += 10000000;
@@ -218,14 +240,19 @@ sub report {
 
 
 	my ($final_binlog_file, $final_binlog_pos) = $master_dbh->selectrow_array("SHOW MASTER STATUS");
-	exit_test(STATUS_UNKNOWN_ERROR) if !defined $final_binlog_file;
+    if (!defined $final_binlog_file) {
+      kill(9,$mysqld_pid, $mysqld_real_pid);
+      return STATUS_UNKNOWN_ERROR;
+    }
 
-        say("Waiting for cloned slave to catch up..., file $final_binlog_file, pos $final_binlog_pos .");
+    say("Waiting for cloned slave to catch up..., file $final_binlog_file, pos $final_binlog_pos .");
 	my $final_wait_result = $slave_dbh->selectrow_array("SELECT MASTER_POS_WAIT('$final_binlog_file', $final_binlog_pos)");
 
 	if (not defined $final_wait_result) {
                 say("MASTER_POS_WAIT() failed. Cloned slave replication thread not running.");
-                return STATUS_REPLICATION_FAILURE;        }
+                kill(9,$mysqld_pid, $mysqld_real_pid);
+                return STATUS_REPLICATION_FAILURE;
+    }
 	
 	say("Cloned slave caught up.");
 
@@ -242,7 +269,8 @@ sub report {
 		my $dump_result = system("\"$client_basedir/mysqldump\" --hex-blob --no-tablespaces --skip-triggers --compact --order-by-primary --skip-extended-insert --no-create-info --host=127.0.0.1 --port=$dump_ports[$i] --user=root --password='' --databases $databases_string | sort > $dump_files[$i]") >> 8;
 		if ($dump_result > 0) {
 			say("ERROR: mysqldump returned error code $dump_result. Status will be set to ENVIRONMENT_FAILURE");
-			return STATUS_ENVIRONMENT_FAILURE if $dump_result > 0;
+            kill(9,$mysqld_pid, $mysqld_real_pid);
+			return STATUS_ENVIRONMENT_FAILURE;
 		}
 	}
 
@@ -257,6 +285,7 @@ sub report {
                 unlink($dump_file);
         }
 
+    kill(9,$mysqld_pid, $mysqld_real_pid);
 	return $diff_result == 0 ? STATUS_OK : STATUS_REPLICATION_FAILURE;
 }
 

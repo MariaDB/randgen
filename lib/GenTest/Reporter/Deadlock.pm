@@ -97,12 +97,9 @@ sub connect {
   my $dbh;
   my $dsn = $reporter->dsn();
 
-  # We directly call exit() in the handler because attempting to catch and handle the signal in a more civilized
-  # manner does not work for some reason -- the read() call from the server gets restarted instead.
-  # Later note: This is legacy, maybe not true anymore in current Perl versions
   sigaction SIGALRM, new POSIX::SigAction sub {
                 sayError("Deadlock reporter: Timeout upon connecting to $dsn");
-                exit (STATUS_SERVER_DEADLOCKED);
+                return STATUS_SERVER_DEADLOCKED;
   } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
   alarm (CONNECT_TIMEOUT_THRESHOLD);
   # Due to MDEV-24998, connect here sometimes returns error 2013
@@ -124,7 +121,7 @@ sub monitor_nonthreaded {
 
   sigaction SIGALRM, new POSIX::SigAction sub {
                 sayError("Deadlock reporter: Timeout upon running SHOW FULL PROCESSLIST");
-                exit (STATUS_SERVER_DEADLOCKED);
+                return STATUS_SERVER_DEADLOCKED;
   } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
 
 	alarm (CONNECT_TIMEOUT_THRESHOLD);
@@ -174,7 +171,7 @@ sub monitor_nonthreaded {
 sub collect_deadlock_diagnostics {
   sigaction SIGALRM, new POSIX::SigAction sub {
               sayError("Deadlock reporter: Timeout upon performing deadlock diagnostics");
-              exit (STATUS_SERVER_DEADLOCKED);
+              return STATUS_SERVER_DEADLOCKED;
   } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
 
   alarm(CONNECT_TIMEOUT_THRESHOLD);
