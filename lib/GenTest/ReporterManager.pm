@@ -1,5 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2021 MariaDB Corporation
+# Copyright (c) 2021,2022 MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,12 @@ sub monitor {
 
 	foreach my $reporter (@{$manager->reporters()}) {
 		if ($reporter->type() & $desired_type) {
-			my $reporter_result = $reporter->monitor();
+			my $reporter_result = STATUS_OK;
+      eval {
+        $reporter_result = $reporter->monitor();
+        1;
+      };
+      sayWarning("Reporter ".(ref $reporter)." returned an error $reporter_result") if $reporter_result != STATUS_OK;
 			$max_result = $reporter_result if $reporter_result > $max_result;
 		}
 	}
