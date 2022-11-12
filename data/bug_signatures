@@ -189,7 +189,7 @@ MDEV-29703:
 MDEV-29702:
 =~ For SPIDER BASE TABLE.*error : Partition .* returned error|For SPIDER BASE TABLE.*error : Subpartition .* returned error
 =~ For SPIDER BASE TABLE.*error : Upgrade required. Please do
-=~ STATUS_UPGRADE_FAILURE
+=~ STATUS_UPGRADE_FAILURE|STATUS_RECOVERY_FAILURE
 MDEV-29701:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
@@ -364,7 +364,7 @@ MDEV-29149:
 MDEV-29144:
 =~ Could not import tablespace for .*: 1808: Schema mismatch
 =~ InnoDB: Discarding tablespace of table .*: Generic error
-=~ runall-new.pl will exit with exit status STATUS_DATABASE_CORRUPTION|STATUS_UPGRADE_FAILURE
+=~ STATUS_DATABASE_CORRUPTION|STATUS_UPGRADE_FAILURE
 MDEV-29144:
 =~ InnoDB: Failing assertion: index != 0
 =~ row_import::set_root_by_name
@@ -489,7 +489,7 @@ MDEV-28996:
 MDEV-28989:
 =~ Could not import tablespace for .*: 1808: Schema mismatch.* prefix mismatch
 =~ InnoDB: Discarding tablespace of table .*: Generic error
-=~ runall-new.pl will exit with exit status STATUS_DATABASE_CORRUPTION
+=~ STATUS_DATABASE_CORRUPTION
 MDEV-28988:
 =~ Assertion \`is_started()'
 =~ Ha_trx_info::is_trx_read_write
