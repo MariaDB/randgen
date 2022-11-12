@@ -73,7 +73,7 @@ sub monitor {
     $monitor_dbh= $reporter->connect();
     unless ($monitor_dbh) {
       sayError("Deadlock reporter: Could not establish the main connection");
-      return STATUS_ENVIRONMENT_FAILURE;
+      return STATUS_CRITICAL_FAILURE;
     }
   }
 
