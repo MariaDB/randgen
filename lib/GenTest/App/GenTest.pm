@@ -757,14 +757,12 @@ sub initReporters {
             push @{$self->config->reporters}, 'ReplicationSlaveStatus' 
                 if $self->config->rpl_mode && $self->isMySQLCompatible();
         }
-    } else {
-        ## Remove the "None" reporter
-        foreach my $i (0..$#{$self->config->reporters}) {
-            delete $self->config->reporters->[$i] 
-                if $self->config->reporters->[$i] eq "None" 
-                or $self->config->reporters->[$i] eq '';
-        }
     }
+
+    # Remove duplicates
+    my %reps=();
+    map { $reps{$_}= 1 } (@{$self->config->reporters});
+    $self->config->reporters([ keys %reps ]);
 
     say("Reporters: ".($#{$self->config->reporters} > -1 ? join(', ', @{$self->config->reporters}) : "(none)"));
 
