@@ -47,7 +47,7 @@
 # dodgy.
 ################################################################################
 query_init_add:
-	{ $total_dur = 0; "" };
+	{ $total_dur = 0; $executors->[0]->registerFeatures("multi-update/delete"); "" };
 
 query_add:
 	{ @nonaggregates = () ; %tables = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } multi_main_dml ;
