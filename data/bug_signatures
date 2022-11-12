@@ -245,7 +245,7 @@ MDEV-29636:
 =~ ha_partition::write_row
 MDEV-29623:
 =~ Out of memory
-=~ FeatureUsage detected SPIDER
+=~ FeatureUsage detected Spider tables
 MDEV-29580:
 =~ Assertion \`!return_error \|\| thd->is_error() \|\| thd->killed'
 =~ mysql_delete
@@ -299,7 +299,7 @@ MDEV-29459:
 =~ signal|AddressSanitizer
 =~ Field_blob::cmp_binary
 =~ Field::cmp_binary_offset
-=~ FeatureUsage detected FEDERATED|ha_federatedx
+=~ FeatureUsage detected Federated tables
 MDEV-29459:
 =~ signal|AddressSanitizer
 =~ String::append_for_single_quote
@@ -307,12 +307,12 @@ MDEV-29459:
 MDEV-29457:
 =~ Assertion \`mode & BTR_MODIFY_LEAF'|Assertion \`!(mode & 8)'
 =~ row_undo_mod_del_unmark_sec_and_undo_update
-=~ FeatureUsage detected GIS
+=~ FeatureUsage detected GIS columns
 MDEV-29457:
 =~ InnoDB: Error (Failed, retry may succeed) in rollback
 =~ ib::fatal::~fatal
 =~ row_undo_step
-=~ FeatureUsage detected GIS
+=~ FeatureUsage detected GIS columns
 MDEV-29317:
 =~ Assertion \`sp && savepoint_next && \*sp && \*sp <= savepoint_level'
 =~ federatedx_txn::sp_release|federatedx_txn::sp_rollback
@@ -332,7 +332,7 @@ MDEV-29214:
 MDEV-29197:
 =~ LeakSanitizer: detected memory leaks
 =~ Direct leak
-=~ FeatureUsage detected S3
+=~ FeatureUsage detected S3 engine
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29184:
 =~ Assertion \`0'
@@ -351,7 +351,7 @@ MDEV-29163:
 MDEV-29157:
 =~ failed: 1041 Out of memory
 =~ Got error 128 when reading table
-=~ Feature usage detected S3 tables|s3.yy
+=~ FeatureUsage detected S3 tables
 MDEV-29152:
 =~ Assertion \`0'
 =~ Type_handler_row::field_type
@@ -383,7 +383,7 @@ MDEV-29136:
 MDEV-29127:
 =~ Assertion \`!return_error \|\| thd->is_error() \|\| thd->killed'
 =~ mysql_delete
-=~ FeatureUsage detected ROCKSDB
+=~ FeatureUsage detected RocksDB tables
 MDEV-29124:
 =~ AddressSanitizer|signal
 =~ st_select_lex::print
@@ -660,8 +660,8 @@ MDEV-28024:
 =~ Assertion \`thd->transaction->stmt\.ha_list == __null \|\| trans == &thd->transaction->stmt'
 =~ ha_rollback_trans
 =~ ha_start_consistent_snapshot
-=~ FeatureUsage detected SPIDER
-=~ FeatureUsage detected ROCKSDB
+=~ FeatureUsage detected Spider engine
+=~ FeatureUsage detected RocksDB engine
 MDEV-27878:
 =~ Assertion \`got_name == named_item_expected()'
 =~ Json_writer::on_start_object
@@ -1141,7 +1141,7 @@ MDEV-25067:
 =~ eliminate_tables
 =~ make_join_statistics
 =~ Prepared_statement::execute
-=~ FeatureUsage detected multi update/delete
+=~ FeatureUsage detected multi-update/delete
 MDEV-25060:
 =~ AddressSanitizer|Invalid write of size|signal 11
 =~ _mi_put_key_in_record
@@ -1206,7 +1206,7 @@ MDEV-25021:
 =~ Protocol::end_statement
 =~ DELETE.*IGNORE|UPDATE.*IGNORE
 =~ FeatureUsage detected foreign keys
-=~ FeatureUsage detected multi update/delete
+=~ FeatureUsage detected multi-update/delete
 MDEV-25012:
 =~ signal [16]|AddressSanitizer|Assertion \`name'
 =~ find_field_in_tables
@@ -1457,7 +1457,7 @@ MDEV-24508:
 =~ InnoDB: Failing assertion: !cursor->index->is_committed()
 =~ row_ins_sec_index_entry_by_modify
 =~ ha_innobase::write_row
-=~ FeatureUsage detected system-versioned
+=~ FeatureUsage detected system-versioned tables
 MDEV-24381:
 =~ Assertion \`user_table->get_ref_count() == 1'
 =~ commit_try_rebuild
@@ -1703,7 +1703,7 @@ MDEV-23679:
 =~ base_list_iterator::next_fast
 =~ sp_instr_stmt::exec_core
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-=~ versioning|FeatureUsage detected system-versioned
+=~ FeatureUsage detected system-versioned tables
 MDEV-23676:
 =~ Assertion \`(((nr) % (1LL << 24)) % (int) log_10_int\[6 - dec\]) == 0'
 =~ my_time_packed_to_binary
@@ -1839,7 +1839,7 @@ MDEV-23305:
 MDEV-23305:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
-=~ FeatureUsage detected Aria
+=~ FeatureUsage detected Aria tables
 =~ Version: '10\.4|Server version: 10\.4
 MDEV-23298:
 =~ Assertion \`table_list->prelocking_placeholder == TABLE_LIST::PRELOCK_NONE'
@@ -2039,7 +2039,7 @@ MDEV-22927:
 =~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'|Assertion \`((0x7 \| 8U) & mode) == LOCK_S \|\| ((0x7 \| 8U) & mode) == LOCK_X'
 =~ lock_rec_lock
 =~ read_stored_values
-=~ SEQUENCE|FeatureUsage detected sequences
+=~ FeatureUsage detected sequences
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-22927:
 =~ AddressSanitizer|signal
@@ -2242,7 +2242,7 @@ MDEV-22548:
 =~ Protocol::end_statement
 =~ IGNORE
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-=~ application_periods|FeatureUsage detected application periods
+=~ FeatureUsage detected application periods
 MDEV-22525:
 =~ signal 11|AddressSanitizer: SEGV
 =~ check_vcol_forward_refs
@@ -2270,7 +2270,7 @@ MDEV-22435:
 =~ extra2_write_len
 =~ discover_assisted
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-=~ versioning|FeatureUsage detected system-versioned|FeatureUsage detected application periods|application_periods\.yy
+=~ FeatureUsage detected system-versioned tables|FeatureUsage detected application periods
 MDEV-22426:
 =~ signal 8|AddressSanitizer: FPE
 =~ maria_create
@@ -2477,7 +2477,7 @@ MDEV-21648:
 MDEV-21641:
 =~ For .* BASE TABLE .* error : Found a misplaced row
 =~ For .* BASE TABLE .* error : Partition .* returned error
-=~ versioning|FeatureUsage detected system-versioned
+=~ FeatureUsage detected system-versioned
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21635:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'|Assertion \`! is_set()'
@@ -2535,7 +2535,7 @@ MDEV-21428:
 =~ row_update_for_mysql
 =~ ha_innobase::delete_row|ha_innobase::update_row
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
-=~ versioning|FeatureUsage detected system-versioned
+=~ versioning|FeatureUsage detected system-versioned tables
 MDEV-21415:
 =~ Assertion \`inited == RND'
 =~ handler::ha_rnd_pos
@@ -2588,13 +2588,13 @@ MDEV-21245:
 MDEV-21242:
 =~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
 =~ Field_.*::val_.*|Field_.*::get_.*
-=~ vcols|FeatureUsage detected virtual columns
+=~ FeatureUsage detected virtual columns
 =~ Version: '10\.[2-3]
 MDEV-21242:
 =~ Assertion \`marked_for_read()'
 =~ Field_.*::val_.*
 =~ Protocol_text::store
-=~ vcols|FeatureUsage detected virtual columns
+=~ FeatureUsage detected virtual columns
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21218:
 =~ signal [16]|AddressSanitizer
@@ -2627,13 +2627,13 @@ MDEV-21016:
 =~ AddressSanitizer: heap-use-after-free
 =~ trx_update_mod_tables_timestamp
 =~ trx_commit_in_memory|trx_t::commit_in_memory
-=~ versioning|application_periods|FeatureUsage detected system-versioned|FeatureUsage detected application periods
+=~ FeatureUsage detected system-versioned|FeatureUsage detected application periods
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21016:
 =~ \`mysql\`\.\`transaction_registry\` does not exist
 =~ AddressSanitizer: heap-use-after-free
 =~ mysql_inplace_alter_table
-=~ versioning|FeatureUsage detected system-versioned
+=~ FeatureUsage detected system-versioned tables
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-21007:
 =~ Assertion \`auto_increment_value'
@@ -3624,7 +3624,7 @@ MDEV-16694:
 MDEV-16694:
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ THD::~THD
-=~ FeatureUsage detected multi update/delete
+=~ FeatureUsage detected multi-update/delete
 MDEV-16659:
 =~ Assertion \`anc_page->org_size == anc_page->size'
 =~ d_search

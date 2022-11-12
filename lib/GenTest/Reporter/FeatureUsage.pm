@@ -41,29 +41,35 @@ my $dbh;
 my $server_version;
 
 my %usage_check= (
-  app_periods => \&check_for_app_periods,
-  aria => \&check_for_aria,
-  backup_stages => \&check_for_backup_stages,
-  compressed_cols => \&check_for_compressed_cols,
-  delayed_insert => \&check_for_delayed_insert,
-  federated => \&check_for_federated,
-  fk => \&check_for_fk,
-  gis => \&check_for_gis,
-  multi_upd_del => \&check_for_multi_upd_del,
-  perfschema => \&check_for_perfschema,
-  rocksdb => \&check_for_rocksdb,
-  s3 => \&check_for_s3,
-  sequences => \&check_for_sequences,
-  spider => \&check_for_spider,
-  unique_blobs => \&check_for_unique_blobs,
-  vcols => \&check_for_vcols,
-  versioning => \&check_for_versioning,
-  xa => \&check_for_xa,
+  'application periods' => \&check_for_application_periods,
+  'Aria tables' => \&check_for_aria_tables,
+  'backup stages' => \&check_for_backup_stages,
+  'compressed columns' => \&check_for_compressed_columns,
+  'delayed inserts' => \&check_for_delayed_inserts,
+  'Federated engine' => \&check_for_federated_plugin,
+  'Federated tables' => \&check_for_federated_tables,
+  'foreign keys' => \&check_for_foreign_keys,
+  'GIS columns' => \&check_for_gis,
+  'multi-update/delete' => \&check_for_multi_upd_del,
+  'performance schema' => \&check_for_performance_schema,
+  'RocksDB engine' => \&check_for_rocksdb_plugin,
+  'RocksDB tables' => \&check_for_rocksdb_tables,
+  'S3 engine' => \&check_for_s3_plugin,
+  'S3 tables' => \&check_for_s3_tables,
+  'sequences' => \&check_for_sequences,
+  'Spider engine' => \&check_for_spider_plugin,
+  'Spider tables' => \&check_for_spider_tables,
+  'unique blobs' => \&check_for_unique_blobs,
+  'virtual columns' => \&check_for_virtual_columns,
+  'system-versioned tables' => \&check_for_versioning,
+  'XA transactions' => \&check_for_xa,
 );
+
 my %features_used = ();
 # To reduce the amount of I_S queries, on every cycle we'll re-fill
 # the hashes once
-my %engines= ();
+my %engine_tables= ();
+my %plugins= ();
 my %global_status= ();
 
 sub monitor {
@@ -74,149 +80,230 @@ sub monitor {
       $server_version.= 'e' if defined $3;
     }
   }
-  %engines= ();
+  my $registered_features;
+  if ($dbh= $reporter->refresh_dbh()) {
+    eval {
+        $registered_features= $dbh->selectcol_arrayref("SELECT feature FROM mysql.rqg_feature_registry");
+        1;
+    } or do {
+      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for mysql.rqg_feature_registry query");
+    }
+  }
+  if ($registered_features) {
+    foreach my $f (@$registered_features) {
+      # To get rid of duplicates in grammar lists, when each thread registeres a feature separately
+      $features_used{$f}= "registered by grammar(s)";
+    }
+  }
   %global_status= ();
   foreach my $f (sort keys %usage_check) {
     next if $features_used{$f};
     my $func= $usage_check{$f};
-    $reporter->$func;
+    my $res= $reporter->$func;
+    $features_used{$f}= $res if defined $res;
   }
   return STATUS_OK;
 }
 
-sub report {
 
+sub report {
   my $reporter = shift;
+  foreach my $f (keys %features_used) {
+    say("FeatureUsage detected $f ($features_used{$f})");
+  }
   return STATUS_OK;
 }
 
 ##########
 # Checkers
 
-sub check_for_rocksdb {
-  $_[0]->check_for_engine('rocksdb');
+sub check_for_rocksdb_tables {
+  $_[0]->check_for_engine_tables('rocksdb');
 }
 
-sub check_for_spider {
-  $_[0]->check_for_engine('spider');
+sub check_for_spider_tables {
+  $_[0]->check_for_engine_tables('spider');
 }
 
-sub check_for_federated {
-  $_[0]->check_for_engine('federated');
+sub check_for_federated_tables {
+  $_[0]->check_for_engine_tables('federated');
 }
 
-sub check_for_s3 {
-  $_[0]->check_for_engine('s3');
+sub check_for_s3_tables {
+  $_[0]->check_for_engine_tables('s3');
 }
 
-sub check_for_aria {
-  $_[0]->check_for_engine('aria');
+sub check_for_aria_tables {
+  $_[0]->check_for_engine_tables('aria');
+}
+
+sub check_for_rocksdb_plugin {
+  $_[0]->check_for_plugin('rocksdb');
+}
+
+sub check_for_spider_plugin {
+  $_[0]->check_for_plugin('spider');
+}
+
+sub check_for_federated_plugin {
+  $_[0]->check_for_plugin('federated');
+}
+
+sub check_for_s3_plugin {
+  $_[0]->check_for_plugin('s3');
 }
 
 sub check_for_sequences {
-  return if $server_version lt '1003';
   my $reporter= shift;
-  if ($features_used{sequences}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='SEQUENCE'")) {
-    say("FeatureUsage detected sequences in the database");
+  if ($server_version ge '1003' and $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='SEQUENCE'")) {
+    return "according to I_S.TABLES";
   }
+  return undef;
 }
 
-sub check_for_fk {
+sub check_for_foreign_keys {
   my $reporter= shift;
-  if ($features_used{fk}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS")) {
-    say("FeatureUsage detected foreign keys in the database");
+  if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS")) {
+    return "according to I_S.REFERENTIAL_CONSTRAINTS";
   }
+  return undef;
 }
 
 sub check_for_unique_blobs {
   return if $server_version lt '1004';
   my $reporter= shift;
-  if ($features_used{unique_blobs}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS constr JOIN INFORMATION_SCHEMA.STATISTICS stat ON ( constr.TABLE_SCHEMA = stat.TABLE_SCHEMA AND constr.TABLE_NAME = stat.TABLE_NAME AND constr.CONSTRAINT_NAME = stat.INDEX_NAME) JOIN INFORMATION_SCHEMA.COLUMNS cols ON ( stat.TABLE_SCHEMA = cols.TABLE_SCHEMA AND stat.TABLE_NAME = cols.TABLE_NAME AND stat.COLUMN_NAME = cols.COLUMN_NAME ) where constr.CONSTRAINT_TYPE = 'UNIQUE' AND stat.INDEX_TYPE = 'HASH' AND cols.DATA_TYPE in ('varchar','varbinary','tinyblob','mediumblob','blob','longblob','tinytext','mediumtext','text','longtext')")) {
-    say("FeatureUsage detected unique blobs in the database");
+  if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS constr JOIN INFORMATION_SCHEMA.STATISTICS stat ON ( constr.TABLE_SCHEMA = stat.TABLE_SCHEMA AND constr.TABLE_NAME = stat.TABLE_NAME AND constr.CONSTRAINT_NAME = stat.INDEX_NAME) JOIN INFORMATION_SCHEMA.COLUMNS cols ON ( stat.TABLE_SCHEMA = cols.TABLE_SCHEMA AND stat.TABLE_NAME = cols.TABLE_NAME AND stat.COLUMN_NAME = cols.COLUMN_NAME ) where constr.CONSTRAINT_TYPE = 'UNIQUE' AND stat.INDEX_TYPE = 'HASH' AND cols.DATA_TYPE in ('varchar','varbinary','tinyblob','mediumblob','blob','longblob','tinytext','mediumtext','text','longtext')")) {
+    return "according to I_S.STATISTICS + I_S.COLUMNS + I_S.TABLE_CONSTRAINTS";
   }
+  return undef;
 }
 
-sub check_for_vcols {
+sub check_for_virtual_columns {
   my $reporter= shift;
-  if ($features_used{vcols}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE IS_GENERATED='ALWAYS'")) {
-    say("FeatureUsage detected virtual columns in the database");
+  if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE IS_GENERATED='ALWAYS'")) {
+    return "according to I_S.COLUMNS";
   }
+  return undef;
 }
 
-sub check_for_compressed_cols {
+sub check_for_compressed_columns {
   return if $server_version lt '1003';
   my $reporter= shift;
-  if ($features_used{compressed_cols}= $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_TYPE LIKE '%COMPRESSED%'")) {
-    say("FeatureUsage detected compressed columns in the database");
+  if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_TYPE LIKE '%COMPRESSED%'")) {
+    return "according to I_S.COLUMNS";
   }
+  return undef;
 }
 
 sub check_for_xa {
-  if ($features_used{xa}= $_[0]->check_status_var('Com_xa_start')) {
-    say("FeatureUsage detected XA transactions");
+  if ($_[0]->check_status_var('Com_xa_start')) {
+    return "according to Com_xa_start";
   }
+  return undef;
 }
 
 sub check_for_versioning {
   return if $server_version lt '1003';
-  if ($features_used{versioning}= $_[0]->check_status_var('Feature_system_versioning')) {
-    say("FeatureUsage detected system-versioned tables in the database");
+  if ($_[0]->check_status_var('Feature_system_versioning')) {
+    return "according to Feature_system_versioning";
   }
+  return undef;
 }
 
-sub check_for_app_periods {
+sub check_for_application_periods {
   return if $server_version lt '1004';
-  if ($features_used{app_periods}= $_[0]->check_status_var('Feature_application_time_periods')) {
-    say("FeatureUsage detected application periods in the database");
+  if ( $_[0]->check_status_var('Feature_application_time_periods')) {
+    return "according to Feature_application_time_periods";
   }
+  return undef;
 }
 
 sub check_for_gis {
-  if ($features_used{gis}= $_[0]->check_status_var('Feature_gis')) {
-    say("FeatureUsage detected GIS columns in the database");
+  if ($_[0]->check_status_var('Feature_gis')) {
+    return "according to Feature_gis";
   }
+  return undef;
 }
 
-sub check_for_perfschema {
-  if ($features_used{perfschema}= $_[0]->check_system_var('performance_schema')) {
-    say("FeatureUsage detected performance schema enabled");
+sub check_for_performance_schema {
+  if ($_[0]->check_system_var('performance_schema')) {
+    return "according to performance_schema variable";
   }
+  return undef;
 }
 
 sub check_for_multi_upd_del {
-  if ($features_used{multi_upd_del}= ( $_[0]->check_status_var('Com_delete_multi') or $_[0]->check_status_var('Com_update_multi')) ) {
-    say("FeatureUsage detected multi update/delete");
+  if (($_[0]->check_status_var('Com_delete_multi') or $_[0]->check_status_var('Com_update_multi')) ) {
+    return "according to Com_update_multi/Com_delete_multi";
   }
+  return undef;
 }
 
-sub check_for_delayed_insert {
-  if ($features_used{delayed_insert}= $_[0]->check_status_var('Delayed_writes')) {
-    say("FeatureUsage detected delayed inserts");
+sub check_for_delayed_inserts {
+  if ($_[0]->check_status_var('Delayed_writes')) {
+    return "according to Delayed_writes";
   }
+  return undef;
 }
 
 sub check_for_backup_stages {
-  return if $server_version lt '1004' and $server_version ne '1002e' and $server_version ne '1003e';
-  if ($features_used{backup_stages}= $_[0]->check_status_var('Com_backup')) {
-    say("FeatureUsage detected backup stages");
+  return ;
+  if (($server_version ge '1004' or $server_version eq '1002e' or $server_version eq '1003e') and $_[0]->check_status_var('Com_backup')) {
+    return "according to Com_backup";
   }
+  return undef;
 }
 
 ####
 # Helpers
 
-sub check_for_engine {
-  my $reporter= shift;
-  my $engine= shift;
-  $reporter->read_engines();
-  if ($features_used{$engine}=$engines{$engine}) {
-    say("FeatureUsage detected ".uc($engine)." tables in the database");
+sub check_for_engine_tables {
+  my ($reporter, $engine)= @_;
+  unless ($engine_tables{$engine}) {
+    if ($dbh= $reporter->refresh_dbh()) {
+      my $engines;
+      eval {
+          $engines= $dbh->selectcol_arrayref("SELECT DISTINCT lower(ENGINE) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE IS NOT NULL AND TABLE_SCHEMA NOT IN ('mysql','information_schema','sys','performance_schema')");
+          # Can't return res from here, because if it's 0, the "or" block will be executed
+          1;
+      } or do {
+        sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for ENGINES query");
+      };
+      if ($engines) {
+        # Also add them to plugins, because if there is a table, there is (or was) the engine/plugin
+        map { $engine_tables{$_}= 1; $plugins{$_}= 1; } (@$engines);
+      }
+    }
   }
+  return ($engine_tables{lc($engine)} ? return "according to I_S.TABLES" : undef);
+}
+
+sub check_for_plugin {
+  my ($reporter, $plugin)= @_;
+  unless ($plugins{$plugin}) {
+    if ($dbh= $reporter->refresh_dbh()) {
+      my $plg;
+      eval {
+          $plg= $dbh->selectcol_arrayref("SELECT lower(plugin_name) FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_STATUS = 'ACTIVE'");
+          # Can't return res from here, because if it's 0, the "or" block will be executed
+          1;
+      } or do {
+        sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for PLUGINS query");
+      };
+      if ($plg) {
+        map { $plugins{$_}= 1 } (@$plg);
+      }
+    }
+  }
+  return ($plugins{lc($plugin)} ? return "according to I_S.PLUGINS" : undef);
 }
 
 sub check_system_var {
   my ($reporter, $var)= @_;
-  return $reporter->getval("SELECT IF(VARIABLE_VALUE = 'OFF',0,1) FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES WHERE VARIABLE_NAME='".$var."'");
+  if($reporter->getval("SELECT IF(VARIABLE_VALUE = 'OFF',0,1) FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES WHERE VARIABLE_NAME='".$var."'")) {
+    return "according to I_S.GLOBAL_VARIABLES";
+  }
+  return undef;
 }
 
 sub check_status_var {
@@ -232,22 +319,7 @@ sub check_status_var {
       }
     }
   }
-  return $global_status{uc($var)};
-}
-
-sub read_engines {
-  my $reporter= shift;
-  if (scalar(keys %engines) == 0) {
-    if ($dbh= $reporter->refresh_dbh()) {
-      eval {
-          %engines= @{$dbh->selectcol_arrayref("SELECT lower(ENGINE), COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE IS NOT NULL AND TABLE_SCHEMA NOT IN ('mysql','information_schema','sys','performance_schema') GROUP BY ENGINE", { Columns=>[1,2] })};
-          # Can't return res from here, because if it's 0, the "or" block will be executed
-          1;
-      } or do {
-        sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for ENGINES query");
-      }
-    }
-  }
+  return ($global_status{uc($var)} ? "according to I_S.GLOBAL_STATUS" : undef);
 }
 
 sub getval {

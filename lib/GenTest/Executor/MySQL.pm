@@ -3245,6 +3245,12 @@ sub currentSchema {
     return $executor->dbh()->selectrow_array("SELECT DATABASE()");
 }
 
+sub registerFeatures {
+    my ($executor,@features)= @_;
+    my $dbh = $executor->dbh();
+    my $feature_list= join ',', map { '("'.$_.'")' } (@features);
+    $dbh->do("REPLACE INTO mysql.rqg_feature_registry VALUES $feature_list");
+}
 
 sub errorType {
     return undef if not defined $_[0];
