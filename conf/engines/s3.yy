@@ -14,11 +14,11 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
+_features:
+  S3 engine | S3 tables ;
+
 query_init_add:
   { $s3_doable= $ENV{S3_DOABLE}; '' } ;
-
-thread1_init_add:
-  { $ENV{S3_DOABLE} ? $executors->[0]->registerFeatures("S3 engine","S3 tables") : $executors->[0]->registerFeatures("S3 engine"); '' } ;
 
 query_add:
   ==FACTOR:0.01== { '/*'.$s3_doable.' ' } ALTER TABLE _table ENGINE=S3 */ |

@@ -694,10 +694,10 @@ sub initGenerator {
             return STATUS_ENVIRONMENT_FAILURE;
         }
 
-        if (not defined $self->grammar()) {
-            sayError("Could not redefine the grammar, status will be set to ENVIRONMENT_FAILURE");
-            return STATUS_ENVIRONMENT_FAILURE;
+          if ($self->grammar()->features && scalar @{$self->grammar()->features}) {
+          $self->registerFeatures($self->grammar()->features);
         }
+
     }
 
     $self->[GT_GENERATOR] = $generator_name->new(
@@ -715,6 +715,26 @@ sub initGenerator {
         sayError("Could not initialize the generator, status will be set to ENVIRONMENT_FAILURE");
         return STATUS_ENVIRONMENT_FAILURE;
     }
+}
+
+sub registerFeatures {
+  my ($self, $features)= @_;
+  my $dbh= DBI->connect($self->config->server_specific->{1}->{dsn});
+  if ($dbh->err) {
+    sayError("Could not connect to server ".$self->config->server_specific->{1}->{dsn}." to register features @{$features}: ".$dbh->err." ".$dbh->errstr);
+    return;
+  }
+  $dbh->do("CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature))");
+  if ($dbh->err) {
+    sayError("Could not create mysql.rqg_feature_registry at ".$self->config->server_specific->{1}->{dsn}.": ".$dbh->err." ".$dbh->errstr);
+    return;
+  }
+  my $feature_list= join ',', map { '("'.$_.'")' } (@$features);
+  $dbh->do("REPLACE INTO mysql.rqg_feature_registry VALUES $feature_list");
+  if ($dbh->err) {
+    sayError("Could not register features @{$features} at".$self->config->server_specific->{1}->{dsn}.": ".$dbh->err." ".$dbh->errstr);
+  }
+  sayDebug("Registered features @$features");
 }
 
 sub isMySQLCompatible {

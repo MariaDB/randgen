@@ -1,5 +1,5 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2016, 2021, MariaDB Corporation
+# Copyright (c) 2016, 2022, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,7 @@ use constant GRAMMAR_RULES	=> 0;
 use constant GRAMMAR_FILES	=> 1;
 use constant GRAMMAR_STRING	=> 2;
 use constant GRAMMAR_FLAGS	=> 3;
+use constant GRAMMAR_FEATURES => 4;
 
 use constant GRAMMAR_FLAG_COMPACT_RULES         => 1;
 use constant GRAMMAR_FLAG_SKIP_RECURSIVE_RULES  => 2;
@@ -56,6 +57,7 @@ sub new {
 		'grammar_rules'		=> GRAMMAR_RULES
 	}, @_);
 
+     $grammar->[GRAMMAR_FEATURES]= [];
 
 	if (defined $grammar->rules()) {
 		$grammar->[GRAMMAR_STRING] = $grammar->toString();
@@ -71,6 +73,21 @@ sub new {
 			my $parse_result = $grammar->parseFromString($grammar->string());
 			return undef if $parse_result > STATUS_OK;
 		}
+    if ($grammar->[GRAMMAR_RULES]->{'_features'}) {
+      # Grammar rule is an array. First element is the rule name (_features),
+      # the second element is an array ref of options.
+      # Each element of the array ref of options is an array ref of tokens.
+      # So, at this moment each of features is a set of tokens (because
+      # feature names can contain spaces).
+      # We need to convert them into an array of feature names.
+      my @features= ();
+      foreach my $f (@{$grammar->[GRAMMAR_RULES]->{'_features'}->[1]}) {
+        push @features, join '', @$f;
+      }
+      $grammar->[GRAMMAR_FEATURES]= \@features;
+      sayDebug("Found features @{$grammar->[GRAMMAR_FEATURES]}");
+      delete $grammar->[GRAMMAR_RULES]->{'_features'}
+    }
 	}
 
 	return $grammar;
@@ -84,6 +101,9 @@ sub string {
 	return $_[0]->[GRAMMAR_STRING];
 }
 
+sub features {
+	return $_[0]->[GRAMMAR_FEATURES];
+}
 
 sub toString {
 	my $grammar = shift;

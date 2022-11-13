@@ -437,7 +437,6 @@ sub createMysqlBase  {
         print BOOT "INSERT INTO proxies_priv SELECT * FROM tmp_proxies;\n";
         print BOOT "DROP TABLE tmp_proxies;\n";
     }
-    print BOOT "CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature));\n";
     # Protect the work account from password expiration
     if ($self->versionNumeric() gt '100403') {
         print BOOT "UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root');\n";
