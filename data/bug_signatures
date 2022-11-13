@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-30003:
+=~ Assertion \`!default_table_charset \|\| thd->stmt_arena->is_stmt_execute()'
+=~ HA_CREATE_INFO::resolve_to_charset_collation_context
+=~ Version: '10\.9|Server version: 10\.9|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29992:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ row_upd_sec_index_entry
