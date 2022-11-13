@@ -31,15 +31,11 @@ use GenTest::Executor::MySQL;
 
 use DBI;
 use Data::Dumper;
-use POSIX;
 
 use constant PROCESSLIST_PROCESS_ID      => 0;
 use constant PROCESSLIST_PROCESS_COMMAND => 4;
 use constant PROCESSLIST_PROCESS_TIME    => 5;
 use constant PROCESSLIST_PROCESS_INFO    => 7;
-
-# The time, in seconds, we will wait for a connect before we declare the server hanged
-use constant CONNECT_TIMEOUT_THRESHOLD		=> 20;
 
 # Maximum lifetime of a query before it is considered suspicios
 # (hard default, may be overridden later)
@@ -54,11 +50,6 @@ use constant ACTUAL_TEST_DURATION_MULTIPLIER	=> 2;
 # Set actual query time limit to a slighly lower value than test duration
 my $lifetime_threshold;
 
-# We will use two handlers: a permanent one for monitoring the processes,
-# and a temporary one for checking the ability to connect.
-# This is the permanent one
-my $monitor_dbh;
-
 sub monitor {
 	my $reporter = shift;
 
@@ -67,14 +58,6 @@ sub monitor {
     $lifetime_threshold= ($reporter->testDuration() * 0.8 > QUERY_LIFETIME_THRESHOLD
                           ? QUERY_LIFETIME_THRESHOLD
                           : int($reporter->testDuration() * 0.8))
-  }
-
-  unless ($monitor_dbh) {
-    $monitor_dbh= $reporter->connect();
-    unless ($monitor_dbh) {
-      sayError("Deadlock reporter: Could not establish the main connection");
-      return STATUS_CRITICAL_FAILURE;
-    }
   }
 
   my $actual_test_duration = time() - $reporter->testStart();
@@ -94,6 +77,9 @@ sub monitor {
 
 sub connect {
   my $reporter= shift;
+  # We will use two handlers: a permanent one for monitoring the processes,
+  # and a temporary one for checking the ability to connect.
+  # The permanent one is coming from Reporter. This is the temporary one
   my $dbh;
   my $dsn = $reporter->dsn();
 
@@ -101,12 +87,12 @@ sub connect {
                 sayError("Deadlock reporter: Timeout upon connecting to $dsn");
                 return STATUS_SERVER_DEADLOCKED;
   } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
-  alarm (CONNECT_TIMEOUT_THRESHOLD);
+  alarm (REPORTER_CONNECT_TIMEOUT_THRESHOLD);
   # Due to MDEV-24998, connect here sometimes returns error 2013
   # falsely indicating server crash. To avoid it, we will try twice before giving up
-  unless ($dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => CONNECT_TIMEOUT_THRESHOLD * 2} )) {
+  unless ($dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} )) {
     sayWarning("Deadlock reporter: Error ".$DBI::err." upon connecting to $dsn. Trying again");
-    $dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => CONNECT_TIMEOUT_THRESHOLD * 2} );
+    $dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} );
   }
   alarm (0);
   if (defined GenTest::Executor::MySQL::errorType($DBI::err)) {
@@ -124,9 +110,9 @@ sub monitor_nonthreaded {
                 return STATUS_SERVER_DEADLOCKED;
   } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
 
-	alarm (CONNECT_TIMEOUT_THRESHOLD);
+	alarm (REPORTER_CONNECT_TIMEOUT_THRESHOLD);
 
-	my $processlist = $monitor_dbh->selectall_arrayref("SHOW FULL PROCESSLIST");
+	my $processlist = $reporter->dbh->selectall_arrayref("SHOW FULL PROCESSLIST");
 	alarm (0);
 
   # Stalled queries are those which have been in the process list too long (in any state)
@@ -158,7 +144,7 @@ sub monitor_nonthreaded {
 
   # We also try to connect on every run in order to be able
   # to use the mysql_connect_timeout to detect very debilitating deadlocks
-  if (my $connect_dbh= $reporter->connect()) {
+  if (my $connect_dbh= $reporter->dbh()) {
     $connect_dbh->disconnect();
   } else {
     sayError("Deadlock reporter: Could not establish a new connection");
@@ -169,14 +155,15 @@ sub monitor_nonthreaded {
 }
 
 sub collect_deadlock_diagnostics {
+  my $reporter= shift;
   sigaction SIGALRM, new POSIX::SigAction sub {
               sayError("Deadlock reporter: Timeout upon performing deadlock diagnostics");
               return STATUS_SERVER_DEADLOCKED;
   } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
 
-  alarm(CONNECT_TIMEOUT_THRESHOLD);
+  alarm(REPORTER_CONNECT_TIMEOUT_THRESHOLD);
 
-  $monitor_dbh->do("INSTALL SONAME 'metadata_lock_info'");
+  $reporter->dbh->do("INSTALL SONAME 'metadata_lock_info'");
   foreach my $status_query (
     "SHOW FULL PROCESSLIST",
     "SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO",
@@ -184,7 +171,7 @@ sub collect_deadlock_diagnostics {
     # "SHOW OPEN TABLES" - disabled due to bug #46433
   ) {
       say("Deadlock reporter: Executing $status_query:");
-      my $status_result = $monitor_dbh->selectall_arrayref($status_query);
+      my $status_result = $reporter->dbh->selectall_arrayref($status_query);
       print Dumper $status_result;
   }
   alarm(0);
@@ -237,7 +224,7 @@ sub alarm_thread {
 
 	# We sleep in small increments so that signals can get delivered in the meantime
 
-	foreach my $i (1..CONNECT_TIMEOUT_THRESHOLD) {
+	foreach my $i (1..REPORTER_CONNECT_TIMEOUT_THRESHOLD) {
 		sleep(1);
 	};
 
@@ -252,7 +239,7 @@ sub dbh_thread {
 
 	# We connect on every run in order to be able to use a timeout to detect very debilitating deadlocks.
 
-	my $dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => CONNECT_TIMEOUT_THRESHOLD * 2, PrintError => 1, RaiseError => 0 });
+	my $dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2, PrintError => 1, RaiseError => 0 });
 
 	if (defined GenTest::Executor::MySQL::errorType($DBI::err)) {
 		return GenTest::Executor::MySQL::errorType($DBI::err);

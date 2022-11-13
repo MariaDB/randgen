@@ -81,14 +81,16 @@ sub monitor {
     }
   }
   my $registered_features;
-  if ($dbh= $reporter->refresh_dbh()) {
-    eval {
-        $registered_features= $dbh->selectcol_arrayref("SELECT feature FROM mysql.rqg_feature_registry");
-        1;
-    } or do {
-      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for mysql.rqg_feature_registry query");
-    }
+  unless ($dbh= $reporter->dbh()) {
+    sayError((ref $reporter)." reporter returning critical failure");
+    return STATUS_SERVER_UNAVAILABLE;
   }
+  eval {
+      $registered_features= $dbh->selectcol_arrayref("SELECT feature FROM mysql.rqg_feature_registry");
+      1;
+  } or do {
+    sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for mysql.rqg_feature_registry query");
+  };
   if ($registered_features) {
     foreach my $f (@$registered_features) {
       # To get rid of duplicates in grammar lists, when each thread registeres a feature separately
@@ -260,19 +262,17 @@ sub check_for_backup_stages {
 sub check_for_engine_tables {
   my ($reporter, $engine)= @_;
   unless ($engine_tables{$engine}) {
-    if ($dbh= $reporter->refresh_dbh()) {
-      my $engines;
-      eval {
-          $engines= $dbh->selectcol_arrayref("SELECT DISTINCT lower(ENGINE) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE IS NOT NULL AND TABLE_SCHEMA NOT IN ('mysql','information_schema','sys','performance_schema')");
-          # Can't return res from here, because if it's 0, the "or" block will be executed
-          1;
-      } or do {
-        sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for ENGINES query");
-      };
-      if ($engines) {
-        # Also add them to plugins, because if there is a table, there is (or was) the engine/plugin
-        map { $engine_tables{$_}= 1; $plugins{$_}= 1; } (@$engines);
-      }
+    my $engines;
+    eval {
+        $engines= $dbh->selectcol_arrayref("SELECT DISTINCT lower(ENGINE) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE IS NOT NULL AND TABLE_SCHEMA NOT IN ('mysql','information_schema','sys','performance_schema')");
+        # Can't return res from here, because if it's 0, the "or" block will be executed
+        1;
+    } or do {
+      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for ENGINES query");
+    };
+    if ($engines) {
+      # Also add them to plugins, because if there is a table, there is (or was) the engine/plugin
+      map { $engine_tables{$_}= 1; $plugins{$_}= 1; } (@$engines);
     }
   }
   return ($engine_tables{lc($engine)} ? return "according to I_S.TABLES" : undef);
@@ -281,18 +281,16 @@ sub check_for_engine_tables {
 sub check_for_plugin {
   my ($reporter, $plugin)= @_;
   unless ($plugins{$plugin}) {
-    if ($dbh= $reporter->refresh_dbh()) {
-      my $plg;
-      eval {
-          $plg= $dbh->selectcol_arrayref("SELECT lower(plugin_name) FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_STATUS = 'ACTIVE'");
-          # Can't return res from here, because if it's 0, the "or" block will be executed
-          1;
-      } or do {
-        sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for PLUGINS query");
-      };
-      if ($plg) {
-        map { $plugins{$_}= 1 } (@$plg);
-      }
+    my $plg;
+    eval {
+        $plg= $dbh->selectcol_arrayref("SELECT lower(plugin_name) FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_STATUS = 'ACTIVE'");
+        # Can't return res from here, because if it's 0, the "or" block will be executed
+        1;
+    } or do {
+      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for PLUGINS query");
+    };
+    if ($plg) {
+      map { $plugins{$_}= 1 } (@$plg);
     }
   }
   return ($plugins{lc($plugin)} ? return "according to I_S.PLUGINS" : undef);
@@ -309,15 +307,13 @@ sub check_system_var {
 sub check_status_var {
   my ($reporter, $var)= @_;
   if (scalar(keys %global_status) == 0) {
-    if ($dbh= $reporter->refresh_dbh()) {
-      eval {
-          %global_status= @{$dbh->selectcol_arrayref("SELECT VARIABLE_NAME, VARIABLE_VALUE FROM INFORMATION_SCHEMA.GLOBAL_STATUS", { Columns=>[1,2] })};
-          # Can't return res from here, because if it's 0, the "or" block will be executed
-          1;
-      } or do {
-        sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for GLOBAL STATUS query");
-      }
-    }
+    eval {
+        %global_status= @{$dbh->selectcol_arrayref("SELECT VARIABLE_NAME, VARIABLE_VALUE FROM INFORMATION_SCHEMA.GLOBAL_STATUS", { Columns=>[1,2] })};
+        # Can't return res from here, because if it's 0, the "or" block will be executed
+        1;
+    } or do {
+      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for GLOBAL STATUS query");
+    };
   }
   return ($global_status{uc($var)} ? "according to I_S.GLOBAL_STATUS" : undef);
 }
@@ -325,28 +321,14 @@ sub check_status_var {
 sub getval {
   my ($reporter, $query)= @_;
   my $res;
-  if ($dbh= $reporter->refresh_dbh()) {
-    eval {
-        $res= $dbh->selectrow_arrayref($query)->[0];
-        # Can't return res from here, because if it's 0, the "or" block will be executed
-        1;
-    } or do {
-      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for query $query");
-    }
-  }
+  eval {
+      $res= $dbh->selectrow_arrayref($query)->[0];
+      # Can't return res from here, because if it's 0, the "or" block will be executed
+      1;
+  } or do {
+    sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for query $query");
+  };
   return $res;
-}
-
-sub refresh_dbh {
-  my $reporter= shift;
-  unless ($dbh) {
-    $dbh = DBI->connect($reporter->dsn(), undef, undef, { RaiseError => 1, PrintError => 0 });
-    unless ($dbh) {
-      sayError("FeatureUsage reporter could not connect to the server. Status will be set to STATUS_INTERNAL_ERROR");
-      return undef;
-    }
-  }
-  return $dbh;
 }
 
 # End of checkers/helpers

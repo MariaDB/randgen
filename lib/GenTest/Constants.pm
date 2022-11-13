@@ -59,6 +59,7 @@ require Exporter;
 	STATUS_POSSIBLE_FAILURE
 
 	STATUS_CRITICAL_FAILURE
+    STATUS_SERVER_UNAVAILABLE
 	STATUS_SERVER_CRASHED
 	STATUS_SERVER_KILLED
 	STATUS_REPLICATION_FAILURE
@@ -134,15 +135,16 @@ use constant STATUS_DATABASE_CORRUPTION      => 96; # Database corruption errors
 use constant STATUS_CRITICAL_FAILURE         => 100; # Boundary between critical and non-critical errors
 
 use constant STATUS_SERVER_KILLED            => 101; # Willfull killing of the server, will not be reported as a crash
-use constant STATUS_SERVER_DEADLOCKED        => 102;
-use constant STATUS_REPLICATION_FAILURE      => 103;
-use constant STATUS_UPGRADE_FAILURE          => 104;
-use constant STATUS_RECOVERY_FAILURE         => 105;
-use constant STATUS_BACKUP_FAILURE           => 106;
-use constant STATUS_SERVER_CRASHED           => 107;
-use constant STATUS_VALGRIND_FAILURE         => 108;
-use constant STATUS_ENVIRONMENT_FAILURE      => 109; # A failure in the environment or the grammar file
-use constant STATUS_ALARM                    => 110; # A module, e.g. a Reporter, raises an alarm with critical severity
+use constant STATUS_SERVER_UNAVAILABLE       => 102; # Cannot connect to the server without a known reason
+use constant STATUS_SERVER_DEADLOCKED        => 103;
+use constant STATUS_REPLICATION_FAILURE      => 104;
+use constant STATUS_UPGRADE_FAILURE          => 105;
+use constant STATUS_RECOVERY_FAILURE         => 106;
+use constant STATUS_BACKUP_FAILURE           => 107;
+use constant STATUS_SERVER_CRASHED           => 108;
+use constant STATUS_VALGRIND_FAILURE         => 109;
+use constant STATUS_ENVIRONMENT_FAILURE      => 110; # A failure in the environment or the grammar file
+use constant STATUS_ALARM                    => 111; # A module, e.g. a Reporter, raises an alarm with critical severity
 
 use constant STATUS_PERL_FAILURE             => 255; # Perl died for some reason
 

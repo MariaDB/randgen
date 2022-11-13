@@ -29,6 +29,7 @@ require Exporter;
 	REPORTER_TYPE_ALWAYS
 	REPORTER_TYPE_DATA
 	REPORTER_TYPE_END
+  REPORTER_CONNECT_TIMEOUT_THRESHOLD
 );
 
 use strict;
@@ -40,6 +41,7 @@ use DBI;
 use File::Find;
 use File::Spec;
 use Carp;
+use POSIX;
 
 use constant REPORTER_PRNG              => 0;
 use constant REPORTER_SERVER_DSN        => 1;
@@ -56,6 +58,7 @@ use constant REPORTER_CUSTOM_ATTRIBUTES => 10;
 # REPORTER_START_TIME is when the data has been generated, and reporter was started
 # (more or less when the test flow started)
 use constant REPORTER_START_TIME        => 11; 
+use constant REPORTER_DBH               => 12;
 
 use constant REPORTER_TYPE_PERIODIC     => 2;
 use constant REPORTER_TYPE_DEADLOCK     => 4;
@@ -66,6 +69,9 @@ use constant REPORTER_TYPE_ALWAYS       => 64;
 use constant REPORTER_TYPE_DATA         => 128;
 # New reporter type which can be used at the end of a test.
 use constant REPORTER_TYPE_END          => 256;
+
+# The time, in seconds, we will wait for a connect before we consider the server unavailable
+use constant REPORTER_CONNECT_TIMEOUT_THRESHOLD => 20;
 
 1;
 
@@ -80,9 +86,9 @@ sub new {
 		properties => REPORTER_PROPERTIES
 	}, @_);
 
-	my $dbh = DBI->connect($reporter->dsn(), undef, undef, { mysql_multi_statements => 1, RaiseError => 0 , PrintError => 1 } );
-	return undef if not defined $dbh;
-	my $sth = $dbh->prepare("SHOW VARIABLES");
+	$reporter->[REPORTER_DBH] = DBI->connect($reporter->dsn(), undef, undef, { mysql_multi_statements => 1, RaiseError => 0 , PrintError => 1 } );
+	return undef if not defined $reporter->[REPORTER_DBH];
+	my $sth = $reporter->[REPORTER_DBH]->prepare("SHOW VARIABLES");
 
 	$sth->execute();
 
@@ -93,23 +99,21 @@ sub new {
 	$sth->finish();
 
 	# SHOW SLAVE HOSTS may fail if user does not have the REPLICATION SLAVE privilege
-	$dbh->{PrintError} = 0;
-	my $slave_info = $dbh->selectrow_arrayref("SHOW SLAVE HOSTS");
-	$dbh->{PrintError} = 1;
+	$reporter->[REPORTER_DBH]->{PrintError} = 0;
+	my $slave_info = $reporter->[REPORTER_DBH]->selectrow_arrayref("SHOW SLAVE HOSTS");
+	$reporter->[REPORTER_DBH]->{PrintError} = 1;
 	if (defined $slave_info) {
 		$reporter->[REPORTER_SERVER_INFO]->{slave_host} = $slave_info->[1];
 		$reporter->[REPORTER_SERVER_INFO]->{slave_port} = $slave_info->[2];
 	}
 
 	if ($reporter->serverVariable('version') !~ m{^5\.0}sgio) {
-		$reporter->[REPORTER_SERVER_PLUGINS] = $dbh->selectall_arrayref("
+		$reporter->[REPORTER_SERVER_PLUGINS] = $reporter->[REPORTER_DBH]->selectall_arrayref("
 	                SELECT PLUGIN_NAME, PLUGIN_LIBRARY
 	                FROM INFORMATION_SCHEMA.PLUGINS
 	                WHERE PLUGIN_LIBRARY IS NOT NULL
 	        ");
 	}
-
-	$dbh->disconnect();
 
 	$reporter->updatePid();
 
@@ -285,6 +289,29 @@ sub findMySQLD {
     }, @basedirs);
     my $binary = File::Spec->catfile($bindir, $binname);
     return ($bindir,$binary);
+}
+
+sub dbh {
+  my $reporter= shift;
+  say("Reporter ".(ref $reporter)." is trying to get dbh");
+  my $dbh;
+  sigaction SIGALRM, new POSIX::SigAction sub {
+                sayError("Reporter ".(ref $reporter).": Timeout upon connecting to ".$reporter->dsn);
+                return STATUS_SERVER_DEADLOCKED;
+  } or die "Reporter ".(ref $reporter).": Error setting SIGALRM handler: $!\n";
+  alarm (REPORTER_CONNECT_TIMEOUT_THRESHOLD);
+  # Due to MDEV-24998, connect here sometimes returns error 2013
+  # falsely indicating server crash. To avoid it, we will try twice before giving up
+  unless ($dbh = DBI->connect($reporter->dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} )) {
+    sayWarning("Reporter ".(ref $reporter).": Error ".$DBI::err." upon connecting to ".$reporter->dsn.". Trying again");
+    $dbh = DBI->connect($reporter->dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} );
+  }
+  alarm (0);
+  if (defined GenTest::Executor::MySQL::errorType($DBI::err)) {
+    sayError("Reporter ".(ref $reporter).": Failed to connect to ".$reporter->dsn.": ".$DBI::err);
+    return undef;
+  }
+  return $dbh;
 }
 
 1;
