@@ -8,12 +8,10 @@ $combinations = [
   '
   --threads=2
   --duration=120
-  --no-mask
   --seed=time
-  --grammar=conf/mariadb/oltp_and_ddl.yy
   --redefine=conf/mariadb/modules/acl.yy
-  --gendata=conf/mariadb/innodb_upgrade.zz
-  --gendata=conf/mariadb/innodb_upgrade_compression.zz
+  --gendata=conf/mariadb/innodb.zz
+  --gendata=conf/mariadb/innodb_compression.zz
   --gendata-advanced
   --reporters=Backtrace,ErrorLog,Deadlock
   --mysqld=--server-id=111

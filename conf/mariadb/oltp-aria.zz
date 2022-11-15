@@ -14,9 +14,9 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-# Rough imitation of OLTP test (sysbench-like)
-# Default number of tables is 5, 1000 rows each, 
-# it can be changed by providing --rows parameter on the command line
+# Rough imitation of OLTP test data (sysbench-like),
+# with Aria for the table engine. ENGINE clause in table options ensures
+# that it remains Aria even if --engine is overridden
 
 $tables = {
         pk => [ undef ],
@@ -45,14 +45,14 @@ $tables = {
         rows => [ 0, 100, 1000 ],
         row_formats => [ undef, 'PAGE', 'FIXED', 'DYNAMIC' ],
         options => [  undef, 
-                      'TRANSACTIONAL=0 PAGE_CHECKSUM=0 TABLE_CHECKSUM=0',
-                      'TRANSACTIONAL=0 PAGE_CHECKSUM=0 TABLE_CHECKSUM=1',
-                      'TRANSACTIONAL=0 PAGE_CHECKSUM=1 TABLE_CHECKSUM=0',
-                      'TRANSACTIONAL=0 PAGE_CHECKSUM=0 TABLE_CHECKSUM=1',
-                      'TRANSACTIONAL=1 PAGE_CHECKSUM=0 TABLE_CHECKSUM=0',
-                      'TRANSACTIONAL=1 PAGE_CHECKSUM=0 TABLE_CHECKSUM=1',
-                      'TRANSACTIONAL=1 PAGE_CHECKSUM=1 TABLE_CHECKSUM=0',
-                      'TRANSACTIONAL=1 PAGE_CHECKSUM=1 TABLE_CHECKSUM=1',
+                      'TRANSACTIONAL=0 PAGE_CHECKSUM=0 TABLE_CHECKSUM=0 ENGINE=Aria',
+                      'TRANSACTIONAL=0 PAGE_CHECKSUM=0 TABLE_CHECKSUM=1 ENGINE=Aria',
+                      'TRANSACTIONAL=0 PAGE_CHECKSUM=1 TABLE_CHECKSUM=0 ENGINE=Aria',
+                      'TRANSACTIONAL=0 PAGE_CHECKSUM=0 TABLE_CHECKSUM=1 ENGINE=Aria',
+                      'TRANSACTIONAL=1 PAGE_CHECKSUM=0 TABLE_CHECKSUM=0 ENGINE=Aria',
+                      'TRANSACTIONAL=1 PAGE_CHECKSUM=0 TABLE_CHECKSUM=1 ENGINE=Aria',
+                      'TRANSACTIONAL=1 PAGE_CHECKSUM=1 TABLE_CHECKSUM=0 ENGINE=Aria',
+                      'TRANSACTIONAL=1 PAGE_CHECKSUM=1 TABLE_CHECKSUM=1 ENGINE=Aria',
         ]
 };
 

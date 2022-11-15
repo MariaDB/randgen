@@ -50,10 +50,6 @@ my $reject_pattern =
 my $errorlog;
 
 sub monitor {
-    if (defined $ENV{RQG_CALLBACK}) {
-	say "ErrorLogAlarm monitor not yet implemented for Callback environments";
-	return STATUS_OK;
-    }
     my $reporter = shift;
 
     if (not defined $errorlog) {
@@ -100,14 +96,7 @@ sub report {
         'ErrorLogAlarm Reporter raised an alarm. Found pattern \''.$pattern.
         '\' in error log file '.$logfile;
     
-    my $incident = GenTest::Incident->new(
-        timestamp => isoTimestamp(),
-        result    => 'fail',
-        description => $description
-        # TODO: Add matched line as signature?
-    );
-
-    return STATUS_OK, $incident;
+    return STATUS_OK;
 }
 
 

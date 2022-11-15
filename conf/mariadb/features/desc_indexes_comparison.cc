@@ -21,7 +21,6 @@ $combinations = [
     '--grammar=conf/mariadb/range_access2.yy --gendata-advanced --partitions',
     '--grammar=conf/mariadb/optimizer.yy --gendata-advanced --partitions',
     '--grammar=conf/mariadb/optimizer.yy --gendata --views',
-    '--grammar=conf/optimizer/optimizer_subquery.yy --gendata=conf/optimizer/world.sql',
     '--grammar=conf/optimizer/optimizer_subquery_semijoin.yy --gendata --views',
     '--grammar=conf/optimizer/optimizer_no_subquery.yy --gendata --views',
     '--grammar=conf/optimizer/optimizer_access_exp.yy --gendata=conf/optimizer/range_access.zz',

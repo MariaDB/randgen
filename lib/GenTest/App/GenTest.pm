@@ -47,10 +47,6 @@ use GenTest::Comparator;
 use POSIX;
 use Time::HiRes;
 
-use GenTest::XML::Report;
-use GenTest::XML::Test;
-use GenTest::XML::BuildInfo;
-use GenTest::XML::Transporter;
 use GenTest::Constants;
 use GenTest::Result;
 use GenTest::Validator;
@@ -59,15 +55,12 @@ use GenTest::Mixer;
 use GenTest::Reporter;
 use GenTest::ReporterManager;
 use GenTest::Filter::Regexp;
-use GenTest::Incident;
 
 use constant PROCESS_TYPE_PARENT	=> 0;
 use constant PROCESS_TYPE_PERIODIC	=> 1;
 use constant PROCESS_TYPE_CHILD		=> 2;
 
 use constant GT_CONFIG => 0;
-use constant GT_XML_TEST => 3;
-use constant GT_XML_REPORT => 4;
 use constant GT_CHANNEL => 5;
 
 use constant GT_GRAMMAR => 6;
@@ -118,14 +111,6 @@ sub grammar {
 
 sub generator {
     return $_[0]->[GT_GENERATOR];
-}
-
-sub XMLTest {
-    return $_[0]->[GT_XML_TEST];
-}
-
-sub XMLReport {
-    return $_[0]->[GT_XML_REPORT];
 }
 
 sub channel {
@@ -239,8 +224,6 @@ sub run {
         $self->config->queries." queries each, duration ".
         $self->config->duration." seconds.");
 
-    $self->initXMLReport();
-    
     ### Start central reporting thread ####
     
     my $errorfilter = GenTest::ErrorFilter->new(channel => $self->channel());
@@ -358,8 +341,6 @@ sub reportResults {
     my $report_status = shift @report_results;
     $total_status = $report_status if $report_status > $total_status;
 
-    $self->reportXMLIncidents($total_status, \@report_results);
-        
     if ($total_status == STATUS_OK) {
         say("Test completed successfully.");
         return STATUS_OK;
@@ -685,26 +666,23 @@ sub initGenerator {
         }
 
         $self->[GT_GRAMMAR] = GenTest::Grammar->new(
-            grammar_files => [ $self->config->grammar, ( $self->config->redefine ? @{$self->config->redefine} : () ) ],
-            grammar_flags => (defined $self->config->property('skip-recursive-rules') ? GRAMMAR_FLAG_SKIP_RECURSIVE_RULES : undef )
-        ) if defined $self->config->grammar;
+            grammar_files => $self->config->grammar,
+            redefine_files => $self->config->redefine
+        );
 
         if (not defined $self->grammar()) {
             sayError("Could not initialize the grammar, status will be set to ENVIRONMENT_FAILURE");
             return STATUS_ENVIRONMENT_FAILURE;
         }
 
-          if ($self->grammar()->features && scalar @{$self->grammar()->features}) {
+        if ($self->grammar()->features && scalar @{$self->grammar()->features}) {
           $self->registerFeatures($self->grammar()->features);
         }
-
     }
 
     $self->[GT_GENERATOR] = $generator_name->new(
         grammar => $self->grammar(),
         varchar_length => $self->config->property('varchar-length'),
-        mask => $self->config->mask,
-        mask_level => $self->config->property('mask-level'),
         annotate_rules => $self->config->property('annotate-rules'),
         vardir => $self->config->vardir,
         parser => $self->config->parser,
@@ -772,7 +750,6 @@ sub initReporters {
     if (not $no_reporters) {
         if ($self->isMySQLCompatible()) {
             $self->config->reporters(['ErrorLog', 'Backtrace']) unless scalar(@{$self->config->reporters});
-            push @{$self->config->reporters}, 'ValgrindXMLErrors' if (defined $self->config->property('valgrind-xml'));
             push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode and $self->config->rpl_mode !~ /nosync/;
             push @{$self->config->reporters}, 'ReplicationSlaveStatus' 
                 if $self->config->rpl_mode && $self->isMySQLCompatible();
@@ -880,116 +857,6 @@ sub copyFileToDir {
     my ($from, $todir) = @_;
     say("Copying '$from' to '$todir'");
     copy($from, $todir);
-}
-
-
-sub initXMLReport {
-    my $self = shift;
-
-    my $buildinfo;
-    if (defined $self->config->property('xml-output')) {
-        $buildinfo = GenTest::XML::BuildInfo->new(
-            dsn => $self->config->server_specific->{1}->{dsn}
-        );
-    }
-    
-    # XML: 
-    #  Define test suite name for reporting purposes.
-    #  Until we support test suites and/or reports with multiple suites/tests,
-    #  we use the test name as test suite name, from config option "testname".
-    #  Default test name is the basename portion of the grammar file name.
-    #  If a grammar file is not given, the default is "rqg_no_name".
-    my $test_suite_name = $self->config->testname;
-    if (not defined $test_suite_name) {
-        if (defined $self->config->grammar) {
-            $test_suite_name = basename($self->config->grammar, '.yy');
-        } else {
-            $test_suite_name = "rqg_no_name";
-        }
-    }
-
-    $self->[GT_XML_TEST] = GenTest::XML::Test->new(
-        id => time(),
-        name => $test_suite_name,  # NOTE: Consider changing to test (or test case) name when suites are supported.
-        logdir => ($self->config->property('report-tt-logdir') ? $self->config->property('report-tt-logdir').'/'.$test_suite_name.isoUTCSimpleTimestamp : ''),
-        attributes => {
-            engine => $self->config->engine,
-            gendata => $self->config->gendata,
-            grammar => $self->config->grammar,
-            threads => $self->config->threads,
-            queries => $self->config->queries,
-            validators => ($self->config->validators ? join (',', @{$self->config->validators}) : ''),
-            reporters => ($self->config->reporters ? join (',', @{$self->config->reporters}) : ''),
-            seed => $self->config->seed,
-            mask => $self->config->mask,
-            mask_level => $self->config->property('mask-level'),
-            rows => $self->config->rows,
-            'varchar-length' => $self->config->property('varchar-length')
-        }
-    );
-    
-    $self->[GT_XML_REPORT] = GenTest::XML::Report->new(
-        buildinfo => $buildinfo,
-        name => $test_suite_name,  # NOTE: name here refers to the name of the test suite or "test".
-        tests => [  $self->XMLTest() ]
-    );
-}
-
-sub reportXMLIncidents {
-    my ($self, $total_status, $incidents) = @_;
- 
-    foreach my $incident (@$incidents) {
-        $self->XMLTest()->addIncident($incident);
-    }
-        
-    # If no Reporters reported an incident, and we have a test failure,
-    # create an incident report and add it to the test report.
-    if ((scalar(@$incidents) < 1) && ($total_status != STATUS_OK)) {
-        my $unreported_incident = GenTest::Incident->new(
-            result      => 'fail',   # can we have other results as incidents?
-            description => 'Non-zero status code from RQG test run',
-            signature   => 'Exit status '.$total_status # better than nothing?
-        );
-        # Add the incident to the test report
-        $self->XMLTest()->addIncident($unreported_incident);
-    }
-        
-    $self->XMLTest()->end($total_status == STATUS_OK ? "pass" : "fail");
-       
-    if (defined $self->config->property('xml-output')) {
-        open (XML , '>'.$self->config->property('xml-output')) or carp("Unable to open ".$self->config->property('xml-output').": $!");
-        print XML $self->XMLReport()->xml();
-        close XML;
-        say("XML report written to ". $self->config->property('xml-output'));
-    }
-
-    # XML Result reporting to Test Tool (TT).
-    # Currently both --xml-output=<filename> and --report-xml-tt must be
-    # set to trigger this.
-    if (defined $self->config->property('report-xml-tt')) {
-        my $xml_transporter = GenTest::XML::Transporter->new(
-            type => $self->config->property('report-xml-tt-type')
-        );
-
-        # If xml-output option is not set, bail out. TODO: Make xml-output optional.
-        if (not defined $self->config->property('xml-output')) {
-            carp("ERROR: --xml-output=<filename> must be set when using --report-xml-tt");
-        }
- 
-        my $xml_send_result = $xml_transporter->sendXML(
-            $self->config->property('xml-output'),
-            $self->config->property('report-xml-tt-dest')
-        );
-
-        if ($xml_send_result != STATUS_OK) {
-            croak("Error from XML Transporter: $xml_send_result");
-        }
-
-        if (defined $self->config->logfile && defined 
-            $self->config->property('report-tt-logdir')) {
-            $self->copyLogFiles($self->XMLTest->logdir(), $self->config->server_specific->{1}->{dsn});
-        }
-    }
 }
 
 1;

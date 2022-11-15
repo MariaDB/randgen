@@ -14,9 +14,6 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-# 84 combinations
-# Some of legacy will duplicate the newer ones, but better safe than sorry
-
 $combinations = [
   ['
     --seed=time
@@ -32,14 +29,14 @@ $combinations = [
 # Some of legacy will duplicate the newer ones, but better safe than sorry
   [
     { 
-      current_specific_data => [
+      specific_data => [
         [
           '--grammar=conf/optimizer/outer_join.yy --gendata=conf/optimizer/outer_join.zz --views=TEMPTABLE,MERGE',
           '--grammar=conf/optimizer/optimizer_access_exp.yy --gendata=conf/optimizer/range_access.zz --views=TEMPTABLE,MERGE',
         ],
         [ '', '--notnull' ],
       ],
-      current_any_data => [
+      any_data => [
         [
           '--grammar=conf/optimizer/optimizer.yy',
           '--grammar=conf/optimizer/range_access2.yy',
@@ -51,38 +48,10 @@ $combinations = [
           '--gendata=conf/optimizer/optimizer.zz',
           '--gendata-advanced',
           '--gendata',
-          '--gendata=conf/general/world.sql'
+          '--gendata=data/sql/world.sql'
         ],
         [ '--views --engine=InnoDB,MyISAM,Aria' ],
       ],
-      legacy_specific_data => [
-        [
-          '--grammar=conf/optimizer/legacy/optimizer_access_exp.yy --gendata=conf/optimizer/legacy/range_access.zz',
-          '--grammar=conf/optimizer/legacy/outer_join.yy --gendata=conf/optimizer/legacy/outer_join.zz',
-          '--grammar=conf/optimizer/legacy/range_access2.yy --gendata=conf/optimizer/legacy/range_access2.zz',
-          '--grammar=conf/optimizer/legacy/range_access.yy --gendata=conf/optimizer/legacy/range_access.zz',
-        ],
-        [ '--views' ],
-        [ '', '--notnull' ],
-      ],
-      legacy_simple_data => [
-        [
-          '--grammar=conf/optimizer/legacy/optimizer_no_subquery.yy',
-          '--grammar=conf/optimizer/legacy/optimizer_subquery_no_outer_join.yy',
-          '--grammar=conf/optimizer/legacy/optimizer_subquery_semijoin.yy',
-          '--grammar=conf/optimizer/legacy/optimizer_subquery.yy',
-        ],
-        [ '--engine=InnoDB', '--engine=MyISAM', '--engine=Aria' ],
-        [ '--views=MERGE', '--views=TEMPTABLE' ],
-        [ '', '--notnull' ],
-      ],
-      legacy_world_data => [
-        [
-          '--grammar=conf/optimizer/legacy/optimizer_no_subquery.yy --mysqld=--init-file=$RQG_HOME/conf/mariadb/world.sql',
-          '--grammar=conf/optimizer/legacy/optimizer_subquery.yy --mysqld=--init-file=$RQG_HOME/conf/mariadb/world.sql',
-        ],
-        [ '--mysqld=--default-storage-engine=InnoDB', '--mysqld=--default-storage-engine=MyISAM', '--mysqld=--default-storage-engine=Aria' ],
-      ]
     }
   ], 
 ];

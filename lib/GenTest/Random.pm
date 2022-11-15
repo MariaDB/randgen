@@ -1054,7 +1054,7 @@ sub isFieldType {
 	} elsif (exists $dict_exists{$field_name}) {
 		return $dict_exists{$field_name};
 	} else {
-                my $dict_file = $ENV{RQG_HOME} ne '' ? $ENV{RQG_HOME}."/dict/$field_name.txt" : "dict/$field_name.txt";
+                my $dict_file = $ENV{RQG_HOME} ne '' ? $ENV{RQG_HOME}."/data/dict/$field_name.txt" : "data/dict/$field_name.txt";
 
                 if (-e $dict_file) {
 			$dict_exists{$field_name} = FIELD_TYPE_DICT;
@@ -1071,7 +1071,7 @@ sub loadDictionary {
   my $dict_name = shift;
 
   if (not exists $dict_data{$dict_name}) {
-    my $dict_file = $ENV{RQG_HOME} ne '' ? $ENV{RQG_HOME}."/dict/$dict_name.txt" : "dict/$dict_name.txt";
+    my $dict_file = $ENV{RQG_HOME} ne '' ? $ENV{RQG_HOME}."/data/dict/$dict_name.txt" : "data/dict/$dict_name.txt";
 
     open (DICT, $dict_file) or warn "# Unable to load $dict_file: $!";
     my @dict_data = map { chop; $_ } <DICT>;

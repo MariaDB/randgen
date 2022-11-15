@@ -15,34 +15,33 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-# For this grammer, use the --strict-fields and --short_column_names options to RQG. See current_timestamp.yy for more information.
 
 $tables = {
   names => ['A','AA','B','BB','C','CC','D','DD','E','EE','F','FF','G','GG','H','HH',
             'I','II','J','JJ','K','KK','L','LL','M','MM','N','NN','O','OO'],
-  pk => [undef,'int','int auto_increment','datetime','timestamp'],
+  pk => [undef,'int','int auto_increment','datetime(6)','timestamp(6)'],
   engines => ['InnoDB','MyISAM','MEMORY'],
   rows => [100,500]
 };
 
 $fields = {
-  types => ["datetime null","datetime not null","datetime null default 0","datetime not null default 0",
-            "datetime null default current_timestamp","datetime not null default current_timestamp",
-            "datetime not null default current_timestamp on update current_timestamp","datetime null default now() on update now()",
-            "datetime null default current_timestamp on update current_timestamp","datetime not null default now() on update now()",
-            "datetime null on update now()","datetime not null on update now()",
-            "datetime not null default \'2000-01-01 00:00:00\'","datetime null default \'2000-01-01 00:00:00\'",
-            "datetime not null default \'2000-01-01 00:00:00\' on update now()","datetime null default \'2000-01-01 00:00:00\' on update now()",
-            "timestamp","timestamp null","timestamp null default 0","timestamp not null default 0",
-            "timestamp null default now()","timestamp not null default now()",
-            "timestamp not null default now() on update now()","timestamp null default current_timestamp on update current_timestamp",
-            "timestamp null on update current_timestamp","timestamp not null on update current_timestamp",
-            "timestamp not null default \'2000-01-01 00:00:00\'","timestamp null default \'2000-01-01 00:00:00\'",
+  types => ["datetime(6) null","datetime(6) not null","datetime(6) null default 0","datetime(6) not null default 0",
+            "datetime(6) null default current_timestamp(6)","datetime(6) not null default current_timestamp(6)",
+            "datetime(6) not null default current_timestamp(6) on update current_timestamp(6)","datetime(6) null default now(6) on update now(6)",
+            "datetime(6) null default current_timestamp(6) on update current_timestamp(6)","datetime(6) not null default now(6) on update now(6)",
+            "datetime(6) null on update now(6)","datetime(6) not null on update now(6)",
+            "datetime(6) not null default \'2000-01-01 00:00:00.000000\'","datetime(6) null default \'2000-01-01 00:00:00.000000\'",
+            "datetime(6) not null default \'2000-01-01 00:00:00.000000\' on update now(6)","datetime(6) null default \'2000-01-01 00:00:00.000000\' on update now(6)",
+            "timestamp(6)","timestamp(6) null","timestamp(6) null default 0","timestamp(6) not null default 0",
+            "timestamp(6) null default now(6)","timestamp(6) not null default now(6)",
+            "timestamp(6) not null default now(6) on update now(6)","timestamp(6) null default current_timestamp(6) on update current_timestamp(6)",
+            "timestamp(6) null on update current_timestamp(6)","timestamp(6) not null on update current_timestamp(6)",
+            "timestamp(6) not null default \'2000-01-01 00:00:00.000000\'","timestamp(6) null default \'2000-01-01 00:00:00.000000\'",
            ],
   indexes => ['unique','key'],
 };
 
 $data = {
     numbers => ['int'],
-    temporals => ['datetime','timestamp']
+    temporals => ['datetime(6)','timestamp(6)']
 }

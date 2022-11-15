@@ -25,34 +25,24 @@ use strict;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Reporter;
-use GenTest::Incident;
-use GenTest::CallbackPlugin;
 
 sub report {
-    if (defined $ENV{RQG_CALLBACK}) {
-        return callbackReport(@_);
-    } else {
-        return nativeReport(@_);
-    }
-}
+  my $reporter = shift;
 
-sub nativeReport {
-	my $reporter = shift;
+  my $datadir = $reporter->serverVariable('datadir');
+  my $binary = $reporter->serverInfo('binary');
+  my $bindir = $reporter->serverInfo('bindir');
+  my $pid = $reporter->serverInfo('pid');
+  say("datadir: $datadir");
+  say("binary: $binary");
+  say("bindir: $bindir");
+  say("pid: $pid");
 
-	my $datadir = $reporter->serverVariable('datadir');
-	my $binary = $reporter->serverInfo('binary');
-	my $bindir = $reporter->serverInfo('bindir');
-	my $pid = $reporter->serverInfo('pid');
-	say("datadir: $datadir");
-	say("binary: $binary");
-	say("bindir: $bindir");
-	say("pid: $pid");
-
-	my $core;
+  my $core;
   $core = </cores/core.$pid> if $^O eq 'darwin';
   $core = <$datadir/vgcore*> if defined $reporter->properties->valgrind;
 
-	my @commands;
+  my @commands;
 
   if (osWindows()) {
     $bindir =~ s{/}{\\}sgio;
@@ -102,45 +92,30 @@ sub nativeReport {
         }
       } elsif (-f $core) {
           ## Assume all other systems are gdb-"friendly" ;-)
-          push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace.gdb";
-          push @commands, "gdb --batch --se=$binary --core=$core --command=backtrace-all.gdb";
+          push @commands, "gdb --batch --se=$binary --core=$core --command=util/backtrace.gdb";
+          push @commands, "gdb --batch --se=$binary --core=$core --command=util/backtrace-all.gdb";
       } elsif (kill(0,$pid)) {
           say("The process $pid is still alive. Taking stack traces from the running server");
-          push @commands, "gdb --batch --se=$binary -p $pid --command=backtrace.gdb";
-          push @commands, "gdb --batch --se=$binary -p $pid --command=backtrace-all.gdb";
+          push @commands, "gdb --batch --se=$binary -p $pid --command=util/backtrace.gdb";
+          push @commands, "gdb --batch --se=$binary -p $pid --command=util/backtrace-all.gdb";
       } else {
         sayWarning("Neither core file $core nor process $pid were found!");
       }
   }
 
-	my @debugs;
+  my @debugs;
 
-	foreach my $command (@commands) {
-		my $output = `$command`;
-		say("$output");
-		push @debugs, [$command, $output];
-	}
-
-
-    my $incident = GenTest::Incident->new(
-        result   => 'fail',
-        corefile => $core,
-        debugs   => \@debugs
-    );
-
-	return STATUS_OK, $incident;
-}
-
-sub callbackReport {
-    my $output = GenTest::CallbackPlugin::run("backtrace");
+  foreach my $command (@commands) {
+    my $output = `$command`;
     say("$output");
-    ## Need some incident interface here in the output from
-    ## the callback
-    return STATUS_OK, undef;
+    push @debugs, [$command, $output];
+  }
+
+  return STATUS_OK;
 }
 
 sub type {
-	return REPORTER_TYPE_CRASH | REPORTER_TYPE_DEADLOCK;
+  return REPORTER_TYPE_CRASH | REPORTER_TYPE_DEADLOCK;
 }
 
 1;

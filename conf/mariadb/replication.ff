@@ -1,0 +1,4 @@
+$rules = {
+  'vars'        => sub { $_ =~ m{^\s*SET\s+}s },
+  'plugins'     => sub { $_ =~ m{INSTALL|UNINSTALL}s },
+}

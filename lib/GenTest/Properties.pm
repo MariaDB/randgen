@@ -179,7 +179,6 @@ sub init {
   my ($class, $props)= @_;
   my $gentestProps= $class->new(
     legal => ['grammar',
-              'skip-recursive-rules',
               'dsn',
               'engine',
               'gendata',
@@ -197,12 +196,9 @@ sub init {
               'transformers',
               'variators',
               'seed',
-              'mask',
-              'mask-level',
               'metadata',
               'rows',
               'varchar-length',
-              'xml-output',
               'vcols',
               'views',
               'start-dirty',
@@ -214,14 +210,10 @@ sub init {
               'strict_fields',
               'freeze_time',
               'valgrind',
-              'valgrind-xml',
               'rr',
               'testname',
               'sqltrace',
               'querytimeout',
-              'report-xml-tt',
-              'report-xml-tt-type',
-              'report-xml-tt-dest',
               'logfile',
               'logconf',
               'report-tt-logdir',
@@ -268,8 +260,6 @@ sub setPropertiesFromHash {
   $gentestProps->property('queries',$props->{queries}) if defined $props->{queries};
   $gentestProps->property('logconf',$props->{logconf}) if defined $props->{logconf};
   $gentestProps->property('logfile',$props->{logfile}) if defined $props->{logfile};
-  $gentestProps->property('mask',$props->{mask}) if (exists $props->{mask});
-  $gentestProps->property('mask-level',$props->{mask_level}) if defined $props->{mask_level};
   $gentestProps->property('metadata',(defined $props->{metadata} ? $props->{metadata} : 1)); # By default metadata is loaded
   $gentestProps->property('multi-master',1) if $props->{'multi-master'};
   $gentestProps->property('notnull',$props->{notnull}) if defined $props->{notnull};
@@ -280,9 +270,6 @@ sub setPropertiesFromHash {
   $gentestProps->property('querytimeout',$props->{querytimeout}) if defined $props->{querytimeout};
   $gentestProps->property('redefine',$props->{redefine}) if $props->{redefine};
   $gentestProps->property('report-tt-logdir',$props->{report_tt_logdir}) if defined $props->{report_tt_logdir};
-  $gentestProps->property('report-xml-tt',1) if defined $props->{report_xml_tt};
-  $gentestProps->property('report-xml-tt-dest',$props->{report_xml_tt_dest}) if defined $props->{report_xml_tt_dest};
-  $gentestProps->property('report-xml-tt-type',$props->{report_xml_tt_type}) if defined $props->{report_xml_tt_type};
   $gentestProps->property('reporters',$props->{reporters}) if $props->{reporters};
   $gentestProps->property('restart-timeout',$props->{restart_timeout}) if defined $props->{restart_timeout};
   $gentestProps->property('rows',$props->{rows}) if defined $props->{rows};
@@ -290,7 +277,6 @@ sub setPropertiesFromHash {
   $gentestProps->property('seed',$props->{seed}) if defined $props->{seed};
   $gentestProps->property('server_specific',$props->{server_specific}) if $props->{server_specific};
   $gentestProps->property('short_column_names',$props->{short_column_names}) if defined $props->{short_column_names};
-  $gentestProps->property('skip-recursive-rules',$props->{skip_recursive_rules});
   $gentestProps->property('sqltrace',$props->{sqltrace}) if $props->{sqltrace};
   $gentestProps->property('start-dirty',1) if defined $props->{start_dirty};
   $gentestProps->property('strict_fields',$props->{strict_fields}) if defined $props->{strict_fields};
@@ -304,7 +290,6 @@ sub setPropertiesFromHash {
   $gentestProps->property('varchar-length',$props->{varchar_len}) if defined $props->{varchar_len};
   $gentestProps->property('vcols',$props->{vcols}) if $props->{vcols};
   $gentestProps->property('views',$props->{views}) if $props->{views};
-  $gentestProps->property('xml-output',$props->{xml_output}) if defined $props->{xml_output};
   $gentestProps->property('partitions',$props->{partitions}) if defined $props->{partitions};
   $gentestProps->property('compatibility',$props->{compatibility}) if defined $props->{compatibility};
   $gentestProps->property('database',$props->{database}) if defined $props->{database};

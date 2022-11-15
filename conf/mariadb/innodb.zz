@@ -88,13 +88,13 @@ $tables = {
 
 $fields = {
         types => [ 'int', 'timestamp', 'varchar(8)', 'tinyblob', 'text compressed', 'decimal' ],
-        indexes => [ undef ],
+        indexes => [ undef, 'key' ],
         null => [ undef, 'not null' ]
 };
 
 $data = {
         numbers => [ 'digit', 'null', undef, 'smallint_unsigned' ],
         strings => [ 'letter', 'english', 'char(8)', 'null' ],
-        temporals => [ undef, 'timestamp', 'null' ],
-        blobs => [ undef, 'null', 'english', 'digit' ]
+        blobs => [ undef, 'null', 'english', 'digit' ],
+        temporals => [ undef, 'timestamp', 'null' ]
 }

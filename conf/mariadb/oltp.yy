@@ -17,6 +17,10 @@
 # Rough imitation of OLTP-read-write test (sysbench-like)
 
 query_add:
+    dml | dml | dml | dml | dml | dml | dml |
+    START TRANSACTION | COMMIT ;
+
+dml:
     select | 
     update |
     delete |
@@ -28,7 +32,8 @@ insert:
     INSERT IGNORE INTO _table ( _field_int ) VALUES ( _smallint_unsigned ) |
     INSERT IGNORE INTO _table ( _field_char ) VALUES ( _string ) |
     INSERT IGNORE INTO _table ( _field_pk, _field_int)  VALUES ( NULL, _int ) |
-    INSERT IGNORE INTO _table ( _field_pk, _field_char ) VALUES ( NULL, _string ) 
+    INSERT IGNORE INTO _table ( _field_pk, _field_char ) VALUES ( NULL, _string ) |
+    INSERT IGNORE INTO _table ( _field_pk ) VALUES ( NULL ),( NULL ),( NULL ),( NULL )
 ;
 
 update:

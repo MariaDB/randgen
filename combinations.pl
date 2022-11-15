@@ -72,7 +72,7 @@ $SIG{CHLD} = "IGNORE" if osWindows();
 
 my ($config_file, $basedir, $vardir, $trials, $duration, $grammar, $gendata, 
     $seed, $testname, $xml_output, $report_xml_tt, $report_xml_tt_type,
-    $report_xml_tt_dest, $force, $no_mask, $exhaustive, $start_combination, $debug, $noLog, 
+    $report_xml_tt_dest, $force, $exhaustive, $start_combination, $debug, $noLog, 
     $threads, $new, $servers, $noshuffle, $clean, $workdir, $discard_logs, $dry_run);
 
 my @basedirs=('','');
@@ -87,24 +87,23 @@ my $discard_logs = 0;
 my $new= 1;
 
 my $opt_result = GetOptions(
-	'config=s' => \$config_file,
-	'basedir=s' => \$basedirs[0],
-	'basedir1=s' => \$basedirs[0],
-	'basedir2=s' => \$basedirs[1],
-	'workdir=s' => \$workdir,
-	'vardir=s' => \$workdir,
-	'trials=i' => \$trials,
-	'duration=i' => \$duration,
-	'seed=s' => \$seed,
-	'force' => \$force,
-	'no-mask' => \$no_mask,
-	'grammar=s' => \$grammar,
-	'gendata=s' => \$gendata,
-	'testname=s' => \$testname,
-	'xml-output=s' => \$xml_output,
-	'report-xml-tt' => \$report_xml_tt,
-	'report-xml-tt-type=s' => \$report_xml_tt_type,
-	'report-xml-tt-dest=s' => \$report_xml_tt_dest,
+  'config=s' => \$config_file,
+  'basedir=s' => \$basedirs[0],
+  'basedir1=s' => \$basedirs[0],
+  'basedir2=s' => \$basedirs[1],
+  'workdir=s' => \$workdir,
+  'vardir=s' => \$workdir,
+  'trials=i' => \$trials,
+  'duration=i' => \$duration,
+  'seed=s' => \$seed,
+  'force' => \$force,
+  'grammar=s' => \$grammar,
+  'gendata=s' => \$gendata,
+  'testname=s' => \$testname,
+  'xml-output=s' => \$xml_output,
+  'report-xml-tt' => \$report_xml_tt,
+  'report-xml-tt-type=s' => \$report_xml_tt_type,
+  'report-xml-tt-dest=s' => \$report_xml_tt_dest,
     'run-all-combinations-once' => \$exhaustive,
     'start-combination=i' => \$start_combination,
     'debug' => \$debug,
@@ -383,31 +382,27 @@ sub doCombination {
     return if (($trial_id -1) % $threads +1) != $thread_id;
     say("#============================================================");
     say("[$thread_id] Running $comment (".$trial_id."/".$trials.")");
-	my $mask = $prng->uint16(0, 65535);
 
-    my $runall = $new?"runall-new.pl":"runall.pl";
-
-	my $command = "
-		perl ".($Carp::Verbose?"-MCarp=verbose ":"").
+  my $command = "
+    perl ".($Carp::Verbose?"-MCarp=verbose ":"").
         (defined $ENV{RQG_HOME} ? $ENV{RQG_HOME}."/" : "" ).
-        "$runall $comb_str ";
+        "run.pl $comb_str ";
 
-#	$command .= " --queries=100000000" if $comb_str !~ /--queries=/;
-#	$command .= " --mask=$mask" if $comb_str !~ /-mask/;
-	$command .= " --mtr-build-thread=".($mtrbt+($thread_id-1)*2);
-	$command .= " --duration=$duration" if $duration ne '';
+#  $command .= " --queries=100000000" if $comb_str !~ /--queries=/;
+  $command .= " --mtr-build-thread=".($mtrbt+($thread_id-1)*2);
+  $command .= " --duration=$duration" if $duration ne '';
   if ($servers == 1) {
     $command .= " --basedir=".$basedirs[0]." ";
   } else  {
     $command .= " --basedir1=".$basedirs[0]." --basedir2=".($basedirs[1] || $basedirs[0])." ";
   }
-	$command .= " --gendata=$gendata " if $gendata ne '';
-	$command .= " --grammar=$grammar " if $grammar ne '';
-	$command .= " --testname=$testname " if $testname ne '';
-	$command .= " --xml-output=$xml_output " if $xml_output ne '';
-	$command .= " --report-xml-tt" if defined $report_xml_tt;
-	$command .= " --report-xml-tt-type=$report_xml_tt_type " if $report_xml_tt_type ne '';
-	$command .= " --report-xml-tt-dest=$report_xml_tt_dest " if $report_xml_tt_dest ne '';
+  $command .= " --gendata=$gendata " if $gendata ne '';
+  $command .= " --grammar=$grammar " if $grammar ne '';
+  $command .= " --testname=$testname " if $testname ne '';
+  $command .= " --xml-output=$xml_output " if $xml_output ne '';
+  $command .= " --report-xml-tt" if defined $report_xml_tt;
+  $command .= " --report-xml-tt-type=$report_xml_tt_type " if $report_xml_tt_type ne '';
+  $command .= " --report-xml-tt-dest=$report_xml_tt_dest " if $report_xml_tt_dest ne '';
 
   my $tm= time();
   if ($command =~ s/--seed=time/--seed=$tm/g) {}
@@ -415,7 +410,7 @@ sub doCombination {
     $command .= " --seed=".($seed + $trial_id)." ";
   }
 
-	$command.= " @ARGV";
+  $command.= " @ARGV";
 
   if ($command !~ m{--mem}sio && $workdir ne '') {
     if ($servers == 1) {
@@ -424,25 +419,25 @@ sub doCombination {
       $command .= " --vardir1=$workdir/current1_$thread_id --vardir2=$workdir/current2_$thread_id ";
     }
   }
-	$command =~ s{[\t\r\n]}{ }sgio;
+  $command =~ s{[\t\r\n]}{ }sgio;
     if ($logToStd) {
         $command .= " 2>&1 | tee $workdir/trial".$trial_id.'.log';
     } else {
         $command .= " > $workdir/trial".$trial_id.'.log';
     }
-	$commands[$trial_id] = $command;
+  $commands[$trial_id] = $command;
 
-	$command =~ s{"}{\\"}sgio;
+  $command =~ s{"}{\\"}sgio;
 
-	# '_epoch' time directory creator extension (only activated if '_epoch' is used anywhere in the command line)
-	if ($command =~ m/_epoch/) {
-		my $epoch=`date -u '+%s%N' | tr -d '\n'`;
-		my $epochdir = defined $ENV{EPOCH_DIR}?$ENV{EPOCH_DIR}:'/tmp';
-		$epochcreadir=$epochdir.'/'.$epoch;
-		mkdir $epochcreadir or croak "unable to create directory '$epochcreadir': $!";
-		say ("[$thread_id] '_epoch' detected in command line. Created directory: $epochcreadir and substituted '_epoch' to it.");
-		$command =~ s/_epoch/$epochcreadir/sgo;	
-	}
+  # '_epoch' time directory creator extension (only activated if '_epoch' is used anywhere in the command line)
+  if ($command =~ m/_epoch/) {
+    my $epoch=`date -u '+%s%N' | tr -d '\n'`;
+    my $epochdir = defined $ENV{EPOCH_DIR}?$ENV{EPOCH_DIR}:'/tmp';
+    $epochcreadir=$epochdir.'/'.$epoch;
+    mkdir $epochcreadir or croak "unable to create directory '$epochcreadir': $!";
+    say ("[$thread_id] '_epoch' detected in command line. Created directory: $epochcreadir and substituted '_epoch' to it.");
+    $command =~ s/_epoch/$epochcreadir/sgo;  
+  }
 
   while ($command =~ s/\s\s/ /g) {};
   $command =~ s/^\s*//;
@@ -450,10 +445,10 @@ sub doCombination {
 
   unless ($dry_run)
   {
-	unless (osWindows())
-	{
-		$command = 'bash -c "set -o pipefail; '.$command.'"';
-	}
+  unless (osWindows())
+  {
+    $command = 'bash -c "set -o pipefail; '.$command.'"';
+  }
 
     my $result = 0;
     $result = system($command) if not $debug;
@@ -462,10 +457,10 @@ sub doCombination {
 
     my $tl = $workdir.'/trial'.$trial_id.'.log';
     if (defined $clean && $result == 0) {
-        say("[$thread_id] $runall exited with exit status ".status2text($result)."($result). Clean mode active: deleting this OK log");
+        say("[$thread_id] run.pl exited with exit status ".status2text($result)."($result). Clean mode active: deleting this OK log");
         system("rm -f $tl");
     } else {
-        say("[$thread_id] $runall exited with exit status ".status2text($result)."($result), see $tl");
+        say("[$thread_id] run.pl exited with exit status ".status2text($result)."($result), see $tl");
     }
     exit($result) if (($result == STATUS_ENVIRONMENT_FAILURE) || ($result == 255)) && (not defined $force);
 
@@ -491,9 +486,9 @@ sub doCombination {
             } else {
                 system("cp -r $from $to") if -e $from;
                 system("cp -r $from"."_slave $to") if -e $from.'_slave';
-		if ($command =~ m/_epoch/) {
-			system("mv $epochcreadir $to");
-		}
+    if ($command =~ m/_epoch/) {
+      system("mv $epochcreadir $to");
+    }
                 open(OUT, ">$to/command");
                 print OUT $command;
                 close(OUT);
@@ -501,7 +496,7 @@ sub doCombination {
                     say("[$thread_id] Clean mode active & failed run (".status2text($result)."): Archiving this vardir");
                     system('rm -f '.$workdir.'/vardir'.$s.'_'.$trial_id.'/tmp/master.sock'); 
                     system('tar zhcf '.$workdir.'/vardir'.$s.'_'.$trial_id.'.tar.gz -C '.$workdir.' ./vardir'.$s.'_'.$trial_id);
-		    system("rm -Rf $epochcreadir");
+        system("rm -Rf $epochcreadir");
                     system("rm -Rf $to");
                 }
             }

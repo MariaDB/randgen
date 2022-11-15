@@ -33,10 +33,6 @@ use IPC::Open3;
 use DBServer::MySQL::MySQLd;
 
 sub report {
-    if (defined $ENV{RQG_CALLBACK}) {
-        say "Shutdown reporter should not be used in callback environments (E.g. JET)";
-        return STATUS_OK;
-    }
     my $reporter = shift;
 
     my $primary_port = $reporter->serverVariable('port');

@@ -37,7 +37,7 @@ $combinations = [
   ##### Transformers
   [ {
       transform => [
-        [ '--validators=TransformerNoComparator' ], @$optional_variators_103,
+        @$optional_variators_103,
       ],
       notransform => [ '' ]
     }

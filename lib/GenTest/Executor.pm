@@ -36,7 +36,6 @@ require Exporter;
 	FETCH_METHOD_USE_RESULT
 
 	EXECUTOR_FLAG_SILENT
-	EXECUTOR_FLAG_PERFORMANCE
 	EXECUTOR_FLAG_HASH_DATA
 );
 
@@ -88,8 +87,7 @@ use constant FETCH_METHOD_STORE_RESULT	=> 1;
 use constant FETCH_METHOD_USE_RESULT	=> 2;
 
 use constant EXECUTOR_FLAG_SILENT	=> 1;
-use constant EXECUTOR_FLAG_PERFORMANCE	=> 2;
-use constant EXECUTOR_FLAG_HASH_DATA	=> 4;
+use constant EXECUTOR_FLAG_HASH_DATA	=> 2;
 
 use constant EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL => 60;
 
@@ -121,27 +119,14 @@ sub new {
 }
 
 sub newFromDSN {
-	my ($self,$dsn,$channel) = @_;
-	
-	if ($dsn =~ m/^dbi:mysql:/i) {
-		require GenTest::Executor::MySQL;
-		return GenTest::Executor::MySQL->new(dsn => $dsn, channel => $channel);
-	} elsif ($dsn =~ m/^dbi:drizzle:/i) {
-		require GenTest::Executor::Drizzle;
-		return GenTest::Executor::Drizzle->new(dsn => $dsn);
-	} elsif ($dsn =~ m/^dbi:JDBC:.*url=jdbc:derby:/i) {
-		require GenTest::Executor::JavaDB;
-		return GenTest::Executor::JavaDB->new(dsn => $dsn);
-	} elsif ($dsn =~ m/^dbi:Pg:/i) {
-		require GenTest::Executor::Postgres;
-		return GenTest::Executor::Postgres->new(dsn => $dsn);
-    } elsif ($dsn =~ m/^dummy/) {
-		require GenTest::Executor::Dummy;
-		return GenTest::Executor::Dummy->new(dsn => $dsn);
-	} else {
-		say("Unsupported dsn: $dsn");
-		exit(STATUS_ENVIRONMENT_FAILURE);
-	}
+  my ($self,$dsn,$channel) = @_;
+  if ($dsn =~ m/^dbi:(?:mysql|mariadb):/i) {
+    require GenTest::Executor::MariaDB;
+    return GenTest::Executor::MariaDB(dsn => $dsn, channel => $channel);
+  } else {
+    say("Unsupported dsn: $dsn");
+    exit(STATUS_ENVIRONMENT_FAILURE);
+  }
 }
 
 sub setMetadataReloadInterval {
@@ -320,57 +305,6 @@ sub is_compatible {
     }
     return 0 if ($requirement =~ /e$/ and $_[0]->[EXECUTOR_COMPATIBILITY] !~ /e$/);
     return $_[0]->[EXECUTOR_COMPATIBILITY] ge $requirement;
-}
-
-sub type {
-	my ($self) = @_;
-	
-	if (ref($self) eq "GenTest::Executor::JavaDB") {
-		return DB_JAVADB;
-	} elsif (ref($self) eq "GenTest::Executor::MySQL") {
-		return $self->serverName eq 'MariaDB' ? DB_MARIADB : DB_MYSQL;
-	} elsif (ref($self) eq "GenTest::Executor::Drizzle") {
-		return DB_DRIZZLE;
-	} elsif (ref($self) eq "GenTest::Executor::Postgres") {
-		return DB_POSTGRES;
-    } elsif (ref($self) eq "GenTest::Executor::Dummy") {
-        if ($self->dsn =~ m/mysql/) {
-            return DB_MYSQL;
-        } elsif ($self->dsn =~ m/postgres/) {
-            return DB_POSTGRES;
-        } if ($self->dsn =~ m/javadb/) {
-            return DB_JAVADB;
-        } else {
-            return DB_DUMMY;
-        }
-	} else {
-		return DB_UNKNOWN;
-	}
-}
-
-my @dbid = ("Unknown","Dummy","MySQL","Postgres","JavaDB","Drizzle","MariaDB");
-
-sub getName {
-    my ($self) = @_;
-    return $dbid[$self->type()];
-}
-
-sub preprocess {
-    my ($self, $query) = @_;
-
-    my $id = $dbid[$self->type()];
-    
-    # Keep if match (+)
-
-    # print "... $id before: $query \n";
-
-    if (index($query, '/*+') > -1) {
-        $query =~ s/\/\*\+[a-z:]*$id[a-z:]*:([^*]*)\*\//$1/gi;
-    }
-
-    # print "... after: $query \n";
-
-    return $query;
 }
 
 ## This array maps SQL State class (2 first letters) to a status. This

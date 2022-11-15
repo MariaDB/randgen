@@ -20,10 +20,6 @@ package GenTest::Grammar;
 
 require Exporter;
 @ISA = qw(GenTest);
-@EXPORT = qw(
-	GRAMMAR_FLAG_COMPACT_RULES
-	GRAMMAR_FLAG_SKIP_RECURSIVE_RULES
-);
 
 use strict;
 
@@ -35,412 +31,412 @@ use GenTest::Random;
 use Data::Dumper;
 use Carp;
 
-use constant GRAMMAR_RULES	=> 0;
-use constant GRAMMAR_FILES	=> 1;
-use constant GRAMMAR_STRING	=> 2;
-use constant GRAMMAR_FLAGS	=> 3;
-use constant GRAMMAR_FEATURES => 4;
-
-use constant GRAMMAR_FLAG_COMPACT_RULES         => 1;
-use constant GRAMMAR_FLAG_SKIP_RECURSIVE_RULES  => 2;
+use constant GRAMMAR_RULES     => 0;
+use constant GRAMMAR_FILES     => 1;
+use constant GRAMMAR_STRINGS   => 2;
+use constant GRAMMAR_FEATURES  => 3;
+use constant GRAMMAR_REDEFINES => 4;
 
 1;
 
 sub new {
-	my $class = shift;
+  my $class = shift;
 
 
-	my $grammar = $class->SUPER::new({
-		'grammar_files'			=> GRAMMAR_FILES,
-		'grammar_string'		=> GRAMMAR_STRING,
-		'grammar_flags'		=> GRAMMAR_FLAGS,
-		'grammar_rules'		=> GRAMMAR_RULES
-	}, @_);
+  my $grammar = $class->SUPER::new({
+    'grammar_files'   => GRAMMAR_FILES,
+    'grammar_strings' => GRAMMAR_STRINGS,
+    'grammar_rules'   => GRAMMAR_RULES,
+    'redefine_files'  => GRAMMAR_REDEFINES,
+  }, @_);
 
-     $grammar->[GRAMMAR_FEATURES]= [];
+  $grammar->[GRAMMAR_FEATURES]= [];
 
-	if (defined $grammar->rules()) {
-		$grammar->[GRAMMAR_STRING] = $grammar->toString();
-	} else {
-		$grammar->[GRAMMAR_RULES] = {};
+  if (defined $grammar->rules()) {
+    $grammar->[GRAMMAR_STRINGS] = [ $grammar->toString() ];
+  } else {
+    $grammar->[GRAMMAR_RULES] = {};
 
-		if (defined $grammar->files()) {
-			my $parse_result = $grammar->extractFromFiles($grammar->files());
-			return undef if $parse_result > STATUS_OK;
-		}
+    if (defined $grammar->files()) {
+      my $parse_result = $grammar->extractFromFiles($grammar->files());
+      return undef if $parse_result > STATUS_OK;
+    }
 
-		if (defined $grammar->string()) {
-			my $parse_result = $grammar->parseFromString($grammar->string());
-			return undef if $parse_result > STATUS_OK;
-		}
-    if ($grammar->[GRAMMAR_RULES]->{'_features'}) {
-      # Grammar rule is an array. First element is the rule name (_features),
-      # the second element is an array ref of options.
-      # Each element of the array ref of options is an array ref of tokens.
-      # So, at this moment each of features is a set of tokens (because
-      # feature names can contain spaces).
-      # We need to convert them into an array of feature names.
-      my @features= ();
-      foreach my $f (@{$grammar->[GRAMMAR_RULES]->{'_features'}->[1]}) {
-        push @features, join '', @$f;
+    if (defined $grammar->strings()) {
+      my $parse_result = $grammar->parseFromStrings($grammar->strings());
+      return undef if $parse_result > STATUS_OK;
+    }
+    my @features= ();
+    foreach my $i (0..$#{$grammar->[GRAMMAR_RULES]}) {
+      if ($grammar->[GRAMMAR_RULES]->[$i]->{'_features'}) {
+        # Grammar rule is an array. First element is the rule name (_features),
+        # the second element is an array ref of options.
+        # Each element of the array ref of options is an array ref of tokens.
+        # So, at this moment each of features is a set of tokens (because
+        # feature names can contain spaces).
+        # We need to convert them into an array of feature names.
+        foreach my $f (@{$grammar->[GRAMMAR_RULES]->[$i]->{'_features'}->[1]}) {
+          push @features, join '', @$f;
+        }
+        delete $grammar->[GRAMMAR_RULES]->[$i]->{'_features'}
       }
       $grammar->[GRAMMAR_FEATURES]= \@features;
       sayDebug("Found features @{$grammar->[GRAMMAR_FEATURES]}");
-      delete $grammar->[GRAMMAR_RULES]->{'_features'}
     }
-	}
+  }
 
-	return $grammar;
+  return $grammar;
 }
 
 sub files {
-	return $_[0]->[GRAMMAR_FILES];
+  return $_[0]->[GRAMMAR_FILES];
 }
 
-sub string {
-	return $_[0]->[GRAMMAR_STRING];
+sub strings {
+  return $_[0]->[GRAMMAR_STRINGS];
 }
 
 sub features {
-	return $_[0]->[GRAMMAR_FEATURES];
+  return $_[0]->[GRAMMAR_FEATURES];
 }
 
 sub toString {
-	my $grammar = shift;
-	my $rules = $grammar->rules();
-	return join("\n\n", map { $grammar->rule($_)->toString() } sort keys %$rules);
+  my $grammar = shift;
+  my $rules = $grammar->rules();
+  return join("\n\n", map { $grammar->rule($_)->toString() } sort keys %$rules);
 }
 
 
 sub extractFromFiles {
-	my ($grammar, $grammar_files) = @_;
+  my ($grammar, $grammar_files) = @_;
 
-    $grammar->[GRAMMAR_STRING] = '';
+    my @grammar_strings= ();
     foreach my $grammar_file (@$grammar_files) {
         open (GF, $grammar_file) or die "Unable to open() grammar $grammar_file: $!";
         say "Reading grammar from file $grammar_file";
         read (GF, my $grammar_string, -s $grammar_file) or die "Unable to read() $grammar_file: $!";
         close (GF);
-        $grammar->[GRAMMAR_STRING] .= $grammar_string;
+        push @grammar_strings, $grammar_string;
     }
-    
+    $grammar->[GRAMMAR_STRINGS] = \@grammar_strings;
     return STATUS_OK;
-
-#	return $grammar->parseFromString($grammar_string);
 }
 
-sub parseFromString {
-	my ($grammar, $grammar_string) = @_;
+sub parseFromStrings {
+  my ($grammar, $grammar_strings) = @_;
 
-	#
-	# provide an #include directive
-	#
+  if (ref $grammar_strings eq '') {
+    $grammar_strings= [ $grammar_strings ] ;
+  }
+  my @all_rules= ();
 
-	while ($grammar_string =~ s{#include [<"](.*?)[>"]$}{
-		{
-			my $include_string;
-			my $include_file = $1;
-		        open (IF, $1) or die "Unable to open include file $include_file: $!";
-		        read (IF, $include_string, -s $include_file) or die "Unable to open $include_file: $!";
-			$include_string;
-	}}mie) {};
-
-	# Strip comments. Note that this is not Perl-code safe, since perl fragments
-	# can contain both comments with # and the $# expression. A proper lexer will fix this
-	
-	$grammar_string =~ s{#.*$}{}iomg;
-
-	# Join lines ending in \
-
-	$grammar_string =~ s{\\$}{ }iomg;
-
-	# Strip end-line whitespace
-
-	$grammar_string =~ s{\s+$}{}iomg;
-
-	# Add terminating \n to ease parsing
-
-	$grammar_string = $grammar_string."\n";
-
-	my @rule_strings = split (";[ \t]*[\r\n]+", $grammar_string);
-
-	my %rules;
-
-    # Redefining grammars might want to *add* something to an existing rule
-    # rather than replace them. For now we recognize additions only to init queries
-    # and to the main queries ('query' and 'threadX'). Additions should end with '_add':
-    # - query_add
-    # - threadX_add
-    # - query_init_add
-    # _ threadX_init_add
-    # Grammars can have multiple additions like these, they all will be stored
-    # and appended to the corresponding rule.
+  foreach my $grammar_string (@$grammar_strings)
+  {
     #
-    # Additions to 'query' and 'threadX' will be appended as an option, e.g.
+    # provide an #include directive
     #
-    # In grammar files we have:
-    #   query:
-    #     rule1 | rule2;
-    #   query_add:
-    #     rule3;
-    # In the resulting grammar we will have:
-    #   query:
-    #     rule1 | rule2 | rule3;
-    # 
-    # Additions to '*_init' rules will be added as a part of a multiple-statement, e.g.
-    #
-    # In grammar files we have:
-    #   query_init:
-    #     rule4 ;
-    #   query_init_add:
-    #     rule5;
-    # In the resulting grammar we will have:
-    #   query_init:
-    #     rule4 ; rule5;
-    #
-    # Also, we will add threadX_init_add to query_init (if it's not overridden for the given thread ID).
-    # That is, if we have in the grammars
-    # query_init: ...
-    # query_init_add: ...
-    # thread2_init_add: ...
-    # thread3_init: ...
-    #
-    # then the resulting init sequence for threads will be:
-    # 1: query_init; query_init_add
-    # 2: query_init; query_init_add; thread2_init_add
-    # 3: thread3_init
+
+    while ($grammar_string =~ s{#include [<"](.*?)[>"]$}{
+      {
+        my $include_string;
+        my $include_file = $1;
+              open (IF, $1) or die "Unable to open include file $include_file: $!";
+              read (IF, $include_string, -s $include_file) or die "Unable to open $include_file: $!";
+        $include_string;
+    }}mie) {};
+
+    # Strip comments. Note that this is not Perl-code safe, since perl fragments
+    # can contain both comments with # and the $# expression. A proper lexer will fix this
     
+    $grammar_string =~ s{#.*$}{}iomg;
 
-    my @query_adds = ();
-    my %thread_adds = ();
-    my @query_init_adds = ();
-    my %thread_init_adds = ();
+    # Join lines ending in \
 
-	foreach my $rule_string (@rule_strings) {
-		my ($rule_name, $components_string) = $rule_string =~ m{^(.*?)\s*:(.*)$}sio;
-		$rule_name =~ s{[\r\n]}{}gsio;
-		$rule_name =~ s{^\s*}{}gsio;
+    $grammar_string =~ s{\\$}{ }iomg;
 
-		next if $rule_name eq '';
+    # Strip end-line whitespace
 
-        if ($rule_name =~ /^query_add$/) {
-            push @query_adds, $components_string;
-        }
-        elsif ($rule_name =~ /^thread(\d+)_add$/) {
-            @{$thread_adds{$1}} = () unless defined $thread_adds{$1};
-            push @{$thread_adds{$1}}, $components_string;
-        }
-        elsif ($rule_name =~ /^query_init_add$/) {
-            push @query_init_adds, $components_string;
-        }
-        elsif ($rule_name =~ /^thread(\d+)_init_add$/) {
-            @{$thread_init_adds{$1}} = () unless defined $thread_init_adds{$1};
-            push @{$thread_init_adds{$1}}, $components_string;
-        }
-        else {
-            say("Warning: Rule $rule_name is defined twice.") if exists $rules{$rule_name};
-            $rules{$rule_name} = $components_string;
-        }
-    }
+    $grammar_string =~ s{\s+$}{}iomg;
 
-    if (@query_adds) {
-        my $adds = join ' | ', @query_adds;
-        $rules{'query'} = ( defined $rules{'query'} ? $rules{'query'} . ' | ' . $adds : $adds );
-    }
+    # Add terminating \n to ease parsing
 
-    foreach my $tid (keys %thread_adds) {
-        my $adds = join ' | ', @{$thread_adds{$tid}};
-        $rules{'thread'.$tid} = ( defined $rules{'thread'.$tid} ? $rules{'thread'.$tid} . ' | ' . $adds : $adds );
-    }
-    
-    if (@query_init_adds) {
-        my $adds = join ';; ', @query_init_adds;
-        $rules{'query_init'} = ( defined $rules{'query_init'} ? $rules{'query_init'} . ';; ' . $adds : $adds );
-    }
+    $grammar_string = $grammar_string."\n";
 
-    foreach my $tid (keys %thread_init_adds) {
-        my $adds = join ';; ', @{$thread_init_adds{$tid}};
-        $rules{'thread'.$tid.'_init'} = (
-            defined $rules{'thread'.$tid.'_init'}
-                ? $rules{'thread'.$tid.'_init'} . ';; ' . $adds
-                : ( defined $rules{'query_init'}
-                    ? $rules{'query_init'} . ';; ' . $adds
-                    : $adds
-                )
-        );
-    }
+    my @rule_strings = split (";[ \t]*[\r\n]+", $grammar_string);
 
-    # Now we have all the rules extracted from grammar files, time to parse
+    my %rules;
 
-	foreach my $rule_name (keys %rules) {
+      # Redefining grammars might want to *add* something to an existing rule
+      # rather than replace them. For now we recognize additions only to init queries
+      # and to the main queries ('query' and 'threadX'). Additions should end with '_add':
+      # - query_add
+      # - threadX_add
+      # - query_init_add
+      # _ threadX_init_add
+      # Grammars can have multiple additions like these, they all will be stored
+      # and appended to the corresponding rule.
+      #
+      # Additions to 'query' and 'threadX' will be appended as an option, e.g.
+      #
+      # In grammar files we have:
+      #   query:
+      #     rule1 | rule2;
+      #   query_add:
+      #     rule3;
+      # In the resulting grammar we will have:
+      #   query:
+      #     rule1 | rule2 | rule3;
+      # 
+      # Additions to '*_init' rules will be added as a part of a multiple-statement, e.g.
+      #
+      # In grammar files we have:
+      #   query_init:
+      #     rule4 ;
+      #   query_init_add:
+      #     rule5;
+      # In the resulting grammar we will have:
+      #   query_init:
+      #     rule4 ; rule5;
+      #
+      # Also, we will add threadX_init_add to query_init (if it's not overridden for the given thread ID).
+      # That is, if we have in the grammars
+      # query_init: ...
+      # query_init_add: ...
+      # thread2_init_add: ...
+      # thread3_init: ...
+      #
+      # then the resulting init sequence for threads will be:
+      # 1: query_init; query_init_add
+      # 2: query_init; query_init_add; thread2_init_add
+      # 3: thread3_init
+      
 
-        my $components_string = $rules{$rule_name};
-        
-		my @orig_component_strings = split (m{\|}, $components_string);
+      my @query_adds = ();
+      my %thread_adds = ();
+      my @query_init_adds = ();
+      my %thread_init_adds = ();
 
-        # Check for ==FACTOR:N== directives and adjust probabilities
-        my $multiplier= 1;
-        my %component_factors= ();
-        my @modified_component_strings= ();
-        for (my $i=0; $i<=$#orig_component_strings; $i++) {
-            my $c= $orig_component_strings[$i];
-            if ($c =~ s{^\s*==FACTOR:([\d+\.]+)==\s*}{}sgio) {
-                $component_factors{$i}= $1;
-                $multiplier= int(1/$1) if $1 > 0 and $multiplier < int(1/$1);
+    foreach my $rule_string (@rule_strings) {
+      my ($rule_name, $components_string) = $rule_string =~ m{^(.*?)\s*:(.*)$}sio;
+      $rule_name =~ s{[\r\n]}{}gsio;
+      $rule_name =~ s{^\s*}{}gsio;
+
+      next if $rule_name eq '';
+
+          if ($rule_name =~ /^query_add$/) {
+              push @query_adds, $components_string;
+          }
+          elsif ($rule_name =~ /^thread(\d+)_add$/) {
+              @{$thread_adds{$1}} = () unless defined $thread_adds{$1};
+              push @{$thread_adds{$1}}, $components_string;
+          }
+          elsif ($rule_name =~ /^query_init_add$/) {
+              push @query_init_adds, $components_string;
+          }
+          elsif ($rule_name =~ /^thread(\d+)_init_add$/) {
+              @{$thread_init_adds{$1}} = () unless defined $thread_init_adds{$1};
+              push @{$thread_init_adds{$1}}, $components_string;
+          }
+          else {
+              say("Warning: Rule $rule_name is defined twice.") if exists $rules{$rule_name};
+              $rules{$rule_name} = $components_string;
+          }
+      }
+
+      if (@query_adds) {
+          my $adds = join ' | ', @query_adds;
+          $rules{'query'} = ( defined $rules{'query'} ? $rules{'query'} . ' | ' . $adds : $adds );
+      }
+
+      foreach my $tid (keys %thread_adds) {
+          my $adds = join ' | ', @{$thread_adds{$tid}};
+          $rules{'thread'.$tid} = ( defined $rules{'thread'.$tid} ? $rules{'thread'.$tid} . ' | ' . $adds : $adds );
+      }
+      
+      if (@query_init_adds) {
+          my $adds = join ';; ', @query_init_adds;
+          $rules{'query_init'} = ( defined $rules{'query_init'} ? $rules{'query_init'} . ';; ' . $adds : $adds );
+      }
+
+      foreach my $tid (keys %thread_init_adds) {
+          my $adds = join ';; ', @{$thread_init_adds{$tid}};
+          $rules{'thread'.$tid.'_init'} = (
+              defined $rules{'thread'.$tid.'_init'}
+                  ? $rules{'thread'.$tid.'_init'} . ';; ' . $adds
+                  : ( defined $rules{'query_init'}
+                      ? $rules{'query_init'} . ';; ' . $adds
+                      : $adds
+                  )
+          );
+      }
+
+      # Now we have all the rules extracted from grammar files, time to parse
+
+    foreach my $rule_name (keys %rules) {
+
+          my $components_string = $rules{$rule_name};
+          
+      my @orig_component_strings = split (m{\|}, $components_string);
+
+          # Check for ==FACTOR:N== directives and adjust probabilities
+          my $multiplier= 1;
+          my %component_factors= ();
+          my @modified_component_strings= ();
+          for (my $i=0; $i<=$#orig_component_strings; $i++) {
+              my $c= $orig_component_strings[$i];
+              if ($c =~ s{^\s*==FACTOR:([\d+\.]+)==\s*}{}sgio) {
+                  $component_factors{$i}= $1;
+                  $multiplier= int(1/$1) if $1 > 0 and $multiplier < int(1/$1);
+              }
+              push @modified_component_strings, $c;
+          }
+
+          my @component_strings= ();
+          for (my $i=0; $i<=$#modified_component_strings; $i++) {
+              my $count= int ((defined $component_factors{$i} ? $component_factors{$i} : 1) * $multiplier) || 1;
+              foreach (1..$count) {
+                  push @component_strings, $modified_component_strings[$i];
+              }
+          }
+
+      my @components;
+      my %components;
+
+      foreach my $component_string (@component_strings) {
+        # Remove leading and trailing whitespace
+        $component_string =~ s{^\s+}{}sgio;
+        $component_string =~ s{\s+$}{}sgio;
+      
+        # Rempove repeating whitespaces
+        $component_string =~ s{\s+}{ }sgio;
+
+        # Split this so that each identifier is separated from all syntax elements
+        # The identifier can start with a lowercase letter or an underscore , plus quotes
+
+        $component_string =~ s{([_a-zA-Z0-9'"`\{\}\$\[\]]+)}{|$1|}sgio;
+
+        # Revert overzealous splitting that splits things like _varchar(32)
+        # or __on_off(33,33) into several tokens
+
+        $component_string =~ s{\|(\d+)\|,\|(\d+)\|}{\|$1,$2\|}sgo;
+        $component_string =~ s{([a-zA-Z0-9_]+)\|\(\|([,\d]+)\|\)}{$1($2)|}sgo;
+
+        # Remove leading and trailing pipes
+        $component_string =~ s{^\|}{}sgio;
+        $component_string =~ s{\|$}{}sgio;
+
+        $components{$component_string}++;
+
+        my @component_parts = split (m{\|}, $component_string);
+
+        #
+        # If this grammar rule contains Perl code, assemble it between the various
+        # component parts it was split into. This "reconstructive" step is definitely bad design
+        # The way to do it properly would be to tokenize the grammar using a full-blown lexer
+        # which should hopefully come up in a future version.
+        #
+
+        my $nesting_level = 0;
+        my $pos = 0;
+        my $code_start;
+
+        while (1) {
+          if (defined $component_parts[$pos] and $component_parts[$pos] =~ m{\{}so) {
+            $code_start = $pos if $nesting_level == 0;  # Code segment starts here
+            my $bracket_count = ($component_parts[$pos] =~ tr/{//);
+            $nesting_level = $nesting_level + $bracket_count;
+          }
+          
+          if (defined $component_parts[$pos] and $component_parts[$pos] =~ m{\}}so) {
+            my $bracket_count = ($component_parts[$pos] =~ tr/}//);
+            $nesting_level = $nesting_level - $bracket_count;
+            if ($nesting_level == 0) {
+              # Resemble the entire Perl code segment into a single string
+              splice(@component_parts, $code_start, ($pos - $code_start + 1) , join ('', @component_parts[$code_start..$pos]));
+              $pos = $code_start + 1;
+              $code_start = undef;
             }
-            push @modified_component_strings, $c;
+          }
+          last if $pos > $#component_parts;
+          $pos++;
         }
 
-        my @component_strings= ();
-        for (my $i=0; $i<=$#modified_component_strings; $i++) {
-            my $count= int ((defined $component_factors{$i} ? $component_factors{$i} : 1) * $multiplier) || 1;
-            foreach (1..$count) {
-                push @component_strings, $modified_component_strings[$i];
-            }
-        }
+        push @components, \@component_parts;
+      }
 
-		my @components;
-		my %components;
+      my $rule = GenTest::Grammar::Rule->new(
+        name => $rule_name,
+        components => \@components
+      );
+      $rules{$rule_name} = $rule;
+    }
+    push @all_rules, \%rules;
+  }
 
-		foreach my $component_string (@component_strings) {
-			# Remove leading and trailing whitespace
-			$component_string =~ s{^\s+}{}sgio;
-			$component_string =~ s{\s+$}{}sgio;
-		
-			# Rempove repeating whitespaces
-			$component_string =~ s{\s+}{ }sgio;
-
-			# Split this so that each identifier is separated from all syntax elements
-			# The identifier can start with a lowercase letter or an underscore , plus quotes
-
-			$component_string =~ s{([_a-zA-Z0-9'"`\{\}\$\[\]]+)}{|$1|}sgio;
-
-			# Revert overzealous splitting that splits things like _varchar(32)
-			# or __on_off(33,33) into several tokens
-
-			$component_string =~ s{\|(\d+)\|,\|(\d+)\|}{\|$1,$2\|}sgo;
-			$component_string =~ s{([a-zA-Z0-9_]+)\|\(\|([,\d]+)\|\)}{$1($2)|}sgo;
-
-			# Remove leading and trailing pipes
-			$component_string =~ s{^\|}{}sgio;
-			$component_string =~ s{\|$}{}sgio;
-
-			if (
-				(exists $components{$component_string}) &&
-        (defined $grammar->[GRAMMAR_FLAGS]) &&
-				($grammar->[GRAMMAR_FLAGS] & GRAMMAR_FLAG_COMPACT_RULES)
-			) {
-				next;
-			} else {
-				$components{$component_string}++;
-			}
-
-			my @component_parts = split (m{\|}, $component_string);
-
-			if (
-				(grep { $_ eq $rule_name } @component_parts) &&
-        (defined $grammar->[GRAMMAR_FLAGS]) &&
-				($grammar->[GRAMMAR_FLAGS] & GRAMMAR_FLAG_SKIP_RECURSIVE_RULES)
-			) {
-				say("Skipping recursive production in rule '$rule_name'.") if rqg_debug();
-				next;
-			}
-
-			#
-			# If this grammar rule contains Perl code, assemble it between the various
-			# component parts it was split into. This "reconstructive" step is definitely bad design
-			# The way to do it properly would be to tokenize the grammar using a full-blown lexer
-			# which should hopefully come up in a future version.
-			#
-
-			my $nesting_level = 0;
-			my $pos = 0;
-			my $code_start;
-
-			while (1) {
-				if (defined $component_parts[$pos] and $component_parts[$pos] =~ m{\{}so) {
-					$code_start = $pos if $nesting_level == 0;	# Code segment starts here
-					my $bracket_count = ($component_parts[$pos] =~ tr/{//);
-					$nesting_level = $nesting_level + $bracket_count;
-				}
-				
-				if (defined $component_parts[$pos] and $component_parts[$pos] =~ m{\}}so) {
-					my $bracket_count = ($component_parts[$pos] =~ tr/}//);
-					$nesting_level = $nesting_level - $bracket_count;
-					if ($nesting_level == 0) {
-						# Resemble the entire Perl code segment into a single string
-						splice(@component_parts, $code_start, ($pos - $code_start + 1) , join ('', @component_parts[$code_start..$pos]));
-						$pos = $code_start + 1;
-						$code_start = undef;
-					}
-				}
-				last if $pos > $#component_parts;
-				$pos++;
-			}
-
-			push @components, \@component_parts;
-		}
-
-		my $rule = GenTest::Grammar::Rule->new(
-			name => $rule_name,
-			components => \@components
-		);
-		$rules{$rule_name} = $rule;
-	}
-
-	$grammar->[GRAMMAR_RULES] = \%rules;
-	return STATUS_OK;
+  $grammar->[GRAMMAR_RULES] = \@all_rules;
+  return STATUS_OK;
 }
 
+# First parameter is rule name, second is the grammar number
 sub rule {
-	return $_[0]->[GRAMMAR_RULES]->{$_[1]};
+  my $grammar_no= $_[2] || 0;
+  return $_[0]->[GRAMMAR_RULES]->[$grammar_no]->{$_[1]};
 }
 
+sub all_rules {
+  return $_[0]->[GRAMMAR_RULES];
+}
+
+# By grammar number
 sub rules {
-	return $_[0]->[GRAMMAR_RULES];
+  my $grammar_no= $_[1] || 0;
+  return $_[0]->[GRAMMAR_RULES]->[$grammar_no];
 }
 
+# Deletes from all grammars
 sub deleteRule {
-	delete $_[0]->[GRAMMAR_RULES]->{$_[1]};
+  foreach my $grammar_no (0..$#{$_[0]->[GRAMMAR_RULES]}) {
+    delete $_[0]->[GRAMMAR_RULES]->[$grammar_no]->{$_[1]};
+  }
 }
 
 sub cloneRule {
-	my ($grammar, $old_rule_name, $new_rule_name) = @_;
+  my ($grammar, $old_rule_name, $new_rule_name) = @_;
 
-	# Rule consists of
-	# rule_name
-	# pointer to array called components
-	#   An element of components is a pointer to an array of component_parts
+  # Rule consists of
+  # rule_name
+  # pointer to array called components
+  #   An element of components is a pointer to an array of component_parts
 
-	my $components = $grammar->[GRAMMAR_RULES]->{$old_rule_name}->[1];
+  my $components = $grammar->[GRAMMAR_RULES]->{$old_rule_name}->[1];
 
-	my @new_components;
-	for (my $idx=$#$components; $idx >= 0; $idx--) {
-		my $component = $components->[$idx];
-		my @new_component_parts = @$component;
-		# We go from the highest index to the lowest.
-		# So "push @new_components , \@new_component_parts ;" would give the wrong order
-		unshift @new_components , \@new_component_parts ;
-	}
+  my @new_components;
+  for (my $idx=$#$components; $idx >= 0; $idx--) {
+    my $component = $components->[$idx];
+    my @new_component_parts = @$component;
+    # We go from the highest index to the lowest.
+    # So "push @new_components , \@new_component_parts ;" would give the wrong order
+    unshift @new_components , \@new_component_parts ;
+  }
 
-	my $new_rule = GenTest::Grammar::Rule->new(
-		name => $new_rule_name,
-		components => \@new_components
-	);
-	$grammar->[GRAMMAR_RULES]->{$new_rule_name} = $new_rule;
+  my $new_rule = GenTest::Grammar::Rule->new(
+    name => $new_rule_name,
+    components => \@new_components
+  );
+  $grammar->[GRAMMAR_RULES]->{$new_rule_name} = $new_rule;
 
 }
 
 #
 # Check if the grammar is tagged with query properties such as RESULTSET_ or ERROR_1234
 #
-
 sub hasProperties {
-	if ($_[0]->[GRAMMAR_STRING] =~ m{RESULTSET_|ERROR_|QUERY_}so) {
-		return 1;
-	} else {
-		return 0;
-	}
+  my $grammar_no= $_[1] || 0;
+  if ($_[0]->[GRAMMAR_STRINGS]->[$grammar_no] =~ m{RESULTSET_|ERROR_|QUERY_}so) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 ##
@@ -533,58 +529,6 @@ sub topGrammar {
     my $rules = $self->topGrammarX(0,$levels, $start);
 
     return GenTest::Grammar->new(grammar_rules => $rules);
-}
-
-##
-## Produce a new grammar keeping a masked set of rules. The mask is 16
-## bits. If the mask is too short, we use the original mask as a seed
-## for a random number generator and generate more 16-bit values as
-## needed. The mask is applied in alphapetical order on the rules to
-## ensure a deterministicresult since I don't trust the Perl %hashes
-## to be always ordered the same twhen they are produced e.g. from
-## topGrammar or whatever...
-##
-
-
-sub mask {
-    my ($self, $mask) = @_;
-
-
-    my $rules = $self->rules();
-
-    my %newRuleset;
-
-    my $i = 0;
-    my $prng = GenTest::Random->new(seed => $mask);
-    ## Generate the first 16 bits.
-    my $mask16 = $prng->uint16(0,0x7fff);
-    foreach my $rulename (sort keys %$rules) {
-        my $rule = $self->rule($rulename);
-        my @newComponents;
-        foreach my $x (@{$rule->components()}) {
-            push @newComponents, $x if (1 << ($i++)) & $mask16;
-            if ($i % 16 == 0) {
-                # We need more bits!
-                $i = 0;
-                $mask = $prng->uint16(0,0x7fff);
-            }
-        }
-
-        my $newRule;
-
-        ## If no components were chosen, we chose all to have a working
-        ## grammar.
-        if ($#newComponents < 0) {
-            $newRule = $rule;
-        } else {
-            $newRule= GenTest::Grammar::Rule->new(name => $rulename,
-                                              components => \@newComponents);
-        }
-        $newRuleset{$rulename}= $newRule;
-
-    }
-
-    return GenTest::Grammar->new(grammar_rules => \%newRuleset);
 }
 
 1;
