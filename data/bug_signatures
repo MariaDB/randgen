@@ -366,7 +366,7 @@ MDEV-29149:
 =~ Datetime_truncation_not_needed::Datetime_truncation_not_needed
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29144:
-=~ Could not import tablespace for .*: 1808: Schema mismatch
+=~ Could not import tablespace .*: 1808: Schema mismatch
 =~ InnoDB: Discarding tablespace of table .*: Generic error
 =~ STATUS_DATABASE_CORRUPTION|STATUS_UPGRADE_FAILURE
 MDEV-29144:
@@ -491,7 +491,7 @@ MDEV-28996:
 =~ spider_string::q_append
 =~ spider_db_mbase_util::open_item_func
 MDEV-28989:
-=~ Could not import tablespace for .*: 1808: Schema mismatch.* prefix mismatch
+=~ Could not import tablespace .*: 1808: Schema mismatch.* prefix mismatch
 =~ InnoDB: Discarding tablespace of table .*: Generic error
 =~ STATUS_DATABASE_CORRUPTION
 MDEV-28988:
