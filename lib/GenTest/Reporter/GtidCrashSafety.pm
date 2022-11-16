@@ -30,7 +30,7 @@
 # at the end of the test.
 ####################################################################
 
-package GenTest::Reporter::MariadbGtidCrashSafety;
+package GenTest::Reporter::GtidCrashSafety;
 
 require Exporter;
 @ISA = qw(GenTest::Reporter);
@@ -182,7 +182,7 @@ sub restart {
 				my ($sql_thread, $io_thread, $sql_error, $io_error);
 				foreach (1..$crash_interval) {
 					sleep(1);
-		     		my @slave_status = $dbh->selectrow_array("SHOW SLAVE STATUS /* MariadbGtidCrashSafety::restart */");
+		     		my @slave_status = $dbh->selectrow_array("SHOW SLAVE STATUS /* GtidCrashSafety::restart */");
 		     		($sql_thread, $io_thread, $sql_error, $io_error) = ($slave_status[11], $slave_status[10], $slave_status[37], $slave_status[35]);
 					say("Current replication status: IO thread $io_thread, SQL thread $sql_thread");
 					last if ( ( $sql_thread eq 'Yes' and $io_thread eq 'Yes' ) or ( $sql_thread eq 'No' and $sql_error ) or ( $io_thread eq 'No' and $io_error ) );

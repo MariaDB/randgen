@@ -213,7 +213,6 @@ sub init {
               'rr',
               'testname',
               'sqltrace',
-              'querytimeout',
               'logfile',
               'logconf',
               'report-tt-logdir',
@@ -267,7 +266,6 @@ sub setPropertiesFromHash {
   $gentestProps->property('parser',$props->{parser});
   $gentestProps->property('parser_mode',$props->{parser_mode});
   $gentestProps->property('ps-protocol',1) if $props->{ps_protocol};
-  $gentestProps->property('querytimeout',$props->{querytimeout}) if defined $props->{querytimeout};
   $gentestProps->property('redefine',$props->{redefine}) if $props->{redefine};
   $gentestProps->property('report-tt-logdir',$props->{report_tt_logdir}) if defined $props->{report_tt_logdir};
   $gentestProps->property('reporters',$props->{reporters}) if $props->{reporters};

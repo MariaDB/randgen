@@ -152,7 +152,6 @@ my $opt_result = GetOptions(
     'partitions3'  => \$props->{server_specific}->{3}->{partitions},
     'ps_protocol|ps-protocol' => \$props->{ps_protocol},
     'queries=s' => \$props->{queries},
-    'querytimeout=i' => \$props->{querytimeout},
     'redefine=s@' => \@{$props->{redefine}},
     'report-tt-logdir=s' => \$props->{report_tt_logdir},
     'reporters=s@' => \@{$props->{reporters}},
@@ -861,7 +860,6 @@ $0 - Run a complete random query generation test, including server start with re
     --reporter  : The reporters to use
     --transformer(s): The transformers to use (turns on --validator=transformer). Accepts comma separated list
     --variator(s): Variators to use. Accepts comma separated list
-    --querytimeout: The timeout to use for the QueryTimeout reporter 
     --gendata   : Generate data option. Passed to gentest.pl / GenTest. Takes a data template (.zz file)
                   as an optional argument. Without an argument, indicates the use of GendataSimple (default)
     --gendata-advanced: Generate the data using GendataAdvanced instead of default GendataSimple
