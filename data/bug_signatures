@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-30028:
+=~ InnoDB: Failing assertion: result != FTS_INVALID
+=~ fts_trx_row_get_new_state
+=~ mysql_alter_table
+MDEV-30024:
+=~ InnoDB: tried to purge non-delete-marked record in index
+=~ Assertion \`0'
+=~ row_purge_remove_sec_if_poss_leaf
+=~ Version: '10\.[3-4]|Server version: 10\.[3-4]
+=~ FeatureUsage detected virtual columns
+MDEV-30024:
+=~ InnoDB: tried to purge non-delete-marked record in index
+=~ InnoDB: Flagged corruption.*in purge
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+=~ FeatureUsage detected virtual columns
 MDEV-30003:
 =~ Assertion \`!default_table_charset \|\| thd->stmt_arena->is_stmt_execute()'
 =~ HA_CREATE_INFO::resolve_to_charset_collation_context
@@ -294,6 +309,11 @@ MDEV-29510:
 =~ signal|AddressSanitizer
 =~ _mi_rec_pack
 =~ _mi_update_blob_record
+MDEV-29503:
+=~ Assertion \`share->tdc->flushed'
+=~ close_all_tables_for_name
+=~ handle_alter_part_error
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29502:
 =~ signal|AddressSanitizer
 =~ spider_db_mbase_row::append_to_str
@@ -468,7 +488,7 @@ MDEV-29014:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
 MDEV-29010:
 =~ Table .* contains unrecognizable instant ALTER metadata
-=~ Table .* does not exist in the InnoDB internal data dictionary|Assertion \`!table \|\| (ignore_err & \~DICT_ERR_IGNORE_FK_NOKEY) \|\| !table->is_readable() \|\| !table->corrupted'
+=~ Table .* does not exist in the InnoDB internal data dictionary|Assertion \`!table \|\| (ignore_err & \~DICT_ERR_IGNORE_FK_NOKEY) \|\| !table->is_readable() \|\| !table->corrupted'|Table .* doesn't exist in engine
 MDEV-29009:
 =~ Assertion \`dd_val >= last_val'
 =~ myrocks::ha_rocksdb::load_auto_incr_value_from_index
