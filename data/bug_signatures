@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-30035:
+=~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction\.stmt'
+=~ ha_rollback_trans
+=~ Version: '10\.3|Server version: 10\.3
+MDEV-30033:
+=~ Assertion \`0'
+=~ Field_new_decimal::get_equal_const_item
+=~ propagate_equal_fields
 MDEV-30028:
 =~ InnoDB: Failing assertion: result != FTS_INVALID
 =~ fts_trx_row_get_new_state
@@ -2162,9 +2170,11 @@ MDEV-22754:
 MDEV-22732:
 =~ AddressSanitizer|signal [16]
 =~ create_tmp_table
-=~ multi_update::initialize_tables
-=~ JOIN::optimize_stage2
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[0-9]|Server version: 10\.1[0-9]
+=~ multi_update::initialize_tables|Multiupdate_prelocking_strategy
+MDEV-22732:
+=~ AddressSanitizer|signal
+=~ Field::cmp_binary
+=~ compare_record
 MDEV-22695:
 =~ signal [16]|AddressSanitizer
 =~ heap_rnext
