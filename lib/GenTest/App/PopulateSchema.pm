@@ -22,12 +22,13 @@ package GenTest::App::PopulateSchema;
 use strict;
 use DBI;
 use Carp;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Random;
 use GenTest::Executor;
 
-use DBServer::MySQL::MySQLd;
+use DBServer::MariaDB;
 
 use Data::Dumper;
 
@@ -150,7 +151,7 @@ sub run {
     my $mysql_client_path = 'mysql';
     my $basedir = $self->basedir();
     if ($basedir) {
-        $mysql_client_path = DBServer::MySQL::MySQLd->_find(
+        $mysql_client_path = DBServer::MariaDB->_find(
             [$basedir,$basedir.'/..',$basedir.'/../debug/',$basedir.'/../relwithdebinfo/'],
            ['client','bin'],
            'mysql.exe', 'mysql' );

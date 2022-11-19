@@ -35,6 +35,7 @@ require Exporter;
 
 use strict;
 use DBI;
+use GenUtil;
 use GenTest;
 use GenTest::App::GenTest;
 use GenTest::Properties;
@@ -45,7 +46,7 @@ use File::Copy;
 use File::Compare;
 use POSIX;
 
-use DBServer::MySQL::MySQLd;
+use DBServer::MariaDB;
 
 sub new {
   my $class= shift;
@@ -196,8 +197,6 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
     return $self->finalize(STATUS_TEST_FAILURE,[$server]);
-  } else {
-    say("Success");
   }
 
   return $self->finalize($status,[]);

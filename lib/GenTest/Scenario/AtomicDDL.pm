@@ -28,6 +28,7 @@ require Exporter;
 
 use strict;
 use DBI;
+use GenUtil;
 use GenTest;
 use GenTest::App::GenTest;
 use GenTest::Properties;
@@ -40,7 +41,7 @@ use File::Copy;
 use File::Compare;
 use POSIX;
 
-use DBServer::MySQL::MySQLd;
+use DBServer::MariaDB;
 
 sub new {
   my $class= shift;
@@ -64,7 +65,7 @@ sub run {
   # If the test is running with binary log enabled, we will use replication
   # for binlog consistency check. Otherwise the check will be skipped
 
-  my @mysqld_options= @{$self->getServerSpecific(1)->{mysqld_options}};
+  my @mysqld_options= @{$self->getServerSpecific(1)->{mysqld}};
 
   $server= $self->prepareServer(1);
 

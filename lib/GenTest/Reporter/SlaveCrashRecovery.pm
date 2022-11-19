@@ -32,6 +32,7 @@ require Exporter;
 
 use strict;
 use DBI;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Reporter;
@@ -41,7 +42,7 @@ use IPC::Open2;
 use File::Copy;
 use POSIX;
 
-use DBServer::MySQL::MySQLd;
+use DBServer::MariaDB;
 
 my $first_reporter;
 my $last_crash_time;

@@ -34,7 +34,6 @@ $combinations = [
           '--grammar=conf/optimizer/outer_join.yy --gendata=conf/optimizer/outer_join.zz --views=TEMPTABLE,MERGE',
           '--grammar=conf/optimizer/optimizer_access_exp.yy --gendata=conf/optimizer/range_access.zz --views=TEMPTABLE,MERGE',
         ],
-        [ '', '--notnull' ],
       ],
       any_data => [
         [

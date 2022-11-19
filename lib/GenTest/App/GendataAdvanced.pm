@@ -22,6 +22,7 @@ package GenTest::App::GendataAdvanced;
 
 use strict;
 use DBI;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Random;
@@ -35,9 +36,7 @@ use constant GDS_DSN => 0;
 use constant GDS_ENGINE => 1;
 use constant GDS_VIEWS => 2;
 use constant GDS_SQLTRACE => 3;
-use constant GDS_NOTNULL => 4;
 use constant GDS_ROWS => 5;
-use constant GDS_VARCHAR_LENGTH => 6;
 use constant GDS_VCOLS => 7;
 use constant GDS_EXECUTOR_ID => 8;
 use constant GDS_PARTITIONS => 9;
@@ -59,9 +58,7 @@ sub new {
         'engine' => GDS_ENGINE,
         'views' => GDS_VIEWS,
         'sqltrace' => GDS_SQLTRACE,
-        'notnull' => GDS_NOTNULL,
         'rows' => GDS_ROWS,
-        'varchar_length' => GDS_VARCHAR_LENGTH,
         'vcols' => GDS_VCOLS,
         'executor_id' => GDS_EXECUTOR_ID,
         'partitions' => GDS_PARTITIONS,
@@ -119,10 +116,6 @@ sub partitions {
     return $_[0]->[GDS_PARTITIONS];
 }
 
-sub varcharLength {
-    return $_[0]->[GDS_VARCHAR_LENGTH] || 1;
-}
-
 sub executor_id {
     return $_[0]->[GDS_EXECUTOR_ID] || '';
 }
@@ -139,9 +132,6 @@ sub run {
     $prng = GenTest::Random->new( seed => $self->[GDS_SEED] );
 
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
-    if ($executor->type != DB_MYSQL && $executor->type != DB_MARIADB) {
-        die "Only MySQL executor type is supported\n";
-    }
     $executor->sqltrace($self->sqltrace);
     $executor->setId($self->executor_id);
     $executor->setVardir($self->[GDS_VARDIR]);
@@ -157,7 +147,7 @@ sub run {
     }
 
     my $res= STATUS_OK;
-    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
+    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
     foreach my $i (0..$#$names) {
         my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i], $prng);
         $res= $gen_table_result if $gen_table_result > $res;
@@ -226,12 +216,6 @@ sub variate_and_execute {
 
 sub gen_table {
     my ($self, $executor, $basename, $size, $prng) = @_;
-
-    my $nullability = defined $self->[GDS_NOTNULL] ? 'NOT NULL' : '/*! NULL */';  
-    ### NULL is not a valid ANSI constraint, (but NOT NULL of course,
-    ### is)
-
-    my $varchar_length = $self->varcharLength();
 
     my $engine = $self->engine();
     my $views = $self->views();

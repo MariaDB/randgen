@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-package GenTest::Executor::MySQL;
+package GenTest::Executor::MariaDB;
 
 require Exporter;
 
@@ -26,6 +26,7 @@ require Exporter;
 use strict;
 use Carp;
 use DBI;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Result;
@@ -2899,7 +2900,7 @@ sub execute {
                 # Mark invalid queries in the trace by prefixing each line.
                 # We need to prefix all lines of multi-line statements also.
                 $trace_query =~ s/\n/\n# [sqltrace]    /g;
-                print '# [$$] [sqltrace] ERROR '.$err.": $trace_query;\n";
+                print "# [$$] [sqltrace] ERROR ".$err.": $trace_query;\n";
         } else {
             print "[$$] $trace_query;\n";
         }
@@ -2936,21 +2937,21 @@ sub execute {
             # If server is still connectable, it is not a real crash, but most likely a KILL query
 
             if (defined $dbh) {
-                say("Executor::MySQL::execute: Successfully reconnected after getting " . status2text($err_type));
+                say("Executor::MariaDB::execute: Successfully reconnected after getting " . status2text($err_type));
                 $err_type = STATUS_SEMANTIC_ERROR;
                 $executor->setDbh($dbh);
             } else {
-                sayError("Executor::MySQL::execute: Failed to reconnect after getting " . status2text($err_type));
+                sayError("Executor::MariaDB::execute: Failed to reconnect after getting " . status2text($err_type));
             }
 
             my $query_for_print= shorten_message($query);
             if (not ($execution_flags & EXECUTOR_FLAG_SILENT)) {
-              say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
+              say("Executor::MariaDB::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
             }
         } elsif (not ($execution_flags & EXECUTOR_FLAG_SILENT)) {
             # Always print syntax and uncategorized errors, unless specifically asked not to
             my $query_for_print= shorten_message($query);
-            say("Executor::MySQL::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
+            say("Executor::MariaDB::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
         }
 
         $result = GenTest::Result->new(

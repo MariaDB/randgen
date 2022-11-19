@@ -21,6 +21,7 @@ require Exporter;
 @ISA = qw(GenTest::Reporter);
 
 use strict;
+use GenUtil;
 use GenTest;
 use GenTest::Reporter;
 use GenTest::Constants;

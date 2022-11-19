@@ -22,6 +22,7 @@ require Exporter;
 
 use strict;
 use File::Spec::Functions;
+use GenUtil;
 use GenTest;
 use GenTest::Reporter;
 use GenTest::Constants;

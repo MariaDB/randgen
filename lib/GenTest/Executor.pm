@@ -42,6 +42,7 @@ require Exporter;
 use strict;
 use Carp;
 use Data::Dumper;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 
@@ -122,7 +123,7 @@ sub newFromDSN {
   my ($self,$dsn,$channel) = @_;
   if ($dsn =~ m/^dbi:(?:mysql|mariadb):/i) {
     require GenTest::Executor::MariaDB;
-    return GenTest::Executor::MariaDB(dsn => $dsn, channel => $channel);
+    return GenTest::Executor::MariaDB->new(dsn => $dsn, channel => $channel);
   } else {
     say("Unsupported dsn: $dsn");
     exit(STATUS_ENVIRONMENT_FAILURE);

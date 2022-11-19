@@ -22,6 +22,7 @@ package GenTest::App::GendataSimple;
 
 use strict;
 use DBI;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Random;
@@ -35,9 +36,7 @@ use constant GDS_DSN => 0;
 use constant GDS_ENGINE => 1;
 use constant GDS_VIEWS => 2;
 use constant GDS_SQLTRACE => 3;
-use constant GDS_NOTNULL => 4;
 use constant GDS_ROWS => 5;
-use constant GDS_VARCHAR_LENGTH => 6;
 use constant GDS_VCOLS => 7;
 use constant GDS_EXECUTOR_ID => 8;
 use constant GDS_VARIATORS => 9;
@@ -55,9 +54,7 @@ sub new {
         'engine' => GDS_ENGINE,
         'views' => GDS_VIEWS,
         'sqltrace' => GDS_SQLTRACE,
-        'notnull' => GDS_NOTNULL,
         'rows' => GDS_ROWS,
-        'varchar_length' => GDS_VARCHAR_LENGTH,
         'vcols' => GDS_VCOLS,
         'executor_id' => GDS_EXECUTOR_ID,
         'variators' => GDS_VARIATORS,
@@ -107,10 +104,6 @@ sub sqltrace {
 
 sub rows {
     return $_[0]->[GDS_ROWS];
-}
-
-sub varcharLength {
-    return $_[0]->[GDS_VARCHAR_LENGTH] || 1;
 }
 
 sub executor_id {
@@ -171,7 +164,7 @@ sub run {
     $self->variate_and_execute($executor,"CREATE TABLE DUMMY (I INTEGER)");
     $self->variate_and_execute($executor,"INSERT INTO DUMMY VALUES(0)");
     
-    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
+    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
     return STATUS_OK;
 }
 
@@ -187,11 +180,8 @@ sub gen_table {
 
     my $prng = GenTest::Random->new( seed => $self->[GDS_SEED] );
 
-    my $nullability = defined $self->[GDS_NOTNULL] ? 'NOT NULL' : '/*! NULL */';  
     ### NULL is not a valid ANSI constraint, (but NOT NULL of course,
     ### is)
-
-    my $varchar_length = $self->varcharLength();
 
     my $engine = $self->engine();
     my $vcols = $self->vcols();
@@ -201,144 +191,75 @@ sub gen_table {
     foreach my $e (@engines)
     {
       my $name = ( $e eq $engine ? $basename : $basename . '_'.$e );
-      if (($executor->type == DB_MYSQL) || ($executor->type == DB_MARIADB) || ($executor->type == DB_DRIZZLE))
-      {
-        # For backward compatibility, only extend names
-        # if multiple engines were provided
+      # For backward compatibility, only extend names
+      # if multiple engines were provided
 
-        say("Creating ".$executor->getName()." table $name, size $size rows, engine $e .");
+      say("Creating table $name, size $size rows, engine $e .");
 
-        ### This variant is needed due to
-        ### http://bugs.mysql.com/bug.php?id=47125
+      ### This variant is needed due to
+      ### http://bugs.mysql.com/bug.php?id=47125
 
-        $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ $name");
-        # RocksDB does not support virtual columns
-        if ($vcols and lc($engine) ne 'rocksdb') {
-            $self->variate_and_execute($executor,
-            "CREATE TABLE $name (
-                pk INTEGER AUTO_INCREMENT,
-                col_int_nokey INTEGER $nullability,
-                col_int_key INTEGER AS (col_int_nokey * 2) $vcols,
+      $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ $name");
+      # RocksDB does not support virtual columns
+      if ($vcols and lc($engine) ne 'rocksdb') {
+          $self->variate_and_execute($executor,
+          "CREATE TABLE $name (
+              pk INTEGER AUTO_INCREMENT,
+              col_int_nokey INTEGER,
+              col_int_key INTEGER AS (col_int_nokey * 2) $vcols,
 
-                col_date_key DATE AS (DATE_SUB(col_date_nokey, INTERVAL 1 DAY)) $vcols,
-                col_date_nokey DATE $nullability,
+              col_date_key DATE AS (DATE_SUB(col_date_nokey, INTERVAL 1 DAY)) $vcols,
+              col_date_nokey DATE,
 
-                col_time_key TIME AS (TIME(col_time_nokey)) $vcols,
-                col_time_nokey TIME $nullability,
+              col_time_key TIME AS (TIME(col_time_nokey)) $vcols,
+              col_time_nokey TIME,
 
-                col_datetime_key DATETIME AS (DATE_ADD(col_datetime_nokey, INTERVAL 1 HOUR)) $vcols,
-                col_datetime_nokey DATETIME $nullability,
+              col_datetime_key DATETIME AS (DATE_ADD(col_datetime_nokey, INTERVAL 1 HOUR)) $vcols,
+              col_datetime_nokey DATETIME,
 
-                col_varchar_key VARCHAR($varchar_length) AS (CONCAT('virt-',col_varchar_nokey)) $vcols,
-                col_varchar_nokey VARCHAR($varchar_length) $nullability,
+              col_varchar_key VARCHAR(1) AS (CONCAT('virt-',col_varchar_nokey)) $vcols,
+              col_varchar_nokey VARCHAR(1),
 
-                PRIMARY KEY (pk".asc_desc_key($prng->uint16(0,2),$e)."),
-                KEY (col_int_key".asc_desc_key($prng->uint16(0,2),$e)."),
-                KEY (col_date_key".asc_desc_key($prng->uint16(0,2),$e)."),
-                KEY (col_time_key".asc_desc_key($prng->uint16(0,2),$e)."),
-                KEY (col_datetime_key".asc_desc_key($prng->uint16(0,2),$e)."),
-                KEY (col_varchar_key".asc_desc_key($prng->uint16(0,2),$e).", col_int_key".asc_desc_key($prng->uint16(0,2),$e).")
-            ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
-                               # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
-                               # joining such tables on PK does not produce only 1-to-1 matches.
-                );
-        } else {
-            $self->variate_and_execute($executor,
-            "CREATE TABLE $name (
-                pk INTEGER AUTO_INCREMENT,
-                col_int_nokey INTEGER $nullability,
-                col_int_key INTEGER,
+              PRIMARY KEY (pk".asc_desc_key($prng->uint16(0,2),$e)."),
+              KEY (col_int_key".asc_desc_key($prng->uint16(0,2),$e)."),
+              KEY (col_date_key".asc_desc_key($prng->uint16(0,2),$e)."),
+              KEY (col_time_key".asc_desc_key($prng->uint16(0,2),$e)."),
+              KEY (col_datetime_key".asc_desc_key($prng->uint16(0,2),$e)."),
+              KEY (col_varchar_key".asc_desc_key($prng->uint16(0,2),$e).", col_int_key".asc_desc_key($prng->uint16(0,2),$e).")
+          ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
+                             # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
+                             # joining such tables on PK does not produce only 1-to-1 matches.
+              );
+      } else {
+          $self->variate_and_execute($executor,
+          "CREATE TABLE $name (
+              pk INTEGER AUTO_INCREMENT,
+              col_int_nokey INTEGER,
+              col_int_key INTEGER,
 
-                col_date_key DATE,
-                col_date_nokey DATE $nullability,
+              col_date_key DATE,
+              col_date_nokey DATE,
 
-                col_time_key TIME,
-                col_time_nokey TIME $nullability,
+              col_time_key TIME,
+              col_time_nokey TIME,
 
-                col_datetime_key DATETIME,
-                col_datetime_nokey DATETIME $nullability,
+              col_datetime_key DATETIME,
+              col_datetime_nokey DATETIME,
 
-                col_varchar_key VARCHAR($varchar_length),
-                col_varchar_nokey VARCHAR($varchar_length) $nullability,
+              col_varchar_key VARCHAR(1),
+              col_varchar_nokey VARCHAR(1),
 
-                PRIMARY KEY (pk".asc_desc_key($prng->uint16(0,2),$e)."),
-                KEY (col_int_key".asc_desc_key($prng->uint16(0,2),$e)."),
-                KEY (col_date_key".asc_desc_key($prng->uint16(0,2),$e)."),
-                KEY (col_time_key".asc_desc_key($prng->uint16(0,2),$e)."),
-                KEY (col_datetime_key".asc_desc_key($prng->uint16(0,2),$e)."),
-                KEY (col_varchar_key".asc_desc_key($prng->uint16(0,2),$e).", col_int_key".asc_desc_key($prng->uint16(0,2),$e).")
-            ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
-                               # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
-                               # joining such tables on PK does not produce only 1-to-1 matches.
-                );
-        }
-      } elsif ($executor->type == DB_POSTGRES) {
-        say("Creating ".$executor->getName()." table $name, size $size rows");
-    
-        my $increment_size = (length($name) > 1 ? (length($name) * 5) : 1);
-        $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ $name");
-        $self->variate_and_execute($executor,"DROP SEQUENCE ".$name."_seq");
-        $self->variate_and_execute($executor,"CREATE SEQUENCE ".$name."_seq INCREMENT 1 START $increment_size");
-        $self->variate_and_execute($executor,
-        "CREATE TABLE $name (
-          pk INTEGER DEFAULT nextval('".$name."_seq') NOT NULL,
-          col_int_nokey INTEGER $nullability,
-          col_int_key INTEGER $nullability,
-
-          col_date_key DATE $nullability,
-          col_date_nokey DATE $nullability,
-
-          col_time_key TIME $nullability,
-          col_time_nokey TIME $nullability,
-
-          col_datetime_key DATETIME $nullability,
-          col_datetime_nokey DATETIME $nullability,
-
-          col_varchar_key VARCHAR($varchar_length) $nullability,
-          col_varchar_nokey VARCHAR($varchar_length) $nullability,
-
-          PRIMARY KEY (pk))");
-
-        $self->variate_and_execute($executor,"CREATE INDEX ".$name."_int_key ON $name(col_int_key)");
-        $self->variate_and_execute($executor,"CREATE INDEX ".$name."_date_key ON $name(col_date_key)");
-        $self->variate_and_execute($executor,"CREATE INDEX ".$name."_time_key ON $name(col_time_key)");
-        $self->variate_and_execute($executor,"CREATE INDEX ".$name."_datetime_key ON $name(col_datetime_key)");
-        $self->variate_and_execute($executor,"CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key, col_int_key)");
-
-    } else {
-        say("Creating ".$executor->getName()." table $name, size $size rows");
-
-		$self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ $name");
-		$self->variate_and_execute($executor,
-		"CREATE TABLE $name (
-			pk INTEGER AUTO_INCREMENT,
-			col_int_nokey INTEGER $nullability,
-			col_int_key INTEGER $nullability,
-
-			col_date_key DATE $nullability,
-			col_date_nokey DATE $nullability,
-
-			col_time_key TIME $nullability,
-			col_time_nokey TIME $nullability,
-
-			col_datetime_key DATETIME $nullability,
-			col_datetime_nokey DATETIME $nullability,
-
-			col_varchar_key VARCHAR($varchar_length) $nullability,
-			col_varchar_nokey VARCHAR($varchar_length) $nullability,
-
-			PRIMARY KEY (pk)
-		) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
-						   # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
-						   # joining such tables on PK does not produce only 1-to-1 matches.
-			);
-		
-		$self->variate_and_execute($executor,"CREATE INDEX ".$name."_int_key ON $name(col_int_key)");
-		$self->variate_and_execute($executor,"CREATE INDEX ".$name."_date_key ON $name(col_date_key)");
-		$self->variate_and_execute($executor,"CREATE INDEX ".$name."_time_key ON $name(col_time_key)");
-		$self->variate_and_execute($executor,"CREATE INDEX ".$name."_datetime_key ON $name(col_datetime_key)");
-		$self->variate_and_execute($executor,"CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key, col_int_key)");
-    };
+              PRIMARY KEY (pk".asc_desc_key($prng->uint16(0,2),$e)."),
+              KEY (col_int_key".asc_desc_key($prng->uint16(0,2),$e)."),
+              KEY (col_date_key".asc_desc_key($prng->uint16(0,2),$e)."),
+              KEY (col_time_key".asc_desc_key($prng->uint16(0,2),$e)."),
+              KEY (col_datetime_key".asc_desc_key($prng->uint16(0,2),$e)."),
+              KEY (col_varchar_key".asc_desc_key($prng->uint16(0,2),$e).", col_int_key".asc_desc_key($prng->uint16(0,2),$e).")
+          ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
+                             # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
+                             # joining such tables on PK does not produce only 1-to-1 matches.
+              );
+      }
 
     if (defined $views) {
       if ($views ne '') {
@@ -358,44 +279,23 @@ sub gen_table {
       my $pick2 = $prng->uint16(0,9);
 
       my ($rnd_int1, $rnd_int2);
-      if (defined $self->[GDS_NOTNULL]) {
-        $rnd_int1 = ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
-        $rnd_int2 = ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
-      } else {
-        $rnd_int1 = $pick1 == 9 ? "NULL" : ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
-        $rnd_int2 = $pick2 == 9 ? "NULL" : ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
-      }
+      $rnd_int1 = $pick1 == 9 ? "NULL" : ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
+      $rnd_int2 = $pick2 == 9 ? "NULL" : ($pick1 == 8 ? $prng->int(0,255) : $prng->digit() );
 
       # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
 
       my $rnd_date = $prng->date();
-
-      if (not defined $self->[GDS_NOTNULL]) {
-        $rnd_date = ($rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, "NULL", "'1900-01-01'")[$prng->uint16(0,9)];
-          }
+      $rnd_date = ($rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, $rnd_date, "NULL", "'1900-01-01'")[$prng->uint16(0,9)];
       my $rnd_time = $prng->time();
-      if (not defined $self->[GDS_NOTNULL]) {
-        $rnd_time = ($rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
-          }
+      $rnd_time = ($rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, $rnd_time, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
 
       # 10% NULLS, 10% "1900-01-01 00:00:00', 20% date + " 00:00:00"
 
       my $rnd_datetime = $prng->datetime();
       my $rnd_datetime_round_date = "'".$prng->unquotedDate()." 00:00:00'";
+      $rnd_datetime = ($rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime_round_date, $rnd_datetime_round_date, "NULL", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
 
-      if (defined $self->[GDS_NOTNULL]) {
-        $rnd_datetime = ($rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime_round_date, $rnd_datetime_round_date, "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
-      } else {
-        $rnd_datetime = ($rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime, $rnd_datetime_round_date, $rnd_datetime_round_date, "NULL", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
-      }
-
-      my $rnd_varchar;
-
-      if (defined $self->[GDS_NOTNULL]) {
-        $rnd_varchar = $prng->string($varchar_length);
-      } else {
-        $rnd_varchar = $prng->uint16(0,9) == 9 ? "NULL" : $prng->string($varchar_length);
-      }
+      my $rnd_varchar = $prng->uint16(0,9) == 9 ? "NULL" : $prng->string(1);
 
       push(@values, "($rnd_int1, $rnd_int2, $rnd_date, $rnd_date, $rnd_time, $rnd_time, $rnd_datetime, $rnd_datetime, $rnd_varchar, $rnd_varchar)");
 

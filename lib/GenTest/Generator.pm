@@ -34,7 +34,6 @@ require Exporter;
   GENERATOR_TMPNAM
   GENERATOR_THREAD_ID
   GENERATOR_SEQ_ID
-  GENERATOR_VARCHAR_LENGTH
   GENERATOR_GLOBAL_FRAME
   GENERATOR_PARTICIPATING_RULES
   GENERATOR_ANNOTATE_RULES
@@ -53,7 +52,6 @@ use constant GENERATOR_PRNG             => 4;
 use constant GENERATOR_TMPNAM           => 5;
 use constant GENERATOR_THREAD_ID        => 6;
 use constant GENERATOR_SEQ_ID           => 7;
-use constant GENERATOR_VARCHAR_LENGTH  => 10;
 use constant GENERATOR_GLOBAL_FRAME  => 12;
 use constant GENERATOR_PARTICIPATING_RULES => 13;       # Stores the list of rules used in the last generated query
 use constant GENERATOR_ANNOTATE_RULES => 14;
@@ -70,7 +68,6 @@ sub new {
     'seed'      => GENERATOR_SEED,
     'prng'      => GENERATOR_PRNG,
     'thread_id'    => GENERATOR_THREAD_ID,
-    'varchar_length'  => GENERATOR_VARCHAR_LENGTH,
     'annotate_rules'  => GENERATOR_ANNOTATE_RULES,
     'vardir'          => GENERATOR_VARDIR,
     'parser'          => GENERATOR_PARSER,

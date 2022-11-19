@@ -16,23 +16,23 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-package DBServer::MySQL::MySQLd;
+package DBServer::MariaDB;
 
-@ISA = qw(DBServer::DBServer);
+@ISA = qw(DBServer);
 
 use DBI;
-use DBServer::DBServer;
+use DBServer;
+use GenUtil;
 use if osWindows(), Win32::Process;
 use Time::HiRes;
 use POSIX ":sys_wait_h";
-
-use strict;
-
 use Carp;
 use Data::Dumper;
 use File::Basename qw(dirname);
 use File::Path qw(mkpath rmtree);
 use File::Copy qw(move);
+
+use strict;
 
 use constant MYSQLD_BASEDIR => 0;
 use constant MYSQLD_VARDIR => 1;
@@ -51,7 +51,6 @@ use constant MYSQLD_WINDOWS_PROCESS => 13;
 use constant MYSQLD_DBH => 14;
 use constant MYSQLD_START_DIRTY => 15;
 use constant MYSQLD_VALGRIND => 16;
-use constant MYSQLD_VALGRIND_OPTIONS => 17;
 use constant MYSQLD_VERSION => 18;
 use constant MYSQLD_DUMPER => 19;
 use constant MYSQLD_SOURCEDIR => 20;
@@ -60,7 +59,6 @@ use constant MYSQLD_WINDOWS_PROCESS_EXITCODE => 22;
 use constant MYSQLD_SERVER_TYPE => 23;
 use constant MYSQLD_VALGRIND_SUPPRESSION_FILE => 24;
 use constant MYSQLD_TMPDIR => 25;
-use constant MYSQLD_CONFIG_CONTENTS => 26;
 use constant MYSQLD_CONFIG_FILE => 27;
 use constant MYSQLD_USER => 28;
 use constant MYSQLD_MAJOR_VERSION => 29;
@@ -70,6 +68,7 @@ use constant MYSQLD_RR => 32;
 use constant MYSLQD_CONFIG_VARIABLES => 33;
 use constant MYSQLD_CLIENT => 34;
 use constant MARIABACKUP => 35;
+use constant MYSQLD_MANUAL_GDB => 36;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -91,18 +90,15 @@ sub new {
                                    'start_dirty' => MYSQLD_START_DIRTY,
                                    'general_log' => MYSQLD_GENERAL_LOG,
                                    'valgrind' => MYSQLD_VALGRIND,
-                                   'valgrind_options' => MYSQLD_VALGRIND_OPTIONS,
                                    'rr' => MYSQLD_RR,
-                                   'config' => MYSQLD_CONFIG_CONTENTS,
+                                   'manual_gdb' => MYSQLD_MANUAL_GDB,
+                                   'config' => MYSQLD_CONFIG_FILE,
                                    'user' => MYSQLD_USER},@_);
     
-    croak "No valgrind support on windows" if osWindows() and $self->[MYSQLD_VALGRIND];
+    croak "No valgrind support on windows" if osWindows() and defined $self->[MYSQLD_VALGRIND];
     croak "No rr support on windows" if osWindows() and $self->[MYSQLD_RR];
-    croak "No cannot use both rr and valgrind at once" if $self->[MYSQLD_RR] and $self->[MYSQLD_VALGRIND];
-    
-    if (not defined $self->[MYSQLD_VARDIR]) {
-        $self->[MYSQLD_VARDIR] = "mysql-test/var";
-    }
+    croak "No cannot use both rr and valgrind at once" if $self->[MYSQLD_RR] and defined $self->[MYSQLD_VALGRIND];
+    croak "Vardir is not defined for the server" unless $self->[MYSQLD_VARDIR];
     
     if (osWindows()) {
         ## Use unix-style path's since that's what Perl expects...
@@ -158,8 +154,8 @@ sub new {
         }
     }
    
-    ## Use valgrind suppression file available in mysql-test path. 
-    if ($self->[MYSQLD_VALGRIND]) {
+    ## Use valgrind suppression file if available in mysql-test path. 
+    if (defined $self->[MYSQLD_VALGRIND]) {
         $self->[MYSQLD_VALGRIND_SUPPRESSION_FILE] = $self->_find(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir],
                                                              osWindows()?["share/mysql-test","mysql-test"]:["share/mysql-test","mysql-test"],
                                                              "valgrind.supp")
@@ -267,7 +263,7 @@ sub socketfile {
     my ($self) = @_;
     my $socketFileName = $_[0]->vardir."/mysql.sock";
     if (length($socketFileName) >= 100) {
-	$socketFileName = "/tmp/RQGmysql.".$self->port.".sock";
+  $socketFileName = "/tmp/RQGmysql.".$self->port.".sock";
     }
     return $socketFileName;
 }
@@ -353,16 +349,6 @@ sub createMysqlBase  {
     mkpath($self->vardir);
     mkpath($self->tmpdir);
     mkpath($self->datadir);
-
-    ## Prepare config file if needed
-    if ($self->[MYSQLD_CONFIG_CONTENTS] and ref $self->[MYSQLD_CONFIG_CONTENTS] eq 'ARRAY' and scalar(@{$self->[MYSQLD_CONFIG_CONTENTS]})) {
-        $self->[MYSQLD_CONFIG_FILE] = $self->vardir."/my.cnf";
-        open(CONFIG,">$self->[MYSQLD_CONFIG_FILE]") || die "Could not open $self->[MYSQLD_CONFIG_FILE] for writing: $!\n";
-        print CONFIG @{$self->[MYSQLD_CONFIG_CONTENTS]};
-        close CONFIG;
-        say("Config file contents:");
-        sayFile($self->[MYSQLD_CONFIG_FILE]);
-    }
 
     my $defaults = ($self->[MYSQLD_CONFIG_FILE] ? "--defaults-file=$self->[MYSQLD_CONFIG_FILE]" : "--no-defaults");
 
@@ -458,7 +444,7 @@ sub _reportError {
 sub startServer {
     my ($self) = @_;
 
-	my @defaults = ($self->[MYSQLD_CONFIG_FILE] ? ("--defaults-group-suffix=.runtime", "--defaults-file=$self->[MYSQLD_CONFIG_FILE]") : ("--no-defaults"));
+  my @defaults = ($self->[MYSQLD_CONFIG_FILE] ? ("--defaults-group-suffix=.runtime", "--defaults-file=$self->[MYSQLD_CONFIG_FILE]") : ("--no-defaults"));
 
     my ($v1,$v2,@rest) = $self->versionNumbers;
     my $v = $v1*1000+$v2;
@@ -466,15 +452,21 @@ sub startServer {
                                          $self->[MYSQLD_STDOPTS],
                                          ["--core-file",
                                           "--datadir=".$self->datadir,  # Could not add to STDOPTS, because datadir could have changed
-                                          "--max-allowed-packet=1G",	# Allow loading bigger blobs
-                                          "--loose-innodb-ft-min-token-size=10", # Workaround for MDEV-25324
                                           "--port=".$self->port,
                                           "--socket=".$self->socketfile,
                                           "--pid-file=".$self->pidfile],
                                          $self->_logOptions);
-    if (defined $self->[MYSQLD_SERVER_OPTIONS]) {
-        $command = $command." ".join(' ',@{$self->[MYSQLD_SERVER_OPTIONS]});
-    }
+    my @extra_opts= ( '--max-allowed-packet=1G', # Allow loading bigger blobs
+                      '--loose-innodb-ft-min-token-size=10', # Workaround for MDEV-25324
+                      '--secure-file-priv=', # Make sure that LOAD_FILE and such works
+                      (defined $self->[MYSQLD_SERVER_OPTIONS] ? @{$self->[MYSQLD_SERVER_OPTIONS]} : ())
+                    );
+
+    say("Final options for server on port ".$self->port.", MTR style:\n".
+      join(' ', map {'--mysqld='.$_} @extra_opts));
+
+    $command = $command." ".join(' ',@extra_opts);
+
     # If we don't remove the existing pidfile, 
     # the server will be considered started too early, and further flow can fail
     unlink($self->pidfile);
@@ -493,12 +485,12 @@ sub startServer {
     if ($self->[MYSQLD_RR]) {
         $command = "rr record -h --output-trace-dir=".$self->vardir."/rr_profile_".time()." ".$command;
     }
-    elsif ($self->[MYSQLD_VALGRIND]) {
+    elsif (defined $self->[MYSQLD_VALGRIND]) {
         my $val_opt ="";
         $start_wait_timeout= 60;
         $startup_timeout= 1200;
-        if (defined $self->[MYSQLD_VALGRIND_OPTIONS]) {
-            $val_opt = join(' ',@{$self->[MYSQLD_VALGRIND_OPTIONS]});
+        if ($self->[MYSQLD_VALGRIND]) {
+            $val_opt = $self->[MYSQLD_VALGRIND];
         }
         $command = "valgrind --time-stamp=yes --leak-check=yes --suppressions=".$self->valgrind_suppressionfile." ".$val_opt." ".$command;
     }
@@ -653,6 +645,11 @@ sub startServer {
 
     if ($self->waitForServerToStart && $self->dbh) {
         $self->serverVariables();
+        if ($self->[MYSQLD_MANUAL_GDB]) {
+          say("Pausing test to allow attaching debuggers etc. to the server process ".$self->[MYSQLD_SERVERPID].".");
+          say("Press ENTER to continue the test run...");
+          my $keypress = <STDIN>;
+        }
         return DBSTATUS_OK;
     } else {
         return DBSTATUS_FAILURE;
@@ -1077,7 +1074,7 @@ sub nonSystemDatabases {
 
 sub collectAutoincrements {
   my $self= shift;
-	my $autoinc_tables= $self->dbh->selectall_arrayref(
+  my $autoinc_tables= $self->dbh->selectall_arrayref(
       "SELECT CONCAT(ist.TABLE_SCHEMA,'.',ist.TABLE_NAME), ist.AUTO_INCREMENT, isc.COLUMN_NAME, '' ".
       "FROM INFORMATION_SCHEMA.TABLES ist JOIN INFORMATION_SCHEMA.COLUMNS isc ON (ist.TABLE_SCHEMA = isc.TABLE_SCHEMA AND ist.TABLE_NAME = isc.TABLE_NAME) ".
       "WHERE ist.TABLE_SCHEMA NOT IN ('mysql','information_schema','performance_schema','sys') ".
@@ -1400,7 +1397,7 @@ sub checkErrorLogForErrors {
   {
     next unless !$marker or $found_marker or /^$marker$/;
     $found_marker= 1;
-		$_ =~ s{[\r\n]}{}siog;
+    $_ =~ s{[\r\n]}{}siog;
 
     # Ignore certain errors
     next if
@@ -1562,10 +1559,10 @@ sub _find {
     
     foreach my $base (@$bases) {
         foreach my $s (@$subdir) {
-        	foreach my $n (@names) {
+          foreach my $n (@names) {
                 my $path  = $base."/".$s."/".$n;
                 return $path if -f $path;
-        	}
+          }
         }
     }
     my $paths = "";
@@ -1578,7 +1575,7 @@ sub _find {
 
 sub dsn {
     my ($self,$database) = @_;
-    $database = "test" if not defined MYSQLD_DEFAULT_DATABASE;
+    $database = MYSQLD_DEFAULT_DATABASE if not defined $database;
     return "dbi:mysql:host=127.0.0.1:port=".
         $self->[MYSQLD_PORT].
         ":user=".
@@ -1758,14 +1755,14 @@ sub _notOlderThan {
 }
 
 sub get_pid_from_file {
-	my $fname= shift;
-	my $separ= $/;
-	$/= undef;
-	open(PID,$fname) || croak("Could not open pid file $fname for reading");
-	my $p = <PID>;
-	close(PID);
-	$p =~ s/.*?([0-9]+).*/$1/;
-	$/= $separ;
-	return $p;
+  my $fname= shift;
+  my $separ= $/;
+  $/= undef;
+  open(PID,$fname) || croak("Could not open pid file $fname for reading");
+  my $p = <PID>;
+  close(PID);
+  $p =~ s/.*?([0-9]+).*/$1/;
+  $/= $separ;
+  return $p;
 }
 

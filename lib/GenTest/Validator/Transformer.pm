@@ -24,6 +24,7 @@ require Exporter;
 use strict;
 
 use Carp;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Comparator;

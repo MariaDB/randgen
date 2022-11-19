@@ -29,6 +29,7 @@ require Exporter;
 
 use strict;
 
+use GenUtil;
 use GenTest;
 use GenTest::Comparator;
 use GenTest::Constants;

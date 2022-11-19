@@ -19,6 +19,7 @@ package GenTest::ErrorFilter;
 
 @ISA = qw(GenTest);
 
+use GenUtil;
 use GenTest;
 use GenTest::IPC::Channel;
 

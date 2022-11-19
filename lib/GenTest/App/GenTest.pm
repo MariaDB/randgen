@@ -31,6 +31,7 @@ use File::Path 'mkpath';
 use File::Copy;
 use File::Spec;
 
+use GenUtil;
 use GenTest;
 use GenTest::Properties;
 use GenTest::Constants;
@@ -69,7 +70,6 @@ use constant GT_REPORTER_MANAGER => 8;
 use constant GT_TEST_START => 9;
 use constant GT_TEST_END => 10;
 use constant GT_QUERY_FILTERS => 11;
-use constant GT_LOG_FILES_TO_REPORT => 12;
 use constant GT_EXECUTORS => 13;
 
 sub new {
@@ -125,29 +125,16 @@ sub queryFilters {
     return $_[0]->[GT_QUERY_FILTERS];
 }
 
-sub logFilesToReport {
-    return @{$_[0]->[GT_LOG_FILES_TO_REPORT]};
-}
-
 sub run {
     my $self = shift;
 
     $SIG{TERM} = sub { exit(0) };
     $SIG{CHLD} = "IGNORE" if osWindows();
-    $SIG{INT} = "IGNORE";
-    
-    if (defined $ENV{RQG_HOME}) {
-        $ENV{RQG_HOME} = osWindows() ? $ENV{RQG_HOME}.'\\' : $ENV{RQG_HOME}.'/';
-    }
+#    $SIG{INT} = "IGNORE";
     
     $ENV{RQG_DEBUG} = 1 if $self->config->debug;
 
     $self->initSeed();
-
-    my $queries = $self->config->queries;
-    $queries =~ s{K}{000}so;
-    $queries =~ s{M}{000000}so;
-    $self->config->property('queries', $queries);
 
     say("-------------------------------\nConfiguration");
     $self->config->printProps;
@@ -162,49 +149,8 @@ sub run {
     my $init_generator_result = $self->initGenerator();
     return $init_generator_result if $init_generator_result != STATUS_OK;
 
-    # Cache metadata and other info that may be needed later
-    my @log_files_to_report;
-    foreach my $i (1..$self->config->number_of_servers) {
-        next unless $self->config->server_specific->{$i}->{dsn};
-        if ($self->config->property('ps-protocol') and $self->config->server_specific->{$i}->{dsn} !~ /mysql_server_prepare/) {
-          $self->config->server_specific->{$i}->{dsn} .= ';mysql_server_prepare=1';
-        }
-        next if $self->config->server_specific->{$i}->{dsn} !~ m{mysql}sio;
-        my $metadata_executor = GenTest::Executor->newFromDSN($self->config->server_specific->{$i}->{dsn}, osWindows() ? undef : $self->channel());
-        $metadata_executor->setVardir($self->config->vardir);
-        $metadata_executor->init();
-        
-        # Cache log file names needed for result reporting at end-of-test
-        
-        # We do not copy the general log, as it may grow very large for some tests.
-        #my $logfile_result = $metadata_executor->execute("SHOW VARIABLES LIKE 'general_log_file'");
-        #push(@log_files_to_report, $logfile_result->data()->[0]->[1]);
-        
-        # Guessing the error log file name relative to datadir (lacking safer methods).
-        my $datadir_result = $metadata_executor->execute("SHOW VARIABLES LIKE 'datadir'");
-        croak("FATAL ERROR: Failed to retrieve datadir") unless $datadir_result;
-
-        my $errorlog;
-        foreach my $errorlog_path (
-            "../log/master.err",  # MTRv1 regular layout
-            "../log/mysqld1.err", # MTRv2 regular layout
-            "../mysql.err"        # DBServer::MySQL layout
-        ) {
-            my $possible_path = File::Spec->catfile($datadir_result->data()->[0]->[1], $errorlog_path);
-            if (-e $possible_path) {
-                $errorlog = $possible_path;
-                last;
-            }
-        }
-        push(@log_files_to_report, $errorlog) if defined $errorlog;
-        
-        $metadata_executor->disconnect();
-        undef $metadata_executor;
-    }
-
     $self->[GT_TEST_START] = time();
     $self->[GT_TEST_END] = $self->[GT_TEST_START] + $self->config->duration;
-    $self->[GT_LOG_FILES_TO_REPORT] = \@log_files_to_report;
 
     my $init_reporters_result = $self->initReporters();
     return $init_reporters_result if $init_reporters_result != STATUS_OK;
@@ -380,8 +326,8 @@ sub workerProcess {
     }
 
     $| = 1;
-    my $ctrl_c = 0;
-    local $SIG{INT} = sub { $ctrl_c = 1 };
+#    my $ctrl_c = 0;
+#    local $SIG{INT} = sub { $ctrl_c = 1 };
 
     $self->generator()->setSeed($self->config->seed() + $worker_id);
     $self->generator()->setThreadId($worker_id);
@@ -427,7 +373,7 @@ sub workerProcess {
         }
 
         last if $query_result == STATUS_EOF;
-        last if $ctrl_c == 1;
+#        last if $ctrl_c == 1;
         last if time() > $self->[GT_TEST_END];
     }
         
@@ -540,8 +486,6 @@ sub validateGenData {
 sub doGenData {
     my $self = shift;
 
-    return STATUS_OK if defined $self->config->property('start-dirty');
-
     foreach my $i (1..$self->config->number_of_servers) {
         next unless $self->config->server_specific->{$i}->{dsn};
         my $gendata_result;
@@ -555,9 +499,7 @@ sub doGenData {
                views => $self->config->server_specific->{$i}->{views},
                seed => $self->config->seed(),
                sqltrace=> $self->config->sqltrace,
-               notnull => $self->config->notnull,
                rows => $self->config->rows,
-               varchar_length => $self->config->property('varchar-length'),
                executor_id => $i,
                compatibility => $self->config->compatibility,
                variators => $self->config->variators,
@@ -579,9 +521,7 @@ sub doGenData {
                    views => $self->config->server_specific->{$i}->{views},
                    seed => $self->config->seed(),
                    sqltrace=> $self->config->sqltrace,
-                   notnull => $self->config->notnull,
                    rows => $self->config->rows,
-                   varchar_length => $self->config->property('varchar-length'),
                    executor_id => $i,
                    variators => $self->config->variators,
                    vardir => $self->config->vardir,
@@ -598,11 +538,8 @@ sub doGenData {
                    seed => $self->config->seed(),
                    debug => $self->config->debug,
                    rows => $self->config->rows,
-                   varchar_length => $self->config->property('varchar-length'),
                    sqltrace => $self->config->sqltrace,
                    short_column_names => $self->config->short_column_names,
-                   strict_fields => $self->config->strict_fields,
-                   notnull => $self->config->notnull,
                    executor_id => $i,
                    variators => $self->config->variators,
                    vardir => $self->config->vardir,
@@ -682,7 +619,6 @@ sub initGenerator {
 
     $self->[GT_GENERATOR] = $generator_name->new(
         grammar => $self->grammar(),
-        varchar_length => $self->config->property('varchar-length'),
         annotate_rules => $self->config->property('annotate-rules'),
         vardir => $self->config->vardir,
         parser => $self->config->parser,
@@ -793,13 +729,6 @@ sub initValidators {
         # In case of multi-master topology (e.g. Galera with multiple "masters"),
         # we don't want to compare results after each query.
 
-        unless ($self->config->property('multi-master')) {
-            if ($self->config->server_specific->{3}->{dsn}) {
-                push @{$self->config->validators}, 'ResultsetComparator3';
-            } elsif ($self->config->server_specific->{2}->{dsn}) {
-                push @{$self->config->validators}, 'ResultsetComparator';
-            }
-        }        
         push @{$self->config->validators}, 'MarkErrorLog' 
             if (defined $self->config->valgrind) && $self->isMySQLCompatible();
         
@@ -836,21 +765,6 @@ sub initValidators {
         if defined $self->config->transformers and $#{$self->config->transformers} > -1;
 
     return STATUS_OK;
-}
-
-sub copyLogFiles {
-    my ($self, $logdir, $dsn) = @_;
-    ## Do this only when tt-logging is enabled
-    if (-e $self->config->property('report-tt-logdir')) {
-        mkpath($logdir) if ! -e $logdir;
-
-        # copy database logs
-        foreach my $filename ($self->logFilesToReport()) {
-            copyFileToDir($filename, $logdir);
-        }
-        # copy RQG log
-        copyFileToDir($self->config->logfile, $logdir);
-    }
 }
 
 sub copyFileToDir {

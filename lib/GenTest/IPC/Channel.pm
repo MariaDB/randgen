@@ -26,6 +26,7 @@ use Carp;
 use IO::Handle;
 use IO::Pipe;
 use Data::Dumper;
+use GenUtil;
 use GenTest;
 
 use constant CHANNEL_IN => 0;

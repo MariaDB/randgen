@@ -27,11 +27,12 @@ require Exporter;
 @ISA = qw(GenTest::Reporter);
 
 use strict;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Result;
 use GenTest::Reporter;
-use GenTest::Executor::MySQL;
+use GenTest::Executor::MariaDB;
 
 use DBI;
 use Data::Dumper;

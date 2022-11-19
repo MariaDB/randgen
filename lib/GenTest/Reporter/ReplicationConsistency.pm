@@ -21,6 +21,7 @@ require Exporter;
 
 use strict;
 use DBI;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Reporter;

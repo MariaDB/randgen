@@ -21,6 +21,7 @@ package GenTest::Comparator;
 
 use strict;
 
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Result;

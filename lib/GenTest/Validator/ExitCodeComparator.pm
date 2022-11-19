@@ -26,12 +26,13 @@ require Exporter;
 
 use strict;
 
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Comparator;
 use GenTest::Result;
 use GenTest::Validator;
-use GenTest::Executor::MySQL;
+use GenTest::Executor::MariaDB;
 
 my $garbage_in= 0;
 

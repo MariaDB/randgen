@@ -1,7 +1,7 @@
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights
 # reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020, 2022, MariaDB
+# Copyright (c) 2022, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,11 +17,18 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-package GenTest;
-
+package DBServer;
 use base 'Exporter';
+
+@EXPORT = ('DBSTATUS_OK','DBSTATUS_FAILURE');
+
 use Carp;
+use GenUtil;
+
 use strict;
+
+use constant DBSTATUS_OK => 0;
+use constant DBSTATUS_FAILURE => 1;
 
 1;
 
@@ -30,6 +37,7 @@ sub new {
   my $args = shift;
 
   my $obj = bless ([], $class);
+
   my $max_arg = (scalar(@_) / 2) - 1;
 
   foreach my $i (0..$max_arg) {

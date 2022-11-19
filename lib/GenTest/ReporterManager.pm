@@ -21,6 +21,7 @@ package GenTest::ReporterManager;
 @ISA = qw(GenTest);
 
 use strict;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Reporter;

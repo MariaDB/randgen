@@ -25,9 +25,10 @@ require Exporter;
 use strict;
 
 use lib 'lib';
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
-use GenTest::Executor::MySQL;
+use GenTest::Executor::MariaDB;
 use GenTest::Random;
 use Data::Dumper;
 
@@ -212,7 +213,6 @@ sub transformExecuteValidate {
                 #
                 my $allowed= $transformer->allowedErrors();
                 if ( 
-                    ($executor->type() == DB_MYSQL || $executor->type() == DB_MARIADB) &&
                     ( (exists $mysql_grouping_errors{$part_result->err()})
                       || (defined $allowed and exists $allowed->{$part_result->err()})
                     )

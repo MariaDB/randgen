@@ -21,6 +21,7 @@ require Exporter;
 @ISA = qw(GenTest);
 
 use strict;
+use GenUtil;
 use GenTest;
 
 use constant RESULT_QUERY		=> 0;

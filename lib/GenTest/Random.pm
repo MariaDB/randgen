@@ -58,6 +58,7 @@ require Exporter;
 #use strict;
 
 use Carp;
+use GenUtil;
 use GenTest;
 use Cwd;
 
@@ -86,8 +87,7 @@ efficiency, math is done in integer mode
 
 use constant RANDOM_SEED		=> 0;
 use constant RANDOM_GENERATOR		=> 1;
-use constant RANDOM_VARCHAR_LENGTH	=> 2;
-use constant RANDOM_STRBUF          	=> 3;
+use constant RANDOM_STRBUF          	=> 2;
 
 use constant FIELD_TYPE_NUMERIC		=> 2;
 use constant FIELD_TYPE_STRING		=> 3;
@@ -266,7 +266,6 @@ sub new {
 
 	my $prng = $class->SUPER::new({
 		'seed'			=> RANDOM_SEED,
-		'varchar_length'	=> RANDOM_VARCHAR_LENGTH
 	}, @_ );
 
 
@@ -577,7 +576,7 @@ sub unquotedString {
 
 	my ($prng, $len) = @_;
 
-	$len = defined $len ? $len : ($prng->[RANDOM_VARCHAR_LENGTH] || 1);
+	$len = defined $len ? $len : 1;
   my $str;
 
 	# If the length is 0 or negative, return a zero-length string

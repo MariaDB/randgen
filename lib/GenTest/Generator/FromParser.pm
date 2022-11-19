@@ -24,6 +24,7 @@ use strict;
 use GenTest::Constants;
 use GenTest::Random;
 use GenTest::Generator;
+use GenUtil;
 use GenTest;
 use Cwd;
 use Carp;

@@ -27,6 +27,7 @@ require Exporter;
 
 use strict;
 use DBI;
+use GenUtil;
 use GenTest;
 use GenTest::App::GenTest;
 use GenTest::Properties;
@@ -37,7 +38,7 @@ use File::Copy;
 use File::Compare;
 use POSIX;
 
-use DBServer::MySQL::MySQLd;
+use DBServer::MariaDB;
 
 use constant MARIABACKUP_BACKUP_INTERVAL => 51;
 

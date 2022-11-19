@@ -23,6 +23,7 @@ require Exporter;
 use strict;
 use lib 'lib';
 
+use GenUtil;
 use GenTest;
 use GenTest::Transform;
 use GenTest::Constants;

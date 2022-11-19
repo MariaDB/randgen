@@ -76,14 +76,6 @@ require Exporter;
 	ORACLE_ISSUE_NO_LONGER_REPEATABLE
 	ORACLE_ISSUE_STATUS_UNKNOWN
 
-	DB_UNKNOWN
-	DB_DUMMY
-	DB_MYSQL
-	DB_POSTGRES
-	DB_JAVADB
-	DB_DRIZZLE
-    DB_MARIADB
-
 	DEFAULT_MTR_BUILD_THREAD
 
 	constant2text
@@ -151,14 +143,6 @@ use constant STATUS_PERL_FAILURE             => 255; # Perl died for some reason
 use constant ORACLE_ISSUE_STILL_REPEATABLE	=> 2;
 use constant ORACLE_ISSUE_NO_LONGER_REPEATABLE	=> 3;
 use constant ORACLE_ISSUE_STATUS_UNKNOWN	=> 4;
-
-use constant DB_UNKNOWN		=> 0;
-use constant DB_DUMMY        => 1;
-use constant DB_MYSQL		=> 2;
-use constant DB_POSTGRES	=> 3;
-use constant DB_JAVADB		=> 4;
-use constant DB_DRIZZLE		=> 5;
-use constant DB_MARIADB		=> 6;
 
 use constant DEFAULT_MTR_BUILD_THREAD => 930; ## Legacy...
 

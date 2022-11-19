@@ -38,6 +38,7 @@ package GenTest::Properties;
 
 use strict;
 use Carp;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 
@@ -178,7 +179,10 @@ sub new {
 sub init {
   my ($class, $props)= @_;
   my $gentestProps= $class->new(
-    legal => ['grammar',
+    legal => [
+              'basedirs',
+              'base_port',
+              'grammar',
               'dsn',
               'engine',
               'gendata',
@@ -190,7 +194,6 @@ sub init {
               'duration',
               'help',
               'debug',
-              'rpl_mode',
               'validators',
               'reporters',
               'transformers',
@@ -198,24 +201,16 @@ sub init {
               'seed',
               'metadata',
               'rows',
-              'varchar-length',
               'vcols',
               'views',
-              'start-dirty',
               'filters',
-              'notnull',
               'short_column_names',
               'server_specific',
               'number_of_servers',
-              'strict_fields',
               'freeze_time',
               'valgrind',
               'rr',
-              'testname',
               'sqltrace',
-              'logfile',
-              'logconf',
-              'report-tt-logdir',
               'servers',
               'multi-master',
               'annotate-rules',
@@ -224,7 +219,6 @@ sub init {
               'partitions',
               'compatibility',
               'user',
-              'database',
               'parser',
               'parser_mode',
       ]
@@ -247,6 +241,8 @@ sub setPropertiesFromHash {
   my ($gentestProps, $props)= @_;
 
   $gentestProps->property('annotate-rules',$props->{annotate_rules}) if defined $props->{annotate_rules};
+  $gentestProps->property('basedirs',$props->{basedirs}) if defined $props->{basedirs};
+  $gentestProps->property('base_port',$props->{base_port}) if defined $props->{base_port};
   $gentestProps->property('debug',1) if defined $props->{debug};
   $gentestProps->property('duration',$props->{duration}) if defined $props->{duration};
   $gentestProps->property('engine',$props->{engine}) if $props->{engine};
@@ -257,40 +253,30 @@ sub setPropertiesFromHash {
   $gentestProps->property('generator',($props->{generator} || 'FromGrammar'));
   $gentestProps->property('grammar',$props->{grammar});
   $gentestProps->property('queries',$props->{queries}) if defined $props->{queries};
-  $gentestProps->property('logconf',$props->{logconf}) if defined $props->{logconf};
-  $gentestProps->property('logfile',$props->{logfile}) if defined $props->{logfile};
   $gentestProps->property('metadata',(defined $props->{metadata} ? $props->{metadata} : 1)); # By default metadata is loaded
   $gentestProps->property('multi-master',1) if $props->{'multi-master'};
-  $gentestProps->property('notnull',$props->{notnull}) if defined $props->{notnull};
   $gentestProps->property('number_of_servers',$props->{number_of_servers});
   $gentestProps->property('parser',$props->{parser});
   $gentestProps->property('parser_mode',$props->{parser_mode});
   $gentestProps->property('ps-protocol',1) if $props->{ps_protocol};
   $gentestProps->property('redefine',$props->{redefine}) if $props->{redefine};
-  $gentestProps->property('report-tt-logdir',$props->{report_tt_logdir}) if defined $props->{report_tt_logdir};
   $gentestProps->property('reporters',$props->{reporters}) if $props->{reporters};
   $gentestProps->property('restart-timeout',$props->{restart_timeout}) if defined $props->{restart_timeout};
   $gentestProps->property('rows',$props->{rows}) if defined $props->{rows};
-  $gentestProps->property('rpl_mode',$props->{rpl_mode}) if defined $props->{rpl_mode};
   $gentestProps->property('seed',$props->{seed}) if defined $props->{seed};
   $gentestProps->property('server_specific',$props->{server_specific}) if $props->{server_specific};
   $gentestProps->property('short_column_names',$props->{short_column_names}) if defined $props->{short_column_names};
   $gentestProps->property('sqltrace',$props->{sqltrace}) if $props->{sqltrace};
-  $gentestProps->property('start-dirty',1) if defined $props->{start_dirty};
-  $gentestProps->property('strict_fields',$props->{strict_fields}) if defined $props->{strict_fields};
-  $gentestProps->property('testname',$props->{testname}) if $props->{testname};
   $gentestProps->property('threads',$props->{threads}) if defined $props->{threads};
   $gentestProps->property('transformers',$props->{transformers}) if $props->{transformers};
   $gentestProps->property('variators',$props->{variators}) if $props->{variators};
   $gentestProps->property('valgrind',1) if $props->{valgrind};
   $gentestProps->property('rr',1) if $props->{rr};
   $gentestProps->property('validators',$props->{validators}) if $props->{validators};
-  $gentestProps->property('varchar-length',$props->{varchar_len}) if defined $props->{varchar_len};
   $gentestProps->property('vcols',$props->{vcols}) if $props->{vcols};
   $gentestProps->property('views',$props->{views}) if $props->{views};
   $gentestProps->property('partitions',$props->{partitions}) if defined $props->{partitions};
   $gentestProps->property('compatibility',$props->{compatibility}) if defined $props->{compatibility};
-  $gentestProps->property('database',$props->{database}) if defined $props->{database};
   $gentestProps->property('user',$props->{user}) if defined $props->{user};
   $gentestProps->property('vardir',$props->{vardir}) if defined $props->{vardir};
 

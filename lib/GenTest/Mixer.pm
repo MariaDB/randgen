@@ -24,6 +24,7 @@ require Exporter;
 use strict;
 use Carp;
 use Data::Dumper;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Result;
@@ -134,12 +135,8 @@ sub next {
 
     if ($mixer->properties->freeze_time) {
         foreach my $ex (@$executors) {
-            if ($ex->type == DB_MYSQL || $ex->type == DB_MARIADB) {
-                $ex->execute("SET TIMESTAMP=0");
-                $ex->execute("SET TIMESTAMP=UNIX_TIMESTAMP(NOW())");
-            } else {
-                carp "Don't know how to freeze time for ".$ex->getName;
-            }
+          $ex->execute("SET TIMESTAMP=0");
+          $ex->execute("SET TIMESTAMP=UNIX_TIMESTAMP(NOW())");
         }
     }
 

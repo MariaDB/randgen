@@ -23,6 +23,7 @@ require Exporter;
 
 use strict;
 use DBI;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Reporter;
@@ -32,7 +33,7 @@ use GenTest::Reporter;
 #use File::Copy;
 #use POSIX;
 
-use DBServer::MySQL::MySQLd;
+use DBServer::MariaDB;
 
 use constant SLAVE_STATUS_LAST_ERROR		=> 19;
 use constant SLAVE_STATUS_LAST_SQL_ERROR	=> 35;

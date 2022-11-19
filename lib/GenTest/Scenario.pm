@@ -19,9 +19,10 @@ package GenTest::Scenario;
 
 require Exporter;
 @ISA = qw(GenTest Exporter);
-@EXPORT = qw();
+@EXPORT = qw(SC_GALERA_DEFAULT_LISTEN_PORT);
 
 use strict;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use Data::Dumper;
@@ -34,6 +35,8 @@ use constant SC_GLOBAL_RESULT          => 5;
 use constant SC_SCENARIO_OPTIONS       => 6;
 use constant SC_PROPERTIES_BACKUP      => 7;
 
+use constant SC_GALERA_DEFAULT_LISTEN_PORT =>  4800;
+
 1;
 
 sub new {
@@ -43,6 +46,8 @@ sub new {
       properties => SC_TEST_PROPERTIES,
       scenario_options => SC_SCENARIO_OPTIONS
   }, @_);
+
+  print Dumper $scenario->[SC_TEST_PROPERTIES],"\n";
 
   $scenario->[SC_DETECTED_BUGS] = {};
   $scenario->[SC_GLOBAL_RESULT] = STATUS_OK;
@@ -125,20 +130,58 @@ sub getServerSpecific {
   }
 }
 
+sub getServerStartupOption {
+  my ($self, $srvnum, $option)= @_;
+  my $option_search= $option;
+  $option_search=~ s/[-_]/[-_]/g;
+  my $server_options= $self->getServerSpecific($srvnum, 'mysqld');
+  my $val= undef;
+  if ($server_options) {
+    foreach my $o (@$server_options) {
+      # an option can be provided more than once, so we have to go through the whole list
+      # TODO: add logic for options which can be provided multiple times,
+      #       e.g. --plugin-load-add etc.
+      if ($o =~ /^--(?:loose-)?$option_search=(.*)$/) {
+        $val= $1;
+      } elsif ($o =~ /^--(?:loose-)?$option_search$/) {
+        $val= 1;
+      } elsif ($o =~ /^--(?:skip-)?$option_search$/) {
+        $val= 0;
+      }
+    }
+  }
+  return $val;
+}
+
+sub setServerStartupOption {
+  my ($self, $srvnum, $option, $value)= @_;
+  $option=~ s/\_/-/g;
+  my $server_options= $self->getServerSpecific($srvnum, 'mysqld');
+  $server_options= [] unless $server_options;
+  if (defined $value) {
+    push @$server_options, "--$option=$value";
+  } else {
+    push @$server_options, "--$option";
+  }
+  $self->setServerSpecific($srvnum, 'mysqld', [ @$server_options ]);
+}
+
 sub generate_data {
   my $self= shift;
+  $self->backupProperties();
   $self->setProperty('duration',3600);
   $self->setProperty('queries',0);
   $self->setProperty('threads',1);
   $self->setProperty('reporters','None');
   my $gentest= GenTest::App::GenTest->new(config => $self->getProperties());
-  my $status= $gentest->run();
+  my $status= $gentest->doGenData();
   $self->restoreProperties();
   return $status;
 }
 
 sub run_test_flow {
   my $self= shift;
+  $self->backupProperties();
   $self->unsetProperty('gendata');
   $self->unsetProperty('gendata-advanced');
   my $gentest= GenTest::App::GenTest->new(config => $self->getProperties());
@@ -153,27 +196,27 @@ sub run_test_flow {
 
 sub prepareServer {
   my ($self, $srvnum, $start_dirty)= @_;
+  
+  say("Preparing server $srvnum");
 
-  my $server= DBServer::MySQL::MySQLd->new(
+  my $server= DBServer::MariaDB->new(
                       basedir => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{basedir},
-                      vardir => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{vardir},
-                      port => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{port},
+                      vardir => $self->[SC_TEST_PROPERTIES]->vardir.'/s'.$srvnum,
+                      port => $self->[SC_TEST_PROPERTIES]->base_port + $srvnum - 1,
                       start_dirty => $start_dirty || 0,
-                      valgrind => $self->[SC_TEST_PROPERTIES]->valgrind,
-                      valgrind_options => ($self->[SC_TEST_PROPERTIES]->valgrind_options ? \@{$self->[SC_TEST_PROPERTIES]->valgrind_options} : []),
-                      rr => $self->[SC_TEST_PROPERTIES]->rr,
-                      server_options => [ @{$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{mysqld_options}} ],
+                      valgrind => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{valgrind},
+                      rr => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{rr},
+                      manual_gdb => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{manual_gdb},
+                      server_options => [ @{$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{mysqld}} ],
                       general_log => 1,
-                      config => $self->[SC_TEST_PROPERTIES]->cnf_array_ref,
+                      config => $self->[SC_TEST_PROPERTIES]->cnf,
                       user => $self->[SC_TEST_PROPERTIES]->user
               );
 
-  $self->setServerSpecific($srvnum,'dsn',$server->dsn($self->getProperty('database'),$self->getProperty('user')));
+  $self->setServerSpecific($srvnum,'dsn',$server->dsn(undef,$self->getProperty('user')));
   $self->setServerSpecific($srvnum,'server',$server);
   return $server;
 }
-
-
 
 # Scenario can run (consequently or simultaneously) an arbitrary
 # number of test flows. Each flow might potentially have different set
@@ -212,15 +255,6 @@ sub prepareGentest {
 # my $gentest = GenTest::App::GenTest->new(config => $gentestProps);
 # my $gentest_result = $gentest->run();
 # say("GenTest exited with exit status ".status2text($gentest_result)." ($gentest_result)");
-
-  # Set hard defaults for missing values
-#  $config->property('database', 'test') if !defined $config->property('database');
-#  $config->property('duration', 300) if !defined $config->property('duration');
-#  $config->property('generator', 'FromGrammar') if !defined $config->property('generator');
-#  $config->property('queries', '1000M') if !defined $config->property('queries');
-#  $config->property('reporters', ['Backtrace', 'Deadlock']) if !defined $config->property('reporters');
-#  $config->property('user', 'root') if !defined $config->property('user');
-#  $config->property('strict_fields', 1);
 
   # gendata and gendata-advanced will only be used if they specified
   # explicitly for this run

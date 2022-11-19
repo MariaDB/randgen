@@ -29,6 +29,7 @@ use GenTest::Generator;
 use GenTest::Grammar;
 use GenTest::Grammar::Rule;
 use GenTest::Stack::Stack;
+use GenUtil;
 use GenTest;
 use Cwd;
 use List::Util qw(shuffle); # For some grammars
@@ -41,11 +42,10 @@ my $field_pos;
 my $cwd = cwd();
 
 sub new {
-        my $class = shift;
+  my $class = shift;
   my $generator = $class->SUPER::new(@_);
 
   if (not defined $generator->grammar()) {
-#    say("Loading grammar file '".$generator->grammarFile()."' ...");
     $generator->[GENERATOR_GRAMMAR] = GenTest::Grammar->new(
       grammar_file  => $generator->grammarFile(),
       grammar_string  => $generator->grammarString()
@@ -56,7 +56,6 @@ sub new {
   if (not defined $generator->prng()) {
     $generator->[GENERATOR_PRNG] = GenTest::Random->new(
       seed => $generator->[GENERATOR_SEED] || 0,
-      varchar_length => $generator->[GENERATOR_VARCHAR_LENGTH]
     );
   }
 
@@ -361,7 +360,7 @@ sub next {
     }
   } elsif ($generator->[GENERATOR_SEQ_ID] == 1) {
         # Always reload metadata after the first rule, before expanding the next ones
-        say("Reloading metadata after the first rule was executed");
+        sayDebug("Reloading metadata after the first rule was executed");
         $executors->[0]->forceMetadataReload();
         $executors->[0]->cacheMetaData();
     }

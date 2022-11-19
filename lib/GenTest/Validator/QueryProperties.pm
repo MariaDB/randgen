@@ -23,6 +23,7 @@ require Exporter;
 
 use strict;
 
+use GenUtil;
 use GenTest;
 use Data::Dumper;
 use GenTest::Constants;

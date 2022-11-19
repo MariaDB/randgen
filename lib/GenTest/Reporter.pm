@@ -33,6 +33,7 @@ require Exporter;
 );
 
 use strict;
+use GenUtil;
 use GenTest;
 use GenTest::Result;
 use GenTest::Random;
@@ -174,7 +175,7 @@ sub new {
 	foreach my $errorlog_path (
 		"../log/master.err",  # MTRv1 regular layout
 		"../log/mysqld1.err", # MTRv2 regular layout
-		"../mysql.err"        # DBServer::MySQL layout
+		"../mysql.err"        # DBServer::MariaDB layout
 	) {
 		my $possible_path = File::Spec->catfile($reporter->serverVariable('datadir'),$errorlog_path);
 		if (-e $possible_path) {
@@ -280,10 +281,6 @@ sub findMySQLD {
     # Handling general basedirs and MTRv1 style basedir,
     # but trying not to search the entire universe just for the sake of it
     my @basedirs = ($reporter->serverVariable('basedir'));
-    if (! -e File::Spec->catfile($reporter->serverVariable('basedir'),'mysql-test') and -e File::Spec->catfile($reporter->serverVariable('basedir'),'t')) {
-        # Assuming it's the MTRv1 style basedir
-        @basedirs=(File::Spec->catfile($reporter->serverVariable('basedir'),'..'));
-    }
     find(sub {
             $bindir=$File::Find::dir if $_ eq $binname;
     }, @basedirs);
@@ -307,7 +304,7 @@ sub dbh {
     $dbh = DBI->connect($reporter->dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} );
   }
   alarm (0);
-  if (defined GenTest::Executor::MySQL::errorType($DBI::err)) {
+  if (defined GenTest::Executor::MariaDB::errorType($DBI::err)) {
     sayError("Reporter ".(ref $reporter).": Failed to connect to ".$reporter->dsn.": ".$DBI::err);
     return undef;
   }

@@ -19,6 +19,7 @@ package GenTest::IPC::Process;
 
 @ISA = qw(GenTest);
 
+use GenUtil;
 use GenTest;
 #use if osWindows(), threads;
 

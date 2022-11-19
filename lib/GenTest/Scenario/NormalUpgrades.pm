@@ -43,6 +43,7 @@ require Exporter;
 
 use strict;
 use DBI;
+use GenUtil;
 use GenTest;
 use GenTest::App::GenTest;
 use GenTest::Properties;
@@ -54,7 +55,7 @@ use File::Copy;
 use File::Compare;
 use GenTest::Scenario::AclUpgrade;
 
-use DBServer::MySQL::MySQLd;
+use DBServer::MariaDB;
 
 # True if the "old" and the "new" servers are the same ("restart" mode).
 # It will determine how we categorize errors before the restart:

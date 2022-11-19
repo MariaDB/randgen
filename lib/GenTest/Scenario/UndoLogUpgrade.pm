@@ -54,6 +54,7 @@ require Exporter;
 
 use strict;
 use DBI;
+use GenUtil;
 use GenTest;
 use GenTest::App::GenTest;
 use GenTest::Properties;
@@ -65,7 +66,7 @@ use File::Copy;
 use File::Compare;
 use POSIX;
 
-use DBServer::MySQL::MySQLd;
+use DBServer::MariaDB;
 
 sub new {
   my $class= shift;
@@ -78,12 +79,12 @@ sub new {
     $self->printTitle('Undo log upgrade/downgrade');
   }
 
-  my @mysqld_options= @{$self->old_server_options()->{mysqld_options}};
+  my @mysqld_options= @{$self->old_server_options()->{mysqld}};
   if ( "@mysqld_options" !~ /innodb[-_]change[-_]buffering=/) {
     push @mysqld_options, '--loose-innodb-change-buffering=none';
     $self->setServerSpecific(1,'mysqld_options',\@mysqld_options);
   }
-  @mysqld_options= @{$self->new_server_options()->{mysqld_options}};
+  @mysqld_options= @{$self->new_server_options()->{mysqld}};
   if ( "@mysqld_options" !~ /innodb[-_]change[-_]buffering=/) {
     push @mysqld_options, '--loose-innodb-change-buffering=none';
     $self->setServerSpecific(2,'mysqld_options',\@mysqld_options);

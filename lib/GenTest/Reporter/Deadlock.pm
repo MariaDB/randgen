@@ -22,12 +22,13 @@ require Exporter;
 @ISA = qw(GenTest::Reporter);
 
 use strict;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Result;
 use GenTest::Reporter;
 use GenTest::Reporter::Backtrace;
-use GenTest::Executor::MySQL;
+use GenTest::Executor::MariaDB;
 
 use DBI;
 use Data::Dumper;
@@ -95,7 +96,7 @@ sub connect {
     $dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} );
   }
   alarm (0);
-  if (defined GenTest::Executor::MySQL::errorType($DBI::err)) {
+  if (defined GenTest::Executor::MariaDB::errorType($DBI::err)) {
     sayError("Deadlock reporter: Failed to connect to $dsn: ".$DBI::err);
     return undef;
   }
@@ -241,14 +242,14 @@ sub dbh_thread {
 
   my $dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2, PrintError => 1, RaiseError => 0 });
 
-  if (defined GenTest::Executor::MySQL::errorType($DBI::err)) {
-    return GenTest::Executor::MySQL::errorType($DBI::err);
+  if (defined GenTest::Executor::MariaDB::errorType($DBI::err)) {
+    return GenTest::Executor::MariaDB::errorType($DBI::err);
   } elsif (not defined $dbh) {
     return STATUS_UNKNOWN_ERROR;
   }
 
   my $processlist = $dbh->selectall_arrayref("SHOW FULL PROCESSLIST");
-  return GenTest::Executor::MySQL::errorType($DBI::err) if not defined $processlist;
+  return GenTest::Executor::MariaDB::errorType($DBI::err) if not defined $processlist;
 
   my $stalled_queries = 0;
   my $dead_queries = 0;

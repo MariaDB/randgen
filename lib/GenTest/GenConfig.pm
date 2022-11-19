@@ -1,5 +1,5 @@
 # Copyright (C) 2014 SkySQL Ab
-# Copyright (c) 2018 MariaDB Corporation Ab
+# Copyright (c) 2018, 2022, MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,13 +14,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-package GenTest::App::GenConfig;
+package GenTest::GenConfig;
 
 @ISA = qw(GenTest);
 
 use strict;
 #use DBI;
 use Carp;
+use GenUtil;
 use GenTest;
 #use GenTest::Constants;
 use GenTest::Random;
@@ -28,52 +29,11 @@ use GenTest::Random;
 
 #use Data::Dumper;
 
-# use constant FIELD_TYPE			=> 0;
-# use constant FIELD_CHARSET		=> 1;
-# use constant FIELD_COLLATION		=> 2;
-# use constant FIELD_SIGN			=> 3;
-# use constant FIELD_NULLABILITY		=> 4;
-# use constant FIELD_INDEX		=> 5;
-# use constant FIELD_AUTO_INCREMENT	=> 6;
-# use constant FIELD_SQL			=> 7;
-# use constant FIELD_INDEX_SQL		=> 8;
-# use constant FIELD_NAME			=> 9;
-# use constant FIELD_DEFAULT => 10;
-
-# use constant TABLE_ROW		=> 0;
-# use constant TABLE_ENGINE	=> 1;
-# use constant TABLE_CHARSET	=> 2;
-# use constant TABLE_COLLATION	=> 3;
-# use constant TABLE_ROW_FORMAT	=> 4;
-# use constant TABLE_PARTITION	=> 5;
-# use constant TABLE_PK		=> 6;
-# use constant TABLE_SQL		=> 7;
-# use constant TABLE_NAME		=> 8;
-# use constant TABLE_VIEWS	=> 9;
-# use constant TABLE_MERGES	=> 10;
-# use constant TABLE_NAMES	=> 11;
-
-# use constant DATA_NUMBER	=> 0;
-# use constant DATA_STRING	=> 1;
-# use constant DATA_BLOB		=> 2;
-# use constant DATA_TEMPORAL	=> 3;
-# use constant DATA_ENUM		=> 4;
-
-
 use constant GC_SPEC => 0;
 use constant GC_DEBUG => 1;
 use constant GC_CONFIG => 2;
 use constant GC_SEED => 3;
 use constant GC_PRNG => 4;
-# use constant GD_ENGINE => 4;
-# use constant GD_ROWS => 5;
-# use constant GD_VIEWS => 6;
-# use constant GD_VARCHAR_LENGTH => 7;
-# use constant GD_SERVER_ID => 8;
-# use constant GD_SQLTRACE => 9;
-# use constant GD_NOTNULL => 10;
-# use constant GD_SHORT_COLUMN_NAMES => 11;
-# use constant GD_STRICT_FIELDS => 12;
 
 sub new {
 	my $class = shift;
@@ -83,13 +43,8 @@ sub new {
 		'debug' => GC_DEBUG,
 		'seed' => GC_SEED},@_);
 
-	if (not defined $self->[GC_SEED]) {
-		$self->[GC_SEED] = 1;
-	} elsif ($self->[GC_SEED] eq 'time') {
+	if (not defined $self->[GC_SEED] or $self->[GC_SEED] eq 'time') {
 		$self->[GC_SEED] = time();
-		say("GenConfig: Converting --seed=time to --seed=".$self->[GC_SEED]);
-	} else {
-    say("GenConfig: seed=".$self->[GC_SEED]);
   }
   $self->[GC_PRNG]= GenTest::Random->new(seed => $self->[GC_SEED]);
 	return generate($self);

@@ -24,6 +24,7 @@ package GenTest::App::Gendata;
 use strict;
 use DBI;
 use Carp;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Random;
@@ -75,12 +76,9 @@ use constant GD_SEED => 3;
 use constant GD_ENGINE => 4;
 use constant GD_ROWS => 5;
 use constant GD_VIEWS => 6;
-use constant GD_VARCHAR_LENGTH => 7;
 use constant GD_SERVER_ID => 8;
 use constant GD_SQLTRACE => 9;
-use constant GD_NOTNULL => 10;
 use constant GD_SHORT_COLUMN_NAMES => 11;
-use constant GD_STRICT_FIELDS => 12;
 use constant GD_EXECUTOR_ID => 13;
 use constant GD_VARIATORS => 14;
 use constant GD_VARDIR => 15;
@@ -95,10 +93,7 @@ sub new {
         'engine' => GD_ENGINE,
         'rows' => GD_ROWS,
         'views' => GD_VIEWS,
-        'varchar_length' => GD_VARCHAR_LENGTH,
-        'notnull' => GD_NOTNULL,	
         'short_column_names' => GD_SHORT_COLUMN_NAMES,	
-        'strict_fields' => GD_STRICT_FIELDS,	
         'server_id' => GD_SERVER_ID,
         'executor_id' => GD_EXECUTOR_ID,
         'variators' => GD_VARIATORS,
@@ -160,12 +155,6 @@ sub views {
     return $_[0]->[GD_VIEWS];
 }
 
-
-sub varchar_length {
-    return $_[0]->[GD_VARCHAR_LENGTH];
-}
-
-
 sub server_id {
     return $_[0]->[GD_SERVER_ID];
 }
@@ -176,11 +165,6 @@ sub sqltrace {
 
 sub short_column_names {
     return $_[0]->[GD_SHORT_COLUMN_NAMES];
-}
-
-
-sub strict_fields {
-    return $_[0]->[GD_STRICT_FIELDS];
 }
 
 sub executor_id {
@@ -208,7 +192,6 @@ sub run {
     
     my $prng = GenTest::Random->new(
         seed => $self->seed(),
-        varchar_length => $self->varchar_length()
         );
 
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
@@ -269,7 +252,7 @@ sub run {
 
     say("Running Gendata from file $spec_file");
 
-    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL") if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB);
+    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
 
     if (defined $schemas) {
         push(@schema_perms, @$schemas);
@@ -296,34 +279,18 @@ sub run {
     $field_perms[FIELD_SQLS] = $fields->{sqls} || [ ];
     $field_perms[FIELD_INDEX_SQLS] = $fields->{index_sqls} || [ ];
     $field_perms[FIELD_TYPE] = $fields->{types} || [ 'int', 'varchar', 'date', 'time', 'datetime' ];
-    if (not ($executor->type == DB_MYSQL or $executor->type == DB_MARIADB or $executor->type == DB_DRIZZLE or $executor->type==DB_DUMMY)) {
-        my @datetimestuff = grep(/date|time/,@{$fields->{types}});
-        if ($#datetimestuff > -1) {
-            croak "Dates and times are severly broken. Cannot be used for other than MySQL/Drizzle";
-        }
-    }
-    if ($self->strict_fields) {
-        $field_perms[FIELD_NULLABILITY] = $fields->{null} || $fields->{nullability} || [ undef ];
-        $field_perms[FIELD_DEFAULT] = $fields->{default} || [ undef ];
-        $field_perms[FIELD_SIGN] = $fields->{sign} || [ undef ];
-        $field_perms[FIELD_INDEX] = $fields->{indexes} || $fields->{keys} || [ undef ];
-        $field_perms[FIELD_CHARSET] =  $fields->{charsets} || [ undef ];
-        $field_perms[FIELD_COLLATION] = $fields->{collations} || [ undef ];
-    } else {
-        $field_perms[FIELD_NULLABILITY] = $fields->{null} || $fields->{nullability} || [ (defined $self->[GD_NOTNULL] ? 'NOT NULL' : undef) ];
-        $field_perms[FIELD_DEFAULT] = $fields->{default} || [ undef ];
-        $field_perms[FIELD_SIGN] = $fields->{sign} || [ undef ];
-        $field_perms[FIELD_INDEX] = $fields->{indexes} || $fields->{keys} || [ undef, 'KEY' ];
-        $field_perms[FIELD_CHARSET] =  $fields->{charsets} || [ undef ];
-        $field_perms[FIELD_COLLATION] = $fields->{collations} || [ undef ];
-    }
-    
+    $field_perms[FIELD_NULLABILITY] = $fields->{null} || $fields->{nullability} || [ undef ];
+    $field_perms[FIELD_DEFAULT] = $fields->{default} || [ undef ];
+    $field_perms[FIELD_SIGN] = $fields->{sign} || [ undef ];
+    $field_perms[FIELD_INDEX] = $fields->{indexes} || $fields->{keys} || [ undef ];
+    $field_perms[FIELD_CHARSET] =  $fields->{charsets} || [ undef ];
+    $field_perms[FIELD_COLLATION] = $fields->{collations} || [ undef ];
 
-    $data_perms[DATA_NUMBER] = $data->{numbers} || ['digit', 'digit', 'digit', 'digit', (defined $self->[GD_NOTNULL] ? 'digit' : 'null') ];	# 20% NULL values
-    $data_perms[DATA_STRING] = $data->{strings} || ['letter', 'letter', 'letter', 'letter', (defined $self->[GD_NOTNULL] ? 'letter' : 'null') ];
-    $data_perms[DATA_BLOB] = $data->{blobs} || [ 'data', 'data', 'data', 'data', (defined $self->[GD_NOTNULL] ? 'data' : 'null') ];
-    $data_perms[DATA_TEMPORAL] = $data->{temporals} || [ 'date', 'time', 'datetime', 'year', 'timestamp', (defined $self->[GD_NOTNULL] ? 'date' : 'null') ];
-    $data_perms[DATA_ENUM] = $data->{enum} || ['letter', 'letter', 'letter', 'letter', (defined $self->[GD_NOTNULL] ? 'letter' : 'null') ];
+    $data_perms[DATA_NUMBER] = $data->{numbers} || ['digit', 'digit', 'digit', 'digit', 'digit', 'null' ]; # 20% NULL values
+    $data_perms[DATA_STRING] = $data->{strings} || ['letter', 'letter', 'letter', 'letter', 'null' ];
+    $data_perms[DATA_BLOB] = $data->{blobs} || [ 'data', 'data', 'data', 'data', 'null' ];
+    $data_perms[DATA_TEMPORAL] = $data->{temporals} || [ 'date', 'time', 'datetime', 'year', 'timestamp', 'null' ];
+    $data_perms[DATA_ENUM] = $data->{enum} || ['letter', 'letter', 'letter', 'letter', 'null' ];
 
     my @tables = (undef);
     my @myisam_tables;
@@ -392,7 +359,7 @@ sub run {
         #   $field_copy[FIELD_INDEX] = 'nokey' if $field_copy[FIELD_INDEX] eq '';
         
         # Remove fields where default null and not null appear together, as its not valid.
-        if ( (($field_copy[FIELD_NULLABILITY] =~ m{not null}sio) || (defined $self->[GD_NOTNULL])) && ($field_copy[FIELD_DEFAULT]=~ m{default null}sio) )
+        if ( $field_copy[FIELD_NULLABILITY] =~ m{not null}sio )
         {
             # Remove the fields array structure and skip.
 	    # We dont want to keep this, becasue it causes duplicate coulmns to be created.
@@ -430,10 +397,9 @@ sub run {
             $field_copy[FIELD_TYPE] .= ' (1)';
         }
         
-        if ($executor->type() == DB_MYSQL || $executor->type() == DB_MARIADB) {
-            $field_copy[FIELD_CHARSET] = "CHARACTER SET ".$field_copy[FIELD_CHARSET] if $field_copy[FIELD_CHARSET] ne '';
-            $field_copy[FIELD_COLLATION] = "COLLATE ".$field_copy[FIELD_COLLATION] if $field_copy[FIELD_COLLATION] ne '';
-        }
+        $field_copy[FIELD_CHARSET] = "CHARACTER SET ".$field_copy[FIELD_CHARSET] if $field_copy[FIELD_CHARSET] ne '';
+        $field_copy[FIELD_COLLATION] = "COLLATE ".$field_copy[FIELD_COLLATION] if $field_copy[FIELD_COLLATION] ne '';
+
         my $key_len;
         
         if (
@@ -453,14 +419,6 @@ sub run {
         delete $field_copy[FIELD_INDEX]; # do not include FIELD_INDEX in the field description
         
         $fields[$field_id]->[FIELD_SQL] = "`$field_name` ". join(' ' , grep { $_ ne '' } @field_copy);
-        
-        if (!$self->strict_fields && $field_copy[FIELD_TYPE] =~ m{timestamp}sio ) {
-            if (defined $self->[GD_NOTNULL]) {
-                $field->[FIELD_SQL] .= ' NOT NULL';
-            } else {
-                $field->[FIELD_SQL] .= ' NULL DEFAULT 0';
-            }
-        }
     }
 
     foreach my $sql (@{$field_perms[FIELD_SQLS]}) {
@@ -558,12 +516,7 @@ sub run {
         my @field_sqls = join(",\n", map { $_->[FIELD_SQL] } grep { $_->[FIELD_SQL] ne '' } @fields_copy);
  
         my @index_fields;
-        if ($executor->type() == DB_MYSQL || $executor->type() == DB_MARIADB || $executor->type() == DB_DRIZZLE) {
-            @index_fields = grep { $_->[FIELD_INDEX_SQL] =~ s/DESC// if $table_copy[TABLE_ENGINE] =~ /rocksdb/i; $_->[FIELD_INDEX_SQL] ne '' } @fields_copy;
-        } else {
-            ## Just keep the primary keys.....
-            @index_fields = grep { $_->[FIELD_INDEX_SQL] =~ m/primary/ } @fields_copy;
-        }
+        @index_fields = grep { $_->[FIELD_INDEX_SQL] =~ s/DESC// if $table_copy[TABLE_ENGINE] =~ /rocksdb/i; $_->[FIELD_INDEX_SQL] ne '' } @fields_copy;
 
         foreach my $sql (@{$field_perms[FIELD_INDEX_SQLS]}) {
             my $f = [];
@@ -578,22 +531,6 @@ sub run {
           sayError("Table creation failed");
           next;
         }
-        
-        if (not ($executor->type() == DB_MYSQL ||
-                 $executor->type() == DB_MARIADB || 
-                 $executor->type() == DB_DRIZZLE)) {
-            @index_fields = grep { $_->[FIELD_INDEX_SQL] ne '' } @fields_copy;
-            foreach my $idx (@index_fields) {
-                my $key_sql = $idx->[FIELD_INDEX_SQL];
-                if ($key_sql =~ m/^key \((`[a-z0-9_]*`)/) {
-                    $self->variate_and_execute($executor,"CREATE INDEX idx_".
-                                       $table->[TABLE_NAME]."_$1".
-                                       " ON ".$table->[TABLE_NAME]."($1)");
-                }
-            }
-        }
-        
-        
         
         if (defined $table_perms[TABLE_VIEWS]) {
             foreach my $view_id (0..$#{$table_perms[TABLE_VIEWS]}) {
@@ -612,13 +549,11 @@ sub run {
             }
         }
         
-        if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB ) {
-            $self->variate_and_execute($executor,"ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS");
-            
-            if ($table->[TABLE_ROW] > 100) {
-                $self->variate_and_execute($executor,"SET AUTOCOMMIT=OFF");
-                $self->variate_and_execute($executor,"START TRANSACTION");
-            }
+        $self->variate_and_execute($executor,"ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS");
+        
+        if ($table->[TABLE_ROW] > 100) {
+            $self->variate_and_execute($executor,"SET AUTOCOMMIT=OFF");
+            $self->variate_and_execute($executor,"START TRANSACTION");
         }
         
         my @row_buffer;
@@ -630,11 +565,7 @@ sub run {
                 my $value;
                 my $quote = 0;
                 if ($field->[FIELD_TYPE] =~ m{auto_increment}sio) {
-                    if ($executor->type == DB_MYSQL or $executor->type == DB_MARIADB or $executor->type == DB_DRIZZLE) {
-                        $value = undef;		# Trigger auto-increment by inserting NULLS for PK
-                    } else {
-                        $value = 'DEFAULT';
-                    }
+                    $value = undef;		# Trigger auto-increment by inserting NULLS for PK
                 } elsif ($field->[FIELD_INDEX] eq 'primary key') {
                     if ($field->[FIELD_TYPE] =~ m{^(datetime|timestamp)$}sgio) {
     				$value = "FROM_UNIXTIME(UNIX_TIMESTAMP('2000-01-01') + $row_id)";
@@ -669,7 +600,7 @@ sub run {
                         $quote = 1;
                     }
                     
-                    if (($field->[FIELD_NULLABILITY] eq 'not null') || ($self->[GD_NOTNULL])) {
+                    if ($field->[FIELD_NULLABILITY] eq 'not null') {
                         # Remove NULL from the list of allowed values
                         @possible_values = grep { lc($_) ne 'null' } @{$data_perms[$value_type]};
                     } else {
@@ -715,18 +646,13 @@ sub run {
                 say("# Progress: loaded $row_id out of $table->[TABLE_ROW] rows");
             }
         }
-        if ($executor->type == DB_MYSQL || $executor->type == DB_MARIADB) {
-            $self->variate_and_execute($executor,"COMMIT");
-            
-            $self->variate_and_execute($executor,"ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
-        }
-    }
-    }
-    
-    if ($executor->type == DB_MYSQL or $executor->type == DB_MARIADB or $executor->type == DB_DRIZZLE) {
         $self->variate_and_execute($executor,"COMMIT");
+        $self->variate_and_execute($executor,"ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
+    }
     }
     
+    $self->variate_and_execute($executor,"COMMIT");
+
     if (
         (defined $table_perms[TABLE_MERGES]) && 
         ($#myisam_tables > -1)

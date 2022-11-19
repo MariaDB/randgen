@@ -19,7 +19,7 @@ use strict;
 use lib 'lib';
 use lib "$ENV{RQG_HOME}/lib";
 use Carp;
-use GenTest;
+use GenUtil;
 use GenTest::Constants;
 use GenTest::App::PopulateSchema;
 use Getopt::Long;

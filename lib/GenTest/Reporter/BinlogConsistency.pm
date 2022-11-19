@@ -32,12 +32,13 @@ require Exporter;
 
 use strict;
 use DBI;
+use GenUtil;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Reporter;
 use File::Copy;
 
-use DBServer::MySQL::MySQLd;
+use DBServer::MariaDB;
 
 my $first_reporter;
 
@@ -53,7 +54,7 @@ sub report {
   my $datadir = $server->datadir;
   my $port = $server->port;
 
-  my $client = DBServer::MySQL::MySQLd::_find(undef,
+  my $client = DBServer::MariaDB::_find(undef,
     [$reporter->serverVariable('basedir')],
     osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
     osWindows()?"mysql.exe":"mysql"
@@ -67,7 +68,7 @@ sub report {
   $client .= " -uroot --host=127.0.0.1 --port=$port --force --protocol=tcp test";
 
 
-  my $binlog = DBServer::MySQL::MySQLd::_find(undef,
+  my $binlog = DBServer::MariaDB::_find(undef,
                        [$reporter->serverVariable('basedir')],
                        osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
                        osWindows()?"mysqlbinlog.exe":"mysqlbinlog");
