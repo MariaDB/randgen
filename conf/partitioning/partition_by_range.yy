@@ -59,7 +59,7 @@
 ##########################################################################
 # Initialization of tables with focus on partitioned tables.
 
-query_init_add:
+query_init:
 	{our $nb_parts= 50; return undef } 
 	init_db ;
 
@@ -113,7 +113,7 @@ insert_nop:
 ##########################################################################
 # Randomly executed SQL
 
-query_add:
+query:
 	exec_sql ;
 
 exec_sql:

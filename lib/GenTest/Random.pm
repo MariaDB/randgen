@@ -429,9 +429,7 @@ sub spatial_text_value {
         my $size= $prng->uint16(1,10);
         foreach (1..$size) {
             my $tp2= $prng->arrayElement(['POINT','LINESTRING','POLYGON','MULTIPOINT','MULTILINESTRING','MULTIPOLYGON']);
-#            print "HERE: Geoms: Creating geometry $tp2\n";
             push @geoms, $prng->spatial_text_value($tp2);
-#            print "HERE: Geoms: @geoms\n";
             return 'GeometryCollectionFromText(GEOMETRYCOLLECTION('.(join ',', @geoms).'))';
         }
     } else {

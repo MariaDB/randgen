@@ -2800,7 +2800,8 @@ sub execute {
     # Or occasionaly "x AS alias1 AS alias2"
     while ($query =~ s/AS\s+\w+\s+(AS\s+\w+)/$1/g) {}
 
-    my $qno_comment= 'QNO ' . (++$query_no) . ' CON_ID ' . $executor->connectionId();
+    my $qno_comment= 'QNO ' . $query_no . ' CON_ID ' . $executor->connectionId();
+    $query_no++ if $executor->id == 1;
     # If a query starts with an executable comment, we'll put QNO right after the executable comment
     if ($query =~ s/^\s*(\/\*\!.*?\*\/)/$1 \/\* $qno_comment \*\//) {}
     # If a query starts with a non-executable comment, we'll put QNO into this comment

@@ -13,11 +13,13 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
+#include <conf/basics.yy>
 
-query_init_add:
+
+query_init:
   { $indnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
 
-query_add:
+query:
   ==FACTOR:0.1== ind_constr_query ;
 
 ind_constr_own_table:
@@ -34,14 +36,14 @@ ind_constr_query:
 ;
 
 ind_constr_alter:
-  ALTER _basics_online_10pct _basics_ignore_33pct TABLE /*!100502 _basics_if_exists_80pct */ ind_constr_table /*!100301 _basics_wait_nowait_40pct */ ind_constr_list_with_optional_order_by ;
+  ALTER __online(10) __ignore(30) TABLE /*!100502 __if_exists(80) */ ind_constr_table _basics_wait_no_wait ind_constr_list_with_optional_order_by ;
 
 ind_constr_create_index_stmt:
-  CREATE _basics_or_replace_80pct ind_constr_unique INDEX ind_constr_ind_name ind_constr_ind_type_optional ON ind_constr_table ( ind_constr_column_list ) /*!100301 _basics_wait_nowait_40pct */ ind_constr_option_list ind_constr_algorithm_opt ind_constr_lock_opt ;
+  CREATE __or_replace(80) ind_constr_unique INDEX ind_constr_ind_name ind_constr_ind_type_optional ON ind_constr_table ( ind_constr_column_list ) _basics_wait_no_wait ind_constr_option_list ind_constr_algorithm_opt ind_constr_lock_opt ;
 
 # ALGORITHM and LOCK are not supported, despite being documented. MDEV-12572
 ind_constr_drop_index_stmt:
-  DROP INDEX _basics_if_exists_80pct ind_constr_ind_name ON ind_constr_table /*!100301 _basics_wait_nowait_40pct */ ;
+  DROP INDEX __if_exists(80) ind_constr_ind_name ON ind_constr_table _basics_wait_no_wait ;
 
 # Long blobs
 ind_constr_long_blobs:
@@ -51,7 +53,7 @@ ind_constr_unique:
     | | | | UNIQUE ;
 
 ind_constr_replace_ignore:
-  _basics_ignore_80pct | _basics_replace_80pct ;
+  __ignore(80) | __replace(80) ;
 
 ind_constr_list_with_optional_order_by:
   ind_constr_list ind_constr_order_by
@@ -85,19 +87,19 @@ ind_constr_item:
 ;
 
 ind_constr_add_index:
-  ADD ind_constr_index_word _basics_if_not_exists_80pct ind_constr_ind_name_optional ind_constr_ind_type_optional ( ind_constr_column_list ) ind_constr_option_list
+  ADD ind_constr_index_word __if_not_exists(80) ind_constr_ind_name_optional ind_constr_ind_type_optional ( ind_constr_column_list ) ind_constr_option_list
 ;
 
 ind_constr_drop_index:
-  DROP ind_constr_index_word _basics_if_exists_80pct ind_constr_ind_name_or_col_name
+  DROP ind_constr_index_word __if_exists(80) ind_constr_ind_name_or_col_name
 ;
 
 ind_constr_rename_index:
-  /* compatibility 10.5.2 */ RENAME ind_constr_index_word _basics_if_exists_80pct ind_constr_ind_name_or_col_name TO ind_constr_ind_name_or_col_name
+  /* compatibility 10.5.2 */ RENAME ind_constr_index_word __if_exists(80) ind_constr_ind_name_or_col_name TO ind_constr_ind_name_or_col_name
 ;
 
 ind_constr_drop_constraint:
-  DROP CONSTRAINT _basics_if_exists_80pct ind_constr_ind_name_or_col_name
+  DROP CONSTRAINT __if_exists(80) ind_constr_ind_name_or_col_name
 ;
 
 ind_constr_add_pk:
@@ -181,13 +183,13 @@ ind_constr_ind_name:
 ;
 
 ind_constr_algorithm_opt_comma:
-  | | , _basics_alter_table_algorithm ;
+  | | , ALGORITHM = __default_x_inplace_x_copy_x_nocopy_x_instant ;
 
 ind_constr_algorithm_opt:
-  | | | _basics_alter_table_algorithm ;
+  | | | ALGORITHM = __default_x_inplace_x_copy_x_nocopy_x_instant ;
 
 ind_constr_lock_opt_comma:
-  | | , _basics_alter_table_lock ;
+  | | , __default_x_non_x_shared_x_exclusive ;
   
 ind_constr_lock_opt:
-  | | | _basics_alter_table_lock ;
+  | | | LOCK = __default_x_non_x_shared_x_exclusive ;

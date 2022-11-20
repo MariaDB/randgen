@@ -20,10 +20,10 @@
 
 
 # Change max number of procedures here if needed
-query_init_add:
+query_init:
   CREATE PROCEDURE IF NOT EXISTS { $maxspnum= 9; 'sp'.($spnum= 0) } () BEGIN END ;
 
-query_add:
+query:
   ==FACTOR:0.1== sp_create_and_or_execute ;
 
 sp_create_and_or_execute:
@@ -33,13 +33,13 @@ sp_create_and_or_execute:
 ;
 
 sp_drop:
-  DROP PROCEDURE _basics_if_exists_80pct sp_existing_name ;
+  DROP PROCEDURE __if_exists(80) sp_existing_name ;
 
 sp_recreate:
   CREATE PROCEDURE { $last_sp } () sp_body ;
 
 sp_create:
-  CREATE _basics_or_replace_80pct PROCEDURE sp_new_or_existing_name () sp_body ;
+  CREATE __or_replace(80) PROCEDURE sp_new_or_existing_name () sp_body ;
 
 sp_call:
   CALL sp_existing_name ;

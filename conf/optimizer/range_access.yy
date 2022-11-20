@@ -37,7 +37,7 @@
 #        but this is more than a little tricky
 ################################################################################
 
-query_add:
+query:
   { $idx_table = '' ; @idx_fields = () ;  "" } query_type ;
 
 query_type:

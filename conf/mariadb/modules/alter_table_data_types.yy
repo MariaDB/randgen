@@ -17,17 +17,16 @@
 # Data types via ALTER TABLE, except for GIS
 ##############################################
 
-query_init_add:
+query_init:
   { $col=0; @enum_vals=(); foreach (1..65535) { push @enum_vals, "'".$_."'" }; '' } CREATE TABLE t (a INT);
 
-query_add:
+query:
   { $null= $prng->uint16(0,3); '' } ALTER IGNORE TABLE _table data_types_usage ;
 
 data_types_usage:
   data_types_modify_column |
   data_types_change_column |
-  ==FACTOR:0.0001== data_types_add_column |
-  ==FACTOR:0.001== _basics_reload_metadata
+  ==FACTOR:0.0001== data_types_add_column
 ;
 
 data_types_modify_column:

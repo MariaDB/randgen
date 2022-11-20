@@ -1,4 +1,4 @@
-query_add:
+query:
 	SELECT distinct select_item FROM lineitem index_hint WHERE where order_by |
 	SELECT aggregate key_field ) FROM lineitem WHERE where ;
 

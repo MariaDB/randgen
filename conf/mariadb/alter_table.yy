@@ -13,12 +13,14 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
+#include <conf/basics.yy>
 
-query_init_add:
+
+query_init:
   { $tbnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
 
-query_add: 
-  ==FACTOR:0.1== alt_query ;
+query: 
+  alt_query ;
 
 alt_query:
     alt_create
@@ -42,13 +44,7 @@ alt_rename_multi:
 ;
 
 alt_alter:
-  ALTER alt_online_optional alt_ignore_optional TABLE _basics_if_exists_95pct _basetable alt_wait_optional alt_alter_list_with_optional_order_by
-;
-
-alt_wait_optional:
-  ==FACTOR:5== |
-  WAIT _digit |
-  NOWAIT
+  ALTER alt_online_optional alt_ignore_optional TABLE __if_exists(95) _basetable _basics_wait_nowait alt_alter_list_with_optional_order_by
 ;
 
 alt_ignore_optional:
@@ -339,8 +335,8 @@ alt_create_like:
 ;
 
 alt_add_column:
-    ADD alt_column_optional _basics_if_not_exists_95pct alt_col_new_name alt_col_definition alt_col_location alt_algorithm alt_lock
-  | { $new_col_next_num = 1; '' } ADD alt_column_optional _basics_if_not_exists_95pct ( alt_col_name_and_definition_list ) alt_algorithm alt_lock { $new_col_next_num = 0; '' }
+    ADD alt_column_optional __if_not_exists(95) alt_col_new_name alt_col_definition alt_col_location alt_algorithm alt_lock
+  | { $new_col_next_num = 1; '' } ADD alt_column_optional __if_not_exists(95) ( alt_col_name_and_definition_list ) alt_algorithm alt_lock { $new_col_next_num = 0; '' }
 ;
 
 alt_column_optional:
@@ -352,20 +348,20 @@ alt_col_location:
 ;
 
 alt_modify_column:
-  MODIFY COLUMN _basics_if_exists_95pct _field alt_col_definition alt_col_location alt_algorithm alt_lock
+  MODIFY COLUMN __if_exists(95) _field alt_col_definition alt_col_location alt_algorithm alt_lock
 ;
 
 alt_change_column:
-  CHANGE COLUMN _basics_if_exists_95pct _field alt_new_or_existing_col_name alt_col_definition alt_algorithm alt_lock
+  CHANGE COLUMN __if_exists(95) _field alt_new_or_existing_col_name alt_col_definition alt_algorithm alt_lock
 ;
 
 alt_alter_column:
-    ALTER COLUMN _basics_if_exists_95pct _field SET DEFAULT alt_default_val
+    ALTER COLUMN __if_exists(95) _field SET DEFAULT alt_default_val
   | ALTER COLUMN _field DROP DEFAULT
 ;
 
 alt_drop_column:
-  DROP COLUMN _basics_if_exists_95pct _field alt_algorithm alt_lock
+  DROP COLUMN __if_exists(95) _field alt_algorithm alt_lock
 ;
 
 alt_add_index:
@@ -512,7 +508,7 @@ alt_add_check_constraint:
 ;
 
 alt_drop_check_constraint:
-  /*!100200 DROP CONSTRAINT _basics_if_exists_95pct _letter */ /*!!100200 COMMENT 'Skipped DROP CONSTRAINT' */
+  /*!100200 DROP CONSTRAINT __if_exists(95) _letter */ /*!!100200 COMMENT 'Skipped DROP CONSTRAINT' */
 ;
 
 # TODO: extend
@@ -526,7 +522,7 @@ alt_operator:
 ;
 
 alt_drop_foreign_key:
-  DROP FOREIGN KEY _basics_if_exists_95pct _letter
+  DROP FOREIGN KEY __if_exists(95) _letter
 ;
 
 alt_optional_on_delete:

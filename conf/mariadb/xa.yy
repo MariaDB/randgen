@@ -13,11 +13,11 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
-query_init_add:
+query_init:
   { %active_xa = (); %idle_xa = (); %prepared_xa = (); '' }
 ;
 
-query_add:
+query:
   { $current_xid= ''; $last_xa_stage= '' } xa_query
 ;
 

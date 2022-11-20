@@ -13,15 +13,17 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
-query_init_add:
+#include <conf/basics.yy>
+
+query_init:
   { $colnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
 
-query_add:
+query:
   ==FACTOR:0.1== alttcol_query
 ;
 
 alttcol_query:
-  ALTER alttcol_online alttcol_ignore TABLE _basetable alttcol_wait alttcol_list_with_optional_order_by
+  ALTER alttcol_online alttcol_ignore TABLE _basetable _basics_wait_nowait alttcol_list_with_optional_order_by
 ;
 
 alttcol_online:
@@ -30,10 +32,6 @@ alttcol_online:
 
 alttcol_ignore:
   | | IGNORE
-;
-
-alttcol_wait:
-  | | | WAIT _digit | NOWAIT
 ;
 
 alttcol_list_with_optional_order_by:
@@ -66,29 +64,29 @@ alttcol_item:
 ;
 
 alttcol_add_column:
-    ADD alttcol_column_word _basics_if_not_exists_95pct alttcol_col_new_name alttcol_add_definition alttcol_location
-  | ADD alttcol_column_word _basics_if_not_exists_95pct ( alttcol_add_list )
+    ADD alttcol_column_word __if_not_exists(95) alttcol_col_new_name alttcol_add_definition alttcol_location
+  | ADD alttcol_column_word __if_not_exists(95) ( alttcol_add_list )
 ;
 
 alttcol_alter_column:
-    ALTER alttcol_column_word _basics_if_exists_95pct _field SET DEFAULT alttcol_default_val
-  | ALTER alttcol_column_word _basics_if_exists_95pct _field DROP DEFAULT
+    ALTER alttcol_column_word __if_exists(95) _field SET DEFAULT alttcol_default_val
+  | ALTER alttcol_column_word __if_exists(95) _field DROP DEFAULT
 ;
 
 alttcol_change_column:
-    CHANGE alttcol_column_word _basics_if_exists_95pct _field alttcol_new_or_existing_col_name alttcol_add_definition alttcol_location
+    CHANGE alttcol_column_word __if_exists(95) _field alttcol_new_or_existing_col_name alttcol_add_definition alttcol_location
 ;
 
 alttcol_rename_column:
-    /* compatibility 10.5.2 */ RENAME COLUMN _basics_if_exists_95pct _field TO alttcol_new_or_existing_col_name
+    /* compatibility 10.5.2 */ RENAME COLUMN __if_exists(95) _field TO alttcol_new_or_existing_col_name
 ;
 
 alttcol_modify_column:
-    MODIFY alttcol_column_word _basics_if_exists_95pct _field alttcol_add_definition alttcol_location
+    MODIFY alttcol_column_word __if_exists(95) _field alttcol_add_definition alttcol_location
 ;
 
 alttcol_drop_column:
-    DROP alttcol_column_word _basics_if_exists_95pct _field alttcol_restrict_cascade
+    DROP alttcol_column_word __if_exists(95) _field alttcol_restrict_cascade
 ;
 
 alttcol_new_or_existing_col_name:

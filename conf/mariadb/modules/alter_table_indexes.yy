@@ -13,20 +13,18 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
-query_init_add:
+#include <conf/basics.yy>
+
+query_init:
   { $indnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
 
-query_add:
+query:
   ==FACTOR:0.1== alttind_query ;
 
 alttind_query:
-  ==FACTOR:10==  ALTER __online(20) __ignore(20) TABLE _basetable alttind_wait alttind_list_with_optional_order_by |
-                 CREATE _basics_or_replace_95pct __unique(20) INDEX alttind_ind_new_name alttind_ind_type_optional ON _basetable ( alttind_column_name_list ) _basics_wait_nowait_40pct alttind_option_list alttind_algorithm_optional alttind_lock_optional |
-  ==FACTOR:2==   DROP INDEX _basics_if_exists_95pct  /* _basetable */ _index ON { $last_table } _basics_wait_nowait_40pct
-;
-
-alttind_wait:
-  | | | WAIT _digit | NOWAIT
+  ==FACTOR:10==  ALTER __online(20) __ignore(20) TABLE _basetable _basics_wait_nowait alttind_list_with_optional_order_by |
+                 CREATE __or_replace(95) __unique(20) INDEX alttind_ind_new_name alttind_ind_type_optional ON _basetable ( alttind_column_name_list ) _basics_wait_nowait alttind_option_list alttind_algorithm_optional alttind_lock_optional |
+  ==FACTOR:2==   DROP INDEX __if_exists(95)  /* _basetable */ _index ON { $last_table } _basics_wait_nowait
 ;
 
 alttind_list_with_optional_order_by:
@@ -58,19 +56,19 @@ alttind_item:
 ;
 
 alttind_add_index:
-  ADD alttind_index_word _basics_if_not_exists_95pct alttind_ind_new_name_optional alttind_ind_type_optional ( alttind_column_list ) alttind_option_list
+  ADD alttind_index_word __if_not_exists(95) alttind_ind_new_name_optional alttind_ind_type_optional ( alttind_column_list ) alttind_option_list
 ;
 
 alttind_drop_index:
-  DROP alttind_index_word _basics_if_exists_95pct _index
+  DROP alttind_index_word __if_exists(95) _index
 ;
 
 alttind_rename_index:
-  /* compatibility 10.5.2 */ RENAME alttind_index_word _basics_if_exists_95pct _index TO alttind_ind_new_name
+  /* compatibility 10.5.2 */ RENAME alttind_index_word __if_exists(95) _index TO alttind_ind_new_name
 ;
 
 alttind_drop_constraint:
-  DROP CONSTRAINT _basics_if_exists_95pct _index
+  DROP CONSTRAINT __if_exists(95) _index
 ;
 
 alttind_add_pk:

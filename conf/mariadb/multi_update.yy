@@ -50,10 +50,10 @@
 _features:
   multi-update/delete ;
 
-query_init_add:
+query_init:
 	{ $total_dur = 0; "" };
 
-query_add:
+query:
 	{ @nonaggregates = () ; %tables = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } multi_main_dml ;
 
 multi_main_dml:

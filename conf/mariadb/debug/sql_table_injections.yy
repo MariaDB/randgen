@@ -1,4 +1,4 @@
-query_add:
+query:
   SET debug_dbug = '' | SET debug_dbug = sql_table_dbug_execute_if ;
 
 sql_table_dbug_execute_if:

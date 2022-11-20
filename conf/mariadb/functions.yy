@@ -1,4 +1,4 @@
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022, MariaDB Corporation Ab.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,16 +13,19 @@
 # along with this program; if not, write to the Free Software Foundation,
 # 51 Franklin Street, Suite 500, Boston, MA 02110-1335 USA
 
-query_init_add:
+#include <conf/basics.yy>
+
+
+query_init:
    { $tmp_table = 0; '' } CREATE FUNCTION IF NOT EXISTS MIN2(a BIGINT, b BIGINT) RETURNS BIGINT RETURN (a>b,b,a) ;
 
-query_add:
+query:
     ==FACTOR:9== func_select_or_explain_select
   | { $tmp_table++; '' } func_create_and_drop
 ;
 
 func_create_and_drop:
-   CREATE _basics_temporary_50pct TABLE { 'tmp'.$tmp_table } AS func_select ; DROP TABLE IF EXISTS { 'tmp'.$tmp_table } ;
+   CREATE __temporary(50) TABLE { 'tmp'.$tmp_table } AS func_select ; DROP TABLE IF EXISTS { 'tmp'.$tmp_table } ;
 
 func_select_or_explain_select:
    _basics_explain_analyze func_select;
@@ -35,7 +38,7 @@ func_select_item:
 ;
 
 func_select:
-  { $num = 0; '' } /* _table */ SELECT _basics_distinct_50pct func_select_list FROM { $last_table } func_where func_group_by_having_order_by_limit ;
+  { $num = 0; '' } /* _table */ SELECT __distinct(50) func_select_list FROM { $last_table } func_where func_group_by_having_order_by_limit ;
 
 func_aggregate_func:
    COUNT( func_func )
@@ -206,7 +209,7 @@ func_str_func:
    LCASE( func_arg ) |
    LEFT( func_arg, func_arg ) |
    LENGTH( func_arg ) |
-   func_arg _basics_not_33pct LIKE func_arg |
+   func_arg __not(30) LIKE func_arg |
    LOAD_FILE( func_arg ) |
    LOCATE( func_arg, func_arg ) | LOCATE( func_arg, func_arg, func_arg ) |
    LOWER( func_arg ) |
@@ -222,7 +225,7 @@ func_str_func:
    POSITION( func_arg IN func_arg ) |
    QUOTE( func_arg ) |
 # TODO: provide reasonable patterns to REGEXP
-   func_arg _basics_not_33pct REGEXP func_arg | func_arg _basics_not_33pct RLIKE func_arg |
+   func_arg __not(30) REGEXP func_arg | func_arg __not(30) RLIKE func_arg |
    REPEAT( func_arg, MIN2( func_arg, 65536 ) ) |
    REPLACE( func_arg, func_arg, func_arg ) |
    REVERSE( func_arg ) |
@@ -417,15 +420,15 @@ func_comparison_oper:
    func_arg < func_arg |
    func_arg >= func_arg |
    func_arg > func_arg |
-   func_arg IS _basics_not_33pct func_bool_value |
-   func_arg _basics_not_33pct BETWEEN func_arg AND func_arg |
+   func_arg IS __not(30) func_bool_value |
+   func_arg __not(30) BETWEEN func_arg AND func_arg |
    COALESCE( func_arg_list ) |
    GREATEST( func_arg_list ) |
-   func_arg _basics_not_33pct IN ( func_arg_list ) |
+   func_arg __not(30) IN ( func_arg_list ) |
    ISNULL( func_arg ) |
    INTERVAL( func_arg_list ) |
    LEAST( func_arg_list ) |
-   func_arg _basics_not_33pct LIKE func_arg |
+   func_arg __not(30) LIKE func_arg |
    STRCMP( func_arg, func_arg )
 ;
 

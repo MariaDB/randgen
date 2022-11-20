@@ -1,4 +1,4 @@
-#  Copyright (c) 2018, MariaDB
+#  Copyright (c) 2018, 2022, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -13,8 +13,11 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
+########################################
 
-query_add:
+#include <conf/basics.yy>
+
+query:
   query | query | query | query | query | fk_query
 ;
 
@@ -29,7 +32,7 @@ fk_global_session:
 ;
 
 fk_alter_table:
-  ALTER fk_online_optional fk_ignore_optional TABLE _table fk_wait_optional fk_add_drop_list fk_algorithm fk_lock
+  ALTER fk_online_optional fk_ignore_optional TABLE _table _basics_wait_nowait fk_add_drop_list fk_algorithm fk_lock
 ;
 
 
@@ -47,10 +50,6 @@ fk_online_optional:
 
 fk_ignore_optional:
   | | IGNORE
-;
-
-fk_wait_optional:
-  | | | /*!100301 WAIT _digit */ | /*!100301 NOWAIT */
 ;
 
 fk_add_drop_list:

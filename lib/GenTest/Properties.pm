@@ -180,7 +180,6 @@ sub init {
   my ($class, $props)= @_;
   my $gentestProps= $class->new(
     legal => [
-              'basedirs',
               'base_port',
               'grammars',
               'dsn',
@@ -240,7 +239,6 @@ sub setPropertiesFromHash {
   my ($gentestProps, $props)= @_;
 
   $gentestProps->property('annotate-rules',$props->{annotate_rules}) if defined $props->{annotate_rules};
-  $gentestProps->property('basedirs',$props->{basedirs}) if defined $props->{basedirs};
   $gentestProps->property('base_port',$props->{base_port}) if defined $props->{base_port};
   $gentestProps->property('debug',1) if defined $props->{debug};
   $gentestProps->property('duration',$props->{duration}) if defined $props->{duration};

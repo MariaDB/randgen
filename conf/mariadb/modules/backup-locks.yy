@@ -17,11 +17,11 @@
 # Locking additions in 10.4:
 # - MDEV-5336 - Lock for BACKUP
 
-query_init_add:
+query_init:
   { @stages= ('START','FLUSH','BLOCK_DDL','BLOCK_COMMIT','END'); '' }
 ;
 
-query_add:
+query:
   locks_104_query |
   query | query | query | query | query | query | query | query | query |
   query | query | query | query | query | query | query | query | query

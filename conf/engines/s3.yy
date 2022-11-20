@@ -17,10 +17,10 @@
 #feature <S3 engine>
 #feature <S3 tables>
 
-query_init_add:
+query_init:
   { $s3_doable= $ENV{S3_DOABLE}; '' } ;
 
-query_add:
+query:
   ==FACTOR:0.01== { '/*'.$s3_doable.' ' } ALTER TABLE _table ENGINE=S3 */ |
   ==FACTOR:0.01== s3_alter_table_back
 ;

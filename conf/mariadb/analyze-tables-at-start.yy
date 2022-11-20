@@ -1,3 +1,3 @@
-thread1_init_add:
+thread1_init:
   ANALYZE TABLE { join ',', @{$executors->[0]->baseTables()} } PERSISTENT FOR ALL;
 

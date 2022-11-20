@@ -22,10 +22,10 @@
 # * Use of FORCE KEY in order to prevent full table scans as much as possible
 #
 
-query_init_add:
+query_init:
 	alter_add ; alter_add ; alter_add ; alter_add ; alter_add ;
 
-query_add:
+query:
 	alter_drop_add |
 	select | select | select | select | select |
 	select | select | select | select | select |

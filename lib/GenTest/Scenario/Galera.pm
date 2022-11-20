@@ -56,7 +56,7 @@ sub run {
   $status= STATUS_OK;
   $topology= 'mss';
   
-  my $srv_count= scalar(@{$self->getProperty('basedirs')});
+  my $srv_count= scalar(keys %{$self->getProperty('server_specific')});
   if ($srv_count < length($topology)) {
     sayError("There should be at least ".length($topology)." servers for the replication test");
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[]);

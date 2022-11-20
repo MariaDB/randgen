@@ -26,10 +26,10 @@
 # Instead we use a set of discrete values with no apparent conflicts, i.e. 
 # outside the range of MySQL error codes, see rule "number".
 
-query_init_add:
+query_init:
 	{ $width = 100 ; return undef };
 
-query_add:
+query:
 	set_variable      | update            |
 	create_procedure  | create_procedure  | create_function | create_function |
 	create_procedure1 | create_procedure1 |

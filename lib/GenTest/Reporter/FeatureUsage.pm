@@ -72,9 +72,19 @@ my %features_used = ();
 my %engine_tables= ();
 my %plugins= ();
 my %global_status= ();
+my $first_reporter;
+
+my $reporter = shift;
+
+# In case of two or more main servers, we will be called more than once.
+# Ignore all but the first call.
 
 sub monitor {
   my $reporter = shift;
+
+  $first_reporter = $reporter if not defined $first_reporter;
+  return STATUS_OK if $reporter ne $first_reporter;
+
   unless (defined $server_version) {
     if ($reporter->serverVariable('version') =~ /^(\d+)\.(\d+)\.\d+(-\d+)?/) {
       $server_version= sprintf("%02d%02d",$1, $2);
@@ -111,6 +121,10 @@ sub monitor {
 
 sub report {
   my $reporter = shift;
+
+  $first_reporter = $reporter if not defined $first_reporter;
+  return STATUS_OK if $reporter ne $first_reporter;
+
   foreach my $f (keys %features_used) {
     say("FeatureUsage detected $f ($features_used{$f})");
   }

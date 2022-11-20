@@ -18,7 +18,7 @@
 # --mysqld=--plugin-load-add=query_response_time --mysqld=--loose-query-response-time
 #
 
-query_add:
+query:
     ==FACTOR:0.1== plugin_query_response_time ;
 
 plugin_query_response_time:
@@ -36,8 +36,8 @@ plugin_query_response_vars:
 ;
 
 plugin_query_response_var:
-    QUERY_RESPONSE_TIME_FLUSH = _basics_off_on |
+    QUERY_RESPONSE_TIME_FLUSH = __off_x_on |
     QUERY_RESPONSE_TIME_RANGE_BASE = { $prng->int(2,100) } |
     QUERY_RESPONSE_TIME_EXEC_TIME_DEBUG = { $prng->int(0,100000000) } |
-    QUERY_RESPONSE_TIME_STATS = _basics_10pct_off_90pct_on
+    QUERY_RESPONSE_TIME_STATS = __on_x_off(90)
 ;

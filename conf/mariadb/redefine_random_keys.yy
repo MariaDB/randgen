@@ -17,7 +17,7 @@
 # this is to avoid overriding rule names from other grammars
 
 
-thread1_init_add:
+thread1_init:
     # rkr_indexes is a hash: table => hash of index numbers
     { %primary_keys = (); %rkr_indexes = (); '' }
 #      LOCK TABLE { join ' WRITE, ', @{$executors->[0]->tables()} } WRITE
@@ -29,7 +29,7 @@ thread1_init_add:
 #    ; UNLOCK TABLES
 ;
 
-query_add:
+query:
     ==FACTOR:0.1== rkr_add_key |
     ==FACTOR:0.01== rkr_analyze_tables
 ;

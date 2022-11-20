@@ -18,6 +18,6 @@
 # --mysqld=--plugin-load-add=locales --mysqld=--loose-locales
 #
 
-query_add:
+query:
     ==FACTOR:0.05== SELECT * FROM INFORMATION_SCHEMA.LOCALES
 ;

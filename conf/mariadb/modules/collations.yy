@@ -1,4 +1,4 @@
-query_add:
+query:
     ==FACTOR:0.01== SELECT CONCAT("SET NAMES '",IFNULL(CHARACTER_SET_NAME,'utf8mb4'),"' COLLATE '",{ $coll= "'".$prng->arrayElement($executors->[0]->metaCollations())."'" },"'") INTO @setnames FROM INFORMATION_SCHEMA.COLLATIONS WHERE COLLATION_NAME = { $coll }
     ; EXECUTE IMMEDIATE @setnames |
     collation_strings collation_comparison ;

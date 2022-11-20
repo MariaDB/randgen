@@ -1,4 +1,4 @@
-query_add:
+query:
   set_debug_invisible
 ;
 

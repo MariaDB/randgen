@@ -18,7 +18,7 @@
 # --mysqld=--plugin-load-add=sql_errlog --mysqld=--loose-sql-errlog
 #
 
-query_add:
+query:
     ==FACTOR:0.05== SET GLOBAL plugin_sql_errlog_vars ;
 
 plugin_sql_errlog_vars:
@@ -29,7 +29,7 @@ plugin_sql_errlog_var:
 # Not dynamic
 #    SQL_ERROR_LOG_FILENAME = plugin_sql_errlog_file |
     SQL_ERROR_LOG_RATE = plugin_sql_errlog_rate |
-    SQL_ERROR_LOG_ROTATE =  _basics_off_on
+    SQL_ERROR_LOG_ROTATE =  __off_x_on
 # Not dynamic
 #    SQL_ERROR_LOG_ROTATIONS = { $prng->int(0,999) } |
 # Not dynamic

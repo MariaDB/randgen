@@ -13,17 +13,20 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1335  USA */
 
-#
+############################################
 # A DML grammar created from all_selects.yy
-#
+############################################
+
+#include <conf/basics.yy>
+
 
 # Set here the list of databases if necessary, e.g.
 # $updates_deletes_databases= [ 'test' ]; 
 
-query_init_add:
+query_init:
    { $tables= 0; $updates_deletes_databases= $executors->[0]->databases(1); $executors->[0]->setMetadataReloadInterval(15); '' };
 
-query_add:
+query:
   { @aliases= (); $non_agg_fields= 0; $agg_fields= 0; $skip_aliases= 0; '' } updates_deletes_query { $last_database= undef; $last_table= undef; '' };
 
 updates_deletes_query:
@@ -128,9 +131,9 @@ updates_deletes_join_on_clause:
   ON (updates_deletes_join_on_list) ;
 
 updates_deletes_join_on_list:
-  ==FACTOR:5== updates_deletes_join_condition _basics_logical_operator updates_deletes_join_condition |
-  updates_deletes_join_condition _basics_logical_operator updates_deletes_join_on_list |
-  (updates_deletes_join_on_list) _basics_logical_operator updates_deletes_join_condition
+  ==FACTOR:5== updates_deletes_join_condition __and_x_or updates_deletes_join_condition |
+  updates_deletes_join_condition __and_x_or updates_deletes_join_on_list |
+  (updates_deletes_join_on_list) __and_x_or updates_deletes_join_condition
 ;
 
 # TODO
@@ -154,15 +157,15 @@ updates_deletes_optional_where_clause:
 ;
 
 updates_deletes_where_list:
-  ==FACTOR:5== updates_deletes_where_condition _basics_logical_operator updates_deletes_where_condition |
-  updates_deletes_where_condition _basics_logical_operator updates_deletes_where_list |
-  (updates_deletes_where_list) _basics_logical_operator updates_deletes_where_condition
+  ==FACTOR:5== updates_deletes_where_condition __and_x_or updates_deletes_where_condition |
+  updates_deletes_where_condition __and_x_or updates_deletes_where_list |
+  (updates_deletes_where_list) __and_x_or updates_deletes_where_condition
 ;
 
 # TODO
 updates_deletes_where_condition:
   ==FACTOR:5== updates_deletes_where_argument _basics_comparison_operator updates_deletes_where_argument |
-  updates_deletes_where_argument IS _basics_not_33pct NULL
+  updates_deletes_where_argument IS __not(30) NULL
 ;
 
 updates_deletes_where_argument:
@@ -188,15 +191,15 @@ updates_deletes_having_clause:
   HAVING updates_deletes_having_list ;
 
 updates_deletes_having_list:
-  ==FACTOR:5== updates_deletes_having_condition _basics_logical_operator updates_deletes_having_condition |
-  updates_deletes_having_condition _basics_logical_operator updates_deletes_having_list |
-  (updates_deletes_having_list) _basics_logical_operator updates_deletes_having_condition
+  ==FACTOR:5== updates_deletes_having_condition __and_x_or updates_deletes_having_condition |
+  updates_deletes_having_condition __and_x_or updates_deletes_having_list |
+  (updates_deletes_having_list) __and_x_or updates_deletes_having_condition
 ;
 
 # TODO
 updates_deletes_having_condition:
   ==FACTOR:5== updates_deletes_having_argument _basics_comparison_operator updates_deletes_having_argument |
-  updates_deletes_having_argument IS _basics_not_33pct NULL
+  updates_deletes_having_argument IS __not(30) NULL
 ;
 
 updates_deletes_having_argument:

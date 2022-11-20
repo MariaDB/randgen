@@ -1,4 +1,4 @@
-query_init_add:
+query_init:
     set_variables ;
     
 set_variables: 

@@ -29,10 +29,10 @@ nested_expr:
 #
 
 
-query_init_add:
+query_init:
 	drop_table ; create_table ; create_table ; create_table ;
 
-query_add:
+query:
 	drop_table ; create_table ; create_table ; create_table | create_table |
 	select_dml | select_dml | select_dml | select_dml | select_dml |
 	select_dml | select_dml | select_dml | select_dml | select_dml |

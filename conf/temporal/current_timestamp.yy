@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-query_add:
+query:
   select | insert | insert | insert | delete | replace | update | transaction | 
   wl_query | wl_query | wl_query | wl_query | wl_query | wl_query | wl_query |
   wl_query | wl_query | wl_query | wl_query | wl_query | wl_query | wl_query ;

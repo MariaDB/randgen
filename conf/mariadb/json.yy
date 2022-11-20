@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2021 MariaDB Corporation Ab.
+# Copyright (C) 2017, 2022 MariaDB Corporation Ab.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,227 +20,233 @@
 # https://www.crockford.com/mckeeman.html
 ####################################
 
-query_init_add:
+#include <conf/basics.yy>
+
+
+query_init:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
-  ; json_create
-  ; SET SQL_MODE=DEFAULT
+  ;; create
+  ;; SET SQL_MODE=DEFAULT
 ;
 
-query_add:
-  json_select | json_insert | json_delete | json_update |
-  ==FACTOR:0.1== json_create |
-  ==FACTOR:0.1== json_alter
+query:
+  select |
+  insert |
+  delete |
+  update |
+  ==FACTOR:0.1== create |
+  ==FACTOR:0.1== alter
 ;
 
-json_create:
+create:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
-  ; CREATE OR REPLACE TABLE `tmp` ENGINE = _basics_inbuilt_engine_weighted AS json_select
-  ; SET SQL_MODE=DEFAULT
+  ;; CREATE OR REPLACE TABLE `tmp` ENGINE = inbuilt_engine AS select
+  ;; SET SQL_MODE=DEFAULT
 ;
 
-json_insert:
+inbuilt_engine:
+  ==FACTOR:8== InnoDB |
+  ==FACTOR:5== Aria   |
+  ==FACTOR:4== MyISAM |
+  ==FACTOR:2== HEAP   |
+  ==FACTOR:1== CSV
+;
+
+insert:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
-  ; INSERT INTO `tmp` ( `fld` ) json_select
-  ; SET SQL_MODE=DEFAULT
+  ;; INSERT INTO `tmp` ( `fld` ) select
+  ;; SET SQL_MODE=DEFAULT
 ;
 
 # TODO: vcols
-json_alter:
-	  ALTER TABLE `tmp` ADD json_index_type INDEX ( json_key_field json_key_length )
-	| ALTER TABLE `tmp` DROP INDEX json_key_field
-#	| ==FACTOR:0.05== ALTER TABLE `tmp` json_column_op `vfld` TEXT AS ( json_vcol_expression ) json_virt_persist
-	| ALTER TABLE `tmp` MODIFY `fld` json_fld_type
+alter:
+    ALTER TABLE `tmp` ADD index_type INDEX ( key_field key_length )
+  | ALTER TABLE `tmp` DROP INDEX key_field
+#  | ==FACTOR:0.05== ALTER TABLE `tmp` column_op `vfld` TEXT AS ( vcol_expression ) virt_persist
+  | ALTER TABLE `tmp` MODIFY `fld` fld_type
 ;
 
-json_vcol_expression:
-	json_func | `fld` | SUBSTR(`fld`,1,1024)
+vcol_expression:
+  func | `fld` | SUBSTR(`fld`,1,1024)
 ;
 
-json_fld_type:
-	TEXT | BLOB | MEDIUMTEXT | VARCHAR(2048) | JSON
+fld_type:
+  TEXT | BLOB | MEDIUMTEXT | VARCHAR(2048) | JSON
 ;
 
-json_key_field:
-	`fld` | `fld` | `fld` | `vfld`
+key_field:
+  `fld` | `fld` | `fld` | `vfld`
 ;
 
-json_key_length:
-	| (_smallint_unsigned)
+key_length:
+  | (_smallint_unsigned)
 ;
 
-json_virt_persist:
-	VIRTUAL | PERSISTENT
+virt_persist:
+  VIRTUAL | PERSISTENT
 ;
 
-json_column_op:
-	ADD IF NOT EXISTS | MODIFY
+column_op:
+  ADD IF NOT EXISTS | MODIFY
 ;
 
-json_index_type:
-	| | | | | | UNIQUE | FULLTEXT
+index_type:
+  | | | | | | UNIQUE | FULLTEXT
 ;
 
-json_delete:
-  DELETE FROM { $json_table_field= 'fld'; 'tmp' } json_where LIMIT 1
+delete:
+  DELETE FROM { $json_table_field= 'fld'; 'tmp' } where LIMIT 1
 ;
 
-json_update:
+update:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
-  ; UPDATE `tmp` SET { $json_table_field= 'fld' } = json_func_returning_json ORDER BY fld LIMIT _digit
+  ; UPDATE `tmp` SET { $json_table_field= 'fld' } = func_returning_json ORDER BY fld LIMIT _digit
   ; SET SQL_MODE=DEFAULT
 ;
 
-json_select:
-  ==FACTOR:3== /* _table _field { $json_table_field = $last_field } */ SELECT json_select_item AS fld FROM { $last_table } json_where LIMIT _digit |
-  SELECT { $col= $prng->uint16(1,20); $json_table_field = 'col'.$col; '' } json_select_item FROM { $prng->jsonTable($prng->uint16($col,25)) } /* compatibility 10.6.0 */
+select:
+  ==FACTOR:3== /* _table _field { $json_table_field = $last_field } */ SELECT select_item AS fld FROM { $last_table } where LIMIT _digit |
+  SELECT { $col= $prng->uint16(1,20); $json_table_field = 'col'.$col; '' } select_item FROM { $prng->jsonTable($prng->uint16($col,25)) } /* compatibility 10.6.0 */
 ;
 
-json_select_item:
-    ==FACTOR:20== json_func
-  | GROUP_CONCAT(json_func)
-  | MIN(json_func)
-  | MAX(json_func)
+select_item:
+    ==FACTOR:20== func
+  | GROUP_CONCAT(func)
+  | MIN(func)
+  | MAX(func)
 ;
 
-json_where:
+where:
   | | | |
-  | WHERE json_text_arg _basics_comparison_operator json_text_arg
-  | WHERE json_func_other _basics_comparison_operator json_func_other
+  | WHERE text_arg _basics_comparison_operator text_arg
+  | WHERE func_other _basics_comparison_operator func_other
 ;
 
-json_text_arg:
+text_arg:
   _json |
-  json_func_returning_json |
+  func_returning_json |
   ==FACTOR:0.1== { $json_table_field }
 ;
 
-json_func_returning_json:
-    JSON_ARRAY( json_value_list )
-  | JSON_ARRAYAGG( json_any_value ) /* compatibility 10.5.0 */
-  | JSON_ARRAY_APPEND( json_text_arg, json_path_val_list_no_wildcard )
-  | JSON_ARRAY_INSERT( json_text_arg, json_path_val_list_no_wildcard )
-  | JSON_COMPACT( json_text_arg )
-  | JSON_DETAILED( json_text_arg )
-  | JSON_INSERT( json_text_arg, json_path_val_list_no_wildcard )
-  | JSON_INSERT( _json, json_path_val_list_no_wildcard )
-  | JSON_KEYS( json_text_arg json_optional_path_no_wildcard )
-  | JSON_LOOSE( json_text_arg )
-  | JSON_MERGE( json_text_arg, json_doc_list )
-  | JSON_MERGE_PATCH( json_text_arg, json_doc_list ) /* compatibility 10.2.25 */
-  | JSON_MERGE_PRESERVE( json_text_arg, json_doc_list ) /* compatibility 10.2.25 */
-  | JSON_NORMALIZE( json_text_arg ) /* compatibililty 10.7.0 */
-  | JSON_OBJECT( json_key_value_list )
-  | JSON_OBJECTAGG( _jsonkey, json_valid_arg ) /* compatibility 10.5.0 */
-  | JSON_QUERY( json_text_arg, _jsonpath )
-  | JSON_REMOVE( json_text_arg, json_remove_path_list )
-  | JSON_REPLACE( json_text_arg, json_path_val_list_no_wildcard )
-  | JSON_REPLACE( _json, json_path_val_list_no_wildcard )
-  | JSON_SET( json_text_arg, json_path_val_list_no_wildcard )
-  | JSON_SET( _json, json_path_val_list_no_wildcard )
+func_returning_json:
+    JSON_ARRAY( value_list )
+  | JSON_ARRAYAGG( any_value ) /* compatibility 10.5.0 */
+  | JSON_ARRAY_APPEND( text_arg, path_val_list_no_wildcard )
+  | JSON_ARRAY_INSERT( text_arg, path_val_list_no_wildcard )
+  | JSON_COMPACT( text_arg )
+  | JSON_DETAILED( text_arg )
+  | JSON_INSERT( text_arg, path_val_list_no_wildcard )
+  | JSON_INSERT( _json, path_val_list_no_wildcard )
+  | JSON_KEYS( text_arg optional_path_no_wildcard )
+  | JSON_LOOSE( text_arg )
+  | JSON_MERGE( text_arg, doc_list )
+  | JSON_MERGE_PATCH( text_arg, doc_list )
+  | JSON_MERGE_PRESERVE( text_arg, doc_list )
+  | JSON_NORMALIZE( text_arg ) /* compatibililty 10.7.0 */
+  | JSON_OBJECT( key_value_list )
+  | JSON_OBJECTAGG( _jsonkey, valid_arg ) /* compatibility 10.5.0 */
+  | JSON_QUERY( text_arg, _jsonpath )
+  | JSON_REMOVE( text_arg, remove_path_list )
+  | JSON_REPLACE( text_arg, path_val_list_no_wildcard )
+  | JSON_REPLACE( _json, path_val_list_no_wildcard )
+  | JSON_SET( text_arg, path_val_list_no_wildcard )
+  | JSON_SET( _json, path_val_list_no_wildcard )
 ;
 
-json_func:
-  ==FACTOR:2== json_func_returning_json
-  |            json_func_other
+func:
+  ==FACTOR:2== func_returning_json
+  |            func_other
 ;
 
-json_func_other:
-	  JSON_CONTAINS( json_text_arg, json_contains_args )
-	| JSON_CONTAINS_PATH( json_text_arg, json_one_or_all, json_path_list_no_wildcard )
-	| JSON_DEPTH( json_text_arg )
-  | JSON_EQUALS( json_text_arg, json_text_arg ) /* compatibility 10.7.0 */
-	| JSON_EXISTS( json_text_arg, _jsonpath )
-	| JSON_EXTRACT( json_text_arg, json_path_list )
-	| JSON_LENGTH( json_text_arg json_optional_path_no_wildcard )
-	| JSON_QUOTE( _json )
-	| JSON_SEARCH( json_text_arg, json_one_or_all, json_search_string json_search_args )
-	| JSON_TYPE( _json )
-	| JSON_UNQUOTE( _json )
-	| JSON_VALID( json_valid_arg )
-	| JSON_VALUE( json_text_arg, _jsonpath )
+func_other:
+    JSON_CONTAINS( text_arg, contains_args )
+  | JSON_CONTAINS_PATH( text_arg, one_or_all, path_list_no_wildcard )
+  | JSON_DEPTH( text_arg )
+  | JSON_EQUALS( text_arg, text_arg ) /* compatibility 10.7.0 */
+  | JSON_EXISTS( text_arg, _jsonpath )
+  | JSON_EXTRACT( text_arg, path_list )
+  | JSON_LENGTH( text_arg json_optional_path_no_wildcard )
+  | JSON_QUOTE( _json )
+  | JSON_SEARCH( text_arg, one_or_all, search_string search_args )
+  | JSON_TYPE( _json )
+  | JSON_UNQUOTE( _json )
+  | JSON_VALID( valid_arg )
+  | JSON_VALUE( text_arg, _jsonpath )
 ;
 
-json_optional_path_no_wildcard:
-	| , _jsonpath_no_wildcard
+optional_path_no_wildcard:
+  | , _jsonpath_no_wildcard
 ;
 
-json_value_list:
-  _json | _json, json_value_list ;
+value_list:
+  _json | _json, value_list ;
 
-json_valid_arg:
-	json_text_arg | _json | _jsonkey | _jsonpath | { $last_json_field or 'fld' }
+valid_arg:
+  text_arg | _json | _jsonkey | _jsonpath | { $json_table_field or 'fld' }
 ;
 
-json_search_string:
-	_english | _char(2) | _digit | '' | NULL | `fld`
+search_string:
+  _english | _char(2) | _digit | '' | NULL | `fld`
 ;
 
-json_search_args:
-	| , json_escape_char | , json_escape_char, _jsonpath | , json_escape_char, _jsonpath json_search_args
+search_args:
+  | , escape_char | , escape_char, _jsonpath | , escape_char, _jsonpath search_args
 ;
 
-json_one_or_all:
-	'one' | 'all'
+one_or_all:
+  'one' | 'all'
 ;
 
-json_key_value_list:
-	==FACTOR:3== _jsonkey, _json |
-  _jsonkey, _json, json_key_value_list
+key_value_list:
+  ==FACTOR:3== _jsonkey, _json |
+  _jsonkey, _json, key_value_list
 ;
 
-json_doc_list:
-	==FACTOR:3== json_text_arg |
-  json_text_arg, json_doc_list
-;
-
-json_optional_path_list:
-	| , json_path_list
-;
-
-json_optional_path_list_no_wildcard:
-	| , json_path_list_no_wildcard
+doc_list:
+  ==FACTOR:3== text_arg |
+  text_arg, doc_list
 ;
 
 # Path '$' is not allowed in JSON_REMOVE
-json_remove_path_item:
+remove_path_item:
   _jsonpath_no_wildcard(1) |
   _jsonpath_no_wildcard(2) |
   _jsonpath_no_wildcard(3) |
   _jsonpath_no_wildcard(4)
 ;
 
-json_remove_path_list:
-  ==FACTOR:3== json_remove_path_item |
-  json_remove_path_item, json_remove_path_list
+remove_path_list:
+  ==FACTOR:3== remove_path_item |
+  remove_path_item, remove_path_list
 ;
 
-json_path_list_no_wildcard:
+path_list_no_wildcard:
   ==FACTOR:3== _jsonpath_no_wildcard |
-  _jsonpath_no_wildcard, json_path_list_no_wildcard
+  _jsonpath_no_wildcard, path_list_no_wildcard
 ;
 
-json_path_list:
-	==FACTOR:3== _jsonpath |
-  _jsonpath, json_path_list
+path_list:
+  ==FACTOR:3== _jsonpath |
+  _jsonpath, path_list
 ;
 
-json_contains_args:
-	_json | _json, _jsonpath_no_wildcard
+contains_args:
+  _json | _json, _jsonpath_no_wildcard
 ;
 
-json_path_val_list_no_wildcard:
+path_val_list_no_wildcard:
   ==FACTOR:3== _jsonpath_no_wildcard, _json |
-  json_path_val_list_no_wildcard, _jsonpath_no_wildcard, _json
+  path_val_list_no_wildcard, _jsonpath_no_wildcard, _json
 ;
 
-json_path_val_list:
-	==FACTOR:3== _jsonpath, _json |
-  json_path_val_list, _jsonpath, _json
+path_val_list:
+  ==FACTOR:3== _jsonpath, _json |
+  path_val_list, _jsonpath, _json
 ;
 
-json_escape_char:
-	NULL | '\\' | "'" | '"' | '/' | '%' | _char(1)
+escape_char:
+  NULL | '\\' | "'" | '"' | '/' | '%' | _char(1)
 ;
 
-json_any_value:
+any_value:
   _basics_any_value | `fld` | _field | _json ;

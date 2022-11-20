@@ -18,6 +18,6 @@
 # --mysqld=--plugin-load-add=user_variables --mysqld=--loose-user-variables
 #
 
-query_add:
+query:
   ==FACTOR:0.05== SELECT * FROM INFORMATION_SCHEMA.USER_VARIABLES
 ;

@@ -1,4 +1,4 @@
-# Copyright (C) 2018, 2021 MariaDB Corporation.
+# Copyright (C) 2018, 2022, MariaDB Corporation.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,10 +14,15 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
+#################################################################
 # Very generic DML which should work with most gendata patterns,
 # mainly to serve as a placeholder to run with various redefines
+#################################################################
 
-query_add:
+#include <conf/basics.yy>
+
+
+query:
     ==FACTOR:9== generic_dml_dml |
     generic_dml_trx
 ;
@@ -41,7 +46,7 @@ generic_dml_insert:
 ;
 
 generic_dml_insert_op:
-  INSERT _basics_delayed_5pct _basics_ignore_80pct | REPLACE
+  INSERT __ignore_x_delayed(85,3) | REPLACE
 ;
 
 generic_dml_data_value:
@@ -49,7 +54,7 @@ generic_dml_data_value:
 ;
 
 generic_dml_update:
-    UPDATE _basics_ignore_80pct _table SET _field = generic_dml_data_value ORDER BY _field LIMIT _digit
+    UPDATE __ignore(80) _table SET _field = generic_dml_data_value ORDER BY _field LIMIT _digit
 ;
 
 generic_dml_delete:

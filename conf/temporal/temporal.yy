@@ -1,4 +1,4 @@
-query_add:
+query:
   { $col = 1 ; return "" } SELECT select_list FROM _table WHERE where_list order_by |
   INSERT INTO _table ( _field ) VALUE ( datetime_expr ) |
   INSERT INTO _table ( _field ) VALUE ( datetime_expr ) |

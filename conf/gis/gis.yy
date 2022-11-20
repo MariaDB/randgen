@@ -1,4 +1,4 @@
-query_add:
+query:
 	SELECT returns ;
 
 returns_list:

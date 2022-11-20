@@ -35,14 +35,14 @@
 #	commented out in order to avoid semantic errors
 #
 
-query_init_add:
+query_init:
 	USE flightstats;
 
 # The queries from this grammar may produce resultsets of varying length
 # to avoid excessive memory usage, we reduce all queries to a COUNT(*)
 # This way, we also do not have to tinker with any field names in the SELECT list
 
-query_add:
+query:
 	{ $alias_count = 0 ; %tables = () ; %aliases = () ; return undef ; }
 	select ;
 

@@ -14,10 +14,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # 51 Franklin Street, Suite 500, Boston, MA 02110-1335 USA
 
-query_init_add:
+query_init:
   UPDATE mysql.proc SET definer = 'root@localhost'; FLUSH TABLES; FLUSH PRIVILEGES; 
 
-query_add:
+query:
   infoschema_query { $last_database= undef; $last_table= undef; '' } ;
 
 infoschema_query:
@@ -94,7 +94,7 @@ infoschema_join_list:
   (infoschema_new_table_item infoschema_join_type infoschema_new_table_item ON ( infoschema_current_table_item . _field = infoschema_previous_table_item . _field ) ) ;
 
 infoschema_join_type:
-  INNER JOIN | _basics_left_right _basics_outer_50pct JOIN | STRAIGHT_JOIN ;  
+  INNER JOIN | __left_x_right __outer(50) JOIN | STRAIGHT_JOIN ;  
 
 infoschema_where:
   WHERE infoschema_where_list ;
@@ -115,10 +115,10 @@ infoschema_having:
   | HAVING infoschema_having_list;
 
 infoschema_having_list:
-  _basics_not_33pct infoschema_having_item |
-  _basics_not_33pct (infoschema_having_list AND infoschema_having_item) |
-  _basics_not_33pct (infoschema_having_list OR infoschema_having_item) |
-  infoschema_having_item IS _basics_not_33pct NULL ;
+  __not(30) infoschema_having_item |
+  __not(30) (infoschema_having_list AND infoschema_having_item) |
+  __not(30) (infoschema_having_list OR infoschema_having_item) |
+  infoschema_having_item IS __not(30) NULL ;
 
 infoschema_having_item:
   infoschema_existing_table_item . _field infoschema_sign infoschema_value ;

@@ -13,10 +13,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # 51 Franklin Street, Suite 500, Boston, MA 02110-1335 USA
 
-query_init_add:
+query_init:
   SELECT _field FROM _table ;  # Populate the RQG metadata caches from the start of the start of the test
 
-query_add:
+query:
   modify |
   ==FACTOR:3== { @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select { $last_database= undef; $last_table= undef; '' } |
   ==FACTOR:3== { @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } select_join { $last_database= undef; $last_table= undef; '' } |

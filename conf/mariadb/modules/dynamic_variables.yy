@@ -13,10 +13,13 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
-thread1_init_add:
+#include <conf/basics.yy>
+
+
+thread1_init:
     dynvar_initial_settings;
 
-query_add:
+query:
     ==FACTOR:0.01==   SET SESSION dynvar_session_variable
   | ==FACTOR:0.001== SET GLOBAL dynvar_global_variable_runtime
 ;

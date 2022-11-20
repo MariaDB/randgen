@@ -51,7 +51,7 @@
 # and stable queries that find bugs rather than wondering if our query is      #
 # dodgy.                                                                       #
 ################################################################################
-query_add:
+query:
 	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } query_type ;
 
 

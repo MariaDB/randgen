@@ -52,7 +52,7 @@
 # and stable queries that find bugs rather than wondering if our query is      #
 # dodgy.                                                                       #
 ################################################################################
-query_add:
+query:
 	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } main_select /* _thread_id */ ;
 
 main_select:

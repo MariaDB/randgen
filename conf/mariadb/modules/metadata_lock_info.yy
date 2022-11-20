@@ -18,7 +18,7 @@
 # --mysqld=--plugin-load-add=metadata_lock_info --mysqld=--loose-metadata-lock-info
 #
 
-query_add:
+query:
   ==FACTOR:0.05== SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO metadata_lock_info_where
 ;
 

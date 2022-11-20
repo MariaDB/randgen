@@ -1,4 +1,4 @@
-query_add:
+query:
   SET debug_sync= RESET |
   ==FACTOR:2== SET debug_sync= 'now SIGNAL goforit' |
   ==FACTOR:0.1== SET debug_sync= sql_table_debug_sync

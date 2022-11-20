@@ -1,4 +1,4 @@
-thread1_init_add:
+thread1_init:
     CREATE DATABASE IF NOT EXISTS fed_db
   ;; CREATE USER IF NOT EXISTS fed_user@'127.0.0.1' IDENTIFIED BY 'FdrUs3r!pw'
   ;; GRANT ALL ON *.* TO fed_user@'127.0.0.1'

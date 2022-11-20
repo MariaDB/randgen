@@ -15,7 +15,7 @@
 
 # Error codes to ignore on slave: slave-skip-errors=1049,1305,1539,1505,1317,1568
 
-query_add:
+query:
   seq_query
 ;
 

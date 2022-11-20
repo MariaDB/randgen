@@ -1,4 +1,4 @@
-query_add:
+query:
   diag_query
 ;
 

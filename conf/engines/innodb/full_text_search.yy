@@ -1,5 +1,5 @@
 # Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2022 MariaDB Corporation Ab
+# Copyright (c) 2022, MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,11 +38,14 @@
 #           MySQL-specific syntax variants.
 ################################################################################
 
-query_init_add:
+#include <conf/basics.yy>
+
+
+query_init:
     { $indexcount= 0; '' };
 
 # Run Select , DML , DDL , transactional statements
-query_add:
+query:
      select | select | select | select | select | update | delete | 
      create_drop_index | transaction | insert | insert |
      ==FACTOR:0.05== fts_doc_id
@@ -72,7 +75,7 @@ natural_language_search:
      SELECT _field_indexed[invariant] f, natural_language_search_condition AS SCORE FROM _table ORDER BY f, SCORE limit_clause;
 
 extra_condition_optional:
-  | _basics_logical_operator _field_int _basics_comparison_operator _smallint;
+  | __and_x_or _field_int _basics_comparison_operator _smallint;
 
 natural_language_search_condition:
      MATCH (_field_no_pk[invariant]) AGAINST (_english[invariant] IN NATURAL LANGUAGE MODE );

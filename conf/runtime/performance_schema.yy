@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-query_add:
+query:
   perfschema_query { $last_database= undef; $last_table= undef; '' };
 
 perfschema_query:
@@ -128,33 +128,33 @@ perfschema_column_privileges:
 
 perfschema_events:
 	CREATE __or_replace_event_x_event_if_not_exists(90,5) _letter ON SCHEDULE AT NOW() DO SET @a=@a |
-	DROP EVENT _basics_if_exists_95pct _letter ;
+	DROP EVENT __if_exists(95) _letter ;
 
 perfschema_key_column_usage:
 	ALTER TABLE _table ADD KEY ( _letter __asc_x_desc(33,33)) |
 	ALTER TABLE _table DROP KEY _letter ;
 
 perfschema_parameters:
-	CREATE PROCEDURE _basics_if_not_exists_80pct _letter ( perfschema_procedure_parameter_list ) BEGIN SELECT COUNT(*) INTO @a FROM _table; END ; |
-	DROP PROCEDURE _basics_if_exists_80pct _letter |
-	CREATE FUNCTION _basics_if_not_exists_80pct _letter ( perfschema_function_parameter_list ) RETURNS INTEGER RETURN 1 |
-	DROP FUNCTION _basics_if_exists_80pct _letter ;
+	CREATE PROCEDURE __if_not_exists(80) _letter ( perfschema_procedure_parameter_list ) BEGIN SELECT COUNT(*) INTO @a FROM _table; END ; |
+	DROP PROCEDURE __if_exists(80) _letter |
+	CREATE FUNCTION __if_not_exists(80) _letter ( perfschema_function_parameter_list ) RETURNS INTEGER RETURN 1 |
+	DROP FUNCTION __if_exists(80) _letter ;
 
 perfschema_partitions:
 	ALTER TABLE _table PARTITION BY KEY() PARTITIONS _digit |
 	ALTER TABLE _table REMOVE PARTITIONING ;
 
 perfschema_schemata:
-	CREATE DATABASE _basics_if_not_exists_80pct _letter |
-	DROP DATABASE _basics_if_exists_80pct _letter ;
+	CREATE DATABASE __if_not_exists(80) _letter |
+	DROP DATABASE __if_exists(80) _letter ;
 
 perfschema_schema_privileges:
 	GRANT ALL PRIVILEGES ON _letter . * TO 'someuser'@'somehost' |
 	REVOKE ALL PRIVILEGES ON _letter . * FROM 'someuser'@'somehost' ; 
 
 perfschema_tables:
-	CREATE TABLE _basics_if_not_exists_80pct _letter LIKE _table |
-	DROP TABLE _basics_if_exists_80pct _letter ;
+	CREATE TABLE __if_not_exists(80) _letter LIKE _table |
+	DROP TABLE __if_exists(80) _letter ;
 
 perfschema_table_constraints:
 	ALTER TABLE _table DROP PRIMARY KEY |
@@ -165,8 +165,8 @@ perfschema_table_privileges:
 	REVOKE ALL PRIVILEGES ON test . _letter FROM 'someuser'@'somehost' ;
 
 perfschema_triggers:
-	CREATE TRIGGER _basics_if_not_exists_80pct _letter BEFORE INSERT ON _table FOR EACH ROW BEGIN INSERT INTO _table SELECT * FROM _table LIMIT 0 ; END ; |
-	DROP TRIGGER _basics_if_exists_80pct _letter;
+	CREATE TRIGGER __if_not_exists(80) _letter BEFORE INSERT ON _table FOR EACH ROW BEGIN INSERT INTO _table SELECT * FROM _table LIMIT 0 ; END ; |
+	DROP TRIGGER __if_exists(80) _letter;
 
 perfschema_user_privileges:
 	GRANT perfschema_admin_privilege_list ON * . * to 'someuser'@'somehost' |
@@ -241,22 +241,16 @@ perfschema_join_list:
 	(perfschema_new_table_item perfschema_join_type perfschema_new_table_item ON ( perfschema_current_table_item . _field = perfschema_previous_table_item . _field ) ) ;
 
 perfschema_join_type:
-	INNER JOIN | perfschema_left_right perfschema_outer JOIN | STRAIGHT_JOIN ;
-
-perfschema_left_right:
-	LEFT | RIGHT ;
-
-perfschema_outer:
-	| OUTER ;
+	INNER JOIN | __left_x_right(50) __outer(50) JOIN | STRAIGHT_JOIN ;
 
 perfschema_where:
 	|
 	WHERE perfschema_where_list ;
 
 perfschema_where_list:
-	_basics_not_33pct perfschema_where_item |
-	_basics_not_33pct (perfschema_where_list AND perfschema_where_item) |
-	_basics_not_33pct (perfschema_where_list OR perfschema_where_item) ;
+	__not(30) perfschema_where_item |
+	__not(30) (perfschema_where_list AND perfschema_where_item) |
+	__not(30) (perfschema_where_list OR perfschema_where_item) ;
 
 perfschema_where_item:
 	perfschema_existing_table_item . _field IN ( _digit , _digit , _digit ) |
@@ -271,10 +265,10 @@ perfschema_having:
 	| HAVING perfschema_having_list;
 
 perfschema_having_list:
-	_basics_not_33pct perfschema_having_item |
-	_basics_not_33pct (perfschema_having_list AND perfschema_having_item) |
-	_basics_not_33pct (perfschema_having_list OR perfschema_having_item) |
-	perfschema_having_item IS _basics_not_33pct NULL ;
+	__not(30) perfschema_having_item |
+	__not(30) (perfschema_having_list AND perfschema_having_item) |
+	__not(30) (perfschema_having_list OR perfschema_having_item) |
+	perfschema_having_item IS __not(30) NULL ;
 
 perfschema_having_item:
 	perfschema_existing_table_item . _field perfschema_sign perfschema_value ;

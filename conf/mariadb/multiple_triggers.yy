@@ -39,7 +39,7 @@
 # ERROR 1360 for CREATE OR REPLACE TRIGGER is added because of MDEV-10912 (CREATE OR REPLACE TRIGGER produces ER_TRG_DOES_NOT_EXIST)
 # ERROR 1360 for DROP TRIGGER IF EXISTS is also because of one of these two problems
 
-query_init_add:
+query_init:
     CREATE TABLE IF NOT EXISTS test.tlog (
       pk INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
       dt TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), 
@@ -53,7 +53,7 @@ query_init_add:
         val BLOB NOT NULL DEFAULT '_'
     );
 
-query_add:
+query:
       mdev6112_create_trigger | mdev6112_create_trigger | mdev6112_create_trigger | mdev6112_create_trigger
     | mdev6112_drop_trigger | mdev6112_drop_trigger
     | mdev6112_create_log_trigger | mdev6112_create_log2_trigger

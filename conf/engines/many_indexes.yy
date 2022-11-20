@@ -18,7 +18,7 @@
 ## TODO: Re-enable UTF16 in 'charset' and _UTF16 in 'charset_underscore' once WL#1213 is pushed.
 ##       (Implementation not present in current 6.0 or 5.x codebases).
 
-query_add:
+query:
  	update | insert | delete | select ;
 
 select:

@@ -17,7 +17,7 @@
 # MDEV-7567 rename slow queries variables
 #
 
-query_add:
+query:
     SET slow_global_or_not slow_var_min_examined = slow_var_min_examined_val |
     SET slow_var_min_examined_var = slow_var_min_examined_val |
     SET slow_global_or_not slow_var_log          = slow_var_log_val          |

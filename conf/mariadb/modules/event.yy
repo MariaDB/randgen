@@ -19,11 +19,11 @@
 # it can be changed by providing --rows parameter on the command line
 
 
-query_init_add:
+query_init:
   { $ev = 0; '' } SET GLOBAL event_scheduler = ON
 ;
 
-query_add:
+query:
     ==FACTOR:4==   event_create
   |                DROP EVENT IF EXISTS existing_event_name
   | ==FACTOR:8==   event_alter
@@ -43,8 +43,8 @@ event_name_new:
   { 'ev_'.abs($$).'_'.(++$ev) } ;
 
 event_create:
-  CREATE _basics_or_replace_95pct event_definer_optional EVENT event_name ON SCHEDULE event_schedule event_optional_attributes DO event_body |
-  CREATE event_definer_optional EVENT _basics_if_not_exists_95pct event_name ON SCHEDULE event_schedule event_optional_attributes DO event_body
+  CREATE __or_replace(95) event_definer_optional EVENT event_name ON SCHEDULE event_schedule event_optional_attributes DO event_body |
+  CREATE event_definer_optional EVENT __if_not_exists(95) event_name ON SCHEDULE event_schedule event_optional_attributes DO event_body
 ;
 
 event_alter:
@@ -74,7 +74,7 @@ event_schedule_optional:
   | { $event_action_count++; '' } ON SCHEDULE event_schedule ;
 
 event_on_completion_optional:
-  | { $event_action_count++; '' } ON COMPLETION _basics_not_33pct PRESERVE ;
+  | { $event_action_count++; '' } ON COMPLETION __not(30) PRESERVE ;
 
 event_rename_optional:
   | { $event_action_count++; '' } RENAME TO event_name ;

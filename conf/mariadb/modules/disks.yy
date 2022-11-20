@@ -18,7 +18,7 @@
 # --mysqld=--plugin-load-add=disks --mysqld=--loose-disks
 #
 
-query_add:
+query:
     ==FACTOR:0.05== disks_query
 ;
 

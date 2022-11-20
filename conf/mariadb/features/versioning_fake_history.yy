@@ -13,11 +13,13 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
+#include <conf/basics.yy>
+
 
 # Re-defining grammar for SYSTEM VERSIONING testing
 
 # DDL-rich grammar requires frequent metadata reload
-query_init_add:
+query_init:
   { $vers_tab_num=0; $executors->[0]->setMetadataReloadInterval(15 + $generator->threadId()); '' }
     SET SYSTEM_VERSIONING_ALTER_HISTORY= vers_alter_history_value, ENFORCE_STORAGE_ENGINE=NULL
   ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init
@@ -46,7 +48,7 @@ vers_create_table_with_visible_columns:
   CREATE OR REPLACE TABLE `vers_table_visible_columns` (`a` INT, `row_start` TIMESTAMP(6) AS ROW START, `row_end` TIMESTAMP(6) AS ROW END, PERIOD FOR SYSTEM_TIME(`row_start`,`row_end`)) WITH SYSTEM VERSIONING
 ;
 
-query_add:
+query:
   { $new_col_next_num= 0; '' } vers_fix_timestamp ;; vers_query ;; SET timestamp= 0 ;
 
 vers_fix_timestamp:

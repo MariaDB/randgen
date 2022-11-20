@@ -1,4 +1,4 @@
-# Copyright (c) 2021, MariaDB Corporation.
+# Copyright (c) 2021, 2022, MariaDB Corporation.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,12 +13,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1335  USA */
 
+#include <conf/basics.yy>
+
+
 # Set here the list of databases if necessary, e.g.
 # $all_selects_databases= [ 'INFORMATION_SCHEMA' ]; 
-query_init_add:
+query_init:
    { $all_selects_databases= $executors->[0]->databases(); '' };
 
-query_add:
+query:
   { @aliases= (); $non_agg_fields= 0; $agg_fields= 0; '' } all_selects_query { $last_database= undef; $last_table= undef; '' };
 
 all_selects_query:
@@ -110,9 +113,9 @@ all_selects_join_on_clause:
   ON (all_selects_join_on_list) ;
 
 all_selects_join_on_list:
-  ==FACTOR:5== all_selects_join_condition _basics_logical_operator all_selects_join_condition |
-  all_selects_join_condition _basics_logical_operator all_selects_join_on_list |
-  (all_selects_join_on_list) _basics_logical_operator all_selects_join_condition
+  ==FACTOR:5== all_selects_join_condition __and_x_or all_selects_join_condition |
+  all_selects_join_condition __and_x_or all_selects_join_on_list |
+  (all_selects_join_on_list) __and_x_or all_selects_join_condition
 ;
 
 # TODO
@@ -136,15 +139,15 @@ all_selects_optional_where_clause:
 ;
 
 all_selects_where_list:
-  ==FACTOR:5== all_selects_where_condition _basics_logical_operator all_selects_where_condition |
-  all_selects_where_condition _basics_logical_operator all_selects_where_list |
-  (all_selects_where_list) _basics_logical_operator all_selects_where_condition
+  ==FACTOR:5== all_selects_where_condition __and_x_or all_selects_where_condition |
+  all_selects_where_condition __and_x_or all_selects_where_list |
+  (all_selects_where_list) __and_x_or all_selects_where_condition
 ;
 
 # TODO
 all_selects_where_condition:
   ==FACTOR:5== all_selects_where_argument _basics_comparison_operator all_selects_where_argument |
-  all_selects_where_argument IS _basics_not_33pct NULL
+  all_selects_where_argument IS __not(30) NULL
 ;
 
 all_selects_where_argument:
@@ -170,15 +173,15 @@ all_selects_having_clause:
   HAVING all_selects_having_list ;
 
 all_selects_having_list:
-  ==FACTOR:5== all_selects_having_condition _basics_logical_operator all_selects_having_condition |
-  all_selects_having_condition _basics_logical_operator all_selects_having_list |
-  (all_selects_having_list) _basics_logical_operator all_selects_having_condition
+  ==FACTOR:5== all_selects_having_condition __and_x_or all_selects_having_condition |
+  all_selects_having_condition __and_x_or all_selects_having_list |
+  (all_selects_having_list) __and_x_or all_selects_having_condition
 ;
 
 # TODO
 all_selects_having_condition:
   ==FACTOR:5== all_selects_having_argument _basics_comparison_operator all_selects_having_argument |
-  all_selects_having_argument IS _basics_not_33pct NULL
+  all_selects_having_argument IS __not(30) NULL
 ;
 
 all_selects_having_argument:

@@ -54,7 +54,7 @@ sub run {
   my ($status, $server, $gentest);
 
   $status= STATUS_OK;
-  my $srv_count= scalar(@{$self->getProperty('basedirs')});
+  my $srv_count= scalar(keys %{$self->getProperty('server_specific')});
   if ($srv_count < 2) {
     sayError("There should be at least two servers for the comparison test");
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[]);
