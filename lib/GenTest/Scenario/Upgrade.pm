@@ -30,7 +30,7 @@ use strict;
 use DBI;
 use GenUtil;
 use GenTest;
-use GenTest::App::GenTest;
+use GenTest::TestRunner;
 use GenTest::Properties;
 use GenTest::Constants;
 use GenTest::Scenario;
@@ -97,14 +97,6 @@ sub switch_to_new_server {
   my $srvspec= $self->getProperty('server_specific');
   $srvspec->{1}= $self->new_server_options();
   $self->setProperty('server_specific',$srvspec);
-  if ($self->scenarioOptions()->{grammar2}) {
-    $self->setProperty('grammar',$self->scenarioOptions()->{grammar2});
-  }
-  if ($self->scenarioOptions()->{redefine2}) {
-    my @redefines= @{$self->getProperty('redefine')};
-    push @redefines, $self->scenarioOptions()->{redefine2};
-    $self->setProperty('redefine',\@redefines);
-  }
 }
 
 sub compare_autoincrements {

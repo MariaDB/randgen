@@ -22,18 +22,19 @@ package GenTest::Generator::FromGrammar;
 require Exporter;
 @ISA = qw(GenTest::Generator GenTest);
 
-use strict;
-use GenTest::Constants;
-use GenTest::Random;
-use GenTest::Generator;
-use GenTest::Grammar;
-use GenTest::Grammar::Rule;
-use GenTest::Stack::Stack;
-use GenUtil;
-use GenTest;
 use Cwd;
 use List::Util qw(shuffle); # For some grammars
 use Time::HiRes qw(time);
+
+use strict;
+use GenTest;
+use GenTest::Constants;
+use GenTest::Generator;
+use GenTest::Grammar;
+use GenTest::Grammar::Rule;
+use GenTest::Random;
+use GenTest::Stack::Stack;
+use GenUtil;
 
 use constant GENERATOR_MAX_OCCURRENCES  => 10000;
 use constant GENERATOR_MAX_LENGTH  => 10000000;
@@ -44,14 +45,6 @@ my $cwd = cwd();
 sub new {
   my $class = shift;
   my $generator = $class->SUPER::new(@_);
-
-  if (not defined $generator->grammar()) {
-    $generator->[GENERATOR_GRAMMAR] = GenTest::Grammar->new(
-      grammar_file  => $generator->grammarFile(),
-      grammar_string  => $generator->grammarString()
-    );
-    return undef if not defined $generator->[GENERATOR_GRAMMAR];
-  }
 
   if (not defined $generator->prng()) {
     $generator->[GENERATOR_PRNG] = GenTest::Random->new(
@@ -75,8 +68,6 @@ sub participatingRules {
   return $_[0]->[GENERATOR_PARTICIPATING_RULES];
 }
 
-
-
 #
 # Generate a new query. We do this by iterating over the array containing grammar rules and expanding each grammar rule
 # to one of its right-side components . We do that in-place in the array.
@@ -91,8 +82,7 @@ sub next {
   # We already know that our UTFs in some grammars are ugly.
   no warnings 'surrogate';
 
-  my $grammar = $generator->[GENERATOR_GRAMMAR];
-  my $grammar_rules = $grammar->rules();
+  my $grammars = $generator->[GENERATOR_GRAMMARS];
 
   my $prng = $generator->[GENERATOR_PRNG];
   my %rule_invariants = ();
@@ -103,14 +93,14 @@ sub next {
   my $last_field;
   my $last_table;
   my $last_database;
-    my $last_field_list_length;
-    my $last_item;
+  my $last_field_list_length;
+  my $last_item;
     
   my $stack = GenTest::Stack::Stack->new();
   my $global = $generator->globalFrame();
 
   sub expand {
-    my ($rule_counters, $rule_invariants, @sentence) = @_;
+    my ($rule_counters, $rule_invariants, $grammar_rules, @sentence) = @_;
     my $item_nodash;
     my $orig_item;
 
@@ -142,10 +132,10 @@ sub next {
         }
 
         if ($invariant) {
-          @{$rule_invariants->{$item}} = expand($rule_counters,$rule_invariants,($item)) unless defined $rule_invariants->{$item};
+          @{$rule_invariants->{$item}} = expand($rule_counters,$rule_invariants,$grammar_rules,($item)) unless defined $rule_invariants->{$item};
           @expansion = @{$rule_invariants->{$item}};
         } else {
-          @expansion = expand($rule_counters,$rule_invariants,@{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]->[
+          @expansion = expand($rule_counters,$rule_invariants,$grammar_rules,@{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]->[
             $prng->uint16(0, $#{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]})
           ]});
 
@@ -349,38 +339,44 @@ sub next {
   unlink($generator->[GENERATOR_TMPNAM]) if defined $generator->[GENERATOR_TMPNAM];
   $generator->[GENERATOR_TMPNAM] = undef;
 
-  my $starting_rule;
+  my $starting_rule= '';
+  my $grammar_rules;
+  my @sentence= ();
 
   # If this is our first query, we look for a rule named "threadN_init" or "query_init"
-  if ($generator->[GENERATOR_SEQ_ID] == 0) {
-    if (exists $grammar_rules->{"thread".$generator->threadId()."_init"}) {
-      $starting_rule = "thread".$generator->threadId()."_init";
-    } elsif (exists $grammar_rules->{"query_init"}) {
-      $starting_rule = "query_init";
+  # in all grammars and concatenate them
+  if ($generator->[GENERATOR_SEQ_ID] == 0)
+  {
+    foreach my $grammar (@$grammars) {
+      $grammar_rules = $grammar->rules();
+      if (exists $grammar_rules->{"thread".$generator->threadId()."_init"}) {
+        $starting_rule= "thread".$generator->threadId()."_init";
+      } elsif (exists $grammar_rules->{"query_init"}) {
+        $starting_rule= "query_init";
+      } else {
+        next;
+      }
+      @sentence = (@sentence, expand(\%rule_counters,\%rule_invariants,$grammar_rules,($starting_rule)), ';; ');
     }
-  } elsif ($generator->[GENERATOR_SEQ_ID] == 1) {
-        # Always reload metadata after the first rule, before expanding the next ones
-        sayDebug("Reloading metadata after the first rule was executed");
-        $executors->[0]->forceMetadataReload();
-        $executors->[0]->cacheMetaData();
+    sayDebug("Starting rule ($starting_rule) expanded:\n@sentence");
+  }
+  else
+  {
+    if ($generator->[GENERATOR_SEQ_ID] == 1) {
+      # Always reload metadata after the first rule, before expanding the next ones
+      sayDebug("Reloading metadata after the first rule was executed");
+      $executors->[0]->forceMetadataReload();
+      $executors->[0]->cacheMetaData();
     }
-
-  $grammar_rules = $grammar->rules();
-
-  # If no init starting rule, we look for rules named "threadN" or "query"
-
-  if (not defined $starting_rule) {
+    my $grammar= $prng->arrayElement($grammars);
+    $grammar_rules= $grammar->rules();
     if (exists $grammar_rules->{"thread".$generator->threadId()}) {
       $starting_rule = $grammar_rules->{"thread".$generator->threadId()}->name();
     } else {
       $starting_rule = "query";
     }
+    @sentence = expand(\%rule_counters,\%rule_invariants,$grammar_rules,($starting_rule));
   }
-    
-  my @sentence = expand(\%rule_counters,\%rule_invariants,($starting_rule));
-  if ($generator->[GENERATOR_SEQ_ID] == 0) {
-      sayDebug("Starting rule ($starting_rule) expanded:\n@sentence");
-    }
 
   $generator->[GENERATOR_SEQ_ID]++;
 

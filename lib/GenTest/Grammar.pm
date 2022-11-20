@@ -33,8 +33,8 @@ use Data::Dumper;
 use Carp;
 
 use constant GRAMMAR_RULES     => 0;
-use constant GRAMMAR_FILES     => 1;
-use constant GRAMMAR_STRINGS   => 2;
+use constant GRAMMAR_FILE      => 1;
+use constant GRAMMAR_STRING    => 2;
 use constant GRAMMAR_FEATURES  => 3;
 use constant GRAMMAR_REDEFINES => 4;
 
@@ -43,58 +43,30 @@ use constant GRAMMAR_REDEFINES => 4;
 sub new {
   my $class = shift;
 
-
   my $grammar = $class->SUPER::new({
-    'grammar_files'   => GRAMMAR_FILES,
-    'grammar_strings' => GRAMMAR_STRINGS,
-    'grammar_rules'   => GRAMMAR_RULES,
+    'grammar_file'   => GRAMMAR_FILE,
     'redefine_files'  => GRAMMAR_REDEFINES,
   }, @_);
 
   $grammar->[GRAMMAR_FEATURES]= [];
+  $grammar->[GRAMMAR_RULES] = {};
 
-  if (defined $grammar->rules()) {
-    $grammar->[GRAMMAR_STRINGS] = [ $grammar->toString() ];
-  } else {
-    $grammar->[GRAMMAR_RULES] = {};
-
-    if (defined $grammar->files()) {
-      my $parse_result = $grammar->extractFromFiles($grammar->files());
-      return undef if $parse_result > STATUS_OK;
-    }
-
-    if (defined $grammar->strings()) {
-      my $parse_result = $grammar->parseFromStrings($grammar->strings());
-      return undef if $parse_result > STATUS_OK;
-    }
-    my @features= ();
-    foreach my $i (0..$#{$grammar->[GRAMMAR_RULES]}) {
-      if ($grammar->[GRAMMAR_RULES]->[$i]->{'_features'}) {
-        # Grammar rule is an array. First element is the rule name (_features),
-        # the second element is an array ref of options.
-        # Each element of the array ref of options is an array ref of tokens.
-        # So, at this moment each of features is a set of tokens (because
-        # feature names can contain spaces).
-        # We need to convert them into an array of feature names.
-        foreach my $f (@{$grammar->[GRAMMAR_RULES]->[$i]->{'_features'}->[1]}) {
-          push @features, join '', @$f;
-        }
-        delete $grammar->[GRAMMAR_RULES]->[$i]->{'_features'}
-      }
-      $grammar->[GRAMMAR_FEATURES]= \@features;
-      sayDebug("Found features @{$grammar->[GRAMMAR_FEATURES]}");
-    }
+  if (defined $grammar->file()) {
+    my $parse_result = $grammar->parseFromFile($grammar->file());
+    return undef if $parse_result > STATUS_OK;
   }
+
+  sayDebug("Found features @{$grammar->[GRAMMAR_FEATURES]}");
 
   return $grammar;
 }
 
-sub files {
-  return $_[0]->[GRAMMAR_FILES];
+sub file {
+  return $_[0]->[GRAMMAR_FILE];
 }
 
-sub strings {
-  return $_[0]->[GRAMMAR_STRINGS];
+sub string {
+  return $_[0]->[GRAMMAR_STRING];
 }
 
 sub features {
@@ -108,34 +80,20 @@ sub toString {
 }
 
 
-sub extractFromFiles {
-  my ($grammar, $grammar_files) = @_;
+sub parseFromFile {
+  my ($grammar, $grammar_file) = @_;
 
-    my @grammar_strings= ();
-    foreach my $grammar_file (@$grammar_files) {
-        open (GF, $grammar_file) or die "Unable to open() grammar $grammar_file: $!";
-        say "Reading grammar from file $grammar_file";
-        read (GF, my $grammar_string, -s $grammar_file) or die "Unable to read() $grammar_file: $!";
-        close (GF);
-        push @grammar_strings, $grammar_string;
-    }
-    $grammar->[GRAMMAR_STRINGS] = \@grammar_strings;
-    return STATUS_OK;
+  open (GF, $grammar_file) or die "Unable to open() grammar $grammar_file: $!";
+  sayDebug("Reading grammar from file $grammar_file");
+  read (GF, my $grammar_string, -s $grammar_file) or die "Unable to read() $grammar_file: $!";
+  close (GF);
+
+  $grammar->[GRAMMAR_STRING] = $grammar_string;
+  return $grammar->parseFromString($grammar_string);
 }
 
-sub parseFromStrings {
-  my ($grammar, $grammar_strings) = @_;
-
-  if (ref $grammar_strings eq '') {
-    $grammar_strings= [ $grammar_strings ] ;
-  }
-  my @all_rules= ();
-
-  foreach my $grammar_string (@$grammar_strings)
-  {
-    #
-    # provide an #include directive
-    #
+sub parseFromString {
+  my ($grammar, $grammar_string) = @_;
 
     while ($grammar_string =~ s{#include [<"](.*?)[>"]$}{
       {
@@ -145,6 +103,10 @@ sub parseFromStrings {
               read (IF, $include_string, -s $include_file) or die "Unable to open $include_file: $!";
         $include_string;
     }}mie) {};
+
+    while ($grammar_string =~ s{#feature\s*<(.+)>.*}{}) {
+      push @{$grammar->[GRAMMAR_FEATURES]}, $1;
+    }
 
     # Strip comments. Note that this is not Perl-code safe, since perl fragments
     # can contain both comments with # and the $# expression. A proper lexer will fix this
@@ -371,34 +333,23 @@ sub parseFromStrings {
       );
       $rules{$rule_name} = $rule;
     }
-    push @all_rules, \%rules;
-  }
 
-  $grammar->[GRAMMAR_RULES] = \@all_rules;
+  $grammar->[GRAMMAR_RULES] = \%rules;
   return STATUS_OK;
 }
 
 # First parameter is rule name, second is the grammar number
 sub rule {
-  my $grammar_no= $_[2] || 0;
-  return $_[0]->[GRAMMAR_RULES]->[$grammar_no]->{$_[1]};
+  return $_[0]->[GRAMMAR_RULES]->{$_[1]};
 }
 
-sub all_rules {
-  return $_[0]->[GRAMMAR_RULES];
-}
-
-# By grammar number
 sub rules {
-  my $grammar_no= $_[1] || 0;
-  return $_[0]->[GRAMMAR_RULES]->[$grammar_no];
+  return $_[0]->[GRAMMAR_RULES];
 }
 
 # Deletes from all grammars
 sub deleteRule {
-  foreach my $grammar_no (0..$#{$_[0]->[GRAMMAR_RULES]}) {
-    delete $_[0]->[GRAMMAR_RULES]->[$grammar_no]->{$_[1]};
-  }
+  delete $_[0]->[GRAMMAR_RULES]->{$_[1]};
 }
 
 sub cloneRule {
@@ -432,8 +383,7 @@ sub cloneRule {
 # Check if the grammar is tagged with query properties such as RESULTSET_ or ERROR_1234
 #
 sub hasProperties {
-  my $grammar_no= $_[1] || 0;
-  if ($_[0]->[GRAMMAR_STRINGS]->[$grammar_no] =~ m{RESULTSET_|ERROR_|QUERY_}so) {
+  if ($_[0]->[GRAMMAR_STRING] =~ m{RESULTSET_|ERROR_|QUERY_}so) {
     return 1;
   } else {
     return 0;
@@ -447,8 +397,8 @@ sub hasProperties {
 sub patch {
     my ($self, $patch_grammar) = @_;
 
+    sayDebug("Applying a patch to grammar ".$self->file);
     my $patch_rules = $patch_grammar->rules();
-
     my $rules = $self->rules();
 
     foreach my $ruleName (sort keys %$patch_rules) {
@@ -473,8 +423,7 @@ sub patch {
         }
     }
 
-    my $new_grammar = GenTest::Grammar->new(grammar_rules => $rules);
-    return $new_grammar;
+    $self->[GRAMMAR_RULES]= $rules;
 }
 
 

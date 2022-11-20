@@ -71,7 +71,7 @@ my ($help,
     @exit_status, $trials, $output, $force,
    );
 
-$SIG{INT}= sub { kill('KILL',-$$) };
+$SIG{INT}= sub { \&group_cleaner };
 
 
 # Defaults
@@ -81,6 +81,7 @@ $props->{queries}= 100000000;
 $props->{duration}= 300;
 
 $trials= 1;
+$scenario= DEFAULT_RQG_SCENARIO;
 
 my @ARGV_saved = @ARGV;
 
@@ -120,7 +121,7 @@ my $opt_result = GetOptions(
   'freeze_time|freeze-time' => \$props->{freeze_time},
   'genconfig=s' => \$genconfig,
   'gendata=s@' => \@{$props->{gendata}},
-  'grammars=s@' => \@{$props->{grammar}},
+  'grammars=s@' => \@{$props->{grammars}},
   'help' => \$help,
   'metadata!' => \$props->{metadata},
   'minio|with-minio|with_minio' => \$minio,
@@ -128,7 +129,7 @@ my $opt_result = GetOptions(
   'parser=s' => \$props->{parser},
   'parser-mode|parser_mode=s' => \$props->{parser_mode},
   'queries=s' => \$props->{queries},
-  'redefines=s@' => \@{$props->{redefine}},
+  'redefines=s@' => \@{$props->{redefines}},
   'reporters=s@' => \@{$props->{reporters}},
   'restart_timeout|restart-timeout=i' => \$props->{restart_timeout},
   'rows=s' => \$props->{rows},
@@ -383,9 +384,11 @@ foreach my $trial_id (1..$trials)
 
   my $config = GenTest::Properties->init($props);
   my $sc= $class->new(properties => $config, scenario_options => \%scenario_options);
-  my $res= $sc->run();
+  my $res= STATUS_PERL_FAILURE;
+  eval { $res= $sc->run(); } ; warn $@ if $@;
   $status= $res if $res > $status;
   my $resname= status2text($res);
+  group_cleaner();
   if ($search_mode) {
     say("Trial $trial_id ended with exit status $resname ($res)");
     my $check_result= check_for_desired_result($resname,$output_file);
@@ -399,10 +402,25 @@ foreach my $trial_id (1..$trials)
 
 say("$0 will exit with exit status ".status2text($status). " ($status)\n");
 if ($search_mode) {
-  say("Trial search ".($trial_result ? "succeeded at reproducing the problem" : "failed to reproduce the problem"));
+  say("Test runs apparently ".($trial_result ? "achieved the expected outcome" : "failed to achieve the expected outcome"));
 }
 
 safe_exit($status);
+
+###############################################
+
+sub group_cleaner {
+  return if osWindows();
+  my @pids= split /\n/, `ps xh -o pgrp,pid,comm | grep -v tee`;
+  my @group= ();
+  foreach my $pp (@pids) {
+    if ($pp =~ /^\s*(\d+)\s+(\d+)/) {
+      my ($p1, $p2) = ($1, $2);
+      push @group, $p2 if ($p1 == $$ and $p2 != $$);
+    }
+  }
+  kill('KILL',@group);
+}
 
 # NOTE: subroutine returns 1 if the goal was achieved, and 0 otherwise
 sub check_for_desired_result
@@ -456,7 +474,7 @@ sub check_for_desired_result
 
   # If we are here, we have achieved the goal, we just need to produce a proper log message
 
-  my $line= "Trials succeeded at reproducing the problem: exit status $resname";
+  my $line= "The trial achieved the expected result: exit status $resname";
   if (scalar @exit_status) {
       $line.= ", matches one of desired exit codes [@exit_status]";
   }
@@ -480,7 +498,7 @@ $0 - Run a complete random query generation test scenario
 
     General options
 
-    --grammar   : Grammar file to use when generating queries
+    --grammar   : Grammar file to use when generating queries (can be used multiple times)
     --redefine  : Grammar file(s) to redefine and/or add rules to the given grammar
     --engine    : Table engine(s) to use when creating tables with gendata (default no ENGINE in CREATE TABLE).
                 : Multiple engines should be provided as a comma-separated list.

@@ -142,7 +142,7 @@ sub setMetadataReloadInterval {
 }
 
 sub forceMetadataReload {
-  say("Forcing metadata reload");
+  sayDebug("Forcing metadata reload");
   $_[0]->[EXECUTOR_META_RELOAD_NOW]= 1;
 }
 
@@ -372,7 +372,7 @@ sub cacheMetaData {
         $coll->{$collation} = $charset;
     }
     $self->[EXECUTOR_COLLATION_METADATA] = $coll;
-    say("Executor has loaded collation metadata");
+    sayDebug("Executor has loaded collation metadata");
   }
 
   my ($system_meta, $non_system_meta);
@@ -382,7 +382,7 @@ sub cacheMetaData {
     $system_meta= $self->loadMetaData('system');
     if ($system_meta and scalar(keys %$system_meta)) {
       $system_schema_cache{$self->dsn()}= $system_meta;
-      say("Executor has loaded system metadata");
+      sayDebug("Executor has loaded system metadata");
     } else {
       sayError("Executor failed to load system metadata");
     }
@@ -399,7 +399,7 @@ sub cacheMetaData {
     $non_system_meta= $self->loadMetaData('non-system');
 
     if ($non_system_meta and scalar(%$non_system_meta)) {
-      say("Executor has (re-)loaded non-system metadata");
+      sayDebug("Executor has (re-)loaded non-system metadata");
       $self->[EXECUTOR_META_LAST_LOAD_OK]= 1;
     } elsif ($non_system_meta) {
       sayDebug("Executor has kept old non-system metadata");

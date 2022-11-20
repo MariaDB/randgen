@@ -182,13 +182,12 @@ sub init {
     legal => [
               'basedirs',
               'base_port',
-              'grammar',
+              'grammars',
               'dsn',
               'engine',
               'gendata',
-              'gendata-advanced',
               'generator',
-              'redefine',
+              'redefines',
               'threads',
               'queries',
               'duration',
@@ -249,9 +248,8 @@ sub setPropertiesFromHash {
   $gentestProps->property('filters',$props->{filters}) if defined $props->{filters};
   $gentestProps->property('freeze_time',$props->{freeze_time}) if defined $props->{freeze_time};
   $gentestProps->property('gendata',$props->{gendata}) if exists $props->{gendata};
-  $gentestProps->property('gendata-advanced',1) if defined $props->{gendata_advanced};
   $gentestProps->property('generator',($props->{generator} || 'FromGrammar'));
-  $gentestProps->property('grammar',$props->{grammar});
+  $gentestProps->property('grammars',$props->{grammars});
   $gentestProps->property('queries',$props->{queries}) if defined $props->{queries};
   $gentestProps->property('metadata',(defined $props->{metadata} ? $props->{metadata} : 1)); # By default metadata is loaded
   $gentestProps->property('multi-master',1) if $props->{'multi-master'};
@@ -259,7 +257,7 @@ sub setPropertiesFromHash {
   $gentestProps->property('parser',$props->{parser});
   $gentestProps->property('parser_mode',$props->{parser_mode});
   $gentestProps->property('ps-protocol',1) if $props->{ps_protocol};
-  $gentestProps->property('redefine',$props->{redefine}) if $props->{redefine};
+  $gentestProps->property('redefines',$props->{redefines}) if $props->{redefines};
   $gentestProps->property('reporters',$props->{reporters}) if $props->{reporters};
   $gentestProps->property('restart-timeout',$props->{restart_timeout}) if defined $props->{restart_timeout};
   $gentestProps->property('rows',$props->{rows}) if defined $props->{rows};
@@ -356,7 +354,6 @@ sub printProps {
     $Data::Dumper::Maxdepth= 3;
     $Data::Dumper::Sortkeys= 1;
     $Data::Dumper::Ident= 0;
-    say Dumper $self->[PROPS_PROPS];
 }
 
 ## Remove proerties set to defined

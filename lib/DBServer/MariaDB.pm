@@ -1334,12 +1334,12 @@ sub addErrorLogMarker {
   my $self= shift;
   my $marker= shift;
 
-    say("Adding marker $marker to the error log ".$self->errorlog);
+    sayDebug("Adding marker $marker to the error log ".$self->errorlog);
   if (open(ERRLOG,">>".$self->errorlog)) {
     print ERRLOG "$marker\n";
     close (ERRLOG);
   } else {
-    say("Could not add marker $marker to the error log ".$self->errorlog);
+    sayWarning("Could not add marker $marker to the error log ".$self->errorlog);
   }
 }
 
@@ -1390,7 +1390,7 @@ sub checkErrorLogForErrors {
   open(ERRLOG, $self->errorlog);
   my $found_marker= 0;
 
-  say("Checking server log for important errors starting from " . ($marker ? "marker $marker" : 'the beginning'));
+  sayDebug("Checking server log for important errors starting from " . ($marker ? "marker $marker" : 'the beginning'));
 
   my $count= 0;
   while (<ERRLOG>)

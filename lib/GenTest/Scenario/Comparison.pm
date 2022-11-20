@@ -32,7 +32,7 @@ use strict;
 use DBI;
 use GenUtil;
 use GenTest;
-use GenTest::App::GenTest;
+use GenTest::TestRunner;
 use GenTest::Properties;
 use GenTest::Constants;
 use GenTest::Scenario;

@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-package GenTest::App::GendataAdvanced;
+package GenData::GendataAdvanced;
 
 @ISA = qw(GenTest);
 
@@ -671,7 +671,7 @@ sub gen_table {
     {
       my $name = ( $e eq $engine ? $basename : $basename . '_'.$e );
 
-      say("Creating ".$executor->getName()." table $name, size $size rows, " . ($e eq '' ? "default engine" : "engine $e"));
+      say("Creating table $name, size $size rows, " . ($e eq '' ? "default engine" : "engine $e"));
 
       ### This variant is needed due to
       ### http://bugs.mysql.com/bug.php?id=47125

@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-package GenTest::App::GenTest;
+package GenTest::TestRunner;
 
 @ISA = qw(GenTest);
 
@@ -30,41 +30,37 @@ use File::Basename;
 use File::Path 'mkpath';
 use File::Copy;
 use File::Spec;
-
-use GenUtil;
-use GenTest;
-use GenTest::Properties;
-use GenTest::Constants;
-use GenTest::App::Gendata;
-use GenTest::App::GendataSimple;
-use GenTest::App::GendataAdvanced;
-use GenTest::IPC::Channel;
-use GenTest::IPC::Process;
-use GenTest::ErrorFilter;
-use GenTest::Grammar;
-use GenTest::Comparator;
-
-
 use POSIX;
 use Time::HiRes;
 
+use GenData::GendataFromFile;
+use GenData::GendataSimple;
+use GenData::GendataAdvanced;
+use GenTest;
+use GenTest::Comparator;
 use GenTest::Constants;
-use GenTest::Result;
-use GenTest::Validator;
+use GenTest::ErrorFilter;
 use GenTest::Executor;
+use GenTest::Filter::Regexp;
+use GenTest::Grammar;
+use GenTest::IPC::Channel;
+use GenTest::IPC::Process;
 use GenTest::Mixer;
+use GenTest::Properties;
 use GenTest::Reporter;
 use GenTest::ReporterManager;
-use GenTest::Filter::Regexp;
+use GenTest::Result;
+use GenTest::Validator;
+use GenUtil;
 
-use constant PROCESS_TYPE_PARENT	=> 0;
-use constant PROCESS_TYPE_PERIODIC	=> 1;
-use constant PROCESS_TYPE_CHILD		=> 2;
+use constant PROCESS_TYPE_PARENT  => 0;
+use constant PROCESS_TYPE_PERIODIC  => 1;
+use constant PROCESS_TYPE_CHILD    => 2;
 
 use constant GT_CONFIG => 0;
 use constant GT_CHANNEL => 5;
 
-use constant GT_GRAMMAR => 6;
+use constant GT_GRAMMARS => 6;
 use constant GT_GENERATOR => 7;
 use constant GT_REPORTER_MANAGER => 8;
 use constant GT_TEST_START => 9;
@@ -78,25 +74,6 @@ sub new {
     my $self = $class->SUPER::new({
         'config' => GT_CONFIG},@_);
     
-    if ($self->config->reporters and not ref $self->config->reporters eq 'ARRAY') {
-        $self->config->reporters([ split /,/, $self->config->reporters ]);
-    }
-    if ($self->config->validators and not ref $self->config->validators eq 'ARRAY') {
-        $self->config->validators([ split /,/, $self->config->validators ]);
-    }
-    if ($self->config->transformers and not ref $self->config->transformers eq 'ARRAY') {
-        $self->config->transformers([ split /,/, $self->config->transformers ]);
-    }
-    if ($self->config->redefine and not ref $self->config->redefine eq 'ARRAY') {
-        $self->config->redefine([ split /,/, $self->config->redefine ]);
-    }
-    if ($self->config->redefine and "@{$self->config->redefine}" !~ /basics.yy/) {
-        push @{$self->config->redefine}, 'conf/mariadb/basics.yy';
-    }
-    if ($self->config->servers and not ref $self->config->servers eq 'ARRAY') {
-        $self->config->servers([ split /,/, $self->config->servers ]);
-    }
-
     croak ("Need config") if not defined $self->config;
     return $self;
 }
@@ -105,8 +82,8 @@ sub config {
     return $_[0]->[GT_CONFIG];
 }
 
-sub grammar {
-    return $_[0]->[GT_GRAMMAR];
+sub grammars {
+    return $_[0]->[GT_GRAMMARS];
 }
 
 sub generator {
@@ -130,7 +107,6 @@ sub run {
 
     $SIG{TERM} = sub { exit(0) };
     $SIG{CHLD} = "IGNORE" if osWindows();
-#    $SIG{INT} = "IGNORE";
     
     $ENV{RQG_DEBUG} = 1 if $self->config->debug;
 
@@ -367,8 +343,8 @@ sub workerProcess {
         $worker_result = $query_result if $query_result > $worker_result && $query_result > STATUS_TEST_FAILURE;
 
         if ($query_result > STATUS_CRITICAL_FAILURE) {
-				say("GenTest: Server crash or critical failure (". status2text($query_result) . ") reported, the child will be stopped");
-            undef $mixer;	# so that destructors are called
+        say("GenTest: Server crash or critical failure (". status2text($query_result) . ") reported, the child will be stopped");
+            undef $mixer;  # so that destructors are called
             $self->stopChild($query_result);
         }
 
@@ -390,7 +366,7 @@ sub workerProcess {
         say("GenTest: Child worker process completed with error code $worker_result.");
         $self->stopChild($worker_result);
     } else {
-        say("GenTest: Child worker process completed successfully.");
+        sayDebug("GenTest: Child worker process completed successfully.");
         $self->stopChild(STATUS_OK);
     }
 }
@@ -484,79 +460,72 @@ sub validateGenData {
 }
 
 sub doGenData {
-    my $self = shift;
-
-    foreach my $i (1..$self->config->number_of_servers) {
-        next unless $self->config->server_specific->{$i}->{dsn};
-        my $gendata_result;
-
-        if (defined $self->config->property('gendata-advanced')) {
-            $gendata_result = GenTest::App::GendataAdvanced->new(
-               dsn => $self->config->server_specific->{$i}->{dsn},
-               engine => $self->config->server_specific->{$i}->{engine},
-               partitions => $self->config->server_specific->{$i}->{partitions},
-               vcols => $self->config->server_specific->{$i}->{vcols},
-               views => $self->config->server_specific->{$i}->{views},
-               seed => $self->config->seed(),
-               sqltrace=> $self->config->sqltrace,
-               rows => $self->config->rows,
-               executor_id => $i,
-               compatibility => $self->config->compatibility,
-               variators => $self->config->variators,
-               vardir => $self->config->vardir,
-            )->run();
-            say("GendataAdvanced finished with result ".status2text($gendata_result));
-        }
-
-        # Contrary to the obvious, we will use the *best* result code --
-        # if at least one of data generations succeeded, it means we have some data and can proceed
-        if (defined $self->config->gendata) {
-            my @gd= @{$self->config->gendata};
-            foreach my $gendata (@gd) {
-             if ($gendata eq '') {
-                my $res = GenTest::App::GendataSimple->new(
-                   dsn => $self->config->server_specific->{$i}->{dsn},
-                   engine => $self->config->server_specific->{$i}->{engine},
-                   vcols => $self->config->server_specific->{$i}->{vcols},
-                   views => $self->config->server_specific->{$i}->{views},
-                   seed => $self->config->seed(),
-                   sqltrace=> $self->config->sqltrace,
-                   rows => $self->config->rows,
-                   executor_id => $i,
-                   variators => $self->config->variators,
-                   vardir => $self->config->vardir,
-                )->run();
-                say("GendataSimple finished with result ".status2text($res));
-                $gendata_result= STATUS_OK if $res == STATUS_OK;
-            }
-            else {
-              my $res = GenTest::App::Gendata->new(
-                   spec_file => $gendata,
-                   dsn => $self->config->server_specific->{$i}->{dsn},
-                   engine => $self->config->server_specific->{$i}->{engine},
-                   views => $self->config->server_specific->{$i}->{views},
-                   seed => $self->config->seed(),
-                   debug => $self->config->debug,
-                   rows => $self->config->rows,
-                   sqltrace => $self->config->sqltrace,
-                   short_column_names => $self->config->short_column_names,
-                   executor_id => $i,
-                   variators => $self->config->variators,
-                   vardir => $self->config->vardir,
-              )->run();
-              say("Gendata $gendata finished with result ".status2text($res));
-              $gendata_result= STATUS_OK if $res == STATUS_OK;
-            }
-          }
-        }
-            
-        return $gendata_result if $gendata_result >= STATUS_CRITICAL_FAILURE;
-
-        # For multi-master setup, e.g. Galera, we only need to do generatoion once
-        return STATUS_OK if $self->config->property('multi-master');
+  my $self = shift;
+  return STATUS_OK unless $self->config->gendata && scalar(@{$self->config->gendata});
+  my $gendata_result= STATUS_PERL_FAILURE;
+  foreach my $i (1..$self->config->number_of_servers) {
+    next unless $self->config->server_specific->{$i}->{dsn};
+    # Contrary to the usual, we will use the *best* result code here --
+    # if at least one of data generations succeeded, it means we have some data and can proceed
+    my @gd= @{$self->config->gendata};
+    foreach my $gendata (@gd) {
+      my $res= STATUS_OK;
+      if ($gendata eq 'advanced') {
+        $res= GenData::GendataAdvanced->new(
+           dsn => $self->config->server_specific->{$i}->{dsn},
+           engine => $self->config->server_specific->{$i}->{engine},
+           partitions => $self->config->server_specific->{$i}->{partitions},
+           vcols => $self->config->server_specific->{$i}->{vcols},
+           views => $self->config->server_specific->{$i}->{views},
+           seed => $self->config->seed(),
+           sqltrace=> $self->config->sqltrace,
+           rows => $self->config->rows,
+           executor_id => $i,
+           compatibility => $self->config->compatibility,
+           variators => $self->config->variators,
+           vardir => $self->config->vardir,
+        )->run();
+        say("GendataAdvanced finished with result ".status2text($res));
+      }
+      elsif ($gendata eq 'simple') {
+        $res = GenData::GendataSimple->new(
+           dsn => $self->config->server_specific->{$i}->{dsn},
+           engine => $self->config->server_specific->{$i}->{engine},
+           vcols => $self->config->server_specific->{$i}->{vcols},
+           views => $self->config->server_specific->{$i}->{views},
+           seed => $self->config->seed(),
+           sqltrace=> $self->config->sqltrace,
+           rows => $self->config->rows,
+           executor_id => $i,
+           variators => $self->config->variators,
+           vardir => $self->config->vardir,
+        )->run();
+        say("GendataSimple finished with result ".status2text($res));
+      }
+      else {
+        $res = GenData::GendataFromFile->new(
+           spec_file => $gendata,
+           dsn => $self->config->server_specific->{$i}->{dsn},
+           engine => $self->config->server_specific->{$i}->{engine},
+           views => $self->config->server_specific->{$i}->{views},
+           seed => $self->config->seed(),
+           debug => $self->config->debug,
+           rows => $self->config->rows,
+           sqltrace => $self->config->sqltrace,
+           short_column_names => $self->config->short_column_names,
+           executor_id => $i,
+           variators => $self->config->variators,
+           vardir => $self->config->vardir,
+        )->run();
+        say("Gendata $gendata finished with result ".status2text($res));
+      }
+      $gendata_result = $res if $res < $gendata_result;
+      return $gendata_result if $gendata_result >= STATUS_CRITICAL_FAILURE;
     }
-
-    return STATUS_OK;
+    # For multi-master setup, e.g. Galera, we only need to do generatoion once
+    return $gendata_result if $self->config->property('multi-master');
+  }
+  return $gendata_result;
 }
 
 sub initSeed {
@@ -591,43 +560,58 @@ sub initGenerator {
     eval("use $generator_name");
     croak($@) if $@;
 
-    if ($self->config->redefine and not ref $self->config->redefine eq 'ARRAY') {
-        my $redefines= [ split /,/, $self->config->redefine ];
-        $self->config->redefine($redefines);
-    }
-
     if ($generator_name eq 'GenTest::Generator::FromGrammar') {
-        if (not defined $self->config->grammar) {
-            sayError("Grammar not specified but Generator is $generator_name, status will be set to ENVIRONMENT_FAILURE");
-            return STATUS_ENVIRONMENT_FAILURE;
+      if (not defined $self->config->grammars or (scalar(@{$self->config->grammars}) == 0)) {
+          sayError("Grammar(s) not specified but Generator is $generator_name, status will be set to ENVIRONMENT_FAILURE");
+          return STATUS_ENVIRONMENT_FAILURE;
+      }
+      my $redefining_grammar;
+      foreach my $r (@{$self->config->redefines}) {
+        my $rg= GenTest::Grammar->new(
+                                  grammar_file => $r
+                              );
+        if (not defined $rg) {
+          sayError("Could not initialize the redefining grammar from $r");
+          return STATUS_ENVIRONMENT_FAILURE;
         }
-
-        $self->[GT_GRAMMAR] = GenTest::Grammar->new(
-            grammar_files => $self->config->grammar,
-            redefine_files => $self->config->redefine
-        );
-
-        if (not defined $self->grammar()) {
-            sayError("Could not initialize the grammar, status will be set to ENVIRONMENT_FAILURE");
-            return STATUS_ENVIRONMENT_FAILURE;
+        if ($rg->features && scalar @{$rg->features}) {
+          $self->registerFeatures($rg->features);
         }
-
-        if ($self->grammar()->features && scalar @{$self->grammar()->features}) {
-          $self->registerFeatures($self->grammar()->features);
+        if (defined $redefining_grammar) {
+          $redefining_grammar->patch($rg)
+        } else {
+          $redefining_grammar= $rg;
         }
+      }
+      my @grammars= ();
+      foreach my $g (@{$self->config->grammars}) {
+        my $grammar= GenTest::Grammar->new(
+                                  grammar_file => $g,
+                                  redefine_files => $self->config->redefines
+                        );
+        if (not defined $grammar) {
+          sayError("Could not initialize the grammar from $g, status will be set to ENVIRONMENT_FAILURE");
+          return STATUS_ENVIRONMENT_FAILURE;
+        }
+        $grammar->patch($redefining_grammar) if defined $redefining_grammar;
+        if ($grammar->features && scalar @{$grammar->features}) {
+          $self->registerFeatures($grammar->features);
+        }
+        push @grammars, $grammar;
+      }
+      $self->[GT_GRAMMARS]= [ @grammars ];
     }
 
     $self->[GT_GENERATOR] = $generator_name->new(
-        grammar => $self->grammar(),
-        annotate_rules => $self->config->property('annotate-rules'),
-        vardir => $self->config->vardir,
-        parser => $self->config->parser,
-        parser_mode => $self->config->parser_mode,
+      grammars => $self->grammars(),
+      annotate_rules => $self->config->property('annotate-rules'),
+      parser => $self->config->parser,
+      parser_mode => $self->config->parser_mode,
     );
 
     if (not defined $self->generator()) {
-        sayError("Could not initialize the generator, status will be set to ENVIRONMENT_FAILURE");
-        return STATUS_ENVIRONMENT_FAILURE;
+      sayError("Could not initialize the generator, status will be set to ENVIRONMENT_FAILURE");
+      return STATUS_ENVIRONMENT_FAILURE;
     }
 }
 
@@ -648,7 +632,7 @@ sub registerFeatures {
   if ($dbh->err) {
     sayError("Could not register features @{$features} at".$self->config->server_specific->{1}->{dsn}.": ".$dbh->err." ".$dbh->errstr);
   }
-  sayDebug("Registered features @$features");
+  sayDebug("Registered features: @$features");
 }
 
 sub isMySQLCompatible {
@@ -731,9 +715,12 @@ sub initValidators {
 
         push @{$self->config->validators}, 'MarkErrorLog' 
             if (defined $self->config->valgrind) && $self->isMySQLCompatible();
-        
-        push @{$self->config->validators}, 'QueryProperties' 
-            if defined $self->grammar() && $self->grammar()->hasProperties() && $self->isMySQLCompatible();
+
+        if ($self->grammars()) {
+          foreach my $grammar (@{$self->grammars}) {
+            push @{$self->config->validators}, 'QueryProperties' if $grammar->hasProperties();
+          }
+        }
     } else {
         ## Remove the "None" validator
         foreach my $i (0..$#{$self->config->validators}) {
@@ -765,12 +752,6 @@ sub initValidators {
         if defined $self->config->transformers and $#{$self->config->transformers} > -1;
 
     return STATUS_OK;
-}
-
-sub copyFileToDir {
-    my ($from, $todir) = @_;
-    say("Copying '$from' to '$todir'");
-    copy($from, $todir);
 }
 
 1;

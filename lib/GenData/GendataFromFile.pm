@@ -1,6 +1,6 @@
 # Copyright (C) 2009, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020, 2021, MariaDB Corporation Ab.
+# Copyright (c) 2020, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,21 +17,21 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-package GenTest::App::Gendata;
+package GenData::GendataFromFile;
 
 @ISA = qw(GenTest);
 
 use strict;
 use DBI;
 use Carp;
-use GenUtil;
+use Data::Dumper;
+
+use GenData::PopulateSchema;
 use GenTest;
 use GenTest::Constants;
-use GenTest::Random;
 use GenTest::Executor;
-use GenTest::App::PopulateSchema;
-
-use Data::Dumper;
+use GenTest::Random;
+use GenUtil;
 
 use constant FIELD_TYPE			=> 0;
 use constant FIELD_CHARSET		=> 1;
@@ -233,7 +233,7 @@ sub run {
           # but such things should be caught at test implementation stage
 
           my @populate_rows= (defined $self->rows() ? split(',', $self->rows()) : (0));
-          my $populate = GenTest::App::PopulateSchema->new(schema_file => $spec_file,
+          my $populate = GenTest::PopulateSchema->new(schema_file => $spec_file,
                                                debug => $self->debug,
                                                dsn => $self->dsn,
                                                seed => $self->seed,
@@ -491,8 +491,7 @@ sub run {
         my @table_copy = @$table;
         my @fields_copy = @fields;
         
-        say("Creating ".$executor->getName().
-            " table: $schema.$table_copy[TABLE_NAME]; engine: $table_copy[TABLE_ENGINE]; rows: $table_copy[TABLE_ROW] .");
+        say("Creating table: $schema.$table_copy[TABLE_NAME]; engine: $table_copy[TABLE_ENGINE]; rows: $table_copy[TABLE_ROW] .");
         
         if ($table_copy[TABLE_PK] ne '') {
             my $pk_field;

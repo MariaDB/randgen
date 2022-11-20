@@ -35,7 +35,7 @@ use strict;
 use DBI;
 use GenUtil;
 use GenTest;
-use GenTest::App::GenTest;
+use GenTest::TestRunner;
 use GenTest::Properties;
 use GenTest::Constants;
 use GenTest::Scenario;
@@ -175,7 +175,7 @@ sub run {
   }
   else {
     $self->printStep("Running test flow on the server");
-    $gentest= GenTest::App::GenTest->new(config => $self->getProperties());
+    $gentest= GenTest::TestRunner->new(config => $self->getProperties());
     my $res= $gentest->run();
     exit $res;
   }

@@ -47,8 +47,6 @@ sub new {
       scenario_options => SC_SCENARIO_OPTIONS
   }, @_);
 
-  print Dumper $scenario->[SC_TEST_PROPERTIES],"\n";
-
   $scenario->[SC_DETECTED_BUGS] = {};
   $scenario->[SC_GLOBAL_RESULT] = STATUS_OK;
 
@@ -173,7 +171,7 @@ sub generate_data {
   $self->setProperty('queries',0);
   $self->setProperty('threads',1);
   $self->setProperty('reporters','None');
-  my $gentest= GenTest::App::GenTest->new(config => $self->getProperties());
+  my $gentest= GenTest::TestRunner->new(config => $self->getProperties());
   my $status= $gentest->doGenData();
   $self->restoreProperties();
   return $status;
@@ -183,8 +181,7 @@ sub run_test_flow {
   my $self= shift;
   $self->backupProperties();
   $self->unsetProperty('gendata');
-  $self->unsetProperty('gendata-advanced');
-  my $gentest= GenTest::App::GenTest->new(config => $self->getProperties());
+  my $gentest= GenTest::TestRunner->new(config => $self->getProperties());
   my $status= $gentest->run();
   $self->restoreProperties();
   return $status;
@@ -252,7 +249,7 @@ sub prepareGentest {
 #  }
 
 # my $gentestProps = GenTest::Properties->init($props);
-# my $gentest = GenTest::App::GenTest->new(config => $gentestProps);
+# my $gentest = GenTest::TestRunner->new(config => $gentestProps);
 # my $gentest_result = $gentest->run();
 # say("GenTest exited with exit status ".status2text($gentest_result)." ($gentest_result)");
 
@@ -265,7 +262,7 @@ sub prepareGentest {
 #    $config->property('gendata-advanced', $self->getProperty('gendata-advanced'.$gentest_num));
 #  }
 
-  return GenTest::App::GenTest->new(config => $config);
+  return GenTest::TestRunner->new(config => $config);
 }
 
 sub addDetectedBug {
