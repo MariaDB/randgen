@@ -30,7 +30,7 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub transform {
-	my ($class, $orig_query) = @_;
+  my ($class, $orig_query) = @_;
 
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   return STATUS_WONT_HANDLE
@@ -38,11 +38,11 @@ sub transform {
       || $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|INSERT|REPLACE|CREATE)}sio
       || $orig_query =~ m{OFFSET}sio;
 
-	if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 4294836225}sio) {
-		return $orig_query." /* TRANSFORM_OUTCOME_SUPERSET */";
-	} else {
-		return $orig_query." LIMIT 4294836225 /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
-	}
+  if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 4294836225}sio) {
+    return $orig_query." /* TRANSFORM_OUTCOME_SUPERSET */";
+  } else {
+    return $orig_query." LIMIT 4294836225 /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+  }
 }
 
 1;

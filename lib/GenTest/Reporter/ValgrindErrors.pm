@@ -1,4 +1,5 @@
 # Copyright (c) 2011,2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -96,13 +97,13 @@ sub report {
     my $valgrind_prefix = '^==([0-9:\.]+ |)[0-9]+==\s+';
     my $regex = $valgrind_prefix.".*".
         join('|', map("($_)", map{quotemeta} sort {length($b)<=>length($a)} (@valgrind_strings)));
-    $regex = qr/($regex)/i;  # quote and compile regex, case insensitive                                     
-    $valgrind_prefix = qr/$valgrind_prefix/; # also compile the prefix, used several times below.            
+    $regex = qr/($regex)/i;  # quote and compile regex, case insensitive
+    $valgrind_prefix = qr/$valgrind_prefix/; # also compile the prefix, used several times below.
     my @valgrind_lines;
     my $errorcount = 0;
     my $issue_detected = 0;
     while (my $line = <$LogFile>) {
-        chomp($line); # remove extra line endings                                                            
+        chomp($line); # remove extra line endings
         if ($line =~ m{($valgrind_prefix)}) {
             push(@valgrind_lines, $line);
         }

@@ -260,7 +260,7 @@ sub register_result
             if (scalar(keys %mdevs_to_register) == 0) {
               %mdevs_to_register= %found_mdevs;
             }
- 
+
             foreach my $j (keys %mdevs_to_register) {
                 my $fixdate= 'NULL';
                 my $match_type= $type;

@@ -1,4 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -29,24 +30,24 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub transform {
-	my ($class, $orig_query) = @_;
+  my ($class, $orig_query) = @_;
 
-	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-		|| $orig_query !~ m{SELECT}io
-		|| $orig_query =~ m{SQL_BIG_RESULT|SQL_SMALL_RESULT|SQL_BUFFER_RESULT}io;
+  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
+    || $orig_query !~ m{SELECT}io
+    || $orig_query =~ m{SQL_BIG_RESULT|SQL_SMALL_RESULT|SQL_BUFFER_RESULT}io;
 
-	my $modified_queries = [
-		$orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ",
-		$orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ",
-		$orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ "
-	];
-	
-	$modified_queries->[0] =~ s{SELECT}{SELECT SQL_BIG_RESULT}io;
-	$modified_queries->[1] =~ s{SELECT}{SELECT SQL_SMALL_RESULT}io;
-	$modified_queries->[2] =~ s{SELECT}{SELECT SQL_BUFFER_RESULT}io;
+  my $modified_queries = [
+    $orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ",
+    $orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ",
+    $orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ "
+  ];
 
-	return $modified_queries;
+  $modified_queries->[0] =~ s{SELECT}{SELECT SQL_BIG_RESULT}io;
+  $modified_queries->[1] =~ s{SELECT}{SELECT SQL_SMALL_RESULT}io;
+  $modified_queries->[2] =~ s{SELECT}{SELECT SQL_BUFFER_RESULT}io;
+
+  return $modified_queries;
 }
 
 1;

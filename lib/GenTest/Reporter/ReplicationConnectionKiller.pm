@@ -1,4 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -31,50 +32,50 @@ my $tcpkill_pid;
 use constant KILL_DURATION => 5;
 
 sub monitor {
-	local $SIG{INT} = sub {
-		kill(15, $tcpkill_pid) if defined $tcpkill_pid;
-		exit(STATUS_OK);
-	};
+  local $SIG{INT} = sub {
+    kill(15, $tcpkill_pid) if defined $tcpkill_pid;
+    exit(STATUS_OK);
+  };
 
-	my $reporter = shift;
+  my $reporter = shift;
 
-	my $dsn = $reporter->dsn();
+  my $dsn = $reporter->dsn();
 
-	my $dbh = DBI->connect($dsn);
+  my $dbh = DBI->connect($dsn);
 
-	my $slave_host = $reporter->serverInfo('slave_host');
-	my $master_port = $reporter->serverVariable('port');
+  my $slave_host = $reporter->serverInfo('slave_host');
+  my $master_port = $reporter->serverVariable('port');
 
-	# If interface is not specified, tcpkill will auto-pick the first available
+  # If interface is not specified, tcpkill will auto-pick the first available
 
-	my $interface = $slave_host eq '127.0.0.1' ? 'lo' : '';
+  my $interface = $slave_host eq '127.0.0.1' ? 'lo' : '';
 
         my $slave_local = $dbh->selectrow_array("
-		SELECT HOST
-		FROM INFORMATION_SCHEMA.PROCESSLIST
-		WHERE COMMAND = 'Binlog Dump'
-	");
-	
-	my ($slave_local_host, $slave_local_port) = split (':', $slave_local);
+    SELECT HOST
+    FROM INFORMATION_SCHEMA.PROCESSLIST
+    WHERE COMMAND = 'Binlog Dump'
+  ");
 
-	$tcpkill_pid = fork();
+  my ($slave_local_host, $slave_local_port) = split (':', $slave_local);
 
-	if ($tcpkill_pid) {	# parent
-		sleep(KILL_DURATION);
-		say("Killing tcpkill with pid $tcpkill_pid");
-		kill (15, $tcpkill_pid);
-		$tcpkill_pid = undef;
-		return(STATUS_OK);
-	} else {
-		my $command = "/usr/sbin/tcpkill -i $interface src host $slave_local_host and src port $slave_local_port and dst port $master_port";
-		say("Executing $command");
-		exec($command);
-		exit(STATUS_OK);
-	}
+  $tcpkill_pid = fork();
+
+  if ($tcpkill_pid) {  # parent
+    sleep(KILL_DURATION);
+    say("Killing tcpkill with pid $tcpkill_pid");
+    kill (15, $tcpkill_pid);
+    $tcpkill_pid = undef;
+    return(STATUS_OK);
+  } else {
+    my $command = "/usr/sbin/tcpkill -i $interface src host $slave_local_host and src port $slave_local_port and dst port $master_port";
+    say("Executing $command");
+    exec($command);
+    exit(STATUS_OK);
+  }
 }
 
 sub type {
-	return REPORTER_TYPE_PERIODIC;
+  return REPORTER_TYPE_PERIODIC;
 }
 
 1;

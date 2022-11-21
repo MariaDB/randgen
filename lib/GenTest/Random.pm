@@ -21,28 +21,28 @@ package GenTest::Random;
 require Exporter;
 @ISA = qw(GenTest);
 @EXPORT = qw(
-	FIELD_TYPE_NUMERIC
-	FIELD_TYPE_STRING
-	FIELD_TYPE_DATE
-	FIELD_TYPE_TIME
-	FIELD_TYPE_DATETIME
-	FIELD_TYPE_TIMESTAMP
-	FIELD_TYPE_YEAR
-	FIELD_TYPE_BLOB
+  FIELD_TYPE_NUMERIC
+  FIELD_TYPE_STRING
+  FIELD_TYPE_DATE
+  FIELD_TYPE_TIME
+  FIELD_TYPE_DATETIME
+  FIELD_TYPE_TIMESTAMP
+  FIELD_TYPE_YEAR
+  FIELD_TYPE_BLOB
   FIELD_TYPE_TEXT
   FIELD_TYPE_INET6
-	FIELD_TYPE_DICT
-	FIELD_TYPE_DIGIT
-	FIELD_TYPE_LETTER
-	FIELD_TYPE_ASCII
-	FIELD_TYPE_EMPTY
+  FIELD_TYPE_DICT
+  FIELD_TYPE_DIGIT
+  FIELD_TYPE_LETTER
+  FIELD_TYPE_ASCII
+  FIELD_TYPE_EMPTY
   FIELD_TYPE_DATATYPE
   FIELD_TYPE_FIXED
   FIELD_TYPE_UUID
 
-	FIELD_TYPE_HEX
-	FIELD_TYPE_QUID
-	FIELD_TYPE_JSON
+  FIELD_TYPE_HEX
+  FIELD_TYPE_QUID
+  FIELD_TYPE_JSON
   FIELD_TYPE_JSON_TABLE
 
   FIELD_TYPE_IDENTIFIER
@@ -85,42 +85,42 @@ efficiency, math is done in integer mode
 
 =cut
 
-use constant RANDOM_SEED		=> 0;
-use constant RANDOM_GENERATOR		=> 1;
-use constant RANDOM_STRBUF          	=> 2;
+use constant RANDOM_SEED    => 0;
+use constant RANDOM_GENERATOR    => 1;
+use constant RANDOM_STRBUF            => 2;
 
-use constant FIELD_TYPE_NUMERIC		=> 2;
-use constant FIELD_TYPE_STRING		=> 3;
-use constant FIELD_TYPE_DATE		=> 4;
-use constant FIELD_TYPE_TIME		=> 5;
-use constant FIELD_TYPE_DATETIME	=> 6;
-use constant FIELD_TYPE_TIMESTAMP	=> 7;
-use constant FIELD_TYPE_YEAR		=> 8;
+use constant FIELD_TYPE_NUMERIC    => 2;
+use constant FIELD_TYPE_STRING    => 3;
+use constant FIELD_TYPE_DATE    => 4;
+use constant FIELD_TYPE_TIME    => 5;
+use constant FIELD_TYPE_DATETIME  => 6;
+use constant FIELD_TYPE_TIMESTAMP  => 7;
+use constant FIELD_TYPE_YEAR    => 8;
 
-use constant FIELD_TYPE_BLOB		=> 11;
+use constant FIELD_TYPE_BLOB    => 11;
 
-use constant FIELD_TYPE_DIGIT		=> 12;
-use constant FIELD_TYPE_LETTER		=> 13;
-use constant FIELD_TYPE_DICT		=> 15;
-use constant FIELD_TYPE_ASCII		=> 16;
-use constant FIELD_TYPE_EMPTY		=> 17;
+use constant FIELD_TYPE_DIGIT    => 12;
+use constant FIELD_TYPE_LETTER    => 13;
+use constant FIELD_TYPE_DICT    => 15;
+use constant FIELD_TYPE_ASCII    => 16;
+use constant FIELD_TYPE_EMPTY    => 17;
 
-use constant FIELD_TYPE_HEX		=> 18;
-use constant FIELD_TYPE_QUID		=> 19;
+use constant FIELD_TYPE_HEX    => 18;
+use constant FIELD_TYPE_QUID    => 19;
 
-use constant FIELD_TYPE_BIT		=> 20;
+use constant FIELD_TYPE_BIT    => 20;
 
-use constant FIELD_TYPE_FLOAT		=> 21;
+use constant FIELD_TYPE_FLOAT    => 21;
 
-use constant FIELD_TYPE_JSON		=> 22;
-use constant FIELD_TYPE_JSONPATH	=> 23;
+use constant FIELD_TYPE_JSON    => 22;
+use constant FIELD_TYPE_JSONPATH  => 23;
 use constant FIELD_TYPE_JSONKEY     => 24;
 use constant FIELD_TYPE_JSON_TABLE     => 25;
 
 use constant FIELD_TYPE_TEXT  => 29;
 use constant FIELD_TYPE_INET6  => 30;
 
-use constant FIELD_TYPE_JSONPATH_NO_WILDCARD	=> 31;
+use constant FIELD_TYPE_JSONPATH_NO_WILDCARD  => 31;
 
 use constant FIELD_TYPE_IDENTIFIER          => 32;
 use constant FIELD_TYPE_IDENTIFIER_UNQUOTED => 33;
@@ -130,10 +130,10 @@ use constant FIELD_TYPE_FIXED => 36;
 
 use constant FIELD_TYPE_UUID  => 37;
 
-use constant ASCII_RANGE_START		=> 97;
-use constant ASCII_RANGE_END		=> 122;
+use constant ASCII_RANGE_START    => 97;
+use constant ASCII_RANGE_END    => 122;
 
-use constant RANDOM_STRBUF_SIZE		=> 1024;
+use constant RANDOM_STRBUF_SIZE    => 1024;
 
 use constant JSON_STRUCT_OBJECT     => 0;
 use constant JSON_STRUCT_ARRAY      => 1;
@@ -156,56 +156,56 @@ my %dict_data;
 my %data_dirs;
 
 my %name2type = (
-	'bit'			=> FIELD_TYPE_BIT,
-	'bool'			=> FIELD_TYPE_NUMERIC,
-	'boolean'		=> FIELD_TYPE_NUMERIC,
-	'tinyint'		=> FIELD_TYPE_NUMERIC,
-	'smallint'		=> FIELD_TYPE_NUMERIC,
-	'mediumint'		=> FIELD_TYPE_NUMERIC,
-	'int'			=> FIELD_TYPE_NUMERIC,
-	'integer'		=> FIELD_TYPE_NUMERIC,
-	'bigint'		=> FIELD_TYPE_NUMERIC,
-	'float'			=> FIELD_TYPE_FLOAT,
-	'double'		=> FIELD_TYPE_FLOAT,
-	'double precision'	=> FIELD_TYPE_FLOAT,
-	'decimal'		=> FIELD_TYPE_FIXED,
-	'dec'			=> FIELD_TYPE_FIXED,
-	'numeric'		=> FIELD_TYPE_FIXED,
-	'fixed'			=> FIELD_TYPE_FIXED,
-	'char'			=> FIELD_TYPE_STRING,
-	'varchar'		=> FIELD_TYPE_STRING,
-	'binary'		=> FIELD_TYPE_BLOB,
-	'varbinary'		=> FIELD_TYPE_BLOB,
-	'tinyblob'		=> FIELD_TYPE_BLOB,
-	'blob'			=> FIELD_TYPE_BLOB,
-	'mediumblob'		=> FIELD_TYPE_BLOB,
-	'longblob'		=> FIELD_TYPE_BLOB,
-	'tinytext'		=> FIELD_TYPE_TEXT,
-	'text'			=> FIELD_TYPE_TEXT,
-	'mediumtext'		=> FIELD_TYPE_TEXT,
-	'longtext'		=> FIELD_TYPE_TEXT,
-	'date'			=> FIELD_TYPE_DATE,
-	'time'			=> FIELD_TYPE_TIME,
-	'datetime'		=> FIELD_TYPE_DATETIME,
-	'timestamp'		=> FIELD_TYPE_TIMESTAMP,
-	'year'			=> FIELD_TYPE_YEAR,
-#	'enum'			=> FIELD_TYPE_ENUM,
-#	'set'			=> FIELD_TYPE_SET,
+  'bit'      => FIELD_TYPE_BIT,
+  'bool'      => FIELD_TYPE_NUMERIC,
+  'boolean'    => FIELD_TYPE_NUMERIC,
+  'tinyint'    => FIELD_TYPE_NUMERIC,
+  'smallint'    => FIELD_TYPE_NUMERIC,
+  'mediumint'    => FIELD_TYPE_NUMERIC,
+  'int'      => FIELD_TYPE_NUMERIC,
+  'integer'    => FIELD_TYPE_NUMERIC,
+  'bigint'    => FIELD_TYPE_NUMERIC,
+  'float'      => FIELD_TYPE_FLOAT,
+  'double'    => FIELD_TYPE_FLOAT,
+  'double precision'  => FIELD_TYPE_FLOAT,
+  'decimal'    => FIELD_TYPE_FIXED,
+  'dec'      => FIELD_TYPE_FIXED,
+  'numeric'    => FIELD_TYPE_FIXED,
+  'fixed'      => FIELD_TYPE_FIXED,
+  'char'      => FIELD_TYPE_STRING,
+  'varchar'    => FIELD_TYPE_STRING,
+  'binary'    => FIELD_TYPE_BLOB,
+  'varbinary'    => FIELD_TYPE_BLOB,
+  'tinyblob'    => FIELD_TYPE_BLOB,
+  'blob'      => FIELD_TYPE_BLOB,
+  'mediumblob'    => FIELD_TYPE_BLOB,
+  'longblob'    => FIELD_TYPE_BLOB,
+  'tinytext'    => FIELD_TYPE_TEXT,
+  'text'      => FIELD_TYPE_TEXT,
+  'mediumtext'    => FIELD_TYPE_TEXT,
+  'longtext'    => FIELD_TYPE_TEXT,
+  'date'      => FIELD_TYPE_DATE,
+  'time'      => FIELD_TYPE_TIME,
+  'datetime'    => FIELD_TYPE_DATETIME,
+  'timestamp'    => FIELD_TYPE_TIMESTAMP,
+  'year'      => FIELD_TYPE_YEAR,
+#  'enum'      => FIELD_TYPE_ENUM,
+#  'set'      => FIELD_TYPE_SET,
     'inet6'         => FIELD_TYPE_INET6,
     'uuid'         => FIELD_TYPE_UUID,
-	'letter'		=> FIELD_TYPE_LETTER,
-	'digit'			=> FIELD_TYPE_DIGIT,
-	'data'			=> FIELD_TYPE_BLOB,
-	'ascii'			=> FIELD_TYPE_ASCII,
-	'string'		=> FIELD_TYPE_STRING,
-	'empty'			=> FIELD_TYPE_EMPTY,
+  'letter'    => FIELD_TYPE_LETTER,
+  'digit'      => FIELD_TYPE_DIGIT,
+  'data'      => FIELD_TYPE_BLOB,
+  'ascii'      => FIELD_TYPE_ASCII,
+  'string'    => FIELD_TYPE_STRING,
+  'empty'      => FIELD_TYPE_EMPTY,
 
-	'hex'			=> FIELD_TYPE_HEX,
-	'quid'			=> FIELD_TYPE_QUID,
-	'json'			=> FIELD_TYPE_JSON,
-	'jsonpath'		=> FIELD_TYPE_JSONPATH,
-	'jsonkey'       => FIELD_TYPE_JSONKEY,
-	'jsonpath_no_wildcard'		=> FIELD_TYPE_JSONPATH_NO_WILDCARD,
+  'hex'      => FIELD_TYPE_HEX,
+  'quid'      => FIELD_TYPE_QUID,
+  'json'      => FIELD_TYPE_JSON,
+  'jsonpath'    => FIELD_TYPE_JSONPATH,
+  'jsonkey'       => FIELD_TYPE_JSONKEY,
+  'jsonpath_no_wildcard'    => FIELD_TYPE_JSONPATH_NO_WILDCARD,
 
   'identifier'    => FIELD_TYPE_IDENTIFIER,
   'identifierUnquoted'    => FIELD_TYPE_IDENTIFIER_UNQUOTED,
@@ -225,8 +225,8 @@ my @dictionaries= qw(chinese croatian english german hebrew japanese thai vietna
 # Min and max values for integer data types
 
 my %name2range = (
-	'bool'		=> [0, 1],
-	'boolean'	=> [0, 1],
+  'bool'    => [0, 1],
+  'boolean'  => [0, 1],
         'tinyint'       => [-128, 127],
         'smallint'      => [-32768, 32767],
         'mediumint'     => [-8388608, 8388607],
@@ -264,35 +264,35 @@ my $prng_class;
 sub new {
     my $class = shift;
 
-	my $prng = $class->SUPER::new({
-		'seed'			=> RANDOM_SEED,
-	}, @_ );
+  my $prng = $class->SUPER::new({
+    'seed'      => RANDOM_SEED,
+  }, @_ );
 
 
-	$prng->setSeed($prng->seed() ? $prng->seed() : 1);
+  $prng->setSeed($prng->seed() ? $prng->seed() : 1);
 
-#	say("Initializing PRNG with seed '".$prng->seed()."' ...");
+#  say("Initializing PRNG with seed '".$prng->seed()."' ...");
 
-	$prng->[RANDOM_GENERATOR] = $prng->seed();
+  $prng->[RANDOM_GENERATOR] = $prng->seed();
 
-	return $prng;
+  return $prng;
 }
 
 sub seed {
-	return $_[0]->[RANDOM_SEED];
+  return $_[0]->[RANDOM_SEED];
 }
 
 sub setSeed {
-	$_[0]->[RANDOM_SEED] = $_[1];
-	$_[0]->[RANDOM_GENERATOR] = $_[1];
+  $_[0]->[RANDOM_SEED] = $_[1];
+  $_[0]->[RANDOM_GENERATOR] = $_[1];
 }
 
 sub update_generator {
-	{
-		use integer;
-		$_[0]->[RANDOM_GENERATOR] =
-			$_[0]->[RANDOM_GENERATOR] * 1103515245 + 12345;
-	}
+  {
+    use integer;
+    $_[0]->[RANDOM_GENERATOR] =
+      $_[0]->[RANDOM_GENERATOR] * 1103515245 + 12345;
+  }
 }
 
 ### Random unsigned integer. 16 bit on 32-bit platforms, 48 bit on
@@ -350,13 +350,13 @@ sub int {
 
 ### Signed 64-bit float of any range.
 sub float {
-	my $rand;
-	# urand() is manually inlined for efficiency
-	update_generator($_[0]);
-	# Since this may be a 64-bit platform, we mask down to 16 bit
-	# to ensure the division below becomes correct.
-	$rand = ($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF;
-	return $_[1] + (($rand / 0x10000) * ($_[2] - $_[1] + 1));
+  my $rand;
+  # urand() is manually inlined for efficiency
+  update_generator($_[0]);
+  # Since this may be a 64-bit platform, we mask down to 16 bit
+  # to ensure the division below becomes correct.
+  $rand = ($_[0]->[RANDOM_GENERATOR] >> 15) & 0xFFFF;
+  return $_[1] + (($rand / 0x10000) * ($_[2] - $_[1] + 1));
 }
 
 ### Decimal/numeric value of any allowed length
@@ -378,21 +378,21 @@ sub fixed {
 }
 
 sub digit {
-	return $_[0]->uint16(0, 9);
+  return $_[0]->uint16(0, 9);
 }
 
 sub positive_digit {
-	return $_[0]->uint16(1, 9);
+  return $_[0]->uint16(1, 9);
 }
 
 sub letter {
-	return $_[0]->unquotedString(1);
+  return $_[0]->unquotedString(1);
 }
 
 sub hex {
-	my ($prng, $length) = @_;
-	$length = 4 if not defined $length;
-	return '0x'.join ('', map { (0..9,'A'..'F')[$prng->int(0,15)] } (1..$prng->int(1,$length)) );
+  my ($prng, $length) = @_;
+  $length = 4 if not defined $length;
+  return '0x'.join ('', map { (0..9,'A'..'F')[$prng->int(0,15)] } (1..$prng->int(1,$length)) );
 }
 
 sub inet6 {
@@ -488,12 +488,12 @@ sub date {
 }
 
 sub year {
-	my $prng = shift;
-	return $prng->uint16(1971,2035);
+  my $prng = shift;
+  return $prng->uint16(1971,2035);
 }
 
 sub unquotedTime {
-	my ($prng, $ts) = @_;
+  my ($prng, $ts) = @_;
     if (defined $ts) {
         my ($sec,$min,$hour,undef,undef,undef,undef,undef,undef)= localtime($ts);
         return sprintf('%02d:%02d:%02d',$hour,$min,$sec);
@@ -507,13 +507,13 @@ sub unquotedTime {
 }
 
 sub time {
-	my ($prng, $ts) = @_;
+  my ($prng, $ts) = @_;
   return "'".$prng->unquotedTime($ts)."'";
 }
 
 sub datetime {
-	my ($prng, $ts) = @_;
-	return "'".$prng->unquotedDate($ts)." ".$prng->unquotedTime($ts)."'";
+  my ($prng, $ts) = @_;
+  return "'".$prng->unquotedDate($ts)." ".$prng->unquotedTime($ts)."'";
 }
 
 sub timestamp {
@@ -524,13 +524,13 @@ sub timestamp {
 }
 
 #sub enum {
-#	my $prng = shift;
-#	return $prng->letter();
+#  my $prng = shift;
+#  return $prng->letter();
 #}
 #
 #sub set {
-#	my $prng = shift;
-#	return join(',', map { $prng->letter() } (0..$prng->digit() ) );
+#  my $prng = shift;
+#  return join(',', map { $prng->letter() } (0..$prng->digit() ) );
 #}
 
 sub text {
@@ -570,15 +570,15 @@ sub text {
 }
 
 sub unquotedString {
-	use integer;
+  use integer;
 
-	my ($prng, $len) = @_;
+  my ($prng, $len) = @_;
 
-	$len = defined $len ? $len : 1;
+  $len = defined $len ? $len : 1;
   my $str;
 
-	# If the length is 0 or negative, return a zero-length string
-	if ($len <= 0) {
+  # If the length is 0 or negative, return a zero-length string
+  if ($len <= 0) {
     $str= '';
   } elsif ($len == 1) {
     $str= chr($prng->uint16(ASCII_RANGE_START, ASCII_RANGE_END));
@@ -613,7 +613,7 @@ sub unquotedString {
 }
 
 sub string {
-	my ($prng, $len) = @_;
+  my ($prng, $len) = @_;
   my $str= $prng->unquotedString($len);
   if (index($str,"'") == -1) {
     return "'".$str."'";
@@ -639,13 +639,13 @@ sub json {
   my ($prng, $len) = @_;
 
   # IMPORTANT:
-	# Length here is a number of structures on the 1st level,
+  # Length here is a number of structures on the 1st level,
   # not the length of the resulting string as one could think
   # That is,
-	# length < 0: empty string or NULL (invalid JSON)
-	# length == 0: '[]' or '{}'
-	# length == 1: '["a"]' or '[{}]' or '{"a":"b"}' or '{"a":[1,2,3,4]}'
-	# length == 2: '["a","b"]' or '{"a":"b","c":"d"}' or ...
+  # length < 0: empty string or NULL (invalid JSON)
+  # length == 0: '[]' or '{}'
+  # length == 1: '["a"]' or '[{}]' or '{"a":"b"}' or '{"a":[1,2,3,4]}'
+  # length == 2: '["a","b"]' or '{"a":"b","c":"d"}' or ...
   # etc.
 
   if (defined $len and $len < 0) {
@@ -670,58 +670,58 @@ sub json {
 }
 
 sub json_doc {
-	my ($prng, $len) = @_;
-	return "'". (
-		$prng->arrayElement([JSON_STRUCT_ARRAY, JSON_STRUCT_OBJECT]) == JSON_STRUCT_ARRAY
-		? $prng->jsonArray($len)
-		: $prng->jsonObject($len)
-	) ."'";
+  my ($prng, $len) = @_;
+  return "'". (
+    $prng->arrayElement([JSON_STRUCT_ARRAY, JSON_STRUCT_OBJECT]) == JSON_STRUCT_ARRAY
+    ? $prng->jsonArray($len)
+    : $prng->jsonObject($len)
+  ) ."'";
 }
 
 # [ <[value [, value ...]]> ]
 sub jsonArray {
-	my ($prng, $len) = @_;
+  my ($prng, $len) = @_;
   $len= $prng->uint16(0,8) unless defined $len;
 
-	my @contents = ();
-	foreach (1..$len) {
-		push @contents, $prng->jsonValue();
-	}
-	return '[' . join(',', @contents) . ']';
+  my @contents = ();
+  foreach (1..$len) {
+    push @contents, $prng->jsonValue();
+  }
+  return '[' . join(',', @contents) . ']';
 }
 
 # { <[string : value [, string : value ... ]]> }
 sub jsonObject {
-	my ($prng, $len) = @_;
+  my ($prng, $len) = @_;
   $len= $prng->uint16(0,8) unless defined $len;
 
-	my @contents = ();
-	foreach (1..$len) {
-		push @contents, $prng->jsonPair();
-	}
-	return '{' . join(',', @contents) . '}';
+  my @contents = ();
+  foreach (1..$len) {
+    push @contents, $prng->jsonPair();
+  }
+  return '{' . join(',', @contents) . '}';
 }
 
 sub jsonValue {
-	my $prng = shift;
+  my $prng = shift;
 
-	my $value_type= $prng->jsonValueType();
+  my $value_type= $prng->jsonValueType();
 
-	if ($value_type == JSON_VALUE_OBJECT) {
-		return $prng->jsonObject($prng->uint16(0,8));
-	} elsif ($value_type == JSON_VALUE_ARRAY) {
-		return $prng->jsonArray($prng->uint16(0,16));
-	} elsif ($value_type == JSON_VALUE_STRING) {
-		return $prng->jsonString();
-	} elsif ($value_type == JSON_VALUE_NUMBER) {
-		return $prng->urand();
-	} elsif ($value_type == JSON_VALUE_TRUE) {
-		return 'true';
-	} elsif ($value_type == JSON_VALUE_FALSE) {
-		return 'false';
-	} elsif ($value_type == JSON_VALUE_NULL) {
-		return 'null';
-	}
+  if ($value_type == JSON_VALUE_OBJECT) {
+    return $prng->jsonObject($prng->uint16(0,8));
+  } elsif ($value_type == JSON_VALUE_ARRAY) {
+    return $prng->jsonArray($prng->uint16(0,16));
+  } elsif ($value_type == JSON_VALUE_STRING) {
+    return $prng->jsonString();
+  } elsif ($value_type == JSON_VALUE_NUMBER) {
+    return $prng->urand();
+  } elsif ($value_type == JSON_VALUE_TRUE) {
+    return 'true';
+  } elsif ($value_type == JSON_VALUE_FALSE) {
+    return 'false';
+  } elsif ($value_type == JSON_VALUE_NULL) {
+    return 'null';
+  }
 }
 
 sub jsonString {
@@ -731,72 +731,72 @@ sub jsonString {
 }
 
 sub jsonKey {
-	my $prng = shift;
-	return $prng->jsonString();
+  my $prng = shift;
+  return $prng->jsonString();
 }
 
 sub jsonPair {
-	my $prng = shift;
-	return $prng->jsonString() . ': ' . $prng->jsonValue();
+  my $prng = shift;
+  return $prng->jsonString() . ': ' . $prng->jsonValue();
 }
 
 sub jsonValueType {
-	my $prng = shift;
-	return $prng->arrayElement([
-		JSON_VALUE_OBJECT,
-		JSON_VALUE_ARRAY,
-		JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING,
-		JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING,
-		JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER,
-		JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER,
-		JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE,
-		JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE,
-		JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL
-	]);
+  my $prng = shift;
+  return $prng->arrayElement([
+    JSON_VALUE_OBJECT,
+    JSON_VALUE_ARRAY,
+    JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING,
+    JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING, JSON_VALUE_STRING,
+    JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER,
+    JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER, JSON_VALUE_NUMBER,
+    JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE, JSON_VALUE_TRUE,
+    JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE, JSON_VALUE_FALSE,
+    JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL, JSON_VALUE_NULL
+  ]);
 }
 
 # For JSON Path, we'll use syntax from here:
 # https://dev.mysql.com/doc/refman/5.7/en/json-path-syntax.html
 
 sub jsonPath {
-	my $prng = shift;
-	my $num_of_legs = shift || $prng->uint16(0,4);
-	my $path= '$';
-	foreach (1..$num_of_legs) {
+  my $prng = shift;
+  my $num_of_legs = shift || $prng->uint16(0,4);
+  my $path= '$';
+  foreach (1..$num_of_legs) {
     # Attach optional wildcard to the _previous_ element
     $path .= '**' if ($prng->uint16(0,1)) and $path !~ /\*$/;
-		$path .= $prng->jsonPathLeg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_MEMBER]),1);
-	}
-	return "'".$path."'";
+    $path .= $prng->jsonPathLeg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_MEMBER]),1);
+  }
+  return "'".$path."'";
 }
 
 # Some functions don't accept wild cards in JSON path
 sub jsonPathNoWildcard {
-	my $prng = shift;
-	my $num_of_legs = shift || $prng->uint16(0,4);
-	my $path= '$';
-	foreach (1..$num_of_legs) {
+  my $prng = shift;
+  my $num_of_legs = shift || $prng->uint16(0,4);
+  my $path= '$';
+  foreach (1..$num_of_legs) {
     # Attach optional wildcard to the _previous_ element
-		$path .= $prng->jsonPathLeg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_MEMBER]));
-	}
-	return "'".$path."'";
+    $path .= $prng->jsonPathLeg($prng->arrayElement([JSON_PATHLEG_ARRAYLOC, JSON_PATHLEG_MEMBER]));
+  }
+  return "'".$path."'";
 }
 
 sub jsonPathLeg {
-	my $prng = shift;
-	my $pathleg_type= shift;
+  my $prng = shift;
+  my $pathleg_type= shift;
   my $wildcards_allowed= shift;
 
-	if ($pathleg_type == JSON_PATHLEG_DBLASTER and $wildcards_allowed) {
-		return '.**';
-	} elsif ($pathleg_type == JSON_PATHLEG_ARRAYLOC) {
-		my $ind= $wildcards_allowed ? $prng->uint16(-1,8) : $prng->uint16(0,8);
-		return '[' . ( $ind < 0 ? '*' : $ind ) . ']';
-	} else { # MEMBER
-		my $key= $prng->jsonKey();
-		# Quoted string or identifier
-		return '.' . ((! $wildcards_allowed or $prng->uint16(0,3)) ? $key : '*');
-	}
+  if ($pathleg_type == JSON_PATHLEG_DBLASTER and $wildcards_allowed) {
+    return '.**';
+  } elsif ($pathleg_type == JSON_PATHLEG_ARRAYLOC) {
+    my $ind= $wildcards_allowed ? $prng->uint16(-1,8) : $prng->uint16(0,8);
+    return '[' . ( $ind < 0 ? '*' : $ind ) . ']';
+  } else { # MEMBER
+    my $key= $prng->jsonKey();
+    # Quoted string or identifier
+    return '.' . ((! $wildcards_allowed or $prng->uint16(0,3)) ? $key : '*');
+  }
 }
 
 #JSON_TABLE(
@@ -885,17 +885,17 @@ sub jsonTableColumnList {
 #-- END OF JSON -----------------------------
 
 sub quid {
-	my $prng = shift;
+  my $prng = shift;
 
-	return "'". pack("c*", map {
-		$prng->uint16(65,90);
+  return "'". pack("c*", map {
+    $prng->uint16(65,90);
                 } (1..5)) ."'";
 }
 
 sub bit {
-	my ($prng, $length) = @_;
-	$length = 1 if not defined $length;
-	return 'b\''.join ('', map { $prng->int(0,1) } (1..$prng->int(1,$length)) ).'\'';
+  my ($prng, $length) = @_;
+  $length = 1 if not defined $length;
+  return 'b\''.join ('', map { $prng->int(0,1) } (1..$prng->int(1,$length)) ).'\'';
 }
 
 sub identifier {
@@ -932,7 +932,7 @@ sub identifierQuoted {
 sub arrayElement {
     ## To avoid mod zero-problems in uint16 (See Bug#45857)
     return undef if $#{$_[1]} < 0;
-	return $_[1]->[ $_[0]->uint16(0, $#{$_[1]}) ];
+  return $_[1]->[ $_[0]->uint16(0, $#{$_[1]}) ];
 }
 
 #
@@ -940,92 +940,92 @@ sub arrayElement {
 #
 
 sub fieldType {
-	my ($rand, $field_def) = @_;
+  my ($rand, $field_def) = @_;
 
-	$field_def =~ s{ }{_}o;
-	$field_def =~ s{^_}{}o;
-	my ($field_base_type) = $field_def =~ m{^([A-Za-z0-9]*)}o;
-	my ($field_full_type) = $field_def =~ m{^([A-Za-z_]*)}o;
-	my ($orig_field_length) = $field_def =~ m{\((.*?)\)}o;
-	my $field_length = (defined $orig_field_length ? $orig_field_length : 1);
-	my $field_type = $name2type{$field_full_type} || $name2type{$field_base_type};
+  $field_def =~ s{ }{_}o;
+  $field_def =~ s{^_}{}o;
+  my ($field_base_type) = $field_def =~ m{^([A-Za-z0-9]*)}o;
+  my ($field_full_type) = $field_def =~ m{^([A-Za-z_]*)}o;
+  my ($orig_field_length) = $field_def =~ m{\((.*?)\)}o;
+  my $field_length = (defined $orig_field_length ? $orig_field_length : 1);
+  my $field_type = $name2type{$field_full_type} || $name2type{$field_base_type};
 
-	if ($field_type == FIELD_TYPE_DIGIT) {
-		return $rand->digit();
-	} elsif ($field_type == FIELD_TYPE_LETTER) {
-		return $rand->unquotedString(1);
-	} elsif ($field_type == FIELD_TYPE_NUMERIC) {
-		return $rand->int(@{$name2range{$field_full_type}});
-	} elsif ($field_type == FIELD_TYPE_FIXED) {
-		return $rand->fixed();
-	} elsif ($field_type == FIELD_TYPE_FLOAT) {
-		return $rand->float(@{$name2range{$field_full_type}});
-	} elsif ($field_type == FIELD_TYPE_STRING) {
-		return $rand->string($field_length);
-	} elsif ($field_type == FIELD_TYPE_TEXT) {
-		return $rand->text($field_length);
-	} elsif ($field_type == FIELD_TYPE_DATE) {
-		return $rand->date();
-	} elsif ($field_type == FIELD_TYPE_YEAR) {
-		return $rand->year();
-	} elsif ($field_type == FIELD_TYPE_TIME) {
-		return $rand->time();
-	} elsif ($field_type == FIELD_TYPE_DATETIME) {
-		return $rand->datetime();
-	} elsif ($field_type == FIELD_TYPE_TIMESTAMP) {
-		return $rand->timestamp();
-#	} elsif ($field_type == FIELD_TYPE_ENUM) {
-#		return $rand->enum();
-#	} elsif ($field_type == FIELD_TYPE_SET) {
-#		return $rand->set();
-	} elsif ($field_type == FIELD_TYPE_INET6) {
-		return $rand->inet6();
-	} elsif ($field_type == FIELD_TYPE_UUID) {
-		return $rand->uuid();
-	} elsif ($field_type == FIELD_TYPE_BLOB) {
-		return $rand->loadFile($data_location);
-	} elsif ($field_type == FIELD_TYPE_ASCII) {
-		return $rand->string($field_length, [0, 255]);
-	} elsif ($field_type == FIELD_TYPE_EMPTY) {
-		return "''";
-	} elsif ($field_type == FIELD_TYPE_HEX) {
-		return $rand->hex($field_length);
-	} elsif ($field_type == FIELD_TYPE_QUID) {
-		return $rand->quid();
-	} elsif ($field_type == FIELD_TYPE_DICT) {
-		return $rand->word($field_base_type);
-	} elsif ($field_type == FIELD_TYPE_BIT) {
-		return $rand->bit($field_length);
-	} elsif ($field_type == FIELD_TYPE_JSON) {
-		return $rand->json($orig_field_length);
-	} elsif ($field_type == FIELD_TYPE_JSONPATH) {
-		return $rand->jsonPath($field_length);
-	} elsif ($field_type == FIELD_TYPE_JSONPATH_NO_WILDCARD) {
-		return $rand->jsonPathNoWildcard($field_length);
-	} elsif ($field_type == FIELD_TYPE_JSONKEY) {
-		return $rand->jsonKey();
-	} elsif ($field_type == FIELD_TYPE_IDENTIFIER) {
-		return $rand->identifier();
-	} elsif ($field_type == FIELD_TYPE_IDENTIFIER_QUOTED) {
-		return $rand->identifierQuoted();
-	} elsif ($field_type == FIELD_TYPE_IDENTIFIER_UNQUOTED) {
-		return $rand->identifierUnquoted();
+  if ($field_type == FIELD_TYPE_DIGIT) {
+    return $rand->digit();
+  } elsif ($field_type == FIELD_TYPE_LETTER) {
+    return $rand->unquotedString(1);
+  } elsif ($field_type == FIELD_TYPE_NUMERIC) {
+    return $rand->int(@{$name2range{$field_full_type}});
+  } elsif ($field_type == FIELD_TYPE_FIXED) {
+    return $rand->fixed();
+  } elsif ($field_type == FIELD_TYPE_FLOAT) {
+    return $rand->float(@{$name2range{$field_full_type}});
+  } elsif ($field_type == FIELD_TYPE_STRING) {
+    return $rand->string($field_length);
+  } elsif ($field_type == FIELD_TYPE_TEXT) {
+    return $rand->text($field_length);
+  } elsif ($field_type == FIELD_TYPE_DATE) {
+    return $rand->date();
+  } elsif ($field_type == FIELD_TYPE_YEAR) {
+    return $rand->year();
+  } elsif ($field_type == FIELD_TYPE_TIME) {
+    return $rand->time();
+  } elsif ($field_type == FIELD_TYPE_DATETIME) {
+    return $rand->datetime();
+  } elsif ($field_type == FIELD_TYPE_TIMESTAMP) {
+    return $rand->timestamp();
+#  } elsif ($field_type == FIELD_TYPE_ENUM) {
+#    return $rand->enum();
+#  } elsif ($field_type == FIELD_TYPE_SET) {
+#    return $rand->set();
+  } elsif ($field_type == FIELD_TYPE_INET6) {
+    return $rand->inet6();
+  } elsif ($field_type == FIELD_TYPE_UUID) {
+    return $rand->uuid();
+  } elsif ($field_type == FIELD_TYPE_BLOB) {
+    return $rand->loadFile($data_location);
+  } elsif ($field_type == FIELD_TYPE_ASCII) {
+    return $rand->string($field_length, [0, 255]);
+  } elsif ($field_type == FIELD_TYPE_EMPTY) {
+    return "''";
+  } elsif ($field_type == FIELD_TYPE_HEX) {
+    return $rand->hex($field_length);
+  } elsif ($field_type == FIELD_TYPE_QUID) {
+    return $rand->quid();
+  } elsif ($field_type == FIELD_TYPE_DICT) {
+    return $rand->word($field_base_type);
+  } elsif ($field_type == FIELD_TYPE_BIT) {
+    return $rand->bit($field_length);
+  } elsif ($field_type == FIELD_TYPE_JSON) {
+    return $rand->json($orig_field_length);
+  } elsif ($field_type == FIELD_TYPE_JSONPATH) {
+    return $rand->jsonPath($field_length);
+  } elsif ($field_type == FIELD_TYPE_JSONPATH_NO_WILDCARD) {
+    return $rand->jsonPathNoWildcard($field_length);
+  } elsif ($field_type == FIELD_TYPE_JSONKEY) {
+    return $rand->jsonKey();
+  } elsif ($field_type == FIELD_TYPE_IDENTIFIER) {
+    return $rand->identifier();
+  } elsif ($field_type == FIELD_TYPE_IDENTIFIER_QUOTED) {
+    return $rand->identifierQuoted();
+  } elsif ($field_type == FIELD_TYPE_IDENTIFIER_UNQUOTED) {
+    return $rand->identifierUnquoted();
   } elsif ($field_type == FIELD_TYPE_JSON_TABLE) {
     return $rand->jsonTable();
   } elsif ($field_type == FIELD_TYPE_DATATYPE) {
     return $rand->dataType($field_length);
-	} else {
-		croak ("unknown field type $field_def");
-	}
+  } else {
+    croak ("unknown field type $field_def");
+  }
 }
 
 sub file {
-	my ($prng, $dir) = @_;
+  my ($prng, $dir) = @_;
   $dir = $data_location unless $dir;
-	if (not exists $data_dirs{$dir}) {
-		my @files = <$dir/*>;
-		$data_dirs{$dir} = \@files;
-	}
+  if (not exists $data_dirs{$dir}) {
+    my @files = <$dir/*>;
+    $data_dirs{$dir} = \@files;
+  }
   return $prng->arrayElement($data_dirs{$dir});
 }
 
@@ -1041,27 +1041,27 @@ sub dataLocation {
 }
 
 sub isFieldType {
-	my ($rand, $field_def) = @_;
-	return undef if not defined $field_def;
+  my ($rand, $field_def) = @_;
+  return undef if not defined $field_def;
 
-	my ($field_name) = $field_def =~ m{^(?:_|)([A-Za-z0-9]*)}o;
+  my ($field_name) = $field_def =~ m{^(?:_|)([A-Za-z0-9]*)}o;
 
-	if (exists $name2type{$field_name}) {
-		return $name2type{$field_name};
-	} elsif (exists $dict_exists{$field_name}) {
-		return $dict_exists{$field_name};
-	} else {
+  if (exists $name2type{$field_name}) {
+    return $name2type{$field_name};
+  } elsif (exists $dict_exists{$field_name}) {
+    return $dict_exists{$field_name};
+  } else {
                 my $dict_file = $ENV{RQG_HOME} ne '' ? $ENV{RQG_HOME}."/data/dict/$field_name.txt" : "data/dict/$field_name.txt";
 
                 if (-e $dict_file) {
-			$dict_exists{$field_name} = FIELD_TYPE_DICT;
-			$name2type{$field_name} = FIELD_TYPE_DICT;
-			return FIELD_TYPE_DICT;
-		} else {
-			$dict_exists{$field_name} = undef;
-			return undef;
-		}
-	}
+      $dict_exists{$field_name} = FIELD_TYPE_DICT;
+      $name2type{$field_name} = FIELD_TYPE_DICT;
+      return FIELD_TYPE_DICT;
+    } else {
+      $dict_exists{$field_name} = undef;
+      return undef;
+    }
+  }
 }
 
 sub loadDictionary {
@@ -1087,20 +1087,20 @@ sub dictionaryWord {
 }
 
 sub word {
-	my ($rand, $dict_name) = @_;
+  my ($rand, $dict_name) = @_;
     $dict_name||= $rand->arrayElement(\@dictionaries);
-	return "'".$rand->dictionaryWord($dict_name)."'";
+  return "'".$rand->dictionaryWord($dict_name)."'";
 }
 
 sub shuffleArray {
-	my ($rand, $array) = @_;
-	my $i;
-	for ($i = @$array; --$i; ) {
-	        my $j = $rand->uint16(0, $i);
-	        next if $i == $j;
-	        @$array[$i,$j] = @$array[$j,$i];
-	}
-	return $array;
+  my ($rand, $array) = @_;
+  my $i;
+  for ($i = @$array; --$i; ) {
+          my $j = $rand->uint16(0, $i);
+          next if $i == $j;
+          @$array[$i,$j] = @$array[$j,$i];
+  }
+  return $array;
 }
 
 #######################

@@ -32,66 +32,66 @@ use GenTest::Constants;
 
 
 sub transform {
-	my ($class, $orig_query, $executor, $original_result) = @_;
+  my ($class, $orig_query, $executor, $original_result) = @_;
 
-	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-		|| $orig_query !~ m{^\s*SELECT}sio
-	        || $orig_query =~ m{LIMIT}sio
-	        || $orig_query =~ m{(AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE)\s*\(}sio
-	        || $orig_query =~ m{(SYSDATE)\s*\(}sio
-		|| $original_result->rows() == 0
-		|| $#{$original_result->data()->[0]} != 0;	# Only single-column resultsets
+  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
+    || $orig_query !~ m{^\s*SELECT}sio
+          || $orig_query =~ m{LIMIT}sio
+          || $orig_query =~ m{(AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE)\s*\(}sio
+          || $orig_query =~ m{(SYSDATE)\s*\(}sio
+    || $original_result->rows() == 0
+    || $#{$original_result->data()->[0]} != 0;  # Only single-column resultsets
 
-	# This transformation can not work if the result set contains NULLs
-	foreach my $orig_row (@{$original_result->data()}) {
-		foreach my $orig_col (@$orig_row) {
-			return STATUS_WONT_HANDLE if $orig_col eq '';
-		}
-	}
+  # This transformation can not work if the result set contains NULLs
+  foreach my $orig_row (@{$original_result->data()}) {
+    foreach my $orig_col (@$orig_row) {
+      return STATUS_WONT_HANDLE if $orig_col eq '';
+    }
+  }
 
-	my $table_name = 'transforms.where_updatedelete_'.abs($$);
-	my $col_name = $original_result->columnNames()->[0];
+  my $table_name = 'transforms.where_updatedelete_'.abs($$);
+  my $col_name = $original_result->columnNames()->[0];
 
-	return STATUS_WONT_HANDLE if $col_name =~ m{`}sgio;
+  return STATUS_WONT_HANDLE if $col_name =~ m{`}sgio;
 
-	return [
+  return [
     # Unlock tables prevents conflicting locks and should also take care
     # of open transactions by performing implicit COMMIT
     'UNLOCK TABLES',
     'SET @tx_read_only.save= @@session.tx_read_only',
     'SET SESSION tx_read_only= 0',
-		#Include database transforms creation DDL so that it appears in the simplified testcase.
-		"CREATE DATABASE IF NOT EXISTS transforms",
-		"DROP TABLE IF EXISTS $table_name",
-		"CREATE TABLE $table_name $orig_query",
+    #Include database transforms creation DDL so that it appears in the simplified testcase.
+    "CREATE DATABASE IF NOT EXISTS transforms",
+    "DROP TABLE IF EXISTS $table_name",
+    "CREATE TABLE $table_name $orig_query",
 
-		# If the result set has more than 1 row, we can not use it in the SET clause
-		( $original_result->rows() == 1 ?
-			"UPDATE $table_name SET `$col_name` = ( $orig_query ) + 9999 WHERE `$col_name` NOT IN ( $orig_query ) " :
-			"UPDATE $table_name SET `$col_name` = $col_name + 9999 WHERE `$col_name` NOT IN ( $orig_query ) "
-		),
+    # If the result set has more than 1 row, we can not use it in the SET clause
+    ( $original_result->rows() == 1 ?
+      "UPDATE $table_name SET `$col_name` = ( $orig_query ) + 9999 WHERE `$col_name` NOT IN ( $orig_query ) " :
+      "UPDATE $table_name SET `$col_name` = $col_name + 9999 WHERE `$col_name` NOT IN ( $orig_query ) "
+    ),
 
-		# The queries above should not have updated any rows. Sometimes ROW_COUNT() returns -1
-		"SELECT IF((ROW_COUNT() = 0 OR ROW_COUNT() = -1), 1, 0) /* TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE */",
-		"SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+    # The queries above should not have updated any rows. Sometimes ROW_COUNT() returns -1
+    "SELECT IF((ROW_COUNT() = 0 OR ROW_COUNT() = -1), 1, 0) /* TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE */",
+    "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
 
-		( $original_result->rows() == 1 ?
-			"UPDATE $table_name SET `$col_name` = ( $orig_query ) WHERE `$col_name` IN ( $orig_query ) " :
-			"UPDATE $table_name SET `$col_name` = $col_name WHERE `$col_name` IN ( $orig_query ) "
-		),
+    ( $original_result->rows() == 1 ?
+      "UPDATE $table_name SET `$col_name` = ( $orig_query ) WHERE `$col_name` IN ( $orig_query ) " :
+      "UPDATE $table_name SET `$col_name` = $col_name WHERE `$col_name` IN ( $orig_query ) "
+    ),
 
-		# The queries above should have updated all rows
-		"SELECT IF((ROW_COUNT() = ".$original_result->rows()." OR ROW_COUNT() = -1), 1, 0) /* TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE */",
-		"SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+    # The queries above should have updated all rows
+    "SELECT IF((ROW_COUNT() = ".$original_result->rows()." OR ROW_COUNT() = -1), 1, 0) /* TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE */",
+    "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
 
-		# All rows should end up deleted
-		"DELETE FROM $table_name WHERE `$col_name` IN ( $orig_query ) ",
-		"SELECT IF((ROW_COUNT() = ".$original_result->rows()." OR ROW_COUNT() = -1), 1, 0) /* TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE */",
-		"SELECT * FROM $table_name /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
-		"DROP TABLE IF EXISTS $table_name",
+    # All rows should end up deleted
+    "DELETE FROM $table_name WHERE `$col_name` IN ( $orig_query ) ",
+    "SELECT IF((ROW_COUNT() = ".$original_result->rows()." OR ROW_COUNT() = -1), 1, 0) /* TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE */",
+    "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
+    "DROP TABLE IF EXISTS $table_name",
     '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save'
-	];
+  ];
 }
 
 1;

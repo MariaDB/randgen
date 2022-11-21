@@ -26,76 +26,76 @@ use GenTest;
 use GenTest::Constants;
 use GenTest::Reporter;
 
-use constant MANAGER_REPORTERS		=> 0;
+use constant MANAGER_REPORTERS    => 0;
 1;
 
 sub new {
-	my $class = shift;
-	my $manager = $class->SUPER::new({
-		reporters => MANAGER_REPORTERS
-	}, @_);
+  my $class = shift;
+  my $manager = $class->SUPER::new({
+    reporters => MANAGER_REPORTERS
+  }, @_);
 
-	$manager->[MANAGER_REPORTERS] = [];
+  $manager->[MANAGER_REPORTERS] = [];
 
-	return $manager;
+  return $manager;
 }
 
 sub monitor {
-	my ($manager, $desired_type) = @_;
+  my ($manager, $desired_type) = @_;
 
-	my $max_result = STATUS_OK;
+  my $max_result = STATUS_OK;
 
-	foreach my $reporter (@{$manager->reporters()}) {
-		if ($reporter->type() & $desired_type) {
-			my $reporter_result = STATUS_OK;
+  foreach my $reporter (@{$manager->reporters()}) {
+    if ($reporter->type() & $desired_type) {
+      my $reporter_result = STATUS_OK;
       eval {
         $reporter_result = $reporter->monitor();
         1;
       };
       sayWarning("Reporter ".(ref $reporter)." returned an error $reporter_result") if $reporter_result != STATUS_OK;
-			$max_result = $reporter_result if $reporter_result > $max_result;
-		}
-	}
-	return $max_result;
+      $max_result = $reporter_result if $reporter_result > $max_result;
+    }
+  }
+  return $max_result;
 }
 
 sub report {
-	my ($manager, $desired_type) = @_;
+  my ($manager, $desired_type) = @_;
 
-	my $max_result = STATUS_OK;
+  my $max_result = STATUS_OK;
 
-	foreach my $reporter (@{$manager->reporters()}) {
-		if ($reporter->type() & $desired_type) {
-			my @reporter_results = $reporter->report();
-			my $reporter_result = shift @reporter_results;
-			$max_result = $reporter_result if $reporter_result > $max_result;
-		}
-	}
-	return $max_result;
+  foreach my $reporter (@{$manager->reporters()}) {
+    if ($reporter->type() & $desired_type) {
+      my @reporter_results = $reporter->report();
+      my $reporter_result = shift @reporter_results;
+      $max_result = $reporter_result if $reporter_result > $max_result;
+    }
+  }
+  return $max_result;
 }
 
 sub addReporter {
-	my ($manager, $reporter, $params) = @_;
+  my ($manager, $reporter, $params) = @_;
 
-	if (ref($reporter) eq '') {
-		my $module = "GenTest::Reporter::".$reporter;
-		eval "use $module" or print $@;
-		$reporter = $module->new(%$params);
-		if (not defined $reporter) {
-				sayError("Reporter could not be added. Status will be set to ENVIRONMENT_FAILURE");
-				return STATUS_ENVIRONMENT_FAILURE;
-		}
+  if (ref($reporter) eq '') {
+    my $module = "GenTest::Reporter::".$reporter;
+    eval "use $module" or print $@;
+    $reporter = $module->new(%$params);
+    if (not defined $reporter) {
+        sayError("Reporter could not be added. Status will be set to ENVIRONMENT_FAILURE");
+        return STATUS_ENVIRONMENT_FAILURE;
+    }
     if (not $reporter->init() == STATUS_OK) {
       return STATUS_ENVIRONMENT_FAILURE;
     }
-	}
+  }
 
-	push @{$manager->[MANAGER_REPORTERS]}, $reporter;
-	return STATUS_OK;
+  push @{$manager->[MANAGER_REPORTERS]}, $reporter;
+  return STATUS_OK;
 }
 
 sub reporters {
-	return $_[0]->[MANAGER_REPORTERS];
+  return $_[0]->[MANAGER_REPORTERS];
 }
 
 1;

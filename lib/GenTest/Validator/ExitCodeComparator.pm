@@ -134,7 +134,7 @@ sub validate {
 #            say(logLine($executors,$results) . ". Ignoring the difference, since the status is the same, and major versions are different");
             return STATUS_WONT_HANDLE;
         }
-    
+
     }
     # For the same major version, we'll try for now return an error on any error code mismatch
     # and see how it goes. Probably there will be way too many false positives

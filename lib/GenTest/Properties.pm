@@ -80,13 +80,13 @@ sub AUTOLOAD {
 sub new {
     my $class = shift;
 
-	my $props = $class->SUPER::new({
-	    'name' => PROPS_NAME,
-	    'defaults'	=> PROPS_DEFAULTS,
-	    'required'	=> PROPS_REQUIRED,
-	    'options' => PROPS_OPTIONS,
-	    'legal' => PROPS_LEGAL,
-	    'help' => PROPS_HELP ## disabled since I get weird warning....
+  my $props = $class->SUPER::new({
+      'name' => PROPS_NAME,
+      'defaults'  => PROPS_DEFAULTS,
+      'required'  => PROPS_REQUIRED,
+      'options' => PROPS_OPTIONS,
+      'legal' => PROPS_LEGAL,
+      'help' => PROPS_HELP ## disabled since I get weird warning....
        }, @_);
 
     ## List of legal properties, if no such list, all properties are

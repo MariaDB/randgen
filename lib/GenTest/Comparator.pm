@@ -42,28 +42,28 @@ use constant COMPARISON_OUTCOME_ORDERED_MATCH   => 1;
 1;
 
 sub _comparison {
-	my ($comparison_mode, @resultsets) = @_;
+  my ($comparison_mode, @resultsets) = @_;
 
-	return STATUS_OK if $#resultsets == 0;
+  return STATUS_OK if $#resultsets == 0;
 
-	return STATUS_WONT_HANDLE if $resultsets[0]->status() == STATUS_WONT_HANDLE || $resultsets[1]->status() == STATUS_WONT_HANDLE;
-	return STATUS_SKIP if $resultsets[0]->status() == STATUS_SKIP || $resultsets[1]->status() == STATUS_SKIP;
+  return STATUS_WONT_HANDLE if $resultsets[0]->status() == STATUS_WONT_HANDLE || $resultsets[1]->status() == STATUS_WONT_HANDLE;
+  return STATUS_SKIP if $resultsets[0]->status() == STATUS_SKIP || $resultsets[1]->status() == STATUS_SKIP;
 
-	foreach my $i (0..($#resultsets-1)) {
+  foreach my $i (0..($#resultsets-1)) {
 
-		my $resultset1 = $resultsets[$i];
-		my $resultset2 = $resultsets[$i+1];
-		if ($resultset1->status() != $resultset2->status()) {
-			return STATUS_ERROR_MISMATCH;
-		} elsif (
-			(not defined $resultset1->data()) &&					# Only for DML statements
-			($resultset1->affectedRows() != $resultset2->affectedRows())
-		) {
-			return STATUS_LENGTH_MISMATCH;
-		} else {
-			my $data1 = $resultset1->data();
-			my $data2 = $resultset2->data();
-			return STATUS_LENGTH_MISMATCH if $#$data1 != $#$data2;
+    my $resultset1 = $resultsets[$i];
+    my $resultset2 = $resultsets[$i+1];
+    if ($resultset1->status() != $resultset2->status()) {
+      return STATUS_ERROR_MISMATCH;
+    } elsif (
+      (not defined $resultset1->data()) &&          # Only for DML statements
+      ($resultset1->affectedRows() != $resultset2->affectedRows())
+    ) {
+      return STATUS_LENGTH_MISMATCH;
+    } else {
+      my $data1 = $resultset1->data();
+      my $data2 = $resultset2->data();
+      return STATUS_LENGTH_MISMATCH if $#$data1 != $#$data2;
             my ($data1_sorted, $data2_sorted);
             if ($comparison_mode == COMPARISON_OUTCOME_UNORDERED_MATCH) {
                 $data1_sorted = join('<row>', sort map { join('<col>', map { defined $_ ? substr($_,0,32) : 'NULL' } @$_) } @$data1);
@@ -76,9 +76,9 @@ sub _comparison {
             if ($data1_sorted ne $data2_sorted) {
                 return STATUS_CONTENT_MISMATCH;
             }
-		}
-	}
-	return STATUS_OK;
+    }
+  }
+  return STATUS_OK;
 }
 
 # For backward compatibility, we keep "compare" a synonym of unordered comparison
@@ -96,34 +96,34 @@ sub compare_as_ordered {
 
 
 sub dumpDiff {
-	my @results = @_;
-	my @files;
-	my $diff;
+  my @results = @_;
+  my @files;
+  my $diff;
 
-	foreach my $i (0..1) {
-		return undef if not defined $results[$i] or not defined $results[$i]->data();
-		my $data_sorted = join("\n", map { join("\t", map { defined $_ ? $_ : "NULL" } @$_) } @{$results[$i]->data()});
-		$data_sorted = $data_sorted."\n" if $data_sorted ne '';
-		$files[$i] = tmpdir()."/randgen".abs($$)."-".time()."-server".$i.".dump";
-		open (FILE, ">".$files[$i]);
-		print FILE $data_sorted;
-		close FILE;
-	}
-	
-	my $diff_cmd = "diff -a -u $files[0] $files[1]";
+  foreach my $i (0..1) {
+    return undef if not defined $results[$i] or not defined $results[$i]->data();
+    my $data_sorted = join("\n", map { join("\t", map { defined $_ ? $_ : "NULL" } @$_) } @{$results[$i]->data()});
+    $data_sorted = $data_sorted."\n" if $data_sorted ne '';
+    $files[$i] = tmpdir()."/randgen".abs($$)."-".time()."-server".$i.".dump";
+    open (FILE, ">".$files[$i]);
+    print FILE $data_sorted;
+    close FILE;
+  }
 
-	open (DIFF, "$diff_cmd|");
-	while (<DIFF>) {
-		$diff .= $_;
-	}
-	close DIFF;
+  my $diff_cmd = "diff -a -u $files[0] $files[1]";
 
-	foreach my $file (@files) {
-		unlink($file);
-	}
-	
-	return $diff;
-	
+  open (DIFF, "$diff_cmd|");
+  while (<DIFF>) {
+    $diff .= $_;
+  }
+  close DIFF;
+
+  foreach my $file (@files) {
+    unlink($file);
+  }
+
+  return $diff;
+
 }
 
 1;

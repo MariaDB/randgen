@@ -1,4 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (C) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -28,47 +29,47 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub transform {
-	my ($class, $orig_query, $executor) = @_;
+  my ($class, $orig_query, $executor) = @_;
 
   return STATUS_WONT_HANDLE if $orig_query !~ m{SELECT}sio;
 
-	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|GRANT|REVOKE)}sio
-		|| $orig_query =~ m{LIMIT}sio;
+  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|GRANT|REVOKE)}sio
+    || $orig_query =~ m{LIMIT}sio;
 
-	my $modified_query = $orig_query;
+  my $modified_query = $orig_query;
 
-	# Replace AA with ( SELECT * FROM AA ) AS derived1; Add "AS derivedN" if there was no alias originally;
+  # Replace AA with ( SELECT * FROM AA ) AS derived1; Add "AS derivedN" if there was no alias originally;
 
-	my $derived_count = 1;
+  my $derived_count = 1;
 
-	$modified_query =~ s{([ `])([A-Z])([ `]|$)(\s*AS|)}{
-		if ($4 eq '') {
-			" ( SELECT * FROM $1$2$1 ) AS derived".$derived_count++." ";
-		} else {
-			" ( SELECT * FROM $1$2$1 ) AS ";
-		}
-	}sgoe;
+  $modified_query =~ s{([ `])([A-Z])([ `]|$)(\s*AS|)}{
+    if ($4 eq '') {
+      " ( SELECT * FROM $1$2$1 ) AS derived".$derived_count++." ";
+    } else {
+      " ( SELECT * FROM $1$2$1 ) AS ";
+    }
+  }sgoe;
 
-	$modified_query =~ s{([ `])([A-Z])\2([ `]|$)(\s*AS|)}{
-		if ($4 eq '') {
-			" ( SELECT * FROM $1$2$2$1 ) AS derived".$derived_count++." ";
-		} else {
-			" ( SELECT * FROM $1$2$2$1 ) AS ";
-		}
-	}sgoe;
+  $modified_query =~ s{([ `])([A-Z])\2([ `]|$)(\s*AS|)}{
+    if ($4 eq '') {
+      " ( SELECT * FROM $1$2$2$1 ) AS derived".$derived_count++." ";
+    } else {
+      " ( SELECT * FROM $1$2$2$1 ) AS ";
+    }
+  }sgoe;
 
-	$modified_query =~ s{([ `])([A-Z])\2\2([ `]|$)(\s*AS|)}{
-		if ($4 eq '') {
-			" ( SELECT * FROM $1$2$2$2$1 ) AS derived".$derived_count++." ";
-		} else {
-			" ( SELECT * FROM $1$2$2$2$1 ) AS ";
-		}
-	}sgoe;
+  $modified_query =~ s{([ `])([A-Z])\2\2([ `]|$)(\s*AS|)}{
+    if ($4 eq '') {
+      " ( SELECT * FROM $1$2$2$2$1 ) AS derived".$derived_count++." ";
+    } else {
+      " ( SELECT * FROM $1$2$2$2$1 ) AS ";
+    }
+  }sgoe;
 
-	if ($modified_query ne $orig_query) {
-		return [ $modified_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" ];
-	} else {
-		return STATUS_WONT_HANDLE;
-	}
+  if ($modified_query ne $orig_query) {
+    return [ $modified_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" ];
+  } else {
+    return STATUS_WONT_HANDLE;
+  }
 }

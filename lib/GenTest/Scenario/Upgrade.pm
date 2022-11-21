@@ -101,7 +101,7 @@ sub switch_to_new_server {
 
 sub compare_autoincrements {
   my ($self, $old_autoinc, $new_autoinc)= @_;
-#	say("Comparing auto-increment data between old and new servers...");
+#  say("Comparing auto-increment data between old and new servers...");
 
   if (not $old_autoinc and not $new_autoinc) {
       say("No auto-inc data for old and new servers, skipping the check");

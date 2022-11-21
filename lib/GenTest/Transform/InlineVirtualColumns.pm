@@ -1,4 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -30,37 +31,37 @@ use GenTest::Constants;
 my $global_inlines = 0;
 
 sub transform {
-	my ($class, $query, $executor) = @_;
+  my ($class, $query, $executor) = @_;
 
-	my %virtual_columns;
+  my %virtual_columns;
 
-	my $dbh = $executor->dbh();
+  my $dbh = $executor->dbh();
 
-	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-		|| $query !~ m{\s*SELECT}sio;
+  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
+    || $query !~ m{\s*SELECT}sio;
 
-	my ($table_name) = $query =~ m{FROM (`.*?`|\w+)[ ^]}sio;
+  my ($table_name) = $query =~ m{FROM (`.*?`|\w+)[ ^]}sio;
   return STATUS_WONT_HANDLE unless $table_name;
 
-	my (undef, $table_create) = $dbh->selectrow_array("SHOW CREATE TABLE $table_name");
+  my (undef, $table_create) = $dbh->selectrow_array("SHOW CREATE TABLE $table_name");
 
-	foreach my $create_row (split("\n", $table_create)) {
-		next if $create_row !~ m{ VIRTUAL}sio;
-		my ($column_name, $column_def) = $create_row =~ m{`(.*)` [^ ]*? AS (.*) VIRTUAL}sio;
-		$virtual_columns{$column_name} = $column_def;
-	}
+  foreach my $create_row (split("\n", $table_create)) {
+    next if $create_row !~ m{ VIRTUAL}sio;
+    my ($column_name, $column_def) = $create_row =~ m{`(.*)` [^ ]*? AS (.*) VIRTUAL}sio;
+    $virtual_columns{$column_name} = $column_def;
+  }
 
-	foreach my $virtual_column (keys %virtual_columns) {
-		my $inlines = $query =~ s{$virtual_column}{$virtual_columns{$virtual_column}}sgi;
-		$global_inlines = $global_inlines + $inlines;
-	}
+  foreach my $virtual_column (keys %virtual_columns) {
+    my $inlines = $query =~ s{$virtual_column}{$virtual_columns{$virtual_column}}sgi;
+    $global_inlines = $global_inlines + $inlines;
+  }
 
-	return $query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+  return $query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 }
 
 DESTROY {
-	say("[Statistics]: InlineVirtualColumns Transformer inlined $global_inlines expressions") if rqg_debug();
+  say("[Statistics]: InlineVirtualColumns Transformer inlined $global_inlines expressions") if rqg_debug();
 }
 
 1;

@@ -238,7 +238,7 @@ sub parseFromString {
     foreach my $rule_name (keys %rules) {
 
           my $components_string = $rules{$rule_name};
-  
+
       my @orig_component_strings = split (m{\|}, $components_string);
 
           # Check for ==FACTOR:N== directives and adjust probabilities
@@ -309,7 +309,7 @@ sub parseFromString {
             my $bracket_count = ($component_parts[$pos] =~ tr/{//);
             $nesting_level = $nesting_level + $bracket_count;
           }
-  
+
           if (defined $component_parts[$pos] and $component_parts[$pos] =~ m{\}}so) {
             my $bracket_count = ($component_parts[$pos] =~ tr/}//);
             $nesting_level = $nesting_level - $bracket_count;

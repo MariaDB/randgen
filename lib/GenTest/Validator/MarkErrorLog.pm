@@ -1,4 +1,5 @@
 # Copyright (c) 2008, 2010 Oracle and/or its affiliates, Inc. All
+# Copyright (c) 2022, MariaDB
 # rights reserved.  Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -30,35 +31,35 @@ my $error_log;
 
 sub validate {
     my ($validator, $executors, $results) = @_;
-	my $dbh = $executors->[0]->dbh();
+  my $dbh = $executors->[0]->dbh();
 
-	if (not defined $error_log) {
-		my ($foo, $error_log_mysql) = $dbh->selectrow_array("SHOW VARIABLES LIKE 'log_error'");
+  if (not defined $error_log) {
+    my ($foo, $error_log_mysql) = $dbh->selectrow_array("SHOW VARIABLES LIKE 'log_error'");
 
-		if ($error_log_mysql ne '') {
-			$error_log = $error_log_mysql;
-		} else {
-			my ($bar, $datadir_mysql) = $dbh->selectrow_array("SHOW VARIABLES LIKE 'datadir'");
+    if ($error_log_mysql ne '') {
+      $error_log = $error_log_mysql;
+    } else {
+      my ($bar, $datadir_mysql) = $dbh->selectrow_array("SHOW VARIABLES LIKE 'datadir'");
             foreach my $errlog ('../log/master.err', '../mysql.err') {
                 if (-f $datadir_mysql.'/'.$errlog) {
                     $error_log = $datadir_mysql.'/'.$errlog;
                     last;
                 }
             }
-    
-		}
+
+    }
         say ("MarkErrorLog found errorlog at " . $error_log);
-	}
-	
+  }
 
 
-	my $query = $results->[0]->query();
 
-	open(LOG, ">>$error_log") or die "unable to open $error_log: $!";
-	print LOG isoTimestamp()." [$$] Query: $query\n";
-	close LOG;
+  my $query = $results->[0]->query();
 
-	return STATUS_OK;
+  open(LOG, ">>$error_log") or die "unable to open $error_log: $!";
+  print LOG isoTimestamp()." [$$] Query: $query\n";
+  close LOG;
+
+  return STATUS_OK;
 }
 
 1;

@@ -1,4 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (C) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,44 +41,44 @@ $paren_rx = qr{
 }x;
 
 sub transform {
-	my ($class, $query, $executor) = @_;
+  my ($class, $query, $executor) = @_;
 
-	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio;
+  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio;
 
-	my $inline_successful = 0;
-	$query =~ s{(\(\s*SELECT\s+(??{$paren_rx})\))}{
-		my $result = $executor->execute($1, 1);
+  my $inline_successful = 0;
+  $query =~ s{(\(\s*SELECT\s+(??{$paren_rx})\))}{
+    my $result = $executor->execute($1, 1);
 
-		if (
-			($result->status() != STATUS_OK) ||
-			($result->rows() < 1)
-		) {
-			$1;				# return original query
-		} else {
-			$inline_successful = 1;		# return inlined literals
-			" ( ".join(', ', map {
-				if (not defined $_->[0]) {
-					"NULL";
-				} elsif ($_->[0] =~ m{^\d+$}sio){
-					$_->[0];
-				} else {
-					"'".$_->[0]."'"
-				}
-			} @{$result->data()})." ) ";
-		}
-	}sgexi;
+    if (
+      ($result->status() != STATUS_OK) ||
+      ($result->rows() < 1)
+    ) {
+      $1;        # return original query
+    } else {
+      $inline_successful = 1;    # return inlined literals
+      " ( ".join(', ', map {
+        if (not defined $_->[0]) {
+          "NULL";
+        } elsif ($_->[0] =~ m{^\d+$}sio){
+          $_->[0];
+        } else {
+          "'".$_->[0]."'"
+        }
+      } @{$result->data()})." ) ";
+    }
+  }sgexi;
 
-	my $final_result = $executor->execute($query, 1);
-	
-	if (
-		($inline_successful) &&
-		($final_result->status() == STATUS_OK)
-	) {
-		return $query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
-	} else {
-		return STATUS_WONT_HANDLE;
-	}
+  my $final_result = $executor->execute($query, 1);
+
+  if (
+    ($inline_successful) &&
+    ($final_result->status() == STATUS_OK)
+  ) {
+    return $query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+  } else {
+    return STATUS_WONT_HANDLE;
+  }
 }
 
 1;

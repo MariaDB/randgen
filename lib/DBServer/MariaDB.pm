@@ -180,7 +180,7 @@ sub new {
     $self->[MYSQLD_CHARSETS] =
         $self->_findDir(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir],
                         ["sql/share/charsets","share/mysql/charsets","share/charsets"], "Index.xml");
-                 
+
 
     $self->[MYSQLD_STDOPTS] = ["--basedir=".$self->basedir,
                                $self->_messages,
@@ -554,7 +554,7 @@ sub startServer {
             # [Note] <path>/mysqld (mysqld <version>) starting as process <pid> ...
             # (if the server is new enough to produce it).
             # We need the latest line of this kind
-    
+
             unless ($errlog_fh) {
                 unless (open($errlog_fh, $errorlog)) {
                     sayError("Could not open the error log  " . $errorlog . ": $!");

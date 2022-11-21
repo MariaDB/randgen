@@ -31,39 +31,39 @@ use GenTest::Constants;
 my $initialized = 0;
 
 sub transform {
-	my ($class, $orig_query, $executor) = @_;
+  my ($class, $orig_query, $executor) = @_;
 
-	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $orig_query =~ m{LIMIT}sgio
-	         || $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio;
+  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  return STATUS_WONT_HANDLE if $orig_query =~ m{LIMIT}sgio
+           || $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio;
 
-	my $new_query = $orig_query;
-	my $var_counter = 0;
-	my @var_variables;
+  my $new_query = $orig_query;
+  my $var_counter = 0;
+  my @var_variables;
 
-	# Do not match partial dates, timestamps, etc.
-	if ($new_query =~ m{\s+(\d+)(?:\s|\)|,|;)}) {
-		$new_query =~ s{\s+(\d+)\s}{
-		    $var_counter++;
-		    push @var_variables, '@var'.$var_counter." = $1";
-		    ' @var'.$var_counter.' ';
-		}sgexi;
-	}
+  # Do not match partial dates, timestamps, etc.
+  if ($new_query =~ m{\s+(\d+)(?:\s|\)|,|;)}) {
+    $new_query =~ s{\s+(\d+)\s}{
+        $var_counter++;
+        push @var_variables, '@var'.$var_counter." = $1";
+        ' @var'.$var_counter.' ';
+    }sgexi;
+  }
 
-	$new_query =~ s{\s+'(.*?)'}{
-		$var_counter++;
-		push @var_variables, '@var'.$var_counter." = '$1'";
-		' @var'.$var_counter.' ';
-	}sgexi;
-	
-	if ($var_counter > 0) {
-		return [
-			"SET ".join(", ", @var_variables).";",
-			$new_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */;"
-		];
-	} else {
-		return STATUS_WONT_HANDLE;
-	}
+  $new_query =~ s{\s+'(.*?)'}{
+    $var_counter++;
+    push @var_variables, '@var'.$var_counter." = '$1'";
+    ' @var'.$var_counter.' ';
+  }sgexi;
+
+  if ($var_counter > 0) {
+    return [
+      "SET ".join(", ", @var_variables).";",
+      $new_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */;"
+    ];
+  } else {
+    return STATUS_WONT_HANDLE;
+  }
 }
 
 1;

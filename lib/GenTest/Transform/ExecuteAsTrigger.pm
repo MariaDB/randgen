@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -30,11 +31,11 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub transform {
-	my ($class, $orig_query, $executor) = @_;
-	
-	# We skip: - [OUTFILE | INFILE | INTO] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  my ($class, $orig_query, $executor) = @_;
+
+  # We skip: - [OUTFILE | INFILE | INTO] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   #          - everything that causes explicit/implicit COMMIT
-	return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|CREATE\s|ALTER\s|DROP\s|RENAME\s|GRANT\s|FLUSH\s|START|BEGIN|COMMIT|ROLLBACK|SHOW\s|REVOKE\s|TRUNCATE\s|USE\s|UNLOCK\s|PREPARE\s|EXECUTE\s|DEALLOCATE\s|CHECK\s+TABLE|INTO\s)}sio;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|CREATE\s|ALTER\s|DROP\s|RENAME\s|GRANT\s|FLUSH\s|START|BEGIN|COMMIT|ROLLBACK|SHOW\s|REVOKE\s|TRUNCATE\s|USE\s|UNLOCK\s|PREPARE\s|EXECUTE\s|DEALLOCATE\s|CHECK\s+TABLE|INTO\s)}sio;
 
   if ($orig_query =~ m{^\s*(?:SELECT|WITH)}sio) {
     # For true SELECTs, check the result

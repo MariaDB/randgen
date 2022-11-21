@@ -33,40 +33,40 @@ use GenTest::Executor;
 use GenTest::Random;
 use GenUtil;
 
-use constant FIELD_TYPE			=> 0;
-use constant FIELD_CHARSET		=> 1;
-use constant FIELD_COLLATION		=> 2;
-use constant FIELD_SIGN			=> 3;
-use constant FIELD_NULLABILITY		=> 4;
-use constant FIELD_INDEX		=> 5;
-use constant FIELD_AUTO_INCREMENT	=> 6;
-use constant FIELD_SQL			=> 7;
-use constant FIELD_INDEX_SQL		=> 8;
-use constant FIELD_NAME			=> 9;
+use constant FIELD_TYPE      => 0;
+use constant FIELD_CHARSET    => 1;
+use constant FIELD_COLLATION    => 2;
+use constant FIELD_SIGN      => 3;
+use constant FIELD_NULLABILITY    => 4;
+use constant FIELD_INDEX    => 5;
+use constant FIELD_AUTO_INCREMENT  => 6;
+use constant FIELD_SQL      => 7;
+use constant FIELD_INDEX_SQL    => 8;
+use constant FIELD_NAME      => 9;
 use constant FIELD_DEFAULT => 10;
 use constant FIELD_NAMES    => 11;
 use constant FIELD_SQLS     => 12;
 use constant FIELD_INDEX_SQLS   => 13;
 
-use constant TABLE_ROW		=> 0;
-use constant TABLE_ENGINE	=> 1;
-use constant TABLE_CHARSET	=> 2;
-use constant TABLE_COLLATION	=> 3;
-use constant TABLE_ROW_FORMAT	=> 4;
-use constant TABLE_EXTRA_OPTS	=> 5;
-use constant TABLE_PK		=> 6;
-use constant TABLE_SQL		=> 7;
-use constant TABLE_NAME		=> 8;
-use constant TABLE_VIEWS	=> 9;
-use constant TABLE_MERGES	=> 10;
-use constant TABLE_NAMES	=> 11;
-use constant TABLE_PARTITION	=> 12;
+use constant TABLE_ROW    => 0;
+use constant TABLE_ENGINE  => 1;
+use constant TABLE_CHARSET  => 2;
+use constant TABLE_COLLATION  => 3;
+use constant TABLE_ROW_FORMAT  => 4;
+use constant TABLE_EXTRA_OPTS  => 5;
+use constant TABLE_PK    => 6;
+use constant TABLE_SQL    => 7;
+use constant TABLE_NAME    => 8;
+use constant TABLE_VIEWS  => 9;
+use constant TABLE_MERGES  => 10;
+use constant TABLE_NAMES  => 11;
+use constant TABLE_PARTITION  => 12;
 
-use constant DATA_NUMBER	=> 0;
-use constant DATA_STRING	=> 1;
-use constant DATA_BLOB		=> 2;
-use constant DATA_TEMPORAL	=> 3;
-use constant DATA_ENUM		=> 4;
+use constant DATA_NUMBER  => 0;
+use constant DATA_STRING  => 1;
+use constant DATA_BLOB    => 2;
+use constant DATA_TEMPORAL  => 3;
+use constant DATA_ENUM    => 4;
 
 
 use constant GD_SPEC => 0;
@@ -93,7 +93,7 @@ sub new {
         'engine' => GD_ENGINE,
         'rows' => GD_ROWS,
         'views' => GD_VIEWS,
-        'short_column_names' => GD_SHORT_COLUMN_NAMES,	
+        'short_column_names' => GD_SHORT_COLUMN_NAMES,
         'server_id' => GD_SERVER_ID,
         'executor_id' => GD_EXECUTOR_ID,
         'variators' => GD_VARIATORS,
@@ -202,7 +202,7 @@ sub run {
 
     my ($tables, $fields, $data, $schemas);  # Specification as read
                                              # from the spec file.
-    my (@table_perms, @field_perms, @data_perms, @schema_perms);	# Specification
+    my (@table_perms, @field_perms, @data_perms, @schema_perms);  # Specification
                                                                     # after
                                                                     # defaults
                                                                     # have
@@ -299,7 +299,7 @@ sub run {
         @tables = map {
             my $old_table = $_;
             if (not defined $table_perms[$cycle]) {
-                $old_table;	# Retain old table, no permutations at this stage.
+                $old_table;  # Retain old table, no permutations at this stage.
             } else {
                 # Create several new tables, one for each allowed value in the current $cycle
                 map {
@@ -325,17 +325,17 @@ sub run {
         @fields = map {
             my $old_field = $_;
             if (not defined $field_perms[$cycle]) {
-                $old_field;	# Retain old field, no permutations at this stage.
+                $old_field;  # Retain old field, no permutations at this stage.
             } elsif (
                 ($cycle == FIELD_SIGN) &&
                 ($old_field->[FIELD_TYPE] !~ m{int|float|double|dec|numeric|fixed}sio)
                 ) {
-                $old_field;	# Retain old field, sign does not apply to non-integer types
+                $old_field;  # Retain old field, sign does not apply to non-integer types
             } elsif (
                 ($cycle == FIELD_CHARSET) &&
                 ($old_field->[FIELD_TYPE] =~ m{bit|int|bool|float|double|dec|numeric|fixed|blob|date|time|year|binary}sio)
                 ) {
-                $old_field;	# Retain old field, charset does not apply to integer types
+                $old_field;  # Retain old field, charset does not apply to integer types
             } else {
                 # Create several new fields, one for each allowed value in the current $cycle
                 map {
@@ -362,7 +362,7 @@ sub run {
         if ( $field_copy[FIELD_NULLABILITY] =~ m{not null}sio )
         {
             # Remove the fields array structure and skip.
-	    # We dont want to keep this, becasue it causes duplicate coulmns to be created.
+      # We dont want to keep this, becasue it causes duplicate coulmns to be created.
             undef $fields[$field_id];
             next;
         }
@@ -378,7 +378,7 @@ sub run {
             $field_name =~ s{ }{_}sgio;
             $field_name =~ s{_+}{_}sgio;
             $field_name =~ s{_+$}{}sgio;
-    
+
         }
         $field->[FIELD_NAME] = $field_name;
 
@@ -450,21 +450,21 @@ sub run {
             $table_name =~ s{partitions}{parts}siog;
             $table_name =~ s{values_less_than}{}siog;
             $table_name =~ s{integer}{int}siog;
-    
+
             # We don't want duplicate table names in case all parameters that affect the name are the same
             if ($tnames{$table_name}) {
                 $table_name .= '_'.(++$tnames{$table_name});
             } else {
                 $tnames{$table_name} = 1;
             }
-    
+
             if (
                 (uc($table_copy[TABLE_ENGINE]) eq 'MYISAM') ||
                 ($table_copy[TABLE_ENGINE] eq '')
                 ) {
                 push @myisam_tables, $table_name;
             }
-    
+
             $table->[TABLE_NAME] = $table_name;
         }
 
@@ -474,11 +474,11 @@ sub run {
         $table_copy[TABLE_COLLATION] = "COLLATE ".$table_copy[TABLE_COLLATION] if $table_copy[TABLE_COLLATION] ne '';
         $table_copy[TABLE_PARTITION] = "/*!50100 PARTITION BY ".$table_copy[TABLE_PARTITION]." */" if $table_copy[TABLE_PARTITION] ne '';
 
-        delete $table_copy[TABLE_ROW];	# Do not include number of rows in the CREATE TABLE
-        delete $table_copy[TABLE_PK];	# Do not include PK definition at the end of CREATE TABLE
+        delete $table_copy[TABLE_ROW];  # Do not include number of rows in the CREATE TABLE
+        delete $table_copy[TABLE_PK];  # Do not include PK definition at the end of CREATE TABLE
 
         $table->[TABLE_SQL] = join(' ' , grep { $_ ne '' } @table_copy);
-    }	
+    }
 
     foreach my $schema (@schema_perms) {
         $self->variate_and_execute($executor,"CREATE SCHEMA /*!IF NOT EXISTS*/ $schema");
@@ -533,18 +533,18 @@ sub run {
 
         if (defined $table_perms[TABLE_VIEWS]) {
             foreach my $view_id (0..$#{$table_perms[TABLE_VIEWS]}) {
-		my $view_name;
-		if ($#{$table_perms[TABLE_VIEWS]} == 0) {
-		   $view_name = 'view_'.$table->[TABLE_NAME];
-		} else {
-		   $view_name = 'view_'.$table->[TABLE_NAME]."_$view_id";
-		}
+    my $view_name;
+    if ($#{$table_perms[TABLE_VIEWS]} == 0) {
+       $view_name = 'view_'.$table->[TABLE_NAME];
+    } else {
+       $view_name = 'view_'.$table->[TABLE_NAME]."_$view_id";
+    }
 
-		if ($table_perms[TABLE_VIEWS]->[$view_id] ne '') {
-	                $self->variate_and_execute($executor,"CREATE OR REPLACE ALGORITHM=".uc($table_perms[TABLE_VIEWS]->[$view_id])." VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
-		} else {
-	                $self->variate_and_execute($executor,"CREATE OR REPLACE VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
-		}
+    if ($table_perms[TABLE_VIEWS]->[$view_id] ne '') {
+                  $self->variate_and_execute($executor,"CREATE OR REPLACE ALGORITHM=".uc($table_perms[TABLE_VIEWS]->[$view_id])." VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
+    } else {
+                  $self->variate_and_execute($executor,"CREATE OR REPLACE VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
+    }
             }
         }
 
@@ -564,25 +564,25 @@ sub run {
                 my $value;
                 my $quote = 0;
                 if ($field->[FIELD_TYPE] =~ m{auto_increment}sio) {
-                    $value = undef;		# Trigger auto-increment by inserting NULLS for PK
+                    $value = undef;    # Trigger auto-increment by inserting NULLS for PK
                 } elsif ($field->[FIELD_INDEX] eq 'primary key') {
                     if ($field->[FIELD_TYPE] =~ m{^(datetime|timestamp)$}sgio) {
-    				$value = "FROM_UNIXTIME(UNIX_TIMESTAMP('2000-01-01') + $row_id)";
-	                } elsif ($field->[FIELD_TYPE] =~ m{date}sgio) {
-		                $value = "FROM_DAYS(TO_DAYS('2000-01-01') + $row_id)";
-	                } elsif ($field->[FIELD_TYPE] =~ m{^time$}sgio) {
-		                $value = "SEC_TO_TIME($row_id)";
-	                # Support wider range for frastionl seconds precision with temporal datatypes.
-	                } elsif ($field->[FIELD_TYPE] =~ m{^(timestamp|datetime|time)\((\d+)\)$}sgio) {
-		                $value = "CURRENT_TIMESTAMP($2) + $row_id";
-	                } elsif ($field->[FIELD_TYPE] =~ m{^(time)\((\d+)\)$}sgio) {
-		                $value = "CURRENT_TIME($2) + $row_id";			
-	                } else {
-                        $value = $row_id;	# Otherwise, insert sequential numbers
-	                }
+            $value = "FROM_UNIXTIME(UNIX_TIMESTAMP('2000-01-01') + $row_id)";
+                  } elsif ($field->[FIELD_TYPE] =~ m{date}sgio) {
+                    $value = "FROM_DAYS(TO_DAYS('2000-01-01') + $row_id)";
+                  } elsif ($field->[FIELD_TYPE] =~ m{^time$}sgio) {
+                    $value = "SEC_TO_TIME($row_id)";
+                  # Support wider range for frastionl seconds precision with temporal datatypes.
+                  } elsif ($field->[FIELD_TYPE] =~ m{^(timestamp|datetime|time)\((\d+)\)$}sgio) {
+                    $value = "CURRENT_TIMESTAMP($2) + $row_id";
+                  } elsif ($field->[FIELD_TYPE] =~ m{^(time)\((\d+)\)$}sgio) {
+                    $value = "CURRENT_TIME($2) + $row_id";
+                  } else {
+                        $value = $row_id;  # Otherwise, insert sequential numbers
+                  }
                 } else {
                     my (@possible_values, $value_type);
-            
+
                     if ($field->[FIELD_TYPE] =~ m{date|time|year}sio) {
                         $value_type = DATA_TEMPORAL;
                         $quote = 1;
@@ -598,26 +598,26 @@ sub run {
                         $value_type = DATA_STRING;
                         $quote = 1;
                     }
-            
+
                     if ($field->[FIELD_NULLABILITY] eq 'not null') {
                         # Remove NULL from the list of allowed values
                         @possible_values = grep { lc($_) ne 'null' } @{$data_perms[$value_type]};
                     } else {
                         @possible_values = @{$data_perms[$value_type]};
                     }
-            
+
                     croak("# Unable to generate data for field '$field->[FIELD_TYPE] $field->[FIELD_NULLABILITY]'") if $#possible_values == -1;
-            
+
                     my $possible_value = $prng->arrayElement(\@possible_values);
                     $possible_value = $field->[FIELD_TYPE] if not defined $possible_value;
-            
+
                     if ($prng->isFieldType($possible_value)) {
                         $value = $prng->fieldType($possible_value);
                     } else {
-                        $value = $possible_value;		# A simple string literal as specified
+                        $value = $possible_value;    # A simple string literal as specified
                     }
                 }
-        
+
                 ## Quote if necessary
                 if ($value =~ m{load_file}sio) {
                     push @data, defined $value ? $value : "NULL";
@@ -626,11 +626,11 @@ sub run {
                     push @data, defined $value ? "'$value'" : "NULL";
                 } else {
                     push @data, defined $value ? $value : "NULL";
-                }	
+                }
             }
-    
+
             push @row_buffer, " (".join(', ', @data).") ";
-    
+
             if (
                 (($row_id % 50) == 0) ||
                 ($row_id == $table->[TABLE_ROW])
@@ -639,7 +639,7 @@ sub run {
                 return $insert_result->status() if $insert_result->status() >= STATUS_CRITICAL_FAILURE;
                 @row_buffer = ();
             }
-    
+
             if (($row_id % 10000) == 0) {
                 $self->variate_and_execute($executor,"COMMIT");
                 say("# Progress: loaded $row_id out of $table->[TABLE_ROW] rows");

@@ -410,7 +410,7 @@ sub gen_table {
 
     # Spatial columns are hopefully not very common and they are also painful. 10%
     if (!$prng->uint16(0,9)) {
-		my $tp= $prng->geometryType();
+    my $tp= $prng->geometryType();
         $columns{col_spatial} = [  $tp,
                                    undef,
                                    undef,

@@ -176,7 +176,7 @@ sub asc_desc_key {
 }
 
 sub gen_table {
-	my ($self, $executor, $basename, $size) = @_;
+  my ($self, $executor, $basename, $size) = @_;
 
     my $prng = GenTest::Random->new( seed => $self->[GDS_SEED] );
 
@@ -269,7 +269,7 @@ sub gen_table {
       }
     }
 
-	my @values;
+  my @values;
 
     foreach my $row (1..$size) {
 
@@ -314,7 +314,7 @@ sub gen_table {
       }
     }
   }
-	return STATUS_OK;
+  return STATUS_OK;
 }
 
 1;

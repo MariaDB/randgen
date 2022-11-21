@@ -23,20 +23,20 @@ require Exporter;
 @ISA = qw(GenTest Exporter);
 
 @EXPORT = qw(
-	EXECUTOR_RETURNED_ROW_COUNTS
-	EXECUTOR_AFFECTED_ROW_COUNTS
-	EXECUTOR_EXPLAIN_COUNTS
-	EXECUTOR_EXPLAIN_QUERIES
-	EXECUTOR_ERROR_COUNTS
-	EXECUTOR_STATUS_COUNTS
+  EXECUTOR_RETURNED_ROW_COUNTS
+  EXECUTOR_AFFECTED_ROW_COUNTS
+  EXECUTOR_EXPLAIN_COUNTS
+  EXECUTOR_EXPLAIN_QUERIES
+  EXECUTOR_ERROR_COUNTS
+  EXECUTOR_STATUS_COUNTS
     EXECUTOR_SILENT_ERRORS_COUNT
 
-	FETCH_METHOD_AUTO
-	FETCH_METHOD_STORE_RESULT
-	FETCH_METHOD_USE_RESULT
+  FETCH_METHOD_AUTO
+  FETCH_METHOD_STORE_RESULT
+  FETCH_METHOD_USE_RESULT
 
-	EXECUTOR_FLAG_SILENT
-	EXECUTOR_FLAG_HASH_DATA
+  EXECUTOR_FLAG_SILENT
+  EXECUTOR_FLAG_HASH_DATA
 );
 
 use strict;
@@ -46,29 +46,29 @@ use GenUtil;
 use GenTest;
 use GenTest::Constants;
 
-use constant EXECUTOR_DSN			=> 0;
-use constant EXECUTOR_DBH			=> 1;
-use constant EXECUTOR_ID			=> 2;
-use constant EXECUTOR_RETURNED_ROW_COUNTS	=> 3;
-use constant EXECUTOR_AFFECTED_ROW_COUNTS	=> 4;
-use constant EXECUTOR_EXPLAIN_COUNTS		=> 5;
-use constant EXECUTOR_EXPLAIN_QUERIES		=> 6;
-use constant EXECUTOR_ERROR_COUNTS		=> 7;
-use constant EXECUTOR_STATUS_COUNTS		=> 8;
-use constant EXECUTOR_DEFAULT_SCHEMA		=> 9;
-use constant EXECUTOR_SCHEMA_METADATA		=> 10;
-use constant EXECUTOR_COLLATION_METADATA	=> 11;
-use constant EXECUTOR_META_CACHE		=> 12;
-use constant EXECUTOR_CHANNEL			=> 13;
-use constant EXECUTOR_SQLTRACE			=> 14;
+use constant EXECUTOR_DSN      => 0;
+use constant EXECUTOR_DBH      => 1;
+use constant EXECUTOR_ID      => 2;
+use constant EXECUTOR_RETURNED_ROW_COUNTS  => 3;
+use constant EXECUTOR_AFFECTED_ROW_COUNTS  => 4;
+use constant EXECUTOR_EXPLAIN_COUNTS    => 5;
+use constant EXECUTOR_EXPLAIN_QUERIES    => 6;
+use constant EXECUTOR_ERROR_COUNTS    => 7;
+use constant EXECUTOR_STATUS_COUNTS    => 8;
+use constant EXECUTOR_DEFAULT_SCHEMA    => 9;
+use constant EXECUTOR_SCHEMA_METADATA    => 10;
+use constant EXECUTOR_COLLATION_METADATA  => 11;
+use constant EXECUTOR_META_CACHE    => 12;
+use constant EXECUTOR_CHANNEL      => 13;
+use constant EXECUTOR_SQLTRACE      => 14;
 use constant EXECUTOR_NO_ERR_FILTER             => 15;
-use constant EXECUTOR_FETCH_METHOD		=> 16;
-use constant EXECUTOR_CONNECTION_ID		=> 17;
-use constant EXECUTOR_FLAGS			=> 18;
+use constant EXECUTOR_FETCH_METHOD    => 16;
+use constant EXECUTOR_CONNECTION_ID    => 17;
+use constant EXECUTOR_FLAGS      => 18;
 use constant EXECUTOR_HOST          => 19;
 use constant EXECUTOR_PORT          => 20;
-use constant EXECUTOR_END_TIME	    => 21;
-use constant EXECUTOR_CURRENT_USER	    => 22;
+use constant EXECUTOR_END_TIME      => 21;
+use constant EXECUTOR_CURRENT_USER      => 22;
 use constant EXECUTOR_SERVER_VERSION    => 23;
 use constant EXECUTOR_SERVER_VERSION_MAJOR => 24;
 use constant EXECUTOR_SERVER_VERSION_NUMERIC => 25;
@@ -83,12 +83,12 @@ use constant EXECUTOR_META_RELOAD_NOW => 33;
 use constant EXECUTOR_SERVICE_DBH => 34;
 use constant EXECUTOR_SILENT_ERRORS_COUNT => 35;
 
-use constant FETCH_METHOD_AUTO		=> 0;
-use constant FETCH_METHOD_STORE_RESULT	=> 1;
-use constant FETCH_METHOD_USE_RESULT	=> 2;
+use constant FETCH_METHOD_AUTO    => 0;
+use constant FETCH_METHOD_STORE_RESULT  => 1;
+use constant FETCH_METHOD_USE_RESULT  => 2;
 
-use constant EXECUTOR_FLAG_SILENT	=> 1;
-use constant EXECUTOR_FLAG_HASH_DATA	=> 2;
+use constant EXECUTOR_FLAG_SILENT  => 1;
+use constant EXECUTOR_FLAG_HASH_DATA  => 2;
 
 use constant EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL => 60;
 
@@ -102,8 +102,8 @@ sub new {
     my $class = shift;
 
     my $executor = $class->SUPER::new({
-        'dsn'	=> EXECUTOR_DSN,
-        'dbh'	=> EXECUTOR_DBH,
+        'dsn'  => EXECUTOR_DSN,
+        'dbh'  => EXECUTOR_DBH,
         'channel' => EXECUTOR_CHANNEL,
         'sqltrace' => EXECUTOR_SQLTRACE,
         'no-err-filter' => EXECUTOR_NO_ERR_FILTER,
@@ -160,43 +160,43 @@ sub sendError {
 }
 
 sub dbh {
-	return $_[0]->[EXECUTOR_DBH];
+  return $_[0]->[EXECUTOR_DBH];
 }
 
 sub setDbh {
-	$_[0]->[EXECUTOR_DBH] = $_[1];
+  $_[0]->[EXECUTOR_DBH] = $_[1];
 }
 
 sub serviceDbh {
-	return $_[0]->[EXECUTOR_SERVICE_DBH];
+  return $_[0]->[EXECUTOR_SERVICE_DBH];
 }
 
 sub setServiceDbh {
-	$_[0]->[EXECUTOR_SERVICE_DBH] = $_[1];
+  $_[0]->[EXECUTOR_SERVICE_DBH] = $_[1];
 }
 
 sub host {
-	return $_[0]->[EXECUTOR_HOST];
+  return $_[0]->[EXECUTOR_HOST];
 }
 
 sub setHost {
-	$_[0]->[EXECUTOR_HOST] = $_[1];
+  $_[0]->[EXECUTOR_HOST] = $_[1];
 }
 
 sub port {
-	return $_[0]->[EXECUTOR_PORT];
+  return $_[0]->[EXECUTOR_PORT];
 }
 
 sub setPort {
-	$_[0]->[EXECUTOR_PORT] = $_[1];
+  $_[0]->[EXECUTOR_PORT] = $_[1];
 }
 
 sub currentUser {
-	return $_[0]->[EXECUTOR_CURRENT_USER];
+  return $_[0]->[EXECUTOR_CURRENT_USER];
 }
 
 sub setCurrentUser {
-	$_[0]->[EXECUTOR_CURRENT_USER] = $_[1];
+  $_[0]->[EXECUTOR_CURRENT_USER] = $_[1];
 }
 
 sub sqltrace {
@@ -212,55 +212,55 @@ sub noErrFilter {
 }
 
 sub dsn {
-	return $_[0]->[EXECUTOR_DSN];
+  return $_[0]->[EXECUTOR_DSN];
 }
 
 sub setDsn {
-	$_[0]->[EXECUTOR_DSN] = $_[1];
+  $_[0]->[EXECUTOR_DSN] = $_[1];
 }
 
 sub end_time {
-	return $_[0]->[EXECUTOR_END_TIME];
+  return $_[0]->[EXECUTOR_END_TIME];
 }
 
 sub set_end_time {
-	$_[0]->[EXECUTOR_END_TIME] = $_[1];
+  $_[0]->[EXECUTOR_END_TIME] = $_[1];
 }
 
 sub id {
-	return $_[0]->[EXECUTOR_ID];
+  return $_[0]->[EXECUTOR_ID];
 }
 
 sub setId {
-	$_[0]->[EXECUTOR_ID] = $_[1];
+  $_[0]->[EXECUTOR_ID] = $_[1];
 }
 
 sub vardir {
-	return $_[0]->[EXECUTOR_VARDIR];
+  return $_[0]->[EXECUTOR_VARDIR];
 }
 
 sub setVardir {
-	$_[0]->[EXECUTOR_VARDIR]= $_[1];
+  $_[0]->[EXECUTOR_VARDIR]= $_[1];
 }
 
 sub fetchMethod {
-	return $_[0]->[EXECUTOR_FETCH_METHOD];
+  return $_[0]->[EXECUTOR_FETCH_METHOD];
 }
 
 sub connectionId {
-	return $_[0]->[EXECUTOR_CONNECTION_ID];
+  return $_[0]->[EXECUTOR_CONNECTION_ID];
 }
 
 sub setConnectionId {
-	$_[0]->[EXECUTOR_CONNECTION_ID] = $_[1];
+  $_[0]->[EXECUTOR_CONNECTION_ID] = $_[1];
 }
 
 sub flags {
-	return $_[0]->[EXECUTOR_FLAGS] || 0;
+  return $_[0]->[EXECUTOR_FLAGS] || 0;
 }
 
 sub setFlags {
-	$_[0]->[EXECUTOR_FLAGS] = $_[1];
+  $_[0]->[EXECUTOR_FLAGS] = $_[1];
 }
 
 sub setServerVersion {
@@ -787,7 +787,7 @@ sub metaColumnsDataIndexType {
             sayDebug "Table/view '$table' in schema '$schema' has no '$indextype' columns (Might be caused by use of --views option in combination with grammars containing _field_indexed). Using any column";
             return $self->metaColumns($table,$schema);
         }
-    
+
         my $cols = GenTest::intersect_arrays($cols_by_datatype,$cols_by_indextype);
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }

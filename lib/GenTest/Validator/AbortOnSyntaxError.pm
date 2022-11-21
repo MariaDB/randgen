@@ -1,4 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -33,11 +34,11 @@ use GenTest::Validator;
 sub validate {
         my ($validator, $executors, $results) = @_;
 
-	if ($results->[0]->status() == STATUS_SYNTAX_ERROR) {
-		return STATUS_ENVIRONMENT_FAILURE;
-	} else {
-		return STATUS_WONT_HANDLE;
-	}
+  if ($results->[0]->status() == STATUS_SYNTAX_ERROR) {
+    return STATUS_ENVIRONMENT_FAILURE;
+  } else {
+    return STATUS_WONT_HANDLE;
+  }
 }
 
 1;

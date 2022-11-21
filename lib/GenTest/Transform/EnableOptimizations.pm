@@ -34,7 +34,7 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub transform {
-	my ($class, $original_query, $executor, $original_result, $skip_result_validations) = @_;
+  my ($class, $original_query, $executor, $original_result, $skip_result_validations) = @_;
 
   return STATUS_WONT_HANDLE if
     ($original_query !~ /SELECT/)

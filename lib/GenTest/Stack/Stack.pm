@@ -1,4 +1,5 @@
 # Copyright (C) 2009 Sun Microsystems, Inc. All rights reserved.
+# Copyright (C) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -26,19 +27,19 @@ use GenTest;
 use GenTest::Stack::StackFrame;
 use Data::Dumper;
 
-use constant FRAME_NO	=> 0;
-use constant FRAMES	=> 1;
+use constant FRAME_NO  => 0;
+use constant FRAMES  => 1;
 
 1;
 
 sub new {
-	my $class = shift;
+  my $class = shift;
 
-	my $stack = $class->SUPER::new({}, @_);
+  my $stack = $class->SUPER::new({}, @_);
 
-	$stack->[FRAME_NO] = 0;
+  $stack->[FRAME_NO] = 0;
 
-	return $stack;
+  return $stack;
 }
 
 sub _current {
@@ -49,7 +50,7 @@ sub push {
     my ($self) = @_;
     my $arg;
     if ($self->_current() > 0) {
-	$arg = $self->get("arg") if defined $self->get("arg");
+  $arg = $self->get("arg") if defined $self->get("arg");
     }
     $self->[FRAME_NO]++;
     $self->[$self->[FRAME_NO]]=GenTest::Stack::StackFrame->new();

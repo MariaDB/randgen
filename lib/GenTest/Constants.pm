@@ -26,60 +26,60 @@ require Exporter;
 @ISA = qw(Exporter);
 
 @EXPORT = qw(
-	STATUS_OK
-	STATUS_INTERNAL_ERROR
-	STATUS_UNKNOWN_ERROR
-	STATUS_ANY_ERROR
+  STATUS_OK
+  STATUS_INTERNAL_ERROR
+  STATUS_UNKNOWN_ERROR
+  STATUS_ANY_ERROR
 
-	STATUS_EOF
-	STATUS_ENVIRONMENT_FAILURE
-	STATUS_PERL_FAILURE
+  STATUS_EOF
+  STATUS_ENVIRONMENT_FAILURE
+  STATUS_PERL_FAILURE
 
-	STATUS_CUSTOM_OUTCOME
+  STATUS_CUSTOM_OUTCOME
 
-	STATUS_WONT_HANDLE
-	STATUS_SKIP
+  STATUS_WONT_HANDLE
+  STATUS_SKIP
   STATUS_IGNORED_ERROR
 
     STATUS_UNSUPPORTED
-	STATUS_SYNTAX_ERROR
-	STATUS_SEMANTIC_ERROR
-	STATUS_RUNTIME_ERROR
-	STATUS_CONTEXT_ERROR
+  STATUS_SYNTAX_ERROR
+  STATUS_SEMANTIC_ERROR
+  STATUS_RUNTIME_ERROR
+  STATUS_CONTEXT_ERROR
     STATUS_ACL_ERROR
     STATUS_CONFIGURATION_ERROR
 
-	STATUS_TEST_FAILURE
+  STATUS_TEST_FAILURE
 
-	STATUS_REQUIREMENT_UNMET
-	STATUS_ERROR_MISMATCH
-	STATUS_LENGTH_MISMATCH
-	STATUS_CONTENT_MISMATCH
+  STATUS_REQUIREMENT_UNMET
+  STATUS_ERROR_MISMATCH
+  STATUS_LENGTH_MISMATCH
+  STATUS_CONTENT_MISMATCH
 
-	STATUS_POSSIBLE_FAILURE
+  STATUS_POSSIBLE_FAILURE
 
-	STATUS_CRITICAL_FAILURE
+  STATUS_CRITICAL_FAILURE
     STATUS_SERVER_UNAVAILABLE
-	STATUS_SERVER_CRASHED
-	STATUS_SERVER_KILLED
-	STATUS_REPLICATION_FAILURE
-	STATUS_BACKUP_FAILURE
-	STATUS_RECOVERY_FAILURE
-	STATUS_UPGRADE_FAILURE
-	STATUS_DATABASE_CORRUPTION
-	STATUS_SERVER_DEADLOCKED
+  STATUS_SERVER_CRASHED
+  STATUS_SERVER_KILLED
+  STATUS_REPLICATION_FAILURE
+  STATUS_BACKUP_FAILURE
+  STATUS_RECOVERY_FAILURE
+  STATUS_UPGRADE_FAILURE
+  STATUS_DATABASE_CORRUPTION
+  STATUS_SERVER_DEADLOCKED
   STATUS_SERVER_SHUTDOWN_FAILURE
-	STATUS_VALGRIND_FAILURE
-	STATUS_ALARM
+  STATUS_VALGRIND_FAILURE
+  STATUS_ALARM
 
-	ORACLE_ISSUE_STILL_REPEATABLE
-	ORACLE_ISSUE_NO_LONGER_REPEATABLE
-	ORACLE_ISSUE_STATUS_UNKNOWN
+  ORACLE_ISSUE_STILL_REPEATABLE
+  ORACLE_ISSUE_NO_LONGER_REPEATABLE
+  ORACLE_ISSUE_STATUS_UNKNOWN
 
-	DEFAULT_MTR_BUILD_THREAD
+  DEFAULT_MTR_BUILD_THREAD
 
-	constant2text
-	status2text
+  constant2text
+  status2text
 );
 
 use strict;
@@ -140,9 +140,9 @@ use constant STATUS_ALARM                    => 111; # A module, e.g. a Reporter
 
 use constant STATUS_PERL_FAILURE             => 255; # Perl died for some reason
 
-use constant ORACLE_ISSUE_STILL_REPEATABLE	=> 2;
-use constant ORACLE_ISSUE_NO_LONGER_REPEATABLE	=> 3;
-use constant ORACLE_ISSUE_STATUS_UNKNOWN	=> 4;
+use constant ORACLE_ISSUE_STILL_REPEATABLE  => 2;
+use constant ORACLE_ISSUE_NO_LONGER_REPEATABLE  => 3;
+use constant ORACLE_ISSUE_STATUS_UNKNOWN  => 4;
 
 use constant DEFAULT_MTR_BUILD_THREAD => 930; ## Legacy...
 
@@ -155,26 +155,26 @@ my %text2value;
 
 sub BEGIN {
 
-	# What we do here is open the Constants.pm file and parse the 'use constant' lines from it
-	# The regexp is faily hairy in order to be more permissive.
+  # What we do here is open the Constants.pm file and parse the 'use constant' lines from it
+  # The regexp is faily hairy in order to be more permissive.
 
-	open (CONSTFILE, __FILE__) or croak "Unable to read constants from ".__FILE__;
-	read(CONSTFILE, my $constants_text, -s __FILE__);
-	%text2value = $constants_text =~ m{^\s*use\s+constant\s+([A-Z_0-9]*?)\s*=>\s*(\d+)\s*;}mgio;
+  open (CONSTFILE, __FILE__) or croak "Unable to read constants from ".__FILE__;
+  read(CONSTFILE, my $constants_text, -s __FILE__);
+  %text2value = $constants_text =~ m{^\s*use\s+constant\s+([A-Z_0-9]*?)\s*=>\s*(\d+)\s*;}mgio;
 }
 
 sub constant2text {
-	my ($constant_value, $prefix) = @_;
+  my ($constant_value, $prefix) = @_;
 
-	foreach my $constant_text (keys %text2value) {
-		return $constant_text if $text2value{$constant_text} == $constant_value && $constant_text =~ m{^$prefix}si;
-	}
-	carp "Unable to obtain constant text for constant_value = $constant_value; prefix = $prefix";
-	return undef;
+  foreach my $constant_text (keys %text2value) {
+    return $constant_text if $text2value{$constant_text} == $constant_value && $constant_text =~ m{^$prefix}si;
+  }
+  carp "Unable to obtain constant text for constant_value = $constant_value; prefix = $prefix";
+  return undef;
 }
 
 sub status2text {
-	return constant2text($_[0], 'STATUS_');
+  return constant2text($_[0], 'STATUS_');
 }
 
 1;

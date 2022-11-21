@@ -35,56 +35,56 @@ use GenTest::Reporter;
 
 use DBServer::MariaDB;
 
-use constant SLAVE_STATUS_LAST_ERROR		=> 19;
-use constant SLAVE_STATUS_LAST_SQL_ERROR	=> 35;
-use constant SLAVE_STATUS_LAST_IO_ERROR		=> 38;
+use constant SLAVE_STATUS_LAST_ERROR    => 19;
+use constant SLAVE_STATUS_LAST_SQL_ERROR  => 35;
+use constant SLAVE_STATUS_LAST_IO_ERROR    => 38;
 
 my $first_reporter;
 
 sub monitor {
-	my $reporter = shift;
+  my $reporter = shift;
     status($reporter);
 }
 
 sub report {
-	my $reporter = shift;
+  my $reporter = shift;
     status($reporter);
 }
 
 sub status {
-	my $reporter = shift;
+  my $reporter = shift;
 
-	alarm(3600);
+  alarm(3600);
 
-	$first_reporter = $reporter if not defined $first_reporter;
-	return STATUS_OK if $reporter ne $first_reporter;
+  $first_reporter = $reporter if not defined $first_reporter;
+  return STATUS_OK if $reporter ne $first_reporter;
 
     my $server = $reporter->properties->server_specific->{1}->{server};
     my $dbh = DBI->connect($server->dsn());
 
-	if ($dbh) {
-		my $slave_status = $dbh->selectrow_arrayref("SHOW SLAVE STATUS /* ReplicationSlaveStatus::status */");
+  if ($dbh) {
+    my $slave_status = $dbh->selectrow_arrayref("SHOW SLAVE STATUS /* ReplicationSlaveStatus::status */");
 
-		if ($slave_status->[SLAVE_STATUS_LAST_IO_ERROR] ne '') {
-			say("Slave IO thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_IO_ERROR]);
-			return STATUS_REPLICATION_FAILURE;
-		} elsif ($slave_status->[SLAVE_STATUS_LAST_SQL_ERROR] ne '') {
-			say("Slave SQL thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_SQL_ERROR]);
-			return STATUS_REPLICATION_FAILURE;
-		} elsif ($slave_status->[SLAVE_STATUS_LAST_ERROR] ne '') {
-			say("Slave has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_ERROR]);
-			return STATUS_REPLICATION_FAILURE;
-		} else {
-			return STATUS_OK;
-		}
-	} else {
-		say("ERROR: Lost connection to the slave");
-		return STATUS_REPLICATION_FAILURE;
-	}
+    if ($slave_status->[SLAVE_STATUS_LAST_IO_ERROR] ne '') {
+      say("Slave IO thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_IO_ERROR]);
+      return STATUS_REPLICATION_FAILURE;
+    } elsif ($slave_status->[SLAVE_STATUS_LAST_SQL_ERROR] ne '') {
+      say("Slave SQL thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_SQL_ERROR]);
+      return STATUS_REPLICATION_FAILURE;
+    } elsif ($slave_status->[SLAVE_STATUS_LAST_ERROR] ne '') {
+      say("Slave has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_ERROR]);
+      return STATUS_REPLICATION_FAILURE;
+    } else {
+      return STATUS_OK;
+    }
+  } else {
+    say("ERROR: Lost connection to the slave");
+    return STATUS_REPLICATION_FAILURE;
+  }
 }
 
 sub type {
-	return REPORTER_TYPE_PERIODIC | REPORTER_TYPE_SUCCESS;
+  return REPORTER_TYPE_PERIODIC | REPORTER_TYPE_SUCCESS;
 }
 
 1;

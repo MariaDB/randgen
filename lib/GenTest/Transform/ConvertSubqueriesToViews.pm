@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
+# Copyright (C) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -47,33 +48,33 @@ $paren_rx = qr{
 #
 
 sub transform {
-	my ($class, $query, $executor) = @_;
+  my ($class, $query, $executor) = @_;
 
-	my @view_ddl;
-	my $view_counter = 0;
+  my @view_ddl;
+  my $view_counter = 0;
 
-	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-	return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio;
+  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio;
 
-	$query =~ s{\((\s*SELECT\s+(??{$paren_rx}))\)}{
-		my $subquery = $1;
-		my $view_name = "view_".abs($$)."_inline_".$view_counter;
-		my $drop_view = "DROP VIEW IF EXISTS $view_name",
-		my $create_view = "CREATE OR REPLACE VIEW $view_name AS $subquery";
-		if ($executor->execute($create_view, 1)->err() == 0) {
-			push @view_ddl, $drop_view, $create_view;
-			$view_counter++;
-			"( SELECT * FROM $view_name )";
-		} else {
-			"( $1 )";
-		}
-	}sgexi;
+  $query =~ s{\((\s*SELECT\s+(??{$paren_rx}))\)}{
+    my $subquery = $1;
+    my $view_name = "view_".abs($$)."_inline_".$view_counter;
+    my $drop_view = "DROP VIEW IF EXISTS $view_name",
+    my $create_view = "CREATE OR REPLACE VIEW $view_name AS $subquery";
+    if ($executor->execute($create_view, 1)->err() == 0) {
+      push @view_ddl, $drop_view, $create_view;
+      $view_counter++;
+      "( SELECT * FROM $view_name )";
+    } else {
+      "( $1 )";
+    }
+  }sgexi;
 
-	if ($view_counter > 0) {
-		return [@view_ddl, "$query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"];
-	} else {
-		return STATUS_WONT_HANDLE;
-	}
+  if ($view_counter > 0) {
+    return [@view_ddl, "$query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"];
+  } else {
+    return STATUS_WONT_HANDLE;
+  }
 }
 
 1;

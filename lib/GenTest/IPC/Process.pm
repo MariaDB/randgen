@@ -1,4 +1,5 @@
 # Copyright (C) 2010 Sun Microsystems, Inc. All rights reserved.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -48,19 +49,19 @@ sub new {
 sub start {
   my ($self, @args) = @_;
 
-	my $pid = fork();
-	if ($pid == 0 ) {
-	    ## Forked process
-	    $self->[PROCESS_PID]=$$;
-	    $self->[PROCESS_OBJECT]->run(@args);
-	    say "".(ref $self->[PROCESS_OBJECT])."($$) terminated normally\n";
-	    exit 0;
-	} else {
-	    sayDebug "".(ref $self->[PROCESS_OBJECT])."($pid) started\n";
-	    $self->[PROCESS_PID] = $pid;
-	    $processes{$pid} = $self->[PROCESS_OBJECT];
-	    return $pid;
-	}
+  my $pid = fork();
+  if ($pid == 0 ) {
+      ## Forked process
+      $self->[PROCESS_PID]=$$;
+      $self->[PROCESS_OBJECT]->run(@args);
+      say "".(ref $self->[PROCESS_OBJECT])."($$) terminated normally\n";
+      exit 0;
+  } else {
+      sayDebug "".(ref $self->[PROCESS_OBJECT])."($pid) started\n";
+      $self->[PROCESS_PID] = $pid;
+      $processes{$pid} = $self->[PROCESS_OBJECT];
+      return $pid;
+  }
 }
 
 

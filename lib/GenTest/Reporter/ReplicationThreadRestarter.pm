@@ -1,4 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -30,65 +31,65 @@ my $previous_verb = 'START';
 
 sub monitor {
 
-	my $reporter = shift;
+  my $reporter = shift;
 
-	my $prng = $reporter->prng();
+  my $prng = $reporter->prng();
 
-	my $slave_host = $reporter->serverInfo('slave_host');
-	my $slave_port = $reporter->serverInfo('slave_port');
+  my $slave_host = $reporter->serverInfo('slave_host');
+  my $slave_port = $reporter->serverInfo('slave_port');
 
-	my $slave_dsn = 'dbi:mysql:host='.$slave_host.':port='.$slave_port.':user=root';
-	my $slave_dbh = DBI->connect($slave_dsn);
+  my $slave_dsn = 'dbi:mysql:host='.$slave_host.':port='.$slave_port.':user=root';
+  my $slave_dbh = DBI->connect($slave_dsn);
 
-	my $verb = ( $previous_verb eq 'START' ? 'STOP' : 'START' );
-	my $threads = $prng->arrayElement([
-		'',
-		'IO_THREAD',
-		'IO_THREAD, SQL_THREAD',
-		'SQL_THREAD, IO_THREAD',
-		'SQL_THREAD'
-	]);
+  my $verb = ( $previous_verb eq 'START' ? 'STOP' : 'START' );
+  my $threads = $prng->arrayElement([
+    '',
+    'IO_THREAD',
+    'IO_THREAD, SQL_THREAD',
+    'SQL_THREAD, IO_THREAD',
+    'SQL_THREAD'
+  ]);
 
-	my $query = $verb.' SLAVE '.$threads;
+  my $query = $verb.' SLAVE '.$threads;
 
-	if (defined $slave_dbh) {
-		$slave_dbh->do($query);
-		if ($slave_dbh->err()) {
-			say("Query: $query failed: ".$slave_dbh->errstr());
-			return STATUS_REPLICATION_FAILURE;
-		} else {
-			$previous_verb = $verb;
-			return STATUS_OK;
-		}
-	} else {
-		return STATUS_SERVER_CRASHED;
-	}
+  if (defined $slave_dbh) {
+    $slave_dbh->do($query);
+    if ($slave_dbh->err()) {
+      say("Query: $query failed: ".$slave_dbh->errstr());
+      return STATUS_REPLICATION_FAILURE;
+    } else {
+      $previous_verb = $verb;
+      return STATUS_OK;
+    }
+  } else {
+    return STATUS_SERVER_CRASHED;
+  }
 }
 
 sub report {
 
-	my $reporter = shift;
-	my $slave_host = $reporter->serverInfo('slave_host');
-	my $slave_port = $reporter->serverInfo('slave_port');
+  my $reporter = shift;
+  my $slave_host = $reporter->serverInfo('slave_host');
+  my $slave_port = $reporter->serverInfo('slave_port');
 
-	my $slave_dsn = 'dbi:mysql:host='.$slave_host.':port='.$slave_port.':user=root';
-	my $slave_dbh = DBI->connect($slave_dsn);
+  my $slave_dsn = 'dbi:mysql:host='.$slave_host.':port='.$slave_port.':user=root';
+  my $slave_dbh = DBI->connect($slave_dsn);
 
-	if (defined $slave_dbh) {
-		$slave_dbh->do("START SLAVE");
-		if ($slave_dbh->err()) {
-			say("Query START SLAVE failed: ".$slave_dbh->errstr());
-			return STATUS_REPLICATION_FAILURE;
-		} else {
-			return STATUS_OK;
-		}
-	} else {
-		return STATUS_SERVER_CRASHED;
-	}
+  if (defined $slave_dbh) {
+    $slave_dbh->do("START SLAVE");
+    if ($slave_dbh->err()) {
+      say("Query START SLAVE failed: ".$slave_dbh->errstr());
+      return STATUS_REPLICATION_FAILURE;
+    } else {
+      return STATUS_OK;
+    }
+  } else {
+    return STATUS_SERVER_CRASHED;
+  }
 }
 
 sub type {
-	return REPORTER_TYPE_PERIODIC | REPORTER_TYPE_SUCCESS;
+  return REPORTER_TYPE_PERIODIC | REPORTER_TYPE_SUCCESS;
 }
 
 1;

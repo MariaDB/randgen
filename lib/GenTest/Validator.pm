@@ -1,4 +1,5 @@
 # Copyright (c) 2008,2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (C) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -22,17 +23,17 @@ package GenTest::Validator;
 use strict;
 use GenTest::Result;
 
-use constant VALIDATOR_DBH	=> 0;
+use constant VALIDATOR_DBH  => 0;
 
 sub new {
-	my $class = shift;
-	return $class->SUPER::new({
-		dbh => VALIDATOR_DBH
-	}, @_);
+  my $class = shift;
+  return $class->SUPER::new({
+    dbh => VALIDATOR_DBH
+  }, @_);
 }
 
 sub init {
-	return 1;
+  return 1;
 }
 
 sub configure {
@@ -40,15 +41,15 @@ sub configure {
 }
 
 sub prerequsites {
-	return undef;
+  return undef;
 }
 
 sub dbh {
-	return $_[0]->[VALIDATOR_DBH];
+  return $_[0]->[VALIDATOR_DBH];
 }
 
 sub setDbh {
-	$_[0]->[VALIDATOR_DBH] = $_[1];
+  $_[0]->[VALIDATOR_DBH] = $_[1];
 }
 
 1;

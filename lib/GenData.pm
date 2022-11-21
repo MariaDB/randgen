@@ -34,40 +34,40 @@ use GenData::PopulateSchema;
 
 use strict;
 
-use constant FIELD_TYPE			=> 0;
-use constant FIELD_CHARSET		=> 1;
-use constant FIELD_COLLATION		=> 2;
-use constant FIELD_SIGN			=> 3;
-use constant FIELD_NULLABILITY		=> 4;
-use constant FIELD_INDEX		=> 5;
-use constant FIELD_AUTO_INCREMENT	=> 6;
-use constant FIELD_SQL			=> 7;
-use constant FIELD_INDEX_SQL		=> 8;
-use constant FIELD_NAME			=> 9;
+use constant FIELD_TYPE      => 0;
+use constant FIELD_CHARSET    => 1;
+use constant FIELD_COLLATION    => 2;
+use constant FIELD_SIGN      => 3;
+use constant FIELD_NULLABILITY    => 4;
+use constant FIELD_INDEX    => 5;
+use constant FIELD_AUTO_INCREMENT  => 6;
+use constant FIELD_SQL      => 7;
+use constant FIELD_INDEX_SQL    => 8;
+use constant FIELD_NAME      => 9;
 use constant FIELD_DEFAULT => 10;
 use constant FIELD_NAMES    => 11;
 use constant FIELD_SQLS     => 12;
 use constant FIELD_INDEX_SQLS   => 13;
 
-use constant TABLE_ROW		=> 0;
-use constant TABLE_ENGINE	=> 1;
-use constant TABLE_CHARSET	=> 2;
-use constant TABLE_COLLATION	=> 3;
-use constant TABLE_ROW_FORMAT	=> 4;
-use constant TABLE_EXTRA_OPTS	=> 5;
-use constant TABLE_PK		=> 6;
-use constant TABLE_SQL		=> 7;
-use constant TABLE_NAME		=> 8;
-use constant TABLE_VIEWS	=> 9;
-use constant TABLE_MERGES	=> 10;
-use constant TABLE_NAMES	=> 11;
-use constant TABLE_PARTITION	=> 12;
+use constant TABLE_ROW    => 0;
+use constant TABLE_ENGINE  => 1;
+use constant TABLE_CHARSET  => 2;
+use constant TABLE_COLLATION  => 3;
+use constant TABLE_ROW_FORMAT  => 4;
+use constant TABLE_EXTRA_OPTS  => 5;
+use constant TABLE_PK    => 6;
+use constant TABLE_SQL    => 7;
+use constant TABLE_NAME    => 8;
+use constant TABLE_VIEWS  => 9;
+use constant TABLE_MERGES  => 10;
+use constant TABLE_NAMES  => 11;
+use constant TABLE_PARTITION  => 12;
 
-use constant DATA_NUMBER	=> 0;
-use constant DATA_STRING	=> 1;
-use constant DATA_BLOB		=> 2;
-use constant DATA_TEMPORAL	=> 3;
-use constant DATA_ENUM		=> 4;
+use constant DATA_NUMBER  => 0;
+use constant DATA_STRING  => 1;
+use constant DATA_BLOB    => 2;
+use constant DATA_TEMPORAL  => 3;
+use constant DATA_ENUM    => 4;
 
 
 use constant GD_SPEC => 0;
@@ -94,7 +94,7 @@ sub new {
         'engine' => GD_ENGINE,
         'rows' => GD_ROWS,
         'views' => GD_VIEWS,
-        'short_column_names' => GD_SHORT_COLUMN_NAMES,	
+        'short_column_names' => GD_SHORT_COLUMN_NAMES,
         'server_id' => GD_SERVER_ID,
         'executor_id' => GD_EXECUTOR_ID,
         'variators' => GD_VARIATORS,

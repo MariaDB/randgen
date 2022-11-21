@@ -21,14 +21,14 @@ package GenTest::Reporter;
 require Exporter;
 @ISA = qw(GenTest Exporter);
 @EXPORT = qw(
-	REPORTER_TYPE_PERIODIC
-	REPORTER_TYPE_DEADLOCK
-	REPORTER_TYPE_CRASH
-	REPORTER_TYPE_SUCCESS
-	REPORTER_TYPE_SERVER_KILLED
-	REPORTER_TYPE_ALWAYS
-	REPORTER_TYPE_DATA
-	REPORTER_TYPE_END
+  REPORTER_TYPE_PERIODIC
+  REPORTER_TYPE_DEADLOCK
+  REPORTER_TYPE_CRASH
+  REPORTER_TYPE_SUCCESS
+  REPORTER_TYPE_SERVER_KILLED
+  REPORTER_TYPE_ALWAYS
+  REPORTER_TYPE_DATA
+  REPORTER_TYPE_END
   REPORTER_CONNECT_TIMEOUT_THRESHOLD
 );
 
@@ -77,46 +77,46 @@ use constant REPORTER_CONNECT_TIMEOUT_THRESHOLD => 20;
 1;
 
 sub new {
-	my $class = shift;
+  my $class = shift;
 
-	my $reporter = $class->SUPER::new({
-		dsn => REPORTER_SERVER_DSN,
-		test_start => REPORTER_TEST_START,
-		test_end => REPORTER_TEST_END,
-		test_duration => REPORTER_TEST_DURATION,
-		properties => REPORTER_PROPERTIES
-	}, @_);
+  my $reporter = $class->SUPER::new({
+    dsn => REPORTER_SERVER_DSN,
+    test_start => REPORTER_TEST_START,
+    test_end => REPORTER_TEST_END,
+    test_duration => REPORTER_TEST_DURATION,
+    properties => REPORTER_PROPERTIES
+  }, @_);
 
-	$reporter->[REPORTER_DBH] = DBI->connect($reporter->dsn(), undef, undef, { mysql_multi_statements => 1, RaiseError => 0 , PrintError => 1 } );
-	return undef if not defined $reporter->[REPORTER_DBH];
-	my $sth = $reporter->[REPORTER_DBH]->prepare("SHOW VARIABLES");
+  $reporter->[REPORTER_DBH] = DBI->connect($reporter->dsn(), undef, undef, { mysql_multi_statements => 1, RaiseError => 0 , PrintError => 1 } );
+  return undef if not defined $reporter->[REPORTER_DBH];
+  my $sth = $reporter->[REPORTER_DBH]->prepare("SHOW VARIABLES");
 
-	$sth->execute();
+  $sth->execute();
 
-	while (my $array_ref = $sth->fetchrow_arrayref()) {
-		$reporter->[REPORTER_SERVER_VARIABLES]->{$array_ref->[0]} = $array_ref->[1];
-	}
+  while (my $array_ref = $sth->fetchrow_arrayref()) {
+    $reporter->[REPORTER_SERVER_VARIABLES]->{$array_ref->[0]} = $array_ref->[1];
+  }
 
-	$sth->finish();
+  $sth->finish();
 
-	# SHOW SLAVE HOSTS may fail if user does not have the REPLICATION SLAVE privilege
-	$reporter->[REPORTER_DBH]->{PrintError} = 0;
-	my $slave_info = $reporter->[REPORTER_DBH]->selectrow_arrayref("SHOW SLAVE HOSTS");
-	$reporter->[REPORTER_DBH]->{PrintError} = 1;
-	if (defined $slave_info) {
-		$reporter->[REPORTER_SERVER_INFO]->{slave_host} = $slave_info->[1];
-		$reporter->[REPORTER_SERVER_INFO]->{slave_port} = $slave_info->[2];
-	}
+  # SHOW SLAVE HOSTS may fail if user does not have the REPLICATION SLAVE privilege
+  $reporter->[REPORTER_DBH]->{PrintError} = 0;
+  my $slave_info = $reporter->[REPORTER_DBH]->selectrow_arrayref("SHOW SLAVE HOSTS");
+  $reporter->[REPORTER_DBH]->{PrintError} = 1;
+  if (defined $slave_info) {
+    $reporter->[REPORTER_SERVER_INFO]->{slave_host} = $slave_info->[1];
+    $reporter->[REPORTER_SERVER_INFO]->{slave_port} = $slave_info->[2];
+  }
 
-	if ($reporter->serverVariable('version') !~ m{^5\.0}sgio) {
-		$reporter->[REPORTER_SERVER_PLUGINS] = $reporter->[REPORTER_DBH]->selectall_arrayref("
-	                SELECT PLUGIN_NAME, PLUGIN_LIBRARY
-	                FROM INFORMATION_SCHEMA.PLUGINS
-	                WHERE PLUGIN_LIBRARY IS NOT NULL
-	        ");
-	}
+  if ($reporter->serverVariable('version') !~ m{^5\.0}sgio) {
+    $reporter->[REPORTER_SERVER_PLUGINS] = $reporter->[REPORTER_DBH]->selectall_arrayref("
+                  SELECT PLUGIN_NAME, PLUGIN_LIBRARY
+                  FROM INFORMATION_SCHEMA.PLUGINS
+                  WHERE PLUGIN_LIBRARY IS NOT NULL
+          ");
+  }
 
-	$reporter->updatePid();
+  $reporter->updatePid();
 
     my $binary;
     my $bindir;
@@ -132,12 +132,12 @@ sub new {
             # If mysqld_debug server is not present use mysqld.
             $binname = osWindows() ? 'mysqld.exe' : 'mysqld';
             ($bindir,$binary)=$reporter->findMySQLD($binname);
-    
+
             # Identify if server is debug.
             my $command = $binary.' --version';
             my $result=`$command 2>&1`;
             undef $binary if ($result !~ /debug/sig);
-    
+
             if ((-e $binary)) {
                 $reporter->[REPORTER_SERVER_INFO]->{bindir} = $bindir;
                 $reporter->[REPORTER_SERVER_INFO]->{binary} = $binary;
@@ -161,57 +161,57 @@ sub new {
         }
     }
 
-	foreach my $client_path (
-		"client/RelWithDebInfo", "client/Debug",
-		"client", "../client", "bin", "../bin"
-	) {
-	        if (-e $reporter->serverVariable('basedir').'/'.$client_path) {
-			$reporter->[REPORTER_SERVER_INFO]->{'client_bindir'} = $reporter->serverVariable('basedir').'/'.$client_path;
-	                last;
-	        }
-	}
+  foreach my $client_path (
+    "client/RelWithDebInfo", "client/Debug",
+    "client", "../client", "bin", "../bin"
+  ) {
+          if (-e $reporter->serverVariable('basedir').'/'.$client_path) {
+      $reporter->[REPORTER_SERVER_INFO]->{'client_bindir'} = $reporter->serverVariable('basedir').'/'.$client_path;
+                  last;
+          }
+  }
 
-	# look for error log relative to datadir
-	foreach my $errorlog_path (
-		"../log/master.err",  # MTRv1 regular layout
-		"../log/mysqld1.err", # MTRv2 regular layout
-		"../mysql.err"        # DBServer::MariaDB layout
-	) {
-		my $possible_path = File::Spec->catfile($reporter->serverVariable('datadir'),$errorlog_path);
-		if (-e $possible_path) {
-			$reporter->[REPORTER_SERVER_INFO]->{'errorlog'} = $possible_path;
-			last;
-		}
-	}
+  # look for error log relative to datadir
+  foreach my $errorlog_path (
+    "../log/master.err",  # MTRv1 regular layout
+    "../log/mysqld1.err", # MTRv2 regular layout
+    "../mysql.err"        # DBServer::MariaDB layout
+  ) {
+    my $possible_path = File::Spec->catfile($reporter->serverVariable('datadir'),$errorlog_path);
+    if (-e $possible_path) {
+      $reporter->[REPORTER_SERVER_INFO]->{'errorlog'} = $possible_path;
+      last;
+    }
+  }
 
-	my $prng = GenTest::Random->new( seed => 1 );
-	$reporter->[REPORTER_PRNG] = $prng;
+  my $prng = GenTest::Random->new( seed => 1 );
+  $reporter->[REPORTER_PRNG] = $prng;
 
-	# general properties area for sub-classes
-	$reporter->[REPORTER_CUSTOM_ATTRIBUTES]={};
-	$reporter->[REPORTER_START_TIME]= time();
+  # general properties area for sub-classes
+  $reporter->[REPORTER_CUSTOM_ATTRIBUTES]={};
+  $reporter->[REPORTER_START_TIME]= time();
 
-	return $reporter;
+  return $reporter;
 }
 
 sub updatePid {
-	my $pid_file = $_[0]->serverVariable('pid_file');
+  my $pid_file = $_[0]->serverVariable('pid_file');
 
-	open (PF, $pid_file);
-	read (PF, my $pid, -s $pid_file);
-	close (PF);
+  open (PF, $pid_file);
+  read (PF, my $pid, -s $pid_file);
+  close (PF);
 
-	$pid =~ s{[\r\n]}{}sio;
+  $pid =~ s{[\r\n]}{}sio;
 
-	$_[0]->[REPORTER_SERVER_INFO]->{pid} = $pid;
+  $_[0]->[REPORTER_SERVER_INFO]->{pid} = $pid;
 }
 
 sub monitor {
-	die "Default monitor() called.";
+  die "Default monitor() called.";
 }
 
 sub report {
-	die "Default report() called.";
+  die "Default report() called.";
 }
 
 sub init {
@@ -219,43 +219,43 @@ sub init {
 }
 
 sub dsn {
-	return $_[0]->[REPORTER_SERVER_DSN];
+  return $_[0]->[REPORTER_SERVER_DSN];
 }
 
 sub serverVariable {
-	return $_[0]->[REPORTER_SERVER_VARIABLES]->{$_[1]};
+  return $_[0]->[REPORTER_SERVER_VARIABLES]->{$_[1]};
 }
 
 sub serverInfo {
-	$_[0]->[REPORTER_SERVER_INFO]->{$_[1]};
+  $_[0]->[REPORTER_SERVER_INFO]->{$_[1]};
 }
 
 sub serverPlugins {
-	return $_[0]->[REPORTER_SERVER_PLUGINS];
+  return $_[0]->[REPORTER_SERVER_PLUGINS];
 }
 
 sub testStart {
-	return $_[0]->[REPORTER_TEST_START];
+  return $_[0]->[REPORTER_TEST_START];
 }
 
 sub reporterStartTime {
-	return $_[0]->[REPORTER_START_TIME];
+  return $_[0]->[REPORTER_START_TIME];
 }
 
 sub testEnd {
-	return $_[0]->[REPORTER_TEST_END];
+  return $_[0]->[REPORTER_TEST_END];
 }
 
 sub prng {
-	return $_[0]->[REPORTER_PRNG];
+  return $_[0]->[REPORTER_PRNG];
 }
 
 sub testDuration {
-	return $_[0]->[REPORTER_TEST_DURATION];
+  return $_[0]->[REPORTER_TEST_DURATION];
 }
 
 sub properties {
-	return $_[0]->[REPORTER_PROPERTIES];
+  return $_[0]->[REPORTER_PROPERTIES];
 }
 
 sub serverDebug {
@@ -263,10 +263,10 @@ sub serverDebug {
 }
 
 sub customAttribute() {
-	if (defined $_[2]) {
-		$_[0]->[GenTest::Reporter::REPORTER_CUSTOM_ATTRIBUTES]->{$_[1]}=$_[2];
-	}
-	return $_[0]->[GenTest::Reporter::REPORTER_CUSTOM_ATTRIBUTES]->{$_[1]};
+  if (defined $_[2]) {
+    $_[0]->[GenTest::Reporter::REPORTER_CUSTOM_ATTRIBUTES]->{$_[1]}=$_[2];
+  }
+  return $_[0]->[GenTest::Reporter::REPORTER_CUSTOM_ATTRIBUTES]->{$_[1]};
 }
 
 sub configure {

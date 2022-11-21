@@ -1,4 +1,5 @@
 # Copyright (C) 2009 Sun Microsystems, Inc. All rights reserved.
+# Copyright (C) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -21,11 +22,11 @@ use strict;
 use Data::Dumper;
 
 sub new {
-	my $class = shift;
+  my $class = shift;
 
-	my $frame = bless({}, $class);
+  my $frame = bless({}, $class);
 
-	return $frame;
+  return $frame;
 }
 
 sub set {

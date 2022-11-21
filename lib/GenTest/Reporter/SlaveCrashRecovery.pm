@@ -1,4 +1,5 @@
 # Copyright (C) 2013 Monty Program Ab
+# Copyright (c) 2022, MariaDB
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -49,91 +50,91 @@ my $last_crash_time;
 my $restart_count = 0;
 
 sub monitor {
-	my $reporter = shift;
+  my $reporter = shift;
 
-	$first_reporter = $reporter if not defined $first_reporter;
-	return STATUS_OK if $reporter ne $first_reporter;
+  $first_reporter = $reporter if not defined $first_reporter;
+  return STATUS_OK if $reporter ne $first_reporter;
 
     my $server= $reporter->properties->server_specific->{2}->{server};
-	$last_crash_time = $reporter->testStart() if not defined $last_crash_time;
+  $last_crash_time = $reporter->testStart() if not defined $last_crash_time;
 
-	if (time() > $last_crash_time + 30) {
-		$last_crash_time = time();
-		my $pid = $server->serverpid();
-		say("Sending SIGKILL to server with pid $pid in order to force a crash recovery");
-		kill(9, $pid);
-		sleep(3);
-		return restart($reporter);
-	} else {
-		return STATUS_OK;
-	}
+  if (time() > $last_crash_time + 30) {
+    $last_crash_time = time();
+    my $pid = $server->serverpid();
+    say("Sending SIGKILL to server with pid $pid in order to force a crash recovery");
+    kill(9, $pid);
+    sleep(3);
+    return restart($reporter);
+  } else {
+    return STATUS_OK;
+  }
 }
 
 sub report {
-	return STATUS_OK;
+  return STATUS_OK;
 }
 
 sub restart {
-	my $reporter = shift;
+  my $reporter = shift;
 
-	alarm(3600);
+  alarm(3600);
 
-	$first_reporter = $reporter if not defined $first_reporter;
-	return STATUS_OK if $reporter ne $first_reporter;
+  $first_reporter = $reporter if not defined $first_reporter;
+  return STATUS_OK if $reporter ne $first_reporter;
 
-	my $server = $reporter->properties->server_specific->{2}->{server};
+  my $server = $reporter->properties->server_specific->{2}->{server};
 
-	my $dbh_prev = DBI->connect($server->dsn());
+  my $dbh_prev = DBI->connect($server->dsn());
 
-	if (defined $dbh_prev) {
-		$dbh_prev->disconnect();
-	}
+  if (defined $dbh_prev) {
+    $dbh_prev->disconnect();
+  }
 
-	$server->setStartDirty(1);
+  $server->setStartDirty(1);
 
-	say("Trying to restart the server ...");
+  say("Trying to restart the server ...");
 
-	my $errlog = $server->errorlog();
-	move($errlog,"$errlog.$restart_count");
+  my $errlog = $server->errorlog();
+  move($errlog,"$errlog.$restart_count");
 
-	my $restart_status = $server->startServer();
+  my $restart_status = $server->startServer();
 
-	open(RESTART, $errlog);
-	while (<RESTART>) {
-		$_ =~ s{[\r\n]}{}siog;
-#		say($_);
-		if ($_ =~ m{registration as a STORAGE ENGINE failed.}sio) {
-			say("Storage engine registration failed");
-			$restart_status = STATUS_DATABASE_CORRUPTION;
-		} elsif ($_ =~ m{exception}sio) {
-			say("Exception was caught");
-			$restart_status = STATUS_DATABASE_CORRUPTION;
-		} elsif ($_ =~ m{ready for connections}sio) {
-			say("Server restart was apparently successfull.") if $restart_status == STATUS_OK ;
-			last;
-		} elsif ($_ =~ m{device full error|no space left on device}sio) {
-			say("No space left on device");
-			$restart_status = STATUS_ENVIRONMENT_FAILURE;
-			last;
-		} elsif ($_ =~ m{slave SQL thread aborted|slave IO thread aborted}sio) {
-			say("Replication aborted");
-			$restart_status = STATUS_REPLICATION_FAILURE;
-			last;
-		} elsif (
-			($_ =~ m{got signal}sio) ||
-			($_ =~ m{segfault}sio) ||
-			($_ =~ m{segmentation fault}sio)
-		) {
-			say("Restarting server has apparently crashed.");
-			$restart_status = STATUS_DATABASE_CORRUPTION;
-			last;
-		}
-	}
-	close(RESTART);
+  open(RESTART, $errlog);
+  while (<RESTART>) {
+    $_ =~ s{[\r\n]}{}siog;
+#    say($_);
+    if ($_ =~ m{registration as a STORAGE ENGINE failed.}sio) {
+      say("Storage engine registration failed");
+      $restart_status = STATUS_DATABASE_CORRUPTION;
+    } elsif ($_ =~ m{exception}sio) {
+      say("Exception was caught");
+      $restart_status = STATUS_DATABASE_CORRUPTION;
+    } elsif ($_ =~ m{ready for connections}sio) {
+      say("Server restart was apparently successfull.") if $restart_status == STATUS_OK ;
+      last;
+    } elsif ($_ =~ m{device full error|no space left on device}sio) {
+      say("No space left on device");
+      $restart_status = STATUS_ENVIRONMENT_FAILURE;
+      last;
+    } elsif ($_ =~ m{slave SQL thread aborted|slave IO thread aborted}sio) {
+      say("Replication aborted");
+      $restart_status = STATUS_REPLICATION_FAILURE;
+      last;
+    } elsif (
+      ($_ =~ m{got signal}sio) ||
+      ($_ =~ m{segfault}sio) ||
+      ($_ =~ m{segmentation fault}sio)
+    ) {
+      say("Restarting server has apparently crashed.");
+      $restart_status = STATUS_DATABASE_CORRUPTION;
+      last;
+    }
+  }
+  close(RESTART);
 
-	$restart_count++;
-	my $dbh = DBI->connect($server->dsn());
-	$restart_status = STATUS_DATABASE_CORRUPTION if not defined $dbh && $restart_status == STATUS_OK;
+  $restart_count++;
+  my $dbh = DBI->connect($server->dsn());
+  $restart_status = STATUS_DATABASE_CORRUPTION if not defined $dbh && $restart_status == STATUS_OK;
 
   if ($restart_status == STATUS_OK) {
     $restart_status= $server->checkDatabaseIntegrity;
@@ -148,7 +149,7 @@ sub restart {
 }
 
 sub type {
-	return REPORTER_TYPE_PERIODIC;
+  return REPORTER_TYPE_PERIODIC;
 }
 
 1;

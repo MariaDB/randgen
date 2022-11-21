@@ -87,7 +87,7 @@ sub monitor {
         foreach my $ind (keys %secondary_keys) {
             my $ind_data= get_all_rows($dbh,"SELECT $pk_columns FROM $table FORCE INDEX($ind) ORDER BY $pk_columns");
             next unless defined $ind_data;
-    
+
             my $diff= GenTest::Comparator::dumpDiff($pk_data, $ind_data);
             if ($diff) {
                 sayError("$diff");

@@ -36,18 +36,18 @@ use constant GC_SEED => 3;
 use constant GC_PRNG => 4;
 
 sub new {
-	my $class = shift;
-	
-	my $self = $class->SUPER::new({
-		'spec_file' => GC_SPEC,
-		'debug' => GC_DEBUG,
-		'seed' => GC_SEED},@_);
+  my $class = shift;
 
-	if (not defined $self->[GC_SEED] or $self->[GC_SEED] eq 'time') {
-		$self->[GC_SEED] = time();
+  my $self = $class->SUPER::new({
+    'spec_file' => GC_SPEC,
+    'debug' => GC_DEBUG,
+    'seed' => GC_SEED},@_);
+
+  if (not defined $self->[GC_SEED] or $self->[GC_SEED] eq 'time') {
+    $self->[GC_SEED] = time();
   }
   $self->[GC_PRNG]= GenTest::Random->new(seed => $self->[GC_SEED]);
-	return generate($self);
+  return generate($self);
 }
 
 
@@ -57,27 +57,27 @@ return $_[0]->[GC_SPEC];
 
 
 sub debug {
-	return $_[0]->[GC_DEBUG];
+  return $_[0]->[GC_DEBUG];
 }
 
 
 sub seed {
-	return $_[0]->[GC_SEED];
+  return $_[0]->[GC_SEED];
 }
 
 sub rand_bool {
   my $self= shift;
-	return $self->[GC_PRNG]->uint16(0,1);
+  return $self->[GC_PRNG]->uint16(0,1);
 }
 
 sub rand_int {
-	my ($self, $first, $last) = @_;
-	return $self->[GC_PRNG]->int($first,$last);
+  my ($self, $first, $last) = @_;
+  return $self->[GC_PRNG]->int($first,$last);
 }
 
 sub rand_float {
-	my ($self, $first, $last) = @_;
-	return $self->[GC_PRNG]->float($first,$last);
+  my ($self, $first, $last) = @_;
+  return $self->[GC_PRNG]->float($first,$last);
 }
 
 sub rand_array_element {
@@ -86,69 +86,69 @@ sub rand_array_element {
 }
 
 sub generate {
-	my ($self) = @_;
+  my ($self) = @_;
 
-	my $spec_file = $self->spec_file();
-	
-	return undef if $spec_file eq '';
-	open(TEMPLATE, "<$spec_file") or croak "ERROR: GenConfig: unable to open specification file '$spec_file': $!";
-	my @config_contents = ();
+  my $spec_file = $self->spec_file();
 
-	while (<TEMPLATE>)
-	{
-		if  (/^\s*([^\#\s]+)(?:\s*=\s*)?\s*\[\s*(.*)\s*\](.*)/) {
-			# real option with template
-			my ( $name, $template, $suffix ) = ( $1, $2 , $3 );
-			next if (! $self->rand_bool()); # do not use the template, leave default;
+  return undef if $spec_file eq '';
+  open(TEMPLATE, "<$spec_file") or croak "ERROR: GenConfig: unable to open specification file '$spec_file': $!";
+  my @config_contents = ();
 
-			if ($template =~ /\(\s*(\S+)\s*\)/) {
+  while (<TEMPLATE>)
+  {
+    if  (/^\s*([^\#\s]+)(?:\s*=\s*)?\s*\[\s*(.*)\s*\](.*)/) {
+      # real option with template
+      my ( $name, $template, $suffix ) = ( $1, $2 , $3 );
+      next if (! $self->rand_bool()); # do not use the template, leave default;
 
-				# Should be a comma-separated list which presents a set --
-				# several values can be used simultaneously
-				my $allowed_values = $1;
-				my %allowed_values = map( ($_, 1), split /,/, $allowed_values);
-				my $number_of_values = $self->rand_int(0,scalar(keys %allowed_values));
-				my @values = ();
-				foreach (1 .. $number_of_values) {
-					my $val = $self->rand_array_element(sort keys %allowed_values);
-					push @values, $val;
-					delete $allowed_values{$val};
-				}
-				my $values = "'" . ( join ',', @values ) . "'";
-				push @config_contents, sprintf( "loose-%-64s = $values\n" , $name );
-			}
-		
-			elsif ($template =~ /\s,\s/) {
-				# Should be a comma-separated list which presents a single-choice
-				# the comma is supposed to be surrounded by spaces, to differentiate
-				# from actual values containing commas
-				my @allowed_values = split / , /, $template;
-				push @config_contents, sprintf( "loose-%-64s = " . $self->rand_array_element(@allowed_values) . "\n" , $name );
-			}
+      if ($template =~ /\(\s*(\S+)\s*\)/) {
 
-			elsif ($template =~ /([\.\d]+)\s+..\s+([\.\d]+)/) {
-				# Should be a numeric range, either of integer or float values.
-				# The first and last limits are separated by ' .. ' (with spaces).
-				my ($first, $last) = ($1, $2);
-				if ( $first =~ /\./ or $last =~ /\./ ) {
-					push @config_contents, sprintf( "loose-%-64s = " . $self->rand_float($first,$last) . "\n" , $name );
-				}
-				else {
-					push @config_contents, sprintf( "loose-%-64s = " . $self->rand_int($first,$last) . "\n" , $name );
-				}
-			}
+        # Should be a comma-separated list which presents a set --
+        # several values can be used simultaneously
+        my $allowed_values = $1;
+        my %allowed_values = map( ($_, 1), split /,/, $allowed_values);
+        my $number_of_values = $self->rand_int(0,scalar(keys %allowed_values));
+        my @values = ();
+        foreach (1 .. $number_of_values) {
+          my $val = $self->rand_array_element(sort keys %allowed_values);
+          push @values, $val;
+          delete $allowed_values{$val};
+        }
+        my $values = "'" . ( join ',', @values ) . "'";
+        push @config_contents, sprintf( "loose-%-64s = $values\n" , $name );
+      }
 
-		}
-		elsif (/^\s*\#/) {
-			# Comment lines, ignore for now
-		}
-		else {
-			# Something else: "hardcoded" option, section start, empty line..
-			push @config_contents, $_;
-		}
-	}
+      elsif ($template =~ /\s,\s/) {
+        # Should be a comma-separated list which presents a single-choice
+        # the comma is supposed to be surrounded by spaces, to differentiate
+        # from actual values containing commas
+        my @allowed_values = split / , /, $template;
+        push @config_contents, sprintf( "loose-%-64s = " . $self->rand_array_element(@allowed_values) . "\n" , $name );
+      }
 
-	return \@config_contents;
+      elsif ($template =~ /([\.\d]+)\s+..\s+([\.\d]+)/) {
+        # Should be a numeric range, either of integer or float values.
+        # The first and last limits are separated by ' .. ' (with spaces).
+        my ($first, $last) = ($1, $2);
+        if ( $first =~ /\./ or $last =~ /\./ ) {
+          push @config_contents, sprintf( "loose-%-64s = " . $self->rand_float($first,$last) . "\n" , $name );
+        }
+        else {
+          push @config_contents, sprintf( "loose-%-64s = " . $self->rand_int($first,$last) . "\n" , $name );
+        }
+      }
+
+    }
+    elsif (/^\s*\#/) {
+      # Comment lines, ignore for now
+    }
+    else {
+      # Something else: "hardcoded" option, section start, empty line..
+      push @config_contents, $_;
+    }
+  }
+
+  return \@config_contents;
 }
 
 1;

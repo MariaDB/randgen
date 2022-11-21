@@ -192,7 +192,7 @@ sub run {
             my $child_exit_status = $? > 0 ? ($? >> 8) : 0;
 
             $total_status = $child_exit_status if $child_exit_status > $total_status;
-    
+
             if ($child_pid == -1) {
                 say("Process with pid $spawned_pid (worker) no longer exists");
                 last OUTER;
@@ -200,7 +200,7 @@ sub run {
                 say("Process with pid $child_pid (worker) ended with status ".status2text($child_exit_status));
                 delete $worker_pids{$child_pid};
             }
-    
+
             last OUTER if $child_exit_status >= STATUS_CRITICAL_FAILURE;
             last OUTER if keys %worker_pids == 0;
         }

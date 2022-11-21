@@ -766,7 +766,7 @@ MDEV-27366:
 MDEV-27296:
 =~ Assertion \`((thd && (WSREP_PROVIDER_EXISTS_ && thd->variables\.wsrep_on)) && wsrep_emulate_bin_log) \|\| mysql_bin_log\.is_open()'
 =~ binlog_trans_log_savepos
-# The bug report is 10.5+, but the failure can happen on 10.4 too 
+# The bug report is 10.5+, but the failure can happen on 10.4 too
 MDEV-27292:
 =~ Assertion \`!prebuilt->index->is_primary()'
 =~ row_search_idx_cond_check
