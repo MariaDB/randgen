@@ -52,7 +52,7 @@
 # dodgy.                                                                       #
 ################################################################################
 query:
-	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } query_type ;
+  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } query_type ;
 
 
 query_type:
@@ -80,7 +80,7 @@ loose_select_list:
         loose_select_item , loose_select_list ;
 
 loose_select_item:
-        opt_no_sq_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;       
+        opt_no_sq_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 ################################################################################
 # The bulk of interesting things happen with this main rule                    #
@@ -90,12 +90,12 @@ main_select:
         mixed_select |  mixed_select | mixed_select ;
 
 mixed_select:
-	SELECT distinct straight_join select_option select_list
-	FROM join_list
-	where_clause
-	group_by_clause
+  SELECT distinct straight_join select_option select_list
+  FROM join_list
+  where_clause
+  group_by_clause
         having_clause
-	order_by_clause ;
+  order_by_clause ;
 
 simple_select:
         SELECT distinct straight_join select_option simple_select_list
@@ -120,8 +120,8 @@ select_option:  | | | | | | | | | SQL_SMALL_RESULT ;
 straight_join:  | | | | | | | | | | | | | | | | | | | | | STRAIGHT_JOIN ;
 
 select_list:
-	new_select_item |
-	new_select_item , select_list |
+  new_select_item |
+  new_select_item , select_list |
         new_select_item , select_list ;
 
 simple_select_list:
@@ -138,10 +138,10 @@ join_list:
 # this limits us to 2 and 3 table joins / can use it if we hit                 #
 # too many mega-join conditions which take too long to run                     #
 ################################################################################
-	( new_table_item join_type new_table_item ON (join_condition_list ) ) |
+  ( new_table_item join_type new_table_item ON (join_condition_list ) ) |
         ( new_table_item join_type ( ( new_table_item join_type new_table_item ON (join_condition_list ) ) ) ON (join_condition_list ) ) |
-	( new_table_item , new_table_item ) |
-	( new_table_item , ( new_table_item , new_table_item ) ) ;
+  ( new_table_item , new_table_item ) |
+  ( new_table_item , ( new_table_item , new_table_item ) ) ;
 
 join_list_disabled:
 ################################################################################
@@ -155,7 +155,7 @@ join_list_disabled:
         ( new_table_item join_type join_list ON (join_condition_list ) ) ;
 
 join_type:
-	INNER JOIN | left_right outer JOIN | STRAIGHT_JOIN ;
+  INNER JOIN | left_right outer JOIN | STRAIGHT_JOIN ;
 
 join_condition_list:
     join_condition_item |
@@ -174,17 +174,17 @@ join_condition_item:
 
 
 left_right:
-	LEFT | RIGHT ;
+  LEFT | RIGHT ;
 
 outer:
-	| OUTER ;
+  | OUTER ;
 
 where_clause:
         | WHERE where_list ;
 
 
 where_list:
-	generic_where_list |
+  generic_where_list |
         range_predicate1_list | range_predicate2_list |
         range_predicate1_list and_or generic_where_list |
         range_predicate2_list and_or generic_where_list ;
@@ -195,7 +195,7 @@ generic_where_list:
         ( where_list and_or where_item ) ;
 
 not:
-	| | | NOT;
+  | | | NOT;
 
 ################################################################################
 # The IS not NULL values in where_item are to hit the ref_or_null and          #
@@ -205,7 +205,7 @@ not:
 where_item:
         alias1 .`pk` arithmetic_operator existing_table_item .opt_no_sq_field  |
         alias1 .`pk` arithmetic_operator existing_table_item .opt_no_sq_field  |
-	existing_table_item .opt_no_sq_field arithmetic_operator value  |
+  existing_table_item .opt_no_sq_field arithmetic_operator value  |
         existing_table_item .opt_no_sq_field arithmetic_operator existing_table_item .opt_no_sq_field |
         existing_table_item .opt_no_sq_field arithmetic_operator value  |
         existing_table_item .opt_no_sq_field arithmetic_operator existing_table_item .opt_no_sq_field |
@@ -260,7 +260,7 @@ number_list:
         _tinyint_unsigned | number_list, _tinyint_unsigned ;
 
 char_list:
-	_char | 'USA' | char_list , _char | char_list , 'USA' ;
+  _char | 'USA' | char_list , _char | char_list , 'USA' ;
 
 ################################################################################
 # We ensure that a GROUP BY statement includes all nonaggregates.              #
@@ -268,21 +268,21 @@ char_list:
 # that the query doesn't lend itself to variable result sets                   #
 ################################################################################
 group_by_clause:
-	{ scalar(@nonaggregates) > 0 ? " GROUP BY ".join (', ' , @nonaggregates ) : "" }  ;
+  { scalar(@nonaggregates) > 0 ? " GROUP BY ".join (', ' , @nonaggregates ) : "" }  ;
 
 optional_group_by:
         | | group_by_clause ;
 
 having_clause:
-	| HAVING having_list;
+  | HAVING having_list;
 
 having_list:
         having_item |
         having_item |
-	(having_list and_or having_item)  ;
+  (having_list and_or having_item)  ;
 
 having_item:
-	existing_select_item arithmetic_operator value ;
+  existing_select_item arithmetic_operator value ;
 
 ################################################################################
 # We use the total_order_by rule when using the LIMIT operator to ensure that  #
@@ -290,22 +290,22 @@ having_item:
 ################################################################################
 
 order_by_clause:
-	|
+  |
         ORDER BY total_order_by , alias1 . _field_indexed desc limit |
-	ORDER BY order_by_list |
-	ORDER BY total_order_by,  order_by_list limit ;
+  ORDER BY order_by_list |
+  ORDER BY total_order_by,  order_by_list limit ;
 
 total_order_by:
-	{ join(', ', map { "field".$_ } (1..$fields) ) };
+  { join(', ', map { "field".$_ } (1..$fields) ) };
 
 order_by_list:
-	order_by_item  |
-	order_by_item  , order_by_list ;
+  order_by_item  |
+  order_by_item  , order_by_list ;
 
 order_by_item:
         alias1 . _field_indexed , existing_table_item .`pk` desc  |
         alias1 . _field_indexed desc |
-	existing_select_item desc ;
+  existing_select_item desc ;
 
 desc:
         ASC | | DESC ;
@@ -316,18 +316,18 @@ desc:
 ################################################################################
 
 limit:
-	| | LIMIT limit_size | LIMIT limit_size OFFSET _digit;
+  | | LIMIT limit_size | LIMIT limit_size OFFSET _digit;
 
 new_select_item:
-	nonaggregate_select_item |
-	nonaggregate_select_item |
+  nonaggregate_select_item |
+  nonaggregate_select_item |
         nonaggregate_select_item |
         nonaggregate_select_item |
         nonaggregate_select_item |
         nonaggregate_select_item |
         nonaggregate_select_item |
         nonaggregate_select_item |
-	aggregate_select_item |
+  aggregate_select_item |
         combo_select_item ;
 
 ################################################################################
@@ -339,10 +339,10 @@ new_select_item:
 nonaggregate_select_item:
         table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
         table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-	table_one_two .opt_no_sq_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
+  table_one_two .opt_no_sq_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 aggregate_select_item:
-	aggregate table_one_two .opt_no_sq_field ) AS { "field".++$fields };
+  aggregate table_one_two .opt_no_sq_field ) AS { "field".++$fields };
 
 ################################################################################
 # The combo_select_items are for 'spice' - we actually found                   #
@@ -353,10 +353,10 @@ combo_select_item:
     CONCAT( table_one_two . char_field_name , table_one_two . char_field_name ) AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 table_one_two:
-	alias1 | alias2 ;
+  alias1 | alias2 ;
 
 aggregate:
-	COUNT( distinct | SUM( distinct | MIN( distinct | MAX( distinct ;
+  COUNT( distinct | SUM( distinct | MIN( distinct | MAX( distinct ;
 
 ################################################################################
 # The following rules are for writing more sensible queries - that we don't    #
@@ -364,25 +364,25 @@ aggregate:
 # track of what we have added.  You shouldn't need to touch these ever         #
 ################################################################################
 new_table_item:
-	opt_no_sq_table AS { "alias".++$tables };
+  opt_no_sq_table AS { "alias".++$tables };
 
 current_table_item:
-	{ "alias".$tables };
+  { "alias".$tables };
 
 previous_table_item:
-	{ "alias".($tables - 1) };
+  { "alias".($tables - 1) };
 
 existing_table_item:
-	{ "alias".$prng->int(1,$tables) };
+  { "alias".$prng->int(1,$tables) };
 
 existing_select_item:
-	{ "field".$prng->int(1,$fields) };
+  { "field".$prng->int(1,$fields) };
 ################################################################################
 # end of utility rules                                                         #
 ################################################################################
 
 arithmetic_operator:
-	= | > | < | != | <> | <= | >= ;
+  = | > | < | != | <> | <= | >= ;
 
 ################################################################################
 # We are trying to skew the ON condition for JOINs to be largely based on      #
@@ -407,9 +407,9 @@ math_operator:
 and_or:
    AND | AND | OR ;
 
-	
+
 value:
-	_digit | _digit | _digit | _digit | _tinyint_unsigned |
+  _digit | _digit | _digit | _digit | _tinyint_unsigned |
         _char(2) | _char(2) | _char(2) | _char(2) | _char(2) | 'USA' ;
 
 opt_no_sq_table:

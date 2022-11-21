@@ -16,9 +16,9 @@
 # USA
 
 $tables = {
-	names => ['A','B','C','D', 'AA', 'BB', 'CC', 'DD' ],
+  names => ['A','B','C','D', 'AA', 'BB', 'CC', 'DD' ],
         rows => [ 0, 0, 0, 1, 1, 1, 1, 10, 10, 10, 100 ],
-	engines => [ 'MyISAM', 'InnoDB' ]
+  engines => [ 'MyISAM', 'InnoDB' ]
 };
 
 $fields = {
@@ -30,7 +30,7 @@ $fields = {
 };
 
 $data = {
-	blobs => [ 'data', 'varchar(1024)', 'varchar(1024)', 'char(1024)', 'char(1024)' ],
-	texts => [ 'data', 'varchar(1024)', 'varchar(1024)', 'char(1024)', 'char(1024)' ],
+  blobs => [ 'data', 'varchar(1024)', 'varchar(1024)', 'char(1024)', 'char(1024)' ],
+  texts => [ 'data', 'varchar(1024)', 'varchar(1024)', 'char(1024)', 'char(1024)' ],
         strings => [ 'varchar(1024)', 'varchar(1024)', 'varchar(1024)' , 'english' , 'letter' ]
 };

@@ -33,5 +33,5 @@ $data = {
         numbers => [ 'digit', 'null', undef ],
         strings => [ 'letter', 'english' ],
         blobs => [ 'data' ],
-	temporals => ['date', 'year', 'null', undef ]
+  temporals => ['date', 'year', 'null', undef ]
 }

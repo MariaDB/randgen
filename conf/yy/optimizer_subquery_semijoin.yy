@@ -53,7 +53,7 @@
 # dodgy.                                                                       #
 ################################################################################
 query:
-	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } main_select /* _thread_id */ ;
+  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } main_select /* _thread_id */ ;
 
 main_select:
         simple_select | simple_select | simple_select | simple_select |
@@ -61,12 +61,12 @@ main_select:
         aggregate_select ;
 
 mixed_select:
-	explain_extended SELECT distinct straight_join select_option select_list
-	FROM join_list
-	where_clause
-	group_by_clause
+  explain_extended SELECT distinct straight_join select_option select_list
+  FROM join_list
+  where_clause
+  group_by_clause
         having_clause
-	order_by_clause ;
+  order_by_clause ;
 
 simple_select:
         explain_extended SELECT distinct straight_join select_option simple_select_list
@@ -84,7 +84,7 @@ aggregate_select:
         having_clause
         order_by_clause ;
 
-explain_extended:	
+explain_extended:
         | | | | | | | | | explain_extended2 ;
 
 explain_extended2: | | | | EXPLAIN | EXPLAIN EXTENDED ;
@@ -96,8 +96,8 @@ select_option:  | | | | | | | | | | | SQL_SMALL_RESULT ;
 straight_join:  | | | | | | | | | | | | | | | | | | | | | STRAIGHT_JOIN ;
 
 select_list:
-	new_select_item |
-	new_select_item , select_list |
+  new_select_item |
+  new_select_item , select_list |
         new_select_item , select_list ;
 
 simple_select_list:
@@ -114,9 +114,9 @@ join_list:
 # this limits us to 2 and 3 table joins / can use it if we hit                 #
 # too many mega-join conditions which take too long to run                     #
 ################################################################################
-	( new_table_item join_type new_table_item ON (join_condition_item ) ) |
+  ( new_table_item join_type new_table_item ON (join_condition_item ) ) |
         ( new_table_item join_type ( ( new_table_item join_type new_table_item ON (join_condition_item ) ) ) ON (join_condition_item ) ) |
-	( new_table_item , new_table_item ) |
+  ( new_table_item , new_table_item ) |
         ( new_table_item , new_table_item , new_table_item ) ;
 
 
@@ -132,8 +132,8 @@ join_list_disabled:
         ( new_table_item join_type join_list ON (join_condition_item ) ) ;
 
 join_type:
-	INNER JOIN | INNER JOIN | INNER JOIN | INNER JOIN | STRAIGHT_JOIN |
-	left_right outer JOIN | STRAIGHT_JOIN ;
+  INNER JOIN | INNER JOIN | INNER JOIN | INNER JOIN | STRAIGHT_JOIN |
+  left_right outer JOIN | STRAIGHT_JOIN ;
 
 join_condition_item:
     current_table_item . int_indexed = previous_table_item . int_field_name on_subquery |
@@ -146,19 +146,19 @@ on_subquery:
 
 
 left_right:
-	LEFT | RIGHT ;
+  LEFT | RIGHT ;
 
 outer:
-	| OUTER ;
+  | OUTER ;
 
 where_clause:
-	WHERE where_subquery |
- 	WHERE ( where_subquery ) and_or where_list |
- 	WHERE ( where_subquery ) and_or where_list ;
+  WHERE where_subquery |
+   WHERE ( where_subquery ) and_or where_list |
+   WHERE ( where_subquery ) and_or where_list ;
 
 
 where_list:
-	generic_where_list |
+  generic_where_list |
         range_predicate1_list | range_predicate2_list |
         range_predicate1_list and_or generic_where_list |
         range_predicate2_list and_or generic_where_list ;
@@ -169,16 +169,16 @@ generic_where_list:
         ( where_item and_or where_item ) ;
 
 not:
-	| | | | NOT;
+  | | | | NOT;
 
 where_item:
         where_subquery  |
         alias1 . int_field_name arithmetic_operator existing_table_item . int_field_name  |
-	existing_table_item . char_field_name arithmetic_operator _char  |
+  existing_table_item . char_field_name arithmetic_operator _char  |
         existing_table_item . char_field_name arithmetic_operator existing_table_item . char_field_name |
         alias1 . opt_sq_semi_field IS not NULL |
         alias1 . int_field_name arithmetic_operator existing_table_item . int_field_name  |
-	existing_table_item . char_field_name arithmetic_operator _char  |
+  existing_table_item . char_field_name arithmetic_operator _char  |
         existing_table_item . char_field_name arithmetic_operator existing_table_item . char_field_name |
         alias1 . opt_sq_semi_field IS not NULL ;
 
@@ -399,10 +399,10 @@ subquery_having:
 subquery_having_list:
         subquery_having_item |
         subquery_having_item |
-	(subquery_having_list and_or subquery_having_item)  ;
+  (subquery_having_list and_or subquery_having_item)  ;
 
 subquery_having_item:
-	existing_subquery_table_item . int_field_name arithmetic_operator _digit |
+  existing_subquery_table_item . int_field_name arithmetic_operator _digit |
         existing_subquery_table_item . int_field_name arithmetic_operator _char ;
 
 
@@ -563,10 +563,10 @@ child_subquery_having:
 child_subquery_having_list:
         child_subquery_having_item |
         child_subquery_having_item |
-	(child_subquery_having_list and_or child_subquery_having_item)  ;
+  (child_subquery_having_list and_or child_subquery_having_item)  ;
 
 child_subquery_having_item:
-	existing_child_subquery_table_item . int_field_name arithmetic_operator _digit |
+  existing_child_subquery_table_item . int_field_name arithmetic_operator _digit |
         existing_child_subquery_table_item . int_field_name arithmetic_operator _char ;
 
 
@@ -625,21 +625,21 @@ char_list:
 # that the query doesn't lend itself to variable result sets                   #
 ################################################################################
 group_by_clause:
-	{ scalar(@nonaggregates) > 0 ? " GROUP BY ".join (', ' , @nonaggregates ) : "" }  ;
+  { scalar(@nonaggregates) > 0 ? " GROUP BY ".join (', ' , @nonaggregates ) : "" }  ;
 
 optional_group_by:
         | | group_by_clause ;
 
 having_clause:
-	| HAVING having_list;
+  | HAVING having_list;
 
 having_list:
         having_item |
         having_item |
-	(having_list and_or having_item)  ;
+  (having_list and_or having_item)  ;
 
 having_item:
-	existing_select_item arithmetic_operator value |
+  existing_select_item arithmetic_operator value |
         existing_select_item arithmetic_operator value |
         existing_select_item arithmetic_operator value |
         existing_select_item arithmetic_operator value |
@@ -653,39 +653,39 @@ having_item:
 ################################################################################
 
 order_by_clause:
-	|
+  |
         ORDER BY alias1 . _field_indexed desc , total_order_by  limit |
-	ORDER BY order_by_list |
-	ORDER BY  order_by_list, total_order_by limit ;
+  ORDER BY order_by_list |
+  ORDER BY  order_by_list, total_order_by limit ;
 
 total_order_by:
-	{ join(', ', map { "field".$_ } (1..$fields) ) };
+  { join(', ', map { "field".$_ } (1..$fields) ) };
 
 order_by_list:
-	order_by_item  |
-	order_by_item  , order_by_list ;
+  order_by_item  |
+  order_by_item  , order_by_list ;
 
 order_by_item:
         alias1 . _field_indexed , existing_table_item .`pk` desc  |
         alias1 . _field_indexed desc |
-	existing_select_item desc |
+  existing_select_item desc |
         CONCAT( existing_table_item . char_field_name, existing_table_item . char_field_name );
 desc:
         ASC | | DESC ;
 
 
 limit:
-	| | LIMIT limit_size | LIMIT limit_size OFFSET _digit;
+  | | LIMIT limit_size | LIMIT limit_size OFFSET _digit;
 
 new_select_item:
-	nonaggregate_select_item |
-	nonaggregate_select_item |
-	aggregate_select_item |
+  nonaggregate_select_item |
+  nonaggregate_select_item |
+  aggregate_select_item |
         combo_select_item |
         nonaggregate_select_item |
-	nonaggregate_select_item |
-	aggregate_select_item |
-	select_subquery;
+  nonaggregate_select_item |
+  aggregate_select_item |
+  select_subquery;
 
 ################################################################################
 # We have the perl code here to help us write more sensible queries            #
@@ -696,10 +696,10 @@ new_select_item:
 nonaggregate_select_item:
         table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
         table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-	table_one_two . opt_sq_semi_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
+  table_one_two . opt_sq_semi_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 aggregate_select_item:
-	aggregate table_one_two . opt_sq_semi_field ) AS { "field".++$fields };
+  aggregate table_one_two . opt_sq_semi_field ) AS { "field".++$fields };
 
 select_subquery:
          { $subquery_idx += 1 ; $subquery_tables=0 ; ""} select_subquery_body;
@@ -722,7 +722,7 @@ combo_select_item:
     CONCAT( table_one_two . char_field_name , table_one_two . char_field_name ) AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 table_one_two:
-	alias1 | alias1 | alias2 ;
+  alias1 | alias1 | alias2 ;
 
 subquery_table_one_two:
         { "SQ".$subquery_idx."_alias1" ;  } | { "SQ".$subquery_idx."_alias1" ;  } |
@@ -733,7 +733,7 @@ child_subquery_table_one_two:
         { "C_SQ".$child_subquery_idx."_alias1" ;  } | { "C_SQ".$child_subquery_idx."_alias2" ;  } ;
 
 aggregate:
-	COUNT( distinct | SUM( distinct | MIN( distinct | MAX( distinct ;
+  COUNT( distinct | SUM( distinct | MIN( distinct | MAX( distinct ;
 
 ################################################################################
 # The following rules are for writing more sensible queries - that we don't    #
@@ -741,7 +741,7 @@ aggregate:
 # track of what we have added.  You shouldn't need to touch these ever         #
 ################################################################################
 new_table_item:
-	opt_sq_semi_table AS { "alias".++$tables } | opt_sq_semi_table AS { "alias".++$tables } | opt_sq_semi_table AS { "alias".++$tables } |
+  opt_sq_semi_table AS { "alias".++$tables } | opt_sq_semi_table AS { "alias".++$tables } | opt_sq_semi_table AS { "alias".++$tables } |
        ( from_subquery ) AS { "alias".++$tables } ;
 
 from_subquery:
@@ -754,7 +754,7 @@ child_subquery_new_table_item:
         opt_sq_semi_table AS { "C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables } ;
 
 current_table_item:
-	{ "alias".$tables };
+  { "alias".$tables };
 
 subquery_current_table_item:
         { "SQ".$subquery_idx."_alias".$subquery_tables } ;
@@ -763,7 +763,7 @@ child_subquery_current_table_item:
         { "C_SQ".$child_subquery_idx."_alias".$child_subquery_tables } ;
 
 previous_table_item:
-	{ "alias".($tables - 1) };
+  { "alias".($tables - 1) };
 
 subquery_previous_table_item:
         { "SQ".$subquery_idx."_alias".($subquery_tables-1) } ;
@@ -772,7 +772,7 @@ child_subquery_previous_table_item:
         { "C_SQ".$child_subquery_idx."_alias".($child_subquery_tables-1) } ;
 
 existing_table_item:
-	{ "alias".$prng->int(1,$tables) };
+  { "alias".$prng->int(1,$tables) };
 
 existing_subquery_table_item:
         { "SQ".$subquery_idx."_alias".$prng->int(1,$subquery_tables) } ;
@@ -781,14 +781,14 @@ existing_child_subquery_table_item:
         { "C_SQ".$child_subquery_idx."_alias".$prng->int(1,$child_subquery_tables) } ;
 
 existing_select_item:
-	{ "field".$prng->int(1,$fields) };
+  { "field".$prng->int(1,$fields) };
 
 ################################################################################
 # end of utility rules                                                         #
 ################################################################################
 
 arithmetic_operator:
-	= | > | < | != | <> | <= | >= ;
+  = | > | < | != | <> | <= | >= ;
 
 
 membership_operator:
@@ -815,15 +815,15 @@ math_operator:
 # OR-only list in the WHERE clause are specifically stacked in another rule    #
 ################################################################################
 and_or:
-	AND | AND | AND | AND | AND | OR ;
+  AND | AND | AND | AND | AND | OR ;
 
 all_distinct:
    | | | | |
    | | | ALL | DISTINCT ;
 
-	
+
 value:
-	_digit | _digit | _digit | _digit | _tinyint_unsigned|
+  _digit | _digit | _digit | _digit | _tinyint_unsigned|
         _char(1) | _char(1) | _char(1) | _char(2) | _char(2) | 'USA' ;
 
 opt_sq_semi_table:

@@ -16,9 +16,9 @@
 # USA
 
 $tables = {
-	rows => [1, 1000, 10000],
-	# 378 is the largest key size possible with --aria-block-size=1K
-	pk => ['VARCHAR(378) NOT NULL' ],
+  rows => [1, 1000, 10000],
+  # 378 is the largest key size possible with --aria-block-size=1K
+  pk => ['VARCHAR(378) NOT NULL' ],
         partitions => [ undef , 'KEY (pk) PARTITIONS 2' ]
 };
 

@@ -60,49 +60,49 @@
 # Initialization of tables with focus on partitioned tables.
 
 query_init:
-	{our $nb_parts= 50; return undef }
-	init_db ;
+  {our $nb_parts= 50; return undef }
+  init_db ;
 
 init_db:
-	create_tables ; insert_tables ;  cache_index ; load_index ;
+  create_tables ; insert_tables ;  cache_index ; load_index ;
 
 create_tables:
-	create_10 ; create_10 ; create_10 ; create_nop_4 ;
+  create_10 ; create_10 ; create_10 ; create_nop_4 ;
 
 create_10:
-	create ; create ; create ; create ; create ; create ; create ; create ; create ; create ;
+  create ; create ; create ; create ; create ; create ; create ; create ; create ; create ;
 
 create_nop_4:
-	create_nop ; create_nop ; create_nop ; create_nop ;
+  create_nop ; create_nop ; create_nop ; create_nop ;
 
 insert_tables:
-	insert_part_tables ; insert_part_tables ; insert_part_tables ; insert_part_tables ; insert_nop_tables ;
+  insert_part_tables ; insert_part_tables ; insert_part_tables ; insert_part_tables ; insert_nop_tables ;
 
 insert_part_tables:
-	insert_part_6 ; insert_part_6 ; insert_part_6 ; insert_part_6 ; insert_part_6 ;
+  insert_part_6 ; insert_part_6 ; insert_part_6 ; insert_part_6 ; insert_part_6 ;
 
 insert_nop_tables:
-	insert_nop_6 ; insert_nop_6 ; insert_nop_6 ; insert_nop_6 ; insert_nop_6 ;
+  insert_nop_6 ; insert_nop_6 ; insert_nop_6 ; insert_nop_6 ; insert_nop_6 ;
 
 insert_part_6:
-	insert_part ; insert_part ; insert_part ; insert_part ; insert_part ; insert_part ;
+  insert_part ; insert_part ; insert_part ; insert_part ; insert_part ; insert_part ;
 
 insert_nop_6:
-	insert_nop ; insert_nop ; insert_nop ; insert_nop ; insert_nop ; insert_nop ;
+  insert_nop ; insert_nop ; insert_nop ; insert_nop ; insert_nop ; insert_nop ;
 
 create:
         CREATE TABLE if_not_exists table_name_part (
                 `col_int_nokey` INTEGER,
                 `col_int_key` INTEGER NOT NULL,
                 KEY (`col_int_key` __asc_x_desc(33,33))
-	) ENGINE = engine /*!50100 partition */ ;
+  ) ENGINE = engine /*!50100 partition */ ;
 
 create_nop:
         CREATE TABLE if_not_exists table_name_nopart (
                 `col_int_nokey` INTEGER,
                 `col_int_key` INTEGER NOT NULL,
                 KEY (`col_int_key` __asc_x_desc(33,33))
-	) ENGINE = engine ;
+  ) ENGINE = engine ;
 
 insert_part:
         INSERT INTO table_name_part   ( `col_int_nokey`, `col_int_key` ) VALUES ( value , value ) , ( value , value ) , ( value , value ) , ( value , value ) ;
@@ -114,62 +114,62 @@ insert_nop:
 # Randomly executed SQL
 
 query:
-	exec_sql ;
+  exec_sql ;
 
 exec_sql:
-	select_explain |
-	select | select | select | select | select | select                   |
-	select | select | select | select | select | select                   |
-	select | select | select | select | select | select                   |
-	insert | update | delete | insert | update                            |
-	insert | update | delete | insert | update                            |
-	alter | alter | alter | alter | alter | alter                         |
-	alter | alter | alter | alter | alter | alter                         |
-	cache_index | load_index                                              |
-	create_sel | create_sel | create_sel | create_sel | create_sel | drop |
-	set_key_buffer_size | set_key_cache_block_size                        ;
+  select_explain |
+  select | select | select | select | select | select                   |
+  select | select | select | select | select | select                   |
+  select | select | select | select | select | select                   |
+  insert | update | delete | insert | update                            |
+  insert | update | delete | insert | update                            |
+  alter | alter | alter | alter | alter | alter                         |
+  alter | alter | alter | alter | alter | alter                         |
+  cache_index | load_index                                              |
+  create_sel | create_sel | create_sel | create_sel | create_sel | drop |
+  set_key_buffer_size | set_key_cache_block_size                        ;
 
 cache_index:
-	CACHE INDEX table_name_letter IN cache_name                                               |
-	CACHE INDEX table_name_letter /*!50400 PARTITION ( ALL ) */ IN cache_name                 |
-	CACHE INDEX table_name_letter /*!50400 PARTITION ( partition_name_list ) */ IN cache_name ;
+  CACHE INDEX table_name_letter IN cache_name                                               |
+  CACHE INDEX table_name_letter /*!50400 PARTITION ( ALL ) */ IN cache_name                 |
+  CACHE INDEX table_name_letter /*!50400 PARTITION ( partition_name_list ) */ IN cache_name ;
 
 load_index:
-	LOAD INDEX INTO CACHE table_name_letter ignore_leaves                                               |
-	LOAD INDEX INTO CACHE table_name_letter /*!50400 PARTITION ( ALL ) */ ignore_leaves                 |
-	LOAD INDEX INTO CACHE table_name_letter /*!50400 PARTITION ( partition_name_list ) */ ignore_leaves ;
+  LOAD INDEX INTO CACHE table_name_letter ignore_leaves                                               |
+  LOAD INDEX INTO CACHE table_name_letter /*!50400 PARTITION ( ALL ) */ ignore_leaves                 |
+  LOAD INDEX INTO CACHE table_name_letter /*!50400 PARTITION ( partition_name_list ) */ ignore_leaves ;
 
 ignore_leaves:
-	| IGNORE LEAVES ;
+  | IGNORE LEAVES ;
 
 set_key_buffer_size:
-	/*!50400 SET GLOBAL cache_name.key_buffer_size = _tinyint_unsigned   */ |
-	/*!50400 SET GLOBAL cache_name.key_buffer_size = _smallint_unsigned  */ |
-	/*!50400 SET GLOBAL cache_name.key_buffer_size = _mediumint_unsigned */ ;
+  /*!50400 SET GLOBAL cache_name.key_buffer_size = _tinyint_unsigned   */ |
+  /*!50400 SET GLOBAL cache_name.key_buffer_size = _smallint_unsigned  */ |
+  /*!50400 SET GLOBAL cache_name.key_buffer_size = _mediumint_unsigned */ ;
 
 set_key_cache_block_size:
-	/*!50400 SET GLOBAL cache_name.key_cache_block_size = key_cache_block_size_enum */ ;
+  /*!50400 SET GLOBAL cache_name.key_cache_block_size = key_cache_block_size_enum */ ;
 
 key_cache_block_size_enum:
-	512 | 1024 | 2048 | 4096 | 8192 | 16384 ;
+  512 | 1024 | 2048 | 4096 | 8192 | 16384 ;
 
 cache_name:
-	c1 | c2 | c3 | c4;
+  c1 | c2 | c3 | c4;
 
 select_explain:
-	EXPLAIN /*!50100 PARTITIONS */ SELECT partition_99_rg_field FROM table_name_letter where ;
+  EXPLAIN /*!50100 PARTITIONS */ SELECT partition_99_rg_field FROM table_name_letter where ;
 
 create_select:
-	SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM table_name_letter where ;
+  SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM table_name_letter where ;
 
 select:
-	SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM dml_table_name    where ;
+  SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM dml_table_name    where ;
 
 # WHERE clauses suitable for partition pruning
 where:
-	|                                      |
-	WHERE partition_99_rg_field comparison_operator value |
-	WHERE partition_99_rg_field BETWEEN value AND value   ;
+  |                                      |
+  WHERE partition_99_rg_field comparison_operator value |
+  WHERE partition_99_rg_field BETWEEN value AND value   ;
 
 comparison_operator:
         > | < | = | <> | != | >= | <= ;
@@ -188,13 +188,13 @@ delete:
         DELETE FROM dml_table_name WHERE partition_99_rg_field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
 
 dml_table_name:
-	table_name_part_ext | table_name_part_ext | table_name_part_ext | table_name_part_ext |
-	table_name_part_ext | table_name_part_ext | table_name_part_ext | table_name_part_ext |
-	table_name_nopart                                                                     ;
+  table_name_part_ext | table_name_part_ext | table_name_part_ext | table_name_part_ext |
+  table_name_part_ext | table_name_part_ext | table_name_part_ext | table_name_part_ext |
+  table_name_nopart                                                                     ;
 
 table_name_part_ext:
-	{ our $ind= 0; return undef }
-	table_name_part PARTITION (part_list last_part_elem) ;
+  { our $ind= 0; return undef }
+  table_name_part PARTITION (part_list last_part_elem) ;
 
 part_list:
         part_list_elem_10 |
@@ -203,13 +203,13 @@ part_list:
         part_list part_list_elem_10 |
         part_list part_list_elem_10 |
         part_list part_list_elem_10
-	;
+  ;
 
 part_list_100:
         part_list_elem_10 part_list_elem_10 part_list_elem_10 part_list_elem_10
         part_list_elem_10 part_list_elem_10 part_list_elem_10 part_list_elem_10
         part_list_elem_10 part_list_elem_10
-	last_part_elem
+  last_part_elem
         ;
 
 part_list_elem_10:
@@ -227,10 +227,10 @@ last_part_elem:
 
 
 table_name_nopart:
-	a | b ;
+  a | b ;
 
 table_name_part:
-	c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z ;
+  c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z ;
 
 value:
         _digit ;
@@ -242,11 +242,11 @@ create_sel:
         create_part | create_part | create_part | create_nopart | create_nopart ;
 
 create_part:
-	CREATE TABLE if_not_exists table_name_part (
-		`col_int_nokey` INTEGER,
-		`col_int_key` INTEGER NOT NULL,
-		KEY (`col_int_key`)
-	) ENGINE = engine /*!50100 partition */ create_select ;
+  CREATE TABLE if_not_exists table_name_part (
+    `col_int_nokey` INTEGER,
+    `col_int_key` INTEGER NOT NULL,
+    KEY (`col_int_key`)
+  ) ENGINE = engine /*!50100 partition */ create_select ;
 
 create_nopart:
         CREATE TABLE if_not_exists table_name_nopart (
@@ -256,80 +256,80 @@ create_nopart:
         ) ENGINE = engine create_select ;
 
 table_name_letter:
-	table_name_part   |
-	table_name_nopart ;
+  table_name_part   |
+  table_name_nopart ;
 drop:
-	DROP TABLE if_exists table_name_letter ;
+  DROP TABLE if_exists table_name_letter ;
 
 alter:
-	/*!50400 ALTER TABLE table_name_letter alter_operation */;
+  /*!50400 ALTER TABLE table_name_letter alter_operation */;
 
 alter_operation:
-	partition                                                           |
-	enable_disable KEYS                                                 |
-	ADD PARTITION (PARTITION partition_name VALUES LESS THAN MAXVALUE)  |
-	ADD PARTITION (PARTITION p125 VALUES LESS THAN MAXVALUE)             |
-	COALESCE PARTITION one_two                                          |
-	ANALYZE PARTITION partition_name_list                               |
-	CHECK PARTITION partition_name_list                                 |
-	REBUILD PARTITION partition_name_list                               |
-	REPAIR PARTITION partition_name_list                                |
-	REMOVE PARTITIONING                                                 |
-	OPTIMIZE PARTITION partition_name_list                              |
-	ENGINE = engine                                                     |
-	ORDER BY partition_99_rg_field                                                     |
-	TRUNCATE PARTITION partition_name_list		# can not be used in comparison tests against 5.0
+  partition                                                           |
+  enable_disable KEYS                                                 |
+  ADD PARTITION (PARTITION partition_name VALUES LESS THAN MAXVALUE)  |
+  ADD PARTITION (PARTITION p125 VALUES LESS THAN MAXVALUE)             |
+  COALESCE PARTITION one_two                                          |
+  ANALYZE PARTITION partition_name_list                               |
+  CHECK PARTITION partition_name_list                                 |
+  REBUILD PARTITION partition_name_list                               |
+  REPAIR PARTITION partition_name_list                                |
+  REMOVE PARTITIONING                                                 |
+  OPTIMIZE PARTITION partition_name_list                              |
+  ENGINE = engine                                                     |
+  ORDER BY partition_99_rg_field                                                     |
+  TRUNCATE PARTITION partition_name_list    # can not be used in comparison tests against 5.0
 ;
-#	REORGANIZE PARTITION partition_name_list                            |
+#  REORGANIZE PARTITION partition_name_list                            |
 #       EXCHANGE PARTITION partition_name WITH TABLE table_name_nopart      |
-#	DROP PARTITION partition_name                                       |
+#  DROP PARTITION partition_name                                       |
 
 one_two:
-	1 | 2;
+  1 | 2;
 
 partition_name_list:
-	{ our $ind= 0; return undef }
-	part_list last_part_elem ;
+  { our $ind= 0; return undef }
+  part_list last_part_elem ;
 
 partition_name:
-	{ our $nb_part_list= $prng->int(0,$nb_parts); 'p'.$nb_part_list } ;
+  { our $nb_part_list= $prng->int(0,$nb_parts); 'p'.$nb_part_list } ;
 
 
 enable_disable:
-	ENABLE | DISABLE ;
+  ENABLE | DISABLE ;
 
 # Give preference to MyISAM because key caching is specific to MyISAM
 
 engine:
-	MYISAM |
-	INNODB | MEMORY          ;
+  MYISAM |
+  INNODB | MEMORY          ;
 
 partition:
-	{ our $nb_part_list= $prng->int($nb_parts-5,$nb_parts); return undef }
-	partition_by_range ;
+  { our $nb_part_list= $prng->int($nb_parts-5,$nb_parts); return undef }
+  partition_by_range ;
 
 subpartition:
-	|
-	SUBPARTITION BY linear HASH ( partition_99_rg_field ) SUBPARTITIONS partition_count ;
+  |
+  SUBPARTITION BY linear HASH ( partition_99_rg_field ) SUBPARTITIONS partition_count ;
 
 populate_digits:
-	{ @digits = @{$prng->shuffleArray([0..9])} ; return undef };
+  { @digits = @{$prng->shuffleArray([0..9])} ; return undef };
 
 shift_digit:
-	{ shift @digits };
+  { shift @digits };
 
 partition_by_hash:
-	PARTITION BY linear HASH ( partition_99_rg_field ) PARTITIONS partition_count;
+  PARTITION BY linear HASH ( partition_99_rg_field ) PARTITIONS partition_count;
 
 linear:
-	| LINEAR;
+  | LINEAR;
 
 partition_by_key:
-	PARTITION BY KEY(`col_int_key`) PARTITIONS partition_count ;
+  PARTITION BY KEY(`col_int_key`) PARTITIONS partition_count ;
 
 partition_hash_or_key:
-	HASH ( field_name ) PARTITIONS partition_count |
-	KEY  ( field_name ) PARTITIONS partition_count ;
+  HASH ( field_name ) PARTITIONS partition_count |
+  KEY  ( field_name ) PARTITIONS partition_count ;
 
 partition_by_range:
           range_elements { our $ind= 0; return undef } PARTITION BY RANGE ( partition_99_rg_field ) (
@@ -344,22 +344,22 @@ range_list_elem_10:
         range_elem range_elem range_elem range_elem range_elem ;
 
 range_list:
-	range_list_elem_10 range_list_elem_10 range_list_elem_10 range_list_elem_10
-	range_list_elem_10 range_list_elem_10 range_list_elem_10 range_list_elem_10
-	range_list_elem_10 range_list_elem_10
+  range_list_elem_10 range_list_elem_10 range_list_elem_10 range_list_elem_10
+  range_list_elem_10 range_list_elem_10 range_list_elem_10 range_list_elem_10
+  range_list_elem_10 range_list_elem_10
         ;
 
 range_elem:
         { $ind<$nb_part_list ? return @range_list[$ind++] : "" } ;
 
 limit_rows:
-	1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
+  1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 
 partition_count:
-	96 | 97 | 98 | 98 | 98 | 99 | 99 | 99 | 99 ;
+  96 | 97 | 98 | 98 | 98 | 99 | 99 | 99 | 99 ;
 
 if_exists:
-	IF EXISTS ;
+  IF EXISTS ;
 
 if_not_exists:
-	IF NOT EXISTS ;
+  IF NOT EXISTS ;

@@ -17,15 +17,15 @@
 # USA
 
 $tables = {
-	rows => [0, 1, 10, 20, 100],
-	engines => [ 'MyISAM', 'InnoDB', 'Aria' ],
-	views => [ 'MERGE', 'TEMPTABLE' ],
+  rows => [0, 1, 10, 20, 100],
+  engines => [ 'MyISAM', 'InnoDB', 'Aria' ],
+  views => [ 'MERGE', 'TEMPTABLE' ],
 };
 
 $fields = {
-	types => [ 'int', 'char(2)', 'char(255)', 'varchar(64)', 'date', 'time', 'datetime', 'text', 'blob', 'decimal' ],
-	indexes => [ undef, 'key' ],
-	null => [ 'null', 'not null' ],
+  types => [ 'int', 'char(2)', 'char(255)', 'varchar(64)', 'date', 'time', 'datetime', 'text', 'blob', 'decimal' ],
+  indexes => [ undef, 'key' ],
+  null => [ 'null', 'not null' ],
 };
 
 $data = {

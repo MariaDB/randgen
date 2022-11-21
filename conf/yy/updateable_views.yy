@@ -1,4 +1,21 @@
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2022, MariaDB
 #
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+########################################################################
 # This grammar creates random chains of possibly updateable vies
 # and tries to execute DML queries against them. The following princples apply:
 #
@@ -11,6 +28,8 @@
 # Since there can be aggressive grammars which drop tables which we need,
 # we will make copies in a "private" database. The views themselves will
 # be created in the common database, it's okay if they are tampered with
+########################################################################
+
 query_init:
     CREATE DATABASE IF NOT EXISTS private_updateable_views
     ; CREATE TABLE private_updateable_views.table_multipart LIKE table_multipart
@@ -24,17 +43,17 @@ query_init:
     create_with_redundancy ;
 
 query:
-	dml | dml | dml | dml | dml |
-	dml | dml | dml | dml | dml_or_drop ;
+  dml | dml | dml | dml | dml |
+  dml | dml | dml | dml | dml_or_drop ;
 
 dml:
-	select | select | insert | insert | update | delete ;
+  select | select | insert | insert | update | delete ;
 
 dml_or_drop:
-	dml | dml | create_or_replace | create_if_not_exists | drop_all_views | truncate ;
+  dml | dml | create_or_replace | create_if_not_exists | drop_all_views | truncate ;
 
 drop_all_views:
-	DROP VIEW IF EXISTS view1 , view2 , view3 , view4 , view5 ; create_with_redundancy;
+  DROP VIEW IF EXISTS view1 , view2 , view3 , view4 , view5 ; create_with_redundancy;
 
 # Since some creation may fail, we can make two attempts for each view
 # for better chances that all views are created.
@@ -51,13 +70,13 @@ create_with_redundancy:
 ;
 
 create_if_not_exists:
-	CREATE ALGORITHM = algorithm VIEW __if_not_exists(95) view_name AS select check_option ;
+  CREATE ALGORITHM = algorithm VIEW __if_not_exists(95) view_name AS select check_option ;
 
 create_or_replace:
        CREATE __or_replace(95) VIEW view_name AS select check_option ;
 
 truncate:
-	TRUNCATE TABLE table_name ;
+  TRUNCATE TABLE table_name ;
 
 select:
     select_single | select_single | select_single |
@@ -73,98 +92,98 @@ select_single:
     SELECT a1_2 . field1 AS field1 , a1_2 . field2 AS field2 , a1_2 . field3 AS field3 , a1_2 . field4 AS field4 FROM comma_join where_comma_join ;
 
 a1_2:
-	a1 | a2 ;
+  a1 | a2 ;
 
 join:
-	table_view_name AS a1 JOIN table_view_name AS a2 join_condition |
-	table_view_name AS a1 STRAIGHT_JOIN table_view_name AS a2 ON join_cond_expr |
-	table_view_name AS a1 left_right JOIN table_view_name AS a2 join_condition ;
+  table_view_name AS a1 JOIN table_view_name AS a2 join_condition |
+  table_view_name AS a1 STRAIGHT_JOIN table_view_name AS a2 ON join_cond_expr |
+  table_view_name AS a1 left_right JOIN table_view_name AS a2 join_condition ;
 
 comma_join:
-	table_view_name AS a1 , table_view_name AS a2 ;
+  table_view_name AS a1 , table_view_name AS a2 ;
 
 join_condition:
-	USING ( field_name ) |
-	ON join_cond_expr ;
+  USING ( field_name ) |
+  ON join_cond_expr ;
 
 join_cond_expr:
-	a1 . field_name cmp_op a2 . field_name ;
+  a1 . field_name cmp_op a2 . field_name ;
 
 left_right:
-	LEFT | RIGHT ;
+  LEFT | RIGHT ;
 
 insert:
-	insert_single | insert_select |
-	insert_multi | insert_multi ;
+  insert_single | insert_select |
+  insert_multi | insert_multi ;
 
 insert_single:
-	insert_replace INTO view_name SET value_list ;
+  insert_replace INTO view_name SET value_list ;
 
 insert_multi:
-	insert_replace INTO view_name ( field1 , field2 , field3 , field4 ) VALUES row_list ;
+  insert_replace INTO view_name ( field1 , field2 , field3 , field4 ) VALUES row_list ;
 
 insert_select:
-	insert_replace INTO view_name ( field1 , field2 , field3 , field4 ) select ORDER BY field1 , field2 , field3 , field4 LIMIT _digit ;;
+  insert_replace INTO view_name ( field1 , field2 , field3 , field4 ) select ORDER BY field1 , field2 , field3 , field4 LIMIT _digit ;;
 
 update:
-	UPDATE view_name SET value_list where ORDER BY field1 , field2 , field3 , field4 limit ;
+  UPDATE view_name SET value_list where ORDER BY field1 , field2 , field3 , field4 limit ;
 
 limit:
-	| LIMIT _digit ;
+  | LIMIT _digit ;
 
 delete:
-	DELETE FROM view_name where ORDER BY field1 , field2 , field3 , field4 LIMIT _digit ;
+  DELETE FROM view_name where ORDER BY field1 , field2 , field3 , field4 LIMIT _digit ;
 
 insert_replace:
-	INSERT IGNORE | REPLACE ;
+  INSERT IGNORE | REPLACE ;
 
 value_list:
-	value_list , value_item |
-	value_item , value_item ;
+  value_list , value_item |
+  value_item , value_item ;
 
 row_list:
-	row_list , row_item |
-	row_item , row_item ;
+  row_list , row_item |
+  row_item , row_item ;
 
 row_item:
-	( value , value , value , value );
+  ( value , value , value , value );
 
 value_item:
-	field_name = value ;
+  field_name = value ;
 
 table_view_name:
     ==FACTOR:3== table_name |
     { $base_tables_only ? 'table_name' : 'view_name' } ;
 
 where:
-	|
-	WHERE field_name cmp_op value ;
+  |
+  WHERE field_name cmp_op value ;
 
 where_join:
-	WHERE a1_2 . field_name cmp_op value |
-	WHERE a1_2 . field_name cmp_op value and_or a1_2 . field_name cmp_op value ;
+  WHERE a1_2 . field_name cmp_op value |
+  WHERE a1_2 . field_name cmp_op value and_or a1_2 . field_name cmp_op value ;
 
 where_comma_join:
-	WHERE join_cond_expr and_or a1_2 . field_name cmp_op value ;
+  WHERE join_cond_expr and_or a1_2 . field_name cmp_op value ;
 
 and_or:
-	AND | AND | AND | AND | OR ;
+  AND | AND | AND | AND | OR ;
 
 field_name:
-	field1 | field2 | field3 | field4 ;
+  field1 | field2 | field3 | field4 ;
 
 value:
-	_digit | _tinyint_unsigned | _varchar(1) | _english | NULL ;
+  _digit | _tinyint_unsigned | _varchar(1) | _english | NULL ;
 
 cmp_op:
-	= | > | < | >= | <= | <> | != | <=> ;
+  = | > | < | >= | <= | <> | != | <=> ;
 
 # Disabled CHECK OPTION for 5.5 due to MDEV-10558
 check_option:
-	| | | | /*!100012 WITH cascaded_local CHECK OPTION */;
+  | | | | /*!100012 WITH cascaded_local CHECK OPTION */;
 
 cascaded_local:
-	CASCADED | LOCAL ;
+  CASCADED | LOCAL ;
 
 table_name:
     private_updateable_views.table_merge |
@@ -179,5 +198,5 @@ view_name:
   { $view_to_create ? $view_to_create : 'view'.$prng->uint16(1,5) };
 
 algorithm:
-	MERGE | MERGE | MERGE | MERGE | MERGE |
-	MERGE | MERGE | MERGE | TEMPTABLE | UNDEFINED ;
+  MERGE | MERGE | MERGE | MERGE | MERGE |
+  MERGE | MERGE | MERGE | TEMPTABLE | UNDEFINED ;

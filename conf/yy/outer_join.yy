@@ -27,7 +27,7 @@
 #           Additionally, it is not recommended to use the standard RQG-produced
 #           tables as they way we pick tables can result in the use of
 #           several large tables that will bog down a generated query
-#  
+#
 #           Please rely largely on the _portable variant of this grammar if
 #           doing 3-way comparisons as it has altered code that will produce
 #           more standards-compliant queries for use with other DBMS's
@@ -59,8 +59,8 @@ select_option:  | | | | | | | | | SQL_SMALL_RESULT ;
 straight_join:  | | | | | | | | | | | STRAIGHT_JOIN ;
 
 select_list:
-	new_select_item |
-	new_select_item , select_list |
+  new_select_item |
+  new_select_item , select_list |
         new_select_item , select_list ;
 
 simple_select_list:
@@ -78,7 +78,7 @@ new_select_item:
         nonaggregate_select_item |
         nonaggregate_select_item |
         nonaggregate_select_item |
-	aggregate_select_item ;
+  aggregate_select_item ;
 
 nonaggregate_select_item:
         table_alias . int_field_name AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
@@ -131,7 +131,7 @@ where_list:
 where_item:
         existing_table_item . `pk` comparison_operator _digit  |
         existing_table_item . `pk` comparison_operator existing_table_item . int_field_name  |
-	existing_table_item . int_field_name comparison_operator _digit  |
+  existing_table_item . int_field_name comparison_operator _digit  |
         existing_table_item . int_field_name comparison_operator existing_table_item . int_field_name |
         existing_table_item . int_field_name IS not NULL |
         existing_table_item . int_field_name not IN (number_list) |
@@ -146,21 +146,21 @@ number_list:
 # that the query doesn't lend itself to variable result sets                   #
 ################################################################################
 group_by_clause:
-	{ scalar(@nonaggregates) > 0 ? " GROUP BY ".join (', ' , @nonaggregates ) : "" }  ;
+  { scalar(@nonaggregates) > 0 ? " GROUP BY ".join (', ' , @nonaggregates ) : "" }  ;
 
 optional_group_by:
         | | | | | | | | group_by_clause ;
 
 having_clause:
-	| HAVING having_list;
+  | HAVING having_list;
 
 having_list:
         having_item |
         having_item |
-	(having_list and_or having_item)  ;
+  (having_list and_or having_item)  ;
 
 having_item:
-	existing_select_item comparison_operator _digit ;
+  existing_select_item comparison_operator _digit ;
 
 ################################################################################
 # We use the total_order_by rule when using the LIMIT operator to ensure that  #
@@ -168,19 +168,19 @@ having_item:
 ################################################################################
 
 order_by_clause:
-	|
+  |
         ORDER BY total_order_by desc limit |
-	ORDER BY order_by_list ;
+  ORDER BY order_by_list ;
 
 total_order_by:
-	{ join(', ', map { "field".$_ } (1..$fields) ) };
+  { join(', ', map { "field".$_ } (1..$fields) ) };
 
 order_by_list:
-	order_by_item  |
-	order_by_item  , order_by_list ;
+  order_by_item  |
+  order_by_item  , order_by_list ;
 
 order_by_item:
-	existing_select_item desc ;
+  existing_select_item desc ;
 
 desc:
         ASC | | | | | DESC ;
@@ -191,7 +191,7 @@ desc:
 ################################################################################
 
 limit:
-	| | LIMIT limit_size | LIMIT limit_size OFFSET _digit;
+  | | LIMIT limit_size | LIMIT limit_size OFFSET _digit;
 
 ################################################################################
 # recommend 8 tables : 2 joins for smaller queries, 6:2 for larger ones
@@ -245,10 +245,10 @@ other_table:
   { $min_tables_to_join=5; '/* min tables 5 */ alias5' } ;
 
 existing_table_item:
-	{ "alias".$prng->int(1,$tables) };
+  { "alias".$prng->int(1,$tables) };
 
 existing_select_item:
-	{ "field".$prng->int(1,$fields) };
+  { "field".$prng->int(1,$fields) };
 
 _digit:
     1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
@@ -259,19 +259,19 @@ and_or:
    AND | AND | OR ;
 
 comparison_operator:
-	= | > | < | != | <> | <= | >= ;
+  = | > | < | != | <> | <= | >= ;
 
 aggregate:
-	COUNT( distinct | SUM( distinct | MIN( distinct | MAX( distinct ;
+  COUNT( distinct | SUM( distinct | MIN( distinct | MAX( distinct ;
 
 not:
-	| | | NOT;
+  | | | NOT;
 
 left_right:
-	LEFT | LEFT | LEFT | RIGHT ;
+  LEFT | LEFT | LEFT | RIGHT ;
 
 outer:
-	| | | | OUTER ;
+  | | | | OUTER ;
 
 ################################################################################
 # We define LIMIT_rows in this fashion as LIMIT values can differ depending on      #

@@ -107,7 +107,7 @@ new_select_item:
 nonaggregate_select_item:
         table_123 . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
         table_123 . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-	table_123 . _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
+  table_123 . _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 aggregate_select_item:
         aggregate table_123 . aggregate_field ) AS { "field".++$fields } ;
@@ -282,21 +282,21 @@ spec_single_char_idx_where_item:
 # that the query doesn't lend itself to variable result sets                   #
 ################################################################################
 group_by_clause:
-	{ scalar(@nonaggregates) > 0 ? " GROUP BY ".join (', ' , @nonaggregates ) : "" }  ;
+  { scalar(@nonaggregates) > 0 ? " GROUP BY ".join (', ' , @nonaggregates ) : "" }  ;
 
 optional_group_by:
         | | group_by_clause ;
 
 having_clause:
-	| | | | HAVING having_list;
+  | | | | HAVING having_list;
 
 having_list:
         having_item |
         having_item |
-	(having_list and_or having_item)  ;
+  (having_list and_or having_item)  ;
 
 having_item:
-	{ 'field'.($prng->uint16(1,$fields)) } comparison_operator int_value |
+  { 'field'.($prng->uint16(1,$fields)) } comparison_operator int_value |
         { 'field'.($prng->uint16(1,$fields)) } comparison_operator char_value ;
 
 ################################################################################
@@ -305,11 +305,11 @@ having_item:
 ################################################################################
 
 order_by_clause:
-	|
+  |
         ORDER BY total_order_by desc limit ;
 
 total_order_by:
-	{ join(', ', map { "field".$_ } (1..$fields) ) };
+  { join(', ', map { "field".$_ } (1..$fields) ) };
 
 desc:
         ASC | | | | | DESC ;
@@ -326,7 +326,7 @@ limit_value:
     1 | 2 | 10 | 100 | 1000 ;
 
 aggregate:
-	COUNT( | SUM( | MIN( | MAX( ;
+  COUNT( | SUM( | MIN( | MAX( ;
 
 number_list:
         int_value | number_list, int_value ;
@@ -335,10 +335,10 @@ char_list:
         char_value | char_list, char_value ;
 
 left_right:
-	LEFT | LEFT | LEFT | RIGHT ;
+  LEFT | LEFT | LEFT | RIGHT ;
 
 outer:
-	| | | | OUTER ;
+  | | | | OUTER ;
 
 and_or:
   AND | AND | OR ;

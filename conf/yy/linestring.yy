@@ -1,56 +1,75 @@
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2022, MariaDB
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+########################################################################
+
 query:
-	SELECT AsText(linestring_nokey) FROM linestring /*executor1 FORCE KEY ( linestring_key ) */  WHERE where_cond AND ST_Length( linestring_nokey ) > 1;
+  SELECT AsText(linestring_nokey) FROM linestring /*executor1 FORCE KEY ( linestring_key ) */  WHERE where_cond AND ST_Length( linestring_nokey ) > 1;
 
 where_cond:
-	bool_cond |
-	where_cond and_or bool_cond |
-	bool_cond and_or bool_cond ;
+  bool_cond |
+  where_cond and_or bool_cond |
+  bool_cond and_or bool_cond ;
 
 and_or:
-	AND | AND | AND | AND | AND |
-	AND | AND | AND | AND | OR ;
+  AND | AND | AND | AND | AND |
+  AND | AND | AND | AND | OR ;
 
 bool_cond:
         ST_INTERSECTS( geometry , geometry_column ) |
        ST_CROSSES( geometry , geometry_column ) |
-	ST_CONTAINS( GeomFromText('POLYGON( polygon_wkt )') , geometry_column ) |
-	ST_EQUALS( ( SELECT linestring_nokey FROM linestring WHERE pk = pk_value ) , geometry_column ) |
-	ST_WITHIN( GeomFromText('POLYGON( polygon_wkt )') , geometry_column ) |
-	ST_DISJOINT( geometry , geometry_column ) |
-	ST_TOUCHES( geometry , geometry_column ) ;
+  ST_CONTAINS( GeomFromText('POLYGON( polygon_wkt )') , geometry_column ) |
+  ST_EQUALS( ( SELECT linestring_nokey FROM linestring WHERE pk = pk_value ) , geometry_column ) |
+  ST_WITHIN( GeomFromText('POLYGON( polygon_wkt )') , geometry_column ) |
+  ST_DISJOINT( geometry , geometry_column ) |
+  ST_TOUCHES( geometry , geometry_column ) ;
 ;
 
 geometry_column:
-	linestring_key | linestring_key | linestring_key | linestring_key | linestring_nokey ;
+  linestring_key | linestring_key | linestring_key | linestring_key | linestring_nokey ;
 
 geometry:
-	GeomFromText('LINESTRING( point_list )') |
-	GeomFromText('MULTILINESTRING( line_list )') ;
+  GeomFromText('LINESTRING( point_list )') |
+  GeomFromText('MULTILINESTRING( line_list )') ;
 #|
-#	( SELECT linestring_nokey FROM linestring WHERE pk = pk_value ) ;
+#  ( SELECT linestring_nokey FROM linestring WHERE pk = pk_value ) ;
 
 line_list:
-	( point_list ) , ( point_list ) |
-	( point_list ) , line_list ;
+  ( point_list ) , ( point_list ) |
+  ( point_list ) , line_list ;
 
 point_list:
-	point , point , point |
-	point , point , point_list ;
+  point , point , point |
+  point , point , point_list ;
 
 polygon_wkt:
-	( start_point , point_list , end_point ) ;
+  ( start_point , point_list , end_point ) ;
 
 point:
-	{ $prng->int(3000,5000)." ".$prng->int(2000,4000) } |
-	{ $prng->int(3750,4250)." ".$prng->int(2750,3250) } |
-	{ $prng->int(4000,4100)." ".$prng->int(3000,3100) } ;
+  { $prng->int(3000,5000)." ".$prng->int(2000,4000) } |
+  { $prng->int(3750,4250)." ".$prng->int(2750,3250) } |
+  { $prng->int(4000,4100)." ".$prng->int(3000,3100) } ;
 
 pk_value_list:
-	pk_value , pk_value |
-	pk_value , pk_value_list ;
+  pk_value , pk_value |
+  pk_value , pk_value_list ;
 
 pk_value:
-	{ $prng->int(1,3726) } ;
+  { $prng->int(1,3726) } ;
 
 start_point:
         { $start_x = $prng->int(3750,4250) ; $start_y = $prng->int(2750,3250) ; "$start_x $start_y"; } ;

@@ -33,41 +33,41 @@
 ########################################################################
 
 query_init:
-	SET SQL_SAFE_UPDATES=1;
+  SET SQL_SAFE_UPDATES=1;
 query:
-	transaction;
+  transaction;
 
 transaction:
-	START TRANSACTION ; query_list ; commit_rollback ;
+  START TRANSACTION ; query_list ; commit_rollback ;
 
 query_list:
-	query_item |
-	query_item ; query_list ;
+  query_item |
+  query_item ; query_list ;
 
 query_item:
-	insert | update | delete ;
+  insert | update | delete ;
 
 commit_rollback:
-	COMMIT | COMMIT | COMMIT | COMMIT | COMMIT |
-	COMMIT | COMMIT | COMMIT | COMMIT | ROLLBACK ;
+  COMMIT | COMMIT | COMMIT | COMMIT | COMMIT |
+  COMMIT | COMMIT | COMMIT | COMMIT | ROLLBACK ;
 
 insert:
-	insert_replace INTO _table ( _field , _field ) VALUES ( value , value );
+  insert_replace INTO _table ( _field , _field ) VALUES ( value , value );
 
 insert_replace:
-	INSERT | REPLACE ;
+  INSERT | REPLACE ;
 
 update:
-	UPDATE _table SET _field = value dml_filter;
+  UPDATE _table SET _field = value dml_filter;
 
 delete:
-	DELETE FROM _table dml_filter ;
+  DELETE FROM _table dml_filter ;
 
 dml_filter:
-	WHERE `pk` = value |
-	WHERE _field_indexed = value LIMIT 1;
+  WHERE `pk` = value |
+  WHERE _field_indexed = value LIMIT 1;
 
 value:
-	CONNECTION_ID() |
-	(CONNECTION_ID() * _thread_count) + _digit |
-	(CONNECTION_ID() * _thread_count) + (_digit * 10) ;
+  CONNECTION_ID() |
+  (CONNECTION_ID() * _thread_count) + _digit |
+  (CONNECTION_ID() * _thread_count) + (_digit * 10) ;

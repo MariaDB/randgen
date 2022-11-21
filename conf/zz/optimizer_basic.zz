@@ -17,18 +17,18 @@
 # USA
 
 $tables = {
-	rows => [0, 1, 10, 20, 1000],
-	engines => [ 'MyISAM', 'InnoDB', 'Aria' ],
-	views => [ 'MERGE', 'TEMPTABLE' ],
-	pk => [ undef ],
+  rows => [0, 1, 10, 20, 1000],
+  engines => [ 'MyISAM', 'InnoDB', 'Aria' ],
+  views => [ 'MERGE', 'TEMPTABLE' ],
+  pk => [ undef ],
     charsets => [ 'utf8', 'latin1' ]
 };
 
 $fields = {
-	types => [ 'enum', 'set', 'int', 'bigint', 'smallint', 'tinyint', 'bit', 'float', 'double', 'decimal', 'char(2)', 'char(255)', 'varchar(1)', 'binary(8)', 'varbinary(32)', 'varchar(64)', 'date', 'time', 'datetime', 'timestamp', 'year', 'text', 'blob' ],
-	indexes => [ undef ],
-	null => [ 'null', 'not null' ],
-	sign => [ undef, 'unsigned' ],
+  types => [ 'enum', 'set', 'int', 'bigint', 'smallint', 'tinyint', 'bit', 'float', 'double', 'decimal', 'char(2)', 'char(255)', 'varchar(1)', 'binary(8)', 'varbinary(32)', 'varchar(64)', 'date', 'time', 'datetime', 'timestamp', 'year', 'text', 'blob' ],
+  indexes => [ undef ],
+  null => [ 'null', 'not null' ],
+  sign => [ undef, 'unsigned' ],
     charsets => [ 'utf8', 'latin1' ]
 };
 

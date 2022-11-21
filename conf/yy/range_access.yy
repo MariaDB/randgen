@@ -199,7 +199,7 @@ select_item:
   table_one_two . _field AS { my $f = "field".++$fields ; $f } ;
 
 straight_join:
-	| | | | | | | | STRAIGHT_JOIN ;
+  | | | | | | | | STRAIGHT_JOIN ;
 
 join:
    { $stack->push() }
@@ -259,13 +259,13 @@ idx_table_for_join:
        { $stack->push() ; my $x = $idx_table." AS alias".++$tables; my @s=($x); $stack->pop(\@s); $x } ;
 
 join_type:
-	INNER JOIN | left_right outer JOIN | STRAIGHT_JOIN ;
+  INNER JOIN | left_right outer JOIN | STRAIGHT_JOIN ;
 
 left_right:
-	LEFT | LEFT | LEFT | RIGHT ;
+  LEFT | LEFT | LEFT | RIGHT ;
 
 outer:
-	| | | | OUTER ;
+  | | | | OUTER ;
 
 index_type:
 # Disabled due to MDEV-371 issues
@@ -293,25 +293,25 @@ where_item:
   single_idx_where_list ;
 
 group_by_clause:
-	| | | | | GROUP BY { @groupby = (); for (1..$fields) { push @groupby, 'field'.$_ }; join ',', @groupby } ;
+  | | | | | GROUP BY { @groupby = (); for (1..$fields) { push @groupby, 'field'.$_ }; join ',', @groupby } ;
 
 order_by_clause:
-	| | |
+  | | |
         ORDER BY total_order_by __asc_x_desc(20,20) limit |
-	ORDER BY order_by_list  ;
+  ORDER BY order_by_list  ;
 
 total_order_by:
-	{ join(', ', map { "field".$_ } (1..$fields) ) };
+  { join(', ', map { "field".$_ } (1..$fields) ) };
 
 order_by_list:
-	order_by_item  |
-	order_by_item  , order_by_list ;
+  order_by_item  |
+  order_by_item  , order_by_list ;
 
 order_by_item:
-	existing_select_item __asc_x_desc(20,20);
+  existing_select_item __asc_x_desc(20,20);
 
 limit:
-	| | LIMIT limit_size | LIMIT limit_size OFFSET int_value;
+  | | LIMIT limit_size | LIMIT limit_size OFFSET int_value;
 
 limit_size:
     1 | 2 | 10 | 100 | 1000;
@@ -321,13 +321,13 @@ limit_size:
 ################################################################################
 
 new_table_item:
-	_table AS { "alias".++$tables };
+  _table AS { "alias".++$tables };
 
 existing_table_item:
-	{ "alias".$prng->int(1,$tables) };
+  { "alias".$prng->int(1,$tables) };
 
 existing_select_item:
-	{ "field".$prng->int(1,$fields) };
+  { "field".$prng->int(1,$fields) };
 
 comparison_operator:
   = | > | < | != | <> | <= | >= ;
