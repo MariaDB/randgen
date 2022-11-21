@@ -67,16 +67,16 @@ sub transform {
 		"CREATE TABLE $table_name $orig_query",
 
 		# If the result set has more than 1 row, we can not use it in the SET clause
-		( $original_result->rows() == 1 ? 
+		( $original_result->rows() == 1 ?
 			"UPDATE $table_name SET `$col_name` = ( $orig_query ) + 9999 WHERE `$col_name` NOT IN ( $orig_query ) " :
 			"UPDATE $table_name SET `$col_name` = $col_name + 9999 WHERE `$col_name` NOT IN ( $orig_query ) "
 		),
 
-		# The queries above should not have updated any rows. Sometimes ROW_COUNT() returns -1 
+		# The queries above should not have updated any rows. Sometimes ROW_COUNT() returns -1
 		"SELECT IF((ROW_COUNT() = 0 OR ROW_COUNT() = -1), 1, 0) /* TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE */",
 		"SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
 
-		( $original_result->rows() == 1 ? 
+		( $original_result->rows() == 1 ?
 			"UPDATE $table_name SET `$col_name` = ( $orig_query ) WHERE `$col_name` IN ( $orig_query ) " :
 			"UPDATE $table_name SET `$col_name` = $col_name WHERE `$col_name` IN ( $orig_query ) "
 		),

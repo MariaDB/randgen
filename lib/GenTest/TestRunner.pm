@@ -70,10 +70,10 @@ use constant GT_EXECUTORS => 13;
 
 sub new {
     my $class = shift;
-    
+
     my $self = $class->SUPER::new({
         'config' => GT_CONFIG},@_);
-    
+
     croak ("Need config") if not defined $self->config;
     return $self;
 }
@@ -107,7 +107,7 @@ sub run {
 
     $SIG{TERM} = sub { exit(0) };
     $SIG{CHLD} = "IGNORE" if osWindows();
-    
+
     $ENV{RQG_DEBUG} = 1 if $self->config->debug;
 
     $self->initSeed();
@@ -141,13 +141,13 @@ sub run {
         }
         $self->[GT_QUERY_FILTERS]= \@filters;
     }
-    
+
     say("Starting ".$self->config->threads." processes, ".
         $self->config->queries." queries each, duration ".
         $self->config->duration." seconds.");
 
     ### Start central reporting thread ####
-    
+
     my $errorfilter = GenTest::ErrorFilter->new(channel => $self->channel());
     my $errorfilter_p = GenTest::IPC::Process->new(object => $errorfilter);
     if (!osWindows()) {
@@ -167,7 +167,7 @@ sub run {
     }
 
     ### Main process
-        
+
     if (osWindows()) {
         ## Important that this is done here in the parent after the last
         ## fork since on windows Process.pm uses threads
@@ -185,14 +185,14 @@ sub run {
         # Remaining Worker & Reporter processes that were spawned and haven't ended yet.
         my @spawned_pids = (keys %worker_pids);
 
-        # Wait for processes to complete, i.e only processes spawned by workers & reporters. 
+        # Wait for processes to complete, i.e only processes spawned by workers & reporters.
         foreach my $spawned_pid (@spawned_pids) {
             my $child_pid = waitpid($spawned_pid, WNOHANG);
             next if $child_pid == 0;
             my $child_exit_status = $? > 0 ? ($? >> 8) : 0;
 
             $total_status = $child_exit_status if $child_exit_status > $total_status;
-            
+    
             if ($child_pid == -1) {
                 say("Process with pid $spawned_pid (worker) no longer exists");
                 last OUTER;
@@ -200,7 +200,7 @@ sub run {
                 say("Process with pid $child_pid (worker) ended with status ".status2text($child_exit_status));
                 delete $worker_pids{$child_pid};
             }
-            
+    
             last OUTER if $child_exit_status >= STATUS_CRITICAL_FAILURE;
             last OUTER if keys %worker_pids == 0;
         }
@@ -235,10 +235,10 @@ sub run {
 
 sub reportResults {
     my ($self, $total_status) = @_;
-      
+
     my $reporter_manager = $self->reporterManager();
     my @report_results;
-        
+
     # New report type REPORTER_TYPE_END, used with reporter's that processes information at the end of a test.
     if ($total_status == STATUS_OK) {
         @report_results = $reporter_manager->report(REPORTER_TYPE_SUCCESS | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
@@ -335,7 +335,7 @@ sub workerProcess {
         sayError("GenTest failed to create a Mixer, status will be set to ENVIRONMENT_FAILURE");
         $self->stopChild(STATUS_ENVIRONMENT_FAILURE);
     }
-        
+
     my $worker_result = 0;
 
     foreach my $i (1..$self->config->queries) {
@@ -352,7 +352,7 @@ sub workerProcess {
 #        last if $ctrl_c == 1;
         last if time() > $self->[GT_TEST_END];
     }
-        
+
     foreach my $executor (@executors) {
         $executor->disconnect;
         undef $executor;
@@ -361,7 +361,7 @@ sub workerProcess {
     # Forcefully deallocate the Mixer so that Validator destructors are called
     undef $mixer;
     undef $self->[GT_QUERY_FILTERS];
-        
+
     if ($worker_result > 0) {
         say("GenTest: Child worker process completed with error code $worker_result.");
         $self->stopChild($worker_result);
@@ -530,7 +530,7 @@ sub doGenData {
 
 sub initSeed {
     my $self = shift;
- 
+
     return if not defined $self->config->seed();
 
     my $orig_seed = $self->config->seed();
@@ -671,7 +671,7 @@ sub initReporters {
         if ($self->isMySQLCompatible()) {
             $self->config->reporters(['ErrorLog', 'Backtrace']) unless scalar(@{$self->config->reporters});
             push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode and $self->config->rpl_mode !~ /nosync/;
-            push @{$self->config->reporters}, 'ReplicationSlaveStatus' 
+            push @{$self->config->reporters}, 'ReplicationSlaveStatus'
                 if $self->config->rpl_mode && $self->isMySQLCompatible();
         }
     }
@@ -713,7 +713,7 @@ sub initValidators {
         # In case of multi-master topology (e.g. Galera with multiple "masters"),
         # we don't want to compare results after each query.
 
-        push @{$self->config->validators}, 'MarkErrorLog' 
+        push @{$self->config->validators}, 'MarkErrorLog'
             if (defined $self->config->valgrind) && $self->isMySQLCompatible();
 
         if ($self->grammars()) {
@@ -724,7 +724,7 @@ sub initValidators {
     } else {
         ## Remove the "None" validator
         foreach my $i (0..$#{$self->config->validators}) {
-            delete $self->config->validators->[$i] 
+            delete $self->config->validators->[$i]
                 if $self->config->validators->[$i] eq "None"
                 or $self->config->validators->[$i] eq '';
         }
@@ -733,8 +733,8 @@ sub initValidators {
     ## Add the transformer validator if --transformers is specified
     ## and transformer validator not allready specified.
 
-    if (defined $self->config->transformers and 
-        $#{$self->config->transformers} >= 0) 
+    if (defined $self->config->transformers and
+        $#{$self->config->transformers} >= 0)
     {
         my $hasTransformer = 0;
         foreach my $t (@{$self->config->validators}) {
@@ -747,8 +747,8 @@ sub initValidators {
     }
 
     say("Validators: ".(defined $self->config->validators and $#{$self->config->validators} > -1 ? join(', ', @{$self->config->validators}) : "(none)"));
-    
-    say("Transformers: ".join(', ', @{$self->config->transformers})) 
+
+    say("Transformers: ".join(', ', @{$self->config->transformers}))
         if defined $self->config->transformers and $#{$self->config->transformers} > -1;
 
     return STATUS_OK;

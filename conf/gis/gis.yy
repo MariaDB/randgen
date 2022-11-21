@@ -109,7 +109,7 @@ geometry_2d:
 	ST_INTERSECTION( geometry_2d , geometry_2d ) |
 	ST_DIFFERENCE( geometry_2d , geometry_2d ) |
 	ST_SYMDIFFERENCE( geometry_2d , geometry_2d ) |
-	ST_ENVELOPE( geometry_2d ) 
+	ST_ENVELOPE( geometry_2d )
 ;
 
 geometry_collection:
@@ -180,14 +180,14 @@ actual_polygon:
 	digit_wkt ;
 
 digit_wkt:
-	zero | 
+	zero |
 	one |
 	two |
 	three |
 	four |
-	five | 
+	five |
 	six |
-	seven | 
+	seven |
 	eight |
 	nine ;
 

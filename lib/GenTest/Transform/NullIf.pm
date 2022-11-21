@@ -28,8 +28,8 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 # Expression in round brackets
-my $parens_template = 
-    qr{ 
+my $parens_template =
+    qr{
         (\s*
             \(
                 (                       # group 1 - inside parens
@@ -43,7 +43,7 @@ my $parens_template =
         )
 }xi;
 
-# A part of an argument - 
+# A part of an argument -
 # either a simple expression without brackets or commas,
 # or something in round brackets
 my $part_arg_template = qr{ [^(),]+ | $parens_template }xi;

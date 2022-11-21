@@ -20,7 +20,7 @@
 
 query_init:
 	{ $query_count = 0; $total_dur = 0; %table_columns; %table_columns_by_type; "" } fetch_table_columns fetch_table_int_columns fetch_table_char_columns;
-    
+
 fetch_table_columns:
     { unless (%table_columns) { foreach $t (@{$executors->[0]->baseTables()}) { $table_columns{$t} = $executors->[0]->metaColumns($t, $last_database) }; } '' };
 
@@ -46,12 +46,12 @@ query:
 
 
 query_type:
-      main_select 
+      main_select
     | range_access ;
 
 main_select:
 	simple_select | simple_select | simple_select | simple_select |
-	mixed_select |  mixed_select |  mixed_select |  mixed_select  | 
+	mixed_select |  mixed_select |  mixed_select |  mixed_select  |
 	aggregate_select | loose_scan ;
 
 ################################################################################
@@ -72,7 +72,7 @@ loose_select_clause:
 	MIN( _field[invariant] ) AS { "field".++$fields }, MAX( _field[invariant] ) AS { "field".++$fields }, loose_select_list ;
 
 loose_select_list:
-	loose_select_item | 
+	loose_select_item |
 	loose_select_item , loose_select_list ;
 
 loose_select_item:
@@ -86,7 +86,7 @@ mixed_select:
 	SELECT distinct straight_join select_option select_list
 	FROM join_list
 	where_clause
-	group_by_clause 
+	group_by_clause
 	having_clause
 	order_by_clause ;
 
@@ -94,7 +94,7 @@ simple_select:
 	SELECT distinct straight_join select_option simple_select_list
 	FROM join_list
 	where_clause
-	optional_group_by 
+	optional_group_by
 	having_clause
 	order_by_clause ;
 
@@ -102,15 +102,15 @@ aggregate_select:
 	SELECT distinct straight_join select_option aggregate_select_list
 	FROM join_list
 	where_clause
-	optional_group_by 
+	optional_group_by
 	having_clause
 	order_by_clause ;
 
 explain_extended:	
 	| | | | | | | | | explain_extended2 ;
 
-explain_extended2: | | | | EXPLAIN | EXPLAIN EXTENDED ; 
-	   
+explain_extended2: | | | | EXPLAIN | EXPLAIN EXTENDED ;
+	
 distinct: DISTINCT | | | | | | | | | ;
 
 select_option:  | | | | | | | | | | | | | | | | SQL_SMALL_RESULT | SQL_BIG_RESULT ;
@@ -150,10 +150,10 @@ join_type:
 	INNER JOIN | left_right outer JOIN |
 	INNER JOIN | left_right outer JOIN |
 	INNER JOIN | left_right outer JOIN |
-	STRAIGHT_JOIN ;  
+	STRAIGHT_JOIN ;
 
 join_condition_list:
-	join_condition_item | 
+	join_condition_item |
 	( join_condition_item ) and_or ( join_condition_list ) |
 	( current_table_item  . _field arithmetic_operator previous_table_item . _field ) AND (current_table_item  . _field arithmetic_operator previous_table_item . _field ) ;	
 
@@ -189,7 +189,7 @@ where_list:
 	generic_where_list |
 	range_predicate1_list | range_predicate2_list |
 	range_predicate1_list and_or generic_where_list |
-	range_predicate2_list and_or generic_where_list ; 
+	range_predicate2_list and_or generic_where_list ;
 
 
 generic_where_list:
@@ -217,7 +217,7 @@ where_item:
 	degenerate_where_item ;
 
 real_where_item:
-	where_subquery  |  
+	where_subquery  |
 	existing_table_item . _field_char arithmetic_operator _char  |
 	existing_table_item . _field_char arithmetic_operator existing_table_item . _field_char |
 	existing_table_item . _field arithmetic_operator value  |
@@ -266,8 +266,8 @@ special_subquery:
 	not EXISTS ( char_single_member_subquery ) |
 	not EXISTS int_correlated_subquery |
 	not EXISTS int_correlated_subquery |
-	not EXISTS char_correlated_subquery  | 
-	not EXISTS char_correlated_subquery  | 
+	not EXISTS char_correlated_subquery  |
+	not EXISTS char_correlated_subquery  |
 	existing_table_item . _field_int membership_operator  int_correlated_subquery  |
 	existing_table_item . _field_int membership_operator  int_correlated_subquery  |
 	existing_table_item . _field_char membership_operator char_correlated_subquery  |
@@ -276,22 +276,22 @@ special_subquery:
 	char_single_value_subquery IS not NULL ;
 
 int_single_value_subquery:
-	( SELECT distinct select_option aggregate subquery_table_one_two . _field_int ) AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" } 
+	( SELECT distinct select_option aggregate subquery_table_one_two . _field_int ) AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" }
 	  subquery_body ) |
-	( SELECT distinct select_option aggregate subquery_table_one_two . _field_int ) AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" } 
+	( SELECT distinct select_option aggregate subquery_table_one_two . _field_int ) AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" }
 	  subquery_body ) |
 	( SELECT _digit FROM DUAL ) ;
 
 char_single_value_subquery:
-	{ $group_concat = '' } ( SELECT distinct select_option aggregate subquery_table_one_two . _field_char ) AS { $sq_cfields = 1; "SQ".$subquery_idx."_cfield1" }  
+	{ $group_concat = '' } ( SELECT distinct select_option aggregate subquery_table_one_two . _field_char ) AS { $sq_cfields = 1; "SQ".$subquery_idx."_cfield1" }
 	  subquery_body ) |
-	{ $group_concat = '' } ( SELECT distinct select_option aggregate subquery_table_one_two . _field_char ) AS { $sq_cfields = 1; "SQ".$subquery_idx."_cfield1" } 
+	{ $group_concat = '' } ( SELECT distinct select_option aggregate subquery_table_one_two . _field_char ) AS { $sq_cfields = 1; "SQ".$subquery_idx."_cfield1" }
 	  subquery_body ) |
 	( SELECT _char FROM DUAL ) ;
-   
+
 int_single_member_subquery:
 	( SELECT distinct select_option subquery_table_one_two . _field_int AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" }
-	  subquery_body 
+	  subquery_body
 	  single_subquery_group_by
 	  subquery_having ) |
 	( SELECT _digit FROM DUAL ) ;
@@ -303,24 +303,24 @@ int_single_union_subquery_disabled:
 	int_single_member_subquery   UNION all_distinct  int_single_member_subquery ;
 
 int_double_member_subquery:
-	( SELECT distinct select_option subquery_table_one_two . _field_int AS { "SQ".$subquery_idx."_ifield1" } , 
+	( SELECT distinct select_option subquery_table_one_two . _field_int AS { "SQ".$subquery_idx."_ifield1" } ,
 	  subquery_table_one_two . _field_int AS { $sq_ifields = 2; "SQ".$subquery_idx."_ifield2" }
-	  subquery_body 
+	  subquery_body
 	  double_subquery_group_by
 	  subquery_having ) |
-	( SELECT distinct select_option subquery_table_one_two . _field_int AS { "SQ".$subquery_idx."_ifield1" } , 
+	( SELECT distinct select_option subquery_table_one_two . _field_int AS { "SQ".$subquery_idx."_ifield1" } ,
 	  subquery_table_one_two . _field_int AS { $sq_ifields = 2; "SQ".$subquery_idx."_ifield2" }
-	  subquery_body 
+	  subquery_body
 	  double_subquery_group_by
 	  subquery_having ) |
-	( SELECT distinct select_option subquery_table_one_two . _field_int AS { $f = "SQ".$subquery_idx."_ifield1"; $f } , 
+	( SELECT distinct select_option subquery_table_one_two . _field_int AS { $f = "SQ".$subquery_idx."_ifield1"; $f } ,
 	  subquery_table_one_two . _field_int AS { $f = "SQ".$subquery_idx."_ifield2"; $sq_ifields = 2; $f }
-	  subquery_body 
+	  subquery_body
 	  double_subquery_group_by
 	  subquery_having ) |
-	( SELECT distinct select_option subquery_table_one_two . _field_int AS { "SQ".$subquery_idx."_ifield1" } , 
+	( SELECT distinct select_option subquery_table_one_two . _field_int AS { "SQ".$subquery_idx."_ifield1" } ,
 	  aggregate subquery_table_one_two . _field_int ) AS { $sq_ifields = 2; "SQ".$subquery_idx."_ifield2" }
-	  subquery_body 
+	  subquery_body
 	  single_subquery_group_by
 	  subquery_having ) |
 	(  SELECT _digit , _digit  UNION all_distinct  SELECT _digit, _digit  ) ;
@@ -370,21 +370,21 @@ char_double_member_subquery:
 
 int_correlated_subquery:
 	( SELECT distinct select_option subquery_table_one_two . _field_int AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" }
-	  FROM subquery_join_list 
+	  FROM subquery_join_list
 	  correlated_subquery_where_clause ) ;
 
 char_correlated_subquery:
 	( SELECT distinct select_option subquery_table_one_two . _field_char AS { $sq_cfields = 1; "SQ".$subquery_idx."_cfield1" }
-	  FROM subquery_join_list 
+	  FROM subquery_join_list
 	  correlated_subquery_where_clause ) ;
 
 int_scalar_correlated_subquery:
 	 ( SELECT distinct select_option aggregate subquery_table_one_two . _field_int ) AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" }
-	  FROM subquery_join_list 
+	  FROM subquery_join_list
 	  correlated_subquery_where_clause ) |
 	 ( SELECT distinct select_option aggregate table_one_two . _field_int ) AS { $sq_ifields = 1; "SQ".$subquery_idx."_ifield1" }
-	  FROM subquery_join_list 
-	  subquery_where_clause ) ; 
+	  FROM subquery_join_list
+	  subquery_where_clause ) ;
 
 subquery_body:
 	  FROM subquery_join_list
@@ -507,16 +507,16 @@ special_child_subquery:
 
 
 int_single_value_child_subquery:
-	( SELECT distinct select_option aggregate child_subquery_table_one_two . _field_int ) AS { $c_sq_ifields=1; "C_SQ".$child_subquery_idx."_ifield1" } 
+	( SELECT distinct select_option aggregate child_subquery_table_one_two . _field_int ) AS { $c_sq_ifields=1; "C_SQ".$child_subquery_idx."_ifield1" }
 	  child_subquery_body ) ;
 
 char_single_value_child_subquery:
-	( SELECT distinct select_option aggregate child_subquery_table_one_two . _field_char ) AS { $c_sq_cfields=1; "C_SQ".$child_subquery_idx."_cfield1" } 
+	( SELECT distinct select_option aggregate child_subquery_table_one_two . _field_char ) AS { $c_sq_cfields=1; "C_SQ".$child_subquery_idx."_cfield1" }
 	  child_subquery_body ) ;
-   
+
 int_single_member_child_subquery:
 	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { $c_sq_ifields=1; "C_SQ".$child_subquery_idx."_ifield1" }
-	  child_subquery_body 
+	  child_subquery_body
 	  single_child_subquery_group_by
 	  child_subquery_having ) ;
 
@@ -524,14 +524,14 @@ int_single_union_child_subquery:
 	(  SELECT _digit  UNION all_distinct  SELECT _digit  )  ;
 
 int_double_member_child_subquery:
-	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { "C_SQ".$child_subquery_idx."_ifield1" } , 
+	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { "C_SQ".$child_subquery_idx."_ifield1" } ,
 	  child_subquery_table_one_two . _field_int AS { $c_sq_ifields=2; "C_SQ".$child_subquery_idx."_ifield2" }
-	  child_subquery_body 
+	  child_subquery_body
 	  double_child_subquery_group_by
 	  child_subquery_having ) |
-	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { "C_SQ".$child_subquery_idx."_ifield1" } , 
+	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { "C_SQ".$child_subquery_idx."_ifield1" } ,
 	  aggregate child_subquery_table_one_two . _field_int ) AS { $c_sq_ifields=2; "C_SQ".$child_subquery_idx."_ifield2" }
-	  child_subquery_body 
+	  child_subquery_body
 	  single_child_subquery_group_by
 	  child_subquery_having );
 
@@ -558,17 +558,17 @@ char_double_member_child_subquery:
 
 int_correlated_child_subquery:
 	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { $c_sq_ifields=1; "C_SQ".$child_subquery_idx."_ifield1" }
-	  FROM child_subquery_join_list 
+	  FROM child_subquery_join_list
 	  correlated_child_subquery_where_clause ) ;
 
 int_correlated_with_top_child_subquery:
 	( SELECT distinct select_option child_subquery_table_one_two . _field_int AS { $c_sq_ifields=1; "C_SQ".$child_subquery_idx."_ifield1" }
-	  FROM child_subquery_join_list 
+	  FROM child_subquery_join_list
 	  correlated_with_top_child_subquery_where_clause ) ;
 
 char_correlated_child_subquery:
 	( SELECT distinct select_option child_subquery_table_one_two . _field_char AS { $c_sq_cfields=1; "C_SQ".$child_subquery_idx."_cfield1" }
-	  FROM child_subquery_join_list 
+	  FROM child_subquery_join_list
 	  correlated_child_subquery_where_clause ) ;
 
 child_subquery_body:
@@ -646,7 +646,7 @@ child_subquery_having_item:
 	existing_child_subquery_char_select_item arithmetic_operator _char ;
 
 existing_child_subquery_select_item:
-	existing_child_subquery_int_select_item | existing_child_subquery_char_select_item ; 
+	existing_child_subquery_int_select_item | existing_child_subquery_char_select_item ;
 
 existing_child_subquery_int_select_item:
 	{ "C_SQ".$child_subquery_idx. ($c_sq_ifields ? "_ifield".$prng->int(1,$c_sq_ifields) : "_cfield".$prng->int(1,$c_sq_cfields)) };
@@ -663,7 +663,7 @@ existing_child_subquery_char_select_item:
 ################################################################################
 
 range_predicate1_list:
-	range_predicate1_item | 
+	range_predicate1_item |
 	( range_predicate1_item OR range_predicate1_list ) ;
 
 range_predicate1_item:
@@ -682,7 +682,7 @@ range_predicate1_item:
 ################################################################################
 
 range_predicate2_list:
-	range_predicate2_item | 
+	range_predicate2_item |
 	( range_predicate2_item and_or range_predicate2_list ) ;
 
 range_predicate2_item:
@@ -770,7 +770,7 @@ total_order_by:
 	{ join(', ', shuffle ( (map { "field".$_ } 1..$fields), (map { "ifield".$_ } 1..$ifields), (map { "cfield".$_ } 1..$cfields) ) ) };
 
 desc:
-	ASC | | DESC ; 
+	ASC | | DESC ;
 
 
 limit:
@@ -788,7 +788,7 @@ new_select_item:
 
 primitive_select_item:
 	nonaggregate_select_item | aggregate_select_item ;
- 
+
 ################################################################################
 # We have the perl code here to help us write more sensible queries
 # It allows us to use field1...fieldn in the WHERE, ORDER BY, and GROUP BY
@@ -825,7 +825,7 @@ select_subquery_body_disabled:
 	 (  SELECT _char  UNION all_distinct ( SELECT _char ) LIMIT 1 )  AS  { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 ################################################################################
-# The combo_select_items are for 'spice' 
+# The combo_select_items are for 'spice'
 ################################################################################
 
 combo_select_item:
@@ -848,13 +848,13 @@ aggregate_group_concat:
 	{$count_gc_fields = 0; '' } GROUP_CONCAT( aggregate_list aggregate_order_by aggregate_separator ) ;
 
 aggregate_list:
-	{ $count_gc_fields++; '' } table_one_two . _field | 
-	{ $count_gc_fields++; '' } table_one_two . _field , aggregate_list | 
+	{ $count_gc_fields++; '' } table_one_two . _field |
+	{ $count_gc_fields++; '' } table_one_two . _field , aggregate_list |
 	{ $count_gc_fields++; '' } IF( table_one_two . _field , table_one_two . _field , table_one_two . _field ), aggregate_list;
 
 aggregate_order_by:
 	aggregate_order_by_fields ;
-	aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | 
+	aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields | aggregate_order_by_fields |
 	aggregate_order_by_fields, ( aggregate_order_by_subquery ) | ( aggregate_order_by_subquery ), aggregate_order_by_fields ;
 
 aggregate_order_by_subquery:
@@ -993,15 +993,15 @@ range_access:
   { $idx_table = '' ; %idx_fields = () ;  "" } range_access_query_type ;
 
 range_access_query_type:
-    single_idx_query_set 
-  | dual_int_idx_query_set 
-  | dual_char_idx_query_set 
-  | tri_int_idx_query_set 
-  | tri_char_idx_query_set 
+    single_idx_query_set
+  | dual_int_idx_query_set
+  | dual_char_idx_query_set
+  | tri_int_idx_query_set
+  | tri_char_idx_query_set
 ;
 
 single_idx_query_set:
-  single_idx_query ; single_idx_query ; single_idx_query ; single_idx_query ; single_idx_query ; 
+  single_idx_query ; single_idx_query ; single_idx_query ; single_idx_query ; single_idx_query ;
 
 dual_int_idx_query_set:
   new_dual_int_index ; multi_int_idx_query_set ;
@@ -1019,7 +1019,7 @@ wild_query:
   single_idx_query | multi_int_idx_query | multi_char_idx_query ;
 
 multi_int_idx_query_set:
-  multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; wild_query ; drop_index ;  
+  multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; wild_query ; drop_index ;
 
 multi_char_idx_query_set:
   multi_char_idx_query ; multi_char_idx_query ; multi_char_idx_query ; multi_char_idx_query ; multi_char_idx_query ; wild_query ; drop_index ;
@@ -1048,7 +1048,7 @@ new_tri_char_index:
 
 dual_idx_field_list:
   unique_field_for_index unique_field_for_index;
-    
+
 tri_idx_field_list:
   unique_field_for_index unique_field_for_index unique_field_for_index;
 
@@ -1117,7 +1117,7 @@ single_char_idx_where_item:
 ################################################################################
 
 multi_int_idx_where_list:
-    multi_int_idx_where_clause | 
+    multi_int_idx_where_clause |
     multi_int_idx_where_list and_or multi_int_idx_where_clause | multi_int_idx_where_list and_or multi_int_idx_where_clause ;
 
 
@@ -1131,7 +1131,7 @@ multi_char_idx_where_list:
 
 multi_char_idx_where_clause:
    {  $char_idx_field = $idx_table_alias." . ".$prng->arrayElement([keys %idx_fields]) ; "" } single_char_idx_where_list ;
-  
+
 
 
 ################################################################################
@@ -1151,29 +1151,29 @@ range_access_select_list:
   select_item | select_item , range_access_select_list ;
 
 select_item:
-  table_one_two . _field AS { my $f = "field".++$fields ; $f } ; 
+  table_one_two . _field AS { my $f = "field".++$fields ; $f } ;
 
 join:
-   { $stack->push() }      
-   table_or_join 
+   { $stack->push() }
+   table_or_join
    { $stack->set("left",$stack->get("result")); }
-   left_right outer JOIN table_or_join 
-   ON 
+   left_right outer JOIN table_or_join
+   ON
    join_condition ;
 
 idx_join:
-   { $stack->push() }      
-   idx_table_for_join 
+   { $stack->push() }
+   idx_table_for_join
    { $stack->set("left",$stack->get("result")); }
-   left_right outer JOIN table_or_join 
-   ON 
+   left_right outer JOIN table_or_join
+   ON
    join_condition ;
 
 join_condition:
    int_condition | char_condition ;
 
-int_condition: 
-   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed = 
+int_condition:
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed =
    { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed =
@@ -1190,17 +1190,17 @@ int_condition:
 
 char_condition:
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed  =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } ;
 
 table_or_join:
-           table | table | table | table | table | table | 
+           table | table | table | table | table | table |
            table | table | join | join ;
 
 table:
@@ -1279,19 +1279,19 @@ other_int:
    _tinyint_unsigned | 20 | 25 | 30 | 35 | 50 | 65 | 75 | 100 ;
 
 char_value:
-  _char | _char | _char | _quid | _english ; 
+  _char | _char | _char | _quid | _english ;
 
 char_pattern:
  char_value | char_value | CONCAT( _char, '%') | 'a%'| _quid | '_' | '_%' ;
 
 increment:
-   1 |  1 | 2 | 2 | 5 | 5 | 6 | 10 ; 
+   1 |  1 | 2 | 2 | 5 | 5 | 6 | 10 ;
 
 large_length:
    200 | 200 | 200 | 200 | 200 | 100 | 200 | 250 | 37 | 50 | 175 | small_length ;
 
 small_length:
-   1 | 2 | 5 | 7 | 8 | 9 | 10 | 10 | 10 | 10 ; 
+   1 | 2 | 5 | 7 | 8 | 9 | 10 | 10 | 10 | 10 ;
 
 random_length:
   large_length | large_length | small_length ;
@@ -1299,14 +1299,14 @@ random_length:
 int_indexed:
    _field_int ;
 
-int_field_name: 
+int_field_name:
    _field_int ;
 
-char_indexed:  
+char_indexed:
    _field_char;
- 
+
 char_field_name:
-   _field_char ; 
+   _field_char ;
 
 or_and:
   OR | OR | OR | AND ;

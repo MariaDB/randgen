@@ -236,7 +236,7 @@ $extra_engine_combinations_103= [
 ];
 
 $extra_engine_combinations_104= [ @$extra_engine_combinations_103 ];
-$extra_engine_combinations_105= [ 
+$extra_engine_combinations_105= [
   @$extra_engine_combinations_104,
   '--redefine=conf/engines/s3.yy --mysqld=--plugin-load-add=ha_s3 --mysqld=--s3=on --mysqld=--s3-host-name="127.0.0.1" --mysqld=--s3-protocol-version=Auto --mysqld=--s3-bucket=rqg --mysqld=--s3-access-key=minio --mysqld=--s3-secret-key=minioadmin --mysqld=--s3-region="" --mysqld=--s3-port=9000 --mysqld=--s3-use-http=on',
 ];
@@ -576,7 +576,7 @@ $optional_server_variables_103= [
     '--mysqld=--slave-transaction-retry-errors=""',
     '--mysqld=--slave-transaction-retry-errors="1213,1205"',
   ],
-  [ '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 
+  [ '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
     '--mysqld=--sql-mode=ORACLE'
   ],
 ];

@@ -1,5 +1,5 @@
 # Copyright (C) 2022, MariaDB
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
@@ -55,7 +55,7 @@ sub run {
   my ($status, $server, $gentest, $topology);
   $status= STATUS_OK;
   $topology= 'mss';
-  
+
   my $srv_count= scalar(keys %{$self->getProperty('server_specific')});
   if ($srv_count < length($topology)) {
     sayError("There should be at least ".length($topology)." servers for the replication test");
@@ -119,7 +119,7 @@ sub run {
   $self->printStep("Generating test data on the server(s)");
 
   $status= $self->generate_data();
-  
+
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
     return $self->finalize($status,[@servers]);
@@ -128,12 +128,12 @@ sub run {
   #####
   $self->printStep("Running test flow");
   $status= $self->run_test_flow();
-    
+
   if ($status != STATUS_OK) {
     sayError("Test flow failed");
     return $self->finalize($status,[@servers]);
   }
-    
+
   #####
   $self->printStep("Stopping the servers");
 

@@ -41,10 +41,10 @@
 
 query_init:
     CREATE TABLE IF NOT EXISTS test.tlog (
-      pk INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
-      dt TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), 
-      tbl VARCHAR(16), 
-      tp ENUM('BEFORE','AFTER'), 
+      pk INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      dt TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+      tbl VARCHAR(16),
+      tp ENUM('BEFORE','AFTER'),
       op ENUM('INSERT','UPDATE','DELETE'),
       fld BLOB
     ); CREATE TABLE IF NOT EXISTS test.tlog2 (
@@ -90,17 +90,17 @@ mdev6112_drop_trigger:
       /* QProp.ERROR_1099 QProp.ERROR_1100 */ /* QProp.ERROR_1360 */ DROP TRIGGER mdev6112_trigger_name
     | /* QProp.ERROR_1099 QProp.ERROR_1100 */ /* QProp.ERROR_1360 */ DROP TRIGGER IF EXISTS mdev6112_trigger_name
 ;
-    
+
 mdev6112_create_clause:
       /* QProp.ERROR_1359 QProp.ERROR_7 */ CREATE TRIGGER
     | /* QProp.ERROR_1360 QProp.ERROR_7 */ CREATE OR REPLACE TRIGGER
     | /* QProp.ERROR_1360 QProp.ERROR_7 */ CREATE OR REPLACE TRIGGER
     | /* QProp.ERROR_7 */ CREATE TRIGGER IF NOT EXISTS
 ;
-    
+
 mdev6112_precedes_follows:
     | | | | /* QProp.ERROR_4031 */ /*!100202 PRECEDES _letter */ | /* QProp.ERROR_4031 */ /*!100202 FOLLOWS _letter */ ;
-    
+
 mdev6112_before_after:
     { $tp = ($prng->int(0,1) ? 'BEFORE' : 'AFTER' ) };
 

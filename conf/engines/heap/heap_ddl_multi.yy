@@ -1,6 +1,6 @@
 #
 # The goal of this grammar is to stress test the operation of the HEAP storage engine by:
-# 
+#
 # * Creating numerous tables, populating them rapidly and then dropping them
 #
 # * Using various DDL statements that cause HEAP tables to be created or manipulated

@@ -15,7 +15,7 @@ field_type:
 
 nested_expr:
 	( comparison_operator ) | ( logical_operator ) | ( logical_operator ) |
-	( control_flow_function ) | 
+	( control_flow_function ) |
 #	( string_function ) |
 #	( string_comparison_function ) |
 	( arithmetic_function ) |
@@ -189,7 +189,7 @@ logical_operator:
  	NOT ( expr ) |
         ( expr ) AND ( expr ) |
         ( expr ) OR ( expr ) ;
-#       ( expr ) XOR ( expr ) ;	# MySQL bug #55365 
+#       ( expr ) XOR ( expr ) ;	# MySQL bug #55365
 
 string_comparison_function:
         expr not LIKE pattern |
@@ -301,7 +301,7 @@ mathematical_function:
 	SIN( expr ) |
 	SQRT( expr ) |
 	TAN( expr ) ;
-#	TRUNCATE( expr , expr ) ;	# MySQL bug #55365 
+#	TRUNCATE( expr , expr ) ;	# MySQL bug #55365
 
 date_and_time_function:
 	ADDDATE( expr , INTERVAL expr unit) |
@@ -345,7 +345,7 @@ date_and_time_function:
 	SUBDATE( expr INTERVAL expr unit ) |
 	SUBDATE( expr , expr ) |
 	SUBTIME( expr , expr ) |
-	SYSDATE() | 
+	SYSDATE() |
 	TIME( expr ) |
 	TIMEDIFF( expr , expr ) |
 	TIMESTAMP( expr ) |
@@ -365,7 +365,7 @@ date_and_time_function:
 	WEEKOFYEAR( expr ) |
 	YEAR( expr ) |
 	YEARWEEK( expr ) |
-	YEARWEEK( expr , expr ) ; 
+	YEARWEEK( expr , expr ) ;
 
 date_time_datetime:
 	DATE | TIME | DATETIME ;

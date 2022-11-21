@@ -29,7 +29,7 @@ use GenTest::Constants;
 use IO::File;
 
 # This reporter looks for valgrind messages in the server error log, and
-# prints the messages and returns a failure status if any valgrind errors 
+# prints the messages and returns a failure status if any valgrind errors
 # are found.
 #
 
@@ -51,17 +51,17 @@ sub report {
     }
 
     # Open log file and read valgrind messages...
-    my $LogFile = IO::File->new($error_log) 
-        or say("ERROR: $0 could not read log file '$error_log': $!") 
+    my $LogFile = IO::File->new($error_log)
+        or say("ERROR: $0 could not read log file '$error_log': $!")
             && return STATUS_ENVIRONMENT_FAILURE;
 
-    # We use a set of strings to look for valgrind errors. These are based on 
+    # We use a set of strings to look for valgrind errors. These are based on
     # the valgrind manual + code. We compose a regex of all the strings later.
     #
     # We also try to gather the number of reported errors. Note that not all
     # issues reported by valgrind are "errors".
     #
-    # These strings need to be matched as case insensitive. 
+    # These strings need to be matched as case insensitive.
     # Special characters will be escaped using quotemeta before regex matching.
     my @valgrind_strings = (
         'are definitely lost',
@@ -83,11 +83,11 @@ sub report {
         'uninitialised byte',
         'uninitialised value',
     );
-    
+
     # The regular expression is composed as follows:
-    #   - sort: Sort strings in array @valgrind_strings by length in reversed order 
+    #   - sort: Sort strings in array @valgrind_strings by length in reversed order
     #     (to ensure correct matches in case of similar substrings).
-    #   - map{quotemeta}: Add escape characters to all non-letter, non-digit characters in the sorted strings, 
+    #   - map{quotemeta}: Add escape characters to all non-letter, non-digit characters in the sorted strings,
     #     to avoid special regex interpretation of these characters.
     #   - map("($_)"): Wrap each escaped sting inside a pair of parenthesis (for proper regex alternatives).
     #   - join: Separate each block of parenthesis by the "or" operator (|).
@@ -96,13 +96,13 @@ sub report {
     my $valgrind_prefix = '^==([0-9:\.]+ |)[0-9]+==\s+';
     my $regex = $valgrind_prefix.".*".
         join('|', map("($_)", map{quotemeta} sort {length($b)<=>length($a)} (@valgrind_strings)));
-    $regex = qr/($regex)/i;  # quote and compile regex, case insensitive                                             
-    $valgrind_prefix = qr/$valgrind_prefix/; # also compile the prefix, used several times below.                    
+    $regex = qr/($regex)/i;  # quote and compile regex, case insensitive                                     
+    $valgrind_prefix = qr/$valgrind_prefix/; # also compile the prefix, used several times below.            
     my @valgrind_lines;
     my $errorcount = 0;
     my $issue_detected = 0;
     while (my $line = <$LogFile>) {
-        chomp($line); # remove extra line endings                                                                    
+        chomp($line); # remove extra line endings                                                            
         if ($line =~ m{($valgrind_prefix)}) {
             push(@valgrind_lines, $line);
         }

@@ -55,10 +55,10 @@ use constant REPORTER_TEST_DURATION     => 7;
 use constant REPORTER_PROPERTIES        => 8;
 use constant REPORTER_SERVER_DEBUG      => 9;
 use constant REPORTER_CUSTOM_ATTRIBUTES => 10;
-# TEST_START is when the RQG test started running; 
+# TEST_START is when the RQG test started running;
 # REPORTER_START_TIME is when the data has been generated, and reporter was started
 # (more or less when the test flow started)
-use constant REPORTER_START_TIME        => 11; 
+use constant REPORTER_START_TIME        => 11;
 use constant REPORTER_DBH               => 12;
 
 use constant REPORTER_TYPE_PERIODIC     => 2;
@@ -132,12 +132,12 @@ sub new {
             # If mysqld_debug server is not present use mysqld.
             $binname = osWindows() ? 'mysqld.exe' : 'mysqld';
             ($bindir,$binary)=$reporter->findMySQLD($binname);
-            
+    
             # Identify if server is debug.
             my $command = $binary.' --version';
             my $result=`$command 2>&1`;
             undef $binary if ($result !~ /debug/sig);
-            
+    
             if ((-e $binary)) {
                 $reporter->[REPORTER_SERVER_INFO]->{bindir} = $bindir;
                 $reporter->[REPORTER_SERVER_INFO]->{binary} = $binary;

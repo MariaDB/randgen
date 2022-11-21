@@ -22,7 +22,7 @@ use base 'Exporter';
 @EXPORT = ('say', 'sayError', 'sayWarning', 'sayDebug', 'sayFile',
            'tmpdir', 'safe_exit',
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
-           'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp', 
+           'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp',
            'rqg_debug', 'unix2winPath',
            'shorten_message');
 
@@ -64,7 +64,7 @@ sub say {
   my $level= shift; # ERROR or DEBUG or Warning or nothing
   $level= ($level ? '['.$level.']' : '');
 
-  # Suppress warnings "Wide character in print". 
+  # Suppress warnings "Wide character in print".
   # We already know that our UTFs in some grammars are ugly.
   no warnings 'layer';
 
@@ -115,7 +115,7 @@ sub osWindows {
     return 1;
   } else {
     return 0;
-  }  
+  }
 }
 
 sub osLinux {
@@ -131,7 +131,7 @@ sub osSolaris {
     return 1;
   } else {
     return 0;
-  }  
+  }
 }
 
 sub osMac {

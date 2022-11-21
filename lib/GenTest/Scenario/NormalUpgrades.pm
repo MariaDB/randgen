@@ -1,5 +1,5 @@
 # Copyright (C) 2022 MariaDB Corporation Ab
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
@@ -87,7 +87,7 @@ sub run {
 
   #####
   # Prepare servers
-  
+
   ($old_server, $new_server)= $self->prepare_servers();
    $old_server->backupDatadir($old_server->datadir."_clean");
   $vardir=$old_server->vardir;
@@ -106,7 +106,7 @@ sub run {
   $self->printStep("Generating data on the old server");
 
   $status= $self->generate_data();
-  
+
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
     return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
@@ -450,12 +450,12 @@ sub post_upgrade {
     sayError("Database appears to be corrupt after $type upgrade");
     return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
   }
-  
+
   #####
   $self->printStep("Dumping databases from the new server after $type upgrade");
 
   my @databases= $new_server->nonSystemDatabases();
-  
+
   $new_server->dumpSchema(\@databases, $vardir.'/server_schema_'.$type.'_upgrade.dump');
   $new_server->normalizeDump($vardir.'/server_schema_'.$type.'_upgrade.dump', 'remove_autoincs');
   $new_server->dumpdb(\@databases, $vardir.'/server_data_'.$type.'_upgrade.dump');
@@ -484,7 +484,7 @@ sub post_upgrade {
 
   #####
   $self->printStep("Comparing databases before and after $type upgrade");
-  
+
   $post_upgrade_status= compare($vardir.'/server_schema_old.dump', $vardir.'/server_schema_'.$type.'_upgrade.dump');
   if ($post_upgrade_status != STATUS_OK) {
     sayError("Database structures differ after $type upgrade");
@@ -494,7 +494,7 @@ sub post_upgrade {
   else {
     say("Structure dumps appear to be identical after $type upgrade");
   }
-  
+
   $post_upgrade_status= compare($vardir.'/server_data_old.dump', $vardir.'/server_data_'.$type.'_upgrade.dump');
   if ($post_upgrade_status != STATUS_OK) {
     sayError("Data differs after $type upgrade");

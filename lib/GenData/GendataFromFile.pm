@@ -189,7 +189,7 @@ sub run {
     my ($self) = @_;
 
     my $spec_file = $self->spec_file();
-    
+
     my $prng = GenTest::Random->new(
         seed => $self->seed(),
         );
@@ -269,12 +269,12 @@ sub run {
     $table_perms[TABLE_PK] = $tables->{pk} || $tables->{primary_key} || [ 'integer auto_increment' ];
     $table_perms[TABLE_ROW_FORMAT] = $tables->{row_formats} || [ undef ];
     $table_perms[TABLE_EXTRA_OPTS] = $tables->{options} || [ undef ];
-    
+
     $table_perms[TABLE_VIEWS] = $tables->{views} || (defined $self->views() ? [ $self->views() ] : undef );
     $table_perms[TABLE_MERGES] = $tables->{merges} || undef ;
-    
+
     $table_perms[TABLE_NAMES] = $tables->{names} || [ ];
-    
+
     $field_perms[FIELD_NAMES] = $fields->{names} || [ ];
     $field_perms[FIELD_SQLS] = $fields->{sqls} || [ ];
     $field_perms[FIELD_INDEX_SQLS] = $fields->{index_sqls} || [ ];
@@ -294,7 +294,7 @@ sub run {
 
     my @tables = (undef);
     my @myisam_tables;
-    
+
     foreach my $cycle (TABLE_ROW, TABLE_ENGINE, TABLE_CHARSET, TABLE_COLLATION, TABLE_PARTITION, TABLE_PK, TABLE_ROW_FORMAT, TABLE_EXTRA_OPTS) {
         @tables = map {
             my $old_table = $_;
@@ -311,16 +311,16 @@ sub run {
             }
         } @tables;
     }
-    
+
 #
 # Iteratively build the array of tables. We start with an empty array, and on each iteration
 # we increase the size of the array to contain more combinations.
-# 
+#
 # Then we do the same for fields.
 #
-    
+
     my @fields = (undef);
-    
+
     foreach my $cycle (FIELD_TYPE, FIELD_NULLABILITY, FIELD_DEFAULT, FIELD_SIGN, FIELD_INDEX, FIELD_CHARSET, FIELD_COLLATION) {
         @fields = map {
             my $old_field = $_;
@@ -328,7 +328,7 @@ sub run {
                 $old_field;	# Retain old field, no permutations at this stage.
             } elsif (
                 ($cycle == FIELD_SIGN) &&
-                ($old_field->[FIELD_TYPE] !~ m{int|float|double|dec|numeric|fixed}sio) 
+                ($old_field->[FIELD_TYPE] !~ m{int|float|double|dec|numeric|fixed}sio)
                 ) {
                 $old_field;	# Retain old field, sign does not apply to non-integer types
             } elsif (
@@ -347,7 +347,7 @@ sub run {
             }
         } @fields;
     }
-    
+
 # If no fields were defined, continue with just the primary key.
     @fields = () if ($#fields == 0) && ($fields[0]->[FIELD_TYPE] eq '');
     my $field_no=0;
@@ -355,9 +355,9 @@ sub run {
         my $field = $fields[$field_id];
         next if not defined $field;
         my @field_copy = @$field;
-        
+
         #   $field_copy[FIELD_INDEX] = 'nokey' if $field_copy[FIELD_INDEX] eq '';
-        
+
         # Remove fields where default null and not null appear together, as its not valid.
         if ( $field_copy[FIELD_NULLABILITY] =~ m{not null}sio )
         {
@@ -366,7 +366,7 @@ sub run {
             undef $fields[$field_id];
             next;
         }
-        
+
         my $field_name;
         if ($#{$field_perms[FIELD_NAMES]} > -1) {
             $field_name = shift @{$field_perms[FIELD_NAMES]};
@@ -378,10 +378,10 @@ sub run {
             $field_name =~ s{ }{_}sgio;
             $field_name =~ s{_+}{_}sgio;
             $field_name =~ s{_+$}{}sgio;
-            
+    
         }
         $field->[FIELD_NAME] = $field_name;
-        
+
         if (
             ($field_copy[FIELD_TYPE] =~ m{set|enum}sio) &&
             ($field_copy[FIELD_TYPE] !~ m{\(}sio )
@@ -389,35 +389,35 @@ sub run {
             #$field_copy[FIELD_TYPE] .= " (".join(',', map { "'$_'" } ('a'..'z') ).")";
             $field_copy[FIELD_TYPE] .= $prng->enumSetTypeValues();
         }
-        
+
         if (
             ($field_copy[FIELD_TYPE] =~ m{char}sio) &&
             ($field_copy[FIELD_TYPE] !~ m{\(}sio)
             ) {
             $field_copy[FIELD_TYPE] .= ' (1)';
         }
-        
+
         $field_copy[FIELD_CHARSET] = "CHARACTER SET ".$field_copy[FIELD_CHARSET] if $field_copy[FIELD_CHARSET] ne '';
         $field_copy[FIELD_COLLATION] = "COLLATE ".$field_copy[FIELD_COLLATION] if $field_copy[FIELD_COLLATION] ne '';
 
         my $key_len;
-        
+
         if (
-            ($field_copy[FIELD_TYPE] =~ m{blob|text|binary}sio ) &&  
+            ($field_copy[FIELD_TYPE] =~ m{blob|text|binary}sio ) &&
             ($field_copy[FIELD_TYPE] !~ m{\(}sio )
             ) {
             $key_len = " (255)";
         }
-        
+
         if (
             ($field_copy[FIELD_INDEX] ne 'nokey') &&
             ($field_copy[FIELD_INDEX] ne '')
             ) {
             $field->[FIELD_INDEX_SQL] = $field_copy[FIELD_INDEX]." (`$field_name`$key_len".asc_desc_key($prng->uint16(0,2)).")";
         }
-        
+
         delete $field_copy[FIELD_INDEX]; # do not include FIELD_INDEX in the field description
-        
+
         $fields[$field_id]->[FIELD_SQL] = "`$field_name` ". join(' ' , grep { $_ ne '' } @field_copy);
     }
 
@@ -433,7 +433,7 @@ sub run {
     foreach my $table_id (0..$#tables) {
         my $table = $tables[$table_id];
         my @table_copy = @$table;
-        
+
         if ($#{$table_perms[TABLE_NAMES]} > -1) {
             $table->[TABLE_NAME] = shift @{$table_perms[TABLE_NAMES]};
         } else {
@@ -450,33 +450,33 @@ sub run {
             $table_name =~ s{partitions}{parts}siog;
             $table_name =~ s{values_less_than}{}siog;
             $table_name =~ s{integer}{int}siog;
-            
+    
             # We don't want duplicate table names in case all parameters that affect the name are the same
             if ($tnames{$table_name}) {
                 $table_name .= '_'.(++$tnames{$table_name});
             } else {
                 $tnames{$table_name} = 1;
             }
-            
+    
             if (
                 (uc($table_copy[TABLE_ENGINE]) eq 'MYISAM') ||
                 ($table_copy[TABLE_ENGINE] eq '')
                 ) {
                 push @myisam_tables, $table_name;
             }
-            
+    
             $table->[TABLE_NAME] = $table_name;
         }
-        
+
         $table_copy[TABLE_ENGINE] = "ENGINE=".$table_copy[TABLE_ENGINE] if $table_copy[TABLE_ENGINE] ne '';
         $table_copy[TABLE_ROW_FORMAT] = "ROW_FORMAT=".$table_copy[TABLE_ROW_FORMAT] if $table_copy[TABLE_ROW_FORMAT] ne '';
         $table_copy[TABLE_CHARSET] = "CHARACTER SET ".$table_copy[TABLE_CHARSET] if $table_copy[TABLE_CHARSET] ne '';
         $table_copy[TABLE_COLLATION] = "COLLATE ".$table_copy[TABLE_COLLATION] if $table_copy[TABLE_COLLATION] ne '';
         $table_copy[TABLE_PARTITION] = "/*!50100 PARTITION BY ".$table_copy[TABLE_PARTITION]." */" if $table_copy[TABLE_PARTITION] ne '';
-        
+
         delete $table_copy[TABLE_ROW];	# Do not include number of rows in the CREATE TABLE
         delete $table_copy[TABLE_PK];	# Do not include PK definition at the end of CREATE TABLE
-        
+
         $table->[TABLE_SQL] = join(' ' , grep { $_ ne '' } @table_copy);
     }	
 
@@ -490,9 +490,9 @@ sub run {
         my $table = $tables[$table_id];
         my @table_copy = @$table;
         my @fields_copy = @fields;
-        
+
         say("Creating table: $schema.$table_copy[TABLE_NAME]; engine: $table_copy[TABLE_ENGINE]; rows: $table_copy[TABLE_ROW] .");
-        
+
         if ($table_copy[TABLE_PK] ne '') {
             my $pk_field;
             $pk_field->[FIELD_NAME] = 'pk';
@@ -502,18 +502,18 @@ sub run {
             $pk_field->[FIELD_SQL] = 'pk '.$table_copy[TABLE_PK];
             push @fields_copy, $pk_field;
         }
-        
+
         # Make field ordering in every table different.
         # This exposes bugs caused by different physical field placement
-        
+
         $prng->shuffleArray(\@fields_copy);
-        
+
         $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS*/ $table->[TABLE_NAME]");
-        
+
         # Compose the CREATE TABLE statement by joining all fields and indexes and appending the table options
-        # Skip undefined fields. 
+        # Skip undefined fields.
         my @field_sqls = join(",\n", map { $_->[FIELD_SQL] } grep { $_->[FIELD_SQL] ne '' } @fields_copy);
- 
+
         my @index_fields;
         @index_fields = grep { $_->[FIELD_INDEX_SQL] =~ s/DESC// if $table_copy[TABLE_ENGINE] =~ /rocksdb/i; $_->[FIELD_INDEX_SQL] ne '' } @fields_copy;
 
@@ -522,7 +522,7 @@ sub run {
             $f->[FIELD_INDEX_SQL] = $sql;
             @index_fields = ( $f, @index_fields );
         }
-        
+
         my $index_sqls = $#index_fields > -1 ? join(",\n", map { $_->[FIELD_INDEX_SQL] } @index_fields) : undef;
 
         my $res= $self->variate_and_execute($executor,"CREATE TABLE `$table->[TABLE_NAME]` (\n".join(",\n/*Indices*/\n", grep { defined $_ } (@field_sqls, $index_sqls) ).") ".$table->[TABLE_SQL]);
@@ -530,7 +530,7 @@ sub run {
           sayError("Table creation failed");
           next;
         }
-        
+
         if (defined $table_perms[TABLE_VIEWS]) {
             foreach my $view_id (0..$#{$table_perms[TABLE_VIEWS]}) {
 		my $view_name;
@@ -547,14 +547,14 @@ sub run {
 		}
             }
         }
-        
+
         $self->variate_and_execute($executor,"ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS");
-        
+
         if ($table->[TABLE_ROW] > 100) {
             $self->variate_and_execute($executor,"SET AUTOCOMMIT=OFF");
             $self->variate_and_execute($executor,"START TRANSACTION");
         }
-        
+
         my @row_buffer;
         foreach my $row_id (1..$table->[TABLE_ROW]) {
             my @data;
@@ -582,7 +582,7 @@ sub run {
 	                }
                 } else {
                     my (@possible_values, $value_type);
-                    
+            
                     if ($field->[FIELD_TYPE] =~ m{date|time|year}sio) {
                         $value_type = DATA_TEMPORAL;
                         $quote = 1;
@@ -598,26 +598,26 @@ sub run {
                         $value_type = DATA_STRING;
                         $quote = 1;
                     }
-                    
+            
                     if ($field->[FIELD_NULLABILITY] eq 'not null') {
                         # Remove NULL from the list of allowed values
                         @possible_values = grep { lc($_) ne 'null' } @{$data_perms[$value_type]};
                     } else {
                         @possible_values = @{$data_perms[$value_type]};
                     }
-                    
+            
                     croak("# Unable to generate data for field '$field->[FIELD_TYPE] $field->[FIELD_NULLABILITY]'") if $#possible_values == -1;
-                    
+            
                     my $possible_value = $prng->arrayElement(\@possible_values);
                     $possible_value = $field->[FIELD_TYPE] if not defined $possible_value;
-                    
+            
                     if ($prng->isFieldType($possible_value)) {
                         $value = $prng->fieldType($possible_value);
                     } else {
                         $value = $possible_value;		# A simple string literal as specified
                     }
                 }
-                
+        
                 ## Quote if necessary
                 if ($value =~ m{load_file}sio) {
                     push @data, defined $value ? $value : "NULL";
@@ -628,9 +628,9 @@ sub run {
                     push @data, defined $value ? $value : "NULL";
                 }	
             }
-            
+    
             push @row_buffer, " (".join(', ', @data).") ";
-            
+    
             if (
                 (($row_id % 50) == 0) ||
                 ($row_id == $table->[TABLE_ROW])
@@ -639,7 +639,7 @@ sub run {
                 return $insert_result->status() if $insert_result->status() >= STATUS_CRITICAL_FAILURE;
                 @row_buffer = ();
             }
-            
+    
             if (($row_id % 10000) == 0) {
                 $self->variate_and_execute($executor,"COMMIT");
                 say("# Progress: loaded $row_id out of $table->[TABLE_ROW] rows");
@@ -649,11 +649,11 @@ sub run {
         $self->variate_and_execute($executor,"ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
     }
     }
-    
+
     $self->variate_and_execute($executor,"COMMIT");
 
     if (
-        (defined $table_perms[TABLE_MERGES]) && 
+        (defined $table_perms[TABLE_MERGES]) &&
         ($#myisam_tables > -1)
         ) {
         foreach my $merge_id (0..$#{$table_perms[TABLE_MERGES]}) {

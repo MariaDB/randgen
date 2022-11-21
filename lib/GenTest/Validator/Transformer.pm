@@ -84,7 +84,7 @@ sub validate {
       say('WARNING: Got STATUS_CONTENT_MISMATCH from transformer. This is likely'.
         ' a FALSE POSITIVE given that there is a LIMIT clause but possibly'.
         ' no complete ORDER BY. Hence we return STATUS_OK. The previous transform issue can likely be ignored.');
-      $transformer_status = STATUS_OK     
+      $transformer_status = STATUS_OK
     }
     return $transformer_status if $transformer_status > STATUS_CRITICAL_FAILURE;
     $max_transformer_status = $transformer_status if $transformer_status > $max_transformer_status;
@@ -104,7 +104,7 @@ sub transform {
   if (
     ($transform_outcome > STATUS_CRITICAL_FAILURE) ||
     ($transform_outcome == STATUS_OK) ||
-    ($transform_outcome == STATUS_SKIP) || 
+    ($transform_outcome == STATUS_SKIP) ||
     ($transform_outcome == STATUS_WONT_HANDLE)
   ) {
     return $transform_outcome;
@@ -120,7 +120,7 @@ sub transform {
       " errors caused by the transformed query.");
     if ($transform_outcome == STATUS_UNKNOWN_ERROR) {
       # We want to know about unknown errors returned by transformed queries.
-      say('ERROR: Unknown error from transformer, likely a test issue. '. 
+      say('ERROR: Unknown error from transformer, likely a test issue. '.
         'Raising status to STATUS_ENVIRONMENT_FAILURE');
       return STATUS_ENVIRONMENT_FAILURE;
     }

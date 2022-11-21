@@ -161,7 +161,7 @@ alttcol_virt_col_definition:
 alttcol_null:
   | | NULL | NOT NULL | NOT NULL
 ;
-  
+
 alttcol_unsigned:
   | | | | UNSIGNED
 ;
@@ -290,4 +290,4 @@ alttcol_lock:
                , LOCK=SHARED |
                , LOCK=EXCLUSIVE
 ;
-  
+

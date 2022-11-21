@@ -318,7 +318,7 @@ my %class2status = (
     "25" => STATUS_RUNTIME_ERROR,  # general query error state
     "42" => STATUS_SYNTAX_ERROR    # syntax error or access rule
                                    # violation
-    
+
     );
 
 sub findStatus {
@@ -545,7 +545,7 @@ sub metaViews {
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-    
+
 }
 
 # Internal (for now) function. It takes a table name and tries to return
@@ -634,7 +634,7 @@ sub metaColumns {
     my ($table, $schema)= $self->_metaFindTable($requested_table,$requested_schema);
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
-    
+
     my $cachekey="COL-$schema-$table";
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
@@ -663,12 +663,12 @@ sub metaColumnsIndexType {
     my ($self, $indextype, $table, $schema, $forced) = @_;
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-    
+
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
-    
+
     my $cachekey="COL-$indextype-$schema-$table";
-    
+
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $colref;
         if ($meta->{$schema}->{table}->{$table}->{col}) {
@@ -704,19 +704,19 @@ sub metaColumnsIndexType {
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-    
+
 }
 
 sub metaColumnsDataType {
     my ($self, $datatype, $table, $schema) = @_;
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-    
+
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
-    
+
     my $cachekey="COL-$datatype-$schema-$table";
-    
+
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $colref;
         if ($meta->{$schema}->{table}->{$table}->{col}) {
@@ -740,19 +740,19 @@ sub metaColumnsDataType {
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-    
+
 }
 
 sub metaColumnsDataIndexType {
     my ($self, $datatype, $indextype, $table, $schema) = @_;
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-    
+
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
-    
+
     my $cachekey="COL-$datatype-$indextype-$schema-$table";
-    
+
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $colref;
         if ($meta->{$schema}->{table}->{$table}->{col}) {
@@ -787,24 +787,24 @@ sub metaColumnsDataIndexType {
             sayDebug "Table/view '$table' in schema '$schema' has no '$indextype' columns (Might be caused by use of --views option in combination with grammars containing _field_indexed). Using any column";
             return $self->metaColumns($table,$schema);
         }
-            
+    
         my $cols = GenTest::intersect_arrays($cols_by_datatype,$cols_by_indextype);
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-    
+
 }
 
 sub metaColumnsDataTypeIndexTypeNot {
     my ($self, $datatype, $indextype, $table, $schema) = @_;
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-    
+
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
-    
+
     my $cachekey="COL-$datatype-$indextype-$schema-$table";
-    
+
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $colref;
         if ($meta->{$schema}->{table}->{$table}->{col}) {
@@ -837,17 +837,17 @@ sub metaColumnsDataTypeIndexTypeNot {
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-    
+
 }
 
 sub metaColumnsIndexTypeNot {
     my ($self, $indextype, $table, $schema) = @_;
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-    
+
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $table = $self->metaTables($schema)->[0] if not defined $table;
-    
+
     my $cachekey="COLNOT-$indextype-$schema-$table";
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
@@ -880,7 +880,7 @@ sub metaColumnsIndexTypeNot {
 
 sub metaCollations {
     my ($self) = @_;
-    
+
     my $cachekey="COLLATIONS";
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
@@ -893,14 +893,16 @@ sub metaCollations {
 
 sub metaCharactersets {
     my ($self) = @_;
-    
+
     my $cachekey="CHARSETS";
-    
+
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $charsets = [values %{$self->[EXECUTOR_COLLATION_METADATA]}];
-        croak "FATAL ERROR: No character sets defined" if not defined $charsets or $#$charsets < 0;
-        my %seen = ();
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = [sort grep { ! $seen{$_} ++ } @$charsets];
+        my %charsets= reverse %{$self->[EXECUTOR_COLLATION_METADATA]};
+        # Some collations come with a NULL charset these days
+        delete $charsets{''};
+        croak "FATAL ERROR: No character sets defined" if (scalar(keys %charsets) == 0);
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = [sort keys %charsets];
+        say("HERE: @{$self->[EXECUTOR_META_CACHE]->{$cachekey}}");
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }
@@ -914,7 +916,7 @@ sub metaColumnInfo {
     $table = $self->metaTables($schema)->[0] if not defined $table;
 
     my $cachekey="COLINFO-$schema-$table";
-    
+
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $cols = ();
         if ($meta->{$schema}->{table}->{$table}->{col}) {

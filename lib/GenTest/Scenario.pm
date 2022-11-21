@@ -193,7 +193,7 @@ sub run_test_flow {
 
 sub prepareServer {
   my ($self, $srvnum, $start_dirty)= @_;
-  
+
   say("Preparing server $srvnum");
 
   my $server= DBServer::MariaDB->new(
@@ -226,7 +226,7 @@ sub prepareServer {
 
 sub prepareGentest {
   my ($self, $gentest_num, $opts)= @_;
-  
+
   my $config= $self->getProperties;
 #  foreach my $p (keys %$props) {
 #    if ($p =~ /^([-\w]+)$gentest_num/) {
@@ -288,7 +288,7 @@ sub checkErrorLog {
   my ($crashes, $errors)= $server->checkErrorLogForErrors($marker);
   my @errors= (($opts && $opts->{CrashOnly}) ? @$crashes : (@$errors, @$crashes));
   foreach (@errors) {
-    if (m{\[ERROR\] InnoDB: Corruption: Page is marked as compressed but uncompress failed with error}so) 
+    if (m{\[ERROR\] InnoDB: Corruption: Page is marked as compressed but uncompress failed with error}so)
     {
         $self->addDetectedBug(13112);
         $status= STATUS_CUSTOM_OUTCOME if $status < STATUS_CUSTOM_OUTCOME;

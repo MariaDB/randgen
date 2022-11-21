@@ -1,5 +1,5 @@
 # Copyright (C) 2019, 2022 MariaDB Corporation Ab
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
@@ -19,7 +19,7 @@
 #
 # The module implements incremental MariaBackup scenario
 #
-# The test starts the server, executes some flow on it, 
+# The test starts the server, executes some flow on it,
 # performs some incremental backups while the test flow is running,
 # stops the server, restores the all the backups,
 # starts the server and runs the checks
@@ -65,7 +65,7 @@ sub run {
   $status= STATUS_OK;
 
   #####
-  
+
   $self->printStep("Starting the server");
 
   $server= $self->prepare_server();
@@ -75,7 +75,7 @@ sub run {
     sayError("Server failed to start");
     return $self->finalize(STATUS_TEST_FAILURE,[]);
   }
-  
+
   #####
 
   unless ($mbackup= $server->mariabackup) {
@@ -93,11 +93,11 @@ sub run {
     sayError("Failed to fork for running the test flow");
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
   }
-  
+
   # The child will be running the test flow. The parent will be running
   # the backup in the middle, and while waiting, will be monitoring
   # the status of the test flow to notice if it exits prematurely.
-  
+
   my $backup_num= 0;
 
   if ($gentest_pid > 0)
@@ -271,7 +271,7 @@ sub run {
   $status= $self->checkErrorLog($server);
 
   if ($status != STATUS_OK) {
-    # Error log can show known errors. We want to update 
+    # Error log can show known errors. We want to update
     # the global status, but don't want to exit prematurely
     $self->setStatus($status);
     if ($status > STATUS_CUSTOM_OUTCOME) {
@@ -279,7 +279,7 @@ sub run {
       return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
     }
   }
-  
+
   #####
   $self->printStep("Checking the database state after restore and restart");
 
@@ -289,7 +289,7 @@ sub run {
     sayError("Database appears to be corrupt after restoring the backup");
     return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
   }
-  
+
   #####
   $self->printStep("Stopping the server");
 

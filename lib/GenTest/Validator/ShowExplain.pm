@@ -1,15 +1,15 @@
 # Copyright (C) 2013 Monty Program Ab
-# 
+#
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -46,12 +46,12 @@ my $child_con_id;
 # On each validate call, we pick up a SELECT which has already been executed,
 # run EXPLAIN on it in the spare connection and store the result.
 # Then we fork a separate child process and run the SELECT in it using
-# the same spare connection, while the parent runs SHOW EXPLAIN FOR that connection 
+# the same spare connection, while the parent runs SHOW EXPLAIN FOR that connection
 # repeatedly in parallel in the normal executor connection, collecting results.
 # When SELECT finishes, the child process exits, the parent notices it
-# and stops running SHOW EXPLAIN. After that the parent compares results 
-# of SHOW EXPLAIN with the normal EXPLAIN output. Certain expected mismatches 
-# are ignored, otherwise STATUS_CONTENT_MISMATCH or STATUS_LENGTH_MISMATCH 
+# and stops running SHOW EXPLAIN. After that the parent compares results
+# of SHOW EXPLAIN with the normal EXPLAIN output. Certain expected mismatches
+# are ignored, otherwise STATUS_CONTENT_MISMATCH or STATUS_LENGTH_MISMATCH
 # is returned if there are differences.
 #
 
@@ -63,25 +63,25 @@ sub validate {
 
 	return STATUS_OK if $query !~ m{^\s*select}io;
 
-	unless ($child_dbh) 
+	unless ($child_dbh)
 	{
 		$child_dbh = DBI->connect($executor->dsn(), undef, undef, { PrintError => 0 } );
-		if ($DBI::err) 
+		if ($DBI::err)
 		{
 			say("ERROR: Could not create child connection in ShowExplain: " . $DBI::errstr);
 			return STATUS_ENVIRONMENT_FAILURE;
 		}
 	}
 	my $native_explain = $child_dbh->selectall_arrayref("EXPLAIN $query");
-	if ($child_dbh->err) 
+	if ($child_dbh->err)
 	{
 		say("Warning: EXPLAIN did not return anything for $query: " . $child_dbh->errstr);
 		return STATUS_WONT_HANDLE;
 	}
-	unless ($child_con_id) 
+	unless ($child_con_id)
 	{
 		$child_con_id = $child_dbh->selectrow_arrayref("SELECT CONNECTION_ID()")->[0];
-		if ($child_dbh->err) 
+		if ($child_dbh->err)
 		{
 			say("ERROR: Could not find out child connection ID in ShowExplain: " . $child_dbh->errstr);
 			return STATUS_ENVIRONMENT_FAILURE;
@@ -89,21 +89,21 @@ sub validate {
 	}
 
 	my $pid = fork();
-	unless (defined $pid) 
+	unless (defined $pid)
 	{
 		say("Could not fork for ShowExplain");
 		return STATUS_ENVIRONMENT_FAILURE;
 	}
-	if ($pid) 
+	if ($pid)
 	{
 		# Parent
 		my @show_explains = ();
-		do 
+		do
 		{
 			my $res = $executor->dbh()->selectall_arrayref("SHOW EXPLAIN FOR $child_con_id");
 			push @show_explains, $res unless $executor->dbh()->err;
 			waitpid($pid, WNOHANG);
-		} 
+		}
 		while ( $? < 0 and Time::HiRes::sleep(0.1) );
 
 		my @native_explain_rows = ();
@@ -172,7 +172,7 @@ sub validate {
 			}
 		}
 	}
-	else 
+	else
 	{
 		$executor->dbh()->{InactiveDestroy} = 1;
 		$executor->setDbh(undef);
@@ -197,7 +197,7 @@ sub print_explain {
 }
 
 # There are some documented differences in SHOW EXPLAIN and EXPLAIN output,
-# they should be ignored to avoid false positives. 
+# they should be ignored to avoid false positives.
 
 sub remove_expected_diffs {
 	my $rowref = shift;
@@ -206,7 +206,7 @@ sub remove_expected_diffs {
 		$rowref->[1] = '<SIMPLE/PRIMARY>'
 	}
 
-	if ( ( ( $rowref->[1] eq 'SUBQUERY' or $rowref->[1] eq 'DEPENDENT SUBQUERY' ) 
+	if ( ( ( $rowref->[1] eq 'SUBQUERY' or $rowref->[1] eq 'DEPENDENT SUBQUERY' )
 				and $rowref->[9] =~ /Impossible WHERE noticed after reading const tables/ )
 			or ( ( $rowref->[1] eq 'DEPENDENT SUBQUERY' and $rowref->[9] =~ /no matching row in const table/ ) ) )
 	{

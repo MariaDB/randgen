@@ -1,7 +1,7 @@
 # RQG_HOME must be defined in the environment. But it has to be defined anyway,
 # or the include file won't be found
 
-$recovery_scenarios = 
+$recovery_scenarios =
   [
     '--scenario=CrashUpgrade --duration=180',
     '--scenario=UndoLogUpgrade --duration=300',

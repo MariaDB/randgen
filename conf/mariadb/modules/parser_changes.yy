@@ -14,7 +14,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 ########################################################################
-# 
+#
 # This grammar is meant to be a temporary (but possibly long-term)
 # solution until we have a complete working grammar for parser testing
 #
@@ -23,7 +23,7 @@
 # functionality-specific grammars
 #
 # Changes:
-# 
+#
 # 10.5.3: MDEV-16978 (WITHOUT OVERLAPS)
 #         Some logic added/modified in CREATE UNIQUE and other places
 # 10.8.0 MDEV-13756 (DESC INDEXES)

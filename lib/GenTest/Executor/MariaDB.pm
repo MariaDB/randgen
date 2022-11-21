@@ -3262,7 +3262,7 @@ sub getSchemaMetaData {
 
     # Unset max_statement_time in case it was set in test configuration
     $self->dbh()->do('/*!100108 SET @@max_statement_time= 0 */');
-    my $query = 
+    my $query =
         "SELECT DISTINCT ".
                 "CASE WHEN table_schema = 'information_schema' ".
                      "THEN 'INFORMATION_SCHEMA' ".  ## Hack due to

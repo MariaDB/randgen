@@ -25,10 +25,10 @@ $combinations = [
     --mysqld=--log-output=FILE
     --mysqld=--max-statement-time=30
     --transformers=DisableOptimizations,EnableOptimizations,ExecuteAsDerived,ExecuteAsPreparedThrice,ExecuteAsView,ExecuteAsUnion,ExecuteAsExcept,ExecuteAsIntersect
-  '], 
+  '],
 # Some of legacy will duplicate the newer ones, but better safe than sorry
   [
-    { 
+    {
       specific_data => [
         [
           '--grammar=conf/optimizer/outer_join.yy --gendata=conf/optimizer/outer_join.zz --views=TEMPTABLE,MERGE',
@@ -41,7 +41,7 @@ $combinations = [
           '--grammar=conf/optimizer/range_access2.yy',
           '--grammar=conf/optimizer/range_access.yy',
         ],
-        [ 
+        [
           '--gendata=conf/optimizer/range_access.zz',
           '--gendata=conf/optimizer/range_access2.zz',
           '--gendata=conf/optimizer/optimizer.zz',
@@ -52,5 +52,5 @@ $combinations = [
         [ '--views --engine=InnoDB,MyISAM,Aria' ],
       ],
     }
-  ], 
+  ],
 ];

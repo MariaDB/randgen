@@ -1,5 +1,5 @@
 # Copyright (C) 2017, 2020 MariaDB Corporation Ab
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
@@ -67,7 +67,7 @@ sub run {
 
   #####
   # Prepare servers
-  
+
   ($old_server, $new_server)= $self->prepare_servers();
 
   #####
@@ -84,7 +84,7 @@ sub run {
   $self->printStep("Generating data on the old server");
 
   $status= $self->generate_data();
-  
+
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
     return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
@@ -102,13 +102,13 @@ sub run {
   # The child will be running the test flow. The parent will be running
   # the server and then killing it, and while waiting, will be monitoring
   # the status of the test flow to notice if it exits prematurely.
-  
+
   if ($gentest_pid > 0) {
     my $timeout= int($self->getProperty('duration')/3);
     foreach (1..$timeout) {
       if (waitpid($gentest_pid, WNOHANG) == 0) {
         sleep 1;
-      } 
+      }
       else {
         $status= $? >> 8;
         last;
@@ -129,7 +129,7 @@ sub run {
   $self->printStep("Killing the old server");
 
   $status= $old_server->kill;
-  
+
   if ($status != STATUS_OK) {
     sayError("Could not kill the old server");
     return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
@@ -215,7 +215,7 @@ sub run {
     sayError("Database appears to be corrupt after upgrade");
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
   }
-  
+
   #####
   $self->printStep("Running test flow on the new server");
 

@@ -45,10 +45,10 @@ sub new {
     $self->[CHANNEL_IN] = IO::Handle->new();
     $self->[CHANNEL_OUT] = IO::Handle->new();
     $self->[CHANNEL_PIPE] = IO::Pipe->new($self->[CHANNEL_IN],$self->[CHANNEL_OUT]);
-    
+
     $self->[CHANNEL_EOF]= 0;
     $self->[CHANNEL_READER] = undef;
-    
+
     ## Turn off buffering of output. Each object is sent as one
     ## print-statement
     $self->[CHANNEL_OUT]->autoflush(1);
@@ -110,7 +110,7 @@ sub recv {
 
 sub reader{
     my ($self) = @_;
-    
+
     ## Readers don't need the output part
     close $self->[CHANNEL_OUT];
     $self->[CHANNEL_READER] = 1;

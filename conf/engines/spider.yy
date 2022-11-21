@@ -10,7 +10,7 @@ thread1_init:
 ;
 
 get_charsets:
-  { @charsets= (); map { push @charsets, $_ if ($_ ne 'utf32' && $_ ne 'utf16' && $_ ne 'ucs2' && $_ ne 'utf16le' && $_ ne '') } @{$executors->[0]->metaCharactersets()}; print "HERE: @charsets\n"; '' };
+  { @charsets= (); map { push @charsets, $_ if ($_ ne 'utf32' && $_ ne 'utf16' && $_ ne 'ucs2' && $_ ne 'utf16le') } @{$executors->[0]->metaCharactersets()}; print "HERE: @charsets\n"; '' };
 
 # Character set enforced due to MDEV-29562 (can't work with utf32/utf16/ucs2)
 query:

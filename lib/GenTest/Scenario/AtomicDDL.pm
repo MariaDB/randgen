@@ -1,5 +1,5 @@
 # Copyright 2020 MariaDB Corporation Ab
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
@@ -153,7 +153,7 @@ sub run {
     foreach (1..$timeout) {
       if (waitpid($gentest_pid, WNOHANG) == 0) {
         sleep 1;
-      } 
+      }
       else {
         $status= $? >> 8;
         last;

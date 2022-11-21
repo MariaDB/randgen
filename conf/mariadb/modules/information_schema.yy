@@ -15,7 +15,7 @@
 # 51 Franklin Street, Suite 500, Boston, MA 02110-1335 USA
 
 query_init:
-  UPDATE mysql.proc SET definer = 'root@localhost'; FLUSH TABLES; FLUSH PRIVILEGES; 
+  UPDATE mysql.proc SET definer = 'root@localhost'; FLUSH TABLES; FLUSH PRIVILEGES;
 
 query:
   infoschema_query { $last_database= undef; $last_table= undef; '' } ;
@@ -30,7 +30,7 @@ infoschema_select_or_select_join:
 
 infoschema_show:
 #  SHOW BINARY LOGS |
-  SHOW BINLOG EVENTS |  
+  SHOW BINLOG EVENTS |
   SHOW CHARACTER SET  |
   SHOW COLLATION  |
   SHOW COLUMNS FROM _table |
@@ -44,7 +44,7 @@ infoschema_show:
   SHOW ENGINES  |
   SHOW ERRORS  |
   SHOW FUNCTION CODE _letter |
-  SHOW FUNCTION STATUS | 
+  SHOW FUNCTION STATUS |
   SHOW GRANTS  |
   SHOW INDEX FROM _table |
 #  SHOW INNODB STATUS  |
@@ -54,7 +54,7 @@ infoschema_show:
   SHOW OPEN TABLES  |
   SHOW PRIVILEGES  |
   SHOW PROCEDURE CODE _letter |
-  SHOW PROCEDURE STATUS | 
+  SHOW PROCEDURE STATUS |
   SHOW PROCESSLIST  |
   SHOW PROFILE  |
   SHOW PROFILES  |
@@ -63,9 +63,9 @@ infoschema_show:
   SHOW STATUS  |
   SHOW TABLE STATUS  |
   SHOW TABLES  |
-  SHOW TRIGGERS | 
-  SHOW VARIABLES | 
-  SHOW WARNINGS ;  
+  SHOW TRIGGERS |
+  SHOW VARIABLES |
+  SHOW WARNINGS ;
 
 infoschema_select:
   SELECT *
@@ -94,7 +94,7 @@ infoschema_join_list:
   (infoschema_new_table_item infoschema_join_type infoschema_new_table_item ON ( infoschema_current_table_item . _field = infoschema_previous_table_item . _field ) ) ;
 
 infoschema_join_type:
-  INNER JOIN | __left_x_right __outer(50) JOIN | STRAIGHT_JOIN ;  
+  INNER JOIN | __left_x_right __outer(50) JOIN | STRAIGHT_JOIN ;
 
 infoschema_where:
   WHERE infoschema_where_list ;
@@ -149,7 +149,7 @@ infoschema_aggregate_select_item:
 # Only 20% table2, since sometimes table2 is not present at all
 
 infoschema_table_one_two:
-  table1 { $last_table = $tables[1] } | 
+  table1 { $last_table = $tables[1] } |
   table2 { $last_table = $tables[2] } ;
 
 infoschema_aggregate:
@@ -172,6 +172,6 @@ infoschema_existing_table_item:
 
 infoschema_sign:
   = | > | < | != | <> | <= | >= ;
-  
+
 infoschema_value:
   _digit | _char(2) | _datetime ;

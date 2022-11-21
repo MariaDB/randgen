@@ -1,7 +1,7 @@
 # RQG_HOME must be defined in the environment. But it has to be defined anyway,
 # or the include file won't be found
 
-$upgrade_scenarios = 
+$upgrade_scenarios =
   [
     '--scenario=LiveUpgrade --duration=180',
     '--scenario=CrashUpgrade --duration=180',

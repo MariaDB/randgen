@@ -21,7 +21,7 @@ query:
     START TRANSACTION | COMMIT ;
 
 dml:
-    select | 
+    select |
     update |
     delete |
     insert
@@ -47,8 +47,8 @@ delete:
 index_update:
     UPDATE IGNORE _table SET _field_int_indexed = _field_int_indexed + 1 WHERE _field_pk = _smallint_unsigned ;
 
-# It relies on char fields being unindexed. 
-# If char fields happen to be indexed in the table spec, then this update can be indexed as well. No big harm though. 
+# It relies on char fields being unindexed.
+# If char fields happen to be indexed in the table spec, then this update can be indexed as well. No big harm though.
 non_index_update:
     UPDATE _table SET _field_char = _string WHERE _field_pk = _smallint_unsigned ;
 
@@ -57,7 +57,7 @@ select:
     simple_range |
     sum_range |
     order_range |
-    distinct_range 
+    distinct_range
 ;
 
 point_select:

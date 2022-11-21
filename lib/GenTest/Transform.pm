@@ -142,7 +142,7 @@ sub transformExecuteValidate {
         } else {
             # Transformation produced a single block of queries
             $transform_blocks = [ $transformer_output ];
-        }    
+        }
     } else {
         # Transformation produced a single query, convert it to a single block
         $transform_blocks = [ [ $transformer_output ] ];
@@ -161,7 +161,7 @@ sub transformExecuteValidate {
         my @transformed_queries = @$transform_block;
         my @transformed_results;
         my $transform_outcome;
-    
+
         $transformed_queries[0] =  "/* ".ref($transformer)." */ ".$transformed_queries[0];
 
         foreach my $transformed_query_part (@transformed_queries) {
@@ -186,16 +186,16 @@ sub transformExecuteValidate {
               # "Best effort" auxiliary query which shouldn't affect the outcome
               $transform_outcome = STATUS_OK unless defined $transform_outcome;
             } elsif (
-                ($part_result->status() == STATUS_SYNTAX_ERROR) || 
+                ($part_result->status() == STATUS_SYNTAX_ERROR) ||
                 ($part_result->status() == STATUS_SEMANTIC_ERROR) ||
-                ($part_result->status() == STATUS_SERVER_CRASHED) 
+                ($part_result->status() == STATUS_SERVER_CRASHED)
             ) {
                 # We return an error when a transformer returns a semantic
                 # or syntactic error, which allows for detecting any faulty
-                # transformers, e.g. those which do not produce valid queries. 
+                # transformers, e.g. those which do not produce valid queries.
                 #
-                # Most often the only subsequent change required to these 
-                # transformers is to exclude the failing query by using 
+                # Most often the only subsequent change required to these
+                # transformers is to exclude the failing query by using
                 # STATUS_WONT_HANDLE within the transformer.
                 #
                 # As such, we now return STATUS_WONT_HANDLE here, which allows
@@ -207,12 +207,12 @@ sub transformExecuteValidate {
                 #
                 # For example, with MySQL's ONLY_FULL_GROUP_BY sql mode, some
                 # queries return grouping related errors, whereas they would
-                # not return such errors without this mode, and we want to 
+                # not return such errors without this mode, and we want to
                 # continue the test even if such errors occur.
                 # We have logic in place to take care of this below.
                 #
                 my $allowed= $transformer->allowedErrors();
-                if ( 
+                if (
                     ( (exists $mysql_grouping_errors{$part_result->err()})
                       || (defined $allowed and exists $allowed->{$part_result->err()})
                     )
@@ -277,22 +277,22 @@ sub transformExecuteValidate {
             return ($transform_outcome, \@transformed_queries, \@transformed_results, $cleanup_block);
         }
         elsif ($transform_outcome == STATUS_OK) {
-            # To expose transformed queries when a transformation was successfull 
+            # To expose transformed queries when a transformation was successfull
                     # This is useful for unit tests of RQG.
             return ($transform_outcome, @transformed_queries);
         }
     }
-    
+
     cleanup($executor, $cleanup_block);
     return STATUS_OK;
 
 }
 
-# Some transformations can end prematurely and leave the environment in a dirty state, 
-# e.g. with some variables changed. 
-# If a transformation changes the environment, it must have a block marked as TRANSFORM_CLEANUP 
-# (as a comment before the first statement in the block). If such a block exists, 
-# it will be executed even if the transformation is going to quit. 
+# Some transformations can end prematurely and leave the environment in a dirty state,
+# e.g. with some variables changed.
+# If a transformation changes the environment, it must have a block marked as TRANSFORM_CLEANUP
+# (as a comment before the first statement in the block). If such a block exists,
+# it will be executed even if the transformation is going to quit.
 sub cleanup {
     my ($executor, $cleanup_block) = @_;
     if ($cleanup_block) {
@@ -330,7 +330,7 @@ sub validate {
     } elsif ($transform_outcome == TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE) {
         return $transformer->isSingleIntegerOne($original_result, $transformed_result);
     } elsif ($transform_outcome == TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED) {
-        return $transformer->isRowsExaminedObeyed($transformed_query, $transformed_result); 
+        return $transformer->isRowsExaminedObeyed($transformed_query, $transformed_result);
         } elsif ($transform_outcome == TRANSFORM_OUTCOME_SUBSET) {
                 return $transformer->isSuperset($transformed_result, $original_result);
     } elsif ($transform_outcome == TRANSFORM_OUTCOME_ANY) {

@@ -188,7 +188,7 @@ sub monitor_threaded {
 # * alarm_thread keeps a timeout so that we do not hang forever
 # * dbh_thread attempts to connect to the database and thus can hang forever because
 # there are no network-level timeouts in DBD::mysql
-# 
+#
 
   my $alarm_thread = threads->create( \&alarm_thread );
   my $dbh_thread = threads->create ( \&dbh_thread, $reporter );

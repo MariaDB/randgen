@@ -23,44 +23,44 @@
 # Experiences
 #
 # --rpl_mode=row:
-# perl runall.pl  --engine=MyISAM --debug --rpl_mode=row --duration=12000 --queries=40000 
-# --reporter=Deadlock,Backtrace,ErrorLog --threads=10 --basedir=/home/horst/bzrysql-trunk 
+# perl runall.pl  --engine=MyISAM --debug --rpl_mode=row --duration=12000 --queries=40000
+# --reporter=Deadlock,Backtrace,ErrorLog --threads=10 --basedir=/home/horst/bzrysql-trunk
 # --mysqld=--lock-wait-timeout=1 --mysqld=--general-log=ON --mysqld=--default-storage-engine=
-# MyISAM --mysqld=--log-output=table --mysqld=--loose-innodb-lock-wait-timeout=1 
+# MyISAM --mysqld=--log-output=table --mysqld=--loose-innodb-lock-wait-timeout=1
 # --grammar=./conpartitioning/partitions.yy --vardir=/dev/shm/var1
 # --seed=1 >./storage/1.l 2>&1a
 #
-# Failed sometimes with reclication-error 103, but also succedded (needed about 5-10 Minutes). 
+# Failed sometimes with reclication-error 103, but also succedded (needed about 5-10 Minutes).
 # Produced a log file of about 10MB and a var directory with 6,6MB.
-# 
+#
 # --rpl_mode=mixed:
-# Failed sometimes with reclication-error 103, but also succedded (needed about 5-10 Minutes). 
+# Failed sometimes with reclication-error 103, but also succedded (needed about 5-10 Minutes).
 # Produced a log file of about 36KB  and a var directory with 5MB.
-# 
-# perl runall.pl  --engine=MyISAM --debug --duration=12000 --queries=40000 
-# --reporter=Deadlock,Backtrace,ErrorLog --threads=10 
-# --basedir=/home/horst/bzr/mysql-trunk--mysqld=--lock-wait-timeout=1 --mysqld=--general-log=ON 
-# --mysqld=--default-storage-engine=MyISAM --mysqld=--log-output=table 
-# --mysqld=--loose-innodb-lock-wait-timeout=1 --grammar=./conf/partitioning/partitions.yy 
+#
+# perl runall.pl  --engine=MyISAM --debug --duration=12000 --queries=40000
+# --reporter=Deadlock,Backtrace,ErrorLog --threads=10
+# --basedir=/home/horst/bzr/mysql-trunk--mysqld=--lock-wait-timeout=1 --mysqld=--general-log=ON
+# --mysqld=--default-storage-engine=MyISAM --mysqld=--log-output=table
+# --mysqld=--loose-innodb-lock-wait-timeout=1 --grammar=./conf/partitioning/partitions.yy
 # --vardir=/dev/shm/var1 --seed=1 >./storage/1.log 2>&1
 
 # Log: 21MB, var: 148Mb, time about 8Min.  Semantic_error: 12234, OK:27980
 
-# perl runall.pl  --engine=MyISAM --debug --duration=24000 --queries=100000 
-# --reporter=Deadlock,Backtrace,ErrorLog --threads=16 
-# --basedir=/home/horst/bzr/mysql-trunk--mysqld=--lock-wait-timeout=1 --mysqld=--general-log=ON 
-# --mysqld=--default-storage-engine=MyISAM --mysqld=--log-output=table 
-# --mysqld=--loose-innodb-lock-wait-timeout=1 --grammar=./conf/partitioning/partitions.yy 
+# perl runall.pl  --engine=MyISAM --debug --duration=24000 --queries=100000
+# --reporter=Deadlock,Backtrace,ErrorLog --threads=16
+# --basedir=/home/horst/bzr/mysql-trunk--mysqld=--lock-wait-timeout=1 --mysqld=--general-log=ON
+# --mysqld=--default-storage-engine=MyISAM --mysqld=--log-output=table
+# --mysqld=--loose-innodb-lock-wait-timeout=1 --grammar=./conf/partitioning/partitions.yy
 # --vardir=/dev/shm/var1 --seed=1 >./storage/1.log 2>&1
 
-# Log: 48MB, var: 320Mb, time about 20Min. 
+# Log: 48MB, var: 320Mb, time about 20Min.
 
 
 ##########################################################################
 # Initialization of tables with focus on partitioned tables.
 
 query_init:
-	{our $nb_parts= 50; return undef } 
+	{our $nb_parts= 50; return undef }
 	init_db ;
 
 init_db:
@@ -197,12 +197,12 @@ table_name_part_ext:
 	table_name_part PARTITION (part_list last_part_elem) ;
 
 part_list:
-        part_list_elem_10 | 
+        part_list_elem_10 |
         part_list part_list_elem_10 |
         part_list part_list_elem_10 |
         part_list part_list_elem_10 |
         part_list part_list_elem_10 |
-        part_list part_list_elem_10 
+        part_list part_list_elem_10
 	;
 
 part_list_100:
@@ -344,9 +344,9 @@ range_list_elem_10:
         range_elem range_elem range_elem range_elem range_elem ;
 
 range_list:
-	range_list_elem_10 range_list_elem_10 range_list_elem_10 range_list_elem_10 
-	range_list_elem_10 range_list_elem_10 range_list_elem_10 range_list_elem_10 
-	range_list_elem_10 range_list_elem_10  
+	range_list_elem_10 range_list_elem_10 range_list_elem_10 range_list_elem_10
+	range_list_elem_10 range_list_elem_10 range_list_elem_10 range_list_elem_10
+	range_list_elem_10 range_list_elem_10
         ;
 
 range_elem:
@@ -359,7 +359,7 @@ partition_count:
 	96 | 97 | 98 | 98 | 98 | 99 | 99 | 99 | 99 ;
 
 if_exists:
-	IF EXISTS ;   
+	IF EXISTS ;
 
 if_not_exists:
 	IF NOT EXISTS ;

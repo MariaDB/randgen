@@ -18,7 +18,7 @@
 ################################################################################
 # optimizer_access.yy - RQG grammar to reliably mix a variety of table access
 #                       methods (range, union, sort_union, etc)
-# 
+#
 # The design goal is to have a minimum of 3 tables per query
 # This needs to be implemented as the current JOIN construction rule
 # still produces a number of queries with < 3 tables (and a number of invalid
@@ -27,9 +27,9 @@
 # However, the grammar will produce a varied amount of EXPLAIN output (shown via
 # --debug) and is useful
 #
-# NOTE:  This must be used with a gendata file, I have been using 
+# NOTE:  This must be used with a gendata file, I have been using
 #        range_access.zz with success for now
-#        If you want to try an alternate, ensure that the rules for 
+#        If you want to try an alternate, ensure that the rules for
 #        things like int_field, char_field, etc are correct for the gendata file
 ################################################################################
 
@@ -101,7 +101,7 @@ mixed_spec_list:
 new_select_item:
   nonaggregate_select_item |
   nonaggregate_select_item |
-  nonaggregate_select_item |        
+  nonaggregate_select_item |
   aggregate_select_item ;
 
 nonaggregate_select_item:
@@ -110,23 +110,23 @@ nonaggregate_select_item:
 	table_123 . _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 aggregate_select_item:
-        aggregate table_123 . aggregate_field ) AS { "field".++$fields } ; 
+        aggregate table_123 . aggregate_field ) AS { "field".++$fields } ;
 
 table_or_join_count_control:
   { $min_tables_to_join > 1 ? 'join' : 'table_or_join' };
 
 join:
-       { $stack->push() }      
-       table_or_join 
+       { $stack->push() }
+       table_or_join
        { $stack->set("left",$stack->get("result")); }
        left_right outer JOIN table_or_join_count_control
-       ON 
+       ON
        join_condition ;
 
 join_condition:
    int_condition | char_condition ;
 
-int_condition: 
+int_condition:
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed join_condition_operator
    { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
@@ -136,10 +136,10 @@ int_condition:
 
 char_condition:
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name join_condition_operator
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed  join_condition_operator
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef }  ;
 
 table_or_join:
@@ -163,13 +163,13 @@ where_clause:
   WHERE t1_where_list and_or t2_where_list and_or t3_where_list |
   WHERE t1_where_list and_or t2_where_list and_or t3_where_list |
   WHERE t1_where_list and_or t2_where_list  ;
- 
+
 
 t1_where_list:
   { $cur_table='table1'; "" } targeted_where_list ;
 
 t2_where_list:
-  { $cur_table='table1'; "" } targeted_where_list ;  
+  { $cur_table='table1'; "" } targeted_where_list ;
 
 t3_where_list:
   { $cur_table='table1'; "" } targeted_where_list ;
@@ -312,7 +312,7 @@ total_order_by:
 	{ join(', ', map { "field".$_ } (1..$fields) ) };
 
 desc:
-        ASC | | | | | DESC ; 
+        ASC | | | | | DESC ;
 
 ################################################################################
 # We define LIMIT_rows in this fashion as LIMIT values can differ depending on #
@@ -331,7 +331,7 @@ aggregate:
 number_list:
         int_value | number_list, int_value ;
 
-char_list: 
+char_list:
         char_value | char_list, char_value ;
 
 left_right:
@@ -371,13 +371,13 @@ char_value:
   _char | _quid | _english ;
 
 low_char:
- 'a' | 'b' | 'c' | 'd' | 
  'a' | 'b' | 'c' | 'd' |
- 'h' | 'i' | 'j' ; 
+ 'a' | 'b' | 'c' | 'd' |
+ 'h' | 'i' | 'j' ;
 
 high_char:
  'w' | 'x' | 'y' | 'z' |
- 'w' | 'x' | 'y' | 'z' | 
+ 'w' | 'x' | 'y' | 'z' |
  'p' | 'r' | 't' ;
 
 
@@ -390,25 +390,25 @@ existing_table_item:
 int_indexed:
    `pk` | `col_int_key` ;
 
-int_field_name: 
+int_field_name:
    `pk` | `col_int_key` | `col_int` ;
 
-char_indexed:  
-   `col_varchar_10_latin1_key` | `col_varchar_10_utf8_key` | 
+char_indexed:
+   `col_varchar_10_latin1_key` | `col_varchar_10_utf8_key` |
    `col_varchar_1024_latin1_key` | `col_varchar_1024_utf8_key`;
- 
+
 char_field_name:
-   `col_varchar_10_latin1_key` | `col_varchar_10_utf8_key` | 
+   `col_varchar_10_latin1_key` | `col_varchar_10_utf8_key` |
    `col_varchar_1024_latin1_key` | `col_varchar_1024_utf8_key` |
-   `col_varchar_10_latin1` | `col_varchar_10_utf8` | 
-   `col_varchar_1024_latin1` | `col_varchar_1024_utf8` ; 
+   `col_varchar_10_latin1` | `col_varchar_10_utf8` |
+   `col_varchar_1024_latin1` | `col_varchar_1024_utf8` ;
 
 date_field_name:
   `col_date_key` | `col_date` ;
 
 aggregate_field:
-  int_field_name | char_field_name | int_field_name | char_field_name | 
-  int_field_name | char_field_name | int_field_name | char_field_name | 
+  int_field_name | char_field_name | int_field_name | char_field_name |
+  int_field_name | char_field_name | int_field_name | char_field_name |
   int_field_name | char_field_name | int_field_name | char_field_name |
   date_field_name ;
 

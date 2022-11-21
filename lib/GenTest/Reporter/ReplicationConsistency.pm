@@ -38,7 +38,7 @@ sub report {
 
 	my $master_dbh = DBI->connect($reporter->dsn(), undef, undef, {PrintError => 0});
   return STATUS_ENVIRONMENT_FAILURE if not defined $master_dbh;
-  
+
 	my $master_port = $reporter->serverVariable('port');
 	my $slave_port;
 

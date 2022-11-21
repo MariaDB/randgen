@@ -102,7 +102,7 @@ seq_alter:
 ;
 
 seq_if_exists_optional:
-  | IF EXISTS | IF EXISTS | IF EXISTS 
+  | IF EXISTS | IF EXISTS | IF EXISTS
 ;
 
 seq_alter_list:
@@ -114,7 +114,7 @@ seq_insert:
 ;
 
 seq_alter_element:
-    RESTART seq_with_or_equal_optional seq_start_value 
+    RESTART seq_with_or_equal_optional seq_start_value
   | seq_increment
   | seq_min
   | seq_max

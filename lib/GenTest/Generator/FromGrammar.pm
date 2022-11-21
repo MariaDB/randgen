@@ -95,7 +95,7 @@ sub next {
   my $last_database;
   my $last_field_list_length;
   my $last_item;
-    
+
   my $stack = GenTest::Stack::Stack->new();
   my $global = $generator->globalFrame();
 
@@ -108,7 +108,7 @@ sub next {
       say("Sentence is now longer than ".GENERATOR_MAX_LENGTH()." symbols. Possible endless loop in grammar. Aborting.");
       return undef;
     }
-    
+
     for (my $pos = 0; $pos <= $#sentence; $pos++) {
       $orig_item = $sentence[$pos];
 
@@ -316,7 +316,7 @@ sub next {
           # The generation of constructs such as `table _digit` => `table 5`
 
           if (
-            (substr($orig_item, -1) eq '`') && 
+            (substr($orig_item, -1) eq '`') &&
             (index($item, '`') == -1)
           ) {
             $item = $item.'`';
@@ -395,7 +395,7 @@ sub next {
     # However, there are many legacy grammars so far, for which the old
     # logic is preserved in elsif's below:
   # If this is a BEGIN ... END block or alike, then send it to server without splitting.
-  # If the semicolon is inside a string literal, ignore it. 
+  # If the semicolon is inside a string literal, ignore it.
   # Otherwise, split it into individual statements so that the error and the result set from each statement
   # can be examined
 
@@ -410,27 +410,27 @@ sub next {
     return \@sentences;
   } elsif (
     # Stored procedures of all sorts
-      ( 
+      (
         (index($sentence, 'CREATE') > -1 ) &&
-        (index($sentence, 'BEGIN') > -1 || index($sentence, 'END') > -1) 
+        (index($sentence, 'BEGIN') > -1 || index($sentence, 'END') > -1)
       )
     or
     # MDEV-5317, anonymous blocks BEGIN NOT ATOMIC .. END
-      ( 
+      (
         (index($sentence, 'BEGIN') > -1 ) &&
         (index($sentence, 'ATOMIC') > -1 ) &&
         (index($sentence, 'END') > -1 )
       )
     or
     # MDEV-5317, IF .. THEN .. [ELSE ..] END IF
-      ( 
+      (
         (index($sentence, 'IF') > -1 ) &&
         (index($sentence, 'THEN') > -1 ) &&
         (index($sentence, 'END') > -1 )
       )
     or
     # MDEV-5317, CASE .. [WHEN .. THEN .. [WHEN .. THEN ..] [ELSE .. ]] END CASE
-      ( 
+      (
         (index($sentence, 'CASE') > -1 ) &&
         (index($sentence, 'WHEN') > -1 ) &&
         (index($sentence, 'THEN') > -1 ) &&
@@ -438,20 +438,20 @@ sub next {
       )
     or
     # MDEV-5317, LOOP .. END LOOP
-      ( 
+      (
         (index($sentence, 'LOOP') > -1 ) &&
         (index($sentence, 'END') > -1 )
       )
     or
     # MDEV-5317, REPEAT .. UNTIL .. END REPEAT
-      ( 
+      (
         (index($sentence, 'REPEAT') > -1 ) &&
         (index($sentence, 'UNTIL') > -1 ) &&
         (index($sentence, 'END') > -1 )
       )
     or
     # MDEV-5317, WHILE .. DO .. END WHILE
-      ( 
+      (
         (index($sentence, 'WHILE') > -1 ) &&
         (index($sentence, 'DO') > -1 ) &&
         (index($sentence, 'END') > -1 )
@@ -465,8 +465,8 @@ sub next {
 
     my @sentences;
 
-    # We want to split the sentence into separate statements, but we do not want 
-    # to split literals if a semicolon happens to be inside. 
+    # We want to split the sentence into separate statements, but we do not want
+    # to split literals if a semicolon happens to be inside.
     # I am sure it could be done much smarter; feel free to improve it.
     # For now, we do the following:
     # - store and mask all literals (inside single or double quote marks);
@@ -478,11 +478,11 @@ sub next {
     if (index($sentence, "'") > -1 or index($sentence, '"') > -1) {
       # Store literals in single quotes
       my @singles = ( $sentence =~ /(?<!\\)(\'.*?(?<!\\)\')/g );
-      # Mask these literals 
+      # Mask these literals
       $sentence =~ s/(?<!\\)\'.*?(?<!\\)\'/######SINGLES######/g;
       # Store remaining literals in double quotes
       my @doubles = ( $sentence =~ /(?<!\\)(\".*?(?<!\\)\")/g );
-      # Mask these literals 
+      # Mask these literals
       $sentence =~ s/(?<!\\)\".*?(?<!\\)\"/######DOUBLES######/g;
       # Replace remaining semicolons
       $sentence =~ s/;/######SEMICOLON######/g;

@@ -15,7 +15,7 @@
 # USA
 
 # Rough imitation of OLTP test (sysbench-like)
-# Default number of tables is 5, 1000 rows each, 
+# Default number of tables is 5, 1000 rows each,
 # it can be changed by providing --rows parameter on the command line
 
 

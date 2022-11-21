@@ -68,7 +68,7 @@ _basics_virtual_column_attributes:
   _basics_prepare_type_dependent_value { $last_column_type eq 'SERIAL' ? '' : "GENERATED ALWAYS AS ($last_type_value) ".$prng->arrayElement( [ '', 'PERSISTENT', 'STORED', 'VIRTUAL', 'VIRTUAL' ] ) } ;
 
 _basics_column_nullable:
-  { $last_nullable= ($last_column_type eq 'SERIAL' ? '' : $prng->arrayElement( [ '', 'NULL', 'NOT NULL' ] )) }; 
+  { $last_nullable= ($last_column_type eq 'SERIAL' ? '' : $prng->arrayElement( [ '', 'NULL', 'NOT NULL' ] )) };
 
 _basics_prepare_type_dependent_value:
   { $last_type_value= 'NULL'
@@ -130,7 +130,7 @@ _basics_table_partitioning:
 _basics_partition_by_hash_or_key:
   PARTITION BY __hash_x_key ( _field_indexed ) ;
 
-# TODO: add 
+# TODO: add
 _basics_partition_by_value:
 ;
 

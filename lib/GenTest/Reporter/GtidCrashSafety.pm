@@ -1,15 +1,15 @@
 # Copyright (C) 2013 Monty Program Ab
-# 
+#
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -18,13 +18,13 @@
 # ATTENTION! The reporter works with *MariaDB* implementation of GTID.
 ####################################################################
 # The reporter makes the slave server crash every 30 seconds,
-# restarts it and checks that it started all right. 
+# restarts it and checks that it started all right.
 # If it's used alone, it can catch errors that do not allow
 # slave to restart properly (e.g. if it crashed or if the replication aborted).
-# Besides, it performs a basic sanity check on GTID seq_no behavior, saving 
+# Besides, it performs a basic sanity check on GTID seq_no behavior, saving
 # the previous seq_no and verifying that the next one is greater or equal
 # the stored value.
-# 
+#
 # If used in conjunction with ReplicationConsistency reporter,
 # the correctness of the data after all the crashes will also be checked
 # at the end of the test.
@@ -110,7 +110,7 @@ sub check_gtid_status {
 		say("Stopping replication, the test will continue without this reporter");
 		$dbh->do("STOP SLAVE");
 		return STATUS_REPLICATION_FAILURE;
-	} 
+	}
 	return STATUS_OK;
 }	
 
@@ -198,7 +198,7 @@ sub restart {
 				$restart_status = check_gtid_status("after START SLAVE");
 				last;
 
-			} else { 
+			} else {
 				say("Could not connect to the slave after restart");
 				$restart_status = STATUS_REPLICATION_FAILURE;
 			}

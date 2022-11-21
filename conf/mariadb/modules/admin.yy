@@ -56,7 +56,7 @@ admin_flush:
   | RESET QUERY CACHE
 ;
 
-admin_no_write_or_local:  
+admin_no_write_or_local:
   | | | | | | NO_WRITE_TO_BINLOG | LOCAL
 ;
 
@@ -96,7 +96,7 @@ admin_flush_option:
   | USER_RESOURCES
 #  | USER_STATISTICS # userstat
 ;
-  
+
 admin_flush_log_type:
   | | | ERROR | ENGINE | GENERAL | SLOW | BINARY | RELAY
 ;

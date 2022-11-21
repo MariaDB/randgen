@@ -23,7 +23,7 @@
 #
 # The goal is to spend as much time as possible inside the storage engine and as little time
 # as possible in the optimizer. Therefore, most of the queries have trivial optimizer plans
-# and run very quickly. 
+# and run very quickly.
 #
 # At the same time, please note that this grammar does not aim to cover all possible
 # table access methods. The grammars from conf/optimizer/optimizer* are more suitable for that.
@@ -64,7 +64,7 @@ subselect:
 
 # Use index for all joins
 join_list:
-  _table AS X | 
+  _table AS X |
   _table AS X LEFT JOIN _table AS Y USING ( _field_key );
 
 
@@ -79,7 +79,7 @@ i_r:
   REPLACE;
 
 ignore:
-  | 
+  |
   IGNORE ;
 
 update:

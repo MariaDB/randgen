@@ -45,13 +45,13 @@ sub validate {
                     last;
                 }
             }
-            
+    
 		}
         say ("MarkErrorLog found errorlog at " . $error_log);
 	}
 	
 
-    
+
 	my $query = $results->[0]->query();
 
 	open(LOG, ">>$error_log") or die "unable to open $error_log: $!";

@@ -63,14 +63,14 @@ sub set {
 
     $self->[$self->_current()]->set($name,$value);
     return undef;
-    
+
 }
 
 sub get {
     my ($self, $name, $value) = @_;
-    
+
     return $self->[$self->_current()]->get($name);
-    
+
 }
 
 sub pop {

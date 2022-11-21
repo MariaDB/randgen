@@ -19,20 +19,20 @@
 # full_text_search.yy
 # Purpose:  Grammar for testing fulltext search condition
 #
-# Notes:    This grammar is designed to be used with 
+# Notes:    This grammar is designed to be used with
 #           gendata=conf/engines/innodb/full_text_search.zz
 #           Fulltext serach condition can be used on the column on which fulltext
-#           index is defined. 
+#           index is defined.
 #
 #           IMP : Pass '--innodb_ft_enable_stopword=0' to server , this allows
 #           user to search default stopword. ( english.txt contain stopwords
-#           so these words will not be searched if don't pass this argument.)  
+#           so these words will not be searched if don't pass this argument.)
 #
-#           There are 3 types for search conditions - natural,binary,query 
-#           expansion mode. Innodb has added proximity search feature (belong to 
+#           There are 3 types for search conditions - natural,binary,query
+#           expansion mode. Innodb has added proximity search feature (belong to
 #           binary mode) which allows search based on distance between the words.
-#           This type of query generation is disabled in grammar as it required 
-#           small change in rqg.(it requires unquoted english words from rqg)  
+#           This type of query generation is disabled in grammar as it required
+#           small change in rqg.(it requires unquoted english words from rqg)
 #
 #           We keep the grammar here as it is in order to also test certain
 #           MySQL-specific syntax variants.
@@ -46,14 +46,14 @@ query_init:
 
 # Run Select , DML , DDL , transactional statements
 query:
-     select | select | select | select | select | update | delete | 
+     select | select | select | select | select | update | delete |
      create_drop_index | transaction | insert | insert |
      ==FACTOR:0.05== fts_doc_id
 ;
 
-# Add/Drop fulltext index 
+# Add/Drop fulltext index
 create_drop_index:
-     ALTER TABLE _table ADD FULLTEXT INDEX {"idx_". $indexcount++} (_field_no_pk) 
+     ALTER TABLE _table ADD FULLTEXT INDEX {"idx_". $indexcount++} (_field_no_pk)
      | ALTER TABLE _table DROP INDEX {"idx_".$prng->int(1,$indexcount)} ;
 
 # Statement to start or to end transaction.
@@ -67,10 +67,10 @@ select:
      | query_expansion_search ;
 #     natural_language_search | boolean_search | query_expansion_search ;
 
-# Type - Natural language Search queries with 
+# Type - Natural language Search queries with
 # SELECT .. MATCH (<fields>) AGAING ( <string> IN NATURAL LANGUAGE MODE )
 natural_language_search:
-     SELECT select_list FROM _table WHERE natural_language_search_condition expression | 
+     SELECT select_list FROM _table WHERE natural_language_search_condition expression |
      SELECT _field_indexed[invariant],natural_language_search_condition AS SCORE FROM _table WHERE natural_language_search_condition expression extra_condition_optional order_clause_optional |
      SELECT _field_indexed[invariant] f, natural_language_search_condition AS SCORE FROM _table ORDER BY f, SCORE limit_clause;
 
@@ -80,17 +80,17 @@ extra_condition_optional:
 natural_language_search_condition:
      MATCH (_field_no_pk[invariant]) AGAINST (_english[invariant] IN NATURAL LANGUAGE MODE );
 
-# Type - Boolean Search queries with, 
+# Type - Boolean Search queries with,
 # SELECT .. MATCH (<fields>) AGAING ( <string> IN BOOLEAN MODE )
 boolean_search:
-     SELECT select_list FROM _table WHERE boolean_search_condition expression | 
+     SELECT select_list FROM _table WHERE boolean_search_condition expression |
      SELECT _field_indexed[invariant],boolean_search_condition AS SCORE FROM _table WHERE boolean_search_condition expression order_clause_optional |
      SELECT _field_indexed[invariant] f, boolean_search_condition AS SCORE FROM _table ORDER BY f, SCORE limit_clause;
 
 boolean_search_condition:
      MATCH (_field_no_pk[invariant]) AGAINST ( CONCAT( concatinate_strings ) IN BOOLEAN MODE);
 
-# Type - Query expansion mode , 
+# Type - Query expansion mode ,
 # SELECT .. MATCH (<fields>) AGAING ( <string> WITH QUERY EXPANSION )
 query_expansion_search:
      SELECT select_list FROM _table WHERE query_expansion_search_condition |
@@ -102,7 +102,7 @@ query_expansion_search_condition:
 
 # Type - Proximity search - Innodb Feature , Search done with Boolean Mode
 proximity_search:
-     SELECT select_list FROM _table WHERE proximity_search_condition expression | 
+     SELECT select_list FROM _table WHERE proximity_search_condition expression |
      SELECT _field_indexed[invariant],proximity_search_condition AS SCORE FROM _table WHERE proximity_search_condition expression order_clause_optional |
      SELECT _field_indexed[invariant] f, proximity_search_condition AS SCORE FROM _table ORDER BY f, SCORE limit_clause;
 
@@ -110,14 +110,14 @@ proximity_search_condition:
      MATCH (_field_no_pk[invariant]) AGAINST ( proximity_search_string IN BOOLEAN MODE);
 
 proximity_search_string:
-     single_quote double_quote _englishnoquote double_quote {$val= "@".$prng->int(0,15)} single_quote 
+     single_quote double_quote _englishnoquote double_quote {$val= "@".$prng->int(0,15)} single_quote
      | single_quote double_quote _englishnoquote _englishnoquote double_quote {$val= "@".$prng->int(0,15)} single_quote;
 
 select_list:
      count(*) | * ;
 
 expression:
-    > 0 | = 0 | > 1 | < 1 | != 0 | != 1 | | | | | | | | | | |;   
+    > 0 | = 0 | > 1 | < 1 | != 0 | != 1 | | | | | | | | | | |;
 
 order_clause_optional:
      order_clause | | |;
@@ -135,7 +135,7 @@ get_string:
      _english[invariant];
 
 concatinate_strings:
-     get_string | str_with_operator 
+     get_string | str_with_operator
      | single_quote ( single_quote , concatinate_strings , single_quote ) single_quote ;
 
 str_with_operator:
@@ -145,7 +145,7 @@ boolean_operator_at_end_of_string:
      '' | '' | '' | {$rval="'*'"};
 
 boolean_operators:
-     {$rval="'+'"} | {$rval="'-'"} | {$rval="'>'"} 
+     {$rval="'+'"} | {$rval="'-'"} | {$rval="'>'"}
      | {$rval="'<'"} | {$rval="'~'"} ;
 #    { $str = '+' . $prng->fieldType("_english") ; return($str) } ;
 
@@ -157,20 +157,20 @@ double_quote:
 
 # Condition to be used in update and delete statement
 condition:
-#     natural_language_search_condition 
-#     | boolean_search_condition 
-#     | proximity_search_condition 
+#     natural_language_search_condition
+#     | boolean_search_condition
+#     | proximity_search_condition
 #     | query_expansion_search_condition ;
-     natural_language_search_condition 
-     | boolean_search_condition 
+     natural_language_search_condition
+     | boolean_search_condition
      | query_expansion_search_condition ;
 
 insert :
-    INSERT INTO _table ( _field_no_pk ) VALUES ( _english ) ;    
+    INSERT INTO _table ( _field_no_pk ) VALUES ( _english ) ;
 
 update:
     UPDATE _table SET _field_no_pk = _english WHERE condition ;
- 
+
 delete:
     DELETE FROM _table WHERE condition ;
 

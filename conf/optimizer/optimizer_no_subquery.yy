@@ -16,10 +16,10 @@
 # USA
 
 # **NOTE** Joins for this grammar are currently not working as intended.
-# For example, if we have tables 1, 2, and 3, we end up with ON conditions that 
+# For example, if we have tables 1, 2, and 3, we end up with ON conditions that
 # only involve tables 2 and 3.
-# This will be fixed, but initial attempts at altering this had a negative 
-# impact on the coverage the test was providing.  To be fixed when scheduling 
+# This will be fixed, but initial attempts at altering this had a negative
+# impact on the coverage the test was providing.  To be fixed when scheduling
 # permits.  We are still seeing significant coverage with the grammar as-is.
 
 ################################################################################
@@ -40,7 +40,7 @@
 #       Validators:  ResultsetComparatorSimplify                               #
 #                      - used on server-server comparisons                     #
 #                    Transformer - used on a single server                     #
-#                      - creates equivalent versions of a single query         # 
+#                      - creates equivalent versions of a single query         #
 #                    SelectStability - used on a single server                 #
 #                      - ensures the same query produces stable result sets    #
 ################################################################################
@@ -76,17 +76,17 @@ loose_select_clause:
         MIN( _field_indexed[invariant] ) AS { "field".++$fields }, MAX( _field_indexed[invariant] ) AS { "field".++$fields }, loose_select_list ;
 
 loose_select_list:
-        loose_select_item | 
+        loose_select_item |
         loose_select_item , loose_select_list ;
 
 loose_select_item:
-        opt_no_sq_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;                
-        
+        opt_no_sq_field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;       
+
 ################################################################################
 # The bulk of interesting things happen with this main rule                    #
 ################################################################################
 main_select:
-        simple_select | simple_select | aggregate_select | 
+        simple_select | simple_select | aggregate_select |
         mixed_select |  mixed_select | mixed_select ;
 
 mixed_select:
@@ -104,7 +104,7 @@ simple_select:
         optional_group_by
         having_clause
         order_by_clause ;
- 
+
 aggregate_select:
         SELECT distinct straight_join select_option aggregate_select_list
         FROM join_list
@@ -155,12 +155,12 @@ join_list_disabled:
         ( new_table_item join_type join_list ON (join_condition_list ) ) ;
 
 join_type:
-	INNER JOIN | left_right outer JOIN | STRAIGHT_JOIN ;  
+	INNER JOIN | left_right outer JOIN | STRAIGHT_JOIN ;
 
 join_condition_list:
-    join_condition_item | 
+    join_condition_item |
     ( join_condition_item ) and_or ( join_condition_item ) |
-    ( current_table_item  .`pk` arithmetic_operator previous_table_item . opt_no_sq_field ) AND (current_table_item  .`pk` arithmetic_operator previous_table_item .opt_no_sq_field ) ;    
+    ( current_table_item  .`pk` arithmetic_operator previous_table_item . opt_no_sq_field ) AND (current_table_item  .`pk` arithmetic_operator previous_table_item .opt_no_sq_field ) ;
 
 join_condition_item:
      current_table_item . int_indexed = previous_table_item . int_field_name  |
@@ -221,7 +221,7 @@ where_item:
 ################################################################################
 
 range_predicate1_list:
-      range_predicate1_item | 
+      range_predicate1_item |
       ( range_predicate1_item OR range_predicate1_list ) ;
 
 range_predicate1_item:
@@ -240,7 +240,7 @@ range_predicate1_item:
 ################################################################################
 
 range_predicate2_list:
-      range_predicate2_item | 
+      range_predicate2_item |
       ( range_predicate2_item and_or range_predicate2_list ) ;
 
 range_predicate2_item:
@@ -259,7 +259,7 @@ range_predicate2_item:
 number_list:
         _tinyint_unsigned | number_list, _tinyint_unsigned ;
 
-char_list: 
+char_list:
 	_char | 'USA' | char_list , _char | char_list , 'USA' ;
 
 ################################################################################
@@ -308,7 +308,7 @@ order_by_item:
 	existing_select_item desc ;
 
 desc:
-        ASC | | DESC ; 
+        ASC | | DESC ;
 
 ################################################################################
 # We mix digit and _digit here.  We want to alter the possible values of LIMIT #
@@ -321,11 +321,11 @@ limit:
 new_select_item:
 	nonaggregate_select_item |
 	nonaggregate_select_item |
-        nonaggregate_select_item |        
         nonaggregate_select_item |
-        nonaggregate_select_item |        
         nonaggregate_select_item |
-        nonaggregate_select_item |        
+        nonaggregate_select_item |
+        nonaggregate_select_item |
+        nonaggregate_select_item |
         nonaggregate_select_item |
 	aggregate_select_item |
         combo_select_item ;
@@ -413,7 +413,7 @@ value:
         _char(2) | _char(2) | _char(2) | _char(2) | _char(2) | 'USA' ;
 
 opt_no_sq_table:
-     A | B | C | BB | CC | B | C | BB | CC | 
+     A | B | C | BB | CC | B | C | BB | CC |
      C | C | C | C  | C  | C | C | C  | C  |
      CC | CC | CC | CC | CC | CC | CC | CC |
      D | view ;

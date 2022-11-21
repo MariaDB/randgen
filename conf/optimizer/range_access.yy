@@ -28,7 +28,7 @@
 #   comparison between MySQL versions / configurations
 #   3way compares to javadb and postgres
 #
-# NOTES:  This grammar will run against either a single or multi-part index 
+# NOTES:  This grammar will run against either a single or multi-part index
 #         For multi-part indexes, the index will be created, a set of queries
 #         will be run, then the index will be dropped
 #
@@ -44,7 +44,7 @@ query_type:
   single_idx_query_set | dual_int_idx_query_set | dual_char_idx_query_set | tri_int_idx_query_set ;
 
 single_idx_query_set:
-  single_idx_query ; single_idx_query ; single_idx_query ; single_idx_query ; single_idx_query ; 
+  single_idx_query ; single_idx_query ; single_idx_query ; single_idx_query ; single_idx_query ;
 
 dual_int_idx_query_set:
   new_dual_int_index ; multi_int_idx_query_set ;
@@ -62,7 +62,7 @@ wild_query:
   single_idx_query | multi_int_idx_query | multi_char_idx_query ;
 
 multi_int_idx_query_set:
-  multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; wild_query ; drop_index ;  
+  multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; wild_query ; drop_index ;
 
 multi_char_idx_query_set:
   multi_char_idx_query ; multi_char_idx_query ; multi_char_idx_query ; multi_char_idx_query ; multi_char_idx_query ; wild_query ; drop_index ;
@@ -162,7 +162,7 @@ single_char_idx_where_item:
 ################################################################################
 
 multi_int_idx_where_list:
-    multi_int_idx_where_clause | 
+    multi_int_idx_where_clause |
     multi_int_idx_where_list and_or multi_int_idx_where_clause | multi_int_idx_where_list and_or multi_int_idx_where_clause ;
 
 
@@ -176,7 +176,7 @@ multi_char_idx_where_list:
 
 multi_char_idx_where_clause:
    {  $char_idx_field = ("alias".$prng->int(1,$tables))." . ".$prng->arrayElement(\@idx_fields) ; "" } single_char_idx_where_list ;
-  
+
 
 
 ################################################################################
@@ -196,32 +196,32 @@ select_list:
   select_item | select_item , select_list ;
 
 select_item:
-  table_one_two . _field AS { my $f = "field".++$fields ; $f } ; 
+  table_one_two . _field AS { my $f = "field".++$fields ; $f } ;
 
 straight_join:
 	| | | | | | | | STRAIGHT_JOIN ;
 
 join:
-   { $stack->push() }      
-   table_or_join 
+   { $stack->push() }
+   table_or_join
    { $stack->set("left",$stack->get("result")); }
-   left_right outer JOIN table_or_join 
-   ON 
+   left_right outer JOIN table_or_join
+   ON
    join_condition ;
 
 idx_join:
-   { $stack->push() }      
-   idx_table_for_join 
+   { $stack->push() }
+   idx_table_for_join
    { $stack->set("left",$stack->get("result")); }
-   left_right outer JOIN table_or_join 
-   ON 
+   left_right outer JOIN table_or_join
+   ON
    join_condition ;
 
 join_condition:
    int_condition | char_condition ;
 
-int_condition: 
-   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed = 
+int_condition:
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed =
    { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed =
@@ -238,17 +238,17 @@ int_condition:
 
 char_condition:
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed  =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } ;
 
 table_or_join:
-           table | table | table | table | table | table | 
+           table | table | table | table | table | table |
            table | table | join | join ;
 
 table:
@@ -259,7 +259,7 @@ idx_table_for_join:
        { $stack->push() ; my $x = $idx_table." AS alias".++$tables; my @s=($x); $stack->pop(\@s); $x } ;
 
 join_type:
-	INNER JOIN | left_right outer JOIN | STRAIGHT_JOIN ; 
+	INNER JOIN | left_right outer JOIN | STRAIGHT_JOIN ;
 
 left_right:
 	LEFT | LEFT | LEFT | RIGHT ;
@@ -348,19 +348,19 @@ other_int:
    _tinyint_unsigned | 20 | 25 | 30 | 35 | 50 | 65 | 75 | 100 ;
 
 char_value:
-  _char | _char | _char | _quid | _english ; 
+  _char | _char | _char | _quid | _english ;
 
 char_pattern:
  char_value | char_value | CONCAT( _char, '%') | 'a%'| _quid | '_' | '_%' ;
 
 increment:
-   1 |  1 | 2 | 2 | 5 | 5 | 6 | 10 ; 
+   1 |  1 | 2 | 2 | 5 | 5 | 6 | 10 ;
 
 large_length:
    200 | 200 | 200 | 200 | 200 | 100 | 200 | 250 | 37 | 50 | 175 | small_length ;
 
 small_length:
-   1 | 2 | 5 | 7 | 8 | 9 | 10 | 10 | 10 | 10 ; 
+   1 | 2 | 5 | 7 | 8 | 9 | 10 | 10 | 10 | 10 ;
 
 random_length:
   large_length | large_length | small_length ;
@@ -368,19 +368,19 @@ random_length:
 int_indexed:
    _field_int ;
 
-int_field_name: 
+int_field_name:
    _field_int ;
 
-char_indexed:  
+char_indexed:
    _field_char;
- 
+
 char_field_name:
-   _field_char ; 
+   _field_char ;
 
 number_list:
    int_value | number_list, int_value ;
 
-char_list: 
+char_list:
    _char | char_list, _char ;
 
 table_one_two:

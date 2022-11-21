@@ -52,7 +52,7 @@ sub transform {
 			# Removing ORDER BY
 		} elsif ($original_query !~ s{LIMIT[^()]*$}{ORDER BY 1}sio) {
 			return STATUS_WONT_HANDLE;
-		} 
+		}
 	} else {
 		$transform_outcome = "TRANSFORM_OUTCOME_UNORDERED_MATCH";
 	}

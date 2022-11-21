@@ -21,7 +21,7 @@ package GenTest::Validator::ExecutionTimeComparator;
 
 ################################################################################
 #
-# This validator compares the execution times of queries against two different 
+# This validator compares the execution times of queries against two different
 # servers. It may repeat each suitable query and compute averages if configured
 # to do so (see below).
 #
@@ -36,7 +36,7 @@ package GenTest::Validator::ExecutionTimeComparator;
 #   - maximum execution time to care about
 #   - maximum result set size (number of rows)
 #   - whether or not to compare EXPLAIN output
-#   - whether or not to repeat queries N times and compute average execution 
+#   - whether or not to repeat queries N times and compute average execution
 #     times and/or other statistics to avoid false positives.
 #   - whether or not to repeat given queries against multiple tables.
 #   - whether or not to write results to a file, and this file's name.
@@ -77,11 +77,11 @@ use constant MAX_DEVIATION  => 15;    # Percentage of mean below which we want t
 #
 # 1) A query is repeated if MAX_SAMPLES > 0 and MIN_SAMPLES > 0.
 #    MAX_SAMPLES cannot be lower than MIN_SAMPLES.
-#    If the Statistics::Descriptive module is not available, the query will be 
+#    If the Statistics::Descriptive module is not available, the query will be
 #    repeated MAX_SAMPLES times if both are above 0.
 #
 # 2) If a query is repeated, the original result is discarded.
-#    If a query is not repeated, numbers from the original execution will be 
+#    If a query is not repeated, numbers from the original execution will be
 #    used for comparison.
 #
 # 3) When a query is repeated, it is repeated at least MIN_SAMPLES times.
@@ -89,12 +89,12 @@ use constant MAX_DEVIATION  => 15;    # Percentage of mean below which we want t
 #    be used).
 #    One sample = one measurement of execution time for a given query.
 #
-# 4) If the Statistics::Descriptive module is available and sampling results 
-#    then have a relative standard deviation (percentage of the mean) of less 
-#    than MAX_DEVIATION, sampling is ended. Otherwise, sampling continues until 
-#    sufficiently low deviation is reached, or until a maximum of MAX_SAMPLES 
+# 4) If the Statistics::Descriptive module is available and sampling results
+#    then have a relative standard deviation (percentage of the mean) of less
+#    than MAX_DEVIATION, sampling is ended. Otherwise, sampling continues until
+#    sufficiently low deviation is reached, or until a maximum of MAX_SAMPLES
 #    samples (per query per server) is done (whatever occurs first).
-#    Even if MIN_SAMPLES = 1 the query must be repeated at least twice in order 
+#    Even if MIN_SAMPLES = 1 the query must be repeated at least twice in order
 #    to obtain a standard deviation value other than 0.
 #    Queries with too high standard deviation will not be included in the final
 #    listing of queries above/below the set ratio threshold.
@@ -135,7 +135,7 @@ my $non_selects = 0;        # Number of non-SELECT statements
 my $no_results = 0;         # Number of (rejected) queries with no results (original query/tables only)
 my $unstable_queries = 0;   # Number of queries with too much variation of results (relative std_dev higher than MAX_DEVIATION)
 
-# If a query modified by this validator fails, a non-ok status may be returned 
+# If a query modified by this validator fails, a non-ok status may be returned
 # from the validator even if the original query executed OK.
 # Still, if a table variation query does not pass the various threshold checks,
 # the total status is not returned until all table variations are done.
@@ -168,9 +168,9 @@ sub BEGIN {
     }
 
 
-    # @tables: Tables against which we should repeat the original query and 
+    # @tables: Tables against which we should repeat the original query and
     # re-validate.
-    # Example: Configure the grammar to produce queries only against a single 
+    # Example: Configure the grammar to produce queries only against a single
     #          table. Do systematic testing of different tables by setting e.g.:
     #
     #   @tables = ('AA', 'B', 'BB', 'C', 'CC', 'D', 'DD', 'E');
@@ -245,7 +245,7 @@ sub compareDurations {
     # or undefined if this is a query that is a variation of the original.
     my ($executors, $results, $query) = @_;
 
-    # In case of table variation we do not have any results for the new 
+    # In case of table variation we do not have any results for the new
     # query, so we need to execute it once, for EXPLAIN comparison etc.
     if ($results == undef) {
         $results->[0] = $executors->[0]->execute($query);
@@ -285,7 +285,7 @@ sub compareDurations {
         if ($have_statistics_mod) {
             my ($times_ref, $relative_std_devs_ref) = sampleWithStatisticsModule($executors, $query);
             # $times_ref may be undefined if sufficient statistical confidence was not reached.
-            # In that case we assume the query has been reported if necessary 
+            # In that case we assume the query has been reported if necessary
             # and discontinue further validation of the query.
             return STATUS_WONT_HANDLE if not defined $times_ref;
             @times = @${times_ref};
@@ -396,7 +396,7 @@ sub compareDurations {
 #
 # Execute queries and collect statistics needed in order to tell whether one
 # server is better than the other.
-# 
+#
 # Requires Statistics::Desriptive module installed.
 #
 # Input:  - array of executors (two executors)
@@ -421,7 +421,7 @@ sub sampleWithStatisticsModule() {
         $stats[$server] = Statistics::Descriptive::Full->new();
         my $stat = $stats[$server];
         # Repetition is enabled, so collect results to replace the original.
-        # Repeat until we have some idea of statistical significance, 
+        # Repeat until we have some idea of statistical significance,
         # or until a max number of samples
         my $repeats = 0;
         while ($repeats < MAX_SAMPLES) {
@@ -429,11 +429,11 @@ sub sampleWithStatisticsModule() {
             my $time = $executors->[$server]->execute($query)->duration();
             $stat->add_data($time);
             my $desired_absolute_deviation = ($stat->mean() * (MAX_DEVIATION/100));
-            if($repeats >= MIN_SAMPLES && 
+            if($repeats >= MIN_SAMPLES &&
                ($repeats > 1) &&
                ($stat->standard_deviation() <= $desired_absolute_deviation) ) {
                 # Standard deviation was good enough, no further samples needed.
-                # Note that if MIN_SAMPLES is 1, the standard deviation will be 
+                # Note that if MIN_SAMPLES is 1, the standard deviation will be
                 # 0, so we need to do one more sample to get proper numbers,
                 # hence the (repeats > 1) part in the 'if' check.
                 last;
@@ -512,9 +512,9 @@ sub sampleSimple() {
     my ($executors, $query) = @_;
     my @exec_times;    # array of execution times (mean values), one per server.
 
-    # If repetitions is desired, we ignore the results from the original query 
-    # execution (from before entering the validator), as it may be off for some 
-    # reason. 
+    # If repetitions is desired, we ignore the results from the original query
+    # execution (from before entering the validator), as it may be off for some
+    # reason.
     #
     # Repeat the same query, collect results (depending on settings).
     my @sum_times;
@@ -526,7 +526,7 @@ sub sampleSimple() {
         }
     }
     # Calculate the mean.
-    # We use only the first 4 decimals of the result, but include all decimals 
+    # We use only the first 4 decimals of the result, but include all decimals
     # in calculations.
     if (MAX_SAMPLES > 0) {
         foreach my $id (0..1) {
@@ -539,7 +539,7 @@ sub sampleSimple() {
 
 sub doTableVariation() {
     my ($executors, $results, $query, $status) = @_;
-    
+
     # The goal is to repeat the same query against different tables.
     # We assume the query is simple, with a single "FROM <letter(s)>" construct.
     # Otherwise, skip the repeating (this detection may be improved).
@@ -571,7 +571,7 @@ sub doTableVariation() {
 
         # One table variation query may yield STATUS_WONT_HANDLE, while others
         # may yield STATUS_OK. We return the status from the last variation and
-        # ignore the others, assuming previous checks have taken care of 
+        # ignore the others, assuming previous checks have taken care of
         # unwanted queries and errors.
 
         $status = $compare_status;
@@ -586,7 +586,7 @@ sub DESTROY {
     say("Extra tables used for query repetition: ".scalar(@tables));
     say("Minimum samples of execution time per query: ".MIN_SAMPLES);
     say("Maximum samples of execution time per query: ".MAX_SAMPLES);
-    say("Maximum relative standard deviation: ".MAX_DEVIATION.'% of mean value') 
+    say("Maximum relative standard deviation: ".MAX_DEVIATION.'% of mean value')
         if $have_statistics_mod and MIN_SAMPLES > 0;
     say("Skipped queries:");
     say("  Excluded non-SELECT queries: ".$non_selects);

@@ -3630,7 +3630,7 @@ UPDATE smf_pm_recipients
     SET is_new = _int
     WHERE id_member = _int|
 UPDATE smf_pm_recipients
-    SET is_read = is_read 
+    SET is_read = is_read
     WHERE id_pm = _int
       AND id_member = _int|
 UPDATE smf_pm_recipients
@@ -3646,7 +3646,7 @@ UPDATE smf_pm_recipients
     WHERE id_member IN (_array_int)
       AND deleted = _int|
 UPDATE smf_pm_recipients
-  SET is_read = is_read 
+  SET is_read = is_read
   WHERE id_member = _int
     AND NOT (is_read & 1 >= 1)|
 UPDATE smf_pm_recipients

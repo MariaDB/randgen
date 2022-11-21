@@ -18,16 +18,16 @@
 
 
 thread1_init:
-  SET GLOBAL SQL_MODE= CONCAT(@@sql_mode,hist_extra_sql_mode_values); 
+  SET GLOBAL SQL_MODE= CONCAT(@@sql_mode,hist_extra_sql_mode_values);
 
 query:
   { $fields = 0 ; "" } ANALYZE FORMAT=JSON SELECT hist_select_list FROM _table WHERE hist_where_list hist_opt_where_list hist_group_by_clause hist_order_by_clause;
-  
+
 hist_select_list:
   hist_select_item | hist_select_item , hist_select_list ;
 
 hist_select_item:
-  _field AS { my $f = "field".++$fields ; $f } ; 
+  _field AS { my $f = "field".++$fields ; $f } ;
 
 hist_where_list:
     hist_where_clause | hist_where_clause |
@@ -110,16 +110,16 @@ hist_char_value_or_field:
   hist_char_value | _field_char ;
 
 hist_char_value:
-  _char | _char(8) | _char(16) | _quid | _english ; 
+  _char | _char(8) | _char(16) | _quid | _english ;
 
-hist_char_list: 
+hist_char_list:
    hist_char_value_or_field | hist_char_list, hist_char_value_or_field ;
 
 hist_char_pattern:
  hist_char_value | hist_char_value | CONCAT( _char, '%') | 'a%'| _quid | '_' | '_%' ;
 
 hist_desc:
- ASC | | | | DESC ; 
+ ASC | | | | DESC ;
 
 hist_and_or:
    AND | AND | AND | AND | OR | XOR ;

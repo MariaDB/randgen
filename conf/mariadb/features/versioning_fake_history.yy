@@ -182,10 +182,10 @@ vers_timestamp_trx:
 ;
 
 vers_system_time:
-    _timestamp 
-  | CURRENT_TIMESTAMP 
+    _timestamp
+  | CURRENT_TIMESTAMP
   | NOW() | NOW(6)
-  | _tinyint_unsigned 
+  | _tinyint_unsigned
   | @trx_user_var | @trx_user_var | @trx_user_var | @trx_user_var
   | DATE_ADD(_timestamp, INTERVAL _positive_digit vers_interval)
   | DATE_SUB(_timestamp, INTERVAL _positive_digit vers_interval)
@@ -220,7 +220,7 @@ vers_partitioning_optional:
 ;
 
 vers_partitioning_definition:
-  { $parts=0 ; '' } 
+  { $parts=0 ; '' }
   PARTITION BY system_time vers_partitioning_interval_or_limit vers_subpartitioning_optional (
     vers_partition_list ,
     PARTITION ver_pn CURRENT
@@ -241,7 +241,7 @@ vers_partitioning_interval_or_limit:
   | LIMIT _smallint_positive
   | LIMIT _positive_digit
 ;
-    
+
 vers_subpartitioning_optional:
   | | | | SUBPARTITION BY vers_hash_key(vers_col_name) SUBPARTITIONS _positive_digit
 ;
@@ -327,7 +327,7 @@ vers_virt_col_definition:
 vers_optional_default_or_current_timestamp:
   | DEFAULT vers_default_or_current_timestamp_val
 ;
-  
+
 vers_default_or_current_timestamp_val:
     '1970-01-01'
   | CURRENT_TIMESTAMP
@@ -435,7 +435,7 @@ vers_history_values:
   # Possibly invalid range
   ==FACTOR:0.5== (_vers_value, { $ts=$prng->uint16(0,2147483647); $prng->datetime($ts) . ', '. $prng->datetime($ts) } )
 ;
- 
+
 vers_empty_value_list:
   () | (),vers_empty_value_list
 ;
@@ -445,7 +445,7 @@ vers_if_exists:
 ;
 
 vers_if_not_exists:
-  | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS 
+  | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS
 ;
 
 vers_column_list:
@@ -472,7 +472,7 @@ vers_lock:
   , LOCK=SHARED |
   , LOCK=EXCLUSIVE
 ;
-  
+
 vers_data_type:
     vers_bit_type
   | vers_enum_type
@@ -550,10 +550,10 @@ vers_optional_geo_default:
 
 vers_optional_auto_increment:
   | | | | | | AUTO_INCREMENT KEY;
-  
+
 vers_index:
   KEY | PRIMARY KEY | UNIQUE ;
-  
+
 vers_key_column_list:
   _field __asc_x_desc(33,33) | _field __asc_x_desc(33,33), vers_key_column_list
 ;

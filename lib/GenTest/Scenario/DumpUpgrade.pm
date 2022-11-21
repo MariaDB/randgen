@@ -1,5 +1,5 @@
 # Copyright (C) 2022 MariaDB Corporation Ab
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
@@ -75,7 +75,7 @@ sub run {
 
   #####
   # Prepare servers
-  
+
   ($old_server, $new_server)= $self->prepare_servers();
    $old_server->backupDatadir($old_server->datadir."_clean");
 
@@ -93,7 +93,7 @@ sub run {
   $self->printStep("Generating data on the old server");
 
   $status= $self->generate_data();
-  
+
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
     return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
@@ -153,7 +153,7 @@ sub run {
   }
   $old_server->normalizeDump($old_server->vardir.'/server_data_old.dump');
   $table_autoinc{'old'}= $old_server->collectAutoincrements();
-   
+
   #####
   $self->printStep("Stopping the old server");
 
@@ -251,10 +251,10 @@ sub run {
     sayError("Database appears to be corrupt after upgrade");
     return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
   }
-  
+
   #####
   $self->printStep("Dumping databases from the new server");
-  
+
   $new_server->dumpSchema(\@databases, $new_server->vardir.'/server_schema_new.dump');
   $new_server->normalizeDump($new_server->vardir.'/server_schema_new.dump', 'remove_autoincs');
   # No need to skip heap tables' data on the new server, they should be empty
@@ -307,7 +307,7 @@ sub run {
 
   #####
   $self->printStep("Comparing databases before and after upgrade");
-  
+
   my $x_status= compare($new_server->vardir.'/server_schema_old.dump', $new_server->vardir.'/server_schema_new.dump');
   if ($x_status != STATUS_OK) {
     sayError("Database structures differ after upgrade");
@@ -317,7 +317,7 @@ sub run {
   else {
     say("Structure dumps appear to be identical");
   }
-  
+
   $x_status= compare($new_server->vardir.'/server_data_old.dump', $new_server->vardir.'/server_data_new.dump');
   if ($x_status != STATUS_OK) {
     sayError("Data differs after upgrade");
@@ -327,7 +327,7 @@ sub run {
   else {
     say("Data dumps appear to be identical");
   }
-  
+
   $x_status= $self->compare_autoincrements($table_autoinc{old}, $table_autoinc{new});
   if ($x_status != STATUS_OK) {
     sayError("Auto-increment data differs after upgrade");

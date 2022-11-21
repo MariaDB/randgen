@@ -76,7 +76,7 @@ ind_constr_item_alg_lock:
 ind_constr_item:
     ind_constr_add_index | ind_constr_add_index | ind_constr_add_index | ind_constr_add_index
   | ind_constr_add_index | ind_constr_add_index | ind_constr_add_index | ind_constr_add_index
-  | ind_constr_add_pk | ind_constr_add_pk 
+  | ind_constr_add_pk | ind_constr_add_pk
   | ind_constr_add_unique | ind_constr_add_unique | ind_constr_add_unique
   | ind_constr_drop_index | ind_constr_drop_index | ind_constr_drop_index | ind_constr_drop_index
   | ind_constr_drop_pk
@@ -165,7 +165,7 @@ ind_constr_column_item:
 ;
 
 ind_constr_column_list:
-    ind_constr_column_item | ind_constr_column_item | ind_constr_column_item 
+    ind_constr_column_item | ind_constr_column_item | ind_constr_column_item
   | ind_constr_column_item, ind_constr_column_list
 ;
 
@@ -190,6 +190,6 @@ ind_constr_algorithm_opt:
 
 ind_constr_lock_opt_comma:
   | | , LOCK = __default_x_none_x_shared_x_exclusive ;
-  
+
 ind_constr_lock_opt:
   | | | LOCK = __default_x_none_x_shared_x_exclusive ;

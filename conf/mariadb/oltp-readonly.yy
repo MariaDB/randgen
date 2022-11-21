@@ -17,7 +17,7 @@
 # Rough imitation of OLTP-readonly test (sysbench-like)
 
 query:
-    select 
+    select
 ;
 
 select:
@@ -25,7 +25,7 @@ select:
     simple_range |
     sum_range |
     order_range |
-    distinct_range 
+    distinct_range
 ;
 
 point_select:

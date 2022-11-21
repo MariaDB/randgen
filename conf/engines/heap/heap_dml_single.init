@@ -15,7 +15,7 @@ CREATE TABLE heap_large_block ( f1 VARCHAR(1000) NOT NULL, f2 VARCHAR(1024), f3 
 # Complex indexes
 CREATE TABLE heap_complex_indexes ( f1 VARCHAR(32) NOT NULL, f2 VARCHAR(32) NOT NULL, f3 VARCHAR(32), f4 VARCHAR(32), PRIMARY KEY (f1, f2), KEY (f2, f3) , UNIQUE (f3, f4)) ENGINE=HEAP ROW_FORMAT=DYNAMIC KEY_BLOCK_SIZE=134;
 
-# Complex hash indexes 
+# Complex hash indexes
 CREATE TABLE heap_complex_indexes_hash ( f1 VARCHAR(32) NOT NULL, f2 VARCHAR(32) NOT NULL, f3 VARCHAR(32), f4 VARCHAR(32), PRIMARY KEY (f1, f2) USING HASH , KEY (f2, f3) USING HASH , UNIQUE (f3, f4) USING HASH ) ENGINE=HEAP ROW_FORMAT=DYNAMIC KEY_BLOCK_SIZE=134;
 
 # No indexes at all, small records # Due to bug 784468 , we can not use VARCHAR(2) or similar

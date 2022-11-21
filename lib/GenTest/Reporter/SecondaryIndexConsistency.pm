@@ -40,7 +40,7 @@ my $last_run= 0;
 
 sub monitor {
     my $reporter = shift;
-    
+
     $first_reporter = $reporter if not defined $first_reporter;
     return STATUS_OK if $reporter ne $first_reporter;
 
@@ -82,12 +82,12 @@ sub monitor {
         $dbh->do("LOCK TABLE $table READ");
         my $pk_data= get_all_rows($dbh,"SELECT $pk_columns FROM $table FORCE INDEX(PRIMARY) ORDER BY $pk_columns");
         next unless defined $pk_data;
-        
+
         KEY:
         foreach my $ind (keys %secondary_keys) {
             my $ind_data= get_all_rows($dbh,"SELECT $pk_columns FROM $table FORCE INDEX($ind) ORDER BY $pk_columns");
             next unless defined $ind_data;
-            
+    
             my $diff= GenTest::Comparator::dumpDiff($pk_data, $ind_data);
             if ($diff) {
                 sayError("$diff");

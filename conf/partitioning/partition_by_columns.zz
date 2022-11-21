@@ -23,10 +23,10 @@ $tables = {
                    ],
           rows => [ 5000 ] ,
           engines => [ 'MyISAM', 'Innodb' ] ,
-          pk => [ undef ] , 
+          pk => [ undef ] ,
           partitions => [
                           "RANGE COLUMNS(col_int_signed, col_varchar_5_utf8)
-                          ( PARTITION p0 VALUES LESS THAN (5, 'm'), 
+                          ( PARTITION p0 VALUES LESS THAN (5, 'm'),
                           PARTITION p1 VALUES LESS THAN (10, 'za' ))",
                           "RANGE COLUMNS(col_int_signed, col_varchar_512_cp932)
                           SUBPARTITION BY HASH( TO_SECONDS(`col_datetime`))

@@ -110,7 +110,7 @@ sub parseFromString {
 
     # Strip comments. Note that this is not Perl-code safe, since perl fragments
     # can contain both comments with # and the $# expression. A proper lexer will fix this
-    
+
     $grammar_string =~ s{#.*$}{}iomg;
 
     # Join lines ending in \
@@ -149,7 +149,7 @@ sub parseFromString {
       # In the resulting grammar we will have:
       #   query:
       #     rule1 | rule2 | rule3;
-      # 
+      #
       # Additions to '*_init' rules will be added as a part of a multiple-statement, e.g.
       #
       # In grammar files we have:
@@ -172,7 +172,7 @@ sub parseFromString {
       # 1: query_init; query_init_add
       # 2: query_init; query_init_add; thread2_init_add
       # 3: thread3_init
-      
+
 
       my @query_adds = ();
       my %thread_adds = ();
@@ -215,7 +215,7 @@ sub parseFromString {
           my $adds = join ' | ', @{$thread_adds{$tid}};
           $rules{'thread'.$tid} = ( defined $rules{'thread'.$tid} ? $rules{'thread'.$tid} . ' | ' . $adds : $adds );
       }
-      
+
       if (@query_init_adds) {
           my $adds = join ';; ', @query_init_adds;
           $rules{'query_init'} = ( defined $rules{'query_init'} ? $rules{'query_init'} . ';; ' . $adds : $adds );
@@ -238,7 +238,7 @@ sub parseFromString {
     foreach my $rule_name (keys %rules) {
 
           my $components_string = $rules{$rule_name};
-          
+  
       my @orig_component_strings = split (m{\|}, $components_string);
 
           # Check for ==FACTOR:N== directives and adjust probabilities
@@ -269,7 +269,7 @@ sub parseFromString {
         # Remove leading and trailing whitespace
         $component_string =~ s{^\s+}{}sgio;
         $component_string =~ s{\s+$}{}sgio;
-      
+
         # Rempove repeating whitespaces
         $component_string =~ s{\s+}{ }sgio;
 
@@ -309,7 +309,7 @@ sub parseFromString {
             my $bracket_count = ($component_parts[$pos] =~ tr/{//);
             $nesting_level = $nesting_level + $bracket_count;
           }
-          
+  
           if (defined $component_parts[$pos] and $component_parts[$pos] =~ m{\}}so) {
             my $bracket_count = ($component_parts[$pos] =~ tr/}//);
             $nesting_level = $nesting_level - $bracket_count;

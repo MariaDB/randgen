@@ -34,7 +34,7 @@ use constant COMPARISON_OUTCOME_ORDERED_MATCH   => 1;
 # then sort the rows and convert them into one gigantic string. Such string representation is no longer
 # dependent on sort order so can be compared safely.
 #
-# A O(N) algorithm that would avoid sorting is to use a hash representation of each data set. e.g. $hash{"A,B,C"} = 2 
+# A O(N) algorithm that would avoid sorting is to use a hash representation of each data set. e.g. $hash{"A,B,C"} = 2
 # if there were two rows containing "A,B,C". If two hashes contain the same keys with the same values, the two initial
 # data sets were identical
 #

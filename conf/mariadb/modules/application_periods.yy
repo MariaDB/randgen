@@ -53,7 +53,7 @@ query_init:
 ;
 
 query:
-     USE { $col_number= 0; $inds= 1; $period_added= 0; ''; $last_database= 'app_periods' } 
+     USE { $col_number= 0; $inds= 1; $period_added= 0; ''; $last_database= 'app_periods' }
   ;; app_periods_query { $last_database = '' }
 ;
 
@@ -61,7 +61,7 @@ app_periods_query:
     ==FACTOR:20==  dml
   |                ddl
   |                admin_table
-  | ==FACTOR:0.1== invalid /* EXECUTOR_FLAG_SILENT */ 
+  | ==FACTOR:0.1== invalid /* EXECUTOR_FLAG_SILENT */
 ;
 
 ##############
@@ -101,11 +101,11 @@ create_table_clause:
 create_definition_for_simple_with_period:
   # Only period columns and period
     full_period_definition
-  # Period columns, period, auto-incremented primary key, optional WITHOUT OVERLAPS  
+  # Period columns, period, auto-incremented primary key, optional WITHOUT OVERLAPS
   | `id` INT AUTO_INCREMENT, `f` VARCHAR(16), full_period_definition, PRIMARY KEY(`id` __asc_x_desc(33,33) without_overlaps_opt)
-  # Period columns, period, unique blob, optional primary/unique key on INT column with optional WITHOUT OVERLAPS  
+  # Period columns, period, unique blob, optional primary/unique key on INT column with optional WITHOUT OVERLAPS
   | `id` INT, `f` _basics_blob_column_type /*!100403 UNIQUE */, full_period_definition unique_key_for_simple_table_opt
-  # Period columns, period, PK on VARCHAR, unique key on INT column with optional WITHOUT OVERLAPS  
+  # Period columns, period, PK on VARCHAR, unique key on INT column with optional WITHOUT OVERLAPS
   | `id` VARCHAR(32), `f` INT,  full_period_definition, PRIMARY KEY(`id` __asc_x_desc(33,33)), UNIQUE(`f` __asc_x_desc(33,33) without_overlaps_opt)
 ;
 
@@ -337,7 +337,7 @@ index_type:
 # Disabled due to MDEV-371 issues
 #  |              HASH
 ;
-    
+
 constraint_definition:
     ==FACTOR:4==   unique_key
   |                primary_key
@@ -410,7 +410,7 @@ period_boundary_literal:
 time_value:
   _timestamp | _date |
   CURRENT_TIMESTAMP + _tinyint |
-  CURDATE | CURDATE | CURDATE | CURDATE | CURDATE | CURDATE | 
+  CURDATE | CURDATE | CURDATE | CURDATE | CURDATE | CURDATE |
   NOW() | NOW(6) | NOW() | NOW(6) | NOW() | NOW(6) | NOW() | NOW(6) |
   DATE_ADD(_timestamp, INTERVAL _positive_digit _basics_interval) |
   DATE_ADD(_timestamp, INTERVAL _positive_digit _basics_interval) |

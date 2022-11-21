@@ -100,7 +100,7 @@ my $parens_template =
 #my $part_select_template = qr{[^()]+|$parens_template}xi;
 my $part_select_template = qr{$parens_template|$comment_template|$single_quotes_template|$double_quotes_template|[^();'" ]+|;}xi;
 
-sub convert_selects_to_cte 
+sub convert_selects_to_cte
 {
     my ($tmp_query, $cte_count) = @_;
     sayDebug("In convert_selects_to_cte with $tmp_query");
@@ -111,20 +111,20 @@ sub convert_selects_to_cte
     # Parse the query or query fragment
     while ($tmp_query =~ s/\s*($part_select_template)//xi)
     {
-        # Token here is either a part of the query without brackets, 
+        # Token here is either a part of the query without brackets,
         # or something in round brackets
         my $token = $1;
         sayDebug("Token: $1");
 
         # If the fragment starts with SELECT, we'll start collecting the complete SELECT
-        # (we assume there had been no CTEs before transformation, 
+        # (we assume there had been no CTEs before transformation,
         #  or if there had, we ignore them).
         if ($token =~ /^SELECT$/is) {
             $in_select = 1;
             $select = $token;
         }
 
-        # SELECT ends either by one of the words below, or by semicolon, 
+        # SELECT ends either by one of the words below, or by semicolon,
         # or when the fragment ends
         elsif ($token =~ /^(?:UNION|EXCEPT|INTERSECT|INTO|RETURNING|;)/) {
           if ($in_select) {
@@ -142,8 +142,8 @@ sub convert_selects_to_cte
             # otherwise to the new query directly
             if ($in_select) {
                 $select .= $res;
-            } else { 
-                $new_query .= $res; 
+            } else {
+                $new_query .= $res;
             }
         }
 

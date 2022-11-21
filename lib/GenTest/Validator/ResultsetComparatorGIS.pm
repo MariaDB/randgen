@@ -77,7 +77,7 @@ sub validate {
 	}
 
 	if ( ($compare_outcome == STATUS_LENGTH_MISMATCH) ||
-	     ($compare_outcome == STATUS_CONTENT_MISMATCH) 
+	     ($compare_outcome == STATUS_CONTENT_MISMATCH)
 	) {
 		say("---------- RESULT COMPARISON ISSUE START ----------");
 	}
@@ -96,7 +96,7 @@ sub validate {
 	}
 
 	if ( ($compare_outcome == STATUS_LENGTH_MISMATCH) ||
-	     ($compare_outcome == STATUS_CONTENT_MISMATCH) 
+	     ($compare_outcome == STATUS_CONTENT_MISMATCH)
 	) {
 		say("---------- RESULT COMPARISON ISSUE END ------------");
 	}

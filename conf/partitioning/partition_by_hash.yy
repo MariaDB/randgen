@@ -303,7 +303,7 @@ partition_count:
   96 | 97 | 98 | 98 | 98 | 99 | 99 | 99 | 99 ;
 
 if_exists:
-  IF EXISTS ;   
+  IF EXISTS ;
 
 if_not_exists:
   IF NOT EXISTS ;

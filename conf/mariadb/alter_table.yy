@@ -19,7 +19,7 @@
 query_init:
   { $tbnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
 
-query: 
+query:
   alt_query ;
 
 alt_query:
@@ -228,7 +228,7 @@ alt_new_or_existing_col_name:
   ==FACTOR:10== alt_new_col_name |
   _field
 ;
-  
+
 alt_col_definition:
     alt_bit_type alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
   | alt_int_type alt_unsigned alt_zerofill alt_null alt_default_optional_int_or_auto_increment alt_invisible_optional alt_check_optional
@@ -294,7 +294,7 @@ alt_default_optional_int_or_auto_increment:
 ;
 
 alt_create_or_replace:
-  { $new_col_next_num = 1; '' } CREATE OR REPLACE alt_temporary TABLE alt_new_or_existing_table_name (alt_col_name_and_definition_list) alt_table_flags { $new_col_next_num = 0; '' } 
+  { $new_col_next_num = 1; '' } CREATE OR REPLACE alt_temporary TABLE alt_new_or_existing_table_name (alt_col_name_and_definition_list) alt_table_flags { $new_col_next_num = 0; '' }
 ;
 
 alt_col_name_and_definition_list:
@@ -406,7 +406,7 @@ alt_lock:
                , LOCK=SHARED |
                , LOCK=EXCLUSIVE
 ;
-  
+
 alt_data_type:
     alt_bit_type
   | alt_enum_type
@@ -458,7 +458,7 @@ alt_geo_type:
 
 alt_null:
   | NULL | NOT NULL ;
-  
+
 alt_optional_default:
   | DEFAULT alt_default_val
 ;
@@ -489,10 +489,10 @@ alt_geo_optional_default:
 alt_optional_auto_increment:
   | | | | | | AUTO_INCREMENT
 ;
-  
+
 alt_inline_key:
   | | | alt_index ;
-  
+
 alt_index:
     alt_index_or_key
   | alt_constraint_optional PRIMARY KEY
@@ -552,7 +552,7 @@ alt_index_or_key:
 alt_optional_index_or_key:
   | alt_index_or_key
 ;
-  
+
 alt_key_column:
     alt_bit_col_name
   | alt_int_col_name
@@ -581,7 +581,7 @@ alt_any_key:
 alt_comment:
   COMMENT alt_eq_optional _english
 ;
-  
+
 alt_compressed:
   | | | | | | COMPRESSED ;
 

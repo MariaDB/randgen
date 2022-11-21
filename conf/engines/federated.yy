@@ -27,7 +27,7 @@ thread1_init:
   ;; fed_create_federated_table
   ;; fed_create_federated_table
   ;; fed_create_federated_table
-;  
+;
 
 fed_create_federated_table:
     SELECT CONCAT("CREATE OR REPLACE TABLE fed_db.", table_name, " ENGINE=FEDERATED CONNECTION='fedlink/", table_name, "'") INTO @stmt FROM information_schema.tables WHERE table_schema = 'test' AND table_type = 'BASE TABLE' ORDER BY RAND(_int_unsigned) LIMIT 1

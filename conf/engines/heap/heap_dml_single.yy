@@ -4,7 +4,7 @@
 # * Creating a small set of tables and executing various operations over those tables
 #
 # * Employ TEMPORARY tables in as many DML contexts as possible
-# 
+#
 # This grammar goes together with the respective mysqld --init file that creates the tables
 #
 

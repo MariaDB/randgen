@@ -57,7 +57,7 @@ select:
 simple_select:
   explain_extended SELECT simple_select_list
   FROM join_list
-  WHERE where_list 
+  WHERE where_list
   optional_group_by
   having_clause
   order_by_clause ;
@@ -86,7 +86,7 @@ int_update:
  int_update_query ; int_select_count ;
 
 int_update_query:
-  UPDATE _table[invariant] partition_pruning SET `col_int_signed` = _digit[invariant] WHERE special_where_list ; 
+  UPDATE _table[invariant] partition_pruning SET `col_int_signed` = _digit[invariant] WHERE special_where_list ;
 
 int_select_count:
   SELECT COUNT(*) FROM _table[invariant] partition_pruning WHERE `col_int_signed` = _digit[invariant];
@@ -143,7 +143,7 @@ special_where_item:
   _table[invariant] . int_field not in (number_list) |
   _table[invariant] . partitioned_char_field comparison_operator _char |
   _table[invariant] . partitioned_char_field not IN (char_list ) |
-  _table[invariant] . char_field not IN (char_list) ; 
+  _table[invariant] . char_field not IN (char_list) ;
 
 insert:
   INSERT INTO _table SELECT _field_list FROM _table[invariant] WHERE special_where_list ORDER BY _field_list LIMIT _digit ;
@@ -172,7 +172,7 @@ join_type:
 
 join_condition:
   current_table_item . int_indexed = previous_table_item . int_indexed |
-  current_table_item . char_indexed = previous_table_item . char_indexed ; 
+  current_table_item . char_indexed = previous_table_item . char_indexed ;
 
 
 #########################################################
@@ -189,10 +189,10 @@ where_item:
   table1 . partitioned_int_field not BETWEEN _digit[invariant] AND ( _digit[invariant] + _digit ) |
   table1 . partitioned_int_field not IN ( number_list ) |
   table1 . partitioned_char_field comparison_operator _char  |
-  table1 . partitioned_char_field not IN (char_list ) | 
+  table1 . partitioned_char_field not IN (char_list ) |
   table1 . utf8_char_field comparison_operator existing_table_item . utf8_char_field  |
   table1 . latin1_char_field comparison_operator existing_table_item . latin1_char_field  |
-  table1 . cp932_char_field comparison_operator existing_table_item . cp932_char_field  | 
+  table1 . cp932_char_field comparison_operator existing_table_item . cp932_char_field  |
   table1 . `col_date` comparison_operator _date  |
   table1 . `col_datetime` comparison_operator _datetime  |
   table1 . date_field comparison_operator _date  |
@@ -217,13 +217,13 @@ latin1_char_field:
   `col_varchar_5_latin1`  | `col_varchar_5_latin1_key` | `col_varchar_256_latin1` | `col_varchar_256_latin1_key` | `col_varchar_512_latin1` | `col_varchar_512_latin1_key`;
 
 cp932_char_field:
-  `col_varchar_5_cp932` | `col_varchar_5_cp932_key` | `col_varchar_256_cp932` | `col_varchar_256_cp932_key` | `col_varchar_512_cp932` | `col_varchar_512_cp932_key` ; 
+  `col_varchar_5_cp932` | `col_varchar_5_cp932_key` | `col_varchar_256_cp932` | `col_varchar_256_cp932_key` | `col_varchar_512_cp932` | `col_varchar_512_cp932_key` ;
 
 char_field:
   utf8_char_field | latin1_char_field | cp932_char_field ;
 
 date_field:
-  `col_datetime` | `col_date_key` | `col_datetime_key` | `col_date` ; 
+  `col_datetime` | `col_date_key` | `col_datetime_key` | `col_date` ;
 
 non_int_field:
   char_field | date_field ;
@@ -231,7 +231,7 @@ non_int_field:
 number_list:
   _digit | number_list, _digit ;
 
-char_list: 
+char_list:
   char | char_list, char ;
 
 char:
@@ -304,7 +304,7 @@ table_one_two:
 
 # disabled this to reduce number of bad queries
 # can merge with rule table_one_two to add more
-# variety to queries, but it is recommended that   
+# variety to queries, but it is recommended that
 # table1 is still favored disproportionately
 # (there aren't a lot of joins)
 table_one_two_disabled:
@@ -322,7 +322,7 @@ existing_table_item:
 left_right:
   LEFT | RIGHT ;
 
-outer: 
+outer:
   | | | OUTER ;
 
 existing_select_item:

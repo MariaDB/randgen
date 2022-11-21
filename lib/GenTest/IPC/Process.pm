@@ -111,7 +111,7 @@ sub childWaitStatus {
 
 sub kill {
     my ($self) = @_;
-    
+
     if (osWindows()) {
         ## Not sure yet, but the thread will enevtually die dtogether
         ## with the main program

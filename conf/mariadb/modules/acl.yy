@@ -113,18 +113,18 @@ acl_grant_variation:
     ALL __privileges(50) ON acl_opt_priv_level_any
 
   | acl_global_privilege_list ON acl_opt_priv_level_all
-  
+
   | acl_database_privilege_list ON acl_opt_priv_level_all
   | acl_database_privilege_list ON acl_opt_priv_level_wildcard
 
   | acl_table_privilege_list ON __table(50) acl_opt_priv_level_any
-  
+
   | acl_column_privilege_list ON __table(50) acl_opt_priv_level_exact
-  
+
   | acl_routine_privilege_list ON acl_opt_priv_level_all
   | acl_routine_privilege_list ON acl_opt_priv_level_wildcard
   | acl_routine_privilege_list ON __function_x_procedure acl_opt_priv_level_exact
-  
+
 ;
 
 acl_opt_priv_level_any:
@@ -280,7 +280,7 @@ acl_host:
 
 acl_authentication_option:
   | | | | | |
-  | IDENTIFIED BY acl_password 
+  | IDENTIFIED BY acl_password
   | IDENTIFIED BY PASSWORD acl_password_hash
   | IDENTIFIED __via_x_with acl_authentication_plugin
   | IDENTIFIED __via_x_with acl_authentication_plugin __using_x_as acl_authentication_string

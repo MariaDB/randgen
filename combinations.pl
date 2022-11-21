@@ -64,7 +64,7 @@ eval
 
 $| = 1;
 my $ctrl_c = 0;
-    
+
 $SIG{INT} = sub { $ctrl_c = 1 };
 $SIG{TERM} = sub { exit(0) };
 $SIG{CHLD} = "IGNORE" if osWindows();
@@ -136,7 +136,7 @@ for my $i (1..$threads) {
     ## Child
     $thread_id = $i;
     make_path($workdir);
-    
+
     if ($exhaustive) {
       doExhaustive();
     } else {
@@ -345,7 +345,7 @@ sub doCombination {
 
   # Count the number of basedirs in the final string to add the vardirs
   my $servers= () = $command =~ /--basedir=/g;
-  foreach (1..$servers) {  
+  foreach (1..$servers) {
     $command .= " --vardir=$workdir/current${_}_${thread_id} ";
   }
 
@@ -404,7 +404,7 @@ sub doCombination {
           close(OUT);
           if (defined $clean) {
             say("[$thread_id] Clean mode active & failed run (".status2text($result)."): Archiving this vardir");
-            system('rm -f '.$workdir.'/vardir'.$s.'_'.$trial_id.'/tmp/master.sock'); 
+            system('rm -f '.$workdir.'/vardir'.$s.'_'.$trial_id.'/tmp/master.sock');
             system('tar zhcf '.$workdir.'/vardir'.$s.'_'.$trial_id.'.tar.gz -C '.$workdir.' ./vardir'.$s.'_'.$trial_id);
             system("rm -Rf $to");
           }
@@ -419,7 +419,7 @@ sub help {
     print <<EOF
 
 $0 - Run a set of RQG tests
-    
+
     Options:
 
     --basedir=<location>   : Specifies the base directory of a server (use multiple --basedir=x --basedir=y for each server). Must be provided either as an option or in the config file

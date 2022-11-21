@@ -30,7 +30,7 @@
 #	several options
 #
 # * Each potential join is listed separately with a specific join condition that should be realistic
-# 
+#
 # * In the WHERE clause, if we generate a condition for which the table is not present, the condition is
 #	commented out in order to avoid semantic errors
 #
@@ -57,7 +57,7 @@ distinct:
 	| DISTINCT ;
 
 #
-# We divide the joins into "big", those containing the `ontime` table, and 
+# We divide the joins into "big", those containing the `ontime` table, and
 # small, those containing stuff like states and ZIP codes.
 #
 
@@ -152,7 +152,7 @@ where_list:
 #
 # Each of the conditions described below are valid and meaningful for the particular table in question
 # They are likely to use indexes and/or zero down on a smaller number of records
-# 
+#
 
 where_condition:
 	{ $condition_table = 'ontime' ; return undef; } start_condition ontime_condition end_condition |
@@ -207,7 +207,7 @@ remark_condition:
 
 generic_char_expression:
 	BETWEEN _char[invariant] AND CHAR(ASCII( _char[invariant] ) + one_two ) |
-	LIKE 'N10%' |	# 6098 aircraft with tail num starting with N10 
+	LIKE 'N10%' |	# 6098 aircraft with tail num starting with N10
 	LIKE 'N9Q%' ;	# 10 aircraft starting with N9Q
 
 one_two:
@@ -221,7 +221,7 @@ generic_code_expression:
 single_airport:
 	'ORD' |		# busiest airport
 	'AKN' |		# un-busiest airport
-	'BIS' |		# 100 flights 
+	'BIS' |		# 100 flights
 	'LIT' |		# 1000 flights
 	'MSP' ; 	# 10000 flights
 
@@ -249,7 +249,7 @@ single_carrier:
 	'AA'|'AQ'|'AS'|'B6'|'CO'|'DH'|'DL'|'EV'|'FL'|'HA'|'HP'|'MQ'|'NW'|'OH'|'OO'|'RU'|'TW'|'TZ'|'UA'|'US'|'WN';
 
 #
-# When we define a condition, we check if the table for which this condition would apply is present in 
+# When we define a condition, we check if the table for which this condition would apply is present in
 # the list of the tables we selected for joining. If the table is not present, the condition is still
 # generated, but it is commented out in order to avoid "unknown table" errors.
 #

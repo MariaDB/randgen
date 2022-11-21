@@ -39,7 +39,7 @@ sub transform {
 	# We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
 	return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
 		|| $query !~ m{\s*SELECT}sio;
-    
+
 	my ($table_name) = $query =~ m{FROM (`.*?`|\w+)[ ^]}sio;
   return STATUS_WONT_HANDLE unless $table_name;
 

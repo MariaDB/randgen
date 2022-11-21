@@ -50,7 +50,7 @@ sub validate {
   {
     my $compare_outcome = ($query =~ /OUTCOME_ORDERED_MATCH/ ? GenTest::Comparator::compare_as_ordered($results->[0], $results->[$i]) : GenTest::Comparator::compare_as_unordered($results->[0], $results->[$i]));
     if ( ($compare_outcome == STATUS_LENGTH_MISMATCH) ||
-         ($compare_outcome == STATUS_CONTENT_MISMATCH) 
+         ($compare_outcome == STATUS_CONTENT_MISMATCH)
     ) {
       say("---------- RESULT COMPARISON ISSUE START ----------");
       if ($compare_outcome == STATUS_LENGTH_MISMATCH) {

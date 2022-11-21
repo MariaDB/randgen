@@ -19,7 +19,7 @@
 # outer_join.yy
 # Purpose:  Random Query Generator grammar for testing larger (6 - 10 tables) JOINs
 # Tuning:   Please tweak the rule table_or_joins ratio of table:join for larger joins
-#           NOTE:  be aware that larger (15-20 tables) queries can take far too 
+#           NOTE:  be aware that larger (15-20 tables) queries can take far too
 #                  long to run to be of much interest for fast, automated testing
 #
 # Notes:    This grammar is designed to be used with gendata=conf/optimizer/outer_join.zz
@@ -27,11 +27,11 @@
 #           Additionally, it is not recommended to use the standard RQG-produced
 #           tables as they way we pick tables can result in the use of
 #           several large tables that will bog down a generated query
-#           
+#  
 #           Please rely largely on the _portable variant of this grammar if
 #           doing 3-way comparisons as it has altered code that will produce
 #           more standards-compliant queries for use with other DBMS's
-#  
+#
 #           We keep the grammar here as it is in order to also test certain
 #           MySQL-specific syntax variants.
 ################################################################################
@@ -74,9 +74,9 @@ aggregate_select_list:
 
 new_select_item:
         nonaggregate_select_item |
-        nonaggregate_select_item |        
         nonaggregate_select_item |
-        nonaggregate_select_item |        
+        nonaggregate_select_item |
+        nonaggregate_select_item |
         nonaggregate_select_item |
 	aggregate_select_item ;
 
@@ -84,21 +84,21 @@ nonaggregate_select_item:
         table_alias . int_field_name AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 aggregate_select_item:
-        aggregate table_alias . int_field_name ) AS {"field".++$fields } ; 
+        aggregate table_alias . int_field_name ) AS {"field".++$fields } ;
 
 join:
-       { $stack->push() }      
-       table_or_join 
+       { $stack->push() }
+       table_or_join
        { $stack->set("left",$stack->get("result")); }
        left_right outer JOIN table_or_join_count_control
-       ON 
+       ON
        join_condition ;
 
 join_condition:
    int_condition | char_condition ;
 
-int_condition: 
-   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed = 
+int_condition:
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed =
    { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed =
@@ -115,13 +115,13 @@ int_condition:
 
 char_condition:
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed  =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_name =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_indexed
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } ;
 
 where_list:
@@ -183,7 +183,7 @@ order_by_item:
 	existing_select_item desc ;
 
 desc:
-        ASC | | | | | DESC ; 
+        ASC | | | | | DESC ;
 
 ################################################################################
 # We mix digit and _digit here.  We want to alter the possible values of LIMIT #
@@ -220,14 +220,14 @@ int_indexed:
    `pk` | `col_int_key` ;
 
 char_field_name:
-  `col_varchar_10_utf8` | 
-  `col_varchar_10_latin1`| 
-  `col_varchar_1024_utf8_key` | 
-  `col_varchar_1024_utf8` | 
-  `col_varchar_1024_latin1_key` | 
-  `col_varchar_10_utf8_key` | 
-  `col_varchar_1024_latin1` | 
-  `col_varchar_10_latin1_key` ; 
+  `col_varchar_10_utf8` |
+  `col_varchar_10_latin1`|
+  `col_varchar_1024_utf8_key` |
+  `col_varchar_1024_utf8` |
+  `col_varchar_1024_latin1_key` |
+  `col_varchar_10_utf8_key` |
+  `col_varchar_1024_latin1` |
+  `col_varchar_10_latin1_key` ;
 
 char_indexed:
   `col_varchar_10_latin1_key` | `col_varchar_10_utf8_key` |
@@ -253,7 +253,7 @@ existing_select_item:
 _digit:
     1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
     1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | _tinyint_unsigned ;
- 
+
 
 and_or:
    AND | AND | OR ;

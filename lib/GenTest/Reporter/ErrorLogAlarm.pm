@@ -26,8 +26,8 @@ use GenTest;
 use GenTest::Reporter;
 use GenTest::Constants;
 
-# Modify this to look for other patterns in the error log. 
-# Note: do not modify $pattern to be defined using double quotes (") but leave as single quotes (') 
+# Modify this to look for other patterns in the error log.
+# Note: do not modify $pattern to be defined using double quotes (") but leave as single quotes (')
 # as double quotes require a different escaping sequence for "[" (namely "\\[" it seems)
 my $pattern = '^Error:|^ERROR|\[ERROR\]|allocated at line|missing DBUG_RETURN|^safe_mutex:|Invalid.*old.*table or database|InnoDB: Warning|InnoDB: Error:|InnoDB: Operating system error|Error while setting value|\[Warning\] Invalid|debugger aborting';
 
@@ -68,7 +68,7 @@ sub monitor {
     if ((-e $errorlog) && (-s $errorlog > 0)) {
         open(LOG, $errorlog);
         while(my $line = <LOG>) {
-            # Case insensitive search required for (observed) programming 
+            # Case insensitive search required for (observed) programming
             # incosistencies like "InnoDB: ERROR:" instead of "InnoDB: Error:"
             if(($line =~ m{$pattern}i) && ($line !~ m{$reject_pattern}i)) {
                 sayError("ErrorLogAlarm reporter: Found a matching line: [ $line ]");
@@ -93,10 +93,10 @@ sub monitor {
 sub report {
     my $reporter = shift;
     my $logfile = $reporter->serverInfo('errorlog');
-    my $description = 
+    my $description =
         'ErrorLogAlarm Reporter raised an alarm. Found pattern \''.$pattern.
         '\' in error log file '.$logfile;
-    
+
     return STATUS_OK;
 }
 

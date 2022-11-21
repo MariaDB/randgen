@@ -75,7 +75,7 @@ sub new {
 	my %validators;
 
 	# If a Validator was specified by name, load the class and create an object.
-	# none is a special word to use when no validators are needed 
+	# none is a special word to use when no validators are needed
 	# (and we don't want any to be added automatically which happens when we don't provide any)
 
 	my @v = @{$mixer->validators()};
@@ -87,7 +87,7 @@ sub new {
 			say("Mixer: Loading Validator $validator.");
 			eval "use $validator" or print $@;
 			push @validators, $validator->new();
-            
+    
             $validators[$i]->configure($mixer->properties);
 		}
 		$validators{ref($validators[$#validators])}++;
@@ -185,10 +185,10 @@ sub next {
 			my $execution_result = $executor->execute($query);
 			
 			# If the server has crashed but we expect server restarts during the test, we will wait and retry
-			if (($execution_result->status() == STATUS_SERVER_CRASHED 
-					or $execution_result->status() == STATUS_SERVER_KILLED 
+			if (($execution_result->status() == STATUS_SERVER_CRASHED
+					or $execution_result->status() == STATUS_SERVER_KILLED
 					or $execution_result->status() == STATUS_REPLICATION_FAILURE
-				 ) and $restart_timeout) 
+				 ) and $restart_timeout)
 			{
                 say("Mixer: Server has gone away, waiting for $restart_timeout more seconds to see if it gets back")
 					if $restart_timeout == $mixer->restart_timeout() or $restart_timeout == 1;

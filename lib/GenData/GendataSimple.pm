@@ -129,7 +129,7 @@ sub run {
     $executor->setId($self->executor_id);
     $executor->setVardir($self->[GDS_VARDIR]);
     $executor->init();
-    
+
     my $names = GDS_DEFAULT_NAMES;
     my $rows;
 
@@ -157,13 +157,13 @@ sub run {
         my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i]);
         return $gen_table_result if $gen_table_result != STATUS_OK;
     }
-    
+
     # Need to create a dummy supdstituion for non-protable DUAL
-    
+
     $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ DUMMY");
     $self->variate_and_execute($executor,"CREATE TABLE DUMMY (I INTEGER)");
     $self->variate_and_execute($executor,"INSERT INTO DUMMY VALUES(0)");
-    
+
     $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
     return STATUS_OK;
 }

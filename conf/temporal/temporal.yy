@@ -29,8 +29,8 @@ where_item:
 	datetime_expr IS not NULL ;
 
 order_by:
-	| 
-	ORDER BY field_list | 
+	|
+	ORDER BY field_list |
 	ORDER BY 1 ;
 
 having:
@@ -39,7 +39,7 @@ having:
 
 field_list:
 	_field , field_list |
-	_field , _field ; 
+	_field , _field ;
 
 comp_op:
 	= | < | > | != | <> |  <=> | >= | <= ;
@@ -59,7 +59,7 @@ datetime_expr:
 
 arg_datetime_list:
 	arg_datetime , arg_datetime |
-	arg_datetime , arg_datetime_list ; 
+	arg_datetime , arg_datetime_list ;
 
 arg_datetime:
 	arg_datetime | arg_datetime | arg_datetime | arg_datetime | arg_date | datetime_func | '0000-00-00 00:00:00' | datetime_field ;
@@ -230,7 +230,7 @@ arg_unit_timestamp:
  SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | QUARTER | YEAR ;
 
 add_sub:
-	DATE_ADD( | DATE_SUB( | SUBDATE 
+	DATE_ADD( | DATE_SUB( | SUBDATE
 
 arg_mode:
 	0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 ;

@@ -42,10 +42,10 @@ sub run {
     my ($self,$servers,@args) = @_;
     $self->[ERRORFILTER_CHANNEL]->reader;
 
-    # This is a forked process. When it gets killed at the end, 
+    # This is a forked process. When it gets killed at the end,
     # it destroys dbh which causes problems and race conditions
-    # on connecting to server. 
-    # Setting InactiveDestroy should help to avoid it. 
+    # on connecting to server.
+    # Setting InactiveDestroy should help to avoid it.
     foreach my $server (@$servers) {
         next unless $server;
         $server->dbh()->{InactiveDestroy} = 1;

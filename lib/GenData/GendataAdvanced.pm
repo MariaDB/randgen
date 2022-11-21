@@ -128,7 +128,7 @@ sub run {
     my ($self) = @_;
 
     say("Running GendataAdvanced");
-    
+
     $prng = GenTest::Random->new( seed => $self->[GDS_SEED] );
 
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
@@ -690,7 +690,7 @@ sub gen_table {
           unless (defined $coldef->[6] or ($c eq 'id' and ($has_autoinc) and $prng->uint16(0,9))) {
               push @column_list, $c;
           }
-          push @columns, 
+          push @columns,
               "$c $coldef->[0]"         # type
               . ($coldef->[1] ? "($coldef->[1])" : '') # length
               . ($coldef->[2] ? " $coldef->[2]" : '')  # unsigned

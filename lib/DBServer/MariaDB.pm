@@ -1,4 +1,4 @@
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved. 
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, 2022, MariaDB
 # Use is subject to license terms.
 #
@@ -81,7 +81,7 @@ my $default_shutdown_timeout= 300;
 
 sub new {
     my $class = shift;
-    
+
     my $self = $class->SUPER::new({'basedir' => MYSQLD_BASEDIR,
                                    'sourcedir' => MYSQLD_SOURCEDIR,
                                    'vardir' => MYSQLD_VARDIR,
@@ -94,28 +94,28 @@ sub new {
                                    'manual_gdb' => MYSQLD_MANUAL_GDB,
                                    'config' => MYSQLD_CONFIG_FILE,
                                    'user' => MYSQLD_USER},@_);
-    
+
     croak "No valgrind support on windows" if osWindows() and defined $self->[MYSQLD_VALGRIND];
     croak "No rr support on windows" if osWindows() and $self->[MYSQLD_RR];
     croak "No cannot use both rr and valgrind at once" if $self->[MYSQLD_RR] and defined $self->[MYSQLD_VALGRIND];
     croak "Vardir is not defined for the server" unless $self->[MYSQLD_VARDIR];
-    
+
     if (osWindows()) {
         ## Use unix-style path's since that's what Perl expects...
         $self->[MYSQLD_BASEDIR] =~ s/\\/\//g;
         $self->[MYSQLD_VARDIR] =~ s/\\/\//g;
         $self->[MYSQLD_DATADIR] =~ s/\\/\//g;
     }
-    
+
     if (not $self->_absPath($self->vardir)) {
         $self->[MYSQLD_VARDIR] = $self->basedir."/".$self->vardir;
     }
-    
+
     # Default tmpdir for server.
     $self->[MYSQLD_TMPDIR] = $self->vardir."/tmp";
 
     $self->[MYSQLD_DATADIR] = $self->[MYSQLD_VARDIR]."/data";
-    
+
     $self->[MYSQLD_MYSQLD] = $self->_find([$self->basedir],
                                           osWindows()?["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"]:["sql","libexec","bin","sbin"],
                                           osWindows()?"mysqld.exe":"mysqld");
@@ -153,8 +153,8 @@ sub new {
             }
         }
     }
-   
-    ## Use valgrind suppression file if available in mysql-test path. 
+
+    ## Use valgrind suppression file if available in mysql-test path.
     if (defined $self->[MYSQLD_VALGRIND]) {
         $self->[MYSQLD_VALGRIND_SUPPRESSION_FILE] = $self->_find(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir],
                                                              osWindows()?["share/mysql-test","mysql-test"]:["share/mysql-test","mysql-test"],
@@ -167,25 +167,25 @@ sub new {
                       'fill_help_tables.sql',
                       'maria_add_gis_sp_bootstrap.sql',
                       'mysql_sys_schema.sql') {
-        my $script = 
+        my $script =
              eval { $self->_find(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir],
                           ["scripts","share/mysql","share"], $file) };
         push(@{$self->[MYSQLD_BOOT_SQL]},$script) if $script;
     }
-    
-    $self->[MYSQLD_MESSAGES] = 
-       $self->_findDir(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir], 
+
+    $self->[MYSQLD_MESSAGES] =
+       $self->_findDir(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir],
                        ["sql/share","share/mysql","share"], "english/errmsg.sys");
 
     $self->[MYSQLD_CHARSETS] =
-        $self->_findDir(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir], 
+        $self->_findDir(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir],
                         ["sql/share/charsets","share/mysql/charsets","share/charsets"], "Index.xml");
-                         
-    
+                 
+
     $self->[MYSQLD_STDOPTS] = ["--basedir=".$self->basedir,
                                $self->_messages,
                                "--character-sets-dir=".$self->[MYSQLD_CHARSETS],
-                               "--tmpdir=".$self->tmpdir];    
+                               "--tmpdir=".$self->tmpdir];
 
     if ($self->[MYSQLD_START_DIRTY]) {
         say("Using existing data for server " .$self->version ." at ".$self->datadir);
@@ -234,7 +234,7 @@ sub tmpdir {
 
 sub port {
     my ($self) = @_;
-    
+
     if (defined $self->[MYSQLD_PORT]) {
         return $self->[MYSQLD_PORT];
     } else {
@@ -300,10 +300,10 @@ sub valgrind_suppressionfile {
 sub serverType {
     my ($self, $mysqld) = @_;
     $self->[MYSQLD_SERVER_TYPE] = "Release";
-    
+
     my $command="$mysqld --version";
     my $result=`$command 2>&1`;
-    
+
     $self->[MYSQLD_SERVER_TYPE] = "Debug" if ($result =~ /debug/sig);
     return $self->[MYSQLD_SERVER_TYPE];
 }
@@ -339,7 +339,7 @@ sub printServerOptions {
 
 sub createMysqlBase  {
     my ($self) = @_;
-    
+
     ## Clean old db if any
     if (-d $self->vardir) {
         rmtree($self->vardir);
@@ -467,12 +467,12 @@ sub startServer {
 
     $command = $command." ".join(' ',@extra_opts);
 
-    # If we don't remove the existing pidfile, 
+    # If we don't remove the existing pidfile,
     # the server will be considered started too early, and further flow can fail
     unlink($self->pidfile);
-    
+
     my $errorlog = $self->vardir."/".MYSQLD_ERRORLOG_FILE;
-    
+
     # In seconds, timeout for the server to start updating error log
     # after the server startup command has been launched
     my $start_wait_timeout= 30;
@@ -481,7 +481,7 @@ sub startServer {
     # after it has started updating the error log
     # (before the server is considered hanging)
     my $startup_timeout= 600;
-    
+
     if ($self->[MYSQLD_RR]) {
         $command = "rr record -h --output-trace-dir=".$self->vardir."/rr_profile_".time()." ".$command;
     }
@@ -554,7 +554,7 @@ sub startServer {
             # [Note] <path>/mysqld (mysqld <version>) starting as process <pid> ...
             # (if the server is new enough to produce it).
             # We need the latest line of this kind
-            
+    
             unless ($errlog_fh) {
                 unless (open($errlog_fh, $errorlog)) {
                     sayError("Could not open the error log  " . $errorlog . ": $!");
@@ -725,7 +725,7 @@ sub term {
 
 sub crash {
     my ($self) = @_;
-    
+
     if (defined $self->serverpid) {
         kill SEGV => $self->serverpid;
         say("Crashed process ".$self->serverpid);
@@ -734,7 +734,7 @@ sub crash {
     # clean up when the server is not alive.
     unlink $self->socketfile if -e $self->socketfile;
     unlink $self->pidfile if -e $self->pidfile;
- 
+
 }
 
 sub corefile {
@@ -1369,7 +1369,7 @@ sub waitForServerToStart {
 sub backupDatadir {
   my $self= shift;
   my $backup_name= shift;
-  
+
   say("Copying datadir... (interrupting the copy operation may cause investigation problems later)");
   if (osWindows()) {
       system('xcopy "'.$self->datadir.'" "'.$backup_name.' /E /I /Q');
@@ -1556,7 +1556,7 @@ sub running {
 
 sub _find {
     my($self, $bases, $subdir, @names) = @_;
-    
+
     foreach my $base (@$bases) {
         foreach my $s (@$subdir) {
           foreach my $n (@names) {
@@ -1570,7 +1570,7 @@ sub _find {
         $paths .= join(",",map {"'".$base."/".$_."'"} @$subdir).",";
     }
     my $names = join(" or ", @names );
-    croak "Cannot find '$names' in $paths"; 
+    croak "Cannot find '$names' in $paths";
 }
 
 sub dsn {
@@ -1616,7 +1616,7 @@ sub dbh {
 
 sub _findDir {
     my($self, $bases, $subdir, $name) = @_;
-    
+
     foreach my $base (@$bases) {
         foreach my $s (@$subdir) {
             my $path  = $base."/".$s."/".$name;
@@ -1632,9 +1632,9 @@ sub _findDir {
 
 sub _absPath {
     my ($self, $path) = @_;
-    
+
     if (osWindows()) {
-        return 
+        return
             $path =~ m/^[A-Z]:[\/\\]/i;
     } else {
         return $path =~ m/^\//;
@@ -1645,10 +1645,10 @@ sub version {
     my($self) = @_;
 
     if (not defined $self->[MYSQLD_VERSION]) {
-        my $conf = $self->_find([$self->basedir], 
+        my $conf = $self->_find([$self->basedir],
                                 ['scripts',
                                  'bin',
-                                 'sbin'], 
+                                 'sbin'],
                                 'mysql_config.pl', 'mysql_config');
         ## This will not work if there is no perl installation,
         ## but without perl, RQG won't work either :-)
@@ -1712,10 +1712,10 @@ sub _logOptions {
     my ($self) = @_;
 
     if ($self->_olderThan(5,1,29)) {
-        return ["--log=".$self->logfile]; 
+        return ["--log=".$self->logfile];
     } else {
         if ($self->[MYSQLD_GENERAL_LOG]) {
-            return ["--general-log", "--general-log-file=".$self->logfile]; 
+            return ["--general-log", "--general-log-file=".$self->logfile];
         } else {
             return ["--general-log-file=".$self->logfile];
         }
@@ -1730,7 +1730,7 @@ sub _logOptions {
 
 sub _olderThan {
     my ($self,$b1,$b2,$b3) = @_;
-    
+
     my ($v1, $v2, $v3) = $self->versionNumbers;
 
     if    ($v1 == 10 and $b1 == 5 and $v2 >= 0 and $v2 < 3) { $v1 = 5; $v2 = 6 }

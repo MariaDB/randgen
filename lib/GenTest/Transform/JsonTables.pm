@@ -223,7 +223,7 @@ sub parse_query_for_variation
       $in_from= 0;
     }
 
-    # SELECT ends either by one of the words below, or by semicolon, 
+    # SELECT ends either by one of the words below, or by semicolon,
     # or when the fragment ends
     # TODO: there must be more
     elsif ($token =~ /^(?:UNION|INTO|RETURNING|;)/i) {
@@ -276,7 +276,7 @@ sub parse_query_for_variation
       $select.= " $token";
       $in_from= 0;
     }
-    
+
     elsif ($inside_outer_from or ($select and $in_from))
     {
       # Index hints should go to transformation along with the table.

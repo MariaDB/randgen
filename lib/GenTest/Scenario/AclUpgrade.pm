@@ -1,5 +1,5 @@
 # Copyright (C) 2017, 2022 MariaDB Corporation Ab
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
@@ -69,7 +69,7 @@ sub run {
 
   #####
   # Prepare servers
-  
+
   ($old_server, $new_server)= $self->prepare_servers();
 
   #####
@@ -86,7 +86,7 @@ sub run {
   $self->printStep("Generating data on the old server");
 
   $status= $self->generate_data();
-  
+
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
     return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
@@ -200,7 +200,7 @@ sub run {
     sayError("Database appears to be corrupt after upgrade");
     return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
   }
-  
+
   #####
   $self->printStep("Getting ACL info from the new server");
 

@@ -1,5 +1,5 @@
 # Copyright (C) 2017, 2020 MariaDB Corporation Ab
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
@@ -83,7 +83,7 @@ sub run {
   $self->printStep("Generating test data");
 
   $status= $self->generate_data();
-  
+
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
     return $self->finalize(STATUS_TEST_FAILURE,[$server]);
@@ -106,16 +106,16 @@ sub run {
       sayError("Failed to fork for running the test flow");
       return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
     }
-    
+
     # The child will be running the test flow. The parent will be running
     # the server and then stopping it, and while waiting, will be monitoring
     # the status of the test flow to notice if it exits prematurely.
-    
+
     if ($gentest_pid > 0) {
       foreach (1..$timeout) {
         if (waitpid($gentest_pid, WNOHANG) == 0) {
           sleep 1;
-        } 
+        }
         else {
           $status= $? >> 8;
           last;
@@ -126,12 +126,12 @@ sub run {
       my $res= $self->run_test_flow();
       exit $res;
     }
-    
+
     if ($status != STATUS_OK) {
       sayError("Test flow failed");
       return $self->finalize($status,[$server]);
     }
-    
+
     #####
 
     if ($self->getTestType eq 'crash') {
@@ -141,7 +141,7 @@ sub run {
       $self->printStep("Stopping the server");
       $status= $server->stopServer($shutdown_timeout);
     }
-    
+
     if ($status != STATUS_OK) {
       sayError("Could not stop the server");
       return $self->finalize(STATUS_TEST_FAILURE,[$server]);
@@ -188,7 +188,7 @@ sub run {
       }
     }
   }
-  
+
   #####
   $self->printStep("Stopping the server");
 

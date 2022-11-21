@@ -34,16 +34,16 @@ mdev7978_drop_user:
 
 mdev7978_existing_user_list:
     mdev7978_existing_user | mdev7978_existing_user, mdev7978_existing_user_list;
-    
+
 mdev7978_existing_user:
     { $user = $prng->arrayElement([ keys %created_users ]); $user = 'non_existing_user' if $user =~ /^\s*$/; delete $created_users{$user}; $user };
 
 mdev7978_alter_user:
     ALTER USER mdev7978_existing_user_definition;
-    
+
 mdev7978_create_user:
     CREATE USER mdev7978_if_not_exists mdev7978_new_user_definition;
-    
+
 mdev7978_new_user_definition:
     mdev7978_new_user_specification_list
     mdev7978_require
@@ -60,10 +60,10 @@ mdev7978_existing_user_definition:
 
 mdev7978_require:
     | REQUIRE mdev7978_tls_option;
-    
+
 mdev7978_tls_option:
     NONE | SSL | X509 | mdev7978_ssl_option_list;
-    
+
 mdev7978_ssl_option_list:
     mdev7978_ssl_option | mdev7978_ssl_option AND mdev7978_ssl_option_list;
 
@@ -76,10 +76,10 @@ mdev7978_ssl_option:
 
 mdev7978_with:
      | WITH mdev7978_resource_option_list;
-     
+
 mdev7978_resource_option_list:
     mdev7978_resource_option | mdev7978_resource_option mdev7978_resource_option_list;
-    
+
 mdev7978_resource_option:
       MAX_QUERIES_PER_HOUR _int_unsigned
     | MAX_UPDATES_PER_HOUR _int_unsigned
@@ -94,13 +94,13 @@ mdev7978_new_user_specification_list:
 
 mdev7978_existing_user_specification_list:
     mdev7978_existing_user_specification | mdev7978_existing_user_specification, mdev7978_existing_user_specification_list;
-    
+
 mdev7978_new_user_specification:
     mdev7978_new_user_name mdev7978_auth_option;
 
 mdev7978_existing_user_specification:
     mdev7978_existing_user mdev7978_auth_option;
-    
+
 mdev7978_auth_option:
       IDENTIFIED BY mdev7978_password
     | IDENTIFIED BY PASSWORD mdev7978_password_hash
@@ -115,15 +115,15 @@ mdev7978_auth_plugin:
 
 mdev7978_password:
     '' | _char(1) | _char(8) | _char(16) | _char(41);
-    
+
 mdev7978_password_hash:
     '' | { "'*". join('', map{ chr($prng->uint16(97, 122)) } (1..40) ) ."'" };
-    
+
 mdev7978_new_user_name:
-      mdev7978_short_user_name { $created_users{$user} = 1; '' } 
+      mdev7978_short_user_name { $created_users{$user} = 1; '' }
     | mdev7978_full_user_name { $created_users{$user.'@'.$host} = 1; '' }
 ;
-    
+
 mdev7978_short_user_name:
       { $user = "'%'" }
     | mdev7978_random_user
@@ -157,16 +157,16 @@ mdev7978_random_host:
 
 mdev7978_if_not_exists:
     | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS;
-    
+
 mdev7978_if_exists:
     | IF EXISTS | IF EXISTS | IF EXISTS | IF EXISTS;
 
-# Not implemented in 10.2    
+# Not implemented in 10.2
 mdev7978_password_or_lock_option:
-    | 
+    |
 #    mdev7978_password_option | mdev7978_lock_option
 ;
-    
+
 mdev7978_password_option:
       PASSWORD EXPIRE
     | PASSWORD EXPIRE DEFAULT

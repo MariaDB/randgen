@@ -4,7 +4,7 @@
 #
 # * No embedded perl and attempts to create balanced expressions
 #
-# * Limited nesting (no runaway recursive nesting), with fixed depth of 2 levels 
+# * Limited nesting (no runaway recursive nesting), with fixed depth of 2 levels
 #
 # * Using indexed columns exclusively in order to provide a lot of optimizable expressions
 #

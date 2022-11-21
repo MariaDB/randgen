@@ -36,16 +36,16 @@ rotate_event:
 	FLUSH LOGS ;
 	
 query_event:
-	dml ; dml ; dml ; dml ; 
+	dml ; dml ; dml ; dml ;
 
 intvar_event:
 	intvar_event_pk | intvar_event_last_insert_id ;
 
 intvar_event_pk:
-	INSERT INTO _table ( `pk` ) VALUES ( NULL ) ; 
+	INSERT INTO _table ( `pk` ) VALUES ( NULL ) ;
 
 intvar_event_last_insert_id:
-	INSERT INTO _table ( _field ) VALUES ( LAST_INSERT_ID() ) ; 
+	INSERT INTO _table ( _field ) VALUES ( LAST_INSERT_ID() ) ;
 
 rand_event:
 	rand_event_dml ;
@@ -56,7 +56,7 @@ rand_event_dml:
 	DELETE FROM _table WHERE _field < RAND(_int_unsigned) limit ;
 
 user_var_event:
-	SET @a = value ; user_var_dml ; 
+	SET @a = value ; user_var_dml ;
 
 user_var_dml:
 	INSERT INTO _table ( _field ) VALUES ( @a ) |
@@ -92,7 +92,7 @@ write_rows_event:
 	insert ;
 
 update_rows_event:
-	update ; 
+	update ;
 
 delete_rows_event:
 	delete ;

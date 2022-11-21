@@ -94,7 +94,7 @@ sub generate {
 	open(TEMPLATE, "<$spec_file") or croak "ERROR: GenConfig: unable to open specification file '$spec_file': $!";
 	my @config_contents = ();
 
-	while (<TEMPLATE>) 
+	while (<TEMPLATE>)
 	{
 		if  (/^\s*([^\#\s]+)(?:\s*=\s*)?\s*\[\s*(.*)\s*\](.*)/) {
 			# real option with template
@@ -103,7 +103,7 @@ sub generate {
 
 			if ($template =~ /\(\s*(\S+)\s*\)/) {
 
-				# Should be a comma-separated list which presents a set -- 
+				# Should be a comma-separated list which presents a set --
 				# several values can be used simultaneously
 				my $allowed_values = $1;
 				my %allowed_values = map( ($_, 1), split /,/, $allowed_values);

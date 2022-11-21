@@ -1,7 +1,7 @@
 # RQG_HOME must be defined in the environment. But it has to be defined anyway,
 # or the include file won't be found
 
-$mariabackup_scenarios = 
+$mariabackup_scenarios =
   [
     '--scenario=MariaBackupFull',
     '--scenario=MariaBackupIncremental',

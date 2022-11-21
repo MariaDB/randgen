@@ -73,7 +73,7 @@ BEGIN {
         require JSON;
         $have_json = 1;
     }
-    
+
 
 }
 
@@ -85,7 +85,7 @@ sub validate {
     my $orig_query = $orig_result->query();
 
     # Note that by default only the trace for the last executed statement will
-    # be available. If we run any extra statements for some reason we need to 
+    # be available. If we run any extra statements for some reason we need to
     # take this into account when asking the server for the trace.
     my $extra_statements = 0; # Number of statements executed after the original.
 
@@ -115,12 +115,12 @@ sub validate {
 
     # We need to retrieve the actual trace for the original query.
     #
-    # We assume here that only the trace for the last executed query is 
+    # We assume here that only the trace for the last executed query is
     # available. As a work-around in case of any extra statements being executed
     # after the original as part of this validator, we re-execute the original
     # statement before continuing.
     # This should normally happen only the first time this subroutine is called.
-    # If the statement is not a DML statement this is more problematic so we 
+    # If the statement is not a DML statement this is more problematic so we
     # skip the query.
     if ($extra_statements > 0) {
         if ($orig_query !~ m{^\s*select}io) {
@@ -158,7 +158,7 @@ sub validate {
     # If missing bytes, trace will not be valid JSON, it will be truncated.
 
     my ($query, $trace, $missing_bytes) = @{$trace_result->data()->[0]};
-    
+
     # Filter out traces with missing bytes.
     if ($missing_bytes > 0) {
         $missing_bytes_count++;
@@ -166,7 +166,7 @@ sub validate {
         return STATUS_WONT_HANDLE;
     }
 
-    # decode() croaks on error (e.g. invalid JSON text). 
+    # decode() croaks on error (e.g. invalid JSON text).
     # Handling this through eval and subqsequent checking of $@.
     my $json_decoded = eval {
         JSON->new->decode($trace);

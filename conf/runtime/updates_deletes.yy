@@ -21,7 +21,7 @@
 
 
 # Set here the list of databases if necessary, e.g.
-# $updates_deletes_databases= [ 'test' ]; 
+# $updates_deletes_databases= [ 'test' ];
 
 query_init:
    { $tables= 0; $updates_deletes_databases= $executors->[0]->databases(1); $executors->[0]->setMetadataReloadInterval(15); '' };
@@ -177,7 +177,7 @@ updates_deletes_optional_group_by_clause:
   { if ($non_agg_fields and $agg_fields) { 'updates_deletes_group_by' } else { '' } }
 ;
 
-# We will use normal decent GROUP BY <all non-aggregate fields> 
+# We will use normal decent GROUP BY <all non-aggregate fields>
 updates_deletes_group_by:
   GROUP BY { @group_by_list= (); foreach $f (1..$non_agg_fields) { push @group_by_list, 'fld'.$f }; join ', ', @{$prng->shuffleArray(\@group_by_list)} }
 ;

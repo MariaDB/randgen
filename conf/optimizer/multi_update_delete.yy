@@ -12,9 +12,9 @@
 
 ################################################################################
 # multi_update_delete.yy: Random Query Generator grammar for testing the effect#
-#			  of multi-table UPDATE and DELETE. This grammar is    # 
+#			  of multi-table UPDATE and DELETE. This grammar is    #
 #			  recommended to run for engine=INNODB with a minumum  #
-#			  query timeout of 120 seconds.	                       # 
+#			  query timeout of 120 seconds.	                       #
 ################################################################################
 
 query_init:
@@ -30,7 +30,7 @@ main_query:
         main_delete ; rollback | main_delete ; rollback ;
 
 main_update:
-	explain_extended UPDATE priority_update ignore 
+	explain_extended UPDATE priority_update ignore
 	outer_table_join_with_set_where_subquery_expression ;
 
 main_delete:
@@ -39,7 +39,7 @@ main_delete:
 delete1:
         explain_extended DELETE priority_update quick ignore
         delete_tab
-        FROM non_comma_join 
+        FROM non_comma_join
 	WHERE subquery_expression_with_alias;
 
 delete2:
@@ -66,12 +66,12 @@ quick:
         | | | | | | | | | | QUICK ;
 
 outer_table_join_with_set_where_subquery_expression:
-	non_comma_join set_update_with_alias WHERE subquery_expression_with_alias | 
-	non_comma_join set_update_with_alias WHERE subquery_expression_with_alias | 
-	non_comma_join set_update_with_alias WHERE subquery_expression_with_alias | 
-	non_comma_join set_update_with_alias WHERE subquery_expression_with_alias | 
-	non_comma_join set_update_with_alias WHERE subquery_expression_with_alias | 
-	non_comma_join set_update_with_alias WHERE subquery_expression_with_alias | 
+	non_comma_join set_update_with_alias WHERE subquery_expression_with_alias |
+	non_comma_join set_update_with_alias WHERE subquery_expression_with_alias |
+	non_comma_join set_update_with_alias WHERE subquery_expression_with_alias |
+	non_comma_join set_update_with_alias WHERE subquery_expression_with_alias |
+	non_comma_join set_update_with_alias WHERE subquery_expression_with_alias |
+	non_comma_join set_update_with_alias WHERE subquery_expression_with_alias |
 	comma_join set_update_without_alias WHERE subquery_expression_without_alias |
 	comma_join set_update_without_alias WHERE subquery_expression_without_alias |
 	comma_join set_update_without_alias WHERE subquery_expression_without_alias |
@@ -103,7 +103,7 @@ outer_join_condition2:
 
 set_update_with_alias:
 	SET OUTR1.set_field_name = value |
-	SET OUTR1.set_field_name = value, OUTR2.set_field_name = value ; 
+	SET OUTR1.set_field_name = value, OUTR2.set_field_name = value ;
 
 set_update_without_alias:
 	SET OUTR1.char_field_name = value |

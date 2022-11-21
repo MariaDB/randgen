@@ -13,7 +13,7 @@
 # USA
 
 # This script can be used to load the files from
-# http://www.tm.kit.edu/~mayer/osm2wkt/ 
+# http://www.tm.kit.edu/~mayer/osm2wkt/
 # into MySQL and PostGIS
 
 use strict;
@@ -26,7 +26,7 @@ print '
   title = {osm2wkt - OpenStreetMap to WKT Conversion},
   howpublished = {http://www.tm.kit.edu/~mayer/osm2wkt},
   year = {2010}
-} 
+}
 
 Map data (c) OpenStreetMap contributors, CC-BY-SA
 

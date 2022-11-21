@@ -289,7 +289,7 @@ partition_by_list:
   PARTITION BY LIST ( part_field ) subpartition partition_by_list_definition
 ;
 
-partition_by_list_definition:  
+partition_by_list_definition:
   ( populate_digits
     PARTITION p0 VALUES IN ( shift_digit, NULL ),
     PARTITION p1 VALUES IN ( shift_digit, shift_digit, shift_digit ),

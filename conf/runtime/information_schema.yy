@@ -24,7 +24,7 @@ query:
 
 show:
   SHOW BINARY LOGS |
-  SHOW BINLOG EVENTS |  
+  SHOW BINLOG EVENTS |
   SHOW CHARACTER SET  |
   SHOW COLLATION  |
   SHOW COLUMNS FROM _table |
@@ -38,7 +38,7 @@ show:
   SHOW ENGINES  |
   SHOW ERRORS  |
   SHOW FUNCTION CODE _letter |
-  SHOW FUNCTION STATUS | 
+  SHOW FUNCTION STATUS |
   SHOW GRANTS  |
   SHOW INDEX FROM _table |
 #  SHOW INNODB STATUS  |
@@ -48,7 +48,7 @@ show:
   SHOW OPEN TABLES  |
   SHOW PRIVILEGES  |
   SHOW PROCEDURE CODE _letter |
-  SHOW PROCEDURE STATUS | 
+  SHOW PROCEDURE STATUS |
   SHOW PROCESSLIST  |
   SHOW PROFILE  |
   SHOW PROFILES  |
@@ -57,9 +57,9 @@ show:
   SHOW STATUS  |
   SHOW TABLE STATUS  |
   SHOW TABLES  |
-  SHOW TRIGGERS | 
-  SHOW VARIABLES | 
-  SHOW WARNINGS ;  
+  SHOW TRIGGERS |
+  SHOW VARIABLES |
+  SHOW WARNINGS ;
 
 modify:
 #  character_sets |
@@ -124,7 +124,7 @@ schemata:
 
 schema_privileges:
   GRANT ALL PRIVILEGES ON _letter . * TO 'someuser'@'somehost' |
-  REVOKE ALL PRIVILEGES ON _letter . * FROM 'someuser'@'somehost' ; 
+  REVOKE ALL PRIVILEGES ON _letter . * FROM 'someuser'@'somehost' ;
 
 tables:
   CREATE TABLE _letter LIKE _table |
@@ -178,7 +178,7 @@ parameter:
 
 in_out:
   IN | OUT ;
-  
+
 
 privilege_list:
   privilege_item |
@@ -224,7 +224,7 @@ join_list:
   (new_table_item join_type new_table_item ON ( current_table_item . _field = previous_table_item . _field ) ) ;
 
 join_type:
-  INNER JOIN | left_right outer JOIN | STRAIGHT_JOIN ;  
+  INNER JOIN | left_right outer JOIN | STRAIGHT_JOIN ;
 
 left_right:
   LEFT | RIGHT ;
@@ -293,7 +293,7 @@ aggregate_select_item:
 # Only 20% table2, since sometimes table2 is not present at all
 
 table_one_two:
-  table1 { $last_table = $tables[1] } | 
+  table1 { $last_table = $tables[1] } |
   table2 { $last_table = $tables[2] } ;
 
 aggregate:
@@ -321,6 +321,6 @@ existing_select_item:
 
 sign:
   = | > | < | != | <> | <= | >= ;
-  
+
 value:
   _digit | _char(2) | _datetime ;

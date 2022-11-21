@@ -1,15 +1,15 @@
 # Copyright (C) 2021 MariaDB Corporation Ab
-# 
+#
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -99,7 +99,7 @@ sub validate {
           sayError("Unexpected row number: $textnum");
           exit STATUS_CRITICAL_FAILURE;
         }
- 
+
         if ($rnum != $textnum) {
           if ($errno == 1260) {
             say("WARNING: MDEV-26848 On query [ ".$result->query." ], condition $cond, errno $errno, diagnostics row number $rnum is not the same as in the error message $errtext");
@@ -146,9 +146,9 @@ sub validate {
     say("Warning: Query in CheckFieldValue didn't return a result: $query");
     return STATUS_OK;
   }
-  if ( $row eq 'all' ) { 
-    foreach ( 0..$#{$result->data()} ) 
-    { 
+  if ( $row eq 'all' ) {
+    foreach ( 0..$#{$result->data()} )
+    {
       push @rownums, $_;
     }
   }
@@ -156,22 +156,22 @@ sub validate {
     @rownums = ( $row - 1 );
   }
 
-  foreach my $r ( @rownums ) 
+  foreach my $r ( @rownums )
   {
     my $val = $result->data()->[$r]->[$pos-1];
     if ( ( ( $sign eq '=' or $sign eq '==' ) and not ( $val eq $value ) )
       or ( ( $sign eq '!=' or $sign eq '<>' ) and ( $val eq $value ) )
-      or ( ( $sign eq '<' ) and not ( $val < $value ) ) 
+      or ( ( $sign eq '<' ) and not ( $val < $value ) )
       or ( ( $sign eq '>' ) and not ( $val > $value ) )
       or ( ( $sign eq '<=' ) and not ( $val <= $value ) )
-      or ( ( $sign eq '>=' ) and not ( $val >= $value ) ) 
-      or ( ( $sign eq '~' or ( $sign eq '=~') ) and not ( $val =~ /$value/ ) ) 
-      or ( ( $sign eq '!~' ) and ( $val =~ /$value/ ) ) 
+      or ( ( $sign eq '>=' ) and not ( $val >= $value ) )
+      or ( ( $sign eq '~' or ( $sign eq '=~') ) and not ( $val =~ /$value/ ) )
+      or ( ( $sign eq '!~' ) and ( $val =~ /$value/ ) )
     )
     {
       say("ERROR: For query \'$query\' on row " . ( $r + 1 ) . " result " . $val . " does not meet the condition $sign $value");
       my $rowset = '';
-      foreach my $i ( 0..$#{$result->data()->[$row-1]} ) 
+      foreach my $i ( 0..$#{$result->data()->[$row-1]} )
       {
         $rowset .= " [" . ($i + 1 ) . "] : " . $result->data()->[$r]->[$i] . ";";
       }

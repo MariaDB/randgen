@@ -42,7 +42,7 @@ locks_flush:
   FLUSH TABLES locks_table_list WITH READ LOCK |
   FLUSH TABLES locks_table_list FOR EXPORT
 ;
-    
+
 locks_table_or_tables:
   TABLE | TABLES
 ;

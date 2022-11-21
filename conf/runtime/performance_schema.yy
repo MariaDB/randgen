@@ -145,7 +145,7 @@ perfschema_schemata:
 
 perfschema_schema_privileges:
   GRANT ALL PRIVILEGES ON _letter . * TO 'someuser'@'somehost' |
-  REVOKE ALL PRIVILEGES ON _letter . * FROM 'someuser'@'somehost' ; 
+  REVOKE ALL PRIVILEGES ON _letter . * FROM 'someuser'@'somehost' ;
 
 perfschema_tables:
   CREATE TABLE __if_not_exists(80) _letter LIKE _table |
@@ -290,7 +290,7 @@ aggregate_select_item:
 # Only 20% table2, since sometimes table2 is not present at all
 
 table_one_two:
-  table1 { $last_table = $tables[1] } | 
+  table1 { $last_table = $tables[1] } |
   table2 { $last_table = $tables[2] } ;
 
 aggregate:
@@ -313,7 +313,7 @@ perfschema_existing_table_item:
 
 perfschema_sign:
   = | > | < | != | <> | <= | >= ;
-  
+
 perfschema_value:
   _digit | _char(2) | _datetime ;
 

@@ -17,7 +17,7 @@
 
 
 # Set here the list of databases if necessary, e.g.
-# $all_selects_databases= [ 'INFORMATION_SCHEMA' ]; 
+# $all_selects_databases= [ 'INFORMATION_SCHEMA' ];
 query_init:
    { $all_selects_databases= $executors->[0]->databases(); '' };
 
@@ -159,7 +159,7 @@ all_selects_optional_group_by_clause:
   { if ($non_agg_fields and $agg_fields) { 'all_selects_group_by' } else { '' } }
 ;
 
-# We will use normal decent GROUP BY <all non-aggregate fields> 
+# We will use normal decent GROUP BY <all non-aggregate fields>
 all_selects_group_by:
   GROUP BY { @group_by_list= (); foreach $f (1..$non_agg_fields) { push @group_by_list, 'fld'.$f }; join ', ', @{$prng->shuffleArray(\@group_by_list)} }
 ;

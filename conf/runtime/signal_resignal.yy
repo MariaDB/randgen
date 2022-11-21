@@ -20,10 +20,10 @@
 # - DECLARE ... HANDLER   must be before any statements like INSERT/CALL etc.
 # - If a handler refers to a condition than this condition must be already defined.
 #
-# We avoid using _digit for possible signal values because that may conflict 
-# with some error codes defined in the MySQL executor. Specifically, signal 5 
-# would be interpreted as an Out Of Memory error by the RQG framework. 
-# Instead we use a set of discrete values with no apparent conflicts, i.e. 
+# We avoid using _digit for possible signal values because that may conflict
+# with some error codes defined in the MySQL executor. Specifically, signal 5
+# would be interpreted as an Out Of Memory error by the RQG framework.
+# Instead we use a set of discrete values with no apparent conflicts, i.e.
 # outside the range of MySQL error codes, see rule "number".
 
 query_init:
@@ -158,7 +158,7 @@ set_variable:
 	SET at_variable_name = value ;
 
 value:
-	# We avoid using _digit here due to conflicts with other error codes, 
+	# We avoid using _digit here due to conflicts with other error codes,
 	# see comment in top of this file for details.
 	CONVERT( _varchar(512) USING some_charset )            |
 	_varchar(512)						|	
@@ -191,7 +191,7 @@ variable_type:
 default_value:
 	# If the default is NULL than we assign in some situation NULL to
 	# condition_information_item --> error.
-	# We avoid using _digit here due to conflicts with other error codes, 
+	# We avoid using _digit here due to conflicts with other error codes,
 	# see comment in top of this file for details.
 	 | DEFAULT _english | DEFAULT number ;
 
@@ -267,7 +267,7 @@ condition_information_item:
 ;
 
 simple_value_specification:
-	# We avoid using _digit here due to conflicts with other error codes, 
+	# We avoid using _digit here due to conflicts with other error codes,
 	# see comment in top of this file for details.
 	_varchar(512)	|
 	_english         |
