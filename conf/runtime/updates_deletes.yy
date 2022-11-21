@@ -17,7 +17,7 @@
 # A DML grammar created from all_selects.yy
 ############################################
 
-#include <conf/basics.yy>
+#include <conf/basics.rr>
 
 
 # Set here the list of databases if necessary, e.g.

@@ -18,12 +18,9 @@
 # MDEV-6111 Optimizer trace, MariaDB 10.4.3+
 # https://mariadb.com/kb/en/library/optimizer-trace/
 #
-# Can be used as a redefined grammar.
-# ATTENTION: presumes the use of basics.yy for primitives
-#
 ########################################################################
 
-#include <conf/basics.yy>
+#include <conf/basics.rr>
 
 
 query:

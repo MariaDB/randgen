@@ -15,14 +15,14 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 #
+
+##########################################################################
 # This grammar contains ddl for partitions as well as partition extentions to dml.
 # It creates partitioned and not partitioned tables and also dml without partition
 # extension. The focus is on partitions and dml with partition extention.
 # The grammar doesn't rely on the predefined tables, but uses instead tables defined in
 # query_init.
-#
 ##########################################################################
-# Initialization of tables with focus on partitioned tables.
 
 query_init:
   init_db ;
@@ -152,12 +152,9 @@ delete:
   DELETE FROM dml_table_name partition_pruning WHERE part_field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
 
 dml_table_name:
-  table_name_part_ext | table_name_part_ext | table_name_part_ext | table_name_part_ext |
-  table_name_part_ext | table_name_part_ext | table_name_part_ext | table_name_part_ext |
+  table_name_part | table_name_part | table_name_part | table_name_part |
+  table_name_part | table_name_part | table_name_part | table_name_part |
   table_name_nopart                                                                     ;
-
-table_name_part_ext:
-  table_name_part /*!50610 PARTITION (partition_name_list) */ ;
 
 table_name_nopart:
   a | b ;

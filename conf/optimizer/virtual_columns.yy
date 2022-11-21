@@ -30,7 +30,7 @@ nested_expr:
 
 
 query_init:
-	drop_table ; create_table ; create_table ; create_table ;
+	drop_table ;; create_table ;; create_table ;; create_table ;
 
 query:
 	drop_table ; create_table ; create_table ; create_table | create_table |

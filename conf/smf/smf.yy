@@ -874,7 +874,7 @@ SELECT COUNT(*) AS num_logs
   FROM smf_log_spider_hits|
 SELECT MIN(stat_date) AS first_date, MAX(stat_date) AS last_date
   FROM smf_log_spider_stats|
-SELECT COUNT(*) AS offset
+SELECT COUNT(*) AS offsets
     FROM smf_log_spider_stats
     WHERE stat_date < _date|
 SELECT COUNT(*) AS num_stats

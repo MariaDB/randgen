@@ -13,7 +13,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
-#include <conf/basics.yy>
+#include <conf/basics.rr>
 
 
 query_init:
@@ -36,14 +36,14 @@ ind_constr_query:
 ;
 
 ind_constr_alter:
-  ALTER __online(10) __ignore(30) TABLE /*!100502 __if_exists(80) */ ind_constr_table _basics_wait_no_wait ind_constr_list_with_optional_order_by ;
+  ALTER __online(10) __ignore(30) TABLE /*!100502 __if_exists(80) */ ind_constr_table _basics_wait_nowait ind_constr_list_with_optional_order_by ;
 
 ind_constr_create_index_stmt:
-  CREATE __or_replace(80) ind_constr_unique INDEX ind_constr_ind_name ind_constr_ind_type_optional ON ind_constr_table ( ind_constr_column_list ) _basics_wait_no_wait ind_constr_option_list ind_constr_algorithm_opt ind_constr_lock_opt ;
+  CREATE __or_replace(80) ind_constr_unique INDEX ind_constr_ind_name ind_constr_ind_type_optional ON ind_constr_table ( ind_constr_column_list ) _basics_wait_nowait ind_constr_option_list ind_constr_algorithm_opt ind_constr_lock_opt ;
 
 # ALGORITHM and LOCK are not supported, despite being documented. MDEV-12572
 ind_constr_drop_index_stmt:
-  DROP INDEX __if_exists(80) ind_constr_ind_name ON ind_constr_table _basics_wait_no_wait ;
+  DROP INDEX __if_exists(80) ind_constr_ind_name ON ind_constr_table _basics_wait_nowait ;
 
 # Long blobs
 ind_constr_long_blobs:
@@ -189,7 +189,7 @@ ind_constr_algorithm_opt:
   | | | ALGORITHM = __default_x_inplace_x_copy_x_nocopy_x_instant ;
 
 ind_constr_lock_opt_comma:
-  | | , __default_x_non_x_shared_x_exclusive ;
+  | | , LOCK = __default_x_none_x_shared_x_exclusive ;
   
 ind_constr_lock_opt:
-  | | | LOCK = __default_x_non_x_shared_x_exclusive ;
+  | | | LOCK = __default_x_none_x_shared_x_exclusive ;

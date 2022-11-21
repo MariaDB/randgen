@@ -19,7 +19,7 @@ $combinations = [
     --duration=180
     --reporters=JsonHistogram
     --rows=1,8,64,128,254,255,256,512,1200
-    --redefine=conf/mariadb/features/histogram_analyze.yy
+    --redefine=conf/mariadb/collect_eits.yy
     --mysqld=--histogram-type=JSON_HB
     '
   ],

@@ -20,7 +20,7 @@ $combinations = [
     --duration=500
     --queries=100M
     --reporters=Backtrace,ErrorLog,Deadlock
-    --redefine=conf/mariadb/analyze-tables-at-start.yy
+    --redefine=conf/mariadb/collect_eits.yy
     --mysqld=--log-output=FILE
     --mysqld=--max-statement-time=60
     --validators=ExecutionTimeComparator

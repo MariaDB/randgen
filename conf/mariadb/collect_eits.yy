@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, 2022, MariaDB Corporation Ab
+#  Copyright (c) 2014, 2022, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -13,13 +13,9 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
-#
-# The grammar should be used with
-# --mysqld=--plugin-load-add=disks --mysqld=--loose-disks
-#
+
+thread1_init:
+  ANALYZE TABLE { join ',', @{$executors->[0]->baseTables()} } PERSISTENT FOR ALL;
 
 query:
-  SELECT SUM(Total) > SUM(Available), SUM(Total)>SUM(Used) FROM INFORMATION_SCHEMA.DISKS |
-  SELECT * FROM INFORMATION_SCHEMA.DISKS |
-  SHOW CREATE TABLE INFORMATION_SCHEMA.DISKS
-;
+  SET STATEMENT lock_wait_timeout=10 FOR ANALYZE TABLE _table PERSISTENT FOR ALL;

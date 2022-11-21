@@ -15,7 +15,7 @@
 
 ########################################
 
-#include <conf/basics.yy>
+#include <conf/basics.rr>
 
 query:
   query | query | query | query | query | fk_query

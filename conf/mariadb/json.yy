@@ -20,7 +20,7 @@
 # https://www.crockford.com/mckeeman.html
 ####################################
 
-#include <conf/basics.yy>
+#include <conf/basics.rr>
 
 
 query_init:

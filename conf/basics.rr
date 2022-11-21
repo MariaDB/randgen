@@ -20,7 +20,7 @@
 # (unless the grammar needs it to be different)
 ########################################################################
 
-_basics_wait_no_wait:
+_basics_wait_nowait:
   ==FACTOR:3== | WAIT _digit | NOWAIT ;
 
 # TODO: add virtual
@@ -62,7 +62,7 @@ _basics_base_column_attributes:
   _basics_column_autoincrement _basics_column_nullable _basics_column_default _basics_column_versioning_5pct __invisible(5) _basics_comment_10pct _basics_column_check_constraint_10pct ;
 
 _basics_column_versioning_5pct:
-   | ==FACTOR:0.05== __with_x_without(60) ;
+   | ==FACTOR:0.05== __with_x_without(60) SYSTEM VERSIONING ;
 
 _basics_virtual_column_attributes:
   _basics_prepare_type_dependent_value { $last_column_type eq 'SERIAL' ? '' : "GENERATED ALWAYS AS ($last_type_value) ".$prng->arrayElement( [ '', 'PERSISTENT', 'STORED', 'VIRTUAL', 'VIRTUAL' ] ) } ;

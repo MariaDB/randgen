@@ -74,5 +74,5 @@ new_datafile_name:
   { $fnum= ($bulk_load_files{"$target_db.$target_table"} or 0) + 1; $fname= "load_${target_table}_${fnum}"; "'$fname'" };
 
 store_datafile_num:
-  { if (-e $generator->vardir."/data/$target_db/load_${target_table}_${fnum}") { $bulk_load_files{"$target_db.$target_table"}= $fnum }; '' };
+  { if (-e $executors->[0]->vardir."/data/$target_db/load_${target_table}_${fnum}") { $bulk_load_files{"$target_db.$target_table"}= $fnum }; '' };
 

@@ -17,7 +17,7 @@
 # Re-defining grammar for SYSTEM VERSIONING testing
 ####################################################
 
-#include <conf/basics.yy>
+#include <conf/basics.rr>
 
 
 # DDL-rich grammar requires frequent metadata reload

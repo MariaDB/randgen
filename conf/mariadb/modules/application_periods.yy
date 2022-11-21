@@ -20,18 +20,13 @@
 # WITHOUT OVERLAPS (10.5.3)
 # MDEV-16978
 #
-# Can be used as a standalone or redefining grammar.
-#
-# ATTENTION:
-# It assumes the use of basics.yy as a redefining grammar for primitives.
-#
 # Specifics:
 # Some statements produce syntax errors on purpose, to cover changes in
 # sql_yacc*.yy
 #
 ########################################################################
 
-#include <conf/basics.yy>
+#include <conf/basics.rr>
 
 #
 # Pre-create simple tables, to make sure they all exist

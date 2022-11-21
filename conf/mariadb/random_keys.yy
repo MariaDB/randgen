@@ -1,4 +1,4 @@
-# Copyright (c) 2016 MariaDB Corporation
+# Copyright (c) 2016, 2022, MariaDB Corporation
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,31 +13,29 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-# rkr stands for "random_keys_redefine"
-# this is to avoid overriding rule names from other grammars
-
 
 thread1_init:
     # rkr_indexes is a hash: table => hash of index numbers
     { %primary_keys = (); %rkr_indexes = (); '' }
 #      LOCK TABLE { join ' WRITE, ', @{$executors->[0]->tables()} } WRITE
-      rkr_add_autoinc_pk ; rkr_add_autoinc_pk ; rkr_add_autoinc_pk
-    ; rkr_add_autoinc_pk ; rkr_add_autoinc_pk ; rkr_add_autoinc_pk
-    ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key
-    ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key
-    ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key ; rkr_add_key
-#    ; UNLOCK TABLES
+      add_autoinc_pk ;; add_autoinc_pk ;; add_autoinc_pk
+    ;; add_autoinc_pk ;; add_autoinc_pk ;; add_autoinc_pk
+    ;; add_key ;; add_key ;; add_key ;; add_key ;; add_key
+    ;; add_key ;; add_key ;; add_key ;; add_key ;; add_key
+    ;; add_key ;; add_key ;; add_key ;; add_key ;; add_key
+#   ;; UNLOCK TABLES
 ;
 
 query:
-    ==FACTOR:0.1== rkr_add_key |
-    ==FACTOR:0.01== rkr_analyze_tables
+      ==FACTOR:3==    add_key
+    |                 drop_key
+    | ==FACTOR:0.01== analyze_tables
 ;
 
-rkr_analyze_tables:
+analyze_tables:
     ANALYZE TABLE { join ',', @{$executors->[0]->baseTables()} };
 
-rkr_new_key_name:
+new_key_name:
     {
           %{$rkr_indexes{$last_table}} = () unless defined $rkr_indexes{$last_table}
         ; @rkr_table_indexes = (keys %{$rkr_indexes{$last_table}} ? sort {$b <=> $a} keys %{$rkr_indexes{$last_table}} : (0) )
@@ -47,7 +45,7 @@ rkr_new_key_name:
     }
 ;
 
-rkr_key_name_to_drop:
+key_name_to_drop:
     {
           @rkr_table_indexes = keys %{$rkr_indexes{$last_table}} or ()
         ; $rkr_index_num = $prng->arrayElement(\@rkr_table_indexes)
@@ -56,7 +54,7 @@ rkr_key_name_to_drop:
     }
 ;
 
-rkr_add_autoinc_pk:
+add_autoinc_pk:
     { $tries = 0
         ; $tables = $executors->[0]->metaBaseTables($last_database)
         ; do {
@@ -71,43 +69,43 @@ rkr_add_autoinc_pk:
     { $primary_keys{$last_table} = 1; '' }
 ;
 
-rkr_add_key:
-    ALTER TABLE _basetable ADD rkr_index_type_and_name ( { %index_fields = (); 'rkr_index_field_list' } ) ;
+add_key:
+    ALTER TABLE _basetable ADD index_type_and_name ( { %index_fields = (); 'index_field_list' } ) ;
 
-rkr_index_type_and_name:
-      rkr_non_unique_key
-    | rkr_non_unique_key
-    | rkr_non_unique_key
-    | rkr_non_unique_key
-    | rkr_unique_key
-    | rkr_pk_if_possible
+index_type_and_name:
+      non_unique_key
+    | non_unique_key
+    | non_unique_key
+    | non_unique_key
+    | unique_key
+    | pk_if_possible
 ;
 
-rkr_pk_if_possible:
-    { if ($primary_keys{$last_table}) { 'rkr_non_unique_key' } else { $primary_keys{$last_table} = 1; 'PRIMARY KEY' } } ;
+pk_if_possible:
+    { if ($primary_keys{$last_table}) { 'non_unique_key' } else { $primary_keys{$last_table} = 1; 'PRIMARY KEY' } } ;
 
-rkr_unique_key:
-    UNIQUE rkr_non_unique_key;
+unique_key:
+    UNIQUE non_unique_key;
 
-rkr_non_unique_key:
-    KEY rkr_new_key_name ;
+non_unique_key:
+    KEY new_key_name ;
 
-rkr_drop_key:
-    ALTER TABLE _basetable DROP KEY rkr_key_name_to_drop ;
+drop_key:
+    ALTER TABLE _basetable DROP KEY key_name_to_drop ;
 
-rkr_index_field_list:
-      rkr_partially_covered_column
-    | rkr_partially_covered_column, rkr_partially_covered_column
-    | rkr_partially_covered_column, rkr_index_field_list
+index_field_list:
+      partially_covered_column
+    | partially_covered_column, partially_covered_column
+    | partially_covered_column, index_field_list
 ;
 
-rkr_partially_covered_column:
-    rkr_unique_field rkr_index_length __asc_x_desc(33,33);
+partially_covered_column:
+    unique_field index_length __asc_x_desc(33,33);
 
-rkr_unique_field:
+unique_field:
     { $tries = 0; $fields = $executors->[0]->metaColumns($last_table, $last_database); do { $last_field = $prng->arrayElement($fields); $tries++ } until ( not defined $index_fields{$last_field} or $tries >= @{$fields} ); $index_fields{$last_field} = 1; $item = '`'.$last_field.'`' } ;
 
-rkr_index_length:
+index_length:
     # Index length 3072 is too much for most cases, but we only take it as an upper limit.
     # Some index creations will fail, let it be so for now
     { $metatype = $executors->[0]->columnMetaType($last_field, $last_table,$last_database); $maxfldlength = $executors->[0]->columnMaxLength($last_field, $last_table,$last_database); $maxlength = ( $maxfldlength > 3072 ? 3072 : $maxfldlength ); if ($metatype eq 'char' or $metatype eq 'binary') { (rand()<0.3 ? '('.(int(rand($maxlength))+1).')' : '') } elsif ($metatype eq 'blob' or $metatype eq 'text') { '('.(int(rand($maxlength))+1).')' } else { '' } };

@@ -14,7 +14,7 @@ require "$ENV{RQG_HOME}/conf/mariadb/include/combo.grammars";
 
 $combinations = [
   [ $common_options ], # seed, reporters, timeouts
-  [ '--redefine=conf/mariadb/features/desc_indexes-runtime.yy --redefine=conf/mariadb/features/desc_indexes-init.yy --variators=FullOrderBy' ],
+  [ '--redefine=conf/mariadb/features/desc_indexes.yy --variators=FullOrderBy' ],
   [
     '--grammar=conf/optimizer/range_access.yy --gendata=conf/optimizer/range_access.zz',
     '--grammar=conf/optimizer/range_access2.yy --gendata=conf/optimizer/range_access2.zz',

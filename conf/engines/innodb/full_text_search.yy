@@ -38,7 +38,7 @@
 #           MySQL-specific syntax variants.
 ################################################################################
 
-#include <conf/basics.yy>
+#include <conf/basics.rr>
 
 
 query_init:
