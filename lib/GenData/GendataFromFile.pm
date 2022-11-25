@@ -332,7 +332,7 @@ sub run {
     }
 
     foreach my $schema (@schema_perms) {
-        $executor->execute("CREATE SCHEMA /*!IF NOT EXISTS*/ $schema");
+        $executor->execute("CREATE DATABASE IF NOT EXISTS $schema");
         $executor->currentSchema($schema);
 
     foreach my $table_id (0..$#tables) {

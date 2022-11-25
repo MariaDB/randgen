@@ -39,6 +39,7 @@ my $dbh;
 my $histogram_size;
 
 my %features_used = ();
+my ($valid_count, $invalid_count, $null_count)= (0,0,0);
 
 sub monitor {
   my $reporter = shift;
@@ -64,7 +65,6 @@ sub monitor {
   if ($histogram_size > 0) {
     my $json_check= $dbh->selectall_arrayref("SELECT db_name, table_name, column_name, histogram, json_valid(histogram) FROM mysql.column_stats WHERE hist_type = 'JSON_HB'");
     if ($json_check and scalar(@$json_check)) {
-      my ($valid_count, $invalid_count, $null_count)= (0,0,0);
       foreach my $jc (@$json_check) {
         if ($jc->[4] == 1) {
           $valid_count++;
@@ -79,7 +79,7 @@ sub monitor {
           $res= STATUS_TEST_FAILURE;
         }
       }
-      say("JsonHistogram: Checked ".($valid_count + $invalid_count + $null_count)." histograms. Valid: $valid_count, NULLs: $null_count, invalid: $invalid_count");
+      sayDebug("JsonHistogram: Checked ".($valid_count + $invalid_count + $null_count)." histograms. Valid: $valid_count, NULLs: $null_count, invalid: $invalid_count");
     }
     my $wrong_hist_size= $dbh->selectall_arrayref("SELECT db_name, table_name, column_name, hist_size FROM mysql.column_stats WHERE hist_type = 'JSON_HB' AND hist_size > $histogram_size");
     if ($wrong_hist_size and scalar(@$wrong_hist_size)) {
@@ -102,6 +102,7 @@ sub monitor {
 sub report {
 
   my $reporter = shift;
+  say("JsonHistogram: Checked ".($valid_count + $invalid_count + $null_count)." histograms. Valid: $valid_count, NULLs: $null_count, invalid: $invalid_count");
   return STATUS_OK;
 }
 

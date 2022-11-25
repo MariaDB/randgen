@@ -26,6 +26,12 @@
 ########################################################################
 
 query:
+  { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'heap_dml'; 'USE heap_dml' }
+  ;; heap_query
+  ;; { $last_database= $saved_database; ($saved_database ? "USE $saved_database" : '') }
+;
+
+heap_query:
   insert | insert | insert |
   select | delete | update ;
 

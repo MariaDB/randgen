@@ -24,27 +24,18 @@
 # * Since dropping a view that already participates in a definition is known to be unsafe, we do not use CREATE OR REPLACE and
 # we do not DROP individual views. Instead, we periodically drop all views as a block and start creating them again
 #
-
-# Since there can be aggressive grammars which drop tables which we need,
-# we will make copies in a "private" database. The views themselves will
-# be created in the common database, it's okay if they are tampered with
 ########################################################################
 
-query_init:
-    CREATE DATABASE IF NOT EXISTS private_updateable_views
-    ; CREATE TABLE private_updateable_views.table_multipart LIKE table_multipart
-    # Here SET STATEMENT is needed because of MDEV-21618
-    ; SET STATEMENT enforce_storage_engine=NULL FOR CREATE TABLE private_updateable_views.table_partitioned LIKE table_partitioned
-    ; CREATE TABLE private_updateable_views.table_virtual LIKE table_virtual
-    ; SET STATEMENT enforce_storage_engine=NULL FOR CREATE TABLE private_updateable_views.table_standard LIKE table_standard
-    ; SET STATEMENT enforce_storage_engine=NULL FOR CREATE TABLE private_updateable_views.table_merge_child LIKE table_merge_child
-    ; SET STATEMENT enforce_storage_engine=NULL FOR CREATE TABLE private_updateable_views.table_merge LIKE table_merge
-    ; SET STATEMENT enforce_storage_engine=NULL ALTER TABLE private_updateable_views.table_merge UNION (private_updateable_views.table_standard, private_updateable_views.table_merge_child)
-    create_with_redundancy ;
-
 query:
-  dml | dml | dml | dml | dml |
-  dml | dml | dml | dml | dml_or_drop ;
+  { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'updateable_views'; 'USE updateable_views' }
+  ;; upd_views_query
+  ;; { $last_database= $saved_database; ($saved_database ? "USE $saved_database" : '') }
+;
+
+upd_views_query:
+  ==FACTOR:20== dml |
+  dml_or_drop
+;
 
 dml:
   select | select | insert | insert | update | delete ;
@@ -186,12 +177,12 @@ cascaded_local:
   CASCADED | LOCAL ;
 
 table_name:
-    private_updateable_views.table_merge |
-    private_updateable_views.table_merge_child |
-    private_updateable_views.table_multipart |
-    private_updateable_views.table_partitioned |
-    private_updateable_views.table_standard |
-    private_updateable_views.table_virtual
+    table_merge |
+    table_merge_child |
+    table_multipart |
+    table_partitioned |
+    table_standard |
+    table_virtual
 ;
 
 view_name:

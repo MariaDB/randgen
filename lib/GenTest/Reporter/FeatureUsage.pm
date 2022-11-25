@@ -75,6 +75,7 @@ my %global_status= ();
 my $first_reporter;
 
 my $reporter = shift;
+my $registered_features = undef;
 
 # In case of two or more main servers, we will be called more than once.
 # Ignore all but the first call.
@@ -91,22 +92,27 @@ sub monitor {
       $server_version.= 'e' if defined $3;
     }
   }
-  my $registered_features;
+
   unless ($dbh= $reporter->dbh()) {
     sayError((ref $reporter)." reporter returning critical failure");
     return STATUS_SERVER_UNAVAILABLE;
   }
-  eval {
-      $registered_features= $dbh->selectcol_arrayref("SELECT feature FROM mysql.rqg_feature_registry");
-      1;
-  } or do {
-    sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for mysql.rqg_feature_registry query");
-  };
-  if ($registered_features) {
-    foreach my $f (@$registered_features) {
-      # To get rid of duplicates in grammar lists, when each thread registeres a feature separately
-      $features_used{$f}= "registered by grammar(s)";
+  # We will only check the table once, as feature registration happens
+  # before reporters are initialized
+  unless (defined $registered_features) {
+    eval {
+        $registered_features= $dbh->selectcol_arrayref("SELECT feature FROM mysql.rqg_feature_registry");
+        1;
+    } or do {
+      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for mysql.rqg_feature_registry query");
+    };
+    if ($registered_features) {
+      foreach my $f (@$registered_features) {
+        # To get rid of duplicates in grammar lists, when each thread registeres a feature separately
+        $features_used{$f}= "registered by grammar(s)";
+      }
     }
+    $registered_features= 1;
   }
   %global_status= ();
   foreach my $f (sort keys %usage_check) {

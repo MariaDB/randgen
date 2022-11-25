@@ -466,7 +466,6 @@ sub isSingleRow {
 
 sub isCount {
     my ($transformer, $original_result, $transformed_result) = @_;
-
     my ($large_result, $small_result) ;
 
     if (

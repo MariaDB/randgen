@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2021 MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -28,25 +28,33 @@ use GenTest;
 use GenTest::Transform;
 use GenTest::Constants;
 
-my $initialized = 0;
-
 sub transform {
-  my ($class, $orig_query, $executor) = @_;
+  my ($class, $orig_query) = @_;
 
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $orig_query =~ m{LIMIT}sgio
-           || $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is;
+  return STATUS_WONT_HANDLE if $orig_query !~ m{^[\(\s]*SELECT}sgio
+           || $orig_query =~ m{(INTO|PROCESSLIST)}is;
+  return $class->modify($orig_query, my $with_transform_outcome=1) || STATUS_WONT_HANDLE;
+}
+
+sub variate {
+  my ($class, $orig_query) = @_;
+  return $class->modify($orig_query) || [ $orig_query ];
+}
+
+sub modify {
+  my ($class, $orig_query, $with_transform_outcome) = @_;
 
   my $new_query = $orig_query;
   my $var_counter = 0;
   my @var_variables;
 
   # Do not match partial dates, timestamps, etc.
-  if ($new_query =~ m{\s+(\d+)(?:\s|\)|,|;)}) {
-    $new_query =~ s{\s+(\d+)\s}{
+  if ($new_query =~ m{[,\(\s;]+(\d+|NULL)[,\(\s;]+}) {
+    $new_query =~ s{([,\(\s;]+)(\d+|NULL)([,\(\s;]+)}{
         $var_counter++;
-        push @var_variables, '@var'.$var_counter." = $1";
-        ' @var'.$var_counter.' ';
+        push @var_variables, '@var'.$var_counter." = $2";
+        $1.'@var'.$var_counter.$3;
     }sgexi;
   }
 
@@ -58,11 +66,11 @@ sub transform {
 
   if ($var_counter > 0) {
     return [
-      "SET ".join(", ", @var_variables).";",
-      $new_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */;"
+      "SET ".join(", ", @var_variables),
+      $new_query.($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : "")
     ];
   } else {
-    return STATUS_WONT_HANDLE;
+    return undef;
   }
 }
 

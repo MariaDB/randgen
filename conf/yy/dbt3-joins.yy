@@ -32,6 +32,12 @@
 ########################################################################
 
 query:
+  { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'dbt3'; 'USE dbt3' }
+  ;; dbt3_query
+  ;; { $last_database= $saved_database; ($saved_database ? "USE $saved_database" : '') }
+;
+
+dbt3_query:
   select_r_n_s_ps_l_o_c | select_p_ps_s_n_r | select_p_ps_l_o_c_r_n_s | currency_select_p_ps_s_l_o_c;
 
 # region -> nation -> supplier -> partsupp -> lineitem -> orders -> customer

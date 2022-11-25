@@ -49,20 +49,29 @@ $paren_rx = qr{
 
 sub transform {
   my ($class, $query, $executor) = @_;
+  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  return STATUS_WONT_HANDLE if $query =~ m{(INTO|PROCESSLIST)}is;
+  return $class->modify($query,$executor,my $with_transform_outcome=1) || STATUS_WONT_HANDLE;
+}
+
+sub variate {
+  my ($class, $query, $executor) = @_;
+  return [ $query ] if $query !~ m{SELECT}is;
+  return $class->modify($query,$executor) || [ $query ];
+}
+
+sub modify {
+  my ($class, $query, $executor, $with_transform_outcome) = @_;
 
   my @view_ddl;
   my $view_counter = 0;
 
-  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is;
-
   $query =~ s{\((\s*SELECT\s+(??{$paren_rx}))\)}{
     my $subquery = $1;
-    my $view_name = "view_".abs($$)."_inline_".$view_counter;
-    my $drop_view = "DROP VIEW IF EXISTS $view_name",
+    my $view_name = "v_ConvertSubqueriesToViews_".abs($$)."_inline_".$view_counter;
     my $create_view = "CREATE OR REPLACE VIEW $view_name AS $subquery";
     if ($executor->execute($create_view, 1)->err() == 0) {
-      push @view_ddl, $drop_view, $create_view;
+      push @view_ddl, $create_view;
       $view_counter++;
       "( SELECT * FROM $view_name )";
     } else {
@@ -71,9 +80,9 @@ sub transform {
   }sgexi;
 
   if ($view_counter > 0) {
-    return [@view_ddl, "$query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"];
+    return [@view_ddl, $query.($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : "") ];
   } else {
-    return STATUS_WONT_HANDLE;
+    return undef;
   }
 }
 

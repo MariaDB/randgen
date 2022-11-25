@@ -20,6 +20,12 @@
 ########################################################################
 
 query:
+  { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'smf'; 'USE smf' }
+  ;; smf_query
+  ;; { $last_database= $saved_database; ($saved_database ? "USE $saved_database" : '') }
+;
+
+smf_query:
   insert_replace | insert_replace | insert_replace | insert_replace | insert_replace | insert_replace |
   update | update | update | update | update |
   delete |

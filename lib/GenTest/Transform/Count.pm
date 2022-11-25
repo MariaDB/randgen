@@ -32,7 +32,7 @@ use GenTest::Constants;
 # This Transform provides the following transformations
 #
 # SELECT COUNT(...) FROM -> SELECT ... FROM
-# SELECT ... FROM -> SELECT ..., COUNT(*) FROM ...
+# SELECT ... FROM -> SELECT COUNT(*) FROM
 #
 # (only for the first found SELECT, to minimize "the number of rows doesn't match"
 # errors with subqueries
@@ -42,40 +42,40 @@ sub transform {
   # We skip: - GROUP BY any other aggregate functions as those are difficult to validate with a simple check like TRANSFORM_OUTCOME_COUNT
   #          - [INTO] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   #          - UNION since replacing all select lists is tricky with the current logic
-  return STATUS_WONT_HANDLE if $orig_query =~ m{GROUP\s+BY|LIMIT|HAVING|UNION}is
-    || $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{GROUP\s+BY|LIMIT|HAVING|UNION|INTERSECT|EXCEPT}is
+    || $orig_query =~ m{(INTO|PROCESSLIST)}is
+    || $orig_query !~ m{^[\(\s]*SELECT}is;
   return $class->modify($orig_query)." /* TRANSFORM_OUTCOME_COUNT */";
 }
 
 sub variate {
   my ($class, $orig_query) = @_;
-  return [ $orig_query ] if $orig_query !~ m{SELECT.*FROM}is;
-  return [ $class->modify($orig_query) || $orig_query ];
+  return [ $orig_query ] if $orig_query !~ m{^[\(\s]*SELECT}is;
+  return [ $class->modify($orig_query) ];
 }
 
 sub modify {
   my ($class, $orig_query) = @_;
-  my ($select_list) = $orig_query =~ m{SELECT\s+(.*?)\s+FROM}is;
-  say("HERE: Found select list $select_list");
-  return undef if not $select_list;
-  my $select_list_orig= $select_list;
-
-  # There is *, COUNT(..) in the select list, removing COUNT
-  # or
-  # there is COUNT(..) in the select list, replacing COUNT by its argument
-  if (
-    $select_list =~ s{(\*\s*,.*),\s*COUNT\(\s*(.*?)\s*\)}{$1}is ||
-    $select_list =~ s{COUNT\(\s*(.*?)\s*\)}{$1}is
-  ) {
-    $orig_query =~ s{$select_list_orig}{$select_list}is;
+  
+  if ($orig_query =~ m{SELECT\s*(.*?)\s*FROM}is) {
+    my $select_list= $1;
+    if ($select_list =~ m{COUNT\(\s*\*\s*\)}is) {
+      # Replacing COUNT(*) with *
+      $orig_query =~ s{COUNT\(\s*\*\s*\)}{\*}is;
+      return $orig_query;
+    } elsif ($select_list =~ m{COUNT\(\s*(.*?)\s*\)}is) {
+      # Replacing COUNT with its argument
+      my $arg= $1;
+      $orig_query =~ s{COUNT\(\s*$arg\s*\)}{$arg}is;
+      return $orig_query;
+    } elsif ($select_list =~ m{^(?:\/\*.*?\*\/)?\s+\*\s+$}is) {
+      # Replacing * with COUNT(*)
+      $orig_query =~ s{\s+\*\s+}{ COUNT(*) }is;
+      return $orig_query;
+    }
   }
-  # There is no COUNT yet, so adding one
-  else {
-    $select_list= "$select_list_orig, COUNT(*)";
-    say("HERE: replacing [ $select_list_orig ] with [ $select_list ] in query [ $orig_query ]");
-    $orig_query =~ s{$select_list_orig}{$select_list}is;
-    say("HERE: now: $orig_query");  }
-  return $orig_query;
+  # If the above didn't work, then just wrap the query in SELECT COUNT(*)
+  return "SELECT COUNT(*) FROM ( $orig_query ) sq_count";
 }
 
 1;

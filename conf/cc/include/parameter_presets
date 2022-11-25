@@ -188,12 +188,8 @@ $auto_gendata_combinations= [
 # Variators are transformers which are run without result comparison
 $optional_variators_110= [ 
   ['--variator=AnalyzeOrExplain','','','','','','','','','','','','','',''],
-  ['--variator=ConvertLiteralsToDyncols','','','','','','','','','','','','','',''],
-  ['--variator=ConvertLiteralsToSubqueries','','','','','','','','','','','','','',''],
   ['--variator=ConvertLiteralsToVariables','','','','','','','','','','','','','',''],
   ['--variator=ConvertSubqueriesToViews','','','','','','','','','','','','','',''],
-  ['--variator=ConvertTablesToDerived','','','','','','','','','','','','','',''],
-  ['--variator=ConvertTablesToViews','','','','','','','','','','','','','',''],
   ['--variator=Count','','','','','','','','','','','','','',''],
   ['--variator=DisableChosenPlan','','','','','','','','','','','','','',''],
   ['--variator=DisableOptimizations','','','','','','','','','','','','','',''],

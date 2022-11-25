@@ -36,8 +36,13 @@
 #           MySQL-specific syntax variants.
 ################################################################################
 
-
 query:
+  { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'outer_join'; 'USE outer_join' }
+  ;; outer_join_query
+  ;; { $last_database= $saved_database; ($saved_database ? "USE $saved_database" : '') }
+;
+
+outer_join_query:
   { @nonaggregates = () ; $tables = 0 ; $fields = 0 ;  "" } query_type ;
 
 query_type:

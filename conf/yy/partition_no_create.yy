@@ -26,6 +26,12 @@
 ################################################################################
 
 query:
+  { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'part_tables'; 'USE part_tables' }
+  ;; partition_no_create_query
+  ;; { $last_database= $saved_database; ($saved_database ? "USE $saved_database" : '') }
+;
+
+partition_no_create_query:
   { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } query_type ;
 
 ################################################################################

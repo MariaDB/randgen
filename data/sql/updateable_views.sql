@@ -1,4 +1,5 @@
-USE test;
+CREATE DATABASE IF NOT EXISTS updateable_views;
+USE updateable_views;
 
 # multipart keys
 CREATE TABLE IF NOT EXISTS table_multipart (field1 INTEGER NOT NULL AUTO_INCREMENT, field2 INTEGER, field3 INTEGER , field4 INTEGER, PRIMARY KEY (field1, field2, field3), KEY (field2,field3, field4), UNIQUE(field3, field4));

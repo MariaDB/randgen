@@ -31,11 +31,8 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub variate {
-  # Don't need executor or (for now) gendata_flag
   my ($self, $query) = @_;
-  # Variate 10% queries
-  return $query if $self->random->uint16(0,9);
-  return $query unless $query =~ /^[\s\(]*(?:SELECT|UPDATE|DELETE|INSERT|REPLACE)/;
+  return [ $query ] unless $query =~ /^[\s\(]*(?:SELECT|UPDATE|DELETE|INSERT|REPLACE)/;
   # Should be
   # - 40% ANALYZE FORMAT=JSON,
   # - 30% EXPLAIN FORMAT=JSON,
@@ -68,7 +65,7 @@ sub variate {
     $cmd =~ s/ANALYZE/EXPLAIN/;
   }
   $query =~ s/^\s*?([\s\(]*(?:SELECT|UPDATE|DELETE|INSERT|REPLACE))/$cmd $1/;
-  return $query;
+  return [ $query ];
 }
 
 sub transform {

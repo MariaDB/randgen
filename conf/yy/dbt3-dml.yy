@@ -28,6 +28,12 @@ query_init:
   SET AUTOCOMMIT = OFF ;
 
 query:
+  { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'dbt3'; 'USE dbt3' }
+  ;; dbt3_query
+  ;; { $last_database= $saved_database; ($saved_database ? "USE $saved_database" : '') }
+;
+
+dbt3_query:
   transaction_body ;; commit_rollback ;
 
 db3_dml_table:

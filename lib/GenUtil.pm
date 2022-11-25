@@ -204,10 +204,10 @@ sub shorten_message {
 
 sub group_cleaner {
   return if osWindows();
-  my @pids= split /\n/, `ps xh -o pgrp,pid,comm | grep -v tee`;
-  my @group= ();
   my $group_id= $ENV{RQG_GROUP_PID} || $$;
   say("Cleaning the group $group_id");
+  my @pids= split /\n/, `ps xh -o pgrp,pid,comm | grep -v tee`;
+  my @group= ();
   foreach my $pp (@pids) {
     if ($pp =~ /^\s*(\d+)\s+(\d+)/) {
       my ($p1, $p2) = ($1, $2);

@@ -21,6 +21,12 @@
 ########################################################################
 
 query:
+  { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'dbt3'; 'USE dbt3' }
+  ;; dbt3_query
+  ;; { $last_database= $saved_database; ($saved_database ? "USE $saved_database" : '') }
+;
+
+dbt3_query:
   SELECT __distinct(20) select_item FROM lineitem index_hint WHERE where order_by |
   SELECT aggregate key_field ) FROM lineitem WHERE where ;
 
