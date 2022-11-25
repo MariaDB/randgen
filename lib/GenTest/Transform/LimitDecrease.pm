@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2021 MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -31,21 +31,27 @@ use GenTest::Constants;
 
 sub transform {
   my ($class, $orig_query) = @_;
-
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   return STATUS_WONT_HANDLE
-    if $orig_query !~ m{SELECT}
+    if $orig_query !~ m{^\s*SELECT}
       || $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|INSERT|REPLACE|CREATE)}sio
       || $orig_query =~ m{OFFSET}sio;
-
-  if (my ($orig_limit) = $orig_query =~ m{LIMIT\s+(\d+)}sio) {
-    return STATUS_WONT_HANDLE if $orig_limit == 0;
-    $orig_query =~ s{LIMIT \d+}{LIMIT 1}sio;
-  } else {
-    $orig_query .= " LIMIT 1 ";
-  }
-
-  return $orig_query." /* TRANSFORM_OUTCOME_SINGLE_ROW */";
+  return $class->modify($orig_query)." /* TRANSFORM_OUTCOME_SINGLE_ROW */";
 }
 
+sub variate {
+  my ($class, $orig_query) = @_;
+  # Don't apply to LIMIT 0
+  return [ $orig_query ] if $orig_query !~ m{^\s*SELECT}sio && $orig_query !~ m{LIMIT\s+(?:[1-9]|0\d+)}sio;
+  return [ $class->modify($orig_query) ];
+}
+
+sub modify {
+  my ($class, $orig_query) = @_;
+  if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 1}siog) {
+    return $orig_query;
+  } else {
+    return $orig_query." LIMIT 1";
+  }
+}
 1;

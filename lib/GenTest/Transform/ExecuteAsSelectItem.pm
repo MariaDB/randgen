@@ -31,7 +31,6 @@ use GenTest::Constants;
 
 sub transform {
   my ($class, $orig_query, $executor, $orig_result) = @_;
-
   #We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
     || $orig_query !~ m{^\s*SELECT}sio
@@ -43,9 +42,8 @@ sub transform {
 
 sub variate {
   my ($class, $orig_query) = @_;
-
-  return $orig_query if $orig_query !~ m{^\s*SELECT}sio;
-  return modify_query($orig_query);
+  return [ $orig_query ] if $orig_query !~ m{^\s*SELECT}sio;
+  return [ modify_query($orig_query) ];
 }
 
 sub modify_query {

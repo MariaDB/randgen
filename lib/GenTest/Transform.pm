@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013 Monty Program Ab.
-# Copyright (c) 2016, 2021 MariaDB Corporation Ab.
+# Copyright (c) 2016, 2022 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@ package GenTest::Transform;
 
 require Exporter;
 @ISA = qw(GenTest);
+@EXPORT= qw(VARIATION_PROBABILITY variate_query);
 
 use strict;
 
@@ -38,6 +39,7 @@ use constant TRANSFORMER_SEED => 2;
 use constant TRANSFORMER_RANDOM => 3;
 use constant TRANSFORMER_EXECUTOR => 4;
 use constant TRANSFORMER_ALLOWED_ERRORS => 5;
+use constant TRANSFORMER_VARIATORS => 7;
 
 use constant TRANSFORM_OUTCOME_EXACT_MATCH           => 1001;
 use constant TRANSFORM_OUTCOME_UNORDERED_MATCH       => 1002;
@@ -51,6 +53,8 @@ use constant TRANSFORM_OUTCOME_EMPTY_RESULT          => 1009;
 use constant TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE    => 1010;
 use constant TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED => 1011;
 use constant TRANSFORM_OUTCOME_ANY                   => 1012;
+
+use constant VARIATION_PROBABILITY => 10; # Per cent
 
 my %transform_outcomes = (
     'TRANSFORM_OUTCOME_EXACT_MATCH'           => 1001,
@@ -151,7 +155,7 @@ sub transformExecuteValidate {
     # See a comment to sub cleanup()
     my $cleanup_block = pop @$transform_blocks;
     if ($cleanup_block->[0] =~ /TRANSFORM_CLEANUP/) {
-        $cleanup_block->[0] = '/* '.ref($transformer).' */ ' . $cleanup_block->[0];
+        $cleanup_block->[0] = '/* '. $transformer->name .' */ ' . $cleanup_block->[0];
     } else {
         push @$transform_blocks, $cleanup_block;
         $cleanup_block = undef;
@@ -162,11 +166,9 @@ sub transformExecuteValidate {
         my @transformed_results;
         my $transform_outcome;
 
-        $transformed_queries[0] =  "/* ".ref($transformer)." */ ".$transformed_queries[0];
-
+        $transformed_queries[0] =  "/* ". $transformer->name ." */ ".$transformed_queries[0];
         foreach my $transformed_query_part (@transformed_queries) {
             my $part_result = $executor->execute($transformed_query_part);
-
             my $partial_transform_outcome;
 
             foreach my $potential_outcome (keys %transform_outcomes) {
@@ -218,12 +220,12 @@ sub transformExecuteValidate {
                     )
                 ){
                     if (rqg_debug()) {
-                        say("Ignoring transform ".ref($transformer)." that failed with the error: ".$part_result->errstr());
+                        say("Ignoring transform ". $transformer->name ." that failed with the error: ".$part_result->errstr());
                         say("Offending query is: $transformed_query_part;");
                         say("Original query is: $original_query;");
                     } else {
                         if (not defined $suppressed_errors{$part_result->err()}) {
-                            say("Ignoring transforms of the type ".ref($transformer)." that fail with an error like: ".$part_result->errstr());
+                            say("Ignoring transforms of the type ". $transformer->name ." that fail with an error like: ".$part_result->errstr());
                             $suppressed_errors{$part_result->err()}++;
                         }
                     }
@@ -235,11 +237,11 @@ sub transformExecuteValidate {
                 # We do it in one "say" because we want it as solid as possible
                 say(
                   "---------- TRANSFORM ISSUE ----------"."\n".
-                  ref($transformer).": Transformation error: ".$part_result->err()." ".$part_result->errstr().
+                  $transformer->name .": Transformation error: ".$part_result->err()." ".$part_result->errstr().
                     "; RQG Status: ".status2text($part_result->status())." (".$part_result->status().")"."\n".
                   "Offending query is: $transformed_query_part;"."\n".
                   "Original query is: $original_query;"."\n".
-#                say("ERROR: Possible syntax or semantic error caused by code in transformer ".ref($transformer).
+#                say("ERROR: Possible syntax or semantic error caused by code in transformer ". $transformer->name .
 #                    ". Not handling this particular transform any further: Please fix the transformer code so as to handle the query shown above correctly.");
                   "-------------------------------------");
                 cleanup($executor, $cleanup_block);
@@ -258,12 +260,11 @@ sub transformExecuteValidate {
                 push @transformed_results, $part_result if ($part_outcome != STATUS_WONT_HANDLE) && ($part_outcome != STATUS_OK);
             }
         }
-
         if (
             (not defined $transform_outcome) ||
             ($transform_outcome == STATUS_WONT_HANDLE)
         ) {
-            say("ERROR: Transform ".ref($transformer)." produced no query which could be validated ($transform_outcome). Status will be set to ENVIRONMENT_FAILURE");
+            say("ERROR: Transform ". $transformer->name ." produced no query which could be validated ($transform_outcome). Status will be set to ENVIRONMENT_FAILURE");
             say("The following queries were produced");
             print Dumper \@transformed_queries;
             cleanup($executor, $cleanup_block);
@@ -306,6 +307,39 @@ sub cleanup {
 # Default non-op variator
 sub variate {
   return $_[1];
+}
+
+sub variate_query {
+  # Gendata flag tells variators that the query comes from gendata,
+  # in case the variator has a different logic in this case
+  my ($self,$orig_query,$executor,$gendata_flag)= @_;
+  my @variators= @{$self->[TRANSFORMER_VARIATORS]};
+  $self->random->shuffleArray(\@variators);
+  my @queries= ($orig_query);
+  VARIATOR:
+  foreach my $v (@variators) {
+    my @new_queries= ();
+    QUERY:
+    foreach my $q (@queries) {
+    # Variation happens with the configured probability
+      if ($v->random->uint16(1,100) > VARIATION_PROBABILITY) {
+        push @new_queries, $orig_query;
+        next QUERY;
+      }
+      $v->[TRANSFORMER_QUERIES_PROCESSED]++;
+      my $qs= $v->variate($q,$executor,$gendata_flag);
+      # Something went wrong
+      return $qs if ref $qs eq '';
+      if (rqg_debug() && (scalar(@$qs) > 1 || ($qs->[0] ne $q))) {
+        sayDebug($v->name." variator modified the query\nfrom [ $q ]\n  to [ ".(join " ]\n     [ ", @$qs).' ]');
+      } elsif (scalar(@$qs)==0) {
+        sayWarning($v->name." returned an empty query");
+      }
+      push @new_queries, @$qs;
+    }
+    @queries= @new_queries;
+  }
+  return \@queries;
 }
 
 sub validate {
@@ -490,8 +524,17 @@ sub isSingleIntegerOne {
     } else {
         return STATUS_LENGTH_MISMATCH;
     }
+}
 
-
+sub initVariators {
+  my ($self,$variators)= @_;
+  my @variators= ();
+  foreach my $vn (@$variators) {
+    eval ("require GenTest::Transform::'".$vn) or croak $@;
+    my $variator = ('GenTest::Transform::'.$vn)->new();
+    push @variators, $variator;
+  }
+  $self->[TRANSFORMER_VARIATORS]= \@variators;
 }
 
 sub isRowsExaminedObeyed {
@@ -533,8 +576,10 @@ sub name {
 }
 
 sub DESTROY {
-    my $transformer = shift;
-    print "# ".ref($transformer).": queries_processed: ".$transformer->[TRANSFORMER_QUERIES_PROCESSED]."; queries_transformed: ".$transformer->[TRANSFORMER_QUERIES_TRANSFORMED]."\n" if rqg_debug();
+  my $transformer = shift;
+  if ($transformer->name ne 'Transform') {
+    sayDebug($transformer->name.": queries_processed: ".($transformer->[TRANSFORMER_QUERIES_PROCESSED] || 0)."; queries_transformed: ".($transformer->[TRANSFORMER_QUERIES_TRANSFORMED] || 0));
+  }
 }
 
 1;

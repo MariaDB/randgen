@@ -16,6 +16,11 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
+########################################################################
+# Replaces virtual columns with their definitions
+########################################################################
+
+
 package GenTest::Transform::InlineVirtualColumns;
 
 require Exporter;
@@ -28,40 +33,44 @@ use GenTest;
 use GenTest::Transform;
 use GenTest::Constants;
 
-my $global_inlines = 0;
-
 sub transform {
   my ($class, $query, $executor) = @_;
-
-  my %virtual_columns;
-
-  my $dbh = $executor->dbh();
-
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
     || $query !~ m{\s*SELECT}sio;
+  my $new_query= $class->modify($query,$executor);
+  return (defined $new_query ? $new_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : STATUS_WONT_HANDLE);
+}
+
+sub variate {
+  my ($class, $query, $executor) = @_;
+  return [ $query ] if $query !~ m{\s*FROM}sio;
+  my $new_query= $class->modify($query,$executor);
+  return [ $new_query || $query ];
+}
+
+sub modify {
+  my ($class, $query, $executor) = @_;
+
+  my %virtual_columns;
+  my $dbh = $executor->dbh();
 
   my ($table_name) = $query =~ m{FROM (`.*?`|\w+)[ ^]}sio;
-  return STATUS_WONT_HANDLE unless $table_name;
+  return undef unless $table_name;
 
   my (undef, $table_create) = $dbh->selectrow_array("SHOW CREATE TABLE $table_name");
 
   foreach my $create_row (split("\n", $table_create)) {
     next if $create_row !~ m{ VIRTUAL}sio;
-    my ($column_name, $column_def) = $create_row =~ m{`(.*)` [^ ]*? AS (.*) VIRTUAL}sio;
+    my ($column_name, $column_def) = $create_row =~ m{`(.*)`\s+[^ ]*?\s+(?:GENERATED\s+ALWAYS\s+)?AS\s*\((.+)\)\s*VIRTUAL}sio;
     $virtual_columns{$column_name} = $column_def;
   }
 
   foreach my $virtual_column (keys %virtual_columns) {
-    my $inlines = $query =~ s{$virtual_column}{$virtual_columns{$virtual_column}}sgi;
-    $global_inlines = $global_inlines + $inlines;
+    $query =~ s{\`?$virtual_column\`?}{$virtual_columns{$virtual_column}}sgi;
   }
 
-  return $query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
-}
-
-DESTROY {
-  say("[Statistics]: InlineVirtualColumns Transformer inlined $global_inlines expressions") if rqg_debug();
+  return $query;
 }
 
 1;

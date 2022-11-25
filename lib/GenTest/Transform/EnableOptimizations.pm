@@ -34,38 +34,32 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub transform {
-  my ($class, $original_query, $executor, $original_result, $skip_result_validations) = @_;
+  my ($class, $original_query) = @_;
 
   return STATUS_WONT_HANDLE if
-    ($original_query !~ /SELECT/)
-      or ($original_query =~ /(?:INTO|CREATE|INSERT.+SELECT)/is)
-      or (! $skip_result_validations and $original_query =~ /INFORMATION_SCHEMA|PERFORMANCE_SCHEMA/is);
+    ($original_query !~ /^[\s\(]*SELECT/is)
+      or ($original_query =~ /INTO|INFORMATION_SCHEMA|PERFORMANCE_SCHEMA/is);
 
-  return modify_query($original_query)
+  return [ 
+    $class->modify_query($original_query,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
+    [ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=\@switch_saved" ]
+  ];
 }
 
 sub variate {
   my ($self, $original_query) = @_;
-  # Variate 10% queries
-  return $original_query if $self->random->uint16(0,9);
-
-  return $original_query if
-    ($original_query !~ /SELECT/)
-      or ($original_query =~ /(?:INTO|CREATE|INSERT.+SELECT)/is);
-
-  my $queries= modify_query($original_query);
-  return join ';', map { join ';', @$_ } @$queries;
+  return $self->modify_query($original_query);
 }
 
 sub modify_query {
-  my $original_query= shift;
+  my ($self, $original_query, $transform_outcome) = @_;
   return [
-    [ "SET \@switch_saved = \@\@optimizer_switch",
-      "SET SESSION optimizer_switch = REPLACE( \@\@optimizer_switch, '=off', '=on' )",
-      # MDEV-28878, MDEV-28841
-      "/*!100501 SET SESSION optimizer_switch = 'not_null_range_scan=off,rowid_filter=off' */",
-      "$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" ],
-    [ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=\@switch_saved" ]
+    "SET \@switch_saved = \@\@optimizer_switch",
+    "SET SESSION optimizer_switch = REPLACE( \@\@optimizer_switch, '=off', '=on' )",
+    # Due to MDEV-28878 and maybe more
+    "/*!100501 SET SESSION optimizer_switch = 'rowid_filter=off' */",
+    "$original_query ".($transform_outcome ? " /* $transform_outcome */" : ''),
+    "SET SESSION optimizer_switch=\@switch_saved"
   ];
 }
 

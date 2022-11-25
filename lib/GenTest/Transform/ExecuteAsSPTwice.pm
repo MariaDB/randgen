@@ -30,18 +30,26 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub transform {
-  my ($class, $orig_query, $executor) = @_;
-
-  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION)}sio
+  my ($class, $orig_query) = @_;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION}sio
           || $orig_query !~ m{SELECT}io;
+  return $class->modify($orig_query, 'TRANSFORM_OUTCOME_UNORDERED_MATCH');
+}
 
+sub variate {
+  my ($class, $orig_query) = @_;
+  return $class->modify($orig_query);
+}
+
+sub modify {
+  my ($class, $orig_query, $transform_outcome) = @_;
+  return [ $orig_query ] if $orig_query =~ m{TRIGGER|PROCEDURE|FUNCTION}sio
   return [
-    "DROP PROCEDURE IF EXISTS stored_proc_".abs($$),
-    "CREATE PROCEDURE stored_proc_".abs($$)." () LANGUAGE SQL $orig_query",
-    "CALL stored_proc_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-                "CALL stored_proc_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "DROP PROCEDURE IF EXISTS stored_proc_".abs($$)
+    "DROP PROCEDURE IF EXISTS sp_ExecuteAsSPTwice_".abs($$),
+    "CREATE PROCEDURE sp_ExecuteAsSPTwice_".abs($$)." () LANGUAGE SQL $orig_query",
+    "CALL sp_ExecuteAsSPTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
+    "CALL sp_ExecuteAsSPTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
+    "DROP PROCEDURE IF EXISTS sp_ExecuteAsSPTwice_".abs($$)
   ];
 }
 

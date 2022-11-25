@@ -58,8 +58,6 @@ sub transform {
 
 sub variate {
   my ($self, $query, $executor) = @_;
-  # Variate 10% queries
-  return $query if $self->random->uint16(0,9);
   # CTE do not work due to MDEV-15177 (closed as "won't fix")
   return $query if $query =~ m{(OUTFILE|INFILE|INTO)}sio || $query !~ m{^\s*SELECT}sio || $query =~ m{^\s*WITH}sio;
 

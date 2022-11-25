@@ -71,7 +71,7 @@ sub transform {
     ];
   }
 
-  my $new_query= $self->modify_query($orig_query);
+  my $new_query= $self->modify($orig_query);
 
   $limit = ( $limit < OVERHEAD_FOR_LOW_LIMITS ? $limit + OVERHEAD_FOR_LOW_LIMITS : $limit * OVERHEAD_MULTIPLIER );
 
@@ -93,10 +93,8 @@ sub transform {
 
 sub variate {
   my ($self, $query) = @_;
-  # Variate one out of 10 queries
-  return $query if $self->random->uint16(0,9);
-  return $query unless $self->is_applicable($query);
-  return $self->modify_query($query);
+  return [ $query ] unless $self->is_applicable($query);
+  return [ $self->modify($query) ];
 }
 
 sub is_applicable {
@@ -106,7 +104,7 @@ sub is_applicable {
   return 1;
 }
 
-sub modify_query {
+sub modify {
   my ($self, $query)= @_;
   return $query if $query =~ m{ROWS\s+EXAMINED}si;
 

@@ -41,26 +41,17 @@ use GenTest::Constants;
 my $version_supported = undef;
 
 sub transform {
-    my ($class, $orig_query, $executor) = @_;
-    return STATUS_WONT_HANDLE unless is_applicable($orig_query);
-    return "EXECUTE IMMEDIATE ".$executor->dbh()->quote($orig_query) . " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+  my ($class, $orig_query, $executor) = @_;
+  return STATUS_WONT_HANDLE if $orig_query !~ m{^[\s\(]*SELECT|HANDLER}sio || $orig_query =~ m{(?:\WINTO\W|PROCESSLIST)}sio;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{;}sio;
+  return "EXECUTE IMMEDIATE ".$executor->dbh()->quote($orig_query) . " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 }
 
 sub variate {
-  my ($self, $query, $executor) = @_;
-  # Variate 20% queries
-  return $query if $self->random->uint16(0,4);
-  return $query unless is_applicable($query);
-  return "EXECUTE IMMEDIATE ".$executor->dbh()->quote($query);
-}
-
-sub is_applicable {
-  my $orig_query= shift;
-  return 0 if $orig_query !~ m{SELECT|HANDLER}sio;
-# TODO: Don't handle anything that looks like multi-statements for now
-  return 0 if $orig_query =~ m{(?:;|OUTFILE)}sio;
-  return 0 if $orig_query =~ m{CREATE.*(?:PROCEDURE|TRIGGER)}sio;
-  return 1;
+  my ($self, $orig_query, $executor) = @_;
+  return [ $orig_query ] if $orig_query =~ m{EXECUTE\s|PREPARE\s}sio;
+  return [ $orig_query ] if $orig_query =~ m{;}sio;
+  return "EXECUTE IMMEDIATE ".$executor->dbh()->quote($orig_query);
 }
 
 1;

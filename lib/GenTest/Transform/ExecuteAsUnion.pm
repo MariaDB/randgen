@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2022 MariaDB Corporation Ab
+# Copyright (c) 2022, MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -59,11 +59,9 @@ sub transform {
 
 sub variate {
   my ($self, $query) = @_;
-  # Variate 10% queries
-  return $query if $self->random->uint16(0,9);
-  my $union_type= $self->random->arrayElement(['','ALL','DISTINCT']);
   # CTE do not work due to MDEV-15177 (closed as "won't fix")
-  return $query if $query =~ m{(OUTFILE|INFILE|INTO)}sio || $query !~ m{^\s*SELECT}sio || $query =~ m{^\s*WITH}sio;
+  return [ $query ] if $query =~ m{(OUTFILE|INFILE|INTO)}sio || $query !~ m{^\s*SELECT}sio || $query =~ m{^\s*WITH}sio;
+  my $union_type= $self->random->arrayElement(['','ALL','DISTINCT']);
   return "( $query ) UNION $union_type ( $query )";
 }
 

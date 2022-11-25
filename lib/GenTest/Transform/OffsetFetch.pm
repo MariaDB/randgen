@@ -33,12 +33,9 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub variate {
-  # Don't need (for now) gendata_flag
   my ($self, $query, $executor) = @_;
-  # Variate one out of 10 queries
-  return $query if $self->random->uint16(0,9);
-  return $query unless $executor->versionNumeric() >= 100601;
-  return $query if $query !~ /^\s*(?:\/\*.*?\*\/\s*)?SELECT/;
+  return [ $query ] unless $executor->versionNumeric() >= 100601;
+  return [ $query ] if $query !~ /^\s*(?:\/\*.*?\*\/\s*)?SELECT/;
 
   my $offset_clause= ($self->random->uint16(0,1) ?
     'OFFSET '.$self->random->uint16(0,100).($self->random->uint16(0,1) ? ' ROW' : ' ROWS') : '');
@@ -74,7 +71,7 @@ sub variate {
   else {
     $query.= " $clause";
   }
-  return $query.($suffix ? " $suffix" : '');
+  return [ $query.($suffix ? " $suffix" : '') ];
 }
 
 sub transform {

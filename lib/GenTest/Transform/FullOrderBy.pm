@@ -1,4 +1,4 @@
-# Copyright (c) 2021 MariaDB Corporation Ab
+# Copyright (c) 2021, 2022, MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,13 +29,25 @@ use GenTest::Constants;
 
 
 sub transform {
-  return undef;
+  my ($self, $original_query, $executor) = @_;
+  my $transform_outcome= 'TRANSFORM_OUTCOME_UNORDERED_MATCH';
+  if ($original_query =~ /LIMIT|FETCH/) {
+    $transform_outcome= 'TRANSFORM_OUTCOME_SUPERSET';
+  }
+  $original_query= $self->modify($original_query,$executor);
+  return (defined $original_query ? $original_query ." /* $transform_outcome */" : STATUS_WONT_HANDLE);
 }
 
 sub variate {
   my ($self, $original_query, $executor) = @_;
-  return $original_query if $original_query !~ m{^\s*SELECT}sio;
-  return $original_query if $original_query =~ m{(OUTFILE|PROCESSLIST|INTO|GROUP_CONCAT)}sio;
+  my $query= $self->modify($original_query,$executor);
+  return [ $query || $original_query ];
+}
+
+sub modify {
+  my ($self, $original_query, $executor) = @_;
+  return undef if $original_query !~ m{^\s*SELECT}sio;
+  return undef if $original_query =~ m{(OUTFILE|PROCESSLIST|INTO|GROUP_CONCAT)}sio;
   my $query= $original_query;
   $query =~ s/ORDER\s+BY\s+.*?(LIMIT|OFFSET|FETCH|FOR\s+UPDATE)/\1/;
   while ($query =~ s/(?:ORDER\s+BY|LIMIT|OFFSET|FETCH)\s+.*?[^\(\)]*$//) {};
@@ -64,8 +76,7 @@ sub variate {
   }
   $query.= ' ORDER BY '.( join ',', @{$self->random->shuffleArray(\@full_order_by)} );
   sayDebug("FullOrderBy: Original query [ $original_query ] ; Modified query [ $query ]");
-  return $query.' /* OUTCOME_ORDERED_MATCH */';
-
+  return $query;
 }
 
 1;

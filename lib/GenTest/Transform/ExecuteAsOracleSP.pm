@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2018 MariaDB Corporation Ab
+# Copyright (c) 2018, 2022, MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -30,27 +30,34 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub transform {
-    my ($class, $orig_query, $executor) = @_;
-
-    return STATUS_WONT_HANDLE unless $executor->versionNumeric() >= 100307;
+    my ($class, $orig_query) = @_;
     return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION)}sio;
-
     return [
-        [
-            "SET \@sql_mode.save=\@\@sql_mode",
-            "SET sql_mode=CONCAT(\@\@sql_mode,',ORACLE')",
-            "CREATE OR REPLACE PROCEDURE stored_proc_".abs($$)." AS BEGIN $orig_query; END",
-            "CALL stored_proc_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-            "CALL stored_proc_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-            "CREATE OR REPLACE PROCEDURE stored_proc_2_".abs($$)." AS BEGIN stored_proc_".abs($$)."; END",
-            "CALL stored_proc_2_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-            "CALL stored_proc_2_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-            "DROP PROCEDURE IF EXISTS stored_proc_2_".abs($$),
-            "DROP PROCEDURE IF EXISTS stored_proc_".abs($$)
-        ],
-        [
-            "/* TRANSFORM_CLEANUP */ SET \@\@sql_mode=\@sql_mode.save",
-        ]
+      $class->modify($orig_query,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
+      [ "/* TRANSFORM_CLEANUP */ SET \@\@sql_mode=\@sql_mode.save" ]
+    ];
+}
+
+sub variate {
+  my ($class, $orig_query) = @_;
+  return [ $orig_query ] if $orig_query =~ m{(?:TRIGGER|PROCEDURE|FUNCTION)}sio;
+  return $class->modify($orig_query);
+}
+
+sub modify {
+    my ($class, $orig_query, $transform_outcome) = @_;
+    return [
+      "SET \@sql_mode.save=\@\@sql_mode",
+      "SET sql_mode=CONCAT(\@\@sql_mode,',ORACLE')",
+      "CREATE OR REPLACE PROCEDURE sp1_ExecuteAsOracleSP_".abs($$)." AS BEGIN $orig_query; END",
+      "CALL sp1_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+      "CALL sp1_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+      "CREATE OR REPLACE PROCEDURE sp2_ExecuteAsOracleSP_".abs($$)." AS BEGIN sp1_ExecuteAsOracleSP_".abs($$)."; END",
+      "CALL sp2_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+      "CALL sp2_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+      "DROP PROCEDURE IF EXISTS sp2_ExecuteAsOracleSP_".abs($$),
+      "DROP PROCEDURE IF EXISTS sp1_ExecuteAsOracleSP_".abs($$),
+      "SET \@\@sql_mode=\@sql_mode.save"
     ];
 }
 

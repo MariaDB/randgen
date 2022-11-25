@@ -66,7 +66,8 @@ use constant GT_REPORTER_MANAGER => 8;
 use constant GT_TEST_START => 9;
 use constant GT_TEST_END => 10;
 use constant GT_QUERY_FILTERS => 11;
-use constant GT_EXECUTORS => 13;
+use constant GT_EXECUTORS => 12;
+use constant GT_VARIATOR_MANAGER => 13;
 
 sub new {
     my $class = shift;
@@ -111,12 +112,17 @@ sub run {
     $ENV{RQG_DEBUG} = 1 if $self->config->debug;
 
     $self->initSeed();
+    if ($self->config->variators && @{$self->config->variators}) {
+      $self->[GT_VARIATOR_MANAGER] = GenTest::Transform->new();
+      $self->[GT_VARIATOR_MANAGER]->setSeed($self->config->property('seed'));
+      $self->[GT_VARIATOR_MANAGER]->initVariators($self->config->variators);
+    }
 
     say("-------------------------------\nConfiguration");
     $self->config->printProps;
 
     my $gendata_result = $self->doGenData();
-    return $gendata_result if $gendata_result != STATUS_OK;
+    return $gendata_result if $gendata_result > STATUS_CRITICAL_FAILURE;
     $gendata_result = $self->validateGenData();
     return $gendata_result if $gendata_result != STATUS_OK;
 
@@ -311,10 +317,14 @@ sub workerProcess {
     my @executors;
     foreach my $i (1..$self->config->number_of_servers) {
         next unless $self->config->server_specific->{$i}->{dsn};
-        my $executor = GenTest::Executor->newFromDSN($self->config->server_specific->{$i}->{dsn}, osWindows() ? undef : $self->channel());
-        $executor->sqltrace($self->config->sqltrace);
+        my $executor = GenTest::Executor->newFromDSN(
+          $self->config->server_specific->{$i}->{dsn},
+          channel => (osWindows() ? undef : $self->channel()),
+          sqltrace => $self->config->sqltrace,
+          vardir => $self->config->vardir,
+          variators => $self->config->variators,
+        );
         $executor->setId($i);
-        $executor->setVardir($self->config->vardir);
         push @executors, $executor;
     }
     $self->[GT_EXECUTORS] = \@executors;
@@ -328,7 +338,7 @@ sub workerProcess {
         end_time => $self->[GT_TEST_END],
         restart_timeout => $self->config->property('restart-timeout'),
         compatibility => $self->config->compatibility,
-        variators => $self->config->variators,
+        variator_manager => $self->[GT_VARIATOR_MANAGER],
     );
 
     if (not defined $mixer) {

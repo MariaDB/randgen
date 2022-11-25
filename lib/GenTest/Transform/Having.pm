@@ -16,6 +16,10 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
+########################################################################
+# Removes HAVING clauses
+########################################################################
+
 package GenTest::Transform::Having;
 
 require Exporter;
@@ -31,17 +35,24 @@ use GenTest::Constants;
 
 sub transform {
   my ($class, $orig_query) = @_;
-
-  my @having = $orig_query =~ m{HAVING}sio;
-  my @selects = $orig_query =~ m{(SELECT)}sgio;
-
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|SET)}sio
-    || (($#having != 0) || ($#selects != 0))
+  #          - LIMIT changes the result when HAVING is removed
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|SET|LIMIT)}sio
+    || $orig_query !~ m{SELECT}sio
     || $orig_query !~ m{HAVING[^()]*$}sio;
+  return $class->modify($orig_query)." /* TRANSFORM_OUTCOME_SUPERSET */";
+}
 
-  $orig_query =~ s{HAVING.*(ORDER\s+BY|LIMIT|$)}{ $1}sio;
-  return $orig_query." /* TRANSFORM_OUTCOME_SUPERSET */";
+sub variate {
+  my ($class, $orig_query) = @_;
+  return [ $orig_query ] if $orig_query !~ m{HAVING[^()]*$}sio;
+  return [ $class->modify($orig_query) ];
+}
+
+sub modify {
+  my ($class, $orig_query) = @_;
+  $orig_query =~ s{HAVING.*?(ORDER\s+BY|LIMIT|$)}{ $1}siog;
+  return $orig_query;
 }
 
 1;

@@ -1,6 +1,6 @@
 # Copyright (C) 2009, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020, 2021, MariaDB Corporation Ab.
+# Copyright (c) 2020, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,20 +17,71 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-package GenTest::GenData;
-
+package GenData;
+require Exporter;
 @ISA = qw(GenTest);
+@EXPORT= qw(
+  FIELD_TYPE
+  FIELD_CHARSET
+  FIELD_COLLATION
+  FIELD_SIGN
+  FIELD_NULLABILITY
+  FIELD_INDEX
+  FIELD_AUTO_INCREMENT
+  FIELD_SQL
+  FIELD_INDEX_SQL
+  FIELD_NAME
+  FIELD_DEFAULT
+  FIELD_NAMES
+  FIELD_SQLS
+  FIELD_INDEX_SQLS
+  TABLE_ROW
+  TABLE_ENGINE
+  TABLE_CHARSET
+  TABLE_COLLATION
+  TABLE_ROW_FORMAT
+  TABLE_EXTRA_OPTS
+  TABLE_PK
+  TABLE_SQL
+  TABLE_NAME
+  TABLE_VIEWS
+  TABLE_MERGES
+  TABLE_NAMES
+  TABLE_PARTITION
+  DATA_NUMBER
+  DATA_STRING
+  DATA_BLOB
+  DATA_TEMPORAL
+  DATA_ENUM
+  GD_SPEC
+  GD_DEBUG
+  GD_DSN
+  GD_SEED
+  GD_ENGINE
+  GD_ROWS
+  GD_VIEWS
+  GD_SERVER_ID
+  GD_SQLTRACE
+  GD_SHORT_COLUMN_NAMES
+  GD_VARIATORS
+  GD_VARDIR
+  GD_PARTITIONS
+  GD_COMPATIBILITY
+  GD_VCOLS
+  GD_RAND
+);
 
 use Carp;
 use Data::Dumper;
 use DBI;
 
-use GenUtil;
+use GenData::PopulateSchema;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Executor;
 use GenTest::Random;
-use GenData::PopulateSchema;
+use GenTest::Transform;
+use GenUtil;
 
 use strict;
 
@@ -77,12 +128,20 @@ use constant GD_SEED => 3;
 use constant GD_ENGINE => 4;
 use constant GD_ROWS => 5;
 use constant GD_VIEWS => 6;
+use constant GD_EXECUTOR_ID => 7;
 use constant GD_SERVER_ID => 8;
 use constant GD_SQLTRACE => 9;
-use constant GD_SHORT_COLUMN_NAMES => 11;
-use constant GD_EXECUTOR_ID => 13;
-use constant GD_VARIATORS => 14;
+use constant GD_SHORT_COLUMN_NAMES => 10;
+use constant GD_EXECUTOR => 11;
+use constant GD_VARIATORS => 12;
+use constant GD_VARIATOR_MANAGER => 13;
 use constant GD_VARDIR => 15;
+use constant GD_PARTITIONS => 16;
+use constant GD_COMPATIBILITY => 17;
+use constant GD_VCOLS => 18;
+use constant GD_RAND => 19;
+use constant GD_BASEDIR => 20;
+use constant GD_TABLES => 21;
 
 sub new {
     my $class = shift;
@@ -92,14 +151,19 @@ sub new {
         'dsn' => GD_DSN,
         'seed' => GD_SEED,
         'engine' => GD_ENGINE,
+        'executor_id' => GD_EXECUTOR_ID,
         'rows' => GD_ROWS,
         'views' => GD_VIEWS,
         'short_column_names' => GD_SHORT_COLUMN_NAMES,
         'server_id' => GD_SERVER_ID,
-        'executor_id' => GD_EXECUTOR_ID,
         'variators' => GD_VARIATORS,
         'sqltrace' => GD_SQLTRACE,
         'vardir' => GD_VARDIR,
+        'partitions' => GD_PARTITIONS,
+        'compatibility' => GD_COMPATIBILITY,
+        'vcols' => GD_VCOLS,
+        'basedir' => GD_BASEDIR,
+        'tables' => GD_TABLES,
       },@_);
 
     if (not defined $self->[GD_SEED]) {
@@ -108,52 +172,65 @@ sub new {
         $self->[GD_SEED] = time();
         say("Converting --seed=time to --seed=".$self->[GD_SEED]);
     }
+    $self->[GD_RAND]= GenTest::Random->new(seed => $self->seed());
 
-    my @variators= ();
-    foreach my $vn (@{$self->[GD_VARIATORS]}) {
-        eval ("require GenTest::Transform::'".$vn) or croak $@;
-        my $variator = ('GenTest::Transform::'.$vn)->new();
-        $variator->setSeed($self->[GD_SEED]);
-        push @variators, $variator;
-    }
-    $self->[GD_VARIATORS] = [ @variators ];
+    $self->[GD_EXECUTOR] = GenTest::Executor->newFromDSN(
+      $self->dsn(),
+      sqltrace => $self->sqltrace,
+      vardir => $self->vardir,
+      seed => $self->seed,
+    );
+    $self->[GD_EXECUTOR]->init();
 
     return $self;
 }
 
-
-sub spec_file {
-return $_[0]->[GD_SPEC];
+sub executor {
+  return $_[0]->[GD_EXECUTOR];
 }
 
+sub executor_id {
+  return $_[0]->[GD_EXECUTOR_ID];
+}
+
+sub vardir {
+  return $_[0]->[GD_VARDIR];
+}
+
+sub rand {
+  return $_[0]->[GD_RAND];
+}
+
+sub spec_file {
+    return $_[0]->[GD_SPEC];
+}
 
 sub debug {
     return $_[0]->[GD_DEBUG];
 }
 
-
 sub dsn {
     return $_[0]->[GD_DSN];
 }
-
 
 sub seed {
     return $_[0]->[GD_SEED];
 }
 
-
 sub engine {
     return $_[0]->[GD_ENGINE];
 }
-
 
 sub rows {
     return $_[0]->[GD_ROWS];
 }
 
-
 sub views {
     return $_[0]->[GD_VIEWS];
+}
+
+sub partitions {
+    return $_[0]->[GD_PARTITIONS];
 }
 
 sub server_id {
@@ -168,17 +245,20 @@ sub short_column_names {
     return $_[0]->[GD_SHORT_COLUMN_NAMES];
 }
 
-sub executor_id {
-    return $_[0]->[GD_EXECUTOR_ID] || '';
+sub compatibility {
+    return $_[0]->[GD_COMPATIBILITY];
 }
 
-sub variate_and_execute {
-  my ($self, $executor, $query)= @_;
-  foreach my $v (@{$self->[GD_VARIATORS]}) {
-    # 1 stands for "it's gendata, variate with caution"
-    $query= $v->variate($query,$executor,1);
-  }
-  return ($query ? $executor->execute($query) : STATUS_OK);
+sub vcols {
+    return $_[0]->[GD_VCOLS];
+}
+
+sub tables {
+    return $_[0]->[GD_TABLES];
+}
+
+sub basedir {
+    return $_[0]->[GD_BASEDIR];
 }
 
 # To be overridden

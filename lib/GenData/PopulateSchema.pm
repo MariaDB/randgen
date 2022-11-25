@@ -18,130 +18,32 @@
 
 package GenData::PopulateSchema;
 
-@ISA = qw(GenTest);
+@ISA = qw(GenData);
 
 use strict;
 use DBI;
 use Carp;
-use GenUtil;
+use Data::Dumper;
+
+use GenData;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Random;
 use GenTest::Executor;
+use GenUtil;
 
 use DBServer::MariaDB;
 
-use Data::Dumper;
-
-use constant FIELD_TYPE           => 0;
-use constant FIELD_CHARSET        => 1;
-use constant FIELD_COLLATION      => 2;
-use constant FIELD_SIGN           => 3;
-use constant FIELD_NULLABILITY    => 4;
-use constant FIELD_INDEX          => 5;
-use constant FIELD_AUTO_INCREMENT => 6;
-use constant FIELD_SQL            => 7;
-use constant FIELD_INDEX_SQL      => 8;
-use constant FIELD_NAME           => 9;
-use constant FIELD_DEFAULT        => 10;
-
-use constant TABLE_ROW            => 0;
-use constant TABLE_ENGINE         => 1;
-use constant TABLE_CHARSET        => 2;
-use constant TABLE_COLLATION      => 3;
-use constant TABLE_ROW_FORMAT     => 4;
-use constant TABLE_PARTITION      => 5;
-use constant TABLE_PK             => 6;
-use constant TABLE_SQL            => 7;
-use constant TABLE_NAME           => 8;
-use constant TABLE_VIEWS          => 9;
-use constant TABLE_MERGES         => 10;
-use constant TABLE_NAMES          => 11;
-
-use constant DATA_NUMBER          => 0;
-use constant DATA_STRING          => 1;
-use constant DATA_BLOB            => 2;
-use constant DATA_TEMPORAL        => 3;
-use constant DATA_ENUM            => 4;
-
-
-use constant PS_SPEC      => 0;
-use constant PS_DEBUG     => 1;
-use constant PS_DSN       => 2;
-use constant PS_SEED      => 3;
-use constant PS_ROWS      => 4;
-use constant PS_SQLTRACE  => 6;
-use constant PS_BASEDIR   => 7;
-use constant PS_TABLES    => 8;
-
 sub new {
     my $class = shift;
-
-    my $self = $class->SUPER::new({
-        'schema_file' => PS_SPEC,
-        'debug' => PS_DEBUG,
-        'dsn' => PS_DSN,
-        'seed' => PS_SEED,
-        'rows' => PS_ROWS,
-        'sqltrace' => PS_SQLTRACE,
-        'basedir' => PS_BASEDIR,
-        'tables' => PS_TABLES,
-    },@_);
-
-    if (not defined $self->[PS_SEED]) {
-        $self->[PS_SEED] = 1;
-    } elsif ($self->[PS_SEED] eq 'time') {
-        $self->[PS_SEED] = time();
-        say("Converting --seed=time to --seed=".$self->[PS_SEED]);
-    }
-
+    my $self = $class->SUPER::new(@_);
     return $self;
-}
-
-
-sub schema_file {
-    return $_[0]->[PS_SPEC];
-}
-
-
-sub tables {
-    return $_[0]->[PS_TABLES];
-}
-
-
-sub debug {
-    return $_[0]->[PS_DEBUG];
-}
-
-
-sub dsn {
-    return $_[0]->[PS_DSN];
-}
-
-
-sub seed {
-    return $_[0]->[PS_SEED];
-}
-
-
-sub rows {
-    return $_[0]->[PS_ROWS];
-}
-
-
-sub sqltrace {
-    return $_[0]->[PS_SQLTRACE];
-}
-
-
-sub basedir {
-    return $_[0]->[PS_BASEDIR];
 }
 
 sub run {
     my ($self) = @_;
 
-    my $schema_file = $self->schema_file();
+    my $schema_file = $self->spec_file();
     my $tables = $self->tables();
 
     my $executor = GenTest::Executor->newFromDSN($self->dsn());

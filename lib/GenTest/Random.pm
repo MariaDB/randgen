@@ -1095,6 +1095,7 @@ sub word {
 sub shuffleArray {
   my ($rand, $array) = @_;
   my $i;
+  return $array unless $array && scalar(@$array);
   for ($i = @$array; --$i; ) {
           my $j = $rand->uint16(0, $i);
           next if $i == $j;
@@ -1393,7 +1394,7 @@ sub auto {
     } else {
       my $s= 0;
       foreach my $p (@probabilities) { $s+= $p };
-      $filler= $s / (scalar(@items) - scalar(@probabilities));
+      $filler= (100 - $s) / (scalar(@items) - scalar(@probabilities));
     }
     foreach my $i ($#probabilities+1..$#items) {
       $probabilities[$i]= $filler;

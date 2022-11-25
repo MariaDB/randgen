@@ -67,7 +67,11 @@ sub transform {
 # Not very important as a variator, we have plenty of INSERT .. SELECT in grammars
 sub variate {
   my ($self, $query) = @_;
-  return $query;
+  return [ $query ] if $query =~ m{INTO\s}sio || $query !~ m{^[\s\(]*SELECT}sio;
+  return [
+    "CREATE OR REPLACE TEMPORARY TABLE tmp_ExecuteAsInsertSelect AS $query",
+    "REPLACE INTO tmp_ExecuteAsInsertSelect $query"
+  ]
 }
 
 1;

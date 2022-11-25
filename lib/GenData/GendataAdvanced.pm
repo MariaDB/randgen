@@ -1,5 +1,5 @@
 # Copyright (C) 2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2016, 2021 MariaDB Corporation Ab
+# Copyright (c) 2016, 2022 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,139 +17,46 @@
 # USA
 
 package GenData::GendataAdvanced;
-
-@ISA = qw(GenTest);
+@ISA = qw(GenData);
 
 use strict;
 use DBI;
-use GenUtil;
+
+use GenData;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Random;
 use GenTest::Executor;
+use GenUtil;
 
 use Data::Dumper;
 
-use constant GDS_DEFAULT_DSN => 'dbi:mysql:host=127.0.0.1:port=9306:user=root:database=test';
-
-use constant GDS_DSN => 0;
-use constant GDS_ENGINE => 1;
-use constant GDS_VIEWS => 2;
-use constant GDS_SQLTRACE => 3;
-use constant GDS_ROWS => 5;
-use constant GDS_VCOLS => 7;
-use constant GDS_EXECUTOR_ID => 8;
-use constant GDS_PARTITIONS => 9;
-use constant GDS_COMPATIBILITY => 10;
-use constant GDS_VARIATORS => 11;
-use constant GDS_SEED => 12;
-use constant GDS_VARDIR => 13;
-
-use constant GDS_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
-use constant GDS_DEFAULT_NAMES => ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9'];
+use constant GDA_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
 
 my $prng;
 
 sub new {
     my $class = shift;
-
-    my $self = $class->SUPER::new({
-        'dsn' => GDS_DSN,
-        'engine' => GDS_ENGINE,
-        'views' => GDS_VIEWS,
-        'sqltrace' => GDS_SQLTRACE,
-        'rows' => GDS_ROWS,
-        'vcols' => GDS_VCOLS,
-        'executor_id' => GDS_EXECUTOR_ID,
-        'partitions' => GDS_PARTITIONS,
-        'compatibility' => GDS_COMPATIBILITY,
-        'variators' => GDS_VARIATORS,
-        'seed' => GDS_SEED,
-        'vardir' => GDS_VARDIR,
-    },@_);
-
-    if (not defined $self->[GDS_DSN]) {
-        $self->[GDS_DSN] = GDS_DEFAULT_DSN;
-    }
-
-    my @variators= ();
-    foreach my $vn (@{$self->[GDS_VARIATORS]}) {
-        eval ("require GenTest::Transform::'".$vn) or croak $@;
-        my $variator = ('GenTest::Transform::'.$vn)->new();
-        $variator->setSeed($self->[GDS_SEED]);
-        push @variators, $variator;
-    }
-    $self->[GDS_VARIATORS] = [ @variators ];
-
+    my $self = $class->SUPER::new(@_);
     return $self;
-}
-
-sub defaultDsn {
-    return GDS_DEFAULT_DSN;
-}
-
-sub dsn {
-    return $_[0]->[GDS_DSN];
-}
-
-sub engine {
-    return $_[0]->[GDS_ENGINE];
-}
-
-sub vcols {
-    return $_[0]->[GDS_VCOLS];
-}
-
-sub views {
-    return $_[0]->[GDS_VIEWS];
-}
-
-sub sqltrace {
-    return $_[0]->[GDS_SQLTRACE];
-}
-
-sub rows {
-    return $_[0]->[GDS_ROWS];
-}
-
-sub partitions {
-    return $_[0]->[GDS_PARTITIONS];
-}
-
-sub executor_id {
-    return $_[0]->[GDS_EXECUTOR_ID] || '';
-}
-
-sub compatibility {
-    return $_[0]->[GDS_COMPATIBILITY];
 }
 
 sub run {
     my ($self) = @_;
-
     say("Running GendataAdvanced");
-
-    $prng = GenTest::Random->new( seed => $self->[GDS_SEED] );
-
-    my $executor = GenTest::Executor->newFromDSN($self->dsn());
-    $executor->sqltrace($self->sqltrace);
-    $executor->setId($self->executor_id);
-    $executor->setVardir($self->[GDS_VARDIR]);
-    $executor->init();
-
-    my $names = GDS_DEFAULT_NAMES;
+    $prng = $self->rand();
+    my $executor = $self->executor();
     my $rows;
-
     if (defined $self->rows()) {
         $rows = [split(',', $self->rows())];
     } else {
-        $rows = GDS_DEFAULT_ROWS;
+        $rows = GDA_DEFAULT_ROWS;
     }
 
     my $res= STATUS_OK;
-    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
-    foreach my $i (0..$#$names) {
-        my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i], $prng);
+    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
+    foreach my $i (0..$#$rows) {
+        my $gen_table_result = $self->gen_table($executor, 't'.($i+1), $rows->[$i], $prng);
         $res= $gen_table_result if $gen_table_result > $res;
     }
     return $res;
@@ -203,15 +110,6 @@ sub random_asc_desc_key {
     # As of 10.8 RocksDB refuses to create DESC keys
     return '' if lc($engine) eq 'rocksdb';
     return ($asc_desc == 1 ? ' ASC' : ($asc_desc == 2 ? ' DESC' : ''));
-}
-
-sub variate_and_execute {
-  my ($self, $executor, $query)= @_;
-  foreach my $v (@{$self->[GDS_VARIATORS]}) {
-    # 1 stands for "it's gendata, variate with caution"
-    $query= $v->variate($query,$executor,1);
-  }
-  return ($query ? $executor->execute($query) : STATUS_OK);
 }
 
 sub gen_table {
@@ -676,7 +574,7 @@ sub gen_table {
       ### This variant is needed due to
       ### http://bugs.mysql.com/bug.php?id=47125
 
-      $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ $name");
+      $executor->execute("DROP TABLE /*! IF EXISTS */ $name");
       my $create_stmt = "CREATE TABLE $name (";
       my @column_list = ();
       my @columns= ();
@@ -751,14 +649,14 @@ sub gen_table {
       }
       $create_stmt .= ")" . ($e ne '' ? " ENGINE=$e" : "");
 
-      $res= $self->variate_and_execute($executor,$create_stmt);
+      $res= $executor->variate_and_execute($create_stmt,my $gendata=1);
       if ($res->status != STATUS_OK) {
           sayError("Failed to create table $name: " . $res->errstr);
           return $res->status;
       }
 
       if ($pk_stmt) {
-          $res= $self->variate_and_execute($executor,$pk_stmt);
+          $res= $executor->variate_and_execute($pk_stmt, my $gendata=1);
           if ($res->status != STATUS_OK) {
               sayError("Failed to add primary key to table $name: " . $res->errstr);
           }
@@ -802,7 +700,7 @@ sub gen_table {
               }
               $part_stmt.= '('.(join ',',@parts).')';
           }
-          $res= $self->variate_and_execute($executor,$part_stmt);
+          $res= $executor->variate_and_execute($part_stmt, my $gendata=1);
           if ($res->status == STATUS_OK) {
               say("Table $name has been partitioned by $partition_type($partition_column)");
           } else {
@@ -812,9 +710,9 @@ sub gen_table {
 
       if (defined $views) {
           if ($views ne '') {
-              $self->variate_and_execute($executor,"CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
+              $executor->variate_and_execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name, my $gendata=1);
           } else {
-              $self->variate_and_execute($executor,'CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
+              $executor->variate_and_execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name, my $gendata=1);
           }
       }
 
@@ -854,18 +752,18 @@ sub gen_table {
               # DESC indexes: add ASC/DESC to the column
               $cols[$i].=random_asc_desc_key($prng->uint16(0,2),$e) if $ind_type ne 'FULLTEXT';
           }
-          $self->variate_and_execute($executor,"ALTER TABLE $name ADD " . $ind_type . "(". join(',',@cols) . ")");
+          $executor->variate_and_execute("ALTER TABLE $name ADD " . $ind_type . "(". join(',',@cols) . ")", my $gendata=1);
       }
       if ($columns{col_spatial} and $columns{col_spatial}->[4] eq 'NOT NULL' and not $prng->uint16(0,3)) {
-          $self->variate_and_execute($executor,"ALTER TABLE $name ADD SPATIAL(". 'col_spatial' . ")");
+          $executor->variate_and_execute("ALTER TABLE $name ADD SPATIAL(". 'col_spatial' . ")", my $gendata=1);
       }
       if ($columns{vcol_spatial} and $columns{vcol_spatial}->[4] eq 'NOT NULL' and not $prng->uint16(0,9)) {
-          $self->variate_and_execute($executor,"ALTER TABLE $name ADD SPATIAL(". 'vcol_spatial' . ")");
+          $executor->variate_and_execute("ALTER TABLE $name ADD SPATIAL(". 'vcol_spatial' . ")", my $gendata=1);
       }
 
       my @values;
 
-      $self->variate_and_execute($executor,"START TRANSACTION");
+      $executor->execute("START TRANSACTION");
       foreach my $row (1..$size)
       {
           my @row_values = ();
@@ -995,7 +893,7 @@ sub gen_table {
 
           ## We do one insert per 500 rows for speed
           if ($row % 500 == 0 || $row == $size) {
-              $res = $self->variate_and_execute($executor,"INSERT IGNORE INTO $name (" . join(",",@column_list).") VALUES" . join(",",@values));
+              $res = $executor->variate_and_execute("INSERT IGNORE INTO $name (" . join(",",@column_list).") VALUES" . join(",",@values), my $gendata=1);
               if ($res->status() != STATUS_OK) {
                   sayError("Insert into table $name didn't succeed");
                   return $res->status();
@@ -1003,7 +901,7 @@ sub gen_table {
               @values = ();
           }
       }
-      $self->variate_and_execute($executor,"COMMIT");
+      $executor->execute("COMMIT");
     }
     return STATUS_OK;
 }

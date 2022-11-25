@@ -2984,12 +2984,7 @@ sub execute {
 
         while (my @row = $sth->fetchrow_array()) {
             $row_count++;
-            if ($execution_flags & EXECUTOR_FLAG_HASH_DATA) {
-                $data_hash{substr(Digest::MD5::md5_hex(@row), 0, 3)}++;
-            } else {
-                push @data, \@row;
-            }
-
+            push @data, \@row;
             last if ($row_count > MAX_ROWS_THRESHOLD);
         }
 
@@ -3009,10 +3004,6 @@ sub execute {
             $dbh->do("SELECT 1 FROM DUAL /* Guard query so that the KILL QUERY we just issued does not affect future queries */;");
             @data = ();
             $result_status = STATUS_SKIP;
-        } elsif ($execution_flags & EXECUTOR_FLAG_HASH_DATA) {
-            while (my ($key, $value) = each %data_hash) {
-                push @data, [ $key , $value ];
-            }
         }
 
         $result = GenTest::Result->new(
@@ -3294,8 +3285,7 @@ sub getSchemaMetaData {
                "character_maximum_length, ".
                "table_rows ".
          "FROM information_schema.tables INNER JOIN ".
-              "information_schema.columns USING(table_schema,table_name) ".
-          "WHERE table_name <> 'DUMMY'";
+              "information_schema.columns USING(table_schema,table_name) ";
     # Do not reload metadata for system tables
     if ($redo) {
       $query.= " AND table_schema NOT IN ('performance_schema','information_schema','mysql')";
@@ -3344,7 +3334,7 @@ sub loadMetaData {
   if ($metadata_type eq 'system') {
     $clause= "table_schema IN ($system_schemata)"
   } elsif ($metadata_type eq 'non-system') {
-    $clause= "table_schema NOT IN ($system_schemata,$exempt_schemata) and table_schema NOT LIKE 'private_%' and table_name != 'DUMMY'"
+    $clause= "table_schema NOT IN ($system_schemata,$exempt_schemata) and table_schema NOT LIKE 'private_%'"
   } else {
     sayError("Unknown metadata type requested: $metadata_type");
     return undef;

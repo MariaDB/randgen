@@ -54,24 +54,15 @@ if ( osWindows() ) {
   $errfunc->Call($initial_mode | 2);
 };
 
-my $logger;
-eval
-{
-  require Log::Log4perl;
-  Log::Log4perl->import();
-  $logger = Log::Log4perl->get_logger('randgen.gentest');
-};
-
 $| = 1;
-my $ctrl_c = 0;
 
-$SIG{INT} = sub { $ctrl_c = 1 };
 $SIG{TERM} = sub { exit(0) };
 $SIG{CHLD} = "IGNORE" if osWindows();
+$SIG{INT}= sub { \&group_cleaner };
 
 # Options
 my @basedirs=();
-my $clean= 0;
+my $clean;
 my $config_file;
 my $discard_logs= 0;
 my $dry_run= 0;
@@ -371,7 +362,7 @@ sub doCombination {
     # Command execution
     my $result= system($command);
     $result= $result >> 8;
-
+    group_cleaner();
     # Post-execution activities
     my $tl = $workdir.'/trial'.$trial_id.'.log';
     if (defined $clean && $result == 0) {

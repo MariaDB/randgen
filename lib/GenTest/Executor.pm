@@ -29,14 +29,12 @@ require Exporter;
   EXECUTOR_EXPLAIN_QUERIES
   EXECUTOR_ERROR_COUNTS
   EXECUTOR_STATUS_COUNTS
-    EXECUTOR_SILENT_ERRORS_COUNT
-
+  EXECUTOR_SILENT_ERRORS_COUNT
   FETCH_METHOD_AUTO
   FETCH_METHOD_STORE_RESULT
   FETCH_METHOD_USE_RESULT
-
   EXECUTOR_FLAG_SILENT
-  EXECUTOR_FLAG_HASH_DATA
+  EXECUTOR_FLAG_VARIATE
 );
 
 use strict;
@@ -82,13 +80,15 @@ use constant EXECUTOR_META_RELOAD_INTERVAL => 32;
 use constant EXECUTOR_META_RELOAD_NOW => 33;
 use constant EXECUTOR_SERVICE_DBH => 34;
 use constant EXECUTOR_SILENT_ERRORS_COUNT => 35;
+use constant EXECUTOR_VARIATORS => 36;
+use constant EXECUTOR_VARIATOR_MANAGER => 37;
+use constant EXECUTOR_SEED => 38;
 
 use constant FETCH_METHOD_AUTO    => 0;
 use constant FETCH_METHOD_STORE_RESULT  => 1;
 use constant FETCH_METHOD_USE_RESULT  => 2;
 
 use constant EXECUTOR_FLAG_SILENT  => 1;
-use constant EXECUTOR_FLAG_HASH_DATA  => 2;
 
 use constant EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL => 60;
 
@@ -100,33 +100,40 @@ my %system_schema_cache;
 
 sub new {
     my $class = shift;
-
     my $executor = $class->SUPER::new({
-        'dsn'  => EXECUTOR_DSN,
-        'dbh'  => EXECUTOR_DBH,
         'channel' => EXECUTOR_CHANNEL,
-        'sqltrace' => EXECUTOR_SQLTRACE,
-        'no-err-filter' => EXECUTOR_NO_ERR_FILTER,
-        'fetch_method' => EXECUTOR_FETCH_METHOD,
-        'end_time' => EXECUTOR_END_TIME,
         'compatibility' => EXECUTOR_COMPATIBILITY,
+        'dbh'  => EXECUTOR_DBH,
+        'dsn'  => EXECUTOR_DSN,
+        'end_time' => EXECUTOR_END_TIME,
+        'fetch_method' => EXECUTOR_FETCH_METHOD,
+        'no-err-filter' => EXECUTOR_NO_ERR_FILTER,
+        'seed' => EXECUTOR_SEED,
+        'sqltrace' => EXECUTOR_SQLTRACE,
         'vardir' => EXECUTOR_VARDIR,
+        'variators' => EXECUTOR_VARIATORS,
     }, @_);
 
     $executor->[EXECUTOR_FETCH_METHOD] = FETCH_METHOD_AUTO if not defined $executor->[EXECUTOR_FETCH_METHOD];
     $executor->[EXECUTOR_META_RELOAD_NOW] = 0;
 
+    if ($executor->[EXECUTOR_VARIATORS] && scalar(@{$executor->[EXECUTOR_VARIATORS]})) {
+      $executor->[EXECUTOR_VARIATOR_MANAGER] = GenTest::Transform->new();
+      $executor->[EXECUTOR_VARIATOR_MANAGER]->setSeed($executor->[EXECUTOR_SEED] || 1);
+      $executor->[EXECUTOR_VARIATOR_MANAGER]->initVariators($executor->[EXECUTOR_VARIATORS]);
+    }
+
     return $executor;
 }
 
 sub newFromDSN {
-  my ($self,$dsn,$channel) = @_;
+  my $self= shift;
+  my $dsn= shift;
   if ($dsn =~ m/^dbi:(?:mysql|mariadb):/i) {
     require GenTest::Executor::MariaDB;
-    return GenTest::Executor::MariaDB->new(dsn => $dsn, channel => $channel);
+    return GenTest::Executor::MariaDB->new(dsn => $dsn, @_);
   } else {
-    say("Unsupported dsn: $dsn");
-    exit(STATUS_ENVIRONMENT_FAILURE);
+    croak("Unsupported dsn: $dsn");
   }
 }
 
@@ -148,6 +155,42 @@ sub forceMetadataReload {
 
 sub metadataReloadInterval {
   return (defined $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] ? $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] : EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL);
+}
+
+sub variate_and_execute {
+  my ($self, $query, $gendata)= @_;
+  if ($self->[EXECUTOR_VARIATOR_MANAGER]) {
+    my $max_result= STATUS_OK;
+    my @errs= ();
+    my @errstrs= ();
+    my $queries= $self->[EXECUTOR_VARIATOR_MANAGER]->variate_query($query,$self,$gendata);
+    if ($queries && ref $queries eq 'ARRAY') {
+      foreach my $q (@$queries) {
+        if ($q =~ /^\d+$/) {
+          sayError("Variators returned error code ".status2text($q)." instead of a query");
+          $max_result = $q if $q > $max_result;
+          next;
+        }
+        my $res= $self->execute($q);
+        $max_result= $res->status() if $res->status() > $max_result;
+        push @errs, $res->err if $res->err;
+        push @errstrs, $res->errstr if $res->errstr;
+      }
+    } else {
+      $max_result= STATUS_ENVIRONMENT_FAILURE;
+    }
+    return GenTest::Result->new(
+                  query       => join ';', @$queries,
+                  status      => $max_result,
+                  err         => join ';', @errs,
+                  errstr      => join ';', @errstrs,
+                  sqlstate    => undef,
+                  start_time  => undef,
+                  end_time    => undef,
+           );
+  } else {
+    return $self->execute($query);
+  }
 }
 
 sub channel {
@@ -902,7 +945,6 @@ sub metaCharactersets {
         delete $charsets{''};
         croak "FATAL ERROR: No character sets defined" if (scalar(keys %charsets) == 0);
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = [sort keys %charsets];
-        say("HERE: @{$self->[EXECUTOR_META_CACHE]->{$cachekey}}");
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }

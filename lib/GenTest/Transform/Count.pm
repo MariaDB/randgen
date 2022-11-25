@@ -31,36 +31,51 @@ use GenTest::Constants;
 
 # This Transform provides the following transformations
 #
-# SELECT COUNT(*) FROM ... -> SELECT * FROM ...
+# SELECT COUNT(...) FROM -> SELECT ... FROM
+# SELECT ... FROM -> SELECT ..., COUNT(*) FROM ...
 #
-# SELECT ... FROM ... -> SELECT COUNT(*), ... FROM ...
+# (only for the first found SELECT, to minimize "the number of rows doesn't match"
+# errors with subqueries
 
 sub transform {
   my ($class, $orig_query) = @_;
-
   # We skip: - GROUP BY any other aggregate functions as those are difficult to validate with a simple check like TRANSFORM_OUTCOME_COUNT
-  #          - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  #          - [INTO] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   #          - UNION since replacing all select lists is tricky with the current logic
   return STATUS_WONT_HANDLE if $orig_query =~ m{GROUP\s+BY|LIMIT|HAVING|UNION}sio
     || $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio;
+  return $class->modify($orig_query)." /* TRANSFORM_OUTCOME_COUNT */";
+}
 
+sub variate {
+  my ($class, $orig_query) = @_;
+  return [ $orig_query ] if $orig_query !~ m{SELECT.*FROM}sio;
+  return [ $class->modify($orig_query) || $orig_query ];
+}
+
+sub modify {
+  my ($class, $orig_query) = @_;
   my ($select_list) = $orig_query =~ m{SELECT\s+(.*?)\s+FROM}sio;
-  return STATUS_WONT_HANDLE if not $select_list;
+  say("HERE: Found select list $select_list");
+  return undef if not $select_list;
+  my $select_list_orig= $select_list;
 
-  if ($select_list =~ m{AVG|BIT|CONCAT|DISTINCT|GROUP|MAX|MIN|STD|SUM|VAR|STRAIGHT_JOIN|SQL_SMALL_RESULT}sio) {
-    return STATUS_WONT_HANDLE;
-  } elsif ($select_list =~ m{\*}sio) {
-    # "SELECT *" was matched. Cannot have both * and COUNT(...) in SELECT list.
-    $orig_query =~ s{SELECT (.*?) FROM}{SELECT COUNT(*) FROM}sio;
-  } elsif ($select_list !~ m{COUNT}sio) {
-    $orig_query =~ s{SELECT (.*?) FROM}{SELECT COUNT(*) , $1 FROM}sio;
-  } elsif ($select_list =~ m{^\s*COUNT\(\s*\*\s*\)}sio) {
-    $orig_query =~ s{SELECT .*? FROM}{SELECT * FROM}sio;
-  } else {
-    return STATUS_WONT_HANDLE;
+  # There is *, COUNT(..) in the select list, removing COUNT
+  # or
+  # there is COUNT(..) in the select list, replacing COUNT by its argument
+  if (
+    $select_list =~ s{(\*\s*,.*),\s*COUNT\(\s*(.*?)\s*\)}{$1}sio ||
+    $select_list =~ s{COUNT\(\s*(.*?)\s*\)}{$1}sio
+  ) {
+    $orig_query =~ s{$select_list_orig}{$select_list}sio;
   }
-
-  return $orig_query." /* TRANSFORM_OUTCOME_COUNT */";
+  # There is no COUNT yet, so adding one
+  else {
+    $select_list= "$select_list_orig, COUNT(*)";
+    say("HERE: replacing [ $select_list_orig ] with [ $select_list ] in query [ $orig_query ]");
+    $orig_query =~ s{$select_list_orig}{$select_list}sio;
+    say("HERE: now: $orig_query");  }
+  return $orig_query;
 }
 
 1;

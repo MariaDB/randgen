@@ -1,5 +1,5 @@
 # Copyright (C) 2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2021, MariaDB Corporation
+# Copyright (c) 2021, 2022, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,118 +17,34 @@
 # USA
 
 package GenData::GendataSimple;
-
-@ISA = qw(GenTest);
+@ISA = qw(GenData);
 
 use strict;
 use DBI;
-use GenUtil;
+
+use GenData;
 use GenTest;
 use GenTest::Constants;
 use GenTest::Random;
 use GenTest::Executor;
+use GenUtil;
 
 use Data::Dumper;
-
-use constant GDS_DEFAULT_DSN => 'dbi:mysql:host=127.0.0.1:port=9306:user=root:database=test';
-
-use constant GDS_DSN => 0;
-use constant GDS_ENGINE => 1;
-use constant GDS_VIEWS => 2;
-use constant GDS_SQLTRACE => 3;
-use constant GDS_ROWS => 5;
-use constant GDS_VCOLS => 7;
-use constant GDS_EXECUTOR_ID => 8;
-use constant GDS_VARIATORS => 9;
-use constant GDS_SEED => 10;
-use constant GDS_VARDIR => 11;
 
 use constant GDS_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
 use constant GDS_DEFAULT_NAMES => ['A', 'B', 'C', 'D', 'E', 'AA', 'BB', 'CC', 'DD'];
 
 sub new {
     my $class = shift;
-
-    my $self = $class->SUPER::new({
-        'dsn' => GDS_DSN,
-        'engine' => GDS_ENGINE,
-        'views' => GDS_VIEWS,
-        'sqltrace' => GDS_SQLTRACE,
-        'rows' => GDS_ROWS,
-        'vcols' => GDS_VCOLS,
-        'executor_id' => GDS_EXECUTOR_ID,
-        'variators' => GDS_VARIATORS,
-        'seed' => GDS_SEED,
-        'vardir' => GDS_VARDIR,
-    },@_);
-
-    if (not defined $self->[GDS_DSN]) {
-        $self->[GDS_DSN] = GDS_DEFAULT_DSN;
-    }
-
-    my @variators= ();
-    foreach my $vn (@{$self->[GDS_VARIATORS]}) {
-        eval ("require GenTest::Transform::'".$vn) or croak $@;
-        my $variator = ('GenTest::Transform::'.$vn)->new();
-        $variator->setSeed($self->[GDS_SEED]);
-        push @variators, $variator;
-    }
-    $self->[GDS_VARIATORS] = [ @variators ];
-
+    my $self = $class->SUPER::new(@_);
     return $self;
-}
-
-sub defaultDsn {
-    return GDS_DEFAULT_DSN;
-}
-
-sub dsn {
-    return $_[0]->[GDS_DSN];
-}
-
-sub engine {
-    return $_[0]->[GDS_ENGINE];
-}
-
-sub vcols {
-    return $_[0]->[GDS_VCOLS];
-}
-
-sub views {
-    return $_[0]->[GDS_VIEWS];
-}
-
-sub sqltrace {
-    return $_[0]->[GDS_SQLTRACE];
-}
-
-sub rows {
-    return $_[0]->[GDS_ROWS];
-}
-
-sub executor_id {
-    return $_[0]->[GDS_EXECUTOR_ID] || '';
-}
-
-sub variate_and_execute {
-  my ($self, $executor, $query)= @_;
-  foreach my $v (@{$self->[GDS_VARIATORS]}) {
-    # 1 stands for "it's gendata, variate with caution"
-    $query= $v->variate($query,$executor,1);
-  }
-  return ($query ? $executor->execute($query) : STATUS_OK);
 }
 
 sub run {
     my ($self) = @_;
 
     say("Running GendataSimple");
-
-    my $executor = GenTest::Executor->newFromDSN($self->dsn());
-    $executor->sqltrace($self->sqltrace);
-    $executor->setId($self->executor_id);
-    $executor->setVardir($self->[GDS_VARDIR]);
-    $executor->init();
+    my $executor = $self->executor();
 
     my $names = GDS_DEFAULT_NAMES;
     my $rows;
@@ -147,24 +63,17 @@ sub run {
 
     my $private_db= 'private_gendata_simple';
     say("GendataSimple is creating tables in $private_db");
-    $executor->dbh->do("CREATE DATABASE IF NOT EXISTS $private_db");
-    if ($executor->dbh->err) {
+    my $res= $executor->execute("CREATE DATABASE IF NOT EXISTS $private_db");
+    if ($res->status() != STATUS_OK) {
         sayError("Could not create database $private_db");
-        return STATUS_ENVIRONMENT_FAILURE;
+        return $res->status;
     }
-    $executor->dbh->do("USE $private_db");
+    $executor->execute("USE $private_db");
+    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
     foreach my $i (0..$#$names) {
         my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i]);
         return $gen_table_result if $gen_table_result != STATUS_OK;
     }
-
-    # Need to create a dummy supdstituion for non-protable DUAL
-
-    $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ DUMMY");
-    $self->variate_and_execute($executor,"CREATE TABLE DUMMY (I INTEGER)");
-    $self->variate_and_execute($executor,"INSERT INTO DUMMY VALUES(0)");
-
-    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
     return STATUS_OK;
 }
 
@@ -178,7 +87,7 @@ sub asc_desc_key {
 sub gen_table {
   my ($self, $executor, $basename, $size) = @_;
 
-    my $prng = GenTest::Random->new( seed => $self->[GDS_SEED] );
+    my $prng = $self->rand;
 
     ### NULL is not a valid ANSI constraint, (but NOT NULL of course,
     ### is)
@@ -199,10 +108,10 @@ sub gen_table {
       ### This variant is needed due to
       ### http://bugs.mysql.com/bug.php?id=47125
 
-      $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS */ $name");
+      $executor->execute("DROP TABLE /*! IF EXISTS */ $name");
       # RocksDB does not support virtual columns
       if ($vcols and lc($engine) ne 'rocksdb') {
-          $self->variate_and_execute($executor,
+          $executor->variate_and_execute(
           "CREATE TABLE $name (
               pk INTEGER AUTO_INCREMENT,
               col_int_nokey INTEGER,
@@ -229,9 +138,9 @@ sub gen_table {
           ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
                              # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
                              # joining such tables on PK does not produce only 1-to-1 matches.
-              );
+              , my $gendata=1);
       } else {
-          $self->variate_and_execute($executor,
+          $executor->variate_and_execute(
           "CREATE TABLE $name (
               pk INTEGER AUTO_INCREMENT,
               col_int_nokey INTEGER,
@@ -258,14 +167,14 @@ sub gen_table {
           ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
                              # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
                              # joining such tables on PK does not produce only 1-to-1 matches.
-              );
+              , my $gendata=1);
       }
 
     if (defined $views) {
       if ($views ne '') {
-        $self->variate_and_execute($executor,"CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
+        $executor->variate_and_execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name, my $gendata=1);
       } else {
-        $self->variate_and_execute($executor,'CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
+        $executor->variate_and_execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name, my $gendata=1);
       }
     }
 
@@ -301,14 +210,15 @@ sub gen_table {
 
       ## We do one insert per 500 rows for speed
       if ($row % 500 == 0 || $row == $size) {
-        my $insert_result = $self->variate_and_execute($executor,
+        my $insert_result = $executor->variate_and_execute(
         "INSERT /*! IGNORE */ INTO $name (
           col_int_key, col_int_nokey,
           col_date_key, col_date_nokey,
           col_time_key, col_time_nokey,
           col_datetime_key, col_datetime_nokey,
           col_varchar_key, col_varchar_nokey
-        ) VALUES " . join(",",@values));
+        ) VALUES " . join(",",@values),
+        my $gendata=1);
         return $insert_result->status() if $insert_result->status() != STATUS_OK;
         @values = ();
       }

@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2021 MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -31,17 +31,30 @@ use GenTest::Constants;
 
 sub transform {
   my ($class, $orig_query) = @_;
-
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   return STATUS_WONT_HANDLE
-    if $orig_query !~ m{SELECT}
+    if $orig_query !~ m{^\s*SELECT}
       || $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|INSERT|REPLACE|CREATE)}sio
       || $orig_query =~ m{OFFSET}sio;
+  my $transform_outcome= '/* TRANSFORM_OUTCOME_UNORDERED_MATCH */';
+  if ($orig_query =~ m{LIMIT\s+\d+}sio) {
+    $transform_outcome= '/* TRANSFORM_OUTCOME_SUPERSET */';
+  }
+  return $class->modify($orig_query)." $transform_outcome";
+}
 
-  if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 4294836225}sio) {
-    return $orig_query." /* TRANSFORM_OUTCOME_SUPERSET */";
+sub variate {
+  my ($class, $orig_query) = @_;
+  return [ $orig_query ] if $orig_query !~ m{^\s*SELECT}sio && $orig_query !~  m{LIMIT\s+\d+}sio;
+  return [ $class->modify($orig_query) ];
+}
+
+sub modify {
+  my ($class, $orig_query) = @_;
+  if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 4294836225}siog) {
+    return $orig_query;
   } else {
-    return $orig_query." LIMIT 4294836225 /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+    return $orig_query." LIMIT 4294836225";
   }
 }
 

@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2018 MariaDB Corporation Ab
+# Copyright (c) 2018, 2022, MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -30,28 +30,35 @@ use GenTest::Transform;
 use GenTest::Constants;
 
 sub transform {
-    my ($class, $orig_query, $executor) = @_;
+  my ($class, $orig_query) = @_;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION)}sio;
+  return [
+    $class->modify($orig_query,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
+    [ " /* TRANSFORM_CLEANUP */ SET \@\@sql_mode=\@sql_mode.save" ]
+  ];
+}
 
-    return STATUS_WONT_HANDLE unless $executor->versionNumeric() >= 100307;
-    return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION)}sio;
+sub variate {
+  my ($class, $orig_query) = @_;
+  return [ $orig_query ] if $orig_query =~ m{(?:TRIGGER|PROCEDURE|FUNCTION)}sio;
+  return $class->modify($orig_query);
+}
 
-    return [
-        [
-            "SET \@sql_mode.save=\@\@sql_mode",
-            "SET sql_mode=CONCAT(\@\@sql_mode,',ORACLE')",
-            "CREATE OR REPLACE PACKAGE pkg_".abs($$)." IS PROCEDURE stored_proc_".abs($$)."; PROCEDURE stored_proc_2_".abs($$)."; END",
-            "CREATE OR REPLACE PACKAGE BODY pkg_".abs($$)." IS PROCEDURE stored_proc_".abs($$)." AS BEGIN $orig_query; END; PROCEDURE stored_proc_2_".abs($$)." AS BEGIN stored_proc_".abs($$)."; END; END",
-            "CALL pkg_".abs($$).".stored_proc_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-            "CALL pkg_".abs($$).".stored_proc_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-            "CALL pkg_".abs($$).".stored_proc_2_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-            "CALL pkg_".abs($$).".stored_proc_2_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-            "DROP PACKAGE BODY IF EXISTS pkg_".abs($$),
-            "DROP PACKAGE IF EXISTS pkg".abs($$)
-        ],
-        [
-            "/* TRANSFORM_CLEANUP */ SET \@\@sql_mode=\@sql_mode.save"
-        ]
-    ];
+sub modify {
+  my ($class, $orig_query, $transform_outcome) = @_;
+  return [
+    "SET \@sql_mode.save=\@\@sql_mode",
+    "SET sql_mode=CONCAT(\@\@sql_mode,',ORACLE')",
+    "CREATE OR REPLACE PACKAGE pkg_ExecuteAsPackageSP_".abs($$)." IS PROCEDURE sp1_".abs($$)."; PROCEDURE sp2_".abs($$)."; END",
+    "CREATE OR REPLACE PACKAGE BODY pkg_ExecuteAsPackageSP_".abs($$)." IS PROCEDURE sp1_".abs($$)." AS BEGIN $orig_query; END; PROCEDURE sp2_".abs($$)." AS BEGIN sp1_".abs($$)."; END; END",
+    "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp1_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+    "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp1_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+    "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp2_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+    "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp2_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+    "DROP PACKAGE BODY IF EXISTS pkg_ExecuteAsPackageSP_".abs($$),
+    "DROP PACKAGE IF EXISTS pkg_ExecuteAsPackageSP_".abs($$),
+    "SET \@\@sql_mode=\@sql_mode.save"
+  ];
 }
 
 1;

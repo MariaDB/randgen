@@ -29,25 +29,61 @@ use GenTest;
 use GenTest::Transform;
 use GenTest::Constants;
 
+my @select_options= qw(
+  SQL_BIG_RESULT
+  SQL_SMALL_RESULT
+  SQL_BUFFER_RESULT
+  STRAIGHT_JOIN
+  HIGH_PRIORITY
+  SQL_CACHE
+  SQL_NO_CACHE
+  SQL_CALC_FOUND_ROWS
+);
+
 sub transform {
   my ($class, $orig_query) = @_;
 
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-    || $orig_query !~ m{SELECT}io
-    || $orig_query =~ m{SQL_BIG_RESULT|SQL_SMALL_RESULT|SQL_BUFFER_RESULT}io;
+    || $orig_query !~ m{SELECT}io;
 
-  my $modified_queries = [
-    $orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ",
-    $orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ",
-    $orig_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ "
-  ];
+  my $modified_queries = $class->modify($orig_query);
+  my @queries= ();
+  foreach my $q (@$modified_queries) {
+    push @queries, $q." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ";
+  }
+  return \@queries;
+}
 
-  $modified_queries->[0] =~ s{SELECT}{SELECT SQL_BIG_RESULT}io;
-  $modified_queries->[1] =~ s{SELECT}{SELECT SQL_SMALL_RESULT}io;
-  $modified_queries->[2] =~ s{SELECT}{SELECT SQL_BUFFER_RESULT}io;
+sub variate {
+  my ($class, $orig_query) = @_;
+  return [ $orig_query ] if $orig_query !~ m{SELECT}io;
+  my $modified_queries= $class->modify($orig_query);
+  return [ $class->random->arrayElement($modified_queries) ];
+}
 
-  return $modified_queries;
+sub modify {
+  my ($class, $query) = @_;
+  my $search= join /|/, @select_options;
+  # Remove select options if there were any
+  my $removed_options= ($query =~ s/$search//iog ? 1 : 0);
+  my @new_options= ( @select_options );
+  $class->random->shuffleArray(\@new_options);
+  my $new_options = join ' ', @new_options[0..$class->random->uint16(0,$#new_options)];
+  # Remove duplicate SQL_CACHE / SQL_NO_CACHE options
+  while ($new_options =~ s/^(.*SQL_(?:NO_)?CACHE.*)SQL_(?:NO_)?CACHE/$1/) {};
+  # If the original query contained any options, then removing them
+  # produced the first modified query
+  my @modified_queries= ( $removed_options ? ( $query ) : () );
+  my $q= $query;
+  $q =~ s/SELECT/SELECT $new_options/iog;
+  push @modified_queries, $q;
+  foreach my $o (@select_options) {
+    my $q= $query;
+    $q =~ s{SELECT}{SELECT $o}iog;
+    push @modified_queries, $q;
+  }
+  return \@modified_queries;
 }
 
 1;

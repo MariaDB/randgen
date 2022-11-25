@@ -26,7 +26,6 @@ unless (defined $ENV{RQG_HOME}) {
   use Cwd qw(abs_path);
   $ENV{RQG_HOME}= abs_path(dirname($0));
 }
-
 use lib 'lib';
 # This can cause "uninitialized" errors, but we need it in case
 # the script is called from outside the RQG basedir
@@ -79,6 +78,7 @@ $props->{user}= 'rqg';
 $props->{threads}= 4;
 $props->{queries}= 100000000;
 $props->{duration}= 300;
+$props->{seed}= 'time';
 
 $trials= 1;
 $scenario= DEFAULT_RQG_SCENARIO;
@@ -334,8 +334,8 @@ require "$cp.pm";
 my $status= STATUS_OK;
 my $trial_result= 0;
 
-my $props_vardir= $props->{vardir};
-my $props_seed= $props->{seed};
+my $props_vardir_orig= $props->{vardir};
+my $props_seed_orig= $props->{seed};
 
 # There will be differences in logging etc. depending on whether it's
 # a normal single run (as previously by runall-new), or it is a search
@@ -347,26 +347,18 @@ TRIALS:
 foreach my $trial_id (1..$trials)
 {
   my $cmd = $0 . " " . join(" ", @ARGV_saved);
+  $props->{seed}= time() if $props_seed_orig eq 'time';
+  $cmd =~ s/--seed=\S+//g;
+  $cmd.= " --seed=$props->{seed}";
 
-  if ($cmd =~ /--seed=/) {
-    $cmd =~ s/seed=time/seed=$props->{seed}/g
-  } else {
-    $cmd.= " --seed=$props->{seed}";
-  }
   if ($trials > 1) {
     say("##########################################################");
     say("Running trial ".$trial_id."/".$trials);
-    $props->{vardir}= $props_vardir."/trial.${trial_id}";
+    $props->{vardir}= $props_vardir_orig."/trial.${trial_id}";
     mkpath($props->{vardir});
-
-    # We want the same seed for all components, but new for every trial
-    # if 'time' was requested
-    if (not defined $props_seed or $props_seed eq 'time') {
-        $props->{seed} = time();
-    }
   }
 
-  my $output_file= $props_vardir."/trial$trial_id.log";
+  my $output_file= $props_vardir_orig."/trial$trial_id.log";
   $cmd = 'bash -c "set -o pipefail; '.$cmd.' 2>&1 | tee '.$output_file.'"';
 
   if ($genconfig) {
@@ -408,19 +400,6 @@ if ($search_mode) {
 safe_exit($status);
 
 ###############################################
-
-sub group_cleaner {
-  return if osWindows();
-  my @pids= split /\n/, `ps xh -o pgrp,pid,comm | grep -v tee`;
-  my @group= ();
-  foreach my $pp (@pids) {
-    if ($pp =~ /^\s*(\d+)\s+(\d+)/) {
-      my ($p1, $p2) = ($1, $2);
-      push @group, $p2 if ($p1 == $$ and $p2 != $$);
-    }
-  }
-  kill('KILL',@group);
-}
 
 # NOTE: subroutine returns 1 if the goal was achieved, and 0 otherwise
 sub check_for_desired_result

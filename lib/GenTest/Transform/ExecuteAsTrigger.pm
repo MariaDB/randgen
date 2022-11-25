@@ -72,4 +72,20 @@ sub transform {
   }
 }
 
+sub variate {
+  my ($class, $orig_query, $executor) = @_;
+  my $table= $class->random->arrayElement($executor->metaTables());
+  my $query= $orig_query;
+  if ($query =~ /^[\s\(]*SELECT/ and $query !~ /\WINTO\W/) {
+    $query = "CREATE OR REPLACE TEMPORARY TABLE tmp_ExecuteAsTrigger AS $query";
+  } elsif ($query !~ /^\s*(?:UPDATE|INSERT|DELETE|REPLACE|LOAD)/) {
+    return [ $orig_query ];
+  }
+  return [
+    "CREATE OR REPLACE TRIGGER tr_Execute_AsTrigger_".abs($$)." AFTER DELETE ON $table FOR EACH ROW $query",
+    "DELETE FROM $table LIMIT 1",
+    "DROP TRIGGER IF EXISTS tr_Execute_AsTrigger_".abs($$)
+  ];
+}
+
 1;

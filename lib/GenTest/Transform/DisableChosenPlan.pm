@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2016, MariaDB Corporation Ab
+# Copyright (c) 2016, 2022, MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -73,54 +73,77 @@ my %explain2count;
 my $available_switches;
 
 sub transform {
-    my ($class, $original_query, $executor) = @_;
+  my ($class, $original_query, $executor) = @_;
+  # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
+  return STATUS_WONT_HANDLE if $original_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|\WINTO\W)}sio
+    || $original_query !~ m{^[\(\s]*SELECT}sio;
+  my $modified_queries= $class->modify($original_query, $executor, 'TRANSFORM_OUTCOME_UNORDERED_MATCH');
+  if (defined $modified_queries and ref $modified_queries eq 'ARRAY') {
+    return $modified_queries;
+  } elsif (defined $modified_queries) {
+    # Non-OK status
+    return $modified_queries;
+  } else {
+    return STATUS_WONT_HANDLE;
+  }
+}
 
-    if (not defined $available_switches) {
-        my $dbh_probe = DBI->connect($executor->dsn(), undef, undef, { PrintError => 0 } );
-
-        foreach my $explain2switch (@explain2switch) {
-            my ($explain_fragment, $switch) = ($explain2switch->[0], $explain2switch->[1]);
-            my $sth_probe = $dbh_probe->prepare("SET SESSION $switch");
-            $sth_probe->execute();
-            $available_switches->{$switch}++ if not defined $sth_probe->err();
+sub variate {
+  my ($class, $original_query, $executor) = @_;
+  return [ $original_query ] if $original_query !~ m{^[\(\s]*(?:SELECT|INSERT|DELETE|REPLACE|UPDATE)}sio;
+  my $modified_queries= $class->modify($original_query, $executor);
+  if (defined $modified_queries and ref $modified_queries eq 'ARRAY') {
+    # flatten the 2-level nested array
+    my @queries= ();
+    foreach my $mq (@$modified_queries) {
+      if (ref $mq eq '') {
+        push @queries, $mq;
+      } elsif (ref $mq eq 'ARRAY') {
+        foreach my $q (@$mq) {
+          push @queries, $q;
         }
+      }
     }
+    return [ @queries ];
+  } elsif (defined $modified_queries) {
+    # Non-OK status
+    return $modified_queries;
+  } else {
+    return [ $original_query ];
+  }
+}
 
-    # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-        return STATUS_WONT_HANDLE if $original_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO)}sio
-        || $original_query !~ m{^\s*SELECT}sio;
-
+sub modify {
+    my ($class, $original_query, $executor, $transform_outcome) = @_;
     my $original_explain = $executor->execute("EXPLAIN EXTENDED $original_query");
 
-    if ($original_explain->status() == STATUS_SERVER_CRASHED) {
-        return STATUS_SERVER_CRASHED;
-    } elsif ($original_explain->status() ne STATUS_OK) {
-        say("Query: $original_query EXPLAIN failed: ".$original_explain->err()." ".$original_explain->errstr());
-        return $original_explain->status();
+    if ($original_explain->status() ne STATUS_OK) {
+      sayError("Query: $original_query EXPLAIN failed: ".$original_explain->err()." ".$original_explain->errstr());
+      return $original_explain->status();
     }
 
     my $original_explain_string = Dumper($original_explain->data())."\n".Dumper($original_explain->warnings());
 
     my @transformed_queries;
     foreach my $explain2switch (@explain2switch) {
-        my ($explain_fragment, $switch) = ($explain2switch->[0], $explain2switch->[1]);
-        next if not exists $available_switches->{$switch};
-        if ($original_explain_string =~ m{$explain_fragment}si) {
-            $explain2count{"$explain_fragment => $switch"}++;
-            my ($switch_name) = $switch =~ m{^(.*?)=}sgio;
-            push @transformed_queries, [
-                'SET @'.$switch_name.'_saved = @@'.$switch_name.';',
-                "SET SESSION $switch;",
-                "$original_query /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ ;"
-            ];
-            push @transformed_queries, [ '/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@'.$switch_name.'_saved' ];
-        }
+      my ($explain_fragment, $switch) = ($explain2switch->[0], $explain2switch->[1]);
+      if ($original_explain_string =~ m{$explain_fragment}si) {
+        $explain2count{"$explain_fragment => $switch"}++;
+        my ($switch_name) = $switch =~ m{^(.*?)=}sgio;
+        push @transformed_queries, [
+          'SET @'.$switch_name.'_saved = @@'.$switch_name.';',
+          "SET SESSION $switch;",
+          $original_query.($transform_outcome ? " /* $transform_outcome */" : ""),
+        ], [
+          '/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@'.$switch_name.'_saved'
+        ]
+      }
     }
 
     if ($#transformed_queries > -1) {
-        return \@transformed_queries;
+      return \@transformed_queries;
     } else {
-        return STATUS_WONT_HANDLE;
+      return undef;
     }
 }
 

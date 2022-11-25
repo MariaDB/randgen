@@ -174,7 +174,13 @@ sub generate_data {
   my $gentest= GenTest::TestRunner->new(config => $self->getProperties());
   my $status= $gentest->doGenData();
   $self->restoreProperties();
-  return $status;
+  if ($status >= STATUS_CRITICAL_FAILURE) {
+    sayError("Data generation failed with ".status2text($status));
+    return $status;
+  } else {
+    sayWarning("Data generation failed with ".status2text($status));
+    return STATUS_OK;
+  }
 }
 
 sub run_test_flow {

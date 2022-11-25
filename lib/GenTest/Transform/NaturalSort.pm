@@ -55,7 +55,7 @@ sub transform {
     $sql_select_limit= 'SET STATEMENT SQL_SELECT_LIMIT=DEFAULT FOR ';
   }
 
-  my $new_query= modify_query($original_query);
+  my $new_query= modify($original_query);
   if (defined $new_query) {
     $new_query =~ s/LIMIT\s+\d+//g;
     return $sql_select_limit .$new_query." /* $transform_outcome */ ";
@@ -66,13 +66,11 @@ sub transform {
 
 sub variate {
   my ($self, $original_query, $executor, $gendata_flag) = @_;
-  # Variate 10% queries
-  return $original_query if $self->random->uint16(0,9);
-  return $original_query if $original_query !~ m{^\s*SELECT}sio;
-  return modify_query($original_query) || $original_query;
+  return [ $original_query ] if $original_query !~ m{^\s*SELECT}sio;
+  return [ modify($original_query) || $original_query ];
 }
 
-sub modify_query {
+sub modify {
   my $query= shift;
   my @new_order_by_list;
 

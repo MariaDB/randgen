@@ -515,16 +515,14 @@ sub replace_columns
 sub variate {
   my ($self, $orig_query, $executor, $gendata_flag) = @_;
   # We won't touch gendata queries
-  return $orig_query if $gendata_flag;
-  # Variate 10% queries
-  return $orig_query if $self->random->uint16(0,9);
+  return [ $orig_query ] if $gendata_flag;
   # Don't touch queries which already have JSON_TABLEs
-  return $orig_query if $orig_query =~ /JSON_TABLE/i;
+  return [ $orig_query ] if $orig_query =~ /JSON_TABLE/i;
 
   # We variate (by replacing tables and views on the FROM list with JSON tables)
   # statements which have SELECT .. FROM (except REVOKE .. SELECT .. FROM)
   if ($orig_query !~ /SELECT.*FROM.*/ or $orig_query =~ /REVOKE.*SELECT/) {
-    return $orig_query;
+    return [ $orig_query ];
   };
 
   $self->executor($executor) if $executor;
@@ -549,7 +547,7 @@ sub variate {
   $query =~ s/=====ESCAPED_SINGLE_QUOTE=====/\\'/g;
   $query =~ s/=====ESCAPED_DOUBLE_QUOTE=====/\\"/g;
   sayDebug("JsonTables variator is returning query $query");
-  return $query;
+  return [ $query ];
 }
 
 sub transform {

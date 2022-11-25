@@ -1,5 +1,5 @@
 # Copyright (c) 2008,2011 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2019, 2020, MariaDB Corporation
+# Copyright (c) 2019, 2022, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,7 +39,7 @@ use constant MIXER_PROPERTIES  => 4;
 use constant MIXER_END_TIME  => 5;
 use constant MIXER_RESTART_TIMEOUT => 6;
 use constant MIXER_COMPATIBILITY => 7;
-use constant MIXER_VARIATORS  => 8;
+use constant MIXER_VARIATOR_MANAGER  => 8;
 
 my %rule_status;
 
@@ -52,7 +52,7 @@ sub new {
         'generator'  => MIXER_GENERATOR,
         'executors'  => MIXER_EXECUTORS,
         'validators'  => MIXER_VALIDATORS,
-        'variators'  => MIXER_VARIATORS,
+        'variator_manager'  => MIXER_VARIATOR_MANAGER,
         'properties'  => MIXER_PROPERTIES,
         'filters'  => MIXER_FILTERS,
         'end_time'  => MIXER_END_TIME,
@@ -116,14 +116,6 @@ sub new {
     return undef if not defined $validator->init($mixer->executors());
   }
 
-  my @variators= ();
-  foreach my $vn (@{$mixer->[MIXER_VARIATORS]}) {
-      eval ("require GenTest::Transform::'".$vn) or croak $@;
-      my $variator = ('GenTest::Transform::'.$vn)->new();
-      push @variators, $variator;
-  }
-  $mixer->[MIXER_VARIATORS] = [ @variators ];
-
   return $mixer;
 }
 
@@ -151,17 +143,23 @@ sub next {
 
   my $max_status = STATUS_OK;
 
+  if ($mixer->[MIXER_VARIATOR_MANAGER]) {
+    my @variated_queries= ();
+    foreach my $query (@$queries) {
+      my $varqs= $mixer->[MIXER_VARIATOR_MANAGER]->variate_query($query,$executors->[0]);
+      if (not defined $varqs) {
+        $max_status = STATUS_ENVIRONMENT_FAILURE if $max_status < STATUS_ENVIRONMENT_FAILURE;
+      } elsif (ref $varqs ne 'ARRAY') {
+        $max_status = $varqs if $max_status < $varqs;
+      } else {
+        push @variated_queries, @$varqs;
+      }
+    }
+    $queries= [ @variated_queries ];
+  }
+
   query: foreach my $query (@$queries) {
     next if $query =~ m{^\s*$}o;
-
-    foreach my $v (@{$mixer->[MIXER_VARIATORS]}) {
-      # TODO: For now an executor is needed for getting metadata.
-      # Maybe it can be changed later, when we make Metadata collection
-      # a separate activity
-      $query= $v->variate($query, $executors->[0]);
-    }
-    next unless $query;
-
     if ($mixer->end_time() && (time() > $mixer->end_time())) {
       say("Mixer: We have already exceeded time specified by --duration=x; exiting now.");
       last;

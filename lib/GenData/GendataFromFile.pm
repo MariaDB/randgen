@@ -18,14 +18,14 @@
 # USA
 
 package GenData::GendataFromFile;
-
-@ISA = qw(GenTest);
+@ISA = qw(GenData);
 
 use strict;
 use DBI;
 use Carp;
 use Data::Dumper;
 
+use GenData;
 use GenData::PopulateSchema;
 use GenTest;
 use GenTest::Constants;
@@ -33,151 +33,10 @@ use GenTest::Executor;
 use GenTest::Random;
 use GenUtil;
 
-use constant FIELD_TYPE      => 0;
-use constant FIELD_CHARSET    => 1;
-use constant FIELD_COLLATION    => 2;
-use constant FIELD_SIGN      => 3;
-use constant FIELD_NULLABILITY    => 4;
-use constant FIELD_INDEX    => 5;
-use constant FIELD_AUTO_INCREMENT  => 6;
-use constant FIELD_SQL      => 7;
-use constant FIELD_INDEX_SQL    => 8;
-use constant FIELD_NAME      => 9;
-use constant FIELD_DEFAULT => 10;
-use constant FIELD_NAMES    => 11;
-use constant FIELD_SQLS     => 12;
-use constant FIELD_INDEX_SQLS   => 13;
-
-use constant TABLE_ROW    => 0;
-use constant TABLE_ENGINE  => 1;
-use constant TABLE_CHARSET  => 2;
-use constant TABLE_COLLATION  => 3;
-use constant TABLE_ROW_FORMAT  => 4;
-use constant TABLE_EXTRA_OPTS  => 5;
-use constant TABLE_PK    => 6;
-use constant TABLE_SQL    => 7;
-use constant TABLE_NAME    => 8;
-use constant TABLE_VIEWS  => 9;
-use constant TABLE_MERGES  => 10;
-use constant TABLE_NAMES  => 11;
-use constant TABLE_PARTITION  => 12;
-
-use constant DATA_NUMBER  => 0;
-use constant DATA_STRING  => 1;
-use constant DATA_BLOB    => 2;
-use constant DATA_TEMPORAL  => 3;
-use constant DATA_ENUM    => 4;
-
-
-use constant GD_SPEC => 0;
-use constant GD_DEBUG => 1;
-use constant GD_DSN => 2;
-use constant GD_SEED => 3;
-use constant GD_ENGINE => 4;
-use constant GD_ROWS => 5;
-use constant GD_VIEWS => 6;
-use constant GD_SERVER_ID => 8;
-use constant GD_SQLTRACE => 9;
-use constant GD_SHORT_COLUMN_NAMES => 11;
-use constant GD_EXECUTOR_ID => 13;
-use constant GD_VARIATORS => 14;
-use constant GD_VARDIR => 15;
-
 sub new {
     my $class = shift;
-    my $self = $class->SUPER::new({
-        'spec_file' => GD_SPEC,
-        'debug' => GD_DEBUG,
-        'dsn' => GD_DSN,
-        'seed' => GD_SEED,
-        'engine' => GD_ENGINE,
-        'rows' => GD_ROWS,
-        'views' => GD_VIEWS,
-        'short_column_names' => GD_SHORT_COLUMN_NAMES,
-        'server_id' => GD_SERVER_ID,
-        'executor_id' => GD_EXECUTOR_ID,
-        'variators' => GD_VARIATORS,
-        'sqltrace' => GD_SQLTRACE,
-        'vardir' => GD_VARDIR,
-      },@_);
-
-    if (not defined $self->[GD_SEED]) {
-        $self->[GD_SEED] = 1;
-    } elsif ($self->[GD_SEED] eq 'time') {
-        $self->[GD_SEED] = time();
-        say("Converting --seed=time to --seed=".$self->[GD_SEED]);
-    }
-
-    my @variators= ();
-    foreach my $vn (@{$self->[GD_VARIATORS]}) {
-        eval ("require GenTest::Transform::'".$vn) or croak $@;
-        my $variator = ('GenTest::Transform::'.$vn)->new();
-        $variator->setSeed($self->[GD_SEED]);
-        push @variators, $variator;
-    }
-    $self->[GD_VARIATORS] = [ @variators ];
-
+    my $self = $class->SUPER::new(@_);
     return $self;
-}
-
-
-sub spec_file {
-return $_[0]->[GD_SPEC];
-}
-
-
-sub debug {
-    return $_[0]->[GD_DEBUG];
-}
-
-
-sub dsn {
-    return $_[0]->[GD_DSN];
-}
-
-
-sub seed {
-    return $_[0]->[GD_SEED];
-}
-
-
-sub engine {
-    return $_[0]->[GD_ENGINE];
-}
-
-
-sub rows {
-    return $_[0]->[GD_ROWS];
-}
-
-
-sub views {
-    return $_[0]->[GD_VIEWS];
-}
-
-sub server_id {
-    return $_[0]->[GD_SERVER_ID];
-}
-
-sub sqltrace {
-    return $_[0]->[GD_SQLTRACE];
-}
-
-sub short_column_names {
-    return $_[0]->[GD_SHORT_COLUMN_NAMES];
-}
-
-sub executor_id {
-    return $_[0]->[GD_EXECUTOR_ID] || '';
-}
-
-sub variate_and_execute {
-  my ($self, $executor, $query)= @_;
-  foreach my $v (@{$self->[GD_VARIATORS]}) {
-    # 1 stands for "it's gendata, variate with caution"
-    $query= $v->variate($query,$executor,1);
-  }
-  return ($query ? $executor->execute($query) : STATUS_OK);
 }
 
 sub asc_desc_key {
@@ -186,19 +45,11 @@ sub asc_desc_key {
 }
 
 sub run {
-    my ($self) = @_;
+    my $self= shift;
 
+    my $executor = $self->executor();
     my $spec_file = $self->spec_file();
-
-    my $prng = GenTest::Random->new(
-        seed => $self->seed(),
-        );
-
-    my $executor = GenTest::Executor->newFromDSN($self->dsn());
-    $executor->sqltrace($self->sqltrace);
-    $executor->setId($self->executor_id);
-    $executor->setVardir($self->[GD_VARDIR]);
-    $executor->init();
+    my $prng = $self->rand();
 
     my ($tables, $fields, $data, $schemas);  # Specification as read
                                              # from the spec file.
@@ -233,7 +84,7 @@ sub run {
           # but such things should be caught at test implementation stage
 
           my @populate_rows= (defined $self->rows() ? split(',', $self->rows()) : (0));
-          my $populate = GenTest::PopulateSchema->new(schema_file => $spec_file,
+          my $populate = GenData::PopulateSchema->new(spec_file => $spec_file,
                                                debug => $self->debug,
                                                dsn => $self->dsn,
                                                seed => $self->seed,
@@ -252,11 +103,11 @@ sub run {
 
     say("Running Gendata from file $spec_file");
 
-    $self->variate_and_execute($executor,"SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
+    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
 
     if (defined $schemas) {
         push(@schema_perms, @$schemas);
-        $executor->defaultSchema($schema_perms[0]);
+        $self->executor->defaultSchema($schema_perms[0]);
     } else {
         push(@schema_perms, $executor->defaultSchema());
     }
@@ -481,9 +332,7 @@ sub run {
     }
 
     foreach my $schema (@schema_perms) {
-        $self->variate_and_execute($executor,"CREATE SCHEMA /*!IF NOT EXISTS*/ $schema");
-        $executor->sqltrace($self->sqltrace);
-        $executor->setId($self->executor_id);
+        $executor->execute("CREATE SCHEMA /*!IF NOT EXISTS*/ $schema");
         $executor->currentSchema($schema);
 
     foreach my $table_id (0..$#tables) {
@@ -508,7 +357,7 @@ sub run {
 
         $prng->shuffleArray(\@fields_copy);
 
-        $self->variate_and_execute($executor,"DROP TABLE /*! IF EXISTS*/ $table->[TABLE_NAME]");
+        $executor->execute("DROP TABLE /*! IF EXISTS*/ $table->[TABLE_NAME]");
 
         # Compose the CREATE TABLE statement by joining all fields and indexes and appending the table options
         # Skip undefined fields.
@@ -525,34 +374,37 @@ sub run {
 
         my $index_sqls = $#index_fields > -1 ? join(",\n", map { $_->[FIELD_INDEX_SQL] } @index_fields) : undef;
 
-        my $res= $self->variate_and_execute($executor,"CREATE TABLE `$table->[TABLE_NAME]` (\n".join(",\n/*Indices*/\n", grep { defined $_ } (@field_sqls, $index_sqls) ).") ".$table->[TABLE_SQL]);
+        my $res= $executor->variate_and_execute(
+          "CREATE TABLE `$table->[TABLE_NAME]` (\n".join(",\n/*Indices*/\n", grep { defined $_ } (@field_sqls, $index_sqls) ).") ".$table->[TABLE_SQL],
+          my $gendata=1
+        );
         if (ref $res ne 'GenTest::Result' or $res->status() != STATUS_OK) {
           sayError("Table creation failed");
           next;
         }
 
         if (defined $table_perms[TABLE_VIEWS]) {
-            foreach my $view_id (0..$#{$table_perms[TABLE_VIEWS]}) {
-    my $view_name;
-    if ($#{$table_perms[TABLE_VIEWS]} == 0) {
-       $view_name = 'view_'.$table->[TABLE_NAME];
-    } else {
-       $view_name = 'view_'.$table->[TABLE_NAME]."_$view_id";
-    }
-
-    if ($table_perms[TABLE_VIEWS]->[$view_id] ne '') {
-                  $self->variate_and_execute($executor,"CREATE OR REPLACE ALGORITHM=".uc($table_perms[TABLE_VIEWS]->[$view_id])." VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
-    } else {
-                  $self->variate_and_execute($executor,"CREATE OR REPLACE VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
-    }
+          foreach my $view_id (0..$#{$table_perms[TABLE_VIEWS]}) {
+            my $view_name;
+            if ($#{$table_perms[TABLE_VIEWS]} == 0) {
+               $view_name = 'view_'.$table->[TABLE_NAME];
+            } else {
+               $view_name = 'view_'.$table->[TABLE_NAME]."_$view_id";
             }
+
+            if ($table_perms[TABLE_VIEWS]->[$view_id] ne '') {
+              $executor->variate_and_execute("CREATE OR REPLACE ALGORITHM=".uc($table_perms[TABLE_VIEWS]->[$view_id])." VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`", my $gendata=1);
+            } else {
+              $executor->variate_and_execute("CREATE OR REPLACE VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`", my $gendata=1);
+            }
+          }
         }
 
-        $self->variate_and_execute($executor,"ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS");
+        $executor->variate_and_execute("ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS", my $gendata=1);
 
         if ($table->[TABLE_ROW] > 100) {
-            $self->variate_and_execute($executor,"SET AUTOCOMMIT=OFF");
-            $self->variate_and_execute($executor,"START TRANSACTION");
+            $executor->execute("SET AUTOCOMMIT=OFF");
+            $executor->execute("START TRANSACTION");
         }
 
         my @row_buffer;
@@ -635,22 +487,22 @@ sub run {
                 (($row_id % 50) == 0) ||
                 ($row_id == $table->[TABLE_ROW])
                 ) {
-                my $insert_result= $self->variate_and_execute($executor,"INSERT /*! IGNORE */ INTO $table->[TABLE_NAME] VALUES ".join(', ', @row_buffer));
+                my $insert_result= $executor->variate_and_execute("INSERT /*! IGNORE */ INTO $table->[TABLE_NAME] VALUES ".join(', ', @row_buffer), my $gendata=1);
                 return $insert_result->status() if $insert_result->status() >= STATUS_CRITICAL_FAILURE;
                 @row_buffer = ();
             }
 
             if (($row_id % 10000) == 0) {
-                $self->variate_and_execute($executor,"COMMIT");
+                $executor->execute("COMMIT");
                 say("# Progress: loaded $row_id out of $table->[TABLE_ROW] rows");
             }
         }
-        $self->variate_and_execute($executor,"COMMIT");
-        $self->variate_and_execute($executor,"ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
+        $executor->execute("COMMIT");
+        $executor->variate_and_execute("ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS", my $gendata=1);
     }
     }
 
-    $self->variate_and_execute($executor,"COMMIT");
+    $executor->execute("COMMIT");
 
     if (
         (defined $table_perms[TABLE_MERGES]) &&
@@ -658,8 +510,8 @@ sub run {
         ) {
         foreach my $merge_id (0..$#{$table_perms[TABLE_MERGES]}) {
             my $merge_name = 'merge_'.$merge_id;
-            $self->variate_and_execute($executor,"CREATE TABLE `$merge_name` LIKE `".$myisam_tables[0]."`");
-            $self->variate_and_execute($executor,"ALTER TABLE `$merge_name` ENGINE=MERGE UNION(".join(',',@myisam_tables).") ".uc($table_perms[TABLE_MERGES]->[$merge_id]));
+            $executor->variate_and_execute("CREATE TABLE `$merge_name` LIKE `".$myisam_tables[0]."`", my $gendata=1);
+            $executor->variate_and_execute("ALTER TABLE `$merge_name` ENGINE=MERGE UNION(".join(',',@myisam_tables).") ".uc($table_perms[TABLE_MERGES]->[$merge_id]), my $gendata=1);
         }
     }
 

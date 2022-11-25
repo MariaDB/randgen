@@ -1,4 +1,4 @@
-# Copyright (C) 2016 MariaDB Corporation.
+# Copyright (C) 2016, 2022, MariaDB Corporation.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,6 +60,18 @@ sub transform {
 #        || $orig_query !~ m{^\s*(?:\/\*\s*[\w ]+\s*\*\/)*\s*SELECT}sio
         || $orig_query !~ m{NULLIF}sio
     ;
+    return $class->modify($orig_query) ." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+}
+
+sub variate {
+    my ($class, $orig_query) = @_;
+    return [ $orig_query ] if $orig_query !~ m{NULLIF}sio;
+    return [ $class->modify($orig_query) ];
+}
+
+sub modify {
+    my ($class, $orig_query) = @_;
+
     my $transformed_query = $orig_query;
     my $func_call;
     while ($transformed_query =~ /(nullif\s*$parens_template)/i) {
@@ -76,7 +88,7 @@ sub transform {
         $transformed_query =~ s/\Q$func_call/$replacement\E/i;
     }
 
-    return $transformed_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+    return $transformed_query;
 }
 
 1;

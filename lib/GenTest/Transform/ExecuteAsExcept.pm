@@ -44,9 +44,9 @@ sub transform {
   $orig_query_zero_limit =~ s{LIMIT\s+\d+(?:\s+OFFSET\s+\d+|\s*,\s*\d+)?}{}sio;
   $orig_query_zero_limit =~ s{(?:OFFSET\s+\d+\s+ROWS?\s+)?FETCH\s+(?:FIRST|NEXT)\s+\d+\s+(?:ROW|ROWS)\s+(?:ONLY|WITH\s+TIES)}{}sio;
   $orig_query_zero_limit =~ s{(FOR\s+UPDATE|LOCK\s+IN\s+(?:SHARE|EXCLUSIVE)\sMODE)}{LIMIT 0 $1}sio;
-    unless ($orig_query_zero_limit =~ /LIMIT\s+0/sio) {
-        $orig_query_zero_limit.= ' LIMIT 0';
-    }
+  unless ($orig_query_zero_limit =~ /LIMIT\s+0/sio) {
+    $orig_query_zero_limit.= ' LIMIT 0';
+  }
 
   my @queries= (
     "( $orig_query ) EXCEPT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_DISTINCT */",
@@ -69,10 +69,8 @@ sub transform {
 
 sub variate {
   my ($self, $query, $executor) = @_;
-  # Variate 10% queries
-  return $query if $self->random->uint16(0,9);
   # CTE do not work due to MDEV-15177 (closed as "won't fix")
-  return $query if $query =~ m{(OUTFILE|INFILE|INTO)}sio || $query !~ m{^\s*SELECT}sio || $query =~ m{^\s*WITH}sio;
+  return [ $query ] if $query =~ m{(OUTFILE|INFILE|INTO)}sio || $query !~ m{^\s*SELECT}sio || $query =~ m{^\s*WITH}sio;
 
   my $except_word= 'EXCEPT';
   my @except_modes= ('');
@@ -86,7 +84,7 @@ sub variate {
     push @except_modes, 'ALL';
   }
   my $except_mode= $self->random->arrayElement(\@except_modes);
-  return "( $query ) $except_word $except_mode ( $query )";
+  return [ "( $query ) $except_word $except_mode ( $query )" ];
 }
 
 1;

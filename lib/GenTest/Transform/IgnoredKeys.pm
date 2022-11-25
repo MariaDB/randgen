@@ -1,4 +1,4 @@
-# Copyright (c) 2020, 2021, MariaDB Corporation Ab.
+# Copyright (c) 2020, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -67,7 +67,11 @@ sub variate {
     }
   }
   $query.= $orig_query;
-  return $query;
+  return [ $query ];
+}
+
+sub transform {
+  return STATUS_WONT_HANDLE;
 }
 
 1;

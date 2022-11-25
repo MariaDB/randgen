@@ -30,35 +30,45 @@ use GenTest;
 use GenTest::Transform;
 use GenTest::Constants;
 
-
 sub transform {
   my ($class, $original_query) = @_;
-
-  my @selects = $original_query =~ m{(SELECT)}sgio;
 
   return STATUS_WONT_HANDLE if $original_query !~ m{^\s*SELECT}sio;
   return STATUS_WONT_HANDLE if $original_query =~ m{LIMIT\s+(?:\d+\s*,\s*)?0}sio;
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   #          - CONCAT() in ORDER BY queries, which require more complex regexes below for correct behavior
   #          - INTO, because there will be nothing to compare
-
   return STATUS_WONT_HANDLE if $original_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO|GROUP\s+BY|ORDER\s+BY[^()]*CONCAT\s*\()}sio;
+
+  my $query= $class->modify($original_query);
+  return STATUS_WONT_HANDLE unless defined $query;
 
   my $transform_outcome;
 
   if ($original_query =~ m{LIMIT[^()]*$}sio) {
     $transform_outcome = "TRANSFORM_OUTCOME_SUPERSET";
-
-    if ($original_query =~ s{ORDER\s+BY.*$}{}sio) {
-      # Removing ORDER BY
-    } elsif ($original_query !~ s{LIMIT[^()]*$}{ORDER BY 1}sio) {
-      return STATUS_WONT_HANDLE;
-    }
   } else {
     $transform_outcome = "TRANSFORM_OUTCOME_UNORDERED_MATCH";
   }
+  return $query." /* $transform_outcome */ ";
+}
 
-  return $original_query." /* $transform_outcome */ ";
+sub variate {
+  my ($class, $original_query) = @_;
+  return $original_query if $original_query !~ m{^\s*SELECT}sio;
+  return [ $class->modify($original_query) || $original_query ];
+}
+
+sub modify {
+  my ($class, $original_query) = @_;
+
+  if ($original_query =~ s{ORDER\s+BY.*$}{}sio) {
+    # Removing ORDER BY
+  } elsif ($original_query !~ s{LIMIT[^()]*$}{ORDER BY 1}sio) {
+    # Won't handle
+    return undef;
+  }
+  return $original_query;
 }
 
 1;

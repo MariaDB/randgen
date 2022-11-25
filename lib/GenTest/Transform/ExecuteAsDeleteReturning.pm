@@ -31,61 +31,46 @@ use GenTest::Constants;
 
 
 sub transform {
-  my ($class, $orig_query, $executor, $original_result, $skip_result_validations) = @_;
+  my ($class, $orig_query, $executor, $original_result) = @_;
 
   # We skip [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  # SELECT HISTORY .. (versioning) does not work with RETURNING
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|RETURNING|HISTORY)}sio
-    || $orig_query !~ m{^\s*(SELECT|DELETE)}sio
-    || $orig_query =~ m{^\s*DELETE}sio && ! $skip_result_validations
-      || $orig_query =~ m{LIMIT\s+\d+\s*,\s*\d+}sio
-    || $orig_query =~ m{(AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE|SYSDATE)\s*\(}sio
-  ;
-
-  # Two variants of transformations: for SELECT, we convert it into DELETE .. RETURNING
-  # (and later compare the result sets if the validator is enabled).
-  # For DELETE, we just add RETURNING *
-
-  if ( $orig_query =~ m{^\s*SELECT}sio )
-  {
-    return STATUS_WONT_HANDLE if not $original_result or not $original_result->columnNames() or "@{$original_result->columnNames()}" =~ m{`}sgio;
-
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|RETURNING)}sio
+    || $orig_query !~ m{^\s*(SELECT)}sio;
+  return STATUS_WONT_HANDLE if not $original_result or not $original_result->columnNames() or "@{$original_result->columnNames()}" =~ m{`}sgio;
+  my $col_list= '*';
+  # INSERT/DELETE ... RETURNING <column list> doesn't work with aggregate functions
+  if ($col_list !~ m{AVG|COUNT|MAX|MIN|GROUP_CONCAT|BIT_AND|BIT_OR|BIT_XOR|STD|SUM|VAR_POP|VAR_SAMP|VARIANCE}sgio) {
     my @cols= map { '`'.$_.'`' unless $_ =~ /`/ } @{$original_result->columnNames()};
-
-    my $col_list = join ',', @cols;
-    # INSERT/DELETE ... RETURNING does not work with aggregate functions
-    return STATUS_WONT_HANDLE if $col_list =~ m{AVG|COUNT|MAX|MIN|GROUP_CONCAT|BIT_AND|BIT_OR|BIT_XOR|STD|SUM|VAR_POP|VAR_SAMP|VARIANCE}sgio;
-
-    my $table_name = 'transforms.delete_returning_'.abs($$);
-
-    return [
-      # Unlock tables prevents conflicting locks and should also take care
-      # of open transactions by performing implicit COMMIT
-      'UNLOCK TABLES',
-      'SET @tx_read_only.save= @@session.tx_read_only',
-      'SET SESSION tx_read_only= 0',
-      #Include database transforms creation DDL so that it appears in the simplified testcase.
-      "CREATE DATABASE IF NOT EXISTS transforms",
-      "DROP TABLE IF EXISTS $table_name",
-      "CREATE TABLE $table_name $orig_query",
-
-      "DELETE FROM $table_name RETURNING $col_list /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-      "DROP TABLE IF EXISTS $table_name",
-    '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save'
-    ];
+    $col_list = join ',', @cols;
   }
-  elsif ($orig_query =~ m{^\s*DELETE}sio )
-  {
-    return [ "$orig_query RETURNING * /* TRANSFORM_OUTCOME_ANY */" ];
-  }
+  return [
+    $class->modify($orig_query,$col_list,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
+    [ '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save' ]
+  ];
 }
 
 sub variate {
   my ($self, $query)= @_;
-  # Variate 10% queries
-  return $query if $self->random->uint16(0,9);
-  return $query unless $query =~ /^\s*DELETE/i;
-  return "$query RETURNING *";
+  if ($query =~ /^\s*DELETE/i && $query !~ /RETURNING/i) {
+    return [ "$query RETURNING *" ]
+  } elsif ($query =~ /^[\s\(]*SELECT/ && $query !~ /\WINTO\W/) {
+    return $self->modify($query);
+  } else {
+    return [ $query ];
+  }
+}
+
+sub modify {
+  my ($self, $query, $column_list, $transform_outcome)= @_;
+  my $table_name = 'tmp_ExecuteAsDeleteReturning_'.abs($$);
+  $column_list= '*' unless $column_list;
+  return [
+    'SET @tx_read_only.save= @@session.tx_read_only',
+    'SET SESSION tx_read_only= 0',
+    "CREATE OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query",
+    "DELETE FROM $table_name RETURNING $column_list".($transform_outcome ? " /* $transform_outcome */" : ""),
+    'SET SESSION tx_read_only= @tx_read_only.save'
+  ];
 }
 
 1;

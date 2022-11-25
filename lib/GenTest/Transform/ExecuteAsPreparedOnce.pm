@@ -31,18 +31,28 @@ use GenTest::Constants;
 
 sub transform {
   my ($class, $orig_query, $executor) = @_;
-
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   #          - Certain HANDLER statements: they can not be re-run as prepared because they advance a cursor
   return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|PREPARE\s|OPEN\s|CLOSE\s|PREV\s|NEXT\s|INTO\s|FUNCTION|PROCEDURE)}sio
     || $orig_query !~ m{SELECT|HANDLER}sio;
 # TODO: Don't handle anything that looks like multi-statements for now
-    return STATUS_WONT_HANDLE if $orig_query =~ m{;}sio;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{;}sio;
+  return $class->modify($orig_query, $executor, 'TRANSFORM_OUTCOME_UNORDERED_MATCH');
+}
 
+sub variate {
+  my ($class, $orig_query, $executor) = @_;
+  return [ $orig_query ] if $orig_query =~ m{EXECUTE\s|PREPARE\s}sio;
+  return [ $orig_query ] if $orig_query =~ m{;}sio;
+  return $class->modify($orig_query, $executor);
+}
+
+sub modify {
+  my ($class, $orig_query, $executor, $transform_outcome) = @_;
   return [
-    "PREPARE prep_stmt_".abs($$)." FROM ".$executor->dbh()->quote($orig_query),
-    "EXECUTE prep_stmt_".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "DEALLOCATE PREPARE prep_stmt_".abs($$)
+    "PREPARE stmt_ExecuteAsPreparedOnce_".abs($$)." FROM ".$executor->dbh()->quote($orig_query),
+    "EXECUTE stmt_ExecuteAsPreparedOnce_".abs($$)." /* $transform_outcome */",
+    "DEALLOCATE PREPARE stmt_ExecuteAsPreparedOnce_".abs($$)
   ];
 }
 

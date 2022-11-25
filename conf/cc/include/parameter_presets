@@ -150,7 +150,7 @@ $common_options_108= [
 $common_options_109= $common_options_108;
 $common_options_110= $common_options_109;
 
-$ps_protocol_options= '--ps-protocol --filter=conf/mariadb/need-reconnect.ff';
+$ps_protocol_options= '--ps-protocol --filter=conf/ff/need-reconnect.ff';
 
 #########################
 # Test parameter combinations
@@ -180,56 +180,63 @@ $threads_low_combinations= [
 ];
 
 $auto_gendata_combinations= [
-  '--gendata',
-  '--gendata-advanced',
-  '--gendata-advanced --partitions',
-  '--skip-gendata --gendata-advanced',
+  '--gendata=simple',
+  '--gendata=advanced',
+  '--gendata=advanced --partitions',
 ];
 
 # Variators are transformers which are run without result comparison
-$optional_variators_102= [
-  [ '', '--variators=ExecuteAsCTE' ],
-  [ '', '', '', '', '', '', '', '--variators=ExecuteAsDeleteReturning' ],
-  [ '', '--transformers=ExecuteAsDerived' ],
-  [ '', '--variators=ExecuteAsExecuteImmediate' ],
-  [ '', '', '--transformers=ExecuteAsFunctionTwice' ],
-  [ '', '', '--transformers=ExecuteAsPreparedThrice' ],
-  [ '', '--variators=ExecuteAsUnion' ],
-  [ '', '--variators=ExecuteAsView' ],
-  [ '', '', '', '--variators=AnalyzeOrExplain' ],
-  [ '', '', '', '--variators=FullOrderBy' ],
-  [ '', '', '', '--variators=LimitRowsExamined' ],
+$optional_variators_110= [ 
+  ['--variator=AnalyzeOrExplain','','','','','','','','','','','','','',''],
+  ['--variator=ConvertLiteralsToDyncols','','','','','','','','','','','','','',''],
+  ['--variator=ConvertLiteralsToSubqueries','','','','','','','','','','','','','',''],
+  ['--variator=ConvertLiteralsToVariables','','','','','','','','','','','','','',''],
+  ['--variator=ConvertSubqueriesToViews','','','','','','','','','','','','','',''],
+  ['--variator=ConvertTablesToDerived','','','','','','','','','','','','','',''],
+  ['--variator=ConvertTablesToViews','','','','','','','','','','','','','',''],
+  ['--variator=Count','','','','','','','','','','','','','',''],
+  ['--variator=DisableChosenPlan','','','','','','','','','','','','','',''],
+  ['--variator=DisableOptimizations','','','','','','','','','','','','','',''],
+  ['--variator=Distinct','','','','','','','','','','','','','',''],
+  ['--variator=EnableOptimizations','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsCTE','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsDeleteReturning','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsDerived','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsExcept','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsExecuteImmediate','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsFunctionTwice','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsInsertReturning','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsInsertSelect','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsIntersect','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsOracleSP','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsPackageSP','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsPreparedOnce','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsPreparedThrice','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsPreparedTwice','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsSelectItem','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsSPTwice','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsTrigger','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsUnion','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsUpdateDelete','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsView','','','','','','','','','','','','','',''],
+  ['--variator=ExecuteAsWhereSubquery','','','','','','','','','','','','','',''],
+  ['--variator=FullOrderBy','','','','','','','','','','','','','',''],
+  ['--variator=Having','','','','','','','','','','','','','',''],
+  ['--variator=IgnoredKeys','','','','','','','','','','','','','',''],
+  ['--variator=InlineSubqueries','','','','','','','','','','','','','',''],
+  ['--variator=InlineVirtualColumns','','','','','','','','','','','','','',''],
+  ['--variator=JsonTables','','','','','','','','','','','','','',''],
+  ['--variator=LimitDecrease','','','','','','','','','','','','','',''],
+  ['--variator=LimitIncrease','','','','','','','','','','','','','',''],
+  ['--variator=LimitRowsExamined','','','','','','','','','','','','','',''],
+  ['--variator=NaturalSort','','','','','','','','','','','','','',''],
+  ['--variator=NullIf','','','','','','','','','','','','','',''],
+  ['--variator=OffsetFetch','','','','','','','','','','','','','',''],
+  ['--variator=OrderBy','','','','','','','','','','','','','',''],
+  ['--variator=RemoveIndexHints','','','','','','','','','','','','','',''],
+  ['--variator=Rownum','','','','','','','','','','','','','',''],
+  ['--variator=SelectOption','','','','','','','','','','','','','',''],
 ];
-
-$optional_variators_103= [
-  @$optional_variators_102,
-  [ '', '--variators=ExecuteAsExcept' ],
-  [ '', '--variators=ExecuteAsIntersect' ],
-];
-
-$optional_variators_104= [ @$optional_variators_103 ];
-
-$optional_variators_105= [
-  @$optional_variators_104,
-  [ '', '', '', '', '', '', '', '', '--variators=ExecuteAsInsertReturning' ],
-];
-
-$optional_variators_106= [
-  @$optional_variators_105,
-  [ '', '', '', '--variators=JsonTables' ],
-  [ '', '', '', '--variators=OffsetFetch' ],
-  [ '', '', '', '', '', '', '--variators=Rownum' ],
-  [ '', '', '', '', '', '', '--variators=IgnoredKeys' ],
-];
-
-$optional_variators_107= [
-  @$optional_variators_106,
-  [ '--variators=NaturalSort' ],
-];
-
-$optional_variators_108= [ @$optional_variators_107 ];
-$optional_variators_109= [ @$optional_variators_108 ];
-$optional_variators_110= [ @$optional_variators_109 ];
 
 $basic_engine_combinations_102= [
   '','','','',
@@ -253,11 +260,7 @@ $extra_engine_combinations_103= [
   '--engine=RocksDB --mysqld=--default-storage-engine=RocksDB --mysqld=--plugin-load-add=ha_rocksdb --mysqld=--enforce-storage-engine=""',
 ];
 
-$extra_engine_combinations_104= [ @$extra_engine_combinations_103 ];
-$extra_engine_combinations_105= [
-  @$extra_engine_combinations_104,
-  '--redefine=conf/engines/s3.yy --mysqld=--plugin-load-add=ha_s3 --mysqld=--s3=on --mysqld=--s3-host-name="127.0.0.1" --mysqld=--s3-protocol-version=Auto --mysqld=--s3-bucket=rqg --mysqld=--s3-access-key=minio --mysqld=--s3-secret-key=minioadmin --mysqld=--s3-region="" --mysqld=--s3-port=9000 --mysqld=--s3-use-http=on',
-];
+$extra_engine_combinations_105= [ @$extra_engine_combinations_104 ];
 $extra_engine_combinations_106= [ @$extra_engine_combinations_105 ];
 $extra_engine_combinations_107= [ @$extra_engine_combinations_106 ];
 $extra_engine_combinations_108= [ @$extra_engine_combinations_107 ];
@@ -265,13 +268,14 @@ $extra_engine_combinations_109= [ @$extra_engine_combinations_108 ];
 $extra_engine_combinations_110= [ @$extra_engine_combinations_109 ];
 
 $non_crash_scenario_combinations_102= [
-  '--scenario=LiveUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
-  '--scenario=LiveUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
-  '--scenario=LiveUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
-  '--scenario=LiveUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
-  '--scenario=LiveUpgrade --filter=conf/mariadb/regression/restrict_dynamic_vars.ff',
-  '--scenario=AclUpgrade',
-  '--scenario=ImportTablespace --filter=conf/mariadb/regression/restrict_dynamic_vars.ff'
+#  '--scenario=LiveUpgrade --filter=conf/ff/restrict_dynamic_vars.ff',
+#  '--scenario=LiveUpgrade --filter=conf/ff/restrict_dynamic_vars.ff',
+#  '--scenario=LiveUpgrade --filter=conf/ff/restrict_dynamic_vars.ff',
+#  '--scenario=LiveUpgrade --filter=conf/ff/restrict_dynamic_vars.ff',
+#  '--scenario=LiveUpgrade --filter=conf/ff/restrict_dynamic_vars.ff',
+#  '--scenario=AclUpgrade',
+#  '--scenario=ImportTablespace --filter=conf/ff/restrict_dynamic_vars.ff',
+   '--scenario=Standard'
 ];
 
 $non_crash_scenario_combinations_103= [ @$non_crash_scenario_combinations_102 ];
@@ -290,10 +294,10 @@ $scenario_combinations_104= [ @$scenario_combinations_103 ];
 $scenario_combinations_105= [ @$scenario_combinations_104 ];
 $scenario_combinations_106= [
   @$scenario_combinations_105,
-  '--scenario=CrashUpgrade',
-  '--scenario=UndoLogUpgrade',
-  '--scenario=MariaBackupFull',
-  '--scenario=MariaBackupIncremental',
+#  '--scenario=CrashUpgrade',
+#  '--scenario=UndoLogUpgrade',
+#  '--scenario=MariaBackupFull',
+#  '--scenario=MariaBackupIncremental',
 ];
 $scenario_combinations_107= [ @$scenario_combinations_106 ];
 $scenario_combinations_108= [ @$scenario_combinations_107 ];

@@ -40,14 +40,25 @@ sub transform {
   return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|PREPARE\s|OPEN\s|CLOSE\s|PREV\s|NEXT\s|INTO\s|FUNCTION|PROCEDURE)}sio
     || $orig_query !~ m{SELECT|HANDLER}sio;
 # TODO: Don't handle anything that looks like multi-statements for now
-    return STATUS_WONT_HANDLE if $orig_query =~ m{;}sio;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{;}sio;
+  return $class->modify($orig_query,$executor,'TRANSFORM_OUTCOME_UNORDERED_MATCH');
+}
 
+sub variate {
+  my ($class, $orig_query, $executor) = @_;
+  return [ $orig_query ] if $orig_query =~ m{PREPARE\s|EXECUTE\s}sio;
+  return [ $orig_query ] if $orig_query =~ m{;}sio;
+  return $class->modify($orig_query, $executor);
+}
+
+sub modify {
+  my ($class, $orig_query, $executor, $transform_outcome) = @_;
   return [
-    "PREPARE prep_stmt_".abs($$)."_".(++$count)." FROM ".$executor->dbh()->quote($orig_query),
-    "EXECUTE prep_stmt_".abs($$)."_$count /* TRANSFORM_OUTCOME_UNORDERED_MATCH *//* 1st execution */",
-    "EXECUTE prep_stmt_".abs($$)."_$count /* TRANSFORM_OUTCOME_UNORDERED_MATCH *//* 2nd execution */",
-    "EXECUTE prep_stmt_".abs($$)."_$count /* TRANSFORM_OUTCOME_UNORDERED_MATCH *//* 3rd execution */",
-    "DEALLOCATE PREPARE prep_stmt_".abs($$)."_$count"
+    "PREPARE stmt_ExecuteAsPreparedThrice_".abs($$)."_".(++$count)." FROM ".$executor->dbh()->quote($orig_query),
+    "EXECUTE stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 1st execution */",
+    "EXECUTE stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 2nd execution */",
+    "EXECUTE stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 3rd execution */",
+    "DEALLOCATE PREPARE stmt_ExecuteAsPreparedThrice_".abs($$)."_$count"
   ];
 }
 

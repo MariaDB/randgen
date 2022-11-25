@@ -20,7 +20,7 @@ package GenUtil;
 use base 'Exporter';
 
 @EXPORT = ('say', 'sayError', 'sayWarning', 'sayDebug', 'sayFile',
-           'tmpdir', 'safe_exit',
+           'tmpdir', 'safe_exit', 'group_cleaner',
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp',
            'rqg_debug', 'unix2winPath',
@@ -200,6 +200,21 @@ sub shorten_message {
     $msg= $prefix.' <...> '.$suffix;
   }
   return $msg;
+}
+
+sub group_cleaner {
+  return if osWindows();
+  my @pids= split /\n/, `ps xh -o pgrp,pid,comm | grep -v tee`;
+  my @group= ();
+  my $group_id= $ENV{RQG_GROUP_PID} || $$;
+  say("Cleaning the group $group_id");
+  foreach my $pp (@pids) {
+    if ($pp =~ /^\s*(\d+)\s+(\d+)/) {
+      my ($p1, $p2) = ($1, $2);
+      push @group, $p2 if ($p1 == $group_id and $p2 != $$);
+    }
+  }
+  kill('KILL',@group);
 }
 
 1;

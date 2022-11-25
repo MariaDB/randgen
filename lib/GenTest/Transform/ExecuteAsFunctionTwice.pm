@@ -52,13 +52,32 @@ sub transform {
     # and this will not fit in (signed) bigint, which is the default return type.
     $return_type = "bigint unsigned";
   }
+  my $fname= 'func_ExecuteAsFunctionTwice_'.abs($$);
 
   return [
-    "DROP FUNCTION IF EXISTS stored_func_".abs($$),
-    "CREATE FUNCTION stored_func_".abs($$)." () RETURNS $return_type NOT DETERMINISTIC BEGIN DECLARE ret $return_type; $orig_query INTO ret ; RETURN ret; END",
-    "SELECT stored_func_".abs($$)."() /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-                "SELECT stored_func_".abs($$)."() /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "DROP FUNCTION IF EXISTS stored_func_".abs($$)
+    "DROP FUNCTION IF EXISTS $fname",
+    "CREATE FUNCTION $fname () RETURNS $return_type NOT DETERMINISTIC BEGIN DECLARE ret $return_type; $orig_query INTO ret ; RETURN ret; END",
+    "SELECT $fname() /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+    "SELECT $fname() /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+    "DROP FUNCTION IF EXISTS $fname"
+  ];
+}
+
+sub variate {
+  my ($class, $orig_query) = @_;
+  return [ $orig_query ] if $orig_query =~ /CREATE|ALTER|DROP|COMMIT|ROLLBACK|LOCK|START/sio && $orig_query !~ /TEMPORARY/sio;
+  my $fname= 'func_ExecuteAsFunctionTwice_'.abs($$);
+  my $query;
+  if ($orig_query =~ /^[\s\(]*SELECT/sio && $orig_query !~ /INTO/sio) {
+    $query= "CREATE OR REPLACE FUNCTION $fname () RETURNS INT NOT DETERMINISTIC BEGIN DECLARE ret INT; SELECT COUNT(*) INTO ret FROM ( $orig_query ) sq ; RETURN ret; END";
+  } else {
+    $query= "CREATE OR REPLACE FUNCTION $fname () RETURNS INT NOT DETERMINISTIC BEGIN $orig_query; RETURN 0; END";
+  }
+  return [
+    $query,
+    "SELECT $fname()",
+    "SELECT $fname()",
+    "DROP FUNCTION IF EXISTS $fname"
   ];
 }
 

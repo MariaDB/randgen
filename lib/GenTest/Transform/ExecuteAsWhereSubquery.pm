@@ -30,7 +30,6 @@ use GenTest;
 use GenTest::Transform;
 use GenTest::Constants;
 
-
 sub transform {
   my ($class, $original_query, $executor, $original_result) = @_;
 
@@ -59,6 +58,14 @@ sub transform {
     "SELECT * FROM $table_name WHERE (".join(', ', map { "`$_`" } @{$original_result->columnNames()}).") NOT IN ( $original_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
     "DROP TABLE $table_name",
   ];
+}
+
+sub variate {
+  my ($class, $original_query, $executor) = @_;
+  return [ $original_query ] if $original_query =~ m{INTO}sio || $original_query !~ m{^[\s\(]*SELECT}sio;
+  my $table= $class->random->arrayElement($executor->metaTables());
+  my $not= ($class->random->uint16(0,1) ? 'NOT' : '');
+  return [ "SELECT * FROM $table WHERE $not EXISTS ($original_query)" ];
 }
 
 1;

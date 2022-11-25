@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -92,6 +92,18 @@ sub transform {
     "DROP TABLE IF EXISTS $table_name",
     '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save'
   ];
+}
+
+sub variate {
+  my ($class, $orig_query, $executor) = @_;
+  return [ $orig_query ] if $orig_query =~ m{INTO}sio || $orig_query !~ m{^[\(\s]*SELECT}sio;
+  my $exists= ($class->random->uint16(0,1) ? 'NOT EXISTS' : 'EXISTS');
+  my $table= $class->random->arrayElement($executor->metaTables());
+  if ($class->random->uint16(0,1)) {
+    return [ "UPDATE IGNORE $table SET ".$class->random->arrayElement($executor->metaColumns($table))." = NULL WHERE $exists ( $orig_query)" ];
+  } else {
+    return [ "DELETE FROM $table WHERE $exists ( $orig_query )" ];
+  }
 }
 
 1;

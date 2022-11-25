@@ -16,6 +16,10 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
+########################################################################
+# Replaced IN subqueries with their result sets (when possible)
+########################################################################
+
 package GenTest::Transform::InlineSubqueries;
 
 require Exporter;
@@ -42,12 +46,31 @@ $paren_rx = qr{
 
 sub transform {
   my ($class, $query, $executor) = @_;
-
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio;
+  return STATUS_WONT_HANDLE if $query !~ m{SELECT.*\s+IN\s*\(\s*SELECT}sio;
+  $query= $class->modify($query, $executor);
+  if (defined $query) {
+    my $res= $executor->execute($query, 1);
+    if ($res->status() == STATUS_OK) {
+      return $query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+    }
+  }
+  return STATUS_WONT_HANDLE;
+}
+
+sub variate {
+  my ($class, $query, $executor) = @_;
+  return [ $query ] if $query !~ m{\s+IN\s*\(\s*SELECT}sio;
+  my $new_query= $class->modify($query, $executor);
+  return [ $new_query || $query ];
+}
+
+sub modify {
+  my ($class, $query, $executor) = @_;
 
   my $inline_successful = 0;
-  $query =~ s{(\(\s*SELECT\s+(??{$paren_rx})\))}{
+  $query =~ s{IN\s*(\(\s*SELECT\s+(??{$paren_rx})\))}{
     my $result = $executor->execute($1, 1);
 
     if (
@@ -57,7 +80,7 @@ sub transform {
       $1;        # return original query
     } else {
       $inline_successful = 1;    # return inlined literals
-      " ( ".join(', ', map {
+      "IN ( ".join(', ', map {
         if (not defined $_->[0]) {
           "NULL";
         } elsif ($_->[0] =~ m{^\d+$}sio){
@@ -69,16 +92,7 @@ sub transform {
     }
   }sgexi;
 
-  my $final_result = $executor->execute($query, 1);
-
-  if (
-    ($inline_successful) &&
-    ($final_result->status() == STATUS_OK)
-  ) {
-    return $query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
-  } else {
-    return STATUS_WONT_HANDLE;
-  }
+  return ($inline_successful ? $query : undef);
 }
 
 1;

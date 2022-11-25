@@ -37,17 +37,27 @@ sub transform {
   #          - Certain aggregate functions, as DISTINCT will just change a number,
   #            not cause the result to be a superset or distinct version of the original.
 
-  return STATUS_WONT_HANDLE if $orig_query !~ m{SELECT}sio;
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|GRANT|REVOKE)}sio
-          || $orig_query =~ m{LIMIT}io
+  return STATUS_WONT_HANDLE if $orig_query !~ m{^[\s\(]*SELECT}sio;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|LIMIT)}sio
     || $orig_query =~ m{(COUNT|SUM|AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE|GROUP_CONCAT)\s*\(}io;
+  return $class->modify($orig_query,'with transform outcome');
+}
+
+sub variate {
+  my ($class, $orig_query) = @_;
+  return [ $orig_query ] if $orig_query !~ m{SELECT}sio;
+  return $class->modify($orig_query);
+}
+
+sub modify {
+  my ($class, $orig_query, $with_transform_outcome) = @_;
 
   if ($orig_query =~ m{SELECT\s+DISTINCT}io) {
-    $orig_query =~ s{SELECT\s+DISTINCT}{SELECT }io;
-    return $orig_query." /* TRANSFORM_OUTCOME_SUPERSET */ ";
+    $orig_query =~ s{SELECT\s+DISTINCT}{SELECT }gio;
+    return $orig_query.($with_transform_outcome ? " /* TRANSFORM_OUTCOME_SUPERSET */" : "");
   } else {
-    $orig_query =~ s{SELECT}{SELECT DISTINCT}io;
-    return $orig_query." /* TRANSFORM_OUTCOME_DISTINCT */ ";
+    $orig_query =~ s{SELECT}{SELECT DISTINCT}gio;
+    return $orig_query.($with_transform_outcome ? " /* TRANSFORM_OUTCOME_DISTINCT */" : "");
   }
 }
 
