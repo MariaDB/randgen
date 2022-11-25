@@ -68,7 +68,7 @@ sub say {
   # We already know that our UTFs in some grammars are ugly.
   no warnings 'layer';
 
-  if ($text =~ m{[\r\n]}sio) {
+  if ($text =~ m{[\r\n]}is) {
     foreach my $line (split (m{[\r\n]}, $text)) {
       print "# ".isoTimestamp()." [$$]$level $line\n";
     }

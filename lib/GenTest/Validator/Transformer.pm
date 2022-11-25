@@ -66,7 +66,7 @@ sub validate {
     $database_created = 1;
   }
 
-  return STATUS_WONT_HANDLE if $original_query !~ m{^\s*(SELECT|HANDLER)}sio;
+  return STATUS_WONT_HANDLE if $original_query !~ m{^\s*(SELECT|HANDLER)}is;
   return STATUS_WONT_HANDLE if defined $results->[0]->warnings();
     foreach my $r (@{$results}) {
         return STATUS_WONT_HANDLE if $r->status() != STATUS_OK;
@@ -79,7 +79,7 @@ sub validate {
             last;
         }
     my $transformer_status = $validator->transform($transformer, $executor, $results);
-    if (($transformer_status == STATUS_CONTENT_MISMATCH) && ($original_query =~ m{LIMIT}sio)) {
+    if (($transformer_status == STATUS_CONTENT_MISMATCH) && ($original_query =~ m{LIMIT}is)) {
       # We avoid reporting bugs on content mismatch with LIMIT queries
       say('WARNING: Got STATUS_CONTENT_MISMATCH from transformer. This is likely'.
         ' a FALSE POSITIVE given that there is a LIMIT clause but possibly'.

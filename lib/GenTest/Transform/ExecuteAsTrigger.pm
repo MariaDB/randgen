@@ -35,14 +35,14 @@ sub transform {
 
   # We skip: - [OUTFILE | INFILE | INTO] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   #          - everything that causes explicit/implicit COMMIT
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|CREATE\s|ALTER\s|DROP\s|RENAME\s|GRANT\s|FLUSH\s|START|BEGIN|COMMIT|ROLLBACK|SHOW\s|REVOKE\s|TRUNCATE\s|USE\s|UNLOCK\s|PREPARE\s|EXECUTE\s|DEALLOCATE\s|CHECK\s+TABLE|INTO\s)}sio;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|CREATE\s|ALTER\s|DROP\s|RENAME\s|GRANT\s|FLUSH\s|START|BEGIN|COMMIT|ROLLBACK|SHOW\s|REVOKE\s|TRUNCATE\s|USE\s|UNLOCK\s|PREPARE\s|EXECUTE\s|DEALLOCATE\s|CHECK\s+TABLE|INTO\s)}is;
 
-  if ($orig_query =~ m{^\s*(?:SELECT|WITH)}sio) {
+  if ($orig_query =~ m{^\s*(?:SELECT|WITH)}is) {
     # For true SELECTs, check the result
     my $zero_query= $orig_query;
 
-    $zero_query =~ s{LIMIT\s+\d+(?:\s*,\s*\d+|\s+OFFSET\s+\d+)?}{LIMIT 0}sio;
-    $zero_query =~ s{(FOR\s+UPDATE|LOCK\s+IN\s+(?:SHARE|EXCLUSIVE)\sMODE)\s+LIMIT 0}{LIMIT 0 $1}sio;
+    $zero_query =~ s{LIMIT\s+\d+(?:\s*,\s*\d+|\s+OFFSET\s+\d+)?}{LIMIT 0}is;
+    $zero_query =~ s{(FOR\s+UPDATE|LOCK\s+IN\s+(?:SHARE|EXCLUSIVE)\sMODE)\s+LIMIT 0}{LIMIT 0 $1}is;
     if (not $zero_query =~ /LIMIT 0/) {
       $zero_query.= ' LIMIT 0';
     }

@@ -40,9 +40,9 @@ sub validate {
   }
 
   my $query = $results->[0]->query();
-  return STATUS_WONT_HANDLE if $query =~ m{skip\s+ResultsetComparator}sio;
-  return STATUS_WONT_HANDLE if $query =~ m{EXPLAIN}sio;
-  return STATUS_WONT_HANDLE if $query =~ m{ANALYZE}sio;
+  return STATUS_WONT_HANDLE if $query =~ m{skip\s+ResultsetComparator}is;
+  return STATUS_WONT_HANDLE if $query =~ m{EXPLAIN}is;
+  return STATUS_WONT_HANDLE if $query =~ m{ANALYZE}is;
 
   my $status= STATUS_OK;
 

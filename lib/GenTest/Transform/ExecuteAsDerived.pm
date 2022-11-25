@@ -32,19 +32,19 @@ use GenTest::Constants;
 sub transform {
   my ($class, $orig_query) = @_;
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $orig_query !~ m{^\s*SELECT}sio || $orig_query =~ m{\WINTO\W|PROCESSLIST}sio;
+  return STATUS_WONT_HANDLE if $orig_query !~ m{^\s*SELECT}is || $orig_query =~ m{\WINTO\W|PROCESSLIST}is;
   return $class->modify_query($orig_query) ." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 }
 
 sub variate {
   my ($self, $orig_query) = @_;
-  return $orig_query if $orig_query !~ m{^\s*SELECT}sio || $orig_query =~ m{\WINTO\W}sio;
+  return $orig_query if $orig_query !~ m{^\s*SELECT}is || $orig_query =~ m{\WINTO\W}is;
   return [ $self->modify_query($orig_query) ];
 }
 
 sub modify_query {
   my ($self, $orig_query)= @_;
-  $orig_query =~ s{SELECT (.*?) FROM ([^;]*)}{SELECT * FROM ( SELECT $1 FROM $2 ) AS tbl_ExecuteAsDerived }sio;
+  $orig_query =~ s{SELECT (.*?) FROM ([^;]*)}{SELECT * FROM ( SELECT $1 FROM $2 ) AS tbl_ExecuteAsDerived }is;
   return $orig_query;
 }
 

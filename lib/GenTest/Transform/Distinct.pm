@@ -37,15 +37,15 @@ sub transform {
   #          - Certain aggregate functions, as DISTINCT will just change a number,
   #            not cause the result to be a superset or distinct version of the original.
 
-  return STATUS_WONT_HANDLE if $orig_query !~ m{^[\s\(]*SELECT}sio;
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|LIMIT)}sio
+  return STATUS_WONT_HANDLE if $orig_query !~ m{^[\s\(]*SELECT}is;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|LIMIT)}is
     || $orig_query =~ m{(COUNT|SUM|AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE|GROUP_CONCAT)\s*\(}io;
   return $class->modify($orig_query,'with transform outcome');
 }
 
 sub variate {
   my ($class, $orig_query) = @_;
-  return [ $orig_query ] if $orig_query !~ m{SELECT}sio;
+  return [ $orig_query ] if $orig_query !~ m{SELECT}is;
   return $class->modify($orig_query);
 }
 

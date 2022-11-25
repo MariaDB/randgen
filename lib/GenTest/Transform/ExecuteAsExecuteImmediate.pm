@@ -42,15 +42,15 @@ my $version_supported = undef;
 
 sub transform {
   my ($class, $orig_query, $executor) = @_;
-  return STATUS_WONT_HANDLE if $orig_query !~ m{^[\s\(]*SELECT|HANDLER}sio || $orig_query =~ m{(?:\WINTO\W|PROCESSLIST)}sio;
-  return STATUS_WONT_HANDLE if $orig_query =~ m{;}sio;
+  return STATUS_WONT_HANDLE if $orig_query !~ m{^[\s\(]*SELECT|HANDLER}is || $orig_query =~ m{(?:\WINTO\W|PROCESSLIST)}is;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{;}is;
   return "EXECUTE IMMEDIATE ".$executor->dbh()->quote($orig_query) . " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 }
 
 sub variate {
   my ($self, $orig_query, $executor) = @_;
-  return [ $orig_query ] if $orig_query =~ m{EXECUTE\s|PREPARE\s}sio;
-  return [ $orig_query ] if $orig_query =~ m{;}sio;
+  return [ $orig_query ] if $orig_query =~ m{EXECUTE\s|PREPARE\s}is;
+  return [ $orig_query ] if $orig_query =~ m{;}is;
   return "EXECUTE IMMEDIATE ".$executor->dbh()->quote($orig_query);
 }
 

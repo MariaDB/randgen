@@ -75,8 +75,8 @@ my $available_switches;
 sub transform {
   my ($class, $original_query, $executor) = @_;
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $original_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|\WINTO\W)}sio
-    || $original_query !~ m{^[\(\s]*SELECT}sio;
+  return STATUS_WONT_HANDLE if $original_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|\WINTO\W)}is
+    || $original_query !~ m{^[\(\s]*SELECT}is;
   my $modified_queries= $class->modify($original_query, $executor, 'TRANSFORM_OUTCOME_UNORDERED_MATCH');
   if (defined $modified_queries and ref $modified_queries eq 'ARRAY') {
     return $modified_queries;
@@ -90,7 +90,7 @@ sub transform {
 
 sub variate {
   my ($class, $original_query, $executor) = @_;
-  return [ $original_query ] if $original_query !~ m{^[\(\s]*(?:SELECT|INSERT|DELETE|REPLACE|UPDATE)}sio;
+  return [ $original_query ] if $original_query !~ m{^[\(\s]*(?:SELECT|INSERT|DELETE|REPLACE|UPDATE)}is;
   my $modified_queries= $class->modify($original_query, $executor);
   if (defined $modified_queries and ref $modified_queries eq 'ARRAY') {
     # flatten the 2-level nested array

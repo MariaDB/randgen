@@ -211,7 +211,7 @@ sub validate {
     my $query = $results->[0]->query();
     $candidate_queries++;
 
-    if ($query !~ m{^\s*(?:SELECT|ANALYZE.*SELECT)}sio) {
+    if ($query !~ m{^\s*(?:SELECT|ANALYZE.*SELECT)}is) {
         $non_selects++;
         return STATUS_WONT_HANDLE;
     }

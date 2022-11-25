@@ -46,8 +46,8 @@ sub variate {
 
 sub modify {
   my ($self, $original_query, $executor) = @_;
-  return undef if $original_query !~ m{^\s*SELECT}sio;
-  return undef if $original_query =~ m{(OUTFILE|PROCESSLIST|INTO|GROUP_CONCAT)}sio;
+  return undef if $original_query !~ m{^\s*SELECT}is;
+  return undef if $original_query =~ m{(OUTFILE|PROCESSLIST|INTO|GROUP_CONCAT)}is;
   my $query= $original_query;
   $query =~ s/ORDER\s+BY\s+.*?(LIMIT|OFFSET|FETCH|FOR\s+UPDATE)/\1/;
   while ($query =~ s/(?:ORDER\s+BY|LIMIT|OFFSET|FETCH)\s+.*?[^\(\)]*$//) {};

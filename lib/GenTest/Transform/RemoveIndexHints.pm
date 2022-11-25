@@ -32,8 +32,8 @@ use GenTest::Constants;
 sub transform {
   my ($class, $orig_query) = @_;
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST)}sio
-    || $orig_query !~ m{(?:FORCE|IGNORE|USE)\s+(?:KEY|INDEX)}sio;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST)}is
+    || $orig_query !~ m{(?:FORCE|IGNORE|USE)\s+(?:KEY|INDEX)}is;
   return $class->modify($orig_query)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 }
 
@@ -45,7 +45,7 @@ sub variate {
 
 sub modify {
   my ($class, $orig_query) = @_;
-  $orig_query =~ s{(FORCE|IGNORE|USE)\s+(INDEX|KEY)\s*\(.*?\)}{}siog;
+  $orig_query =~ s{(FORCE|IGNORE|USE)\s+(INDEX|KEY)\s*\(.*?\)}{}isg;
   return $orig_query;
 }
 

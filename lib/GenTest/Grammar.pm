@@ -180,7 +180,7 @@ sub parseFromString {
       my %thread_init_adds = ();
 
     foreach my $rule_string (@rule_strings) {
-      my ($rule_name, $components_string) = $rule_string =~ m{^(.*?)\s*:(.*)$}sio;
+      my ($rule_name, $components_string) = $rule_string =~ m{^(.*?)\s*:(.*)$}is;
       $rule_name =~ s{[\r\n]}{}gsio;
       $rule_name =~ s{^\s*}{}gsio;
 
@@ -304,13 +304,13 @@ sub parseFromString {
         my $code_start;
 
         while (1) {
-          if (defined $component_parts[$pos] and $component_parts[$pos] =~ m{\{}so) {
+          if (defined $component_parts[$pos] and $component_parts[$pos] =~ m{\{}s) {
             $code_start = $pos if $nesting_level == 0;  # Code segment starts here
             my $bracket_count = ($component_parts[$pos] =~ tr/{//);
             $nesting_level = $nesting_level + $bracket_count;
           }
 
-          if (defined $component_parts[$pos] and $component_parts[$pos] =~ m{\}}so) {
+          if (defined $component_parts[$pos] and $component_parts[$pos] =~ m{\}}s) {
             my $bracket_count = ($component_parts[$pos] =~ tr/}//);
             $nesting_level = $nesting_level - $bracket_count;
             if ($nesting_level == 0) {
@@ -383,7 +383,7 @@ sub cloneRule {
 # Check if the grammar is tagged with query properties such as RESULTSET_ or ERROR_1234
 #
 sub hasProperties {
-  if ($_[0]->[GRAMMAR_STRING] =~ m{RESULTSET_|ERROR_|QUERY_}so) {
+  if ($_[0]->[GRAMMAR_STRING] =~ m{RESULTSET_|ERROR_|QUERY_}s) {
     return 1;
   } else {
     return 0;

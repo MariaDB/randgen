@@ -179,12 +179,12 @@ sub run {
                 $old_field;  # Retain old field, no permutations at this stage.
             } elsif (
                 ($cycle == FIELD_SIGN) &&
-                ($old_field->[FIELD_TYPE] !~ m{int|float|double|dec|numeric|fixed}sio)
+                ($old_field->[FIELD_TYPE] !~ m{int|float|double|dec|numeric|fixed}is)
                 ) {
                 $old_field;  # Retain old field, sign does not apply to non-integer types
             } elsif (
                 ($cycle == FIELD_CHARSET) &&
-                ($old_field->[FIELD_TYPE] =~ m{bit|int|bool|float|double|dec|numeric|fixed|blob|date|time|year|binary}sio)
+                ($old_field->[FIELD_TYPE] =~ m{bit|int|bool|float|double|dec|numeric|fixed|blob|date|time|year|binary}is)
                 ) {
                 $old_field;  # Retain old field, charset does not apply to integer types
             } else {
@@ -210,7 +210,7 @@ sub run {
         #   $field_copy[FIELD_INDEX] = 'nokey' if $field_copy[FIELD_INDEX] eq '';
 
         # Remove fields where default null and not null appear together, as its not valid.
-        if ( $field_copy[FIELD_NULLABILITY] =~ m{not null}sio )
+        if ( $field_copy[FIELD_NULLABILITY] =~ m{not null}is )
         {
             # Remove the fields array structure and skip.
       # We dont want to keep this, becasue it causes duplicate coulmns to be created.
@@ -234,16 +234,16 @@ sub run {
         $field->[FIELD_NAME] = $field_name;
 
         if (
-            ($field_copy[FIELD_TYPE] =~ m{set|enum}sio) &&
-            ($field_copy[FIELD_TYPE] !~ m{\(}sio )
+            ($field_copy[FIELD_TYPE] =~ m{set|enum}is) &&
+            ($field_copy[FIELD_TYPE] !~ m{\(}is )
             ) {
             #$field_copy[FIELD_TYPE] .= " (".join(',', map { "'$_'" } ('a'..'z') ).")";
             $field_copy[FIELD_TYPE] .= $prng->enumSetTypeValues();
         }
 
         if (
-            ($field_copy[FIELD_TYPE] =~ m{char}sio) &&
-            ($field_copy[FIELD_TYPE] !~ m{\(}sio)
+            ($field_copy[FIELD_TYPE] =~ m{char}is) &&
+            ($field_copy[FIELD_TYPE] !~ m{\(}is)
             ) {
             $field_copy[FIELD_TYPE] .= ' (1)';
         }
@@ -254,8 +254,8 @@ sub run {
         my $key_len;
 
         if (
-            ($field_copy[FIELD_TYPE] =~ m{blob|text|binary}sio ) &&
-            ($field_copy[FIELD_TYPE] !~ m{\(}sio )
+            ($field_copy[FIELD_TYPE] =~ m{blob|text|binary}is ) &&
+            ($field_copy[FIELD_TYPE] !~ m{\(}is )
             ) {
             $key_len = " (255)";
         }
@@ -294,13 +294,13 @@ sub run {
             $table_name =~ s{ }{_}sgio;
             $table_name =~ s{_+}{_}sgio;
             # Remove trailing underscore when fractional seconds are used.
-            $table_name =~ s{_$}{}so;
-            $table_name =~ s{auto_increment}{autoinc}siog;
-            $table_name =~ s{partition_by}{part_by}siog;
-            $table_name =~ s{partition}{part}siog;
-            $table_name =~ s{partitions}{parts}siog;
-            $table_name =~ s{values_less_than}{}siog;
-            $table_name =~ s{integer}{int}siog;
+            $table_name =~ s{_$}{}s;
+            $table_name =~ s{auto_increment}{autoinc}isg;
+            $table_name =~ s{partition_by}{part_by}isg;
+            $table_name =~ s{partition}{part}isg;
+            $table_name =~ s{partitions}{parts}isg;
+            $table_name =~ s{values_less_than}{}isg;
+            $table_name =~ s{integer}{int}isg;
 
             # We don't want duplicate table names in case all parameters that affect the name are the same
             if ($tnames{$table_name}) {
@@ -415,7 +415,7 @@ sub run {
                 next if not defined $field->[FIELD_TYPE];
                 my $value;
                 my $quote = 0;
-                if ($field->[FIELD_TYPE] =~ m{auto_increment}sio) {
+                if ($field->[FIELD_TYPE] =~ m{auto_increment}is) {
                     $value = undef;    # Trigger auto-increment by inserting NULLS for PK
                 } elsif ($field->[FIELD_INDEX] eq 'primary key') {
                     if ($field->[FIELD_TYPE] =~ m{^(datetime|timestamp)$}sgio) {
@@ -435,13 +435,13 @@ sub run {
                 } else {
                     my (@possible_values, $value_type);
 
-                    if ($field->[FIELD_TYPE] =~ m{date|time|year}sio) {
+                    if ($field->[FIELD_TYPE] =~ m{date|time|year}is) {
                         $value_type = DATA_TEMPORAL;
                         $quote = 1;
-                    } elsif ($field->[FIELD_TYPE] =~ m{blob|text|binary}sio) {
+                    } elsif ($field->[FIELD_TYPE] =~ m{blob|text|binary}is) {
                         $value_type = DATA_BLOB;
                         $quote = 1;
-                    } elsif ($field->[FIELD_TYPE] =~ m{int|float|double|dec|numeric|fixed|bool|bit}sio) {
+                    } elsif ($field->[FIELD_TYPE] =~ m{int|float|double|dec|numeric|fixed|bool|bit}is) {
                         $value_type = DATA_NUMBER;
                     } elsif ($field->[FIELD_TYPE] eq 'enum') {
                         $value_type = DATA_ENUM;
@@ -471,7 +471,7 @@ sub run {
                 }
 
                 ## Quote if necessary
-                if ($value =~ m{load_file}sio) {
+                if ($value =~ m{load_file}is) {
                     push @data, defined $value ? $value : "NULL";
                 } elsif ($quote) {
                     $value =~ s{'}{\\'}sgio;

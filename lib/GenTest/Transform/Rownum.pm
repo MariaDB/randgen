@@ -30,7 +30,7 @@ use GenTest::Constants;
 
 sub transform {
   my ($self, $query) = @_;
-  return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
+  return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is
     || $query !~ m{^\s*SELECT}io;
   return [ 
     "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() < 2147483648 /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",

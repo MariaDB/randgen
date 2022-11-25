@@ -31,9 +31,9 @@ use GenTest::Constants;
 sub transform {
   my ($class, $query, $executor) = @_;
   # We skip [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST|RETURNING)}sio
-    || $query !~ m{^[\(\s]*SELECT}sio
-    || $query =~ m{(AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE|SYSDATE)\s*\(}sio
+  return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST|RETURNING)}is
+    || $query !~ m{^[\(\s]*SELECT}is
+    || $query =~ m{(AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE|SYSDATE)\s*\(}is
   ;
   return [
     $class->modify($query, $executor,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
@@ -43,9 +43,9 @@ sub transform {
 
 sub variate {
   my ($self, $query, $executor)= @_;
-  if ($query =~ /^\s*(?:INSERT|REPLACE)/sio && $query !~ /RETURNING/sio) {
+  if ($query =~ /^\s*(?:INSERT|REPLACE)/is && $query !~ /RETURNING/is) {
     return [ "$query RETURNING *" ];
-  } elsif ($query =~ /^[\(\s]*SELECT/sio) {
+  } elsif ($query =~ /^[\(\s]*SELECT/is) {
     return $self->modify($query, $executor);
   } else {
     return [ $query ];

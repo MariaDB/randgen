@@ -35,8 +35,8 @@ sub transform {
   my ($class, $original_query, $executor) = @_;
 
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $original_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO\s)}sio
-          || $original_query !~ m{^\s*SELECT}sio;
+  return STATUS_WONT_HANDLE if $original_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO\s)}is
+          || $original_query !~ m{^\s*SELECT}is;
 
   my $table_name = 'transforms.insert_select_'.abs($$);
 
@@ -67,7 +67,7 @@ sub transform {
 # Not very important as a variator, we have plenty of INSERT .. SELECT in grammars
 sub variate {
   my ($self, $query) = @_;
-  return [ $query ] if $query =~ m{INTO\s}sio || $query !~ m{^[\s\(]*SELECT}sio;
+  return [ $query ] if $query =~ m{INTO\s}is || $query !~ m{^[\s\(]*SELECT}is;
   return [
     "CREATE OR REPLACE TEMPORARY TABLE tmp_ExecuteAsInsertSelect AS $query",
     "REPLACE INTO tmp_ExecuteAsInsertSelect $query"

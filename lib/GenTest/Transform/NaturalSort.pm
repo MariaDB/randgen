@@ -32,21 +32,21 @@ sub transform {
   my ($self, $original_query) = @_;
 
   # Only transform SELECTs
-  return STATUS_WONT_HANDLE if $original_query !~ m{^\s*SELECT}sio;
+  return STATUS_WONT_HANDLE if $original_query !~ m{^\s*SELECT}is;
 
   # SELECTs from INFORMATION_SCHEMA can be non-deterministic even with read-only
   # TODO: maybe filter by table name?
-  return STATUS_WONT_HANDLE if $original_query =~ m{INFORMATION_SCHEMA|PERFORMANCE_SCHEMA|\`?sys\`?\s*\.}sio;
+  return STATUS_WONT_HANDLE if $original_query =~ m{INFORMATION_SCHEMA|PERFORMANCE_SCHEMA|\`?sys\`?\s*\.}is;
   # SELECTs with OFFSET won't return the same results after re-ordering
-  return STATUS_WONT_HANDLE if $original_query =~ m{OFFSET|FETCH}sio;
+  return STATUS_WONT_HANDLE if $original_query =~ m{OFFSET|FETCH}is;
   # LIMIT x,y means OFFSET too
-  return STATUS_WONT_HANDLE if $original_query =~ m{LIMIT\s+\d+\s*,\s*\d+}sio;
+  return STATUS_WONT_HANDLE if $original_query =~ m{LIMIT\s+\d+\s*,\s*\d+}is;
   # INTO file, INTO variable -- no result set to compare
-  return STATUS_WONT_HANDLE if $original_query =~ m{INTO}sio;
+  return STATUS_WONT_HANDLE if $original_query =~ m{INTO}is;
 
   my $transform_outcome= 'TRANSFORM_OUTCOME_UNORDERED_MATCH';
   my $sql_select_limit= '';
-  if ($original_query =~ m{LIMIT}sio) {
+  if ($original_query =~ m{LIMIT}is) {
     $transform_outcome= "TRANSFORM_OUTCOME_SUPERSET";
     # If the original query had LIMIT clause, it had precedence over
     # sql_select_limit value, so after we remove the clause, the result set
@@ -66,7 +66,7 @@ sub transform {
 
 sub variate {
   my ($self, $original_query, $executor, $gendata_flag) = @_;
-  return [ $original_query ] if $original_query !~ m{^\s*SELECT}sio;
+  return [ $original_query ] if $original_query !~ m{^\s*SELECT}is;
   return [ modify($original_query) || $original_query ];
 }
 

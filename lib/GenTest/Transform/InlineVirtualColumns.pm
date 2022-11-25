@@ -36,15 +36,15 @@ use GenTest::Constants;
 sub transform {
   my ($class, $query, $executor) = @_;
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-    || $query !~ m{\s*SELECT}sio;
+  return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is
+    || $query !~ m{\s*SELECT}is;
   my $new_query= $class->modify($query,$executor);
   return (defined $new_query ? $new_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : STATUS_WONT_HANDLE);
 }
 
 sub variate {
   my ($class, $query, $executor) = @_;
-  return [ $query ] if $query !~ m{\s*FROM}sio;
+  return [ $query ] if $query !~ m{\s*FROM}is;
   my $new_query= $class->modify($query,$executor);
   return [ $new_query || $query ];
 }
@@ -55,14 +55,14 @@ sub modify {
   my %virtual_columns;
   my $dbh = $executor->dbh();
 
-  my ($table_name) = $query =~ m{FROM (`.*?`|\w+)[ ^]}sio;
+  my ($table_name) = $query =~ m{FROM (`.*?`|\w+)[ ^]}is;
   return undef unless $table_name;
 
   my (undef, $table_create) = $dbh->selectrow_array("SHOW CREATE TABLE $table_name");
 
   foreach my $create_row (split("\n", $table_create)) {
-    next if $create_row !~ m{ VIRTUAL}sio;
-    my ($column_name, $column_def) = $create_row =~ m{`(.*)`\s+[^ ]*?\s+(?:GENERATED\s+ALWAYS\s+)?AS\s*\((.+)\)\s*VIRTUAL}sio;
+    next if $create_row !~ m{ VIRTUAL}is;
+    my ($column_name, $column_def) = $create_row =~ m{`(.*)`\s+[^ ]*?\s+(?:GENERATED\s+ALWAYS\s+)?AS\s*\((.+)\)\s*VIRTUAL}is;
     $virtual_columns{$column_name} = $column_def;
   }
 

@@ -47,8 +47,8 @@ $paren_rx = qr{
 sub transform {
   my ($class, $query, $executor) = @_;
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio;
-  return STATUS_WONT_HANDLE if $query !~ m{SELECT.*\s+IN\s*\(\s*SELECT}sio;
+  return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is;
+  return STATUS_WONT_HANDLE if $query !~ m{SELECT.*\s+IN\s*\(\s*SELECT}is;
   $query= $class->modify($query, $executor);
   if (defined $query) {
     my $res= $executor->execute($query, 1);
@@ -61,7 +61,7 @@ sub transform {
 
 sub variate {
   my ($class, $query, $executor) = @_;
-  return [ $query ] if $query !~ m{\s+IN\s*\(\s*SELECT}sio;
+  return [ $query ] if $query !~ m{\s+IN\s*\(\s*SELECT}is;
   my $new_query= $class->modify($query, $executor);
   return [ $new_query || $query ];
 }
@@ -83,7 +83,7 @@ sub modify {
       "IN ( ".join(', ', map {
         if (not defined $_->[0]) {
           "NULL";
-        } elsif ($_->[0] =~ m{^\d+$}sio){
+        } elsif ($_->[0] =~ m{^\d+$}is){
           $_->[0];
         } else {
           "'".$_->[0]."'"

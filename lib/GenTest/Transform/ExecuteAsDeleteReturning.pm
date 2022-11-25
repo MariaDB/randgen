@@ -34,8 +34,8 @@ sub transform {
   my ($class, $orig_query, $executor, $original_result) = @_;
 
   # We skip [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|RETURNING)}sio
-    || $orig_query !~ m{^\s*(SELECT)}sio;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|RETURNING)}is
+    || $orig_query !~ m{^\s*(SELECT)}is;
   return STATUS_WONT_HANDLE if not $original_result or not $original_result->columnNames() or "@{$original_result->columnNames()}" =~ m{`}sgio;
   my $col_list= '*';
   # INSERT/DELETE ... RETURNING <column list> doesn't work with aggregate functions

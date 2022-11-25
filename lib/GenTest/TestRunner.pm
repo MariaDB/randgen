@@ -652,7 +652,7 @@ sub isMySQLCompatible {
 
     foreach my $i (1..$self->config->number_of_servers) {
         next if $self->config->server_specific->{$i}->{dsn} eq '';
-        $is_mysql_compatible = 0 if ($self->config->server_specific->{$i}->{dsn} !~ m{mysql|drizzle}sio);
+        $is_mysql_compatible = 0 if ($self->config->server_specific->{$i}->{dsn} !~ m{mysql|drizzle}is);
     }
     return $is_mysql_compatible;
 }

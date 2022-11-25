@@ -1175,7 +1175,7 @@ sub checkDatabaseIntegrity {
   ALLDBCHECK:
   foreach my $database (@$databases) {
       my $db_status= DBSTATUS_OK;
-      next if $database =~ m{^(information_schema|pbxt|performance_schema|sys)$}sio;
+      next if $database =~ m{^(information_schema|pbxt|performance_schema|sys)$}is;
       my $tabl_ref = $dbh->selectall_arrayref("SELECT TABLE_NAME, TABLE_TYPE, ENGINE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database'");
       # 1178 is ER_CHECK_NOT_IMPLEMENTED
       my %tables=();
@@ -1397,16 +1397,16 @@ sub checkErrorLogForErrors {
   {
     next unless !$marker or $found_marker or /^$marker$/;
     $found_marker= 1;
-    $_ =~ s{[\r\n]}{}siog;
+    $_ =~ s{[\r\n]}{}isg;
 
     # Ignore certain errors
     next if
-         $_ =~ /innodb_table_stats/so
-      or $_ =~ /InnoDB: Cannot save table statistics for table/so
-      or $_ =~ /InnoDB: Deleting persistent statistics for table/so
-      or $_ =~ /InnoDB: Unable to rename statistics from/so
-      or $_ =~ /ib_buffer_pool' for reading: No such file or directory/so
-      or $_ =~ /has or is referenced in foreign key constraints which are not compatible with the new table definition/so
+         $_ =~ /innodb_table_stats/s
+      or $_ =~ /InnoDB: Cannot save table statistics for table/s
+      or $_ =~ /InnoDB: Deleting persistent statistics for table/s
+      or $_ =~ /InnoDB: Unable to rename statistics from/s
+      or $_ =~ /ib_buffer_pool' for reading: No such file or directory/s
+      or $_ =~ /has or is referenced in foreign key constraints which are not compatible with the new table definition/s
     ;
 
     # MDEV-20320
@@ -1434,12 +1434,12 @@ sub checkErrorLogForErrors {
 
     # Crashes
     if (
-           $_ =~ /Assertion\W/sio
-        or $_ =~ /got\s+signal/sio
-        or $_ =~ /segmentation fault/sio
-        or $_ =~ /segfault/sio
-        or $_ =~ /got\s+exception/sio
-        or $_ =~ /AddressSanitizer|LeakSanitizer/sio
+           $_ =~ /Assertion\W/is
+        or $_ =~ /got\s+signal/is
+        or $_ =~ /segmentation fault/is
+        or $_ =~ /segfault/is
+        or $_ =~ /got\s+exception/is
+        or $_ =~ /AddressSanitizer|LeakSanitizer/is
     ) {
       say("------") unless $count++;
       say($_);
@@ -1447,9 +1447,9 @@ sub checkErrorLogForErrors {
     }
     # Other errors
     elsif (
-           $_ =~ /\[ERROR\]\s+InnoDB/sio
-        or $_ =~ /InnoDB:\s+Error:/sio
-        or $_ =~ /registration as a STORAGE ENGINE failed./sio
+           $_ =~ /\[ERROR\]\s+InnoDB/is
+        or $_ =~ /InnoDB:\s+Error:/is
+        or $_ =~ /registration as a STORAGE ENGINE failed./is
     ) {
       say("------") unless $count++;
       say($_);

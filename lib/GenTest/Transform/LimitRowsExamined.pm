@@ -112,10 +112,10 @@ sub modify {
     $limit = $1;
   } else {
     $limit = $self->random->uint16(0,MAX_LIMIT_ROWS_EXAMINED);
-    if    ($query =~ s{(SELECT.+LIMIT\s+\d+s*,\s*\d+)}{$1 ROWS EXAMINED $limit}siog) {}
-    elsif ($query =~ s{(SELECT.+LIMIT\s+\d+\s+OFFSET\s+\d+)}{$1 ROWS EXAMINED $limit}siog) {}
-    elsif ($query =~ s{(SELECT.+LIMIT\s+\d+)}{$1 ROWS EXAMINED $limit}siog) {}
-    elsif ($query =~ s{(SELECT.+)(PROCEDURE\s+\w+|INTO\s+OUTFILE|INTO\s+DUMPFILE|FOR\s+UPDATE|LOCK\s+IN\s+SHARE\s+MODE)}{$1 LIMIT ROWS EXAMINED $limit $2}sio) {}
+    if    ($query =~ s{(SELECT.+LIMIT\s+\d+s*,\s*\d+)}{$1 ROWS EXAMINED $limit}isg) {}
+    elsif ($query =~ s{(SELECT.+LIMIT\s+\d+\s+OFFSET\s+\d+)}{$1 ROWS EXAMINED $limit}isg) {}
+    elsif ($query =~ s{(SELECT.+LIMIT\s+\d+)}{$1 ROWS EXAMINED $limit}isg) {}
+    elsif ($query =~ s{(SELECT.+)(PROCEDURE\s+\w+|INTO\s+OUTFILE|INTO\s+DUMPFILE|FOR\s+UPDATE|LOCK\s+IN\s+SHARE\s+MODE)}{$1 LIMIT ROWS EXAMINED $limit $2}is) {}
     else {$query .= " LIMIT ROWS EXAMINED $limit"};
   }
   return $query;

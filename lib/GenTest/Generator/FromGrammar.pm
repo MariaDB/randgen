@@ -120,7 +120,7 @@ sub next {
       my $invariant = 0;
       my @expansion = ();
 
-      if ($item =~ m{^([a-z0-9_]+)\[invariant\]}sio) {
+      if ($item =~ m{^([a-z0-9_]+)\[invariant\]}is) {
         ($item, $invariant) = ($1, 1);
       }
 

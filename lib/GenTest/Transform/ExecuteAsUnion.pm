@@ -33,18 +33,18 @@ sub transform {
   my ($class, $orig_query, $executor) = @_;
 
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO)}sio
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO)}is
     # CTE do not work due to MDEV-15177 (closed as "won't fix")
-    || $orig_query =~ m{^\s*WITH}sio
-    || $orig_query !~ m{^\s*SELECT}sio;
+    || $orig_query =~ m{^\s*WITH}is
+    || $orig_query !~ m{^\s*SELECT}is;
 
   # We remove LIMIT/OFFSET if present in the (outer) query, because we are
   # using LIMIT 0 in some of the transformed queries.
   my $orig_query_zero_limit = $orig_query;
-  $orig_query_zero_limit =~ s{(?:LIMIT\s+)?ROWS\s+EXAMINED\s+\d+}{}sio;
-  $orig_query_zero_limit =~ s{LIMIT\s+\d+(?:\s+OFFSET\s+\d+|\s*,\s*\d+)?}{}sio;
-  $orig_query_zero_limit =~ s{(?:OFFSET\s+\d+\s+ROWS?\s+)?FETCH\s+(?:FIRST|NEXT)\s+\d+\s+(?:ROW|ROWS)\s+(?:ONLY|WITH\s+TIES)}{}sio;
-  $orig_query_zero_limit =~ s{(FOR\s+UPDATE|LOCK\s+IN\s+(?:SHARE|EXCLUSIVE)\sMODE)}{LIMIT 0 $1}sio;
+  $orig_query_zero_limit =~ s{(?:LIMIT\s+)?ROWS\s+EXAMINED\s+\d+}{}is;
+  $orig_query_zero_limit =~ s{LIMIT\s+\d+(?:\s+OFFSET\s+\d+|\s*,\s*\d+)?}{}is;
+  $orig_query_zero_limit =~ s{(?:OFFSET\s+\d+\s+ROWS?\s+)?FETCH\s+(?:FIRST|NEXT)\s+\d+\s+(?:ROW|ROWS)\s+(?:ONLY|WITH\s+TIES)}{}is;
+  $orig_query_zero_limit =~ s{(FOR\s+UPDATE|LOCK\s+IN\s+(?:SHARE|EXCLUSIVE)\sMODE)}{LIMIT 0 $1}is;
   if (not $orig_query_zero_limit =~ /LIMIT 0/) {
     $orig_query_zero_limit.= ' LIMIT 0';
   }
@@ -60,7 +60,7 @@ sub transform {
 sub variate {
   my ($self, $query) = @_;
   # CTE do not work due to MDEV-15177 (closed as "won't fix")
-  return [ $query ] if $query =~ m{(OUTFILE|INFILE|INTO)}sio || $query !~ m{^\s*SELECT}sio || $query =~ m{^\s*WITH}sio;
+  return [ $query ] if $query =~ m{(OUTFILE|INFILE|INTO)}is || $query !~ m{^\s*SELECT}is || $query =~ m{^\s*WITH}is;
   my $union_type= $self->random->arrayElement(['','ALL','DISTINCT']);
   return "( $query ) UNION $union_type ( $query )";
 }

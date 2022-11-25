@@ -3030,14 +3030,14 @@ sub execute {
     }
 
     if (rqg_debug() && (! ($execution_flags & EXECUTOR_FLAG_SILENT))) {
-        if ($query =~ m{^\s*(?:select|insert|replace|delete|update)}sio) {
+        if ($query =~ m{^\s*(?:select|insert|replace|delete|update)}is) {
             $executor->explain($query);
 
             if ($result->status() != STATUS_SKIP) {
                 my $row_group = ((not defined $result->rows()) ? 'undef' : ($result->rows() > 100 ? '>100' : ($result->rows() > 10 ? ">10" : sprintf("%5d",$sth->rows()))));
                 $executor->[EXECUTOR_RETURNED_ROW_COUNTS]->{$row_group}++;
             }
-            if ($query =~ m{^\s*(update|delete|insert|replace)}sio) {
+            if ($query =~ m{^\s*(update|delete|insert|replace)}is) {
                 my $row_group = ((not defined $affected_rows) ? 'undef' : ($affected_rows > 100 ? '>100' : ($affected_rows > 10 ? ">10" : sprintf("%5d",$affected_rows))));
                 $executor->[EXECUTOR_AFFECTED_ROW_COUNTS]->{$row_group}++;
             }
@@ -3230,7 +3230,7 @@ sub normalizeError {
         last if $errstr =~ s{$patterns[$i]}{$errors[$i]}s;
     }
 
-    $errstr =~ s{\d+}{%d}sgio if $errstr !~ m{from storage engine}sio; # Make all errors involving numbers the same, e.g. duplicate key errors
+    $errstr =~ s{\d+}{%d}sgio if $errstr !~ m{from storage engine}is; # Make all errors involving numbers the same, e.g. duplicate key errors
 
     $errstr =~ s{\.\*\?}{%s}sgio;
 
@@ -3317,7 +3317,7 @@ sub read_only {
     my $executor = shift;
     my $dbh = $executor->dbh();
     my ($grant_command) = $dbh->selectrow_array("SHOW GRANTS FOR CURRENT_USER()");
-    my ($grants) = $grant_command =~ m{^grant (.*?) on}sio;
+    my ($grants) = $grant_command =~ m{^grant (.*?) on}is;
     if (uc($grants) eq 'SELECT') {
         return 1;
     } else {

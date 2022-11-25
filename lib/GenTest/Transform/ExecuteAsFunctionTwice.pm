@@ -33,7 +33,7 @@ sub transform {
   my ($class, $orig_query, $executor, $original_result) = @_;
 
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is
     || $orig_query !~ m{SELECT}io
     || $original_result->rows() != 1
     || $#{$original_result->data()->[0]} != 0;
@@ -46,7 +46,7 @@ sub transform {
     $return_type .= "(255)"
   } elsif ($return_type =~ m{decimal}sgio) {
     # Change type to avoid false compare diffs due to an incorrect decimal type being used when MAX() (and likely other similar functions) is used in the original query. Knowing what is returning decimal type (DBD or MySQL) may allow further improvement.
-    $return_type =~ s{decimal}{char (255)}sio
+    $return_type =~ s{decimal}{char (255)}is
   } elsif (($return_type =~ m{bigint}sgio) && ($orig_query =~ m{BIT_AND\s*\(}sgio)) {
     # BIT_AND returns max value of "unsigned bigint" if there is no match,
     # and this will not fit in (signed) bigint, which is the default return type.
@@ -65,10 +65,10 @@ sub transform {
 
 sub variate {
   my ($class, $orig_query) = @_;
-  return [ $orig_query ] if $orig_query =~ /CREATE|ALTER|DROP|COMMIT|ROLLBACK|LOCK|START/sio && $orig_query !~ /TEMPORARY/sio;
+  return [ $orig_query ] if $orig_query =~ /CREATE|ALTER|DROP|COMMIT|ROLLBACK|LOCK|START/is && $orig_query !~ /TEMPORARY/is;
   my $fname= 'func_ExecuteAsFunctionTwice_'.abs($$);
   my $query;
-  if ($orig_query =~ /^[\s\(]*SELECT/sio && $orig_query !~ /INTO/sio) {
+  if ($orig_query =~ /^[\s\(]*SELECT/is && $orig_query !~ /INTO/is) {
     $query= "CREATE OR REPLACE FUNCTION $fname () RETURNS INT NOT DETERMINISTIC BEGIN DECLARE ret INT; SELECT COUNT(*) INTO ret FROM ( $orig_query ) sq ; RETURN ret; END";
   } else {
     $query= "CREATE OR REPLACE FUNCTION $fname () RETURNS INT NOT DETERMINISTIC BEGIN $orig_query; RETURN 0; END";

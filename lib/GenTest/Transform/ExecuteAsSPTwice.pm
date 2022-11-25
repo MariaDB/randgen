@@ -31,7 +31,7 @@ use GenTest::Constants;
 
 sub transform {
   my ($class, $orig_query) = @_;
-  return STATUS_WONT_HANDLE if $orig_query =~ m{OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION}sio
+  return STATUS_WONT_HANDLE if $orig_query =~ m{OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION}is
           || $orig_query !~ m{SELECT}io;
   return $class->modify($orig_query, 'TRANSFORM_OUTCOME_UNORDERED_MATCH');
 }
@@ -43,7 +43,7 @@ sub variate {
 
 sub modify {
   my ($class, $orig_query, $transform_outcome) = @_;
-  return [ $orig_query ] if $orig_query =~ m{TRIGGER|PROCEDURE|FUNCTION}sio
+  return [ $orig_query ] if $orig_query =~ m{TRIGGER|PROCEDURE|FUNCTION}is
   return [
     "DROP PROCEDURE IF EXISTS sp_ExecuteAsSPTwice_".abs($$),
     "CREATE PROCEDURE sp_ExecuteAsSPTwice_".abs($$)." () LANGUAGE SQL $orig_query",

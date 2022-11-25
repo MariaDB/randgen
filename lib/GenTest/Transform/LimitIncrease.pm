@@ -34,10 +34,10 @@ sub transform {
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   return STATUS_WONT_HANDLE
     if $orig_query !~ m{^\s*SELECT}
-      || $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|INSERT|REPLACE|CREATE)}sio
-      || $orig_query =~ m{OFFSET}sio;
+      || $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|INSERT|REPLACE|CREATE)}is
+      || $orig_query =~ m{OFFSET}is;
   my $transform_outcome= '/* TRANSFORM_OUTCOME_UNORDERED_MATCH */';
-  if ($orig_query =~ m{LIMIT\s+\d+}sio) {
+  if ($orig_query =~ m{LIMIT\s+\d+}is) {
     $transform_outcome= '/* TRANSFORM_OUTCOME_SUPERSET */';
   }
   return $class->modify($orig_query)." $transform_outcome";
@@ -45,13 +45,13 @@ sub transform {
 
 sub variate {
   my ($class, $orig_query) = @_;
-  return [ $orig_query ] if $orig_query !~ m{^\s*SELECT}sio && $orig_query !~  m{LIMIT\s+\d+}sio;
+  return [ $orig_query ] if $orig_query !~ m{^\s*SELECT}is && $orig_query !~  m{LIMIT\s+\d+}is;
   return [ $class->modify($orig_query) ];
 }
 
 sub modify {
   my ($class, $orig_query) = @_;
-  if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 4294836225}siog) {
+  if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 4294836225}isg) {
     return $orig_query;
   } else {
     return $orig_query." LIMIT 4294836225";

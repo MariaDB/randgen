@@ -201,7 +201,7 @@ sub updatePid {
   read (PF, my $pid, -s $pid_file);
   close (PF);
 
-  $pid =~ s{[\r\n]}{}sio;
+  $pid =~ s{[\r\n]}{}is;
 
   $_[0]->[REPORTER_SERVER_INFO]->{pid} = $pid;
 }

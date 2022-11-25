@@ -36,8 +36,8 @@ sub transform {
 
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   #          - LIMIT queries because LIMIT N can not be converted into LIMIT COLUMN_GET( COLUMN_CREATE () )
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-          || $orig_query =~ m{LIMIT}sio;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is
+          || $orig_query =~ m{LIMIT}is;
 
   my @transformed_queries;
 

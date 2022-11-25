@@ -33,19 +33,19 @@ use GenTest::Constants;
 sub transform {
   my ($class, $original_query) = @_;
 
-  return STATUS_WONT_HANDLE if $original_query !~ m{^\s*SELECT}sio;
-  return STATUS_WONT_HANDLE if $original_query =~ m{LIMIT\s+(?:\d+\s*,\s*)?0}sio;
+  return STATUS_WONT_HANDLE if $original_query !~ m{^\s*SELECT}is;
+  return STATUS_WONT_HANDLE if $original_query =~ m{LIMIT\s+(?:\d+\s*,\s*)?0}is;
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   #          - CONCAT() in ORDER BY queries, which require more complex regexes below for correct behavior
   #          - INTO, because there will be nothing to compare
-  return STATUS_WONT_HANDLE if $original_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO|GROUP\s+BY|ORDER\s+BY[^()]*CONCAT\s*\()}sio;
+  return STATUS_WONT_HANDLE if $original_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO|GROUP\s+BY|ORDER\s+BY[^()]*CONCAT\s*\()}is;
 
   my $query= $class->modify($original_query);
   return STATUS_WONT_HANDLE unless defined $query;
 
   my $transform_outcome;
 
-  if ($original_query =~ m{LIMIT[^()]*$}sio) {
+  if ($original_query =~ m{LIMIT[^()]*$}is) {
     $transform_outcome = "TRANSFORM_OUTCOME_SUPERSET";
   } else {
     $transform_outcome = "TRANSFORM_OUTCOME_UNORDERED_MATCH";
@@ -55,16 +55,16 @@ sub transform {
 
 sub variate {
   my ($class, $original_query) = @_;
-  return $original_query if $original_query !~ m{^\s*SELECT}sio;
+  return $original_query if $original_query !~ m{^\s*SELECT}is;
   return [ $class->modify($original_query) || $original_query ];
 }
 
 sub modify {
   my ($class, $original_query) = @_;
 
-  if ($original_query =~ s{ORDER\s+BY.*$}{}sio) {
+  if ($original_query =~ s{ORDER\s+BY.*$}{}is) {
     # Removing ORDER BY
-  } elsif ($original_query !~ s{LIMIT[^()]*$}{ORDER BY 1}sio) {
+  } elsif ($original_query !~ s{LIMIT[^()]*$}{ORDER BY 1}is) {
     # Won't handle
     return undef;
   }

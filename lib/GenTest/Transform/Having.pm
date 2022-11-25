@@ -37,21 +37,21 @@ sub transform {
   my ($class, $orig_query) = @_;
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   #          - LIMIT changes the result when HAVING is removed
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|SET|LIMIT)}sio
-    || $orig_query !~ m{SELECT}sio
-    || $orig_query !~ m{HAVING[^()]*$}sio;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|SET|LIMIT)}is
+    || $orig_query !~ m{SELECT}is
+    || $orig_query !~ m{HAVING[^()]*$}is;
   return $class->modify($orig_query)." /* TRANSFORM_OUTCOME_SUPERSET */";
 }
 
 sub variate {
   my ($class, $orig_query) = @_;
-  return [ $orig_query ] if $orig_query !~ m{HAVING[^()]*$}sio;
+  return [ $orig_query ] if $orig_query !~ m{HAVING[^()]*$}is;
   return [ $class->modify($orig_query) ];
 }
 
 sub modify {
   my ($class, $orig_query) = @_;
-  $orig_query =~ s{HAVING.*?(ORDER\s+BY|LIMIT|$)}{ $1}siog;
+  $orig_query =~ s{HAVING.*?(ORDER\s+BY|LIMIT|$)}{ $1}isg;
   return $orig_query;
 }
 

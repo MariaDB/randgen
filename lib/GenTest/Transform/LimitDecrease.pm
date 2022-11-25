@@ -34,21 +34,21 @@ sub transform {
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   return STATUS_WONT_HANDLE
     if $orig_query !~ m{^\s*SELECT}
-      || $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|INSERT|REPLACE|CREATE)}sio
-      || $orig_query =~ m{OFFSET}sio;
+      || $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|INSERT|REPLACE|CREATE)}is
+      || $orig_query =~ m{OFFSET}is;
   return $class->modify($orig_query)." /* TRANSFORM_OUTCOME_SINGLE_ROW */";
 }
 
 sub variate {
   my ($class, $orig_query) = @_;
   # Don't apply to LIMIT 0
-  return [ $orig_query ] if $orig_query !~ m{^\s*SELECT}sio && $orig_query !~ m{LIMIT\s+(?:[1-9]|0\d+)}sio;
+  return [ $orig_query ] if $orig_query !~ m{^\s*SELECT}is && $orig_query !~ m{LIMIT\s+(?:[1-9]|0\d+)}is;
   return [ $class->modify($orig_query) ];
 }
 
 sub modify {
   my ($class, $orig_query) = @_;
-  if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 1}siog) {
+  if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 1}isg) {
     return $orig_query;
   } else {
     return $orig_query." LIMIT 1";

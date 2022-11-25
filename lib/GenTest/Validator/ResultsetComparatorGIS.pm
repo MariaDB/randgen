@@ -39,7 +39,7 @@ sub validate {
   my $compare_outcome = GenTest::Comparator::compare($results->[0], $results->[1]);
 
   return STATUS_WONT_HANDLE if $results->[0]->status() != STATUS_OK || $results->[1]->status() != STATUS_OK;
-  return STATUS_WONT_HANDLE if $results->[0]->query() =~ m{EXPLAIN}sio;
+  return STATUS_WONT_HANDLE if $results->[0]->query() =~ m{EXPLAIN}is;
 
   if ($results->[0]->rows() == 0 || $results->[1]->rows() == 0) {
 #    say("Problematic query: ".$results->[0]->query()."\n");

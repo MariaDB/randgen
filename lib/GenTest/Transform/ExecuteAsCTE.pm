@@ -215,10 +215,10 @@ sub variate {
 sub is_applicable {
   my $orig_query= shift;
 # TODO: Don't handle anything that looks like multi-statements for now
-  return 0 if $orig_query =~ m{;}sio;
+  return 0 if $orig_query =~ m{;}is;
 # TODO: 2nd part of UNION does not work for now
-  return 0 if $orig_query =~ m{(?:CREATE\s|GRANT\W|\sINTO\sOUTFILE|\sINTO\s\@|\WUNION\W)}sio;
-  return 0 if $orig_query !~ m{SELECT}sio;
+  return 0 if $orig_query =~ m{(?:CREATE\s|GRANT\W|\sINTO\sOUTFILE|\sINTO\s\@|\WUNION\W)}is;
+  return 0 if $orig_query !~ m{SELECT}is;
   return 1;
 }
 

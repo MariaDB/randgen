@@ -101,29 +101,29 @@ sub restart {
 
   open(RESTART, $errlog);
   while (<RESTART>) {
-    $_ =~ s{[\r\n]}{}siog;
+    $_ =~ s{[\r\n]}{}isg;
 #    say($_);
-    if ($_ =~ m{registration as a STORAGE ENGINE failed.}sio) {
+    if ($_ =~ m{registration as a STORAGE ENGINE failed.}is) {
       say("Storage engine registration failed");
       $restart_status = STATUS_DATABASE_CORRUPTION;
-    } elsif ($_ =~ m{exception}sio) {
+    } elsif ($_ =~ m{exception}is) {
       say("Exception was caught");
       $restart_status = STATUS_DATABASE_CORRUPTION;
-    } elsif ($_ =~ m{ready for connections}sio) {
+    } elsif ($_ =~ m{ready for connections}is) {
       say("Server restart was apparently successfull.") if $restart_status == STATUS_OK ;
       last;
-    } elsif ($_ =~ m{device full error|no space left on device}sio) {
+    } elsif ($_ =~ m{device full error|no space left on device}is) {
       say("No space left on device");
       $restart_status = STATUS_ENVIRONMENT_FAILURE;
       last;
-    } elsif ($_ =~ m{slave SQL thread aborted|slave IO thread aborted}sio) {
+    } elsif ($_ =~ m{slave SQL thread aborted|slave IO thread aborted}is) {
       say("Replication aborted");
       $restart_status = STATUS_REPLICATION_FAILURE;
       last;
     } elsif (
-      ($_ =~ m{got signal}sio) ||
-      ($_ =~ m{segfault}sio) ||
-      ($_ =~ m{segmentation fault}sio)
+      ($_ =~ m{got signal}is) ||
+      ($_ =~ m{segfault}is) ||
+      ($_ =~ m{segmentation fault}is)
     ) {
       say("Restarting server has apparently crashed.");
       $restart_status = STATUS_DATABASE_CORRUPTION;

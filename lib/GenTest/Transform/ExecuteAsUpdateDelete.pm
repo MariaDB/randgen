@@ -35,11 +35,11 @@ sub transform {
   my ($class, $orig_query, $executor, $original_result) = @_;
 
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}sio
-    || $orig_query !~ m{^\s*SELECT}sio
-          || $orig_query =~ m{LIMIT}sio
-          || $orig_query =~ m{(AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE)\s*\(}sio
-          || $orig_query =~ m{(SYSDATE)\s*\(}sio
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is
+    || $orig_query !~ m{^\s*SELECT}is
+          || $orig_query =~ m{LIMIT}is
+          || $orig_query =~ m{(AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE)\s*\(}is
+          || $orig_query =~ m{(SYSDATE)\s*\(}is
     || $original_result->rows() == 0
     || $#{$original_result->data()->[0]} != 0;  # Only single-column resultsets
 
@@ -96,7 +96,7 @@ sub transform {
 
 sub variate {
   my ($class, $orig_query, $executor) = @_;
-  return [ $orig_query ] if $orig_query =~ m{INTO}sio || $orig_query !~ m{^[\(\s]*SELECT}sio;
+  return [ $orig_query ] if $orig_query =~ m{INTO}is || $orig_query !~ m{^[\(\s]*SELECT}is;
   my $exists= ($class->random->uint16(0,1) ? 'NOT EXISTS' : 'EXISTS');
   my $table= $class->random->arrayElement($executor->metaTables());
   if ($class->random->uint16(0,1)) {

@@ -31,11 +31,11 @@ use GenTest::Constants;
 sub transform {
   my ($class, $orig_query, $executor) = @_;
 
-  return STATUS_WONT_HANDLE if $orig_query !~ m{SELECT}sio;
+  return STATUS_WONT_HANDLE if $orig_query !~ m{SELECT}is;
 
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|GRANT|REVOKE)}sio
-    || $orig_query =~ m{LIMIT}sio;
+  return STATUS_WONT_HANDLE if $orig_query =~ m{(OUTFILE|INFILE|PROCESSLIST|GRANT|REVOKE)}is
+    || $orig_query =~ m{LIMIT}is;
 
   my $modified_query = $orig_query;
 

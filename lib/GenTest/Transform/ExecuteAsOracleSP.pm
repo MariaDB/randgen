@@ -31,7 +31,7 @@ use GenTest::Constants;
 
 sub transform {
     my ($class, $orig_query) = @_;
-    return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION)}sio;
+    return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION)}is;
     return [
       $class->modify($orig_query,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
       [ "/* TRANSFORM_CLEANUP */ SET \@\@sql_mode=\@sql_mode.save" ]
@@ -40,7 +40,7 @@ sub transform {
 
 sub variate {
   my ($class, $orig_query) = @_;
-  return [ $orig_query ] if $orig_query =~ m{(?:TRIGGER|PROCEDURE|FUNCTION)}sio;
+  return [ $orig_query ] if $orig_query =~ m{(?:TRIGGER|PROCEDURE|FUNCTION)}is;
   return $class->modify($orig_query);
 }
 
