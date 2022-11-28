@@ -4,6 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-30112:
+=~ AddressSanitizer|signal
+=~ Item_ident::print
+=~ generate_partition_syntax
+=~ Version: '10\.[3-4]|Server version: 10\.[3-4]
+MDEV-30111:
+=~ InnoDB: Failing assertion: update->n_fields == 0
+=~ row_ins_sec_index_entry_by_modify
+MDEV-30105:
+=~ Assertion \`err != DB_DUPLICATE_KEY'
+=~ row_rename_table_for_mysql
+=~ mysql_alter_table
+=~ Version: '10\.[3-4]|Server version: 10\.[3-4]
 MDEV-30058:
 =~ AddressSanitizer|signal
 =~ MYSQL_LOG::generate_name
@@ -360,7 +373,7 @@ MDEV-29273:
 MDEV-29214:
 =~ Assertion \`server->io_count == 0'
 =~ free_server
-=~ ha_federatedx::close
+=~ ha_federatedx::close|FeatureUsage detected Federated
 MDEV-29214:
 =~ AddressSanitizer|signal
 =~ federatedx_txn::txn_commit|federatedx_txn::txn_rollback
@@ -629,7 +642,7 @@ MDEV-28569:
 MDEV-28566:
 =~ Assertion \`!expr->fixed()'|Assertion \`!expr->is_fixed()'
 =~ Virtual_column_info::fix_session_expr
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*|Version: '10\.3\.[0-9][0-9]*-[0-9][0-9]*|Server version: 10\.3\.[0-9][0-9]*-[0-9][0-9]*
 MDEV-28510:
 =~ signal|AddressSanitizer
 =~ get_sort_by_table
