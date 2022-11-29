@@ -69,6 +69,7 @@ require Exporter;
   GD_COMPATIBILITY
   GD_VCOLS
   GD_RAND
+  doGenData
 );
 
 use Carp;
@@ -183,6 +184,42 @@ sub new {
     $self->[GD_EXECUTOR]->init();
 
     return $self;
+}
+
+sub doGenData {
+  my $props= shift;
+  my @generators= ();
+  foreach my $gd (@{$props->gendata}) {
+    my $gd_class= 'GendataFromFile';
+    if ($gd eq 'simple') {
+      $gd_class= 'GendataSimple';
+    } elsif ($gd eq 'advanced') {
+      $gd_class= 'GendataAdvanced';
+    }
+    $gd_class="GenData::$gd_class";
+    eval ("require $gd_class") or croak $@;
+    foreach my $i (@{$props->active_servers}) {
+      my $so= $props->server_specific->{$i};
+      my $res= $gd_class->new(
+         compatibility => $props->compatibility,
+         debug => $props->debug,
+         dsn => $so->{dsn},
+         engine => $so->{engine},
+         executor_id => $i,
+         partitions => $so->{partitions},
+         rows => $props->rows,
+         seed => $props->seed(),
+         short_column_names => $props->short_column_names,
+         spec_file => $gd,
+         sqltrace=> $props->sqltrace,
+         vardir => $props->vardir,
+         variators => $props->variators,
+         vcols => $so->{vcols},
+         views => $so->{views},
+      )->run();
+      say("$gd_class finished with result ".status2text($res));
+    }
+  }
 }
 
 sub executor {

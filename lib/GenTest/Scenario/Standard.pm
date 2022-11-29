@@ -64,14 +64,12 @@ sub run {
     sayError("Server failed to start");
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[]);
   }
+  $self->setProperty('compatibility',$server->version()) unless $self->getProperty('compatibility');
+  $self->setProperty('active_servers',[1]);
 
   #####
-  # This property is for Gendata/GenTest to know on how many servers to execute the flow
-  $self->setProperty('number_of_servers',1);
-
   $self->printStep("Generating test data");
-
-  $status= $self->generate_data();
+  $self->generate_data();
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");

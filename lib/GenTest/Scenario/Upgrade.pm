@@ -47,15 +47,8 @@ sub new {
   # Use common vardir if it was provided
   $srvspec->{1}->{vardir}= $self->getProperty('vardir') || $srvspec->{1}->{vardir};
 
-  if ($self->getProperty('number_of_servers') == 1) {
-    $srvspec->{2}= $srvspec->{1};
-  } else {
-    $srvspec->{2}->{vardir}= $srvspec->{1}->{vardir};
-    $srvspec->{2}->{port}= $srvspec->{1}->{port};
-    $srvspec->{2}->{database}= $srvspec->{1}->{database};
-  }
   $self->setProperty('server_specific',$srvspec);
-  $self->setProperty('number_of_servers',1);
+  $self->setProperty('active_servers',[1]);
 
   return $self;
 }

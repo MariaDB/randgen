@@ -166,14 +166,7 @@ sub setServerStartupOption {
 
 sub generate_data {
   my $self= shift;
-  $self->backupProperties();
-  $self->setProperty('duration',3600);
-  $self->setProperty('queries',0);
-  $self->setProperty('threads',1);
-  $self->setProperty('reporters','None');
-  my $gentest= GenTest::TestRunner->new(config => $self->getProperties());
-  my $status= $gentest->doGenData();
-  $self->restoreProperties();
+  my $status= GenData::doGenData($self->[SC_TEST_PROPERTIES]);
   if ($status >= STATUS_CRITICAL_FAILURE) {
     sayError("Data generation failed with ".status2text($status));
     return $status;
@@ -186,7 +179,6 @@ sub generate_data {
 sub run_test_flow {
   my $self= shift;
   $self->backupProperties();
-  $self->unsetProperty('gendata');
   my $gentest= GenTest::TestRunner->new(config => $self->getProperties());
   my $status= $gentest->run();
   $self->restoreProperties();

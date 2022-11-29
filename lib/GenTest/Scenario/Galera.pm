@@ -112,9 +112,9 @@ sub run {
   }
 
   #####
-  # This property is for Gendata/GenTest to know on how many servers to execute the flow
+  # This property is for Gendata/GenTest to know on which servers to execute the flow
   # TODO: should be set to the number of masters
-  $self->setProperty('number_of_servers',1);
+  $self->setProperty('active_servers',[1]);
 
   $self->printStep("Generating test data on the server(s)");
 

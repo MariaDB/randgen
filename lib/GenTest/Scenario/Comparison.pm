@@ -67,18 +67,20 @@ sub run {
   #####
   $self->printStep("Starting $srv_count servers");
 
+  my @active_servers= ();
   foreach my $s (0..$#servers) {
     $status= $servers[$s]->startServer;
     if ($status != STATUS_OK) {
       sayError("Server ".($s+1)." failed to start");
       return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[@servers]);
     }
+    push @active_servers, $s+1;
   }
 
   #####
   # This property is for Gendata/GenTest to know on how many servers to execute the flow
   # TODO: should be set to the number of masters
-  $self->setProperty('number_of_servers',$srv_count);
+  $self->setProperty('active_servers',\@active_servers);
 
   $self->printStep("Generating test data");
 

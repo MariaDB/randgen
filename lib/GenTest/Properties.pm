@@ -204,7 +204,6 @@ sub init {
               'filters',
               'short_column_names',
               'server_specific',
-              'number_of_servers',
               'freeze_time',
               'valgrind',
               'rr',
@@ -251,7 +250,6 @@ sub setPropertiesFromHash {
   $gentestProps->property('queries',$props->{queries}) if defined $props->{queries};
   $gentestProps->property('metadata_reload',(defined $props->{metadata_reload} ? $props->{metadata_reload} : 1)); # By default metadata is loaded
   $gentestProps->property('multi-master',1) if $props->{'multi-master'};
-  $gentestProps->property('number_of_servers',$props->{number_of_servers});
   $gentestProps->property('parser',$props->{parser});
   $gentestProps->property('parser_mode',$props->{parser_mode});
   $gentestProps->property('ps-protocol',1) if $props->{ps_protocol};
@@ -281,7 +279,7 @@ sub setPropertiesFromHash {
   # Instead, we want to run the flow independently and only compare dumps at the end.
   # If GenTest gets 'multi-master' property, it won't run ResultsetComparator
 
-  $gentestProps->property('multi-master',1) if (defined $props->{galera} and $props->{number_of_servers} > 1);
+  $gentestProps->property('multi-master',1) if (defined $props->{galera});
 
   return $gentestProps;
 }

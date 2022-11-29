@@ -133,8 +133,8 @@ sub run {
   }
 
   #####
-  # This property is for Gendata/GenTest to know on how many servers to execute the flow
-  $self->setProperty('number_of_servers',1);
+  # This property is for Gendata/GenTest to know on which servers to execute the flow
+  $self->setProperty('active_servers',[1]);
 
   $self->printStep("Generating test data on the master");
 

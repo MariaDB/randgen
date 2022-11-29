@@ -121,11 +121,6 @@ sub run {
     say("-------------------------------\nConfiguration");
     $self->config->printProps;
 
-    my $gendata_result = $self->doGenData();
-    return $gendata_result if $gendata_result > STATUS_CRITICAL_FAILURE;
-    $gendata_result = $self->validateGenData();
-    return $gendata_result if $gendata_result != STATUS_OK;
-
     $self->[GT_CHANNEL] = GenTest::IPC::Channel->new();
 
     my $init_generator_result = $self->initGenerator();
@@ -315,7 +310,7 @@ sub workerProcess {
     $self->generator()->setThreadId($worker_id);
 
     my @executors;
-    foreach my $i (1..$self->config->number_of_servers) {
+    foreach my $i (@{$self->config->active_servers}) {
         next unless $self->config->server_specific->{$i}->{dsn};
         my $executor = GenTest::Executor->newFromDSN(
           $self->config->server_specific->{$i}->{dsn},
@@ -389,7 +384,7 @@ sub validateGenData {
   return STATUS_OK if $self->config->property('multi-master');
 
   my @dsns= ();
-  foreach my $i (1..$self->config->number_of_servers) {
+  foreach my $i (@{$self->config->active_servers}) {
     push @dsns, $self->config->server_specific->{$i}->{dsn} if $self->config->server_specific->{$i}->{dsn};
   }
   return STATUS_OK if (scalar @dsns) <= 1;
@@ -467,75 +462,6 @@ sub validateGenData {
   }
   say("GenTest: Original datasets are identical");
   return STATUS_OK;
-}
-
-sub doGenData {
-  my $self = shift;
-  return STATUS_OK unless $self->config->gendata && scalar(@{$self->config->gendata});
-  my $gendata_result= STATUS_PERL_FAILURE;
-  foreach my $i (1..$self->config->number_of_servers) {
-    next unless $self->config->server_specific->{$i}->{dsn};
-    # Contrary to the usual, we will use the *best* result code here --
-    # if at least one of data generations succeeded, it means we have some data and can proceed
-    my @gd= @{$self->config->gendata};
-    foreach my $gendata (@gd) {
-      my $res= STATUS_OK;
-      if ($gendata eq 'advanced') {
-        $res= GenData::GendataAdvanced->new(
-           dsn => $self->config->server_specific->{$i}->{dsn},
-           engine => $self->config->server_specific->{$i}->{engine},
-           partitions => $self->config->server_specific->{$i}->{partitions},
-           vcols => $self->config->server_specific->{$i}->{vcols},
-           views => $self->config->server_specific->{$i}->{views},
-           seed => $self->config->seed(),
-           sqltrace=> $self->config->sqltrace,
-           rows => $self->config->rows,
-           executor_id => $i,
-           compatibility => $self->config->compatibility,
-           variators => $self->config->variators,
-           vardir => $self->config->vardir,
-        )->run();
-        say("GendataAdvanced finished with result ".status2text($res));
-      }
-      elsif ($gendata eq 'simple') {
-        $res = GenData::GendataSimple->new(
-           dsn => $self->config->server_specific->{$i}->{dsn},
-           engine => $self->config->server_specific->{$i}->{engine},
-           vcols => $self->config->server_specific->{$i}->{vcols},
-           views => $self->config->server_specific->{$i}->{views},
-           seed => $self->config->seed(),
-           sqltrace=> $self->config->sqltrace,
-           rows => $self->config->rows,
-           executor_id => $i,
-           variators => $self->config->variators,
-           vardir => $self->config->vardir,
-        )->run();
-        say("GendataSimple finished with result ".status2text($res));
-      }
-      else {
-        $res = GenData::GendataFromFile->new(
-           spec_file => $gendata,
-           dsn => $self->config->server_specific->{$i}->{dsn},
-           engine => $self->config->server_specific->{$i}->{engine},
-           views => $self->config->server_specific->{$i}->{views},
-           seed => $self->config->seed(),
-           debug => $self->config->debug,
-           rows => $self->config->rows,
-           sqltrace => $self->config->sqltrace,
-           short_column_names => $self->config->short_column_names,
-           executor_id => $i,
-           variators => $self->config->variators,
-           vardir => $self->config->vardir,
-        )->run();
-        say("Gendata $gendata finished with result ".status2text($res));
-      }
-      $gendata_result = $res if $res < $gendata_result;
-      return $gendata_result if $gendata_result >= STATUS_CRITICAL_FAILURE;
-    }
-    # For multi-master setup, e.g. Galera, we only need to do generatoion once
-    return $gendata_result if $self->config->property('multi-master');
-  }
-  return $gendata_result;
 }
 
 sub initSeed {
@@ -647,18 +573,6 @@ sub registerFeatures {
   sayDebug("Registered features: @$features");
 }
 
-sub isMySQLCompatible {
-    my $self = shift;
-
-    my $is_mysql_compatible = 1;
-
-    foreach my $i (1..$self->config->number_of_servers) {
-        next if $self->config->server_specific->{$i}->{dsn} eq '';
-        $is_mysql_compatible = 0 if ($self->config->server_specific->{$i}->{dsn} !~ m{mysql|drizzle}is);
-    }
-    return $is_mysql_compatible;
-}
-
 sub initReporters {
     my $self = shift;
 
@@ -680,12 +594,10 @@ sub initReporters {
     }
 
     if (not $no_reporters) {
-        if ($self->isMySQLCompatible()) {
-            $self->config->reporters(['ErrorLog', 'Backtrace']) unless scalar(@{$self->config->reporters});
-            push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode and $self->config->rpl_mode !~ /nosync/;
-            push @{$self->config->reporters}, 'ReplicationSlaveStatus'
-                if $self->config->rpl_mode && $self->isMySQLCompatible();
-        }
+      $self->config->reporters(['ErrorLog', 'Backtrace']) unless scalar(@{$self->config->reporters});
+      push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode and $self->config->rpl_mode !~ /nosync/;
+      push @{$self->config->reporters}, 'ReplicationSlaveStatus'
+          if $self->config->rpl_mode;
     }
 
     # Remove duplicates
@@ -697,7 +609,7 @@ sub initReporters {
 
     my $reporter_manager = GenTest::ReporterManager->new();
 
-    foreach my $i (1..$self->config->number_of_servers) {
+    foreach my $i (@{$self->config->active_servers}) {
         next unless $self->config->server_specific->{$i}->{dsn};
         foreach my $reporter (@{$self->config->reporters}) {
             my $add_result = $reporter_manager->addReporter($reporter, {
@@ -726,7 +638,7 @@ sub initValidators {
         # we don't want to compare results after each query.
 
         push @{$self->config->validators}, 'MarkErrorLog'
-            if (defined $self->config->valgrind) && $self->isMySQLCompatible();
+            if (defined $self->config->valgrind);
 
         if ($self->grammars()) {
           foreach my $grammar (@{$self->grammars}) {
