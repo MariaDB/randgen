@@ -24,6 +24,7 @@ use base 'Exporter';
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp',
            'rqg_debug', 'unix2winPath', 'versionN6',
+           'isNewerVersion', 'isOlderVersion',
            'shorten_message');
 
 use strict;
@@ -227,6 +228,20 @@ sub versionN6 {
     sayError("Unknown version format: $version");
     return $version;
   }
+}
+
+sub isNewerVersion {
+  my ($ver1, $ver2)= @_;
+  $ver1= versionN6($ver1);
+  $ver2= versionN6($ver2);
+  return $ver1 gt $ver2;
+}
+
+sub isOlderVersion {
+  my ($ver1, $ver2)= @_;
+  $ver1= versionN6($ver1);
+  $ver2= versionN6($ver2);
+  return $ver1 lt $ver2;
 }
 
 1;

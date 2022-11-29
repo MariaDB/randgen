@@ -197,7 +197,7 @@ sub init {
               'transformers',
               'variators',
               'seed',
-              'metadata',
+              'metadata_reload',
               'rows',
               'vcols',
               'views',
@@ -249,7 +249,7 @@ sub setPropertiesFromHash {
   $gentestProps->property('generator',($props->{generator} || 'FromGrammar'));
   $gentestProps->property('grammars',$props->{grammars});
   $gentestProps->property('queries',$props->{queries}) if defined $props->{queries};
-  $gentestProps->property('metadata',(defined $props->{metadata} ? $props->{metadata} : 1)); # By default metadata is loaded
+  $gentestProps->property('metadata_reload',(defined $props->{metadata_reload} ? $props->{metadata_reload} : 1)); # By default metadata is loaded
   $gentestProps->property('multi-master',1) if $props->{'multi-master'};
   $gentestProps->property('number_of_servers',$props->{number_of_servers});
   $gentestProps->property('parser',$props->{parser});

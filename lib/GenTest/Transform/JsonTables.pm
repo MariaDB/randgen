@@ -193,16 +193,9 @@ sub parse_query_for_variation
     sayDebug("Parsing cycle: $tmp_query");
     my $token = $1;
     if ($token =~ /^$executable_comment_template$/xi) {
-      if ($token =~ /^\/\*\!(\d+)\s+(.*?)\s*\*\// and not $self->executor->is_compatible($1)) {
-        # Executable comment with incompatible version, treat as a usual comment
-        append_token($token, \$new_query, \$select);
-        next;
-      } else {
-        # Either the version is compatible, or no version at all.
-        # Treat as if it weren't a comment - put the contents back to tmp_query
-        $tmp_query= $2.' '.$tmp_query;
-        next;
-      }
+      # Treat as if it weren't a comment - put the contents back to tmp_query
+      $tmp_query= $2.' '.$tmp_query;
+      next;
     }
     elsif ($token =~ /^\s*$comment_template\s*$/xi) {
       # TODO: it puts the comment in a wrong position, but we can deal with it later

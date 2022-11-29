@@ -14,8 +14,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-#feature <S3 engine>
-#feature <S3 tables>
+#features S3 engine, S3 tables
+#compatibility 10.5.0
 
 query_init:
   { $s3_doable= $ENV{S3_DOABLE}; '' } ;

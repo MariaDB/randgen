@@ -75,7 +75,8 @@ sub variate {
 }
 
 sub transform {
-  my ($self, $orig_query) = @_;
+  my ($self, $orig_query, $executor) = @_;
+  return STATUS_WONT_HANDLE unless $executor->versionNumeric() >= 100601;
   return STATUS_WONT_HANDLE if ($orig_query !~ /SELECT/ or
     $orig_query =~ /(?:OUTFILE|INFILE|PROCESSLIST|INTO|PREPARE)/);
 
@@ -84,13 +85,13 @@ sub transform {
   $query =~ s/LIMIT\s+(\d+)\s+OFFSET\s+(\d+)/OFFSET $2 FETCH FIRST $1 ROWS ONLY/g;
   $query =~ s/LIMIT\s+(\d+)\s*,\s*(\d+)/OFFSET $2 FETCH FIRST $1 ROWS ONLY/g;
   if ($query ne $orig_query) {
-    push @queries, $query.' /* TRANSFORM_OUTCOME_UNORDERED_MATCH */ /* compatibility 10.6.0 */';
+    push @queries, $query.' /* TRANSFORM_OUTCOME_UNORDERED_MATCH */';
   }
   $query= $orig_query;
   $query =~ s/(ORDER\s+BY\s+.*?)LIMIT\s+(\d+)\s+OFFSET\s+(\d+)/$1OFFSET $3 FETCH FIRST $2 ROWS WITH TIES/g;
   $query =~ s/(ORDER\s+BY\s+.*?)LIMIT\s+(\d+)\s*,\s*(\d+)/$1OFFSET $3 FETCH FIRST $2 ROWS WITH TIES/g;
   if ($query ne $orig_query) {
-    push @queries, $query.' /* TRANSFORM_OUTCOME_SUPERSET */ /* compatibility 10.6.0 */';
+    push @queries, $query.' /* TRANSFORM_OUTCOME_SUPERSET */';
   }
   return (scalar @queries ? [ @queries ] : STATUS_WONT_HANDLE);
 }

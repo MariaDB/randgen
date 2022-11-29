@@ -320,6 +320,7 @@ sub workerProcess {
         my $executor = GenTest::Executor->newFromDSN(
           $self->config->server_specific->{$i}->{dsn},
           channel => (osWindows() ? undef : $self->channel()),
+          metadata_reload => $self->config->metadata_reload,
           sqltrace => $self->config->sqltrace,
           vardir => $self->config->vardir,
           variators => $self->config->variators,
@@ -337,7 +338,6 @@ sub workerProcess {
         filters => $self->queryFilters(),
         end_time => $self->[GT_TEST_END],
         restart_timeout => $self->config->property('restart-timeout'),
-        compatibility => $self->config->compatibility,
         variator_manager => $self->[GT_VARIATOR_MANAGER],
     );
 
@@ -577,7 +577,10 @@ sub initGenerator {
       }
       my $redefining_grammar;
       foreach my $r (@{$self->config->redefines}) {
-        my $rg= GenTest::Grammar->new(grammar_file => $r, compatibility => $self->config->compatibility);
+        my $rg= GenTest::Grammar->new(
+          grammar_file => $r,
+          compatibility => $self->config->compatibility
+        );
         if (not defined $rg) {
           sayError("Could not initialize the redefining grammar from $r");
           return STATUS_ENVIRONMENT_FAILURE;

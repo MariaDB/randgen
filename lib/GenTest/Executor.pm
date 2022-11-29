@@ -70,7 +70,6 @@ use constant EXECUTOR_CURRENT_USER      => 22;
 use constant EXECUTOR_SERVER_VERSION    => 23;
 use constant EXECUTOR_SERVER_VERSION_MAJOR => 24;
 use constant EXECUTOR_SERVER_VERSION_NUMERIC => 25;
-use constant EXECUTOR_COMPATIBILITY => 26;
 use constant EXECUTOR_VARDIR => 27;
 use constant EXECUTOR_META_FILE_SIZE => 28;
 use constant EXECUTOR_META_LOCATION => 29;
@@ -83,6 +82,7 @@ use constant EXECUTOR_SILENT_ERRORS_COUNT => 35;
 use constant EXECUTOR_VARIATORS => 36;
 use constant EXECUTOR_VARIATOR_MANAGER => 37;
 use constant EXECUTOR_SEED => 38;
+use constant EXECUTOR_METADATA_RELOAD => 39;
 
 use constant FETCH_METHOD_AUTO    => 0;
 use constant FETCH_METHOD_STORE_RESULT  => 1;
@@ -90,7 +90,7 @@ use constant FETCH_METHOD_USE_RESULT  => 2;
 
 use constant EXECUTOR_FLAG_SILENT  => 1;
 
-use constant EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL => 60;
+use constant EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL => 10;
 
 # Values
 
@@ -102,7 +102,6 @@ sub new {
     my $class = shift;
     my $executor = $class->SUPER::new({
         'channel' => EXECUTOR_CHANNEL,
-        'compatibility' => EXECUTOR_COMPATIBILITY,
         'dbh'  => EXECUTOR_DBH,
         'dsn'  => EXECUTOR_DSN,
         'end_time' => EXECUTOR_END_TIME,
@@ -112,6 +111,7 @@ sub new {
         'sqltrace' => EXECUTOR_SQLTRACE,
         'vardir' => EXECUTOR_VARDIR,
         'variators' => EXECUTOR_VARIATORS,
+        'metadata_reload' => EXECUTOR_METADATA_RELOAD,
     }, @_);
 
     $executor->[EXECUTOR_FETCH_METHOD] = FETCH_METHOD_AUTO if not defined $executor->[EXECUTOR_FETCH_METHOD];
@@ -122,7 +122,6 @@ sub new {
       $executor->[EXECUTOR_VARIATOR_MANAGER]->setSeed($executor->[EXECUTOR_SEED] || 1);
       $executor->[EXECUTOR_VARIATOR_MANAGER]->initVariators($executor->[EXECUTOR_VARIATORS]);
     }
-
     return $executor;
 }
 
@@ -322,35 +321,6 @@ sub serverMajorVersion {
     return $_[0]->[EXECUTOR_SERVER_VERSION_MAJOR];
 }
 
-sub setServerNumericVersion {
-    $_[0]->[EXECUTOR_SERVER_VERSION_NUMERIC] = $_[1];
-}
-
-sub setCompatibility {
-    $_[0]->[EXECUTOR_COMPATIBILITY] = $_[1];
-}
-
-sub compatibility {
-    return $_[0]->[EXECUTOR_COMPATIBILITY];
-}
-
-sub serverNumericVersion {
-    return $_[0]->[EXECUTOR_SERVER_VERSION_NUMERIC];
-}
-
-sub is_compatible {
-    my $requirement= $_[1];
-    if ($requirement =~ /([0-9]+)\.([0-9]+)\.([0-9]+)(?:-[0-9]+|e)/) {
-        $requirement= sprintf("%02d%02d%02de",int($1),int($2),int($3||0));
-    } elsif ($requirement =~ /([0-9]+)\.([0-9]+)(?:\.([0-9]+))?/) {
-        $requirement= sprintf("%02d%02d%02d",int($1),int($2),int($3||0));
-    } elsif ($requirement =~ /\d{5}/) {
-        $requirement= '0'.$requirement;
-    }
-    return 0 if ($requirement =~ /e$/ and $_[0]->[EXECUTOR_COMPATIBILITY] !~ /e$/);
-    return $_[0]->[EXECUTOR_COMPATIBILITY] ge $requirement;
-}
-
 ## This array maps SQL State class (2 first letters) to a status. This
 ## list needs to be extended
 my %class2status = (
@@ -434,7 +404,7 @@ sub cacheMetaData {
   if ($self->[EXECUTOR_META_RELOAD_NOW]
       or not defined $self->[EXECUTOR_META_LAST_CHECK] # Very first attempt
       or (not $self->[EXECUTOR_META_LAST_LOAD_OK] and time() > $self->[EXECUTOR_META_LAST_CHECK] + int($self->metadataReloadInterval()/5)) # Last load failed
-      or time() > $self->[EXECUTOR_META_LAST_CHECK] + $self->metadataReloadInterval() # Reload interval exceeded
+      or ($self->[EXECUTOR_METADATA_RELOAD] and time() > $self->[EXECUTOR_META_LAST_CHECK] + $self->metadataReloadInterval()) # Reload interval exceeded
   )
   {
     $self->[EXECUTOR_META_LAST_LOAD_OK]= 0;

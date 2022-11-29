@@ -79,6 +79,7 @@ $props->{threads}= 4;
 $props->{queries}= 100000000;
 $props->{duration}= 300;
 $props->{seed}= 'time';
+$props->{metadata_reload}= 1;
 
 $trials= 1;
 $scenario= DEFAULT_RQG_SCENARIO;
@@ -123,7 +124,7 @@ my $opt_result = GetOptions(
   'gendata=s@' => \@{$props->{gendata}},
   'grammars=s@' => \@{$props->{grammars}},
   'help' => \$help,
-  'metadata!' => \$props->{metadata},
+  'metadata_reload|metadata-reload!' => \$props->{metadata_reload},
   'minio|with-minio|with_minio' => \$minio,
   'mtr-build-thread=i' => \$build_thread,
   'parser=s' => \$props->{parser},
@@ -510,7 +511,7 @@ $0 - Run a complete random query generation test scenario
                       Useful for debugging query generation, otherwise makes the query look ugly and barely readable.
     --wait-for-debugger: Pause and wait for keypress after server startup to allow attaching a debugger to the server process.
     --restart-timeout: If the server has gone away, do not fail immediately, but wait to see if it restarts (it might be a part of the test)
-    --[no]metadata   : Load metadata after data generation before the test flow. On by default, to turn off, run with --nometadata
+    --[no]metadata-reload : Re-load metadata periodically during the test flow. On by default, to turn off, run with --nometadata
     --compatibility  : Server version which syntax should be compatible with, in the form of x.y.z (e.g. 10.3.22) or NNNNNN (100322).
                        It is not guaranteed that all resulting queries will comply with the requirement, only those which come
                        from the generation mechanisms aware of the option.

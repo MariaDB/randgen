@@ -2629,9 +2629,6 @@ sub init {
 
     $executor->version();
     $executor->serverVariables();
-    if (not defined $executor->compatibility()) {
-      $executor->setCompatibility($executor->serverNumericVersion());
-    }
 
     #
     # Hack around bug 35676, optiimzer_switch must be set sesson-wide in order to have effect
@@ -2693,30 +2690,13 @@ sub execute {
         $execution_flags |= EXECUTOR_FLAG_SILENT;
     }
 
-    # Process "reverse executable comments" -- imitation of feature MDEV-7381
-    # Syntax is /*!!nnnnnn ... */.
-    # If nnnnnn is less than the server version, it should be executed,
-    # and we'll convert it into a normal executable comment.
-    # Otherwise (if nnnnnn is greater or equal than the server version),
-    # it shouldn't be executed, and we'll convert it into a normal comment.
-
-    while ($query =~ /\/\*\!\!(\d+).*?\*\//) {
-      my $ver= $1;
-      if ($executor->versionNumeric() lt $ver) {
-        $query =~ s/\/\*\!\!$ver/\/\*\!/g;
-      } else {
-        $query =~ s/\/\*\!\!$ver/\/\*/g;
-      }
-    }
-
     # It turns out that MySQL fails with a syntax error upon executable comments of the kind /*!100101 ... */
     # (with 6 digits for the version), so we have to process them here as well.
-    # To avoid complicated logic, we'll replace such versions with 99999,
-    # but only when the server logic is 5xxxx. This way the server won't execute
-    # the comment, which is what we need, and we don't need to search for the end of the comment
+    # To avoid complicated logic, we'll replace such executable comments with plain ones
+    # but only when the server vesion is 5xxxx
 
     if ($executor->versionNumeric() =~ /^05\d{4}$/) {
-      while ($query =~ s/\/\*\!1\d{5}/\/\*\!99999/g) {};
+      while ($query =~ s/\/\*\!1\d{5}/\/\*/g) {};
     }
 
     # Filter out any /*executor */ comments that do not pertain to this particular Executor/DBI
@@ -3009,7 +2989,6 @@ sub version {
         $ver= $executor->dbh()->selectrow_array("SELECT VERSION()");
         $executor->setServerVersion($ver);
         $ver =~ /([0-9]+)\.([0-9]+)\.([0-9]+)/;
-        $executor->setServerNumericVersion(sprintf("%02d%02d%02d",int($1),int($2),int($3)));
         $ver =~ /^(\d+\.\d+)/;
         $executor->setServerMajorVersion($1);
     }
@@ -3017,17 +2996,7 @@ sub version {
 }
 
 sub versionNumeric {
-#    my $executor = shift;
-#    version() =~ /([0-9]+)\.([0-9]+)\.([0-9]+)/;
-#    return sprintf("%02d%02d%02d",int($1),int($2),int($3));
-    return $_[0]->serverNumericVersion;
-}
-
-sub majorVersion {
-#    my $executor = shift;
-#    version() =~ /([0-9]+)\.([0-9]+)\.([0-9]+)/;
-#    return sprintf("%02d%02d%02d",int($1),int($2),int($3));
-    return $_[0]->serverMajorVersion;
+    return versionN6($_[0]->serverVersion);
 }
 
 sub serverName {
@@ -3097,7 +3066,7 @@ sub explain {
 # Until then it should be fine
 sub is_query_explainable {
     my ($executor, $query) = @_;
-    if ( $executor->majorVersion > 5.5 ) {
+    if ( $executor->serverMajorVersion > 5.5 ) {
         return $query =~ /^\s*(?:SELECT|UPDATE|DELETE|INSERT)/i;
     } else {
         return $query =~ /^\s*SELECT/;

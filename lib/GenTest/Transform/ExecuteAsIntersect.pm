@@ -48,12 +48,16 @@ sub transform {
         $orig_query_zero_limit.= ' LIMIT 0';
     }
 
-  return [
+  my @queries= (
     "( $orig_query ) INTERSECT ( $orig_query ) /* TRANSFORM_OUTCOME_DISTINCT */",
-    "( $orig_query ) INTERSECT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
-    "/* compatibility 10.5.2 */ ( $orig_query ) INTERSECT ALL ( $orig_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "/* compatibility 10.5.2 */ ( $orig_query ) INTERSECT ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
-  ];
+    "( $orig_query ) INTERSECT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
+  );
+  if ($executor->versionNumeric() >= 100502) {
+    push @queries,
+      "( $orig_query ) INTERSECT ALL ( $orig_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+      "( $orig_query ) INTERSECT ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */";
+  }
+  return \@queries;
 }
 
 sub variate {

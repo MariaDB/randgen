@@ -38,7 +38,6 @@ use constant MIXER_FILTERS  => 3;
 use constant MIXER_PROPERTIES  => 4;
 use constant MIXER_END_TIME  => 5;
 use constant MIXER_RESTART_TIMEOUT => 6;
-use constant MIXER_COMPATIBILITY => 7;
 use constant MIXER_VARIATOR_MANAGER  => 8;
 
 my %rule_status;
@@ -57,7 +56,6 @@ sub new {
         'filters'  => MIXER_FILTERS,
         'end_time'  => MIXER_END_TIME,
         'restart_timeout' => MIXER_RESTART_TIMEOUT,
-        'compatibility' => MIXER_COMPATIBILITY,
     }, @_);
 
     foreach my $executor (@{$mixer->executors()}) {
@@ -65,7 +63,6 @@ sub new {
             return undef if time() > $mixer->end_time();
             $executor->set_end_time($mixer->end_time());
         }
-        $executor->setCompatibility($mixer->[MIXER_COMPATIBILITY]);
         my $init_result = $executor->init();
         return undef if $init_result > STATUS_OK;
         $executor->cacheMetaData();
