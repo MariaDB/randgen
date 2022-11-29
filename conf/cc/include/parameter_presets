@@ -139,6 +139,7 @@ $innodb_pagesize_combinations= [
 $common_options= '
   --seed=time
   --queries=1000000
+  --gendata=advanced
   --reporters=Backtrace,ErrorLog,Deadlock,MemoryUsage,FeatureUsage
 ';
 

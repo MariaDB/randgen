@@ -43,7 +43,7 @@ sub variate {
 
 sub modify {
   my ($class, $orig_query, $transform_outcome) = @_;
-  return [ $orig_query ] if $orig_query =~ m{TRIGGER|PROCEDURE|FUNCTION}is
+  return [ $orig_query ] if $orig_query =~ m{TRIGGER|PROCEDURE|FUNCTION}is;
   return [
     "DROP PROCEDURE IF EXISTS sp_ExecuteAsSPTwice_".abs($$),
     "CREATE PROCEDURE sp_ExecuteAsSPTwice_".abs($$)." () LANGUAGE SQL $orig_query",

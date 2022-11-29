@@ -33,6 +33,10 @@
 #        things like int_field, char_field, etc are correct for the gendata file
 ################################################################################
 
+query_init:
+  # This is to prevent other grammars from altering the schema
+  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON range_access.* TO CURRENT_USER;
+
 query:
   { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'range_access'; 'USE range_access' }
   ;; opt_access_query

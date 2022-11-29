@@ -25,6 +25,10 @@
 #
 ################################################################################
 
+query_init:
+  # This is to prevent other grammars from altering the schema
+  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON part_tables.* TO CURRENT_USER;
+
 query:
   { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'part_tables'; 'USE part_tables' }
   ;; partition_no_create_query

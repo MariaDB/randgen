@@ -25,7 +25,10 @@
 ########################################################################
 
 query_init:
-  SET AUTOCOMMIT = OFF ;
+  # This is to prevent other grammars from altering the schema
+  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON dbt3.* TO CURRENT_USER
+  ;; SET AUTOCOMMIT = OFF
+;
 
 query:
   { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'dbt3'; 'USE dbt3' }

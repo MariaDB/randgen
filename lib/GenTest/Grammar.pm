@@ -37,6 +37,7 @@ use constant GRAMMAR_FILE      => 1;
 use constant GRAMMAR_STRING    => 2;
 use constant GRAMMAR_FEATURES  => 3;
 use constant GRAMMAR_REDEFINES => 4;
+use constant GRAMMAR_COMPATIBILITY => 5;
 
 1;
 
@@ -46,10 +47,16 @@ sub new {
   my $grammar = $class->SUPER::new({
     'grammar_file'   => GRAMMAR_FILE,
     'redefine_files'  => GRAMMAR_REDEFINES,
+    'compatibility'  => GRAMMAR_COMPATIBILITY,
   }, @_);
 
   $grammar->[GRAMMAR_FEATURES]= [];
   $grammar->[GRAMMAR_RULES] = {};
+  $grammar->[GRAMMAR_COMPATIBILITY]= (
+    defined $grammar->compatibility()
+    ? versionN6($grammar->compatibility())
+    : '000000'
+  );
 
   if (defined $grammar->file()) {
     my $parse_result = $grammar->parseFromFile($grammar->file());
@@ -79,6 +86,58 @@ sub toString {
   return join("\n\n", map { $grammar->rule($_)->toString() } sort keys %$rules);
 }
 
+sub compatibility {
+  return $_[0]->[GRAMMAR_COMPATIBILITY];
+}
+
+sub check_compatibility {
+  my ($grammar, $versions, $positive_check)= @_;
+  sayDebug("Checking ".($positive_check ? 'compatibility' : 'incompatibility')." of ".$grammar->compatibility." against $versions");
+  return 1 if $grammar->compatibility eq '0000';
+  my $server_ver6= $grammar->compatibility;
+  my $server_ver4= substr($grammar->compatibility,0,4);
+  my @compat_requirements= $versions=~ /([\d\.]+(?:e|-[0-9]+)?(?:,\s*[\d\.]+(?:e|-[0-9]+)?)*)/gs;
+  my $compatible= 0;
+  if ($positive_check) {
+    my $max4= '0000';
+    COMPAT:
+    foreach my $cr (@compat_requirements) {
+      my @cr= split /,/, $cr;
+      foreach my $c (@cr) {
+        my $compat6= versionN6($c);
+        my $compat4= substr($compat6,0,4);
+        $max4= $compat4 if $compat4 gt $max4;
+        if ($compat4 eq $server_ver4) {
+          # same major version;
+          # if server version same or higher than compatibility, then compatible,
+          # otherwise not compatible
+          $compatible = ($server_ver6 ge $compat6);
+          last COMPAT;
+        }
+      }
+    }
+    return $compatible || $max4 eq '0000' || $server_ver4 gt $max4;
+  } else {
+    my $min4= '9999';
+    INCOMPAT:
+    foreach my $ir (@compat_requirements) {
+      my @ir= split /,/, $ir;
+      foreach my $i (@ir) {
+        my $incompat6= versionN6($i);
+        my $incompat4= substr($incompat6,0,4);
+        $min4= $incompat4 if $min4 gt $incompat4;
+        if ($incompat4 eq $server_ver4) {
+          # same major version;
+          # if server version lower than incompatibility, then compatible,
+          # otherwise not compatible
+          $compatible = ($server_ver6 lt $incompat6);
+          last INCOMPAT;
+        }
+      }
+    }
+    return $compatible || $min4 eq '9999' || $server_ver4 lt $min4;
+  }
+}
 
 sub parseFromFile {
   my ($grammar, $grammar_file) = @_;
@@ -95,6 +154,13 @@ sub parseFromFile {
 sub parseFromString {
   my ($grammar, $grammar_string) = @_;
 
+  while ($grammar_string =~ s{#compatibility\s+([-\d\.]+).*$}{}mi) {
+    unless ($grammar->compatibility eq '000000' or $grammar->check_compatibility($1,my $positive_check=1)) {
+      sayWarning("Grammar ".$grammar->file." does not meet compatibility requirements, ignoring");
+      return;
+    }
+  }
+
     while ($grammar_string =~ s{#include [<"](.*?)[>"]$}{
       {
         my $include_string;
@@ -104,8 +170,8 @@ sub parseFromString {
         $include_string;
     }}mie) {};
 
-    while ($grammar_string =~ s{#feature\s*<(.+)>.*}{}) {
-      push @{$grammar->[GRAMMAR_FEATURES]}, $1;
+    while ($grammar_string =~ s{#features?\s+([^#]+).*$}{}mi) {
+      push @{$grammar->[GRAMMAR_FEATURES]}, split /[\s,]+/, $1;
     }
 
     # Strip comments. Note that this is not Perl-code safe, since perl fragments
@@ -129,138 +195,92 @@ sub parseFromString {
 
     my %rules;
 
-      # Redefining grammars might want to *add* something to an existing rule
-      # rather than replace them. For now we recognize additions only to init queries
-      # and to the main queries ('query' and 'threadX'). Additions should end with '_add':
-      # - query_add
-      # - threadX_add
-      # - query_init_add
-      # _ threadX_init_add
-      # Grammars can have multiple additions like these, they all will be stored
-      # and appended to the corresponding rule.
-      #
-      # Additions to 'query' and 'threadX' will be appended as an option, e.g.
-      #
-      # In grammar files we have:
-      #   query:
-      #     rule1 | rule2;
-      #   query_add:
-      #     rule3;
-      # In the resulting grammar we will have:
-      #   query:
-      #     rule1 | rule2 | rule3;
-      #
-      # Additions to '*_init' rules will be added as a part of a multiple-statement, e.g.
-      #
-      # In grammar files we have:
-      #   query_init:
-      #     rule4 ;
-      #   query_init_add:
-      #     rule5;
-      # In the resulting grammar we will have:
-      #   query_init:
-      #     rule4 ; rule5;
-      #
-      # Also, we will add threadX_init_add to query_init (if it's not overridden for the given thread ID).
-      # That is, if we have in the grammars
-      # query_init: ...
-      # query_init_add: ...
-      # thread2_init_add: ...
-      # thread3_init: ...
-      #
-      # then the resulting init sequence for threads will be:
-      # 1: query_init; query_init_add
-      # 2: query_init; query_init_add; thread2_init_add
-      # 3: thread3_init
-
-
-      my @query_adds = ();
-      my %thread_adds = ();
-      my @query_init_adds = ();
-      my %thread_init_adds = ();
-
     foreach my $rule_string (@rule_strings) {
       my ($rule_name, $components_string) = $rule_string =~ m{^(.*?)\s*:(.*)$}is;
       $rule_name =~ s{[\r\n]}{}gsio;
       $rule_name =~ s{^\s*}{}gsio;
 
       next if $rule_name eq '';
-
-          if ($rule_name =~ /^query_add$/) {
-              push @query_adds, $components_string;
-          }
-          elsif ($rule_name =~ /^thread(\d+)_add$/) {
-              @{$thread_adds{$1}} = () unless defined $thread_adds{$1};
-              push @{$thread_adds{$1}}, $components_string;
-          }
-          elsif ($rule_name =~ /^query_init_add$/) {
-              push @query_init_adds, $components_string;
-          }
-          elsif ($rule_name =~ /^thread(\d+)_init_add$/) {
-              @{$thread_init_adds{$1}} = () unless defined $thread_init_adds{$1};
-              push @{$thread_init_adds{$1}}, $components_string;
-          }
-          else {
-              say("Warning: Rule $rule_name is defined twice.") if exists $rules{$rule_name};
-              $rules{$rule_name} = $components_string;
-          }
+      if (exists $rules{$rule_name}) {
+        say("Warning: Rule $rule_name is defined twice.") ;
       }
+      $rules{$rule_name} = $components_string;
+    }
 
-      if (@query_adds) {
-          my $adds = join ' | ', @query_adds;
-          $rules{'query'} = ( defined $rules{'query'} ? $rules{'query'} . ' | ' . $adds : $adds );
-      }
-
-      foreach my $tid (keys %thread_adds) {
-          my $adds = join ' | ', @{$thread_adds{$tid}};
-          $rules{'thread'.$tid} = ( defined $rules{'thread'.$tid} ? $rules{'thread'.$tid} . ' | ' . $adds : $adds );
-      }
-
-      if (@query_init_adds) {
-          my $adds = join ';; ', @query_init_adds;
-          $rules{'query_init'} = ( defined $rules{'query_init'} ? $rules{'query_init'} . ';; ' . $adds : $adds );
-      }
-
-      foreach my $tid (keys %thread_init_adds) {
-          my $adds = join ';; ', @{$thread_init_adds{$tid}};
-          $rules{'thread'.$tid.'_init'} = (
-              defined $rules{'thread'.$tid.'_init'}
-                  ? $rules{'thread'.$tid.'_init'} . ';; ' . $adds
-                  : ( defined $rules{'query_init'}
-                      ? $rules{'query_init'} . ';; ' . $adds
-                      : $adds
-                  )
-          );
-      }
-
-      # Now we have all the rules extracted from grammar files, time to parse
+    # Now we have all the rules extracted from grammar files, time to parse
 
     foreach my $rule_name (keys %rules) {
 
-          my $components_string = $rules{$rule_name};
-
+      my $components_string = $rules{$rule_name};
       my @orig_component_strings = split (m{\|}, $components_string);
 
-          # Check for ==FACTOR:N== directives and adjust probabilities
-          my $multiplier= 1;
-          my %component_factors= ();
-          my @modified_component_strings= ();
-          for (my $i=0; $i<=$#orig_component_strings; $i++) {
-              my $c= $orig_component_strings[$i];
-              if ($c =~ s{^\s*==FACTOR:([\d+\.]+)==\s*}{}sgio) {
-                  $component_factors{$i}= $1;
-                  $multiplier= int(1/$1) if $1 > 0 and $multiplier < int(1/$1);
-              }
-              push @modified_component_strings, $c;
-          }
+      #
+      # First check the component for compatibility and incompatibility markers
+      # /* compatibility X.Y.Z, A.B.C */ and similar markers are set when the component
+      # requires a server version X.Y.Z or higher or A.B.C or higher
+      # /* incompatibility X.Y.Z, A.B.C */ and similar markers are set when
+      # the component is no longer applicable starting from X.Y.Z and A.B.C
+      #
+      # For the component to be compatible or incompatible, the compatibility marker
+      # should have at least one match. That is, for the above example, if X.Y.Z == 10.2.37 and A.B.C == 10.3.18,
+      # the server version should be (ver 10.1- or ver 10.2 and >= 10.2.37 OR ver 10.3 and >= 10.3.18 or ver 10.4+)
+      # Thus, 10.2.41, 10.3.18 and 10.4.0 are compatible; 10.3.16 is not.
+      #
+      # For the component to be incompatible, it should either break compatibility rules above,
+      # or there should be an incompatibility marker (comment) with a match.
+      # For the incompatibility example above, to remain compatible,
+      # the server version should be (ver 10.2 and < 10.2.37 OR ver 10.3 and < 10.3.18 or ver 10.4+)
+      # Thus, 10.3.16 is compatible; 10.2.41, 10.3.18 and 10.4.0 are not.
+      #
+      # While it's a rare case, a component can have both incompatibility
+      # and compatibility requirements
 
-          my @component_strings= ();
-          for (my $i=0; $i<=$#modified_component_strings; $i++) {
-              my $count= int ((defined $component_factors{$i} ? $component_factors{$i} : 1) * $multiplier) || 1;
-              foreach (1..$count) {
-                  push @component_strings, $modified_component_strings[$i];
-              }
+      my @compatible_component_strings= ();
+      COMPONENT:
+      foreach my $cs (@orig_component_strings)
+      {
+        # First check for incompatibilities
+        if  ($cs=~ s/\/\*\s*incompatibility\s+([\d\.]+(?:e|-[0-9]+)?(?:,\s*[\d\.]+(?:e|-[0-9]+)?)*)\s*\*\///gs && $grammar->compatibility ne '0000') {
+          unless ($grammar->check_compatibility($1,my $positive=0)) {
+            sayDebug("Component $cs is incompatible with the requested ".$grammar->compatibility);
+            next COMPONENT;
           }
+        }
+        if ($cs=~ s/\/\*\s*compatibility\s+([\d\.]+(?:e|-[0-9]+)?(?:,\s*[\d\.]+(?:e|-[0-9]+)?)*)\s*\*\///gs && $grammar->compatibility ne '0000') {
+          unless ($grammar->check_compatibility($1,my $positive=1)) {
+            sayDebug("Component $cs is incompatible with the requested ".$grammar->compatibility);
+            next COMPONENT;
+          }
+        }
+        push @compatible_component_strings, $cs;
+      }
+      if (scalar(@compatible_component_strings) == 0) {
+        # If we removed all component strings due to incompability,
+        # we can't ignore the rule itself, but we'll make it empty
+        push @compatible_component_strings, '';
+      }
+      @orig_component_strings= @compatible_component_strings;
+
+      # Check for ==FACTOR:N== directives and adjust probabilities
+      my $multiplier= 1;
+      my %component_factors= ();
+      my @modified_component_strings= ();
+      for (my $i=0; $i<=$#orig_component_strings; $i++) {
+          my $c= $orig_component_strings[$i];
+          if ($c =~ s{^\s*==FACTOR:([\d+\.]+)==\s*}{}sgio) {
+              $component_factors{$i}= $1;
+              $multiplier= int(1/$1) if $1 > 0 and $multiplier < int(1/$1);
+          }
+          push @modified_component_strings, $c;
+      }
+
+      my @component_strings= ();
+      for (my $i=0; $i<=$#modified_component_strings; $i++) {
+          my $count= int ((defined $component_factors{$i} ? $component_factors{$i} : 1) * $multiplier) || 1;
+          foreach (1..$count) {
+              push @component_strings, $modified_component_strings[$i];
+          }
+      }
 
       my @components;
       my %components;

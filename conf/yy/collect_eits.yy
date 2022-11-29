@@ -18,4 +18,4 @@ thread1_init:
   ANALYZE TABLE { join ',', @{$executors->[0]->baseTables()} } PERSISTENT FOR ALL;
 
 query:
-  SET STATEMENT lock_wait_timeout=10 FOR ANALYZE TABLE _table PERSISTENT FOR ALL;
+  | ==FACTOR:0.01== SET STATEMENT lock_wait_timeout=10 FOR ANALYZE TABLE _table PERSISTENT FOR ALL;

@@ -335,10 +335,7 @@ sub doCombination {
   $command.= " @ARGV";
 
   # Count the number of basedirs in the final string to add the vardirs
-  my $servers= () = $command =~ /--basedir=/g;
-  foreach (1..$servers) {
-    $command .= " --vardir=$workdir/current${_}_${thread_id} ";
-  }
+  $command .= " --vardir=$workdir/current1_${thread_id} ";
 
   $command =~ s{[\t\r\n]}{ }sgio;
     if ($stdToLog) {
@@ -375,30 +372,28 @@ sub doCombination {
 
     $max_result = $result if $result > $max_result;
 
-    foreach my $s (1..$servers) {
-      my $from = $workdir.'/current'.$s.'_'.$thread_id;
-      system("$ENV{RQG_HOME}\\util\\unlock_handles.bat -nobanner \"$from\"") if osWindows() and -e "\"$from\"";
-      if ($result > 0 and not $discard_logs) {
-        my $to = $workdir.'/vardir'.$s.'_'.$trial_id;
-        say("[$thread_id] Copying $from to $to") if $stdToLog;
-        if (osWindows() and -e $from) {
-          system("move \"$from\" \"$to\"");
-          system("move \"$from"."_slave\" \"$to\"") if -e $from.'_slave';
-          open(OUT, ">$to/command");
-          print OUT $command;
-          close(OUT);
-        } else {
-          system("cp -r $from $to") if -e $from;
-          system("cp -r $from"."_slave $to") if -e $from.'_slave';
-          open(OUT, ">$to/command");
-          print OUT $command;
-          close(OUT);
-          if (defined $clean) {
-            say("[$thread_id] Clean mode active & failed run (".status2text($result)."): Archiving this vardir");
-            system('rm -f '.$workdir.'/vardir'.$s.'_'.$trial_id.'/tmp/master.sock');
-            system('tar zhcf '.$workdir.'/vardir'.$s.'_'.$trial_id.'.tar.gz -C '.$workdir.' ./vardir'.$s.'_'.$trial_id);
-            system("rm -Rf $to");
-          }
+    my $from = $workdir.'/current1_'.$thread_id;
+    system("$ENV{RQG_HOME}\\util\\unlock_handles.bat -nobanner \"$from\"") if osWindows() and -e "\"$from\"";
+    if ($result > 0 and not $discard_logs) {
+      my $to = $workdir.'/vardir1_'.$trial_id;
+      say("[$thread_id] Copying $from to $to") if $stdToLog;
+      if (osWindows() and -e $from) {
+        system("move \"$from\" \"$to\"");
+        system("move \"$from"."_slave\" \"$to\"") if -e $from.'_slave';
+        open(OUT, ">$to/command");
+        print OUT $command;
+        close(OUT);
+      } else {
+        system("cp -r $from $to") if -e $from;
+        system("cp -r $from"."_slave $to") if -e $from.'_slave';
+        open(OUT, ">$to/command");
+        print OUT $command;
+        close(OUT);
+        if (defined $clean) {
+          say("[$thread_id] Clean mode active & failed run (".status2text($result)."): Archiving this vardir");
+          system('rm -f '.$workdir.'/vardir1_'.$trial_id.'/tmp/master.sock');
+          system('tar zhcf '.$workdir.'/vardir1_'.$trial_id.'.tar.gz -C '.$workdir.' ./vardir1_'.$trial_id);
+          system("rm -Rf $to");
         }
       }
     }

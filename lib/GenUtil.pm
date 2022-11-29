@@ -23,7 +23,7 @@ use base 'Exporter';
            'tmpdir', 'safe_exit', 'group_cleaner',
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp',
-           'rqg_debug', 'unix2winPath',
+           'rqg_debug', 'unix2winPath', 'versionN6',
            'shorten_message');
 
 use strict;
@@ -215,6 +215,18 @@ sub group_cleaner {
     }
   }
   kill('KILL',@group);
+}
+
+sub versionN6 {
+  my $version = shift;
+  if ($version =~ /([0-9]+)\.([0-9]+)(?:\.([0-9]*))/) {
+    return sprintf("%02d%02d%02d",int($1),int($2),(defined $3 ? int($3) : 0));
+  } elsif ($version =~ /^\d{6}$/) {
+    return $version;
+  } else {
+    sayError("Unknown version format: $version");
+    return $version;
+  }
 }
 
 1;

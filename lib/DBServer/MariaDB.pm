@@ -1691,9 +1691,7 @@ sub versionNumbers {
 }
 
 sub versionNumeric {
-    my $self = shift;
-    $self->version =~ /([0-9]+)\.([0-9]+)\.([0-9]+)/;
-    return sprintf("%02d%02d%02d",int($1),int($2),int($3));
+    return versionN6($_[0]->version);
 }
 
 #############  Version specific stuff

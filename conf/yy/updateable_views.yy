@@ -26,6 +26,10 @@
 #
 ########################################################################
 
+query_init:
+  # This is to prevent other grammars from altering the schema
+  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON updateable_views.* TO CURRENT_USER;
+
 query:
   { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'updateable_views'; 'USE updateable_views' }
   ;; upd_views_query

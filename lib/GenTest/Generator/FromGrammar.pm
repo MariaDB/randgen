@@ -359,6 +359,21 @@ sub next {
       @sentence = (@sentence, expand(\%rule_counters,\%rule_invariants,$grammar_rules,($starting_rule)), ';; ');
     }
     sayDebug("Starting rule ($starting_rule) expanded:\n@sentence");
+    # Now when init rules (if any) have been used, we'll discard grammars
+    # without 'query' rule
+    my @new_grammars= ();
+    foreach my $grammar (@$grammars) {
+      if (exists $grammar->rules()->{query}) {
+        push @new_grammars, $grammar;
+      } else {
+        sayWarning("Grammar ".$grammar->file." does not have 'query' rule and will be further ignored");
+      }
+    }
+    unless (scalar (@new_grammars)) {
+      sayError("There are no grammars for test flow generation");
+      return STATUS_ENVIRONMENT_FAILURE;
+    }
+    $generator->[GENERATOR_GRAMMARS] = [ @new_grammars ];
   }
   else
   {

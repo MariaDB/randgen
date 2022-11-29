@@ -21,7 +21,7 @@ use lib "$ENV{RQG_HOME}/lib";
 use Carp;
 use GenUtil;
 use GenTest::Constants;
-use GenTest::PopulateSchema;
+use GenData::PopulateSchema;
 use Getopt::Long;
 
 my ($schema_file, $debug, $help, $dsn, $rows, $server_id, $seed, $basedir, $table_list, @tables);
@@ -60,7 +60,7 @@ if ($table_list) {
 }
 
 my @row_counts= (defined $rows ? split /,/, $rows : 100);
-my $app = GenTest::PopulateSchema->new(schema_file => $schema_file,
+my $app = GenData::PopulateSchema->new(spec_file => $schema_file,
                                      debug => $debug,
                                      dsn => $dsn,
                                      seed => $seed,

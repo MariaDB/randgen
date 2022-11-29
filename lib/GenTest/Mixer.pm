@@ -133,7 +133,7 @@ sub next {
     }
 
   my $queries = $mixer->generator()->next($executors);
-  if (not defined $queries) {
+  if (not defined $queries or (ref $queries ne 'ARRAY')) {
     say("Mixer: Internal grammar problem. Terminating.");
     return STATUS_ENVIRONMENT_FAILURE;
   } elsif ($queries->[0] eq '') {

@@ -22,13 +22,7 @@
 
 #include <conf/rr/basics.rr>
 
-
 query:
-  opttrace_query |
-  query | query | query | query | query | query | query | query | query
-;
-
-opttrace_query:
   opttrace_set_max_mem_size |
   opttrace_enable_disable_trace |
   opttrace_is_select | opttrace_is_select | opttrace_is_select | opttrace_is_select |
