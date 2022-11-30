@@ -114,11 +114,11 @@ sub run {
   #####
   # This property is for Gendata/GenTest to know on which servers to execute the flow
   # TODO: should be set to the number of masters
-  $self->setProperty('active_servers',[1]);
+  $self->setProperty('active_servers',[$servers[0]]);
 
   $self->printStep("Generating test data on the server(s)");
 
-  $status= $self->generate_data();
+  $status= $self->generateData();
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
@@ -127,7 +127,7 @@ sub run {
 
   #####
   $self->printStep("Running test flow");
-  $status= $self->run_test_flow();
+  $status= $self->runTestFlow();
 
   if ($status != STATUS_OK) {
     sayError("Test flow failed");

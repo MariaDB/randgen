@@ -60,7 +60,6 @@ require Exporter;
   GD_ENGINE
   GD_ROWS
   GD_VIEWS
-  GD_SERVER_ID
   GD_SQLTRACE
   GD_SHORT_COLUMN_NAMES
   GD_VARIATORS
@@ -130,7 +129,6 @@ use constant GD_ENGINE => 4;
 use constant GD_ROWS => 5;
 use constant GD_VIEWS => 6;
 use constant GD_EXECUTOR_ID => 7;
-use constant GD_SERVER_ID => 8;
 use constant GD_SQLTRACE => 9;
 use constant GD_SHORT_COLUMN_NAMES => 10;
 use constant GD_EXECUTOR => 11;
@@ -143,20 +141,20 @@ use constant GD_VCOLS => 18;
 use constant GD_RAND => 19;
 use constant GD_BASEDIR => 20;
 use constant GD_TABLES => 21;
+use constant GD_SERVER => 22;
 
 sub new {
     my $class = shift;
     my $self = $class->SUPER::new({
         'spec_file' => GD_SPEC,
         'debug' => GD_DEBUG,
-        'dsn' => GD_DSN,
         'seed' => GD_SEED,
         'engine' => GD_ENGINE,
         'executor_id' => GD_EXECUTOR_ID,
         'rows' => GD_ROWS,
         'views' => GD_VIEWS,
         'short_column_names' => GD_SHORT_COLUMN_NAMES,
-        'server_id' => GD_SERVER_ID,
+        'server' => GD_SERVER,
         'variators' => GD_VARIATORS,
         'sqltrace' => GD_SQLTRACE,
         'vardir' => GD_VARDIR,
@@ -175,8 +173,8 @@ sub new {
     }
     $self->[GD_RAND]= GenTest::Random->new(seed => $self->seed());
 
-    $self->[GD_EXECUTOR] = GenTest::Executor->newFromDSN(
-      $self->dsn(),
+    $self->[GD_EXECUTOR] = GenTest::Executor->newFromServer(
+      $self->[GD_SERVER],
       sqltrace => $self->sqltrace,
       vardir => $self->vardir,
       seed => $self->seed,
@@ -198,18 +196,19 @@ sub doGenData {
     }
     $gd_class="GenData::$gd_class";
     eval ("require $gd_class") or croak $@;
-    foreach my $i (@{$props->active_servers}) {
+    foreach my $i (sort { $a <=> $b } keys %{$props->server_specific}) {
       my $so= $props->server_specific->{$i};
+      next unless $so->{active};
       my $res= $gd_class->new(
          compatibility => $props->compatibility,
          debug => $props->debug,
-         dsn => $so->{dsn},
          engine => $so->{engine},
          executor_id => $i,
          partitions => $so->{partitions},
          rows => $props->rows,
          seed => $props->seed(),
          short_column_names => $props->short_column_names,
+         server => $so->{server},
          spec_file => $gd,
          sqltrace=> $props->sqltrace,
          vardir => $props->vardir,
@@ -268,10 +267,6 @@ sub views {
 
 sub partitions {
     return $_[0]->[GD_PARTITIONS];
-}
-
-sub server_id {
-    return $_[0]->[GD_SERVER_ID];
 }
 
 sub sqltrace {

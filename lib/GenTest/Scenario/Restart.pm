@@ -82,7 +82,7 @@ sub run {
   #####
   $self->printStep("Generating test data");
 
-  $status= $self->generate_data();
+  $status= $self->generateData();
 
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
@@ -123,7 +123,7 @@ sub run {
       }
     }
     else {
-      my $res= $self->run_test_flow();
+      my $res= $self->runTestFlow();
       exit $res;
     }
 

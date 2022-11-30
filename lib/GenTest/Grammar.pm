@@ -175,6 +175,15 @@ sub parseFromString {
     push @{$grammar->[GRAMMAR_FEATURES]}, map { s/^\s*(.*?)\s*$/$1/; $_ } split /,/, $1;
   }
 
+  # It turns out that MySQL fails with a syntax error upon executable comments of the kind /*!100101 ... */
+  # (with 6 digits for the version), so we have to process them here as well.
+  # To avoid complicated logic, we'll replace such executable comments with plain ones
+  # but only when the server vesion is 5xxxx
+
+  if ($grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY] =~ /^05\d{4}$/) {
+    while ($grammar_string =~ s{\/\*\!1\d{5}}{\/\*}g) {};
+  }
+
   # Grammars can contain "reverse executable comments" -- imitation of feature MDEV-7381
   # Syntax is /*!!nnnnnn ... */.
   # If nnnnnn is less than the server version, it should be executed,

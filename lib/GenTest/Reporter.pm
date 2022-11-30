@@ -45,7 +45,7 @@ use Carp;
 use POSIX;
 
 use constant REPORTER_PRNG              => 0;
-use constant REPORTER_SERVER_DSN        => 1;
+use constant REPORTER_SERVER            => 1;
 use constant REPORTER_SERVER_VARIABLES  => 2;
 use constant REPORTER_SERVER_INFO       => 3;
 use constant REPORTER_SERVER_PLUGINS    => 4;
@@ -80,14 +80,14 @@ sub new {
   my $class = shift;
 
   my $reporter = $class->SUPER::new({
-    dsn => REPORTER_SERVER_DSN,
+    server => REPORTER_SERVER,
     test_start => REPORTER_TEST_START,
     test_end => REPORTER_TEST_END,
     test_duration => REPORTER_TEST_DURATION,
     properties => REPORTER_PROPERTIES
   }, @_);
 
-  $reporter->[REPORTER_DBH] = DBI->connect($reporter->dsn(), undef, undef, { mysql_multi_statements => 1, RaiseError => 0 , PrintError => 1 } );
+  $reporter->[REPORTER_DBH] = DBI->connect($reporter->server->dsn(), undef, undef, { mysql_multi_statements => 1, RaiseError => 0 , PrintError => 1 } );
   return undef if not defined $reporter->[REPORTER_DBH];
   my $sth = $reporter->[REPORTER_DBH]->prepare("SHOW VARIABLES");
 
@@ -108,7 +108,7 @@ sub new {
     $reporter->[REPORTER_SERVER_INFO]->{slave_port} = $slave_info->[2];
   }
 
-  if ($reporter->serverVariable('version') !~ m{^5\.0}sgio) {
+  if ($reporter->server->serverVariable('version') !~ m{^5\.0}sgio) {
     $reporter->[REPORTER_SERVER_PLUGINS] = $reporter->[REPORTER_DBH]->selectall_arrayref("
                   SELECT PLUGIN_NAME, PLUGIN_LIBRARY
                   FROM INFORMATION_SCHEMA.PLUGINS
@@ -165,8 +165,8 @@ sub new {
     "client/RelWithDebInfo", "client/Debug",
     "client", "../client", "bin", "../bin"
   ) {
-          if (-e $reporter->serverVariable('basedir').'/'.$client_path) {
-      $reporter->[REPORTER_SERVER_INFO]->{'client_bindir'} = $reporter->serverVariable('basedir').'/'.$client_path;
+          if (-e $reporter->server->serverVariable('basedir').'/'.$client_path) {
+      $reporter->[REPORTER_SERVER_INFO]->{'client_bindir'} = $reporter->server->serverVariable('basedir').'/'.$client_path;
                   last;
           }
   }
@@ -177,7 +177,7 @@ sub new {
     "../log/mysqld1.err", # MTRv2 regular layout
     "../mysql.err"        # DBServer::MariaDB layout
   ) {
-    my $possible_path = File::Spec->catfile($reporter->serverVariable('datadir'),$errorlog_path);
+    my $possible_path = File::Spec->catfile($reporter->server->serverVariable('datadir'),$errorlog_path);
     if (-e $possible_path) {
       $reporter->[REPORTER_SERVER_INFO]->{'errorlog'} = $possible_path;
       last;
@@ -195,7 +195,7 @@ sub new {
 }
 
 sub updatePid {
-  my $pid_file = $_[0]->serverVariable('pid_file');
+  my $pid_file = $_[0]->server->serverVariable('pid_file');
 
   open (PF, $pid_file);
   read (PF, my $pid, -s $pid_file);
@@ -218,20 +218,12 @@ sub init {
   return STATUS_OK;
 }
 
-sub dsn {
-  return $_[0]->[REPORTER_SERVER_DSN];
-}
-
-sub serverVariable {
-  return $_[0]->[REPORTER_SERVER_VARIABLES]->{$_[1]};
+sub server {
+  return $_[0]->[REPORTER_SERVER];
 }
 
 sub serverInfo {
   $_[0]->[REPORTER_SERVER_INFO]->{$_[1]};
-}
-
-sub serverPlugins {
-  return $_[0]->[REPORTER_SERVER_PLUGINS];
 }
 
 sub testStart {
@@ -280,7 +272,7 @@ sub findMySQLD {
     my $bindir;
     # Handling general basedirs and MTRv1 style basedir,
     # but trying not to search the entire universe just for the sake of it
-    my @basedirs = ($reporter->serverVariable('basedir'));
+    my @basedirs = ($reporter->server->serverVariable('basedir'));
     find(sub {
             $bindir=$File::Find::dir if $_ eq $binname;
     }, @basedirs);
@@ -293,19 +285,19 @@ sub dbh {
   sayDebug("Reporter ".(ref $reporter)." is trying to get dbh");
   my $dbh;
   sigaction SIGALRM, new POSIX::SigAction sub {
-                sayError("Reporter ".(ref $reporter).": Timeout upon connecting to ".$reporter->dsn);
+                sayError("Reporter ".(ref $reporter).": Timeout upon connecting to ".$reporter->server->dsn);
                 return STATUS_SERVER_DEADLOCKED;
   } or die "Reporter ".(ref $reporter).": Error setting SIGALRM handler: $!\n";
   alarm (REPORTER_CONNECT_TIMEOUT_THRESHOLD);
   # Due to MDEV-24998, connect here sometimes returns error 2013
   # falsely indicating server crash. To avoid it, we will try twice before giving up
-  unless ($dbh = DBI->connect($reporter->dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} )) {
-    sayWarning("Reporter ".(ref $reporter).": Error ".$DBI::err." upon connecting to ".$reporter->dsn.". Trying again");
-    $dbh = DBI->connect($reporter->dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} );
+  unless ($dbh = DBI->connect($reporter->server->dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} )) {
+    sayWarning("Reporter ".(ref $reporter).": Error ".$DBI::err." upon connecting to ".$reporter->server->dsn.". Trying again");
+    $dbh = DBI->connect($reporter->server->dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} );
   }
   alarm (0);
   if (defined GenTest::Executor::MariaDB::errorType($DBI::err)) {
-    sayError("Reporter ".(ref $reporter).": Failed to connect to ".$reporter->dsn.": ".$DBI::err);
+    sayError("Reporter ".(ref $reporter).": Failed to connect to ".$reporter->server->dsn.": ".$DBI::err);
     return undef;
   }
   return $dbh;

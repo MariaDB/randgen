@@ -37,7 +37,6 @@ use constant MIXER_VALIDATORS  => 2;
 use constant MIXER_FILTERS  => 3;
 use constant MIXER_PROPERTIES  => 4;
 use constant MIXER_END_TIME  => 5;
-use constant MIXER_RESTART_TIMEOUT => 6;
 use constant MIXER_VARIATOR_MANAGER  => 8;
 
 my %rule_status;
@@ -55,7 +54,6 @@ sub new {
         'properties'  => MIXER_PROPERTIES,
         'filters'  => MIXER_FILTERS,
         'end_time'  => MIXER_END_TIME,
-        'restart_timeout' => MIXER_RESTART_TIMEOUT,
     }, @_);
 
     foreach my $executor (@{$mixer->executors()}) {
@@ -173,39 +171,33 @@ sub next {
     }
 
     my @execution_results;
-    my $restart_timeout = $mixer->restart_timeout();
 
       EXECUTE_QUERY:
     foreach my $executor (@$executors) {
       my $execution_result = $executor->execute($query);
 
       # If the server has crashed but we expect server restarts during the test, we will wait and retry
-      if (($execution_result->status() == STATUS_SERVER_CRASHED
+      if ($execution_result->status() == STATUS_SERVER_CRASHED
           or $execution_result->status() == STATUS_SERVER_KILLED
-          or $execution_result->status() == STATUS_REPLICATION_FAILURE
-         ) and $restart_timeout)
+          or $execution_result->status() == STATUS_SERVER_UNAVAILABLE
+         )
       {
-                say("Mixer: Server has gone away, waiting for $restart_timeout more seconds to see if it gets back")
-          if $restart_timeout == $mixer->restart_timeout() or $restart_timeout == 1;
-                while ($restart_timeout) {
-                    sleep 1;
-                    $restart_timeout--;
-                    if ($executor->execute("SELECT 'Heartbeat'", EXECUTOR_FLAG_SILENT)->status() == STATUS_OK) {
-                        say("Mixer: Server is back, repeating the last query");
-                        redo EXECUTE_QUERY;
-                    }
-                }
-            }
-      $max_status = $execution_result->status() if $execution_result->status() > $max_status;
-      push @execution_results, $execution_result;
+        if ($executor->server->plannedDowntime() == STATUS_OK) {
+          say("Mixer: Server is back, repeating the last query");
+          redo EXECUTE_QUERY;
+        } else {
+          say("Mixer: Server has gone away");
+          $max_status = $execution_result->status() if $execution_result->status() > $max_status;
+          push @execution_results, $execution_result;
+        }
+      }
 
       # If one server has crashed, do not send the query to the second one in order to preserve consistency
       if ($execution_result->status() > STATUS_CRITICAL_FAILURE) {
-        say("Mixer: Server crash or critical failure " . $execution_result->err() . " (". status2text($execution_result->status()) . ") reported at dsn ".$executor->dsn());
+        say("Mixer: Server crash or critical failure " . $execution_result->err() . " (". status2text($execution_result->status()) . ") reported at dsn ".$executor->server->dsn());
         last query;
       }
 
-      $restart_timeout = $mixer->restart_timeout();
       next query if $execution_result->status() == STATUS_SKIP;
     }
 
@@ -273,10 +265,6 @@ sub setValidators {
 
 sub end_time {
   return ($_[0]->[MIXER_END_TIME] > 0) ? $_[0]->[MIXER_END_TIME] : undef;
-}
-
-sub restart_timeout {
-  return ( $_[0]->[MIXER_RESTART_TIMEOUT] || 0 );
 }
 
 1;

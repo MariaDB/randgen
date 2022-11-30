@@ -100,7 +100,6 @@ my @errors = (
 my @patterns = map { qr{$_}i } @errors;
 
 use constant EXECUTOR_MYSQL_AUTOCOMMIT => 101;
-use constant EXECUTOR_MYSQL_SERVER_VARIABLES => 102;
 
 #
 # Column positions for SHOW SLAVES
@@ -2592,7 +2591,7 @@ my $query_no = 0;
 
 sub init {
     my $executor = shift;
-    my $dbh = DBI->connect($executor->dsn(), undef, undef, {
+    my $dbh = DBI->connect($executor->server->dsn(), undef, undef, {
         PrintError => 0,
         RaiseError => 0,
         AutoCommit => 1,
@@ -2601,13 +2600,13 @@ sub init {
     } );
 
     if (not defined $dbh) {
-        sayError("connect() to dsn ".$executor->dsn()." failed: ".$DBI::errstr);
+        sayError("connect() to dsn ".$executor->server->dsn()." failed: ".$DBI::errstr);
         return STATUS_ENVIRONMENT_FAILURE;
     }
 
     $executor->setDbh($dbh);
 
-    my $service_dbh = DBI->connect($executor->dsn(), undef, undef, {
+    my $service_dbh = DBI->connect($executor->server->dsn(), undef, undef, {
         PrintError => 0,
         RaiseError => 0,
         AutoCommit => 1,
@@ -2616,19 +2615,11 @@ sub init {
     } );
 
     if (not defined $service_dbh) {
-        sayError("connect() to dsn ".$executor->dsn()." (service connection) failed: ".$DBI::errstr);
+        sayError("connect() to dsn ".$executor->server->dsn()." (service connection) failed: ".$DBI::errstr);
         return STATUS_ENVIRONMENT_FAILURE;
     }
 
     $executor->setServiceDbh($service_dbh);
-
-    my ($host) = $executor->dsn() =~ m/:host=([^:]+):/;
-    $executor->setHost($host);
-    my ($port) = $executor->dsn() =~ m/:port=([^:]+):/;
-    $executor->setPort($port);
-
-    $executor->version();
-    $executor->serverVariables();
 
     #
     # Hack around bug 35676, optiimzer_switch must be set sesson-wide in order to have effect
@@ -2688,15 +2679,6 @@ sub execute {
 
     if (!rqg_debug() && $query =~ s/\/\*\s*EXECUTOR_FLAG_SILENT\s*\*\///g) {
         $execution_flags |= EXECUTOR_FLAG_SILENT;
-    }
-
-    # It turns out that MySQL fails with a syntax error upon executable comments of the kind /*!100101 ... */
-    # (with 6 digits for the version), so we have to process them here as well.
-    # To avoid complicated logic, we'll replace such executable comments with plain ones
-    # but only when the server vesion is 5xxxx
-
-    if ($executor->versionNumeric() =~ /^05\d{4}$/) {
-      while ($query =~ s/\/\*\!1\d{5}/\/\*/g) {};
     }
 
     # Filter out any /*executor */ comments that do not pertain to this particular Executor/DBI
@@ -2842,7 +2824,7 @@ sub execute {
             ($err_type == STATUS_SERVER_CRASHED) ||
             ($err_type == STATUS_SERVER_KILLED)
         ) {
-            $dbh = DBI->connect($executor->dsn(), undef, undef, {
+            $dbh = DBI->connect($executor->server->dsn(), undef, undef, {
                 PrintError => 0,
                 RaiseError => 0,
                 AutoCommit => 1,
@@ -2912,7 +2894,7 @@ sub execute {
             say("Query: $query_for_print returned more than MAX_ROWS_THRESHOLD (".MAX_ROWS_THRESHOLD().") rows. Killing it ...");
             $executor->[EXECUTOR_RETURNED_ROW_COUNTS]->{'>MAX_ROWS_THRESHOLD'}++;
 
-            my $kill_dbh = DBI->connect($executor->dsn(), undef, undef, { PrintError => 1 });
+            my $kill_dbh = DBI->connect($executor->server->dsn(), undef, undef, { PrintError => 1 });
             $kill_dbh->do("KILL QUERY ".$executor->connectionId());
             $kill_dbh->disconnect();
             $sth->finish();
@@ -2960,47 +2942,6 @@ sub execute {
     }
 
     return $result;
-}
-
-sub serverVariables {
-    my $executor= shift;
-    if (not keys %{$executor->[EXECUTOR_MYSQL_SERVER_VARIABLES]}) {
-        my $sth = $executor->dbh()->prepare("SHOW VARIABLES");
-        $sth->execute();
-        my %vars = ();
-        while (my $array_ref = $sth->fetchrow_arrayref()) {
-            $vars{$array_ref->[0]} = $array_ref->[1];
-        }
-        $sth->finish();
-        $executor->[EXECUTOR_MYSQL_SERVER_VARIABLES] = \%vars;
-    }
-    return $executor->[EXECUTOR_MYSQL_SERVER_VARIABLES];
-}
-
-sub serverVariable {
-    my ($executor, $variable_name)= @_;
-    return $executor->dbh()->selectrow_array('SELECT @@'.$variable_name);
-}
-
-sub version {
-    my $executor = shift;
-    my $ver= $executor->serverVersion;
-    unless ($ver) {
-        $ver= $executor->dbh()->selectrow_array("SELECT VERSION()");
-        $executor->setServerVersion($ver);
-        $ver =~ /([0-9]+)\.([0-9]+)\.([0-9]+)/;
-        $ver =~ /^(\d+\.\d+)/;
-        $executor->setServerMajorVersion($1);
-    }
-    return $ver;
-}
-
-sub versionNumeric {
-    return versionN6($_[0]->serverVersion);
-}
-
-sub serverName {
-    return ($_[0]->serverVersion =~ /mariadb/i ? 'MariaDB' : 'MySQL');
 }
 
 sub slaveInfo {
@@ -3062,15 +3003,9 @@ sub explain {
 
 }
 
-# If Oracle ever issues 5.10.x, this logic will stop working.
-# Until then it should be fine
 sub is_query_explainable {
-    my ($executor, $query) = @_;
-    if ( $executor->serverMajorVersion > 5.5 ) {
-        return $query =~ /^\s*(?:SELECT|UPDATE|DELETE|INSERT)/i;
-    } else {
-        return $query =~ /^\s*SELECT/;
-    }
+  my ($executor, $query) = @_;
+  return $query =~ /^\s*(?:SELECT|UPDATE|DELETE|INSERT)/i;
 }
 
 sub disconnect {
@@ -3084,7 +3019,7 @@ sub DESTROY {
     $executor->disconnect();
 
     say("-----------------------");
-    say("Statistics for Executor ".$executor->dsn());
+    say("Statistics for Executor ".$executor->server->dsn());
     if (
         (rqg_debug()) &&
         (defined $executor->[EXECUTOR_STATUS_COUNTS])

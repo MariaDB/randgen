@@ -41,11 +41,14 @@ use File::Copy;
 use File::Compare;
 use POSIX;
 
+use constant SC_COMPARISON_DEFAULT_VALIDATOR => 'ResultsetComparator';
+
 use DBServer::MariaDB;
 
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
+  $self->printTitle();
   return $self;
 }
 
@@ -59,6 +62,12 @@ sub run {
     sayError("There should be at least two servers for the comparison test");
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[]);
   }
+
+  if (! $self->getProperty('validators') or scalar(@{$self->getProperty('validators')}) == 0) {
+    sayWarning("No validators are defined, using ".SC_COMPARISON_DEFAULT_VALIDATOR);
+    $self->setProperty('validators',[ SC_COMPARISON_DEFAULT_VALIDATOR ]);
+  }
+
   my @servers= ();
   foreach (1..$srv_count) {
     push @servers, $self->prepareServer($_);
@@ -67,33 +76,38 @@ sub run {
   #####
   $self->printStep("Starting $srv_count servers");
 
-  my @active_servers= ();
   foreach my $s (0..$#servers) {
     $status= $servers[$s]->startServer;
     if ($status != STATUS_OK) {
       sayError("Server ".($s+1)." failed to start");
       return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[@servers]);
     }
-    push @active_servers, $s+1;
   }
 
   #####
   # This property is for Gendata/GenTest to know on how many servers to execute the flow
   # TODO: should be set to the number of masters
-  $self->setProperty('active_servers',\@active_servers);
+  $self->setProperty('active_servers',\@servers);
 
   $self->printStep("Generating test data");
-
-  $status= $self->generate_data();
+  $status= $self->generateData();
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
     return $self->finalize($status,[@servers]);
   }
 
+  $self->printStep("Valiadating test data");
+  $status= $self->validateData();
+
+  if ($status != STATUS_OK) {
+    sayError("Data validation failed");
+    return $self->finalize($status,[@servers]);
+  }
+
   #####
   $self->printStep("Running test flow");
-  $status= $self->run_test_flow();
+  $status= $self->runTestFlow();
 
   if ($status != STATUS_OK) {
     sayError("Test flow failed");

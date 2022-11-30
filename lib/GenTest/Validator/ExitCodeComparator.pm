@@ -126,7 +126,7 @@ sub validate {
     # On different major versions, error code may be different.
     # We can only check that they fall into the same category
     # (and even then there likely to be false positives)
-    if ( $executors->[0]->serverMajorVersion != $executors->[1]->serverMajorVersion ) {
+    if ( $executors->[0]->server->majorVersion != $executors->[1]->server->majorVersion ) {
         if ($results->[0]->status() != $results->[1]->status) {
           logResult($executors, $results);
           return STATUS_ERROR_MISMATCH;

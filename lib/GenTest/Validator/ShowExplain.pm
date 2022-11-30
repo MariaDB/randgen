@@ -66,7 +66,7 @@ sub validate {
 
   unless ($child_dbh)
   {
-    $child_dbh = DBI->connect($executor->dsn(), undef, undef, { PrintError => 0 } );
+    $child_dbh = DBI->connect($executor->server->dsn(), undef, undef, { PrintError => 0 } );
     if ($DBI::err)
     {
       say("ERROR: Could not create child connection in ShowExplain: " . $DBI::errstr);

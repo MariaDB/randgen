@@ -255,7 +255,6 @@ sub setPropertiesFromHash {
   $gentestProps->property('ps-protocol',1) if $props->{ps_protocol};
   $gentestProps->property('redefines',$props->{redefines}) if $props->{redefines};
   $gentestProps->property('reporters',$props->{reporters}) if $props->{reporters};
-  $gentestProps->property('restart-timeout',$props->{restart_timeout}) if defined $props->{restart_timeout};
   $gentestProps->property('rows',$props->{rows}) if defined $props->{rows};
   $gentestProps->property('seed',$props->{seed}) if defined $props->{seed};
   $gentestProps->property('server_specific',$props->{server_specific}) if $props->{server_specific};

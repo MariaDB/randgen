@@ -21,7 +21,7 @@
 
 $upgrade_scenarios =
   [
-    '--scenario=LiveUpgrade --duration=180',
+    '--scenario=NormalUpgrades --duration=180',
     '--scenario=CrashUpgrade --duration=180',
     '--scenario=UndoLogUpgrade --duration=300',
   ];

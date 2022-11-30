@@ -87,7 +87,7 @@ sub monitor {
   return STATUS_OK if $reporter ne $first_reporter;
 
   unless (defined $server_version) {
-    if ($reporter->serverVariable('version') =~ /^(\d+)\.(\d+)\.\d+(-\d+)?/) {
+    if ($reporter->server->serverVariable('version') =~ /^(\d+)\.(\d+)\.\d+(-\d+)?/) {
       $server_version= sprintf("%02d%02d",$1, $2);
       $server_version.= 'e' if defined $3;
     }

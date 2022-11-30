@@ -70,7 +70,7 @@ $combinations = [
     {
       engines => [
         [ @$basic_engine_combinations_109 ],
-        [ @$non_crash_scenario_combinations_109, '--scenario=DumpUpgrade',
+        [ @$non_crash_scenario_combinations_109, '--scenario=NormalUpgrades',
           '', '', '', '', '', '', '', '', '', '', ''
         ],
       ],

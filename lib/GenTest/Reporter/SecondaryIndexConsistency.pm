@@ -47,7 +47,7 @@ sub monitor {
     # Don't run the monitor too often, it's expensive
     return STATUS_OK if (time() - $last_run) < $interval;
 
-    my $dbh = DBI->connect($reporter->dsn());
+    my $dbh = $reporter->dbh;
 
     say("Testing consistency of secondary indexes");
 
@@ -92,7 +92,7 @@ sub monitor {
             if ($diff) {
                 sayError("$diff");
                 sayError("Found above difference for indexes PRIMARY and $ind for table $table");
-                return STATUS_INNODB_INDEX_CORRUPTION;
+                return STATUS_DATABASE_CORRUPTION;
             } else {
                 say("Indexes PRIMARY and $ind produced identical data");
             }

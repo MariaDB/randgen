@@ -119,7 +119,7 @@ sub run {
   #####
   $self->printStep("Generating data on the old server");
 
-  $status= $self->generate_data();
+  $status= $self->generateData();
 
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
@@ -152,7 +152,7 @@ sub run {
     }
   }
   else {
-    my $res= $self->run_test_flow();
+    my $res= $self->runTestFlow();
     exit $res;
   }
 
@@ -291,7 +291,7 @@ sub run {
   $self->printStep("Running test flow on the new server");
 
   $self->setProperty('duration',int($self->getProperty('duration')/3));
-  $status= $self->run_test_flow();
+  $status= $self->runTestFlow();
 
   if ($status != STATUS_OK) {
     sayError("Test flow on the new server failed");

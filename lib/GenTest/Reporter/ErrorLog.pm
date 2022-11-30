@@ -32,11 +32,11 @@ sub report {
 
   # master.err-old is created when logs are rotated due to SIGHUP
 
-  my $main_log = $reporter->serverVariable('log_error');
+  my $main_log = $reporter->server->serverVariable('log_error');
     if ($main_log eq '') {
         foreach my $errlog ('../log/master.err', '../mysql.err') {
-            if (-f $reporter->serverVariable('datadir').'/'.$errlog) {
-                $main_log = $reporter->serverVariable('datadir').'/'.$errlog;
+            if (-f $reporter->server->serverVariable('datadir').'/'.$errlog) {
+                $main_log = $reporter->server->serverVariable('datadir').'/'.$errlog;
                 last;
             }
         }

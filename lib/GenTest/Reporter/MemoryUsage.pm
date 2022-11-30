@@ -57,7 +57,7 @@ sub monitor {
     }
     if (rqg_debug()) {
       say("MemoryUsage monitor for pid $pid: memory usage: ".format_mem_value($mem));
-      $dbh = DBI->connect($reporter->dsn()) unless $dbh;
+      $dbh = $reporter->dbh unless $dbh;
       $memusage= $dbh->selectall_arrayref("select event_name, sum_number_of_bytes_alloc, current_number_of_bytes_used, high_number_of_bytes_used from performance_schema.memory_summary_global_by_event_name order by current_number_of_bytes_used desc limit 5");
       say(Dumper($memusage));
     }
@@ -68,19 +68,6 @@ sub monitor {
       $max_cpu= $cpu;
     }
   }
-
-#  my $dsn = $reporter->dsn();
-#  my $dbh = DBI->connect($dsn);
-#
-#  if (defined $dbh) {
-#    my ($total_rows, $total_data, $total_indexes) = $dbh->selectrow_array("
-#      SELECT SUM(TABLE_ROWS) , SUM(DATA_LENGTH) , SUM(INDEX_LENGTH)
-#      FROM INFORMATION_SCHEMA.TABLES
-#      WHERE TABLE_SCHEMA NOT IN ('information_schema','mysql','performance_schema')
-#    ");
-
-#    say("Total_rows: $total_rows; total_data: $total_data; total_indexes: $total_indexes");
-#  }
   return STATUS_OK;
 }
 

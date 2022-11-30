@@ -60,7 +60,7 @@ sub status {
   return STATUS_OK if $reporter ne $first_reporter;
 
     my $server = $reporter->properties->server_specific->{1}->{server};
-    my $dbh = DBI->connect($server->dsn());
+    my $dbh = $reporter->dbh;
 
   if ($dbh) {
     my $slave_status = $dbh->selectrow_arrayref("SHOW SLAVE STATUS /* ReplicationSlaveStatus::status */");

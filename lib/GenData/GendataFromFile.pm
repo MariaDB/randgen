@@ -89,7 +89,7 @@ sub run {
                                                dsn => $self->dsn,
                                                seed => $self->seed,
                                                rows => \@populate_rows,
-                                               basedir => $executor->serverVariable('basedir'),
+                                               basedir => $executor->server->serverVariable('basedir'),
           );
           if ($populate->run() == STATUS_OK)
           {

@@ -40,7 +40,7 @@ sub transform {
 
 sub variate {
   my ($self, $query, $executor) = @_;
-  return $query unless versionN6($executor->serverVersion()) >= 100601;
+  return $query unless versionN6($executor->server->version()) >= 100601;
 
   my $limit= $self->random->uint16(0,100);
   my $op= $self->random->arrayElement(['<','>','<=','>=','=']);

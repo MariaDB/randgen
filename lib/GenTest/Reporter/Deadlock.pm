@@ -82,7 +82,7 @@ sub connect {
   # and a temporary one for checking the ability to connect.
   # The permanent one is coming from Reporter. This is the temporary one
   my $dbh;
-  my $dsn = $reporter->dsn();
+  my $dsn = $reporter->server->dsn();
 
   sigaction SIGALRM, new POSIX::SigAction sub {
                 sayError("Deadlock reporter: Timeout upon connecting to $dsn");
@@ -236,18 +236,7 @@ sub alarm_thread {
 sub dbh_thread {
   local $SIG{KILL} = sub { threads->exit() };
   my $reporter = shift;
-  my $dsn = $reporter->dsn();
-
-  # We connect on every run in order to be able to use a timeout to detect very debilitating deadlocks.
-
-  my $dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2, PrintError => 1, RaiseError => 0 });
-
-  if (defined GenTest::Executor::MariaDB::errorType($DBI::err)) {
-    return GenTest::Executor::MariaDB::errorType($DBI::err);
-  } elsif (not defined $dbh) {
-    return STATUS_UNKNOWN_ERROR;
-  }
-
+  my $dbh = $reporter->dbh();
   my $processlist = $dbh->selectall_arrayref("SHOW FULL PROCESSLIST");
   return GenTest::Executor::MariaDB::errorType($DBI::err) if not defined $processlist;
 
@@ -264,7 +253,7 @@ sub dbh_thread {
   }
 
   if ($stalled_queries >= STALLED_QUERY_COUNT_THRESHOLD) {
-    sayError("Deadlock reporter: $stalled_queries stalled queries detected, declaring deadlock at DSN $dsn.");
+    sayError("Deadlock reporter: $stalled_queries stalled queries detected, declaring deadlock at DSN ".$reporter->server->dsn);
     print Dumper $processlist;
     return STATUS_SERVER_DEADLOCKED;
   } else {
@@ -275,7 +264,7 @@ sub dbh_thread {
 sub report {
   my $reporter = shift;
   my $server_pid = $reporter->serverInfo('pid');
-  my $datadir = $reporter->serverVariable('datadir');
+  my $datadir = $reporter->server->serverVariable('datadir');
 
   if (
     ($^O eq 'MSWin32') ||

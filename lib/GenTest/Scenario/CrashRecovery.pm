@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2020 MariaDB Corporation Ab
+# Copyright (C) 2017, 2022 MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
 #
 # The module implements a crash recovery/upgrade scenario.
 #
-# The test starts the old server, kills the server, starts the new one
-# on the same datadir, runs mysql_upgrade if necessary, performs a basic
-# data check and executes some more flow.
+# The test starts the old server, runs some test flow, kills the server,
+# starts the new one on the same datadir, runs mysql_upgrade if necessary,
+# performs basic data checks and executes some more flow
 #
 ########################################################################
 
-package GenTest::Scenario::CrashUpgrade;
+package GenTest::Scenario::CrashRecovery;
 
 require Exporter;
 @ISA = qw(GenTest::Scenario::Upgrade);
@@ -77,17 +77,17 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Old server failed to start");
-    return $self->finalize(STATUS_TEST_FAILURE,[]);
+    return $self->finalize($status,[]);
   }
 
   #####
   $self->printStep("Generating data on the old server");
 
-  $status= $self->generate_data();
+  $status= $self->generateData();
 
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return $self->finalize($status,[$old_server]);
   }
 
   #####
@@ -116,13 +116,13 @@ sub run {
     }
   }
   else {
-    my $res= $self->run_test_flow();
+    my $res= $self->runTestFlow();
     exit $res;
   }
 
   if ($status != STATUS_OK) {
     sayError("Test flow on the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return $self->finalize($status,[$old_server]);
   }
 
   #####
@@ -132,7 +132,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Could not kill the old server");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return $self->finalize($status,[$old_server]);
   }
 
   # We don't care about the result of gentest after killing the server,
@@ -146,7 +146,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Found fatal errors in the log, old server shutdown has apparently failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return $self->finalize($status,[$old_server]);
   }
 
   #####
@@ -219,8 +219,8 @@ sub run {
   #####
   $self->printStep("Running test flow on the new server");
 
-  $self->setProperty('duration',int($self->getProperty('duration')/3));
-  $status= $self->run_test_flow();
+  $self->setProperty('duration',int($self->getProperty('duration')/2));
+  $status= $self->runTestFlow();
 
   if ($status != STATUS_OK) {
     sayError("Test flow on the new server failed");

@@ -622,7 +622,7 @@ sub gen_table {
           }
           # For InnoDB and HEAP (TODO: and probably some other engines, but not MyISAM or Aria)
           # the auto-increment column has to be the first one in the primary key
-          if ($has_autoinc and ($e =~ /InnoDB|MEMORY|HEAP/i or $e eq '' and $executor->serverVariable('default_storage_engine')))
+          if ($has_autoinc and ($e =~ /InnoDB|MEMORY|HEAP/i or $e eq '' and $executor->server->serverVariable('default_storage_engine')))
           {
               delete $pk_columns{id};
               if (scalar(keys %pk_columns)) {

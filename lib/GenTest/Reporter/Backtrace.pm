@@ -30,7 +30,7 @@ use GenTest::Reporter;
 sub report {
   my $reporter = shift;
 
-  my $datadir = $reporter->serverVariable('datadir');
+  my $datadir = $reporter->server->serverVariable('datadir');
   my $binary = $reporter->serverInfo('binary');
   my $bindir = $reporter->serverInfo('bindir');
   my $pid = $reporter->serverInfo('pid');

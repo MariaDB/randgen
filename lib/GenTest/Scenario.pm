@@ -164,21 +164,106 @@ sub setServerStartupOption {
   $self->setServerSpecific($srvnum, 'mysqld', [ @$server_options ]);
 }
 
-sub generate_data {
+sub generateData {
   my $self= shift;
   my $status= GenData::doGenData($self->[SC_TEST_PROPERTIES]);
   if ($status >= STATUS_CRITICAL_FAILURE) {
     sayError("Data generation failed with ".status2text($status));
     return $status;
-  } else {
+  } elsif ($status != STATUS_OK) {
     sayWarning("Data generation failed with ".status2text($status));
-    return STATUS_OK;
   }
+  return STATUS_OK;
 }
 
-sub run_test_flow {
+# For several servers which will later participate in comparison,
+# the initially generated data should be identical, otherwise no point
+sub validateData {
+  my $self = shift;
+  my @exs= ();
+  foreach my $i (sort { $a <=> $b } keys %{$self->[SC_TEST_PROPERTIES]->server_specific}) {
+    my $so= $self->[SC_TEST_PROPERTIES]->server_specific->{$i};
+    next unless $so->{active};
+    my $e = GenTest::Executor->newFromServer(
+      $so->{server},
+      executor_id => $i
+    );
+    $e->init();
+    push @exs, $e;
+  }
+  say("Validating original datasets");
+  my @dbs0= sort @{$exs[0]->metaSchemas(1)};
+  foreach my $i (1..$#exs) {
+    my @dbs= sort @{$exs[$i]->metaSchemas(1)};
+    if ("@dbs0" ne "@dbs") {
+      sayError("GenTest: Schemata mismatch after data generation between two servers (1 vs ".($i+1)."):\n\t@dbs0\n\t@dbs");
+      return STATUS_CRITICAL_FAILURE;
+    }
+  }
+  foreach my $db (@dbs0) {
+    my @tbs0= sort @{$exs[0]->metaTables($db)};
+    foreach my $i (1..$#exs) {
+      my @tbs= sort @{$exs[1]->metaTables($db)};
+      if ("@tbs0" ne "@tbs") {
+        sayError("GenTest: Table list mismatch after data generation between two servers (1 vs ".($i+1)."):\n\t@tbs0\n\t@tbs");
+        return STATUS_CRITICAL_FAILURE;
+      }
+    }
+    # First, try to compare checksum, and only compare contents when checksums don't match
+    my @checksum_mismatch= ();
+    foreach my $t (@tbs0) {
+      # Workaround for MDEV-22943 : don't run CHECKSUM on tables with virtual columns
+      my $virt_cols= $exs[0]->dbh->selectrow_arrayref("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='$db' AND TABLE_NAME='$t' AND IS_GENERATED='ALWAYS'");
+      if ($exs[0]->dbh->err) {
+        sayError("Check for virtual columns on server 1 for $db.$t ended with an error: ".($exs[0]->dbh->err)." ".($exs[0]->dbh->errstr));
+        return STATUS_CRITICAL_FAILURE;
+      } elsif ($virt_cols->[0] > 0) {
+        sayDebug("Found ".($virt_cols->[0])." virtual columns on server 1 for $db.$t, skipping CHECKSUM");
+        push @checksum_mismatch, $t;
+        next;
+      }
+      my $cs0= $exs[0]->dbh->selectrow_arrayref("CHECKSUM TABLE $db.$t EXTENDED");
+      if ($exs[0]->dbh->err) {
+        sayError("CHECKSUM on server 1 for $db.$t ended with an error: ".($exs[0]->dbh->err)." ".($exs[0]->dbh->errstr));
+        return STATUS_CRITICAL_FAILURE;
+      }
+      foreach my $i (1..$#exs) {
+        my $cs= $exs[$i]->dbh->selectrow_arrayref("CHECKSUM TABLE $db.$t EXTENDED");
+        if ($exs[$i]->dbh->err) {
+          sayError("CHECKSUM on server ".($i+1)." for $db.$t ended with an error: ".($exs[$i]->dbh->err)." ".($exs[$i]->dbh->errstr));
+          return STATUS_CRITICAL_FAILURE;
+        }
+        push @checksum_mismatch, $t if ($cs0->[1] ne $cs->[1]);
+        sayDebug("Checksums for $db.$t: server 1: ".$cs0->[1].", server ".($i+1).": ".$cs->[1]);
+      }
+    }
+    foreach my $t (@checksum_mismatch) {
+      my $rs0= $exs[0]->execute("SELECT * FROM $db.$t");
+      if ($exs[0]->dbh->err) {
+        sayError("SELECT on server 1 from $db.$t ended with an error: ".($exs[0]->dbh->err)." ".($exs[0]->dbh->errstr));
+        return STATUS_CRITICAL_FAILURE;
+      }
+      foreach my $i (1..$#exs) {
+        my $rs= $exs[$i]->execute("SELECT * FROM $db.$t");
+        if ($exs[$i]->dbh->err) {
+          sayError("SELECT on server ".($i+1)." from $db.$t ended with an error: ".($exs[$i]->dbh->err)." ".($exs[$i]->dbh->errstr));
+          return STATUS_CRITICAL_FAILURE;
+        }
+        if ( GenTest::Comparator::compare_as_unordered($rs0, $rs) != STATUS_OK ) {
+          sayError("Data mismatch after data generation between two servers (1 vs ".($i+1).") in table `$db`.`$t`");
+          return STATUS_CONTENT_MISMATCH;
+        }
+      }
+    }
+  }
+  say("Original datasets are identical");
+  return STATUS_OK;
+}
+
+sub runTestFlow {
   my $self= shift;
   $self->backupProperties();
+#  print Dumper $self->[SC_TEST_PROPERTIES];
   my $gentest= GenTest::TestRunner->new(config => $self->getProperties());
   my $status= $gentest->run();
   $self->restoreProperties();
@@ -187,28 +272,28 @@ sub run_test_flow {
 
 # Scenario can run (consequently or simultaneously) an arbitrary
 # number of servers. Each server might potentially have different set
-# of options. $srvnum indicates which options should be used
+# of options. $srvnum indicates which options should be used.
+# $is_active indicates whether the server should be receiving test flow
 
 sub prepareServer {
-  my ($self, $srvnum, $start_dirty)= @_;
+  my ($self, $srvnum, $is_active)= @_;
 
   say("Preparing server $srvnum");
 
   my $server= DBServer::MariaDB->new(
                       basedir => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{basedir},
-                      vardir => $self->[SC_TEST_PROPERTIES]->vardir.'/s'.$srvnum,
-                      port => $self->[SC_TEST_PROPERTIES]->base_port + $srvnum - 1,
-                      start_dirty => $start_dirty || 0,
-                      valgrind => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{valgrind},
-                      rr => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{rr},
-                      manual_gdb => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{manual_gdb},
-                      server_options => [ @{$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{mysqld}} ],
-                      general_log => 1,
                       config => $self->[SC_TEST_PROPERTIES]->cnf,
-                      user => $self->[SC_TEST_PROPERTIES]->user
+                      general_log => 1,
+                      manual_gdb => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{manual_gdb},
+                      port => ($self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{port} || $self->[SC_TEST_PROPERTIES]->base_port + $srvnum - 1),
+                      rr => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{rr},
+                      server_options => [ @{$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{mysqld}} ],
+                      start_dirty => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{start_dirty} || 0,
+                      user => $self->[SC_TEST_PROPERTIES]->user,
+                      valgrind => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{valgrind},
+                      vardir => ($self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{vardir} || $self->[SC_TEST_PROPERTIES]->vardir.'/s'.$srvnum),
               );
-
-  $self->setServerSpecific($srvnum,'dsn',$server->dsn(undef,$self->getProperty('user')));
+  $self->setServerSpecific($srvnum,'active',($is_active || 0));
   $self->setServerSpecific($srvnum,'server',$server);
   return $server;
 }
@@ -217,49 +302,9 @@ sub prepareServer {
 # number of test flows. Each flow might potentially have different set
 # of options. $gentest_num indicates which options should be used
 
-#  my $props= $self->getProperties;
-#  $props->{duration}= int($self->getTestDuration * 2 / 3);
-#  $props->{server}= [$old_server];
-#  my $gentestProps = GenTest::Properties->init($props);
-
 sub prepareGentest {
   my ($self, $gentest_num, $opts)= @_;
-
   my $config= $self->getProperties;
-#  foreach my $p (keys %$props) {
-#    if ($p =~ /^([-\w]+)$gentest_num/) {
-#      $props->{$1}= $props->{$p};
-#    }
-#    if ($skip_gendata and $p =~ /^gendata/) {
-#      delete $props->{$p};
-#    }
-#  }
-
-#  my $config= GenTest::Properties->init($self->getProperties);
-
-#  foreach my $o (keys %$opts) {
-#    $config->property($o, $opts->{$o});
-#  }
-
-#  if (not $config->property('gendata') and not $config->property('gendata-advanced') and not $config->property('grammar')) {
-#    say("Neither gendata nor grammar are configured for this gentest, skipping");
-#    return undef;
-#  }
-
-# my $gentestProps = GenTest::Properties->init($props);
-# my $gentest = GenTest::TestRunner->new(config => $gentestProps);
-# my $gentest_result = $gentest->run();
-# say("GenTest exited with exit status ".status2text($gentest_result)." ($gentest_result)");
-
-  # gendata and gendata-advanced will only be used if they specified
-  # explicitly for this run
-#  if (!defined $config->property('gendata')) {
-    #$config->property('gendata', $self->getProperty('gendata'.$gentest_num));
-#  }
-#  if (!defined $config->property('gendata-advanced')) {
-#    $config->property('gendata-advanced', $self->getProperty('gendata-advanced'.$gentest_num));
-#  }
-
   return GenTest::TestRunner->new(config => $config);
 }
 
@@ -382,6 +427,7 @@ sub finalize {
 
 sub printTitle {
   my ($self, $title)= @_;
+  ($title= ref $self) =~ s/.*::// unless $title;
   if ($title =~ /^(\w)(.*)/) {
     $title= uc($1).$2;
   }

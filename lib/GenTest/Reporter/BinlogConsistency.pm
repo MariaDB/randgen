@@ -55,7 +55,7 @@ sub report {
   my $port = $server->port;
 
   my $client = DBServer::MariaDB::_find(undef,
-    [$reporter->serverVariable('basedir')],
+    [$reporter->server->serverVariable('basedir')],
     osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
     osWindows()?"mysql.exe":"mysql"
   );
@@ -69,7 +69,7 @@ sub report {
 
 
   my $binlog = DBServer::MariaDB::_find(undef,
-                       [$reporter->serverVariable('basedir')],
+                       [$reporter->server->serverVariable('basedir')],
                        osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
                        osWindows()?"mysqlbinlog.exe":"mysqlbinlog");
 
@@ -78,7 +78,7 @@ sub report {
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
-  my $dbh = DBI->connect($reporter->dsn());
+  my $dbh = $reporter->dbh;
 
   unless (defined $dbh) {
     say("ERROR: Could not connect to the server, nothing to dump. Status will be set to ENVIRONMENT_FAILURE");
@@ -99,7 +99,7 @@ sub report {
 
   $status = $server->stopServer();
   sleep(5);
-  $dbh = DBI->connect($reporter->dsn());
+  $dbh = $reporter->dbh;
 
   if (defined $dbh) {
     say("ERROR: Can still connect to the server, shutdown failed. Status will be set to ENVIRONMENT_FAILURE");
@@ -121,7 +121,7 @@ sub report {
     return $status;
   }
 
-  my $dbh_new = DBI->connect($reporter->dsn());
+  my $dbh_new = $reporter->dbh;
 
   unless (defined $dbh_new) {
     say("ERROR: Could not connect to the newly started server. Status will be set to ENVIRONMENT_FAILURE");

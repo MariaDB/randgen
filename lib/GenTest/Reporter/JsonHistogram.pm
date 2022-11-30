@@ -44,7 +44,7 @@ my ($valid_count, $invalid_count, $null_count)= (0,0,0);
 sub monitor {
   my $reporter = shift;
   unless ($dbh) {
-    $dbh = DBI->connect($reporter->dsn(), undef, undef, { RaiseError => 1, PrintError => 0 });
+    $dbh = $reporter->dbh;
     unless ($dbh) {
       sayError("JsonHistogram: reporter could not connect to the server. Status will be set to STATUS_INTERNAL_ERROR");
       return undef;

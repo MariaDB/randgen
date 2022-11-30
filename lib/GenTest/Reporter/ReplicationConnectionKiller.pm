@@ -39,12 +39,10 @@ sub monitor {
 
   my $reporter = shift;
 
-  my $dsn = $reporter->dsn();
-
-  my $dbh = DBI->connect($dsn);
+  my $dbh = $reporter->dbh();
 
   my $slave_host = $reporter->serverInfo('slave_host');
-  my $master_port = $reporter->serverVariable('port');
+  my $master_port = $reporter->server->serverVariable('port');
 
   # If interface is not specified, tcpkill will auto-pick the first available
 

@@ -40,10 +40,10 @@ sub report {
 
     # Look for error log file
     my $error_log = $reporter->serverInfo('errorlog');
-    $error_log = $reporter->serverVariable('log_error') if $error_log eq '';
+    $error_log = $reporter->server->serverVariable('log_error') if $error_log eq '';
     if ($error_log eq '') {
         foreach my $file ('../log/master.err', '../mysql.err') {
-            my $filename = catfile($reporter->serverVariable('datadir'), $file);
+            my $filename = catfile($reporter->server->serverVariable('datadir'), $file);
             if (-f $filename) {
                 $error_log = $filename;
                 last;

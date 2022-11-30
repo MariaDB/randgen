@@ -81,7 +81,7 @@ sub run {
   #####
   $self->printStep("Generating data");
 
-  $status= $self->generate_data();
+  $status= $self->generateData();
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
@@ -92,7 +92,7 @@ sub run {
   $self->printStep("Running the test flow");
 
   $self->setProperty('duration',int($self->getProperty('duration')*4/5));
-  $status= $self->run_test_flow();
+  $status= $self->runTestFlow();
 
   if ($status != STATUS_OK) {
     sayError("Initial test flow failed");

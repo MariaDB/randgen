@@ -265,12 +265,7 @@ $extra_engine_combinations_109= [ @$extra_engine_combinations_108 ];
 $extra_engine_combinations_110= [ @$extra_engine_combinations_109 ];
 
 $non_crash_scenario_combinations_102= [
-#  '--scenario=LiveUpgrade --filter=conf/ff/restrict_dynamic_vars.ff',
-#  '--scenario=LiveUpgrade --filter=conf/ff/restrict_dynamic_vars.ff',
-#  '--scenario=LiveUpgrade --filter=conf/ff/restrict_dynamic_vars.ff',
-#  '--scenario=LiveUpgrade --filter=conf/ff/restrict_dynamic_vars.ff',
-#  '--scenario=LiveUpgrade --filter=conf/ff/restrict_dynamic_vars.ff',
-#  '--scenario=AclUpgrade',
+#  '--scenario=NormalUpgrades --filter=conf/ff/restrict_dynamic_vars.ff',
 #  '--scenario=ImportTablespace --filter=conf/ff/restrict_dynamic_vars.ff',
    '--scenario=Standard'
 ];

@@ -59,7 +59,7 @@ sub transform {
       "( $orig_query ) EXCEPT ALL ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */";
   };
 
-  if ($executor->versionNumeric() >= 100601 and $executor->serverVariable('sql_mode') =~ /oracle/i) {
+  if ($executor->versionNumeric() >= 100601 and $executor->server->serverVariable('sql_mode') =~ /oracle/i) {
     push @queries,
       "( $orig_query ) MINUS DISTINCT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_DISTINCT */",
       "( $orig_query ) MINUS ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
@@ -77,7 +77,7 @@ sub variate {
 
   my $except_word= 'EXCEPT';
   my @except_modes= ('');
-  if ($executor->versionNumeric() >= 100601 && $executor->serverVariable('sql_mode') =~ /oracle/i && $self->random->uint16(0,1)) {
+  if ($executor->versionNumeric() >= 100601 && $executor->server->serverVariable('sql_mode') =~ /oracle/i && $self->random->uint16(0,1)) {
     $except_word= 'MINUS';
   }
   if ($executor->versionNumeric() >= 100500) {

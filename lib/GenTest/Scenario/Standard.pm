@@ -45,6 +45,7 @@ use DBServer::MariaDB;
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
+  $self->printTitle();
   return $self;
 }
 
@@ -53,7 +54,11 @@ sub run {
   my ($status, $server, $gentest);
 
   $status= STATUS_OK;
-  $server= $self->prepareServer(1);
+
+  if (scalar(keys %{$self->getProperty('server_specific')}) > 1) {
+    sayWarning("Multiple servers have been configured, but only the first one will be used");
+  }
+  $server= $self->prepareServer(1, my $is_active=1);
 
   #####
   $self->printStep("Starting the server");
@@ -65,11 +70,10 @@ sub run {
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[]);
   }
   $self->setProperty('compatibility',$server->version()) unless $self->getProperty('compatibility');
-  $self->setProperty('active_servers',[1]);
 
   #####
   $self->printStep("Generating test data");
-  $self->generate_data();
+  $self->generateData();
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
@@ -78,7 +82,7 @@ sub run {
 
   #####
   $self->printStep("Running test flow");
-  $status= $self->run_test_flow();
+  $status= $self->runTestFlow();
 
   if ($status != STATUS_OK) {
     sayError("Test flow failed");

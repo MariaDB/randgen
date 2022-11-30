@@ -69,6 +69,7 @@ use constant MYSLQD_CONFIG_VARIABLES => 33;
 use constant MYSQLD_CLIENT => 34;
 use constant MARIABACKUP => 35;
 use constant MYSQLD_MANUAL_GDB => 36;
+use constant MYSQLD_HOST => 37;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -76,6 +77,7 @@ use constant MYSQLD_LOG_FILE => "mysql.log";
 use constant MYSQLD_DEFAULT_PORT =>  19300;
 use constant MYSQLD_DEFAULT_DATABASE => "test";
 use constant MYSQLD_WINDOWS_PROCESS_STILLALIVE => 259;
+use constant MYSQLD_MAX_SERVER_DOWNTIME => 120;
 
 my $default_shutdown_timeout= 300;
 
@@ -83,17 +85,19 @@ sub new {
     my $class = shift;
 
     my $self = $class->SUPER::new({'basedir' => MYSQLD_BASEDIR,
-                                   'sourcedir' => MYSQLD_SOURCEDIR,
-                                   'vardir' => MYSQLD_VARDIR,
-                                   'port' => MYSQLD_PORT,
-                                   'server_options' => MYSQLD_SERVER_OPTIONS,
-                                   'start_dirty' => MYSQLD_START_DIRTY,
-                                   'general_log' => MYSQLD_GENERAL_LOG,
-                                   'valgrind' => MYSQLD_VALGRIND,
-                                   'rr' => MYSQLD_RR,
-                                   'manual_gdb' => MYSQLD_MANUAL_GDB,
                                    'config' => MYSQLD_CONFIG_FILE,
-                                   'user' => MYSQLD_USER},@_);
+                                   'general_log' => MYSQLD_GENERAL_LOG,
+                                   'host' => MYSQLD_HOST,
+                                   'manual_gdb' => MYSQLD_MANUAL_GDB,
+                                   'port' => MYSQLD_PORT,
+                                   'rr' => MYSQLD_RR,
+                                   'server_options' => MYSQLD_SERVER_OPTIONS,
+                                   'sourcedir' => MYSQLD_SOURCEDIR,
+                                   'start_dirty' => MYSQLD_START_DIRTY,
+                                   'valgrind' => MYSQLD_VALGRIND,
+                                   'vardir' => MYSQLD_VARDIR,
+                                   'user' => MYSQLD_USER},@_,
+                                   );
 
     croak "No valgrind support on windows" if osWindows() and defined $self->[MYSQLD_VALGRIND];
     croak "No rr support on windows" if osWindows() and $self->[MYSQLD_RR];
@@ -138,6 +142,8 @@ sub new {
                           );
 
     $self->[MYSQLD_CLIENT_BINDIR] = dirname($self->[MYSQLD_DUMPER]);
+
+    $self->[MYSQLD_HOST] = '127.0.0.1' unless $self->[MYSQLD_HOST];
 
     ## Check for CMakestuff to get hold of source dir:
 
@@ -257,6 +263,10 @@ sub serverpid {
 
 sub forkpid {
     return $_[0]->[MYSQLD_AUXPID];
+}
+
+sub server_options {
+  return $_[0]->[MYSQLD_SERVER_OPTIONS];
 }
 
 sub socketfile {
@@ -488,7 +498,7 @@ sub startServer {
     elsif (defined $self->[MYSQLD_VALGRIND]) {
         my $val_opt ="";
         $start_wait_timeout= 60;
-        $startup_timeout= 1200;
+        $startup_timeout= MYSQLD_MAX_SERVER_DOWNTIME * 10;
         if ($self->[MYSQLD_VALGRIND]) {
             $val_opt = $self->[MYSQLD_VALGRIND];
         }
@@ -751,7 +761,7 @@ sub upgradeDb {
                                         osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
                                         osWindows()?"mysql_upgrade.exe":"mysql_upgrade");
   my $upgrade_command=
-    '"'.$mysql_upgrade.'" --host=127.0.0.1 --port='.$self->port.' -uroot';
+    '"'.$mysql_upgrade.'" --host='.$self->host.' --port='.$self->port.' -uroot';
   my $upgrade_log= $self->datadir.'/mysql_upgrade.log';
   say("Running mysql_upgrade:\n  $upgrade_command");
   my $res= system("$upgrade_command > $upgrade_log 2>&1");
@@ -865,7 +875,7 @@ sub dumpdb {
     } elsif ($database) {
       $databases= "$database->[0]";
     }
-    my $dump_command= '"'.$self->dumper.'" --skip-dump-date -uroot --host=127.0.0.1 --port='.$self->port.' --hex-blob '.$databases;
+    my $dump_command= '"'.$self->dumper.'" --skip-dump-date -uroot --host='.$self->host.' --port='.$self->port.' --hex-blob '.$databases;
     unless ($for_restoring) {
       my @heap_tables= @{$self->dbh->selectcol_arrayref(
           "select concat(table_schema,'.',table_name) from ".
@@ -902,7 +912,8 @@ sub dumpSchema {
 
     my $dump_command = '"'.$self->dumper.'"'.
                              "  --skip-dump-date --compact --no-tablespaces".
-                             " --no-data --host=127.0.0.1 -uroot".
+                             " --no-data --host=".$self->host.
+                             " -uroot".
                              " --port=".$self->port.
                              " $databases";
     say($dump_command);
@@ -1126,7 +1137,7 @@ sub stopServer {
         my $dbh = $self->dbh();
         # Need to check if $dbh is defined, in case the server has crashed
         if (defined $dbh) {
-            $res = $dbh->func('shutdown','127.0.0.1','root','admin');
+            $res = $dbh->func('shutdown',$self->host,'root','admin');
             alarm(0);
             if (!$res) {
                 ## If shutdown fails, we want to know why:
@@ -1346,7 +1357,7 @@ sub addErrorLogMarker {
 sub waitForServerToStop {
   my $self= shift;
   my $timeout= shift;
-  $timeout = (defined $timeout ? $timeout*2 : 120);
+  $timeout = (defined $timeout ? $timeout*2 : MYSQLD_MAX_SERVER_DOWNTIME);
   my $waits= 0;
   while ($self->running && $waits < $timeout) {
     Time::HiRes::sleep(0.5);
@@ -1358,13 +1369,29 @@ sub waitForServerToStop {
 sub waitForServerToStart {
   my $self= shift;
   my $waits= 0;
-  while (!$self->running && $waits < 120) {
+  while (!$self->running && $waits < MYSQLD_MAX_SERVER_DOWNTIME) {
     Time::HiRes::sleep(0.5);
     $waits++;
   }
   return $self->running;
 }
 
+sub plannedDowntime {
+  my $self= shift;
+  if (-e $self->vardir.'/wait_for_restart') {
+    sayWarning("Planned downtime, waiting for the server to return...");
+    if ($self->waitForServerToStart()) {
+      say("The server is back");
+      return DBSTATUS_OK;
+    } else {
+      sayError("The server hasn't returned");
+      return DBSTATUS_FAILURE;
+    }
+  } else {
+    sayError("The downtime isn't planned");
+    return DBSTATUS_FAILURE;
+  }
+}
 
 sub backupDatadir {
   my $self= shift;
@@ -1573,16 +1600,20 @@ sub _find {
     croak "Cannot find '$names' in $paths";
 }
 
+sub host {
+  return $_[0]->[MYSQLD_HOST];
+}
+
 sub dsn {
     my ($self,$database) = @_;
     $database = MYSQLD_DEFAULT_DATABASE if not defined $database;
-    return "dbi:mysql:host=127.0.0.1:port=".
-        $self->[MYSQLD_PORT].
-        ":user=".
-        $self->[MYSQLD_USER].
-        ":database=".$database.
-        ":mysql_local_infile=1".
-        ":max_allowed_packet=1G";
+    return "dbi:mysql".
+      ":host=".$self->[MYSQLD_HOST].
+      ":port=".$self->[MYSQLD_PORT].
+      ":user=".$self->[MYSQLD_USER].
+      ":database=".$database.
+      ":mysql_local_infile=1".
+      ":max_allowed_packet=1G";
 }
 
 sub dbh {

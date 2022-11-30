@@ -63,13 +63,8 @@ use constant EXECUTOR_NO_ERR_FILTER             => 15;
 use constant EXECUTOR_FETCH_METHOD    => 16;
 use constant EXECUTOR_CONNECTION_ID    => 17;
 use constant EXECUTOR_FLAGS      => 18;
-use constant EXECUTOR_HOST          => 19;
-use constant EXECUTOR_PORT          => 20;
 use constant EXECUTOR_END_TIME      => 21;
 use constant EXECUTOR_CURRENT_USER      => 22;
-use constant EXECUTOR_SERVER_VERSION    => 23;
-use constant EXECUTOR_SERVER_VERSION_MAJOR => 24;
-use constant EXECUTOR_SERVER_VERSION_NUMERIC => 25;
 use constant EXECUTOR_VARDIR => 27;
 use constant EXECUTOR_META_FILE_SIZE => 28;
 use constant EXECUTOR_META_LOCATION => 29;
@@ -83,6 +78,7 @@ use constant EXECUTOR_VARIATORS => 36;
 use constant EXECUTOR_VARIATOR_MANAGER => 37;
 use constant EXECUTOR_SEED => 38;
 use constant EXECUTOR_METADATA_RELOAD => 39;
+use constant EXECUTOR_SERVER => 40;
 
 use constant FETCH_METHOD_AUTO    => 0;
 use constant FETCH_METHOD_STORE_RESULT  => 1;
@@ -102,10 +98,10 @@ sub new {
     my $class = shift;
     my $executor = $class->SUPER::new({
         'channel' => EXECUTOR_CHANNEL,
-        'dbh'  => EXECUTOR_DBH,
-        'dsn'  => EXECUTOR_DSN,
+        'server'  => EXECUTOR_SERVER,
         'end_time' => EXECUTOR_END_TIME,
         'fetch_method' => EXECUTOR_FETCH_METHOD,
+        'id' => EXECUTOR_ID,
         'no-err-filter' => EXECUTOR_NO_ERR_FILTER,
         'seed' => EXECUTOR_SEED,
         'sqltrace' => EXECUTOR_SQLTRACE,
@@ -125,6 +121,7 @@ sub new {
     return $executor;
 }
 
+# Remains here for PopulateSchema when we don't have a server
 sub newFromDSN {
   my $self= shift;
   my $dsn= shift;
@@ -134,6 +131,21 @@ sub newFromDSN {
   } else {
     croak("Unsupported dsn: $dsn");
   }
+}
+
+sub newFromServer {
+  my $self= shift;
+  my $server= shift;
+  if ($server->dsn =~ m/^dbi:(?:mysql|mariadb):/i) {
+    require GenTest::Executor::MariaDB;
+    return GenTest::Executor::MariaDB->new(server => $server, @_);
+  } else {
+    croak("Unsupported server type, dsn: $server->dsn");
+  }
+}
+
+sub server {
+  return $_[0]->[EXECUTOR_SERVER];
 }
 
 sub setMetadataReloadInterval {
@@ -217,22 +229,6 @@ sub setServiceDbh {
   $_[0]->[EXECUTOR_SERVICE_DBH] = $_[1];
 }
 
-sub host {
-  return $_[0]->[EXECUTOR_HOST];
-}
-
-sub setHost {
-  $_[0]->[EXECUTOR_HOST] = $_[1];
-}
-
-sub port {
-  return $_[0]->[EXECUTOR_PORT];
-}
-
-sub setPort {
-  $_[0]->[EXECUTOR_PORT] = $_[1];
-}
-
 sub currentUser {
   return $_[0]->[EXECUTOR_CURRENT_USER];
 }
@@ -251,14 +247,6 @@ sub noErrFilter {
     my ($self, $no_err_filter) = @_;
     $self->[EXECUTOR_NO_ERR_FILTER] = $no_err_filter if defined $no_err_filter;
     return $self->[EXECUTOR_NO_ERR_FILTER];
-}
-
-sub dsn {
-  return $_[0]->[EXECUTOR_DSN];
-}
-
-sub setDsn {
-  $_[0]->[EXECUTOR_DSN] = $_[1];
 }
 
 sub end_time {
@@ -303,22 +291,6 @@ sub flags {
 
 sub setFlags {
   $_[0]->[EXECUTOR_FLAGS] = $_[1];
-}
-
-sub setServerVersion {
-    $_[0]->[EXECUTOR_SERVER_VERSION] = $_[1];
-}
-
-sub serverVersion {
-    return $_[0]->[EXECUTOR_SERVER_VERSION];
-}
-
-sub setServerMajorVersion {
-    $_[0]->[EXECUTOR_SERVER_VERSION_MAJOR] = $_[1];
-}
-
-sub serverMajorVersion {
-    return $_[0]->[EXECUTOR_SERVER_VERSION_MAJOR];
 }
 
 ## This array maps SQL State class (2 first letters) to a status. This
@@ -391,10 +363,10 @@ sub cacheMetaData {
   my ($system_meta, $non_system_meta);
 
   # System schema metadata is loaded only once
-  if (not exists $system_schema_cache{$self->dsn()}) {
+  if (not exists $system_schema_cache{$self->server->dsn()}) {
     $system_meta= $self->loadMetaData('system');
     if ($system_meta and scalar(keys %$system_meta)) {
-      $system_schema_cache{$self->dsn()}= $system_meta;
+      $system_schema_cache{$self->server->dsn()}= $system_meta;
       sayDebug("Executor has loaded system metadata");
     } else {
       sayError("Executor failed to load system metadata");
@@ -433,8 +405,8 @@ sub cacheMetaData {
   #   non-system is not, need to merge loaded system metadata with the old non-system metadata
   # - non-system metadata was loaded, but system metadata never was, need to store non-system metadata only
 
-  if ($non_system_meta and $system_schema_cache{$self->dsn()}) {
-    $all_meta= { %{$system_schema_cache{$self->dsn()}} };
+  if ($non_system_meta and $system_schema_cache{$self->server->dsn()}) {
+    $all_meta= { %{$system_schema_cache{$self->server->dsn()}} };
     local $Data::Dumper::Maxdepth= 0;
     foreach my $s (keys %$non_system_meta) {
       $all_meta->{$s}= { %{$non_system_meta->{$s}} };

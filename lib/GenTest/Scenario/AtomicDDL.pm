@@ -108,7 +108,7 @@ sub run {
   #####
   $self->printStep("Generating data");
 
-  $status= $self->generate_data();
+  $status= $self->generateData();
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
@@ -119,7 +119,7 @@ sub run {
   my $queries= $prng->uint16(20,200);
   $self->printStep("Running $queries queries as initial test flow");
   $self->setProperty('queries',$queries);
-  $status= $self->run_test_flow();
+  $status= $self->runTestFlow();
 
   if ($status != STATUS_OK) {
     sayError("Initial test flow failed");
@@ -161,7 +161,7 @@ sub run {
     }
   }
   else {
-    my $res= $self->run_test_flow();
+    my $res= $self->runTestFlow();
     exit $res;
   }
 

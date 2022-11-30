@@ -53,7 +53,6 @@ use GenTest::Scenario::Upgrade;
 use Data::Dumper;
 use File::Copy;
 use File::Compare;
-use GenTest::Scenario::AclUpgrade;
 
 use DBServer::MariaDB;
 
@@ -69,13 +68,12 @@ my ($status, $old_server, $new_server, $databases, $vardir, $old_grants);
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
-
   if ($self->old_server_options()->{basedir} eq $self->new_server_options()->{basedir}) {
     $same_server= 1;
-    $self->printTitle('Normal recovery');
+    $self->printTitle('Normal restart');
   }
   else {
-    $self->printTitle('Normal upgrades/downgrades');
+    $self->printTitle('Normal upgrade/downgrade');
   }
   return $self;
 }
@@ -99,28 +97,28 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Old server failed to start");
-    return ($same_server ? $self->finalize($status,[]) : $self->finalize(STATUS_TEST_FAILURE,[]));
+    return $self->finalize($status,[]);
   }
 
   #####
   $self->printStep("Generating data on the old server");
 
-  $status= $self->generate_data();
+  $status= $self->generateData();
 
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
-    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+    return $self->finalize($status,[$old_server]);
   }
 
   #####
   $self->printStep("Running test flow on the old server");
 
   $self->setProperty('duration',int($self->getProperty('duration')/2));
-  $status= $self->run_test_flow();
+  $status= $self->runTestFlow();
 
   if ($status != STATUS_OK) {
     sayError("Test flow on the old server failed");
-    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+    return $self->finalize($status,[$old_server]);
   }
 
   #####
@@ -130,14 +128,14 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Shutdown of the old server failed");
-    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+    return $self->finalize($status,[$old_server]);
   }
 
   $status= $old_server->startServer;
 
   if ($status != STATUS_OK) {
     sayError("Old server failed to restart");
-    return ($same_server ? $self->finalize($status,[]) : $self->finalize(STATUS_TEST_FAILURE,[]));
+    return $self->finalize($status,[]);
   }
 
   # Dump all databases for further restoring
@@ -155,14 +153,14 @@ sub run {
   $status= $old_server->dumpSchema(\@databases, $vardir.'/server_schema_old.dump');
   if ($status != STATUS_OK) {
     sayError("Schema dump on the old server failed, no point to continue");
-    return ($same_server ? $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+    return $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]);
   }
   $old_server->normalizeDump($vardir.'/server_schema_old.dump', 'remove_autoincs');
   # Skip heap tables' data on the old server, as it won't be preserved
   $status= $old_server->dumpdb(\@databases, $vardir.'/server_data_old.dump');
   if ($status != STATUS_OK) {
     sayError("Data dump on the old server failed, no point to continue");
-    return ($same_server ? $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+    return $self->finalize(STATUS_DATABASE_CORRUPTION,[$old_server]);
   }
   $old_server->normalizeDump($vardir.'/server_data_old.dump');
 
@@ -219,7 +217,7 @@ sub run {
   #####
   $self->printStep("Getting ACL info from the old server");
 
-  ($status, $old_grants)= GenTest::Scenario::AclUpgrade::collectAclData(undef,$old_server);
+  ($status, $old_grants)= $self->collectAclData($old_server);
 
   if ($status != STATUS_OK) {
     sayError("ACL info collection from the old server failed");
@@ -234,7 +232,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Shutdown of the old server failed");
-    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+    return $self->finalize($status,[$old_server]);
   }
 
   #####
@@ -244,7 +242,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Found fatal errors in the log, old server shutdown has apparently failed");
-    return ($same_server ? $self->finalize($status,[$old_server]) : $self->finalize(STATUS_TEST_FAILURE,[$old_server]));
+    return $self->finalize($status,[$old_server]);
   }
   # Back up data directory and error log from the old server
   system ('cp -r '.$old_server->datadir.' '.$old_server->datadir.'_orig');
@@ -464,7 +462,7 @@ sub post_upgrade {
   #####
   $self->printStep("Getting ACL info from the new server after $type upgrade");
   my $new_grants;
-  ($post_upgrade_status, $new_grants)= GenTest::Scenario::AclUpgrade::collectAclData(undef,$new_server);
+  ($post_upgrade_status, $new_grants)= $self->collectAclData($new_server);
 
   if ($post_upgrade_status != STATUS_OK) {
     sayError("ACL info collection from the new server after $type upgrade failed");
@@ -507,8 +505,8 @@ sub post_upgrade {
 
   $self->printStep("Comparing ACL data after $type upgrade");
   my $old_grants_copy= { %$old_grants };
-  GenTest::Scenario::AclUpgrade::normalizeGrants(undef,$old_server, $new_server, $old_grants_copy, $new_grants);
-  $post_upgrade_status= GenTest::Scenario::AclUpgrade::compareAclData(undef,$old_grants_copy,$new_grants);
+  $self->normalizeGrants($old_server, $new_server, $old_grants_copy, $new_grants);
+  $post_upgrade_status= $self->compareAclData($old_grants_copy,$new_grants);
 
   if ($post_upgrade_status != STATUS_OK) {
     sayError("ACL info collection or comparison after $type upgrade failed");
