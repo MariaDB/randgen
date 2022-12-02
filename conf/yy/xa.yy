@@ -13,12 +13,14 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
+#features XA transactions
+
 query_init:
   { %active_xa = (); %idle_xa = (); %prepared_xa = (); '' }
 ;
 
 query:
-  { $current_xid= ''; $last_xa_stage= '' } xa_query
+  { $current_xid= ''; $last_xa_stage= ''; _set_db('user') } xa_query
 ;
 
 xa_query:

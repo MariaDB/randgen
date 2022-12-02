@@ -1,4 +1,4 @@
-#  Copyright (c) 2021, MariaDB Corporation Ab
+#  Copyright (c) 2021, 2022, MariaDB Corporation Ab
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ query_init:
   CREATE PROCEDURE IF NOT EXISTS { $maxspnum= 9; 'sp'.($spnum= 0) } () BEGIN END ;
 
 query:
-  ==FACTOR:0.1== sp_create_and_or_execute ;
+  ==FACTOR:0.1== { _set_db('user') } sp_create_and_or_execute ;
 
 sp_create_and_or_execute:
     sp_drop ; sp_recreate

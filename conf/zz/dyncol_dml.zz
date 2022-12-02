@@ -21,6 +21,8 @@
 # but can be used anywhere
 ########################################################################
 
+$schemas = [ 'dyncol_dml_db' ];
+
 $tables = {
   rows => [10],
   partitions => [ undef , 'KEY (pk) PARTITIONS 2' ],

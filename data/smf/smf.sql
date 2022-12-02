@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS smf;
-USE smf;
+CREATE DATABASE IF NOT EXISTS smf_db;
+USE smf_db;
 DROP TABLE IF EXISTS `smf_admin_info_files`;
 CREATE TABLE `smf_admin_info_files` (  `id_file` tinyint(4) unsigned NOT NULL AUTO_INCREMENT,  `filename` varchar(255) NOT NULL DEFAULT '',  `path` varchar(255) NOT NULL DEFAULT '',  `parameters` varchar(255) NOT NULL DEFAULT '',  `data` text NOT NULL,  `filetype` varchar(255) NOT NULL DEFAULT '',  PRIMARY KEY (`id_file`),  KEY `filename` (`filename`(30)))     CHECKSUM=1 DEFAULT CHARSET=latin1 ;
 DROP TABLE IF EXISTS `smf_approval_queue`;

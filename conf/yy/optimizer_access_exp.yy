@@ -35,13 +35,10 @@
 
 query_init:
   # This is to prevent other grammars from altering the schema
-  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON range_access.* TO CURRENT_USER;
+  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON range_access_db.* TO CURRENT_USER;
 
 query:
-  { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'range_access'; 'USE range_access' }
-  ;; opt_access_query
-  ;; { $last_database= $saved_database; ($saved_database ? "USE $saved_database" : '') }
-;
+  { _set_db('range_access_db' } opt_access_query ;
 
 opt_access_query:
   { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $min_tables_to_join= 1; "" } main_select ;

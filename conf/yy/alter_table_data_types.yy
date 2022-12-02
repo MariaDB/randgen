@@ -18,10 +18,10 @@
 ##############################################
 
 query_init:
-  { $col=0; @enum_vals=(); foreach (1..65535) { push @enum_vals, "'".$_."'" }; '' } CREATE TABLE t (a INT);
+  { $col=0; @enum_vals=(); foreach (1..65535) { push @enum_vals, "'".$_."'" }; '' } ;
 
 query:
-  { $null= $prng->uint16(0,3); '' } ALTER IGNORE TABLE _table data_types_usage ;
+  { $null= $prng->uint16(0,3); '' } { _set_db('user') } ALTER IGNORE TABLE _table data_types_usage ;
 
 data_types_usage:
   data_types_modify_column |

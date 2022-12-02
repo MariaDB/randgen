@@ -1,4 +1,4 @@
-# Copyright (C) 2016 MariaDB Corporation.
+# Copyright (C) 2016, 2022 MariaDB Corporation.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +17,9 @@
 # Rough imitation of OLTP-read-write test (sysbench-like)
 
 query:
+  { _set_db('user') } oltp_query ;
+
+oltp_query:
     dml | dml | dml | dml | dml | dml | dml |
     START TRANSACTION | COMMIT ;
 

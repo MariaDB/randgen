@@ -18,6 +18,9 @@
 ########################################################################
 
 query:
+  { _set_db('user') } temporal_query ;
+
+temporal_query:
   { $col = 1 ; return "" } SELECT select_list FROM _table WHERE where_list order_by |
   INSERT INTO _table ( _field ) VALUE ( datetime_expr ) |
   INSERT INTO _table ( _field ) VALUE ( datetime_expr ) |
@@ -26,7 +29,6 @@ query:
   UPDATE _table SET _field = datetime_expr WHERE where_list |
   DELETE FROM _table WHERE where_list ORDER BY pk LIMIT 1
 ;
-
 
 select_list:
   select_item |

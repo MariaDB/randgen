@@ -24,17 +24,18 @@ use GenTest::Constants;
 use GenData::PopulateSchema;
 use Getopt::Long;
 
-my ($schema_file, $debug, $help, $dsn, $rows, $server_id, $seed, $basedir, $table_list, @tables);
+my ($schema_file, $debug, $help, $port, $rows, $server_id, $seed, $basedir, $table_list, @tables, $database);
 
 my $opt_result = GetOptions(
   'help'  => \$help,
   'schema:s' => \$schema_file,
   'debug'  => \$debug,
-  'dsn:s'  => \$dsn,
+  'port:i'  => \$port,
   'seed=s' => \$seed,
   'rows=s' => \$rows,
   'server-id=i' => \$server_id,
   'basedir=s' => \$basedir,
+  'database=s' => \$database,
   'tables=s' => \$table_list
 );
 
@@ -62,14 +63,14 @@ if ($table_list) {
 my @row_counts= (defined $rows ? split /,/, $rows : 100);
 my $app = GenData::PopulateSchema->new(spec_file => $schema_file,
                                      debug => $debug,
-                                     dsn => $dsn,
                                      seed => $seed,
                                      rows => \@row_counts,
                                      basedir => $basedir,
                                      tables => \@tables,
 );
 
-
+$app->port($port);
+$app->db($database) if $database;
 my $status = $app->run();
 
 exit $status;
@@ -80,12 +81,13 @@ sub help {
 $0 - Random Population of a given schema. Options:
 
         --debug         : Turn on debugging for additional output
-        --dsn           : DBI resource to connect to
+        --port          : Server port to connect to
  (req?) --schema        : SQL file defining the schemata (normally mysqldump file without the data). Mutually exclusive with --tables
  (req?) --tables        : List of tables to populate (if they have already been created). Mutually exclusive with --schema
         --rows          : Number of rows to generate for each table
         --seed          : Seed to PRNG. if --seed=time the current time will be used. (default 1)
         --basedir       : basedir where MySQL client can be found
+        --database      : Default database
         --help          : This help message
 
 EOF

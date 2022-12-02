@@ -25,11 +25,15 @@
 
 query_init:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
+  ;; CREATE DATABASE IF NOT EXISTS test
   ;; create
   ;; SET SQL_MODE=DEFAULT
 ;
 
 query:
+  { _set_db('any') } json_query ;
+
+json_query:
   select |
   insert |
   delete |
@@ -40,7 +44,7 @@ query:
 
 create:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
-  ;; CREATE OR REPLACE TABLE `tmp` ENGINE = inbuilt_engine AS select
+  ;; CREATE OR REPLACE TABLE test.`tmp` ENGINE = inbuilt_engine AS select
   ;; SET SQL_MODE=DEFAULT
 ;
 
@@ -54,16 +58,16 @@ inbuilt_engine:
 
 insert:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
-  ;; INSERT INTO `tmp` ( `fld` ) select
+  ;; INSERT INTO test.`tmp` ( `fld` ) select
   ;; SET SQL_MODE=DEFAULT
 ;
 
 # TODO: vcols
 alter:
-    ALTER TABLE `tmp` ADD index_type INDEX ( key_field key_length )
-  | ALTER TABLE `tmp` DROP INDEX key_field
-#  | ==FACTOR:0.05== ALTER TABLE `tmp` column_op `vfld` TEXT AS ( vcol_expression ) virt_persist
-  | ALTER TABLE `tmp` MODIFY `fld` fld_type
+    ALTER TABLE test.`tmp` ADD index_type INDEX ( key_field key_length )
+  | ALTER TABLE test.`tmp` DROP INDEX key_field
+#  | ==FACTOR:0.05== ALTER TABLE test.`tmp` column_op `vfld` TEXT AS ( vcol_expression ) virt_persist
+  | ALTER TABLE test.`tmp` MODIFY `fld` fld_type
 ;
 
 vcol_expression:
@@ -100,7 +104,7 @@ delete:
 
 update:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
-  ; UPDATE `tmp` SET { $json_table_field= 'fld' } = func_returning_json ORDER BY fld LIMIT _digit
+  ; UPDATE test.`tmp` SET { $json_table_field= 'fld' } = func_returning_json ORDER BY fld LIMIT _digit
   ; SET SQL_MODE=DEFAULT
 ;
 

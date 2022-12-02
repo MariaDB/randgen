@@ -17,6 +17,8 @@
 # Data generation for InnoDB upgrade tests
 # Applicable to 5.5+
 
+$schemas = [ 'innodb_key_block_size_db' ];
+
 $tables = {
         pk => [ undef ],
         names => [

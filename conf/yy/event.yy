@@ -1,4 +1,4 @@
-# Copyright (C) 2020,2021 MariaDB Corporation.
+# Copyright (C) 2020,2022 MariaDB Corporation.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,16 +14,14 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-# Rough imitation of OLTP test (sysbench-like)
-# Default number of tables is 5, 1000 rows each,
-# it can be changed by providing --rows parameter on the command line
-
-
 query_init:
   { $ev = 0; '' } SET GLOBAL event_scheduler = ON
 ;
 
 query:
+  { _set_db('user') } event_query ;
+
+event_query:
     ==FACTOR:4==   event_create
   |                DROP EVENT IF EXISTS existing_event_name
   | ==FACTOR:8==   event_alter

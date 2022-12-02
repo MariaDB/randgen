@@ -55,7 +55,7 @@ sub monitor {
   $first_reporter = $reporter if not defined $first_reporter;
   return STATUS_OK if $reporter ne $first_reporter;
 
-    my $server= $reporter->properties->server_specific->{2}->{server};
+  my $server= $reporter->properties->server_specific->{2}->{server};
   $last_crash_time = $reporter->testStart() if not defined $last_crash_time;
 
   if (time() > $last_crash_time + 30) {
@@ -64,7 +64,7 @@ sub monitor {
     say("Sending SIGKILL to server with pid $pid in order to force a crash recovery");
     kill(9, $pid);
     sleep(3);
-    return restart($reporter);
+    return $reporter->restart();
   } else {
     return STATUS_OK;
   }
@@ -76,15 +76,11 @@ sub report {
 
 sub restart {
   my $reporter = shift;
-
   alarm(3600);
-
-  $first_reporter = $reporter if not defined $first_reporter;
-  return STATUS_OK if $reporter ne $first_reporter;
-
   my $server = $reporter->properties->server_specific->{2}->{server};
 
-  my $dbh_prev = DBI->connect($server->dsn());
+  my $dbh_prev;
+  eval { $dbh_prev = DBI->connect($server->dsn()) };
 
   if (defined $dbh_prev) {
     $dbh_prev->disconnect();

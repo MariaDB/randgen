@@ -1,4 +1,5 @@
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -52,8 +53,7 @@
 # dodgy.                                                                       #
 ################################################################################
 query:
-  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } query_type ;
-
+  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; _set_db('user') } query_type ;
 
 query_type:
         main_select | main_select | main_select |  loose_scan ;

@@ -35,6 +35,8 @@ use Data::Dumper;
 use File::Basename;
 use File::Path qw(make_path);
 
+use constant COMB_RQG_DEFAULT_BASE_PORT => 13000;
+
 $| = 1;
 
 if (defined $ENV{RQG_HOME}) {
@@ -103,7 +105,6 @@ my %results;
 my @commands;
 my $max_result = 0;
 my $thread_id = 0;
-my $mtrbt = defined $ENV{MTR_BUILD_THREAD}?$ENV{MTR_BUILD_THREAD}:300;
 my $comb_seed= ($seed = 'time' ? time() : $seed);
 
 help("ERROR: Config file must be provided") unless defined $config_file;
@@ -319,10 +320,10 @@ sub doCombination {
 
   my $command = "
     perl ".($Carp::Verbose?"-MCarp=verbose ":"").
-        (defined $ENV{RQG_HOME} ? $ENV{RQG_HOME}."/" : "" ).
+        (defined $ENV{RQG_HOME} ? $ENV{RQG_HOME}."/" : "./" ).
         "run.pl $comb_str ";
 
-  $command .= " --mtr-build-thread=".($mtrbt+($thread_id-1)*2);
+  $command .= " --base-port=".COMB_RQG_DEFAULT_BASE_PORT;
   foreach (@basedirs) {
     $command .= " --basedir=".$_." ";
   }

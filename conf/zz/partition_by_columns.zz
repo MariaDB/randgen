@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-$schemas = [ 'part_tables' ];
+$schemas = [ 'partition_by_columns_db' ];
 
 $tables = {
           names => ['PP_A', 'PP_B', 'PP_C', 'PP_D', 'PP_E', 'PP_F', 'PP_G', 'PP_H', 'PP_I', 'PP_J', 'PP_K', 'PP_L', 'PP_M',

@@ -55,7 +55,6 @@ require Exporter;
   DATA_ENUM
   GD_SPEC
   GD_DEBUG
-  GD_DSN
   GD_SEED
   GD_ENGINE
   GD_ROWS
@@ -123,7 +122,6 @@ use constant DATA_ENUM    => 4;
 
 use constant GD_SPEC => 0;
 use constant GD_DEBUG => 1;
-use constant GD_DSN => 2;
 use constant GD_SEED => 3;
 use constant GD_ENGINE => 4;
 use constant GD_ROWS => 5;
@@ -173,13 +171,15 @@ sub new {
     }
     $self->[GD_RAND]= GenTest::Random->new(seed => $self->seed());
 
-    $self->[GD_EXECUTOR] = GenTest::Executor->newFromServer(
-      $self->[GD_SERVER],
-      sqltrace => $self->sqltrace,
-      vardir => $self->vardir,
-      seed => $self->seed,
-    );
-    $self->[GD_EXECUTOR]->init();
+    if ($self->server) {
+      $self->[GD_EXECUTOR] = GenTest::Executor->newFromServer(
+        $self->[GD_SERVER],
+        sqltrace => $self->sqltrace,
+        vardir => $self->vardir,
+        seed => $self->seed,
+      );
+      $self->[GD_EXECUTOR]->init();
+    }
 
     return $self;
 }
@@ -245,12 +245,12 @@ sub debug {
     return $_[0]->[GD_DEBUG];
 }
 
-sub dsn {
-    return $_[0]->[GD_DSN];
-}
-
 sub seed {
     return $_[0]->[GD_SEED];
+}
+
+sub server {
+  return $_[0]->[GD_SERVER];
 }
 
 sub engine {

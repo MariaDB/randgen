@@ -59,7 +59,7 @@ sub monitor {
       say("MemoryUsage monitor for pid $pid: memory usage: ".format_mem_value($mem));
       $dbh = $reporter->dbh unless $dbh;
       $memusage= $dbh->selectall_arrayref("select event_name, sum_number_of_bytes_alloc, current_number_of_bytes_used, high_number_of_bytes_used from performance_schema.memory_summary_global_by_event_name order by current_number_of_bytes_used desc limit 5");
-      say(Dumper($memusage));
+      say(Dumper($memusage)) if $memusage;
     }
     if (not defined $first_cpu) {
       $first_cpu= $cpu;

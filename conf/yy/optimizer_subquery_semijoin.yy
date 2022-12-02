@@ -1,5 +1,5 @@
 # Copyright (C) 2008-2010 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2021 MariaDB Corporation Ab
+# Copyright (c) 2021, 2022 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -53,7 +53,7 @@
 # dodgy.                                                                       #
 ################################################################################
 query:
-  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } main_select /* _thread_id */ ;
+  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $subquery_idx=0 ; $child_subquery_idx=0 ; _set_db('user') } main_select ;
 
 main_select:
         simple_select | simple_select | simple_select | simple_select |

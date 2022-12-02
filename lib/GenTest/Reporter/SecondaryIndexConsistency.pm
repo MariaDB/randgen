@@ -77,7 +77,7 @@ sub monitor {
         }
         my $pk_columns= join ',', @pk_columns;
 
-        say("Verifying table: $table, PK columns: $pk_columns, indexes: ".join ',', keys %secondary_keys);
+        sayDebug("Verifying table: $table, PK columns: $pk_columns, indexes: ".join ',', keys %secondary_keys);
 
         $dbh->do("LOCK TABLE $table READ");
         my $pk_data= get_all_rows($dbh,"SELECT $pk_columns FROM $table FORCE INDEX(PRIMARY) ORDER BY $pk_columns");
@@ -94,7 +94,7 @@ sub monitor {
                 sayError("Found above difference for indexes PRIMARY and $ind for table $table");
                 return STATUS_DATABASE_CORRUPTION;
             } else {
-                say("Indexes PRIMARY and $ind produced identical data");
+                sayDebug("Indexes PRIMARY and $ind produced identical data");
             }
         }
         $dbh->do("UNLOCK TABLES");

@@ -46,6 +46,9 @@ query_init:
 
 # Run Select , DML , DDL , transactional statements
 query:
+  { _set_db('full_text_search_db') } fts_query ;
+
+fts_query:
      select | select | select | select | select | update | delete |
      create_drop_index | transaction | insert | insert |
      ==FACTOR:0.05== fts_doc_id

@@ -86,8 +86,8 @@ sub run {
           my @populate_rows= (defined $self->rows() ? split(',', $self->rows()) : (0));
           my $populate = GenData::PopulateSchema->new(spec_file => $spec_file,
                                                debug => $self->debug,
-                                               dsn => $self->dsn,
                                                seed => $self->seed,
+                                               server => $self->server,
                                                rows => \@populate_rows,
                                                basedir => $executor->server->serverVariable('basedir'),
           );

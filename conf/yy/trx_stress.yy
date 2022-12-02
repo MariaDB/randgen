@@ -30,14 +30,15 @@
 #
 
 query:
+  { _set_db('user') } trx_stress_ query ;
+
+trx_stress_query:
   transaction |
-  select | select |
-  select | select |
-  insert_replace | update | delete |
-  insert_replace | update | delete |
-  insert_replace | update | delete |
-  insert_replace | update | delete |
-  insert_replace | update | delete ;
+  ==FACTOR:4== select |
+  ==FACTOR:5== insert_replace |
+  ==FACTOR:4== delete |
+  ==FACTOR:5== update
+;
 
 transaction:
   START TRANSACTION |

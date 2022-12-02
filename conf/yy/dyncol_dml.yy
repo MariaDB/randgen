@@ -21,6 +21,9 @@
 ########################################################################
 
 query:
+  { _set_db('dyncol_dml_db') } dyncol_dml_query ;
+
+dyncol_dml_query:
   select | insert | update | delete ;
 
 select:

@@ -16,7 +16,7 @@
 #include <conf/rr/basics.rr>
 
 query:
-  ==FACTOR:0.05== locks_query ;
+  ==FACTOR:0.05== { _set_db('user') } locks_query ;
 
 locks_query:
   locks_lock_tables |

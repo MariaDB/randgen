@@ -17,21 +17,19 @@
 
 
 query_init:
-  { $tbnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
+  { $tbnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' }
+     CREATE DATABASE IF NOT EXISTS alt_table_db ;; { _set_db('alt_table_db' }
+  ;; alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace
+  ;; alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace
+  ;; alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace
+;
 
 query:
-  alt_query ;
-
-alt_query:
-    alt_create
-  | ==FACTOR:0.1== alt_truncate
-  |==FACTOR:20== alt_alter
-  | ==FACTOR:0.1== alt_rename_multi
-  | alt_alter_partitioning
-  | alt_flush
-  | alt_optimize
-  | ==FACTOR:0.2== alt_lock_unlock_table
-  | alt_transaction
+                   { _set_db('alt_table_db') } alt_create
+  | ==FACTOR:20==  { _set_db('user') } alt_alter
+  | ==FACTOR:0.1== { _set_db('alt_table_db') } alt_rename_multi
+  |                { _set_db('user') } alt_alter_partitioning
+  |                { _set_db('user') } alt_optimize
 ;
 
 alt_create:
@@ -182,30 +180,10 @@ alt_storage_optional:
 #  | | STORAGE
 ;
 
-alt_transaction:
-    START TRANSACTION
-  | SAVEPOINT sp
-  | ROLLBACK TO SAVEPOINT sp
-  | COMMIT
-  | ROLLBACK
-;
-
-alt_lock_unlock_table:
-    FLUSH TABLE _table FOR EXPORT
-  | LOCK TABLE _table READ
-  | LOCK TABLE _table WRITE
-  | SELECT * FROM _table FOR UPDATE
-  | ==FACTOR:20== UNLOCK TABLES
-;
-
 alt_alter_partitioning:
     ALTER TABLE _basetable PARTITION BY HASH(_field)
   | ALTER TABLE _basetable PARTITION BY KEY(_field)
   | ALTER TABLE _basetable REMOVE PARTITIONING
-;
-
-alt_truncate:
-  TRUNCATE TABLE _table
 ;
 
 alt_new_or_existing_table_name:
@@ -214,7 +192,7 @@ alt_new_or_existing_table_name:
 ;
 
 alt_new_table_name:
-    { $last_table = 'alt_t'.(++$tbnum) }
+    { 'alt_t'.(++$tbnum) }
 ;
 
 alt_col_name:
@@ -382,10 +360,6 @@ alt_temporary:
   | | | | TEMPORARY
 ;
 
-alt_flush:
-  FLUSH TABLES
-;
-
 alt_optimize:
   OPTIMIZE TABLE _basetable
 ;
@@ -405,23 +379,6 @@ alt_lock:
                , LOCK=NONE |
                , LOCK=SHARED |
                , LOCK=EXCLUSIVE
-;
-
-alt_data_type:
-    alt_bit_type
-  | alt_enum_type
-  | alt_geo_type
-  | alt_int_type
-  | alt_int_type
-  | alt_int_type
-  | alt_int_type
-  | alt_num_type
-  | alt_temporal_type
-  | alt_timestamp_type
-  | alt_text_type
-  | alt_text_type
-  | alt_text_type
-  | alt_text_type
 ;
 
 alt_bit_type:
@@ -490,9 +447,6 @@ alt_optional_auto_increment:
   | | | | | | AUTO_INCREMENT
 ;
 
-alt_inline_key:
-  | | | alt_index ;
-
 alt_index:
     alt_index_or_key
   | alt_constraint_optional PRIMARY KEY
@@ -553,19 +507,6 @@ alt_optional_index_or_key:
   | alt_index_or_key
 ;
 
-alt_key_column:
-    alt_bit_col_name
-  | alt_int_col_name
-  | alt_int_col_name
-  | alt_int_col_name
-  | alt_num_col_name
-  | alt_enum_col_name
-  | alt_temporal_col_name
-  | alt_timestamp_col_name
-  | alt_text_col_name(_tinyint_positive)
-  | alt_text_col_name(_smallint_positive)
-;
-
 alt_key_column_list:
   ==FACTOR:3== _field __asc_x_desc(10,20) |
   _field __asc_x_desc(10,20), alt_key_column_list
@@ -582,9 +523,3 @@ alt_comment:
   COMMENT alt_eq_optional _english
 ;
 
-alt_compressed:
-  | | | | | | COMPRESSED ;
-
-_alt_value:
-  NULL | _digit | '' | _char(1)
-;

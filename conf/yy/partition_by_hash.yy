@@ -24,7 +24,7 @@
 # Initialization of tables with focus on partitioned tables.
 
 query_init:
-  init_db ;
+  CREATE DATABASE IF NOT EXISTS partition_by_hash ;; {our $nb_parts= 50; _set_db('partition_by_hash') } init_db ;
 
 init_db:
   create_tables ; insert_tables ;  cache_index ; load_index ;
@@ -77,7 +77,7 @@ insert_nop:
 # Randomly executed SQL
 
 query:
-  exec_sql ;
+  { _set_db('partition_by_hash') } exec_sql ;
 
 exec_sql:
   select_explain |

@@ -20,6 +20,8 @@
 # The reason why we have a separate file for partitioning is that we can't
 # have a meaningful unique key here.
 
+$schemas = [ 'innodb_partition_db' ];
+
 $tables = {
         pk => [ undef ],
         names => [

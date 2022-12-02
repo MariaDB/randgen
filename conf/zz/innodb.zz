@@ -17,6 +17,8 @@
 # The data setup for InnoDB upgrade tests, focused on flags and formats.
 # Can be used with t0.yy as the test flow
 
+$schemas = [ 'innodb_db' ];
+
 $tables = {
         pk => [ 'bigint auto_increment' ],
         names => [
@@ -87,7 +89,7 @@ $tables = {
 };
 
 $fields = {
-        types => [ 'int', 'timestamp', 'varchar(8)', 'tinyblob', 'text compressed', 'decimal' ],
+        types => [ 'int', 'timestamp', 'varchar(8)', 'tinyblob', 'text', 'decimal' ],
         indexes => [ undef, 'key' ],
         null => [ undef, 'not null' ]
 };

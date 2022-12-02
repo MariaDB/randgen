@@ -21,35 +21,20 @@
 # false positives when used in a comparison test
 ########################################################################
 
-constant:
-  _digit | regular_field ;
-  # _letter | _varchar(4) ;
-
-field_type:
-  DOUBLE ;
-  #| CHAR(255) BINARY | DATETIME ;
-
-
-nested_expr:
-  ( comparison_operator ) | ( logical_operator ) | ( logical_operator ) |
-  ( control_flow_function ) |
-#  ( string_function ) |
-#  ( string_comparison_function ) |
-  ( arithmetic_function ) |
-#  ( date_and_time_function ) |
-  ( mathematical_function ) ;
+#features virtual columns
 
 #
 # We use multiple CREATE TABLE so that if a given table definition is invalid
 # (such as a constant expression in a virtual column), subsequent CREATEs will
 # create a valid table
 #
-
-
 query_init:
   drop_table ;; create_table ;; create_table ;; create_table ;
 
 query:
+ { _set_db('user') } virtual_columns_query ;
+
+virtual_columns_query:
   drop_table ; create_table ; create_table ; create_table | create_table |
   select_dml | select_dml | select_dml | select_dml | select_dml |
   select_dml | select_dml | select_dml | select_dml | select_dml |
@@ -409,3 +394,21 @@ boolean_value:
 
 expr_list:
   expr_list , expr | expr , expr | expr | expr | expr ;
+
+constant:
+  _digit | regular_field ;
+  # _letter | _varchar(4) ;
+
+field_type:
+  DOUBLE ;
+  #| CHAR(255) BINARY | DATETIME ;
+
+
+nested_expr:
+  ( comparison_operator ) | ( logical_operator ) | ( logical_operator ) |
+  ( control_flow_function ) |
+#  ( string_function ) |
+#  ( string_comparison_function ) |
+  ( arithmetic_function ) |
+#  ( date_and_time_function ) |
+  ( mathematical_function ) ;

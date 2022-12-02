@@ -41,24 +41,15 @@
 ########################################################################
 
 query_init:
-  alter_add ; alter_add ; alter_add ; alter_add ; alter_add ;
+  alter_add ;; alter_add ;; alter_add ;; alter_add ;; alter_add ;
 
 query:
+  { _set_db('user') } temporal_ranges_query ;
+
+temporal_ranges_query:
   alter_drop_add |
-  select | select | select | select | select |
-  select | select | select | select | select |
-  select | select | select | select | select |
-  select | select | select | select | select |
-  select | select | select | select | select |
-  select | select | select | select | select |
-  select | select | select | select | select |
-  select | select | select | select | select |
-  select | select | select | select | select |
-  select | select | select | select | select |
-  select | select | select | select | select |
-  select | select | select | select | select |
-  select | select | select | select | select |
-  select | select | select | select | select ;
+  ==FACTOR:70== select
+;
 
 select:
   SELECT distinct * FROM _table index_hint WHERE where order_by /* limit */ |

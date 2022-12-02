@@ -13,10 +13,12 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
+#features sequences
+
 # Error codes to ignore on slave: slave-skip-errors=1049,1305,1539,1505,1317,1568
 
 query:
-  seq_query
+  { _set_db('user') } seq_query
 ;
 
 seq_query:

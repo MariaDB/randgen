@@ -21,6 +21,9 @@ query_init:
   { $s3_doable= $ENV{S3_DOABLE}; '' } ;
 
 query:
+  { _set_db('user') } s3_query ;
+
+s3_query:
   ==FACTOR:0.01== { '/*'.$s3_doable.' ' } ALTER TABLE _table ENGINE=S3 */ |
   ==FACTOR:0.01== s3_alter_table_back
 ;

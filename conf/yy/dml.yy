@@ -23,6 +23,9 @@
 
 
 query:
+  { _set_db('user') } dml_query;
+
+dml_query:
     ==FACTOR:9== generic_dml_dml |
     generic_dml_trx
 ;

@@ -282,7 +282,6 @@ sub findMySQLD {
 
 sub dbh {
   my $reporter= shift;
-  sayDebug("Reporter ".(ref $reporter)." is trying to get dbh");
   my $dbh;
   sigaction SIGALRM, new POSIX::SigAction sub {
                 sayError("Reporter ".(ref $reporter).": Timeout upon connecting to ".$reporter->server->dsn);

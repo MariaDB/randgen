@@ -33,8 +33,7 @@
 ########################################################################
 
 query:
-    ==FACTOR:0.005== parser_changes_query
-;
+  ==FACTOR:0.005== { _set_db('user') } parser_changes_query ;
 
 parser_changes_query:
     ==FACTOR:0.01== parser_changes_create_index_invalid

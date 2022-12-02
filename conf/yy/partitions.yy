@@ -25,7 +25,7 @@
 ##########################################################################
 
 query_init:
-  init_db ;
+  CREATE DATABASE IF NOT EXISTS partitions_db ;; { _set_db('partitions_db') } init_db ;
 
 init_db:
   create_tables ;; insert_tables ;;  cache_index ;; load_index ;
@@ -78,7 +78,7 @@ insert_nop:
 # Randomly executed SQL
 
 query:
-  exec_sql ;
+  { _set_db('partitions_db') } exec_sql ;
 
 exec_sql:
   select_explain |

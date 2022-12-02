@@ -32,12 +32,37 @@ use GenTest::Random;
 use GenTest::Executor;
 use GenUtil;
 
+use constant POPULATE_SCHEMA_DSN  => 1;
+use constant POPULATE_SCHEMA_PORT => 2;
+use constant POPULATE_SCHEMA_DB   => 3;
+
 use DBServer::MariaDB;
 
 sub new {
     my $class = shift;
     my $self = $class->SUPER::new(@_);
+    # These are values for populate-schema.pl
+    $self->[POPULATE_SCHEMA_PORT]= undef;
+    $self->[POPULATE_SCHEMA_DSN]= undef;
+    $self->[POPULATE_SCHEMA_DB]= undef;
     return $self;
+}
+
+sub port {
+  if (defined $_[1]) {
+    $_[0]->[POPULATE_SCHEMA_PORT]= $_[1];
+    $_[0]->[POPULATE_SCHEMA_DSN]= "dbi:mysql:host=127.0.0.1:port=$_[1]:user=root";
+  } else {
+    return $_[0]->[POPULATE_SCHEMA_PORT];
+  }
+}
+
+sub db {
+  if (defined $_[1]) {
+    $_[0]->[POPULATE_SCHEMA_DB]= $_[1];
+  } else {
+    return $_[0]->[POPULATE_SCHEMA_DB];
+  }
 }
 
 sub run {
@@ -46,7 +71,18 @@ sub run {
     my $schema_file = $self->spec_file();
     my $tables = $self->tables();
 
-    my $executor = GenTest::Executor->newFromDSN($self->dsn());
+    my ($executor, $port);
+    if ($self->server) {
+      $executor = GenTest::Executor->newFromServer($self->server(), id => $self->executor_id);
+      $port= $executor->server->port();
+    } elsif ($self->[POPULATE_SCHEMA_DSN]) {
+      $executor = GenTest::Executor->newFromDSN($self->[POPULATE_SCHEMA_DSN], id => $self->executor_id);
+      $port= $self->port();
+    } else {
+      sayError("Don't know how to create executor");
+      return STATUS_ENVIRONMENT_FAILURE;
+    }
+
     $executor->init();
 
     # The specification file should be an SQL script, and we need to feed it to the server through the client
@@ -80,21 +116,30 @@ sub run {
             $old_tables{$_->[0]} = $_->[1];
         }
 
-        my $port = $executor->port();
-        system("$mysql_client_path --port=$port --protocol=tcp -uroot --force test < $schema_file");
+        system("$mysql_client_path --port=$port --protocol=tcp -uroot --force ".$self->db." < $schema_file");
         if ($?) {
             sayError("Failed to load $schema_file through MySQL client");
             return STATUS_ENVIRONMENT_FAILURE;
         }
 
-        # Now we will get the list of tables again. We don't care about those which already have rows in them
-        # (even if they are new, we consider them populated from the schema file);
-        # for empty ones, we'll compare their creation time with the stored one
+        # Now we will get the list of tables again. If at least some new tables got populated, we'll assume that
+        # the SQL file takes care of it. If all tables are empty, then we'll generate some data
 
         $tables = $executor->execute("SELECT CONCAT(TABLE_SCHEMA, '.', TABLE_NAME), CREATE_TIME FROM INFORMATION_SCHEMA.TABLES "
-                . "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema','sys') AND TABLE_ROWS = 0")->data();
+                . "WHERE TABLE_SCHEMA NOT IN ('mysql','performance_schema','information_schema','sys') AND TABLE_TYPE LIKE '%TABLE%'")->data();
+
         foreach (@$tables) {
-            push @tables_to_populate, $_->[0] unless defined $old_tables{$_->[0]} and $old_tables{$_->[0]} eq $_->[1];
+          # Old table, don't touch
+          next if (defined $old_tables{$_->[0]} and $old_tables{$_->[0]} eq $_->[1]);
+
+          # Can't rely on TABLE_ROWS
+          if ($executor->execute("SELECT 1 FROM $_->[0] LIMIT 1")->rows()) {
+            say("Some tables were populated during SQL file execution, no need to generate data");
+            @tables_to_populate= ();
+            last;
+          } else {
+            push @tables_to_populate, $_->[0];
+          }
         }
     }
     # If the table list was defined,
@@ -102,13 +147,14 @@ sub run {
     else {
         @tables_to_populate = @$tables;
     }
-
-    my @row_counts= ( $self->rows() && scalar(@{$self->rows()}) ? @{$self->rows()} : (100) );
-    say("Tables to populate: @tables_to_populate, row counts: @row_counts");
-    my $i= 0;
-    foreach my $t (@tables_to_populate) {
-        populate_table($self, $executor, $t, $row_counts[$i++]);
-        $i= 0 if $i > $#row_counts;
+    if (scalar (@tables_to_populate)) {
+      my @row_counts= ( $self->rows() && scalar(@{$self->rows()}) ? @{$self->rows()} : (100) );
+      say("Tables to populate: @tables_to_populate, row counts: @row_counts");
+      my $i= 0;
+      foreach my $t (@tables_to_populate) {
+          populate_table($self, $executor, $t, $row_counts[$i++]);
+          $i= 0 if $i > $#row_counts;
+      }
     }
 
     return STATUS_OK;

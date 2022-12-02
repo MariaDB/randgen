@@ -17,8 +17,7 @@
 # Rough imitation of OLTP-readonly test (sysbench-like)
 
 query:
-    select
-;
+    { _set_db('any') } select ;
 
 select:
     point_select |

@@ -40,7 +40,7 @@ sub new {
         $obj->[$args->{$_[$i * 2]}] = $_[$i * 2 + 1];
       }
     } else {
-      carp("Unkown argument '$_[$i * 2]' to ".$class.'->new()');
+      carp("Unknown argument '$_[$i * 2]' to ".$class.'->new()');
     }
   }
   return $obj;

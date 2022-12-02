@@ -2249,7 +2249,7 @@ my %err2type = (
     ER_SP_WRONG_NO_OF_ARGS()                            => STATUS_SEMANTIC_ERROR,
     ER_SP_WRONG_NO_OF_FETCH_ARGS()                      => STATUS_SEMANTIC_ERROR,
     ER_SQLTHREAD_WITH_SECURE_SLAVE()                    => STATUS_SEMANTIC_ERROR,
-    ER_SQL_DISCOVER_ERROR()                             => STATUS_DATABASE_CORRUPTION,
+    ER_SQL_DISCOVER_ERROR()                             => STATUS_IGNORED_ERROR, # Demoted due to MDEV-30149
     ER_SQL_SLAVE_SKIP_COUNTER_NOT_SETTABLE_IN_GTID_MODE() => STATUS_SEMANTIC_ERROR,
     ER_SQL_MODE_NO_EFFECT()                             => STATUS_CONFIGURATION_ERROR,
     ER_SR_INVALID_CREATION_CTX()                        => STATUS_SEMANTIC_ERROR,
@@ -2591,7 +2591,7 @@ my $query_no = 0;
 
 sub init {
     my $executor = shift;
-    my $dbh = DBI->connect($executor->server->dsn(), undef, undef, {
+    my $dbh = DBI->connect($executor->dsn(), undef, undef, {
         PrintError => 0,
         RaiseError => 0,
         AutoCommit => 1,
@@ -2600,13 +2600,13 @@ sub init {
     } );
 
     if (not defined $dbh) {
-        sayError("connect() to dsn ".$executor->server->dsn()." failed: ".$DBI::errstr);
+        sayError("connect() to dsn ".$executor->dsn()." failed: ".$DBI::errstr);
         return STATUS_ENVIRONMENT_FAILURE;
     }
 
     $executor->setDbh($dbh);
 
-    my $service_dbh = DBI->connect($executor->server->dsn(), undef, undef, {
+    my $service_dbh = DBI->connect($executor->dsn(), undef, undef, {
         PrintError => 0,
         RaiseError => 0,
         AutoCommit => 1,
@@ -2615,7 +2615,7 @@ sub init {
     } );
 
     if (not defined $service_dbh) {
-        sayError("connect() to dsn ".$executor->server->dsn()." (service connection) failed: ".$DBI::errstr);
+        sayError("connect() to dsn ".$executor->dsn()." (service connection) failed: ".$DBI::errstr);
         return STATUS_ENVIRONMENT_FAILURE;
     }
 
@@ -2652,6 +2652,10 @@ sub init {
     $executor->setCurrentUser($dbh->selectrow_arrayref("SELECT CURRENT_USER()")->[0]);
     $dbh->do('SELECT '.GenTest::Random::dataLocation().' AS DATA_LOCATION');
 
+    sayDebug("Loading metadata upon executor initialization");
+    $executor->forceMetadataReload();
+    $executor->cacheMetaData();
+
     say("Executor initialized. id: ".$executor->id()."; default schema: ".$executor->defaultSchema()."; connection ID: ".$executor->connectionId()) if rqg_debug();
 
     return STATUS_OK;
@@ -2668,7 +2672,7 @@ sub reportError {
       } elsif (not defined $reported_errors{$errstr}) {
           my $query_for_print= shorten_message($query);
           say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text(errorType($err)) . "). Further errors of this kind will be suppressed.");
-          $reported_errors{$errstr}++;
+          $reported_errors{$errstr}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
       }
     }
 }
@@ -2677,8 +2681,32 @@ sub execute {
     my ($executor, $query, $execution_flags) = @_;
     $execution_flags= 0 unless defined $execution_flags;
 
+    # Check for execution flags in query comments. They can, for example,
+    # indicate that a query is intentionally invalid, and the error
+    # doesn't need to be reported.
+    # The format for it is /* EXECUTOR_FLAG_SILENT */
+
+    # Add global flags if any are set
+    $execution_flags = $execution_flags | $executor->flags();
+
     if (!rqg_debug() && $query =~ s/\/\*\s*EXECUTOR_FLAG_SILENT\s*\*\///g) {
         $execution_flags |= EXECUTOR_FLAG_SILENT;
+    }
+    if ($query =~ s/\/\*\s*EXECUTOR_FLAG_SKIP_STATS\s*\*\///g) {
+        $execution_flags |= EXECUTOR_FLAG_SKIP_STATS;
+    }
+
+    if ($query =~ /\!non_existing_(?:table|base_table|versioned_table|view|index|column)/) {
+      sayError("Discarding query [ $query ] and setting STATUS_REQUIREMENT_UNMET");
+      return GenTest::Result->new(
+          query      => $query,
+          status     => STATUS_REQUIREMENT_UNMET,
+          err        => undef,
+          errstr     => "Internal error, required object not found",
+          sqlstate   => undef,
+          start_time => undef,
+          end_time   => undef
+      );
     }
 
     # Filter out any /*executor */ comments that do not pertain to this particular Executor/DBI
@@ -2697,24 +2725,19 @@ sub execute {
     # Or occasionaly "x AS alias1 AS alias2"
     while ($query =~ s/AS\s+\w+\s+(AS\s+\w+)/$1/g) {}
 
-    my $qno_comment= 'QNO ' . $query_no . ' CON_ID ' . $executor->connectionId();
-    $query_no++ if $executor->id == 1;
-    # If a query starts with an executable comment, we'll put QNO right after the executable comment
-    if ($query =~ s/^\s*(\/\*\!.*?\*\/)/$1 \/\* $qno_comment \*\//) {}
-    # If a query starts with a non-executable comment, we'll put QNO into this comment
-    elsif ($query =~ s/^\s*\/\*(.*?)\*\//\/\* $qno_comment $1 \*\//) {}
-    # Otherwise we'll put QNO comment after the first token (it should be a keyword specifying the operation)
-    elsif ($query =~ s/^\s*(\w+)/$1 \/\* $qno_comment \*\//) {}
-    # Finally, if it's something else that we didn't expect, we'll add QNO at the end of the query
-    else { $query .= " /* $qno_comment */" };
 
-    # Check for execution flags in query comments. They can, for example,
-    # indicate that a query is intentionally invalid, and the error
-    # doesn't need to be reported.
-    # The format for it is /* EXECUTOR_FLAG_SILENT */, currently only this flag is supported in queries
-
-    # Add global flags if any are set
-    $execution_flags = $execution_flags | $executor->flags();
+    unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS) {
+      my $qno_comment= 'QNO ' . $query_no . ' CON_ID ' . $executor->connectionId();
+      $query_no++ if $executor->id == 1;
+      # If a query starts with an executable comment, we'll put QNO right after the executable comment
+      if ($query =~ s/^\s*(\/\*\!.*?\*\/)/$1 \/\* $qno_comment \*\//) {}
+      # If a query starts with a non-executable comment, we'll put QNO into this comment
+      elsif ($query =~ s/^\s*\/\*(.*?)\*\//\/\* $qno_comment $1 \*\//) {}
+      # Otherwise we'll put QNO comment after the first token (it should be a keyword specifying the operation)
+      elsif ($query =~ s/^\s*(\w+)/$1 \/\* $qno_comment \*\//) {}
+      # Finally, if it's something else that we didn't expect, we'll add QNO at the end of the query
+      else { $query .= " /* $qno_comment */" };
+    }
 
     my $dbh = $executor->dbh();
 
@@ -2735,7 +2758,6 @@ sub execute {
 
     my $trace_query;
     my $trace_me = 0;
-
 
     # Write query to log before execution so it's sure to get there
     if ($executor->sqltrace) {
@@ -2759,7 +2781,7 @@ sub execute {
 
     if (not defined $sth) {            # Error on PREPARE
         #my $errstr_prepare = $executor->normalizeError($dbh->errstr());
-        $executor->[EXECUTOR_ERROR_COUNTS]->{$dbh->err}++;
+        $executor->[EXECUTOR_ERROR_COUNTS]->{$dbh->err}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
         return GenTest::Result->new(
             query        => $query,
             status        => errorType($dbh->err()),
@@ -2785,7 +2807,9 @@ sub execute {
           $err_type = STATUS_OK if (defined $se_err and defined $acceptable_se_errors{$se_err});
       }
     }
-    $executor->[EXECUTOR_STATUS_COUNTS]->{$err_type}++;
+
+    $executor->[EXECUTOR_STATUS_COUNTS]->{$err_type}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
+
     my $mysql_info = $dbh->{'mysql_info'};
     $mysql_info= '' unless defined $mysql_info;
     my ($matched_rows, $changed_rows) = $mysql_info =~ m{^Rows matched:\s+(\d+)\s+Changed:\s+(\d+)}sgio;
@@ -2807,7 +2831,7 @@ sub execute {
     my $result;
     if (defined $err)
     {  # Error on EXECUTE
-        $executor->[EXECUTOR_ERROR_COUNTS]->{$err}++;
+        $executor->[EXECUTOR_ERROR_COUNTS]->{$err}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
         if ($execution_flags & EXECUTOR_FLAG_SILENT) {
           $executor->[EXECUTOR_SILENT_ERRORS_COUNT] = $executor->[EXECUTOR_SILENT_ERRORS_COUNT] ? $executor->[EXECUTOR_SILENT_ERRORS_COUNT] + 1 : 1;
         }
@@ -2817,6 +2841,7 @@ sub execute {
             ($err_type == STATUS_SEMANTIC_ERROR) ||
             ($err_type == STATUS_CONFIGURATION_ERROR) ||
             ($err_type == STATUS_ACL_ERROR) ||
+            ($err_type == STATUS_IGNORED_ERROR) ||
             ($err_type == STATUS_RUNTIME_ERROR)
         ) {
             $executor->reportError($query, $err, $errstr, $execution_flags);
@@ -2824,7 +2849,7 @@ sub execute {
             ($err_type == STATUS_SERVER_CRASHED) ||
             ($err_type == STATUS_SERVER_KILLED)
         ) {
-            $dbh = DBI->connect($executor->server->dsn(), undef, undef, {
+            $dbh = DBI->connect($executor->dsn(), undef, undef, {
                 PrintError => 0,
                 RaiseError => 0,
                 AutoCommit => 1,
@@ -2872,7 +2897,7 @@ sub execute {
             start_time    => $start_time,
             end_time    => $end_time,
         );
-        $executor->[EXECUTOR_ERROR_COUNTS]->{'(no error)'}++;
+        $executor->[EXECUTOR_ERROR_COUNTS]->{'(no error)'}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
     } else {
         my @data;
         my %data_hash;
@@ -2894,7 +2919,7 @@ sub execute {
             say("Query: $query_for_print returned more than MAX_ROWS_THRESHOLD (".MAX_ROWS_THRESHOLD().") rows. Killing it ...");
             $executor->[EXECUTOR_RETURNED_ROW_COUNTS]->{'>MAX_ROWS_THRESHOLD'}++;
 
-            my $kill_dbh = DBI->connect($executor->server->dsn(), undef, undef, { PrintError => 1 });
+            my $kill_dbh = DBI->connect($executor->dsn(), undef, undef, { PrintError => 1 });
             $kill_dbh->do("KILL QUERY ".$executor->connectionId());
             $kill_dbh->disconnect();
             $sth->finish();
@@ -2914,7 +2939,7 @@ sub execute {
             column_types    => $column_types,
         );
 
-        $executor->[EXECUTOR_ERROR_COUNTS]->{'(no error)'}++;
+        $executor->[EXECUTOR_ERROR_COUNTS]->{'(no error)'}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
     }
 
     $sth->finish();
@@ -2926,7 +2951,7 @@ sub execute {
         }
     }
 
-    if (rqg_debug() && (! ($execution_flags & EXECUTOR_FLAG_SILENT))) {
+    if (rqg_debug() && (! ($execution_flags & EXECUTOR_FLAG_SILENT) && (! ($execution_flags & EXECUTOR_FLAG_SKIP_STATS)))) {
         if ($query =~ m{^\s*(?:select|insert|replace|delete|update)}is) {
             $executor->explain($query);
 
@@ -3017,9 +3042,8 @@ sub disconnect {
 sub DESTROY {
     my $executor = shift;
     $executor->disconnect();
-
     say("-----------------------");
-    say("Statistics for Executor ".$executor->server->dsn());
+    say("Statistics for Executor ".$executor->dsn());
     if (
         (rqg_debug()) &&
         (defined $executor->[EXECUTOR_STATUS_COUNTS])
@@ -3076,71 +3100,6 @@ sub normalizeError {
     return $errstr;
 }
 
-
-sub getSchemaMetaData {
-    ## Return the result from a query with the following columns:
-    ## 1. Schema (aka database) name
-    ## 2. Table name
-    ## 3. TABLE for tables VIEW for views and MISC for other stuff
-    ## 4. Column name
-    ## 5. PRIMARY for primary key, INDEXED for indexed column and "ORDINARY" for all other columns
-    ## 6. generalized data type (INT, FLOAT, BLOB, etc.)
-    ## 7. real data type
-    my ($self, $redo) = @_;
-
-    # TODO: recognize SEQUENCE as a separate type with separate logic
-
-    # Unset max_statement_time in case it was set in test configuration
-    $self->dbh()->do('/*!100108 SET @@max_statement_time= 0 */');
-    my $query =
-        "SELECT DISTINCT ".
-                "CASE WHEN table_schema = 'information_schema' ".
-                     "THEN 'INFORMATION_SCHEMA' ".  ## Hack due to
-                                                    ## weird MySQL
-                                                    ## behaviour on
-                                                    ## schema names
-                                                    ## (See Bug#49708)
-                     "ELSE table_schema END AS table_schema, ".
-               "table_name, ".
-               "CASE WHEN table_type = 'BASE TABLE' THEN 'table' ".
-                    "WHEN table_type = 'SYSTEM VERSIONED' THEN 'versioned' ".
-                    "WHEN table_type = 'SEQUENCE' THEN 'sequence' ".
-                    "WHEN table_type = 'VIEW' THEN 'view' ".
-                    "WHEN table_type = 'SYSTEM VIEW' then 'view' ".
-                    "ELSE 'misc' END AS table_type, ".
-               "column_name, ".
-               "CASE WHEN column_key = 'PRI' THEN 'primary' ".
-                    "WHEN column_key IN ('MUL','UNI') THEN 'indexed' ".
-                    "ELSE 'ordinary' END AS column_key, ".
-               "CASE WHEN data_type IN ('bit','tinyint','smallint','mediumint','int','bigint') THEN 'int' ".
-                    "WHEN data_type IN ('float','double') THEN 'float' ".
-                    "WHEN data_type IN ('decimal') THEN 'decimal' ".
-                    "WHEN data_type IN ('datetime','timestamp') THEN 'timestamp' ".
-                    "WHEN data_type IN ('char','varchar','binary','varbinary') THEN 'char' ".
-                    "WHEN data_type IN ('tinyblob','blob','mediumblob','longblob') THEN 'blob' ".
-                    "WHEN data_type IN ('tinytext','text','mediumtext','longtext') THEN 'blob' ".
-                    "ELSE data_type END AS data_type_normalized, ".
-               "data_type, ".
-               "character_maximum_length, ".
-               "table_rows ".
-         "FROM information_schema.tables INNER JOIN ".
-              "information_schema.columns USING(table_schema,table_name) ";
-    # Do not reload metadata for system tables
-    if ($redo) {
-      $query.= " AND table_schema NOT IN ('performance_schema','information_schema','mysql')";
-    }
-
-    my $res = $self->dbh()->selectall_arrayref($query);
-    if ($res) {
-        say("Finished reading metadata from the database: $#$res entries");
-    } else {
-        sayError("Failed to retrieve schema metadata: " . $self->dbh()->err . " " . $self->dbh()->errstr);
-    }
-    $self->dbh()->do('/*!100108 SET @@max_statement_time= @@global.max_statement_time */');
-
-    return $res;
-}
-
 sub getCollationMetaData {
     ## Return the result from a query with the following columns:
     ## 1. Collation name
@@ -3171,77 +3130,70 @@ sub loadMetaData {
   my $exempt_schemata= "'transforms'";
   my $clause;
   if ($metadata_type eq 'system') {
-    $clause= "table_schema IN ($system_schemata)"
+    $clause= "IN ($system_schemata)"
   } elsif ($metadata_type eq 'non-system') {
-    $clause= "table_schema NOT IN ($system_schemata,$exempt_schemata) and table_schema NOT LIKE 'private_%'"
+    $clause= "NOT IN ($system_schemata,$exempt_schemata)"
   } else {
     sayError("Unknown metadata type requested: $metadata_type");
     return undef;
   }
 
+  my $schema_query=
+      "SELECT schema_name ".
+      "FROM information_schema.schemata WHERE schema_name $clause";
   my $table_query=
       "SELECT table_schema, table_name, table_type ".
-      "FROM information_schema.tables WHERE $clause";
+      "FROM information_schema.tables WHERE table_schema $clause";
   my $column_query=
       "SELECT table_schema, table_name, column_name, column_key, ".
              "data_type, character_maximum_length ".
-      "FROM information_schema.columns WHERE $clause";
+      "FROM information_schema.columns WHERE table_schema $clause";
   my $index_query=
       "SELECT table_schema, table_name, index_name, non_unique XOR 1 ".
-      "FROM information_schema.statistics WHERE $clause";
+      "FROM information_schema.statistics WHERE table_schema $clause";
 
   sayDebug("Metadata reload: Starting reading $metadata_type metadata with condition \"$clause\"");
 
-  my ($table_metadata, $column_metadata, $index_metadata);
+  my ($schema_metadata, $table_metadata, $column_metadata, $index_metadata);
   my $dbh= $self->serviceDbh();
-  $table_metadata= $dbh->selectall_arrayref($table_query);
-  if (not $dbh->err and $table_metadata) {
-    $column_metadata= $dbh->selectall_arrayref($column_query);
-    if (not $dbh->err) {
-      $index_metadata= $dbh->selectall_arrayref($index_query);
+  $schema_metadata= $dbh->selectall_arrayref($schema_query);
+  if (not $dbh->err and $schema_metadata) {
+    $table_metadata= $dbh->selectall_arrayref($table_query);
+    if (not $dbh->err and $table_metadata) {
+      $column_metadata= $dbh->selectall_arrayref($column_query);
+      if (not $dbh->err) {
+        $index_metadata= $dbh->selectall_arrayref($index_query);
+      }
     }
   }
-  if ($dbh->err or not $table_metadata or not $column_metadata) {
+  if ($dbh->err or not $schema_metadata or not $table_metadata or not $column_metadata) {
     sayError("MetadataReload: Failed to retrieve metadata with condition \"$clause\": " . $dbh->err . " " . $dbh->errstr);
     return undef;
   } else {
-    say("MetadataReload: Finished reading $metadata_type metadata: ".scalar(@$table_metadata)." tables, ".scalar(@$column_metadata)." columns, ".scalar(@$index_metadata)." indexes");
+    say("MetadataReload: Finished reading $metadata_type metadata: ".scalar(@$schema_metadata)." schemas, ".scalar(@$table_metadata)." tables, ".scalar(@$column_metadata)." columns, ".scalar(@$index_metadata)." indexes");
   }
 
   my $meta= {};
   my %tabletype= ();
+
+  foreach my $row (@$schema_metadata) {
+    my $schema = $row->[0];
+    $meta->{$schema}= {} if not exists $meta->{$schema};
+  }
 
   foreach my $row (@$table_metadata) {
     my ($schema, $table, $type) = @$row;
     if    ($type eq 'BASE TABLE') { $type= 'table' }
     elsif ($type eq 'SYSTEM VERSIONED') { $type = 'versioned' }
     elsif ($type eq 'SEQUENCE') { $type = 'sequence' }
-    elsif (
-      $type eq 'VIEW' or
-      $type eq 'SYSTEM VIEW'
-    ) { $type= 'view' }
+    elsif ($type eq 'VIEW' or $type eq 'SYSTEM VIEW') { $type= 'view' }
     else { $type= 'misc' };
-    if (lc($schema) eq 'information_schema') {
-      $meta->{information_schema}={} if not exists $meta->{information_schema};
-      $meta->{information_schema}->{$type}={} if not exists $meta->{information_schema}->{$type};
-      $meta->{information_schema}->{$type}->{$table}={} if not exists $meta->{information_schema}->{$type}->{$table};
-      $meta->{information_schema}->{$type}->{$table}->{col}={} if not exists $meta->{information_schema}->{$type}->{$table}->{col};
-      $meta->{information_schema}->{$type}->{$table}->{key}={} if not exists $meta->{information_schema}->{$type}->{$table}->{key};
-      $tabletype{'information_schema.'.$table}= $type;
-      $meta->{INFORMATION_SCHEMA}={} if not exists $meta->{INFORMATION_SCHEMA};
-      $meta->{INFORMATION_SCHEMA}->{$type}={} if not exists $meta->{INFORMATION_SCHEMA}->{$type};
-      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}={} if not exists $meta->{INFORMATION_SCHEMA}->{$type}->{$table};
-      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{col}={} if not exists $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{col};
-      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{key}={} if not exists $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{key};
-      $tabletype{'INFORMATION_SCHEMA.'.$table}= $type;
-    } else {
-      $meta->{$schema}={} if not exists $meta->{$schema};
-      $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
-      $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
-      $meta->{$schema}->{$type}->{$table}->{col}={} if not exists $meta->{$schema}->{$type}->{$table}->{col};
-      $meta->{$schema}->{$type}->{$table}->{key}={} if not exists $meta->{$schema}->{$type}->{$table}->{key};
-      $tabletype{$schema.'.'.$table}= $type;
-    }
+    $meta->{$schema}={} if not exists $meta->{$schema};
+    $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
+    $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
+    $meta->{$schema}->{$type}->{$table}->{col}={} if not exists $meta->{$schema}->{$type}->{$table}->{col};
+    $meta->{$schema}->{$type}->{$table}->{key}={} if not exists $meta->{$schema}->{$type}->{$table}->{key};
+    $tabletype{$schema.'.'.$table}= $type;
   }
 
   foreach my $row (@$column_metadata) {

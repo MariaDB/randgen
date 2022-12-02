@@ -60,6 +60,11 @@ sub run {
   $status= STATUS_OK;
   $topology= '1->2';
 
+  my @reporters= $self->getProperty('reporters') ? @{$self->getProperty('reporters')} : ();
+  my $rpl_mode= $self->scenarioOptions->{'rpl-mode'} || $self->scenarioOptions->{'rpl-mode'} || '';
+  push @reporters, 'ReplicationConsistency' unless $rpl_mode =~ /nosync/;
+  push @reporters, 'ReplicationSlaveStatus';
+
   my $srv_count= scalar(keys %{$self->getProperty('server_specific')});
   if ($srv_count < 2) {
     sayError("There should be at least two servers for the replication test");
@@ -78,7 +83,9 @@ sub run {
     unless ($self->getServerStartupOption($s,'log-bin')) {
       $self->setServerStartupOption($s,'log-bin',undef);
     }
-    push @servers, $self->prepareServer($s);
+    # is_active is for GenData/GenTest to know on which servers to run the flow
+    # TODO: should be set to all masters, according to the topology
+    push @servers, $self->prepareServer($s,my $is_active=($s==1));
   }
 
   #####
@@ -133,9 +140,6 @@ sub run {
   }
 
   #####
-  # This property is for Gendata/GenTest to know on which servers to execute the flow
-  $self->setProperty('active_servers',[$servers[0]]);
-
   $self->printStep("Generating test data on the master");
 
   $status= $self->generateData();

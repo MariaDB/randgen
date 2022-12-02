@@ -1,4 +1,5 @@
 # Copyright (C) 2008 Sun Microsystems, Inc. All rights reserved.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -16,10 +17,12 @@
 # USA
 
 query:
-  binlog_event | binlog_event | binlog_event | binlog_event | binlog_event |
-  binlog_event | binlog_event | binlog_event | binlog_event | binlog_event |
-  binlog_event | binlog_event | binlog_event | binlog_event | binlog_event |
-  binlog_event | binlog_event | binlog_event | binlog_event | binlog_event | ddl ;
+  { _set_db('user') } replication_query ;
+
+replication_query:
+  ==FACTOR:20== binlog_event |
+  ddl
+;
 
 binlog_event:
   delete_rows_event |

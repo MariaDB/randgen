@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014 SkySQL Ab
-# Copyright (c) 2015, 2016, MariaDB Corporation Ab
+# Copyright (c) 2015, 2022, MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,7 @@ fetch_table_columns_by_type:
     { unless (%table_columns_by_type and $table_columns_by_type{$type}) { foreach $t (@{$executors->[0]->baseTables()}) { ${$table_columns_by_type{$type}}{$t} = $executors->[0]->metaColumnsDataType($type,$t,$last_database) } }; '' } ;
 
 query:
-  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } query_type ;
+  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; _set_db('user') } query_type ;
 
 #################################################################################
 #################################################################################

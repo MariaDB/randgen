@@ -42,7 +42,8 @@ use GenTest::Constants;
 use GenTest::Properties;
 use GenTest::GenConfig;
 
-use constant DEFAULT_RQG_SCENARIO => 'Standard';
+use constant RQG_DEFAULT_SCENARIO  => 'Standard';
+use constant RQG_DEFAULT_BASE_PORT => 19000;
 
 $Carp::Verbose= 1;
 $| = 1;
@@ -80,9 +81,10 @@ $props->{queries}= 100000000;
 $props->{duration}= 300;
 $props->{seed}= 'time';
 $props->{metadata_reload}= 1;
+$props->{base_port}= RQG_DEFAULT_BASE_PORT;
 
 $trials= 1;
-$scenario= DEFAULT_RQG_SCENARIO;
+$scenario= RQG_DEFAULT_SCENARIO;
 
 my @ARGV_saved = @ARGV;
 
@@ -115,6 +117,7 @@ my $opt_result = GetOptions(
   #
   # General options
   'annotate_rules|annotate-rules' => \$props->{annotate_rules},
+  'base-port|base_port=i' => \$props->{base_port},
   'compatibility=s' => \$props->{compatibility},
   'debug' => \$props->{debug},
   'duration=i' => \$props->{duration},
@@ -126,7 +129,6 @@ my $opt_result = GetOptions(
   'help' => \$help,
   'metadata_reload|metadata-reload!' => \$props->{metadata_reload},
   'minio|with-minio|with_minio' => \$minio,
-  'mtr-build-thread=i' => \$build_thread,
   'parser=s' => \$props->{parser},
   'parser-mode|parser_mode=s' => \$props->{parser_mode},
   'queries=s' => \$props->{queries},
@@ -281,22 +283,6 @@ if (defined $props->{sqltrace}) {
   }
 }
 
-# Calculate base port based on MTR_BUILD_THREAD
-
-if (not defined $build_thread) {
-  if (defined $ENV{MTR_BUILD_THREAD}) {
-    if ($ENV{MTR_BUILD_THREAD} eq 'auto') {
-      sayWarning("MTR_BUILD_THREAD=auto from the environment will be ignored, ".DEFAULT_MTR_BUILD_THREAD." will be used instead");
-      $build_thread= DEFAULT_MTR_BUILD_THREAD;
-    } else {
-      $build_thread= $ENV{MTR_BUILD_THREAD};
-    }
-  } else {
-    $build_thread = DEFAULT_MTR_BUILD_THREAD;
-  }
-}
-$props->{base_port}= 10000 + 10 * $build_thread;
-
 ## Multiple-value parameters may be given as comma-separated strings
 foreach my $p (qw(engines filters gendatas grammars redefines reporters transformers validators variators)) {
   my @vals= ();
@@ -320,11 +306,11 @@ $ENV{RQG_THREADS}= $props->{threads};
 # (it seems an overkill to start the server here, since it will be rarely needed)
 if ($minio) {
   if (system("mc alias set local http://127.0.0.1:9000 minio minioadmin && ( mc rb --force local/rqg || true ) && mc mb local/rqg")) {
-    say("S3 backend has been configured");
-    $ENV{S3_DOABLE}= '!100501';
-  } else {
     sayWarning("Could not configure S3 backend");
     $ENV{S3_DOABLE}= '';
+  } else {
+    say("S3 backend has been configured");
+    $ENV{S3_DOABLE}= '!100501';
   }
 }
 
@@ -478,6 +464,7 @@ $0 - Run a complete random query generation test scenario
 
     General options
 
+    --base-port : Start of the port range used for the servers
     --grammar   : Grammar file to use when generating queries (can be used multiple times)
     --redefine  : Grammar file(s) to redefine and/or add rules to the given grammar
     --engine    : Table engine(s) to use when creating tables with gendata (default no ENGINE in CREATE TABLE).
@@ -503,7 +490,6 @@ $0 - Run a complete random query generation test scenario
                   Different values can be provided to servers through --views1 | --views2 | --views3
     --valgrind  : Passed to gentest.pl
     --filter    : Suppress queries which match given patterns. Multiple filters can be provided
-    --mtr-build-thread:  Value used for MTR_BUILD_THREAD when servers are started and accessed
     --debug     : Debug mode
     --short_column_names: use short column names in gendata (c<number>)
     --freeze_time: Freeze time for each query so that CURRENT_TIMESTAMP gives the same result for all transformers/validators

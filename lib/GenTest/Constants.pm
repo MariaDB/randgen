@@ -76,8 +76,6 @@ require Exporter;
   ORACLE_ISSUE_NO_LONGER_REPEATABLE
   ORACLE_ISSUE_STATUS_UNKNOWN
 
-  DEFAULT_MTR_BUILD_THREAD
-
   constant2text
   status2text
 );
@@ -123,8 +121,9 @@ use constant STATUS_POSSIBLE_FAILURE         => 60;
 use constant STATUS_SERVER_SHUTDOWN_FAILURE  => 90;
 use constant STATUS_DATABASE_CORRUPTION      => 96; # Database corruption errors are often bogus, but still important to look at
 
-# Higher-priority errors
 use constant STATUS_CRITICAL_FAILURE         => 100; # Boundary between critical and non-critical errors
+
+# Critical errors cause premature test termination
 
 use constant STATUS_SERVER_KILLED            => 101; # Willfull killing of the server, will not be reported as a crash
 use constant STATUS_SERVER_UNAVAILABLE       => 102; # Cannot connect to the server without a known reason
@@ -143,8 +142,6 @@ use constant STATUS_PERL_FAILURE             => 255; # Perl died for some reason
 use constant ORACLE_ISSUE_STILL_REPEATABLE  => 2;
 use constant ORACLE_ISSUE_NO_LONGER_REPEATABLE  => 3;
 use constant ORACLE_ISSUE_STATUS_UNKNOWN  => 4;
-
-use constant DEFAULT_MTR_BUILD_THREAD => 930; ## Legacy...
 
 #
 # The part below deals with constant value to constant name conversions

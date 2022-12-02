@@ -33,13 +33,10 @@
 
 query_init:
   # This is to prevent other grammars from altering the schema
-  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON dbt3.* TO CURRENT_USER;
+  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON dbt3_db.* TO CURRENT_USER;
 
 query:
-  { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'dbt3'; 'USE dbt3' }
-  ;; dbt3_query
-  ;; { $last_database= $saved_database; ($saved_database ? "USE $saved_database" : '') }
-;
+  { _set_db('dbt3_db') } dbt3_query ;
 
 dbt3_query:
   select_r_n_s_ps_l_o_c | select_p_ps_s_n_r | select_p_ps_l_o_c_r_n_s | currency_select_p_ps_s_l_o_c;

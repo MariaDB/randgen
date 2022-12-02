@@ -18,13 +18,13 @@
 ########################################################################
 
 query:
-  insert | insert | insert | insert | insert |
+  { _set_db('oqgraph_db') } oqgraph_query ;
+
+oqgraph_query:
+  ==FACTOR:5== insert |
   update |
   delete |
-  select ;
-
-thread1:
-  insert ;
+  ==FACTOR:5== select ;
 
 select:
   SELECT * FROM oqgraph_table |

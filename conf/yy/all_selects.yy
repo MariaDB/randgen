@@ -15,14 +15,8 @@
 
 #include <conf/rr/basics.rr>
 
-
-# Set here the list of databases if necessary, e.g.
-# $all_selects_databases= [ 'INFORMATION_SCHEMA' ];
-query_init:
-   { $all_selects_databases= $executors->[0]->databases(); '' };
-
 query:
-  { @aliases= (); $non_agg_fields= 0; $agg_fields= 0; '' } all_selects_query { $last_database= undef; $last_table= undef; '' };
+  { @aliases= (); $non_agg_fields= 0; $agg_fields= 0; _set_db('any') } all_selects_query ;
 
 all_selects_query:
   ==FACTOR:4== all_selects_generated_query |
@@ -64,7 +58,7 @@ all_selects_aggregate_item:
 
 all_selects_new_or_existing_alias:
 # The probability of using a new table depends on how many tables are already picked
-  { $alias= $prng->int(1,scalar(@aliases)+1); if ($alias > scalar(@aliases)) { $last_database= $prng->arrayElement($all_selects_databases); push @aliases, $last_database.'.'.$prng->arrayElement($executors->[0]->tables($last_database)) }; $last_table= $aliases[$alias-1]; 'tbl'.$alias } ;
+  { $alias= $prng->int(1,scalar(@aliases)+1); if ($alias > scalar(@aliases)) { $last_database= $prng->arrayElement($executors->[0]->metaAllSchemas()); push @aliases, $last_database.'.'.$prng->arrayElement($executors->[0]->tables($last_database)) }; $last_table= $aliases[$alias-1]; 'tbl'.$alias } ;
 
 all_selects_from_list:
   # We will use a random number of tables, but at least the tables which
@@ -78,7 +72,7 @@ all_selects_from_list:
 ;
 
 all_selects_prepare_list_of_tables:
-  { @list_of_tables= (); my $num_of_tables= (scalar(@aliases) + $prng->int(0,2)); $num_of_tables=1 unless $num_of_tables; foreach (1..$num_of_tables-scalar(@aliases)) { $last_database= $prng->arrayElement($all_selects_databases); push @aliases, $last_database.'.'.$prng->arrayElement($executors->[0]->tables($last_database)) }; foreach my $i (1..scalar(@aliases)) { push @list_of_tables, $aliases[$i-1].' AS tbl'.($i) }; '' }
+  { @list_of_tables= (); my $num_of_tables= (scalar(@aliases) + $prng->int(0,2)); $num_of_tables=1 unless $num_of_tables; foreach (1..$num_of_tables-scalar(@aliases)) { $last_database= $prng->arrayElement($executors->[0]->metaAllSchemas()); push @aliases, $last_database.'.'.$prng->arrayElement($executors->[0]->tables($last_database)) }; foreach my $i (1..scalar(@aliases)) { push @list_of_tables, $aliases[$i-1].' AS tbl'.($i) }; '' }
 ;
 
 # USING will produce a lot of "unknown column (1054 ER_BAD_FIELD_ERROR) errors

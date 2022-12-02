@@ -18,7 +18,7 @@
 ########################################
 
 query_init:
-  { $ind=1; '' } add_8 ;
+  { $ind=1; _set_db('user') } add_8 ;
 
 add_8:
   add_4 ;; add_4 ;
@@ -30,6 +30,9 @@ add:
   ALTER __online(10) TABLE _basetable ADD key_or_unique IF NOT EXISTS { 'ord_index_'.($ind++).'_'.abs($$) } ( field_list ) algorithm_optional;
 
 query:
+  { _set_db('user') } desc_indexes_query ;
+
+desc_indexes_query:
     add
   | ==FACTOR:2== ALTER __online(10) TABLE _basetable DROP KEY IF EXISTS { 'ord_index_'.$prng->uint16(1,$ind).'_'.abs($$) } algorithm_optional
   | ==FACTOR:0.05== ALTER TABLE _basetable DROP PRIMARY KEY algorithm_optional

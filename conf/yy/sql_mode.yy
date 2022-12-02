@@ -1,4 +1,4 @@
-#  Copyright (c) 2018, MariaDB
+#  Copyright (c) 2018, 2022, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 
 
 query:
-  query | query | query | query | query | query | query | sql_mode_set
+  ==FACTOR:0.01== sql_mode_set
 ;
 
 sql_mode_set:

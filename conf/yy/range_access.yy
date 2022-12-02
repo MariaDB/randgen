@@ -1,4 +1,5 @@
 # Copyright (C) 2009-2010 Sun Microsystems, Inc. All rights reserved.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -38,7 +39,7 @@
 ################################################################################
 
 query:
-  { $idx_table = '' ; @idx_fields = () ;  "" } query_type ;
+  { $idx_table = '' ; @idx_fields = () ;  _set_db('range_access_db') } query_type ;
 
 query_type:
   single_idx_query_set | dual_int_idx_query_set | dual_char_idx_query_set | tri_int_idx_query_set ;

@@ -52,7 +52,7 @@ sub transform {
     "( $orig_query ) INTERSECT ( $orig_query ) /* TRANSFORM_OUTCOME_DISTINCT */",
     "( $orig_query ) INTERSECT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
   );
-  if ($executor->versionNumeric() >= 100502) {
+  if ($executor->server->versionNumeric() >= 100502) {
     push @queries,
       "( $orig_query ) INTERSECT ALL ( $orig_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
       "( $orig_query ) INTERSECT ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */";
@@ -66,10 +66,10 @@ sub variate {
   return $query if $query =~ m{(OUTFILE|INFILE|INTO)}is || $query !~ m{^\s*SELECT}is || $query =~ m{^\s*WITH}is;
 
   my @intersect_modes= ('');
-  if ($executor->versionNumeric() >= 100500) {
+  if ($executor->server->versionNumeric() >= 100500) {
     push @intersect_modes, 'DISTINCT';
   }
-  if ($executor->versionNumeric() >= 100502) {
+  if ($executor->server->versionNumeric() >= 100502) {
     push @intersect_modes, 'ALL';
   }
   my $intersect_mode= $self->random->arrayElement(\@intersect_modes);

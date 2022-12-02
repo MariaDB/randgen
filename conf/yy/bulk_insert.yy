@@ -14,10 +14,10 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 query_init:
-  { %bulk_load_files=(); '' } SELECT NULL INTO OUTFILE 'load_data_anon';
+  { %bulk_load_files=(); _set_db('user') } SELECT NULL INTO OUTFILE { "'".$executors->[0]->vardir."/load_data_anon'" };
 
 query:
-  /* _user_db . _table { $target_db= $last_database; $target_table= $last_table; '' } */ bulk_op ;
+  { _set_db('user') } bulk_op ;
 
 bulk_op:
   ==FACTOR:5== insert_load |
@@ -25,8 +25,8 @@ bulk_op:
 ;
 
 load_with_variables:
-  create_datafile ;; TRUNCATE TABLE { $target_table } ;; set_variables ;; self_load ;; reset_variables |
-  TRUNCATE TABLE { $target_table } ;; set_variables ;; self_insert ;; reset_variables
+  create_datafile ;; TRUNCATE TABLE _table ;; set_variables ;; self_load ;; reset_variables |
+  TRUNCATE TABLE _table ;; set_variables ;; self_insert ;; reset_variables
 ;
 
 insert_load:
@@ -38,11 +38,11 @@ insert_load:
 
 # Select from any table into the same table
 self_insert:
-  insert_replace INTO { $target_table } SELECT * FROM { $target_table } ;
+  insert_replace INTO { $last_table } SELECT * FROM { $last_table } ;
 
 # Select from any table into the table. For replace there is a good chance of an error (column doesn't have default value, type mismatch,...)
 cross_insert:
-  insert_replace INTO { $target_table } ( _field ) SELECT _table._field FROM { $last_table } ;
+  insert_replace INTO _table ( _field ) SELECT _table._field FROM { $last_table } ;
 
 insert_replace:
   ==FACTOR:19== __replace_x_insert_ignore |
@@ -50,16 +50,16 @@ insert_replace:
 ;
 
 create_datafile:
-  SELECT * INTO OUTFILE new_datafile_name FROM { $target_table } store_datafile_num ;
+  SELECT * INTO OUTFILE /* _table */ new_datafile_name FROM { $last_table } store_datafile_num ;
 
 # Presumably create_datafile was just called, and fname is set
 self_load:
-  LOAD DATA INFILE { "'$fname'" } __replace_x_ignore INTO TABLE { $target_table } ;
+  LOAD DATA INFILE { "'$fname'" } __replace_x_ignore INTO TABLE { $last_table } ;
 
 # Load a random data file into the table. High chance of wrong field types/count,
 # but it's not as critical for LOAD as it is for INSERT
 cross_load:
-  LOAD DATA INFILE existing_datafile_name __replace_x_ignore INTO TABLE { $target_table } ;
+  LOAD DATA INFILE existing_datafile_name __replace_x_ignore INTO TABLE { $last_table } ;
 
 set_variables:
   SET FOREIGN_KEY_CHECKS=0, UNIQUE_CHECKS=0, AUTOCOMMIT=0 ;
@@ -68,11 +68,11 @@ reset_variables:
   SET FOREIGN_KEY_CHECKS=1, UNIQUE_CHECKS=1, AUTOCOMMIT=1 ;
 
 existing_datafile_name:
-  /* _table */ { $fnum= $bulk_load_files{"last_table"}; $fname= ($fnum ? "load_${last_table}_".$prng->int(1,$fnum) : 'load_data_anon'); "'$fname'" };
+  /* _table */ { $fnum= $bulk_load_files{"$last_database.$last_table"}; $fname= ($fnum ? "load_".abs($$)."_${last_table}_".$prng->int(1,$fnum) : $executors->[0]->vardir.'/load_data_anon' ); "'$fname'" };
 
 new_datafile_name:
-  { $fnum= ($bulk_load_files{"$target_db.$target_table"} or 0) + 1; $fname= "load_${target_table}_${fnum}"; "'$fname'" };
+  { $fnum= ($bulk_load_files{"$last_database.$last_table"} or 0) + 1; $fname= "load_".abs($$)."_${last_table}_${fnum}"; "'$fname'" };
 
 store_datafile_num:
-  { if (-e $executors->[0]->vardir."/data/$target_db/load_${target_table}_${fnum}") { $bulk_load_files{"$target_db.$target_table"}= $fnum }; '' };
+  { if (-e $executors->[0]->server->datadir."/$last_database/load_".abs($$)."_${last_table}_${fnum}") { $bulk_load_files{"$last_database.$last_table"}= $fnum; };  '' };
 

@@ -16,6 +16,8 @@
 
 # Rough imitation of OLTP test data (sysbench-like)
 
+$schemas = [ 'oltp_db' ];
+
 $tables = {
         pk => [ undef ],
         names => [  'oltp1',  'oltp2',  'oltp3',  'oltp4',  'oltp5',  'oltp6',  'oltp7',  'oltp8',  'oltp9',  'oltp10',

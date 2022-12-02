@@ -17,7 +17,7 @@
 
 
 query:
-  { @query_tables= (); '' } real_query query_limit;
+  { @query_tables= (); _set_db('any') } real_query query_limit;
 
 real_query:
   ==FACTOR:1== query_1_join |

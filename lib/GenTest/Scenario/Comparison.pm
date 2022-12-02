@@ -70,7 +70,7 @@ sub run {
 
   my @servers= ();
   foreach (1..$srv_count) {
-    push @servers, $self->prepareServer($_);
+    push @servers, $self->prepareServer($_, my $is_active=1);
   }
 
   #####
@@ -87,7 +87,6 @@ sub run {
   #####
   # This property is for Gendata/GenTest to know on how many servers to execute the flow
   # TODO: should be set to the number of masters
-  $self->setProperty('active_servers',\@servers);
 
   $self->printStep("Generating test data");
   $status= $self->generateData();

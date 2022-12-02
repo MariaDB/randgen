@@ -205,14 +205,15 @@ sub shorten_message {
 
 sub group_cleaner {
   return if osWindows();
-  my $group_id= $ENV{RQG_GROUP_PID} || $$;
+  my $group_id= `ps -ho pgrp -p $$`;
+  chomp $group_id;
   say("Cleaning the group $group_id");
-  my @pids= split /\n/, `ps xh -o pgrp,pid,comm | grep -v tee`;
+  my @pids= split /\n/, `ps -ho pgrp,pid,comm | grep -v tee`;
   my @group= ();
   foreach my $pp (@pids) {
     if ($pp =~ /^\s*(\d+)\s+(\d+)/) {
       my ($p1, $p2) = ($1, $2);
-      push @group, $p2 if ($p1 == $group_id and $p2 != $$);
+      push @group, $p2 if ($p1 == $group_id and $p2 != $group_id and $p2 != $$);
     }
   }
   kill('KILL',@group);
@@ -220,7 +221,7 @@ sub group_cleaner {
 
 sub versionN6 {
   my $version = shift;
-  if ($version =~ /([0-9]+)\.([0-9]+)(?:\.([0-9]*))/) {
+  if ($version =~ /([0-9]+)\.([0-9]+)(?:\.([0-9]*))?/) {
     return sprintf("%02d%02d%02d",int($1),int($2),(defined $3 ? int($3) : 0));
   } elsif ($version =~ /^\d{6}$/) {
     return $version;

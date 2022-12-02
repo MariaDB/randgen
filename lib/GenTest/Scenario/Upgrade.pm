@@ -60,7 +60,7 @@ sub prepare_servers {
   # We can initialize both servers right away, because the second one
   # runs with start_dirty, so it won't bootstrap
 
-  my $old_server= $self->prepareServer(1);
+  my $old_server= $self->prepareServer(1, my $is_active=1);
   $self->setServerSpecific(2,'vardir',$old_server->vardir);
   $self->setServerSpecific(2,'port',$old_server->port);
   $self->setServerSpecific(2,'start_dirty',1);
@@ -75,7 +75,6 @@ sub prepare_servers {
   say("----------------------");
 
   $self->setServerSpecific(2,'dsn',$self->getServerSpecific(1,'dsn'));
-  $self->setProperty('active_servers',[$old_server]);
 
   $self->backupProperties();
 

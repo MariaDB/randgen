@@ -75,7 +75,6 @@ use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
 use constant MYSQLD_LOG_FILE => "mysql.log";
 use constant MYSQLD_DEFAULT_PORT =>  19300;
-use constant MYSQLD_DEFAULT_DATABASE => "test";
 use constant MYSQLD_WINDOWS_PROCESS_STILLALIVE => 259;
 use constant MYSQLD_MAX_SERVER_DOWNTIME => 120;
 
@@ -366,7 +365,6 @@ sub createMysqlBase  {
 
     my $boot = $self->vardir."/boot.sql";
     open BOOT,">$boot";
-    print BOOT "CREATE DATABASE test;\n";
 
     ## Boot database
 
@@ -1606,12 +1604,10 @@ sub host {
 
 sub dsn {
     my ($self,$database) = @_;
-    $database = MYSQLD_DEFAULT_DATABASE if not defined $database;
     return "dbi:mysql".
       ":host=".$self->[MYSQLD_HOST].
       ":port=".$self->[MYSQLD_PORT].
       ":user=".$self->[MYSQLD_USER].
-      ":database=".$database.
       ":mysql_local_infile=1".
       ":max_allowed_packet=1G";
 }

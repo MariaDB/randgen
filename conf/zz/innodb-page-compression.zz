@@ -16,7 +16,8 @@
 
 # Data generation for InnoDB upgrade tests with compression
 # Applicable to 10.1+
-# In 10.1 requires innodb_file_format=Barracuda
+
+$schemas = [ 'innodb_page_compression_db' ];
 
 $tables = {
         pk => [ undef ],

@@ -20,20 +20,17 @@
 ################################################################################
 #
 # Unlike other partitioning grammars, this one requires a specific .zz
-# file, e.g. conf/partitioning/partition_by_columns.zz
+# file, e.g. conf/zz/partition_by_columns.zz
 # (column names are hardcoded)
 #
 ################################################################################
 
 query_init:
   # This is to prevent other grammars from altering the schema
-  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON part_tables.* TO CURRENT_USER;
+  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON partition_by_columns_db.* TO CURRENT_USER;
 
 query:
-  { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'part_tables'; 'USE part_tables' }
-  ;; partition_no_create_query
-  ;; { $last_database= $saved_database; ($saved_database ? "USE $saved_database" : '') }
-;
+  { _set_db('partition_by_columns_db') } partition_no_create_query ;
 
 partition_no_create_query:
   { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } query_type ;

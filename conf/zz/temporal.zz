@@ -18,6 +18,8 @@
 
 ########################################################################
 
+$schemas = [ 'temporal_db' ];
+
 $tables = {
   partitions => [ undef , 'KEY (pk) PARTITIONS 2' ],
   pk => [

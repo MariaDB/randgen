@@ -1,5 +1,6 @@
 # Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights
 # reserved.
+# Copyright (c) 2012 MariaDB
 #
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -17,11 +18,13 @@
 #        query timeout of 120 seconds.                         #
 ################################################################################
 
+#features multi-update/delete
+
 query_init:
   SET AUTOCOMMIT=OFF ;
 
 query:
-        { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } main_query ;
+        { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $subquery_idx=0 ; $child_subquery_idx=0 ; _set_db('user') } main_query ;
 
 main_query:
   main_update ; rollback | main_update ; rollback |

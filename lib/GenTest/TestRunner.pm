@@ -67,7 +67,6 @@ use constant GT_TEST_START => 9;
 use constant GT_TEST_END => 10;
 use constant GT_QUERY_FILTERS => 11;
 use constant GT_EXECUTORS => 12;
-use constant GT_VARIATOR_MANAGER => 13;
 
 sub new {
     my $class = shift;
@@ -112,11 +111,6 @@ sub run {
     $ENV{RQG_DEBUG} = 1 if $self->config->debug;
 
     $self->initSeed();
-    if ($self->config->variators && @{$self->config->variators}) {
-      $self->[GT_VARIATOR_MANAGER] = GenTest::Transform->new();
-      $self->[GT_VARIATOR_MANAGER]->setSeed($self->config->property('seed'));
-      $self->[GT_VARIATOR_MANAGER]->initVariators($self->config->variators);
-    }
 
     say("-------------------------------\nConfiguration");
     $self->config->printProps;
@@ -207,7 +201,7 @@ sub run {
         }
         $reporter_status = $self->reporterManager()->monitor(REPORTER_TYPE_PERIODIC);
         $total_status= $reporter_status if $reporter_status > $total_status;
-        if ($reporter_status > STATUS_CRITICAL_FAILURE) {
+        if ($reporter_status >= STATUS_CRITICAL_FAILURE) {
           sayError("Reporters returned a critical failure, aborting");
           last;
         }
@@ -333,7 +327,6 @@ sub workerProcess {
         properties =>  $self->config,
         filters => $self->queryFilters(),
         end_time => $self->[GT_TEST_END],
-        variator_manager => $self->[GT_VARIATOR_MANAGER],
     );
 
     if (not defined $mixer) {
@@ -347,7 +340,7 @@ sub workerProcess {
         my $query_result = $mixer->next();
         $worker_result = $query_result if $query_result > $worker_result && $query_result > STATUS_TEST_FAILURE;
 
-        if ($query_result > STATUS_CRITICAL_FAILURE) {
+        if ($query_result >= STATUS_CRITICAL_FAILURE) {
         say("GenTest: Server crash or critical failure (". status2text($query_result) . ") reported, the child will be stopped");
             undef $mixer;  # so that destructors are called
             $self->stopChild($query_result);
@@ -472,7 +465,7 @@ sub registerFeatures {
     sayError("Could not connect to server ".$self->config->server_specific->{1}->{dsn}." to register features @{$features}: ".$dbh->err." ".$dbh->errstr);
     return;
   }
-  $dbh->do("CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature))");
+  $dbh->do("SET STATEMENT enforce_storage_engine= NULL FOR CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria");
   if ($dbh->err) {
     sayError("Could not create mysql.rqg_feature_registry at ".$self->config->server_specific->{1}->{dsn}.": ".$dbh->err." ".$dbh->errstr);
     return;
@@ -503,13 +496,6 @@ sub initReporters {
           delete $self->config->reporters->[$i];
           $no_reporters= 1;
         }
-    }
-
-    if (not $no_reporters) {
-      $self->config->reporters(['ErrorLog', 'Backtrace']) unless scalar(@{$self->config->reporters});
-      push @{$self->config->reporters}, 'ReplicationConsistency' if $self->config->rpl_mode and $self->config->rpl_mode !~ /nosync/;
-      push @{$self->config->reporters}, 'ReplicationSlaveStatus'
-          if $self->config->rpl_mode;
     }
 
     # Remove duplicates

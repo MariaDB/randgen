@@ -1,5 +1,5 @@
 # Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022, MariaDB Corporation Ab.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,13 @@ query_init:
   UPDATE mysql.proc SET definer = 'root@localhost'; FLUSH TABLES; FLUSH PRIVILEGES;
 
 query:
-  infoschema_query { $last_database= undef; $last_table= undef; '' } ;
+  { _set_db('user') } infoschema_query ;
+
+set_db:
+  ==FACTOR:10== { _set_db('information_schema') } |
+  { _set_db('user') } |
+  { _set_db('mysql') }
+;
 
 infoschema_query:
   ==FACTOR:10== { @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } infoschema_select_or_select_join |
@@ -156,10 +162,7 @@ infoschema_aggregate:
   COUNT( | SUM( | MIN( | MAX( ;
 
 infoschema_new_table_item:
-  infoschema_database . _table AS { $database_names[++$tables] = $last_database ; $table_names[$tables] = $last_table ; "table".$tables };
-
-infoschema_database:
-  { $last_database = $prng->arrayElement(['mysql','INFORMATION_SCHEMA','test']); return $last_database };
+  _table AS { $database_names[++$tables] = $last_database ; $table_names[$tables] = $last_table ; "table".$tables };
 
 infoschema_current_table_item:
   { $last_database = $database_names[$tables] ; $last_table = $table_names[$tables] ; "table".$tables };

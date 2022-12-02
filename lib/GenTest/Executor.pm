@@ -34,7 +34,7 @@ require Exporter;
   FETCH_METHOD_STORE_RESULT
   FETCH_METHOD_USE_RESULT
   EXECUTOR_FLAG_SILENT
-  EXECUTOR_FLAG_VARIATE
+  EXECUTOR_FLAG_SKIP_STATS
 );
 
 use strict;
@@ -85,8 +85,9 @@ use constant FETCH_METHOD_STORE_RESULT  => 1;
 use constant FETCH_METHOD_USE_RESULT  => 2;
 
 use constant EXECUTOR_FLAG_SILENT  => 1;
+use constant EXECUTOR_FLAG_SKIP_STATS => 2;
 
-use constant EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL => 10;
+use constant EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL => 60;
 
 # Values
 
@@ -98,6 +99,7 @@ sub new {
     my $class = shift;
     my $executor = $class->SUPER::new({
         'channel' => EXECUTOR_CHANNEL,
+        'dsn' => EXECUTOR_DSN,
         'server'  => EXECUTOR_SERVER,
         'end_time' => EXECUTOR_END_TIME,
         'fetch_method' => EXECUTOR_FETCH_METHOD,
@@ -112,16 +114,19 @@ sub new {
 
     $executor->[EXECUTOR_FETCH_METHOD] = FETCH_METHOD_AUTO if not defined $executor->[EXECUTOR_FETCH_METHOD];
     $executor->[EXECUTOR_META_RELOAD_NOW] = 0;
+    $executor->[EXECUTOR_DSN] = $executor->server->dsn() if not defined $executor->[EXECUTOR_DSN] and defined $executor->server;
 
     if ($executor->[EXECUTOR_VARIATORS] && scalar(@{$executor->[EXECUTOR_VARIATORS]})) {
       $executor->[EXECUTOR_VARIATOR_MANAGER] = GenTest::Transform->new();
       $executor->[EXECUTOR_VARIATOR_MANAGER]->setSeed($executor->[EXECUTOR_SEED] || 1);
       $executor->[EXECUTOR_VARIATOR_MANAGER]->initVariators($executor->[EXECUTOR_VARIATORS]);
     }
+
     return $executor;
 }
 
-# Remains here for PopulateSchema when we don't have a server
+# Remains here for PopulateSchema and External scenario,
+# when we don't have a server
 sub newFromDSN {
   my $self= shift;
   my $dsn= shift;
@@ -131,6 +136,10 @@ sub newFromDSN {
   } else {
     croak("Unsupported dsn: $dsn");
   }
+}
+
+sub dsn {
+  return $_[0]->[EXECUTOR_DSN];
 }
 
 sub newFromServer {
@@ -319,7 +328,9 @@ sub findStatus {
 
 sub defaultSchema {
     my ($self, $schema) = @_;
-    if (defined $schema) {
+    if (defined $schema and $self->[EXECUTOR_DEFAULT_SCHEMA] ne $schema) {
+      $schema='information_schema' if lc($schema) eq 'information_schema';
+      say("Setting default schema to $schema");
         $self->[EXECUTOR_DEFAULT_SCHEMA] = $schema;
     }
     return $self->[EXECUTOR_DEFAULT_SCHEMA];
@@ -327,10 +338,6 @@ sub defaultSchema {
 
 sub currentSchema {
     croak "FATAL ERROR: currentSchema not defined for ". (ref $_[0]);
-}
-
-sub getSchemaMetaData {
-    croak "FATAL ERROR: getSchemaMetaData not defined for ". (ref $_[0]);
 }
 
 sub getCollationMetaData {
@@ -411,6 +418,9 @@ sub cacheMetaData {
     foreach my $s (keys %$non_system_meta) {
       $all_meta->{$s}= { %{$non_system_meta->{$s}} };
     }
+    unless (defined $self->defaultSchema() and $self->defaultSchema() != '') {
+      $self->defaultSchema((sort keys %$non_system_meta)[0]) ;
+    }
   } elsif ($system_meta and $self->[EXECUTOR_SCHEMA_METADATA]) {
     $all_meta= { %{$self->[EXECUTOR_SCHEMA_METADATA]} };
     foreach my $s (keys %$system_meta) {
@@ -428,26 +438,49 @@ sub cacheMetaData {
   }
 }
 
-sub metaSchemas {
-    my ($self, $non_system) = @_;
+sub metaAllSchemas {
+    my $self= shift;
+    return [ @{$self->metaUserSchemas()}, @{$self->metaSystemSchemas()} ];
+}
+
+sub metaUserSchemas {
+    my $self= shift;
     $self->cacheMetaData();
-    if (not defined $self->[EXECUTOR_META_CACHE]->{SCHEMAS}) {
+    if (not defined $self->[EXECUTOR_META_CACHE]->{USER_SCHEMAS}) {
         my $schemas = [sort keys %{$self->[EXECUTOR_SCHEMA_METADATA]}];
         if (not defined $schemas or $#$schemas < 0) {
-            sayWarning "No schemas found";
-            $schemas = [ '!non_existing_schema' ];
+            croak "No schemas found\n";
         };
-        $self->[EXECUTOR_META_CACHE]->{SCHEMAS} = $schemas;
+        my @schemas;
+        foreach my $s (@$schemas) {
+          $s= 'information_schema' if lc($s) eq 'information_schema';
+          if ($s !~ /^(?:mysql|performance_schema|information_schema|sys_schema|sys)$/) {
+            push @schemas, $s;
+          }
+        }
+        $self->[EXECUTOR_META_CACHE]->{USER_SCHEMAS} = [ @schemas ];
     }
-    if ($non_system) {
-      my @schemas= ();
-      foreach my $s (@{$self->[EXECUTOR_META_CACHE]->{SCHEMAS}}) {
-        push @schemas, $s unless $s =~ /^(?:mysql|performance_schema|information_schema|sys_schema|sys)$/i;
-      }
-      return \@schemas;
-    } else {
-      return $self->[EXECUTOR_META_CACHE]->{SCHEMAS};
+    return $self->[EXECUTOR_META_CACHE]->{USER_SCHEMAS};
+}
+
+sub metaSystemSchemas {
+    my $self= shift;
+    $self->cacheMetaData();
+    if (not defined $self->[EXECUTOR_META_CACHE]->{SYSTEM_SCHEMAS}) {
+        my $schemas = [sort keys %{$self->[EXECUTOR_SCHEMA_METADATA]}];
+        if (not defined $schemas or $#$schemas < 0) {
+            croak "No schemas found\n";
+        };
+        my @schemas;
+        foreach my $s (@$schemas) {
+          $s= 'information_schema' if lc($s) eq 'information_schema';
+          if ($s =~ /^(?:mysql|performance_schema|information_schema|sys_schema|sys)$/) {
+            push @schemas, $s;
+          }
+        }
+        $self->[EXECUTOR_META_CACHE]->{SYSTEM_SCHEMAS} = [ @schemas ];
     }
+    return $self->[EXECUTOR_META_CACHE]->{SYSTEM_SCHEMAS};
 }
 
 sub metaTables {
@@ -456,6 +489,7 @@ sub metaTables {
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
     my $cachekey = "TAB-$schema";
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey})
@@ -480,6 +514,7 @@ sub metaBaseTables {
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
 
     my $cachekey = "BASETAB-$schema";
 
@@ -499,6 +534,7 @@ sub metaVersionedTables {
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
 
     my $cachekey = "VERSTAB-$schema";
 
@@ -518,6 +554,7 @@ sub metaViews {
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
 
     my $cachekey = "VIEW-$schema";
 
@@ -554,6 +591,7 @@ sub _metaFindTable {
     }
     $table=~ s/^`(.*)`$/$1/;
     if (defined $schema) {
+      $schema='information_schema' if lc($schema) eq 'information_schema';
       $schema=~ s/^`(.*)`$/$1/;
       if (
         (exists $meta->{$schema} and exists $meta->{$schema}->{table} and exists $meta->{$schema}->{table}->{$table})
@@ -587,6 +625,7 @@ sub metaIndexes {
 
     my ($table, $schema)= $self->_metaFindTable($requested_table,$requested_schema);
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
     $table = $self->metaBaseTables($schema)->[0] if not defined $table;
 
     my $cachekey="IND-$schema-$table";
@@ -618,6 +657,7 @@ sub metaColumns {
 
     my ($table, $schema)= $self->_metaFindTable($requested_table,$requested_schema);
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
     $table = $self->metaTables($schema)->[0] if not defined $table;
 
     my $cachekey="COL-$schema-$table";
@@ -650,6 +690,7 @@ sub metaColumnsIndexType {
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
     $table = $self->metaTables($schema)->[0] if not defined $table;
 
     my $cachekey="COL-$indextype-$schema-$table";
@@ -698,6 +739,7 @@ sub metaColumnsDataType {
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
     $table = $self->metaTables($schema)->[0] if not defined $table;
 
     my $cachekey="COL-$datatype-$schema-$table";
@@ -734,6 +776,7 @@ sub metaColumnsDataIndexType {
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
     $table = $self->metaTables($schema)->[0] if not defined $table;
 
     my $cachekey="COL-$datatype-$indextype-$schema-$table";
@@ -786,6 +829,7 @@ sub metaColumnsDataTypeIndexTypeNot {
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
     $table = $self->metaTables($schema)->[0] if not defined $table;
 
     my $cachekey="COL-$datatype-$indextype-$schema-$table";
@@ -831,6 +875,7 @@ sub metaColumnsIndexTypeNot {
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
     $table = $self->metaTables($schema)->[0] if not defined $table;
 
     my $cachekey="COLNOT-$indextype-$schema-$table";
@@ -897,6 +942,7 @@ sub metaColumnInfo {
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
     $table = $self->metaTables($schema)->[0] if not defined $table;
 
     my $cachekey="COLINFO-$schema-$table";
@@ -924,7 +970,7 @@ sub metaColumnInfo {
 
 sub databases {
     my ($self, @args) = @_;
-    return $self->metaSchemas(@args);
+    return $self->metaAllSchemas(@args);
 }
 
 sub tables {

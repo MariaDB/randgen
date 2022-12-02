@@ -186,15 +186,15 @@ sub validateData {
     next unless $so->{active};
     my $e = GenTest::Executor->newFromServer(
       $so->{server},
-      executor_id => $i
+      id => $i
     );
     $e->init();
     push @exs, $e;
   }
   say("Validating original datasets");
-  my @dbs0= sort @{$exs[0]->metaSchemas(1)};
+  my @dbs0= sort @{$exs[0]->metaUserSchemas()};
   foreach my $i (1..$#exs) {
-    my @dbs= sort @{$exs[$i]->metaSchemas(1)};
+    my @dbs= sort @{$exs[$i]->metaUserSchemas()};
     if ("@dbs0" ne "@dbs") {
       sayError("GenTest: Schemata mismatch after data generation between two servers (1 vs ".($i+1)."):\n\t@dbs0\n\t@dbs");
       return STATUS_CRITICAL_FAILURE;

@@ -36,7 +36,7 @@ use GenTest::Result;
 use GenTest::Validator;
 use GenTest::Executor;
 use Time::HiRes;
-use POSIX ":sys_wait_h";
+use POSIX;
 use Data::Dumper;
 
 my $child_dbh;
@@ -62,6 +62,9 @@ sub validate {
   my $executor = $executors->[0];
   my $query = $results->[0]->query();
 
+  my $db= $executor->dbh->selectrow_arrayref("SELECT DATABASE()");
+  $db= $db->[0];
+
   return STATUS_OK if $query !~ m{^\s*select}io;
 
   unless ($child_dbh)
@@ -73,6 +76,9 @@ sub validate {
       return STATUS_ENVIRONMENT_FAILURE;
     }
   }
+  if ($db ne 'NULL') {
+    $child_dbh->do("USE $db");
+  } 
   my $native_explain = $child_dbh->selectall_arrayref("EXPLAIN $query");
   if ($child_dbh->err)
   {
@@ -113,6 +119,7 @@ sub validate {
       push @native_explain_rows, "@$_";
     }
     my $e = 0;
+    sayDebug("Got ".scalar(@show_explains)." SHOW EXPLAIN results for query [ $query ]");
     foreach (@show_explains)
     {
       $e++;
@@ -181,8 +188,8 @@ sub validate {
     $child_dbh->do($query);
     $child_dbh->{InactiveDestroy} = 1;
     $child_dbh = undef;
-    $executor->[EXECUTOR_STATUS_COUNTS] = undef;
-    exit;
+    # To avoid executor printing information
+    kill('KILL',$$);
   }
   return STATUS_OK;
 }

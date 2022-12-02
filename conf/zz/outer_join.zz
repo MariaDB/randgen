@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-$schemas = [ 'outer_join' ];
+$schemas = [ 'outer_join_db' ];
 
 $tables = {
         names => ['A','AA','B','BB','C','CC','D','DD','E','EE','F','FF','G','GG','H','HH','I','II','J','JJ','K','KK','L','LL','M','MM','N','NN','O','OO','P','PP','Q','QQ','R','RR','S','SS','T','TT','U','UU','V','VV','W','WW','X','XX'],

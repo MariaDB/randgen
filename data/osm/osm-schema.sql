@@ -1,3 +1,5 @@
+CREATE DATABASE osm_db;
+USE osm_db;
 CREATE TABLE IF NOT EXISTS `changesets` (  `id` bigint(20) NOT NULL auto_increment,  `user_id` bigint(20) NOT NULL,  `created_at` datetime NOT NULL,  `min_lat` int(11) default NULL,  `max_lat` int(11) default NULL,  `min_lon` int(11) default NULL,  `max_lon` int(11) default NULL,  `closed_at` datetime NOT NULL,  `num_changes` int(11) NOT NULL default '0',  PRIMARY KEY  (`id`))  DEFAULT CHARSET=utf8 ;
 CREATE TABLE IF NOT EXISTS `changeset_tags` (  `id` bigint(64) NOT NULL,  `k` varchar(255) NOT NULL default '',  `v` varchar(255) NOT NULL default '',  KEY `changeset_tags_id_idx` (`id`)) DEFAULT CHARSET=utf8;
 CREATE TABLE IF NOT EXISTS `current_nodes` (  `id` bigint(64) NOT NULL auto_increment,  `latitude` int(11) NOT NULL,  `longitude` int(11) NOT NULL,  `changeset_id` bigint(20) NOT NULL,  `visible` tinyint(1) NOT NULL,  `timestamp` datetime NOT NULL,  `tile` int(10) unsigned NOT NULL,  `version` bigint(20) NOT NULL,  PRIMARY KEY  (`id`),  KEY `current_nodes_timestamp_idx` (`timestamp`),  KEY `current_nodes_tile_idx` (`tile`),  KEY `changeset_id` (`changeset_id`))  DEFAULT CHARSET=utf8 ;

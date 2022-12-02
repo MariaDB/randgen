@@ -1,4 +1,5 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -30,6 +31,9 @@ query_init:
   { $width = 100 ; return undef };
 
 query:
+  { _set_db('user') } query_signal_resignal ;
+
+query_signal_resignal:
   set_variable      | update            |
   create_procedure  | create_procedure  | create_function | create_function |
   create_procedure1 | create_procedure1 |

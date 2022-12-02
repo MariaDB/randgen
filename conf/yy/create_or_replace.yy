@@ -16,8 +16,10 @@
 
 #include <conf/rr/basics.rr>
 
-
 query:
+  { _set_db('user') } crea_query;
+
+crea_query:
   crea_maybe_engine CREATE OR REPLACE TABLE crea_table_name LIKE _table |
   crea_maybe_engine CREATE OR REPLACE TABLE crea_table_name AS SELECT * FROM _table LIMIT crea_limit |
   crea_maybe_engine CREATE OR REPLACE TABLE crea_table_name crea_table_definition

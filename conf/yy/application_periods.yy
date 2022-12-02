@@ -27,13 +27,14 @@
 ########################################################################
 
 #include <conf/rr/basics.rr>
+#compatibility 10.4.0
 
 #
 # Pre-create simple tables, to make sure they all exist
 #
 query_init:
-    CREATE DATABASE IF NOT EXISTS { $last_database = 'app_periods' }
-  ;; USE app_periods
+    CREATE DATABASE IF NOT EXISTS app_periods
+  ;; { _set_db('app_periods') }
   ;; { $tnum= 1; '' } create_simple_with_period_init
   ;; { $tnum++; '' } create_simple_with_period_init
   ;; { $tnum++; '' } create_simple_with_period_init
@@ -53,15 +54,11 @@ query_init:
 ;
 
 query:
-     USE { $col_number= 0; $inds= 1; $period_added= 0; ''; $last_database= 'app_periods' }
-  ;; app_periods_query { $last_database = '' }
-;
+     { $col_number= 0; $inds= 1; $period_added= 0; ''; _set_db('app_periods') } app_periods_query ;
 
 app_periods_query:
     ==FACTOR:20==  dml
   |                ddl
-  |                admin_table
-  | ==FACTOR:0.1== invalid /* EXECUTOR_FLAG_SILENT */
 ;
 
 ##############
@@ -71,30 +68,32 @@ app_periods_query:
 # _init variant does CREATE TABLE IF NOT EXISTS, to avoid re-creating the table multiple times
 #
 create_simple_with_period_init:
-  CREATE TABLE IF NOT EXISTS { $last_table= 'app_periods.t'.$tnum } (create_definition_for_simple_with_period) ;
-
+  CREATE TABLE IF NOT EXISTS new_table_name (create_definition_for_simple_with_period)
+  ;; INSERT IGNORE INTO { $new_table } 
+     SELECT seq * { $prng->uint16(1,100) }, seq * { $prng->uint16(1,100) }, FROM_UNIXTIME( {$s = $prng->uint16(1,2147483647)}), FROM_UNIXTIME({ $prng->uint16($s,2147483647) }) FROM seq_1_to_100
+;
 # _runtime variant does CREATE OR REPLACE, to avoid non-ops
 #
 create_simple_with_period_runtime:
-  CREATE OR REPLACE TABLE own_table (create_definition_for_simple_with_period);
+  CREATE OR REPLACE TABLE new_table_name (create_definition_for_simple_with_period);
 
 # More flexible table structures for re-creation at runtime
 #
 create_table:
-    create_table_clause own_table LIKE any_table
-  | create_table_clause own_table AS SELECT * FROM any_table
-  | create_table_clause own_table (create_definition) optional_main_engine _basics_table_options partitioning_definition
+    create_table_clause new_table_name LIKE _table
+  | create_table_clause new_table_name AS SELECT * FROM _table
+  | create_table_clause new_table_name (create_definition) optional_main_engine _basics_table_options partitioning_definition
 ;
 
 optional_main_engine:
   ==FACTOR:8== |
-  ==FACTOR:4== InnoDB |
-  ==FACTOR:2== MyISAM |
-  ==FACTOR:2== Aria
+  ==FACTOR:4== ENGINE=InnoDB |
+  ==FACTOR:2== ENGINE=MyISAM |
+  ==FACTOR:2== ENGINE=Aria
 ;
 
 create_table_clause:
-    CREATE __or_replace(95) __temporary(5) TABLE
+    ==FACTOR:10== CREATE __or_replace(95) __temporary(5) TABLE
   | CREATE __temporary(5) TABLE __if_not_exists(95)
 ;
 
@@ -113,12 +112,8 @@ create_definition_for_simple_with_period:
 # Table names
 #
 
-any_table:
-  { $last_database= '' } _table { $last_database = 'app_periods'; '' }
-;
-
-own_table:
-  { $last_table= 'app_periods.t'.$prng->uint16(1,15) };
+new_table_name:
+  { $new_table = 'app_periods.t'.$prng->uint16(1,15) };
 
 #
 # PERIOD definitions
@@ -153,38 +148,16 @@ dml:
   |               INSERT __ignore(30) INTO _table insert_values ON DUPLICATE KEY UPDATE app_period_valid_period_boundaries_update /*!100500 _basics_returning_5pct */
   | ==FACTOR:10== UPDATE __ignore(80) _table optional_for_portion SET update_values app_period_optional_where_clause optional_order_by_limit
   | ==FACTOR:5==  UPDATE __ignore(80) _table SET app_period_valid_period_boundaries_update app_period_optional_where_clause optional_order_by_limit
-  |               UPDATE __ignore(80) _table alias1 { $t1= $last_table; '' } NATURAL JOIN any_table alias2 { $t2= $last_table; '' } SET { $last_table= $t1; '' } alias1._field = { $last_table= $t2; '' } alias2._field app_period_optional_where_clause optional_order_by_limit
-  |               UPDATE __ignore(80) any_table alias1  { $t1= $last_table; '' } NATURAL JOIN _table alias2 SET alias2._field = { $last_table= $t1; '' } alias1._field app_period_optional_where_clause
+  |               UPDATE __ignore(80) _table alias1 { $t1= $last_table; '' } NATURAL JOIN _table alias2 { $t2= $last_table; '' } SET { $last_table= $t1; '' } alias1._field = { $last_table= $t2; '' } alias2._field app_period_optional_where_clause optional_order_by_limit
+  |               UPDATE __ignore(80) _table alias1  { $t1= $last_table; '' } NATURAL JOIN _table alias2 SET alias2._field = { $last_table= $t1; '' } alias1._field app_period_optional_where_clause
   | ==FACTOR:2==  DELETE __ignore(80) FROM _table optional_for_portion app_period_optional_where_clause optional_order_by_limit _basics_returning_5pct
-  | ==FACTOR:0.2== DELETE __ignore(80) alias1.* FROM _table alias1, any_table alias2
-  | ==FACTOR:0.2== DELETE __ignore(80) alias2.* FROM any_table alias1, _table alias2
-  # Error silenced due to expected "No such file or directory" errors if the previous SELECT didn't work
-  | ==FACTOR:0.1== SELECT * INTO OUTFILE { $fname= '_data_'.time(); "'$fname'" } FROM _table app_period_optional_where_clause ; LOAD DATA INFILE { "'$fname'" } optional_ignore_replace INTO TABLE { $last_table } /* EXECUTOR_FLAG_SILENT */
   |                SELECT * FROM _table app_period_optional_where_clause optional_order_by_limit
-  |                SELECT * FROM any_table WHERE _field IN ( SELECT _field FROM _table app_period_optional_where_clause optional_order_by_limit )
-  | ==FACTOR:0.2== DELETE HISTORY FROM any_table
-  | ==FACTOR:0.2== TRUNCATE TABLE _table
-;
-
-# DELAYED is not supported for app-period tables
-invalid:
-    INSERT DELAYED __ignore(80) INTO _table insert_values
-  | CREATE OR REPLACE TABLE t_invalid (a INT, s DATE, e DATE, PERIOD FOR p1(s,e), PERIOD FOR p2(s,e))
-  | CREATE OR REPLACE TABLE t_invalid (a INT, s DATE, e DATE, PERIOD FOR p1(s,e), PERIOD FOR p2(s,e))
-  | CREATE OR REPLACE TABLE t_invalid (a INT, s DATE, e DATE, PERIOD FOR p1(s,e), PRIMARY KEY(a __asc_x_desc(33,33), p1 WITHOUT OVERLAPS, p1 WITHOUT OVERLAPS)
+  |                SELECT * FROM _table WHERE _field IN ( SELECT _field FROM _table app_period_optional_where_clause optional_order_by_limit )
 ;
 
 insert_replace:
 # INSERT has a priority, because REPLACE is not supported for WITHOUT OVERLAPS
     ==FACTOR:4== INSERT __ignore(80)
-  |              REPLACE
-;
-
-# For LOAD DATA
-optional_ignore_replace:
-# IGNORE has a priority, because REPLACE is not supported for WITHOUT OVERLAPS
-  |
-  | ==FACTOR:4== IGNORE
   |              REPLACE
 ;
 
@@ -201,8 +174,8 @@ insert_values:
 ;
 
 update_values:
-    ==FACTOR:5== _field_int = _basics_value_for_numeric_column
-  | ==FACTOR:2== _field_char = _basics_value_for_char_column
+    ==FACTOR:5== _field = _basics_value_for_numeric_column
+  | ==FACTOR:2== _field = _basics_value_for_char_column
   | _field = _basics_any_value, update_values
 ;
 
@@ -235,13 +208,11 @@ app_period_where_condition:
     `s` app_period_valid_period_boundaries_between
   | `e` app_period_valid_period_boundaries_between
   | _field app_period_valid_period_boundaries_between
-  | _field _basics_comparison_operator _date
 ;
 
 app_period_where_conditions:
     ==FACTOR:2==   app_period_where_condition
-  | ==FACTOR:0.2== app_period_where_condition AND app_period_where_condition
-  | ==FACTOR:0.5== app_period_where_condition OR app_period_where_condition
+  | ==FACTOR:0.2== app_period_where_condition __or_x_and(70) app_period_where_condition
 ;
 
 app_period_optional_where_clause:
@@ -264,14 +235,6 @@ create_drop_index:
   | CREATE INDEX __if_not_exists(95) random_index_name ON _table (existing_column_list)
   | CREATE UNIQUE INDEX __if_not_exists(95) random_index_name ON _table (existing_column_list without_overlaps_opt)
   | DROP INDEX __if_exists(95) random_index_name ON _table
-;
-
-admin_table:
-    SHOW CREATE TABLE _table
-  | DESCRIBE _table
-  | SHOW INDEX IN _table
-  | ANALYZE TABLE _table
-  | CHECK TABLE _table EXTENDED
 ;
 
 create_definition:
@@ -305,21 +268,12 @@ existing_column_list:
   |              _field __asc_x_desc(33,33), existing_column_list ;
 
 period_name:
-    ==FACTOR:100== valid_period_name
-  | /* EXECUTOR_FLAG_SILENT */ invalid_period_name
-;
-
 # TODO: '``' disabled due to MDEV-18873
-valid_period_name:
     ==FACTOR:100== { $last_period_name= 'p' }
   |                { $last_period_name= 'app' }
   |                { $last_period_name= 'P' }
   |                { $last_period_name= 'period' }
 ;
-
-# This will cause syntax errors, intentionally
-invalid_period_name:
-  | SYSTEM_TIME | system_time | `system_time` | `SYSTEM_TIME` ;
 
 new_index_name_optional:
   | { $last_index_name= 'ind'.$inds++ } ;
@@ -356,7 +310,7 @@ primary_key:
 ;
 
 foreign_key:
-  CONSTRAINT new_index_name_optional FOREIGN KEY (_field) REFERENCES any_table (_field) ;
+  CONSTRAINT new_index_name_optional FOREIGN KEY (_field) REFERENCES _table (_field) ;
 
 alter:
     ==FACTOR:19== ALTER TABLE _table alter_table_list
@@ -373,7 +327,7 @@ alter_table_element:
     ==FACTOR:4==  add_drop_period
   |               add_drop_column
   |               add_drop_index
-z;
+;
 
 add_drop_index:
     ==FACTOR:3==   ADD INDEX __if_not_exists(95) index_definition

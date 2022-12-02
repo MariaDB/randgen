@@ -99,6 +99,24 @@ sub next {
   my $stack = GenTest::Stack::Stack->new();
   my $global = $generator->globalFrame();
 
+  sub _set_db {
+    my $db= shift;
+    if ($db eq 'any') {
+      $db= $prng->arrayElement($executors->[0]->metaAllSchemas());
+    } elsif ($db eq 'user' or $db eq 'non-system') {
+      $db= $prng->arrayElement($executors->[0]->metaUserSchemas());
+    }
+    if ($db ne $last_database) {
+      $last_database= $db;
+      $last_field= undef;
+      $last_table= undef;
+      $last_field_list_length= undef;
+      return "USE $db /* EXECUTOR_FLAG_SKIP_STATS */ ;;";
+    } else {
+      return '';
+    }
+  }
+
   sub expand {
     my ($rule_counters, $rule_invariants, $grammar_rules, @sentence) = @_;
     my $item_nodash;
@@ -119,6 +137,16 @@ sub next {
       my $item = $orig_item;
       my $invariant = 0;
       my @expansion = ();
+
+      # Don't let last values become desynchronized
+      if (not defined $last_database) {
+        $last_field= undef;
+        $last_table= undef;
+        $last_field_list_length= undef;
+      } elsif (not defined $last_table) {
+        $last_field= undef;
+        $last_field_list_length= undef;
+      }
 
       if ($item =~ m{^([a-z0-9_]+)\[invariant\]}is) {
         ($item, $invariant) = ($1, 1);
@@ -166,10 +194,13 @@ sub next {
         } else {
           my $field_type = (substr($item, 0, 1) eq '_' ? $prng->isFieldType(substr($item, 1)) : undef);
 
+          # If we unset $last_table in a grammar, Executor will always use the first one
+          # from the list for all _field rules and alike. We want it to be random still.
+          # For _table rules and alike, it will be adjusted later
           if (not $last_table) {
-            # If we unset $last_table in a grammar, Executor will always use the first one
-            # from the list for all _field rules and alike. We want it to be random still.
-            # For _table rules and alike, it will be adjusted later
+            if (not $last_database) {
+              $last_database = $prng->arrayElement($executors->[0]->metaUserSchemas()) || $prng->arrayElement($executors->[0]->metaAllSchemas());
+            }
             $last_table = $prng->arrayElement($executors->[0]->metaTables($last_database));
           } elsif ($last_table =~ /\`?(.+)\`?\s*\.\`?(.+)\`?/) {
             # If a grammar set $last_table to a fully-qualified name, we want to split it
@@ -186,6 +217,9 @@ sub next {
           } elsif ($item eq '_positive_digit') {
             $item = $prng->positive_digit();
           } elsif ($item eq '_table') {
+            if (not $last_database) {
+              $last_database = $prng->arrayElement($executors->[0]->metaUserSchemas()) || $prng->arrayElement($executors->[0]->metaAllSchemas());
+            }
             my $tables = $executors->[0]->metaTables($last_database);
             $last_table = $prng->arrayElement($tables);
             $item = '`'.$last_table.'`';
@@ -216,11 +250,11 @@ sub next {
           } elsif ($item eq '_thread_count') {
             $item = $ENV{RQG_THREADS};
           } elsif (($item eq '_database') || ($item eq '_db') || ($item eq '_schema')) {
-            my $databases = $executors->[0]->metaSchemas();
+            my $databases = $executors->[0]->metaAllSchemas();
             $last_database = $prng->arrayElement($databases);
             $item = '`'.$last_database.'`';
           } elsif (($item eq '_user_database') || ($item eq '_user_db') || ($item eq '_user_schema')) {
-            my $databases = $executors->[0]->metaSchemas(my $non_system=1);
+            my $databases = $executors->[0]->metaUserSchemas();
             $last_database = $prng->arrayElement($databases);
             $item = '`'.$last_database.'`';
           } elsif ($item eq '_table') {

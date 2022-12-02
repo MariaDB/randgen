@@ -18,6 +18,8 @@
 # with Aria for the table engine. ENGINE clause in table options ensures
 # that it remains Aria even if --engine is overridden
 
+$schemas = [ 'oltp_aria_db' ];
+
 $tables = {
         pk => [ undef ],
         names => [  'oltp1',  'oltp2',  'oltp3',  'oltp4',  'oltp5',  'oltp6',  'oltp7',  'oltp8',  'oltp9',  'oltp10',

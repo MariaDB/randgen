@@ -86,7 +86,7 @@ sub validate {
         ' no complete ORDER BY. Hence we return STATUS_OK. The previous transform issue can likely be ignored.');
       $transformer_status = STATUS_OK
     }
-    return $transformer_status if $transformer_status > STATUS_CRITICAL_FAILURE;
+    return $transformer_status if $transformer_status >= STATUS_CRITICAL_FAILURE;
     $max_transformer_status = $transformer_status if $transformer_status > $max_transformer_status;
   }
 
@@ -102,7 +102,7 @@ sub transform {
   my ($transform_outcome, $transformed_queries, $transformed_results, $cleanup_block) = $transformer->transformExecuteValidate($original_query, $original_result, $executor);
 
   if (
-    ($transform_outcome > STATUS_CRITICAL_FAILURE) ||
+    ($transform_outcome >= STATUS_CRITICAL_FAILURE) ||
     ($transform_outcome == STATUS_OK) ||
     ($transform_outcome == STATUS_SKIP) ||
     ($transform_outcome == STATUS_WONT_HANDLE)

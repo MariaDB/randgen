@@ -65,7 +65,7 @@ sub report {
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
-  $client .= " -uroot --host=127.0.0.1 --port=$port --force --protocol=tcp test";
+  $client .= " -uroot --host=127.0.0.1 --port=$port --force --protocol=tcp";
 
 
   my $binlog = DBServer::MariaDB::_find(undef,
@@ -98,11 +98,8 @@ sub report {
   }
 
   $status = $server->stopServer();
-  sleep(5);
-  $dbh = $reporter->dbh;
-
-  if (defined $dbh) {
-    say("ERROR: Can still connect to the server, shutdown failed. Status will be set to ENVIRONMENT_FAILURE");
+  if ($status != STATUS_OK) {
+    sayError("Shutdown failed. Status will be set to ENVIRONMENT_FAILURE");
     return STATUS_ENVIRONMENT_FAILURE;
   }
 

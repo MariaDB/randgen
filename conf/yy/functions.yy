@@ -17,11 +17,11 @@
 
 
 query_init:
-   { $tmp_table = 0; '' } CREATE FUNCTION IF NOT EXISTS MIN2(a BIGINT, b BIGINT) RETURNS BIGINT RETURN (a>b,b,a) ;
+   CREATE DATABASE IF NOT EXISTS test;; { $tmp_table = 0; _set_db('test') } CREATE FUNCTION IF NOT EXISTS MIN2(a BIGINT, b BIGINT) RETURNS BIGINT RETURN (a>b,b,a) ;
 
 query:
-    ==FACTOR:9== func_select_or_explain_select
-  | { $tmp_table++; '' } func_create_and_drop
+    ==FACTOR:9== { _set_db('any') } func_select_or_explain_select
+  | { $tmp_table++; _set_db('test') } func_create_and_drop
 ;
 
 func_create_and_drop:

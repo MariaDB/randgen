@@ -26,12 +26,27 @@
 ########################################################################
 
 query_init:
-  { $table_name = 'local_'.$generator->threadId().'_1' ; return undef; } create_definition_init ;  { $table_name = 'local_'.$generator->threadId().'_2' ; return undef; } create_definition_init ; { $table_name = 'local_'.$generator->threadId().'_3' ; return undef; } create_definition_init ;
+  CREATE DATABASE IF NOT EXISTS test
+  ;; { _set_db('test') }
+  ;; { $table_name = 'local_'.$generator->threadId().'_1' ; '' } create_definition_init
+  ;; { $table_name = 'local_'.$generator->threadId().'_2' ; '' } create_definition_init
+  ;; { $table_name = 'local_'.$generator->threadId().'_3' ; '' } create_definition_init 
+  ;; { $table_name = 'local_'.$generator->threadId().'_4' ; '' } create_definition_init 
+  ;; { $table_name = 'local_'.$generator->threadId().'_5' ; '' } create_definition_init 
+  ;; { $table_name = 'global_1' ; '' } create_definition_init
+  ;; { $table_name = 'global_2' ; '' } create_definition_init
+  ;; { $table_name = 'global_3' ; '' } create_definition_init 
+  ;; { $table_name = 'global_4' ; '' } create_definition_init 
+  ;; { $table_name = 'global_5' ; '' } create_definition_init 
+;
 
 create_definition_init:
-  create_definition SELECT short_value  AS f1 , short_value AS f2 , short_value AS f3 , short_value AS f4 , short_value AS f5 FROM DUAL ;
+  create_definition __ignore(90) SELECT short_value  AS f1 , short_value AS f2 , short_value AS f3 , short_value AS f4 , short_value AS f5 FROM DUAL ;
 
 query:
+  { _set_db('test') } engine_heap_ddl_query ;
+
+engine_heap_ddl_query:
   create_drop |
   select | select | select | select |
   insert | insert | insert | insert |
@@ -42,8 +57,8 @@ query:
   truncate ;
 
 create_drop:
-  set_table_name DROP TABLE IF EXISTS { $table_name } ; create_definition ; create_definition ; create_definition |
-  set_table_name DROP TABLE IF EXISTS { $table_name } ; create_definition select_all ;
+  set_table_name DROP TABLE IF EXISTS { $table_name } ;; create_definition ;; create_definition ;; create_definition |
+  set_table_name DROP TABLE IF EXISTS { $table_name } ;; create_definition select_all ;
 
 alter:
   ALTER TABLE table_name ENGINE = HEAP |
@@ -79,10 +94,10 @@ insert:
   insert_multi | insert_multi | insert_select ;
 
 insert_multi:
-  INSERT IGNORE INTO table_name VALUES row_list ;
+  __insert_ignore_x_replace(80) INTO table_name VALUES row_list ;
 
 insert_select:
-  INSERT IGNORE INTO table_name select_all;
+  __insert_ignore_x_replace(80) INTO table_name select_all;
 
 row_list:
   row , row , row , row |
@@ -104,7 +119,8 @@ btree_hash:
   BTREE ;
 
 index_type:
-  KEY | KEY | KEY | KEY | PRIMARY KEY ;
+  ==FACTOR:10== KEY |
+  PRIMARY KEY ;
 
 index_column_list:
   f1 | f2 | f1 , f2 | f2 , f1 |
@@ -119,12 +135,9 @@ key_block_size:
   512 | 1024 | 2048 | 3072 ;
 
 column_def:
-  VARCHAR ( size_varchar ) character_set not_null default |
-  VARCHAR ( size_varchar ) collation not_null default |
-  VARBINARY ( size_varchar ) |
-  blob not_null |
-  blob not_null |
-  blob not_null ;
+  VARCHAR ( size_varchar ) character_set __not_null(20) default |
+  VARCHAR ( size_varchar ) collation __not_null(20) default |
+  VARBINARY ( size_varchar ) ;
 
 character_set:
   | CHARACTER SET utf8 ;
@@ -133,8 +146,8 @@ collation:
   | COLLATE utf8_bin ;
 
 column_def_index:
-  VARCHAR ( size_index ) character_set not_null default |
-  VARCHAR ( size_index ) collation not_null default ;
+  VARCHAR ( size_index ) character_set __not_null(20) default |
+  VARCHAR ( size_index ) collation __not_null(20) default ;
 
 size_varchar:
   32 | 128 | 512 | 1024  ;
@@ -142,25 +155,8 @@ size_varchar:
 size_index:
   32 | 128 ;
 
-blob:
-  BLOB | BLOB ( blob_size ) | MEDIUMBLOB | TINYBLOB | LONGBLOB |
-  TEXT character_set |
-  TEXT collation |
-  TEXT ( blob_size ) character_set  |
-  TEXT ( blob_size ) collation |
-  MEDIUMTEXT | TINYTEXT | LONGTEXT ;
-
-blob_size:
-  1024 | 65525 ;
-
-not_null:
-  | NOT NULL ;
-
 default:
   | DEFAULT _varchar(32) ;
-
-unique:
-  | UNIQUE ;
 
 table_name:
   connection_specific_table |
@@ -177,7 +173,7 @@ global_table:
   global_1 | global_2 | global_3 | global_4 | global_5 ;
 
 set_table_name:
-  { $table_name = $prng->int(1,5) <= 4 ? 'local_'.$generator->threadId().'_'.$prng->int(1,5) : 'global_'.$prng->int(1,5) ; return undef ; } ;
+  { $table_name = $prng->int(1,5) <= 4 ? 'local_'.$generator->threadId().'_'.$prng->int(1,5) : 'global_'.$prng->int(1,5) ; '' } ;
 
 value_list:
   value , value |

@@ -37,7 +37,6 @@ use constant MIXER_VALIDATORS  => 2;
 use constant MIXER_FILTERS  => 3;
 use constant MIXER_PROPERTIES  => 4;
 use constant MIXER_END_TIME  => 5;
-use constant MIXER_VARIATOR_MANAGER  => 8;
 
 my %rule_status;
 
@@ -50,7 +49,6 @@ sub new {
         'generator'  => MIXER_GENERATOR,
         'executors'  => MIXER_EXECUTORS,
         'validators'  => MIXER_VALIDATORS,
-        'variator_manager'  => MIXER_VARIATOR_MANAGER,
         'properties'  => MIXER_PROPERTIES,
         'filters'  => MIXER_FILTERS,
         'end_time'  => MIXER_END_TIME,
@@ -138,21 +136,6 @@ sub next {
 
   my $max_status = STATUS_OK;
 
-  if ($mixer->[MIXER_VARIATOR_MANAGER]) {
-    my @variated_queries= ();
-    foreach my $query (@$queries) {
-      my $varqs= $mixer->[MIXER_VARIATOR_MANAGER]->variate_query($query,$executors->[0]);
-      if (not defined $varqs) {
-        $max_status = STATUS_ENVIRONMENT_FAILURE if $max_status < STATUS_ENVIRONMENT_FAILURE;
-      } elsif (ref $varqs ne 'ARRAY') {
-        $max_status = $varqs if $max_status < $varqs;
-      } else {
-        push @variated_queries, @$varqs;
-      }
-    }
-    $queries= [ @variated_queries ];
-  }
-
   query: foreach my $query (@$queries) {
     next if $query =~ m{^\s*$}o;
     if ($mixer->end_time() && (time() > $mixer->end_time())) {
@@ -174,7 +157,7 @@ sub next {
 
       EXECUTE_QUERY:
     foreach my $executor (@$executors) {
-      my $execution_result = $executor->execute($query);
+      my $execution_result = $executor->variate_and_execute($query);
 
       # If the server has crashed but we expect server restarts during the test, we will wait and retry
       if ($execution_result->status() == STATUS_SERVER_CRASHED
@@ -187,13 +170,13 @@ sub next {
           redo EXECUTE_QUERY;
         } else {
           say("Mixer: Server has gone away");
-          $max_status = $execution_result->status() if $execution_result->status() > $max_status;
-          push @execution_results, $execution_result;
         }
       }
+      $max_status = $execution_result->status() if $execution_result->status() > $max_status;
+      push @execution_results, $execution_result;
 
       # If one server has crashed, do not send the query to the second one in order to preserve consistency
-      if ($execution_result->status() > STATUS_CRITICAL_FAILURE) {
+      if ($execution_result->status() >= STATUS_CRITICAL_FAILURE) {
         say("Mixer: Server crash or critical failure " . $execution_result->err() . " (". status2text($execution_result->status()) . ") reported at dsn ".$executor->server->dsn());
         last query;
       }

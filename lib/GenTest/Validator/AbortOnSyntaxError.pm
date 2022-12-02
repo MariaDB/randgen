@@ -32,12 +32,12 @@ use GenTest::Validator;
 1;
 
 sub validate {
-        my ($validator, $executors, $results) = @_;
+   my ($validator, $executors, $results) = @_;
 
   if ($results->[0]->status() == STATUS_SYNTAX_ERROR) {
-    return STATUS_ENVIRONMENT_FAILURE;
+    return STATUS_CRITICAL_FAILURE;
   } else {
-    return STATUS_WONT_HANDLE;
+    return STATUS_OK;
   }
 }
 

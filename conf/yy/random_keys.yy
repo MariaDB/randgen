@@ -15,6 +15,7 @@
 
 
 thread1_init:
+    { _set_db('user') }
     # rkr_indexes is a hash: table => hash of index numbers
     { %primary_keys = (); %rkr_indexes = (); '' }
 #      LOCK TABLE { join ' WRITE, ', @{$executors->[0]->tables()} } WRITE
@@ -27,6 +28,9 @@ thread1_init:
 ;
 
 query:
+  { _set_db('user') } random_keys_query ;
+
+random_keys_query:
       ==FACTOR:3==    add_key
     |                 drop_key
     | ==FACTOR:0.01== analyze_tables

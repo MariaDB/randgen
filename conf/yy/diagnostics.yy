@@ -17,10 +17,6 @@
 ########################################################################
 
 query:
-  diag_query
-;
-
-diag_query:
   ==FACTOR:20== GET __current(20) DIAGNOSTICS diag_list |
                 SET __global(5) max_error_count= { $prng->uint16(0,65537) }
 ;

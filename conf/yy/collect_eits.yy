@@ -15,7 +15,7 @@
 
 
 thread1_init:
-  ANALYZE TABLE { join ',', @{$executors->[0]->baseTables()} } PERSISTENT FOR ALL;
+  ANALYZE TABLE { @dbs= @{$executors->[0]->metaUserSchemas()}; @tables=(); foreach my $db (@dbs) { push @tables, (map { '`'.$db.'`.'.$_ } @{$executors->[0]->baseTables($db)}) } ; join ',',@tables } PERSISTENT FOR ALL;
 
 query:
-  | ==FACTOR:0.01== SET STATEMENT lock_wait_timeout=10 FOR ANALYZE TABLE _table PERSISTENT FOR ALL;
+  | ==FACTOR:0.01== { _set_db('user') } SET STATEMENT lock_wait_timeout=10 FOR ANALYZE TABLE _table PERSISTENT FOR ALL;

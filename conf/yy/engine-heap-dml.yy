@@ -27,13 +27,10 @@
 
 query_init:
   # This is to prevent other grammars from altering the schema
-  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON heap_dml.* TO CURRENT_USER;
+  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON engine_heap_db.* TO CURRENT_USER;
 
 query:
-  { $saved_database= ($last_database ? $last_database : $executors->[0]->currentSchema()); $last_database= 'heap_dml'; 'USE heap_dml' }
-  ;; heap_query
-  ;; { $last_database= $saved_database; ($saved_database ? "USE $saved_database" : '') }
-;
+  { _set_db('engine_heap_db') } heap_query ;
 
 heap_query:
   insert | insert | insert |

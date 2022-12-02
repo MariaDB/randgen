@@ -17,7 +17,7 @@
 # USA
 
 query:
-  perfschema_query { $last_database= undef; $last_table= undef; '' };
+  { _set_db('user') } perfschema_query ;
 
 perfschema_query:
   ==FACTOR:0.1== perfschema_ddl |

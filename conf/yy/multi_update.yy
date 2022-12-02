@@ -47,14 +47,14 @@
 # dodgy.
 ################################################################################
 
-_features:
+#features:
   multi-update/delete ;
 
 query_init:
   { $total_dur = 0; "" };
 
 query:
-  { @nonaggregates = () ; %tables = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } multi_main_dml ;
+  { @nonaggregates = () ; %tables = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; _set_db('user') } multi_main_dml ;
 
 multi_main_dml:
     ==FACTOR:10== multi_main_update |

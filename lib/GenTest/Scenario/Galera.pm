@@ -94,7 +94,10 @@ sub run {
     $self->setServerStartupOption($s,'innodb-autoinc-lock-mode','2');
     $self->setServerStartupOption($s,'innodb-doublewrite','1');
     $self->setServerStartupOption($s,'wsrep-on');
-    push @servers, $self->prepareServer($s);
+
+    # is_active is for Gendata/GenTest to know on which servers to execute the flow
+    # TODO: should be set for actual masters masters
+    push @servers, $self->prepareServer($s,my $is_active= ($s == 1));
   }
   if ($status != STATUS_OK) {
     sayError("Galera configuration failed");
@@ -112,9 +115,6 @@ sub run {
   }
 
   #####
-  # This property is for Gendata/GenTest to know on which servers to execute the flow
-  # TODO: should be set to the number of masters
-  $self->setProperty('active_servers',[$servers[0]]);
 
   $self->printStep("Generating test data on the server(s)");
 

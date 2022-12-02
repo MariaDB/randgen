@@ -14,6 +14,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #include <conf/rr/basics.rr>
+#features system-versioned-tables
 
 
 # Re-defining grammar for SYSTEM VERSIONING testing
@@ -33,6 +34,9 @@ query_init:
   ;; SET ENFORCE_STORAGE_ENGINE=DEFAULT
 ;
 
+query:
+  { $new_col_next_num= 0; _set_db('user') } vers_fix_timestamp ;; vers_query ;; SET timestamp= 0 ;
+
 vers_create_init:
     { $new_col_next_num= 1; '' } CREATE TABLE IF NOT EXISTS vers_new_table_name (vers_col_list) vers_engine vers_table_flags vers_partitioning_optional
   | { $new_col_next_num= 1; '' } CREATE TABLE IF NOT EXISTS vers_new_table_name (vers_col_list_with_period , PERIOD FOR SYSTEM_TIME ( { $period_start } , { $period_end } )) vers_engine vers_table_flags vers_partitioning_optional
@@ -47,9 +51,6 @@ vers_create_simple_table:
 vers_create_table_with_visible_columns:
   CREATE OR REPLACE TABLE `vers_table_visible_columns` (`a` INT, `row_start` TIMESTAMP(6) AS ROW START, `row_end` TIMESTAMP(6) AS ROW END, PERIOD FOR SYSTEM_TIME(`row_start`,`row_end`)) WITH SYSTEM VERSIONING
 ;
-
-query:
-  { $new_col_next_num= 0; '' } vers_fix_timestamp ;; vers_query ;; SET timestamp= 0 ;
 
 vers_fix_timestamp:
   ==FACTOR:100== |

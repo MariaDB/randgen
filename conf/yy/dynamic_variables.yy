@@ -15,7 +15,6 @@
 
 #include <conf/rr/basics.rr>
 
-
 thread1_init:
     dynvar_initial_settings;
 
@@ -748,7 +747,7 @@ dynvar_optimizer_switch_value:
 ;
 
 dynvar_session_track_system_variables_value:
-    { @vars= keys %{$executors->[0]->serverVariables()}
+    { @vars= keys %{$executors->[0]->server->serverVariables()}
       ; $length=$prng->int(0,scalar(@vars)/2)
       ; "'" . (join ',', @{$prng->shuffleArray(\@vars)}[0..$length-1]) . "'"
     }

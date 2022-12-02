@@ -1,4 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
+# Copyright (c) 2022, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -19,6 +20,9 @@
 ##       (Implementation not present in current 6.0 or 5.x codebases).
 
 query:
+  { _set_db('user') } many_indexes_query ;
+
+many_indexes_query:
    update | insert | delete | select ;
 
 select:

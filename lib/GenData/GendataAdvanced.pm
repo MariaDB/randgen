@@ -32,6 +32,7 @@ use GenUtil;
 use Data::Dumper;
 
 use constant GDA_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
+use constant GDA_DEFAULT_DB => 'advanced_db';
 
 my $prng;
 
@@ -55,6 +56,9 @@ sub run {
 
     my $res= STATUS_OK;
     $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
+    say("GendataAdvanced is creating tables in schema `".$self->GDA_DEFAULT_DB."`");
+    $executor->execute("CREATE DATABASE IF NOT EXISTS ".$self->GDA_DEFAULT_DB);
+    $executor->execute("USE ".$self->GDA_DEFAULT_DB);
     foreach my $i (0..$#$rows) {
         my $gen_table_result = $self->gen_table($executor, 't'.($i+1), $rows->[$i], $prng);
         $res= $gen_table_result if $gen_table_result > $res;
@@ -735,6 +739,7 @@ sub gen_table {
           if ($text_only and not $prng->uint16(0,3)) {
               $ind_type= 'FULLTEXT';
           }
+          my @ind_cols;
           foreach my $i (0..$#cols) {
               my $c= $cols[$i];
               next if defined $columns{$c}->[8]; # Compressed columns cannot be in an index
@@ -742,17 +747,18 @@ sub gen_table {
               if ($tp =~ /BLOB|TEXT|CHAR|BINARY|POINT|LINESTRING|POLYGON|GEOMETRY/) {
                   # Starting from 10.4.3, long unique blobs are allowed.
                   # For a non-unique index the column will be auto-sized by the server (with a warning)
-                  if ($ind_type eq 'FULLTEXT' or ($self->compatibility ge '100403' and $prng->uint16(0,1))) {
-                    $cols[$i] = $c;
-                  } else {
+                  if ($ind_type ne 'FULLTEXT' and ($self->compatibility lt '100403' or $prng->uint16(0,1))) {
                     my $length= ( $columns{$c}->[1] and $columns{$c}->[1] < 64 ) ? $columns{$c}->[1] : 64;
-                    $cols[$i] = "$c($length)";
+                    $c = "$c($length)";
                   }
               }
               # DESC indexes: add ASC/DESC to the column
-              $cols[$i].=random_asc_desc_key($prng->uint16(0,2),$e) if $ind_type ne 'FULLTEXT';
+              $c.=random_asc_desc_key($prng->uint16(0,2),$e) if $ind_type ne 'FULLTEXT';
+              push @ind_cols, $c;
           }
-          $executor->variate_and_execute("ALTER TABLE $name ADD " . $ind_type . "(". join(',',@cols) . ")", my $gendata=1);
+          if (scalar(@ind_cols)) {
+            $executor->variate_and_execute("ALTER TABLE $name ADD " . $ind_type . "(". join(',',@ind_cols) . ")", my $gendata=1);
+          }
       }
       if ($columns{col_spatial} and $columns{col_spatial}->[4] eq 'NOT NULL' and not $prng->uint16(0,3)) {
           $executor->variate_and_execute("ALTER TABLE $name ADD SPATIAL(". 'col_spatial' . ")", my $gendata=1);

@@ -1,4 +1,5 @@
 # Copyright (c) 2003, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2022 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,8 +61,7 @@
 # Initialization of tables with focus on partitioned tables.
 
 query_init:
-  {our $nb_parts= 50; return undef }
-  init_db ;
+  CREATE DATABASE IF NOT EXISTS partition_by_range ;; {our $nb_parts= 50; _set_db('partition_by_range') } init_db ;
 
 init_db:
   create_tables ; insert_tables ;  cache_index ; load_index ;
@@ -114,7 +114,7 @@ insert_nop:
 # Randomly executed SQL
 
 query:
-  exec_sql ;
+  { _set_db('partition_by_range') } exec_sql ;
 
 exec_sql:
   select_explain |

@@ -33,6 +33,7 @@ use Data::Dumper;
 
 use constant GDS_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
 use constant GDS_DEFAULT_NAMES => ['A', 'B', 'C', 'D', 'E', 'AA', 'BB', 'CC', 'DD'];
+use constant GDS_DEFAULT_DB => 'simple_db';
 
 sub new {
     my $class = shift;
@@ -55,21 +56,9 @@ sub run {
         $rows = GDS_DEFAULT_ROWS;
     }
 
-    say("GendataSimple is creating tables in default schema");
-    foreach my $i (0..$#$names) {
-        my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i]);
-        return $gen_table_result if $gen_table_result != STATUS_OK;
-    }
-
-    my $private_db= 'private_gendata_simple';
-    say("GendataSimple is creating tables in $private_db");
-    my $res= $executor->execute("CREATE DATABASE IF NOT EXISTS $private_db");
-    if ($res->status() != STATUS_OK) {
-        sayError("Could not create database $private_db");
-        return $res->status;
-    }
-    $executor->execute("USE $private_db");
-    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
+    say("GendataSimple is creating tables in schema `".$self->GDS_DEFAULT_DB."`");
+    $executor->execute("CREATE DATABASE IF NOT EXISTS ".$self->GDS_DEFAULT_DB);
+    $executor->execute("USE ".$self->GDS_DEFAULT_DB);
     foreach my $i (0..$#$names) {
         my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i]);
         return $gen_table_result if $gen_table_result != STATUS_OK;

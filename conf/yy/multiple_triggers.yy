@@ -1,4 +1,4 @@
-# Copyright (C) 2016 MariaDB Corporation.
+# Copyright (C) 2016, 2022 MariaDB Corporation.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@
 # ERROR 1360 for DROP TRIGGER IF EXISTS is also because of one of these two problems
 
 query_init:
+    CREATE DATABASE IF NOT EXISTS test ;; { _set_db('test') }
     CREATE TABLE IF NOT EXISTS test.tlog (
       pk INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
       dt TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
@@ -54,6 +55,9 @@ query_init:
     );
 
 query:
+  { _set_db('test') } multiple_triggers_query ;
+
+multiple_triggers_query:
       mdev6112_create_trigger | mdev6112_create_trigger | mdev6112_create_trigger | mdev6112_create_trigger
     | mdev6112_drop_trigger | mdev6112_drop_trigger
     | mdev6112_create_log_trigger | mdev6112_create_log2_trigger
