@@ -27,8 +27,23 @@
 ########################################################################
 
 query_init:
-  # This is to prevent other grammars from altering the schema
-  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON updateable_views.* TO CURRENT_USER;
+  { $my_spec_file= "data/sql/updateable_views.sql"
+    ; if (open(CONF, $my_spec_file)) {
+        read(CONF, my $spec_text, -s $my_spec_file)
+        ; close(CONF)
+        ; $spec_text
+      } else { print "ERROR: Could not load data from $my_spec_file: $!, proceeding without it\n" }
+  }
+  ;; { _set_db('updateable_views_db') }
+     create_with_redundancy
+  # This is to prevent other grammars from altering the underlying tables
+  ;; GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON updateable_views_db.* TO CURRENT_USER
+  ;; GRANT ALL ON updateable_views_db.view1 TO CURRENT_USER
+  ;; GRANT ALL ON updateable_views_db.view2 TO CURRENT_USER
+  ;; GRANT ALL ON updateable_views_db.view3 TO CURRENT_USER
+  ;; GRANT ALL ON updateable_views_db.view4 TO CURRENT_USER
+  ;; GRANT ALL ON updateable_views_db.view5 TO CURRENT_USER
+;
 
 query:
   { _set_db('updateable_views_db') } upd_views_query ;
@@ -65,7 +80,7 @@ create_if_not_exists:
   CREATE ALGORITHM = algorithm VIEW __if_not_exists(95) view_name AS select check_option ;
 
 create_or_replace:
-       CREATE __or_replace(95) VIEW view_name AS select check_option ;
+  CREATE __or_replace(95) VIEW view_name AS select check_option ;
 
 truncate:
   TRUNCATE TABLE table_name ;

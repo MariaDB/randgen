@@ -71,7 +71,7 @@ my ($help,
     @exit_status, $trials, $output, $force,
    );
 
-$SIG{INT}= sub { \&group_cleaner };
+local $SIG{INT}= sub { print "Caught INT signal\n"; \&group_cleaner };
 
 
 # Defaults

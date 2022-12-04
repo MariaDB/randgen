@@ -131,7 +131,6 @@ use constant GD_SQLTRACE => 9;
 use constant GD_SHORT_COLUMN_NAMES => 10;
 use constant GD_EXECUTOR => 11;
 use constant GD_VARIATORS => 12;
-use constant GD_VARIATOR_MANAGER => 13;
 use constant GD_VARDIR => 15;
 use constant GD_PARTITIONS => 16;
 use constant GD_COMPATIBILITY => 17;

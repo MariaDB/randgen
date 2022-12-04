@@ -92,14 +92,6 @@ sub affectedRows {
   return int($_[0]->[RESULT_AFFECTED_ROWS]);
 }
 
-sub matchedRows {
-  return $_[0]->[RESULT_MATCHED_ROWS];
-}
-
-sub changedRows {
-  return $_[0]->[RESULT_CHANGED_ROWS];
-}
-
 sub info {
   return $_[0]->[RESULT_INFO];
 }
@@ -119,14 +111,6 @@ sub rows {
 
 sub duration {
   return $_[0]->[RESULT_END_TIME] - $_[0]->[RESULT_START_TIME];
-}
-
-sub startTime {
-  return $_[0]->[RESULT_START_TIME];
-}
-
-sub endTime {
-  return $_[0]->[RESULT_END_TIME];
 }
 
 sub warnings {

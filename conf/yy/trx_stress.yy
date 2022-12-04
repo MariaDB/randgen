@@ -1,5 +1,6 @@
 # Copyright (C) 2008 Sun Microsystems, Inc. All rights reserved.
 # Use is subject to license terms.
+# Copyright (c) 2022, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,13 +31,13 @@
 #
 
 query:
-  { _set_db('user') } trx_stress_ query ;
+  { _set_db('user') } trx_stress_query ;
 
 trx_stress_query:
   transaction |
   ==FACTOR:4== select |
   ==FACTOR:5== insert_replace |
-  ==FACTOR:4== delete |
+  ==FACTOR:2== delete |
   ==FACTOR:5== update
 ;
 
@@ -51,29 +52,29 @@ isolation_level:
   READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SERIALIZABLE ;
 
 select:
-  SELECT select_list FROM join_list where LIMIT large_digit;
+  SELECT /* _table { $outer_table= $last_table; '' } */ select_list { $last_table= $outer_table; '' } FROM join_list where LIMIT large_digit;
 
 select_list:
   X . _field_key | X . _field_key |
-  X . `pk` |
+  X . _field_pk |
   X . _field |
   * |
   ( subselect );
 
 subselect:
-  SELECT _field_key FROM _table WHERE `pk` = value ;
+  SELECT /* _table[invariant] */ _field_key FROM _table[invariant] WHERE _field_pk = value ;
 
 # Use index for all joins
 join_list:
-  _table AS X |
-  _table AS X LEFT JOIN _table AS Y USING ( _field_key );
+  { $last_table } AS X |
+  { $last_table } AS X LEFT JOIN _table AS Y ON ( Y._field_key = { $last_table= $outer_table; 'X.' } _field_key );
 
 
 # Insert more than we delete
 insert_replace:
-  i_r INTO _table (`pk`) VALUES (NULL) |
+  i_r INTO _table ( _field_pk ) VALUES (NULL) |
   i_r INTO _table ( _field_no_pk , _field_no_pk ) VALUES ( value , value ) , ( value , value ) |
-  i_r INTO _table ( _field_no_pk ) SELECT _field_key FROM _table AS X where ORDER BY _field_list LIMIT large_digit;
+  i_r INTO _table ( _field_no_pk ) SELECT /* _table[invariant] */ _field_key FROM _table[invariant] AS X where ORDER BY _field_list LIMIT large_digit;
 
 i_r:
   INSERT ignore |
@@ -84,12 +85,12 @@ ignore:
   IGNORE ;
 
 update:
-  UPDATE ignore _table AS X SET _field_no_pk = value where ORDER BY _field_list LIMIT large_digit ;
+  UPDATE ignore _table { $outer_table= $last_table; '' } AS X SET _field_no_pk = value where { $last_table= $outer_table; '' } ORDER BY _field_list LIMIT large_digit ;
 
 # We use a smaller limit on DELETE so that we delete less than we insert
 
 delete:
-  DELETE ignore FROM _table where_delete ORDER BY _field_list LIMIT small_digit ;
+  DELETE ignore FROM _table { $outer_table= $last_table; '' } where_delete ORDER BY { $last_table= $outer_table; '' } _field_list LIMIT small_digit ;
 
 order_by:
   | ORDER BY X . _field_key ;

@@ -19,64 +19,56 @@
 ################################################################################
 # range_access.yy
 # Purpose:  For testing the range optimization for MySQL
-# gendata:  Use with conf/optimizer/range_access.zz as a gendata file
-# parameters:
-#   queries = 10k+
-#   threads = 1
-#   no need for an engine argument - we mix storage engines via the gendata file
+# gendata:  Use with conf/zz/range_access.zz as a gendata file
 # uses:
 #   valgrind - use MarkErrorLog Validator + --valgrind
 #   comparison between MySQL versions / configurations
 #   3way compares to javadb and postgres
-#
-# NOTES:  This grammar will run against either a single or multi-part index
-#         For multi-part indexes, the index will be created, a set of queries
-#         will be run, then the index will be dropped
-#
-# TODO:  It would be nice to dynamically create indexes or to create
-#        more complex indexes on multiple tables at a time
-#        but this is more than a little tricky
 ################################################################################
 
 query:
-  { $idx_table = '' ; @idx_fields = () ;  _set_db('range_access_db') } query_type ;
+# Since the schema is uniform, we can pre-pick any table to get correct field names,
+# no need to pick it in every select and join
+  { $idx_table = '' ; @idx_fields = () ;  _set_db('range_access_db') }
+  { $last_table= $prng->arrayElement($executors->[0]->metaBaseTables($last_database)); '' }
+  query_type ;
 
 query_type:
   single_idx_query_set | dual_int_idx_query_set | dual_char_idx_query_set | tri_int_idx_query_set ;
 
 single_idx_query_set:
-  single_idx_query ; single_idx_query ; single_idx_query ; single_idx_query ; single_idx_query ;
+  single_idx_query ;; single_idx_query ;; single_idx_query ;; single_idx_query ;; single_idx_query ;
 
 dual_int_idx_query_set:
-  new_dual_int_index ; multi_int_idx_query_set ;
+  new_dual_int_index ;; multi_int_idx_query_set ;
 
 dual_char_idx_query_set:
-  new_dual_char_index ; multi_char_idx_query_set ;
+  new_dual_char_index ;; multi_char_idx_query_set ;
 
 tri_int_idx_query_set:
-  new_tri_int_index ; multi_int_idx_query_set ;
+  new_tri_int_index ;; multi_int_idx_query_set ;
 
 tri_char_idx_query_set:
-  new_tri_char_index ; multi_char_idx_query_set ;
+  new_tri_char_index ;; multi_char_idx_query_set ;
 
 wild_query:
   single_idx_query | multi_int_idx_query | multi_char_idx_query ;
 
 multi_int_idx_query_set:
-  multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; multi_int_idx_query ; wild_query ; drop_index ;
+  multi_int_idx_query ;; multi_int_idx_query ;; multi_int_idx_query ;; multi_int_idx_query ;; multi_int_idx_query ;; wild_query ;; drop_index ;
 
 multi_char_idx_query_set:
-  multi_char_idx_query ; multi_char_idx_query ; multi_char_idx_query ; multi_char_idx_query ; multi_char_idx_query ; wild_query ; drop_index ;
+  multi_char_idx_query ;; multi_char_idx_query ;; multi_char_idx_query ;; multi_char_idx_query ;; multi_char_idx_query ;; wild_query ;; drop_index ;
 
 ################################################################################
 # index-specific rules
 ################################################################################
 
 drop_index:
- DROP INDEX `test_idx` ON { $idx_table } ;
+ DROP INDEX IF EXISTS `test_idx` ON { $idx_table } ;
 
 index_pre:
-  ALTER TABLE index_table ADD INDEX `test_idx` USING index_type ;
+  ALTER TABLE index_table ADD INDEX IF NOT EXISTS `test_idx` USING index_type ;
 
 new_dual_int_index:
   index_pre (dual_int_idx_field_list) ;
@@ -254,7 +246,7 @@ table_or_join:
 
 table:
 # We use the "AS alias" bit here so we can have unique aliases if we use the same table many times
-       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->tables())." AS alias".++$tables;  my @s=($x); $stack->pop(\@s); $x } ;
+       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->tables($last_database))." AS alias".++$tables;  my @s=($x); $stack->pop(\@s); $x } ;
 
 idx_table_for_join:
        { $stack->push() ; my $x = $idx_table." AS alias".++$tables; my @s=($x); $stack->pop(\@s); $x } ;
@@ -274,7 +266,7 @@ index_type:
   BTREE ;
 
 index_table:
-  { my $idx_table_candidate = $prng->arrayElement($executors->[0]->baseTables()) ; $idx_table = $idx_table_candidate ; $idx_table } ;
+  { my $idx_table_candidate = $prng->arrayElement($executors->[0]->baseTables($last_database)) ; $idx_table = $idx_table_candidate ; $idx_table } ;
 
 opt_where_list:
   | | | | and_or where_list ;

@@ -53,10 +53,6 @@ sub components {
   return $_[0]->[RULE_COMPONENTS];
 }
 
-sub setComponents {
-  $_[0]->[RULE_COMPONENTS] = $_[1];
-}
-
 sub toString {
   my $rule = shift;
   my $components = $rule->components();

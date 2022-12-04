@@ -20,8 +20,11 @@
 # Should be used with dyncol_dml.zz or something equally rich of blobs
 ########################################################################
 
+query_init:
+  { $db_exists= $executors->[0]->databaseExists('dyncol_dml_db'); '' };
+
 query:
-  { _set_db('dyncol_dml_db') } dyncol_dml_query ;
+  { $db_exists ? _set_db('dyncol_dml_db') : _set_db('user') } dyncol_dml_query ;
 
 dyncol_dml_query:
   select | insert | update | delete ;
@@ -44,10 +47,10 @@ insert:
   INSERT INTO _table SET insert_list ;
 
 update:
-  UPDATE _table SET column_name = column where_clause ORDER BY pk LIMIT 1;
+  UPDATE _table SET column_name = column where_clause ORDER BY _field_list LIMIT 1;
 
 delete:
-  DELETE FROM _table where_clause ORDER BY pk LIMIT 1 ;
+  DELETE FROM _table where_clause ORDER BY _field_list LIMIT 1 ;
 
 where_clause:
   WHERE where_expr |

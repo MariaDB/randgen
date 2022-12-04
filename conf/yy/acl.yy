@@ -21,7 +21,7 @@
 ########################################################################
 
 query:
-  ==FACTOR:0.1== acl
+  { _set_db('any') } acl
 ;
 
 acl:
@@ -119,7 +119,7 @@ acl_grant_variation:
 
   | acl_table_privilege_list ON __table(50) acl_opt_priv_level_any
 
-  | acl_column_privilege_list ON __table(50) acl_opt_priv_level_exact
+  | /* _table[invariant] */ acl_column_privilege_list ON __table(50) acl_priv_table_level_exact
 
   | acl_routine_privilege_list ON acl_opt_priv_level_all
   | acl_routine_privilege_list ON acl_opt_priv_level_wildcard
@@ -141,10 +141,14 @@ acl_opt_priv_level_wildcard:
 ;
 
 acl_opt_priv_level_exact:
-    ==FACTOR:10== test._table
-  | ==FACTOR:10== _table
-  | _letter._letter
+    _database._letter
   | _letter
+;
+
+acl_priv_table_level_exact:
+    ==FACTOR:10== { $last_database }._table[invariant]
+  | ==FACTOR:10== _table[invariant]
+  |               _database . _table
 ;
 
 acl_global_privilege:
@@ -259,8 +263,8 @@ acl_username:
 ;
 
 acl_short_name:
-  ==FACTOR:8== _letter
-  | '%'
+    ==FACTOR:8== _letter
+  | ==FACTOR:0.1== '%'
   # Prevent damaging the current user
   | { $shortname= $prng->unquotedString(8); ${shortname}.'@localhost' ne $executors->[0]->currentUser() and ${shortname} ne 'root' ? '`'.$shortname.'`' : '`'.$shortname.'_`' }
   | ==FACTOR:0.1== PUBLIC

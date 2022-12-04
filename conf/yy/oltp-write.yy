@@ -14,21 +14,23 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-# Rough imitation of OLTP-read-write test (sysbench-like)
+# Rough imitation of OLTP-write test (sysbench-like)
 
 query:
-  { _set_db('user') } oltp_query ;
+    { my @dbs=(); push @dbs, 'oltp_db' if $executors->[0]->databaseExists('oltp_db')
+                ; push @dbs, 'oltp_db' if $executors->[0]->databaseExists('oltp_aria_db')
+                ; push @dbs, 'user'
+                ; _set_db($prng->arrayElement(\@dbs))
+    } /* _table[invariant] */ oltp_query ;
 
 oltp_query:
-    dml | dml | dml | dml | dml | dml | dml |
-    START TRANSACTION | COMMIT ;
+    ==FACTOR:10== dml |
+    START TRANSACTION |
+    COMMIT
+;
 
 dml:
-    select |
-    update |
-    delete |
-    insert
-;
+    update | delete | insert ;
 
 insert:
     INSERT IGNORE INTO _table ( _field_pk ) VALUES ( NULL ) |
@@ -54,27 +56,3 @@ index_update:
 # If char fields happen to be indexed in the table spec, then this update can be indexed as well. No big harm though.
 non_index_update:
     UPDATE _table SET _field_char = _string WHERE _field_pk = _smallint_unsigned ;
-
-select:
-    point_select |
-    simple_range |
-    sum_range |
-    order_range |
-    distinct_range
-;
-
-point_select:
-    SELECT _field FROM _table WHERE _field_pk = _smallint_unsigned ;
-
-simple_range:
-    SELECT _field FROM _table WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ;
-
-sum_range:
-    SELECT SUM(_field) FROM _table WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ;
-
-order_range:
-    SELECT _field FROM _table WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ORDER BY _field ;
-
-distinct_range:
-    SELECT DISTINCT _field FROM _table WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ORDER BY _field ;
-

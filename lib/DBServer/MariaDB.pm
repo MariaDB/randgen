@@ -47,7 +47,6 @@ use constant MYSQLD_CHARSETS => 9;
 use constant MYSQLD_SERVER_OPTIONS => 10;
 use constant MYSQLD_AUXPID => 11;
 use constant MYSQLD_SERVERPID => 12;
-use constant MYSQLD_WINDOWS_PROCESS => 13;
 use constant MYSQLD_DBH => 14;
 use constant MYSQLD_START_DIRTY => 15;
 use constant MYSQLD_VALGRIND => 16;
@@ -55,7 +54,6 @@ use constant MYSQLD_VERSION => 18;
 use constant MYSQLD_DUMPER => 19;
 use constant MYSQLD_SOURCEDIR => 20;
 use constant MYSQLD_GENERAL_LOG => 21;
-use constant MYSQLD_WINDOWS_PROCESS_EXITCODE => 22;
 use constant MYSQLD_SERVER_TYPE => 23;
 use constant MYSQLD_VALGRIND_SUPPRESSION_FILE => 24;
 use constant MYSQLD_TMPDIR => 25;
@@ -75,7 +73,6 @@ use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
 use constant MYSQLD_LOG_FILE => "mysql.log";
 use constant MYSQLD_DEFAULT_PORT =>  19300;
-use constant MYSQLD_WINDOWS_PROCESS_STILLALIVE => 259;
 use constant MYSQLD_MAX_SERVER_DOWNTIME => 120;
 
 my $default_shutdown_timeout= 300;
@@ -209,24 +206,12 @@ sub basedir {
     return $_[0]->[MYSQLD_BASEDIR];
 }
 
-sub error_logs {
-    return ( $_[0]->[MYSQLD_VARDIR].'/mysql.err' );
-}
-
-sub clientBindir {
-    return $_[0]->[MYSQLD_CLIENT_BINDIR];
-}
-
 sub sourcedir {
     return $_[0]->[MYSQLD_SOURCEDIR];
 }
 
 sub datadir {
     return $_[0]->[MYSQLD_DATADIR];
-}
-
-sub setDatadir {
-    $_[0]->[MYSQLD_DATADIR] = $_[1];
 }
 
 sub vardir {
@@ -247,21 +232,12 @@ sub port {
     }
 }
 
-sub setPort {
-    my ($self, $port) = @_;
-    $self->[MYSQLD_PORT]= $port;
-}
-
 sub user {
     return $_[0]->[MYSQLD_USER];
 }
 
 sub serverpid {
     return $_[0]->[MYSQLD_SERVERPID];
-}
-
-sub forkpid {
-    return $_[0]->[MYSQLD_AUXPID];
 }
 
 sub server_options {
@@ -332,11 +308,6 @@ sub addServerOptions {
     my ($self,$opts) = @_;
 
     push(@{$self->[MYSQLD_SERVER_OPTIONS]}, @$opts);
-}
-
-sub getServerOptions {
-  my $self= shift;
-  return $self->[MYSQLD_SERVER_OPTIONS];
 }
 
 sub printServerOptions {
@@ -443,10 +414,6 @@ sub createMysqlBase  {
     say("Bootstrap command: $command");
     system("$command > \"".$self->vardir."/boot.log\" 2>&1");
     return $?;
-}
-
-sub _reportError {
-    say(Win32::FormatMessage(Win32::GetLastError()));
 }
 
 sub startServer {
@@ -1081,25 +1048,6 @@ sub nonSystemDatabases {
   };
 }
 
-sub collectAutoincrements {
-  my $self= shift;
-  my $autoinc_tables= $self->dbh->selectall_arrayref(
-      "SELECT CONCAT(ist.TABLE_SCHEMA,'.',ist.TABLE_NAME), ist.AUTO_INCREMENT, isc.COLUMN_NAME, '' ".
-      "FROM INFORMATION_SCHEMA.TABLES ist JOIN INFORMATION_SCHEMA.COLUMNS isc ON (ist.TABLE_SCHEMA = isc.TABLE_SCHEMA AND ist.TABLE_NAME = isc.TABLE_NAME) ".
-      "WHERE ist.TABLE_SCHEMA NOT IN ('mysql','information_schema','performance_schema','sys') ".
-      "AND ist.AUTO_INCREMENT IS NOT NULL ".
-      "AND isc.EXTRA LIKE '%auto_increment%' ".
-      "ORDER BY ist.TABLE_SCHEMA, ist.TABLE_NAME, isc.COLUMN_NAME"
-    );
-  foreach my $t (@$autoinc_tables) {
-    my $max_autoinc= $self->dbh->selectrow_arrayref("SELECT IFNULL(MAX($t->[2]),0) FROM $t->[0]");
-    if ($max_autoinc && (ref $max_autoinc eq 'ARRAY')) {
-      $t->[3] = $max_autoinc->[0];
-    }
-  }
-  return $autoinc_tables;
-}
-
 # XA transactions which haven't been either committed or rolled back
 # can further cause locking issues, so different scenarios may want to
 # rollback them before doing, for example, DROP TABLE
@@ -1501,55 +1449,6 @@ sub serverVariables {
         $self->[MYSLQD_SERVER_VARIABLES] = \%vars;
     }
     return $self->[MYSLQD_SERVER_VARIABLES];
-}
-
-# Store variables which were set through config or command line
-sub storeConfigVariables {
-    my $self = shift;
-    if (not keys %{$self->[MYSLQD_CONFIG_VARIABLES]}) {
-        my $dbh = $self->dbh;
-        return undef if not defined $dbh;
-        my $sth = $dbh->prepare("SELECT variable_name, global_value FROM information_schema.system_variables WHERE global_value_origin = 'CONFIG'");
-        $sth->execute();
-        my %vars = ();
-        while (my $array_ref = $sth->fetchrow_arrayref()) {
-            $vars{$array_ref->[0]} = $array_ref->[1];
-        }
-        $sth->finish();
-        $self->[MYSLQD_CONFIG_VARIABLES] = \%vars;
-    }
-    if (keys %{$self->[MYSLQD_CONFIG_VARIABLES]}) {
-      say("Server variables set through config or command-line options:");
-      foreach my $v (keys %{$self->[MYSLQD_CONFIG_VARIABLES]}) {
-        say("\t$v: ".${$self->[MYSLQD_CONFIG_VARIABLES]}{$v});
-      }
-    }
-}
-
-# Restore dynamic variables which were set through config or command line
-# but modified during test execution
-# (can be needed for different purposes, e.g. for data consistency checks before/after restart)
-sub restoreConfigVariables {
-    my $self = shift;
-    if ($self->[MYSLQD_CONFIG_VARIABLES]) {
-        my $dbh = $self->dbh;
-        return undef if not defined $dbh;
-        my $sth = $dbh->prepare("SELECT variable_name, global_value FROM information_schema.system_variables WHERE global_value_origin = 'SQL' AND read_only = 'NO'");
-        $sth->execute();
-        my %vars = ();
-        while (my $array_ref = $sth->fetchrow_arrayref()) {
-            $vars{$array_ref->[0]} = $array_ref->[1];
-        }
-        foreach my $var (keys %vars) {
-          my $val= (defined ${$self->[MYSLQD_CONFIG_VARIABLES]}{$var} ? ${$self->[MYSLQD_CONFIG_VARIABLES]}{$var} : 'DEFAULT');
-          if($val ne $vars{$var}) {
-            $val = "'".$val."'" unless ($val =~ /^(?:\d+|NULL|DEFAULT)$/);
-            say("Restoring $var: ".$vars{$var}." => $val");
-            $sth = $dbh->prepare("SET GLOBAL $var = $val");
-            $sth->execute();
-          }
-        }
-    }
 }
 
 sub serverVariable {

@@ -1,4 +1,4 @@
-#  Copyright (c) 2021, MariaDB Corporation Ab
+#  Copyright (c) 2021, 2022, MariaDB Corporation Ab
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,29 +17,32 @@
 
 # Error codes to ignore on slave: slave-skip-errors=1049,1305,1539,1505,1317,1568
 
-query:
-  { _set_db('user') } seq_query
+query_init:
+  CREATE DATABASE IF NOT EXISTS test
+  ;; { _set_db('test') }
+     seq_create ;; seq_create ;; seq_create ;; seq_create ;; seq_create
+  ;; seq_create ;; seq_create ;; seq_create ;; seq_create ;; seq_create
 ;
 
+query:
+  { _set_db('test') } seq_query ;
+
 seq_query:
-    seq_create
-  | seq_show
-  | seq_next_val
-  | seq_prev_val
-  | seq_alter
-  | seq_set_val
-  | seq_drop
-  | seq_select
-  | seq_lock_unlock
-  | seq_rename
-  | seq_insert
+    ==FACTOR:2==   seq_create
+  |                seq_show
+  | ==FACTOR:30==  seq_next_prev_val
+  |                seq_alter
+  |                seq_set_val
+  | ==FACTOR:0.1== seq_drop
+  |                seq_select
+  |                seq_lock_unlock
+  | ==FACTOR:0.5== seq_rename
+  |                seq_insert
 ;
 
 seq_lock_unlock:
     LOCK TABLE seq_lock_list
-  | UNLOCK TABLES
-  | UNLOCK TABLES
-  | UNLOCK TABLES
+  | ==FACTOR:5== UNLOCK TABLES
 ;
 
 seq_rename:
@@ -47,19 +50,17 @@ seq_rename:
 ;
 
 seq_rename_list:
-  seq_name TO seq_name | seq_rename_list, seq_name TO seq_name
+  ==FACTOR:3== _sequence TO seq_name |
+  seq_rename_list, _sequence TO seq_name
 ;
 
 seq_lock_list:
-  seq_name seq_lock_type | seq_lock_list, seq_name seq_lock_type
-;
-
-seq_lock_type:
-  READ | WRITE
+  ==FACTOR:2== _sequence __read_x_write |
+  seq_lock_list, __sequence __read_x_write
 ;
 
 seq_select:
-  SELECT seq_select_list FROM seq_name
+  SELECT seq_select_list FROM _sequence
 ;
 
 seq_select_list:
@@ -84,27 +85,20 @@ seq_field:
 ;
 
 seq_drop:
-  DROP seq_temporary SEQUENCE seq_if_exists_optional seq_drop_list
+  DROP __temporary(5) SEQUENCE __if_exists(90) seq_drop_list
 ;
 
 seq_drop_list:
-  seq_name | seq_name | seq_name, seq_drop_list
-;
-
-seq_temporary:
-  | | | TEMPORARY
+  ==FACTOR:4== _sequence |
+  _sequence, seq_drop_list
 ;
 
 seq_set_val:
-  SELECT SETVAL(seq_name, seq_start_value)
+  SELECT SETVAL(_sequence, seq_start_value)
 ;
 
 seq_alter:
-  ALTER SEQUENCE seq_if_exists_optional seq_name seq_alter_list
-;
-
-seq_if_exists_optional:
-  | IF EXISTS | IF EXISTS | IF EXISTS
+  ALTER SEQUENCE __if_exists(90) _sequence seq_alter_list
 ;
 
 seq_alter_list:
@@ -112,7 +106,7 @@ seq_alter_list:
 ;
 
 seq_insert:
-  INSERT INTO seq_name VALUES (seq_start_value, seq_start_value, seq_end_value, seq_start_value, seq_increment_value, _tinyint_unsigned, seq_zero_or_one, seq_zero_or_one)
+  INSERT INTO _sequence VALUES (seq_start_value, seq_start_value, seq_end_value, seq_start_value, seq_increment_value, _tinyint_unsigned, __0_x_1, __0_x_1)
 ;
 
 seq_alter_element:
@@ -123,24 +117,25 @@ seq_alter_element:
   | seq_start_with
 ;
 
-seq_zero_or_one:
-  0 | 1
+seq_next_prev_val:
+    SELECT __next_value_x_previous_value FOR _sequence
+  | SELECT __nextval_x_lastval( _sequence )
+# Set statement doesn't work here, it throws ER_UNKNOWN_TABLE
+  | SET @sql_mode.save= @@sql_mode, @@sql_mode='ORACLE' ;; SELECT _sequence.nextval_or_currval ;; SET @@sql_mode= @sql_mode.save
 ;
 
-seq_next_val:
-    SELECT NEXT VALUE FOR seq_name
-  | SELECT NEXTVAL( seq_name )
-  | SET STATEMENT `sql_mode`=ORACLE FOR SELECT seq_name.nextval
-;
-
-seq_prev_val:
-    SELECT PREVIOUS VALUE FOR seq_name
-  | SELECT LASTVAL( seq_name )
-  | SET STATEMENT `sql_mode`=ORACLE FOR SELECT seq_name.currval
-;
+nextval_or_currval:
+  nextval | currval;
 
 seq_create:
-  CREATE seq_or_replace_if_not_exists seq_name seq_start_with_optional seq_min_optional seq_max_optional seq_increment_optional seq_cache_optional seq_cycle_optional seq_engine_optional
+  CREATE seq_or_replace_if_not_exists seq_name
+  seq_start_with_optional
+  seq_min_optional
+  seq_max_optional
+  seq_increment_optional
+  seq_cache_optional
+  seq_cycle_optional
+  seq_engine_optional
 ;
 
 seq_cache:
@@ -191,22 +186,19 @@ seq_max_optional:
 ;
 
 seq_show:
-    SHOW CREATE SEQUENCE seq_name
-  | SHOW CREATE TABLE seq_name
+    SHOW CREATE SEQUENCE _sequence
+  | SHOW CREATE TABLE _sequence
   | SHOW TABLES
 ;
 
 seq_or_replace_if_not_exists:
-  seq_temporary SEQUENCE | OR REPLACE seq_temporary SEQUENCE | seq_temporary SEQUENCE IF NOT EXISTS
+  __temporary(5) SEQUENCE |
+  ==FACTOR:10== OR REPLACE __temporary(5) SEQUENCE |
+  __temporary(5) SEQUENCE IF NOT EXISTS
 ;
 
 seq_name:
-  { 'seq'.$prng->int(1,10) }
-;
-
-seq_or_table_name:
-    seq_name | seq_name | seq_name | seq_name | seq_name | seq_name
-  | _table
+  { 'seq'.$prng->int(1,20) }
 ;
 
 seq_start_with:

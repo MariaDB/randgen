@@ -1,5 +1,5 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2021 MariaDB Corporation Ab
+# Copyright (c) 2021, 2022, MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,6 @@ use GenTest::Executor::MariaDB;
 use DBI;
 use Data::Dumper;
 
-use constant PROCESSLIST_PROCESS_ID      => 0;
 use constant PROCESSLIST_PROCESS_COMMAND => 4;
 use constant PROCESSLIST_PROCESS_TIME    => 5;
 use constant PROCESSLIST_PROCESS_INFO    => 7;

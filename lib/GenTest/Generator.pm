@@ -1,5 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2021, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2022, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,7 @@ require Exporter;
   GENERATOR_ANNOTATE_RULES
   GENERATOR_PARSER
   GENERATOR_PARSER_MODE
+  GENERATOR_GRAMMAR_POOL
 );
 
 use strict;
@@ -52,6 +53,7 @@ use constant GENERATOR_PARTICIPATING_RULES => 13;       # Stores the list of rul
 use constant GENERATOR_ANNOTATE_RULES => 14;
 use constant GENERATOR_PARSER => 16;
 use constant GENERATOR_PARSER_MODE => 17;
+use constant GENERATOR_GRAMMAR_POOL => 18;
 
 sub new {
   my $class = shift;
@@ -65,6 +67,23 @@ sub new {
     'parser_mode'          => GENERATOR_PARSER_MODE,
   }, @_);
 
+  if ($generator->[GENERATOR_GRAMMARS]) {
+    # Adjust (normalize) grammar weights
+    my $multiplier= 1;
+    my @grammar_pool= ();
+    foreach my $g (@{$generator->[GENERATOR_GRAMMARS]}) {
+      $multiplier= int(1/$g->weight) if $g->weight > 0 and $multiplier < int(1/$g->weight);
+    }
+    for (my $i=0; $i<=$#{$generator->[GENERATOR_GRAMMARS]}; $i++) {
+      my $factor= $generator->[GENERATOR_GRAMMARS]->[$i]->weight * $multiplier;
+      foreach (1..$factor) {
+        push @grammar_pool, $i;
+      }
+    }
+    # GRAMMAR_POOL contains an array of (non-unique) grammar IDs from
+    # GRAMMAR array, the count of each ID is based on the grammar weight
+    $generator->[GENERATOR_GRAMMAR_POOL]= [ @grammar_pool ];
+  }
   return $generator;
 }
 
@@ -78,10 +97,6 @@ sub grammars {
 
 sub threadId {
   return $_[0]->[GENERATOR_THREAD_ID];
-}
-
-sub seqId {
-  return $_[0]->[GENERATOR_SEQ_ID];
 }
 
 sub parser {

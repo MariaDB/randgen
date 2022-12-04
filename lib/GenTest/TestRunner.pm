@@ -53,10 +53,6 @@ use GenTest::Result;
 use GenTest::Validator;
 use GenUtil;
 
-use constant PROCESS_TYPE_PARENT  => 0;
-use constant PROCESS_TYPE_PERIODIC  => 1;
-use constant PROCESS_TYPE_CHILD    => 2;
-
 use constant GT_CONFIG => 0;
 use constant GT_CHANNEL => 5;
 

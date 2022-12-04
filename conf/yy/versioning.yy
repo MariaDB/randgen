@@ -14,16 +14,17 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 ####################################################
-# Re-defining grammar for SYSTEM VERSIONING testing
+# System versioning
 ####################################################
 
-#include <conf/rr/basics.rr>
-
+#include <conf/yy/include/basics.inc>
 #features system-versioned tables
+
 
 # DDL-rich grammar requires frequent metadata reload
 query_init:
   { $vers_tab_num=0; $executors->[0]->setMetadataReloadInterval(15 + $generator->threadId()); '' }
+    CREATE DATABASE IF NOT EXISTS test ;; { _set_db('test') }
     SET SYSTEM_VERSIONING_ALTER_HISTORY= vers_alter_history_value, ENFORCE_STORAGE_ENGINE=NULL
   ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init
   ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init
@@ -37,7 +38,7 @@ query_init:
 ;
 
 query:
-  { $new_col_next_num= 0; _set_db('user') } vers_fix_timestamp ;; vers_query ;; SET timestamp= 0 ;
+  { $new_col_next_num= 0; _set_db('test') } vers_fix_timestamp ;; vers_query ;; SET timestamp= 0 ;
 
 vers_create_init:
     { $new_col_next_num= 1; '' } CREATE TABLE IF NOT EXISTS vers_new_table_name (vers_col_list) vers_engine vers_table_flags vers_partitioning_optional
@@ -62,28 +63,23 @@ vers_fix_timestamp:
 ;
 
 vers_query:
-    ==FACTOR:5== { $new_col_next_num= 1; '' } vers_create
-  | ==FACTOR:0.5== vers_insert_history /* compatibility 10.11.0 */
-  | ==FACTOR:0.5== vers_delete_history
+    ==FACTOR:5==    { $new_col_next_num= 1; '' } vers_create
+  | ==FACTOR:0.5==  vers_insert_history /* compatibility 10.11.0 */
+  | ==FACTOR:0.5==  vers_delete_history
   | ==FACTOR:0.05== vers_change_variable
-  | ==FACTOR:15== vers_alter
-  | ==FACTOR:2== vers_alter_partitioning
-  | ==FACTOR:5== vers_select
-  | ==FACTOR:0.5== vers_tx_history
-  | ==FACTOR:0.1== vers_create_view
+  | ==FACTOR:5==    vers_alter
+  | ==FACTOR:2==    vers_alter_partitioning
+  | ==FACTOR:15==   vers_select
+  | ==FACTOR:0.5==  vers_tx_history
+  | ==FACTOR:0.1==  vers_create_view
 ;
 
 vers_engine:
   ==FACTOR:5== |
-  ==FACTOR:3== ENGINE=InnoDB |
-  ENGINE=MyISAM |
-  ENGINE=Aria |
+  ==FACTOR:3==   ENGINE=InnoDB |
+                 ENGINE=MyISAM |
+                 ENGINE=Aria |
   ==FACTOR:0.1== ENGINE=MEMORY
-;
-
-vers_with_system_versioning:
-  |
-  ==FACTOR:20== WITH SYSTEM VERSIONING
 ;
 
 vers_with_without_system_versioning:
@@ -91,8 +87,8 @@ vers_with_without_system_versioning:
 ;
 
 vers_change_variable:
-    SET vers_session_global `SYSTEM_VERSIONING_ALTER_HISTORY`= vers_alter_history_value
-  | SET vers_session_global `system_versioning_asof` = vers_as_of_value
+    SET __session_x_global(30,10) `SYSTEM_VERSIONING_ALTER_HISTORY`= vers_alter_history_value
+  | SET __session_x_global(30,10) `system_versioning_asof` = vers_as_of_value
   | SET SYSTEM_VERSIONING_INSERT_HISTORY= __on_x_off(80) /* compatibility 10.11.0 */
 ;
 
@@ -111,10 +107,6 @@ vers_alter_history_value:
   ==FACTOR:20== KEEP |
   ERROR |
   DEFAULT
-;
-
-vers_session_global:
-  | | | SESSION | SESSION | GLOBAL
 ;
 
 vers_alter:
@@ -137,19 +129,19 @@ vers_alter_list:
 ;
 
 vers_alter_item:
-    ==FACTOR:0.05== DROP SYSTEM VERSIONING
+    ==FACTOR:0.5==  DROP SYSTEM VERSIONING
   |                 ADD SYSTEM VERSIONING
   |                 ADD PERIOD FOR SYSTEM_TIME(vers_col_start, vers_col_end)
   | ==FACTOR:0.5==  vers_add_drop_sys_column
 ;
 
 vers_add_drop_sys_column:
-    ADD COLUMN vers_if_not_exists vers_explicit_row_start
-  | ADD COLUMN vers_if_not_exists vers_explicit_row_end
-  | DROP COLUMN vers_col_start
-  | DROP COLUMN vers_col_end
-  | CHANGE COLUMN vers_if_exists vers_col_start vers_explicit_row_start
-  | CHANGE COLUMN vers_if_exists vers_col_end vers_explicit_row_end
+    ADD COLUMN __if_not_exists(80) vers_explicit_row_start
+  | ADD COLUMN __if_not_exists(80) vers_explicit_row_end
+  | DROP COLUMN __if_exists(80) vers_col_start
+  | DROP COLUMN __if_exists(80) vers_col_end
+  | CHANGE COLUMN __if_exists(80) vers_col_start vers_explicit_row_start
+  | CHANGE COLUMN __if_exists(80) vers_col_end vers_explicit_row_end
 ;
 
 vers_select:
@@ -211,8 +203,8 @@ vers_partitioning:
     vers_partitioning_definition
   | vers_partitioning_definition
   | REMOVE PARTITIONING
-  | DROP PARTITION vers_if_exists { 'ver_p'.$prng->int(1,5) }
-  | ADD PARTITION vers_if_not_exists (PARTITION { 'ver_p'.++$parts } HISTORY)
+  | DROP PARTITION __if_exists(80) { 'ver_p'.$prng->int(1,5) }
+  | ADD PARTITION __if_not_exists(80) (PARTITION { 'ver_p'.++$parts } HISTORY)
 ;
 
 vers_partitioning_optional:
@@ -244,11 +236,7 @@ vers_partitioning_interval_or_limit:
 ;
 
 vers_subpartitioning_optional:
-  | | | | SUBPARTITION BY vers_hash_key(vers_col_name) SUBPARTITIONS _positive_digit
-;
-
-vers_hash_key:
-  KEY | HASH
+  | | | | SUBPARTITION BY __key_x_hash(vers_col_name) SUBPARTITIONS _positive_digit
 ;
 
 vers_partition_list:
@@ -305,9 +293,9 @@ vers_col_name_and_definition:
 ;
 
 vers_col_definition:
-                   vers_bit_type vers_null vers_optional_default_int_or_auto_increment
-  | ==FACTOR:10==  vers_int_type vers_unsigned vers_zerofill vers_null vers_optional_default_int_or_auto_increment
-  |                vers_num_type vers_unsigned vers_zerofill vers_null vers_optional_default
+                   BIT vers_null vers_optional_default_int_or_auto_increment
+  | ==FACTOR:10==  vers_int_type __unsigned(20) __zerofill(5) vers_null vers_optional_default_int_or_auto_increment
+  |                vers_num_type __unsigned(20) __zerofill(5) vers_null vers_optional_default
   |                vers_temporal_type vers_null vers_optional_default
   |                vers_timestamp_type vers_null vers_optional_default_or_current_timestamp
   | ==FACTOR:5==   vers_text_type vers_null vers_optional_default_char
@@ -336,14 +324,6 @@ vers_default_or_current_timestamp_val:
   | 0
 ;
 
-
-vers_unsigned:
-  | | UNSIGNED
-;
-
-vers_zerofill:
-  | | | | ZEROFILL
-;
 
 vers_optional_default_int_or_auto_increment:
   | vers_optional_default_int
@@ -388,12 +368,11 @@ vers_explicit_row_end:
   vers_col_end vers_col_type GENERATED ALWAYS AS ROW END ;
 
 vers_replace_or_if_not_exists:
-  vers_temporary TABLE | OR REPLACE vers_temporary TABLE | vers_temporary TABLE IF NOT EXISTS
+  __temporary(2) TABLE | OR REPLACE __temporary(2) TABLE | __temporary(2) TABLE IF NOT EXISTS
 ;
 
 vers_table_flags:
-  vers_row_format vers_encryption vers_compression vers_with_system_versioning
-;
+  vers_row_format vers_encryption vers_compression __with_system_versioning(95) ;
 
 vers_encryption:
 ;
@@ -441,21 +420,8 @@ vers_empty_value_list:
   () | (),vers_empty_value_list
 ;
 
-vers_if_exists:
-  | IF EXISTS | IF EXISTS | IF EXISTS
-;
-
-vers_if_not_exists:
-  | IF NOT EXISTS | IF NOT EXISTS | IF NOT EXISTS
-;
-
 vers_column_list:
   vers_col_name | vers_col_name, vers_column_list
-;
-
-vers_temporary:
-  ==FACTOR:50== |
-  TEMPORARY
 ;
 
 vers_algorithm:
@@ -475,7 +441,7 @@ vers_lock:
 ;
 
 vers_data_type:
-    vers_bit_type
+    BIT
   | vers_enum_type
   | vers_geo_type
   | vers_int_type
@@ -489,10 +455,6 @@ vers_data_type:
   | vers_text_type
   | vers_text_type
   | vers_text_type
-;
-
-vers_bit_type:
-  BIT
 ;
 
 vers_int_type:

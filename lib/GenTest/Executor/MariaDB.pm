@@ -2695,18 +2695,34 @@ sub execute {
     if ($query =~ s/\/\*\s*EXECUTOR_FLAG_SKIP_STATS\s*\*\///g) {
         $execution_flags |= EXECUTOR_FLAG_SKIP_STATS;
     }
+    if ($query =~ s/\/\*\s*EXECUTOR_FLAG_NON_EXISTING_ALLOWED\s*\*\///g) {
+        $execution_flags |= EXECUTOR_FLAG_NON_EXISTING_ALLOWED;
+    }
 
-    if ($query =~ /\!non_existing_(?:table|base_table|versioned_table|view|index|column)/) {
-      sayError("Discarding query [ $query ] and setting STATUS_REQUIREMENT_UNMET");
-      return GenTest::Result->new(
-          query      => $query,
-          status     => STATUS_REQUIREMENT_UNMET,
-          err        => undef,
-          errstr     => "Internal error, required object not found",
-          sqlstate   => undef,
-          start_time => undef,
-          end_time   => undef
-      );
+    if ($query =~ /\!non_existing_(?:schema|table|base_table|versioned_table|view|index|column|sequence|function|procedure)/) {
+      if ($execution_flags & EXECUTOR_FLAG_NON_EXISTING_ALLOWED) {
+        sayDebug("Discarding query [ $query ]");
+        return GenTest::Result->new(
+            query      => $query,
+            status     => STATUS_SKIP,
+            err        => undef,
+            errstr     => "Internal error, required object not found",
+            sqlstate   => undef,
+            start_time => undef,
+            end_time   => undef
+        );
+      } else {
+        sayError("Discarding query [ $query ] and setting STATUS_REQUIREMENT_UNMET");
+        return GenTest::Result->new(
+            query      => $query,
+            status     => STATUS_REQUIREMENT_UNMET,
+            err        => undef,
+            errstr     => "Internal error, required object not found",
+            sqlstate   => undef,
+            start_time => undef,
+            end_time   => undef
+        );
+      }
     }
 
     # Filter out any /*executor */ comments that do not pertain to this particular Executor/DBI
@@ -3151,10 +3167,13 @@ sub loadMetaData {
   my $index_query=
       "SELECT table_schema, table_name, index_name, non_unique XOR 1 ".
       "FROM information_schema.statistics WHERE table_schema $clause";
+  my $proc_query=
+      "SELECT db, name, type, param_list ".
+      "FROM mysql.proc WHERE db $clause";
 
   sayDebug("Metadata reload: Starting reading $metadata_type metadata with condition \"$clause\"");
 
-  my ($schema_metadata, $table_metadata, $column_metadata, $index_metadata);
+  my ($schema_metadata, $table_metadata, $column_metadata, $index_metadata, $proc_metadata);
   my $dbh= $self->serviceDbh();
   $schema_metadata= $dbh->selectall_arrayref($schema_query);
   if (not $dbh->err and $schema_metadata) {
@@ -3165,8 +3184,11 @@ sub loadMetaData {
         $index_metadata= $dbh->selectall_arrayref($index_query);
       }
     }
+    if (not $dbh->err) {
+      $proc_metadata= $dbh->selectall_arrayref($proc_query);
+    }
   }
-  if ($dbh->err or not $schema_metadata or not $table_metadata or not $column_metadata) {
+  if ($dbh->err or not $schema_metadata or not $table_metadata or not $column_metadata or not $proc_metadata) {
     sayError("MetadataReload: Failed to retrieve metadata with condition \"$clause\": " . $dbh->err . " " . $dbh->errstr);
     return undef;
   } else {
@@ -3195,7 +3217,6 @@ sub loadMetaData {
     $meta->{$schema}->{$type}->{$table}->{key}={} if not exists $meta->{$schema}->{$type}->{$table}->{key};
     $tabletype{$schema.'.'.$table}= $type;
   }
-
   foreach my $row (@$column_metadata) {
     my ($schema, $table, $col, $key, $realtype, $maxlength) = @$row;
     my $metatype= lc($realtype);
@@ -3252,6 +3273,17 @@ sub loadMetaData {
     }
   }
 
+  foreach my $row (@$proc_metadata) {
+    my ($schema, $proc, $type, $params) = @$row;
+    # procedure or function
+    $type= lc($type);
+    # params will be just a count for now
+    $params= ()= $params =~ /,/g;
+    $meta->{$schema}={} if not exists $meta->{$schema};
+    $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
+    $meta->{$schema}->{$type}->{$proc}={} if not exists $meta->{$schema}->{$type}->{$proc};
+    $meta->{$schema}->{$type}->{$proc}->{paramnum}= $params;
+  }
   return $meta;
 }
 

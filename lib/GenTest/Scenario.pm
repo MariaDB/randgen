@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2020 MariaDB Corporation Ab
+# Copyright (C) 2017, 2022, MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -28,12 +28,10 @@ use GenTest::Constants;
 use Data::Dumper;
 
 use constant SC_TEST_PROPERTIES        => 1;
-use constant SC_CURRENT_BASEDIR        => 2;
 use constant SC_TYPE                   => 3;
 use constant SC_DETECTED_BUGS          => 4;
 use constant SC_GLOBAL_RESULT          => 5;
 use constant SC_SCENARIO_OPTIONS       => 6;
-use constant SC_PROPERTIES_BACKUP      => 7;
 
 use constant SC_GALERA_DEFAULT_LISTEN_PORT =>  4800;
 
@@ -71,14 +69,6 @@ sub getTestType {
 
 sub setTestType {
   $_[0]->[SC_TYPE]= $_[1];
-}
-
-sub getTestDuration {
-  return $_[0]->getProperty('duration');
-}
-
-sub setTestDuration {
-  return $_[0]->setProperty('duration',$_[1]);
 }
 
 sub getProperties {
@@ -298,16 +288,6 @@ sub prepareServer {
   return $server;
 }
 
-# Scenario can run (consequently or simultaneously) an arbitrary
-# number of test flows. Each flow might potentially have different set
-# of options. $gentest_num indicates which options should be used
-
-sub prepareGentest {
-  my ($self, $gentest_num, $opts)= @_;
-  my $config= $self->getProperties;
-  return GenTest::TestRunner->new(config => $config);
-}
-
 sub addDetectedBug {
   my ($self, $bugnum)= @_;
   $self->[SC_DETECTED_BUGS]->{$bugnum}= (defined $self->[SC_DETECTED_BUGS]->{$bugnum} ? $self->[SC_DETECTED_BUGS]->{$bugnum} + 1 : 1);
@@ -402,11 +382,6 @@ sub setStatus {
   if ($res > $self->[SC_GLOBAL_RESULT]) {
     $self->[SC_GLOBAL_RESULT]= $res;
   }
-  return $self->[SC_GLOBAL_RESULT];
-}
-
-sub getStatus {
-  my $self= shift;
   return $self->[SC_GLOBAL_RESULT];
 }
 

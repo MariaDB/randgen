@@ -1,5 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (C) 2016 MariaDB Corporation AB.
+# Copyright (C) 2016, 2022, MariaDB Corporation AB.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify

@@ -1,5 +1,5 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2021 MariaDB Corporation
+# Copyright (c) 2021, 2022, MariaDB Corporation
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -230,14 +230,6 @@ sub testStart {
   return $_[0]->[REPORTER_TEST_START];
 }
 
-sub reporterStartTime {
-  return $_[0]->[REPORTER_START_TIME];
-}
-
-sub testEnd {
-  return $_[0]->[REPORTER_TEST_END];
-}
-
 sub prng {
   return $_[0]->[REPORTER_PRNG];
 }
@@ -252,13 +244,6 @@ sub properties {
 
 sub serverDebug {
     return $_[0]->[REPORTER_SERVER_DEBUG];
-}
-
-sub customAttribute() {
-  if (defined $_[2]) {
-    $_[0]->[GenTest::Reporter::REPORTER_CUSTOM_ATTRIBUTES]->{$_[1]}=$_[2];
-  }
-  return $_[0]->[GenTest::Reporter::REPORTER_CUSTOM_ATTRIBUTES]->{$_[1]};
 }
 
 sub configure {

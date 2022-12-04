@@ -13,11 +13,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
-#
-# The test should be run with
-# --mysqld=--plugin-load-add=user_variables --mysqld=--loose-user-variables
-#
-
 query:
-  ==FACTOR:0.001== SELECT * FROM INFORMATION_SCHEMA.USER_VARIABLES
+                  SELECT * FROM INFORMATION_SCHEMA.USER_VARIABLES |
+  ==FACTOR:0.01== FLUSH USER_VARIABLES
 ;

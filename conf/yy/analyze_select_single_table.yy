@@ -19,7 +19,7 @@
 # Performs single-table ANALYZE FORMAT=JSON SELECTs
 ########################################################################
 
-#include <conf/rr/basics.rr>
+#include <conf/yy/include/basics.inc>
 
 
 thread1_init:

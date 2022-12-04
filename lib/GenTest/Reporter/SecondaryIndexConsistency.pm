@@ -1,4 +1,4 @@
-# Copyright (C) 2018 MariaDB Corporation Ab. All rights reserved.
+# Copyright (C) 2018, 2022, MariaDB Corporation Ab. All rights reserved.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify

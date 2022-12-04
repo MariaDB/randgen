@@ -20,7 +20,8 @@
 # Purpose:  Grammar for testing fulltext search condition
 #
 # Notes:    This grammar is designed to be used with
-#           gendata=conf/engines/innodb/full_text_search.zz
+#           gendata=conf/zz/full_text_search.zz
+#
 #           Fulltext serach condition can be used on the column on which fulltext
 #           index is defined.
 #
@@ -38,7 +39,7 @@
 #           MySQL-specific syntax variants.
 ################################################################################
 
-#include <conf/rr/basics.rr>
+#include <conf/yy/include/basics.inc>
 
 
 query_init:

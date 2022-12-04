@@ -1,4 +1,4 @@
-#  Copyright (c) 2018, 2021, MariaDB Corporation Ab
+#  Copyright (c) 2018, 2022, MariaDB Corporation Ab
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -20,20 +20,19 @@ query:
 admin_query:
     admin_analyze_or_explain_query
   | admin_flush
-  | admin_show
+  | ==FACTOR:5== admin_show
 ;
 
 admin_analyze_or_explain_query:
-     SHOW EXPLAIN FOR _tinyint_unsigned
-   | SHOW admin_analyze_or_explain admin_format_json FOR { $prng->uint16($executors->[0]->connectionId()-10, $executors->[0]->connectionId()+10) } /* compatibility 10.9.1 */
+  SHOW admin_analyze_or_explain admin_format_json FOR { $prng->uint16($executors->[0]->connectionId()-10, $executors->[0]->connectionId()+10) }
 ;
 
 admin_analyze_or_explain:
-  ANALYZE | EXPLAIN
+  ANALYZE /* compatibility 10.9.1 */ | EXPLAIN
 ;
 
 admin_format_json:
-  | | FORMAT=JSON
+  | | FORMAT=JSON /* compatibility 10.9.1 */
 ;
 
 admin_extended_or_partitions:
@@ -118,7 +117,7 @@ admin_show:
   | SHOW CREATE TABLE _table
   | SHOW CREATE TRIGGER _letter
   | SHOW CREATE USER admin_user_name
-  | SHOW CREATE VIEW _view
+  | SHOW CREATE VIEW _view /* EXECUTOR_FLAG_NON_EXISTING_ALLOWED */
   | SHOW admin_dbs_or_schemas admin_show_like_or_where
   | SHOW ENGINE admin_engine admin_status_or_mutex
   | SHOW admin_storage ENGINES

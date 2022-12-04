@@ -26,7 +26,7 @@
 #
 ########################################################################
 
-#include <conf/rr/basics.rr>
+#include <conf/yy/include/basics.inc>
 #compatibility 10.4.0
 
 #
@@ -72,10 +72,13 @@ create_simple_with_period_init:
   ;; INSERT IGNORE INTO { $new_table } 
      SELECT seq * { $prng->uint16(1,100) }, seq * { $prng->uint16(1,100) }, FROM_UNIXTIME( {$s = $prng->uint16(1,2147483647)}), FROM_UNIXTIME({ $prng->uint16($s,2147483647) }) FROM seq_1_to_100
 ;
-# _runtime variant does CREATE OR REPLACE, to avoid non-ops
+
+# _runtime variant does CREATE OR REPLACE, to avoid non-ops, and
+# CREATE IF NOT EXISTS, to avoid changing metadata too frequently
 #
 create_simple_with_period_runtime:
-  CREATE OR REPLACE TABLE new_table_name (create_definition_for_simple_with_period);
+  __create_or_replace_table_x_create_table_if_not_exists new_table_name (create_definition_for_simple_with_period)
+;
 
 # More flexible table structures for re-creation at runtime
 #
@@ -93,7 +96,7 @@ optional_main_engine:
 ;
 
 create_table_clause:
-    ==FACTOR:10== CREATE __or_replace(95) __temporary(5) TABLE
+    CREATE __or_replace(95) __temporary(5) TABLE
   | CREATE __temporary(5) TABLE __if_not_exists(95)
 ;
 
@@ -224,7 +227,7 @@ app_period_optional_where_clause:
 
 ddl:
                   create_simple_with_period_runtime
-  | ==FACTOR:2==  create_table
+  |               create_table
   | ==FACTOR:10== alter
   |               create_drop_index
 ;
@@ -323,10 +326,9 @@ alter_table_list:
 ;
 
 alter_table_element:
-# Main functionality
-    ==FACTOR:4==  add_drop_period
-  |               add_drop_column
-  |               add_drop_index
+    ==FACTOR:2==    add_drop_period
+  | ==FACTOR:0.1==  add_drop_column
+  |                 add_drop_index
 ;
 
 add_drop_index:

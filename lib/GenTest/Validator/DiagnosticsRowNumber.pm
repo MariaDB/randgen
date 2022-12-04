@@ -1,4 +1,4 @@
-# Copyright (C) 2021 MariaDB Corporation Ab
+# Copyright (C) 2021, 2022, MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

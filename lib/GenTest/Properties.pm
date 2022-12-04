@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights
 # reserved.
-# Copyright (c) 2018, 2021 MariaDB Corporation
+# Copyright (c) 2018, 2022, MariaDB Corporation
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -339,90 +339,12 @@ sub _mergeProps {
     return $result;
 }
 
-sub printHelp {
-    $_[0]->_help;
-}
-
 ## Global print method
 sub printProps {
     my ($self) = @_;
     $Data::Dumper::Maxdepth= 3;
     $Data::Dumper::Sortkeys= 1;
     $Data::Dumper::Ident= 0;
-}
-
-## Remove proerties set to defined
-sub _purgeProps {
-    my ($props) = @_;
-    my $purged = {};
-    foreach my $key (keys %$props) {
-        $purged->{$key} = $props->{$key} if defined $props->{$key};
-    }
-    return $purged;
-}
-
-## Generate a option list from a hash. The hash may be tha name of a
-## property. The prefix may typically be '--' or '--mysqld=--' for
-## Mysql and friends use.
-sub genOpt {
-    my ($self, $prefix, $options) = @_;
-
-    my $hash;
-    if (UNIVERSAL::isa($options,"HASH")) {
-        $hash = $options;
-    } else {
-        $hash = $self->$options;
-    }
-
-    return join(' ', map {$prefix.$_.(defined $hash->{$_}?
-                                      ($hash->{$_} eq ''?
-                                       '':'='.$hash->{$_}):'')} keys %$hash);
-}
-
-## Collect all or specified non-hash/array options into new option string where
-## options are separated by a single space.
-## If an array of strings is passed as second argument, only options specified
-## in the array will be included.
-## If such an array is omitted, all top-level options will be included.
-## A prefix is added to each option, similar to sub genOpt.
-sub collectOpt {
-    # @include is an array specifying property keys to include.
-    # If such a list is not provided, all non-complex properties are included.
-    my ($self, $prefix, @include) = @_;
-    my $props = $self->[PROPS_PROPS];       # all properties (options)
-    my @opts;                               # properties (options) to collect
-
-    if (@include) {
-        foreach my $key (@include) {
-            if (exists $props->{$key}) {
-                if (UNIVERSAL::isa($props->{$key}, "HASH")) {
-                } elsif (UNIVERSAL::isa($props->{$key}, "ARRAY")) {
-                } else {
-                    if (defined $props->{$key} and $props->{$key} ne '') {
-                        push(@opts, $prefix.$key.'='.$props->{$key});
-                    } else {
-                        push(@opts, $prefix.$key);
-                    }
-                }
-            }
-        }
-    } else {
-        # No list of options to include was specified.
-        # Inlcude all top-level options.
-        foreach my $key (keys %$props) {
-            if (UNIVERSAL::isa($props->{$key},"HASH")) {
-            } elsif  (UNIVERSAL::isa($props->{$key},"ARRAY")) {
-            } else {
-            if (defined $props->{$key} and $props->{$key} ne '') {
-                    push(@opts, $prefix.$key.'='.$props->{$key});
-                } else {
-                    push(@opts, $prefix.$key);
-                }
-            }
-        }
-    }
-
-    return join(' ',@opts);
 }
 
 ## Help routine!

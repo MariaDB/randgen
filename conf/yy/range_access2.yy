@@ -51,12 +51,12 @@ range_access2_query:
 ;
 
 select:
-  SELECT distinct * FROM _table index_hint WHERE where order_by /* limit */ |
-  SELECT distinct * FROM _table index_hint WHERE where order_by /* limit */ |
-  SELECT distinct * FROM _table index_hint WHERE where order_by /* limit */ |
-  SELECT distinct * FROM _table index_hint WHERE where order_by /* limit */ |
-  SELECT aggregate int_key ) FROM _table index_hint WHERE where |
-  SELECT int_key , aggregate int_key ) FROM _table index_hint WHERE where GROUP BY 1 ;
+  SELECT distinct * FROM _table index_hint WHERE where order_by_limit |
+  SELECT distinct * FROM _table index_hint WHERE where order_by_limit |
+  SELECT distinct * FROM _table index_hint WHERE where order_by_limit |
+  SELECT distinct * FROM _table index_hint WHERE where order_by_limit |
+  SELECT /* _table[invariant] */ aggregate _field_int_key ) FROM _table[invariant] index_hint WHERE where |
+  SELECT _field_int_key , aggregate _field_int_key ) FROM _table index_hint WHERE where GROUP BY 1 ;
 
 alter_add:
   ALTER TABLE _table ADD KEY key1 ( index_list ) ;
@@ -67,13 +67,16 @@ alter_drop_add:
 distinct:
   | | DISTINCT ;
 
-order_by:
-  | | ORDER BY any_key , `pk` ;
+order_by_limit:
+  ==FACTOR:2== |
+  ORDER BY any_key , _field_pk |
+  ORDER BY _field_list limit ;
 
 limit:
-  | | | | |
-  | LIMIT _digit;
-  | LIMIT _tinyint_unsigned;
+  ==FACTOR:5== |
+  LIMIT _digit |
+  LIMIT _tinyint_unsigned
+;
 
 where:
   where_list and_or where_list ;
@@ -89,17 +92,17 @@ where_two:
   ( string_item or_and string_item );
 
 integer_item:
-  not ( int_key comparison_operator integer_value ) |
-  int_key not BETWEEN integer_value AND integer_value + integer_value |
-  int_key not IN ( integer_list ) |
-  int_key IS not NULL ;
+  not ( _field_int_key comparison_operator integer_value ) |
+  _field_int_key not BETWEEN integer_value AND integer_value + integer_value |
+  _field_int_key not IN ( integer_list ) |
+  _field_int_key IS not NULL ;
 
 string_item:
-  not ( string_key comparison_operator string_value ) |
-  string_key not BETWEEN string_value AND string_value |
-  string_key not LIKE CONCAT (string_value , '%' ) |
-  string_key not IN ( string_list ) |
-  string_key IS not NULL ;
+  not ( _field_char_key comparison_operator string_value ) |
+  _field_char_key not BETWEEN string_value AND string_value |
+  _field_char_key not LIKE CONCAT (string_value , '%' ) |
+  _field_char_key not IN ( string_list ) |
+  _field_char_key IS not NULL ;
 
 aggregate:
   MIN( | MAX( | COUNT( ;
@@ -132,14 +135,9 @@ comparison_operator:
 not:
   | | | | | | NOT ;
 
+# If there are no such keys, the generator will use any field
 any_key:
-  int_key | string_key ;
-
-int_key:
-  _field_int ;
-
-string_key:
-  _field_char ;
+  _field_int_key | _field_char_key ;
 
 index_list:
   index_item  __asc_x_desc(33,33) , index_item  __asc_x_desc(33,33) |
@@ -147,7 +145,7 @@ index_list:
 
 index_item:
   _field | _field |
-  int_key | string_key ( index_length ) ;
+  _field_int_key | _field_char_key ( index_length ) ;
 
 index_length:
   1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;

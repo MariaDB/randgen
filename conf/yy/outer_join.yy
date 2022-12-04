@@ -1,5 +1,6 @@
 # Copyright (C) 2008-2010 Sun Microsystems, Inc. All rights reserved.
 # Use is subject to license terms.
+# Copyright (c) 2022, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,22 +19,9 @@
 ################################################################################
 # outer_join.yy
 # Purpose:  Random Query Generator grammar for testing larger (6 - 10 tables) JOINs
-# Tuning:   Please tweak the rule table_or_joins ratio of table:join for larger joins
-#           NOTE:  be aware that larger (15-20 tables) queries can take far too
-#                  long to run to be of much interest for fast, automated testing
 #
-# Notes:    This grammar is designed to be used with gendata=conf/optimizer/outer_join.zz
-#           It can be altered, but one will likely need field names
-#           Additionally, it is not recommended to use the standard RQG-produced
-#           tables as they way we pick tables can result in the use of
-#           several large tables that will bog down a generated query
-#
-#           Please rely largely on the _portable variant of this grammar if
-#           doing 3-way comparisons as it has altered code that will produce
-#           more standards-compliant queries for use with other DBMS's
-#
-#           We keep the grammar here as it is in order to also test certain
-#           MySQL-specific syntax variants.
+# Notes:    This grammar is designed to be used with gendata=conf/zz/outer_join.zz
+#           or alike (see hardcoded column names)
 ################################################################################
 
 query_init:
@@ -217,7 +205,7 @@ table_disabled:
 
 table:
 # We use the "AS alias" bit here so we can have unique aliases if we use the same table many times
-       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->tables())." AS alias".++$tables;  my @s=($x); $stack->pop(\@s); $x } ;
+       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->tables($last_database))." AS alias".++$tables;  my @s=($x); $stack->pop(\@s); $x } ;
 
 int_field_name:
   `pk` | `col_int_key` | `col_int` ;

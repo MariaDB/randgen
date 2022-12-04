@@ -17,35 +17,6 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-# **NOTE** Joins for this grammar are currently not working as intended.
-# For example, if we have tables 1, 2, and 3, we end up with ON conditions that
-# only involve tables 2 and 3.
-# This will be fixed, but initial attempts at altering this had a negative
-# impact on the coverage the test was providing.  To be fixed when scheduling
-# permits.  We are still seeing significant coverage with the grammar as-is.
-
-################################################################################
-# recommendations:
-#     queries: 10k+.  We can see a lot with lower values, but over 10k is
-#    best.  The intersect optimization happens with low frequency
-#    so larger values help us to hit it at least some of the time
-#     engines: MyISAM *and* Innodb.  Certain optimizations are only hit with
-#    one engine or another and we should use both to ensure we
-#    are getting maximum coverage
-#     Validators:  ResultsetComparatorSimplify
-#        - used on server-server comparisons
-#      Transformer - used on a single server
-#        - creates equivalent versions of a single query
-#      SelectStability - used on a single server
-#        - ensures the same query produces stable result sets
-################################################################################
-
-################################################################################
-# The perl code in {} helps us with bookkeeping for writing more sensible
-# queries.  We need to keep track of these items to ensure we get interesting
-# and stable queries that find bugs rather than wondering if our query is
-# dodgy.
-################################################################################
 
 #features:
   multi-update/delete ;
@@ -54,7 +25,12 @@ query_init:
   { $total_dur = 0; "" };
 
 query:
-  { @nonaggregates = () ; %tables = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; _set_db('user') } multi_main_dml ;
+  { @nonaggregates = () ; %tables = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0; '' } multi_query ;
+
+multi_query:
+  { _set_db('user') }   multi_main_dml |
+  { _set_db('simple_db') } multi_update_delete
+;
 
 multi_main_dml:
     ==FACTOR:10== multi_main_update |
@@ -114,7 +90,10 @@ multi_main_delete:
 explain_extended:
   | | | | | | | | | explain_extended2 ;
 
-explain_extended2: | | | | EXPLAIN | EXPLAIN EXTENDED ;
+# Disabled due to MDEV-16694
+explain_extended2:
+#  | | | | EXPLAIN | EXPLAIN EXTENDED
+;
 
 distinct: DISTINCT | | | | | | | | | ;
 
@@ -967,3 +946,207 @@ _digit:
 
 limit_size:
   1 | 2 | 10 | 100 | 1000;
+
+
+########################################################################
+########################################################################
+# Formerly contents of a different multi-update grammar
+########################################################################
+
+multi_update_delete:
+  START TRANSACTION ;; multi_update_or_delete ;; ROLLBACK ;
+
+multi_update_or_delete:
+  main_update | main_update ;
+
+main_update:
+  explain_extended UPDATE priority_update ignore
+  outer_table_join_with_set_where_subquery_expression ;
+
+main_delete:
+  delete1 | delete1 | delete2 | delete2 ;
+
+delete1:
+  explain_extended DELETE priority_update quick ignore
+  delete_tab
+  FROM non_comma_join
+  WHERE subquery_expression_with_alias;
+
+delete2:
+  explain_extended DELETE priority_update quick ignore
+  FROM delete_tab
+  USING non_comma_join
+        
+
+delete_tab:
+  OUTR1.* | OUTR1.*, OUTR2.* ;
+
+priority_update:
+  | LOW_PRIORITY ;
+
+ignore:
+  | | | | | | IGNORE ;
+
+quick:
+  | | | | | | | | | | QUICK ;
+
+outer_table_join_with_set_where_subquery_expression:
+  non_comma_join set_update_with_alias WHERE subquery_expression_with_alias |
+  non_comma_join set_update_with_alias WHERE subquery_expression_with_alias |
+  non_comma_join set_update_with_alias WHERE subquery_expression_with_alias |
+  non_comma_join set_update_with_alias WHERE subquery_expression_with_alias |
+  non_comma_join set_update_with_alias WHERE subquery_expression_with_alias |
+  non_comma_join set_update_with_alias WHERE subquery_expression_with_alias |
+  comma_join set_update_without_alias WHERE subquery_expression_without_alias |
+  comma_join set_update_without_alias WHERE subquery_expression_without_alias |
+  comma_join set_update_without_alias WHERE subquery_expression_without_alias |
+  comma_join set_update_without_alias WHERE subquery_expression_without_alias;
+
+non_comma_join:
+  o_tab AS OUTR1 join o_tab AS OUTR2 ON ( outer_join_condition ) |
+  o_tab AS OUTR1 join o_tab AS OUTR2 ON ( outer_join_condition ) join o_tab AS OUTR3 ON ( outer_join_condition2 ) ;
+
+comma_join:
+  o_tab AS OUTR1, o_tab AS OUTR2 ;
+#  o_tab AS OUTR1, o_tab AS OUTR2 WHERE ( outer_join_condition ) ;
+
+join:
+  JOIN | RIGHT JOIN | LEFT JOIN | INNER JOIN | RIGHT OUTER JOIN | LEFT OUTER JOIN ;
+
+outer_join_condition:
+  OUTR1 . int_field_name = OUTR2 . int_field_name |
+  OUTR1 . date_field_name = OUTR2 . date_field_name |
+  OUTR1 . char_field_name = OUTR2 . char_field_name ;
+
+outer_join_condition2:
+  OUTR1 . int_field_name = OUTR3 . int_field_name |
+  OUTR1 . date_field_name = OUTR3 . date_field_name |
+  OUTR1 . char_field_name = OUTR3 . char_field_name ;
+
+set_update_with_alias:
+  SET OUTR1.set_field_name = value2 |
+  SET OUTR1.set_field_name = value2, OUTR2.set_field_name = value2 ;
+
+set_update_without_alias:
+  SET OUTR1.char_field_name = value2 |
+  SET OUTR1.char_field_name = value2, OUTR2.char_field_name = value2 ;
+
+subquery_expression_with_alias:
+  OUTR1 . int_field_name arithmetic_operator ( SELECT __distinct(50) INNR1 . int_field_name AS y select_inner_body ) |
+  OUTR1 . char_field_name arithmetic_operator ( SELECT __distinct(50) INNR1 . char_field_name AS y select_inner_body ) |
+  OUTR1 . int_field_name membership_operator ( SELECT __distinct(50) INNR1 . int_field_name AS y select_inner_body ) |
+  OUTR1 . char_field_name membership_operator ( SELECT __distinct(50) INNR1 . char_field_name AS y select_inner_body ) |
+  OUTR1 . int_field_name not IN ( SELECT __distinct(50) INNR1 . int_field_name AS y select_inner_body ) |
+  OUTR1 . int_field_name not IN ( SELECT __distinct(50) INNR1 . int_field_name AS y select_inner_body ) |
+  OUTR1 . char_field_name not IN ( SELECT __distinct(50) INNR1 . char_field_name AS y select_inner_body ) |
+  OUTR1 . char_field_name not IN ( SELECT __distinct(50) INNR1 . char_field_name AS y select_inner_body ) |
+  ( OUTR1 . int_field_name , OUTR1 . int_field_name ) not IN ( SELECT __distinct(50) INNR1 . int_field_name AS x , INNR1 . int_field_name AS y select_inner_body ) |
+  ( OUTR1 . int_field_name , OUTR1 . int_field_name ) not IN ( SELECT __distinct(50) INNR1 . int_field_name AS x , INNR1 . int_field_name AS y select_inner_body ) |
+  ( OUTR1 . char_field_name , OUTR1 . char_field_name ) not IN ( SELECT __distinct(50) INNR1 . char_field_name AS x , INNR1 . char_field_name AS y select_inner_body ) |
+  ( OUTR1 . char_field_name , OUTR1 . char_field_name ) not IN ( SELECT __distinct(50) INNR1 . char_field_name AS x , INNR1 . char_field_name AS y select_inner_body ) |
+  ( _digit, _digit ) not IN ( SELECT __distinct(50) INNR1 . int_field_name AS x , INNR1 . int_field_name AS y select_inner_body ) |
+  ( _char, _char ) not IN ( SELECT __distinct(50) INNR1 . char_field_name AS x , INNR1 . char_field_name AS y select_inner_body ) |
+  (_digit, _digit ) not IN ( SELECT __distinct(50) INNR1 . int_field_name AS x , INNR1 . int_field_name AS y select_inner_body ) |
+  ( _char, _char ) not IN ( SELECT __distinct(50) INNR1 . char_field_name AS x , INNR1 . char_field_name AS y select_inner_body ) |
+  OUTR1 . int_field_name membership_operator int_single_union_subquery |
+  OUTR1 . char_field_name membership_operator char_single_union_subquery ;
+
+subquery_expression_without_alias:
+  OUTR1.int_field_name not IN ( SELECT __distinct(50) INNR1 . int_field_name AS y select_inner_body_without_alias ) |
+  OUTR1.char_field_name not IN ( SELECT __distinct(50) INNR1 . char_field_name AS y select_inner_body_without_alias) |
+  OUTR1.int_field_name arithmetic_operator ( SELECT __distinct(50) INNR1 . int_field_name AS y select_inner_body ) |
+  OUTR1.char_field_name arithmetic_operator ( SELECT __distinct(50) INNR1 . char_field_name AS y select_inner_body ) |
+   OUTR1.int_field_name membership_operator ( SELECT __distinct(50) INNR1 . int_field_name AS y select_inner_body ) |
+  OUTR1.char_field_name membership_operator ( SELECT __distinct(50) INNR1 . char_field_name AS y select_inner_body ) |
+  ( OUTR1.int_field_name, OUTR1.int_field_name ) not IN ( SELECT __distinct(50) INNR1 . int_field_name AS x , INNR1 . int_field_name AS y select_inner_body ) |
+  ( OUTR1.char_field_name, OUTR1.char_field_name ) not IN ( SELECT __distinct(50) INNR1 . char_field_name AS x , INNR1 . char_field_name AS y select_inner_body ) |
+  ( _digit, _digit ) not IN ( SELECT __distinct(50) INNR1 . int_field_name AS x , INNR1 . int_field_name AS y select_inner_body ) |
+  ( _char, _char ) not IN ( SELECT __distinct(50) INNR1 . char_field_name AS x , INNR1 . char_field_name AS y select_inner_body ) |
+  OUTR1.int_field_name membership_operator int_single_union_subquery |
+  OUTR1.char_field_name membership_operator char_single_union_subquery ;
+
+select_inner_body:
+  FROM inner_from
+  WHERE inner_condition_top
+  inner_order_by ;
+
+select_inner_body_without_alias:
+  FROM inner_from
+  WHERE inner_condition_top1
+  inner_order_by ;
+
+inner_from:
+  i_tab AS INNR1 |
+  i_tab AS INNR2 join i_tab AS INNR1 ON ( inner_join_condition );
+
+inner_order_by:
+  | ORDER BY INNR1 . field_name ;
+
+inner_join_condition:
+  INNR2 . int_field_name arithmetic_operator INNR1 . int_field_name |
+  INNR2 . char_field_name arithmetic_operator INNR1 . char_field_name |
+  INNR2 . date_field_name arithmetic_operator INNR1 . date_field_name ;
+
+inner_condition_top:
+  INNR1 . expression |
+  OUTR1 . expression |
+  inner_condition_bottom logical_operator inner_condition_bottom |
+  inner_condition_bottom logical_operator outer_condition_bottom ;
+
+inner_condition_top1:
+  INNR1 . expression |
+  inner_condition_bottom logical_operator inner_condition_bottom ;
+
+expression:
+  field_name null_operator |
+  int_field_name int_expression |
+  date_field_name date_expression |
+  char_field_name char_expression ;
+
+int_expression:
+  arithmetic_operator _digit ;
+
+date_expression:
+  arithmetic_operator date | BETWEEN date AND date ;
+
+char_expression:
+  arithmetic_operator _varchar(1) ;
+
+inner_condition_bottom:
+  INNR1 . expression |
+  INNR1 . int_field_name arithmetic_operator INNR1 . int_field_name |
+  INNR1 . date_field_name arithmetic_operator INNR1 . date_field_name |
+  INNR1 . char_field_name arithmetic_operator INNR1 . char_field_name ;
+
+outer_condition_bottom:
+  OUTR2 . expression ;
+
+null_operator:
+  IS NULL | IS NOT NULL ;
+
+logical_operator:
+  AND | OR | OR NOT | XOR | AND NOT ;
+
+field_name:
+  int_field_name | char_field_name | date_field_name;
+
+int_field_name:
+  `pk` | `col_int_key` | `col_int_nokey` ;
+
+date_field_name:
+  `col_date_key` | `col_date_nokey` | `col_datetime_key` | `col_datetime_nokey` ;
+
+char_field_name:
+  `col_varchar_key` | `col_varchar_nokey` ;
+
+set_field_name:
+  `col_int_nokey` | `col_int_key` | `col_varchar_nokey` | `col_varchar_key` ;
+
+o_tab:
+  A | B | C | D | E ;
+
+i_tab:
+  AA | BB | CC | DD ;
+
+value2:
+  _data | _data | _varchar(256) | _varchar(1024) | _char(256) | _char(1024) | _english | _english | NULL | NULL | 0 | 1 | -1 ;

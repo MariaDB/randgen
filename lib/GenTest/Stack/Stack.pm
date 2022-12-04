@@ -28,7 +28,6 @@ use GenTest::Stack::StackFrame;
 use Data::Dumper;
 
 use constant FRAME_NO  => 0;
-use constant FRAMES  => 1;
 
 1;
 

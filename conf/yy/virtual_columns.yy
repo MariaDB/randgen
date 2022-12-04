@@ -29,22 +29,20 @@
 # create a valid table
 #
 query_init:
+  CREATE DATABASE IF NOT EXISTS test ;; { _set_db('test') }
   drop_table ;; create_table ;; create_table ;; create_table ;
 
 query:
- { _set_db('user') } virtual_columns_query ;
+ { _set_db('test') } virtual_columns_query ;
 
 virtual_columns_query:
-  drop_table ; create_table ; create_table ; create_table | create_table |
-  select_dml | select_dml | select_dml | select_dml | select_dml |
-  select_dml | select_dml | select_dml | select_dml | select_dml |
-  select_dml | select_dml | select_dml | select_dml | select_dml |
-  select_dml | select_dml | select_dml | select_dml | select_dml |
-  select_dml | select_dml | select_dml | select_dml | select_dml |
-  select_dml | select_dml | select_dml | select_dml | select_dml ;
+  drop_table ;; create_table ;; create_table ;; create_table |
+  create_table |
+  ==FACTOR:30== select_dml ;
 
 select_dml:
-  select | dml | dml | dml | dml | dml ;
+  select |
+  ==FACTOR:5== dml ;
 
 drop_table:
   DROP TABLE IF EXISTS X ;

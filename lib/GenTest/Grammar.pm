@@ -38,6 +38,7 @@ use constant GRAMMAR_STRING    => 2;
 use constant GRAMMAR_FEATURES  => 3;
 use constant GRAMMAR_REDEFINES => 4;
 use constant GRAMMAR_SERVER_VERSION_COMPATIBILITY => 5;
+use constant GRAMMAR_WEIGHT    => 5;
 
 1;
 
@@ -57,6 +58,14 @@ sub new {
     ? versionN6($grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY])
     : '000000'
   );
+  # A grammar file can optionally end with :number. It indicates
+  # the relative weight of the grammar among all configured grammars.
+  # The weights will be normalized after all grammar parsing
+  if ($grammar->[GRAMMAR_FILE] =~ s/:([\d\.]+)$//) {
+    $grammar->[GRAMMAR_WEIGHT]= $1
+  } else {
+    $grammar->[GRAMMAR_WEIGHT]= 1;
+  }
 
   if (defined $grammar->file()) {
     my $parse_result = $grammar->parseFromFile($grammar->file());
@@ -66,6 +75,10 @@ sub new {
   sayDebug("Found features @{$grammar->[GRAMMAR_FEATURES]}");
 
   return $grammar;
+}
+
+sub weight {
+  return $_[0]->[GRAMMAR_WEIGHT];
 }
 
 sub file {
@@ -389,38 +402,6 @@ sub rule {
 
 sub rules {
   return $_[0]->[GRAMMAR_RULES];
-}
-
-# Deletes from all grammars
-sub deleteRule {
-  delete $_[0]->[GRAMMAR_RULES]->{$_[1]};
-}
-
-sub cloneRule {
-  my ($grammar, $old_rule_name, $new_rule_name) = @_;
-
-  # Rule consists of
-  # rule_name
-  # pointer to array called components
-  #   An element of components is a pointer to an array of component_parts
-
-  my $components = $grammar->[GRAMMAR_RULES]->{$old_rule_name}->[1];
-
-  my @new_components;
-  for (my $idx=$#$components; $idx >= 0; $idx--) {
-    my $component = $components->[$idx];
-    my @new_component_parts = @$component;
-    # We go from the highest index to the lowest.
-    # So "push @new_components , \@new_component_parts ;" would give the wrong order
-    unshift @new_components , \@new_component_parts ;
-  }
-
-  my $new_rule = GenTest::Grammar::Rule->new(
-    name => $new_rule_name,
-    components => \@new_components
-  );
-  $grammar->[GRAMMAR_RULES]->{$new_rule_name} = $new_rule;
-
 }
 
 #

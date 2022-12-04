@@ -30,7 +30,7 @@ query_init:
   ;; CREATE DATABASE IF NOT EXISTS fed_db_remote
   ;; CREATE USER IF NOT EXISTS fed_user@'127.0.0.1' IDENTIFIED BY 'FdrUs3r!pw'
   ;; GRANT ALL ON *.* TO fed_user@'127.0.0.1'
-  ;; SET STATEMENT binlog_format=statement FOR INSERT INTO mysql.servers (Server_name, Host, Db, Username, Password, Port, Wrapper) VALUES ('fedlink','127.0.0.1','fed_db_remote','fed_user','FdrUs3r!pw',@@port,'mysql')
+  ;; SET STATEMENT binlog_format=statement FOR INSERT IGNORE INTO mysql.servers (Server_name, Host, Db, Username, Password, Port, Wrapper) VALUES ('fedlink','127.0.0.1','fed_db_remote','fed_user','FdrUs3r!pw',@@port,'mysql')
   ;; FLUSH PRIVILEGES
      { @remote_tables= (); '' }
   ;; create_remote_table_init ;; create_remote_table_init ;; create_remote_table_init

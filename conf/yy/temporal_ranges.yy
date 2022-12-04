@@ -17,34 +17,17 @@
 # USA
 
 ########################################################################
-# This is a simple grammar for testing the range optimizer, index_merge and sort_union
-# It is based on the following principles:
+# This is a simple grammar derived from range_access2, based on the same
+# principles but using temporal ranges only.
 #
-# * No embedded perl and attempts to create balanced expressions
-#
-# * Limited nesting (no runaway recursive nesting), with fixed depth of 2 levels
-#
-# * Using indexed columns exclusively in order to provide a lot of optimizable expressions
-#
-# * No joins, in order to enable larger tables without runaway queries, suitable for benchmarking and
-#  avoiding situations where the optimizer would choose a full table scan due to a very small table
-#
-# * A smaller set of indexes in order to provide more range overlap and intersection opportunities
-#
-# * Both wide and narrow ranges in BETWEEN
-#
-# * Preference for equality expressions in order to provide ranges that actually consist of a single value
-#
-# * Reduced usage of NOT in order to avoid expressions that match most of the table
-#
-# * Use of FORCE KEY in order to prevent full table scans as much as possible
+# It should be used with a temporal-rich dataset, e.g. temporal.zz
 ########################################################################
 
 query_init:
-  alter_add ;; alter_add ;; alter_add ;; alter_add ;; alter_add ;
+  { _set_db('temporal_db') } alter_add ;; alter_add ;; alter_add ;; alter_add ;; alter_add ;
 
 query:
-  { _set_db('user') } temporal_ranges_query ;
+  { _set_db('temporal_db') } temporal_ranges_query ;
 
 temporal_ranges_query:
   alter_drop_add |

@@ -25,35 +25,13 @@
 
 ################################################################################
 # optimizer_subquery.yy:  Random Query Generator grammar for testing subquery  #
-#                    optimizations.  This grammar *should* hit the             #
-#                    optimizations listed here:                                #
-#                    https://inside.mysql.com/wiki/Optimizer_grammar_worksheet #
-# see:  WL#5006 Random Query Generator testing of Azalea Optimizer- subqueries #
-#       https://intranet.mysql.com/worklog/QA-Sprint/?tid=5006                 #
-#                                                                              #
-# recommendations:                                                             #
-#       queries: 10k+.  We can see a lot with lower values, but over 10k is    #
-#                best.  The intersect optimization happens with low frequency  #
-#                so larger values help us to hit it at least some of the time  #
-#       engines: MyISAM *and* Innodb.  Certain optimizations are only hit with #
-#                one engine or another and we should use both to ensure we     #
-#                are getting maximum coverage                                  #
-#       Validators:  ResultsetComparatorSimplify                               #
-#                      - used on server-server comparisons                     #
-#                    Transformer - used on a single server                     #
-#                      - creates equivalent versions of a single query         #
-#                    SelectStability - used on a single server                 #
-#                      - ensures the same query produces stable result sets    #
+#                         optimizations.                                       #
+#                         Requires simple dataset with views, or alike         #
+#                        (see hardcoded table and column names)                #
 ################################################################################
 
-################################################################################
-# The perl code in {} helps us with bookkeeping for writing more sensible      #
-# queries.  We need to keep track of these items to ensure we get interesting  #
-# and stable queries that find bugs rather than wondering if our query is      #
-# dodgy.                                                                       #
-################################################################################
 query:
-  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $subquery_idx=0 ; $child_subquery_idx=0 ; _set_db('user') } main_select ;
+  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $subquery_idx=0 ; $child_subquery_idx=0 ; _set_db('simple_db') } main_select ;
 
 main_select:
         simple_select | simple_select | simple_select | simple_select |
@@ -61,7 +39,7 @@ main_select:
         aggregate_select ;
 
 mixed_select:
-  explain_extended SELECT distinct straight_join select_option select_list
+  explain_extended SELECT /* _table */ distinct straight_join select_option select_list
   FROM join_list
   where_clause
   group_by_clause
@@ -69,7 +47,7 @@ mixed_select:
   order_by_clause ;
 
 simple_select:
-        explain_extended SELECT distinct straight_join select_option simple_select_list
+        explain_extended SELECT /* _table */ distinct straight_join select_option simple_select_list
         FROM join_list
         where_clause
         optional_group_by
@@ -77,7 +55,7 @@ simple_select:
         order_by_clause ;
 
 aggregate_select:
-        explain_extended SELECT distinct straight_join select_option aggregate_select_list
+        explain_extended SELECT /* _table */ distinct straight_join select_option aggregate_select_list
         FROM join_list
         where_clause
         optional_group_by

@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2020 MariaDB Corporation Ab
+# Copyright (C) 2017, 2022 MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -86,43 +86,6 @@ sub switch_to_new_server {
   my $srvspec= $self->getProperty('server_specific');
   $srvspec->{1}= $self->new_server_options();
   $self->setProperty('server_specific',$srvspec);
-}
-
-sub compare_autoincrements {
-  my ($self, $old_autoinc, $new_autoinc)= @_;
-#  say("Comparing auto-increment data between old and new servers...");
-
-  if (not $old_autoinc and not $new_autoinc) {
-      say("No auto-inc data for old and new servers, skipping the check");
-      return STATUS_OK;
-  }
-  elsif ($old_autoinc and ref $old_autoinc eq 'ARRAY' and (not $new_autoinc or ref $new_autoinc ne 'ARRAY')) {
-      sayError("Auto-increment data for the new server is not available");
-      return STATUS_CONTENT_MISMATCH;
-  }
-  elsif ($new_autoinc and ref $new_autoinc eq 'ARRAY' and (not $old_autoinc or ref $old_autoinc ne 'ARRAY')) {
-      sayError("Auto-increment data for the old server is not available");
-      return STATUS_CONTENT_MISMATCH;
-  }
-  elsif (scalar @$old_autoinc != scalar @$new_autoinc) {
-      sayError("Different number of tables in auto-incement data. Old server: ".scalar(@$old_autoinc)." ; new server: ".scalar(@$new_autoinc));
-      return STATUS_CONTENT_MISMATCH;
-  }
-  else {
-    foreach my $i (0..$#$old_autoinc) {
-      my $to = $old_autoinc->[$i];
-      my $tn = $new_autoinc->[$i];
-#      say("Comparing auto-increment data. Old server: @$to ; new server: @$tn");
-
-      # 0: table name; 1: table auto-inc; 2: column name; 3: max(column)
-      if ($to->[0] ne $tn->[0] or $to->[2] ne $tn->[2] or $to->[3] != $tn->[3] or ($tn->[1] != $to->[1] and $tn->[1] != $tn->[3]+1))
-      {
-        $self->addDetectedBug(13094);
-        sayError("Difference found:\n  old server: table $to->[0]; autoinc $to->[1]; MAX($to->[2])=$to->[3]\n  new server: table $tn->[0]; autoinc $tn->[1]; MAX($tn->[2])=$tn->[3]");
-        return STATUS_CUSTOM_OUTCOME;
-      }
-    }
-  }
 }
 
 sub collectAclData {

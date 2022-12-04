@@ -35,6 +35,7 @@ require Exporter;
   FETCH_METHOD_USE_RESULT
   EXECUTOR_FLAG_SILENT
   EXECUTOR_FLAG_SKIP_STATS
+  EXECUTOR_FLAG_NON_EXISTING_ALLOWED
 );
 
 use strict;
@@ -66,8 +67,6 @@ use constant EXECUTOR_FLAGS      => 18;
 use constant EXECUTOR_END_TIME      => 21;
 use constant EXECUTOR_CURRENT_USER      => 22;
 use constant EXECUTOR_VARDIR => 27;
-use constant EXECUTOR_META_FILE_SIZE => 28;
-use constant EXECUTOR_META_LOCATION => 29;
 use constant EXECUTOR_META_LAST_CHECK => 30;
 use constant EXECUTOR_META_LAST_LOAD_OK => 31;
 use constant EXECUTOR_META_RELOAD_INTERVAL => 32;
@@ -86,6 +85,7 @@ use constant FETCH_METHOD_USE_RESULT  => 2;
 
 use constant EXECUTOR_FLAG_SILENT  => 1;
 use constant EXECUTOR_FLAG_SKIP_STATS => 2;
+use constant EXECUTOR_FLAG_NON_EXISTING_ALLOWED => 4;
 
 use constant EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL => 60;
 
@@ -252,12 +252,6 @@ sub sqltrace {
     return $self->[EXECUTOR_SQLTRACE];
 }
 
-sub noErrFilter {
-    my ($self, $no_err_filter) = @_;
-    $self->[EXECUTOR_NO_ERR_FILTER] = $no_err_filter if defined $no_err_filter;
-    return $self->[EXECUTOR_NO_ERR_FILTER];
-}
-
 sub end_time {
   return $_[0]->[EXECUTOR_END_TIME];
 }
@@ -270,16 +264,8 @@ sub id {
   return $_[0]->[EXECUTOR_ID];
 }
 
-sub setId {
-  $_[0]->[EXECUTOR_ID] = $_[1];
-}
-
 sub vardir {
   return $_[0]->[EXECUTOR_VARDIR];
-}
-
-sub setVardir {
-  $_[0]->[EXECUTOR_VARDIR]= $_[1];
 }
 
 sub fetchMethod {
@@ -314,17 +300,6 @@ my %class2status = (
                                    # violation
 
     );
-
-sub findStatus {
-    my ($self, $state) = @_;
-
-    my $class = substr($state, 0, 2);
-    if (defined $class2status{$class}) {
-        return $class2status{$class};
-    } else {
-        return STATUS_UNKNOWN_ERROR;
-    }
-}
 
 sub defaultSchema {
     my ($self, $schema) = @_;
@@ -443,6 +418,34 @@ sub metaAllSchemas {
     return [ @{$self->metaUserSchemas()}, @{$self->metaSystemSchemas()} ];
 }
 
+sub metaAllNonEmptySchemas {
+    my $self= shift;
+    return [ @{$self->metaNonEmptyUserSchemas()}, @{$self->metaSystemSchemas()} ];
+}
+
+sub metaNonEmptyUserSchemas {
+    my $self= shift;
+    $self->cacheMetaData();
+    if (not defined $self->[EXECUTOR_META_CACHE]->{NON_EMPTY_USER_SCHEMAS}) {
+        my $schemas = [sort keys %{$self->[EXECUTOR_SCHEMA_METADATA]}];
+        if (not defined $schemas or $#$schemas < 0) {
+            croak "No schemas found\n";
+        };
+        my @schemas;
+        foreach my $s (@$schemas) {
+          $s= 'information_schema' if lc($s) eq 'information_schema';
+          if ($s !~ /^(?:mysql|performance_schema|information_schema|sys_schema|sys)$/) {
+            my $tables= $self->metaTables($s);
+            if ($tables->[0] ne '!non_existing_table') {
+              push @schemas, $s;
+            }
+          }
+        }
+        $self->[EXECUTOR_META_CACHE]->{NON_EMPTY_USER_SCHEMAS} = [ @schemas ];
+    }
+    return $self->[EXECUTOR_META_CACHE]->{NON_EMPTY_USER_SCHEMAS};
+}
+
 sub metaUserSchemas {
     my $self= shift;
     $self->cacheMetaData();
@@ -498,6 +501,7 @@ sub metaTables {
         if (not defined $tables or $#$tables < 0) {
           if ($forced) {
             sayWarning "Schema '$schema' has no tables";
+            croak;
             $tables = [ '!non_existing_table' ];
           } else {
             $self->forceMetadataReload();
@@ -505,6 +509,58 @@ sub metaTables {
           }
         }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+}
+
+sub metaProcedures {
+    my ($self, $schema, $forced) = @_;
+    $self->cacheMetaData();
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
+    my $cachekey = "PROC-$schema";
+
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey})
+    {
+        my $proc = [sort ( keys %{$meta->{$schema}->{procedure}} )];
+        if (not defined $proc or $#$proc < 0) {
+          if ($forced) {
+            sayWarning "Schema '$schema' has no procedures";
+            $proc = [ '!non_existing_procedure' ];
+          } else {
+            $self->forceMetadataReload();
+            return $self->metaProcedures($schema, 1);
+          }
+        }
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $proc;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+}
+
+sub metaFunctions {
+    my ($self, $schema, $forced) = @_;
+    $self->cacheMetaData();
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
+    my $cachekey = "FUNC-$schema";
+
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey})
+    {
+        my $functions = [sort ( keys %{$meta->{$schema}->{function}} )];
+        if (not defined $functions or $#$functions < 0) {
+          if ($forced) {
+            sayWarning "Schema '$schema' has no functions";
+            $functions = [ '!non_existing_function' ];
+          } else {
+            $self->forceMetadataReload();
+            return $self->metaFunctions($schema, 1);
+          }
+        }
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $functions;
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }
@@ -523,6 +579,26 @@ sub metaBaseTables {
         if (not defined $tables or $#$tables < 0) {
             sayWarning "Schema '$schema' has no base tables";
             $tables = [ '!non_existing_base_table' ];
+        }
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+}
+
+sub metaSequences {
+    my ($self, $schema) = @_;
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+
+    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
+    $schema='information_schema' if lc($schema) eq 'information_schema';
+
+    my $cachekey = "SEQ-$schema";
+
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my $tables = [sort keys %{$meta->{$schema}->{sequence}}];
+        if (not defined $tables or $#$tables < 0) {
+            sayWarning "Schema '$schema' has no sequences";
+            $tables = [ '!non_existing_sequence' ];
         }
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
     }
@@ -615,7 +691,7 @@ sub _metaFindTable {
       }
     }
     sayWarning("metaFindTable: Could not find table $table in any schema");
-    return undef;
+    return ('!non_existing_table','!non_existing_schema');
 }
 
 sub metaIndexes {
@@ -983,22 +1059,6 @@ sub baseTables {
     return $self->metaBaseTables(@args);
 }
 
-sub versionedTables {
-    my ($self, @args) = @_;
-    return $self->metaVersionedTables(@args);
-}
-
-sub tableColumns {
-    my ($self, @args) = @_;
-    return $self->metaColumns(@args);
-}
-
-sub columnRealType {
-    my ($self, $column, @args) = @_;
-    my $col_info = $self->metaColumnInfo(@args);
-    return $col_info->{$column}->[2];
-}
-
 sub columnMetaType {
     my ($self, $column, @args) = @_;
     my $col_info = $self->metaColumnInfo(@args);
@@ -1009,6 +1069,15 @@ sub columnMaxLength {
     my ($self, $column, @args) = @_;
     my $col_info = $self->metaColumnInfo(@args);
     return ${$col_info->{$column}}[3];
+}
+
+sub databaseExists {
+  my ($self, $db, @args) = @_;
+  my @dbs= @{$self->metaAllSchemas(@args)};
+  foreach (@dbs) {
+    return 1 if $_ eq $db;
+  }
+  return 0;
 }
 
 1;

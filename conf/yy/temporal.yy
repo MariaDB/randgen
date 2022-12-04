@@ -18,16 +18,14 @@
 ########################################################################
 
 query:
-  { _set_db('user') } temporal_query ;
+  { $col = 0 ; $in_having = 0; _set_db('user') } temporal_query ;
 
 temporal_query:
-  { $col = 1 ; return "" } SELECT select_list FROM _table WHERE where_list order_by |
-  INSERT INTO _table ( _field ) VALUE ( datetime_expr ) |
-  INSERT INTO _table ( _field ) VALUE ( datetime_expr ) |
-  INSERT INTO _table ( _field ) VALUE ( datetime_expr ) |
-  INSERT INTO _table ( _field ) VALUE ( datetime_expr ) |
-  UPDATE _table SET _field = datetime_expr WHERE where_list |
-  DELETE FROM _table WHERE where_list ORDER BY pk LIMIT 1
+               SELECT /* _table[invariant] */ select_list FROM _table[invariant] WHERE where_list having order_by |
+  ==FACTOR:2== __insert_ignore_x_replace(90) INTO _table ( _field ) VALUE ( datetime_expr ) |
+  ==FACTOR:2== __insert_ignore_x_replace(90) INTO _table ( _field ) VALUE ( datetime_expr ) |
+  ==FACTOR:2== UPDATE __ignore(95) _table SET _field = datetime_expr WHERE where_list |
+               DELETE FROM _table WHERE where_list ORDER BY _field_list LIMIT 1
 ;
 
 select_list:
@@ -36,8 +34,8 @@ select_list:
   select_item , select_item ;
 
 select_item:
-  _field AS { 'c'.$col++ } |
-  datetime_expr AS { 'c'.$col++ } ;
+  _field AS { 'c'.(++$col) } |
+  datetime_expr AS { 'c'.(++$col) } ;
 
 where_list:
   where_item |
@@ -50,17 +48,13 @@ where_item:
   datetime_expr IS not NULL ;
 
 order_by:
-  |
-  ORDER BY field_list |
+  ==FACTOR:5== |
+  ORDER BY _field_list |
   ORDER BY 1 ;
 
 having:
-  |
-  HAVING datetime_expr ;
-
-field_list:
-  _field , field_list |
-  _field , _field ;
+  ==FACTOR:5== |
+  { $in_having=1; '' } HAVING datetime_expr ;
 
 comp_op:
   = | < | > | != | <> |  <=> | >= | <= ;
@@ -98,16 +92,17 @@ arg_any_list:
 arg_any:
   arg_datetime |
   # arg_time |
+  string_func |
   arg_date | datetime_func | datetime_field ;
 
 arg_integer:
-  _tinyint_unsigned | digit | integer_func | integer_field ;
+  _tinyint_unsigned | _digit | integer_func | integer_field ;
 
 integer_field:
-  _field ;
+  { $in_having ? 'c'.$prng->uint16(1,$col) : '_field_int' } ;
 
 datetime_field:
-  _field ;
+  { $in_having ? 'c'.$prng->uint16(1,$col) : '_field_datetime' } ;
 
 arg_unix:
   _integer_unsigned ;
@@ -123,6 +118,9 @@ arg_tz:
 
 arg_hour:
   _digit | 24 | _tinyint_unsigned | integer_func | 24 ;
+
+arg_month:
+  _digit | 12 | _tinyint_unsigned | integer_func ;
 
 arg_minute:
   _digit | _tinyint_unsigned | integer_func | 60 ;
@@ -159,12 +157,16 @@ datetime_func:
 #  CURRENT_TIMESTAMP() | NOW() |
   DATE( arg_date ) | DATE ( arg_datetime ) |
   FROM_DAYS( arg_integer ) |
-  FROM_UNIXTIME( arg_unix ) | FROM_UNIXTIME( arg_unix , arg_format ) |
+  FROM_UNIXTIME( arg_unix ) |
+  FROM_UNIXTIME( arg_unix , arg_format ) |
+  IF( integer_func , datetime_func , datetime_func ) |
+  IFNULL( datetime_func, datetime_func ) |
   LAST_DAY( arg_datetime ) |
   LOCALTIME() | LOCALTIMESTAMP() |
   MAKEDATE( arg_year , arg_dayofyear ) |
   MAKETIME( arg_hour , arg_minute, arg_second ) |
 #  NOW() |
+  NULLIF( datetime_func, datetime_func ) |
   SEC_TO_TIME( arg_second ) |
   STR_TO_DATE( arg_formatted , arg_format ) |
 #  SYSDATE() |
@@ -185,7 +187,7 @@ integer_func:
   DAYOFMONTH( arg_datetime ) |
   DAYOFWEEK( arg_datetime ) |
   DAYOFYEAR( arg_datetime ) |
-  EXTRACT( arg_unit_integer FROM arg_any ) |
+  EXTRACT( arg_unit FROM arg_any ) |
   HOUR( arg_datetime ) |
   MICROSECOND( arg_any ) |
   MINUTE( arg_time ) |
@@ -203,44 +205,37 @@ integer_func:
   WEEKOFYEAR( arg_datetime ) |
   YEAR( arg_datetime ) ;
   YEARWEEK( arg_datetime ) | YEARWEEK( arg_datetime , arg_mode ) |
-
-  IF( integer_func , datetime_func , datetime_func ) |
-  IFNULL( datetime_func ) |
-  NULLFIF( datetime_func, datetime_func ) |
   INTERVAL ( arg_datetime_list ) ;
-
 
 string_func:
   DATE_FORMAT( arg_any , arg_format ) |
-  DAYNAME( arg_date ) ;
+  DAYNAME( arg_date ) |
+  GET_FORMAT( date_time_datetime , country_code ) |
   MONTHNAME( arg_date ) |
-  TIME_FORMAT( arg_time , arg_time_format ) |
-
-
-  SUBDATE( arg_date , INTERVAL arg_expr arg_unit ) |
-  SUBDATE( arg_date , arg_days ) |
-
+  TIME_FORMAT( arg_time , arg_format ) |
+  SUBDATE( arg_date , INTERVAL arg_integer arg_unit ) |
+  SUBDATE( arg_date , arg_days ) ;
 
 date_add_sub:
-  add_sub arg_datetime arg_integer , arg_unit_integer ) |
+  add_sub arg_datetime , INTERVAL arg_integer arg_unit ) |
   add_sub arg_datetime , INTERVAL CONCAT_WS('.' , arg_second , arg_microsecond ) SECOND_MICROSECOND ) |
   add_sub arg_datetime , INTERVAL CONCAT_WS('.' , CONCAT_WS(':' , arg_minute , arg_second ) , arg_microsecond ) MINUTE_MICROSECOND ) |
   add_sub arg_datetime , INTERVAL CONCAT_WS(':' , arg_minute , arg_second ) MINUTE_SECOND ) |
   add_sub arg_datetime , INTERVAL CONCAT_WS('.' , CONCAT_WS(':' , arg_hour , arg_minute, arg_second ) , arg_microsecond ) HOUR_MICROSECOND ) |
   add_sub arg_datetime , INTERVAL CONCAT_WS(':' ,  arg_hour , arg_minute, arg_second ) HOUR_SECOND ) |
   add_sub arg_datetime , INTERVAL CONCAT_WS(':' , arg_hour , arg_minute ) HOUR_MINUTE ) |
-  add_sub arg_datetime , INTERVAL CONCAT_WS(' ' , arg_day , CONCAT_WS(':' , arg_hour , arg_minute, CONCAT_WS('.' , arg_second , arg_microsecond ) DAY_MICROSECOND ) |
-  add_sub arg_datetime , INTERVAL CONCAT_WS(' ' , arg_day , CONCAT_WS(':' , arg_hour , arg_minute , arg_second ) DAY_SECOND ) |
-  add_sub arg_datetime , INTERVAL CONCAT_WS(' ' , arg_day , CONCAT_WS(':' , arg_hour , arg_minute ) DAY_MINUTE ) |
-  add_sub arg_datetime , INTERVAL CONCAT_WS(' ' , arg_day , arg_hours ) DAY_HOUR ) |
+  add_sub arg_datetime , INTERVAL CONCAT_WS(' ' , arg_days , CONCAT_WS(':' , arg_hour , arg_minute, CONCAT_WS('.' , arg_second , arg_microsecond ) ) ) DAY_MICROSECOND ) |
+  add_sub arg_datetime , INTERVAL CONCAT_WS(' ' , arg_days , CONCAT_WS(':' , arg_hour , arg_minute , arg_second ) ) DAY_SECOND ) |
+  add_sub arg_datetime , INTERVAL CONCAT_WS(' ' , arg_days , CONCAT_WS(':' , arg_hour , arg_minute ) ) DAY_MINUTE ) |
+  add_sub arg_datetime , INTERVAL CONCAT_WS(' ' , arg_days , arg_hour ) DAY_HOUR ) |
   add_sub arg_datetime , INTERVAL CONCAT_WS('-' , arg_year , arg_month ) YEAR_MONTH ) ;
-
-arg_unit_integer:
-#  MICROSECOND |
- SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | QUARTER | YEAR ;
 
 arg_unit_noninteger:
   SECOND_MICROSECOND | MINUTE_MICROSECOND | MINUTE_SECOND | HOUR_MICROSECOND | HOUR_SECOND | HOUR_MINUTE | DAY_MICROSECOND | DAY_SECOND | DAY_MINUTE | DAY_HOUR | YEAR_MONTH ;
+
+# arg_unit:
+#  MICROSECOND |
+# SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | QUARTER | YEAR ;
 
 arg_unit:
 #  MICROSECOND |
@@ -250,8 +245,11 @@ arg_unit_timestamp:
 #  MICROSECOND |
  SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | QUARTER | YEAR ;
 
+arg_microsecond:
+  { sprintf("%06d", $prng->uint16(0,999999)) } ;
+
 add_sub:
-  DATE_ADD( | DATE_SUB( | SUBDATE
+  DATE_ADD( | DATE_SUB( | SUBDATE( ;
 
 arg_mode:
   0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 ;
@@ -262,15 +260,11 @@ arg_cast_type:
 precision:
   0 | 3 | 6 ;
 
-get_format:
-  GET_FORMAT( date_time_datetime , country_code ) ;
-
 date_time_datetime:
   DATE | TIME | DATETIME ;
 
 country_code:
-  EUR | USA | JIS | ISO | INTERNAL ;
-
+  'EUR' | 'USA' | 'JIS' | 'ISO' | 'INTERNAL' ;
 
 arg_format:
   CONCAT_WS( format_separator , format_list );

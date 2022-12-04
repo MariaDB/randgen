@@ -33,12 +33,12 @@ perfschema_update_settings:
   perfschema_update_timers ;
 
 perfschema_update_consumers:
-  UPDATE performance_schema . setup_consumers SET enabled = __yes_x_no WHERE name IN ( perfschema_consumer_list ) |
-  UPDATE performance_schema . setup_consumers SET enabled = __yes_x_no WHERE name LIKE perfschema_consumer_category ;
+  UPDATE performance_schema . setup_consumers SET enabled = yes_or_no WHERE name IN ( perfschema_consumer_list ) |
+  UPDATE performance_schema . setup_consumers SET enabled = yes_or_no WHERE name LIKE perfschema_consumer_category ;
 
 perfschema_update_instruments:
-  UPDATE performance_schema . setup_instruments SET __enabled_x_timed = __yes_x_no WHERE NAME LIKE perfschema_instrument_category |
-  UPDATE performance_schema . setup_instruments SET __enabled_x_timed = __yes_x_no ORDER BY RAND(_int_unsigned) LIMIT _digit ;
+  UPDATE performance_schema . setup_instruments SET __enabled_x_timed = yes_or_no WHERE NAME LIKE perfschema_instrument_category |
+  UPDATE performance_schema . setup_instruments SET __enabled_x_timed = yes_or_no ORDER BY RAND(_int_unsigned) LIMIT _digit ;
 
 perfschema_update_timers:
   UPDATE performance_schema . setup_timers SET timer_name = perfschema_timer_type ;
@@ -118,7 +118,7 @@ perfschema_columns:
   ALTER TABLE _table DROP COLUMN _letter ;
 
 perfschema_column_privileges:
-  GRANT perfschema_privilege_list ON _table TO 'someuser'@'somehost';
+  GRANT /* _table[invariant] */ perfschema_privilege_list ON _table[invariant] TO 'someuser'@'somehost';
 
 perfschema_events:
   CREATE __or_replace(90) EVENT _letter ON SCHEDULE AT NOW() DO SET @a=@a |
@@ -300,7 +300,7 @@ perfschema_new_table_item:
   perfschema_database . _table AS { $database_names[++$tables] = $last_database ; $table_names[$tables] = $last_table ; "table".$tables };
 
 perfschema_database:
-  { $last_database = $prng->arrayElement(['mysql','test','INFORMATION_SCHEMA','performance_schema']); return $last_database };
+  { $last_database = ( $prng->uint16(0,2) ? $prng->arrayElement($executors->[0]->metaSystemSchemas()) : $prng->arrayElement($executors->[0]->metaNonEmptyUserSchemas()) ); return $last_database };
 
 perfschema_current_table_item:
   { $last_database = $database_names[$tables] ; $last_table = $table_names[$tables] ; "table".$tables };
@@ -329,3 +329,5 @@ perfschema_delete:
 perfschema_insert:
   INSERT INTO _table ( `pk` ) VALUES  (NULL);
 
+yes_or_no:
+  'YES' | 'NO' ;

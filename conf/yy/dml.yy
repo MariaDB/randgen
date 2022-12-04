@@ -19,7 +19,7 @@
 # mainly to serve as a placeholder to run with various redefines
 #################################################################
 
-#include <conf/rr/basics.rr>
+#include <conf/yy/include/basics.inc>
 
 
 query:

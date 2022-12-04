@@ -82,7 +82,8 @@ sub next {
   # We already know that our UTFs in some grammars are ugly.
   no warnings 'surrogate';
 
-  my $grammars = $generator->[GENERATOR_GRAMMARS];
+  my $grammar_pool= $generator->[GENERATOR_GRAMMAR_POOL];
+  my $grammars= $generator->[GENERATOR_GRAMMARS];
 
   my $prng = $generator->[GENERATOR_PRNG];
   my %rule_invariants = ();
@@ -94,6 +95,7 @@ sub next {
   my $last_table;
   my $last_database;
   my $last_field_list_length;
+  my ($last_function, $last_procedure);
   my $last_item;
 
   my $stack = GenTest::Stack::Stack->new();
@@ -102,14 +104,16 @@ sub next {
   sub _set_db {
     my $db= shift;
     if ($db eq 'any') {
-      $db= $prng->arrayElement($executors->[0]->metaAllSchemas());
+      $db= $prng->arrayElement($executors->[0]->metaAllNonEmptySchemas());
     } elsif ($db eq 'user' or $db eq 'non-system') {
-      $db= $prng->arrayElement($executors->[0]->metaUserSchemas());
+      $db= $prng->arrayElement($executors->[0]->metaNonEmptyUserSchemas());
     }
-    if ($db ne $last_database) {
+    if (not defined $last_database or $db ne $last_database) {
       $last_database= $db;
       $last_field= undef;
       $last_table= undef;
+      $last_function= undef;
+      $last_procedure= undef;
       $last_field_list_length= undef;
       return "USE $db /* EXECUTOR_FLAG_SKIP_STATS */ ;;";
     } else {
@@ -143,31 +147,34 @@ sub next {
         $last_field= undef;
         $last_table= undef;
         $last_field_list_length= undef;
+        $last_function= undef;
+        $last_procedure= undef;
       } elsif (not defined $last_table) {
         $last_field= undef;
         $last_field_list_length= undef;
       }
-
       if ($item =~ m{^([a-z0-9_]+)\[invariant\]}is) {
         ($item, $invariant) = ($1, 1);
       }
 
-      if (exists $grammar_rules->{$item}) {
+      if ($invariant) {
+        unless ($rule_invariants->{$item}) {
+          $rule_invariants->{$item} = [ expand($rule_counters,$rule_invariants,$grammar_rules,($item)) ];
+        }
+        @expansion = @{$rule_invariants->{$item}};
+      }
+      
+      elsif (exists $grammar_rules->{$item}) {
 
         if (++($rule_counters->{$orig_item}) > GENERATOR_MAX_OCCURRENCES) {
           say("Rule $orig_item occured more than ".GENERATOR_MAX_OCCURRENCES()." times. Possible endless loop in grammar. Aborting.");
           return undef;
         }
 
-        if ($invariant) {
-          @{$rule_invariants->{$item}} = expand($rule_counters,$rule_invariants,$grammar_rules,($item)) unless defined $rule_invariants->{$item};
-          @expansion = @{$rule_invariants->{$item}};
-        } else {
-          @expansion = expand($rule_counters,$rule_invariants,$grammar_rules,@{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]->[
-            $prng->uint16(0, $#{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]})
-          ]});
+        @expansion = expand($rule_counters,$rule_invariants,$grammar_rules,@{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]->[
+          $prng->uint16(0, $#{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]})
+        ]});
 
-        }
         if ($generator->[GENERATOR_ANNOTATE_RULES]) {
           @expansion = ("/* rule: $item */ ", @expansion);
         }
@@ -194,15 +201,7 @@ sub next {
         } else {
           my $field_type = (substr($item, 0, 1) eq '_' ? $prng->isFieldType(substr($item, 1)) : undef);
 
-          # If we unset $last_table in a grammar, Executor will always use the first one
-          # from the list for all _field rules and alike. We want it to be random still.
-          # For _table rules and alike, it will be adjusted later
-          if (not $last_table) {
-            if (not $last_database) {
-              $last_database = $prng->arrayElement($executors->[0]->metaUserSchemas()) || $prng->arrayElement($executors->[0]->metaAllSchemas());
-            }
-            $last_table = $prng->arrayElement($executors->[0]->metaTables($last_database));
-          } elsif ($last_table =~ /\`?(.+)\`?\s*\.\`?(.+)\`?/) {
+          if ($last_table =~ /\`?(.+)\`?\s*\.\`?(.+)\`?/) {
             # If a grammar set $last_table to a fully-qualified name, we want to split it
             # for further use
             ($last_database,$last_table)= ($1,$2);
@@ -216,13 +215,6 @@ sub next {
             $item = $prng->word();
           } elsif ($item eq '_positive_digit') {
             $item = $prng->positive_digit();
-          } elsif ($item eq '_table') {
-            if (not $last_database) {
-              $last_database = $prng->arrayElement($executors->[0]->metaUserSchemas()) || $prng->arrayElement($executors->[0]->metaAllSchemas());
-            }
-            my $tables = $executors->[0]->metaTables($last_database);
-            $last_table = $prng->arrayElement($tables);
-            $item = '`'.$last_table.'`';
           } elsif ($item eq '_hex') {
             $item = $prng->hex();
           } elsif ($item eq '_cwd') {
@@ -257,22 +249,44 @@ sub next {
             my $databases = $executors->[0]->metaUserSchemas();
             $last_database = $prng->arrayElement($databases);
             $item = '`'.$last_database.'`';
-          } elsif ($item eq '_table') {
-            my $tables = $executors->[0]->metaTables($last_database);
-            $last_table = $prng->arrayElement($tables);
-            $item = '`'.$last_table.'`';
-          } elsif ($item eq '_basetable') {
-            my $tables = $executors->[0]->metaBaseTables($last_database);
-            $last_table = $prng->arrayElement($tables);
-            $item = '`'.$last_table.'`';
-          } elsif ($item eq '_versionedtable') {
-            my $tables = $executors->[0]->metaVersionedTables($last_database);
-            $last_table = $prng->arrayElement($tables);
-            $item = '`'.$last_table.'`';
-          } elsif ($item eq '_view') {
-            my $tables = $executors->[0]->metaViews($last_database);
-            $last_table = $prng->arrayElement($tables);
-            $item = '`'.$last_table.'`';
+          } elsif ($item eq '_table' or $item eq '_basetable' or $item eq '_versionedtable' or $item eq '_view' or $item eq '_sequence' or $item eq '_procedure' or $item eq '_function') {
+            if (not $last_database) {
+              # If we don't set it here, the executor will always use a default schema
+              $last_database = $prng->arrayElement($executors->[0]->metaUserSchemas()) || $prng->arrayElement($executors->[0]->metaAllSchemas());
+            }
+            if ($item eq '_table') {
+              my $tables = $executors->[0]->metaTables($last_database);
+              $last_table = $prng->arrayElement($tables);
+              $item = '`'.$last_table.'`';
+            } elsif ($item eq '_view') {
+              my $tables = $executors->[0]->metaViews($last_database);
+              $last_table = $prng->arrayElement($tables);
+              $item = '`'.$last_table.'`';
+            } elsif ($item eq '_basetable') {
+              my $tables = $executors->[0]->metaBaseTables($last_database);
+              $last_table = $prng->arrayElement($tables);
+              $item = '`'.$last_table.'`';
+            } elsif ($item eq '_versionedtable') {
+              my $tables = $executors->[0]->metaVersionedTables($last_database);
+              $last_table = $prng->arrayElement($tables);
+              $item = '`'.$last_table.'`';
+            } elsif ($item eq '_sequence') {
+              my $tables = $executors->[0]->metaSequences($last_database);
+              $last_table = $prng->arrayElement($tables);
+              $item = '`'.$last_table.'`';
+            } elsif ($item eq '_sequence') {
+              my $tables = $executors->[0]->metaSequences($last_database);
+              $last_table = $prng->arrayElement($tables);
+              $item = '`'.$last_table.'`';
+            } elsif ($item eq '_procedure') {
+              my $proc = $executors->[0]->metaProcedures($last_database);
+              $last_procedure = $prng->arrayElement($proc);
+              $item = '`'.$last_procedure.'`';
+            } elsif ($item eq '_function') {
+              my $func = $executors->[0]->metaFunctions($last_database);
+              $last_function = $prng->arrayElement($func);
+              $item = '`'.$last_function.'`';
+            }
           } elsif ($item eq '_index') {
             my $indexes = $executors->[0]->metaIndexes($last_table, $last_database);
                         $last_field = $prng->arrayElement($indexes);
@@ -417,7 +431,9 @@ sub next {
       $executors->[0]->forceMetadataReload();
       $executors->[0]->cacheMetaData();
     }
-    my $grammar= $prng->arrayElement($grammars);
+
+    my $grammar_id= $prng->arrayElement($grammar_pool);
+    my $grammar = $generator->[GENERATOR_GRAMMARS]->[$grammar_id];
     $grammar_rules= $grammar->rules();
     if (exists $grammar_rules->{"thread".$generator->threadId()}) {
       $starting_rule = $grammar_rules->{"thread".$generator->threadId()}->name();

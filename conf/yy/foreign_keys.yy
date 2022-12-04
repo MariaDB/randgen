@@ -15,7 +15,7 @@
 
 ########################################
 
-#include <conf/rr/basics.rr>
+#include <conf/yy/include/basics.inc>
 
 query:
   { _set_db('user') } fk_query ;

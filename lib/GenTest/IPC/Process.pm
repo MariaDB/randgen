@@ -65,51 +65,6 @@ sub start {
 }
 
 
-sub childWait {
-    my (@list) = @_;
-    if (@list < 1) {
-        while (1) {
-            my $pid = wait();
-            last if $pid < 0;
-            print "".(ref $processes{$pid})."($pid) stopped with status $?\n";
-        }
-    } else {
-        my %pids;
-        map {$pids{$_}=1} @list;
-        while ((keys %pids) > 0) {
-            my $pid = wait();
-            last if $pid < 0;
-            print "".(ref $processes{$pid})."($pid) stopped with status $?\n";
-            delete $pids{$pid} if exists $pids{$pid};
-        }
-    }
-}
-
-sub childWaitStatus {
-    my ($max, @list) = @_;
-    my $status = 0;
-    if (@list < 1) {
-        while (1) {
-            my $pid = wait();
-            last if $pid < 0;
-            $status = $? if $status < $?;
-            print "".(ref $processes{$pid})."($pid) stopped with status $?\n";
-            last if $status >= $max;
-        }
-    } else {
-        my %pids;
-        map {$pids{$_}=1} @list;
-        while ((keys %pids) > 0) {
-            my $pid = wait();
-            last if $pid < 0;
-            $status = $? if $status < $?;
-            print "".(ref $processes{$pid})."($pid) stopped with status $?\n";
-            delete $pids{$pid} if exists $pids{$pid};
-            last if $status >= $max;
-        }
-    }
-}
-
 sub kill {
     my ($self) = @_;
 

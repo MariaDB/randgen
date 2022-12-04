@@ -14,7 +14,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-#include <conf/rr/basics.rr>
+#include <conf/yy/include/basics.inc>
 
 query:
   { _set_db('user') } crea_query;
@@ -37,7 +37,11 @@ crea_maybe_engine:
 ;
 
 crea_table_definition:
-  { $colnum=0; '' } ( crea_column_list ) _basics_table_options __with_system_versioning(5) _basics_table_partitioning ;
+  { $colnum=0; '' } ( crea_column_list ) _basics_table_options __with_system_versioning(5) optional_partitioning ;
+
+optional_partitioning:
+  ==FACTOR:10== |
+  _basics_table_partitioning ;
 
 crea_column_list:
   crea_column |

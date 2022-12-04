@@ -41,24 +41,25 @@ query_init:
 ;
 
 create_definition_init:
-  create_definition __ignore(90) SELECT short_value  AS f1 , short_value AS f2 , short_value AS f3 , short_value AS f4 , short_value AS f5 FROM DUAL ;
+  create_definition IGNORE SELECT short_value  AS f1 , short_value AS f2 , short_value AS f3 , short_value AS f4 , short_value AS f5 FROM DUAL ;
 
 query:
   { _set_db('test') } engine_heap_ddl_query ;
 
 engine_heap_ddl_query:
+  ==FACTOR:3== set_table_name create |
   create_drop |
-  select | select | select | select |
-  insert | insert | insert | insert |
-  insert | insert | insert | insert |
-  update | update | update | update |
-  delete | delete | delete | delete |
+  select | insert | update | delete |
   alter |
   truncate ;
 
 create_drop:
-  set_table_name DROP TABLE IF EXISTS { $table_name } ;; create_definition ;; create_definition ;; create_definition |
-  set_table_name DROP TABLE IF EXISTS { $table_name } ;; create_definition select_all ;
+  set_table_name DROP TABLE IF EXISTS { $table_name } ;; create ;
+
+create:
+  create_definition |
+  create_definition select_all
+;
 
 alter:
   ALTER TABLE table_name ENGINE = HEAP |
@@ -73,22 +74,19 @@ truncate:
 select_all:
   SELECT * FROM table_name ;
 
+create_command:
+  CREATE __temporary(10) TABLE IF NOT EXISTS |
+  CREATE OR REPLACE __temporary(10) TABLE ;
+
 create_definition:
-  CREATE temporary TABLE IF NOT EXISTS { $table_name } (
+  create_command { $table_name } (
     f1 column_def_index ,
     f2 column_def_index ,
     f3 column_def ,
     f4 column_def ,
     f5 column_def ,
     index_definition_list
-  ) ENGINE=HEAP /*executor1 ROW_FORMAT = dynamic_fixed KEY_BLOCK_SIZE = key_block_size */ ;
-
-temporary:
-  | | | | | | TEMPORARY ;
-
-dynamic_fixed:
-  DYNAMIC | DYNAMIC | DYNAMIC | DYNAMIC | DYNAMIC |
-  DYNAMIC | DYNAMIC | DYNAMIC | DYNAMIC | FIXED ;
+  ) ENGINE=HEAP /*executor1 ROW_FORMAT = __dynamic_x_fixed(90) KEY_BLOCK_SIZE = __512_x_1024_x_2048_x_3072 */ ;
 
 insert:
   insert_multi | insert_multi | insert_select ;
@@ -124,20 +122,14 @@ index_type:
 
 index_column_list:
   f1 | f2 | f1 , f2 | f2 , f1 |
-  f1 ( index_column_size ) | f2 ( index_column_size ) |
-  f1 ( index_column_size ) , f2 ( index_column_size ) |
-  f2 ( index_column_size ) , f1 ( index_column_size ) ;
-
-index_column_size:
-  1 | 2 | 32 ;
-
-key_block_size:
-  512 | 1024 | 2048 | 3072 ;
+  f1 ( __1_x_2_x_32 ) | f2 ( __1_x_2_x_32 ) |
+  f1 ( __1_x_2_x_32 ) , f2 ( __1_x_2_x_32 ) |
+  f2 ( __1_x_2_x_32 ) , f1 ( __1_x_2_x_32 ) ;
 
 column_def:
-  VARCHAR ( size_varchar ) character_set __not_null(20) default |
-  VARCHAR ( size_varchar ) collation __not_null(20) default |
-  VARBINARY ( size_varchar ) ;
+  VARCHAR ( __32_x_128_x_512_x_1024 ) character_set __not_null(20) default |
+  VARCHAR ( __32_x_128_x_512_x_1024 ) collation __not_null(20) default |
+  VARBINARY ( __32_x_128_x_512_x_1024 ) ;
 
 character_set:
   | CHARACTER SET utf8 ;
@@ -146,14 +138,8 @@ collation:
   | COLLATE utf8_bin ;
 
 column_def_index:
-  VARCHAR ( size_index ) character_set __not_null(20) default |
-  VARCHAR ( size_index ) collation __not_null(20) default ;
-
-size_varchar:
-  32 | 128 | 512 | 1024  ;
-
-size_index:
-  32 | 128 ;
+  VARCHAR ( __32_x_128 ) character_set __not_null(20) default |
+  VARCHAR ( __32_x_128 ) collation __not_null(20) default ;
 
 default:
   | DEFAULT _varchar(32) ;
@@ -192,10 +178,7 @@ select:
   SELECT field_name FROM table_name WHERE where order_by ;
 
 order_by:
-  ORDER BY field_name desc_asc ;
-
-desc_asc:
-  DESC | ASC ;
+  ORDER BY field_name __desc_x_asc ;
 
 update:
   UPDATE table_name SET field_name = value WHERE where ;
@@ -207,16 +190,10 @@ field_name:
   f1 | f2 | f3 | f4 | f5 ;
 
 where:
-  (field_name cmp_op value ) and_or where |
+  (field_name cmp_op value ) __and_x_or where |
   field_name cmp_op value |
-  field_name not IN ( value_list ) |
+  field_name __not(50) IN ( value_list ) |
   field_name BETWEEN value AND value ;
-
-and_or:
-  AND | OR ;
-
-not:
-  | NOT ;
 
 cmp_op:
   < | > | = | <= | >= | <> | <=> | != ;

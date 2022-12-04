@@ -1,4 +1,4 @@
-#  Copyright (c) 2018,2021 MariaDB Corporation
+#  Copyright (c) 2018, 2022 MariaDB Corporation
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -13,29 +13,40 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
+########################################################################
+# While the grammar can be used alone, it mainly implies that there are
+# queries from other grammars interleaved with its XA actions,
+# otherwise it just produces empty XA transactions
+########################################################################
+
 #features XA transactions
 
 query_init:
-  { %active_xa = (); %idle_xa = (); %prepared_xa = (); '' }
+  { %active_xa = (); %idle_xa = (); %prepared_xa = (); $current_xid= ''; $current_stage= ''; '' }
 ;
 
 query:
-  { $current_xid= ''; $last_xa_stage= ''; _set_db('user') } xa_query
+  { _set_db('user') } xa_query
 ;
 
 xa_query:
-  ==FACTOR:10== xa_valid_sequence
+  ==FACTOR:10== xa_valid_transition
 #  | xa_random
 ;
 
-xa_valid_sequence:
-  xa_begin ; xa_opt_recover xa_query_sequence ; xa_opt_recover XA END { $last_xid } ; xa_opt_recover XA PREPARE { $last_xid } ; xa_opt_recover XA COMMIT { $last_xid } |
-  xa_begin ; xa_opt_recover xa_query_sequence ; xa_opt_recover XA END { $last_xid } ; xa_opt_recover XA COMMIT { $last_xid } ONE PHASE |
-  xa_begin ; xa_opt_recover xa_query_sequence ; xa_opt_recover XA END { $last_xid } ; xa_opt_recover XA PREPARE { $last_xid } ; xa_opt_recover XA ROLLBACK { $last_xid }
+xa_valid_transition:
+  # If there is an ongoing "normal" transaction from other grammars,
+  # then XA won't be able to start. So, we need to end it first
+  { $current_stage eq '' ? $prng->uint16(0,2) ? 'COMMIT ;;' : 'ROLLBACK ;;' : '' }
+  XA { $one_phase= ''; $xid= $current_xid
+       ; if    ($current_stage eq '')         { $current_stage= 'active'; $current_xid= "'xid".$prng->uint16(1,50)."'"; $xid= $current_xid; ( $prng->uint16(0,1) ? 'BEGIN' : 'START' ) }
+         elsif ($current_stage eq 'active')   { $current_stage= 'idle';   'END' }
+         elsif ($current_stage eq 'idle')     { if ($prng->uint16(0,1)) { $current_stage= 'prepared'; 'PREPARE' }
+                                                else                   { $current_stage= ''; $one_phase='ONE PHASE'; 'COMMIT' } }
+         elsif ($current_stage eq 'prepared') { $current_stage= ''; $current_xid= ''; ($prng->uint16(0,1) ? 'COMMIT' : 'ROLLBACK') }
+         else { 'RECOVER' }
+     } { "$xid $one_phase" }
 ;
-
-xa_opt_recover:
-  { $prng->uint16(0,3) ? 'XA RECOVER ;' : '' };
 
 xa_random:
     xa_begin
@@ -47,16 +58,11 @@ xa_random:
   | XA RECOVER
 ;
 
-xa_query_sequence:
-  ==FACTOR:2== query
-  | xa_query_sequence ; query
-;
-
 xa_begin:
-  XA xa_start_begin xa_xid xa_opt_join_resume { $active_xa{$last_xid}= 1 ; '' } ;
+  XA __start_x_begin xa_xid { $active_xa{$last_xid}= 1 ; '' } ;
 
 xa_end:
-  XA END xa_xid_active xa_opt_suspend_opt_for_migrate { $idle_xa{$last_xid}= 1; delete $active_xa{$last_xid}; '' } ;
+  XA END xa_xid_active { $idle_xa{$last_xid}= 1; delete $active_xa{$last_xid}; '' } ;
 
 xa_prepare:
   XA PREPARE xa_xid_idle { $prepared_xa{$last_xid}= 1; delete $idle_xa{$last_xid}; '' } ;
@@ -70,26 +76,8 @@ xa_commit_one_phase:
 xa_rollback:
   XA ROLLBACK xa_xid_prepared { delete $prepared_xa{$last_xid}; '' } ;
 
-# Not supported
-xa_opt_suspend_opt_for_migrate:
-#  | SUSPEND xa_opt_for_migrade
-;
-
-xa_opt_for_migrade:
-  | FOR MIGRATE
-;
-
-xa_start_begin:
-  START | BEGIN
-;
-
-# Not supported
-xa_opt_join_resume:
-#  | JOIN | RESUME
-;
-
 xa_xid:
-  { $last_xid= "'xid".$prng->int(1,200)."'" }
+  { $last_xid= "'xid".$prng->uint16(1,200)."'" }
 ;
 
 xa_xid_active:

@@ -1,5 +1,6 @@
 # Copyright (C) 2008-2010 Sun Microsystems, Inc. All rights reserved.
 # Use is subject to license terms.
+# Copyright (c) 2022, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,10 +28,8 @@
 # However, the grammar will produce a varied amount of EXPLAIN output (shown via
 # --debug) and is useful
 #
-# NOTE:  This must be used with a gendata file, I have been using
-#        range_access.zz with success for now
-#        If you want to try an alternate, ensure that the rules for
-#        things like int_field, char_field, etc are correct for the gendata file
+# NOTE: This must be used with a specific gendata file, e.g. range_access.zz
+#       (see hardcoded column names)
 ################################################################################
 
 query_init:
@@ -38,7 +37,7 @@ query_init:
   GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON range_access_db.* TO CURRENT_USER;
 
 query:
-  { _set_db('range_access_db' } opt_access_query ;
+  { _set_db('range_access_db') } opt_access_query ;
 
 opt_access_query:
   { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $min_tables_to_join= 1; "" } main_select ;
@@ -47,7 +46,7 @@ main_select:
   simple_select | mixed_select | mixed_select ;
 
 simple_select:
-  SELECT distinct straight_join select_option simple_select_list
+  SELECT /* _table */ distinct straight_join select_option simple_select_list
   FROM join
   where_clause
   optional_group_by
@@ -55,7 +54,7 @@ simple_select:
   order_by_clause ;
 
 mixed_select:
-  SELECT distinct straight_join select_option select_list
+  SELECT /* _table */ distinct straight_join select_option select_list
   FROM join
   where_clause
   group_by_clause
@@ -155,7 +154,7 @@ table_or_join:
 
 table:
 # We use the "AS table" bit here so we can have unique aliases if we use the same table many times
-       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->tables())." AS table".++$tables; my @s=($x); $stack->pop(\@s); $x } ;
+       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->tables($last_database))." AS table".++$tables; my @s=($x); $stack->pop(\@s); $x } ;
 
 table_123:
   ==FACTOR:2== table1 |

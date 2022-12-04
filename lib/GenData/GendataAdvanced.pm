@@ -78,9 +78,6 @@ sub random_zerofill {
 sub random_int_type {
     return $prng->arrayElement(['TINYINT','SMALLINT','MEDIUMINT','INT','BIGINT']);
 }
-sub random_float_type {
-    return $prng->uint16(0,1) ? 'FLOAT' : 'DOUBLE' ;
-}
 sub random_char_type {
     return $prng->uint16(0,1) ? 'CHAR' : 'BINARY' ;
 }

@@ -31,7 +31,6 @@ use GenTest::Random;
 
 use constant GC_SPEC => 0;
 use constant GC_DEBUG => 1;
-use constant GC_CONFIG => 2;
 use constant GC_SEED => 3;
 use constant GC_PRNG => 4;
 

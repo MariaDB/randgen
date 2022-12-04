@@ -93,10 +93,10 @@ int_update:
  int_update_query ; int_select_count ;
 
 int_update_query:
-  UPDATE _table[invariant] partition_pruning SET `col_int_signed` = _digit[invariant] WHERE special_where_list ;
+  UPDATE _table[invariant] partition_pruning SET `col_int` = _digit[invariant] WHERE special_where_list ;
 
 int_select_count:
-  SELECT COUNT(*) FROM _table[invariant] partition_pruning WHERE `col_int_signed` = _digit[invariant];
+  SELECT COUNT(*) FROM _table[invariant] partition_pruning WHERE `col_int` = _digit[invariant];
 
 char_update:
   utf8_char_update | utf8_char_update2 | utf8_char_update3 ;
@@ -105,19 +105,19 @@ utf8_char_update:
   utf8_char_update_query ; utf8_char_select_count ;
 
 utf8_char_update_query:
-  UPDATE _table[invariant] partition_pruning SET `col_varchar_256_utf8` = _char[invariant] WHERE special_where_list;
+  UPDATE _table[invariant] partition_pruning SET `col_varchar_32_utf8` = _char[invariant] WHERE special_where_list;
 
 utf8_char_select_count:
-  SELECT COUNT(*) FROM _table[invariant] partition_pruning WHERE `col_varchar_256_utf8` = _char[invariant];
+  SELECT COUNT(*) FROM _table[invariant] partition_pruning WHERE `col_varchar_32_utf8` = _char[invariant];
 
 utf8_char_update2:
   utf8_char_update_query2 ; utf8_char_select_count2 ;
 
 utf8_char_update_query2:
-  UPDATE _table[invariant] partition_pruning SET `col_varchar_512_utf8` = _char[invariant] WHERE special_where_list;
+  UPDATE _table[invariant] partition_pruning SET `col_varchar_64_utf8` = _char[invariant] WHERE special_where_list;
 
 utf8_char_select_count2:
-  SELECT COUNT(*) FROM _table[invariant] partition_pruning WHERE `col_varchar_512_utf8` = _char[invariant];
+  SELECT COUNT(*) FROM _table[invariant] partition_pruning WHERE `col_varchar_64_utf8` = _char[invariant];
 
 utf8_char_update3:
   utf8_char_update_query3 ; utf8_char_select_count3 ;
@@ -135,7 +135,7 @@ int_delete:
   int_delete_query ; int_select_count ;
 
 int_delete_query:
-  DELETE FROM _table[invariant] partition_pruning WHERE `col_int_signed` = _digit[invariant] AND special_where_list ;
+  DELETE FROM _table[invariant] partition_pruning WHERE `col_int` = _digit[invariant] AND special_where_list ;
 
 special_where_list:
   not ( special_where_item ) | not ( special_where_item ) |
@@ -207,24 +207,24 @@ where_item:
   table1 . int_field  comparison_operator _digit  ;
 
 partitioned_int_field:
-  `col_int_signed` ;
+  `col_int` ;
 
 partitioned_char_field:
   `col_varchar_5_utf8`    | `col_varchar_5_cp932`    | `col_varchar_5_latin1`    |
-  `col_varchar_256_utf8` | `col_varchar_256_cp932` | `col_varchar_256_latin1` |
-  `col_varchar_512_utf8` | `col_varchar_512_cp932` | `col_varchar_512_latin1` ;
+  `col_varchar_32_utf8` | `col_varchar_32_cp932` | `col_varchar_32_latin1` |
+  `col_varchar_64_utf8` | `col_varchar_64_cp932` | `col_varchar_64_latin1` ;
 
 int_field:
-    `col_int_signed` | `col_int_signed_key` ;
+    `col_int` | `col_int_key` ;
 
 utf8_char_field:
-  `col_varchar_5_utf8` | `col_varchar_5_utf8_key` | `col_varchar_256_utf8` | `col_varchar_256_utf8_key` | `col_varchar_512_utf8` | `col_varchar_512_utf8_key` ;
+  `col_varchar_5_utf8` | `col_varchar_5_utf8_key` | `col_varchar_32_utf8` | `col_varchar_32_utf8_key` | `col_varchar_64_utf8` | `col_varchar_64_utf8_key` ;
 
 latin1_char_field:
-  `col_varchar_5_latin1`  | `col_varchar_5_latin1_key` | `col_varchar_256_latin1` | `col_varchar_256_latin1_key` | `col_varchar_512_latin1` | `col_varchar_512_latin1_key`;
+  `col_varchar_5_latin1`  | `col_varchar_5_latin1_key` | `col_varchar_32_latin1` | `col_varchar_32_latin1_key` | `col_varchar_64_latin1` | `col_varchar_64_latin1_key`;
 
 cp932_char_field:
-  `col_varchar_5_cp932` | `col_varchar_5_cp932_key` | `col_varchar_256_cp932` | `col_varchar_256_cp932_key` | `col_varchar_512_cp932` | `col_varchar_512_cp932_key` ;
+  `col_varchar_5_cp932` | `col_varchar_5_cp932_key` | `col_varchar_32_cp932` | `col_varchar_32_cp932_key` | `col_varchar_64_cp932` | `col_varchar_64_cp932_key` ;
 
 char_field:
   utf8_char_field | latin1_char_field | cp932_char_field ;
@@ -246,7 +246,7 @@ char:
   _char | _char | _char | _char | big_char ;
 
 big_char:
-   _varchar(512) | _varchar(1024) ;
+   _varchar(64) ;
 
 #########################################################
 # GROUP BY / HAVING / ORDER BY rules
@@ -336,12 +336,12 @@ existing_select_item:
   { "field".$prng->int(1,$fields) };
 
 int_indexed:
-    `col_int_signed_key` ;
+    `col_int_key` ;
 
 char_indexed:
-  `col_varchar_256_utf8_key` | `col_varchar_512_utf8_key` |
-  `col_varchar_256_latin1_key` | `col_varchar_512_latin1_key` |
-  `col_varchar_256_cp932_key` | `col_varchar_512_cp932_key` ;
+  `col_varchar_32_utf8_key` | `col_varchar_64_utf8_key` |
+  `col_varchar_32_latin1_key` | `col_varchar_64_latin1_key` |
+  `col_varchar_32_cp932_key` | `col_varchar_64_cp932_key` ;
 
 comparison_operator:
   = | > | < | != | <> | <= | >= ;

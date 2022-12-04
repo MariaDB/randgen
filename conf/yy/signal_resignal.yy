@@ -28,38 +28,66 @@
 # outside the range of MySQL error codes, see rule "number".
 
 query_init:
-  { $width = 100 ; return undef };
+  ;; { _set_db('user') }
+     CREATE DATABASE IF NOT EXISTS test
+  ;; { $fname= 'test.f1'; '' } create_function
+  ;; { $fname= 'test.f2'; '' } create_function
+  ;; { $fname= 'test.f3'; '' } create_function
+  ;; { $pname= 'test.p1'; '' } create_procedure
+  ;; { $pname= 'test.p2'; '' } create_procedure
+  ;; { $pname= 'test.p3'; '' } create_procedure
+  ;; { $pname= 'test.p1_1'; '' } create_procedure1
+  ;; { $pname= 'test.p1_2'; '' } create_procedure1
+  ;; { $pname= 'test.p1_3'; '' } create_procedure1
+  ;; { $pname= 'test.p1_4'; '' } create_procedure1
+  ;; { $pname= 'test.p1_5'; '' } create_procedure1
+  ;; { $pname= 'test.p1_6'; '' } create_procedure1
+  ;; { $pname= 'test.p1_7'; '' } create_procedure1
+  ;; { $pname= 'test.p1_8'; '' } create_procedure1
+  ;; { $pname= 'test.p1_9'; '' } create_procedure1
+  ;; { $pname= 'test.p1_10'; '' } create_procedure1
+;
 
 query:
   { _set_db('user') } query_signal_resignal ;
 
 query_signal_resignal:
-  set_variable      | update            |
-  create_procedure  | create_procedure  | create_function | create_function |
-  create_procedure1 | create_procedure1 |
-  drop_procedure    | drop_function     |
-  drop_procedure1   | drop_function     |
-  call_procedure    | call_procedure    | call_procedure   | call_procedure |
-  SET @@max_sp_recursion_depth = _digit ;
+                 set_variable |
+                 update |
+  ==FACTOR:2==   procedure_name create_procedure |
+  ==FACTOR:2==   function_name create_function |
+  ==FACTOR:2==   procedure_name1 create_procedure1 |
+  ==FACTOR:0.1== drop_procedure |
+  ==FACTOR:0.1== drop_function |
+  ==FACTOR:10==  call_procedure |
+                 SET @@max_sp_recursion_depth = _digit
+;
 
 create_function:
-  CREATE FUNCTION function_name ( arg1 variable_type, arg2 variable_type , arg3 variable_type) RETURNS variable_type BEGIN procedure ; RETURN value ; END ;
+  CREATE __or_replace_function_x_function_if_not_exists { $fname } ( arg1 variable_type, arg2 variable_type , arg3 variable_type) RETURNS variable_type BEGIN procedure ; RETURN value ; END ;
+
 drop_function:
-  DROP FUNCTION function_name ;
+  DROP FUNCTION IF EXISTS function_name { $fname } ;
+
 function_name:
-  f1 | f2 | f3 ;
+  { $fname= 'test.f'.$prng->uint16(1,3); '' };
 
 create_procedure:
-  CREATE PROCEDURE procedure_name ( arg1 variable_type , arg2 variable_type , arg3 variable_type ) BEGIN procedure ; END ;
+  CREATE __or_replace_procedure_x_procedure_if_not_exists { $pname } ( arg1 variable_type , arg2 variable_type , arg3 variable_type ) BEGIN procedure ; END ;
+
 procedure_name:
-  p1 | p2 | p3 ;
+  { $pname= 'test.p'.$prng->uint16(1,3); '' };
+
 procedure:
   declare_variable ; declare_condition ; declare_handler ; procedure_statement ; procedure_statement ; procedure_statement ; procedure_statement ; procedure_statement ;
+
 drop_procedure:
-  DROP PROCEDURE procedure_name ;
+  DROP PROCEDURE procedure_name { $pname } ;
+
 call_procedure:
-  CALL procedure_name ( value , value , value ) |
-  CALL procedure_name1 ()                       ;
+  CALL procedure_name { $pname } ( value , value , value ) |
+  CALL procedure_name1 { $pname } ()            ;
+
 procedure_statement:
   set_variable    |
   signal_resignal |
@@ -82,19 +110,26 @@ create_procedure1:
   { $begin_count = 0 ; $cond_count = 0 ; return undef } create_begin                       add_left ; add_left ; middle ; add_right ; add_right ;                         create_end |
   { $begin_count = 0 ; $cond_count = 0 ; return undef } create_begin            add_left ; add_left ; add_left ; middle ; add_right ; add_right ; add_right ;             create_end |
   { $begin_count = 0 ; $cond_count = 0 ; return undef } create_begin add_left ; add_left ; add_left ; add_left ; middle ; add_right ; add_right ; add_right ; add_right ; create_end ;
+
 create_begin:
-  CREATE PROCEDURE procedure_name1 () ;
+  CREATE __or_replace_procedure_x_procedure_if_not_exists procedure_name1 { $pname } () ;
+
 procedure_name1:
-  { $procedure_name = 'p1_'.$prng->int(1,$width) } ;
+  { $pname = 'test.p1_'.$prng->int(1,10); '' } ;
+
 add_left:
   { $begin_count++ ;                  return undef } BEGIN some_statement                                                                                      |
   { $begin_count++ ; $begin_count++ ; return undef } BEGIN some_declare_condition DECLARE handler_type HANDLER FOR handler_condition_list BEGIN handler_action ;
+
 middle:
   some_statement ;
+
 add_right:
   some_statement { if ( 0 == $prng->int(0,1) && $begin_count > 1 ) { $begin_count-- ; return "; END " } else { return undef } } ;
+
 create_end:
   some_statement { $val = '' ; while ($begin_count > 0) { $begin_count-- ; $val = $val.'; END' } ; return $val } ;
+
 some_statement:
   # No error, no warning
   SELECT 1                                      |
@@ -106,10 +141,13 @@ some_statement:
   SELECT CAST('ABC' AS CHAR(2))                 |
   # Row not found
   SELECT * FROM (SELECT 1 AS f1) A WHERE f1 = 0 ;
+
 some_declare_condition:
    | declare_condition1 ; | declare_condition1 ; declare_condition1 ; ;
+
 declare_condition1:
   { $cond_count++ ; return undef } DECLARE condition_name_create CONDITION FOR condition_value ;
+
 condition_name_create:
   # 10 % of all cases the first condition name we ever create condition.
   # This can end up in
@@ -119,16 +157,20 @@ condition_name_create:
   #   - success (this already existing condition is within another block)
   #   - failure (this already existing condition is within another block)
   { if ( 10 == $prng->int(1,10) ) { return 'cond1' } else { return 'cond'.$cond_count } } ;
+
 condition_name_use:
   # In case $cond_count == 0 we get an error because the condition does not exist
   { return 'cond'.$cond_count } ;
+
 handler_type:
   # UNDO is not supported
   # UNDO   |
   CONTINUE |
   EXIT     ;
+
 signal:
   SIGNAL   signal_condition_value optional_signal_information ;
+
 resignal:
   RESIGNAL                        optional_signal_information |
   RESIGNAL signal_condition_value optional_signal_information ;
@@ -140,8 +182,9 @@ optional_signal_information:
 handler_action:
   some_statement ; resignal |
   some_statement ;
+
 drop_procedure1:
-  DROP PROCEDURE procedure_name1 ;
+  DROP PROCEDURE procedure_name1 { $pname } ;
 
 # This is currently unused and might be removed later.
 # declaration:
@@ -150,7 +193,7 @@ drop_procedure1:
 #   declare_variable  ;
 
 update:
-  UPDATE signal_resignal_table SET _field = value ;
+  UPDATE _table SET _field = value ;
 
 if:
   IF variable_name = value THEN signal_resignal ; ELSEIF variable_name = value THEN signal_resignal ; ELSE signal_resignal ; END IF ;
@@ -168,8 +211,8 @@ value:
   _varchar(512)            |
   number |
   at_variable_name                                       |
-  function_name ( _english , number , at_variable_name ) |
-  RPAD( _letter , some_size , 'A123456789' )             ;
+  function_name { $fname } ( _english , number , at_variable_name ) |
+  RPAD( _char(1) , some_size , 'A123456789' )             ;
 
 some_size:
   17 | 17 | 17 | 17 | 17 | 17 | 17 | 17 | 17 | 17 | 17 | 17 | 17 | 17 | 17 | 17 |
@@ -240,6 +283,7 @@ handler_condition_value:
   NOT FOUND              |
   SQLEXCEPTION           |
   mysql_error_code       ;
+
 handler_condition_list:
 # This is used in DECLARE ... HANDLER ...
   handler_condition_value                           |
@@ -301,6 +345,3 @@ sqlstate_value:
 number:
   # We try to avoid numbers/digits that may be interpreted as actual error codes.
   9000 | 9001 | 9002 | 9003 | 9004 | 9005 | 9006 | 9007 | 9008 | 9009 ;
-
-signal_resignal_table:
-  B | C ;

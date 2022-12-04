@@ -16,9 +16,6 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-## TODO: Re-enable UTF16 in 'charset' and _UTF16 in 'charset_underscore' once WL#1213 is pushed.
-##       (Implementation not present in current 6.0 or 5.x codebases).
-
 query:
   { _set_db('user') } many_indexes_query ;
 
@@ -26,17 +23,17 @@ many_indexes_query:
    update | insert | delete | select ;
 
 select:
-  SELECT _field FROM _table ;
+  SELECT /* _table[invariant] */ _field FROM _table[invariant] ;
 
 update:
    UPDATE _table SET _field_no_pk = value WHERE condition update_scope;
 
 update_scope:
   |
-  ORDER BY `pk` LIMIT _digit ;
+  ORDER BY _field_list LIMIT _digit ;
 
 delete:
-  DELETE FROM _table WHERE condition ORDER BY `pk` LIMIT 1 ;
+  DELETE FROM _table WHERE condition ORDER BY _field_list LIMIT 1 ;
 
 insert:
   INSERT INTO _table ( _field , _field , _field ) VALUES ( value , value , value ) ;
@@ -49,10 +46,10 @@ string:
   _english | _varchar(255);
 
 charset:
-  UTF8 | LATIN1 | ASCII | UCS2 ;
+  UTF8 | LATIN1 | ASCII | UCS2 | UTF32 | UTF16 ;
 
 charset_underscore:
-  _UTF8 | _LATIN1 | _ASCII | _UCS2 ;
+  _UTF8 | _LATIN1 | _ASCII | _UCS2  | _UTF32 | _UTF16;
 
 condition:
   _field operator value |

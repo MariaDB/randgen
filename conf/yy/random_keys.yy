@@ -15,16 +15,8 @@
 
 
 thread1_init:
-    { _set_db('user') }
     # rkr_indexes is a hash: table => hash of index numbers
     { %primary_keys = (); %rkr_indexes = (); '' }
-#      LOCK TABLE { join ' WRITE, ', @{$executors->[0]->tables()} } WRITE
-      add_autoinc_pk ;; add_autoinc_pk ;; add_autoinc_pk
-    ;; add_autoinc_pk ;; add_autoinc_pk ;; add_autoinc_pk
-    ;; add_key ;; add_key ;; add_key ;; add_key ;; add_key
-    ;; add_key ;; add_key ;; add_key ;; add_key ;; add_key
-    ;; add_key ;; add_key ;; add_key ;; add_key ;; add_key
-#   ;; UNLOCK TABLES
 ;
 
 query:
@@ -33,27 +25,24 @@ query:
 random_keys_query:
       ==FACTOR:3==    add_key
     |                 drop_key
-    | ==FACTOR:0.01== analyze_tables
+    | ==FACTOR:0.01== add_autoinc_pk
 ;
-
-analyze_tables:
-    ANALYZE TABLE { join ',', @{$executors->[0]->baseTables()} };
 
 new_key_name:
     {
-          %{$rkr_indexes{$last_table}} = () unless defined $rkr_indexes{$last_table}
-        ; @rkr_table_indexes = (keys %{$rkr_indexes{$last_table}} ? sort {$b <=> $a} keys %{$rkr_indexes{$last_table}} : (0) )
+          %{$rkr_indexes{"$last_database.$last_table"}} = () unless defined $rkr_indexes{"$last_database.$last_table"}
+        ; @rkr_table_indexes = (keys %{$rkr_indexes{$last_table}} ? sort {$b <=> $a} keys %{$rkr_indexes{"$last_database.$last_table"}} : (0) )
         ; $rkr_index_num = $rkr_table_indexes[0]+1
-        ; ${$rkr_indexes{$last_table}}{$rkr_index_num} = 1
+        ; ${$rkr_indexes{"$last_database.$last_table"}}{$rkr_index_num} = 1
         ; 'rkr_index_'.$rkr_index_num
     }
 ;
 
 key_name_to_drop:
     {
-          @rkr_table_indexes = keys %{$rkr_indexes{$last_table}} or ()
+          @rkr_table_indexes = keys %{$rkr_indexes{"$last_database.$last_table"}} or ()
         ; $rkr_index_num = $prng->arrayElement(\@rkr_table_indexes)
-        ; delete ${$rkr_indexes{$last_table}}{$rkr_index_num} if $rkr_index_num
+        ; delete ${$rkr_indexes{"$last_database.$last_table"}}{$rkr_index_num} if $rkr_index_num
         ; ( $rkr_index_num ? 'rkr_index_'.$rkr_index_num : 'non_existing_rk_index' )
     }
 ;
@@ -64,13 +53,13 @@ add_autoinc_pk:
         ; do {
               $last_table = $prng->arrayElement($tables)
             ; $tries++
-        } until ($tries > @{$tables} or not $primary_keys{$last_table})
+        } until ($tries > @{$tables} or not $primary_keys{"$last_database.$last_table"})
         ; ''
     } LOCK TABLE { $last_table } WRITE
-    ; UPDATE { $last_table } SET _field_int = 0
-    ; ALTER TABLE { $last_table } MODIFY { $last_field } INT AUTO_INCREMENT, ADD PRIMARY KEY ($last_field  __asc_x_desc(33,33))
-    ; UNLOCK TABLES
-    { $primary_keys{$last_table} = 1; '' }
+    ;; UPDATE { $last_table } SET _field_int = 0
+    ;; ALTER TABLE { $last_table } MODIFY { $last_field } INT AUTO_INCREMENT, ADD PRIMARY KEY ($last_field  __asc_x_desc(33,33))
+    ;; UNLOCK TABLES
+    { $primary_keys{"$last_database.$last_table"} = 1; '' }
 ;
 
 add_key:
@@ -86,16 +75,16 @@ index_type_and_name:
 ;
 
 pk_if_possible:
-    { if ($primary_keys{$last_table}) { 'non_unique_key' } else { $primary_keys{$last_table} = 1; 'PRIMARY KEY' } } ;
+    { if ($primary_keys{"$last_database.$last_table"}) { 'non_unique_key' } else { $primary_keys{"$last_database.$last_table"} = 1; 'PRIMARY KEY' } } ;
 
 unique_key:
     UNIQUE non_unique_key;
 
 non_unique_key:
-    KEY new_key_name ;
+    KEY __if_not_exists(90) new_key_name ;
 
 drop_key:
-    ALTER TABLE _basetable DROP KEY key_name_to_drop ;
+    ALTER TABLE _basetable DROP KEY __if_exists(90) key_name_to_drop ;
 
 index_field_list:
       partially_covered_column
