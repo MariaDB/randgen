@@ -30,6 +30,7 @@ require Exporter;
   REPORTER_TYPE_DATA
   REPORTER_TYPE_END
   REPORTER_CONNECT_TIMEOUT_THRESHOLD
+  REPORTER_COMPATIBILITY
 );
 
 use strict;
@@ -60,6 +61,7 @@ use constant REPORTER_CUSTOM_ATTRIBUTES => 10;
 # (more or less when the test flow started)
 use constant REPORTER_START_TIME        => 11;
 use constant REPORTER_DBH               => 12;
+use constant REPORTER_COMPATIBILITY     => 13;
 
 use constant REPORTER_TYPE_PERIODIC     => 2;
 use constant REPORTER_TYPE_DEADLOCK     => 4;
@@ -73,6 +75,7 @@ use constant REPORTER_TYPE_END          => 256;
 
 # The time, in seconds, we will wait for a connect before we consider the server unavailable
 use constant REPORTER_CONNECT_TIMEOUT_THRESHOLD => 20;
+# Can obe overridden in a reporter to indicate minimal version compatibility
 
 1;
 
@@ -84,7 +87,8 @@ sub new {
     test_start => REPORTER_TEST_START,
     test_end => REPORTER_TEST_END,
     test_duration => REPORTER_TEST_DURATION,
-    properties => REPORTER_PROPERTIES
+    properties => REPORTER_PROPERTIES,
+    compatibility => REPORTER_COMPATIBILITY,
   }, @_);
 
   $reporter->[REPORTER_DBH] = DBI->connect($reporter->server->dsn(), undef, undef, { mysql_multi_statements => 1, RaiseError => 0 , PrintError => 1 } );
@@ -190,6 +194,7 @@ sub new {
   # general properties area for sub-classes
   $reporter->[REPORTER_CUSTOM_ATTRIBUTES]={};
   $reporter->[REPORTER_START_TIME]= time();
+  $reporter->[REPORTER_COMPATIBILITY]= '000000' unless defined $reporter->[REPORTER_COMPATIBILITY];
 
   return $reporter;
 }
@@ -204,6 +209,11 @@ sub updatePid {
   $pid =~ s{[\r\n]}{}is;
 
   $_[0]->[REPORTER_SERVER_INFO]->{pid} = $pid;
+}
+
+sub compatibility {
+  $_[0]->[REPORTER_COMPATIBILITY]= $_[1] if defined $_[1];
+  return $_[0]->[REPORTER_COMPATIBILITY];
 }
 
 sub monitor {

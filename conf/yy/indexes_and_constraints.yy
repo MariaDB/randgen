@@ -14,6 +14,9 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #include <conf/yy/include/basics.inc>
+#features GIS columns
+### GIS is included via the use of _basics_column_type
+
 
 query_init:
   CREATE DATABASE IF NOT EXISTS test

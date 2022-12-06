@@ -40,9 +40,19 @@ use File::Compare;
 
 use DBServer::MariaDB;
 
+use constant UPGRADE_ERROR_CODE => 101;
+
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
+  $self->numberOfServers(1,2);
+  if ($self->old_server_options()->{basedir} ne $self->new_server_options()->{basedir}) {
+    $self->printSubtitle('Upgrade/downgrade');
+    $self->[UPGRADE_ERROR_CODE]= STATUS_UPGRADE_FAILURE;
+  } else {
+    $self->printSubtitle('Same server');
+    $self->[UPGRADE_ERROR_CODE]= STATUS_RECOVERY_FAILURE;
+  }
   return $self;
 }
 
@@ -52,6 +62,10 @@ sub old_server_options {
 
 sub new_server_options {
   return $_[0]->getProperty('server_specific')->{2};
+}
+
+sub upgrade_or_recovery_failure {
+  return $_[0]->[UPGRADE_ERROR_CODE];
 }
 
 sub prepare_servers {
@@ -64,7 +78,7 @@ sub prepare_servers {
   $self->setServerSpecific(2,'vardir',$old_server->vardir);
   $self->setServerSpecific(2,'port',$old_server->port);
   $self->setServerSpecific(2,'start_dirty',1);
-  my $new_server= $self->prepareServer(2);
+  my $new_server= $self->prepareServer(2,my $is_active=1);
 
   say("-- Old server info: --");
   say($old_server->version());

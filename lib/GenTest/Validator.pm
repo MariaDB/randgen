@@ -52,4 +52,8 @@ sub setDbh {
   $_[0]->[VALIDATOR_DBH] = $_[1];
 }
 
+sub compatibility {
+  return '000000';
+}
+
 1;

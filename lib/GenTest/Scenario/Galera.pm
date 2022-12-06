@@ -47,6 +47,8 @@ use DBServer::MariaDB;
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
+  $self->numberOfServers(3);
+  $self->printSubtitle($self->numberOfServers()."-node topology");
   return $self;
 }
 
@@ -57,10 +59,6 @@ sub run {
   $topology= 'mss';
 
   my $srv_count= scalar(keys %{$self->getProperty('server_specific')});
-  if ($srv_count < length($topology)) {
-    sayError("There should be at least ".length($topology)." servers for the replication test");
-    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[]);
-  }
   my @servers= ();
 
   # Checking for wsrep-provider

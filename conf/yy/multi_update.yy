@@ -18,8 +18,8 @@
 # USA
 
 
-#features:
-  multi-update/delete ;
+#features: multi-update/delete
+
 
 query_init:
   { $total_dur = 0; "" };

@@ -16,6 +16,8 @@
 
 ########################################################################
 
+#features Spider engine, Spider tables
+
 query_init:
      get_charsets
      # We are doing it this way because otherwise set_db later may pick up a newly created empty spider database

@@ -28,6 +28,8 @@ use GenTest;
 use GenTest::Transform;
 use GenTest::Constants;
 
+sub compatibility { return '100601' }
+
 sub transform {
   my ($self, $query) = @_;
   return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is
@@ -40,7 +42,6 @@ sub transform {
 
 sub variate {
   my ($self, $query, $executor) = @_;
-  return $query unless versionN6($executor->server->version()) >= 100601;
 
   my $limit= $self->random->uint16(0,100);
   my $op= $self->random->arrayElement(['<','>','<=','>=','=']);

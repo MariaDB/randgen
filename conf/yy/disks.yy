@@ -19,9 +19,6 @@
 ########################################################################
 
 query:
-  ==FACTOR:0.001== disks_query ;
-
-disks_query:
   SELECT SUM(Total) > SUM(Available), SUM(Total)>SUM(Used) FROM INFORMATION_SCHEMA.DISKS |
   SELECT * FROM INFORMATION_SCHEMA.DISKS |
   SHOW CREATE TABLE INFORMATION_SCHEMA.DISKS

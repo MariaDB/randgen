@@ -32,7 +32,7 @@
 package GenTest::Scenario::ImportTablespace;
 
 require Exporter;
-@ISA = qw(GenTest::Scenario::Upgrade);
+@ISA = qw(GenTest::Scenario);
 
 use strict;
 use DBI;
@@ -52,8 +52,7 @@ use DBServer::MariaDB;
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
-
-  $self->printTitle('Discard/Import Tablespace');
+  $self->numberOfServers(1,1);
   return $self;
 }
 
@@ -66,7 +65,7 @@ sub run {
   #####
   # Prepare servers
 
-  $server= $self->prepare_servers();
+  $server= $self->prepareServer(1,my $is_active=1);
 
   #####
   $self->printStep("Starting the server");
@@ -148,7 +147,7 @@ sub run {
     # Workaround for MDEV-29966 -- invalid default prevents ALTER or CREATE .. LIKE
     ALTERFORCE:
     $dbh->do("ALTER TABLE ${tschema}.${tname} FORCE");
-    say("Result of ALTER TABLE $tname FORCE: ".($dbh->err ? $dbh->err.' '.$dbh->errstr : 'OK'));
+    sayDebug("Result of ALTER TABLE $tname FORCE: ".($dbh->err ? $dbh->err.' '.$dbh->errstr : 'OK'));
     if ($dbh->err == 1067 and $dbh->errstr =~ /Invalid default value for '(.*)'/) {
       $dbh->do("ALTER TABLE ${tschema}.${tname} ALTER `$1` DROP DEFAULT");
       if ($dbh->err) {

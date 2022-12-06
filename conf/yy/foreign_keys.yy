@@ -16,6 +16,8 @@
 ########################################
 
 #include <conf/yy/include/basics.inc>
+#features foreign keys
+
 
 query:
   { _set_db('user') } fk_query ;

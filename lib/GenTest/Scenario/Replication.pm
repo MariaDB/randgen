@@ -51,6 +51,7 @@ use DBServer::MariaDB;
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
+  $self->numberOfServers(2);
   return $self;
 }
 

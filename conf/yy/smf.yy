@@ -20,14 +20,6 @@
 ########################################################################
 
 query_init:
-  { $my_spec_file= "data/smf/smf.sql"
-    ; if (open(CONF, $my_spec_file)) {
-        read(CONF, my $spec_text, -s $my_spec_file)
-        ; close(CONF)
-        ; $spec_text
-      } else { print "ERROR: Could not load data from $my_spec_file: $!, proceeding without it\n" }
-  }
-  ;;
   # This is to prevent other grammars from altering the schema
   GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON smf_db.* TO CURRENT_USER
 ;

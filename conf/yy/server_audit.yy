@@ -19,7 +19,7 @@
 #
 
 query:
-    ==FACTOR:0.05== SET GLOBAL plugin_server_audit_var ;
+  SET GLOBAL plugin_server_audit_var ;
 
 plugin_server_audit_vars:
     plugin_server_audit_var | plugin_server_audit_var, plugin_server_audit_vars ;

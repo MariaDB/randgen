@@ -21,7 +21,7 @@
 ####################################
 
 #include <conf/yy/include/basics.inc>
-
+#features Aria tables
 
 query_init:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')

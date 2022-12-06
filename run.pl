@@ -363,6 +363,10 @@ foreach my $trial_id (1..$trials)
 
   my $config = GenTest::Properties->init($props);
   my $sc= $class->new(properties => $config, scenario_options => \%scenario_options);
+  unless (defined $sc) {
+    $status= STATUS_ENVIRONMENT_FAILURE;
+    last;
+  }
   my $res= STATUS_PERL_FAILURE;
   eval { $res= $sc->run(); } ; warn $@ if $@;
   $status= $res if $res > $status;

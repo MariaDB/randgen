@@ -14,17 +14,21 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #include <conf/yy/include/basics.inc>
+#features Aria tables, foreign keys, virtual columns
 
 
 query_init:
   { $tbnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' }
-     CREATE DATABASE IF NOT EXISTS alt_table_db ;; { _set_db('alt_table_db' }
-  ;; alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace
+     CREATE DATABASE IF NOT EXISTS alt_table_db ;; { _set_db('alt_table_db') }
+     alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace
   ;; alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace
   ;; alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace
 ;
 
 query:
+  { $in_new_table= 0; $colnum= 0; '' } alt_query;
+
+alt_query:
                    { _set_db('alt_table_db') } alt_create
   | ==FACTOR:20==  { _set_db('user') } alt_alter
   | ==FACTOR:0.1== { _set_db('alt_table_db') } alt_rename_multi
@@ -181,8 +185,8 @@ alt_storage_optional:
 ;
 
 alt_alter_partitioning:
-    ALTER TABLE _basetable PARTITION BY HASH(_field)
-  | ALTER TABLE _basetable PARTITION BY KEY(_field)
+    ALTER TABLE _basetable PARTITION BY HASH(alt_col_name)
+  | ALTER TABLE _basetable PARTITION BY KEY(alt_col_name)
   | ALTER TABLE _basetable REMOVE PARTITIONING
 ;
 
@@ -196,15 +200,15 @@ alt_new_table_name:
 ;
 
 alt_col_name:
- { $new_col_next_num > 0 ? 'alt_new_col_name' : '_field' } ;
+ { $in_new_table ? 'altcol'.$prng->uint16(1,$colnum) : '_field' } ;
 ;
 
 alt_new_col_name:
-  { 'altcol'.($new_col_next_num++) } ;
+  { 'altcol'.(++$colnum) } ;
 
 alt_new_or_existing_col_name:
   ==FACTOR:10== alt_new_col_name |
-  _field
+  alt_col_name
 ;
 
 alt_col_definition:
@@ -234,13 +238,13 @@ alt_invisible_optional:
 ;
 
 alt_virt_col_definition:
-    alt_int_type AS ( _field + _digit )
-  | alt_num_type AS ( _field + _digit )
-  | alt_temporal_type AS ( _field )
-  | alt_timestamp_type AS ( _field )
-  | alt_text_type AS ( SUBSTR(_field, _digit, _digit ) )
-  | alt_enum_type AS ( _field )
-  | alt_geo_type AS ( _field )
+    alt_int_type AS ( alt_col_name + _digit )
+  | alt_num_type AS ( alt_col_name + _digit )
+  | alt_temporal_type AS ( alt_col_name )
+  | alt_timestamp_type AS ( alt_col_name )
+  | alt_text_type AS ( SUBSTR(alt_col_name, _digit, _digit ) )
+  | alt_enum_type AS ( alt_col_name )
+  | alt_geo_type AS ( alt_col_name )
 ;
 
 alt_virt_type:
@@ -272,12 +276,12 @@ alt_default_optional_int_or_auto_increment:
 ;
 
 alt_create_or_replace:
-  { $new_col_next_num = 1; '' } CREATE OR REPLACE alt_temporary TABLE alt_new_or_existing_table_name (alt_col_name_and_definition_list) alt_table_flags { $new_col_next_num = 0; '' }
+  { $in_new_table= 1; '' } CREATE OR REPLACE alt_temporary TABLE alt_new_or_existing_table_name (alt_col_name_and_definition_list) alt_table_flags { $in_new_table=0; '' }
 ;
 
 alt_col_name_and_definition_list:
-  alt_col_name alt_col_definition |
-  alt_col_name alt_col_definition, alt_col_name_and_definition_list
+  alt_new_col_name alt_col_definition |
+  alt_new_col_name alt_col_definition, alt_col_name_and_definition_list
 ;
 
 alt_table_flags:
@@ -314,7 +318,7 @@ alt_create_like:
 
 alt_add_column:
     ADD alt_column_optional __if_not_exists(95) alt_col_new_name alt_col_definition alt_col_location alt_algorithm alt_lock
-  | { $new_col_next_num = 1; '' } ADD alt_column_optional __if_not_exists(95) ( alt_col_name_and_definition_list ) alt_algorithm alt_lock { $new_col_next_num = 0; '' }
+  | ADD alt_column_optional __if_not_exists(95) ( alt_col_name_and_definition_list ) alt_algorithm alt_lock
 ;
 
 alt_column_optional:
@@ -322,24 +326,24 @@ alt_column_optional:
 ;
 
 alt_col_location:
-  | | | | | FIRST | AFTER _field
+  | | | | | FIRST | AFTER alt_col_name
 ;
 
 alt_modify_column:
-  MODIFY COLUMN __if_exists(95) _field alt_col_definition alt_col_location alt_algorithm alt_lock
+  MODIFY COLUMN __if_exists(95) alt_col_name alt_col_definition alt_col_location alt_algorithm alt_lock
 ;
 
 alt_change_column:
-  CHANGE COLUMN __if_exists(95) _field alt_new_or_existing_col_name alt_col_definition alt_algorithm alt_lock
+  CHANGE COLUMN __if_exists(95) alt_col_name alt_new_or_existing_col_name alt_col_definition alt_algorithm alt_lock
 ;
 
 alt_alter_column:
-    ALTER COLUMN __if_exists(95) _field SET DEFAULT alt_default_val
-  | ALTER COLUMN _field DROP DEFAULT
+    ALTER COLUMN __if_exists(95) alt_col_name SET DEFAULT alt_default_val
+  | ALTER COLUMN alt_col_name DROP DEFAULT
 ;
 
 alt_drop_column:
-  DROP COLUMN __if_exists(95) _field alt_algorithm alt_lock
+  DROP COLUMN __if_exists(95) alt_col_name alt_algorithm alt_lock
 ;
 
 alt_add_index:
@@ -352,8 +356,8 @@ alt_drop_index:
 ;
 
 alt_column_list:
-  ==FACTOR:3== _field |
-  _field, alt_column_list
+  ==FACTOR:3== alt_col_name |
+  alt_col_name, alt_column_list
 ;
 
 alt_temporary:
@@ -467,8 +471,8 @@ alt_drop_check_constraint:
 
 # TODO: extend
 alt_check_constraint_expression:
-  _field alt_operator _field |
-  _field alt_operator _digit
+  alt_col_name alt_operator alt_col_name |
+  alt_col_name alt_operator _digit
 ;
 
 alt_operator:
@@ -508,15 +512,15 @@ alt_optional_index_or_key:
 ;
 
 alt_key_column_list:
-  ==FACTOR:3== _field __asc_x_desc(10,20) |
-  _field __asc_x_desc(10,20), alt_key_column_list
+  ==FACTOR:3== alt_col_name __asc_x_desc(10,20) |
+  alt_col_name __asc_x_desc(10,20), alt_key_column_list
 ;
 
 alt_any_key:
-  ==FACTOR:4== alt_index(_field __asc_x_desc(10,20)) |
+  ==FACTOR:4== alt_index(alt_col_name __asc_x_desc(10,20)) |
   ==FACTOR:2== alt_index(alt_key_column_list) |
-  ==FACTOR:0.1== FULLTEXT KEY(_field) |
-  ==FACTOR:0.0001== SPATIAL INDEX(_field)
+  ==FACTOR:0.1== FULLTEXT KEY(alt_col_name) |
+  ==FACTOR:0.0001== SPATIAL INDEX(alt_col_name)
 ;
 
 alt_comment:

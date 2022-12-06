@@ -53,8 +53,7 @@ our $end_time;
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
-
-  $self->printTitle('Full MariaBackup');
+  $self->printSubtitle('Incremental backup');
   return $self;
 }
 
@@ -76,6 +75,14 @@ sub run {
     return $self->finalize(STATUS_TEST_FAILURE,[]);
   }
 
+  #####
+  $self->printStep("Generating test data");
+  $self->generateData();
+
+  if ($status != STATUS_OK) {
+    sayError("Data generation failed");
+    return $self->finalize($status,[$server]);
+  }
   #####
 
   unless ($mbackup= $server->mariabackup) {
@@ -157,14 +164,14 @@ sub run {
   }
   else {
     $self->printStep("Running test flow on the server");
-    $gentest= GenTest::TestRunner->new(config => $self->getProperties());
-    my $res= $gentest->run();
-    exit $res;
+    $status= $self->runTestFlow();
+    exit $status;
   }
 
   #####
   $self->printStep("Stopping the server");
 
+  set_expectation($server->vardir,"-1\n(don't wait)");
   $status= $server->stopServer;
 
   if ($status != STATUS_OK) {
@@ -173,8 +180,14 @@ sub run {
   }
 
   waitpid($gentest_pid, 0);
+  $status= ($? >> 8);
+  if ($status != STATUS_OK) {
+    sayError("Test flow failed");
+    return $self->finalize($status,[$server]);
+  }
 
   #####
+  unset_expectation($server->vardir);
   $self->printStep("Checking the server log for fatal errors after shutdown");
 
   $status= $self->checkErrorLog($server, {CrashOnly => 1});

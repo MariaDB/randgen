@@ -19,8 +19,8 @@ thread1_init:
     dynvar_initial_settings;
 
 query:
-    ==FACTOR:0.01==   SET SESSION dynvar_session_variable
-  | ==FACTOR:0.001== SET GLOBAL dynvar_global_variable_runtime
+                   SET SESSION dynvar_session_variable
+  | ==FACTOR:0.1== SET GLOBAL dynvar_global_variable_runtime
 ;
 
 dynvar_initial_settings:

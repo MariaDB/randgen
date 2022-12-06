@@ -46,6 +46,7 @@ sub monitor {
   my $max_result = STATUS_OK;
 
   foreach my $reporter (@{$manager->reporters()}) {
+    next if isOlderVersion($reporter->server->version(),$reporter->compatibility);
     if ($reporter->type() & $desired_type) {
       my $reporter_result = STATUS_OK;
       eval {
@@ -65,6 +66,7 @@ sub report {
   my $max_result = STATUS_OK;
 
   foreach my $reporter (@{$manager->reporters()}) {
+    next if isOlderVersion($reporter->server->version(),$reporter->compatibility);
     if ($reporter->type() & $desired_type) {
       my @reporter_results = $reporter->report();
       my $reporter_result = shift @reporter_results;

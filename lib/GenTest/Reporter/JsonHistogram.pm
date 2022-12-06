@@ -14,7 +14,11 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
+########################################################################
+# MDEV-21130, MDEV-26519 JSON histograms (10.8.1)
+#
 # The reporter checks the basic health of calculated JSON histograms
+########################################################################
 
 package GenTest::Reporter::JsonHistogram;
 
@@ -32,6 +36,14 @@ use GenTest::Executor::MariaDB;
 use DBI;
 use Data::Dumper;
 use POSIX;
+1;
+
+sub new {
+  my $class = shift;
+  my $reporter = $class->SUPER::new(@_);
+  $reporter->compatibility('100801');
+  return $reporter;
+}
 
 my $dbh;
 
@@ -100,7 +112,6 @@ sub monitor {
 }
 
 sub report {
-
   my $reporter = shift;
   say("JsonHistogram: Checked ".($valid_count + $invalid_count + $null_count)." histograms. Valid: $valid_count, NULLs: $null_count, invalid: $invalid_count");
   return STATUS_OK;

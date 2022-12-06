@@ -18,7 +18,7 @@
 ####################################################
 
 #include <conf/yy/include/basics.inc>
-#features system-versioned tables
+#features system-versioned tables, Aria tables
 
 
 # DDL-rich grammar requires frequent metadata reload

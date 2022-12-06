@@ -19,7 +19,7 @@ query_init:
   { $indnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
 
 query:
-  ==FACTOR:0.1== { _set_db('user') } alttind_query ;
+  { _set_db('user') } alttind_query ;
 
 alttind_query:
   ==FACTOR:10==  ALTER __online(20) __ignore(20) TABLE _basetable _basics_wait_nowait alttind_list_with_optional_order_by |

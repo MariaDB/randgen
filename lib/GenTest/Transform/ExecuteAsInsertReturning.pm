@@ -27,6 +27,7 @@ use GenTest;
 use GenTest::Transform;
 use GenTest::Constants;
 
+sub compatibility { return '100500' }
 
 sub transform {
   my ($class, $query, $executor) = @_;
@@ -54,7 +55,6 @@ sub variate {
 
 sub modify {
   my ($self, $query, $executor,$transform_outcome)= @_;
-  return [ $query ] unless $executor->server->versionNumeric() >= 100501;
   my $table_name = 'tmp_ExecuteAsInsertReturning_'.abs($$);
   return [
     'SET @tx_read_only.save= @@session.tx_read_only',

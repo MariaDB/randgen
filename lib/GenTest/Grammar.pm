@@ -38,7 +38,7 @@ use constant GRAMMAR_STRING    => 2;
 use constant GRAMMAR_FEATURES  => 3;
 use constant GRAMMAR_REDEFINES => 4;
 use constant GRAMMAR_SERVER_VERSION_COMPATIBILITY => 5;
-use constant GRAMMAR_WEIGHT    => 5;
+use constant GRAMMAR_WEIGHT    => 6;
 
 1;
 
@@ -53,11 +53,13 @@ sub new {
 
   $grammar->[GRAMMAR_FEATURES]= [];
   $grammar->[GRAMMAR_RULES] = {};
+
   $grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY]= (
     defined $grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY]
     ? versionN6($grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY])
     : '000000'
   );
+
   # A grammar file can optionally end with :number. It indicates
   # the relative weight of the grammar among all configured grammars.
   # The weights will be normalized after all grammar parsing
@@ -168,13 +170,6 @@ sub parseFromString {
   # - #compatibility <version>[,<version>...]
   # - #feature <feature>[,<feature>...]
 
-  while ($grammar_string =~ s{#compatibility\s+([-\d\.]+).*$}{}mi) {
-    unless ($grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY] eq '000000' or $grammar->check_compatibility($1,my $positive_check=1)) {
-      sayWarning("Grammar ".$grammar->file." does not meet compatibility requirements, ignoring");
-      return;
-    }
-  }
-
   while ($grammar_string =~ s{#include [<"](.*?)[>"]$}{
     {
       my $include_string;
@@ -183,6 +178,13 @@ sub parseFromString {
             read (IF, $include_string, -s $include_file) or die "Unable to open $include_file: $!";
       $include_string;
   }}mie) {};
+
+  while ($grammar_string =~ s{#compatibility\s+([-\d\.]+).*$}{}mi) {
+    unless ($grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY] eq '000000' or $grammar->check_compatibility($1,my $positive_check=1)) {
+      sayWarning("Grammar ".$grammar->file." does not meet compatibility requirements, ignoring");
+      return;
+    }
+  }
 
   while ($grammar_string =~ s{#features?\s+([- \/\w\d,]+)}{}mi) {
     push @{$grammar->[GRAMMAR_FEATURES]}, map { s/^\s*(.*?)\s*$/$1/; $_ } split /,/, $1;

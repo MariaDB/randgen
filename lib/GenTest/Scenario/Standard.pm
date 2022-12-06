@@ -45,7 +45,7 @@ use DBServer::MariaDB;
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
-  $self->printTitle();
+  $self->numberOfServers(1,1);
   return $self;
 }
 
@@ -55,9 +55,6 @@ sub run {
 
   $status= STATUS_OK;
 
-  if (scalar(keys %{$self->getProperty('server_specific')}) > 1) {
-    sayWarning("Multiple servers have been configured, but only the first one will be used");
-  }
   $server= $self->prepareServer(1, my $is_active=1);
 
   #####
@@ -69,7 +66,6 @@ sub run {
     sayError("Server failed to start");
     return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[]);
   }
-  $self->setProperty('compatibility',$server->version()) unless $self->getProperty('compatibility');
 
   #####
   $self->printStep("Generating test data");

@@ -937,43 +937,41 @@ sub normalizeDump {
     close(DUMP1);
     close(DUMP2);
   }
-  if ($self->versionNumeric() ge '100201') {
-    say("normalizeDump patches DEFAULT clauses for version ".$self->versionNumeric);
-    move($file, $file.'.tmp2');
-    open(DUMP1,$file.'.tmp2');
-    open(DUMP2,">$file");
-    while (<DUMP1>) {
-      # In 10.2 blobs can have a default clause
-      # `col_blob` blob NOT NULL DEFAULT ... => `col_blob` blob NOT NULL.
-      s/(\s+(?:blob|text|mediumblob|mediumtext|longblob|longtext|tinyblob|tinytext)(?:\s*NOT\sNULL)?)\s*DEFAULT\s*(?:\d+|NULL|\'[^\']*\')\s*(.*)$/${1}${2}/;
-      # `k` int(10) unsigned NOT NULL DEFAULT '0' => `k` int(10) unsigned NOT NULL DEFAULT 0
-      s/(DEFAULT\s+)([\.\d]+)(.*)$/${1}\'${2}\'${3}/;
-      # DEFAULT current_timestamp() ON UPDATE current_timestamp() => DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-      s/DEFAULT current_timestamp\(\)/DEFAULT CURRENT_TIMESTAMP/g;
-      s/ON UPDATE current_timestamp\(\)/ON UPDATE CURRENT_TIMESTAMP/g;
+  # MDEV-29001
+  say("normalizeDump patches absent DEFAULT NULL clauses (workaround for MDEV-29001)");
+  move($file, $file.'.tmp2');
+  open(DUMP1,$file.'.tmp2');
+  open(DUMP2,">$file");
+  while (<DUMP1>) {
+    # -  `col_date_nokey` date,
+    # +  `col_date_nokey` date DEFAULT NULL,
+    # etc.
+    if (/^(\s+\`.*?\`\s+\w+(?:\(\d+\))?.*?)(,?)$/) {
+      my $def= $1;
+      my $last= $2 || '';
+      if ($def !~ /(?:DEFAULT NULL|NOT NULL|GENERATED ALWAYS)/) {
+        $def= $def." DEFAULT NULL";
+      }
+      print DUMP2 "$def$last";
+    } else {
       print DUMP2 $_;
     }
-    close(DUMP1);
-    close(DUMP2);
   }
-  if ($self->versionNumeric() le '100100') {
-    say("normalizeDump patches PERSISTENT NULL etc. for version ".$self->versionNumeric()." (MDEV-5614)");
-    move($file, $file.'.tmp3');
-    open(DUMP1,$file.'.tmp3');
-    open(DUMP2,">$file");
-    while (<DUMP1>) {
-      # In 10.0 SHOW CREATE TABLE shows things like
-      #   `vcol_timestamp` timestamp(3) AS (col_timestamp) VIRTUAL NULL ON UPDATE CURRENT_TIMESTAMP(3)
-      # or
-      #   `vcol_timestamp` timestamp(5) AS (col_timestamp) PERSISTENT NULL
-      # which makes CREATE TABLE invalid (MDEV-5614, fixed in 10.1+)
-      s/(PERSISTENT|VIRTUAL) NULL/$1/g;
-      s/(PERSISTENT|VIRTUAL) ON UPDATE CURRENT_TIMESTAMP(?:\(\d?\))?/$1/g;
-      print DUMP2 $_;
-    }
-    close(DUMP1);
-    close(DUMP2);
+  close(DUMP1);
+  close(DUMP2);
+
+  # When a table is altered e.g. to a new engine and some options are not
+  # supported, the unsupported options are wrapped into a comment
+  say("normalizeDump removes non-executable comments");
+  move($file, $file.'.tmp3');
+  open(DUMP1,$file.'.tmp3');
+  open(DUMP2,">$file");
+  while (<DUMP1>) {
+    s/ \/\* .*?\*\///g;
+    print DUMP2 $_;
   }
+  close(DUMP1);
+  close(DUMP2);
 
   if ($self->versionNumeric() gt '050701') {
     say("normalizeDump removes _binary for version ".$self->versionNumeric);
@@ -1011,7 +1009,7 @@ sub normalizeDump {
   # in 10.3.37, 10.4.27, 10.5.18, 10.6.11, 10.7.7, 10.8.6, 10.9.4, 10.10.2.
   # We can't know whether it was a part of the original definition or not,
   # so we have to remove it unconditionally.
-  say("normalizeDump removes COLLATE clause from table and other definitions definitions");
+  say("normalizeDump removes COLLATE clause from table and other object definitions");
   move($file, $file.'.tmp6');
   open(DUMP1,$file.'.tmp6');
   open(DUMP2,">$file");
@@ -1041,7 +1039,7 @@ sub normalizeDump {
 
 sub nonSystemDatabases {
   my $self= shift;
-  return @{$self->dbh->selectcol_arrayref(
+  return sort @{$self->dbh->selectcol_arrayref(
       "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA ".
       "WHERE LOWER(SCHEMA_NAME) NOT IN ('mysql','information_schema','performance_schema','sys')"
     )
@@ -1130,7 +1128,7 @@ sub checkDatabaseIntegrity {
   $dbh->do("SET max_statement_time= 0");
   my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
   ALLDBCHECK:
-  foreach my $database (@$databases) {
+  foreach my $database (sort @$databases) {
       my $db_status= DBSTATUS_OK;
       next if $database =~ m{^(information_schema|pbxt|performance_schema|sys)$}is;
       my $tabl_ref = $dbh->selectall_arrayref("SELECT TABLE_NAME, TABLE_TYPE, ENGINE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database'");
@@ -1324,19 +1322,24 @@ sub waitForServerToStart {
 
 sub plannedDowntime {
   my $self= shift;
-  if (-e $self->vardir.'/wait_for_restart') {
-    sayWarning("Planned downtime, waiting for the server to return...");
-    if ($self->waitForServerToStart()) {
-      say("The server is back");
-      return DBSTATUS_OK;
+  my $downtime= 0;
+  if (-e $self->vardir.'/expect') {
+    if (open(DOWNTIME,$self->vardir.'/expect')) {
+      $downtime= <DOWNTIME>;
+      chomp $downtime;
+      close(DOWNTIME);
     } else {
-      sayError("The server hasn't returned");
-      return DBSTATUS_FAILURE;
+      sayError("Could not check for the expect flag: $!");
     }
-  } else {
-    sayError("The downtime isn't planned");
-    return DBSTATUS_FAILURE;
   }
+  if ($downtime > 0) {
+    say("Planned downtime, wait for $downtime seconds");
+  } elsif ($downtime < 0) {
+    say("Planned downtime, don't wait");
+  } else {
+    sayWarning("The downtime isn't planned");
+  }
+  return $downtime;
 }
 
 sub backupDatadir {

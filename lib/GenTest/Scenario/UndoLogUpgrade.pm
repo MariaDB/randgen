@@ -71,13 +71,7 @@ use DBServer::MariaDB;
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
-
-  if ($self->old_server_options()->{basedir} eq $self->new_server_options()->{basedir}) {
-    $self->printTitle('Undo log recovery');
-  }
-  else {
-    $self->printTitle('Undo log upgrade/downgrade');
-  }
+  $self->numberOfServers(1,2);
 
   my @mysqld_options= @{$self->old_server_options()->{mysqld}};
   if ( "@mysqld_options" !~ /innodb[-_]change[-_]buffering=/) {
@@ -89,8 +83,6 @@ sub new {
     push @mysqld_options, '--loose-innodb-change-buffering=none';
     $self->setServerSpecific(2,'mysqld_options',\@mysqld_options);
   }
-
-  $self->backupProperties();
 
   return $self;
 }
@@ -164,6 +156,7 @@ sub run {
   #####
   $self->printStep("Killing the old server");
 
+  set_expectation($old_server->vardir,"-1\n(don't wait)");
   $status= $old_server->kill;
 
   if ($status != STATUS_OK) {
@@ -171,9 +164,12 @@ sub run {
     return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
   }
 
-  # We don't care about the result of gentest after killing the server,
-  # but we need to ensure that the process exited
   waitpid($gentest_pid, 0);
+  $status= ($? >> 8);
+  if ($status != STATUS_OK) {
+    sayError("Test flow failed");
+    return $self->finalize($status,[$old_server]);
+  }
 
   #####
   $self->printStep("Checking the old server log for fatal errors after killing");
@@ -192,6 +188,7 @@ sub run {
   move($old_server->errorlog, $old_server->errorlog.'_orig');
 
   #####
+  unset_expectation($old_server->vardir);
   $self->printStep("Restarting the old server with innodb-force-recovery");
 
   $self->setServerSpecific(1,'start_dirty',1);
@@ -205,7 +202,7 @@ sub run {
   }
 
   #####
-  $self->printStep("Stopping the old server");
+  $self->printStep("Stopping the old server after crash recovery");
 
   # We don't want to stop too quickly, it seems to cause problems
   # with some old servers

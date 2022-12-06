@@ -72,6 +72,7 @@ sub new {
   # (and we don't want any to be added automatically which happens when we don't provide any)
 
   my @v = @{$mixer->validators()};
+  VLD:
   foreach my $i (0..$#v) {
     next if $v[$i] =~ /^none$/i;
     my $validator = $v[$i];
@@ -79,9 +80,12 @@ sub new {
       $validator = "GenTest::Validator::".$validator;
       say("Mixer: Loading Validator $validator.");
       eval "use $validator" or print $@;
-      push @validators, $validator->new();
-
-            $validators[$i]->configure($mixer->properties);
+      my $instance= $validator->new();
+      foreach my $e (@{$mixer->executors()}) {
+        next VLD if isOlderVersion($e->server->version(),$instance->compatibility);
+      }
+      push @validators, $instance;
+      $validators[$i]->configure($mixer->properties);
     }
     $validators{ref($validators[$#validators])}++;
   }
@@ -165,11 +169,26 @@ sub next {
           or $execution_result->status() == STATUS_SERVER_UNAVAILABLE
          )
       {
-        if ($executor->server->plannedDowntime() == STATUS_OK) {
-          say("Mixer: Server is back, repeating the last query");
-          redo EXECUTE_QUERY;
+        my $downtime= $executor->server->plannedDowntime();
+        if ($downtime > 0) {
+          sayDebug("Mixer: waiting for $downtime seconds for the server to return");
+          do {
+            sleep 1;
+            last if ($executor->server->running);
+            $downtime--;
+          } until ($downtime);
+          if ($downtime) {
+            say("Server returned in time, re-running the last query");
+            redo EXECUTE_QUERY;
+          } else {
+            sayError("Mixer: Server didn't return after planned downtime");
+          }
+        } elsif ($downtime < 0) {
+          sayDebug("Mixer: instructed not to wait");
+          $max_status= STATUS_EOF;
+          last query;
         } else {
-          say("Mixer: Server has gone away");
+          sayError("Mixer: Server has gone away");
         }
       }
       $max_status = $execution_result->status() if $execution_result->status() > $max_status;

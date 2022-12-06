@@ -28,6 +28,8 @@
 
 #include <conf/yy/include/basics.inc>
 #compatibility 10.4.0
+#features Aria tables, application periods, foreign keys, system-versioned tables, virtual columns
+### system-versioned tables included via _basics_column_specification
 
 #
 # Pre-create simple tables, to make sure they all exist

@@ -124,6 +124,11 @@ sub random {
   return $_[0]->[TRANSFORMER_RANDOM];
 }
 
+# To be overridden in a transformer if necessary
+sub compatibility {
+  return '000000';
+}
+
 sub transformExecuteValidate {
     my ($transformer, $original_query, $original_result, $executor, $skip_result_validations) = @_;
 
@@ -317,6 +322,7 @@ sub variate_query {
   my @queries= ($orig_query);
   VARIATOR:
   foreach my $v (@variators) {
+    next if isOlderVersion($executor->server->version(),$v->compatibility);
     my @new_queries= ();
     QUERY:
     foreach my $q (@queries) {

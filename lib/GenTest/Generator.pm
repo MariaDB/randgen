@@ -67,6 +67,11 @@ sub new {
     'parser_mode'          => GENERATOR_PARSER_MODE,
   }, @_);
 
+  return $generator;
+}
+
+sub adjustWeights {
+  my $generator= shift;
   if ($generator->[GENERATOR_GRAMMARS]) {
     # Adjust (normalize) grammar weights
     my $multiplier= 1;
@@ -84,7 +89,6 @@ sub new {
     # GRAMMAR array, the count of each ID is based on the grammar weight
     $generator->[GENERATOR_GRAMMAR_POOL]= [ @grammar_pool ];
   }
-  return $generator;
 }
 
 sub prng {

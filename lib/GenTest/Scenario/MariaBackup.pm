@@ -45,15 +45,14 @@ use constant MARIABACKUP_BACKUP_INTERVAL => 51;
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
-  $self->[MARIABACKUP_BACKUP_INTERVAL]= $self->scenarioOptions->{backup_interval} || 30;
-
+  $self->[MARIABACKUP_BACKUP_INTERVAL]= $self->scenarioOptions->{backup_interval} || int($self->getProperty('duration')/2);
   return $self;
 }
 
 sub prepare_server {
   my $self= shift;
 
-  my $server= $self->prepareServer(1);
+  my $server= $self->prepareServer(1,my $is_active=1);
   say("-- Server info: --");
   say($server->version());
   $server->printServerOptions();
@@ -70,7 +69,7 @@ sub mbackup_backup_interval {
 # and -1 if it hung
 sub run_mbackup_in_background {
     my ($self, $cmd, $end_time)= @_;
-    my $vardir= $self->getServerSpecific(1,'vardir');
+    my $vardir= $self->getProperty('vardir');
     open(MBACKUP,">$vardir/mbackup_script") || die "Could not open $vardir/mbackup_script for writing: $!\n";
     print(MBACKUP "rm -f $vardir/mbackup_exit_code $vardir/mbackup_pid\n");
     print(MBACKUP "$cmd 2>&1 || echo \$? > $vardir/mbackup_exit_code &\n");

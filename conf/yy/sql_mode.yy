@@ -15,12 +15,7 @@
 
 
 query:
-  ==FACTOR:0.01== sql_mode_set
-;
-
-sql_mode_set:
-  SET sql_mode_session_or_global SQL_MODE= sql_mode_value
-;
+  SET sql_mode_session_or_global SQL_MODE= sql_mode_value ;
 
 sql_mode_session_or_global:
   | | | | | SESSION | SESSION | SESSION | GLOBAL

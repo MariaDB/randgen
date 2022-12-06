@@ -19,7 +19,7 @@
 #
 
 query:
-  ==FACTOR:0.05== SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO metadata_lock_info_where
+  SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO metadata_lock_info_where
 ;
 
 metadata_lock_info_where:

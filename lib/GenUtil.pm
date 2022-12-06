@@ -25,7 +25,7 @@ use base 'Exporter';
            'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp',
            'rqg_debug', 'unix2winPath', 'versionN6',
            'isNewerVersion', 'isOlderVersion',
-           'shorten_message');
+           'shorten_message', 'set_expectation', 'unset_expectation');
 
 use strict;
 
@@ -227,6 +227,7 @@ sub versionN6 {
     return $version;
   } else {
     sayError("Unknown version format: $version");
+    confess();
     return $version;
   }
 }
@@ -243,6 +244,29 @@ sub isOlderVersion {
   $ver1= versionN6($ver1);
   $ver2= versionN6($ver2);
   return $ver1 lt $ver2;
+}
+
+# Dictionary:
+# - positive number in server-specific vardir: number of seconds to wait
+#   for the server to come back
+# - negative number in server-specific vardir (-1 normally): downtime
+#   is expected, but there is no need to wait
+# - 0 in server-specific vardir (treated the same as the absence of file):
+#   downtime is not expected
+# maybe TBC
+sub set_expectation {
+  my ($location, $text)= @_;
+  if (open(WAITFILE,">$location/expect")) {
+    print WAITFILE "$text\n";
+    close(WAITFILE);
+  } else {
+    sayError("Could not create expectation flag at $location: $!");
+  }
+}
+
+sub unset_expectation {
+  my $location= shift;
+  unlink("$location/expect");
 }
 
 1;

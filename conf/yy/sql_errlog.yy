@@ -19,7 +19,7 @@
 #
 
 query:
-    ==FACTOR:0.05== SET GLOBAL plugin_sql_errlog_vars ;
+  SET GLOBAL plugin_sql_errlog_vars ;
 
 plugin_sql_errlog_vars:
     plugin_sql_errlog_var | plugin_sql_errlog_var | plugin_sql_errlog_var |

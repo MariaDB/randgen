@@ -32,9 +32,10 @@ use GenTest;
 use GenTest::Transform;
 use GenTest::Constants;
 
+sub compatibility { return '100601' }
+
 sub variate {
   my ($self, $query, $executor) = @_;
-  return [ $query ] unless $executor->server->versionNumeric() >= 100601;
   return [ $query ] if $query !~ /^\s*(?:\/\*.*?\*\/\s*)?SELECT/;
 
   my $offset_clause= ($self->random->uint16(0,1) ?
@@ -76,7 +77,6 @@ sub variate {
 
 sub transform {
   my ($self, $orig_query, $executor) = @_;
-  return STATUS_WONT_HANDLE unless $executor->server->versionNumeric() >= 100601;
   return STATUS_WONT_HANDLE if ($orig_query !~ /SELECT/ or
     $orig_query =~ /(?:OUTFILE|INFILE|PROCESSLIST|INTO|PREPARE)/);
 

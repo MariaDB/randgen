@@ -51,13 +51,7 @@ use DBServer::MariaDB;
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
-
-  if (!$self->getTestType) {
-    $self->setTestType('normal');
-  }
-
-  $self->printTitle($self->getTestType." restart");
-
+  $self->numberOfServers(1,1);
   return $self;
 }
 
@@ -67,7 +61,7 @@ sub run {
 
   $status= STATUS_OK;
 
-  $server= $self->prepareServer(1);
+  $server= $self->prepareServer(1, my $is_active=1);
 
   #####
   $self->printStep("Starting the server");
@@ -91,8 +85,10 @@ sub run {
 
   #####
   my $test_end=time() + $self->getProperty('duration');
-  my $restart_interval= $self->scenarioOptions->{restart_interval} || 30;
+  my $restart_interval= $self->scenarioOptions->{restart_interval} || int($self->getProperty('duration') / 4);
   my $shutdown_timeout= $self->scenarioOptions->{shutdown_timeout} || 120;
+
+  my $gentest_pid= undef;
 
   while ( ( my $remaining_time= $test_end - time() ) > 0 )
   {
@@ -101,7 +97,7 @@ sub run {
     #####
     $self->printStep("Running test flow (for $timeout sec)");
 
-    my $gentest_pid= fork();
+    $gentest_pid= fork();
     if (not defined $gentest_pid) {
       sayError("Failed to fork for running the test flow");
       return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
@@ -134,23 +130,14 @@ sub run {
 
     #####
 
-    if ($self->getTestType eq 'crash') {
-      $self->printStep("killing the server");
-      $status= $server->kill;
-    } else {
-      $self->printStep("Stopping the server");
-      $status= $server->stopServer($shutdown_timeout);
-    }
+    $self->printStep("Stopping the server");
+    set_expectation($server->vardir,"120\n(seconds to wait)");
+    $status= $server->stopServer($shutdown_timeout);
 
     if ($status != STATUS_OK) {
       sayError("Could not stop the server");
-      return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+      return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
     }
-
-    # We don't care about the result of gentest after stopping the server,
-    # but we need to ensure that the process exited
-    kill(-9, $gentest_pid);
-    waitpid($gentest_pid, 0);
 
     #####
     $self->printStep("Checking the server log for fatal errors after stopping");
@@ -165,6 +152,7 @@ sub run {
     #####
     $self->printStep("Restarting the server");
 
+    unset_expectation($server->vardir);
     $server->setStartDirty(1);
     $status= $server->startServer;
 
@@ -188,6 +176,15 @@ sub run {
       }
     }
   }
+
+  # Now we wait for the gentest to finish if it hasn't yet
+  waitpid($gentest_pid, 0);
+  $status= ($? >> 8);
+  if ($status != STATUS_OK) {
+    sayError("Test flow failed");
+    return $self->finalize($status,[$server]);
+  }
+
 
   #####
   $self->printStep("Stopping the server");

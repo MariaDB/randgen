@@ -15,6 +15,9 @@
 # USA
 
 #include <conf/yy/include/basics.inc>
+#features GIS columns, system-versioned tables
+### GIS is included via _basics_column_type
+### system-versioned tables is included via _basics_column_attributes
 
 query:
   { _set_db('user') } crea_query;

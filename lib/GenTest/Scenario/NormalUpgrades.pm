@@ -68,13 +68,6 @@ my ($status, $old_server, $new_server, $databases, $vardir, $old_grants);
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
-  if ($self->old_server_options()->{basedir} eq $self->new_server_options()->{basedir}) {
-    $same_server= 1;
-    $self->printTitle('Normal restart');
-  }
-  else {
-    $self->printTitle('Normal upgrade/downgrade');
-  }
   return $self;
 }
 

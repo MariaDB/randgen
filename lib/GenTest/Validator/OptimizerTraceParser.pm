@@ -74,9 +74,9 @@ BEGIN {
         require JSON;
         $have_json = 1;
     }
-
-
 }
+
+sub compatibility { return '100500' };
 
 sub validate {
     my ($validator, $executors, $results) = @_;
@@ -190,12 +190,14 @@ sub validate {
 
 
 sub DESTROY {
+  if ($have_opt_trace) {
     say($thisFile.' statistics:');
     say("\tNumber of statments with valid JSON trace: ".$valid_traces_count);
     say("\tNumber of statments with trace missing bytes beyond max mem size: ".$missing_bytes_count);
     say("\tNumber of statments with invalid JSON trace for other reasons: ".$invalid_traces_count);
     say("\tNumber of statments with no JSON trace: ".$no_traces_count);
     say("\tNumber of skipped statments: ".$skipped_count);
+  }
 }
 
 1;

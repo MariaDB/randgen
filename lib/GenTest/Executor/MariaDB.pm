@@ -2863,7 +2863,8 @@ sub execute {
             $executor->reportError($query, $err, $errstr, $execution_flags);
         } elsif (
             ($err_type == STATUS_SERVER_CRASHED) ||
-            ($err_type == STATUS_SERVER_KILLED)
+            ($err_type == STATUS_SERVER_KILLED) ||
+            ($err_type == STATUS_SERVER_UNAVAILABLE)
         ) {
             $dbh = DBI->connect($executor->dsn(), undef, undef, {
                 PrintError => 0,

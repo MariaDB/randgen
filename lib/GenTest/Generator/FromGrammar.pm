@@ -82,7 +82,6 @@ sub next {
   # We already know that our UTFs in some grammars are ugly.
   no warnings 'surrogate';
 
-  my $grammar_pool= $generator->[GENERATOR_GRAMMAR_POOL];
   my $grammars= $generator->[GENERATOR_GRAMMARS];
 
   my $prng = $generator->[GENERATOR_PRNG];
@@ -422,6 +421,8 @@ sub next {
       return STATUS_ENVIRONMENT_FAILURE;
     }
     $generator->[GENERATOR_GRAMMARS] = [ @new_grammars ];
+    $generator->adjustWeights();
+    
   }
   else
   {
@@ -432,7 +433,7 @@ sub next {
       $executors->[0]->cacheMetaData();
     }
 
-    my $grammar_id= $prng->arrayElement($grammar_pool);
+    my $grammar_id= $prng->arrayElement($generator->[GENERATOR_GRAMMAR_POOL]);
     my $grammar = $generator->[GENERATOR_GRAMMARS]->[$grammar_id];
     $grammar_rules= $grammar->rules();
     if (exists $grammar_rules->{"thread".$generator->threadId()}) {

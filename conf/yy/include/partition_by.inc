@@ -22,6 +22,9 @@
 # tables defined in init instead.
 ##########################################################################
 
+#features Aria tables
+
+
 init_db:
   init_10 ;; init_10 ;; init_10 ;; init_10 ;; init_10 ;
 

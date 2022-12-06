@@ -18,7 +18,7 @@
 ########################################################################
 
 query:
-  ==FACTOR:0.001== { _set_db('user') }
+  { _set_db('user') }
      CREATE OR REPLACE TABLE { $last_table = $prng->arrayElement($executors->[0]->metaTables($last_database)); $last_table.'_MRG_BASE' } LIKE { $last_table } 
   ;; ALTER TABLE { $last_table.'_MRG_BASE' } ENGINE=MyISAM
   ;; CREATE OR REPLACE TABLE { $last_table.'_MRG' } LIKE { $last_table.'_MRG_BASE' }

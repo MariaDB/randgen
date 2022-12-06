@@ -23,6 +23,8 @@
 # GIS in the same run with Federated
 ########################################################################
 
+#features Federated tables
+
 query_init:
      # We are doing it this way because otherwise set_db later may pick up a newly created empty federated database
      { @all_databases=(); foreach my $s (@{$executors->[0]->metaAllSchemas()}) { push @all_databases, $s if $s !~ /^fed_db(_remote)?/ }; @user_databases=(); foreach my $s (@{$executors->[0]->metaUserSchemas()}) { push @user_databases, $s if $s !~ /^fed_db(_remote)?$/ }; print "HERE: user @user_databases all @all_databases\n"; '' }

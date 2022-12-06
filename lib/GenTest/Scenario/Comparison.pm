@@ -48,7 +48,9 @@ use DBServer::MariaDB;
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
-  $self->printTitle();
+  # Min 2, no max
+  $self->numberOfServers(2);
+  $self->printSubtitle($self->numberOfServers()." servers");
   return $self;
 }
 

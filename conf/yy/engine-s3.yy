@@ -14,7 +14,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-#features S3 engine, S3 tables
+#features S3 engine, S3 tables, Aria tables
 #compatibility 10.5.0
 
 query_init:

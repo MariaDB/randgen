@@ -32,6 +32,9 @@ use constant SC_TYPE                   => 3;
 use constant SC_DETECTED_BUGS          => 4;
 use constant SC_GLOBAL_RESULT          => 5;
 use constant SC_SCENARIO_OPTIONS       => 6;
+use constant SC_RAND                   => 7;
+use constant SC_COMPATIBILITY          => 8;
+use constant SC_NUMBER_OF_SERVERS      => 9;
 
 use constant SC_GALERA_DEFAULT_LISTEN_PORT =>  4800;
 
@@ -47,16 +50,47 @@ sub new {
 
   $scenario->[SC_DETECTED_BUGS] = {};
   $scenario->[SC_GLOBAL_RESULT] = STATUS_OK;
+  $scenario->[SC_RAND]= GenTest::Random->new(seed => $scenario->getProperty('seed'));
 
   if ($scenario->[SC_SCENARIO_OPTIONS] and defined $scenario->[SC_SCENARIO_OPTIONS]->{type}) {
     $scenario->setTestType($scenario->[SC_SCENARIO_OPTIONS]->{type});
   }
+  $scenario->[SC_COMPATIBILITY]= $scenario->getProperty('compatibility') | '000000';
   $scenario->backupProperties();
+  $scenario->printTitle();
   return $scenario;
+}
+
+# Checks min/max number of servers for the scenario, removes gaps
+# in server configuration and fixes the counts when possible
+sub numberOfServers {
+  my ($self, $min, $max)= @_;
+  if (defined $min or defined $max) {
+    my @servers= sort keys %{$self->getProperty('server_specific')};
+    my $server_specific= {};
+    foreach my $i (0..$#servers) {
+      $server_specific->{$i+1}= $self->getProperty('server_specific')->{$servers[$i]};
+    }
+    $self->setProperty('server_specific',$server_specific);
+    if (defined $max and scalar(@servers)>$max) {
+      sayWarning(scalar(@servers)." servers is configured, but only up to $max can be used, ignoring the rest");
+    } elsif (defined $min and scalar(@servers)<$min) {
+      sayWarning(scalar(@servers)." servers is configured, but at least $min is needed, cloning the first server");
+      foreach my $i ($min - scalar(@servers)..$min) {
+        $self->copyServerSpecific(1,$i);
+      }
+    }
+    $self->[SC_NUMBER_OF_SERVERS]= ((defined $max and scalar(keys %{$self->getProperty('server_specific')}) > $max) ? $max : scalar(keys %{$self->getProperty('server_specific')}));
+  }
+  return $self->[SC_NUMBER_OF_SERVERS];
 }
 
 sub run {
   die "Default scenario run() called.";
+}
+
+sub prng {
+  return $_[0]->[SC_RAND];
 }
 
 sub backupProperties {
@@ -254,6 +288,7 @@ sub runTestFlow {
   my $self= shift;
   $self->backupProperties();
 #  print Dumper $self->[SC_TEST_PROPERTIES];
+  $self->setProperty('compatibility', $self->[SC_COMPATIBILITY]) unless defined $self->setProperty('compatibility');
   my $gentest= GenTest::TestRunner->new(config => $self->getProperties());
   my $status= $gentest->run();
   $self->restoreProperties();
@@ -285,6 +320,7 @@ sub prepareServer {
               );
   $self->setServerSpecific($srvnum,'active',($is_active || 0));
   $self->setServerSpecific($srvnum,'server',$server);
+  $self->[SC_COMPATIBILITY] = $server->version() if isNewerVersion($server->version(),$self->[SC_COMPATIBILITY]);
   return $server;
 }
 
@@ -412,6 +448,21 @@ sub printTitle {
     $filler.='=';
   }
   say("\n$filler");
+  say($title);
+  say("$filler");
+}
+sub printSubtitle {
+  my ($self, $title)= @_;
+  ($title= ref $self) =~ s/.*::// unless $title;
+  if ($title =~ /^(\w)(.*)/) {
+    $title= uc($1).$2;
+  }
+  $title= '- '.$title.' -';
+  my $filler='';
+  foreach (1..length($title)) {
+    $filler.='=';
+  }
+  say("$filler");
   say($title);
   say("$filler\n");
   say("");

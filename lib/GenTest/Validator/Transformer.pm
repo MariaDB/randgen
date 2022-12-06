@@ -74,6 +74,7 @@ sub validate {
 
   my $max_transformer_status= STATUS_OK;
   foreach my $transformer (@transformers) {
+        next if isOlderVersion($executor->server->version(),$transformer->compatibility);
         if (time() > $executor->end_time) {
             say("Transformer: Test duration has already been exceeded, exiting");
             last;

@@ -49,13 +49,6 @@ use DBServer::MariaDB;
 sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
-
-  if ($self->old_server_options()->{basedir} eq $self->new_server_options()->{basedir}) {
-    $self->printTitle('Crash recovery');
-  }
-  else {
-    $self->printTitle('Crash upgrade/downgrade');
-  }
   return $self;
 }
 
@@ -104,7 +97,7 @@ sub run {
   # the status of the test flow to notice if it exits prematurely.
 
   if ($gentest_pid > 0) {
-    my $timeout= int($self->getProperty('duration')/3);
+    my $timeout= int($self->getProperty('duration')/2);
     foreach (1..$timeout) {
       if (waitpid($gentest_pid, WNOHANG) == 0) {
         sleep 1;
@@ -128,6 +121,7 @@ sub run {
   #####
   $self->printStep("Killing the old server");
 
+  set_expectation($old_server->vardir,"-1\n(don't wait)");
   $status= $old_server->kill;
 
   if ($status != STATUS_OK) {
@@ -149,6 +143,7 @@ sub run {
     return $self->finalize($status,[$old_server]);
   }
 
+  unset_expectation($old_server->vardir);
   #####
   $self->printStep("Backing up data directory from the old server");
 
@@ -166,9 +161,9 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("New server failed to start");
     # Error log might indicate known bugs which will affect the exit code
-    $status= $self->checkErrorLog($new_server);
+    my $log_status= $self->checkErrorLog($new_server);
     # ... but even if it's a known error, we cannot proceed without the server
-    return $self->finalize($status,[$new_server]);
+    return $self->finalize(($log_status == STATUS_CUSTOM_OUTCOME ? STATUS_CUSTOM_OUTCOME : $self->upgrade_or_recovery_failure),[$new_server]);
   }
 
   #####
@@ -182,7 +177,7 @@ sub run {
     $self->setStatus($status);
     sayError("Found errors in the log after upgrade");
     if ($status > STATUS_CUSTOM_OUTCOME) {
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+      return $self->finalize($self->upgrade_or_recovery_failure,[$new_server]);
     }
   }
 
@@ -199,7 +194,7 @@ sub run {
     $status= $new_server->upgradeDb;
     if ($status != STATUS_OK) {
       sayError("mysql_upgrade failed");
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+      return $self->finalize($self->upgrade_or_recovery_failure,[$new_server]);
     }
   }
   else {
@@ -213,7 +208,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Database appears to be corrupt after upgrade");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+    return $self->finalize($self->upgrade_or_recovery_failure,[$new_server]);
   }
 
   #####
@@ -242,7 +237,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Shutdown of the new server failed");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+    return $self->finalize($self->upgrade_or_recovery_failure,[$new_server]);
   }
 
   return $self->finalize($status,[]);

@@ -16,7 +16,7 @@
 #include <conf/yy/include/basics.inc>
 
 query:
-  ==FACTOR:0.05== { _set_db('user') } locks_query ;
+  { _set_db('user') } locks_query ;
 
 locks_query:
   locks_lock_tables |
