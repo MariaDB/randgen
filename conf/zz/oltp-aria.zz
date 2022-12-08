@@ -41,7 +41,17 @@ $tables = {
                     'oltp161', 'oltp162', 'oltp163', 'oltp164', 'oltp165', 'oltp166', 'oltp167', 'oltp168', 'oltp169', 'oltp170',
                     'oltp171', 'oltp172', 'oltp173', 'oltp174', 'oltp175', 'oltp176', 'oltp177', 'oltp178', 'oltp179', 'oltp180',
                     'oltp181', 'oltp182', 'oltp183', 'oltp184', 'oltp185', 'oltp186', 'oltp187', 'oltp188', 'oltp189', 'oltp190',
-                    'oltp191', 'oltp192', 'oltp193', 'oltp194', 'oltp195', 'oltp196', 'oltp197', 'oltp198', 'oltp199', 'oltp200'
+                    'oltp191', 'oltp192', 'oltp193', 'oltp194', 'oltp195', 'oltp196', 'oltp197', 'oltp198', 'oltp199', 'oltp200',
+                    'oltp201', 'oltp202', 'oltp203', 'oltp204', 'oltp205', 'oltp206', 'oltp207', 'oltp208', 'oltp209', 'oltp210',
+                    'oltp211', 'oltp212', 'oltp213', 'oltp214', 'oltp215', 'oltp216', 'oltp217', 'oltp218', 'oltp219', 'oltp220',
+                    'oltp221', 'oltp222', 'oltp223', 'oltp224', 'oltp225', 'oltp226', 'oltp227', 'oltp228', 'oltp229', 'oltp230',
+                    'oltp231', 'oltp232', 'oltp233', 'oltp234', 'oltp235', 'oltp236', 'oltp237', 'oltp238', 'oltp239', 'oltp240',
+                    'oltp241', 'oltp242', 'oltp243', 'oltp244', 'oltp245', 'oltp246', 'oltp247', 'oltp248', 'oltp249', 'oltp250',
+                    'oltp251', 'oltp252', 'oltp253', 'oltp254', 'oltp255', 'oltp256', 'oltp257', 'oltp258', 'oltp259', 'oltp260',
+                    'oltp261', 'oltp262', 'oltp263', 'oltp264', 'oltp265', 'oltp266', 'oltp267', 'oltp268', 'oltp269', 'oltp270',
+                    'oltp271', 'oltp272', 'oltp273', 'oltp274', 'oltp275', 'oltp276', 'oltp277', 'oltp278', 'oltp279', 'oltp280',
+                    'oltp281', 'oltp282', 'oltp283', 'oltp284', 'oltp285', 'oltp286', 'oltp287', 'oltp288', 'oltp289', 'oltp290',
+                    'oltp291', 'oltp292', 'oltp293', 'oltp294', 'oltp295', 'oltp296', 'oltp297', 'oltp298', 'oltp299', 'oltp300'
         ],
         engines => [ 'Aria' ],
         rows => [ 0, 100, 1000 ],

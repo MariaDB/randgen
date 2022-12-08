@@ -2444,7 +2444,7 @@ my %err2type = (
     ER_VIEW_CHECK_FAILED()                              => STATUS_RUNTIME_ERROR,
     ER_VIEW_DELETE_MERGE_VIEW()                         => STATUS_SEMANTIC_ERROR,
     ER_VIEW_FRM_NO_USER()                               => STATUS_DATABASE_CORRUPTION,
-    ER_VIEW_INVALID()                                   => STATUS_RUNTIME_ERROR,
+    ER_VIEW_INVALID()                                   => STATUS_SEMANTIC_ERROR,
     ER_VIEW_INVALID_CREATION_CTX()                      => STATUS_SEMANTIC_ERROR,
     ER_VIEW_MULTIUPDATE()                               => STATUS_SEMANTIC_ERROR,
     ER_VIEW_NONUPD_CHECK()                              => STATUS_SEMANTIC_ERROR,
@@ -2588,6 +2588,11 @@ my %acceptable_se_errors = (
 
 my $query_no = 0;
 
+sub admin {
+  my $executor= shift;
+  $executor->execute("SET ROLE admin");
+}
+
 
 sub init {
     my $executor = shift;
@@ -2649,7 +2654,7 @@ sub init {
     }
 
     $executor->setConnectionId($cidref->[0]);
-    $executor->setCurrentUser($dbh->selectrow_arrayref("SELECT CURRENT_USER()")->[0]);
+    $executor->user($dbh->selectrow_arrayref("SELECT CURRENT_USER()")->[0]);
     $dbh->do('SELECT '.GenTest::Random::dataLocation().' AS DATA_LOCATION');
 
     sayDebug("Loading metadata upon executor initialization");
@@ -2893,7 +2898,6 @@ sub execute {
             my $query_for_print= shorten_message($query);
             say("Executor::MariaDB::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
         }
-
         $result = GenTest::Result->new(
             query        => $query,
             status        => $err_type || STATUS_UNKNOWN_ERROR,

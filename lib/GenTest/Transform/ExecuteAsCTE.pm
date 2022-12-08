@@ -201,7 +201,7 @@ sub transform {
 
 sub variate {
   my ($self, $query)= @_;
-  return $query unless is_applicable($query);
+  return [ $query ] unless is_applicable($query);
   sayDebug("ExecuteAsCTE: before: $query");
   $query =~ s/\\'/=====ESCAPED_SINGLE_QUOTE=====/g;
   $query =~ s/\\"/=====ESCAPED_DOUBLE_QUOTE=====/g;
@@ -209,7 +209,7 @@ sub variate {
   $query =~ s/=====ESCAPED_SINGLE_QUOTE=====/\\'/g;
   $query =~ s/=====ESCAPED_DOUBLE_QUOTE=====/\\"/g;
   sayDebug("ExecuteAsCTE: after: $query");
-  return $query;
+  return [ $query ];
 }
 
 sub is_applicable {

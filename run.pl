@@ -71,8 +71,10 @@ my ($help,
     @exit_status, $trials, $output, $force,
    );
 
-local $SIG{INT}= sub { print "Caught INT signal\n"; \&group_cleaner };
-
+unless ($ENV{RQG_IMMORTALS}) {
+  $ENV{RQG_IMMORTALS}.= "$$";
+  $SIG{INT}= \&group_cleaner;
+}
 
 # Defaults
 $props->{user}= 'rqg';
@@ -233,6 +235,8 @@ if (-d $props->{vardir}) {
   remove_tree($props->{vardir});
 }
 mkpath($props->{vardir});
+open (STDOUT, "| tee -ai ".$props->{vardir}."/trial.log");
+open STDERR, ">&STDOUT";
 
 $props->{queries} =~ s/K/000/so;
 $props->{queries} =~ s/M/000000/so;
@@ -344,9 +348,11 @@ foreach my $trial_id (1..$trials)
     $props->{vardir}= $props_vardir_orig."/trial.${trial_id}";
     mkpath($props->{vardir});
   }
+  open (STDOUT, "| tee -ai ".$props->{vardir}."/trial.log");
+  open STDERR, ">&STDOUT";
 
   my $output_file= $props_vardir_orig."/trial$trial_id.log";
-  $cmd = 'bash -c "set -o pipefail; '.$cmd.' 2>&1 | tee '.$output_file.'"';
+  $cmd = 'bash -c "set -o pipefail; '.$cmd.' 2>&1 | tee -i '.$output_file.'"';
 
   if ($genconfig) {
     my $cnf_contents = GenTest::GenConfig->new(spec_file => $genconfig,

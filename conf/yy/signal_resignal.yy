@@ -29,7 +29,6 @@
 
 query_init:
   ;; { _set_db('user') }
-     CREATE DATABASE IF NOT EXISTS test
   ;; { $fname= 'test.f1'; '' } create_function
   ;; { $fname= 'test.f2'; '' } create_function
   ;; { $fname= 'test.f3'; '' } create_function

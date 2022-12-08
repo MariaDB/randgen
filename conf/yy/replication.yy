@@ -21,7 +21,11 @@
 ########################################################################
 
 query_init:
-  CREATE DATABASE IF NOT EXISTS test ;
+     SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS test
+  ;; GRANT ALL ON test.* TO CURRENT_USER
+  ;; SET ROLE NONE
+;
 
 query:
   { _set_db('user') } replication_query ;

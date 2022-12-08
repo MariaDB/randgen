@@ -26,9 +26,12 @@
 ########################################################################
 
 query_init:
-  CREATE DATABASE IF NOT EXISTS test
+  SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS test
+  ;; GRANT ALL ON test.* TO CURRENT_USER
+  ;; SET ROLE NONE
   ;; { _set_db('test') }
-  ;; { $table_name = 'local_'.$generator->threadId().'_1' ; '' } create_definition_init
+     { $table_name = 'local_'.$generator->threadId().'_1' ; '' } create_definition_init
   ;; { $table_name = 'local_'.$generator->threadId().'_2' ; '' } create_definition_init
   ;; { $table_name = 'local_'.$generator->threadId().'_3' ; '' } create_definition_init 
   ;; { $table_name = 'local_'.$generator->threadId().'_4' ; '' } create_definition_init 

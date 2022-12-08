@@ -62,7 +62,7 @@ sub variate {
   # CTE do not work due to MDEV-15177 (closed as "won't fix")
   return [ $query ] if $query =~ m{(OUTFILE|INFILE|INTO)}is || $query !~ m{^\s*SELECT}is || $query =~ m{^\s*WITH}is;
   my $union_type= $self->random->arrayElement(['','ALL','DISTINCT']);
-  return "( $query ) UNION $union_type ( $query )";
+  return [ "( $query ) UNION $union_type ( $query )" ];
 }
 
 1;

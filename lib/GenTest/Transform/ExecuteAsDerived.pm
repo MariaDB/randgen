@@ -38,7 +38,7 @@ sub transform {
 
 sub variate {
   my ($self, $orig_query) = @_;
-  return $orig_query if $orig_query !~ m{^\s*SELECT}is || $orig_query =~ m{\WINTO\W}is;
+  return [ $orig_query ] if $orig_query !~ m{^\s*SELECT}is || $orig_query =~ m{\WINTO\W}is;
   return [ $self->modify_query($orig_query) ];
 }
 

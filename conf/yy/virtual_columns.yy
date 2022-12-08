@@ -29,11 +29,15 @@
 # create a valid table
 #
 query_init:
-  CREATE DATABASE IF NOT EXISTS test ;; { _set_db('test') }
-  drop_table ;; create_table ;; create_table ;; create_table ;
+     CREATE DATABASE IF NOT EXISTS virtual_columns_db
+  ;; SET ROLE admin
+  ;; GRANT ALL ON virtual_columns_db.* TO CURRENT_USER
+  ;; SET ROLE NONE
+  ;; { _set_db('virtual_columns_db') }
+     drop_table ;; create_table ;; create_table ;; create_table ;
 
 query:
- { _set_db('test') } virtual_columns_query ;
+ { _set_db('virtual_columns_db') } virtual_columns_query ;
 
 virtual_columns_query:
   drop_table ;; create_table ;; create_table ;; create_table |

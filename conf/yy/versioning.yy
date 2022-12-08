@@ -24,8 +24,10 @@
 # DDL-rich grammar requires frequent metadata reload
 query_init:
   { $vers_tab_num=0; $executors->[0]->setMetadataReloadInterval(15 + $generator->threadId()); '' }
-    CREATE DATABASE IF NOT EXISTS test ;; { _set_db('test') }
-    SET SYSTEM_VERSIONING_ALTER_HISTORY= vers_alter_history_value, ENFORCE_STORAGE_ENGINE=NULL
+    CREATE DATABASE IF NOT EXISTS versioning_db
+  ;; SET ROLE admin ;; GRANT ALL ON versioning_db.* TO CURRENT_USER ;; ;; SET ROLE NONE
+  ;; { _set_db('versioning_db') }
+     SET SYSTEM_VERSIONING_ALTER_HISTORY= vers_alter_history_value, ENFORCE_STORAGE_ENGINE=NULL
   ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init
   ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init
   ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init
@@ -38,7 +40,7 @@ query_init:
 ;
 
 query:
-  { $new_col_next_num= 0; _set_db('test') } vers_fix_timestamp ;; vers_query ;; SET timestamp= 0 ;
+  { $new_col_next_num= 0; _set_db('versioning_db') } vers_fix_timestamp ;; vers_query ;; SET timestamp= 0 ;
 
 vers_create_init:
     { $new_col_next_num= 1; '' } CREATE TABLE IF NOT EXISTS vers_new_table_name (vers_col_list) vers_engine vers_table_flags vers_partitioning_optional

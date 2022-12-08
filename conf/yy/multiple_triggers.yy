@@ -40,74 +40,63 @@
 # ERROR 1360 for DROP TRIGGER IF EXISTS is also because of one of these two problems
 
 query_init:
-    CREATE DATABASE IF NOT EXISTS test ;; { _set_db('test') }
-    CREATE TABLE IF NOT EXISTS test.tlog (
+    SET ROLE admin
+    ;; CREATE DATABASE IF NOT EXISTS multi_trigger
+    # To prevent the tables from being modified, as we need the structures
+    ;; GRANT SELECT, INSERT, UPDATE, DELETE, TRIGGER, CREATE ON multi_trigger.* TO CURRENT_USER
+    ;; GRANT SELECT, INSERT, UPDATE, DELETE, TRIGGER, CREATE ON multi_trigger.* TO CURRENT_USER
+    ;; SET ROLE NONE
+    ;; { _set_db('multi_trigger') }
+    CREATE TABLE IF NOT EXISTS multi_trigger.tlog (
       pk INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
       dt TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
       tbl VARCHAR(16),
       tp ENUM('BEFORE','AFTER'),
       op ENUM('INSERT','UPDATE','DELETE'),
       fld BLOB
-    ); CREATE TABLE IF NOT EXISTS test.tlog2 (
+    )
+    ;; CREATE TABLE IF NOT EXISTS multi_trigger.tlog2 (
         log_id INT NOT NULL,
         dt TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
         val BLOB NOT NULL DEFAULT '_'
-    );
-
-query:
-  { _set_db('test') } multiple_triggers_query ;
-
-multiple_triggers_query:
-      mdev6112_create_trigger | mdev6112_create_trigger | mdev6112_create_trigger | mdev6112_create_trigger
-    | mdev6112_drop_trigger | mdev6112_drop_trigger
-    | mdev6112_create_log_trigger | mdev6112_create_log2_trigger
-    | query | query | query | query | query | query | query | query | query | query | query | query
+    )
 ;
 
-mdev6112_create_log_trigger:
-    /* QProp.ERROR_1099 QProp.ERROR_1100 */ mdev6112_create_clause test. mdev6112_trigger_name mdev6112_before_after INSERT ON test.tlog FOR EACH ROW mdev6112_precedes_follows INSERT INTO test.tlog2 VALUES ( NEW.`pk`, NOW(), NEW.`fld` );
+query:
+    ==FACTOR:4== { _set_db('user') } create_trigger |
+    ==FACTOR:2== { _set_db('user') } drop_trigger |
+    { _set_db('any') } create_log_trigger |
+    { _set_db('any') } create_log2_trigger
+;
 
-# While we are here, add something for MDEV-8605
-mdev6112_create_log2_trigger:
-    /* QProp.ERROR_1099 QProp.ERROR_1100 */ mdev6112_create_clause test. mdev6112_trigger_name BEFORE INSERT ON test.tlog2 FOR EACH ROW mdev6112_precedes_follows SET NEW.`val` = IFNULL(NEW.`val`,'');
+create_log_trigger:
+    create_clause multi_trigger.trigger_name before_after INSERT ON multi_trigger.tlog FOR EACH ROW precedes_follows INSERT INTO multi_trigger.tlog2 VALUES ( NEW.`pk`, NOW(), NEW.`fld` );
 
-mdev6112_create_trigger:
-    /* QProp.ERROR_1100 */ mdev6112_create_clause mdev6112_last_database . mdev6112_trigger_name mdev6112_before_after mdev6112_ins_upd_del ON /* QProp.ERROR_1361 QProp.ERROR_1347 */ mdev6112_table FOR EACH ROW mdev6112_precedes_follows INSERT INTO tlog (tbl,tp,op) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field );
+create_log2_trigger:
+    create_clause multi_trigger. trigger_name BEFORE INSERT ON multi_trigger.tlog2 FOR EACH ROW precedes_follows SET NEW.`val` = IFNULL(NEW.`val`,'');
 
-mdev6112_trigger_name:
+create_trigger:
+    create_clause trigger_name before_after ins_upd_del ON /* QProp.ERROR_1361 QProp.ERROR_1347 */ _basetable FOR EACH ROW precedes_follows INSERT INTO multi_trigger.tlog (tbl,tp,op) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field );
+
+trigger_name:
     # ER_SERVER_LOST can happen on any query if the connection is killed.
     # If it happens because the server crashes, we'll know about it anyway.
     /* QProp.ERROR_2013 */ _letter;
 
-mdev6112_table:
-    mdev6112_database . _table { ( lc($last_database) eq 'performance_schema' or lc($last_database) eq 'information_schema' ) ? '/* QProp.ERROR_1044 */' : ( lc($last_database) eq 'mysql' ? '/* QProp.ERROR_1465 */' : '' ) };
-
-mdev6112_database:
-      /* QProp.ERROR_1146 */
-    | mdev6112_last_database
+drop_trigger:
+  /* QProp.ERROR_1099 QProp.ERROR_1100 QProp.ERROR_1360 */ DROP TRIGGER __if_exists(90) trigger_name
 ;
 
-mdev6112_last_database:
-    { $last_database or $last_database = 'test' } ;
-
-mdev6112_drop_trigger:
-      /* QProp.ERROR_1099 QProp.ERROR_1100 */ /* QProp.ERROR_1360 */ DROP TRIGGER mdev6112_trigger_name
-    | /* QProp.ERROR_1099 QProp.ERROR_1100 */ /* QProp.ERROR_1360 */ DROP TRIGGER IF EXISTS mdev6112_trigger_name
+create_clause:
+  CREATE /* QProp.ERROR_1099 QProp.ERROR_1100 QProp.ERROR_1359 QProp.ERROR_7 */ __or_replace_trigger_x_trigger_if_not_exists_x_trigger(50,40)
 ;
 
-mdev6112_create_clause:
-      /* QProp.ERROR_1359 QProp.ERROR_7 */ CREATE TRIGGER
-    | /* QProp.ERROR_1360 QProp.ERROR_7 */ CREATE OR REPLACE TRIGGER
-    | /* QProp.ERROR_1360 QProp.ERROR_7 */ CREATE OR REPLACE TRIGGER
-    | /* QProp.ERROR_7 */ CREATE TRIGGER IF NOT EXISTS
-;
+precedes_follows:
+    | | | | /* QProp.ERROR_4031 */ PRECEDES _letter | /* QProp.ERROR_4031 */ FOLLOWS _letter ;
 
-mdev6112_precedes_follows:
-    | | | | /* QProp.ERROR_4031 */ /*!100202 PRECEDES _letter */ | /* QProp.ERROR_4031 */ /*!100202 FOLLOWS _letter */ ;
-
-mdev6112_before_after:
+before_after:
     { $tp = ($prng->int(0,1) ? 'BEFORE' : 'AFTER' ) };
 
-mdev6112_ins_upd_del:
+ins_upd_del:
     { $r = $prng->int(1,3); $op = ($r == 1 ? 'INSERT' : ( $r == 2 ? 'UPDATE' : 'DELETE' ) ) };
 

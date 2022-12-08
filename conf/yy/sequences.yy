@@ -18,7 +18,10 @@
 # Error codes to ignore on slave: slave-skip-errors=1049,1305,1539,1505,1317,1568
 
 query_init:
-  CREATE DATABASE IF NOT EXISTS test
+     SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS test
+  ;; GRANT ALL ON test.* TO CURRENT_USER
+  ;; SET ROLE NONE
   ;; { _set_db('test') }
      seq_create ;; seq_create ;; seq_create ;; seq_create ;; seq_create
   ;; seq_create ;; seq_create ;; seq_create ;; seq_create ;; seq_create

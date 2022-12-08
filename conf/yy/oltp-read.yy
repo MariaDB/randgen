@@ -20,7 +20,7 @@
 
 query:
     { my @dbs=(); push @dbs, 'oltp_db' if $executors->[0]->databaseExists('oltp_db')
-                ; push @dbs, 'oltp_db' if $executors->[0]->databaseExists('oltp_aria_db')
+                ; push @dbs, 'oltp_aria_db' if $executors->[0]->databaseExists('oltp_aria_db')
                 ; push @dbs, 'user'
                 ; _set_db($prng->arrayElement(\@dbs))
     } /* _table[invariant] */ select ;

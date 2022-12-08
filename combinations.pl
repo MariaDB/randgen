@@ -33,6 +33,7 @@ use Getopt::Long;
 use Getopt::Long qw( :config pass_through );
 use Data::Dumper;
 use File::Basename;
+use File::Copy;
 use File::Path qw(make_path);
 
 use constant COMB_RQG_DEFAULT_BASE_PORT => 13000;
@@ -58,9 +59,10 @@ if ( osWindows() ) {
 
 $| = 1;
 
+$ENV{RQG_IMMORTALS}="$$";
 $SIG{TERM} = sub { exit(0) };
 $SIG{CHLD} = "IGNORE" if osWindows();
-$SIG{INT}= sub { \&group_cleaner };
+#$SIG{INT}= sub { \&group_cleaner };
 
 # Options
 my @basedirs=();
@@ -125,6 +127,7 @@ my %pids;
 for my $i (1..$threads) {
   my $pid = fork();
   if ($pid == 0) {
+    $ENV{RQG_IMMORTALS}.= ",$$";
     ## Child
     $thread_id = $i;
     make_path($workdir);
@@ -336,14 +339,10 @@ sub doCombination {
   $command.= " @ARGV";
 
   # Count the number of basedirs in the final string to add the vardirs
-  $command .= " --vardir=$workdir/current1_${thread_id} ";
+  my $vardir= "$workdir/current1_${thread_id}";
+  $command .= " --vardir=$vardir ";
 
   $command =~ s{[\t\r\n]}{ }sgio;
-    if ($stdToLog) {
-      $command .= " 2>&1 | tee $workdir/trial".$trial_id.'.log';
-    } else {
-      $command .= " > $workdir/trial".$trial_id.'.log';
-    }
   $commands[$trial_id] = $command;
   $command =~ s{"}{\\"}sgio;
 
@@ -353,16 +352,13 @@ sub doCombination {
 
   unless ($dry_run)
   {
-    unless (osWindows()) {
-      $command = 'bash -c "set -o pipefail; '.$command.'"';
-    }
-
     # Command execution
     my $result= system($command);
     $result= $result >> 8;
     group_cleaner();
     # Post-execution activities
     my $tl = $workdir.'/trial'.$trial_id.'.log';
+    move("$vardir/trial.log",$tl);
     if (defined $clean && $result == 0) {
       say("[$thread_id] run.pl exited with exit status ".status2text($result)."($result). Clean mode active: deleting this OK log");
       system("rm -f $tl");

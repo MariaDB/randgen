@@ -65,7 +65,7 @@ use constant EXECUTOR_FETCH_METHOD    => 16;
 use constant EXECUTOR_CONNECTION_ID    => 17;
 use constant EXECUTOR_FLAGS      => 18;
 use constant EXECUTOR_END_TIME      => 21;
-use constant EXECUTOR_CURRENT_USER      => 22;
+use constant EXECUTOR_USER      => 22;
 use constant EXECUTOR_VARDIR => 27;
 use constant EXECUTOR_META_LAST_CHECK => 30;
 use constant EXECUTOR_META_LAST_LOAD_OK => 31;
@@ -107,6 +107,7 @@ sub new {
         'no-err-filter' => EXECUTOR_NO_ERR_FILTER,
         'seed' => EXECUTOR_SEED,
         'sqltrace' => EXECUTOR_SQLTRACE,
+        'user' => EXECUTOR_USER,
         'vardir' => EXECUTOR_VARDIR,
         'variators' => EXECUTOR_VARIATORS,
         'metadata_reload' => EXECUTOR_METADATA_RELOAD,
@@ -114,7 +115,7 @@ sub new {
 
     $executor->[EXECUTOR_FETCH_METHOD] = FETCH_METHOD_AUTO if not defined $executor->[EXECUTOR_FETCH_METHOD];
     $executor->[EXECUTOR_META_RELOAD_NOW] = 0;
-    $executor->[EXECUTOR_DSN] = $executor->server->dsn() if not defined $executor->[EXECUTOR_DSN] and defined $executor->server;
+    $executor->[EXECUTOR_DSN] = $executor->server->dsn($executor->[EXECUTOR_USER]) if not defined $executor->[EXECUTOR_DSN] and defined $executor->server;
 
     if ($executor->[EXECUTOR_VARIATORS] && scalar(@{$executor->[EXECUTOR_VARIATORS]})) {
       $executor->[EXECUTOR_VARIATOR_MANAGER] = GenTest::Transform->new();
@@ -179,7 +180,7 @@ sub metadataReloadInterval {
 
 sub variate_and_execute {
   my ($self, $query, $gendata)= @_;
-  if ($self->[EXECUTOR_VARIATOR_MANAGER]) {
+  if ($self->[EXECUTOR_VARIATOR_MANAGER] && $query !~ s/EXECUTOR_SKIP_VARIATE//g) {
     my $max_result= STATUS_OK;
     my @errs= ();
     my @errstrs= ();
@@ -199,15 +200,16 @@ sub variate_and_execute {
     } else {
       $max_result= STATUS_ENVIRONMENT_FAILURE;
     }
-    return GenTest::Result->new(
-                  query       => join ';', @$queries,
+    my $result= GenTest::Result->new(
+                  query       => (join ';', @$queries),
                   status      => $max_result,
-                  err         => join ';', @errs,
-                  errstr      => join ';', @errstrs,
+                  err         => (join ';', @errs),
+                  errstr      => (join ';', @errstrs),
                   sqlstate    => undef,
                   start_time  => undef,
                   end_time    => undef,
            );
+          return $result;
   } else {
     return $self->execute($query);
   }
@@ -238,12 +240,11 @@ sub setServiceDbh {
   $_[0]->[EXECUTOR_SERVICE_DBH] = $_[1];
 }
 
-sub currentUser {
-  return $_[0]->[EXECUTOR_CURRENT_USER];
-}
-
-sub setCurrentUser {
-  $_[0]->[EXECUTOR_CURRENT_USER] = $_[1];
+sub user {
+  if ($_[1]) {
+    $_[0]->[EXECUTOR_USER]= $_[1];
+  }
+  return $_[0]->[EXECUTOR_USER];
 }
 
 sub sqltrace {
@@ -435,10 +436,7 @@ sub metaNonEmptyUserSchemas {
         foreach my $s (@$schemas) {
           $s= 'information_schema' if lc($s) eq 'information_schema';
           if ($s !~ /^(?:mysql|performance_schema|information_schema|sys_schema|sys)$/) {
-            my $tables= $self->metaTables($s);
-            if ($tables->[0] ne '!non_existing_table') {
-              push @schemas, $s;
-            }
+            push @schemas, $s if $self->schemaHasTables($s);
           }
         }
         $self->[EXECUTOR_META_CACHE]->{NON_EMPTY_USER_SCHEMAS} = [ @schemas ];
@@ -486,8 +484,22 @@ sub metaSystemSchemas {
     return $self->[EXECUTOR_META_CACHE]->{SYSTEM_SCHEMAS};
 }
 
+sub schemaHasTables {
+  my ($self, $schema) = @_;
+  $self->cacheMetaData();
+  my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+  $schema='information_schema' if lc($schema) eq 'information_schema';
+  my $cachekey = "TAB-$schema";
+
+  if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey})
+  {
+    $self->[EXECUTOR_META_CACHE]->{$cachekey}  = [sort ( keys %{$meta->{$schema}->{table}}, keys %{$meta->{$schema}->{view}}, keys %{$meta->{$schema}->{versioned}}, keys %{$meta->{$schema}->{sequence}} )];
+  }
+  return $self->[EXECUTOR_META_CACHE]->{$cachekey} && scalar(@{$self->[EXECUTOR_META_CACHE]->{$cachekey}});
+}
+
 sub metaTables {
-    my ($self, $schema, $forced) = @_;
+    my ($self, $schema, $skip_forcing) = @_;
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
@@ -499,9 +511,8 @@ sub metaTables {
     {
         my $tables = [sort ( keys %{$meta->{$schema}->{table}}, keys %{$meta->{$schema}->{view}}, keys %{$meta->{$schema}->{versioned}}, keys %{$meta->{$schema}->{sequence}} )];
         if (not defined $tables or $#$tables < 0) {
-          if ($forced) {
+          if ($skip_forcing) {
             sayWarning "Schema '$schema' has no tables";
-            croak;
             $tables = [ '!non_existing_table' ];
           } else {
             $self->forceMetadataReload();

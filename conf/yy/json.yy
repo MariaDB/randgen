@@ -25,8 +25,9 @@
 
 query_init:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
-  ;; CREATE DATABASE IF NOT EXISTS test
-  ;; create
+  ;; CREATE DATABASE IF NOT EXISTS test 
+  ;; SET ROLE admin ;; GRANT ALL ON test.* TO CURRENT_USER ;; SET ROLE NONE
+  ;; { _set_db('any') } create
   ;; SET SQL_MODE=DEFAULT
 ;
 
@@ -99,13 +100,13 @@ index_type:
 ;
 
 delete:
-  DELETE FROM { $json_table_field= 'fld'; 'tmp' } where LIMIT 1
+  DELETE FROM { $json_table_field= 'fld'; 'test.tmp' } where LIMIT 1
 ;
 
 update:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
-  ; UPDATE test.`tmp` SET { $json_table_field= 'fld' } = func_returning_json ORDER BY fld LIMIT _digit
-  ; SET SQL_MODE=DEFAULT
+  ;; UPDATE test.`tmp` SET { $json_table_field= 'fld' } = func_returning_json ORDER BY fld LIMIT _digit
+  ;; SET SQL_MODE=DEFAULT
 ;
 
 select:
@@ -253,4 +254,4 @@ escape_char:
 ;
 
 any_value:
-  _basics_any_value | `fld` | _field | _json ;
+  _basics_any_value | `fld` | { $json_table_field or '_field' } | _json ;

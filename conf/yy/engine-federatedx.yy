@@ -27,13 +27,17 @@
 
 query_init:
      # We are doing it this way because otherwise set_db later may pick up a newly created empty federated database
-     { @all_databases=(); foreach my $s (@{$executors->[0]->metaAllSchemas()}) { push @all_databases, $s if $s !~ /^fed_db(_remote)?/ }; @user_databases=(); foreach my $s (@{$executors->[0]->metaUserSchemas()}) { push @user_databases, $s if $s !~ /^fed_db(_remote)?$/ }; print "HERE: user @user_databases all @all_databases\n"; '' }
-     CREATE DATABASE IF NOT EXISTS fed_db
+     { @all_databases=(); foreach my $s (@{$executors->[0]->metaAllSchemas()}) { push @all_databases, $s if $s !~ /^fed_db(_remote)?/ }; @user_databases=(); foreach my $s (@{$executors->[0]->metaUserSchemas()}) { push @user_databases, $s if $s !~ /^fed_db(_remote)?$/ }; '' }
+     SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS fed_db
   ;; CREATE DATABASE IF NOT EXISTS fed_db_remote
+  ;; GRANT ALL ON fed_db.* TO CURRENT_USER
+  ;; GRANT ALL ON fed_db_remote.* TO CURRENT_USER
   ;; CREATE USER IF NOT EXISTS fed_user@'127.0.0.1' IDENTIFIED BY 'FdrUs3r!pw'
-  ;; GRANT ALL ON *.* TO fed_user@'127.0.0.1'
+  ;; GRANT INSERT, UPDATE, DELETE, SELECT ON *.* TO fed_user@'127.0.0.1'
   ;; SET STATEMENT binlog_format=statement FOR INSERT IGNORE INTO mysql.servers (Server_name, Host, Db, Username, Password, Port, Wrapper) VALUES ('fedlink','127.0.0.1','fed_db_remote','fed_user','FdrUs3r!pw',@@port,'mysql')
   ;; FLUSH PRIVILEGES
+  ;; SET ROLE NONE
      { @remote_tables= (); '' }
   ;; create_remote_table_init ;; create_remote_table_init ;; create_remote_table_init
   ;; create_remote_table_init ;; create_remote_table_init ;; create_remote_table_init

@@ -93,6 +93,7 @@ sub new {
 
   $reporter->[REPORTER_DBH] = DBI->connect($reporter->server->dsn(), undef, undef, { mysql_multi_statements => 1, RaiseError => 0 , PrintError => 1 } );
   return undef if not defined $reporter->[REPORTER_DBH];
+  $reporter->[REPORTER_DBH]->do("SET ROLE admin");
   my $sth = $reporter->[REPORTER_DBH]->prepare("SHOW VARIABLES");
 
   $sth->execute();

@@ -26,15 +26,11 @@ query_init:
 ;
 
 query:
-  { _set_db('user') } xa_query
+  ==FACTOR:20== valid_transition |
+                random
 ;
 
-xa_query:
-  ==FACTOR:10== xa_valid_transition
-#  | xa_random
-;
-
-xa_valid_transition:
+valid_transition:
   # If there is an ongoing "normal" transaction from other grammars,
   # then XA won't be able to start. So, we need to end it first
   { $current_stage eq '' ? $prng->uint16(0,2) ? 'COMMIT ;;' : 'ROLLBACK ;;' : '' }
@@ -48,46 +44,46 @@ xa_valid_transition:
      } { "$xid $one_phase" }
 ;
 
-xa_random:
-    xa_begin
-  | xa_end
-  | xa_prepare
-  | xa_commit_one_phase
-  | xa_commit
-  | xa_rollback
+random:
+    begin
+  | end
+  | prepare
+  | commit_one_phase
+  | commit
+  | rollback
   | XA RECOVER
 ;
 
-xa_begin:
-  XA __start_x_begin xa_xid { $active_xa{$last_xid}= 1 ; '' } ;
+begin:
+  XA __start_x_begin xid { $active_xa{$last_xid}= 1 ; '' } ;
 
-xa_end:
-  XA END xa_xid_active { $idle_xa{$last_xid}= 1; delete $active_xa{$last_xid}; '' } ;
+end:
+  XA END xid_active { $idle_xa{$last_xid}= 1; delete $active_xa{$last_xid}; '' } ;
 
-xa_prepare:
-  XA PREPARE xa_xid_idle { $prepared_xa{$last_xid}= 1; delete $idle_xa{$last_xid}; '' } ;
+prepare:
+  XA PREPARE xid_idle { $prepared_xa{$last_xid}= 1; delete $idle_xa{$last_xid}; '' } ;
 
-xa_commit:
-  XA COMMIT xa_xid_prepared { delete $idle_xa{$last_xid}; '' } ;
+commit:
+  XA COMMIT xid_prepared { delete $idle_xa{$last_xid}; '' } ;
 
-xa_commit_one_phase:
-  XA COMMIT xa_xid_idle ONE PHASE { delete $idle_xa{$last_xid}; '' } ;
+commit_one_phase:
+  XA COMMIT xid_idle ONE PHASE { delete $idle_xa{$last_xid}; '' } ;
 
-xa_rollback:
-  XA ROLLBACK xa_xid_prepared { delete $prepared_xa{$last_xid}; '' } ;
+rollback:
+  XA ROLLBACK xid_prepared { delete $prepared_xa{$last_xid}; '' } ;
 
-xa_xid:
+xid:
   { $last_xid= "'xid".$prng->uint16(1,200)."'" }
 ;
 
-xa_xid_active:
+xid_active:
   { $last_xid= (scalar(keys %active_xa) ? $prng->arrayElement([keys %active_xa]) : "'inactive_xid'"); $last_xid }
 ;
 
-xa_xid_idle:
+xid_idle:
   { $last_xid= (scalar(keys %idle_xa) ? $prng->arrayElement([keys %idle_xa]) : "'non_idle_xid'"); $last_xid }
 ;
 
-xa_xid_prepared:
+xid_prepared:
   { $last_xid= (scalar(keys %prepared_xa) ? $prng->arrayElement([keys %prepared_xa]) : "'non_prepared_xid'"); $last_xid }
 ;

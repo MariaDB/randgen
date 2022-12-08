@@ -74,7 +74,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("The server failed to start");
-    return $self->finalize(STATUS_TEST_FAILURE,[]);
+    return $self->finalize(STATUS_SERVER_UNAVAILABLE,[]);
   }
 
   #####
@@ -84,7 +84,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+    return $self->finalize($status,[$server]);
   }
 
   #####
@@ -95,7 +95,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Initial test flow failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+    return $self->finalize(STATUS_$status,[$server]);
   }
 
   my $dbh= $server->dbh;
@@ -103,6 +103,7 @@ sub run {
   #####
   $self->printStep("Preparing to discard/import");
   $dbh->do("SET max_statement_time=0");
+  $dbh->do("SET ROLE admin");
 
   say("Getting rid of stale XA transactions");
   $server->rollbackXA();

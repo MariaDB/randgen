@@ -14,31 +14,23 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 query:
-  userstat_query ;
-
-userstat_query:
-    userstat_show | userstat_show | userstat_show | userstat_show
-  | FLUSH userstat_flush_list
-  | userstat_set
+  ==FACTOR:5== SHOW show_item |
+               FLUSH flush_list |
+               SET GLOBAL userstat= __0_x_1
 ;
 
-userstat_show:
-    SHOW CLIENT_STATISTICS
-  | SHOW INDEX_STATISTICS
-  | SHOW TABLE_STATISTICS
-  | SHOW USER_STATISTICS
+show_item:
+    CLIENT_STATISTICS
+  | INDEX_STATISTICS
+  | TABLE_STATISTICS
+  | USER_STATISTICS
 ;
 
-userstat_set:
-    SET GLOBAL userstat= 1
-  | SET GLOBAL userstat= 0
+flush_list:
+  flush_option | flush_option, flush_list
 ;
 
-userstat_flush_list:
-  userstat_flush_option | userstat_flush_option, userstat_flush_list
-;
-
-userstat_flush_option:
+flush_option:
     CLIENT_STATISTICS
   | INDEX_STATISTICS
   | TABLE_STATISTICS

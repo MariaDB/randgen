@@ -51,7 +51,7 @@ sub variate {
   my ($self, $orig_query, $executor) = @_;
   return [ $orig_query ] if $orig_query =~ m{EXECUTE\s|PREPARE\s}is;
   return [ $orig_query ] if $orig_query =~ m{;}is;
-  return "EXECUTE IMMEDIATE ".$executor->dbh()->quote($orig_query);
+  return [ "EXECUTE IMMEDIATE ".$executor->dbh()->quote($orig_query) ];
 }
 
 1;

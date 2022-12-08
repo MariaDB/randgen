@@ -1,4 +1,5 @@
-CREATE DATABASE IF NOT EXISTS world_db;
+DROP DATABASE IF EXISTS world_db;
+CREATE DATABASE world_db;
 USE world_db;
 CREATE TABLE A (  pk int(11) NOT NULL AUTO_INCREMENT,  col_int_nokey int(11) DEFAULT NULL,  col_int_key int(11) DEFAULT NULL,  col_varchar_key varchar(3) DEFAULT NULL,  col_varchar_nokey varchar(35) DEFAULT NULL,  PRIMARY KEY (pk),  KEY col_int_key (col_int_key),  KEY col_varchar_key (col_varchar_key,col_varchar_nokey));
 CREATE TABLE B (  pk varchar(33) DEFAULT NULL,  col_int_nokey int(11) DEFAULT NULL,  col_int_key int(11) DEFAULT NULL,  col_varchar_key varchar(3) NOT NULL DEFAULT '',  col_varchar_nokey varchar(52) NOT NULL DEFAULT '',  PRIMARY KEY (col_varchar_key,col_varchar_nokey),  KEY col_int_key (col_int_key));

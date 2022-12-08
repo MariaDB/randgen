@@ -1,4 +1,5 @@
-CREATE DATABASE IF NOT EXISTS engine_heap_db;
+DROP DATABASE IF EXISTS engine_heap_db;
+CREATE DATABASE engine_heap_db;
 USE engine_heap_db;
 
 # Standard HEAP table with 2 indexes

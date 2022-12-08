@@ -31,7 +31,7 @@ transaction:
   | | START TRANSACTION | COMMIT | ROLLBACK | SAVEPOINT A | ROLLBACK TO SAVEPOINT A | FLUSH TABLES ;
 
 select:
-  SELECT select_item FROM _table where order_by limit ;
+  SELECT /* _table[invariant] */ select_item FROM _table[invariant] where order_by limit ;
   
 select_item:
   _field | _field null | _field op _field | _field sign _field | select_item, _field ;
@@ -122,8 +122,8 @@ alter:
   ALTER __ignore(50) TABLE _table MODIFY _field TIMESTAMP optional_length NULL DEFAULT '2000-01-01 00:00:00' ON UPDATE CURRENT_TIMESTAMP optional_length FIRST ;
 
 proc_func:
-  DROP PROCEDURE IF EXISTS _letter[invariant] ;; CREATE PROCEDURE _letter[invariant] ( proc_param ) BEGIN SELECT COUNT( _field ) INTO @a FROM _table ; END ;; CALL _letter[invariant](@a) |
-  DROP FUNCTION IF EXISTS _letter[invariant] ;; CREATE FUNCTION _letter[invariant] ( func_param ) RETURNS time_field DETERMINISTIC READS SQL DATA BEGIN DECLARE out1 time_field ; SELECT _table._field INTO out1 FROM _table ; RETURN out1 ; END
+  DROP PROCEDURE IF EXISTS _letter[invariant] ;; CREATE PROCEDURE _letter[invariant] ( proc_param ) BEGIN SELECT /* _table[invariant] */ COUNT( _field ) INTO @a FROM _table[invariant] ; END ;; CALL _letter[invariant](@a) |
+  DROP FUNCTION IF EXISTS _letter[invariant] ;; CREATE FUNCTION _letter[invariant] ( func_param ) RETURNS time_field DETERMINISTIC READS SQL DATA BEGIN DECLARE out1 time_field ; SELECT _table[invariant]._field INTO out1 FROM _table[invariant] ; RETURN out1 ; END
 ;
     
 proc_param:

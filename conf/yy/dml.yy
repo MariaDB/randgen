@@ -65,6 +65,6 @@ generic_dml_delete:
 ;
 
 generic_dml_select:
-    SELECT _field FROM _table ORDER BY _field LIMIT _tinyint_unsigned |
+    SELECT /* _table[invariant] */ _field FROM _table[invariant] ORDER BY _field LIMIT _tinyint_unsigned |
     SELECT * FROM _table ORDER BY _field LIMIT _tinyint_unsigned
 ;

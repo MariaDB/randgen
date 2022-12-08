@@ -19,7 +19,11 @@
 
 query_init:
   { $tbnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' }
-     CREATE DATABASE IF NOT EXISTS alt_table_db ;; { _set_db('alt_table_db') }
+     SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS alt_table_db
+  ;; GRANT ALL ON alt_table_db.* TO CURRENT_USER
+  ;; SET ROLE NONE
+  ;; { _set_db('alt_table_db') }
      alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace
   ;; alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace
   ;; alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace
@@ -276,7 +280,7 @@ alt_default_optional_int_or_auto_increment:
 ;
 
 alt_create_or_replace:
-  { $in_new_table= 1; '' } CREATE OR REPLACE alt_temporary TABLE alt_new_or_existing_table_name (alt_col_name_and_definition_list) alt_table_flags { $in_new_table=0; '' }
+  { $in_new_table= 1; '' } CREATE OR REPLACE alt_temporary TABLE alt_new_table_name (alt_col_name_and_definition_list) alt_table_flags { $in_new_table=0; '' }
 ;
 
 alt_col_name_and_definition_list:

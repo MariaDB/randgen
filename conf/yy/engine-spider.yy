@@ -22,12 +22,16 @@ query_init:
      get_charsets
      # We are doing it this way because otherwise set_db later may pick up a newly created empty spider database
      { @all_databases=(); foreach my $s (@{$executors->[0]->metaAllSchemas()}) { push @all_databases, $s if $s !~ /^spider_db(_remote)?/ }; @user_databases=(); foreach my $s (@{$executors->[0]->metaUserSchemas()}) { push @user_databases, $s if $s !~ /^spider_db(_remote)?$/ }; '' }
-     CREATE DATABASE IF NOT EXISTS spider_db
+     SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS spider_db
   ;; CREATE DATABASE IF NOT EXISTS spider_db_remote
+  ;; GRANT ALL ON spider_db.* TO CURRENT_USER
+  ;; GRANT ALL ON spider_db_remote.* TO CURRENT_USER
   ;; CREATE USER IF NOT EXISTS spider_user@'127.0.0.1' IDENTIFIED BY 'SpdrUs3r!pw'
-  ;; GRANT ALL ON *.* TO spider_user@'127.0.0.1'
+  ;; GRANT INSERT, UPDATE, DELETE, SELECT ON *.* TO spider_user@'127.0.0.1'
   ;; SET STATEMENT binlog_format=statement FOR INSERT IGNORE INTO mysql.servers (Server_name, Host, Db, Username, Password, Port, Wrapper) VALUES ('s','127.0.0.1','spider_db_remote','spider_user','SpdrUs3r!pw',@@port,'mysql')
   ;; FLUSH PRIVILEGES
+  ;; SET ROLE NONE
      { @remote_tables= (); '' }
   ;; create_remote_table_init ;; create_remote_table_init ;; create_remote_table_init
   ;; create_remote_table_init ;; create_remote_table_init ;; create_remote_table_init

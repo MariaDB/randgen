@@ -55,7 +55,7 @@ sub transform {
 
 sub variate {
   my ($class, $original_query) = @_;
-  return $original_query if $original_query !~ m{^\s*SELECT}is;
+  return [ $original_query ] if $original_query !~ m{^\s*SELECT}is;
   return [ $class->modify($original_query) || $original_query ];
 }
 

@@ -45,13 +45,14 @@ sub transform {
   return STATUS_WONT_HANDLE if $orig_query =~ m{GROUP\s+BY|LIMIT|HAVING|UNION|INTERSECT|EXCEPT}is
     || $orig_query =~ m{(INTO|PROCESSLIST)}is
     || $orig_query !~ m{^[\(\s]*SELECT}is;
-  return $class->modify($orig_query)." /* TRANSFORM_OUTCOME_COUNT */";
+  my $query= $class->modify($orig_query);
+  return ( $query ? $query." /* TRANSFORM_OUTCOME_COUNT */" : STATUS_WONT_HANDLE );
 }
 
 sub variate {
   my ($class, $orig_query) = @_;
   return [ $orig_query ] if $orig_query !~ m{^[\(\s]*SELECT}is;
-  return [ $class->modify($orig_query) ];
+  return [ $class->modify($orig_query) || $orig_query ];
 }
 
 sub modify {
@@ -72,10 +73,14 @@ sub modify {
       # Replacing * with COUNT(*)
       $orig_query =~ s{\s+\*\s+}{ COUNT(*) }is;
       return $orig_query;
+  # If the above didn't work, then just wrap the query in SELECT COUNT(*).
+  # But for this the original query cannot be INTO (which was already
+  # forbidden for transform, but not for INTO)
+    } elsif ($orig_query !~ /\WINTO\W/) {
+      return "SELECT COUNT(*) FROM ( $orig_query ) sq_count";
     }
   }
-  # If the above didn't work, then just wrap the query in SELECT COUNT(*)
-  return "SELECT COUNT(*) FROM ( $orig_query ) sq_count";
+  return undef;
 }
 
 1;

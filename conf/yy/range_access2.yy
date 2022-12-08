@@ -40,7 +40,7 @@
 ########################################################################
 
 query_init:
-  alter_add ; alter_add ; alter_add ; alter_add ; alter_add ;
+  { _set_db('user') } alter_add ; alter_add ; alter_add ; alter_add ; alter_add ;
 
 query:
   { _set_db('user') } range_access2_query ;

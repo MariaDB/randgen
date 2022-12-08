@@ -178,6 +178,7 @@ sub new {
         seed => $self->seed,
       );
       $self->[GD_EXECUTOR]->init();
+      $self->[GD_EXECUTOR]->admin();
     }
 
     return $self;

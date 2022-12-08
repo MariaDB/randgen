@@ -29,8 +29,11 @@ query_init:
   # This is to prevent other grammars from altering the schema
   GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON partition_by_columns_db.* TO CURRENT_USER;
 
+# Since the schema is uniform in regard to columns, we can pre-pick any table to get correct field names,
 query:
-  { _set_db('partition_by_columns_db') } partition_no_create_query ;
+  { _set_db('partition_by_columns_db') }
+  { $last_table= $prng->arrayElement($executors->[0]->metaBaseTables($last_database)); '' }
+  partition_no_create_query ;
 
 partition_no_create_query:
   { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } query_type ;

@@ -389,6 +389,7 @@ sub next {
   my $starting_rule= '';
   my $grammar_rules;
   my @sentence= ();
+  my $skip_variate= 0;
 
   # If this is our first query, we look for a rule named "threadN_init" or "query_init"
   # in all grammars and concatenate them
@@ -398,8 +399,10 @@ sub next {
       $grammar_rules = $grammar->rules();
       if (exists $grammar_rules->{"thread".$generator->threadId()."_init"}) {
         $starting_rule= "thread".$generator->threadId()."_init";
+        $skip_variate= 1;
       } elsif (exists $grammar_rules->{"query_init"}) {
         $starting_rule= "query_init";
+        $skip_variate= 1;
       } else {
         next;
       }
@@ -470,9 +473,14 @@ sub next {
     my @sentences;
 
     @sentences = split (';;', $sentence);
-        if ($generator->[GENERATOR_SEQ_ID] == 1) {
-          sayDebug("Starting rule ($starting_rule) processed:\n@sentence");
-        }
+    if ($generator->[GENERATOR_SEQ_ID] == 1) {
+      sayDebug("Starting rule ($starting_rule) processed:\n@sentence");
+    }
+    if ($skip_variate) {
+      foreach my $i (0..$#sentences) {
+        $sentences[$i].= ' /* EXECUTOR_SKIP_VARIATE */' if $sentences[$i] !~ /^\s*$/;
+      }
+    }
     return \@sentences;
   } elsif (
     # Stored procedures of all sorts
@@ -526,7 +534,7 @@ sub next {
         if ($generator->[GENERATOR_SEQ_ID] == 1) {
           sayDebug("Starting rule ($starting_rule) processed:\n$sentence");
         }
-    return [ $sentence ];
+    return [ $sentence.($skip_variate ? ' /* EXECUTOR_SKIP_VARIATE */' : '') ];
   } elsif (index($sentence, ';') > -1) {
 
     my @sentences;

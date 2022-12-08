@@ -1,3 +1,4 @@
+DROP DATABASE IF EXISTS osm_db;
 CREATE DATABASE osm_db;
 USE osm_db;
 CREATE TABLE IF NOT EXISTS `changesets` (  `id` bigint(20) NOT NULL auto_increment,  `user_id` bigint(20) NOT NULL,  `created_at` datetime NOT NULL,  `min_lat` int(11) default NULL,  `max_lat` int(11) default NULL,  `min_lon` int(11) default NULL,  `max_lon` int(11) default NULL,  `closed_at` datetime NOT NULL,  `num_changes` int(11) NOT NULL default '0',  PRIMARY KEY  (`id`))  DEFAULT CHARSET=utf8 ;

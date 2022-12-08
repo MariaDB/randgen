@@ -38,11 +38,11 @@ insert_load:
 
 # Select from any table into the same table
 self_insert:
-  insert_replace INTO { $last_table } SELECT * FROM { $last_table } ;
+  insert_replace INTO _table[invariant] SELECT * FROM _table[invariant] ;
 
 # Select from any table into the table. For replace there is a good chance of an error (column doesn't have default value, type mismatch,...)
 cross_insert:
-  insert_replace INTO _table ( _field ) SELECT _table._field FROM { $last_table } ;
+  insert_replace INTO _table ( _field ) SELECT _table[invariant]._field FROM _table[invariant] ;
 
 insert_replace:
   ==FACTOR:19== __replace_x_insert_ignore |

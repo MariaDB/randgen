@@ -25,8 +25,8 @@
 ########################################################################
 
 query_init:
-  # This is to prevent other grammars from altering the schema
-  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON dbt3_db.* TO CURRENT_USER
+  #  Only necessary permissions, to prevent other grammars from altering the schema
+     SET ROLE admin ;; GRANT INSERT, UPDATE, DELETE, EXECUTE ON dbt3_db.* TO CURRENT_USER ;; SET ROLE NONE
   ;; SET AUTOCOMMIT = OFF
 ;
 

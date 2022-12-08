@@ -15,17 +15,23 @@
 
 #include <conf/yy/include/basics.inc>
 
-
 query_init:
-   CREATE DATABASE IF NOT EXISTS test;; { $tmp_table = 0; _set_db('test') } CREATE FUNCTION IF NOT EXISTS MIN2(a BIGINT, b BIGINT) RETURNS BIGINT RETURN (a>b,b,a) ;
+     SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS test
+  ;; GRANT ALL ON test.* TO CURRENT_USER
+  ;; SET ROLE NONE
+  ;; { $tmp_table = 0; _set_db('test') } CREATE FUNCTION IF NOT EXISTS MIN2(a BIGINT, b BIGINT) RETURNS BIGINT RETURN (a>b,b,a) ;
 
 query:
-    ==FACTOR:9== { _set_db('any') } func_select_or_explain_select
-  | { $tmp_table++; _set_db('test') } func_create_and_drop
+  { _set_db('any') } func_query ;
+
+func_query:
+    ==FACTOR:9== func_select_or_explain_select
+  | { $tmp_table++; '' } func_create_and_drop
 ;
 
 func_create_and_drop:
-   CREATE __temporary(50) TABLE { 'tmp'.$tmp_table } AS func_select ; DROP TABLE IF EXISTS { 'tmp'.$tmp_table } ;
+   CREATE __temporary(50) TABLE { 'test.tmp'.$tmp_table } AS func_select ; DROP TABLE IF EXISTS { 'test.tmp'.$tmp_table } ;
 
 func_select_or_explain_select:
    _basics_explain_analyze func_select;
@@ -38,7 +44,7 @@ func_select_item:
 ;
 
 func_select:
-  { $num = 0; '' } /* _table */ SELECT __distinct(50) func_select_list FROM { $last_table } func_where func_group_by_having_order_by_limit ;
+  { $num = 0; '' } /* _table[invariant] */ SELECT __distinct(50) func_select_list FROM _table[invariant] func_where func_group_by_having_order_by_limit ;
 
 func_aggregate_func:
    COUNT( func_func )

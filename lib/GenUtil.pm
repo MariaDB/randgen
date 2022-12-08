@@ -36,6 +36,8 @@ use Fcntl qw(:flock SEEK_END);
 use File::Temp qw/ :POSIX /;
 use GDBM_File;
 
+use GenTest::Constants;
+
 my $tmpdir;
 
 1;
@@ -207,16 +209,29 @@ sub group_cleaner {
   return if osWindows();
   my $group_id= `ps -ho pgrp -p $$`;
   chomp $group_id;
-  say("Cleaning the group $group_id");
+  #system("ps -ho pgrp,pid,comm | grep -v tee");
   my @pids= split /\n/, `ps -ho pgrp,pid,comm | grep -v tee`;
   my @group= ();
+  my @immortals= ($group_id, $$);
+  if ($ENV{RQG_IMMORTALS}) {
+    push @immortals, (split /,/, $ENV{RQG_IMMORTALS});
+  }
+  
+  PP:
   foreach my $pp (@pids) {
     if ($pp =~ /^\s*(\d+)\s+(\d+)/) {
       my ($p1, $p2) = ($1, $2);
-      push @group, $p2 if ($p1 == $group_id and $p2 != $group_id and $p2 != $$);
+      next if $p1 != $group_id;
+      foreach my $im (@immortals) {
+        next PP if $im and $p2 == $im;
+      }
+      push @group, $p2;
     }
   }
+#  system("ps -ef | grep -E '".join('|',@group)."'");
+  say("Cleaning the group $group_id (@group), keeping immortals (@immortals)");
   kill('KILL',@group);
+  return STATUS_EOF;
 }
 
 sub versionN6 {

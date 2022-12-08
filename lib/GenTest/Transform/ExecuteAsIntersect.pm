@@ -63,7 +63,7 @@ sub transform {
 sub variate {
   my ($self, $query, $executor) = @_;
   # CTE do not work due to MDEV-15177 (closed as "won't fix")
-  return $query if $query =~ m{(OUTFILE|INFILE|INTO)}is || $query !~ m{^\s*SELECT}is || $query =~ m{^\s*WITH}is;
+  return [ $query ] if $query =~ m{(OUTFILE|INFILE|INTO)}is || $query !~ m{^\s*SELECT}is || $query =~ m{^\s*WITH}is;
 
   my @intersect_modes= ('');
   if ($executor->server->versionNumeric() >= 100500) {
@@ -73,6 +73,6 @@ sub variate {
     push @intersect_modes, 'ALL';
   }
   my $intersect_mode= $self->random->arrayElement(\@intersect_modes);
-  return "( $query ) INTERSECT $intersect_mode ( $query )";
+  return [ "( $query ) INTERSECT $intersect_mode ( $query )" ];
 }
 1;

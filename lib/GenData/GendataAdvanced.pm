@@ -58,6 +58,7 @@ sub run {
     $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
     say("GendataAdvanced is creating tables in schema `".$self->GDA_DEFAULT_DB."`");
     $executor->execute("CREATE DATABASE IF NOT EXISTS ".$self->GDA_DEFAULT_DB);
+    $executor->execute("GRANT ALL ON ".$self->GDA_DEFAULT_DB.".* TO CURRENT_USER");
     $executor->execute("USE ".$self->GDA_DEFAULT_DB);
     foreach my $i (0..$#$rows) {
         my $gen_table_result = $self->gen_table($executor, 't'.($i+1), $rows->[$i], $prng);

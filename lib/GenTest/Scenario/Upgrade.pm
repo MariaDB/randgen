@@ -46,10 +46,13 @@ sub new {
   my $class= shift;
   my $self= $class->SUPER::new(@_);
   $self->numberOfServers(1,2);
-  if ($self->old_server_options()->{basedir} ne $self->new_server_options()->{basedir}) {
+  if ($self->new_server_options() and $self->old_server_options()->{basedir} ne $self->new_server_options()->{basedir}) {
     $self->printSubtitle('Upgrade/downgrade');
     $self->[UPGRADE_ERROR_CODE]= STATUS_UPGRADE_FAILURE;
   } else {
+    unless ($self->new_server_options()) {
+      $self->copyServerSpecific(1,2);
+    }
     $self->printSubtitle('Same server');
     $self->[UPGRADE_ERROR_CODE]= STATUS_RECOVERY_FAILURE;
   }

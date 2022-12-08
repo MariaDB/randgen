@@ -59,6 +59,7 @@ sub run {
                                                                     # have
                                                                     # been
                                                                     # substituted
+   my $short_column_names= $self->short_column_names; # Can also be set in the spec file by names => 'short' or names => 'full'
 
 
     if ($spec_file ne '') {
@@ -126,7 +127,17 @@ sub run {
 
     $table_perms[TABLE_NAMES] = $tables->{names} || [ ];
 
-    $field_perms[FIELD_NAMES] = $fields->{names} || [ ];
+
+    $field_perms[FIELD_NAMES] = [];
+    if ($fields->{names} and ref $fields->{names} eq 'ARRAY') {
+      $field_perms[FIELD_NAMES] = $fields->{names};
+    } elsif ($fields->{names} and ref $fields->{names} eq '') {
+      if ($fields->{names} eq 'short') {
+        $short_column_names= 1;
+      } elsif ($fields->{names} eq 'full') {
+        $short_column_names= 0;
+      }
+    }
     $field_perms[FIELD_SQLS] = $fields->{sqls} || [ ];
     $field_perms[FIELD_INDEX_SQLS] = $fields->{index_sqls} || [ ];
     $field_perms[FIELD_TYPE] = $fields->{types} || [ 'int', 'varchar', 'date', 'time', 'datetime' ];
@@ -221,7 +232,7 @@ sub run {
         my $field_name;
         if ($#{$field_perms[FIELD_NAMES]} > -1) {
             $field_name = shift @{$field_perms[FIELD_NAMES]};
-        } elsif ($self->short_column_names) {
+        } elsif ($short_column_names) {
             $field_name = 'c'.($field_no++);
         } else {
             $field_name = "col_".join('_', grep { $_ ne '' } @field_copy);
@@ -333,6 +344,7 @@ sub run {
 
     foreach my $schema (@schema_perms) {
         $executor->execute("CREATE DATABASE IF NOT EXISTS $schema");
+        $executor->execute("GRANT ALL ON $schema.* TO CURRENT_USER");
         $executor->currentSchema($schema);
 
     foreach my $table_id (0..$#tables) {

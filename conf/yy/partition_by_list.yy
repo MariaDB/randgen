@@ -26,7 +26,10 @@
 
 
 query_init:
-  CREATE DATABASE IF NOT EXISTS partition_db
+     SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS partition_db
+  ;; GRANT ALL ON partition_db.* TO CURRENT_USER
+  ;; SET ROLE NONE
   ;; {$tblnum=0 ; _set_db('partition_db') } init_db ;
 
 create:

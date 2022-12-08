@@ -1,4 +1,5 @@
-CREATE DATABASE IF NOT EXISTS oqgraph_db;
+DROP DATABASE IF EXISTS oqgraph_db;
+CREATE DATABASE oqgraph_db;
 USE oqgraph_db;
 CREATE TABLE oq_backing1 (origid INT UNSIGNED NOT NULL, destid INT UNSIGNED NOT NULL, PRIMARY KEY (origid, destid), KEY (destid));
 CREATE TABLE oq_backing2 (origid INT UNSIGNED NOT NULL, destid INT UNSIGNED NOT NULL, PRIMARY KEY (origid, destid), KEY (destid));

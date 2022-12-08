@@ -27,6 +27,7 @@ $tables = {
 };
 
 $fields = {
+  names => 'short',
   types => ["datetime(6) null","datetime(6) not null","datetime(6) null default 0","datetime(6) not null default 0",
             "datetime(6) null default current_timestamp(6)","datetime(6) not null default current_timestamp(6)",
             "datetime(6) not null default current_timestamp(6) on update current_timestamp(6)","datetime(6) null default now(6) on update now(6)",

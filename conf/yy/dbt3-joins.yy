@@ -31,9 +31,7 @@
 # Requires one of dbt3 datasets
 ########################################################################
 
-query_init:
-  # This is to prevent other grammars from altering the schema
-  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON dbt3_db.* TO CURRENT_USER;
+# No need to configure permissions as the grammar is read-only
 
 query:
   { _set_db('dbt3_db') } dbt3_query ;

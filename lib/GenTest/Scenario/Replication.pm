@@ -112,8 +112,10 @@ sub run {
       my ($master, $slave)= ($1-1, $2-1);
       say("Enabling $c replication");
       my $master_dbh= $servers[$master]->dbh;
-      $master_dbh->do("CREATE USER IF NOT EXISTS replication");
-      $master_dbh->do("GRANT REPLICATION SLAVE ON *.* TO replication");
+      $master_dbh->do("CREATE USER IF NOT EXISTS replication IDENTIFIED BY 'yvp.utu9azv4xgt6VRT'");
+      unless ($master_dbh->err) {
+        $master_dbh->do("GRANT REPLICATION SLAVE ON *.* TO replication");
+      }
       if ($master_dbh->err) {
         sayError("Could not configure replication user on server $master: ".$master_dbh->err." (".$master_dbh->errstr.")");
         $status= STATUS_REPLICATION_FAILURE;
@@ -121,7 +123,7 @@ sub run {
       }
       my $master_port= $servers[$master]->port;
       my $slave_dbh= $servers[$slave]->dbh;
-      $slave_dbh->do("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication'");
+      $slave_dbh->do("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT'");
       $slave_dbh->do("START SLAVE");
       if ($slave_dbh->err) {
         sayError("Could not start replication $master -> $slave: ".$slave_dbh->err." (".$slave_dbh->errstr.")");

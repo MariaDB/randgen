@@ -58,6 +58,7 @@ sub run {
 
     say("GendataSimple is creating tables in schema `".$self->GDS_DEFAULT_DB."`");
     $executor->execute("CREATE DATABASE IF NOT EXISTS ".$self->GDS_DEFAULT_DB);
+    $executor->execute("GRANT ALL ON ".$self->GDS_DEFAULT_DB.".* TO CURRENT_USER");
     $executor->execute("USE ".$self->GDS_DEFAULT_DB);
     foreach my $i (0..$#$names) {
         my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i]);

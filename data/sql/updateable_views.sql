@@ -1,4 +1,5 @@
-CREATE DATABASE IF NOT EXISTS updateable_views_db;
+DROP DATABASE IF EXISTS updateable_views_db;
+CREATE DATABASE updateable_views_db;
 USE updateable_views_db;
 
 # multipart keys

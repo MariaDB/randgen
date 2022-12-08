@@ -364,6 +364,10 @@ sub createMysqlBase  {
     }
     # Workaround for MDEV-29197
     push @$boot_options, "--loose-skip-s3";
+    # Don't enforce password checks
+    push @$boot_options, "--loose-skip-cracklib-password-check";
+    push @$boot_options, "--loose-skip-simple-password-check";
+    push @$boot_options, "--loose-skip-password-reuse-check";
 
     my $command;
 
@@ -391,23 +395,27 @@ sub createMysqlBase  {
     ## Add last strokes to the boot/init file: don't want empty users, but want the test user instead
     print BOOT "USE mysql;\n";
     print BOOT "DELETE FROM $usertable WHERE `User` = '';\n";
+    print BOOT "FLUSH PRIVILEGES;\n";
+    print BOOT "CREATE DATABASE IF NOT EXISTS transforms;\n";
+    print BOOT "CREATE DATABASE IF NOT EXISTS test;\n";
+    print BOOT "CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria;\n";
     if ($self->user ne 'root') {
-        print BOOT "CREATE TABLE tmp_user AS SELECT * FROM $usertable WHERE `User`='root' AND `Host`='localhost';\n";
-        print BOOT "UPDATE tmp_user SET `User` = '". $self->user ."';\n";
-        print BOOT "INSERT INTO $usertable SELECT * FROM tmp_user;\n";
-        print BOOT "DROP TABLE tmp_user;\n";
-        print BOOT "UPDATE proxies_priv SET Timestamp = NOW();\n"; # This is for MySQL, it has '0000-00-00' there and next CREATE doesn't work
-        print BOOT "CREATE TABLE tmp_proxies AS SELECT * FROM proxies_priv WHERE `User`='root' AND `Host`='localhost';\n";
-        print BOOT "UPDATE tmp_proxies SET `User` = '". $self->user . "';\n";
-        print BOOT "INSERT INTO proxies_priv SELECT * FROM tmp_proxies;\n";
-        print BOOT "DROP TABLE tmp_proxies;\n";
-    }
-    # Protect the work account from password expiration
-    if ($self->versionNumeric() gt '100403') {
-        print BOOT "UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root');\n";
-    }
-    if ($self->_isMySQL and not $self->_olderThan(5,8,0)) {
-      print BOOT "UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE user in('".$self->user."', 'root');\n";
+        my $user= $self->user.'@localhost';
+        print BOOT "CREATE ROLE admin;\n";
+        print BOOT "GRANT ALL ON *.* TO admin WITH GRANT OPTION;\n";
+        print BOOT "CREATE USER $user;\n";
+        print BOOT "GRANT /*!100502 BINLOG ADMIN, BINLOG MONITOR, BINLOG REPLAY, CONNECTION ADMIN, FEDERATED ADMIN, ".
+                                   "READ_ONLY ADMIN, REPLICATION MASTER ADMIN, REPLICATION REPLICA, REPLICATION SLAVE ADMIN, SET USER, */ ".
+                         "/*!100509 REPLICA MONITOR, */ ".
+                   "CREATE USER, FILE, PROCESS, RELOAD, REPLICATION CLIENT, SHOW DATABASES, SHUTDOWN, SUPER ON *.* TO $user;\n";
+        print BOOT "GRANT CREATE, SELECT ON *.* TO $user;\n";
+        print BOOT "GRANT ALL ON test.* TO $user;\n";
+        print BOOT "GRANT ALL ON transforms.* TO $user;\n";
+        print BOOT "GRANT ALL ON mysql.rqg_feature_registry TO $user;\n";
+        print BOOT "GRANT INSERT, UPDATE, DELETE ON performance_schema.* TO $user;\n";
+        print BOOT "GRANT EXECUTE ON sys.* TO $user;\n";
+        print BOOT "/*!100403 UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root')*/;\n";
+        print BOOT "INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y');\n";
     }
     close BOOT;
 
@@ -1505,11 +1513,12 @@ sub host {
 }
 
 sub dsn {
-    my ($self,$database) = @_;
+    my ($self,$user) = @_;
+    $user= $self->[MYSQLD_USER] unless $user;
     return "dbi:mysql".
       ":host=".$self->[MYSQLD_HOST].
       ":port=".$self->[MYSQLD_PORT].
-      ":user=".$self->[MYSQLD_USER].
+      ":user=".$user.
       ":mysql_local_infile=1".
       ":max_allowed_packet=1G";
 }
@@ -1519,7 +1528,7 @@ sub dbh {
     if (defined $self->[MYSQLD_DBH]) {
         if (!$self->[MYSQLD_DBH]->ping) {
             say("Stale connection to ".$self->[MYSQLD_PORT].". Reconnecting");
-            $self->[MYSQLD_DBH] = DBI->connect($self->dsn("mysql"),
+            $self->[MYSQLD_DBH] = DBI->connect($self->dsn(),
                                                undef,
                                                undef,
                                                {PrintError => 0,
@@ -1529,7 +1538,7 @@ sub dbh {
         }
     } else {
         say("Connecting to ".$self->[MYSQLD_PORT]);
-        $self->[MYSQLD_DBH] = DBI->connect($self->dsn("mysql"),
+        $self->[MYSQLD_DBH] = DBI->connect($self->dsn(),
                                            undef,
                                            undef,
                                            {PrintError => 0,

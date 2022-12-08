@@ -52,7 +52,7 @@ sub variate {
     $query = "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() ${op} ${limit}";
   }
 
-  return $query;
+  return [ $query ];
 }
 
 1;

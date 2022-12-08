@@ -39,7 +39,7 @@ sub transform {
 
 sub variate {
   my ($class, $orig_query) = @_;
-  return $orig_query if $orig_query !~ m{(FORCE|IGNORE|USE)\s+(KEY|INDEX)};
+  return [ $orig_query ] if $orig_query !~ m{(FORCE|IGNORE|USE)\s+(KEY|INDEX)};
   return [ $class->modify($orig_query) ];
 }
 

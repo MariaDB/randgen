@@ -80,9 +80,6 @@ sub transform {
   my $modified_queries= $class->modify($original_query, $executor, 'TRANSFORM_OUTCOME_UNORDERED_MATCH');
   if (defined $modified_queries and ref $modified_queries eq 'ARRAY') {
     return $modified_queries;
-  } elsif (defined $modified_queries) {
-    # Non-OK status
-    return $modified_queries;
   } else {
     return STATUS_WONT_HANDLE;
   }
@@ -92,7 +89,7 @@ sub variate {
   my ($class, $original_query, $executor) = @_;
   return [ $original_query ] if $original_query !~ m{^[\(\s]*(?:SELECT|INSERT|DELETE|REPLACE|UPDATE)}is;
   my $modified_queries= $class->modify($original_query, $executor);
-  if (defined $modified_queries and ref $modified_queries eq 'ARRAY') {
+  if ($modified_queries) {
     # flatten the 2-level nested array
     my @queries= ();
     foreach my $mq (@$modified_queries) {
@@ -105,9 +102,6 @@ sub variate {
       }
     }
     return [ @queries ];
-  } elsif (defined $modified_queries) {
-    # Non-OK status
-    return $modified_queries;
   } else {
     return [ $original_query ];
   }
@@ -119,7 +113,7 @@ sub modify {
 
     if ($original_explain->status() ne STATUS_OK) {
       sayError("Query: $original_query EXPLAIN failed: ".$original_explain->err()." ".$original_explain->errstr());
-      return $original_explain->status();
+      return undef;
     }
 
     my $original_explain_string = Dumper($original_explain->data())."\n".Dumper($original_explain->warnings());
