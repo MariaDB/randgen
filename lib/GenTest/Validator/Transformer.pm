@@ -31,7 +31,6 @@ use GenTest::Comparator;
 
 my @transformer_names;
 my @transformers;
-my $database_created = 0;
 
 sub configure {
     my ($self, $props) = @_;
@@ -61,11 +60,6 @@ sub validate {
   my $original_result = $results->[0];
   my $original_query = $original_result->query();
 
-  if ($database_created == 0) {
-    $executor->dbh()->do("CREATE DATABASE IF NOT EXISTS transforms");
-    $database_created = 1;
-  }
-
   return STATUS_WONT_HANDLE if $original_query !~ m{^\s*(SELECT|HANDLER)}is;
   return STATUS_WONT_HANDLE if defined $results->[0]->warnings();
     foreach my $r (@{$results}) {
@@ -73,6 +67,17 @@ sub validate {
     };
 
   my $max_transformer_status= STATUS_OK;
+  $executor->dbh->do('SELECT CONCAT("SET ROLE ",IFNULL(CURRENT_ROLE(),"NONE")) INTO @role_stmt');
+  if ($executor->dbh->err) {
+    sayError("Couldn't store current role in Transformer validator");
+    return STATUS_ENVIRONMENT_FAILURE;
+  }
+  $executor->dbh->do('SET ROLE admin');
+  if ($executor->dbh->err) {
+    sayError("Couldn't set admin role in Transformer validator");
+    return STATUS_ENVIRONMENT_FAILURE;
+  }
+  
   foreach my $transformer (@transformers) {
         next if isOlderVersion($executor->server->version(),$transformer->compatibility);
         if (time() > $executor->end_time) {
@@ -87,16 +92,19 @@ sub validate {
         ' no complete ORDER BY. Hence we return STATUS_OK. The previous transform issue can likely be ignored.');
       $transformer_status = STATUS_OK
     }
-    return $transformer_status if $transformer_status >= STATUS_CRITICAL_FAILURE;
     $max_transformer_status = $transformer_status if $transformer_status > $max_transformer_status;
+    last if $transformer_status >= STATUS_CRITICAL_FAILURE;
   }
-
+  $executor->dbh->do('EXECUTE IMMEDIATE @role_stmt');
+  if ($executor->dbh->err) {
+    sayError("Couldn't restore previous role in Transformer validator");
+    return STATUS_ENVIRONMENT_FAILURE;
+  }
   return $max_transformer_status;
 }
 
 sub transform {
   my ($validator, $transformer, $executor, $results) = @_;
-
   my $original_result = $results->[0];
   my $original_query = $original_result->query();
 

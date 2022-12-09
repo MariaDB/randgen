@@ -25,7 +25,10 @@
 query_init:
   { $vers_tab_num=0; $executors->[0]->setMetadataReloadInterval(15 + $generator->threadId()); '' }
     CREATE DATABASE IF NOT EXISTS versioning_db
-  ;; SET ROLE admin ;; GRANT ALL ON versioning_db.* TO CURRENT_USER ;; ;; SET ROLE NONE
+  ;; SET ROLE admin
+  # PS is a workaround for MDEV-30190
+  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON versioning_db.* TO ',CURRENT_USER,' WITH GRANT OPTION')
+  ;; SET ROLE NONE
   ;; { _set_db('versioning_db') }
      SET SYSTEM_VERSIONING_ALTER_HISTORY= vers_alter_history_value, ENFORCE_STORAGE_ENGINE=NULL
   ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init ;; vers_create_init

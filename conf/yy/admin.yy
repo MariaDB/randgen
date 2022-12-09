@@ -16,7 +16,7 @@
 #features Aria tables, RocksDB tables
 
 query:
-  { _set_db('any') } admin_query
+  { _set_db('ANY') } admin_query
 ;
 
 admin_query:

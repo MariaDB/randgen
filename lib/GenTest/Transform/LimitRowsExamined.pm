@@ -49,7 +49,6 @@ use constant MAX_LIMIT_ROWS_EXAMINED  => 10000;
 use constant OVERHEAD_FOR_LOW_LIMITS  => 2000;
 use constant OVERHEAD_MULTIPLIER  => 2;
 
-my $show_status_query = "SELECT SUM(VARIABLE_VALUE) FROM INFORMATION_SCHEMA.SESSION_STATUS WHERE VARIABLE_NAME IN ('Handler_delete','Handler_read_first','Handler_read_key','Handler_read_next','Handler_read_prev','Handler_read_rnd','Handler_read_rnd_next','Handler_tmp_update','Handler_tmp_write','Handler_update','Handler_write')";
 my $limit= MAX_LIMIT_ROWS_EXAMINED;
 
   # This transformation adds LIMIT ROWS EXAMINED clause if it's not there,
@@ -62,6 +61,8 @@ my $limit= MAX_LIMIT_ROWS_EXAMINED;
 sub transform {
   my ($self, $orig_query, $executor) = @_;
   return STATUS_WONT_HANDLE unless $self->is_applicable($orig_query);
+
+  my $show_status_query = "SELECT SUM(VARIABLE_VALUE) FROM INFORMATION_SCHEMA.SESSION_STATUS WHERE VARIABLE_NAME IN ('Handler_delete','Handler_read_first','Handler_read_key','Handler_read_next','Handler_read_prev','Handler_read_rnd','Handler_read_rnd_next','Handler_tmp_update','Handler_tmp_write','Handler_update','Handler_write')";
 
   if ($orig_query =~ m{ROWS\s+EXAMINED\s+(\d+)}si) {
     return [

@@ -68,6 +68,7 @@ use constant MYSQLD_CLIENT => 34;
 use constant MARIABACKUP => 35;
 use constant MYSQLD_MANUAL_GDB => 36;
 use constant MYSQLD_HOST => 37;
+use constant MYSQLD_ADMIN_DBH => 38;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -317,6 +318,14 @@ sub printServerOptions {
     }
 }
 
+sub systemSchemas {
+  return ('mysql','performance_schema','information_schema','sys');
+}
+
+sub systemSchemaList {
+  join ',', (map { "'$_'" } ($_[0]->systemSchemas()));
+}
+
 sub createMysqlBase  {
     my ($self) = @_;
 
@@ -324,7 +333,6 @@ sub createMysqlBase  {
     if (-d $self->vardir) {
         rmtree($self->vardir);
     }
-
     ## Create database directory structure
     mkpath($self->vardir);
     mkpath($self->tmpdir);
@@ -852,7 +860,7 @@ sub dumpdb {
     unless ($for_restoring) {
       my @heap_tables= @{$self->dbh->selectcol_arrayref(
           "select concat(table_schema,'.',table_name) from ".
-          "information_schema.tables where engine='MEMORY' and table_schema not in ('information_schema','performance_schema','sys')"
+          "information_schema.tables where engine='MEMORY' and table_schema not in (".$self->systemSchemaList().")"
         )
       };
       my $skip_heap_tables= join ' ', map {'--ignore-table-data='.$_} @heap_tables;
@@ -1049,7 +1057,7 @@ sub nonSystemDatabases {
   my $self= shift;
   return sort @{$self->dbh->selectcol_arrayref(
       "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA ".
-      "WHERE LOWER(SCHEMA_NAME) NOT IN ('mysql','information_schema','performance_schema','sys')"
+      "WHERE LOWER(SCHEMA_NAME) NOT IN (".$self->systemSchemaList.")"
     )
   };
 }
@@ -1138,7 +1146,7 @@ sub checkDatabaseIntegrity {
   ALLDBCHECK:
   foreach my $database (sort @$databases) {
       my $db_status= DBSTATUS_OK;
-      next if $database =~ m{^(information_schema|pbxt|performance_schema|sys)$}is;
+#      next if $database =~ m{^(information_schema|performance_schema|sys)$}is;
       my $tabl_ref = $dbh->selectall_arrayref("SELECT TABLE_NAME, TABLE_TYPE, ENGINE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database'");
       # 1178 is ER_CHECK_NOT_IMPLEMENTED
       my %tables=();
@@ -1523,33 +1531,43 @@ sub dsn {
       ":max_allowed_packet=1G";
 }
 
+sub connect {
+  return DBI->connect($_[0]->dsn(),
+                 undef,
+                 undef,
+                 {PrintError => 0,
+                  RaiseError => 0,
+                  AutoCommit => 1,
+                  mysql_auto_reconnect => 1});
+}
+
 sub dbh {
-    my ($self) = @_;
-    if (defined $self->[MYSQLD_DBH]) {
-        if (!$self->[MYSQLD_DBH]->ping) {
-            say("Stale connection to ".$self->[MYSQLD_PORT].". Reconnecting");
-            $self->[MYSQLD_DBH] = DBI->connect($self->dsn(),
-                                               undef,
-                                               undef,
-                                               {PrintError => 0,
-                                                RaiseError => 0,
-                                                AutoCommit => 1,
-                                                mysql_auto_reconnect => 1});
-        }
+  my ($self, $admin, $new) = @_;
+  my $dbh_type= ($admin ? MYSQLD_ADMIN_DBH : MYSQLD_DBH);
+  my $dbh;
+  if (! $new && defined $self->[$dbh_type]) {
+      if ($self->[$dbh_type]->ping) {
+        $dbh= $self->[$dbh_type];
+      } else {
+        say("Stale connection to ".$self->[MYSQLD_PORT].". Reconnecting");
+      }
+  } else {
+      say("Connecting to ".$self->[MYSQLD_PORT]);
+  }
+  if (! $dbh) {
+    $dbh = $self->connect;
+    if (defined $dbh) {
+      if ($admin) {
+        $dbh->do("SET ROLE admin");
+      }
+      if (! $new) {
+        $self->[$dbh_type]= $dbh;
+      }
     } else {
-        say("Connecting to ".$self->[MYSQLD_PORT]);
-        $self->[MYSQLD_DBH] = DBI->connect($self->dsn(),
-                                           undef,
-                                           undef,
-                                           {PrintError => 0,
-                                            RaiseError => 0,
-                                            AutoCommit => 1,
-                                            mysql_auto_reconnect => 1});
+      sayError("(Re)connect to ".$self->[MYSQLD_PORT]." failed due to ".$DBI::err.": ".$DBI::errstr);
     }
-    if(!defined $self->[MYSQLD_DBH]) {
-        sayError("(Re)connect to ".$self->[MYSQLD_PORT]." failed due to ".$DBI::err.": ".$DBI::errstr);
-    }
-    return $self->[MYSQLD_DBH];
+  }
+  return $dbh;
 }
 
 sub _findDir {

@@ -27,15 +27,9 @@
 ########################################################################
 
 query_init:
-     SET ROLE admin
      # This is to prevent other grammars from altering the underlying tables
-  ;; GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON updateable_views_db.* TO CURRENT_USER
-  ;; GRANT ALL ON updateable_views_db.view1 TO CURRENT_USER
-  ;; GRANT ALL ON updateable_views_db.view2 TO CURRENT_USER
-  ;; GRANT ALL ON updateable_views_db.view3 TO CURRENT_USER
-  ;; GRANT ALL ON updateable_views_db.view4 TO CURRENT_USER
-  ;; GRANT ALL ON updateable_views_db.view5 TO CURRENT_USER
-  ;; SET ROLE NONE
+     # PS is a workaround for MDEV-30190
+     EXECUTE IMMEDIATE CONCAT('REVOKE ALTER, DROP ON updateable_views_db.* FROM ',CURRENT_USER)
   ;; { _set_db('updateable_views_db') }
      create_with_redundancy
 ;

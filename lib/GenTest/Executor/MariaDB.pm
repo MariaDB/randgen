@@ -3147,7 +3147,7 @@ sub read_only {
 sub loadMetaData {
   # Type can be 'system' or 'non-system'
   my ($self, $metadata_type)= @_;
-  my $system_schemata= "'mysql','information_schema','performance_schema','sys'";
+  my $system_schemata= $self->server->systemSchemaList();
   my $exempt_schemata= "'transforms'";
   my $clause;
   if ($metadata_type eq 'system') {

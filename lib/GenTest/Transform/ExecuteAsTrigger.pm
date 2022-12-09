@@ -44,11 +44,10 @@ sub transform {
   }
   return [
     #Include database transforms creation DDL so that it appears in the simplified testcase.
-    "CREATE DATABASE IF NOT EXISTS transforms",
     "DROP TABLE IF EXISTS trigger1".abs($$).",  transforms.trigger2".abs($$),
     "CREATE TABLE IF NOT EXISTS trigger1".abs($$)." (f1 INTEGER)",
     "CREATE TABLE IF NOT EXISTS transforms.trigger2".abs($$)." $zero_query",
-    "CREATE TRIGGER trigger1".abs($$)." BEFORE INSERT ON trigger1".abs($$)." FOR EACH ROW INSERT INTO transforms.trigger2".abs($$)." $orig_query;",
+    "CREATE TRIGGER trigger1".abs($$)." BEFORE INSERT ON trigger1".abs($$)." FOR EACH ROW INSERT INTO transforms.trigger2".abs($$)." $orig_query",
     "INSERT INTO trigger1".abs($$)." VALUES (1)",
     "SELECT * FROM transforms.trigger2".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
     "DROP TABLE IF EXISTS trigger1".abs($$).",  transforms.trigger2".abs($$)
@@ -57,7 +56,7 @@ sub transform {
 
 sub variate {
   my ($class, $orig_query, $executor) = @_;
-  my $table= $class->random->arrayElement($executor->metaTables());
+  my $table= $class->random->arrayElement($executor->metaTables())->[1];
   my $query= $orig_query;
   if ($query =~ /^[\s\(]*SELECT/ and $query !~ /\WINTO\W/) {
     $query = "CREATE OR REPLACE TEMPORARY TABLE tmp_ExecuteAsTrigger AS $query";

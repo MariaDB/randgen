@@ -24,7 +24,7 @@ query_init:
   { $db_exists= $executors->[0]->databaseExists('dyncol_dml_db'); '' };
 
 query:
-  { $db_exists ? _set_db('dyncol_dml_db') : _set_db('user') } dyncol_dml_query ;
+  { $db_exists ? _set_db('dyncol_dml_db') : _set_db('NON-SYSTEM') } dyncol_dml_query ;
 
 dyncol_dml_query:
   select | insert | update | delete ;

@@ -27,7 +27,8 @@
 
 query_init:
   # This is to prevent other grammars from altering the schema
-  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON partition_by_columns_db.* TO CURRENT_USER;
+  # PS is a workaround for MDEV-30190
+  EXECUTE IMMEDIATE CONCAT('REVOKE ALTER, DROP ON partition_by_columns_db.* FROM ',CURRENT_USER);
 
 # Since the schema is uniform in regard to columns, we can pre-pick any table to get correct field names,
 query:

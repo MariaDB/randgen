@@ -17,7 +17,7 @@
 # USA
 
 query:
-  { _set_db('user') } perfschema_query ;
+  { _set_db('NON-SYSTEM') } perfschema_query ;
 
 perfschema_query:
   ==FACTOR:0.1== perfschema_ddl |

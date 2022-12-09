@@ -17,7 +17,7 @@
 # USA
 
 query:
-  { _set_db('user') } current_ts_query ;
+  { _set_db('NON-SYSTEM') } current_ts_query ;
 
 current_ts_query:
   select | insert | insert | insert | delete | replace | update | transaction | 

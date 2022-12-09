@@ -25,13 +25,13 @@
 ########################################################################
 
 query_init:
-  #  Only necessary permissions, to prevent other grammars from altering the schema
-     SET ROLE admin ;; GRANT INSERT, UPDATE, DELETE, EXECUTE ON dbt3_db.* TO CURRENT_USER ;; SET ROLE NONE
-  ;; SET AUTOCOMMIT = OFF
+  #  To prevent other grammars from altering the schema
+  # PS is a workaround for MDEV-30190
+  EXECUTE IMMEDIATE CONCAT('REVOKE ALTER, DROP ON dbt3_db.* FROM ',CURRENT_USER)
 ;
 
 query:
-  { _set_db('dbt3_db') } dbt3_query ;
+  { _set_db('dbt3_db') } SET AUTOCOMMIT = OFF ;; dbt3_query ;
 
 dbt3_query:
   transaction_body ;; commit_rollback ;

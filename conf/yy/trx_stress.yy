@@ -31,7 +31,7 @@
 #
 
 query:
-  { _set_db('user') } trx_stress_query ;
+  { _set_db('NON-SYSTEM') } trx_stress_query ;
 
 trx_stress_query:
   transaction |

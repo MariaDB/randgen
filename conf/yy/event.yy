@@ -19,7 +19,7 @@ query_init:
 ;
 
 query:
-  { _set_db('user') } event_query ;
+  { _set_db('NON-SYSTEM') } event_query ;
 
 event_query:
     ==FACTOR:4==   event_create

@@ -28,7 +28,7 @@
 # outside the range of MySQL error codes, see rule "number".
 
 query_init:
-  ;; { _set_db('user') }
+  ;; { _set_db('NON-SYSTEM') }
   ;; { $fname= 'test.f1'; '' } create_function
   ;; { $fname= 'test.f2'; '' } create_function
   ;; { $fname= 'test.f3'; '' } create_function
@@ -48,7 +48,7 @@ query_init:
 ;
 
 query:
-  { _set_db('user') } query_signal_resignal ;
+  { _set_db('NON-SYSTEM') } query_signal_resignal ;
 
 query_signal_resignal:
                  set_variable |

@@ -18,7 +18,7 @@
 ########################################################################
 
 query:
-  { $col = 0 ; $in_having = 0; _set_db('user') } temporal_query ;
+  { $col = 0 ; $in_having = 0; _set_db('NON-SYSTEM') } temporal_query ;
 
 temporal_query:
                SELECT /* _table[invariant] */ select_list FROM _table[invariant] WHERE where_list having order_by |

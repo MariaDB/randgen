@@ -54,4 +54,8 @@ sub new {
   return $obj;
 }
 
+sub systemSchemas {
+  croak "Must be defined in the server";
+}
+
 1;

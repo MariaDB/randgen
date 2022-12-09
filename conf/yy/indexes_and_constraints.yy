@@ -19,10 +19,7 @@
 
 
 query_init:
-     SET ROLE admin
-  ;; CREATE DATABASE IF NOT EXISTS test
-  ;; GRANT ALL ON test.* TO CURRENT_USER
-  ;; SET ROLE NONE ;; { _set_db('test') }
+     { _set_db('test') }
      long_blobs_init
   ;; long_blobs_init
   ;; long_blobs_init
@@ -31,7 +28,7 @@ query_init:
 ;
 
 query:
-  { _set_db('user') } ind_constr_query ;
+  { _set_db('NON-SYSTEM') } ind_constr_query ;
 
 ind_constr_own_table:
   { 'ind_constr_t'.$prng->uint16(1,5) } ;

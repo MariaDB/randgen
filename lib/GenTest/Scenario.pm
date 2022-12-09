@@ -225,9 +225,9 @@ sub validateData {
     }
   }
   foreach my $db (@dbs0) {
-    my @tbs0= sort @{$exs[0]->metaTables($db)};
+    my @tbs0= map { $_->[1] } (sort @{$exs[0]->metaTables($db)});
     foreach my $i (1..$#exs) {
-      my @tbs= sort @{$exs[1]->metaTables($db)};
+      my @tbs= map { $_->[1] } (sort @{$exs[1]->metaTables($db)});
       if ("@tbs0" ne "@tbs") {
         sayError("GenTest: Table list mismatch after data generation between two servers (1 vs ".($i+1)."):\n\t@tbs0\n\t@tbs");
         return STATUS_CRITICAL_FAILURE;

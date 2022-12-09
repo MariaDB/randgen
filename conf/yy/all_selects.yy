@@ -16,7 +16,7 @@
 #include <conf/yy/include/basics.inc>
 
 query:
-  { @aliases= (); $non_agg_fields= 0; $agg_fields= 0; _set_db('any') } all_selects_query ;
+  { @aliases= (); $non_agg_fields= 0; $agg_fields= 0; _set_db('ANY') } all_selects_query ;
 
 all_selects_query:
   ==FACTOR:4== all_selects_generated_query |

@@ -316,7 +316,7 @@ sub variate {
 sub variate_query {
   # Gendata flag tells variators that the query comes from gendata,
   # in case the variator has a different logic in this case
-  my ($self,$orig_query,$executor,$gendata_flag)= @_;
+  my ($self,$orig_query,$executor)= @_;
   my @variators= @{$self->[TRANSFORMER_VARIATORS]};
   $self->random->shuffleArray(\@variators);
   my @queries= ($orig_query);
@@ -327,23 +327,33 @@ sub variate_query {
     QUERY:
     foreach my $q (@queries) {
     # Variation happens with the configured probability
-      if ($v->random->uint16(1,100) > VARIATION_PROBABILITY) {
-        push @new_queries, $orig_query;
+      if ($v->random->uint16(1,100) > VARIATION_PROBABILITY || $q =~ /SKIP_VARIATION/) {
+        push @new_queries, $q;
         next QUERY;
       }
       $v->[TRANSFORMER_QUERIES_PROCESSED]++;
-      my $qs= $v->variate($q,$executor,$gendata_flag);
+      my $qs= $v->variate($q,$executor);
       # Something went wrong
       return $qs if ref $qs eq '';
-      if (rqg_debug() && (scalar(@$qs) > 1 || ($qs->[0] ne $q))) {
-        sayDebug($v->name." variator modified the query\nfrom [ $q ]\n  to [ ".(join " ]\n     [ ", @$qs).' ]');
+      # flatten 2-level arrays (e.g. if there is TRANFORM_CLEANUP block)
+      my @qs= ();
+      foreach my $q (@$qs) {
+        if (ref $q eq '') {
+          push @qs, $q;
+        } elsif (ref $q eq 'ARRAY') {
+          push @qs, @$q;
+        }
+      }
+      if (rqg_debug() && (scalar(@qs) > 1 || ($qs[0] ne $q))) {
+        sayDebug($v->name." variator modified the query\nfrom [ $q ] to [ \n".(join "\n    ", @qs)." \n]");
       } elsif (scalar(@$qs)==0) {
         sayWarning($v->name." returned an empty query");
       }
-      push @new_queries, @$qs;
+      push @new_queries, @qs;
     }
     @queries= @new_queries;
   }
+  sayDebug("Final queries after variation: [\n".(join "\n    ",@queries)."\n]");
   return \@queries;
 }
 

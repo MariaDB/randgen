@@ -17,7 +17,7 @@
 # USA
 
 query:
-  { _set_db('user') } many_indexes_query ;
+  { _set_db('NON-SYSTEM') } many_indexes_query ;
 
 many_indexes_query:
    update | insert | delete | select ;

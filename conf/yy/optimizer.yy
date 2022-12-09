@@ -21,7 +21,7 @@ query_init:
   { $total_dur = 0; "" };
 
 query:
-  { @nonaggregates = () ; @select_fields = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; _set_db('user') } explain_extended main_select ;
+  { @nonaggregates = () ; @select_fields = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; _set_db('NON-SYSTEM') } explain_extended main_select ;
 
 main_select:
   ==FACTOR:10== simple_select |

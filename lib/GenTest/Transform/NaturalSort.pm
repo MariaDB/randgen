@@ -65,7 +65,7 @@ sub transform {
 }
 
 sub variate {
-  my ($self, $original_query, $executor, $gendata_flag) = @_;
+  my ($self, $original_query, $executor) = @_;
   return [ $original_query ] if $original_query !~ m{^\s*SELECT}is;
   return [ modify($original_query) || $original_query ];
 }

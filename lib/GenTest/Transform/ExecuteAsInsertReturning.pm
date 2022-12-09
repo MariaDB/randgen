@@ -36,10 +36,7 @@ sub transform {
     || $query !~ m{^[\(\s]*SELECT}is
     || $query =~ m{(AVG|STD|STDDEV_POP|STDDEV_SAMP|STDDEV|SUM|VAR_POP|VAR_SAMP|VARIANCE|SYSDATE)\s*\(}is
   ;
-  return [
-    $class->modify($query, $executor,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
-    [ '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save' ]
-  ]
+  return $class->modify($query, $executor,'TRANSFORM_OUTCOME_UNORDERED_MATCH')
 }
 
 sub variate {
@@ -57,11 +54,13 @@ sub modify {
   my ($self, $query, $executor,$transform_outcome)= @_;
   my $table_name = 'tmp_ExecuteAsInsertReturning_'.abs($$);
   return [
-    'SET @tx_read_only.save= @@session.tx_read_only',
-    'SET SESSION tx_read_only= 0',
-    "CREATE OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query",
-    "REPLACE INTO $table_name $query RETURNING *".($transform_outcome ? " /* $transform_outcome */" : ""),
-    'SET SESSION tx_read_only= @tx_read_only.save'
+    [
+      'SET @tx_read_only.save= @@session.tx_read_only',
+      'SET SESSION tx_read_only= 0',
+      "CREATE OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query",
+      "REPLACE INTO $table_name $query RETURNING *".($transform_outcome ? " /* $transform_outcome */" : ""),
+      'SET SESSION tx_read_only= @tx_read_only.save'
+    ],[ '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save' ]
   ];
 }
 

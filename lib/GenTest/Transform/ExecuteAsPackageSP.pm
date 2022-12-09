@@ -32,10 +32,7 @@ use GenTest::Constants;
 sub transform {
   my ($class, $orig_query) = @_;
   return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION)}is;
-  return [
-    $class->modify($orig_query,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
-    [ " /* TRANSFORM_CLEANUP */ SET \@\@sql_mode=\@sql_mode.save" ]
-  ];
+  return $class->modify($orig_query,'TRANSFORM_OUTCOME_UNORDERED_MATCH');
 }
 
 sub variate {
@@ -47,17 +44,20 @@ sub variate {
 sub modify {
   my ($class, $orig_query, $transform_outcome) = @_;
   return [
-    "SET \@sql_mode.save=\@\@sql_mode",
-    "SET sql_mode=CONCAT(\@\@sql_mode,',ORACLE')",
-    "CREATE OR REPLACE PACKAGE pkg_ExecuteAsPackageSP_".abs($$)." IS PROCEDURE sp1_".abs($$)."; PROCEDURE sp2_".abs($$)."; END",
-    "CREATE OR REPLACE PACKAGE BODY pkg_ExecuteAsPackageSP_".abs($$)." IS PROCEDURE sp1_".abs($$)." AS BEGIN $orig_query; END; PROCEDURE sp2_".abs($$)." AS BEGIN sp1_".abs($$)."; END; END",
-    "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp1_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
-    "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp1_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
-    "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp2_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
-    "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp2_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
-    "DROP PACKAGE BODY IF EXISTS pkg_ExecuteAsPackageSP_".abs($$),
-    "DROP PACKAGE IF EXISTS pkg_ExecuteAsPackageSP_".abs($$),
-    "SET \@\@sql_mode=\@sql_mode.save"
+    [
+      "SET \@sql_mode.save=\@\@sql_mode",
+      "SET sql_mode=CONCAT(\@\@sql_mode,',ORACLE')",
+      "CREATE OR REPLACE PACKAGE pkg_ExecuteAsPackageSP_".abs($$)." IS PROCEDURE sp1_".abs($$)."; PROCEDURE sp2_".abs($$)."; END",
+      "CREATE OR REPLACE PACKAGE BODY pkg_ExecuteAsPackageSP_".abs($$)." IS PROCEDURE sp1_".abs($$)." AS BEGIN $orig_query; END; PROCEDURE sp2_".abs($$)." AS BEGIN sp1_".abs($$)."; END; END",
+      "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp1_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+      "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp1_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+      "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp2_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+      "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp2_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+      "DROP PACKAGE BODY IF EXISTS pkg_ExecuteAsPackageSP_".abs($$),
+      "DROP PACKAGE IF EXISTS pkg_ExecuteAsPackageSP_".abs($$),
+    ],[
+      '/* TRANSFORM_CLEANUP */ SET @@sql_mode=@sql_mode.save',
+    ]
   ];
 }
 

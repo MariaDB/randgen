@@ -28,7 +28,7 @@ collation_comparison:
     SELECT { $w1 } = { $w2 } |
     SELECT CONCAT({ $w1 },collation_zero_or_empty) >= CONCAT({ $w2 },collation_zero_or_empty) |
     collation_select_union |
-    ==FACTOR:0.1== { _set_db('user') } CREATE OR REPLACE VIEW { 'v_'.abs($$) } AS collation_select_union ; SELECT * FROM { 'v_'.abs($$) }
+    ==FACTOR:0.1== { _set_db('NON-SYSTEM') } CREATE OR REPLACE VIEW { 'v_'.abs($$) } AS collation_select_union ; SELECT * FROM { 'v_'.abs($$) }
 ;
 
 collation_zero_or_empty:

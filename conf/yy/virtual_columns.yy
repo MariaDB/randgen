@@ -31,7 +31,8 @@
 query_init:
      CREATE DATABASE IF NOT EXISTS virtual_columns_db
   ;; SET ROLE admin
-  ;; GRANT ALL ON virtual_columns_db.* TO CURRENT_USER
+  # PS is a workaround for MDEV-30190
+  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON virtual_columns_db.* TO ',CURRENT_USER,' WITH GRANT OPTION')
   ;; SET ROLE NONE
   ;; { _set_db('virtual_columns_db') }
      drop_table ;; create_table ;; create_table ;; create_table ;

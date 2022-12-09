@@ -23,7 +23,7 @@
 
 
 query:
-  { _set_db('user') } dml_query;
+  { _set_db('NON-SYSTEM') } dml_query;
 
 dml_query:
     ==FACTOR:9== generic_dml_dml |

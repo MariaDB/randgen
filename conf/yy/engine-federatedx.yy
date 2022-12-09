@@ -28,13 +28,14 @@
 query_init:
      # We are doing it this way because otherwise set_db later may pick up a newly created empty federated database
      { @all_databases=(); foreach my $s (@{$executors->[0]->metaAllSchemas()}) { push @all_databases, $s if $s !~ /^fed_db(_remote)?/ }; @user_databases=(); foreach my $s (@{$executors->[0]->metaUserSchemas()}) { push @user_databases, $s if $s !~ /^fed_db(_remote)?$/ }; '' }
-     SET ROLE admin
-  ;; CREATE DATABASE IF NOT EXISTS fed_db
+     CREATE DATABASE IF NOT EXISTS fed_db
   ;; CREATE DATABASE IF NOT EXISTS fed_db_remote
-  ;; GRANT ALL ON fed_db.* TO CURRENT_USER
-  ;; GRANT ALL ON fed_db_remote.* TO CURRENT_USER
+  ;; SET ROLE admin
+     # PS is a workaround for MDEV-30190
+  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON fed_db.* TO ',CURRENT_USER,' WITH GRANT OPTION')
+  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON fed_db_remote.* TO ',CURRENT_USER,' WITH GRANT OPTION')
   ;; CREATE USER IF NOT EXISTS fed_user@'127.0.0.1' IDENTIFIED BY 'FdrUs3r!pw'
-  ;; GRANT INSERT, UPDATE, DELETE, SELECT ON *.* TO fed_user@'127.0.0.1'
+  ;; GRANT INSERT, UPDATE, DELETE, SELECT, EXECUTE ON *.* TO fed_user@'127.0.0.1'
   ;; SET STATEMENT binlog_format=statement FOR INSERT IGNORE INTO mysql.servers (Server_name, Host, Db, Username, Password, Port, Wrapper) VALUES ('fedlink','127.0.0.1','fed_db_remote','fed_user','FdrUs3r!pw',@@port,'mysql')
   ;; FLUSH PRIVILEGES
   ;; SET ROLE NONE
@@ -59,8 +60,8 @@ create_federated_table_init:
     { _set_db('fed_db_remote') } CREATE OR REPLACE TABLE fed_db. { $last_table= $prng->arrayElement(\@remote_tables) } ENGINE=FEDERATED CONNECTION = { "'fedlink/".$last_table."'" } ;
 
 create_remote_table:
-  { _set_db('user') } CREATE OR REPLACE TABLE fed_db_remote._table LIKE { $last_table } ;; INSERT IGNORE INTO fed_db_remote.{ $last_table } SELECT * FROM { $last_table } |
-  { _set_db('any') }  CREATE OR REPLACE TABLE fed_db_remote._table AS SELECT * FROM { $last_table }
+  { _set_db('NON-SYSTEM') } CREATE OR REPLACE TABLE fed_db_remote._table LIKE { $last_table } ;; INSERT IGNORE INTO fed_db_remote.{ $last_table } SELECT * FROM { $last_table } |
+  { _set_db('ANY') }  CREATE OR REPLACE TABLE fed_db_remote._table AS SELECT * FROM { $last_table }
 ;
 
 create_remote_table_init:

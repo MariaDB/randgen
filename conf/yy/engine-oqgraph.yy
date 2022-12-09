@@ -21,7 +21,8 @@
 
 query_init:
   # This is to prevent other grammars from altering the schema
-  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON oqgraph_db.* TO CURRENT_USER
+  # PS is a workaround for MDEV-30190
+  EXECUTE IMMEDIATE CONCAT('REVOKE ALTER, DROP ON oqgraph_db.* FROM ',CURRENT_USER)
 ;
 
 query:

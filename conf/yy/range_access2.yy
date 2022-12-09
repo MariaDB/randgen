@@ -40,10 +40,10 @@
 ########################################################################
 
 query_init:
-  { _set_db('user') } alter_add ; alter_add ; alter_add ; alter_add ; alter_add ;
+  { _set_db('NON-SYSTEM') } alter_add ; alter_add ; alter_add ; alter_add ; alter_add ;
 
 query:
-  { _set_db('user') } range_access2_query ;
+  { _set_db('NON-SYSTEM') } range_access2_query ;
 
 range_access2_query:
   alter_drop_add |

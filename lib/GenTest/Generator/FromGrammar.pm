@@ -92,7 +92,16 @@ sub next {
 
   my $last_field;
   my $last_table;
+  # last_database is what was set upon _database and _table and alike
+  # work_database is what was requested via _set_db, it can be an actual
+  # database name, or NON-SYSTEM, or ANY.
+  # If work_database is NON-SYSTEM or ANY, then last_database is set
+  # to the actual picked value
+  # work_database is used to pick up tables or other database objects.
   my $last_database;
+  my $work_database;
+  # Flag indicating that work_database is ANY or NON-SYSTEM (for convenience)
+  my $work_database_non_specific= 1;
   my $last_field_list_length;
   my ($last_function, $last_procedure);
   my $last_item;
@@ -101,23 +110,22 @@ sub next {
   my $global = $generator->globalFrame();
 
   sub _set_db {
-    my $db= shift;
-    if ($db eq 'any') {
-      $db= $prng->arrayElement($executors->[0]->metaAllNonEmptySchemas());
-    } elsif ($db eq 'user' or $db eq 'non-system') {
-      $db= $prng->arrayElement($executors->[0]->metaNonEmptyUserSchemas());
+    my $db= $work_database= $_[0];
+    my $set_db_stmt= '';
+    if ($db eq 'ANY') {
+      $db= $prng->arrayElement($executors->[0]->metaAllNonEmptySchemas()) || $prng->arrayElement($executors->[0]->metaAllSchemas());
+      $work_database_non_specific= 1;
+    } elsif ($db eq 'NON-SYSTEM') {
+      $db= $prng->arrayElement($executors->[0]->metaNonEmptyUserSchemas()) || $prng->arrayElement($executors->[0]->metaUserSchemas());
+      $work_database_non_specific= 1;
+    } else {
+      $work_database_non_specific= 0;
     }
     if (not defined $last_database or $db ne $last_database) {
+      $set_db_stmt= "USE $db /* EXECUTOR_FLAG_SKIP_STATS SKIP_VARIATION */ ;;";
       $last_database= $db;
-      $last_field= undef;
-      $last_table= undef;
-      $last_function= undef;
-      $last_procedure= undef;
-      $last_field_list_length= undef;
-      return "USE $db /* EXECUTOR_FLAG_SKIP_STATS */ ;;";
-    } else {
-      return '';
     }
+    return $set_db_stmt;
   }
 
   sub expand {
@@ -141,17 +149,6 @@ sub next {
       my $invariant = 0;
       my @expansion = ();
 
-      # Don't let last values become desynchronized
-      if (not defined $last_database) {
-        $last_field= undef;
-        $last_table= undef;
-        $last_field_list_length= undef;
-        $last_function= undef;
-        $last_procedure= undef;
-      } elsif (not defined $last_table) {
-        $last_field= undef;
-        $last_field_list_length= undef;
-      }
       if ($item =~ m{^([a-z0-9_]+)\[invariant\]}is) {
         ($item, $invariant) = ($1, 1);
       }
@@ -200,12 +197,6 @@ sub next {
         } else {
           my $field_type = (substr($item, 0, 1) eq '_' ? $prng->isFieldType(substr($item, 1)) : undef);
 
-          if ($last_table =~ /\`?(.+)\`?\s*\.\`?(.+)\`?/) {
-            # If a grammar set $last_table to a fully-qualified name, we want to split it
-            # for further use
-            ($last_database,$last_table)= ($1,$2);
-          }
-
           if ($item eq '_letter') {
             $item = $prng->letter();
           } elsif ($item eq '_digit') {
@@ -241,51 +232,34 @@ sub next {
           } elsif ($item eq '_thread_count') {
             $item = $ENV{RQG_THREADS};
           } elsif (($item eq '_database') || ($item eq '_db') || ($item eq '_schema')) {
-            my $databases = $executors->[0]->metaAllSchemas();
-            $last_database = $prng->arrayElement($databases);
+            $last_database = $prng->arrayElement($executors->[0]->metaAllSchemas());
             $item = '`'.$last_database.'`';
           } elsif (($item eq '_user_database') || ($item eq '_user_db') || ($item eq '_user_schema')) {
-            my $databases = $executors->[0]->metaUserSchemas();
-            $last_database = $prng->arrayElement($databases);
+            $last_database = $prng->arrayElement($executors->[0]->metaUserSchemas());
             $item = '`'.$last_database.'`';
-          } elsif ($item eq '_table' or $item eq '_basetable' or $item eq '_versionedtable' or $item eq '_view' or $item eq '_sequence' or $item eq '_procedure' or $item eq '_function') {
-            if (not $last_database) {
-              # If we don't set it here, the executor will always use a default schema
-              $last_database = $prng->arrayElement($executors->[0]->metaUserSchemas()) || $prng->arrayElement($executors->[0]->metaAllSchemas());
-            }
+          } elsif ($item eq '_table' or $item eq '_view' or $item eq '_basetable' or $item eq '_versionedtable' or $item eq '_sequence') {
+            my $obj;
             if ($item eq '_table') {
-              my $tables = $executors->[0]->metaTables($last_database);
-              $last_table = $prng->arrayElement($tables);
-              $item = '`'.$last_table.'`';
+              $obj = $prng->arrayElement($executors->[0]->metaTables($work_database));
             } elsif ($item eq '_view') {
-              my $tables = $executors->[0]->metaViews($last_database);
-              $last_table = $prng->arrayElement($tables);
-              $item = '`'.$last_table.'`';
+              $obj = $prng->arrayElement($executors->[0]->metaViews($work_database));
             } elsif ($item eq '_basetable') {
-              my $tables = $executors->[0]->metaBaseTables($last_database);
-              $last_table = $prng->arrayElement($tables);
-              $item = '`'.$last_table.'`';
+              $obj = $prng->arrayElement($executors->[0]->metaBaseTables($work_database));
             } elsif ($item eq '_versionedtable') {
-              my $tables = $executors->[0]->metaVersionedTables($last_database);
-              $last_table = $prng->arrayElement($tables);
-              $item = '`'.$last_table.'`';
+              $obj = $prng->arrayElement($executors->[0]->metaVersionedTables($work_database));
             } elsif ($item eq '_sequence') {
-              my $tables = $executors->[0]->metaSequences($last_database);
-              $last_table = $prng->arrayElement($tables);
-              $item = '`'.$last_table.'`';
-            } elsif ($item eq '_sequence') {
-              my $tables = $executors->[0]->metaSequences($last_database);
-              $last_table = $prng->arrayElement($tables);
-              $item = '`'.$last_table.'`';
-            } elsif ($item eq '_procedure') {
-              my $proc = $executors->[0]->metaProcedures($last_database);
-              $last_procedure = $prng->arrayElement($proc);
-              $item = '`'.$last_procedure.'`';
-            } elsif ($item eq '_function') {
-              my $func = $executors->[0]->metaFunctions($last_database);
-              $last_function = $prng->arrayElement($func);
-              $item = '`'.$last_function.'`';
+              $obj = $prng->arrayElement($executors->[0]->metaSequences($work_database));
             }
+            ($last_database, $last_table) = @$obj;
+            $item = ($work_database_non_specific ? '`'.$last_database.'`.`'.$last_table.'`' : '`'.$last_table.'`');
+          } elsif ($item eq '_procedure') {
+            my $obj = $prng->arrayElement($executors->[0]->metaProcedures($work_database));
+            ($last_database, $last_procedure) = @$obj;
+            $item = ($work_database_non_specific ? '`'.$last_database.'`.`'.$last_procedure.'`' : '`'.$last_procedure.'`');
+          } elsif ($item eq '_function') {
+            my $obj = $prng->arrayElement($executors->[0]->metaFunctions($work_database));
+            ($last_database, $last_procedure) = @$obj;
+            $item = ($work_database_non_specific ? '`'.$last_database.'`.`'.$last_function.'`' : '`'.$last_function.'`');
           } elsif ($item eq '_index') {
             my $indexes = $executors->[0]->metaIndexes($last_table, $last_database);
                         $last_field = $prng->arrayElement($indexes);
@@ -370,7 +344,7 @@ sub next {
           }
 
         }
-                $last_item= $item;
+        $last_item= $item;
         @expansion = ($item);
       }
       splice(@sentence, $pos, 1, @expansion);
@@ -478,7 +452,7 @@ sub next {
     }
     if ($skip_variate) {
       foreach my $i (0..$#sentences) {
-        $sentences[$i].= ' /* EXECUTOR_SKIP_VARIATE */' if $sentences[$i] !~ /^\s*$/;
+        $sentences[$i].= ' /* SKIP_VARIATION */' if $sentences[$i] !~ /^\s*$/;
       }
     }
     return \@sentences;
@@ -534,7 +508,7 @@ sub next {
         if ($generator->[GENERATOR_SEQ_ID] == 1) {
           sayDebug("Starting rule ($starting_rule) processed:\n$sentence");
         }
-    return [ $sentence.($skip_variate ? ' /* EXECUTOR_SKIP_VARIATE */' : '') ];
+    return [ $sentence.($skip_variate ? ' /* SKIP_VARIATION */' : '') ];
   } elsif (index($sentence, ';') > -1) {
 
     my @sentences;

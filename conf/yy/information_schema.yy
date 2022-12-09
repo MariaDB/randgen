@@ -18,11 +18,11 @@ query_init:
   UPDATE mysql.proc SET definer = 'root@localhost'; FLUSH TABLES; FLUSH PRIVILEGES;
 
 query:
-  { _set_db('user') } infoschema_query ;
+  { _set_db('NON-SYSTEM') } infoschema_query ;
 
 set_db:
   ==FACTOR:10== { _set_db('information_schema') } |
-  { _set_db('user') } |
+  { _set_db('NON-SYSTEM') } |
   { _set_db('mysql') }
 ;
 

@@ -25,23 +25,19 @@
 
 query_init:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
-  ;; CREATE DATABASE IF NOT EXISTS test 
-  ;; SET ROLE admin ;; GRANT ALL ON test.* TO CURRENT_USER ;; SET ROLE NONE
-  ;; { _set_db('any') } create
+  ;; { _set_db('test') } create
   ;; SET SQL_MODE=DEFAULT
 ;
 
 query:
-  { _set_db('any') } json_query ;
+                  { _set_db('ANY') } dml |
+  ==FACTOR:0.01== { _set_db('test') } ddl ;
 
-json_query:
-  select |
-  insert |
-  delete |
-  update |
-  ==FACTOR:0.1== create |
-  ==FACTOR:0.1== alter
-;
+dml:
+  select | insert | update | delete ;
+
+ddl:
+  create | alter ;
 
 create:
     SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')

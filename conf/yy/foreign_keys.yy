@@ -20,7 +20,7 @@
 
 
 query:
-  { _set_db('user') } fk_query ;
+  { _set_db('NON-SYSTEM') } fk_query ;
 
 fk_query:
     fk_alter_table | fk_alter_table | fk_alter_table | fk_alter_table

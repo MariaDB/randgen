@@ -18,7 +18,7 @@
 ########################################
 
 query_init:
-  { $ind=1; _set_db('user') } add_8 ;
+  { $ind=1; _set_db('NON-SYSTEM') } add_8 ;
 
 add_8:
   add_4 ;; add_4 ;
@@ -30,7 +30,7 @@ add:
   ALTER __online(10) TABLE _basetable ADD key_or_unique IF NOT EXISTS { 'ord_index_'.($ind++).'_'.abs($$) } ( field_list ) algorithm_optional;
 
 query:
-  { _set_db('user') } desc_indexes_query ;
+  { _set_db('NON-SYSTEM') } desc_indexes_query ;
 
 desc_indexes_query:
     add

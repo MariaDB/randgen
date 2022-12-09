@@ -41,26 +41,28 @@ sub transform {
   my $table_name = 'transforms.insert_select_'.abs($$);
 
   return [
-    # Unlock tables prevents conflicting locks and should also take care
-    'UNLOCK TABLES',
-    'SET @tx_read_only.save= @@session.tx_read_only',
-    'SET SESSION tx_read_only= 0',
-    #Include database transforms creation DDL so that it appears in the simplified testcase.
-    "CREATE DATABASE IF NOT EXISTS transforms",
-    "DROP TABLE IF EXISTS $table_name",
+    [
+      # Unlock tables prevents conflicting locks and should also take care
+      'UNLOCK TABLES',
+      'SET @tx_read_only.save= @@session.tx_read_only',
+      'SET SESSION tx_read_only= 0',
+      #Include database transforms creation DDL so that it appears in the simplified testcase.
+      "DROP TABLE IF EXISTS $table_name",
 
-    "CREATE TABLE $table_name $original_query",
-    "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "DELETE FROM $table_name",
+      "CREATE TABLE $table_name $original_query",
+      "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+      "DELETE FROM $table_name",
 
-    "INSERT INTO $table_name $original_query",
-    "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "DELETE FROM $table_name",
+      "INSERT INTO $table_name $original_query",
+      "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+      "DELETE FROM $table_name",
 
-    "REPLACE INTO $table_name $original_query",
-    "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "DROP TABLE $table_name",
-    '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save'
+      "REPLACE INTO $table_name $original_query",
+      "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+      "DROP TABLE $table_name",
+    ],[
+      '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save'
+    ]
   ];
 }
 

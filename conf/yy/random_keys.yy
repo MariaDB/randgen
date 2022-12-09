@@ -20,7 +20,7 @@ thread1_init:
 ;
 
 query:
-  { _set_db('user') } random_keys_query ;
+  { _set_db('NON-SYSTEM') } random_keys_query ;
 
 random_keys_query:
       ==FACTOR:3==    add_key

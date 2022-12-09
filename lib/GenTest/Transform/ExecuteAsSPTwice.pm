@@ -49,7 +49,7 @@ sub modify {
     "CREATE PROCEDURE sp_ExecuteAsSPTwice_".abs($$)." () LANGUAGE SQL $orig_query",
     "CALL sp_ExecuteAsSPTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
     "CALL sp_ExecuteAsSPTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
-    "DROP PROCEDURE IF EXISTS sp_ExecuteAsSPTwice_".abs($$)
+    "DROP PROCEDURE IF EXISTS sp_ExecuteAsSPTwice_".abs($$),
   ];
 }
 

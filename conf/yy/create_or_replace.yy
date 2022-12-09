@@ -20,7 +20,7 @@
 ### system-versioned tables is included via _basics_column_attributes
 
 query:
-  { _set_db('user') } crea_query;
+  { _set_db('NON-SYSTEM') } crea_query;
 
 crea_query:
   crea_maybe_engine CREATE OR REPLACE TABLE crea_table_name LIKE _table |

@@ -40,10 +40,7 @@ sub transform {
     ($original_query !~ /^[\s\(]*SELECT/is)
       or ($original_query =~ /INTO|INFORMATION_SCHEMA|PERFORMANCE_SCHEMA/is);
 
-  return [ 
-    $class->modify_query($original_query,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
-    [ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=\@switch_saved" ]
-  ];
+  return $class->modify_query($original_query,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
 }
 
 sub variate {
@@ -54,12 +51,13 @@ sub variate {
 sub modify_query {
   my ($self, $original_query, $transform_outcome) = @_;
   return [
-    "SET \@switch_saved = \@\@optimizer_switch",
-    "SET SESSION optimizer_switch = REPLACE( \@\@optimizer_switch, '=off', '=on' )",
-    # Due to MDEV-28878 and maybe more
-    "/*!100501 SET SESSION optimizer_switch = 'rowid_filter=off' */",
-    "$original_query ".($transform_outcome ? " /* $transform_outcome */" : ''),
-    "SET SESSION optimizer_switch=\@switch_saved"
+    [
+      "SET \@switch_saved = \@\@optimizer_switch",
+      "SET SESSION optimizer_switch = REPLACE( \@\@optimizer_switch, '=off', '=on' )",
+      # Due to MDEV-28878 and maybe more
+      "/*!100501 SET SESSION optimizer_switch = 'rowid_filter=off' */",
+      "$original_query ".($transform_outcome ? " /* $transform_outcome */" : ''),
+    ],[ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=\@switch_saved" ]
   ];
 }
 

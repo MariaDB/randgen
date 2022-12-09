@@ -43,10 +43,7 @@ sub transform {
     my @cols= map { '`'.$_.'`' unless $_ =~ /`/ } @{$original_result->columnNames()};
     $col_list = join ',', @cols;
   }
-  return [
-    $class->modify($orig_query,$col_list,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
-    [ '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save' ]
-  ];
+  return $class->modify($orig_query,$col_list,'TRANSFORM_OUTCOME_UNORDERED_MATCH')
 }
 
 sub variate {
@@ -65,11 +62,12 @@ sub modify {
   my $table_name = 'tmp_ExecuteAsDeleteReturning_'.abs($$);
   $column_list= '*' unless $column_list;
   return [
-    'SET @tx_read_only.save= @@session.tx_read_only',
-    'SET SESSION tx_read_only= 0',
-    "CREATE OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query",
-    "DELETE FROM $table_name RETURNING $column_list".($transform_outcome ? " /* $transform_outcome */" : ""),
-    'SET SESSION tx_read_only= @tx_read_only.save'
+    [
+      'SET @tx_read_only.save= @@session.tx_read_only',
+      'SET SESSION tx_read_only= 0',
+      "CREATE OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query",
+      "DELETE FROM $table_name RETURNING $column_list".($transform_outcome ? " /* $transform_outcome */" : ""),
+    ],[ '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save' ]
   ];
 }
 

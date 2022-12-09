@@ -19,7 +19,7 @@ query_init:
   { $colnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
 
 query:
-  { _set_db('user') } alttcol_query
+  { _set_db('NON-SYSTEM') } alttcol_query
 ;
 
 alttcol_query:

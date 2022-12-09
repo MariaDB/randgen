@@ -20,15 +20,8 @@
 # Rather random set of statements which is meant to employ replication
 ########################################################################
 
-query_init:
-     SET ROLE admin
-  ;; CREATE DATABASE IF NOT EXISTS test
-  ;; GRANT ALL ON test.* TO CURRENT_USER
-  ;; SET ROLE NONE
-;
-
 query:
-  { _set_db('user') } replication_query ;
+  { _set_db('NON-SYSTEM') } replication_query ;
 
 replication_query:
   ==FACTOR:20== binlog_event_chain |

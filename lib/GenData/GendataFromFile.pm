@@ -84,6 +84,10 @@ sub run {
           # If it turns out that nothing is loaded at all, it will be a pointless test,
           # but such things should be caught at test implementation stage
 
+          my $dbs= $executor->dbh->selectcol_arrayref("SELECT schema_name from INFORMATION_SCHEMA.SCHEMATA ORDER BY schema_name");
+          my %dbs_before= ();
+          foreach (@$dbs) { $dbs_before{$_}= 1; };
+          
           my @populate_rows= (defined $self->rows() ? split(',', $self->rows()) : (0));
           my $populate = GenData::PopulateSchema->new(spec_file => $spec_file,
                                                debug => $self->debug,
@@ -95,6 +99,19 @@ sub run {
           if ($populate->run() == STATUS_OK)
           {
             say("Loaded SQL file $spec_file and populated the tables");
+            $dbs= $executor->dbh->selectcol_arrayref("SELECT schema_name from INFORMATION_SCHEMA.SCHEMATA ORDER BY schema_name");
+            if ($dbs && scalar(@$dbs)) {
+              foreach (@$dbs) {
+                unless ($dbs_before{$_}) {
+                  say("New schema $_ was created");
+                  # PS is a workaround for MENT-30190
+                  $executor->execute("EXECUTE IMMEDIATE CONCAT('GRANT ALL ON ".$_.".* TO ',CURRENT_USER,' WITH GRANT OPTION')");
+                  if ($executor->dbh->err) {
+                    sayError("Failed to grant permissions on database $_: ".$executor->dbh->err." ".$executor->dbh->errstr);
+                  }
+                }
+              }
+            }
             return STATUS_OK;
           } else {
             croak "Unable to load $spec_file: $perl_errors";
@@ -344,7 +361,8 @@ sub run {
 
     foreach my $schema (@schema_perms) {
         $executor->execute("CREATE DATABASE IF NOT EXISTS $schema");
-        $executor->execute("GRANT ALL ON $schema.* TO CURRENT_USER");
+        # PS is a workaround for MENT-30190
+        $executor->execute("EXECUTE IMMEDIATE CONCAT('GRANT ALL ON ".$schema.".* TO ',CURRENT_USER,' WITH GRANT OPTION')");
         $executor->currentSchema($schema);
 
     foreach my $table_id (0..$#tables) {
@@ -386,10 +404,8 @@ sub run {
 
         my $index_sqls = $#index_fields > -1 ? join(",\n", map { $_->[FIELD_INDEX_SQL] } @index_fields) : undef;
 
-        my $res= $executor->variate_and_execute(
-          "CREATE TABLE `$table->[TABLE_NAME]` (\n".join(",\n/*Indices*/\n", grep { defined $_ } (@field_sqls, $index_sqls) ).") ".$table->[TABLE_SQL],
-          my $gendata=1
-        );
+        my $res= $executor->execute(
+          "CREATE TABLE `$table->[TABLE_NAME]` (\n".join(",\n/*Indices*/\n", grep { defined $_ } (@field_sqls, $index_sqls) ).") ".$table->[TABLE_SQL]);
         if (ref $res ne 'GenTest::Result' or $res->status() != STATUS_OK) {
           sayError("Table creation failed");
           next;
@@ -405,14 +421,14 @@ sub run {
             }
 
             if ($table_perms[TABLE_VIEWS]->[$view_id] ne '') {
-              $executor->variate_and_execute("CREATE OR REPLACE ALGORITHM=".uc($table_perms[TABLE_VIEWS]->[$view_id])." VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`", my $gendata=1);
+              $executor->execute("CREATE OR REPLACE ALGORITHM=".uc($table_perms[TABLE_VIEWS]->[$view_id])." VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
             } else {
-              $executor->variate_and_execute("CREATE OR REPLACE VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`", my $gendata=1);
+              $executor->execute("CREATE OR REPLACE VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
             }
           }
         }
 
-        $executor->variate_and_execute("ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS", my $gendata=1);
+        $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS");
 
         if ($table->[TABLE_ROW] > 100) {
             $executor->execute("SET AUTOCOMMIT=OFF");
@@ -499,7 +515,7 @@ sub run {
                 (($row_id % 50) == 0) ||
                 ($row_id == $table->[TABLE_ROW])
                 ) {
-                my $insert_result= $executor->variate_and_execute("INSERT /*! IGNORE */ INTO $table->[TABLE_NAME] VALUES ".join(', ', @row_buffer), my $gendata=1);
+                my $insert_result= $executor->execute("INSERT /*! IGNORE */ INTO $table->[TABLE_NAME] VALUES ".join(', ', @row_buffer));
                 return $insert_result->status() if $insert_result->status() >= STATUS_CRITICAL_FAILURE;
                 @row_buffer = ();
             }
@@ -510,7 +526,7 @@ sub run {
             }
         }
         $executor->execute("COMMIT");
-        $executor->variate_and_execute("ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS", my $gendata=1);
+        $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
     }
     }
 
@@ -522,8 +538,8 @@ sub run {
         ) {
         foreach my $merge_id (0..$#{$table_perms[TABLE_MERGES]}) {
             my $merge_name = 'merge_'.$merge_id;
-            $executor->variate_and_execute("CREATE TABLE `$merge_name` LIKE `".$myisam_tables[0]."`", my $gendata=1);
-            $executor->variate_and_execute("ALTER TABLE `$merge_name` ENGINE=MERGE UNION(".join(',',@myisam_tables).") ".uc($table_perms[TABLE_MERGES]->[$merge_id]), my $gendata=1);
+            $executor->execute("CREATE TABLE `$merge_name` LIKE `".$myisam_tables[0]."`");
+            $executor->execute("ALTER TABLE `$merge_name` ENGINE=MERGE UNION(".join(',',@myisam_tables).") ".uc($table_perms[TABLE_MERGES]->[$merge_id]));
         }
     }
 

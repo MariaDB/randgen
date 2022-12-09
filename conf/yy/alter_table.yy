@@ -19,9 +19,10 @@
 
 query_init:
   { $tbnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' }
-     SET ROLE admin
-  ;; CREATE DATABASE IF NOT EXISTS alt_table_db
-  ;; GRANT ALL ON alt_table_db.* TO CURRENT_USER
+     CREATE DATABASE IF NOT EXISTS alt_table_db
+  ;; SET ROLE admin
+     # PS is a workaround for MDEV-30190
+  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON alt_table_db.* TO ',CURRENT_USER,' WITH GRANT OPTION')
   ;; SET ROLE NONE
   ;; { _set_db('alt_table_db') }
      alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace
@@ -34,10 +35,10 @@ query:
 
 alt_query:
                    { _set_db('alt_table_db') } alt_create
-  | ==FACTOR:20==  { _set_db('user') } alt_alter
+  | ==FACTOR:20==  { _set_db('NON-SYSTEM') } alt_alter
   | ==FACTOR:0.1== { _set_db('alt_table_db') } alt_rename_multi
-  |                { _set_db('user') } alt_alter_partitioning
-  |                { _set_db('user') } alt_optimize
+  |                { _set_db('NON-SYSTEM') } alt_alter_partitioning
+  |                { _set_db('NON-SYSTEM') } alt_optimize
 ;
 
 alt_create:

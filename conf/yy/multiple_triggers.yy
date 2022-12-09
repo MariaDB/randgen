@@ -40,43 +40,45 @@
 # ERROR 1360 for DROP TRIGGER IF EXISTS is also because of one of these two problems
 
 query_init:
-    SET ROLE admin
-    ;; CREATE DATABASE IF NOT EXISTS multi_trigger
-    # To prevent the tables from being modified, as we need the structures
-    ;; GRANT SELECT, INSERT, UPDATE, DELETE, TRIGGER, CREATE ON multi_trigger.* TO CURRENT_USER
-    ;; GRANT SELECT, INSERT, UPDATE, DELETE, TRIGGER, CREATE ON multi_trigger.* TO CURRENT_USER
-    ;; SET ROLE NONE
-    ;; { _set_db('multi_trigger') }
-    CREATE TABLE IF NOT EXISTS multi_trigger.tlog (
-      pk INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+     CREATE DATABASE IF NOT EXISTS multi_trigger_db
+  ;; SET ROLE admin
+     # PS is a workaround for MDEV-30190
+  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON multi_trigger_db.* TO ',CURRENT_USER,' WITH GRANT OPTION')
+  ;; SET ROLE NONE
+     # To prevent the tables from being modified, as we need the structures
+     # PS is a workaround for MDEV-30190
+  ;; EXECUTE IMMEDIATE CONCAT('REVOKE ALTER, DROP ON multi_trigger_db FROM ',CURRENT_USER)
+  ;; { _set_db('multi_trigger_db') }
+  CREATE TABLE IF NOT EXISTS multi_trigger_db.tlog (
+    pk INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    dt TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    tbl VARCHAR(16),
+    tp ENUM('BEFORE','AFTER'),
+    op ENUM('INSERT','UPDATE','DELETE'),
+    fld BLOB
+  )
+  ;; CREATE TABLE IF NOT EXISTS multi_trigger_db.tlog2 (
+      log_id INT NOT NULL,
       dt TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-      tbl VARCHAR(16),
-      tp ENUM('BEFORE','AFTER'),
-      op ENUM('INSERT','UPDATE','DELETE'),
-      fld BLOB
-    )
-    ;; CREATE TABLE IF NOT EXISTS multi_trigger.tlog2 (
-        log_id INT NOT NULL,
-        dt TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-        val BLOB NOT NULL DEFAULT '_'
-    )
+      val BLOB NOT NULL DEFAULT '_'
+  )
 ;
 
 query:
-    ==FACTOR:4== { _set_db('user') } create_trigger |
-    ==FACTOR:2== { _set_db('user') } drop_trigger |
-    { _set_db('any') } create_log_trigger |
-    { _set_db('any') } create_log2_trigger
+    ==FACTOR:4== { _set_db('NON-SYSTEM') } create_trigger |
+    ==FACTOR:2== { _set_db('NON-SYSTEM') } drop_trigger |
+    { _set_db('ANY') } create_log_trigger |
+    { _set_db('ANY') } create_log2_trigger
 ;
 
 create_log_trigger:
-    create_clause multi_trigger.trigger_name before_after INSERT ON multi_trigger.tlog FOR EACH ROW precedes_follows INSERT INTO multi_trigger.tlog2 VALUES ( NEW.`pk`, NOW(), NEW.`fld` );
+    create_clause multi_trigger_db.trigger_name before_after INSERT ON multi_trigger_db.tlog FOR EACH ROW precedes_follows INSERT INTO multi_trigger_db.tlog2 VALUES ( NEW.`pk`, NOW(), NEW.`fld` );
 
 create_log2_trigger:
-    create_clause multi_trigger. trigger_name BEFORE INSERT ON multi_trigger.tlog2 FOR EACH ROW precedes_follows SET NEW.`val` = IFNULL(NEW.`val`,'');
+    create_clause multi_trigger_db. trigger_name BEFORE INSERT ON multi_trigger_db.tlog2 FOR EACH ROW precedes_follows SET NEW.`val` = IFNULL(NEW.`val`,'');
 
 create_trigger:
-    create_clause trigger_name before_after ins_upd_del ON /* QProp.ERROR_1361 QProp.ERROR_1347 */ _basetable FOR EACH ROW precedes_follows INSERT INTO multi_trigger.tlog (tbl,tp,op) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field );
+    create_clause trigger_name before_after ins_upd_del ON /* QProp.ERROR_1361 QProp.ERROR_1347 */ _basetable FOR EACH ROW precedes_follows INSERT INTO multi_trigger_db.tlog (tbl,tp,op) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field );
 
 trigger_name:
     # ER_SERVER_LOST can happen on any query if the connection is killed.

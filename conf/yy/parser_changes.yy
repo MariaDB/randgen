@@ -33,7 +33,7 @@
 ########################################################################
 
 query:
-  { _set_db('user') } parser_changes_query ;
+  { _set_db('NON-SYSTEM') } parser_changes_query ;
 
 parser_changes_query:
     ==FACTOR:0.01== parser_changes_create_index_invalid

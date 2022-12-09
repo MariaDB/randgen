@@ -16,14 +16,10 @@
 #include <conf/yy/include/basics.inc>
 
 query_init:
-     SET ROLE admin
-  ;; CREATE DATABASE IF NOT EXISTS test
-  ;; GRANT ALL ON test.* TO CURRENT_USER
-  ;; SET ROLE NONE
-  ;; { $tmp_table = 0; _set_db('test') } CREATE FUNCTION IF NOT EXISTS MIN2(a BIGINT, b BIGINT) RETURNS BIGINT RETURN (a>b,b,a) ;
+  { $tmp_table = 0; _set_db('test') } CREATE FUNCTION IF NOT EXISTS MIN2(a BIGINT, b BIGINT) RETURNS BIGINT RETURN (a>b,b,a) ;
 
 query:
-  { _set_db('any') } func_query ;
+  { _set_db('ANY') } func_query ;
 
 func_query:
     ==FACTOR:9== func_select_or_explain_select

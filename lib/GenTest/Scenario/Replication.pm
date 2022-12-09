@@ -111,7 +111,7 @@ sub run {
     if ($c =~ /^(\d+)->(\d+)$/) {
       my ($master, $slave)= ($1-1, $2-1);
       say("Enabling $c replication");
-      my $master_dbh= $servers[$master]->dbh;
+      my $master_dbh= $servers[$master]->dbh(my $admin=1);
       $master_dbh->do("CREATE USER IF NOT EXISTS replication IDENTIFIED BY 'yvp.utu9azv4xgt6VRT'");
       unless ($master_dbh->err) {
         $master_dbh->do("GRANT REPLICATION SLAVE ON *.* TO replication");

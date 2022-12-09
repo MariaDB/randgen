@@ -347,9 +347,9 @@ foreach my $trial_id (1..$trials)
     say("Running trial ".$trial_id."/".$trials);
     $props->{vardir}= $props_vardir_orig."/trial.${trial_id}";
     mkpath($props->{vardir});
+    open (STDOUT, "| tee -ai ".$props->{vardir}."/trial.log");
+    open STDERR, ">&STDOUT";
   }
-  open (STDOUT, "| tee -ai ".$props->{vardir}."/trial.log");
-  open STDERR, ">&STDOUT";
 
   my $output_file= $props_vardir_orig."/trial$trial_id.log";
   $cmd = 'bash -c "set -o pipefail; '.$cmd.' 2>&1 | tee -i '.$output_file.'"';

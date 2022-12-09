@@ -42,7 +42,6 @@ sub transform {
   $executor->execute("DROP VIEW transforms.view_".abs($$)."_probe");
   return [
     #Include database transforms creation DDL so that it appears in the simplified testcase.
-    "CREATE DATABASE IF NOT EXISTS transforms",
     "DROP VIEW IF EXISTS transforms.view_".abs($$)."_merge , transforms.view_".abs($$)."_temptable",
     "CREATE OR REPLACE ALGORITHM=MERGE VIEW transforms.view_".abs($$)."_merge AS $orig_query",
     "SELECT * FROM transforms.view_".abs($$)."_merge /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
@@ -57,7 +56,7 @@ sub variate {
   return [ $query ] if $query =~ /INTO/i;
   return [ $query ] if $query !~ /^\s*(?:SELECT|VALUES)/i;
   my $alg= $self->random->arrayElement(['ALGORITHM=TEMPTABLE','ALGORITHM=MERGE','ALGORITHM=UNDEFINED','']);
-  my $vname= 'v_ExecuteAsView_'.abs($$);
+  my $vname= 'transforms.v_ExecuteAsView_'.abs($$);
   return [ "CREATE OR REPLACE $alg VIEW $vname AS $query",
            "SELECT * FROM $vname ",
            "DROP VIEW IF EXISTS $vname" ];

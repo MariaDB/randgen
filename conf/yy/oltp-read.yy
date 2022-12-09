@@ -21,11 +21,11 @@
 query:
     { my @dbs=(); push @dbs, 'oltp_db' if $executors->[0]->databaseExists('oltp_db')
                 ; push @dbs, 'oltp_aria_db' if $executors->[0]->databaseExists('oltp_aria_db')
-                ; push @dbs, 'user'
+                ; push @dbs, 'NON-SYSTEM'
                 ; _set_db($prng->arrayElement(\@dbs))
-    } /* _table[invariant] */ select ;
+    } SELECT /* _table[invariant] */ select_body ;
 
-select:
+select_body:
     point_select |
     simple_range |
     sum_range |
@@ -34,17 +34,17 @@ select:
 ;
 
 point_select:
-    SELECT _field FROM _table[invariant] WHERE _field_pk = _smallint_unsigned ;
+    _field FROM _table[invariant] WHERE _field_pk = _smallint_unsigned ;
 
 simple_range:
-    SELECT _field FROM _table[invariant] WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ;
+    _field FROM _table[invariant] WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ;
 
 sum_range:
-    SELECT SUM(_field) FROM _table[invariant] WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ;
+    SUM(_field) FROM _table[invariant] WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ;
 
 order_range:
-    SELECT _field FROM _table[invariant] WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ORDER BY _field ;
+    _field FROM _table[invariant] WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ORDER BY _field ;
 
 distinct_range:
-    SELECT DISTINCT _field FROM _table[invariant] WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ORDER BY _field ;
+    DISTINCT _field FROM _table[invariant] WHERE _field_pk BETWEEN _smallint_unsigned AND _smallint_unsigned ORDER BY _field ;
 

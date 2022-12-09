@@ -28,7 +28,7 @@ query:
   { @nonaggregates = () ; %tables = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0; '' } multi_query ;
 
 multi_query:
-  { _set_db('user') }   multi_main_dml |
+  { _set_db('NON-SYSTEM') }   multi_main_dml |
   { _set_db('simple_db') } multi_update_delete
 ;
 
@@ -841,17 +841,17 @@ aggregate_separator:
 # track of what we have added.  You shouldn't need to touch these ever
 ################################################################################
 new_table_item:
-   { $alias="alias".++$tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($last_database)) if not defined $tables{$alias}; $tables{$alias} } AS { $alias } ;
+   { $alias="alias".++$tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($last_database))->[1] if not defined $tables{$alias}; $tables{$alias} } AS { $alias } ;
 #  ( from_subquery ) AS { "alias".++$tables } ;
 
 from_subquery:
      { $subquery_idx += 1 ; $subquery_tables=0 ; $sq_ifields = 0; $sq_cfields = 0; ""}  SELECT distinct select_option subquery_table_one_two . * subquery_body  ;
 
 subquery_new_table_item:
-   { $alias="SQ".$subquery_idx."_alias".++$subquery_tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($last_database)) if not defined $tables{$alias}; $tables{$alias} } AS { $alias } ;
+   { $alias="SQ".$subquery_idx."_alias".++$subquery_tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($last_database))->[1] if not defined $tables{$alias}; $tables{$alias} } AS { $alias } ;
 
 child_subquery_new_table_item:
-   { $alias="C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($last_database)) if not defined $tables{$alias}; $tables{$alias} } AS { $alias } ;
+   { $alias="C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($last_database))->[1] if not defined $tables{$alias}; $tables{$alias} } AS { $alias } ;
 
 current_table_item:
   { $alias = "alias".$tables; $last_table= $tables{$alias}; $alias };
@@ -872,13 +872,13 @@ child_subquery_previous_table_item:
   { $alias= "C_SQ".$child_subquery_idx."_alias".($child_subquery_tables-1); $last_table= $tables{$alias}; $alias } ;
 
 existing_table_item:
-  { $alias= "alias".$prng->int(1,$tables); $tables{$alias} = $prng->arrayElement($executors->[0]->metaTables($last_database)) if not defined $tables{$alias}; $last_table= $tables{$alias}; $alias };
+  { $alias= "alias".$prng->int(1,$tables); $tables{$alias} = $prng->arrayElement($executors->[0]->metaTables($last_database))->[1] if not defined $tables{$alias}; $last_table= $tables{$alias}; $alias };
 
 existing_subquery_table_item:
-  { $alias= "SQ".$subquery_idx."_alias".$prng->int(1,$subquery_tables); $tables{$alias} = $prng->arrayElement($executors->[0]->metaTables($last_database)) if not defined $tables{$alias}; $last_table= $tables{$alias}; $alias } ;
+  { $alias= "SQ".$subquery_idx."_alias".$prng->int(1,$subquery_tables); $tables{$alias} = $prng->arrayElement($executors->[0]->metaTables($last_database))->[1] if not defined $tables{$alias}; $last_table= $tables{$alias}; $alias } ;
 
 existing_child_subquery_table_item:
-  { $alias="C_SQ".$child_subquery_idx."_alias".$prng->int(1,$child_subquery_tables); $tables{$alias} = $prng->arrayElement($executors->[0]->metaTables($last_database)) if not defined $tables{$alias}; $last_table= $tables{$alias}; $alias } ;
+  { $alias="C_SQ".$child_subquery_idx."_alias".$prng->int(1,$child_subquery_tables); $tables{$alias} = $prng->arrayElement($executors->[0]->metaTables($last_database))->[1] if not defined $tables{$alias}; $last_table= $tables{$alias}; $alias } ;
 
 existing_select_item:
   { $fields ? "field".$prng->int(1,$fields) : ( $ifields ? "ifield".$prng->int(1,$ifields) : "cfield".$prng->int(1,$cfields) ) };

@@ -16,7 +16,7 @@
 #include <conf/yy/include/basics.inc>
 
 query:
-  { _set_db('user') } locks_query ;
+  { _set_db('NON-SYSTEM') } locks_query ;
 
 locks_query:
   locks_lock_tables |

@@ -58,7 +58,8 @@ sub run {
 
     say("GendataSimple is creating tables in schema `".$self->GDS_DEFAULT_DB."`");
     $executor->execute("CREATE DATABASE IF NOT EXISTS ".$self->GDS_DEFAULT_DB);
-    $executor->execute("GRANT ALL ON ".$self->GDS_DEFAULT_DB.".* TO CURRENT_USER");
+    # PS is a workaround for MENT-30190
+    $executor->execute("EXECUTE IMMEDIATE CONCAT('GRANT ALL ON ".$self->GDS_DEFAULT_DB.".* TO ',CURRENT_USER,' WITH GRANT OPTION')");
     $executor->execute("USE ".$self->GDS_DEFAULT_DB);
     foreach my $i (0..$#$names) {
         my $gen_table_result = $self->gen_table($executor, $names->[$i], $rows->[$i]);
@@ -101,7 +102,7 @@ sub gen_table {
       $executor->execute("DROP TABLE /*! IF EXISTS */ $name");
       # RocksDB does not support virtual columns
       if ($vcols and lc($engine) ne 'rocksdb') {
-          $executor->variate_and_execute(
+          $executor->execute(
           "CREATE TABLE $name (
               pk INTEGER AUTO_INCREMENT,
               col_int_nokey INTEGER,
@@ -128,9 +129,9 @@ sub gen_table {
           ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
                              # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
                              # joining such tables on PK does not produce only 1-to-1 matches.
-              , my $gendata=1);
+          );
       } else {
-          $executor->variate_and_execute(
+          $executor->execute(
           "CREATE TABLE $name (
               pk INTEGER AUTO_INCREMENT,
               col_int_nokey INTEGER,
@@ -157,14 +158,14 @@ sub gen_table {
           ) ".(length($name) > 1 ? " AUTO_INCREMENT=".(length($name) * 5) : "").($e ne '' ? " ENGINE=$e" : "")
                              # For tables named like CC and CCC, start auto_increment with some offset. This provides better test coverage since
                              # joining such tables on PK does not produce only 1-to-1 matches.
-              , my $gendata=1);
+          );
       }
 
     if (defined $views) {
       if ($views ne '') {
-        $executor->variate_and_execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name, my $gendata=1);
+        $executor->execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
       } else {
-        $executor->variate_and_execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name, my $gendata=1);
+        $executor->execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
       }
     }
 
@@ -200,15 +201,14 @@ sub gen_table {
 
       ## We do one insert per 500 rows for speed
       if ($row % 500 == 0 || $row == $size) {
-        my $insert_result = $executor->variate_and_execute(
+        my $insert_result = $executor->execute(
         "INSERT /*! IGNORE */ INTO $name (
           col_int_key, col_int_nokey,
           col_date_key, col_date_nokey,
           col_time_key, col_time_nokey,
           col_datetime_key, col_datetime_nokey,
           col_varchar_key, col_varchar_nokey
-        ) VALUES " . join(",",@values),
-        my $gendata=1);
+        ) VALUES " . join(",",@values));
         return $insert_result->status() if $insert_result->status() != STATUS_OK;
         @values = ();
       }

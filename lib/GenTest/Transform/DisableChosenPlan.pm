@@ -56,8 +56,6 @@ my @explain2switch = (
     [ 'BKA'               => "optimizer_switch='join_cache_bka=off'" ],
     [ 'incremental'       => "optimizer_switch='join_cache_incremental=off'" ],
     [ 'join buffer'       => "join_cache_level=0" ],
-# MySQL version:
-    [ 'join buffer'       => "optimizer_join_cache_level=0" ],
     [ 'mrr'               => "optimizer_switch='mrr=off'" ],
     [ 'index condition'   => "optimizer_switch='index_condition_pushdown=off'" ],
     [ qr{DERIVED}s        => "optimizer_switch='derived_merge=on'" ],
@@ -89,22 +87,7 @@ sub variate {
   my ($class, $original_query, $executor) = @_;
   return [ $original_query ] if $original_query !~ m{^[\(\s]*(?:SELECT|INSERT|DELETE|REPLACE|UPDATE)}is;
   my $modified_queries= $class->modify($original_query, $executor);
-  if ($modified_queries) {
-    # flatten the 2-level nested array
-    my @queries= ();
-    foreach my $mq (@$modified_queries) {
-      if (ref $mq eq '') {
-        push @queries, $mq;
-      } elsif (ref $mq eq 'ARRAY') {
-        foreach my $q (@$mq) {
-          push @queries, $q;
-        }
-      }
-    }
-    return [ @queries ];
-  } else {
-    return [ $original_query ];
-  }
+  return $modified_queries || [ $original_query ];
 }
 
 sub modify {
@@ -125,8 +108,8 @@ sub modify {
         $explain2count{"$explain_fragment => $switch"}++;
         my ($switch_name) = $switch =~ m{^(.*?)=}sgio;
         push @transformed_queries, [
-          'SET @'.$switch_name.'_saved = @@'.$switch_name.';',
-          "SET SESSION $switch;",
+          'SET @'.$switch_name.'_saved = @@'.$switch_name,
+          "SET SESSION $switch",
           $original_query.($transform_outcome ? " /* $transform_outcome */" : ""),
         ], [
           '/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@'.$switch_name.'_saved'

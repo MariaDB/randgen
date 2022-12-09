@@ -18,17 +18,17 @@
 ########################################################################
 
 query_init:
-  { %handlers= (); '' } { _set_db('user') }
+  { %handlers= (); '' } { _set_db('NON-SYSTEM') }
      handler_open_close ;; handler_open_close
   ;; handler_open_close ;; handler_open_close
   ;; handler_open_close ;; handler_open_close
 ;
 
 query:
-  { _set_db('user') } handler ;
+  { _set_db('NON-SYSTEM') } handler ;
 
 set_db:
-  ==FACTOR:50== { _set_db('user') } |
+  ==FACTOR:50== { _set_db('NON-SYSTEM') } |
                 { _set_db('mysql') } ;
 
 handler:

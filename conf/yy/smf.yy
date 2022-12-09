@@ -21,7 +21,7 @@
 
 query_init:
   # This is to prevent other grammars from altering the schema
-  GRANT INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW ON smf_db.* TO CURRENT_USER
+  REVOKE ALTER, DROP ON smf_db.* FROM CURRENT_USER
 ;
 
 query:

@@ -32,10 +32,7 @@ use GenTest::Constants;
 sub transform {
     my ($class, $orig_query) = @_;
     return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST|TRIGGER|PROCEDURE|FUNCTION)}is;
-    return [
-      $class->modify($orig_query,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
-      [ "/* TRANSFORM_CLEANUP */ SET \@\@sql_mode=\@sql_mode.save" ]
-    ];
+    return $class->modify($orig_query,'TRANSFORM_OUTCOME_UNORDERED_MATCH');
 }
 
 sub variate {
@@ -47,18 +44,21 @@ sub variate {
 sub modify {
     my ($class, $orig_query, $transform_outcome) = @_;
     return [
-      "SET \@sql_mode.save=\@\@sql_mode",
-      "SET sql_mode=CONCAT(\@\@sql_mode,',ORACLE')",
-      "CREATE OR REPLACE PROCEDURE sp1_ExecuteAsOracleSP_".abs($$)." AS BEGIN $orig_query; END",
-      "CALL sp1_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
-      "CALL sp1_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
-      "CREATE OR REPLACE PROCEDURE sp2_ExecuteAsOracleSP_".abs($$)." AS BEGIN sp1_ExecuteAsOracleSP_".abs($$)."; END",
-      "CALL sp2_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
-      "CALL sp2_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
-      "DROP PROCEDURE IF EXISTS sp2_ExecuteAsOracleSP_".abs($$),
-      "DROP PROCEDURE IF EXISTS sp1_ExecuteAsOracleSP_".abs($$),
-      "SET \@\@sql_mode=\@sql_mode.save"
-    ];
+      [
+        "SET \@sql_mode.save=\@\@sql_mode",
+        "SET sql_mode=CONCAT(\@\@sql_mode,',ORACLE')",
+        "CREATE OR REPLACE PROCEDURE sp1_ExecuteAsOracleSP_".abs($$)." AS BEGIN $orig_query; END",
+        "CALL sp1_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+        "CALL sp1_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+        "CREATE OR REPLACE PROCEDURE sp2_ExecuteAsOracleSP_".abs($$)." AS BEGIN sp1_ExecuteAsOracleSP_".abs($$)."; END",
+        "CALL sp2_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+        "CALL sp2_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
+        "DROP PROCEDURE IF EXISTS sp2_ExecuteAsOracleSP_".abs($$),
+        "DROP PROCEDURE IF EXISTS sp1_ExecuteAsOracleSP_".abs($$),
+      ],[
+        '/* TRANSFORM_CLEANUP */ SET @@sql_mode=@sql_mode.save'
+      ]
+    ]
 }
 
 1;

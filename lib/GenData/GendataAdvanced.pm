@@ -58,7 +58,8 @@ sub run {
     $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
     say("GendataAdvanced is creating tables in schema `".$self->GDA_DEFAULT_DB."`");
     $executor->execute("CREATE DATABASE IF NOT EXISTS ".$self->GDA_DEFAULT_DB);
-    $executor->execute("GRANT ALL ON ".$self->GDA_DEFAULT_DB.".* TO CURRENT_USER");
+    # PS is a workaround for MENT-30190
+    $executor->execute("EXECUTE IMMEDIATE CONCAT('GRANT ALL ON ".$self->GDA_DEFAULT_DB.".* TO ',CURRENT_USER,' WITH GRANT OPTION')");
     $executor->execute("USE ".$self->GDA_DEFAULT_DB);
     foreach my $i (0..$#$rows) {
         my $gen_table_result = $self->gen_table($executor, 't'.($i+1), $rows->[$i], $prng);
@@ -651,14 +652,14 @@ sub gen_table {
       }
       $create_stmt .= ")" . ($e ne '' ? " ENGINE=$e" : "");
 
-      $res= $executor->variate_and_execute($create_stmt,my $gendata=1);
+      $res= $executor->execute($create_stmt);
       if ($res->status != STATUS_OK) {
           sayError("Failed to create table $name: " . $res->errstr);
           return $res->status;
       }
 
       if ($pk_stmt) {
-          $res= $executor->variate_and_execute($pk_stmt, my $gendata=1);
+          $res= $executor->execute($pk_stmt);
           if ($res->status != STATUS_OK) {
               sayError("Failed to add primary key to table $name: " . $res->errstr);
           }
@@ -702,7 +703,7 @@ sub gen_table {
               }
               $part_stmt.= '('.(join ',',@parts).')';
           }
-          $res= $executor->variate_and_execute($part_stmt, my $gendata=1);
+          $res= $executor->execute($part_stmt);
           if ($res->status == STATUS_OK) {
               say("Table $name has been partitioned by $partition_type($partition_column)");
           } else {
@@ -712,9 +713,9 @@ sub gen_table {
 
       if (defined $views) {
           if ($views ne '') {
-              $executor->variate_and_execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name, my $gendata=1);
+              $executor->execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
           } else {
-              $executor->variate_and_execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name, my $gendata=1);
+              $executor->execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
           }
       }
 
@@ -755,14 +756,14 @@ sub gen_table {
               push @ind_cols, $c;
           }
           if (scalar(@ind_cols)) {
-            $executor->variate_and_execute("ALTER TABLE $name ADD " . $ind_type . "(". join(',',@ind_cols) . ")", my $gendata=1);
+            $executor->execute("ALTER TABLE $name ADD " . $ind_type . "(". join(',',@ind_cols) . ")");
           }
       }
       if ($columns{col_spatial} and $columns{col_spatial}->[4] eq 'NOT NULL' and not $prng->uint16(0,3)) {
-          $executor->variate_and_execute("ALTER TABLE $name ADD SPATIAL(". 'col_spatial' . ")", my $gendata=1);
+          $executor->execute("ALTER TABLE $name ADD SPATIAL(". 'col_spatial' . ")");
       }
       if ($columns{vcol_spatial} and $columns{vcol_spatial}->[4] eq 'NOT NULL' and not $prng->uint16(0,9)) {
-          $executor->variate_and_execute("ALTER TABLE $name ADD SPATIAL(". 'vcol_spatial' . ")", my $gendata=1);
+          $executor->execute("ALTER TABLE $name ADD SPATIAL(". 'vcol_spatial' . ")");
       }
 
       my @values;
@@ -897,7 +898,7 @@ sub gen_table {
 
           ## We do one insert per 500 rows for speed
           if ($row % 500 == 0 || $row == $size) {
-              $res = $executor->variate_and_execute("INSERT IGNORE INTO $name (" . join(",",@column_list).") VALUES" . join(",",@values), my $gendata=1);
+              $res = $executor->execute("INSERT IGNORE INTO $name (" . join(",",@column_list).") VALUES" . join(",",@values));
               if ($res->status() != STATUS_OK) {
                   sayError("Insert into table $name didn't succeed");
                   return $res->status();

@@ -22,13 +22,14 @@ query_init:
      get_charsets
      # We are doing it this way because otherwise set_db later may pick up a newly created empty spider database
      { @all_databases=(); foreach my $s (@{$executors->[0]->metaAllSchemas()}) { push @all_databases, $s if $s !~ /^spider_db(_remote)?/ }; @user_databases=(); foreach my $s (@{$executors->[0]->metaUserSchemas()}) { push @user_databases, $s if $s !~ /^spider_db(_remote)?$/ }; '' }
-     SET ROLE admin
-  ;; CREATE DATABASE IF NOT EXISTS spider_db
+     CREATE DATABASE IF NOT EXISTS spider_db
   ;; CREATE DATABASE IF NOT EXISTS spider_db_remote
-  ;; GRANT ALL ON spider_db.* TO CURRENT_USER
-  ;; GRANT ALL ON spider_db_remote.* TO CURRENT_USER
+  ;; SET ROLE admin
+     # PS is a workaround for MDEV-30190
+  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON spider_db.* TO ',CURRENT_USER,' WITH GRANT OPTION')
+  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON spider_db_remote.* TO ',CURRENT_USER,' WITH GRANT OPTION')
   ;; CREATE USER IF NOT EXISTS spider_user@'127.0.0.1' IDENTIFIED BY 'SpdrUs3r!pw'
-  ;; GRANT INSERT, UPDATE, DELETE, SELECT ON *.* TO spider_user@'127.0.0.1'
+  ;; GRANT INSERT, UPDATE, DELETE, SELECT, EXECUTE ON *.* TO spider_user@'127.0.0.1'
   ;; SET STATEMENT binlog_format=statement FOR INSERT IGNORE INTO mysql.servers (Server_name, Host, Db, Username, Password, Port, Wrapper) VALUES ('s','127.0.0.1','spider_db_remote','spider_user','SpdrUs3r!pw',@@port,'mysql')
   ;; FLUSH PRIVILEGES
   ;; SET ROLE NONE
@@ -52,19 +53,19 @@ query:
 create_spider_table:
   { _set_db('spider_db_remote') }
      CREATE OR REPLACE TABLE spider_db. _table LIKE { $last_table }
-  ;; ALTER TABLE spider_db.{$last_table} ENGINE=SPIDER COMMENT = { '"wrapper '."'mysql', srv 's', table '".$last_table."'".'"' } CHARACTER SET { $prng->arrayElement(\@charsets) };
+  ;; ALTER TABLE spider_db.{$last_table} ENGINE=SPIDER COMMENT = { "'". 'wrapper "mysql", srv "s", table "'.$last_table.'"'. "'" } CHARACTER SET { $prng->arrayElement(\@charsets) };
 
 create_spider_table_init:
   { _set_db('spider_db_remote') }
      CREATE OR REPLACE TABLE spider_db. { $last_table= $prng->arrayElement(\@remote_tables) } LIKE { $last_table }
-  ;; ALTER TABLE spider_db.{ $last_table } ENGINE=SPIDER COMMENT = { '"wrapper '."'mysql', srv 's', table '".$last_table."'".'"' } CHARACTER SET { $prng->arrayElement(\@charsets) };
+  ;; ALTER TABLE spider_db.{ $last_table } ENGINE=SPIDER COMMENT = { "'". 'wrapper "mysql", srv "s", table "'.$last_table.'"'. "'" } CHARACTER SET { $prng->arrayElement(\@charsets) };
 
 create_remote_table:
-  { _set_db('user') } CREATE OR REPLACE TABLE spider_db_remote._table LIKE { $last_table } ;; INSERT IGNORE INTO spider_db_remote.{ $last_table } SELECT * FROM { $last_table } |
-  { _set_db('any') }  CREATE OR REPLACE TABLE spider_db_remote._table AS SELECT * FROM { $last_table }
+  { _set_db('NON-SYSTEM') } CREATE OR REPLACE TABLE spider_db_remote._table LIKE { $last_table } ;; INSERT IGNORE INTO spider_db_remote.{ $last_table } SELECT * FROM { $last_table } |
+  { _set_db('ANY') }  CREATE OR REPLACE TABLE spider_db_remote._table AS SELECT * FROM { $last_table }
 ;
 
 create_remote_table_init:
-  { _set_db($prng->arrayElement(\@user_databases)) } CREATE OR REPLACE TABLE spider_db_remote._table LIKE { $last_table } ;; INSERT IGNORE INTO spider_db_remote.{ $last_table } SELECT * FROM { $last_table }  { push @remote_tables, $last_table; '' } |
-  { _set_db($prng->arrayElement(\@all_databases)) } CREATE OR REPLACE TABLE spider_db_remote._table AS SELECT * FROM { $last_table } { push @remote_tables, $last_table; '' }
+  { _set_db('NON-SYSTEM') } CREATE OR REPLACE TABLE spider_db_remote._table LIKE { $last_table } ;; INSERT IGNORE INTO spider_db_remote.{ $last_table } SELECT * FROM { $last_table }  { push @remote_tables, $last_table; '' } |
+  { _set_db('ANY') } CREATE OR REPLACE TABLE spider_db_remote._table AS SELECT * FROM { $last_table } { push @remote_tables, $last_table; '' }
 ;

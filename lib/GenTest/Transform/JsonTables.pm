@@ -506,9 +506,7 @@ sub replace_columns
 }
 
 sub variate {
-  my ($self, $orig_query, $executor, $gendata_flag) = @_;
-  # We won't touch gendata queries
-  return [ $orig_query ] if $gendata_flag;
+  my ($self, $orig_query, $executor) = @_;
   # Don't touch queries which already have JSON_TABLEs
   return [ $orig_query ] if $orig_query =~ /JSON_TABLE/i;
 
@@ -582,8 +580,7 @@ sub transform {
       push @queries, "INSERT IGNORE INTO ${tmp_table_prefix}${i} SELECT * FROM JSON_TABLE $def AS jt /* TRANSFORM_OUTCOME_ANY */";
     }
     push @queries, $query. ' /* TRANSFORM_OUTCOME_UNORDERED_MATCH */';
-    push @queries, '/* TRANSFORM_CLEANUP */ SET sql_mode= @sql_mode.save';
-    return \@queries;
+    return [ \@queries, [ '/* TRANSFORM_CLEANUP */ SET sql_mode= @sql_mode.save' ] ];
   } else {
     return STATUS_WONT_HANDLE;
   }

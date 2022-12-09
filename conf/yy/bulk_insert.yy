@@ -14,10 +14,10 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 query_init:
-  { %bulk_load_files=(); _set_db('user') } SELECT NULL INTO OUTFILE { "'".$executors->[0]->vardir."/load_data_anon'" };
+  { %bulk_load_files=(); _set_db('NON-SYSTEM') } SELECT NULL INTO OUTFILE { "'".$executors->[0]->vardir."/load_data_anon'" };
 
 query:
-  { _set_db('user') } bulk_op ;
+  { _set_db('NON-SYSTEM') } bulk_op ;
 
 bulk_op:
   ==FACTOR:5== insert_load |

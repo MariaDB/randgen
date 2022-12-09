@@ -37,10 +37,7 @@ sub transform {
   my ($class, $original_query) = @_;
   return STATUS_WONT_HANDLE if
     ($original_query !~ /^[\s\(]*SELECT/is) or ($original_query =~ /\WINTO\W|INFORMATION_SCHEMA|PERFORMANCE_SCHEMA/is);
-  return [
-    $class->modify($original_query,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
-    [ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=\@switch_saved" ]
-  ];
+  return $class->modify($original_query,'TRANSFORM_OUTCOME_UNORDERED_MATCH'),
 }
 
 sub variate {
@@ -51,10 +48,11 @@ sub variate {
 sub modify {
   my ($self, $original_query, $transform_outcome)= @_;
   return [
-    "SET \@switch_saved = \@\@optimizer_switch",
-    "SET SESSION optimizer_switch = REPLACE(REPLACE( \@\@optimizer_switch, '=on', '=off' ), 'in_to_exists=off', 'in_to_exists=on')",
-    $original_query.($transform_outcome ? " /* $transform_outcome */" : ""),
-    "SET SESSION optimizer_switch=\@switch_saved"
+    [
+      "SET \@switch_saved = \@\@optimizer_switch",
+      "SET SESSION optimizer_switch = REPLACE(REPLACE( \@\@optimizer_switch, '=on', '=off' ), 'in_to_exists=off', 'in_to_exists=on')",
+      $original_query.($transform_outcome ? " /* $transform_outcome */" : ""),
+    ],[ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=\@switch_saved" ]
   ];
 }
 

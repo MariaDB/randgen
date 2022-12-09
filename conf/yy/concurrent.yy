@@ -35,7 +35,7 @@
 query_init:
   SET SQL_SAFE_UPDATES=1;
 query:
-  { _set_db('user') } transaction;
+  { _set_db('NON-SYSTEM') } transaction;
 
 transaction:
   START TRANSACTION ; query_list ; commit_rollback ;
