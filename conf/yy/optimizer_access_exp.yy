@@ -155,7 +155,7 @@ table_or_join:
 
 table:
 # We use the "AS table" bit here so we can have unique aliases if we use the same table many times
-       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->tables($last_database))." AS table".++$tables; my @s=($x); $stack->pop(\@s); $x } ;
+       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->metaTables($work_database))->[1]; $x.= " AS table".++$tables; my @s=($x); $stack->pop(\@s); $x } ;
 
 table_123:
   ==FACTOR:2== table1 |

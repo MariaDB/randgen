@@ -32,6 +32,7 @@ use GenTest::Executor::MariaDB;
 
 use DBI;
 use Data::Dumper;
+use POSIX;
 
 use constant PROCESSLIST_PROCESS_COMMAND => 4;
 use constant PROCESSLIST_PROCESS_TIME    => 5;

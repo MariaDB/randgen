@@ -37,7 +37,7 @@ init_table:
   create ;; insert_part ;; cache_index ;; load_index ;
 
 insert_part:
-  INSERT INTO { $last_table } ( `col_int_nokey`, `col_int_key` ) VALUES insert_part_vals ;
+  INSERT INTO { $new_table or '_basetable' } ( `col_int_nokey`, `col_int_key` ) VALUES insert_part_vals ;
 
 insert_part_vals:
   insert_part_vals_5 , insert_part_vals_5 , insert_part_vals_5 , 
@@ -50,7 +50,7 @@ insert_part_vals_5:
 # Randomly executed SQL
 
 query:
-  { _set_db('partition_db') } exec_sql ;
+  { $new_table= ''; _set_db('partition_db') } exec_sql ;
 
 exec_sql:
   select_explain |
@@ -67,14 +67,14 @@ exec_sql:
   set_key_buffer_size | set_key_cache_block_size                        ;
 
 cache_index:
-  CACHE INDEX { $last_table } IN cache_name                                                |
-  CACHE INDEX { $last_table }  PARTITION ( ALL ) IN cache_name                 |
-  CACHE INDEX { $last_table }  PARTITION ( partition_name_list ) IN cache_name ;
+  CACHE INDEX { $new_table or '_basetable' } IN cache_name                                                |
+  CACHE INDEX { $new_table or '_basetable' }  PARTITION ( ALL ) IN cache_name                 |
+  CACHE INDEX { $new_table or '_basetable' }  PARTITION ( partition_name_list ) IN cache_name ;
 
 load_index:
-  LOAD INDEX INTO CACHE { $last_table } ignore_leaves                                               |
-  LOAD INDEX INTO CACHE { $last_table } PARTITION ( ALL ) ignore_leaves                 |
-  LOAD INDEX INTO CACHE { $last_table } PARTITION ( partition_name_list ) ignore_leaves ;
+  LOAD INDEX INTO CACHE { $new_table or '_basetable' } ignore_leaves                                               |
+  LOAD INDEX INTO CACHE { $new_table or '_basetable' } PARTITION ( ALL ) ignore_leaves                 |
+  LOAD INDEX INTO CACHE { $new_table or '_basetable' } PARTITION ( partition_name_list ) ignore_leaves ;
 
 ignore_leaves:
   | IGNORE LEAVES ;

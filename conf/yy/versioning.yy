@@ -270,12 +270,12 @@ vers_existing_table:
   ==FACTOR:30== _versionedtable
   | _table
   | vers_view_name
-  | { $last_table = '`vers_simple_table`' }
-  | { $last_table = '`vers_table_visible_columns`' }
+  | { $my_last_table = '`vers_simple_table`' }
+  | { $my_last_table = '`vers_table_visible_columns`' }
 ;
 
 vers_view_name:
-  { $last_table = '`vers_view_'.$prng->uint16(1,2).'`' } ;
+  { $my_last_table = '`vers_view_'.$prng->uint16(1,2).'`' } ;
 
 vers_existing_or_new_table_name:
   ==FACTOR:10== vers_existing_table |
@@ -395,8 +395,8 @@ vers_row_format:
 
 vers_insert_history:
   vers_set_statement_insert_history vers_insert_ignore_replace INTO vers_existing_table ( _field, vers_col_start, vers_col_end ) VALUES vers_history_value_list |
-  vers_set_statement_insert_history vers_insert_ignore_replace INTO vers_existing_table ( _field, vers_col_start, vers_col_end ) SELECT _field, vers_col_start, vers_col_end FROM { $last_table } |
-  vers_set_statement_insert_history vers_insert_ignore_replace INTO vers_existing_table SELECT * FROM { $last_table } |
+  vers_set_statement_insert_history vers_insert_ignore_replace INTO vers_existing_table ( _field, vers_col_start, vers_col_end ) SELECT _field, vers_col_start, vers_col_end FROM { $my_last_table } |
+  vers_set_statement_insert_history vers_insert_ignore_replace INTO vers_existing_table SELECT * FROM { $my_last_table } |
   vers_set_statement_insert_history vers_insert_ignore_replace INTO `vers_simple_table` (a, row_start, row_end) VALUES vers_history_value_list |
   vers_set_statement_insert_history vers_insert_ignore_replace INTO `vers_simple_table` VALUES vers_history_value_list |
   vers_set_statement_insert_history vers_insert_ignore_replace INTO `vers_table_visible_columns` VALUES vers_history_value_list

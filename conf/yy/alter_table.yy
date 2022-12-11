@@ -18,7 +18,7 @@
 
 
 query_init:
-  { $tbnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' }
+  { $tbnum=0; '' }
      CREATE DATABASE IF NOT EXISTS alt_table_db
   ;; SET ROLE admin
      # PS is a workaround for MDEV-30190
@@ -47,7 +47,7 @@ alt_create:
 ;
 
 alt_rename_multi:
-    DROP TABLE IF EXISTS { $tmp_tbl= 'tmp_rename_'.abs($$) } ;; RENAME TABLE _basetable TO { $tmp_tbl }, { $tmp_tbl } TO { $last_table }
+    DROP TABLE IF EXISTS { $tmp_tbl= 'tmp_rename_'.abs($$) } ;; RENAME TABLE _basetable[invariant] TO { $tmp_tbl }, { $tmp_tbl } TO _basetable[invariant]
 ;
 
 alt_alter:

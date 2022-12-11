@@ -34,7 +34,7 @@ query_init:
   ;; { $tblnum=0 ; _set_db('partition_db') } init_db ;
 
 create:
-  CREATE TABLE if_not_exists { $last_table= 'thash_'.(++$tblnum).'_'.$generator->threadId() } (
+  CREATE TABLE if_not_exists { $new_table= 'thash_'.(++$tblnum).'_'.$generator->threadId() } (
                 `col_int_nokey` INTEGER,
                 `col_int_key` INTEGER NOT NULL,
                 KEY (`col_int_key` __asc_x_desc(33,33))

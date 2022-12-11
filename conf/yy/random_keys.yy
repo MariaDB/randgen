@@ -24,8 +24,8 @@ query:
 
 random_keys_query:
       ==FACTOR:3==    add_key
-    |                 drop_key
-    | ==FACTOR:0.01== add_autoinc_pk
+#    |                 drop_key
+#    | ==FACTOR:0.01== add_autoinc_pk
 ;
 
 new_key_name:
@@ -51,7 +51,7 @@ add_autoinc_pk:
     { $tries = 0
         ; $tables = $executors->[0]->metaBaseTables($last_database)
         ; do {
-              $last_table = $prng->arrayElement($tables)
+              ($last_database,$last_table) = @{$prng->arrayElement($tables)}
             ; $tries++
         } until ($tries > @{$tables} or not $primary_keys{"$last_database.$last_table"})
         ; ''
@@ -96,11 +96,11 @@ partially_covered_column:
     unique_field index_length __asc_x_desc(33,33);
 
 unique_field:
-    { $tries = 0; $fields = $executors->[0]->metaColumns($last_table, $last_database); do { $last_field = $prng->arrayElement($fields); $tries++ } until ( not defined $index_fields{$last_field} or $tries >= @{$fields} ); $index_fields{$last_field} = 1; $item = '`'.$last_field.'`' } ;
+    { $tries = 0; $fields = $executors->[0]->metaColumns([$last_database,$last_table]); do { $last_field = $prng->arrayElement($fields); $tries++ } until ( not defined $index_fields{$last_field} or $tries >= @{$fields} ); $index_fields{$last_field} = 1; $item = '`'.$last_field.'`' } ;
 
 index_length:
     # Index length 3072 is too much for most cases, but we only take it as an upper limit.
     # Some index creations will fail, let it be so for now
-    { $metatype = $executors->[0]->columnMetaType($last_field, $last_table,$last_database); $maxfldlength = $executors->[0]->columnMaxLength($last_field, $last_table,$last_database); $maxlength = ( $maxfldlength > 3072 ? 3072 : $maxfldlength ); if ($metatype eq 'char' or $metatype eq 'binary') { (rand()<0.3 ? '('.(int(rand($maxlength))+1).')' : '') } elsif ($metatype eq 'blob' or $metatype eq 'text') { '('.(int(rand($maxlength))+1).')' } else { '' } };
+    { $metatype = $executors->[0]->columnMetaType($last_field,[$last_database,$last_table]); $maxfldlength = $executors->[0]->columnMaxLength($last_field,[$last_database,$last_table]); $maxlength = ( $maxfldlength > 3072 ? 3072 : $maxfldlength ); if ($metatype eq 'char' or $metatype eq 'binary') { (rand()<0.3 ? '('.(int(rand($maxlength))+1).')' : '') } elsif ($metatype eq 'blob' or $metatype eq 'text') { '('.(int(rand($maxlength))+1).')' } else { '' } };
 
 

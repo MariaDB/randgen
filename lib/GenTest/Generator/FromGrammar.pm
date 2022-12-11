@@ -25,6 +25,7 @@ require Exporter;
 use Cwd;
 use List::Util qw(shuffle); # For some grammars
 use Time::HiRes qw(time);
+use File::Path qw(mkpath);
 
 use strict;
 use GenTest;
@@ -98,8 +99,10 @@ sub next {
   # If work_database is NON-SYSTEM or ANY, then last_database is set
   # to the actual picked value
   # work_database is used to pick up tables or other database objects.
+  # work_database_real is work_database resolved
   my $last_database;
   my $work_database;
+  my $work_database_real;
   # Flag indicating that work_database is ANY or NON-SYSTEM (for convenience)
   my $work_database_non_specific= 1;
   my $last_field_list_length;
@@ -121,9 +124,9 @@ sub next {
     } else {
       $work_database_non_specific= 0;
     }
-    if (not defined $last_database or $db ne $last_database) {
+    if (not defined $work_database_real or $db ne $work_database_real) {
       $set_db_stmt= "USE $db /* EXECUTOR_FLAG_SKIP_STATS SKIP_VARIATION */ ;;";
-      $last_database= $db;
+      $work_database_real= $db;
     }
     return $set_db_stmt;
   }
@@ -228,7 +231,7 @@ sub next {
           } elsif ($item eq '_connection_id') {
             $item = $executors->[0]->connectionId();
           } elsif ($item eq '_current_user') {
-            $item = $executors->[0]->currentUser();
+            $item = $executors->[0]->user();
           } elsif ($item eq '_thread_count') {
             $item = $ENV{RQG_THREADS};
           } elsif (($item eq '_database') || ($item eq '_db') || ($item eq '_schema')) {
@@ -250,65 +253,65 @@ sub next {
             } elsif ($item eq '_sequence') {
               $obj = $prng->arrayElement($executors->[0]->metaSequences($work_database));
             }
-            ($last_database, $last_table) = @$obj;
+            ($last_database, $last_table) = ($obj ? @$obj : ('!non_existing_database', '!non_existing_object'));
             $item = ($work_database_non_specific ? '`'.$last_database.'`.`'.$last_table.'`' : '`'.$last_table.'`');
           } elsif ($item eq '_procedure') {
             my $obj = $prng->arrayElement($executors->[0]->metaProcedures($work_database));
-            ($last_database, $last_procedure) = @$obj;
+            ($last_database, $last_procedure) = ($obj ? @$obj : ('!non_existing_database', '!non_existing_object'));
             $item = ($work_database_non_specific ? '`'.$last_database.'`.`'.$last_procedure.'`' : '`'.$last_procedure.'`');
           } elsif ($item eq '_function') {
             my $obj = $prng->arrayElement($executors->[0]->metaFunctions($work_database));
-            ($last_database, $last_procedure) = @$obj;
+            ($last_database, $last_procedure) = ($obj ? @$obj : ('!non_existing_database', '!non_existing_object'));
             $item = ($work_database_non_specific ? '`'.$last_database.'`.`'.$last_function.'`' : '`'.$last_function.'`');
           } elsif ($item eq '_index') {
-            my $indexes = $executors->[0]->metaIndexes($last_table, $last_database);
+            my $indexes = $executors->[0]->metaIndexes([$last_database,$last_table]);
                         $last_field = $prng->arrayElement($indexes);
             $item = '`'.$last_field.'`';
           } elsif ($item eq '_field') {
-            my $fields = $executors->[0]->metaColumns($last_table, $last_database);
+            my $fields = $executors->[0]->metaColumns([$last_database,$last_table]);
                         $last_field = $prng->arrayElement($fields);
             $item = '`'.$last_field.'`';
           } elsif ($item eq '_field_list') {
-            my $fields = $executors->[0]->metaColumns($last_table, $last_database);
+            my $fields = $executors->[0]->metaColumns([$last_database,$last_table]);
             $item = '`'.join('`,`', @$fields).'`';
                         $last_field_list_length= scalar(@$fields);
           } elsif ($item eq '_field_count') {
-            my $fields = $executors->[0]->metaColumns($last_table, $last_database);
+            my $fields = $executors->[0]->metaColumns([$last_database,$last_table]);
             $item = $#$fields + 1;
           } elsif ($item eq '_field_next') {
             # Pick the next field that has not been picked recently and increment the $field_pos counter
             # (if there is more than one field in the table
-            my $fields = $executors->[0]->metaColumns($last_table, $last_database);
+            my $fields = $executors->[0]->metaColumns([$last_database,$last_table]);
             $item = '`'.($#$fields ? $fields->[$field_pos++ % $#$fields] : $fields->[0]).'`';
           } elsif ($item eq '_field_pk') {
-            my $fields = $executors->[0]->metaColumnsIndexType('primary',$last_table, $last_database);
+            my $fields = $executors->[0]->metaColumnsIndexType('primary',[$last_database,$last_table]);
                         $last_field = $fields->[0];
             $item = '`'.$last_field.'`';
           } elsif ($item eq '_field_no_pk') {
-            my $fields = $executors->[0]->metaColumnsIndexTypeNot('primary',$last_table, $last_database);
+            my $fields = $executors->[0]->metaColumnsIndexTypeNot('primary',[$last_database,$last_table]);
                         $last_field = $prng->arrayElement($fields);
             $item = '`'.$last_field.'`';
           } elsif (($item eq '_field_indexed') || ($item eq '_field_key')) {
-            my $fields_indexed = $executors->[0]->metaColumnsIndexType('indexed',$last_table, $last_database);
+            my $fields_indexed = $executors->[0]->metaColumnsIndexType('indexed',[$last_database,$last_table]);
                         $last_field = $prng->arrayElement($fields_indexed);
             $item = '`'.$last_field.'`';
           } elsif (($item eq '_field_unindexed') || ($item eq '_field_nokey')) {
-            my $fields_unindexed = $executors->[0]->metaColumnsIndexTypeNot('indexed',$last_table, $last_database);
+            my $fields_unindexed = $executors->[0]->metaColumnsIndexTypeNot('indexed',[$last_database,$last_table]);
                         $last_field = $prng->arrayElement($fields_unindexed);
             $item = '`'.$last_field.'`';
           } elsif ($item =~ /^_field_list\((\d+)\)/) {
                         # Partial field list of a given length (or less, if there are not enough columns)
                         $last_field_list_length= $1;
-            my $f = $executors->[0]->metaColumns($last_table, $last_database);
+            my $f = $executors->[0]->metaColumns([$last_database,$last_table]);
                         $last_field_list_length= scalar(@$f) if scalar(@$f) < $last_field_list_length;
                         my @fields= @{$prng->shuffleArray($f)}[0..$last_field_list_length-1];
             $item = '`'.join('`,`',@fields).'`';
-          } elsif ($item =~ /^_field_([a-z]+)/) {
-            my $fields = $executors->[0]->metaColumnsDataType($1,$last_table, $last_database);
+          } elsif ($item =~ /^_field_([a-z]+)_(?:indexed|key)/) {
+            my $fields = $executors->[0]->metaColumnsDataIndexType($1,'indexed',[$last_database,$last_table]);
                         $last_field = $prng->arrayElement($fields);
             $item = '`'.$last_field.'`';
-          } elsif ($item =~ /^_field_([a-z]+)_(?:indexed|key)/) {
-            my $fields = $executors->[0]->metaColumnsDataIndexType($1,'indexed',$last_table, $last_database);
+          } elsif ($item =~ /^_field_([a-z]+)/) {
+            my $fields = $executors->[0]->metaColumnsDataType($1,[$last_database,$last_table]);
                         $last_field = $prng->arrayElement($fields);
             $item = '`'.$last_field.'`';
           } elsif ($item eq '_collation') {

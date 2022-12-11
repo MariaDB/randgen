@@ -52,22 +52,23 @@ isolation_level:
   READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SERIALIZABLE ;
 
 select:
-  SELECT /* _table { $outer_table= $last_table; '' } */ select_list { $last_table= $outer_table; '' } FROM join_list where LIMIT large_digit;
+  SELECT /* _table { ($outer_db,$outer_table)= ($last_database,$last_table); '' } */ select_list { ($last_database,$last_table)= ($outer_db,$outer_table); '' } FROM join_list where LIMIT large_digit;
 
 select_list:
   X . _field_key | X . _field_key |
   X . _field_pk |
   X . _field |
   * |
-  ( subselect );
+  ==FACTOR:0.1== ( subselect ORDER BY 1 LIMIT 1 )
+;
 
 subselect:
   SELECT /* _table[invariant] */ _field_key FROM _table[invariant] WHERE _field_pk = value ;
 
 # Use index for all joins
 join_list:
-  { $last_table } AS X |
-  { $last_table } AS X LEFT JOIN _table AS Y ON ( Y._field_key = { $last_table= $outer_table; 'X.' } _field_key );
+  { "$last_database.$last_table" } AS X |
+  { "$last_database.$last_table" } AS X LEFT JOIN _table AS Y ON ( Y._field_key = { ($last_database,$last_table)= ($outer_db,$outer_table); 'X.' } _field_key );
 
 
 # Insert more than we delete
@@ -77,20 +78,16 @@ insert_replace:
   i_r INTO _table ( _field_no_pk ) SELECT /* _table[invariant] */ _field_key FROM _table[invariant] AS X where ORDER BY _field_list LIMIT large_digit;
 
 i_r:
-  INSERT ignore |
+  INSERT __ignore(80) |
   REPLACE;
 
-ignore:
-  |
-  IGNORE ;
-
 update:
-  UPDATE ignore _table { $outer_table= $last_table; '' } AS X SET _field_no_pk = value where { $last_table= $outer_table; '' } ORDER BY _field_list LIMIT large_digit ;
+  UPDATE __ignore(80) _table { ($outer_db,$outer_table)= ($last_database,$last_table); '' } AS X SET _field_no_pk = value where { ($last_database,$last_table)= ($outer_db,$outer_table); '' } ORDER BY _field_list LIMIT large_digit ;
 
 # We use a smaller limit on DELETE so that we delete less than we insert
 
 delete:
-  DELETE ignore FROM _table { $outer_table= $last_table; '' } where_delete ORDER BY { $last_table= $outer_table; '' } _field_list LIMIT small_digit ;
+  DELETE __ignore(20) FROM _table { ($outer_db,$outer_table)= ($last_database,$last_table); '' } where_delete ORDER BY { ($last_database,$last_table)= ($outer_db,$outer_table); '' } _field_list LIMIT small_digit ;
 
 order_by:
   | ORDER BY X . _field_key ;
@@ -102,7 +99,8 @@ where:
   WHERE X . _field_key IN ( value , value , value , value , value ) |
   WHERE X . _field_key BETWEEN small_digit AND large_digit |
   WHERE X . _field_key BETWEEN _tinyint_unsigned AND _int_unsigned |
-  WHERE X . _field_key = ( subselect ) ;
+  WHERE X . _field_key IN ( subselect ) |
+  WHERE X . _field_key = ( subselect ORDER BY 1 LIMIT 1 ) ;
 
 where_delete:
   |

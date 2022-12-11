@@ -81,6 +81,14 @@ sub run {
         last;
       }
     }
+    # Workaround for MDEV-30197 (WSREP debug can't run with utf32)
+    if (my $cs= $self->getServerStartupOption($s,'character-set-server')) {
+      if ($cs eq 'utf32') {
+        sayWarning("Cannot run Galera with utf32 due to MDEV-30197, switching to utf8mb3");
+        $self->setServerStartupOption($s,'character-set-server','utf8mb3');
+        $self->setServerStartupOption($s,'collation-server','utf8mb3_general_ci');
+      }
+    }
     my $galera_listen_port = SC_GALERA_DEFAULT_LISTEN_PORT + $s-1;
     my $galera_cluster_address = ($s-1 ? "gcomm://127.0.0.1:".SC_GALERA_DEFAULT_LISTEN_PORT : "gcomm://")
                                        . "?gmcast.listen_addr=tcp://127.0.0.1:".$galera_listen_port ;
@@ -95,6 +103,7 @@ sub run {
 
     # is_active is for Gendata/GenTest to know on which servers to execute the flow
     # TODO: should be set for actual masters masters
+    print Dumper $self->getProperty('server_specific')->{$s};
     push @servers, $self->prepareServer($s,my $is_active= ($s == 1));
   }
   if ($status != STATUS_OK) {

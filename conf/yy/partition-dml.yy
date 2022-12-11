@@ -33,7 +33,7 @@ query_init:
 # Since the schema is uniform in regard to columns, we can pre-pick any table to get correct field names,
 query:
   { _set_db('partition_by_columns_db') }
-  { $last_table= $prng->arrayElement($executors->[0]->metaBaseTables($last_database)); '' }
+  { ($last_database, $last_table) = @{$prng->arrayElement($executors->[0]->metaBaseTables($work_database))}; '' }
   partition_no_create_query ;
 
 partition_no_create_query:

@@ -931,7 +931,7 @@ sub identifierQuoted {
 
 sub arrayElement {
     ## To avoid mod zero-problems in uint16 (See Bug#45857)
-    return undef if $#{$_[1]} < 0;
+  return undef if $#{$_[1]} < 0;
   return $_[1]->[ $_[0]->uint16(0, $#{$_[1]}) ];
 }
 

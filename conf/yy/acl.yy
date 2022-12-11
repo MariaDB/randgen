@@ -146,9 +146,7 @@ acl_opt_priv_level_exact:
 ;
 
 acl_priv_table_level_exact:
-    ==FACTOR:10== { $last_database }._table[invariant]
-  | ==FACTOR:10== _table[invariant]
-  |               _database . _table
+    ==FACTOR:20== _table[invariant]
 ;
 
 acl_global_privilege:
@@ -266,7 +264,7 @@ acl_short_name:
     ==FACTOR:8== _letter
   | ==FACTOR:0.1== '%'
   # Prevent damaging the current user
-  | { $shortname= $prng->unquotedString(8); ${shortname}.'@localhost' ne $executors->[0]->currentUser() and ${shortname} ne 'root' ? '`'.$shortname.'`' : '`'.$shortname.'_`' }
+  | { $shortname= $prng->unquotedString(8); ${shortname}.'@localhost' ne $executors->[0]->user() and ${shortname} ne 'root' ? '`'.$shortname.'`' : '`'.$shortname.'_`' }
   | ==FACTOR:0.1== PUBLIC
   | ==FACTOR:0.1== NONE
 ;

@@ -220,10 +220,6 @@ perfschema_select:
   perfschema_order_by_limit
 ;
 
-perfschema_select_list:
-  perfschema_new_select_item |
-  perfschema_new_select_item , perfschema_select_list ;
-
 perfschema_join_list:
   perfschema_new_table_item |
   perfschema_new_table_item |
@@ -276,31 +272,10 @@ perfschema_order_by_list:
 perfschema_order_by_item:
   perfschema_existing_table_item . _field ;
 
-perfschema_new_select_item:
-  nonaggregate_select_item |
-  nonaggregate_select_item |
-  aggregate_select_item;
-
-nonaggregate_select_item:
-  table_one_two . _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f} ;
-
-aggregate_select_item:
-  aggregate table_one_two . _field ) AS { "field".++$fields };
-
 # Only 20% table2, since sometimes table2 is not present at all
 
-table_one_two:
-  table1 { $last_table = $tables[1] } |
-  table2 { $last_table = $tables[2] } ;
-
-aggregate:
-  COUNT( | SUM( | MIN( | MAX( ;
-
 perfschema_new_table_item:
-  perfschema_database . _table AS { $database_names[++$tables] = $last_database ; $table_names[$tables] = $last_table ; "table".$tables };
-
-perfschema_database:
-  { $last_database = ( $prng->uint16(0,2) ? $prng->arrayElement($executors->[0]->metaSystemSchemas()) : $prng->arrayElement($executors->[0]->metaNonEmptyUserSchemas()) ); return $last_database };
+  _table AS { $database_names[++$tables] = $last_database ; $table_names[$tables] = $last_table ; "table".$tables };
 
 perfschema_current_table_item:
   { $last_database = $database_names[$tables] ; $last_table = $table_names[$tables] ; "table".$tables };

@@ -321,17 +321,11 @@ sub getCollationMetaData {
     return [[undef,undef]];
 }
 
+##############################
+#### Metadata routines
+##############################
 
-########### Metadata routines
-
-sub exceptionSchemas {
-  return ();
-}
-
-sub systemSchemaPattern {
-  my $list= join '|', $_[0]->server->systemSchemas();
-  return qr/$list/;
-}
+#### Caching
 
 sub cacheMetaData {
   my $self= shift;
@@ -423,6 +417,39 @@ sub cacheMetaData {
   }
 }
 
+sub systemSchemaPattern {
+  my $list= join '|', $_[0]->server->systemSchemas();
+  return qr/$list/;
+}
+
+sub schemaHasTables {
+  my ($self, $schema) = @_;
+  return scalar(@{$self->_collectShemaObjects($schema,'BASETAB')});
+}
+
+sub _collectSchemas {
+    # user_or_system should be a constant 'USER_SCHEMAS' or 'SYSTEM_SCHEMAS'
+    my ($self, $user_or_system, $non_empty)= @_;
+    $self->cacheMetaData();
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$user_or_system}) {
+        my $schemas = [sort keys %{$self->[EXECUTOR_SCHEMA_METADATA]}];
+        if (not defined $schemas or $#$schemas < 0) {
+            croak "No schemas found\n";
+        };
+        my @schemas;
+        foreach my $s (@$schemas) {
+          $s= 'information_schema' if lc($s) eq 'information_schema';
+          if ($user_or_system eq 'USER_SCHEMAS' and $s !~ $self->systemSchemaPattern()) {
+            push @schemas, $s if (not $non_empty or $self->schemaHasTables($s));
+          } elsif ($user_or_system eq 'SYSTEM_SCHEMAS' and $s =~ $self->systemSchemaPattern()) {
+            push @schemas, $s;
+          }
+        }
+        $self->[EXECUTOR_META_CACHE]->{$user_or_system} = [ @schemas ];
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$user_or_system};
+}
+
 sub metaAllSchemas {
     my $self= shift;
     return [ @{$self->metaUserSchemas()}, @{$self->metaSystemSchemas()} ];
@@ -434,121 +461,50 @@ sub metaAllNonEmptySchemas {
 }
 
 sub metaNonEmptyUserSchemas {
-    my $self= shift;
-    $self->cacheMetaData();
-    if (not defined $self->[EXECUTOR_META_CACHE]->{NON_EMPTY_USER_SCHEMAS}) {
-        my $schemas = [sort keys %{$self->[EXECUTOR_SCHEMA_METADATA]}];
-        if (not defined $schemas or $#$schemas < 0) {
-            croak "No schemas found\n";
-        };
-        my @schemas;
-        foreach my $s (@$schemas) {
-          $s= 'information_schema' if lc($s) eq 'information_schema';
-          if ($s !~ $self->systemSchemaPattern()) {
-            push @schemas, $s if $self->schemaHasTables($s);
-          }
-        }
-        $self->[EXECUTOR_META_CACHE]->{NON_EMPTY_USER_SCHEMAS} = [ @schemas ];
-    }
-    return $self->[EXECUTOR_META_CACHE]->{NON_EMPTY_USER_SCHEMAS};
+    return $_[0]->metaUserSchemas(my $non_emtpty=1);
 }
 
 sub metaUserSchemas {
-    my $self= shift;
-    $self->cacheMetaData();
-    if (not defined $self->[EXECUTOR_META_CACHE]->{USER_SCHEMAS}) {
-        my $schemas = [sort keys %{$self->[EXECUTOR_SCHEMA_METADATA]}];
-        if (not defined $schemas or $#$schemas < 0) {
-            croak "No schemas found\n";
-        };
-        my @schemas;
-        foreach my $s (@$schemas) {
-          $s= 'information_schema' if lc($s) eq 'information_schema';
-          if ($s !~ $self->systemSchemaPattern()) {
-            push @schemas, $s;
-          }
-        }
-        $self->[EXECUTOR_META_CACHE]->{USER_SCHEMAS} = [ @schemas ];
-    }
-    return $self->[EXECUTOR_META_CACHE]->{USER_SCHEMAS};
+    my ($self, $non_empty)= @_;
+    return $self->_collectSchemas('USER_SCHEMAS',$non_empty);
 }
 
 sub metaSystemSchemas {
-    my $self= shift;
-    $self->cacheMetaData();
-    if (not defined $self->[EXECUTOR_META_CACHE]->{SYSTEM_SCHEMAS}) {
-        my $schemas = [sort keys %{$self->[EXECUTOR_SCHEMA_METADATA]}];
-        if (not defined $schemas or $#$schemas < 0) {
-            croak "No schemas found\n";
-        };
-        my @schemas;
-        foreach my $s (@$schemas) {
-          $s= 'information_schema' if lc($s) eq 'information_schema';
-          if ($s =~ $self->systemSchemaPattern()) {
-            push @schemas, $s;
-          }
-        }
-        $self->[EXECUTOR_META_CACHE]->{SYSTEM_SCHEMAS} = [ @schemas ];
-    }
-    return $self->[EXECUTOR_META_CACHE]->{SYSTEM_SCHEMAS};
+    return $_[0]->_collectSchemas('SYSTEM_SCHEMAS');
 }
 
-sub schemaHasTables {
-  my ($self, $schema) = @_;
-  $self->cacheMetaData();
-  my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-  $schema='information_schema' if lc($schema) eq 'information_schema';
-  my $cachekey = "TAB-$schema";
-
-  if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey})
-  {
-    $self->[EXECUTOR_META_CACHE]->{$cachekey}  = [sort ( keys %{$meta->{$schema}->{table}}, keys %{$meta->{$schema}->{view}}, keys %{$meta->{$schema}->{versioned}}, keys %{$meta->{$schema}->{sequence}} )];
-  }
-  return $self->[EXECUTOR_META_CACHE]->{$cachekey} && scalar(@{$self->[EXECUTOR_META_CACHE]->{$cachekey}});
-}
-
-sub _collectMetaTables {
-    my ($self, $schema, $keys) = @_;
+# Tables, views, sequences, procedures, functions ...
+sub _collectShemaObjects {
+    my ($self, $schema, $type) = @_;
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
     $schema='information_schema' if lc($schema) eq 'information_schema';
-    my @tables= ();
-    my @schemas= ();
-    if ($schema eq 'ANY') {
-      @schemas= @{$self->metaAllSchemas()};
-    } elsif ($schema eq 'NON-SYSTEM') {
-      @schemas= @{$self->metaUserSchemas()};
+    
+    my @keys= ();
+    if ($type eq 'TAB') {
+      @keys= qw(table view versioned sequence);
+    } elsif ($type eq 'BASETAB') {
+      @keys= qw(table versioned);
+    } elsif ($type eq 'SEQ') {
+      @keys= qw(sequence);
+    } elsif ($type eq 'VERSTAB') {
+      @keys= qw(versioned);
+    } elsif ($type eq 'VIEW') {
+      @keys= qw(view);
+    } elsif ($type eq 'PROC') {
+      @keys= qw(procedure)
+    } elsif ($type eq 'FUNC') {
+      @keys= qw(function);
     } else {
-      @schemas= ($schema);
+      croak "Unknown object type $type"
     }
-    foreach my $s (sort @schemas) {
-      foreach my $k (@$keys) {
-        next unless $meta->{$s}->{$k} && scalar(keys %{$meta->{$s}->{$k}});
-        push @tables, map { [ $s, $_ ] } ( sort keys %{$meta->{$s}->{$k}});
-      }
-    }
-    if ($#tables < 0) {
-      sayWarning "Haven't found any [@$keys] tables for $schema schema(s)";
-      @tables = ([ $schema, '!non_existing_table' ]);
-    }
-    return \@tables;
-}
-
-
-sub metaTables {
-    my ($self, $schema, $skip_forcing) = @_;
-    $self->cacheMetaData();
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-    my $cachekey = "TAB-$schema";
+    my $cachekey = "$type-$schema";
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey})
     {
-      my @tables= ();
+      my @objects= ();
       my @schemas= ();
       if ($schema eq 'ANY') {
         @schemas= @{$self->metaAllSchemas()};
@@ -557,151 +513,54 @@ sub metaTables {
       } else {
         @schemas= ($schema);
       }
-      foreach my $s (@schemas) {
-        my @tb = map { [ $s, $_ ] } ( keys %{$meta->{$s}->{table}}, keys %{$meta->{$s}->{view}}, keys %{$meta->{$s}->{versioned}}, keys %{$meta->{$s}->{sequence}} );
-        next unless scalar(@tb);
-        push @tables, @tb;
+      foreach my $s (sort @schemas) {
+        foreach my $k (@keys) {
+          next unless $meta->{$s}->{$k} && scalar(keys %{$meta->{$s}->{$k}});
+          push @objects, map { [ $s, $_ ] } (sort keys %{$meta->{$s}->{$k}});
+        }
       }
-      if ($#tables < 0) {
-        sayWarning "Haven't found any tables for $schema schema(s)";
-        @tables = ('!non_existing_table');
+      if ($#objects < 0) {
+        sayWarning "Haven't found any [ @keys ] objects for $schema schema(s)";
       }
-      $self->[EXECUTOR_META_CACHE]->{$cachekey} = [ sort @tables ];
+      $self->[EXECUTOR_META_CACHE]->{$cachekey} = [ @objects ];
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }
 
-sub metaProcedures {
-    my ($self, $schema, $forced) = @_;
-    $self->cacheMetaData();
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-    my $cachekey = "PROC-$schema";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey})
-    {
-        my $proc = [sort ( keys %{$meta->{$schema}->{procedure}} )];
-        if (not defined $proc or $#$proc < 0) {
-          if ($forced) {
-            sayWarning "Schema '$schema' has no procedures";
-            $proc = [ '!non_existing_procedure' ];
-          } else {
-            $self->forceMetadataReload();
-            return $self->metaProcedures($schema, 1);
-          }
-        }
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $proc;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-}
-
-sub metaFunctions {
-    my ($self, $schema, $forced) = @_;
-    $self->cacheMetaData();
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-    my $cachekey = "FUNC-$schema";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey})
-    {
-        my $functions = [sort ( keys %{$meta->{$schema}->{function}} )];
-        if (not defined $functions or $#$functions < 0) {
-          if ($forced) {
-            sayWarning "Schema '$schema' has no functions";
-            $functions = [ '!non_existing_function' ];
-          } else {
-            $self->forceMetadataReload();
-            return $self->metaFunctions($schema, 1);
-          }
-        }
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $functions;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+sub metaTables {
+    my ($self, $schema) = @_;
+    return $self->_collectShemaObjects($schema,'TAB');
 }
 
 sub metaBaseTables {
     my ($self, $schema) = @_;
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-
-    my $cachekey = "BASETAB-$schema";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $tables = [sort keys %{$meta->{$schema}->{table}}, keys %{$meta->{$schema}->{versioned}}];
-        if (not defined $tables or $#$tables < 0) {
-            sayWarning "Schema '$schema' has no base tables";
-            $tables = [ '!non_existing_base_table' ];
-        }
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+    return $self->_collectShemaObjects($schema,'BASETAB');
 }
 
 sub metaSequences {
     my ($self, $schema) = @_;
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-
-    my $cachekey = "SEQ-$schema";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $tables = [sort keys %{$meta->{$schema}->{sequence}}];
-        if (not defined $tables or $#$tables < 0) {
-            sayWarning "Schema '$schema' has no sequences";
-            $tables = [ '!non_existing_sequence' ];
-        }
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+    return $self->_collectShemaObjects($schema,'SEQ');
 }
 
 sub metaVersionedTables {
     my ($self, $schema) = @_;
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-
-    my $cachekey = "VERSTAB-$schema";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $tables = [sort keys %{$meta->{$schema}->{versioned}}];
-        if (not defined $tables or $#$tables < 0) {
-            sayWarning "Schema '$schema' has no versioned tables";
-            $tables = [ '!non_existing_versioned_table' ];
-        }
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+    return $self->_collectShemaObjects($schema,'VERSTAB');
 }
 
 sub metaViews {
     my ($self, $schema) = @_;
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+    return $self->_collectShemaObjects($schema,'VIEW');
+}
 
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
+sub metaProcedures {
+    my ($self, $schema, $forced) = @_;
+    return $self->_collectShemaObjects($schema,'PROC');
+}
 
-    my $cachekey = "VIEW-$schema";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $tables = [sort keys %{$meta->{$schema}->{view}}];
-        if (not defined $tables or $#$tables < 0) {
-            sayWarning "Schema '$schema' has no views";
-            $tables = [ '!non_existing_view' ];
-        }
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $tables;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-
+sub metaFunctions {
+    my ($self, $schema, $forced) = @_;
+    return $self->_collectShemaObjects($schema,'FUNC');
 }
 
 # Internal (for now) function. It takes a table name and tries to return
@@ -720,7 +579,7 @@ sub _metaFindTable {
       # If table is a fully-qualified name, split it into table and schema
       # and ignore the provided schema name
       if ($table=~ /`?([^`]*)`?\s*\.\s*`?([^`]*)`?/) {
-        return ($2, $1);
+        return ($1, $2);
       }
     }
     $table=~ s/^`(.*)`$/$1/;
@@ -736,7 +595,7 @@ sub _metaFindTable {
         or
         (exists $meta->{$schema} and exists $meta->{$schema}->{sequence} and exists $meta->{$schema}->{sequence}->{$table})
       ) {
-        return ($table, $schema);
+        return ($schema, $table);
       }
     }
     # If we are here, either schema was not defined, or we didn't find
@@ -744,302 +603,114 @@ sub _metaFindTable {
     foreach my $s (sort keys %$meta) {
       foreach my $t (sort keys %{$meta->{$s}->{table}}, keys %{$meta->{$s}->{view}}, keys %{$meta->{$s}->{versioned}}, keys %{$meta->{$s}->{sequence}}) {
         if ($t eq $table) {
-          return ($t, $s);
+          return ($s, $t);
         }
       }
     }
     sayWarning("metaFindTable: Could not find table $table in any schema");
-    return ('!non_existing_table','!non_existing_schema');
+    return ('!non_existing_database','!non_existing_object');
+}
+
+
+# Columns, indexes, ...
+#
+# tableref in column- and index-related methods is an arrayref [schema_name,table_name]
+# objtype is COL or IND (for now)
+# datatype is data type
+# indextype is index-related type (primary, indexed, ordinary)
+# not is negation (e.g. not indexed)
+#
+sub _collectTableObjects {
+    my ($self, $tableref, $objtype, $datatype, $indextype, $not) = @_;
+    $self->cacheMetaData();
+    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+    my ($schema,$table)= @$tableref;
+
+    my $cachekey= "$objtype-$schema-$table";
+    if ($datatype) {
+      $cachekey.= "-$datatype";
+    }
+    if ($indextype) {
+      $cachekey.= "-$indextype";
+    }
+    my $objects= [];
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+      my $objref;
+      if ($meta->{$schema}->{tables}->{$table}->{$objtype}) {
+          $objref = $meta->{$schema}->{tables}->{$table}->{$objtype};
+      }
+      unless (defined $objref && scalar(keys %$objref)) {
+        sayWarning("In Table/view '$table' in schema '$schema' has no ".($objtype eq 'COL' ? 'columns' : 'indexes'));
+        return ['!non_existing_object'];
+      }
+      $objects= [ keys %$objref ];
+
+      if ($objtype eq 'COL') {
+        my ($cols_by_datatype, $cols_by_indextype);
+        if (defined $datatype) {
+          $cols_by_datatype = [sort grep {$objref->{$_}->[1] eq $datatype} keys %$objref];
+          if (not defined $cols_by_datatype or $#$cols_by_datatype < 0) {
+              sayDebug "Table/view '$table' in schema '$schema' has no '$datatype' columns. Using any column";
+              $cols_by_datatype= [sort keys %$objref];
+          }
+        }
+        if (defined $indextype) {
+          if ($indextype eq 'indexed') {
+            $cols_by_indextype = [sort grep { ($not ? ($objref->{$_}->[0] ne $indextype and $objref->{$_}->[0] ne 'primary') : ($objref->{$_}->[0] eq $indextype or $objref->{$_}->[0] eq 'primary')) } keys %$objref];
+          } else {
+            $cols_by_indextype = [sort grep { ($not ? $objref->{$_}->[0] ne $indextype : $objref->{$_}->[0] eq $indextype) } keys %$objref];
+          }
+          if (not defined $cols_by_indextype or $#$cols_by_indextype < 0) {
+              sayDebug "Table/view '$table' in schema '$schema' has no ".($datatype ? "'$datatype' " : ' ')."columns which are ".($not? 'not ' : ' ')."'$indextype'. Using any column";
+              $cols_by_indextype = [sort keys %$objref];
+          }
+        }
+        if ($cols_by_datatype && $cols_by_indextype) {
+          $objects= intersect_arrays($cols_by_datatype,$cols_by_indextype);
+        } elsif ($cols_by_datatype) {
+          $objects= $cols_by_datatype;
+        } elsif ($cols_by_indextype) {
+          $objects= $cols_by_indextype;
+        }
+      }
+      $self->[EXECUTOR_META_CACHE]->{$cachekey} = $objects;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }
 
 sub metaIndexes {
-    my ($self, $requested_table, $requested_schema, $forced) = @_;
-    $self->cacheMetaData();
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    my ($table, $schema)= $self->_metaFindTable($requested_table,$requested_schema);
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-    $table = $self->metaBaseTables($schema)->[0] if not defined $table;
-
-    my $cachekey="IND-$schema-$table";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $inds;
-        if ($meta->{$schema}->{table}->{$table}) {
-            $inds = [sort keys %{$meta->{$schema}->{table}->{$table}->{key}}]
-        } elsif ($meta->{$schema}->{versioned}->{$table}) {
-            $inds = [sort keys %{$meta->{$schema}->{versioned}->{$table}->{key}}]
-        } elsif ($meta->{$schema}->{sequence}->{$table}) {
-            $inds = [sort keys %{$meta->{$schema}->{sequence}->{$table}->{key}}]
-        } elsif ($forced) {
-            sayWarning "In metaIndexes: Table/view '$table' in schema '$schema' has no indexes";
-            return ['!non_existing_index'];
-        } else {
-            $self->forceMetadataReload();
-            return $self->metaIndexes($requested_table, $requested_schema, 1);
-        }
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $inds;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+    my ($self, $tableref) = @_;
+    return $self->_collectTableObjects($tableref,'IND');
 }
 
 sub metaColumns {
-    my ($self, $requested_table, $requested_schema, $forced) = @_;
-    $self->cacheMetaData();
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    my ($table, $schema)= $self->_metaFindTable($requested_table,$requested_schema);
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-    $table = $self->metaTables($schema)->[0]->[1] if not defined $table;
-
-    my $cachekey="COL-$schema-$table";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $cols;
-        if ($meta->{$schema}->{table}->{$table}->{col}) {
-            $cols = [sort keys %{$meta->{$schema}->{table}->{$table}->{col}}]
-        } elsif ($meta->{$schema}->{view}->{$table}->{col}) {
-            $cols = [sort keys %{$meta->{$schema}->{view}->{$table}->{col}}]
-        } elsif ($meta->{$schema}->{versioned}->{$table}->{col}) {
-            $cols = [sort keys %{$meta->{$schema}->{versioned}->{$table}->{col}}]
-        } elsif ($meta->{$schema}->{sequence}->{$table}->{col}) {
-            $cols = [sort keys %{$meta->{$schema}->{sequence}->{$table}->{col}}]
-        } elsif ($forced) {
-            sayWarning "In metaColumns: Table/view '$table' in schema '$schema' has no columns";
-            return ['!non_existing_column'];
-        } else {
-            $self->forceMetadataReload();
-            return $self->metaColumns($requested_table, $requested_schema, 1);
-        }
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+    my ($self, $tableref) = @_;
+    return $self->_collectTableObjects($tableref,'COL');
 }
 
 sub metaColumnsIndexType {
-    my ($self, $indextype, $table, $schema, $forced) = @_;
-    $self->cacheMetaData();
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-    $table = $self->metaTables($schema)->[0]->[1] if not defined $table;
-
-    my $cachekey="COL-$indextype-$schema-$table";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $colref;
-        if ($meta->{$schema}->{table}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{table}->{$table}->{col}
-        } elsif ($meta->{$schema}->{view}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{view}->{$table}->{col};
-        } elsif ($meta->{$schema}->{versioned}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{versioned}->{$table}->{col};
-        } elsif ($meta->{$schema}->{sequence}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{sequence}->{$table}->{col};
-        } elsif ($forced) {
-            sayWarning "In metaColumnsIndexType: Table/view '$table' in schema '$schema' has no columns";
-            return ['!non_existing_column'];
-        } else {
-            $self->forceMetadataReload();
-            return $self->metaColumnsIndexType($indextype, $table, $schema, 1);
-        }
-
-        # If the table is a view, don't bother looking for indexed columns, fall back to ordinary
-        if ($meta->{$schema}->{view}->{$table} and ($indextype eq 'indexed' or $indextype eq 'primary')) {
-            $indextype = 'ordinary'
-        }
-        my $cols;
-        if ($indextype eq 'indexed') {
-            $cols = [sort grep {$colref->{$_}->[0] eq $indextype or $colref->{$_}->[0] eq 'primary'} keys %$colref];
-        } else {
-            $cols = [sort grep {$colref->{$_}->[0] eq $indextype} keys %$colref];
-        };
-        if (not defined $cols or $#$cols < 0) {
-            sayDebug "Table/view '$table' in schema '$schema' has no '$indextype' columns (Might be caused by use of --views option in combination with grammars containing _field_indexed). Using any column";
-            return $self->metaColumns($table,$schema);
-        }
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-
+    my ($self, $indextype, $tableref) = @_;
+    return $self->_collectTableObjects($tableref,'COL',undef,$indextype);
 }
 
 sub metaColumnsDataType {
-    my ($self, $datatype, $table, $schema) = @_;
-    $self->cacheMetaData();
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-    $table = $self->metaTables($schema)->[0]->[1] if not defined $table;
-
-    my $cachekey="COL-$datatype-$schema-$table";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $colref;
-        if ($meta->{$schema}->{table}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{table}->{$table}->{col};
-        } elsif ($meta->{$schema}->{view}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{view}->{$table}->{col};
-        } elsif ($meta->{$schema}->{versioned}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{versioned}->{$table}->{col};
-        } elsif ($meta->{$schema}->{sequence}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{sequence}->{$table}->{col};
-        } else {
-            sayWarning "In metaColumnsDataType: Table/view '$table' in schema '$schema' has no columns";
-            return ['!non_existing_column'];
-        }
-
-        my $cols = [sort grep {$colref->{$_}->[1] eq $datatype} keys %$colref];
-        if (not defined $cols or $#$cols < 0) {
-            sayDebug "Table/view '$table' in schema '$schema' has no '$datatype' columns. Using any column";
-            return $self->metaColumns($table,$schema);
-        }
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-
+    my ($self, $datatype, $tableref) = @_;
+    return $self->_collectTableObjects($tableref,'COL',$datatype);
 }
 
 sub metaColumnsDataIndexType {
-    my ($self, $datatype, $indextype, $table, $schema) = @_;
-    $self->cacheMetaData();
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-    $table = $self->metaTables($schema)->[0]->[1] if not defined $table;
-
-    my $cachekey="COL-$datatype-$indextype-$schema-$table";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $colref;
-        if ($meta->{$schema}->{table}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{table}->{$table}->{col};
-        } elsif ($meta->{$schema}->{view}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{view}->{$table}->{col};
-        } elsif ($meta->{$schema}->{versioned}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{versioned}->{$table}->{col};
-        } elsif ($meta->{$schema}->{sequence}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{sequence}->{$table}->{col};
-        } else {
-            sayWarning "In metaColumnsDataIndexType: Table/view '$table' in schema '$schema' has no columns";
-            return ['!non_existing_column'];
-        }
-
-        # If the table is a view, don't bother looking for indexed columns, fall back to ordinary
-        if ($meta->{$schema}->{view}->{$table} and ($indextype eq 'indexed' or $indextype eq 'primary')) {
-            $indextype = 'ordinary'
-        }
-        my $cols_by_datatype = [sort grep {$colref->{$_}->[1] eq $datatype} keys %$colref];
-        if (not defined $cols_by_datatype or $#$cols_by_datatype < 0) {
-            sayDebug "Table/view '$table' in schema '$schema' has no '$datatype' columns. Using any column";
-            return $self->metaColumns($table,$schema);
-        }
-        my $cols_by_indextype;
-        if ($indextype eq 'indexed') {
-            $cols_by_indextype = [sort grep {$colref->{$_}->[0] eq $indextype or $colref->{$_}->[0] eq 'primary'} keys %$colref];
-        } else {
-            $cols_by_indextype = [sort grep {$colref->{$_}->[0] eq $indextype} keys %$colref];
-        }
-        if (not defined $cols_by_indextype or $#$cols_by_indextype < 0) {
-            sayDebug "Table/view '$table' in schema '$schema' has no '$indextype' columns (Might be caused by use of --views option in combination with grammars containing _field_indexed). Using any column";
-            return $self->metaColumns($table,$schema);
-        }
-
-        my $cols = GenTest::intersect_arrays($cols_by_datatype,$cols_by_indextype);
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-
+    my ($self, $datatype, $indextype, $tableref) = @_;
+    return $self->_collectTableObjects($tableref,'COL',$datatype,$indextype);
 }
 
 sub metaColumnsDataTypeIndexTypeNot {
-    my ($self, $datatype, $indextype, $table, $schema) = @_;
-    $self->cacheMetaData();
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-    $table = $self->metaTables($schema)->[0]->[1] if not defined $table;
-
-    my $cachekey="COL-$datatype-$indextype-$schema-$table";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $colref;
-        if ($meta->{$schema}->{table}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{table}->{$table}->{col};
-        } elsif ($meta->{$schema}->{view}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{view}->{$table}->{col};
-        } elsif ($meta->{$schema}->{versioned}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{versioned}->{$table}->{col};
-        } elsif ($meta->{$schema}->{sequence}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{sequence}->{$table}->{col};
-        } else {
-            sayWarning "In metaColumnsDataTypeIndexTypeNot: Table/view '$table' in schema '$schema' has no columns";
-            return ['!non_existing_column'];
-        }
-
-        # If the table is a view, don't bother looking for indexed columns, fall back to ordinary
-        $indextype = 'unknown'
-            if ($meta->{$schema}->{view}->{$table} and $indextype eq 'ordinary');
-        my $cols_by_datatype = [sort grep {$colref->{$_}->[1] eq $datatype} keys %$colref];
-        if (not defined $cols_by_datatype or $#$cols_by_datatype < 0) {
-            sayDebug "Table/view '$table' in schema '$schema' has no '$datatype' columns. Using any column";
-            return $self->metaColumns($table,$schema);
-        }
-        my $cols_by_indextype = [sort grep {$colref->{$_}->[0] ne $indextype} keys %$colref];
-        if (not defined $cols_by_indextype or $#$cols_by_indextype < 0) {
-            sayDebug "In metaColumnsDataTypeIndexTypeNot: Table '$table' in schema '$schema' has no columns which are not '$indextype'. Using any column";
-            return $self->metaColumns($table,$schema);
-        }
-        my $cols = intersect_arrays($cols_by_datatype,$cols_by_indextype);
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
-
+    my ($self, $datatype, $indextype, $tableref) = @_;
+    return $self->_collectTableObjects($tableref,'COL',$datatype,$indextype,my $not=1);
 }
 
 sub metaColumnsIndexTypeNot {
-    my ($self, $indextype, $table, $schema) = @_;
-    $self->cacheMetaData();
-    my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-    $table = $self->metaTables($schema)->[0]->[1] if not defined $table;
-
-    my $cachekey="COLNOT-$indextype-$schema-$table";
-
-    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $colref;
-        if ($meta->{$schema}->{table}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{table}->{$table}->{col};
-        } elsif ($meta->{$schema}->{view}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{view}->{$table}->{col};
-        } elsif ($meta->{$schema}->{versioned}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{versioned}->{$table}->{col};
-        } elsif ($meta->{$schema}->{sequence}->{$table}->{col}) {
-            $colref = $meta->{$schema}->{sequence}->{$table}->{col};
-        } else {
-            sayWarning "In metaColumnsIndexTypeNot: Table/view '$table' in schema '$schema' has no columns";
-            return ['!non_existing_column'];
-        }
-
-        # If the table is a view, don't bother looking for indexed columns, fall back to ordinary
-        $indextype = 'unknown'
-            if ($meta->{$schema}->{view}->{$table} and $indextype eq 'ordinary');
-        my $cols = [sort grep {$colref->{$_}->[0] ne $indextype} keys %$colref];
-        if (not defined $cols or $#$cols < 0) {
-            sayDebug "In metaColumnsIndexTypeNot: Table '$table' in schema '$schema' has no columns which are not '$indextype'. Using any column";
-            return $self->metaColumns($table,$schema);
-        }
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
-    }
-    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+    my ($self, $indextype, $tableref) = @_;
+    return $self->_collectTableObjects($tableref,'COL',undef,$indextype,my $not=1);
 }
 
 sub metaCollations {
@@ -1071,30 +742,23 @@ sub metaCharactersets {
 }
 
 sub metaColumnInfo {
-    my ($self, $table, $schema) = @_;
+    my ($self, $tableref) = @_;
     $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
-
-    $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
-    $schema='information_schema' if lc($schema) eq 'information_schema';
-    $table = $self->metaTables($schema)->[0]->[1] if not defined $table;
+    my ($schema, $table)= @$tableref;
 
     my $cachekey="COLINFO-$schema-$table";
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
-        my $cols = ();
-        if ($meta->{$schema}->{table}->{$table}->{col}) {
-            $cols = $meta->{$schema}->{table}->{$table}->{col}
-        } elsif ($meta->{$schema}->{view}->{$table}->{col}) {
-            $cols = $meta->{$schema}->{view}->{$table}->{col}
-        } elsif ($meta->{$schema}->{versioned}->{$table}->{col}) {
-            $cols = $meta->{$schema}->{versioned}->{$table}->{col}
-        } elsif ($meta->{$schema}->{sequence}->{$table}->{col}) {
-            $cols = $meta->{$schema}->{sequence}->{$table}->{col}
-        } else {
-            sayWarning "In metaColumnInfo: Table '$table' in schema '$schema' has no columns";
-        }
-        $self->[EXECUTOR_META_CACHE]->{$cachekey} = $cols;
+      unless (defined $meta->{$schema}->{tables}->{$table}) {
+        sayWarning("Table/view $schema.$table does not exist in the cache");
+        return {}
+      }
+      unless (defined $meta->{$schema}->{tables}->{$table}->{COL} && scalar(keys %{$meta->{$schema}->{tables}->{$table}->{COL}})) {
+          sayWarning "In metaColumnInfo: Table '$table' in schema '$schema' has no column info";
+          return {}
+      }
+      $self->[EXECUTOR_META_CACHE]->{$cachekey} = $meta->{$schema}->{table}->{$table}->{COL};
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }
@@ -1109,12 +773,12 @@ sub databases {
 
 sub tables {
     my ($self, @args) = @_;
-    return $self->metaTables(@args);
+    return [ map { $_[1] } (@{$self->metaTables(@args)}) ];
 }
 
 sub baseTables {
     my ($self, @args) = @_;
-    return $self->metaBaseTables(@args);
+    return [ map { $_[1] } (@{$self->metaBaseTables(@args)}) ];
 }
 
 sub columnMetaType {

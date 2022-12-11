@@ -14,7 +14,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 query_init:
-  { %bulk_load_files=(); _set_db('NON-SYSTEM') } SELECT NULL INTO OUTFILE { "'".$executors->[0]->vardir."/load_data_anon'" };
+  { %bulk_load_files=(); $path= $executors->[0]->vardir.'/loaddata'; mkpath($path); _set_db('NON-SYSTEM') } SELECT NULL INTO OUTFILE { "'$path/load_data_anon'" };
 
 query:
   { _set_db('NON-SYSTEM') } bulk_op ;
@@ -50,16 +50,16 @@ insert_replace:
 ;
 
 create_datafile:
-  SELECT * INTO OUTFILE /* _table */ new_datafile_name FROM { $last_table } store_datafile_num ;
+  SELECT * INTO OUTFILE /* _table[invariant] */ new_datafile_name FROM _table[invariant] store_datafile_num ;
 
 # Presumably create_datafile was just called, and fname is set
 self_load:
-  LOAD DATA INFILE { "'$fname'" } __replace_x_ignore INTO TABLE { $last_table } ;
+  LOAD DATA LOCAL INFILE { "'$fname'" } __replace_x_ignore INTO TABLE _table[invariant] ;
 
 # Load a random data file into the table. High chance of wrong field types/count,
 # but it's not as critical for LOAD as it is for INSERT
 cross_load:
-  LOAD DATA INFILE existing_datafile_name __replace_x_ignore INTO TABLE { $last_table } ;
+  LOAD DATA LOCAL INFILE existing_datafile_name __replace_x_ignore INTO TABLE _table ;
 
 set_variables:
   SET FOREIGN_KEY_CHECKS=0, UNIQUE_CHECKS=0, AUTOCOMMIT=0 ;
@@ -68,11 +68,11 @@ reset_variables:
   SET FOREIGN_KEY_CHECKS=1, UNIQUE_CHECKS=1, AUTOCOMMIT=1 ;
 
 existing_datafile_name:
-  /* _table */ { $fnum= $bulk_load_files{"$last_database.$last_table"}; $fname= ($fnum ? "load_".abs($$)."_${last_table}_".$prng->int(1,$fnum) : $executors->[0]->vardir.'/load_data_anon' ); "'$fname'" };
+  /* _table[invariant] */ { $fnum= $bulk_load_files{"$last_database.$last_table"}; $fname= ($fnum ? "$path/load_".abs($$)."_${last_table}_".$prng->int(1,$fnum) : "$path/load_data_anon" ); "'$fname'" };
 
 new_datafile_name:
-  { $fnum= ($bulk_load_files{"$last_database.$last_table"} or 0) + 1; $fname= "load_".abs($$)."_${last_table}_${fnum}"; "'$fname'" };
+  { $fnum= ($bulk_load_files{"$last_database.$last_table"} or 0) + 1; $fname= "$path/load_".abs($$)."_${last_table}_${fnum}"; "'$fname'" };
 
 store_datafile_num:
-  { if (-e $executors->[0]->server->datadir."/$last_database/load_".abs($$)."_${last_table}_${fnum}") { $bulk_load_files{"$last_database.$last_table"}= $fnum; };  '' };
+  { if (-e "$path/load_".abs($$)."_${last_table}_${fnum}") { $bulk_load_files{"$last_database.$last_table"}= $fnum; };  '' };
 

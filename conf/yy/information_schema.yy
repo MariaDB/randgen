@@ -18,7 +18,7 @@ query_init:
   UPDATE mysql.proc SET definer = 'root@localhost'; FLUSH TABLES; FLUSH PRIVILEGES;
 
 query:
-  { _set_db('NON-SYSTEM') } infoschema_query ;
+  set_db infoschema_query ;
 
 set_db:
   ==FACTOR:10== { _set_db('information_schema') } |
@@ -155,8 +155,8 @@ infoschema_aggregate_select_item:
 # Only 20% table2, since sometimes table2 is not present at all
 
 infoschema_table_one_two:
-  table1 { $last_table = $tables[1] } |
-  table2 { $last_table = $tables[2] } ;
+  table1 { $last_database = $database_names[1]; $last_table = $table_names[1] } |
+  table2 { $last_database = $database_names[2]; $last_table = $table_names[2] } ;
 
 infoschema_aggregate:
   COUNT( | SUM( | MIN( | MAX( ;

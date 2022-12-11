@@ -138,7 +138,13 @@ sub copyServerSpecific {
   my ($self, $srvnum1, $srvnum2)= @_;
   my %new_opts= ();
   foreach my $o ( keys %{$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum1}} ) {
-    $new_opts{$o}= $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum1}->{$o};
+    if (ref $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum1}->{$o} eq '') {
+      $new_opts{$o}= $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum1}->{$o};
+    } elsif (ref $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum1}->{$o} eq 'ARRAY') {
+      $new_opts{$o}= [ @{$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum1}->{$o}} ];
+    } elsif (ref $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum1}->{$o} eq 'HASH') {
+      $new_opts{$o}= { %{$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum1}->{$o}} };
+    }
   }
   $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum2}= { %new_opts };
 }
@@ -287,7 +293,6 @@ sub validateData {
 sub runTestFlow {
   my $self= shift;
   $self->backupProperties();
-#  print Dumper $self->[SC_TEST_PROPERTIES];
   $self->setProperty('compatibility', $self->[SC_COMPATIBILITY]) unless defined $self->setProperty('compatibility');
   my $gentest= GenTest::TestRunner->new(config => $self->getProperties());
   my $status= $gentest->run();

@@ -49,7 +49,7 @@ parser_changes_create_index_invalid:
 ;
 
 parser_changes_desc_keys:
-  | CREATE OR REPLACE __unique(5) INDEX { $my_index = 'prsind'.$prng->uint16(1,100) } ON _basetable (_field __asc_x_desc(50,50)) ;; DROP INDEX IF EXISTS { $my_index } ON { $last_table }
+  | CREATE OR REPLACE __unique(5) INDEX { $my_index = 'prsind'.$prng->uint16(1,100) } ON _basetable[invariant] (_field __asc_x_desc(50,50)) ;; DROP INDEX IF EXISTS { $my_index } ON _basetable[invariant]
   | CREATE OR REPLACE TABLE parser_changes_table (pk INT, a INT, b CHAR(16), PRIMARY KEY(pk __asc_x_desc(50,50), a __asc_x_desc(50,50)), KEY(a __asc_x_desc(50,50)), UNIQUE(b(8) __asc_x_desc(50,50)))
   | ALTER TABLE IF EXISTS parser_changes_table DROP PRIMARY KEY ;; ALTER TABLE IF EXISTS parser_changes_table ADD PRIMARY KEY (pk __asc_x_desc(50,50)), ADD KEY(b __asc_x_desc(50,50))
 ;

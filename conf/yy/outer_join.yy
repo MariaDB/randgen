@@ -206,7 +206,7 @@ table_disabled:
 
 table:
 # We use the "AS alias" bit here so we can have unique aliases if we use the same table many times
-       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->tables($last_database))." AS alias".++$tables;  my @s=($x); $stack->pop(\@s); $x } ;
+       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->metaTables($work_database))->[1]; $x.= " AS alias".++$tables;  my @s=($x); $stack->pop(\@s); $x } ;
 
 int_field_name:
   `pk` | `col_int_key` | `col_int` ;

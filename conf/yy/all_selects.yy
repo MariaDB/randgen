@@ -25,7 +25,7 @@ all_selects_query:
 
 all_selects_extra_query:
   # From table elimination task
-  { %extra_tables=(); '' } SELECT t1.* FROM _table { $extra_tables{t1}= $last_table; 't1' } LEFT JOIN (SELECT /* _table */ { $extra_tables{t11} = $last_table; '' } t11._field AS fld1, COUNT(*) AS cnt FROM { $extra_tables{t11} } t11 LEFT JOIN _table { $extra_tables{t12}= $last_table; 't12' } ON t12._field = { $last_table= $extra_tables{t11}; '' } t11._field GROUP BY fld1 ) sq ON sq.fld1= { $last_table= $extra_tables{t1}; '' } t1._field
+  { %extra_tables=(); '' } SELECT t1.* FROM _table { $extra_tables{t1}= [$last_database,$last_table]; 't1' } LEFT JOIN (SELECT /* _table */ { $extra_tables{t11} = [$last_database,$last_table]; '' } t11._field AS fld1, COUNT(*) AS cnt FROM { join '.', @{$extra_tables{t11}} } t11 LEFT JOIN _table { $extra_tables{t12}= [$last_database,$last_table]; 't12' } ON t12._field = { ($last_database,$last_table)= @{$extra_tables{t11}}; '' } t11._field GROUP BY fld1 ) sq ON sq.fld1= { ($last_database,$last_table)= @{$extra_tables{t1}}; '' } t1._field
 ;
 
 all_selects_generated_query:
@@ -58,7 +58,7 @@ all_selects_aggregate_item:
 
 all_selects_new_or_existing_alias:
 # The probability of using a new table depends on how many tables are already picked
-  { $alias= $prng->int(1,scalar(@aliases)+1); if ($alias > scalar(@aliases)) { $last_database= $prng->arrayElement($executors->[0]->metaAllSchemas()); push @aliases, $last_database.'.'.$prng->arrayElement($executors->[0]->tables($last_database)) }; $last_table= $aliases[$alias-1]; 'tbl'.$alias } ;
+  { $alias= $prng->int(1,scalar(@aliases)+1); if ($alias > scalar(@aliases)) { push @aliases, $prng->arrayElement($executors->[0]->metaTables($work_database)) }; ($last_database,$last_table)= @{$aliases[$alias-1]}; 'tbl'.$alias } ;
 
 all_selects_from_list:
   # We will use a random number of tables, but at least the tables which
@@ -72,14 +72,14 @@ all_selects_from_list:
 ;
 
 all_selects_prepare_list_of_tables:
-  { @list_of_tables= (); my $num_of_tables= (scalar(@aliases) + $prng->int(0,2)); $num_of_tables=1 unless $num_of_tables; foreach (1..$num_of_tables-scalar(@aliases)) { $last_database= $prng->arrayElement($executors->[0]->metaAllSchemas()); push @aliases, $last_database.'.'.$prng->arrayElement($executors->[0]->tables($last_database)) }; foreach my $i (1..scalar(@aliases)) { push @list_of_tables, $aliases[$i-1].' AS tbl'.($i) }; '' }
+  { @list_of_tables= (); my $num_of_tables= (scalar(@aliases) + $prng->int(0,2)); $num_of_tables=1 unless $num_of_tables; foreach (1..$num_of_tables-scalar(@aliases)) { push @aliases, $prng->arrayElement($executors->[0]->metaTables($work_database)) }; foreach my $i (1..scalar(@aliases)) { push @list_of_tables, (join '.', @{$aliases[$i-1]}).' AS tbl'.($i) }; '' }
 ;
 
 # USING will produce a lot of "unknown column (1054 ER_BAD_FIELD_ERROR) errors
 # on random (non-uniform) data structures.
 # It will only work when joined tables happen to have the same column
 all_selects_using_condition:
-  { $last_table= $aliases[$joined_tables_num-1]; '' } USING (all_selects_using_list)
+  { ($last_database,$last_table)= @{$aliases[$joined_tables_num-1]}; '' } USING (all_selects_using_list)
 ;
 
 all_selects_using_list:
@@ -120,7 +120,7 @@ all_selects_join_condition:
 # JOIN ON condition should only use tables/aliases which have already been joined
 
 all_selects_join_on_argument:
-  ==FACTOR:10== { $alias= $prng->int(1,$joined_tables_num); $last_table= $aliases[$alias-1]; 'tbl'.$alias.'.' } _field |
+  ==FACTOR:10== { $alias= $prng->int(1,$joined_tables_num); ($last_database,$last_table)= @{$aliases[$alias-1]}; 'tbl'.$alias.'.' } _field |
   _basics_any_value
 ;
 
@@ -145,7 +145,7 @@ all_selects_where_condition:
 ;
 
 all_selects_where_argument:
-  ==FACTOR:5== { $alias= $prng->int(1,scalar(@aliases)); $last_table= $aliases[$alias-1]; 'tbl'.$alias.'.' } _field |
+  ==FACTOR:5== { $alias= $prng->int(1,scalar(@aliases)); ($last_database,$last_table)= @{$aliases[$alias-1]}; 'tbl'.$alias.'.' } _field |
   _basics_any_value
 ;
 

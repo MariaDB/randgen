@@ -25,7 +25,9 @@ use base 'Exporter';
            'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp',
            'rqg_debug', 'unix2winPath', 'versionN6',
            'isNewerVersion', 'isOlderVersion',
-           'shorten_message', 'set_expectation', 'unset_expectation');
+           'shorten_message', 'set_expectation', 'unset_expectation',
+           'intersect_arrays'
+           );
 
 use strict;
 

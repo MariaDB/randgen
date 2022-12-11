@@ -35,6 +35,7 @@ my @last_choice_files= ();
 my @signature_files= ();
 my @strong_signatures;
 my @weak_signatures;
+my $result_status= '';
 
 GetOptions (
   "last=s@" => \@last_choice_files,
@@ -123,7 +124,7 @@ if ($match_info= search_files_for_matches(\@files, \@last_choice_files, \@weak_s
     exit 0;
 }
 
-print "\n--- NO MATCHES FOUND ---------------\n\n";
+print "Status: $result_status\n--- NO MATCHES FOUND ---------------\n\n";
 register_result('no_match');
 
 exit 1;
@@ -140,6 +141,11 @@ sub search_files_for_matches
   {
       my @files= @$ref;
       next unless scalar (@files);
+      $result_status= `grep -a -h \"run.pl will exit with exit status STATUS_\" @files | tail -n 1`;
+      if ($result_status) {
+        chomp $result_status;
+        $result_status =~ s/.*will exit with exit status (STATUS_\w+).*/$1/;
+      }
 
       my $matches_info= '';
 

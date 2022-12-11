@@ -55,7 +55,7 @@ long_blobs:
     CREATE OR REPLACE TABLE test.own_table (c _basics_char_column_type, f _basics_column_type, b _basics_blob_column_type, UNIQUE(b/*!!100403 (16)*/)) __ignore(90) AS SELECT;
 
 long_blobs_runtime:
-    long_blobs /* _table */ _field AS c, _field AS f, _field AS b FROM { $last_table } ;
+    long_blobs /* _table[invariant] */ _field AS c, _field AS f, _field AS b FROM _table[invariant] ;
 
 long_blobs_init:
     long_blobs _basics_value_for_char_column AS c, _basics_any_value AS f, _basics_any_value AS b;

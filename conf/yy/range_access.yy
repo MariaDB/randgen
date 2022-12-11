@@ -30,7 +30,7 @@ query:
 # Since the schema is uniform, we can pre-pick any table to get correct field names,
 # no need to pick it in every select and join
   { $idx_table = '' ; @idx_fields = () ;  _set_db('range_access_db') }
-  { $last_table= $prng->arrayElement($executors->[0]->metaBaseTables($last_database)); '' }
+  { ($last_database,$last_table)= @{$prng->arrayElement($executors->[0]->metaBaseTables($work_database))}; '' }
   query_type ;
 
 query_type:
@@ -246,7 +246,7 @@ table_or_join:
 
 table:
 # We use the "AS alias" bit here so we can have unique aliases if we use the same table many times
-       { $stack->push(); my $x = $prng->arrayElement($executors->[0]->tables($last_database))." AS alias".++$tables;  my @s=($x); $stack->pop(\@s); $x } ;
+       { $stack->push(); my (undef,$x) = @{$prng->arrayElement($executors->[0]->metaTables($work_database))}; $x.=" AS alias".++$tables;  my @s=($x); $stack->pop(\@s); $x } ;
 
 idx_table_for_join:
        { $stack->push() ; my $x = $idx_table." AS alias".++$tables; my @s=($x); $stack->pop(\@s); $x } ;
@@ -266,7 +266,7 @@ index_type:
   BTREE ;
 
 index_table:
-  { my $idx_table_candidate = $prng->arrayElement($executors->[0]->baseTables($last_database)) ; $idx_table = $idx_table_candidate ; $idx_table } ;
+  { my (undef,$idx_table_candidate) = @{$prng->arrayElement($executors->[0]->metaBaseTables($work_database))} ; $idx_table = $idx_table_candidate ; $idx_table } ;
 
 opt_where_list:
   | | | | and_or where_list ;

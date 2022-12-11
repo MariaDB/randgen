@@ -114,7 +114,7 @@ sub convert_selects_to_cte
         # Token here is either a part of the query without brackets,
         # or something in round brackets
         my $token = $1;
-        sayDebug("Token: $1");
+        sayDebug("Token: $1, in select is: $in_select");
 
         # If the fragment starts with SELECT, we'll start collecting the complete SELECT
         # (we assume there had been no CTEs before transformation,
@@ -150,6 +150,7 @@ sub convert_selects_to_cte
         # No conversion needed, just add the next part to the select
         elsif ($in_select) {
             $select .= " $token";
+            sayDebug("Remaining query part: $tmp_query");
         }
 
         # No conversion needed, just add the next part to the query

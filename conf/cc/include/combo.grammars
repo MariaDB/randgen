@@ -56,12 +56,11 @@ $grammars= [
     '--grammar=conf/yy/create_or_replace.yy'],
   [@empty_set,
     '--grammar=conf/yy/create_user.yy:0.1
+      --mysqld=--plugin-maturity=alpha
       --mysqld=--plugin-load-add=auth_0x0100.so
       --mysqld=--plugin-load-add=auth_ed25519.so
       --mysqld=--plugin-load-add=auth_pam.so
-      --mysqld=--plugin-load-add=caching_sha2_password.so
       --mysqld=--plugin-load-add=cracklib_password_check.so
-      --mysqld=--plugin-load-add=mysql_clear_password.so
       --mysqld=--plugin-load-add=password_reuse_check.so
       --mysqld=--plugin-load-add=simple_password_check.so'],
   [@empty_set,

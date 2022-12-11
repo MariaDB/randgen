@@ -16,7 +16,7 @@
 #include <conf/yy/include/basics.inc>
 
 query_init:
-  { $indnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
+  { $indnum=0; '' } ;
 
 query:
   { _set_db('NON-SYSTEM') } alttind_query ;
@@ -24,7 +24,7 @@ query:
 alttind_query:
   ==FACTOR:10==  ALTER __online(20) __ignore(20) TABLE _basetable _basics_wait_nowait alttind_list_with_optional_order_by |
                  CREATE __or_replace(95) __unique(20) INDEX alttind_ind_new_name alttind_ind_type_optional ON _basetable ( alttind_column_name_list ) _basics_wait_nowait alttind_option_list alttind_algorithm_optional alttind_lock_optional |
-  ==FACTOR:2==   DROP INDEX __if_exists(95)  /* _basetable */ _index ON { $last_table } _basics_wait_nowait
+  ==FACTOR:2==   DROP INDEX __if_exists(95)  /* _basetable[invariant] */ _index ON _basetable[invariant] _basics_wait_nowait
 ;
 
 alttind_list_with_optional_order_by:

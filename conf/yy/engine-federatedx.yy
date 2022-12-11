@@ -39,7 +39,6 @@ query_init:
   ;; SET STATEMENT binlog_format=statement FOR INSERT IGNORE INTO mysql.servers (Server_name, Host, Db, Username, Password, Port, Wrapper) VALUES ('fedlink','127.0.0.1','fed_db_remote','fed_user','FdrUs3r!pw',@@port,'mysql')
   ;; FLUSH PRIVILEGES
   ;; SET ROLE NONE
-     { @remote_tables= (); '' }
   ;; create_remote_table_init ;; create_remote_table_init ;; create_remote_table_init
   ;; create_remote_table_init ;; create_remote_table_init ;; create_remote_table_init
   ;; create_federated_table_init ;; create_federated_table_init ;; create_federated_table_init
@@ -60,11 +59,11 @@ create_federated_table_init:
     { _set_db('fed_db_remote') } CREATE OR REPLACE TABLE fed_db. { $last_table= $prng->arrayElement(\@remote_tables) } ENGINE=FEDERATED CONNECTION = { "'fedlink/".$last_table."'" } ;
 
 create_remote_table:
-  { _set_db('NON-SYSTEM') } CREATE OR REPLACE TABLE fed_db_remote._table LIKE { $last_table } ;; INSERT IGNORE INTO fed_db_remote.{ $last_table } SELECT * FROM { $last_table } |
-  { _set_db('ANY') }  CREATE OR REPLACE TABLE fed_db_remote._table AS SELECT * FROM { $last_table }
+  { _set_db('NON-SYSTEM') } CREATE /* _basetable[invariant] */ OR REPLACE TABLE fed_db_remote.{ $last_table } LIKE _basetable[invariant] ;; INSERT IGNORE INTO fed_db_remote.{ $last_table } SELECT * FROM _basetable[invariant] |
+  { _set_db('ANY') }  CREATE /* _table[invariant] */ OR REPLACE TABLE fed_db_remote.{ $last_table } AS SELECT * FROM _table[invariant]
 ;
 
 create_remote_table_init:
-  { _set_db($prng->arrayElement(\@user_databases)) } CREATE OR REPLACE TABLE fed_db_remote._table LIKE { $last_table } ;; INSERT IGNORE INTO fed_db_remote.{ $last_table } SELECT * FROM { $last_table }  { push @remote_tables, $last_table; '' } |
-  { _set_db($prng->arrayElement(\@all_databases)) } CREATE OR REPLACE TABLE fed_db_remote._table AS SELECT * FROM { $last_table } { push @remote_tables, $last_table; '' }
+  { _set_db('NON-SYSTEM') } CREATE /* _basetable[invariant] */ OR REPLACE TABLE fed_db_remote.{ $last_table } LIKE _basetable[invariant] ;; INSERT IGNORE INTO fed_db_remote.{ $last_table } SELECT * FROM _basetable[invariant]  { push @remote_tables, $last_table; '' } |
+  { _set_db('ANY') } CREATE /* _table[invariant] */ OR REPLACE TABLE fed_db_remote.{ $last_table } AS SELECT * FROM _table[invariant] { push @remote_tables, $last_table; '' }
 ;

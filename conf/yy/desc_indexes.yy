@@ -38,7 +38,7 @@ desc_indexes_query:
   | ==FACTOR:0.05== ALTER TABLE _basetable DROP PRIMARY KEY algorithm_optional
   | ==FACTOR:0.2== ANALYZE TABLE _basetable PERSISTENT FOR ALL
   | ==FACTOR:0.05== ALTER __online(10) TABLE _basetable FORCE algorithm_optional
-  | /* _table */ SELECT _field FROM { $last_table } WHERE { $last_field } LIKE { "'" . $prng->unquotedString($prng->uint16(0,8)) ."%'" }
+  | /* _table[invariant] */ SELECT _field FROM _table[invariant] WHERE { $last_field } LIKE { "'" . $prng->unquotedString($prng->uint16(0,8)) ."%'" }
 ;
 
 algorithm_optional:

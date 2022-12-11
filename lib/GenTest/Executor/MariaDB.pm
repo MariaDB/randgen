@@ -2704,7 +2704,7 @@ sub execute {
         $execution_flags |= EXECUTOR_FLAG_NON_EXISTING_ALLOWED;
     }
 
-    if ($query =~ /\!non_existing_(?:schema|table|base_table|versioned_table|view|index|column|sequence|function|procedure)/) {
+    if ($query =~ /\!non_existing_(?:database|object|index|column)/) {
       if ($execution_flags & EXECUTOR_FLAG_NON_EXISTING_ALLOWED) {
         sayDebug("Discarding query [ $query ]");
         return GenTest::Result->new(
@@ -3218,9 +3218,10 @@ sub loadMetaData {
     $meta->{$schema}={} if not exists $meta->{$schema};
     $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
     $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
-    $meta->{$schema}->{$type}->{$table}->{col}={} if not exists $meta->{$schema}->{$type}->{$table}->{col};
-    $meta->{$schema}->{$type}->{$table}->{key}={} if not exists $meta->{$schema}->{$type}->{$table}->{key};
+    $meta->{$schema}->{$type}->{$table}->{COL}={} if not exists $meta->{$schema}->{$type}->{$table}->{COL};
+    $meta->{$schema}->{$type}->{$table}->{IND}={} if not exists $meta->{$schema}->{$type}->{$table}->{IND};
     $tabletype{$schema.'.'.$table}= $type;
+    $meta->{$schema}->{tables}->{$table}= $meta->{$schema}->{$type}->{$table};
   }
   foreach my $row (@$column_metadata) {
     my ($schema, $table, $col, $key, $realtype, $maxlength) = @$row;
@@ -3258,24 +3259,24 @@ sub loadMetaData {
     elsif ($key eq 'MUL' or $key eq 'UNI') { $key= 'indexed' }
     else { $key= 'ordinary' };
     my $type= $tabletype{$schema.'.'.$table};
-    if (lc($schema) eq 'information_schema') {
-      $meta->{information_schema}->{$type}->{$table}->{col}->{$col}= [$key,$metatype,$realtype,$maxlength];
-      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{col}->{$col}= [$key,$metatype,$realtype,$maxlength];
-    } else {
-      $meta->{$schema}->{$type}->{$table}->{col}->{$col}= [$key,$metatype,$realtype,$maxlength];
-    }
+#    if (lc($schema) eq 'information_schema') {
+#      $meta->{information_schema}->{$type}->{$table}->{col}->{$col}= [$key,$metatype,$realtype,$maxlength];
+#      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{col}->{$col}= [$key,$metatype,$realtype,$maxlength];
+#    } else {
+      $meta->{$schema}->{$type}->{$table}->{COL}->{$col}= [$key,$metatype,$realtype,$maxlength];
+#    }
   }
 
   foreach my $row (@$index_metadata) {
     my ($schema, $table, $ind, $unique) = @$row;
 
     my $type= $tabletype{$schema.'.'.$table};
-    if (lc($schema) eq 'information_schema') {
-      $meta->{information_schema}->{$type}->{$table}->{key}->{$ind}= [$unique];
-      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{key}->{$ind}= [$unique];
-    } else {
-      $meta->{$schema}->{$type}->{$table}->{key}->{$ind}= [$unique];
-    }
+#    if (lc($schema) eq 'information_schema') {
+#      $meta->{information_schema}->{$type}->{$table}->{key}->{$ind}= [$unique];
+#      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{key}->{$ind}= [$unique];
+#    } else {
+      $meta->{$schema}->{$type}->{$table}->{IND}->{$ind}= [$unique];
+#    }
   }
 
   foreach my $row (@$proc_metadata) {

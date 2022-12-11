@@ -31,6 +31,7 @@ require Exporter;
   REPORTER_TYPE_END
   REPORTER_CONNECT_TIMEOUT_THRESHOLD
   REPORTER_COMPATIBILITY
+  REPORTER_DBH
 );
 
 use strict;
@@ -91,35 +92,35 @@ sub new {
     compatibility => REPORTER_COMPATIBILITY,
   }, @_);
 
-  $reporter->[REPORTER_DBH] = DBI->connect($reporter->server->dsn(), undef, undef, { mysql_multi_statements => 1, RaiseError => 0 , PrintError => 1 } );
+#  $reporter->[REPORTER_DBH] = DBI->connect($reporter->server->dsn(), undef, undef, { mysql_multi_statements => 1, RaiseError => 0 , PrintError => 1 } );
+  $reporter->[REPORTER_DBH]= $reporter->server->dbh(my $admin=1, my $new=1);
   return undef if not defined $reporter->[REPORTER_DBH];
-  $reporter->[REPORTER_DBH]->do("SET ROLE admin");
-  my $sth = $reporter->[REPORTER_DBH]->prepare("SHOW VARIABLES");
-
-  $sth->execute();
-
-  while (my $array_ref = $sth->fetchrow_arrayref()) {
-    $reporter->[REPORTER_SERVER_VARIABLES]->{$array_ref->[0]} = $array_ref->[1];
+  #$reporter->[REPORTER_DBH]->do("SET ROLE admin");
+  #my $sth = $reporter->[REPORTER_DBH]->prepare("SHOW VARIABLES");
+  #$sth->execute();
+  my $vars= $reporter->[REPORTER_DBH]->selectall_arrayref("SHOW VARIABLES");
+  foreach my $v (@$vars) {
+    $reporter->[REPORTER_SERVER_VARIABLES]->{$v->[0]} = $v->[1];
   }
 
-  $sth->finish();
+  #$sth->finish();
 
   # SHOW SLAVE HOSTS may fail if user does not have the REPLICATION SLAVE privilege
-  $reporter->[REPORTER_DBH]->{PrintError} = 0;
-  my $slave_info = $reporter->[REPORTER_DBH]->selectrow_arrayref("SHOW SLAVE HOSTS");
-  $reporter->[REPORTER_DBH]->{PrintError} = 1;
-  if (defined $slave_info) {
-    $reporter->[REPORTER_SERVER_INFO]->{slave_host} = $slave_info->[1];
-    $reporter->[REPORTER_SERVER_INFO]->{slave_port} = $slave_info->[2];
-  }
+  #$reporter->[REPORTER_DBH]->{PrintError} = 0;
+  #my $slave_info = $reporter->[REPORTER_DBH]->selectrow_arrayref("SHOW SLAVE HOSTS");
+  #$reporter->[REPORTER_DBH]->{PrintError} = 1;
+  #if (defined $slave_info) {
+  #  $reporter->[REPORTER_SERVER_INFO]->{slave_host} = $slave_info->[1];
+  #  $reporter->[REPORTER_SERVER_INFO]->{slave_port} = $slave_info->[2];
+  #}
 
-  if ($reporter->server->serverVariable('version') !~ m{^5\.0}sgio) {
-    $reporter->[REPORTER_SERVER_PLUGINS] = $reporter->[REPORTER_DBH]->selectall_arrayref("
-                  SELECT PLUGIN_NAME, PLUGIN_LIBRARY
-                  FROM INFORMATION_SCHEMA.PLUGINS
-                  WHERE PLUGIN_LIBRARY IS NOT NULL
-          ");
-  }
+  #if ($reporter->server->serverVariable('version') !~ m{^5\.0}sgio) {
+  $reporter->[REPORTER_SERVER_PLUGINS] = $reporter->[REPORTER_DBH]->selectall_arrayref("
+                SELECT PLUGIN_NAME, PLUGIN_LIBRARY
+                FROM INFORMATION_SCHEMA.PLUGINS
+                WHERE PLUGIN_LIBRARY IS NOT NULL
+        ");
+  #}
 
   $reporter->updatePid();
 
@@ -278,24 +279,17 @@ sub findMySQLD {
 
 sub dbh {
   my $reporter= shift;
-  my $dbh;
-  sigaction SIGALRM, new POSIX::SigAction sub {
-                sayError("Reporter ".(ref $reporter).": Timeout upon connecting to ".$reporter->server->dsn);
-                return STATUS_SERVER_DEADLOCKED;
-  } or die "Reporter ".(ref $reporter).": Error setting SIGALRM handler: $!\n";
-  alarm (REPORTER_CONNECT_TIMEOUT_THRESHOLD);
-  # Due to MDEV-24998, connect here sometimes returns error 2013
-  # falsely indicating server crash. To avoid it, we will try twice before giving up
-  unless ($dbh = DBI->connect($reporter->server->dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} )) {
-    sayWarning("Reporter ".(ref $reporter).": Error ".$DBI::err." upon connecting to ".$reporter->server->dsn.". Trying again");
-    $dbh = DBI->connect($reporter->server->dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} );
+  if (defined $reporter->[REPORTER_DBH] && $reporter->[REPORTER_DBH]->ping) {
+    return $reporter->[REPORTER_DBH];
+  } elsif (defined $reporter->[REPORTER_DBH]) {
+    say("Reporter ".(ref $reporter)." is re-connecting to the server");
+    eval { $reporter->[REPORTER_DBH]->disconnect(); 1 }
   }
-  alarm (0);
-  if (defined GenTest::Executor::MariaDB::errorType($DBI::err)) {
-    sayError("Reporter ".(ref $reporter).": Failed to connect to ".$reporter->server->dsn.": ".$DBI::err);
-    return undef;
+  $reporter->[REPORTER_DBH]= $reporter->server->dbh(my $admin=1, my $new=1);
+  if (not defined $reporter->[REPORTER_DBH] || $reporter->[REPORTER_DBH]->err) {
+    sayError("Reporter ".(ref $reporter)." failed to connect to the server");
   }
-  return $dbh;
+  return $reporter->[REPORTER_DBH];
 }
 
 1;

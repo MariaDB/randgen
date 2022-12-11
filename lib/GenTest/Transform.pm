@@ -133,6 +133,8 @@ sub transformExecuteValidate {
     my ($transformer, $original_query, $original_result, $executor, $skip_result_validations) = @_;
 
     $transformer->[TRANSFORMER_QUERIES_PROCESSED]++;
+    # Do not transform queries with /*executorN */ comments, they are for comparison
+    return STATUS_OK if ($original_query =~ /\/\*executor\d/);
 
     my $transformer_output = $transformer->transform($original_query, $executor, $original_result, $skip_result_validations);
     my $transform_blocks;
@@ -317,6 +319,9 @@ sub variate_query {
   # Gendata flag tells variators that the query comes from gendata,
   # in case the variator has a different logic in this case
   my ($self,$orig_query,$executor)= @_;
+  # Do not variate queries with /*executorN */ comments
+  return [ $orig_query ] if ($orig_query =~ /\/\*executor\d/);
+  
   my @variators= @{$self->[TRANSFORMER_VARIATORS]};
   $self->random->shuffleArray(\@variators);
   my @queries= ($orig_query);

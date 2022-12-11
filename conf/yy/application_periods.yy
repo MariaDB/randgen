@@ -38,7 +38,7 @@ query_init:
      CREATE DATABASE IF NOT EXISTS app_periods
   ;; SET ROLE admin
      # PS is a workaround for MDEV-30190
-  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON app_periods.* TO ',CURRENT_USER',' WITH GRANT OPTION')
+  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON app_periods.* TO ',CURRENT_USER,' WITH GRANT OPTION')
   ;; SET ROLE NONE
   ;; { _set_db('app_periods') }
      { $tnum=1; '' } create_simple_with_period_init
@@ -56,7 +56,7 @@ query_init:
   ;; { $tnum++; '' } create_simple_with_period_init
   ;; { $tnum++; '' } create_simple_with_period_init
   ;; { $tnum++; '' } create_simple_with_period_init
-  ;; SET system_versioning_alter_history= KEEP { $last_database= ''; $executors->[0]->forceMetadataReload(); $executors->[0]->setMetadataReloadInterval(10 + $generator->threadId()); '' }
+  ;; SET system_versioning_alter_history= KEEP
 ;
 
 query:

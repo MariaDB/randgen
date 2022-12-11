@@ -76,7 +76,7 @@ fk_lock:
 
 fk_add_foreign_key:
   # First variant: the table references itself, the referenced and referencing columns are random
-    ADD fk_constraint_optional FOREIGN KEY fk_index_name_optional (_field) REFERENCES { $last_table } (_field) fk_optional_on_delete fk_optional_on_update
+    ADD fk_constraint_optional FOREIGN KEY fk_index_name_optional (_field) REFERENCES { "$last_database.$last_table" } (_field) fk_optional_on_delete fk_optional_on_update
   # Second variant: the table references a different table, the referenced and referencing column lists are identical
   | ADD fk_constraint_optional FOREIGN KEY fk_index_name_optional (fk_column_list_new) REFERENCES _table (fk_column_list_last) fk_optional_on_delete fk_optional_on_update
 ;

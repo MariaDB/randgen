@@ -26,7 +26,7 @@ thread1_init:
   SET GLOBAL SQL_MODE= CONCAT(@@sql_mode,',',extra_sql_mode_values);
 
 query:
-  { $fields = 0 ; _set_db('ANY') } ANALYZE FORMAT=JSON /* table */ SELECT select_list FROM {$last_table} WHERE where_list opt_where_list group_by_clause order_by_clause;
+  { $fields = 0 ; _set_db('ANY') } ANALYZE FORMAT=JSON /* _table[invariant] */ SELECT select_list FROM _table[invariant] WHERE where_list opt_where_list group_by_clause order_by_clause;
 
 select_list:
   select_item | select_item , select_list ;

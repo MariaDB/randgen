@@ -50,22 +50,25 @@ query:
   |              { _set_db('spider_db') } DROP TABLE IF EXISTS _table
 ;
 
-create_spider_table:
-  { _set_db('spider_db_remote') }
-     CREATE OR REPLACE TABLE spider_db. _table LIKE { $last_table }
-  ;; ALTER TABLE spider_db.{$last_table} ENGINE=SPIDER COMMENT = { "'". 'wrapper "mysql", srv "s", table "'.$last_table.'"'. "'" } CHARACTER SET { $prng->arrayElement(\@charsets) };
+create_remote_table_init:
+  { _set_db('NON-SYSTEM') } CREATE /* _basetable[invariant] */ OR REPLACE TABLE spider_db_remote. { $last_table } LIKE _basetable[invariant] ;; INSERT IGNORE INTO spider_db_remote.{ $last_table } SELECT * FROM _basetable[invariant]  { push @remote_tables, $last_table; '' } |
+  { _set_db('ANY') } CREATE /* _table[invariant] */ OR REPLACE TABLE spider_db_remote. { $last_table } AS SELECT * FROM _table[invariant] { push @remote_tables, $last_table; '' }
+;
 
 create_spider_table_init:
   { _set_db('spider_db_remote') }
      CREATE OR REPLACE TABLE spider_db. { $last_table= $prng->arrayElement(\@remote_tables) } LIKE { $last_table }
-  ;; ALTER TABLE spider_db.{ $last_table } ENGINE=SPIDER COMMENT = { "'". 'wrapper "mysql", srv "s", table "'.$last_table.'"'. "'" } CHARACTER SET { $prng->arrayElement(\@charsets) };
+  ;; ALTER TABLE spider_db.{ $last_table } ENGINE=SPIDER COMMENT = { "'". 'wrapper "mysql", srv "s", table "'.$last_table.'"'. "'" } CHARACTER SET { $prng->arrayElement(\@charsets) }
+;
 
 create_remote_table:
-  { _set_db('NON-SYSTEM') } CREATE OR REPLACE TABLE spider_db_remote._table LIKE { $last_table } ;; INSERT IGNORE INTO spider_db_remote.{ $last_table } SELECT * FROM { $last_table } |
-  { _set_db('ANY') }  CREATE OR REPLACE TABLE spider_db_remote._table AS SELECT * FROM { $last_table }
+  { _set_db('NON-SYSTEM') } CREATE /* _basetable[invariant] */ OR REPLACE TABLE spider_db_remote. { $last_table } LIKE _basetable[invariant] ;; INSERT IGNORE INTO spider_db_remote.{ $last_table } SELECT * FROM _basetable[invariant] |
+  { _set_db('ANY') }  CREATE /* _table[invariant] */ OR REPLACE TABLE spider_db_remote. { $last_table } AS SELECT * FROM _table[invariant]
 ;
 
-create_remote_table_init:
-  { _set_db('NON-SYSTEM') } CREATE OR REPLACE TABLE spider_db_remote._table LIKE { $last_table } ;; INSERT IGNORE INTO spider_db_remote.{ $last_table } SELECT * FROM { $last_table }  { push @remote_tables, $last_table; '' } |
-  { _set_db('ANY') } CREATE OR REPLACE TABLE spider_db_remote._table AS SELECT * FROM { $last_table } { push @remote_tables, $last_table; '' }
+create_spider_table:
+  { _set_db('spider_db_remote') }
+     CREATE OR REPLACE TABLE spider_db. _table[invariant] LIKE _table[invariant]
+  ;; ALTER TABLE spider_db._table[invariant] ENGINE=SPIDER COMMENT = { "'". 'wrapper "mysql", srv "s", table "'.$last_table.'"'. "'" } CHARACTER SET { $prng->arrayElement(\@charsets) }
 ;
+
