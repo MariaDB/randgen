@@ -406,13 +406,6 @@ sub next {
   }
   else
   {
-    if ($generator->[GENERATOR_SEQ_ID] == 1) {
-      # Always reload metadata after the first rule, before expanding the next ones
-      sayDebug("Reloading metadata after the first rule was executed");
-      $executors->[0]->forceMetadataReload();
-      $executors->[0]->cacheMetaData();
-    }
-
     my $grammar_id= $prng->arrayElement($generator->[GENERATOR_GRAMMAR_POOL]);
     my $grammar = $generator->[GENERATOR_GRAMMARS]->[$grammar_id];
     $grammar_rules= $grammar->rules();

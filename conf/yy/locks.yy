@@ -26,7 +26,7 @@ locks_query:
 ;
 
 locks_locking_select_optional_trx:
-  START TRANSACTION ; locks_locking_select ; __commit_x_rollback |
+  START TRANSACTION ;; locks_locking_select ;; __commit_x_rollback |
   locks_locking_select
 ;
 

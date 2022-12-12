@@ -357,7 +357,7 @@ alt_add_index:
 
 
 alt_drop_index:
-  DROP INDEX _index | DROP PRIMARY KEY
+  DROP INDEX /* EXECUTOR_FLAG_NON_EXISTING_ALLOWED */ _index | DROP PRIMARY KEY
 ;
 
 alt_column_list:

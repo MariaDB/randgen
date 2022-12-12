@@ -23,7 +23,7 @@
 
 # DDL-rich grammar requires frequent metadata reload
 query_init:
-  { $vers_tab_num=0; $executors->[0]->setMetadataReloadInterval(15 + $generator->threadId()); '' }
+  { $vers_tab_num=0; '' }
     CREATE DATABASE IF NOT EXISTS versioning_db
   ;; SET ROLE admin
   # PS is a workaround for MDEV-30190

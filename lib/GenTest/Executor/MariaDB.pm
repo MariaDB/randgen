@@ -2657,8 +2657,7 @@ sub init {
     $executor->user($dbh->selectrow_arrayref("SELECT CURRENT_USER()")->[0]);
     $dbh->do('SELECT '.GenTest::Random::dataLocation().' AS DATA_LOCATION');
 
-    sayDebug("Loading metadata upon executor initialization");
-    $executor->forceMetadataReload();
+    say("Caching metadata upon executor initialization");
     $executor->cacheMetaData();
 
     say("Executor initialized. id: ".$executor->id()."; default schema: ".$executor->defaultSchema()."; connection ID: ".$executor->connectionId()) if rqg_debug();
@@ -2704,7 +2703,7 @@ sub execute {
         $execution_flags |= EXECUTOR_FLAG_NON_EXISTING_ALLOWED;
     }
 
-    if ($query =~ /\!non_existing_(?:database|object|index|column)/) {
+    if ($query =~ /\!non_existing_(?:database|object|index)/) {
       if ($execution_flags & EXECUTOR_FLAG_NON_EXISTING_ALLOWED) {
         sayDebug("Discarding query [ $query ]");
         return GenTest::Result->new(
@@ -3121,15 +3120,24 @@ sub normalizeError {
     return $errstr;
 }
 
-sub getCollationMetaData {
+sub loadCollations {
     ## Return the result from a query with the following columns:
     ## 1. Collation name
     ## 2. Character set
-    my ($self) = @_;
-    my $query =
-        "SELECT collation_name,character_set_name FROM information_schema.collations";
+    my ($self, $file) = @_;
 
-    return $self->dbh()->selectall_arrayref($query);
+    unless (open(COLL,$file)) {
+      sayError("Couldn't open collations dump $file: $!");
+      return undef;
+    }
+    my @collations=();
+    while (<COLL>) {
+      chomp;
+      my ($coll, $cs)= split /;/, $_;
+      push @collations, [$coll, $cs];
+    }
+    close(COLL);
+    return \@collations;
 }
 
 sub read_only {
@@ -3145,71 +3153,22 @@ sub read_only {
 }
 
 sub loadMetaData {
-  # Type can be 'system' or 'non-system'
-  my ($self, $metadata_type)= @_;
-  my $system_schemata= $self->server->systemSchemaList();
-  my $exempt_schemata= "'transforms'";
-  my $clause;
-  if ($metadata_type eq 'system') {
-    $clause= "IN ($system_schemata)"
-  } elsif ($metadata_type eq 'non-system') {
-    $clause= "NOT IN ($system_schemata,$exempt_schemata)"
-  } else {
-    sayError("Unknown metadata type requested: $metadata_type");
+  # File points at table metadata (main). Other files, e.g. proc,
+  # should be searched using the same TS
+  my ($self, $file)= @_;
+
+  unless (open(TBL,$file)) {
+    sayError("Couldn't open table dump $file: $!");
     return undef;
   }
+  sayDebug("Loading metadata from $file");
+  my %tabletype;
+  my $meta;
 
-  my $schema_query=
-      "SELECT schema_name ".
-      "FROM information_schema.schemata WHERE schema_name $clause";
-  my $table_query=
-      "SELECT table_schema, table_name, table_type ".
-      "FROM information_schema.tables WHERE table_schema $clause";
-  my $column_query=
-      "SELECT table_schema, table_name, column_name, column_key, ".
-             "data_type, character_maximum_length ".
-      "FROM information_schema.columns WHERE table_schema $clause";
-  my $index_query=
-      "SELECT table_schema, table_name, index_name, non_unique XOR 1 ".
-      "FROM information_schema.statistics WHERE table_schema $clause";
-  my $proc_query=
-      "SELECT db, name, type, param_list ".
-      "FROM mysql.proc WHERE db $clause";
-
-  sayDebug("Metadata reload: Starting reading $metadata_type metadata with condition \"$clause\"");
-
-  my ($schema_metadata, $table_metadata, $column_metadata, $index_metadata, $proc_metadata);
-  my $dbh= $self->serviceDbh();
-  $schema_metadata= $dbh->selectall_arrayref($schema_query);
-  if (not $dbh->err and $schema_metadata) {
-    $table_metadata= $dbh->selectall_arrayref($table_query);
-    if (not $dbh->err and $table_metadata) {
-      $column_metadata= $dbh->selectall_arrayref($column_query);
-      if (not $dbh->err) {
-        $index_metadata= $dbh->selectall_arrayref($index_query);
-      }
-    }
-    if (not $dbh->err) {
-      $proc_metadata= $dbh->selectall_arrayref($proc_query);
-    }
-  }
-  if ($dbh->err or not $schema_metadata or not $table_metadata or not $column_metadata or not $proc_metadata) {
-    sayError("MetadataReload: Failed to retrieve metadata with condition \"$clause\": " . $dbh->err . " " . $dbh->errstr);
-    return undef;
-  } else {
-    say("MetadataReload: Finished reading $metadata_type metadata: ".scalar(@$schema_metadata)." schemas, ".scalar(@$table_metadata)." tables, ".scalar(@$column_metadata)." columns, ".scalar(@$index_metadata)." indexes");
-  }
-
-  my $meta= {};
-  my %tabletype= ();
-
-  foreach my $row (@$schema_metadata) {
-    my $schema = $row->[0];
-    $meta->{$schema}= {} if not exists $meta->{$schema};
-  }
-
-  foreach my $row (@$table_metadata) {
-    my ($schema, $table, $type) = @$row;
+  while (<TBL>) {
+    chomp;
+    my ($schema, $table, $type, $column, $key, $realtype, $maxlength, $ind, $unique) = split /;/, $_;
+#    print "HERE: $schema, $table, $type, $column, $key, $realtype, $maxlength, $ind, $unique\n";
     if    ($type eq 'BASE TABLE') { $type= 'table' }
     elsif ($type eq 'SYSTEM VERSIONED') { $type = 'versioned' }
     elsif ($type eq 'SEQUENCE') { $type = 'sequence' }
@@ -3222,9 +3181,7 @@ sub loadMetaData {
     $meta->{$schema}->{$type}->{$table}->{IND}={} if not exists $meta->{$schema}->{$type}->{$table}->{IND};
     $tabletype{$schema.'.'.$table}= $type;
     $meta->{$schema}->{tables}->{$table}= $meta->{$schema}->{$type}->{$table};
-  }
-  foreach my $row (@$column_metadata) {
-    my ($schema, $table, $col, $key, $realtype, $maxlength) = @$row;
+
     my $metatype= lc($realtype);
     if (
       $metatype eq 'bit' or
@@ -3259,37 +3216,36 @@ sub loadMetaData {
     elsif ($key eq 'MUL' or $key eq 'UNI') { $key= 'indexed' }
     else { $key= 'ordinary' };
     my $type= $tabletype{$schema.'.'.$table};
-#    if (lc($schema) eq 'information_schema') {
-#      $meta->{information_schema}->{$type}->{$table}->{col}->{$col}= [$key,$metatype,$realtype,$maxlength];
-#      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{col}->{$col}= [$key,$metatype,$realtype,$maxlength];
-#    } else {
-      $meta->{$schema}->{$type}->{$table}->{COL}->{$col}= [$key,$metatype,$realtype,$maxlength];
-#    }
-  }
+    $meta->{$schema}->{$type}->{$table}->{COL}->{$column}= [$key,$metatype,$realtype,$maxlength];
 
-  foreach my $row (@$index_metadata) {
-    my ($schema, $table, $ind, $unique) = @$row;
-
-    my $type= $tabletype{$schema.'.'.$table};
-#    if (lc($schema) eq 'information_schema') {
-#      $meta->{information_schema}->{$type}->{$table}->{key}->{$ind}= [$unique];
-#      $meta->{INFORMATION_SCHEMA}->{$type}->{$table}->{key}->{$ind}= [$unique];
-#    } else {
-      $meta->{$schema}->{$type}->{$table}->{IND}->{$ind}= [$unique];
-#    }
+    if ($ind ne 'NULL' and $ind ne '' and $ind ne '\N') {
+      my $indtype= $tabletype{$schema.'.'.$table};
+      $meta->{$schema}->{$indtype}->{$table}->{IND}->{$ind}= [$unique];
+    }
   }
+  close(TBL);
 
-  foreach my $row (@$proc_metadata) {
-    my ($schema, $proc, $type, $params) = @$row;
-    # procedure or function
-    $type= lc($type);
-    # params will be just a count for now
-    $params= ()= $params =~ /,/g;
-    $meta->{$schema}={} if not exists $meta->{$schema};
-    $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
-    $meta->{$schema}->{$type}->{$proc}={} if not exists $meta->{$schema}->{$type}->{$proc};
-    $meta->{$schema}->{$type}->{$proc}->{paramnum}= $params;
+  $file =~ s/\/(system|nonsystem)-tables-([\d\.]+)$/\/$1-proc-$2/;
+  my ($ft, $ts)= ($1, $2);
+  if (open(PROC,$file)) {
+    while (<PROC>) {
+      chomp;
+      my ($schema, $proc, $type) = split /;/, $_;
+      # procedure or function
+      $type= lc($type);
+      # paramnum will be just a placeholder for now
+      $meta->{$schema}={} if not exists $meta->{$schema};
+      $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
+      $meta->{$schema}->{$type}->{$proc}={} if not exists $meta->{$schema}->{$type}->{$proc};
+      $meta->{$schema}->{$type}->{$proc}->{paramnum}= 0;
+    }
+    close(PROC);
+  } else {
+    sayWarning("Couldn't open procedure dump $file: $!");
   }
+  sayDebug("Executor finished loading $ft metadata: ".scalar(keys %$meta)." schemas, ".scalar(keys %tabletype)." tables");
+#  $Data::Dumper::Maxdepth= 0;
+#  print Dumper $meta;
   return $meta;
 }
 

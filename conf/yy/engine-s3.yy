@@ -30,9 +30,9 @@ s3_query:
 
 s3_alter_table_back:
     SET @stmt_sql= NULL
-  ; SELECT CONCAT('ALTER TABLE ',table_schema,'.',table_name,' ENGINE=', s3_other_engine) INTO @stmt_sql FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='S3' ORDER BY table_schema, table_name LIMIT 1
-  ; IF @stmt_sql IS NOT NULL THEN EXECUTE IMMEDIATE @stmt_sql
-  ; END IF ;
+  ;; SELECT CONCAT('ALTER TABLE ',table_schema,'.',table_name,' ENGINE=', s3_other_engine) INTO @stmt_sql FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE='S3' ORDER BY table_schema, table_name LIMIT 1
+  ;; IF @stmt_sql IS NOT NULL THEN EXECUTE IMMEDIATE @stmt_sql
+  ;; END IF ;
 
 
 s3_other_engine:

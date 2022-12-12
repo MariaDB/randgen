@@ -67,17 +67,16 @@ use constant EXECUTOR_FLAGS      => 18;
 use constant EXECUTOR_END_TIME      => 21;
 use constant EXECUTOR_USER      => 22;
 use constant EXECUTOR_VARDIR => 27;
-use constant EXECUTOR_META_LAST_CHECK => 30;
-use constant EXECUTOR_META_LAST_LOAD_OK => 31;
-use constant EXECUTOR_META_RELOAD_INTERVAL => 32;
-use constant EXECUTOR_META_RELOAD_NOW => 33;
 use constant EXECUTOR_SERVICE_DBH => 34;
 use constant EXECUTOR_SILENT_ERRORS_COUNT => 35;
 use constant EXECUTOR_VARIATORS => 36;
 use constant EXECUTOR_VARIATOR_MANAGER => 37;
 use constant EXECUTOR_SEED => 38;
-use constant EXECUTOR_METADATA_RELOAD => 39;
 use constant EXECUTOR_SERVER => 40;
+use constant EXECUTOR_META_NONSYSTEM_CACHE => 42;
+use constant EXECUTOR_META_NONSYSTEM_TS => 43;
+use constant EXECUTOR_META_SYSTEM_CACHE => 44;
+use constant EXECUTOR_META_SYSTEM_TS => 45;
 
 use constant FETCH_METHOD_AUTO    => 0;
 use constant FETCH_METHOD_STORE_RESULT  => 1;
@@ -86,12 +85,6 @@ use constant FETCH_METHOD_USE_RESULT  => 2;
 use constant EXECUTOR_FLAG_SILENT  => 1;
 use constant EXECUTOR_FLAG_SKIP_STATS => 2;
 use constant EXECUTOR_FLAG_NON_EXISTING_ALLOWED => 4;
-
-use constant EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL => 60;
-
-# Values
-
-my %system_schema_cache;
 
 1;
 
@@ -110,11 +103,9 @@ sub new {
         'user' => EXECUTOR_USER,
         'vardir' => EXECUTOR_VARDIR,
         'variators' => EXECUTOR_VARIATORS,
-        'metadata_reload' => EXECUTOR_METADATA_RELOAD,
     }, @_);
 
     $executor->[EXECUTOR_FETCH_METHOD] = FETCH_METHOD_AUTO if not defined $executor->[EXECUTOR_FETCH_METHOD];
-    $executor->[EXECUTOR_META_RELOAD_NOW] = 0;
     $executor->[EXECUTOR_DSN] = $executor->server->dsn($executor->[EXECUTOR_USER]) if not defined $executor->[EXECUTOR_DSN] and defined $executor->server;
 
     if ($executor->[EXECUTOR_VARIATORS] && scalar(@{$executor->[EXECUTOR_VARIATORS]})) {
@@ -123,6 +114,7 @@ sub new {
       $executor->[EXECUTOR_VARIATOR_MANAGER]->initVariators($executor->[EXECUTOR_VARIATORS]);
     }
 
+    $executor->cacheMetaData();
     return $executor;
 }
 
@@ -156,26 +148,6 @@ sub newFromServer {
 
 sub server {
   return $_[0]->[EXECUTOR_SERVER];
-}
-
-sub setMetadataReloadInterval {
-  # Variate the interval a bit to avoid reloading in all threads at once
-  my $interval= $_[1] + $_[0]->connectionId() % 10;
-  if (not defined $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] or $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] >= $interval) {
-    say("Metadata interval set to $interval for executor ".$_[0]->[EXECUTOR_ID]);
-    $_[0]->[EXECUTOR_META_RELOAD_INTERVAL]= $interval;
-  } else {
-    sayWarning("Metadata interval $interval is ignored for executor ".$_[0]->[EXECUTOR_ID].", already set to ".$_[0]->[EXECUTOR_META_RELOAD_INTERVAL]);
-  }
-}
-
-sub forceMetadataReload {
-  sayDebug("Forcing metadata reload");
-  $_[0]->[EXECUTOR_META_RELOAD_NOW]= 1;
-}
-
-sub metadataReloadInterval {
-  return (defined $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] ? $_[0]->[EXECUTOR_META_RELOAD_INTERVAL] : EXECUTOR_DEFAULT_METADATA_RELOAD_INTERVAL);
 }
 
 sub variate_and_execute {
@@ -306,7 +278,7 @@ sub defaultSchema {
     my ($self, $schema) = @_;
     if (defined $schema and $self->[EXECUTOR_DEFAULT_SCHEMA] ne $schema) {
       $schema='information_schema' if lc($schema) eq 'information_schema';
-      say("Setting default schema to $schema");
+      sayDebug("Setting default schema to $schema");
         $self->[EXECUTOR_DEFAULT_SCHEMA] = $schema;
     }
     return $self->[EXECUTOR_DEFAULT_SCHEMA];
@@ -316,8 +288,8 @@ sub currentSchema {
     croak "FATAL ERROR: currentSchema not defined for ". (ref $_[0]);
 }
 
-sub getCollationMetaData {
-    carp "getCollationMetaData not defined for ". (ref $_[0]);
+sub loadCollations {
+    carp "loadCollations not defined for ". (ref $_[0]);
     return [[undef,undef]];
 }
 
@@ -329,92 +301,94 @@ sub getCollationMetaData {
 
 sub cacheMetaData {
   my $self= shift;
+  my ($collations, $non_system, $system);
+
+  my $vardir= $self->server->vardir;
 
   # Collation metadata is loaded only once
-  if (not $self->[EXECUTOR_COLLATION_METADATA]) {
-    my $meta= $self->getCollationMetaData();
-    if ($meta) {
+  unless (defined $self->[EXECUTOR_COLLATION_METADATA]) {
+    my @files= glob("$vardir/collations-*");
+    if (scalar(@files)) {
+      @files= reverse sort @files;
+      $collations= $self->loadCollations($files[0]);
+      if ($collations) {
+        my $coll= {};
+        foreach my $row (@$collations) {
+          my ($collation, $charset) = @$row;
+          $coll->{$collation} = $charset;
+        }
+        $self->[EXECUTOR_COLLATION_METADATA] = $coll;
+        say("Executor has loaded ".scalar(keys %$coll)." collations");
+      } else {
+        sayError("Executor failed to load collation metadata");
+      }
     } else {
-      sayError("Executor failed to load collation metadata");
-    }
-    my $coll= {};
-    foreach my $row (@$meta) {
-        my ($collation, $charset) = @$row;
-        $coll->{$collation} = $charset;
-    }
-    $self->[EXECUTOR_COLLATION_METADATA] = $coll;
-    sayDebug("Executor has loaded collation metadata");
-  }
-
-  my ($system_meta, $non_system_meta);
-
-  # System schema metadata is loaded only once
-  if (not exists $system_schema_cache{$self->server->dsn()}) {
-    $system_meta= $self->loadMetaData('system');
-    if ($system_meta and scalar(keys %$system_meta)) {
-      $system_schema_cache{$self->server->dsn()}= $system_meta;
-      sayDebug("Executor has loaded system metadata");
-    } else {
-      sayError("Executor failed to load system metadata");
+      sayWarning("Executor could not find a collation dump");
     }
   }
-
-  if ($self->[EXECUTOR_META_RELOAD_NOW]
-      or not defined $self->[EXECUTOR_META_LAST_CHECK] # Very first attempt
-      or (not $self->[EXECUTOR_META_LAST_LOAD_OK] and time() > $self->[EXECUTOR_META_LAST_CHECK] + int($self->metadataReloadInterval()/5)) # Last load failed
-      or ($self->[EXECUTOR_METADATA_RELOAD] and time() > $self->[EXECUTOR_META_LAST_CHECK] + $self->metadataReloadInterval()) # Reload interval exceeded
-  )
-  {
-    $self->[EXECUTOR_META_LAST_LOAD_OK]= 0;
-    # Non-system schema metadata is reloaded periodically
-    $non_system_meta= $self->loadMetaData('non-system');
-
-    if ($non_system_meta and scalar(%$non_system_meta)) {
-      sayDebug("Executor has (re-)loaded non-system metadata");
-      $self->[EXECUTOR_META_LAST_LOAD_OK]= 1;
-    } elsif ($non_system_meta) {
-      sayDebug("Executor has kept old non-system metadata");
-      $non_system_meta= undef;
-    } else {
-      sayWarning("Executor has not loaded non-system metadata");
+  my @files= glob("$vardir/system-tables-*");
+  if (scalar(@files)) {
+    @files= reverse sort @files;
+    if ($files[0] =~ /\/system-tables-([\d\.]+)/) {
+      my $ts= $1;
+      if (not defined $self->[EXECUTOR_META_SYSTEM_TS] or $self->[EXECUTOR_META_SYSTEM_TS] < $ts) {
+        $system= $self->loadMetaData($files[0]); # loadMetaData should search for -proc itself
+        if ($system) {
+          $self->[EXECUTOR_META_SYSTEM_TS]= $ts;
+          $self->[EXECUTOR_META_SYSTEM_CACHE]= $system;
+        } else {
+          sayError("Executor failed to load system metadata");
+        }
+      }
     }
-    $self->[EXECUTOR_META_LAST_CHECK]= time();
-    $self->[EXECUTOR_META_RELOAD_NOW] = 0;
+  } else {
+    sayWarning("Executor could not find a system metadata dump");
   }
 
-  my $all_meta;
-  # Possible situations:
-  # - system and non-system metadata was loaded, need to merge them and store
-  # - in a previous load system metadata was loaded, now non-system metadata is reloaded, need to merge them and store
-  # - in a previous load system metadata was loaded, now non-system metadata was not reloaded, need to keep things as is
-  # - in a previous load system metadata failed to load, but non-system metadata was loaded; now system metadata is loaded,
-  #   non-system is not, need to merge loaded system metadata with the old non-system metadata
-  # - non-system metadata was loaded, but system metadata never was, need to store non-system metadata only
+  my @files= glob("$vardir/nonsystem-tables-*");
+  if (scalar(@files)) {
+    @files= reverse sort @files;
+    if ($files[0] =~ /\/nonsystem-tables-([\d\.]+)/) {
+      my $ts= $1;
+      if (not defined $self->[EXECUTOR_META_NONSYSTEM_TS] or $self->[EXECUTOR_META_NONSYSTEM_TS] < $ts) {
+        $non_system= $self->loadMetaData($files[0]); # loadMetaData should search for -proc itself
+        if ($non_system) {
+          $self->[EXECUTOR_META_NONSYSTEM_TS]= $ts;
+          $self->[EXECUTOR_META_NONSYSTEM_CACHE]= $non_system;
+        } else {
+          sayError("Executor failed to load non-system metadata");
+        }
+      }
+    }
+  } else {
+    sayWarning("Executor could not find a non-system metadata dump");
+  }
 
-  if ($non_system_meta and $system_schema_cache{$self->server->dsn()}) {
-    $all_meta= { %{$system_schema_cache{$self->server->dsn()}} };
-    local $Data::Dumper::Maxdepth= 0;
-    foreach my $s (keys %$non_system_meta) {
-      $all_meta->{$s}= { %{$non_system_meta->{$s}} };
-    }
-    unless (defined $self->defaultSchema() and $self->defaultSchema() != '') {
-      $self->defaultSchema((sort keys %$non_system_meta)[0]) ;
-    }
-  } elsif ($system_meta and $self->[EXECUTOR_SCHEMA_METADATA]) {
-    $all_meta= { %{$self->[EXECUTOR_SCHEMA_METADATA]} };
-    foreach my $s (keys %$system_meta) {
-      $all_meta->{$s}= { %{$system_meta->{$s}} };
-    }
-    $self->[EXECUTOR_SCHEMA_METADATA]= $all_meta;
-  } elsif ($non_system_meta) {
-    $all_meta= { %$non_system_meta };
+  unless ($system || $non_system) {
+    sayDebug("Executor has not loaded either system- or non-system data, nothing to merge");
+    return;
+  }
+
+  # If at least one of system- and non-system data was loaded, we need
+  # to merge system- and non-system
+  
+  my $all_meta= { %{$self->[EXECUTOR_META_SYSTEM_CACHE]} };
+
+  foreach my $s (keys %{$self->[EXECUTOR_META_NONSYSTEM_CACHE]}) {
+    $all_meta->{$s}= { %{$self->[EXECUTOR_META_NONSYSTEM_CACHE]->{$s}} };
+  }
+  unless (defined $self->defaultSchema() and $self->defaultSchema() != '') {
+    $self->defaultSchema((sort keys %{$self->[EXECUTOR_META_NONSYSTEM_CACHE]})[0]) ;
   }
 
   if ($all_meta) {
     $self->[EXECUTOR_SCHEMA_METADATA]= $all_meta;
     $self->[EXECUTOR_META_CACHE] = {};
-    sayDebug("Executor has reloaded metadata");
+    sayDebug("Executor has updated metadata");
   }
+
+#  $Data::Dumper::Maxdepth= 0;
+#  print Dumper $self->[EXECUTOR_SCHEMA_METADATA];
 }
 
 sub systemSchemaPattern {
@@ -430,7 +404,7 @@ sub schemaHasTables {
 sub _collectSchemas {
     # user_or_system should be a constant 'USER_SCHEMAS' or 'SYSTEM_SCHEMAS'
     my ($self, $user_or_system, $non_empty)= @_;
-    $self->cacheMetaData();
+#    $self->cacheMetaData();
     if (not defined $self->[EXECUTOR_META_CACHE]->{$user_or_system}) {
         my $schemas = [sort keys %{$self->[EXECUTOR_SCHEMA_METADATA]}];
         if (not defined $schemas or $#$schemas < 0) {
@@ -476,7 +450,7 @@ sub metaSystemSchemas {
 # Tables, views, sequences, procedures, functions ...
 sub _collectShemaObjects {
     my ($self, $schema, $type) = @_;
-    $self->cacheMetaData();
+#    $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
 
     $schema = $self->defaultSchema if (not defined $schema) || ($schema eq '');
@@ -520,7 +494,7 @@ sub _collectShemaObjects {
         }
       }
       if ($#objects < 0) {
-        sayWarning "Haven't found any [ @keys ] objects for $schema schema(s)";
+        sayDebug("Haven't found any [ @keys ] objects for $schema schema(s)");
       }
       $self->[EXECUTOR_META_CACHE]->{$cachekey} = [ @objects ];
     }
@@ -622,11 +596,11 @@ sub _metaFindTable {
 #
 sub _collectTableObjects {
     my ($self, $tableref, $objtype, $datatype, $indextype, $not) = @_;
-    $self->cacheMetaData();
+#    $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
     my ($schema,$table)= @$tableref;
 
-    my $cachekey= "$objtype-$schema-$table";
+    my $cachekey= ( $not ? $objtype.'NOT' : $objtype ). "-$schema-$table";
     if ($datatype) {
       $cachekey.= "-$datatype";
     }
@@ -636,11 +610,15 @@ sub _collectTableObjects {
     my $objects= [];
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
       my $objref;
+      unless (defined $meta->{$schema}->{tables}->{$table}) {
+        sayWarning("Table/view `$schema`.`$table` does not exist in the cache");
+        return ['!non_existing_object'];
+      }
       if ($meta->{$schema}->{tables}->{$table}->{$objtype}) {
-          $objref = $meta->{$schema}->{tables}->{$table}->{$objtype};
+        $objref = $meta->{$schema}->{tables}->{$table}->{$objtype};
       }
       unless (defined $objref && scalar(keys %$objref)) {
-        sayWarning("In Table/view '$table' in schema '$schema' has no ".($objtype eq 'COL' ? 'columns' : 'indexes'));
+        sayWarning("Table/view `$schema`.`$table` has no ".($objtype eq 'COL' ? 'columns' : 'indexes'));
         return ['!non_existing_object'];
       }
       $objects= [ keys %$objref ];
@@ -743,7 +721,7 @@ sub metaCharactersets {
 
 sub metaColumnInfo {
     my ($self, $tableref) = @_;
-    $self->cacheMetaData();
+#    $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
     my ($schema, $table)= @$tableref;
 

@@ -43,8 +43,8 @@ commit_rollback:
   COMMIT | COMMIT | COMMIT | COMMIT | ROLLBACK ;
 
 transaction_body:
-  dml ; dml ; dml |
-  dml ; transaction_body ;
+  dml ;; dml ;; dml |
+  dml ;; transaction_body ;
 
 dml:
   select | select | select | select | select |

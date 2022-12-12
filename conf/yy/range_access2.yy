@@ -40,7 +40,7 @@
 ########################################################################
 
 query_init:
-  { _set_db('NON-SYSTEM') } alter_add ; alter_add ; alter_add ; alter_add ; alter_add ;
+  { _set_db('NON-SYSTEM') } alter_add ;; alter_add ;; alter_add ;; alter_add ;; alter_add ;
 
 query:
   { _set_db('NON-SYSTEM') } range_access2_query ;
@@ -62,7 +62,7 @@ alter_add:
   ALTER TABLE _table ADD KEY key1 ( index_list ) ;
 
 alter_drop_add:
-  ALTER TABLE _table DROP KEY key1 ; ALTER TABLE _table[invariant] ADD KEY key1 ( index_list ) ;
+  ALTER TABLE _table DROP KEY key1 ;; ALTER TABLE _table[invariant] ADD KEY key1 ( index_list ) ;
 
 distinct:
   | | DISTINCT ;

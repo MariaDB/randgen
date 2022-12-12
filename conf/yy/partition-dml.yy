@@ -94,7 +94,7 @@ update:
   int_update | char_update ;
 
 int_update:
- int_update_query ; int_select_count ;
+ int_update_query ;; int_select_count ;
 
 int_update_query:
   UPDATE _table[invariant] partition_pruning SET `col_int` = _digit[invariant] WHERE special_where_list ;
@@ -106,7 +106,7 @@ char_update:
   utf8_char_update | utf8_char_update2 | utf8_char_update3 ;
 
 utf8_char_update:
-  utf8_char_update_query ; utf8_char_select_count ;
+  utf8_char_update_query ;; utf8_char_select_count ;
 
 utf8_char_update_query:
   UPDATE _table[invariant] partition_pruning SET `col_varchar_32_utf8` = _char[invariant] WHERE special_where_list;
@@ -115,7 +115,7 @@ utf8_char_select_count:
   SELECT COUNT(*) FROM _table[invariant] partition_pruning WHERE `col_varchar_32_utf8` = _char[invariant];
 
 utf8_char_update2:
-  utf8_char_update_query2 ; utf8_char_select_count2 ;
+  utf8_char_update_query2 ;; utf8_char_select_count2 ;
 
 utf8_char_update_query2:
   UPDATE _table[invariant] partition_pruning SET `col_varchar_64_utf8` = _char[invariant] WHERE special_where_list;
@@ -124,7 +124,7 @@ utf8_char_select_count2:
   SELECT COUNT(*) FROM _table[invariant] partition_pruning WHERE `col_varchar_64_utf8` = _char[invariant];
 
 utf8_char_update3:
-  utf8_char_update_query3 ; utf8_char_select_count3 ;
+  utf8_char_update_query3 ;; utf8_char_select_count3 ;
 
 utf8_char_update_query3:
   UPDATE _table[invariant] partition_pruning SET `col_varchar_5_utf8` = _char[invariant] WHERE special_where_list;
@@ -136,7 +136,7 @@ delete:
   int_delete ;
 
 int_delete:
-  int_delete_query ; int_select_count ;
+  int_delete_query ;; int_select_count ;
 
 int_delete_query:
   DELETE FROM _table[invariant] partition_pruning WHERE `col_int` = _digit[invariant] AND special_where_list ;

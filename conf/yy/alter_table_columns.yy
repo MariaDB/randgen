@@ -16,7 +16,7 @@
 #include <conf/yy/include/basics.inc>
 
 query_init:
-  { $colnum=0; $executors->[0]->setMetadataReloadInterval(20 + $generator->threadId()); '' } ;
+  { $colnum=0; '' } ;
 
 query:
   { _set_db('NON-SYSTEM') } alttcol_query

@@ -66,15 +66,15 @@ loose_select_item:
 ################################################################################
 
 multi_store_data:
-    CREATE OR REPLACE TEMPORARY TABLE { 'multi_tmp1_'.abs($$) } AS SELECT * FROM _table { $tables{alias1} = [$last_database, $last_table] }
-    ;; CREATE OR REPLACE TEMPORARY TABLE { 'multi_tmp2_'.abs($$) } AS SELECT * FROM _table { $tables{alias2} = [$last_database, $last_table] }
+    CREATE OR REPLACE TEMPORARY TABLE { 'multi_tmp1_'.abs($$) } AS SELECT * FROM _table { $tables{alias1} = [$last_database, $last_table]; '' }
+    ;; CREATE OR REPLACE TEMPORARY TABLE { 'multi_tmp2_'.abs($$) } AS SELECT * FROM _table { $tables{alias2} = [$last_database, $last_table]; '' }
 ;
 
 multi_restore_data:
-    TRUNCATE { $tables{alias1}->[0].'.'$tables{alias1}->[1] }
-  ;; INSERT INTO { $tables{alias1}->[0].'.'$tables{alias1}->[1] } SELECT * FROM { 'multi_tmp1_'.abs($$) }
-  ;; TRUNCATE { $tables{alias2}->[0].'.'$tables{alias2}->[1] }
-  ;; INSERT INTO { $tables{alias2}->[0].'.'$tables{alias2}->[1] } SELECT * FROM { 'multi_tmp2_'.abs($$) }
+    TRUNCATE { $tables{alias1}->[0].'.'.$tables{alias1}->[1] }
+  ;; INSERT INTO { $tables{alias1}->[0].'.'.$tables{alias1}->[1] } SELECT * FROM { 'multi_tmp1_'.abs($$) }
+  ;; TRUNCATE { $tables{alias2}->[0].'.'.$tables{alias2}->[1] }
+  ;; INSERT INTO { $tables{alias2}->[0].'.'.$tables{alias2}->[1] } SELECT * FROM { 'multi_tmp2_'.abs($$) }
 ;
 
 multi_main_update:
@@ -841,17 +841,17 @@ aggregate_separator:
 # track of what we have added.  You shouldn't need to touch these ever
 ################################################################################
 new_table_item:
-   { $alias="alias".++$tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($work_database)) if not defined $tables{$alias}; $tables{$alias}->[0].'.'$tables{$alias}->[1] } AS { $alias } ;
+   { $alias="alias".++$tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($work_database)) if not defined $tables{$alias}; $tables{$alias}->[0].'.'.$tables{$alias}->[1] } AS { $alias } ;
 #  ( from_subquery ) AS { "alias".++$tables } ;
 
 from_subquery:
      { $subquery_idx += 1 ; $subquery_tables=0 ; $sq_ifields = 0; $sq_cfields = 0; ""}  SELECT distinct select_option subquery_table_one_two . * subquery_body  ;
 
 subquery_new_table_item:
-   { $alias="SQ".$subquery_idx."_alias".++$subquery_tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($work_database)) if not defined $tables{$alias}; $tables{$alias}->[0].'.'$tables{$alias}->[1] } AS { $alias } ;
+   { $alias="SQ".$subquery_idx."_alias".++$subquery_tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($work_database)) if not defined $tables{$alias}; $tables{$alias}->[0].'.'.$tables{$alias}->[1] } AS { $alias } ;
 
 child_subquery_new_table_item:
-   { $alias="C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($work_database)) if not defined $tables{$alias}; $tables{$alias}->[0].'.'$tables{$alias}->[1] } AS { $alias } ;
+   { $alias="C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables; $tables{$alias}=$prng->arrayElement($executors->[0]->metaTables($work_database)) if not defined $tables{$alias}; $tables{$alias}->[0].'.'.$tables{$alias}->[1] } AS { $alias } ;
 
 current_table_item:
   { $alias = "alias".$tables; ($last_database,$last_table)= @{$tables{$alias}}; $alias };

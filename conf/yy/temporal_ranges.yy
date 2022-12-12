@@ -46,7 +46,7 @@ alter_add:
   ALTER TABLE _table ADD KEY key1 ( index_list ) ;
 
 alter_drop_add:
-  ALTER TABLE _table DROP KEY key1 ; ALTER TABLE _table[invariant] ADD KEY key1 ( index_list ) ;
+  ALTER TABLE _table DROP KEY key1 ;; ALTER TABLE _table[invariant] ADD KEY key1 ( index_list ) ;
 
 distinct:
   | | DISTINCT ;

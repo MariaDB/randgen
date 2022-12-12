@@ -53,49 +53,52 @@ use GenTest::Result;
 use GenTest::Validator;
 use GenUtil;
 
-use constant GT_CONFIG => 0;
-use constant GT_CHANNEL => 5;
+use constant TR_CONFIG => 0;
+use constant TR_CHANNEL => 5;
 
-use constant GT_GRAMMARS => 6;
-use constant GT_GENERATOR => 7;
-use constant GT_REPORTER_MANAGER => 8;
-use constant GT_TEST_START => 9;
-use constant GT_TEST_END => 10;
-use constant GT_QUERY_FILTERS => 11;
-use constant GT_EXECUTORS => 12;
+use constant TR_GRAMMARS => 6;
+use constant TR_GENERATOR => 7;
+use constant TR_REPORTER_MANAGER => 8;
+use constant TR_TEST_START => 9;
+use constant TR_TEST_END => 10;
+use constant TR_QUERY_FILTERS => 11;
+use constant TR_EXECUTORS => 12;
+
+# In seconds
+use constant TR_META_RELOAD_INTERVAL => 20;
 
 sub new {
     my $class = shift;
 
     my $self = $class->SUPER::new({
-        'config' => GT_CONFIG},@_);
+        'config' => TR_CONFIG},@_);
 
     croak ("Need config") if not defined $self->config;
     return $self;
 }
 
 sub config {
-    return $_[0]->[GT_CONFIG];
+    return $_[0]->[TR_CONFIG];
 }
 
 sub grammars {
-    return $_[0]->[GT_GRAMMARS];
+    return $_[0]->[TR_GRAMMARS];
 }
 
 sub generator {
-    return $_[0]->[GT_GENERATOR];
+    return $_[0]->[TR_GENERATOR];
 }
 
 sub channel {
-    return $_[0]->[GT_CHANNEL];
+    return $_[0]->[TR_CHANNEL];
 }
 
 sub reporterManager {
-    return $_[0]->[GT_REPORTER_MANAGER];
+    return $_[0]->[TR_REPORTER_MANAGER];
 }
 
 sub queryFilters {
-    return $_[0]->[GT_QUERY_FILTERS];
+    return $_[0]->[TR_QUERY_FILTERS];
 }
 
 sub run {
@@ -111,13 +114,13 @@ sub run {
     say("-------------------------------\nConfiguration");
     $self->config->printProps;
 
-    $self->[GT_CHANNEL] = GenTest::IPC::Channel->new();
+    $self->[TR_CHANNEL] = GenTest::IPC::Channel->new();
 
     my $init_generator_result = $self->initGenerator();
     return $init_generator_result if $init_generator_result != STATUS_OK;
 
-    $self->[GT_TEST_START] = time();
-    $self->[GT_TEST_END] = $self->[GT_TEST_START] + $self->config->duration;
+    $self->[TR_TEST_START] = time();
+    $self->[TR_TEST_END] = $self->[TR_TEST_START] + $self->config->duration;
 
     my $init_reporters_result = $self->initReporters();
     return $init_reporters_result if $init_reporters_result != STATUS_OK;
@@ -130,7 +133,7 @@ sub run {
         foreach my $f (@{$self->config->filters}) {
             push @filters, GenTest::Filter::Regexp->new(file => $f);
         }
-        $self->[GT_QUERY_FILTERS]= \@filters;
+        $self->[TR_QUERY_FILTERS]= \@filters;
     }
 
     say("Starting ".$self->config->threads." processes, ".
@@ -145,8 +148,29 @@ sub run {
         $errorfilter_p->start($self->config->servers);
     }
 
-    ### Start worker children ###
+    ### Dump metadata before starting the working processes ###
+    #
+    # There are three stages of metadata dump/load
+    # 1. TestRunner triggers the dump before executors are started
+    #    (gendata has already been run or isn't going to be).
+    #    It's done synchronously. The server will produce the dump files
+    #    and then executors will load the metadata upon initialization
+    # 2. After executing the rule 0 (init rules) each executor will stop
+    #    and wait till the metadata is dumped again. When all executors
+    #    reach this stage, TestRunner will again trigger the dump
+    #    and when it is finished, will let the executors continue.
+    # 3. After that, TestRunner will start a background process which
+    #    will be dumping the data periodically, and executors are supposed
+    #    to pick it up automatically
 
+    # TODO: for now, always the 1st server will be used as a metadata source.
+    #       Further scenarios should be able to indicate which one to use.
+
+    # Stage 1 -- initial data collection
+    $self->config->server_specific->{1}->{server}->storeMetaData("all");
+
+    ### Start worker children ###
+    
     my %worker_pids;
 
     if ($self->config->threads > 0) {
@@ -156,6 +180,20 @@ sub run {
             Time::HiRes::sleep(0.1); # fork slowly for more predictability
         }
     }
+
+    # Stage 2 -- data collection after init rules
+    # each executor will create a flag after executing the first rule.
+    # The dumper will be waiting for all flags to be created
+    # We are dumping both non-system and system schemas, because init
+    # could install plugins etc.
+    $self->config->server_specific->{1}->{server}->storeMetaData("schemata",my $waiters=$self->config->threads);
+
+    # Now the executors are re-caching the data asynchronously, while
+    # Stage 3 starts -- a periodic dumper is created. It will be dumping
+    # only non-system schemata
+
+    my $metadata_pid= $self->metadataDumper();
+    $worker_pids{$metadata_pid}= 1;
 
     ### Main process
 
@@ -178,6 +216,7 @@ sub run {
 
         # Wait for processes to complete, i.e only processes spawned by workers & reporters.
         foreach my $spawned_pid (@spawned_pids) {
+            my $processtype= ($spawned_pid == $metadata_pid ? "metadata" : "worker");
             my $child_pid = waitpid($spawned_pid, WNOHANG);
             next if $child_pid == 0;
             my $child_exit_status = $? > 0 ? ($? >> 8) : 0;
@@ -185,10 +224,10 @@ sub run {
             $total_status = $child_exit_status if $child_exit_status > $total_status;
 
             if ($child_pid == -1) {
-                say("Process with pid $spawned_pid (worker) no longer exists");
+                say("Process with pid $spawned_pid ($processtype) no longer exists");
                 last OUTER;
             } else {
-                say("Process with pid $child_pid (worker) ended with status ".status2text($child_exit_status));
+                say("Process with pid $child_pid ($processtype) ended with status ".status2text($child_exit_status));
                 delete $worker_pids{$child_pid};
             }
 
@@ -205,7 +244,8 @@ sub run {
     }
 
     foreach my $worker_pid (keys %worker_pids) {
-        say("Killing remaining worker process with pid $worker_pid...");
+        my $processtype= ($worker_pid == $metadata_pid ? "metadata" : "worker");
+        say("Killing remaining $processtype process with pid $worker_pid...");
         kill(15, $worker_pid);
         foreach (1..5) {
             last unless kill(0, $worker_pid);
@@ -268,7 +308,7 @@ sub stopChild {
 
     say("GenTest: child $$ is being stopped with status " . status2text($status));
     # Stopping executors explicitly to hopefully trigger statistics output
-    foreach my $executor (@{$self->[GT_EXECUTORS]}) {
+    foreach my $executor (@{$self->[TR_EXECUTORS]}) {
         if ($executor) {
             $executor->disconnect;
             undef $executor;
@@ -280,6 +320,34 @@ sub stopChild {
     } else {
         safe_exit($status);
     }
+}
+
+sub metadataDumper {
+  my $self= shift;
+  my $metadata_pid= fork();
+  return $metadata_pid if ($metadata_pid != 0);
+
+  # We don't want to sleep the whole interval, it may be too long
+  # at the end of the test
+  my $wait= TR_META_RELOAD_INTERVAL;
+  # We will be reloading system data too, but not as often, only
+  # every $wait_cycles of non-system data reload
+  my $wait_cycles= 10;
+  # No point reloading in the last seconds
+  while (time() < $self->[TR_TEST_END] - int(TR_META_RELOAD_INTERVAL/10)) {
+    if ($wait == 0) {
+      $self->config->server_specific->{1}->{server}->storeMetaData("nonsystem");
+      $wait= TR_META_RELOAD_INTERVAL;
+      $wait_cycles--;
+      if ($wait_cycles == 0) {
+        $self->config->server_specific->{1}->{server}->storeMetaData("system");
+        $wait_cycles= 10;
+      }
+    }
+    sleep 1;
+    $wait--;
+  }
+  $self->stopChild(STATUS_OK);
 }
 
 sub workerProcess {
@@ -307,14 +375,13 @@ sub workerProcess {
           $so->{server},
           channel => (osWindows() ? undef : $self->channel()),
           id => $i,
-          metadata_reload => $self->config->metadata_reload,
           sqltrace => $self->config->sqltrace,
           vardir => $self->config->vardir,
           variators => $self->config->variators,
         );
         push @executors, $executor;
     }
-    $self->[GT_EXECUTORS] = \@executors;
+    $self->[TR_EXECUTORS] = \@executors;
 
     my $mixer = GenTest::Mixer->new(
         generator => $self->generator(),
@@ -322,7 +389,7 @@ sub workerProcess {
         validators => $self->config->validators,
         properties =>  $self->config,
         filters => $self->queryFilters(),
-        end_time => $self->[GT_TEST_END],
+        end_time => $self->[TR_TEST_END],
     );
 
     if (not defined $mixer) {
@@ -330,8 +397,25 @@ sub workerProcess {
         $self->stopChild(STATUS_ENVIRONMENT_FAILURE);
     }
 
-    my $worker_result = 0;
+    # Execute the very first query (e.g. init rules)
+    my $worker_result = $mixer->next();
+    if ($worker_result >= STATUS_CRITICAL_FAILURE) {
+      sayError("A critical failure (". status2text($worker_result) . ") occurred upon executing the first query");
+      undef $mixer;
+      $self->stopChild($worker_result);
+    } elsif ($worker_result < STATUS_TEST_FAILURE) {
+      $worker_result= STATUS_OK;
+    }
 
+    # If there was no critical failures, we are letting the dumper know
+    # that we are ready for data reload
+    open(FLAG,'>'.$self->config->server_specific->{1}->{server}->vardir.'/executor_'.$$.'_ready') && close(FLAG) || sayError("Could not create a waiting flag");
+    while (-e $self->config->server_specific->{1}->{server}->vardir.'/executor_'.$$.'_ready') {
+      sayDebug("Waiting for a new metadata dump after the first rule");
+      sleep 1;
+    }
+    $executors[0]->cacheMetaData();
+    my $last_metadata_reload= time();
     foreach my $i (1..$self->config->queries) {
         my $query_result = $mixer->next();
         $worker_result = $query_result if $query_result > $worker_result && $query_result > STATUS_TEST_FAILURE;
@@ -344,7 +428,11 @@ sub workerProcess {
 
         last if $query_result == STATUS_EOF;
 #        last if $ctrl_c == 1;
-        last if time() > $self->[GT_TEST_END];
+        last if time() > $self->[TR_TEST_END];
+        if (time() > $last_metadata_reload + int(TR_META_RELOAD_INTERVAL/2*3)) {
+          $executors[0]->cacheMetaData();
+          $last_metadata_reload= time();
+        }
     }
 
     foreach my $executor (@executors) {
@@ -354,7 +442,7 @@ sub workerProcess {
 
     # Forcefully deallocate the Mixer so that Validator destructors are called
     undef $mixer;
-    undef $self->[GT_QUERY_FILTERS];
+    undef $self->[TR_QUERY_FILTERS];
 
     if ($worker_result > 0) {
         say("GenTest: Child worker process completed with error code $worker_result.");
@@ -438,10 +526,10 @@ sub initGenerator {
         }
         push @grammars, $grammar;
       }
-      $self->[GT_GRAMMARS]= [ @grammars ];
+      $self->[TR_GRAMMARS]= [ @grammars ];
     }
 
-    $self->[GT_GENERATOR] = $generator_name->new(
+    $self->[TR_GENERATOR] = $generator_name->new(
       grammars => $self->grammars(),
       annotate_rules => $self->config->property('annotate-rules'),
       parser => $self->config->parser,
@@ -509,8 +597,8 @@ sub initReporters {
         foreach my $reporter (@{$self->config->reporters}) {
             my $add_result = $reporter_manager->addReporter($reporter, {
                 server => $so->{server},
-                test_start => $self->[GT_TEST_START],
-                test_end => $self->[GT_TEST_END],
+                test_start => $self->[TR_TEST_START],
+                test_end => $self->[TR_TEST_END],
                 test_duration => $self->config->duration,
                 properties => $self->config
             });
@@ -519,7 +607,7 @@ sub initReporters {
         }
     }
 
-    $self->[GT_REPORTER_MANAGER] = $reporter_manager;
+    $self->[TR_REPORTER_MANAGER] = $reporter_manager;
     return STATUS_OK;
 }
 

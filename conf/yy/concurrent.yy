@@ -38,11 +38,11 @@ query:
   { _set_db('NON-SYSTEM') } transaction;
 
 transaction:
-  START TRANSACTION ; query_list ; commit_rollback ;
+  START TRANSACTION ;; query_list ;; commit_rollback ;
 
 query_list:
   query_item |
-  query_item ; query_list ;
+  query_item ;; query_list ;
 
 query_item:
   insert | update | delete ;

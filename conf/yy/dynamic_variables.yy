@@ -25,7 +25,7 @@ query:
 
 dynvar_initial_settings:
   dynvar_global_setting /* initial setting */ |
-  ==FACTOR:10== dynvar_global_setting /* initial setting */ ; dynvar_initial_settings
+  ==FACTOR:10== dynvar_global_setting /* initial setting */ ;; dynvar_initial_settings
 ;
 
 dynvar_global_setting:

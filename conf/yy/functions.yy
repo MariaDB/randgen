@@ -27,7 +27,7 @@ func_query:
 ;
 
 func_create_and_drop:
-   CREATE __temporary(50) TABLE { 'test.tmp'.$tmp_table } AS func_select ; DROP TABLE IF EXISTS { 'test.tmp'.$tmp_table } ;
+   CREATE __temporary(50) TABLE { 'test.tmp'.$tmp_table } AS func_select ;; DROP TABLE IF EXISTS { 'test.tmp'.$tmp_table } ;
 
 func_select_or_explain_select:
    _basics_explain_analyze func_select;

@@ -130,7 +130,7 @@ perfschema_key_column_usage:
   ALTER TABLE _table DROP KEY _letter ;
 
 perfschema_parameters:
-  CREATE PROCEDURE __if_not_exists(80) _letter ( perfschema_procedure_parameter_list ) BEGIN SELECT COUNT(*) INTO @a FROM _table; END ; |
+  CREATE PROCEDURE __if_not_exists(80) _letter ( perfschema_procedure_parameter_list ) BEGIN SELECT COUNT(*) INTO @a FROM _table; END |
   DROP PROCEDURE __if_exists(80) _letter |
   CREATE FUNCTION __if_not_exists(80) _letter ( perfschema_function_parameter_list ) RETURNS INTEGER RETURN 1 |
   DROP FUNCTION __if_exists(80) _letter ;
@@ -160,7 +160,7 @@ perfschema_table_privileges:
   REVOKE ALL PRIVILEGES ON test . _letter FROM 'someuser'@'somehost' ;
 
 perfschema_triggers:
-  CREATE TRIGGER __if_not_exists(80) _letter BEFORE INSERT ON _table FOR EACH ROW BEGIN INSERT INTO _table SELECT * FROM _table LIMIT 0 ; END ; |
+  CREATE TRIGGER __if_not_exists(80) _letter BEFORE INSERT ON _table FOR EACH ROW BEGIN INSERT INTO _table SELECT * FROM _table LIMIT 0 ; END |
   DROP TRIGGER __if_exists(80) _letter;
 
 perfschema_user_privileges:
