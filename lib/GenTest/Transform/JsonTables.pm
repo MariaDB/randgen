@@ -438,9 +438,7 @@ sub json_table_to_append
       if (defined $replaced_aliases{$refalias}) {
         $jdoc= $refalias.'.col'.$self->random->uint16(1,$replaced_aliases{$refalias});
       } else {
-        my $reftable= $encountered_aliases{$refalias};
-        $reftable =~ s/`//g;
-        my $fields= $self->executor()->metaColumns($reftable);
+        my $fields= $self->executor()->metaColumns($encountered_aliases{$refalias});
         if ($fields and scalar(@$fields)) {
           $jdoc= $refalias.'.'.$self->random->arrayElement($fields);
         }
@@ -471,7 +469,11 @@ sub json_table_to_append
   }
   # Save the encountered alias for future references, regardless whether
   # replacement was performed or not
-  $encountered_aliases{$alias}= $table_name;
+  if ($table_name =~ /\`([^\`]+)\`\\s*.\s*\`([^\`]+)\`|(\w+)\s*\.\s*(\w+)/) {
+    $encountered_aliases{$alias}= [$1,$2];
+  } else {
+    $encountered_aliases{$alias}= [$self->executor->currentSchema(),$table_name];
+  }
   return $res;
 }
 

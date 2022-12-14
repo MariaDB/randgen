@@ -76,33 +76,6 @@ sub monitor {
   }
 }
 
-sub connect {
-  my $reporter= shift;
-  # We will use two handlers: a permanent one for monitoring the processes,
-  # and a temporary one for checking the ability to connect.
-  # The permanent one is coming from Reporter. This is the temporary one
-  my $dbh;
-  my $dsn = $reporter->server->dsn();
-
-  sigaction SIGALRM, new POSIX::SigAction sub {
-                sayError("Deadlock reporter: Timeout upon connecting to $dsn");
-                return STATUS_SERVER_DEADLOCKED;
-  } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
-  alarm (REPORTER_CONNECT_TIMEOUT_THRESHOLD);
-  # Due to MDEV-24998, connect here sometimes returns error 2013
-  # falsely indicating server crash. To avoid it, we will try twice before giving up
-  unless ($dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} )) {
-    sayWarning("Deadlock reporter: Error ".$DBI::err." upon connecting to $dsn. Trying again");
-    $dbh = DBI->connect($dsn, undef, undef, { mysql_connect_timeout => REPORTER_CONNECT_TIMEOUT_THRESHOLD * 2} );
-  }
-  alarm (0);
-  if (defined GenTest::Executor::MariaDB::errorType($DBI::err)) {
-    sayError("Deadlock reporter: Failed to connect to $dsn: ".$DBI::err);
-    return undef;
-  }
-  return $dbh;
-}
-
 sub monitor_nonthreaded {
   my $reporter = shift;
 
@@ -113,6 +86,10 @@ sub monitor_nonthreaded {
 
   alarm (REPORTER_CONNECT_TIMEOUT_THRESHOLD);
 
+  if (! $reporter->dbh) {
+    sayError((ref $reporter)." could not connect to the server");
+    return STATUS_SERVER_UNAVAILABLE;
+  }
   my $processlist = $reporter->dbh->selectall_arrayref("SHOW FULL PROCESSLIST");
   alarm (0);
 
@@ -139,8 +116,7 @@ sub monitor_nonthreaded {
 
   if ($stalled_queries >= STALLED_QUERY_COUNT_THRESHOLD or $dead_queries > 0) {
     sayError("Deadlock reporter: $stalled_queries stalled queries / $dead_queries dead queries detected, declaring deadlock");
-    $reporter->collect_deadlock_diagnostics();
-    return STATUS_SERVER_DEADLOCKED;
+    return $reporter->collect_deadlock_diagnostics();
   }
 
   # We also try to connect on every run in order to be able
@@ -149,7 +125,7 @@ sub monitor_nonthreaded {
     $connect_dbh->disconnect();
   } else {
     sayError("Deadlock reporter: Could not establish a new connection");
-    return STATUS_SERVER_DEADLOCKED;
+    return STATUS_SERVER_UNAVAILABLE;
   }
 
   return STATUS_OK;
@@ -157,14 +133,22 @@ sub monitor_nonthreaded {
 
 sub collect_deadlock_diagnostics {
   my $reporter= shift;
+  say("HERE: in collect 1");
   sigaction SIGALRM, new POSIX::SigAction sub {
               sayError("Deadlock reporter: Timeout upon performing deadlock diagnostics");
               return STATUS_SERVER_DEADLOCKED;
   } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
 
+  say("HERE: in collect 2");
   alarm(REPORTER_CONNECT_TIMEOUT_THRESHOLD);
+  say("HERE: in collect 3");
 
+  unless ($reporter->dbh) {
+    alarm(0);
+    return STATUS_SERVER_UNAVAILABLE;
+  }
   $reporter->dbh->do("INSTALL SONAME 'metadata_lock_info'");
+  say("HERE: in collect 4");
   foreach my $status_query (
     "SHOW FULL PROCESSLIST",
     "SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO",
@@ -176,6 +160,7 @@ sub collect_deadlock_diagnostics {
       print Dumper $status_result;
   }
   alarm(0);
+  return STATUS_SERVER_DEADLOCKED
 }
 
 sub monitor_threaded {

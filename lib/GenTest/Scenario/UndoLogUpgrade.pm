@@ -105,7 +105,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Old server failed to start");
-    return $self->finalize(STATUS_TEST_FAILURE,[]);
+    return $self->finalize(STATUS_SERVER_STARTUP_FAILURE,[]);
   }
 
   #####
@@ -115,7 +115,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return $self->finalize($status,[$old_server]);
   }
 
   #####
@@ -150,7 +150,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Test flow on the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return $self->finalize($status,[$old_server]);
   }
 
   #####
@@ -161,7 +161,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Could not kill the old server");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$old_server]);
   }
 
   waitpid($gentest_pid, 0);
@@ -178,7 +178,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Found fatal errors in the log, old server shutdown has apparently failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return $self->finalize(STATUS_ERRORS_IN_LOG,[$old_server]);
   }
 
   #####
@@ -198,7 +198,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Old server failed to restart with innodb-force-recovery");
-    return $self->finalize(STATUS_TEST_FAILURE,[]);
+    return $self->finalize(STATUS_SERVER_STARTUP_FAILURE,[]);
   }
 
   #####
@@ -212,7 +212,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Shutdown of the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$old_server]);
   }
 
   $self->restoreProperties();

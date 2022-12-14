@@ -363,7 +363,7 @@ sub run {
         $executor->execute("CREATE DATABASE IF NOT EXISTS $schema");
         # PS is a workaround for MENT-30190
         $executor->execute("EXECUTE IMMEDIATE CONCAT('GRANT ALL ON ".$schema.".* TO ',CURRENT_USER,' WITH GRANT OPTION')");
-        $executor->currentSchema($schema);
+        $executor->execute("USE $schema");
 
     foreach my $table_id (0..$#tables) {
         my $table = $tables[$table_id];
@@ -543,7 +543,7 @@ sub run {
         }
     }
 
-    $executor->currentSchema($schema_perms[0]);
+    $executor->execute("USE ".$schema_perms[0]);
     return STATUS_OK;
 }
 

@@ -183,7 +183,7 @@ sub collectAclData {
     $sth->execute;
     if ($sth->err() > 0) {
       sayError("Couldn't fetch grants for $u, error: ".$sth->err()." (".$sth->errstr().")");
-      $res= STATUS_TEST_FAILURE if $res < STATUS_TEST_FAILURE;
+      $res= STATUS_UNKNOWN_ERROR if $res < STATUS_UNKNOWN_ERROR;
     }
     else {
       my $def= $sth->fetchrow_arrayref;

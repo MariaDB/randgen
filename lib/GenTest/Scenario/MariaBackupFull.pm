@@ -72,7 +72,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server failed to start");
-    return $self->finalize(STATUS_TEST_FAILURE,[]);
+    return $self->finalize(STATUS_SERVER_STARTUP_FAILURE,[]);
   }
 
   #####
@@ -128,7 +128,7 @@ sub run {
             $test_flow_finished= 1;
             if ($status != STATUS_OK) {
               sayError("Test flow before the backup failed");
-              return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+              return $self->finalize($status,[$server]);
             } else {
                 say("Test flow finished, take the last backup now");
                 last;
@@ -195,7 +195,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
   }
 
   waitpid($gentest_pid, 0);
@@ -213,7 +213,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Found fatal errors in the log, server shutdown has apparently failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+    return $self->finalize(STATUS_ERRORS_IN_LOG,[$server]);
   }
 
 # If we have reached this far, backups and prepares succeeded,

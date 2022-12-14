@@ -56,13 +56,6 @@ use File::Compare;
 
 use DBServer::MariaDB;
 
-# True if the "old" and the "new" servers are the same ("restart" mode).
-# It will determine how we categorize errors before the restart:
-# if the server changes, then we are only really interested in the new one,
-# so all errors before that will be "TEST_FAILURE". If the server is
-# the same, then everything matters.
-my $same_server= 0;
-
 my ($status, $old_server, $new_server, $databases, $vardir, $old_grants);
 
 sub new {
@@ -181,7 +174,7 @@ sub run {
   } else {
       sayError("MariaBackup failed: $status");
       sayFile("$vardir/mbackup_backup.log");
-      return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+      return $self->finalize(STATUS_BACKUP_FAILURE,[$old_server]);
   }
 
   $self->printStep("Preparing backup");
@@ -204,7 +197,7 @@ sub run {
   } else {
     sayError("Backup preparing failed");
     sayFile("$vardir/mbackup_prepare.log");
-    return $self->finalize(STATUS_TEST_FAILURE,[$old_server]);
+    return $self->finalize(STATUS_BACKUP_FAILURE,[$old_server]);
   }
 
   #####
@@ -214,8 +207,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("ACL info collection from the old server failed");
-    $status= STATUS_TEST_FAILURE if $status < STATUS_TEST_FAILURE;
-    return $self->finalize($status,[$old_server]);
+    return $self->finalize(STATUS_BACKUP_FAILURE,[$old_server]);
   }
 
   #####
@@ -225,7 +217,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Shutdown of the old server failed");
-    return $self->finalize($status,[$old_server]);
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$old_server]);
   }
 
   #####
@@ -235,7 +227,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Found fatal errors in the log, old server shutdown has apparently failed");
-    return $self->finalize($status,[$old_server]);
+    return $self->finalize(STATUS_ERRORS_IN_LOG,[$old_server]);
   }
   # Back up data directory and error log from the old server
   system ('cp -r '.$old_server->datadir.' '.$old_server->datadir.'_orig');
@@ -302,7 +294,7 @@ LIVE_UPGRADE_END:
   $status= system($client_command.' < '.$vardir.'/all_db.dump');
   if ($status != STATUS_OK) {
     sayError("All databases' schema dump failed to load");
-    $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+    return $self->finalize($self->upgrade_or_recovery_failure(),[$new_server]);
     $status= $self->checkErrorLog($new_server);
     push @upgrade_errors, "DUMP upgrade failed: all databases' schema dump failed to load";
     goto DUMP_UPGRADE_END;
@@ -339,7 +331,7 @@ DUMP_UPGRADE_END:
   say($cmd);
   $status= system($cmd);
   if ($status != STATUS_OK) {
-    $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+    return $self->finalize($self->upgrade_or_recovery_failure(),[$new_server]);
     sayError("Backup failed to restore");
     sayFile("$vardir/mbackup_restore.log");
     push @upgrade_errors, "MARIABACKUP upgrade failed: backup failed to restore";
@@ -386,7 +378,7 @@ sub start_for_upgrade {
     # Error log might indicate known bugs which will affect the exit code
     $start_status= $self->checkErrorLog($new_server);
     # ... but even if it's a known error, we cannot proceed without the server
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    return $self->finalize($self->upgrade_or_recovery_failure(),[$new_server]);
   }
 
   return $start_status;
@@ -408,7 +400,7 @@ sub post_upgrade {
     $self->setStatus($post_upgrade_status);
     sayError("Found errors in the log after upgrade");
     if ($post_upgrade_status > STATUS_CUSTOM_OUTCOME) {
-      return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+      return $self->finalize($self->upgrade_or_recovery_failure(),[$new_server]);
     }
   }
 
@@ -425,7 +417,7 @@ sub post_upgrade {
     $post_upgrade_status= $new_server->upgradeDb;
     if ($post_upgrade_status != STATUS_OK) {
       sayError("mysql_upgrade failed");
-      return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+        return $self->finalize($self->upgrade_or_recovery_failure(),[$new_server]);
     }
   }
   else {
@@ -439,7 +431,7 @@ sub post_upgrade {
 
   if ($post_upgrade_status != STATUS_OK) {
     sayError("Database appears to be corrupt after $type upgrade");
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    return $self->finalize($self->upgrade_or_recovery_failure(),[$new_server]);
   }
 
   #####
@@ -459,8 +451,7 @@ sub post_upgrade {
 
   if ($post_upgrade_status != STATUS_OK) {
     sayError("ACL info collection from the new server after $type upgrade failed");
-    $post_upgrade_status= STATUS_TEST_FAILURE if $post_upgrade_status < STATUS_TEST_FAILURE;
-    return $self->finalize($post_upgrade_status,[$new_server]);
+    return $self->finalize($self->upgrade_or_recovery_failure(),[$new_server]);
   }
 
   #####
@@ -480,7 +471,7 @@ sub post_upgrade {
   if ($post_upgrade_status != STATUS_OK) {
     sayError("Database structures differ after $type upgrade");
     system('diff -a -u '.$vardir.'/server_schema_old.dump'.' '.$vardir.'/server_schema_'.$type.'_upgrade.dump');
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    return $self->finalize($self->upgrade_or_recovery_failure(),[$new_server]);
   }
   else {
     say("Structure dumps appear to be identical after $type upgrade");
@@ -490,7 +481,7 @@ sub post_upgrade {
   if ($post_upgrade_status != STATUS_OK) {
     sayError("Data differs after $type upgrade");
     system('diff -a -u '.$vardir.'/server_data_old.dump'.' '.$vardir.'/server_data_'.$type.'_upgrade.dump');
-    return ($same_server ? $self->finalize(STATUS_RECOVERY_FAILURE,[$new_server]) : $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]));
+    return $self->finalize($self->upgrade_or_recovery_failure(),[$new_server]);
   }
   else {
     say("Data dumps appear to be identical after $type upgrade");
@@ -503,8 +494,7 @@ sub post_upgrade {
 
   if ($post_upgrade_status != STATUS_OK) {
     sayError("ACL info collection or comparison after $type upgrade failed");
-    $post_upgrade_status= STATUS_TEST_FAILURE if $post_upgrade_status < STATUS_TEST_FAILURE;
-    return $self->finalize($post_upgrade_status,[$new_server]);
+    return $self->finalize($self->upgrade_or_recovery_failure(),[$new_server]);
   }
 
   return $post_upgrade_status;

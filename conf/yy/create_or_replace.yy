@@ -44,7 +44,7 @@ crea_table_definition:
 
 optional_partitioning:
   ==FACTOR:10== |
-  _basics_table_partitioning ;
+  { $partition_field = 'col'.$prng->uint16(1,$colnum); '' } _basics_table_partitioning ;
 
 crea_column_list:
   crea_column |

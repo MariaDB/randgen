@@ -120,6 +120,9 @@ _basics_column_autoincrement:
 _basics_column_specification:
   _basics_column_type _basics_column_attributes ;
 
+# Expects that $partition_field would be initialized by now
+# (either as a colum of the existing engine, for ALTER, or a newly created
+# one, for CREATE)
 _basics_table_partitioning:
   ==FACTOR:2== _basics_partition_by_hash_or_key |
                _basics_partition_by_value |
@@ -128,7 +131,7 @@ _basics_table_partitioning:
 ;
 
 _basics_partition_by_hash_or_key:
-  PARTITION BY __hash_x_key ( _field_indexed ) ;
+  PARTITION BY __hash_x_key ( { $partition_field } ) ;
 
 # TODO: add
 _basics_partition_by_value:

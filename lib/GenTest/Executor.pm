@@ -36,6 +36,7 @@ require Exporter;
   EXECUTOR_FLAG_SILENT
   EXECUTOR_FLAG_SKIP_STATS
   EXECUTOR_FLAG_NON_EXISTING_ALLOWED
+  EXECUTOR_CURRENT_SCHEMA
 );
 
 use strict;
@@ -64,6 +65,7 @@ use constant EXECUTOR_NO_ERR_FILTER             => 15;
 use constant EXECUTOR_FETCH_METHOD    => 16;
 use constant EXECUTOR_CONNECTION_ID    => 17;
 use constant EXECUTOR_FLAGS      => 18;
+use constant EXECUTOR_CURRENT_SCHEMA => 19;
 use constant EXECUTOR_END_TIME      => 21;
 use constant EXECUTOR_USER      => 22;
 use constant EXECUTOR_VARDIR => 27;
@@ -114,7 +116,6 @@ sub new {
       $executor->[EXECUTOR_VARIATOR_MANAGER]->initVariators($executor->[EXECUTOR_VARIATORS]);
     }
 
-    $executor->cacheMetaData();
     return $executor;
 }
 
@@ -598,6 +599,7 @@ sub _collectTableObjects {
     my ($self, $tableref, $objtype, $datatype, $indextype, $not) = @_;
 #    $self->cacheMetaData();
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
+    if (ref $tableref ne 'ARRAY') { confess() };
     my ($schema,$table)= @$tableref;
 
     my $cachekey= ( $not ? $objtype.'NOT' : $objtype ). "-$schema-$table";

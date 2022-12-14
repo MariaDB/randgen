@@ -24,10 +24,7 @@
 #features Aria tables
 
 query_init:
-    SET SQL_MODE=REPLACE(REPLACE(@@SQL_MODE,'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')
-  ;; { _set_db('test') } create
-  ;; SET SQL_MODE=DEFAULT
-;
+  { _set_db('NON-SYSTEM') } create ;
 
 query:
                   { _set_db('ANY') } dml |

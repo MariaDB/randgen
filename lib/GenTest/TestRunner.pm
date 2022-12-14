@@ -148,6 +148,8 @@ sub run {
         $errorfilter_p->start($self->config->servers);
     }
 
+    my $total_status = STATUS_OK;
+
     ### Dump metadata before starting the working processes ###
     #
     # There are three stages of metadata dump/load
@@ -167,7 +169,13 @@ sub run {
     #       Further scenarios should be able to indicate which one to use.
 
     # Stage 1 -- initial data collection
-    $self->config->server_specific->{1}->{server}->storeMetaData("all");
+    
+    $total_status= $self->config->server_specific->{1}->{server}->storeMetaData("all",my $maxtime=$self->[TR_TEST_END]-time());
+    unless ($total_status == STATUS_OK) {
+      sayError("Initial metadata dump failed, cannot continue");
+      $total_status= STATUS_ENVIRONMENT_FAILURE;
+      goto TESTEND;
+    }
 
     ### Start worker children ###
     
@@ -186,7 +194,12 @@ sub run {
     # The dumper will be waiting for all flags to be created
     # We are dumping both non-system and system schemas, because init
     # could install plugins etc.
-    $self->config->server_specific->{1}->{server}->storeMetaData("schemata",my $waiters=$self->config->threads);
+    $total_status= $self->config->server_specific->{1}->{server}->storeMetaData("schemata", my $maxtime=$self->[TR_TEST_END]-time(), my $waiters=$self->config->threads);
+    unless ($total_status == STATUS_OK) {
+      sayError("Metadata dump after the 1st rule failed, terminating the test");
+      $total_status= STATUS_ENVIRONMENT_FAILURE;
+      goto WORKEND;
+    }
 
     # Now the executors are re-caching the data asynchronously, while
     # Stage 3 starts -- a periodic dumper is created. It will be dumping
@@ -204,7 +217,6 @@ sub run {
     }
 
     # We are the parent process, wait for for all spawned processes to terminate
-    my $total_status = STATUS_OK;
     my $reporter_status = STATUS_OK;
 
     ## Parent thread does not use channel
@@ -239,10 +251,14 @@ sub run {
         if ($reporter_status >= STATUS_CRITICAL_FAILURE) {
           sayError("Reporters returned a critical failure, aborting");
           last;
+        } elsif ($reporter_status == STATUS_TEST_STOPPED) {
+          say("Reporters indicated that the test has been stopped");
+          last;
         }
         sleep 10;
     }
 
+  WORKEND:
     foreach my $worker_pid (keys %worker_pids) {
         my $processtype= ($worker_pid == $metadata_pid ? "metadata" : "worker");
         say("Killing remaining $processtype process with pid $worker_pid...");
@@ -256,10 +272,11 @@ sub run {
         }
     }
 
+  TESTEND:
     $errorfilter_p->kill();
 
     my $gentest_result= $self->reportResults($total_status);
-    say("GenTest will exit with exit status ".status2text($gentest_result)." ($gentest_result)");
+    say("TestRunner will exit with exit status ".status2text($gentest_result)." ($gentest_result)");
     return $gentest_result;
 
 }
@@ -284,7 +301,7 @@ sub reportResults {
     } elsif ($total_status == STATUS_SERVER_DEADLOCKED) {
         say("Server deadlock reported, initiating analysis...");
         @report_results = $reporter_manager->report(REPORTER_TYPE_DEADLOCK | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
-    } elsif ($total_status == STATUS_SERVER_KILLED) {
+    } elsif ($total_status == STATUS_SERVER_STOPPED) {
         $total_status = STATUS_OK;
         @report_results = $reporter_manager->report(REPORTER_TYPE_SERVER_KILLED | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
     } else {
@@ -336,11 +353,11 @@ sub metadataDumper {
   # No point reloading in the last seconds
   while (time() < $self->[TR_TEST_END] - int(TR_META_RELOAD_INTERVAL/10)) {
     if ($wait == 0) {
-      $self->config->server_specific->{1}->{server}->storeMetaData("nonsystem");
+      $self->config->server_specific->{1}->{server}->storeMetaData("nonsystem", my $maxtime=$self->[TR_TEST_END]-time());
       $wait= TR_META_RELOAD_INTERVAL;
       $wait_cycles--;
       if ($wait_cycles == 0) {
-        $self->config->server_specific->{1}->{server}->storeMetaData("system");
+        $self->config->server_specific->{1}->{server}->storeMetaData("system", my $maxtime=$self->[TR_TEST_END]-time());
         $wait_cycles= 10;
       }
     }
@@ -379,6 +396,7 @@ sub workerProcess {
           vardir => $self->config->vardir,
           variators => $self->config->variators,
         );
+        $executor->cacheMetaData();
         push @executors, $executor;
     }
     $self->[TR_EXECUTORS] = \@executors;
@@ -396,6 +414,9 @@ sub workerProcess {
         sayError("GenTest failed to create a Mixer, status will be set to ENVIRONMENT_FAILURE");
         $self->stopChild(STATUS_ENVIRONMENT_FAILURE);
     }
+
+    # Cache metadata before the first rule (after gendata if it was configured)
+    $executors[0]->cacheMetaData();
 
     # Execute the very first query (e.g. init rules)
     my $worker_result = $mixer->next();
@@ -421,12 +442,12 @@ sub workerProcess {
         $worker_result = $query_result if $query_result > $worker_result && $query_result > STATUS_TEST_FAILURE;
 
         if ($query_result >= STATUS_CRITICAL_FAILURE) {
-        say("GenTest: Server crash or critical failure (". status2text($query_result) . ") reported, the child will be stopped");
+        say("TestRunner: Server crash or critical failure (". status2text($query_result) . ") reported, the child will be stopped");
             undef $mixer;  # so that destructors are called
             $self->stopChild($query_result);
         }
 
-        last if $query_result == STATUS_EOF;
+        last if $query_result == STATUS_TEST_STOPPED;
 #        last if $ctrl_c == 1;
         last if time() > $self->[TR_TEST_END];
         if (time() > $last_metadata_reload + int(TR_META_RELOAD_INTERVAL/2*3)) {
@@ -445,10 +466,10 @@ sub workerProcess {
     undef $self->[TR_QUERY_FILTERS];
 
     if ($worker_result > 0) {
-        say("GenTest: Child worker process completed with error code $worker_result.");
+        say("TestRunner: Child worker process completed with error code $worker_result.");
         $self->stopChild($worker_result);
     } else {
-        sayDebug("GenTest: Child worker process completed successfully.");
+        sayDebug("TestRunner: Child worker process completed successfully.");
         $self->stopChild(STATUS_OK);
     }
 }

@@ -1350,11 +1350,11 @@ sub plannedDowntime {
     }
   }
   if ($downtime > 0) {
-    say("Planned downtime, wait for $downtime seconds");
+    say("Server says: planned downtime, wait for $downtime seconds");
   } elsif ($downtime < 0) {
-    say("Planned downtime, don't wait");
+    say("Server says: planned downtime, don't wait");
   } else {
-    sayWarning("The downtime isn't planned");
+    sayWarning("Server says: the downtime isn't planned");
   }
   return $downtime;
 }
@@ -1566,6 +1566,8 @@ sub dbh {
       }
     } else {
       sayError("(Re)connect to ".$self->[MYSQLD_PORT]." failed due to ".$DBI::err.": ".$DBI::errstr);
+      # HERE:
+#      confess();
     }
   }
   return $dbh;
@@ -1740,42 +1742,71 @@ sub storeMetaData {
 # nonsystem-tables.<timestamp>
 # nonsystem-proc.<timestamp>
 
-  my ($self, $metadata_type, $wait_for_threads)= @_;
+  my ($self, $metadata_type, $maxtime, $wait_for_threads)= @_;
 
   my $vardir= $self->vardir;
   my @waiters= ();
+  my $status= DBSTATUS_OK;
 
-  while (scalar(@waiters) < $wait_for_threads) {
-    sayDebug("Waiting for $wait_for_threads executors to get ready for new metadata, so far found ".scalar(@waiters));
+  unless ($maxtime) {
+    sayError("Max time for metadata dump must be defined, cannot wait forever");
+    $status= DBSTATUS_FAILURE;
+    goto METAERR;
+  }
+  my $end_time= time()+$maxtime;
+
+  while (time() < $end_time && scalar(@waiters) < $wait_for_threads) {
+    sayDebug("Waiting for $wait_for_threads executors to get ready for new metadata dump, so far found ".scalar(@waiters).", ".($end_time-time())." sec left");
     sleep 1;
     @waiters= glob("$vardir/executor_*_ready");
   };
+
+  if (time() >= $end_time) {
+    sayError("Not enough time to do the metadata dump");
+    $status= DBSTATUS_FAILURE;
+    goto METAERR;
+  }
 
   unless (defined $self->[MYSQLD_METADATA_DBH] && $self->[MYSQLD_METADATA_DBH]->ping) {
     $self->[MYSQLD_METADATA_DBH]= $self->dbh(my $admin=1, my $new= 1);
   }
   my $dbh= $self->[MYSQLD_METADATA_DBH];
+  unless ($dbh) {
+    sayError("Metadata dumper could not establish connection");
+    $status= DBSTATUS_FAILURE;
+    goto METAERR;
+  }
 
   my @files= ();
 
-  sayDebug("Starting dumping $metadata_type metadata");
+  my $timeout= $end_time - time();
+  say("Starting dumping $metadata_type metadata with $timeout sec timeout".($wait_for_threads ? ", for $wait_for_threads waiters" : ""));
+
+  # If executors are waiting, we should produce the result regardless the timeout
+  my $statement_time= "SET STATEMENT max_statement_time=$timeout FOR";
 
   if ($metadata_type eq 'all' or $metadata_type eq 'collations') {
     push @files, "$vardir/collations";
-    $dbh->do("SELECT collation_name,character_set_name ".
-            "INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-            "FROM information_schema.collations");
-    if ($dbh->err) {
-      sayError("Collations dump failed: ".$dbh->err.": ".$dbh->errstr);
-      unlink @files;
-      return DBSTATUS_FAILURE;
+    if ($dbh) {
+      $dbh->do("$statement_time SELECT collation_name,character_set_name ".
+              "INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+              "FROM information_schema.collations");
+      if ($dbh->err) {
+        sayError("Collations dump failed: ".$dbh->err.": ".$dbh->errstr);
+        $status= DBSTATUS_FAILURE;
+        goto METAERR;
+      }
+    } else {
+      sayError("Metadata dumper lost connection to the server");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
     }
   }
 
   if ($metadata_type ne 'collations')
   {
     my $table_query_p1=
-        "SELECT s.schema_name, tt.table_name, tt.table_type, ".
+        "$statement_time SELECT s.schema_name, tt.table_name, tt.table_type, ".
         "       tc.column_name, tc.column_key, tc.data_type, tc.character_maximum_length, ".
         "       ts.index_name, ts.non_unique XOR 1 ";
     my $table_query_p2=
@@ -1783,7 +1814,7 @@ sub storeMetaData {
         "LEFT JOIN information_schema.tables tt ON (s.schema_name = tt.table_schema)".
         "JOIN information_schema.columns tc USING (table_schema, table_name) ".
         "LEFT JOIN information_schema.statistics ts USING (table_schema, table_name, column_name)";
-    my $proc_query_p1= "SELECT db, name, type";
+    my $proc_query_p1= "$statement_time SELECT db, name, type";
     my $proc_query_p2= "FROM mysql.proc";
 
     my $system_schemata= $self->systemSchemaList();
@@ -1791,48 +1822,84 @@ sub storeMetaData {
 
     if ($metadata_type ne 'nonsystem') {
       push @files, "$vardir/system-tables";
-      $dbh->do(
-        $table_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-        $table_query_p2." WHERE table_schema IN ($system_schemata)"
-      );
-      if ($dbh->err) {
-        sayError("System table dump failed: ".$dbh->err.": ".$dbh->errstr);
-        unlink @files;
-        return DBSTATUS_FAILURE;
+      unlink $files[$#files];
+      if ($dbh) {
+        $dbh->do(
+          $table_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+          $table_query_p2." WHERE table_schema IN ($system_schemata)"
+        );
+        if ($dbh->err) {
+          sayError("System table dump failed: ".$dbh->err.": ".$dbh->errstr);
+          $status= DBSTATUS_FAILURE;
+          goto METAERR;
+        }
+      } else {
+        sayError("Metadata dumper lost connection to the server");
+        $status= DBSTATUS_FAILURE;
+        goto METAERR;
       }
+
       push @files, "$vardir/system-proc";
-      $dbh->do(
-        $proc_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-        $proc_query_p2." WHERE db IN ($system_schemata)"
-      );
-      if ($dbh->err) {
-        sayError("System proc dump failed: ".$dbh->err.": ".$dbh->errstr);
-        unlink @files;
-        return DBSTATUS_FAILURE;
+      unlink $files[$#files];
+      if ($dbh) {
+        $dbh->do(
+          $proc_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+          $proc_query_p2." WHERE db IN ($system_schemata)"
+        );
+        if ($dbh->err) {
+          sayError("System proc dump failed: ".$dbh->err.": ".$dbh->errstr);
+          $status= DBSTATUS_FAILURE;
+          goto METAERR;
+        }
+      } else {
+        sayError("Metadata dumper lost connection to the server");
+        $status= DBSTATUS_FAILURE;
+        goto METAERR;
       }
     }
     if ($metadata_type ne 'system') {
       push @files, "$vardir/nonsystem-tables";
-      $dbh->do(
-        $table_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-        $table_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)"
-      );
-      if ($dbh->err) {
-        sayError("Non-system table dump failed: ".$dbh->err.": ".$dbh->errstr);
-        unlink @files;
-        return DBSTATUS_FAILURE;
+      unlink $files[$#files];
+      if ($dbh) {
+        $dbh->do(
+          $table_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+          $table_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)"
+        );
+        if ($dbh->err) {
+          sayError("Non-system table dump failed: ".$dbh->err.": ".$dbh->errstr);
+          $status= DBSTATUS_FAILURE;
+          goto METAERR;
+        }
+      } else {
+        sayError("Metadata dumper lost connection to the server");
+        $status= DBSTATUS_FAILURE;
+        goto METAERR;
       }
+
       push @files, "$vardir/nonsystem-proc";
-      $dbh->do(
-        $proc_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-        $proc_query_p2." WHERE db NOT IN ($system_schemata,$exempt_schemata)"
-      );
-      if ($dbh->err) {
-        sayError("Non-system proc dump failed: ".$dbh->err.": ".$dbh->errstr);
-        unlink @files;
-        return DBSTATUS_FAILURE;
+      unlink $files[$#files];
+      if ($dbh) {
+        $dbh->do(
+          $proc_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+          $proc_query_p2." WHERE db NOT IN ($system_schemata,$exempt_schemata)"
+        );
+        if ($dbh->err) {
+          sayError("Non-system proc dump failed: ".$dbh->err.": ".$dbh->errstr);
+          $status= DBSTATUS_FAILURE;
+          goto METAERR;
+        }
+      } else {
+        sayError("Metadata dumper lost connection to the server");
+        $status= DBSTATUS_FAILURE;
+        goto METAERR;
       }
     }
+  }
+
+  METAERR:
+  if ($status != DBSTATUS_OK) {
+    unlink @files, @waiters;
+    return $status;
   }
 
   my $ts= Time::HiRes::time();
@@ -1840,8 +1907,8 @@ sub storeMetaData {
     my @prev= glob("$f-*");
     unlink @prev;
     move($f,$f."-$ts");
-    unlink @waiters;
   }
-  sayDebug("Finished dumping $metadata_type metadata");
+  unlink @waiters;
+  say("Finished dumping $metadata_type metadata".($wait_for_threads ? " for $wait_for_threads waiters" : ""));
   return DBSTATUS_OK;
 }

@@ -143,7 +143,7 @@ sub validate {
         $no_traces_count++;
         say("ERROR: $thisFile was unable to obtain optimizer trace for query $orig_query");
         #return STATUS_LENGTH_MISMATCH;
-        return STATUS_TEST_FAILURE;
+        return STATUS_UNKNOWN_ERROR;
     }
 
     if ($trace_result->rows() != 1) {

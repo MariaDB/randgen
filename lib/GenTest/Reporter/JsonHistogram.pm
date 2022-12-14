@@ -58,7 +58,7 @@ sub monitor {
   unless ($dbh) {
     $dbh = $reporter->dbh;
     unless ($dbh) {
-      sayError("JsonHistogram: reporter could not connect to the server. Status will be set to STATUS_INTERNAL_ERROR");
+      sayError("JsonHistogram: reporter could not connect to the server");
       return undef;
     }
   }
@@ -88,7 +88,7 @@ sub monitor {
           $res= STATUS_DATABASE_CORRUPTION;
         } else {
           sayError("JsonHistogram: Got an unexpected result of JSON_VALID(histogram): $jc->[4]");
-          $res= STATUS_TEST_FAILURE;
+          $res= STATUS_DATABASE_CORRUPTION;
         }
       }
       sayDebug("JsonHistogram: Checked ".($valid_count + $invalid_count + $null_count)." histograms. Valid: $valid_count, NULLs: $null_count, invalid: $invalid_count");

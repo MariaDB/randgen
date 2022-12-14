@@ -29,39 +29,31 @@ require Exporter;
   STATUS_OK
   STATUS_INTERNAL_ERROR
   STATUS_UNKNOWN_ERROR
-  STATUS_ANY_ERROR
-
-  STATUS_EOF
+  STATUS_SERVER_STOPPED
+  STATUS_TEST_STOPPED
   STATUS_ENVIRONMENT_FAILURE
   STATUS_PERL_FAILURE
-
   STATUS_CUSTOM_OUTCOME
-
   STATUS_WONT_HANDLE
   STATUS_SKIP
   STATUS_IGNORED_ERROR
-
-    STATUS_UNSUPPORTED
+  STATUS_UNSUPPORTED
   STATUS_SYNTAX_ERROR
   STATUS_SEMANTIC_ERROR
   STATUS_RUNTIME_ERROR
   STATUS_CONTEXT_ERROR
-    STATUS_ACL_ERROR
-    STATUS_CONFIGURATION_ERROR
-
+  STATUS_ACL_ERROR
+  STATUS_CONFIGURATION_ERROR
   STATUS_TEST_FAILURE
-
   STATUS_REQUIREMENT_UNMET
   STATUS_ERROR_MISMATCH
   STATUS_LENGTH_MISMATCH
   STATUS_CONTENT_MISMATCH
-
   STATUS_POSSIBLE_FAILURE
-
+  STATUS_ERRORS_IN_LOG
   STATUS_CRITICAL_FAILURE
-    STATUS_SERVER_UNAVAILABLE
+  STATUS_SERVER_UNAVAILABLE
   STATUS_SERVER_CRASHED
-  STATUS_SERVER_KILLED
   STATUS_REPLICATION_FAILURE
   STATUS_BACKUP_FAILURE
   STATUS_RECOVERY_FAILURE
@@ -70,14 +62,12 @@ require Exporter;
   STATUS_SERVER_DEADLOCKED
   STATUS_SERVER_SHUTDOWN_FAILURE
   STATUS_VALGRIND_FAILURE
+  STATUS_SERVER_STARTUP_FAILURE
   STATUS_ALARM
-
-  ORACLE_ISSUE_STILL_REPEATABLE
-  ORACLE_ISSUE_NO_LONGER_REPEATABLE
-  ORACLE_ISSUE_STATUS_UNKNOWN
 
   constant2text
   status2text
+  serverGone
 );
 
 use strict;
@@ -86,9 +76,9 @@ use constant STATUS_OK                       =>  0; ## Suitable for exit code
 
 use constant STATUS_INTERNAL_ERROR           =>  1;   # Apparently seen with certain Perl coding errors; check RQG log carefully for exact error
 use constant STATUS_UNKNOWN_ERROR            =>  2;
-use constant STATUS_ANY_ERROR                =>  3; # Used in util/simplify* to not differentiate based on error code
 
-use constant STATUS_EOF                      =>  4; # A module requested that the test is terminated without failure
+use constant STATUS_SERVER_STOPPED            => 3; # Willfull killing of the server, will not be reported as a crash
+use constant STATUS_TEST_STOPPED             =>  4; # A module requested that the test is terminated without failure
 
 use constant STATUS_WONT_HANDLE              =>  5; # A module, e.g. a Validator refuses to handle certain query
 use constant STATUS_SKIP                     =>  6; # A Filter specifies that the query should not be processed further
@@ -117,6 +107,7 @@ use constant STATUS_CONTENT_MISMATCH         => 43;
 
 use constant STATUS_CUSTOM_OUTCOME           => 50; # Used for things such as signaling an EXPLAIN hit from the ExplainMatch Validator
 use constant STATUS_POSSIBLE_FAILURE         => 60;
+use constant STATUS_ERRORS_IN_LOG            => 70; # Set errors are found in the error log (other than ignorable ones)
 
 use constant STATUS_SERVER_SHUTDOWN_FAILURE  => 90;
 use constant STATUS_DATABASE_CORRUPTION      => 96; # Database corruption errors are often bogus, but still important to look at
@@ -125,7 +116,6 @@ use constant STATUS_CRITICAL_FAILURE         => 100; # Boundary between critical
 
 # Critical errors cause premature test termination
 
-use constant STATUS_SERVER_KILLED            => 101; # Willfull killing of the server, will not be reported as a crash
 use constant STATUS_SERVER_UNAVAILABLE       => 102; # Cannot connect to the server without a known reason
 use constant STATUS_SERVER_DEADLOCKED        => 103;
 use constant STATUS_REPLICATION_FAILURE      => 104;
@@ -134,14 +124,11 @@ use constant STATUS_RECOVERY_FAILURE         => 106;
 use constant STATUS_BACKUP_FAILURE           => 107;
 use constant STATUS_SERVER_CRASHED           => 108;
 use constant STATUS_VALGRIND_FAILURE         => 109;
-use constant STATUS_ENVIRONMENT_FAILURE      => 110; # A failure in the environment or the grammar file
-use constant STATUS_ALARM                    => 111; # A module, e.g. a Reporter, raises an alarm with critical severity
+use constant STATUS_SERVER_STARTUP_FAILURE   => 110;
+use constant STATUS_ENVIRONMENT_FAILURE      => 111; # A failure in the environment or the grammar file
+use constant STATUS_ALARM                    => 112; # A module, e.g. a Reporter, raises an alarm with critical severity
 
 use constant STATUS_PERL_FAILURE             => 255; # Perl died for some reason
-
-use constant ORACLE_ISSUE_STILL_REPEATABLE  => 2;
-use constant ORACLE_ISSUE_NO_LONGER_REPEATABLE  => 3;
-use constant ORACLE_ISSUE_STATUS_UNKNOWN  => 4;
 
 #
 # The part below deals with constant value to constant name conversions
@@ -172,6 +159,14 @@ sub constant2text {
 
 sub status2text {
   return constant2text($_[0], 'STATUS_');
+}
+
+# Collection of status values meaning that the server disappeared
+sub serverGone {
+  my $status= shift;
+  return $status == STATUS_SERVER_CRASHED
+      || $status == STATUS_SERVER_STOPPED
+      || $status == STATUS_SERVER_UNAVAILABLE;
 }
 
 1;

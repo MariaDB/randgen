@@ -80,7 +80,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+    return $self->finalize($status,[$server]);
   }
 
   #####
@@ -146,7 +146,7 @@ sub run {
 
     if ($status != STATUS_OK) {
       sayError("Found fatal errors in the log, server shutdown has apparently failed");
-      return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+      return $self->finalize(STATUS_DATABASE_CORRUPTION,[$server]);
     }
 
     #####
@@ -193,7 +193,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
-    return $self->finalize(STATUS_TEST_FAILURE,[$server]);
+    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
   }
 
   return $self->finalize($status,[]);

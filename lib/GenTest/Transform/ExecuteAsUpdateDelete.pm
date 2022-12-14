@@ -98,11 +98,11 @@ sub variate {
   my ($class, $orig_query, $executor) = @_;
   return [ $orig_query ] if $orig_query =~ m{INTO}is || $orig_query !~ m{^[\(\s]*SELECT}is;
   my $exists= ($class->random->uint16(0,1) ? 'NOT EXISTS' : 'EXISTS');
-  my $table= $class->random->arrayElement($executor->metaTables())->[1];
+  my $table= $class->random->arrayElement($executor->metaTables());
   if ($class->random->uint16(0,1)) {
-    return [ "UPDATE IGNORE $table SET ".$class->random->arrayElement($executor->metaColumns($table))." = NULL WHERE $exists ( $orig_query)" ];
+    return [ "UPDATE IGNORE ".$table->[0].".".$table->[1]." SET ".$class->random->arrayElement($executor->metaColumns($table))." = NULL WHERE $exists ( $orig_query)" ];
   } else {
-    return [ "DELETE FROM $table WHERE $exists ( $orig_query )" ];
+    return [ "DELETE FROM ".$table->[0].".".$table->[1]." WHERE $exists ( $orig_query )" ];
   }
 }
 

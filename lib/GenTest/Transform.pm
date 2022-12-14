@@ -196,7 +196,7 @@ sub transformExecuteValidate {
             } elsif (
                 ($part_result->status() == STATUS_SYNTAX_ERROR) ||
                 ($part_result->status() == STATUS_SEMANTIC_ERROR) ||
-                ($part_result->status() == STATUS_SERVER_CRASHED)
+                serverGone($part_result->status())
             ) {
                 # We return an error when a transformer returns a semantic
                 # or syntactic error, which allows for detecting any faulty

@@ -1964,7 +1964,7 @@ my %err2type = (
     ER_NON_RO_SELECT_DISABLE_TIMER()                    => STATUS_RUNTIME_ERROR,
     ER_NON_UNIQ_ERROR()                                 => STATUS_SEMANTIC_ERROR,
     ER_NON_UPDATABLE_TABLE()                            => STATUS_SEMANTIC_ERROR,
-    ER_NORMAL_SHUTDOWN()                                => STATUS_SERVER_KILLED,
+    ER_NORMAL_SHUTDOWN()                                => STATUS_SERVER_STOPPED,
     ER_NOT_AGGREGATE_FUNCTION()                         => STATUS_SEMANTIC_ERROR,
     ER_NOT_ALLOWED_COMMAND()                            => STATUS_UNSUPPORTED,
     ER_NOT_ALLOWED_IN_THIS_CONTEXT()                    => STATUS_SEMANTIC_ERROR,
@@ -2150,13 +2150,13 @@ my %err2type = (
     ER_SERVER_LOST()                                    => STATUS_SERVER_CRASHED,
     ER_SERVER_LOST_EXTENDED()                           => STATUS_SERVER_CRASHED,
     ER_SERVER_OFFLINE_MODE()                            => STATUS_CONFIGURATION_ERROR,
-    ER_SERVER_SHUTDOWN()                                => STATUS_SERVER_KILLED,
+    ER_SERVER_SHUTDOWN()                                => STATUS_SERVER_STOPPED,
     ER_SET_CONSTANTS_ONLY()                             => STATUS_SEMANTIC_ERROR,
     ER_SET_PASSWORD_AUTH_PLUGIN()                       => STATUS_ACL_ERROR,
     ER_SET_STATEMENT_CANNOT_INVOKE_FUNCTION()           => STATUS_SEMANTIC_ERROR,
     ER_SET_STATEMENT_NOT_SUPPORTED()                    => STATUS_UNSUPPORTED,
     ER_SF_OUT_INOUT_ARG_NOT_ALLOWED()                   => STATUS_SYNTAX_ERROR,
-    ER_SHUTDOWN_COMPLETE()                              => STATUS_SERVER_KILLED,
+    ER_SHUTDOWN_COMPLETE()                              => STATUS_SERVER_STOPPED,
     ER_SIGNAL_BAD_CONDITION_TYPE()                      => STATUS_SEMANTIC_ERROR,
     ER_SIGNAL_EXCEPTION()                               => STATUS_RUNTIME_ERROR,
     ER_SIGNAL_NOT_FOUND()                               => STATUS_RUNTIME_ERROR,
@@ -2593,7 +2593,6 @@ sub admin {
   $executor->execute("SET ROLE admin");
 }
 
-
 sub init {
     my $executor = shift;
     my $dbh = DBI->connect($executor->dsn(), undef, undef, {
@@ -2657,9 +2656,6 @@ sub init {
     $executor->user($dbh->selectrow_arrayref("SELECT CURRENT_USER()")->[0]);
     $dbh->do('SELECT '.GenTest::Random::dataLocation().' AS DATA_LOCATION');
 
-    say("Caching metadata upon executor initialization");
-    $executor->cacheMetaData();
-
     say("Executor initialized. id: ".$executor->id()."; default schema: ".$executor->defaultSchema()."; connection ID: ".$executor->connectionId()) if rqg_debug();
 
     return STATUS_OK;
@@ -2693,13 +2689,13 @@ sub execute {
     # Add global flags if any are set
     $execution_flags = $execution_flags | $executor->flags();
 
-    if (!rqg_debug() && $query =~ s/\/\*\s*EXECUTOR_FLAG_SILENT\s*\*\///g) {
+    if (!rqg_debug() && $query =~ s/EXECUTOR_FLAG_SILENT//g) {
         $execution_flags |= EXECUTOR_FLAG_SILENT;
     }
-    if ($query =~ s/\/\*\s*EXECUTOR_FLAG_SKIP_STATS\s*\*\///g) {
+    if ($query =~ s/EXECUTOR_FLAG_SKIP_STATS//g) {
         $execution_flags |= EXECUTOR_FLAG_SKIP_STATS;
     }
-    if ($query =~ s/\/\*\s*EXECUTOR_FLAG_NON_EXISTING_ALLOWED\s*\*\///g) {
+    if ($query =~ s/EXECUTOR_FLAG_NON_EXISTING_ALLOWED//g) {
         $execution_flags |= EXECUTOR_FLAG_NON_EXISTING_ALLOWED;
     }
 
@@ -2727,6 +2723,10 @@ sub execute {
             end_time   => undef
         );
       }
+    }
+
+    if ($query =~ /^\s*(?:\/\*.*?\*\/\s*)?USE\s*(?:\/\*.*?\*\/\s*)?(\`[^\`]+\`|\w+)/) {
+      $executor->currentSchema($1);
     }
 
     # Filter out any /*executor */ comments that do not pertain to this particular Executor/DBI
@@ -2865,11 +2865,7 @@ sub execute {
             ($err_type == STATUS_RUNTIME_ERROR)
         ) {
             $executor->reportError($query, $err, $errstr, $execution_flags);
-        } elsif (
-            ($err_type == STATUS_SERVER_CRASHED) ||
-            ($err_type == STATUS_SERVER_KILLED) ||
-            ($err_type == STATUS_SERVER_UNAVAILABLE)
-        ) {
+        } elsif (serverGone($err_type)) {
             $dbh = DBI->connect($executor->dsn(), undef, undef, {
                 PrintError => 0,
                 RaiseError => 0,
@@ -3089,15 +3085,12 @@ sub DESTROY {
 }
 
 sub currentSchema {
-    my ($executor,$schema) = @_;
-
-    return undef if not defined $executor->dbh();
-
-    if (defined $schema) {
-        $executor->execute("USE $schema");
-    }
-
-    return $executor->dbh()->selectrow_array("SELECT DATABASE()");
+  my ($executor,$schema) = @_;
+  if (defined $schema) {
+    sayDebug("Setting current schema to $schema");
+    $executor->[EXECUTOR_CURRENT_SCHEMA]= $schema;
+  }
+  return $executor->[EXECUTOR_CURRENT_SCHEMA];
 }
 
 sub errorType {
@@ -3134,6 +3127,10 @@ sub loadCollations {
     while (<COLL>) {
       chomp;
       my ($coll, $cs)= split /;/, $_;
+      # TODO: maybe better solution
+      if (($cs eq '\N' or $cs eq '') and ($coll =~ /^uca1400/)) {
+        $cs= 'utf8mb3';
+      }
       push @collations, [$coll, $cs];
     }
     close(COLL);
@@ -3243,7 +3240,7 @@ sub loadMetaData {
   } else {
     sayWarning("Couldn't open procedure dump $file: $!");
   }
-  sayDebug("Executor finished loading $ft metadata: ".scalar(keys %$meta)." schemas, ".scalar(keys %tabletype)." tables");
+  say("Executor finished loading $ft metadata: ".scalar(keys %$meta)." schemas, ".scalar(keys %tabletype)." tables");
 #  $Data::Dumper::Maxdepth= 0;
 #  print Dumper $meta;
   return $meta;

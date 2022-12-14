@@ -30,9 +30,6 @@ query_init:
 query:
   { _set_db('NON-SYSTEM') } ind_constr_query ;
 
-ind_constr_own_table:
-  { 'ind_constr_t'.$prng->uint16(1,5) } ;
-
 ind_constr_query:
     ==FACTOR:3==    alter | alter
   | ==FACTOR:4==    create_index_stmt | create_index_stmt | create_index_stmt
@@ -90,7 +87,7 @@ item:
   | drop_index | drop_index | drop_index | drop_index
   | drop_pk
   | drop_constraint | drop_constraint
-  | rename_index | rename_index | rename_index
+  | ==FACTOR:6== rename_index /* compatibility 10.5.2 */ 
   | rename_index | rename_index | rename_index
   | enable_disable_keys
 ;
@@ -100,16 +97,15 @@ add_index:
 ;
 
 drop_index:
-  DROP index_word __if_exists(80) _index
+  DROP index_word __if_exists(80) /* EXECUTOR_FLAG_NON_EXISTING_ALLOWED */ _index
 ;
 
 rename_index:
-  /* compatibility 10.5.2 */ RENAME index_word __if_exists(80) _index TO ind_name
+  /* EXECUTOR_FLAG_NON_EXISTING_ALLOWED */ RENAME index_word __if_exists(80) _index TO ind_name
 ;
 
 drop_constraint:
-  DROP CONSTRAINT __if_exists(80) _index
-;
+  DROP CONSTRAINT __if_exists(80) /* EXECUTOR_FLAG_NON_EXISTING_ALLOWED */  _index ;
 
 add_pk:
   ADD constraint_word_optional PRIMARY KEY ind_type_optional ( column_list ) option_list

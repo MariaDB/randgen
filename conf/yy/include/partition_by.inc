@@ -26,12 +26,10 @@
 
 
 init_db:
-  init_10 ;; init_10 ;; init_10 ;; init_10 ;; init_10 ;
+  init_5 ;; init_5 ;; init_5 ;; init_5 ;; init_5 ;
 
-init_10:
-     init_table ;; init_table ;; init_table ;; init_table ;; init_table
-  ;; init_table ;; init_table ;; init_table ;; init_table ;; init_table
-;
+init_5:
+  init_table ;; init_table ;; init_table ;; init_table ;; init_table ;
 
 init_table:
   create ;; insert_part ;; cache_index ;; load_index ;

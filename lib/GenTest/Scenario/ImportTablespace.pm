@@ -95,7 +95,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Initial test flow failed");
-    return $self->finalize(STATUS_$status,[$server]);
+    return $self->finalize($status,[$server]);
   }
 
   my $dbh= $server->dbh;

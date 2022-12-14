@@ -78,23 +78,22 @@ create_log2_trigger:
     create_clause multi_trigger_db. trigger_name BEFORE INSERT ON multi_trigger_db.tlog2 FOR EACH ROW precedes_follows SET NEW.`val` = IFNULL(NEW.`val`,'');
 
 create_trigger:
-    create_clause /* _basetable[invariant] */ { $last_database }.trigger_name before_after ins_upd_del ON /* QProp.ERROR_1361 QProp.ERROR_1347 */ _basetable[invariant] FOR EACH ROW precedes_follows INSERT INTO multi_trigger_db.tlog (tbl,tp,op) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field );
+    create_clause /* _basetable[invariant] */ { $last_database }.trigger_name before_after ins_upd_del ON _basetable[invariant] FOR EACH ROW precedes_follows INSERT INTO multi_trigger_db.tlog (tbl,tp,op) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field );
 
 trigger_name:
-    # ER_SERVER_LOST can happen on any query if the connection is killed.
-    # If it happens because the server crashes, we'll know about it anyway.
-    /* QProp.ERROR_2013 */ _letter;
+    _letter ;
 
 drop_trigger:
-  /* QProp.ERROR_1099 QProp.ERROR_1100 QProp.ERROR_1360 */ DROP TRIGGER __if_exists(90) trigger_name
-;
+  DROP TRIGGER __if_exists(90) trigger_name ;
 
-create_clause:
-  CREATE /* QProp.ERROR_1099 QProp.ERROR_1100 QProp.ERROR_1359 QProp.ERROR_7 QProp.ERROR_1360 QProp.ERROR_1146 */ __or_replace_trigger_x_trigger_if_not_exists_x_trigger(50,40)
-;
+create_clause: 
+  CREATE __or_replace_trigger_x_trigger_if_not_exists_x_trigger(50,40) ;
 
 precedes_follows:
-    | | | | /* QProp.ERROR_4031 */ PRECEDES _letter | /* QProp.ERROR_4031 */ FOLLOWS _letter ;
+    ==FACTOR:4== |
+    PRECEDES _letter |
+    FOLLOWS _letter
+;
 
 before_after:
     { $tp = ($prng->int(0,1) ? 'BEFORE' : 'AFTER' ) };

@@ -35,8 +35,6 @@ $grammars= [
   [@empty_set,
     '--grammar=conf/yy/alter_table_data_types.yy'],
   [@empty_set,
-    '--grammar=conf/yy/alter_table_indexes.yy'],
-  [@empty_set,
     '--grammar=conf/yy/alter_table.yy'],
   [@empty_set,
     '--grammar=conf/yy/analyze_select_single_table.yy:0.1'],

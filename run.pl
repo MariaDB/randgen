@@ -352,7 +352,7 @@ foreach my $trial_id (1..$trials)
   }
 
   my $output_file= $props_vardir_orig."/trial$trial_id.log";
-  $cmd = 'bash -c "set -o pipefail; '.$cmd.' 2>&1 | tee -i '.$output_file.'"';
+  $cmd = 'bash -c "set -o pipefail; perl '.$cmd.' 2>&1 | tee -i '.$output_file.'"';
 
   if ($genconfig) {
     my $cnf_contents = GenTest::GenConfig->new(spec_file => $genconfig,

@@ -278,18 +278,22 @@ sub findMySQLD {
 }
 
 sub dbh {
-  my $reporter= shift;
-  if (defined $reporter->[REPORTER_DBH] && $reporter->[REPORTER_DBH]->ping) {
-    return $reporter->[REPORTER_DBH];
-  } elsif (defined $reporter->[REPORTER_DBH]) {
-    say("Reporter ".(ref $reporter)." is re-connecting to the server");
-    eval { $reporter->[REPORTER_DBH]->disconnect(); 1 }
+  my ($reporter,$new)= @_;
+  unless ($new) {
+    if (defined $reporter->[REPORTER_DBH] && $reporter->[REPORTER_DBH]->ping) {
+      return $reporter->[REPORTER_DBH];
+    } elsif (defined $reporter->[REPORTER_DBH]) {
+      say("Reporter ".(ref $reporter)." is re-connecting to the server");
+      eval { $reporter->[REPORTER_DBH]->disconnect(); 1 }
+    }
   }
-  $reporter->[REPORTER_DBH]= $reporter->server->dbh(my $admin=1, my $new=1);
-  if (not defined $reporter->[REPORTER_DBH] || $reporter->[REPORTER_DBH]->err) {
+  my $dbh= $reporter->server->dbh(my $admin=1, my $new=1);
+  if (not defined $dbh || $dbh) {
     sayError("Reporter ".(ref $reporter)." failed to connect to the server");
+  } elsif (not $new) {
+    $reporter->[REPORTER_DBH]= $dbh;
   }
-  return $reporter->[REPORTER_DBH];
+  return $dbh;
 }
 
 1;

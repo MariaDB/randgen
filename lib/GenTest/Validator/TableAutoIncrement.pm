@@ -61,7 +61,7 @@ sub validate {
         $e->dbh->do("TRUNCATE TABLE $t");
         if ($e->dbh->err) {
           sayWarning("TableAutoIncrement was trying to fix table $t but failed: ".$e->dbh->err." ".$e->dbh->errstr);
-          $res= STATUS_TEST_FAILURE;
+          $res= STATUS_RUNTIME_ERROR;
         } else {
           sayDebug("TableAutoIncrement truncated table $t due to a bad auto-increment value");
           $fixed_count++;

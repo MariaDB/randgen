@@ -167,7 +167,7 @@ sub run {
   }
 
   #####
-  $self->printStep("Checking the server error log for errors after upgrade");
+  $self->printStep("Checking the server error log for errors after recovery");
 
   $status= $self->checkErrorLog($new_server);
 
@@ -175,7 +175,7 @@ sub run {
     # Error log can show known errors. We want to update
     # the global status, but don't want to exit prematurely
     $self->setStatus($status);
-    sayError("Found errors in the log after upgrade");
+    sayError("Found errors in the log after recovery");
     if ($status > STATUS_CUSTOM_OUTCOME) {
       return $self->finalize($self->upgrade_or_recovery_failure,[$new_server]);
     }
@@ -202,12 +202,12 @@ sub run {
   }
 
   #####
-  $self->printStep("Checking the database state after upgrade");
+  $self->printStep("Checking the database state after recovery");
 
   $status= $new_server->checkDatabaseIntegrity;
 
   if ($status != STATUS_OK) {
-    sayError("Database appears to be corrupt after upgrade");
+    sayError("Database appears to be corrupt after recovery");
     return $self->finalize($self->upgrade_or_recovery_failure,[$new_server]);
   }
 

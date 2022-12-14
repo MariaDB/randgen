@@ -231,9 +231,9 @@ sub group_cleaner {
     }
   }
 #  system("ps -ef | grep -E '".join('|',@group)."'");
-  sayDebug("Cleaning the group $group_id (@group), keeping immortals (@immortals)");
+  say("Cleaning the group $group_id (@group), keeping immortals (@immortals)");
   kill('KILL',@group);
-  return STATUS_EOF;
+  return STATUS_TEST_STOPPED;
 }
 
 sub versionN6 {
