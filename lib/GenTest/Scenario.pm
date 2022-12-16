@@ -317,6 +317,7 @@ sub prepareServer {
                       manual_gdb => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{manual_gdb},
                       port => ($self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{port} || $self->[SC_TEST_PROPERTIES]->base_port + $srvnum - 1),
                       rr => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{rr},
+                      ps => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{ps},
                       server_options => [ @{$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{mysqld}} ],
                       start_dirty => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{start_dirty} || 0,
                       user => $self->[SC_TEST_PROPERTIES]->user,

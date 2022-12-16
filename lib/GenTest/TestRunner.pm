@@ -204,9 +204,13 @@ sub run {
     # Now the executors are re-caching the data asynchronously, while
     # Stage 3 starts -- a periodic dumper is created. It will be dumping
     # only non-system schemata
+    # (unless the test is configured not to do it)
 
-    my $metadata_pid= $self->metadataDumper();
-    $worker_pids{$metadata_pid}= 1;
+    my $metadata_pid;
+    if ($self->config->metadata_reload) {
+      $metadata_pid= $self->metadataDumper();
+      $worker_pids{$metadata_pid}= 1;
+    }
 
     ### Main process
 
@@ -450,7 +454,7 @@ sub workerProcess {
         last if $query_result == STATUS_TEST_STOPPED;
 #        last if $ctrl_c == 1;
         last if time() > $self->[TR_TEST_END];
-        if (time() > $last_metadata_reload + int(TR_META_RELOAD_INTERVAL/2*3)) {
+        if ($self->config->metadata_reload && time() > $last_metadata_reload + int(TR_META_RELOAD_INTERVAL/2*3)) {
           $executors[0]->cacheMetaData();
           $last_metadata_reload= time();
         }

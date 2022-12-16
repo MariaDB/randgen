@@ -20,44 +20,58 @@ $combinations = [
     --threads=4
     --duration=600
     --queries=100M
+    --nometadata-reload
     --reporters=Backtrace,ErrorLog,Deadlock
-    --grammar=conf/yy/collect_eits.yy
+    --engine=InnoDB,MyISAM,Aria,HEAP
     --mysqld=--log-output=FILE
     --mysqld=--max-statement-time=30
-    --transformers=DisableOptimizations,EnableOptimizations,ExecuteAsDerived,ExecuteAsPreparedTwice,ExecuteAsView,ExecuteAsUnion,ExecuteAsExcept,ExecuteAsIntersect,DisableJoinCache
+    --transformer=AnalyzeOrExplain
+    --transformer=ConvertSubqueriesToViews
+    --transformer=Count
+    --transformer=DisableChosenPlan
+    --transformer=DisableOptimizations
+    --transformer=Distinct
+    --transformer=EnableOptimizations
+    --transformer=ExecuteAsCTE
+    --transformer=ExecuteAsDeleteReturning
+    --transformer=ExecuteAsDerived
+    --transformer=ExecuteAsExcept
+    --transformer=ExecuteAsInsertSelect
+    --transformer=ExecuteAsIntersect
+    --transformer=ExecuteAsPreparedTwice
+    --transformer=ExecuteAsSelectItem
+    --transformer=ExecuteAsUnion
+    --transformer=ExecuteAsUpdateDelete
+    --transformer=ExecuteAsView
+    --transformer=ExecuteAsWhereSubquery
+    --transformer=FullOrderBy
+    --transformer=Having
+    --transformer=IgnoredKeys
+    --transformer=InlineSubqueries
+    --transformer=LimitDecrease
+    --transformer=LimitIncrease
+    --transformer=LimitRowsExamined
+    --transformer=OffsetFetch
+    --transformer=OrderBy
+    --transformer=Rownum
+    --transformer=SelectOption
+    --grammar=conf/yy/collect_eits.yy
   '],
-# Some of legacy will duplicate the newer ones, but better safe than sorry
   [
-    {
-      specific_data => [
-        [
-          '--grammar=conf/yy/outer_join.yy --gendata=conf/zz/outer_join.zz',
-          '--grammar=conf/yy/optimizer_access_exp.yy --gendata=conf/zz/range_access.zz',
-          '--grammar=conf/yy/dbt3-joins.yy --gendata=data/dbt3/dbt3-s0.001.dump',
-          '--grammar=conf/yy/dbt3-ranges.yy --gendata=data/dbt3/dbt3-s0.001.dump',
-          '--grammar=conf/yy/dbt3-joins.yy --gendata=data/dbt3/dbt3-s0.0001.dump',
-          '--grammar=conf/yy/dbt3-ranges.yy --gendata=data/dbt3/dbt3-s0.0001.dump',
-          '--grammar=conf/yy/oltp-readonly.yy --gendata=conf/zz/oltp.zz',
-          '--grammar=conf/yy/range_access.yy --gendata=conf/zz/range_access.zz',
-          '--grammar=conf/yy/range_access2.yy --gendata=conf/zz/range_access2.zz',
-        ],
-      ],
-      any_data => [
-        [
-          '--grammar=conf/yy/optimizer.yy',
-          '--grammar=conf/yy/range_access2.yy',
-          '--grammar=conf/yy/range_access.yy',
-        ],
-        [
-          '--gendata=conf/zz/range_access.zz',
-          '--gendata=conf/zz/range_access2.zz',
-          '--gendata=conf/zz/optimizer.zz',
-          '--gendata=simple',
-          '--gendata=data/dbt3/dbt3-s0.001.dump',
-          '--gendata=data/sql/world.sql'
-        ],
-        [ '--engine=InnoDB,MyISAM,Aria' ],
-      ],
-    }
+    '--grammar=conf/yy/outer_join.yy --gendata=conf/zz/outer_join.zz',
+    '--grammar=conf/yy/optimizer_access_exp.yy --gendata=conf/zz/range_access.zz',
+    '--grammar=conf/yy/dbt3-joins.yy --gendata=data/dbt3/dbt3-s0.001.dump',
+    '--grammar=conf/yy/dbt3-ranges.yy --gendata=data/dbt3/dbt3-s0.001.dump',
+    '--grammar=conf/yy/dbt3-joins.yy --gendata=data/dbt3/dbt3-s0.0001.dump',
+    '--grammar=conf/yy/dbt3-ranges.yy --gendata=data/dbt3/dbt3-s0.0001.dump',
+    '--grammar=conf/yy/oltp-read.yy --gendata=conf/zz/oltp.zz',
+    '--grammar=conf/yy/range_access.yy --gendata=conf/zz/range_access.zz',
+    '--grammar=conf/yy/range_access2.yy --gendata=conf/zz/range_access2.zz',
+    '--grammar=conf/yy/optimizer_no_subquery.yy --gendata=simple',
+    '--grammar=conf/yy/optimizer_subquery_semijoin.yy --gendata=simple',
+    '--grammar=conf/yy/optimizer.yy --gendata=advanced --partitions',
+    '--grammar=conf/yy/optimizer.yy --gendata=simple',
+    '--grammar=conf/yy/optimizer.yy --gendata=data/sql/world.sql',
+    '--grammar=conf/yy/optimizer.yy --gendata=data/dbt3/dbt3-s0.001.dump',
   ],
 ];

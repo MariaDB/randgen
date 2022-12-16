@@ -606,7 +606,7 @@ MDEV-28683:
 =~ signal|AddressSanitizer
 =~ ha_spider::multi_range_read_next_first|ha_spider::rnd_next_internal|spider_db_connect
 =~ Version: '10\.4|Server version: 10\.4
-MDEV-28621:
+MDEV-28621: [Assertion '!eliminated']
 =~ Assertion \`!eliminated'
 =~ Item_subselect::exec
 =~ Item_singlerow_subselect::val_
@@ -802,6 +802,10 @@ MDEV-27422:
 =~ _ma_log_delete
 =~ d_search
 =~ FeatureUsage detected GIS columns
+MDEV-27409:
+=~ signal|AddressSanitizer
+=~ oqgraph3::intrusive_ptr_release
+=~ oqgraph3::edge_info::operator
 # The bug report is 10.5+, but the failure can happen on 10.4 too, like MDEV-27292
 MDEV-27366:
 =~ signal|AddressSanitizer
@@ -2196,6 +2200,9 @@ MDEV-22732:
 =~ AddressSanitizer|signal
 =~ Field::cmp_binary
 =~ compare_record
+MDEV-22705:
+=~ Assertion \`llabs(next_free_value % real_increment) == offset'
+=~ sequence_definition::adjust_values
 MDEV-22695:
 =~ signal [16]|AddressSanitizer
 =~ heap_rnext

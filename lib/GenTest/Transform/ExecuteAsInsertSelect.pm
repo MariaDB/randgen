@@ -45,6 +45,7 @@ sub transform {
       # Unlock tables prevents conflicting locks and should also take care
       'UNLOCK TABLES',
       'SET @tx_read_only.save= @@session.tx_read_only',
+      'SET sql_mode=replace(replace(@@sql_mode,"STRICT_TRANS_TABLES",""),"STRICT_ALL_TABLES","")',
       'SET SESSION tx_read_only= 0',
       #Include database transforms creation DDL so that it appears in the simplified testcase.
       "DROP TABLE IF EXISTS $table_name",
@@ -61,7 +62,7 @@ sub transform {
       "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
       "DROP TABLE $table_name",
     ],[
-      '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save'
+      '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save, sql_mode= DEFAULT'
     ]
   ];
 }

@@ -45,8 +45,8 @@ sub transform {
   return STATUS_WONT_HANDLE if $orig_query =~ m{GROUP\s+BY|LIMIT|HAVING|UNION|INTERSECT|EXCEPT}is
     || $orig_query =~ m{(INTO|PROCESSLIST)}is
     || $orig_query !~ m{^[\(\s]*SELECT}is;
-  my $query= $class->modify($orig_query);
-  return ( $query ? $query." /* TRANSFORM_OUTCOME_COUNT */" : STATUS_WONT_HANDLE );
+  my $query= $class->modify($orig_query, my $with_transform_outcome=1);
+  return $query || STATUS_WONT_HANDLE;
 }
 
 sub variate {
@@ -56,28 +56,30 @@ sub variate {
 }
 
 sub modify {
-  my ($class, $orig_query) = @_;
+  my ($class, $orig_query, $with_transform_outcome) = @_;
   
   if ($orig_query =~ m{SELECT\s*(.*?)\s*FROM}is) {
     my $select_list= $1;
     if ($select_list =~ m{COUNT\(\s*\*\s*\)}is) {
       # Replacing COUNT(*) with *
-      $orig_query =~ s{COUNT\(\s*\*\s*\)}{\*}is;
-      return $orig_query;
-    } elsif ($select_list =~ m{COUNT\(\s*(.*?)\s*\)}is) {
-      # Replacing COUNT with its argument
+      # If there is 'DISTINCT' before count, we remove it
+      $orig_query =~ s{(?:DISTINCT\s+)?COUNT\(\s*\*\s*\)}{\*}is;
+      return $orig_query.($with_transform_outcome ? ' /* TRANSFORM_OUTCOME_COUNT_REVERSE */' : '');
+    } elsif ($select_list !~ /,/ && $select_list =~ m{COUNT\(\s*(.*?)\s*\)}is) {
+      # Replacing (single) COUNT with its argument.
+      # If there is 'DISTINCT' before count, we remove it
       my $arg= $1;
-      $orig_query =~ s{COUNT\(\s*$arg\s*\)}{$arg}is;
-      return $orig_query;
+      $orig_query =~ s{(?:DISTINCT\s+)?COUNT\(\s*(.*?)\s*\)}{$arg}is;
+      return $orig_query.($with_transform_outcome ? ' /* TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE */' : '');
     } elsif ($select_list =~ m{^(?:\/\*.*?\*\/)?\s+\*\s+$}is) {
       # Replacing * with COUNT(*)
       $orig_query =~ s{\s+\*\s+}{ COUNT(*) }is;
-      return $orig_query;
+      return $orig_query.($with_transform_outcome ? ' /* TRANSFORM_OUTCOME_COUNT */' : '');
   # If the above didn't work, then just wrap the query in SELECT COUNT(*).
   # But for this the original query cannot be INTO (which was already
   # forbidden for transform, but not for INTO)
     } elsif ($orig_query !~ /\WINTO\W/) {
-      return "SELECT COUNT(*) FROM ( $orig_query ) sq_count";
+      return "SELECT COUNT(*) FROM ( $orig_query ) sq_count".($with_transform_outcome ? ' /* TRANSFORM_OUTCOME_COUNT */' : '');
     }
   }
   return undef;

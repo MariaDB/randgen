@@ -70,6 +70,7 @@ use constant MYSQLD_MANUAL_GDB => 36;
 use constant MYSQLD_HOST => 37;
 use constant MYSQLD_ADMIN_DBH => 38;
 use constant MYSQLD_METADATA_DBH => 39;
+use constant MYSQLD_PS_PROTOCOL => 40;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -88,6 +89,7 @@ sub new {
                                    'host' => MYSQLD_HOST,
                                    'manual_gdb' => MYSQLD_MANUAL_GDB,
                                    'port' => MYSQLD_PORT,
+                                   'ps' => MYSQLD_PS_PROTOCOL,
                                    'rr' => MYSQLD_RR,
                                    'server_options' => MYSQLD_SERVER_OPTIONS,
                                    'sourcedir' => MYSQLD_SOURCEDIR,
@@ -1529,7 +1531,9 @@ sub dsn {
       ":port=".$self->[MYSQLD_PORT].
       ":user=".$user.
       ":mysql_local_infile=1".
-      ":max_allowed_packet=1G";
+      ":max_allowed_packet=1G".
+      ($self->[MYSQLD_PS_PROTOCOL] ? ":mysql_server_prepare=1" : "")
+;
 }
 
 sub connect {

@@ -41,34 +41,40 @@ use constant TRANSFORMER_EXECUTOR => 4;
 use constant TRANSFORMER_ALLOWED_ERRORS => 5;
 use constant TRANSFORMER_VARIATORS => 7;
 
-use constant TRANSFORM_OUTCOME_EXACT_MATCH           => 1001;
-use constant TRANSFORM_OUTCOME_UNORDERED_MATCH       => 1002;
-use constant TRANSFORM_OUTCOME_SUPERSET              => 1003;
-use constant TRANSFORM_OUTCOME_SUBSET                => 1004;
-use constant TRANSFORM_OUTCOME_SINGLE_ROW            => 1005;
-use constant TRANSFORM_OUTCOME_FIRST_ROW             => 1006;
-use constant TRANSFORM_OUTCOME_DISTINCT              => 1007;
-use constant TRANSFORM_OUTCOME_COUNT                 => 1008;
-use constant TRANSFORM_OUTCOME_EMPTY_RESULT          => 1009;
-use constant TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE    => 1010;
-use constant TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED => 1011;
-use constant TRANSFORM_OUTCOME_ANY                   => 1012;
+use constant TRANSFORM_OUTCOME_EXACT_MATCH            => 1001;
+use constant TRANSFORM_OUTCOME_UNORDERED_MATCH        => 1002;
+use constant TRANSFORM_OUTCOME_SUPERSET               => 1003;
+use constant TRANSFORM_OUTCOME_SUBSET                 => 1004;
+use constant TRANSFORM_OUTCOME_SINGLE_ROW             => 1005;
+use constant TRANSFORM_OUTCOME_FIRST_ROW              => 1006;
+use constant TRANSFORM_OUTCOME_DISTINCT               => 1007;
+use constant TRANSFORM_OUTCOME_COUNT                  => 1008; # Transformed result is a count of the original
+use constant TRANSFORM_OUTCOME_EMPTY_RESULT           => 1009;
+use constant TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE     => 1010;
+use constant TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED  => 1011;
+use constant TRANSFORM_OUTCOME_COUNT_NOT_NULL         => 1012; # Transformed result is a count or the original except NULLs (for col => COUNT(col))
+use constant TRANSFORM_OUTCOME_COUNT_REVERSE          => 1013; # Original is a count of the transformed result
+use constant TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE => 1014; # Transformed result is a count of the original result except NULLs (for COUNT(col) => col)
+use constant TRANSFORM_OUTCOME_ANY                    => 1015;
 
 use constant VARIATION_PROBABILITY => 10; # Per cent
 
 my %transform_outcomes = (
-    'TRANSFORM_OUTCOME_EXACT_MATCH'           => 1001,
-    'TRANSFORM_OUTCOME_UNORDERED_MATCH'       => 1002,
-    'TRANSFORM_OUTCOME_SUPERSET'              => 1003,
-    'TRANSFORM_OUTCOME_SUBSET'                => 1004,
-    'TRANSFORM_OUTCOME_SINGLE_ROW'            => 1005,
-    'TRANSFORM_OUTCOME_FIRST_ROW'             => 1006,
-    'TRANSFORM_OUTCOME_DISTINCT'              => 1007,
-    'TRANSFORM_OUTCOME_COUNT'                 => 1008,
-    'TRANSFORM_OUTCOME_EMPTY_RESULT'          => 1009,
-    'TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE'    => 1010,
-    'TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED' => 1011,
-    'TRANSFORM_OUTCOME_ANY'                   => 1012
+    'TRANSFORM_OUTCOME_EXACT_MATCH'            => TRANSFORM_OUTCOME_EXACT_MATCH,
+    'TRANSFORM_OUTCOME_UNORDERED_MATCH'        => TRANSFORM_OUTCOME_UNORDERED_MATCH,
+    'TRANSFORM_OUTCOME_SUPERSET'               => TRANSFORM_OUTCOME_SUPERSET,
+    'TRANSFORM_OUTCOME_SUBSET'                 => TRANSFORM_OUTCOME_SUBSET,
+    'TRANSFORM_OUTCOME_SINGLE_ROW'             => TRANSFORM_OUTCOME_SINGLE_ROW,
+    'TRANSFORM_OUTCOME_FIRST_ROW'              => TRANSFORM_OUTCOME_FIRST_ROW,
+    'TRANSFORM_OUTCOME_DISTINCT'               => TRANSFORM_OUTCOME_DISTINCT,
+    'TRANSFORM_OUTCOME_COUNT'                  => TRANSFORM_OUTCOME_COUNT,
+    'TRANSFORM_OUTCOME_EMPTY_RESULT'           => TRANSFORM_OUTCOME_EMPTY_RESULT,
+    'TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE'     => TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE,
+    'TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED'  => TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED,
+    'TRANSFORM_OUTCOME_COUNT_NOT_NULL'         => TRANSFORM_OUTCOME_COUNT_NOT_NULL,
+    'TRANSFORM_OUTCOME_COUNT_REVERSE'          => TRANSFORM_OUTCOME_COUNT_REVERSE,
+    'TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE' => TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE,
+    'TRANSFORM_OUTCOME_ANY'                    => TRANSFORM_OUTCOME_ANY
 );
 
 # Subset of semantic errors that we may want to allow during transforms.
@@ -178,7 +184,7 @@ sub transformExecuteValidate {
             my $partial_transform_outcome;
 
             foreach my $potential_outcome (keys %transform_outcomes) {
-                if ($transformed_query_part =~ m{$potential_outcome}s) {
+                if ($transformed_query_part =~ m{\W+$potential_outcome\W+}s) {
                     $partial_transform_outcome = $transform_outcomes{$potential_outcome};
                     last;
                 }
@@ -379,6 +385,12 @@ sub validate {
         return $transformer->isFirstRow($original_result, $transformed_result);
     } elsif ($transform_outcome == TRANSFORM_OUTCOME_COUNT) {
         return $transformer->isCount($original_result, $transformed_result);
+    } elsif ($transform_outcome == TRANSFORM_OUTCOME_COUNT_REVERSE) {
+        return $transformer->isCount($original_result, $transformed_result, my $reverse=1);
+    } elsif ($transform_outcome == TRANSFORM_OUTCOME_COUNT_NOT_NULL) {
+        return $transformer->isCount($original_result, $transformed_result, my $reverse=0, my $notnull=1);
+    } elsif ($transform_outcome == TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE) {
+        return $transformer->isCount($original_result, $transformed_result, my $reverse=1, my $notnull=1);
     } elsif ($transform_outcome == TRANSFORM_OUTCOME_EMPTY_RESULT) {
         return $transformer->isEmptyResult($original_result, $transformed_result);
     } elsif ($transform_outcome == TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE) {
@@ -387,6 +399,8 @@ sub validate {
         return $transformer->isRowsExaminedObeyed($transformed_query, $transformed_result);
         } elsif ($transform_outcome == TRANSFORM_OUTCOME_SUBSET) {
                 return $transformer->isSuperset($transformed_result, $original_result);
+    } elsif ($transform_outcome == TRANSFORM_OUTCOME_COUNT_NOT_NULL) {
+        return $transformer->isCountNotNull($original_result, $transformed_result);
     } elsif ($transform_outcome == TRANSFORM_OUTCOME_ANY) {
       # "Best effort" query, shouldn't affect the outcome
         return STATUS_OK;
@@ -485,39 +499,40 @@ sub isSingleRow {
 }
 
 sub isCount {
-    my ($transformer, $original_result, $transformed_result) = @_;
-    my ($large_result, $small_result) ;
-
-    if (
-        ($original_result->rows() == 0) ||
-        ($transformed_result->rows() == 0)
-    ) {
-        return STATUS_OK;
-    } elsif (
-        ($original_result->rows() == 1) &&
-        ($transformed_result->rows() == 1)
-    ) {
-        return STATUS_OK;
-    } elsif (
-        ($original_result->rows() == 1) &&
-        ($transformed_result->rows() >= 1)
-    ) {
-        $small_result = $original_result;
-        $large_result = $transformed_result;
-    } elsif (
-        ($transformed_result->rows() == 1) &&
-        ($original_result->rows() >= 1)
-    ) {
-        $small_result = $transformed_result;
-        $large_result = $original_result;
+    my ($transformer, $original_result, $transformed_result, $reverse, $notnull) = @_;
+    my ($resultset, $count);
+    if ($reverse) {
+      $count= $original_result;
+      $resultset= $transformed_result;
     } else {
-        return STATUS_LENGTH_MISMATCH;
+      $resultset= $original_result;
+      $count= $transformed_result;
     }
 
-    if ($large_result->rows() != $small_result->data()->[0]->[0]) {
-        return STATUS_LENGTH_MISMATCH;
-    } else {
+    unless ($count->rows() == 1) {
+      sayError("Expected 1 row in the COUNT resultset, found ".$count->rows());
+      return STATUS_LENGTH_MISMATCH;
+    }
+
+    my $countval= $count->data()->[0]->[0];
+
+    if ($notnull) {
+      my $notnull_count= 0;
+      foreach my $r (@{$resultset->data()}) {
+        $notnull_count++ if defined $r->[0];
+      }
+      if ($notnull_count == $countval) {
         return STATUS_OK;
+      } else {
+        sayError("Resultset contains ".$notnull_count." non-null values, count returned $countval");
+        return STATUS_LENGTH_MISMATCH;
+      }
+    }
+    elsif ($resultset->rows() == $countval) {
+      return STATUS_OK;
+    } else {
+      sayError("Resultset length is ".$resultset->rows().", count returned $countval");
+      return STATUS_LENGTH_MISMATCH;
     }
 }
 

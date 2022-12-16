@@ -96,6 +96,8 @@ $grammars= [
   [@empty_set,
     '--grammar=conf/yy/dml.yy'],
   [@empty_set,
+    '--grammar=conf/yy/dml-ps-params.yy'],
+  [@empty_set,
     '--grammar=conf/yy/dynamic_variables.yy:0.01'],
   [@empty_set,
     '--grammar=conf/yy/dyncol_dml.yy
