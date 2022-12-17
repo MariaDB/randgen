@@ -64,20 +64,27 @@ sub validate {
 
     return STATUS_WONT_HANDLE if $results->[0]->query =~ /INTO OUTFILE/ and $results->[1]->err == 1086;
 
+    # PS/IS tables in different major versions may be different
+    return STATUS_WONT_HANDLE if (
+      $results->[0]->err == 1109 and $results->[1]->err != 1109 and isOlderVersion($executors->[0]->server->version,$executors->[1]->server->version)
+      or
+      $results->[0]->err != 1109 and $results->[1]->err == 1109 and isNewerVersion($executors->[0]->server->version,$executors->[1]->server->version)
+    );
+
     # 10.4x differs from previous versions upon
     # CREATE TABLE IF NOT EXISTS t AS SELECT .. FROM x
     # when t exists and x doesn't. Older versions would return ER_NO_SUCH_TABLE for x,
     # but 10.4+ succeeds with a warning that t already exists
 
     return STATUS_OK if ( ( $results->[0]->err == 1146
-                            and $executors->[0]->versionNumeric lt '1004'
+                            and $executors->[0]->server->versionNumeric lt '1004'
                             and $results->[1]->status == STATUS_OK
-                            and $executors->[1]->versionNumeric ge '1004'
+                            and $executors->[1]->server->versionNumeric ge '1004'
                           ) or
                           ( $results->[1]->err == 1146
-                            and $executors->[1]->versionNumeric lt '1004'
+                            and $executors->[1]->server->versionNumeric lt '1004'
                             and $results->[0]->status == STATUS_OK
-                            and $executors->[0]->versionNumeric ge '1004'
+                            and $executors->[0]->server->versionNumeric ge '1004'
                           )
                         ) and $results->[0]->query =~ /CREATE.*IF\s+NOT\s+EXISTS/ ;
 
@@ -92,21 +99,21 @@ sub validate {
 
     if ( ( $results->[0]->status() == STATUS_SYNTAX_ERROR
             and $results->[1]->status() != STATUS_SYNTAX_ERROR
-            and $executors->[0]->versionNumeric lt $executors->[1]->versionNumeric
+            and $executors->[0]->server->versionNumeric lt $executors->[1]->server->versionNumeric
          ) or
          ( $results->[1]->status() == STATUS_SYNTAX_ERROR
             and $results->[0]->status() != STATUS_SYNTAX_ERROR
-            and $executors->[0]->versionNumeric gt $executors->[1]->versionNumeric
+            and $executors->[0]->server->versionNumeric gt $executors->[1]->server->versionNumeric
          ) or
          ( $results->[0]->status() == STATUS_UNSUPPORTED
             and $results->[1]->status() != STATUS_UNSUPPORTED
             and $results->[1]->status() != STATUS_SYNTAX_ERROR
-            and $executors->[0]->versionNumeric lt $executors->[1]->versionNumeric
+            and $executors->[0]->server->versionNumeric lt $executors->[1]->server->versionNumeric
          ) or
          ( $results->[1]->status() == STATUS_UNSUPPORTED
             and $results->[0]->status() != STATUS_UNSUPPORTED
             and $results->[0]->status() != STATUS_SYNTAX_ERROR
-            and $executors->[0]->versionNumeric gt $executors->[1]->versionNumeric
+            and $executors->[0]->server->versionNumeric gt $executors->[1]->server->versionNumeric
          )
        )
     {
@@ -149,8 +156,8 @@ sub logResult {
     my $line=
       "---------- EXIT CODE COMPARISON ISSUE START ------------\n".
       "For query " . $results->[0]->query . ":\n".
-      "    " . $executors->[0]->version . ": " . ( $results->[0]->err ? status2text($results->[0]->status) . ": " . $results->[0]->err . " (" . $results->[0]->errstr . ")" : "OK" )."\n".
-      "    " . $executors->[1]->version . ": " . ( $results->[1]->err ? status2text($results->[1]->status) . ": " . $results->[1]->err . " (" . $results->[1]->errstr . ")" : "OK" )."\n"
+      "    " . $executors->[0]->server->version . ": " . ( $results->[0]->err ? status2text($results->[0]->status) . ": " . $results->[0]->err . " (" . $results->[0]->errstr . ")" : "OK" )."\n".
+      "    " . $executors->[1]->server->version . ": " . ( $results->[1]->err ? status2text($results->[1]->status) . ": " . $results->[1]->err . " (" . $results->[1]->errstr . ")" : "OK" )."\n"
     ;
     $line.= "\n".$more_text if $more_text;
     $line.= "\n"."----------- EXIT CODE COMPARISON ISSUE END -------------";

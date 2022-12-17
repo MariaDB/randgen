@@ -62,7 +62,7 @@ sub transform {
 sub variate {
   my ($class, $original_query, $executor) = @_;
   return [ $original_query ] if $original_query =~ m{INTO}is || $original_query !~ m{^[\s\(]*SELECT}is;
-  my $table= $class->random->arrayElement($executor->metaTables())->[1];
+  my $table= $class->random->arrayElement($executor->metaTables('NON-SYSTEM'))->[1];
   my $not= ($class->random->uint16(0,1) ? 'NOT' : '');
   return [ "SELECT * FROM $table WHERE $not EXISTS ($original_query)" ];
 }

@@ -22,6 +22,8 @@ package GenTest::Validator::ResultsetComparator;
 require Exporter;
 @ISA = qw(GenTest GenTest::Validator);
 
+use Data::Dumper;
+
 use strict;
 
 use GenUtil;
@@ -64,6 +66,13 @@ sub validate {
         say("Query: ".$query." failed: result content mismatch between servers 1 and ".($i+1));
         say(GenTest::Comparator::dumpDiff($results->[0], $results->[$i]));
       }
+      my $explain1= $executors->[0]->execute("EXPLAIN EXTENDED ".$results->[0]->query)->data;
+      my $explain2= $executors->[$i]->execute("EXPLAIN EXTENDED ".$results->[0]->query)->data;
+      say("Execution plans on server 1 vs ".($i+1)." (maybe different from the one which produced the initial results)");
+      say("----------");
+      say(join "\n", map { "@$_" } (@$explain1));
+      say("----------");
+      say(join "\n", map { "@$_" } (@$explain2));
       say("---------- RESULT COMPARISON ISSUE END ------------");
     } elsif ($compare_outcome != STATUS_OK) {
       sayError("Result comparison for query $query failed with an unexpected error ".status2text($compare_outcome));

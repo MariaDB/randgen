@@ -98,13 +98,13 @@ sub run {
     return $self->finalize($status,[@servers]);
   }
 
-  $self->printStep("Valiadating test data");
-  $status= $self->validateData();
-
-  if ($status != STATUS_OK) {
-    sayError("Data validation failed");
-    return $self->finalize($status,[@servers]);
-  }
+#  $self->printStep("Valiadating test data");
+#  $status= $self->validateData();
+#
+#  if ($status != STATUS_OK) {
+#    sayError("Data validation failed");
+#    return $self->finalize($status,[@servers]);
+#  }
 
   #####
   $self->printStep("Running test flow");

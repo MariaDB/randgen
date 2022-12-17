@@ -79,6 +79,7 @@ use constant EXECUTOR_META_NONSYSTEM_CACHE => 42;
 use constant EXECUTOR_META_NONSYSTEM_TS => 43;
 use constant EXECUTOR_META_SYSTEM_CACHE => 44;
 use constant EXECUTOR_META_SYSTEM_TS => 45;
+use constant EXECUTOR_THREAD_ID => 46;
 
 use constant FETCH_METHOD_AUTO    => 0;
 use constant FETCH_METHOD_STORE_RESULT  => 1;
@@ -99,6 +100,7 @@ sub new {
         'end_time' => EXECUTOR_END_TIME,
         'fetch_method' => EXECUTOR_FETCH_METHOD,
         'id' => EXECUTOR_ID,
+        'thread_id' => EXECUTOR_THREAD_ID,
         'no-err-filter' => EXECUTOR_NO_ERR_FILTER,
         'seed' => EXECUTOR_SEED,
         'sqltrace' => EXECUTOR_SQLTRACE,
@@ -109,6 +111,7 @@ sub new {
 
     $executor->[EXECUTOR_FETCH_METHOD] = FETCH_METHOD_AUTO if not defined $executor->[EXECUTOR_FETCH_METHOD];
     $executor->[EXECUTOR_DSN] = $executor->server->dsn($executor->[EXECUTOR_USER]) if not defined $executor->[EXECUTOR_DSN] and defined $executor->server;
+    $executor->[EXECUTOR_THREAD_ID]= 0 if not defined $executor->[EXECUTOR_THREAD_ID];
 
     if ($executor->[EXECUTOR_VARIATORS] && scalar(@{$executor->[EXECUTOR_VARIATORS]})) {
       $executor->[EXECUTOR_VARIATOR_MANAGER] = GenTest::Transform->new();
@@ -238,6 +241,10 @@ sub id {
   return $_[0]->[EXECUTOR_ID];
 }
 
+sub threadId {
+  return $_[0]->[EXECUTOR_THREAD_ID];
+}
+
 sub vardir {
   return $_[0]->[EXECUTOR_VARDIR];
 }
@@ -279,7 +286,7 @@ sub defaultSchema {
     my ($self, $schema) = @_;
     if (defined $schema and $self->[EXECUTOR_DEFAULT_SCHEMA] ne $schema) {
       $schema='information_schema' if lc($schema) eq 'information_schema';
-      sayDebug("Setting default schema to $schema");
+      $self->sayDebug("Setting default schema to $schema");
         $self->[EXECUTOR_DEFAULT_SCHEMA] = $schema;
     }
     return $self->[EXECUTOR_DEFAULT_SCHEMA];
@@ -324,7 +331,7 @@ sub cacheMetaData {
         sayError("Executor failed to load collation metadata");
       }
     } else {
-      sayWarning("Executor could not find a collation dump");
+      sayWarning("Executor ".$self->id." at ".$self->dsn." could not find a collation dump");
     }
   }
   my @files= glob("$vardir/system-tables-*");
@@ -645,8 +652,14 @@ sub _collectTableObjects {
               $cols_by_indextype = [sort keys %$objref];
           }
         }
+
         if ($cols_by_datatype && $cols_by_indextype) {
           $objects= intersect_arrays($cols_by_datatype,$cols_by_indextype);
+          unless (scalar(@$objects)) {
+            # No intersection between index type and data type, fall back to one of those
+            sayDebug("Table/view `$schema`.`$table` does not have $datatype $indextype columns, falling back to datatype only");
+            $objects= $cols_by_datatype;
+          }
         } elsif ($cols_by_datatype) {
           $objects= $cols_by_datatype;
         } elsif ($cols_by_indextype) {
@@ -753,12 +766,12 @@ sub databases {
 
 sub tables {
     my ($self, @args) = @_;
-    return [ map { $_[1] } (@{$self->metaTables(@args)}) ];
+    return [ map { $_->[1] } (@{$self->metaTables(@args)}) ];
 }
 
 sub baseTables {
     my ($self, @args) = @_;
-    return [ map { $_[1] } (@{$self->metaBaseTables(@args)}) ];
+    return [ map { $_->[1] } (@{$self->metaBaseTables(@args)}) ];
 }
 
 sub columnMetaType {

@@ -505,50 +505,6 @@ sub next {
           sayDebug("Starting rule ($starting_rule) processed:\n$sentence");
         }
     return [ $sentence.($skip_variate ? ' /* SKIP_VARIATION */' : '') ];
-  } elsif (index($sentence, ';') > -1) {
-
-    my @sentences;
-
-    # We want to split the sentence into separate statements, but we do not want
-    # to split literals if a semicolon happens to be inside.
-    # I am sure it could be done much smarter; feel free to improve it.
-    # For now, we do the following:
-    # - store and mask all literals (inside single or double quote marks);
-    # - replace remaining semicolons with something expectedly unique;
-    # - restore the literals;
-    # - split the sentence, not by the semicolon, but by the unique substitution
-    # Do not forget that there can also be escaped quote marks, which are not literal boundaries
-
-    if (index($sentence, "'") > -1 or index($sentence, '"') > -1) {
-      # Store literals in single quotes
-      my @singles = ( $sentence =~ /(?<!\\)(\'.*?(?<!\\)\')/g );
-      # Mask these literals
-      $sentence =~ s/(?<!\\)\'.*?(?<!\\)\'/######SINGLES######/g;
-      # Store remaining literals in double quotes
-      my @doubles = ( $sentence =~ /(?<!\\)(\".*?(?<!\\)\")/g );
-      # Mask these literals
-      $sentence =~ s/(?<!\\)\".*?(?<!\\)\"/######DOUBLES######/g;
-      # Replace remaining semicolons
-      $sentence =~ s/;/######SEMICOLON######/g;
-
-      # Restore literals in double quotes
-      while ( $sentence =~ s/######DOUBLES######/$doubles[0]/ ) {
-        shift @doubles;
-      }
-      # Restore literals in single quotes
-      while ( $sentence =~ s/######SINGLES######/$singles[0]/ ) {
-        shift @singles;
-      }
-      # split the sentence
-      @sentences = split('######SEMICOLON######', $sentence);
-    }
-    else {
-      @sentences = split (';', $sentence);
-    }
-        if ($generator->[GENERATOR_SEQ_ID] == 1) {
-          sayDebug("Starting rule ($starting_rule) processed:\n@sentence");
-        }
-    return \@sentences;
   } else {
         if ($generator->[GENERATOR_SEQ_ID] == 1) {
           sayDebug("Starting rule ($starting_rule) processed:\n$sentence");

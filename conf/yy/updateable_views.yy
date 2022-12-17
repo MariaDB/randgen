@@ -137,7 +137,7 @@ insert_multi:
   insert_replace INTO view_name ( field1 , field2 , field3 , field4 ) VALUES row_list ;
 
 insert_select:
-  insert_replace INTO view_name ( field1 , field2 , field3 , field4 ) select ORDER BY field1 , field2 , field3 , field4 LIMIT _digit ;;
+  insert_replace INTO view_name ( field1 , field2 , field3 , field4 ) select ORDER BY field1 , field2 , field3 , field4 LIMIT _digit ;
 
 update:
   UPDATE view_name SET value_list where ORDER BY field1 , field2 , field3 , field4 limit ;

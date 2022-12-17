@@ -25,12 +25,6 @@ query_init:
 ;
 
 query:
-  locks_104_query |
-  query | query | query | query | query | query | query | query | query |
-  query | query | query | query | query | query | query | query | query
-;
-
-locks_104_query:
   locks_104_backup_mariabackup_stages | locks_104_backup_mariabackup_stages |
   locks_104_backup_mariabackup_stages | locks_104_backup_mariabackup_stages |
   locks_104_backup_mariabackup_stages | locks_104_backup_mariabackup_stages |
@@ -46,8 +40,7 @@ locks_104_backup_random_stage:
 ;
 
 locks_104_backup_mariabackup_stages:
-  BACKUP STAGE START; BACKUP STAGE BLOCK_COMMIT; BACKUP STAGE END
-;
+  BACKUP STAGE START ;; BACKUP STAGE BLOCK_COMMIT ;; BACKUP STAGE END ;
 
 
 locks_104_backup_ordered_stages:

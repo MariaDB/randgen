@@ -122,6 +122,11 @@ event_inteval_unit:
     HOUR_MINUTE | HOUR_SECOND | MINUTE_SECOND ;
 
 event_body:
+  event_body_element |
+  BEGIN event_body_list ; END
+;
+
+event_body_list:
     ==FACTOR:4== event_body_element
   |              event_body_element ; event_body
 ;

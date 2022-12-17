@@ -36,7 +36,7 @@ crea_limit:
 
 crea_maybe_engine:
   |
-  SELECT `engine` FROM INFORMATION_SCHEMA.ENGINES WHERE SUPPORT IN ('YES','DEFAULT') AND ENGINE NOT IN ('PERFORMANCE_SCHEMA','SEQUENCE') ORDER BY RAND({$prng->uint16(0,20)}) LIMIT 1 INTO @eng; SET STATEMENT default_storage_engine = @eng FOR
+  SELECT `engine` FROM INFORMATION_SCHEMA.ENGINES WHERE SUPPORT IN ('YES','DEFAULT') AND ENGINE NOT IN ('PERFORMANCE_SCHEMA','SEQUENCE') ORDER BY RAND({$prng->uint16(0,20)}) LIMIT 1 INTO @eng ;; SET STATEMENT default_storage_engine = @eng FOR
 ;
 
 crea_table_definition:

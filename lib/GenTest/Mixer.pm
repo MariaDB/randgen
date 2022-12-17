@@ -61,7 +61,6 @@ sub new {
         }
         my $init_result = $executor->init();
         return undef if $init_result > STATUS_OK;
-        $executor->cacheMetaData();
     }
 
   my @validators;

@@ -17,39 +17,36 @@
 $combinations = [
   ['
     --seed=time
-    --threads=4
-    --duration=400
+    --scenario=Comparison
+    --duration=600
     --queries=100M
-    --reporters=Backtrace,ErrorLog,Deadlock
-    --redefine=conf/mariadb/collect_eits.yy
+    --nometadata-reload
+    --reporters=Backtrace,ErrorLog,Deadlock,JsonHistogram
+    --engine=InnoDB,MyISAM,Aria,HEAP
     --mysqld=--log-output=FILE
     --mysqld=--max-statement-time=30
+    --grammar=conf/yy/collect_eits.yy:0.00001
   '],
-
   [
-    {
-      specific_data => [
-        [
-          '--grammar=conf/optimizer/outer_join.yy --gendata=conf/optimizer/outer_join.zz --views=TEMPTABLE,MERGE',
-          '--grammar=conf/optimizer/optimizer_access_exp.yy --gendata=conf/optimizer/range_access.zz --views=TEMPTABLE,MERGE',
-        ],
-      ],
-      any_data => [
-        [
-          '--grammar=conf/optimizer/optimizer.yy',
-          '--grammar=conf/optimizer/range_access2.yy',
-          '--grammar=conf/optimizer/range_access.yy',
-        ],
-        [
-          '--gendata=conf/optimizer/range_access.zz',
-          '--gendata=conf/optimizer/range_access2.zz',
-          '--gendata=conf/optimizer/optimizer.zz',
-          '--gendata-advanced',
-          '--gendata',
-          '--gendata=data/sql/world.sql'
-        ],
-        [ '--views --engine=InnoDB,MyISAM,Aria' ],
-      ],
-    }
-  ],
+    [
+      '--validator=ResultsetComparator --threads=4',
+      '--validator=ExitCodeComparator --threads=1',
+    ],[
+      '--grammar=conf/yy/outer_join.yy --gendata=conf/zz/outer_join.zz',
+      '--grammar=conf/yy/optimizer_access_exp.yy --gendata=conf/zz/range_access.zz',
+      '--grammar=conf/yy/dbt3-joins.yy --gendata=data/dbt3/dbt3-s0.001.dump',
+      '--grammar=conf/yy/dbt3-ranges.yy --gendata=data/dbt3/dbt3-s0.001.dump',
+      '--grammar=conf/yy/dbt3-joins.yy --gendata=data/dbt3/dbt3-s0.0001.dump',
+      '--grammar=conf/yy/dbt3-ranges.yy --gendata=data/dbt3/dbt3-s0.0001.dump',
+      '--grammar=conf/yy/oltp-read.yy --gendata=conf/zz/oltp.zz',
+      '--grammar=conf/yy/range_access.yy --gendata=conf/zz/range_access.zz',
+      '--grammar=conf/yy/range_access2.yy --gendata=conf/zz/range_access2.zz',
+      '--grammar=conf/yy/optimizer_no_subquery.yy --gendata=simple',
+      '--grammar=conf/yy/optimizer_subquery_semijoin.yy --gendata=simple',
+      '--grammar=conf/yy/optimizer.yy --gendata=advanced --partitions',
+      '--grammar=conf/yy/optimizer.yy --gendata=simple',
+      '--grammar=conf/yy/optimizer.yy --gendata=data/sql/world.sql',
+      '--grammar=conf/yy/optimizer.yy --gendata=data/dbt3/dbt3-s0.001.dump',
+    ],
+  ]
 ];

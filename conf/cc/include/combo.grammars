@@ -15,11 +15,6 @@
 # USA
 
 ########################################################################
-# Legend:
-# - $xxxx should be an array ref of strings,
-#   to be used as a full or partial set of combinations
-#   within an array ref in a combinations config
-# - $optional_xxxx should be an array ref of array refs
 
 my @empty_set= ('','','','','','','','','','','','','','','','','','');
 
@@ -41,7 +36,7 @@ $grammars= [
   [@empty_set,
     '--grammar=conf/yy/application_periods.yy'],
   [@empty_set,
-    '--grammar=conf/yy/backup-locks.yy'],
+    '--grammar=conf/yy/backup-locks.yy:0.01'],
   [@empty_set,
     '--grammar=conf/yy/bulk_insert.yy'],
   [@empty_set,

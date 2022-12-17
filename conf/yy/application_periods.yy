@@ -277,11 +277,11 @@ existing_column_list:
   |              _field __asc_x_desc(33,33), existing_column_list ;
 
 period_name:
-# TODO: '``' disabled due to MDEV-18873
     ==FACTOR:100== { $last_period_name= 'p' }
   |                { $last_period_name= 'app' }
   |                { $last_period_name= 'P' }
   |                { $last_period_name= 'period' }
+  |                { $last_period_name= '``' }
 ;
 
 new_index_name_optional:

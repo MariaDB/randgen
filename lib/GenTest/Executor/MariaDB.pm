@@ -2689,7 +2689,7 @@ sub execute {
     # Add global flags if any are set
     $execution_flags = $execution_flags | $executor->flags();
 
-    if (!rqg_debug() && $query =~ s/EXECUTOR_FLAG_SILENT//g) {
+    if (!rqg_debug() && $query =~ s/EXECUTOR_FLAG_SILENT\s*\*\///g) {
         $execution_flags |= EXECUTOR_FLAG_SILENT;
     }
     if ($query =~ s/EXECUTOR_FLAG_SKIP_STATS//g) {
@@ -2747,8 +2747,8 @@ sub execute {
 
 
     unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS) {
-      my $qno_comment= 'QNO ' . $query_no . ' CON_ID ' . $executor->connectionId();
       $query_no++ if $executor->id == 1;
+      my $qno_comment= 'QNO ' . $query_no . ' TID ' . $executor->threadId();
       # If a query starts with an executable comment, we'll put QNO right after the executable comment
       if ($query =~ s/^\s*(\/\*\!.*?\*\/)/$1 \/\* $qno_comment \*\//) {}
       # If a query starts with a non-executable comment, we'll put QNO into this comment
