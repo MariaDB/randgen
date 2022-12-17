@@ -44,7 +44,6 @@ sub new {
 
 sub run {
     my ($self) = @_;
-    say("Running GendataAdvanced");
     $prng = $self->rand();
     my $executor = $self->executor();
     my $rows;

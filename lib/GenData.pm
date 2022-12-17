@@ -187,6 +187,7 @@ sub new {
 sub doGenData {
   my $props= shift;
   my @generators= ();
+  my $result= STATUS_OK;
   foreach my $gd (@{$props->gendata}) {
     my $gd_class= 'GendataFromFile';
     if ($gd eq 'simple') {
@@ -199,6 +200,7 @@ sub doGenData {
     foreach my $i (sort { $a <=> $b } keys %{$props->server_specific}) {
       my $so= $props->server_specific->{$i};
       next unless $so->{active};
+      say("Running $gd_class".($gd_class eq 'GenData::GendataFromFile' ? " from $gd" : "")." on server $i");
       my $res= $gd_class->new(
          compatibility => $props->compatibility,
          debug => $props->debug,
@@ -216,9 +218,104 @@ sub doGenData {
          vcols => $so->{vcols},
          views => $so->{views},
       )->run();
+      
+      if ($res > STATUS_CRITICAL_FAILURE) {
+        sayError("$gd_class finished with result ".status2text($res).", aborting data generation");
+        return $res;
+      } elsif ($res > $result) {
+        $result= $res;
+      }
       say("$gd_class finished with result ".status2text($res));
     }
   }
+  if ($result < STATUS_CRITICAL_FAILURE && scalar(keys %{$props->server_specific}) > 1) {
+    $result= validateData($props);
+  }
+  return $result;
+}
+
+# For several servers which may later participate in comparison,
+# the initially generated data should be identical, otherwise no point
+sub validateData {
+  my $props= shift;
+  my @exs= ();
+  foreach my $i (sort { $a <=> $b } keys %{$props->server_specific}) {
+    my $so= $props->server_specific->{$i};
+    next unless $so->{active};
+    my $e = GenTest::Executor->newFromServer(
+      $so->{server},
+      id => $i
+    );
+    $e->init();
+    push @exs, $e;
+  }
+  say("Validating original datasets");
+  my $dbs0= $exs[0]->dbh->selectcol_arrayref('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('.$exs[0]->server->systemSchemaList().') ORDER BY SCHEMA_NAME');
+  foreach my $i (1..$#exs) {
+    my $dbs= $exs[$i]->dbh->selectcol_arrayref('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('.$exs[$i]->server->systemSchemaList().') ORDER BY SCHEMA_NAME');
+    if ("@$dbs0" ne "@$dbs") {
+      sayError("GenData: Schemata mismatch after data generation between two servers (1 vs ".($i+1)."):\n\t@$dbs0\n\t@$dbs");
+      return STATUS_CRITICAL_FAILURE;
+    }
+  }
+  foreach my $db (@$dbs0) {
+    my $tbs0= $exs[0]->dbh->selectcol_arrayref("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '$db' ORDER BY TABLE_NAME");
+    foreach my $i (1..$#exs) {
+      my $tbs= $exs[$i]->dbh->selectcol_arrayref("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '$db' ORDER BY TABLE_NAME");
+      if ("@$tbs0" ne "@$tbs") {
+        sayError("GenData: Table list mismatch after data generation between two servers (1 vs ".($i+1)."):\n\t@$tbs0\n\t@$tbs");
+        return STATUS_CRITICAL_FAILURE;
+      }
+    }
+    # First, try to compare checksum, and only compare contents when checksums don't match
+    my @checksum_mismatch= ();
+    foreach my $t (@$tbs0) {
+      # Workaround for MDEV-22943 : don't run CHECKSUM on tables with virtual columns
+      my $virt_cols= $exs[0]->dbh->selectrow_arrayref("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='$db' AND TABLE_NAME='$t' AND IS_GENERATED='ALWAYS'");
+      if ($exs[0]->dbh->err) {
+        sayError("Check for virtual columns on server 1 for $db.$t ended with an error: ".($exs[0]->dbh->err)." ".($exs[0]->dbh->errstr));
+        return STATUS_CRITICAL_FAILURE;
+      } elsif ($virt_cols->[0] > 0) {
+        sayDebug("Found ".($virt_cols->[0])." virtual columns on server 1 for $db.$t, skipping CHECKSUM");
+        push @checksum_mismatch, $t;
+        next;
+      }
+      my $cs0= $exs[0]->dbh->selectrow_arrayref("CHECKSUM TABLE $db.$t EXTENDED");
+      if ($exs[0]->dbh->err) {
+        sayError("CHECKSUM on server 1 for $db.$t ended with an error: ".($exs[0]->dbh->err)." ".($exs[0]->dbh->errstr));
+        return STATUS_CRITICAL_FAILURE;
+      }
+      foreach my $i (1..$#exs) {
+        my $cs= $exs[$i]->dbh->selectrow_arrayref("CHECKSUM TABLE $db.$t EXTENDED");
+        if ($exs[$i]->dbh->err) {
+          sayError("CHECKSUM on server ".($i+1)." for $db.$t ended with an error: ".($exs[$i]->dbh->err)." ".($exs[$i]->dbh->errstr));
+          return STATUS_CRITICAL_FAILURE;
+        }
+        push @checksum_mismatch, $t if ($cs0->[1] ne $cs->[1]);
+        sayDebug("Checksums for $db.$t: server 1: ".$cs0->[1].", server ".($i+1).": ".$cs->[1]);
+      }
+    }
+    foreach my $t (@checksum_mismatch) {
+      my $rs0= $exs[0]->execute("SELECT * FROM $db.$t");
+      if ($exs[0]->dbh->err) {
+        sayError("SELECT on server 1 from $db.$t ended with an error: ".($exs[0]->dbh->err)." ".($exs[0]->dbh->errstr));
+        return STATUS_CRITICAL_FAILURE;
+      }
+      foreach my $i (1..$#exs) {
+        my $rs= $exs[$i]->execute("SELECT * FROM $db.$t");
+        if ($exs[$i]->dbh->err) {
+          sayError("SELECT on server ".($i+1)." from $db.$t ended with an error: ".($exs[$i]->dbh->err)." ".($exs[$i]->dbh->errstr));
+          return STATUS_CRITICAL_FAILURE;
+        }
+        if ( GenTest::Comparator::compare_as_unordered($rs0, $rs) != STATUS_OK ) {
+          sayError("Data mismatch after data generation between two servers (1 vs ".($i+1).") in table `$db`.`$t`");
+          return STATUS_CONTENT_MISMATCH;
+        }
+      }
+    }
+  }
+  say("Original datasets are identical");
+  return STATUS_OK;
 }
 
 sub executor {

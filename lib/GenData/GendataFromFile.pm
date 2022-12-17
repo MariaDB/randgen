@@ -119,8 +119,6 @@ sub run {
         }
     }
 
-    say("Running Gendata from file $spec_file");
-
     $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
 
     if (defined $schemas) {

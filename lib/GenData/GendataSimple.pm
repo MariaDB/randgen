@@ -44,7 +44,6 @@ sub new {
 sub run {
     my ($self) = @_;
 
-    say("Running GendataSimple");
     my $executor = $self->executor();
 
     my $names = GDS_DEFAULT_NAMES;
