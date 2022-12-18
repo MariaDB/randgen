@@ -78,11 +78,14 @@ my $trials= 1;
 my $seed= 'time';
 my $shuffle= 1;
 my $workdir;
+# Config files may be parameterized depending on version number
+my $version= '999999';
 
 my $opt_result = GetOptions(
   'basedir=s@' => \@basedirs,
   'clean' => \$clean,
   'config=s' => \$config_file,
+  'config-version|config_version=s' => \$version,
   'discard_logs|discard-logs' => \$discard_logs,
   'dry-run|dry_run' => \$dry_run,
   'force!' => \$force,
@@ -108,6 +111,8 @@ my @commands;
 my $max_result = 0;
 my $thread_id = 0;
 my $comb_seed= ($seed = 'time' ? time() : $seed);
+
+$version= versionN6($version);
 
 help("ERROR: Config file must be provided") unless defined $config_file;
 help("ERROR: Workdir must be provided") unless defined $workdir;

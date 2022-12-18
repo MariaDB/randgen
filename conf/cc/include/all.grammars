@@ -1,0 +1,167 @@
+# Copyright (c) 2022, MariaDB
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+$grammars = [
+'--grammar=conf/yy/acl.yy',
+'--grammar=conf/yy/admin.yy',
+'--grammar=conf/yy/all_selects.yy',
+'--grammar=conf/yy/alter_table_columns.yy',
+'--grammar=conf/yy/alter_table_data_types.yy',
+'--grammar=conf/yy/alter_table.yy',
+'--grammar=conf/yy/analyze_select_single_table.yy',
+'--grammar=conf/yy/application_periods.yy',
+'--grammar=conf/yy/backup-locks.yy',
+'--grammar=conf/yy/bulk_insert.yy',
+'--grammar=conf/yy/collations.yy',
+'--grammar=conf/yy/collect_eits.yy',
+'--grammar=conf/yy/concurrent.yy',
+'--grammar=conf/yy/create_or_replace.yy',
+'--grammar=conf/yy/create_user.yy
+      --mysqld=--plugin-maturity=alpha
+      --mysqld=--plugin-load-add=auth_0x0100.so
+      --mysqld=--plugin-load-add=auth_ed25519.so
+      --mysqld=--plugin-load-add=auth_pam.so
+      --mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=password_reuse_check.so
+      --mysqld=--plugin-load-add=simple_password_check.so',
+'--grammar=conf/yy/current_timestamp.yy
+      --gendata=conf/zz/current_timestamp.zz',
+'--grammar=conf/yy/dbt3-dml.yy
+      --gendata=data/dbt3/dbt3-s0.0001.dump',
+'--grammar=conf/yy/dbt3-joins.yy
+      --gendata=data/dbt3/dbt3-s0.0001.dump',
+'--grammar=conf/yy/dbt3-ranges.yy
+      --gendata=data/dbt3/dbt3-s0.0001.dump',
+'--grammar=conf/yy/debug-injections-hidden_columns.yy',
+'--grammar=conf/yy/debug-injections-sql_table.yy',
+'--grammar=conf/yy/debug-sync-sql_table.yy',
+'--grammar=conf/yy/desc_indexes.yy',
+'--grammar=conf/yy/diagnostics.yy',
+'--grammar=conf/yy/disks.yy
+      --mysqld=--plugin-load-add=disks
+      --mysqld=--loose-disks',
+'--grammar=conf/yy/dml.yy',
+'--grammar=conf/yy/dml-ps-params.yy',
+'--grammar=conf/yy/dynamic_variables.yy',
+'--grammar=conf/yy/dyncol_dml.yy
+      --gendata=conf/zz/dyncol_dml.zz',
+'--grammar=conf/yy/engine-federatedx.yy
+      --mysqld=--plugin-load-add=ha_federatedx',
+'--grammar=conf/yy/engine-heap-ddl.yy',
+'--grammar=conf/yy/engine-heap-dml.yy
+      --gendata=data/sql/engine-heap.sql',
+'--grammar=conf/yy/engine-merge.yy',
+'--grammar=conf/yy/engine-oqgraph.yy
+      --gendata=data/sql/engine-oqgraph.sql
+      --mysqld=--plugin-load-add=ha_oqgraph.so',
+'--grammar=conf/yy/engine-s3.yy
+      --minio
+      --mysqld=--plugin-load-add=ha_s3
+      --mysqld=--s3=on
+      --mysqld=--s3-host-name="127.0.0.1"
+      --mysqld=--s3-protocol-version=Auto
+      --mysqld=--s3-bucket=rqg
+      --mysqld=--s3-access-key=minio
+      --mysqld=--s3-secret-key=minioadmin
+      --mysqld=--s3-region=""
+      --mysqld=--s3-port=9000
+      --mysqld=--s3-use-http=on',
+'--grammar=conf/yy/engine-spider.yy
+      --mysqld=--plugin-load-add=ha_spider
+      --mysqld=--loose-spider-same-server-link=on
+      --mysqld=--loose-spider_table_crd_thread_count=1
+      --mysqld=--loose-spider_table_sts_thread_count=1',
+'--grammar=conf/yy/event.yy',
+'--grammar=conf/yy/foreign_keys.yy',
+'--grammar=conf/yy/full_text_search.yy
+      --gendata=conf/zz/full_text_search.zz',
+'--grammar=conf/yy/functions.yy',
+'--grammar=conf/yy/gis.yy',
+'--grammar=conf/yy/handler.yy',
+'--grammar=conf/yy/indexes_and_constraints.yy',
+'--grammar=conf/yy/information_schema.yy',
+'--grammar=conf/yy/joins.yy',
+'--grammar=conf/yy/json.yy',
+'--grammar=conf/yy/linestring.yy',
+'--grammar=conf/yy/locales.yy
+      --mysqld=--plugin-load-add=locales
+      --mysqld=--locales',
+'--grammar=conf/yy/locks.yy',
+'--grammar=conf/yy/log_slow_vars.yy',
+'--grammar=conf/yy/many_indexes.yy',
+'--grammar=conf/yy/metadata_lock_info.yy
+      --mysqld=--plugin-load-add=metadata_lock_info
+      --mysqld=--metadata-lock-info',
+'--grammar=conf/yy/multiple_triggers.yy',
+'--grammar=conf/yy/multi_update.yy
+      --gendata=simple',
+'--grammar=conf/yy/oltp-read.yy
+      --gendata=conf/zz/oltp.zz',
+'--grammar=conf/yy/oltp-write.yy
+      --gendata=conf/zz/oltp.zz',
+'--grammar=conf/yy/optimizer_access_exp.yy
+      --gendata=conf/zz/range_access.zz',
+'--grammar=conf/yy/optimizer_no_subquery.yy
+      --gendata=simple
+      --views',
+'--grammar=conf/yy/optimizer_subquery_semijoin.yy
+      --gendata=simple',
+'--grammar=conf/yy/optimizer_trace.yy',
+'--grammar=conf/yy/optimizer.yy',
+'--grammar=conf/yy/outer_join.yy
+      --gendata=conf/zz/outer_join.zz',
+'--grammar=conf/yy/parser_changes.yy',
+'--grammar=conf/yy/partition-dml.yy
+      --gendata=conf/zz/partition_by_columns.zz',
+'--grammar=conf/yy/partition_by_hash.yy',
+'--grammar=conf/yy/partition_by_range.yy',
+'--grammar=conf/yy/partition_by_list.yy',
+'--grammar=conf/yy/performance_schema.yy
+      --mysqld=--performance-schema',
+'--grammar=conf/yy/query_response_time.yy
+      --mysqld=--plugin-load-add=query_response_time
+      --mysqld=--query-response-time',
+'--grammar=conf/yy/random_keys.yy',
+'--grammar=conf/yy/range_access.yy
+      --gendata=conf/zz/range_access.zz',
+'--grammar=conf/yy/range_access2.yy
+      --gendata=conf/zz/range_access2.zz',
+'--grammar=conf/yy/replication.yy',
+'--grammar=conf/yy/sequences.yy',
+'--grammar=conf/yy/server_audit.yy
+      --mysqld=--plugin-load-add=server_audit
+      --mysqld=--server-audit
+      --mysqld=--server-audit-logging=on',
+'--grammar=conf/yy/signal_resignal.yy',
+'--grammar=conf/yy/smf.yy
+      --gendata=data/smf/smf.sql',
+'--grammar=conf/yy/sql_errlog.yy
+      --mysqld=--plugin-load-add=sql_errlog
+      --mysqld=--sql-error-log',
+'--grammar=conf/yy/sql_mode.yy',
+'--grammar=conf/yy/temporal_ranges.yy
+      --gendata=conf/zz/temporal.zz',
+'--grammar=conf/yy/temporal.yy',
+'--grammar=conf/yy/trx_stress.yy',
+'--grammar=conf/yy/updateable_views.yy
+      --gendata=data/sql/updateable_views.sql',
+'--grammar=conf/yy/userstat.yy',
+'--grammar=conf/yy/user_variables.yy
+      --mysqld=--user-variables',
+'--grammar=conf/yy/versioning.yy',
+'--grammar=conf/yy/virtual_columns.yy',
+'--grammar=conf/yy/xa.yy',
+];

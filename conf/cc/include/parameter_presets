@@ -155,7 +155,7 @@ $mariabackup_scenarios= [
 # Server option presets
 #########################
 
-my $minversion="100300";
+my $minversion="1003";
 
 %server_options= ();
 
@@ -243,7 +243,7 @@ $perfschema_options{$minversion}= "
 # PERFORMANCE_SCHEMA_MAX_STATEMENT_STACK
 # PERFORMANCE_SCHEMA_MAX_TABLE_LOCK_STAT
 
-$perfschema_options{100500}= $perfschema_options{$minversion}.'
+$perfschema_options{1005}= $perfschema_options{$minversion}.'
   --mysqld=--performance-schema-consumer-events-transactions-current=ON
   --mysqld=--performance-schema-consumer-events-transactions-history=ON
   --mysqld=--performance-schema-consumer-events-transactions-history-long=ON
@@ -391,11 +391,11 @@ $optional_innodb_variables{$minversion}= [
   ],
 ];
 
-$optional_innodb_variables{100400}= [ @$optional_innodb_variables{$minversion} ];
+$optional_innodb_variables{1004}= [ @$optional_innodb_variables{$minversion} ];
 #
 # 'full_crc32' checksum algorithm was added in 10.4
 #
-foreach my $o (@$optional_innodb_variables{100400}) {
+foreach my $o (@$optional_innodb_variables{1004}) {
   foreach my $i (0..$#$o) {
     if ($o->[$i] =~ /^--mysqld=--innodb-checksum-algorithm/) {
       $o= [ @$o, '--mysqld=--innodb-checksum-algorithm=full_crc32', '--mysqld=--innodb-checksum-algorithm=strict_full_crc32' ];
@@ -404,7 +404,7 @@ foreach my $o (@$optional_innodb_variables{100400}) {
   }
 }
 
-$optional_innodb_variables_{100600}= [ @$optional_innodb_variables{100400},
+$optional_innodb_variables_{1006}= [ @$optional_innodb_variables{1004},
   [ '','','','','','','','','','','','','','','',
     '--mysqld=--innodb-read-only-compressed=on',
     '--mysqld=--innodb-read-only-compressed=off',
@@ -413,7 +413,7 @@ $optional_innodb_variables_{100600}= [ @$optional_innodb_variables{100400},
 #
 # 'none' and 'innodb' checksum algorithms were removed from 10.6
 #
-foreach my $o (@$optional_innodb_variables{100600}) {
+foreach my $o (@$optional_innodb_variables{1006}) {
   foreach my $i (0..$#$o) {
     if ( ($o->[$i] eq '--mysqld=--innodb-checksum-algorithm=innodb')
       or ($o->[$i] eq '--mysqld=--innodb-checksum-algorithm=none')
@@ -452,7 +452,7 @@ $optional_plugins{$minversion}= [
   [ '--mysqld=--plugin-load-add=simple_password_check', '', '', '', '' ],
 ];
 
-$optional_plugins{100700}= [
+$optional_plugins{1007}= [
   @$optional_plugins{$minversion},
   [ '', '', '', '--mysqld=--plugin-load-add=provider_bzip2' ],
   [ '', '', '', '--mysqld=--plugin-load-add=provider_lz4' ],
@@ -555,13 +555,13 @@ $optional_server_variables{$minversion}= [
   ],
 ];
 
-$optional_server_variables{100900}= [ @$optional_server_variables{$minversion},
-    ['','--mysqld=--loose-hashicorp-key-management-max-retries=2147483647', '--mysqld=--loose-hashicorp-key-management-max-retries=0', '--mysqld=--loose-hashicorp-key-management-max-retries=1'],
-    ['','--mysqld=--loose-hashicorp-key-cache-version-timeout=0', '--mysqld=--loose-hashicorp-key-cache-version-timeout=9223372036854775807', '--mysqld=--loose-hashicorp-key-cache-version-timeout=1'],
-    ['','--mysqld=--loose-hashicorp-key-management-timeout=0', '--mysqld=--loose-hashicorp-key-management-timeout=86400', '--mysqld=--loose-hashicorp-key-management-timeout=1'],
-    ['','--mysqld=--loose-hashicorp-key-management-use-cache-on-timeout=ON'],
-    ['','--mysqld=--loose-hashicorp-key-management-caching-enabled=OFF'],
-    ['','--mysqld=--loose-hashicorp-key-cache-timeout=0', '--mysqld=--loose-hashicorp-key-cache-timeout=9223372036854775807', '--mysqld=--loose-hashicorp-key-cache-timeout=1'],
+$optional_server_variables{1009}= [ @$optional_server_variables{$minversion},
+    ['--mysqld=--loose-hashicorp-key-management-max-retries=2147483647', '--mysqld=--loose-hashicorp-key-management-max-retries=0', '--mysqld=--loose-hashicorp-key-management-max-retries=1'],
+    ['--mysqld=--loose-hashicorp-key-cache-version-timeout=0', '--mysqld=--loose-hashicorp-key-cache-version-timeout=9223372036854775807', '--mysqld=--loose-hashicorp-key-cache-version-timeout=1'],
+    ['--mysqld=--loose-hashicorp-key-management-timeout=0', '--mysqld=--loose-hashicorp-key-management-timeout=86400', '--mysqld=--loose-hashicorp-key-management-timeout=1'],
+    ['--mysqld=--loose-hashicorp-key-management-use-cache-on-timeout=ON'],
+    ['--mysqld=--loose-hashicorp-key-management-caching-enabled=OFF'],
+    ['--mysqld=--loose-hashicorp-key-cache-timeout=0', '--mysqld=--loose-hashicorp-key-cache-timeout=9223372036854775807', '--mysqld=--loose-hashicorp-key-cache-timeout=1'],
 ];
 
 $server_options{optional_server_variables}= \%optional_server_variables;

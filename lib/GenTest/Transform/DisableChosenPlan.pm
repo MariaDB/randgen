@@ -102,23 +102,23 @@ sub modify {
     my $original_explain_string = Dumper($original_explain->data())."\n".Dumper($original_explain->warnings());
 
     my @transformed_queries;
+    my @cleanup_block;
     foreach my $explain2switch (@explain2switch) {
       my ($explain_fragment, $switch) = ($explain2switch->[0], $explain2switch->[1]);
       if ($original_explain_string =~ m{$explain_fragment}si) {
         $explain2count{"$explain_fragment => $switch"}++;
         my ($switch_name) = $switch =~ m{^(.*?)=}sgio;
-        push @transformed_queries, [
+        push @transformed_queries,
           'SET @'.$switch_name.'_saved = @@'.$switch_name,
           "SET SESSION $switch",
-          $original_query.($transform_outcome ? " /* $transform_outcome */" : ""),
-        ], [
-          '/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@'.$switch_name.'_saved'
-        ]
+          $original_query.($transform_outcome ? " /* $transform_outcome */" : "");
+        push @cleanup_block,
+          '/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@'.$switch_name.'_saved';
       }
     }
 
     if ($#transformed_queries > -1) {
-      return \@transformed_queries;
+      return [ [ @transformed_queries ], [ @cleanup_block ] ];
     } else {
       return undef;
     }

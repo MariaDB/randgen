@@ -181,14 +181,6 @@ sub transformExecuteValidate {
         $transformed_queries[0] =  "/* ". $transformer->name ." */ ".$transformed_queries[0];
         foreach my $transformed_query_part (@transformed_queries) {
             my $part_result = $executor->execute($transformed_query_part);
-            my $partial_transform_outcome;
-
-            foreach my $potential_outcome (keys %transform_outcomes) {
-                if ($transformed_query_part =~ m{\W+$potential_outcome\W+}s) {
-                    $partial_transform_outcome = $transform_outcomes{$potential_outcome};
-                    last;
-                }
-            }
 
             if ($part_result->status() == STATUS_SKIP) {
                 # During query transformations skipping only some parts of the transformed queries
@@ -196,7 +188,17 @@ sub transformExecuteValidate {
                 # Completely skipping such transformed queries is better.
                 $transform_outcome = STATUS_OK;
                 last;
-            } elsif ($partial_transform_outcome == TRANSFORM_OUTCOME_ANY) {
+            }
+
+            my $partial_transform_outcome;
+            foreach my $potential_outcome (keys %transform_outcomes) {
+                if ($transformed_query_part =~ m{\W+$potential_outcome\W+}s) {
+                    $partial_transform_outcome = $transform_outcomes{$potential_outcome};
+                    last;
+                }
+            }
+
+            if ($partial_transform_outcome == TRANSFORM_OUTCOME_ANY) {
               # "Best effort" auxiliary query which shouldn't affect the outcome
               $transform_outcome = STATUS_OK unless defined $transform_outcome;
             } elsif (

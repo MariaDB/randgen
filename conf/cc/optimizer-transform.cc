@@ -16,6 +16,7 @@
 
 $combinations = [
   ['
+    --scenario=Standard
     --seed=time
     --threads=4
     --duration=600
@@ -25,6 +26,7 @@ $combinations = [
     --engine=InnoDB,MyISAM,Aria,HEAP
     --mysqld=--log-output=FILE
     --mysqld=--max-statement-time=30
+    --mysqld=--loose-optimizer-trace=enabled=on
     --transformer=AnalyzeOrExplain
     --transformer=ConvertSubqueriesToViews
     --transformer=Count
@@ -55,7 +57,8 @@ $combinations = [
     --transformer=OrderBy
     --transformer=Rownum
     --transformer=SelectOption
-    --grammar=conf/yy/collect_eits.yy
+    --validators=Transformer,OptimizerTraceParser
+    --grammar=conf/yy/collect_eits.yy:0.00001
   '],
   [
     '--grammar=conf/yy/outer_join.yy --gendata=conf/zz/outer_join.zz',

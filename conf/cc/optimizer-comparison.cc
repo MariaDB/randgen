@@ -16,8 +16,8 @@
 
 $combinations = [
   ['
-    --seed=time
     --scenario=Comparison
+    --seed=time
     --duration=600
     --queries=100M
     --nometadata-reload
@@ -25,12 +25,43 @@ $combinations = [
     --engine=InnoDB,MyISAM,Aria,HEAP
     --mysqld=--log-output=FILE
     --mysqld=--max-statement-time=30
+    --variator=AnalyzeOrExplain
+    --variator=ConvertSubqueriesToViews
+    --variator=Count
+    --variator=DisableChosenPlan
+    --variator=DisableOptimizations
+    --variator=Distinct
+    --variator=EnableOptimizations
+    --variator=ExecuteAsCTE
+    --variator=ExecuteAsDeleteReturning
+    --variator=ExecuteAsDerived
+    --variator=ExecuteAsExcept
+    --variator=ExecuteAsInsertSelect
+    --variator=ExecuteAsIntersect
+    --variator=ExecuteAsPreparedTwice
+    --variator=ExecuteAsSelectItem
+    --variator=ExecuteAsUnion
+    --variator=ExecuteAsUpdateDelete
+    --variator=ExecuteAsView
+    --variator=ExecuteAsWhereSubquery
+    --variator=FullOrderBy
+    --variator=Having
+    --variator=IgnoredKeys
+    --variator=InlineSubqueries
+    --variator=LimitDecrease
+    --variator=LimitIncrease
+    --variator=LimitRowsExamined
+    --variator=OffsetFetch
+    --variator=OrderBy
+    --variator=Rownum
+    --variator=SelectOption
     --grammar=conf/yy/collect_eits.yy:0.00001
   '],
   [
     [
       '--validator=ResultsetComparator --threads=4',
       '--validator=ExitCodeComparator --threads=1',
+      '--validator=ExecutionTimeComparator --threads=1',
     ],[
       '--grammar=conf/yy/outer_join.yy --gendata=conf/zz/outer_join.zz',
       '--grammar=conf/yy/optimizer_access_exp.yy --gendata=conf/zz/range_access.zz',
