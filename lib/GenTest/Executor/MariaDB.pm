@@ -3006,6 +3006,10 @@ sub explain {
     return unless is_query_explainable($executor,$query);
 
     my $sth_output = $executor->dbh()->prepare("EXPLAIN /*!50100 PARTITIONS */ $query");
+    if ($executor->dbh()->err) {
+      sayWarning("EXPLAIN attempt for $query failed with ".$executor->dbh()->err." (".$executor->dbh()->errstr.")");
+      return;
+    }
 
     $sth_output->execute();
 

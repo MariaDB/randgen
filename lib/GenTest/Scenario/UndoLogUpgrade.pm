@@ -166,7 +166,7 @@ sub run {
 
   waitpid($gentest_pid, 0);
   $status= ($? >> 8);
-  if ($status != STATUS_OK) {
+  if ($status != STATUS_OK && $status != STATUS_SERVER_STOPPED && $status != STATUS_TEST_STOPPED) {
     sayError("Test flow failed");
     return $self->finalize($status,[$old_server]);
   }

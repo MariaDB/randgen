@@ -28,7 +28,7 @@ query_init:
 
 query:
                   { _set_db('ANY') } dml |
-  ==FACTOR:0.01== { _set_db('test') } ddl ;
+  ==FACTOR:0.01== { _set_db('ANY') } ddl ;
 
 dml:
   select | insert | update | delete ;

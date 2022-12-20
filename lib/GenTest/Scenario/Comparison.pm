@@ -67,7 +67,7 @@ sub run {
 
   if (! $self->getProperty('validators') or scalar(@{$self->getProperty('validators')}) == 0) {
     sayWarning("No validators are defined, using ".SC_COMPARISON_DEFAULT_VALIDATOR);
-    $self->setProperty('validators',[ SC_COMPARISON_DEFAULT_VALIDATOR ]);
+    $self->setProperty('validators',[ SC_COMPARISON_DEFAULT_VALIDATOR,'ExitCodeComparator' ]);
   }
 
   my @servers= ();

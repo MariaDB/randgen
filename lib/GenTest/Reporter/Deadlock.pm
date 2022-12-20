@@ -133,22 +133,18 @@ sub monitor_nonthreaded {
 
 sub collect_deadlock_diagnostics {
   my $reporter= shift;
-  say("HERE: in collect 1");
   sigaction SIGALRM, new POSIX::SigAction sub {
               sayError("Deadlock reporter: Timeout upon performing deadlock diagnostics");
               return STATUS_SERVER_DEADLOCKED;
   } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
 
-  say("HERE: in collect 2");
   alarm(REPORTER_CONNECT_TIMEOUT_THRESHOLD);
-  say("HERE: in collect 3");
 
   unless ($reporter->dbh) {
     alarm(0);
     return STATUS_SERVER_UNAVAILABLE;
   }
   $reporter->dbh->do("INSTALL SONAME 'metadata_lock_info'");
-  say("HERE: in collect 4");
   foreach my $status_query (
     "SHOW FULL PROCESSLIST",
     "SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO",

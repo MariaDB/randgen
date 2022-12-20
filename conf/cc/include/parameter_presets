@@ -437,6 +437,14 @@ $optional_aria_variables{$minversion}= [
     '--mysqld=--aria-block-size=32768'
   ],
 ];
+$optional_aria_variables{1006}= [
+  # Default 8192;
+  # MDEV-30278 - 4K cannot be used in 10.6+
+  [ '', '', '', '', '', '', '', '', '', '', '', '',
+    '--mysqld=--aria-block-size=16384',
+    '--mysqld=--aria-block-size=32768'
+  ],
+];
 
 $server_options{optional_aria_variables}= \%optional_aria_variables;
 

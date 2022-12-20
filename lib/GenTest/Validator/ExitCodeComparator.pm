@@ -24,6 +24,8 @@ package GenTest::Validator::ExitCodeComparator;
 require Exporter;
 @ISA = qw(GenTest GenTest::Validator);
 
+use Data::Dumper;
+
 use strict;
 
 use GenUtil;
@@ -153,6 +155,10 @@ sub validate {
 
 sub logResult {
     my ($executors, $results, $level, $more_text)= @_;
+      say("HERE: 1:");
+      print Dumper $results->[0];
+      say("HERE: 2:");
+      print Dumper $results->[1];
     my $line=
       "---------- EXIT CODE COMPARISON ISSUE START ------------\n".
       "For query " . $results->[0]->query . ":\n".

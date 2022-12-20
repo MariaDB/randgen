@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-30277:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ Reprepare_observer::report_error
+MDEV-30263:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ Query .*: HANDLER .* READ
 MDEV-30112:
 =~ AddressSanitizer|signal
 =~ Item_ident::print
