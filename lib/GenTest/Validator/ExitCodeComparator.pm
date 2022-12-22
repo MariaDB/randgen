@@ -34,7 +34,7 @@ use Constants;
 use GenTest::Comparator;
 use GenTest::Result;
 use GenTest::Validator;
-use GenTest::Executor::MariaDB;
+use GenTest::Executor::MRDB;
 
 my $garbage_in= 0;
 

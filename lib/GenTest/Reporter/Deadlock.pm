@@ -29,7 +29,7 @@ use Constants::MariaDBErrorCodes;
 use GenTest::Result;
 use GenTest::Reporter;
 use GenTest::Reporter::Backtrace;
-use GenTest::Executor::MariaDB;
+use GenTest::Executor::MRDB;
 
 use DBI;
 use Data::Dumper;

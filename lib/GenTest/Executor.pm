@@ -36,9 +36,10 @@ require Exporter;
 use strict;
 use Carp;
 use Data::Dumper;
+use Constants;
+use Constants::MariaDBErrorCodes;
 use GenUtil;
 use GenTest;
-use Constants;
 
 use constant EXECUTOR_DSN      => 0;
 use constant EXECUTOR_DBH      => 1;
@@ -75,6 +76,8 @@ use constant EXECUTOR_FLAG_NON_EXISTING_ALLOWED => 2;
 
 use constant EXECUTOR_MAX_ROWS_THRESHOLD  => 5000000;
 
+my %reported_errors;
+
 1;
 
 sub new {
@@ -105,8 +108,8 @@ sub newFromDSN {
   my $self= shift;
   my $dsn= shift;
   if ($dsn =~ m/^dbi:(?:mysql|mariadb):/i) {
-    require GenTest::Executor::MariaDB;
-    return GenTest::Executor::MariaDB->new(dsn => $dsn, @_);
+    require GenTest::Executor::MRDB;
+    return GenTest::Executor::MRDB->new(dsn => $dsn, @_);
   } else {
     croak("Unsupported dsn: $dsn");
   }
@@ -120,8 +123,8 @@ sub newFromServer {
   my $self= shift;
   my $server= shift;
   if ($server->dsn =~ m/^dbi:(?:mysql|mariadb):/i) {
-    require GenTest::Executor::MariaDB;
-    return GenTest::Executor::MariaDB->new(server => $server, @_);
+    require GenTest::Executor::MRDB;
+    return GenTest::Executor::MRDB->new(server => $server, @_);
   } else {
     croak("Unsupported server type, dsn: $server->dsn");
   }
@@ -236,6 +239,36 @@ sub loadCollations {
     carp "loadCollations not defined for ". (ref $_[0]);
     return [[undef,undef]];
 }
+
+sub disconnect {
+    my $executor = shift;
+    $executor->dbh()->disconnect() if defined $executor->dbh();
+    $executor->setDbh(undef);
+}
+
+sub reportError {
+    my ($self, $query, $err, $errstr, $execution_flags) = @_;
+
+    my $msg = [$query,$err,$errstr];
+
+    if (defined $self->channel) {
+        $self->sendError($msg);
+    } elsif (not defined $reported_errors{$errstr}) {
+        my $query_for_print= shorten_message($query);
+        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text(errorType($err)) . "). Further errors of this kind will be suppressed.");
+        $reported_errors{$errstr}++;
+    }
+}
+
+sub currentSchema {
+  my ($executor,$schema) = @_;
+  if (defined $schema) {
+    sayDebug("Setting current schema to $schema");
+    $executor->[EXECUTOR_CURRENT_SCHEMA]= $schema;
+  }
+  return $executor->[EXECUTOR_CURRENT_SCHEMA];
+}
+
 
 ##############################
 #### Metadata routines
@@ -692,6 +725,7 @@ sub metaColumnInfo {
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }
 
+
 ################### Public interface to be used from grammars
 ##
 
@@ -729,6 +763,16 @@ sub databaseExists {
     return 1 if $_ eq $db;
   }
   return 0;
+}
+
+sub DESTROY {
+    my $executor = shift;
+    $executor->disconnect();
+    if (scalar(keys %{$executor->[EXECUTOR_STATUS_COUNTS]})) {
+      say("-----------------------");
+      say("Statuses: for Executor#".$executor->threadId()." at ".$executor->server->port().": ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } sort keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
+      say("-----------------------");
+    }
 }
 
 1;

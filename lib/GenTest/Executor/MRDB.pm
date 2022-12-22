@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-package GenTest::Executor::MariaDB;
+package GenTest::Executor::MRDB;
 
 require Exporter;
 
@@ -35,8 +35,6 @@ use GenTest::Executor;
 use Time::HiRes;
 use Digest::MD5;
 use GenTest::Random;
-
-my %reported_errors;
 
 #
 # Column positions for SHOW SLAVES
@@ -108,20 +106,6 @@ sub init {
     sayDebug("Executor initialized. id: ".$executor->id()."; default schema: ".$executor->defaultSchema()."; connection ID: ".$executor->connectionId());
 
     return STATUS_OK;
-}
-
-sub reportError {
-    my ($self, $query, $err, $errstr, $execution_flags) = @_;
-
-    my $msg = [$query,$err,$errstr];
-
-    if (defined $self->channel) {
-        $self->sendError($msg);
-    } elsif (not defined $reported_errors{$errstr}) {
-        my $query_for_print= shorten_message($query);
-        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text(errorType($err)) . "). Further errors of this kind will be suppressed.");
-        $reported_errors{$errstr}++;
-    }
 }
 
 sub execute {
@@ -401,31 +385,6 @@ sub slaveInfo {
 sub masterStatus {
     my $executor = shift;
     return $executor->dbh()->selectrow_array("SHOW MASTER STATUS");
-}
-
-sub disconnect {
-    my $executor = shift;
-    $executor->dbh()->disconnect() if defined $executor->dbh();
-    $executor->setDbh(undef);
-}
-
-sub DESTROY {
-    my $executor = shift;
-    $executor->disconnect();
-    if (scalar(keys %{$executor->[EXECUTOR_STATUS_COUNTS]})) {
-      say("-----------------------");
-      say("Statuses: for Executor#".$executor->threadId()." at ".$executor->server->port().": ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } sort keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
-      say("-----------------------");
-    }
-}
-
-sub currentSchema {
-  my ($executor,$schema) = @_;
-  if (defined $schema) {
-    sayDebug("Setting current schema to $schema");
-    $executor->[EXECUTOR_CURRENT_SCHEMA]= $schema;
-  }
-  return $executor->[EXECUTOR_CURRENT_SCHEMA];
 }
 
 sub loadCollations {

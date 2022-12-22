@@ -32,7 +32,7 @@ use GenTest;
 use Constants;
 use GenTest::Result;
 use GenTest::Reporter;
-use GenTest::Executor::MariaDB;
+use GenTest::Executor::MRDB;
 
 use DBI;
 use Data::Dumper;
