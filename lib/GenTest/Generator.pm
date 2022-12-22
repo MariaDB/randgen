@@ -42,31 +42,46 @@ require Exporter;
 
 use strict;
 
-use constant GENERATOR_GRAMMARS         => 2;
-use constant GENERATOR_SEED             => 3;
-use constant GENERATOR_PRNG             => 4;
-use constant GENERATOR_TMPNAM           => 5;
-use constant GENERATOR_THREAD_ID        => 6;
-use constant GENERATOR_SEQ_ID           => 7;
-use constant GENERATOR_GLOBAL_FRAME  => 12;
+use GenUtil;
+
+use constant GENERATOR_GRAMMARS            =>  2;
+use constant GENERATOR_SEED                =>  3;
+use constant GENERATOR_PRNG                =>  4;
+use constant GENERATOR_TMPNAM              =>  5;
+use constant GENERATOR_THREAD_ID           =>  6;
+use constant GENERATOR_SEQ_ID              =>  7;
+use constant GENERATOR_VARIATORS           =>  8;
+use constant GENERATOR_GLOBAL_FRAME        => 12;
 use constant GENERATOR_PARTICIPATING_RULES => 13;       # Stores the list of rules used in the last generated query
-use constant GENERATOR_ANNOTATE_RULES => 14;
-use constant GENERATOR_PARSER => 16;
-use constant GENERATOR_PARSER_MODE => 17;
-use constant GENERATOR_GRAMMAR_POOL => 18;
+use constant GENERATOR_ANNOTATE_RULES      => 14;
+use constant GENERATOR_PARSER              => 16;
+use constant GENERATOR_PARSER_MODE         => 17;
+use constant GENERATOR_GRAMMAR_POOL        => 18;
+
+use constant VARIATION_PROBABILITY => 10; # Per cent
 
 sub new {
   my $class = shift;
   my $generator = $class->SUPER::new({
-    'grammars'    => GENERATOR_GRAMMARS,
-    'seed'      => GENERATOR_SEED,
-    'prng'      => GENERATOR_PRNG,
-    'thread_id'    => GENERATOR_THREAD_ID,
-    'annotate_rules'  => GENERATOR_ANNOTATE_RULES,
-    'parser'          => GENERATOR_PARSER,
-    'parser_mode'          => GENERATOR_PARSER_MODE,
+    'grammars'       => GENERATOR_GRAMMARS,
+    'seed'           => GENERATOR_SEED,
+    'prng'           => GENERATOR_PRNG,
+    'thread_id'      => GENERATOR_THREAD_ID,
+    'annotate_rules' => GENERATOR_ANNOTATE_RULES,
+    'parser'         => GENERATOR_PARSER,
+    'parser_mode'    => GENERATOR_PARSER_MODE,
+    'variators'      => GENERATOR_VARIATORS,
   }, @_);
 
+  if ($generator->[GENERATOR_VARIATORS] && scalar(@{$generator->[GENERATOR_VARIATORS]})) {
+    my @variators= ();
+    foreach my $vn (@{$generator->[GENERATOR_VARIATORS]}) {
+      eval ("require GenTest::Transform::'".$vn) or croak $@;
+      my $variator = ('GenTest::Transform::'.$vn)->new();
+      push @variators, $variator;
+    }
+    $generator->[GENERATOR_VARIATORS]= \@variators;
+  }
   return $generator;
 }
 
@@ -99,6 +114,10 @@ sub grammars {
   return $_[0]->[GENERATOR_GRAMMARS];
 }
 
+sub variators {
+  return $_[0]->[GENERATOR_VARIATORS];
+}
+
 sub threadId {
   return $_[0]->[GENERATOR_THREAD_ID];
 }
@@ -124,4 +143,47 @@ sub setThreadId {
   $_[0]->[GENERATOR_THREAD_ID] = $_[1];
 }
 
+sub variateQuery {
+  my ($self,$orig_query,$executor)= @_;
+  # Do not variate queries with /*executorN */ comments
+  return [ $orig_query ] if ($orig_query =~ /\/\*executor\d/);
+  
+  my @variators= @{$self->[GENERATOR_VARIATORS]};
+  $self->prng->shuffleArray(\@variators);
+  my @queries= ($orig_query);
+  VARIATOR:
+  foreach my $v (@variators) {
+    next if isOlderVersion($executor->server->version(),$v->compatibility);
+    my @new_queries= ();
+    QUERY:
+    foreach my $q (@queries) {
+    # Variation happens with the configured probability
+      if ($self->prng->uint16(1,100) > VARIATION_PROBABILITY || $q =~ /SKIP_VARIATION/) {
+        push @new_queries, $q;
+        next QUERY;
+      }
+      my $qs= $v->variate($q,$executor);
+      # Something went wrong
+      return $qs if ref $qs eq '';
+      # flatten 2-level arrays (e.g. if there is TRANFORM_CLEANUP block)
+      my @qs= ();
+      foreach my $q (@$qs) {
+        if (ref $q eq '') {
+          push @qs, $q;
+        } elsif (ref $q eq 'ARRAY') {
+          push @qs, @$q;
+        }
+      }
+      if (scalar(@qs) > 1 || ($qs[0] ne $q)) {
+        sayDebug($v->name." variator modified the query\nfrom [ $q ] to [ \n".(join "\n    ", @qs)." \n]");
+      } elsif (scalar(@$qs)==0) {
+        sayWarning($v->name." returned an empty query");
+      }
+      push @new_queries, @qs;
+    }
+    @queries= @new_queries;
+  }
+  sayDebug("Final queries after variation: [\n".(join "\n    ",@queries)."\n]");
+  return \@queries;
+}
 1;

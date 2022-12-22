@@ -67,14 +67,14 @@ sub validate {
     };
 
   my $max_transformer_status= STATUS_OK;
-  $executor->dbh->do('SELECT CONCAT("SET ROLE ",IFNULL(CURRENT_ROLE(),"NONE")) INTO @role_stmt');
+  $executor->dbh->do("SELECT CONCAT('SET ROLE ',IFNULL(CURRENT_ROLE(),'NONE')) INTO ".'@role_stmt');
   if ($executor->dbh->err) {
-    sayError("Couldn't store current role in Transformer validator");
+    sayError("Couldn't store current role in Transformer validator: ".$executor->dbh->err." ".$executor->dbh->errstr);
     return STATUS_ENVIRONMENT_FAILURE;
   }
   $executor->dbh->do('SET ROLE admin');
   if ($executor->dbh->err) {
-    sayError("Couldn't set admin role in Transformer validator");
+    sayError("Couldn't set admin role in Transformer validator: ".$executor->dbh->err." ".$executor->dbh->errstr);
     return STATUS_ENVIRONMENT_FAILURE;
   }
   
@@ -119,7 +119,7 @@ sub transform {
     return $transform_outcome;
   }
 
-  say("---------- TRANSFORM ISSUE ----------");
+  say("---------- TRANSFORM ISSUE START ----------");
   say("Original query: $original_query failed transformation with Transformer ".$transformer->name().
     "; RQG Status: ".status2text($transform_outcome)." ($transform_outcome)");
   if (not defined $transformed_queries) {
@@ -133,7 +133,7 @@ sub transform {
         'Raising status to STATUS_ENVIRONMENT_FAILURE');
       return STATUS_ENVIRONMENT_FAILURE;
     }
-    say("------- END OF TRANSFORM ISSUE -------");
+    say("----------- TRANSFORM ISSUE END -----------");
     return $transform_outcome;
   }
 

@@ -35,9 +35,6 @@ use Time::HiRes;
 use Digest::MD5;
 use GenTest::Random;
 
-use constant RARE_QUERY_THRESHOLD    => 5;
-use constant MAX_ROWS_THRESHOLD        => 7000000;
-
 my %reported_errors;
 
 my @errors = (
@@ -99,8 +96,6 @@ my @errors = (
 
 my @patterns = map { qr{$_}i } @errors;
 
-use constant EXECUTOR_MYSQL_AUTOCOMMIT => 101;
-
 #
 # Column positions for SHOW SLAVES
 #
@@ -112,12 +107,13 @@ use constant SLAVE_INFO_PORT => 2;
 # Error codes
 #
 
-use constant  ER_OUTOFMEMORY2                                   => 5; # returned by some storage engines
-use constant  ER_CRASHED1                                       => 126; # Index is corrupted
-use constant  ER_CRASHED2                                       => 145; # Table was marked as crashed and should be repaired
-use constant  HA_ERR_TABLE_DEF_CHANGED                          => 159; # The table changed in the storage engine
-use constant  ER_AUTOINCREMENT                                  => 167; # Failed to set row auto increment value
-use constant  ER_INCOMPATIBLE_FRM                               => 190; # Incompatible key or row definition between the MariaDB .frm file and the information in the storage engine
+use constant  X_ER_OUTOFMEMORY2                                    => 5; # returned by some storage engines
+use constant  X_ER_CRASHED1                                      => 126; # Index is corrupted
+use constant  X_ER_TOO_BIG_ROW                                   => 139; # Too big row
+use constant  X_ER_CRASHED2                                      => 145; # Table was marked as crashed and should be repaired
+use constant  X_ER_TABLE_DEF_CHANGED                             => 159; # The table changed in the storage engine
+use constant  X_ER_AUTOINCREMENT                                 => 167; # Failed to set row auto increment value
+use constant  X_ER_INCOMPATIBLE_FRM                              => 190; # Incompatible key or row definition between the MariaDB .frm file and the information in the storage engine
 
 use constant  ER_NISAMCHK                                       => 1001; # !!! NOT MAPPED !!! # isamchk
 use constant  ER_NO                                             => 1002; # !!! NOT MAPPED !!! # NO
@@ -1411,7 +1407,6 @@ my %err2type = (
     ER_AMBIGUOUS_FIELD_TERM()                           => STATUS_SEMANTIC_ERROR,
     ER_ARGUMENT_NOT_CONSTANT()                          => STATUS_SEMANTIC_ERROR,
     ER_ARGUMENT_OUT_OF_RANGE()                          => STATUS_SEMANTIC_ERROR,
-    ER_AUTOINCREMENT()                                  => STATUS_RUNTIME_ERROR,
     ER_AUTOINC_READ_FAILED()                            => STATUS_IGNORED_ERROR, # See MDEV-533 for "Failed to read auto-increment value from storage engine" on BIGINT UNSIGNED
     ER_AUTO_INCREMENT_CONFLICT()                        => STATUS_RUNTIME_ERROR,
     ER_AUTO_POSITION_REQUIRES_GTID_MODE_ON()            => STATUS_SEMANTIC_ERROR,
@@ -1581,8 +1576,6 @@ my %err2type = (
     ER_CONSTRAINT_FAILED()                              => STATUS_RUNTIME_ERROR,
     ER_CON_COUNT_ERROR()                                => STATUS_ENVIRONMENT_FAILURE,
     ER_CORRUPT_HELP_DB()                                => STATUS_DATABASE_CORRUPTION,
-    ER_CRASHED1()                                       => STATUS_IGNORED_ERROR,
-    ER_CRASHED2()                                       => STATUS_IGNORED_ERROR,
     ER_CRASHED_ON_REPAIR()                              => STATUS_DATABASE_CORRUPTION,
     ER_CRASHED_ON_USAGE()                               => STATUS_DATABASE_CORRUPTION,
     ER_CREATE_DB_WITH_READ_LOCK()                       => STATUS_RUNTIME_ERROR,
@@ -1783,7 +1776,6 @@ my %err2type = (
     ER_ILLEGAL_REFERENCE()                              => STATUS_UNSUPPORTED,
     ER_ILLEGAL_SUBQUERY_OPTIMIZER_SWITCHES()            => STATUS_SEMANTIC_ERROR,
     ER_ILLEGAL_VALUE_FOR_TYPE()                         => STATUS_RUNTIME_ERROR,
-    ER_INCOMPATIBLE_FRM()                               => STATUS_DATABASE_CORRUPTION,
     ER_INCONSISTENT_ERROR()                             => STATUS_REPLICATION_FAILURE,
     ER_INCONSISTENT_PARTITION_INFO_ERROR()              => STATUS_DATABASE_CORRUPTION,
     ER_INCONSISTENT_SLAVE_TEMP_TABLE()                  => STATUS_REPLICATION_FAILURE,
@@ -2023,7 +2015,6 @@ my %err2type = (
     ER_ORDER_LIST_IN_REFERENCING_WINDOW_SPEC()          => STATUS_SEMANTIC_ERROR,
     ER_ORDER_WITH_PROC()                                => STATUS_SEMANTIC_ERROR,
     ER_OUTOFMEMORY()                                    => STATUS_ENVIRONMENT_FAILURE,
-    ER_OUTOFMEMORY2()                                   => STATUS_ENVIRONMENT_FAILURE,
     ER_OUT_OF_RESOURCES()                               => STATUS_DATABASE_CORRUPTION, # Demoted to non-critical due to MDEV-29157
     ER_OUT_OF_SORTMEMORY()                              => STATUS_CONFIGURATION_ERROR,
     ER_OVERLAPPING_KEYS()                               => STATUS_RUNTIME_ERROR,
@@ -2561,8 +2552,6 @@ my %err2type = (
     ER_ZLIB_Z_DATA_ERROR()                              => STATUS_IGNORED_ERROR, # MDEV-16698, MDEV-16699
     ER_ZLIB_Z_MEM_ERROR()                               => STATUS_ENVIRONMENT_FAILURE,
 
-    HA_ERR_TABLE_DEF_CHANGED()                          => STATUS_RUNTIME_ERROR,
-
     WARN_COND_ITEM_TRUNCATED()                          => STATUS_RUNTIME_ERROR,
     WARN_DATA_TRUNCATED()                               => STATUS_RUNTIME_ERROR,
     WARN_INNODB_PARTITION_OPTION_IGNORED()              => STATUS_RUNTIME_ERROR,
@@ -2576,14 +2565,14 @@ my %err2type = (
     WARN_VERS_PARAMETERS()                              => STATUS_SEMANTIC_ERROR,
     WARN_VERS_PART_FULL()                               => STATUS_RUNTIME_ERROR,
     WARN_VERS_PART_NON_HISTORICAL()                     => STATUS_RUNTIME_ERROR,
-);
-
-# Sub-error numbers (<nr>) from storage engine failures (ER_GET_ERRNO);
-# "1030 Got error <nr> from storage engine", which should not lead to
-# STATUS_DATABASE_CORRUPTION, as they are acceptable runtime errors.
-
-my %acceptable_se_errors = (
-        139                     => "TOO_BIG_ROW"
+    
+    X_ER_AUTOINCREMENT()                                => STATUS_RUNTIME_ERROR,
+    X_ER_CRASHED1()                                     => STATUS_IGNORED_ERROR,
+    X_ER_CRASHED2()                                     => STATUS_IGNORED_ERROR,
+    X_ER_INCOMPATIBLE_FRM()                             => STATUS_DATABASE_CORRUPTION,
+    X_ER_OUTOFMEMORY2()                                 => STATUS_ENVIRONMENT_FAILURE,
+    X_ER_TABLE_DEF_CHANGED()                            => STATUS_RUNTIME_ERROR,
+    X_ER_TOO_BIG_ROW()                                  => STATUS_RUNTIME_ERROR,
 );
 
 my $query_no = 0;
@@ -2636,17 +2625,6 @@ sub init {
 
     $executor->defaultSchema($executor->currentSchema());
 
-    if (
-        ($executor->fetchMethod() == FETCH_METHOD_AUTO) ||
-        ($executor->fetchMethod() == FETCH_METHOD_USE_RESULT)
-    ) {
-        say("Setting mysql_use_result to 1, so mysql_use_result() will be used.") if rqg_debug();
-#        $dbh->{'mysql_use_result'} = 1;
-    } elsif ($executor->fetchMethod() == FETCH_METHOD_STORE_RESULT) {
-        say("Setting mysql_use_result to 0, so mysql_store_result() will be used.") if rqg_debug();
-#        $dbh->{'mysql_use_result'} = 0;
-    }
-
     my $cidref= $dbh->selectrow_arrayref("SELECT CONNECTION_ID()");
     if ($dbh->err) {
         sayError("Couldn't get connection ID: " . $dbh->err() . " (" . $dbh->errstr() .")");
@@ -2656,7 +2634,7 @@ sub init {
     $executor->user($dbh->selectrow_arrayref("SELECT CURRENT_USER()")->[0]);
     $dbh->do('SELECT '.GenTest::Random::dataLocation().' AS DATA_LOCATION');
 
-    say("Executor initialized. id: ".$executor->id()."; default schema: ".$executor->defaultSchema()."; connection ID: ".$executor->connectionId()) if rqg_debug();
+    sayDebug("Executor initialized. id: ".$executor->id()."; default schema: ".$executor->defaultSchema()."; connection ID: ".$executor->connectionId());
 
     return STATUS_OK;
 }
@@ -2666,14 +2644,12 @@ sub reportError {
 
     my $msg = [$query,$err,$errstr];
 
-    if (not ($execution_flags & EXECUTOR_FLAG_SILENT)) {
-      if (defined $self->channel) {
-          $self->sendError($msg);
-      } elsif (not defined $reported_errors{$errstr}) {
-          my $query_for_print= shorten_message($query);
-          say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text(errorType($err)) . "). Further errors of this kind will be suppressed.");
-          $reported_errors{$errstr}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
-      }
+    if (defined $self->channel) {
+        $self->sendError($msg);
+    } elsif (not defined $reported_errors{$errstr}) {
+        my $query_for_print= shorten_message($query);
+        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text(errorType($err)) . "). Further errors of this kind will be suppressed.");
+        $reported_errors{$errstr}++;
     }
 }
 
@@ -2682,16 +2658,13 @@ sub execute {
     $execution_flags= 0 unless defined $execution_flags;
 
     # Check for execution flags in query comments. They can, for example,
-    # indicate that a query is intentionally invalid, and the error
-    # doesn't need to be reported.
-    # The format for it is /* EXECUTOR_FLAG_SILENT */
+    # indicate that a query is for service purposes and doesn't need
+    # to be included into statistics
+    # The format for it is /* EXECUTOR_FLAG_SKIP_STATS */
 
     # Add global flags if any are set
     $execution_flags = $execution_flags | $executor->flags();
 
-    if (!rqg_debug() && $query =~ s/EXECUTOR_FLAG_SILENT\s*\*\///g) {
-        $execution_flags |= EXECUTOR_FLAG_SILENT;
-    }
     if ($query =~ s/EXECUTOR_FLAG_SKIP_STATS//g) {
         $execution_flags |= EXECUTOR_FLAG_SKIP_STATS;
     }
@@ -2709,7 +2682,8 @@ sub execute {
             errstr     => "Internal error, required object not found",
             sqlstate   => undef,
             start_time => undef,
-            end_time   => undef
+            end_time   => undef,
+            execution_flags => $execution_flags
         );
       } else {
         sayError("Discarding query [ $query ] and setting STATUS_REQUIREMENT_UNMET");
@@ -2720,7 +2694,8 @@ sub execute {
             errstr     => "Internal error, required object not found",
             sqlstate   => undef,
             start_time => undef,
-            end_time   => undef
+            end_time   => undef,
+            execution_flags => $execution_flags
         );
       }
     }
@@ -2745,36 +2720,20 @@ sub execute {
     # Or occasionaly "x AS alias1 AS alias2"
     while ($query =~ s/AS\s+\w+\s+(AS\s+\w+)/$1/g) {}
 
-
-    unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS) {
-      $query_no++ if $executor->id == 1;
-      my $qno_comment= 'QNO ' . $query_no . ' TID ' . $executor->threadId();
-      # If a query starts with an executable comment, we'll put QNO right after the executable comment
-      if ($query =~ s/^\s*(\/\*\!.*?\*\/)/$1 \/\* $qno_comment \*\//) {}
-      # If a query starts with a non-executable comment, we'll put QNO into this comment
-      elsif ($query =~ s/^\s*\/\*(.*?)\*\//\/\* $qno_comment $1 \*\//) {}
-      # Otherwise we'll put QNO comment after the first token (it should be a keyword specifying the operation)
-      elsif ($query =~ s/^\s*(\w+)/$1 \/\* $qno_comment \*\//) {}
-      # Finally, if it's something else that we didn't expect, we'll add QNO at the end of the query
-      else { $query .= " /* $qno_comment */" };
-    }
+    $query_no++ if $executor->id == 1;
+    my $qno_comment= 'QNO ' . $query_no . ' TID ' . $executor->threadId();
+    # If a query starts with an executable comment, we'll put QNO right after the executable comment
+    if ($query =~ s/^\s*(\/\*\!.*?\*\/)/$1 \/\* $qno_comment \*\//) {}
+    # If a query starts with a non-executable comment, we'll put QNO into this comment
+    elsif ($query =~ s/^\s*\/\*(.*?)\*\//\/\* $qno_comment $1 \*\//) {}
+    # Otherwise we'll put QNO comment after the first token (it should be a keyword specifying the operation)
+    elsif ($query =~ s/^\s*(\w+)/$1 \/\* $qno_comment \*\//) {}
+    # Finally, if it's something else that we didn't expect, we'll add QNO at the end of the query
+    else { $query .= " /* $qno_comment */" };
 
     my $dbh = $executor->dbh();
 
-    return GenTest::Result->new( query => $query, status => STATUS_UNKNOWN_ERROR ) if not defined $dbh;
-
-    if (
-        (not defined $executor->[EXECUTOR_MYSQL_AUTOCOMMIT]) &&
-        ($query =~ m{^\s*(start\s+transaction|begin|commit|rollback)}io)
-    ) {
-        $dbh->do("SET AUTOCOMMIT=OFF");
-        $executor->[EXECUTOR_MYSQL_AUTOCOMMIT] = 0;
-
-        if ($executor->fetchMethod() == FETCH_METHOD_AUTO) {
-            say("Transactions detected. Setting mysql_use_result to 0, so mysql_store_result() will be used.") if rqg_debug();
-            $dbh->{'mysql_use_result'} = 0;
-        }
-    }
+    return GenTest::Result->new( query => $query, status => STATUS_UNKNOWN_ERROR, execution_flags => $execution_flags ) if not defined $dbh;
 
     my $trace_query;
     my $trace_me = 0;
@@ -2801,7 +2760,6 @@ sub execute {
 
     if (not defined $sth) {            # Error on PREPARE
         #my $errstr_prepare = $executor->normalizeError($dbh->errstr());
-        $executor->[EXECUTOR_ERROR_COUNTS]->{$dbh->err}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
         return GenTest::Result->new(
             query        => $query,
             status        => errorType($dbh->err()),
@@ -2809,7 +2767,8 @@ sub execute {
             errstr         => $dbh->errstr(),
             sqlstate    => $dbh->state(),
             start_time    => $start_time,
-            end_time    => Time::HiRes::time()
+            end_time    => Time::HiRes::time(),
+            execution_flags => $execution_flags
         );
     }
 
@@ -2824,7 +2783,6 @@ sub execute {
       $err_type= errorType($err);
       if ($err == ER_GET_ERRNO) {
           my ($se_err) = $sth->errstr() =~ m{^Got error\s+(\d+)\s+from storage engine}sgio;
-          $err_type = STATUS_OK if (defined $se_err and defined $acceptable_se_errors{$se_err});
       }
     }
 
@@ -2851,10 +2809,6 @@ sub execute {
     my $result;
     if (defined $err)
     {  # Error on EXECUTE
-        $executor->[EXECUTOR_ERROR_COUNTS]->{$err}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
-        if ($execution_flags & EXECUTOR_FLAG_SILENT) {
-          $executor->[EXECUTOR_SILENT_ERRORS_COUNT] = $executor->[EXECUTOR_SILENT_ERRORS_COUNT] ? $executor->[EXECUTOR_SILENT_ERRORS_COUNT] + 1 : 1;
-        }
         if (
             ($err_type == STATUS_SKIP) ||
             ($err_type == STATUS_UNSUPPORTED) ||
@@ -2885,10 +2839,8 @@ sub execute {
             }
 
             my $query_for_print= shorten_message($query);
-            if (not ($execution_flags & EXECUTOR_FLAG_SILENT)) {
-              say("Executor::MariaDB::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
-            }
-        } elsif (not ($execution_flags & EXECUTOR_FLAG_SILENT)) {
+            say("Executor::MariaDB::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
+        } else {
             # Always print syntax and uncategorized errors, unless specifically asked not to
             my $query_for_print= shorten_message($query);
             say("Executor::MariaDB::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
@@ -2901,6 +2853,7 @@ sub execute {
             sqlstate    => $sth->state(),
             start_time    => $start_time,
             end_time    => $end_time,
+            execution_flags => $execution_flags
         );
     } elsif ((not defined $sth->{NUM_OF_FIELDS}) || ($sth->{NUM_OF_FIELDS} == 0)) {
         $result = GenTest::Result->new(
@@ -2912,8 +2865,8 @@ sub execute {
             info        => $mysql_info,
             start_time    => $start_time,
             end_time    => $end_time,
+            execution_flags => $execution_flags
         );
-        $executor->[EXECUTOR_ERROR_COUNTS]->{'(no error)'}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
     } else {
         my @data;
         my %data_hash;
@@ -2923,17 +2876,16 @@ sub execute {
         while (my @row = $sth->fetchrow_array()) {
             $row_count++;
             push @data, \@row;
-            last if ($row_count > MAX_ROWS_THRESHOLD);
+            last if ($row_count > EXECUTOR_MAX_ROWS_THRESHOLD);
         }
 
         # Do one extra check to catch 'query execution was interrupted' error
         if (defined $sth->err()) {
             $result_status = errorType($sth->err());
             @data = ();
-        } elsif ($row_count > MAX_ROWS_THRESHOLD) {
+        } elsif ($row_count > EXECUTOR_MAX_ROWS_THRESHOLD) {
             my $query_for_print= shorten_message($query);
-            say("Query: $query_for_print returned more than MAX_ROWS_THRESHOLD (".MAX_ROWS_THRESHOLD().") rows. Killing it ...");
-            $executor->[EXECUTOR_RETURNED_ROW_COUNTS]->{'>MAX_ROWS_THRESHOLD'}++;
+            say("Query: $query_for_print returned more than EXECUTOR_MAX_ROWS_THRESHOLD (".EXECUTOR_MAX_ROWS_THRESHOLD().") rows. Killing it ...");
 
             my $kill_dbh = DBI->connect($executor->dsn(), undef, undef, { PrintError => 1 });
             $kill_dbh->do("KILL QUERY ".$executor->connectionId());
@@ -2953,9 +2905,9 @@ sub execute {
             end_time    => $end_time,
             column_names    => $column_names,
             column_types    => $column_types,
+            execution_flags => $execution_flags
         );
 
-        $executor->[EXECUTOR_ERROR_COUNTS]->{'(no error)'}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
     }
 
     $sth->finish();
@@ -2966,22 +2918,6 @@ sub execute {
             $result->setWarnings($warnings);
         }
     }
-
-    if (rqg_debug() && (! ($execution_flags & EXECUTOR_FLAG_SILENT) && (! ($execution_flags & EXECUTOR_FLAG_SKIP_STATS)))) {
-        if ($query =~ m{^\s*(?:select|insert|replace|delete|update)}is) {
-            $executor->explain($query);
-
-            if ($result->status() != STATUS_SKIP) {
-                my $row_group = ((not defined $result->rows()) ? 'undef' : ($result->rows() > 100 ? '>100' : ($result->rows() > 10 ? ">10" : sprintf("%5d",$sth->rows()))));
-                $executor->[EXECUTOR_RETURNED_ROW_COUNTS]->{$row_group}++;
-            }
-            if ($query =~ m{^\s*(update|delete|insert|replace)}is) {
-                my $row_group = ((not defined $affected_rows) ? 'undef' : ($affected_rows > 100 ? '>100' : ($affected_rows > 10 ? ">10" : sprintf("%5d",$affected_rows))));
-                $executor->[EXECUTOR_AFFECTED_ROW_COUNTS]->{$row_group}++;
-            }
-        }
-    }
-
     return $result;
 }
 
@@ -2996,63 +2932,6 @@ sub masterStatus {
     return $executor->dbh()->selectrow_array("SHOW MASTER STATUS");
 }
 
-#
-# Run EXPLAIN on the query in question, recording all notes in the EXPLAIN's Extra field into the statistics
-#
-
-sub explain {
-    my ($executor, $query) = @_;
-
-    return unless is_query_explainable($executor,$query);
-
-    my $sth_output = $executor->dbh()->prepare("EXPLAIN /*!50100 PARTITIONS */ $query");
-    if ($executor->dbh()->err) {
-      sayWarning("EXPLAIN attempt for $query failed with ".$executor->dbh()->err." (".$executor->dbh()->errstr.")");
-      return;
-    }
-
-    $sth_output->execute();
-
-    my @explain_fragments;
-
-    while (my $explain_row = $sth_output->fetchrow_hashref()) {
-
-        push @explain_fragments, "select_type: ".($explain_row->{select_type} || '(empty)');
-        push @explain_fragments, "type: ".($explain_row->{type} || '(empty)');
-        push @explain_fragments, "partitions: ".$explain_row->{table}.":".$explain_row->{partitions} if defined $explain_row->{partitions};
-        push @explain_fragments, "possible_keys: ".(defined $explain_row->{possible_keys} ? $explain_row->{possible_keys} : '');
-        push @explain_fragments, "key: ".(defined $explain_row->{key} ? $explain_row->{key} : '');
-        push @explain_fragments, "ref: ".(defined $explain_row->{ref} ? $explain_row->{ref} : '');
-
-        foreach my $extra_item (split('; ', ($explain_row->{Extra} || '(empty)')) ) {
-            $extra_item =~ s{0x.*?\)}{%d\)}sgio;
-            $extra_item =~ s{PRIMARY|[a-z_]+_key|i_l_[a-z_]+}{%s}sgio;
-            push @explain_fragments, "extra: ".$extra_item;
-        }
-    }
-
-    $executor->dbh()->do("EXPLAIN EXTENDED $query");
-    my $explain_extended = $executor->dbh()->selectrow_arrayref("SHOW WARNINGS");
-    if (defined $explain_extended) {
-        push @explain_fragments, $explain_extended->[2] =~ m{<[a-z_0-9\-]*?>}sgo;
-    }
-
-    foreach my $explain_fragment (@explain_fragments) {
-        $executor->[EXECUTOR_EXPLAIN_COUNTS]->{$explain_fragment}++;
-        if ($executor->[EXECUTOR_EXPLAIN_COUNTS]->{$explain_fragment} > RARE_QUERY_THRESHOLD) {
-            delete $executor->[EXECUTOR_EXPLAIN_QUERIES]->{$explain_fragment};
-        } else {
-            push @{$executor->[EXECUTOR_EXPLAIN_QUERIES]->{$explain_fragment}}, $query;
-        }
-    }
-
-}
-
-sub is_query_explainable {
-  my ($executor, $query) = @_;
-  return $query =~ /^\s*(?:SELECT|UPDATE|DELETE|INSERT)/i;
-}
-
 sub disconnect {
     my $executor = shift;
     $executor->dbh()->disconnect() if defined $executor->dbh();
@@ -3062,30 +2941,11 @@ sub disconnect {
 sub DESTROY {
     my $executor = shift;
     $executor->disconnect();
-    say("-----------------------");
-    say("Statistics for Executor ".$executor->dsn());
-    if (
-        (rqg_debug()) &&
-        (defined $executor->[EXECUTOR_STATUS_COUNTS])
-    ) {
-        use Data::Dumper;
-        $Data::Dumper::Sortkeys = 1;
-        say("Rows returned:");
-        print Dumper $executor->[EXECUTOR_RETURNED_ROW_COUNTS];
-        say("Rows affected:");
-        print Dumper $executor->[EXECUTOR_AFFECTED_ROW_COUNTS];
-        say("Explain items:");
-        print Dumper $executor->[EXECUTOR_EXPLAIN_COUNTS];
-        say("Errors:");
-        print Dumper $executor->[EXECUTOR_ERROR_COUNTS];
-        if ($executor->[EXECUTOR_SILENT_ERRORS_COUNT]) {
-          say("Out of the above, ".$executor->[EXECUTOR_SILENT_ERRORS_COUNT]." errors had SILENT flag");
-        }
-#        say("Rare EXPLAIN items:");
-#        print Dumper $executor->[EXECUTOR_EXPLAIN_QUERIES];
+    if (scalar(keys %{$executor->[EXECUTOR_STATUS_COUNTS]})) {
+      say("-----------------------");
+      say("Statuses: for Executor ".$executor->threadId()." at ".$executor->server->port().": ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } sort keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
+      say("-----------------------");
     }
-    say("Statuses: ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } sort keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
-    say("-----------------------");
 }
 
 sub currentSchema {

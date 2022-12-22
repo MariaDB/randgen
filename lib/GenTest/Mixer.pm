@@ -77,7 +77,7 @@ sub new {
     my $validator = $v[$i];
     if (ref($validator) eq '') {
       $validator = "GenTest::Validator::".$validator;
-      say("Mixer: Loading Validator $validator.");
+      sayDebug("Mixer: Loading Validator $validator.");
       eval "use $validator" or print $@;
       my $instance= $validator->new();
       foreach my $e (@{$mixer->executors()}) {
@@ -160,7 +160,7 @@ sub next {
 
       EXECUTE_QUERY:
     foreach my $executor (@$executors) {
-      my $execution_result = $executor->variate_and_execute($query);
+      my $execution_result = $executor->execute($query);
 
       # If the server has crashed but we expect server restarts during the test, we will wait and retry
       if (serverGone($execution_result->status()))
@@ -211,7 +211,7 @@ sub next {
   # rules will be reported on DESTROY.
   #
 
-  if ((rqg_debug()) && (ref($mixer->generator()) eq 'GenTest::Generator::FromGrammar')) {
+  if (ref($mixer->generator()) eq 'GenTest::Generator::FromGrammar') {
     my $participating_rules = $mixer->generator()->participatingRules();
     foreach my $participating_rule (@$participating_rules) {
       if (

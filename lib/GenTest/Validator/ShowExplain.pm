@@ -135,7 +135,7 @@ sub validate {
         {
           if ( $show_row[9] =~ /Query plan already deleted/ )
           {
-            say("SHOW EXPLAIN output contains row 'Query plan already deleted'") if rqg_debug();
+            sayDebug("SHOW EXPLAIN output contains row 'Query plan already deleted'");
             ( $length_differs ? last : next );
           }
           my $err_description = '';
@@ -184,7 +184,6 @@ sub validate {
   {
     $executor->dbh()->{InactiveDestroy} = 1;
     $executor->setDbh(undef);
-    $executor->setFlags($executor->flags() | EXECUTOR_FLAG_SILENT);
     $child_dbh->do($query);
     $child_dbh->{InactiveDestroy} = 1;
     $child_dbh = undef;

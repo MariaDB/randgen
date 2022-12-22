@@ -211,13 +211,10 @@ sub group_cleaner {
   return if osWindows();
   my $group_id= `ps -ho pgrp -p $$`;
   chomp $group_id;
-  #system("ps -ho pgrp,pid,comm | grep -v tee");
+#  system("ps -ho pgrp,pid,args | grep -v tee");
   my @pids= split /\n/, `ps -ho pgrp,pid,comm | grep -v tee`;
   my @group= ();
   my @immortals= ($group_id, $$);
-  if ($ENV{RQG_IMMORTALS}) {
-    push @immortals, (split /,/, $ENV{RQG_IMMORTALS});
-  }
   
   PP:
   foreach my $pp (@pids) {
@@ -231,7 +228,7 @@ sub group_cleaner {
     }
   }
 #  system("ps -ef | grep -E '".join('|',@group)."'");
-  say("Cleaning the group $group_id (@group), keeping immortals (@immortals)");
+  sayDebug("Cleaning the group $group_id (@group), keeping immortals (@immortals)");
   kill('KILL',@group);
   return STATUS_TEST_STOPPED;
 }

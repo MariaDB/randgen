@@ -96,7 +96,7 @@ sub filter {
 }
 
 sub DESTROY {
-  print "GenTest::Filter::Regexp: total_queries: $total_queries; filtered_queries: $filtered_queries\n" if rqg_debug() && defined $total_queries;
+  sayDebug("Filter::Regexp: total_queries: $total_queries; filtered_queries: $filtered_queries") if defined $total_queries;
 }
 
 1;

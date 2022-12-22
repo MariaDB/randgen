@@ -21,6 +21,8 @@
 
 ########################################################################
 
+sub run {
+  @ARGV= @_;
 unless (defined $ENV{RQG_HOME}) {
   use File::Basename qw(dirname);
   use Cwd qw(abs_path);
@@ -71,10 +73,7 @@ my ($help,
     @exit_status, $trials, $output, $force,
    );
 
-unless ($ENV{RQG_IMMORTALS}) {
-  $ENV{RQG_IMMORTALS}.= "$$";
-  $SIG{INT}= \&group_cleaner;
-}
+$SIG{INT}= \&group_cleaner;
 
 # Defaults
 $props->{user}= 'rqg';
@@ -262,7 +261,7 @@ if ($git_rev) {
   sayWarning("Could not get RQG git revision");
 }
 
-say("Starting \n# $0 \\ \n# ".join(" \\ \n# ", @ARGV_saved));
+say("Starting \\ \n# ".join(" \\ \n# ", @ARGV_saved));
 
 if (defined $props->{sqltrace}) {
   # --sqltrace may have a string value (optional).
@@ -389,12 +388,12 @@ foreach my $trial_id (1..$trials)
   }
 }
 
-say("$0 will exit with exit status ".status2text($status). " ($status)\n");
+say("Test run exits with exit status ".status2text($status). " ($status)\n");
 if ($search_mode) {
   say("Test runs apparently ".($trial_result ? "achieved the expected outcome" : "failed to achieve the expected outcome"));
 }
 
-safe_exit($status);
+return $status;
 
 ###############################################
 
@@ -523,7 +522,15 @@ EOF
         print STDERR "ERROR: $_\n";
       }
       print "\n";
-      exit 1;
+      return 1;
     }
-    exit 0;
+    return 0;
 }
+}
+
+if (scalar(@ARGV)) {
+  my $status= run(@ARGV);
+  safe_exit($status);
+}
+
+1;

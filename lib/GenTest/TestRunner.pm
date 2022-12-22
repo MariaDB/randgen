@@ -243,7 +243,7 @@ sub run {
                 say("Process with pid $spawned_pid ($processtype) no longer exists");
                 last OUTER;
             } else {
-                say("Process with pid $child_pid ($processtype) ended with status ".status2text($child_exit_status));
+                sayDebug("Process with pid $child_pid ($processtype) ended with status ".status2text($child_exit_status));
                 delete $worker_pids{$child_pid};
             }
 
@@ -280,7 +280,7 @@ sub run {
     $errorfilter_p->kill();
 
     my $gentest_result= $self->reportResults($total_status);
-    say("TestRunner will exit with exit status ".status2text($gentest_result)." ($gentest_result)");
+    sayDebug("TestRunner will exit with exit status ".status2text($gentest_result)." ($gentest_result)");
     return $gentest_result;
 
 }
@@ -327,7 +327,7 @@ sub reportResults {
 sub stopChild {
     my ($self, $status) = @_;
 
-    say("GenTest: child $$ is being stopped with status " . status2text($status));
+    sayDebug("TestRunner: child $$ is being stopped with status " . status2text($status));
     # Stopping executors explicitly to hopefully trigger statistics output
     foreach my $executor (@{$self->[TR_EXECUTORS]}) {
         if ($executor) {
@@ -399,7 +399,6 @@ sub workerProcess {
           thread_id => $worker_id,
           sqltrace => $self->config->sqltrace,
           vardir => $self->config->vardir,
-          variators => $self->config->variators,
         );
         push @executors, $executor;
     }
@@ -472,7 +471,7 @@ sub workerProcess {
     undef $self->[TR_QUERY_FILTERS];
 
     if ($worker_result > 0) {
-        say("TestRunner: Child worker process completed with error code $worker_result.");
+        say("TestRunner: Child worker process completed with error code ".status2text($worker_result)." ($worker_result)");
         $self->stopChild($worker_result);
     } else {
         sayDebug("TestRunner: Child worker process completed successfully.");
@@ -508,7 +507,7 @@ sub initGenerator {
     my $self = shift;
 
     my $generator_name = "GenTest::Generator::".$self->config->generator;
-    say("Loading Generator $generator_name.") if rqg_debug();
+    sayDebug("Loading Generator $generator_name.");
     eval("use $generator_name");
     croak($@) if $@;
 
@@ -561,6 +560,7 @@ sub initGenerator {
       annotate_rules => $self->config->property('annotate-rules'),
       parser => $self->config->parser,
       parser_mode => $self->config->parser_mode,
+      variators => $self->config->variators,
     );
 
     if (not defined $self->generator()) {

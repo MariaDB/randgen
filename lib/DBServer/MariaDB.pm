@@ -1092,7 +1092,7 @@ sub stopServer {
     my $shutdown_marker= 'SHUTDOWN_'.time();
     $self->addErrorLogMarker($shutdown_marker);
     if ($shutdown_timeout and defined $self->[MYSQLD_DBH]) {
-        say("Stopping server on port ".$self->port);
+        sayDebug("Stopping server at port ".$self->port);
         $SIG{'ALRM'} = sub { sayWarning("Could not execute shutdown command in time"); };
         ## Use dbh routine to ensure reconnect in case connection is
         ## stale (happens i.e. with mdl_stability/valgrind runs)
@@ -1109,21 +1109,21 @@ sub stopServer {
                     $res= $self->term;
                 }
                 if (!$res) {
-                    say("Shutdown failed due to ".$dbh->err.":".$dbh->errstr);
+                    sayError("Shutdown failed due to ".$dbh->err.":".$dbh->errstr);
                     $res= DBSTATUS_FAILURE;
                 }
             }
         }
         if (!$self->waitForServerToStop($shutdown_timeout)) {
             # Terminate process
-            say("Server would not shut down properly. Terminate it");
+            sayWarining("Server would not shut down properly. Terminating it");
             $res= $self->term;
         } else {
             # clean up when server is not alive.
             unlink $self->socketfile if -e $self->socketfile;
             unlink $self->pidfile if -e $self->pidfile;
             $res= DBSTATUS_OK;
-            say("Server has been stopped");
+            say("Server at port ".$self->port." has been stopped");
         }
     } else {
         say("Shutdown timeout or dbh is not defined, killing the server");

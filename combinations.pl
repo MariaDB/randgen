@@ -59,10 +59,9 @@ if ( osWindows() ) {
 
 $| = 1;
 
-$ENV{RQG_IMMORTALS}="$$";
 $SIG{TERM} = sub { exit(0) };
 $SIG{CHLD} = "IGNORE" if osWindows();
-#$SIG{INT}= sub { \&group_cleaner };
+$SIG{INT}= sub { \&group_cleaner };
 
 # Options
 my @basedirs=();
@@ -98,10 +97,6 @@ my $opt_result = GetOptions(
   'workdir=s' => \$workdir,
 );
 
-if (@ARGV) {
-  say("Unrecognized options will be passed to the runner: @ARGV");
-}
-
 help() if $help;
 
 # Variables
@@ -132,7 +127,6 @@ my %pids;
 for my $i (1..$threads) {
   my $pid = fork();
   if ($pid == 0) {
-    $ENV{RQG_IMMORTALS}.= ",$$";
     ## Child
     $thread_id = $i;
     make_path($workdir);
@@ -153,7 +147,7 @@ for my $i (1..$threads) {
 }
 
 if ($thread_id > 0) {
-    say("[$thread_id] will exit with exit status ".status2text($max_result).
+    sayDebug("Combinations [$thread_id]: will exit with exit status ".status2text($max_result).
         "($max_result)");
     exit($max_result);
 } else {
@@ -166,8 +160,7 @@ if ($thread_id > 0) {
       #say("Thread $pids{$child} (pid=$child) exited with $exit_status");
       $total_status = $exit_status if $exit_status > $total_status;
     }
-    say("$0 will exit with exit status ".status2text($total_status).
-        "($total_status)");
+    say("Combinations exit with exit status ".status2text($total_status)." ($total_status)");
     exit($total_status);
 }
 
@@ -320,55 +313,64 @@ sub doRandom {
 
 ## ----------------------------------------------------
 sub doCombination {
-    my ($trial_id,$comb_str,$comment) = @_;
+  my ($trial_id,$comb_str,$comment) = @_;
 
-    return if (($trial_id -1) % $threads +1) != $thread_id;
-    say("#============================================================");
-    say("[$thread_id] Running $comment (".$trial_id."/".$trials.")");
+  return if (($trial_id -1) % $threads +1) != $thread_id;
+  say("#============================================================");
+  say("Combinations [$thread_id]: running $comment (".$trial_id."/".$trials.")");
 
-  my $command = "
-    perl ".($Carp::Verbose?"-MCarp=verbose ":"").
-        (defined $ENV{RQG_HOME} ? $ENV{RQG_HOME}."/" : "./" ).
-        "run.pl $comb_str ";
+#  my $command = "
+#    perl ".($Carp::Verbose?"-MCarp=verbose ":"").
+#        (defined $ENV{RQG_HOME} ? $ENV{RQG_HOME}."/" : "./" ).
+#        "run.pl $comb_str ";
 
-  $command .= " --base-port=".COMB_RQG_DEFAULT_BASE_PORT;
+  # Split arguments back into an array. We do it this way rather than
+  # making an array from the start, because some arguments come from
+  # combinations file as a string already, '--x --y' etc., so they
+  # would need splitting anyway
+  my @args= ();
+  while ($comb_str =~ s/^\s*(\".*?\"|--[^\s]+)//) {
+    my $arg= $1;
+    chomp $arg;
+    $arg =~ s{[\t\r\n]}{ }sgio;
+    push @args, $arg;
+  }
+
+  push @args, "--base-port=".COMB_RQG_DEFAULT_BASE_PORT;
   foreach (@basedirs) {
-    $command .= " --basedir=".$_." ";
+    push @args, "--basedir=".$_;
   }
-  my $tm= time();
-  if ($command =~ s/--seed=time/--seed=$tm/g) {}
-  elsif ($command !~ /--seed=/) {
-    $command .= " --seed=".($seed eq 'time' ? $tm : $seed)." ";
+  push @args, "--seed=".($seed eq 'time' ? time() : $seed);
+
+  if (@ARGV) {
+    sayDebug("Unrecognized options will be passed to the runner: @ARGV");
+    push @args, @ARGV;
+    @ARGV= ();
   }
 
-  $command.= " @ARGV";
+  my $runscript= (defined $ENV{RQG_HOME} ? $ENV{RQG_HOME}."/run.pl" : "./run.pl");
+  require "$runscript";
 
   # Count the number of basedirs in the final string to add the vardirs
   my $vardir= "$workdir/current1_${thread_id}";
-  $command .= " --vardir=$vardir ";
+  push @args, "--vardir=$vardir";
 
-  $command =~ s{[\t\r\n]}{ }sgio;
-  $commands[$trial_id] = $command;
-  $command =~ s{"}{\\"}sgio;
+  $commands[$trial_id] = [ @args ];
 
-  while ($command =~ s/\s\s/ /g) {};
-  $command =~ s/^\s*//;
-  say("[$thread_id] $command\n");
-
+  say("Combinations [$thread_id]: arguments: @args");
   unless ($dry_run)
   {
     # Command execution
-    my $result= system($command);
-    $result= $result >> 8;
+    my $result= run(@args);
     group_cleaner();
     # Post-execution activities
     my $tl = $workdir.'/trial'.$trial_id.'.log';
     move("$vardir/trial.log",$tl);
     if (defined $clean && $result == 0) {
-      say("[$thread_id] run.pl exited with exit status ".status2text($result)."($result). Clean mode active: deleting this OK log");
+      say("Combinations [$thread_id]: test run exited with exit status ".status2text($result)."($result). Clean mode active: deleting this OK log");
       system("rm -f $tl");
     } else {
-      say("[$thread_id] run.pl exited with exit status ".status2text($result)."($result), see $tl");
+      say("Combinations [$thread_id]: test run exited with exit status ".status2text($result)."($result), see $tl");
     }
     exit($result) if (($result == STATUS_ENVIRONMENT_FAILURE) || ($result == 255)) && (not defined $force);
 
@@ -378,21 +380,21 @@ sub doCombination {
     system("$ENV{RQG_HOME}\\util\\unlock_handles.bat -nobanner \"$from\"") if osWindows() and -e "\"$from\"";
     if ($result > 0 and not $discard_logs) {
       my $to = $workdir.'/vardir1_'.$trial_id;
-      say("[$thread_id] Copying $from to $to") if $stdToLog;
+      sayDebug("Combinations [$thread_id]: Copying $from to $to") if $stdToLog;
       if (osWindows() and -e $from) {
         system("move \"$from\" \"$to\"");
         system("move \"$from"."_slave\" \"$to\"") if -e $from.'_slave';
         open(OUT, ">$to/command");
-        print OUT $command;
+        print OUT "@args";
         close(OUT);
       } else {
         system("cp -r $from $to") if -e $from;
         system("cp -r $from"."_slave $to") if -e $from.'_slave';
         open(OUT, ">$to/command");
-        print OUT $command;
+        print OUT "@args";
         close(OUT);
         if (defined $clean) {
-          say("[$thread_id] Clean mode active & failed run (".status2text($result)."): Archiving this vardir");
+          say("Combinations [$thread_id]: Clean mode active & failed run (".status2text($result)."): Archiving this vardir");
           system('rm -f '.$workdir.'/vardir1_'.$trial_id.'/tmp/master.sock');
           system('tar zhcf '.$workdir.'/vardir1_'.$trial_id.'.tar.gz -C '.$workdir.' ./vardir1_'.$trial_id);
           system("rm -Rf $to");

@@ -61,7 +61,6 @@ require Exporter;
   GD_VIEWS
   GD_SQLTRACE
   GD_SHORT_COLUMN_NAMES
-  GD_VARIATORS
   GD_VARDIR
   GD_PARTITIONS
   GD_COMPATIBILITY
@@ -130,7 +129,6 @@ use constant GD_EXECUTOR_ID => 7;
 use constant GD_SQLTRACE => 9;
 use constant GD_SHORT_COLUMN_NAMES => 10;
 use constant GD_EXECUTOR => 11;
-use constant GD_VARIATORS => 12;
 use constant GD_VARDIR => 15;
 use constant GD_PARTITIONS => 16;
 use constant GD_COMPATIBILITY => 17;
@@ -152,7 +150,6 @@ sub new {
         'views' => GD_VIEWS,
         'short_column_names' => GD_SHORT_COLUMN_NAMES,
         'server' => GD_SERVER,
-        'variators' => GD_VARIATORS,
         'sqltrace' => GD_SQLTRACE,
         'vardir' => GD_VARDIR,
         'partitions' => GD_PARTITIONS,
@@ -214,7 +211,6 @@ sub doGenData {
          spec_file => $gd,
          sqltrace=> $props->sqltrace,
          vardir => $props->vardir,
-         variators => $props->variators,
          vcols => $so->{vcols},
          views => $so->{views},
       )->run();

@@ -42,6 +42,7 @@ use constant RESULT_INFO    => 13;
 use constant RESULT_COLUMN_TYPES  => 14;
 use constant RESULT_EXPLAIN    => 15;
 use constant RESULT_PERFORMANCE    => 16;
+use constant RESULT_EXECUTION_FLAGS => 17;
 
 1;
 
@@ -64,8 +65,13 @@ sub new {
     'info'    => RESULT_INFO,
     'column_types'  => RESULT_COLUMN_TYPES,
     'explain'  => RESULT_EXPLAIN,
-    'performance'  => RESULT_PERFORMANCE
+    'performance'  => RESULT_PERFORMANCE,
+    'execution_flags' => RESULT_EXECUTION_FLAGS
   }, @_);
+}
+
+sub execution_flags {
+  return $_[0]->[RESULT_EXECUTION_FLAGS] || 0;
 }
 
 sub query {

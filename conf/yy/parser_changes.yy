@@ -43,9 +43,9 @@ parser_changes_query:
 
 parser_changes_create_index_invalid:
     # Syntax error
-    CREATE OR REPLACE UNIQUE INDEX _letter ON `` (x) /* EXECUTOR_FLAG_SILENT */
+    CREATE OR REPLACE UNIQUE INDEX _letter ON `` (x) /* QProp.ERR_1103 */
     # Semantic error (incorrect usage)
-  | CREATE OR REPLACE UNIQUE INDEX IF NOT EXISTS _letter ON _basetable (_field) /* EXECUTOR_FLAG_SILENT */
+  | CREATE OR REPLACE UNIQUE INDEX IF NOT EXISTS _letter ON _basetable (_field) /* QProp.ERR_1221 */
 ;
 
 parser_changes_desc_keys:
@@ -58,7 +58,7 @@ parser_changes_functions:
     # OVERLAPS is also a GIS function
       SELECT OVERLAPS(NULL,NULL) FROM DUAL
       # Semantic error: Wrong parameter count
-    | ==FACTOR:0.01== SELECT OVERLAPS() /* EXECUTOR_FLAG_SILENT */
+    | ==FACTOR:0.01== SELECT OVERLAPS() /* QProp.ERR_1582 */
     | SELECT * FROM (SELECT OVERLAPS(NULL,NULL)) sq
     | SELECT * FROM _table WHERE OVERLAPS(NULL,NULL) IS NOT NULL
 ;

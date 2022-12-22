@@ -428,89 +428,26 @@ sub next {
 
   $generator->[GENERATOR_PARTICIPATING_RULES] = [ keys %rule_counters ];
 
-    # In new grammars, we will use ;; to indicate a delimiter in multi-statements
-    # (as opposed to single ; withing stored procedures and such).
-    # It will allow to use the syntax more freely.
-    # However, there are many legacy grammars so far, for which the old
-    # logic is preserved in elsif's below:
-  # If this is a BEGIN ... END block or alike, then send it to server without splitting.
-  # If the semicolon is inside a string literal, ignore it.
-  # Otherwise, split it into individual statements so that the error and the result set from each statement
-  # can be examined
+  # In the grammars, we use ;; to indicate a delimiter in multi-statements
+  # (as opposed to single ; withing stored procedures and such).
 
-  if (index($sentence, ';;') > -1) {
+  my @sentences= split (';;', $sentence);
 
-    my @sentences;
-
-    @sentences = split (';;', $sentence);
-    if ($generator->[GENERATOR_SEQ_ID] == 1) {
-      sayDebug("Starting rule ($starting_rule) processed:\n@sentence");
-    }
-    if ($skip_variate) {
-      foreach my $i (0..$#sentences) {
-        $sentences[$i].= ' /* SKIP_VARIATION */' if $sentences[$i] !~ /^\s*$/;
+  if ($generator->variators) {
+    my @variated= ();
+    foreach my $s (@sentences) {
+      my $queries= $generator->variateQuery($s,$executors->[0]);
+      if (ref $queries eq 'ARRAY') {
+        push @variated, @$queries;
+      } else {
+        sayError("A problem occurred during query variation");
+        return undef;
       }
     }
-    return \@sentences;
-  } elsif (
-    # Stored procedures of all sorts
-      (
-        (index($sentence, 'CREATE') > -1 ) &&
-        (index($sentence, 'BEGIN') > -1 || index($sentence, 'END') > -1)
-      )
-    or
-    # MDEV-5317, anonymous blocks BEGIN NOT ATOMIC .. END
-      (
-        (index($sentence, 'BEGIN') > -1 ) &&
-        (index($sentence, 'ATOMIC') > -1 ) &&
-        (index($sentence, 'END') > -1 )
-      )
-    or
-    # MDEV-5317, IF .. THEN .. [ELSE ..] END IF
-      (
-        (index($sentence, 'IF') > -1 ) &&
-        (index($sentence, 'THEN') > -1 ) &&
-        (index($sentence, 'END') > -1 )
-      )
-    or
-    # MDEV-5317, CASE .. [WHEN .. THEN .. [WHEN .. THEN ..] [ELSE .. ]] END CASE
-      (
-        (index($sentence, 'CASE') > -1 ) &&
-        (index($sentence, 'WHEN') > -1 ) &&
-        (index($sentence, 'THEN') > -1 ) &&
-        (index($sentence, 'END') > -1 )
-      )
-    or
-    # MDEV-5317, LOOP .. END LOOP
-      (
-        (index($sentence, 'LOOP') > -1 ) &&
-        (index($sentence, 'END') > -1 )
-      )
-    or
-    # MDEV-5317, REPEAT .. UNTIL .. END REPEAT
-      (
-        (index($sentence, 'REPEAT') > -1 ) &&
-        (index($sentence, 'UNTIL') > -1 ) &&
-        (index($sentence, 'END') > -1 )
-      )
-    or
-    # MDEV-5317, WHILE .. DO .. END WHILE
-      (
-        (index($sentence, 'WHILE') > -1 ) &&
-        (index($sentence, 'DO') > -1 ) &&
-        (index($sentence, 'END') > -1 )
-      )
-  ) {
-        if ($generator->[GENERATOR_SEQ_ID] == 1) {
-          sayDebug("Starting rule ($starting_rule) processed:\n$sentence");
-        }
-    return [ $sentence.($skip_variate ? ' /* SKIP_VARIATION */' : '') ];
-  } else {
-        if ($generator->[GENERATOR_SEQ_ID] == 1) {
-          sayDebug("Starting rule ($starting_rule) processed:\n$sentence");
-        }
-    return [ $sentence ];
+    @sentences= @variated;
   }
+  
+  return \@sentences;
 }
 
 1;

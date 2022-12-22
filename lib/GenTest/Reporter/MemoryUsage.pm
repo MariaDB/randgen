@@ -55,7 +55,7 @@ sub monitor {
       $max_mem= $mem;
       $max_mem_pct= $mem_pct;
     }
-    if (rqg_debug()) {
+    if ($reporter->server->serverVariable('performance_schema') == 1) {
       say("MemoryUsage monitor for pid $pid: memory usage: ".format_mem_value($mem));
       $dbh = $reporter->dbh unless $dbh;
       $memusage= $dbh->selectall_arrayref("select event_name, sum_number_of_bytes_alloc, current_number_of_bytes_used, high_number_of_bytes_used from performance_schema.memory_summary_global_by_event_name order by current_number_of_bytes_used desc limit 5");

@@ -23,20 +23,14 @@ require Exporter;
 @ISA = qw(GenTest Exporter);
 
 @EXPORT = qw(
-  EXECUTOR_RETURNED_ROW_COUNTS
-  EXECUTOR_AFFECTED_ROW_COUNTS
   EXECUTOR_EXPLAIN_COUNTS
   EXECUTOR_EXPLAIN_QUERIES
   EXECUTOR_ERROR_COUNTS
   EXECUTOR_STATUS_COUNTS
-  EXECUTOR_SILENT_ERRORS_COUNT
-  FETCH_METHOD_AUTO
-  FETCH_METHOD_STORE_RESULT
-  FETCH_METHOD_USE_RESULT
-  EXECUTOR_FLAG_SILENT
   EXECUTOR_FLAG_SKIP_STATS
   EXECUTOR_FLAG_NON_EXISTING_ALLOWED
   EXECUTOR_CURRENT_SCHEMA
+  EXECUTOR_MAX_ROWS_THRESHOLD
 );
 
 use strict;
@@ -49,8 +43,7 @@ use GenTest::Constants;
 use constant EXECUTOR_DSN      => 0;
 use constant EXECUTOR_DBH      => 1;
 use constant EXECUTOR_ID      => 2;
-use constant EXECUTOR_RETURNED_ROW_COUNTS  => 3;
-use constant EXECUTOR_AFFECTED_ROW_COUNTS  => 4;
+use constant EXECUTOR_QNO      => 3;
 use constant EXECUTOR_EXPLAIN_COUNTS    => 5;
 use constant EXECUTOR_EXPLAIN_QUERIES    => 6;
 use constant EXECUTOR_ERROR_COUNTS    => 7;
@@ -62,7 +55,6 @@ use constant EXECUTOR_META_CACHE    => 12;
 use constant EXECUTOR_CHANNEL      => 13;
 use constant EXECUTOR_SQLTRACE      => 14;
 use constant EXECUTOR_NO_ERR_FILTER             => 15;
-use constant EXECUTOR_FETCH_METHOD    => 16;
 use constant EXECUTOR_CONNECTION_ID    => 17;
 use constant EXECUTOR_FLAGS      => 18;
 use constant EXECUTOR_CURRENT_SCHEMA => 19;
@@ -70,9 +62,6 @@ use constant EXECUTOR_END_TIME      => 21;
 use constant EXECUTOR_USER      => 22;
 use constant EXECUTOR_VARDIR => 27;
 use constant EXECUTOR_SERVICE_DBH => 34;
-use constant EXECUTOR_SILENT_ERRORS_COUNT => 35;
-use constant EXECUTOR_VARIATORS => 36;
-use constant EXECUTOR_VARIATOR_MANAGER => 37;
 use constant EXECUTOR_SEED => 38;
 use constant EXECUTOR_SERVER => 40;
 use constant EXECUTOR_META_NONSYSTEM_CACHE => 42;
@@ -81,13 +70,10 @@ use constant EXECUTOR_META_SYSTEM_CACHE => 44;
 use constant EXECUTOR_META_SYSTEM_TS => 45;
 use constant EXECUTOR_THREAD_ID => 46;
 
-use constant FETCH_METHOD_AUTO    => 0;
-use constant FETCH_METHOD_STORE_RESULT  => 1;
-use constant FETCH_METHOD_USE_RESULT  => 2;
+use constant EXECUTOR_FLAG_SKIP_STATS => 1;
+use constant EXECUTOR_FLAG_NON_EXISTING_ALLOWED => 2;
 
-use constant EXECUTOR_FLAG_SILENT  => 1;
-use constant EXECUTOR_FLAG_SKIP_STATS => 2;
-use constant EXECUTOR_FLAG_NON_EXISTING_ALLOWED => 4;
+use constant EXECUTOR_MAX_ROWS_THRESHOLD  => 5000000;
 
 1;
 
@@ -98,7 +84,6 @@ sub new {
         'dsn' => EXECUTOR_DSN,
         'server'  => EXECUTOR_SERVER,
         'end_time' => EXECUTOR_END_TIME,
-        'fetch_method' => EXECUTOR_FETCH_METHOD,
         'id' => EXECUTOR_ID,
         'thread_id' => EXECUTOR_THREAD_ID,
         'no-err-filter' => EXECUTOR_NO_ERR_FILTER,
@@ -106,18 +91,10 @@ sub new {
         'sqltrace' => EXECUTOR_SQLTRACE,
         'user' => EXECUTOR_USER,
         'vardir' => EXECUTOR_VARDIR,
-        'variators' => EXECUTOR_VARIATORS,
     }, @_);
 
-    $executor->[EXECUTOR_FETCH_METHOD] = FETCH_METHOD_AUTO if not defined $executor->[EXECUTOR_FETCH_METHOD];
     $executor->[EXECUTOR_DSN] = $executor->server->dsn($executor->[EXECUTOR_USER]) if not defined $executor->[EXECUTOR_DSN] and defined $executor->server;
     $executor->[EXECUTOR_THREAD_ID]= 0 if not defined $executor->[EXECUTOR_THREAD_ID];
-
-    if ($executor->[EXECUTOR_VARIATORS] && scalar(@{$executor->[EXECUTOR_VARIATORS]})) {
-      $executor->[EXECUTOR_VARIATOR_MANAGER] = GenTest::Transform->new();
-      $executor->[EXECUTOR_VARIATOR_MANAGER]->setSeed($executor->[EXECUTOR_SEED] || 1);
-      $executor->[EXECUTOR_VARIATOR_MANAGER]->initVariators($executor->[EXECUTOR_VARIATORS]);
-    }
 
     return $executor;
 }
@@ -152,43 +129,6 @@ sub newFromServer {
 
 sub server {
   return $_[0]->[EXECUTOR_SERVER];
-}
-
-sub variate_and_execute {
-  my ($self, $query)= @_;
-  if ($self->[EXECUTOR_VARIATOR_MANAGER]) {
-    my $max_result= STATUS_OK;
-    my @errs= ();
-    my @errstrs= ();
-    my $queries= $self->[EXECUTOR_VARIATOR_MANAGER]->variate_query($query,$self);
-    if ($queries && ref $queries eq 'ARRAY') {
-      foreach my $q (@$queries) {
-        if ($q =~ /^\d+$/) {
-          sayError("Variators returned error code ".status2text($q)." instead of a query");
-          $max_result = $q if $q > $max_result;
-          next;
-        }
-        my $res= $self->execute($q);
-        $max_result= $res->status() if $res->status() > $max_result;
-        push @errs, $res->err if $res->err;
-        push @errstrs, $res->errstr if $res->errstr;
-      }
-    } else {
-      $max_result= STATUS_ENVIRONMENT_FAILURE;
-    }
-    my $result= GenTest::Result->new(
-                  query       => (join ';', @$queries),
-                  status      => $max_result,
-                  err         => (join ';', @errs),
-                  errstr      => (join ';', @errstrs),
-                  sqlstate    => undef,
-                  start_time  => undef,
-                  end_time    => undef,
-           );
-          return $result;
-  } else {
-    return $self->execute($query);
-  }
 }
 
 sub channel {
@@ -247,10 +187,6 @@ sub threadId {
 
 sub vardir {
   return $_[0]->[EXECUTOR_VARDIR];
-}
-
-sub fetchMethod {
-  return $_[0]->[EXECUTOR_FETCH_METHOD];
 }
 
 sub connectionId {

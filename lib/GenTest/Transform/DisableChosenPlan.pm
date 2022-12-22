@@ -125,10 +125,8 @@ sub modify {
 }
 
 sub DESTROY {
-    if (rqg_debug()) {
-        say("DisableChosenPlan statistics:");
-        print Dumper \%explain2count;
-    }
+    sayDebug("DisableChosenPlan statistics:");
+    sayDebug(Dumper \%explain2count);
 }
 
 1;

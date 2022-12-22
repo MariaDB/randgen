@@ -47,7 +47,7 @@ sub validate {
     my ($validator, $executors, $results) = @_;
 
     my $query = $results->[0]->query();
-    my @query_properties = $query =~ m{((?:QProp\.RESULTSET_|QProp\.ERROR_|QProp\.QUERY_).*?)[^A-Z_0-9]}sg;
+    my @query_properties = $query =~ m{((?:QProp\.RESULTSET_|QProp\.ERROR_|QProp\.ERR_|QProp\.QUERY_).*?)[^A-Z_0-9]}sg;
 
     return STATUS_WONT_HANDLE if $#query_properties == -1;
 
@@ -67,7 +67,7 @@ sub validate {
                     say("ERROR: Query: $query does not have the required property: $query_property");
                 }
                 $query_status = $property_status if $property_status > $query_status;
-            } elsif (my ($error) = $query_property =~ m{ERROR_(.*)}s) {
+            } elsif (my ($error) = $query_property =~ m{ERR(?:OR)?_(.*)}s) {
                 #
                 # This is an error code, check that the query returned one of the given error codes
                 #
@@ -93,11 +93,7 @@ sub validate {
             }
         }
     }
-
-    if ($query_status != STATUS_OK) {
-        print Dumper $results if rqg_debug();
-    }
-
+    sayDebug(Dumper $results) if ($query_status != STATUS_OK);
     return $query_status;
 }
 
