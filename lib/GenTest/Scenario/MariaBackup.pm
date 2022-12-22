@@ -31,7 +31,7 @@ use GenUtil;
 use GenTest;
 use GenTest::TestRunner;
 use GenTest::Properties;
-use GenTest::Constants;
+use Constants;
 use GenTest::Scenario;
 use Data::Dumper;
 use File::Copy;

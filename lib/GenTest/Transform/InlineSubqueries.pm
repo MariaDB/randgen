@@ -30,7 +30,7 @@ use lib 'lib';
 use GenUtil;
 use GenTest;
 use GenTest::Transform;
-use GenTest::Constants;
+use Constants;
 
 # This is a regexp to match nested brackets, taken from
 # here http://www.perlmonks.org/?node_id=547596

@@ -53,7 +53,7 @@ use strict;
 
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Comparator;
 use GenTest::Result;
 use GenTest::Validator;

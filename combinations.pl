@@ -28,7 +28,7 @@ use Carp;
 use Cwd;
 use GenUtil;
 use GenTest::Random;
-use GenTest::Constants;
+use Constants;
 use Getopt::Long;
 use Getopt::Long qw( :config pass_through );
 use Data::Dumper;
@@ -70,7 +70,6 @@ my $config_file;
 my $discard_logs= 0;
 my $dry_run= 0;
 my $exhaustive= 0;
-my $force= 1;
 my $help= 0;
 my $threads= 1;
 my $trials= 1;
@@ -87,7 +86,6 @@ my $opt_result = GetOptions(
   'config-version|config_version=s' => \$version,
   'discard_logs|discard-logs' => \$discard_logs,
   'dry-run|dry_run' => \$dry_run,
-  'force!' => \$force,
   'help' => \$help,
   'shuffle!' => \$shuffle,
   'parallel=i' => \$threads,
@@ -372,7 +370,6 @@ sub doCombination {
     } else {
       say("Combinations [$thread_id]: test run exited with exit status ".status2text($result)."($result), see $tl");
     }
-    exit($result) if (($result == STATUS_ENVIRONMENT_FAILURE) || ($result == 255)) && (not defined $force);
 
     $max_result = $result if $result > $max_result;
 
@@ -416,7 +413,6 @@ $0 - Run a set of RQG tests
     --clean                : Optional, default OFF. If provided, logs of successful runs will be removed. Default OFF
     --config=<location>    : MANDATORY. Location of the combinations config file
     --discard-logs         : Optional, default OFF. If provided, vardirs of failed runs will not be preserved
-    --force                : Optional, default ON. Continue running even when a test ended with a critical failure. Can be switched off by --noforce
     --shuffle              : Optional, default ON. Randomize the order of selected combinations. Can be switched off by --noshuffle
     --parallel=N           : Optional, default 1. The number of parallel processes running combinations
     --run-all-combinations : Optional, default OFF. If provided, all combinations constructed based on the config file will be run (as opposed to --trials=N)

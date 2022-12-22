@@ -31,7 +31,7 @@ use lib 'lib';
 use GenUtil;
 use GenTest;
 use GenTest::Transform;
-use GenTest::Constants;
+use Constants;
 
 # LIMIT ROWS EXAMINED is not the exact science. The actual number of examined rows
 # is allowed to be greater than the given limit, and the difference might vary

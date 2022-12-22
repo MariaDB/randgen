@@ -75,7 +75,7 @@ use DBI;
 
 use GenData::PopulateSchema;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Executor;
 use GenTest::Random;
 use GenTest::Transform;

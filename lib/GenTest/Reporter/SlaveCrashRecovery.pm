@@ -35,7 +35,7 @@ use strict;
 use DBI;
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Reporter;
 use GenTest::Comparator;
 use Data::Dumper;

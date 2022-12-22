@@ -27,7 +27,7 @@ use lib 'lib';
 use GenUtil;
 use GenTest;
 use GenTest::Transform;
-use GenTest::Constants;
+use Constants;
 
 # This Transform provides the following transformations
 #

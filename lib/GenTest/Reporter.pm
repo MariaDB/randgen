@@ -39,7 +39,7 @@ use GenUtil;
 use GenTest;
 use GenTest::Result;
 use GenTest::Random;
-use GenTest::Constants;
+use Constants;
 use DBI;
 use File::Find;
 use File::Spec;

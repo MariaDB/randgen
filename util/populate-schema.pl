@@ -21,7 +21,7 @@ use lib 'lib';
 use lib "$ENV{RQG_HOME}/lib";
 use Carp;
 use GenUtil;
-use GenTest::Constants;
+use Constants;
 use GenData::PopulateSchema;
 use Getopt::Long;
 

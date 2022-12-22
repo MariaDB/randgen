@@ -24,7 +24,7 @@ require Exporter;
 use strict;
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Reporter;
 
 sub report {

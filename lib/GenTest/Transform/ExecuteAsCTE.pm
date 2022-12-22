@@ -37,7 +37,7 @@ use lib 'lib';
 use GenUtil;
 use GenTest;
 use GenTest::Transform;
-use GenTest::Constants;
+use Constants;
 
 # Expression in round brackets
 # b'..' and x'xxx' (bit-value and hex-value literals) are a special case

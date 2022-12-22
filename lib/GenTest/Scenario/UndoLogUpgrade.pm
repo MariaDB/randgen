@@ -58,7 +58,7 @@ use GenUtil;
 use GenTest;
 use GenTest::TestRunner;
 use GenTest::Properties;
-use GenTest::Constants;
+use Constants;
 use GenTest::Scenario;
 use GenTest::Scenario::Upgrade;
 use Data::Dumper;

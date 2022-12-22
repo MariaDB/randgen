@@ -155,16 +155,21 @@ sub variateQuery {
   foreach my $v (@variators) {
     next if isOlderVersion($executor->server->version(),$v->compatibility);
     my @new_queries= ();
+    sayDebug("Original queries before variation: ".scalar(@queries)." [\n".(join "\n    ",@queries)."\n]");
     QUERY:
     foreach my $q (@queries) {
-    # Variation happens with the configured probability
+      next if $q =~ /^\s*$/;
+      # Variation happens with the configured probability
       if ($self->prng->uint16(1,100) > VARIATION_PROBABILITY || $q =~ /SKIP_VARIATION/) {
         push @new_queries, $q;
         next QUERY;
       }
       my $qs= $v->variate($q,$executor);
       # Something went wrong
-      return $qs if ref $qs eq '';
+      if (ref $qs eq '') {
+        sayWarning("Variator ".$v->name." returned a scalar");
+        return $qs;
+      }
       # flatten 2-level arrays (e.g. if there is TRANFORM_CLEANUP block)
       my @qs= ();
       foreach my $q (@$qs) {
@@ -178,12 +183,14 @@ sub variateQuery {
         sayDebug($v->name." variator modified the query\nfrom [ $q ] to [ \n".(join "\n    ", @qs)." \n]");
       } elsif (scalar(@$qs)==0) {
         sayWarning($v->name." returned an empty query");
+      } else {
+        sayDebug($v->name." variator apparently hasn't done anything");
       }
       push @new_queries, @qs;
     }
     @queries= @new_queries;
   }
-  sayDebug("Final queries after variation: [\n".(join "\n    ",@queries)."\n]");
+  sayDebug("Final queries after variation: ".scalar(@queries)." [\n".(join "\n    ",@queries)."\n]");
   return \@queries;
 }
 1;

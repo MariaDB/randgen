@@ -25,7 +25,7 @@ use lib 'lib';
 use GenUtil;
 use GenTest;
 use GenTest::Transform;
-use GenTest::Constants;
+use Constants;
 
 # Expression in round brackets
 my $parens_template =

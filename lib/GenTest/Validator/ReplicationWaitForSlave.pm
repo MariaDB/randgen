@@ -26,7 +26,7 @@ use strict;
 use DBI;
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Result;
 use GenTest::Validator;
 

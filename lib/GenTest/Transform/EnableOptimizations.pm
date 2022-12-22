@@ -31,7 +31,7 @@ use lib 'lib';
 use GenUtil;
 use GenTest;
 use GenTest::Transform;
-use GenTest::Constants;
+use Constants;
 
 sub transform {
   my ($class, $original_query) = @_;

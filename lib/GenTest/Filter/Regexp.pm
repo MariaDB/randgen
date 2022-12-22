@@ -25,7 +25,7 @@ use strict;
 
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 
 use constant FILTER_REGEXP_FILE    => 0;
 use constant FILTER_REGEXP_RULES  => 1;

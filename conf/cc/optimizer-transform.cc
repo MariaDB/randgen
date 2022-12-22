@@ -41,6 +41,7 @@ $combinations = [
     --transformer=ExecuteAsInsertSelect
     --transformer=ExecuteAsIntersect
     --transformer=ExecuteAsPreparedTwice
+    --transformer=ExecuteAsPSWithParams
     --transformer=ExecuteAsSelectItem
     --transformer=ExecuteAsUnion
     --transformer=ExecuteAsUpdateDelete

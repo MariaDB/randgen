@@ -26,7 +26,7 @@ use Carp;
 use Data::Dumper;
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Result;
 use GenTest::Validator;
 use GenTest::Executor;

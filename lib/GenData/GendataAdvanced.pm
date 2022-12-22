@@ -24,7 +24,7 @@ use DBI;
 
 use GenData;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Random;
 use GenTest::Executor;
 use GenUtil;

@@ -38,7 +38,7 @@ use GenData::GendataSimple;
 use GenData::GendataAdvanced;
 use GenTest;
 use GenTest::Comparator;
-use GenTest::Constants;
+use Constants;
 use GenTest::ErrorFilter;
 use GenTest::Executor;
 use GenTest::Filter::Regexp;

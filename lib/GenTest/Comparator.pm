@@ -23,7 +23,7 @@ use strict;
 
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Result;
 
 use constant COMPARISON_OUTCOME_UNORDERED_MATCH => 0;

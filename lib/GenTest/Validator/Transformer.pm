@@ -26,7 +26,7 @@ use strict;
 use Carp;
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Comparator;
 
 my @transformer_names;

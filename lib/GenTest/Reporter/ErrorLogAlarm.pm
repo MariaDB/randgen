@@ -25,7 +25,7 @@ use strict;
 use GenUtil;
 use GenTest;
 use GenTest::Reporter;
-use GenTest::Constants;
+use Constants;
 
 # Modify this to look for other patterns in the error log.
 # Note: do not modify $pattern to be defined using double quotes (") but leave as single quotes (')

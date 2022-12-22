@@ -22,7 +22,7 @@ require Exporter;
 use strict;
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Result;
 use GenTest::Reporter;
 use GenTest::Executor::MariaDB;

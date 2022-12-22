@@ -23,7 +23,7 @@ package GenTest::ReporterManager;
 use strict;
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Reporter;
 
 use constant MANAGER_REPORTERS    => 0;

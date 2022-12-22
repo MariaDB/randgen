@@ -38,7 +38,7 @@ use Carp;
 use Data::Dumper;
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 
 use constant EXECUTOR_DSN      => 0;
 use constant EXECUTOR_DBH      => 1;
@@ -222,7 +222,7 @@ sub defaultSchema {
     my ($self, $schema) = @_;
     if (defined $schema and $self->[EXECUTOR_DEFAULT_SCHEMA] ne $schema) {
       $schema='information_schema' if lc($schema) eq 'information_schema';
-      $self->sayDebug("Setting default schema to $schema");
+      sayDebug("Setting default schema to $schema");
         $self->[EXECUTOR_DEFAULT_SCHEMA] = $schema;
     }
     return $self->[EXECUTOR_DEFAULT_SCHEMA];

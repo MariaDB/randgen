@@ -25,7 +25,7 @@ use strict;
 use GenUtil;
 use GenTest;
 use GenTest::Validator;
-use GenTest::Constants;
+use Constants;
 
 my $error_log;
 

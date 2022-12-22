@@ -24,7 +24,7 @@ require Exporter;
 use strict;
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use Data::Dumper;
 
 use constant SC_TEST_PROPERTIES        => 1;

@@ -38,7 +38,7 @@ use Fcntl qw(:flock SEEK_END);
 use File::Temp qw/ :POSIX /;
 use GDBM_File;
 
-use GenTest::Constants;
+use Constants;
 
 my $tmpdir;
 

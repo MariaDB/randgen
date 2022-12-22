@@ -26,7 +26,7 @@ use File::Spec::Functions;
 use GenUtil;
 use GenTest;
 use GenTest::Reporter;
-use GenTest::Constants;
+use Constants;
 use IO::File;
 
 # This reporter looks for valgrind messages in the server error log, and

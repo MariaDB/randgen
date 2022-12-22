@@ -25,7 +25,7 @@ use strict;
 use GenUtil;
 use GenTest;
 use GenTest::Reporter;
-use GenTest::Constants;
+use Constants;
 
 my $tcpkill_pid;
 

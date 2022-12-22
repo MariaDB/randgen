@@ -27,7 +27,7 @@ use strict;
 use lib 'lib';
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Executor::MariaDB;
 use GenTest::Random;
 use Data::Dumper;

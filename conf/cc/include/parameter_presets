@@ -93,6 +93,7 @@ $optional_variators= [
   ['','','','','','','','','','','','','','','--variator=ExecuteAsPreparedOnce'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsPreparedThrice'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsPreparedTwice'],
+  ['','','','','','','','','','','','','','','--variator=ExecuteAsPSWithParams'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsSelectItem'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsSPTwice'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsTrigger'],

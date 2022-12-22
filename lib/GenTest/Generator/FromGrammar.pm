@@ -29,7 +29,7 @@ use File::Path qw(mkpath);
 
 use strict;
 use GenTest;
-use GenTest::Constants;
+use Constants;
 use GenTest::Generator;
 use GenTest::Grammar;
 use GenTest::Grammar::Rule;
@@ -433,7 +433,7 @@ sub next {
 
   my @sentences= split (';;', $sentence);
 
-  if ($generator->variators) {
+  if ($generator->variators && scalar(@{$generator->variators})) {
     my @variated= ();
     foreach my $s (@sentences) {
       my $queries= $generator->variateQuery($s,$executors->[0]);

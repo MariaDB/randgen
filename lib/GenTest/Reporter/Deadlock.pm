@@ -24,7 +24,8 @@ require Exporter;
 use strict;
 use GenUtil;
 use GenTest;
-use GenTest::Constants;
+use Constants;
+use Constants::MariaDBErrorCodes;
 use GenTest::Result;
 use GenTest::Reporter;
 use GenTest::Reporter::Backtrace;
@@ -219,7 +220,7 @@ sub dbh_thread {
   my $reporter = shift;
   my $dbh = $reporter->dbh();
   my $processlist = $dbh->selectall_arrayref("SHOW FULL PROCESSLIST");
-  return GenTest::Executor::MariaDB::errorType($DBI::err) if not defined $processlist;
+  return errorType($DBI::err) if not defined $processlist;
 
   my $stalled_queries = 0;
   my $dead_queries = 0;
