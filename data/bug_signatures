@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-30277:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ Reprepare_observer::report_error
+MDEV-30263:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ Query .*: HANDLER .* READ
 MDEV-30112:
 =~ AddressSanitizer|signal
 =~ Item_ident::print
@@ -606,7 +614,7 @@ MDEV-28683:
 =~ signal|AddressSanitizer
 =~ ha_spider::multi_range_read_next_first|ha_spider::rnd_next_internal|spider_db_connect
 =~ Version: '10\.4|Server version: 10\.4
-MDEV-28621:
+MDEV-28621: [Assertion '!eliminated']
 =~ Assertion \`!eliminated'
 =~ Item_subselect::exec
 =~ Item_singlerow_subselect::val_
@@ -802,6 +810,10 @@ MDEV-27422:
 =~ _ma_log_delete
 =~ d_search
 =~ FeatureUsage detected GIS columns
+MDEV-27409:
+=~ signal|AddressSanitizer
+=~ oqgraph3::intrusive_ptr_release
+=~ oqgraph3::edge_info::operator
 # The bug report is 10.5+, but the failure can happen on 10.4 too, like MDEV-27292
 MDEV-27366:
 =~ signal|AddressSanitizer
@@ -1059,7 +1071,7 @@ MDEV-25654:
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-25643:
 =~ Assertion \`table->no_keyread \|\| !table->covering_keys\.is_set(tab->index) \|\| table->file->keyread == tab->index'
-=~ join_read_first
+=~ join_read_first|join_read_last
 MDEV-25627:
 =~ signal 11|AddressSanitizer
 =~ get_prefix
@@ -2149,6 +2161,10 @@ MDEV-22856:
 MDEV-22855:
 =~ Assertion \`!field->prefix_len \|\| field->fixed_len == field->prefix_len'
 =~ btr_node_ptr_max_size
+MDEV-22848:
+=~ Assertion \`trx_is_registered_for_2pc(trx)'
+=~ innobase_xa_prepare
+=~ prepare_or_error
 MDEV-22832:
 =~ AddressSanitizer: global-buffer-overflow
 =~ QUICK_GROUP_MIN_MAX_SELECT::add_range
@@ -2192,6 +2208,9 @@ MDEV-22732:
 =~ AddressSanitizer|signal
 =~ Field::cmp_binary
 =~ compare_record
+MDEV-22705:
+=~ Assertion \`llabs(next_free_value % real_increment) == offset'
+=~ sequence_definition::adjust_values
 MDEV-22695:
 =~ signal [16]|AddressSanitizer
 =~ heap_rnext
@@ -3676,6 +3695,9 @@ MDEV-16694:
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ THD::~THD
 =~ FeatureUsage detected multi-update/delete
+MDEV-16686:
+=~ Assertion \`(\*tables)->reginfo\.lock_type >= TL_READ'
+=~ lock_external
 MDEV-16659:
 =~ Assertion \`anc_page->org_size == anc_page->size'
 =~ d_search
