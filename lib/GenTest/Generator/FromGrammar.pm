@@ -99,10 +99,9 @@ sub next {
   # If work_database is NON-SYSTEM or ANY, then last_database is set
   # to the actual picked value
   # work_database is used to pick up tables or other database objects.
-  # work_database_real is work_database resolved
+  # $executors->[0]->currentSchema is work_database resolved
   my $last_database;
   my $work_database;
-  my $work_database_real;
   # Flag indicating that work_database is ANY or NON-SYSTEM (for convenience)
   my $work_database_non_specific= 1;
   my $last_field_list_length;
@@ -124,9 +123,11 @@ sub next {
     } else {
       $work_database_non_specific= 0;
     }
-    if (not defined $work_database_real or $db ne $work_database_real) {
+    if (not defined $executors->[0]->currentSchema() or $db ne $executors->[0]->currentSchema()) {
       $set_db_stmt= "USE $db /* EXECUTOR_FLAG_SKIP_STATS SKIP_VARIATION */ ;;";
-      $work_database_real= $db;
+      # Executor should do it later upon USE,
+      # but it may be already needed for variation
+      $executors->[0]->currentSchema($db);
     }
     return $set_db_stmt;
   }
@@ -408,6 +409,7 @@ sub next {
   {
     my $grammar_id= $prng->arrayElement($generator->[GENERATOR_GRAMMAR_POOL]);
     my $grammar = $generator->[GENERATOR_GRAMMARS]->[$grammar_id];
+    sayDebug("Using ".$grammar->file." for query ".$generator->[GENERATOR_SEQ_ID]);
     $grammar_rules= $grammar->rules();
     if (exists $grammar_rules->{"thread".$generator->threadId()}) {
       $starting_rule = $grammar_rules->{"thread".$generator->threadId()}->name();
@@ -432,6 +434,7 @@ sub next {
   # (as opposed to single ; withing stored procedures and such).
 
   my @sentences= split (';;', $sentence);
+  sayDebug("Expanded into [ @sentences ]");
 
   if ($generator->variators && scalar(@{$generator->variators})) {
     my @variated= ();

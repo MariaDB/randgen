@@ -266,6 +266,8 @@ $grammars= [
   [@empty_set,
     '--grammar=conf/yy/virtual_columns.yy'],
   [@empty_set,
+    '--grammar=conf/yy/window_functions.yy'],
+  [@empty_set,
     '--grammar=conf/yy/xa.yy'],
 ];
 

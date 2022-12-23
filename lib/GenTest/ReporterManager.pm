@@ -45,6 +45,7 @@ sub monitor {
 
   my $max_result = STATUS_OK;
 
+  REPORTER:
   foreach my $reporter (@{$manager->reporters()}) {
     next if isOlderVersion($reporter->server->version(),$reporter->compatibility);
     if ($reporter->type() & $desired_type) {
@@ -66,7 +67,7 @@ sub monitor {
           } until ($downtime);
           if ($downtime) {
             say("ReporterManager: Server returned in time, continuing monitoring");
-            redo EXECUTE_QUERY;
+            redo REPORTER;
           } else {
             sayError("ReporterManager: Server didn't return after planned downtime, aborting monitoring");
             return $reporter_result;

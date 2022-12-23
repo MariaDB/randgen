@@ -1570,8 +1570,6 @@ sub dbh {
       }
     } else {
       sayError("(Re)connect to ".$self->[MYSQLD_PORT]." failed due to ".$DBI::err.": ".$DBI::errstr);
-      # HERE:
-#      confess();
     }
   }
   return $dbh;
@@ -1909,7 +1907,7 @@ sub storeMetaData {
   my $ts= Time::HiRes::time();
   foreach my $f (@files) {
     my @prev= glob("$f-*");
-    unlink @prev;
+    foreach my $p (@prev) { move($p,$p.'.bak') unless $p =~ /\.bak$/ };
     move($f,$f."-$ts");
   }
   unlink @waiters;

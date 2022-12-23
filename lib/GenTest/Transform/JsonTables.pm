@@ -157,9 +157,8 @@ sub parse_query_for_transformation
 
 sub parse_query_for_variation
 {
-  sayDebug("Parsing query for variation: @_");
-
   my $self= shift;
+#  sayDebug("Parsing query for variation: @_");
   my $tmp_query= shift;
   my $inside_outer_from= shift;
 
@@ -190,7 +189,7 @@ sub parse_query_for_variation
   # TODO: shouldn't it be /^\s* ...?
   while ($tmp_query =~ s/\s*($part_select_template)//xi)
   {
-    sayDebug("Parsing cycle: $tmp_query");
+#    sayDebug("Parsing cycle: $tmp_query");
     my $token = $1;
     if ($token =~ /^$executable_comment_template$/xi) {
       # Treat as if it weren't a comment - put the contents back to tmp_query
@@ -469,9 +468,10 @@ sub json_table_to_append
   }
   # Save the encountered alias for future references, regardless whether
   # replacement was performed or not
-  if ($table_name =~ /\`([^\`]+)\`\\s*.\s*\`([^\`]+)\`|(\w+)\s*\.\s*(\w+)/) {
+  if ($table_name =~ /\`([^\`]+)\`\s*.\s*\`([^\`]+)\`|(\w+)\s*\.\s*(\w+)/) {
     $encountered_aliases{$alias}= [$1,$2];
   } else {
+    $table_name =~ s/`//g;
     $encountered_aliases{$alias}= [$self->executor->currentSchema(),$table_name];
   }
   return $res;

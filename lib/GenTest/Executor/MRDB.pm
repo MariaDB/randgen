@@ -103,7 +103,7 @@ sub init {
     $executor->user($dbh->selectrow_arrayref("SELECT CURRENT_USER()")->[0]);
     $dbh->do('SELECT '.GenTest::Random::dataLocation().' AS DATA_LOCATION');
 
-    sayDebug("Executor initialized. id: ".$executor->id()."; default schema: ".$executor->defaultSchema()."; connection ID: ".$executor->connectionId());
+    sayDebug("Executor initialized. id: ".$executor->id()."; default schema: ".$executor->defaultSchema()."; thread ID: ".$executor->threadId()."; connection ID: ".$executor->connectionId());
 
     return STATUS_OK;
 }
@@ -514,7 +514,7 @@ sub loadMetaData {
   } else {
     sayWarning("Couldn't open procedure dump $file: $!");
   }
-  say("Executor finished loading $ft metadata: ".scalar(keys %$meta)." schemas, ".scalar(keys %tabletype)." tables");
+  say("Executor#".$self->threadId()." finished loading $ft metadata: ".scalar(keys %$meta)." schemas, ".scalar(keys %tabletype)." tables");
 #  $Data::Dumper::Maxdepth= 0;
 #  print Dumper $meta;
   return $meta;

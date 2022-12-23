@@ -85,96 +85,93 @@ sub run {
 
   #####
   my $test_end=time() + $self->getProperty('duration');
-  my $restart_interval= $self->scenarioOptions->{restart_interval} || int($self->getProperty('duration') / 4);
+  my $restart_interval= $self->scenarioOptions->{restart_interval} || int($self->getProperty('duration') / 5);
   my $shutdown_timeout= $self->scenarioOptions->{shutdown_timeout} || 120;
 
   my $gentest_pid= undef;
 
-  while ( ( my $remaining_time= $test_end - time() ) > 0 )
-  {
-    my $timeout= ( $remaining_time > $restart_interval ? $restart_interval : $remaining_time );
+  $gentest_pid= fork();
+  if (not defined $gentest_pid) {
+    sayError("Failed to fork for running the test flow");
+    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
+  }
 
-    #####
-    $self->printStep("Running test flow (for $timeout sec)");
+  # The child will be running the test flow. The parent will be running
+  # the server and then stopping it, and while waiting, will be monitoring
+  # the status of the test flow to notice if it exits prematurely.
 
-    $gentest_pid= fork();
-    if (not defined $gentest_pid) {
-      sayError("Failed to fork for running the test flow");
-      return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
-    }
-
-    # The child will be running the test flow. The parent will be running
-    # the server and then stopping it, and while waiting, will be monitoring
-    # the status of the test flow to notice if it exits prematurely.
-
-    if ($gentest_pid > 0) {
-      foreach (1..$timeout) {
+  if ($gentest_pid > 0) {
+   TESTRUN:
+    while ( $test_end - time() > $restart_interval )
+    {
+      foreach (1..$restart_interval) {
         if (waitpid($gentest_pid, WNOHANG) == 0) {
           sleep 1;
         }
         else {
           $status= $? >> 8;
-          last;
+          say("Test flow exited with status $status");
+          last TESTRUN;
+        }
+      }
+
+      #####
+      $self->printStep("Stopping the server");
+      set_expectation($server->vardir,"120\n(seconds to wait)");
+      $status= $server->stopServer($shutdown_timeout);
+
+      if ($status != STATUS_OK) {
+        sayError("Could not stop the server");
+        return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
+      }
+
+      #####
+      $self->printStep("Checking the server log for fatal errors after stopping");
+
+      $status= $self->checkErrorLog($server, {CrashOnly => 1});
+
+      if ($status != STATUS_OK) {
+        sayError("Found fatal errors in the log, server shutdown has apparently failed");
+        return $self->finalize(STATUS_DATABASE_CORRUPTION,[$server]);
+      }
+
+      #####
+      $self->printStep("Restarting the server");
+
+      unset_expectation($server->vardir);
+      $server->setStartDirty(1);
+      $status= $server->startServer;
+
+      if ($status != STATUS_OK) {
+        sayError("Server failed to start");
+        # Error log might indicate known bugs which will affect the exit code
+        $status= $self->checkErrorLog($server);
+        # ... but even if it's a known error, we cannot proceed without the server
+        return $self->finalize($status,[$server]);
+      }
+
+      #####
+      if ($self->getTestType eq 'normal') {
+        $self->printStep("Checking the database state after restart");
+
+        $status= $server->checkDatabaseIntegrity;
+
+        if ($status != STATUS_OK) {
+          sayError("Database appears to be corrupt after restart");
+          return $self->finalize(STATUS_RECOVERY_FAILURE,[$server]);
         }
       }
     }
-    else {
-      my $res= $self->runTestFlow();
-      exit $res;
-    }
-
     if ($status != STATUS_OK) {
       sayError("Test flow failed");
       return $self->finalize($status,[$server]);
     }
-
+  }
+  else {
     #####
-
-    $self->printStep("Stopping the server");
-    set_expectation($server->vardir,"120\n(seconds to wait)");
-    $status= $server->stopServer($shutdown_timeout);
-
-    if ($status != STATUS_OK) {
-      sayError("Could not stop the server");
-      return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
-    }
-
-    #####
-    $self->printStep("Checking the server log for fatal errors after stopping");
-
-    $status= $self->checkErrorLog($server, {CrashOnly => 1});
-
-    if ($status != STATUS_OK) {
-      sayError("Found fatal errors in the log, server shutdown has apparently failed");
-      return $self->finalize(STATUS_DATABASE_CORRUPTION,[$server]);
-    }
-
-    #####
-    $self->printStep("Restarting the server");
-
-    unset_expectation($server->vardir);
-    $server->setStartDirty(1);
-    $status= $server->startServer;
-
-    if ($status != STATUS_OK) {
-      sayError("Server failed to start");
-      # Error log might indicate known bugs which will affect the exit code
-      $status= $self->checkErrorLog($server);
-      # ... but even if it's a known error, we cannot proceed without the server
-      return $self->finalize($status,[$server]);
-    }
-
-    #####
-    if ($self->getTestType eq 'normal') {
-      $self->printStep("Checking the database state after restart");
-
-      $status= $server->checkDatabaseIntegrity;
-
-      if ($status != STATUS_OK) {
-        sayError("Database appears to be corrupt after restart");
-        return $self->finalize(STATUS_RECOVERY_FAILURE,[$server]);
-      }
-    }
+    $self->printStep("Running test flow");
+    my $res= $self->runTestFlow();
+    exit $res;
   }
 
   # Now we wait for the gentest to finish if it hasn't yet
@@ -184,7 +181,6 @@ sub run {
     sayError("Test flow failed");
     return $self->finalize($status,[$server]);
   }
-
 
   #####
   $self->printStep("Stopping the server");

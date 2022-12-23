@@ -155,7 +155,7 @@ sub variateQuery {
   foreach my $v (@variators) {
     next if isOlderVersion($executor->server->version(),$v->compatibility);
     my @new_queries= ();
-    sayDebug("Original queries before variation: ".scalar(@queries)." [\n".(join "\n    ",@queries)."\n]");
+    sayDebug("Original queries before variation by ".$v->name.": ".scalar(@queries)." [\n".(join "\n    ",@queries)."\n]");
     QUERY:
     foreach my $q (@queries) {
       next if $q =~ /^\s*$/;

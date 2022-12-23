@@ -121,10 +121,16 @@ $optional_variators= [
 
 $basic_engine_combinations= [
   '','','','',
-  '--engine=Aria --mysqld=--default-storage-engine=Aria --mysqld=--enforce-storage-engine=""',
-  '--engine=MyISAM --mysqld=--default-storage-engine=MyISAM --mysqld=--enforce-storage-engine=""',
+  '--engine=InnoDB',
+  '--engine=Aria',
+  '--engine=MyISAM',
+  '--engine=InnoDB,Aria',
   '--engine=InnoDB,MyISAM',
+  '--engine=InnoDB,Archive --mysqld=--plugin-load-add=ha_archive',
+  '--engine=InnoDB,Blackhole --mysqld=--plugin-load-add=ha_blackhole',
+  '--engine=InnoDB,MyISAM,Aria',
   '--engine=InnoDB,MyISAM,Aria,HEAP',
+  '--engine=InnoDB,MyISAM,Aria,HEAP,Archive,Blackhole --mysqld=--plugin-load-add=ha_archive --mysqld=--plugin-load-add=ha_blackhole',
 ];
 
 $extra_engine_combinations= [
@@ -455,8 +461,6 @@ $server_options{optional_aria_variables}= \%optional_aria_variables;
 #############
 
 $optional_plugins{$minversion}= [
-  [ '--mysqld=--plugin-load-add=ha_archive', '', '', '', '', '', '', '', '', '' ],
-  [ '--mysqld=--plugin-load-add=ha_blackhole', '', '', '', '', '', '', '', '', '' ],
   [ '--mysqld=--plugin-load-add=query_cache_info', '', '', '', '' ],
   [ '--mysqld=--plugin-load-add=simple_password_check', '', '', '', '' ],
 ];
@@ -540,11 +544,6 @@ $optional_server_variables{$minversion}= [
 #   '--mysqld=--thread-stack=131072',
     '--mysqld=--thread-stack=512K',
     '--mysqld=--thread-stack=1M',
-  ],
-  [ '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-    '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-    '--mysqld=--enforce-storage-engine=InnoDB --mysqld=--default-storage-engine=InnoDB',
-    '--mysqld=--enforce-storage-engine=MyISAM --mysqld=--default-storage-engine=MyISAM'
   ],
   # Default NO
   [ '', '', '', '', '', '', '', '',

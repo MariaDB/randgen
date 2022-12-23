@@ -99,6 +99,7 @@ sub run {
     # We won't set default storage engine even though the page wants it
     $self->setServerStartupOption($s,'innodb-autoinc-lock-mode','2');
     $self->setServerStartupOption($s,'innodb-doublewrite','1');
+    $self->setServerStartupOption($s,'enforce-storage-engine=');
     $self->setServerStartupOption($s,'wsrep-on');
 
     # is_active is for Gendata/GenTest to know on which servers to execute the flow

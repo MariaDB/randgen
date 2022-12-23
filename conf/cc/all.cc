@@ -63,15 +63,19 @@ $combinations = [
         [ '','','','','','','','', '', '', '', @$non_crash_scenarios ],
       ],
       innodb => [
-        [ '--engine=InnoDB' ],
+        [ '--engine=InnoDB', '--engine=InnoDB --mysqld=--default-storage-engine=InnoDB --mysqld=--enforce-storage-engine=InnoDB' ],
         [ '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', @$crash_scenarios, @$non_crash_scenarios, @$mariabackup_scenarios ],
         @{$options{optional_innodb_variables}},
         @{$options{innodb_compression_combinations}},
       ],
       aria => [
-        [ '--engine=Aria' ],
+        [ '--engine=Aria', '--engine=Aria --mysqld=--default-storage-engine=Aria --mysqld=--enforce-storage-engine=Aria' ],
         [ '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', @$crash_scenarios, @$non_crash_scenarios, @$mariabackup_scenarios ],
         @{$options{optional_aria_variables}},
+      ],
+      myisam => [
+        [ '--engine=MyISAM', '--engine=MyISAM --mysqld=--default-storage-engine=MyISAM --mysqld=--enforce-storage-engine=MyISAM' ],
+        [ '','','','','','','','', '', '', '', @$non_crash_scenarios ],
       ],
     }
   ],

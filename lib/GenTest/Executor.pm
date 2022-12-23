@@ -231,10 +231,6 @@ sub defaultSchema {
     return $self->[EXECUTOR_DEFAULT_SCHEMA];
 }
 
-sub currentSchema {
-    croak "FATAL ERROR: currentSchema not defined for ". (ref $_[0]);
-}
-
 sub loadCollations {
     carp "loadCollations not defined for ". (ref $_[0]);
     return [[undef,undef]];
@@ -255,7 +251,7 @@ sub reportError {
         $self->sendError($msg);
     } elsif (not defined $reported_errors{$errstr}) {
         my $query_for_print= shorten_message($query);
-        say("Executor: Query: $query_for_print failed: $err $errstr (" . status2text(errorType($err)) . "). Further errors of this kind will be suppressed.");
+        say("Executor#".$self->threadId().": Query: $query_for_print failed: $err $errstr (" . status2text(errorType($err)) . "). Further errors of this kind will be suppressed.");
         $reported_errors{$errstr}++;
     }
 }
@@ -295,18 +291,18 @@ sub cacheMetaData {
           $coll->{$collation} = $charset;
         }
         $self->[EXECUTOR_COLLATION_METADATA] = $coll;
-        say("Executor has loaded ".scalar(keys %$coll)." collations");
+        say("Executor#".$self->threadId()." has loaded ".scalar(keys %$coll)." collations");
       } else {
-        sayError("Executor failed to load collation metadata");
+        sayError("Executor#".$self->threadId()." failed to load collation metadata");
       }
     } else {
-      sayWarning("Executor ".$self->id." at ".$self->dsn." could not find a collation dump");
+      sayWarning("Executor#".$self->threadId()." at ".$self->dsn." could not find a collation dump");
     }
   }
   my @files= glob("$vardir/system-tables-*");
   if (scalar(@files)) {
     @files= reverse sort @files;
-    if ($files[0] =~ /\/system-tables-([\d\.]+)/) {
+    if ($files[0] =~ /\/system-tables-([\d\.]+)$/) {
       my $ts= $1;
       if (not defined $self->[EXECUTOR_META_SYSTEM_TS] or $self->[EXECUTOR_META_SYSTEM_TS] < $ts) {
         $system= $self->loadMetaData($files[0]); # loadMetaData should search for -proc itself
@@ -314,18 +310,18 @@ sub cacheMetaData {
           $self->[EXECUTOR_META_SYSTEM_TS]= $ts;
           $self->[EXECUTOR_META_SYSTEM_CACHE]= $system;
         } else {
-          sayError("Executor failed to load system metadata");
+          sayError("Executor#".$self->threadId()." failed to load system metadata");
         }
       }
     }
   } else {
-    sayWarning("Executor could not find a system metadata dump");
+    sayWarning("Executor#".$self->threadId()." could not find a system metadata dump");
   }
 
   my @files= glob("$vardir/nonsystem-tables-*");
   if (scalar(@files)) {
     @files= reverse sort @files;
-    if ($files[0] =~ /\/nonsystem-tables-([\d\.]+)/) {
+    if ($files[0] =~ /\/nonsystem-tables-([\d\.]+)$/) {
       my $ts= $1;
       if (not defined $self->[EXECUTOR_META_NONSYSTEM_TS] or $self->[EXECUTOR_META_NONSYSTEM_TS] < $ts) {
         $non_system= $self->loadMetaData($files[0]); # loadMetaData should search for -proc itself
@@ -333,16 +329,16 @@ sub cacheMetaData {
           $self->[EXECUTOR_META_NONSYSTEM_TS]= $ts;
           $self->[EXECUTOR_META_NONSYSTEM_CACHE]= $non_system;
         } else {
-          sayError("Executor failed to load non-system metadata");
+          sayError("Executor#".$self->threadId()." failed to load non-system metadata");
         }
       }
     }
   } else {
-    sayWarning("Executor could not find a non-system metadata dump");
+    sayWarning("Executor#".$self->threadId()." could not find a non-system metadata dump");
   }
 
   unless ($system || $non_system) {
-    sayDebug("Executor has not loaded either system- or non-system data, nothing to merge");
+    sayDebug("Executor#".$self->threadId()." has not loaded either system- or non-system data, nothing to merge");
     return;
   }
 
@@ -361,7 +357,7 @@ sub cacheMetaData {
   if ($all_meta) {
     $self->[EXECUTOR_SCHEMA_METADATA]= $all_meta;
     $self->[EXECUTOR_META_CACHE] = {};
-    sayDebug("Executor has updated metadata");
+    sayDebug("Executor#".$self->threadId()." has updated metadata");
   }
 
 #  $Data::Dumper::Maxdepth= 0;
