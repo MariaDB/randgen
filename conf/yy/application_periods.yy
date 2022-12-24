@@ -281,7 +281,8 @@ period_name:
   |                { $last_period_name= 'app' }
   |                { $last_period_name= 'P' }
   |                { $last_period_name= 'period' }
-  |                { $last_period_name= '``' }
+# Still can't enable, now due to MDEV-30297
+#  |                { $last_period_name= '``' }
 ;
 
 new_index_name_optional:

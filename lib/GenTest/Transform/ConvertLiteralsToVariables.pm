@@ -49,12 +49,14 @@ sub modify {
   my $new_query = $orig_query;
   my $var_counter = 0;
   my @var_variables;
+  my %var_values;
 
   # Do not match partial dates, timestamps, etc.
   if ($new_query =~ m{[,\(\s;]+(\d+|NULL)[,\(\s;]+}) {
     $new_query =~ s{([,\(\s;]+)(\d+|NULL)([,\(\s;]+)}{
         $var_counter++;
         push @var_variables, '@var'.$var_counter." = $2";
+        $var_values{$var_counter}= $2;
         $1.'@var'.$var_counter.$3;
     }sgexi;
   }
@@ -64,6 +66,10 @@ sub modify {
     push @var_variables, '@var'.$var_counter." = '$1'";
     ' @var'.$var_counter.' ';
   }sgexi;
+
+  # LIMIT does not accept variables, so if we have put them there,
+  # better restore the values
+  while ($new_query =~ s{LIMIT\s+\@var(\d+)}{'LIMIT '.$var_values{$1}}sexi) {};
 
   if ($var_counter > 0) {
     return [

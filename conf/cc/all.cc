@@ -20,7 +20,7 @@ use Data::Dumper;
 use strict;
 
 our ($common_options, $ps_protocol_options, $views_combinations, $vcols_combinations, $threads_low_combinations, $optional_variators);
-our ($basic_engine_combinations, $extra_engine_combinations);
+our ($basic_engine_combinations, $enforced_engine_combinations, $extra_engine_combinations);
 our ($non_crash_scenarios, $crash_scenarios, $mariabackup_scenarios);
 our (%server_options);
 our ($grammars, $gendata);
@@ -45,6 +45,8 @@ foreach my $comb (keys %server_options) {
 }
 
 $combinations = [
+  # For the  unlikely case when nothing else is picked
+  [ '--grammar=conf/yy/all_selects.yy:0.0001' ],
   [ $common_options ], # seed, reporters, timeouts
   [ @$threads_low_combinations ],
   [ @$views_combinations, '', '', '' ],
@@ -58,8 +60,12 @@ $combinations = [
   ##### Engines and engine=specific options
   [
     {
-      engines => [
-        [ @$basic_engine_combinations, @$extra_engine_combinations ],
+      basic_engines => [
+        [ @$basic_engine_combinations, @$enforced_engine_combinations ],
+        [ '','','','','','','','', '', '', '', @$non_crash_scenarios ],
+      ],
+      extra_engines => [
+        [ @$extra_engine_combinations ],
         [ '','','','','','','','', '', '', '', @$non_crash_scenarios ],
       ],
       innodb => [

@@ -39,8 +39,8 @@ select:
   SELECT distinct * FROM _table index_hint WHERE where order_by /* limit */ |
   SELECT distinct * FROM _table index_hint WHERE where order_by /* limit */ |
   SELECT distinct * FROM _table index_hint WHERE where order_by /* limit */ |
-  SELECT aggregate _field_key ) FROM _table index_hint WHERE where |
-  SELECT _field_key , aggregate _field_key ) FROM _table index_hint WHERE where GROUP BY _field_key ;
+  SELECT /* _table[invariant] */ aggregate _field_key ) FROM _table[invariant] index_hint WHERE where |
+  SELECT /* _table[invariant] */ _field_key , aggregate _field_key ) FROM _table[invariant] index_hint WHERE where GROUP BY _field_key ;
 
 alter_add:
   ALTER TABLE _table ADD KEY key1 ( index_list ) ;

@@ -72,22 +72,35 @@ query:
 ;
 
 create_log_trigger:
-    create_clause multi_trigger_db.trigger_name before_after INSERT ON multi_trigger_db.tlog FOR EACH ROW precedes_follows INSERT INTO multi_trigger_db.tlog2 VALUES ( NEW.`pk`, NOW(), NEW.`fld` );
+    CREATE __or_replace_trigger_x_trigger_if_not_exists_x_trigger(50,40)
+    multi_trigger_db.trigger_name
+    before_after INSERT ON multi_trigger_db.tlog
+    FOR EACH ROW precedes_follows
+    INSERT INTO multi_trigger_db.tlog2 VALUES ( NEW.`pk`, NOW(), NEW.`fld` )
+;
 
 create_log2_trigger:
-    create_clause multi_trigger_db. trigger_name BEFORE INSERT ON multi_trigger_db.tlog2 FOR EACH ROW precedes_follows SET NEW.`val` = IFNULL(NEW.`val`,'');
+    CREATE __or_replace_trigger_x_trigger_if_not_exists_x_trigger(50,40)
+    multi_trigger_db.trigger_name
+    BEFORE INSERT ON multi_trigger_db.tlog2
+    FOR EACH ROW precedes_follows
+    SET NEW.`val` = IFNULL(NEW.`val`,'')
+;
 
+# It's important to have the "basetable" comment there
+# before TRIGGER clause, due to MDEV-30295.
 create_trigger:
-    create_clause /* _basetable[invariant] */ { $last_database }.trigger_name before_after ins_upd_del ON _basetable[invariant] FOR EACH ROW precedes_follows INSERT INTO multi_trigger_db.tlog (tbl,tp,op) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field );
+    CREATE /* _basetable[invariant] */ __or_replace_trigger_x_trigger_if_not_exists_x_trigger(50,40)
+    { $last_database }.trigger_name
+    before_after ins_upd_del ON _basetable[invariant]
+    FOR EACH ROW precedes_follows
+    INSERT INTO multi_trigger_db.tlog (tbl,tp,op) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field );
 
 trigger_name:
     _letter ;
 
 drop_trigger:
   DROP TRIGGER __if_exists(90) trigger_name ;
-
-create_clause: 
-  CREATE __or_replace_trigger_x_trigger_if_not_exists_x_trigger(50,40) ;
 
 precedes_follows:
     ==FACTOR:4== |

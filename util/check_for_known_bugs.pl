@@ -124,7 +124,7 @@ if ($match_info= search_files_for_matches(\@files, \@last_choice_files, \@weak_s
     exit 0;
 }
 
-print "Status: $result_status\n--- NO MATCHES FOUND ---------------\n\n";
+print "Status: $result_status\n\n--- NO MATCHES FOUND ---------------\n\n";
 register_result('no_match');
 
 exit 1;
@@ -141,10 +141,10 @@ sub search_files_for_matches
   {
       my @files= @$ref;
       next unless scalar (@files);
-      $result_status= `grep -a -h \"run.pl will exit with exit status STATUS_\" @files | tail -n 1`;
+      $result_status= `grep -a -h \"ends with exit status STATUS_\" @files | tail -n 1`;
       if ($result_status) {
         chomp $result_status;
-        $result_status =~ s/.*will exit with exit status (STATUS_\w+).*/$1/;
+        $result_status =~ s/.*ends with exit status (STATUS_\w+).*/$1/;
       }
 
       my $matches_info= '';
@@ -208,7 +208,7 @@ sub search_files_for_matches
 sub print_result {
   my ($match_type, $matches_info)= @_; # match_type: strong or weak
   if ($matches_info) {
-    print "\n--- " . uc($match_type)." matches -------------------\n";
+    print "Status: $result_status\n\n--- " . uc($match_type)." matches -------------------\n";
     print $matches_info;
     print "--------------------------------------\n\n";
     register_result($match_type);
@@ -299,7 +299,7 @@ sub process_found_mdev
 
   if ($mdev =~ /^(?:MENT|TODO)-/) {
       # No point trying to retrieve information
-      $$info_ref .= "$mdev: $nickname\n";
+      $$info_ref .= "\n$mdev: $nickname\n";
       if ($mdev =~ /^TODO-/) {
           $draft_mdevs{$mdev}= 1;
       }
@@ -350,7 +350,7 @@ sub process_found_mdev
       my $affectsVersions= `cat /tmp/$mdev.affectsVersions`;
       my @affected = ($affectsVersions =~ /\"name\":\"(.*?)\"/g);
 
-      $$info_ref .= "$mdev: $nickname\n$summary\n";
+      $$info_ref .= "\n$mdev: $nickname\n$summary\n";
 
       if ($resolution eq 'FIXED') {
         my $fixVersions= `cat /tmp/$mdev.fixVersions`;
@@ -382,7 +382,7 @@ sub process_found_mdev
         $$info_ref .= "Affects versions: @affected\n";
       }
    }
-   $$info_ref .= "-------------\n";
+#   $$info_ref .= "-------------\n";
 }
 
 sub resolve_files {

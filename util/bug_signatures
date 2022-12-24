@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-30297:
+=~ Assertion \`a\.str != __null'|signal
+=~ Compare_identifiers::operator
+=~ Lex_cstring_with_compare
 MDEV-30277:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
@@ -378,6 +382,10 @@ MDEV-29273:
 =~ 'close' returned OS error 209\. Cannot continue operation
 =~ got signal 6
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-29217:
+=~ Assertion \`0'
+=~ Item_param::can_return_value
+=~ Prepared_statement::prepare
 MDEV-29214:
 =~ Assertion \`server->io_count == 0'
 =~ free_server

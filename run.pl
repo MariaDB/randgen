@@ -394,7 +394,7 @@ sub run {
     }
   }
 
-  say("Test run exits with exit status ".status2text($status). " ($status)\n");
+  say("Test run ends with exit status ".status2text($status). " ($status)\n");
   if ($search_mode) {
     say("Test runs apparently ".($trial_result ? "achieved the expected outcome" : "failed to achieve the expected outcome"));
   }

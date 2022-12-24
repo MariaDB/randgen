@@ -283,7 +283,15 @@ sub cacheMetaData {
     my @files= glob("$vardir/collations-*");
     if (scalar(@files)) {
       @files= reverse sort @files;
-      $collations= $self->loadCollations($files[0]);
+      unless (open(COLL,"$files[0]")) {
+        sayError("Executor#".$self->threadId()." failed to open collations file: $!");
+        return;
+      }
+      read(COLL, my $cont, -s "$files[0]");
+      close(COLL);
+      my $VAR1;
+      eval ($cont);
+      $collations= $VAR1;
       if ($collations) {
         my $coll= {};
         foreach my $row (@$collations) {
@@ -299,16 +307,25 @@ sub cacheMetaData {
       sayWarning("Executor#".$self->threadId()." at ".$self->dsn." could not find a collation dump");
     }
   }
-  my @files= glob("$vardir/system-tables-*");
+  my @files= glob("$vardir/system-metadata-*");
   if (scalar(@files)) {
     @files= reverse sort @files;
-    if ($files[0] =~ /\/system-tables-([\d\.]+)$/) {
+    if ($files[0] =~ /\/system-metadata-([\d\.]+)$/) {
       my $ts= $1;
       if (not defined $self->[EXECUTOR_META_SYSTEM_TS] or $self->[EXECUTOR_META_SYSTEM_TS] < $ts) {
-        $system= $self->loadMetaData($files[0]); # loadMetaData should search for -proc itself
+        unless (open(META,"$files[0]")) {
+          sayError("Executor#".$self->threadId()." failed to open system metadata file: $!");
+          return;
+        }
+        read(META, my $cont, -s "$files[0]");
+        close(META);
+        my $VAR1;
+        eval ($cont);
+        $system= $VAR1;
         if ($system) {
           $self->[EXECUTOR_META_SYSTEM_TS]= $ts;
           $self->[EXECUTOR_META_SYSTEM_CACHE]= $system;
+          say("Executor#".$self->threadId()." has loaded ".scalar(keys %$system)." system schemas");
         } else {
           sayError("Executor#".$self->threadId()." failed to load system metadata");
         }
@@ -318,16 +335,27 @@ sub cacheMetaData {
     sayWarning("Executor#".$self->threadId()." could not find a system metadata dump");
   }
 
-  my @files= glob("$vardir/nonsystem-tables-*");
+  my @files= glob("$vardir/nonsystem-metadata-*");
   if (scalar(@files)) {
     @files= reverse sort @files;
-    if ($files[0] =~ /\/nonsystem-tables-([\d\.]+)$/) {
+    if ($files[0] =~ /\/nonsystem-metadata-([\d\.]+)$/) {
       my $ts= $1;
       if (not defined $self->[EXECUTOR_META_NONSYSTEM_TS] or $self->[EXECUTOR_META_NONSYSTEM_TS] < $ts) {
-        $non_system= $self->loadMetaData($files[0]); # loadMetaData should search for -proc itself
+        unless (open(META,"$files[0]")) {
+          sayError("Executor#".$self->threadId()." failed to open non-system metadata file: $!");
+          return;
+        }
+        read(META, my $cont, -s "$files[0]");
+        close(META);
+        my $VAR1;
+        eval ($cont);
+        $non_system= $VAR1;
         if ($non_system) {
           $self->[EXECUTOR_META_NONSYSTEM_TS]= $ts;
           $self->[EXECUTOR_META_NONSYSTEM_CACHE]= $non_system;
+          say("Executor#".$self->threadId()." has loaded ".scalar(keys %$non_system)." non-system schemas");
+          # HERE:
+          # print Dumper $self->[EXECUTOR_META_NONSYSTEM_CACHE];
         } else {
           sayError("Executor#".$self->threadId()." failed to load non-system metadata");
         }

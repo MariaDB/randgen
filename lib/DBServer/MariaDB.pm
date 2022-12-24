@@ -851,6 +851,15 @@ sub dumpdb {
           $self->dbh->do("alter ignore table $c->[0].$c->[1] drop primary key /* dropping primary key containing spatial columns */");
         }
       }
+      # Workaround for MDEV-30296 (triggers on MERGE tables may cause problems);
+      my $merge_triggers= $self->dbh->selectcol_arrayref(
+        "select concat(trigger_schema,'.',trigger_name) from information_schema.triggers tr join information_schema.tables tb ".
+        "on (trigger_schema = table_schema and event_object_table = table_name) ".
+        "where engine='MRG_MyISAM'"
+      );
+      foreach my $t (@$merge_triggers) {
+        $self->dbh->do("drop trigger $t");
+      }
     } # End of $for_restoring
 
     my $databases= '--all-databases';
@@ -1116,7 +1125,7 @@ sub stopServer {
         }
         if (!$self->waitForServerToStop($shutdown_timeout)) {
             # Terminate process
-            sayWarining("Server would not shut down properly. Terminating it");
+            sayWarning("Server would not shut down properly. Terminating it");
             $res= $self->term;
         } else {
             # clean up when server is not alive.
@@ -1789,6 +1798,7 @@ sub storeMetaData {
 
   if ($metadata_type eq 'all' or $metadata_type eq 'collations') {
     push @files, "$vardir/collations";
+    unlink $files[$#files];
     if ($dbh) {
       $dbh->do("$statement_time SELECT collation_name,character_set_name ".
               "INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
@@ -1807,43 +1817,60 @@ sub storeMetaData {
 
   if ($metadata_type ne 'collations')
   {
-    my $table_query_p1=
-        "$statement_time SELECT s.schema_name, tt.table_name, tt.table_type, ".
-        "       tc.column_name, tc.column_key, tc.data_type, tc.character_maximum_length, ".
-        "       ts.index_name, ts.non_unique XOR 1 ";
-    my $table_query_p2=
-        "FROM information_schema.schemata s ".
-        "LEFT JOIN information_schema.tables tt ON (s.schema_name = tt.table_schema)".
-        "JOIN information_schema.columns tc USING (table_schema, table_name) ".
-        "LEFT JOIN information_schema.statistics ts USING (table_schema, table_name, column_name)";
+    my $tbl_query_p1= "$statement_time SELECT table_schema, table_name, table_type";
+    my $tbl_query_p2= "FROM information_schema.tables";
+    my $col_query_p1= "$statement_time SELECT table_schema, table_name, column_name, column_key, data_type, character_maximum_length";
+    my $col_query_p2= "FROM information_schema.columns";
+    my $ind_query_p1= "$statement_time SELECT table_schema, table_name, column_name, index_name, non_unique XOR 1";
+    my $ind_query_p2= "FROM information_schema.statistics";
     my $proc_query_p1= "$statement_time SELECT db, name, type";
     my $proc_query_p2= "FROM mysql.proc";
 
     my $system_schemata= $self->systemSchemaList();
     my $exempt_schemata= "'transforms'";
 
-    if ($metadata_type ne 'nonsystem') {
-      push @files, "$vardir/system-tables";
-      unlink $files[$#files];
-      if ($dbh) {
+    if ($dbh) {
+      if ($metadata_type ne 'nonsystem')
+      {
+        # System tables
+        push @files, "$vardir/system-tables";
+        unlink $files[$#files];
         $dbh->do(
-          $table_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-          $table_query_p2." WHERE table_schema IN ($system_schemata)"
+          $tbl_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+          $tbl_query_p2." WHERE table_schema IN ($system_schemata)"
         );
         if ($dbh->err) {
           sayError("System table dump failed: ".$dbh->err.": ".$dbh->errstr);
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
-      } else {
-        sayError("Metadata dumper lost connection to the server");
-        $status= DBSTATUS_FAILURE;
-        goto METAERR;
-      }
-
-      push @files, "$vardir/system-proc";
-      unlink $files[$#files];
-      if ($dbh) {
+        # System table columns
+        push @files, "$vardir/system-columns";
+        unlink $files[$#files];
+        $dbh->do(
+          $col_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+          $col_query_p2." WHERE table_schema IN ($system_schemata)"
+        );
+        if ($dbh->err) {
+          sayError("System table column dump failed: ".$dbh->err.": ".$dbh->errstr);
+          $status= DBSTATUS_FAILURE;
+          goto METAERR;
+        }
+        # System table columns
+        push @files, "$vardir/system-indexes";
+        unlink $files[$#files];
+        $dbh->do(
+          $ind_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+          $ind_query_p2." WHERE table_schema IN ($system_schemata)"
+        );
+        if ($dbh->err) {
+          sayError("System table index dump failed: ".$dbh->err.": ".$dbh->errstr);
+          $status= DBSTATUS_FAILURE;
+          goto METAERR;
+        }
+        # System stored proc
+        push @files, "$vardir/system-proc";
+        unlink $files[$#files];
         $dbh->do(
           $proc_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
           $proc_query_p2." WHERE db IN ($system_schemata)"
@@ -1853,34 +1880,48 @@ sub storeMetaData {
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
-      } else {
-        sayError("Metadata dumper lost connection to the server");
-        $status= DBSTATUS_FAILURE;
-        goto METAERR;
       }
-    }
-    if ($metadata_type ne 'system') {
-      push @files, "$vardir/nonsystem-tables";
-      unlink $files[$#files];
-      if ($dbh) {
+      if ($metadata_type ne 'system')
+      {
+        # Non-system tables
+        push @files, "$vardir/nonsystem-tables";
+        unlink $files[$#files];
         $dbh->do(
-          $table_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-          $table_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)"
+          $tbl_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+          $tbl_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)"
         );
         if ($dbh->err) {
           sayError("Non-system table dump failed: ".$dbh->err.": ".$dbh->errstr);
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
-      } else {
-        sayError("Metadata dumper lost connection to the server");
-        $status= DBSTATUS_FAILURE;
-        goto METAERR;
-      }
-
-      push @files, "$vardir/nonsystem-proc";
-      unlink $files[$#files];
-      if ($dbh) {
+        # Non-system table columns
+        push @files, "$vardir/nonsystem-columns";
+        unlink $files[$#files];
+        $dbh->do(
+          $col_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+          $col_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)"
+        );
+        if ($dbh->err) {
+          sayError("Non-system table column dump failed: ".$dbh->err.": ".$dbh->errstr);
+          $status= DBSTATUS_FAILURE;
+          goto METAERR;
+        }
+        # Non-system table indexes
+        push @files, "$vardir/nonsystem-indexes";
+        unlink $files[$#files];
+        $dbh->do(
+          $ind_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+          $ind_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)"
+        );
+        if ($dbh->err) {
+          sayError("Non-system table index dump failed: ".$dbh->err.": ".$dbh->errstr);
+          $status= DBSTATUS_FAILURE;
+          goto METAERR;
+        }
+        # Non-system stored procedures
+        push @files, "$vardir/nonsystem-proc";
+        unlink $files[$#files];
         $dbh->do(
           $proc_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
           $proc_query_p2." WHERE db NOT IN ($system_schemata,$exempt_schemata)"
@@ -1890,12 +1931,161 @@ sub storeMetaData {
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
-      } else {
-        sayError("Metadata dumper lost connection to the server");
-        $status= DBSTATUS_FAILURE;
-        goto METAERR;
+      }
+    } else {
+      sayError("Metadata dumper lost connection to the server");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
+    }
+  }
+
+  my $ts= Time::HiRes::time();
+  local $Data::Dumper::Maxdepth= 0;
+  local $Data::Dumper::Deepcopy= 1;
+  my %files= ();
+  foreach my $f (@files) {
+    $files{$f}= 1;
+    my @prev= glob("$f-*");
+    foreach my $p (@prev) { move($p,$p.'.bak') unless $p =~ /\.bak$/ };
+  }
+  if ($files{"$vardir/collations"}) {
+    unless (open(COLL,"$vardir/collations")) {
+      sayError("Couldn't open collations dump $vardir/collations: $!");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
+    }
+    my @collations=();
+    while (<COLL>) {
+      chomp;
+      my ($coll, $cs)= split /;/, $_;
+      # TODO: maybe better solution
+      if (($cs eq '\N' or $cs eq '') and ($coll =~ /^uca1400/)) {
+        $cs= 'utf8mb3';
+      }
+      push @collations, [$coll, $cs];
+    }
+    close(COLL);
+    unless (open(COLL,">$vardir/collations-$ts")) {
+      sayError("Couldn't open collations file for writing: $!");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
+    }
+    print COLL Dumper \@collations;
+    close(COLL);
+  }
+  foreach my $sys ('system','nonsystem') {
+    # Columns, tables and index lists may be diverged, since they weren't
+    # taken at exactly the same time or transactionally. We'll neeed to
+    # reconcile them -- only records for tables present in col and tbl files
+    # will be used
+    next unless $files{"$vardir/$sys-tables"} && $files{"$vardir/$sys-columns"} && $files{"$vardir/$sys-indexes"};
+    my $meta;
+    my %tabletype;
+    unless (open(TBL, "$vardir/$sys-tables")) {
+      sayError("Couldn't open $vardir/$sys-tables for reading: $!");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
+    }
+    while (<TBL>) {
+      chomp;
+      my ($schema, $table, $type) = split /;/, $_;
+      if    ($type eq 'BASE TABLE') { $type= 'table' }
+      elsif ($type eq 'SYSTEM VERSIONED') { $type = 'versioned' }
+      elsif ($type eq 'SEQUENCE') { $type = 'sequence' }
+      elsif ($type eq 'VIEW' or $type eq 'SYSTEM VIEW') { $type= 'view' }
+      else { $type= 'misc' };
+      $meta->{$schema}={} if not exists $meta->{$schema};
+      $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
+      $meta->{$schema}->{$type}->{$table}={} if not exists $meta->{$schema}->{$type}->{$table};
+      $meta->{$schema}->{$type}->{$table}->{COL}={} if not exists $meta->{$schema}->{$type}->{$table}->{COL};
+      $meta->{$schema}->{$type}->{$table}->{IND}={} if not exists $meta->{$schema}->{$type}->{$table}->{IND};
+      $tabletype{$schema.'.'.$table}= $type;
+    }
+    close(TBL);
+    unless (open(COL, "$vardir/$sys-columns")) {
+      sayError("Couldn't open $vardir/$sys-columns for reading: $!");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
+    }
+    while (<COL>) {
+      chomp;
+      my ($schema, $table, $column, $key, $realtype, $maxlength) = split /;/, $_;
+      my $type= $tabletype{$schema.'.'.$table};
+      next unless $type;
+      my $metatype= lc($realtype);
+      if (
+        $metatype eq 'bit' or
+        $metatype eq 'tinyint' or
+        $metatype eq 'smallint' or
+        $metatype eq 'mediumint' or
+        $metatype eq 'bigint'
+      ) { $metatype= 'int' }
+      elsif (
+        $metatype eq 'double'
+      ) { $metatype= 'float' }
+      elsif (
+        $metatype eq 'datetime'
+      ) { $metatype= 'timestamp' }
+      elsif (
+        $metatype eq 'varchar' or
+        $metatype eq 'binary' or
+        $metatype eq 'varbinary'
+      ) { $metatype= 'char' }
+      elsif (
+        $metatype eq 'tinyblob' or
+        $metatype eq 'mediumblob' or
+        $metatype eq 'longblob' or
+        $metatype eq 'blob' or
+        $metatype eq 'tinytext' or
+        $metatype eq 'mediumtext' or
+        $metatype eq 'longtext' or
+        $metatype eq 'text'
+      ) { $metatype= 'blob' };
+
+      if ($key eq 'PRI') { $key= 'primary' }
+      elsif ($key eq 'MUL' or $key eq 'UNI') { $key= 'indexed' }
+      else { $key= 'ordinary' };
+      $meta->{$schema}->{$type}->{$table}->{COL}->{$column}= [$key,$metatype,$realtype,$maxlength];
+    }
+    close(COL);
+    unless (open(IND, "$vardir/$sys-indexes")) {
+      sayError("Couldn't open $vardir/$sys-indexes for reading: $!");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
+    }
+    while (<IND>) {
+      chomp;
+      my ($schema, $table, $column, $ind, $unique) = split /;/, $_;
+      my $type= $tabletype{$schema.'.'.$table};
+      next unless $type && $meta->{$schema}->{$type}->{$table}->{COL}->{$column};
+      if ($ind ne 'NULL' and $ind ne '' and $ind ne '\N') {
+        my $indtype= $tabletype{$schema.'.'.$table};
+        $meta->{$schema}->{$indtype}->{$table}->{IND}->{$ind}= [$unique];
       }
     }
+    close(IND);
+
+    # Finally, remove tables which have no columns
+    foreach my $s (keys %$meta) {
+      foreach my $tp (keys %{$meta->{$s}}) {
+        foreach my $t (keys %{$meta->{$s}->{$tp}}) {
+          if (scalar keys %{$meta->{$s}->{$tp}->{$t}->{COL}}) {
+            my %tbl= %{$meta->{$s}->{$tp}->{$t}};
+            $meta->{$s}->{tables}->{$t}= \%tbl;
+          } else {
+            delete $meta->{$s}->{$tp}->{$t};
+          }
+        }
+      }
+    }
+    unless (open(META,">$vardir/$sys-metadata-$ts")) {
+      sayError("Couldn't open metadata file for writing: $!");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
+    }
+    print META Dumper $meta;
+    close(META);
+
   }
 
   METAERR:
@@ -1904,12 +2094,8 @@ sub storeMetaData {
     return $status;
   }
 
-  my $ts= Time::HiRes::time();
-  foreach my $f (@files) {
-    my @prev= glob("$f-*");
-    foreach my $p (@prev) { move($p,$p.'.bak') unless $p =~ /\.bak$/ };
-    move($f,$f."-$ts");
-  }
+  
+#    move($f,$f."-$ts");
   unlink @waiters;
   say("Finished dumping $metadata_type metadata".($wait_for_threads ? " for $wait_for_threads waiters" : ""));
   return DBSTATUS_OK;

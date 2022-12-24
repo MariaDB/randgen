@@ -120,22 +120,109 @@ $optional_variators= [
 ];
 
 $basic_engine_combinations= [
-  '','','','',
-  '--engine=InnoDB',
-  '--engine=Aria',
-  '--engine=MyISAM',
   '--engine=InnoDB,Aria',
   '--engine=InnoDB,MyISAM',
-  '--engine=InnoDB,Archive --mysqld=--plugin-load-add=ha_archive',
-  '--engine=InnoDB,Blackhole --mysqld=--plugin-load-add=ha_blackhole',
+  '--engine=InnoDB,HEAP',
   '--engine=InnoDB,MyISAM,Aria',
   '--engine=InnoDB,MyISAM,Aria,HEAP',
-  '--engine=InnoDB,MyISAM,Aria,HEAP,Archive,Blackhole --mysqld=--plugin-load-add=ha_archive --mysqld=--plugin-load-add=ha_blackhole',
+];
+
+$enforced_engine_combinations= [
+  '--engine=InnoDB','--engine=InnoDB --mysqld=--enforce-storage-engine=InnoDB',
+  '--engine=Aria','--engine=Aria --mysqld=--enforce-storage-engine=Aria',
+  '--engine=MyISAM','--engine=MyISAM --mysqld=--enforce-storage-engine=MyISAM',
+  '--engine=HEAP','--engine=HEAP --mysqld=--enforce-storage-engine=HEAP',
 ];
 
 $extra_engine_combinations= [
-  '','','','','','','','','','','','','','','','',
-  '--engine=RocksDB --mysqld=--default-storage-engine=RocksDB --mysqld=--plugin-load-add=ha_rocksdb --mysqld=--enforce-storage-engine=""',
+  # RocksDB
+  '--engine=RocksDB
+   --mysqld=--default-storage-engine=RocksDB
+   --mysqld=--plugin-load-add=ha_rocksdb
+  ',
+  # Archive
+  '--engine=Archive
+   --mysqld=--plugin-load-add=ha_archive
+  ',
+  # Blackhole
+  '--engine=Blackhole
+   --mysqld=--plugin-load-add=ha_blackhole
+  ',
+  # FederatedX with InnoDB for backing
+  '--engine=InnoDB
+   --mysqld=--plugin-load-add=ha_federatedx
+   --grammar=conf/yy/engine-federatedx.yy:0.1
+  ',
+  # OQGraph with InnoDB for backing
+  '--engine=InnoDB
+   --mysqld=--plugin-load-add=ha_oqgraph
+   --gendata=data/sql/engine-oqgraph.sql
+   --grammar=conf/yy/engine-oqgraph.yy
+  ',
+  # Spider with InnoDB for backing
+  '--engine=InnoDB
+   --mysqld=--plugin-load-add=ha_spider
+   --mysqld=--loose-spider-same-server-link=on
+   --mysqld=--loose-spider_table_crd_thread_count=1
+   --mysqld=--loose-spider_table_sts_thread_count=1
+   --grammar=conf/yy/engine-spider.yy:0.5
+  ',
+  # S3 with Aria for a base
+  '--engine=Aria
+   --minio
+   --mysqld=--plugin-load-add=ha_s3
+   --mysqld=--s3=on
+   --mysqld=--s3-host-name="127.0.0.1"
+   --mysqld=--s3-protocol-version=Auto
+   --mysqld=--s3-bucket=rqg
+   --mysqld=--s3-access-key=minio
+   --mysqld=--s3-secret-key=minioadmin
+   --mysqld=--s3-region=""
+   --mysqld=--s3-port=9000
+   --mysqld=--s3-use-http=on
+   --grammar=conf/yy/engine-s3.yy:0.1
+  ',
+  # HEAP
+  '--engine=HEAP
+   --gendata=data/sql/engine-heap.sql
+   --grammar=conf/yy/engine-heap-ddl.yy
+   --grammar=conf/yy/engine-heap-dml.yy
+  ',
+  # Merge with MyISAM for backing
+  '--engine=MyISAM
+   --grammar=conf/yy/engine-merge.yy
+  ',
+  # Full mix
+  '--engine=InnoDB,MyISAM,Aria,HEAP,Archive,Blackhole,RocksDB
+   --mysqld=--plugin-load-add=ha_archive
+   --mysqld=--plugin-load-add=ha_blackhole
+   --mysqld=--plugin-load-add=ha_federatedx
+   --mysqld=--plugin-load-add=ha_rocksdb
+   --mysqld=--plugin-load-add=ha_oqgraph
+   --mysqld=--plugin-load-add=ha_spider
+   --mysqld=--plugin-load-add=ha_s3
+   --mysqld=--loose-spider-same-server-link=on
+   --mysqld=--loose-spider_table_crd_thread_count=1
+   --mysqld=--loose-spider_table_sts_thread_count=1
+   --mysqld=--loose-s3=on
+   --mysqld=--loose-s3-host-name="127.0.0.1"
+   --mysqld=--loose-s3-protocol-version=Auto
+   --mysqld=--loose-s3-bucket=rqg
+   --mysqld=--loose-s3-access-key=minio
+   --mysqld=--loose-s3-secret-key=minioadmin
+   --mysqld=--loose-s3-region=""
+   --mysqld=--loose-s3-port=9000
+   --mysqld=--loose-s3-use-http=on
+   --gendata=data/sql/engine-oqgraph.sql
+   --gendata=data/sql/engine-heap.sql
+   --grammar=conf/yy/engine-oqgraph.yy:0.1
+   --grammar=conf/yy/engine-federatedx.yy:0.1
+   --grammar=conf/yy/engine-spider.yy:0.5
+   --grammar=conf/yy/engine-s3.yy:0.1
+   --grammar=conf/yy/engine-heap-ddl.yy
+   --grammar=conf/yy/engine-heap-dml.yy
+   --grammar=conf/yy/engine-merge.yy
+  ',
 ];
 
 $non_crash_scenarios= [

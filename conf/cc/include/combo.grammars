@@ -97,39 +97,46 @@ $grammars= [
   [@empty_set,
     '--grammar=conf/yy/dyncol_dml.yy
       --gendata=conf/zz/dyncol_dml.zz'],
-  [@empty_set,
-    '--grammar=conf/yy/engine-federatedx.yy:0.1
-      --mysqld=--plugin-load-add=ha_federatedx'],
-  [@empty_set,
-    '--grammar=conf/yy/engine-heap-ddl.yy'],
-  [@empty_set,
-    '--grammar=conf/yy/engine-heap-dml.yy
-      --gendata=data/sql/engine-heap.sql'],
-  [@empty_set,
-    '--grammar=conf/yy/engine-merge.yy'],
-  [@empty_set,
-    '--grammar=conf/yy/engine-oqgraph.yy
-      --gendata=data/sql/engine-oqgraph.sql
-      --mysqld=--plugin-load-add=ha_oqgraph.so'],
-  [@empty_set,
-    '--grammar=conf/yy/engine-s3.yy:0.1
-      --minio
-      --mysqld=--plugin-load-add=ha_s3
-      --mysqld=--s3=on
-      --mysqld=--s3-host-name="127.0.0.1"
-      --mysqld=--s3-protocol-version=Auto
-      --mysqld=--s3-bucket=rqg
-      --mysqld=--s3-access-key=minio
-      --mysqld=--s3-secret-key=minioadmin
-      --mysqld=--s3-region=""
-      --mysqld=--s3-port=9000
-      --mysqld=--s3-use-http=on'],
-  [@empty_set,
-    '--grammar=conf/yy/engine-spider.yy:0.5
-      --mysqld=--plugin-load-add=ha_spider
-      --mysqld=--loose-spider-same-server-link=on
-      --mysqld=--loose-spider_table_crd_thread_count=1
-      --mysqld=--loose-spider_table_sts_thread_count=1'],
+# In engine combinations
+#  [@empty_set,
+#    '--grammar=conf/yy/engine-federatedx.yy:0.1
+#      --mysqld=--plugin-load-add=ha_federatedx'],
+# In engine combinations
+#  [@empty_set,
+#    '--grammar=conf/yy/engine-heap-ddl.yy'],
+# In engine combinations
+#  [@empty_set,
+#    '--grammar=conf/yy/engine-heap-dml.yy
+#      --gendata=data/sql/engine-heap.sql'],
+# In engine combinations
+#  [@empty_set,
+#    '--grammar=conf/yy/engine-merge.yy'],
+# In engine combinations
+#  [@empty_set,
+#    '--grammar=conf/yy/engine-oqgraph.yy
+#      --gendata=data/sql/engine-oqgraph.sql
+#      --mysqld=--plugin-load-add=ha_oqgraph.so'],
+# In engine combinations
+#  [@empty_set,
+#    '--grammar=conf/yy/engine-s3.yy:0.1
+#      --minio
+#      --mysqld=--plugin-load-add=ha_s3
+#      --mysqld=--s3=on
+#      --mysqld=--s3-host-name="127.0.0.1"
+#      --mysqld=--s3-protocol-version=Auto
+#      --mysqld=--s3-bucket=rqg
+#      --mysqld=--s3-access-key=minio
+#      --mysqld=--s3-secret-key=minioadmin
+#      --mysqld=--s3-region=""
+#      --mysqld=--s3-port=9000
+#      --mysqld=--s3-use-http=on'],
+# In engine combinations
+#  [@empty_set,
+#    '--grammar=conf/yy/engine-spider.yy:0.5
+#      --mysqld=--plugin-load-add=ha_spider
+#      --mysqld=--loose-spider-same-server-link=on
+#      --mysqld=--loose-spider_table_crd_thread_count=1
+#      --mysqld=--loose-spider_table_sts_thread_count=1'],
   [@empty_set,
     '--grammar=conf/yy/event.yy:0.1'],
   [@empty_set,
