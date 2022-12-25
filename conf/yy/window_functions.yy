@@ -16,48 +16,88 @@
 query:
   { _set_db('ANY') }
   SELECT /* _table[invariant] */
-  window_function
+  window_function_list
   FROM _table[invariant]
 ;
 
+window_function_list:
+  window_function |
+  window_function, window_function_list ;
+
 window_function:
-#### Non-aggregate functions
-#  CUME_DIST()                     |
-#  DENSE_RANK()                    |
-#  FIRST_VALUE(expr)               |
-#  LAG(expr optional_offset)       |
-#  LAST_VALUE(expr_list)           |
-#  LAST_VALUE(expr_list) over_expression          |
-#  LEAD(expr optional_offset)      |
-#  MEDIAN(expr)                    |
-#  NTH_VALUE(expr optional_offset) |
-#  NTILE(_tinyint_unsigned)        |
-#  PERCENT_RANK()                  |
-  PERCENTILE_CONT({$a= $prng->uint16(0,99); $a/$prng->uint16($a+1,100)}) WITHIN GROUP (ORDER BY expr) OVER (optional_partition_by) |
-# Cannot have a truly random value due to MDEV-30292
-  PERCENTILE_DISC({$a= $prng->uint16(0,99); $a/$prng->uint16($a+1,100)}) WITHIN GROUP (ORDER BY expr) OVER (optional_partition_by) |
-#  RANK()                          |
-#  ROW_NUMBER()                    |
-#### Aggregate functions
-#  AVG(__distinct(50) expr)        |
-#  BIT_AND(expr)                   |
-#  BIT_OR(expr)                    |
-#  BIT_XOR(expr)                   |
-#  COUNT(aggr_expr)                |
-#  MAX(__distinct(50) expr)        |
-#  MIN(__distinct(50) expr)        |
-#  STD(expr)                       |
-#  STDDEV(expr)                    |
-#  STDDEV_POP(expr)                |
-#  STDDEV_SAMP(expr)               |
-#  SUM(__distinct(50) expr)        |
-#  VAR_POP(expr)                   |
-#  VAR_SAMP(expr)                  |
-#  VARIANCE(expr)
-1
+  non_aggregate_function |
+  aggregate_function over_expression_optional
 ;
 
-over_expression:
+non_aggregate_function:
+  function_requiring_order_by over_expression_mandatory_order_by |
+  function_with_optional_over over_expression_optional |
+  function_without_order_by OVER (optional_partition_by) |
+  function_without_frame OVER (optional_partition_by ORDER BY order_list) |
+  function_percentile WITHIN GROUP (ORDER BY expr) OVER (optional_partition_by)
+;
+
+function_requiring_order_by:
+  CUME_DIST()                |
+  DENSE_RANK()               |
+  LAG(expr optional_offset)  |
+  LEAD(expr optional_offset) |
+  NTH_VALUE(expr offset)
+;
+
+function_with_optional_over:
+  FIRST_VALUE(_field_int) |
+  LAST_VALUE(_field_int)
+;
+
+function_without_order_by:
+  MEDIAN(_field_int) ;
+
+function_without_frame:
+  NTILE(ntile_arg) |
+  PERCENT_RANK()   |
+  RANK()           |
+  ROW_NUMBER()
+;
+
+function_percentile:
+  PERCENTILE_CONT({$a= $prng->uint16(0,99); $a/$prng->uint16($a+1,100)}) |
+# Cannot have a truly random value (e.g. > 1) due to MDEV-30292
+  PERCENTILE_DISC({$a= $prng->uint16(0,99); $a/$prng->uint16($a+1,100)})
+;
+
+aggregate_function:
+  AVG(expr)                |
+  BIT_AND(expr)            |
+  BIT_OR(expr)             |
+  BIT_XOR(expr)            |
+  COUNT(expr)              |
+  MAX(__distinct(50) expr) |
+  MIN(__distinct(50) expr) |
+  STD(expr)                |
+  STDDEV(expr)             |
+  STDDEV_POP(expr)         |
+  STDDEV_SAMP(expr)        |
+  SUM(expr)                |
+  VAR_POP(expr)            |
+  VAR_SAMP(expr)           |
+  VARIANCE(expr)
+;
+
+ntile_arg:
+  ==FACTOR:50== { $prng->uint16(1,10) } |
+  ==FACTOR:10== { $prng->uint16(1,1000) } |
+  _field_int
+;
+
+over_expression_mandatory_order_by:
+  OVER (
+    optional_partition_by
+    order_by
+  )
+;
+
+over_expression_optional:
   OVER (
     optional_partition_by
     optional_order_by
@@ -68,7 +108,10 @@ aggr_expr:
   * | __distinct(50) expr_list ;
 
 optional_offset:
-  | , _tinyint_unsigned ;
+  | offset ;
+
+offset:
+  , _tinyint_unsigned | , _field ;
 
 optional_partition_by:
   ==FACTOR:4== |
@@ -80,11 +123,21 @@ expr_list:
 
 optional_order_by:
   ==FACTOR:4== |
-  ORDER BY order_list optional_frame_clause ;
+  order_by ;
+
+order_by:
+  ORDER BY order_list |
+  ORDER BY order_element __rows_x_range frame_between |
+  ORDER BY order_list ROWS frame_start |
+  ORDER BY order_element RANGE CURRENT ROW
+;
 
 order_list:
-  expr __asc_x_desc(30,30) |
-  expr __asc_x_desc(30,30), order_list ;
+  order_element |
+  order_element, order_list ;
+
+order_element:
+  expr __asc_x_desc(30,30) ;
 
 optional_frame_clause:
   __rows_x_range frame_border_expression ;
@@ -93,20 +146,23 @@ frame_border_expression:
   frame_start | frame_between ;
 
 frame_between:
-  BETWEEN frame_start AND frame_end ;
+  BETWEEN frame_start AND frame_end |
+  BETWEEN UNBOUNDED PRECEDING AND _tinyint_unsigned PRECEDING |
+  BETWEEN _tinyint_unsigned PRECEDING AND _tinyint_unsigned PRECEDING |
+  BETWEEN _tinyint_unsigned FOLLOWING AND UNBOUNDED FOLLOWING |
+  BETWEEN _tinyint_unsigned FOLLOWING AND _tinyint_unsigned FOLLOWING
+;
 
 frame_start:
     UNBOUNDED PRECEDING
-  | CURRENT ROW
   | _tinyint_unsigned PRECEDING
+  | CURRENT ROW
 ;
 
 frame_end:
-    UNBOUNDED PRECEDING
-  | UNBOUNDED FOLLOWING
-  | CURRENT ROW
-  | _tinyint_unsigned PRECEDING
+    CURRENT ROW
   | _tinyint_unsigned FOLLOWING
+  | UNBOUNDED FOLLOWING
 ;
 
 # TODO: expand
