@@ -261,10 +261,6 @@ sub pidfile {
     return $_[0]->vardir."/".MYSQLD_PID_FILE;
 }
 
-sub pid {
-    return $_[0]->[MYSQLD_SERVERPID];
-}
-
 sub logfile {
     return $_[0]->vardir."/".MYSQLD_LOG_FILE;
 }
@@ -426,6 +422,7 @@ sub createMysqlBase  {
         print BOOT "GRANT INSERT, UPDATE, DELETE ON performance_schema.* TO $user;\n";
         print BOOT "GRANT EXECUTE ON sys.* TO $user;\n";
         print BOOT "/*!100403 UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root')*/;\n";
+        print BOOT "DELETE FROM mysql.roles_mapping WHERE Role = 'admin';\n";
         print BOOT "INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y');\n";
     }
     close BOOT;
@@ -464,6 +461,7 @@ sub startServer {
     # If we don't remove the existing pidfile,
     # the server will be considered started too early, and further flow can fail
     unlink($self->pidfile);
+    $self->[MYSQLD_SERVERPID]= undef;
 
     my $errorlog = $self->vardir."/".MYSQLD_ERRORLOG_FILE;
 
@@ -678,6 +676,7 @@ sub kill {
     # clean up when the server is not alive.
     unlink $self->socketfile if -e $self->socketfile;
     unlink $self->pidfile if -e $self->pidfile;
+    $self->[MYSQLD_SERVERPID]= undef;
     return ($self->running ? DBSTATUS_FAILURE : DBSTATUS_OK);
 }
 
@@ -714,6 +713,7 @@ sub term {
     if (-e $self->socketfile) {
         unlink $self->socketfile;
     }
+    $self->[MYSQLD_SERVERPID]= undef;
     return $res;
 }
 
@@ -728,7 +728,7 @@ sub crash {
     # clean up when the server is not alive.
     unlink $self->socketfile if -e $self->socketfile;
     unlink $self->pidfile if -e $self->pidfile;
-
+    $self->[MYSQLD_SERVERPID]= undef;
 }
 
 sub corefile {
@@ -1131,6 +1131,7 @@ sub stopServer {
             # clean up when server is not alive.
             unlink $self->socketfile if -e $self->socketfile;
             unlink $self->pidfile if -e $self->pidfile;
+            $self->[MYSQLD_SERVERPID]= undef;
             $res= DBSTATUS_OK;
             say("Server at port ".$self->port." has been stopped");
         }
@@ -1362,6 +1363,9 @@ sub plannedDowntime {
   }
   if ($downtime > 0) {
     say("Server says: planned downtime, wait for $downtime seconds");
+    # We are unsetting PID in case it became stale,
+    # it should be re-read from the server pidfile
+    $self->[MYSQLD_SERVERPID]= undef;
   } elsif ($downtime < 0) {
     say("Server says: planned downtime, don't wait");
   } else {
@@ -1501,7 +1505,7 @@ sub running {
       } else {
         # It looks like in some cases the process may be not responding
         # to ping but is still not quite dead
-        return ! system("ls /proc/$pid > /dev/null 2>&1")
+        return ! system("[ -e /proc/$pid ]")
       }
     } else {
       sayWarning("PID not found");
@@ -1731,6 +1735,7 @@ sub get_pid_from_file {
   close(PID);
   $p =~ s/.*?([0-9]+).*/$1/;
   $/= $separ;
+  chomp $p;
   return $p;
 }
 
@@ -1756,6 +1761,9 @@ sub storeMetaData {
   my ($self, $metadata_type, $maxtime, $wait_for_threads)= @_;
 
   my $vardir= $self->vardir;
+  my $dumpdir= $vardir."/metadata";
+  mkpath($dumpdir);
+  
   my @waiters= ();
   my $status= DBSTATUS_OK;
 
@@ -1791,13 +1799,13 @@ sub storeMetaData {
   my @files= ();
 
   my $timeout= $end_time - time();
-  say("Starting dumping $metadata_type metadata with $timeout sec timeout".($wait_for_threads ? ", for $wait_for_threads waiters" : ""));
+  sayDebug("Starting dumping $metadata_type metadata with $timeout sec timeout".($wait_for_threads ? ", for $wait_for_threads waiters" : ""));
 
   # If executors are waiting, we should produce the result regardless the timeout
   my $statement_time= "SET STATEMENT max_statement_time=$timeout FOR";
 
   if ($metadata_type eq 'all' or $metadata_type eq 'collations') {
-    push @files, "$vardir/collations";
+    push @files, "$dumpdir/collations";
     unlink $files[$#files];
     if ($dbh) {
       $dbh->do("$statement_time SELECT collation_name,character_set_name ".
@@ -1825,6 +1833,8 @@ sub storeMetaData {
     my $ind_query_p2= "FROM information_schema.statistics";
     my $proc_query_p1= "$statement_time SELECT db, name, type";
     my $proc_query_p2= "FROM mysql.proc";
+    my $db_query_p1= "$statement_time SELECT schema_name";
+    my $db_query_p2= "FROM information_schema.schemata";
 
     my $system_schemata= $self->systemSchemaList();
     my $exempt_schemata= "'transforms'";
@@ -1832,8 +1842,20 @@ sub storeMetaData {
     if ($dbh) {
       if ($metadata_type ne 'nonsystem')
       {
+        # System db
+        push @files, "$dumpdir/system-db";
+        unlink $files[$#files];
+        $dbh->do(
+          $db_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+          $db_query_p2." WHERE schema_name IN ($system_schemata)"
+        );
+        if ($dbh->err) {
+          sayError("System schemata dump failed: ".$dbh->err.": ".$dbh->errstr);
+          $status= DBSTATUS_FAILURE;
+          goto METAERR;
+        }
         # System tables
-        push @files, "$vardir/system-tables";
+        push @files, "$dumpdir/system-tables";
         unlink $files[$#files];
         $dbh->do(
           $tbl_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
@@ -1845,7 +1867,7 @@ sub storeMetaData {
           goto METAERR;
         }
         # System table columns
-        push @files, "$vardir/system-columns";
+        push @files, "$dumpdir/system-columns";
         unlink $files[$#files];
         $dbh->do(
           $col_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
@@ -1857,7 +1879,7 @@ sub storeMetaData {
           goto METAERR;
         }
         # System table columns
-        push @files, "$vardir/system-indexes";
+        push @files, "$dumpdir/system-indexes";
         unlink $files[$#files];
         $dbh->do(
           $ind_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
@@ -1869,7 +1891,7 @@ sub storeMetaData {
           goto METAERR;
         }
         # System stored proc
-        push @files, "$vardir/system-proc";
+        push @files, "$dumpdir/system-proc";
         unlink $files[$#files];
         $dbh->do(
           $proc_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
@@ -1883,8 +1905,20 @@ sub storeMetaData {
       }
       if ($metadata_type ne 'system')
       {
+        # Non-system db
+        push @files, "$dumpdir/nonsystem-db";
+        unlink $files[$#files];
+        $dbh->do(
+          $db_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+          $db_query_p2." WHERE schema_name NOT IN ($system_schemata,$exempt_schemata)"
+        );
+        if ($dbh->err) {
+          sayError("Non-system schemata dump failed: ".$dbh->err.": ".$dbh->errstr);
+          $status= DBSTATUS_FAILURE;
+          goto METAERR;
+        }
         # Non-system tables
-        push @files, "$vardir/nonsystem-tables";
+        push @files, "$dumpdir/nonsystem-tables";
         unlink $files[$#files];
         $dbh->do(
           $tbl_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
@@ -1896,7 +1930,7 @@ sub storeMetaData {
           goto METAERR;
         }
         # Non-system table columns
-        push @files, "$vardir/nonsystem-columns";
+        push @files, "$dumpdir/nonsystem-columns";
         unlink $files[$#files];
         $dbh->do(
           $col_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
@@ -1908,7 +1942,7 @@ sub storeMetaData {
           goto METAERR;
         }
         # Non-system table indexes
-        push @files, "$vardir/nonsystem-indexes";
+        push @files, "$dumpdir/nonsystem-indexes";
         unlink $files[$#files];
         $dbh->do(
           $ind_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
@@ -1920,7 +1954,7 @@ sub storeMetaData {
           goto METAERR;
         }
         # Non-system stored procedures
-        push @files, "$vardir/nonsystem-proc";
+        push @files, "$dumpdir/nonsystem-proc";
         unlink $files[$#files];
         $dbh->do(
           $proc_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
@@ -1948,9 +1982,11 @@ sub storeMetaData {
     my @prev= glob("$f-*");
     foreach my $p (@prev) { move($p,$p.'.bak') unless $p =~ /\.bak$/ };
   }
-  if ($files{"$vardir/collations"}) {
-    unless (open(COLL,"$vardir/collations")) {
-      sayError("Couldn't open collations dump $vardir/collations: $!");
+
+  my $coll_count;
+  if ($files{"$dumpdir/collations"}) {
+    unless (open(COLL,"$dumpdir/collations")) {
+      sayError("Couldn't open collations dump $dumpdir/collations: $!");
       $status= DBSTATUS_FAILURE;
       goto METAERR;
     }
@@ -1972,17 +2008,20 @@ sub storeMetaData {
     }
     print COLL Dumper \@collations;
     close(COLL);
+    $coll_count= scalar(@collations);
   }
+
+  my ($db_count, $tbl_count, $col_count, $ind_count, $proc_count)= (0, 0, 0, 0, 0);
   foreach my $sys ('system','nonsystem') {
     # Columns, tables and index lists may be diverged, since they weren't
     # taken at exactly the same time or transactionally. We'll neeed to
     # reconcile them -- only records for tables present in col and tbl files
     # will be used
-    next unless $files{"$vardir/$sys-tables"} && $files{"$vardir/$sys-columns"} && $files{"$vardir/$sys-indexes"};
+    next unless $files{"$dumpdir/$sys-db"} && $files{"$dumpdir/$sys-tables"} && $files{"$dumpdir/$sys-columns"} && $files{"$dumpdir/$sys-indexes"};
     my $meta;
     my %tabletype;
-    unless (open(TBL, "$vardir/$sys-tables")) {
-      sayError("Couldn't open $vardir/$sys-tables for reading: $!");
+    unless (open(TBL, "$dumpdir/$sys-tables")) {
+      sayError("Couldn't open $dumpdir/$sys-tables for reading: $!");
       $status= DBSTATUS_FAILURE;
       goto METAERR;
     }
@@ -2000,10 +2039,12 @@ sub storeMetaData {
       $meta->{$schema}->{$type}->{$table}->{COL}={} if not exists $meta->{$schema}->{$type}->{$table}->{COL};
       $meta->{$schema}->{$type}->{$table}->{IND}={} if not exists $meta->{$schema}->{$type}->{$table}->{IND};
       $tabletype{$schema.'.'.$table}= $type;
+      $tbl_count++;
     }
     close(TBL);
-    unless (open(COL, "$vardir/$sys-columns")) {
-      sayError("Couldn't open $vardir/$sys-columns for reading: $!");
+
+    unless (open(COL, "$dumpdir/$sys-columns")) {
+      sayError("Couldn't open $dumpdir/$sys-columns for reading: $!");
       $status= DBSTATUS_FAILURE;
       goto METAERR;
     }
@@ -2046,10 +2087,11 @@ sub storeMetaData {
       elsif ($key eq 'MUL' or $key eq 'UNI') { $key= 'indexed' }
       else { $key= 'ordinary' };
       $meta->{$schema}->{$type}->{$table}->{COL}->{$column}= [$key,$metatype,$realtype,$maxlength];
+      $col_count++;
     }
     close(COL);
-    unless (open(IND, "$vardir/$sys-indexes")) {
-      sayError("Couldn't open $vardir/$sys-indexes for reading: $!");
+    unless (open(IND, "$dumpdir/$sys-indexes")) {
+      sayError("Couldn't open $dumpdir/$sys-indexes for reading: $!");
       $status= DBSTATUS_FAILURE;
       goto METAERR;
     }
@@ -2058,12 +2100,42 @@ sub storeMetaData {
       my ($schema, $table, $column, $ind, $unique) = split /;/, $_;
       my $type= $tabletype{$schema.'.'.$table};
       next unless $type && $meta->{$schema}->{$type}->{$table}->{COL}->{$column};
-      if ($ind ne 'NULL' and $ind ne '' and $ind ne '\N') {
-        my $indtype= $tabletype{$schema.'.'.$table};
-        $meta->{$schema}->{$indtype}->{$table}->{IND}->{$ind}= [$unique];
-      }
+      my $indtype= $tabletype{$schema.'.'.$table};
+      $meta->{$schema}->{$indtype}->{$table}->{IND}->{$ind}= [$unique];
+      $ind_count++;
     }
     close(IND);
+    unless (open(PROC, "$dumpdir/$sys-proc")) {
+      sayError("Couldn't open $dumpdir/$sys-proc for reading: $!");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
+    }
+    while (<PROC>) {
+      chomp;
+      my ($schema, $proc, $type) = split /;/, $_;
+      $type= lc($type);
+      # paramnum will be just a placeholder for now
+      $meta->{$schema}={} if not exists $meta->{$schema};
+      $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
+      $meta->{$schema}->{$type}->{$proc}={} if not exists $meta->{$schema}->{$type}->{$proc};
+      $meta->{$schema}->{$type}->{$proc}->{paramnum}= 0;
+      $proc_count++;
+    }
+    close(PROC);
+
+    # Make sure that even empty databases (which wouldn't appear in table/index/column dumps)
+    # are accounted for
+    unless (open(DB, "$dumpdir/$sys-db")) {
+      sayError("Couldn't open $dumpdir/$sys-db for reading: $!");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
+    }
+    while (<DB>) {
+      chomp;
+      my $schema = $_;
+      $meta->{$schema}={} if not exists $meta->{$schema};
+    }
+    close(DB);
 
     # Finally, remove tables which have no columns
     foreach my $s (keys %$meta) {
@@ -2074,6 +2146,7 @@ sub storeMetaData {
             $meta->{$s}->{tables}->{$t}= \%tbl;
           } else {
             delete $meta->{$s}->{$tp}->{$t};
+            $tbl_count--;
           }
         }
       }
@@ -2085,7 +2158,7 @@ sub storeMetaData {
     }
     print META Dumper $meta;
     close(META);
-
+    $db_count+= scalar(keys %$meta);
   }
 
   METAERR:
@@ -2097,6 +2170,9 @@ sub storeMetaData {
   
 #    move($f,$f."-$ts");
   unlink @waiters;
-  say("Finished dumping $metadata_type metadata".($wait_for_threads ? " for $wait_for_threads waiters" : ""));
+  say("Finished dumping $metadata_type metadata".($wait_for_threads ? " for $wait_for_threads waiters:" : ":").
+    (defined $coll_count ? " $coll_count collations;" : "").
+    ($db_count ? " $db_count databases, $tbl_count tables, $col_count columns, $ind_count indexes, $proc_count stored procedures" : "")
+  );
   return DBSTATUS_OK;
 }

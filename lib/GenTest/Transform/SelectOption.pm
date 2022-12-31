@@ -76,11 +76,11 @@ sub modify {
   # produced the first modified query
   my @modified_queries= ( $removed_options ? ( $query ) : () );
   my $q= $query;
-  $q =~ s/SELECT/SELECT $new_options/iog;
+  $q =~ s/(^[\s\(]*SELECT|\WSELECT)(\W)/$1 $new_options${2}/iog;
   push @modified_queries, $q;
   foreach my $o (@select_options) {
     my $q= $query;
-    $q =~ s{SELECT}{SELECT $o}iog;
+    $q =~ s{(^[\s\(]*SELECT|\WSELECT)(\W)}{$1 $o${2}}iog;
     push @modified_queries, $q;
   }
   return \@modified_queries;

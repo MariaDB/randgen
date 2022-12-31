@@ -54,11 +54,10 @@ sub variate {
 sub modify {
   my ($class, $orig_query, $executor, $transform_outcome) = @_;
   return [
-    "PREPARE stmt_ExecuteAsPreparedThrice_".abs($$)."_".(++$count)." FROM ".$executor->dbh()->quote($orig_query),
+    "PREPARE /* TRANSFORM_SETUP */ stmt_ExecuteAsPreparedThrice_".abs($$)."_".(++$count)." FROM ".$executor->dbh()->quote($orig_query),
     "EXECUTE stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 1st execution */",
     "EXECUTE stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 2nd execution */",
     "EXECUTE stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 3rd execution */",
-    "DEALLOCATE PREPARE stmt_ExecuteAsPreparedThrice_".abs($$)."_$count"
   ];
 }
 

@@ -64,9 +64,8 @@ sub variate {
     return [ $orig_query ];
   }
   return [
-    "CREATE OR REPLACE TRIGGER tr_Execute_AsTrigger_".abs($$)." AFTER DELETE ON $table FOR EACH ROW $query",
-    "DELETE FROM $table LIMIT 1",
-    "DROP TRIGGER IF EXISTS tr_Execute_AsTrigger_".abs($$)
+    "CREATE /* TRANSFORM_SETUP */ OR REPLACE TRIGGER tr_Execute_AsTrigger_".abs($$)." AFTER DELETE ON $table FOR EACH ROW $query",
+    "DELETE FROM $table LIMIT 1"
   ];
 }
 

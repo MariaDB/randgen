@@ -235,7 +235,6 @@ sub validate {
         $total_status = $tableVarStatus if $tableVarStatus > $total_status;
     }
 
-
     return $total_status;
 }
 
@@ -244,7 +243,7 @@ sub compareDurations {
     # $results is from the original query execution (outside this validator),
     # or undefined if this is a query that is a variation of the original.
     my ($executors, $results, $query) = @_;
-
+    
     # In case of table variation we do not have any results for the new
     # query, so we need to execute it once, for EXPLAIN comparison etc.
     if ($results == undef) {
@@ -356,9 +355,9 @@ sub compareDurations {
 
         if (!$skip_explain) {
             if ($explains[0] ne $explains[1]) {
-                say("EXPLAIN on server 1 (".$executors->[0]->version()."):");
+                say("EXPLAIN on server 1 (".$executors->[0]->server->version()."):");
                 say($explains_to_print[0]);
-                say("EXPLAIN on server 2 (".$executors->[1]->version()."):");
+                say("EXPLAIN on server 2 (".$executors->[1]->server->version()."):");
                 say($explains_to_print[1]);
             } else {
                 say("EXPLAIN on both servers:");

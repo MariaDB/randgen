@@ -24,9 +24,8 @@
 
 #features Aria tables
 
-
 init_db:
-  init_5 ;; init_5 ;; init_5 ;; init_5 ;; init_5 ;
+  init_5 ;; init_5 ;;
 
 init_5:
   init_table ;; init_table ;; init_table ;; init_table ;; init_table ;
@@ -136,7 +135,7 @@ create_part_invar:
     `col_int_nokey` INTEGER,
     `col_int_key` INTEGER NOT NULL,
     KEY (`col_int_key`)
-  ) ENGINE = engine partition create_select ;
+  ) engine_clause partition create_select ;
 
 drop_create:
   DROP TABLE if_exists _table[invariant] ;; create_part_invar ;
@@ -174,6 +173,10 @@ one_two:
 
 enable_disable:
   ENABLE | DISABLE ;
+
+engine_clause:
+  ==FACTOR:5== |
+  ENGINE = engine ;
 
 engine:
   MYISAM | ARIA | INNODB | MEMORY;

@@ -57,9 +57,9 @@ sub variate {
   return [ $query ] if $query !~ /^\s*(?:SELECT|VALUES)/i;
   my $alg= $self->random->arrayElement(['ALGORITHM=TEMPTABLE','ALGORITHM=MERGE','ALGORITHM=UNDEFINED','']);
   my $vname= 'transforms.v_ExecuteAsView_'.abs($$);
-  return [ "CREATE OR REPLACE $alg VIEW $vname AS $query",
-           "SELECT * FROM $vname ",
-           "DROP VIEW IF EXISTS $vname" ];
+  return [ "/* TRANSFORM_SETUP */ CREATE OR REPLACE $alg VIEW $vname AS $query",
+           "SELECT * FROM $vname "
+         ];
 }
 
 1;

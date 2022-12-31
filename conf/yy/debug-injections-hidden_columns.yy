@@ -20,14 +20,11 @@ query:
   set_debug_invisible
 ;
 
+# test_completely_invisible disabled due to MDEV-15130 (won't fix)
 set_debug_invisible:
-    SET debug_dbug= "+d,test_completely_invisible"
   | SET debug_dbug= "+d,test_pseudo_invisible"
   | SET debug_dbug="+d,test_invisible_index"
-  | SET debug_dbug="+d,test_completely_invisible,test_invisible_index"
   | SET debug_dbug="+d,test_pseudo_invisible,test_invisible_index"
-  | SET debug_dbug="+d,test_pseudo_invisible,test_completely_invisible"
-  | SET debug_dbug="+d,test_pseudo_invisible,test_completely_invisible,test_invisible_index"
   | SET debug_dbug=""
   | SET debug_dbug=""
   | SET debug_dbug=""

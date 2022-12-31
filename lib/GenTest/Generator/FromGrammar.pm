@@ -419,8 +419,6 @@ sub next {
     @sentence = expand(\%rule_counters,\%rule_invariants,$grammar_rules,($starting_rule));
   }
 
-  $generator->[GENERATOR_SEQ_ID]++;
-
   my $sentence = join ('', map { defined $_ ? $_ : '' } @sentence);
   # Remove extra spaces while we are here
   while ($sentence =~ s/\.\s/\./s) {};
@@ -449,8 +447,27 @@ sub next {
     }
     @sentences= @variated;
   }
-  
-  return \@sentences;
+  # Enumerate sentences
+  # We generally don't want a query to start with a comment, as it makes
+  # further processing more difficult; so we will try to put it after
+  # at least one token. The exceptions are when the query already starts
+  # from a comment, then there is nothing to lose
+  foreach my $i (0..$#sentences) {
+    next if $sentences[$i] =~ /^\s*$/;
+    my $qno= 'TID '.$executors->[0]->threadId().' QNO '.$generator->[GENERATOR_SEQ_ID].'-'.($i+1);
+    # If a query starts with an executable comment, we'll put QNO right after the executable comment
+    if ($sentences[$i] =~ s/^\s*(\/\*\!.*?\*\/)/$1 \/\* ${qno} \*\//) {}
+    # If a query starts with a non-executable comment, we'll put QNO into this comment
+    elsif ($sentences[$i] =~ s/^\s*\/\*(.*?)\*\//\/\* ${qno} $1 \*\//) {}
+    # Otherwise we'll put QNO comment after the first token (it should be a keyword specifying the operation)
+    elsif ($sentences[$i] =~ s/^\s*(\w+)/$1 \/\* ${qno} \*\//) {}
+    # Finally, if it's something else that we didn't expect, we'll add QNO at the end of the query
+    else { $sentences[$i] .= " /* ${qno} */" };
+  }
+
+  $generator->[GENERATOR_SEQ_ID]++;
+
+ return \@sentences;
 }
 
 1;

@@ -215,17 +215,17 @@ sub run {
   }
 
   if (scalar(@unknown_options)) {
-    help("Unknown options: @unknown_options");
+    return help("Unknown options: @unknown_options");
   }
 
   #-------------------
   # Mandatory options
 
   unless ($server_specific->{1}{basedir}) {
-    help("At least one basedir must be defined");
+    return help("At least one basedir must be defined");
   }
   unless ($props->{vardir}) {
-    help("Vardir must be defined");
+    return help("Vardir must be defined");
   }
 
   #-------------------
@@ -279,7 +279,7 @@ sub run {
     if (length($props->{sqltrace}) > 0) {
       # A value is given, check if it is legal.
       if (not exists $sqltrace_legal_values{$props->{sqltrace}}) {
-        help("Invalid value for --sqltrace option: '$props->{sqltrace}'.\n".
+        return help("Invalid value for --sqltrace option: '$props->{sqltrace}'.\n".
              "Valid values are: [".join(', ', keys(%sqltrace_legal_values))."]. ".
              "No value means that default/plain sqltrace will be used."
             );
@@ -303,7 +303,7 @@ sub run {
 
   if ($genconfig) {
     unless (-e $genconfig) {
-        help("Specified config template $genconfig does not exist");
+      return help("Specified config template $genconfig does not exist");
     }
   }
 
@@ -365,7 +365,7 @@ sub run {
                                                  debug => $props->{debug}
       );
       $props->{cnf}= $props->{vardir}.'/my.cnf';
-      open(CONFIG,'>'.$props->{cnf}) || help("Could not open file ".$props->{cnf}." for writing: $!");
+      open(CONFIG,'>'.$props->{cnf}) || return help("Could not open file ".$props->{cnf}." for writing: $!");
       print CONFIG @$cnf_contents;
       close(CONFIG);
     }
@@ -379,7 +379,17 @@ sub run {
       last;
     }
     my $res= STATUS_PERL_FAILURE;
-    eval { $res= $sc->run(); } ; warn $@ if $@;
+    my $run_pid= fork();
+    if ($run_pid) {
+      # Parent, waiting for the test run to end
+      waitpid($run_pid,0);
+      $res= ($? >> 8);
+    } elsif (defined $run_pid) {
+      # Test runner
+      exit $sc->run()
+    } else {
+      sayError("Could not fork for test run: $!");
+    }
     $status= $res if $res > $status;
     my $resname= status2text($res);
     group_cleaner();
@@ -571,7 +581,7 @@ EOF
         print STDERR "ERROR: $_\n";
       }
       print "\n";
-      return 1;
+      return STATUS_ENVIRONMENT_FAILURE;
     }
     return 0;
 }
@@ -579,6 +589,7 @@ EOF
 # If there are any arguments, we assume the script was launched directly,
 # otherwise run(...) subroutine is called from another script
 if (scalar(@ARGV)) {
+  say("HERE: Command-line arguments: @ARGV");
   my $status= run(@ARGV);
   safe_exit($status);
 }

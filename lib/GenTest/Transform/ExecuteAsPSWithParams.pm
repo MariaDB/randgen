@@ -59,18 +59,19 @@ sub modify {
   my @var_variables;
 
   # Do not match partial dates, timestamps, etc.
-  if ($new_query =~ m{[,\(\s;]+(\d+|NULL|'.*?')[,\(\s;]+} || $new_query =~ m{[,\(\s;]+(\d+|NULL|'.*?')$}) {
-    $new_query =~ s{([,\(\s;]+)(\d+|NULL|'.*?')([,\(\s;]+)}{
-        $var_counter++;
-        push @var_variables, '@var'.$var_counter." = $2";
-        $1.'?'.$3;
-    }sgexi;
-    $new_query =~ s{([,\(\s;]+)(\d+|NULL|'.*?')$}{
-        $var_counter++;
-        push @var_variables, '@var'.$var_counter." = $2";
-        $1.'?';
-    }sgexi;
-  }
+#  if ($new_query =~ m{[,\(\s;]+(\d+|NULL|'.*?')[,\(\s;]+} || $new_query =~ m{[,\(\s;]+(\d+|NULL|'.*?')$}) {
+#    $new_query =~ s{([,\(\s;]+)(\d+|NULL|'.*?')([,\(\s;]+)}{
+  $new_query =~ s{(\W)('.*?'|\d+|NULL)(\W)}{
+      my ($prefix, $val, $suffix)= ($1,$2,$3);
+      $var_counter++;
+      push @var_variables, '@var'.$var_counter." = $val";
+      $prefix.'?'.$suffix;
+  }sgexi;
+#    $new_query =~ s{([,\(\s;]+)(\d+|NULL|'.*?')$}{
+#        $var_counter++;
+#        push @var_variables, '@var'.$var_counter." = $2";
+#        $1.'?';
+#    }sgexi;
 
   # Unmask IS NULL, IS NOT NULL, SEPARATOR ...
   $new_query =~ s/IS##NULL/IS NULL/g;
@@ -80,8 +81,8 @@ sub modify {
   if ($var_counter > 0) {
     my $stmt= 'stmt_ExecuteAsPS_'.abs($$);
     return [
-      "SET ".join(", ", @var_variables),
-      "PREPARE $stmt FROM ".$executor->dbh()->quote($new_query),
+      "SET  /* TRANSFORM_SETUP */ ".join(", ", @var_variables),
+      "PREPARE /* TRANSFORM_SETUP */ $stmt FROM ".$executor->dbh()->quote($new_query),
       "EXECUTE $stmt USING ". (join ',', map { '@var'.$_ } (1..$var_counter)).($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : ""),
       "EXECUTE $stmt USING ". (join ',', map { '@var'.$_ } (1..$var_counter)).($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : ""),
     ];

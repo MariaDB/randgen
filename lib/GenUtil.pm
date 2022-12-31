@@ -215,7 +215,10 @@ sub group_cleaner {
   my @pids= split /\n/, `ps -ho pgrp,pid,comm | grep -v tee`;
   my @group= ();
   my @immortals= ($group_id, $$);
-  
+  if ($ENV{RQG_IMMORTALS}) {
+    push @immortals, split ',', $ENV{RQG_IMMORTALS};
+  }
+
   PP:
   foreach my $pp (@pids) {
     if ($pp =~ /^\s*(\d+)\s+(\d+)/) {

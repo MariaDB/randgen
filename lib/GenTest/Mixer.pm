@@ -111,7 +111,6 @@ sub new {
   foreach my $validator (@validators) {
     return undef if not defined $validator->init($mixer->executors());
   }
-
   return $mixer;
 }
 
@@ -129,6 +128,7 @@ sub next {
     }
 
   my $queries = $mixer->generator()->next($executors);
+
   if (not defined $queries or (ref $queries ne 'ARRAY')) {
     say("Mixer: Internal grammar problem. Terminating.");
     return STATUS_ENVIRONMENT_FAILURE;
@@ -139,7 +139,8 @@ sub next {
 
   my $max_status = STATUS_OK;
 
-  query: foreach my $query (@$queries) {
+  QUERIES:
+  foreach my $query (@$queries) {
     next if $query =~ m{^\s*$}o;
     if ($mixer->end_time() && (time() > $mixer->end_time())) {
       say("Mixer: We have already exceeded time specified by --duration=x; exiting now.");
@@ -152,13 +153,13 @@ sub next {
 #        my $explain = Dumper $executors->[0]->execute("EXPLAIN $query") if $query =~ m{^\s*SELECT}is;
         my $explain = '';
         my $filter_result = $filter->filter($query." ".$explain);
-        next query if $filter_result == STATUS_SKIP;
+        next QUERIES if $filter_result == STATUS_SKIP;
       }
     }
 
     my @execution_results;
 
-      EXECUTE_QUERY:
+   EXECUTE_QUERY:
     foreach my $executor (@$executors) {
       my $execution_result = $executor->execute($query);
 
@@ -167,12 +168,12 @@ sub next {
       {
         my $downtime= $executor->server->plannedDowntime();
         if ($downtime > 0) {
-          sayDebug("Mixer: waiting for $downtime seconds for the server to return");
-          do {
-            sleep 1;
+          while ($downtime) {
+            sayDebug("Mixer: waiting for $downtime seconds for the server to return");
             last if ($executor->server->running);
+            sleep 1;
             $downtime--;
-          } until ($downtime);
+          };
           if ($downtime) {
             say("Server returned in time, re-running the last query");
             redo EXECUTE_QUERY;
@@ -182,7 +183,7 @@ sub next {
         } elsif ($downtime < 0) {
           sayDebug("Mixer: instructed not to wait");
           $max_status= STATUS_TEST_STOPPED;
-          last query;
+          last; # QUERIES;
         } else {
           sayError("Mixer: Server has gone away");
         }
@@ -193,10 +194,10 @@ sub next {
       # If one server has crashed, do not send the query to the second one in order to preserve consistency
       if ($execution_result->status() >= STATUS_CRITICAL_FAILURE) {
         say("Mixer: Server crash or critical failure " . $execution_result->err() . " (". status2text($execution_result->status()) . ") reported at dsn ".$executor->server->dsn());
-        last query;
+        last QUERIES;
       }
 
-      next query if $execution_result->status() == STATUS_SKIP;
+      next QUERIES if $execution_result->status() == STATUS_SKIP;
     }
 
     foreach my $validator (@{$mixer->validators()}) {

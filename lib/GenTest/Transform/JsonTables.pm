@@ -158,6 +158,7 @@ sub parse_query_for_transformation
 sub parse_query_for_variation
 {
   my $self= shift;
+  my $executor= shift;
 #  sayDebug("Parsing query for variation: @_");
   my $tmp_query= shift;
   my $inside_outer_from= shift;
@@ -243,14 +244,14 @@ sub parse_query_for_variation
         # Partition pruning would be an exception, but we have already ruled it out
         # when PARTITION clause was encountered.
         if ($table_name) {
-          $select.= $self->json_table_to_append($table_name, $alias, $index_hints);
+          $select.= $self->json_table_to_append($executor, $table_name, $alias, $index_hints);
           $table_name= '';
         }
         $alias= '';
         $index_hints= '';
         # If we are in partition pruning, the contents of the brackets should be
         # a list of partitions, so for our purpose it doesn't count as a part of FROM
-        my $res = ' (' . $self->parse_query_for_variation($sq, ($in_from && not $in_partition_pruning)) . ')';
+        my $res = ' (' . $self->parse_query_for_variation($executor, $sq, ($in_from && not $in_partition_pruning)) . ')';
         $in_partition_pruning= 0;
         append_token($res, \$new_query, \$select);
       }
@@ -260,7 +261,7 @@ sub parse_query_for_variation
     # TODO: Is it even important?
     elsif ($token =~ /^(WHERE|HAVING|GROUP|ORDER|LIMIT)$/i) {
       if ($table_name) {
-        $select.= $self->json_table_to_append($table_name, $alias, $index_hints);
+        $select.= $self->json_table_to_append($executor, $table_name, $alias, $index_hints);
         $table_name= '';
       }
       $alias= '';
@@ -282,7 +283,7 @@ sub parse_query_for_variation
       }
       elsif ($token =~ /^(,|STRAIGHT_JOIN|NATURAL|LEFT|RIGHT|JOIN|ON|USING|INNER|OUTER)$/i) {
         if ($table_name) {
-          $select.= $self->json_table_to_append($table_name, $alias, $index_hints);
+          $select.= $self->json_table_to_append($executor, $table_name, $alias, $index_hints);
           $table_name= '';
         }
         $alias= '';
@@ -311,7 +312,7 @@ sub parse_query_for_variation
         # FOR in SELECT list is probably FOR SYSTEM_TIME ...
         # No point to wait for alias anymore, if there is a table, work it
         if ($table_name) {
-          $select.= $self->json_table_to_append($table_name, $alias, $index_hints);
+          $select.= $self->json_table_to_append($executor, $table_name, $alias, $index_hints);
           $table_name= '';
         }
         $alias= '';
@@ -355,7 +356,7 @@ sub parse_query_for_variation
       elsif ($table_name and $token =~ /^(.*?),$/) {
         # Found the alias, we'll use it for the JSON table;
         # and since it is followed by comma, no need to look for index hints
-        $select.= $self->json_table_to_append($table_name, $1).',';
+        $select.= $self->json_table_to_append($executor, $table_name, $1).',';
         $table_name= '';
         $alias= '';
         $index_hints= '';
@@ -391,7 +392,7 @@ sub parse_query_for_variation
   # Final fragment, in case we have something left
   if ($select or $inside_outer_from) {
     if ($table_name) {
-      $select.= $self->json_table_to_append($table_name, $alias, $index_hints);
+      $select.= $self->json_table_to_append($executor, $table_name, $alias, $index_hints);
       $table_name= '';
     }
     $alias= '';
@@ -404,7 +405,7 @@ sub parse_query_for_variation
 
 sub json_table_to_append
 {
-  my ($self, $table_name, $alias, $index_hints)= @_;
+  my ($self, $executor, $table_name, $alias, $index_hints)= @_;
 
   # We don't want to convert DUAL or store it in encountered tables
   return ' DUAL' if $table_name eq 'DUAL';
@@ -437,7 +438,7 @@ sub json_table_to_append
       if (defined $replaced_aliases{$refalias}) {
         $jdoc= $refalias.'.col'.$self->random->uint16(1,$replaced_aliases{$refalias});
       } else {
-        my $fields= $self->executor()->metaColumns($encountered_aliases{$refalias});
+        my $fields= $executor->metaColumns($encountered_aliases{$refalias});
         if ($fields and scalar(@$fields)) {
           $jdoc= $refalias.'.'.$self->random->arrayElement($fields);
         }
@@ -452,7 +453,7 @@ sub json_table_to_append
     unless (defined $jdoc) {
       $jdoc= $self->random->json();
       if (substr($jdoc,0,9) eq 'LOAD_FILE' and $self->random->uint16(0,1)) {
-        my $charsets= $self->executor()->metaCharactersets();
+        my $charsets= $executor->metaCharactersets();
         if ($charsets and scalar(@$charsets)) {
           my $charset= $self->random->arrayElement($charsets);
           $jdoc= 'CONVERT('.$jdoc.' USING '.$charset.')';
@@ -468,11 +469,11 @@ sub json_table_to_append
   }
   # Save the encountered alias for future references, regardless whether
   # replacement was performed or not
-  if ($table_name =~ /\`([^\`]+)\`\s*.\s*\`([^\`]+)\`|(\w+)\s*\.\s*(\w+)/) {
+  if ($table_name =~ /\`([^\`]+)\`\s*.\s*\`([^\`]+)\`/ or $table_name =~ /(\w+)\s*\.\s*(\w+)/) {
     $encountered_aliases{$alias}= [$1,$2];
   } else {
     $table_name =~ s/`//g;
-    $encountered_aliases{$alias}= [$self->executor->currentSchema(),$table_name];
+    $encountered_aliases{$alias}= [$executor->currentSchema(),$table_name];
   }
   return $res;
 }
@@ -518,7 +519,7 @@ sub variate {
     return [ $orig_query ];
   };
 
-  $self->executor($executor) if $executor;
+#  $self->executor($executor) if $executor;
 
   sayDebug("JsonTables variator is processing query $orig_query");
 
@@ -529,7 +530,7 @@ sub variate {
   my $query= $orig_query;
   $query =~ s/\\'/=====ESCAPED_SINGLE_QUOTE=====/g;
   $query =~ s/\\"/=====ESCAPED_DOUBLE_QUOTE=====/g;
-  $query= $self->parse_query_for_variation($query);
+  $query= $self->parse_query_for_variation($executor, $query);
 
   if (scalar keys(%replaced_aliases)) {
     $query= $self->replace_columns($query);
@@ -566,23 +567,25 @@ sub transform {
   $query=~ s/(\w)\s+\(/$1\(/g;
   sayDebug("JsonTables transformer is processing query $orig_query");
   if (defined $query and scalar(@json_table_definitions)) {
-    my @queries= (
-      'SET @sql_mode.save= @@sql_mode',
-      'SET SQL_MODE=REPLACE(REPLACE(@@sql_mode,'."'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')"
-    );
+    my @queries= ();
     foreach my $i (0..$#json_table_definitions) {
       my $def= $json_table_definitions[$i];
-      push @queries, "DROP TEMPORARY TABLE IF EXISTS ${tmp_table_prefix}${i}";
       # We do it in two steps, because it's possible that the original query
       # has an impossible condition and thus works, even if JSON_TABLE in general doesn't
       # (for example, it has invalid values for arguments).
       # So, we make sure that the temporary table is created first,
       # and then populate it on the "best effort" basis
-      push @queries, "CREATE TEMPORARY TABLE ${tmp_table_prefix}${i} SELECT * FROM JSON_TABLE $def AS jt LIMIT 0";
+      push @queries, "CREATE OR REPLACE TEMPORARY TABLE ${tmp_table_prefix}${i} SELECT * FROM JSON_TABLE $def AS jt LIMIT 0";
       push @queries, "INSERT IGNORE INTO ${tmp_table_prefix}${i} SELECT * FROM JSON_TABLE $def AS jt /* TRANSFORM_OUTCOME_ANY */";
     }
     push @queries, $query. ' /* TRANSFORM_OUTCOME_UNORDERED_MATCH */';
-    return [ \@queries, [ '/* TRANSFORM_CLEANUP */ SET sql_mode= @sql_mode.save' ] ];
+    return [
+      [ '/* TRANSFORM_SETUP */ SET @sql_mode.save= @@sql_mode',
+        '/* TRANSFORM_SETUP */ SET SQL_MODE=REPLACE(REPLACE(@@sql_mode,'."'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')"
+      ],
+      \@queries,
+      [ '/* TRANSFORM_CLEANUP */ SET sql_mode= @sql_mode.save' ]
+    ];
   } else {
     return STATUS_WONT_HANDLE;
   }

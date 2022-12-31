@@ -51,8 +51,7 @@ sub transform {
 
   return [
     #Include database transforms creation DDL so that it appears in the simplified testcase.
-    "DROP TABLE IF EXISTS $table_name",
-    "CREATE TABLE $table_name $original_query",
+    "CREATE OR REPLACE TABLE $table_name $original_query",
     "SELECT * FROM $table_name WHERE (".join(', ', map { "`$_`" } @{$original_result->columnNames()}).") IN ( $original_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
     "SELECT * FROM $table_name WHERE (".join(', ', map { "`$_`" } @{$original_result->columnNames()}).") NOT IN ( $original_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
     "DROP TABLE $table_name",
@@ -62,6 +61,8 @@ sub transform {
 sub variate {
   my ($class, $original_query, $executor) = @_;
   return [ $original_query ] if $original_query =~ m{INTO}is || $original_query !~ m{^[\s\(]*SELECT}is;
+  # WITH TIES cannot be in EXISTS subquery due to MDEV-30320
+  return [ $original_query ] if $original_query =~ m{WITH\s+TIES}is;
   my $table= $class->random->arrayElement($executor->metaTables('NON-SYSTEM'))->[1];
   my $not= ($class->random->uint16(0,1) ? 'NOT' : '');
   return [ "SELECT * FROM $table WHERE $not EXISTS ($original_query)" ];

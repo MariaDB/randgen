@@ -56,7 +56,8 @@ sub modify {
     $orig_query =~ s{SELECT\s+DISTINCT}{SELECT }gio;
     return $orig_query.($with_transform_outcome ? " /* TRANSFORM_OUTCOME_SUPERSET */" : "");
   } else {
-    $orig_query =~ s{SELECT}{SELECT DISTINCT}gio;
+    $orig_query =~ s{^([\s\(]*)SELECT(\W)}{${1}SELECT DISTINCT${2}}gio;
+    $orig_query =~ s{(\W)SELECT(\W)}{${1}SELECT DISTINCT${2}}gio;
     return $orig_query.($with_transform_outcome ? " /* TRANSFORM_OUTCOME_DISTINCT */" : "");
   }
 }

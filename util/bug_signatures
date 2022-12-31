@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-30309:
+=~ Assertion \`!(\*with_wild)'
+=~ setup_wild
+=~ setup_returning_fields
+MDEV-30305:
+=~ Protocol::valid_handler|Version: '10\.3|Server version: 10\.3
+=~ Protocol_text::store_long
+=~ Protocol::send_result_set_row
 MDEV-30297:
 =~ Assertion \`a\.str != __null'|signal
 =~ Compare_identifiers::operator
@@ -16,6 +24,10 @@ MDEV-30263:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ Query .*: HANDLER .* READ
+MDEV-30115:
+=~ ERROR 4025 (23000) at line .*: CONSTRAINT .* failed for .*
+=~ All databases' schema dump failed to load
+=~ STATUS_RECOVERY_FAILURE
 MDEV-30112:
 =~ AddressSanitizer|signal
 =~ Item_ident::print
@@ -1014,6 +1026,9 @@ MDEV-26000:
 =~ Item_func_case::find_item
 =~ Item_func_in::create_array
 =~ Version: '10\.2|Server version: 10\.2
+MDEV-25987:
+=~ Assertion \`(value & (1ULL << i)) == 0'
+=~ Item_sum_bit::remove_as_window
 MDEV-25964:
 =~ Assertion \`(have_max && !have_min) \|\| (have_max && have_min && (max_res == 0))'
 =~ QUICK_GROUP_MIN_MAX_SELECT::get_next

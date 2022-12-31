@@ -20,7 +20,14 @@ my @empty_set= ('','','','','','','','','','','','','','','','','','');
 
 $grammars= [
   [@empty_set,
-    '--grammar=conf/yy/acl.yy:0.1'],
+    '--grammar=conf/yy/acl.yy:0.1
+      --mysqld=--plugin-maturity=experimental
+      --mysqld=--plugin-load-add=auth_0x0100.so
+      --mysqld=--plugin-load-add=auth_ed25519.so
+      --mysqld=--plugin-load-add=auth_pam.so
+      --mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
+      --mysqld=--plugin-load-add=simple_password_check.so'],
   [@empty_set,
     '--grammar=conf/yy/admin.yy'],
   [@empty_set,
@@ -49,12 +56,12 @@ $grammars= [
     '--grammar=conf/yy/create_or_replace.yy'],
   [@empty_set,
     '--grammar=conf/yy/create_user.yy:0.1
-      --mysqld=--plugin-maturity=alpha
+      --mysqld=--plugin-maturity=experimental
       --mysqld=--plugin-load-add=auth_0x0100.so
       --mysqld=--plugin-load-add=auth_ed25519.so
       --mysqld=--plugin-load-add=auth_pam.so
       --mysqld=--plugin-load-add=cracklib_password_check.so
-      --mysqld=--plugin-load-add=password_reuse_check.so
+      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
       --mysqld=--plugin-load-add=simple_password_check.so'],
   [@empty_set,
     '--grammar=conf/yy/current_timestamp.yy
@@ -194,6 +201,8 @@ $grammars= [
     '--grammar=conf/yy/optimizer_access_exp.yy
       --gendata=conf/zz/range_access.zz'],
   [@empty_set,
+    '--grammar=conf/yy/optimizer_main_select.yy'],
+  [@empty_set,
     '--grammar=conf/yy/optimizer_no_subquery.yy
       --gendata=simple
       --views'],
@@ -221,6 +230,11 @@ $grammars= [
   [@empty_set,
     '--grammar=conf/yy/performance_schema.yy
       --mysqld=--performance-schema'],
+  [@empty_set,
+    '--grammar=conf/yy/plugin-query_cache_info.yy:0.01
+      --mysqld=--plugin-load-add=query_cache_info
+      --mysqld=--loose-query-cache-info
+      --mysqld=--query-cache-type=1'],
   [@empty_set,
     '--grammar=conf/yy/query_response_time.yy:0.01
       --mysqld=--plugin-load-add=query_response_time

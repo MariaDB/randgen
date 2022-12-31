@@ -49,8 +49,7 @@ sub modify {
   my ($self, $original_query, $transform_outcome)= @_;
   return [
     [
-      "SET \@switch_saved = \@\@optimizer_switch",
-      "SET SESSION optimizer_switch = REPLACE(REPLACE( \@\@optimizer_switch, '=on', '=off' ), 'in_to_exists=off', 'in_to_exists=on')",
+      "SET /* TRANSFORM_SETUP */ \@switch_saved = \@\@optimizer_switch, optimizer_switch = REPLACE(REPLACE( \@\@optimizer_switch, '=on', '=off' ), 'in_to_exists=off', 'in_to_exists=on')",
       $original_query.($transform_outcome ? " /* $transform_outcome */" : ""),
     ],[ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=\@switch_saved" ]
   ];

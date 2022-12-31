@@ -50,9 +50,8 @@ sub variate {
 sub modify {
   my ($class, $orig_query, $executor, $transform_outcome) = @_;
   return [
-    "PREPARE stmt_ExecuteAsPreparedOnce_".abs($$)." FROM ".$executor->dbh()->quote($orig_query),
+    "PREPARE /* TRANSFORM_SETUP */ stmt_ExecuteAsPreparedOnce_".abs($$)." FROM ".$executor->dbh()->quote($orig_query),
     "EXECUTE stmt_ExecuteAsPreparedOnce_".abs($$)." /* $transform_outcome */",
-    "DEALLOCATE PREPARE stmt_ExecuteAsPreparedOnce_".abs($$)
   ];
 }
 

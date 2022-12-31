@@ -59,9 +59,12 @@ if ( osWindows() ) {
 
 $| = 1;
 
+my $interrupted= 0;
+my $total_status= STATUS_OK;
+
 $SIG{TERM} = sub { exit(0) };
 $SIG{CHLD} = "IGNORE" if osWindows();
-$SIG{INT}= sub { \&group_cleaner };
+$SIG{INT}= sub { \&group_cleaner; $interrupted=1; $total_status= STATUS_TEST_STOPPED if $total_status < STATUS_TEST_STOPPED };
 
 # Options
 my @basedirs=();
@@ -78,6 +81,8 @@ my $shuffle= 1;
 my $workdir;
 # Config files may be parameterized depending on version number
 my $version= '999999';
+
+my @pass_through= ();
 
 my $opt_result = GetOptions(
   'basedir=s@' => \@basedirs,
@@ -116,6 +121,14 @@ help("ERROR: Unable to load $config_file: $@") if $@;
 
 say("Using config=$config_file, workdir=$workdir, seed=$comb_seed");
 
+if (@ARGV) {
+  sayDebug("Unrecognized options will be passed to the runner: @ARGV");
+  @pass_through= @ARGV;
+  @ARGV= ();
+}
+
+
+
 my $stdToLog = !osWindows() && $threads == 1;
 
 my $prng = GenTest::Random->new(seed => $comb_seed);
@@ -125,6 +138,7 @@ my %pids;
 for my $i (1..$threads) {
   my $pid = fork();
   if ($pid == 0) {
+    $ENV{RQG_IMMORTALS}= "$$";
     ## Child
     $thread_id = $i;
     make_path($workdir);
@@ -150,7 +164,7 @@ if ($thread_id > 0) {
     exit($max_result);
 } else {
     ## Parent
-    my $total_status = 0;
+    $total_status = 0;
     while(1) {
       my $child = wait();
       last if $child == -1;
@@ -297,6 +311,7 @@ sub doExhaustive {
   foreach my $e (@combinations) {
     $trial_counter++;
     doCombination($trial_counter,$e->[1],"combination ".$e->[0]);
+    last if $interrupted;
   }
 }
 
@@ -306,6 +321,7 @@ sub doRandom {
   foreach my $trial_id (1..$trials) {
     my $c= pickOne($combinations);
     doCombination($trial_id,$c->[1],"random trial ".$c->[0]);
+    last if $interrupted;
   }
 }
 
@@ -339,12 +355,7 @@ sub doCombination {
     push @args, "--basedir=".$_;
   }
   push @args, "--seed=".($seed eq 'time' ? time() : $seed);
-
-  if (@ARGV) {
-    sayDebug("Unrecognized options will be passed to the runner: @ARGV");
-    push @args, @ARGV;
-    @ARGV= ();
-  }
+  push @args, @pass_through;
 
   my $runscript= (defined $ENV{RQG_HOME} ? $ENV{RQG_HOME}."/run.pl" : "./run.pl");
   require "$runscript";
@@ -358,8 +369,19 @@ sub doCombination {
   say("Combinations [$thread_id]: arguments: @args");
   unless ($dry_run)
   {
-    # Command execution
-    my $result= run(@args);
+    my $result= STATUS_PERL_FAILURE;
+    my $cmd_pid= fork();
+    if ($cmd_pid) {
+      # Parent, waiting for command execution to finish
+      waitpid($cmd_pid,0);
+      $result= ($? >> 8);
+    } elsif (defined $cmd_pid) {
+      # Command execution
+      my $r= run(@args);
+      exit $r;
+    } else {
+      sayError("Could not for for command execution");
+    }
     group_cleaner();
     # Post-execution activities
     my $tl = $workdir.'/trial'.$trial_id.'.log';
@@ -428,7 +450,7 @@ EOF
         print STDERR "ERROR: $_\n";
       }
       print "\n";
-      exit 1;
+      exit STATUS_ENVIRONMENT_FAILURE;
     }
     exit 0;
 }

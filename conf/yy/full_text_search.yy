@@ -50,9 +50,13 @@ query:
   { _set_db('full_text_search_db') } fts_query ;
 
 fts_query:
-     select | select | select | select | select | update | delete |
-     create_drop_index | transaction | insert | insert |
-     ==FACTOR:0.05== fts_doc_id
+  ==FACTOR:5== select |
+               update |
+               delete |
+    create_drop_index |
+          transaction |
+  ==FACTOR:3== insert |
+  ==FACTOR:0.05== fts_doc_id
 ;
 
 # Add/Drop fulltext index
@@ -67,16 +71,17 @@ transaction:
 # Prepeare 3 type of fulltext search queries condition
 # Enable proximity search when its possinle to get string without quote
 select:
-     natural_language_search | boolean_search | proximity_search
-     | query_expansion_search ;
-#     natural_language_search | boolean_search | query_expansion_search ;
+  ==FACTOR:2== natural_language_search |
+                        boolean_search |
+                      proximity_search |
+                query_expansion_search ;
 
 # Type - Natural language Search queries with
 # SELECT .. MATCH (<fields>) AGAING ( <string> IN NATURAL LANGUAGE MODE )
 natural_language_search:
-     SELECT select_list FROM _table WHERE natural_language_search_condition expression |
-     SELECT _field_indexed[invariant],natural_language_search_condition AS SCORE FROM _table WHERE natural_language_search_condition expression extra_condition_optional order_clause_optional |
-     SELECT _field_indexed[invariant] f, natural_language_search_condition AS SCORE FROM _table ORDER BY f, SCORE limit_clause;
+     SELECT /* _table[invariant] */ select_list FROM _table[invariant] WHERE natural_language_search_condition expression |
+     SELECT /* _table[invariant] */ _field_indexed[invariant],natural_language_search_condition AS SCORE FROM _table[invariant] WHERE natural_language_search_condition expression extra_condition_optional order_clause_optional |
+     SELECT /* _table[invariant] */ _field_indexed[invariant] f, natural_language_search_condition AS SCORE FROM _table[invariant] ORDER BY f, SCORE limit_clause;
 
 extra_condition_optional:
   | __and_x_or _field_int _basics_comparison_operator _smallint;
@@ -87,9 +92,9 @@ natural_language_search_condition:
 # Type - Boolean Search queries with,
 # SELECT .. MATCH (<fields>) AGAING ( <string> IN BOOLEAN MODE )
 boolean_search:
-     SELECT select_list FROM _table WHERE boolean_search_condition expression |
-     SELECT _field_indexed[invariant],boolean_search_condition AS SCORE FROM _table WHERE boolean_search_condition expression order_clause_optional |
-     SELECT _field_indexed[invariant] f, boolean_search_condition AS SCORE FROM _table ORDER BY f, SCORE limit_clause;
+     SELECT /* _table[invariant] */ select_list FROM _table[invariant] WHERE boolean_search_condition expression |
+     SELECT /* _table[invariant] */ _field_indexed[invariant],boolean_search_condition AS SCORE FROM _table[invariant] WHERE boolean_search_condition expression order_clause_optional |
+     SELECT /* _table[invariant] */ _field_indexed[invariant] f, boolean_search_condition AS SCORE FROM _table[invariant] ORDER BY f, SCORE limit_clause;
 
 boolean_search_condition:
      MATCH (_field_no_pk[invariant]) AGAINST ( CONCAT( concatinate_strings ) IN BOOLEAN MODE);
@@ -97,18 +102,18 @@ boolean_search_condition:
 # Type - Query expansion mode ,
 # SELECT .. MATCH (<fields>) AGAING ( <string> WITH QUERY EXPANSION )
 query_expansion_search:
-     SELECT select_list FROM _table WHERE query_expansion_search_condition |
-     SELECT _field_indexed[invariant],query_expansion_search_condition AS SCORE FROM _table WHERE query_expansion_search_condition expression order_clause_optional |
-     SELECT _field_indexed[invariant] f, query_expansion_search_condition AS SCORE FROM _table ORDER BY f, SCORE limit_clause;
+     SELECT /* _table[invariant] */ select_list FROM _table[invariant] WHERE query_expansion_search_condition |
+     SELECT /* _table[invariant] */ _field_indexed[invariant],query_expansion_search_condition AS SCORE FROM _table[invariant] WHERE query_expansion_search_condition expression order_clause_optional |
+     SELECT /* _table[invariant] */ _field_indexed[invariant] f, query_expansion_search_condition AS SCORE FROM _table[invariant] ORDER BY f, SCORE limit_clause;
 
 query_expansion_search_condition:
      MATCH (_field_no_pk[invariant]) AGAINST ( _english[invariant] WITH QUERY EXPANSION );
 
 # Type - Proximity search - Innodb Feature , Search done with Boolean Mode
 proximity_search:
-     SELECT select_list FROM _table WHERE proximity_search_condition expression |
-     SELECT _field_indexed[invariant],proximity_search_condition AS SCORE FROM _table WHERE proximity_search_condition expression order_clause_optional |
-     SELECT _field_indexed[invariant] f, proximity_search_condition AS SCORE FROM _table ORDER BY f, SCORE limit_clause;
+     SELECT /* _table[invariant] */ select_list FROM _table[invariant] WHERE proximity_search_condition expression |
+     SELECT /* _table[invariant] */ _field_indexed[invariant],proximity_search_condition AS SCORE FROM _table[invariant] WHERE proximity_search_condition expression order_clause_optional |
+     SELECT /* _table[invariant] */ _field_indexed[invariant] f, proximity_search_condition AS SCORE FROM _table[invariant] ORDER BY f, SCORE limit_clause;
 
 proximity_search_condition:
      MATCH (_field_no_pk[invariant]) AGAINST ( proximity_search_string IN BOOLEAN MODE);

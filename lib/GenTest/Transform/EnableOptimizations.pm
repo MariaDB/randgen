@@ -52,10 +52,9 @@ sub modify_query {
   my ($self, $original_query, $transform_outcome) = @_;
   return [
     [
-      "SET \@switch_saved = \@\@optimizer_switch",
-      "SET SESSION optimizer_switch = REPLACE( \@\@optimizer_switch, '=off', '=on' )",
+      "SET /* TRANSFORM_SETUP */ \@switch_saved = \@\@optimizer_switch, optimizer_switch = REPLACE( \@\@optimizer_switch, '=off', '=on' )",
       # Due to MDEV-28878 and maybe more
-      "/*!100501 SET SESSION optimizer_switch = 'rowid_filter=off' */",
+      # "/*!100501 SET SESSION optimizer_switch = 'rowid_filter=off' */",
       "$original_query ".($transform_outcome ? " /* $transform_outcome */" : ''),
     ],[ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=\@switch_saved" ]
   ];

@@ -63,9 +63,8 @@ sub modify {
   $column_list= '*' unless $column_list;
   return [
     [
-      'SET @tx_read_only.save= @@session.tx_read_only',
-      'SET SESSION tx_read_only= 0',
-      "CREATE OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query",
+      'SET /* TRANSFORM_SETUP */ @tx_read_only.save= @@session.tx_read_only, tx_read_only= 0',
+      "CREATE /* TRANSFORM_SETUP */ OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query",
       "DELETE FROM $table_name RETURNING $column_list".($transform_outcome ? " /* $transform_outcome */" : ""),
     ],[ '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save' ]
   ];

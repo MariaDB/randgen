@@ -15,7 +15,14 @@
 # USA
 
 $grammars = [
-'--grammar=conf/yy/acl.yy',
+'--grammar=conf/yy/acl.yy
+      --mysqld=--plugin-maturity=experimental
+      --mysqld=--plugin-load-add=auth_0x0100.so
+      --mysqld=--plugin-load-add=auth_ed25519.so
+      --mysqld=--plugin-load-add=auth_pam.so
+      --mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
+      --mysqld=--plugin-load-add=simple_password_check.so',
 '--grammar=conf/yy/admin.yy',
 '--grammar=conf/yy/all_selects.yy',
 '--grammar=conf/yy/alter_table_columns.yy',
@@ -30,12 +37,12 @@ $grammars = [
 '--grammar=conf/yy/concurrent.yy',
 '--grammar=conf/yy/create_or_replace.yy',
 '--grammar=conf/yy/create_user.yy
-      --mysqld=--plugin-maturity=alpha
+      --mysqld=--plugin-maturity=experimental
       --mysqld=--plugin-load-add=auth_0x0100.so
       --mysqld=--plugin-load-add=auth_ed25519.so
       --mysqld=--plugin-load-add=auth_pam.so
       --mysqld=--plugin-load-add=cracklib_password_check.so
-      --mysqld=--plugin-load-add=password_reuse_check.so
+      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
       --mysqld=--plugin-load-add=simple_password_check.so',
 '--grammar=conf/yy/current_timestamp.yy
       --gendata=conf/zz/current_timestamp.zz',
@@ -114,6 +121,7 @@ $grammars = [
       --gendata=conf/zz/oltp.zz',
 '--grammar=conf/yy/optimizer_access_exp.yy
       --gendata=conf/zz/range_access.zz',
+'--grammar=conf/yy/optimizer_main_select.yy',
 '--grammar=conf/yy/optimizer_no_subquery.yy
       --gendata=simple
       --views',
@@ -131,6 +139,10 @@ $grammars = [
 '--grammar=conf/yy/partition_by_list.yy',
 '--grammar=conf/yy/performance_schema.yy
       --mysqld=--performance-schema',
+'--grammar=conf/yy/plugin-query_cache_info.yy
+      --mysqld=--plugin-load-add=query_cache_info
+      --mysqld=--loose-query-cache-info
+      --mysqld=--query-cache-type=1',
 '--grammar=conf/yy/query_response_time.yy
       --mysqld=--plugin-load-add=query_response_time
       --mysqld=--query-response-time',

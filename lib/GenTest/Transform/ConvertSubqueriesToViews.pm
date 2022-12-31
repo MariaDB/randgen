@@ -65,7 +65,6 @@ sub modify {
 
   my @view_ddl;
   my $view_counter = 0;
-
   $query =~ s{\((\s*SELECT\s+(??{$paren_rx}))\)}{
     my $subquery = $1;
     my $view_name = "v_ConvertSubqueriesToViews_".abs($$)."_inline_".$view_counter;
@@ -78,7 +77,6 @@ sub modify {
       "( $1 )";
     }
   }sgexi;
-
   if ($view_counter > 0) {
     return [@view_ddl, $query.($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : "") ];
   } else {

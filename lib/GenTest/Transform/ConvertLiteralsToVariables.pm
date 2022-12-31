@@ -44,7 +44,9 @@ sub variate {
 
 sub modify {
   my ($class, $orig_query, $with_transform_outcome) = @_;
-  return [ $orig_query ] if $orig_query =~ /^\s*(?:CREATE|ALTER)/;
+  # JSON_TABLE because there are too many literals which cannot be converted (JSON paths, column lengths etc)
+  # CREATE and ALTER table on the same reason except for JSON paths
+  return [ $orig_query ] if $orig_query =~ /^\s*(?:CREATE|ALTER||JSON_TABLE)/;
 
   my $new_query = $orig_query;
   my $var_counter = 0;
@@ -64,6 +66,7 @@ sub modify {
   $new_query =~ s{\s+'(.*?)'}{
     $var_counter++;
     push @var_variables, '@var'.$var_counter." = '$1'";
+    $var_values{$var_counter}= $1;
     ' @var'.$var_counter.' ';
   }sgexi;
 
@@ -73,7 +76,7 @@ sub modify {
 
   if ($var_counter > 0) {
     return [
-      "SET ".join(", ", @var_variables),
+      "SET /* TRANSFORM_SETUP */ ".join(", ", @var_variables),
       $new_query.($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : "")
     ];
   } else {

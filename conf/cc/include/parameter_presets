@@ -37,6 +37,7 @@ $common_options= '
   --queries=1000000
   --gendata=advanced
   --reporters=Backtrace,ErrorLog,Deadlock,MemoryUsage,FeatureUsage
+  --mysqld=--plugin-maturity=experimental
 ';
 
 $ps_protocol_options= '--ps-protocol --filter=conf/ff/need-reconnect.ff';

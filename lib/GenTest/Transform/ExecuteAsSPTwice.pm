@@ -45,11 +45,9 @@ sub modify {
   my ($class, $orig_query, $transform_outcome) = @_;
   return [ $orig_query ] if $orig_query =~ m{TRIGGER|PROCEDURE|FUNCTION}is;
   return [
-    "DROP PROCEDURE IF EXISTS sp_ExecuteAsSPTwice_".abs($$),
-    "CREATE PROCEDURE sp_ExecuteAsSPTwice_".abs($$)." () LANGUAGE SQL $orig_query",
+    "CREATE  /* TRANSFORM_SETUP */ OR REPLACE PROCEDURE sp_ExecuteAsSPTwice_".abs($$)." () LANGUAGE SQL $orig_query",
     "CALL sp_ExecuteAsSPTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
     "CALL sp_ExecuteAsSPTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
-    "DROP PROCEDURE IF EXISTS sp_ExecuteAsSPTwice_".abs($$),
   ];
 }
 

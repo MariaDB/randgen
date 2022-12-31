@@ -109,8 +109,8 @@ sub modify {
         $explain2count{"$explain_fragment => $switch"}++;
         my ($switch_name) = $switch =~ m{^(.*?)=}sgio;
         push @transformed_queries,
-          'SET @'.$switch_name.'_saved = @@'.$switch_name,
-          "SET SESSION $switch",
+          'SET /* TRANSFORM_SETUP */ @'.$switch_name.'_saved = @@'.$switch_name,
+          "SET /* TRANSFORM_SETUP */ SESSION $switch",
           $original_query.($transform_outcome ? " /* $transform_outcome */" : "");
         push @cleanup_block,
           '/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@'.$switch_name.'_saved';

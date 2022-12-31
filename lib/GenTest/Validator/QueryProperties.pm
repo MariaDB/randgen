@@ -23,6 +23,8 @@ require Exporter;
 
 use strict;
 
+use Carp;
+
 use GenUtil;
 use GenTest;
 use Data::Dumper;
@@ -45,6 +47,9 @@ foreach my $property (@properties) {
 
 sub validate {
     my ($validator, $executors, $results) = @_;
+    unless ($results && $results->[0] && defined $results->[0]->query) {
+      confess();
+    }
 
     my $query = $results->[0]->query();
     my @query_properties = $query =~ m{((?:QProp\.RESULTSET_|QProp\.ERROR_|QProp\.ERR_|QProp\.QUERY_).*?)[^A-Z_0-9]}sg;

@@ -44,8 +44,6 @@ use constant SLAVE_INFO_HOST => 1;
 use constant SLAVE_INFO_PORT => 2;
 
 
-my $query_no = 0;
-
 sub admin {
   my $executor= shift;
   $executor->execute("SET ROLE admin");
@@ -174,17 +172,6 @@ sub execute {
     while ($query =~ s/(PROCEDURE.*)BEGIN\s*;/${1}BEGIN /g) {}
     # Or occasionaly "x AS alias1 AS alias2"
     while ($query =~ s/AS\s+\w+\s+(AS\s+\w+)/$1/g) {}
-
-    $query_no++ if $executor->id == 1;
-    my $qno_comment= 'QNO ' . $query_no . ' TID ' . $executor->threadId();
-    # If a query starts with an executable comment, we'll put QNO right after the executable comment
-    if ($query =~ s/^\s*(\/\*\!.*?\*\/)/$1 \/\* $qno_comment \*\//) {}
-    # If a query starts with a non-executable comment, we'll put QNO into this comment
-    elsif ($query =~ s/^\s*\/\*(.*?)\*\//\/\* $qno_comment $1 \*\//) {}
-    # Otherwise we'll put QNO comment after the first token (it should be a keyword specifying the operation)
-    elsif ($query =~ s/^\s*(\w+)/$1 \/\* $qno_comment \*\//) {}
-    # Finally, if it's something else that we didn't expect, we'll add QNO at the end of the query
-    else { $query .= " /* $qno_comment */" };
 
     my $dbh = $executor->dbh();
 

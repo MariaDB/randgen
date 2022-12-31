@@ -55,11 +55,9 @@ sub transform {
   my $fname= 'func_ExecuteAsFunctionTwice_'.abs($$);
 
   return [
-    "DROP FUNCTION IF EXISTS $fname",
-    "CREATE FUNCTION $fname () RETURNS $return_type NOT DETERMINISTIC BEGIN DECLARE ret $return_type; $orig_query INTO ret ; RETURN ret; END",
+    "CREATE OR REPLACE FUNCTION $fname () RETURNS $return_type NOT DETERMINISTIC BEGIN DECLARE ret $return_type; $orig_query INTO ret ; RETURN ret; END",
     "SELECT $fname() /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
     "SELECT $fname() /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "DROP FUNCTION IF EXISTS $fname"
   ];
 }
 
@@ -69,15 +67,14 @@ sub variate {
   my $fname= 'func_ExecuteAsFunctionTwice_'.abs($$);
   my $query;
   if ($orig_query =~ /^[\s\(]*SELECT/is && $orig_query !~ /INTO/is) {
-    $query= "CREATE OR REPLACE FUNCTION $fname () RETURNS INT NOT DETERMINISTIC BEGIN DECLARE ret INT; SELECT COUNT(*) INTO ret FROM ( $orig_query ) sq ; RETURN ret; END";
+    $query= "CREATE /* TRANSFORM_SETUP */ OR REPLACE FUNCTION $fname () RETURNS INT NOT DETERMINISTIC BEGIN DECLARE ret INT; SELECT COUNT(*) INTO ret FROM ( $orig_query ) sq ; RETURN ret; END";
   } else {
-    $query= "CREATE OR REPLACE FUNCTION $fname () RETURNS INT NOT DETERMINISTIC BEGIN $orig_query; RETURN 0; END";
+    $query= "CREATE /* TRANSFORM_SETUP */ OR REPLACE FUNCTION $fname () RETURNS INT NOT DETERMINISTIC BEGIN $orig_query; RETURN 0; END";
   }
   return [
     $query,
     "SELECT $fname()",
     "SELECT $fname()",
-    "DROP FUNCTION IF EXISTS $fname"
   ];
 }
 

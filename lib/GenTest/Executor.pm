@@ -299,7 +299,7 @@ sub cacheMetaData {
           $coll->{$collation} = $charset;
         }
         $self->[EXECUTOR_COLLATION_METADATA] = $coll;
-        say("Executor#".$self->threadId()." has loaded ".scalar(keys %$coll)." collations");
+        sayDebug("Executor#".$self->threadId()." has loaded ".scalar(keys %$coll)." collations");
       } else {
         sayError("Executor#".$self->threadId()." failed to load collation metadata");
       }
@@ -325,7 +325,7 @@ sub cacheMetaData {
         if ($system) {
           $self->[EXECUTOR_META_SYSTEM_TS]= $ts;
           $self->[EXECUTOR_META_SYSTEM_CACHE]= $system;
-          say("Executor#".$self->threadId()." has loaded ".scalar(keys %$system)." system schemas");
+          sayDebug("Executor#".$self->threadId()." has loaded ".scalar(keys %$system)." system schemas");
         } else {
           sayError("Executor#".$self->threadId()." failed to load system metadata");
         }
@@ -353,9 +353,7 @@ sub cacheMetaData {
         if ($non_system) {
           $self->[EXECUTOR_META_NONSYSTEM_TS]= $ts;
           $self->[EXECUTOR_META_NONSYSTEM_CACHE]= $non_system;
-          say("Executor#".$self->threadId()." has loaded ".scalar(keys %$non_system)." non-system schemas");
-          # HERE:
-          # print Dumper $self->[EXECUTOR_META_NONSYSTEM_CACHE];
+          sayDebug("Executor#".$self->threadId()." has loaded ".scalar(keys %$non_system)." non-system schemas");
         } else {
           sayError("Executor#".$self->threadId()." failed to load non-system metadata");
         }
@@ -601,6 +599,7 @@ sub _collectTableObjects {
     my $meta = $self->[EXECUTOR_SCHEMA_METADATA];
     if (ref $tableref ne 'ARRAY') { confess() };
     my ($schema,$table)= @$tableref;
+    $schema= 'information_schema' if lc($schema) eq 'information_schema';
 
     my $cachekey= ( $not ? $objtype.'NOT' : $objtype ). "-$schema-$table";
     if ($datatype) {
@@ -794,7 +793,7 @@ sub DESTROY {
     $executor->disconnect();
     if (scalar(keys %{$executor->[EXECUTOR_STATUS_COUNTS]})) {
       say("-----------------------");
-      say("Statuses: for Executor#".$executor->threadId()." at ".$executor->server->port().": ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } sort keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
+      say("Statuses: for Executor#".$executor->threadId().": ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } sort keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
       say("-----------------------");
     }
 }

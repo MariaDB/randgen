@@ -160,7 +160,7 @@ sub variateQuery {
     foreach my $q (@queries) {
       next if $q =~ /^\s*$/;
       # Variation happens with the configured probability
-      if ($self->prng->uint16(1,100) > VARIATION_PROBABILITY || $q =~ /SKIP_VARIATION/) {
+      if ($self->prng->uint16(1,100) > VARIATION_PROBABILITY || $q =~ /(?:SKIP_VARIATION|TRANSFORM_SETUP|TRANSFORM_CLEANUP)/) {
         push @new_queries, $q;
         next QUERY;
       }

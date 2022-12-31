@@ -279,6 +279,9 @@ LIVE_UPGRADE_END:
   # Restore clean datadir for mysqldump upgrade
   system ('mv '.$old_server->datadir.'_clean '.$new_server->datadir);
 
+  # enforce-storage-engine needs to be unset, otherwise the dump won't load
+  my $enforced_stored= $self->getServerStartupOption(1,'enforce-storage-engine');
+  $new_server->addServerOptions(['--enforce-storage-engine=']) if ($enforced_stored);
   $status= $self->start_for_upgrade('dump');
 
   if ($status != STATUS_OK) {
@@ -313,6 +316,8 @@ DUMP_UPGRADE_END:
   system ('mv '.$new_server->datadir.' '.$new_server->datadir.'_dump_upgrade');
   system ('mv '.$new_server->errorlog.' '.$new_server->errorlog.'_dump_upgrade');
   $self->setStatus($status);
+
+  $new_server->addServerOptions(['--enforce-storage-engine='.$enforced_stored]) if ($enforced_stored);
 
   #######################
   # MariaBackup upgrade

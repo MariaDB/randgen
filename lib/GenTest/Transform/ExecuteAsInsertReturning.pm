@@ -55,12 +55,11 @@ sub modify {
   my $table_name = 'tmp_ExecuteAsInsertReturning_'.abs($$);
   return [
     [
-      'SET @tx_read_only.save= @@session.tx_read_only',
-      'SET SESSION tx_read_only= 0',
-      "CREATE OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query",
+      'SET /* TRANSFORM_SETUP */ @tx_read_only.save= @@session.tx_read_only, tx_read_only= 0',
+      "CREATE /* TRANSFORM_SETUP */ OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query",
       "REPLACE INTO $table_name $query RETURNING *".($transform_outcome ? " /* $transform_outcome */" : ""),
-      'SET SESSION tx_read_only= @tx_read_only.save'
-    ],[ '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save' ]
+    ],
+    [ '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save' ]
   ];
 }
 

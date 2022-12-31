@@ -44,7 +44,7 @@ sub variate {
     . ($self->random->uint16(0,1) ? 'FIRST ' : 'NEXT ')
     . $self->random->uint16(0,100)
     . ($self->random->uint16(0,1) ? ' ROW' : ' ROWS')
-    . (($query =~ /ORDER\s+BY/ and $self->random->uint16(0,1)) ? ' WITH TIES' : ' ONLY')
+    . (($query =~ /ORDER\s+BY[^)]+$/ and $self->random->uint16(0,1)) ? ' WITH TIES' : ' ONLY')
   ;
   my $clause= "$offset_clause $fetch_clause";
 
