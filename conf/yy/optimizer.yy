@@ -21,7 +21,8 @@ query_init:
   { $total_dur = 0; "" };
 
 query:
-  { @nonaggregates = () ; @select_fields = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0 ; _set_db('NON-SYSTEM') } explain_extended main_select ;
+  { @nonaggregates = () ; @select_fields = () ; $tables = 0 ; $fields = 0 ; $ifields = 0; $cfields = 0; $subquery_idx=0 ; $child_subquery_idx=0; $alias_name= undef
+    ; %tables= () ; _set_db('NON-SYSTEM') } explain_extended main_select ;
 
 main_select:
   ==FACTOR:10== simple_select |
@@ -35,7 +36,8 @@ main_select:
 # we needed a separate query pattern to ensure we hit it.
 ################################################################################
 loose_scan:
-  SELECT /* _table */ distinct loose_select_clause
+  SELECT distinct
+  { $alias_name= 'alias1'; '' } set_alias_table loose_select_clause
   FROM new_table_item
   WHERE generic_where_list
   group_by_clause ;
@@ -58,7 +60,7 @@ loose_select_item:
 ################################################################################
 
 mixed_select:
-  SELECT /* _table */ distinct straight_join select_option select_list
+  SELECT distinct straight_join select_option select_list
   FROM table_references
   where_clause
   group_by_clause
@@ -66,7 +68,7 @@ mixed_select:
   order_by_clause ;
 
 simple_select:
-  SELECT /* _table */ distinct straight_join select_option simple_select_list
+  SELECT distinct straight_join select_option simple_select_list
   FROM table_references
   where_clause
   optional_group_by
@@ -74,7 +76,7 @@ simple_select:
   order_by_clause ;
 
 aggregate_select:
-  SELECT /* _table */ distinct straight_join select_option aggregate_select_list
+  SELECT distinct straight_join select_option aggregate_select_list
   FROM table_references
   where_clause
   optional_group_by
@@ -178,11 +180,14 @@ real_where_item:
   existing_table_item . _field_char arithmetic_operator existing_table_item . _field_char |
   existing_table_item . _field arithmetic_operator value  |
   existing_table_item . _field arithmetic_operator existing_table_item . _field |
-  alias1 . _field IS not NULL |
-  alias1 . _field arithmetic_operator existing_table_item . _field  |
-  alias1 . _field_int arithmetic_operator existing_table_item . _field_int  |
-  ==FACTOR:0.1== alias1 . _field_indexed arithmetic_operator value AND ( alias1 . _field_char LIKE '%a%' OR alias1._field_char LIKE '%b%') ;
+  { $alias_name= 'alias1' } set_alias_table . _field IS not NULL |
+  { $alias_name= 'alias1' } set_alias_table . _field arithmetic_operator existing_table_item . _field  |
+  { $alias_name= 'alias1' } set_alias_table . _field_int arithmetic_operator existing_table_item . _field_int  |
+  ==FACTOR:0.1== { $alias_name= 'alias1' } set_alias_table . _field_indexed arithmetic_operator value AND ( alias1 . _field_char LIKE '%a%' OR alias1._field_char LIKE '%b%') ;
 
+set_alias_table:
+  # Expects $alias_name to be set
+  { if (! $tables{$alias_name}) { $tables{$alias_name} = $prng->arrayElement($executors->[0]->metaTables($work_database)) } ; ($last_database, $last_table) = @{$tables{$alias_name}}; '' } ;
 
 ################################################################################
 # subquery rules
@@ -628,12 +633,12 @@ range_predicate1_list:
   ( range_predicate1_item OR range_predicate1_list ) ;
 
 range_predicate1_item:
-   alias1 . _field_int_indexed not BETWEEN _tinyint_unsigned[invariant] AND ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
-   alias1 . _field_char_indexed arithmetic_operator _char[invariant]  |
-   alias1 . _field_int_indexed not IN (number_list) |
-   alias1 . _field_char_indexed not IN (char_list) |
-   alias1 . _field_pk > _tinyint_unsigned[invariant] AND alias1 . _field_pk < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
-   alias1 . _field_int_indexed > _tinyint_unsigned[invariant] AND alias1 . _field_int_indexed < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) ;
+   { $alias_name= 'alias1' } set_alias_table . _field_int_indexed not BETWEEN _tinyint_unsigned[invariant] AND ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
+   { $alias_name= 'alias1' } set_alias_table . _field_char_indexed arithmetic_operator _char[invariant]  |
+   { $alias_name= 'alias1' } set_alias_table . _field_int_indexed not IN (number_list) |
+   { $alias_name= 'alias1' } set_alias_table . _field_char_indexed not IN (char_list) |
+   { $alias_name= 'alias1' } set_alias_table . _field_pk > _tinyint_unsigned[invariant] AND alias1 . _field_pk < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
+   { $alias_name= 'alias1' } set_alias_table . _field_int_indexed > _tinyint_unsigned[invariant] AND alias1 . _field_int_indexed < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) ;
 
 ################################################################################
 # The range_predicate_2* rules below are in place to ensure we hit the
@@ -647,13 +652,13 @@ range_predicate2_list:
   ( range_predicate2_item and_or range_predicate2_list ) ;
 
 range_predicate2_item:
-  alias1 . _field_pk = _tinyint_unsigned |
-  alias1 . _field_int_indexed = _tinyint_unsigned |
-  alias1 . _field_char_indexed = _char |
-  alias1 . _field_int_indexed = _tinyint_unsigned |
-  alias1 . _field_char_indexed LIKE CONCAT( _char , '%') |
-  alias1 . _field_int_indexed = existing_table_item . _field_int_indexed |
-  alias1 . _field_char_indexed = existing_table_item . _field_char_indexed ;
+  { $alias_name= 'alias1' } set_alias_table . _field_pk = _tinyint_unsigned |
+  { $alias_name= 'alias1' } set_alias_table . _field_int_indexed = _tinyint_unsigned |
+  { $alias_name= 'alias1' } set_alias_table . _field_char_indexed = _char |
+  { $alias_name= 'alias1' } set_alias_table . _field_int_indexed = _tinyint_unsigned |
+  { $alias_name= 'alias1' } set_alias_table . _field_char_indexed LIKE CONCAT( _char , '%') |
+  { $alias_name= 'alias1' } set_alias_table . _field_int_indexed = existing_table_item . _field_int_indexed |
+  { $alias_name= 'alias1' } set_alias_table . _field_char_indexed = existing_table_item . _field_char_indexed ;
 
 ################################################################################
 # The number and char_list rules are for creating WHERE conditions that test
@@ -845,17 +850,17 @@ aggregate_separator:
 ################################################################################
 
 new_table_item:
-  _table AS { "alias".++$tables } | _table AS { "alias".++$tables } | _table AS { "alias".++$tables } |
+  ==FACTOR:9== { $alias_name= 'alias'.++$tables; '' } set_alias_table { "$last_database.$last_table" } AS { $alias_name } |
   ( from_subquery ) AS { "alias".++$tables } ;
 
 from_subquery:
      { $subquery_idx += 1 ; $subquery_tables=0 ; $sq_ifields = 0; $sq_cfields = 0; ""}  SELECT distinct select_option subquery_table_one_two . * subquery_body  ;
 
 subquery_new_table_item:
-  _table AS { "SQ".$subquery_idx."_alias".++$subquery_tables } ;
+  { $alias_name= "SQ".$subquery_idx."_alias".++$subquery_tables; '' } set_alias_table { "$last_database.$last_table" } AS { $alias_name } ;
 
 child_subquery_new_table_item:
-  _table AS { "C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables } ;
+  { $alias_name= "C_SQ".$child_subquery_idx."_alias".++$child_subquery_tables; '' } set_alias_table { "$last_database.$last_table" } AS { $alias_name } ;
 
 current_table_item:
   { "alias".$tables };
@@ -876,13 +881,13 @@ child_subquery_previous_table_item:
   { "C_SQ".$child_subquery_idx."_alias".($child_subquery_tables-1) } ;
 
 existing_table_item:
-  { "alias".$prng->int(1,$tables) };
+  { $alias_name= "alias".$prng->int(1,$tables) } set_alias_table ;
 
 existing_subquery_table_item:
-  { "SQ".$subquery_idx."_alias".$prng->int(1,$subquery_tables) } ;
+  { $alias_name= "SQ".$subquery_idx."_alias".$prng->int(1,$subquery_tables) } set_alias_table ;
 
 existing_child_subquery_table_item:
-  { "C_SQ".$child_subquery_idx."_alias".$prng->int(1,$child_subquery_tables) } ;
+  { $alias_name= "C_SQ".$child_subquery_idx."_alias".$prng->int(1,$child_subquery_tables) } set_alias_table ;
 
 existing_select_item:
   { $fields ? "field".$prng->int(1,$fields) : ( $ifields ? "ifield".$prng->int(1,$ifields) : "cfield".$prng->int(1,$cfields) ) };

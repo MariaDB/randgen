@@ -40,6 +40,7 @@ sub validate {
   foreach my $r (@$results) {
     return STATUS_WONT_HANDLE if $r->status() != STATUS_OK;
   }
+  return STATUS_WONT_HANDLE if $comparator->resultsetsNotComparable($results);
 
   my $query = $results->[0]->query();
   return STATUS_WONT_HANDLE if $query =~ m{skip\s+ResultsetComparator}is;
@@ -56,7 +57,7 @@ sub validate {
     ) {
       say("---------- RESULT COMPARISON ISSUE START ----------");
       if ($compare_outcome == STATUS_LENGTH_MISMATCH) {
-        if ($query =~ m{^\s*select}io) {
+        if ($results->[0]->rows() || $results->[1]->rows()) {
           say("Query: $query failed: result length mismatch between servers 1 and ".($i+1)." (".$results->[0]->rows()." vs. ".$results->[$i]->rows().")");
           say(GenTest::Comparator::dumpDiff($results->[0], $results->[$i]));
         } else {
@@ -66,13 +67,15 @@ sub validate {
         say("Query: ".$query." failed: result content mismatch between servers 1 and ".($i+1));
         say(GenTest::Comparator::dumpDiff($results->[0], $results->[$i]));
       }
-      my $explain1= $executors->[0]->execute("EXPLAIN EXTENDED ".$results->[0]->query)->data;
-      my $explain2= $executors->[$i]->execute("EXPLAIN EXTENDED ".$results->[0]->query)->data;
-      say("Execution plans on server 1 vs ".($i+1)." (maybe different from the one which produced the initial results)");
-      say("----------");
-      say(join "\n", map { "@$_" } (@$explain1));
-      say("----------");
-      say(join "\n", map { "@$_" } (@$explain2));
+      if ($query =~ /^[\s\(]*SELECT/i) {
+        my $explain1= $executors->[0]->execute("EXPLAIN EXTENDED ".$results->[0]->query)->data;
+        my $explain2= $executors->[$i]->execute("EXPLAIN EXTENDED ".$results->[0]->query)->data;
+        say("Execution plans on server 1 vs ".($i+1)." (maybe different from the one which produced the initial results)");
+        say("----------");
+        say(join "\n", map { "@$_" } (@$explain1));
+        say("----------");
+        say(join "\n", map { "@$_" } (@$explain2));
+      }
       say("---------- RESULT COMPARISON ISSUE END ------------");
     } elsif ($compare_outcome != STATUS_OK) {
       sayError("Result comparison for query $query failed with an unexpected error ".status2text($compare_outcome));

@@ -67,6 +67,7 @@ sub validate {
       $affected_rows{$i}->{$row_group}++;
     }
 
+    next if $result->err;
     next unless $query =~ /^[\(\s]*(?:SELECT|UPDATE|DELETE|INSERT|REPLACE)/i;
     $explain_fragments{$i}= {} unless exists $explain_fragments{$i};
     my $sth_output = $executor->dbh()->prepare("EXPLAIN PARTITIONS $query");

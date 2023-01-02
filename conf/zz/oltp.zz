@@ -20,11 +20,17 @@ $schemas = [ 'oltp_db' ];
 
 $tables = {
         pk => [ undef ],
-        names => [  'oltp1',  'oltp2',  'oltp3',  'oltp4',  'oltp5',  'oltp6',  'oltp7',  'oltp8',  'oltp9',  'oltp10',
+        names => [
+                    'oltp1',  'oltp2',  'oltp3',  'oltp4',  'oltp5',  'oltp6',  'oltp7',  'oltp8',  'oltp9',  'oltp10',
                     'oltp11', 'oltp12', 'oltp13', 'oltp14', 'oltp15', 'oltp16', 'oltp17', 'oltp18', 'oltp19', 'oltp20',
                     'oltp21', 'oltp22', 'oltp23', 'oltp24', 'oltp25', 'oltp26', 'oltp27', 'oltp28', 'oltp29', 'oltp30',
                     'oltp31', 'oltp32', 'oltp33', 'oltp34', 'oltp35', 'oltp36', 'oltp37', 'oltp38', 'oltp39', 'oltp40',
-                    'oltp41', 'oltp42', 'oltp43', 'oltp44', 'oltp45', 'oltp46', 'oltp47', 'oltp48', 'oltp49', 'oltp50'
+                    'oltp41', 'oltp42', 'oltp43', 'oltp44', 'oltp45', 'oltp46', 'oltp47', 'oltp48', 'oltp49', 'oltp50',
+                    'oltp51', 'oltp52', 'oltp53', 'oltp54', 'oltp55', 'oltp56', 'oltp57', 'oltp58', 'oltp59', 'oltp60',
+                    'oltp61', 'oltp62', 'oltp63', 'oltp64', 'oltp65', 'oltp66', 'oltp67', 'oltp68', 'oltp69', 'oltp70',
+                    'oltp71', 'oltp72', 'oltp73', 'oltp74', 'oltp75', 'oltp76', 'oltp77', 'oltp78', 'oltp79', 'oltp80',
+                    'oltp81', 'oltp82', 'oltp83', 'oltp84', 'oltp85', 'oltp86', 'oltp87', 'oltp88', 'oltp89', 'oltp90',
+                    'oltp91', 'oltp92', 'oltp93', 'oltp94', 'oltp95', 'oltp96', 'oltp97', 'oltp98', 'oltp99', 'oltp100'
         ],
         rows => [ 0, 100, 1000, 10000 ],
 };

@@ -165,7 +165,7 @@ quoted_number:
 
 query:
   { _set_db('main_select_db') } main_select_query 
-;; 
+;
 
 main_select_query:
   select period from t1 |
@@ -193,15 +193,15 @@ main_select_query:
   select distinct companynr from t2 order by companynr desc |
   select distinct t2.fld3,period from t2,t1 where companynr=_tinyint_unsigned and fld3 like my_pattern |
   select distinct fld3 from t2 where companynr = _tinyint_unsigned order by fld3 |
-  select distinct fld3 from t2 limit _tinyint_unsigned |
-  select distinct fld3 from t2 having fld3 like my_pattern limit _tinyint_unsigned |
+  select /* RESULTSESTS_NOT_COMPARABLE */ distinct fld3 from t2 limit _tinyint_unsigned |
+  select /* RESULTSESTS_NOT_COMPARABLE */ distinct fld3 from t2 having fld3 like my_pattern limit _tinyint_unsigned |
   select distinct substring(fld3,_digit,_digit) from t2 where fld3 like my_pattern |
   select distinct substring(fld3,_digit,_digit) as a from t2 having a like my_pattern order by a limit _tinyint_unsigned |
-  select distinct substring(fld3,_digit,_digit) from t2 where fld3 like my_pattern limit _tinyint_unsigned |
-  select distinct substring(fld3,_digit,_digit) as a from t2 having a like my_pattern limit _tinyint_unsigned |
-  set tmp_memory_table_size=0; # force on-disk tmp table ;; select distinct concat(fld3," ",fld3) as namn from t2,t3 where t2.fld1=t3.t2nr order by namn limit _tinyint_unsigned ;; set tmp_memory_table_size=default |
+  select /* RESULTSESTS_NOT_COMPARABLE */ distinct substring(fld3,_digit,_digit) from t2 where fld3 like my_pattern limit _tinyint_unsigned |
+  select /* RESULTSESTS_NOT_COMPARABLE */ distinct substring(fld3,_digit,_digit) as a from t2 having a like my_pattern limit _tinyint_unsigned |
+  set tmp_memory_table_size=0 ;; select distinct concat(fld3," ",fld3) as namn from t2,t3 where t2.fld1=t3.t2nr order by namn limit _tinyint_unsigned ;; set tmp_memory_table_size=default |
   select distinct concat(fld3," ",fld3) from t2,t3 where t2.fld1=t3.t2nr order by fld3 limit _tinyint_unsigned |
-  select distinct fld5 from t2 limit _tinyint_unsigned |
+  select /* RESULTSESTS_NOT_COMPARABLE */ distinct fld5 from t2 limit _tinyint_unsigned |
   select distinct fld3,count(*) from t2 group by companynr,fld3 limit _tinyint_unsigned |
   set tmp_memory_table_size=0 ;; select distinct fld3,count(*) from t2 group by companynr,fld3 limit _tinyint_unsigned ;; set tmp_memory_table_size=default |
   select distinct fld3,repeat("a",length(fld3)),count(*) from t2 group by companynr,fld3 limit _tinyint_unsigned,_tinyint_unsigned |
@@ -256,7 +256,6 @@ main_select_query:
   select name,count(*) from t3 where name='cloakroom' and price2=_mediumint_unsigned group by name |
   select name,count(*) from t3 where name >= my_word and price <= _mediumint_unsigned group by name |
   select t2.fld3,count(*) from t2,t3 where t2.fld1=_mediumint_unsigned and t3.name=t2.fld3 group by t3.name |
-  select companynr|_digit,companyname from t4 group by 1 |
   select t2.companynr,companyname,count(*) from t2,t4 where t2.companynr=t4.companynr group by t2.companynr order by companyname |
   select t2.fld1,count(*) from t2,t3 where t2.fld1=_mediumint_unsigned and t3.name=t2.fld3 group by t3.name |
   select sum(Period)/count(*) from t1 |
@@ -286,14 +285,14 @@ main_select_query:
   select count(*),min(t2nr),max(t2nr) from t3 where name='spates' and companynr=_tinyint_unsigned |
   select t2nr,count(*) from t3 where name='gems' group by t2nr limit _tinyint_unsigned |
   select max(t2nr) from t3 where price=_mediumint_unsigned |
-  select t1.period from t3 = t1 limit _digit |
-  select t1.period from t1 as t1 limit _digit |
-  select t1.period as "Nuvarande period" from t1 as t1 limit _digit |
-  select period as ok_period from t1 limit _digit |
+  select /* RESULTSESTS_NOT_COMPARABLE */ t1.period from t3 = t1 limit _digit |
+  select /* RESULTSESTS_NOT_COMPARABLE */ t1.period from t1 as t1 limit _digit |
+  select /* RESULTSESTS_NOT_COMPARABLE */ t1.period as "Nuvarande period" from t1 as t1 limit _digit |
+  select /* RESULTSESTS_NOT_COMPARABLE */ period as ok_period from t1 limit _digit |
   select period as ok_period from t1 group by ok_period limit _digit |
   select _digit+_digit as summa from t1 group by summa limit _digit |
   select period as "Nuvarande period" from t1 group by "Nuvarande period" limit _digit |
-  show tables
+  show tables |
   show full columns from t2 |
   show full columns from t2 from main_select_db like my_pattern |
   show full columns from t2 from main_select_db like my_pattern |

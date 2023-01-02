@@ -44,47 +44,42 @@ sub variate {
 
 sub modify {
   my ($class, $orig_query, $with_transform_outcome, $executor) = @_;
-  return [ $orig_query ] if $orig_query =~ /^\s*(?:CREATE|ALTER)/;
+  return [ $orig_query ] if $orig_query =~ /^\s*(?:CREATE|ALTER)/i;
 
   my $new_query = $orig_query;
   # Remove comments, we don't want to do substitution there
   $new_query =~ s/\/\*[^!].*?\*\///g;
 
   # Mask IS NULL, IS NOT NULL, SEPARATOR ...
-  $new_query =~ s/IS\s+NULL/IS##NULL/g;
-  $new_query =~ s/IS\s+NOT\s+NULL/IS##NOT##NULL/g;
-  $new_query =~ s/SEPARATOR\s+(['"].*?['"])/SEPARATOR##$1/g;
+  $new_query =~ s/IS\s+NULL/IS##NULL/gi;
+  $new_query =~ s/IS\s+NOT\s+NULL/IS##NOT##NULL/gi;
+  $new_query =~ s/SEPARATOR\s+(['"].*?['"])/SEPARATOR##$1/gi;
 
   my $var_counter = 0;
   my @var_variables;
 
-  # Do not match partial dates, timestamps, etc.
-#  if ($new_query =~ m{[,\(\s;]+(\d+|NULL|'.*?')[,\(\s;]+} || $new_query =~ m{[,\(\s;]+(\d+|NULL|'.*?')$}) {
-#    $new_query =~ s{([,\(\s;]+)(\d+|NULL|'.*?')([,\(\s;]+)}{
-  $new_query =~ s{(\W)('.*?'|\d+|NULL)(\W)}{
-      my ($prefix, $val, $suffix)= ($1,$2,$3);
-      $var_counter++;
-      push @var_variables, '@var'.$var_counter." = $val";
-      $prefix.'?'.$suffix;
-  }sgexi;
-#    $new_query =~ s{([,\(\s;]+)(\d+|NULL|'.*?')$}{
-#        $var_counter++;
-#        push @var_variables, '@var'.$var_counter." = $2";
-#        $1.'?';
-#    }sgexi;
+  while (
+    $new_query =~ s{(\W)('.*?'|\d+|NULL)(\W)}{
+        my ($prefix, $val, $suffix)= ($1,$2,$3);
+        $var_counter++;
+        push @var_variables, '@var'.$var_counter." = $val";
+        $prefix.'?'.$suffix;
+    }sexi
+  ) {};
 
   # Unmask IS NULL, IS NOT NULL, SEPARATOR ...
-  $new_query =~ s/IS##NULL/IS NULL/g;
-  $new_query =~ s/IS##NOT##NULL/IS NOT NULL/g;
-  $new_query =~ s/SEPARATOR##(['"].*?['"])/SEPARATOR $1/g;
+  $new_query =~ s/IS##NULL/IS NULL/gi;
+  $new_query =~ s/IS##NOT##NULL/IS NOT NULL/gi;
+  $new_query =~ s/SEPARATOR##(['"].*?['"])/SEPARATOR $1/gi;
 
   if ($var_counter > 0) {
     my $stmt= 'stmt_ExecuteAsPS_'.abs($$);
+    my $flags= ($new_query !~ /^[\s\(]*SELECT/i or $new_query =~ /RESULTSETS_NOT_COMPARABLE/) ? '/* RESULTSETS_NOT_COMPARABLE */' : '';
     return [
       "SET  /* TRANSFORM_SETUP */ ".join(", ", @var_variables),
       "PREPARE /* TRANSFORM_SETUP */ $stmt FROM ".$executor->dbh()->quote($new_query),
-      "EXECUTE $stmt USING ". (join ',', map { '@var'.$_ } (1..$var_counter)).($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : ""),
-      "EXECUTE $stmt USING ". (join ',', map { '@var'.$_ } (1..$var_counter)).($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : ""),
+      "EXECUTE $flags $stmt USING ". (join ',', map { '@var'.$_ } (1..$var_counter)).($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : ""),
+      "EXECUTE $flags $stmt USING ". (join ',', map { '@var'.$_ } (1..$var_counter)).($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : ""),
     ];
   } else {
     return undef;

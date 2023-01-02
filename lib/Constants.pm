@@ -100,13 +100,14 @@ use constant STATUS_ACL_ERROR                => 25; # Access denied etc., a spec
 
 use constant STATUS_TEST_FAILURE             => 30; # Boundary between genuine errors and false positives due to randomness
 
+use constant STATUS_POSSIBLE_FAILURE         => 35;
+
 use constant STATUS_REQUIREMENT_UNMET        => 40;
 use constant STATUS_ERROR_MISMATCH           => 41; # A DML statement caused those errors, and the test can not continue
 use constant STATUS_LENGTH_MISMATCH          => 42; # because the databases are in an unknown inconsistent state
 use constant STATUS_CONTENT_MISMATCH         => 43;
 
 use constant STATUS_CUSTOM_OUTCOME           => 50; # Used for things such as signaling an EXPLAIN hit from the ExplainMatch Validator
-use constant STATUS_POSSIBLE_FAILURE         => 60;
 use constant STATUS_ERRORS_IN_LOG            => 70; # Set errors are found in the error log (other than ignorable ones)
 
 use constant STATUS_SERVER_SHUTDOWN_FAILURE  => 90;

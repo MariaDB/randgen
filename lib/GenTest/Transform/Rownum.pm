@@ -36,18 +36,19 @@ sub transform {
     || $query !~ m{^\s*SELECT}io;
   return [ 
     "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() < 2147483648 /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() >= 0 /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"
+    "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() >= 0 /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+    "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() <= ".$self->random->uint16(0,1000)." /* TRANSFORM_OUTCOME_SUBSET */",
   ];
 }
 
 sub variate {
   my ($self, $query, $executor) = @_;
 
-  my $limit= $self->random->uint16(0,100);
+  my $limit= $self->random->uint16(0,1000);
   my $op= $self->random->arrayElement(['<','>','<=','>=','=']);
 
   if ($query =~ /\WWHERE\W/) {
-    $query =~ s/(\W)WHERE(\W)/${1}WHERE ROWNUM() ${op} ${limit} AND${2}/g;
+    $query =~ s/(\W)WHERE(\W)/${1}WHERE \/\* RESULTSETS_NOT_COMPARABLE \*\/ ROWNUM() ${op} ${limit} AND${2}/g;
   } elsif ($query =~ /^\s*SELECT/ && $query !~ /INTO\s+OUTFILE/) {
     $query = "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() ${op} ${limit}";
   }

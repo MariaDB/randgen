@@ -50,10 +50,11 @@ sub variate {
 
 sub modify {
   my ($class, $orig_query, $executor, $transform_outcome) = @_;
+  my $flags= ($orig_query !~ /^[\s\(]*SELECT/i or $orig_query =~ /RESULTSETS_NOT_COMPARABLE/) ? '/* RESULTSETS_NOT_COMPARABLE */' : '';
   return [
     "PREPARE /* TRANSFORM_SETUP */ stmt_ExecuteAsPreparedTwice_".abs($$)." FROM ".$executor->dbh()->quote($orig_query),
-    "EXECUTE stmt_ExecuteAsPreparedTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
-    "EXECUTE stmt_ExecuteAsPreparedTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
+    "EXECUTE $flags stmt_ExecuteAsPreparedTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
+    "EXECUTE $flags stmt_ExecuteAsPreparedTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
   ];
 }
 

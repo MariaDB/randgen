@@ -22,8 +22,11 @@ package GenTest::Validator;
 
 use strict;
 use GenTest::Result;
+use GenUtil;
 
 use constant VALIDATOR_DBH  => 0;
+
+use constant ER_QUERY_EXCEEDED_ROWS_EXAMINED_LIMIT => 1931;
 
 sub new {
   my $class = shift;
@@ -54,6 +57,29 @@ sub setDbh {
 
 sub compatibility {
   return '000000';
+}
+
+sub resultsetsNotComparable {
+  my ($self, $results)= @_;
+  if ($results->[0]->query() =~ /RESULTSETS_NOT_COMPARABLE/) {
+    sayDebug("Results are not comparable according to the flag in the query");
+    return 1;
+  }
+  if ($results->[0]->query() =~ /(?:FETCH|OFFSET|LIMIT)/i and $results->[0]->query() !~ /ORDER\s+BY/i) {
+    sayDebug("Results are not comparable due to the use of LIMIT without ORDER BY\n".$results->[0]->query());
+    return 1;
+  }
+  foreach my $i (0..$#$results) {
+    if ($results->[$i]->warnings()) {
+      foreach my $w (@{$results->[$i]->warnings()}) {
+        if ($w->[1] == ER_QUERY_EXCEEDED_ROWS_EXAMINED_LIMIT) {
+          sayDebug("Results are not comparable as the query has hit ER_QUERY_EXCEEDED_ROWS_EXAMINED_LIMIT (at least) on server ".($i+1));
+          return 1;
+        }
+      }
+    }
+  }
+  return 0;
 }
 
 1;

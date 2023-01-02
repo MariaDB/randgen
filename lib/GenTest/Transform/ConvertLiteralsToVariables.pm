@@ -21,6 +21,8 @@ package GenTest::Transform::ConvertLiteralsToVariables;
 require Exporter;
 @ISA = qw(GenTest GenTest::Transform);
 
+#use utf8;
+
 use strict;
 use lib 'lib';
 use GenUtil;

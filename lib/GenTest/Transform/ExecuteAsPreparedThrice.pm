@@ -53,11 +53,12 @@ sub variate {
 
 sub modify {
   my ($class, $orig_query, $executor, $transform_outcome) = @_;
+  my $flags= ($orig_query !~ /^[\s\(]*SELECT/i or $orig_query =~ /RESULTSETS_NOT_COMPARABLE/) ? '/* RESULTSETS_NOT_COMPARABLE */' : '';
   return [
     "PREPARE /* TRANSFORM_SETUP */ stmt_ExecuteAsPreparedThrice_".abs($$)."_".(++$count)." FROM ".$executor->dbh()->quote($orig_query),
-    "EXECUTE stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 1st execution */",
-    "EXECUTE stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 2nd execution */",
-    "EXECUTE stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 3rd execution */",
+    "EXECUTE $flags stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 1st execution */",
+    "EXECUTE $flags stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 2nd execution */",
+    "EXECUTE $flags stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 3rd execution */",
   ];
 }
 

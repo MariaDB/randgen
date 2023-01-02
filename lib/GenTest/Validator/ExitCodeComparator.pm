@@ -64,7 +64,10 @@ sub validate {
     # SELECT .. INTO OUTFILE will inevitably fail on the 2nd executor,
     # regardless versions, with ER_FILE_EXISTS_ERROR
 
-    return STATUS_WONT_HANDLE if $results->[0]->query =~ /INTO OUTFILE/ and $results->[1]->err == 1086;
+    return STATUS_WONT_HANDLE if $results->[0]->query =~ /INTO OUTFILE/i and $results->[1]->err == 1086;
+
+    # LIMIT ROWS EXAMINED may or may not end with Sort aborted depending on the execution plan
+    return STATUS_WONT_HANDLE if $results->[0]->query =~ /ROWS\s+EXAMINED/i and ($results->[0]->err == 1028 or $results->[1]->err == 1028);
 
     # PS/IS tables in different major versions may be different
     return STATUS_WONT_HANDLE if (
@@ -155,10 +158,6 @@ sub validate {
 
 sub logResult {
     my ($executors, $results, $level, $more_text)= @_;
-      say("HERE: 1:");
-      print Dumper $results->[0];
-      say("HERE: 2:");
-      print Dumper $results->[1];
     my $line=
       "---------- EXIT CODE COMPARISON ISSUE START ------------\n".
       "For query " . $results->[0]->query . ":\n".

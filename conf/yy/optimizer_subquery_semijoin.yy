@@ -632,9 +632,8 @@ having_item:
 
 order_by_clause:
   |
-        ORDER BY alias1 . _field_indexed desc , total_order_by  limit |
-  ORDER BY order_by_list |
-  ORDER BY  order_by_list, total_order_by limit ;
+  ORDER BY total_order_by limit |
+  ORDER BY order_by_list ;
 
 total_order_by:
   { join(', ', map { "field".$_ } (1..$fields) ) };

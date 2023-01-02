@@ -1088,7 +1088,7 @@ sub dictionaryWord {
 
 sub word {
   my ($rand, $dict_name) = @_;
-    $dict_name||= $rand->arrayElement(\@dictionaries);
+  $dict_name||= $rand->arrayElement(\@dictionaries);
   return "'".$rand->dictionaryWord($dict_name)."'";
 }
 
