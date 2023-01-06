@@ -48,12 +48,16 @@ sub transform {
   }
 
   my $table_name = 'transforms.where_subselect_'.abs($$);
+  my @column_names= @{$original_result->columnNames()};
+  foreach my $i (0..$#column_names) {
+    $column_names[$i] =~ s/\`/\`\`/g;
+  }
 
   return [
     #Include database transforms creation DDL so that it appears in the simplified testcase.
     "CREATE OR REPLACE TABLE $table_name $original_query",
-    "SELECT * FROM $table_name WHERE (".join(', ', map { "`$_`" } @{$original_result->columnNames()}).") IN ( $original_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "SELECT * FROM $table_name WHERE (".join(', ', map { "`$_`" } @{$original_result->columnNames()}).") NOT IN ( $original_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
+    "SELECT * FROM $table_name WHERE (".join(', ', map { "`$_`" } @column_names).") IN ( $original_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+    "SELECT * FROM $table_name WHERE (".join(', ', map { "`$_`" } @column_names).") NOT IN ( $original_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
     "DROP TABLE $table_name",
   ];
 }

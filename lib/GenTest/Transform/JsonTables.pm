@@ -576,7 +576,7 @@ sub transform {
       # So, we make sure that the temporary table is created first,
       # and then populate it on the "best effort" basis
       push @queries, "CREATE OR REPLACE TEMPORARY TABLE ${tmp_table_prefix}${i} SELECT * FROM JSON_TABLE $def AS jt LIMIT 0";
-      push @queries, "INSERT IGNORE INTO ${tmp_table_prefix}${i} SELECT * FROM JSON_TABLE $def AS jt /* TRANSFORM_OUTCOME_ANY */";
+      push @queries, "INSERT IGNORE INTO ${tmp_table_prefix}${i} SELECT * FROM JSON_TABLE $def AS jt";
     }
     push @queries, $query. ' /* TRANSFORM_OUTCOME_UNORDERED_MATCH */';
     return [

@@ -70,17 +70,25 @@ sub modify {
   my @new_options= ( @select_options );
   $class->random->shuffleArray(\@new_options);
   my $new_options = join ' ', @new_options[0..$class->random->uint16(0,$#new_options)];
-  # Remove duplicate SQL_CACHE / SQL_NO_CACHE options
-  while ($new_options =~ s/^(.*SQL_(?:NO_)?CACHE.*)SQL_(?:NO_)?CACHE/$1/) {};
   # If the original query contained any options, then removing them
   # produced the first modified query
   my @modified_queries= ( $removed_options ? ( $query ) : () );
   my $q= $query;
   $q =~ s/(^[\s\(]*SELECT|\WSELECT)(\W)/$1 $new_options${2}/iog;
+  # Remove options from subqueries where they are not allowed
+  while ($q =~ s/^(.*)(HIGH_PRIORITY|SQL_CALC_FOUND_ROWS|SQL_BUFFER_RESULT)(.*)\2/$1$2$3/) {};
+  # Also remove duplicate SQL_CACHE / SQL_NO_CACHE options. It removes
+  # them from subqueries, too
+  while ($q =~ s/^(.*SQL_(?:NO_)?CACHE.*)SQL_(?:NO_)?CACHE/$1/) {};
   push @modified_queries, $q;
   foreach my $o (@select_options) {
     my $q= $query;
-    $q =~ s{(^[\s\(]*SELECT|\WSELECT)(\W)}{$1 $o${2}}iog;
+    if ($o eq 'SQL_CACHE' or $o eq 'SQL_NO_CACHE' or $o eq 'SQL_BUFFER_RESULT' or $o eq 'HIGH_PRIORITY' or $o eq 'SQL_CALC_FOUND_ROWS') {
+      # Only allowed in the top query, so no "global"
+      $q =~ s{(^[\s\(]*SELECT|\WSELECT)(\W)}{$1 $o${2}}io;
+    } else {
+      $q =~ s{(^[\s\(]*SELECT|\WSELECT)(\W)}{$1 $o${2}}iog;
+    }
     push @modified_queries, $q;
   }
   return \@modified_queries;

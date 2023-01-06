@@ -201,6 +201,8 @@ $grammars= [
     '--grammar=conf/yy/optimizer_access_exp.yy
       --gendata=conf/zz/range_access.zz'],
   [@empty_set,
+    '--grammar=conf/yy/optimizer_costs.yy:0.001'],
+  [@empty_set,
     '--grammar=conf/yy/optimizer_main_select.yy'],
   [@empty_set,
     '--grammar=conf/yy/optimizer_no_subquery.yy

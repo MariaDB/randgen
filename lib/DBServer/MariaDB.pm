@@ -1106,7 +1106,7 @@ sub stopServer {
         ## Use dbh routine to ensure reconnect in case connection is
         ## stale (happens i.e. with mdl_stability/valgrind runs)
         alarm($shutdown_timeout);
-        my $dbh = $self->dbh();
+        my $dbh = $self->dbh(my $admin=1);
         # Need to check if $dbh is defined, in case the server has crashed
         if (defined $dbh) {
             $res = $dbh->func('shutdown',$self->host,'root','admin');

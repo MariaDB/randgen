@@ -62,7 +62,7 @@ sub variate {
 sub modify {
   my ($class, $original_query) = @_;
 
-  if ($original_query =~ s{ORDER\s+BY[^\(\)]+}{}is) {
+  if ($original_query =~ s{ORDER\s+BY[^\(\)]+$}{}is) {
     # Removing ORDER BY
   } elsif ($original_query !~ s{LIMIT[^()]*$}{ORDER BY 1}is) {
     # Won't handle

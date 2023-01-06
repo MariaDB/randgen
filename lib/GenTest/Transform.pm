@@ -53,28 +53,27 @@ use constant TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED  => 1011;
 use constant TRANSFORM_OUTCOME_COUNT_NOT_NULL         => 1012; # Transformed result is a count or the original except NULLs (for col => COUNT(col))
 use constant TRANSFORM_OUTCOME_COUNT_REVERSE          => 1013; # Original is a count of the transformed result
 use constant TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE => 1014; # Transformed result is a count of the original result except NULLs (for COUNT(col) => col)
-use constant TRANSFORM_OUTCOME_ANY                    => 1015;
 
 my %transform_outcomes = (
-    'TRANSFORM_OUTCOME_EXACT_MATCH'            => TRANSFORM_OUTCOME_EXACT_MATCH,
-    'TRANSFORM_OUTCOME_UNORDERED_MATCH'        => TRANSFORM_OUTCOME_UNORDERED_MATCH,
-    'TRANSFORM_OUTCOME_SUPERSET'               => TRANSFORM_OUTCOME_SUPERSET,
+    'TRANSFORM_OUTCOME_EXACT_MATCH'            => \&isOrderedMatch,
+    'TRANSFORM_OUTCOME_UNORDERED_MATCH'        => \&isUnorderedMatch,
+    'TRANSFORM_OUTCOME_SUPERSET'               => \&isSuperset,
     'TRANSFORM_OUTCOME_SUBSET'                 => TRANSFORM_OUTCOME_SUBSET,
-    'TRANSFORM_OUTCOME_SINGLE_ROW'             => TRANSFORM_OUTCOME_SINGLE_ROW,
-    'TRANSFORM_OUTCOME_FIRST_ROW'              => TRANSFORM_OUTCOME_FIRST_ROW,
-    'TRANSFORM_OUTCOME_DISTINCT'               => TRANSFORM_OUTCOME_DISTINCT,
-    'TRANSFORM_OUTCOME_COUNT'                  => TRANSFORM_OUTCOME_COUNT,
-    'TRANSFORM_OUTCOME_EMPTY_RESULT'           => TRANSFORM_OUTCOME_EMPTY_RESULT,
-    'TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE'     => TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE,
-    'TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED'  => TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED,
+    'TRANSFORM_OUTCOME_SINGLE_ROW'             => \&isSingleRow,
+    'TRANSFORM_OUTCOME_FIRST_ROW'              => \&isFirstRow,
+    'TRANSFORM_OUTCOME_DISTINCT'               => \&isDistinct,
+    'TRANSFORM_OUTCOME_COUNT'                  => \&isCount,
+    'TRANSFORM_OUTCOME_EMPTY_RESULT'           => \&isEmptyResult,
+    'TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE'     => \&isSingleIntegerOne,
+    'TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED'  => \&isRowsExaminedObeyed,
     'TRANSFORM_OUTCOME_COUNT_NOT_NULL'         => TRANSFORM_OUTCOME_COUNT_NOT_NULL,
     'TRANSFORM_OUTCOME_COUNT_REVERSE'          => TRANSFORM_OUTCOME_COUNT_REVERSE,
-    'TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE' => TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE,
-    'TRANSFORM_OUTCOME_ANY'                    => TRANSFORM_OUTCOME_ANY
+    'TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE' => TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE
 );
 
 # Subset of semantic errors that we may want to allow during transforms.
-my %mysql_grouping_errors = (
+my %semantic_errors = (
+    # In case of FULL GROUP BY
     1004 => 'ER_NON_GROUPING_FIELD_USED',
     1028 => 'ER_FILSORT_ABORT',
     # Transformation for CREATE statement can cause ER_TABLE_EXISTS_ERROR
@@ -132,13 +131,13 @@ sub compatibility {
 }
 
 sub transformExecuteValidate {
-    my ($transformer, $original_query, $original_result, $executor, $skip_result_validations) = @_;
+    my ($transformer, $original_query, $original_result, $executor) = @_;
 
     $transformer->[TRANSFORMER_QUERIES_PROCESSED]++;
     # Do not transform queries with /*executorN */ comments, they are for comparison
     return STATUS_OK if ($original_query =~ /\/\*executor\d/);
 
-    my $transformer_output = $transformer->transform($original_query, $executor, $original_result, $skip_result_validations);
+    my $transformer_output = $transformer->transform($original_query, $executor, $original_result);
     my $transform_blocks;
 
     if ($transformer_output =~ m{^\d+$}sgio) {
@@ -169,133 +168,33 @@ sub transformExecuteValidate {
         $cleanup_block = undef;
     }
 
+    my @transformed_results;
+    my $transform_outcome= STATUS_OK;
+    my $transformed_count= 0;
+   BLOCK:
     foreach my $transform_block (@$transform_blocks) {
-        my @transformed_queries = @$transform_block;
-        my @transformed_results;
-        my $transform_outcome;
+      my @transformed_queries = @$transform_block;
+      foreach my $transformed_query_part (@transformed_queries) {
+        my $part_result = $executor->execute("/* ". $transformer->name ." */ ".$transformed_query_part);
 
-        $transformed_queries[0] =  "/* ". $transformer->name ." */ ".$transformed_queries[0];
-        foreach my $transformed_query_part (@transformed_queries) {
-            my $part_result = $executor->execute($transformed_query_part);
+        push @transformed_results, $part_result;
 
-            if ($part_result->status() == STATUS_SKIP) {
-                # During query transformations skipping only some parts of the transformed queries
-                # due to errors leads to simplificatoin of such queries.
-                # Completely skipping such transformed queries is better.
-                $transform_outcome = STATUS_OK;
-                last;
-            }
+        $transform_outcome= $part_result->status() if $part_result->status() > $transform_outcome;
+        last BLOCK if $transform_outcome > STATUS_CRITICAL_FAILURE;
 
-            my $partial_transform_outcome;
-            foreach my $potential_outcome (keys %transform_outcomes) {
-                if ($transformed_query_part =~ m{\W+$potential_outcome\W+}s) {
-                    $partial_transform_outcome = $transform_outcomes{$potential_outcome};
-                    last;
-                }
-            }
+        $transformed_count++ if ($transformed_query_part =~ /\WTRANSFORM_OUTCOME_\w+\W/);
+      }
+    }
+    cleanup($executor, $cleanup_block);
 
-            if ($partial_transform_outcome == TRANSFORM_OUTCOME_ANY) {
-              # "Best effort" auxiliary query which shouldn't affect the outcome
-              $transform_outcome = STATUS_OK unless defined $transform_outcome;
-            } elsif (
-                ($part_result->status() == STATUS_SYNTAX_ERROR) ||
-                ($part_result->status() == STATUS_SEMANTIC_ERROR) ||
-                serverGone($part_result->status())
-            ) {
-                # We return an error when a transformer returns a semantic
-                # or syntactic error, which allows for detecting any faulty
-                # transformers, e.g. those which do not produce valid queries.
-                #
-                # Most often the only subsequent change required to these
-                # transformers is to exclude the failing query by using
-                # STATUS_WONT_HANDLE within the transformer.
-                #
-                # As such, we now return STATUS_WONT_HANDLE here, which allows
-                # the run to continue without aborting, while covering almost
-                # all situations (i.e. STATUS_WONT_HANDLE) correctly already.
-                #
-                # Additionally, some errors may need to be accepted in certain
-                # situations.
-                #
-                # For example, with MySQL's ONLY_FULL_GROUP_BY sql mode, some
-                # queries return grouping related errors, whereas they would
-                # not return such errors without this mode, and we want to
-                # continue the test even if such errors occur.
-                # We have logic in place to take care of this below.
-                #
-                my $allowed= $transformer->allowedErrors();
-                if (
-                    ( (exists $mysql_grouping_errors{$part_result->err()})
-                      || (defined $allowed and exists $allowed->{$part_result->err()})
-                    )
-                ){
-                    if (not defined $suppressed_errors{$part_result->err()}) {
-                        say("Ignoring transforms of the type ". $transformer->name ." that fail with an error like: ".$part_result->errstr());
-                        $suppressed_errors{$part_result->err()}++;
-                    } else {
-                        sayDebug("Ignoring transform ". $transformer->name ." that failed with the error: ".$part_result->errstr());
-                    }
-                    sayDebug("Offending query is: $transformed_query_part;");
-                    sayDebuf("Original query is: $original_query;");
-
-                    # Then move on...
-                    # We "cheat" by returning STATUS_OK, as the validator would otherwise try to access the result.
-                    cleanup($executor, $cleanup_block);
-                    return STATUS_OK;
-                }
-                # We do it in one "say" because we want it as solid as possible
-                say(
-                  "---------- TRANSFORM PROBLEM ----------"."\n".
-                  $transformer->name .": Transformation error: ".$part_result->err()." ".$part_result->errstr().
-                    "; RQG Status: ".status2text($part_result->status())." (".$part_result->status().")"."\n".
-                  "Offending query is: $transformed_query_part;"."\n".
-                  "Original query is: $original_query;"."\n".
-#                say("ERROR: Possible syntax or semantic error caused by code in transformer ". $transformer->name .
-#                    ". Not handling this particular transform any further: Please fix the transformer code so as to handle the query shown above correctly.");
-                  "---------------------------------------");
-                cleanup($executor, $cleanup_block);
-                return STATUS_WONT_HANDLE;
-            } elsif ($skip_result_validations) {
-                $transform_outcome = STATUS_OK unless defined $transform_outcome;
-            } elsif ($part_result->status() != STATUS_OK) {
-                say("---------- TRANSFORM PROBLEM ----------");
-                say("Transform ".$transformer->name()." failed with an error: ".$part_result->err().'  '.$part_result->errstr());
-                say("Transformed query was: ".$transformed_query_part);
-                cleanup($executor, $cleanup_block);
-                return $part_result->status();
-            } elsif (defined $part_result->data()) {
-                my $part_outcome = $transformer->validate($original_result, $part_result, $partial_transform_outcome);
-                $transform_outcome = $part_outcome if (($part_outcome > $transform_outcome) || (! defined $transform_outcome));
-                push @transformed_results, $part_result if ($part_outcome != STATUS_WONT_HANDLE) && ($part_outcome != STATUS_OK);
-            }
-        }
-        if (
-            (not defined $transform_outcome) ||
-            ($transform_outcome == STATUS_WONT_HANDLE)
-        ) {
-            say("ERROR: Transform ". $transformer->name ." produced no query which could be validated ($transform_outcome). Status will be set to ENVIRONMENT_FAILURE");
-            say("The following queries were produced");
-            print Dumper \@transformed_queries;
-            cleanup($executor, $cleanup_block);
-            return STATUS_ENVIRONMENT_FAILURE;
-        }
-
-        $transformer->[TRANSFORMER_QUERIES_TRANSFORMED]++;
-
-        cleanup($executor, $cleanup_block);
-        if ($transform_outcome != STATUS_OK) {
-            return ($transform_outcome, \@transformed_queries, \@transformed_results, $cleanup_block);
-        }
-        elsif ($transform_outcome == STATUS_OK) {
-            # To expose transformed queries when a transformation was successfull
-                    # This is useful for unit tests of RQG.
-            return ($transform_outcome, @transformed_queries);
-        }
+    if ($transformed_count == 0) {
+      sayError($transformer->name ." did not produce any queries which could be validated. Status will be set to ENVIRONMENT_FAILURE. ".
+        "The following queries were produced: ".(Dumper $transform_blocks));
+      return STATUS_ENVIRONMENT_FAILURE;
     }
 
-    cleanup($executor, $cleanup_block);
-    return STATUS_OK;
-
+    $transformer->[TRANSFORMER_QUERIES_TRANSFORMED]+= $transformed_count;
+    return ($transform_outcome, \@transformed_results);
 }
 
 # Some transformations can end prematurely and leave the environment in a dirty state,
@@ -346,9 +245,6 @@ sub validate {
                 return $transformer->isSuperset($transformed_result, $original_result);
     } elsif ($transform_outcome == TRANSFORM_OUTCOME_COUNT_NOT_NULL) {
         return $transformer->isCountNotNull($original_result, $transformed_result);
-    } elsif ($transform_outcome == TRANSFORM_OUTCOME_ANY) {
-      # "Best effort" query, shouldn't affect the outcome
-        return STATUS_OK;
     } else {
         return STATUS_WONT_HANDLE;
     }
@@ -377,15 +273,17 @@ sub isDistinct {
     my $transformed_rows;
 
     foreach my $row_ref (@{$original_result->data()}) {
-        my $row = lc(join('<col>', @$row_ref));
+        my $row = lc(join('<col>', map { defined $_ ? $_ : '<NULL>' } (@$row_ref)));
         $original_rows->{$row}++;
     }
 
     foreach my $row_ref (@{$transformed_result->data()}) {
-        my $row = lc(join('<col>', @$row_ref));
+        my $row = lc(join('<col>', map { defined $_ ? $_ : '<NULL>' } (@$row_ref)));
         $transformed_rows->{$row}++;
         if ($transformed_rows->{$row} > 1) {
-          say("ERROR: Non-distinct row: $row");
+          sayError("Non-distinct row: $row");
+          # HERE:
+          print Dumper $original_result->data();
           return STATUS_LENGTH_MISMATCH
         }
     }
@@ -542,6 +440,7 @@ sub name {
     my ($name) = $transformer =~ m{.*::([a-z]*)}sgio;
     return $name;
 }
+
 
 sub DESTROY {
   my $transformer = shift;

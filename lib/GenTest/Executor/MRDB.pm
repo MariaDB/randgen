@@ -219,7 +219,8 @@ sub execute {
     my $execution_time = $end_time - $start_time;
 
     my $err = $sth->err();
-    my $errstr = normalizeError($sth->errstr()) if defined $sth->errstr();
+#    my $errstr = normalizeError($sth->errstr()) if defined $sth->errstr();
+    my $errstr = $sth->errstr();
     my $err_type = STATUS_OK;
     if (defined $err) {
       $err_type= errorType($err);
@@ -298,9 +299,14 @@ sub execute {
             execution_flags => $execution_flags
         );
     } elsif ((not defined $sth->{NUM_OF_FIELDS}) || ($sth->{NUM_OF_FIELDS} == 0)) {
+      # We add an empty data here because DELETE RETURNING and such
+      # may return undefined NUM_OF_FIELDS, particularly when the resultset is empty,
+      # but we still want it to be processed as something returning a resultset
+      # (because it is). Hopefully it won't hurt
         $result = GenTest::Result->new(
             query        => $query,
             status        => STATUS_OK,
+            data            => [],
             affected_rows    => $affected_rows,
             matched_rows    => $matched_rows,
             changed_rows    => $changed_rows,

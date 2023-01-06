@@ -190,7 +190,14 @@ sub convert_selects_to_cte
 
 sub transform {
   my ($class, $orig_query) = @_;
+
   return STATUS_WONT_HANDLE unless is_applicable($orig_query);
+
+  # External references are not allowed for subqueries, which means that CTE
+  # fail frequently with "Unknown column". MDEV-19078 is to track
+  $class->allowedErrors(
+    { 1054 => 'ER_BAD_FIELD_ERROR' }
+  );
   my $transformed_query = $orig_query;
   $transformed_query =~ s/\\'/=====ESCAPED_SINGLE_QUOTE=====/g;
   $transformed_query =~ s/\\"/=====ESCAPED_DOUBLE_QUOTE=====/g;

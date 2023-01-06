@@ -53,13 +53,13 @@ sub modify {
   # Mask IS NULL, IS NOT NULL, SEPARATOR ...
   $new_query =~ s/IS\s+NULL/IS##NULL/gi;
   $new_query =~ s/IS\s+NOT\s+NULL/IS##NOT##NULL/gi;
-  $new_query =~ s/SEPARATOR\s+(['"].*?['"])/SEPARATOR##$1/gi;
+  $new_query =~ s/SEPARATOR\s+(['"].*?['"])/SEPARATOR##$1##/gi;
 
   my $var_counter = 0;
   my @var_variables;
 
   while (
-    $new_query =~ s{(\W)('.*?'|\d+|NULL)(\W)}{
+    $new_query =~ s{([^\w\#])('.*?'|\d+|NULL)([^\w\#])}{
         my ($prefix, $val, $suffix)= ($1,$2,$3);
         $var_counter++;
         push @var_variables, '@var'.$var_counter." = $val";
@@ -70,7 +70,7 @@ sub modify {
   # Unmask IS NULL, IS NOT NULL, SEPARATOR ...
   $new_query =~ s/IS##NULL/IS NULL/gi;
   $new_query =~ s/IS##NOT##NULL/IS NOT NULL/gi;
-  $new_query =~ s/SEPARATOR##(['"].*?['"])/SEPARATOR $1/gi;
+  $new_query =~ s/SEPARATOR##(['"].*?['"])##/SEPARATOR $1/gi;
 
   if ($var_counter > 0) {
     my $stmt= 'stmt_ExecuteAsPS_'.abs($$);
