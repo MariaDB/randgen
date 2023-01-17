@@ -31,6 +31,7 @@ require Exporter;
   EXECUTOR_FLAG_NON_EXISTING_ALLOWED
   EXECUTOR_CURRENT_SCHEMA
   EXECUTOR_MAX_ROWS_THRESHOLD
+  EXECUTOR_QNO
 );
 
 use strict;
@@ -98,6 +99,7 @@ sub new {
 
     $executor->[EXECUTOR_DSN] = $executor->server->dsn($executor->[EXECUTOR_USER]) if not defined $executor->[EXECUTOR_DSN] and defined $executor->server;
     $executor->[EXECUTOR_THREAD_ID]= 0 if not defined $executor->[EXECUTOR_THREAD_ID];
+    $executor->[EXECUTOR_QNO]= 0;
 
     return $executor;
 }
@@ -391,7 +393,7 @@ sub cacheMetaData {
 }
 
 sub systemSchemaPattern {
-  my $list= join '|', $_[0]->server->systemSchemas();
+  my $list= '^(?:'.(join '|', $_[0]->server->systemSchemas()).')$';
   return qr/$list/;
 }
 

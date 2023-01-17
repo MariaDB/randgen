@@ -22,7 +22,22 @@
 #compatibility 11.0.0
 
 query:
-  SET optimizer_cost ;
+  SET optimizer_cost |
+  SELECT opt_engine cost_var |
+  SELECT cost_select_list FROM information_schema.optimizer_costs opt_engine_clause ;
+
+cost_select_list:
+  cost_var |
+  engine |
+  cost_select_list, cost_var |
+  cost_select_list, engine
+;
+
+opt_engine_clause:
+    ==FACTOR:3==
+  | WHERE ENGINE = @@default_storage_engine
+  | WHERE ENGINE = 'default'
+  | WHERE ENGINE IN (SELECT ENGINE FROM INFORMATION_SCHEMA.ENGINES ) ;
 
 optimizer_cost:
     GLOBAL opt_engine OPTIMIZER_DISK_READ_COST= val10000
@@ -53,6 +68,21 @@ optimizer_cost:
   | __global(50) OPTIMIZER_SCAN_SETUP_COST= { $prng->uint16(7000,15000) / 1000 } # 10.000000
   | __global(50) OPTIMIZER_WHERE_COST= val100000
   | __global(50) OPTIMIZER_WHERE_COST= { $prng->uint16(200,500) / 10000 } # 0.032000
+;
+
+cost_var:
+  OPTIMIZER_DISK_READ_COST |
+  OPTIMIZER_INDEX_BLOCK_COPY_COST |
+  OPTIMIZER_KEY_COMPARE_COST |
+  OPTIMIZER_KEY_COPY_COST |
+  OPTIMIZER_KEY_LOOKUP_COST |
+  OPTIMIZER_KEY_NEXT_FIND_COST |
+  OPTIMIZER_DISK_READ_RATIO |
+  OPTIMIZER_ROW_COPY_COST |
+  OPTIMIZER_ROW_LOOKUP_COST |
+  OPTIMIZER_ROW_NEXT_FIND_COST |
+  OPTIMIZER_ROWID_COMPARE_COST |
+  OPTIMIZER_ROWID_COPY_COST
 ;
 
 val100000000:

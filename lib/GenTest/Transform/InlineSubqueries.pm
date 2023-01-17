@@ -50,13 +50,7 @@ sub transform {
   return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is;
   return STATUS_WONT_HANDLE if $query !~ m{SELECT.*\s+IN\s*\(\s*SELECT}is;
   $query= $class->modify($query, $executor);
-  if (defined $query) {
-    my $res= $executor->execute($query, 1);
-    if ($res->status() == STATUS_OK) {
-      return $query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
-    }
-  }
-  return STATUS_WONT_HANDLE;
+  return (defined $query ? [ $query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" ] : STATUS_WONT_HANDLE);
 }
 
 sub variate {
@@ -70,25 +64,35 @@ sub modify {
   my ($class, $query, $executor) = @_;
 
   my $inline_successful = 0;
-  $query =~ s{IN\s*(\(\s*SELECT\s+(??{$paren_rx})\))}{
-    my $result = $executor->execute($1, 1);
-
-    if (
-      ($result->status() != STATUS_OK) ||
-      ($result->rows() < 1)
-    ) {
-      $1;        # return original query
+  $query =~ s{(\WIN\s*)(\(\s*SELECT\s+(??{$paren_rx})\))}{
+    my $result = $executor->execute($2, 1);
+    if (($result->status() != STATUS_OK) || ($result->rows() < 1)) {
+      "$1\($2\)";        # return original query
     } else {
-      $inline_successful = 1;    # return inlined literals
-      "IN ( ".join(', ', map {
-        if (not defined $_->[0]) {
-          "NULL";
-        } elsif ($_->[0] =~ m{^\d+$}is){
-          $_->[0];
-        } else {
-          "'".$_->[0]."'"
+      my $prefix= $1;
+      my $data= $result->data();
+      my @data;
+      foreach my $r (@{$data}) {
+        my @row= ();
+        foreach my $v (@{$r}) {
+          if (not defined $v) {
+            $v= "NULL";
+          } elsif ($v =~ m{^\d+$}is) {
+            # Don't do anything
+          } else {
+            $v =~ s/(^|[^\\])'/$1\\'/g;
+            $v= "'".$v."'"
+          }
+          push @row, $v;
         }
-      } @{$result->data()})." ) ";
+        if (scalar(@row) > 1) {
+          push @data, '('.(join ',', @row).')';
+        } else {
+          push @data, $row[0];
+        }
+      }
+      $inline_successful = 1;    # return inlined literals
+      "$prefix( ".join(',', @data)." ) ";
     }
   }sgexi;
 

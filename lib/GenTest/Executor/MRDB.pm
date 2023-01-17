@@ -153,6 +153,10 @@ sub execute {
       }
     }
 
+    if ($query =~ s/(TID \d+)(?:-\d+)? (QNO \d+-\d+)/$1-$executor->[EXECUTOR_QNO] $2/) {
+      $executor->[EXECUTOR_QNO]++;
+    }
+
     if ($query =~ /^\s*(?:\/\*.*?\*\/\s*)?USE\s*(?:\/\*.*?\*\/\s*)?(\`[^\`]+\`|\w+)/) {
       $executor->currentSchema($1);
     }
@@ -306,7 +310,7 @@ sub execute {
         $result = GenTest::Result->new(
             query        => $query,
             status        => STATUS_OK,
-            data            => [],
+            data            => ( $query =~ /\WRETURNING\W/i ? [] : undef ),
             affected_rows    => $affected_rows,
             matched_rows    => $matched_rows,
             changed_rows    => $changed_rows,

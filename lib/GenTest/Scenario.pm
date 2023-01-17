@@ -73,9 +73,9 @@ sub numberOfServers {
     }
     $self->setProperty('server_specific',$server_specific);
     if (defined $max and scalar(@servers)>$max) {
-      sayWarning(scalar(@servers)." servers is configured, but only up to $max can be used, ignoring the rest");
+      sayWarning(scalar(@servers)." servers configured, but only up to $max can be used, ignoring the rest");
     } elsif (defined $min and scalar(@servers)<$min) {
-      sayWarning(scalar(@servers)." servers is configured, but at least $min is needed, cloning the first server");
+      sayWarning(scalar(@servers)." servers configured, but at least $min needed, cloning the first server");
       foreach my $i ($min - scalar(@servers)..$min) {
         $self->copyServerSpecific(1,$i);
       }

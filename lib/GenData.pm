@@ -314,6 +314,51 @@ sub validateData {
   return STATUS_OK;
 }
 
+# For federation-like engines
+sub setupRemote {
+  my ($self, $db)= @_;
+  my $remote_db= $db.'_remote';
+  # It's just a random line, nothing secret. Need it to keep password plugins happy
+  my $remote_pass= 'jvc8vxe6fky-CEX@zax';
+  my $res= $self->executor->execute("CREATE DATABASE IF NOT EXISTS $remote_db");
+  return STATUS_ENVIRONMENT_FAILURE if $res->err;
+  $res= $self->executor->execute('CREATE USER IF NOT EXISTS remote_user@localhost IDENTIFIED BY "'.$remote_pass.'"');
+  return STATUS_ENVIRONMENT_FAILURE if $res->err;
+  $res= $self->executor->execute('GRANT ALL ON '.$remote_db.'.* TO remote_user@localhost');
+  return STATUS_ENVIRONMENT_FAILURE if $res->err;
+  $res= $self->executor->execute('CREATE SERVER IF NOT EXISTS s_'.$db.' foreign data wrapper mysql options '.
+    '(host "127.0.0.1", database "'.$remote_db.'", user "remote_user", password "'.$remote_pass.'", port '.$self->executor->server->port.')');
+  return STATUS_ENVIRONMENT_FAILURE if $res->err;
+  return STATUS_OK;
+}
+
+sub createView {
+  my ($self, $alg, $table, $db)= @_;
+  if (defined $alg) {
+    if ($alg ne '') {
+        $self->executor->execute("CREATE ALGORITHM=$alg VIEW $db.view_$table AS SELECT * FROM $db.$table");
+    } else {
+        $self->executor->execute("CREATE VIEW $db.view_$table AS SELECT * FROM $db.$table");
+    }
+  }
+}
+
+sub createFederatedTable {
+  my ($self,$engine,$name,$db)= @_;
+  my $connection_options= '';
+  (my $remote_name= $name) =~ s/_$engine$//i;
+  if (lc($engine) eq 'spider') {
+    $connection_options= 'COMMENT = "wrapper '."'mysql', srv 's_".$db."', table '".$remote_name."'".'"';
+    $self->executor->execute("CREATE TABLE $db.$name LIKE ${db}_remote.$remote_name");
+    $self->executor->execute("ALTER TABLE $db.$name ENGINE=SPIDER $connection_options");
+  } elsif (lc($engine) eq 'federated') {
+    # We assume it's actually FederatedX, able to discover
+    $connection_options= 'CONNECTION="s_'.$db.'/'.$remote_name.'"';
+    $self->executor->execute("CREATE TABLE $db.$name ENGINE=FEDERATED $connection_options");
+  }
+  return STATUS_OK;
+}
+
 sub executor {
   return $_[0]->[GD_EXECUTOR];
 }

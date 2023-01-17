@@ -103,6 +103,9 @@ sub info {
 }
 
 sub data {
+  if (defined $_[1]) {
+    $_[0]->[RESULT_DATA]= [ @{$_[1]} ];
+  }
   return $_[0]->[RESULT_DATA];
 }
 

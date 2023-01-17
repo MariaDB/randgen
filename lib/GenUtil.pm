@@ -26,7 +26,7 @@ use base 'Exporter';
            'rqg_debug', 'unix2winPath', 'versionN6',
            'isNewerVersion', 'isOlderVersion',
            'shorten_message', 'set_expectation', 'unset_expectation',
-           'intersect_arrays'
+           'intersect_arrays', 'isFederatedEngine'
            );
 
 use strict;
@@ -75,10 +75,10 @@ sub say {
 
   if ($text =~ m{[\r\n]}is) {
     foreach my $line (split (m{[\r\n]}, $text)) {
-      print "# ".isoTimestamp()." [$$]$level $line\n";
+      print "# ".isoTimestamp()." [$$]$level ".shorten_message($line)."\n";
     }
   } else {
-    print "# ".isoTimestamp()." [$$]$level $text\n";
+    print "# ".isoTimestamp()." [$$]$level ".shorten_message($text)."\n";
   }
 }
 
@@ -202,7 +202,7 @@ sub shorten_message {
     my ($prefix, $suffix) = (substr($msg,0,2000),substr($msg,-512));
     if (substr($prefix,1999) eq '\\') { chop $prefix };
     if (substr($suffix,0,1) eq "'" or substr($suffix,0,1) eq '"') { $suffix= substr($suffix,1) };
-    $msg= $prefix.' <...> '.$suffix;
+    $msg= '[ABRIDGED] '.$prefix.' <...> '.$suffix;
   }
   return $msg;
 }
@@ -285,5 +285,11 @@ sub unset_expectation {
   my $location= shift;
   unlink("$location/expect");
 }
+
+sub isFederatedEngine {
+  my $engine= shift;
+  return (lc($engine) eq 'federated' or lc($engine) eq 'spider');
+}
+
 
 1;

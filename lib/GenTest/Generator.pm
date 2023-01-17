@@ -58,7 +58,7 @@ use constant GENERATOR_PARSER              => 16;
 use constant GENERATOR_PARSER_MODE         => 17;
 use constant GENERATOR_GRAMMAR_POOL        => 18;
 
-use constant VARIATION_PROBABILITY => 10; # Per cent
+use constant VARIATION_PROBABILITY => 50; # Per cent (further adjusted depending on the number of variators)
 
 sub new {
   my $class = shift;
@@ -151,6 +151,11 @@ sub variateQuery {
   my @variators= @{$self->[GENERATOR_VARIATORS]};
   $self->prng->shuffleArray(\@variators);
   my @queries= ($orig_query);
+  # For 1 variator, the probability of triggering it remains is as hardcoded, e.g. 50%
+  # for 10 variators, it is 5% for each variator; etc.
+  # If the number of variators is greater than VARIATION_PROBABILITY,
+  # we still leave them a chance by setting probability to 1%
+  my $probability= int(VARIATION_PROBABILITY / scalar(@variators)) || 1;
   VARIATOR:
   foreach my $v (@variators) {
     next if isOlderVersion($executor->server->version(),$v->compatibility);
@@ -160,7 +165,7 @@ sub variateQuery {
     foreach my $q (@queries) {
       next if $q =~ /^\s*$/;
       # Variation happens with the configured probability
-      if ($self->prng->uint16(1,100) > VARIATION_PROBABILITY || $q =~ /(?:SKIP_VARIATION|TRANSFORM_SETUP|TRANSFORM_CLEANUP)/) {
+      if ($self->prng->uint16(1,100) >= $probability || $q =~ /(?:SKIP_VARIATION|TRANSFORM_SETUP|TRANSFORM_CLEANUP)/) {
         push @new_queries, $q;
         next QUERY;
       }

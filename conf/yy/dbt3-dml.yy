@@ -60,7 +60,9 @@ select:
   SELECT o_orderkey , o_custkey , o_orderstatus , o_orderpriority , o_clerk , o_shippriority , o_comment FROM orders WHERE cond_o __and_x_or(66) cond_o |
   SELECT l_orderkey , l_partkey , l_suppkey , l_linenumber , l_quantity , l_returnflag ,  l_linestatus , l_shipinstruct , l_shipmode , l_comment FROM lineitem WHERE cond_l __and_x_or(66) cond_l |
   SELECT * FROM nation WHERE cond_n __and_x_or(66) cond_n |
-  SELECT * FROM region WHERE cond_r __and_x_or(66) cond_r ;
+  SELECT * FROM region WHERE cond_r __and_x_or(66) cond_r |
+  # From MTR
+  SELECT MAX(l_orderkey) FROM lineitem WHERE l_partkey BETWEEN _tinyint_unsigned and _tinyint_unsigned GROUP BY l_partkey ;
 
 insert:
   insert_s | insert_p | insert_ps | insert_c | insert_o | insert_l | insert_n | insert_r ;

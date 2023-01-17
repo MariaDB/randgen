@@ -33,6 +33,8 @@ use GenTest::Executor;
 use GenTest::Random;
 use GenUtil;
 
+my $remote_created;
+
 sub new {
     my $class = shift;
     my $self = $class->SUPER::new(@_);
@@ -128,8 +130,21 @@ sub run {
         push(@schema_perms, $executor->defaultSchema());
     }
 
+    my $engines= defined $self->engine() ? [ split /,/, $self->engine() ] : $tables->{engines};
+    foreach my $e (@$engines) {
+      if (isFederatedEngine($e)) {
+        foreach my $s (@schema_perms) {
+          unless ($self->setupRemote($s) == STATUS_OK) {
+            sayError("Could not set up remote access for engine $e / schema $s");
+            return STATUS_ENVIRONMENT_FAILURE;
+          }
+        }
+        last;
+      }
+    }
+
     $table_perms[TABLE_ROW] = (defined $self->rows() ? [split(',', $self->rows())] : undef ) || $tables->{rows} || [0, 1, 2, 10, 100];
-    $table_perms[TABLE_ENGINE] = defined $self->engine() ? [ split /,/, $self->engine() ] : $tables->{engines};
+    $table_perms[TABLE_ENGINE] = $engines;
     $table_perms[TABLE_CHARSET] = $tables->{charsets} || [ undef ];
     $table_perms[TABLE_COLLATION] = $tables->{collations} || [ undef ];
     $table_perms[TABLE_PARTITION] = $tables->{partitions} || [ undef ];
@@ -172,7 +187,7 @@ sub run {
     my @tables = (undef);
     my @myisam_tables;
 
-    foreach my $cycle (TABLE_ROW, TABLE_ENGINE, TABLE_CHARSET, TABLE_COLLATION, TABLE_PARTITION, TABLE_PK, TABLE_ROW_FORMAT, TABLE_EXTRA_OPTS) {
+    foreach my $cycle (TABLE_ENGINE, TABLE_ROW, TABLE_CHARSET, TABLE_COLLATION, TABLE_PARTITION, TABLE_PK, TABLE_ROW_FORMAT, TABLE_EXTRA_OPTS) {
         @tables = map {
             my $old_table = $_;
             if (not defined $table_perms[$cycle]) {
@@ -361,14 +376,20 @@ sub run {
         $executor->execute("CREATE DATABASE IF NOT EXISTS $schema");
         # PS is a workaround for MENT-30190
         $executor->execute("EXECUTE IMMEDIATE CONCAT('GRANT ALL ON ".$schema.".* TO ',CURRENT_USER,' WITH GRANT OPTION')");
-        $executor->execute("USE $schema");
 
     foreach my $table_id (0..$#tables) {
         my $table = $tables[$table_id];
         my @table_copy = @$table;
         my @fields_copy = @fields;
 
-        say("Creating table: $schema.$table_copy[TABLE_NAME]; engine: $table_copy[TABLE_ENGINE]; rows: $table_copy[TABLE_ROW] .");
+        if (isFederatedEngine($table_copy[TABLE_ENGINE])) {
+          say("Creating table: ${schema}_remote.$table_copy[TABLE_NAME]; engine: <default>; rows: $table_copy[TABLE_ROW]");
+          $executor->execute("USE ${schema}_remote");
+          $table->[TABLE_SQL] =~ s/ENGINE=\w+//;
+        } else {
+          say("Creating table: $schema.$table_copy[TABLE_NAME]; engine: $table_copy[TABLE_ENGINE]; rows: $table_copy[TABLE_ROW]");
+          $executor->execute("USE $schema");
+        }
 
         if ($table_copy[TABLE_PK] ne '') {
             my $pk_field;
@@ -407,23 +428,6 @@ sub run {
         if (ref $res ne 'GenTest::Result' or $res->status() != STATUS_OK) {
           sayError("Table creation failed");
           next;
-        }
-
-        if (defined $table_perms[TABLE_VIEWS]) {
-          foreach my $view_id (0..$#{$table_perms[TABLE_VIEWS]}) {
-            my $view_name;
-            if ($#{$table_perms[TABLE_VIEWS]} == 0) {
-               $view_name = 'view_'.$table->[TABLE_NAME];
-            } else {
-               $view_name = 'view_'.$table->[TABLE_NAME]."_$view_id";
-            }
-
-            if ($table_perms[TABLE_VIEWS]->[$view_id] ne '') {
-              $executor->execute("CREATE OR REPLACE ALGORITHM=".uc($table_perms[TABLE_VIEWS]->[$view_id])." VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
-            } else {
-              $executor->execute("CREATE OR REPLACE VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
-            }
-          }
         }
 
         $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS");
@@ -525,6 +529,28 @@ sub run {
         }
         $executor->execute("COMMIT");
         $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
+
+        if (isFederatedEngine($table_copy[TABLE_ENGINE])) {
+          $executor->execute("USE $schema");
+          say("Creating table: $schema.$table_copy[TABLE_NAME]; engine: $table_copy[TABLE_ENGINE] (rows in remote: $table_copy[TABLE_ROW])");
+          $self->createFederatedTable($table_copy[TABLE_ENGINE],$table->[TABLE_NAME],$schema);
+        }
+        if (defined $table_perms[TABLE_VIEWS]) {
+          foreach my $view_id (0..$#{$table_perms[TABLE_VIEWS]}) {
+            my $view_name;
+            if ($#{$table_perms[TABLE_VIEWS]} == 0) {
+               $view_name = 'view_'.$table->[TABLE_NAME];
+            } else {
+               $view_name = 'view_'.$table->[TABLE_NAME]."_$view_id";
+            }
+
+            if ($table_perms[TABLE_VIEWS]->[$view_id] ne '') {
+              $executor->execute("CREATE OR REPLACE ALGORITHM=".uc($table_perms[TABLE_VIEWS]->[$view_id])." VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
+            } else {
+              $executor->execute("CREATE OR REPLACE VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
+            }
+          }
+        }
     }
     }
 

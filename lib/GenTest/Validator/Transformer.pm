@@ -38,7 +38,7 @@ my %transform_outcomes = (
     'TRANSFORM_OUTCOME_SINGLE_ROW'             => \&isSingleRow,
     'TRANSFORM_OUTCOME_FIRST_ROW'              => \&isFirstRow,
     'TRANSFORM_OUTCOME_DISTINCT'               => \&isDistinct,
-    'TRANSFORM_OUTCOME_COUNT'                  => \&isCount,
+    'TRANSFORM_OUTCOME_COUNT'                  => \&isCountNormal,
     'TRANSFORM_OUTCOME_EMPTY_RESULT'           => \&isEmptyResult,
     'TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE'     => \&isSingleIntegerOne,
     'TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED'  => \&isRowsExaminedObeyed,
@@ -109,18 +109,29 @@ sub configure {
   }
 }
 
+# Executors and execution results are multiple in validate because
+# GENERALLY a validator can receive results from several executors (different servers),
+# and validate them against each other. But here in Transformer we assume
+# one executor and hence one result only
 sub validate {
   my ($validator, $executors, $results) = @_;
 
-  my $executor = $executors->[0];
   my $original_result = $results->[0];
+  my $executor = $executors->[0];
   my $original_query = $original_result->query();
 
-  return STATUS_WONT_HANDLE if $original_query !~ m{^\s*(SELECT|HANDLER)}is;
-  return STATUS_WONT_HANDLE if defined $results->[0]->warnings();
-    foreach my $r (@{$results}) {
-        return STATUS_WONT_HANDLE if $r->status() != STATUS_OK;
-    };
+  return STATUS_WONT_HANDLE if $original_result->status() != STATUS_OK;
+  return STATUS_WONT_HANDLE if defined $original_result->warnings();
+  return STATUS_WONT_HANDLE if not defined $original_result->data();
+  # Also return a dataset, but we won't compare them
+  return STATUS_WONT_HANDLE if $original_query =~ /^\s*(?:SHOW|ANALYZE|REPAIR|OPTIMIZE|EXPLAIN)/is;
+
+  # Get the plan before doing any transformations. Still not a guarantee
+  # that it's the right one, but better chance than getting it later
+  my $original_explain;
+  if ($original_query =~ m{^[\(\s]*(?:SELECT|WITH|VALUES)}is) {
+    $original_explain= $executor->execute("EXPLAIN $original_query");
+  }
 
   my $max_transformer_status= STATUS_OK;
   $executor->dbh->do("SELECT CONCAT('SET ROLE ',IFNULL(CURRENT_ROLE(),'NONE')) INTO ".'@role_stmt');
@@ -140,7 +151,7 @@ sub validate {
       say("Transformer: Test duration has already been exceeded, exiting");
       last;
     }
-    my $transformer_status = $validator->transform($transformer, $executor, $results);
+    my $transformer_status = $validator->transform($transformer, $executor, $original_result, $original_explain);
     $max_transformer_status = $transformer_status if $transformer_status > $max_transformer_status;
     last if $transformer_status >= STATUS_CRITICAL_FAILURE;
   }
@@ -153,15 +164,12 @@ sub validate {
 }
 
 sub transform {
-  my ($validator, $transformer, $executor, $results) = @_;
-  my $original_result = $results->[0];
+  my ($validator, $transformer, $executor, $original_result, $original_explain) = @_;
   my $original_query = $original_result->query();
   my $name= $transformer->name;
   my $allowed_by_transformer= $transformer->allowedErrors();
 
   my ($transform_outcome, $transformed_results) = $transformer->transformExecuteValidate($original_query, $original_result, $executor);
-
-  sayDebug("transformExecuteValidate returned $transform_outcome");
 
   if (
     ($transform_outcome >= STATUS_CRITICAL_FAILURE) ||
@@ -172,8 +180,10 @@ sub transform {
   }
 
   $transform_outcome= STATUS_OK;
+  my @transformed_queries= ();
 
   foreach my $tr (@$transformed_results) {
+    push @transformed_queries, $tr->query;
     next unless $tr->query =~ /\W(TRANSFORM_OUTCOME_\w+)\W/;
     next if $tr->status == STATUS_SKIP;
     my $expected_outcome= $1;
@@ -207,38 +217,61 @@ sub transform {
         } else {
             sayDebug("$name: Ignoring transformation failure: ".$tr->err()." (".$tr->errstr().")");
         }
-        sayDebug("Original query is: $original_query\nOffending query is: ".$tr->query);
+        sayDebug("Original query is: ".shorten_message($original_query)."\nOffending query is: ".shorten_message($tr->query));
       }
       else {
         # If we are here, the transformed query returned an error
         # and it's not on the allowed list
         sayWarning(
-          "---------- TRANSFORM PROBLEM ----------"."\n".
+          "---------- TRANSFORM PROBLEM ($name) ----------\n".
           "$name: Transformation error: ".$tr->err()." ".$tr->errstr().
             "; RQG Status: ".status2text($tr->status())." (".$tr->status().")"."\n".
-          "Original query is: $original_query"."\n".
-          "Offending query is: ".$tr->query."\n".
-          "---------------------------------------");
+          "Original query is: ".shorten_message($original_query)."\n".
+          "Offending query is: ".shorten_message($tr->query)."\n".
+          "All previous transformed queries: \n".
+          (join "\n", map { shorten_message($_) } (@transformed_queries))."\n".
+          "---------------- END OF ($name) ---------------");
       }
       next;
     }
 
-#    sayDebug("Checking transformation results of ".(Dumper $tr));
-
     # If we are here, the transformed query succeeded and we need to check
-    # whether it matches the expected outcome
+    # whether it matches the expected outcome.
+
+    # First we do some normalization, e.g.
+    # - zerofilled values can in some resultsets have leading zeros and in others not;
+    # - also, trailing spaces are insignificant for comparison purposes
+    # - we'll also convert undefs to <NULL> while we are here
+    sub normalize {
+      my $data= shift;
+      foreach my $ri (0..$#$data) {
+        foreach my $vi (0..$#{$data->[$ri]}) {
+          $data->[$ri]->[$vi] = '<NULL>' if not defined $data->[$ri]->[$vi];
+          $data->[$ri]->[$vi] =~ s/^0*(\d+)$/$1/;
+          $data->[$ri]->[$vi] =~ s/(.*?)\s*$/$1/;
+        }
+      }
+      return $data;
+    }
+    $original_result->data(normalize($original_result->data()));
+    $tr->data(normalize($tr->data()));
+
     my $check= $transform_outcomes{$expected_outcome};
 
-    my ($check_outcome, $report)= $validator->$check($original_result, $tr, $executor);
+    my ($check_outcome, $report)= $validator->$check($original_result, $tr, $executor, $original_explain);
 
     if ($check_outcome != STATUS_OK) {
-
+      # Get non-default session variables
+      my $vars= $executor->dbh->selectcol_arrayref('select concat(variable_name,"-",session_value) from information_schema.system_variables where session_value != global_value order by variable_name');
       say("---------- TRANSFORM ISSUE START ($name) ----------\n".
           "RQG Status: ".status2text($check_outcome)." ($check_outcome)\n".
-          "Original query: $original_query\n".
-          "Transformed query: ".$tr->query."\n".
+          "Original query: ".shorten_message($original_query)."\n".
+          "Transformed query: ".shorten_message($tr->query)."\n".
           $report.
-          "------- END OF TRANSFORM ISSUE ($name) -------"
+          "All previous transformed queries: \n".
+          (join "\n", map { shorten_message($_) } (@transformed_queries))."\n".
+          (($vars && scalar(@$vars)) ? "Non-default session vars: \n".(join "\n", @$vars)."\n" : "").
+          "----------------- END OF ($name) ------------------"
       );
       $transform_outcome= $check_outcome if $check_outcome > $transform_outcome;
     }
@@ -249,47 +282,37 @@ sub transform {
 ########################
 # Checkers and reports
 
-sub explainDiff {
-  my ($self, $original_query, $transformed_query, $executor)= @_;
-  my $orig_explain = $executor->execute("EXPLAIN ".$original_query);
-  my $explain_diff= '';
-  if ($orig_explain) {
-    my $transformed_explain= $executor->execute("EXPLAIN ".$transformed_query);
-    if ($transformed_explain) {
-      $explain_diff= "EXPLAIN diff:\n".GenTest::Comparator::dumpDiff($orig_explain, $transformed_explain);
+sub isMatch {
+    my ($validator, $original_result, $transformed_result, $executor, $original_explain, $ordered) = @_;
+    return (STATUS_OK, undef) if $validator->resultsetsNotComparable([$original_result, $transformed_result]);
+    my $res= ($ordered ? GenTest::Comparator::compare_as_ordered($original_result, $transformed_result)
+                       : GenTest::Comparator::compare($original_result, $transformed_result)
+             );
+    my $report= undef;
+    if ($res != STATUS_OK) {
+      $report= "Result set mismatch";
+      if ($original_result->rows != $transformed_result->rows) {
+        $report.= ' ('.$original_result->rows.' vs '.$transformed_result->rows.')';
+      }
+      $report.= ":\n".GenTest::Comparator::dumpDiff($original_result, $transformed_result);
+      if ($original_explain && $original_explain->data()) {
+        my $transformed_explain= pop @$transformed_result;
+        if ($transformed_explain && $transformed_explain->data) {
+          $report.= "EXPLAIN diff:\n".GenTest::Comparator::dumpDiff($original_explain, $transformed_explain);
+        }
+      }
     }
-  }
-  return $explain_diff;
-}
-
-# Used for mismatch results, show the diff in results
-# and the diff in EXPLAIN if possible
-sub mismatchReport {
-  my ($self, $original_result, $transformed_result, $executor)= @_;
-  my $report= "Result set mismatch";
-  if ($original_result->rows != $transformed_result->rows) {
-    $report.= ' ('.$original_result->rows.' vs '.$transformed_result->rows.')';
-  }
-  $report.= "\n".GenTest::Comparator::dumpDiff($original_result, $transformed_result);
-  my $explain_diff= $self->explainDiff($original_result->query, $transformed_result->query, $executor);
-  if ($explain_diff) {
-      $report.= "\n".$explain_diff;
-  }
-  return $report;
+    return ($res, $report);
 }
 
 sub isUnorderedMatch {
-    my ($validator, $original_result, $transformed_result, $executor) = @_;
-    my $res= GenTest::Comparator::compare($original_result, $transformed_result);
-    my $report= ($res == STATUS_OK ? undef : $validator->mismatchReport($original_result, $transformed_result, $executor));
-    return ($res, $report);
+    my ($validator, $original_result, $transformed_result, $executor, $original_explain) = @_;
+    return $validator->isMatch($original_result, $transformed_result, $executor, $original_explain, my $ordered=0);
 }
 
 sub isOrderedMatch {
-    my ($validator, $original_result, $transformed_result, $executor) = @_;
-    my $res= GenTest::Comparator::compare_as_ordered($original_result, $transformed_result);
-    my $report= ($res == STATUS_OK ? undef : $validator->mismatchReport($original_result, $transformed_result, $executor));
-    return ($res, $report);
+    my ($validator, $original_result, $transformed_result, $executor, $original_explain) = @_;
+    return $validator->isMatch($original_result, $transformed_result, $executor, $original_explain, my $ordered=1);
 }
 
 sub isFirstRow {
@@ -317,14 +340,14 @@ sub isDistinct {
     my $transformed_rows;
 
     foreach my $row_ref (@{$original_result->data()}) {
-        my $row = lc(join('<col>', map { defined $_ ? $_ : '<NULL>'; $_ =~ s/^0*(\d+)$/$1/ ; $_ } (@$row_ref)));
-        $original_rows->{$row}++;
+      my $row = lc(join('<col>', @$row_ref));
+      $original_rows->{$row}++;
     }
 
     my $report= "Distinct violation:\n";
     my $res= STATUS_OK;
     foreach my $row_ref (@{$transformed_result->data()}) {
-      my $row = lc(join('<col>', map { defined $_ ? $_ : '<NULL>'; $_ =~ s/\^0*(\d+)$/$1/; $_ } (@$row_ref)));
+      my $row = lc(join('<col>', @$row_ref));
       if (not defined $original_rows->{$row}) {
         $report.= "Unexpected row: $row\n";
         $res= STATUS_CONTENT_MISMATCH;
@@ -403,19 +426,24 @@ sub isCount {
     if ($notnull) {
       my $notnull_count= 0;
       foreach my $r (@{$resultset->data()}) {
-        $notnull_count++ if defined $r->[0];
+        $notnull_count++ if ($r->[0] ne '<NULL>');
       }
       if ($notnull_count == $countval) {
-        return STATUS_OK;
+        return (STATUS_OK, undef);
       } else {
         return (STATUS_LENGTH_MISMATCH, "Count violation - resultset contains ".$notnull_count." non-null values, count returned $countval\n");
       }
     }
     elsif ($resultset->rows() == $countval) {
-      return STATUS_OK;
+      return (STATUS_OK, undef);
     } else {
       return (STATUS_LENGTH_MISMATCH, "Count violation - resultset length is ".$resultset->rows().", count returned $countval\n");
     }
+}
+
+sub isCountNormal {
+    my ($validator, $original_result, $transformed_result, $executor) = @_;
+    return $validator->isCount($original_result, $transformed_result, $executor);
 }
 
 sub isCountNotNull {
@@ -437,9 +465,9 @@ sub isEmptyResult {
     my ($validator, $original_result, $transformed_result) = @_;
 
     if ($transformed_result->rows() == 0) {
-        return STATUS_OK;
+        return (STATUS_OK, undef);
     } else {
-        return STATUS_LENGTH_MISMATCH;
+        return (STATUS_LENGTH_MISMATCH, "Empty result violation - not empty\n".(Dumper $transformed_result->data()));
     }
 }
 
@@ -451,9 +479,9 @@ sub isSingleIntegerOne {
         ($#{$transformed_result->data()->[0]} == 0) &&
         ($transformed_result->data()->[0]->[0] eq '1')
     ) {
-        return STATUS_OK;
+        return (STATUS_OK, undef);
     } else {
-        return STATUS_LENGTH_MISMATCH;
+        return (STATUS_CONTENT_MISMATCH, "Result 1 violation - expected to get 1, but got ".$transformed_result->data()->[0]->[0]."\n")
     }
 }
 
@@ -463,8 +491,8 @@ sub isRowsExaminedObeyed {
     # The comment already contains the calculated maximum, including the margin,
     # we only need to do the comparison
     return (STATUS_WONT_HANDLE, undef) if ($transformed_query !~ m{TRANSFORM_OUTCOME_EXAMINED_ROWS_LIMITED\s+(\d+)}s);
-    if ( $transformed_result->data()->[0]->[0] > $1 ) {
-        return (STATUS_LENGTH_MISMATCH, "Rows examined violation - number of examined rows " . $transformed_result->data()->[0]->[0] . ", max allowed (with margin) $1");
+    if ( $transformed_result->rows() > $1 ) {
+        return (STATUS_LENGTH_MISMATCH, "Rows examined violation - number of returned rows " . $transformed_result->rows() . ", max allowed to examine $1\n");
     } else {
         return (STATUS_OK, undef);
     }

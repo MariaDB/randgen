@@ -108,7 +108,7 @@ my %results;
 my @commands;
 my $max_result = 0;
 my $thread_id = 0;
-my $comb_seed= ($seed = 'time' ? time() : $seed);
+my $comb_seed= ($seed eq 'time' ? time() : $seed);
 
 $version= versionN6($version);
 
@@ -354,7 +354,7 @@ sub doCombination {
   foreach (@basedirs) {
     push @args, "--basedir=".$_;
   }
-  push @args, "--seed=".($seed eq 'time' ? time() : $seed);
+  push @args, "--seed=$seed";
   push @args, @pass_through;
 
   my $runscript= (defined $ENV{RQG_HOME} ? $ENV{RQG_HOME}."/run.pl" : "./run.pl");

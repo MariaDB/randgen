@@ -31,7 +31,7 @@ use Constants;
 sub transform {
   my ($self, $original_query, $executor) = @_;
   my $transform_outcome= 'TRANSFORM_OUTCOME_UNORDERED_MATCH';
-  if ($original_query =~ /LIMIT|FETCH/) {
+  if ($original_query =~ /\WLIMIT\W|\WFETCH\W/is) {
     $transform_outcome= 'TRANSFORM_OUTCOME_SUPERSET';
   }
   $original_query= $self->modify($original_query,$executor);
@@ -46,11 +46,11 @@ sub variate {
 
 sub modify {
   my ($self, $original_query, $executor) = @_;
-  return undef if $original_query !~ m{^\s*SELECT}is;
-  return undef if $original_query =~ m{(OUTFILE|PROCESSLIST|INTO|GROUP_CONCAT)}is;
+  return undef if $original_query !~ m{^\s*SELECT\W}is;
+  return undef if $original_query =~ m{\W(?:OUTFILE|PROCESSLIST|INTO|GROUP_CONCAT)\W}is;
   my $query= $original_query;
-  $query =~ s/ORDER\s+BY\s+.*?(LIMIT|OFFSET|FETCH|FOR\s+UPDATE)/\1/;
-  while ($query =~ s/(?:ORDER\s+BY|LIMIT|OFFSET|FETCH)\s+.*?[^\(\)]*$//) {};
+  $query =~ s/ORDER\s+BY\s+.*?(LIMIT|OFFSET|FETCH|FOR\s+UPDATE)/\1/is;
+  while ($query =~ s/(?:ORDER\s+BY|LIMIT|OFFSET|FETCH)\s+.*?[^\(\)]*$//is) {};
   my $dbh= $executor->dbh();
   if (!$dbh) {
       sayError("FullOrderBy: couldn't establish connection");

@@ -35,6 +35,7 @@ use constant GDA_DEFAULT_ROWS => [0, 1, 20, 100, 1000, 0, 1, 20, 100];
 use constant GDA_DEFAULT_DB => 'advanced_db';
 
 my $prng;
+my $remote_created;
 
 sub new {
     my $class = shift;
@@ -55,16 +56,34 @@ sub run {
 
     my $res= STATUS_OK;
     $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
-    say("GendataAdvanced is creating tables in schema `".$self->GDA_DEFAULT_DB."`");
+    say("GendataAdvanced is creating tables");
     $executor->execute("CREATE DATABASE IF NOT EXISTS ".$self->GDA_DEFAULT_DB);
     # PS is a workaround for MENT-30190
     $executor->execute("EXECUTE IMMEDIATE CONCAT('GRANT ALL ON ".$self->GDA_DEFAULT_DB.".* TO ',CURRENT_USER,' WITH GRANT OPTION')");
-    $executor->execute("USE ".$self->GDA_DEFAULT_DB);
-    foreach my $i (0..$#$rows) {
-        my $gen_table_result = $self->gen_table($executor, 't'.($i+1), $rows->[$i], $prng);
-        $res= $gen_table_result if $gen_table_result > $res;
+
+    my @engines= ($self->engine ? split /,/, $self->engine : '');
+
+    foreach my $e (@engines) {
+      if (isFederatedEngine($e) and not $remote_created) {
+        unless ($self->setupRemote($self->GDA_DEFAULT_DB) == STATUS_OK) {
+          sayError("Could not set up remote access for engine $e");
+          return STATUS_ENVIRONMENT_FAILURE;
+        }
+        # Create remote tables with default engine
+        foreach my $i (0..$#$rows) {
+          my $gen_table_result = $self->gen_table($executor, 't'.($i+1), $rows->[$i], '', $self->GDA_DEFAULT_DB.'_remote');
+          return $gen_table_result if $gen_table_result >= STATUS_CRITICAL_FAILURE;
+        }
+        $remote_created= 1;
+      }
+
+      foreach my $i (0..$#$rows) {
+        my $name= ($e eq $self->engine ? 't'.($i+1) : 't'.($i+1).'_'.$e);
+        my $gen_table_result = $self->gen_table($executor, $name, $rows->[$i], $e, $self->GDA_DEFAULT_DB);
+        return $gen_table_result if $gen_table_result != STATUS_OK;
+      }
     }
-    return $res;
+    return STATUS_OK;
 }
 
 sub random_null {
@@ -115,10 +134,18 @@ sub random_asc_desc_key {
 }
 
 sub gen_table {
-    my ($self, $executor, $basename, $size, $prng) = @_;
+    my ($self, $executor, $name, $size, $e, $db) = @_;
 
-    my $engine = $self->engine();
-    my $views = $self->views();
+    say("Creating table $db.$name, size $size rows, " . ($e ? "engine $e" : "default engine"));
+
+    # Remote table should already be created and populated by now,
+    # just need the local one
+    if (isFederatedEngine($e)) {
+      $self->createFederatedTable($e,$name,$db);
+      $self->createView($self->views(),$name,$db) if defined $self->views();
+      return STATUS_OK;
+    }
+
     my ($nullable, $precision);
 
     my $res= STATUS_OK;
@@ -361,7 +388,7 @@ sub gen_table {
     my %pk_columns= ($has_autoinc ? (id => 1) : ());
 
     # RocksDB does not support virtual columns
-    if (defined $self->vcols and lc($engine) ne 'rocksdb')
+    if (defined $self->vcols and lc($e) ne 'rocksdb')
     {
         # TODO: add actual functions for virtual columns
 
@@ -566,347 +593,334 @@ sub gen_table {
         }
     }
 
-    my @engines= ($engine ? split /,/, $engine : '');
-    foreach my $e (@engines)
+    ### This variant is needed due to
+    ### http://bugs.mysql.com/bug.php?id=47125
+
+    $executor->execute("DROP TABLE IF EXISTS $db.$name");
+    my $create_stmt = "CREATE TABLE $db.$name (";
+    my @column_list = ();
+    my @columns= ();
+    foreach my $c (sort keys %columns) {
+        # as of 10.8 RocksDB does not support geometry
+        next if $e =~ /rocksdb/i and $c =~ /spatial/i;
+        my $coldef= $columns{$c};
+        # Virtual columns are not inserted into
+        # Auto-increment columns are usually skipped (90%),
+        # but sometimes used, mainly to get non-consequent unordered values
+        unless (defined $coldef->[6] or ($c eq 'id' and ($has_autoinc) and $prng->uint16(0,9))) {
+            push @column_list, $c;
+        }
+        push @columns,
+            "$c $coldef->[0]"         # type
+            . ($coldef->[1] ? "($coldef->[1])" : '') # length
+            . ($coldef->[2] ? " $coldef->[2]" : '')  # unsigned
+            . ($coldef->[3] ? " $coldef->[3]" : '')  # zerofill
+            . ($coldef->[4] ? " $coldef->[4]" : '')  # nullability
+            . (defined $coldef->[5] ? " DEFAULT $coldef->[5]" : '')   # default
+            . (defined $coldef->[6] ? " $coldef->[6]" : '') # virtual
+            . ($coldef->[7] ? " $coldef->[7]" : '')  # invisible
+            . ($coldef->[8] ? " $coldef->[8]" : '')  # compressed
+        ;
+    };
+    my @create_table_columns= @columns;
+    $prng->shuffleArray(\@create_table_columns);
+    $create_stmt.= join ', ', @create_table_columns;
+    my $pk_stmt= '';
+
+    # Create PK for 90% of tables
+    if ($prng->uint16(0,9))
     {
-      my $name = ( $e eq $engine ? $basename : $basename . '_'.$e );
-
-      say("Creating table $name, size $size rows, " . ($e eq '' ? "default engine" : "engine $e"));
-
-      ### This variant is needed due to
-      ### http://bugs.mysql.com/bug.php?id=47125
-
-      $executor->execute("DROP TABLE /*! IF EXISTS */ $name");
-      my $create_stmt = "CREATE TABLE $name (";
-      my @column_list = ();
-      my @columns= ();
-      foreach my $c (sort keys %columns) {
-          # as of 10.8 RocksDB does not support geometry
-          next if $e =~ /rocksdb/i and $c =~ /spatial/i;
-          my $coldef= $columns{$c};
-          # Virtual columns are not inserted into
-          # Auto-increment columns are usually skipped (90%),
-          # but sometimes used, mainly to get non-consequent unordered values
-          unless (defined $coldef->[6] or ($c eq 'id' and ($has_autoinc) and $prng->uint16(0,9))) {
-              push @column_list, $c;
+        my $num_of_columns_in_pk= $prng->uint16(1,4);
+        my @cols= sort keys %columns;
+        $prng->shuffleArray(\@cols);
+        foreach my $c (@cols) {
+          next if defined $columns{$c}->[8]; # Compressed columns cannot be in an index
+          last if scalar(keys %pk_columns) >= $num_of_columns_in_pk;
+          next if $pk_columns{$c};
+          if ($columns{$c}->[0] =~ /BLOB|TEXT|POINT|LINESTRING|POLYGON|GEOMETRY/) {
+              $c= $c.'('.$prng->uint16(1,32).')';
           }
-          push @columns,
-              "$c $coldef->[0]"         # type
-              . ($coldef->[1] ? "($coldef->[1])" : '') # length
-              . ($coldef->[2] ? " $coldef->[2]" : '')  # unsigned
-              . ($coldef->[3] ? " $coldef->[3]" : '')  # zerofill
-              . ($coldef->[4] ? " $coldef->[4]" : '')  # nullability
-              . (defined $coldef->[5] ? " DEFAULT $coldef->[5]" : '')   # default
-              . (defined $coldef->[6] ? " $coldef->[6]" : '') # virtual
-              . ($coldef->[7] ? " $coldef->[7]" : '')  # invisible
-              . ($coldef->[8] ? " $coldef->[8]" : '')  # compressed
-          ;
-      };
-      my @create_table_columns= @columns;
-      $prng->shuffleArray(\@create_table_columns);
-      $create_stmt.= join ', ', @create_table_columns;
-      my $pk_stmt= '';
-
-      # Create PK for 90% of tables
-      if ($prng->uint16(0,9))
-      {
-          my $num_of_columns_in_pk= $prng->uint16(1,4);
-          my @cols= sort keys %columns;
-          $prng->shuffleArray(\@cols);
-          foreach my $c (@cols) {
-            next if defined $columns{$c}->[8]; # Compressed columns cannot be in an index
-            last if scalar(keys %pk_columns) >= $num_of_columns_in_pk;
-            next if $pk_columns{$c};
-            if ($columns{$c}->[0] =~ /BLOB|TEXT|POINT|LINESTRING|POLYGON|GEOMETRY/) {
-                $c= $c.'('.$prng->uint16(1,32).')';
+          $pk_columns{$c}= 1;
+        }
+        # For InnoDB and HEAP (TODO: and probably some other engines, but not MyISAM or Aria)
+        # the auto-increment column has to be the first one in the primary key
+        if ($has_autoinc and ($e =~ /InnoDB|MEMORY|HEAP/i or $e eq '' and $executor->server->serverVariable('default_storage_engine')))
+        {
+            delete $pk_columns{id};
+            if (scalar(keys %pk_columns)) {
+                @cols= sort keys %pk_columns;
+                $prng->shuffleArray(\@cols);
+                unshift @cols, 'id';
+            } else {
+                @cols= ('id');
             }
-            $pk_columns{$c}= 1;
-          }
-          # For InnoDB and HEAP (TODO: and probably some other engines, but not MyISAM or Aria)
-          # the auto-increment column has to be the first one in the primary key
-          if ($has_autoinc and ($e =~ /InnoDB|MEMORY|HEAP/i or $e eq '' and $executor->server->serverVariable('default_storage_engine')))
-          {
-              delete $pk_columns{id};
-              if (scalar(keys %pk_columns)) {
-                  @cols= sort keys %pk_columns;
-                  $prng->shuffleArray(\@cols);
-                  unshift @cols, 'id';
-              } else {
-                  @cols= ('id');
-              }
-          } else {
-              @cols= sort keys %pk_columns;
-              $prng->shuffleArray(\@cols);
-          }
-          if ($has_autoinc) {
-            # If there is an auto-increment column, we have to add PRIMARY KEY right away in the CREATE statement
-            $create_stmt.= ', PRIMARY KEY('.(join ',', map {$_ . random_asc_desc_key($prng->uint16(0,2),$e) } @cols).")";
-          } else {
-            # Otherwise, it is always better to add it separately, since it can fail
-            $pk_stmt= "ALTER TABLE $name ADD PRIMARY KEY (".(join ',', map {$_ . random_asc_desc_key($prng->uint16(0,2),$e) } @cols).")";
-          }
-      }
-      elsif ($has_autoinc) {
-          $create_stmt.= ", UNIQUE(id)";
-      }
-      $create_stmt .= ")" . ($e ne '' ? " ENGINE=$e" : "");
-
-      $res= $executor->execute($create_stmt);
-      if ($res->status != STATUS_OK) {
-          sayError("Failed to create table $name: " . $res->errstr);
-          return $res->status;
-      }
-
-      if ($pk_stmt) {
-          $res= $executor->execute($pk_stmt);
-          if ($res->status != STATUS_OK) {
-              sayError("Failed to add primary key to table $name: " . $res->errstr);
-          }
-      }
-
-      # partition 50% tables (if requested at all). Not all of them will succeed
-      if ($self->partitions and $prng->uint16(0,1))
-      {
-          my $partition_type= $self->random_partition_type();
-          my $partition_column= (scalar(keys %pk_columns) ? $prng->arrayElement([sort keys %pk_columns]) : 'id');
-          my $part_stmt.= 'ALTER TABLE ' . $name . ' PARTITION BY ' .$partition_type.'('.$partition_column.') ';
-
-          if ($partition_type eq 'KEY' or $partition_type eq 'HASH') {
-              $part_stmt.= 'PARTITIONS '.$prng->uint16(1,20);
-          } elsif ($partition_type eq 'RANGE') {
-              my @parts= ();
-              my $part_count= $prng->uint16(1,20);
-              my $part_max_value= -1;
-              my $max_value= $size || 1;
-              for (my $i= 1; $i<$part_count; $i++) {
-                  last if $part_max_value >= $max_value;
-                  $part_max_value= $prng->uint16($part_max_value+1,$max_value);
-                  push @parts, 'PARTITION p'.$i.' VALUES LESS THAN ('.$part_max_value.')';
-              }
-              push @parts, 'PARTITION pmax VALUES LESS THAN (MAXVALUE)';
-              $part_stmt.= '('.(join ',',@parts).')';
-          } elsif ($partition_type eq 'LIST') {
-              my @vals= ();
-              foreach my $i (0..($size*10 || 1)) {
-                  push @vals, $i;
-              }
-              my @parts= ();
-              my $n= 1;
-              while (scalar(@vals)) {
-                  my $part_val_count= $prng->uint16(1,scalar(@vals));
-                  my @shuffled_vals= @vals;
-                  $prng->shuffleArray(\@shuffled_vals);
-                  my @part_vals= splice(@shuffled_vals,0,$part_val_count);
-                  @vals= @shuffled_vals;
-                  push @parts, 'PARTITION p'.$n++.' VALUES IN ('.(join ',', @part_vals).')';
-              }
-              $part_stmt.= '('.(join ',',@parts).')';
-          }
-          $res= $executor->execute($part_stmt);
-          if ($res->status == STATUS_OK) {
-              say("Table $name has been partitioned by $partition_type($partition_column)");
-          } else {
-              sayError("Failed to partition table $name by $partition_type($partition_column): " . $res->errstr);
-          }
-      }
-
-      if (defined $views) {
-          if ($views ne '') {
-              $executor->execute("CREATE ALGORITHM=$views VIEW view_".$name.' AS SELECT * FROM '.$name);
-          } else {
-              $executor->execute('CREATE VIEW view_'.$name.' AS SELECT * FROM '.$name);
-          }
-      }
-
-      # The limit for the number of indexes is purely arbitrary, there is no secret wisdom
-      my $number_of_indexes= $prng->uint16(0,scalar(keys %columns)*2);
-
-      foreach (1..$number_of_indexes)
-      {
-          my $number_of_columns= $prng->uint16(1,scalar(keys %columns));
-          # TODO: make it conditional depending on the version -- keys %columns vs @column_list
-          my @cols=();
-          my $text_only= 1;
-          foreach my $c (sort keys %columns) {
-              push @cols, $c;
-              $text_only= 0 if $columns{$c}->[0] !~ /BLOB|TEXT|CHAR|BINARY/;
-          }
-          $prng->shuffleArray(\@cols);
-          @cols= @cols[0..$number_of_columns-1];
-          my $ind_type= $prng->uint16(0,5) ? 'INDEX' : 'UNIQUE';
-          if ($text_only and not $prng->uint16(0,3)) {
-              $ind_type= 'FULLTEXT';
-          }
-          my @ind_cols;
-          foreach my $i (0..$#cols) {
-              my $c= $cols[$i];
-              next if defined $columns{$c}->[8]; # Compressed columns cannot be in an index
-              my $tp= $columns{$c}->[0];
-              if ($tp =~ /BLOB|TEXT|CHAR|BINARY|POINT|LINESTRING|POLYGON|GEOMETRY/) {
-                  # Starting from 10.4.3, long unique blobs are allowed.
-                  # For a non-unique index the column will be auto-sized by the server (with a warning)
-                  if ($ind_type ne 'FULLTEXT' and ($self->compatibility lt '100403' or $prng->uint16(0,1))) {
-                    my $length= ( $columns{$c}->[1] and $columns{$c}->[1] < 64 ) ? $columns{$c}->[1] : 64;
-                    $c = "$c($length)";
-                  }
-              }
-              # DESC indexes: add ASC/DESC to the column
-              $c.=random_asc_desc_key($prng->uint16(0,2),$e) if $ind_type ne 'FULLTEXT';
-              push @ind_cols, $c;
-          }
-          if (scalar(@ind_cols)) {
-            $executor->execute("ALTER TABLE $name ADD " . $ind_type . "(". join(',',@ind_cols) . ")");
-          }
-      }
-      if ($columns{col_spatial} and $columns{col_spatial}->[4] eq 'NOT NULL' and not $prng->uint16(0,3)) {
-          $executor->execute("ALTER TABLE $name ADD SPATIAL(". 'col_spatial' . ")");
-      }
-      if ($columns{vcol_spatial} and $columns{vcol_spatial}->[4] eq 'NOT NULL' and not $prng->uint16(0,9)) {
-          $executor->execute("ALTER TABLE $name ADD SPATIAL(". 'vcol_spatial' . ")");
-      }
-
-      my @values;
-
-      $executor->execute("START TRANSACTION");
-      foreach my $row (1..$size)
-      {
-          my @row_values = ();
-          my $val;
-
-          foreach my $cname (@column_list)
-          {
-              my $c = $columns{$cname};
-
-              if ($c->[0] eq 'TINYINT' or $c->[0] eq 'SMALLINT' or $c->[0] eq 'MEDIUMINT' or $c->[0] eq 'INT' or $c->[0] eq 'BIGINT')
-              {
-                  # 10% NULLs, 10% tinyint_unsigned, 80% digits
-                  my $pick = $prng->uint16(0,9);
-
-                  if ($c->[4] eq 'NOT NULL') {
-                      $val = ($pick == 8 ? $prng->int(0,255) : $prng->digit() );
-                  } else {
-                      $val = $pick == 9 ? "NULL" : ($pick == 8 ? $prng->int(0,255) : $prng->digit() );
-                  }
-              }
-              elsif ($c->[0] eq 'BIT') {
-                  if ($c->[4] eq 'NOT NULL') {
-                      $val = $prng->bit($c->[1]);
-                  } else {
-                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->bit($c->[1]);
-                  }
-              }
-              # ('','a','b','c','d','e','f','foo','bar')
-              elsif ($c->[0] =~ /^(?:ENUM|SET)/) {
-                  if ($c->[4] eq 'NOT NULL') {
-                      $val = "'".$prng->arrayElement('','a','b','c','d','e','f','foo','bar')."'";
-                  } else {
-                      $val = $prng->uint16(0,9) == 9 ? "NULL" : "'".$prng->arrayElement(['','a','b','c','d','e','f','foo','bar'])."'";
-                  }
-              }
-              elsif ($c->[0] eq 'FLOAT' or $c->[0] eq 'DOUBLE' or $c->[0] eq 'DECIMAL') {
-                  if ($c->[4] eq 'NOT NULL') {
-                      $val = $prng->float();
-                  } else {
-                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->float();
-                  }
-              }
-              elsif ($c->[0] eq 'YEAR') {
-                  if ($c->[4] eq 'NOT NULL') {
-                      $val = $prng->year();
-                  } else {
-                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->year();
-                  }
-              }
-              elsif ($c->[0] eq 'DATE') {
-                  # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
-
-                  $val = $prng->date();
-                  $val = ($val, $val, $val, $val, $val, $val, $val, $val, "NULL", "'1900-01-01'")[$prng->uint16(0,9)];
-              }
-              elsif ($c->[0] eq 'TIME') {
-                  # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
-
-                  $val = $prng->time();
-                  $val = ($val, $val, $val, $val, $val, $val, $val, $val, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
-              }
-              elsif ($c->[0] eq 'DATETIME' or $c->[0] eq 'TIMESTAMP') {
-              # 10% NULLS, 10% "1900-01-01 00:00:00', 20% date + " 00:00:00"
-
-                  $val = $prng->datetime();
-                  my $val_date_only = $prng->unquotedDate();
-
-                  # Don't try to insert NULLs into TIMESTAMP columns, it may end up as a current timestamp
-                  # due to non-standard behavior of TIMESTAMP columns
-                  if ($c->[4] eq 'NOT NULL' or $c->[0] eq 'TIMESTAMP') {
-                      $val = ($val, $val, $val, $val, $val, $val, $val, "'".$val_date_only." 00:00:00'", "'".$val_date_only." 00:00:00'", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
-                  } else {
-                      $val = ($val, $val, $val, $val, $val, $val, "'".$val_date_only." 00:00:00'", "'".$val_date_only." 00:00:00'", "NULL", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
-                  }
-              }
-              elsif ($c->[0] eq 'CHAR' or $c->[0] eq 'VARCHAR' or $c->[0] eq 'BINARY' or $c->[0] eq 'VARBINARY')
-              {
-                  if ($c->[4] ne 'NOT NULL' and $prng->uint16(0,9) == 0) {
-                    $val= "NULL";
-                  } else {
-                    my $length= $prng->uint16(0,9) == 9 ? $prng->uint16(0,$c->[1]) : $prng->uint16(0,8);
-                    $val = $prng->string($length);
-                  }
-              }
-              elsif ($c->[0] =~ /(TINY|MEDIUM|LONG)?BLOB/)
-              {
-                if ($c->[4] ne 'NOT NULL' and $prng->uint16(0,5) == 0) {
-                  $val= "NULL";
-                } elsif ($prng->uint16(0,1)) {
-                  $val= $prng->loadFile();
-                } else {
-                  my $length= $prng->uint16(0,64);
-                  $val= $prng->string($length);
-                }
-              }
-              elsif ($c->[0] =~ /(TINY|MEDIUM|LONG)?TEXT/)
-              {
-                  my $maxlength= 65535;
-                  if ($1 eq 'TINY') {
-                    $maxlength= 255;
-                  }
-                  my $length= $prng->uint16(0,$maxlength);
-                  if ($c->[4] eq 'NOT NULL') {
-                      $val = $prng->text($length);
-                  } else {
-                      $val = $prng->uint16(0,5) ? $prng->text($length) : "NULL";
-                  }
-              }
-              elsif ($c->[0] eq 'INET6') {
-                  if ($c->[4] eq 'NOT NULL') {
-                      $val = $prng->inet6();
-                  } else {
-                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->inet6();
-                  }
-              }
-              elsif ($c->[0] =~ /POINT|LINESTRING|POLYGON|GEOMETRY/) {
-                  if ($c->[4] eq 'NOT NULL') {
-                      $val = $prng->spatial($c->[0]);
-                  } else {
-                      $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->spatial($c->[0]);
-                  }
-              }
-              push @row_values, $val;
-          }
-          # $rnd_int1, $rnd_int2, $rnd_date, $rnd_date, $rnd_time, $rnd_time, $rnd_datetime, $rnd_datetime, $rnd_varchar, $rnd_varchar)
-          push @values, "\n(" . join(',',@row_values).")";
-
-          ## We do one insert per 500 rows for speed
-          if ($row % 500 == 0 || $row == $size) {
-              $res = $executor->execute("INSERT IGNORE INTO $name (" . join(",",@column_list).") VALUES" . join(",",@values));
-              if ($res->status() != STATUS_OK) {
-                  sayError("Insert into table $name didn't succeed");
-                  return $res->status();
-              }
-              @values = ();
-          }
-      }
-      $executor->execute("COMMIT");
+        } else {
+            @cols= sort keys %pk_columns;
+            $prng->shuffleArray(\@cols);
+        }
+        if ($has_autoinc) {
+          # If there is an auto-increment column, we have to add PRIMARY KEY right away in the CREATE statement
+          $create_stmt.= ', PRIMARY KEY('.(join ',', map {$_ . random_asc_desc_key($prng->uint16(0,2),$e) } @cols).")";
+        } else {
+          # Otherwise, it is always better to add it separately, since it can fail
+          $pk_stmt= "ALTER TABLE $db.$name ADD PRIMARY KEY (".(join ',', map {$_ . random_asc_desc_key($prng->uint16(0,2),$e) } @cols).")";
+        }
     }
+    elsif ($has_autoinc) {
+        $create_stmt.= ", UNIQUE(id)";
+    }
+    $create_stmt .= ")" . ($e ne '' ? " ENGINE=$e" : "");
+
+    $res= $executor->execute($create_stmt);
+    if ($res->status != STATUS_OK) {
+        sayError("Failed to create table $db.$name: " . $res->errstr);
+        return $res->status;
+    }
+
+    if ($pk_stmt) {
+        $res= $executor->execute($pk_stmt);
+        if ($res->status != STATUS_OK) {
+            sayError("Failed to add primary key to table $db.$name: " . $res->errstr);
+        }
+    }
+
+    # partition 50% tables (if requested at all). Not all of them will succeed
+    if ($self->partitions and $prng->uint16(0,1))
+    {
+        my $partition_type= $self->random_partition_type();
+        my $partition_column= (scalar(keys %pk_columns) ? $prng->arrayElement([sort keys %pk_columns]) : 'id');
+        my $part_stmt.= 'ALTER TABLE ' . $db.'.'.$name . ' PARTITION BY ' .$partition_type.'('.$partition_column.') ';
+
+        if ($partition_type eq 'KEY' or $partition_type eq 'HASH') {
+            $part_stmt.= 'PARTITIONS '.$prng->uint16(1,20);
+        } elsif ($partition_type eq 'RANGE') {
+            my @parts= ();
+            my $part_count= $prng->uint16(1,20);
+            my $part_max_value= -1;
+            my $max_value= $size || 1;
+            for (my $i= 1; $i<$part_count; $i++) {
+                last if $part_max_value >= $max_value;
+                $part_max_value= $prng->uint16($part_max_value+1,$max_value);
+                push @parts, 'PARTITION p'.$i.' VALUES LESS THAN ('.$part_max_value.')';
+            }
+            push @parts, 'PARTITION pmax VALUES LESS THAN (MAXVALUE)';
+            $part_stmt.= '('.(join ',',@parts).')';
+        } elsif ($partition_type eq 'LIST') {
+            my @vals= ();
+            foreach my $i (0..($size*10 || 1)) {
+                push @vals, $i;
+            }
+            my @parts= ();
+            my $n= 1;
+            while (scalar(@vals)) {
+                my $part_val_count= $prng->uint16(1,scalar(@vals));
+                my @shuffled_vals= @vals;
+                $prng->shuffleArray(\@shuffled_vals);
+                my @part_vals= splice(@shuffled_vals,0,$part_val_count);
+                @vals= @shuffled_vals;
+                push @parts, 'PARTITION p'.$n++.' VALUES IN ('.(join ',', @part_vals).')';
+            }
+            $part_stmt.= '('.(join ',',@parts).')';
+        }
+        $res= $executor->execute($part_stmt);
+        if ($res->status == STATUS_OK) {
+            say("Table $db.$name has been partitioned by $partition_type($partition_column)");
+        } else {
+            sayError("Failed to partition table $db.$name by $partition_type($partition_column): " . $res->errstr);
+        }
+    }
+
+    $self->createView($self->views(),$name,$db);
+
+    # The limit for the number of indexes is purely arbitrary, there is no secret wisdom
+    my $number_of_indexes= $prng->uint16(0,scalar(keys %columns)*2);
+
+    foreach (1..$number_of_indexes)
+    {
+        my $number_of_columns= $prng->uint16(1,scalar(keys %columns));
+        # TODO: make it conditional depending on the version -- keys %columns vs @column_list
+        my @cols=();
+        my $text_only= 1;
+        foreach my $c (sort keys %columns) {
+            push @cols, $c;
+            $text_only= 0 if $columns{$c}->[0] !~ /BLOB|TEXT|CHAR|BINARY/;
+        }
+        $prng->shuffleArray(\@cols);
+        @cols= @cols[0..$number_of_columns-1];
+        my $ind_type= $prng->uint16(0,5) ? 'INDEX' : 'UNIQUE';
+        if ($text_only and not $prng->uint16(0,3)) {
+            $ind_type= 'FULLTEXT';
+        }
+        my @ind_cols;
+        foreach my $i (0..$#cols) {
+            my $c= $cols[$i];
+            next if defined $columns{$c}->[8]; # Compressed columns cannot be in an index
+            my $tp= $columns{$c}->[0];
+            if ($tp =~ /BLOB|TEXT|CHAR|BINARY|POINT|LINESTRING|POLYGON|GEOMETRY/) {
+                # Starting from 10.4.3, long unique blobs are allowed.
+                # For a non-unique index the column will be auto-sized by the server (with a warning)
+                if ($ind_type ne 'FULLTEXT' and ($self->compatibility lt '100403' or $prng->uint16(0,1))) {
+                  my $length= ( $columns{$c}->[1] and $columns{$c}->[1] < 64 ) ? $columns{$c}->[1] : 64;
+                  $c = "$c($length)";
+                }
+            }
+            # DESC indexes: add ASC/DESC to the column
+            $c.=random_asc_desc_key($prng->uint16(0,2),$e) if $ind_type ne 'FULLTEXT';
+            push @ind_cols, $c;
+        }
+        if (scalar(@ind_cols)) {
+          $executor->execute("ALTER TABLE $db.$name ADD " . $ind_type . "(". join(',',@ind_cols) . ")");
+        }
+    }
+    if ($columns{col_spatial} and $columns{col_spatial}->[4] eq 'NOT NULL' and not $prng->uint16(0,3)) {
+        $executor->execute("ALTER TABLE $db.$name ADD SPATIAL(". 'col_spatial' . ")");
+    }
+    if ($columns{vcol_spatial} and $columns{vcol_spatial}->[4] eq 'NOT NULL' and not $prng->uint16(0,9)) {
+        $executor->execute("ALTER TABLE $db.$name ADD SPATIAL(". 'vcol_spatial' . ")");
+    }
+
+    my @values;
+
+    $executor->execute("START TRANSACTION");
+    foreach my $row (1..$size)
+    {
+        my @row_values = ();
+        my $val;
+
+        foreach my $cname (@column_list)
+        {
+            my $c = $columns{$cname};
+
+            if ($c->[0] eq 'TINYINT' or $c->[0] eq 'SMALLINT' or $c->[0] eq 'MEDIUMINT' or $c->[0] eq 'INT' or $c->[0] eq 'BIGINT')
+            {
+                # 10% NULLs, 10% tinyint_unsigned, 80% digits
+                my $pick = $prng->uint16(0,9);
+
+                if ($c->[4] eq 'NOT NULL') {
+                    $val = ($pick == 8 ? $prng->int(0,255) : $prng->digit() );
+                } else {
+                    $val = $pick == 9 ? "NULL" : ($pick == 8 ? $prng->int(0,255) : $prng->digit() );
+                }
+            }
+            elsif ($c->[0] eq 'BIT') {
+                if ($c->[4] eq 'NOT NULL') {
+                    $val = $prng->bit($c->[1]);
+                } else {
+                    $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->bit($c->[1]);
+                }
+            }
+            # ('','a','b','c','d','e','f','foo','bar')
+            elsif ($c->[0] =~ /^(?:ENUM|SET)/) {
+                if ($c->[4] eq 'NOT NULL') {
+                    $val = "'".$prng->arrayElement('','a','b','c','d','e','f','foo','bar')."'";
+                } else {
+                    $val = $prng->uint16(0,9) == 9 ? "NULL" : "'".$prng->arrayElement(['','a','b','c','d','e','f','foo','bar'])."'";
+                }
+            }
+            elsif ($c->[0] eq 'FLOAT' or $c->[0] eq 'DOUBLE' or $c->[0] eq 'DECIMAL') {
+                if ($c->[4] eq 'NOT NULL') {
+                    $val = $prng->float();
+                } else {
+                    $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->float();
+                }
+            }
+            elsif ($c->[0] eq 'YEAR') {
+                if ($c->[4] eq 'NOT NULL') {
+                    $val = $prng->year();
+                } else {
+                    $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->year();
+                }
+            }
+            elsif ($c->[0] eq 'DATE') {
+                # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
+
+                $val = $prng->date();
+                $val = ($val, $val, $val, $val, $val, $val, $val, $val, "NULL", "'1900-01-01'")[$prng->uint16(0,9)];
+            }
+            elsif ($c->[0] eq 'TIME') {
+                # 10% NULLS, 10% '1900-01-01', pick real date/time/datetime for the rest
+
+                $val = $prng->time();
+                $val = ($val, $val, $val, $val, $val, $val, $val, $val, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
+            }
+            elsif ($c->[0] eq 'DATETIME' or $c->[0] eq 'TIMESTAMP') {
+            # 10% NULLS, 10% "1900-01-01 00:00:00', 20% date + " 00:00:00"
+
+                $val = $prng->datetime();
+                my $val_date_only = $prng->unquotedDate();
+
+                # Don't try to insert NULLs into TIMESTAMP columns, it may end up as a current timestamp
+                # due to non-standard behavior of TIMESTAMP columns
+                if ($c->[4] eq 'NOT NULL' or $c->[0] eq 'TIMESTAMP') {
+                    $val = ($val, $val, $val, $val, $val, $val, $val, "'".$val_date_only." 00:00:00'", "'".$val_date_only." 00:00:00'", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
+                } else {
+                    $val = ($val, $val, $val, $val, $val, $val, "'".$val_date_only." 00:00:00'", "'".$val_date_only." 00:00:00'", "NULL", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
+                }
+            }
+            elsif ($c->[0] eq 'CHAR' or $c->[0] eq 'VARCHAR' or $c->[0] eq 'BINARY' or $c->[0] eq 'VARBINARY')
+            {
+                if ($c->[4] ne 'NOT NULL' and $prng->uint16(0,9) == 0) {
+                  $val= "NULL";
+                } else {
+                  my $length= $prng->uint16(0,9) == 9 ? $prng->uint16(0,$c->[1]) : $prng->uint16(0,8);
+                  $val = $prng->string($length);
+                }
+            }
+            elsif ($c->[0] =~ /(TINY|MEDIUM|LONG)?BLOB/)
+            {
+              if ($c->[4] ne 'NOT NULL' and $prng->uint16(0,5) == 0) {
+                $val= "NULL";
+              } elsif ($prng->uint16(0,1)) {
+                $val= $prng->loadFile();
+              } else {
+                my $length= $prng->uint16(0,64);
+                $val= $prng->string($length);
+              }
+            }
+            elsif ($c->[0] =~ /(TINY|MEDIUM|LONG)?TEXT/)
+            {
+                my $maxlength= 65535;
+                if ($1 eq 'TINY') {
+                  $maxlength= 255;
+                }
+                my $length= $prng->uint16(0,$maxlength);
+                if ($c->[4] eq 'NOT NULL') {
+                    $val = $prng->text($length);
+                } else {
+                    $val = $prng->uint16(0,5) ? $prng->text($length) : "NULL";
+                }
+            }
+            elsif ($c->[0] eq 'INET6') {
+                if ($c->[4] eq 'NOT NULL') {
+                    $val = $prng->inet6();
+                } else {
+                    $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->inet6();
+                }
+            }
+            elsif ($c->[0] =~ /POINT|LINESTRING|POLYGON|GEOMETRY/) {
+                if ($c->[4] eq 'NOT NULL') {
+                    $val = $prng->spatial($c->[0]);
+                } else {
+                    $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->spatial($c->[0]);
+                }
+            }
+            push @row_values, $val;
+        }
+        # $rnd_int1, $rnd_int2, $rnd_date, $rnd_date, $rnd_time, $rnd_time, $rnd_datetime, $rnd_datetime, $rnd_varchar, $rnd_varchar)
+        push @values, "\n(" . join(',',@row_values).")";
+
+        ## We do one insert per 500 rows for speed
+        if ($row % 500 == 0 || $row == $size) {
+            $res = $executor->execute("INSERT IGNORE INTO $db.$name (" . join(",",@column_list).") VALUES" . join(",",@values));
+            if ($res->status() != STATUS_OK) {
+                sayError("Insert into table $db.$name didn't succeed");
+                return $res->status();
+            }
+            @values = ();
+        }
+    }
+    $executor->execute("COMMIT");
+
     return STATUS_OK;
 }
 

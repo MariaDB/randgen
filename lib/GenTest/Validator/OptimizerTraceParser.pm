@@ -23,6 +23,7 @@ require Exporter;
 
 use strict;
 
+use Data::Dumper;
 use GenUtil;
 use GenTest;
 use GenTest::Comparator;
@@ -135,6 +136,8 @@ sub validate {
     # If missing bytes, trace will not be valid JSON, it will be truncated.
 
     my ($query, $trace, $trace_valid, $trace_compact, $missing_bytes) = @{$trace_result->data()->[0]};
+    # HERE:
+    # print Dumper $trace_result;
 
     # Filter out traces with missing bytes.
     if ($missing_bytes > 0) {
@@ -142,26 +145,38 @@ sub validate {
         sayDebug("$thisFile skipping validation of query due to missing $missing_bytes bytes from trace: $query");
         return STATUS_WONT_HANDLE;
     }
+    my $warnings_text= '';
     unless ($trace_valid) {
       my $warnings= $trace_result->warnings();
       if ($warnings and (ref $warnings eq 'ARRAY')) {
         foreach my $w (@$warnings) {
+          $warnings_text.= $w->[1]." ".$w->[2]."\n";
           # Too many nested levels
           if ($w->[1] == 4040) {
-            sayWarning("For query [ $query ] optimizer trace produced invalid JSON which looks like MDEV-30343: ".$w->[1]." ".$w->[2]);
+            sayWarning("Optimizer trace produced invalid JSON, assuming MDEV-30343: ".$w->[1]." ".$w->[2]."\nQuery [ $orig_query ]");
             $known_issues_count++;
             return STATUS_IGNORED_ERROR;
           }
           # Character disallowed in JSON in argument
           elsif ($w->[1] == 4036 && $trace =~ /(?:select\s*\#|condition.*)[[:^print:]]/) {
-            sayWarning("For query [ $query ] optimizer trace produced invalid JSON which looks like MDEV-30334 or MDEV-30349: ".$w->[1]." ".$w->[2]);
+            sayWarning("Optimizer trace produced invalid JSON, assuming MDEV-30334 or MDEV-30349: ".$w->[1]." ".$w->[2]."\nQuery [ $orig_query ]");
+            $known_issues_count++;
+            return STATUS_IGNORED_ERROR;
+          }
+          elsif ($w->[1] == 4038 && $trace =~ /: \"[^\"]*\`[^\`\\]*\"/) {
+            sayWarning("Optimizer trace produced invalid JSON, assuming MDEV-30354: ".$w->[1]." ".$w->[2]."\nQuery [ $orig_query ]");
+            $known_issues_count++;
+            return STATUS_IGNORED_ERROR;
+          }
+          elsif ($w->[1] == 4037 && $query eq '') {
+            sayWarning("Optimizer trace produced empty JSON, assuming MDEV-30356: ".$w->[1]." ".$w->[2]."\nQuery [ $orig_query ]");
             $known_issues_count++;
             return STATUS_IGNORED_ERROR;
           }
         }
       }
       $invalid_traces_count++;
-      sayError("Optimizer trace produced invalid JSON for query $query: $trace".($warnings and (ref $warnings eq 'ARRAY') ? @$warnings : ""));
+      sayError("Optimizer trace produced invald JSON: $trace\n".($warnings_text ?  "\n$warnings_text" : "")."\nQuery [ $orig_query ]");
       return STATUS_DATABASE_CORRUPTION;
     }
 

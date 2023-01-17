@@ -113,6 +113,7 @@ sub dumpDiff {
   my $diff_cmd = "diff -a -u $files[0] $files[1]";
 
   open (DIFF, "$diff_cmd|");
+  <DIFF>; <DIFF>; # Skip the header (file names)
   while (<DIFF>) {
     $diff .= $_;
   }

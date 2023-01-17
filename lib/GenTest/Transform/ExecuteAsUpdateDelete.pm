@@ -46,7 +46,7 @@ sub transform {
   # This transformation can not work if the result set contains NULLs
   foreach my $orig_row (@{$original_result->data()}) {
     foreach my $orig_col (@$orig_row) {
-      return STATUS_WONT_HANDLE if $orig_col eq '';
+      return STATUS_WONT_HANDLE if $orig_col eq '<NULL>';
     }
   }
 

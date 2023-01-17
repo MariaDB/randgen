@@ -29,10 +29,12 @@ use GenTest;
 use GenTest::Transform;
 use Constants;
 
+# Disabled due to MDEV-30240, re-enable when the fix is merged everywhere
+#  SQL_BUFFER_RESULT
+
 my @select_options= qw(
   SQL_BIG_RESULT
   SQL_SMALL_RESULT
-  SQL_BUFFER_RESULT
   STRAIGHT_JOIN
   HIGH_PRIORITY
   SQL_CACHE

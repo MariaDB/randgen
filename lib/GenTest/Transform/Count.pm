@@ -42,8 +42,10 @@ sub transform {
   # We skip: - GROUP BY any other aggregate functions as those are difficult to validate with a simple check like TRANSFORM_OUTCOME_COUNT
   #          - [INTO] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   #          - UNION since replacing all select lists is tricky with the current logic
+  #          - Other aggregate functions because we canot verify COUNT result then
   return STATUS_WONT_HANDLE if $orig_query =~ m{GROUP\s+BY|LIMIT|HAVING|UNION|INTERSECT|EXCEPT}is
     || $orig_query =~ m{(INTO|PROCESSLIST)}is
+    || $orig_query =~ m{\W(AVG|BIT_AND|BIT_OR|BIT_XOR|GROUP_CONCAT|JSON_ARRAYAGG|JSON_OBJECTAGG|MAX|MIN|STD|STDDEV|STDDEV_POP|STDDEV_SAMP|SUM|VARIANCE|VAR_POP|VAR_SAMP)\W}is
     || $orig_query !~ m{^[\(\s]*SELECT}is;
   my $query= $class->modify($orig_query, my $with_transform_outcome=1);
   return $query || STATUS_WONT_HANDLE;
@@ -63,13 +65,15 @@ sub modify {
     if ($select_list =~ m{COUNT\(\s*\*\s*\)}is) {
       # Replacing COUNT(*) with *
       # If there is 'DISTINCT' before count, we remove it
-      $orig_query =~ s{(?:DISTINCT\s+)?COUNT\(\s*\*\s*\)}{\*}is;
+      # (there can be select options between DISTINCT and COUNT, we remote them for now too)
+      $orig_query =~ s{(?:DISTINCT[^,]+)?COUNT\(\s*\*\s*\)}{\*}is;
       return $orig_query.($with_transform_outcome ? ' /* TRANSFORM_OUTCOME_COUNT_REVERSE */' : '');
     } elsif ($select_list !~ /,/ && $select_list =~ m{COUNT\(\s*(.*?)\s*\)}is) {
       # Replacing (single) COUNT with its argument.
       # If there is 'DISTINCT' before count, we remove it
+      # (there can be select options between DISTINCT and COUNT, we remote them for now too)
       my $arg= $1;
-      $orig_query =~ s{(?:DISTINCT\s+)?COUNT\(\s*(.*?)\s*\)}{$arg}is;
+      $orig_query =~ s{(?:DISTINCT[^,]+)?COUNT\(\s*(.*?)\s*\)}{$arg}is;
       return $orig_query.($with_transform_outcome ? ' /* TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE */' : '');
     } elsif ($select_list =~ m{^(?:\/\*.*?\*\/)?\s+\*\s+$}is) {
       # Replacing * with COUNT(*)
