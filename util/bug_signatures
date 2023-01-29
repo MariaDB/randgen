@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-30434:
+=~ signal|AddressSanitizer
+=~ Item_trigger_field::setup_field
+=~ Table_triggers_list::create_trigger
+=~ Prepared_statement::execute
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-30391:
+=~ signal|AddressSanitizer
+=~ spider_set_direct_limit_offset
+=~ Prepared_statement::execute
 MDEV-30309:
 =~ Assertion \`!(\*with_wild)'
 =~ setup_wild
@@ -365,7 +375,7 @@ MDEV-29503:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-29502:
 =~ signal|AddressSanitizer
-=~ spider_db_mbase_row::append_to_str
+=~ spider_db_mbase_row::append_to_str|spider_db_mbase_row::store_to_field
 =~ Pushdown_query::execute
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-29459:
