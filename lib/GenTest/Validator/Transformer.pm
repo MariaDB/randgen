@@ -262,7 +262,7 @@ sub transform {
 
     if ($check_outcome != STATUS_OK) {
       # Get non-default session variables
-      my $vars= $executor->dbh->selectcol_arrayref('select concat(variable_name,"-",session_value) from information_schema.system_variables where session_value != global_value order by variable_name');
+      my $vars= $executor->dbh->selectcol_arrayref('select concat(variable_name,"=",session_value) from information_schema.system_variables where session_value != global_value order by variable_name');
       say("---------- TRANSFORM ISSUE START ($name) ----------\n".
           "RQG Status: ".status2text($check_outcome)." ($check_outcome)\n".
           "Original query: ".shorten_message($original_query)."\n".
