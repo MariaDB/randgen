@@ -581,7 +581,7 @@ sub registerFeatures {
     sayError("Could not create mysql.rqg_feature_registry at ".$self->config->server_specific->{1}->{dsn}.": ".$dbh->err." ".$dbh->errstr);
     return;
   }
-  my $feature_list= join ',', map { '("'.$_.'")' } (@$features);
+  my $feature_list= join ',', map { "('$_')" } (@$features);
   $dbh->do("REPLACE INTO mysql.rqg_feature_registry VALUES $feature_list");
   if ($dbh->err) {
     sayError("Could not register features @{$features} at".$self->config->server_specific->{1}->{dsn}.": ".$dbh->err." ".$dbh->errstr);
