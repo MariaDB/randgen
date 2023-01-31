@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-30527:
+=~ Assertion `!m_freed_pages'
+=~ mtr_t::start
+=~ btr_drop_temporary_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-30434:
 =~ signal|AddressSanitizer
 =~ Item_trigger_field::setup_field
@@ -396,6 +401,10 @@ MDEV-29457:
 =~ ib::fatal::~fatal
 =~ row_undo_step
 =~ FeatureUsage detected GIS columns
+MDEV-29411:
+=~ signal|AddressSanitizer
+=~ Assertion \`!eliminated'
+=~ Item_subselect::exec
 MDEV-29317:
 =~ Assertion \`sp && savepoint_next && \*sp && \*sp <= savepoint_level'
 =~ federatedx_txn::sp_release|federatedx_txn::sp_rollback
