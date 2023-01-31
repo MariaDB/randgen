@@ -4,6 +4,33 @@
 # Strong matches
 ##############################################################################
 
+MDEV-30527:
+=~ Assertion `!m_freed_pages'
+=~ mtr_t::start
+=~ btr_drop_temporary_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-30434:
+=~ signal|AddressSanitizer
+=~ Item_trigger_field::setup_field
+=~ Table_triggers_list::create_trigger
+=~ Prepared_statement::execute
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-30391:
+=~ signal|AddressSanitizer
+=~ spider_set_direct_limit_offset
+=~ Prepared_statement::execute
+MDEV-30309:
+=~ Assertion \`!(\*with_wild)'
+=~ setup_wild
+=~ setup_returning_fields
+MDEV-30305:
+=~ Protocol::valid_handler|Version: '10\.3|Server version: 10\.3
+=~ Protocol_text::store_long
+=~ Protocol::send_result_set_row
+MDEV-30297:
+=~ Assertion \`a\.str != __null'|signal
+=~ Compare_identifiers::operator
+=~ Lex_cstring_with_compare
 MDEV-30277:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
@@ -12,6 +39,10 @@ MDEV-30263:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ Query .*: HANDLER .* READ
+MDEV-30115:
+=~ ERROR 4025 (23000) at line .*: CONSTRAINT .* failed for .*
+=~ All databases' schema dump failed to load
+=~ STATUS_RECOVERY_FAILURE
 MDEV-30112:
 =~ AddressSanitizer|signal
 =~ Item_ident::print
@@ -349,7 +380,7 @@ MDEV-29503:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-29502:
 =~ signal|AddressSanitizer
-=~ spider_db_mbase_row::append_to_str
+=~ spider_db_mbase_row::append_to_str|spider_db_mbase_row::store_to_field
 =~ Pushdown_query::execute
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-29459:
@@ -370,6 +401,10 @@ MDEV-29457:
 =~ ib::fatal::~fatal
 =~ row_undo_step
 =~ FeatureUsage detected GIS columns
+MDEV-29411:
+=~ signal|AddressSanitizer
+=~ Assertion \`!eliminated'
+=~ Item_subselect::exec
 MDEV-29317:
 =~ Assertion \`sp && savepoint_next && \*sp && \*sp <= savepoint_level'
 =~ federatedx_txn::sp_release|federatedx_txn::sp_rollback
@@ -378,6 +413,10 @@ MDEV-29273:
 =~ 'close' returned OS error 209\. Cannot continue operation
 =~ got signal 6
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-29217:
+=~ Assertion \`0'
+=~ Item_param::can_return_value
+=~ Prepared_statement::prepare
 MDEV-29214:
 =~ Assertion \`server->io_count == 0'
 =~ free_server
@@ -1006,6 +1045,9 @@ MDEV-26000:
 =~ Item_func_case::find_item
 =~ Item_func_in::create_array
 =~ Version: '10\.2|Server version: 10\.2
+MDEV-25987:
+=~ Assertion \`(value & (1ULL << i)) == 0'
+=~ Item_sum_bit::remove_as_window
 MDEV-25964:
 =~ Assertion \`(have_max && !have_min) \|\| (have_max && have_min && (max_res == 0))'
 =~ QUICK_GROUP_MIN_MAX_SELECT::get_next
