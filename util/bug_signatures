@@ -3157,7 +3157,6 @@ MDEV-19225:
 MDEV-19216:
 =~ Assertion \`!strcmp(index->table->name\.m_name, "SYS_FOREIGN") \|\| !strcmp(index->table->name\.m_name, "SYS_FOREIGN_COLS")'
 =~ btr_node_ptr_max_size
-=~ btr_cur_search_to_nth_level
 MDEV-19202:
 =~ signal 11
 =~ strlen
