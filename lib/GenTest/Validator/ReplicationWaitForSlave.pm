@@ -57,9 +57,8 @@ sub validate {
 	my $wait_status = $slave_dbh->selectrow_array("SELECT MASTER_POS_WAIT(?, ?)", undef, $file, $pos);
 	
 	if (not defined $wait_status) {
-		my @slave_status = $slave_dbh->selectrow_array("SHOW SLAVE STATUS /* ReplicationWaitForSlave::validate */");
-		my $slave_status = $slave_status[37];
-		say("Slave SQL thread has stopped with error: ".$slave_status);
+		my $slave_status = $slave_dbh->selectrow_hashref("SHOW SLAVE STATUS /* ReplicationWaitForSlave::validate */");
+		say("Slave SQL thread has stopped with error: ".$$slave_status{'Last_SQL_Error'});
 		return STATUS_REPLICATION_FAILURE;
 	} else {
 		return STATUS_OK;

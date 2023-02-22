@@ -34,10 +34,6 @@ use GenTest::Reporter;
 
 use DBServer::MySQL::MySQLd;
 
-use constant SLAVE_STATUS_LAST_ERROR		=> 19;
-use constant SLAVE_STATUS_LAST_SQL_ERROR	=> 35;
-use constant SLAVE_STATUS_LAST_IO_ERROR		=> 38;
-
 my $first_reporter;
 
 sub monitor {
@@ -62,16 +58,16 @@ sub status {
     my $dbh = DBI->connect($server->dsn());
 
 	if ($dbh) {
-		my $slave_status = $dbh->selectrow_arrayref("SHOW SLAVE STATUS /* ReplicationSlaveStatus::status */");
+		my $slave_status = $dbh->selectrow_hashref("SHOW SLAVE STATUS /* ReplicationSlaveStatus::status */");
 
-		if ($slave_status->[SLAVE_STATUS_LAST_IO_ERROR] ne '') {
-			say("Slave IO thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_IO_ERROR]);
+		if ($$slave_status{'Last_IO_Error'} ne '') {
+			say("Slave IO thread has stopped with error: ".$$slave_status{'Last_IO_Error'});
 			return STATUS_REPLICATION_FAILURE;
-		} elsif ($slave_status->[SLAVE_STATUS_LAST_SQL_ERROR] ne '') {
-			say("Slave SQL thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_SQL_ERROR]);
+		} elsif ($$slave_status{'Last_SQL_Error'} ne '') {
+			say("Slave SQL thread has stopped with error: ".$$slave_status{'Last_SQL_Error'});
 			return STATUS_REPLICATION_FAILURE;
-		} elsif ($slave_status->[SLAVE_STATUS_LAST_ERROR] ne '') {
-			say("Slave has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_ERROR]);
+		} elsif ($$slave_status{'Last_Error'} ne '') {
+			say("Slave has stopped with error: ".$$slave_status{'Last_Error'});
 			return STATUS_REPLICATION_FAILURE;
 		} else {
 			return STATUS_OK;
