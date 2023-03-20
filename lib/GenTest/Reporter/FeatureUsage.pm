@@ -45,6 +45,7 @@ my %usage_check= (
   'application periods' => \&check_for_application_periods,
   'Aria tables' => \&check_for_aria_tables,
   'backup stages' => \&check_for_backup_stages,
+  'Blackhole tables' => \&check_for_blackhole_tables,
   'compressed columns' => \&check_for_compressed_columns,
   'delayed inserts' => \&check_for_delayed_inserts,
   'Federated engine' => \&check_for_federated_plugin,
@@ -158,6 +159,10 @@ sub check_for_s3_tables {
 
 sub check_for_aria_tables {
   $_[0]->check_for_engine_tables('aria');
+}
+
+sub check_for_blackhole_tables {
+  $_[0]->check_for_engine_tables('blackhole');
 }
 
 sub check_for_rocksdb_plugin {
