@@ -44,17 +44,21 @@ sub validate {
 
   my $query = $results->[0]->query();
   return STATUS_WONT_HANDLE if $query =~ m{skip\s+ResultsetComparator}is;
-  return STATUS_WONT_HANDLE if $query =~ m{EXPLAIN}is;
-  return STATUS_WONT_HANDLE if $query =~ m{ANALYZE}is;
+  return STATUS_WONT_HANDLE if $query !~ m{^[\s\(]*(?:SELECT|VALUES|WITH)}is;
 
   my $status= STATUS_OK;
 
   foreach my $i (1..$#$results)
   {
+    my @vars;
     my $compare_outcome = ($query =~ /OUTCOME_ORDERED_MATCH/ ? GenTest::Comparator::compare_as_ordered($results->[0], $results->[$i]) : GenTest::Comparator::compare_as_unordered($results->[0], $results->[$i]));
     if ( ($compare_outcome == STATUS_LENGTH_MISMATCH) ||
          ($compare_outcome == STATUS_CONTENT_MISMATCH)
     ) {
+      push @vars, $executors->[0]->dbh->selectcol_arrayref('select concat(variable_name,"=",session_value) from information_schema.system_variables where session_value != global_value order by variable_name')
+        unless defined $vars[0];
+      $vars[$i]= $executors->[0]->dbh->selectcol_arrayref('select concat(variable_name,"=",session_value) from information_schema.system_variables where session_value != global_value order by variable_name')
+        unless defined $vars[$i];
       say("---------- RESULT COMPARISON ISSUE START ----------");
       if ($compare_outcome == STATUS_LENGTH_MISMATCH) {
         if ($results->[0]->rows() || $results->[1]->rows()) {
@@ -76,6 +80,8 @@ sub validate {
         say("----------");
         say(join "\n", map { "@$_" } (@$explain2));
       }
+      say(($vars[0] && scalar(@{$vars[0]})) ? "Non-default session vars on server 1: \n".(join "\n", @{$vars[0]})."\n" : "");
+      say(($vars[$i] && scalar(@{$vars[$i]})) ? "Non-default session vars on server ".($i+1).": \n".(join "\n", @{$vars[$i]})."\n" : "");
       say("---------- RESULT COMPARISON ISSUE END ------------");
     } elsif ($compare_outcome != STATUS_OK) {
       sayError("Result comparison for query $query failed with an unexpected error ".status2text($compare_outcome));
