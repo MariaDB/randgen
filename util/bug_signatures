@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-30886:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ FeatureUsage detected Blackhole tables
 MDEV-30565:
 =~ LeakSanitizer:
 =~ ha_innobase::open
@@ -14,6 +18,11 @@ MDEV-30527:
 =~ mtr_t::start
 =~ btr_drop_temporary_table
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-30442:
+=~ Assertion \`!m_innodb'
+=~ ha_partition::cmp_ref
+=~ Rowid_filter_sorted_array::sort
+=~ Version: '11\.[0-9]|Server version: 11\.[0-9]
 MDEV-30434:
 =~ signal|AddressSanitizer
 =~ Item_trigger_field::setup_field
@@ -753,6 +762,11 @@ MDEV-28169:
 =~ row_upd_build_difference_binary
 =~ row_ins_clust_index_entry_by_modify
 =~ FeatureUsage detected unique blobs
+MDEV-28130:
+=~ AddressSanitizer|signal
+=~ tree_search_next
+=~ handler::ha_index_prev
+=~ mysql_ha_read
 MDEV-28105:
 =~ Diagnostics_area::set_error_status
 =~ spider_mbase_handler::show_table_status
