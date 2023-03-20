@@ -420,6 +420,18 @@ sub read_only {
     }
 }
 
+# Assuming for now that engines (interesting ones) are loaded at the beginning
+sub engines {
+  my $self= shift;
+  unless ($self->[EXECUTOR_ENGINES]) {
+    my $engines= $self->dbh->selectcol_arrayref("select engine from information_schema.engines where support in ('YES','DEFAULT')");
+    if ($engines) {
+      $self->[EXECUTOR_ENGINES]= [ @$engines ];
+    }
+  }
+  return $self->[EXECUTOR_ENGINES];
+}
+
 sub loadMetaData {
   # File points at table metadata (main). Other files, e.g. proc,
   # should be searched using the same TS

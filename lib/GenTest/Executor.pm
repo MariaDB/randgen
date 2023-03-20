@@ -23,6 +23,7 @@ require Exporter;
 @ISA = qw(GenTest Exporter);
 
 @EXPORT = qw(
+  EXECUTOR_ENGINES
   EXECUTOR_EXPLAIN_COUNTS
   EXECUTOR_EXPLAIN_QUERIES
   EXECUTOR_ERROR_COUNTS
@@ -44,8 +45,9 @@ use GenTest;
 
 use constant EXECUTOR_DSN      => 0;
 use constant EXECUTOR_DBH      => 1;
-use constant EXECUTOR_ID      => 2;
+use constant EXECUTOR_ID       => 2;
 use constant EXECUTOR_QNO      => 3;
+use constant EXECUTOR_ENGINES  => 4;
 use constant EXECUTOR_EXPLAIN_COUNTS    => 5;
 use constant EXECUTOR_EXPLAIN_QUERIES    => 6;
 use constant EXECUTOR_ERROR_COUNTS    => 7;

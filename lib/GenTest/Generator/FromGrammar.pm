@@ -227,6 +227,8 @@ sub next {
             $item = time();
           } elsif ($item eq '_pid') {
             $item = abs($$);
+          } elsif ($item eq '_engine') {
+            $item = $prng->arrayElement($executors->[0]->engines);
           } elsif ($item eq '_thread_id') {
             $item = $generator->threadId();
           } elsif ($item eq '_connection_id') {
