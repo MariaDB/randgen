@@ -195,7 +195,7 @@ my $simplifier = GenTest::Simplifier::Grammar->new(
 
             my $rqgcmd =
 
-                "perl runall.pl $rqgoptions $mysqlopt ".
+                "perl runall-new.pl $rqgoptions $mysqlopt ".
                 "--grammar=$current_grammar ".
                 "--vardir=$vardir ".
                 "--mtr-build-thread=".$mtrbt." ".
