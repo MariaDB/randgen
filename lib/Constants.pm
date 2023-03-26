@@ -84,9 +84,9 @@ use constant STATUS_WONT_HANDLE              =>  5; # A module, e.g. a Validator
 use constant STATUS_SKIP                     =>  6; # A Filter specifies that the query should not be processed further
 use constant STATUS_IGNORED_ERROR            => 19; # Most likely a real error (maybe even important), but due to amount of known bugs or false positives it is untreatable
 
-use constant STATUS_UNSUPPORTED              => 20; # Error codes caused by certain functionality recognized as unsupported (NOT syntax errors)
-use constant STATUS_SYNTAX_ERROR             => 21; # General parsing errors and specific errors indicating wrong syntax
+use constant STATUS_REQUIREMENT_UNMET        => 20; # Errors which the executor produces itself without sending a query to the server, when a required object not found
 
+use constant STATUS_UNSUPPORTED              => 21; # Error codes caused by certain functionality recognized as unsupported (NOT syntax errors)
 # Distinction between "semantic" and "runtime" errors is quite arbitrary.
 # In most general terms, "semantic" errors are those which happen due
 # to inaccuracies of random data/query generation and should be
@@ -97,12 +97,12 @@ use constant STATUS_SEMANTIC_ERROR           => 22; # Errors caused by the rando
 use constant STATUS_CONFIGURATION_ERROR      => 23; # Missing engines, wrong startup options, etc, a special kind of semantic errors
 use constant STATUS_RUNTIME_ERROR            => 24; # Lock wait timeouts, deadlocks, duplicate keys, etc.
 use constant STATUS_ACL_ERROR                => 25; # Access denied etc., a special kind of runtime errors
+use constant STATUS_SYNTAX_ERROR             => 26; # General parsing errors and specific errors indicating wrong syntax
 
 use constant STATUS_TEST_FAILURE             => 30; # Boundary between genuine errors and false positives due to randomness
 
 use constant STATUS_POSSIBLE_FAILURE         => 35;
 
-use constant STATUS_REQUIREMENT_UNMET        => 40;
 use constant STATUS_ERROR_MISMATCH           => 41; # A DML statement caused those errors, and the test can not continue
 use constant STATUS_LENGTH_MISMATCH          => 42; # because the databases are in an unknown inconsistent state
 use constant STATUS_CONTENT_MISMATCH         => 43;
