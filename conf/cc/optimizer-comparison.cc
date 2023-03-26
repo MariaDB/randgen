@@ -79,9 +79,9 @@ $combinations = [
       '--grammar=conf/yy/optimizer.yy --gendata=simple',
       '--grammar=conf/yy/optimizer.yy --gendata=data/sql/world.sql',
       '--grammar=conf/yy/optimizer.yy --gendata=data/dbt3/dbt3-s0.001.dump',
-      '--grammar=conf/yy/optimizer_main_select.yy',
-      '--grammar=conf/yy/optimizer_main_select.yy --mysqld=--default-storage-engine=MyISAM',
-      '--grammar=conf/yy/optimizer_main_select.yy --mysqld=--default-storage-engine=Aria',
+      '--grammar=conf/yy/optimizer_mtr_select.yy',
+      '--grammar=conf/yy/optimizer_mtr_select.yy --mysqld=--default-storage-engine=MyISAM',
+      '--grammar=conf/yy/optimizer_mtr_select.yy --mysqld=--default-storage-engine=Aria',
     ],
   ]
 ];

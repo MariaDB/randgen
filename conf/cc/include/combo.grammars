@@ -203,7 +203,7 @@ $grammars= [
   [@empty_set,
     '--grammar=conf/yy/optimizer_costs.yy:0.001'],
   [@empty_set,
-    '--grammar=conf/yy/optimizer_main_select.yy'],
+    '--grammar=conf/yy/optimizer_mtr_select.yy'],
   [@empty_set,
     '--grammar=conf/yy/optimizer_no_subquery.yy
       --gendata=simple
