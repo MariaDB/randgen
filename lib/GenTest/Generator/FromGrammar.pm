@@ -91,6 +91,7 @@ sub next {
   my %rule_counters;
   my %invariants;
 
+  my $last_index;
   my $last_field;
   my $last_table;
   # last_database is what was set upon _database and _table and alike
@@ -268,8 +269,8 @@ sub next {
             $item = ($work_database_non_specific ? '`'.$last_database.'`.`'.$last_function.'`' : '`'.$last_function.'`');
           } elsif ($item eq '_index') {
             my $indexes = $executors->[0]->metaIndexes([$last_database,$last_table]);
-                        $last_field = $prng->arrayElement($indexes);
-            $item = '`'.$last_field.'`';
+                        $last_index = $prng->arrayElement($indexes);
+            $item = '`'.$last_index.'`';
           } elsif ($item eq '_field') {
             my $fields = $executors->[0]->metaColumns([$last_database,$last_table]);
                         $last_field = $prng->arrayElement($fields);
