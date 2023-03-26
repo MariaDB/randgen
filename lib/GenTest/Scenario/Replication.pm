@@ -75,6 +75,8 @@ sub run {
   }
   my @servers= ();
 
+# TODO: make log-bin random on slaves
+# TODO: make log-slave-updates be set only on slaves, and randomly
   foreach my $s (1..$srv_count) {
     my $server_id= $self->getServerStartupOption($s,'server-id');
     if ($server_id) {
@@ -83,6 +85,9 @@ sub run {
     $self->setServerStartupOption($s,'server-id',$s);
     unless ($self->getServerStartupOption($s,'log-bin')) {
       $self->setServerStartupOption($s,'log-bin',undef);
+    }
+    unless ($self->getServerStartupOption($s,'log-slave-updates')) {
+      $self->setServerStartupOption($s,'log-slave-updates',undef);
     }
     # is_active is for GenData/GenTest to know on which servers to run the flow
     # TODO: should be set to all masters, according to the topology
@@ -159,6 +164,27 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Test flow failed");
     return $self->finalize($status,[@servers]);
+  }
+
+  #####
+  my ($file, $pos) = $servers[0]->dbh->selectrow_array("SHOW MASTER STATUS");
+  unless (defined $file and defined $pos) {
+    sayError("Could not determine master position");
+    return $self->finalize($status,[@servers]);
+  }
+  $self->printStep("Waiting for the slave to synchronize with master ($file, $pos)");
+  my $wait_result = $servers[1]->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
+  if ($servers[1]->dbh) {
+    my @slave_status = $servers[1]->dbh->selectrow_array("SHOW SLAVE STATUS");
+    if (not defined $wait_result) {
+      sayError("Slave SQL thread has stopped with error: ".$slave_status[37]);
+      return $self->finalize(STATUS_REPLICATION_FAILURE,[@servers]);
+    } else {
+      say("Slave SQL thread apparently synchronized successfully: ".$slave_status[37]);
+    }
+  } else {
+    sayError("Lost connection to the slave");
+    return $self->finalize(STATUS_REPLICATION_FAILURE,[@servers]);
   }
 
   #####
