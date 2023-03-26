@@ -277,6 +277,8 @@ $grammars= [
   [@empty_set,
     '--grammar=conf/yy/temporal.yy'],
   [@empty_set,
+    '--grammar=conf/yy/transaction.yy'],
+  [@empty_set,
     '--grammar=conf/yy/trx_stress.yy'],
   [@empty_set,
     '--grammar=conf/yy/updateable_views.yy
