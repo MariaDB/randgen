@@ -77,6 +77,7 @@ dynvar_session_variable:
   | AUTO_INCREMENT_OFFSET= { $prng->arrayElement([1,1,1,1,2,2,2,3,3,65534,65535]) }
 # TODO: big_tables is deprecated in 10.5.0
   | BIG_TABLES= dynvar_boolean
+  | BINLOG_ALTER_TWO_PHASE= dynvar_boolean /* compatibility 10.8.1 */
   | BINLOG_ANNOTATE_ROW_EVENTS= dynvar_boolean
   | BINLOG_DIRECT_NON_TRANSACTIONAL_UPDATES= dynvar_boolean
   | BINLOG_FORMAT= { $prng->arrayElement(['MIXED','ROW','MIXED','ROW','MIXED','ROW','STATEMENT']) }
