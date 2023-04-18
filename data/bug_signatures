@@ -4,6 +4,34 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31073:
+=~ signal|AddressSanitizer
+=~ ha_heap::info
+=~ Query.*:.*ROWNUM
+MDEV-31073:
+=~ Assertion \`table != 0 && view->field_translation != 0'
+=~ check_key_in_view
+=~ Query.*:.*ROWNUM
+MDEV-31056:
+=~ signal|AddressSanitizer
+=~ Field::set_datetime_warning
+=~ Column_stat::get_stat_values
+MDEV-30957:
+=~ AddressSanitizer: use-after-poison
+=~ Item_change_list::rollback_item_tree_changes
+=~ Prepared_statement::cleanup_stmt|sp_lex_keeper::reset_lex_and_exec_core
+MDEV-30935:
+=~ Assertion \`marked_for_read()'
+=~ Item_cond::fix_fields
+=~ Virtual_column_info::fix_expr
+MDEV-30895:
+=~ Assertion \`btr_cur->rtr_info->thr \|\| !btr_cur->index()->is_committed()'
+=~ rtr_ins_enlarge_mbr
+=~ Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-30886:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ FeatureUsage detected Blackhole tables
 MDEV-30565:
 =~ LeakSanitizer:
 =~ ha_innobase::open
@@ -14,6 +42,11 @@ MDEV-30527:
 =~ mtr_t::start
 =~ btr_drop_temporary_table
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-30442:
+=~ Assertion \`!m_innodb'
+=~ ha_partition::cmp_ref
+=~ Rowid_filter_sorted_array::sort
+=~ Version: '11\.[0-9]|Server version: 11\.[0-9]
 MDEV-30434:
 =~ signal|AddressSanitizer
 =~ Item_trigger_field::setup_field
@@ -61,6 +94,9 @@ MDEV-30105:
 =~ row_rename_table_for_mysql
 =~ mysql_alter_table
 =~ Version: '10\.[3-4]|Server version: 10\.[3-4]
+MDEV-30097:
+=~ Assertion \`low == (int)buckets\.size()-1 \|\| field->key_cmp((uchar\*)buckets\[low+1\]\.start_value\.data(), lookup_val)> 0'
+=~ Histogram_json_hb::find_bucket
 MDEV-30058:
 =~ AddressSanitizer|signal
 =~ MYSQL_LOG::generate_name
@@ -753,6 +789,15 @@ MDEV-28169:
 =~ row_upd_build_difference_binary
 =~ row_ins_clust_index_entry_by_modify
 =~ FeatureUsage detected unique blobs
+MDEV-28130:
+=~ AddressSanitizer|signal
+=~ tree_search_next
+=~ handler::ha_index_prev
+=~ mysql_ha_read
+MDEV-28127:
+=~ Assertion \`table->s->db_options_in_use == part_table->s->db_options_in_use'
+=~ compare_table_with_partition
+=~ Query.*EXCHANGE PARTITION
 MDEV-28105:
 =~ Diagnostics_area::set_error_status
 =~ spider_mbase_handler::show_table_status
@@ -1604,6 +1649,10 @@ MDEV-24249:
 =~ Assertion \`!page \|\| fil_page_type_is_index(page_type)'
 =~ recv_parse_or_apply_log_rec_body
 =~ recv_recover_page
+MDEV-24245:
+=~ AddressSanitizer: memcpy-param-overlap
+=~ Field_blob::pack
+=~ ha_archive::pack_row
 MDEV-24210:
 =~ signal 11|AddressSanitizer
 =~ st_join_table::is_using_agg_loose_index_scan
@@ -3157,7 +3206,6 @@ MDEV-19225:
 MDEV-19216:
 =~ Assertion \`!strcmp(index->table->name\.m_name, "SYS_FOREIGN") \|\| !strcmp(index->table->name\.m_name, "SYS_FOREIGN_COLS")'
 =~ btr_node_ptr_max_size
-=~ btr_cur_search_to_nth_level
 MDEV-19202:
 =~ signal 11
 =~ strlen
@@ -3536,10 +3584,6 @@ MDEV-17912:
 =~ failed to decrypt .*  rc: -1  dstlen: 0  size: .*
 =~ Got error 192 when executing record .*
 =~ Aria engine: Redo phase failed
-MDEV-17869:
-=~ AddressSanitizer: use-after-poison
-=~ Item_change_list::rollback_item_tree_changes
-=~ Prepared_statement::cleanup_stmt|sp_lex_keeper::reset_lex_and_exec_core
 MDEV-17818:
 =~ signal 11|AddressSanitizer: SEGV
 =~ parse_vcol_defs
