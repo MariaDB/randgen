@@ -6,7 +6,7 @@
 
 MDEV-31073:
 =~ signal|AddressSanitizer
-=~ ha_heap::info
+=~ ha_heap::info|ha_maria::info
 =~ Query.*:.*ROWNUM
 MDEV-31073:
 =~ Assertion \`table != 0 && view->field_translation != 0'
