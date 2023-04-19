@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31083:
+=~ AddressSanitizer|signal
+=~ myrg_attach_children
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31073:
 =~ signal|AddressSanitizer
 =~ ha_heap::info|ha_maria::info
@@ -11,6 +15,10 @@ MDEV-31073:
 MDEV-31073:
 =~ Assertion \`table != 0 && view->field_translation != 0'
 =~ check_key_in_view
+=~ Query.*:.*ROWNUM
+MDEV-31073:
+=~ Assertion \`view->table != 0 && view->field_translation != 0'
+=~ check_view_insertability
 =~ Query.*:.*ROWNUM
 MDEV-31056:
 =~ signal|AddressSanitizer
