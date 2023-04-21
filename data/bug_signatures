@@ -4,6 +4,13 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31085:
+=~ AddressSanitizer|signal
+=~ st_select_lex::print_set_clause
+=~ opt_trace_print_expanded_query
+MDEV-31084:
+=~ Assertion \`waiting'
+=~ TP_connection_generic::wait_end
 MDEV-31083:
 =~ AddressSanitizer|signal
 =~ myrg_attach_children
@@ -24,6 +31,9 @@ MDEV-31056:
 =~ signal|AddressSanitizer
 =~ Field::set_datetime_warning
 =~ Column_stat::get_stat_values
+MDEV-31007:
+=~ Assertion `item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF)'
+=~ find_producing_item
 MDEV-30957:
 =~ AddressSanitizer: use-after-poison
 =~ Item_change_list::rollback_item_tree_changes
