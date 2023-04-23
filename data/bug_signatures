@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31113:
+=~ AddressSanitizer|signal
+=~ store_length
+=~ Type_handler_string_result::make_sort_key
 MDEV-31112:
 =~ AddressSanitizer|signal
 =~ Item::walk
