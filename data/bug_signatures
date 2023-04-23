@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31114:
+=~ Assertion \`!tls_worker_data->is_waiting()'
+=~ tpool::tpool_wait_begin
 MDEV-31113:
 =~ AddressSanitizer|signal
 =~ store_length
