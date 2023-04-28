@@ -1,4 +1,4 @@
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -238,7 +238,8 @@ $non_crash_scenarios= [
 $crash_scenarios= [
   '--scenario=AtomicDDL',
   '--scenario=CrashRecovery',
-  '--scenario=UndoLogUpgrade'
+  '--scenario=UndoLogUpgrade',
+  '--scenario=Restart --scenario-restart-type=kill'
 ];
 
 $mariabackup_scenarios= [
@@ -569,7 +570,7 @@ $server_options{optional_plugins}= \%optional_plugins;
 #############
 
 $binlog_combinations{$minversion}= [
-  [ '--mysqld=--log-bin --mysqld=--log_bin_trust_function_creators=1' ],
+  [ '--mysqld=--log-bin --mysqld=--log-bin-trust-function-creators=1' ],
   [ '--mysqld=--binlog-format=row', '--mysqld=--binlog-format=mixed' ],
 ];
 
@@ -577,8 +578,8 @@ $server_options{binlog_combinations}= \%binlog_combinations;
 
 
 $optional_server_variables{$minversion}= [
-  # Default OFF
-  [ '', '', '', '', '--mysqld=--explicit-defaults-for-timestamp=on' ],
+  # Default OFF before 10.10, ON after
+  [ '', '', '', '--mysqld=--explicit-defaults-for-timestamp=off', '--mysqld=--explicit-defaults-for-timestamp=on' ],
   # Default OFF
   [ '', '', '', '', '--mysqld=--large-pages=on' ],
   # FILE by default, but allow also TABLE sometimes. We can't use NONE
@@ -615,12 +616,16 @@ $optional_server_variables{$minversion}= [
     '--mysqld=--table-open-cache-instances=64',
   ],
   # Default query_cache_type is OFF and size is 1M
-  # but type is set to ON automatically if size is configured explicitly
-  [ '', '', '', '', '', '', '', '', '', '',
-    '--mysqld=--query-cache-type=1',
-    '--mysqld=--query-cache-type=2',
-    '--mysqld=--query-cache-size=128K',
-    '--mysqld=--query-cache-size=4M',
+  # (although type is set to ON automatically if size is configured explicitly)
+  [ '', '', '',
+        '--mysqld=--query-cache-type=1',
+        '--mysqld=--query-cache-type=2',
+        '--mysqld=--query-cache-size=128K',
+        '--mysqld=--query-cache-size=4M',
+  ],
+  # Default query_cache_wlock_invalidate is OFF
+  [ '', '', '', '', '',
+    '--mysqld=--query-cache-wlock-invalidate=on'
   ],
   # Default one-thread-per-connection (on Linux)
   [ '', '', '',
