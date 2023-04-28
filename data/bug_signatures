@@ -9,6 +9,11 @@ MDEV-31150:
 =~ multi_update_check_table_access
 =~ Prepared_statement::execute
 =~ Version: '1[1-9]\.[1-9]|Server version: 1[1-9]\.[1-9]
+MDEV-31143:
+=~ signal|AddressSanitizer
+=~ ha_maria::scan_time
+=~ SQL_SELECT::test_quick_select
+=~ Query.*:.*ROWNUM
 MDEV-31114:
 =~ Assertion \`!tls_worker_data->is_waiting()'
 =~ tpool::tpool_wait_begin
