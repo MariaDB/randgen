@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31150:
+=~ signal|AddressSanitizer
+=~ multi_update_check_table_access
+=~ Prepared_statement::execute
+=~ Version: '1[1-9]\.[1-9]|Server version: 1[1-9]\.[1-9]
 MDEV-31114:
 =~ Assertion \`!tls_worker_data->is_waiting()'
 =~ tpool::tpool_wait_begin
@@ -16,6 +21,10 @@ MDEV-31112:
 =~ Item::walk
 =~ Item_field::check_valid_arguments_processor
 =~ fix_partition_func
+MDEV-31102:
+=~ AddressSanitizer|signal
+=~ Used_tables_and_const_cache::used_tables_and_const_cache_join
+=~ Prepared_statement::execute
 MDEV-31085:
 =~ AddressSanitizer|signal
 =~ st_select_lex::print_set_clause
@@ -67,6 +76,10 @@ MDEV-30565:
 =~ ha_innobase::open
 =~ innobase_init_vc_templ
 =~ Version: '10\.[34]|Server version: 10\.[34]
+MDEV-30528:
+=~ Assertion \`!mbmaxlen \|\| !(prefix_len % mbmaxlen)'|Assertion \`!mbmaxlen \|\| !(prefix_len % mbmaxlen) \|\| !(prefix_len % 4)'
+=~ dtype_get_at_most_n_mbchars
+=~ mysql_alter_table
 MDEV-30527:
 =~ Assertion \`!m_freed_pages'
 =~ mtr_t::start
@@ -186,7 +199,7 @@ MDEV-29954:
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-29933:
 =~ AddressSanitizer|signal
-=~ maria_rkey
+=~ maria_rkey|mi_rkey
 =~ handler::ha_index_read_map
 =~ join_read_always_key
 MDEV-29932:
@@ -757,6 +770,10 @@ MDEV-28569:
 =~ Assertion \`len1 == DATA_MBR_LEN'|signal|AddressSanitizer
 =~ btr_cur_compress_if_useful
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-28569:
+=~ Assertion \`offsets'
+=~ btr_check_node_ptr
+=~ btr_insert_into_right_sibling
 MDEV-28566:
 =~ Assertion \`!expr->fixed()'|Assertion \`!expr->is_fixed()'
 =~ Virtual_column_info::fix_session_expr
@@ -2931,18 +2948,15 @@ MDEV-20640:
 =~ Assertion \`0'|AddressSanitizer
 =~ row_purge_remove_sec_if_poss_leaf
 =~ que_thr_step
-=~ Version: '10\.3
 MDEV-20640:
 =~ signal [16]
 =~ rec_init_offsets_comp_ordinary
 =~ purge_node_t::validate_pcur
 =~ row_purge_del_mark
-=~ Version: '10\.3
 MDEV-20640:
 =~ Assertion \`node->validate_pcur()'
 =~ row_purge_reposition_pcur
 =~ row_purge_del_mark
-=~ Version: '10\.3
 MDEV-20622:
 =~ signal 11|AddressSanitizer
 =~ embedding_sjm
