@@ -167,12 +167,12 @@ sub new {
                                                              "valgrind.supp")
     };
 
-    foreach my $file ('mysql_system_tables.sql',
-                      'mysql_performance_tables.sql',
-                      'mysql_system_tables_data.sql',
+    foreach my $file ('mysql_system_tables.sql', 'mariadb_system_tables.sql',
+                      'mysql_performance_tables.sql', 'mariadb_performance_tables.sql',
+                      'mysql_system_tables_data.sql', 'mariadb_system_tables_data.sql',
                       'fill_help_tables.sql',
                       'maria_add_gis_sp_bootstrap.sql',
-                      'mysql_sys_schema.sql') {
+                      'mysql_sys_schema.sql', 'mariadb_sys_schema.sql') {
         my $script =
              eval { $self->_find(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir],
                           ["scripts","share/mysql","share"], $file) };
@@ -868,7 +868,8 @@ sub dumpdb {
     } elsif ($database) {
       $databases= "$database->[0]";
     }
-    my $dump_command= '"'.$self->dumper.'" --skip-dump-date -uroot --host='.$self->host.' --port='.$self->port.' --hex-blob '.$databases;
+    # --skip-disable-keys due to MDEV-26253
+    my $dump_command= '"'.$self->dumper.'" --skip-disable-keys --skip-dump-date -uroot --host='.$self->host.' --port='.$self->port.' --hex-blob '.$databases;
     unless ($for_restoring) {
       my @heap_tables= @{$self->dbh->selectcol_arrayref(
           "select concat(table_schema,'.',table_name) from ".
