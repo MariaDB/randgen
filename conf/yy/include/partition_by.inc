@@ -141,7 +141,26 @@ drop_create:
   DROP TABLE if_exists _table[invariant] ;; create_part_invar ;
 
 alter:
-  ALTER TABLE _table alter_operation;
+  ==FACTOR:20== ALTER TABLE _table alter_operation |
+                alter_exchange |
+                alter_convert_to /* compatibility 10.7.1 */ |
+                alter_convert_from /* compatibility 10.7.1 */
+;
+
+alter_exchange:
+     CREATE OR REPLACE TABLE tp_exchange LIKE _table[invariant]
+  ;; ALTER TABLE tp_exchange REMOVE PARTITIONING
+  ;; ALTER TABLE _table[invariant] EXCHANGE PARTITION partition_name WITH TABLE tp_exchange
+;
+
+alter_convert_to:
+     DROP TABLE IF EXISTS tp_exchange
+  ;; ALTER TABLE _table CONVERT PARTITION partition_name TO TABLE tp_exchange
+;
+
+alter_convert_from:
+  ALTER TABLE _table CONVERT TABLE tp_exchange TO PARTITION partition_name VALUES LESS THAN MAXVALUE
+;
 
 alter_operation:
   partition                                                           |
@@ -157,7 +176,7 @@ alter_operation:
   REMOVE PARTITIONING                                                 |
   OPTIMIZE PARTITION partition_name_list                              |
   ENGINE = engine                                                     |
-  ORDER BY part_field                                                     |
+  ORDER BY part_field                                                 |
   TRUNCATE PARTITION partition_name_list    # can not be used in comparison tests against 5.0
 ;
 
