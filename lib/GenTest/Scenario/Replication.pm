@@ -173,6 +173,7 @@ sub run {
     return $self->finalize($status,[@servers]);
   }
   $self->printStep("Waiting for the slave to synchronize with master ($file, $pos)");
+  $servers[1]->dbh->do("SET max_statement_time=0");
   my $wait_result = $servers[1]->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
   if ($servers[1]->dbh) {
     my @slave_status = $servers[1]->dbh->selectrow_array("SHOW SLAVE STATUS");
