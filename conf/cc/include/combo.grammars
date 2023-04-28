@@ -86,7 +86,7 @@ $grammars= [
   [@empty_set,
     '--grammar=conf/yy/debug-injections-sql_table.yy:0.001'],
   [@empty_set,
-    '--grammar=conf/yy/debug-sync-sql_table.yy:0.001'],
+    '--grammar=conf/yy/debug-sync-sql.yy:0.001'],
   [@empty_set,
     '--grammar=conf/yy/desc_indexes.yy'],
   [@empty_set,
