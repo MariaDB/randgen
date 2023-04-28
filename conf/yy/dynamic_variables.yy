@@ -358,8 +358,8 @@ dynvar_global_variable:
   | INNODB_BUF_DUMP_STATUS_FREQUENCY= { $prng->arrayElement([10,50,99]) }
 # Debug variable
   | INNODB_BUF_FLUSH_LIST_NOW= dynvar_boolean
-# Deprecated since 10.9.0
-  | INNODB_CHANGE_BUFFERING= { $prng->arrayElement(['inserts','none','deletes','purges','changes','all']) } /* incompatibility 10.9.0 */
+# Deprecated since 10.9.0, removed in 11.0.1 (MDEV-29694)
+# | INNODB_CHANGE_BUFFERING= { $prng->arrayElement(['inserts','none','deletes','purges','changes','all']) } /* incompatibility 10.9.0 */
 # Debug variable, 2 causes intentional crash
 # | INNODB_CHANGE_BUFFERING_DEBUG
   | INNODB_CHANGE_BUFFER_MAX_SIZE= { $prng->int(0,50) }
@@ -376,12 +376,14 @@ dynvar_global_variable:
   | INNODB_DEADLOCK_DETECT= dynvar_boolean
   | INNODB_DEADLOCK_REPORT= { $prng->arrayElement(['off','basic','full']) } /* compatibility 10.6.0 */
   | INNODB_DEFAULT_ROW_FORMAT= { $prng->arrayElement(['redundant','compact','dynamic']) }
-  | INNODB_DEFRAGMENT= dynvar_boolean
-  | INNODB_DEFRAGMENT_FILL_FACTOR= { $prng->arrayElement([0.7,0.8,0.9,1]) }
-  | INNODB_DEFRAGMENT_FILL_FACTOR_N_RECS= { $prng->int(1,100) }
-  | INNODB_DEFRAGMENT_FREQUENCY= { $prng->arrayElement([1,2,100,1000]) }
-  | INNODB_DEFRAGMENT_N_PAGES= { $prng->int(2,32) }
-  | INNODB_DEFRAGMENT_STATS_ACCURACY= { $prng->arrayElement([1,2,10,100,1000,10000]) }
+### Removed in 11.1.0, MDEV-30545
+#  | INNODB_DEFRAGMENT= dynvar_boolean
+#  | INNODB_DEFRAGMENT_FILL_FACTOR= { $prng->arrayElement([0.7,0.8,0.9,1]) }
+#  | INNODB_DEFRAGMENT_FILL_FACTOR_N_RECS= { $prng->int(1,100) }
+#  | INNODB_DEFRAGMENT_FREQUENCY= { $prng->arrayElement([1,2,100,1000]) }
+#  | INNODB_DEFRAGMENT_N_PAGES= { $prng->int(2,32) }
+#  | INNODB_DEFRAGMENT_STATS_ACCURACY= { $prng->arrayElement([1,2,10,100,1000,10000]) }
+###
   | INNODB_DICT_STATS_DISABLED_DEBUG= dynvar_boolean
   | INNODB_DISABLE_RESIZE_BUFFER_POOL_DEBUG= dynvar_boolean
   | INNODB_DISABLE_SORT_FILE_CACHE= dynvar_boolean
@@ -438,13 +440,13 @@ dynvar_global_variable:
   | INNODB_PAGE_CLEANERS= { $prng->int(1,8) } /* compatibility 10.3.3 */ /* incompatibility 10.6.0 */
 # Makes server stall
 # | innodb_page_cleaner_disabled_debug= dynvar_boolean
-# Deprecated in 10.10.0
-  | INNODB_PREFIX_INDEX_CLUSTER_OPTIMIZATION= dynvar_boolean /* incompatibility 10.10.0 */
+# Deprecated and ignored in 10.10.0 (MDEV-28540)
+#  | INNODB_PREFIX_INDEX_CLUSTER_OPTIMIZATION= dynvar_boolean /* incompatibility 10.10.0 */
   | INNODB_PRINT_ALL_DEADLOCKS= dynvar_boolean
   | INNODB_PURGE_BATCH_SIZE= { $prng->arrayElement([1,2,10,100,1000]) }
   | INNODB_PURGE_RSEG_TRUNCATE_FREQUENCY= { $prng->arrayElement([1,2,10,64]) }
 # MENT-599
-  | INNODB_PURGE_THREADS= { $prng->int(0,33) } /* compatibility 10.5.2-0 */
+  | INNODB_PURGE_THREADS= { $prng->int(0,33) } /* compatibility 10.5.2-0 10.7.1 */
   | INNODB_RANDOM_READ_AHEAD= dynvar_boolean
   | INNODB_READ_AHEAD_THRESHOLD= { $prng->int(0,64) }
 # MENT-661
