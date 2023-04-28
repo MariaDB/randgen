@@ -234,7 +234,7 @@ sub DESTROY {
   }
 
   if ($#rule_failures > -1) {
-    say("Mixer: The following rules produced no STATUS_OK queries: ".join(', ', @rule_failures));
+    sayDebug("Mixer: The following rules produced no STATUS_OK queries: ".join(', ', @rule_failures));
   }
 }
 
