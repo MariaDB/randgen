@@ -24,7 +24,9 @@
 # continues the flow and repeats it until the end
 # of the test duration.
 # Time between restarts is controlled by --scenario-restart-interval
-# option, default 30 seconds
+# option, default 30 seconds.
+# Whether it's a shutdown or kill is controlled by --scenario-restart-type,
+# for now the values are [kill | clean], default "clean"
 #
 ########################################################################
 
@@ -87,6 +89,7 @@ sub run {
   my $test_end=time() + $self->getProperty('duration');
   my $restart_interval= $self->scenarioOptions->{restart_interval} || int($self->getProperty('duration') / 5);
   my $shutdown_timeout= $self->scenarioOptions->{shutdown_timeout} || 120;
+  my $restart_type= $self->scenarioOptions->{restart_type} || 'clean';
 
   my $gentest_pid= undef;
 
@@ -116,9 +119,14 @@ sub run {
       }
 
       #####
-      $self->printStep("Stopping the server");
       set_expectation($server->vardir,"120\n(seconds to wait)");
-      $status= $server->stopServer($shutdown_timeout);
+      if ($restart_type eq 'clean') {
+        $self->printStep("Stopping the server");
+        $status= $server->stopServer($shutdown_timeout);
+      } elsif ($restart_type eq 'kill') {
+        $self->printStep("Killing the server");
+        $status= $server->kill();
+      }
 
       if ($status != STATUS_OK) {
         sayError("Could not stop the server");
