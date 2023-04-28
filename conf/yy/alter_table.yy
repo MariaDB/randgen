@@ -322,7 +322,7 @@ alt_create_like:
 ;
 
 alt_add_column:
-    ADD alt_column_optional __if_not_exists(95) alt_col_new_name alt_col_definition alt_col_location alt_algorithm alt_lock
+    ADD alt_column_optional __if_not_exists(95) alt_new_col_name alt_col_definition alt_col_location alt_algorithm alt_lock
   | ADD alt_column_optional __if_not_exists(95) ( alt_col_name_and_definition_list ) alt_algorithm alt_lock
 ;
 
