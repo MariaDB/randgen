@@ -4,6 +4,74 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31150:
+=~ signal|AddressSanitizer
+=~ multi_update_check_table_access
+=~ Prepared_statement::execute
+=~ Version: '1[1-9]\.[1-9]|Server version: 1[1-9]\.[1-9]
+MDEV-31143:
+=~ signal|AddressSanitizer
+=~ ha_maria::scan_time
+=~ SQL_SELECT::test_quick_select
+=~ Query.*:.*ROWNUM
+MDEV-31114:
+=~ Assertion \`!tls_worker_data->is_waiting()'
+=~ tpool::tpool_wait_begin
+MDEV-31113:
+=~ AddressSanitizer|signal
+=~ store_length
+=~ Type_handler_string_result::make_sort_key
+MDEV-31112:
+=~ AddressSanitizer|signal
+=~ Item::walk
+=~ Item_field::check_valid_arguments_processor
+=~ fix_partition_func
+MDEV-31102:
+=~ AddressSanitizer|signal
+=~ Used_tables_and_const_cache::used_tables_and_const_cache_join
+=~ Prepared_statement::execute
+MDEV-31085:
+=~ AddressSanitizer|signal
+=~ st_select_lex::print_set_clause
+=~ opt_trace_print_expanded_query
+MDEV-31084:
+=~ Assertion \`waiting'
+=~ TP_connection_generic::wait_end
+MDEV-31083:
+=~ AddressSanitizer|signal
+=~ myrg_attach_children
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31073:
+=~ signal|AddressSanitizer
+=~ ha_heap::info|ha_maria::info
+=~ Query.*:.*ROWNUM
+MDEV-31073:
+=~ Assertion \`table != 0 && view->field_translation != 0'
+=~ check_key_in_view
+=~ Query.*:.*ROWNUM
+MDEV-31073:
+=~ Assertion \`view->table != 0 && view->field_translation != 0'
+=~ check_view_insertability
+=~ Query.*:.*ROWNUM
+MDEV-31056:
+=~ signal|AddressSanitizer
+=~ Field::set_datetime_warning
+=~ Column_stat::get_stat_values
+MDEV-31007:
+=~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF)'
+=~ find_producing_item
+MDEV-30957:
+=~ AddressSanitizer: use-after-poison
+=~ Item_change_list::rollback_item_tree_changes
+=~ Prepared_statement::cleanup_stmt|sp_lex_keeper::reset_lex_and_exec_core
+MDEV-30935:
+=~ Assertion \`marked_for_read()'
+=~ Item_cond::fix_fields
+=~ Virtual_column_info::fix_expr
+MDEV-30895:
+=~ Assertion \`btr_cur->rtr_info->thr \|\| !btr_cur->index()->is_committed()'
+=~ rtr_ins_enlarge_mbr
+=~ Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-30886:
 =~ Assertion \`0'
 =~ Protocol::end_statement
@@ -13,6 +81,10 @@ MDEV-30565:
 =~ ha_innobase::open
 =~ innobase_init_vc_templ
 =~ Version: '10\.[34]|Server version: 10\.[34]
+MDEV-30528:
+=~ Assertion \`!mbmaxlen \|\| !(prefix_len % mbmaxlen)'|Assertion \`!mbmaxlen \|\| !(prefix_len % mbmaxlen) \|\| !(prefix_len % 4)'
+=~ dtype_get_at_most_n_mbchars
+=~ mysql_alter_table
 MDEV-30527:
 =~ Assertion \`!m_freed_pages'
 =~ mtr_t::start
@@ -70,6 +142,9 @@ MDEV-30105:
 =~ row_rename_table_for_mysql
 =~ mysql_alter_table
 =~ Version: '10\.[3-4]|Server version: 10\.[3-4]
+MDEV-30097:
+=~ Assertion \`low == (int)buckets\.size()-1 \|\| field->key_cmp((uchar\*)buckets\[low+1\]\.start_value\.data(), lookup_val)> 0'
+=~ Histogram_json_hb::find_bucket
 MDEV-30058:
 =~ AddressSanitizer|signal
 =~ MYSQL_LOG::generate_name
@@ -129,7 +204,7 @@ MDEV-29954:
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-29933:
 =~ AddressSanitizer|signal
-=~ maria_rkey
+=~ maria_rkey|mi_rkey
 =~ handler::ha_index_read_map
 =~ join_read_always_key
 MDEV-29932:
@@ -700,6 +775,10 @@ MDEV-28569:
 =~ Assertion \`len1 == DATA_MBR_LEN'|signal|AddressSanitizer
 =~ btr_cur_compress_if_useful
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-28569:
+=~ Assertion \`offsets'
+=~ btr_check_node_ptr
+=~ btr_insert_into_right_sibling
 MDEV-28566:
 =~ Assertion \`!expr->fixed()'|Assertion \`!expr->is_fixed()'
 =~ Virtual_column_info::fix_session_expr
@@ -767,6 +846,10 @@ MDEV-28130:
 =~ tree_search_next
 =~ handler::ha_index_prev
 =~ mysql_ha_read
+MDEV-28127:
+=~ Assertion \`table->s->db_options_in_use == part_table->s->db_options_in_use'
+=~ compare_table_with_partition
+=~ Query.*EXCHANGE PARTITION
 MDEV-28105:
 =~ Diagnostics_area::set_error_status
 =~ spider_mbase_handler::show_table_status
@@ -1618,6 +1701,10 @@ MDEV-24249:
 =~ Assertion \`!page \|\| fil_page_type_is_index(page_type)'
 =~ recv_parse_or_apply_log_rec_body
 =~ recv_recover_page
+MDEV-24245:
+=~ AddressSanitizer: memcpy-param-overlap
+=~ Field_blob::pack
+=~ ha_archive::pack_row
 MDEV-24210:
 =~ signal 11|AddressSanitizer
 =~ st_join_table::is_using_agg_loose_index_scan
@@ -2866,18 +2953,15 @@ MDEV-20640:
 =~ Assertion \`0'|AddressSanitizer
 =~ row_purge_remove_sec_if_poss_leaf
 =~ que_thr_step
-=~ Version: '10\.3
 MDEV-20640:
 =~ signal [16]
 =~ rec_init_offsets_comp_ordinary
 =~ purge_node_t::validate_pcur
 =~ row_purge_del_mark
-=~ Version: '10\.3
 MDEV-20640:
 =~ Assertion \`node->validate_pcur()'
 =~ row_purge_reposition_pcur
 =~ row_purge_del_mark
-=~ Version: '10\.3
 MDEV-20622:
 =~ signal 11|AddressSanitizer
 =~ embedding_sjm
@@ -3549,10 +3633,6 @@ MDEV-17912:
 =~ failed to decrypt .*  rc: -1  dstlen: 0  size: .*
 =~ Got error 192 when executing record .*
 =~ Aria engine: Redo phase failed
-MDEV-17869:
-=~ AddressSanitizer: use-after-poison
-=~ Item_change_list::rollback_item_tree_changes
-=~ Prepared_statement::cleanup_stmt|sp_lex_keeper::reset_lex_and_exec_core
 MDEV-17818:
 =~ signal 11|AddressSanitizer: SEGV
 =~ parse_vcol_defs
