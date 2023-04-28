@@ -60,9 +60,13 @@ insert:
 alter:
     ALTER TABLE test.`tmp` ADD index_type INDEX ( key_field key_length )
   | ALTER TABLE test.`tmp` DROP INDEX key_field
-#  | ==FACTOR:0.05== ALTER TABLE test.`tmp` column_op `vfld` TEXT AS ( vcol_expression ) virt_persist
-  | ALTER TABLE test.`tmp` MODIFY `fld` fld_type
+#  | ==FACTOR:0.05== ALTER TABLE test.`tmp` column_op `vfld` TEXT AS ( vcol_expression ) virt_persist opt_col_check
+  | ALTER TABLE test.`tmp` MODIFY `fld` fld_type opt_col_check
 ;
+
+opt_col_check:
+  ==FACTOR:10== |
+  CHECK(func) ;
 
 vcol_expression:
   func | `fld` | SUBSTR(`fld`,1,1024)
@@ -164,6 +168,7 @@ func_other:
   | JSON_EXISTS( text_arg, _jsonpath )
   | JSON_EXTRACT( text_arg, path_list )
   | JSON_LENGTH( text_arg json_optional_path_no_wildcard )
+  | JSON_OVERLAPS( text_arg, text_arg ) /* compatibility 10.9.1 */
   | JSON_QUOTE( _json )
   | JSON_SEARCH( text_arg, one_or_all, search_string search_args )
   | JSON_TYPE( _json )
