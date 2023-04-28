@@ -19,12 +19,28 @@ query_init:
   { $tmp_table = 0; _set_db('test') } CREATE FUNCTION IF NOT EXISTS MIN2(a BIGINT, b BIGINT) RETURNS BIGINT RETURN (a>b,b,a) ;
 
 query:
-  { _set_db('ANY') } func_query ;
-
-func_query:
-    ==FACTOR:9== func_select_or_explain_select
-  | { $tmp_table++; '' } func_create_and_drop
+    ==FACTOR:9== { _set_db('ANY') }        func_select_or_explain_select
+  |              { _set_db('ANY') }        { $tmp_table++; '' } func_create_and_drop
+  |              { _set_db('NON-SYSTEM') } func_alter_table
 ;
+
+func_alter_table:
+  ALTER TABLE _basetable DROP CONSTRAINT IF EXISTS `func_check` ;; ALTER TABLE _basetable ADD CONSTRAINT IF NOT EXISTS `func_check` CHECK(func_func) |
+  ALTER TABLE _basetable func_add_or_modify_col `func_col_str` VARCHAR(1024) DEFAULT (func_func) func_opt_col_check |
+  ALTER TABLE _basetable func_add_or_modify_col `func_col_int` BIGINT DEFAULT (func_func) func_opt_col_check |
+  ALTER TABLE _basetable func_add_or_modify_col `func_vcol_str` VARCHAR(1024) GENERATED ALWAYS AS (func_func) func_opt_col_check |
+  ALTER TABLE _basetable func_add_or_modify_col `func_vcol_str` BIGINT GENERATED ALWAYS AS (func_func) func_opt_col_check |
+  ALTER TABLE _basetable func_add_or_modify_col `func_vcol_str` VARCHAR(1024) AS (func_func) STORED func_opt_col_check |
+  ALTER TABLE _basetable func_add_or_modify_col `func_vcol_str` BIGINT AS (func_func) STORED func_opt_col_check
+;
+
+func_add_or_modify_col:
+  ADD COLUMN IF NOT EXISTS |
+  ==FACTOR:20== MODIFY COLUMN IF EXISTS ;
+
+func_opt_col_check:
+  ==FACTOR:5== |
+  CHECK(func_func) ;
 
 func_create_and_drop:
    CREATE __temporary(50) TABLE { 'test.tmp'.$tmp_table } AS func_select ;; DROP TABLE IF EXISTS { 'test.tmp'.$tmp_table } ;
@@ -84,7 +100,7 @@ func_order_by:
    | ORDER BY func_func | ORDER BY func_func, func_func ;
 
 func_func:
-  func_math_func |
+   func_math_func |
    func_arithm_oper |
    func_comparison_oper |
    func_logical_or_bitwise_oper |
@@ -177,14 +193,16 @@ func_encrypt_func:
    AES_ENCRYPT( func_arg, func_arg ) |
    COMPRESS( func_arg ) |
    DECODE( func_arg, func_arg ) |
-   DES_DECRYPT( func_arg ) | DES_DECRYPT( func_arg, func_arg ) |
-   DES_ENCRYPT( func_arg ) | DES_ENCRYPT( func_arg, func_arg ) |
+# Deprecated in 10.10.1 (MDEV-27104)
+#   DES_DECRYPT( func_arg ) | DES_DECRYPT( func_arg, func_arg ) |
+#   DES_ENCRYPT( func_arg ) | DES_ENCRYPT( func_arg, func_arg ) |
    ENCODE( func_arg, func_arg ) |
 # TODO: Restore when MDEV-27514 is fixed
 #  ENCRYPT( func_arg ) | ENCRYPT( func_arg, func_arg ) |
    MD5( func_arg ) |
    OLD_PASSWORD( func_arg ) |
    PASSWORD( func_arg ) |
+   RANDOM_BYTES( func_arg ) /* compatibility 10.10.1 */ |
    SHA1( func_arg ) |
    SHA( func_arg ) |
    SHA2( func_arg, func_arg ) |
@@ -234,6 +252,8 @@ func_str_func:
    RIGHT( func_arg, func_arg ) |
    RPAD( func_arg, MIN2( func_arg, 65536 ), func_arg ) |
    RTRIM( func_arg ) |
+# Disabled due to MDEV-31024 - crash
+#  SFORMAT( sformat_template, func_arg ) |
    SOUNDEX( func_arg ) |
    func_arg SOUNDS LIKE func_arg |
    SPACE( MIN2( func_arg, 65536 ) ) |
@@ -245,6 +265,14 @@ func_str_func:
    UNHEX( func_arg ) |
    UPPER( func_arg )
 ;
+
+sformat_template:
+  CONCAT(_string, sformat_replacement_field, _string);
+
+# TODO: extend!!!
+# https://fmt.dev/latest/syntax.html
+sformat_replacement_field:
+  '{}' ;
 
 func_optional_to_char_fmt:
   | , func_to_char_fmt ;
