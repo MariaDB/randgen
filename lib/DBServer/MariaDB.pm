@@ -170,15 +170,16 @@ sub new {
                                                              "valgrind.supp")
     };
 
-    foreach my $file ('mysql_system_tables.sql', 'mariadb_system_tables.sql',
-                      'mysql_performance_tables.sql', 'mariadb_performance_tables.sql',
-                      'mysql_system_tables_data.sql', 'mariadb_system_tables_data.sql',
-                      'fill_help_tables.sql',
-                      'maria_add_gis_sp_bootstrap.sql',
-                      'mysql_sys_schema.sql', 'mariadb_sys_schema.sql') {
+    foreach my $fileref (['mysql_system_tables.sql', 'mariadb_system_tables.sql'],
+                         ['mysql_performance_tables.sql', 'mariadb_performance_tables.sql'],
+                         ['mysql_system_tables_data.sql', 'mariadb_system_tables_data.sql'],
+                         ['fill_help_tables.sql'],
+                         ['maria_add_gis_sp_bootstrap.sql'],
+                         ['mysql_sys_schema.sql', 'mariadb_sys_schema.sql']
+                        ) {
         my $script =
              eval { $self->_find(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir],
-                          ["scripts","share/mysql","share"], $file) };
+                          ["scripts","share/mysql","share"], @$fileref) };
         push(@{$self->[MYSQLD_BOOT_SQL]},$script) if $script;
     }
 
@@ -424,7 +425,9 @@ sub createMysqlBase  {
         print BOOT "GRANT ALL ON mysql.rqg_feature_registry TO $user;\n";
         print BOOT "GRANT INSERT, UPDATE, DELETE ON performance_schema.* TO $user;\n";
         print BOOT "GRANT EXECUTE ON sys.* TO $user;\n";
-        print BOOT "/*!100403 UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root');*/\n";
+        if ($self->_notOlderThan(10,4,0)) {
+          print BOOT "UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root');\n";
+        }
         print BOOT "DELETE FROM mysql.roles_mapping WHERE Role = 'admin';\n";
         print BOOT "INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y');\n";
     }
