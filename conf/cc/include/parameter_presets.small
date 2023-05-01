@@ -1,0 +1,307 @@
+# Copyright (c) 2022, 2023, MariaDB
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+########################################################################
+
+# RQG_HOME must be defined in the environment. But it has to be defined anyway,
+# or the include file won't be found
+
+####
+# Legend:
+# - $xxxx_options should be a single string containing a list of options,
+#   to be a added as a variant to an array of combinations;
+# - $xxxx_combinations should be an array ref of strings,
+#   to be used as a full or partial set of combinations
+#   within an array ref in a combinations config
+# - $optional_xxxx should be an array ref of array refs
+
+#########################
+# Test parameter presets
+#########################
+
+$common_options= '
+  --seed=time
+  --queries=1000000
+  --gendata=advanced
+  --reporters=Backtrace,ErrorLog,Deadlock,MemoryUsage,FeatureUsage
+  --mysqld=--plugin-maturity=experimental
+';
+
+#########################
+# Test parameter combinations
+#########################
+
+$views_combinations= ['','--views'];
+$vcols_combinations= [''];
+
+$threads_low_combinations= [
+  [ '--threads=1','--threads=2','--threads=3','--threads=4','--threads=6' ],
+  [ '--duration=180 --mysqld=--max-statement-time=20 --mysqld=--lock-wait-timeout=10 --mysqld=--innodb-lock-wait-timeout=5',
+    '--duration=200 --mysqld=--max-statement-time=20 --mysqld=--lock-wait-timeout=10 --mysqld=--innodb-lock-wait-timeout=5',
+    '--duration=250 --mysqld=--max-statement-time=25 --mysqld=--lock-wait-timeout=12 --mysqld=--innodb-lock-wait-timeout=10',
+    '--duration=300 --mysqld=--max-statement-time=30 --mysqld=--lock-wait-timeout=15 --mysqld=--innodb-lock-wait-timeout=10',
+    '--duration=350 --mysqld=--max-statement-time=35 --mysqld=--lock-wait-timeout=20 --mysqld=--innodb-lock-wait-timeout=10',
+    '--duration=600 --mysqld=--max-statement-time=60 --mysqld=--lock-wait-timeout=30 --mysqld=--innodb-lock-wait-timeout=15'
+  ]
+];
+
+# Variators are transformers which are run without result comparison
+$optional_variators= [ 
+  ['','','','','','','','','','','','','','','--variator=DisableOptimizations'],
+  ['','','','','','','','','','','','','','','--variator=Distinct'],
+  ['','','','','','','','','','','','','','','--variator=EnableOptimizations'],
+  ['','','','','','','','','','','','','','','--variator=ExecuteAsCTE'],
+  ['','','','','','','','','','','','','','','--variator=ExecuteAsDerived'],
+  ['','','','','','','','','','','','','','','--variator=ExecuteAsFunctionTwice'],
+  ['','','','','','','','','','','','','','','--variator=ExecuteAsPreparedTwice'],
+  ['','','','','','','','','','','','','','','--variator=ExecuteAsPSWithParams'],
+  ['','','','','','','','','','','','','','','--variator=ExecuteAsSPTwice'],
+  ['','','','','','','','','','','','','','','--variator=ExecuteAsUnion'],
+  ['','','','','','','','','','','','','','','--variator=ExecuteAsView'],
+  ['','','','','','','','','','','','','','','--variator=FullOrderBy'],
+  ['','','','','','','','','','','','','','','--variator=SelectOption'],
+];
+
+$basic_engine_combinations= [
+  '--engine=InnoDB,Aria',
+  '--engine=InnoDB,MyISAM',
+  '--engine=InnoDB,MyISAM,Aria',
+];
+
+$enforced_engine_combinations= [''];
+
+$extra_engine_combinations= [
+  # HEAP
+  '--engine=HEAP
+   --gendata=data/sql/engine-heap.sql
+   --grammar=conf/yy/engine-heap-ddl.yy
+   --grammar=conf/yy/engine-heap-dml.yy
+  '
+];
+
+$non_crash_scenarios= ['--scenario=Standard','--scenario=Restart'];
+
+$crash_scenarios= [
+  '--scenario=CrashRecovery',
+  '--scenario=Restart --scenario-restart-type=kill'
+];
+
+$mariabackup_scenarios= [''];
+
+#########################
+# Server option presets
+#########################
+
+my $minversion="1003";
+
+%server_options= ();
+
+#########################
+# Encryption 
+#########################
+
+$all_encryption_options{$minversion}= '
+   --mysqld=--innodb-encrypt-tables
+   --mysqld=--innodb-encrypt-log
+   --mysqld=--innodb-encryption-threads=4
+   --mysqld=--aria-encrypt-tables=1
+   --mysqld=--encrypt-tmp-disk-tables=1
+   --mysqld=--encrypt-binlog
+   --mysqld=--file-key-management
+   --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt
+   --mysqld=--plugin-load-add=file_key_management
+';
+
+$server_options{all_encryption_options}= \%all_encryption_options;
+
+$innodb_encryption_options{$minversion}= '';
+$server_options{innodb_encryption_options}= \%innodb_encryption_options;
+
+$aria_encryption_options{$minversion}= '';
+$server_options{aria_encryption_options}= \%aria_encryption_options;
+
+$non_innodb_encryption_options{$minversion}= '';
+$server_options{non_innodb_encryption_options}= \%non_innodb_encryption_options;
+
+#########################
+# Performance schema
+#########################
+
+$perfschema_options{$minversion}= "";
+
+# Other new perfschema variables in 10.5:
+# PERFORMANCE_SCHEMA_EVENTS_TRANSACTIONS_HISTORY_LONG_SIZE
+# PERFORMANCE_SCHEMA_EVENTS_TRANSACTIONS_HISTORY_SIZE
+# PERFORMANCE_SCHEMA_MAX_INDEX_STAT
+# PERFORMANCE_SCHEMA_MAX_MEMORY_CLASSES
+# PERFORMANCE_SCHEMA_MAX_METADATA_LOCKS
+# PERFORMANCE_SCHEMA_MAX_PREPARED_STATEMENTS_INSTANCES
+# PERFORMANCE_SCHEMA_MAX_PROGRAM_INSTANCES
+# PERFORMANCE_SCHEMA_MAX_SQL_TEXT_LENGTH
+# PERFORMANCE_SCHEMA_MAX_STATEMENT_STACK
+# PERFORMANCE_SCHEMA_MAX_TABLE_LOCK_STAT
+
+$perfschema_options{1005}= '';
+$server_options{perfschema_options}= \%perfschema_options;
+
+#########################
+# InnoDB option combinations
+#########################
+
+$innodb_compression_combinations{$minversion}= [''];
+$server_options{innodb_compression_combinations}= \%innodb_compression_combinations;
+
+$innodb_pagesize_combinations{$minversion}= [
+  '--mysqld=--innodb-page-size=4K',
+  '--mysqld=--innodb-page-size=8K',
+  '--mysqld=--innodb-page-size=16K',
+  '--mysqld=--innodb-page-size=32K',
+  '--mysqld=--innodb-page-size=64K'
+];
+$server_options{innodb_compression_combinations}= \%innodb_compression_combinations;
+
+#############
+# InnoDB vars
+#############
+
+$optional_innodb_variables{$minversion}= [
+  # Default ON
+  [ '', '', '', '',
+    '--mysqld=--skip-innodb-doublewrite',
+  ],
+  # Default 16M
+  [ '', '', '', '', '', '', '', '',
+    '--mysqld=--innodb-log-buffer-size=1M',
+    '--mysqld=--innodb-log-buffer-size=128M',
+  ],
+  # Default 50M, in 10.5+ ~96M
+  [ '', '', '', '', '', '', '', '',
+    '--mysqld=--innodb-log-file-size=16M',
+    '--mysqld=--innodb-log-file-size=256M',
+  ],
+  # Default 16K
+  [ '', '', '', '', '', '',
+    '--mysqld=--innodb-page-size=4K',
+    '--mysqld=--innodb-page-size=8K',
+    '--mysqld=--innodb-page-size=32K',
+    '--mysqld=--innodb-page-size=64K',
+  ],
+  # Default 0
+  [ '', '', '', '', '', '', '',
+    '--mysqld=--innodb-undo-tablespaces=1',
+    '--mysqld=--innodb-undo-tablespaces=2',
+    '--mysqld=--innodb-undo-tablespaces=16',
+  ],
+  # Default ON
+  [ '', '', '', '', '', '', '', '', '',
+    '--mysqld=--innodb-use-atomic-writes=OFF'
+  ],
+];
+
+$optional_innodb_variables{1004}= [ @$optional_innodb_variables{$minversion} ];
+#
+# 'full_crc32' checksum algorithm was added in 10.4
+#
+foreach my $o (@$optional_innodb_variables{1004}) {
+  foreach my $i (0..$#$o) {
+    if ($o->[$i] =~ /^--mysqld=--innodb-checksum-algorithm/) {
+      $o= [ @$o, '--mysqld=--innodb-checksum-algorithm=full_crc32', '--mysqld=--innodb-checksum-algorithm=strict_full_crc32' ];
+      last;
+    }
+  }
+}
+
+$server_options{optional_innodb_variables}= \%optional_innodb_variables;
+
+#############
+# Aria vars
+#############
+
+$optional_aria_variables{$minversion}= [];
+$optional_aria_variables{1006}= [];
+$server_options{optional_aria_variables}= \%optional_aria_variables;
+
+
+#############
+# Plugins
+#############
+
+$optional_plugins{$minversion}= [''],
+$server_options{optional_plugins}= \%optional_plugins;
+
+#############
+# Other vars
+#############
+
+$binlog_combinations{$minversion}= [
+  [ '--mysqld=--log-bin --mysqld=--log-bin-trust-function-creators=1' ],
+  [ '--mysqld=--binlog-format=row', '--mysqld=--binlog-format=mixed' ],
+];
+
+$server_options{binlog_combinations}= \%binlog_combinations;
+
+
+$optional_server_variables{$minversion}= [
+  # Default 0
+  [ '', '', '', '', '', '--mysqld=--lower-case-table-names=1' ],
+  # Default query_cache_type is OFF and size is 1M
+  # (although type is set to ON automatically if size is configured explicitly)
+  [ '', '', '',
+        '--mysqld=--query-cache-type=1',
+        '--mysqld=--query-cache-type=2',
+        '--mysqld=--query-cache-size=128K',
+        '--mysqld=--query-cache-size=4M',
+  ],
+  # Default one-thread-per-connection (on Linux)
+  [ '', '', '',
+    '--mysqld=--thread-handling=pool-of-threads',
+  ],
+  [ '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+    '--mysqld=--sql-mode=ORACLE'
+  ],
+];
+
+$server_options{optional_server_variables}= \%optional_server_variables;
+
+# Default depends on the build/system, so in addition to the default,
+# we'll also add extra utf8 with presumably most common collations
+$optional_charsets{$minversion}= [
+  '', '', '',
+  '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_general_ci',
+  '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_bin',
+  '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_unicode_ci',
+  '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_general_nopad_ci',
+  '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_nopad_bin',
+  '--mysqld=--character-set-server=utf8mb4 --mysqld=--collation-server=utf8mb4_general_ci',
+  '--mysqld=--character-set-server=utf8mb4 --mysqld=--collation-server=utf8mb4_bin',
+  '--mysqld=--character-set-server=utf8mb4 --mysqld=--collation-server=utf8mb4_unicode_ci',
+  '--mysqld=--character-set-server=utf8mb4 --mysqld=--collation-server=utf8mb4_general_nopad_ci',
+  '--mysqld=--character-set-server=utf8mb4 --mysqld=--collation-server=utf8mb4_nopad_bin',
+  '--mysqld=--character-set-server=latin1 --mysqld=--collation-server=latin1_bin',
+  '--mysqld=--character-set-server=latin1 --mysqld=--collation-server=latin1_general_ci',
+  '--mysqld=--character-set-server=latin1 --mysqld=--collation-server=latin1_general_cs',
+  '--mysqld=--character-set-server=latin1 --mysqld=--collation-server=latin1_nopad_bin',
+  '--mysqld=--character-set-server=latin2 --mysqld=--collation-server=latin2_general_ci',
+  '--mysqld=--character-set-server=latin2 --mysqld=--collation-server=latin2_bin',
+  '--mysqld=--character-set-server=latin2 --mysqld=--collation-server=latin2_general_nopad_ci',
+  '--mysqld=--character-set-server=latin2 --mysqld=--collation-server=latin2_nopad_bin',
+  '--mysqld=--character-set-server=ascii --mysqld=--collation-server=ascii_general_ci',
+  '--mysqld=--character-set-server=ascii --mysqld=--collation-server=ascii_bin',
+  '--mysqld=--character-set-server=ascii --mysqld=--collation-server=ascii_general_nopad_ci',
+  '--mysqld=--character-set-server=binary --mysqld=--collation-server=binary',
+];
+
+$server_options{optional_charsets}= \%optional_charsets;

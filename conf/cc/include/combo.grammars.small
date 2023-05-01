@@ -1,0 +1,207 @@
+# Copyright (c) 2023, MariaDB
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+########################################################################
+
+my @empty_set= ('','','','','','','','','','','','','','','','','','');
+
+$grammars= [
+  [@empty_set,
+    '--grammar=conf/yy/acl.yy:0.1 --mysqld=--plugin-load-add=auth_ed25519.so'
+  ],
+  [@empty_set,
+    '--grammar=conf/yy/admin.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/all_selects.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/alter_table_columns.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/alter_table_data_types.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/alter_table.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/backup-locks.yy:0.01'],
+  [@empty_set,
+    '--grammar=conf/yy/bulk_insert.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/collect_eits.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/concurrent.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/create_or_replace.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/create_user.yy:0.1 --mysqld=--plugin-load-add=auth_ed25519.so'
+  ],
+  [@empty_set,
+    '--grammar=conf/yy/dbt3-dml.yy
+      --gendata=data/dbt3/dbt3-s0.0001.dump'],
+  [@empty_set,
+    '--grammar=conf/yy/dbt3-joins.yy
+      --gendata=data/dbt3/dbt3-s0.0001.dump',
+    '--grammar=conf/yy/dbt3-joins.yy
+      --gendata=data/dbt3/dbt3-s0.001.dump'],
+  [@empty_set,
+    '--grammar=conf/yy/dbt3-ranges.yy
+      --gendata=data/dbt3/dbt3-s0.0001.dump'],
+  [@empty_set,
+    '--grammar=conf/yy/desc_indexes.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/diagnostics.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/dml.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/dml-ps-params.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/foreign_keys.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/functions.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/indexes_and_constraints.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/information_schema.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/json.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/locks.yy:0.1'],
+  [@empty_set,
+    '--grammar=conf/yy/multi_update.yy
+      --gendata=simple'],
+  [@empty_set,
+    '--grammar=conf/yy/oltp-write.yy
+      --gendata=conf/zz/oltp.zz',
+    '--grammar=conf/yy/oltp-write.yy
+    --gendata=conf/zz/oltp-aria.zz'],
+  [@empty_set,
+    '--grammar=conf/yy/optimizer_access_exp.yy
+      --gendata=conf/zz/range_access.zz'],
+  [@empty_set,
+    '--grammar=conf/yy/optimizer_costs.yy:0.001'],
+  [@empty_set,
+    '--grammar=conf/yy/optimizer_subquery_semijoin.yy
+      --gendata=simple'],
+  [@empty_set,
+    '--grammar=conf/yy/optimizer_vars.yy:0.001'],
+  [@empty_set,
+    '--grammar=conf/yy/optimizer.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/outer_join.yy
+      --gendata=conf/zz/outer_join.zz'],
+  [@empty_set,
+    '--grammar=conf/yy/partition-dml.yy
+      --gendata=conf/zz/partition_by_columns.zz'],
+  [@empty_set,
+    '--grammar=conf/yy/partition_by_hash.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/partition_by_range.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/partition_by_list.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/performance_schema.yy
+      --mysqld=--performance-schema'],
+  [@empty_set,
+    '--grammar=conf/yy/random_keys.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/range_access.yy
+      --gendata=conf/zz/range_access.zz'],
+  [@empty_set,
+    '--grammar=conf/yy/range_access2.yy
+      --gendata=conf/zz/range_access2.zz'],
+  [@empty_set,
+    '--grammar=conf/yy/replication.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/sequences.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/server_audit.yy
+      --mysqld=--plugin-load-add=server_audit
+      --mysqld=--server-audit
+      --mysqld=--server-audit-logging=on'],
+  [@empty_set,
+    '--grammar=conf/yy/sql_mode.yy:0.01'],
+  [@empty_set,
+    '--grammar=conf/yy/temporal_ranges.yy
+      --gendata=conf/zz/temporal.zz'],
+  [@empty_set,
+    '--grammar=conf/yy/temporal.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/transaction.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/trx_stress.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/updateable_views.yy
+      --gendata=data/sql/updateable_views.sql'],
+  [@empty_set,
+    '--grammar=conf/yy/user_variables.yy:0.01
+      --mysqld=--user-variables'],
+  [@empty_set,
+    '--grammar=conf/yy/versioning.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/window_functions.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/xa.yy'],
+];
+
+$gendata= [
+  [@empty_set,
+    '--gendata=simple'],
+  [@empty_set,
+    '--gendata=conf/zz/current_timestamp.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/innodb-key-block-size.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/innodb-page-compression-partition.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/innodb-page-compression.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/innodb-partition.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/innodb.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/many_indexes.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/oltp-aria.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/oltp.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/optimizer_basic.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/optimizer_no_indexes.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/optimizer.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/outer_join.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/partition_by_columns.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/range_access2.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/range_access.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/temporal.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/trx_stress.zz'],
+  [@empty_set,
+    '--gendata=conf/zz/varchar.zz'],
+  [@empty_set,
+    '--gendata=data/dbt3/dbt3-s0.0001.dump',
+    '--gendata=data/dbt3/dbt3-s0.001.dump',
+  ],
+  [@empty_set,
+    '--gendata=data/sql/updateable_views.sql'],
+  [@empty_set,
+    '--gendata=data/sql/world.sql']
+];
+
+
