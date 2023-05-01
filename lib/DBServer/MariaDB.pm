@@ -122,7 +122,10 @@ sub new {
 
     $self->[MYSQLD_MYSQLD] = $self->_find([$self->basedir],
                                           osWindows()?["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"]:["sql","libexec","bin","sbin"],
-                                          osWindows()?"mysqld.exe":"mysqld");
+                                          osWindows()?("mysqld.exe","mariadbd.exe"):("mysqld","mariadbd"));
+    unless (defined $self->[MYSQLD_MYSQLD]) {
+      croak("We could not find the server binary");
+    }
 
     $self->serverType($self->[MYSQLD_MYSQLD]);
 
@@ -130,11 +133,11 @@ sub new {
 
     $self->[MYSQLD_DUMPER] = $self->_find([$self->basedir],
                                           osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-                                          osWindows()?"mysqldump.exe":"mysqldump");
+                                          osWindows()?("mysqldump.exe","mariadb-dump.exe"):("mysqldump","mariadb-dump"));
 
     $self->[MYSQLD_CLIENT] = $self->_find([$self->basedir],
                                           osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-                                          osWindows()?"mysql.exe":"mysql");
+                                          osWindows()?("mysql.exe","mariadb.exe"):("mysql","mariadb"));
 
     $self->[MARIABACKUP]= $self->_find([$self->basedir],
                             osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
@@ -163,7 +166,7 @@ sub new {
     ## Use valgrind suppression file if available in mysql-test path.
     if (defined $self->[MYSQLD_VALGRIND]) {
         $self->[MYSQLD_VALGRIND_SUPPRESSION_FILE] = $self->_find(defined $self->sourcedir?[$self->basedir,$self->sourcedir]:[$self->basedir],
-                                                             osWindows()?["share/mysql-test","mysql-test"]:["share/mysql-test","mysql-test"],
+                                                             ["share/mysql-test","mysql-test","mariadb-test"],
                                                              "valgrind.supp")
     };
 
@@ -421,7 +424,7 @@ sub createMysqlBase  {
         print BOOT "GRANT ALL ON mysql.rqg_feature_registry TO $user;\n";
         print BOOT "GRANT INSERT, UPDATE, DELETE ON performance_schema.* TO $user;\n";
         print BOOT "GRANT EXECUTE ON sys.* TO $user;\n";
-        print BOOT "/*!100403 UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root')*/;\n";
+        print BOOT "/*!100403 UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root');*/\n";
         print BOOT "DELETE FROM mysql.roles_mapping WHERE Role = 'admin';\n";
         print BOOT "INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y');\n";
     }
@@ -1525,12 +1528,14 @@ sub _find {
           }
         }
     }
+    # If we are here, we haven't found what we were looking for
     my $paths = "";
     foreach my $base (@$bases) {
         $paths .= join(",",map {"'".$base."/".$_."'"} @$subdir).",";
     }
     my $names = join(" or ", @names );
-    croak "Cannot find '$names' in $paths";
+    sayWarning("Cannot find '$names' in $paths");
+    return undef;
 }
 
 sub host {
