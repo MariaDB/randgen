@@ -4,6 +4,25 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31161:
+=~ Assertion \`!prebuilt->table->indexes\.start->online_log'
+=~ rollback_inplace_alter_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31161:
+=~ Error on close of
+=~ Failing assertion: res != -1
+=~ row_merge_file_destroy_low
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31158:
+=~ Assertion \`mtr->memo_contains(index->lock, MTR_MEMO_X_LOCK)'
+=~ btr_attach_half_pages
+=~ btr_page_split_and_insert
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31154:
+=~ Assertion \`!is_v'|FATAL.*InnoDB: Clustered record field for column
+=~ ha_innobase::build_template
+=~ ha_innobase::change_active_index
+=~ Version: '1[1-9]\.[1-9]|Server version: 1[1-9]\.[1-9]
 MDEV-31150:
 =~ signal|AddressSanitizer
 =~ multi_update_check_table_access
@@ -961,6 +980,9 @@ MDEV-27366:
 =~ handler_index_cond_check
 =~ row_search_idx_cond_check
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-27305:
+=~ Assertion \`info\.length < field->field_length'
+=~ is_part_of_a_key_prefix
 MDEV-27296:
 =~ Assertion \`((thd && (WSREP_PROVIDER_EXISTS_ && thd->variables\.wsrep_on)) && wsrep_emulate_bin_log) \|\| mysql_bin_log\.is_open()'
 =~ binlog_trans_log_savepos
