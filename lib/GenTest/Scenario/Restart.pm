@@ -146,9 +146,9 @@ sub run {
       #####
       $self->printStep("Restarting the server");
 
-      unset_expectation($server->vardir);
       $server->setStartDirty(1);
       $status= $server->startServer;
+      unset_expectation($server->vardir);
 
       if ($status != STATUS_OK) {
         sayError("Server failed to start");
