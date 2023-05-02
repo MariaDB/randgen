@@ -95,6 +95,11 @@ MDEV-30886:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ FeatureUsage detected Blackhole tables
+MDEV-30801:
+=~ InnoDB: Assertion failure
+=~ trx_start_if_not_started_low
+=~ Query_cache::send_result_to_client
+=~ FeatureUsage detected XA transactions
 MDEV-30565:
 =~ LeakSanitizer:
 =~ ha_innobase::open
