@@ -111,6 +111,8 @@ $props->{threads}= 10;
 $props->{queries}= 100000000;
 $props->{duration}= 600;
 
+
+
 my @ARGV_saved = @ARGV;
 
 my $opt_result = GetOptions(
@@ -120,6 +122,7 @@ my $opt_result = GetOptions(
     'basedir2=s' => \$props->{server_specific}->{2}->{basedir},
     'basedir3=s' => \$props->{server_specific}->{3}->{basedir},
     'compatibility=s' => \$props->{compatibility},
+    'config-version=s' => \$props->{ignored}, # Ignored
     'debug' => \$props->{debug},
     # Compatibility option, not used
     'debug-server' => \$deprecated->{debug_server},
