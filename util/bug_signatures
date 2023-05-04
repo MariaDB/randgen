@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31190:
+=~ signal|AddressSanitizer
+=~ Field::maybe_null
+=~ FixedBinTypeBundle<Inet6>::Field_fbt::store_fbt_null_with_warn
 MDEV-31189:
 =~ Assertion \`!derived->is_excluded()'
 =~ TABLE_LIST::set_check_materialized
