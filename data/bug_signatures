@@ -4,6 +4,43 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31189:
+=~ Assertion \`!derived->is_excluded()'
+=~ TABLE_LIST::set_check_materialized
+=~ mysql_derived_init
+=~ Prepared_statement::execute
+MDEV-31189:
+=~ signal|AddressSanitizer
+=~ st_select_lex::mark_as_dependent
+=~ Item_direct_view_ref::fix_fields
+=~ Prepared_statement::execute
+MDEV-31188:
+=~ Assertion \`used_tables_cache == 0'
+=~ Virtual_column_info::fix_session_expr
+=~ open_tables
+MDEV-31182:
+=~ signal|AddressSanitizer
+=~ Field_longstr::well_formed_copy_with_check|Field::set_key_image
+=~ get_column_range_cardinality
+=~ calculate_cond_selectivity_for_table
+MDEV-31181:
+=~ signal|AddressSanitizer
+=~ subselect_uniquesubquery_engine::print|subselect_indexsubquery_engine::print
+=~ Explain_query::send_explain
+MDEV-31180:
+=~ Assertion \`!this->file->children_attached'
+=~ ha_myisammrg::attach_children
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31179:
+=~ Assertion \`fixed \|\| state == NO_VALUE'
+=~ Item_param::basic_const_item
+=~ Prepared_statement::execute
+=~ Version: '10\.3|Server version: 10\.3
+MDEV-31178:
+=~ signal|AddressSanitizer
+=~ fix_fields_for_tvc
+=~ TABLE_LIST::handle_derived
+=~ Prepared_statement::execute
 MDEV-31161:
 =~ Assertion \`!prebuilt->table->indexes\.start->online_log'
 =~ rollback_inplace_alter_table
@@ -597,7 +634,7 @@ MDEV-29124:
 =~ AddressSanitizer|signal
 =~ st_select_lex::print
 =~ With_element::print
-=~ Prepared_statement::execute
+=~ Prepared_statement::execute|sp_instr_stmt::execute
 MDEV-29122:
 =~ AddressSanitizer|signal
 =~ my_mb_wc_bin
@@ -878,6 +915,10 @@ MDEV-28105:
 =~ Diagnostics_area::set_error_status
 =~ spider_mbase_handler::show_table_status
 =~ spider_get_sts
+MDEV-28058:
+=~ MemorySanitizer
+=~ spider_bulk_alloc_mem
+=~ spider_parse_connect_info
 MDEV-28024:
 =~ Assertion \`thd->transaction->stmt\.ha_list == __null \|\| trans == &thd->transaction->stmt'
 =~ ha_rollback_trans
@@ -1192,7 +1233,6 @@ MDEV-25903:
 MDEV-25896:
 =~ Assertion \`computed_weight == weight'
 =~ SEL_ARG::verify_weight
-=~ key_or_with_limit|key_and_with_limit
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-25821:
 =~ Assertion \`Count >= rest_length'|signal 11|AddressSanitizer
@@ -2383,6 +2423,9 @@ MDEV-22732:
 =~ AddressSanitizer|signal
 =~ Field::cmp_binary
 =~ compare_record
+MDEV-22713:
+=~ Assertion \`(\*select_ref)->fixed()'
+=~ resolve_ref_in_select_and_group
 MDEV-22705:
 =~ Assertion \`llabs(next_free_value % real_increment) == offset'
 =~ sequence_definition::adjust_values
@@ -4068,7 +4111,7 @@ MDEV-14656: [Got error 22 when trying to lock mutex]
 =~ Got error 22 when trying to lock mutex LOCK_event_queue|safe_mutex: Trying to lock uninitialized mutex at .*sql/event_queue\.cc
 =~ KILL_SERVER
 MDEV-14574:
-=~ Assertion \`!join->select_lex->master_unit()->derived \|\| join->select_lex->master_unit()->derived->is_materialized_derived()'
+=~ Assertion \`!join->select_lex->master_unit()->derived \|\| join->select_lex->master_unit()->derived->is_materialized_derived()'|Assertion \`!join->select_lex->master_unit()->derived \|\| join->select_lex->master_unit()->derived->is_materialized_derived() \|\| join->select_lex->master_unit()->derived->is_with_table()'
 =~ JOIN::save_explain_data_intern
 =~ Version: '10\.[2-4]|Server version: 10\.[2-4]
 =~ Query.*:.*INSERT|Query.*:.*REPLACE
