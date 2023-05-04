@@ -4,6 +4,25 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31189:
+=~ Assertion \`!derived->is_excluded()'
+=~ TABLE_LIST::set_check_materialized
+=~ mysql_derived_init
+=~ Prepared_statement::execute
+MDEV-31189:
+=~ signal|AddressSanitizer
+=~ st_select_lex::mark_as_dependent
+=~ Item_direct_view_ref::fix_fields
+=~ Prepared_statement::execute
+MDEV-31188:
+=~ Assertion \`used_tables_cache == 0'
+=~ Virtual_column_info::fix_session_expr
+=~ open_tables
+MDEV-31182:
+=~ signal|AddressSanitizer
+=~ Field_longstr::well_formed_copy_with_check|Field::set_key_image
+=~ get_column_range_cardinality
+=~ calculate_cond_selectivity_for_table
 MDEV-31181:
 =~ signal|AddressSanitizer
 =~ subselect_uniquesubquery_engine::print|subselect_indexsubquery_engine::print
