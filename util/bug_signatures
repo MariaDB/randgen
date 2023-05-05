@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31199:
+=~ Assertion \`field->table->stats_is_read'
+=~ is_eits_usable
+=~ hash_join_fanout
+MDEV-31198:
+=~ signal|AddressSanitizer
+=~ st_select_lex::update_used_tables
+=~ JOIN::optimize
+=~ Prepared_statement::execute
 MDEV-31195:
 =~ Assertion \`outer_context \|\| !\*from_field \|\| \*from_field == not_found_field'
 =~ Item_field::fix_outer_field
@@ -1792,6 +1801,10 @@ MDEV-24349:
 =~ st_select_lex::print
 =~ With_element::print
 =~ opt_trace_print_expanded_query
+MDEV-24337:
+=~ signal|AddressSanitizer
+=~ DTCollation::set_repertoire_from_charset
+=~ in_string::Item_string_for_in_vector::set_value
 MDEV-24283:
 =~ Assertion \`bitmap_is_set(&m_part_info->read_partitions, m_part_spec\.start_part)'
 =~ ha_partition::handle_ordered_index_scan
