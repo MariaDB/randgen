@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31195:
+=~ Assertion \`outer_context \|\| !\*from_field \|\| \*from_field == not_found_field'
+=~ Item_field::fix_outer_field
+=~ sp_head::execute
+=~ Version: '10\.[45]|Server version: 10\.[45]
 MDEV-31194:
 =~ signal|AddressSanitizer
 =~ ha_heap::index_flags
@@ -13,6 +18,11 @@ MDEV-31194:
 =~ Assertion \`n < width'
 =~ Bitmap<width>::bit_index
 =~ make_join_readinfo
+MDEV-31193:
+=~ AddressSanitizer|signal
+=~ base_list_iterator::next_fast
+=~ Item_equal::contains
+=~ eliminate_item_equal
 MDEV-31192:
 =~ signal|AddressSanitizer
 =~ check_grant
