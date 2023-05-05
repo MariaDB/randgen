@@ -52,7 +52,8 @@ $grammars = [
       --gendata=data/dbt3/dbt3-s0.0001.dump',
 '--grammar=conf/yy/dbt3-ranges.yy
       --gendata=data/dbt3/dbt3-s0.0001.dump',
-'--grammar=conf/yy/debug-injections-hidden_columns.yy',
+# Disabled due to MDEV-15130 (won't fix)
+#'--grammar=conf/yy/debug-injections-hidden_columns.yy',
 '--grammar=conf/yy/debug-injections-sql_table.yy',
 '--grammar=conf/yy/debug-sync-sql.yy',
 '--grammar=conf/yy/desc_indexes.yy',
