@@ -465,15 +465,6 @@ MDEV-29702:
 =~ For SPIDER BASE TABLE.*error : Partition .* returned error|For SPIDER BASE TABLE.*error : Subpartition .* returned error
 =~ For SPIDER BASE TABLE.*error : Upgrade required. Please do
 =~ STATUS_UPGRADE_FAILURE|STATUS_RECOVERY_FAILURE
-MDEV-29701:
-=~ Assertion \`err != DB_DUPLICATE_KEY'
-=~ row_rename_table_for_mysql
-=~ HA_CREATE_INFO::finalize_atomic_replace|Sql_cmd_alter_table::execute
-=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
-MDEV-29701:
-=~ Failing assertion: table2 == NULL
-=~ ha_innobase::rename_table
-=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 MDEV-29699:
 =~ Assertion \`!table_list->table \|\| frm\.str \|\| !atomic_replace'
 =~ select_create::create_table_from_items
@@ -605,6 +596,10 @@ MDEV-29273:
 =~ 'close' returned OS error 209\. Cannot continue operation
 =~ got signal 6
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-29262:
+=~ signal|AddressSanitizer
+=~ mark_select_range_as_dependent
+=~ setup_fields
 MDEV-29217:
 =~ Assertion \`0'
 =~ Item_param::can_return_value
