@@ -172,15 +172,15 @@ $extra_engine_combinations= [
   '--engine=Aria
    --minio
    --mysqld=--plugin-load-add=ha_s3
-   --mysqld=--s3=on
-   --mysqld=--s3-host-name="127.0.0.1"
-   --mysqld=--s3-protocol-version=Auto
-   --mysqld=--s3-bucket=rqg
-   --mysqld=--s3-access-key=minio
-   --mysqld=--s3-secret-key=minioadmin
-   --mysqld=--s3-region=""
-   --mysqld=--s3-port=9000
-   --mysqld=--s3-use-http=on
+   --mysqld=--loose-s3=on
+   --mysqld=--loose-s3-host-name="127.0.0.1"
+   --mysqld=--loose-s3-protocol-version=Auto
+   --mysqld=--loose-s3-bucket=rqg
+   --mysqld=--loose-s3-access-key=minio
+   --mysqld=--loose-s3-secret-key=minioadmin
+   --mysqld=--loose-s3-region=""
+   --mysqld=--loose-s3-port=9000
+   --mysqld=--loose-s3-use-http=on
    --grammar=conf/yy/engine-s3.yy:0.1
   ',
   # HEAP
