@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31194:
+=~ signal|AddressSanitizer
+=~ ha_heap::index_flags
+=~ push_index_cond
+=~ make_join_readinfo
+MDEV-31194:
+=~ Assertion \`n < width'
+=~ Bitmap<width>::bit_index
+=~ make_join_readinfo
+MDEV-31192:
+=~ signal|AddressSanitizer
+=~ check_grant
+=~ Sql_cmd_alter_table_truncate_partition::execute
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-31190:
 =~ signal|AddressSanitizer
 =~ Field::maybe_null
@@ -659,6 +673,15 @@ MDEV-29089:
 =~ myrocks::Rdb_key_def::pack_index_tuple
 =~ QUICK_RANGE_SELECT::get_next_prefix
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-29071:
+=~ Assertion \`outer_context \|\| !\*from_field \|\| \*from_field == not_found_field'
+=~ Item_field::fix_outer_field
+=~ mysql_derived_optimize
+MDEV-29071:
+=~ signal|AddressSanitizer
+=~ st_select_lex::mark_as_dependent
+=~ Item_field::fix_outer_field
+=~ mysql_derived_optimize
 MDEV-29066:
 =~ signal 8
 =~ spider_db_set_cardinarity
