@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31209:
+=~ STATUS_SERVER_DEADLOCKED
+=~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
+=~ Deadlock reporter: Stalled query: .* OVER (
 MDEV-31201:
 =~ LeakSanitizer
 =~ String::real_alloc
