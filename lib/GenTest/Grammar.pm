@@ -186,7 +186,7 @@ sub parseFromString {
     }
   }
 
-  while ($grammar_string =~ s{#features?\s+([- \/\w\d,]+)}{}mi) {
+  while ($grammar_string =~ s{#features:?\s+([- \/\w\d,]+)}{}mi) {
     push @{$grammar->[GRAMMAR_FEATURES]}, map { s/^\s*(.*?)\s*$/$1/; $_ } split /,/, $1;
   }
 
