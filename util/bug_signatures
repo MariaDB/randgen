@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31219:
+=~ Assertion \`fixed'
+=~ Item_func_hybrid_field_type
+=~ Frame_positional_cursor::save_offset_value
+=~ compute_window_func
+MDEV-31218:
+=~ signal|AddressSanitizer
+=~ Field::set_default
+=~ Item_default_value::calculate
+=~ TABLE::verify_constraints
 MDEV-31215:
 =~ Assertion \`marked_for_read()'
 =~ Regexp_processor_pcre::compile
@@ -1320,11 +1330,6 @@ MDEV-25781:
 =~ SHA1_Update
 =~ Item_func_sha::
 =~ Item_result_field::save_in_result_field
-MDEV-25775:
-=~ AddressSanitizer|signal 11|Invalid read of size
-=~ String::copy
-=~ Item_cache_str::cache_value
-=~ Version: '10\.2|Server version: 10\.2
 MDEV-25696:
 =~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type != 2'
 =~ get_dup_key
@@ -1379,12 +1384,6 @@ MDEV-25490:
 =~ Create_tmp_table::start
 =~ subselect_union_engine::prepare|JOIN::make_aggr_tables_info
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
-MDEV-25439:
-=~ AddressSanitizer|signal 11
-=~ my_strtod_int
-=~ Value_source::Converter_strntod::Converter_strntod
-=~ Item_default_value
-=~ Version: '10\.2|Server version: 10\.2
 MDEV-25438:
 =~ Assertion \`last_pos == 0 \|\| pos > last_pos'
 =~ fts_cache_node_add_positions
