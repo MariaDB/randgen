@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31215:
+=~ Assertion \`marked_for_read()'
+=~ Regexp_processor_pcre::compile
+=~ Virtual_column_info::fix_expr
+=~ Version: '10\.4|Server version: 10\.4
+MDEV-31215:
+=~ Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
+=~ Regexp_processor_pcre::compile
+=~ Virtual_column_info::fix_expr
+=~ Version: '10\.3|Server version: 10\.3
 MDEV-31209:
 =~ STATUS_SERVER_DEADLOCKED
 =~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
