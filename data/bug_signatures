@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31224:
+=~ Assertion \`marked_for_read()'
+=~ st_select_lex::print_set_clause
+=~ Explain_query::send_explain
+=~ mysql_multi_update
 MDEV-31219:
 =~ Assertion \`fixed'
 =~ Item_func_hybrid_field_type
@@ -2390,6 +2395,9 @@ MDEV-22915:
 =~ Assertion \`binlog_table_maps == 0 \|\| locked_tables_mode == LTM_LOCK_TABLES'
 =~ reset_for_next_command
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-22907:
+=~ Assertion \`(m_storage_engine_name\.str != __null) == used_engine'
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-22886:
 =~ AddressSanitizer
 =~ my_convert
