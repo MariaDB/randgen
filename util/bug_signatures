@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31228:
+=~ signal|AddressSanitizer
+=~ dynamic_column_update_many_fmt
+=~ Prepared_statement::execute
 MDEV-31226:
 =~ signal|AddressSanitizer
 =~ end_read_record
@@ -246,6 +250,9 @@ MDEV-30391:
 =~ signal|AddressSanitizer
 =~ spider_set_direct_limit_offset
 =~ Prepared_statement::execute
+MDEV-30372:
+=~ Assertion \`state() == s_executing \|\| state() == s_preparing \|\| state() == s_prepared \|\| state() == s_must_abort \|\| state() == s_aborting \|\| state() == s_cert_failed \|\| state() == s_must_replay'
+=~ wsrep::transaction::before_rollback
 MDEV-30309:
 =~ Assertion \`!(\*with_wild)'
 =~ setup_wild
@@ -444,6 +451,10 @@ MDEV-29793:
 =~ _ma_tmp_disable_logging_for_table
 =~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 =~ Query.*:.*CREATE.*OR REPLACE
+MDEV-29786:
+=~ Assertion \`thd == _current_thd() \|\| ((&(&thd->LOCK_thd_data)->m_mutex)->count > 0 && pthread_equal(pthread_self(), (&(&thd->LOCK_thd_data)->m_mutex)->thread))'
+=~ thd_get_ha_data
+=~ wsrep_abort_transaction
 MDEV-29781:
 =~ signal|AddressSanitizer
 =~ ha_myisammrg::add_children_list
@@ -989,8 +1000,9 @@ MDEV-28169:
 MDEV-28130:
 =~ AddressSanitizer|signal
 =~ tree_search_next
-=~ handler::ha_index_prev
+=~ handler::ha_index_prev|handler::ha_index_next
 =~ mysql_ha_read
+=~ Query.*: .*HANDLER
 MDEV-28127:
 =~ Assertion \`table->s->db_options_in_use == part_table->s->db_options_in_use'
 =~ compare_table_with_partition
@@ -1485,7 +1497,7 @@ MDEV-25067:
 =~ AddressSanitizer|signal 11
 =~ eliminate_tables
 =~ make_join_statistics
-=~ Prepared_statement::execute
+=~ Prepared_statement::execute|sp_head::execute
 =~ FeatureUsage detected multi-update/delete
 MDEV-25060:
 =~ AddressSanitizer|Invalid write of size|signal 11
@@ -3959,7 +3971,7 @@ MDEV-16699:
 =~ FeatureUsage detected compressed columns|FeatureUsage detected GIS columns
 MDEV-16699:
 =~ AddressSanitizer|signal 11
-=~ Static_binary_string::q_append|Binary_string::q_append
+=~ Static_binary_string::q_append|Binary_string::q_append|String::append
 =~ dump_leaf_key
 =~ tree_walk_left_root_right
 =~ Item_func_group_concat::val_str
