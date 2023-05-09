@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31226:
+=~ signal|AddressSanitizer
+=~ end_read_record
+=~ st_join_table::cleanup
+=~ JOIN::join_free
+MDEV-31226:
+=~ Assertion \`cp + len <= buff + buff_size'
+=~ JOIN_CACHE::write_record_data
+=~ evaluate_join_record
 MDEV-31224:
 =~ Assertion \`marked_for_read()'
 =~ st_select_lex::print_set_clause
