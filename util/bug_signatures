@@ -55,7 +55,7 @@ MDEV-31198:
 =~ signal|AddressSanitizer
 =~ st_select_lex::update_used_tables
 =~ JOIN::optimize
-=~ Prepared_statement::execute
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-31195:
 =~ Assertion \`outer_context \|\| !\*from_field \|\| \*from_field == not_found_field'
 =~ Item_field::fix_outer_field
