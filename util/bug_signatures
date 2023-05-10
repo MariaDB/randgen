@@ -274,6 +274,12 @@ MDEV-30297:
 =~ Assertion \`a\.str != __null'|signal
 =~ Compare_identifiers::operator
 =~ Lex_cstring_with_compare
+MDEV-30292:
+=~ Item::save_in_field
+=~ save_window_function_values
+=~ Window_funcs_computation::exec
+=~ Query.*:.*PERCENTILE_DISC
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-30277:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
@@ -1268,6 +1274,12 @@ MDEV-26508:
 =~ Version: '10\.2|Server version: 10\.2
 MDEV-26464:
 =~ Failing assertion: UT_LIST_GET_LEN(buf_pool->flush_list) == 0
+MDEV-26416:
+=~ signal|AddressSanitizer
+=~ Item::save_in_field
+=~ compute_window_func
+=~ Window_funcs_computation::exec
+=~ AGGR_OP::end_send
 MDEV-26247:
 =~ signal|AddressSanitizer
 =~ spider_db_mbase_util::append_table
