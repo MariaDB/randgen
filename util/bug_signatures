@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31233:
+=~ signal|AddressSanitizer
+=~ multi_update::prepare|open_tables_for_query
+=~ Sql_cmd_dml::prepare
+=~ Prepared_statement::execute|sp_head::execute
+=~ Version: '1[1-9]\.[1-9]|Server version: 1[1-9]\.[1-9]
 MDEV-31228:
 =~ signal|AddressSanitizer
 =~ dynamic_column_update_many_fmt
@@ -150,7 +156,7 @@ MDEV-31152:
 MDEV-31150:
 =~ signal|AddressSanitizer
 =~ multi_update_check_table_access
-=~ Prepared_statement::execute
+=~ Prepared_statement::execute|sp_head::execute
 =~ Version: '1[1-9]\.[1-9]|Server version: 1[1-9]\.[1-9]
 MDEV-31143:
 =~ signal|AddressSanitizer
