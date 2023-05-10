@@ -144,6 +144,9 @@ MDEV-31154:
 =~ ha_innobase::build_template
 =~ ha_innobase::change_active_index
 =~ Version: '1[1-9]\.[1-9]|Server version: 1[1-9]\.[1-9]
+MDEV-31152:
+=~ Assertion \`!bpage'
+=~ buf_flush_try_neighbors
 MDEV-31150:
 =~ signal|AddressSanitizer
 =~ multi_update_check_table_access
