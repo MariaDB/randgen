@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31237:
+=~ Assertion \`!(tab->select && tab->select->quick)'
+=~ make_join_readinfo
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31236:
 =~ Assertion \`prebuilt->select_lock_type == LOCK_NONE \|\| (index)->is_spatial()'
 =~ row_search_mvcc
@@ -4539,6 +4543,9 @@ TODO-842: [Common causes: ha_spider::~ha_spider]
 TODO-842: [Common causes: Protocol::end_statement]
 =~ Assertion \`0'
 =~ Protocol::end_statement
+TODO-842: [Test problems: Metadata dump]
+=~ Not enough time to do the metadata dump
+=~ STATUS_ENVIRONMENT_FAILURE
 
 ##############################################################################
 # Weak matches
