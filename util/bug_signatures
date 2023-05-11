@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31248:
+=~ Assertion \`false'
+=~ set_field_object_type
+=~ table_os_global_by_type::read_row_values
 MDEV-31247:
 =~ Assertion \`c >= 0'
 =~ COST_MULT
