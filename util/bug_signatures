@@ -592,6 +592,16 @@ MDEV-29686:
 =~ st_select_lex_node::attach_single
 =~ MYSQLparse
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-29681:
+=~ signal|AddressSanitizer
+=~ update_depend_map_for_order
+=~ remove_const
+=~ mysql_union
+MDEV-29681:
+=~ signal|AddressSanitizer
+=~ get_sort_by_table
+=~ make_join_statistics
+=~ mysql_union
 MDEV-29680:
 =~ AddressSanitizer|signal
 =~ myrocks::Rdb_transaction::on_commit|myrocks::Rdb_transaction_impl::prepare
@@ -1079,6 +1089,9 @@ MDEV-27840:
 =~ ha_innobase::build_template
 =~ QUICK_RANGE_SELECT
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-27797:
+=~ InnoDB: Failing assertion: dfield_get_len(field) == sizeof(doc_id)
+=~ fts_get_doc_id_from_row
 MDEV-27769:
 =~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
 =~ Field::ptr_in_record
@@ -4566,6 +4579,9 @@ TODO-842: [Common causes: Protocol::end_statement]
 =~ Protocol::end_statement
 TODO-842: [Test problems: Metadata dump]
 =~ Not enough time to do the metadata dump
+=~ STATUS_ENVIRONMENT_FAILURE
+TODO-842: [Test problems: Galera does not load]
+=~ WSREP: Failed to create a new provider
 =~ STATUS_ENVIRONMENT_FAILURE
 
 ##############################################################################
