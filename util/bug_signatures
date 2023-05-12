@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31255:
+=~ signal|AddressSanitizer
+=~ ha_innobase::ft_read
+=~ join_ft_read_first
+=~ subselect_single_select_engine
 MDEV-31248:
 =~ Assertion \`false'
 =~ set_field_object_type
@@ -343,7 +348,7 @@ MDEV-30097:
 =~ Histogram_json_hb::find_bucket
 MDEV-30058:
 =~ AddressSanitizer|signal
-=~ MYSQL_LOG::generate_name
+=~ MYSQL_LOG::generate_name|MYSQL_LOG::open
 =~ fix_slow_log_file|fix_general_log_file
 MDEV-30035:
 =~ Assertion \`thd->transaction\.stmt\.ha_list == __null \|\| trans == &thd->transaction\.stmt'
