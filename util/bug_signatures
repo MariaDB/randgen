@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31258:
+=~ Assertion \`cond_selectivity <= 1.000000001'
+=~ get_range_limit_read_cost
+=~ test_if_cheaper_ordering
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31255:
 =~ signal|AddressSanitizer
 =~ ha_innobase::ft_read
@@ -162,7 +167,7 @@ MDEV-31178:
 =~ signal|AddressSanitizer
 =~ fix_fields_for_tvc
 =~ TABLE_LIST::handle_derived
-=~ Prepared_statement::execute
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-31161:
 =~ Assertion \`!prebuilt->table->indexes\.start->online_log'
 =~ rollback_inplace_alter_table
@@ -807,7 +812,7 @@ MDEV-29089:
 MDEV-29071:
 =~ Assertion \`outer_context \|\| !\*from_field \|\| \*from_field == not_found_field'
 =~ Item_field::fix_outer_field
-=~ mysql_derived_optimize
+=~ mysql_handle_single_derived
 MDEV-29071:
 =~ signal|AddressSanitizer
 =~ st_select_lex::mark_as_dependent
