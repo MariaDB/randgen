@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31267:
+=~ signal|AddressSanitizer|Assertion \`n > 0 && n < SINUSES_CALCULATED*2+1'
+=~ get_n_sincos
+=~ Item_func_buffer::Transporter::add_edge_buffer
+MDEV-31266:
+=~ AddressSanitizer|signal
+=~ _ma_seq_search
+=~ _ma_ck_write_btree
+=~ FeatureUsage detected GIS columns
 MDEV-31264:
 =~ Assertion \`mode == 16 \|\| mode == 12'
 =~ buf_page_get_low
