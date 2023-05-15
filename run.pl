@@ -39,6 +39,7 @@ sub run {
   use Carp;
   use Data::Dumper;
   use File::Path qw(mkpath remove_tree);
+  use File::Copy;
   use Getopt::Long qw( :config pass_through );
   use POSIX;
   use strict;
@@ -357,7 +358,6 @@ sub run {
     }
 
     my $output_file= $props_vardir_orig."/trial$trial_id.log";
-    $cmd = 'bash -c "set -o pipefail; perl '.$cmd.' 2>&1 | tee -i '.$output_file.'"';
 
     if ($genconfig) {
       my $cnf_contents = GenTest::GenConfig->new(spec_file => $genconfig,
@@ -393,9 +393,10 @@ sub run {
     $status= $res if $res > $status;
     my $resname= status2text($res);
     group_cleaner();
+    copy($props->{vardir}."/trial.log",$output_file);
     if ($search_mode) {
       say("Trial $trial_id ended with exit status $resname ($res)");
-      my $check_result= check_for_desired_result($resname,$output_file);
+      my $check_result= check_for_desired_result($resname,$output_file, $output);
       if ($check_result) {
         $trial_result= 1;
         last TRIALS unless $force;
@@ -421,7 +422,7 @@ sub run {
 # NOTE: subroutine returns 1 if the goal was achieved, and 0 otherwise
 sub check_for_desired_result
 {
-  my ($resname, $output_file) = @_;
+  my ($resname, $output_file, $output) = @_;
   return $resname ne 'STATUS_OK' unless (defined $output || scalar(@exit_status));
 
   if (scalar @exit_status) {
@@ -440,7 +441,7 @@ sub check_for_desired_result
 
   if ($output) {
     my @output_files= ($output_file);
-    foreach my $srvnum (keys %{$props->server_specific}) {
+    foreach my $srvnum (keys %{$props->{server_specific}}) {
       if (-e $props->{vardir}."/s${srvnum}/mysql.err") {
         push @output_files, $props->{vardir}."/s${srvnum}/mysql.err";
       }
@@ -454,6 +455,7 @@ sub check_for_desired_result
         return 0;
       }
       while (<OUTFILE>) {
+        next if /run\.pl.*--output=/; # skip the startup command, it always matches;
         if (/$output/) {
           $output_matches= 1;
           close(OUTFILE);
@@ -589,7 +591,6 @@ EOF
 # If there are any arguments, we assume the script was launched directly,
 # otherwise run(...) subroutine is called from another script
 if (scalar(@ARGV)) {
-  say("HERE: Command-line arguments: @ARGV");
   my $status= run(@ARGV);
   safe_exit($status);
 }
