@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31279:
+=~ signal|AddressSanitizer
+=~ heap_clear
+=~ ha_heap::delete_all_rows
+=~ mysql_handle_single_derived
+MDEV-31278:
+=~ signal|AddressSanitizer
+=~ _ma_unpin_all_pages
+=~ handler::ha_check_overlaps
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31267:
 =~ signal|AddressSanitizer|Assertion \`n > 0 && n < SINUSES_CALCULATED*2+1'
 =~ get_n_sincos
