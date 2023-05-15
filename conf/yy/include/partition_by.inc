@@ -94,10 +94,10 @@ select_explain:
   EXPLAIN PARTITIONS SELECT part_field FROM _table where ;
 
 create_select:
-  SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM _table where ;
+  SELECT `col_int_nokey` MOD 10 AS `col_int_nokey` , `col_int_key` MOD 10 AS `col_int_key` FROM _table where ;
 
 select:
-  SELECT `col_int_nokey` % 10 AS `col_int_nokey` , `col_int_key` % 10 AS `col_int_key` FROM dml_table_name where ;
+  SELECT `col_int_nokey` MOD 10 AS `col_int_nokey` , `col_int_key` MOD 10 AS `col_int_key` FROM dml_table_name where ;
 
 # WHERE clauses suitable for partition pruning
 where:

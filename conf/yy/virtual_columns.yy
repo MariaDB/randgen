@@ -270,7 +270,7 @@ arithmetic_function:
   expr * expr |
   expr / expr |
   expr DIV expr |
-  expr % expr ;
+  expr MOD expr ;
 
 mathematical_function:
   ABS( expr ) |
