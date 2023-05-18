@@ -3879,9 +3879,10 @@ MDEV-17977:
 =~ MYSQL_BIN_LOG::write_transaction_to_binlog_events
 MDEV-17974:
 =~ signal 11|AddressSanitizer
-=~ sp_process_definer
+=~ sp_process_definer|replace_roles_mapping_table
 =~ mysql_create_user
 =~ Prepared_statement::execute|sp_head::execute
+=~ Version: '10\.[45]|Server version: 10\.[45]
 MDEV-17971:
 =~ Assertion \`table_ref->table \|\| table_ref->view'|signal [16]|AddressSanitizer
 =~ Field_iterator_table_ref::set_field_iterator|Field_iterator_table::set
