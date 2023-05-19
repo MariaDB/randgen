@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31314:
+=~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
+=~ THD::~THD
+=~ FeatureUsage detected virtual columns
 MDEV-31304:
 =~ InnoDB: Assertion failure in file.*trx0roll|InnoDB: Assertion failure in file *trx0trx
 =~ trx_rollback_last_sql_stat_for_mysql|trx_mark_sql_stat_end
@@ -86,7 +90,7 @@ MDEV-31226:
 =~ st_join_table::cleanup
 =~ JOIN::join_free
 MDEV-31226:
-=~ Assertion \`cp + len <= buff + buff_size'
+=~ Assertion \`cp + len <= buff + buff_size'|Assertion \`cp + copy->length <= buff + buff_size'
 =~ JOIN_CACHE::write_record_data
 =~ evaluate_join_record
 MDEV-31224:
@@ -1256,6 +1260,10 @@ MDEV-27223:
 MDEV-27216:
 =~ mysqld: Incorrect information in file:
 =~ Version: '10\.4|Server version: 10\.4
+MDEV-27207:
+=~ Assertion \`!m_null_value'
+=~ cmp_item_fbt::compare|cmp_item_inet6::compare
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-27198:
 =~ Assertion \`!is_set() \|\| (m_status == DA_EOF_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_eof_status
