@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31319:
+=~ Assertion \`const_item_cache == true'
+=~ Item_func::fix_fields
+=~ Virtual_column_info::fix_expr
 MDEV-31314:
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ THD::~THD
@@ -1068,6 +1072,10 @@ MDEV-28396:
 MDEV-28392:
 =~ Assertion \`(length % 4) == 0'
 =~ my_lengthsp_utf32
+MDEV-28345:
+=~ AddressSanitizer|signal
+=~ my_strtod_int
+=~ Value_source::Converter_strntod::Converter_strntod
 MDEV-28328:
 =~ Assertion \`rec_offs_any_extern(offsets)'|InnoDB: Failing assertion: rec_offs_nth_extern(offsets, n)|InnoDB: Failing assertion: op == BTR_STORE_UPDATE \|\| (field_ref\[BTR_EXTERN_LEN\] & BTR_EXTERN_INHERITED_FLAG) \|\| !memcmp(field_ref, field_ref_zero, BTR_EXTERN_FIELD_REF_SIZE)
 =~ btr_store_big_rec_extern_fields|btr_rec_get_field_ref_offs
@@ -1086,6 +1094,11 @@ MDEV-28270:
 =~ lf_hash_search_using_hash_value
 =~ xid_cache_search
 =~ Version: '10\.[2-3]|Server version: 10\.[2-3]
+MDEV-28264:
+=~ AddressSanitizer|signal
+=~ dict_sys_t::load_table
+=~ dict_load_table_on_id|dict_get_referenced_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-28169:
 =~ AddressSanitizer|signal
 =~ dfield_dup
