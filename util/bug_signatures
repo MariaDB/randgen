@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31375:
+=~ Assertion \`dbl_records <= s->records'
+=~ apply_selectivity_for_table
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31319:
 =~ Assertion \`const_item_cache == true'
 =~ Item_func::fix_fields
@@ -1985,7 +1989,7 @@ MDEV-24249:
 =~ recv_parse_or_apply_log_rec_body
 =~ recv_recover_page
 MDEV-24245:
-=~ AddressSanitizer: memcpy-param-overlap
+=~ AddressSanitizer
 =~ Field_blob::pack
 =~ ha_archive::pack_row
 MDEV-24210:
@@ -2513,7 +2517,7 @@ MDEV-23045:
 MDEV-23041:
 =~ signal [16]|AddressSanitizer
 =~ Item_func_set_user_var::update_hash
-=~ TABLE::update_default_fields|end_write_group|TABLE::update_virtual_fields|end_send_group
+=~ TABLE::update_default_fields|end_write_group|TABLE::update_virtual_fields|end_send_group|Field::set_default
 MDEV-23041:
 =~ free_memory: Assertion \`irem->marker == .*'
 =~ Item_func_set_user_var::update_hash
@@ -2781,7 +2785,7 @@ MDEV-22435:
 MDEV-22426:
 =~ signal 8|AddressSanitizer: FPE
 =~ maria_create
-=~ CHAR(0)
+=~ CHAR(0)|CHAR (0)
 MDEV-22395:
 =~ Assertion \`templ->mbmaxlen > templ->mbminlen \|\| templ->mysql_col_len == len \|\| (field_no == templ->icp_rec_field_no && field->prefix_len > 0)'
 =~ row_sel_field_store_in_mysql_format_func
