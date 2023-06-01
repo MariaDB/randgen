@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31380:
+=~ Assertion \`s->table->opt_range_condition_rows <= s->found_records'
+=~ apply_selectivity_for_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]
 MDEV-31375:
 =~ Assertion \`dbl_records <= s->records'
 =~ apply_selectivity_for_table
@@ -2449,6 +2453,11 @@ MDEV-23171:
 =~ get_one_variable
 =~ fill_variables
 =~ Version: '10\.2
+MDEV-23167:
+=~ signal|AddressSanitizer
+=~ row_sel_field_store_in_mysql_format_func|maria_rprev|mi_rprev
+=~ handler::ha_index_prev
+=~ Query.*HANDLER.*READ
 MDEV-23151:
 =~ Assertion \`i < get_width()'
 =~ Histogram::get_value|Histogram_binary::get_value
