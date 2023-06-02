@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31386:
+=~ InnoDB: Failing assertion: page_type == i_s_page_type\[page_type\]\.type_value
+=~ i_s_innodb_set_page_type
 MDEV-31380:
 =~ Assertion \`s->table->opt_range_condition_rows <= s->found_records'
 =~ apply_selectivity_for_table
