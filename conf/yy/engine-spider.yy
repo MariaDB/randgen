@@ -19,7 +19,6 @@
 #features Spider engine, Spider tables
 
 query_init:
-     get_charsets
      # We are doing it this way because otherwise set_db later may pick up a newly created empty spider database
      { @all_databases=(); foreach my $s (@{$executors->[0]->metaAllSchemas()}) { push @all_databases, $s if $s !~ /^spider_db(_remote)?/ }; @user_databases=(); foreach my $s (@{$executors->[0]->metaUserSchemas()}) { push @user_databases, $s if $s !~ /^spider_db(_remote)?$/ }; '' }
      CREATE DATABASE IF NOT EXISTS spider_db
@@ -40,9 +39,6 @@ query_init:
   ;; create_spider_table_init ;; create_spider_table_init ;; create_spider_table_init
 ;
 
-get_charsets:
-  { @charsets= (); map { push @charsets, $_ if ($_ ne 'utf32' && $_ ne 'utf16' && $_ ne 'ucs2' && $_ ne 'utf16le') } @{$executors->[0]->metaCharactersets()}; '' };
-
 query:
     ==FACTOR:6== create_spider_table
   | ==FACTOR:2== { _set_db('spider_db') } ALTER TABLE _table __force(50)
@@ -58,7 +54,7 @@ create_remote_table_init:
 create_spider_table_init:
   { _set_db('spider_db_remote') }
      CREATE OR REPLACE TABLE spider_db. { $last_table= $prng->arrayElement(\@remote_tables) } LIKE { $last_table }
-  ;; ALTER TABLE spider_db.{ $last_table } ENGINE=SPIDER COMMENT = { "'". 'wrapper "mysql", srv "s", table "'.$last_table.'"'. "'" } CHARACTER SET { $prng->arrayElement(\@charsets) }
+  ;; ALTER TABLE spider_db.{ $last_table } ENGINE=SPIDER COMMENT = { "'". 'wrapper "mysql", srv "s", table "'.$last_table.'"'. "'" }
 ;
 
 create_remote_table:
@@ -69,6 +65,6 @@ create_remote_table:
 create_spider_table:
   { _set_db('spider_db_remote') }
      CREATE OR REPLACE TABLE spider_db. _table[invariant] LIKE _table[invariant]
-  ;; ALTER TABLE spider_db._table[invariant] ENGINE=SPIDER COMMENT = { "'". 'wrapper "mysql", srv "s", table "'.$last_table.'"'. "'" } CHARACTER SET { $prng->arrayElement(\@charsets) }
+  ;; ALTER TABLE spider_db._table[invariant] ENGINE=SPIDER COMMENT = { "'". 'wrapper "mysql", srv "s", table "'.$last_table.'"'. "'" }
 ;
 
