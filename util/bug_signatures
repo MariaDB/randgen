@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31391:
+=~ Assertion \`((best\.records_out) == 0\.0 && (best\.records) == 0\.0) \|\| (best\.records_out)/(best\.records) < 1\.0000001'
+=~ get_costs_for_tables
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31386:
 =~ InnoDB: Failing assertion: page_type == i_s_page_type\[page_type\]\.type_value
 =~ i_s_innodb_set_page_type
