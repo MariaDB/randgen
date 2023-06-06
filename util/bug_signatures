@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31406:
+=~ AddressSanitizer|signal
+=~ ha_maria::repair
+=~ ha_partition::repair
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31403:
 =~ AddressSanitizer|signal
 =~ st_join_table::choose_best_splitting
@@ -1549,6 +1554,10 @@ MDEV-25603:
 =~ row_sel_store_mysql_field
 =~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 =~ FeatureUsage detected virtual columns
+MDEV-25548:
+=~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction\.stmt\.modified_non_trans_table'
+=~ select_insert::abort_result_set
+=~ wsrep_mysql_parse
 MDEV-25532:
 =~ Assertion \`part_id == m_last_part'
 =~ ha_partition::delete_row
@@ -4256,6 +4265,12 @@ MDEV-15753: [thd->is_error]
 =~ mysql_admin_table
 =~ Status: KILL_TIMEOUT|Status: KILL_SERVER
 =~ Version: '10\.[0-3]
+MDEV-15703:
+=~ signal|AddressSanitizer
+=~ TABLE_LIST::top_table
+=~ Item_param::save_in_field
+=~ Prepared_statement::execute
+=~ Query.*:.*DEFAULT
 MDEV-15656:
 =~ Assertion \`is_last_prefix <= 0'
 =~ QUICK_GROUP_MIN_MAX_SELECT::get_next
