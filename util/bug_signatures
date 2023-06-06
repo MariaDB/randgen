@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31416:
+=~ AddressSanitizer|signal
+=~ dict_v_col_t::detach
+=~ ha_innobase::commit_inplace_alter_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+=~ FeatureUsage detected system-versioned tables
 MDEV-31406:
 =~ AddressSanitizer|signal
 =~ ha_maria::repair
@@ -266,6 +272,11 @@ MDEV-31143:
 =~ ha_maria::scan_time
 =~ SQL_SELECT::test_quick_select
 =~ Query.*:.*ROWNUM
+MDEV-31122:
+=~ signal|AddressSanitizer
+=~ get_lock_data
+=~ mysql_lock_abort_for_thread
+=~ MDL_lock::notify_conflicting_locks
 MDEV-31114:
 =~ Assertion \`!tls_worker_data->is_waiting()'
 =~ tpool::tpool_wait_begin
