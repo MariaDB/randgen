@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31429:
+=~ AddressSanitizer|signal
+=~ Field::set_image
+=~ Field::print_key_part_value
+=~ print_range_for_non_indexed_field
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31416:
 =~ AddressSanitizer|signal
 =~ dict_v_col_t::detach
@@ -1244,6 +1250,10 @@ MDEV-27551:
 =~ Operating system error number 2 in a file operation
 =~ Failed to validate first page of the file .*/FTS_000.*, error 62
 =~ MariaBackupFull|MariaBackupIncremental
+MDEV-27483:
+=~ AddressSanitizer|signal
+=~ Field::set_image
+=~ get_column_range_cardinality
 MDEV-27427:
 =~ AddressSanitizer|signal
 =~ get_full_part_id_from_key
