@@ -560,6 +560,10 @@ MDEV-29262:
 =~ signal|AddressSanitizer
 =~ mark_select_range_as_dependent
 =~ setup_fields
+MDEV-29261:
+=~ signal|AddressSanitizer
+=~ subselect_uniquesubquery_engine::print
+=~ Item_func::print_args
 MDEV-29217:
 =~ Assertion \`0'
 =~ Item_param::can_return_value
@@ -2059,6 +2063,10 @@ MDEV-23256:
 =~ Query_cache::unlink_table
 =~ Query_cache::register_all_tables
 =~ Query_cache::store_query
+MDEV-23256:
+=~ AddressSanitizer|signal 11
+=~ Query_cache::join_free_blocks
+=~ Query_cache::free_old_query
 MDEV-23226:
 =~ Assertion \`inited == RND'
 =~ handler::ha_rnd_next
@@ -3634,9 +3642,10 @@ MDEV-17217:
 =~ find_all_keys
 =~ filesort
 MDEV-17120:
-=~ signal 11
+=~ signal|AddressSanitizer
 =~ multi_update::prepare
-=~ sp_head::execute
+=~ JOIN::prepare
+=~ sp_head::execute|Prepared_statement::execute
 MDEV-17120:
 =~ AddressSanitizer: use-after-poison
 =~ multi_update::prepare
