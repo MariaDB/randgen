@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31451:
+=~ Assertion \`marked_for_write_or_computed()'
+=~ fill_record_n_invoke_before_triggers
+=~ Sql_cmd_update::update_single_table
+=~ Version: '1[1-9]\.[1-9]|Server version: 1[1-9]\.[1-9]
 MDEV-31449:
 =~ Assertion \`s->table->opt_range_condition_rows <= s->found_records'
 =~ apply_selectivity_for_table
@@ -279,7 +284,7 @@ MDEV-30391:
 =~ Prepared_statement::execute
 MDEV-30372:
 =~ Assertion \`state() == s_executing \|\| state() == s_preparing \|\| state() == s_prepared \|\| state() == s_must_abort \|\| state() == s_aborting \|\| state() == s_cert_failed \|\| state() == s_must_replay'
-=~ wsrep::transaction::before_rollback
+=~ wsrep::transaction::before_rollback|wsrep::transaction::before_commit
 MDEV-30309:
 =~ Assertion \`!(\*with_wild)'
 =~ setup_wild
