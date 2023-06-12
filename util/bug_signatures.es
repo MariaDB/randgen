@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MENT-1844:
+=~ Assertion \`\*new_engine'
+=~ check_engine
+=~ Version: '10\.4|Server version: 10\.4
 MENT-809:
 =~ mariabackup: Aria engine: starting recovery
 =~ Got error 127 when executing|Got error 175 when executing
