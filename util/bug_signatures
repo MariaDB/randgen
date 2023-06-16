@@ -2211,6 +2211,11 @@ MDEV-23115:
 =~ trx_rseg_mem_restore
 =~ plugin_initialize
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-23113:
+=~ signal|AddressSanitizer
+=~ make_select|update_ref_and_keys
+=~ st_select_lex::optimize_unflattened_subqueries
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-23073:
 =~ LeakSanitizer: detected memory leaks
 =~ trx_savepoint_for_mysql
