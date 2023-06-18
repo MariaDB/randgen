@@ -40,7 +40,10 @@ $common_options= '
   --mysqld=--plugin-maturity=experimental
 ';
 
-$ps_protocol_options= '--ps-protocol --filter=conf/ff/need-reconnect.ff';
+# Disable for now, it doesn't seem to do much good, but causes a lot
+# of false positives due to a problem in DBD perl
+# $ps_protocol_options= '--ps-protocol --filter=conf/ff/need-reconnect.ff';
+$ps_protocol_options= '';
 
 #########################
 # Test parameter combinations
