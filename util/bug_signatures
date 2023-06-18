@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31494:
+=~ AddressSanitizer|signal
+=~ ha_partition::index_blocks
+=~ get_key_scans_params
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31451:
 =~ Assertion \`marked_for_write_or_computed()'
 =~ fill_record_n_invoke_before_triggers
@@ -76,6 +81,11 @@ MDEV-31278:
 =~ _ma_unpin_all_pages
 =~ handler::ha_check_overlaps
 =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31269:
+=~ AddressSanitizer|signal
+=~ Item::print_parenthesised
+=~ Item_bool_rowready_func2::print
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-31267:
 =~ signal|AddressSanitizer|Assertion \`n > 0 && n < SINUSES_CALCULATED*2+1'
 =~ get_n_sincos
@@ -229,6 +239,11 @@ MDEV-31122:
 =~ signal|AddressSanitizer
 =~ mysql_lock_abort_for_thread
 =~ MDL_lock::notify_conflicting_locks
+MDEV-31122:
+=~ signal|AddressSanitizer
+=~ ha_innobase::store_lock
+=~ ha_partition::store_lock
+=~ get_lock_data
 MDEV-31112:
 =~ AddressSanitizer|signal
 =~ Item::walk
@@ -295,7 +310,7 @@ MDEV-30309:
 =~ setup_returning_fields
 MDEV-30305:
 =~ Protocol::valid_handler|Version: '10\.3|Server version: 10\.3
-=~ Protocol_text::store_long
+=~ Protocol_text::store
 =~ Protocol::send_result_set_row
 MDEV-30297:
 =~ Assertion \`a\.str != __null'|signal
@@ -913,6 +928,10 @@ MDEV-28024:
 =~ ha_start_consistent_snapshot
 =~ FeatureUsage detected Spider engine
 =~ FeatureUsage detected RocksDB engine
+MDEV-27902:
+=~ signal|AddressSanitizer
+=~ ha_spider::rnd_next_internal
+=~ handler::ha_rnd_next
 MDEV-27878:
 =~ Assertion \`got_name == named_item_expected()'
 =~ Json_writer::on_start_object
