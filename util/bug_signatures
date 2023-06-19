@@ -2874,6 +2874,11 @@ MDEV-21085:
 =~ Assertion \`info->last_key\.keyinfo == key->keyinfo'
 =~ _ma_search_no_save
 =~ maria_rkey
+MDEV-21061:
+=~ signal|AddressSanitizer
+=~ ha_partition::open
+=~ QUICK_RANGE_SELECT::init_ror_merged_scan
+=~ Version: '10\.[3-4]|Server version: 10\.[3-4]
 MDEV-21016:
 =~ AddressSanitizer: heap-use-after-free
 =~ trx_update_mod_tables_timestamp
