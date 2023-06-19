@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31500:
+=~ Assertion \`(slen % 4) == 0'
+=~ my_fill_utf32
+=~ Field::make_key_image
+=~ calculate_cond_selectivity_for_table
+=~ FeatureUsage detected RocksDB tables
+MDEV-31499:
+=~ Assertion \`(0)'
+=~ Gis_geometry_collection::init_from_opresult
+=~ Item_func_spatial_operation::val_str
+MDEV-31498:
+=~ Assertion \`(key_dependent & s->key_dependent) == key_dependent'
+=~ best_access_path
+=~ make_join_statistics
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31497:
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_commit_stmt
