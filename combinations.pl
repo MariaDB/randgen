@@ -119,7 +119,7 @@ read(CONF, my $config_text, -s $config_file);
 eval ($config_text);
 help("ERROR: Unable to load $config_file: $@") if $@;
 
-say("Using config=$config_file, workdir=$workdir, seed=$comb_seed");
+say("Using config=$config_file, workdir=$workdir, seed=$comb_seed, adjusted to version $version");
 
 if (@ARGV) {
   sayDebug("Unrecognized options will be passed to the runner: @ARGV");
