@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31501:
+=~ Assertion \`cond_selectivity <= 1\.000000001'
+=~ get_range_limit_read_cost
+=~ test_if_cheaper_ordering
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31500:
 =~ Assertion \`(slen % 4) == 0'
 =~ my_fill_utf32
