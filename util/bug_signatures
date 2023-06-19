@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31497:
+=~ Assertion \`! thd->in_sub_stmt'
+=~ trans_commit_stmt
+=~ sequence_insert
+=~ sp_head::execute
 MDEV-31494:
 =~ AddressSanitizer|signal
 =~ ha_partition::index_blocks
