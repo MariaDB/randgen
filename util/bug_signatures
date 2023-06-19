@@ -165,7 +165,7 @@ MDEV-31226:
 =~ JOIN_CACHE::write_record_data
 =~ evaluate_join_record
 MDEV-31219:
-=~ Assertion \`fixed'
+=~ Assertion \`fixed'|Assertion \`fixed()'
 =~ Item_func_hybrid_field_type
 =~ Frame_positional_cursor::save_offset_value
 =~ compute_window_func
@@ -955,8 +955,8 @@ MDEV-28024:
 =~ FeatureUsage detected RocksDB engine
 MDEV-27902:
 =~ signal|AddressSanitizer
-=~ ha_spider::rnd_next_internal
-=~ handler::ha_rnd_next
+=~ ha_spider::rnd_next_internal|ha_spider::index_first_internal
+=~ handler::ha_rnd_next|handler::ha_index_first
 MDEV-27878:
 =~ Assertion \`got_name == named_item_expected()'
 =~ Json_writer::on_start_object
