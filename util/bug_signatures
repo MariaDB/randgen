@@ -4,6 +4,25 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31575:
+=~ signal|AddressSanitizer
+=~ mysql_admin_table
+=~ Sql_cmd_analyze_table::execute
+=~ Version: '10\.[4-7]|Server version: 10\.[4-7]
+MDEV-31575:
+=~ signal|AddressSanitizer
+=~ free_statistics_for_table
+=~ Sql_cmd_analyze_table::execute
+=~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31574:
+=~ Assertion \`rec_get_deleted_flag(rec, rec_offs_comp(offsets))'
+=~ row_purge_remove_clust_if_poss_low
+=~ Version: '10\.4|Server version: 10\.4
+MDEV-31565:
+=~ Assertion \`file->trn == 0 \|\| file->trn == &dummy_transaction_object'
+=~ ha_maria::close
+=~ ha_partition::close
+=~ sp_instr_stmt::exec_core
 MDEV-31501:
 =~ Assertion \`cond_selectivity <= 1\.000000001'
 =~ get_range_limit_read_cost
