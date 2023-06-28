@@ -3848,7 +3848,7 @@ MDEV-16659:
 =~ Assertion \`anc_page->org_size == anc_page->size'
 =~ d_search
 =~ _ma_ck_real_delete
-=~ ha_maria::delete_row
+=~ ha_maria::delete_row|ha_maria::update_row
 MDEV-16635:
 =~ signal 11|AddressSanitizer: SEGV
 =~ open_table
