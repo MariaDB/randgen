@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31591:
+=~ Assertion \`!error'
+=~ ha_partition::delete_row
+=~ multi_delete
+=~ Status: KILL_TIMEOUT
+MDEV-31580:
+=~ Assertion \`marked_for_read()'
+=~ store_key::copy
+=~ cmp_buffer_with_ref
+=~ Item_subselect::exec
 MDEV-31575:
 =~ signal|AddressSanitizer
 =~ mysql_admin_table
@@ -44,7 +54,7 @@ MDEV-31498:
 =~ make_join_statistics
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31497:
-=~ Assertion \`! thd->in_sub_stmt'
+=~ Assertion \`! thd->in_sub_stmt'|Assertion \`!(thd->in_sub_stmt)'
 =~ trans_commit_stmt
 =~ sequence_insert
 =~ sp_head::execute
