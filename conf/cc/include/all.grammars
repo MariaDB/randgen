@@ -42,7 +42,7 @@ $grammars = [
       --mysqld=--plugin-load-add=auth_ed25519.so
       --mysqld=--plugin-load-add=auth_pam.so
       --mysqld=--plugin-load-add=cracklib_password_check.so
-      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
+      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--loose-password-reuse-check-interval=1
       --mysqld=--plugin-load-add=simple_password_check.so',
 '--grammar=conf/yy/current_timestamp.yy
       --gendata=conf/zz/current_timestamp.zz',
