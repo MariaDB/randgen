@@ -506,7 +506,10 @@ sub startServer {
     $self->printInfo;
 
     my $errlog_last_update_time= (stat($errorlog))[9] || 0;
-    my $number_of_previous_starts= `grep -Ec 'Starting MariaDB .* as process [0-9][0-9]*|starting as process [0-9][0-9]*' $errorlog`;
+    my $number_of_previous_starts= 0;
+    if (-f $errorlog) {
+      $number_of_previous_starts= `grep -Ec 'Starting MariaDB .* as process [0-9][0-9]*|starting as process [0-9][0-9]*' $errorlog`;
+    }
     chomp $number_of_previous_starts;
     say("Starting server ".$self->version.": $command");
 
