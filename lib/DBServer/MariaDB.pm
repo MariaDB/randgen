@@ -50,6 +50,7 @@ use constant MYSQLD_SERVERPID => 12;
 use constant MYSQLD_DBH => 14;
 use constant MYSQLD_START_DIRTY => 15;
 use constant MYSQLD_VALGRIND => 16;
+use constant MYSQLD_PERF => 17;
 use constant MYSQLD_VERSION => 18;
 use constant MYSQLD_DUMPER => 19;
 use constant MYSQLD_SOURCEDIR => 20;
@@ -88,6 +89,7 @@ sub new {
                                    'general_log' => MYSQLD_GENERAL_LOG,
                                    'host' => MYSQLD_HOST,
                                    'manual_gdb' => MYSQLD_MANUAL_GDB,
+                                   'perf' => MYSQLD_PERF,
                                    'port' => MYSQLD_PORT,
                                    'ps' => MYSQLD_PS_PROTOCOL,
                                    'rr' => MYSQLD_RR,
@@ -101,7 +103,10 @@ sub new {
 
     croak "No valgrind support on windows" if osWindows() and defined $self->[MYSQLD_VALGRIND];
     croak "No rr support on windows" if osWindows() and $self->[MYSQLD_RR];
-    croak "No cannot use both rr and valgrind at once" if $self->[MYSQLD_RR] and defined $self->[MYSQLD_VALGRIND];
+    croak "No perf support on windows" if osWindows() and $self->[MYSQLD_PERF];
+    croak "Cannot use both rr and valgrind at once" if $self->[MYSQLD_RR] and defined $self->[MYSQLD_VALGRIND];
+    croak "Cannot use both rr and perf at once" if $self->[MYSQLD_RR] and defined $self->[MYSQLD_PERF];
+    croak "Cannot use both valgrind and perf at once" if $self->[MYSQLD_VALGRIND] and defined $self->[MYSQLD_PERF];
     croak "Vardir is not defined for the server" unless $self->[MYSQLD_VARDIR];
 
     if (osWindows()) {
@@ -485,6 +490,9 @@ sub startServer {
 
     if ($self->[MYSQLD_RR]) {
         $command = "rr record -h --output-trace-dir=".$self->vardir."/rr_profile_".time()." ".$command;
+    }
+    elsif ($self->[MYSQLD_PERF]) {
+        $command= "perf record -o ".$self->vardir."/perf_data_".time()." ".$command;
     }
     elsif (defined $self->[MYSQLD_VALGRIND]) {
         my $val_opt ="";

@@ -218,6 +218,7 @@ sub init {
               'user',
               'parser',
               'parser_mode',
+              'perf',
       ]
   );
 
@@ -265,6 +266,7 @@ sub setPropertiesFromHash {
   $gentestProps->property('variators',$props->{variators}) if $props->{variators};
   $gentestProps->property('valgrind',1) if $props->{valgrind};
   $gentestProps->property('rr',1) if $props->{rr};
+  $gentestProps->property('perf',1) if $props->{perf};
   $gentestProps->property('validators',$props->{validators}) if $props->{validators};
   $gentestProps->property('vcols',$props->{vcols}) if $props->{vcols};
   $gentestProps->property('views',$props->{views}) if $props->{views};

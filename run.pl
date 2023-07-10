@@ -99,6 +99,7 @@ sub run {
     manual_gdb  => undef,
     mysqld      => undef,
     partitions  => undef,
+    perf        => undef,
     ps          => undef,
     rr          => undef,
     valgrind    => undef,
@@ -114,6 +115,7 @@ sub run {
     'manual-gdb|manual_gdb' => \$server_options{manual_gdb},
     'mysqld=s@' => \@{$server_options{mysqld}},
     'partitions!'   => \$server_options{partitions},
+    'perf!' => \$server_options{perf},
     'ps_protocol|ps-protocol' => \$server_options{ps},
     'rr!' => \$server_options{rr},
     'valgrind:s'    => \$server_options{valgrind},
@@ -570,6 +572,7 @@ Run a complete random query generation test scenario
     --debug          : RQG debug mode (a lot of extra output)
     --manual-gdb     : Pause and wait for keypress after server startup
                        to allow attaching a debugger to the server process
+    --perf           : Run the server under perf record
     --rr             : Run the server under rr record
     --sqltrace       : Print all generated SQL statements.
                        Optional: Specify --sqltrace=MarkErrors to mark
