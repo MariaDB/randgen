@@ -185,6 +185,7 @@ dynvar_session_variable:
 # Too many problems: MDEV-23294, MDEV-23318, MDEV-23363, MDEV-23364, ...
 # | MYISAM_REPAIR_THREADS= { $prng->int(1,10) }
 # Too many problems with low values, removing 131072 from the array
+# e.g. MDEV-23398
   | MYISAM_SORT_BUFFER_SIZE= { $prng->arrayElement([1048576,268434432]) }
   | MYISAM_STATS_METHOD= { $prng->arrayElement(['nulls_equal','nulls_unequal','nulls_ignored']) }
 # | NET_BUFFER_LENGTH # Doesn't seem to be dynamic
