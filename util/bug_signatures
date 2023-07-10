@@ -131,7 +131,7 @@ MDEV-31314:
 =~ THD::~THD
 =~ FeatureUsage detected virtual columns
 MDEV-31304:
-=~ InnoDB: Assertion failure in file.*trx0roll|InnoDB: Assertion failure in file *trx0trx
+=~ InnoDB: Assertion failure in file.*trx0roll|InnoDB: Assertion failure in file.*trx0trx
 =~ trx_rollback_last_sql_stat_for_mysql|trx_mark_sql_stat_end
 =~ FeatureUsage detected XA transactions
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
