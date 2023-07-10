@@ -168,6 +168,8 @@ sub run {
     return help();
   }
 
+  $ENV{RQG_DEBUG} = 1 if ($props->{debug});
+
   if ( osWindows() && !$props->{debug} )
   {
     require Win32::API;
