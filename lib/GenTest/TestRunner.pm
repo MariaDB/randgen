@@ -107,8 +107,6 @@ sub run {
     $SIG{TERM} = sub { exit(0) };
     $SIG{CHLD} = "IGNORE" if osWindows();
 
-    $ENV{RQG_DEBUG} = 1 if $self->config->debug;
-
     $self->initSeed();
 
     say("-------------------------------\nConfiguration");
