@@ -93,7 +93,7 @@ $combinations = [
   ##### Binary logging
   [ '', '', [ @{$options{binlog_combinations}} ] ],
   ##### Performance schema
-  [ '', '', '', '', '', '', '', '', '', $options{perfschema_options} . ' --grammar=conf/yy/performance_schema.yy'],
+  [ '', '', '', '', '', '', '', '', '', $options{perfschema_options}->[0] . ' --grammar=conf/yy/performance_schema.yy'],
   ##### Startup variables (general)
   [ @{$options{optional_server_variables}} ],
   [ @{$options{optional_charsets}} ],
