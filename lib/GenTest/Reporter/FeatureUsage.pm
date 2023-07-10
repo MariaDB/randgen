@@ -52,6 +52,7 @@ my %usage_check= (
   'Federated tables' => \&check_for_federated_tables,
   'foreign keys' => \&check_for_foreign_keys,
   'GIS columns' => \&check_for_gis,
+  'INET columns' => \&check_for_inet_columns,
   'multi-update/delete' => \&check_for_multi_upd_del,
   'performance schema' => \&check_for_performance_schema,
   'RocksDB engine' => \&check_for_rocksdb_plugin,
@@ -209,6 +210,14 @@ sub check_for_unique_blobs {
 sub check_for_virtual_columns {
   my $reporter= shift;
   if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE IS_GENERATED='ALWAYS'")) {
+    return "according to I_S.COLUMNS";
+  }
+  return undef;
+}
+
+sub check_for_inet_columns {
+  my $reporter= shift;
+  if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_TYPE IN ('inet4','inet6')")) {
     return "according to I_S.COLUMNS";
   }
   return undef;
