@@ -305,6 +305,14 @@ sub normalizeGrants {
     if ($old_server->versionNumeric lt '101101' and $new_server->versionNumeric ge '101101' and $old_grants->{$u} =~ /SUPER/ and $old_grants->{$u} !~ /READ_ONLY ADMIN/) {
       $new_grants->{$u} =~ s/, READ_ONLY ADMIN//;
     }
+    # In 11.0 SUPER and small privileges it included were separated (MDEV-29668)
+#    if ($old_server->versionNumeric lt '110001' and $new_server->versionNumeric ge '110001' and $old_grants->{$u} =~ /SUPER/) {
+#      foreach my $p ('SET USER','BINLOG ADMIN','BINLOG REPLAY','CONNECTION ADMIN','FEDERATED ADMIN','REPLICATION SLAVE ADMIN','SLAVE MONITOR','REPLICATION MASTER ADMIN') {
+#        if($old_grants->{$u} !~ /$p/) {
+#          $new_grants->{$u} =~ s/, $p//;
+#        }
+#      }
+#    }
   }
 }
 
