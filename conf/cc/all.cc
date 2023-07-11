@@ -34,14 +34,16 @@ require "$ENV{RQG_HOME}/conf/cc/include/combo.grammars";
 my %options;
 
 foreach my $comb (keys %server_options) {
+  my @opts= ();
   my $opts= $server_options{$comb};
   VERSIONS:
   foreach my $ver (reverse sort keys %$opts) {
     if ($ver le $version) {
-      $options{$comb}= $opts->{$ver};
+      push @opts, (ref $opts->{$ver} eq 'ARRAY' ? @{$opts->{$ver}} : $opts->{$ver});
       last VERSIONS;
     }
   }
+  $options{$comb}= [ @opts ];
 }
 
 $combinations = [
