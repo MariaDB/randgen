@@ -369,7 +369,7 @@ $innodb_pagesize_combinations{$minversion}= [
   '--mysqld=--innodb-page-size=64K'
 ];
 
-$server_options{innodb_compression_combinations}= \%innodb_compression_combinations;
+$server_options{innodb_pagesize_combinations}= \%innodb_pagesize_combinations;
 
 #############
 # InnoDB vars
