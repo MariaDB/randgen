@@ -183,6 +183,11 @@ sub new {
 
 sub doGenData {
   my $props= shift;
+  my $server_num= shift;
+  # If server number is defined, generate data only there, ignore all other servers.
+  # It is a scenario of upgrade tests, for example.
+  # Otherwise generate data on each server (e.g. for comparison tests).
+  my @server_numbers= ($server_num ? ($server_num) : sort { $a <=> $b } keys %{$props->server_specific});
   my @generators= ();
   my $result= STATUS_OK;
   foreach my $gd (@{$props->gendata}) {
@@ -194,7 +199,7 @@ sub doGenData {
     }
     $gd_class="GenData::$gd_class";
     eval ("require $gd_class") or croak $@;
-    foreach my $i (sort { $a <=> $b } keys %{$props->server_specific}) {
+    foreach my $i (@server_numbers) {
       my $so= $props->server_specific->{$i};
       next unless $so->{active};
       say("Running $gd_class".($gd_class eq 'GenData::GendataFromFile' ? " from $gd" : "")." on server $i");
@@ -224,7 +229,7 @@ sub doGenData {
       say("$gd_class finished with result ".status2text($res));
     }
   }
-  if ($result < STATUS_CRITICAL_FAILURE && scalar(keys %{$props->server_specific}) > 1) {
+  if ($result < STATUS_CRITICAL_FAILURE && scalar(@server_numbers) > 1) {
     $result= validateData($props);
   }
   return $result;

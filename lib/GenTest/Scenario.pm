@@ -196,7 +196,9 @@ sub setServerStartupOption {
 
 sub generateData {
   my $self= shift;
-  my $status= GenData::doGenData($self->[SC_TEST_PROPERTIES]);
+  # Server number may be undefined, doGenData will handle it
+  my $server_num= shift;
+  my $status= GenData::doGenData($self->[SC_TEST_PROPERTIES], $server_num);
   if ($status >= STATUS_CRITICAL_FAILURE) {
     sayError("Data generation failed with ".status2text($status));
     return $status;

@@ -150,7 +150,7 @@ sub run {
   #####
   $self->printStep("Generating test data on the master");
 
-  $status= $self->generateData();
+  $status= $self->generateData(1);
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");

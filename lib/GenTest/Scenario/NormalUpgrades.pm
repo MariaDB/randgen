@@ -89,7 +89,7 @@ sub run {
   #####
   $self->printStep("Generating data on the old server");
 
-  $status= $self->generateData();
+  $status= $self->generateData(1);
 
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
