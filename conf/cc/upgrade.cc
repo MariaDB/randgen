@@ -20,26 +20,11 @@ use strict;
 
 our (%server_options);
 
-# Version should be defined in the combinations options
-$version='999999' unless defined $version;
-
 require "$ENV{RQG_HOME}/conf/cc/include/parameter_presets";
 require "$ENV{RQG_HOME}/conf/cc/include/combo.grammars";
 
-my %options;
-
-foreach my $comb (keys %server_options) {
-  my @opts= ();
-  my $opts= $server_options{$comb};
-  VERSIONS:
-  foreach my $ver (reverse sort keys %$opts) {
-    if ($ver le $version) {
-      push @opts, (ref $opts->{$ver} eq 'ARRAY' ? @{$opts->{$ver}} : $opts->{$ver});
-      last VERSIONS;
-    }
-  }
-  $options{$comb}= [ @opts ];
-}
+# Choose options based on $version value
+require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
 
 $combinations = [
   ['

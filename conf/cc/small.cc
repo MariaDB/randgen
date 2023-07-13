@@ -25,24 +25,11 @@ our ($non_crash_scenarios, $crash_scenarios, $mariabackup_scenarios);
 our (%server_options);
 our ($grammars, $gendata);
 
-# Version should be defined in the combinations options
-$version='999999' unless defined $version;
-
 require "$ENV{RQG_HOME}/conf/cc/include/parameter_presets.small";
 require "$ENV{RQG_HOME}/conf/cc/include/combo.grammars.small";
 
-my %options;
-
-foreach my $comb (keys %server_options) {
-  my $opts= $server_options{$comb};
-  VERSIONS:
-  foreach my $ver (reverse sort keys %$opts) {
-    if ($ver le $version) {
-      $options{$comb}= $opts->{$ver};
-      last VERSIONS;
-    }
-  }
-}
+# Choose options based on $version value
+require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
 
 $combinations = [
   # For the  unlikely case when nothing else is picked
