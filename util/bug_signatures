@@ -4,6 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31681:
+=~ [ERROR] Duplicated key: used_range_estimates
+=~ Assertion \`is_uniq_key'
+=~ Json_writer::add_member
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31680:
+=~ missing DBUG_RETURN or DBUG_VOID_RETURN macro in function "prepare_fk_prelocking_list"
+=~ DML_prelocking_strategy::handle_table
+MDEV-31678:
+=~ Assertion \`marked_for_read()'
+=~ Field_long::val_int
+=~ calc_row_difference
+=~ Log_event::apply_event
 MDEV-31650:
 =~ Assertion \`0'
 =~ retrieve_auto_increment|ma_retrieve_auto_increment
@@ -346,6 +359,10 @@ MDEV-30801:
 =~ trx_start_if_not_started_low
 =~ Query_cache::send_result_to_client
 =~ FeatureUsage detected XA transactions
+MDEV-30691:
+=~ Assertion \`strlen(Ptr) == str_length'
+=~ Binary_string::chop
+=~ Item_func_json_format::val_str
 MDEV-30565:
 =~ LeakSanitizer:
 =~ ha_innobase::open
