@@ -22,13 +22,15 @@ use strict;
 our ($common_options, $ps_protocol_options, $views_combinations, $vcols_combinations, $threads_low_combinations, $optional_variators);
 our ($basic_engine_combinations, $enforced_engine_combinations, $extra_engine_combinations);
 our ($non_crash_scenarios, $crash_scenarios, $mariabackup_scenarios);
-our (%server_options);
+our (%server_options, %options);
 our ($grammars, $gendata);
 
 require "$ENV{RQG_HOME}/conf/cc/include/parameter_presets.small";
 require "$ENV{RQG_HOME}/conf/cc/include/combo.grammars.small";
 
 # Choose options based on $version value
+# ($version may be defined via config-version, otherwise 999999 will be used)
+local @ARGV = ($version);
 require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
 
 $combinations = [

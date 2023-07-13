@@ -16,18 +16,19 @@
 
 ########################################################################
 
-# Version should/can be defined in the combinations options
-$version='999999' unless defined $version;
-
-my %options;
+# Version should/can be defined in the combinations options and passed here
+my $version= shift;
 
 foreach my $comb (keys %server_options) {
+  my @opts= ();
   my $opts= $server_options{$comb};
   VERSIONS:
   foreach my $ver (reverse sort keys %$opts) {
     if ($ver le $version) {
-      $options{$comb}= $opts->{$ver};
+      push @opts, (ref $opts->{$ver} eq 'ARRAY' ? @{$opts->{$ver}} : $opts->{$ver});
       last VERSIONS;
     }
   }
+  $options{$comb}= [ @opts ];
 }
+return 1;

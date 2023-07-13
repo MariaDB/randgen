@@ -18,12 +18,14 @@
 
 use strict;
 
-our (%server_options);
+our (%server_options, %options);
 
 require "$ENV{RQG_HOME}/conf/cc/include/parameter_presets";
 require "$ENV{RQG_HOME}/conf/cc/include/combo.grammars";
 
 # Choose options based on $version value
+# ($version may be defined via config-version, otherwise 999999 will be used)
+local @ARGV = ($version);
 require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
 
 $combinations = [
