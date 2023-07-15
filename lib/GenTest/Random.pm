@@ -1407,7 +1407,10 @@ sub auto {
   foreach my $i (0..$#items) {
     if ($r <= $probabilities[$i]) {
       my $item= $items[$i];
-      $item=~ s/_([^_])/ $1/g;
+      # To have an actual underscore in the item, we repeat it twice in the template
+      # so, to get LOW_PRIORITY, it should be __low__priority
+      $item=~ s/_/ /g;
+      $item=~ s/  /\_/g;
       return uc($item) ;
     }
     $r-= $probabilities[$i];

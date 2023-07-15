@@ -54,12 +54,12 @@ create_datafile:
 
 # Presumably create_datafile was just called, and fname is set
 self_load:
-  LOAD DATA LOCAL INFILE { "'$fname'" } __replace_x_ignore INTO TABLE _table[invariant] ;
+  LOAD DATA __low__priority_x_concurrent(10,20) LOCAL INFILE { "'$fname'" } __replace_x_ignore INTO TABLE _table[invariant] ;
 
 # Load a random data file into the table. High chance of wrong field types/count,
 # but it's not as critical for LOAD as it is for INSERT
 cross_load:
-  LOAD DATA LOCAL INFILE existing_datafile_name __replace_x_ignore INTO TABLE _table ;
+  LOAD DATA __low__priority_x_concurrent(10,20) LOCAL INFILE existing_datafile_name __replace_x_ignore INTO TABLE _table ;
 
 set_variables:
   SET FOREIGN_KEY_CHECKS=0, UNIQUE_CHECKS=0, AUTOCOMMIT=0 ;
