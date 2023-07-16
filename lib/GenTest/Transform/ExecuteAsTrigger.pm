@@ -56,6 +56,7 @@ sub transform {
 
 sub variate {
   my ($class, $orig_query, $executor) = @_;
+  return [ $orig_query ] unless $executor->metaTables() && (scalar(@{$executor->metaTables()}));
   my $table= $class->random->arrayElement($executor->metaTables())->[1];
   my $query= $orig_query;
   if ($query =~ /^[\s\(]*SELECT/ and $query !~ /\WINTO\W/) {
