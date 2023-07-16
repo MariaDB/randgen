@@ -81,7 +81,7 @@ sub prepare_servers {
   $self->setServerSpecific(2,'vardir',$old_server->vardir);
   $self->setServerSpecific(2,'port',$old_server->port);
   $self->setServerSpecific(2,'start_dirty',1);
-  my $new_server= $self->prepareServer(2,my $is_active=1);
+  my $new_server= $self->prepareServer(2,my $is_active=0);
 
   say("-- Old server info: --");
   say($old_server->version());
