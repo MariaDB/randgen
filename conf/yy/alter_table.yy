@@ -34,11 +34,12 @@ query:
   { $in_new_table= 0; $colnum= 0; '' } alt_query;
 
 alt_query:
-                   { _set_db('alt_table_db') } alt_create
+    ==FACTOR:0.5== { _set_db('alt_table_db') } alt_create
   | ==FACTOR:20==  { _set_db('NON-SYSTEM') } alt_alter
   | ==FACTOR:0.1== { _set_db('alt_table_db') } alt_rename_multi
   |                { _set_db('NON-SYSTEM') } alt_alter_partitioning
-  |                { _set_db('NON-SYSTEM') } alt_optimize
+  | ==FACTOR:0.5== { _set_db('NON-SYSTEM') } alt_optimize
+  |                { _set_db('NON-SYSTEM') }  alt_alter_item_skip_binlog
 ;
 
 alt_create:
@@ -51,7 +52,7 @@ alt_rename_multi:
 ;
 
 alt_alter:
-  ALTER alt_online_optional alt_ignore_optional TABLE __if_exists(95) _basetable _basics_wait_nowait alt_alter_list_with_optional_order_by
+  alt_optional_set_statement ALTER alt_online_optional alt_ignore_optional TABLE __if_exists(95) _basetable _basics_wait_nowait alt_alter_list_with_optional_order_by
 ;
 
 alt_ignore_optional:
@@ -77,20 +78,42 @@ alt_alter_item:
   | ==FACTOR:3==   alt_modify_column
   |                alt_change_column
   |                alt_alter_column
-  | ==FACTOR:2==   alt_add_index
+  | ==FACTOR:4==   alt_add_index
   | ==FACTOR:0.2== alt_add_foreign_key
   | ==FACTOR:0.2== alt_drop_foreign_key
   | ==FACTOR:0.5== alt_add_check_constraint
   | ==FACTOR:0.5== alt_drop_check_constraint
   | ==FACTOR:0.5== alt_drop_column
   |                alt_drop_index
-  | ==FACTOR:4==   FORCE alt_lock alt_algorithm
+  | ==FACTOR:0.1== alt_versioning
   | ==FACTOR:0.001== RENAME TO alt_new_or_existing_table_name
+  | ==FACTOR:4==   alt_alter_item_can_skip_binlog
+;
+
+# We will only do non-binlog ALTER if it doesn't change the structure,
+# to avoid diverging
+alt_alter_item_can_skip_binlog:
+    ==FACTOR:4==   FORCE alt_lock alt_algorithm
+  |                DISABLE KEYS alt_lock alt_algorithm
+  |                ENABLE KEYS alt_lock alt_algorithm
+;
+
+alt_alter_item_skip_binlog:
+  SET STATEMENT SQL_LOG_BIN=0 FOR ALTER TABLE __if_exists(95) _basetable _basics_wait_nowait alt_alter_item_can_skip_binlog
 ;
 
 # Can't put it on the list, as ORDER BY should always go last
 alt_optional_order_by:
   | | | | | | | | | | , ORDER BY alt_column_list ;
+
+alt_versioning:
+  ==FACTOR:3== ADD SYSTEM VERSIONING |
+               DROP SYSTEM VERSIONING
+;
+
+alt_optional_set_statement:
+  | SET STATEMENT SYSTEM_VERSIONING_ALTER_HISTORY=KEEP FOR
+;
 
 alt_table_option:
     alt_storage_optional ENGINE alt_eq_optional alt_engine
