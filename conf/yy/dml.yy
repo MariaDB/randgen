@@ -26,7 +26,8 @@ query:
   { _set_db('NON-SYSTEM') } dml_query;
 
 dml_query:
-    ==FACTOR:9== generic_dml_dml |
+    ==FACTOR:9== generic_dml_query |
+    ==FACTOR:3== generic_dml_transaction |
     generic_dml_trx
 ;
 
@@ -35,8 +36,19 @@ generic_dml_trx:
   COMMIT
 ;
 
-generic_dml_dml:
+generic_dml_transaction:
+  START TRANSACTION ;; generic_dml_set ;; COMMIT ;
+
+generic_dml_set:
+  generic_dml_dml |
+  generic_dml_dml ;; generic_dml_set
+;
+
+generic_dml_query:
     generic_dml_select |
+    ==FACTOR:10== generic_dml_dml ;
+
+generic_dml_dml:
     ==FACTOR:3== generic_dml_update |
     generic_dml_delete |
     ==FACTOR:2== generic_dml_insert
