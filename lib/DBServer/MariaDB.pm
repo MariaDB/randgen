@@ -1310,6 +1310,44 @@ sub waitForServerToStop {
   return !$self->running;
 }
 
+sub getMasterPos {
+  my $self= shift;
+  my ($file, $pos) = $self->dbh->selectrow_array("SHOW MASTER STATUS");
+  unless ($file && $pos) {
+    sayError("Could not retrieve master status");
+  }
+  return ($file, $pos);
+}
+
+sub syncWithMaster {
+  my ($self, $file, $pos, $rpl_timeout)= @_;
+  say("Waiting for the slave to synchronize with master ($file, $pos)");
+  $rpl_timeout ||= 0;
+  if ($self->dbh) {
+    $self->dbh->do("SET max_statement_time=0");
+    my $wait_result = $self->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos,$rpl_timeout)");
+    # Cannot do selectrow_array, as fields have different positions in different versions
+    my $sth= $self->dbh->prepare("SHOW SLAVE STATUS");
+    my $slave_status= $sth->fetchrow_hashref;
+    $slave_status->{Last_SQL_Errno}, $slave_status->{Last_IO_Errno};
+    if (not defined $wait_result) {
+      sayError("Slave failed to synchronize with master");
+      foreach my $f ('Last_SQL','Last_IO') {
+        if ($slave_status->{$f.'_Errno'}) {
+          sayError("${f}_Errno: ".$slave_status->{$f.'_Errno'}." (".$slave_status->{$f.'_Error'}.")");
+        }
+      }
+      return DBSTATUS_FAILURE;
+    } else {
+      say("Slave SQL thread apparently synchronized successfully");
+      return DBSTATUS_OK;
+    }
+  } else {
+    sayError("Lost connection to the slave");
+    return DBSTATUS_FAILURE;
+  }
+}
+
 sub waitForServerToStart {
   my $self= shift;
   my $waits= 0;
