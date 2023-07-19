@@ -79,7 +79,7 @@ sub run {
   # for binlog consistency check. Otherwise the check will be skipped
   my @mysqld_options= @{$self->getServerSpecific(1)->{mysqld}};
 
-  if ("@mysqld_options" =~ /--log[-_]bin/) {
+  if ("@mysqld_options" =~ /--log[-_]bin[= ]|--log[-_]bin$/) {
     $self->copyServerSpecific(1,2);
     $self->setServerSpecific(2,'port',$self->getProperty('base_port') + 1);
 
@@ -253,21 +253,12 @@ sub run {
   if ($slave) {
     #####
     $self->printStep("Replicating the data");
-    $master_dbh= $server->dbh;
-    my ($file, $pos) = $master_dbh->selectrow_array("SHOW MASTER STATUS");
-    say("Master status: $file/$pos. Waiting for the slave to catch up...");
-    my $wait_result = $slave_dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
-    if (not defined $wait_result) {
-      if ($slave_dbh) {
-          my @slave_status = $slave_dbh->selectrow_array("SHOW SLAVE STATUS");
-          sayError("Slave SQL thread has stopped with error: ".$slave_status[37]);
-      } else {
-          sayError("Lost connection to the slave");
-      }
+    my ($file, $pos) = $server->getMasterPos();
+    if ($file && $pos && $slave->syncWithMaster($file, $pos) == STATUS_OK) {
+      $slave_dbh->do("STOP SLAVE");
+    } else {
       return $self->finalize(STATUS_REPLICATION_FAILURE,[$server,$slave]);
     }
-    $slave_dbh->do("STOP SLAVE");
-
     #####
     $self->printStep("Dumping databases from the slave");
 
