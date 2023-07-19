@@ -4,6 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31744:
+=~ Assertion \`order_list->elements == 1'
+=~ Frame_range_n_bottom::Frame_range_n_bottom
+=~ get_window_functions_required_cursors
+MDEV-31743:
+=~ Assertion \`sortorder->length <= 0xFFFFFFFFL - sortorder->suffix_length'
+=~ Type_handler_string_result::sort_length
+=~ st_join_table::remove_duplicates
+MDEV-31743:
+=~ signal|AddressSanitizer
+=~ store_length
+=~ Type_handler_string_result::make_sort_key
+=~ st_join_table::remove_duplicates
 MDEV-31681:
 =~ [ERROR] Duplicated key: used_range_estimates
 =~ Assertion \`is_uniq_key'
