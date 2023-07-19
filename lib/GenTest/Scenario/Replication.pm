@@ -62,7 +62,8 @@ sub run {
   $topology= '1->2';
 
   my @reporters= $self->getProperty('reporters') ? @{$self->getProperty('reporters')} : ();
-  my $rpl_mode= $self->scenarioOptions->{'rpl-mode'} || $self->scenarioOptions->{'rpl-mode'} || '';
+  my $rpl_mode= $self->scenarioOptions->{'rpl-mode'} || $self->scenarioOptions->{'rpl_mode'} || '';
+  my $rpl_timeout= $self->scenarioOptions->{'rpl-timeout'} || $self->scenarioOptions->{'rpl_timeout'} || $self->getProperty('duration');
   push @reporters, 'ReplicationConsistency' unless $rpl_mode =~ /nosync/;
   push @reporters, 'ReplicationSlaveStatus';
 
@@ -167,24 +168,9 @@ sub run {
   }
 
   #####
-  my ($file, $pos) = $servers[0]->dbh->selectrow_array("SHOW MASTER STATUS");
-  unless (defined $file and defined $pos) {
-    sayError("Could not determine master position");
-    return $self->finalize($status,[@servers]);
-  }
-  $self->printStep("Waiting for the slave to synchronize with master ($file, $pos)");
-  if ($servers[1]->dbh) {
-    $servers[1]->dbh->do("SET max_statement_time=0");
-    my $wait_result = $servers[1]->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos)");
-    my @slave_status = $servers[1]->dbh->selectrow_array("SHOW SLAVE STATUS");
-    if (not defined $wait_result) {
-      sayError("Slave SQL thread has stopped with error: ".$slave_status[37]);
-      return $self->finalize(STATUS_REPLICATION_FAILURE,[@servers]);
-    } else {
-      say("Slave SQL thread apparently synchronized successfully: ".$slave_status[37]);
-    }
-  } else {
-    sayError("Lost connection to the slave");
+  $self->printStep("Synchronizing with master");
+  my ($file, $pos) = $servers[0]->getMasterPos();
+  unless ($file && $pos && $servers[1]->syncWithMaster($file, $pos) == STATUS_OK) {
     return $self->finalize(STATUS_REPLICATION_FAILURE,[@servers]);
   }
 
