@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31764:
+=~ AddressSanitizer|signal
+=~ trace_engine_stats
+=~ Explain_table_access::print_explain_json
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31744:
 =~ Assertion \`order_list->elements == 1'
 =~ Frame_range_n_bottom::Frame_range_n_bottom
