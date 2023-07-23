@@ -205,7 +205,7 @@ MDEV-31244:
 =~ TABLE::vers_switch_partition
 =~ Version: '10\.9|Server version: 10\.9|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31243:
-=~ Assertion \`field->orig_table->stats_is_read'|=~ Assertion \`field->table->stats_is_read'
+=~ Assertion \`field->orig_table->stats_is_read'| Assertion \`field->table->stats_is_read'
 =~ is_eits_usable
 =~ hash_join_fanout
 =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
