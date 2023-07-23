@@ -762,9 +762,13 @@ sub drop_broken {
   my $self= shift;
   my $dbh= $self->dbh;
   say("Checking view and merge table consistency");
+  # In case it was set to READ ONLY before
+  $dbh->do("SET SESSION TRANSACTION READ WRITE");
   while (1) {
     my $broken= $dbh->selectall_arrayref("select * from information_schema.tables where table_comment like 'Unable to open underlying table which is differently defined or of non-MyISAM type or%' or table_comment like '%references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them' or table_comment like 'Table % is differently defined or of non-MyISAM type or%'");
     last unless ($broken && scalar(@$broken));
+    # If we don't succeed to drop anything in a round, we'll give up
+    my $count= 0;
     foreach my $vt (@$broken) {
       my $fullname= '`'.$vt->[1].'`.`'.$vt->[2].'`';
       my $type= ($vt->[3] eq 'VIEW' ? 'view' : 'table');
@@ -773,9 +777,16 @@ sub drop_broken {
       $dbh->do("DROP $type $fullname");
       if ($dbh->err) {
         sayWarning("Failed to drop $type $fullname: ".$dbh->err."(".$dbh->errstr.")");
+      } else {
+        $count++;
       }
     }
+    if ($count == 0) {
+      sayError("Couldn't drop any of ".scalar(@$broken)." broken objects, giving up");
+      return DBSTATUS_FAILURE;
+    }
   }
+  return DBSTATUS_OK;
 }
 
 # dumpdb is performed in two modes.
@@ -788,7 +799,9 @@ sub dumpdb {
     my ($self,$database,$file,$for_restoring,$options) = @_;
     my $dbh= $self->dbh;
     $dbh->do('SET GLOBAL max_statement_time=0');
-    $self->drop_broken();
+    if ($self->drop_broken() != DBSTATUS_OK) {
+      return DBSTATUS_FAILURE;
+    }
     if ($for_restoring) {
       # Workaround for MDEV-29936 (unique ENUM/SET with invalid values cause problems)
       my $enums= $self->dbh->selectall_arrayref(
@@ -865,7 +878,9 @@ sub dumpdb {
 sub dumpSchema {
     my ($self,$database, $file) = @_;
 
-    $self->drop_broken();
+    if ($self->drop_broken() != DBSTATUS_OK) {
+      return DBSTATUS_FAILURE;
+    }
 
     my $databases= '--all-databases --add-drop-database';
     if ($database && scalar(@$database) > 1) {
