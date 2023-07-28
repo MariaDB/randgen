@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31792:
+=~ Assertion \`(mdl_request->type != MDL_INTENTION_EXCLUSIVE && mdl_request->type != MDL_EXCLUSIVE) \|\| !(get_thd()->rgi_slave && get_thd()->rgi_slave->is_parallel_exec && lock->check_if_conflicting_replication_locks(this))'
+=~ MDL_context::acquire_lock
+=~ FeatureUsage detected sequences
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31764:
 =~ AddressSanitizer|signal
 =~ trace_engine_stats
@@ -1206,11 +1211,6 @@ MDEV-26986:
 MDEV-26963:
 =~ Assertion \`je->s\.cs == nice_js->charset()'
 =~ json_nice
-MDEV-26942:
-=~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
-=~ my_malloc_size_cb_func
-=~ session_tracker\.cc
-=~ Version: '10\.2|Server version: 10\.2
 MDEV-26940:
 =~ Assertion \`0'
 =~ get_field_item_for_having
@@ -1238,6 +1238,10 @@ MDEV-26820:
 =~ TABLE::update_virtual_fields
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 =~ Query .*VALUE(
+MDEV-26692:
+=~ Assertion \`table.get_ref_count() <= 1'|Assertion \`user_table->get_ref_count() == 1'
+=~ commit_try_rebuild|dberr_t trx_t::drop_table
+=~ FeatureUsage detected OQGraph tables
 MDEV-26677:
 =~ RocksDB: Failed to get column family flags from CF with id
 =~ signal 6
@@ -1287,11 +1291,6 @@ MDEV-26084:
 =~ handler::get_foreign_dup_key
 =~ ha_partition::print_error
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
-MDEV-26076:
-=~ AddressSanitizer|signal 11
-=~ read_fixed_header
-=~ dynamic_column_get_internal
-=~ Version: '10\.2|Server version: 10\.2
 MDEV-26074:
 =~ Assertion \`!is_thread_specific \|\| (mysqld_server_initialized && thd)'
 =~ my_malloc_size_cb_func
@@ -1306,16 +1305,6 @@ MDEV-26035:
 =~ Assertion \`file->s->base\.reclength < file->s->vreclength \|\| !table->s->stored_fields'
 =~ ha_myisam::setup_vcols_for_repair
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
-MDEV-26006:
-=~ AddressSanitizer|READ of size
-=~ in_vector::find
-=~ Item_func_in::val_int
-=~ Version: '10\.2|Server version: 10\.2
-MDEV-26000:
-=~ signal 11|AddressSanitizer|Assertion \`cmp_items\[(uint)cmp_type\]'
-=~ Item_func_case::find_item
-=~ Item_func_in::create_array
-=~ Version: '10\.2|Server version: 10\.2
 MDEV-25987:
 =~ Assertion \`(value & (1ULL << i)) == 0'
 =~ Item_sum_bit::remove_as_window
@@ -1407,10 +1396,6 @@ MDEV-25548:
 MDEV-25532:
 =~ Assertion \`part_id == m_last_part'
 =~ ha_partition::delete_row
-MDEV-25523:
-=~ Assertion \`using_unique_constraint \|\| group_buff <= param->group_buff + param->group_length'
-=~ create_tmp_table
-=~ Version: '10\.2|Server version: 10\.2
 MDEV-25490:
 =~ LeakSanitizer: detected memory leaks
 =~ Create_tmp_table::start
@@ -1450,18 +1435,6 @@ MDEV-25350:
 =~ Assertion \`!table->file->keyread_enabled()'
 =~ close_thread_table
 =~ Query .*: INSERT.*RETURNING|Query .*: REPLACE.*RETURNING
-MDEV-25335:
-=~ Assertion \`!is_arena_for_set_stmt()'
-=~ LEX::free_set_stmt_mem_root
-=~ Prepared_statement
-=~ delete_statement_as_hash_key
-=~ Version: '10\.2|Server version: 10\.2
-MDEV-25335:
-=~ LeakSanitizer: detected memory leaks
-=~ String::real_alloc
-=~ Item_string::Item_string
-=~ Prepared_statement::execute
-=~ Version: '10\.2|Server version: 10\.2
 MDEV-25332:
 =~ STATUS_SERVER_DEADLOCKED|STATUS_TEST_FAILURE
 =~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
@@ -1536,12 +1509,6 @@ MDEV-25056:
 =~ Protocol::net_store_data
 =~ Protocol_text::store
 =~ Protocol::send_result_set_row
-MDEV-25052:
-=~ signal 11|AddressSanitizer
-=~ Locked_tables_list::mark_table_for_reopen
-=~ TABLE::mark_table_for_reopen
-=~ mysql_prepare_alter_table
-=~ Version: '10\.2|Server version: 10\.2
 MDEV-25050:
 =~ LeakSanitizer: detected memory leaks|Warning: Memory not freed
 =~ create_file
@@ -2029,11 +1996,6 @@ MDEV-23794:
 =~ pack_row|max_row_length
 =~ THD::binlog_write_row
 =~ Version: '10\.[1-4]
-MDEV-23742:
-=~ AddressSanitizer|Conditional jump or move depends on uninitialised value
-=~ sys_var::val_str_nolock
-=~ store_value_ptr
-=~ Version: '10\.2
 MDEV-23728:
 =~ AddressSanitizer|signal [16]
 =~ st_key::actual_rec_per_key
@@ -2273,6 +2235,10 @@ MDEV-23202:
 =~ maria_status|heap_info|heap_scan_init
 =~ ha_maria::info|TABLE_LIST::fetch_number_of_rows|ha_heap::info|ha_heap::rnd_init|handler::ha_rnd_init
 =~ sp_instr_stmt::exec_core|Prepared_statement::execute
+MDEV-23200:
+=~ Assertion \`btr_page_get_index_id(btr_pcur_get_page(pcur)) == index->id'
+=~ row_search_mvcc
+=~ mysql_ha_read
 MDEV-23188:
 =~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
 =~ create_tmp_table|Create_tmp_table::add_field
@@ -2286,12 +2252,6 @@ MDEV-23173:
 =~ Assertion \`length < 249'
 =~ Transaction_state_tracker::store
 =~ net_send_ok
-MDEV-23171:
-=~ AddressSanitizer
-=~ strend
-=~ get_one_variable
-=~ fill_variables
-=~ Version: '10\.2
 MDEV-23167:
 =~ signal|AddressSanitizer
 =~ row_sel_field_store_in_mysql_format_func|maria_rprev|mi_rprev
@@ -2467,12 +2427,6 @@ MDEV-22825:
 =~ add_key_field
 =~ update_ref_and_keys
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
-MDEV-22772:
-=~ signal [16]|AddressSanitizer
-=~ Item_null_result::field_type
-=~ cast_to_int_type|Item::get_date_with_conversion|cmp_item_datetime::store_value|Item::val_int_unsigned_typecast
-=~ ROLLUP
-=~ Version: '10\.[1-2]
 MDEV-22768:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
@@ -2798,11 +2752,6 @@ MDEV-21798:
 =~ row_sel_convert_mysql_key_to_innobase
 =~ ha_innobase::index_read
 =~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
-MDEV-21789:
-=~ Assertion \`precision > 0'
-=~ decimal_bin_size
-=~ GROUP BY.*IFNULL
-=~ Version: '10\.[1-2]
 MDEV-21754:
 =~ Assertion \`file->trn == trn'
 =~ ha_maria::start_stmt
@@ -3099,6 +3048,9 @@ MDEV-20597:
 MDEV-20595:
 =~ Assertion \`0 < sel && sel <= 2\.0'|Assertion \`0 < sel && sel <= 1\.0'|Assertion \`0\.0 < sel && sel <= 1\.0'
 =~ table_cond_selectivity
+MDEV-20586:
+=~ Assertion \`!thd->in_active_multi_stmt_transaction() \|\| thd->in_multi_stmt_transaction_mode()'
+=~ Query_log_event::do_apply_event
 MDEV-20554:
 =~ Assertion \`fil_page_get_type(page_align(rec)) == 17855'|InnoDB: Failing assertion: fil_page_get_type(page_align(rec)) == 17855
 =~ row_log_table_low
