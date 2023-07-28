@@ -54,6 +54,10 @@ my %usage_check= (
   'GIS columns' => \&check_for_gis,
   'INET columns' => \&check_for_inet_columns,
   'multi-update/delete' => \&check_for_multi_upd_del,
+  'Mroonga engine' => \&check_for_mroonga_plugin,
+  'Mroonga tables' => \&check_for_mroonga_tables,
+  'OQGraph engine' => \&check_for_oqgraph_plugin,
+  'OQGraph tables' => \&check_for_oqgraph_tables,
   'performance schema' => \&check_for_performance_schema,
   'RocksDB engine' => \&check_for_rocksdb_plugin,
   'RocksDB tables' => \&check_for_rocksdb_tables,
@@ -142,6 +146,13 @@ sub report {
 ##########
 # Checkers
 
+sub check_for_mroonga_tables {
+  $_[0]->check_for_engine_tables('mroonga');
+}
+sub check_for_oqgraph_tables {
+  $_[0]->check_for_engine_tables('oqgraph');
+}
+
 sub check_for_rocksdb_tables {
   $_[0]->check_for_engine_tables('rocksdb');
 }
@@ -164,6 +175,14 @@ sub check_for_aria_tables {
 
 sub check_for_blackhole_tables {
   $_[0]->check_for_engine_tables('blackhole');
+}
+
+sub check_for_mroonga_plugin {
+  $_[0]->check_for_plugin('mroonga');
+}
+
+sub check_for_oqgraph_plugin {
+  $_[0]->check_for_plugin('oqgraph');
 }
 
 sub check_for_rocksdb_plugin {
