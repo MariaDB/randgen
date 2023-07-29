@@ -170,7 +170,7 @@ sub run {
   #####
   $self->printStep("Synchronizing with master");
   my ($file, $pos) = $servers[0]->getMasterPos();
-  unless ($file && $pos && $servers[1]->syncWithMaster($file, $pos) == STATUS_OK) {
+  unless ($file && $pos && $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration')) == STATUS_OK) {
     return $self->finalize(STATUS_REPLICATION_FAILURE,[@servers]);
   }
 
