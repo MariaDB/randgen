@@ -75,52 +75,17 @@ $threads_low_combinations= [
 
 # Variators are transformers which are run without result comparison
 $optional_variators= [ 
-  ['','','','','','','','','','','','','','','--variator=AnalyzeOrExplain'],
-  ['','','','','','','','','','','','','','','--variator=ConvertLiteralsToVariables'],
-  ['','','','','','','','','','','','','','','--variator=ConvertSubqueriesToViews'],
-  ['','','','','','','','','','','','','','','--variator=Count'],
-  ['','','','','','','','','','','','','','','--variator=DisableChosenPlan'],
-  ['','','','','','','','','','','','','','','--variator=DisableOptimizations'],
-  ['','','','','','','','','','','','','','','--variator=Distinct'],
-  ['','','','','','','','','','','','','','','--variator=EnableOptimizations'],
-  ['','','','','','','','','','','','','','','--variator=ExecuteAsCTE'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsDeleteReturning'],
-  ['','','','','','','','','','','','','','','--variator=ExecuteAsDerived'],
-  ['','','','','','','','','','','','','','','--variator=ExecuteAsExcept'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsExecuteImmediate'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsFunctionTwice'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsInsertReturning'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsInsertSelect'],
-  ['','','','','','','','','','','','','','','--variator=ExecuteAsIntersect'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsOracleSP'],
-  ['','','','','','','','','','','','','','','--variator=ExecuteAsPackageSP'],
-  ['','','','','','','','','','','','','','','--variator=ExecuteAsPreparedOnce'],
-  ['','','','','','','','','','','','','','','--variator=ExecuteAsPreparedThrice'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsPreparedTwice'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsPSWithParams'],
-  ['','','','','','','','','','','','','','','--variator=ExecuteAsSelectItem'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsSPTwice'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsTrigger'],
-  ['','','','','','','','','','','','','','','--variator=ExecuteAsUnion'],
   ['','','','','','','','','','','','','','','--variator=ExecuteAsUpdateDelete'],
-  ['','','','','','','','','','','','','','','--variator=ExecuteAsView'],
-  ['','','','','','','','','','','','','','','--variator=ExecuteAsWhereSubquery'],
-  ['','','','','','','','','','','','','','','--variator=FullOrderBy'],
-  ['','','','','','','','','','','','','','','--variator=Having'],
-  ['','','','','','','','','','','','','','','--variator=IgnoredKeys'],
-  ['','','','','','','','','','','','','','','--variator=InlineSubqueries'],
-  ['','','','','','','','','','','','','','','--variator=InlineVirtualColumns'],
-  ['','','','','','','','','','','','','','','--variator=JsonTables'],
-  ['','','','','','','','','','','','','','','--variator=LimitDecrease'],
-  ['','','','','','','','','','','','','','','--variator=LimitIncrease'],
-  ['','','','','','','','','','','','','','','--variator=LimitRowsExamined'],
-  ['','','','','','','','','','','','','','','--variator=NaturalSort'],
-  ['','','','','','','','','','','','','','','--variator=NullIf'],
-  ['','','','','','','','','','','','','','','--variator=OffsetFetch'],
-  ['','','','','','','','','','','','','','','--variator=OrderBy'],
-  ['','','','','','','','','','','','','','','--variator=RemoveIndexHints'],
-  ['','','','','','','','','','','','','','','--variator=Rownum'],
-  ['','','','','','','','','','','','','','','--variator=SelectOption'],
 ];
 
 $basic_engine_combinations= [
@@ -192,6 +157,11 @@ $extra_engine_combinations= [
    --grammar=conf/yy/engine-heap-ddl.yy
    --grammar=conf/yy/engine-heap-dml.yy
   ',
+  # Mroonga
+  '--engine=Mroonga
+   --gendata=simple
+   --mysqld=--plugin-load-add=ha_mroonga
+  ',
   # Merge with MyISAM for backing
   '--engine=MyISAM
    --grammar=conf/yy/engine-merge.yy
@@ -230,22 +200,19 @@ $extra_engine_combinations= [
 ];
 
 $non_crash_scenarios= [
-  '--scenario=NormalUpgrades --filter=conf/ff/restrict_dynamic_vars.ff',
-  '--scenario=ImportTablespace --filter=conf/ff/restrict_dynamic_vars.ff',
   '--scenario=Standard',
-  '--scenario=Galera',
-  '--scenario=Replication',
   '--scenario=Restart'
 ];
 
 $crash_scenarios= [
   '--scenario=AtomicDDL',
   '--scenario=CrashRecovery',
-  '--scenario=UndoLogUpgrade',
+#  '--scenario=UndoLogUpgrade',
   '--scenario=Restart --scenario-restart-type=kill'
 ];
 
 $mariabackup_scenarios= [
+  '--scenario=NormalUpgrades',
   '--scenario=MariaBackupFull',
   '--scenario=MariaBackupIncremental',
 ];
@@ -313,9 +280,9 @@ $server_options{non_innodb_encryption_options}= \%non_innodb_encryption_options;
 # Performance schema
 #########################
 
-$perfschema_options{$minversion}= "
+$perfschema_options{$minversion}= '
   --mysqld=--performance-schema=on
-  --mysqld=--performance-schema-instrument='%=ON'
+  --mysqld=--performance-schema-instrument="%=ON"
   --mysqld=--performance-schema-consumer-events-stages-current=ON
   --mysqld=--performance-schema-consumer-events-stages-history=ON
   --mysqld=--performance-schema-consumer-events-stages-history-long=ON
@@ -328,8 +295,7 @@ $perfschema_options{$minversion}= "
   --mysqld=--performance-schema-consumer-global-instrumentation=ON
   --mysqld=--performance-schema-consumer-thread-instrumentation=ON
   --mysqld=--performance-schema-consumer-statements-digest=ON
-";
-
+';
 # Other new perfschema variables in 10.5:
 # PERFORMANCE_SCHEMA_EVENTS_TRANSACTIONS_HISTORY_LONG_SIZE
 # PERFORMANCE_SCHEMA_EVENTS_TRANSACTIONS_HISTORY_SIZE
@@ -678,10 +644,7 @@ $server_options{optional_server_variables}= \%optional_server_variables;
 #   '--mysqld=--character-set-server=swe7 --mysqld=--collation-server=swe7_bin',
 #   '--mysqld=--character-set-server=swe7 --mysqld=--collation-server=swe7_swedish_nopad_ci',
 #   '--mysqld=--character-set-server=swe7 --mysqld=--collation-server=swe7_nopad_bin',
-$optional_charsets{$minversion}= [
-  '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-  '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-  '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+$safe_charsets{$minversion}= [
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_general_ci',
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_general_ci',
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_general_ci',
@@ -702,8 +665,6 @@ $optional_charsets{$minversion}= [
   '--mysqld=--character-set-server=utf8mb4 --mysqld=--collation-server=utf8mb4_bin',
   '--mysqld=--character-set-server=utf8mb4 --mysqld=--collation-server=utf8mb4_unicode_ci',
   '--mysqld=--character-set-server=utf8mb4 --mysqld=--collation-server=utf8mb4_unicode_ci',
-  '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-  '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
   '--mysqld=--character-set-server=big5 --mysqld=--collation-server=big5_chinese_ci',
   '--mysqld=--character-set-server=big5 --mysqld=--collation-server=big5_bin',
   '--mysqld=--character-set-server=big5 --mysqld=--collation-server=big5_chinese_nopad_ci',
@@ -830,40 +791,6 @@ $optional_charsets{$minversion}= [
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_nopad_bin',
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_unicode_nopad_ci',
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_unicode_520_nopad_ci',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_general_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_bin --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_unicode_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_icelandic_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_latvian_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_romanian_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_slovenian_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_polish_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_estonian_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_spanish_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_swedish_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_turkish_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_czech_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_danish_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_lithuanian_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_slovak_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_spanish2_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_roman_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_persian_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_esperanto_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_hungarian_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_sinhala_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_german2_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_croatian_mysql561_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_unicode_520_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_vietnamese_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_general_mysql500_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_croatian_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_myanmar_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_thai_520_w2 --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_general_nopad_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_nopad_bin --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_unicode_nopad_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_unicode_520_nopad_ci --mysqld=--skip-character-set-client-handshake',
   '--mysqld=--character-set-server=cp866 --mysqld=--collation-server=cp866_general_ci',
   '--mysqld=--character-set-server=cp866 --mysqld=--collation-server=cp866_bin',
   '--mysqld=--character-set-server=cp866 --mysqld=--collation-server=cp866_general_nopad_ci',
@@ -930,6 +857,67 @@ $optional_charsets{$minversion}= [
   '--mysqld=--character-set-server=cp1251 --mysqld=--collation-server=cp1251_general_cs',
   '--mysqld=--character-set-server=cp1251 --mysqld=--collation-server=cp1251_nopad_bin',
   '--mysqld=--character-set-server=cp1251 --mysqld=--collation-server=cp1251_general_nopad_ci',
+  '--mysqld=--character-set-server=cp1256 --mysqld=--collation-server=cp1256_general_ci',
+  '--mysqld=--character-set-server=cp1256 --mysqld=--collation-server=cp1256_bin',
+  '--mysqld=--character-set-server=cp1256 --mysqld=--collation-server=cp1256_general_nopad_ci',
+  '--mysqld=--character-set-server=cp1256 --mysqld=--collation-server=cp1256_nopad_bin',
+  '--mysqld=--character-set-server=cp1257 --mysqld=--collation-server=cp1257_lithuanian_ci',
+  '--mysqld=--character-set-server=cp1257 --mysqld=--collation-server=cp1257_bin',
+  '--mysqld=--character-set-server=cp1257 --mysqld=--collation-server=cp1257_general_ci',
+  '--mysqld=--character-set-server=cp1257 --mysqld=--collation-server=cp1257_nopad_bin',
+  '--mysqld=--character-set-server=cp1257 --mysqld=--collation-server=cp1257_general_nopad_ci',
+  '--mysqld=--character-set-server=binary --mysqld=--collation-server=binary',
+  '--mysqld=--character-set-server=geostd8 --mysqld=--collation-server=geostd8_general_ci',
+  '--mysqld=--character-set-server=geostd8 --mysqld=--collation-server=geostd8_bin',
+  '--mysqld=--character-set-server=geostd8 --mysqld=--collation-server=geostd8_general_nopad_ci',
+  '--mysqld=--character-set-server=geostd8 --mysqld=--collation-server=geostd8_nopad_bin',
+  '--mysqld=--character-set-server=cp932 --mysqld=--collation-server=cp932_japanese_ci',
+  '--mysqld=--character-set-server=cp932 --mysqld=--collation-server=cp932_bin',
+  '--mysqld=--character-set-server=cp932 --mysqld=--collation-server=cp932_japanese_nopad_ci',
+  '--mysqld=--character-set-server=cp932 --mysqld=--collation-server=cp932_nopad_bin',
+  '--mysqld=--character-set-server=eucjpms --mysqld=--collation-server=eucjpms_japanese_ci',
+  '--mysqld=--character-set-server=eucjpms --mysqld=--collation-server=eucjpms_bin',
+  '--mysqld=--character-set-server=eucjpms --mysqld=--collation-server=eucjpms_japanese_nopad_ci',
+  '--mysqld=--character-set-server=eucjpms --mysqld=--collation-server=eucjpms_nopad_bin',
+];
+
+$server_options{safe_charsets}= \%safe_charsets;
+
+$unsafe_charsets{$minversion}= [
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_general_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_bin --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_unicode_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_icelandic_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_latvian_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_romanian_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_slovenian_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_polish_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_estonian_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_spanish_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_swedish_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_turkish_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_czech_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_danish_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_lithuanian_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_slovak_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_spanish2_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_roman_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_persian_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_esperanto_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_hungarian_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_sinhala_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_german2_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_croatian_mysql561_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_unicode_520_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_vietnamese_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_general_mysql500_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_croatian_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_myanmar_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_thai_520_w2 --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_general_nopad_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_nopad_bin --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_unicode_nopad_ci --mysqld=--skip-character-set-client-handshake',
+  '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_unicode_520_nopad_ci --mysqld=--skip-character-set-client-handshake',
   '--mysqld=--character-set-server=utf16 --mysqld=--collation-server=utf16_general_ci --mysqld=--skip-character-set-client-handshake',
   '--mysqld=--character-set-server=utf16 --mysqld=--collation-server=utf16_bin --mysqld=--skip-character-set-client-handshake',
   '--mysqld=--character-set-server=utf16 --mysqld=--collation-server=utf16_unicode_ci --mysqld=--skip-character-set-client-handshake',
@@ -967,15 +955,6 @@ $optional_charsets{$minversion}= [
   '--mysqld=--character-set-server=utf16le --mysqld=--collation-server=utf16le_bin --mysqld=--skip-character-set-client-handshake',
   '--mysqld=--character-set-server=utf16le --mysqld=--collation-server=utf16le_general_nopad_ci --mysqld=--skip-character-set-client-handshake',
   '--mysqld=--character-set-server=utf16le --mysqld=--collation-server=utf16le_nopad_bin --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=cp1256 --mysqld=--collation-server=cp1256_general_ci',
-  '--mysqld=--character-set-server=cp1256 --mysqld=--collation-server=cp1256_bin',
-  '--mysqld=--character-set-server=cp1256 --mysqld=--collation-server=cp1256_general_nopad_ci',
-  '--mysqld=--character-set-server=cp1256 --mysqld=--collation-server=cp1256_nopad_bin',
-  '--mysqld=--character-set-server=cp1257 --mysqld=--collation-server=cp1257_lithuanian_ci',
-  '--mysqld=--character-set-server=cp1257 --mysqld=--collation-server=cp1257_bin',
-  '--mysqld=--character-set-server=cp1257 --mysqld=--collation-server=cp1257_general_ci',
-  '--mysqld=--character-set-server=cp1257 --mysqld=--collation-server=cp1257_nopad_bin',
-  '--mysqld=--character-set-server=cp1257 --mysqld=--collation-server=cp1257_general_nopad_ci',
   '--mysqld=--character-set-server=utf32 --mysqld=--collation-server=utf32_general_ci --mysqld=--skip-character-set-client-handshake',
   '--mysqld=--character-set-server=utf32 --mysqld=--collation-server=utf32_bin --mysqld=--skip-character-set-client-handshake',
   '--mysqld=--character-set-server=utf32 --mysqld=--collation-server=utf32_unicode_ci --mysqld=--skip-character-set-client-handshake',
@@ -1009,19 +988,13 @@ $optional_charsets{$minversion}= [
   '--mysqld=--character-set-server=utf32 --mysqld=--collation-server=utf32_nopad_bin --mysqld=--skip-character-set-client-handshake',
   '--mysqld=--character-set-server=utf32 --mysqld=--collation-server=utf32_unicode_nopad_ci --mysqld=--skip-character-set-client-handshake',
   '--mysqld=--character-set-server=utf32 --mysqld=--collation-server=utf32_unicode_520_nopad_ci --mysqld=--skip-character-set-client-handshake',
-  '--mysqld=--character-set-server=binary --mysqld=--collation-server=binary',
-  '--mysqld=--character-set-server=geostd8 --mysqld=--collation-server=geostd8_general_ci',
-  '--mysqld=--character-set-server=geostd8 --mysqld=--collation-server=geostd8_bin',
-  '--mysqld=--character-set-server=geostd8 --mysqld=--collation-server=geostd8_general_nopad_ci',
-  '--mysqld=--character-set-server=geostd8 --mysqld=--collation-server=geostd8_nopad_bin',
-  '--mysqld=--character-set-server=cp932 --mysqld=--collation-server=cp932_japanese_ci',
-  '--mysqld=--character-set-server=cp932 --mysqld=--collation-server=cp932_bin',
-  '--mysqld=--character-set-server=cp932 --mysqld=--collation-server=cp932_japanese_nopad_ci',
-  '--mysqld=--character-set-server=cp932 --mysqld=--collation-server=cp932_nopad_bin',
-  '--mysqld=--character-set-server=eucjpms --mysqld=--collation-server=eucjpms_japanese_ci',
-  '--mysqld=--character-set-server=eucjpms --mysqld=--collation-server=eucjpms_bin',
-  '--mysqld=--character-set-server=eucjpms --mysqld=--collation-server=eucjpms_japanese_nopad_ci',
-  '--mysqld=--character-set-server=eucjpms --mysqld=--collation-server=eucjpms_nopad_bin',
 ];
 
+$server_options{unsafe_charsets}= \%unsafe_charsets;
+
+$optional_charsets{$minversion} = [ 
+  @{$safe_charsets{$minversion}}, @{$unsafe_charsets{$minversion}},
+  '','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','',
+  '','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','',''
+];
 $server_options{optional_charsets}= \%optional_charsets;
