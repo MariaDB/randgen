@@ -51,6 +51,8 @@ $grammars= [
   [@empty_set,
     '--grammar=conf/yy/collect_eits.yy'],
   [@empty_set,
+    '--grammar=conf/yy/compound.yy'],
+  [@empty_set,
     '--grammar=conf/yy/concurrent.yy'],
   [@empty_set,
     '--grammar=conf/yy/create_or_replace.yy'],
