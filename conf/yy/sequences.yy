@@ -37,7 +37,19 @@ seq_query:
   |                seq_lock_unlock
   | ==FACTOR:0.5== seq_rename
   |                seq_insert
+  | ==FACTOR:0.5== seq_default
 ;
+
+seq_default:
+  { ($s,$t) = @{$prng->arrayElement($executors->[0]->metaBaseTables('NON-SYSTEM'))}; '' } ALTER TABLE { "$s.$t" } MODIFY _field __int_x_bigint DEFAULT(NEXTVAL(test._sequence)) optional_algorithm optional_lock ;
+
+optional_algorithm:
+  ==FACTOR:5== |
+  , ALGORITHM = __copy_x_nocopy_x_inplace_x_instant_x_default ;
+
+optional_lock:
+  ==FACTOR:5== |
+  , LOCK = __none_x_shared_x_exclusive ;
 
 seq_lock_unlock:
     LOCK TABLE seq_lock_list
