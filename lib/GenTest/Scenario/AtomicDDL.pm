@@ -254,7 +254,7 @@ sub run {
     #####
     $self->printStep("Replicating the data");
     my ($file, $pos) = $server->getMasterPos();
-    if ($file && $pos && $slave->syncWithMaster($file, $pos$, self->getProperty('duration')) == STATUS_OK) {
+    if ($file && $pos && $slave->syncWithMaster($file, $pos, $self->getProperty('duration')) == STATUS_OK) {
       $slave_dbh->do("STOP SLAVE");
     } else {
       return $self->finalize(STATUS_REPLICATION_FAILURE,[$server,$slave]);
