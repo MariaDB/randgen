@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31808:
+=~ signal|AddressSanitizer
+=~ mysql_lock_merge
+=~ open_and_lock_internal_tables
+=~ Sql_cmd_alter_table::execute
+=~ FeatureUsage detected sequences
+MDEV-31808:
+=~ Assertion \`thd->transaction.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ close_tables_for_reopen
+=~ Sql_cmd_alter_table::execute
+=~ FeatureUsage detected sequences
 MDEV-31806:
 =~ InnoDB: Failing assertion: key_part->key_part_flag & HA_PART_KEY_SEG
 =~ wsrep_store_key_val_for_row
