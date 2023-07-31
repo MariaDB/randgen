@@ -73,8 +73,9 @@ sub run {
 
   my ($help,
       $props, %scenario_options, %server_options,
-      $scenario, $genconfig, $minio, $build_thread,
+      $scenario, $genconfig, $build_thread,
       @exit_status, $trials, $output, $force,
+      $minio, $hashicorp,
      );
 
   $SIG{INT}= \&group_cleaner;
@@ -133,6 +134,7 @@ sub run {
     'genconfig=s' => \$genconfig,
     'gendata=s@' => \@{$props->{gendata}},
     'grammars=s@' => \@{$props->{grammars}},
+    'hashicorp|with-hashicorp|with_hashicorp|vault' => \$hashicorp,
     'help' => \$help,
     'metadata_reload|metadata-reload!' => \$props->{metadata_reload},
     'minio|with-minio|with_minio' => \$minio,
@@ -178,6 +180,53 @@ sub run {
     $errfunc->Call($initial_mode | 2);
   };
 
+  #-------------------
+  # Mandatory options
+
+  unless ($props->{vardir}) {
+    return help("Vardir must be defined");
+  }
+
+  #-------------------
+
+  if (-d $props->{vardir}) {
+    remove_tree($props->{vardir});
+  }
+  mkpath($props->{vardir});
+  # copy STDOUT to another filehandle
+  open (my $STDOUTOLD, '>&', STDOUT);
+  open (my $STDERROLD, '>&', STDERR);
+
+  open (STDOUT, "| tee -ai ".$props->{vardir}."/trial.log");
+  open STDERR, ">&STDOUT";
+
+  # Configure MinIO if it's installed and running
+  # (it seems an overkill to start the server here, since it will be rarely needed)
+  if ($minio) {
+    if (system("mc alias set local http://127.0.0.1:9000 minio minioadmin && ( mc rb --force local/rqg || true ) && mc mb local/rqg")) {
+      sayWarning("Could not configure S3 backend");
+      $ENV{S3_DOABLE}= '';
+    } else {
+      say("S3 backend has been configured");
+      $ENV{S3_DOABLE}= '!100501';
+    }
+  }
+
+  # Configure Hashicorp vault if it's installed and running
+  # (again, it seems an overkill to configure it here, since it will be rarely needed)
+  if ($hashicorp) {
+    if (system($ENV{RQG_HOME}.'/util/setup_hashicorp.sh '.$props->{vardir}.' > '.$props->{vardir}.'/vault.log 2>&1')) {
+      sayWarning("Could not configure Hashicorp vault");
+      $ENV{HASHICORP_DOABLE}= '';
+    } else {
+      $ENV{VAULT_TOKEN}= `cat $props->{vardir}/vault.token | head -n 1`;
+      chomp $ENV{VAULT_TOKEN};
+      $ENV{VAULT_ADDR}= `cat $props->{vardir}/vault.token | tail -n 1`;
+      chomp $ENV{VAULT_ADDR};
+      say("Hashicorp vault has been configured: $ENV{VAULT_ADDR} $ENV{VAULT_TOKEN}");
+    }
+  }
+
   # We collect common and per-server options the following way:
   # - collect allowed per-server options (serverN-xxx, where xxx is among
   #   keys of %server_specific) in a hash for each found N;
@@ -217,36 +266,20 @@ sub run {
         ${$server_specific->{$s}}{$o}= $server_options{$o};
       }
     }
+    if ($hashicorp && $ENV{VAULT_TOKEN} && $ENV{VAULT_ADDR}) {
+      push @{$server_specific->{$s}{mysqld}}, "--hashicorp-key-management-vault-url=$ENV{VAULT_ADDR}/v1/mariadbtest", "--hashicorp-key-management-token=$ENV{VAULT_TOKEN}";
+    }
   }
-
-  if (scalar(@unknown_options)) {
-    return help("Unknown options: @unknown_options");
-  }
-
-  #-------------------
-  # Mandatory options
 
   unless ($server_specific->{1}{basedir}) {
     return help("At least one basedir must be defined");
   }
-  unless ($props->{vardir}) {
-    return help("Vardir must be defined");
-  }
-
-  #-------------------
 
   $props->{server_specific}= $server_specific;
 
-  if (-d $props->{vardir}) {
-    remove_tree($props->{vardir});
+  if (scalar(@unknown_options)) {
+    return help("Unknown options: @unknown_options");
   }
-  mkpath($props->{vardir});
-  # copy STDOUT to another filehandle
-  open (my $STDOUTOLD, '>&', STDOUT);
-  open (my $STDERROLD, '>&', STDERR);
-
-  open (STDOUT, "| tee -ai ".$props->{vardir}."/trial.log");
-  open STDERR, ">&STDOUT";
 
   $props->{queries} =~ s/K/000/so;
   $props->{queries} =~ s/M/000000/so;
@@ -315,18 +348,6 @@ sub run {
   # Push the number of "worker" threads into the environment.
   # lib/GenTest/Generator/FromGrammar.pm will generate a corresponding grammar element.
   $ENV{RQG_THREADS}= $props->{threads};
-
-  # Configure MinIO if it's installed and running
-  # (it seems an overkill to start the server here, since it will be rarely needed)
-  if ($minio) {
-    if (system("mc alias set local http://127.0.0.1:9000 minio minioadmin && ( mc rb --force local/rqg || true ) && mc mb local/rqg")) {
-      sayWarning("Could not configure S3 backend");
-      $ENV{S3_DOABLE}= '';
-    } else {
-      say("S3 backend has been configured");
-      $ENV{S3_DOABLE}= '!100501';
-    }
-  }
 
   my $cp= my $class= "GenTest::Scenario::$scenario";
   $cp =~ s/::/\//g;
@@ -533,6 +554,7 @@ Run a complete random query generation test scenario
                         gives the same result for all transformers/validators
     --grammar         : Grammar file to use when generating queries
                         (can be used multiple times)
+    --hashicorp       : Prepare Hashicorp vault for the test
     --help            : Print this help message and exit
     --metadata-reload : When set to ON (default), the test will be periodically
                         updating cached information about columns, tables etc.
