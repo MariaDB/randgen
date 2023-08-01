@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31824:
+=~ STATUS_REPLICATION_FAILURE
+=~ Slave SQL: Error 'Cannot change column .*: used in a foreign key constraint .* on query. .* Internal MariaDB error code: 1832
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31823:
+=~ LeakSanitizer
+=~ Binary_string::real_alloc
+=~ Column_definition::prepare_stage1_convert_default
+=~ Sql_cmd_alter_table::execute
+=~ Log_event::apply_event
+=~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31808:
 =~ signal|AddressSanitizer
 =~ mysql_lock_merge
@@ -19,6 +30,11 @@ MDEV-31806:
 =~ InnoDB: Failing assertion: key_part->key_part_flag & HA_PART_KEY_SEG
 =~ wsrep_store_key_val_for_row
 =~ FeatureUsage detected GIS columns
+MDEV-31799:
+=~ signal|AddressSanitizer
+=~ iterate_trigger_fields_and_run_func
+=~ Table_triggers_list::mark_fields_used
+=~ Version: '1[1-9]\.[2-9]|Server version: 1[1-9]\.[2-9]
 MDEV-31792:
 =~ Assertion \`(mdl_request->type != MDL_INTENTION_EXCLUSIVE && mdl_request->type != MDL_EXCLUSIVE) \|\| !(get_thd()->rgi_slave && get_thd()->rgi_slave->is_parallel_exec && lock->check_if_conflicting_replication_locks(this))'
 =~ MDL_context::acquire_lock
@@ -29,6 +45,10 @@ MDEV-31764:
 =~ trace_engine_stats
 =~ Explain_table_access::print_explain_json
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31757:
+=~ Only Format_description_log_event and row events are allowed in BINLOG statements (but Query_compressed was provided)
+=~ FeatureUsage detected binlog compression
+=~ FeatureUsage detected binlog alter two phase
 MDEV-31744:
 =~ Assertion \`order_list->elements == 1'
 =~ Frame_range_n_bottom::Frame_range_n_bottom
@@ -301,7 +321,7 @@ MDEV-31193:
 =~ eliminate_item_equal
 MDEV-31192:
 =~ signal|AddressSanitizer
-=~ check_grant
+=~ check_grant|check_access
 =~ check_one_table_access
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-31190:
@@ -1426,7 +1446,7 @@ MDEV-25490:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-25488:
 =~ Assertion \`!writer\.checksum_len \|\| writer\.remains == 0'
-=~ MYSQL_BIN_LOG::write_cache
+=~ MYSQL_BIN_LOG::write_cache|Event_log::write_cache
 =~ MYSQL_BIN_LOG::write_transaction_or_stmt
 MDEV-25438:
 =~ Assertion \`last_pos == 0 \|\| pos > last_pos'
