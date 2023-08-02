@@ -22,7 +22,7 @@ MDEV-31808:
 =~ Sql_cmd_alter_table::execute
 =~ FeatureUsage detected sequences
 MDEV-31808:
-=~ Assertion \`thd->transaction.stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
+=~ Assertion \`thd->transaction.*stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_tables_for_reopen
 =~ Sql_cmd_alter_table::execute
 =~ FeatureUsage detected sequences
