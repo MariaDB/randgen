@@ -437,7 +437,7 @@ sub next {
   my @sentences= split (';;', $sentence);
   sayDebug("Expanded into [ @sentences ]");
 
-  if ($generator->variators && scalar(@{$generator->variators})) {
+  if ((! $skip_variate) && $generator->variators && scalar(@{$generator->variators})) {
     my @variated= ();
     foreach my $s (@sentences) {
       my $queries= $generator->variateQuery($s,$executors->[0]);
