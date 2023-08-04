@@ -98,6 +98,26 @@ sub prepare_servers {
   return ($old_server, $new_server);
 }
 
+sub prepare_new_server {
+  my ($self, $old_server)= @_;
+
+  $self->setServerSpecific(2,'vardir',$old_server->vardir);
+  $self->setServerSpecific(2,'port',$old_server->port);
+  $self->setServerSpecific(2,'start_dirty',1);
+  my $new_server= $self->prepareServer(2,my $is_active=1);
+
+  say("-- New server info: --");
+  say($new_server->version());
+  $new_server->printServerOptions();
+  say("----------------------");
+
+  $self->setServerSpecific(2,'dsn',$self->getServerSpecific(1,'dsn'));
+
+  $self->backupProperties();
+
+  return $new_server;
+}
+
 sub switch_to_new_server {
   my $self= shift;
   my $srvspec= $self->getProperty('server_specific');
