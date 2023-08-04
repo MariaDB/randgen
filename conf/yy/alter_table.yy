@@ -304,7 +304,19 @@ alt_default_optional_int_or_auto_increment:
 ;
 
 alt_create_or_replace:
-  { $in_new_table= 1; '' } CREATE OR REPLACE alt_temporary TABLE alt_new_table_name (alt_col_name_and_definition_list) alt_table_flags { $in_new_table=0; '' }
+  { $in_new_table= 1; '' } CREATE OR REPLACE alt_temporary TABLE alt_new_table_name (alt_col_name_and_definition_list alt_optional_keys) alt_table_flags { $in_new_table=0; '' }
+;
+
+alt_optional_keys:
+  | , alt_key_list ;
+
+alt_key_list:
+  ==FACTOR:3== alt_key |
+  alt_key, alt_key_list ;
+
+alt_key:
+    __key_x_unique(90,10) ({'altcol'.$prng->uint16(1,$colnum)})
+  | __key_x_unique(90,10) ({'altcol'.$prng->uint16(1,$colnum)},{'altcol'.$prng->uint16(1,$colnum)})
 ;
 
 alt_col_name_and_definition_list:
