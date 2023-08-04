@@ -2,7 +2,7 @@
 
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
+# Copyright (c) 2021, 2023 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,95 @@
 # USA
 
 ########################################################################
+# At the top level, $combinations is an array reference.
+# Each element of an array[ref] can be either a scalar, or hashref, or arrayref
+#
+# Elements combine as follows:
+# Scalars don't combine with anything on the same level.
+# From array[ref] one element is chosen and it's combines with other combinable elements
+# at the same level;
+# From hash[ref] one element is chosen. It combines with other combinable elements
+# at the same level, but it doesn't combine with other hashref elements.
+#
+# Examples demonstrating the difference between hashref and arrayref:
+#
+# $combinations = [
+#   '--opt1a',
+#   '--opt1b',
+#   [
+#     '--opt2a',
+#     '--opt2b'
+#   ],
+#   {
+#      opt3 => [
+#                 '--opt3a',
+#                 '--opt3b'
+#              ],
+#      opt4 => [
+#                 '--opt4a',
+#                 '--opt4b'
+#              ]
+#   }
+# ]
+# Results in the following exhaustive set of combinations:
+# --opt1a
+# --opt1b
+# --opt2a --opt3a
+# --opt2a --opt3b
+# --opt2a --opt4a
+# --opt2a --opt4b
+# --opt2b --opt3a
+# --opt2b --opt3b
+# --opt2b --opt4a
+# --opt2b --opt4b
+#
+# $combinations = [
+#   '--opt1a',
+#   '--opt1b',
+#   [
+#     '--opt2a',
+#     '--opt2b'
+#   ],
+#   [
+#     [
+#       '--opt3a',
+#       '--opt3b'
+#     ],
+#     [
+#       '--opt4a',
+#       '--opt4b'
+#     ]
+#   ]
+# ]
+# Same as
+# $combinations = [
+#   '--opt1a',
+#   '--opt1b',
+#   [
+#     '--opt2a',
+#     '--opt2b'
+#   ],
+#   [
+#     '--opt3a',
+#     '--opt3b'
+#   ],
+#   [
+#     '--opt4a',
+#     '--opt4b'
+#   ]
+# ]
+
+# Results in the following exhaustive set of combinations:
+# --opt1a
+# --opt1b
+# --opt2a --opt3a --opt4a
+# --opt2a --opt3b --opt4a
+# --opt2a --opt3a --opt4b
+# --opt2a --opt3b --opt4b
+# --opt2b --opt3a --opt4a
+# --opt2b --opt3b --opt4a
+# --opt2b --opt3a --opt4b
+# --opt2b --opt3b --opt4b
 
 use strict;
 use lib 'lib';
@@ -72,13 +161,13 @@ my $clean;
 my $config_file;
 my $discard_logs= 0;
 my $dry_run= 0;
-my $exhaustive= 0;
 my $help= 0;
 my $threads= 1;
-my $trials= 1;
+my $trials= 0;
 my $seed= 'time';
 my $shuffle= 1;
 my $workdir;
+my $runall; # Backward compatibility, synonym of trials=all
 # Config files may be parameterized depending on version number
 my $version= '999999';
 
@@ -94,13 +183,24 @@ my $opt_result = GetOptions(
   'help' => \$help,
   'shuffle!' => \$shuffle,
   'parallel=i' => \$threads,
-  'run-all-combinations' => \$exhaustive,
+  'run-all-combinations' => \$runall,
   'seed=s' => \$seed,
-  'trials=i' => \$trials,
+  'trials=s' => \$trials,
   'workdir=s' => \$workdir,
 );
 
 help() if $help;
+
+if (defined $runall) {
+  if ($trials) {
+    sayWarning("Both --run-all-combinations and trials were defined, run-all-combinations will be ignored");
+  } else {
+    $trials= 'all';
+  }
+} elsif ($trials eq '0') {
+  sayError("No trials requested");
+  exit 1;
+}
 
 # Variables
 my $combinations;
@@ -143,7 +243,7 @@ for my $i (1..$threads) {
     $thread_id = $i;
     make_path($workdir);
 
-    if ($exhaustive) {
+    if ($trials eq 'all') {
       doExhaustive();
     } else {
       doRandom();
@@ -182,36 +282,33 @@ if ($thread_id > 0) {
 
 sub pickOne
 {
-  my ($group)= @_;
-  my $opt= [];
-  $opt->[0]= '';
+  my $group= shift;
+  if (ref $group eq '') {
+    $group= [ $group ];
+  }
+  my $opt;
   $prng->shuffleArray($group);
   foreach my $element (@$group) {
-    if (ref $element eq '') {
-      # Regular scalar element, adding to options
-      $opt->[1].= ' '.$element;
+    if (ref $element eq '' and not defined $opt) {
+      # Regular scalar element, using exclusively
+      $opt= $element;
       last;
     }
     elsif (ref $element eq 'ARRAY') {
       # Group of alternatives, need to pick one option
       my $combo= pickOne($element);
-      $opt->[1].= ' '.$combo->[1];
-      if ($combo->[0]) {
-        $opt->[0]= ($opt->[0] ? $opt->[0].'-'.$combo->[0] : $combo->[0]);
-      }
+      $opt.= ' '.$combo;
     }
     elsif (ref $element eq 'HASH') {
+      # Hashref represents exclusive options.
       # Exclusives only combine with regular alternatives,
-      # But not with other exclusives on the same level.
-      # So, we'll keep them separate instead of combining right away,
-      # and will only do it after the loop is finished
+      # But not with other exclusives of the same level.
+      # In other words, we only pick one element from the hash.
       my @keys= sort keys %$element;
       $prng->shuffleArray(\@keys);
       my $o= shift @keys;
-      $opt->[0]= ($opt->[0] ? $opt->[0].'-'.$o : $o);
       my $combo= pickOne($element->{$o});
-      $opt->[1].= ' '.$combo->[1];
-      last;
+      $opt.= ' '.$combo;
     }
   }
   return $opt;
@@ -219,74 +316,66 @@ sub pickOne
 
 sub flattenCombinations
 {
-  my ($name, $group)= @_;
+  my $group= shift;
+  if (ref $group eq '') {
+    $group= [ $group ];
+  }
+  my @combinations= ();
   my @alts= ();
   my @exclusives= ();
   foreach my $g (@$group) {
     if (ref $g eq '') {
-      # Regular scalar element, adding to alternatives
-      push @alts, [ $name || '', $g ];
-    }
-    elsif (ref $g eq 'ARRAY') {
-      # Group of alternatives,
-      # need a cartesian product with all previous combinations
-      my $set= flattenCombinations($name, $g);
-      my @new_alts= ();
-      if (scalar(@alts)) {
-        foreach my $a (@alts) {
-          foreach my $e (@$set) {
-            my $name= ($a->[0] ? ($e->[0] ? $a->[0].'-'.$e->[0] : $a->[0]) : ($e->[0] || ''));
-            push @new_alts, [ $name, $a->[1].' '.$e->[1] ];
-          }
-        }
-      } else {
-        @new_alts= @$set;
-      }
-      @alts= @new_alts;
-    }
-    elsif (ref $g eq 'HASH') {
-      # Exclusives only combine with regular alternatives,
-      # But not with other exclusives on the same level.
-      # So, we'll keep them separate instead of combining right away,
-      # and will only do it after the loop is finished
-      foreach my $e (sort keys %$g) {
-        push @exclusives, [ $e, flattenCombinations($name, $g->{$e}) ];
-      }
-    }
-  }
-  if (scalar(@exclusives)) {
-    my @new_alts= ();
-    foreach my $e (@exclusives) {
-      foreach my $c (@{$e->[1]}) {
+      # Regular scalar element, doesn't combine with anything else,
+      # so adding to combinations as is
+      push @combinations, $g;
+    } elsif (ref $g eq 'ARRAY') {
+      # Group of alternatives
+      # need a cartesian product with all previous alternatives
+      my $flattened= flattenCombinations($g);
+      if ($flattened and scalar(@$flattened)) {
         if (scalar(@alts)) {
-          foreach my $a (@alts) {
-            my $name= $e->[0];
-            if ($a->[0]) {
-              $name= $a->[0].'-'.$name;
+          my @new_alts= ();
+          foreach my $f (@$flattened) {
+            foreach my $a (@alts) {
+              push @new_alts, "$a $f";
             }
-            if ($c->[0]) {
-              $name= $name.'-'.$c->[0];
-            }
-            push @new_alts, [$name, $c->[1]];
           }
+          @alts= @new_alts;
         } else {
-          my $name= $e->[0];
-          if ($c->[0]) {
-            $name.= '-'.$c->[0];
-          }
-          push @new_alts, [$name, $c->[1]];
+          @alts= ( @$flattened );
         }
       }
+    } elsif (ref $g eq 'HASH') {
+      # Exclusives only combine with regular alternatives,
+      # But not with other exclusives on the same level
+      # (and of course not with scalars)
+      foreach my $e (sort keys %$g) {
+        push @exclusives, @{flattenCombinations($g->{$e})};
+      }
     }
-    @alts= @new_alts;
   }
-  return \@alts;
+  # Now we need to combine alternatives with exclusives
+  # and add results to combinations
+  if (scalar(@exclusives)) {
+    if (scalar(@alts)) {
+      foreach my $e (@exclusives) {
+        foreach my $a (@alts) {
+          push @combinations, "$a $e";
+        }
+      }
+    } else {
+      push @combinations, @exclusives;
+    }
+  } else {
+    push @combinations, @alts;
+  }
+  return \@combinations;
 }
 
 my $trial_counter = 0;
 
 sub doExhaustive {
-  my $flattened= flattenCombinations('',$combinations,[]);
+  my $flattened= flattenCombinations($combinations);
   my @combinations= ();
   # Beautify the names
   my $num= scalar(@$flattened);
@@ -295,13 +384,9 @@ sub doExhaustive {
     $len++;
   }
   my $n= 0;
-  foreach my $e (@$flattened) {
+  foreach my $k (@$flattened) {
     $n++;
-    my $k= $e->[0];
-    while ( $k=~ s/(?:\-\d+|\d+\-)//g ) {};
-    $k= sprintf("%0${len}d-$k", $n);
-    $k=~ s/\-$//;
-    push @combinations, [$k, $e->[1]]
+    push @combinations, $k
   }
   $trials= scalar(@combinations);
 
@@ -310,7 +395,7 @@ sub doExhaustive {
   }
   foreach my $e (@combinations) {
     $trial_counter++;
-    doCombination($trial_counter,$e->[1],"combination ".$e->[0]);
+    doCombination($trial_counter,$e,"combination");
     last if $interrupted;
   }
 }
@@ -320,7 +405,7 @@ sub doExhaustive {
 sub doRandom {
   foreach my $trial_id (1..$trials) {
     my $c= pickOne($combinations);
-    doCombination($trial_id,$c->[1],"random trial ".$c->[0]);
+    doCombination($trial_id,$c,"random trial");
     last if $interrupted;
   }
 }
@@ -328,6 +413,7 @@ sub doRandom {
 ## ----------------------------------------------------
 sub doCombination {
   my ($trial_id,$comb_str,$comment) = @_;
+
 
   return if (($trial_id -1) % $threads +1) != $thread_id;
   say("#============================================================");
