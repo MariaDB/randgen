@@ -430,7 +430,7 @@ sub spatial_text_value {
         foreach (1..$size) {
             my $tp2= $prng->arrayElement(['POINT','LINESTRING','POLYGON','MULTIPOINT','MULTILINESTRING','MULTIPOLYGON']);
             push @geoms, $prng->spatial_text_value($tp2);
-            return 'GeometryCollectionFromText(GEOMETRYCOLLECTION('.(join ',', @geoms).'))';
+            return 'GEOMETRYCOLLECTION('.(join ',', @geoms).')';
         }
     } else {
         if ($tp eq 'POINT') {
