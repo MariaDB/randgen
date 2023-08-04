@@ -98,7 +98,7 @@ use constant  ER_HANDSHAKE_ERROR                                => 1043; # Bad h
 use constant  ER_DBACCESS_DENIED_ERROR                          => 1044; # Access denied for user '%s'@'%s' to database '%-.192s'
 use constant  ER_ACCESS_DENIED_ERROR                            => 1045; # Access denied for user '%s'@'%s' (using password: %s)
 use constant  ER_NO_DB_ERROR                                    => 1046; # No database selected
-use constant  ER_UNKNOWN_COM_ERROR                              => 1047; # Unknown command
+use constant  ER_UNKNOWN_COM_ERROR                              => 1047; # Unknown command ########## In reality WSREP has not yet prepared node for application use
 use constant  ER_BAD_NULL_ERROR                                 => 1048; # Column '%-.192s' cannot be null
 use constant  ER_BAD_DB_ERROR                                   => 1049; # Unknown database '%-.192s'
 use constant  ER_TABLE_EXISTS_ERROR                             => 1050; # Table '%-.192s' already exists
@@ -2301,7 +2301,7 @@ sub BEGIN {
     ER_UNKNOWN_CHARACTER_SET()                          => STATUS_SEMANTIC_ERROR,
     ER_UNKNOWN_COLLATION()                              => STATUS_SEMANTIC_ERROR,
     ER_UNKNOWN_COMPRESSION_METHOD()                     => STATUS_SEMANTIC_ERROR,
-    ER_UNKNOWN_COM_ERROR()                              => STATUS_SYNTAX_ERROR,
+    ER_UNKNOWN_COM_ERROR()                              => STATUS_ENVIRONMENT_FAILURE,
     ER_UNKNOWN_DATA_TYPE()                              => STATUS_SEMANTIC_ERROR,
     ER_UNKNOWN_ERROR()                                  => STATUS_RUNTIME_ERROR,
     ER_UNKNOWN_EXPLAIN_FORMAT()                         => STATUS_SYNTAX_ERROR,
