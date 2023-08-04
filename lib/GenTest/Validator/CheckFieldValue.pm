@@ -81,7 +81,7 @@ sub validate {
         $rowset .= " [" . ($i + 1 ) . "] : " . $result->data()->[$r]->[$i] . ";";
       }
       say("Full row:$rowset");
-      return STATUS_REQUIREMENT_UNMET;
+      return STATUS_CRITICAL_FAILURE;
     }
   }
   return STATUS_OK;
