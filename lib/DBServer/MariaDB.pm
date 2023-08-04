@@ -1353,8 +1353,11 @@ sub syncWithMaster {
         }
       }
       return DBSTATUS_FAILURE;
+    } elsif ($wait_result == -1) {
+      sayError("Timeout occurred while waiting for the slave to synchronize with the master");
+      return DBSTATUS_FAILURE;
     } else {
-      say("Slave SQL thread apparently synchronized successfully");
+      say("Slave SQL thread apparently synchronized successfully: $wait_result events executed");
       return DBSTATUS_OK;
     }
   } else {
