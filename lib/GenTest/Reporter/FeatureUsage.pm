@@ -45,6 +45,8 @@ my %usage_check= (
   'application periods' => \&check_for_application_periods,
   'Aria tables' => \&check_for_aria_tables,
   'backup stages' => \&check_for_backup_stages,
+  'binlog compression' => \&check_for_binlog_compression,
+  'binlog alter two phase' => \&check_for_binlog_alter_two_phase,
   'Blackhole tables' => \&check_for_blackhole_tables,
   'compressed columns' => \&check_for_compressed_columns,
   'delayed inserts' => \&check_for_delayed_inserts,
@@ -277,6 +279,20 @@ sub check_for_application_periods {
 sub check_for_gis {
   if ($_[0]->check_status_var('Feature_gis')) {
     return "according to Feature_gis";
+  }
+  return undef;
+}
+
+sub check_for_binlog_compression {
+  if ($_[0]->check_system_var('log_bin') && $_[0]->check_system_var('log_bin_compress')) {
+    return "according to log_bin and log_bin_compress variables";
+  }
+  return undef;
+}
+
+sub check_for_binlog_alter_two_phase {
+  if ($server_version ge '1008' && $_[0]->check_system_var('log_bin') && $_[0]->check_system_var('binlog_alter_two_phase')) {
+    return "according to log_bin and binlog_alter_two_phase variables";
   }
   return undef;
 }
