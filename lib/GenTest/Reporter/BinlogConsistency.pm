@@ -125,8 +125,9 @@ sub report {
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
-  say("Feeding binary logs of the original server to the new one (@all_binlogs)");
-  $status = system("$binlog $binlogs_string | $client") >> 8;
+  say("Feeding binary logs of the original server to the new one");
+  # MDEV-31756 - NOWAIT in DDL makes binary logs difficult or impossible to replay
+  $status = system("$binlog $binlogs_string | sed -e 's/NOWAIT//g' | $client") >> 8;
   if ($status > STATUS_OK) {
     say("ERROR: Feeding binary logs to the server finished with an error");
     return $status;
@@ -177,7 +178,7 @@ sub dump_all {
 
 
 sub type {
-  return REPORTER_TYPE_DATA | REPORTER_TYPE_END;
+  return REPORTER_TYPE_SUCCESS;
 }
 
 
