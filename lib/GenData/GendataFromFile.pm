@@ -130,7 +130,10 @@ sub run {
         push(@schema_perms, $executor->defaultSchema());
     }
 
-    my $engines= defined $self->engine() ? [ split /,/, $self->engine() ] : $tables->{engines};
+    if ((exists $tables->{engines}) && (defined $self->engine())) {
+      sayWarning("Engine(s) from test parameters will be ignored, the value from .zz file will be used instead: @{$tables->{engines}}");
+    }
+    my $engines= (exists $tables->{engines}) ? $tables->{engines} : [ split /,/, $self->engine() ];
     foreach my $e (@$engines) {
       if (isFederatedEngine($e)) {
         foreach my $s (@schema_perms) {
@@ -141,6 +144,10 @@ sub run {
         }
         last;
       }
+    }
+    # Using default engine only
+    unless (scalar (@$engines)) {
+      $engines= [ '' ];
     }
 
     $table_perms[TABLE_ROW] = (defined $self->rows() ? [split(',', $self->rows())] : undef ) || $tables->{rows} || [0, 1, 2, 10, 100];

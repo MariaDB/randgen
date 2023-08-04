@@ -1,5 +1,5 @@
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@ $schemas = [ 'dyncol_dml_db' ];
 $tables = {
   rows => [10],
   partitions => [ undef , 'KEY (pk) PARTITIONS 2' ],
-  engines => [ 'Aria', 'MyISAM', 'InnoDB' ]
 };
 
 $fields = {

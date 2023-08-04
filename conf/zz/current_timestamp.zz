@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Use is subject to license terms.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@ $tables = {
   names => ['A','AA','B','BB','C','CC','D','DD','E','EE','F','FF','G','GG','H','HH',
             'I','II','J','JJ','K','KK','L','LL','M','MM','N','NN','O','OO'],
   pk => [undef,'int','int auto_increment','datetime(6)','timestamp(6)'],
-  engines => ['InnoDB','MyISAM','MEMORY'],
   rows => [100,500]
 };
 
