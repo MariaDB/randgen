@@ -66,6 +66,7 @@ require Exporter;
   GD_COMPATIBILITY
   GD_VCOLS
   GD_RAND
+  GD_GIS
   doGenData
 );
 
@@ -137,6 +138,7 @@ use constant GD_RAND => 19;
 use constant GD_BASEDIR => 20;
 use constant GD_TABLES => 21;
 use constant GD_SERVER => 22;
+use constant GD_GIS => 23;
 
 sub new {
     my $class = shift;
@@ -146,6 +148,7 @@ sub new {
         'seed' => GD_SEED,
         'engine' => GD_ENGINE,
         'executor_id' => GD_EXECUTOR_ID,
+        'gis' => GD_GIS,
         'rows' => GD_ROWS,
         'views' => GD_VIEWS,
         'short_column_names' => GD_SHORT_COLUMN_NAMES,
@@ -208,6 +211,7 @@ sub doGenData {
          debug => $props->debug,
          engine => $so->{engine},
          executor_id => $i,
+         gis => $so->{gis},
          partitions => $so->{partitions},
          rows => $props->rows,
          seed => $props->seed(),
@@ -427,6 +431,11 @@ sub compatibility {
 sub vcols {
     return $_[0]->[GD_VCOLS];
 }
+
+sub gis {
+    return $_[0]->[GD_GIS];
+}
+
 
 sub tables {
     return $_[0]->[GD_TABLES];

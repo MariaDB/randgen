@@ -63,6 +63,7 @@ sub run {
 
     my @engines= ($self->engine ? split /,/, $self->engine : '');
 
+    my $res= STATUS_OK;
     foreach my $e (@engines) {
       if (isFederatedEngine($e) and not $remote_created) {
         unless ($self->setupRemote($self->GDA_DEFAULT_DB) == STATUS_OK) {
@@ -80,10 +81,11 @@ sub run {
       foreach my $i (0..$#$rows) {
         my $name= ($e eq $self->engine ? 't'.($i+1) : 't'.($i+1).'_'.$e);
         my $gen_table_result = $self->gen_table($executor, $name, $rows->[$i], $e, $self->GDA_DEFAULT_DB);
-        return $gen_table_result if $gen_table_result != STATUS_OK;
+        return $gen_table_result if $gen_table_result >= STATUS_CRITICAL_FAILURE;
+        $res= $gen_table_result if $gen_table_result > $res;
       }
     }
-    return STATUS_OK;
+    return $res;
 }
 
 sub random_null {
@@ -335,8 +337,9 @@ sub gen_table {
                             ]
     }
 
-    # Spatial columns are hopefully not very common and they are also painful. 10%
-    if (!$prng->uint16(0,9)) {
+    # Spatial columns are hopefully not very common and they are also painful. 20%,
+    # and only if configured explicitly
+    if ($self->gis && !$prng->uint16(0,4)) {
     my $tp= $prng->geometryType();
         $columns{col_spatial} = [  $tp,
                                    undef,

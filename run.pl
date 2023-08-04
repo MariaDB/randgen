@@ -97,6 +97,7 @@ sub run {
   %server_options= (
     basedir     => undef,
     engine      => undef,
+    gis         => undef,
     manual_gdb  => undef,
     mysqld      => undef,
     partitions  => undef,
@@ -113,6 +114,7 @@ sub run {
     # Server-related options
     'basedir=s' => \$server_options{basedir},
     'engine=s' => \$server_options{engine},
+    'gis!'     => \$server_options{gis},
     'manual-gdb|manual_gdb' => \$server_options{manual_gdb},
     'mysqld=s@' => \@{$server_options{mysqld}},
     'partitions!'   => \$server_options{partitions},
@@ -527,13 +529,15 @@ Run a complete random query generation test scenario
                            Comma-separated list
     --gendata            : 'simple', 'advanced', or a path to .zz template
                            or SQL file. Can be provided multiple times
+    --gis                : Create GIS columns upon data generation
+                           (only affects gendata=advanced).
     --partitions         : Create partitions upon data generation
                            (only affects gendata=advanced)
     --rows               : Number of rows to use for table data generation,
                            comma-separated
     --short-column-names : Use short column names in data generation
     --vcols              : Create virtual columns upon data generation
-                           (only affects gendata=advanced).
+                           (only affects gendata=advanced and gendata=simple).
                            Takes optional VIRTUAL/STORED value (comma-separated)
     --views              : Create views upon data generation.
                            Takes optional algorithm value (comma-separated)

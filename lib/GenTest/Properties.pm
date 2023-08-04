@@ -186,6 +186,7 @@ sub init {
               'engine',
               'gendata',
               'generator',
+              'gis',
               'redefines',
               'threads',
               'queries',
@@ -247,6 +248,7 @@ sub setPropertiesFromHash {
   $gentestProps->property('freeze_time',$props->{freeze_time}) if defined $props->{freeze_time};
   $gentestProps->property('gendata',$props->{gendata}) if exists $props->{gendata};
   $gentestProps->property('generator',($props->{generator} || 'FromGrammar'));
+  $gentestProps->property('gis',1) if defined $props->{gis};
   $gentestProps->property('grammars',$props->{grammars});
   $gentestProps->property('queries',$props->{queries}) if defined $props->{queries};
   $gentestProps->property('metadata_reload',(defined $props->{metadata_reload} ? $props->{metadata_reload} : 1)); # By default metadata is loaded
