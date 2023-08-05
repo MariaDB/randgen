@@ -1,4 +1,4 @@
-# Copyright (c) 2023, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,14 +19,15 @@
 use Data::Dumper;
 use strict;
 
-our ($common_options, $ps_protocol_options, $views_combinations, $vcols_combinations, $threads_low_combinations, $optional_variators);
+our ($common_options, $ps_protocol_combinations, $views_combinations, $vcols_combinations, $gis_combinations, $threads_low_combinations, $optional_variators);
 our ($basic_engine_combinations, $enforced_engine_combinations, $extra_engine_combinations);
-our ($non_crash_scenarios, $crash_scenarios, $mariabackup_scenarios);
+our ($non_crash_scenarios, $crash_scenarios, $mariabackup_scenarios, $upgrade_scenarios);
 our (%server_options, %options);
-our ($grammars, $gendata);
+our ($grammars, $unsafe_grammars, $gendata);
 
-require "$ENV{RQG_HOME}/conf/cc/include/parameter_presets.small";
-require "$ENV{RQG_HOME}/conf/cc/include/combo.grammars.small";
+my @empty_set_10= ('','','','','','','','','','');
+
+require "$ENV{RQG_HOME}/conf/cc/include/parameter_presets";
 
 # Choose options based on $version value
 # ($version may be defined via config-version, otherwise 999999 will be used)
@@ -34,44 +35,46 @@ local @ARGV = ($version);
 require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
 
 $combinations = [
-  # For the  unlikely case when nothing else is picked
-  [ '--grammar=conf/yy/all_selects.yy:0.0001' ],
   [ $common_options ], # seed, reporters, timeouts
   [ @$threads_low_combinations ],
+  [ @$views_combinations ],
+  [ @$vcols_combinations ],
   [ @$optional_variators ],
   [ @$grammars ],
   [ @$gendata ],
 
-  ##### Engines and engine=specific options
+  ##### Engines and scenarios
+  ##### Scenarios
   [
     {
-      basic_engines => [
+      normal => [
+        [ @$non_crash_scenarios ],
         [ @$basic_engine_combinations ],
-        [ '','','',@$non_crash_scenarios ],
+        [ @$unsafe_grammars ],
+        [ @{$options{safe_charsets}}, @{$options{unsafe_charsets}} ],
       ],
-      extra_engines => [
-        [ @$extra_engine_combinations ],
-        [ '','','',@$non_crash_scenarios ],
+      recovery => [
+        [ @$crash_scenarios ],
+        [ '--engine=InnoDB', '--engine=Aria --mysqld=--default-storage-engine=Aria' ],
+        [ @{$options{safe_charsets}} ],
       ],
-      innodb => [
-        [ '--engine=InnoDB', '--engine=InnoDB --mysqld=--default-storage-engine=InnoDB' ],
-        [ '', '', '', '', '', '', '', '', @$crash_scenarios, @$non_crash_scenarios ],
-        @{$options{optional_innodb_variables}},
-      ],
-      aria => [
-        [ '--engine=Aria', '--engine=Aria --mysqld=--default-storage-engine=Aria' ],
-        [ '', '', '', '', '', '', '', '', @$crash_scenarios, @$non_crash_scenarios ],
-        @{$options{optional_aria_variables}},
-      ],
-      myisam => [
-        [ '--engine=MyISAM', '--engine=MyISAM --mysqld=--default-storage-engine=MyISAM' ],
-        [ '','','','',@$non_crash_scenarios ],
+      upgrade_backup => [
+        [ @$mariabackup_scenarios ],
+        [ @$basic_engine_combinations ],
+        [ @{$options{safe_charsets}} ],
       ],
     }
   ],
+
+  ##### Encryption
+  [ @{$options{optional_full_encryption}} ],
+  ##### InnoDB
+  [ @{$options{optional_innodb_variables}} ],
+  ##### Plugins (not linked to grammars)
+  [ @{$options{optional_plugins}} ],
   ##### Binary logging
-  [ '', '', [ @{$options{binlog_combinations}} ] ],
+  [ @{$options{optional_binlog_variables}} ],
   ##### Startup variables (general)
   [ @{$options{optional_server_variables}} ],
-  [ @{$options{optional_charsets}} ],
+  [ @{$options{safe_charsets}} ],
 ];

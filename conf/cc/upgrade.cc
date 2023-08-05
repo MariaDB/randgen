@@ -21,7 +21,6 @@ use strict;
 our (%server_options, %options);
 
 require "$ENV{RQG_HOME}/conf/cc/include/parameter_presets";
-require "$ENV{RQG_HOME}/conf/cc/include/combo.grammars";
 
 # Choose options based on $version value
 # ($version may be defined via config-version, otherwise 999999 will be used)
@@ -45,7 +44,18 @@ $combinations = [
   '],
   [ @{$options{innodb_compression_combinations}} ],
   [ @{$options{innodb_pagesize_combinations}} ],
-  [ '', $options{all_encryption_options} ],
+  [ '',
+    '--mysqld=--innodb-encrypt-tables
+     --mysqld=--innodb-encrypt-log
+     --mysqld=--innodb-encryption-threads=4
+     --mysqld=--aria-encrypt-tables=1
+     --mysqld=--encrypt-tmp-disk-tables=1
+     --mysqld=--encrypt-binlog
+     --mysqld=--file-key-management
+     --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt
+     --mysqld=--plugin-load-add=file_key_management
+    '
+  ],
   [
     '--scenario=NormalUpgrades --duration=180',
     '--scenario=CrashUpgrade --duration=180',
