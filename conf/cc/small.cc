@@ -58,11 +58,6 @@ $combinations = [
         [ '--engine=InnoDB', '--engine=Aria --mysqld=--default-storage-engine=Aria' ],
         [ @{$options{safe_charsets}} ],
       ],
-      upgrade_backup => [
-        [ @$mariabackup_scenarios ],
-        [ @$basic_engine_combinations ],
-        [ @{$options{safe_charsets}} ],
-      ],
     }
   ],
 
