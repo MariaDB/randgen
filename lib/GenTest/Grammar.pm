@@ -153,9 +153,16 @@ sub check_compatibility {
 sub parseFromFile {
   my ($grammar, $grammar_file) = @_;
 
-  open (GF, $grammar_file) or die "Unable to open() grammar $grammar_file: $!";
+  my $grammar_string;
+  unless (open (GF, $grammar_file)) {
+    sayError("Unable to open() grammar $grammar_file: $!");
+    die "Unable to open() grammar $grammar_file: $!";
+  };
   sayDebug("Reading grammar from file $grammar_file");
-  read (GF, my $grammar_string, -s $grammar_file) or die "Unable to read() $grammar_file: $!";
+  unless (read (GF, $grammar_string, -s $grammar_file)) {
+    sayError("Unable to read() $grammar_file: $!");
+    die "Unable to read() $grammar_file: $!";
+  }
   close (GF);
 
   $grammar->[GRAMMAR_STRING] = $grammar_string;
