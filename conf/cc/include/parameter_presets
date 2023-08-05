@@ -240,7 +240,7 @@ $extra_engine_combinations= [
    --mysqld=--loose-s3-use-http=on
    --gendata=data/sql/engine-oqgraph.sql
    --gendata=data/sql/engine-heap.sql
-   --gendata=data/zz/oltp-connect.zz
+   --gendata=conf/zz/oltp-connect.zz
    --grammar=conf/yy/engine-oqgraph.yy:0.1
    --grammar=conf/yy/engine-federatedx.yy:0.1
    --grammar=conf/yy/engine-spider.yy:0.5
