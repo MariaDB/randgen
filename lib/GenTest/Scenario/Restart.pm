@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2022 MariaDB Corporation Ab
+# Copyright (C) 2017, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -119,14 +119,8 @@ sub run {
       }
 
       #####
-      set_expectation($server->vardir,"120\n(seconds to wait)");
-      if ($restart_type eq 'clean') {
-        $self->printStep("Stopping the server");
-        $status= $server->stopServer($shutdown_timeout);
-      } elsif ($restart_type eq 'kill') {
-        $self->printStep("Killing the server");
-        $status= $server->kill();
-      }
+      $self->printStep("Stopping/killing the server");
+      $status= $server->startPlannedDowntime($restart_type,$shutdown_timeout*2);
 
       if ($status != STATUS_OK) {
         sayError("Could not stop the server");
@@ -148,7 +142,6 @@ sub run {
 
       $server->setStartDirty(1);
       $status= $server->startServer;
-      unset_expectation($server->vardir);
 
       if ($status != STATUS_OK) {
         sayError("Server failed to start");
@@ -157,6 +150,8 @@ sub run {
         # ... but even if it's a known error, we cannot proceed without the server
         return $self->finalize($status,[$server]);
       }
+
+      $server->endPlannedDowntime();
 
       #####
       if ($self->getTestType eq 'normal') {

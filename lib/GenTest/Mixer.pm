@@ -166,26 +166,17 @@ sub next {
       # If the server has crashed but we expect server restarts during the test, we will wait and retry
       if (serverGone($execution_result->status()))
       {
-        my $downtime= $executor->server->plannedDowntime();
-        if ($downtime > 0) {
-          while ($downtime) {
-            sayDebug("Mixer: waiting for $downtime seconds for the server to return");
-            last if ($executor->server->running);
-            sleep 1;
-            $downtime--;
-          };
-          if ($downtime) {
-            say("Server returned in time, re-running the last query");
-            redo EXECUTE_QUERY;
-          } else {
-            sayError("Mixer: Server didn't return after planned downtime");
-          }
-        } elsif ($downtime < 0) {
+        my $status= $executor->server->waitPlannedDowntime();
+        if ($status == STATUS_OK) {
+          say("Server returned in time, re-running the last query");
+          redo EXECUTE_QUERY;
+        } elsif ($status == STATUS_SERVER_STOPPED) {
           sayDebug("Mixer: instructed not to wait");
-          $max_status= STATUS_TEST_STOPPED;
+          $max_status= STATUS_TEST_STOPPED if $max_status < STATUS_SERVER_STOPPED;
           last; # QUERIES;
         } else {
           sayError("Mixer: Server has gone away");
+          $max_status= STATUS_SERVER_UNAVAILABLE;
         }
       }
       $max_status = $execution_result->status() if $execution_result->status() > $max_status;

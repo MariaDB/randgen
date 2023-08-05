@@ -31,6 +31,7 @@ use Data::Dumper;
 use File::Basename qw(dirname);
 use File::Path qw(mkpath rmtree);
 use File::Copy qw(move);
+use Constants;
 
 use strict;
 
@@ -1379,11 +1380,41 @@ sub waitForServerToStart {
   return $self->running;
 }
 
-sub plannedDowntime {
+# wait_time is how long clients should be waiting for the server to come back.
+# Negative value means no wait
+# restart_type is "clean" or a signal name ("kill","abrt","segv");
+sub startPlannedDowntime {
+  my ($self, $restart_type, $wait_time)= @_;
+  $restart_type= ($restart_type ? uc($restart_type) : 'CLEAN');
+  $wait_time= 0 unless defined $wait_time;
+  my $status;
+  if ($restart_type !~ /^(?:CLEAN|KILL|ABRT|SEGV)$/) {
+    sayError("Wrong value for restart_type ($restart_type), assuming clean");
+    $restart_type= 'CLEAN';
+  }
+  say("Starting planned downtime, waiting $wait_time seconds, type $restart_type");
+  set_expectation($self->vardir,"$wait_time\n(seconds to wait)");
+  if ($restart_type eq 'CLEAN') {
+    my $shutdown_timeout= ($wait_time ? int($wait_time/2) : undef);
+    $status= $self->stopServer($shutdown_timeout);
+  } else {
+    $status= $self->kill($restart_type);
+  }
+  return $status;
+}
+
+sub endPlannedDowntime {
+  my $self= shift;
+  sayDebug("Unsetting planned downtime");
+  unset_expectation($self->vardir);
+}
+
+sub waitPlannedDowntime {
   my $self= shift;
   my $downtime= 0;
-  if (-e $self->vardir.'/expect') {
-    if (open(DOWNTIME,$self->vardir.'/expect')) {
+  my $expect_file= $self->vardir.'/expect';
+  if (-e $expect_file) {
+    if (open(DOWNTIME,$expect_file)) {
       $downtime= <DOWNTIME>;
       chomp $downtime;
       close(DOWNTIME);
@@ -1392,16 +1423,26 @@ sub plannedDowntime {
     }
   }
   if ($downtime > 0) {
-    say("Server says: planned downtime, wait for $downtime seconds");
-    # We are unsetting PID in case it became stale,
-    # it should be re-read from the server pidfile
+    say("Server says: planned downtime, waiting up to $downtime seconds");
     $self->[MYSQLD_SERVERPID]= undef;
+    while ($downtime-- && -e $expect_file) {
+      sleep 1;
+    }
+    sayDebug("Expect file disappeared");
+    if ($self->running) {
+      sayDebug("Server is running again");
+      return STATUS_OK;
+    } else {
+      sayError("Server is not running");
+      return STATUS_SERVER_UNAVAILABLE;
+    }
   } elsif ($downtime < 0) {
-    say("Server says: planned downtime, don't wait");
+    say("Server says: planned downtime, no need to wait");
+    return STATUS_SERVER_STOPPED;
   } else {
     sayWarning("Server says: the downtime isn't planned");
+    return STATUS_CRITICAL_FAILURE;
   }
-  return $downtime;
 }
 
 sub backupDatadir {

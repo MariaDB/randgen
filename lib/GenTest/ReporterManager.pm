@@ -57,28 +57,17 @@ sub monitor {
       sayWarning("Reporter ".(ref $reporter)." returned ".status2text($reporter_result)) if $reporter_result != STATUS_OK;
       if (serverGone($reporter_result))
       {
-        my $downtime= $reporter->server->plannedDowntime();
-        if ($downtime > 0) {
-          sayError("ReporterManager: waiting for $downtime seconds for the server to return");
-          do {
-            sleep 1;
-            last if ($reporter->server->running);
-            $downtime--;
-          } until ($downtime);
-          if ($downtime) {
-            say("ReporterManager: Server returned in time, continuing monitoring");
-            redo REPORTER;
-          } else {
-            sayError("ReporterManager: Server didn't return after planned downtime, aborting monitoring");
-            return $reporter_result;
-          }
-        } elsif ($downtime < 0) {
+        my $status= $reporter->server->waitPlannedDowntime();
+        if ($status == STATUS_OK) {
+          say("ReporterManager: Server returned in time, continuing monitoring");
+          redo REPORTER;
+        } elsif ($status == STATUS_SERVER_STOPPED) {
           sayError("ReporterManager: instructed not to wait");
           $max_result= STATUS_TEST_STOPPED if $max_result < STATUS_TEST_STOPPED;
           return $max_result;
         } else {
           sayError("ReporterManager: Server has gone away");
-          return $reporter_result;
+          return STATUS_SERVER_UNAVAILABLE;
         }
       }
       $max_result = $reporter_result if $reporter_result > $max_result;

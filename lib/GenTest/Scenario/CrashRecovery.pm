@@ -121,8 +121,7 @@ sub run {
   #####
   $self->printStep("Killing the old server");
 
-  set_expectation($old_server->vardir,"-1\n(don't wait)");
-  $status= $old_server->kill;
+  $status= $old_server->startPlannedDowntime('KILL',-1);
 
   if ($status != STATUS_OK) {
     sayError("Could not kill the old server");
@@ -143,7 +142,7 @@ sub run {
     return $self->finalize($status,[$old_server]);
   }
 
-  unset_expectation($old_server->vardir);
+  $old_server->endPlannedDowntime();
   #####
   $self->printStep("Backing up data directory from the old server");
 

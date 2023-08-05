@@ -190,8 +190,7 @@ sub run {
   #####
   $self->printStep("Stopping the server");
 
-  set_expectation($server->vardir,"-1\n(don't wait)");
-  $status= $server->stopServer;
+  $status= $server->startPlannedDowntime('clean',-1);
 
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
@@ -206,7 +205,7 @@ sub run {
   }
 
   #####
-  unset_expectation($server->vardir);
+  $server->endPlannedDowntime();
   $self->printStep("Checking the server log for fatal errors after shutdown");
 
   $status= $self->checkErrorLog($server, {CrashOnly => 1});

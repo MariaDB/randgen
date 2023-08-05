@@ -155,9 +155,7 @@ sub run {
 
   #####
   $self->printStep("Killing the old server");
-
-  set_expectation($old_server->vardir,"-1\n(don't wait)");
-  $status= $old_server->kill;
+  $status= $old_server->startPlannedDowntime('KILL',-1);
 
   if ($status != STATUS_OK) {
     sayError("Could not kill the old server");
@@ -188,7 +186,6 @@ sub run {
   move($old_server->errorlog, $old_server->errorlog.'_orig');
 
   #####
-  unset_expectation($old_server->vardir);
   $self->printStep("Restarting the old server with innodb-force-recovery");
 
   $self->setServerSpecific(1,'start_dirty',1);
@@ -200,6 +197,7 @@ sub run {
     sayError("Old server failed to restart with innodb-force-recovery");
     return $self->finalize(STATUS_SERVER_STARTUP_FAILURE,[]);
   }
+  $old_server->endPlannedDowntime();
 
   #####
   $self->printStep("Stopping the old server after crash recovery");

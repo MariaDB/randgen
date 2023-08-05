@@ -1,4 +1,4 @@
-# Copyright 2020, 2022, MariaDB Corporation Ab
+# Copyright 2020, 2023, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -158,9 +158,7 @@ sub run {
   #####
   my $signal= $prng->arrayElement(['KILL','ABRT','SEGV']);
   $self->printStep("Killing the server with $signal");
-  # Tell Mixer/Executor that the downtime is planned but there is no need to wait
-  set_expectation($server->vardir,"-1\n(don't wait)");
-  $status= $server->kill($signal);
+  $status= $server->startPlannedDowntime($signal,-1);
 
   if ($status != STATUS_OK) {
     sayError("Could not kill the server");
@@ -184,7 +182,6 @@ sub run {
   $self->printStep("Restarting the server");
 
   $status= $server->startServer;
-  unset_expectation($server->vardir);
 
   if ($status != STATUS_OK) {
     sayError("Server failed to restart");
@@ -193,6 +190,8 @@ sub run {
     # ... but even if it's a known error, we cannot proceed without the server
     return $self->finalize($status,[$server]);
   }
+
+  $server->endPlannedDowntime();
 
   #####
   $self->printStep("Checking the server error log for errors after recovery");
