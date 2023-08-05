@@ -47,6 +47,7 @@ use constant SLAVE_INFO_PORT => 2;
 sub admin {
   my $executor= shift;
   $executor->execute("SET ROLE admin");
+  $executor->execute("SET SESSION tx_read_only= OFF");
 }
 
 sub init {

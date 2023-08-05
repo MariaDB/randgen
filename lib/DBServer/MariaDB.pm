@@ -384,6 +384,9 @@ sub createMysqlBase  {
     push @$boot_options, "--loose-skip-cracklib-password-check";
     push @$boot_options, "--loose-skip-simple-password-check";
     push @$boot_options, "--loose-skip-password-reuse-check";
+    # Can't be read-only
+    push @$boot_options, "--skip-transaction-read-only";
+    push @$boot_options, "--skip-read-only";
 
     my $command;
 
