@@ -31,6 +31,7 @@ default_lease_ttl = "730h"
 #max_versions=2
 ui = true
 log_level = "Trace"
+disable_mlock = true
 EOF
 
 set -o pipefail
@@ -59,7 +60,7 @@ set -e
 # restart exits too early, vault may be not ready yet
 for i in 1 2 3 4 5 ; do
   sleep 2
-  if vault operator init > $vardir/vault.init ; then
+  if ./vault operator init > $vardir/vault.init ; then
     break
   fi
 done
