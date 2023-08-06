@@ -62,9 +62,9 @@ sub run {
   $topology= '1->2';
 
   my @reporters= $self->getProperty('reporters') ? @{$self->getProperty('reporters')} : ();
-  my $rpl_mode= $self->scenarioOptions->{'rpl-mode'} || $self->scenarioOptions->{'rpl_mode'} || '';
+  my $do_sync= (exists $self->scenarioOptions->{'nosync'} ? 0 : 1 );
   my $rpl_timeout= $self->scenarioOptions->{'rpl-timeout'} || $self->scenarioOptions->{'rpl_timeout'} || $self->getProperty('duration');
-  push @reporters, 'ReplicationConsistency' unless $rpl_mode =~ /nosync/;
+  push @reporters, 'ReplicationConsistency' if $do_sync;
   push @reporters, 'ReplicationSlaveStatus';
 
   my $srv_count= scalar(keys %{$self->getProperty('server_specific')});
@@ -168,10 +168,21 @@ sub run {
   }
 
   #####
-  $self->printStep("Synchronizing with master");
-  my ($file, $pos) = $servers[0]->getMasterPos();
-  unless ($file && $pos && $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration')) == STATUS_OK) {
-    return $self->finalize(STATUS_REPLICATION_FAILURE,[@servers]);
+  if ($do_sync) {
+    $self->printStep("Synchronizing with master");
+    my ($file, $pos) = $servers[0]->getMasterPos();
+    unless ($file && $pos && $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration')) == STATUS_OK) {
+      return $self->finalize(STATUS_REPLICATION_FAILURE,[@servers]);
+    }
+  } else {
+    $self->printStep("Checking that the replica is alive");
+    my $status= $servers[1]->getSlaveStatus();
+    if (defined $status) {
+      say("Current replica status: Last_SQL_Errno: ".$status->{Last_SQL_Errno}.", Last_IO_Errno: ".$status->{Last_IO_Errno});
+    } else {
+      sayError("Slave didn't return any status");
+      return $self->finalize(STATUS_SERVER_UNAVAILABLE,[@servers]);
+    }
   }
 
   #####
