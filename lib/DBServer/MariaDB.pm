@@ -1345,10 +1345,7 @@ sub syncWithMaster {
   if ($self->dbh) {
     $self->dbh->do("SET max_statement_time=0");
     my $wait_result = $self->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos,$rpl_timeout)");
-    # Cannot do selectrow_array, as fields have different positions in different versions
-    my $sth= $self->dbh->prepare("SHOW SLAVE STATUS");
-    my $slave_status= $sth->fetchrow_hashref;
-    $slave_status->{Last_SQL_Errno}, $slave_status->{Last_IO_Errno};
+    my $slave_status= $self->getSlaveStatus();
     if (not defined $wait_result) {
       sayError("Slave failed to synchronize with master");
       foreach my $f ('Last_SQL','Last_IO') {
@@ -1368,6 +1365,17 @@ sub syncWithMaster {
     sayError("Lost connection to the slave");
     return DBSTATUS_FAILURE;
   }
+}
+
+sub getSlaveStatus {
+  my $self= shift;
+  my $status= undef;
+  # Cannot do selectrow_array, as fields have different positions in different versions
+  if ($self->dbh) {
+    my $sth= $self->dbh->prepare("SHOW SLAVE STATUS");
+    $status= $sth->fetchrow_hashref;
+  }
+  return $status;
 }
 
 sub waitForServerToStart {
