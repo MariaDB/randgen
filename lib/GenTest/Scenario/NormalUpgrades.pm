@@ -70,10 +70,9 @@ sub run {
   $status= STATUS_OK;
 
   #####
-  # Prepare servers
-
-  ($old_server, $new_server)= $self->prepare_servers();
-   $old_server->backupDatadir($old_server->datadir."_clean");
+  # Prepare old server
+  $old_server=  $self->prepareServer(1, my $is_active=1);
+  $old_server->backupDatadir($old_server->datadir."_clean");
   $vardir=$old_server->vardir;
 
   #####
@@ -236,6 +235,7 @@ sub run {
   ######################################################################
 
   # Point server_specific to the new server
+  $new_server=  $self->prepare_new_server($old_server);
   $self->switch_to_new_server();
 
   my @upgrade_errors;

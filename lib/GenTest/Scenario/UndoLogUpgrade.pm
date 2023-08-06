@@ -94,9 +94,8 @@ sub run {
   $status= STATUS_OK;
 
   #####
-  # Prepare servers
-
-  ($old_server, $new_server)= $self->prepare_servers();
+  # Prepare old server
+  $old_server=  $self->prepareServer(1, my $is_active=1);
 
   #####
   $self->printStep("Starting the old server");
@@ -225,6 +224,7 @@ sub run {
   $self->printStep("Starting the new server");
 
   # Point server_specific to the new server
+  $new_server=  $self->prepare_new_server($old_server);
   $self->switch_to_new_server();
 
   $status= $new_server->startServer;
