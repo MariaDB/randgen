@@ -19,9 +19,9 @@
 # Version should/can be defined in the combinations options and passed here
 my $version= shift;
 
-foreach my $comb (keys %server_options) {
+foreach my $comb (keys %parameters) {
   my @opts= ();
-  my $opts= $server_options{$comb};
+  my $opts= $parameters{$comb};
   VERSIONS:
   foreach my $ver (reverse sort keys %$opts) {
     if ($ver le $version) {
