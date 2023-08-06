@@ -7,7 +7,7 @@
 MDEV-31854:
 =~ AddressSanitizer|signal|Assertion \`table && table->s->sequence'
 =~ Item_func_nextval::val_int
-=~ Item_default_value::save_in_field
+=~ Item_default_value::save_in_field|Field::set_default
 MDEV-31853:
 =~ Assertion \`thd->is_error()'
 =~ Column_definition::check_vcol_for_key
