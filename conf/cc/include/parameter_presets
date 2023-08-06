@@ -21,15 +21,22 @@
 
 ####
 # Legend:
-# - $xxxx_options (except for %server_options) should be a single string containing
-#   a list of options, to be a added as a variant to an array of combinations;
-# - $xxxx_combinations should be an array ref of strings or a hashref, to be used
-#   as a full or partial set of combinations within an array ref in a combinations config
-# - $optional_xxxx should be an array ref of array refs
+# - $xxxx_combinations{v} / parameters{xxxx_combinations}:
+#         an array ref (of strings or arrayrefs or hasrefs),
+#         one of which should be used as an alternative
+# - $optional_xxxx{v} / parameters{optional_xxxx}:
+#         an arrayref or elements with empty fillers, that is,
+#         one of elements will be used with certain probability, or no elements at all
+# - $xxxx_options{v} is an array ref with a single string inside
+#   used as a temporary value, doesn't go to %parameters
+# - grammars{v} / parameter{grammars} and gendata{v} / parameters{gendata}
+#         special case of optional_xxxx (they are not completely optional,
+#         as there is always at least one grammar and one gendata)
 
-#########################
-# Test parameter presets
-#########################
+# De-facto 10.4, as of 2023-08-06
+my $minversion="0000";
+
+our %parameters;
 
 # Fillers to adjust probability of options
 my @empty_set_5=  ('','','','','');
@@ -38,31 +45,24 @@ my @empty_set_20= (@empty_set_10, @empty_set_10);
 my @empty_set_30= (@empty_set_20, @empty_set_10);
 my @empty_set_50= (@empty_set_30, @empty_set_20);
 
-$common_options= '
-  --seed=time
-  --queries=1000000
-  --gendata=advanced
-  --reporters=Backtrace,ErrorLog,Deadlock,MemoryUsage,FeatureUsage
-  --mysqld=--plugin-maturity=experimental
-';
+#########################
+# Test parameters
+#########################
 
-# Disable for now, it doesn't seem to do much good, but causes a lot
-# of false positives due to a problem in DBD perl
+#++++++++++++++++++++++++
+# Common test run parameters
+#++++++++++++++++++++++++
 
-$ps_protocol_combinations= [
-  @empty_set_10, 
-# '--ps-protocol --filter=conf/ff/need-reconnect.ff';
+$test_common_option_combinations{$minversion}= [
+  '
+    --seed=time
+    --queries=1000000
+    --reporters=Backtrace,ErrorLog,Deadlock,MemoryUsage,FeatureUsage
+    --mysqld=--plugin-maturity=experimental
+  '
 ];
 
-#########################
-# Test parameter combinations
-#########################
-
-$views_combinations= [ @empty_set_10, '--views', '--views=MERGE', '--views=TEMPTABLE'];
-$vcols_combinations= [ @empty_set_30, '--vcols', '--vcols=VIRTUAL', '--vcols=STORED' ];
-$gis_combinations=   [ @empty_set_30, '--gis' ];
-
-$threads_low_combinations= [
+$test_concurrency_combinations{$minversion}= [
   [ '--threads=1','--threads=2','--threads=3','--threads=4','--threads=6','--threads=8' ],
   [ '--duration=180 --mysqld=--max-statement-time=20 --mysqld=--lock-wait-timeout=10 --mysqld=--innodb-lock-wait-timeout=5',
     '--duration=200 --mysqld=--max-statement-time=20 --mysqld=--lock-wait-timeout=10 --mysqld=--innodb-lock-wait-timeout=5',
@@ -73,8 +73,37 @@ $threads_low_combinations= [
   ]
 ];
 
-# Variators are transformers which are run without result comparison
-$optional_variators= [ 
+$parameters{test_common_option_combinations}= \%test_common_option_combinations;
+$parameters{test_concurrency_combinations}= \%test_concurrency_combinations;
+
+#++++++++++++++++++++++++
+# PS protocol
+#++++++++++++++++++++++++
+
+$optional_ps_protocol{$minversion}= [
+  @empty_set_10,
+  '--ps-protocol --filter=conf/ff/need-reconnect.ff'
+];
+
+$parameters{optional_ps_protocol}= \%optional_ps_protocol;
+
+#++++++++++++++++++++++++
+# Gendata parameter combinations
+#++++++++++++++++++++++++
+
+$optional_gendata_views{$minversion}= [ @empty_set_10, '--views', '--views=MERGE', '--views=TEMPTABLE'];
+$optional_gendata_vcols{$minversion}= [ @empty_set_30, '--vcols', '--vcols=VIRTUAL', '--vcols=STORED' ];
+$optional_gendata_gis{$minversion}= [ @empty_set_30, '--gis' ];
+
+$parameters{optional_gendata_views}= \%optional_gendata_views;
+$parameters{optional_gendata_vcols}= \%optional_gendata_vcols;
+$parameters{optional_gendata_gis}= \%optional_gendata_gis;
+
+#++++++++++++++++++++++++
+# Variators
+#++++++++++++++++++++++++
+
+$optional_variators{$minversion}= [
   [@empty_set_30,'--variator=AnalyzeOrExplain'],
   [@empty_set_30,'--variator=ConvertLiteralsToVariables'],
   [@empty_set_30,'--variator=ConvertSubqueriesToViews'],
@@ -89,7 +118,6 @@ $optional_variators= [
   [@empty_set_30,'--variator=ExecuteAsExcept'],
   [@empty_set_10,'--variator=ExecuteAsExecuteImmediate'],
   [@empty_set_20,'--variator=ExecuteAsFunctionTwice'],
-  [@empty_set_30,'--variator=ExecuteAsInsertReturning'],
   [@empty_set_30,'--variator=ExecuteAsInsertSelect'],
   [@empty_set_30,'--variator=ExecuteAsIntersect'],
   [@empty_set_30,'--variator=ExecuteAsOracleSP'],
@@ -107,24 +135,39 @@ $optional_variators= [
   [@empty_set_30,'--variator=ExecuteAsWhereSubquery'],
   [@empty_set_30,'--variator=FullOrderBy'],
   [@empty_set_30,'--variator=Having'],
-  [@empty_set_30,'--variator=IgnoredKeys'],
   [@empty_set_30,'--variator=InlineSubqueries'],
   [@empty_set_30,'--variator=InlineVirtualColumns'],
-  [@empty_set_30,'--variator=JsonTables'],
   [@empty_set_30,'--variator=LimitDecrease'],
   [@empty_set_30,'--variator=LimitIncrease'],
   [@empty_set_30,'--variator=LimitRowsExamined'],
-  [@empty_set_30,'--variator=NaturalSort'],
   [@empty_set_30,'--variator=NullIf'],
-  [@empty_set_30,'--variator=OffsetFetch'],
   [@empty_set_20,'--variator=OrderBy'],
   [@empty_set_30,'--variator=RemoveIndexHints'],
-  [@empty_set_30,'--variator=Rownum'],
   [@empty_set_20,'--variator=SelectOption'],
 ];
 
-$basic_engine_combinations= [
-  @empty_set_10,
+$optional_variators{1005}= [ @{$optional_variators{$minversion}},
+  [@empty_set_30,'--variator=ExecuteAsInsertReturning'],
+];
+
+$optional_variators{1006}= [ @{$optional_variators{1005}},
+  [@empty_set_30,'--variator=IgnoredKeys'],
+  [@empty_set_30,'--variator=JsonTables'],
+  [@empty_set_30,'--variator=OffsetFetch'],
+  [@empty_set_30,'--variator=Rownum'],
+];
+
+$optional_variators{1007}= [ @{$optional_variators{1005}},
+  [@empty_set_30,'--variator=NaturalSort'],
+];
+
+$parameters{optional_variators}= \%optional_variators;
+
+#++++++++++++++++++++++++
+# Engines
+#++++++++++++++++++++++++
+
+$engine_basic_combinations{$minversion}= [
   '--engine=InnoDB',
   '--engine=InnoDB --mysqld=--default-tmp-storage-engine=MyISAM',
   '--engine=InnoDB --mysqld=--default-tmp-storage-engine=Aria',
@@ -140,14 +183,14 @@ $basic_engine_combinations= [
   '--engine=InnoDB,MyISAM,Aria,HEAP',
 ];
 
-$enforced_engine_combinations= [
+$engine_enforced_combinations{$minversion}= [
   '--engine=InnoDB --mysqld=--enforce-storage-engine=InnoDB',
   '--engine=Aria --mysqld=--enforce-storage-engine=Aria',
   '--engine=MyISAM --mysqld=--enforce-storage-engine=MyISAM',
   '--engine=HEAP --mysqld=--enforce-storage-engine=HEAP',
 ];
 
-$extra_engine_combinations= [
+$engine_extra_combinations{$minversion}= [
   # RocksDB
   '--engine=RocksDB
    --mysqld=--default-storage-engine=RocksDB
@@ -186,6 +229,23 @@ $extra_engine_combinations= [
    --mysqld=--loose-spider_table_sts_thread_count=1
    --grammar=conf/yy/engine-spider.yy:0.5
   ',
+  # HEAP
+  '--engine=HEAP
+   --gendata=data/sql/engine-heap.sql
+   --grammar=conf/yy/engine-heap-ddl.yy
+   --grammar=conf/yy/engine-heap-dml.yy
+  ',
+  # Merge with MyISAM for backing
+  '--engine=MyISAM
+   --grammar=conf/yy/engine-merge.yy
+  ',
+  # Connect
+  '--gendata=conf/zz/oltp-connect.zz
+   --mysqld=--plugin-load-add=ha_connect
+  ',
+];
+
+$engine_extra_combinations{1005}= [ @{$engine_extra_combinations{$minversion}},
   # S3 with Aria for a base
   '--engine=Aria
    --minio
@@ -201,21 +261,35 @@ $extra_engine_combinations= [
    --mysqld=--loose-s3-use-http=on
    --grammar=conf/yy/engine-s3.yy:0.1
   ',
-  # HEAP
-  '--engine=HEAP
+];
+
+$engine_full_mix_combinations{$minversion}= [
+  '--engine=InnoDB,MyISAM,Aria,HEAP,Archive,Blackhole,RocksDB
+   --mysqld=--plugin-load-add=ha_archive
+   --mysqld=--plugin-load-add=ha_blackhole
+   --mysqld=--plugin-load-add=ha_federatedx
+   --mysqld=--plugin-load-add=ha_rocksdb
+   --mysqld=--plugin-load-add=ha_oqgraph
+   --mysqld=--plugin-load-add=ha_spider
+   --mysqld=--plugin-load-add=ha_mroonga
+   --mysqld=--plugin-load-add=ha_connect
+   --mysqld=--loose-spider-same-server-link=on
+   --mysqld=--loose-spider_table_crd_thread_count=1
+   --mysqld=--loose-spider_table_sts_thread_count=1
+   --gendata=data/sql/engine-oqgraph.sql
    --gendata=data/sql/engine-heap.sql
+   --gendata=conf/zz/oltp-connect.zz
+   --grammar=conf/yy/engine-oqgraph.yy:0.1
+   --grammar=conf/yy/engine-federatedx.yy:0.1
+   --grammar=conf/yy/engine-spider.yy:0.5
    --grammar=conf/yy/engine-heap-ddl.yy
    --grammar=conf/yy/engine-heap-dml.yy
-  ',
-  # Merge with MyISAM for backing
-  '--engine=MyISAM
    --grammar=conf/yy/engine-merge.yy
-  ',
-  # Connect
-  '--gendata=conf/zz/oltp-connect.zz
-   --mysqld=--plugin-load-add=ha_connect
-  ',
-  # Full mix
+   --grammar=conf/yy/engine-mroonga.yy
+  '
+];
+
+$engine_full_mix_combinatinos{1005}= [
   '--engine=InnoDB,MyISAM,Aria,HEAP,Archive,Blackhole,RocksDB
    --mysqld=--plugin-load-add=ha_archive
    --mysqld=--plugin-load-add=ha_blackhole
@@ -252,53 +326,75 @@ $extra_engine_combinations= [
   ',
 ];
 
-#########################
-# Scenarios
-#########################
+$parameters{engine_basic_combinations}= \%engine_basic_combinations;
+$parameters{engine_enforced_combinations}= \%engine_enforced_combinations;
+$parameters{engine_extra_combinations}= \%engine_extra_combinations;
+$parameters{engine_full_mix_combinations}= \%engine_full_mix_combinations;
 
-$non_crash_scenarios= [
+#++++++++++++++++++++++++
+# Scenarios
+#++++++++++++++++++++++++
+
+$scenario_non_crash_combinations{$minversion}= [
   '--scenario=Standard',
-  '--scenario=Restart'
+  '--scenario=Restart',
+  '--scenario=Replication --scenario-nosync'
 ];
 
-$crash_scenarios= [
+# No crash-safe DDL in 10.4/10.5
+$scenario_crash_combinations{$minversion}= [
+  '--scenario=CrashRecovery --filter=conf/ff/no_ddl.ff',
+  '--scenario=Restart --scenario-restart-type=kill --filter=conf/ff/no_ddl.ff'
+];
+
+$scenario_crash_combinations{1006}= [
   '--scenario=AtomicDDL',
   '--scenario=CrashRecovery',
   '--scenario=Restart --scenario-restart-type=kill'
 ];
 
-$upgrade_scenarios= [
+$scenario_upgrade_combinations{$minversion}= [
   '--scenario=NormalUpgrades --filter=conf/ff/restrict_dynamic_vars.ff',
-  '--scenario=ImportTablespace --filter=conf/ff/restrict_dynamic_vars.ff',
 ];
 
-$innodb_special_scenarios= [
+$scenario_innodb_special_combinations{$minversion}= [
   '--scenario=UndoLogUpgrade',
+];
+
+$scenario_innodb_special_combinations{1006}= [ @{$scenario_innodb_special_combinations{$minversion}},
   '--scenario=ImportTablespace --filter=conf/ff/restrict_dynamic_vars.ff',
 ];
 
-$mariabackup_scenarios= [
+$scenario_mariabackup_combinations{$minversion}= [
   '--scenario=MariaBackupFull',
   '--scenario=MariaBackupIncremental',
 ];
 
-$replication_scenarios= [
+$scenario_replication_combinations{$minversion}= [
+  '--scenario=Replication --filter=conf/ff/restrict_dynamic_vars.ff',
+  '--scenario=Replication --server1-mysqld=--rpl_semi_sync_master_enabled=on --server2-mysqld=--rpl_semi_sync_slave_enabled=on --filter=conf/ff/restrict_dynamic_vars.ff',
+];
+
+$scenario_cluster_combinations{$minversion}= [
   '--scenario=Galera --filter=conf/ff/restrict_dynamic_vars.ff',
   '--scenario=Replication --filter=conf/ff/restrict_dynamic_vars.ff',
 ];
 
+$parameters{scenario_non_crash_combinations}= \%scenario_non_crash_combinations;
+$parameters{scenario_crash_combinations}= \%scenario_crash_combinations;
+$parameters{scenario_upgrade_combinations}= \%scenario_upgrade_combinations;
+$parameters{scenario_innodb_special_combinations}= \%scenario_innodb_special_combinations;
+$parameters{scenario_mariabackup_combinations}= \%scenario_mariabackup_combinations;
+$parameters{scenario_replication_combinations}= \%scenario_replication_combinations;
+$parameters{scenario_cluster_combinations}= \%scenario_cluster_combinations;
+
 #########################
-# Server option presets
+# Server options
 #########################
 
-# De-facto 10.4
-my $minversion="0000";
-
-%server_options= ();
-
-#########################
+#++++++++++++++++++++++++
 # Encryption
-#########################
+#++++++++++++++++++++++++
 
 $key_management_combinations{$minversion}= [
   {
@@ -324,52 +420,52 @@ $key_management_combinations{1009}= [
       ['--mysqld=--hashicorp-key-management-max-retries=2147483647', '--mysqld=--hashicorp-key-management-max-retries=0', '--mysqld=--hashicorp-key-management-max-retries=1'],
       ['--mysqld=--hashicorp-key-management-cache-version-timeout=0', '--mysqld=--hashicorp-key-management-cache-version-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-version-timeout=1'],
       ['--mysqld=--hashicorp-key-management-timeout=0', '--mysqld=--hashicorp-key-management-timeout=86400', '--mysqld=--hashicorp-key-management-timeout=1'],
-      ['--mysqld=--hashicorp-key-management-use-cache-on-timeout=ON'],
-      ['--mysqld=--hashicorp-key-management-caching-enabled=OFF'],
+      ['--mysqld=--hashicorp-key-management-use-cache-on-timeout=ON','--mysqld=--hashicorp-key-management-use-cache-on-timeout=OFF'],
+      ['--mysqld=--hashicorp-key-management-caching-enabled=ON','--mysqld=--hashicorp-key-management-caching-enabled=OFF'],
       ['--mysqld=--hashicorp-key-management-cache-timeout=0', '--mysqld=--hashicorp-key-management-cache-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-timeout=1'],
     ]
   }
 ];
 
-$all_encryption_options= '
-   --mysqld=--innodb-encrypt-tables
-   --mysqld=--innodb-encrypt-log
-   --mysqld=--innodb-encryption-threads=4
-   --mysqld=--aria-encrypt-tables=1
-   --mysqld=--encrypt-tmp-disk-tables=1
-   --mysqld=--encrypt-binlog
-';
+$parameters{key_management_combinations}= \%key_management_combinations;
 
-$innodb_encryption_options= '
-   --mysqld=--innodb-encrypt-tables
-   --mysqld=--innodb-encrypt-log
-   --mysqld=--innodb-encryption-threads=4
-';
+$encryption_innodb_options{$minversion}= ['
+  --mysqld=--innodb-encrypt-tables
+  --mysqld=--innodb-encrypt-log
+  --mysqld=--innodb-encryption-threads=4
+'];
 
-$aria_encryption_options= '
-   --mysqld=--aria-encrypt-tables=1
-   --mysqld=--encrypt-tmp-disk-tables=1
-';
+$encryption_aria_options{$minversion}= ['
+  --mysqld=--aria-encrypt-tables=1
+'];
 
-$non_innodb_encryption_options= '
-   --mysqld=--aria-encrypt-tables=1
-   --mysqld=--encrypt-tmp-disk-tables=1
-   --mysqld=--encrypt-tmp-files=1
-   --mysqld=--encrypt-binlog
-';
+$encryption_tmp_options{$minversion}= ['
+  --mysqld=--encrypt-tmp-disk-tables=1
+  --mysqld=--encrypt-tmp-files=1
+'];
 
-$non_binlog_encryption_options= '
-   --mysqld=--aria-encrypt-tables=1
-   --mysqld=--encrypt-tmp-disk-tables=1
-   --mysqld=--encrypt-tmp-files=1
-   --mysqld=--encrypt-binlog
-';
+$encryption_binlog_options{$minversion}= ['
+  --mysqld=--encrypt-binlog
+'];
+
+$encryption_non_binlog_options{$minversion}= [
+  @{$encryption_innodb_options{$minversion}},
+  @{$encryption_aria_options{$minversion}},
+  @{$encryption_tmp_options{$minversion}}
+];
+
+$encryption_options{$minversion}= [
+  @{$encryption_innodb_options{$minversion}},
+  @{$encryption_aria_options{$minversion}},
+  @{$encryption_tmp_options{$minversion}},
+  @{$encryption_binlog_options{$minversion}},
+];
 
 $optional_encryption{$minversion} = [
   @empty_set_20,
   [
     $key_management_combinations{$minversion},
-    [ $all_encryption_options ]
+    $encryption_options{$minversion}
   ]
 ];
 
@@ -377,7 +473,7 @@ $optional_encryption{1009} = [
   @empty_set_20,
   [
     $key_management_combinations{1009},
-    [ $all_encryption_options ]
+    $encryption_options{$minversion}
   ]
 ];
 
@@ -385,7 +481,7 @@ $optional_non_binlog_encryption{$minversion} = [
   @empty_set_20,
   [
     $key_management_combinations{$minversion},
-    [ $non_binlog_encryption_options ]
+    $encryption_non_binlog_options{$minversion}
   ]
 ];
 
@@ -393,18 +489,18 @@ $optional_non_binlog_encryption{1009} = [
   @empty_set_20,
   [
     $key_management_combinations{1009},
-    [ $non_binlog_encryption_options ]
+    $encryption_non_binlog_options{$minversion}
   ]
 ];
 
-$server_options{optional_full_encryption}= \%optional_encryption;
-$server_options{optional_non_binlog_encryption}= \%optional_non_binlog_encryption;
+$parameters{optional_encryption}= \%optional_encryption;
+$parameters{optional_non_binlog_encryption}= \%optional_non_binlog_encryption;
 
-#########################
+#++++++++++++++++++++++++
 # Performance schema
-#########################
+#++++++++++++++++++++++++
 
-$perfschema_options{$minversion}= '
+$optional_perfschema{$minversion}= [ @empty_set_20, '
   --mysqld=--performance-schema=on
   --mysqld=--performance-schema-instrument="%=ON"
   --mysqld=--performance-schema-consumer-events-stages-current=ON
@@ -419,7 +515,7 @@ $perfschema_options{$minversion}= '
   --mysqld=--performance-schema-consumer-global-instrumentation=ON
   --mysqld=--performance-schema-consumer-thread-instrumentation=ON
   --mysqld=--performance-schema-consumer-statements-digest=ON
-';
+'];
 
 # Other new perfschema variables in 10.5:
 # PERFORMANCE_SCHEMA_EVENTS_TRANSACTIONS_HISTORY_LONG_SIZE
@@ -433,38 +529,64 @@ $perfschema_options{$minversion}= '
 # PERFORMANCE_SCHEMA_MAX_STATEMENT_STACK
 # PERFORMANCE_SCHEMA_MAX_TABLE_LOCK_STAT
 
-$perfschema_options{1005}= $perfschema_options{$minversion}.'
+$optional_perfschema{1005}= [ @empty_set_10, '
+  --mysqld=--performance-schema=on
+  --mysqld=--performance-schema-instrument="%=ON"
+  --mysqld=--performance-schema-consumer-events-stages-current=ON
+  --mysqld=--performance-schema-consumer-events-stages-history=ON
+  --mysqld=--performance-schema-consumer-events-stages-history-long=ON
+  --mysqld=--performance-schema-consumer-events-statements-current=ON
+  --mysqld=--performance-schema-consumer-events-statements-history=ON
+  --mysqld=--performance-schema-consumer-events-statements-history-long=ON
+  --mysqld=--performance-schema-consumer-events-waits-current=ON
+  --mysqld=--performance-schema-consumer-events-waits-history=ON
+  --mysqld=--performance-schema-consumer-events-waits-history-long=ON
+  --mysqld=--performance-schema-consumer-global-instrumentation=ON
+  --mysqld=--performance-schema-consumer-thread-instrumentation=ON
+  --mysqld=--performance-schema-consumer-statements-digest=ON
   --mysqld=--performance-schema-consumer-events-transactions-current=ON
   --mysqld=--performance-schema-consumer-events-transactions-history=ON
   --mysqld=--performance-schema-consumer-events-transactions-history-long=ON
-';
+'];
 
-$server_options{perfschema_options}= \%perfschema_options;
+$parameters{optional_perfschema}= \%optional_perfschema;
 
-#########################
-# InnoDB option combinations
-#########################
+#++++++++++++++++++++++++
+# InnoDB special option combinations
+#++++++++++++++++++++++++
 
-$innodb_compression_combinations{$minversion}= [
-  '--mysqld=--innodb-compression-algorithm=none',
-  '--mysqld=--innodb-compression-algorithm=zlib',
+# Default zlib
+$optional_innodb_compression{$minversion}= [
+  @empty_set_20,
+  '--mysqld=--innodb_compression_algorithm=none',
+  '--mysqld=--innodb_compression_default=on',
 ];
 
-$server_options{innodb_compression_combinations}= \%innodb_compression_combinations;
-
-$innodb_pagesize_combinations{$minversion}= [
-  '--mysqld=--innodb-page-size=4K',
-  '--mysqld=--innodb-page-size=8K',
-  '--mysqld=--innodb-page-size=16K',
-  '--mysqld=--innodb-page-size=32K',
-  '--mysqld=--innodb-page-size=64K'
+$optional_innodb_compression{1007}= [
+  @empty_set_50,
+  @{$optional_innodb_compression{$minversion}},
+  '--mysqld=--innodb_compression_algorithm=lz4 --mysqld=--plugin-load-add=provider_lz4 --mysqld=--innodb_compression_default=on',
+  '--mysqld=--innodb_compression_algorithm=lzo --mysqld=--plugin-load-add=provider_lzo --mysqld=--innodb_compression_default=on',
+  '--mysqld=--innodb_compression_algorithm=lzma --mysqld=--plugin-load-add=provider_lzma --mysqld=--innodb_compression_default=on',
+  '--mysqld=--innodb_compression_algorithm=bzip2 --mysqld=--plugin-load-add=provider_bzip2 --mysqld=--innodb_compression_default=on',
+  '--mysqld=--innodb_compression_algorithm=snappy --mysqld=--plugin-load-add=provider_snappy --mysqld=--innodb_compression_default=on',
 ];
 
-$server_options{innodb_pagesize_combinations}= \%innodb_pagesize_combinations;
+# Default 16K
+$optional_innodb_pagesize{$minversion}= [
+  @empty_set_50,
+  '--mysqld=--innodb_page_size=4K',
+  '--mysqld=--innodb_page_size=8K',
+  '--mysqld=--innodb_page_size=32K',
+  '--mysqld=--innodb_page_size=64K'
+];
 
-#############
+$parameters{optional_innodb_compression}= \%optional_innodb_compression;
+$parameters{optional_innodb_pagesize}= \%optional_innodb_pagesize;
+
+#++++++++++++++++++++++++
 # InnoDB vars
-#############
+#++++++++++++++++++++++++
 
 $optional_innodb_variables{$minversion}= [
   # Default ON
@@ -489,8 +611,8 @@ $optional_innodb_variables{$minversion}= [
   ],
   # Default zlib
   [ @empty_set_20,
-    '--mysqld=--innodb-compression-algorithm=none',
-    '--mysqld=--innodb-compression-algorithm=zlib'
+    '--mysqld=--innodb_compression_algorithm=none',
+    '--mysqld=--innodb_compression_algorithm=zlib'
   ],
   # No default in 10.2
   # Default fsync in 10.3.7
@@ -529,10 +651,10 @@ $optional_innodb_variables{$minversion}= [
   ],
   # Default 16K
   [ @empty_set_30,
-    '--mysqld=--innodb-page-size=4K',
-    '--mysqld=--innodb-page-size=8K',
-    '--mysqld=--innodb-page-size=32K',
-    '--mysqld=--innodb-page-size=64K',
+    '--mysqld=--innodb_page_size=4K',
+    '--mysqld=--innodb_page_size=8K',
+    '--mysqld=--innodb_page_size=32K',
+    '--mysqld=--innodb_page_size=64K',
   ],
   # Default 4
   [ @empty_set_30,
@@ -630,11 +752,11 @@ $optional_innodb_variables{1100}= [ @$optional_innodb_variables{$minversion},
   [ @empty_set_50, '--mysqld=--innodb_log_file_write_through=ON' ],
 ];
 
-$server_options{optional_innodb_variables}= \%optional_innodb_variables;
+$parameters{optional_innodb_variables}= \%optional_innodb_variables;
 
-#############
+#++++++++++++++++++++++++
 # Aria vars
-#############
+#++++++++++++++++++++++++
 
 $optional_aria_variables{$minversion}= [
   # Default 30, in seconds
@@ -689,31 +811,13 @@ $optional_aria_variables{1006}= [ @{$optional_aria_variables{$minversion}},
   ],
 ];
 
-$server_options{optional_aria_variables}= \%optional_aria_variables;
+$parameters{optional_aria_variables}= \%optional_aria_variables;
 
+#++++++++++++++++++++++++
+# Binlog vars
+#++++++++++++++++++++++++
 
-#############
-# Plugins
-#############
-
-$optional_plugins{$minversion}= [];
-
-$optional_plugins{1007}= [
-  @$optional_plugins{$minversion},
-  [ @empty_set_30, '--mysqld=--plugin-load-add=provider_bzip2' ],
-  [ @empty_set_30, '--mysqld=--plugin-load-add=provider_lz4' ],
-  [ @empty_set_30, '--mysqld=--plugin-load-add=provider_lzma' ],
-  [ @empty_set_30, '--mysqld=--plugin-load-add=provider_lzo' ],
-  [ @empty_set_30, '--mysqld=--plugin-load-add=provider_snappy' ],
-];
-
-$server_options{optional_plugins}= \%optional_plugins;
-
-#############
-# Other vars
-#############
-
-$optional_binlog_variables{$minversion}= [
+$optional_binlog_safe_variables{$minversion}= [
   # Default OFF
   [ '', '--mysqld=--log-bin' ],
   # Default OFF
@@ -740,17 +844,17 @@ $optional_binlog_variables{$minversion}= [
   [ @empty_set_50, '--mysqld=--sync_binlog=10' ],
 ];
 
-$binlog_combinations{1005}= [ @{$binlog_combinations{$minversion}},
+$optional_binlog_safe_variables{1005}= [ @{$optional_binlog_safe_variables{$minversion}},
   # Default NO_LOG
   [ @empty_set_30, '--mysqld=--binlog_row_metadata=MINIMAL', '--mysqld=--binlog_row_metadata=FULL' ],
 ];
 
-$binlog_combinations{1008}= [ @{$binlog_combinations{1005}},
+$optional_binlog_safe_variables{1008}= [ @{$optional_binlog_safe_variables{1005}},
   # Default OFF
   [ @empty_set_20, '--mysqld=--binlog-alter-two-phase=ON' ],
 ];
 
-$optional_unsafe_binlog_variables{$minversion}= [
+$optional_binlog_unsafe_variables{$minversion}= [
   # Default mixed
   [ @empty_set_10, '--mysqld=--binlog-format=statement' ],
   # Default 0
@@ -763,15 +867,19 @@ $optional_unsafe_binlog_variables{$minversion}= [
   [ @empty_set_30, '--mysqld=--binlog_ignore_db=mysql' ],
 ];
 
-$optional_unsafe_binlog_variables{1006}= [ @{$optional_unsafe_binlog_variables{$minversion}},
+$optional_binlog_unsafe_variables{1006}= [ @{$optional_binlog_unsafe_variables{$minversion}},
   # Default 0
   [ @empty_set_10, '--mysqld=--binlog_expire_logs_seconds=100' ],
 ];
 
-$server_options{optional_binlog_variables}= \%optional_binlog_variables;
-$server_options{optional_unsafe_binlog_variables}= \%optional_unsafe_binlog_variables;
+$parameters{optional_binlog_safe_variables}= \%optional_binlog_variables;
+$parameters{optional_binlog_unsafe_variables}= \%optional_binlog_unsafe_variables;
 
-$optional_replication_variables{$minversion}= [
+#++++++++++++++++++++++++
+# Replication vars
+#++++++++++++++++++++++++
+
+$optional_replication_safe_variables{$minversion}= [
   # Default OFF
   [ @empty_set_10, '--mysqld=--log_slave_updates=on' ],
   # Default ON
@@ -794,11 +902,11 @@ $optional_replication_variables{$minversion}= [
   [ @empty_set_30, '--mysqld=--slave_type_conversions=ALL_LOSSY','--mysqld=--slave_type_conversions=ALL_NON_LOSSY','--mysqld=--slave_type_conversions=ALL_LOSSY,ALL_NON_LOSSY' ],
 ];
 
-$optional_replication_variables{1004}= [ @{$optional_replication_variables{$minversion}},
+$optional_replication_safe_variables{1004}= [ @{$optional_replication_safe_variables{$minversion}},
   # Default NO
   [ @empty_set_30, '--mysqld=--slave_run_triggers_for_rbr=YES', '--mysqld=--slave_run_triggers_for_rbr=LOGGING' ],
 ];
-$optional_replication_variables{1005}= [ @{$optional_replication_variables{$minversion}},
+$optional_replication_safe_variables{1005}= [ @{$optional_replication_safe_variables{$minversion}},
   # Default NO
   [ @empty_set_30, '--mysqld=--slave_run_triggers_for_rbr=YES', '--mysqld=--slave_run_triggers_for_rbr=LOGGING', '--mysqld=--slave_run_triggers_for_rbr=ENFORCE' ],
 ];
@@ -814,8 +922,12 @@ $optional_replication_unsafe_variables{1011}= [ @{$optional_replication_unsafe_v
   [ @empty_set_50, "--mysqld=--replicate_rewrite_db='test->test'" ],
 ];
 
-$server_options{optional_replication_variables}= \%optional_replication_variables;
-$server_options{optional_replication_unsafe_variables}= \%optional_replication_unsafe_variables;
+$parameters{optional_replication_safe_variables}= \%optional_replication_safe_variables;
+$parameters{optional_replication_unsafe_variables}= \%optional_replication_unsafe_variables;
+
+#++++++++++++++++++++++++
+# Core server vars
+#++++++++++++++++++++++++
 
 $optional_server_variables{$minversion}= [
   # not set by default
@@ -1117,11 +1229,15 @@ $optional_server_variables{1011}= [ @{$optional_server_variables{1006}},
   [ @empty_set_10, '--mysqld=--log_slow_query_time=3' ],
 ];
 
-$server_options{optional_server_variables}= \%optional_server_variables;
+$parameters{optional_server_variables}= \%optional_server_variables;
+
+#++++++++++++++++++++++++
+# Character sets
+#++++++++++++++++++++++++
 
 # Default depends on the build/system, so in addition to the default,
 # we'll also add extra utf8 with presumably most common collations
-$safe_charsets{$minversion}= [
+$optional_charsets_safe{$minversion}= [
   @empty_set_50, @empty_set_50,
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_general_ci',
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_general_ci',
@@ -1359,8 +1475,6 @@ $safe_charsets{$minversion}= [
   '--mysqld=--character-set-server=eucjpms --mysqld=--collation-server=eucjpms_nopad_bin',
 ];
 
-$server_options{safe_charsets}= \%safe_charsets;
-
 #   Workarounds:
 #   - swe7 disabled due to MDEV-24591
 #   '--mysqld=--character-set-server=swe7 --mysqld=--collation-server=swe7_swedish_ci',
@@ -1368,7 +1482,7 @@ $server_options{safe_charsets}= \%safe_charsets;
 #   '--mysqld=--character-set-server=swe7 --mysqld=--collation-server=swe7_swedish_nopad_ci',
 #   '--mysqld=--character-set-server=swe7 --mysqld=--collation-server=swe7_nopad_bin',
 
-$unsafe_charsets{$minversion}= [
+$optional_charsets_unsafe{$minversion}= [
   @empty_set_50, @empty_set_50,
   '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_general_ci --mysqld=--skip-character-set-client-handshake',
   '--mysqld=--character-set-server=ucs2 --mysqld=--collation-server=ucs2_bin --mysqld=--skip-character-set-client-handshake',
@@ -1476,24 +1590,16 @@ $unsafe_charsets{$minversion}= [
   '--mysqld=--character-set-server=utf32 --mysqld=--collation-server=utf32_unicode_520_nopad_ci --mysqld=--skip-character-set-client-handshake',
 ];
 
-$server_options{unsafe_charsets}= \%unsafe_charsets;
+$parameters{optional_charsets_safe}= \%optional_charsets_safe;
+$parameters{optional_charsets_unsafe}= \%optional_charsets_unsafe;
 
 #########################
 # Grammars
 #########################
 
-$grammars= [
-  # For the  unlikely case when nothing else is picked
+$grammars{$minversion}= [
+  # For the unlikely case when nothing else is picked
   [ '--grammar=conf/yy/all_selects.yy:0.0001' ],
-  [@empty_set_50,
-    '--grammar=conf/yy/acl.yy:0.1
-      --mysqld=--plugin-maturity=experimental
-      --mysqld=--plugin-load-add=auth_0x0100.so
-      --mysqld=--plugin-load-add=auth_ed25519.so
-      --mysqld=--plugin-load-add=auth_pam.so
-      --mysqld=--plugin-load-add=cracklib_password_check.so
-      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--loose-password-reuse-check-interval=1
-      --mysqld=--plugin-load-add=simple_password_check.so'],
   [@empty_set_10,
     '--grammar=conf/yy/admin.yy'],
   [@empty_set_30,
@@ -1522,15 +1628,6 @@ $grammars= [
     '--grammar=conf/yy/concurrent.yy'],
   [@empty_set_20,
     '--grammar=conf/yy/create_or_replace.yy'],
-  [@empty_set_50,
-    '--grammar=conf/yy/create_user.yy:0.1
-      --mysqld=--plugin-maturity=experimental
-      --mysqld=--plugin-load-add=auth_0x0100.so
-      --mysqld=--plugin-load-add=auth_ed25519.so
-      --mysqld=--plugin-load-add=auth_pam.so
-      --mysqld=--plugin-load-add=cracklib_password_check.so
-      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--loose-password-reuse-check-interval=1
-      --mysqld=--plugin-load-add=simple_password_check.so'],
   [@empty_set_20,
     '--grammar=conf/yy/current_timestamp.yy
       --gendata=conf/zz/current_timestamp.zz'],
@@ -1556,8 +1653,6 @@ $grammars= [
     '--grammar=conf/yy/debug-injections-sql_table.yy:0.001'],
   [@empty_set_30,
     '--grammar=conf/yy/debug-sync-sql.yy:0.001 --mysqld=--loose-debug-sync-timeout=10'],
-  [@empty_set_20,
-    '--grammar=conf/yy/desc_indexes.yy'],
   [@empty_set_30,
     '--grammar=conf/yy/diagnostics.yy'],
   [@empty_set_50,
@@ -1568,49 +1663,10 @@ $grammars= [
     '--grammar=conf/yy/dml.yy'],
   [@empty_set_20,
     '--grammar=conf/yy/dml-ps-params.yy'],
+  [@empty_set_20, '--grammar=conf/yy/dynamic_variables.yy:0.01'],
   [@empty_set_30,
     '--grammar=conf/yy/dyncol_dml.yy
       --gendata=conf/zz/dyncol_dml.zz'],
-# In engine combinations
-#  [@empty_set_30,
-#    '--grammar=conf/yy/engine-federatedx.yy:0.1
-#      --mysqld=--plugin-load-add=ha_federatedx'],
-# In engine combinations
-#  [@empty_set_30,
-#    '--grammar=conf/yy/engine-heap-ddl.yy'],
-# In engine combinations
-#  [@empty_set_30,
-#    '--grammar=conf/yy/engine-heap-dml.yy
-#      --gendata=data/sql/engine-heap.sql'],
-# In engine combinations
-#  [@empty_set_30,
-#    '--grammar=conf/yy/engine-merge.yy'],
-# In engine combinations
-#  [@empty_set_30,
-#    '--grammar=conf/yy/engine-oqgraph.yy
-#      --gendata=data/sql/engine-oqgraph.sql
-#      --mysqld=--plugin-load-add=ha_oqgraph.so'],
-# In engine combinations
-#  [@empty_set_30,
-#    '--grammar=conf/yy/engine-s3.yy:0.1
-#      --minio
-#      --mysqld=--plugin-load-add=ha_s3
-#      --mysqld=--s3=on
-#      --mysqld=--s3-host-name="127.0.0.1"
-#      --mysqld=--s3-protocol-version=Auto
-#      --mysqld=--s3-bucket=rqg
-#      --mysqld=--s3-access-key=minio
-#      --mysqld=--s3-secret-key=minioadmin
-#      --mysqld=--s3-region=""
-#      --mysqld=--s3-port=9000
-#      --mysqld=--s3-use-http=on'],
-# In engine combinations
-#  [@empty_set_30,
-#    '--grammar=conf/yy/engine-spider.yy:0.5
-#      --mysqld=--plugin-load-add=ha_spider
-#      --mysqld=--loose-spider-same-server-link=on
-#      --mysqld=--loose-spider_table_crd_thread_count=1
-#      --mysqld=--loose-spider_table_sts_thread_count=1'],
   [@empty_set_50,
     '--grammar=conf/yy/event.yy:0.1'],
   [@empty_set_20,
@@ -1667,8 +1723,6 @@ $grammars= [
   [@empty_set_30,
     '--grammar=conf/yy/optimizer_access_exp.yy
       --gendata=conf/zz/range_access.zz'],
-  [@empty_set_50,
-    '--grammar=conf/yy/optimizer_costs.yy:0.001'],
   [@empty_set_50,
     '--grammar=conf/yy/optimizer_mtr_select.yy'],
   [@empty_set_30,
@@ -1765,13 +1819,65 @@ $grammars= [
     '--grammar=conf/yy/xa.yy'],
 ];
 
-$unsafe_grammars= [
-  [@empty_set_10, '--grammar=conf/yy/dynamic_variables.yy:0.01'],
+$grammars{1004}= [ @{$grammars{$minversion}},
+  [@empty_set_50,
+    '--grammar=conf/yy/acl.yy:0.1
+      --mysqld=--plugin-maturity=experimental
+      --mysqld=--plugin-load-add=auth_0x0100.so
+      --mysqld=--plugin-load-add=auth_ed25519.so
+      --mysqld=--plugin-load-add=auth_pam.so
+      --mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=simple_password_check.so'],
+  [@empty_set_50,
+    '--grammar=conf/yy/create_user.yy:0.1
+      --mysqld=--plugin-maturity=experimental
+      --mysqld=--plugin-load-add=auth_0x0100.so
+      --mysqld=--plugin-load-add=auth_ed25519.so
+      --mysqld=--plugin-load-add=auth_pam.so
+      --mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=simple_password_check.so'],
 ];
 
-$gendata= [
+$grammars{1007}= [ @{$grammars{$minversion}},
+  [@empty_set_50,
+    '--grammar=conf/yy/acl.yy:0.1
+      --mysqld=--plugin-maturity=experimental
+      --mysqld=--plugin-load-add=auth_0x0100.so
+      --mysqld=--plugin-load-add=auth_ed25519.so
+      --mysqld=--plugin-load-add=auth_pam.so
+      --mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
+      --mysqld=--plugin-load-add=simple_password_check.so'],
+  [@empty_set_50,
+    '--grammar=conf/yy/create_user.yy:0.1
+      --mysqld=--plugin-maturity=experimental
+      --mysqld=--plugin-load-add=auth_0x0100.so
+      --mysqld=--plugin-load-add=auth_ed25519.so
+      --mysqld=--plugin-load-add=auth_pam.so
+      --mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
+      --mysqld=--plugin-load-add=simple_password_check.so']
+];
+
+$grammars{1008}= [ @{$grammars{1007}},
   [@empty_set_20,
-    '--gendata=simple'],
+    '--grammar=conf/yy/desc_indexes.yy'],
+];
+
+$grammars{1100}= [ @{$grammars{1008}},
+  [@empty_set_50,
+    '--grammar=conf/yy/optimizer_costs.yy:0.001'],
+];
+
+$parameters{grammars}= \%grammars;
+
+#########################
+# Gendata
+#########################
+
+$gendata{$minversion}= [
+  # At least one gendata should always be used
+  [ '--gendata=advanced', '--gendata=simple', '--gendata=advanced --gendata=simple' ],
   [@empty_set_50,
     '--gendata=conf/zz/blobs.zz'],
   [@empty_set_30,
@@ -1832,10 +1938,14 @@ $gendata= [
     '--gendata=data/sql/engine-oqgraph.sql'],
   [@empty_set_30,
     '--gendata=data/sql/misc.sql'],
-  [@empty_set_30,
+  [@empty_set_50,
     '--gendata=data/sql/system_schemata_copy.sql'],
   [@empty_set_20,
     '--gendata=data/sql/updateable_views.sql'],
   [@empty_set_20,
     '--gendata=data/sql/world.sql']
 ];
+
+$parameters{gendata}= \%gendata;
+
+1;

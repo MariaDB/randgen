@@ -19,27 +19,19 @@
 use strict;
 
 $combinations = [
-  [
-  '
+  ['
     --threads=2
-    --duration=120
     --seed=time
-    --grammar=conf/yy/acl.yy
     --grammar=conf/yy/dml.yy
-    --grammar=conf/yy/alter_table.yy
     --gendata=conf/zz/innodb.zz
     --gendata=conf/zz/innodb-page-compression.zz
     --gendata=advanced
-    --views
-    --vcols
-    --partitions
     --reporters=Backtrace,ErrorLog,Deadlock
     --mysqld=--server-id=111
     --mysqld=--log_output=FILE
     --mysqld=--loose-max-statement-time=20
     --mysqld=--lock-wait-timeout=10
     --mysqld=--innodb-lock-wait-timeout=5
-    --scenario=NormalUpgrades
   '],
   [
     '--mysqld=--innodb_compression_algorithm=none',
@@ -63,4 +55,8 @@ $combinations = [
      --mysqld=--plugin-load-add=file_key_management
     '
   ],
+  [
+    '--scenario=CrashUpgrade --duration=180',
+    '--scenario=UndoLogUpgrade --duration=300',
+  ]
 ];

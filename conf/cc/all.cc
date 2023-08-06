@@ -1,4 +1,4 @@
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,13 +19,7 @@
 use Data::Dumper;
 use strict;
 
-our ($common_options, $ps_protocol_combinations, $views_combinations, $vcols_combinations, $gis_combinations, $threads_low_combinations, $optional_variators);
-our ($basic_engine_combinations, $enforced_engine_combinations, $extra_engine_combinations);
-our ($non_crash_scenarios, $crash_scenarios, $mariabackup_scenarios, $upgrade_scenarios);
-our (%server_options, %options);
-our ($grammars, $unsafe_grammars, $gendata);
-
-my @empty_set_10= ('','','','','','','','','','');
+our (%parameters, %options);
 
 require "$ENV{RQG_HOME}/conf/cc/include/parameter_presets";
 
@@ -35,86 +29,78 @@ local @ARGV = ($version);
 require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
 
 $combinations = [
-  [ $common_options ], # seed, reporters, timeouts
-  [ @$threads_low_combinations ],
-  [ @$gis_combinations ],
-  [ @$views_combinations ],
-  [ @$vcols_combinations ],
-  [ @$optional_variators ],
-  [ @$grammars ],
-  [ @$gendata ],
+
+# Test options
+  [ @{$options{test_common_option_combinations}} ], # seed, reporters, timeouts
+  [ @{$options{test_concurrency_combinations}} ],
+  [ @{$options{optional_gendata_gis}} ],
+  [ @{$options{optional_gendata_views}} ],
+  [ @{$options{optional_gendata_vcols}} ],
+  [ @{$options{optional_variators}} ],
+  [ @{$options{grammars}} ],
+  [ @{$options{gendata}} ],
+# Disabled for now, too frequent DBD problems
+#  [ @{$options{optional_ps_protocol}} ],
+
+# Server options
+  [ @{$options{optional_aria_variables}} ],
+  [ @{$options{optional_binlog_safe_variables}} ],
+  [ @{$options{optional_innodb_compression}} ],
+  [ @{$options{optional_innodb_pagesize}} ],
+  [ @{$options{optional_innodb_variables}} ],
+  [ @{$options{optional_perfschema}} ],
+  [ @{$options{optional_server_variables}} ],
 
   ##### Engines and scenarios
-  ##### Scenarios
   [
     {
       normal => [
-        [ @$non_crash_scenarios ],
-        [ @$basic_engine_combinations, @$extra_engine_combinations ],
-        [ '--mysqld=--binlog_ignore_db=test', '', '', '', '', '', '' ],
-        [ '--mysqld=--replicate_ignore_db=test', '',  '',  '',  '',  '',  '',  '' ],
-        [ "--mysqld=--replicate_rewrite_db='test->test'", '', '', '' ],
-        [ '--mysqld=--replicate_wild_ignore_table=test.t%', '', '' , '' , '' ],
-        [ '--mysqld=--binlog-format=statement', '', '', '', '', '', '', '', '', '', '', '', '' ],
-        [ '--mysqld=--binlog_expire_logs_seconds=100', '' ],
-        [ @$unsafe_grammars ],
-        [ @{$options{safe_charsets}}, @{$options{unsafe_charsets}} ],
-        [ @{$options{optional_full_encryption}} ],
-        [ @{$options{optional_unsafe_binlog_variables}} ],
+        [ @{$options{scenario_non_crash_combinations}} ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_combinations}}, @{$options{engine_full_mix_combinations}} ],
+        [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
+        [ @{$options{optional_encryption}} ],
+        [ @{$options{optional_binlog_unsafe_variables}} ],
       ],
       binlog => [
-        [ @$non_crash_scenarios ],
+        [ @{$options{scenario_non_crash_combinations}} ],
         [ '--reporters=BinlogConsistency --mysqld=--log-bin' ],
-        [ @$basic_engine_combinations, @$extra_engine_combinations ],
-        [ @{$options{safe_charsets}} ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
         # Cannot have binlog encryption here, mysqlbinlog cannot read it
         [ @{$options{optional_non_binlog_encryption}} ],
       ],
       index => [
-        [ @$non_crash_scenarios ],
+        [ @{$options{scenario_non_crash_combinations}} ],
         [ '--reporters=SecondaryIndexConsistency' ],
-        [ @$basic_engine_combinations, @$extra_engine_combinations ],
-        [ @{$options{safe_charsets}} ],
-        [ @{$options{optional_full_encryption}} ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
       ],
       recovery => [
-        [ @$crash_scenarios ],
+        [ @{$options{scenario_crash_combinations}} ],
         [ '--engine=InnoDB', '--engine=Aria --mysqld=--default-storage-engine=Aria', '--engine=InnoDB,Aria' ],
-        [ @{$options{safe_charsets}} ],
-        [ @{$options{optional_full_encryption}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
       ],
       upgrade_backup => [
-        [ @$mariabackup_scenarios, @$upgrade_scenarios ],
-        [ @$basic_engine_combinations ],
-        [ @{$options{safe_charsets}} ],
-        [ @{$options{optional_full_encryption}} ],
+        [ @{$options{scenario_mariabackup_combinations}}, @{$options{scenario_upgrade_combinations}} ],
+        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
       ],
       replication => [
-        [ '--scenario=Replication' ],
-        [ @$basic_engine_combinations ],
-        [ @{$options{safe_charsets}} ],
-        [ @{$options{optional_full_encryption}} ],
+        [ @{$options{scenario_replication_combinations}} ],
+        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
+        [ @{$options{optional_replication_safe_variables}} ],
       ],
       cluster => [
-        [ '--scenario=Replication', '--scenario=Galera' ],
+        [ @{$options{scenario_cluster_combinations}} ],
         [ '--engine=InnoDB' ],
-        [ @{$options{safe_charsets}} ],
-        [ @{$options{optional_full_encryption}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
       ]
     }
   ],
-
-  ##### InnoDB
-  [ @{$options{optional_innodb_variables}} ],
-  ##### Plugins (not linked to grammars)
-  [ @{$options{optional_plugins}} ],
-  ##### PS protocol
-  [ @$ps_protocol_combinations ],
-  ##### Binary logging
-  [ @{$options{optional_binlog_variables}} ],
-  ##### Performance schema
-  [ @empty_set_10, $options{perfschema_options}->[0] . ' --grammar=conf/yy/performance_schema.yy'],
-  ##### Startup variables (general)
-  [ @{$options{optional_server_variables}} ],
-  [ @{$options{safe_charsets}} ],
 ];
