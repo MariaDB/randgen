@@ -1373,6 +1373,7 @@ sub getSlaveStatus {
   # Cannot do selectrow_array, as fields have different positions in different versions
   if ($self->dbh) {
     my $sth= $self->dbh->prepare("SHOW SLAVE STATUS");
+    $sth->execute();
     $status= $sth->fetchrow_hashref;
   }
   return $status;
