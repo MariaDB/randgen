@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31867:
+=~ Assertion \`is_invalidated()'
+=~ Reprepare_observer::can_retry
+=~ sp_head::execute
+=~ Version: '11\.[2-9]|Server version: 11]\.[2-9]|'1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-31864:
 =~ Assertion \`d >= 0'
 =~ COST_ADD
