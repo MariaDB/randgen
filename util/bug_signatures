@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31869:
+=~ signal|AddressSanitizer
+=~ ha_innobase::prepare_inplace_alter_table
+=~ Sql_cmd_alter_table::execute
 MDEV-31867:
 =~ Assertion \`is_invalidated()'
 =~ Reprepare_observer::can_retry
