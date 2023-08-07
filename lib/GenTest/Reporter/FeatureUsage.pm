@@ -118,6 +118,7 @@ sub monitor {
       foreach my $f (@$registered_features) {
         # To get rid of duplicates in grammar lists, when each thread registeres a feature separately
         $features_used{$f}= "registered by grammar(s)";
+        say("FeatureUsage detected $f ($features_used{$f})");
       }
     }
     $registered_features= 1;
@@ -127,7 +128,10 @@ sub monitor {
     next if $features_used{$f};
     my $func= $usage_check{$f};
     my $res= $reporter->$func;
-    $features_used{$f}= $res if defined $res;
+    if (defined $res) {
+      $features_used{$f}= $res;
+      say("FeatureUsage detected $f ($features_used{$f})");
+    }
   }
   return STATUS_OK;
 }
