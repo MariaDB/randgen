@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31864:
+=~ Assertion \`d >= 0'
+=~ COST_ADD
+=~ best_extension_by_limited_search
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31854:
 =~ AddressSanitizer|signal|Assertion \`table && table->s->sequence'
 =~ Item_func_nextval::val_int
