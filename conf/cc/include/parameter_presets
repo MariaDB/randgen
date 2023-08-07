@@ -354,7 +354,7 @@ $scenario_crash_combinations{1006}= [
 ];
 
 $scenario_upgrade_combinations{$minversion}= [
-  '--scenario=NormalUpgrades --filter=conf/ff/restrict_dynamic_vars.ff',
+  '--scenario=NormalUpgrades',
 ];
 
 $scenario_innodb_special_combinations{$minversion}= [
@@ -362,7 +362,7 @@ $scenario_innodb_special_combinations{$minversion}= [
 ];
 
 $scenario_innodb_special_combinations{1006}= [ @{$scenario_innodb_special_combinations{$minversion}},
-  '--scenario=ImportTablespace --filter=conf/ff/restrict_dynamic_vars.ff',
+  '--scenario=ImportTablespace',
 ];
 
 $scenario_mariabackup_combinations{$minversion}= [
@@ -371,13 +371,13 @@ $scenario_mariabackup_combinations{$minversion}= [
 ];
 
 $scenario_replication_combinations{$minversion}= [
-  '--scenario=Replication --filter=conf/ff/restrict_dynamic_vars.ff',
-  '--scenario=Replication --server1-mysqld=--rpl_semi_sync_master_enabled=on --server2-mysqld=--rpl_semi_sync_slave_enabled=on --filter=conf/ff/restrict_dynamic_vars.ff',
+  '--scenario=Replication',
+  '--scenario=Replication --server1-mysqld=--rpl_semi_sync_master_enabled=on --server2-mysqld=--rpl_semi_sync_slave_enabled=on',
 ];
 
 $scenario_cluster_combinations{$minversion}= [
-  '--scenario=Galera --filter=conf/ff/restrict_dynamic_vars.ff',
-  '--scenario=Replication --filter=conf/ff/restrict_dynamic_vars.ff',
+  '--scenario=Galera',
+  '--scenario=Replication',
 ];
 
 $parameters{scenario_non_crash_combinations}= \%scenario_non_crash_combinations;

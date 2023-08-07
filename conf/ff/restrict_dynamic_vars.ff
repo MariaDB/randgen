@@ -19,6 +19,4 @@
 $rules = {
   # MDEV-24680 and many more anti-uses
   'fk_checks'       => sub { $_ =~ m{SET.*FOREIGN_KEY_CHECKS}is },
-  # Problematic for replication
-  'set_statement'   => sub { $_ =~ m{SET\W.*STATEMENT\W.*FOR\W}is },
 }

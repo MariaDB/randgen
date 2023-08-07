@@ -59,6 +59,7 @@ $combinations = [
       binlog => [
         [ @{$options{scenario_non_crash_combinations}} ],
         [ '--reporters=BinlogConsistency --mysqld=--log-bin' ],
+        [ '--filter=conf/ff/replication.ff' ],
         [ @{$options{engine_basic_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         # Cannot have binlog encryption here, mysqlbinlog cannot read it
@@ -74,6 +75,7 @@ $combinations = [
       recovery => [
         [ @{$options{scenario_crash_combinations}} ],
         [ '--engine=InnoDB' ],
+        [ '--filter=conf/ff/restrict_dynamic_variables.ff' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
       ],

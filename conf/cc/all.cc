@@ -64,6 +64,7 @@ $combinations = [
       binlog => [
         [ @{$options{scenario_non_crash_combinations}} ],
         [ '--reporters=BinlogConsistency --mysqld=--log-bin' ],
+        [ '--filter=conf/ff/replication.ff' ],
         [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         # Cannot have binlog encryption here, mysqlbinlog cannot read it
@@ -79,17 +80,20 @@ $combinations = [
       recovery => [
         [ @{$options{scenario_crash_combinations}} ],
         [ '--engine=InnoDB', '--engine=Aria --mysqld=--default-storage-engine=Aria', '--engine=InnoDB,Aria' ],
+        [ '--filter=restrict_dynamic_vars.ff' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
       ],
       upgrade_backup => [
         [ @{$options{scenario_mariabackup_combinations}}, @{$options{scenario_upgrade_combinations}} ],
+        [ '--filter=restrict_dynamic_vars.ff' ],
         [ @{$options{engine_basic_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
       ],
       replication => [
         [ @{$options{scenario_replication_combinations}} ],
+        [ '--filter=conf/ff/replication.ff' ],
         [ @{$options{engine_basic_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
@@ -97,6 +101,7 @@ $combinations = [
       ],
       cluster => [
         [ @{$options{scenario_cluster_combinations}} ],
+        [ '--filter=conf/ff/replication.ff' ],
         [ '--engine=InnoDB' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
