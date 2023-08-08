@@ -75,7 +75,7 @@ $combinations = [
       recovery => [
         [ @{$options{scenario_crash_combinations}} ],
         [ '--engine=InnoDB' ],
-        [ '--filter=conf/ff/restrict_dynamic_variables.ff' ],
+        [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
       ],
