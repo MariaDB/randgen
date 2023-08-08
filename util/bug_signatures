@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31877:
+=~ signal|AddressSanitizer
+=~ Exec_time_tracker::get_cycles
+=~ close_thread_table
+=~ sp_lex_keeper::reset_lex_and_exec_core
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31869:
 =~ signal|AddressSanitizer
 =~ ha_innobase::prepare_inplace_alter_table
