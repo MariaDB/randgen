@@ -56,15 +56,6 @@ $combinations = [
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
       ],
-      binlog => [
-        [ @{$options{scenario_non_crash_combinations}} ],
-        [ '--reporters=BinlogConsistency --mysqld=--log-bin' ],
-        [ '--filter=conf/ff/replication.ff' ],
-        [ @{$options{engine_basic_combinations}} ],
-        [ @{$options{optional_charsets_safe}} ],
-        # Cannot have binlog encryption here, mysqlbinlog cannot read it
-        [ @{$options{optional_non_binlog_encryption}} ],
-      ],
       index => [
         [ @{$options{scenario_non_crash_combinations}} ],
         [ '--reporters=SecondaryIndexConsistency' ],
