@@ -1454,6 +1454,11 @@ sub waitPlannedDowntime {
   }
 }
 
+sub isPlannedDowntime {
+  my $self= shift;
+  return (-e $self->vardir.'/expect');
+}
+
 sub backupDatadir {
   my $self= shift;
   my $backup_name= shift;

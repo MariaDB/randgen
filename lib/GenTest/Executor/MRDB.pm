@@ -268,26 +268,29 @@ sub execute {
         ) {
             $executor->reportError($query, $err, $errstr, $execution_flags);
         } elsif (serverGone($err_type)) {
-            $dbh = DBI->connect($executor->dsn(), undef, undef, {
-                PrintError => 0,
-                RaiseError => 0,
-                AutoCommit => 1,
-                mysql_multi_statements => 1,
-                mysql_auto_reconnect => 1
-            } );
-
-            # If server is still connectable, it is not a real crash, but most likely a KILL query
-
-            if (defined $dbh) {
-                say("Executor::MariaDB::execute: Successfully reconnected after getting " . status2text($err_type));
-                $err_type = STATUS_SEMANTIC_ERROR;
-                $executor->setDbh($dbh);
+            if ($executor->server->isPlannedDowntime()) {
+              say("Executor::MariaDB::execute: Server is down, the downtime is planned");
             } else {
-                sayError("Executor::MariaDB::execute: Failed to reconnect after getting " . status2text($err_type));
-            }
+                $dbh = DBI->connect($executor->dsn(), undef, undef, {
+                    PrintError => 0,
+                    RaiseError => 0,
+                    AutoCommit => 1,
+                    mysql_multi_statements => 1,
+                    mysql_auto_reconnect => 1
+                } );
 
-            my $query_for_print= shorten_message($query);
-            say("Executor::MariaDB::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
+                # If server is still connectable, it is not a real crash, but most likely a KILL query
+
+                if (defined $dbh) {
+                    say("Executor::MariaDB::execute: Successfully reconnected after getting " . status2text($err_type));
+                    $err_type = STATUS_SEMANTIC_ERROR;
+                    $executor->setDbh($dbh);
+                } else {
+                    sayError("Executor::MariaDB::execute: Failed to reconnect after getting " . status2text($err_type));
+                }
+                my $query_for_print= shorten_message($query);
+                say("Executor::MariaDB::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
+            }
         } else {
             # Always print syntax and uncategorized errors, unless specifically asked not to
             my $query_for_print= shorten_message($query);
