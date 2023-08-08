@@ -393,6 +393,10 @@ MDEV-31161:
 =~ Failing assertion: res != -1
 =~ row_merge_file_destroy_low
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31161:
+=~ Assertion \`((copy & STATE_MASK) == PFS_LOCK_ALLOCATED)'
+=~ pfs_lock::allocated_to_free
+=~ ha_innobase::delete_table
 MDEV-31154:
 =~ Assertion \`!is_v'|FATAL.*InnoDB: Clustered record field for column
 =~ ha_innobase::build_template
