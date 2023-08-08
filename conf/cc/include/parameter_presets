@@ -338,7 +338,8 @@ $parameters{engine_full_mix_combinations}= \%engine_full_mix_combinations;
 $scenario_non_crash_combinations{$minversion}= [
   '--scenario=Standard',
   '--scenario=Restart',
-  '--scenario=Replication --scenario-nosync'
+  '--scenario=Replication --scenario-nosync',
+  '--scenario=Replication --scenario-nosync --server2-mysqld=--default-storage-engine=InnoDB'
 ];
 
 # No crash-safe DDL in 10.4/10.5
