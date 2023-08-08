@@ -80,13 +80,13 @@ $combinations = [
       recovery => [
         [ @{$options{scenario_crash_combinations}} ],
         [ '--engine=InnoDB', '--engine=Aria --mysqld=--default-storage-engine=Aria', '--engine=InnoDB,Aria' ],
-        [ '--filter=restrict_dynamic_vars.ff' ],
+        [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
       ],
       upgrade_backup => [
         [ @{$options{scenario_mariabackup_combinations}}, @{$options{scenario_upgrade_combinations}} ],
-        [ '--filter=restrict_dynamic_vars.ff' ],
+        [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
         [ @{$options{engine_basic_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
