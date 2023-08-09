@@ -65,6 +65,12 @@ sub monitor {
 
         while (my $key_hashref = $sth_keys->fetchrow_hashref()) {
             my $key_name = $key_hashref->{Key_name};
+            my $key_type = $key_hashref->{Index_type};
+            # MDEV-31885 -- forcing fulltext indexes does not end well
+            if ($key_type eq 'FULLTEXT') {
+              sayDebug("SecondaryIndexConsistency: Index $key_name on table $table is fulltext, skipping due to MDEV-31885");
+              next;
+            }
             if ($key_name eq 'PRIMARY') {
                 push @pk_columns, '`'.$key_hashref->{Column_name}.'`';
             } else {
@@ -72,12 +78,12 @@ sub monitor {
             }
         }
         unless (scalar(@pk_columns)) {
-          say("Table $table doesn't have a PRIMARY KEY, skipping");
+          sayDebug("SecondaryIndexConsistency: Table $table doesn't have a PRIMARY KEY, skipping");
           next;
         }
         my $pk_columns= join ',', @pk_columns;
 
-        sayDebug("Verifying table: $table, PK columns: $pk_columns, indexes: ".join ',', keys %secondary_keys);
+        sayDebug("SecondaryIndexConsistency: Verifying table: $table, PK columns: $pk_columns, indexes: ".join ',', keys %secondary_keys);
 
         $dbh->do("LOCK TABLE $table READ");
         my $pk_data= get_all_rows($dbh,"SELECT $pk_columns FROM $table FORCE INDEX(PRIMARY) ORDER BY $pk_columns");
