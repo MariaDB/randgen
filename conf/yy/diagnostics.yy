@@ -47,7 +47,11 @@ diag_stmt_property_list:
   { @props= qw(NUMBER ROW_COUNT); '' } diag_property_list ;
 
 diag_cond_property_list:
-  { @props= (
+  diag_cond_property_array diag_property_list;
+;
+
+diag_cond_property_array:
+  ==FACTOR:10== { @props= (
       'RETURNED_SQLSTATE',
       'MYSQL_ERRNO',
       'MESSAGE_TEXT',
@@ -60,8 +64,7 @@ diag_cond_property_list:
       'SCHEMA_NAME',
       'TABLE_NAME',
       'COLUMN_NAME',
-      'CURSOR_NAME',
-      'ROW_NUMBER /* compatibility 10.7.1 */'
-    ); ''
-  } diag_property_list;
+      'CURSOR_NAME'
+    ); '' } |
+  { @props= ('ROW_NUMBER'); '' } /* compatibility 10.7.1 */
 ;
