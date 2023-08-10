@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31898:
+=~ signal|AddressSanitizer
+=~ Field_string::get_key_image
+=~ ha_mroonga::storage_write_row_multiple_column_index
+MDEV-31897:
+=~ Item_ref::real_item
+=~ Item_direct_view_ref::replace_equal_field
+=~ Item_in_optimizer::transform
+=~ substitute_for_best_equal_field
 MDEV-31896:
 =~ index_init CONNECT: Open error
 =~ Assertion \`inited==INDEX'
