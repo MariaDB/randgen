@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31910:
+=~ signal|AddressSanitizer
+=~ Binary_string::copy
+=~ Item_func_concat_operator_oracle::val_str
 MDEV-31909:
 =~ signal|AddressSanitizer
 =~ Item_ref::const_item
