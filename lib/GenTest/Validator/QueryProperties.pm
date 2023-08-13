@@ -48,7 +48,8 @@ foreach my $property (@properties) {
 sub validate {
     my ($validator, $executors, $results) = @_;
     unless ($results && $results->[0] && defined $results->[0]->query) {
-      confess();
+      sayWarning("QueryProperties: Result or query is not defined");
+      return STATUS_WONT_HANDLE;
     }
 
     my $query = $results->[0]->query();
