@@ -703,14 +703,32 @@ sub metaColumnsIndexTypeNot {
 }
 
 sub metaCollations {
-    my ($self) = @_;
+    my ($self, $charset) = @_;
+    return $self->metaCharsetCollations($charset) if (defined $charset);
 
-    my $cachekey="COLLATIONS";
+    my $cachekey= "COLLATIONS";
 
     if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
         my $coll = [sort keys %{$self->[EXECUTOR_COLLATION_METADATA]}];
         croak "FATAL ERROR: No Collations defined" if not defined $coll or $#$coll < 0;
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = $coll;
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+}
+
+sub metaCharsetCollations {
+    my ($self, $charset) = @_;
+
+    my $cachekey= "COLLATIONS-$charset";
+
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        croak "FATAL ERROR: No Collations defined" if not defined $self->[EXECUTOR_COLLATION_METADATA] or scalar(keys %{$self->[EXECUTOR_COLLATION_METADATA]}) == 0;
+        my @colls= ();
+        foreach my $c (keys %{$self->[EXECUTOR_COLLATION_METADATA]}) {
+          next if $self->[EXECUTOR_COLLATION_METADATA]->{$c} ne "$charset";
+          push @colls, $c;
+        }
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = [ @colls ];
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }

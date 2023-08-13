@@ -94,6 +94,7 @@ sub next {
   my $last_index;
   my $last_field;
   my $last_table;
+  my $last_charset;
   # last_database is what was set upon _database and _table and alike
   # work_database is what was requested via _set_db, it can be an actual
   # database name, or NON-SYSTEM, or ANY.
@@ -319,17 +320,23 @@ sub next {
                         $last_field = $prng->arrayElement($fields);
             $item = '`'.$last_field.'`';
           } elsif ($item eq '_collation') {
-            my $collations = $executors->[0]->metaCollations();
+            my $collations = $executors->[0]->metaCollations($last_charset);
             $item = '_'.$prng->arrayElement($collations);
           } elsif ($item eq '_collation_name') {
-            my $collations = $executors->[0]->metaCollations();
+            my $collations = $executors->[0]->metaCollations($last_charset);
             $item = $prng->arrayElement($collations);
+            # MDEV-28767 - binary collation causes syntax errors
+            if ($item eq 'binary') {
+              $item= '`binary`';
+            }
           } elsif ($item eq '_charset') {
             my $charsets = $executors->[0]->metaCharactersets();
-            $item = '_'.$prng->arrayElement($charsets);
+            $last_charset= $prng->arrayElement($charsets);
+            $item = '_'.$last_charset;
           } elsif ($item eq '_charset_name') {
             my $charsets = $executors->[0]->metaCharactersets();
-            $item = $prng->arrayElement($charsets);
+            $last_charset = $prng->arrayElement($charsets);
+            $item= $last_charset;
           } elsif ( defined $field_type and
             (($field_type == FIELD_TYPE_NUMERIC) ||
              ($field_type == FIELD_TYPE_BLOB))
