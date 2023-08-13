@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31911:
+=~ signal|AddressSanitizer
+=~ CntIndexRange
+=~ ha_connect::records_in_range
 MDEV-31910:
 =~ signal|AddressSanitizer
 =~ Binary_string::copy
