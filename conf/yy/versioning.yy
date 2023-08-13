@@ -291,10 +291,10 @@ vers_col_new_name:
 vers_virt_col_new_name:
   { 'vcol'.($new_col_next_num++) } ;
 
-# TODO: vcols
+# TODO: vcols - adjust pribabilities when virtual columns start working
 vers_col_name_and_definition:
-   ==FACTOR:50== vers_col_name vers_col_definition
-#  | vers_virt_col_new_name vers_virt_col_definition
+   ==FACTOR:99== vers_col_name vers_col_definition
+  | vers_virt_col_new_name vers_virt_col_definition
 ;
 
 vers_col_definition:

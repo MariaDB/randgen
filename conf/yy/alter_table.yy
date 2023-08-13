@@ -251,8 +251,8 @@ alt_col_definition:
   | alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
   | alt_text_type alt_null alt_optional_default_char alt_invisible_optional alt_check_optional
   | alt_enum_type alt_null alt_optional_default alt_invisible_optional alt_check_optional
-# TODO: vcols: re-enable when virtual columns start working
-#  | alt_virt_col_definition alt_virt_type alt_invisible_optional alt_check_optional
+# TODO: vcols: adjust probability when virtual columns start working
+  | ==FACTOR:0.01== alt_virt_col_definition alt_virt_type alt_invisible_optional alt_check_optional
   | alt_geo_type alt_null alt_geo_optional_default alt_invisible_optional alt_check_optional
 ;
 

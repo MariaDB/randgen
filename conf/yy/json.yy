@@ -56,11 +56,11 @@ insert:
   ;; SET SQL_MODE=DEFAULT
 ;
 
-# TODO: vcols
+# TODO: vcols - adjust probabilities when virtual columns start working
 alter:
     ALTER TABLE test.`tmp` ADD index_type INDEX ( key_field key_length )
   | ALTER TABLE test.`tmp` DROP INDEX key_field
-#  | ==FACTOR:0.05== ALTER TABLE test.`tmp` column_op `vfld` TEXT AS ( vcol_expression ) virt_persist opt_col_check
+  | ==FACTOR:0.01== ALTER TABLE test.`tmp` column_op `vfld` TEXT AS ( vcol_expression ) virt_persist opt_col_check
   | ALTER TABLE test.`tmp` MODIFY `fld` fld_type opt_col_check
 ;
 
