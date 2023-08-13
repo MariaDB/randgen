@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31907:
+=~ LeakSanitizer
+=~ init_dynamic_array2
+=~ sp_rcontext::sp_rcontext
 MDEV-31898:
 =~ signal|AddressSanitizer
 =~ Field_string::get_key_image
