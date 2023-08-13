@@ -86,9 +86,16 @@ alt_alter_item:
   | ==FACTOR:0.5== alt_drop_column
   |                alt_drop_index
   | ==FACTOR:0.1== alt_versioning
+  | ==FACTOR:2==   alt_convert_charset
   | ==FACTOR:0.001== RENAME TO alt_new_or_existing_table_name
   | ==FACTOR:4==   alt_alter_item_can_skip_binlog
 ;
+
+alt_convert_charset:
+  CONVERT TO CHARACTER SET _charset_name alt_optional_collation ;
+
+alt_optional_collation:
+  | COLLATE _collation_name ;
 
 # We will only do non-binlog ALTER if it doesn't change the structure,
 # to avoid diverging
