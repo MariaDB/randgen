@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31909:
+=~ signal|AddressSanitizer
+=~ Item_ref::const_item
+=~ Item::cache_const_expr_analyzer
+=~ Prepared_statement::execute
 MDEV-31908:
 =~ signal|AddressSanitizer
 =~ ha_connect::OpenTable
