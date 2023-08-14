@@ -86,6 +86,10 @@ sub monitor {
         sayDebug("SecondaryIndexConsistency: Verifying table: $table, PK columns: $pk_columns, indexes: ".join ',', keys %secondary_keys);
 
         $dbh->do("LOCK TABLE $table READ");
+        if ($dbh->err) {
+          sayWarning("SecondaryIndexConsistency: Failed to lock table $table, skipping the check");
+          next;
+        }
         my $pk_data= get_all_rows($dbh,"SELECT $pk_columns FROM $table FORCE INDEX(PRIMARY) ORDER BY $pk_columns");
         next unless defined $pk_data;
 
