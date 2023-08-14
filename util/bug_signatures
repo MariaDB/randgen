@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31916:
+=~ signal|AddressSanitizer
+=~ grn_proc_call
+=~ grn_normalizer_normalize
+=~ ha_mroonga::storage_encode_multiple_column_key
 MDEV-31912:
 =~ signal|AddressSanitizer
 =~ base_list_iterator::next_fast
@@ -444,7 +449,7 @@ MDEV-31161:
 MDEV-31161:
 =~ Assertion \`((copy & STATE_MASK) == PFS_LOCK_ALLOCATED)'
 =~ pfs_lock::allocated_to_free
-=~ ha_innobase::delete_table
+=~ ha_innobase::delete_table|mysql_create_or_drop_trigger
 MDEV-31154:
 =~ Assertion \`!is_v'|FATAL.*InnoDB: Clustered record field for column
 =~ ha_innobase::build_template
