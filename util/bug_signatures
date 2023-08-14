@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31920:
+=~ Assertion \`!check_datetime_range(ltime)'
+=~ TIME_to_longlong_datetime_packed
+=~ ha_mroonga::storage_store_fields_by_index
 MDEV-31916:
 =~ signal|AddressSanitizer
 =~ grn_proc_call
@@ -42,6 +46,10 @@ MDEV-31907:
 MDEV-31898:
 =~ signal|AddressSanitizer
 =~ Field_string::get_key_image
+=~ ha_mroonga::storage_write_row_multiple_column_index
+MDEV-31898:
+=~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
+=~ key_copy
 =~ ha_mroonga::storage_write_row_multiple_column_index
 MDEV-31897:
 =~ Item_ref::real_item
@@ -99,8 +107,7 @@ MDEV-31823:
 =~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31808:
 =~ signal|AddressSanitizer
-=~ mysql_lock_merge
-=~ open_and_lock_internal_tables
+=~ mysql_lock_merge|NEXTVAL
 =~ Sql_cmd_alter_table::execute
 =~ FeatureUsage detected sequences
 MDEV-31808:
@@ -1217,6 +1224,9 @@ MDEV-27674:
 =~ sig=8|Assertion failure
 =~ row_ins_cascade_calc_update_vec
 =~ row_ins_foreign_check_on_constraint
+MDEV-27661:
+=~ CONVERT TO CHARACTER SET .* failed: 1033: Incorrect information in file
+=~ Test completed with failure status STATUS_DATABASE_CORRUPTION
 MDEV-27616:
 =~ AddressSanitizer|signal
 =~ prepare_inplace_alter_table_dict
