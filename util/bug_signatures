@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31912:
+=~ signal|AddressSanitizer
+=~ base_list_iterator::next_fast
+=~ JOIN::choose_tableless_subquery_plan
+=~ Version: '10\.[45]|Server version: 10\.[45]
 MDEV-31911:
 =~ signal|AddressSanitizer
 =~ CntIndexRange
@@ -324,7 +329,7 @@ MDEV-31243:
 =~ Assertion \`field->orig_table->stats_is_read'| Assertion \`field->table->stats_is_read'
 =~ is_eits_usable
 =~ hash_join_fanout
-=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31236:
 =~ Assertion \`prebuilt->select_lock_type == LOCK_NONE \|\| (index)->is_spatial()'
 =~ row_search_mvcc
@@ -493,6 +498,10 @@ MDEV-30957:
 =~ AddressSanitizer: use-after-poison
 =~ Item_change_list::rollback_item_tree_changes
 =~ Prepared_statement::cleanup_stmt|sp_lex_keeper::reset_lex_and_exec_core
+MDEV-30938:
+=~ Could not create a join buffer\. Please check and adjust the value of the variables 'JOIN_BUFFER_SIZE ([0-9]*)' and 'JOIN_BUFFER_SPACE_LIMIT ([0-9]*)'
+=~ STATUS_ENVIRONMENT_FAILURE
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-30935:
 =~ Assertion \`marked_for_read()'
 =~ Item_cond::fix_fields|Item_func.*::fix_fields
@@ -4236,6 +4245,9 @@ TODO-842: [Test problems: Metadata dump]
 =~ STATUS_ENVIRONMENT_FAILURE
 TODO-842: [Test problems: Galera does not load]
 =~ WSREP: Failed to create a new provider
+=~ STATUS_ENVIRONMENT_FAILURE
+TODO-842: [Test problems: Cluster does not initialize]
+=~ WSREP has not yet prepared node for application use
 =~ STATUS_ENVIRONMENT_FAILURE
 
 ##############################################################################
