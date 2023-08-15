@@ -1225,7 +1225,7 @@ MDEV-27674:
 =~ row_ins_cascade_calc_update_vec
 =~ row_ins_foreign_check_on_constraint
 MDEV-27661:
-=~ CONVERT TO CHARACTER SET .* failed: 1033: Incorrect information in file
+=~ CONVERT TO CHARACTER SET .* failed: 1033.* Incorrect information in file
 =~ Test completed with failure status STATUS_DATABASE_CORRUPTION
 MDEV-27616:
 =~ AddressSanitizer|signal
