@@ -4,6 +4,19 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31941:
+=~ InnoDB: Failing assertion: UT_LIST_GET_LEN(lock\.trx_locks) == 0
+=~ trx_t::commit_in_memory
+=~ mysql_unlock_tables
+=~ FeatureUsage detected OQGraph tables
+MDEV-31941:
+=~ Assertion \`!trx->auto_commit \|\| trx->will_lock'|Assertion \`!trx->is_autocommit_non_locking()'
+=~ lock_table_create
+=~ oqgraph3::cursor::seek_to
+MDEV-31935:
+=~ AddressSanitizer: allocator is out of memory
+=~ JOIN_CACHE::alloc_buffer
+=~ JOIN::init_join_caches
 MDEV-31920:
 =~ Assertion \`!check_datetime_range(ltime)'
 =~ TIME_to_longlong_datetime_packed
