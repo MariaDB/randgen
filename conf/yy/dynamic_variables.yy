@@ -677,7 +677,33 @@ dynvar_old_mode_value:
           NO_PROGRESS_INFO
           ZERO_DATE_TIME_CAST
         ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
-    }
+    } |
+    { @modes= qw(
+          NO_DUP_KEY_WARNINGS_WITH_IGNORE
+          NO_PROGRESS_INFO
+          ZERO_DATE_TIME_CAST
+          UTF8_IS_UTF8MB3
+        ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
+    } /* compatibility 10.6.1 */ |
+    { @modes= qw(
+          NO_DUP_KEY_WARNINGS_WITH_IGNORE
+          NO_PROGRESS_INFO
+          ZERO_DATE_TIME_CAST
+          UTF8_IS_UTF8MB3
+          IGNORE_INDEX_ONLY_FOR_JOIN
+          COMPAT_5_1_CHECKSUM
+        ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
+    } /* compatibility 10.9.1 */ |
+    { @modes= qw(
+          NO_DUP_KEY_WARNINGS_WITH_IGNORE
+          NO_PROGRESS_INFO
+          ZERO_DATE_TIME_CAST
+          LOCK_ALTER_TABLE_COPY
+          UTF8_IS_UTF8MB3
+          IGNORE_INDEX_ONLY_FOR_JOIN
+          COMPAT_5_1_CHECKSUM
+        ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
+    } /* compatibility 11.2.1 */
 ;
 
 # 10.2:  index_merge,index_merge_union,index_merge_sort_union,index_merge_intersection,index_merge_sort_intersection,engine_condition_pushdown,index_condition_pushdown,derived_merge,derived_with_keys,firstmatch,loosescan,materialization,in_to_exists,semijoin,partial_match_rowid_merge,partial_match_table_scan,subquery_cache,mrr,mrr_cost_based,mrr_sort_keys,outer_join_with_cache,semijoin_with_cache,join_cache_incremental,join_cache_hashed,join_cache_bka,optimize_join_buffer_size,table_elimination,extended_keys,exists_to_in,orderby_uses_equalities,condition_pushdown_for_derived
