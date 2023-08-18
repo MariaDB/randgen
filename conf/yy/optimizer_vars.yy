@@ -32,7 +32,7 @@ optimizer_var:
   JOIN_BUFFER_SIZE = join_buffer_size_val |
   JOIN_BUFFER_SPACE_LIMIT = join_buffer_space_val |
   JOIN_CACHE_LEVEL = join_cache_level_val |
-  OPTIMIZER_EXTRA_PRUNING_DEPTH = extra_pruning_val |
+  OPTIMIZER_EXTRA_PRUNING_DEPTH = extra_pruning_val /* compatibility 10.10.1 */ |
   OPTIMIZER_MAX_SEL_ARG_WEIGHT = max_sel_weight_val |
   OPTIMIZER_PRUNE_LEVEL = prune_level_val |
   OPTIMIZER_SEARCH_DEPTH = search_depth_val |
@@ -91,20 +91,25 @@ in_predicate_val:
   4294967295 ;
 
 # Default 262144 as of 11.0
+# Too small size disabled due to MDEV-30938 / MDEV-31348 ("Could not create a join buffer")
+# Too big size disabled due to MDEV-31935 (cannot allocate)
 join_buffer_size_val:
   DEFAULT |
-  128 |
-  { $prng->uint16(1024,262144) } |
-  { $prng->uint16(262144,1048576) } |
-  18446744073709551615 ;
+#  128 |
+#  18446744073709551615 |
+  { $prng->uint16(8192,262144) } |
+  { $prng->uint16(262144,1048576) }
+;
 
 # Default 2097152 as of 11.0
+# Too small size disabled due to MDEV-30938 / MDEV-31348 ("Could not create a join buffer")
 join_buffer_space_val:
   DEFAULT |
-  2048 |
+#  2048 |
+  18446744073709551615 |
   { $prng->uint16(65536,2097152) } |
-  { $prng->uint16(65536,8388608) } |
-  18446744073709551615 ;
+  { $prng->uint16(65536,8388608) }
+;
 
 # Default 2 as of 11.0
 join_cache_level_val:
