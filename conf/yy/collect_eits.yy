@@ -18,4 +18,12 @@ thread1_init:
   ANALYZE TABLE { @dbs= @{$executors->[0]->metaUserSchemas()}; @tables=(); foreach my $db (@dbs) { push @tables, (map { '`'.$db.'`.`'.$_.'`' } @{$executors->[0]->baseTables($db)}) } ; join ',',@tables } PERSISTENT FOR ALL;
 
 query:
-  { _set_db('NON-SYSTEM') } SET STATEMENT lock_wait_timeout=10 FOR ANALYZE TABLE _table PERSISTENT FOR ALL;
+  { _set_db('NON-SYSTEM') } SET STATEMENT lock_wait_timeout=10 FOR analyze_persistent ;
+
+analyze_persistent:
+  ANALYZE TABLE _table PERSISTENT FOR ALL |
+  ANALYZE TABLE _table, _table PERSISTENT FOR ALL |
+  ANALYZE TABLE _table PERSISTENT FOR COLUMNS(_field) INDEXES (_index) |
+  ANALYZE TABLE _table PERSISTENT FOR COLUMNS() INDEXES () |
+  ANALYZE TABLE _table PERSISTENT FOR COLUMNS(_field) INDEXES ()
+;
