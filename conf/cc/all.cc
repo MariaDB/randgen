@@ -37,7 +37,6 @@ $combinations = [
   [ @{$options{optional_gendata_views}} ],
   [ @{$options{optional_gendata_vcols}} ],
   [ @{$options{optional_variators}} ],
-  [ @{$options{grammars}} ],
   [ @{$options{gendata}} ],
 # Disabled for now, too frequent DBD problems
 #  [ @{$options{optional_ps_protocol}} ],
@@ -60,6 +59,7 @@ $combinations = [
         [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{optional_binlog_unsafe_variables}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
       ],
       binlog => [
         [ @{$options{scenario_non_crash_combinations}} ],
@@ -69,6 +69,7 @@ $combinations = [
         [ @{$options{optional_charsets_safe}} ],
         # Cannot have binlog encryption here, mysqlbinlog cannot read it
         [ @{$options{optional_non_binlog_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{debug_grammars}} ],
       ],
       index => [
         [ @{$options{scenario_non_crash_combinations}} ],
@@ -76,6 +77,7 @@ $combinations = [
         [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
       ],
       recovery => [
         [ @{$options{scenario_crash_combinations}} ],
@@ -83,6 +85,7 @@ $combinations = [
         [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{debug_grammars}} ],
       ],
       upgrade_backup => [
         [ @{$options{scenario_mariabackup_combinations}}, @{$options{scenario_upgrade_combinations}} ],
@@ -90,6 +93,7 @@ $combinations = [
         [ @{$options{engine_basic_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
       ],
       replication => [
         [ @{$options{scenario_replication_combinations}} ],
@@ -98,6 +102,7 @@ $combinations = [
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{optional_replication_safe_variables}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
       ],
       cluster => [
         [ @{$options{scenario_cluster_combinations}} ],
@@ -105,6 +110,7 @@ $combinations = [
         [ '--engine=InnoDB' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
       ]
     }
   ],

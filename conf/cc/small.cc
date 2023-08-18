@@ -35,7 +35,6 @@ $combinations = [
   [ @{$options{test_concurrency_combinations}} ],
   [ @{$options{optional_gendata_views}} ],
   [ @{$options{optional_variators}} ],
-  [ @{$options{grammars}} ],
   [ @{$options{gendata}} ],
 
 # Server options
@@ -55,6 +54,7 @@ $combinations = [
         [ @{$options{engine_basic_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
       ],
       index => [
         [ @{$options{scenario_non_crash_combinations}} ],
@@ -62,6 +62,7 @@ $combinations = [
         [ @{$options{engine_basic_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
       ],
       recovery => [
         [ @{$options{scenario_crash_combinations}} ],
@@ -69,6 +70,7 @@ $combinations = [
         [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
       ],
     }
   ],
