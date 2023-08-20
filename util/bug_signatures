@@ -4,6 +4,24 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31971:
+=~ AddressSanitizer|signal
+=~ ha_mroonga::storage_encode_key_fixed_size_string
+=~ ha_mroonga::storage_records_in_range
+MDEV-31970:
+=~ AddressSanitizer|signal
+=~ grn_obj_unlink
+=~ ha_mroonga::clear_indexes
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-31969:
+=~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'|Assertion \`(longlong) thd->status_var\.local_memory_used >= 0 \|\| !debug_assert_on_not_freed_memory'
+=~ my_hash_free
+=~ Session_sysvars_tracker::vars_list::deinit
+MDEV-31968:
+=~ Assertion \`name_length <= sizeof(pfs_uvar\.m_name)'
+=~ User_variables::materialize
+=~ FeatureUsage detected Spider engine
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-31966:
 =~ AddressSanitizer|signal
 =~ Binary_string::alloc
@@ -2186,7 +2204,11 @@ MDEV-23687:
 =~ Datetime::Datetime|Date::Date
 =~ Item_datetime_typecast::get_date|Item_date_typecast::get_date
 =~ Extract_source::Extract_source
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-23687:
+=~ AddressSanitizer|signal
+=~ check_date
+=~ time_to_datetime_with_warn
+=~ Extract_source::Extract_source
 MDEV-23686:
 =~ signal [16]|AddressSanitizer
 =~ get_foreign_key_info
@@ -2202,7 +2224,7 @@ MDEV-23676:
 =~ my_time_packed_to_binary
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-23665:
-=~ Assertion \`length <= 64'|Assertion \`length <= sizeof(m_str)'
+=~ Assertion \`length <= 64'|Assertion \`length <= sizeof(m_str)'|Assertion \`length <= NAME_CHAR_LEN'
 =~ PFS_variable_name_row::make_row
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-23654:
