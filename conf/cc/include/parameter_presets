@@ -1098,8 +1098,8 @@ $optional_server_variables{1004}= [ @{$optional_server_variables{$minversion}},
   [ @empty_set_20, '--mysqld=--default_regex_flags=DOTALL,DUPNAMES,EXTENDED,EXTRA,MULTILINE,UNGREEDY'],
   # Default empty
   [ @empty_set_20, '--mysqld=--log_slow_verbosity=innodb,query_plan,explain' ],
-  # Default empty in 10.4-10.5, UTF8_IS_UTF8MB3 in 10.6+
-  [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST,LOCK_ALTER_TABLE_COPY', '--mysqld=--old_mode=UTF8_IS_UTF8MB3,LOCK_ALTER_TABLE_COPY' ],
+  # Default empty in 10.4-10.5, UTF8_IS_UTF8MB3 in 10.6+ (UTF8_IS_UTF8MB3 doesn't exist in 10.4-10.5)
+  [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST,LOCK_ALTER_TABLE_COPY' ],
   # Default DOUBLE_PREC_HB
   [ @empty_set_20, '--mysqld=--histogram_type=SINGLE_PREC_HB' ],
   # Default OFF
@@ -1116,7 +1116,7 @@ $optional_server_variables{1005}= [ @{$optional_server_variables{$minversion}},
   [ @empty_set_30, '--mysqld=--thread_pool_dedicated_listener=ON' ],
   # Default OFF
   [ @empty_set_30, '--mysqld=--thread_pool_exact_stats=ON' ],
-  # Default empty in 10.4-10.5, UTF8_IS_UTF8MB3 in 10.6+
+  # Default empty in 10.4-10.5, UTF8_IS_UTF8MB3 in 10.6+ (UTF8_IS_UTF8MB3 doesn't exist in 10.4-10.5)
   [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST' ],
   # Default DOUBLE_PREC_HB
   [ @empty_set_20, '--mysqld=--histogram_type=SINGLE_PREC_HB' ],
