@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31966:
+=~ AddressSanitizer|signal
+=~ Binary_string::alloc
+=~ Field_longstr::uncompress
+=~ ha_mroonga::generic_store_bulk_variable_size_string
+MDEV-31965:
+=~ AddressSanitizer|signal
+=~ wc_ShaUpdate
+=~ Item_func_sha::val|compute_two_stage_sha1_hash
+=~ TABLE::update_virtual_field
+=~ row_merge_read_clustered_index
 MDEV-31941:
 =~ InnoDB: Failing assertion: UT_LIST_GET_LEN(lock\.trx_locks) == 0
 =~ trx_t::commit_in_memory
