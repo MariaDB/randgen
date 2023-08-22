@@ -32,7 +32,6 @@ require Exporter;
 @ISA = qw(GenTest::Scenario::MariaBackup);
 
 use strict;
-use DBI;
 use GenUtil;
 use GenTest;
 use GenTest::TestRunner;

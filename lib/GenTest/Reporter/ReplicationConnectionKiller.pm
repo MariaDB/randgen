@@ -1,5 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,7 +39,7 @@ sub monitor {
 
   my $reporter = shift;
 
-  my $dbh = $reporter->dbh();
+  my $conn = $reporter->connection();
 
   my $slave_host = $reporter->serverInfo('slave_host');
   my $master_port = $reporter->server->serverVariable('port');
@@ -48,7 +48,7 @@ sub monitor {
 
   my $interface = $slave_host eq '127.0.0.1' ? 'lo' : '';
 
-        my $slave_local = $dbh->selectrow_array("
+  my $slave_local = $conn->get_row("
     SELECT HOST
     FROM INFORMATION_SCHEMA.PROCESSLIST
     WHERE COMMAND = 'Binlog Dump'

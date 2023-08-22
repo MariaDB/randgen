@@ -2,7 +2,7 @@
 
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2016, 2022, MariaDB Corporation Ab.
+# Copyright (c) 2016, 2023, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -52,6 +52,7 @@ use GenTest::ReporterManager;
 use GenTest::Result;
 use GenTest::Validator;
 use GenUtil;
+use Connection::Perl;
 
 use constant TR_CONFIG => 0;
 use constant TR_CHANNEL => 5;
@@ -104,6 +105,8 @@ sub queryFilters {
 sub run {
     my $self = shift;
 
+    my $total_status = STATUS_OK;
+
     $SIG{TERM} = sub { exit(0) };
     $SIG{CHLD} = "IGNORE" if osWindows();
 
@@ -140,13 +143,11 @@ sub run {
 
     ### Start central reporting thread ####
 
-    my $errorfilter = GenTest::ErrorFilter->new(channel => $self->channel());
-    my $errorfilter_p = GenTest::IPC::Process->new(object => $errorfilter);
-    if (!osWindows()) {
-        $errorfilter_p->start($self->config->servers);
-    }
-
-    my $total_status = STATUS_OK;
+#    my $errorfilter = GenTest::ErrorFilter->new(channel => $self->channel());
+#    my $errorfilter_p = GenTest::IPC::Process->new(object => $errorfilter);
+#    if (!osWindows()) {
+#        $errorfilter_p->start($self->config->servers);
+#    }
 
     ### Dump metadata before starting the working processes ###
     #
@@ -168,10 +169,10 @@ sub run {
 
     # Stage 1 -- initial data collection
     
-    $total_status= $self->config->server_specific->{1}->{server}->storeMetaData("all",my $maxtime=$self->[TR_TEST_END]-time());
-    unless ($total_status == STATUS_OK) {
+    my $metadata_res= $self->config->server_specific->{1}->{server}->storeMetaData("all",my $maxtime=$self->[TR_TEST_END]-time());
+    unless ($metadata_res == STATUS_OK) {
       sayError("Initial metadata dump failed, cannot continue");
-      $total_status= STATUS_ENVIRONMENT_FAILURE;
+      $total_status= STATUS_CRITICAL_FAILURE if $total_status < STATUS_CRITICAL_FAILURE;
       goto TESTEND;
     }
 
@@ -192,11 +193,11 @@ sub run {
     # The dumper will be waiting for all flags to be created
     # We are dumping both non-system and system schemas, because init
     # could install plugins etc.
-    $total_status= $self->config->server_specific->{1}->{server}->storeMetaData("schemata", my $maxtime=$self->[TR_TEST_END]-time(), my $waiters=$self->config->threads);
-    unless ($total_status == STATUS_OK) {
+    $metadata_res= $self->config->server_specific->{1}->{server}->storeMetaData("schemata", my $maxtime=$self->[TR_TEST_END]-time(), my $waiters=$self->config->threads);
+    unless ($metadata_res == STATUS_OK) {
       sayError("Metadata dump after the 1st rule failed, terminating the test");
-      $total_status= STATUS_ENVIRONMENT_FAILURE;
-      goto WORKEND;
+      $total_status= STATUS_CRITICAL_FAILURE if $total_status < STATUS_CRITICAL_FAILURE;
+      goto OUTER;
     }
 
     # Now the executors are re-caching the data asynchronously, while
@@ -212,11 +213,11 @@ sub run {
 
     ### Main process
 
-    if (osWindows()) {
-        ## Important that this is done here in the parent after the last
-        ## fork since on windows Process.pm uses threads
-        $errorfilter_p->start();
-    }
+#    if (osWindows()) {
+#        ## Important that this is done here in the parent after the last
+#        ## fork since on windows Process.pm uses threads
+#        $errorfilter_p->start();
+#    }
 
     # We are the parent process, wait for for all spawned processes to terminate
     my $reporter_status = STATUS_OK;
@@ -275,7 +276,7 @@ sub run {
     }
 
   TESTEND:
-    $errorfilter_p->kill();
+#    $errorfilter_p->kill();
 
     my $gentest_result= $self->reportResults($total_status);
     sayDebug("TestRunner will exit with exit status ".status2text($gentest_result)." ($gentest_result)");
@@ -328,10 +329,7 @@ sub stopChild {
     sayDebug("TestRunner: child $$ is being stopped with status " . status2text($status));
     # Stopping executors explicitly to hopefully trigger statistics output
     foreach my $executor (@{$self->[TR_EXECUTORS]}) {
-        if ($executor) {
-            $executor->disconnect;
-            undef $executor;
-        }
+      undef $executor if $executor;
     }
     croak "calling stopChild() for $$ without a \$status" if not defined $status;
     if (osWindows()) {
@@ -569,20 +567,18 @@ sub initGenerator {
 
 sub registerFeatures {
   my ($self, $features)= @_;
-  my $dbh= DBI->connect($self->config->server_specific->{1}->{server}->dsn);
-  if ($dbh->err) {
-    sayError("Could not connect to server ".$self->config->server_specific->{1}->{dsn}." to register features @{$features}: ".$dbh->err." ".$dbh->errstr);
+  my $conn= Connection::Perl->new( server => $self->config->server_specific->{1}->{server}, role => 'super', name => 'FTR' );
+  unless ($conn) {
+    sayError("Could not connect to server to register features @{$features}");
     return;
   }
-  $dbh->do("SET STATEMENT enforce_storage_engine= NULL FOR CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria");
-  if ($dbh->err) {
-    sayError("Could not create mysql.rqg_feature_registry at ".$self->config->server_specific->{1}->{dsn}.": ".$dbh->err." ".$dbh->errstr);
+  if ($conn->execute("SET STATEMENT enforce_storage_engine= NULL FOR CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria") != STATUS_OK) {
+    sayError("Could not create mysql.rqg_feature_registry: ".$conn->print_error);
     return;
   }
   my $feature_list= join ',', map { "('$_')" } (@$features);
-  $dbh->do("REPLACE INTO mysql.rqg_feature_registry VALUES $feature_list");
-  if ($dbh->err) {
-    sayError("Could not register features @{$features} at".$self->config->server_specific->{1}->{dsn}.": ".$dbh->err." ".$dbh->errstr);
+  if ($conn->execute("REPLACE INTO mysql.rqg_feature_registry VALUES $feature_list") != STATUS_OK) {
+    sayError("Could not register features @{$features}: ".$conn->print_error);
   }
   sayDebug("Registered features: @$features");
 }

@@ -20,7 +20,6 @@ package GenData::GendataAdvanced;
 @ISA = qw(GenData);
 
 use strict;
-use DBI;
 
 use GenData;
 use GenTest;

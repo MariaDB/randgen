@@ -106,11 +106,13 @@ sub report {
 
   my @debugs;
 
+  say("----------------------------  START OF STACK TRACES  ----------------------------\n");
   foreach my $command (@commands) {
     my $output = `$command`;
-    say("$output");
+    print("$output\n");
     push @debugs, [$command, $output];
   }
+  say("-----------------------------  END OF STACK TRACES  -----------------------------\n");
 
   return STATUS_OK;
 }

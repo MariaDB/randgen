@@ -1,4 +1,4 @@
-# Copyright (C) 2018, 2022, MariaDB Corporation Ab. All rights reserved.
+# Copyright (C) 2018, 2023, MariaDB. All rights reserved.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@ require Exporter;
 @ISA = qw(GenTest::Reporter);
 
 use strict;
-use DBI;
 use GenUtil;
 use GenTest;
 use Constants;
@@ -47,23 +46,22 @@ sub monitor {
     # Don't run the monitor too often, it's expensive
     return STATUS_OK if (time() - $last_run) < $interval;
 
-    my $dbh = $reporter->dbh;
+    my $conn = $reporter->connection;
 
     say("Testing consistency of secondary indexes");
 
-    my $tables = $dbh->selectcol_arrayref("SELECT CONCAT('`',table_schema,'`.`',table_name,'`') FROM information_schema.tables WHERE engine='InnoDB'");
+    my $tables = $conn->get_column("SELECT CONCAT('`',table_schema,'`.`',table_name,'`') FROM information_schema.tables WHERE engine='InnoDB'");
 
-    $dbh->do("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
+    $conn->execute("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
     foreach my $table (@$tables) {
-        my $sth_keys = $dbh->prepare("SHOW KEYS FROM $table");
-        $sth_keys->execute();
+        my $sth_keys = $conn->get_columns_by_name("SHOW KEYS FROM $table",'Key_name','Index_type','Column_name');
 
         # collect all columns included into the primary key and all names of secondary keys
 
         my @pk_columns;
         my %secondary_keys;
 
-        while (my $key_hashref = $sth_keys->fetchrow_hashref()) {
+        foreach my $key_hashref (@$sth_keys) {
             my $key_name = $key_hashref->{Key_name};
             my $key_type = $key_hashref->{Index_type};
             # MDEV-31885 -- forcing fulltext indexes does not end well
@@ -85,17 +83,16 @@ sub monitor {
 
         sayDebug("SecondaryIndexConsistency: Verifying table: $table, PK columns: $pk_columns, indexes: ".join ',', keys %secondary_keys);
 
-        $dbh->do("LOCK TABLE $table READ");
-        if ($dbh->err) {
+        unless ($conn->execute("LOCK TABLE $table READ") == STATUS_OK) {
           sayWarning("SecondaryIndexConsistency: Failed to lock table $table, skipping the check");
           next;
         }
-        my $pk_data= get_all_rows($dbh,"SELECT $pk_columns FROM $table FORCE INDEX(PRIMARY) ORDER BY $pk_columns");
+        my $pk_data= $conn->get_column("SELECT $pk_columns FROM $table FORCE INDEX(PRIMARY) ORDER BY $pk_columns");
         next unless defined $pk_data;
 
         KEY:
         foreach my $ind (keys %secondary_keys) {
-            my $ind_data= get_all_rows($dbh,"SELECT $pk_columns FROM $table FORCE INDEX($ind) ORDER BY $pk_columns");
+            my $ind_data= $conn->get_column("SELECT $pk_columns FROM $table FORCE INDEX($ind) ORDER BY $pk_columns");
             next unless defined $ind_data;
 
             my $diff= GenTest::Comparator::dumpDiff($pk_data, $ind_data);
@@ -107,29 +104,13 @@ sub monitor {
                 sayDebug("Indexes PRIMARY and $ind produced identical data");
             }
         }
-        $dbh->do("UNLOCK TABLES");
+        $conn->execute("UNLOCK TABLES");
     }
     return STATUS_OK;
 }
 
 sub type {
     return REPORTER_TYPE_PERIODIC;
-}
-
-sub get_all_rows {
-    my ($dbh, $stmt)= @_;
-    my $sth= $dbh->prepare($stmt);
-    if ($sth->err or $dbh->err) {
-        sayError("Prepare for $stmt failed: ". ($sth->err ? $sth->errstr : $dbh->errstr));
-        return undef;
-    }
-    $sth->execute;
-    if ($sth->err or $dbh->err) {
-        sayError("Execute for $stmt failed: ". ($sth->err ? $sth->errstr : $dbh->errstr));
-        return undef;
-    }
-    return GenTest::Result->new(
-            data => $sth->fetchall_arrayref);
 }
 
 1;

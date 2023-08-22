@@ -1,4 +1,4 @@
-# Copyright (C) 2022, MariaDB
+# Copyright (C) 2022, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@ require Exporter;
 @ISA = qw(GenTest::Scenario);
 
 use strict;
-use DBI;
 use GenUtil;
 use GenTest;
 use GenTest::TestRunner;
@@ -47,6 +46,7 @@ use File::Compare;
 use POSIX;
 
 use DBServer::MariaDB;
+use Connection::Perl;
 
 sub new {
   my $class= shift;
@@ -117,23 +117,23 @@ sub run {
     if ($c =~ /^(\d+)->(\d+)$/) {
       my ($master, $slave)= ($1-1, $2-1);
       say("Enabling $c replication");
-      my $master_dbh= $servers[$master]->dbh(my $admin=1);
-      $master_dbh->do("SET tx_read_only= OFF");
-      $master_dbh->do("CREATE USER IF NOT EXISTS replication IDENTIFIED BY 'yvp.utu9azv4xgt6VRT'");
-      unless ($master_dbh->err) {
-        $master_dbh->do("GRANT REPLICATION SLAVE ON *.* TO replication");
+      my $master_conn= Connection::Perl->new( server => $servers[$master], role => 'admin', name => 'RPL' );
+      $master_conn->execute("SET tx_read_only= OFF");
+      $master_conn->execute("CREATE USER IF NOT EXISTS replication IDENTIFIED BY 'yvp.utu9azv4xgt6VRT'");
+      unless ($master_conn->err) {
+        $master_conn->execute("GRANT REPLICATION SLAVE ON *.* TO replication");
       }
-      if ($master_dbh->err) {
-        sayError("Could not configure replication user on server $master: ".$master_dbh->err." (".$master_dbh->errstr.")");
+      if ($master_conn->err) {
+        sayError("Could not configure replication user on server $master: ".$master_conn->print_error);
         $status= STATUS_REPLICATION_FAILURE;
         last;
       }
       my $master_port= $servers[$master]->port;
-      my $slave_dbh= $servers[$slave]->dbh;
-      $slave_dbh->do("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT'");
-      $slave_dbh->do("START SLAVE");
-      if ($slave_dbh->err) {
-        sayError("Could not start replication $master -> $slave: ".$slave_dbh->err." (".$slave_dbh->errstr.")");
+      my $slave_conn= Connection::Perl->new( server => $servers[$slave], role => 'super', name => 'RPL' );
+      $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT'");
+      $slave_conn->execute("START SLAVE");
+      if ($slave_conn->err) {
+        sayError("Could not start replication $master -> $slave: ".$slave_conn->print_error);
         $status= STATUS_REPLICATION_FAILURE;
         last;
       }

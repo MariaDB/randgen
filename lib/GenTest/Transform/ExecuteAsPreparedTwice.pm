@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -52,7 +52,7 @@ sub modify {
   my ($class, $orig_query, $executor, $transform_outcome) = @_;
   my $flags= ($orig_query !~ /^[\s\(]*SELECT/i or $orig_query =~ /RESULTSETS_NOT_COMPARABLE/) ? '/* RESULTSETS_NOT_COMPARABLE */' : '';
   return [
-    "PREPARE /* TRANSFORM_SETUP */ stmt_ExecuteAsPreparedTwice_".abs($$)." FROM ".$executor->dbh()->quote($orig_query),
+    "PREPARE /* TRANSFORM_SETUP */ stmt_ExecuteAsPreparedTwice_".abs($$)." FROM ".$executor->connection->quote($orig_query),
     "EXECUTE $flags stmt_ExecuteAsPreparedTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
     "EXECUTE $flags stmt_ExecuteAsPreparedTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
   ];

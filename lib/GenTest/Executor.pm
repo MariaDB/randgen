@@ -1,6 +1,6 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020, 2022, MariaDB Corporation Ab.
+# Copyright (c) 2020, 2023, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,7 @@ require Exporter;
   EXECUTOR_CURRENT_SCHEMA
   EXECUTOR_MAX_ROWS_THRESHOLD
   EXECUTOR_QNO
+  EXECUTOR_CONNECTION
 );
 
 use strict;
@@ -44,7 +45,7 @@ use GenUtil;
 use GenTest;
 
 use constant EXECUTOR_DSN      => 0;
-use constant EXECUTOR_DBH      => 1;
+use constant EXECUTOR_CONNECTION  => 1;
 use constant EXECUTOR_ID       => 2;
 use constant EXECUTOR_QNO      => 3;
 use constant EXECUTOR_ENGINES  => 4;
@@ -65,7 +66,6 @@ use constant EXECUTOR_CURRENT_SCHEMA => 19;
 use constant EXECUTOR_END_TIME      => 21;
 use constant EXECUTOR_USER      => 22;
 use constant EXECUTOR_VARDIR => 27;
-use constant EXECUTOR_SERVICE_DBH => 34;
 use constant EXECUTOR_SEED => 38;
 use constant EXECUTOR_SERVER => 40;
 use constant EXECUTOR_META_NONSYSTEM_CACHE => 42;
@@ -147,20 +147,8 @@ sub sendError {
     $self->channel->send($msg);
 }
 
-sub dbh {
-  return $_[0]->[EXECUTOR_DBH];
-}
-
-sub setDbh {
-  $_[0]->[EXECUTOR_DBH] = $_[1];
-}
-
-sub serviceDbh {
-  return $_[0]->[EXECUTOR_SERVICE_DBH];
-}
-
-sub setServiceDbh {
-  $_[0]->[EXECUTOR_SERVICE_DBH] = $_[1];
+sub connection {
+  return $_[0]->[EXECUTOR_CONNECTION];
 }
 
 sub user {
@@ -242,8 +230,7 @@ sub loadCollations {
 
 sub disconnect {
     my $executor = shift;
-    $executor->dbh()->disconnect() if defined $executor->dbh();
-    $executor->setDbh(undef);
+    $executor->[EXECUTOR_CONNECTION]= undef;
 }
 
 sub reportError {
@@ -251,12 +238,12 @@ sub reportError {
 
     my $msg = [$query,$err,$errstr];
 
-    if (defined $self->channel) {
-        $self->sendError($msg);
-    } elsif (not defined $reported_errors{$errstr}) {
+#    if (defined $self->channel) {
+#        $self->sendError($msg);
+    if (not defined $reported_errors{$err}) {
         my $query_for_print= shorten_message($query);
         say("Executor#".$self->threadId().": Query: $query_for_print failed: $err $errstr (" . status2text(errorType($err)) . "). Further errors of this kind will be suppressed.");
-        $reported_errors{$errstr}++;
+        $reported_errors{$err}++;
     }
 }
 
@@ -623,7 +610,7 @@ sub _collectTableObjects {
         $objref = $meta->{$schema}->{tables}->{$table}->{$objtype};
       }
       unless (defined $objref && scalar(keys %$objref)) {
-        sayWarning("Table/view `$schema`.`$table` has no ".($objtype eq 'COL' ? 'columns' : 'indexes'));
+        sayDebug("Table/view `$schema`.`$table` has no ".($objtype eq 'COL' ? 'columns' : 'indexes'));
         return ['!non_existing_object'];
       }
       $objects= [ keys %$objref ];
@@ -633,7 +620,7 @@ sub _collectTableObjects {
         if (defined $datatype) {
           $cols_by_datatype = [sort grep {$objref->{$_}->[1] eq $datatype} keys %$objref];
           if (not defined $cols_by_datatype or $#$cols_by_datatype < 0) {
-              sayDebug "Table/view '$table' in schema '$schema' has no '$datatype' columns. Using any column";
+              sayDebug("Table/view '$table' in schema '$schema' has no '$datatype' columns. Using any column");
               $cols_by_datatype= [sort keys %$objref];
           }
         }

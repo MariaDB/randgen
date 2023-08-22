@@ -1,5 +1,5 @@
 # Copyright (C) 2013 Monty Program Ab
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -32,7 +32,6 @@ require Exporter;
 @ISA = qw(GenTest::Reporter);
 
 use strict;
-use DBI;
 use GenUtil;
 use GenTest;
 use Constants;
@@ -79,12 +78,8 @@ sub restart {
   alarm(3600);
   my $server = $reporter->properties->server_specific->{2}->{server};
 
-  my $dbh_prev;
-  eval { $dbh_prev = DBI->connect($server->dsn()) };
-
-  if (defined $dbh_prev) {
-    $dbh_prev->disconnect();
-  }
+  my $conn;
+  eval { $conn = $reporter->connection() };
 
   $server->setStartDirty(1);
 
@@ -129,8 +124,8 @@ sub restart {
   close(RESTART);
 
   $restart_count++;
-  my $dbh = DBI->connect($server->dsn());
-  $restart_status = STATUS_DATABASE_CORRUPTION if not defined $dbh && $restart_status == STATUS_OK;
+  $conn->refresh;
+  $restart_status = STATUS_DATABASE_CORRUPTION if not defined $conn && $restart_status == STATUS_OK;
 
   if ($restart_status == STATUS_OK) {
     $restart_status= $server->checkDatabaseIntegrity;

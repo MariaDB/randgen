@@ -1,5 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (C) 2016, 2022, MariaDB Corporation AB.
+# Copyright (C) 2016, 2022, 2023 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -22,16 +22,10 @@ require Exporter;
 @ISA = qw(GenTest::Reporter);
 
 use strict;
-use DBI;
 use GenUtil;
 use GenTest;
 use Constants;
 use GenTest::Reporter;
-#use GenTest::Comparator;
-#use Data::Dumper;
-#use IPC::Open2;
-#use File::Copy;
-#use POSIX;
 
 use DBServer::MariaDB;
 
@@ -60,10 +54,10 @@ sub status {
   return STATUS_OK if $reporter ne $first_reporter;
 
     my $server = $reporter->properties->server_specific->{1}->{server};
-    my $dbh = $reporter->dbh;
+    my $conn = $reporter->connection;
 
-  if ($dbh) {
-    my $slave_status = $dbh->selectrow_arrayref("SHOW SLAVE STATUS /* ReplicationSlaveStatus::status */");
+  if ($conn) {
+    my $slave_status = $conn->get_row("SHOW SLAVE STATUS");
 
     if ($slave_status->[SLAVE_STATUS_LAST_IO_ERROR] ne '') {
       say("Slave IO thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_IO_ERROR]);

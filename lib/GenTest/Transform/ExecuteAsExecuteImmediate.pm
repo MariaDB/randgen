@@ -1,4 +1,4 @@
-# Copyright (c) 2016, 2022, MariaDB Corporation
+# Copyright (c) 2016, 2023, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -44,14 +44,14 @@ sub transform {
   my ($class, $orig_query, $executor) = @_;
   return STATUS_WONT_HANDLE if $orig_query !~ m{^[\s\(]*SELECT|HANDLER}is || $orig_query =~ m{(?:\WINTO\W|PROCESSLIST)}is;
   return STATUS_WONT_HANDLE if $orig_query =~ m{;}is;
-  return "EXECUTE IMMEDIATE ".$executor->dbh()->quote($orig_query) . " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+  return "EXECUTE IMMEDIATE ".$executor->connection()->quote($orig_query) . " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 }
 
 sub variate {
   my ($self, $orig_query, $executor) = @_;
   return [ $orig_query ] if $orig_query =~ m{EXECUTE\s|PREPARE\s}is;
   return [ $orig_query ] if $orig_query =~ m{;}is;
-  return [ "EXECUTE IMMEDIATE ".$executor->dbh()->quote($orig_query) ];
+  return [ "EXECUTE IMMEDIATE ".$executor->connection()->quote($orig_query) ];
 }
 
 1;

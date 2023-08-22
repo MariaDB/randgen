@@ -1,5 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -21,45 +21,41 @@ package GenTest::Validator::ReplicationWaitForSlave;
 require Exporter;
 @ISA = qw(GenTest::Validator GenTest);
 
+use Data::Dumper;
+
 use strict;
 
-use DBI;
 use GenUtil;
 use GenTest;
 use Constants;
 use GenTest::Result;
 use GenTest::Validator;
+use Connection::Perl;
+
+my $slave_conn;
 
 sub init {
   my ($validator, $executors) = @_;
   my $master_executor = $executors->[0];
-
-  my ($slave_host, $slave_port) = $master_executor->slaveInfo();
-
-  if (($slave_host ne '') && ($slave_port ne '')) {
-    my $slave_dsn = 'dbi:mysql:host='.$slave_host.':port='.$slave_port.':user=root';
-    my $slave_dbh = DBI->connect($slave_dsn, undef, undef, { RaiseError => 1 });
-    $validator->setDbh($slave_dbh);
-  }
-
+  my $slave_info= $master_executor->connection->get_columns_by_name("SHOW SLAVE HOSTS",'Host','Port');
+  my ($slave_host, $slave_port) = ($slave_info->[0]->{Host}, $slave_info->[0]->{Port});
+  $slave_host= '127.0.0.1' if ($slave_host eq 'localhost');
+  $slave_conn= Connection::Perl->new(host => $slave_host, port => $slave_port, name => 'WFS');
   return 1;
 }
 
 sub validate {
   my ($validator, $executors, $results) = @_;
-
   my $master_executor = $executors->[0];
+  my ($file, $pos)= @{$master_executor->connection()->get_row("SHOW MASTER STATUS")};
 
-  my ($file, $pos) = $master_executor->masterStatus();
-  return STATUS_OK if ($file eq '') || ($pos eq '');
-
-  my $slave_dbh = $validator->dbh();
-  return STATUS_OK if not defined $slave_dbh;
-
-  my $wait_status = $slave_dbh->selectrow_array("SELECT MASTER_POS_WAIT(?, ?)", undef, $file, $pos);
-
+  if (($file eq '') || ($pos eq '')) {
+    sayWarning("ReplicationWaitForSlave: Could not retrieve master status");
+    return STATUS_WONT_HANDLE;
+  }
+  my $wait_status = $slave_conn->get_value("SELECT /* ReplicationWaitForSlave::validate */ MASTER_POS_WAIT('$file', $pos)");
   if (not defined $wait_status) {
-    my @slave_status = $slave_dbh->selectrow_array("SHOW SLAVE STATUS /* ReplicationWaitForSlave::validate */");
+    my @slave_status = $slave_conn->get_row("SHOW SLAVE STATUS /* ReplicationWaitForSlave::validate */");
     my $slave_status = $slave_status[37];
     say("Slave SQL thread has stopped with error: ".$slave_status);
     return STATUS_REPLICATION_FAILURE;

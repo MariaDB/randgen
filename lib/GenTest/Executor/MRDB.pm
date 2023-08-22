@@ -1,7 +1,7 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Use is subject to license terms.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020,2022 MariaDB Corporation
+# Copyright (c) 2020, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ require Exporter;
 
 use strict;
 use Carp;
-use DBI;
+use Data::Dumper;
 use GenUtil;
 use GenTest;
 use Constants;
@@ -36,71 +36,35 @@ use Time::HiRes;
 use Digest::MD5;
 use GenTest::Random;
 
-#
-# Column positions for SHOW SLAVES
-#
-
-use constant SLAVE_INFO_HOST => 1;
-use constant SLAVE_INFO_PORT => 2;
-
-
 sub admin {
   my $executor= shift;
   $executor->execute("SET ROLE admin");
   $executor->execute("SET SESSION tx_read_only= OFF");
 }
 
+sub connection {
+  return $_[0]->[EXECUTOR_CONNECTION];
+}
+
 sub init {
     my $executor = shift;
-    my $dbh = DBI->connect($executor->dsn(), undef, undef, {
-        PrintError => 0,
-        RaiseError => 0,
-        AutoCommit => 1,
-        mysql_multi_statements => 1,
-        mysql_auto_reconnect => 1
-    } );
+    my $conn = Connection::Perl->new(server => $executor->server, name => 'WRK-'.$executor->threadId());
 
-    if (not defined $dbh) {
-        sayError("connect() to dsn ".$executor->dsn()." failed: ".$DBI::errstr);
+    unless ($conn) {
+        sayError("Connect() to dsn ".$executor->server->port()." failed: ".$conn->last_error->[0]." ".$conn->last_error->[1]);
         return STATUS_ENVIRONMENT_FAILURE;
     }
-
-    $executor->setDbh($dbh);
-
-    my $service_dbh = DBI->connect($executor->dsn(), undef, undef, {
-        PrintError => 0,
-        RaiseError => 0,
-        AutoCommit => 1,
-        mysql_multi_statements => 1,
-        mysql_auto_reconnect => 1
-    } );
-
-    if (not defined $service_dbh) {
-        sayError("connect() to dsn ".$executor->dsn()." (service connection) failed: ".$DBI::errstr);
-        return STATUS_ENVIRONMENT_FAILURE;
-    }
-
-    $executor->setServiceDbh($service_dbh);
-
-    #
-    # Hack around bug 35676, optiimzer_switch must be set sesson-wide in order to have effect
-    # So we read it from the GLOBAL_VARIABLE table and set it locally to the session
-    # Please leave this statement on a single line, which allows easier correct parsing from general log.
-    #
-
-    $dbh->do("SET optimizer_switch=(SELECT variable_value FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES WHERE VARIABLE_NAME='optimizer_switch')");
-#    $dbh->do("SET TIMESTAMP=".Time::HiRes::time());
-
+    $executor->[EXECUTOR_CONNECTION]= $conn;
     $executor->defaultSchema($executor->currentSchema());
 
-    my $cidref= $dbh->selectrow_arrayref("SELECT CONNECTION_ID()");
-    if ($dbh->err) {
-        sayError("Couldn't get connection ID: " . $dbh->err() . " (" . $dbh->errstr() .")");
+    my $cid= $conn->get_value("SELECT CONNECTION_ID()");
+    if ($conn->err) {
+        sayError("Couldn't get connection ID: " . $conn->print_error);
     }
 
-    $executor->setConnectionId($cidref->[0]);
-    $executor->user($dbh->selectrow_arrayref("SELECT CURRENT_USER()")->[0]);
-    $dbh->do('SELECT '.GenTest::Random::dataLocation().' AS DATA_LOCATION');
+    $executor->setConnectionId($cid);
+    $executor->user($conn->get_value("SELECT CURRENT_USER()"));
+    $conn->execute('SELECT '.GenTest::Random::dataLocation().' AS DATA_LOCATION');
 
     sayDebug("Executor initialized. id: ".$executor->id()."; default schema: ".$executor->defaultSchema()."; thread ID: ".$executor->threadId()."; connection ID: ".$executor->connectionId());
 
@@ -127,35 +91,23 @@ sub execute {
     }
 
     if ($query =~ /\!non_existing_(?:database|object|index)/) {
+      my $errtype= STATUS_REQUIREMENT_UNMET;
       if ($execution_flags & EXECUTOR_FLAG_NON_EXISTING_ALLOWED) {
         sayDebug("Discarding query [ $query ]");
-        return GenTest::Result->new(
-            query      => $query,
-            status     => STATUS_SKIP,
-            err        => undef,
-            errstr     => "Internal error, required object not found",
-            sqlstate   => undef,
-            start_time => undef,
-            end_time   => undef,
-            execution_flags => $execution_flags
-        );
       } else {
         sayError("Discarding query [ $query ] and setting STATUS_REQUIREMENT_UNMET");
-        return GenTest::Result->new(
+      }
+      $executor->[EXECUTOR_STATUS_COUNTS]->{$errtype}++;
+      return GenTest::Result->new(
             query      => $query,
-            status     => STATUS_REQUIREMENT_UNMET,
+            status     => $errtype,
             err        => undef,
             errstr     => "Internal error, required object not found",
             sqlstate   => undef,
             start_time => undef,
             end_time   => undef,
             execution_flags => $execution_flags
-        );
-      }
-    }
-
-    if ($query =~ s/(TID \d+)(?:-\d+)? (QNO \d+-\d+)/$1-$executor->[EXECUTOR_QNO] $2/) {
-      $executor->[EXECUTOR_QNO]++;
+      );
     }
 
     if ($query =~ /^\s*(?:\/\*.*?\*\/\s*)?USE\s*(?:\/\*.*?\*\/\s*)?(\`[^\`]+\`|\w+)/) {
@@ -178,9 +130,8 @@ sub execute {
     # Or occasionaly "x AS alias1 AS alias2"
     while ($query =~ s/AS\s+\w+\s+(AS\s+\w+)/$1/g) {}
 
-    my $dbh = $executor->dbh();
-
-    return GenTest::Result->new( query => $query, status => STATUS_UNKNOWN_ERROR, execution_flags => $execution_flags ) if not defined $dbh;
+    my $conn = $executor->connection();
+    return GenTest::Result->new( query => $query, status => STATUS_SERVER_UNAVAILABLE, execution_flags => $execution_flags ) if not defined $conn;
 
     my $trace_query;
     my $trace_me = 0;
@@ -200,192 +151,59 @@ sub execute {
         }
     }
 
-    my $start_time = Time::HiRes::time();
-    # Combination of mysql_server_prepare and mysql_multi_statements
-    # still causes troubles (syntax errors), both with mysql and MariaDB drivers
-    my $sth = (index($query,";") == -1) ? $dbh->prepare($query) : $dbh->prepare($query, { mysql_server_prepare => 0 });
+    my $resultset= $conn->query($query);
+    my $execution_time = $conn->execution_time();
+    my $affected_rows= $conn->affected_rows();
+    my ($err,$errstr) = $conn->last_error;
+    my $err_type = errorType($err);
 
-    if (not defined $sth) {            # Error on PREPARE
-        #my $errstr_prepare = normalizeError($dbh->errstr());
-        return GenTest::Result->new(
-            query        => $query,
-            status        => errorType($dbh->err()),
-            err        => $dbh->err(),
-            errstr         => $dbh->errstr(),
-            sqlstate    => $dbh->state(),
-            start_time    => $start_time,
-            end_time    => Time::HiRes::time(),
-            execution_flags => $execution_flags
-        );
+    $executor->[EXECUTOR_STATUS_COUNTS]->{$conn->err_type}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
+
+    my $mysql_info = $conn->mysql_info;
+    my ($matched_rows, $changed_rows) = $mysql_info =~ m{^Rows matched:\s+(\d+)\s+Changed:\s+(\d+)}sgio;
+
+    my ($column_names,$column_types);
+    if ($conn && $conn->number_of_fields) {
+      $column_names = $conn->column_names;
+      $column_types = $conn->column_types;
     }
 
-    my $affected_rows = $sth->execute();
-    my $end_time = Time::HiRes::time();
-    my $execution_time = $end_time - $start_time;
-
-    my $err = $sth->err();
-#    my $errstr = normalizeError($sth->errstr()) if defined $sth->errstr();
-    my $errstr = $sth->errstr();
-    my $err_type = STATUS_OK;
-    if (defined $err) {
-      $err_type= errorType($err);
-      if ($err == ER_GET_ERRNO) {
-          my ($se_err) = $sth->errstr() =~ m{^Got error\s+(\d+)\s+from storage engine}sgio;
+    if ($trace_me eq 1) {
+      if ($err) {
+        # Mark invalid queries in the trace by prefixing each line.
+        # We need to prefix all lines of multi-line statements also.
+        $trace_query =~ s/\n/\n# [sqltrace]    /g;
+        print "# [$$] [sqltrace] ERROR ".$err.": $trace_query;\n";
+      } else {
+        print "[$$] $trace_query;\n";
       }
     }
 
-    $executor->[EXECUTOR_STATUS_COUNTS]->{$err_type}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
+    # We add an empty data here because DELETE RETURNING and such
+    # may return undefined NUM_OF_FIELDS, particularly when the resultset is empty,
+    # but we still want it to be processed as something returning a resultset
+    # (because it is). Hopefully it won't hurt
+    my $result = GenTest::Result->new(
+        query           => $query,
+        status          => $err_type,
+        err             => $err,
+        errstr          => $errstr,
+        sqlstate        => $conn->sqlstate(),
+        execution_flags => $execution_flags,
+        data            => ( $query =~ /\WRETURNING\W/i ? [] : \@$resultset ),
+        affected_rows   => $affected_rows,
+        matched_rows    => $matched_rows,
+        changed_rows    => $changed_rows,
+        info            => $mysql_info,
+        column_names    => $column_names,
+        column_types    => $column_types,
+    );
 
-    my $mysql_info = $dbh->{'mysql_info'};
-    $mysql_info= '' unless defined $mysql_info;
-    my ($matched_rows, $changed_rows) = $mysql_info =~ m{^Rows matched:\s+(\d+)\s+Changed:\s+(\d+)}sgio;
-
-    my $column_names = $sth->{NAME} if $sth and $sth->{NUM_OF_FIELDS};
-    my $column_types = $sth->{mysql_type_name} if $sth and $sth->{NUM_OF_FIELDS};
-
-    if ($trace_me eq 1) {
-        if (defined $err) {
-                # Mark invalid queries in the trace by prefixing each line.
-                # We need to prefix all lines of multi-line statements also.
-                $trace_query =~ s/\n/\n# [sqltrace]    /g;
-                print "# [$$] [sqltrace] ERROR ".$err.": $trace_query;\n";
-        } else {
-            print "[$$] $trace_query;\n";
-        }
-    }
-
-    my $result;
-    if (defined $err)
-    {  # Error on EXECUTE
-        if (
-            ($err_type == STATUS_SKIP) ||
-            ($err_type == STATUS_UNSUPPORTED) ||
-            ($err_type == STATUS_SEMANTIC_ERROR) ||
-            ($err_type == STATUS_CONFIGURATION_ERROR) ||
-            ($err_type == STATUS_ACL_ERROR) ||
-            ($err_type == STATUS_IGNORED_ERROR) ||
-            ($err_type == STATUS_RUNTIME_ERROR)
-        ) {
-            $executor->reportError($query, $err, $errstr, $execution_flags);
-        } elsif (serverGone($err_type)) {
-            if ($executor->server->isPlannedDowntime()) {
-              say("Executor::MariaDB::execute: Server is down, the downtime is planned");
-            } else {
-                $dbh = DBI->connect($executor->dsn(), undef, undef, {
-                    PrintError => 0,
-                    RaiseError => 0,
-                    AutoCommit => 1,
-                    mysql_multi_statements => 1,
-                    mysql_auto_reconnect => 1
-                } );
-
-                # If server is still connectable, it is not a real crash, but most likely a KILL query
-
-                if (defined $dbh) {
-                    say("Executor::MariaDB::execute: Successfully reconnected after getting " . status2text($err_type));
-                    $err_type = STATUS_SEMANTIC_ERROR;
-                    $executor->setDbh($dbh);
-                } else {
-                    sayError("Executor::MariaDB::execute: Failed to reconnect after getting " . status2text($err_type));
-                }
-                my $query_for_print= shorten_message($query);
-                say("Executor::MariaDB::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
-            }
-        } else {
-            # Always print syntax and uncategorized errors, unless specifically asked not to
-            my $query_for_print= shorten_message($query);
-            say("Executor::MariaDB::execute: Query: $query_for_print failed: $err ".$sth->errstr().($err_type?" (".status2text($err_type).")":""));
-        }
-        $result = GenTest::Result->new(
-            query        => $query,
-            status        => $err_type || STATUS_UNKNOWN_ERROR,
-            err        => $err,
-            errstr        => $errstr,
-            sqlstate    => $sth->state(),
-            start_time    => $start_time,
-            end_time    => $end_time,
-            execution_flags => $execution_flags
-        );
-    } elsif ((not defined $sth->{NUM_OF_FIELDS}) || ($sth->{NUM_OF_FIELDS} == 0)) {
-      # We add an empty data here because DELETE RETURNING and such
-      # may return undefined NUM_OF_FIELDS, particularly when the resultset is empty,
-      # but we still want it to be processed as something returning a resultset
-      # (because it is). Hopefully it won't hurt
-        $result = GenTest::Result->new(
-            query        => $query,
-            status        => STATUS_OK,
-            data            => ( $query =~ /\WRETURNING\W/i ? [] : undef ),
-            affected_rows    => $affected_rows,
-            matched_rows    => $matched_rows,
-            changed_rows    => $changed_rows,
-            info        => $mysql_info,
-            start_time    => $start_time,
-            end_time    => $end_time,
-            execution_flags => $execution_flags
-        );
-    } else {
-        my @data;
-        my %data_hash;
-        my $row_count = 0;
-        my $result_status = STATUS_OK;
-
-        while (my @row = $sth->fetchrow_array()) {
-            $row_count++;
-            push @data, \@row;
-            last if ($row_count > EXECUTOR_MAX_ROWS_THRESHOLD);
-        }
-
-        # Do one extra check to catch 'query execution was interrupted' error
-        if (defined $sth->err()) {
-            $result_status = errorType($sth->err());
-            @data = ();
-        } elsif ($row_count > EXECUTOR_MAX_ROWS_THRESHOLD) {
-            my $query_for_print= shorten_message($query);
-            say("Query: $query_for_print returned more than EXECUTOR_MAX_ROWS_THRESHOLD (".EXECUTOR_MAX_ROWS_THRESHOLD().") rows. Killing it ...");
-
-            my $kill_dbh = DBI->connect($executor->dsn(), undef, undef, { PrintError => 1 });
-            $kill_dbh->do("KILL QUERY ".$executor->connectionId());
-            $kill_dbh->disconnect();
-            $sth->finish();
-            $dbh->do("SELECT 1 FROM DUAL /* Guard query so that the KILL QUERY we just issued does not affect future queries */;");
-            @data = ();
-            $result_status = STATUS_SKIP;
-        }
-
-        $result = GenTest::Result->new(
-            query        => $query,
-            status        => $result_status,
-            affected_rows     => $affected_rows,
-            data        => \@data,
-            start_time    => $start_time,
-            end_time    => $end_time,
-            column_names    => $column_names,
-            column_types    => $column_types,
-            execution_flags => $execution_flags
-        );
-
-    }
-
-    $sth->finish();
-
-    if (defined $err or $sth->{mysql_warning_count} > 0) {
-        eval {
-            my $warnings = $dbh->selectall_arrayref("SHOW WARNINGS");
-            $result->setWarnings($warnings);
-        }
+    if (($err or $conn->warning_count() > 0) and not serverGone($err_type)) {
+      my $warnings = $conn->query("SHOW WARNINGS");
+      $result->setWarnings($warnings);
     }
     return $result;
-}
-
-sub slaveInfo {
-    my $executor = shift;
-    my $slave_info = $executor->dbh()->selectrow_arrayref("SHOW SLAVE HOSTS");
-    return ($slave_info->[SLAVE_INFO_HOST], $slave_info->[SLAVE_INFO_PORT]);
-}
-
-sub masterStatus {
-    my $executor = shift;
-    return $executor->dbh()->selectrow_array("SHOW MASTER STATUS");
 }
 
 sub loadCollations {
@@ -414,8 +232,7 @@ sub loadCollations {
 
 sub read_only {
     my $executor = shift;
-    my $dbh = $executor->dbh();
-    my ($grant_command) = $dbh->selectrow_array("SHOW GRANTS FOR CURRENT_USER()");
+    my ($grant_command) = $executor->connection->get_row("SHOW GRANTS FOR CURRENT_USER()");
     my ($grants) = $grant_command =~ m{^grant (.*?) on}is;
     if (uc($grants) eq 'SELECT') {
         return 1;
@@ -428,7 +245,7 @@ sub read_only {
 sub engines {
   my $self= shift;
   unless ($self->[EXECUTOR_ENGINES]) {
-    my $engines= $self->dbh->selectcol_arrayref("select engine from information_schema.engines where support in ('YES','DEFAULT')");
+    my $engines= $self->connection->get_column("select engine from information_schema.engines where support in ('YES','DEFAULT')");
     if ($engines) {
       $self->[EXECUTOR_ENGINES]= [ @$engines ];
     }

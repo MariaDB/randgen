@@ -1,5 +1,5 @@
 # Copyright (C) 2013 Monty Program Ab
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -35,11 +35,12 @@ use Constants;
 use GenTest::Result;
 use GenTest::Validator;
 use GenTest::Executor;
+use Connection::Perl;
 use Time::HiRes;
 use POSIX;
 use Data::Dumper;
 
-my $child_dbh;
+my $child_conn;
 my $child_con_id;
 
 # On the first validate call, we open a spare connection and keep it open.
@@ -62,35 +63,34 @@ sub validate {
   my $executor = $executors->[0];
   my $query = $results->[0]->query();
 
-  my $db= $executor->dbh->selectrow_arrayref("SELECT DATABASE()");
-  $db= $db->[0];
-
   return STATUS_OK if $query !~ m{^\s*select}io;
 
-  unless ($child_dbh)
+  my $db= $executor->connection->get_value("SELECT DATABASE()");
+
+  unless ($child_conn)
   {
-    $child_dbh = DBI->connect($executor->server->dsn(), undef, undef, { PrintError => 0 } );
-    if ($DBI::err)
+    $child_conn = Connection::Perl->new(server => $executor->server, role => 'admin', name => 'SHX' );
+    unless ($child_conn)
     {
-      say("ERROR: Could not create child connection in ShowExplain: " . $DBI::errstr);
+      say("ERROR: Could not create child connection in ShowExplain");
       return STATUS_ENVIRONMENT_FAILURE;
     }
   }
   if ($db ne 'NULL') {
-    $child_dbh->do("USE $db");
+    $child_conn->execute("USE $db");
   } 
-  my $native_explain = $child_dbh->selectall_arrayref("EXPLAIN $query");
-  if ($child_dbh->err)
+  my $native_explain = $child_conn->query("EXPLAIN $query");
+  if ($child_conn->err)
   {
-    say("Warning: EXPLAIN did not return anything for $query: " . $child_dbh->errstr);
+    say("Warning: EXPLAIN did not return anything for $query: " . $child_conn->print_error);
     return STATUS_WONT_HANDLE;
   }
   unless ($child_con_id)
   {
-    $child_con_id = $child_dbh->selectrow_arrayref("SELECT CONNECTION_ID()")->[0];
-    if ($child_dbh->err)
+    $child_con_id = $child_conn->get_value("SELECT CONNECTION_ID()");
+    if ($child_conn->err)
     {
-      say("ERROR: Could not find out child connection ID in ShowExplain: " . $child_dbh->errstr);
+      say("ERROR: Could not find out child connection ID in ShowExplain: " . $child_conn->print_error);
       return STATUS_ENVIRONMENT_FAILURE;
     }
   }
@@ -107,8 +107,8 @@ sub validate {
     my @show_explains = ();
     do
     {
-      my $res = $executor->dbh()->selectall_arrayref("SHOW EXPLAIN FOR $child_con_id");
-      push @show_explains, $res unless $executor->dbh()->err;
+      my $res = $executor->connection->query("SHOW EXPLAIN FOR $child_con_id");
+      push @show_explains, $res unless $executor->connection()->err;
       waitpid($pid, WNOHANG);
     }
     while ( $? < 0 and Time::HiRes::sleep(0.1) );
@@ -182,11 +182,8 @@ sub validate {
   }
   else
   {
-    $executor->dbh()->{InactiveDestroy} = 1;
-    $executor->setDbh(undef);
-    $child_dbh->do($query);
-    $child_dbh->{InactiveDestroy} = 1;
-    $child_dbh = undef;
+    $child_conn->execute($query);
+    $child_conn->disconnect();
     # To avoid executor printing information
     kill('KILL',$$);
   }

@@ -36,7 +36,6 @@ require Exporter;
 @ISA = qw(GenTest::Scenario);
 
 use strict;
-use DBI;
 use GenUtil;
 use GenTest;
 use GenTest::TestRunner;
@@ -59,8 +58,9 @@ sub new {
 
 sub run {
   my $self= shift;
-  my ($status, $server, $gentest);
+  my ($total_status, $status, $server, $gentest);
 
+  $total_status= STATUS_OK;
   $status= STATUS_OK;
 
   $server= $self->prepareServer(1, my $is_active=1);
@@ -72,7 +72,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server failed to start");
-    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[]);
+    $total_status= STATUS_SERVER_STARTUP_FAILURE if STATUS_SERVER_STARTUP_FAILURE > $total_status;
+    return $self->finalize($total_status,[$server]);
   }
 
   #####
@@ -82,7 +83,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
-    return $self->finalize($status,[$server]);
+    $total_status= $status if $status > $total_status;
+    return $self->finalize($total_status,[$server]);
   }
 
   #####
@@ -122,19 +124,12 @@ sub run {
       $self->printStep("Stopping/killing the server");
       $status= $server->startPlannedDowntime($restart_type,$shutdown_timeout*2);
 
+      # Since the scenario is about restart, we cannot proceed after shutdown failure
       if ($status != STATUS_OK) {
         sayError("Could not stop the server");
-        return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
-      }
-
-      #####
-      $self->printStep("Checking the server log for fatal errors after stopping");
-
-      $status= $self->checkErrorLog($server, {CrashOnly => 1});
-
-      if ($status != STATUS_OK) {
-        sayError("Found fatal errors in the log, server shutdown has apparently failed");
-        return $self->finalize(STATUS_DATABASE_CORRUPTION,[$server]);
+        $total_status= STATUS_SERVER_SHUTDOWN_FAILURE if STATUS_SERVER_SHUTDOWN_FAILURE > $total_status;
+        $server->endPlannedDowntime();
+        last TESTRUN;
       }
 
       #####
@@ -142,16 +137,17 @@ sub run {
 
       $server->setStartDirty(1);
       $status= $server->startServer;
+      $server->endPlannedDowntime();
 
       if ($status != STATUS_OK) {
         sayError("Server failed to start");
+        $total_status= STATUS_SERVER_STARTUP_FAILURE if STATUS_SERVER_STARTUP_FAILURE > $total_status;
         # Error log might indicate known bugs which will affect the exit code
         $status= $self->checkErrorLog($server);
+        $total_status= $status if $status > $total_status;
         # ... but even if it's a known error, we cannot proceed without the server
-        return $self->finalize($status,[$server]);
+        last TESTRUN;
       }
-
-      $server->endPlannedDowntime();
 
       #####
       if ($self->getTestType eq 'normal') {
@@ -160,29 +156,29 @@ sub run {
         $status= $server->checkDatabaseIntegrity;
 
         if ($status != STATUS_OK) {
+          $total_status= STATUS_RECOVERY_FAILURE if STATUS_RECOVERY_FAILURE > $total_status;
           sayError("Database appears to be corrupt after restart");
-          return $self->finalize(STATUS_RECOVERY_FAILURE,[$server]);
+          last TESTRUN;
         }
       }
-    }
-    if ($status != STATUS_OK) {
-      sayError("Test flow failed");
-      return $self->finalize($status,[$server]);
     }
   }
   else {
     #####
+    # Child running the queries
     $self->printStep("Running test flow");
     my $res= $self->runTestFlow();
     exit $res;
   }
 
-  # Now we wait for the gentest to finish if it hasn't yet
+  say("Waiting for test flow to finish");
   waitpid($gentest_pid, 0);
-  $status= ($? >> 8);
+  # -1 means that we caught it before already
+  $status= ($? >> 8) if ($? >= 0);
+  
   if ($status != STATUS_OK) {
     sayError("Test flow failed");
-    return $self->finalize($status,[$server]);
+    $total_status= $status if $status > $total_status;
   }
 
   #####
@@ -192,10 +188,16 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
+    $total_status= STATUS_SERVER_SHUTDOWN_FAILURE if STATUS_SERVER_SHUTDOWN_FAILURE > $total_status;
   }
 
-  return $self->finalize($status,[]);
+  #####
+  $self->printStep("Checking the server log for errors");
+  $status= $self->checkErrorLog($server);
+
+  $total_status= $status if $status > $total_status;
+
+  return $self->finalize($total_status,[]);
 }
 
 1;

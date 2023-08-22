@@ -1,5 +1,5 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2021, 2022, MariaDB Corporation Ab
+# Copyright (c) 2021, 2023, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -30,8 +30,8 @@ use GenTest::Result;
 use GenTest::Reporter;
 use GenTest::Reporter::Backtrace;
 use GenTest::Executor::MRDB;
+use Connection::Perl;
 
-use DBI;
 use Data::Dumper;
 use POSIX;
 
@@ -87,11 +87,12 @@ sub monitor_nonthreaded {
 
   alarm (REPORTER_CONNECT_TIMEOUT_THRESHOLD);
 
-  if (! $reporter->dbh) {
+  my $conn= $reporter->connection();
+  if (! $conn) {
     sayError((ref $reporter)." could not connect to the server");
     return STATUS_SERVER_UNAVAILABLE;
   }
-  my $processlist = $reporter->dbh->selectall_arrayref("SHOW FULL PROCESSLIST");
+  my $processlist = $conn->query("SHOW FULL PROCESSLIST");
   alarm (0);
 
   # Stalled queries are those which have been in the process list too long (in any state)
@@ -120,15 +121,6 @@ sub monitor_nonthreaded {
     return $reporter->collect_deadlock_diagnostics();
   }
 
-  # We also try to connect on every run in order to be able
-  # to use the mysql_connect_timeout to detect very debilitating deadlocks
-  if (my $connect_dbh= $reporter->dbh()) {
-    $connect_dbh->disconnect();
-  } else {
-    sayError("Deadlock reporter: Could not establish a new connection");
-    return STATUS_SERVER_UNAVAILABLE;
-  }
-
   return STATUS_OK;
 }
 
@@ -141,11 +133,11 @@ sub collect_deadlock_diagnostics {
 
   alarm(REPORTER_CONNECT_TIMEOUT_THRESHOLD);
 
-  unless ($reporter->dbh) {
+  unless ($reporter->connection) {
     alarm(0);
     return STATUS_SERVER_UNAVAILABLE;
   }
-  $reporter->dbh->do("INSTALL SONAME 'metadata_lock_info'");
+  $reporter->connection->execute("INSTALL SONAME 'metadata_lock_info'");
   foreach my $status_query (
     "SHOW FULL PROCESSLIST",
     "SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO",
@@ -153,7 +145,7 @@ sub collect_deadlock_diagnostics {
     # "SHOW OPEN TABLES" - disabled due to bug #46433
   ) {
       say("Deadlock reporter: Executing $status_query:");
-      my $status_result = $reporter->dbh->selectall_arrayref($status_query);
+      my $status_result = $reporter->connection->query($status_query);
       print Dumper $status_result;
   }
   alarm(0);
@@ -168,19 +160,19 @@ sub monitor_threaded {
 #
 # We create two threads:
 # * alarm_thread keeps a timeout so that we do not hang forever
-# * dbh_thread attempts to connect to the database and thus can hang forever because
+# * connect_thread attempts to connect to the database and thus can hang forever because
 # there are no network-level timeouts in DBD::mysql
 #
 
   my $alarm_thread = threads->create( \&alarm_thread );
-  my $dbh_thread = threads->create ( \&dbh_thread, $reporter );
+  my $connect_thread = threads->create ( \&connect_thread, $reporter );
 
   my $status;
 
   # We repeatedly check if either thread has terminated, and if so, reap its exit status
 
   while (1) {
-    foreach my $thread ($alarm_thread, $dbh_thread) {
+    foreach my $thread ($alarm_thread, $connect_thread) {
       $status = $thread->join() if defined $thread && $thread->is_joinable();
     }
     last if defined $status;
@@ -189,7 +181,7 @@ sub monitor_threaded {
 
   # And then we kill the remaining thread.
 
-  foreach my $thread ($alarm_thread, $dbh_thread) {
+  foreach my $thread ($alarm_thread, $connect_thread) {
     next if !$thread->is_running();
     # Windows hangs when joining killed threads
     if (osWindows()) {
@@ -215,12 +207,12 @@ sub alarm_thread {
   return(STATUS_SERVER_DEADLOCKED);
 }
 
-sub dbh_thread {
+sub connect_thread {
   local $SIG{KILL} = sub { threads->exit() };
   my $reporter = shift;
-  my $dbh = $reporter->dbh();
-  my $processlist = $dbh->selectall_arrayref("SHOW FULL PROCESSLIST");
-  return errorType($DBI::err) if not defined $processlist;
+  my $conn = $reporter->connection();
+  my $processlist = $conn->query("SHOW FULL PROCESSLIST");
+  return $conn->last_error->[0] if not defined $processlist;
 
   my $stalled_queries = 0;
   my $dead_queries = 0;

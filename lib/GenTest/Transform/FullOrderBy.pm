@@ -1,4 +1,4 @@
-# Copyright (c) 2021, 2022, MariaDB Corporation Ab
+# Copyright (c) 2021, 2023, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -51,25 +51,17 @@ sub modify {
   my $query= $original_query;
   $query =~ s/ORDER\s+BY\s+.*?(LIMIT|OFFSET|FETCH|FOR\s+UPDATE)/\1/is;
   while ($query =~ s/(?:ORDER\s+BY|LIMIT|OFFSET|FETCH)\s+.*?[^\(\)]*$//is) {};
-  my $dbh= $executor->dbh();
-  if (!$dbh) {
+  my $conn= $executor->connection();
+  if (!$conn) {
       sayError("FullOrderBy: couldn't establish connection");
       return undef;
   }
-  my $sth= $dbh->prepare("SELECT /* FullOrderBy column fetch */ * FROM ( $query ) FOBsq LIMIT 0");
-  if (!$sth) {
-      sayError("FullOrderBy: Couldn't prepare stmt: ".$dbh->err().": ".$dbh->errstr().". Original query: [ $query ]");
-      return undef;
-  } elsif ($sth->err) {
-    sayError("FullOrderBy: Prepare of column fetch for $query returned an error: ".$sth->err." (".$sth->errstr."), variation skipped");
+  $conn->query("SELECT /* FullOrderBy column fetch */ * FROM ( $query ) FOBsq LIMIT 0");
+  if ($conn->err) {
+    sayError("FullOrderBy: Couldn't execute stmt: ".$conn->print_error.". Original query: [ $query ]");
     return undef;
   }
-  $sth->execute();
-  if ($sth->err) {
-    sayDebug("FullOrderBy: Column fetch for $query returned an error: ".$sth->err." (".$sth->errstr."), variation skipped");
-    return undef;
-  }
-  my $colnum= $sth->{NUM_OF_FIELDS};
+  my $colnum= $conn->number_of_fields();
   my @full_order_by= ();
   for (1..$colnum) {
     push @full_order_by, $_ . ($self->random->uint16(0,1) ? '' : ($self->random->uint16(0,1) ? ' DESC' : ' ASC' ));

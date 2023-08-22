@@ -1,4 +1,4 @@
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -70,17 +70,14 @@ sub validate {
     next if $result->err;
     next unless $query =~ /^[\(\s]*(?:SELECT|UPDATE|DELETE|INSERT|REPLACE)/i;
     $explain_fragments{$i}= {} unless exists $explain_fragments{$i};
-    my $sth_output = $executor->dbh()->prepare("EXPLAIN PARTITIONS $query");
-    unless ($executor->dbh()->err) {
-      $sth_output->execute();
-    }
-    if ($executor->dbh()->err) {
-      sayWarning("EXPLAIN attempt for $query failed with ".$executor->dbh()->err." (".$executor->dbh()->errstr.")");
+    my $explain_parts = $executor->connection()->get_columns_by_name("EXPLAIN PARTITIONS $query");
+    if ($executor->connection->err) {
+      sayWarning("EXPLAIN attempt for $query failed with ".$executor->connection->print_error);
       next;
     }
     my @explain_fragments;
 
-    while (my $explain_row = $sth_output->fetchrow_hashref()) {
+    foreach my $explain_row (@{$explain_parts}) {
 
       push @explain_fragments, "select_type: ".($explain_row->{select_type} || '(empty)');
       push @explain_fragments, "type: ".($explain_row->{type} || '(empty)');
@@ -96,10 +93,9 @@ sub validate {
       }
     }
 
-    $executor->dbh()->do("EXPLAIN EXTENDED $query");
-    my $explain_extended = $executor->dbh()->selectrow_arrayref("SHOW WARNINGS");
+    my $explain_extended= $executor->connection->get_row("EXPLAIN EXTENDED $query");
     if (defined $explain_extended) {
-        push @explain_fragments, $explain_extended->[2] =~ m{<[a-z_0-9\-]*?>}sgo;
+      push @explain_fragments, $explain_extended->[2] =~ m{<[a-z_0-9\-]*?>}sgo;
     }
 
     foreach my $explain_fragment (@explain_fragments) {

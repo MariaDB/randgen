@@ -1,5 +1,5 @@
 # Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -74,7 +74,6 @@ sub compatibility { return '100500' };
 sub validate {
     my ($validator, $executors, $results) = @_;
     my $executor = $executors->[0];
-    my $dbh = $executors->[0]->dbh();
     my $orig_result = $results->[0];
 
     return STATUS_WONT_HANDLE if $orig_result->status() != STATUS_OK;
@@ -89,9 +88,9 @@ sub validate {
     # Check if optimizer_trace is enabled.
     # Save the result in a variable so we don't have to check it every time.
     if (not defined $have_opt_trace) {
-        my $opt_trace_value = $dbh->selectrow_array('SELECT @@optimizer_trace');
+        my $opt_trace_value = $executor->connection->get_value('SELECT @@optimizer_trace');
         $extra_statements++;
-        if (!($opt_trace_value =~ m{enabled=on})) {
+        if ($opt_trace_value !~ m{enabled=on}) {
             say('ERROR: Optimizer trace is disabled or not available. '.$thisFile.' validator cannot continue.');
             # Since tracing is per-session, we may want to just continue in this case (return STATUS_WONT_HANDLE).
             # However, we are returning a fatal error for now, to avoid accidentally thinking parsing was OK.
@@ -114,9 +113,9 @@ sub validate {
     if (not defined $trace_result->data()) {
       $no_traces_count++;
       sayError("$thisFile was unable to obtain optimizer trace for query $orig_query");
-      my $opt_trace_value = $dbh->selectrow_array('SELECT @@optimizer_trace');
-      if (!$opt_trace_value !~ m{enabled=on}) {
-          sayError('Optimizer trace is disabled or not available');
+      my $opt_trace_value = $executor->connection->value('SELECT @@optimizer_trace');
+      if ($opt_trace_value !~ m{enabled=on}) {
+          sayError("Optimizer trace is disabled or not available");
           return STATUS_CONFIGURATION_ERROR;
       } else {
         return STATUS_UNKNOWN_ERROR;

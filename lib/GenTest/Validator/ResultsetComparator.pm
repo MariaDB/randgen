@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2019, 2022, MariaDB Corporation Ab.
+# Copyright (c) 2019, 2023, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -55,9 +55,9 @@ sub validate {
     if ( ($compare_outcome == STATUS_LENGTH_MISMATCH) ||
          ($compare_outcome == STATUS_CONTENT_MISMATCH)
     ) {
-      push @vars, $executors->[0]->dbh->selectcol_arrayref('select concat(variable_name,"=",session_value) from information_schema.system_variables where session_value != global_value order by variable_name')
+      push @vars, $executors->[0]->connection->get_column('select concat(variable_name,"=",session_value) from information_schema.system_variables where session_value != global_value order by variable_name')
         unless defined $vars[0];
-      $vars[$i]= $executors->[0]->dbh->selectcol_arrayref('select concat(variable_name,"=",session_value) from information_schema.system_variables where session_value != global_value order by variable_name')
+      $vars[$i]= $executors->[0]->connection->get_column('select concat(variable_name,"=",session_value) from information_schema.system_variables where session_value != global_value order by variable_name')
         unless defined $vars[$i];
       say("---------- RESULT COMPARISON ISSUE START ----------");
       if ($compare_outcome == STATUS_LENGTH_MISMATCH) {

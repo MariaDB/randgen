@@ -1,5 +1,5 @@
 # Copyright (C) 2013 Monty Program Ab
-# Copyright (C) 2020, 2022 MariaDB
+# Copyright (C) 2020, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -31,7 +31,6 @@ require Exporter;
 @ISA = qw(GenTest::Reporter);
 
 use strict;
-use DBI;
 use GenUtil;
 use GenTest;
 use Constants;
@@ -65,7 +64,7 @@ sub report {
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
-  $client .= " -uroot --host=127.0.0.1 --port=$port --force --protocol=tcp";
+  $client .= " -uroot --host=127.0.0.1 --port=$port --protocol=tcp";
 
 
   my $binlog = DBServer::MariaDB::_find(undef,
@@ -78,20 +77,18 @@ sub report {
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
-  my $dbh = $reporter->dbh;
+  my $conn = $reporter->connection;
 
-  unless (defined $dbh) {
+  unless (defined $conn) {
     say("ERROR: Could not connect to the server, nothing to dump. Status will be set to ENVIRONMENT_FAILURE");
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
-#  $dbh->do("SET GLOBAL sql_log_bin = OFF");
-  my @all_binlogs = @{$dbh->selectcol_arrayref("SHOW BINARY LOGS")};
+  my @all_binlogs = @{$conn->get_column("SHOW BINARY LOGS",1)};
   my $binlogs_string = join(' ', map { "$vardir/vardir_orig/data/$_" } @all_binlogs );
 
   say("Dumping the original server...");
-  $status = $reporter->dump_all($dbh, $vardir."/original.dump");
-  $dbh->disconnect();
+  $status = $reporter->dump_all($vardir."/original.dump");
   if ($status > STATUS_OK) {
     say("ERROR: mysqldump finished with an error");
     return $status;
@@ -118,24 +115,23 @@ sub report {
     return $status;
   }
 
-  my $dbh_new = $reporter->dbh;
-
-  unless (defined $dbh_new) {
-    say("ERROR: Could not connect to the newly started server. Status will be set to ENVIRONMENT_FAILURE");
-    return STATUS_ENVIRONMENT_FAILURE;
+  say("Dumping binary log events (with adjustments) into a file...");
+  # MDEV-31756 - NOWAIT in DDL makes binary logs difficult or impossible to replay
+  $status = system("$binlog $binlogs_string | sed -e 's/NOWAIT//g' > $vardir/vardir_orig/binlog_events") >> 8;
+  if ($status > STATUS_OK) {
+    say("ERROR: Dumping binary logs finished with an error");
+    return STATUS_CRITICAL_FAILURE;
   }
 
-  say("Feeding binary logs of the original server to the new one");
-  # MDEV-31756 - NOWAIT in DDL makes binary logs difficult or impossible to replay
-  $status = system("$binlog $binlogs_string | sed -e 's/NOWAIT//g' | $client") >> 8;
+  say("Feeding binary log events of the original server to the new one");
+  $status = system("$client < $vardir/vardir_orig/binlog_events") >> 8;
   if ($status > STATUS_OK) {
     say("ERROR: Feeding binary logs to the server finished with an error");
-    return $status;
+    return STATUS_RECOVERY_FAILURE;
   }
 
   say("Dumping the new server...");
-  $status = $reporter->dump_all($dbh_new, $vardir."/restored.dump");
-  $dbh_new->disconnect();
+  $status = $reporter->dump_all($vardir."/restored.dump");
   if ($status > STATUS_OK) {
     say("ERROR: mysqldump finished with an error");
     return $status;
@@ -157,7 +153,7 @@ sub report {
 }
 
 sub dump_all {
-  my ($reporter, $dbh, $dumpfile) = @_;
+  my ($reporter, $dumpfile) = @_;
   my $server = $reporter->properties->server_specific->{1}->{server};
 
   my @databases= $server->nonSystemDatabases();
@@ -175,7 +171,6 @@ sub dump_all {
     return STATUS_ENVIRONMENT_FAILURE;
   }
 }
-
 
 sub type {
   return REPORTER_TYPE_SUCCESS;

@@ -263,78 +263,17 @@ sub detectedBugs {
 # and parse for known errors.
 # Additional options can be provided. Currently the function recognizes
 # - Marker - the check is performed either from the given marker or from the start
-# - CrashOnly - if true, non-fatal errors are ignored
 sub checkErrorLog {
   my ($self, $server, $opts)= @_;
 
   my $marker= ($opts ? $opts->{Marker} : undef);
   my $status= STATUS_OK;
   my ($crashes, $errors)= $server->checkErrorLogForErrors($marker);
-  my @errors= (($opts && $opts->{CrashOnly}) ? @$crashes : (@$errors, @$crashes));
-  foreach (@errors) {
-    if (m{\[ERROR\] InnoDB: Corruption: Page is marked as compressed but uncompress failed with error}s)
-    {
-        $self->addDetectedBug(13112);
-        $status= STATUS_CUSTOM_OUTCOME if $status < STATUS_CUSTOM_OUTCOME;
-    }
-    elsif (m{void fil_decompress_page.*: Assertion `0' failed}s)
-    {
-        $self->addDetectedBug(13103);
-        # We will only set the status to CUSTOM_OUTCOME if it was previously set to POSSIBLE_FAILURE
-        $status= STATUS_CUSTOM_OUTCOME if $status == STATUS_POSSIBLE_FAILURE;
-        last;
-    }
-    elsif (m{InnoDB: Corruption: Page is marked as compressed space:}s)
-    {
-        # Most likely it is an indication of MDEV-13103, but to make sure, we still need to find the assertion failure.
-        # If we find it later, we will set result to STATUS_CUSTOM_OUTCOME.
-        # If we don't find it later, we will raise it to STATUS_UPGRADE_FAILURE
-        $status= STATUS_POSSIBLE_FAILURE if $status < STATUS_POSSIBLE_FAILURE;
-    }
-    elsif (m{recv_parse_or_apply_log_rec_body.*Assertion.*offs == .*failed}s)
-    {
-        $self->addDetectedBug(13101);
-        $status= STATUS_CUSTOM_OUTCOME if $status < STATUS_CUSTOM_OUTCOME;
-        last;
-    }
-    elsif (m{Failing assertion: \!memcmp\(FIL_PAGE_TYPE \+ page, FIL_PAGE_TYPE \+ page_zip\-\>data, PAGE_HEADER - FIL_PAGE_TYPE\)}s)
-    {
-        $self->addDetectedBug(13512);
-        $status= STATUS_CUSTOM_OUTCOME if $status < STATUS_CUSTOM_OUTCOME;
-        last;
-    }
-    elsif (m{InnoDB: Assertion failure in thread \d+ in file page0zip\.cc line \d+})
-    {
-        # Possibly it's MDEV-13247, it can show up if the old version is between 10.1.2 and 10.1.25.
-        # We need to check for "Failing assertion: !page_zip_dir_find(page_zip, page_offset(rec))" later
-        $status= STATUS_POSSIBLE_FAILURE if $status < STATUS_POSSIBLE_FAILURE;
-    }
-    elsif (m{Failing assertion: \!page_zip_dir_find\(page_zip, page_offset\(rec\)\)}s)
-    {
-        # Possibly it's MDEV-13247, it can show up if the old version is between 10.1.2 and 10.1.25.
-        # If we've also seen Assertion failure .. in file page0zip.cc, we'll consider it related
-        $self->addDetectedBug(13247);
-        $status= STATUS_CUSTOM_OUTCOME if $status == STATUS_POSSIBLE_FAILURE;
-        last;
-    }
-    elsif (m{Assertion \`\!is_user_rec \|\| \!leaf \|\| index-\>is_dummy \|\| dict_index_is_ibuf\(index\) \|\| n == n_fields \|\| \(n \>= index->n_core_fields \&\& n \<= index-\>n_fields\)\' failed}s)
-    {
-        $self->addDetectedBug(14022);
-        $status= STATUS_CUSTOM_OUTCOME if $status < STATUS_CUSTOM_OUTCOME;
-        last;
-    }
-# Assertion `id == 0 || id > trx_id' failed
-    elsif (m{Assertion \`id == 0 \|\| id \> trx_id\' failed}s)
-    {
-        $self->addDetectedBug(13820);
-        $status= STATUS_CUSTOM_OUTCOME if $status < STATUS_CUSTOM_OUTCOME;
-        last;
-    }
-    else {
-        $status= STATUS_UPGRADE_FAILURE if $status < STATUS_UPGRADE_FAILURE;
-    }
+  if (scalar(@$crashes)) {
+    $status= STATUS_SERVER_CRASHED;
+  } elsif (scalar(@$errors)) {
+    $status= STATUS_ERRORS_IN_LOG;
   }
-  $status= STATUS_UPGRADE_FAILURE if $status == STATUS_POSSIBLE_FAILURE;
   return $status;
 }
 

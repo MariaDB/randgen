@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -53,12 +53,10 @@ sub modify {
   my ($class, $query, $executor) = @_;
 
   my %virtual_columns;
-  my $dbh = $executor->dbh();
-
   my ($table_name) = $query =~ m{FROM (`.*?`|\w+)[ ^]}is;
   return undef unless $table_name;
 
-  my (undef, $table_create) = $dbh->selectrow_array("SHOW CREATE TABLE $table_name");
+  my $table_create= $executor->connection->get_value("SHOW CREATE TABLE $table_name",1,2);
 
   foreach my $create_row (split("\n", $table_create)) {
     next if $create_row !~ m{ VIRTUAL}is;

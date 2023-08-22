@@ -1,6 +1,6 @@
 # Copyright (C) 2009, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020, 2022, MariaDB Corporation Ab.
+# Copyright (c) 2020, 2023, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -72,7 +72,6 @@ require Exporter;
 
 use Carp;
 use Data::Dumper;
-use DBI;
 
 use GenData::PopulateSchema;
 use GenTest;
@@ -81,6 +80,7 @@ use GenTest::Executor;
 use GenTest::Random;
 use GenTest::Transform;
 use GenUtil;
+use Connection::Perl;
 
 use strict;
 
@@ -255,18 +255,18 @@ sub validateData {
     push @exs, $e;
   }
   say("Validating original datasets");
-  my $dbs0= $exs[0]->dbh->selectcol_arrayref('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('.$exs[0]->server->systemSchemaList().') ORDER BY SCHEMA_NAME');
+  my $dbs0= $exs[0]->connection->get_column('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('.$exs[0]->server->systemSchemaList().') ORDER BY SCHEMA_NAME');
   foreach my $i (1..$#exs) {
-    my $dbs= $exs[$i]->dbh->selectcol_arrayref('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('.$exs[$i]->server->systemSchemaList().') ORDER BY SCHEMA_NAME');
+    my $dbs= $exs[$i]->connection->get_column('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('.$exs[$i]->server->systemSchemaList().') ORDER BY SCHEMA_NAME');
     if ("@$dbs0" ne "@$dbs") {
       sayError("GenData: Schemata mismatch after data generation between two servers (1 vs ".($i+1)."):\n\t@$dbs0\n\t@$dbs");
       return STATUS_CRITICAL_FAILURE;
     }
   }
   foreach my $db (@$dbs0) {
-    my $tbs0= $exs[0]->dbh->selectcol_arrayref("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '$db' ORDER BY TABLE_NAME");
+    my $tbs0= $exs[0]->connection->get_column("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '$db' ORDER BY TABLE_NAME");
     foreach my $i (1..$#exs) {
-      my $tbs= $exs[$i]->dbh->selectcol_arrayref("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '$db' ORDER BY TABLE_NAME");
+      my $tbs= $exs[$i]->connection->get_column("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '$db' ORDER BY TABLE_NAME");
       if ("@$tbs0" ne "@$tbs") {
         sayError("GenData: Table list mismatch after data generation between two servers (1 vs ".($i+1)."):\n\t@$tbs0\n\t@$tbs");
         return STATUS_CRITICAL_FAILURE;
@@ -276,40 +276,40 @@ sub validateData {
     my @checksum_mismatch= ();
     foreach my $t (@$tbs0) {
       # Workaround for MDEV-22943 : don't run CHECKSUM on tables with virtual columns
-      my $virt_cols= $exs[0]->dbh->selectrow_arrayref("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='$db' AND TABLE_NAME='$t' AND IS_GENERATED='ALWAYS'");
-      if ($exs[0]->dbh->err) {
-        sayError("Check for virtual columns on server 1 for $db.$t ended with an error: ".($exs[0]->dbh->err)." ".($exs[0]->dbh->errstr));
+      my $virt_cols= $exs[0]->connection->get_value("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='$db' AND TABLE_NAME='$t' AND IS_GENERATED='ALWAYS'");
+      if ($exs[0]->connection->err) {
+        sayError("Check for virtual columns on server 1 for $db.$t ended with an error: ".$exs[0]->connection->print_error);
         return STATUS_CRITICAL_FAILURE;
-      } elsif ($virt_cols->[0] > 0) {
-        sayDebug("Found ".($virt_cols->[0])." virtual columns on server 1 for $db.$t, skipping CHECKSUM");
+      } elsif ($virt_cols > 0) {
+        sayDebug("Found virt_cols virtual columns on server 1 for $db.$t, skipping CHECKSUM");
         push @checksum_mismatch, $t;
         next;
       }
-      my $cs0= $exs[0]->dbh->selectrow_arrayref("CHECKSUM TABLE $db.$t EXTENDED");
-      if ($exs[0]->dbh->err) {
-        sayError("CHECKSUM on server 1 for $db.$t ended with an error: ".($exs[0]->dbh->err)." ".($exs[0]->dbh->errstr));
+      my $cs0= $exs[0]->connection->get_value("CHECKSUM TABLE $db.$t EXTENDED");
+      if ($exs[0]->connection->err) {
+        sayError("CHECKSUM on server 1 for $db.$t ended with an error: ".$exs[0]->connection->print_error);
         return STATUS_CRITICAL_FAILURE;
       }
       foreach my $i (1..$#exs) {
-        my $cs= $exs[$i]->dbh->selectrow_arrayref("CHECKSUM TABLE $db.$t EXTENDED");
-        if ($exs[$i]->dbh->err) {
-          sayError("CHECKSUM on server ".($i+1)." for $db.$t ended with an error: ".($exs[$i]->dbh->err)." ".($exs[$i]->dbh->errstr));
+        my $cs= $exs[$i]->connection->get_value("CHECKSUM TABLE $db.$t EXTENDED");
+        if ($exs[$i]->connection->err) {
+          sayError("CHECKSUM on server ".($i+1)." for $db.$t ended with an error: ".$exs[$i]->connection->print_error);
           return STATUS_CRITICAL_FAILURE;
         }
-        push @checksum_mismatch, $t if ($cs0->[1] ne $cs->[1]);
-        sayDebug("Checksums for $db.$t: server 1: ".$cs0->[1].", server ".($i+1).": ".$cs->[1]);
+        push @checksum_mismatch, $t if ($cs0 ne $cs);
+        sayDebug("Checksums for $db.$t: server 1: $cs0, server ".($i+1).": $cs");
       }
     }
     foreach my $t (@checksum_mismatch) {
       my $rs0= $exs[0]->execute("SELECT * FROM $db.$t");
-      if ($exs[0]->dbh->err) {
-        sayError("SELECT on server 1 from $db.$t ended with an error: ".($exs[0]->dbh->err)." ".($exs[0]->dbh->errstr));
+      if ($exs[0]->connection->err) {
+        sayError("SELECT on server 1 from $db.$t ended with an error: ".$exs[0]->connection->print_error);
         return STATUS_CRITICAL_FAILURE;
       }
       foreach my $i (1..$#exs) {
         my $rs= $exs[$i]->execute("SELECT * FROM $db.$t");
-        if ($exs[$i]->dbh->err) {
-          sayError("SELECT on server ".($i+1)." from $db.$t ended with an error: ".($exs[$i]->dbh->err)." ".($exs[$i]->dbh->errstr));
+        if ($exs[$i]->connection->err) {
+          sayError("SELECT on server ".($i+1)." from $db.$t ended with an error: ".$exs[$i]->connection->print_error);
           return STATUS_CRITICAL_FAILURE;
         }
         if ( GenTest::Comparator::compare_as_unordered($rs0, $rs) != STATUS_OK ) {

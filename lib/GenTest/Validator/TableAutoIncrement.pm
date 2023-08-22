@@ -1,4 +1,4 @@
-# Copyright (c) 2022 MariaDB Corporation Ab
+# Copyright (c) 2022, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,11 +34,9 @@ use GenTest;
 use Constants;
 use GenTest::Validator;
 
-use DBI;
 use Data::Dumper;
 use POSIX;
 
-my $dbh;
 my ($broken_count, $fixed_count)= (0,0);
 
 sub validate {
@@ -54,13 +52,13 @@ sub validate {
   my $res= STATUS_OK;
 
   foreach my $e (@$executors) {
-    my $tables= $e->dbh->selectcol_arrayref("SELECT CONCAT(table_schema,'.',table_name) FROM INFORMATION_SCHEMA.TABLES WHERE AUTO_INCREMENT IN (18446744073709551615,2147483647,2147483648)");
+    my $tables= $e->connection->get_column("SELECT CONCAT(table_schema,'.',table_name) FROM INFORMATION_SCHEMA.TABLES WHERE AUTO_INCREMENT IN (18446744073709551615,2147483647,2147483648)");
     if ($tables) {
       foreach my $t (@$tables) {
         $broken_count++;
-        $e->dbh->do("TRUNCATE TABLE $t");
-        if ($e->dbh->err) {
-          sayWarning("TableAutoIncrement was trying to fix table $t but failed: ".$e->dbh->err." ".$e->dbh->errstr);
+        $e->connection->execute("TRUNCATE TABLE $t");
+        if ($e->connection->err) {
+          sayWarning("TableAutoIncrement was trying to fix table $t but failed: ".$e->connection->print_error);
           $res= STATUS_RUNTIME_ERROR;
         } else {
           sayDebug("TableAutoIncrement truncated table $t due to a bad auto-increment value");

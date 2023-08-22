@@ -1,4 +1,4 @@
-# Copyright (c) 2019, 2022, MariaDB Corporation Ab.
+# Copyright (c) 2019, 2023, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -41,11 +41,77 @@ my $garbage_in= 0;
 sub validate {
     my ($comparator, $executors, $results) = @_;
 
+#    say("Result 1");
+#    print Dumper $results->[0];
+#    say("Result 2");
+#    print Dumper $results->[1];
+
     # Insufficient or excessive data
     return STATUS_OK if $#$results != 1;
 
-    # If result codes are the same, return success right away
-    return STATUS_OK if ($results->[0]->err || 0) == ($results->[1]->err || 0);
+    my $query= $results->[0]->query;
+    my $qno= '[qno N/A]';
+    if ($query =~ /(TID \d+-\d+ QNO \d+-\d+)/) {
+      $qno= '['.$1.']';
+    }
+    # Remove comments for easier parsing
+    while ($query =~ s/\/\*[^!].*?\*\///g) {}
+    # Executable comments should have been already converted into either normal comments or no-comments, but still
+    while ($query =~ s/\/\*\!\d*(.*?)\*\//$1/g) {}
+    # We don't care much whether it's EXECUTE IMMEDIATE or just a query
+    # (maybe for logging later, but then we can use the original query from the result)
+    $query=~ s/^\s*EXECUTE\s+IMMEDIATE\s*["'](.*)["']\s*$/$1/;
+
+    # Even if the exit codes are the same, before exiting we need to do some checks.
+    #
+    # If DDL on a table ended with different results, then regardless of whether
+    # it is an expected change or not, the table can no longer participate in comparison,
+    # as the instances diverge. So, we'll try to keep track of such tables.
+    # We may not always succeed as tables can come as fully-qualified or not,
+    # and some other difficulties may occur, so it's just the best effort.
+    #
+    # But a table can also be vindicated if CREATE TABLE or CREATE OR REPLACE TABLE on both servers succeeded
+    # (not CREATE TABLE IF NOT EXISTS!). That's why the check is done even for same results
+
+    if ((! $results->[0]->err) && (! $results->[1]->err)) {
+      if (($query !=~ /IF\s+NOT\s+EXISTS/) && ($query =~ /^\s*CREATE\s+(?:OR\s+REPLACE\s+)?(?:TEMPORARY\s+)?TABLE\s+(\s+|`.*?`(?:\s*\.\s*(?:\s+|`.*?`))?)/is)) {
+        say("ExitCodeComparator: Table $1 was (re)created successfully after query $qno, removing from invalidated (if it was there)");
+        $comparator->vindicate_table($1);
+      }
+      return STATUS_OK;
+    } elsif (($results->[0]->err || 0) == ($results->[1]->err || 0)) {
+      # Now we can just exit if the error codes are the same
+      return STATUS_OK;
+    } else {
+      # That's the case when exit codes are different
+      # TODO: EXECUTE <stmt> can be added too, but then we'll need to read from performance_schema.prepared_statements_instances
+      if (  ($query =~ /^\s*(ALTER)\s+(?:ONLINE\s+)?(?:IGNORE\s+)?TABLE\s+(?:IF\s+EXISTS\s+)?(\w+|`.*?`(?:\s*\.\s*(?:\s+|`.*?`))?)/is)
+         || ($query =~ /^\s*(DROP)\s+(?:TEMPORARY\s+)?TABLE\s+(?:IF\s+EXISTS\s+)?(\w+|`.*?`(?:\s*\.\s*(?:\s+|`.*?`))?)/is)
+         || ($query =~ /^\s*(CREATE)\s+(?:OR\s+REPLACE\s+)?(?:TEMPORARY\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(\w+|`.*?`(?:\s*\.\s*(?:\s+|`.*?`))?)/is)
+         || ($query =~ /^\s*(UPDATE)\s+(?:IGNORE\s+)?(\w+|`.*?`(?:\s*\.\s*(?:\s+|`.*?`))?)/is)
+         || ($query =~ /^\s*(DELETE)\s+(?:IGNORE\s+)?FROM\s+(\w+|`.*?`(?:\s*\.\s*(?:\s+|`.*?`))?)/is)
+         || ($query =~ /^\s*(INSERT)\s+(?:IGNORE\s+)?INTO\s+(\w+|`.*?`(?:\s*\.\s*(?:\s+|`.*?`))?)/is)
+         || ($query =~ /^\s*(REPLACE)\s+INTO\s+(\w+|`.*?`(?:\s*\.\s*(?:\s+|`.*?`))?)/is)
+         || ($query =~ /^\s*(LOAD)\s+DATA\s+.*INTO\s+TABLE\s+(\w+|`.*?`(?:\s*\.\s*(?:\s+|`.*?`))?)/is)
+      ) {
+        my ($op, $tbl_name)= ($1, $2);
+        $tbl_name =~ s/\s*\.\s*/\./;
+        if ($comparator->is_table_invalidated($tbl_name)) {
+          sayDebug("ExitCodeComparator: $op on invalidated table $tbl_name is ignored for query $qno");
+          return STATUS_WONT_HANDLE;
+        } elsif (($op eq 'ALTER') or ($op eq 'CREATE') or ($op eq 'DROP')) {
+          if ($comparator->reconcile_table($tbl_name, $executors) == STATUS_OK) {
+            say("ExitCodeComparator: $op on table $tbl_name $qno returned different results (".($results->[0]->err || 0)." vs ".($results->[1]->err || 0)."), the table has been reconciled");
+          } else {
+            say("ExitCodeComparator: $op on table $tbl_name $qno returned different results (".($results->[0]->err || 0)." vs ".($results->[1]->err || 0)."), could not reconcile, invalidating");
+            $comparator->invalidate_table($tbl_name);
+          }
+        }
+      }
+    }
+
+# For online alter, REMOVE afterwards!!!
+    return STATUS_WONT_HANDLE unless $query =~ /ALTER.*TABLE/i;
 
     # Ignore the difference if one of the queries was interrupted
     return STATUS_WONT_HANDLE if $results->[0]->status == STATUS_SKIP or $results->[1]->status == STATUS_SKIP;
@@ -75,6 +141,15 @@ sub validate {
       or
       $results->[0]->err != 1109 and $results->[1]->err == 1109 and isNewerVersion($executors->[0]->server->version,$executors->[1]->server->version)
     );
+
+    # That's what all non-locking ALTER is about
+    if (( $results->[0]->err == 0 ) and (( $results->[1]->err == 1846 ) || ( $results->[1]->err == 1845 )) ) {
+      say("Encountered query $qno which became allowed with online alter: ".$results->[0]->query);
+      return STATUS_OK;
+    } elsif (( $results->[1]->err == 1846 ) || ( $results->[1]->err == 1845 )) {
+      # Less exciting, but same idea -- if the query was failing with "online not supported" before, it can fail any other way now
+      return STATUS_WONT_HANDLE;
+    }
 
     # 10.4x differs from previous versions upon
     # CREATE TABLE IF NOT EXISTS t AS SELECT .. FROM x
@@ -123,17 +198,44 @@ sub validate {
        )
     {
 
-        # If one of the servers succeeded executing the statement, and the statement modifies the data,
-        # the servers will diverge, we will have to ignore most of failures after that
-        if ( ($results->[0]->status == STATUS_OK or $results->[1]->status == STATUS_OK)
-              and ($results->[0]->query =~ /(?:INSERT|UPDATE|DELETE|REPLACE|ALTER|CREATE|DROP|RENAME|TRUNCATE|LOAD|CALL)/i)
-           )
-        {
-            logResult($executors, $results, "WARNING", "Most of the validation will further be skipped");
-            $garbage_in= 1;
-        }
+#        # If one of the servers succeeded executing the statement, and the statement modifies the data,
+#        # the servers will diverge, we will have to ignore most of failures after that
+#        if ( ($results->[0]->status == STATUS_OK or $results->[1]->status == STATUS_OK)
+#              and ($results->[0]->query =~ /(?:INSERT|UPDATE|DELETE|REPLACE|ALTER|CREATE|DROP|RENAME|TRUNCATE|LOAD|CALL)/i)
+#           )
+#        {
+#            logResult($executors, $results, "WARNING", "Most of the validation will further be skipped");
+#            $garbage_in= 1;
+#        }
         return STATUS_WONT_HANDLE;
     }
+
+    ################
+    # Workarounds for existing bugs
+
+    # MDEV-19303 - DELETE from sequence with ORDER BY can cause non-deterministic results
+    if ($query =~ /(?:(?:UPDATE|DELETE)\W.*\WORDER\s+BY|^\s*EXECUTE)/
+        and (($results->[0]->err == 0 or $results->[0]->err == 1030 or $results->[0]->err == 1031)
+          and ($results->[1]->err == 0 or $results->[1]->err == 1030 or $results->[1]->err == 1031))
+        and (($results->[0]->errstr =~ /(?:Storage engine SEQUENCE of the table|Expected more data in file)/)
+          or ($results->[1]->errstr =~ /(?:Storage engine SEQUENCE of the table|Expected more data in file)/))
+    ) {
+      say("Possible MDEV-19303 upon $qno, ignoring the difference");
+      return STATUS_WONT_HANDLE;
+    }
+
+    # MDEV-31601 - ALTER .. ORDER BY started failing (currently only in online alter development branch)
+    if (($query =~ /ALTER\W.*(?:ALGORITHM\s*\=?\s*(?:NOCOPY|INSTANT))/i)
+      and (($executors->[0]->server->versionNumeric >= 110200 && $results->[0]->err == 1845 && $results->[0]->errstr =~ /ALGORITHM=INPLACE is not supported/)
+          or ($executors->[1]->server->versionNumeric >= 110200 && $results->[1]->err == 1845 && $results->[1]->errstr =~ /ALGORITHM=INPLACE is not supported/)
+          )
+    ) {
+      say("Possible MDEV-31601 upon $qno, ignoring the difference");
+      return STATUS_WONT_HANDLE;
+    }
+
+    # end of workarounds
+    ################
 
     # On different major versions, error code may be different.
     # We can only check that they fall into the same category

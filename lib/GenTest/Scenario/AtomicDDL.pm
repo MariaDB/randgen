@@ -38,7 +38,6 @@ require Exporter;
 @ISA = qw(GenTest::Scenario);
 
 use strict;
-use DBI;
 use GenUtil;
 use GenTest;
 use GenTest::TestRunner;
@@ -53,6 +52,7 @@ use File::Compare;
 use POSIX;
 
 use DBServer::MariaDB;
+use Connection::Perl;
 
 sub new {
   my $class= shift;
@@ -209,7 +209,7 @@ sub run {
   }
 
   my $master_dump_result= STATUS_OK;
-  my ($master_dbh, $slave_dbh);
+  my ($master_conn, $slave_conn);
   my @databases;
 
   if ($slave) {
@@ -229,10 +229,10 @@ sub run {
       return $self->finalize(STATUS_REPLICATION_FAILURE,[$server]);
     }
 
-    $slave_dbh= $slave->dbh;
-    if ($slave_dbh) {
-      $slave_dbh->do("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=".$server->port.", MASTER_USER='root'");
-      $slave_dbh->do("START SLAVE");
+    $slave_conn= Connection::Perl->new(server => $slave, name => 'ATO');
+    if ($slave_conn) {
+      $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=".$server->port.", MASTER_USER='root'");
+      $slave_conn->execute("START SLAVE");
     } else {
       sayError("Could not connect to the slave");
       return $self->finalize(STATUS_RECOVERY_FAILURE,[$server,$slave]);
@@ -254,7 +254,7 @@ sub run {
     $self->printStep("Replicating the data");
     my ($file, $pos) = $server->getMasterPos();
     if ($file && $pos && $slave->syncWithMaster($file, $pos, $self->getProperty('duration')) == STATUS_OK) {
-      $slave_dbh->do("STOP SLAVE");
+      $slave_conn->execute("STOP SLAVE");
     } else {
       return $self->finalize(STATUS_REPLICATION_FAILURE,[$server,$slave]);
     }

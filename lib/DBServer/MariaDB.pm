@@ -1,5 +1,5 @@
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2013, 2022, MariaDB
+# Copyright (c) 2013, 2023, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@ package DBServer::MariaDB;
 
 @ISA = qw(DBServer);
 
-use DBI;
 use DBServer;
 use GenUtil;
 use if osWindows(), Win32::Process;
@@ -32,6 +31,7 @@ use File::Basename qw(dirname);
 use File::Path qw(mkpath rmtree);
 use File::Copy qw(move);
 use Constants;
+use Connection::Perl;
 
 use strict;
 
@@ -48,7 +48,8 @@ use constant MYSQLD_CHARSETS => 9;
 use constant MYSQLD_SERVER_OPTIONS => 10;
 use constant MYSQLD_AUXPID => 11;
 use constant MYSQLD_SERVERPID => 12;
-use constant MYSQLD_DBH => 14;
+use constant MYSQLD_SERVER_CONNECTION => 13;
+use constant MYSQLD_METADATA_CONNECTION => 14;
 use constant MYSQLD_START_DIRTY => 15;
 use constant MYSQLD_VALGRIND => 16;
 use constant MYSQLD_PERF => 17;
@@ -70,8 +71,6 @@ use constant MYSQLD_CLIENT => 34;
 use constant MARIABACKUP => 35;
 use constant MYSQLD_MANUAL_GDB => 36;
 use constant MYSQLD_HOST => 37;
-use constant MYSQLD_ADMIN_DBH => 38;
-use constant MYSQLD_METADATA_DBH => 39;
 use constant MYSQLD_PS_PROTOCOL => 40;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
@@ -606,7 +605,7 @@ sub startServer {
         exec("$command >> \"$errorlog\"  2>&1") || croak("Could not start mysql server");
     }
 
-    if ($self->waitForServerToStart && $self->dbh) {
+    if ($self->waitForServerToStart) {
         $self->serverVariables();
         if ($self->[MYSQLD_MANUAL_GDB]) {
           say("Pausing test to allow attaching debuggers etc. to the server process ".$self->[MYSQLD_SERVERPID].".");
@@ -764,12 +763,12 @@ sub mariabackup {
 
 sub drop_broken {
   my $self= shift;
-  my $dbh= $self->dbh;
+  my $conn= $self->connection();
   say("Checking view and merge table consistency");
   # In case it was set to READ ONLY before
-  $dbh->do("SET SESSION TRANSACTION READ WRITE");
+  $conn->execute("SET SESSION TRANSACTION READ WRITE");
   while (1) {
-    my $broken= $dbh->selectall_arrayref("select * from information_schema.tables where table_comment like 'Unable to open underlying table which is differently defined or of non-MyISAM type or%' or table_comment like '%references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them' or table_comment like 'Table % is differently defined or of non-MyISAM type or%'");
+    my $broken= $conn->query("select * from information_schema.tables where table_comment like 'Unable to open underlying table which is differently defined or of non-MyISAM type or%' or table_comment like '%references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them' or table_comment like 'Table % is differently defined or of non-MyISAM type or%'");
     last unless ($broken && scalar(@$broken));
     # If we don't succeed to drop anything in a round, we'll give up
     my $count= 0;
@@ -778,9 +777,9 @@ sub drop_broken {
       my $type= ($vt->[3] eq 'VIEW' ? 'view' : 'table');
       my $err= $vt->[20];
       sayWarning("Error $err for $type $fullname, dropping");
-      $dbh->do("DROP $type $fullname");
-      if ($dbh->err) {
-        sayWarning("Failed to drop $type $fullname: ".$dbh->err."(".$dbh->errstr.")");
+      $conn->execute("DROP $type $fullname");
+      if ($conn->err) {
+        sayWarning("Failed to drop $type $fullname: ".$conn->print_error);
       } else {
         $count++;
       }
@@ -801,21 +800,21 @@ sub drop_broken {
 
 sub dumpdb {
     my ($self,$database,$file,$for_restoring,$options) = @_;
-    my $dbh= $self->dbh;
-    $dbh->do('SET GLOBAL max_statement_time=0');
+    my $conn= $self->connection();
+    $conn->execute('SET GLOBAL max_statement_time=0');
     if ($self->drop_broken() != DBSTATUS_OK) {
       return DBSTATUS_FAILURE;
     }
     if ($for_restoring) {
       # Workaround for MDEV-29936 (unique ENUM/SET with invalid values cause problems)
-      my $enums= $self->dbh->selectall_arrayref(
+      my $enums= $conn->query(
         "select cols.table_schema, cols.table_name, cols.column_name from information_schema.columns cols ".
         "join information_schema.table_constraints constr on (cols.table_schema = constr.constraint_schema and cols.table_name = constr.table_name) ".
         "join information_schema.statistics stat on (constr.constraint_name = stat.index_name and cols.table_schema = stat.table_schema and cols.table_name = stat.table_name and cols.column_name = stat.column_name) ".
         "where (column_type like 'enum%' or column_type like 'set%') and constraint_type in ('UNIQUE','PRIMARY KEY')"
       );
       foreach my $e (@$enums) {
-        $self->dbh->do("delete ignore from $e->[0].$e->[1] where $e->[2] = 0 /* dropping enums with invalid values */");
+        $conn->execute("delete ignore from $e->[0].$e->[1] where $e->[2] = 0 /* dropping enums with invalid values */");
       }
       # Workaround for MDEV-29941 (spatial columns in primary keys cause problems)
       # We can't just drop PK because it may also contain auto-increment columns.
@@ -823,29 +822,29 @@ sub dumpdb {
       # So we will first find out if there are other columns in PK. If not, we'll just drop the PK.
       # Otherwise, we'll try to re-create it but without the spatial column.
       # POINT is not affected
-      my $spatial_pk= $self->dbh->selectall_arrayref(
+      my $spatial_pk= $conn->query(
         "select table_schema, table_name, column_name from information_schema.columns ".
         "where column_type in ('linestring','polygon','multipoint','multilinestring','multipolygon','geometrycollection','geometry') and column_key = 'PRI'"
       );
       foreach my $c (@$spatial_pk) {
-        my @pk= $self->dbh->selectrow_array(
+        my @pk= $conn->get_row(
           "select group_concat(if(sub_part is not null,concat(column_name,'(',sub_part,')'),column_name)) from information_schema.statistics ".
           "where table_schema = '$c->[0]' and table_name = '$c->[1]' and index_name = 'PRIMARY' and column_name != '$c->[2]' order by seq_in_index"
         );
         if (@pk and $pk[0] ne '') {
-          $self->dbh->do("alter ignore table $c->[0].$c->[1] drop primary key, add primary key ($pk[0]) /* re-creating primary key containing spatial columns */");
+          $conn->execute("alter ignore table $c->[0].$c->[1] drop primary key, add primary key ($pk[0]) /* re-creating primary key containing spatial columns */");
         } else {
-          $self->dbh->do("alter ignore table $c->[0].$c->[1] drop primary key /* dropping primary key containing spatial columns */");
+          $conn->execute("alter ignore table $c->[0].$c->[1] drop primary key /* dropping primary key containing spatial columns */");
         }
       }
       # Workaround for MDEV-30296 (triggers on MERGE tables may cause problems);
-      my $merge_triggers= $self->dbh->selectcol_arrayref(
+      my $merge_triggers= $conn->get_column(
         "select concat(trigger_schema,'.',trigger_name) from information_schema.triggers tr join information_schema.tables tb ".
         "on (trigger_schema = table_schema and event_object_table = table_name) ".
         "where engine='MRG_MyISAM'"
       );
       foreach my $t (@$merge_triggers) {
-        $self->dbh->do("drop trigger $t");
+        $conn->execute("drop trigger $t");
       }
     } # End of $for_restoring
 
@@ -858,7 +857,7 @@ sub dumpdb {
     # --skip-disable-keys due to MDEV-26253
     my $dump_command= '"'.$self->dumper.'" --skip-disable-keys --skip-dump-date -uroot --host='.$self->host.' --port='.$self->port.' --hex-blob '.$databases;
     unless ($for_restoring) {
-      my @heap_tables= @{$self->dbh->selectcol_arrayref(
+      my @heap_tables= @{$conn->get_column(
           "select concat(table_schema,'.',table_name) from ".
           "information_schema.tables where engine='MEMORY' and table_schema not in (".$self->systemSchemaList().")"
         )
@@ -904,7 +903,7 @@ sub dumpSchema {
     if ($dump_result != 0) {
       # MDEV-28577: There can be Federated tables with virtual columns, they make mysqldump fail
 
-      my $vcol_tables= $self->dbh->selectall_arrayref(
+      my $vcol_tables= $self->connection->query(
           "SELECT DISTINCT CONCAT(ist.TABLE_SCHEMA,'.',ist.TABLE_NAME), ist.ENGINE ".
           "FROM INFORMATION_SCHEMA.TABLES ist JOIN INFORMATION_SCHEMA.COLUMNS isc ON (ist.TABLE_SCHEMA = isc.TABLE_SCHEMA AND ist.TABLE_NAME = isc.TABLE_NAME) ".
           "WHERE IS_GENERATED = 'ALWAYS'"
@@ -914,11 +913,11 @@ sub dumpSchema {
       foreach my $t (@$vcol_tables) {
         if ($t->[1] eq 'FEDERATED') {
           say("Dropping Federated table $t->[0] as it has virtual columns");
-          if ($self->dbh->do("DROP TABLE $t->[0]")) {
+          if ($self->connection->execute("DROP TABLE $t->[0]")) {
             $retry= 1;
           } else {
             $retry= 0;
-            sayError("Failed to drop Federated table $t->[0] which contains virtual columns, mysqldump won't succeed: ".$self->dbh->err.": ".$self->dbh->errstr());
+            sayError("Failed to drop Federated table $t->[0] which contains virtual columns, mysqldump won't succeed: ".$self->connection->print_error);
             last;
           }
         }
@@ -1057,7 +1056,7 @@ sub normalizeDump {
 
 sub nonSystemDatabases {
   my $self= shift;
-  return sort @{$self->dbh->selectcol_arrayref(
+  return sort @{$self->connection->get_column(
       "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA ".
       "WHERE LOWER(SCHEMA_NAME) NOT IN (".$self->systemSchemaList.")"
     )
@@ -1070,11 +1069,11 @@ sub nonSystemDatabases {
 
 sub rollbackXA {
   my $self= shift;
-  my $xa_transactions= $self->dbh->selectcol_arrayref("XA RECOVER", { Columns => [4] });
+  my $xa_transactions= $self->connection->get_column("XA RECOVER", 4);
   if ($xa_transactions) {
     foreach my $xa (@$xa_transactions) {
       say("Rolling back XA transaction $xa");
-      $self->dbh->do("XA ROLLBACK '$xa'");
+      $self->connection->execute("XA ROLLBACK '$xa'");
     }
   }
 }
@@ -1088,27 +1087,25 @@ sub stopServer {
     $shutdown_timeout = $default_shutdown_timeout unless defined $shutdown_timeout;
     my $res;
 
-    my $shutdown_marker= 'SHUTDOWN_'.time();
-    $self->addErrorLogMarker($shutdown_marker);
-    if ($shutdown_timeout and defined $self->[MYSQLD_DBH]) {
+    my $shutdown_marker= undef;
+    if (defined $self->serverpid && kill(0,$self->serverpid)) {
+      $shutdown_marker= 'SHUTDOWN_'.time();
+      $self->addErrorLogMarker($shutdown_marker);
+    }
+    if ($shutdown_timeout and $self->connection) {
         sayDebug("Stopping server at port ".$self->port);
         $SIG{'ALRM'} = sub { sayWarning("Could not execute shutdown command in time"); };
-        ## Use dbh routine to ensure reconnect in case connection is
+        ## Use connection routine to ensure reconnect in case connection is
         ## stale (happens i.e. with mdl_stability/valgrind runs)
         alarm($shutdown_timeout);
-        my $dbh = $self->dbh(my $admin=1);
-        # Need to check if $dbh is defined, in case the server has crashed
-        if (defined $dbh) {
-            $res = $dbh->func('shutdown',$self->host,'root','admin');
-            alarm(0);
-            if (!$res) {
-                ## If shutdown fails, we want to know why:
-                if ($dbh->err == 1064) {
-                    say("Shutdown command is not supported, sending SIGTERM instead");
-                    $res= $self->term;
-                }
+        # Need to check if $connection is defined, in case the server has crashed
+        if ($self->connection->refresh() == STATUS_OK) {
+            if ($self->connection->execute("shutdown") != STATUS_OK) {
+                sayWarning("Shutdown command did not work: ".$self->connection->print_error);
+                say("Sending SIGTERM");
+                $res= $self->term;
                 if (!$res) {
-                    sayError("Shutdown failed due to ".$dbh->err.":".$dbh->errstr);
+                    sayError("Shutdown via SIGTERM failed");
                     $res= DBSTATUS_FAILURE;
                 }
             }
@@ -1126,7 +1123,7 @@ sub stopServer {
             say("Server at port ".$self->port." has been stopped");
         }
     } else {
-        say("Shutdown timeout or dbh is not defined, killing the server");
+        say("Shutdown timeout or connection is not established, killing the server");
         $res= $self->kill;
     }
     my ($crashes, undef)= $self->checkErrorLogForErrors($shutdown_marker);
@@ -1140,17 +1137,17 @@ sub checkDatabaseIntegrity {
   my $self= shift;
 
   say("Testing database integrity");
-  my $dbh= $self->dbh;
+  my $conn= $self->connection;
   my $status= DBSTATUS_OK;
   my $foreign_key_check_workaround= 0;
 
-  $dbh->do("SET max_statement_time= 0");
-  my $databases = $dbh->selectcol_arrayref("SHOW DATABASES");
+  $conn->execute("SET max_statement_time= 0");
+  my $databases = $conn->get_column("SHOW DATABASES");
   ALLDBCHECK:
   foreach my $database (sort @$databases) {
       my $db_status= DBSTATUS_OK;
 #      next if $database =~ m{^(information_schema|performance_schema|sys)$}is;
-      my $tabl_ref = $dbh->selectall_arrayref("SELECT TABLE_NAME, TABLE_TYPE, ENGINE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database'");
+      my $tabl_ref = $conn->query("SELECT TABLE_NAME, TABLE_TYPE, ENGINE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database'");
       # 1178 is ER_CHECK_NOT_IMPLEMENTED
       my %tables=();
       foreach (@$tabl_ref) {
@@ -1171,13 +1168,13 @@ sub checkDatabaseIntegrity {
           next CHECKTABLE;
         }
         #say("Verifying table: $database.$table ($tables{$table}->[1]):");
-        my $check = $dbh->selectcol_arrayref("CHECK TABLE `$database`.`$table` EXTENDED", { Columns=>[3,4] });
-        if ($dbh->err() > 0) {
-          sayError("Got an error for table ${database}.${table}: ".$dbh->err()." (".$dbh->errstr().")");
+        my $check = $conn->get_columns_by_name("CHECK TABLE `$database`.`$table` EXTENDED", 'Msg_type', 'Msg_text');
+        if ($conn->err) {
+          sayError("Got an error for table ${database}.${table}: ".$conn->print_error);
           # 1178 is ER_CHECK_NOT_IMPLEMENTED. It's not an error
-          $db_status= DBSTATUS_FAILURE unless ($dbh->err() == 1178);
+          $db_status= DBSTATUS_FAILURE unless ($conn->err() == 1178);
           # Mysterious loss of connection upon checks
-          if ($dbh->err() == 2013 || $dbh->err() == 2002) {
+          if ($conn->err() == 2013 || $conn->err() == 2002) {
             if ($retried_lost_connection) {
               last ALLDBCHECK;
             } else {
@@ -1189,7 +1186,7 @@ sub checkDatabaseIntegrity {
         }
         # CHECK as such doesn't return errors, even on corrupt tables, only prints them
         else {
-          my @msg = @$check;
+          my @msg = ($check->[0]->{Msg_type}, $check->[0]->{Msg_text});
           # table_schema.table_name => [table_type, engine, row_format, table_options]
           my %table_attributes= ();
           CHECKOUTPUT:
@@ -1197,7 +1194,7 @@ sub checkDatabaseIntegrity {
             my ($msg_type, $msg_text)= ($msg[$i], $msg[$i+1]);
             if ($msg_type eq 'status' and $msg_text ne 'OK' or $msg_type =~ /^error$/i) {
               if (not exists $table_attributes{"$database.$table"}) {
-                $table_attributes{"$database.$table"}= $dbh->selectrow_arrayref("SELECT TABLE_TYPE, ENGINE, ROW_FORMAT, CREATE_OPTIONS FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database' AND TABLE_NAME='$table'");
+                $table_attributes{"$database.$table"}= $conn->get_row("SELECT TABLE_TYPE, ENGINE, ROW_FORMAT, CREATE_OPTIONS FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database' AND TABLE_NAME='$table'");
               }
               my $tname="$database.$table";
               my $engine= $table_attributes{$tname}->[1];
@@ -1216,7 +1213,7 @@ sub checkDatabaseIntegrity {
                           ) {
                         sayWarning("Aria table `$database`.`$table` was not loaded, : $msg_type : $msg_text");
                         sayWarning("... ignoring due to known bug MDEV-20313, trying to repair");
-                        $dbh->do("REPAIR TABLE $tname");
+                        $conn->execute("REPAIR TABLE $tname");
                         $repair_done{$table}= 1;
                         redo CHECKTABLE;
                       }
@@ -1249,7 +1246,7 @@ sub checkDatabaseIntegrity {
                         and $msg_text =~ /Found \d+ keys of \d+/ ) {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 sayWarning("... ignoring due to known bug MDEV-20313, trying to repair");
-                $dbh->do("REPAIR TABLE $tname");
+                $conn->execute("REPAIR TABLE $tname");
                 $repair_done{$table}= 1;
                 redo CHECKTABLE;
               }
@@ -1263,19 +1260,19 @@ sub checkDatabaseIntegrity {
                         and $msg_text =~ /Checksum for key:  \d+ doesn't match checksum for records|Record at: \d+:\d+  Can\'t find key for index:  \d+|Record-count is not ok; found \d+  Should be: \d+|Key \d+ doesn\'t point at same records as key \d+|Page at \d+ is not delete marked|Key in wrong position at page|Page at \d+ is not marked for index \d+/ ) {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 sayWarning("... ignoring due to known bug MDEV-17913, trying to repair");
-                $dbh->do("REPAIR TABLE $tname");
+                $conn->execute("REPAIR TABLE $tname");
                 $repair_done{$table}= 1;
                 redo CHECKTABLE;
               } elsif (! $foreign_key_check_workaround and $msg_text =~ /Table .* doesn't exist in engine/) {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 sayWarning("... possible foreign key check problem. Trying to turn off FOREIGN_KEY_CHECKS and retry");
-                $dbh->do("SET FOREIGN_KEY_CHECKS= 0");
+                $conn->execute("SET FOREIGN_KEY_CHECKS= 0");
                 $foreign_key_check_workaround= 1;
                 redo CHECKTABLE;
               } elsif (not $repair_done{$table} and ($table_attributes{$tname}->[1] eq 'Aria' and $table_attributes{$tname}->[3] !~ /transactional=1/ or $table_attributes{$tname}->[1] eq 'MyISAM')) {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 sayWarning("... non-transactional table may be corrupt after crash recovery, trying to repair");
-                $dbh->do("REPAIR TABLE $tname");
+                $conn->execute("REPAIR TABLE $tname");
                 $repair_done{$table}= 1;
                 redo CHECKTABLE;
               } else {
@@ -1299,7 +1296,7 @@ sub checkDatabaseIntegrity {
     sayError("Database integrity check failed");
   }
   if ($foreign_key_check_workaround) {
-    $dbh->do("SET FOREIGN_KEY_CHECKS= DEFAULT");
+    $conn->execute("SET FOREIGN_KEY_CHECKS= DEFAULT");
   }
   return $status;
 }
@@ -1331,7 +1328,7 @@ sub waitForServerToStop {
 
 sub getMasterPos {
   my $self= shift;
-  my ($file, $pos) = $self->dbh->selectrow_array("SHOW MASTER STATUS");
+  my ($file, $pos) = @{$self->connection->get_row("SHOW MASTER STATUS")};
   unless ($file && $pos) {
     sayError("Could not retrieve master status");
   }
@@ -1342,9 +1339,9 @@ sub syncWithMaster {
   my ($self, $file, $pos, $rpl_timeout)= @_;
   say("Waiting for the slave to synchronize with master ($file, $pos)");
   $rpl_timeout ||= 0;
-  if ($self->dbh) {
-    $self->dbh->do("SET max_statement_time=0");
-    my $wait_result = $self->dbh->selectrow_array("SELECT MASTER_POS_WAIT('$file',$pos,$rpl_timeout)");
+  if ($self->connection) {
+    $self->connection->execute("SET max_statement_time=0");
+    my $wait_result = $self->connection->get_row("SELECT MASTER_POS_WAIT('$file',$pos,$rpl_timeout)");
     my $slave_status= $self->getSlaveStatus();
     if (not defined $wait_result) {
       sayError("Slave failed to synchronize with master");
@@ -1371,12 +1368,10 @@ sub getSlaveStatus {
   my $self= shift;
   my $status= undef;
   # Cannot do selectrow_array, as fields have different positions in different versions
-  if ($self->dbh) {
-    my $sth= $self->dbh->prepare("SHOW SLAVE STATUS");
-    $sth->execute();
-    $status= $sth->fetchrow_hashref;
+  if ($self->connection) {
+    $status= $self->connection->get_columns_by_name("SHOW SLAVE STATUS");
   }
-  return $status;
+  return $status->[0];
 }
 
 sub waitForServerToStart {
@@ -1432,7 +1427,7 @@ sub waitPlannedDowntime {
     }
   }
   if ($downtime > 0) {
-    say("Server says: planned downtime, waiting up to $downtime seconds");
+    sayDebug("Server says: planned downtime, waiting up to $downtime seconds");
     $self->[MYSQLD_SERVERPID]= undef;
     while ($downtime-- && -e $expect_file) {
       sleep 1;
@@ -1446,7 +1441,7 @@ sub waitPlannedDowntime {
       return STATUS_SERVER_UNAVAILABLE;
     }
   } elsif ($downtime < 0) {
-    say("Server says: planned downtime, no need to wait");
+    sayDebug("Server says: planned downtime, no need to wait");
     return STATUS_SERVER_STOPPED;
   } else {
     sayWarning("Server says: the downtime isn't planned");
@@ -1483,7 +1478,7 @@ sub checkErrorLogForErrors {
   open(ERRLOG, $self->errorlog);
   my $found_marker= 0;
 
-  sayDebug("Checking server log for important errors starting from " . ($marker ? "marker $marker" : 'the beginning'));
+  say("Checking server log for important errors starting from " . ($marker ? "marker $marker" : 'the beginning'));
 
   my $count= 0;
   while (<ERRLOG>)
@@ -1534,8 +1529,6 @@ sub checkErrorLogForErrors {
         or $_ =~ /got\s+exception/is
         or $_ =~ /AddressSanitizer|LeakSanitizer/is
     ) {
-      say("------") unless $count++;
-      say($_);
       push @crashes, $_;
     }
     # Other errors
@@ -1544,28 +1537,32 @@ sub checkErrorLogForErrors {
         or $_ =~ /InnoDB:\s+Error:/is
         or $_ =~ /registration as a STORAGE ENGINE failed./is
     ) {
-      say("------") unless $count++;
-      say($_);
       push @errors, $_;
     }
   }
-  say("------") if $count;
   close(ERRLOG);
+  if (scalar @crashes) {
+    say("------- Crash-like lines in the error log -------");
+    say(join "\n", @crashes);
+    say("-------");
+  }
+  if (scalar @errors) {
+    say("------- Error messages in the error log -------");
+    say(join "\n", @errors);
+    say("-------");
+  }
+
   return (\@crashes, \@errors);
 }
 
 sub serverVariables {
     my $self = shift;
     if (not keys %{$self->[MYSLQD_SERVER_VARIABLES]}) {
-        my $dbh = $self->dbh;
-        return undef if not defined $dbh;
-        my $sth = $dbh->prepare("SHOW VARIABLES");
-        $sth->execute();
+        my $array_ref = $self->connection->query("SHOW VARIABLES");
         my %vars = ();
-        while (my $array_ref = $sth->fetchrow_arrayref()) {
-            $vars{$array_ref->[0]} = $array_ref->[1];
+        foreach my $r (@$array_ref) {
+            $vars{$r->[0]} = $r->[1];
         }
-        $sth->finish();
         $self->[MYSLQD_SERVER_VARIABLES] = \%vars;
     }
     return $self->[MYSLQD_SERVER_VARIABLES];
@@ -1637,42 +1634,17 @@ sub dsn {
 }
 
 sub connect {
-  return DBI->connect($_[0]->dsn(),
-                 undef,
-                 undef,
-                 {PrintError => 0,
-                  RaiseError => 0,
-                  AutoCommit => 1,
-                  mysql_auto_reconnect => 1});
+  my ($self, $name, $role)= @_;
+  $name= 'SRV' unless defined $name;
+  $role= 'super' unless defined $role;
+  return Connection::Perl->new( server => $self, role => $role, name => $name );
 }
 
-sub dbh {
-  my ($self, $admin, $new) = @_;
-  my $dbh_type= ($admin ? MYSQLD_ADMIN_DBH : MYSQLD_DBH);
-  my $dbh;
-  if (! $new && defined $self->[$dbh_type]) {
-      if ($self->[$dbh_type]->ping) {
-        $dbh= $self->[$dbh_type];
-      } else {
-        say("Stale connection to ".$self->[MYSQLD_PORT].". Reconnecting");
-      }
-  } else {
-      sayDebug("Connecting to ".$self->[MYSQLD_PORT]);
+sub connection {
+  unless (defined $_[0]->[MYSQLD_SERVER_CONNECTION]) {
+    $_[0]->[MYSQLD_SERVER_CONNECTION]= $_[0]->connect();
   }
-  if (! $dbh) {
-    $dbh = $self->connect;
-    if (defined $dbh) {
-      if ($admin) {
-        $dbh->do("SET ROLE admin");
-      }
-      if (! $new) {
-        $self->[$dbh_type]= $dbh;
-      }
-    } else {
-      sayError("(Re)connect to ".$self->[MYSQLD_PORT]." failed due to ".$DBI::err.": ".$DBI::errstr);
-    }
-  }
-  return $dbh;
+  return $_[0]->[MYSQLD_SERVER_CONNECTION];
 }
 
 sub _findDir {
@@ -1859,9 +1831,13 @@ sub storeMetaData {
     $status= DBSTATUS_FAILURE;
     goto METAERR;
   }
+
+  unless (defined $self->[MYSQLD_METADATA_CONNECTION] && $self->[MYSQLD_METADATA_CONNECTION]->alive) {
+    $self->[MYSQLD_METADATA_CONNECTION]= $self->connect('MET');
+  }
   my $end_time= time()+$maxtime;
 
-  while (time() < $end_time && scalar(@waiters) < $wait_for_threads) {
+  while ($self->[MYSQLD_METADATA_CONNECTION]->alive && time() < $end_time && scalar(@waiters) < $wait_for_threads) {
     sayDebug("Waiting for $wait_for_threads executors to get ready for new metadata dump, so far found ".scalar(@waiters).", ".($end_time-time())." sec left");
     sleep 1;
     @waiters= glob("$vardir/executor_*_ready");
@@ -1873,11 +1849,8 @@ sub storeMetaData {
     goto METAERR;
   }
 
-  unless (defined $self->[MYSQLD_METADATA_DBH] && $self->[MYSQLD_METADATA_DBH]->ping) {
-    $self->[MYSQLD_METADATA_DBH]= $self->dbh(my $admin=1, my $new= 1);
-  }
-  my $dbh= $self->[MYSQLD_METADATA_DBH];
-  unless ($dbh) {
+  my $conn= $self->[MYSQLD_METADATA_CONNECTION];
+  unless ($conn && $conn->alive) {
     sayError("Metadata dumper could not establish connection");
     $status= DBSTATUS_FAILURE;
     goto METAERR;
@@ -1894,12 +1867,12 @@ sub storeMetaData {
   if ($metadata_type eq 'all' or $metadata_type eq 'collations') {
     push @files, "$dumpdir/collations";
     unlink $files[$#files];
-    if ($dbh) {
-      $dbh->do("$statement_time SELECT collation_name,character_set_name ".
+    if ($conn) {
+      $conn->execute("$statement_time SELECT collation_name,character_set_name ".
               "INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
               "FROM information_schema.collations");
-      if ($dbh->err) {
-        sayError("Collations dump failed: ".$dbh->err.": ".$dbh->errstr);
+      if ($conn->err) {
+        sayError("Collations dump failed: ".$conn->print_error);
         $status= DBSTATUS_FAILURE;
         goto METAERR;
       }
@@ -1926,66 +1899,66 @@ sub storeMetaData {
     my $system_schemata= $self->systemSchemaList();
     my $exempt_schemata= "'transforms'";
 
-    if ($dbh) {
+    if ($conn) {
       if ($metadata_type ne 'nonsystem')
       {
         # System db
         push @files, "$dumpdir/system-db";
         unlink $files[$#files];
-        $dbh->do(
+        $conn->execute(
           $db_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
           $db_query_p2." WHERE schema_name IN ($system_schemata)"
         );
-        if ($dbh->err) {
-          sayError("System schemata dump failed: ".$dbh->err.": ".$dbh->errstr);
+        if ($conn->err) {
+          sayError("System schemata dump failed: ".$conn->print_error);
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
         # System tables
         push @files, "$dumpdir/system-tables";
         unlink $files[$#files];
-        $dbh->do(
+        $conn->execute(
           $tbl_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
           $tbl_query_p2." WHERE table_schema IN ($system_schemata)"
         );
-        if ($dbh->err) {
-          sayError("System table dump failed: ".$dbh->err.": ".$dbh->errstr);
+        if ($conn->err) {
+          sayError("System table dump failed: ".$conn->print_error);
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
         # System table columns
         push @files, "$dumpdir/system-columns";
         unlink $files[$#files];
-        $dbh->do(
+        $conn->execute(
           $col_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
           $col_query_p2." WHERE table_schema IN ($system_schemata)"
         );
-        if ($dbh->err) {
-          sayError("System table column dump failed: ".$dbh->err.": ".$dbh->errstr);
+        if ($conn->err) {
+          sayError("System table column dump failed: ".$conn->print_error);
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
         # System table columns
         push @files, "$dumpdir/system-indexes";
         unlink $files[$#files];
-        $dbh->do(
+        $conn->execute(
           $ind_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
           $ind_query_p2." WHERE table_schema IN ($system_schemata)"
         );
-        if ($dbh->err) {
-          sayError("System table index dump failed: ".$dbh->err.": ".$dbh->errstr);
+        if ($conn->err) {
+          sayError("System table index dump failed: ".$conn->print_error);
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
         # System stored proc
         push @files, "$dumpdir/system-proc";
         unlink $files[$#files];
-        $dbh->do(
+        $conn->execute(
           $proc_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
           $proc_query_p2." WHERE db IN ($system_schemata)"
         );
-        if ($dbh->err) {
-          sayError("System proc dump failed: ".$dbh->err.": ".$dbh->errstr);
+        if ($conn->err) {
+          sayError("System proc dump failed: ".$conn->print_error);
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
@@ -1995,60 +1968,60 @@ sub storeMetaData {
         # Non-system db
         push @files, "$dumpdir/nonsystem-db";
         unlink $files[$#files];
-        $dbh->do(
+        $conn->execute(
           $db_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
           $db_query_p2." WHERE schema_name NOT IN ($system_schemata,$exempt_schemata)"
         );
-        if ($dbh->err) {
-          sayError("Non-system schemata dump failed: ".$dbh->err.": ".$dbh->errstr);
+        if ($conn->err) {
+          sayError("Non-system schemata dump failed: ".$conn->print_error);
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
         # Non-system tables
         push @files, "$dumpdir/nonsystem-tables";
         unlink $files[$#files];
-        $dbh->do(
+        $conn->execute(
           $tbl_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
           $tbl_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)"
         );
-        if ($dbh->err) {
-          sayError("Non-system table dump failed: ".$dbh->err.": ".$dbh->errstr);
+        if ($conn->err) {
+          sayError("Non-system table dump failed: ".$conn->print_error);
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
         # Non-system table columns
         push @files, "$dumpdir/nonsystem-columns";
         unlink $files[$#files];
-        $dbh->do(
+        $conn->execute(
           $col_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
           $col_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)"
         );
-        if ($dbh->err) {
-          sayError("Non-system table column dump failed: ".$dbh->err.": ".$dbh->errstr);
+        if ($conn->err) {
+          sayError("Non-system table column dump failed: ".$conn->print_error);
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
         # Non-system table indexes
         push @files, "$dumpdir/nonsystem-indexes";
         unlink $files[$#files];
-        $dbh->do(
+        $conn->execute(
           $ind_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
           $ind_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)"
         );
-        if ($dbh->err) {
-          sayError("Non-system table index dump failed: ".$dbh->err.": ".$dbh->errstr);
+        if ($conn->err) {
+          sayError("Non-system table index dump failed: ".$conn->print_error);
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }
         # Non-system stored procedures
         push @files, "$dumpdir/nonsystem-proc";
         unlink $files[$#files];
-        $dbh->do(
+        $conn->execute(
           $proc_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
           $proc_query_p2." WHERE db NOT IN ($system_schemata,$exempt_schemata)"
         );
-        if ($dbh->err) {
-          sayError("Non-system proc dump failed: ".$dbh->err.": ".$dbh->errstr);
+        if ($conn->err) {
+          sayError("Non-system proc dump failed: ".$conn->print_error);
           $status= DBSTATUS_FAILURE;
           goto METAERR;
         }

@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014 SkySQL Ab
-# Copyright (c) 2020, 2022 MariaDB Corporation Ab
+# Copyright (c) 2020, 2023 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -308,10 +308,10 @@ sub compareDurations {
     my @explains_to_print;
     if ($skip_explain == 0) {
         foreach my $executor_id (0..1) {
-            my $last_query_cost= $executors->[$executor_id]->dbh()->selectrow_arrayref("show status like 'Last_query_cost'")->[1];
+            my $last_query_cost= $executors->[$executor_id]->connection->get_value("show status like 'Last_query_cost'",1,2);
             my $explain_extended = ( $query =~ /^[\s*\(]*ANALYZE/
               ? $results->[$executor_id]->data()
-              : $executors->[$executor_id]->dbh()->selectall_arrayref("EXPLAIN EXTENDED $query")
+              : $executors->[$executor_id]->connection->query("EXPLAIN EXTENDED $query")
             );
             $explains[$executor_id] = Dumper($explain_extended)."\n";
             $explains_to_print[$executor_id] = "Last_query_cost=${last_query_cost}\n".join("\n", map { join("\t", map { defined $_ ? $_ : "NULL" } @$_) } @$explain_extended);

@@ -1,4 +1,4 @@
-# Copyright (C) 2021, 2022, MariaDB Corporation Ab
+# Copyright (C) 2021, 2023, MariaDB
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -31,7 +31,7 @@ use Data::Dumper;
 
 sub validate {
   my ($validator, $executors, $results) = @_;
-  my $dbh= $executors->[0]->dbh();
+  my $conn= $executors->[0]->connection;
   foreach my $result (@$results) {
     my $warnings= $result->warnings();
     next unless $warnings && scalar(@$warnings);
@@ -54,15 +54,12 @@ sub validate {
       $errors{$errno}= (defined $errors{$errno} ? $errors{$errno}+1 : 1);
       $msg_examples{$errno}= $errtext unless defined $msg_examples{$errno};
       my $cond= $w + 1;
-      $dbh->do("GET DIAGNOSTICS CONDITION $cond \@rn = ROW_NUMBER");
-      my $rnum_res= $dbh->selectcol_arrayref("SELECT \@rn");
-      my $rnum;
-      if ($rnum_res && (ref $rnum_res eq 'ARRAY')) {
-        $rnum= $rnum_res->[0];
-      } else {
-        say("ERROR: Couldn't retrieve ROW_NUMBER: ".$dbh->errstr);
+      $conn->execute("GET DIAGNOSTICS CONDITION $cond \@rn = ROW_NUMBER");
+      if ($conn->err) {
+        say("ERROR: Couldn't retrieve ROW_NUMBER: ".$conn->print_error);
         exit STATUS_ENVIRONMENT_FAILURE;
       }
+      my $rnum= $conn->get_value('SELECT @rn');
       if (not defined $rnum or $rnum eq '') {
         say("ERROR: Undefined rownum for query ".$result->query." Warning: @{$warnings->[$w]}");
         print Dumper $results;

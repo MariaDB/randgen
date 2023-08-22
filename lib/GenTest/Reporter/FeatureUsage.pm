@@ -1,4 +1,4 @@
-# Copyright (c) 2021, 2022 MariaDB Corporation Ab
+# Copyright (c) 2021, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,11 +34,10 @@ use GenTest::Result;
 use GenTest::Reporter;
 use GenTest::Executor::MRDB;
 
-use DBI;
 use Data::Dumper;
 use POSIX;
 
-my $dbh;
+my $conn;
 my $server_version;
 
 my %usage_check= (
@@ -100,8 +99,10 @@ sub monitor {
       $server_version.= 'e' if defined $3;
     }
   }
+  
+  $conn= $reporter->connection() unless ($conn);
 
-  unless ($dbh= $reporter->dbh()) {
+  unless ($conn->alive()) {
     sayError((ref $reporter)." reporter returning critical failure");
     return STATUS_SERVER_UNAVAILABLE;
   }
@@ -109,10 +110,10 @@ sub monitor {
   # before reporters are initialized
   unless (defined $registered_features) {
     eval {
-        $registered_features= $dbh->selectcol_arrayref("SELECT feature FROM mysql.rqg_feature_registry");
+        $registered_features= $conn->get_column("SELECT feature FROM mysql.rqg_feature_registry",1);
         1;
     } or do {
-      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for mysql.rqg_feature_registry query");
+      sayWarning("FeatureUsage got an error: ".$conn->last_error->[0]." (".$conn->last_error->[1].") for mysql.rqg_feature_registry query");
     };
     if ($registered_features) {
       foreach my $f (@$registered_features) {
@@ -338,11 +339,11 @@ sub check_for_engine_tables {
   unless ($engine_tables{$engine}) {
     my $engines;
     eval {
-        $engines= $dbh->selectcol_arrayref("SELECT DISTINCT lower(ENGINE) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE IS NOT NULL AND TABLE_SCHEMA NOT IN ('mysql','information_schema','sys','performance_schema')");
+        $engines= $conn->get_column("SELECT DISTINCT lower(ENGINE) FROM INFORMATION_SCHEMA.TABLES WHERE ENGINE IS NOT NULL AND TABLE_SCHEMA NOT IN ('mysql','information_schema','sys','performance_schema')");
         # Can't return res from here, because if it's 0, the "or" block will be executed
         1;
     } or do {
-      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for ENGINES query");
+      sayWarning("FeatureUsage got an error: ".$conn->last_error->[0]." (".$conn->last_error->[1].") for ENGINES query");
     };
     if ($engines) {
       # Also add them to plugins, because if there is a table, there is (or was) the engine/plugin
@@ -357,11 +358,11 @@ sub check_for_plugin {
   unless ($plugins{$plugin}) {
     my $plg;
     eval {
-        $plg= $dbh->selectcol_arrayref("SELECT lower(plugin_name) FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_STATUS = 'ACTIVE'");
+        $plg= $conn->get_column("SELECT lower(plugin_name) FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_STATUS = 'ACTIVE'");
         # Can't return res from here, because if it's 0, the "or" block will be executed
         1;
     } or do {
-      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for PLUGINS query");
+      sayWarning("FeatureUsage got an error: ".$conn->last_error->[0]." (".$conn->last_error->[1].") for PLUGINS query");
     };
     if ($plg) {
       map { $plugins{$_}= 1 } (@$plg);
@@ -381,13 +382,17 @@ sub check_system_var {
 sub check_status_var {
   my ($reporter, $var)= @_;
   if (scalar(keys %global_status) == 0) {
+    my $global_status_arr;
     eval {
-        %global_status= @{$dbh->selectcol_arrayref("SELECT VARIABLE_NAME, VARIABLE_VALUE FROM INFORMATION_SCHEMA.GLOBAL_STATUS", { Columns=>[1,2] })};
+        $global_status_arr= $conn->query("SELECT VARIABLE_NAME, VARIABLE_VALUE FROM INFORMATION_SCHEMA.GLOBAL_STATUS");
         # Can't return res from here, because if it's 0, the "or" block will be executed
         1;
     } or do {
-      sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for GLOBAL STATUS query");
+      sayWarning("FeatureUsage got an error: ".$conn->last_error->[0]." (".$conn->last_error->[1].") for GLOBAL STATUS query");
     };
+    foreach (@$global_status_arr) {
+      $global_status{$_->[0]}= $_->[1];
+    }
   }
   return ($global_status{uc($var)} ? "according to I_S.GLOBAL_STATUS" : undef);
 }
@@ -396,11 +401,11 @@ sub getval {
   my ($reporter, $query)= @_;
   my $res;
   eval {
-      $res= $dbh->selectrow_arrayref($query)->[0];
+      $res= $conn->get_value($query,1,1);
       # Can't return res from here, because if it's 0, the "or" block will be executed
       1;
   } or do {
-    sayWarning("FeatureUsage got an error: ".$dbh->err." (".$dbh->errstr.") for query $query");
+    sayWarning("FeatureUsage got an error: ".$conn->last_error->[0]." (".$conn->last_error->[1].") for query $query");
   };
   return $res;
 }

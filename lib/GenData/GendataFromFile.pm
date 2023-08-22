@@ -1,6 +1,6 @@
 # Copyright (C) 2009, 2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020, 2022, MariaDB Corporation Ab.
+# Copyright (c) 2020, 2023, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package GenData::GendataFromFile;
 @ISA = qw(GenData);
 
 use strict;
-use DBI;
 use Carp;
 use Data::Dumper;
 
@@ -86,7 +85,7 @@ sub run {
           # If it turns out that nothing is loaded at all, it will be a pointless test,
           # but such things should be caught at test implementation stage
 
-          my $dbs= $executor->dbh->selectcol_arrayref("SELECT schema_name from INFORMATION_SCHEMA.SCHEMATA ORDER BY schema_name");
+          my $dbs= $executor->connection->get_column("SELECT schema_name from INFORMATION_SCHEMA.SCHEMATA ORDER BY schema_name");
           my %dbs_before= ();
           foreach (@$dbs) { $dbs_before{$_}= 1; };
           
@@ -101,15 +100,15 @@ sub run {
           if ($populate->run() == STATUS_OK)
           {
             say("Loaded SQL file $spec_file and populated the tables");
-            $dbs= $executor->dbh->selectcol_arrayref("SELECT schema_name from INFORMATION_SCHEMA.SCHEMATA ORDER BY schema_name");
+            $dbs= $executor->connection->get_column("SELECT schema_name from INFORMATION_SCHEMA.SCHEMATA ORDER BY schema_name");
             if ($dbs && scalar(@$dbs)) {
               foreach (@$dbs) {
                 unless ($dbs_before{$_}) {
                   say("New schema $_ was created");
                   # PS is a workaround for MENT-30190
                   $executor->execute("EXECUTE IMMEDIATE CONCAT('GRANT ALL ON ".$_.".* TO ',CURRENT_USER,' WITH GRANT OPTION')");
-                  if ($executor->dbh->err) {
-                    sayError("Failed to grant permissions on database $_: ".$executor->dbh->err." ".$executor->dbh->errstr);
+                  if ($executor->connection->err) {
+                    sayError("Failed to grant permissions on database $_: ".$executor->connection->print_error);
                   }
                 }
               }

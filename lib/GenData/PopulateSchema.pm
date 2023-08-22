@@ -21,7 +21,6 @@ package GenData::PopulateSchema;
 @ISA = qw(GenData);
 
 use strict;
-use DBI;
 use Carp;
 use Data::Dumper;
 

@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2021, 2022, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2023, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -80,7 +80,7 @@ sub modify {
     my $flags= ($new_query !~ /^[\s\(]*SELECT/i or $new_query =~ /RESULTSETS_NOT_COMPARABLE/) ? '/* RESULTSETS_NOT_COMPARABLE */' : '';
     return [
       "SET  /* TRANSFORM_SETUP */ ".join(", ", @var_variables),
-      "PREPARE /* TRANSFORM_SETUP */ $stmt FROM ".$executor->dbh()->quote($new_query),
+      "PREPARE /* TRANSFORM_SETUP */ $stmt FROM ".$executor->connection()->quote($new_query),
       "EXECUTE $flags $stmt USING ". (join ',', map { '@var'.$_ } (1..$var_counter)).($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : ""),
       "EXECUTE $flags $stmt USING ". (join ',', map { '@var'.$_ } (1..$var_counter)).($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : ""),
     ];

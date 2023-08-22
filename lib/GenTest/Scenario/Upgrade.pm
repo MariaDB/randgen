@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2022 MariaDB Corporation Ab
+# Copyright (C) 2017, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@ require Exporter;
 @ISA = qw(GenTest::Scenario);
 
 use strict;
-use DBI;
 use GenUtil;
 use GenTest;
 use GenTest::TestRunner;
@@ -39,6 +38,7 @@ use File::Copy;
 use File::Compare;
 
 use DBServer::MariaDB;
+use Connection::Perl;
 
 use constant UPGRADE_ERROR_CODE => 101;
 
@@ -130,17 +130,15 @@ sub collectAclData {
   my $res= STATUS_OK;
 
   say("Collecting user names");
-  my $dbh= $server->dbh;
+  my $conn= Connection::Perl->new(server => $server, role => 'super', name => 'UPG');
 
-  $dbh->do("FLUSH PRIVILEGES");
+  $conn->execute("FLUSH PRIVILEGES");
   # Needed due to MDEV-24657
-  $dbh->do('SET character_set_connection= @@character_set_server');
-  $dbh->do('SET collation_connection= @@collation_server');
-
+  $conn->execute('SET character_set_connection= @@character_set_server, collation_connection= @@collation_server');
   my $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user WHERE is_role = 'N'";
-  my $users= $dbh->selectcol_arrayref($query);
-  if ($dbh->err() > 0) {
-    sayError("Couldn't fetch users, error: ".$dbh->err()." (".$dbh->errstr().")");
+  my $users= $conn->get_column($query);
+  if ($conn->err) {
+    sayError("Couldn't fetch users, error: ".$conn->print_error);
     $users= [];
     $res= STATUS_DATABASE_CORRUPTION;
   }
@@ -149,9 +147,9 @@ sub collectAclData {
   }
 
   my $roles= [];
-  $roles= $dbh->selectcol_arrayref("SELECT CONCAT('`',user,'`') FROM mysql.user WHERE is_role = 'Y'");
-  if ($dbh->err() > 0) {
-    sayError("Couldn't fetch roles, error: ".$dbh->err()." (".$dbh->errstr().")");
+  $roles= $conn->get_column("SELECT CONCAT('`',user,'`') FROM mysql.user WHERE is_role = 'Y'");
+  if ($conn->err) {
+    sayError("Couldn't fetch roles, error: ".$conn->print_error);
     $roles= [];
     $res= STATUS_DATABASE_CORRUPTION;
   }
@@ -183,9 +181,9 @@ sub collectAclData {
       $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`'), password FROM mysql.user WHERE plugin != '' AND password != '' AND authentication_string = ''";
     }
 
-    my $plugin_users_with_passwords= $dbh->selectall_arrayref($query);
-    if ($dbh->err() > 0) {
-      sayError("Couldn't fetch plugin users with passwords, error: ".$dbh->err()." (".$dbh->errstr().")");
+    my $plugin_users_with_passwords= $conn->query($query);
+    if ($conn->err) {
+      sayError("Couldn't fetch plugin users with passwords, error: ".$conn->print_error);
       $res= STATUS_DATABASE_CORRUPTION;
     }
     else {
@@ -199,19 +197,17 @@ sub collectAclData {
 
   my %grants= ();
   foreach my $u (@$users, @$roles) {
-    my $sth= $dbh->prepare("SHOW GRANTS FOR $u");
-    $sth->execute;
-    if ($sth->err() > 0) {
-      sayError("Couldn't fetch grants for $u, error: ".$sth->err()." (".$sth->errstr().")");
+    my $def= $conn->get_value("SHOW GRANTS FOR $u");
+    if ($conn->err) {
+      sayError("Couldn't fetch grants for $u, error: ".$conn->print_error);
       $res= STATUS_UNKNOWN_ERROR if $res < STATUS_UNKNOWN_ERROR;
     }
     else {
-      my $def= $sth->fetchrow_arrayref;
-      if (defined $plugin_users_with_passwords{$u} and $def->[0] !~ /USING /) {
-        $def->[0] =~ s/IDENTIFIED VIA (\w+)/IDENTIFIED VIA $1 USING \'$plugin_users_with_passwords{$u}\'/;
-        say("Adjusted grants for $u to show the password along with the plugin: $def->[0]");
+      if (defined $plugin_users_with_passwords{$u} and $def !~ /USING /) {
+        $def =~ s/IDENTIFIED VIA (\w+)/IDENTIFIED VIA $1 USING \'$plugin_users_with_passwords{$u}\'/;
+        say("Adjusted grants for $u to show the password along with the plugin: $def");
       }
-      $grants{$u}= $def->[0];
+      $grants{$u}= $def;
     }
   }
 

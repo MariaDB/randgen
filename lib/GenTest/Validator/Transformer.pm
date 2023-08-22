@@ -1,5 +1,5 @@
 # Copyright (c) 2008,2011 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
+# Copyright (c) 2021, 2023 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -134,14 +134,14 @@ sub validate {
   }
 
   my $max_transformer_status= STATUS_OK;
-  $executor->dbh->do("SELECT CONCAT('SET ROLE ',IFNULL(CURRENT_ROLE(),'NONE')) INTO ".'@role_stmt');
-  if ($executor->dbh->err) {
-    sayError("Couldn't store current role in Transformer validator: ".$executor->dbh->err." ".$executor->dbh->errstr);
+  $executor->connection->execute("SELECT CONCAT('SET ROLE ',IFNULL(CURRENT_ROLE(),'NONE')) INTO ".'@role_stmt');
+  if ($executor->connection->err) {
+    sayError("Couldn't store current role in Transformer validator: ".$executor->connection->print_error);
     return STATUS_ENVIRONMENT_FAILURE;
   }
-  $executor->dbh->do('SET ROLE admin');
-  if ($executor->dbh->err) {
-    sayError("Couldn't set admin role in Transformer validator: ".$executor->dbh->err." ".$executor->dbh->errstr);
+  $executor->connection->execute('SET ROLE admin');
+  if ($executor->connection->err) {
+    sayError("Couldn't set admin role in Transformer validator: ".$executor->connection->print_error);
     return STATUS_ENVIRONMENT_FAILURE;
   }
   
@@ -155,8 +155,8 @@ sub validate {
     $max_transformer_status = $transformer_status if $transformer_status > $max_transformer_status;
     last if $transformer_status >= STATUS_CRITICAL_FAILURE;
   }
-  $executor->dbh->do('EXECUTE IMMEDIATE @role_stmt');
-  if ($executor->dbh->err) {
+  $executor->connection->execute('EXECUTE IMMEDIATE @role_stmt');
+  if ($executor->connection->err) {
     sayError("Couldn't restore previous role in Transformer validator");
     return STATUS_ENVIRONMENT_FAILURE;
   }
@@ -230,7 +230,7 @@ sub transform {
           "Offending query is: ".shorten_message($tr->query)."\n".
           "All previous transformed queries: \n".
           (join "\n", map { shorten_message($_) } (@transformed_queries))."\n".
-          "---------------- END OF ($name) ---------------");
+          "----------------- END ($name) -----------------");
       }
       next;
     }
@@ -262,7 +262,7 @@ sub transform {
 
     if ($check_outcome != STATUS_OK) {
       # Get non-default session variables
-      my $vars= $executor->dbh->selectcol_arrayref('select concat(variable_name,"=",session_value) from information_schema.system_variables where session_value != global_value order by variable_name');
+      my $vars= $executor->connection->get_column('select concat(variable_name,"=",session_value) from information_schema.system_variables where session_value != global_value order by variable_name');
       say("---------- TRANSFORM ISSUE START ($name) ----------\n".
           "RQG Status: ".status2text($check_outcome)." ($check_outcome)\n".
           "Original query: ".shorten_message($original_query)."\n".

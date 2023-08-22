@@ -1,4 +1,4 @@
-# Copyright (c) 2021, 2022, MariaDB Corporation
+# Copyright (c) 2021, 2023, MariaDB Corporation
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,9 +29,7 @@ use GenTest::Executor::MRDB;
 use Carp;
 use Data::Dumper;
 
-use DBI;
-
-my ($first_mem, $max_mem, $first_cpu, $max_cpu, $max_mem_pct, $last_reported_mem, $dbh, $memusage);
+my ($first_mem, $max_mem, $first_cpu, $max_cpu, $max_mem_pct, $last_reported_mem, $conn, $memusage);
 
 sub monitor {
   my $reporter= shift;
@@ -57,8 +55,8 @@ sub monitor {
     }
     if ($reporter->server->serverVariable('performance_schema') == 1) {
       say("MemoryUsage monitor for pid $pid: memory usage: ".format_mem_value($mem));
-      $dbh = $reporter->dbh unless $dbh;
-      $memusage= $dbh->selectall_arrayref("select event_name, sum_number_of_bytes_alloc, current_number_of_bytes_used, high_number_of_bytes_used from performance_schema.memory_summary_global_by_event_name order by current_number_of_bytes_used desc limit 5");
+      $conn = $reporter->connection unless $conn;
+      $memusage= $conn->query("select event_name, sum_number_of_bytes_alloc, current_number_of_bytes_used, high_number_of_bytes_used from performance_schema.memory_summary_global_by_event_name order by current_number_of_bytes_used desc limit 5");
       say(Dumper($memusage)) if $memusage;
     }
     if (not defined $first_cpu) {

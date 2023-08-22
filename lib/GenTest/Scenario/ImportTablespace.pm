@@ -1,4 +1,4 @@
-# Copyright (C) 2021, 2022 MariaDB Corporation Ab
+# Copyright (C) 2021, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,6 @@ require Exporter;
 @ISA = qw(GenTest::Scenario);
 
 use strict;
-use DBI;
 use GenUtil;
 use GenTest;
 use GenTest::TestRunner;
@@ -48,6 +47,7 @@ use File::Copy;
 use File::Compare;
 
 use DBServer::MariaDB;
+use Connection::Perl;
 
 sub new {
   my $class= shift;
@@ -98,12 +98,11 @@ sub run {
     return $self->finalize($status,[$server]);
   }
 
-  my $dbh= $server->dbh;
+  my $conn= Connection::Perl->new(server => $server, role => 'admin', name => 'TBS' );
 
   #####
   $self->printStep("Preparing to discard/import");
-  $dbh->do("SET max_statement_time=0");
-  $dbh->do("SET ROLE admin");
+  $conn->execute("SET max_statement_time=0");
 
   say("Getting rid of stale XA transactions");
   $server->rollbackXA();
@@ -111,31 +110,31 @@ sub run {
   my $non_system_databases= join ',', map { "'$_'" } ($server->nonSystemDatabases());
 
   # Drop all non-InnoDB tables, it will make things simpler
-  my $not_interesting_tables = $dbh->selectcol_arrayref("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.tables where table_schema in ($non_system_databases) and table_type = 'VIEW'");
+  my $not_interesting_tables = $conn->get_column("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.tables where table_schema in ($non_system_databases) and table_type = 'VIEW'");
   say("Dropping views @$not_interesting_tables");
   foreach my $v (@$not_interesting_tables) {
-    $dbh->do("DROP VIEW $v");
+    $conn->execute("DROP VIEW $v");
   }
-  $not_interesting_tables = $dbh->selectcol_arrayref("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.tables where table_schema in ($non_system_databases) and engine != 'InnoDB'");
+  $not_interesting_tables = $conn->get_column("select concat('`',table_schema,'`.`',table_name,'`') from information_schema.tables where table_schema in ($non_system_databases) and engine != 'InnoDB'");
   say("Dropping non-innodb tables @$not_interesting_tables");
   foreach my $t (@$not_interesting_tables) {
-    $dbh->do("DROP TABLE $t");
+    $conn->execute("DROP TABLE $t");
   }
   # Drop also partitioned tables, mainly because we don't know how to import their tablespaces
-  $not_interesting_tables = $dbh->selectcol_arrayref("select distinct concat('`',table_schema,'`.`',table_name,'`') from information_schema.partitions where partition_name is not null and table_schema in ($non_system_databases)");
+  $not_interesting_tables = $conn->get_column("select distinct concat('`',table_schema,'`.`',table_name,'`') from information_schema.partitions where partition_name is not null and table_schema in ($non_system_databases)");
   say("Dropping partitioned tables @$not_interesting_tables");
   foreach my $t (@$not_interesting_tables) {
-    $dbh->do("DROP TABLE $t");
+    $conn->execute("DROP TABLE $t");
   }
 
   #####
   $self->printStep("Creating copies of tables and importing tablespaces");
 
-  $dbh->do("SET GLOBAL innodb_file_per_table= 1");
+  $conn->execute("SET GLOBAL innodb_file_per_table= 1");
   # Workaround for MDEV-29960, and anyway mysqldump does it too
-  $dbh->do("SET NAMES utf8");
+  $conn->execute("SET NAMES utf8");
 
-  my $tables = $dbh->selectcol_arrayref("select ts.name from information_schema.innodb_sys_tablespaces ts ".
+  my $tables = $conn->get_column("select ts.name from information_schema.innodb_sys_tablespaces ts ".
     "join information_schema.tables t on BINARY ts.name = BINARY concat(t.table_schema,'/',t.table_name) ".
     "where ts.name != 'innodb_system' and ts.name not like 'mysql/%' and ts.name not like '%#%' and t.table_type != 'SEQUENCE' and ts.name not like '%/FTS_0000%'");
 
@@ -147,59 +146,59 @@ sub run {
 
     # Workaround for MDEV-29966 -- invalid default prevents ALTER or CREATE .. LIKE
     ALTERFORCE:
-    $dbh->do("ALTER TABLE ${tschema}.${tname} FORCE");
-    sayDebug("Result of ALTER TABLE $tname FORCE: ".($dbh->err ? $dbh->err.' '.$dbh->errstr : 'OK'));
-    if ($dbh->err == 1067 and $dbh->errstr =~ /Invalid default value for '(.*)'/) {
-      $dbh->do("ALTER TABLE ${tschema}.${tname} ALTER `$1` DROP DEFAULT");
-      if ($dbh->err) {
-        sayError("Failed to drop invalid default from ${tschema}.${tname}.${1}: ".$dbh->err." ".$dbh->errstr);
+    $conn->execute("ALTER TABLE ${tschema}.${tname} FORCE");
+    sayDebug("Result of ALTER TABLE $tname FORCE: ".($conn->err ? $conn->print_error : 'OK'));
+    if ($conn->err == 1067 and $conn->errstr =~ /Invalid default value for '(.*)'/) {
+      $conn->execute("ALTER TABLE ${tschema}.${tname} ALTER `$1` DROP DEFAULT");
+      if ($conn->err) {
+        sayError("Failed to drop invalid default from ${tschema}.${tname}.${1}: ".$conn->print_error);
         $status= STATUS_DATABASE_CORRUPTION;
         next;
       } else {
         goto ALTERFORCE;
       }
-    } elsif ($dbh->err) {
-      sayError("Failed to run ALTER .. FORCE on ${tschema}.${tname}: ".$dbh->err." ".$dbh->errstr);
+    } elsif ($conn->err) {
+      sayError("Failed to run ALTER .. FORCE on ${tschema}.${tname}: ".$conn->print_error);
       $status= STATUS_DATABASE_CORRUPTION;
       next;
     }
 
     my $tschema_import = $tschema.'_import';
-    $dbh->do("CREATE DATABASE IF NOT EXISTS `$tschema_import`");
-    if ($dbh->err) {
-      sayError("Could not create database ${tschema_import}: ".$dbh->err.": ".$dbh->errstr);
+    $conn->execute("CREATE DATABASE IF NOT EXISTS `$tschema_import`");
+    if ($conn->err) {
+      sayError("Could not create database ${tschema_import}: ".$conn->print_error);
       $status= STATUS_DATABASE_CORRUPTION;
       next;
     }
-    $dbh->do("CREATE TABLE `${tschema_import}`.`$tname` LIKE `$tschema`.`$tname`");
-    if ($dbh->err) {
-      sayError("Could not create table ${tschema_import}.$tname: ".$dbh->err.": ".$dbh->errstr);
+    $conn->execute("CREATE TABLE `${tschema_import}`.`$tname` LIKE `$tschema`.`$tname`");
+    if ($conn->err) {
+      sayError("Could not create table ${tschema_import}.$tname: ".$conn->print_error);
       $status= STATUS_DATABASE_CORRUPTION;
       next;
     }
-    $dbh->do("ALTER TABLE `${tschema_import}`.`$tname` DISCARD TABLESPACE");
-    if ($dbh->err) {
-      sayError("Could not discard tablespace of table ${tschema_import}.$tname: ".$dbh->err.": ".$dbh->errstr);
+    $conn->execute("ALTER TABLE `${tschema_import}`.`$tname` DISCARD TABLESPACE");
+    if ($conn->err) {
+      sayError("Could not discard tablespace of table ${tschema_import}.$tname: ".$conn->print_error);
       $status= STATUS_DATABASE_CORRUPTION;
       next;
     }
 
-    $dbh->do("FLUSH TABLE `$tschema`.`$tname` FOR EXPORT");
-    if ($dbh->err) {
-      sayError("Could not flush table $tschema.$tname for export: ".$dbh->err.": ".$dbh->errstr);
+    $conn->execute("FLUSH TABLE `$tschema`.`$tname` FOR EXPORT");
+    if ($conn->err) {
+      sayError("Could not flush table $tschema.$tname for export: ".$conn->print_error);
       $status= STATUS_DATABASE_CORRUPTION;
       next;
     }
     copy($server->datadir.'/'.$tpath.'.ibd', $server->datadir.'/'.${tschema_import}.'/');
     copy($server->datadir.'/'.$tpath.'.cfg', $server->datadir.'/'.${tschema_import}.'/');
-    $dbh->do("UNLOCK TABLES");
-    if ($dbh->err) {
-      sayError("Could not unlock tables: ".$dbh->err.": ".$dbh->errstr);
+    $conn->execute("UNLOCK TABLES");
+    if ($conn->err) {
+      sayError("Could not unlock tables: ".$conn->print_error);
       return $self->finalize($status,[$server]);
     }
-    $dbh->do("ALTER TABLE `${tschema_import}`.`$tname` IMPORT TABLESPACE");
-    if ($dbh->err) {
-      sayError("Could not import tablespace of table ${tschema_import}.$tname: ".$dbh->err.": ".$dbh->errstr);
+    $conn->execute("ALTER TABLE `${tschema_import}`.`$tname` IMPORT TABLESPACE");
+    if ($conn->err) {
+      sayError("Could not import tablespace of table ${tschema_import}.$tname: ".$conn->print_error);
       $status= STATUS_DATABASE_CORRUPTION;
       next;
     }

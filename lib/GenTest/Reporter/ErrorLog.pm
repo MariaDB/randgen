@@ -51,8 +51,11 @@ sub report {
         shift @errlog if scalar(@errlog) >= $maxsize;
         push @errlog, $_;
       }
+      push @errlog,"\n";
       say("The last 200 lines from $log :");
+      say("------------------------------ START OF ERROR LOG ------------------------------\n");
       print(@errlog);
+      say("------------------------------- END OF ERROR LOG -------------------------------\n");
     }
   }
 

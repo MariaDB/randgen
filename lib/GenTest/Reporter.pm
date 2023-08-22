@@ -31,7 +31,7 @@ require Exporter;
   REPORTER_TYPE_END
   REPORTER_CONNECT_TIMEOUT_THRESHOLD
   REPORTER_COMPATIBILITY
-  REPORTER_DBH
+  REPORTER_CONNECTION
 );
 
 use strict;
@@ -40,9 +40,9 @@ use GenTest;
 use GenTest::Result;
 use GenTest::Random;
 use Constants;
-use DBI;
 use File::Find;
 use File::Spec;
+use Connection::Perl;
 use Carp;
 use POSIX;
 
@@ -61,7 +61,7 @@ use constant REPORTER_CUSTOM_ATTRIBUTES => 10;
 # REPORTER_START_TIME is when the data has been generated, and reporter was started
 # (more or less when the test flow started)
 use constant REPORTER_START_TIME        => 11;
-use constant REPORTER_DBH               => 12;
+use constant REPORTER_CONNECTION        => 12;
 use constant REPORTER_COMPATIBILITY     => 13;
 
 use constant REPORTER_TYPE_PERIODIC     => 2;
@@ -92,36 +92,17 @@ sub new {
     compatibility => REPORTER_COMPATIBILITY,
   }, @_);
 
-#  $reporter->[REPORTER_DBH] = DBI->connect($reporter->server->dsn(), undef, undef, { mysql_multi_statements => 1, RaiseError => 0 , PrintError => 1 } );
-  $reporter->[REPORTER_DBH]= $reporter->server->dbh(my $admin=1, my $new=1);
-  return undef if not defined $reporter->[REPORTER_DBH];
-  #$reporter->[REPORTER_DBH]->do("SET ROLE admin");
-  #my $sth = $reporter->[REPORTER_DBH]->prepare("SHOW VARIABLES");
-  #$sth->execute();
-  my $vars= $reporter->[REPORTER_DBH]->selectall_arrayref("SHOW VARIABLES");
+  return undef unless defined $reporter->connect();
+  my $vars= $reporter->[REPORTER_CONNECTION]->query("SHOW VARIABLES");
   foreach my $v (@$vars) {
     $reporter->[REPORTER_SERVER_VARIABLES]->{$v->[0]} = $v->[1];
   }
 
-  #$sth->finish();
-
-  # SHOW SLAVE HOSTS may fail if user does not have the REPLICATION SLAVE privilege
-  #$reporter->[REPORTER_DBH]->{PrintError} = 0;
-  #my $slave_info = $reporter->[REPORTER_DBH]->selectrow_arrayref("SHOW SLAVE HOSTS");
-  #$reporter->[REPORTER_DBH]->{PrintError} = 1;
-  #if (defined $slave_info) {
-  #  $reporter->[REPORTER_SERVER_INFO]->{slave_host} = $slave_info->[1];
-  #  $reporter->[REPORTER_SERVER_INFO]->{slave_port} = $slave_info->[2];
-  #}
-
-  #if ($reporter->server->serverVariable('version') !~ m{^5\.0}sgio) {
-  $reporter->[REPORTER_SERVER_PLUGINS] = $reporter->[REPORTER_DBH]->selectall_arrayref("
+  $reporter->[REPORTER_SERVER_PLUGINS] = $reporter->[REPORTER_CONNECTION]->query("
                 SELECT PLUGIN_NAME, PLUGIN_LIBRARY
                 FROM INFORMATION_SCHEMA.PLUGINS
                 WHERE PLUGIN_LIBRARY IS NOT NULL
         ");
-  #}
-
   $reporter->updatePid();
 
     my $binary;
@@ -201,6 +182,12 @@ sub new {
   return $reporter;
 }
 
+sub connect {
+  my $reporter= shift;
+  $reporter->[REPORTER_CONNECTION]= Connection::Perl->new( server => $reporter->server, role => 'admin', name => 'RPT' );
+  return $reporter->[REPORTER_CONNECTION];
+}
+
 sub updatePid {
   my $pid_file = $_[0]->server->serverVariable('pid_file');
 
@@ -277,23 +264,17 @@ sub findMySQLD {
     return ($bindir,$binary);
 }
 
-sub dbh {
-  my ($reporter,$new)= @_;
-  unless ($new) {
-    if (defined $reporter->[REPORTER_DBH] && $reporter->[REPORTER_DBH]->ping) {
-      return $reporter->[REPORTER_DBH];
-    } elsif (defined $reporter->[REPORTER_DBH]) {
-      say("Reporter ".(ref $reporter)." is re-connecting to the server");
-      eval { $reporter->[REPORTER_DBH]->disconnect(); 1 }
+sub connection {
+  my $reporter= shift;
+  unless (defined $reporter->[REPORTER_CONNECTION]) {
+    $reporter->connect;
+  }
+  if (defined $reporter->[REPORTER_CONNECTION]) {
+    unless ($reporter->[REPORTER_CONNECTION]->alive) {
+      $reporter->[REPORTER_CONNECTION]->refresh;
     }
   }
-  my $dbh= $reporter->server->dbh(my $admin=1, my $new=1);
-  if (not defined $dbh || $dbh) {
-    sayError("Reporter ".(ref $reporter)." failed to connect to the server");
-  } elsif (not $new) {
-    $reporter->[REPORTER_DBH]= $dbh;
-  }
-  return $dbh;
+  return $reporter->[REPORTER_CONNECTION];
 }
 
 1;

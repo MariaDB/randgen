@@ -19,7 +19,6 @@ package GenTest::GenConfig;
 @ISA = qw(GenTest);
 
 use strict;
-#use DBI;
 use Carp;
 use GenUtil;
 use GenTest;

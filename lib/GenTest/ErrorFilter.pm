@@ -1,5 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -43,14 +43,6 @@ sub run {
     my ($self,$servers,@args) = @_;
     $self->[ERRORFILTER_CHANNEL]->reader;
 
-    # This is a forked process. When it gets killed at the end,
-    # it destroys dbh which causes problems and race conditions
-    # on connecting to server.
-    # Setting InactiveDestroy should help to avoid it.
-    foreach my $server (@$servers) {
-        next unless $server;
-        $server->dbh()->{InactiveDestroy} = 1;
-    }
     while (1) {
         my $msg = $self->[ERRORFILTER_CHANNEL]->recv;
         if (defined $msg) {
