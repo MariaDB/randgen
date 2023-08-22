@@ -1099,7 +1099,7 @@ $optional_server_variables{1004}= [ @{$optional_server_variables{$minversion}},
   # Default empty
   [ @empty_set_20, '--mysqld=--log_slow_verbosity=innodb,query_plan,explain' ],
   # Default empty in 10.4-10.5, UTF8_IS_UTF8MB3 in 10.6+ (UTF8_IS_UTF8MB3 doesn't exist in 10.4-10.5)
-  [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST,LOCK_ALTER_TABLE_COPY' ],
+  [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST' ],
   # Default DOUBLE_PREC_HB
   [ @empty_set_20, '--mysqld=--histogram_type=SINGLE_PREC_HB' ],
   # Default OFF
@@ -1207,7 +1207,7 @@ $optional_server_variables{1010}= [ @{$optional_server_variables{$minversion}},
   # Default 10 seconds
   [ @empty_set_10, '--mysqld=--long_query_time=3' ],
 ];
-$optional_server_variables{1011}= [ @{$optional_server_variables{1006}},
+$optional_server_variables{1011}= [ @{$optional_server_variables{$minversion}},
   # Default empty
   [ @empty_set_20, '--mysqld=--default_regex_flags=DOTALL,DUPNAMES,EXTENDED,EXTENDED_MORE,EXTRA,MULTILINE,UNGREEDY'],
   # Default empty
@@ -1218,8 +1218,58 @@ $optional_server_variables{1011}= [ @{$optional_server_variables{1006}},
   [ @empty_set_30, '--mysqld=--thread_pool_dedicated_listener=ON' ],
   # Default OFF
   [ @empty_set_30, '--mysqld=--thread_pool_exact_stats=ON' ],
-  # UTF8_IS_UTF8MB3
+  # Default UTF8_IS_UTF8MB3
   [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST,UTF8_IS_UTF8MB3,IGNORE_INDEX_ONLY_FOR_JOIN,COMPAT_5_1_CHECKSUM', '--mysqld=--old_mode=""' ],
+  # Default DOUBLE_PREC_HB
+  [ @empty_set_30, '--mysqld=--histogram_type=SINGLE_PREC_HB', '--mysqld=--histogram_type=JSON_HB' ],
+  # Default 8
+  [ @empty_set_50, '--mysqld=--optimizer_extra_pruning_depth=0', '--mysqld=--optimizer_extra_pruning_depth=62' ],
+  # Default OFF
+  [ @empty_set_10, '--mysqld=--system_versioning_insert_history=ON' ],
+  # Default OFF
+  [ @empty_set_10, '--mysqld=--log_slow_query=ON' ],
+  # Default 10 seconds
+  [ @empty_set_10, '--mysqld=--log_slow_query_time=3' ],
+];
+
+$optional_server_variables{1100}= [ @{$optional_server_variables{$minversion}},
+  # Default empty
+  [ @empty_set_20, '--mysqld=--default_regex_flags=DOTALL,DUPNAMES,EXTENDED,EXTENDED_MORE,EXTRA,MULTILINE,UNGREEDY'],
+  # Default empty
+  [ @empty_set_20, '--mysqld=--log_slow_verbosity=innodb,query_plan,explain,engine,full' ],
+  # Default 32000
+  [ @empty_set_50, '--mysqld=--optimizer_max_sel_arg_weight=0', '--mysqld=--optimizer_max_sel_arg_weight=1', '--mysqld=--optimizer_max_sel_arg_weight=1000000' ],
+  # Default OFF
+  [ @empty_set_30, '--mysqld=--thread_pool_dedicated_listener=ON' ],
+  # Default OFF
+  [ @empty_set_30, '--mysqld=--thread_pool_exact_stats=ON' ],
+  # Default UTF8_IS_UTF8MB3
+  [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST,UTF8_IS_UTF8MB3,IGNORE_INDEX_ONLY_FOR_JOIN,COMPAT_5_1_CHECKSUM', '--mysqld=--old_mode=""' ],
+  # Default JSON_HB
+  [ @empty_set_30, '--mysqld=--histogram_type=SINGLE_PREC_HB', '--mysqld=--histogram_type=DOUBLE_PREC_HB' ],
+  # Default 8
+  [ @empty_set_50, '--mysqld=--optimizer_extra_pruning_depth=0', '--mysqld=--optimizer_extra_pruning_depth=62' ],
+  # Default OFF
+  [ @empty_set_10, '--mysqld=--system_versioning_insert_history=ON' ],
+  # Default OFF
+  [ @empty_set_10, '--mysqld=--log_slow_query=ON' ],
+  # Default 10 seconds
+  [ @empty_set_10, '--mysqld=--log_slow_query_time=3' ],
+];
+
+$optional_server_variables{1102}= [ @{$optional_server_variables{$minversion}},
+  # Default empty
+  [ @empty_set_20, '--mysqld=--default_regex_flags=DOTALL,DUPNAMES,EXTENDED,EXTENDED_MORE,EXTRA,MULTILINE,UNGREEDY'],
+  # Default empty
+  [ @empty_set_20, '--mysqld=--log_slow_verbosity=innodb,query_plan,explain,engine,full' ],
+  # Default 32000
+  [ @empty_set_50, '--mysqld=--optimizer_max_sel_arg_weight=0', '--mysqld=--optimizer_max_sel_arg_weight=1', '--mysqld=--optimizer_max_sel_arg_weight=1000000' ],
+  # Default OFF
+  [ @empty_set_30, '--mysqld=--thread_pool_dedicated_listener=ON' ],
+  # Default OFF
+  [ @empty_set_30, '--mysqld=--thread_pool_exact_stats=ON' ],
+  # Default UTF8_IS_UTF8MB3
+  [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST,UTF8_IS_UTF8MB3,IGNORE_INDEX_ONLY_FOR_JOIN,COMPAT_5_1_CHECKSUM,LOCK_ALTER_TABLE_COPY', '--mysqld=--old_mode=""' ],
   # Default DOUBLE_PREC_HB
   [ @empty_set_30, '--mysqld=--histogram_type=SINGLE_PREC_HB', '--mysqld=--histogram_type=JSON_HB' ],
   # Default 8
