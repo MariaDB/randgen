@@ -1314,7 +1314,7 @@ sub BEGIN {
 
   %err2type = (
 
-    CR_COMMANDS_OUT_OF_SYNC() => STATUS_ENVIRONMENT_FAILURE,
+    CR_COMMANDS_OUT_OF_SYNC() => STATUS_CRITICAL_FAILURE,
 
     ER_ABORTING_CONNECTION()                            => STATUS_RUNTIME_ERROR,
     ER_ACCESS_DENIED_CHANGE_USER_ERROR()                => STATUS_ACL_ERROR,
@@ -1574,7 +1574,7 @@ sub BEGIN {
     ER_EMPTY_QUERY()                                    => STATUS_SEMANTIC_ERROR,
     ER_EMPTY_ROW_IN_TVC()                               => STATUS_SEMANTIC_ERROR,
     ER_END_IDENTIFIER_DOES_NOT_MATCH()                  => STATUS_SEMANTIC_ERROR,
-    ER_ENGINE_OUT_OF_MEMORY()                           => STATUS_ENVIRONMENT_FAILURE,
+    ER_ENGINE_OUT_OF_MEMORY()                           => STATUS_OUT_OF_MEMORY,
     ER_ERROR_DURING_CHECKPOINT()                        => STATUS_RUNTIME_ERROR,
     ER_ERROR_DURING_COMMIT()                            => STATUS_RUNTIME_ERROR,
     ER_ERROR_DURING_FLUSH_LOGS()                        => STATUS_RUNTIME_ERROR,
@@ -1953,8 +1953,8 @@ sub BEGIN {
     ER_OPTION_PREVENTS_STATEMENT()                      => STATUS_CONFIGURATION_ERROR,
     ER_ORDER_LIST_IN_REFERENCING_WINDOW_SPEC()          => STATUS_SEMANTIC_ERROR,
     ER_ORDER_WITH_PROC()                                => STATUS_SEMANTIC_ERROR,
-    ER_OUTOFMEMORY()                                    => STATUS_ENVIRONMENT_FAILURE,
-    ER_OUT_OF_RESOURCES()                               => STATUS_DATABASE_CORRUPTION, # Demoted to non-critical due to MDEV-29157
+    ER_OUTOFMEMORY()                                    => STATUS_OUT_OF_MEMORY,
+    ER_OUT_OF_RESOURCES()                               => STATUS_OUT_OF_MEMORY, # Demoted to non-critical due to MDEV-29157
     ER_OUT_OF_SORTMEMORY()                              => STATUS_CONFIGURATION_ERROR,
     ER_OVERLAPPING_KEYS()                               => STATUS_RUNTIME_ERROR,
     ER_PACKAGE_ROUTINE_FORWARD_DECLARATION_NOT_DEFINED() => STATUS_SEMANTIC_ERROR,
@@ -2509,7 +2509,7 @@ sub BEGIN {
     X_ER_CRASHED1()                                     => STATUS_IGNORED_ERROR,
     X_ER_CRASHED2()                                     => STATUS_IGNORED_ERROR,
     X_ER_INCOMPATIBLE_FRM()                             => STATUS_DATABASE_CORRUPTION,
-    X_ER_OUTOFMEMORY2()                                 => STATUS_ENVIRONMENT_FAILURE,
+    X_ER_OUTOFMEMORY2()                                 => STATUS_OUT_OF_MEMORY,
     X_ER_TABLE_DEF_CHANGED()                            => STATUS_RUNTIME_ERROR,
     X_ER_TOO_BIG_ROW()                                  => STATUS_RUNTIME_ERROR,
   );
