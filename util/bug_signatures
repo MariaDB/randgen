@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-31983:
+=~ Assertion \`subq_pred->test_set_strategy(8)'|signal|AddressSanitizer
+=~ setup_jtbm_semi_joins
+=~ mysql_multi_update
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-31971:
 =~ AddressSanitizer|signal
 =~ ha_mroonga::storage_encode_key_fixed_size_string
@@ -150,7 +155,7 @@ MDEV-31823:
 MDEV-31808:
 =~ signal|AddressSanitizer
 =~ mysql_lock_merge|NEXTVAL
-=~ Sql_cmd_alter_table::execute
+=~ Sql_cmd_alter_table::execute|mysql_alter_table
 =~ FeatureUsage detected sequences
 MDEV-31808:
 =~ Assertion \`thd->transaction.*stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
@@ -180,6 +185,11 @@ MDEV-31764:
 =~ trace_engine_stats
 =~ Explain_table_access::print_explain_json
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31732:
+=~ Assertion \`subq_pred->test_set_strategy(8)'|signal|AddressSanitizer
+=~ setup_jtbm_semi_joins
+=~ mysql_multi_update
+=~ Version: '10\.4|Server version: 10\.4
 MDEV-31757:
 =~ Only Format_description_log_event and row events are allowed in BINLOG statements (but Query_compressed was provided)
 =~ FeatureUsage detected binlog compression
@@ -554,7 +564,7 @@ MDEV-30957:
 =~ Prepared_statement::cleanup_stmt|sp_lex_keeper::reset_lex_and_exec_core
 MDEV-30938:
 =~ Could not create a join buffer\. Please check and adjust the value of the variables 'JOIN_BUFFER_SIZE ([0-9]*)' and 'JOIN_BUFFER_SPACE_LIMIT ([0-9]*)'
-=~ STATUS_ENVIRONMENT_FAILURE
+=~ Test completed with failure status STATUS_OUT_OF_MEMORY
 MDEV-30935:
 =~ Assertion \`marked_for_read()'
 =~ Item_cond::fix_fields|Item_func.*::fix_fields
@@ -1013,7 +1023,7 @@ MDEV-29059:
 =~ ha_spider::index_read_map
 MDEV-29047:
 =~ signal|AddressSanitizer
-=~ myrocks::Rdb_field_packing::get_field_in_table
+=~ myrocks::Rdb_field_packing::get_field_in_table|myrocks::Rdb_key_def::get_primary_key_tuple
 =~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-29027:
 =~ AddressSanitizer|signal
@@ -4070,7 +4080,7 @@ MDEV-16659:
 =~ Assertion \`anc_page->org_size == anc_page->size'
 =~ d_search
 =~ _ma_ck_real_delete
-=~ ha_maria::delete_row|ha_maria::update_row
+=~ ha_maria::delete_row|ha_maria::update_row|ha_maria::write_row
 MDEV-16635:
 =~ signal 11|AddressSanitizer: SEGV
 =~ open_table
