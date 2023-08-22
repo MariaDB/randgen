@@ -79,7 +79,8 @@ histogram_type_val:
   DEFAULT |
   SINGLE_PREC_HB |
   DOUBLE_PREC_HB |
-  JSON_HB ;
+  JSON_HB /* compatibility 10.7.1 */
+;
 
 # Default 1000 as of 11.0
 in_predicate_val:
@@ -103,12 +104,13 @@ join_buffer_size_val:
 
 # Default 2097152 as of 11.0
 # Too small size disabled due to MDEV-30938 / MDEV-31348 ("Could not create a join buffer")
+# Too big size disabled due to MDEV-31935 (cannot allocate)
 join_buffer_space_val:
   DEFAULT |
 #  2048 |
-  18446744073709551615 |
-  { $prng->uint16(65536,2097152) } |
-  { $prng->uint16(65536,8388608) }
+#  18446744073709551615 |
+  { $prng->uint16(131072,2097152) } |
+  { $prng->uint16(131072,8388608) }
 ;
 
 # Default 2 as of 11.0
