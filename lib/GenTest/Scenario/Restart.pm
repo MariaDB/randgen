@@ -188,7 +188,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
-    $total_status= STATUS_SERVER_SHUTDOWN_FAILURE if STATUS_SERVER_SHUTDOWN_FAILURE > $total_status;
+    $total_status= $status if $status > $total_status;
   }
 
   #####
