@@ -613,7 +613,7 @@ sub _collectTableObjects {
         sayDebug("Table/view `$schema`.`$table` has no ".($objtype eq 'COL' ? 'columns' : 'indexes'));
         return ['!non_existing_object'];
       }
-      $objects= [ keys %$objref ];
+      $objects= [ sort keys %$objref ];
 
       if ($objtype eq 'COL') {
         my ($cols_by_datatype, $cols_by_indextype);
