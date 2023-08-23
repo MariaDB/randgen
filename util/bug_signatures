@@ -220,6 +220,11 @@ MDEV-31678:
 =~ Field_long::val_int
 =~ calc_row_difference
 =~ Log_event::apply_event
+MDEV-31670:
+=~ Assertion \`marked_for_write_or_computed()'
+=~ copy_data_between_tables
+=~ mysql_alter_table
+=~ Query_log_event::do_apply_event
 MDEV-31650:
 =~ Assertion \`0'
 =~ retrieve_auto_increment|ma_retrieve_auto_increment
@@ -1497,7 +1502,6 @@ MDEV-26084:
 MDEV-26074:
 =~ Assertion \`!is_thread_specific \|\| (mysqld_server_initialized && thd)'
 =~ my_malloc_size_cb_func
-=~ maria_ft_linearize
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-26057:
 =~ Assertion \`!vcol->v_indexes\.empty()'
