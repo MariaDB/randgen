@@ -1,5 +1,5 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -53,40 +53,71 @@ sub transform {
 
 sub variate {
   my ($class, $orig_query) = @_;
-  return [ $orig_query ] if $orig_query !~ m{^[\(\s]*SELECT}is;
   return [ $class->modify($orig_query) || $orig_query ];
 }
 
 sub modify {
   my ($class, $orig_query, $with_transform_outcome) = @_;
+
+  return undef if $orig_query !~ m{^\s*(?:[\(\s]*SELECT|WITH\s|VALUES)}is
+    || $orig_query =~ m{(INTO|PROCESSLIST)}is ;
+
+  # A query "SELECT * FROM ..." (without UNION and GROUP BY and window functions) is converted into SELECT COUNT(*) FROM ..."
+  # A query "SELECT COUNT(*) FROM ..." (without UNION and GROUP BY and window functions) is converted into SELECT * FROM ..."
+  # A query "SELECT COUNT(<single field>) [AS smth] FROM..." (without UNION and GROUP BY and window functions) is converted into SELECT <single field> [AS smth] FROM..."
+  # A query "SELECT DISTINCT <single field> [AS smth] FROM..." (without UNION and GROUP BY and window functions) is converted into SELECT COUNT(DISTINCT(<single field>)) [AS smth] FROM..."
+  # A query "SELECT <single field> [AS smth] FROM..." (without UNION and GROUP BY and window functions) is converted into SELECT COUNT(<single field>) [AS smth] FROM..."
+  # A query "SELECT COUNT(DISTINCT(<field>)) [AS smth] FROM..." (without UNION and GROUP BY and window functions) is converted into SELECT DISTINCT <field> [AS smth] FROM..."
+  # Everything else is converted into "SELECT COUNT(*) FROM (<original query>) sq"
   
-  if ($orig_query =~ m{SELECT\s*(.*?)\s*FROM}is) {
-    my $select_list= $1;
-    if ($select_list =~ m{COUNT\(\s*\*\s*\)}is) {
-      # Replacing COUNT(*) with *
-      # If there is 'DISTINCT' before count, we remove it
-      # (there can be select options between DISTINCT and COUNT, we remote them for now too)
-      $orig_query =~ s{(?:DISTINCT[^,]+)?COUNT\(\s*\*\s*\)}{\*}is;
-      return $orig_query.($with_transform_outcome ? ' /* TRANSFORM_OUTCOME_COUNT_REVERSE */' : '');
-    } elsif ($select_list !~ /,/ && $select_list =~ m{COUNT\(\s*(.*?)\s*\)}is) {
-      # Replacing (single) COUNT with its argument.
-      # If there is 'DISTINCT' before count, we remove it
-      # (there can be select options between DISTINCT and COUNT, we remote them for now too)
-      my $arg= $1;
-      $orig_query =~ s{(?:DISTINCT[^,]+)?COUNT\(\s*(.*?)\s*\)}{$arg}is;
-      return $orig_query.($with_transform_outcome ? ' /* TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE */' : '');
-    } elsif ($select_list =~ m{^(?:\/\*.*?\*\/)?\s+\*\s+$}is) {
-      # Replacing * with COUNT(*)
-      $orig_query =~ s{\s+\*\s+}{ COUNT(*) }is;
-      return $orig_query.($with_transform_outcome ? ' /* TRANSFORM_OUTCOME_COUNT */' : '');
-  # If the above didn't work, then just wrap the query in SELECT COUNT(*).
-  # But for this the original query cannot be INTO (which was already
-  # forbidden for transform, but not for INTO)
-    } elsif ($orig_query !~ /\WINTO\W/) {
-      return "SELECT COUNT(*) FROM ( $orig_query ) sq_count".($with_transform_outcome ? ' /* TRANSFORM_OUTCOME_COUNT */' : '');
+  my $query= undef;
+  my $transform_outcome= '';
+  if (($orig_query =~ m{^\s*SELECT\W}is) and ($orig_query !~ m{\W(?:UNION|EXCEPT|INTERSECT|GROUP\s+BY|OVER)\W}is)) {
+    if ($orig_query =~ s{^\s*SELECT\s+\*\s+FROM}{SELECT COUNT(*) FROM}is) {
+      $query= $orig_query;
+      if ($with_transform_outcome) {
+        $transform_outcome= ' /* TRANSFORM_OUTCOME_COUNT */';
+      }
+    }
+    elsif ($orig_query =~ s{^\s*SELECT\s+COUNT\(\s*\*\s*\)(\s+AS\s+\w+)?\s+FROM}{SELECT * FROM}is) {
+      $query= $orig_query;
+      if ($with_transform_outcome) {
+        $transform_outcome= ' /* TRANSFORM_OUTCOME_COUNT_REVERSE */';
+      }
+    }
+    elsif ($orig_query =~ s{^\s*SELECT\s+COUNT\(\s*(\w+|`[^`]+`)\s*\)(\s+AS\s+\w+)?\s+FROM}{SELECT $1$2 FROM}is) {
+      $query= $orig_query;
+      if ($with_transform_outcome) {
+        $transform_outcome= ' /* TRANSFORM_OUTCOME_COUNT_REVERSE */';
+      }
+    }
+    elsif ($orig_query =~ s{^\s*SELECT\s+DISTINCT[\s+|\(\s*](\w+|`[^`]+`)\)?(\s+AS\s+\w+)?\s+FROM}{SELECT COUNT(DISTINCT($1))$2 FROM}is) {
+      $query= $orig_query;
+      if ($with_transform_outcome) {
+        $transform_outcome= ' /* TRANSFORM_OUTCOME_COUNT_NOT_NULL */';
+      }
+    }
+    elsif ($orig_query =~ s{^\s*SELECT\s+(\w+|`[^`]+`)(\s+AS\s+\w+)?\s+FROM}{SELECT COUNT($1)$2 FROM}is) {
+      $query= $orig_query;
+      if ($with_transform_outcome) {
+        $transform_outcome= ' /* TRANSFORM_OUTCOME_COUNT */';
+      }
+    }
+    elsif ($orig_query =~ s{^\s*SELECT\s+COUNT\(\s*DISTINCT[\s+|\(\s*](\w+|`[^`]+`)\)?\s*\)(\s+AS\s+\w+)?\s+FROM}{SELECT DISTINCT $1$2 FROM}is) {
+      $query= $orig_query;
+      if ($with_transform_outcome) {
+        $transform_outcome= ' /* TRANSFORM_OUTCOME_COUNT_NOT_NULL_REVERSE */';
+      }
     }
   }
-  return undef;
+  unless (defined $query) {
+    $query= "SELECT COUNT(*) FROM ( $orig_query ) sq_count_transformer";
+    if ($with_transform_outcome) {
+      $transform_outcome= ' /* TRANSFORM_OUTCOME_COUNT */';
+    }
+  }
+  $query.= $transform_outcome;
+  return [ $query ];
 }
 
 1;
