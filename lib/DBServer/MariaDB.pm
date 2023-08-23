@@ -1105,16 +1105,21 @@ sub stopServer {
         ## stale (happens i.e. with mdl_stability/valgrind runs)
         alarm($shutdown_timeout);
         # Need to check if $connection is defined, in case the server has crashed
+        my $shutdown_sent= 0;
         if ($self->connection->alive()) {
-            if ($self->connection->execute("shutdown") != STATUS_OK) {
-                sayWarning("Shutdown command did not work: ".$self->connection->print_error);
-                say("Sending SIGTERM");
-                $res= $self->kill('TERM');
-                if (!$res) {
-                    sayError("Shutdown via SIGTERM failed");
-                    $res= DBSTATUS_FAILURE;
-                }
-            }
+          if ($self->connection->execute("shutdown") != STATUS_OK) {
+              sayWarning("Shutdown command did not work: ".$self->connection->print_error);
+          } else {
+            $shutdown_sent= 1;
+          }
+        }
+        unless ($shutdown_sent) {
+          say("Sending SIGTERM");
+          $res= $self->kill('TERM');
+          if (!$res) {
+              sayError("Shutdown via SIGTERM failed");
+              $res= DBSTATUS_FAILURE;
+          }
         }
         if (!$self->waitForServerToStop($shutdown_timeout)) {
             # Terminate process
@@ -1132,11 +1137,14 @@ sub stopServer {
         say("Shutdown timeout or connection is not established, killing the server");
         $res= $self->kill;
     }
-    my ($crashes, undef)= $self->checkErrorLogForErrors();
+    my ($crashes, $errors)= $self->checkErrorLogForErrors();
     if ($crashes and scalar(@$crashes)) {
-      $res= DBSTATUS_FAILURE;
+      return STATUS_SERVER_CRASHED;
+    } elsif ($errors and scalar(@$errors)) {
+      return STATUS_ERRORS_IN_LOG;
+    } else {
+      return STATUS_OK;
     }
-    return $res;
 }
 
 sub checkDatabaseIntegrity {
