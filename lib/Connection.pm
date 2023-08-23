@@ -69,7 +69,7 @@ use constant CONNECTION_DSN => 8;
 use constant CONNECTION_ERROR => 9;
 use constant CONNECTION_ERROR_STRING => 10;
 use constant CONNECTION_SERVER => 11;
-use constant CONNECTION_ROLE => 12; # super, admin, worker
+use constant CONNECTION_ROLE => 12; # super, worker
 use constant CONNECTION_EXECUTION_TIME => 13;
 use constant CONNECTION_AFFECTED_ROWS => 14;
 use constant CONNECTION_MYSQL_INFO => 15;
@@ -85,7 +85,6 @@ use constant CONNECTION_REPORTED_ERRORS => 24;
 use constant CONNECTION_MESSAGE_FILTERING => 25;
 
 use constant CONNECTION_SUPER_USER => 'root';
-use constant CONNECTION_ADMIN_ROLE => 'admin';
 use constant CONNECTION_TEST_USER => 'rqg';
 use constant CONNECTION_DEFAULT_PORT => 19300;
 use constant CONNECTION_DEFAULT_HOST => '127.0.0.1';

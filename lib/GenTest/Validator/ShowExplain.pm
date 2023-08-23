@@ -69,7 +69,7 @@ sub validate {
 
   unless ($child_conn)
   {
-    $child_conn = Connection::Perl->new(server => $executor->server, role => 'admin', name => 'SHX' );
+    $child_conn = Connection::Perl->new(server => $executor->server, role => 'super', name => 'SHX' );
     unless ($child_conn)
     {
       say("ERROR: Could not create child connection in ShowExplain");

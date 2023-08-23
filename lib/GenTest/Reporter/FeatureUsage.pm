@@ -102,10 +102,10 @@ sub monitor {
   
   $conn= $reporter->connection() unless ($conn);
 
-  unless ($conn->alive()) {
-    sayError((ref $reporter)." reporter returning critical failure");
-    return STATUS_SERVER_UNAVAILABLE;
-  }
+#  unless ($conn->alive()) {
+#    sayError((ref $reporter)." reporter returning critical failure");
+#    return STATUS_SERVER_UNAVAILABLE;
+#  }
   # We will only check the table once, as feature registration happens
   # before reporters are initialized
   unless (defined $registered_features) {

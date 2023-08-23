@@ -80,12 +80,12 @@ sub monitor {
 sub monitor_nonthreaded {
   my $reporter = shift;
 
-  sigaction SIGALRM, new POSIX::SigAction sub {
-                sayError("Deadlock reporter: Timeout upon running SHOW FULL PROCESSLIST");
-                return STATUS_SERVER_DEADLOCKED;
-  } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
+#  sigaction SIGALRM, new POSIX::SigAction sub {
+#                sayError("Deadlock reporter: Timeout upon running SHOW FULL PROCESSLIST");
+#                return STATUS_SERVER_DEADLOCKED;
+#  } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
 
-  alarm (REPORTER_CONNECT_TIMEOUT_THRESHOLD);
+#  alarm (REPORTER_CONNECT_TIMEOUT_THRESHOLD);
 
   my $conn= $reporter->connection();
   if (! $conn) {
@@ -93,7 +93,7 @@ sub monitor_nonthreaded {
     return STATUS_SERVER_UNAVAILABLE;
   }
   my $processlist = $conn->query("SHOW FULL PROCESSLIST");
-  alarm (0);
+#  alarm (0);
 
   # Stalled queries are those which have been in the process list too long (in any state)
   my $stalled_queries= 0;
@@ -126,15 +126,15 @@ sub monitor_nonthreaded {
 
 sub collect_deadlock_diagnostics {
   my $reporter= shift;
-  sigaction SIGALRM, new POSIX::SigAction sub {
-              sayError("Deadlock reporter: Timeout upon performing deadlock diagnostics");
-              return STATUS_SERVER_DEADLOCKED;
-  } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
-
-  alarm(REPORTER_CONNECT_TIMEOUT_THRESHOLD);
-
+#  sigaction SIGALRM, new POSIX::SigAction sub {
+#              sayError("Deadlock reporter: Timeout upon performing deadlock diagnostics");
+#              return STATUS_SERVER_DEADLOCKED;
+#  } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
+#
+#  alarm(REPORTER_CONNECT_TIMEOUT_THRESHOLD);
+#
   unless ($reporter->connection) {
-    alarm(0);
+#    alarm(0);
     return STATUS_SERVER_UNAVAILABLE;
   }
   $reporter->connection->execute("INSTALL SONAME 'metadata_lock_info'");
@@ -148,8 +148,8 @@ sub collect_deadlock_diagnostics {
       my $status_result = $reporter->connection->query($status_query);
       print Dumper $status_result;
   }
-  alarm(0);
-  return STATUS_SERVER_DEADLOCKED
+#  alarm(0);
+  return STATUS_SERVER_DEADLOCKED;
 }
 
 sub monitor_threaded {
@@ -253,7 +253,7 @@ sub report {
     sleep(2);
 
     say("Deadlock reporter: Killing mysqld with pid $server_pid with SIGSEGV in order to capture core.");
-    kill(11, $server_pid);
+    $reporter->server->kill('SEGV');
   }
   return STATUS_SERVER_DEADLOCKED;
 }

@@ -48,7 +48,7 @@ sub monitor {
 
     my $conn = $reporter->connection;
 
-    say("Testing consistency of secondary indexes");
+    sayDebug("Testing consistency of secondary indexes");
 
     my $tables = $conn->get_column("SELECT CONCAT('`',table_schema,'`.`',table_name,'`') FROM information_schema.tables WHERE engine='InnoDB'");
 

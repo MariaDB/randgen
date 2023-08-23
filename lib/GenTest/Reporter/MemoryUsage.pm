@@ -82,6 +82,7 @@ sub report {
 
 sub get_top_output {
   my $pid= shift;
+  return undef unless $pid;
   my ($mem, $unit, $cpu, $mem_pct);
   if (open(TOP, 'top -b -n 1 -p '.$pid.' |')) {
     while (<TOP>) {

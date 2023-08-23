@@ -52,24 +52,40 @@ sub new {
     ":max_allowed_packet=1G".
     ($self->[CONNECTION_PROTOCOL] eq 'ps' ? ":mysql_server_prepare=1" : "");
   $self->[CONNECTION_DBH]= $self->connect();
-  if ($self->[CONNECTION_DBH] && ($self->[CONNECTION_ROLE] eq 'admin')) {
-    unless ($self->[CONNECTION_ERROR]) {
-      $self->execute("SET ROLE admin");
-    }
-  }
+  sayDebug("Connected: ".$self->[CONNECTION_NAME]." as ".$self->[CONNECTION_ROLE]." (".$self->[CONNECTION_USER].")");
   return $self;
 }
 
 sub connect {
   my $self= shift;
+  $self->[CONNECTION_ERROR]= undef;
+  $self->[CONNECTION_ERROR_STRING]= undef;
+  $self->[CONNECTION_ERROR_TYPE]= undef;
   my $dbh= DBI->connect($self->[CONNECTION_DSN],
     undef,
     undef,
     {PrintError => 0, RaiseError => 0, AutoCommit => 1, mysql_auto_reconnect => 1}
   );
   ($self->[CONNECTION_ERROR], $self->[CONNECTION_ERROR_STRING])= ($DBI::err||0,$DBI::errstr||'');
+  $self->[CONNECTION_ERROR_TYPE]= errorType($self->[CONNECTION_ERROR]);
+
   if ($self->[CONNECTION_ERROR]) {
-    sayError($self->name().": Failed to connect to server at port ".$self->[CONNECTION_PORT].": ".$self->print_error);
+    my $downtime= (serverGone($self->[CONNECTION_ERROR_TYPE]) && $self->[CONNECTION_SERVER] && $self->[CONNECTION_SERVER]->isPlannedDowntime());
+    $self->[CONNECTION_ERROR_TYPE]= STATUS_SERVER_STOPPED if $downtime;
+    $self->report_error("Connect") if $self->err;
+
+    if ($downtime) {
+      sayDebug($self->name().": Upon connecting: server is down, the downtime is planned");
+      my $status= $self->[CONNECTION_SERVER]->waitPlannedDowntime();
+      if ($status == STATUS_OK) {
+        sayDebug($self->name().": Server returned in time, trying to connect again");
+        return $self->connect();
+      } elsif ($status == STATUS_SERVER_STOPPED) {
+        sayDebug($self->name().": Upon connecting: instructed not to wait");
+      } else {
+        sayError($self->name().": Upon connecting: Server has gone away");
+      }
+    }
   }
   return $dbh;
 }
@@ -130,7 +146,7 @@ sub query {
   $self->[CONNECTION_SQLSTATE]= undef;
   $self->[CONNECTION_WARNING_COUNT]= undef;
 
-  return undef unless $self->refresh() == STATUS_OK;
+  return undef unless $self->alive();
     
   my $sth;
   # Combination of mysql_server_prepare and mysql_multi_statements
@@ -158,7 +174,6 @@ sub query {
   $self->report_error($send_query) if $self->err;
 
   if ($downtime) {
-    $self->[CONNECTION_ERROR_TYPE]= STATUS_SERVER_STOPPED;
     sayDebug($self->name().": Server is down, the downtime is planned");
     my $status= $self->[CONNECTION_SERVER]->waitPlannedDowntime();
     if ($status == STATUS_OK) {

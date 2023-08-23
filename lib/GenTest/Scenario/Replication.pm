@@ -117,7 +117,7 @@ sub run {
     if ($c =~ /^(\d+)->(\d+)$/) {
       my ($master, $slave)= ($1-1, $2-1);
       say("Enabling $c replication");
-      my $master_conn= Connection::Perl->new( server => $servers[$master], role => 'admin', name => 'RPL' );
+      my $master_conn= Connection::Perl->new( server => $servers[$master], role => 'super', name => 'RPL' );
       $master_conn->execute("SET tx_read_only= OFF");
       $master_conn->execute("CREATE USER IF NOT EXISTS replication IDENTIFIED BY 'yvp.utu9azv4xgt6VRT'");
       unless ($master_conn->err) {

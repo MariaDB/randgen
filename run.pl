@@ -384,8 +384,6 @@ sub run {
       open STDERR, ">&STDOUT";
     }
 
-    my $output_file= $props_vardir_orig."/trial$trial_id.log";
-
     if ($genconfig) {
       my $cnf_contents = GenTest::GenConfig->new(spec_file => $genconfig,
                                                  seed => $props->{seed},
@@ -420,10 +418,12 @@ sub run {
     $status= $res if $res > $status;
     my $resname= status2text($res);
     group_cleaner();
-    copy($props->{vardir}."/trial.log",$output_file);
+    if ($trials > 1) {
+      copy($props->{vardir}."/trial.log",$props_vardir_orig."/trial$trial_id.log");
+    }
     if ($search_mode) {
       say("Trial $trial_id ended with exit status $resname ($res)");
-      my $check_result= check_for_desired_result($resname,$output_file, $output);
+      my $check_result= check_for_desired_result($resname,$props->{vardir}."/trial.log", $output);
       if ($check_result) {
         $trial_result= 1;
         last TRIALS unless $force;

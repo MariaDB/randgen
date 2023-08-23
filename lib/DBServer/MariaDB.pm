@@ -64,7 +64,7 @@ use constant MYSQLD_CONFIG_FILE => 27;
 use constant MYSQLD_USER => 28;
 use constant MYSQLD_MAJOR_VERSION => 29;
 use constant MYSQLD_CLIENT_BINDIR => 30;
-use constant MYSLQD_SERVER_VARIABLES => 31;
+use constant MYSQLD_SERVER_VARIABLES => 31;
 use constant MYSQLD_RR => 32;
 use constant MYSLQD_CONFIG_VARIABLES => 33;
 use constant MYSQLD_CLIENT => 34;
@@ -72,6 +72,7 @@ use constant MARIABACKUP => 35;
 use constant MYSQLD_MANUAL_GDB => 36;
 use constant MYSQLD_HOST => 37;
 use constant MYSQLD_PS_PROTOCOL => 40;
+use constant MYSQLD_LAST_CHECKED_MARKER => 41;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -629,6 +630,9 @@ sub kill {
     }
 
     if (defined $self->serverpid and $self->serverpid =~ /^\d+$/) {
+        unless (($signal eq '0') || ($signal eq 'TERM') || ($signal eq '15')) {
+          $self->addErrorLogMarker('KILL_'.time().'_'.$signal);
+        }
         kill $signal => $self->serverpid;
         my $sleep_time= 0.2;
         my $waits = int($default_shutdown_timeout / $sleep_time);
@@ -664,6 +668,7 @@ sub term {
         }
         unless ($waits) {
             say("Unable to terminate process ".$self->serverpid.". Trying SIGABRT");
+            $self->addErrorLogMarker('KILL_'.time().'_ABRT');
             kill ABRT => $self->serverpid;
             $res= DBSTATUS_FAILURE;
             $waits= int($default_shutdown_timeout / $sleep_time);
@@ -673,6 +678,7 @@ sub term {
             }
             unless ($waits) {
               say("SIGABRT didn't work for process ".$self->serverpid.". Trying KILL");
+              $self->addErrorLogMarker('KILL_'.time().'_KILL');
               $self->kill;
             }
         } else {
@@ -1094,16 +1100,16 @@ sub stopServer {
     }
     if ($shutdown_timeout and $self->connection) {
         sayDebug("Stopping server at port ".$self->port);
-        $SIG{'ALRM'} = sub { sayWarning("Could not execute shutdown command in time"); };
+        $SIG{'ALRM'} = sub { sayDebug("Could not execute shutdown command in time"); };
         ## Use connection routine to ensure reconnect in case connection is
         ## stale (happens i.e. with mdl_stability/valgrind runs)
         alarm($shutdown_timeout);
         # Need to check if $connection is defined, in case the server has crashed
-        if ($self->connection->refresh() == STATUS_OK) {
+        if ($self->connection->alive()) {
             if ($self->connection->execute("shutdown") != STATUS_OK) {
                 sayWarning("Shutdown command did not work: ".$self->connection->print_error);
                 say("Sending SIGTERM");
-                $res= $self->term;
+                $res= $self->kill('TERM');
                 if (!$res) {
                     sayError("Shutdown via SIGTERM failed");
                     $res= DBSTATUS_FAILURE;
@@ -1112,8 +1118,8 @@ sub stopServer {
         }
         if (!$self->waitForServerToStop($shutdown_timeout)) {
             # Terminate process
-            sayWarning("Server would not shut down properly. Terminating it");
-            $res= $self->term;
+            sayWarning("Server doesn't shut down properly. Terminating it with SIGABRT");
+            $res= $self->kill('ABRT');
         } else {
             # clean up when server is not alive.
             unlink $self->socketfile if -e $self->socketfile;
@@ -1126,7 +1132,7 @@ sub stopServer {
         say("Shutdown timeout or connection is not established, killing the server");
         $res= $self->kill;
     }
-    my ($crashes, undef)= $self->checkErrorLogForErrors($shutdown_marker);
+    my ($crashes, undef)= $self->checkErrorLogForErrors();
     if ($crashes and scalar(@$crashes)) {
       $res= DBSTATUS_FAILURE;
     }
@@ -1322,6 +1328,9 @@ sub waitForServerToStop {
   while ($self->running && $waits < $timeout) {
     Time::HiRes::sleep(0.5);
     $waits++;
+    if ($waits % 60 == 0) {
+      say("Still waiting for the server to stop...");
+    }
   }
   return !$self->running;
 }
@@ -1470,20 +1479,38 @@ sub backupDatadir {
 # The check starts from the provided marker or from the beginning of the log
 
 sub checkErrorLogForErrors {
-  my ($self, $marker)= @_;
+  my $self= shift;
 
   my @crashes= ();
   my @errors= ();
 
   open(ERRLOG, $self->errorlog);
   my $found_marker= 0;
+  my $marker= $self->[MYSQLD_LAST_CHECKED_MARKER];
+  my $last_marker= undef;
+  my $server_is_being_killed= 0;
 
   say("Checking server log for important errors starting from " . ($marker ? "marker $marker" : 'the beginning'));
 
   my $count= 0;
   while (<ERRLOG>)
   {
-    next unless !$marker or $found_marker or /^$marker$/;
+    if (/^SHUTDOWN_\d+$|^KILL_\d+_\w*$/) {
+      $last_marker= $_;
+      chomp $last_marker;
+      if ($last_marker =~ /^KILL/) {
+        $server_is_being_killed= 1;
+      }
+    } elsif (/Starting.*as process.*/) {
+      # The server is restarted, the last KILL marker isn't important anymore
+      $server_is_being_killed= 0;
+    }
+
+    # If a marker is defined, we skip all lines until we find it
+    next if $marker and (not $found_marker) and not ($_ =~ /^$marker$/);
+
+    # Either we found the last checked marker, or it wasn't defined,
+    # all the same, we are checking from here
     $found_marker= 1;
     $_ =~ s{[\r\n]}{}isg;
 
@@ -1495,6 +1522,7 @@ sub checkErrorLogForErrors {
       or $_ =~ /InnoDB: Unable to rename statistics from/s
       or $_ =~ /ib_buffer_pool' for reading: No such file or directory/s
       or $_ =~ /has or is referenced in foreign key constraints which are not compatible with the new table definition/s
+      or $_ =~ /InnoDB: .*because after adding it, the row size is/s
     ;
 
     # MDEV-20320
@@ -1523,11 +1551,11 @@ sub checkErrorLogForErrors {
     # Crashes
     if (
            $_ =~ /Assertion\W/is
-        or $_ =~ /got\s+signal/is
-        or $_ =~ /segmentation fault/is
-        or $_ =~ /segfault/is
-        or $_ =~ /got\s+exception/is
-        or $_ =~ /AddressSanitizer|LeakSanitizer/is
+        or ( $_ =~ /got\s+signal/is and not $server_is_being_killed )
+        or ( $_ =~ /segmentation fault/is and not $server_is_being_killed )
+        or ( $_ =~ /segfault/is and not $server_is_being_killed )
+        or ( $_ =~ /got\s+exception/is and not $server_is_being_killed )
+        or $_ =~ /AddressSanitizer|LeakSanitizer|MemorySanitizer/is
     ) {
       push @crashes, $_;
     }
@@ -1541,14 +1569,15 @@ sub checkErrorLogForErrors {
     }
   }
   close(ERRLOG);
+  $self->[MYSQLD_LAST_CHECKED_MARKER]= $last_marker;
   if (scalar @crashes) {
-    say("------- Crash-like lines in the error log -------");
-    say(join "\n", @crashes);
+    sayError("------- Crash-like lines in the error log -------");
+    sayError(join "\n", @crashes);
     say("-------");
   }
   if (scalar @errors) {
-    say("------- Error messages in the error log -------");
-    say(join "\n", @errors);
+    sayError("------- Error messages in the error log -------");
+    sayError(join "\n", @errors);
     say("-------");
   }
 
@@ -1557,15 +1586,15 @@ sub checkErrorLogForErrors {
 
 sub serverVariables {
     my $self = shift;
-    if (not keys %{$self->[MYSLQD_SERVER_VARIABLES]}) {
+    if (not keys %{$self->[MYSQLD_SERVER_VARIABLES]}) {
         my $array_ref = $self->connection->query("SHOW VARIABLES");
         my %vars = ();
         foreach my $r (@$array_ref) {
             $vars{$r->[0]} = $r->[1];
         }
-        $self->[MYSLQD_SERVER_VARIABLES] = \%vars;
+        $self->[MYSQLD_SERVER_VARIABLES] = \%vars;
     }
-    return $self->[MYSLQD_SERVER_VARIABLES];
+    return $self->[MYSQLD_SERVER_VARIABLES];
 }
 
 sub serverVariable {

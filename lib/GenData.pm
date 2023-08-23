@@ -207,6 +207,7 @@ sub doGenData {
       next unless $so->{active};
       say("Running $gd_class".($gd_class eq 'GenData::GendataFromFile' ? " from $gd" : "")." on server $i");
       my $res= $gd_class->new(
+         basedir => $so->{basedir},
          compatibility => $props->compatibility,
          debug => $props->debug,
          engine => $so->{engine},

@@ -184,7 +184,7 @@ sub new {
 
 sub connect {
   my $reporter= shift;
-  $reporter->[REPORTER_CONNECTION]= Connection::Perl->new( server => $reporter->server, role => 'admin', name => 'RPT' );
+  $reporter->[REPORTER_CONNECTION]= Connection::Perl->new( server => $reporter->server, role => 'super', name => 'RPT' );
   return $reporter->[REPORTER_CONNECTION];
 }
 
@@ -222,6 +222,9 @@ sub server {
 }
 
 sub serverInfo {
+  if ($_[1] eq 'pid') {
+    $_[0]->updatePid();
+  }
   $_[0]->[REPORTER_SERVER_INFO]->{$_[1]};
 }
 
@@ -271,7 +274,7 @@ sub connection {
   }
   if (defined $reporter->[REPORTER_CONNECTION]) {
     unless ($reporter->[REPORTER_CONNECTION]->alive) {
-      $reporter->[REPORTER_CONNECTION]->refresh;
+      $reporter->[REPORTER_CONNECTION]= undef;
     }
   }
   return $reporter->[REPORTER_CONNECTION];
