@@ -33,7 +33,7 @@ optimizer_var:
   JOIN_BUFFER_SPACE_LIMIT = join_buffer_space_val |
   JOIN_CACHE_LEVEL = join_cache_level_val |
   OPTIMIZER_EXTRA_PRUNING_DEPTH = extra_pruning_val /* compatibility 10.10.1 */ |
-  OPTIMIZER_MAX_SEL_ARG_WEIGHT = max_sel_weight_val |
+  OPTIMIZER_MAX_SEL_ARG_WEIGHT = max_sel_weight_val /* compatibility 10.5.9 */ |
   OPTIMIZER_PRUNE_LEVEL = prune_level_val |
   OPTIMIZER_SEARCH_DEPTH = search_depth_val |
   OPTIMIZER_SELECTIVITY_SAMPLING_LIMIT = selectivity_sampling_val |
