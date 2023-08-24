@@ -124,12 +124,10 @@ sub run {
       $self->printStep("Stopping/killing the server");
       $status= $server->startPlannedDowntime($restart_type,$shutdown_timeout*2);
 
-      # Since the scenario is about restart, we cannot proceed after shutdown failure
       if ($status != STATUS_OK) {
-        sayError("Could not stop the server");
-        $total_status= STATUS_SERVER_SHUTDOWN_FAILURE if STATUS_SERVER_SHUTDOWN_FAILURE > $total_status;
+        sayError("Restart scenario: Attempt to stop the server ended with an error");
+        $total_status= $status if $status > $total_status;
         $server->endPlannedDowntime();
-        last TESTRUN;
       }
 
       #####
