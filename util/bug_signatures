@@ -1040,7 +1040,7 @@ MDEV-28438:
 =~ Query.*:.*SELECT
 =~ query-cache-size|query-cache-type=1
 MDEV-28404:
-=~ STATUS_SERVER_DEADLOCKED|STATUS_TEST_FAILURE
+=~ STATUS_SERVER_DEADLOCKED
 =~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
 =~ Deadlock reporter: Stalled query: .*JSON_
 MDEV-28396:
@@ -1153,7 +1153,7 @@ MDEV-27674:
 =~ row_ins_cascade_calc_update_vec
 =~ row_ins_foreign_check_on_constraint
 MDEV-27661:
-=~ CONVERT TO CHARACTER SET .* failed: 1033.* Incorrect information in file
+=~ CONVERT TO CHARACTER SET .* failed: 1033.* Incorrect information in file|STATUS_DATABASE_CORRUPTION: 1033 .*Incorrect information in file.* CONVERT TO CHARACTER SET
 =~ Test completed with failure status STATUS_DATABASE_CORRUPTION
 MDEV-27616:
 =~ AddressSanitizer|signal
