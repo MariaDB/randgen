@@ -237,23 +237,22 @@ sub connect_thread {
 
 sub report {
   my $reporter = shift;
-  my $server_pid = $reporter->serverInfo('pid');
   my $datadir = $reporter->server->serverVariable('datadir');
-
-  if (
-    ($^O eq 'MSWin32') ||
-    ($^O eq 'MSWin64')
-        ) {
-    my $cdb_command = "cdb -p $server_pid -c \".dump /m $datadir\\mysqld.dmp;q\"";
-    say("Deadlock reporter: Executing $cdb_command");
-    system($cdb_command);
+  my $server_pid = $reporter->serverInfo('pid');
+  if ($server_pid) {
+    if (($^O eq 'MSWin32') || ($^O eq 'MSWin64')) {
+      my $cdb_command = "cdb -p $server_pid -c \".dump /m $datadir\\mysqld.dmp;q\"";
+      say("Deadlock reporter: Executing $cdb_command");
+      system($cdb_command);
+    } else {
+      say("Deadlock reporter: Killing mysqld with pid $server_pid with SIGHUP in order to force debug output.");
+      kill(1, $server_pid);
+      sleep(2);
+      say("Deadlock reporter: Killing mysqld with pid $server_pid with SIGSEGV in order to capture core.");
+      $reporter->server->kill('SEGV');
+    }
   } else {
-    say("Deadlock reporter: Killing mysqld with pid $server_pid with SIGHUP in order to force debug output.");
-    kill(1, $server_pid);
-    sleep(2);
-
-    say("Deadlock reporter: Killing mysqld with pid $server_pid with SIGSEGV in order to capture core.");
-    $reporter->server->kill('SEGV');
+    say("Deadlock reporter: Server PID not found, not sending signals");
   }
   return STATUS_SERVER_DEADLOCKED;
 }
