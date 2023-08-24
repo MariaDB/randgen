@@ -34,10 +34,9 @@ sub report {
   my $binary = $reporter->serverInfo('binary');
   my $bindir = $reporter->serverInfo('bindir');
   my $pid = $reporter->serverInfo('pid');
-  say("datadir: $datadir");
-  say("binary: $binary");
-  say("bindir: $bindir");
-  say("pid: $pid");
+  say("BackTrace: datadir: $datadir");
+  say("BackTrace: binary: $binary");
+  say("BackTrace: pid: $pid");
 
   my $core;
   $core = </cores/core.$pid> if $^O eq 'darwin';
@@ -95,7 +94,7 @@ sub report {
           ## Assume all other systems are gdb-"friendly" ;-)
           push @commands, "gdb --batch --se=$binary --core=$core --command=util/backtrace.gdb";
           push @commands, "gdb --batch --se=$binary --core=$core --command=util/backtrace-all.gdb";
-      } elsif (kill(0,$pid)) {
+      } elsif ($pid and kill(0,$pid)) {
           say("The process $pid is still alive. Taking stack traces from the running server");
           push @commands, "gdb --batch --se=$binary -p $pid --command=util/backtrace.gdb";
           push @commands, "gdb --batch --se=$binary -p $pid --command=util/backtrace-all.gdb";
