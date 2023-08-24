@@ -50,7 +50,7 @@ sub monitor {
 
     sayDebug("Testing consistency of secondary indexes");
 
-    my $tables = $conn->get_column("SELECT CONCAT('`',table_schema,'`.`',table_name,'`') FROM information_schema.tables WHERE engine='InnoDB'");
+    my $tables = $conn->get_column("SELECT CONCAT('`',table_schema,'`.`',table_name,'`') FROM information_schema.tables WHERE engine='InnoDB' AND table_schema NOT IN ('mysql','information_schema','performance_schema','sys')");
 
     $conn->execute("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
     foreach my $table (@$tables) {
