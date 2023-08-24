@@ -1137,9 +1137,11 @@ sub stopServer {
         say("Shutdown timeout or connection is not established, killing the server");
         $res= $self->kill;
     }
-    my ($crashes, $errors)= $self->checkErrorLogForErrors();
+    my ($crashes, $errors, $leaks)= $self->checkErrorLogForErrors();
     if ($crashes and scalar(@$crashes)) {
       return STATUS_SERVER_CRASHED;
+    } elsif ($leaks and scalar(@$leaks)) {
+      return STATUS_MEMORY_LEAK;
     } elsif ($errors and scalar(@$errors)) {
       return STATUS_ERRORS_IN_LOG;
     } else {
@@ -1491,6 +1493,7 @@ sub checkErrorLogForErrors {
 
   my @crashes= ();
   my @errors= ();
+  my @leaks= ();
 
   open(ERRLOG, $self->errorlog);
   my $found_marker= 0;
@@ -1563,9 +1566,15 @@ sub checkErrorLogForErrors {
         or ( $_ =~ /segmentation fault/is and not $server_is_being_killed )
         or ( $_ =~ /segfault/is and not $server_is_being_killed )
         or ( $_ =~ /got\s+exception/is and not $server_is_being_killed )
-        or $_ =~ /AddressSanitizer|LeakSanitizer|MemorySanitizer/is
+        or $_ =~ /ERROR: AddressSanitizer|ERROR: MemorySanitizer/is
     ) {
       push @crashes, $_;
+    }
+    elsif (
+           $_ =~ /ERROR: LeakSanitizer/is
+        or /Memory not freed/is
+    ) {
+      push @leaks, $_;
     }
     # Other errors
     elsif (
@@ -1589,7 +1598,7 @@ sub checkErrorLogForErrors {
     say("-------");
   }
 
-  return (\@crashes, \@errors);
+  return (\@crashes, \@errors, \@leaks);
 }
 
 sub serverVariables {
@@ -1627,7 +1636,7 @@ sub running {
         return ! system("[ -e /proc/$pid ]")
       }
     } else {
-      sayWarning("PID not found");
+      sayDebug("PID not found");
       return 0;
     }
 }

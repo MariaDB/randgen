@@ -63,6 +63,7 @@ require Exporter;
   STATUS_SERVER_DEADLOCKED
   STATUS_SERVER_SHUTDOWN_FAILURE
   STATUS_VALGRIND_FAILURE
+  STATUS_MEMORY_LEAK
   STATUS_SERVER_STARTUP_FAILURE
   STATUS_ALARM
 
@@ -115,9 +116,9 @@ use constant STATUS_SERVER_SHUTDOWN_FAILURE  => 90;
 use constant STATUS_OUT_OF_MEMORY            => 95; # Various non-fatal out-of-memory errors
 use constant STATUS_DATABASE_CORRUPTION      => 96; # Database corruption errors are often bogus, but still important to look at
 
-use constant STATUS_CRITICAL_FAILURE         => 100; # Boundary between critical and non-critical errors
-
 # Critical errors cause premature test termination
+
+use constant STATUS_CRITICAL_FAILURE         => 100; # Boundary between critical and non-critical errors
 
 use constant STATUS_SERVER_UNAVAILABLE       => 102; # Cannot connect to the server without a known reason
 use constant STATUS_SERVER_DEADLOCKED        => 103;
@@ -125,11 +126,12 @@ use constant STATUS_REPLICATION_FAILURE      => 104;
 use constant STATUS_UPGRADE_FAILURE          => 105;
 use constant STATUS_RECOVERY_FAILURE         => 106;
 use constant STATUS_BACKUP_FAILURE           => 107;
-use constant STATUS_SERVER_CRASHED           => 108;
-use constant STATUS_VALGRIND_FAILURE         => 109;
-use constant STATUS_SERVER_STARTUP_FAILURE   => 110;
-use constant STATUS_ENVIRONMENT_FAILURE      => 111; # A failure in the environment or the grammar file
-use constant STATUS_ALARM                    => 112; # A module, e.g. a Reporter, raises an alarm with critical severity
+use constant STATUS_VALGRIND_FAILURE         => 108;
+use constant STATUS_MEMORY_LEAK              => 109;
+use constant STATUS_SERVER_CRASHED           => 110;
+use constant STATUS_SERVER_STARTUP_FAILURE   => 111;
+use constant STATUS_ENVIRONMENT_FAILURE      => 112; # A failure in the environment or the grammar file
+use constant STATUS_ALARM                    => 113; # A module, e.g. a Reporter, raises an alarm with critical severity
 
 use constant STATUS_PERL_FAILURE             => 255; # Perl died for some reason
 
