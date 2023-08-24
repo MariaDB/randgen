@@ -57,8 +57,10 @@ sub new {
 
 sub run {
   my $self= shift;
-  my ($status, $server, $gentest, $topology);
+  my ($status, $server, $gentest, $topology, $total_status);
+  $total_status= STATUS_OK;
   $status= STATUS_OK;
+
   $topology= '1->2';
 
   my @reporters= $self->getProperty('reporters') ? @{$self->getProperty('reporters')} : ();
@@ -101,7 +103,8 @@ sub run {
     $status= $servers[$s]->startServer;
     if ($status != STATUS_OK) {
       sayError("Server ".($s+1)." failed to start");
-      return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[@servers]);
+      $total_status= $status if $status > $total_status;
+      goto FINALIZE;
     }
   }
 
@@ -125,7 +128,7 @@ sub run {
       }
       if ($master_conn->err) {
         sayError("Could not configure replication user on server $master: ".$master_conn->print_error);
-        $status= STATUS_REPLICATION_FAILURE;
+        $total_status= STATUS_REPLICATION_FAILURE if STATUS_REPLICATION_FAILURE > $total_status;
         last;
       }
       my $master_port= $servers[$master]->port;
@@ -134,19 +137,19 @@ sub run {
       $slave_conn->execute("START SLAVE");
       if ($slave_conn->err) {
         sayError("Could not start replication $master -> $slave: ".$slave_conn->print_error);
-        $status= STATUS_REPLICATION_FAILURE;
+        $total_status= STATUS_REPLICATION_FAILURE if STATUS_REPLICATION_FAILURE > $total_status;
         last;
       }
     } else {
       sayError("Wrong connection $c in topology");
-      $status= STATUS_ENVIRONMENT_FAILURE;
+      $total_status= STATUS_ENVIRONMENT_FAILURE if STATUS_ENVIRONMENT_FAILURE > $total_status;
       last;
     }
   }
 
-  if ($status != STATUS_OK) {
-    sayError("Replication configuration failed");
-    return $self->finalize($status,[@servers]);
+  if ($total_status != STATUS_OK) {
+    sayError("Replication preparation failed");
+    goto FINALIZE;
   }
 
   #####
@@ -156,7 +159,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
-    return $self->finalize($status,[@servers]);
+    $total_status= $status if $status > $total_status;
+    goto FINALIZE;
   }
 
   #####
@@ -165,7 +169,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Test flow failed");
-    return $self->finalize($status,[@servers]);
+    $total_status= $status if $status > $total_status;
+    goto FINALIZE;
   }
 
   #####
@@ -173,16 +178,18 @@ sub run {
     $self->printStep("Synchronizing with master");
     my ($file, $pos) = $servers[0]->getMasterPos();
     unless ($file && $pos && $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration')) == STATUS_OK) {
-      return $self->finalize(STATUS_REPLICATION_FAILURE,[@servers]);
+      $total_status= STATUS_REPLICATION_FAILURE if STATUS_REPLICATION_FAILURE > $total_status;
+      goto FINALIZE;
     }
   } else {
     $self->printStep("Checking that the replica is alive");
-    my $status= $servers[1]->getSlaveStatus();
-    if (defined $status) {
-      say("Current replica status: Last_SQL_Errno: ".$status->{Last_SQL_Errno}.", Last_IO_Errno: ".$status->{Last_IO_Errno});
+    my $slave_status= $servers[1]->getSlaveStatus();
+    if (defined $slave_status) {
+      say("Current replica status: Last_SQL_Errno: ".$slave_status->{Last_SQL_Errno}.", Last_IO_Errno: ".$slave_status->{Last_IO_Errno});
     } else {
       sayError("Slave didn't return any status");
-      return $self->finalize(STATUS_SERVER_UNAVAILABLE,[@servers]);
+      $total_status= STATUS_REPLICATION_FAILURE if STATUS_REPLICATION_FAILURE > $total_status;
+      goto FINALIZE;
     }
   }
 
@@ -191,13 +198,11 @@ sub run {
 
   foreach (0..$#servers) {
     $status= $servers[$_]->stopServer();
-    if ($status != STATUS_OK) {
-      sayError("Server ".($_+1)." shutdown failed");
-      return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[@servers]);
-    }
+    $total_status= $status if $status > $total_status;
   }
 
-  return $self->finalize($status,[]);
+FINALIZE:
+  return $self->finalize($total_status,[@servers]);
 }
 
 1;

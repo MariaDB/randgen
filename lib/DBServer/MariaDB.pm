@@ -564,14 +564,14 @@ sub startServer {
         if (!$pid) {
             sayError("Server has not started written a starting line into the error log $errorlog within $start_wait_timeout sec. timeout, and has not created pid file");
             sayFile($errorlog);
-            return DBSTATUS_FAILURE;
+            return STATUS_SERVER_STARTUP_FAILURE;
         }
 
         # If the server has written a starting line in the log, we should see whether that process is still alive
         unless (kill(0,$pid)) {
           sayError("Server attempted to start with pid $pid, but the process no longer exists");
           sayFile($errorlog);
-          return DBSTATUS_FAILURE;
+          return STATUS_SERVER_STARTUP_FAILURE;
         }
 
         # If the process is still alive, but the pid file is not created yet,
@@ -587,7 +587,7 @@ sub startServer {
         if (! kill(0,$pid)) {
           sayError("Server with pid $pid died before it finished startup");
           sayFile($errorlog);
-          return DBSTATUS_FAILURE;
+          return STATUS_SERVER_STARTUP_FAILURE;
         }
 
         if (! -f $self->pidfile()) {
@@ -595,7 +595,7 @@ sub startServer {
           sayFile($errorlog);
           # Try to generate a coredump
           $self->kill('SEGV');
-          return DBSTATUS_FAILURE;
+          return STATUS_SERVER_STARTUP_FAILURE;
         }
 
         # If we are here, the server has created a PID file and is still alive
@@ -615,7 +615,7 @@ sub startServer {
         }
         return DBSTATUS_OK;
     } else {
-        return DBSTATUS_FAILURE;
+        return STATUS_SERVER_STARTUP_FAILURE;
     }
 }
 
@@ -1501,7 +1501,7 @@ sub checkErrorLogForErrors {
   my $last_marker= undef;
   my $server_is_being_killed= 0;
 
-  say("Checking server log for important errors starting from " . ($marker ? "marker $marker" : 'the beginning'));
+  say("Checking log ".$self->errorlog." for important errors starting from " . ($marker ? "marker $marker" : 'the beginning'));
 
   my $count= 0;
   while (<ERRLOG>)
@@ -1526,15 +1526,7 @@ sub checkErrorLogForErrors {
     $_ =~ s{[\r\n]}{}isg;
 
     # Ignore certain errors
-    next if
-         $_ =~ /innodb_table_stats/s
-      or $_ =~ /InnoDB: Cannot save table statistics for table/s
-      or $_ =~ /InnoDB: Deleting persistent statistics for table/s
-      or $_ =~ /InnoDB: Unable to rename statistics from/s
-      or $_ =~ /ib_buffer_pool' for reading: No such file or directory/s
-      or $_ =~ /has or is referenced in foreign key constraints which are not compatible with the new table definition/s
-      or $_ =~ /InnoDB: .*because after adding it, the row size is/s
-    ;
+    next if $self->isRecordIgnored($_);
 
     # MDEV-20320
     if ($_ =~ /Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id/) {
@@ -1578,9 +1570,10 @@ sub checkErrorLogForErrors {
     }
     # Other errors
     elsif (
-           $_ =~ /\[ERROR\]\s+InnoDB/is
-        or $_ =~ /InnoDB:\s+Error:/is
-        or $_ =~ /registration as a STORAGE ENGINE failed./is
+           $_ =~ /\[ERROR\]\s+InnoDB/s
+        or $_ =~ /\[ERROR\]\s+Slave SQL/s
+        or $_ =~ /InnoDB:\s+Error:/s
+        or $_ =~ /registration as a STORAGE ENGINE failed/s
     ) {
       push @errors, $_;
     }
@@ -1606,6 +1599,27 @@ sub checkErrorLogForErrors {
   return (\@crashes, \@errors, \@leaks);
 }
 
+# Helper for errorLogReport and checkErrorLogForErrors to ignore
+# certain errors and other error log messages
+sub isRecordIgnored {
+  my ($self,$line)= @_;
+  my $res= (
+        $line =~ /\[Note\]|\[Warning\]/s
+    or  $line =~ /InnoDB: In .* is referenced in foreign key constraints which are not compatible with the new table definition/s
+    or  $line =~ /^\s*$/s
+    or  $line =~ /innodb_table_stats/s
+    or  $line =~ /InnoDB: Cannot save table statistics for table/s
+    or  $line =~ /InnoDB: Deleting persistent statistics for table/s
+    or  $line =~ /InnoDB: Unable to rename statistics from/s
+    or  $line =~ /ib_buffer_pool' for reading: No such file or directory/s
+    or  $line =~ /InnoDB: .*because after adding it, the row size is/s
+    or  $line =~ /InnoDB: FTS_DOC_ID must be larger than/s
+    or  $line =~ /InnoDB: Table rename might cause two FOREIGN KEY constraints to have the same internal name in case-insensitive comparison/s
+    or  $line =~ /mysqld: The table .* is full/s
+    or  $line =~ /Slave I\/O: error reconnecting to master/s
+  );
+  return $res;
+}
 
 # Full error log report.
 # It is more verbose than checkErrorLogForErrors (extracts more lines),
@@ -1636,25 +1650,14 @@ sub errorLogReport {
       if (/^KILL_\d+_\w*$/s) {
         $server_is_being_killed= 1;
       }
-      next if
-           $_ =~ /\[Note\]|\[Warning\]/s
-        or $_ =~ /^\s*$/s
-        or $_ =~ /innodb_table_stats/s
-        or $_ =~ /InnoDB: Cannot save table statistics for table/s
-        or $_ =~ /InnoDB: Deleting persistent statistics for table/s
-        or $_ =~ /InnoDB: Unable to rename statistics from/s
-        or $_ =~ /ib_buffer_pool' for reading: No such file or directory/s
-        or $_ =~ /has or is referenced in foreign key constraints which are not compatible with the new table definition/s
-        or $_ =~ /InnoDB: .*because after adding it, the row size is/s
-      ;
+      next if $self->isRecordIgnored($_);
       push @lines, $_;
     }
     close(ERRLOG);
     if (scalar(@lines)) {
-      say("ErrorLog reporter: Potentially interesting lines from $log:");
-      say("--------------------------- ERRORS IN LOG $log ------------------------------\n");
+      say("----------- HIGHLIGHTS FROM $log ------------------------------\n");
       print(@lines);
-      say("--------------------------- END OF ERRORS IN LOG $log -----------------------\n");
+      say("----------- END OF HIGHLIGHTS FROM $log -----------------------\n");
     }
   }
 }

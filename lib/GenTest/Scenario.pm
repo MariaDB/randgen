@@ -268,7 +268,7 @@ sub checkErrorLog {
 
   my $marker= ($opts ? $opts->{Marker} : undef);
   my $status= STATUS_OK;
-  my ($crashes, $errors)= $server->checkErrorLogForErrors($marker);
+  my ($crashes, $errors)= $server->checkErrorLogForErrors();
   if (scalar(@$crashes)) {
     $status= STATUS_SERVER_CRASHED;
   } elsif (scalar(@$errors)) {
@@ -289,10 +289,13 @@ sub finalize {
   my ($self, $status, $servers)= @_;
   if ($servers) {
     foreach my $s (@$servers) {
-      if ($s->stopServer() != STATUS_OK) {
-        $s->kill;
+      if ($s->running) {
+        if ($s->stopServer() != STATUS_OK) {
+          $s->kill;
+          $status= STATUS_SERVER_SHUTDOWN_FAILURE if STATUS_SERVER_SHUTDOWN_FAILURE > $status;
+        }
       }
-      $s->errorLogReport();
+      $s->errorLogReport() if $status != STATUS_OK;
     }
   }
   if (scalar (keys %{$self->detectedBugs})) {
