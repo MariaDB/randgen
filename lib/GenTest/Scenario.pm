@@ -290,8 +290,9 @@ sub finalize {
   if ($servers) {
     foreach my $s (@$servers) {
       if ($s->stopServer() != STATUS_OK) {
-        $s->kill
+        $s->kill;
       }
+      $s->errorLogReport();
     }
   }
   if (scalar (keys %{$self->detectedBugs})) {

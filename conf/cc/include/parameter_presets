@@ -57,7 +57,7 @@ $test_common_option_combinations{$minversion}= [
   '
     --seed=time
     --queries=1000000
-    --reporters=Backtrace,ErrorLog,Deadlock,MemoryUsage,FeatureUsage
+    --reporters=Backtrace,Deadlock,MemoryUsage,FeatureUsage
     --mysqld=--plugin-maturity=experimental
   '
 ];

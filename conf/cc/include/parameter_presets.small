@@ -36,7 +36,7 @@ $common_options= '
   --seed=time
   --queries=1000000
   --gendata=advanced
-  --reporters=Backtrace,ErrorLog,Deadlock,MemoryUsage,FeatureUsage
+  --reporters=Backtrace,Deadlock,MemoryUsage,FeatureUsage
   --mysqld=--plugin-maturity=experimental
 ';
 

@@ -1360,7 +1360,7 @@ sub syncWithMaster {
   $rpl_timeout ||= 0;
   if ($self->connection) {
     $self->connection->execute("SET max_statement_time=0");
-    my $wait_result = $self->connection->get_row("SELECT MASTER_POS_WAIT('$file',$pos,$rpl_timeout)");
+    my $wait_result = $self->connection->get_value("SELECT MASTER_POS_WAIT('$file',$pos,$rpl_timeout)");
     my $slave_status= $self->getSlaveStatus();
     if (not defined $wait_result) {
       sayError("Slave failed to synchronize with master");
@@ -1486,8 +1486,8 @@ sub backupDatadir {
 }
 
 # Extract important messages from the error log.
-# The check starts from the provided marker or from the beginning of the log
-
+# The check starts from the last seen marker or from the beginning of the log.
+# It is meant to be called upon each server shutdown
 sub checkErrorLogForErrors {
   my $self= shift;
 
@@ -1592,6 +1592,11 @@ sub checkErrorLogForErrors {
     sayError(join "\n", @crashes);
     say("-------");
   }
+  if (scalar @leaks) {
+    sayError("------- Memory leak-like lines in the error log -------");
+    sayError(join "\n", @leaks);
+    say("-------");
+  }
   if (scalar @errors) {
     sayError("------- Error messages in the error log -------");
     sayError(join "\n", @errors);
@@ -1599,6 +1604,59 @@ sub checkErrorLogForErrors {
   }
 
   return (\@crashes, \@errors, \@leaks);
+}
+
+
+# Full error log report.
+# It is more verbose than checkErrorLogForErrors (extracts more lines),
+# and is meant to be called at the end of a test only.
+# The check is performed from the beginning of the log, but KILL markers
+# are taken into account to avoid noise created by intentional crashes
+sub errorLogReport {
+  my $self= shift;
+  my $vardir= $self->vardir;
+
+  my @logs= glob("$vardir/mysql.err*");
+
+  foreach my $log (@logs) {
+    next unless ((-e $log) && (-s $log > 0));
+    unless (open(ERRLOG, $log)) {
+      sayError("Could not open error log $log: $!");
+      next;
+    }
+    my @lines= ();
+    my $server_is_being_killed= 0;
+
+    while (<ERRLOG>) {
+      if (/Starting.*as process.*/s) {
+        $server_is_being_killed= 0;
+        push @lines, $_;
+      };
+      next if $server_is_being_killed;
+      if (/^KILL_\d+_\w*$/s) {
+        $server_is_being_killed= 1;
+      }
+      next if
+           $_ =~ /\[Note\]|\[Warning\]/s
+        or $_ =~ /^\s*$/s
+        or $_ =~ /innodb_table_stats/s
+        or $_ =~ /InnoDB: Cannot save table statistics for table/s
+        or $_ =~ /InnoDB: Deleting persistent statistics for table/s
+        or $_ =~ /InnoDB: Unable to rename statistics from/s
+        or $_ =~ /ib_buffer_pool' for reading: No such file or directory/s
+        or $_ =~ /has or is referenced in foreign key constraints which are not compatible with the new table definition/s
+        or $_ =~ /InnoDB: .*because after adding it, the row size is/s
+      ;
+      push @lines, $_;
+    }
+    close(ERRLOG);
+    if (scalar(@lines)) {
+      say("ErrorLog reporter: Potentially interesting lines from $log:");
+      say("--------------------------- ERRORS IN LOG $log ------------------------------\n");
+      print(@lines);
+      say("--------------------------- END OF ERRORS IN LOG $log -----------------------\n");
+    }
+  }
 }
 
 sub serverVariables {

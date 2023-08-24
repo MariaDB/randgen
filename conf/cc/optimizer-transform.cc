@@ -22,7 +22,7 @@ $combinations = [
     --duration=600
     --queries=100M
     --nometadata-reload
-    --reporters=Backtrace,ErrorLog,Deadlock
+    --reporters=Backtrace,Deadlock
     --engine=InnoDB,MyISAM,Aria,HEAP
     --mysqld=--log-output=FILE
     --mysqld=--max-statement-time=30
