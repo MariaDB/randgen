@@ -1857,6 +1857,10 @@ MDEV-24095:
 =~ json_path_parts_compare
 =~ Item_func_json_extract::read_json
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-24038:
+=~ Assertion \`next_insert_id >= auto_inc_interval_for_cur_row\.minimum()'
+=~ handler::update_auto_increment
+=~ Query: .*ON DUPLICATE KEY UPDATE
 MDEV-23984:
 =~ Assertion \`result_field'
 =~ Item_result_field::get_tmp_field_src
