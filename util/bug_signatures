@@ -3801,6 +3801,9 @@ MDEV-8089:
 =~ Apc_target::make_apc_call
 =~ fill_show_explain
 =~ get_schema_tables_result
+MDEV-630:
+=~ Slave SQL: Error 'Partition management on a not partitioned table is not possible'
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG|Test run ends with exit status STATUS_REPLICATION_FAILURE
 TODO-842: [Common causes: marked_for_read]
 =~ marked_for_read
 =~ Item::save_in_field|Item_field::val_.*|Field::store_field
