@@ -1,0 +1,107 @@
+# Copyright (C) 2023, MariaDB Corporation.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+# Rough imitation of OLTP test data (sysbench-like)
+
+$schemas = [ 'custom_db' ];
+
+$tables = {
+        pk => [ undef ],
+        charsets => [ 'utf8mb3', 'utf8mb4' ],
+        names => [
+                    'cust1',  'cust2',  'cust3',  'cust4',  'cust5',  'cust6',  'cust7',  'cust8',  'cust9',  'cust10',
+                    'cust11', 'cust12', 'cust13', 'cust14', 'cust15', 'cust16', 'cust17', 'cust18', 'cust19', 'cust20',
+                    'cust21', 'cust22', 'cust23', 'cust24', 'cust25', 'cust26', 'cust27', 'cust28', 'cust29', 'cust30',
+                    'cust31', 'cust32', 'cust33', 'cust34', 'cust35', 'cust36', 'cust37', 'cust38', 'cust39', 'cust40',
+                    'cust41', 'cust42', 'cust43', 'cust44', 'cust45', 'cust46', 'cust47', 'cust48', 'cust49', 'cust50',
+                    'cust51', 'cust52', 'cust53', 'cust54', 'cust55', 'cust56', 'cust57', 'cust58', 'cust59', 'cust60',
+                    'cust61', 'cust62', 'cust63', 'cust64', 'cust65', 'cust66', 'cust67', 'cust68', 'cust69', 'cust70',
+                    'cust71', 'cust72', 'cust73', 'cust74', 'cust75', 'cust76', 'cust77', 'cust78', 'cust79', 'cust80',
+                    'cust81', 'cust82', 'cust83', 'cust84', 'cust85', 'cust86', 'cust87', 'cust88', 'cust89', 'cust90',
+                    'cust91', 'cust92', 'cust93', 'cust94', 'cust95', 'cust96', 'cust97', 'cust98', 'cust99', 'cust100'
+        ],
+        rows => [ 2, 1000 ],
+        engines => [ 'MyISAM', 'InnoDB' ],
+};
+
+$fields = {
+        sqls => [
+          "`id` bigint(20) NOT NULL AUTO_INCREMENT",
+          "`f01` varchar(1) DEFAULT NULL",
+          "`f02` varchar(8) DEFAULT NULL",
+          "`f03` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL",
+          "`f04` varchar(255) DEFAULT NULL",
+          "`f05` varchar(255) DEFAULT NULL",
+          "`f06` varchar(255) DEFAULT NULL",
+          "`f07` varchar(255) DEFAULT NULL",
+          "`f08` varchar(255) DEFAULT NULL",
+          "`f09` varchar(255) DEFAULT NULL",
+          "`f10` varchar(255) DEFAULT NULL",
+          "`f11` varchar(255) DEFAULT NULL",
+          "`f12` varchar(255) DEFAULT NULL",
+          "`f13` varchar(255) DEFAULT NULL",
+          "`f14` varchar(255) DEFAULT NULL",
+          "`f15` varchar(255) DEFAULT NULL",
+          "`f16` varchar(8) DEFAULT NULL",
+          "`f17` varchar(6) DEFAULT NULL",
+          "`f18` varchar(255) DEFAULT NULL",
+          "`f19` varchar(255) DEFAULT NULL",
+          "`f20` varchar(255) DEFAULT NULL",
+          "`f21` varchar(255) DEFAULT NULL",
+          "`f22` varchar(255) DEFAULT NULL",
+          "`f23` varchar(255) DEFAULT NULL",
+          "`f24` varchar(255) DEFAULT NULL",
+          "`f25` datetime DEFAULT NULL",
+          "`f26` varchar(255) DEFAULT NULL",
+          "`f27` varchar(255) DEFAULT NULL",
+          "`f28` varchar(255) DEFAULT NULL",
+          "`f29` varchar(1) DEFAULT NULL",
+          "`f30` varchar(255) DEFAULT NULL",
+          "`f31` varchar(255) DEFAULT NULL",
+          "`f32` varchar(255) DEFAULT NULL",
+          "`f33` varchar(255) DEFAULT NULL",
+          "`f34` varchar(255) DEFAULT NULL",
+          "`f35` varchar(255) DEFAULT NULL",
+          "`f36` varchar(255) DEFAULT NULL",
+          "`f37` varchar(255) DEFAULT NULL",
+          "`f38` varchar(255) DEFAULT NULL",
+          "`f39` varchar(255) DEFAULT NULL",
+          "`f40` varchar(255) DEFAULT NULL",
+          "`f41` varchar(255) DEFAULT NULL",
+          "`f42` varchar(255) DEFAULT NULL",
+          "`f43` varchar(255) DEFAULT NULL",
+          "`f44` varchar(255) DEFAULT NULL",
+          "`f45` varchar(6) DEFAULT NULL",
+          "`f46` varchar(1) DEFAULT NULL",
+          "`f47` varchar(1) DEFAULT NULL",
+          "`f48` datetime(6) DEFAULT NULL",
+          "`f49` datetime(6) DEFAULT NULL",
+          "`f50` mediumtext GENERATED ALWAYS AS (concat_ws(':',ifnull(`f39`,''),ifnull(`f34`,''),ifnull(`f35`,''),ifnull(`f33`,''),ifnull(`f03`,''),ifnull(`f45`,''))) VIRTUAL",
+        ],
+        index_sqls => [
+          "PRIMARY KEY (`id`)",
+          "UNIQUE KEY `unq` (`f39`,`f34`,`f35`,`f03`,`f33`,`f45`) USING HASH",
+          "KEY `idx1` (`f12`)",
+          "KEY `idx2` (`f50`(1024))"
+        ],
+        types => [ undef ],
+        indexes => [ undef ]
+};
+
+$data = {
+        numbers => [ 'digit', 'null', undef ],
+        strings => [ 'letter', 'english', 'char(16)' ]
+}
