@@ -520,6 +520,10 @@ MDEV-30391:
 MDEV-30372:
 =~ Assertion \`state() == s_executing \|\| state() == s_preparing \|\| state() == s_prepared \|\| state() == s_must_abort \|\| state() == s_aborting \|\| state() == s_cert_failed \|\| state() == s_must_replay'
 =~ wsrep::transaction::before_rollback|wsrep::transaction::before_commit
+MDEV-30371:
+=~ Assertion \`0'
+=~ Type_handler_string_result::make_packed_sort_key_part
+=~ find_all_keys
 MDEV-30309:
 =~ Assertion \`!(\*with_wild)'
 =~ setup_wild
