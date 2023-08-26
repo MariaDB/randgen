@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32017:
+=~ InnoDB: FTS_DOC_ID must be larger than
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-31983:
 =~ Assertion \`subq_pred->test_set_strategy(8)'|signal|AddressSanitizer
 =~ setup_jtbm_semi_joins
@@ -220,6 +223,9 @@ MDEV-31565:
 =~ ha_maria::close
 =~ ha_partition::close
 =~ sp_instr_stmt::exec_core
+MDEV-31564:
+=~ Slave SQL: Column .* of table 'information_schema_db_copy\..*' cannot be converted from type
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG|Test run ends with exit status STATUS_REPLICATION_FAILURE
 MDEV-31551:
 =~ AddressSanitizer|signal
 =~ JOIN::transform_in_predicates_into_in_subq
