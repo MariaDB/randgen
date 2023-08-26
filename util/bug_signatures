@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32021:
+=~ Assertion \`inited==NONE'
+=~ ha_mroonga::storage_get_auto_increment
+=~ ha_mroonga::update_row
+MDEV-32021:
+=~ signal|AddressSanitizer
+=~ handler::multi_range_read_next
+=~ QUICK_RANGE_SELECT::get_next
+=~ FeatureUsage detected Mroonga tables
 MDEV-32017:
 =~ InnoDB: FTS_DOC_ID must be larger than
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG
