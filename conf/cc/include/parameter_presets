@@ -338,8 +338,6 @@ $parameters{engine_full_mix_combinations}= \%engine_full_mix_combinations;
 $scenario_non_crash_combinations{$minversion}= [
   '--scenario=Standard',
   '--scenario=Restart',
-  '--scenario=Replication --scenario-nosync',
-  '--scenario=Replication --scenario-nosync --server2-mysqld=--default-storage-engine=InnoDB'
 ];
 
 # No crash-safe DDL in 10.4/10.5
@@ -1831,6 +1829,8 @@ $gendata{$minversion}= [
     '--gendata=conf/zz/blobs.zz'],
   [@empty_set_30,
     '--gendata=conf/zz/current_timestamp.zz'],
+  [@empty_set_30,
+    '--gendata=conf/zz/custom.zz'],
   [@empty_set_50,
     '--gendata=conf/zz/dyncol_dml.zz'],
   [@empty_set_30,
