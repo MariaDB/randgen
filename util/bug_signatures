@@ -392,7 +392,6 @@ MDEV-31188:
 MDEV-31182:
 =~ signal|AddressSanitizer
 =~ Field_longstr::well_formed_copy_with_check|Field::set_key_image
-=~ get_column_range_cardinality
 =~ calculate_cond_selectivity_for_table
 MDEV-31180:
 =~ Assertion \`!this->file->children_attached'
@@ -1866,7 +1865,7 @@ MDEV-24095:
 MDEV-24038:
 =~ Assertion \`next_insert_id >= auto_inc_interval_for_cur_row\.minimum()'
 =~ handler::update_auto_increment
-=~ Query: .*ON DUPLICATE KEY UPDATE
+=~ Query.*: .*ON DUPLICATE KEY UPDATE
 MDEV-23984:
 =~ Assertion \`result_field'
 =~ Item_result_field::get_tmp_field_src
