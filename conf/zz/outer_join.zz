@@ -24,7 +24,7 @@ $tables = {
 };
 
 $fields = {
-        types => [ 'int', 'varchar(10)', 'varchar(1024)' ],
+        types => [ 'int', 'varchar(10)', 'varchar(512)' ],
         indexes => [undef, 'key' ],
         null => [undef ],
         charsets => ['utf8', 'latin1']
@@ -32,5 +32,5 @@ $fields = {
 
 $data = {
         numbers => [ 'digit', 'null', undef ],
-        strings => [ 'letter', 'english' , 'string(1024)']
+        strings => [ 'letter', 'english' , 'string(512)']
 };
