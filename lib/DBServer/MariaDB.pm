@@ -1610,6 +1610,7 @@ sub isRecordIgnored {
     or  $line =~ /innodb_table_stats/s
     or  $line =~ /InnoDB: Cannot save table statistics for table/s
     or  $line =~ /InnoDB: Deleting persistent statistics for table/s
+    or  $line =~ /InnoDB: DROP TABLE .*: Deadlock/s
     or  $line =~ /InnoDB: Unable to rename statistics from/s
     or  $line =~ /ib_buffer_pool' for reading: No such file or directory/s
     or  $line =~ /InnoDB: .*because after adding it, the row size is/s
