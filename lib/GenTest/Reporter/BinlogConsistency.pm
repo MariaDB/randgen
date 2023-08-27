@@ -123,6 +123,9 @@ sub report {
     return STATUS_CRITICAL_FAILURE;
   }
 
+  # Cannot apply binlog events with transaction_read_only
+  $reporter->connection->execute("SET GLOBAL tx_read_only= OFF");
+
   say("Feeding binary log events of the original server to the new one");
   # We need --force here because there can be events in the error log
   # written with error codes
