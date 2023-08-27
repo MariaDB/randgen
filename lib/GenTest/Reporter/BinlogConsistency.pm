@@ -124,7 +124,9 @@ sub report {
   }
 
   say("Feeding binary log events of the original server to the new one");
-  $status = system("$client < $vardir/vardir_orig/binlog_events") >> 8;
+  # We need --force here because there can be events in the error log
+  # written with error codes
+  $status = system("$client --force < $vardir/vardir_orig/binlog_events") >> 8;
   if ($status > STATUS_OK) {
     say("ERROR: Feeding binary logs to the server finished with an error");
     return STATUS_RECOVERY_FAILURE;
