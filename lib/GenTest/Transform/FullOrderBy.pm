@@ -29,12 +29,13 @@ use Constants;
 
 
 sub transform {
-  my ($self, $original_query, $executor) = @_;
+  my ($self, $original_query, $executor, $original_result) = @_;
   my $transform_outcome= 'TRANSFORM_OUTCOME_UNORDERED_MATCH';
   if ($original_query =~ /\WLIMIT\W|\WFETCH\W/is) {
     $transform_outcome= 'TRANSFORM_OUTCOME_SUPERSET';
   }
-  $original_query= $self->modify($original_query,$executor);
+  # Transformer already knows column number, so there is no point trying to detect it upon modification
+  $original_query= $self->modify($original_query,$executor,scalar(@{$original_result->columnNames()}));
   return (defined $original_query ? $original_query ." /* $transform_outcome */" : STATUS_WONT_HANDLE);
 }
 
@@ -45,25 +46,28 @@ sub variate {
 }
 
 sub modify {
-  my ($self, $original_query, $executor) = @_;
+  my ($self, $original_query, $executor, $number_of_fields) = @_;
   return undef if $original_query !~ m{^\s*SELECT\W}is;
   return undef if $original_query =~ m{\W(?:OUTFILE|PROCESSLIST|INTO|GROUP_CONCAT)\W}is;
   my $query= $original_query;
   $query =~ s/ORDER\s+BY\s+.*?(LIMIT|OFFSET|FETCH|FOR\s+UPDATE)/\1/is;
   while ($query =~ s/(?:ORDER\s+BY|LIMIT|OFFSET|FETCH)\s+.*?[^\(\)]*$//is) {};
-  my $conn= $executor->connection();
-  if (!$conn) {
-      sayError("FullOrderBy: couldn't establish connection");
+  unless (defined $number_of_fields) {
+    my $conn= $executor->connection();
+    if (!$conn) {
+        sayError("FullOrderBy: couldn't establish connection");
+        return undef;
+    }
+    my $col_number_fetch_query= "$query /* FullOrderBy column fetch */ LIMIT 0";
+    $conn->query($col_number_fetch_query);
+    if ($conn->err) {
+      sayError("FullOrderBy: Couldn't execute stmt: ".$conn->print_error.". [ $col_number_fetch_query ]");
       return undef;
+    }
+    $number_of_fields= $conn->number_of_fields();
   }
-  $conn->query("SELECT /* FullOrderBy column fetch */ * FROM ( $query ) FOBsq LIMIT 0");
-  if ($conn->err) {
-    sayError("FullOrderBy: Couldn't execute stmt: ".$conn->print_error.". Original query: [ $query ]");
-    return undef;
-  }
-  my $colnum= $conn->number_of_fields();
   my @full_order_by= ();
-  for (1..$colnum) {
+  for (1..$number_of_fields) {
     push @full_order_by, $_ . ($self->random->uint16(0,1) ? '' : ($self->random->uint16(0,1) ? ' DESC' : ' ASC' ));
   }
   $query.= ' ORDER BY '.( join ',', @{$self->random->shuffleArray(\@full_order_by)} );
