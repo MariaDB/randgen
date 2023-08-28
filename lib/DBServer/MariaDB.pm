@@ -1620,7 +1620,6 @@ sub isRecordIgnored {
   my ($self,$line)= @_;
   my $res= (
         $line =~ /\[Note\]|\[Warning\]/s
-    or  $line =~ /InnoDB: In .* is referenced in foreign key constraints which are not compatible with the new table definition/s
     or  $line =~ /^\s*$/s
     or  $line =~ /innodb_table_stats/s
     or  $line =~ /InnoDB: Cannot save table statistics for table/s
@@ -1631,6 +1630,8 @@ sub isRecordIgnored {
     or  $line =~ /InnoDB: .*because after adding it, the row size is/s
     or  $line =~ /InnoDB: FTS_DOC_ID must be larger than/s
     or  $line =~ /InnoDB: Table rename might cause two FOREIGN KEY constraints to have the same internal name in case-insensitive comparison/s
+    or  $line =~ /InnoDB: In .* is referenced in foreign key constraints which are not compatible with the new table definition/s
+    or  $line =~ /InnoDB: Failed to load table .* which has a foreign key constraint with.*/s
     or  $line =~ /mysqld: The table .* is full/s
     or  $line =~ /Slave I\/O: error reconnecting to master/s
   );
