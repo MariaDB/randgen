@@ -1,4 +1,4 @@
-# Copyright (C) 2022, MariaDB
+# Copyright (C) 2022, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -50,9 +50,10 @@ sub new {
 
 sub run {
   my $self= shift;
-  my ($status, $server, $gentest);
+  my ($status, $total_status, $server, $gentest);
 
   $status= STATUS_OK;
+  $total_status= STATUS_OK;
 
   $server= $self->prepareServer(1, my $is_active=1);
 
@@ -63,7 +64,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server failed to start");
-    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[]);
+    $total_status= $status;
+    goto FINALIZE;
   }
 
   #####
@@ -72,7 +74,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
-    return $self->finalize($status,[$server]);
+    $total_status= $status if $status > $total_status;
+    goto FINALIZE;
   }
 
   #####
@@ -81,7 +84,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Test flow failed");
-    return $self->finalize($status,[$server]);
+    $total_status= $status if $status > $total_status;
+    goto FINALIZE;
   }
 
   #####
@@ -91,10 +95,11 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
+    $total_status= $status if $status > $total_status;
   }
 
-  return $self->finalize($status,[]);
+FINALIZE:
+  return $self->finalize($total_status,[$server]);
 }
 
 1;
