@@ -1043,6 +1043,21 @@ sub normalizeDump {
   close(DUMP1);
   close(DUMP2);
 
+  if ($self->versionNumeric() gt '100600') {
+    say("normalizeDump replaces utf8mb3 with utf8 for version ".$self->versionNumeric);
+    move($file, $file.'.tmp7');
+    open(DUMP1,$file.'.tmp7');
+    open(DUMP2,">$file");
+    while (<DUMP1>) {
+      # Starting from 10.6, utf8 is replaced with utf8mb3. It would be better
+      # to make an opposite adjustment (utf8=>utf8mb3 for older versions),
+      # but this is easier for now
+      if (s/utf8mb3/utf8/g) {}
+      print DUMP2 $_;
+    }
+    close(DUMP1);
+    close(DUMP2);
+  }
 
   if (-e $file.'.tmp1') {
     move($file.'.tmp1',$file.'.orig');
