@@ -1621,18 +1621,21 @@ sub isRecordIgnored {
   my $res= (
         $line =~ /\[Note\]|\[Warning\]/s
     or  $line =~ /^\s*$/s
+    or  $line =~ /ib_buffer_pool' for reading: No such file or directory/s
     or  $line =~ /innodb_table_stats/s
     or  $line =~ /InnoDB: Cannot save table statistics for table/s
     or  $line =~ /InnoDB: Deleting persistent statistics for table/s
     or  $line =~ /InnoDB: DROP TABLE .*: Deadlock/s
     or  $line =~ /InnoDB: Unable to rename statistics from/s
-    or  $line =~ /ib_buffer_pool' for reading: No such file or directory/s
     or  $line =~ /InnoDB: .*because after adding it, the row size is/s
     or  $line =~ /InnoDB: FTS_DOC_ID must be larger than/s
     or  $line =~ /InnoDB: Table rename might cause two FOREIGN KEY constraints to have the same internal name in case-insensitive comparison/s
     or  $line =~ /InnoDB: In .* is referenced in foreign key constraints which are not compatible with the new table definition/s
     or  $line =~ /InnoDB: Failed to load table .* which has a foreign key constraint with.*/s
+    or  $line =~ /InnoDB: Cannot delete\/update rows with cascading foreign key constraints that exceed max depth of/s
+    or  $line =~ /Invalid roles_mapping table entry user/s
     or  $line =~ /mysqld: The table .* is full/s
+    or  $line =~ /mysqld: Deadlock found when trying to get lock/s
     or  $line =~ /Slave I\/O: error reconnecting to master/s
   );
   return $res;
