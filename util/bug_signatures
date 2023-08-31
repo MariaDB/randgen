@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32060:
+=~ signal|AddressSanitizer
+=~ check_col_is_in_fk_indexes
+=~ ha_innobase::prepare_inplace_alter_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-32029:
 =~ Assertion \`l > 2'|Assertion \`r > 2'|Assertion \`list\[i\]->oldest_modification() > 2'
 =~ log_sort_flush_list
