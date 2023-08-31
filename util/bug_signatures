@@ -250,6 +250,12 @@ MDEV-31551:
 =~ JOIN::transform_in_predicates_into_in_subq
 =~ convert_join_subqueries_to_semijoins
 =~ FeatureUsage detected GIS columns|FeatureUsage detected INET columns
+# Not merged to 11.1+ yet
+MDEV-31501:
+=~ Assertion \`cond_selectivity <= 1\.000000001'
+=~ get_range_limit_read_cost
+=~ test_if_cheaper_ordering
+=~ Version: '1[1-9]\.[1-9]|Server version: 1[1-9]\.[1-9]
 MDEV-31500:
 =~ Assertion \`(slen % 4) == 0'
 =~ my_fill_utf32
