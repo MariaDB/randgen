@@ -26,14 +26,17 @@ use GenUtil;
 use GenTest;
 use GenTest::Transform;
 use Constants;
-
+use Carp;
+use Data::Dumper;
 
 sub transform {
   my ($self, $original_query, $executor, $original_result) = @_;
+  return STATUS_WONT_HANDLE unless defined $original_result->columnNames();
   my $transform_outcome= 'TRANSFORM_OUTCOME_UNORDERED_MATCH';
   if ($original_query =~ /\WLIMIT\W|\WFETCH\W/is) {
     $transform_outcome= 'TRANSFORM_OUTCOME_SUPERSET';
   }
+
   # Transformer already knows column number, so there is no point trying to detect it upon modification
   $original_query= $self->modify($original_query,$executor,scalar(@{$original_result->columnNames()}));
   return (defined $original_query ? $original_query ." /* $transform_outcome */" : STATUS_WONT_HANDLE);
