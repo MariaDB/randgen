@@ -630,7 +630,9 @@ sub kill {
     }
 
     if (defined $self->serverpid and $self->serverpid =~ /^\d+$/) {
-        unless (($signal eq '0') || ($signal eq 'TERM') || ($signal eq '15')) {
+        if (($signal eq 'TERM') or ($signal eq '15')) {
+          $self->addErrorLogMarker('SHUTDOWN_'.time());
+        } elsif ($signal ne '0') {
           $self->addErrorLogMarker('KILL_'.time().'_'.$signal);
         }
         kill $signal => $self->serverpid;
@@ -642,8 +644,10 @@ sub kill {
         }
         unless ($waits) {
             sayError("Unable to kill process ".$self->serverpid);
+            return STATUS_SERVER_SHUTDOWN_FAILURE;
         } else {
             say("Killed process ".$self->serverpid." with $signal");
+            return STATUS_OK;
         }
     }
 
@@ -652,59 +656,6 @@ sub kill {
     unlink $self->pidfile if -e $self->pidfile;
     $self->[MYSQLD_SERVERPID]= undef;
     return ($self->running ? DBSTATUS_FAILURE : DBSTATUS_OK);
-}
-
-sub term {
-    my ($self) = @_;
-
-    my $res;
-    if (defined $self->serverpid) {
-        kill TERM => $self->serverpid;
-        my $sleep_time= 0.2;
-        my $waits = int($default_shutdown_timeout / $sleep_time);
-        while ($self->running && $waits) {
-            Time::HiRes::sleep($sleep_time);
-            $waits--;
-        }
-        unless ($waits) {
-            say("Unable to terminate process ".$self->serverpid.". Trying SIGABRT");
-            $self->addErrorLogMarker('KILL_'.time().'_ABRT');
-            kill ABRT => $self->serverpid;
-            $res= DBSTATUS_FAILURE;
-            $waits= int($default_shutdown_timeout / $sleep_time);
-            while ($self->running && $waits) {
-              Time::HiRes::sleep($sleep_time);
-              $waits--;
-            }
-            unless ($waits) {
-              say("SIGABRT didn't work for process ".$self->serverpid.". Trying KILL");
-              $self->addErrorLogMarker('KILL_'.time().'_KILL');
-              $self->kill;
-            }
-        } else {
-            say("Terminated process ".$self->serverpid);
-            $res= DBSTATUS_OK;
-        }
-    }
-    if (-e $self->socketfile) {
-        unlink $self->socketfile;
-    }
-    $self->[MYSQLD_SERVERPID]= undef;
-    return $res;
-}
-
-sub crash {
-    my ($self) = @_;
-
-    if (defined $self->serverpid) {
-        kill SEGV => $self->serverpid;
-        say("Crashed process ".$self->serverpid);
-    }
-
-    # clean up when the server is not alive.
-    unlink $self->socketfile if -e $self->socketfile;
-    unlink $self->pidfile if -e $self->pidfile;
-    $self->[MYSQLD_SERVERPID]= undef;
 }
 
 sub corefile {
@@ -1106,46 +1057,30 @@ sub binary {
 sub stopServer {
     my ($self, $shutdown_timeout) = @_;
     $shutdown_timeout = $default_shutdown_timeout unless defined $shutdown_timeout;
-    my $res;
+    my $res= STATUS_OK;
 
-    my $shutdown_marker= undef;
-    if (defined $self->serverpid && kill(0,$self->serverpid)) {
-      $shutdown_marker= 'SHUTDOWN_'.time();
-      $self->addErrorLogMarker($shutdown_marker);
-    }
     if ($shutdown_timeout and $self->connection) {
         sayDebug("Stopping server at port ".$self->port);
         $SIG{'ALRM'} = sub { sayDebug("Could not execute shutdown command in time"); };
         ## Use connection routine to ensure reconnect in case connection is
         ## stale (happens i.e. with mdl_stability/valgrind runs)
         alarm($shutdown_timeout);
-        # Need to check if $connection is defined, in case the server has crashed
-        my $shutdown_sent= 0;
-        if ($self->connection->alive()) {
-          if ($self->connection->execute("shutdown") != STATUS_OK) {
-              sayWarning("Shutdown command did not work: ".$self->connection->print_error);
-          } else {
-            $shutdown_sent= 1;
-          }
-        }
-        unless ($shutdown_sent) {
-          say("Sending SIGTERM");
-          $res= $self->kill('TERM');
-          if (!$res) {
-              sayError("Shutdown via SIGTERM failed");
-              $res= DBSTATUS_FAILURE;
-          }
+        sayDebug("Sending SIGTERM");
+        $res= $self->kill('TERM');
+        if ($res != STATUS_OK) {
+            sayError("Shutdown via SIGTERM failed");
+            $res= STATUS_SERVER_SHUTDOWN_FAILURE;
         }
         if (!$self->waitForServerToStop($shutdown_timeout)) {
             # Terminate process
             sayWarning("Server doesn't shut down properly. Terminating it with SIGABRT");
-            $res= $self->kill('ABRT');
+            $res= STATUS_SERVER_SHUTDOWN_FAILURE;
+            $self->kill('ABRT');
         } else {
             # clean up when server is not alive.
             unlink $self->socketfile if -e $self->socketfile;
             unlink $self->pidfile if -e $self->pidfile;
             $self->[MYSQLD_SERVERPID]= undef;
-            $res= DBSTATUS_OK;
             say("Server at port ".$self->port." has been stopped");
         }
     } else {
@@ -1154,14 +1089,13 @@ sub stopServer {
     }
     my ($crashes, $errors, $leaks)= $self->checkErrorLogForErrors();
     if ($crashes and scalar(@$crashes)) {
-      return STATUS_SERVER_CRASHED;
+      $res= STATUS_SERVER_CRASHED if $res < STATUS_SERVER_CRASHED;
     } elsif ($leaks and scalar(@$leaks)) {
-      return STATUS_MEMORY_LEAK;
+      $res= STATUS_MEMORY_LEAK if $res < STATUS_MEMORY_LEAK;
     } elsif ($errors and scalar(@$errors)) {
-      return STATUS_ERRORS_IN_LOG;
-    } else {
-      return STATUS_OK;
+      $res= STATUS_ERRORS_IN_LOG if $res < STATUS_ERRORS_IN_LOG;
     }
+    return $res;
 }
 
 sub checkDatabaseIntegrity {
