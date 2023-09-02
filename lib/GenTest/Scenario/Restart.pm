@@ -128,6 +128,7 @@ sub run {
         sayError("Restart scenario: Attempt to stop the server ended with an error");
         $total_status= $status if $status > $total_status;
         $server->endPlannedDowntime();
+        last TESTRUN;
       }
 
       #####
@@ -195,7 +196,7 @@ sub run {
 
   $total_status= $status if $status > $total_status;
 
-  return $self->finalize($total_status,[]);
+  return $self->finalize($total_status,[$server]);
 }
 
 1;
