@@ -520,7 +520,7 @@ MDEV-30565:
 =~ innobase_init_vc_templ
 =~ Version: '10\.[34]|Server version: 10\.[34]
 MDEV-30528:
-=~ Assertion \`!mbmaxlen \|\| !(prefix_len % mbmaxlen)'|Assertion \`!mbmaxlen \|\| !(prefix_len % mbmaxlen) \|\| !(prefix_len % 4)'
+=~ Assertion \`!mbmaxlen \|\| !(prefix_len % mbmaxlen)'|Assertion \`!mbmaxlen \|\| !(prefix_len % mbmaxlen) \|\| !(prefix_len % 4)'|InnoDB: Failing assertion: !(prefix_len % mbmaxlen) \|\| !(prefix_len % 4)
 =~ dtype_get_at_most_n_mbchars
 =~ mysql_alter_table
 MDEV-30434:
@@ -1286,6 +1286,7 @@ MDEV-27223:
 MDEV-27216:
 =~ mysqld: Incorrect information in file:
 =~ Version: '10\.4|Server version: 10\.4
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-27207:
 =~ Assertion \`!m_null_value'
 =~ cmp_item_fbt::compare|cmp_item_inet6::compare
@@ -2932,18 +2933,20 @@ MDEV-20816:
 =~ Assertion \`maybe_null \|\| !null_value'|Assertion \`maybe_null() \|\| !null_value'
 =~ Item_func_.*::time_op
 =~ Type_handler_time_common::Item_func_hybrid_field_type
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-20771:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ mysql_update
 =~ rocksdb
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-20765:
 =~ Assertion \`type\.vers_sys_end()'
 =~ dfield_t::vers_history_row
 =~ row_ins_check_foreign_constraint
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
+MDEV-20765:
+=~ signal|AddressSanitizer
+=~ dfield_t::vers_history_row
+=~ row_merge_build_indexes
+=~ mysql_alter_table
 MDEV-20761:
 =~ signal 11|AddressSanitizer: SEGV
 =~ base_list_iterator::next
