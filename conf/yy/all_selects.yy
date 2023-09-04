@@ -36,6 +36,7 @@ all_selects_generated_query:
   all_selects_optional_having_clause
   all_selects_optional_order_by_clause
   all_selects_optional_limit_clause
+  __for_update(10)
 ;
 
 all_selects_select_list:

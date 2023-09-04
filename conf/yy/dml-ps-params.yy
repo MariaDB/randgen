@@ -77,6 +77,6 @@ delete:
     DELETE FROM _table ORDER BY _field LIMIT { $paramcount= 1; '?' } ;
 
 select:
-    SELECT /* _table[invariant] */ _field FROM _table[invariant] ORDER BY _field LIMIT { $paramcount= 1; '?' } |
-    SELECT * FROM _table ORDER BY _field LIMIT { $paramcount= 1; '?' }
+    SELECT /* _table[invariant] */ _field FROM _table[invariant] ORDER BY _field LIMIT { $paramcount= 1; '?' } __for_update(20) |
+    SELECT * FROM _table ORDER BY _field LIMIT { $paramcount= 1; '?' } __for_update(20)
 ;
