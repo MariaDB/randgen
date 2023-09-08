@@ -29,7 +29,6 @@ MDEV-32017:
 MDEV-31983:
 =~ Assertion \`subq_pred->test_set_strategy(8)'|signal|AddressSanitizer
 =~ setup_jtbm_semi_joins
-=~ mysql_multi_update
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '1[0-9]\.[0-9][0-9]*|Server version: 1[0-9]\.[0-9][0-9]*
 MDEV-31971:
 =~ AddressSanitizer|signal
