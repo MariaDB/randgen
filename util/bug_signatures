@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32140:
+=~ MemorySanitizer: use-of-uninitialized-value|Conditional jump or move depends on uninitialised value
+=~ dynamic_column_update_move_left
+=~ Item_func_dyncol_add::val_str
 MDEV-32139:
 =~ AddressSanitizer|signal
 =~ ha_mroonga::create_share_for_create
@@ -575,7 +579,7 @@ MDEV-30528:
 =~ FeatureUsage detected system-versioned tables
 =~ STATUS_ERRORS_IN_LOG
 MDEV-30434:
-=~ signal|AddressSanitizer
+=~ signal|AddressSanitizer|MemorySanitizer
 =~ Item_trigger_field::setup_field
 =~ Table_triggers_list::create_trigger
 =~ Prepared_statement::execute
@@ -633,7 +637,7 @@ MDEV-30097:
 =~ Assertion \`low == (int)buckets\.size()-1 \|\| field->key_cmp((uchar\*)buckets\[low+1\]\.start_value\.data(), lookup_val)> 0'
 =~ Histogram_json_hb::find_bucket
 MDEV-30058:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal|MemorySanitizer
 =~ MYSQL_LOG::generate_name|MYSQL_LOG::open
 =~ fix_slow_log_file|fix_general_log_file
 MDEV-30033:
@@ -1253,7 +1257,7 @@ MDEV-27562:
 =~ AddressSanitizer|signal|MemorySanitizer
 =~ join_read_key2
 =~ Expression_cache_tmptable::check_value|create_sort_index
-=~ mysql_multi_update
+=~ mysql_multi_update|Sql_cmd_update::execute_inner
 MDEV-27560:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer
 =~ cmp_key_rowid_part_id
@@ -1693,7 +1697,7 @@ MDEV-24935:
 =~ sp_head::execute
 MDEV-24935:
 =~ Assertion \`!natural_using_join->join_columns'
-=~ store_natural_using_join_columns
+=~ store_natural_using_join_columns|store_top_level_join_columns
 =~ sp_head::execute
 MDEV-24934:
 =~ AddressSanitizer|signal [16]
@@ -3371,7 +3375,7 @@ MDEV-18756:
 =~ DES_set_key_unchecked
 =~ Item_func_des_encrypt::val_str
 MDEV-18735:
-=~ Conditional jump or move depends on uninitialised value
+=~ Conditional jump or move depends on uninitialised value|MemorySanitizer: use-of-uninitialized-value
 =~ promote_first_timestamp_column
 =~ Sql_cmd_alter_table::execute
 MDEV-18706:
