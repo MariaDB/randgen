@@ -436,7 +436,8 @@ sub run {
           next;
         }
 
-        $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS");
+# MDEV-26253 Can't find record
+#        $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS");
 
         if ($table->[TABLE_ROW] > 100) {
             $executor->execute("SET AUTOCOMMIT=OFF");
@@ -534,7 +535,8 @@ sub run {
             }
         }
         $executor->execute("COMMIT");
-        $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
+# MDEV-26253 Can't find record
+#        $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
 
         if (isFederatedEngine($table_copy[TABLE_ENGINE])) {
           $executor->execute("USE $schema");
