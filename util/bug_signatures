@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32139:
+=~ AddressSanitizer|signal
+=~ ha_mroonga::create_share_for_create
+=~ THD::rm_temporary_table
 MDEV-32138:
 =~ Assertion \`table_records == 0 \|\| sel <= s->table->opt_range_condition_rows / table_records'
 =~ apply_selectivity_for_table
@@ -488,6 +492,12 @@ MDEV-31083:
 =~ AddressSanitizer|signal
 =~ myrg_attach_children
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31063:
+=~ Assertion \`marked_for_read()'
+=~ Field_.*::val_.*
+=~ Column_statistics_collected::add|Histogram_json_builder::append_column_value
+=~ Sql_cmd_analyze_table::execute
+=~ FeatureUsage detected virtual columns
 MDEV-31056:
 =~ signal|AddressSanitizer
 =~ Field::set_datetime_warning
