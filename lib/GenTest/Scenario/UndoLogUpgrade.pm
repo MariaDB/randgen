@@ -119,6 +119,8 @@ sub run {
   #####
   $self->printStep("Running test flow on the old server");
 
+  $self->createTestRunner();
+
   my $gentest_pid= fork();
   if (not defined $gentest_pid) {
     sayError("Failed to fork for running the test flow");
@@ -285,6 +287,7 @@ sub run {
   $self->printStep("Running test flow on the new server");
 
   $self->setProperty('duration',int($self->getProperty('duration')/3));
+  $self->createTestRunner();
   $status= $self->runTestFlow();
 
   if ($status != STATUS_OK) {

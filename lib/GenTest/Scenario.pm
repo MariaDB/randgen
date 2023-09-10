@@ -35,6 +35,8 @@ use constant SC_SCENARIO_OPTIONS       => 6;
 use constant SC_RAND                   => 7;
 use constant SC_COMPATIBILITY          => 8;
 use constant SC_NUMBER_OF_SERVERS      => 9;
+use constant SC_REPORTER_MANAGER       => 10;
+use constant SC_TEST_RUNNER            => 11;
 
 use constant SC_GALERA_DEFAULT_LISTEN_PORT =>  4800;
 
@@ -208,12 +210,17 @@ sub generateData {
   return STATUS_OK;
 }
 
-sub runTestFlow {
+sub createTestRunner {
   my $self= shift;
   $self->backupProperties();
   $self->setProperty('compatibility', $self->[SC_COMPATIBILITY]) unless defined $self->setProperty('compatibility');
-  my $gentest= GenTest::TestRunner->new(config => $self->getProperties());
-  my $status= $gentest->run();
+  $self->[SC_TEST_RUNNER]= GenTest::TestRunner->new(config => $self->getProperties());
+  $self->[SC_REPORTER_MANAGER]= $self->[SC_TEST_RUNNER]->initReporters();
+}
+
+sub runTestFlow {
+  my $self= shift;
+  my $status= $self->[SC_TEST_RUNNER]->run();
   $self->restoreProperties();
   return $status;
 }
@@ -287,6 +294,7 @@ sub setStatus {
 
 sub finalize {
   my ($self, $status, $servers)= @_;
+  $status= $self->[SC_TEST_RUNNER]->reportResults($status);
   if ($servers) {
     foreach my $s (@$servers) {
       if ($s->running) {

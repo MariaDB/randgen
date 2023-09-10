@@ -166,6 +166,7 @@ sub run {
 
   #####
   $self->printStep("Running test flow");
+  $self->createTestRunner();
   $status= $self->runTestFlow();
 
   if ($status != STATUS_OK) {

@@ -91,6 +91,7 @@ sub run {
   $self->printStep("Running the test flow");
 
   $self->setProperty('duration',int($self->getProperty('duration')*4/5));
+  $self->createTestRunner();
   $status= $self->runTestFlow();
 
   if ($status != STATUS_OK) {

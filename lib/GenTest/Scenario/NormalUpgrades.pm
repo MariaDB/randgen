@@ -105,6 +105,7 @@ sub run {
   $self->printStep("Running test flow on the old server");
 
   $self->setProperty('duration',int($self->getProperty('duration')/2));
+  $self->createTestRunner();
   $status= $self->runTestFlow();
 
   if ($status != STATUS_OK) {

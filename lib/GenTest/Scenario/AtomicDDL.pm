@@ -124,6 +124,7 @@ sub run {
 
   my $timeout= $prng->int($self->getProperty('duration')/4,$self->getProperty('duration')/4*3);
   $self->printStep("Running the test flow (random duration: $timeout sec)");
+  $self->createTestRunner();
   my $gentest_pid= fork();
   if (not defined $gentest_pid) {
     sayError("Failed to fork for atomic DDL");

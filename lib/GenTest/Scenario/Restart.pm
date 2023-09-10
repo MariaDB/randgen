@@ -95,6 +95,8 @@ sub run {
 
   my $gentest_pid= undef;
 
+  $self->createTestRunner();
+
   $gentest_pid= fork();
   if (not defined $gentest_pid) {
     sayError("Failed to fork for running the test flow");
@@ -125,9 +127,9 @@ sub run {
       $status= $server->startPlannedDowntime($restart_type,$shutdown_timeout*2);
 
       if ($status != STATUS_OK) {
-        sayError("Restart scenario: Attempt to stop the server ended with an error");
+        sayError("Restart scenario: Attempt to stop the server ended with an error, aborting the test");
         $total_status= $status if $status > $total_status;
-        $server->endPlannedDowntime();
+        $server->setFinalDowntime();
         last TESTRUN;
       }
 

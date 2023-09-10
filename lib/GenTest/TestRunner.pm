@@ -123,8 +123,8 @@ sub run {
     $self->[TR_TEST_START] = time();
     $self->[TR_TEST_END] = $self->[TR_TEST_START] + $self->config->duration;
 
-    my $init_reporters_result = $self->initReporters();
-    return $init_reporters_result if $init_reporters_result != STATUS_OK;
+#    my $init_reporters_result = $self->initReporters();
+#    return $init_reporters_result if $init_reporters_result != STATUS_OK;
 
     my $init_validators_result = $self->initValidators();
     return $init_validators_result if $init_validators_result != STATUS_OK;
@@ -278,7 +278,8 @@ sub run {
   TESTEND:
 #    $errorfilter_p->kill();
 
-    my $gentest_result= $self->reportResults($total_status);
+#    my $gentest_result= $self->reportResults($total_status);
+    my $gentest_result= $total_status;
     sayDebug("TestRunner will exit with exit status ".status2text($gentest_result)." ($gentest_result)");
     return $gentest_result;
 
@@ -618,8 +619,8 @@ sub initReporters {
         foreach my $reporter (@{$self->config->reporters}) {
             my $add_result = $reporter_manager->addReporter($reporter, {
                 server => $so->{server},
-                test_start => $self->[TR_TEST_START],
-                test_end => $self->[TR_TEST_END],
+                test_start => ( $self->[TR_TEST_START] || time ),
+                test_end => ( $self->[TR_TEST_END] || ($self->[TR_TEST_START] + $self->config->duration) ),
                 test_duration => $self->config->duration,
                 properties => $self->config
             });

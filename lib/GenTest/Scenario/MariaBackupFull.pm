@@ -94,6 +94,8 @@ sub run {
 
   my $interval_between_backups= $self->mbackup_backup_interval;
 
+  $self->createTestRunner();
+
   my $gentest_pid= fork();
   if (not defined $gentest_pid) {
     sayError("Failed to fork for running the test flow");
