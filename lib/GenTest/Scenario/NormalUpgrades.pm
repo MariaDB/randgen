@@ -262,6 +262,8 @@ sub run {
   }
 
 LIVE_UPGRADE_END:
+  # In case it wasn't stopped before
+  $server->stopServer;
   # Back up data directory from the live upgrade
   system ('mv '.$server->datadir.' '.$server->datadir.'_live_upgrade');
   system ('mv '.$server->errorlog.' '.$server->errorlog.'_live_upgrade');
@@ -311,6 +313,8 @@ LIVE_UPGRADE_END:
   }
 
 DUMP_UPGRADE_END:
+  # In case it wasn't stopped before
+  $server->stopServer;
   # Back up data directory from the live upgrade
   system ('mv '.$server->datadir.' '.$server->datadir.'_dump_upgrade');
   system ('mv '.$server->errorlog.' '.$server->errorlog.'_dump_upgrade');
@@ -360,6 +364,8 @@ DUMP_UPGRADE_END:
   }
 
 MBACKUP_UPGRADE_END:
+  # In case it wasn't stopped before
+  $server->stopServer;
   # Back up data directory from the mariabackup upgrade
   system ('mv '.$server->datadir.' '.$server->datadir.'_mbackup_upgrade');
   system ('mv '.$server->errorlog.' '.$server->errorlog.'_mbackup_upgrade');
