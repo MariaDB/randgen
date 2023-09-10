@@ -72,7 +72,7 @@ sub status {
       return STATUS_OK;
     }
   } else {
-    say("ERROR: Lost connection to the slave");
+    sayError("ReplicationSlaveStatus: Lost connection to the slave");
     return STATUS_REPLICATION_FAILURE;
   }
 }
