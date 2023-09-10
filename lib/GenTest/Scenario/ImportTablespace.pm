@@ -74,7 +74,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("The server failed to start");
-    return $self->finalize(STATUS_SERVER_UNAVAILABLE,[]);
+    $status= STATUS_SERVER_STARTUP_FAILURE if $status < STATUS_SERVER_STARTUP_FAILURE;
+    goto FINALIZE;
   }
 
   #####
@@ -84,7 +85,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
-    return $self->finalize($status,[$server]);
+    goto FINALIZE;
   }
 
   #####
@@ -96,7 +97,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Initial test flow failed");
-    return $self->finalize($status,[$server]);
+    goto FINALIZE;
   }
 
   my $conn= Connection::Perl->new(server => $server, role => 'admin', name => 'TBS' );
@@ -195,7 +196,7 @@ sub run {
     $conn->execute("UNLOCK TABLES");
     if ($conn->err) {
       sayError("Could not unlock tables: ".$conn->print_error);
-      return $self->finalize($status,[$server]);
+      goto FINALIZE;
     }
     $conn->execute("ALTER TABLE `${tschema_import}`.`$tname` IMPORT TABLESPACE");
     if ($conn->err) {
@@ -207,7 +208,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Tablespace import failed");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
+    $status= STATUS_DATABASE_CORRUPTION if $status < STATUS_DATABASE_CORRUPTION;
+    goto FINALIZE;
   }
 
   foreach my $db (keys %databases) {
@@ -232,7 +234,7 @@ sub run {
     if ($status != STATUS_OK) {
       sayError("Data in ${db} and {$db}_import differs");
       system('diff -a -u '.$server->vardir."/server_data_${db}.dump".' '.$server->vardir."/server_data_${db}_import.dump");
-      $status= STATUS_DATABASE_CORRUPTION;
+      $status= STATUS_DATABASE_CORRUPTION if $status < STATUS_DATABASE_CORRUPTION;
     }
     else {
       say("Data in $db and ${db}_import dumps appear to be identical");
@@ -241,19 +243,11 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data comparison failed");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
+    $status= STATUS_DATABASE_CORRUPTION if $status < STATUS_DATABASE_CORRUPTION;
+    goto FINALIZE;
   }
 
-  #####
-  $self->printStep("Stopping the server");
-
-  $status= $server->stopServer;
-
-  if ($status != STATUS_OK) {
-    sayError("Server shutdown failed");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$server]);
-  }
-
+FINALIZE:
   return $self->finalize($status,[]);
 }
 

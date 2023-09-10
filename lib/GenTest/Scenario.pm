@@ -298,6 +298,7 @@ sub finalize {
   if ($servers) {
     foreach my $s (@$servers) {
       if ($s->running) {
+        say("Stopping the server at port ".$s->port);
         if ($s->stopServer() != STATUS_OK) {
           $s->kill;
           $status= STATUS_SERVER_SHUTDOWN_FAILURE if STATUS_SERVER_SHUTDOWN_FAILURE > $status;

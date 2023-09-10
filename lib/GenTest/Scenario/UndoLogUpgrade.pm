@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2022 MariaDB Corporation Ab
+# Copyright (C) 2017, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -88,13 +88,14 @@ sub new {
 
 sub run {
   my $self= shift;
-  my ($status, $old_server, $new_server, $databases, %table_autoinc);
+  my ($status, $old_server, $new_server, $server, $databases, %table_autoinc);
 
   $status= STATUS_OK;
 
   #####
   # Prepare old server
   $old_server=  $self->prepareServer(1, my $is_active=1);
+  $server= $old_server;
 
   #####
   $self->printStep("Starting the old server");
@@ -103,7 +104,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Old server failed to start");
-    return $self->finalize(STATUS_SERVER_STARTUP_FAILURE,[]);
+    $status= STATUS_SERVER_STARTUP_FAILURE if $status < STATUS_SERVER_STARTUP_FAILURE;
+    goto FINALIZE;
   }
 
   #####
@@ -113,7 +115,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
-    return $self->finalize($status,[$old_server]);
+    goto FINALIZE;
   }
 
   #####
@@ -124,7 +126,8 @@ sub run {
   my $gentest_pid= fork();
   if (not defined $gentest_pid) {
     sayError("Failed to fork for running the test flow");
-    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$old_server]);
+    $status= STATUS_ENVIRONMENT_FAILURE if $status < STATUS_ENVIRONMENT_FAILURE;
+    goto FINALIZE;
   }
 
   # The child will be running the test flow. The parent will be running
@@ -150,7 +153,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Test flow on the old server failed");
-    return $self->finalize($status,[$old_server]);
+    goto FINALIZE;
   }
 
   #####
@@ -159,14 +162,15 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Could not kill the old server");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$old_server]);
+    $status= STATUS_SERVER_SHUTDOWN_FAILURE if $status < STATUS_SERVER_SHUTDOWN_FAILURE;
+    goto FINALIZE;
   }
 
   waitpid($gentest_pid, 0);
   $status= ($? >> 8);
   if ($status != STATUS_OK && $status != STATUS_SERVER_STOPPED && $status != STATUS_TEST_STOPPED) {
     sayError("Test flow failed");
-    return $self->finalize($status,[$old_server]);
+    goto FINALIZE;
   }
 
   #####
@@ -176,7 +180,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Found fatal errors in the log, old server shutdown has apparently failed");
-    return $self->finalize(STATUS_ERRORS_IN_LOG,[$old_server]);
+    $status= STATUS_ERRORS_IN_LOG if $status < STATUS_ERRORS_IN_LOG;
+    goto FINALIZE;
   }
 
   #####
@@ -195,7 +200,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Old server failed to restart with innodb-force-recovery");
-    return $self->finalize(STATUS_SERVER_STARTUP_FAILURE,[]);
+    $status= STATUS_SERVER_STARTUP_FAILURE if $status < STATUS_SERVER_STARTUP_FAILURE;
+    goto FINALIZE;
   }
   $old_server->endPlannedDowntime();
 
@@ -210,7 +216,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Shutdown of the old server failed");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$old_server]);
+    $status= STATUS_SERVER_SHUTDOWN_FAILURE;
+    goto FINALIZE;
   }
 
   $self->restoreProperties();
@@ -226,6 +233,7 @@ sub run {
 
   # Point server_specific to the new server
   $new_server=  $self->prepare_new_server($old_server);
+  $server= $new_server;
   $self->switch_to_new_server();
 
   $status= $new_server->startServer;
@@ -235,7 +243,7 @@ sub run {
     # Error log might indicate known bugs which will affect the exit code
     $status= $self->checkErrorLog($new_server);
     # ... but even if it's a known error, we cannot proceed without the server
-    return $self->finalize($status,[$new_server]);
+    goto FINALIZE;
   }
 
   #####
@@ -249,7 +257,8 @@ sub run {
     $self->setStatus($status);
     sayError("Found errors in the log after upgrade");
     if ($status > STATUS_CUSTOM_OUTCOME) {
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+      $status= STATUS_UPGRADE_FAILURE if $status < STATUS_UPGRADE_FAILURE;
+      goto FINALIZE;
     }
   }
 
@@ -266,7 +275,8 @@ sub run {
     $status= $new_server->upgradeDb;
     if ($status != STATUS_OK) {
       sayError("mysql_upgrade failed");
-      return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+      $status= STATUS_UPGRADE_FAILURE if $status < STATUS_UPGRADE_FAILURE;
+      goto FINALIZE;
     }
   }
   else {
@@ -280,7 +290,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Database appears to be corrupt after upgrade");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
+    $status= STATUS_UPGRADE_FAILURE if $status < STATUS_UPGRADE_FAILURE;
+    goto FINALIZE;
   }
 
   #####
@@ -300,20 +311,11 @@ sub run {
     }
 
     $self->setStatus($status);
-    return $self->finalize($status,[$new_server])
+    goto FINALIZE;
   }
 
-  #####
-  $self->printStep("Stopping the new server");
-
-  $status= $new_server->stopServer;
-
-  if ($status != STATUS_OK) {
-    sayError("Shutdown of the new server failed");
-    return $self->finalize(STATUS_UPGRADE_FAILURE,[$new_server]);
-  }
-
-  return $self->finalize($status,[]);
+FINALIZE:
+  return $self->finalize($status,[$server]);
 }
 
 1;

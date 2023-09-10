@@ -89,16 +89,6 @@ sub run {
     goto FINALIZE;
   }
 
-  #####
-  $self->printStep("Stopping the server");
-
-  $status= $server->stopServer();
-
-  if ($status != STATUS_OK) {
-    sayError("Server shutdown failed");
-    $total_status= $status if $status > $total_status;
-  }
-
 FINALIZE:
   return $self->finalize($total_status,[$server]);
 }

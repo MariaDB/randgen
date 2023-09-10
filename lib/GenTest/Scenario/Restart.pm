@@ -73,7 +73,7 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Server failed to start");
     $total_status= STATUS_SERVER_STARTUP_FAILURE if STATUS_SERVER_STARTUP_FAILURE > $total_status;
-    return $self->finalize($total_status,[$server]);
+    goto FINALIZE;
   }
 
   #####
@@ -84,7 +84,7 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
     $total_status= $status if $status > $total_status;
-    return $self->finalize($total_status,[$server]);
+    goto FINALIZE;
   }
 
   #####
@@ -100,7 +100,8 @@ sub run {
   $gentest_pid= fork();
   if (not defined $gentest_pid) {
     sayError("Failed to fork for running the test flow");
-    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
+    $status= STATUS_ENVIRONMENT_FAILURE if $status < STATUS_ENVIRONMENT_FAILURE;
+    goto FINALIZE;
   }
 
   # The child will be running the test flow. The parent will be running
@@ -181,22 +182,6 @@ sub run {
     sayError("Test flow failed");
     $total_status= $status if $status > $total_status;
   }
-
-  #####
-  $self->printStep("Stopping the server");
-
-  $status= $server->stopServer($shutdown_timeout);
-
-  if ($status != STATUS_OK) {
-    sayError("Server shutdown failed");
-    $total_status= $status if $status > $total_status;
-  }
-
-  #####
-  $self->printStep("Checking the server log for errors");
-  $status= $self->checkErrorLog($server);
-
-  $total_status= $status if $status > $total_status;
 
   return $self->finalize($total_status,[$server]);
 }

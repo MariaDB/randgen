@@ -1,4 +1,4 @@
-# Copyright (C) 2019, 2022 MariaDB Corporation Ab
+# Copyright (C) 2019, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -71,7 +71,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server failed to start");
-    return $self->finalize(STATUS_SERVER_STARTUP_FAILURE,[]);
+    $status= STATUS_SERVER_STARTUP_FAILURE if $status < STATUS_SERVER_STARTUP_FAILURE;
+    goto FINALIZE;
   }
 
   #####
@@ -80,13 +81,14 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
-    return $self->finalize($status,[$server]);
+    goto FINALIZE;
   }
   #####
 
   unless ($mbackup= $server->mariabackup) {
     sayError("Could not find MariaBackup binary");
-    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
+    $status= STATUS_ENVIRONMENT_FAILURE if $status < STATUS_ENVIRONMENT_FAILURE;
+    goto FINALIZE;
   }
 
   $vardir= $server->vardir;
@@ -99,7 +101,8 @@ sub run {
   my $gentest_pid= fork();
   if (not defined $gentest_pid) {
     sayError("Failed to fork for running the test flow");
-    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
+    $status= STATUS_ENVIRONMENT_FAILURE if $status < STATUS_ENVIRONMENT_FAILURE;
+    goto FINALIZE;
   }
 
   # The child will be running the test flow. The parent will be running
@@ -128,7 +131,7 @@ sub run {
             $test_flow_finished= 1;
             if ($status != STATUS_OK) {
               sayError("Test flow before the backup failed");
-              return $self->finalize($status,[$server]);
+              goto FINALIZE;
             } else {
                 last;
                 say("Test flow finished, take the backup now");
@@ -157,7 +160,8 @@ sub run {
       } else {
           sayError("Backup #$backup_num failed: $status");
           sayFile("$vardir/mbackup_backup_${backup_num}.log");
-          return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+          $status= STATUS_BACKUP_FAILURE if $status < STATUS_BACKUP_FAILURE;
+          goto FINALIZE;
       }
 
       $backup_num++;
@@ -176,14 +180,15 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Server shutdown failed");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
+    $status= STATUS_SERVER_SHUTDOWN_FAILURE if $status < STATUS_SERVER_SHUTDOWN_FAILURE;
+    goto FINALIZE;
   }
 
   waitpid($gentest_pid, 0);
   $status= ($? >> 8);
   if ($status != STATUS_OK && $status != STATUS_SERVER_STOPPED && $status != STATUS_TEST_STOPPED) {
     sayError("Test flow failed");
-    return $self->finalize($status,[$server]);
+    goto FINALIZE;
   }
 
   #####
@@ -194,7 +199,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Found fatal errors in the log, server shutdown has apparently failed");
-    return $self->finalize(STATUS_DATABASE_CORRUPTION,[$server]);
+    $status= STATUS_DATABASE_CORRUPTION if $status < STATUS_DATABASE_CORRUPTION;
+    goto FINALIZE;
   }
 
   #####
@@ -231,7 +237,8 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Backup preparing failed");
     sayFile("$vardir/mbackup_prepare_0.log");
-    return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+    $status= STATUS_BACKUP_FAILURE if $status < STATUS_BACKUP_FAILURE;
+    goto FINALIZE;
   }
 
   #####
@@ -247,7 +254,8 @@ sub run {
       if ($status != STATUS_OK) {
         sayError("Backup preparing failed");
         sayFile("$vardir/mbackup_prepare_${b}.log");
-        return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+        $status= STATUS_BACKUP_FAILURE if $status < STATUS_BACKUP_FAILURE;
+        goto FINALIZE;
       }
   }
 
@@ -262,7 +270,8 @@ sub run {
   if ($status != STATUS_OK) {
     sayError("Backup restore failed");
     sayFile("$vardir/mbackup_restore_${b}.log");
-    return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+    $status= STATUS_BACKUP_FAILURE if $status < STATUS_BACKUP_FAILURE;
+    goto FINALIZE;
   }
 
   #####
@@ -275,7 +284,7 @@ sub run {
     # Error log might indicate known bugs which will affect the exit code
     $status= $self->checkErrorLog($server);
     # ... but even if it's a known error, we cannot proceed without the server
-    return $self->finalize($status,[$server]);
+    goto FINALIZE;
   }
 
   #####
@@ -289,7 +298,8 @@ sub run {
     $self->setStatus($status);
     if ($status > STATUS_CUSTOM_OUTCOME) {
       sayError("Found errors in the log, restart has apparently failed");
-      return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+      $status= STATUS_BACKUP_FAILURE if $status < STATUS_BACKUP_FAILURE;
+      goto FINALIZE;
     }
   }
 
@@ -300,20 +310,12 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Database appears to be corrupt after restoring the backup");
-    return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
+    $status= STATUS_BACKUP_FAILURE if $status < STATUS_BACKUP_FAILURE;
+    goto FINALIZE;
   }
 
-  #####
-  $self->printStep("Stopping the server");
-
-  $status= $server->stopServer;
-
-  if ($status != STATUS_OK) {
-    sayError("Server shutdown failed");
-    return $self->finalize(STATUS_BACKUP_FAILURE,[$server]);
-  }
-
-  return $self->finalize($status,[]);
+FINALIZE:
+  return $self->finalize($status,[$server]);
 }
 
 1;

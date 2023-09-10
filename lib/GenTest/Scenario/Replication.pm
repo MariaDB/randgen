@@ -195,14 +195,6 @@ sub run {
     }
   }
 
-  #####
-  $self->printStep("Stopping the servers");
-
-  foreach (0..$#servers) {
-    $status= $servers[$_]->stopServer();
-    $total_status= $status if $status > $total_status;
-  }
-
 FINALIZE:
   return $self->finalize($total_status,[@servers]);
 }

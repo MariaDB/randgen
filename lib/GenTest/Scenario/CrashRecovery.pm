@@ -53,13 +53,14 @@ sub new {
 
 sub run {
   my $self= shift;
-  my ($status, $old_server, $new_server, $databases, %table_autoinc);
+  my ($status, $old_server, $new_server, $server, $databases, %table_autoinc);
 
   $status= STATUS_OK;
 
   #####
   # Prepare old server
   $old_server=  $self->prepareServer(1, my $is_active=1);
+  $server= $old_server;
 
   #####
   $self->printStep("Starting the old server");
@@ -68,7 +69,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Old server failed to start");
-    return $self->finalize($status,[]);
+    $status= STATUS_SERVER_STARTUP_FAILURE if $status < STATUS_SERVER_STARTUP_FAILURE;
+    goto FINALIZE;
   }
 
   #####
@@ -78,7 +80,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data generation on the old server failed");
-    return $self->finalize($status,[$old_server]);
+    $status= STATUS_CRITICAL_FAILURE if $status < STATUS_CRITICAL_FAILURE;
+    goto FINALIZE;
   }
 
   #####
@@ -89,7 +92,8 @@ sub run {
   my $gentest_pid= fork();
   if (not defined $gentest_pid) {
     sayError("Failed to fork for running the test flow");
-    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$old_server]);
+    $status= STATUS_ENVIRONMENT_FAILURE if $status < STATUS_ENVIRONMENT_FAILURE;
+    goto FINALIZE;
   }
 
   # The child will be running the test flow. The parent will be running
@@ -115,7 +119,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Test flow on the old server failed");
-    return $self->finalize($status,[$old_server]);
+    goto FINALIZE;
   }
 
   #####
@@ -125,7 +129,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Could not kill the old server");
-    return $self->finalize($status,[$old_server]);
+    goto FINALIZE;
   }
 
   # We don't care about the result of gentest after killing the server,
@@ -139,7 +143,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Found fatal errors in the log, old server shutdown has apparently failed");
-    return $self->finalize($status,[$old_server]);
+    goto FINALIZE;
   }
 
   $old_server->endPlannedDowntime();
@@ -153,7 +157,8 @@ sub run {
   $self->printStep("Starting the new server");
 
   # Point server_specific to the new server
-  $new_server=  $self->prepare_new_server($old_server);
+  $new_server= $self->prepare_new_server($old_server);
+  $server= $new_server;
   $self->switch_to_new_server();
 
   $status= $new_server->startServer;
@@ -163,7 +168,8 @@ sub run {
     # Error log might indicate known bugs which will affect the exit code
     my $log_status= $self->checkErrorLog($new_server);
     # ... but even if it's a known error, we cannot proceed without the server
-    return $self->finalize(($log_status == STATUS_CUSTOM_OUTCOME ? STATUS_CUSTOM_OUTCOME : $self->upgrade_or_recovery_failure),[$new_server]);
+    $status= ($log_status == STATUS_CUSTOM_OUTCOME ? STATUS_CUSTOM_OUTCOME : $self->upgrade_or_recovery_failure);
+    goto FINALIZE;
   }
 
   #####
@@ -177,7 +183,8 @@ sub run {
     $self->setStatus($status);
     sayError("Found errors in the log after recovery");
     if ($status > STATUS_CUSTOM_OUTCOME) {
-      return $self->finalize($self->upgrade_or_recovery_failure,[$new_server]);
+      $status= $self->upgrade_or_recovery_failure;
+      goto FINALIZE;
     }
   }
 
@@ -194,7 +201,8 @@ sub run {
     $status= $new_server->upgradeDb;
     if ($status != STATUS_OK) {
       sayError("mysql_upgrade failed");
-      return $self->finalize($self->upgrade_or_recovery_failure,[$new_server]);
+      $status= $self->upgrade_or_recovery_failure;
+      goto FINALIZE;
     }
   }
   else {
@@ -208,7 +216,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Database appears to be corrupt after recovery");
-    return $self->finalize($self->upgrade_or_recovery_failure,[$new_server]);
+    $status= $self->upgrade_or_recovery_failure;
+    goto FINALIZE;
   }
 
   #####
@@ -227,22 +236,11 @@ sub run {
     if ($self->checkErrorLog($new_server) == STATUS_CUSTOM_OUTCOME) {
       $status= STATUS_CUSTOM_OUTCOME;
     }
-
     $self->setStatus($status);
-    return $self->finalize($status,[$new_server])
   }
 
-  #####
-  $self->printStep("Stopping the new server");
-
-  $status= $new_server->stopServer;
-
-  if ($status != STATUS_OK) {
-    sayError("Shutdown of the new server failed");
-    return $self->finalize($self->upgrade_or_recovery_failure,[$new_server]);
-  }
-
-  return $self->finalize($status,[]);
+FINALIZE:
+  return $self->finalize($status,[$server]);
 }
 
 1;

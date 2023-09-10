@@ -81,7 +81,8 @@ sub run {
     $status= $servers[$s]->startServer;
     if ($status != STATUS_OK) {
       sayError("Server ".($s+1)." failed to start");
-      return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[@servers]);
+      $status= STATUS_SERVER_STARTUP_FAILURE if $status < STATUS_SERVER_STARTUP_FAILURE;
+      goto FINALIZE;
     }
   }
 
@@ -94,7 +95,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
-    return $self->finalize($status,[@servers]);
+    $status= STATUS_CRITICAL_FAILURE if $status < STATUS_CRITICAL_FAILURE;
+    goto FINALIZE;
   }
 
   #####
@@ -104,21 +106,10 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Test flow failed");
-    return $self->finalize($status,[@servers]);
   }
 
-  #####
-  $self->printStep("Stopping the servers");
-
-  foreach (0..$#servers) {
-    $status= $servers[$_]->stopServer();
-    if ($status != STATUS_OK) {
-      sayError("Server ".($_+1)." shutdown failed");
-      return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[@servers]);
-    }
-  }
-
-  return $self->finalize($status,[]);
+FINALIZE:
+  return $self->finalize($status,[@servers]);
 }
 
 1;

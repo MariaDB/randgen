@@ -102,7 +102,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("The server failed to start");
-    return $self->finalize($status,[]);
+    $status= STATUS_SERVER_STARTUP_FAILURE if $status < STATUS_SERVER_STARTUP_FAILURE;
+    goto FINALIZE;
   }
 
   $general_log_file= $server->serverVariable('general_log_file');
@@ -117,7 +118,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Data generation failed");
-    return $self->finalize($status,[$server]);
+    goto FINALIZE;
   }
 
   #####
@@ -128,7 +129,8 @@ sub run {
   my $gentest_pid= fork();
   if (not defined $gentest_pid) {
     sayError("Failed to fork for atomic DDL");
-    return $self->finalize(STATUS_ENVIRONMENT_FAILURE,[$server]);
+    $status= STATUS_ENVIRONMENT_FAILURE if $status < STATUS_ENVIRONMENT_FAILURE;
+    goto FINALIZE;
   }
 
   # The child will be running DDL. The parent will be running
@@ -153,7 +155,7 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Atomic DDL failed");
-    return $self->finalize($status,[$server]);
+    goto FINALIZE;
   }
 
   #####
@@ -163,7 +165,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Could not kill the server");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
+    $status= STATUS_SERVER_SHUTDOWN_FAILURE if $status < STATUS_SERVER_SHUTDOWN_FAILURE;
+    goto FINALIZE;
   }
 
   # We don't care about the result of gentest after killing the server,
@@ -189,7 +192,7 @@ sub run {
     # Error log might indicate known bugs which will affect the exit code
     $status= $self->checkErrorLog($server);
     # ... but even if it's a known error, we cannot proceed without the server
-    return $self->finalize($status,[$server]);
+    goto FINALIZE;
   }
 
   $server->endPlannedDowntime();
@@ -205,7 +208,8 @@ sub run {
     $self->setStatus($status);
     sayError("Found errors in the log after restart");
     if ($status > STATUS_CUSTOM_OUTCOME) {
-      return $self->finalize(STATUS_RECOVERY_FAILURE,[$server]);
+      $status= STATUS_RECOVERY_FAILURE if $status < STATUS_RECOVERY_FAILURE;
+      goto FINALIZE;
     }
   }
 
@@ -227,7 +231,8 @@ sub run {
 
     if ($status != STATUS_OK) {
       sayError("Failed to start the slave");
-      return $self->finalize(STATUS_REPLICATION_FAILURE,[$server]);
+      $status= STATUS_SERVER_STARTUP_FAILURE if $status < STATUS_SERVER_STARTUP_FAILURE;
+      goto FINALIZE;
     }
 
     $slave_conn= Connection::Perl->new(server => $slave, name => 'ATO');
@@ -236,7 +241,8 @@ sub run {
       $slave_conn->execute("START SLAVE");
     } else {
       sayError("Could not connect to the slave");
-      return $self->finalize(STATUS_RECOVERY_FAILURE,[$server,$slave]);
+      $status= STATUS_REPLICATION_FAILURE if $status < STATUS_REPLICATION_FAILURE;
+      goto FINALIZE;
     }
   }
 
@@ -247,7 +253,8 @@ sub run {
 
   if ($status != STATUS_OK) {
     sayError("Database appears to be corrupt after restart");
-    return $self->finalize(STATUS_RECOVERY_FAILURE,[$server,$slave]);
+    $status= STATUS_RECOVERY_FAILURE if $status < STATUS_RECOVERY_FAILURE;
+    goto FINALIZE;
   }
 
   if ($slave) {
@@ -257,7 +264,8 @@ sub run {
     if ($file && $pos && $slave->syncWithMaster($file, $pos, $self->getProperty('duration')) == STATUS_OK) {
       $slave_conn->execute("STOP SLAVE");
     } else {
-      return $self->finalize(STATUS_REPLICATION_FAILURE,[$server,$slave]);
+      $status= STATUS_REPLICATION_FAILURE if $status < STATUS_REPLICATION_FAILURE;
+      goto FINALIZE;
     }
     #####
     $self->printStep("Dumping databases from the slave");
@@ -273,30 +281,16 @@ sub run {
     if ($status != STATUS_OK) {
       sayError("Database structures differ");
       system('diff -a -u '.$server->vardir.'/server_schema_recovered.dump'.' '.$server->vardir.'/slave_schema.dump');
-      return $self->finalize(STATUS_RECOVERY_FAILURE,[$server,$slave]);
+      $status= STATUS_RECOVERY_FAILURE if $status < STATUS_RECOVERY_FAILURE;
+      goto FINALIZE;
     }
     else {
       say("Structure dumps appear to be identical");
     }
   }
 
-  #####
-  $self->printStep("Stopping the servers");
-
-  if ($slave) {
-    $status= $slave->stopServer;
-    if ($status != STATUS_OK) {
-      sayError("Slave shutdown failed");
-      return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server,$slave]);
-    }
-  }
-  $status= $server->stopServer;
-  if ($status != STATUS_OK) {
-    sayError("Server shutdown failed");
-    return $self->finalize(STATUS_SERVER_SHUTDOWN_FAILURE,[$server]);
-  }
-
-  return $self->finalize($status,[]);
+FINALIZE:
+  return $self->finalize($status,($slave ? [$server,$slave] : [$server]));
 }
 
 1;
