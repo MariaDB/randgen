@@ -25,6 +25,7 @@ use GenUtil;
 use if osWindows(), Win32::Process;
 use Time::HiRes;
 use POSIX ":sys_wait_h";
+use POSIX;
 use Carp;
 use Data::Dumper;
 use File::Basename qw(dirname);
@@ -620,8 +621,9 @@ sub startServer {
 }
 
 sub kill {
-    my ($self, $signal) = @_;
+    my ($self, $signal, $timeout) = @_;
     $signal= 'KILL' unless defined $signal;
+    $timeout= $default_shutdown_timeout unless defined $timeout;
 
     my $pidfile= $self->pidfile;
 
@@ -637,7 +639,7 @@ sub kill {
         }
         kill $signal => $self->serverpid;
         my $sleep_time= 0.2;
-        my $waits = int($default_shutdown_timeout / $sleep_time);
+        my $waits = int($timeout / $sleep_time);
         while ($self->running && $waits) {
             Time::HiRes::sleep($sleep_time);
             $waits--;
@@ -1061,17 +1063,17 @@ sub stopServer {
 
     if ($shutdown_timeout and $self->connection) {
         sayDebug("Stopping server at port ".$self->port);
-        $SIG{'ALRM'} = sub { sayDebug("Could not execute shutdown command in time"); };
         ## Use connection routine to ensure reconnect in case connection is
         ## stale (happens i.e. with mdl_stability/valgrind runs)
-        alarm($shutdown_timeout);
         sayDebug("Sending SIGTERM");
-        $res= $self->kill('TERM');
+        $res= $self->kill('TERM',$shutdown_timeout);
         if ($res != STATUS_OK) {
             sayError("Shutdown via SIGTERM failed");
             $res= STATUS_SERVER_SHUTDOWN_FAILURE;
+        } else {
+          $res= $self->waitForServerToStop($shutdown_timeout)
         }
-        if (!$self->waitForServerToStop($shutdown_timeout)) {
+        if ($res != STATUS_OK) {
             # Terminate process
             sayWarning("Server doesn't shut down properly. Terminating it with SIGABRT");
             $res= STATUS_SERVER_SHUTDOWN_FAILURE;
@@ -1291,7 +1293,7 @@ sub waitForServerToStop {
       say("Still waiting for the server to stop...");
     }
   }
-  return !$self->running;
+  return ($self->running ? STATUS_SERVER_SHUTDOWN_FAILURE : STATUS_OK);
 }
 
 sub getMasterPos {
@@ -1375,6 +1377,12 @@ sub startPlannedDowntime {
   return $status;
 }
 
+sub setFinalDowntime {
+  my $self= shift;
+  sayDebug("Writing a message about final downtime");
+  set_expectation($self->vardir,"-1\n(seconds to wait)");
+}
+
 sub endPlannedDowntime {
   my $self= shift;
   sayDebug("Unsetting planned downtime");
@@ -1385,7 +1393,10 @@ sub waitPlannedDowntime {
   my $self= shift;
   my $downtime= 0;
   my $expect_file= $self->vardir.'/expect';
+  my $last_mod_time;
+ EXPECTATION:
   if (-e $expect_file) {
+    $last_mod_time = -M $expect_file;
     if (open(DOWNTIME,$expect_file)) {
       $downtime= <DOWNTIME>;
       chomp $downtime;
@@ -1397,10 +1408,17 @@ sub waitPlannedDowntime {
   if ($downtime > 0) {
     sayDebug("Server says: planned downtime, waiting up to $downtime seconds");
     $self->[MYSQLD_SERVERPID]= undef;
-    while ($downtime-- && -e $expect_file) {
+    while ($downtime--) {
+      unless (-e $expect_file) {
+        sayDebug("Expect file disappeared");
+        last;
+      }
+      unless ($last_mod_time == (-M $expect_file)) {
+        sayDebug("Expect file was updated, re-reading it");
+        goto EXPECTATION;
+      }
       sleep 1;
     }
-    sayDebug("Expect file disappeared");
     if ($self->running) {
       sayDebug("Server is running again");
       return STATUS_OK;
