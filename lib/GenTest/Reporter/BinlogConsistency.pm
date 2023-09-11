@@ -67,12 +67,12 @@ sub report {
   $client .= " -uroot --host=127.0.0.1 --port=$port --protocol=tcp";
 
 
-  my $binlog = DBServer::MariaDB::_find(undef,
+  my $binlog_utility= DBServer::MariaDB::_find(undef,
                        [$reporter->server->serverVariable('basedir')],
                        osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
                        osWindows()?"mysqlbinlog.exe":"mysqlbinlog");
 
-  unless ($binlog) {
+  unless ($binlog_utility) {
     say("ERROR: Could not find mysqlbinlog. Status will be set to ENVIRONMENT_FAILURE");
     return STATUS_ENVIRONMENT_FAILURE;
   }
@@ -84,8 +84,8 @@ sub report {
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
-  my @all_binlogs = @{$conn->get_column("SHOW BINARY LOGS",1)};
-  my $binlogs_string = join(' ', map { "$vardir/vardir_orig/data/$_" } @all_binlogs );
+  my $binlog = $conn->get_value("SHOW BINARY LOGS");
+  $binlog=~ s/^([^\.]*)\..*/$1/;
 
   say("Dumping the original server...");
   $status = $reporter->dump_all($vardir."/original.dump");
@@ -115,11 +115,13 @@ sub report {
     return $status;
   }
 
-  say("Dumping binary log events (with adjustments) into a file...");
   # MDEV-31756 - NOWAIT in DDL makes binary logs difficult or impossible to replay
-  $status = system("$binlog $binlogs_string | sed -e 's/NOWAIT//g' > $vardir/vardir_orig/binlog_events") >> 8;
-  if ($status > STATUS_OK) {
-    say("ERROR: Dumping binary logs finished with an error");
+  my $cmd= "$binlog_utility $vardir/vardir_orig/data/$binlog.0* | sed -e 's/NOWAIT//g' > $vardir/vardir_orig/binlog_events";
+  say("Dumping binary log events (with adjustments) into a file...");
+  sayDebug($cmd);
+  $status = system($cmd);
+  if ($status != STATUS_OK) {
+    say("ERROR: Dumping binary logs finished with an error: ".($status >> 8));
     return STATUS_CRITICAL_FAILURE;
   }
 
