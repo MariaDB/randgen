@@ -143,6 +143,7 @@ sub run {
     goto FINALIZE;
   }
 
+FINALIZE:
   return $self->finalize($status,[@servers]);
 }
 
