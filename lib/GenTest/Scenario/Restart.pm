@@ -152,7 +152,7 @@ sub run {
       }
 
       #####
-      if ($self->getTestType eq 'normal') {
+      if ($self->getTestType and ($self->getTestType eq 'normal')) {
         $self->printStep("Checking the database state after restart");
 
         $status= $server->checkDatabaseIntegrity;

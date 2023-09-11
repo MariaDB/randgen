@@ -367,7 +367,7 @@ sub cacheMetaData {
   foreach my $s (keys %{$self->[EXECUTOR_META_NONSYSTEM_CACHE]}) {
     $all_meta->{$s}= { %{$self->[EXECUTOR_META_NONSYSTEM_CACHE]->{$s}} };
   }
-  unless (defined $self->defaultSchema() and $self->defaultSchema() != '') {
+  unless ((defined $self->defaultSchema()) and ($self->defaultSchema() ne '')) {
     $self->defaultSchema((sort keys %{$self->[EXECUTOR_META_NONSYSTEM_CACHE]})[0]) ;
   }
 

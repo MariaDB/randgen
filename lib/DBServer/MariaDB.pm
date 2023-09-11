@@ -1898,6 +1898,7 @@ sub storeMetaData {
 
   my ($self, $metadata_type, $maxtime, $wait_for_threads)= @_;
 
+  $wait_for_threads= 0 unless defined $wait_for_threads;
   my $vardir= $self->vardir;
   my $dumpdir= $vardir."/metadata";
   mkpath($dumpdir);

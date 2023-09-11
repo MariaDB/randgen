@@ -53,7 +53,7 @@ sub monitor {
       $max_mem= $mem;
       $max_mem_pct= $mem_pct;
     }
-    if ($reporter->server->serverVariable('performance_schema') == 1) {
+    if (($reporter->server->serverVariable('performance_schema') eq '1') or ($reporter->server->serverVariable('performance_schema') eq 'ON')) {
       say("MemoryUsage monitor for pid $pid: memory usage: ".format_mem_value($mem));
       $conn = $reporter->connection unless $conn;
       $memusage= $conn->query("select event_name, sum_number_of_bytes_alloc, current_number_of_bytes_used, high_number_of_bytes_used from performance_schema.memory_summary_global_by_event_name order by current_number_of_bytes_used desc limit 5");

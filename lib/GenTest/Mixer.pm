@@ -132,7 +132,7 @@ sub next {
   if (not defined $queries or (ref $queries ne 'ARRAY')) {
     say("Mixer: Internal grammar problem. Terminating.");
     return STATUS_ENVIRONMENT_FAILURE;
-  } elsif ($queries->[0] eq '') {
+  } elsif ((not defined $queries->[0]) or ($queries->[0] eq '')) {
 #    say("Mixer: Your grammar generated an empty query.");
 #    return STATUS_ENVIRONMENT_FAILURE;
   }
