@@ -1306,7 +1306,6 @@ MDEV-27422:
 MDEV-27409:
 =~ signal|AddressSanitizer
 =~ oqgraph3::intrusive_ptr_release
-=~ oqgraph3::edge_info::operator
 # The bug report is 10.5+, but the failure can happen on 10.4 too, like MDEV-27292
 MDEV-27366:
 =~ signal|AddressSanitizer
