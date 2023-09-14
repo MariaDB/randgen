@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32173:
+=~ Assertion \`res >= 0'
+=~ JOIN::optimize_inner
+=~ FeatureUsage detected Connect tables
+MDEV-32164:
+=~ signal|AddressSanitizer
+=~ next_breadth_first_tab|SQL_SELECT::cleanup
+=~ JOIN::cleanup
+=~ st_select_lex::cleanup
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32140:
 =~ MemorySanitizer: use-of-uninitialized-value|Conditional jump or move depends on uninitialised value
 =~ dynamic_column_update_move_left
@@ -501,7 +511,6 @@ MDEV-31063:
 =~ Field_.*::val_.*
 =~ Column_statistics_collected::add|Histogram_json_builder::append_column_value
 =~ Sql_cmd_analyze_table::execute
-=~ FeatureUsage detected virtual columns
 MDEV-31056:
 =~ signal|AddressSanitizer
 =~ Field::set_datetime_warning
@@ -1949,7 +1958,7 @@ MDEV-24095:
 MDEV-24038:
 =~ Assertion \`next_insert_id >= auto_inc_interval_for_cur_row\.minimum()'
 =~ handler::update_auto_increment
-=~ Query.*: .*ON DUPLICATE KEY UPDATE
+=~ Query.*: .*ON DUPLICATE KEY UPDATE|mysql_parse.*ON DUPLICATE KEY UPDATE
 MDEV-23984:
 =~ Assertion \`result_field'
 =~ Item_result_field::get_tmp_field_src
