@@ -48,6 +48,7 @@ my %usage_check= (
   'binlog alter two phase' => \&check_for_binlog_alter_two_phase,
   'Blackhole tables' => \&check_for_blackhole_tables,
   'compressed columns' => \&check_for_compressed_columns,
+  'Connect tables' => \&check_for_connect_tables,
   'delayed inserts' => \&check_for_delayed_inserts,
   'Federated engine' => \&check_for_federated_plugin,
   'Federated tables' => \&check_for_federated_tables,
@@ -153,6 +154,9 @@ sub report {
 ##########
 # Checkers
 
+sub check_for_connect_tables {
+  $_[0]->check_for_engine_tables('connect');
+}
 sub check_for_mroonga_tables {
   $_[0]->check_for_engine_tables('mroonga');
 }
