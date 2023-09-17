@@ -58,6 +58,7 @@ my %usage_check= (
   'multi-update/delete' => \&check_for_multi_upd_del,
   'Mroonga engine' => \&check_for_mroonga_plugin,
   'Mroonga tables' => \&check_for_mroonga_tables,
+  'nopad collations' => \&check_for_nopad_collations,
   'OQGraph engine' => \&check_for_oqgraph_plugin,
   'OQGraph tables' => \&check_for_oqgraph_tables,
   'performance schema' => \&check_for_performance_schema,
@@ -262,6 +263,14 @@ sub check_for_compressed_columns {
   return undef;
 }
 
+sub check_for_nopad_collations {
+  my $reporter= shift;
+  if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_COLLATION LIKE '%nopad%'")) {
+    return "according to I_S.TABLES";
+  }
+  return undef;
+}
+
 sub check_for_xa {
   if ($_[0]->check_status_var('Com_xa_start')) {
     return "according to Com_xa_start";
@@ -328,7 +337,6 @@ sub check_for_delayed_inserts {
 }
 
 sub check_for_backup_stages {
-  return ;
   if (($server_version ge '1004' or $server_version eq '1002e' or $server_version eq '1003e') and $_[0]->check_status_var('Com_backup')) {
     return "according to Com_backup";
   }
