@@ -4,6 +4,14 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32190:
+=~ InnoDB: Flagged corruption of
+=~ Got error 128 when reading table
+=~ FeatureUsage detected nopad collations
+MDEV-32190:
+=~ InnoDB: Clustered record for sec rec not found index
+=~ InnoDB: We detected index corruption in an InnoDB type table
+=~ FeatureUsage detected nopad collations
 MDEV-32173:
 =~ Assertion \`res >= 0'
 =~ JOIN::optimize_inner
@@ -940,7 +948,7 @@ MDEV-29136:
 =~ FeatureUsage detected S3 tables
 MDEV-29127:
 =~ Assertion \`!return_error \|\| thd->is_error() \|\| thd->killed'
-=~ mysql_delete
+=~ mysql_delete|Sql_cmd_delete::delete_from_single_table
 =~ FeatureUsage detected RocksDB tables
 MDEV-29124:
 =~ AddressSanitizer|signal
