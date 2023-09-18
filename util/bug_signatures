@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32199:
+=~ AddressSanitizer|signal
+=~ dd_frm_type
+=~ mysql_create_or_drop_trigger
+=~ Version: '10\.[45]|Server version: 10\.[45]
 MDEV-32195:
 =~ LeakSanitizer
 =~ ft_linearize|maria_ft_linearize
@@ -3828,7 +3833,6 @@ MDEV-15164:
 =~ rocksdb::DBImpl::BackgroundCompaction
 MDEV-14894: [remove_from_locked_mutex]
 =~ signal [16]
-=~ free_memory
 =~ remove_from_locked_mutex
 =~ my_hash_iterate
 MDEV-14890:
