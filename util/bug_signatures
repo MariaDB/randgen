@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32195:
+=~ LeakSanitizer
+=~ ft_linearize|maria_ft_linearize
+=~ handler::ha_end_bulk_insert
+=~ Sql_cmd_alter_table::execute
 MDEV-32190:
 =~ InnoDB: Flagged corruption of
 =~ Got error 128 when reading table
