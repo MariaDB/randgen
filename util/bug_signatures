@@ -13,7 +13,6 @@ MDEV-32195:
 =~ LeakSanitizer
 =~ ft_linearize|maria_ft_linearize
 =~ handler::ha_end_bulk_insert
-=~ Sql_cmd_alter_table::execute
 MDEV-32190:
 =~ InnoDB: Flagged corruption of
 =~ Got error 128 when reading table
@@ -1908,6 +1907,11 @@ MDEV-24521:
 MDEV-24521:
 =~ InnoDB: Flagged corruption of \`FTS_DOC_ID_INDEX\` in table .* in CHECK TABLE; Wrong count
 =~ For InnoDB SYSTEM VERSIONED ROW_FORMAT=Dynamic .* : error : Corrupt
+MDEV-24513:
+=~ AddressSanitizer|signal
+=~ set_bit
+=~ sort_and_filter_keyuse
+=~ make_join_statistics
 MDEV-24381:
 =~ Assertion \`user_table->get_ref_count() == 1'
 =~ commit_try_rebuild
