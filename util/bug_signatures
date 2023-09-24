@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32237:
+=~ AddressSanitizer|signal
+=~ my_charlen_utf8
+=~ Charset::charpos
+=~ Version: '10\.4|Server version: 10\.4
 MDEV-32199:
 =~ AddressSanitizer|signal
 =~ dd_frm_type
