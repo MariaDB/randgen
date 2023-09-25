@@ -73,26 +73,36 @@ sub filter {
       ($query =~ m{$rule}si)
     ) {
       $filtered_queries++;
-#      say("Query: $query filtered out by regexp rule $rule_name.");
-      return STATUS_SKIP;
+      sayDebug("Query: $query filtered out by regexp rule $rule_name.");
+      return undef;
     } elsif (
       (ref($rule) eq '') &&
       (lc($query) eq lc($rule))
     ) {
       $filtered_queries++;
-#      say("Query: $query filtered out by literal rule $rule_name.");
-      return STATUS_SKIP;
+      sayDebug("Query: $query filtered out by literal rule $rule_name.");
+      return undef;
     } elsif (ref($rule) eq 'CODE') {
+      # Code may filter out a query or modify it.
+      # For now we assume that m{...} rules are meant to filter out,
+      # while s{...}{...} rules are meant to modify the query.
+      # So, if there was a match but the resulting query ($_) is the same
+      # as the original one we assume that it was the matching rule,
+      # while if the query changed we assume it was a modification
       local $_ = $query;
       if ($rule->($query)) {
         $filtered_queries++;
-#        say("Query: $query filtered out by code rule $rule_name");
-                          return STATUS_SKIP;
+        if ($query eq $_) {
+          sayDebug("Query: $query filtered out by code rule $rule_name");
+          return undef;
+        } else {
+          sayDebug("Query $query modified by code rule $rule_name to $_");
+          return $_;
+        }
       }
     }
   }
-
-  return STATUS_OK;
+  return $query;
 }
 
 sub DESTROY {
