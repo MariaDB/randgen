@@ -440,6 +440,11 @@ MDEV-31209:
 =~ STATUS_SERVER_DEADLOCKED
 =~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
 =~ Deadlock reporter: Stalled query: .* OVER (
+MDEV-31209:
+=~ STATUS_SERVER_SHUTDOWN_FAILURE
+=~ Shutdown via SIGTERM failed
+=~ Thread .* did not exit
+=~ window_functions\.yy
 MDEV-31198:
 =~ signal|AddressSanitizer
 =~ st_select_lex::update_used_tables
@@ -1163,6 +1168,11 @@ MDEV-28404:
 =~ STATUS_SERVER_DEADLOCKED
 =~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
 =~ Deadlock reporter: Stalled query: .*JSON_
+MDEV-28404:
+=~ STATUS_SERVER_SHUTDOWN_FAILURE
+=~ Shutdown via SIGTERM failed
+=~ Thread .* did not exit
+=~ json\.yy
 MDEV-28396:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
