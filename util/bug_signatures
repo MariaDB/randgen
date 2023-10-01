@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32337:
+=~ Assertion \`pos < table->n_def'
+=~ dict_table_get_nth_col
+=~ Sql_cmd_alter_table::execute
 MDEV-32237:
 =~ AddressSanitizer|signal
 =~ my_charlen_utf8
@@ -536,7 +540,7 @@ MDEV-31083:
 MDEV-31063:
 =~ Assertion \`marked_for_read()'
 =~ Field_.*::val_.*
-=~ Column_statistics_collected::add|Histogram_json_builder::append_column_value
+=~ Column_statistics_collected::add|Histogram_json_builder::append_column_value|Column_statistics_collected::finish
 =~ Sql_cmd_analyze_table::execute
 MDEV-31056:
 =~ signal|AddressSanitizer
