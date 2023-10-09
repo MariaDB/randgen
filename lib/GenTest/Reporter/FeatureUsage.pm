@@ -42,6 +42,7 @@ my $server_version;
 
 my %usage_check= (
   'application periods' => \&check_for_application_periods,
+  'Archive tables' => \&check_for_archive_tables,
   'Aria tables' => \&check_for_aria_tables,
   'backup stages' => \&check_for_backup_stages,
   'binlog compression' => \&check_for_binlog_compression,
@@ -163,6 +164,9 @@ sub check_for_mroonga_tables {
 }
 sub check_for_oqgraph_tables {
   $_[0]->check_for_engine_tables('oqgraph');
+}
+sub check_for_archive_tables {
+  $_[0]->check_for_engine_tables('archive');
 }
 
 sub check_for_rocksdb_tables {
