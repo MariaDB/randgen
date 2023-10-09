@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32384:
+=~ AddressSanitizer|signal
+=~ Field_new_decimal::cmp
+=~ SEL_ARG::sel_cmp
+=~ calculate_cond_selectivity_for_table
+=~ FeatureUsage detected Archive tables
+MDEV-32383:
+=~ AddressSanitizer|signal
+=~ Item_func_match::init_search
+=~ init_ftfuncs
+=~ Prepared_statement::execute|sp_head::execute
+MDEV-32373:
+=~ AddressSanitizer|signal
+=~ ha_connect::GetStringOption
+=~ MYCAT::MakeTableDesc
 MDEV-32337:
 =~ Assertion \`pos < table->n_def'
 =~ dict_table_get_nth_col
@@ -934,7 +949,7 @@ MDEV-29214:
 MDEV-29214:
 =~ AddressSanitizer|signal
 =~ federatedx_txn::txn_commit|federatedx_txn::txn_rollback
-=~ trans_commit|trans_rollback
+=~ trans_commit|trans_rollback|trans_begin
 MDEV-29197:
 =~ LeakSanitizer: detected memory leaks
 =~ Direct leak
