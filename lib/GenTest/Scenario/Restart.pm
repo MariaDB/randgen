@@ -183,6 +183,7 @@ sub run {
     $total_status= $status if $status > $total_status;
   }
 
+FINALIZE:
   return $self->finalize($total_status,[$server]);
 }
 
