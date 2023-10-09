@@ -1586,7 +1586,9 @@ sub isRecordIgnored {
     or  $line =~ /InnoDB: Failed to load table .* which has a foreign key constraint with.*/s
     or  $line =~ /InnoDB: Cannot delete\/update rows with cascading foreign key constraints that exceed max depth of/s
     or  $line =~ /InnoDB: Possible reasons/s
-    or  $line =~ /InnoDB: Records in wrong order/s
+    or  $line =~ /InnoDB: \(1\) Table rename would cause two/s
+    or  $line =~ /InnoDB: \(2\) Table/s
+    or  $line =~ /InnoDB: If table .* it can be that there are still queries running on the table/s
     or  $line =~ /Invalid roles_mapping table entry user/s
     or  $line =~ /mysqld: The table .* is full/s
     or  $line =~ /mysqld: Deadlock found when trying to get lock/s
