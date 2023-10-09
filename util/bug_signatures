@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32388:
+=~ MemorySanitizer|Conditional jump or move depends|signal
+=~ Item_func_like::get_mm_leaf
+=~ prune_partitions
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32384:
 =~ AddressSanitizer|signal
 =~ Field_new_decimal::cmp
@@ -3206,11 +3211,13 @@ MDEV-20132:
 =~ exec_UNDO_LOGREC_UNDO_ROW_UPDATE
 MDEV-20038:
 =~ Assertion \`rw_lock_own(dict_index_get_lock(index), RW_LOCK_S)'
-=~ btr_cur_search_to_nth_level_func
+=~ btr_cur_search_to_nth_level
 =~ row_ins_sec_index_entry
+=~ Version: '10\.[45]|Server version: 10\.[45]
 MDEV-19984:
 =~ Assertion \`marked_for_read()'|Assertion \`!table \|\| (!table->read_set \|\| bitmap_is_set(table->read_set, field_index) \|\| (!(ptr >= table->record\[0\] && ptr < table->record\[0\] + table->s->reclength)))'
-=~ do_copy_null|do_outer_field_null
+=~ JOIN_CACHE::generate_full_extensions
+=~ Item_subselect::exec
 MDEV-19980:
 =~ Got error 22 when executing undo undo_row_insert
 =~ Aria engine: Undo phase failed
