@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32436:
+=~ Conditional jump or move depends on uninitialised value
+=~ mach_write_to_
+=~ rec_convert_dtuple_to_rec
+=~ row_ins
+MDEV-32436:
+=~ MemorySanitizer
+=~ cmp_buffer_with_ref
+=~ Item_cache_wrapper::check_cache
 MDEV-32388:
 =~ MemorySanitizer|Conditional jump or move depends|signal
 =~ Item_func_like::get_mm_leaf
@@ -3004,7 +3013,7 @@ MDEV-21102:
 =~ signal 11|AddressSanitizer: SEGV
 =~ JOIN_CACHE::write_record_data
 =~ JOIN_CACHE.*::put_record
-=~ Query.*:.*EXPLAIN
+=~ Query.*:.*EXPLAIN|mysql_parse.*EXPLAIN
 MDEV-21085:
 =~ Assertion \`info->last_key\.keyinfo == key->keyinfo'
 =~ _ma_search_no_save
