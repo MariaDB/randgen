@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32438:
+=~ MemorySanitizer|signal
+=~ TXTFAM::GetFileLength
+=~ ha_connect::create|ha_connect::CloseTable
+MDEV-32437:
+=~ MemorySanitizer|Conditional jump or move depends on uninitialised value
+=~ do_sub
+=~ Dec_ptr::cmp
+=~ Arg_comparator::compare
 MDEV-32436:
 =~ Conditional jump or move depends on uninitialised value
 =~ mach_write_to_
@@ -1327,6 +1336,10 @@ MDEV-27603:
 =~ AddressSanitizer
 =~ Gap_time_tracker::log_time
 =~ Exec_time_tracker::start_tracking
+MDEV-27569:
+=~ Conditional jump or move depends on uninitialised value|MemorySanitizer
+=~ ha_partition::swap_blobs
+=~ collect_statistics_for_index
 MDEV-27562:
 =~ AddressSanitizer|signal|MemorySanitizer
 =~ join_read_key2
