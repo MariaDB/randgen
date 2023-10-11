@@ -1,0 +1,21 @@
+# Bug signatures for recognizing known CS bugs by server and test logs
+
+##############################################################################
+# Strong matches
+##############################################################################
+
+MDEV-31864:
+=~ Assertion \`d >= 0'
+=~ COST_ADD
+=~ get_costs_for_tables
+=~ Version: '11\.3|Server version: 11\.3
+MDEV-31764:
+=~ signal|AddressSanitizer
+=~ trace_engine_stats
+=~ Explain_query::print_explain_json
+=~ Version: '11\.3|Server version: 11\.3
+TODO-842: [CRYPTO_zalloc]
+=~ LeakSanitizer
+=~ CRYPTO_zalloc
+=~ init_ssl
+=~ Version: '11\.3|Server version: 11\.3
