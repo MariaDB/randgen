@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32450:
+=~ signal|AddressSanitizer
+=~ SEL_ARG::rb_insert
+=~ SEL_IMERGE::or_sel_tree_with_checks
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-32450:
+=~ Assertion \`computed_weight == weight'
+=~ SEL_ARG::verify_weight
+=~ SEL_IMERGE::or_sel_tree_with_checks
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32449:
 =~ signal|AddressSanitizer
 =~ Alter_info::add_stat_drop_index
