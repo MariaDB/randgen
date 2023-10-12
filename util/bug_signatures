@@ -1304,6 +1304,10 @@ MDEV-27878:
 =~ Assertion \`got_name == named_item_expected()'
 =~ Json_writer::on_start_object
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-27845:
+=~ AddressSanitizer|signal
+=~ server_mysql_real_connect
+=~ Repl_semi_sync_slave::kill_connection
 MDEV-27843:
 =~ Assertion \`index->table->persistent_autoinc'
 =~ btr_read_autoinc|btr_write_autoinc
@@ -1955,7 +1959,7 @@ MDEV-24640:
 =~ Unknown key id 1. Can't continue!
 =~ marked as crashed and should be repaired|Failed to flush data or index file|Protocol::end_statement(): Assertion \`0'|Diagnostics_area::set_ok_status(ulonglong, ulonglong, const char\*): Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'|Assertion \`! is_set() \|\| m_can_overwrite_status'
 MDEV-24633:
-=~ AddressSanitizer|signal [16]
+=~ AddressSanitizer|signal [16]|MemorySanitizer
 =~ my_mb_wc_.*|my_utf8_uni
 =~ get_first_nonspace
 =~ Item_func_json_merge_patch
@@ -3358,6 +3362,11 @@ MDEV-19303:
 =~ dtuple_validate
 =~ page_cur_search_with_match_bytes
 =~ rr_from_pointers
+MDEV-19303:
+=~ Conditional jump or move depends on uninitialised value|MemorySanitizer
+=~ Sort_costs::compute_fastest_sort
+=~ filesort
+=~ Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-19299:
 =~ AddressSanitizer: heap-use-after-free
 =~ my_scan_weight_utf8_general_ci|my_utf8_uni
@@ -3693,7 +3702,7 @@ MDEV-17711:
 =~ set_arena_for_set_stmt
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-17678:
-=~ AddressSanitizer|signal 11
+=~ AddressSanitizer|signal 11|MemorySanitizer
 =~ field_unpack
 =~ print_keydup_error
 =~ ha_myisam::enable_indexes
