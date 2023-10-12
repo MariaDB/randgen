@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32205:
+=~ signal|AddressSanitizer
+=~ get_schema_key_period_usage_record
+=~ fill_schema_table_by_open
+=~ Version: '11\.3|Server version: 11\.3
 MDEV-31864:
 =~ Assertion \`d >= 0'
 =~ COST_ADD
