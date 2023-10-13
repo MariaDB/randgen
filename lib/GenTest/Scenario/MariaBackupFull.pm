@@ -150,7 +150,7 @@ sub run {
       $backup_num++;
       $self->printStep("Creating full backup #$backup_num");
       my $mbackup_command= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup_${backup_num} $mbackup" : $mbackup);
-      $status= $self->run_mbackup_in_background("$mbackup_command --backup --target-dir=${mbackup_target}_${backup_num} --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
+      $status= $self->run_mbackup_in_background("$mbackup_command --backup --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
 
       if ($status == STATUS_OK) {
           say("Backup #$backup_num finished successfully");
@@ -171,7 +171,7 @@ sub run {
       }
 
       $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_$backup_num $mbackup" : $mbackup)
-        . " --use-memory=$buffer_pool_size --prepare --target-dir=${mbackup_target}_${backup_num} --user=".$server->user." 2>$vardir/mbackup_prepare_${backup_num}.log";
+        . " --use-memory=$buffer_pool_size --prepare --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --user=".$server->user." 2>$vardir/mbackup_prepare_${backup_num}.log";
       say($cmd);
       system($cmd);
       $status= $? >> 8;
@@ -237,7 +237,7 @@ sub run {
       #####
       $self->printStep("Restoring backup #$b");
       system("rm -rf ".$server->datadir);
-      $cmd= "$mbackup --copy-back --target-dir=${mbackup_target}_${b} --datadir=".$server->datadir." --user=".$server->user." 2>$vardir/mbackup_restore_${b}.log";
+      $cmd= "$mbackup --copy-back --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${b} --datadir=".$server->datadir." --user=".$server->user." 2>$vardir/mbackup_restore_${b}.log";
       say($cmd);
       system($cmd);
       $status= $? >> 8;

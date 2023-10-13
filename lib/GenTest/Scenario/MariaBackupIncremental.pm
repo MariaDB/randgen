@@ -150,10 +150,10 @@ sub run {
       if ($backup_num == 0)
       {
           $self->printStep("Creating initial full backup");
-          $status= $self->run_mbackup_in_background("$mbackup_command --backup --target-dir=${mbackup_target}_0 --protocol=tcp --port=".$server->port." --user=".$server->user." > $vardir/mbackup_backup_0.log", $end_time);
+          $status= $self->run_mbackup_in_background("$mbackup_command --backup --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_0 --protocol=tcp --port=".$server->port." --user=".$server->user." > $vardir/mbackup_backup_0.log", $end_time);
       } else {
           $self->printStep("Creating incremental backup #$backup_num");
-          $status= $self->run_mbackup_in_background("$mbackup_command --backup --target-dir=${mbackup_target}_${backup_num} --incremental-basedir=${mbackup_target}_".($backup_num-1)." --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
+          $status= $self->run_mbackup_in_background("$mbackup_command --backup --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --incremental-basedir=${mbackup_target}_".($backup_num-1)." --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
       }
       if ($status == STATUS_OK) {
           say("Backup #$backup_num finished successfully");
@@ -229,7 +229,7 @@ sub run {
   my $apply_log_only_option= ($server->versionNumeric() ge '100200' ? '' : '--apply-log-only');
 
   $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_0 $mbackup" : $mbackup)
-    . " --prepare --use-memory=$buffer_pool_size $apply_log_only_option --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --user=".$server->user." 2>$vardir/mbackup_prepare_0.log";
+    . " --prepare --skip-ssl --loose-disable-ssl-verify-server-cert --use-memory=$buffer_pool_size $apply_log_only_option --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --user=".$server->user." 2>$vardir/mbackup_prepare_0.log";
   say($cmd);
   system($cmd);
   $status= $? >> 8;
@@ -246,7 +246,7 @@ sub run {
       $self->printStep("Preparing incremental backup #${b}");
 
       $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_$b $mbackup" : $mbackup)
-        . " --prepare --use-memory=$buffer_pool_size $apply_log_only_option --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --incremental-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
+        . " --prepare --skip-ssl --loose-disable-ssl-verify-server-cert --use-memory=$buffer_pool_size $apply_log_only_option --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --incremental-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
       say($cmd);
       system($cmd);
       $status= $? >> 8;
@@ -262,7 +262,7 @@ sub run {
   #####
   $self->printStep("Restoring backup");
   system("rm -rf ".$server->datadir);
-  $cmd= "$mbackup --copy-back --target-dir=${mbackup_target}_0 --datadir=".$server->datadir." --user=".$server->user." 2>$vardir/mbackup_restore_${b}.log";
+  $cmd= "$mbackup --copy-back --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_0 --datadir=".$server->datadir." --user=".$server->user." 2>$vardir/mbackup_restore_${b}.log";
   say($cmd);
   system($cmd);
   $status= $? >> 8;
