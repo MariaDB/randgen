@@ -134,7 +134,7 @@ sub run {
       my $master_port= $servers[$master]->port;
       my $slave_conn= Connection::Perl->new( server => $servers[$slave], role => 'super', name => 'RPL' );
       $slave_conn->execute("SET GLOBAL tx_read_only= OFF");
-      $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT'");
+      $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT', MASTER_SSL=0");
       $slave_conn->execute("START SLAVE");
       if ($slave_conn->err) {
         sayError("Could not start replication $master -> $slave: ".$slave_conn->print_error);
