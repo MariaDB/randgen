@@ -31,6 +31,7 @@ require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
 $combinations = [
 
 # Test options
+  [ --mysqld=--debug_assert_on_not_freed_memory=0 ],
   [ @{$options{test_common_option_combinations}} ], # seed, reporters, timeouts
   [ @{$options{test_concurrency_combinations}} ],
   [ @{$options{optional_gendata_gis}} ],
