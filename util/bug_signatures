@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32476:
+=~ LeakSanitizer
+=~ get_quick_select
+=~ TRP_RANGE::make_quick
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32457:
 =~ MemorySanitizer|Conditional jump or move depends on uninitialised value
 =~ compare_cost
