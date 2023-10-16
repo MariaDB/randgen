@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32481:
+=~ Conditional jump or move depends on uninitialised value|MemorySanitizer
+=~ alloc_query
+=~ sp_instr_stmt::execute
 MDEV-32476:
 =~ LeakSanitizer
 =~ get_quick_select
@@ -2019,7 +2023,7 @@ MDEV-24349:
 =~ st_select_lex::print
 =~ opt_trace_print_expanded_query
 MDEV-24349:
-=~ AddressSanitizer
+=~ AddressSanitizer|MemorySanitizer
 =~ get_hash_symbol
 =~ get_quote_char_for_identifier
 =~ opt_trace_print_expanded_query
