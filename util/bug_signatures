@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32482:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ thr_upgrade_write_delay_lock
+=~ Delayed_insert::handle_inserts
+=~ FeatureUsage detected OQGraph tables
 MDEV-32481:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer
 =~ alloc_query
@@ -2552,6 +2557,10 @@ MDEV-22943:
 =~ Assertion \`marked_for_read()'
 =~ handler::calculate_checksum
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-22936:
+=~ Assertion \`m_curr_row <= m_rows_end'
+=~ Rows_log_event::unpack_current_row
+=~ mysql_client_binlog_statement
 MDEV-22927:
 =~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'|Assertion \`((0x7 \| 8U) & mode) == LOCK_S \|\| ((0x7 \| 8U) & mode) == LOCK_X'
 =~ lock_rec_lock
