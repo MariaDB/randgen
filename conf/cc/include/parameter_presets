@@ -406,6 +406,18 @@ $key_management_combinations{$minversion}= [
   }
 ];
 
+# Hashicorp doesn't work with MSAN
+$key_management_combinations_msan_safe{$minversion}= [
+  {
+    file_key_management =>
+    '
+       --mysqld=--file-key-management
+       --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt
+       --mysqld=--plugin-load-add=file_key_management
+    '
+  }
+];
+
 # Added later in run.pl
 #      --mysqld=--hashicorp-key-management-vault-url=$ENV{VAULT_ADDR}/v1/mariadbtest
 #      --mysqld=--hashicorp-key-management-token=$ENV{VAULT_TOKEN}
@@ -427,6 +439,7 @@ $key_management_combinations{1009}= [
 ];
 
 $parameters{key_management_combinations}= \%key_management_combinations;
+$parameters{key_management_combinations_msan_safe}= \%key_management_combinations_msan_safe;
 
 $encryption_innodb_options{$minversion}= ['
   --mysqld=--innodb-encrypt-tables
@@ -468,6 +481,15 @@ $optional_encryption{$minversion} = [
   ]
 ];
 
+# Hashicorp doesn't work with MSAN
+$optional_encryption_msan_safe{$minversion} = [
+  @empty_set_20,
+  [
+    $key_management_combinations_msan_safe{$minversion},
+    $encryption_options{$minversion}
+  ]
+];
+
 $optional_encryption{1009} = [
   @empty_set_20,
   [
@@ -484,6 +506,15 @@ $optional_non_binlog_encryption{$minversion} = [
   ]
 ];
 
+# Hashicorp doesn't work with MSAN
+$optional_non_binlog_encryption_msan_safe{$minversion} = [
+  @empty_set_20,
+  [
+    $key_management_combinations_msan_safe{$minversion},
+    $encryption_non_binlog_options{$minversion}
+  ]
+];
+
 $optional_non_binlog_encryption{1009} = [
   @empty_set_20,
   [
@@ -493,7 +524,9 @@ $optional_non_binlog_encryption{1009} = [
 ];
 
 $parameters{optional_encryption}= \%optional_encryption;
+$parameters{optional_encryption_msan_safe}= \%optional_encryption_msan_safe;
 $parameters{optional_non_binlog_encryption}= \%optional_non_binlog_encryption;
+$parameters{optional_non_binlog_encryption_msan_safe}= \%optional_non_binlog_encryption_msan_safe;
 
 #++++++++++++++++++++++++
 # Performance schema
@@ -561,6 +594,13 @@ $optional_innodb_compression{$minversion}= [
   '--mysqld=--innodb_compression_default=on',
 ];
 
+# Extra libraries do not work with MSAN
+$optional_innodb_compression_msan_safe{$minversion}= [
+  @empty_set_20,
+  '--mysqld=--innodb_compression_algorithm=none',
+  '--mysqld=--innodb_compression_default=on',
+];
+
 $optional_innodb_compression{1007}= [
   @empty_set_50,
   @{$optional_innodb_compression{$minversion}},
@@ -581,6 +621,7 @@ $optional_innodb_pagesize{$minversion}= [
 ];
 
 $parameters{optional_innodb_compression}= \%optional_innodb_compression;
+$parameters{optional_innodb_compression_msan_safe}= \%optional_innodb_compression_msan_safe;
 $parameters{optional_innodb_pagesize}= \%optional_innodb_pagesize;
 
 #++++++++++++++++++++++++
