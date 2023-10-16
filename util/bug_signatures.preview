@@ -19,6 +19,11 @@ MDEV-31764:
 =~ trace_engine_stats
 =~ Explain_query::print_explain_json
 =~ Version: '11\.3|Server version: 11\.3
+MDEV-29873:
+=~ MemorySanitizer
+=~ bcmp
+=~ prep_alter_part_table
+=~ Version: '11\.3|Server version: 11\.3
 TODO-842: [CRYPTO_zalloc]
 =~ LeakSanitizer
 =~ CRYPTO_zalloc

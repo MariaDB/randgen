@@ -56,7 +56,7 @@ MDEV-32436:
 MDEV-32436:
 =~ MemorySanitizer
 =~ cmp_buffer_with_ref
-=~ Item_cache_wrapper::check_cache
+=~ join_read_key2
 MDEV-32388:
 =~ MemorySanitizer|Conditional jump or move depends|signal
 =~ Item_func_like::get_mm_leaf
