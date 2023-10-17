@@ -278,7 +278,7 @@ MDEV-31867:
 MDEV-31854:
 =~ AddressSanitizer|signal|Assertion \`table && table->s->sequence'
 =~ Item_func_nextval::val_int
-=~ Item_default_value::save_in_field|Field::set_default
+=~ Item_default_value::save_in_field|Field::set_default|Item::save_int_in_field
 MDEV-31824:
 =~ STATUS_REPLICATION_FAILURE
 =~ Slave SQL: Error 'Cannot change column .*: used in a foreign key constraint .* on query. .* Internal MariaDB error code: 1832
@@ -1345,7 +1345,7 @@ MDEV-27840:
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-27797:
 =~ InnoDB: Failing assertion: dfield_get_len(field) == sizeof(doc_id)
-=~ fts_get_doc_id_from_row
+=~ fts_get_doc_id_from_row|dfield_get_type
 MDEV-27769:
 =~ Assertion \`l_offset >= 0 && table->s->rec_buff_length - l_offset > 0'
 =~ Field::ptr_in_record
