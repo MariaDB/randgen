@@ -71,7 +71,7 @@ sub run_mbackup_in_background {
     my $vardir= $self->getProperty('vardir');
     open(MBACKUP,">$vardir/mbackup_script") || die "Could not open $vardir/mbackup_script for writing: $!\n";
     print(MBACKUP "rm -f $vardir/mbackup_exit_code $vardir/mbackup_pid\n");
-    print(MBACKUP "$cmd 2>&1 || echo \$? > $vardir/mbackup_exit_code &\n");
+    print(MBACKUP "LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd 2>&1 || echo \$? > $vardir/mbackup_exit_code &\n");
     print(MBACKUP "echo \$! > $vardir/mbackup_pid\n");
     close(MBACKUP);
     sayFile("$vardir/mbackup_script");

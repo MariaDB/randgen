@@ -231,7 +231,7 @@ sub run {
   $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_0 $mbackup" : $mbackup)
     . " --prepare --skip-ssl --loose-disable-ssl-verify-server-cert --use-memory=$buffer_pool_size $apply_log_only_option --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --user=".$server->user." 2>$vardir/mbackup_prepare_0.log";
   say($cmd);
-  system($cmd);
+  system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
   $status= $? >> 8;
 
   if ($status != STATUS_OK) {
@@ -248,7 +248,7 @@ sub run {
       $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_$b $mbackup" : $mbackup)
         . " --prepare --skip-ssl --loose-disable-ssl-verify-server-cert --use-memory=$buffer_pool_size $apply_log_only_option --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --incremental-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
       say($cmd);
-      system($cmd);
+      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
       $status= $? >> 8;
 
       if ($status != STATUS_OK) {
@@ -264,7 +264,7 @@ sub run {
   system("rm -rf ".$server->datadir);
   $cmd= "$mbackup --copy-back --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_0 --datadir=".$server->datadir." --user=".$server->user." 2>$vardir/mbackup_restore_${b}.log";
   say($cmd);
-  system($cmd);
+  system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
   $status= $? >> 8;
 
   if ($status != STATUS_OK) {

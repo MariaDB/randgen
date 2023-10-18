@@ -162,7 +162,7 @@ sub run {
     sleep(5);
   }
   my $mbackup_command= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup $mbackup" : $mbackup);
-  $status= system("$mbackup_command --backup --target-dir=$vardir/mbackup --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup.log 2>&1");
+  $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $mbackup_command --backup --target-dir=$vardir/mbackup --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup.log 2>&1");
 
   if ($status == STATUS_OK) {
       say("MariaBackup ran finished successfully");
@@ -185,7 +185,7 @@ sub run {
   my $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare $mbackup" : $mbackup)
     . " --use-memory=".($buffer_pool_size * 2)." --prepare --target-dir=$vardir/mbackup --user=".$server->user." 2>$vardir/mbackup_prepare.log 2>&1";
   say($cmd);
-  system($cmd);
+  system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
   $status= $? >> 8;
 
   if ($status == STATUS_OK) {
@@ -294,7 +294,7 @@ LIVE_UPGRADE_END:
   $self->printStep("Restoring the dump of all databases");
   my $client_command= $server->client.' -uroot --host=127.0.0.1 --protocol=tcp --port='.$server->port;
 
-  $status= system($client_command.' < '.$vardir.'/all_db.dump');
+  $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ".$client_command.' < '.$vardir.'/all_db.dump');
   if ($status != STATUS_OK) {
     sayError("All databases' schema dump failed to load");
     $self->setStatus($self->upgrade_or_recovery_failure());
@@ -338,7 +338,7 @@ DUMP_UPGRADE_END:
   system("rm -rf ".$server->datadir);
   $cmd= "$mbackup --copy-back --target-dir=$vardir/mbackup --datadir=".$server->datadir." --user=".$server->user." > $vardir/mbackup_restore.log 2>&1";
   say($cmd);
-  $status= system($cmd);
+  $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
   if ($status != STATUS_OK) {
     $status= $self->upgrade_or_recovery_failure();
     sayFile("$vardir/mbackup_restore.log");

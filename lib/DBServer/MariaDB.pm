@@ -298,7 +298,7 @@ sub serverType {
     $self->[MYSQLD_SERVER_TYPE] = "Release";
 
     my $command="$mysqld --version";
-    my $result=`$command 2>&1`;
+    my $result=`LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command 2>&1`;
 
     $self->[MYSQLD_SERVER_TYPE] = "Debug" if ($result =~ /debug/sig);
     return $self->[MYSQLD_SERVER_TYPE];
@@ -405,7 +405,7 @@ sub createMysqlBase  {
 
         push(@$boot_options,"--bootstrap") ;
         $command = $self->generateCommand($boot_options);
-        $command = "$command < \"$boot\"";
+        $command = "LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command < \"$boot\"";
     } else {
         push @$boot_options, "--initialize-insecure", "--init-file=$boot";
         $command = $self->generateCommand($boot_options);
@@ -444,7 +444,7 @@ sub createMysqlBase  {
     close BOOT;
 
     say("Bootstrap command: $command");
-    system("$command > \"".$self->vardir."/boot.log\" 2>&1");
+    system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command > \"".$self->vardir."/boot.log\" 2>&1");
     return $?;
 }
 
@@ -604,7 +604,7 @@ sub startServer {
         $self->[MYSQLD_SERVERPID] = int($pid);
         say("Server started with PID ".$self->[MYSQLD_SERVERPID]);
     } else {
-        exec("$command >> \"$errorlog\"  2>&1") || croak("Could not start mysql server");
+        exec("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command >> \"$errorlog\"  2>&1") || croak("Could not start mysql server");
     }
 
     if ($self->waitForServerToStart) {
@@ -677,7 +677,7 @@ sub upgradeDb {
     '"'.$mysql_upgrade.'" --host='.$self->host.' --port='.$self->port.' -uroot';
   my $upgrade_log= $self->datadir.'/mysql_upgrade.log';
   say("Running mysql_upgrade:\n  $upgrade_command");
-  my $res= system("$upgrade_command > $upgrade_log 2>&1");
+  my $res= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $upgrade_command > $upgrade_log 2>&1");
   if ($res == DBSTATUS_OK) {
     # mysql_upgrade can return exit code 0 even if user tables are corrupt,
     # so we don't trust the exit code, we should also check the actual output
@@ -829,8 +829,8 @@ sub dumpdb {
     say("Dumping server ".$self->version.($for_restoring ? " for restoring":" data for comparison")." on port ".$self->port);
     say($dump_command);
     my $dump_result = ($for_restoring ?
-      system("$dump_command 2>&1 1>$file") :
-      system("$dump_command | sort 2>&1 1>$file")
+      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $dump_command 2>&1 1>$file") :
+      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $dump_command | sort 2>&1 1>$file")
     );
     return $dump_result;
 }
@@ -858,7 +858,7 @@ sub dumpSchema {
                              " --port=".$self->port.
                              " $databases";
     say($dump_command);
-    my $dump_result = system("$dump_command 2>&1 1>$file");
+    my $dump_result = system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $dump_command 2>&1 1>$file");
     if ($dump_result != 0) {
       # MDEV-28577: There can be Federated tables with virtual columns, they make mysqldump fail
 
@@ -888,8 +888,8 @@ sub dumpSchema {
       }
 
       sayError("Dump failed, trying to collect some information");
-      system($self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SHOW FULL PROCESSLIST'");
-      system($self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO'");
+      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ".$self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SHOW FULL PROCESSLIST'");
+      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ".$self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO'");
     }
     return $dump_result;
 }

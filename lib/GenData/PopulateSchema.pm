@@ -115,7 +115,7 @@ sub run {
             $old_tables{$_->[0]} = $_->[1];
         }
 
-        system("$mysql_client_path --init-command='SET tx_read_only=OFF' --port=$port --protocol=tcp -uroot --force ".$self->db." < $schema_file");
+        system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $mysql_client_path --init-command='SET tx_read_only=OFF' --port=$port --protocol=tcp -uroot --force ".$self->db." < $schema_file");
         if ($?) {
             sayError("Failed to load $schema_file through MySQL client");
             return STATUS_ENVIRONMENT_FAILURE;

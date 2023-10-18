@@ -173,7 +173,7 @@ sub run {
       $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_$backup_num $mbackup" : $mbackup)
         . " --use-memory=$buffer_pool_size --prepare --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --user=".$server->user." 2>$vardir/mbackup_prepare_${backup_num}.log";
       say($cmd);
-      system($cmd);
+      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
       $status= $? >> 8;
 
       if ($status == STATUS_OK) {
@@ -239,7 +239,7 @@ sub run {
       system("rm -rf ".$server->datadir);
       $cmd= "$mbackup --copy-back --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${b} --datadir=".$server->datadir." --user=".$server->user." 2>$vardir/mbackup_restore_${b}.log";
       say($cmd);
-      system($cmd);
+      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
       $status= $? >> 8;
 
       if ($status != STATUS_OK) {
