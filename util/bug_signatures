@@ -719,7 +719,7 @@ MDEV-30309:
 =~ setup_returning_fields
 MDEV-30305:
 =~ Protocol::valid_handler|Version: '10\.3|Server version: 10\.3
-=~ Protocol_text::store
+=~ Protocol_text::store|Type_handler::Item_send.*
 =~ Protocol::send_result_set_row
 MDEV-30297:
 =~ Assertion \`a\.str != __null'|signal
@@ -2398,12 +2398,12 @@ MDEV-23259:
 =~ create_sort_index
 =~ Version: '10\.[1-4]
 MDEV-23256:
-=~ AddressSanitizer|signal 11
+=~ AddressSanitizer|signal
 =~ Query_cache::unlink_table
 =~ Query_cache::register_all_tables
 =~ Query_cache::store_query
 MDEV-23256:
-=~ AddressSanitizer|signal 11
+=~ AddressSanitizer|signal
 =~ Query_cache::join_free_blocks
 =~ Query_cache::free_old_query
 MDEV-23226:
@@ -2630,7 +2630,7 @@ MDEV-22848:
 =~ innobase_xa_prepare
 =~ prepare_or_error
 MDEV-22832:
-=~ AddressSanitizer: global-buffer-overflow
+=~ AddressSanitizer|signal
 =~ QUICK_GROUP_MIN_MAX_SELECT::add_range
 =~ TRP_GROUP_MIN_MAX::make_quick
 =~ get_quick_record_count
