@@ -63,6 +63,16 @@ $combinations = [
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
       ],
       binlog => [
+        [ '--mysqld=--log-bin' ],
+        [ @{$options{scenario_non_crash_combinations}} ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_combinations}}, @{$options{engine_full_mix_combinations}} ],
+        [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
+        [ @{$options{optional_encryption}} ],
+        # We don't care about binlog safety here, because we are not checking consistency
+        [ @{$options{optional_binlog_unsafe_variables}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
+      ],
+      binlog_check => [
         [ @{$options{scenario_non_crash_combinations}} ],
         [ '--reporters=BinlogConsistency --mysqld=--log-bin' ],
         [ '--filter=conf/ff/replication.ff' ],

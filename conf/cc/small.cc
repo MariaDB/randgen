@@ -57,6 +57,14 @@ $combinations = [
         [ @{$options{optional_encryption}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
       ],
+      binlog => [
+        [ '--mysqld=--log-bin' ],
+        [ @{$options{scenario_non_crash_combinations}} ],
+        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
+      ],
       index => [
         [ @{$options{scenario_non_crash_combinations}} ],
         [ '--reporters=SecondaryIndexConsistency' ],
