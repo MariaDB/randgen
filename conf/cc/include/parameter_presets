@@ -200,12 +200,12 @@ $engine_extra_combinations{$minversion}= [
   '--engine=Archive
    --mysqld=--plugin-load-add=ha_archive
   ',
-  # Mroonga
-  '--engine=Mroonga
-   --gendata=simple
-   --mysqld=--plugin-load-add=ha_mroonga
-   --grammar=conf/yy/engine-mroonga.yy
-  ',
+#  # Mroonga
+#  '--engine=Mroonga
+#   --gendata=simple
+#   --mysqld=--plugin-load-add=ha_mroonga
+#   --grammar=conf/yy/engine-mroonga.yy
+#  ',
   # Blackhole
   '--engine=Blackhole
    --mysqld=--plugin-load-add=ha_blackhole
@@ -863,7 +863,7 @@ $optional_binlog_safe_variables{$minversion}= [
   # Default OFF
   [ '', '--mysqld=--log-bin-trust-function-creators=1' ],
   # Default mixed
-  [ @empty_set_10, '--mysqld=--binlog-format=row' ],
+  [ '', '--mysqld=--binlog-format=row' ],
   # Default ON
   [ @empty_set_10, '--mysqld=--binlog_annotate_row_events=OFF' ],
   # Default CRC32
@@ -1117,7 +1117,7 @@ $optional_server_variables{$minversion}= [
     '--mysqld=--thread-stack=1M',
   ],
   # Default REPEATABLE-READ
-  [ @empty_set_50,
+  [ @empty_set_10,
     '--mysqld=--transaction-isolation=READ-UNCOMMITTED',
     '--mysqld=--transaction-isolation=READ-COMMITTED',
     '--mysqld=--transaction-isolation=SERIALIZABLE',
