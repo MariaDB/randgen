@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32523:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ dfield_dup|Assertion \`len <= col->len \|\| ((col->mtype) == 5 \|\| (col->mtype) == 14)'
+=~ row_merge_buf_add
+=~ ha_innobase::inplace_alter_table
 MDEV-32482:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ thr_upgrade_write_delay_lock
