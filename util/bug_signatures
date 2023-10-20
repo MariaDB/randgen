@@ -4,6 +4,17 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32532:
+=~ Assertion \`0'
+=~ ddl_log_increment_phase_no_lock
+=~ fast_alter_partition_table
+=~ Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ FeatureUsage detected Spider engine
+MDEV-32531:
+=~ MemorySanitizer|Conditional jump or move depends|signal
+=~ Item_func_like::get_mm_leaf
+=~ calculate_cond_selectivity_for_table
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32523:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ dfield_dup|Assertion \`len <= col->len \|\| ((col->mtype) == 5 \|\| (col->mtype) == 14)'
@@ -1836,7 +1847,7 @@ MDEV-24935:
 =~ sp_head::execute
 MDEV-24934:
 =~ AddressSanitizer|signal [16]
-=~ my_longlong10_to_str_8bit|fmt_number
+=~ my_longlong10_to_str_8bit|fmt_number|Binary_string::copy
 =~ Item_dyncol_get::val_str
 =~ Item_char_typecast::val_str
 MDEV-24931:
