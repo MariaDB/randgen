@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32541:
+=~ Assertion \`!(thd->server_status & (1U \| 8192U))'
+=~ MDL_context::release_transactional_locks
 MDEV-32540:
 =~ Assertion \`! is_set()'
 =~ Diagnostics_area::disable_status
