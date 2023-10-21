@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32540:
+=~ Assertion \`! is_set()'
+=~ Diagnostics_area::disable_status
+=~ Query_cache::send_result_to_client
+=~ Prepared_statement::execute|sp_head::execute
+MDEV-32539:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ Time_and_counter_tracker::incr_loops
+=~ Temporal_with_date::Temporal_with_date
+MDEV-32539:
+=~ Assertion \`select_lex->select_number == (0x7fffffff \* 2U + 1U) \|\| select_lex->select_number == 0x7fffffff \|\| !output \|\| !output->get_select(select_lex->select_number) || output->get_select(select_lex->select_number)->select_lex == select_lex'
+=~ JOIN::save_explain_data
 MDEV-32534:
 =~ Assertion \`marked_for_read()'
 =~ Field::hash_not_null
@@ -2114,7 +2126,7 @@ MDEV-24095:
 MDEV-24038:
 =~ Assertion \`next_insert_id >= auto_inc_interval_for_cur_row\.minimum()'
 =~ handler::update_auto_increment
-=~ Query.*: .*ON DUPLICATE KEY UPDATE|mysql_parse.*ON DUPLICATE KEY UPDATE
+=~ Query.*: .*ON DUPLICATE KEY UPDATE|mysql_parse.*ON DUPLICATE KEY
 MDEV-23984:
 =~ Assertion \`result_field'
 =~ Item_result_field::get_tmp_field_src
