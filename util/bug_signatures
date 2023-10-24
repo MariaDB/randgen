@@ -314,6 +314,10 @@ MDEV-31892:
 =~ signal|AddressSanitizer|Assertion \`aux_table != __null'
 =~ row_fts_merge_insert
 =~ fts_parallel_merge
+MDEV-31878:
+=~ Assertion \`bit < map->n_bits'
+=~ bitmap_is_set
+=~ ha_partition::handle_ordered_index_scan
 MDEV-31867:
 =~ Assertion \`is_invalidated()'
 =~ Reprepare_observer::can_retry
@@ -608,7 +612,7 @@ MDEV-31180:
 =~ ha_myisammrg::attach_children
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31178:
-=~ signal|AddressSanitizer
+=~ signal|AddressSanitizer|MemorySanitizer
 =~ fix_fields_for_tvc
 =~ TABLE_LIST::handle_derived
 =~ Prepared_statement::execute|sp_head::execute
@@ -3346,8 +3350,7 @@ MDEV-19817:
 =~ unsafe_key_update
 =~ Multiupdate_prelocking_strategy::handle_end
 MDEV-19817:
-=~ signal 11|AddressSanitizer: heap-use-after-free
-=~ Item_field::used_tables
+=~ signal 11|AddressSanitizer: heap-use-after-free|MemorySanitizer
 =~ setup_fields_with_no_wrap
 =~ Multiupdate_prelocking_strategy::handle_end
 MDEV-19817:
@@ -3431,9 +3434,9 @@ MDEV-19303:
 =~ ha_sequence::rnd_pos
 =~ rr_from_pointers
 MDEV-19303:
-=~ Uninitialised byte(s) found during client check request
+=~ Uninitialised byte(s) found during client check request|MemorySanitizer
 =~ dtuple_validate
-=~ page_cur_search_with_match_bytes
+=~ page_cur_search_with_match_bytes|page_cur_search_with_match
 =~ rr_from_pointers
 MDEV-19303:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer
