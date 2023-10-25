@@ -193,6 +193,7 @@ $engine_enforced_combinations{$minversion}= [
 $engine_extra_combinations{$minversion}= [
   # RocksDB
   '--engine=RocksDB
+   --grammar=conf/yy/engine-rocksdb.yy:0.1
    --mysqld=--default-storage-engine=RocksDB
    --mysqld=--plugin-load-add=ha_rocksdb
   ',
@@ -286,6 +287,7 @@ $engine_full_mix_combinations{$minversion}= [
    --grammar=conf/yy/engine-heap-dml.yy
    --grammar=conf/yy/engine-merge.yy
    --grammar=conf/yy/engine-mroonga.yy
+   --grammar=conf/yy/engine-rocksdb.yy:0.1
   '
 ];
 
