@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32575:
+=~ MemorySanitizer|Conditional jump or move depends on uninitialised value
+=~ test_if_cheaper_ordering
+=~ test_if_skip_sort_order
+=~ Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-32572:
+=~ MemorySanitizer
+=~ dtuple_validate
+=~ page_cur_search_with_match
+=~ QUICK_RANGE_SELECT::get_next_prefix
+MDEV-32572:
+=~ Conditional jump or move depends on uninitialised value
+=~ mach_write_to_2
+=~ rec_convert_dtuple_to_rec
+=~ row_ins_clust_index_entry
 MDEV-32541:
 =~ Assertion \`!(thd->server_status & (1U \| 8192U))'
 =~ MDL_context::release_transactional_locks
