@@ -4,6 +4,10 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32593:
+=~ Assertion \`thd_arg->lex->sql_command != SQLCOM_CREATE_SEQUENCE \|\| (flags2 & FL_DDL)'
+=~ Gtid_log_event::Gtid_log_event
+=~ MYSQL_BIN_LOG::write_transaction_or_stmt
 MDEV-32575:
 =~ MemorySanitizer|Conditional jump or move depends on uninitialised value
 =~ test_if_cheaper_ordering
@@ -569,7 +573,7 @@ MDEV-31219:
 MDEV-31218:
 =~ signal|AddressSanitizer
 =~ Field::set_default
-=~ Item_default_value::calculate
+=~ Item_default_value::
 =~ TABLE::verify_constraints
 MDEV-31215:
 =~ Assertion \`marked_for_read()'
