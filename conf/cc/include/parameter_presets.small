@@ -63,7 +63,6 @@ $optional_variators= [
   ['','','','','','','','','','','','','','','--variator=ConvertLiteralsToVariables'],
   ['','','','','','','','','','','','','','','--variator=ConvertSubqueriesToViews'],
   ['','','','','','','','','','','','','','','--variator=Count'],
-  ['','','','','','','','','','','','','','','--variator=DisableChosenPlan'],
   ['','','','','','','','','','','','','','','--variator=DisableOptimizations'],
   ['','','','','','','','','','','','','','','--variator=Distinct'],
   ['','','','','','','','','','','','','','','--variator=EnableOptimizations'],

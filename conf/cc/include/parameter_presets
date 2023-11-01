@@ -108,7 +108,6 @@ $optional_variators{$minversion}= [
   [@empty_set_30,'--variator=ConvertLiteralsToVariables'],
   [@empty_set_30,'--variator=ConvertSubqueriesToViews'],
   [@empty_set_30,'--variator=Count'],
-  [@empty_set_30,'--variator=DisableChosenPlan'],
   [@empty_set_20,'--variator=DisableOptimizations'],
   [@empty_set_20,'--variator=Distinct'],
   [@empty_set_10,'--variator=EnableOptimizations'],
