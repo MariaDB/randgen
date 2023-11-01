@@ -2301,7 +2301,7 @@ sub BEGIN {
     ER_UNKNOWN_CHARACTER_SET()                          => STATUS_SEMANTIC_ERROR,
     ER_UNKNOWN_COLLATION()                              => STATUS_SEMANTIC_ERROR,
     ER_UNKNOWN_COMPRESSION_METHOD()                     => STATUS_SEMANTIC_ERROR,
-    ER_UNKNOWN_COM_ERROR()                              => STATUS_ENVIRONMENT_FAILURE,
+    ER_UNKNOWN_COM_ERROR()                              => STATUS_IGNORED_ERROR, # Because of Galera Aborting TOI: Replication paused etc.
     ER_UNKNOWN_DATA_TYPE()                              => STATUS_SEMANTIC_ERROR,
     ER_UNKNOWN_ERROR()                                  => STATUS_RUNTIME_ERROR,
     ER_UNKNOWN_EXPLAIN_FORMAT()                         => STATUS_SYNTAX_ERROR,
