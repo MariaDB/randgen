@@ -482,7 +482,7 @@ sub check_for_desired_result
         return 0;
       }
       while (<OUTFILE>) {
-        next if /run\.pl.*--output=/; # skip the startup command, it always matches;
+        next if /(?:run\.pl.*)? --output=/; # skip the startup command, it always matches;
         if (/$output/) {
           $output_matches= 1;
           close(OUTFILE);
