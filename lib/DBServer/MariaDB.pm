@@ -1547,19 +1547,19 @@ sub checkErrorLogForErrors {
   close(ERRLOG);
   $self->[MYSQLD_LAST_CHECKED_MARKER]= $last_marker;
   if (scalar @crashes) {
-    sayError("------- Crash-like lines in the error log -------");
+    sayError("------- Crash-like lines in the error log ---------");
     sayError(join "\n", @crashes);
-    say("-------");
+    sayError("------- End of crash-like lines in the error log --");
   }
   if (scalar @leaks) {
-    sayError("------- Memory leak-like lines in the error log -------");
+    sayError("------- Memory leak-like lines in the error log ---------");
     sayError(join "\n", @leaks);
-    say("-------");
+    sayError("------- End of memory leak-like lines in the error log --");
   }
   if (scalar @errors) {
-    sayError("------- Error messages in the error log -------");
+    sayError("------- Error messages in the error log ---------");
     sayError(join "\n", @errors);
-    say("-------");
+    sayError("------- End of error messages in the error log --");
   }
 
   return (\@crashes, \@errors, \@leaks);
@@ -1584,6 +1584,7 @@ sub isRecordIgnored {
     or  $line =~ /InnoDB: In .* is referenced in foreign key constraints which are not compatible with the new table definition/s
     or  $line =~ /InnoDB: Failed to load table .* which has a foreign key constraint with.*/s
     or  $line =~ /InnoDB: Cannot delete\/update rows with cascading foreign key constraints that exceed max depth of/s
+    or  $line =~ /InnoDB: Cannot save index statistics for table.*Lock wait timeout/s
     or  $line =~ /InnoDB: Possible reasons/s
     or  $line =~ /InnoDB: \(1\) Table rename would cause two/s
     or  $line =~ /InnoDB: \(2\) Table/s
@@ -1591,6 +1592,7 @@ sub isRecordIgnored {
     or  $line =~ /Invalid roles_mapping table entry user/s
     or  $line =~ /mysqld: The table .* is full/s
     or  $line =~ /mysqld: Deadlock found when trying to get lock/s
+    or  $kube -~ /mysqld: Lock wait timeout exceeded; try restarting transaction/
     or  $line =~ /Slave I\/O: error reconnecting to master/s
   );
   return $res;
