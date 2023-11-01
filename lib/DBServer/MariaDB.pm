@@ -1592,7 +1592,7 @@ sub isRecordIgnored {
     or  $line =~ /Invalid roles_mapping table entry user/s
     or  $line =~ /mysqld: The table .* is full/s
     or  $line =~ /mysqld: Deadlock found when trying to get lock/s
-    or  $kube -~ /mysqld: Lock wait timeout exceeded; try restarting transaction/
+    or  $line -~ /mysqld: Lock wait timeout exceeded; try restarting transaction/s
     or  $line =~ /Slave I\/O: error reconnecting to master/s
     or  $line =~ /Can't open and lock privilege tables/s
     or  $line =~ /Event Scheduler: /s
