@@ -1537,8 +1537,7 @@ sub checkErrorLogForErrors {
     }
     # Other errors
     elsif (
-           $_ =~ /\[ERROR\]\s+InnoDB/s
-        or $_ =~ /\[ERROR\]\s+Slave SQL/s
+           $_ =~ /\[ERROR\]\s+\S/s
         or $_ =~ /InnoDB:\s+Error:/s
         or $_ =~ /registration as a STORAGE ENGINE failed/s
     ) {
