@@ -141,7 +141,7 @@ MDEV-32388:
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32384:
 =~ AddressSanitizer|signal
-=~ Field_new_decimal::cmp
+=~ Field_.*::cmp
 =~ SEL_ARG::sel_cmp
 =~ calculate_cond_selectivity_for_table
 =~ FeatureUsage detected Archive tables
@@ -709,6 +709,12 @@ MDEV-31026:
 =~ Diagnostics_area::set_error_status
 =~ binlog_format_check
 =~ LEX::restore_set_statement_var
+MDEV-31016:
+=~ AddressSanitizer|signal
+=~ Field::maybe_null
+=~ Field::store_from_statistical_minmax_field
+=~ read_statistics_for_table
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31007:
 =~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF)'
 =~ find_producing_item
@@ -2716,6 +2722,11 @@ MDEV-22825:
 =~ add_key_field
 =~ update_ref_and_keys
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-22788:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ dict_index_get_nth_field
+=~ dict_foreign_qualify_index
+=~ innobase_update_foreign_try
 MDEV-22768:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
