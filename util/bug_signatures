@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32684:
+=~ signal|AddressSanitizer
+=~ JOIN::transform_in_predicates_into_in_subq
+=~ convert_join_subqueries_to_semijoins
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-32682:
 =~ Assertion \`range->rows >= s->found_records'
 =~ best_access_path
