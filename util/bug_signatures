@@ -4,6 +4,18 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32679:
+=~ AddressSanitizer|signal
+=~ Binary_string::copy
+=~ cmp_item_sort_string::store_value
+=~ Predicant_to_list_comparator::cmp
+=~ Version: '10\.[45]|Server version: 10\.[45]
+MDEV-32678:
+=~ AddressSanitizer|signal
+=~ filter_query_type
+=~ log_statement_ex
+=~ auditing
+=~ Version: '10\.4|Server version: 10\.4
 MDEV-32666:
 =~ MemorySanitizer|Conditional jump or move depends on uninitialised value
 =~ JOIN_CACHE::read_all_record_fields
@@ -1258,7 +1270,7 @@ MDEV-28934:
 =~ runtime error: downcast of address .* which does not point to an object of type 'Item_cond'
 =~ note: object is of type 'Item_equal'
 MDEV-28913:
-=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
+=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'|`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED) \|\| thd->mdl_context\.is_lock_warrantee(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
 =~ close_thread_table
 =~ FeatureUsage detected sequences
 MDEV-28887:
