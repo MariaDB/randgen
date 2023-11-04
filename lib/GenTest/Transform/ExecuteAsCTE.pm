@@ -227,6 +227,9 @@ sub is_applicable {
 # TODO: 2nd part of UNION does not work for now
   return 0 if $orig_query =~ m{(?:CREATE\s|GRANT\W|\sINTO\sOUTFILE|\sINTO\s\@|\WUNION\W)}is;
   return 0 if $orig_query !~ m{SELECT}is;
+  my $c = () = $orig_query =~ /\(/g;
+  # Match falls into an endless loop with too many brackets
+  return 0 if $c > 32767;
   return 1;
 }
 
