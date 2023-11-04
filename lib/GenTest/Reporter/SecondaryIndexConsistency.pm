@@ -99,7 +99,7 @@ sub monitor {
             if ($diff) {
                 sayError("$diff");
                 sayError("Found above difference for indexes PRIMARY and $ind for table $table");
-                return STATUS_DATABASE_CORRUPTION;
+                return STATUS_CONTENT_MISMATCH;
             } else {
                 sayDebug("Indexes PRIMARY and $ind produced identical data");
             }
