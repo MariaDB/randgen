@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32666:
+=~ MemorySanitizer|Conditional jump or move depends on uninitialised value
+=~ JOIN_CACHE::read_all_record_fields
+=~ JOIN_CACHE::restore_last_record
+MDEV-32656:
+=~ AddressSanitizer|signal
+=~ base_list_iterator::next
+=~ TABLE_LIST::reset_const_table
+=~ setup_table_map
+=~ Version: '11\.[1-9]|Server version: 11\.[1-9]|Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 MDEV-32614:
 =~ LeakSanitizer
 =~ copy_data_between_tables
@@ -3940,6 +3950,16 @@ MDEV-16694:
 MDEV-16686:
 =~ Assertion \`(\*tables)->reginfo\.lock_type >= TL_READ'
 =~ lock_external
+MDEV-16686:
+=~ signal|AddressSanitizer
+=~ wake_up_waiters
+=~ wait_for_lock
+=~ thr_multi_lock
+MDEV-16686:
+=~ Assertion \`false'
+=~ lock_flags_to_lock_type
+=~ pfs_start_table_lock_wait_v1
+=~ thr_multi_lock
 MDEV-16659:
 =~ Assertion \`anc_page->org_size == anc_page->size'
 =~ d_search
