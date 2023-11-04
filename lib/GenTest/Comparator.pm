@@ -19,6 +19,8 @@
 
 package GenTest::Comparator;
 
+use Data::Dumper;
+
 use strict;
 
 use GenUtil;
@@ -101,15 +103,16 @@ sub dumpDiff {
   my $diff;
 
   foreach my $i (0..1) {
-    return undef if not defined $results[$i] or not defined $results[$i]->data();
-    my $data_sorted = join("\n", map { join("\t", map { defined $_ ? $_ : "NULL" } @$_) } @{$results[$i]->data()});
+    return undef if not defined $results[$i];
+    my $data= (ref $results[$i] eq 'GenTest::Result' ? $results[$i]->data() : $results[$i]);
+    return undef if not defined $data;
+    my $data_sorted = join("\n", map { join("\t", map { defined $_ ? $_ : "NULL" } (ref $_ eq 'ARRAY' ? @$_ : $_ )) } @{$data});
     $data_sorted = $data_sorted."\n" if $data_sorted ne '';
     $files[$i] = tmpdir()."/randgen".abs($$)."-".time()."-server".$i.".dump";
     open (FILE, ">".$files[$i]);
     print FILE $data_sorted;
     close FILE;
   }
-
   my $diff_cmd = "diff -a -u $files[0] $files[1]";
 
   open (DIFF, "$diff_cmd|");
