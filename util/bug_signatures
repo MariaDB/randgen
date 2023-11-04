@@ -4,6 +4,16 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32682:
+=~ Assertion \`range->rows >= s->found_records'
+=~ best_access_path
+=~ optimize_straight_join
+=~ Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-32680:
+=~ MemorySanitizer|Conditional jump or move depends on uninitialised value
+=~ Field_blob::cached
+=~ QUICK_RANGE_SELECT::get_next
+=~ read_keys_and_merge_scans
 MDEV-32679:
 =~ AddressSanitizer|signal
 =~ Binary_string::copy
