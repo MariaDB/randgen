@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32685:
+=~ Decoding ttl from PK value failed, for index
+=~ FeatureUsage detected RocksDB tables
 MDEV-32684:
 =~ signal|AddressSanitizer
 =~ JOIN::transform_in_predicates_into_in_subq
