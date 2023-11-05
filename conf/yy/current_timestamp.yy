@@ -139,7 +139,7 @@ views:
   DROP TABLE IF EXISTS _letter[invariant] ;; DROP VIEW IF EXISTS _letter[invariant] ;; CREATE VIEW _letter[invariant] AS SELECT * FROM _table ;; INSERT INTO _letter[invariant] ( _field ) VALUES ( value ) ;
   
 outfile_infile:
-  SELECT * FROM _table[invariant] INTO OUTFILE _tmpnam ;; TRUNCATE _table[invariant] ;; LOAD DATA INFILE _tmpnam INTO TABLE _table[invariant] ;
+  SELECT * INTO OUTFILE _tmpnam FROM _table[invariant] ;; TRUNCATE _table[invariant] ;; LOAD DATA INFILE _tmpnam INTO TABLE _table[invariant] ;
 
 value:
   _date(6) | _time(6) | _datetime(6) | _datetime(6) | _datetime(6) | _timestamp(6) | _timestamp(6) | _timestamp(6) | _year | NULL | NULL | NULL |

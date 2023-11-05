@@ -81,7 +81,7 @@ xid_event:
 implicit_commit_chain:
   CREATE DATABASE ic ;; CREATE TABLE ic.ic SELECT * FROM _table LIMIT _digit ;; DROP DATABASE ic |
   LOCK TABLE _table WRITE ;; UNLOCK TABLES |
-  SELECT * FROM _table LIMIT _digit INTO OUTFILE _tmpnam ;; LOAD DATA INFILE _tmpnam REPLACE INTO TABLE _table |
+  SELECT * INTO OUTFILE _tmpnam FROM _table LIMIT _digit ;; LOAD DATA INFILE _tmpnam REPLACE INTO TABLE _table |
   ==FACTOR:10== implicit_commit
 ;
 
@@ -104,7 +104,7 @@ execute_load_query_event:
   load_data_infile ;
 
 load_data_infile:
-  SELECT * FROM _table ORDER BY _field LIMIT _digit INTO OUTFILE _tmpnam ;; LOAD DATA INFILE _tmpnam REPLACE INTO TABLE _table ;
+  SELECT * INTO OUTFILE _tmpnam FROM _table ORDER BY _field LIMIT _digit;; LOAD DATA INFILE _tmpnam REPLACE INTO TABLE _table ;
 
 binlog_format_statement:
   SET @binlog_format_saved = @@binlog_format ;; SET BINLOG_FORMAT = 'STATEMENT' ;
