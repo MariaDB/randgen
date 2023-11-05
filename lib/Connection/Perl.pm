@@ -64,6 +64,7 @@ sub connect {
   my $dbh= DBI->connect($self->[CONNECTION_DSN],
     undef,
     undef,
+    # , mysql_server_prepare => 1
     {PrintError => 0, RaiseError => 0, AutoCommit => 1, mysql_auto_reconnect => 1}
   );
   ($self->[CONNECTION_ERROR], $self->[CONNECTION_ERROR_STRING])= ($DBI::err||0,$DBI::errstr||'');
@@ -88,6 +89,10 @@ sub connect {
     }
   }
   return $dbh;
+}
+
+sub dbh {
+  return $_[0]->[CONNECTION_DBH];
 }
 
 sub disconnect {
@@ -153,19 +158,23 @@ sub query {
   # allegedly causes troubles (syntax errors), both with mysql and MariaDB drivers
   $self->[CONNECTION_QNO]++;
   my $send_query= '/* '.$self->name().' QNO '.$self->[CONNECTION_QNO].' */ '.$query;
+  sayDebug("Preparing query $send_query");
   if (index($query,";") == -1) {
     $sth= $self->dbh()->prepare($send_query);
   } else {
     $sth= $self->dbh()->prepare($send_query, { mysql_server_prepare => 0 });
   }
+  sayDebug("Prepared query $send_query");
   if ($DBI::err) {
     ($self->[CONNECTION_ERROR], $self->[CONNECTION_ERROR_STRING])= ($DBI::err||0,$DBI::errstr||'');
     $self->report_error($send_query);
     return undef;
   }
   my $start_time = Time::HiRes::time();
+  sayDebug("Executing query $send_query");
   $self->[CONNECTION_AFFECTED_ROWS]= $sth->execute();
   $self->[CONNECTION_EXECUTION_TIME] = Time::HiRes::time() - $start_time;
+  sayDebug("Executed query $send_query");
 
   ($self->[CONNECTION_ERROR], $self->[CONNECTION_ERROR_STRING])= ($DBI::err||0,$DBI::errstr||'');
   $self->[CONNECTION_ERROR_TYPE]= errorType($self->[CONNECTION_ERROR]);
