@@ -111,7 +111,7 @@ auth_option:
 ;
 
 auth_plugin:
-    'auth_0x0100' | 'pam' | 'auth_socket' | 'auth_test_plugin' | 'test_plugin_server' | 'cleartext_plugin_server' | 'two_questions' | 'three_attempts' | 'qa_auth_interface' | 'qa_auth_server' | 'simple_password_check' | 'cracklib_password_check';
+    'auth_0x0100' | 'pam' | 'auth_socket' | 'auth_test_plugin' | 'test_plugin_server' | 'cleartext_plugin_server' | 'two_questions' | 'three_attempts' | 'qa_auth_interface' | 'qa_auth_server';
 
 password:
     '' | _char(1) | _char(8) | _char(16) | _char(41);
