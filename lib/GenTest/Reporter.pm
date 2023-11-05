@@ -269,11 +269,9 @@ sub findMySQLD {
 
 sub connection {
   my $reporter= shift;
-  unless (defined $reporter->[REPORTER_CONNECTION]) {
+  unless (defined $reporter->[REPORTER_CONNECTION] && $reporter->[REPORTER_CONNECTION]->alive) {
     $reporter->connect;
-  }
-  if (defined $reporter->[REPORTER_CONNECTION]) {
-    unless ($reporter->[REPORTER_CONNECTION]->alive) {
+    unless (defined $reporter->[REPORTER_CONNECTION] && $reporter->[REPORTER_CONNECTION]->alive) {
       $reporter->[REPORTER_CONNECTION]= undef;
     }
   }

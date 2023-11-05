@@ -1727,7 +1727,7 @@ sub connect {
 }
 
 sub connection {
-  unless (defined $_[0]->[MYSQLD_SERVER_CONNECTION]) {
+  unless (defined $_[0]->[MYSQLD_SERVER_CONNECTION] && $_[0]->[MYSQLD_SERVER_CONNECTION]->alive) {
     $_[0]->[MYSQLD_SERVER_CONNECTION]= $_[0]->connect();
   }
   return $_[0]->[MYSQLD_SERVER_CONNECTION];
