@@ -48,6 +48,11 @@ sub report {
   return STATUS_OK if $reporter ne $first_reporter;
 
   my $server = $reporter->properties->server_specific->{1}->{server};
+  my $secure_timestamp= $reporter->server->serverVariable('secure_timestamp');
+  if ($secure_timestamp eq 'YES') {
+    sayWarning("BinlogConsistency: Cannot run with secure_timestamp=YES");
+    return STATUS_WONT_HANDLE;
+  }
   my $status;
   my $vardir = $server->vardir;
   my $datadir = $server->datadir;
