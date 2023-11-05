@@ -60,7 +60,7 @@ sub report {
   );
 
   unless ($client) {
-    say("ERROR: Could not find mysql client. Status will be set to ENVIRONMENT_FAILURE");
+    sayError("BinlogConsistency: Could not find mysql client. Status will be set to ENVIRONMENT_FAILURE");
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
@@ -73,14 +73,14 @@ sub report {
                        osWindows()?"mysqlbinlog.exe":"mysqlbinlog");
 
   unless ($binlog_utility) {
-    say("ERROR: Could not find mysqlbinlog. Status will be set to ENVIRONMENT_FAILURE");
+    sayError("BinlogConsistency: Could not find mysqlbinlog. Status will be set to ENVIRONMENT_FAILURE");
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
   my $conn = $reporter->connection;
 
   unless (defined $conn) {
-    say("ERROR: Could not connect to the server, nothing to dump. Status will be set to ENVIRONMENT_FAILURE");
+    sayError("BinlogConsistency: Could not connect to the server, nothing to dump. Status will be set to ENVIRONMENT_FAILURE");
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
@@ -90,7 +90,7 @@ sub report {
   say("Dumping the original server...");
   $status = $reporter->dump_all($vardir."/original.dump");
   if ($status > STATUS_OK) {
-    say("ERROR: mysqldump finished with an error");
+    sayError("BinlogConsistency: mysqldump finished with an error");
     return $status;
   }
 
@@ -111,17 +111,17 @@ sub report {
   my $status = $server->startServer();
 
   if ($status > STATUS_OK) {
-    say("ERROR: Server startup finished with an error");
+    sayError("BinlogConsistency: Server startup finished with an error");
     return $status;
   }
 
   # MDEV-31756 - NOWAIT in DDL makes binary logs difficult or impossible to replay
-  my $cmd= "$binlog_utility $vardir/vardir_orig/data/$binlog.0* | sed -e 's/NOWAIT//g' > $vardir/vardir_orig/binlog_events";
+  my $cmd= "$binlog_utility --no-defaults $vardir/vardir_orig/data/$binlog.0* | sed -e 's/NOWAIT//g' > $vardir/vardir_orig/binlog_events";
   say("Dumping binary log events (with adjustments) into a file...");
   sayDebug($cmd);
   $status = system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
   if ($status != STATUS_OK) {
-    say("ERROR: Dumping binary logs finished with an error: ".($status >> 8));
+    sayError("BinlogConsistency: Dumping binary logs finished with an error: ".($status >> 8));
     return STATUS_CRITICAL_FAILURE;
   }
 
@@ -133,14 +133,14 @@ sub report {
   # written with error codes
   $status = system("$client --force --binary-mode < $vardir/vardir_orig/binlog_events") >> 8;
   if ($status > STATUS_OK) {
-    say("ERROR: Feeding binary logs to the server finished with an error");
+    sayError("BinlogConsistency: Feeding binary logs to the server finished with an error");
     return STATUS_RECOVERY_FAILURE;
   }
 
   say("Dumping the new server...");
   $status = $reporter->dump_all($vardir."/restored.dump");
   if ($status > STATUS_OK) {
-    say("ERROR: mysqldump finished with an error");
+    sayError("BinlogConsistency: mysqldump finished with an error");
     return $status;
   }
 
@@ -174,7 +174,7 @@ sub dump_all {
   # or something equally fatal.
   $dump_result = system("sort $dumpfile > $dumpfile.sorted");
   if ($dump_result > 0) {
-    say("ERROR: dump returned error code $dump_result. Status will be set to ENVIRONMENT_FAILURE");
+    sayError("BinlogConsistency: dump returned error code $dump_result. Status will be set to ENVIRONMENT_FAILURE");
     return STATUS_ENVIRONMENT_FAILURE;
   }
 }
