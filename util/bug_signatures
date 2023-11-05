@@ -1285,7 +1285,7 @@ MDEV-28934:
 =~ runtime error: downcast of address .* which does not point to an object of type 'Item_cond'
 =~ note: object is of type 'Item_equal'
 MDEV-28913:
-=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'|`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED) \|\| thd->mdl_context\.is_lock_warrantee(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
+=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'|\`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED) \|\| thd->mdl_context\.is_lock_warrantee(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
 =~ close_thread_table
 =~ FeatureUsage detected sequences
 MDEV-28887:
