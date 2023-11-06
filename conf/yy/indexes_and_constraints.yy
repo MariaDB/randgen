@@ -87,8 +87,7 @@ item:
   | drop_index | drop_index | drop_index | drop_index
   | drop_pk
   | drop_constraint | drop_constraint
-  | ==FACTOR:6== rename_index /* compatibility 10.5.2 */ 
-  | rename_index | rename_index | rename_index
+  | ==FACTOR:2== rename_index /* compatibility 10.5.2 */ 
   | enable_disable_keys
 ;
 
