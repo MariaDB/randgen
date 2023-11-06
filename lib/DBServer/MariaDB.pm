@@ -1471,6 +1471,7 @@ sub checkErrorLogForErrors {
   say("Checking log ".$self->errorlog." for important errors starting from " . ($marker ? "marker $marker" : 'the beginning'));
 
   my $count= 0;
+  my $is_wsrep= 0;
   while (<ERRLOG>)
   {
     if (/^SHUTDOWN_\d+$|^KILL_\d+_\w*$/) {
@@ -1482,6 +1483,10 @@ sub checkErrorLogForErrors {
     } elsif (/Starting.*as process.*/) {
       # The server is restarted, the last KILL marker isn't important anymore
       $server_is_being_killed= 0;
+      # Maybe it's not a Galera after restart
+      $is_wsrep= 0;
+    } elsif (/WSREP: Loading provider/) {
+      $is_wsrep= 1;
     }
 
     # If a marker is defined, we skip all lines until we find it
@@ -1494,6 +1499,8 @@ sub checkErrorLogForErrors {
 
     # Ignore certain errors
     next if $self->isRecordIgnored($_);
+    # WSREP probably ignores these errors anyway
+    next if $is_wsrep && /Slave SQL: Error/;
 
     # MDEV-20320
     if ($_ =~ /Failed to find tablespace for table .* in the cache\. Attempting to load the tablespace with space id/) {
