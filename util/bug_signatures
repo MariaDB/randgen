@@ -221,9 +221,10 @@ MDEV-32237:
 =~ my_charlen_utf8
 =~ Charset::charpos
 =~ test_if_group_changed
-MDEV-32201:
-=~ Got error 128 when reading table
-=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
+# Moved to MariaDB.com
+# MDEV-32201:
+#=~ Got error 128 when reading table
+#=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-32199:
 =~ AddressSanitizer|signal
 =~ dd_frm_type

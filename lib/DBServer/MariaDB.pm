@@ -1604,9 +1604,11 @@ sub isRecordIgnored {
     or  $line =~ /Slave I\/O: error reconnecting to master/s
     or  $line =~ /Can't open and lock privilege tables/s
     or  $line =~ /Event Scheduler: /s
-    # MDEV-32628 x 2
+    # MDEV-32628 (Cryptic ERROR message & inconsistent behavior on incorrect SHOW BINLOG EVENTS) x 2
     or  $line =~ /Error in Log_event::read_log_event/s
     or  $line =~ /Replication event checksum verification failed while reading from a log file/s
+    # MDEV-32201 (join_init_read_record() wrongly issues HA_ERR_OUT_OF_MEM)
+    or  $line =~ /Got error 128 when reading table/s
   );
   return $res;
 }
