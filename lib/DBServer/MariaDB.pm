@@ -1604,6 +1604,8 @@ sub isRecordIgnored {
     or  $line =~ /Slave I\/O: error reconnecting to master/s
     or  $line =~ /Can't open and lock privilege tables/s
     or  $line =~ /Event Scheduler: /s
+    # MDEV-32628
+    or  $line =~ /Error in Log_event::read_log_event/s
   );
   return $res;
 }
