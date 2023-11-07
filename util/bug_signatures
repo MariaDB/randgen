@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32728:
+=~ safe_mutex: Found wrong usage of mutex 'wait_mutex' and 'LOCK_thd_kill'
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32694:
 =~ AddressSanitizer|signal
 =~ Item_param::reset
@@ -55,9 +58,10 @@ MDEV-32656:
 =~ TABLE_LIST::reset_const_table
 =~ setup_table_map
 =~ Version: '11\.[1-9]|Server version: 11\.[1-9]|Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
-MDEV-32628:
-=~ Error in Log_event::read_log_event(): 'Event too big'|Error in Log_event::read_log_event(): 'Event truncated'
-=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
+# Moved to MariaDB.pm
+#MDEV-32628:
+#=~ Error in Log_event::read_log_event(): 'Event too big'|Error in Log_event::read_log_event(): 'Event truncated'
+#=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-32614:
 =~ LeakSanitizer
 =~ copy_data_between_tables
