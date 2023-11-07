@@ -67,6 +67,11 @@ sub variate {
   return [ $original_query ] if $original_query =~ m{INTO}is || $original_query !~ m{^[\s\(]*SELECT}is;
   # WITH TIES cannot be in EXISTS subquery due to MDEV-30320
   return [ $original_query ] if $original_query =~ m{WITH\s+TIES}is;
+  my $tables= $executor->metaTables('NON-SYSTEM');
+  unless ($tables && scalar(@$tables)) {
+    sayWarning("ExecuteAsWhereSubquery: Could not find a table to use");
+    return [ $original_query ];
+  }
   my $table= $class->random->arrayElement($executor->metaTables('NON-SYSTEM'))->[1];
   my $not= ($class->random->uint16(0,1) ? 'NOT' : '');
   return [ "SELECT * FROM $table WHERE $not EXISTS ($original_query)" ];
