@@ -55,6 +55,8 @@ MDEV-32656:
 =~ TABLE_LIST::reset_const_table
 =~ setup_table_map
 =~ Version: '11\.[1-9]|Server version: 11\.[1-9]|Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
+MDEV-32628:
+=~ Error in Log_event::read_log_event(): 'Event too big'|Error in Log_event::read_log_event(): 'Event truncated'
 MDEV-32614:
 =~ LeakSanitizer
 =~ copy_data_between_tables
