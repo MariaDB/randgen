@@ -1532,6 +1532,7 @@ sub checkErrorLogForErrors {
         or ( $_ =~ /segmentation fault/is and not $server_is_being_killed )
         or ( $_ =~ /segfault/is and not $server_is_being_killed )
         or ( $_ =~ /got\s+exception/is and not $server_is_being_killed )
+        or $_ =~ /safe_mutex: Found wrong usage of mutex/is
         or $_ =~ /ERROR: AddressSanitizer|ERROR: MemorySanitizer/is
     ) {
       push @crashes, $_;
