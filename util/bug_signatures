@@ -4227,6 +4227,9 @@ TODO-842: [Test problems: Cluster does not initialize]
 # Weak matches
 ##############################################################################
 
+MDEV-31907: [Memory leak with variable of row type]
+=~ Warning: Memory not freed:
+=~ FeatureUsage detected ROW type
 MDEV-26990: [Unknown (generic) error from engine]
 =~ DDL_LOG: Got error .* when trying to execute action for entry .* of type .*
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
