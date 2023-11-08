@@ -1609,6 +1609,8 @@ sub isRecordIgnored {
     or  $line =~ /Replication event checksum verification failed while reading from a log file/s
     # MDEV-32201 (join_init_read_record() wrongly issues HA_ERR_OUT_OF_MEM)
     or  $line =~ /Got error 128 when reading table/s
+    # MDEV-22927, MDEV-26253 and many more
+    or  $line =~ /Can't find record in/s
   );
   return $res;
 }
