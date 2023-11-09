@@ -4,6 +4,20 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32753:
+=~ SPIDER plugin initialization failed at.*create function if not exists.*You have an error in your SQL syntax
+=~ sql-mode=ORACLE
+=~ Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-32749:
+=~ InnoDB: Failing assertion: table->quiesce == QUIESCE_START|InnoDB: Failing assertion: table->quiesce == QUIESCE_COMPLETE
+=~ row_quiesce_set_state
+=~ ha_innobase::external_lock
+MDEV-32747:
+=~ MemorySanitizer|Conditional jump or move depends on uninitialised value
+=~ int10_to_str
+=~ partition_info::print_no_partition_found
+=~ ha_partition::print_error
+=~ write_record
 MDEV-32728:
 =~ safe_mutex: Found wrong usage of mutex 'wait_mutex' and 'LOCK_thd_kill'
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
@@ -16,7 +30,7 @@ MDEV-32694:
 MDEV-32693:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer
 =~ safe_substract
-=~ Histogram_builder::next
+=~ Histogram_builder::next|Histogram_binary_builder::next
 =~ collect_statistics_for_table
 MDEV-32685:
 =~ Decoding ttl from PK value failed, for index
@@ -33,7 +47,7 @@ MDEV-32682:
 =~ Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32680:
 =~ MemorySanitizer|Conditional jump or move depends on uninitialised value
-=~ Field_blob::cached
+=~ Field_blob::cached|ha_partition::swap_blobs
 =~ QUICK_RANGE_SELECT::get_next
 =~ read_keys_and_merge_scans
 MDEV-32679:
@@ -48,6 +62,11 @@ MDEV-32678:
 =~ log_statement_ex
 =~ auditing
 =~ Version: '10\.4|Server version: 10\.4
+MDEV-32667:
+=~ MemorySanitizer| runtime error: load of value .*, which is not a valid value for type
+=~ dict_stats_save_index_stat
+=~ dict_stats_func
+=~ Version: '10\.[45]|Server version: 10\.[45]
 MDEV-32666:
 =~ MemorySanitizer|Conditional jump or move depends on uninitialised value
 =~ JOIN_CACHE::read_all_record_fields
@@ -414,7 +433,7 @@ MDEV-31867:
 =~ sp_head::execute
 =~ Version: '11\.[2-9]|Server version: 11]\.[2-9]|'1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-31854:
-=~ AddressSanitizer|signal|Assertion \`table && table->s->sequence'
+=~ AddressSanitizer|signal|Assertion \`table && table->s->sequence'|MemorySanitizer
 =~ Item_func_nextval::val_int
 =~ Item_default_value::save_in_field|Field::set_default|Item::save_int_in_field
 MDEV-31824:
@@ -637,6 +656,10 @@ MDEV-31228:
 =~ signal|AddressSanitizer
 =~ dynamic_column_update_many_fmt
 =~ Prepared_statement::execute
+MDEV-31228:
+=~ MemorySanitizer
+=~ dynamic_column_update_many_fmt
+=~ Item_func_dyncol_add::val_str
 MDEV-31219:
 =~ Assertion \`fixed'|Assertion \`fixed()'
 =~ Item_func_hybrid_field_type
@@ -1515,7 +1538,7 @@ MDEV-27674:
 =~ row_ins_foreign_check_on_constraint
 MDEV-27661:
 =~ CONVERT TO CHARACTER SET .* failed: 1033.* Incorrect information in file|STATUS_DATABASE_CORRUPTION: 1033 .*Incorrect information in file.* CONVERT TO CHARACTER SET
-=~ Test completed with failure status STATUS_DATABASE_CORRUPTION
+=~ Test completed with failure status STATUS_DATABASE_CORRUPTION|Test completed with failure status STATUS_ERRORS_IN_LOG
 MDEV-27616:
 =~ AddressSanitizer|signal
 =~ prepare_inplace_alter_table_dict
@@ -1660,6 +1683,9 @@ MDEV-26891:
 =~ Field::register_field_in_read_map
 =~ TABLE::mark_auto_increment_column
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-26839:
+=~ ma_key.c:279:7: runtime error: null pointer passed as argument 2, which is declared to never be null
+=~ FeatureUsage detected GIS columns
 MDEV-26835:
 =~ AddressSanitizer|signal
 =~ heap_rrnd
@@ -2708,9 +2734,8 @@ MDEV-22936:
 MDEV-22927:
 =~ Assertion \`(0xFUL & mode) == LOCK_S \|\| (0xFUL & mode) == LOCK_X'|Assertion \`((0x7 \| 8U) & mode) == LOCK_S \|\| ((0x7 \| 8U) & mode) == LOCK_X'
 =~ lock_rec_lock
-=~ read_stored_values
+=~ SEQUENCE::read_initial_values
 =~ FeatureUsage detected sequences
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22927:
 =~ AddressSanitizer|signal
 =~ lock_mode_compatible
@@ -4230,6 +4255,10 @@ TODO-842: [Test problems: Cluster does not initialize]
 MDEV-31907: [Memory leak with variable of row type]
 =~ Warning: Memory not freed:
 =~ FeatureUsage detected ROW type
+MDEV-29954:
+=~ Got an error from thread_id=
+=~ MariaDB thread id .* Checking table|MySQL thread id .* Checking table
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-26990: [Unknown (generic) error from engine]
 =~ DDL_LOG: Got error .* when trying to execute action for entry .* of type .*
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
