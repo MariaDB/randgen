@@ -1553,7 +1553,7 @@ MDEV-27674:
 =~ row_ins_foreign_check_on_constraint
 MDEV-27661:
 =~ CONVERT TO CHARACTER SET .* failed: 1033.* Incorrect information in file|STATUS_DATABASE_CORRUPTION: 1033 .*Incorrect information in file.* CONVERT TO CHARACTER SET
-=~ Test completed with failure status STATUS_DATABASE_CORRUPTION|Test completed with failure status STATUS_ERRORS_IN_LOG
+=~ Test completed with failure status STATUS_DATABASE_CORRUPTION|Test completed with failure status STATUS_ERRORS_IN_LOG|Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-27616:
 =~ AddressSanitizer|signal
 =~ prepare_inplace_alter_table_dict
