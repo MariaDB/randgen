@@ -1580,6 +1580,7 @@ sub isRecordIgnored {
   my $res= (
         $line =~ /\[Note\]|\[Warning\]/s
     or  $line =~ /^\s*$/s
+    or  $line =~ /aria_sort_buffer_size is too small\. Current aria_sort_buffer_size:/s
     or  $line =~ /Can't open and lock privilege tables/s
     or  $line =~ /Event Scheduler: /s
     or  $line =~ /ib_buffer_pool' for reading: No such file or directory/s
