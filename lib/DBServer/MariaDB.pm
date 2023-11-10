@@ -1555,19 +1555,19 @@ sub checkErrorLogForErrors {
   close(ERRLOG);
   $self->[MYSQLD_LAST_CHECKED_MARKER]= $last_marker;
   if (scalar @crashes) {
-    sayError("------- Crash-like lines in the error log ---------");
+    sayError("------- Crash-like lines in the error log --------------");
     sayError(join "\n", @crashes);
-    sayError("------- End of crash-like lines in the error log --");
+    sayError("------- End of crash-like lines in the error log -------");
   }
   if (scalar @leaks) {
-    sayError("------- Memory leak-like lines in the error log ---------");
+    sayError("------- Memory leak-like lines in the error log --------------");
     sayError(join "\n", @leaks);
-    sayError("------- End of memory leak-like lines in the error log --");
+    sayError("------- End of memory leak-like lines in the error log -------");
   }
   if (scalar @errors) {
-    sayError("------- Error messages in the error log ---------");
+    sayError("------- Error messages in the error log --------------");
     sayError(join "\n", @errors);
-    sayError("------- End of error messages in the error log --");
+    sayError("------- End of error messages in the error log -------");
   }
 
   return (\@crashes, \@errors, \@leaks);
@@ -1601,6 +1601,9 @@ sub isRecordIgnored {
     or  $line =~ /mysqld: The table .* is full/s
     or  $line =~ /mysqld: Deadlock found when trying to get lock/s
     or  $line =~ /mysqld: Lock wait timeout exceeded; try restarting transaction/s
+    # CSV is not crash-safe x 2
+    or  $line =~ /mysqld: Table 'general_log' is marked as crashed and should be repaired/s
+    or  $line =~ /mysqld: Table 'slow_log' is marked as crashed and should be repaired/s
     or  $line =~ /Slave I\/O: error reconnecting to master/s
     or  $line =~ /Can't open and lock privilege tables/s
     or  $line =~ /Event Scheduler: /s
