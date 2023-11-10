@@ -4,6 +4,21 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32771:
+=~ signal|Sanitizer
+=~ online_alter_end_trans
+=~ online_alter_rollback|online_alter_commit
+=~ trans_xa_rollback|trans_xa_commit
+MDEV-32769:
+=~ MemorySanitizer|AddressSanitizer|signal
+=~ Item_func_group_concat::setup
+=~ Item_sum::aggregator_setup
+=~ JOIN::optimize
+MDEV-32768:
+=~ MemorySanitizer|AddressSanitizer|signal
+=~ my_ci_well_formed_char_length
+=~ charset_info_st::copy_fix
+=~ Field_.*::get_mm_leaf
 MDEV-32753:
 =~ SPIDER plugin initialization failed at.*create function if not exists.*You have an error in your SQL syntax
 =~ sql-mode=ORACLE
