@@ -391,6 +391,7 @@ sub get_data {
   my @databases= $server->nonSystemDatabases();
   my $databases= join ',', map { "'".$_."'" } @databases;
   my ($tables, $columns, $indexes, $checksums_versioned, $checksums_non_versioned);
+  $server->connection->execute("SET max_statement_time= 0");
   # We skip auto_increment value due to MDEV-13094 etc.
   $tables= $server->connection->query(
     "SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE, ENGINE, ROW_FORMAT, TABLE_COLLATION, CREATE_OPTIONS, TABLE_COMMENT ".
