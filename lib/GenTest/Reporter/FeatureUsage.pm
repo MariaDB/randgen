@@ -65,6 +65,7 @@ my %usage_check= (
   'performance schema' => \&check_for_performance_schema,
   'RocksDB engine' => \&check_for_rocksdb_plugin,
   'RocksDB tables' => \&check_for_rocksdb_tables,
+  'ROW type' => \&void_check,
   'S3 engine' => \&check_for_s3_plugin,
   'S3 tables' => \&check_for_s3_tables,
   'sequences' => \&check_for_sequences,
@@ -155,6 +156,10 @@ sub report {
 
 ##########
 # Checkers
+
+sub void_check {
+  return undef;
+}
 
 sub check_for_connect_tables {
   $_[0]->check_for_engine_tables('connect');

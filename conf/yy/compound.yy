@@ -18,6 +18,8 @@
 # Basic compound statement syntax, placeholder
 # TODO: to be extended
 
+#features ROW type
+
 query:
   { _set_db('NON-SYSTEM') } BEGIN NOT ATOMIC compound_block ; END ;
 
