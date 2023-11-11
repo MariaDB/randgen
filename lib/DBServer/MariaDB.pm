@@ -1580,7 +1580,6 @@ sub isRecordIgnored {
   my $res= (
         $line =~ /\[Note\]|\[Warning\]/s
     or  $line =~ /^\s*$/s
-    or  $line =~ /aria_sort_buffer_size is too small\. Current aria_sort_buffer_size:/s
     or  $line =~ /Can't open and lock privilege tables/s
     or  $line =~ /Event Scheduler: /s
     or  $line =~ /ib_buffer_pool' for reading: No such file or directory/s
@@ -1614,6 +1613,10 @@ sub isRecordIgnored {
     or  $line =~ /Got error 128 when reading table/s
     # MDEV-22927, MDEV-26253 and many more
     or  $line =~ /Can't find record in/s
+    # MDEV-32772 (Unexpected "aria_sort_buffer_size is too small" error)
+    or  $line =~ /aria_sort_buffer_size is too small\. Current aria_sort_buffer_size:/s
+    # MDEV-32773 (Syntax error upon loading Spider in ORACLE mode)
+    or  $line =~ /You have an error in your SQL syntax; .*col_exists := 0;  select 1 into/s
   );
   return $res;
 }
