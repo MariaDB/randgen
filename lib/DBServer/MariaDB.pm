@@ -1617,6 +1617,8 @@ sub isRecordIgnored {
     or  $line =~ /aria_sort_buffer_size is too small\. Current aria_sort_buffer_size:/s
     # MDEV-32773 (Syntax error upon loading Spider in ORACLE mode)
     or  $line =~ /You have an error in your SQL syntax; .*col_exists := 0;  select 1 into/s
+    # MDEV-32774 (HANDLER after DISABLE KEYS)
+    or  $line =~ /mysql_ha_read: Got error 124 when reading table/s
   );
   return $res;
 }
