@@ -1753,6 +1753,9 @@ MDEV-26416:
 =~ compute_window_func
 =~ Window_funcs_computation::exec
 =~ AGGR_OP::end_send
+MDEV-26393:
+=~ wsrep::this_thread::get_id() == owning_thread_id_
+=~ wsrep::client_state::state
 MDEV-26247:
 =~ signal|AddressSanitizer
 =~ spider_db_mbase_util::append_table
