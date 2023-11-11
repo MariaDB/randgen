@@ -5,10 +5,17 @@
 ##############################################################################
 
 MDEV-32771:
+=~ Assertion \`data'
+=~ get_cache_list
+=~ online_alter_rollback|online_alter_commit
+=~ trans_xa_rollback|trans_xa_commit
+=~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '11\.1[0-9]|Server version: 11\.1[0-9]|Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
+MDEV-32771:
 =~ signal|Sanitizer
 =~ online_alter_end_trans
 =~ online_alter_rollback|online_alter_commit
 =~ trans_xa_rollback|trans_xa_commit
+=~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '11\.1[0-9]|Server version: 11\.1[0-9]|Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 MDEV-32769:
 =~ MemorySanitizer|AddressSanitizer|signal
 =~ Item_func_group_concat::setup
