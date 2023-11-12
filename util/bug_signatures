@@ -374,7 +374,7 @@ MDEV-31965:
 MDEV-31941:
 =~ InnoDB: Failing assertion: UT_LIST_GET_LEN(lock\.trx_locks) == 0
 =~ trx_t::commit_in_memory
-=~ mysql_unlock_tables
+=~ mysql_unlock_tables|mysql_unlock_read_tables
 =~ FeatureUsage detected OQGraph tables
 MDEV-31941:
 =~ Assertion \`!trx->auto_commit \|\| trx->will_lock'|Assertion \`!trx->is_autocommit_non_locking()'
@@ -2442,7 +2442,7 @@ MDEV-23687:
 =~ time_to_datetime_with_warn
 =~ Extract_source::Extract_source
 MDEV-23686:
-=~ signal [16]|AddressSanitizer
+=~ signal [16]|AddressSanitizer|MemorySanitizer
 =~ get_foreign_key_info
 =~ ha_innobase::get_parent_foreign_key_list|ha_innobase::get_foreign_key_list
 MDEV-23679:
