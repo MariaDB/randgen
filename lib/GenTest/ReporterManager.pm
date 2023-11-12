@@ -50,6 +50,7 @@ sub monitor {
     next if isOlderVersion($reporter->server->version(),$reporter->compatibility);
     if ($reporter->type() & $desired_type) {
       my $reporter_result = STATUS_OK;
+      sayDebug("ReporterManager: calling monitor for ".(ref $reporter));
       eval {
         $reporter_result = $reporter->monitor();
         1;

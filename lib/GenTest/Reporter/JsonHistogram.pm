@@ -57,8 +57,8 @@ sub monitor {
   unless ($conn) {
     $conn = $reporter->connection;
     unless ($conn) {
-      sayError("JsonHistogram: reporter could not connect to the server");
-      return undef;
+      sayWarning("JsonHistogram monitor could not connect to the server");
+      return STATUS_SERVER_UNAVAILABLE;
     }
   }
   if (not defined $histogram_size or $histogram_size >= 0) {

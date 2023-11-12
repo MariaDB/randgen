@@ -1406,7 +1406,7 @@ sub waitPlannedDowntime {
     }
   }
   if ($downtime > 0) {
-    sayDebug("Server says: planned downtime, waiting up to $downtime seconds");
+    sayDebug("Server: planned downtime, waiting up to $downtime seconds");
     $self->[MYSQLD_SERVERPID]= undef;
     while ($downtime--) {
       unless (-e $expect_file) {
@@ -1427,10 +1427,10 @@ sub waitPlannedDowntime {
       return STATUS_SERVER_UNAVAILABLE;
     }
   } elsif ($downtime < 0) {
-    sayDebug("Server says: planned downtime, no need to wait");
+    sayDebug("Server: planned downtime, no need to wait");
     return STATUS_SERVER_STOPPED;
   } else {
-    sayWarning("Server says: the downtime isn't planned");
+    sayWarning("Server: the downtime isn't planned");
     return STATUS_CRITICAL_FAILURE;
   }
 }

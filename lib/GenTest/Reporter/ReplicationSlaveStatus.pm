@@ -55,6 +55,10 @@ sub status {
 
     my $server = $reporter->properties->server_specific->{1}->{server};
     my $conn = $reporter->connection;
+    unless ($conn) {
+      sayWarning("ReplicationSlaveStatus reporter could not connect to the server");
+      return STATUS_SERVER_UNAVAILABLE;
+    }
 
   if ($conn) {
     my $slave_status = $conn->get_row("SHOW SLAVE STATUS");

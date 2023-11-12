@@ -87,6 +87,7 @@ my $first_reporter;
 
 my $reporter = shift;
 my $registered_features = undef;
+my $connection_status;
 
 # In case of two or more main servers, we will be called more than once.
 # Ignore all but the first call.
@@ -105,6 +106,11 @@ sub monitor {
   }
   
   $conn= $reporter->connection() unless ($conn);
+  unless ($conn) {
+    sayWarning("FeatureUsage monitor could not connect to the server");
+    return STATUS_SERVER_UNAVAILABLE;
+  }
+  $connection_status= $conn->err_type();
 
 #  unless ($conn->alive()) {
 #    sayError((ref $reporter)." reporter returning critical failure");
@@ -118,6 +124,7 @@ sub monitor {
         1;
     } or do {
       sayWarning("FeatureUsage got an error: ".$conn->last_error->[0]." (".$conn->last_error->[1].") for mysql.rqg_feature_registry query");
+      return errorType($conn->last_error->[0]);
     };
     if ($registered_features) {
       foreach my $f (@$registered_features) {
@@ -137,6 +144,7 @@ sub monitor {
       $features_used{$f}= $res;
       say("FeatureUsage detected $f ($features_used{$f})");
     }
+    return $connection_status if $connection_status != STATUS_OK;
   }
   return STATUS_OK;
 }
@@ -366,6 +374,7 @@ sub check_for_engine_tables {
     } or do {
       sayWarning("FeatureUsage got an error: ".$conn->last_error->[0]." (".$conn->last_error->[1].") for ENGINES query");
     };
+    $connection_status= $conn->err_type();
     if ($engines) {
       # Also add them to plugins, because if there is a table, there is (or was) the engine/plugin
       map { $engine_tables{$_}= 1; $plugins{$_}= 1; } (@$engines);
@@ -385,6 +394,7 @@ sub check_for_plugin {
     } or do {
       sayWarning("FeatureUsage got an error: ".$conn->last_error->[0]." (".$conn->last_error->[1].") for PLUGINS query");
     };
+    $connection_status= $conn->err_type();
     if ($plg) {
       map { $plugins{$_}= 1 } (@$plg);
     }
@@ -411,6 +421,7 @@ sub check_status_var {
     } or do {
       sayWarning("FeatureUsage got an error: ".$conn->last_error->[0]." (".$conn->last_error->[1].") for GLOBAL STATUS query");
     };
+    $connection_status= $conn->err_type();
     foreach (@$global_status_arr) {
       $global_status{$_->[0]}= $_->[1];
     }
@@ -428,6 +439,7 @@ sub getval {
   } or do {
     sayWarning("FeatureUsage got an error: ".$conn->last_error->[0]." (".$conn->last_error->[1].") for query $query");
   };
+  $connection_status= $conn->err_type();
   return $res;
 }
 

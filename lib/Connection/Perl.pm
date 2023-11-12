@@ -52,8 +52,13 @@ sub new {
     ":max_allowed_packet=1G".
     ($self->[CONNECTION_PROTOCOL] eq 'ps' ? ":mysql_server_prepare=1" : "");
   $self->[CONNECTION_DBH]= $self->connect();
-  sayDebug("Connected: ".$self->[CONNECTION_NAME]." as ".$self->[CONNECTION_ROLE]." (".$self->[CONNECTION_USER].")");
-  return $self;
+  if ($self->[CONNECTION_DBH]) {
+    sayDebug("Connected: ".$self->[CONNECTION_NAME]." as ".$self->[CONNECTION_ROLE]." (".$self->[CONNECTION_USER].")");
+    return $self;
+  } else {
+    sayWarning($self->[CONNECTION_NAME].": Could not connect to the server");
+    return undef;
+  }
 }
 
 sub connect {
@@ -83,8 +88,12 @@ sub connect {
         return $self->connect();
       } elsif ($status == STATUS_SERVER_STOPPED) {
         sayDebug($self->name().": Upon connecting: instructed not to wait");
+        ($self->[CONNECTION_ERROR], $self->[CONNECTION_ERROR_STRING])= (2013,"Could not connect to server");
+        $self->report_error("<Connect>");
+        return undef;
       } else {
         sayError($self->name().": Upon connecting: Server has gone away");
+        return undef;
       }
     }
   }
@@ -151,7 +160,12 @@ sub query {
   $self->[CONNECTION_SQLSTATE]= undef;
   $self->[CONNECTION_WARNING_COUNT]= undef;
 
-  return undef unless $self->alive();
+  # ER_SERVER_LOST
+  unless ($self->alive()) {
+    ($self->[CONNECTION_ERROR_TYPE], $self->[CONNECTION_ERROR], $self->[CONNECTION_ERROR_STRING])= (STATUS_SERVER_UNAVAILABLE, 2013,"Could not connect to server");
+    $self->report_error("<connection alive check>");
+    return undef;
+  }
     
   my $sth;
   # Combination of mysql_server_prepare and mysql_multi_statements

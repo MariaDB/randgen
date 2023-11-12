@@ -294,7 +294,9 @@ sub setStatus {
 
 sub finalize {
   my ($self, $status, $servers)= @_;
-  $status= $self->[SC_TEST_RUNNER]->reportResults($status);
+  if ($self->[SC_TEST_RUNNER]) {
+    $status= $self->[SC_TEST_RUNNER]->reportResults($status);
+  }
   if ($servers) {
     foreach my $s (@$servers) {
       if ($s->running) {

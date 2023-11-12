@@ -56,6 +56,10 @@ sub monitor {
     if (($reporter->server->serverVariable('performance_schema') eq '1') or ($reporter->server->serverVariable('performance_schema') eq 'ON')) {
       say("MemoryUsage monitor for pid $pid: memory usage: ".format_mem_value($mem));
       $conn = $reporter->connection unless $conn;
+      unless ($conn) {
+        sayWarning("MemoryUsage monitor could not connect to the server");
+        return STATUS_SERVER_UNAVAILABLE;
+      }
       $memusage= $conn->query("select event_name, sum_number_of_bytes_alloc, current_number_of_bytes_used, high_number_of_bytes_used from performance_schema.memory_summary_global_by_event_name order by current_number_of_bytes_used desc limit 5");
       say(Dumper($memusage)) if $memusage;
     }

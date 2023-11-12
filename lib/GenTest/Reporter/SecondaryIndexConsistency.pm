@@ -47,6 +47,10 @@ sub monitor {
     return STATUS_OK if (time() - $last_run) < $interval;
 
     my $conn = $reporter->connection;
+    unless ($conn) {
+      sayWarning("SecondaryIndexConsistency monitor could not connect to the server");
+      return STATUS_SERVER_UNAVAILABLE;
+    }
 
     sayDebug("Testing consistency of secondary indexes");
 
