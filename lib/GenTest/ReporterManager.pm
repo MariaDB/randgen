@@ -56,6 +56,7 @@ sub monitor {
         1;
       };
       sayWarning("Reporter ".(ref $reporter)." returned ".status2text($reporter_result)) if $reporter_result != STATUS_OK;
+      $reporter_result= STATUS_OK if $reporter_result == STATUS_SKIP;
       if (serverGone($reporter_result))
       {
         my $status= $reporter->server->waitPlannedDowntime();
