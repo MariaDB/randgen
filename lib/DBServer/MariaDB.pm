@@ -1947,7 +1947,7 @@ sub storeMetaData {
   }
   my $end_time= time()+$maxtime;
 
-  while ($self->[MYSQLD_METADATA_CONNECTION]->alive && time() < $end_time && scalar(@waiters) < $wait_for_threads) {
+  while ($self->[MYSQLD_METADATA_CONNECTION] && $self->[MYSQLD_METADATA_CONNECTION]->alive && time() < $end_time && scalar(@waiters) < $wait_for_threads) {
     sayDebug("Waiting for $wait_for_threads executors to get ready for new metadata dump, so far found ".scalar(@waiters).", ".($end_time-time())." sec left");
     sleep 1;
     @waiters= glob("$vardir/executor_*_ready");
