@@ -752,6 +752,11 @@ MDEV-31178:
 =~ fix_fields_for_tvc
 =~ TABLE_LIST::handle_derived
 =~ Prepared_statement::execute|sp_head::execute
+MDEV-31178:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ fill_record
+=~ select_union_direct::send_data
+=~ mysql_handle_single_derived
 MDEV-31161:
 =~ Assertion \`!prebuilt->table->indexes\.start->online_log'
 =~ rollback_inplace_alter_table
@@ -2736,7 +2741,7 @@ MDEV-23045:
 =~ MYSQL_BIN_LOG::write_transaction_to_binlog
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-23041:
-=~ signal [16]|AddressSanitizer
+=~ signal [16]|AddressSanitizer|MemorySanitizer
 =~ Item_func_set_user_var::update_hash
 =~ TABLE::update_default_fields|end_write_group|TABLE::update_virtual_fields|end_send_group|Field::set_default
 MDEV-23041:
