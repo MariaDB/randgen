@@ -1612,7 +1612,7 @@ sub isRecordIgnored {
     # MDEV-32201 (join_init_read_record() wrongly issues HA_ERR_OUT_OF_MEM)
     or  $line =~ /Got error 128 when reading table/s
     # MDEV-22927, MDEV-26253 and many more
-    or  $line =~ /Can't find record in/s
+    or  $line =~ /(?:mysqld|mariadbd): Can't find record in/s
     # MDEV-32772 (Unexpected "aria_sort_buffer_size is too small" error)
     or  $line =~ /aria_sort_buffer_size is too small\. Current aria_sort_buffer_size:/s
     # MDEV-32773 (Syntax error upon loading Spider in ORACLE mode)
