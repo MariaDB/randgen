@@ -4,6 +4,15 @@
 # Strong matches
 ##############################################################################
 
+MDEV-32824:
+=~ Conditional jump or move depends on uninitialised value
+=~ key_cmp
+=~ handler::compare_key
+=~ ha_innobase::multi_range_read_next
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-32787:
+=~ Assertion \`!wsrep_has_changes(thd) \|\| (thd->lex->sql_command == SQLCOM_CREATE_TABLE && !thd->is_current_stmt_binlog_format_row()) \|\| thd->wsrep_cs()\.transaction()\.state() == wsrep::transaction::s_aborted'
+=~ wsrep_commit_empty
 MDEV-32771:
 =~ Assertion \`data'
 =~ get_cache_list
@@ -43,6 +52,9 @@ MDEV-32747:
 MDEV-32728:
 =~ safe_mutex: Found wrong usage of mutex 'wait_mutex' and 'LOCK_thd_kill'
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-32705:
+=~ Assertion \`outer_context \|\| !\*from_field \|\| \*from_field == not_found_field'
+=~ Item_field::fix_outer_field
 MDEV-32694:
 =~ AddressSanitizer|signal
 =~ Item_param::reset
