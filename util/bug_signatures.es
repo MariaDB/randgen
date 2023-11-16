@@ -17,15 +17,6 @@ MENT-1844:
 MENT-809:
 =~ mariabackup: Aria engine: starting recovery
 =~ Got error 127 when executing|Got error 175 when executing
-MENT-328:
-=~ mariabackup: File '.*seq.*MAI' not found (Errcode: 2 "No such file or directory")
-=~ Error on aria table file open .*seq.*MAI
-=~ Version: '10\.[3-4]
-MENT-328:
-=~ scenario=MariaBackup
-=~ For  BASE TABLE ROW_FORMAT= .* : Error : Can't find file: '.*seq.*MAI' (errno: 2 "No such file or directory")
-=~ status STATUS_BACKUP_FAILURE
-=~ Version: '10\.[3-4]
 MENT-319:
 =~ Assertion \`backup_flush_ticket == 0'
 =~ backup_start
