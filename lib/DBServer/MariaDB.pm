@@ -755,7 +755,7 @@ sub drop_broken {
 # One is for comparison. In this case certain objects are disabled,
 # data and schema are dumped separately, and data is sorted.
 # Another one is for restoring the dump. In this case a "normal"
-# dump is perfomed, all together and without suppressions
+# dump is perfomed, all together
 
 sub dumpdb {
     my ($self,$database,$file,$for_restoring,$options) = @_;
@@ -765,6 +765,13 @@ sub dumpdb {
       return DBSTATUS_FAILURE;
     }
     if ($for_restoring) {
+      # Workaround for MDEV-29954 and many more
+      # (unique hash keys are so broken that we cannot hope that the dump
+      # will be restorable, e.g. they may contain non-unique values)
+      my $uniq_hashes= $conn->query("SELECT DISTINCT CONCAT(constr.table_schema,'.',constr.table_name), constr.CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS constr JOIN INFORMATION_SCHEMA.STATISTICS stat ON ( constr.TABLE_SCHEMA = stat.TABLE_SCHEMA AND constr.TABLE_NAME = stat.TABLE_NAME AND constr.CONSTRAINT_NAME = stat.INDEX_NAME) JOIN INFORMATION_SCHEMA.COLUMNS cols ON ( stat.TABLE_SCHEMA = cols.TABLE_SCHEMA AND stat.TABLE_NAME = cols.TABLE_NAME AND stat.COLUMN_NAME = cols.COLUMN_NAME ) where constr.CONSTRAINT_TYPE = 'UNIQUE' AND stat.INDEX_TYPE = 'HASH' AND cols.DATA_TYPE in ('varchar','varbinary','tinyblob','mediumblob','blob','longblob','tinytext','mediumtext','text','longtext')");
+      foreach my $uh (@$uniq_hashes) {
+        $conn->execute("alter table $uh->[0] drop key $uh->[1]");
+      }
       # Workaround for MDEV-29936 (unique ENUM/SET with invalid values cause problems)
       my $enums= $conn->query(
         "select cols.table_schema, cols.table_name, cols.column_name from information_schema.columns cols ".
