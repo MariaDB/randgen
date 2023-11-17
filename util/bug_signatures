@@ -4,6 +4,28 @@
 # Strong matches
 ##############################################################################
 
+# Examples of version markers:
+# 10.4-10.5
+# Version: '10\.[45]|Server version: 10\.[45]
+# 10.6+
+# Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+# 10.10+
+# Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+# 11.0+
+# Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+
+MDEV-32831:
+=~ AddressSanitizer|signal
+=~ charset_info_st
+=~ SORT_FIELD_ATTR::compare_packed_varstrings
+=~ Filesort_buffer::sort_buffer
+=~ Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-32831:
+=~ Assertion \`0'
+=~ Type_handler_string_result::make_packed_sort_key_part
+=~ make_packed_sortkey
+=~ Query .* RANDOM_BYTES
+=~ Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32824:
 =~ Conditional jump or move depends on uninitialised value
 =~ key_cmp
