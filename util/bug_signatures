@@ -1630,6 +1630,11 @@ MDEV-26084:
 =~ handler::get_foreign_dup_key
 =~ ha_partition::print_error
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-26084:
+=~ 1761.*would lead to a duplicate entry in table '#mysql50
+=~ Invalid (old?) table or database name '#sql-alter-
+=~ STATUS_ERRORS_IN_LOG
+=~ FeatureUsage detected system-versioned tables
 MDEV-26074:
 =~ Assertion \`!is_thread_specific \|\| (mysqld_server_initialized && thd)'
 =~ my_malloc_size_cb_func
