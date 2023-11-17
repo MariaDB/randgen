@@ -1419,6 +1419,7 @@ sub waitPlannedDowntime {
       }
       sleep 1;
     }
+    $self->endPlannedDowntime();
     if ($self->running) {
       sayDebug("Server is running again");
       return STATUS_OK;
