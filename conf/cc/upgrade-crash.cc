@@ -26,7 +26,7 @@ $combinations = [
     --gendata=conf/zz/innodb.zz
     --gendata=conf/zz/innodb-page-compression.zz
     --gendata=advanced
-    --reporters=Backtrace,ErrorLog,Deadlock
+    --reporters=Backtrace,Deadlock,FeatureUsage
     --mysqld=--server-id=111
     --mysqld=--log_output=FILE
     --mysqld=--loose-max-statement-time=20

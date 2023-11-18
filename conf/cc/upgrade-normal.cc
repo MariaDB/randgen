@@ -33,7 +33,7 @@ $combinations = [
     --views
     --vcols
     --partitions
-    --reporters=Backtrace,Deadlock
+    --reporters=Backtrace,Deadlock,FeatureUsage
     --mysqld=--server-id=111
     --mysqld=--log_output=FILE
     --mysqld=--loose-max-statement-time=20
