@@ -317,7 +317,7 @@ alt_enum_type:
 ;
 
 alt_text_type:
-  BLOB | TEXT | CHAR | VARCHAR(_smallint_unsigned) | BINARY | VARBINARY(_smallint_unsigned)
+  CHAR | VARCHAR({$prng->uint16(1,1024)}) | BINARY | VARBINARY({$prng->uint16(1,1024)})
 ;
 
 alt_null:
