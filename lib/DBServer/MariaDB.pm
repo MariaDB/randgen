@@ -1596,7 +1596,7 @@ sub isRecordIgnored {
     or  $line =~ /InnoDB: \(1\) Table rename would cause two/s
     or  $line =~ /InnoDB: \(2\) Table/s
     or  $line =~ /InnoDB: Cannot delete\/update rows with cascading foreign key constraints that exceed max depth of/s
-    or  $line =~ /InnoDB: Cannot save index statistics for table.*Lock wait timeout/s
+    or  $line =~ /InnoDB: Cannot save (?:table|index) statistics for table.*Lock wait timeout/s
     or  $line =~ /InnoDB: Deleting persistent statistics for table/s
     or  $line =~ /InnoDB: DROP TABLE .*: Deadlock/s
     or  $line =~ /InnoDB: Failed to load table .* which has a foreign key constraint with.*/s
