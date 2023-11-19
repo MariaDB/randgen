@@ -14,6 +14,11 @@
 # 11.0+
 # Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 
+MDEV-32838:
+=~ Record was not updated. New values were the same as original values
+=~ InnoDB: Record in index .* of table .* was not found on update
+=~ FeatureUsage detected unique blobs
+=~ FeatureUsage detected system-versioned tables
 MDEV-32831:
 =~ AddressSanitizer|signal
 =~ charset_info_st
@@ -876,6 +881,7 @@ MDEV-29958:
 MDEV-29954:
 =~ InnoDB: Flagged corruption of .* in table .* in CHECK TABLE-check index|InnoDB: Flagged corruption of .* in table .* in CHECK TABLE; Wrong count|For MyISAM .* : error : Record at: .* Can't find key for index
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-29935:
 =~ signal|AddressSanitizer
 =~ get_sort_by_table
@@ -2470,6 +2476,7 @@ MDEV-23218:
 MDEV-23218:
 =~ InnoDB: Flagged corruption of .* in CHECK TABLE; Wrong count
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-23215:
 =~ signal [16]|AddressSanitizer
 =~ my_hash_first|flush_simple_key_cache_blocks
@@ -3250,7 +3257,7 @@ MDEV-20518:
 MDEV-20501:
 =~ Assertion \`maybe_null \|\| !null_value'|Assertion \`maybe_null() \|\| !null_value'
 =~ Item_func_round::date_op
-=~ Type_handler_temporal_result
+=~ Type_handler_.*_result
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-20498:
 =~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type == 1'
