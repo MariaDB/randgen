@@ -88,6 +88,7 @@ sub run {
   $props->{seed}= 'time';
   $props->{metadata_reload}= 1;
   $props->{base_port}= RQG_DEFAULT_BASE_PORT;
+  $props->{compatibility}= '999999';
 
   $trials= 1;
   $scenario= RQG_DEFAULT_SCENARIO;
@@ -104,6 +105,7 @@ sub run {
     perf        => undef,
     ps          => undef,
     rr          => undef,
+    uhashkeys   => undef,
     valgrind    => undef,
     vcols       => undef,
     views       => undef,
@@ -121,6 +123,7 @@ sub run {
     'perf!' => \$server_options{perf},
     'ps_protocol|ps-protocol' => \$server_options{ps},
     'rr!' => \$server_options{rr},
+    'unique-hash-keys|unique_hash_keys!' => \$server_options{uhashkeys},
     'valgrind:s'    => \$server_options{valgrind},
     'vcols:s'        => \$server_options{vcols},
     'views:s'        => \$server_options{views},

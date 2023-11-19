@@ -220,6 +220,7 @@ sub init {
               'parser',
               'parser_mode',
               'perf',
+              'uhashkeys',
       ]
   );
 
@@ -276,6 +277,7 @@ sub setPropertiesFromHash {
   $gentestProps->property('compatibility',$props->{compatibility}) if defined $props->{compatibility};
   $gentestProps->property('user',$props->{user}) if defined $props->{user};
   $gentestProps->property('vardir',$props->{vardir}) if defined $props->{vardir};
+  $gentestProps->property('uhashkeys',1) if defined $props->{uhashkeys};
 
   # In case of multi-master topology (e.g. Galera with multiple "masters"),
   # we don't want to compare results after each query.

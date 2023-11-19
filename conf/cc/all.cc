@@ -37,6 +37,7 @@ $combinations = [
   [ @{$options{optional_gendata_gis}} ],
   [ @{$options{optional_gendata_views}} ],
   [ @{$options{optional_gendata_vcols}} ],
+  [ @{$options{optional_gendata_unique_hash_keys}} ],
   [ @{$options{optional_variators}} ],
   [ @{$options{gendata}} ],
 # Disabled for now, too frequent DBD problems

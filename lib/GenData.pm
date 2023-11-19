@@ -67,6 +67,7 @@ require Exporter;
   GD_VCOLS
   GD_RAND
   GD_GIS
+  GD_UNIQUE_HASH_KEYS
   doGenData
 );
 
@@ -139,6 +140,7 @@ use constant GD_BASEDIR => 20;
 use constant GD_TABLES => 21;
 use constant GD_SERVER => 22;
 use constant GD_GIS => 23;
+use constant GD_UNIQUE_HASH_KEYS => 24;
 
 sub new {
     my $class = shift;
@@ -160,6 +162,7 @@ sub new {
         'vcols' => GD_VCOLS,
         'basedir' => GD_BASEDIR,
         'tables' => GD_TABLES,
+        'uhashkeys' => GD_UNIQUE_HASH_KEYS,
       },@_);
 
     if (not defined $self->[GD_SEED]) {
@@ -220,6 +223,7 @@ sub doGenData {
          server => $so->{server},
          spec_file => $gd,
          sqltrace=> $props->sqltrace,
+         uhashkeys => $so->{uhashkeys},
          vardir => $props->vardir,
          vcols => $so->{vcols},
          views => $so->{views},
@@ -431,6 +435,10 @@ sub compatibility {
 
 sub vcols {
     return $_[0]->[GD_VCOLS];
+}
+
+sub uhashkeys {
+  return $_[0]->[GD_UNIQUE_HASH_KEYS];
 }
 
 sub gis {

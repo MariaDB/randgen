@@ -94,10 +94,12 @@ $parameters{optional_ps_protocol}= \%optional_ps_protocol;
 $optional_gendata_views{$minversion}= [ @empty_set_10, '--views', '--views=MERGE', '--views=TEMPTABLE'];
 $optional_gendata_vcols{$minversion}= [ @empty_set_30, '--vcols', '--vcols=VIRTUAL', '--vcols=STORED' ];
 $optional_gendata_gis{$minversion}= [ @empty_set_30, '--gis' ];
+$optional_gendata_unique_hash_keys{$minversion}= [ @empty_set_10, '--unique-hash-keys' ];
 
 $parameters{optional_gendata_views}= \%optional_gendata_views;
 $parameters{optional_gendata_vcols}= \%optional_gendata_vcols;
 $parameters{optional_gendata_gis}= \%optional_gendata_gis;
+$parameters{optional_gendata_unique_hash_keys}= \%optional_gendata_unique_hash_keys;
 
 #++++++++++++++++++++++++
 # Variators
