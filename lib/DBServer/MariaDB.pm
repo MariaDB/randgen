@@ -1408,6 +1408,7 @@ sub waitPlannedDowntime {
       $downtime= <DOWNTIME>;
       chomp $downtime;
       close(DOWNTIME);
+      sayDebug("Found expect file, downtime $downtime");
     } else {
       sayError("Could not check for the expect flag: $!");
     }
@@ -1426,7 +1427,6 @@ sub waitPlannedDowntime {
       }
       sleep 1;
     }
-    $self->endPlannedDowntime();
     if ($self->running) {
       sayDebug("Server is running again");
       return STATUS_OK;
@@ -1969,8 +1969,13 @@ sub storeMetaData {
 
   my $conn= $self->[MYSQLD_METADATA_CONNECTION];
   unless ($conn && $conn->alive) {
-    sayError("Metadata dumper could not establish connection");
-    $status= DBSTATUS_FAILURE;
+    if ($self->isPlannedDowntime()) {
+      sayDebug("Metadata dumper could not establish connection due to planned downtime");
+      $status= STATUS_SERVER_STOPPED;
+    } else {
+      sayError("Metadata dumper could not establish connection");
+      $status= STATUS_SERVER_UNAVAILABLE;
+    }
     goto METAERR;
   }
 
@@ -2340,7 +2345,7 @@ sub storeMetaData {
   }
 
   METAERR:
-  if ($status != DBSTATUS_OK) {
+  if ($status != STATUS_OK) {
     unlink @files, @waiters;
     return $status;
   }
@@ -2352,5 +2357,5 @@ sub storeMetaData {
     (defined $coll_count ? " $coll_count collations;" : "").
     ($db_count ? " $db_count databases, $tbl_count tables, $col_count columns, $ind_count indexes, $proc_count stored procedures" : "")
   );
-  return DBSTATUS_OK;
+  return STATUS_OK;
 }
