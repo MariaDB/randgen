@@ -555,6 +555,10 @@ MDEV-31278:
 =~ _ma_unpin_all_pages
 =~ handler::ha_check_overlaps
 =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31278:
+=~ ma_key_recover.c:71:5: runtime error: member access within null pointer of type 'struct st_ma_transaction'
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+=~ FeatureUsage detected application periods
 MDEV-31269:
 =~ AddressSanitizer|signal
 =~ Item::print_parenthesised
