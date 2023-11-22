@@ -300,6 +300,14 @@ MDEV-31965:
 =~ Item_func_sha::val|compute_two_stage_sha1_hash
 =~ TABLE::update_virtual_field
 =~ row_merge_read_clustered_index
+MDEV-31947:
+=~ Assertion \`!join->select_lex->master_unit()->derived \|\| join->select_lex->master_unit()->derived->is_materialized_derived() \|\| join->select_lex->master_unit()->derived->is_with_table()'
+=~ JOIN::save_explain_data_intern
+=~ Version: '10\.4|Server version: 10\.4
+MDEV-31947:
+=~ Assertion \`inited==NONE'
+=~ handler::ha_index_read_idx_map
+=~ Version: '10\.4|Server version: 10\.4
 MDEV-31941:
 =~ InnoDB: Failing assertion: UT_LIST_GET_LEN(lock\.trx_locks) == 0
 =~ trx_t::commit_in_memory
