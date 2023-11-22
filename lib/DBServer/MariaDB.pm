@@ -1607,13 +1607,14 @@ sub isRecordIgnored {
     or  $line =~ /InnoDB: Table rename might cause two FOREIGN KEY constraints to have the same internal name in case-insensitive comparison/s
     or  $line =~ /InnoDB: Unable to rename statistics from/s
     or  $line =~ /Invalid roles_mapping table entry user/s
-    or  $line =~ /mysqld: The table .* is full/s
-    or  $line =~ /mysqld: Deadlock found when trying to get lock/s
-    or  $line =~ /mysqld: Lock wait timeout exceeded; try restarting transaction/s
+    or  $line =~ /(?:mysqld|mariadbd): The table .* is full/s
+    or  $line =~ /(?:mysqld|mariadbd): Deadlock found when trying to get lock/s
+    or  $line =~ /(?:mysqld|mariadbd): Lock wait timeout exceeded; try restarting transaction/s
+    or  $line =~ /(?:mysqld|mariadbd): Out of sort memory, consider increasing server sort buffer size/s
     or  $line =~ /Slave I\/O: error reconnecting to master/s
     # CSV is not crash-safe x 2
-    or  $line =~ /mysqld: Table 'general_log' is marked as crashed and should be repaired/s
-    or  $line =~ /mysqld: Table 'slow_log' is marked as crashed and should be repaired/s
+    or  $line =~ /(?:mysqld|mariadbd): Table 'general_log' is marked as crashed and should be repaired/s
+    or  $line =~ /(?:mysqld|mariadbd): Table 'slow_log' is marked as crashed and should be repaired/s
     # MDEV-32628 (Cryptic ERROR message & inconsistent behavior on incorrect SHOW BINLOG EVENTS) x 2
     or  $line =~ /Error in Log_event::read_log_event/s
     or  $line =~ /Replication event checksum verification failed while reading from a log file/s
