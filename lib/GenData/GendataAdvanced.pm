@@ -762,12 +762,8 @@ sub gen_table {
                 # Starting from 10.4.3, long unique blobs are allowed.
                 # For a non-unique index the column will be auto-sized by the server (with a warning)
                 if (($ind_type ne 'FULLTEXT') and ($self->compatibility lt '100403' or (not $self->uhashkeys) or $prng->uint16(0,1))) {
-                  say("HERE: unique hash keys? ".$self->uhashkeys.", adjusting length for $c ".$columns{$c}->[1]);
                   my $length= ( $columns{$c}->[1] and $columns{$c}->[1] < 64 ) ? $columns{$c}->[1] : 64;
                   $c = "$c($length)";
-                  say("HERE: now $c");
-                } else {
-                  say("HERE: unique hash keys? ".$self->uhashkeys.", NOT adjusting length for $c ".$columns{$c}->[1]);
                 }
             }
             # DESC indexes: add ASC/DESC to the column
