@@ -71,6 +71,8 @@ sub monitor {
           sayError("ReporterManager: Server has gone away");
           return STATUS_SERVER_UNAVAILABLE;
         }
+      } elsif ($reporter_result <= STATUS_TEST_FAILURE) {
+        $reporter_result= STATUS_OK;
       }
       $max_result = $reporter_result if $reporter_result > $max_result;
     }
