@@ -664,7 +664,7 @@ MDEV-31193:
 MDEV-31192:
 =~ signal|AddressSanitizer
 =~ check_grant|check_access
-=~ check_one_table_access
+=~ check_one_table_access|check_table_access
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-31190:
 =~ signal|AddressSanitizer
