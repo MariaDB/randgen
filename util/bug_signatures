@@ -14,6 +14,12 @@
 # 11.0+
 # Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 
+MDEV-32880:
+=~ AddressSanitizer|signal|MemorySanitizer
+=~ mark_select_range_as_dependent
+=~ find_field_in_tables
+=~ Prepared_statement::execute|sp_head::execute
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32879:
 =~ AddressSanitizer|signal|MemorySanitizer
 =~ my_decimal::operator=
