@@ -14,6 +14,12 @@
 # 11.0+
 # Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 
+MDEV-32879:
+=~ AddressSanitizer|signal|MemorySanitizer
+=~ my_decimal::operator=
+=~ make_sortkey
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ FeatureUsage detected INET columns|FeatureUsage detected UUID columns
 MDEV-32867:
 =~ AddressSanitizer|signal
 =~ Item_func_json_contains_path::val_int
