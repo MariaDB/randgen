@@ -4007,6 +4007,16 @@ MDEV-15256:
 =~ flush_cached_blocks
 =~ flush_pagecache_blocks_with_filter
 =~ ma_checkpoint_background|run_backup_stage
+MDEV-15255:
+=~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| ((lock_type != 2 && m_lock_type == 2) \|\| lock_type == 2)'
+=~ handler::ha_external_lock
+=~ mysql_alter_table|sequence_insert
+=~ FeatureUsage detected sequences
+MDEV-15255:
+=~ Assertion \`m_lock_type == 2'
+=~ handler::ha_close
+=~ mysql_rm_table
+=~ FeatureUsage detected sequences
 MDEV-15164:
 =~ Assertion \`ikey_\.type == kTypeValue'
 =~ rocksdb::CompactionIterator::NextFromInput
