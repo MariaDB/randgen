@@ -72,6 +72,7 @@ my %usage_check= (
   'Spider engine' => \&check_for_spider_plugin,
   'Spider tables' => \&check_for_spider_tables,
   'unique blobs' => \&check_for_unique_blobs,
+  'UUID columns' => \&check_for_uuid_columns,
   'virtual columns' => \&check_for_virtual_columns,
   'system-versioned tables' => \&check_for_versioning,
   'XA transactions' => \&check_for_xa,
@@ -266,6 +267,14 @@ sub check_for_virtual_columns {
 sub check_for_inet_columns {
   my $reporter= shift;
   if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_TYPE IN ('inet4','inet6')")) {
+    return "according to I_S.COLUMNS";
+  }
+  return undef;
+}
+
+sub check_for_uuid_columns {
+  my $reporter= shift;
+  if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_TYPE IN ('uuid')")) {
     return "according to I_S.COLUMNS";
   }
   return undef;
