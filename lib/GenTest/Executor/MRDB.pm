@@ -46,13 +46,21 @@ sub connection {
   return $_[0]->[EXECUTOR_CONNECTION];
 }
 
+sub connect {
+  my $executor= shift;
+  my $conn = Connection::Perl->new(server => $executor->server, name => 'WRK-'.$executor->threadId());
+  unless ($conn) {
+      sayError("Connect() to dsn ".$executor->server->port()." failed: ".$conn->last_error->[0]." ".$conn->last_error->[1]);
+      return undef;
+  }
+}
+
 sub init {
     my $executor = shift;
-    my $conn = Connection::Perl->new(server => $executor->server, name => 'WRK-'.$executor->threadId());
 
-    unless ($conn) {
-        sayError("Connect() to dsn ".$executor->server->port()." failed: ".$conn->last_error->[0]." ".$conn->last_error->[1]);
-        return STATUS_ENVIRONMENT_FAILURE;
+    my $conn= $executor->connect();
+    unless (defined $conn) {
+      return STATUS_ENVIRONMENT_FAILURE;
     }
     $executor->[EXECUTOR_CONNECTION]= $conn;
     $executor->defaultSchema($executor->currentSchema());

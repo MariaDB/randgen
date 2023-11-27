@@ -163,17 +163,25 @@ sub next {
       # If the server has crashed but we expect server restarts during the test, we will wait and retry
       if (serverGone($execution_result->status()))
       {
-        my $status= $executor->server->waitPlannedDowntime();
-        if ($status == STATUS_OK) {
-          say("Server returned in time, re-running the last query");
-          redo EXECUTE_QUERY;
-        } elsif ($status == STATUS_SERVER_STOPPED) {
-          sayDebug("Mixer: instructed not to wait");
-          $max_status= STATUS_TEST_STOPPED if $max_status < STATUS_SERVER_STOPPED;
-          last; # QUERIES;
+        if ($executor->server->isPlannedDowntime()) {
+          my $status= $executor->server->waitPlannedDowntime();
+          if ($status == STATUS_OK) {
+            say("Server returned in time, re-running the last query");
+            redo EXECUTE_QUERY;
+          } elsif ($status == STATUS_SERVER_STOPPED) {
+            sayDebug("Mixer: instructed not to wait");
+            $max_status= STATUS_TEST_STOPPED if $max_status < STATUS_SERVER_STOPPED;
+            last; # QUERIES;
+          } else {
+            sayError("Mixer: Server has gone away");
+            $max_status= STATUS_SERVER_UNAVAILABLE;
+          }
         } else {
-          sayError("Mixer: Server has gone away");
-          $max_status= STATUS_SERVER_UNAVAILABLE;
+          # In case the connection was killed
+          if ($executor->connect()) {
+            say("Reconnect succeeded, apparently the connection was killed");
+            redo EXECUTE_QUERY;
+          }
         }
       }
       $max_status = $execution_result->status() if $execution_result->status() > $max_status;
