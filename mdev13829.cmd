@@ -1,0 +1,1 @@
+perl ./run.pl --threads=8 --duration=300 --queries=100M --grammar=mdev13829.yy --nometadata-reload --mysqld=--max-statement-time=5 --mysqld=--lock-wait-timeout=3 --mysqld=--innodb-lock-wait-timeout=2 --trials=5 --output="post_kill_notification|fill_schema_processlist" --basedir=$1 --vardir=/dev/shm/var-mdev13829 
