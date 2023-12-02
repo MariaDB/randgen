@@ -1765,8 +1765,10 @@ $variables_grammars{'es-'.$minversion}= [
   [@empty_set_20, '--grammar=conf/yy/dynamic_variables.yy:0.01'],
   [@empty_set_50, '--grammar=conf/yy/log_slow_vars.yy:0.01'],
   [@empty_set_30, '--grammar=conf/yy/optimizer_vars.yy:0.001'],
-  [@empty_set_20, '--grammar=conf/yy/server_audit.yy --mysqld=--plugin-load-add=server_audit --mysqld=--server-audit --mysqld=--server-audit-logging=on'],
-  [@empty_set_10, '--grammar=conf/yy/server_audit.yy --mysqld=--plugin-load-add=server_audit2 --mysqld=--server-audit --mysqld=--server-audit-logging=on'],
+  [@empty_set_10,
+     '--grammar=conf/yy/server_audit.yy --mysqld=--plugin-load-add=server_audit --mysqld=--server-audit --mysqld=--server-audit-logging=on',
+     '--grammar=conf/yy/server_audit.yy --mysqld=--plugin-load-add=server_audit2 --mysqld=--server-audit --mysqld=--server-audit-logging=on'
+  ],
   [@empty_set_50, '--grammar=conf/yy/sql_errlog.yy:0.01 --mysqld=--plugin-load-add=sql_errlog --mysqld=--sql-error-log'],
   [@empty_set_20, '--grammar=conf/yy/sql_mode.yy:0.01'],
 ];
