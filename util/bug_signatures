@@ -757,7 +757,7 @@ MDEV-31083:
 MDEV-31063:
 =~ Assertion \`marked_for_read()'
 =~ Field_.*::val_.*
-=~ Column_statistics_collected::add|Histogram_json_builder::append_column_value|Column_statistics_collected::finish
+=~ Column_statistics_collected::add|Histogram_json_builder::append_column_value|Column_statistics_collected::finish|Histogram_json_builder::start_bucket
 =~ Sql_cmd_analyze_table::execute
 MDEV-31056:
 =~ signal|AddressSanitizer|MemorySanitizer
@@ -854,7 +854,7 @@ MDEV-30391:
 MDEV-30371:
 =~ Assertion \`0'
 =~ Type_handler_string_result::make_packed_sort_key_part
-=~ find_all_keys
+=~ find_all_keys|create_sort_index
 MDEV-30309:
 =~ Assertion \`!(\*with_wild)'
 =~ setup_wild
@@ -3731,10 +3731,6 @@ MDEV-18003:
 =~ Assertion \`grantee->counter > 0'
 =~ merge_role_privileges
 =~ traverse_role_graph
-MDEV-17991:
-=~ Out of memory
-=~ Lex_input_stream::body_utf8_start
-=~ MYSQLparse
 MDEV-17977:
 =~ Assertion \`Count >= rest_length'
 =~ _my_b_write
@@ -3803,9 +3799,6 @@ MDEV-17596:
 =~ buf_flush_note_modification
 =~ add_dirty_page_to_flush_list
 =~ Version: '10\.[1-4]
-MDEV-17583: [next_mrec == next_mrec_end]
-=~ next_mrec == next_mrec_end
-=~ row_log_table_apply_ops
 MDEV-17539:
 =~ Assertion \`0'
 =~ Protocol::end_statement
@@ -4016,10 +4009,6 @@ MDEV-15164:
 =~ Assertion \`ikey_\.type == kTypeValue'
 =~ rocksdb::CompactionIterator::NextFromInput
 =~ rocksdb::DBImpl::BackgroundCompaction
-MDEV-14894: [remove_from_locked_mutex]
-=~ signal [16]
-=~ remove_from_locked_mutex
-=~ my_hash_iterate
 MDEV-14890:
 =~ Assertion \`!(start_key == __null && end_key == __null)'
 =~ ha_federatedx::read_range_first
@@ -4054,10 +4043,6 @@ MDEV-14472:
 =~ Assertion \`is_current_stmt_binlog_format_row()'
 =~ THD::binlog_write_table_map
 =~ write_locked_table_maps
-MDEV-14420:
-=~ Assertion failure in file .*log0recv\.cc line
-=~ recv_parse_or_apply_log_rec_body
-=~ recv_recover_page
 # Only fixed in 10.5!
 MDEV-12967:
 =~ signal 11|AddressSanitizer
