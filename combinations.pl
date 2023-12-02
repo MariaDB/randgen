@@ -210,15 +210,19 @@ my $max_result = 0;
 my $thread_id = 0;
 my $comb_seed= ($seed eq 'time' ? time() : $seed);
 
+my $es= '';
+if ($version =~ s/^es-//) {
+  $es= 'es-';
+}
 if ($version =~ /^\d+\.\d+$/) {
-  # compatibility=10.6 means that *any* 10.6.x is good
+  # config-version=10.6 means that *any* 10.6.x is good
   $version.= '.99';
 } elsif ($version =~ /^\d+$/) {
-  # Unlikely case --compatibility=11 and such, means that any 11.x.y is good
+  # Unlikely case --config-version=11 and such, means that any 11.x.y is good
   $version.= '.99.99';
 }
 
-$version= versionN6($version);
+$version= $es.versionN6($version);
 
 help("ERROR: Config file must be provided") unless defined $config_file;
 help("ERROR: Workdir must be provided") unless defined $workdir;
