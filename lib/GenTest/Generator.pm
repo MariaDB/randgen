@@ -158,7 +158,7 @@ sub variateQuery {
   my $probability= int(VARIATION_PROBABILITY / scalar(@variators)) || 1;
   VARIATOR:
   foreach my $v (@variators) {
-    next if isOlderVersion($executor->server->version(),$v->compatibility);
+    next unless isCompatible($v->compatibility,$executor->server->version(),$executor->server->enterprise());
     my @new_queries= ();
     sayDebug("Original queries before variation by ".$v->name.": ".scalar(@queries)." [\n".(join "\n    ",@queries)."\n]");
     QUERY:

@@ -19,12 +19,27 @@
 # Version should/can be defined in the combinations options and passed here
 my $version= shift;
 
+my $es= 0;
+my $vernum= $version;
+if ($version =~ /^es-(.*)$/) {
+  $es= 1;
+  $vernum= $1;
+}
+
 foreach my $comb (keys %parameters) {
   my @opts= ();
   my $opts= $parameters{$comb};
   VERSIONS:
   foreach my $ver (reverse sort keys %$opts) {
-    if ($ver le $version) {
+    my $ver_es= 0;
+    my $ver_n= $ver;
+    if ($ver =~ /^es-(.*)$/) {
+      $ver_es= 1;
+      $ver_n= $1;
+    }
+    # Parameter entries specific for ES aren't applicable to CS
+    next if $ver_es and not $es;
+    if ($ver_n le $vernum) {
       push @opts, (ref $opts->{$ver} eq 'ARRAY' ? @{$opts->{$ver}} : $opts->{$ver});
       last VERSIONS;
     }

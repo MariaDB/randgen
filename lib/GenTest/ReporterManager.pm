@@ -47,7 +47,7 @@ sub monitor {
 
   REPORTER:
   foreach my $reporter (@{$manager->reporters()}) {
-    next if isOlderVersion($reporter->server->version(),$reporter->compatibility);
+    next unless isCompatible($reporter->compatibility,$reporter->server->version(),$reporter->server->enterprise());
     if ($reporter->type() & $desired_type) {
       my $reporter_result = STATUS_OK;
       sayDebug("ReporterManager: calling monitor for ".(ref $reporter));
@@ -86,7 +86,7 @@ sub report {
   my $max_result = STATUS_OK;
 
   foreach my $reporter (@{$manager->reporters()}) {
-    next if isOlderVersion($reporter->server->version(),$reporter->compatibility);
+    next unless isCompatible($reporter->compatibility,$reporter->server->version(),$reporter->server->enterprise());
     if ($reporter->type() & $desired_type) {
       my @reporter_results = $reporter->report();
       my $reporter_result = shift @reporter_results;

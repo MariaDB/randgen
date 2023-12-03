@@ -64,6 +64,7 @@ require Exporter;
   GD_VARDIR
   GD_PARTITIONS
   GD_COMPATIBILITY
+  GD_COMPATIBILITY_ES
   GD_VCOLS
   GD_RAND
   GD_GIS
@@ -141,6 +142,7 @@ use constant GD_TABLES => 21;
 use constant GD_SERVER => 22;
 use constant GD_GIS => 23;
 use constant GD_UNIQUE_HASH_KEYS => 24;
+use constant GD_COMPATIBILITY_ES => 25;
 
 sub new {
     my $class = shift;
@@ -159,6 +161,7 @@ sub new {
         'vardir' => GD_VARDIR,
         'partitions' => GD_PARTITIONS,
         'compatibility' => GD_COMPATIBILITY,
+        'compatibility_es' => GD_COMPATIBILITY_ES,
         'vcols' => GD_VCOLS,
         'basedir' => GD_BASEDIR,
         'tables' => GD_TABLES,
@@ -212,6 +215,7 @@ sub doGenData {
       my $res= $gd_class->new(
          basedir => $so->{basedir},
          compatibility => $props->compatibility,
+         compatibility_es => $props->compatibility_es,
          debug => $props->debug,
          engine => $so->{engine},
          executor_id => $i,
@@ -431,6 +435,10 @@ sub short_column_names {
 
 sub compatibility {
     return $_[0]->[GD_COMPATIBILITY];
+}
+
+sub compatibility_es {
+    return $_[0]->[GD_COMPATIBILITY_ES];
 }
 
 sub vcols {

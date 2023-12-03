@@ -517,7 +517,8 @@ sub initGenerator {
       foreach my $r (@{$self->config->redefines}) {
         my $rg= GenTest::Grammar->new(
           grammar_file => $r,
-          compatibility => $self->config->compatibility
+          compatibility => $self->config->compatibility,
+          compatibility_es => $self->config->compatibility_es
         );
         if (not defined $rg) {
           sayError("Could not initialize the redefining grammar from $r");
@@ -537,7 +538,8 @@ sub initGenerator {
         my $grammar= GenTest::Grammar->new(
                                   grammar_file => $g,
                                   redefine_files => $self->config->redefines,
-                                  compatibility => $self->config->compatibility
+                                  compatibility => $self->config->compatibility,
+                                  compatibility_es => $self->config->compatibility_es
                         );
         if (not defined $grammar) {
           sayError("Could not initialize the grammar from $g, status will be set to ENVIRONMENT_FAILURE");

@@ -216,6 +216,7 @@ sub init {
               'ps-protocol',
               'partitions',
               'compatibility',
+              'compatibility_es',
               'user',
               'parser',
               'parser_mode',
@@ -275,6 +276,7 @@ sub setPropertiesFromHash {
   $gentestProps->property('views',$props->{views}) if $props->{views};
   $gentestProps->property('partitions',$props->{partitions}) if defined $props->{partitions};
   $gentestProps->property('compatibility',$props->{compatibility}) if defined $props->{compatibility};
+  $gentestProps->property('compatibility_es',$props->{compatibility_es}) if $props->{compatibility_es};
   $gentestProps->property('user',$props->{user}) if defined $props->{user};
   $gentestProps->property('vardir',$props->{vardir}) if defined $props->{vardir};
   $gentestProps->property('uhashkeys',1) if defined $props->{uhashkeys};

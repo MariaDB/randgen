@@ -213,7 +213,7 @@ sub generateData {
 sub createTestRunner {
   my $self= shift;
   $self->backupProperties();
-  $self->setProperty('compatibility', $self->[SC_COMPATIBILITY]) unless defined $self->setProperty('compatibility');
+  $self->setProperty('compatibility', $self->[SC_COMPATIBILITY]) unless defined $self->getProperty('compatibility');
   $self->[SC_TEST_RUNNER]= GenTest::TestRunner->new(config => $self->getProperties());
   $self->[SC_REPORTER_MANAGER]= $self->[SC_TEST_RUNNER]->initReporters();
 }
@@ -252,7 +252,6 @@ sub prepareServer {
               );
   $self->setServerSpecific($srvnum,'active',($is_active || 0));
   $self->setServerSpecific($srvnum,'server',$server);
-  $self->[SC_COMPATIBILITY] = $server->version() if isNewerVersion($server->version(),$self->[SC_COMPATIBILITY]);
   return $server;
 }
 

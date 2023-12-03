@@ -26,7 +26,8 @@ use base 'Exporter';
            'rqg_debug', 'unix2winPath', 'versionN6',
            'isNewerVersion', 'isOlderVersion',
            'shorten_message', 'set_expectation', 'unset_expectation',
-           'intersect_arrays', 'isFederatedEngine'
+           'intersect_arrays', 'isFederatedEngine',
+           'isCompatible'
            );
 
 use strict;
@@ -236,10 +237,21 @@ sub group_cleaner {
   return STATUS_TEST_STOPPED;
 }
 
+# if $version is X.Y (or NNNN), that is major version only, then
+# $max_min is used to fill the rest. If it's set to 0, then the result
+# will be the minimal version, e.g. 10.6 => 100600. Otherwise it will be
+# the maximum version, e.g. 10.6 => 100699.
+# Usually if we convert the server version (or the test compatibility version),
+# then it should be maximum, e.g. run.pl --compatibility=10.6 means that
+# everything that's compatible with any 10.6 will do.
+# If we convert the object/grammar compatibility, then it should be the minimum,
+# e.g. 10.6 => 100600, because /* compatibility 10.6 */ means that
+# any 10.6 server will do.
 sub versionN6 {
-  my $version = shift;
+  my ($version,$max_min) = @_;
+  $max_min= '99' unless defined $max_min;
   if ($version =~ /([0-9]+)\.([0-9]+)(?:\.([0-9]*))?/) {
-    return sprintf("%02d%02d%02d",int($1),int($2),(defined $3 ? int($3) : 0));
+    return sprintf("%02d%02d%02d",int($1),int($2),(defined $3 ? int($3) : $max_min));
   } elsif ($version =~ /^\d{6}$/) {
     return $version;
   } else {
@@ -261,6 +273,44 @@ sub isOlderVersion {
   $ver1= versionN6($ver1);
   $ver2= versionN6($ver2);
   return $ver1 lt $ver2;
+}
+
+# Checks whether an object is compatible with the server.
+# It is applied when an object has a requirement for a minimal server version,
+# e.g. syntax is only applicable to 10.11+.
+# An object requirements may be a comma-separated list, e.g. '10.11,es-10.6', or '10.5.22,10.6.15,10.10.2' etc.
+# For the server side, two values are provided -- one is the server version
+# (or it can be a configured compatibility version), and another is a ES flag which can be true or false.
+# Compatibility is checked in the following way:
+# - if the server version is X.Y.Z and the object requirements list contains X.Y.N,
+#   then the function only returns true if z >= N.
+#   If z is not defined, it is considered to be 99. If N is not defined, it is considered to be 00.
+#   e.g. isCompatible('10.4.30,10.6.15','10.6.14') returns false,
+#   while isCompatible('10.4.30,10.6.15','10.6.16') and isCompatible('10.4.30,10.6.15','10.6') return true.
+# - if the object requirements list doesn't contain the same major version as the server,
+#   the function returns true if the server version is greater or equal at least one item
+#   on the requirements list
+# es-XX and A.B.C-N requirements are only satisfied if the server ES flag is true.
+
+sub isCompatible {
+  my ($object_compatibility, $server_version, $server_es)= @_;
+  my $srv6= versionN6($server_version,'99');
+  my $srv4= substr($srv6,0,4);
+  $object_compatibility =~ s/ +//g;
+  my @compat= split /,/, $object_compatibility;
+  my $loose_compatibility= 0;
+  foreach my $c (@compat) {
+    next if $c =~ s/^es-// and not $server_es;
+    next if $c =~ s/-\d+$// and not $server_es;
+    my $c6= versionN6($c,'00');
+    my $c4= substr($c6,0,4);
+    if ($c4 eq $srv4) {
+      return ($srv6 ge $c6);
+    } elsif ($srv6 ge $c6) {
+      $loose_compatibility= 1;
+    }
+  }
+  return $loose_compatibility;
 }
 
 # Dictionary:

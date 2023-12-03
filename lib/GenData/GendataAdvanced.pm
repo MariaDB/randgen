@@ -354,7 +354,7 @@ sub gen_table {
 
     # INET6 data type was introduced in 10.5.0
     # INET6 columns shoudn't be very common. 10%
-    if ($self->compatibility ge '100500' and !$prng->uint16(0,9)) {
+    if (isCompatible('100500',$self->compatibility,$self->compatibility_es) and !$prng->uint16(0,9)) {
         $columns{col_inet6} = [ 'INET6',
                                 undef,
                                 undef,
@@ -369,7 +369,7 @@ sub gen_table {
 
     # UUID data type was introduced in 10.7.1
     # UUID columns shoudn't be very common, but they're new. 20% for now
-    if ($self->compatibility ge '100701' and !$prng->uint16(0,4)) {
+    if (isCompatible('100701',$self->compatibility,$self->compatibility_es) and !$prng->uint16(0,4)) {
         $columns{col_uuid} = [ 'UUID',
                                 undef,
                                 undef,
@@ -761,7 +761,7 @@ sub gen_table {
             if ($tp =~ /BLOB|TEXT|CHAR|BINARY|POINT|LINESTRING|POLYGON|GEOMETRY/) {
                 # Starting from 10.4.3, long unique blobs are allowed.
                 # For a non-unique index the column will be auto-sized by the server (with a warning)
-                if (($ind_type ne 'FULLTEXT') and ($self->compatibility lt '100403' or (not $self->uhashkeys) or $prng->uint16(0,1))) {
+                if (($ind_type ne 'FULLTEXT') and (not isCompatible('100403',$self->compatibility,$self->compatibility_es) or (not $self->uhashkeys) or $prng->uint16(0,1))) {
                   my $length= ( $columns{$c}->[1] and $columns{$c}->[1] < 64 ) ? $columns{$c}->[1] : 64;
                   $c = "$c($length)";
                 }

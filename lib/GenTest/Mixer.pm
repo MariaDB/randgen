@@ -81,7 +81,7 @@ sub new {
       eval "use $validator" or print $@;
       my $instance= $validator->new();
       foreach my $e (@{$mixer->executors()}) {
-        next VLD if isOlderVersion($e->server->version(),$instance->compatibility);
+        next VLD unless isCompatible($instance->compatibility,$e->server->version(),$e->server->enterprise());
       }
       push @validators, $instance;
       $validators[$i]->configure($mixer->properties);

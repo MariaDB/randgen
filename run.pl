@@ -289,10 +289,14 @@ sub run {
   $props->{queries} =~ s/K/000/so;
   $props->{queries} =~ s/M/000000/so;
 
+  if ($props->{compatibility} =~ s/^es-//) {
+    $props->{compatibility_es}= 1;
+  }
   if ($props->{compatibility}=~ /([0-9]+)\.([0-9]+)\.([0-9]+)-([0-9]+)/) {
-    $props->{compatibility}= sprintf("%02d%02d%02de",int($1),int($2),int($3));
+    $props->{compatibility}= sprintf("%02d%02d%02d",int($1),int($2),int($3));
+    $props->{compatibility_es}= 1;
   } elsif ($props->{compatibility}=~ /([0-9]+)\.([0-9]+)(?:\.([0-9]+))?/) {
-    $props->{compatibility}= sprintf("%02d%02d%02d",int($1),int($2),int($3||0));
+    $props->{compatibility}= sprintf("%02d%02d%02d",int($1),int($2),int($3||99));
   }
 
   if (defined $props->{parser}) {

@@ -146,7 +146,7 @@ sub validate {
   }
   
   foreach my $transformer (@transformers) {
-    next if isOlderVersion($executor->server->version(),$transformer->compatibility);
+    next unless isCompatible($transformer->compatibility,$executor->server->version(),$executor->server->enterprise());
     if (time() > $executor->end_time) {
       say("Transformer: Test duration has already been exceeded, exiting");
       last;

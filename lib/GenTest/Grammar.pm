@@ -39,6 +39,7 @@ use constant GRAMMAR_FEATURES  => 3;
 use constant GRAMMAR_REDEFINES => 4;
 use constant GRAMMAR_SERVER_VERSION_COMPATIBILITY => 5;
 use constant GRAMMAR_WEIGHT    => 6;
+use constant GRAMMAR_SERVER_ES_COMPATIBILITY => 7;
 
 1;
 
@@ -49,6 +50,7 @@ sub new {
     'grammar_file'   => GRAMMAR_FILE,
     'redefine_files'  => GRAMMAR_REDEFINES,
     'compatibility'  => GRAMMAR_SERVER_VERSION_COMPATIBILITY,
+    'compatibility_es'  => GRAMMAR_SERVER_ES_COMPATIBILITY,
   }, @_);
 
   $grammar->[GRAMMAR_FEATURES]= [];
@@ -103,50 +105,12 @@ sub toString {
 
 sub check_compatibility {
   my ($grammar, $versions, $positive_check)= @_;
-  sayDebug("Checking ".($positive_check ? 'compatibility' : 'incompatibility')." of ".$grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY]." against $versions");
-  return 1 if $grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY] eq '0000';
-  my $server_ver6= $grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY];
-  my $server_ver4= substr($server_ver6,0,4);
-  my @compat_requirements= $versions=~ /([\d\.]+(?:e|-[0-9]+)?(?:,\s*[\d\.]+(?:e|-[0-9]+)?)*)/gs;
-  my $compatible= 0;
+  sayDebug("Checking ".($positive_check ? 'compatibility' : 'incompatibility')." of server ".$grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY].($grammar->[GRAMMAR_SERVER_ES_COMPATIBILITY]?" (ES)":"")." against $versions");
+  $versions =~ s/ +//g;
   if ($positive_check) {
-    my $max4= '0000';
-    COMPAT:
-    foreach my $cr (@compat_requirements) {
-      my @cr= split /,/, $cr;
-      foreach my $c (@cr) {
-        my $compat6= versionN6($c);
-        my $compat4= substr($compat6,0,4);
-        $max4= $compat4 if $compat4 gt $max4;
-        if ($compat4 eq $server_ver4) {
-          # same major version;
-          # if server version same or higher than compatibility, then compatible,
-          # otherwise not compatible
-          $compatible = ($server_ver6 ge $compat6);
-          last COMPAT;
-        }
-      }
-    }
-    return $compatible || $max4 eq '0000' || $server_ver4 gt $max4;
+    return isCompatible($versions,$grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY],$grammar->[GRAMMAR_SERVER_ES_COMPATIBILITY]);
   } else {
-    my $min4= '9999';
-    INCOMPAT:
-    foreach my $ir (@compat_requirements) {
-      my @ir= split /,/, $ir;
-      foreach my $i (@ir) {
-        my $incompat6= versionN6($i);
-        my $incompat4= substr($incompat6,0,4);
-        $min4= $incompat4 if $min4 gt $incompat4;
-        if ($incompat4 eq $server_ver4) {
-          # same major version;
-          # if server version lower than incompatibility, then compatible,
-          # otherwise not compatible
-          $compatible = ($server_ver6 lt $incompat6);
-          last INCOMPAT;
-        }
-      }
-    }
-    return $compatible || $min4 eq '9999' || $server_ver4 lt $min4;
+    return not isCompatible($versions,$grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY],$grammar->[GRAMMAR_SERVER_ES_COMPATIBILITY]);
   }
 }
 
@@ -187,7 +151,7 @@ sub parseFromString {
   }}mie) {};
 
   while ($grammar_string =~ s{#compatibility\s+([-\d\.]+).*$}{}mi) {
-    unless ($grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY] eq '000000' or $grammar->check_compatibility($1,my $positive_check=1)) {
+    unless ($grammar->check_compatibility($1,my $positive_check=1)) {
       sayWarning("Grammar ".$grammar->file." does not meet compatibility requirements, ignoring");
       return;
     }
@@ -280,25 +244,28 @@ sub parseFromString {
     #
     # While it's a rare case, a component can have both incompatibility
     # and compatibility requirements
+    #
+    # All the above applies to markers es-X.Y.Z and X.Y.Z-N, but these are only taken into account
+    # if compatibility_es is set to true.
 
     my @compatible_component_strings= ();
     COMPONENT:
-    foreach my $cs (@orig_component_strings)
+    foreach my $cstr (@orig_component_strings)
     {
       # First check for incompatibilities
-      if  ($cs=~ s/\/\*\s*incompatibility\s+([\d\.]+(?:e|-[0-9]+)?(?:,\s*[\d\.]+(?:e|-[0-9]+)?)*)\s*\*\///gs && $grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY] ne '0000') {
+      if  ($cstr=~ s/\/\*\s*incompatibility\s+((?:es-)?[\d\.]+(?:-[0-9]+)?(?:,\s*(?:es-)?[\d\.]+(?:-[0-9]+)?)*)\s*\*\///gs) {
         unless ($grammar->check_compatibility($1,my $positive=0)) {
-          sayDebug("Component $cs is incompatible with the requested ".$grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY]);
+          sayDebug("Component $cstr is incompatible with the requested ".$grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY]);
           next COMPONENT;
         }
       }
-      if ($cs=~ s/\/\*\s*compatibility\s+([\d\.]+(?:e|-[0-9]+)?(?:,\s*[\d\.]+(?:e|-[0-9]+)?)*)\s*\*\///gs && $grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY] ne '0000') {
+      if ($cstr=~ s/\/\*\s*compatibility\s+((?:es-)?[\d\.]+(?:-[0-9]+)?(?:,\s*(?:es-)?[\d\.]+(?:-[0-9]+)?)*)\s*\*\///gs) {
         unless ($grammar->check_compatibility($1,my $positive=1)) {
-          sayDebug("Component $cs is incompatible with the requested ".$grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY]);
+          sayDebug("Component $cstr is incompatible with the requested ".$grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY]);
           next COMPONENT;
         }
       }
-      push @compatible_component_strings, $cs;
+      push @compatible_component_strings, $cstr;
     }
     if (scalar(@compatible_component_strings) == 0) {
       # If we removed all component strings due to incompability,

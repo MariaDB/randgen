@@ -76,7 +76,7 @@ use constant REPORTER_TYPE_END          => 256;
 
 # The time, in seconds, we will wait for a connect before we consider the server unavailable
 use constant REPORTER_CONNECT_TIMEOUT_THRESHOLD => 20;
-# Can obe overridden in a reporter to indicate minimal version compatibility
+# Can be overridden in a reporter to indicate minimal version compatibility
 
 1;
 

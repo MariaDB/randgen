@@ -58,6 +58,7 @@ use constant MYSQLD_VERSION => 18;
 use constant MYSQLD_DUMPER => 19;
 use constant MYSQLD_SOURCEDIR => 20;
 use constant MYSQLD_GENERAL_LOG => 21;
+use constant MYSQLD_ES => 22;
 use constant MYSQLD_SERVER_TYPE => 23;
 use constant MYSQLD_VALGRIND_SUPPRESSION_FILE => 24;
 use constant MYSQLD_TMPDIR => 25;
@@ -1611,6 +1612,8 @@ sub isRecordIgnored {
     or  $line =~ /(?:mysqld|mariadbd): Deadlock found when trying to get lock/s
     or  $line =~ /(?:mysqld|mariadbd): Lock wait timeout exceeded; try restarting transaction/s
     or  $line =~ /(?:mysqld|mariadbd): Out of sort memory, consider increasing server sort buffer size/s
+    or  $line =~ /server_audit: Query log limit was changed/s
+    or  $line =~ /server_audit: SysLog facility was changed/s
     or  $line =~ /Slave I\/O: error reconnecting to master/s
     # CSV is not crash-safe x 2
     or  $line =~ /(?:mysqld|mariadbd): Table 'general_log' is marked as crashed and should be repaired/s
@@ -1806,8 +1809,21 @@ sub version {
         my $ver = `perl $conf --version`;
         chop($ver);
         $self->[MYSQLD_VERSION] = $ver;
+        if (($ver =~ /^\d+\.d+\.\d+\-\d+$/) or ($ver =~ /^2[3-9]\.\d+\.\d+$/)) {
+          $self->[MYSQLD_ES]= 1;
+        } else {
+          $self->[MYSQLD_ES]= 0;
+        }
     }
     return $self->[MYSQLD_VERSION];
+}
+
+sub enterprise {
+  my $self= shift;
+  unless (defined $self->[MYSQLD_ES]) {
+    $self->version;
+  }
+  return $self->[MYSQLD_ES];
 }
 
 sub majorVersion {
