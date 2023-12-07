@@ -217,9 +217,6 @@ if ($version =~ s/^es-//) {
 if ($version =~ /^\d+\.\d+$/) {
   # config-version=10.6 means that *any* 10.6.x is good
   $version.= '.99';
-} elsif ($version =~ /^\d+$/) {
-  # Unlikely case --config-version=11 and such, means that any 11.x.y is good
-  $version.= '.99.99';
 }
 
 $version= $es.versionN6($version);
