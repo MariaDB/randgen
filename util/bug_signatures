@@ -14,6 +14,9 @@
 # 11.0+
 # Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 
+MDEV-32965:
+=~ Assertion \`thd->active_stmt_arena_to_use()-> is_stmt_prepare_or_first_sp_execute() \|\| thd->active_stmt_arena_to_use()-> is_conventional() \|\| thd->active_stmt_arena_to_use()->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-32895:
 =~ AddressSanitizer
 =~ ha_spider::external_lock
@@ -604,7 +607,7 @@ MDEV-31269:
 MDEV-31267:
 =~ signal|AddressSanitizer|Assertion \`n > 0 && n < SINUSES_CALCULATED*2+1'
 =~ get_n_sincos
-=~ Item_func_buffer::Transporter::add_edge_buffer
+=~ Item_func_buffer::Transporter::add
 MDEV-31266:
 =~ AddressSanitizer|signal
 =~ _ma_seq_search
@@ -1673,7 +1676,7 @@ MDEV-26152:
 =~ sp_instr_stmt::exec_core
 MDEV-26087:
 =~ InnoDB: Failing assertion: table->quiesce == QUIESCE_START|InnoDB: Failing assertion: table->quiesce == QUIESCE_COMPLETE
-=~ row_quiesce_set_state
+=~ row_quiesce_set_state|dict_table_get_next_index
 =~ ha_innobase::external_lock
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-26084:
@@ -1930,7 +1933,6 @@ MDEV-24972: [MyISAM unique blobs]
 MDEV-24935:
 =~ AddressSanitizer|signal [16]
 =~ Field_iterator_natural_join::next
-=~ mark_common_columns
 =~ setup_natural_join_row_types
 =~ sp_head::execute
 MDEV-24935:
@@ -2715,6 +2717,11 @@ MDEV-22873:
 MDEV-22855:
 =~ Assertion \`!field->prefix_len \|\| field->fixed_len == field->prefix_len'
 =~ btr_node_ptr_max_size
+MDEV-22853:
+=~ Assertion \`! thd->in_sub_stmt'
+=~ trans_rollback_stmt|mysql_execute_command
+=~ sp_head::execute
+=~ Table_triggers_list::process_triggers
 MDEV-22848:
 =~ Assertion \`trx_is_registered_for_2pc(trx)'
 =~ innobase_xa_prepare
