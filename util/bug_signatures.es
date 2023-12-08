@@ -4,6 +4,9 @@
 # Strong matches
 ##############################################################################
 
+MENT-1942:
+=~ Can't open Aria control file (0)
+=~ mysqld=--aria-block-size=
 MENT-1941:
 =~ MemorySanitizer
 =~ inline_mysql_file_write
