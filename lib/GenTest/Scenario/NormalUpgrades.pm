@@ -117,10 +117,10 @@ sub run {
   #####
   $self->printStep("Restarting the old server and dumping databases");
 
+  # We'll ignore non-critical status for the old server
   $status= $server->stopServer;
-
-  $total_status= $status;
   if ($status >= STATUS_CRITICAL_FAILURE) {
+    $total_status= $status;
     sayError("Shutdown of the old server failed");
     goto UPGRADE_END;
   }
