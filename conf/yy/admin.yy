@@ -26,7 +26,8 @@ admin_query:
 ;
 
 admin_analyze_or_explain_query:
-  SHOW admin_analyze_or_explain admin_format_json FOR { $prng->uint16($executors->[0]->connectionId()-10, $executors->[0]->connectionId()+10) }
+  SHOW admin_analyze_or_explain admin_format_json FOR { $prng->uint16($executors->[0]->connectionId()-10, $executors->[0]->connectionId()+10) } /* compatibility 10.11 */ |
+  SHOW EXPLAIN admin_format_json FOR { $prng->uint16($executors->[0]->connectionId()-10, $executors->[0]->connectionId()+10) }
 ;
 
 admin_analyze_or_explain:

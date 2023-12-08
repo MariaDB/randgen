@@ -369,7 +369,7 @@ sub gen_table {
 
     # UUID data type was introduced in 10.7.1
     # UUID columns shoudn't be very common, but they're new. 20% for now
-    if (isCompatible('100701',$self->compatibility,$self->compatibility_es) and !$prng->uint16(0,4)) {
+    if (isCompatible('100701,es-1006',$self->compatibility,$self->compatibility_es) and !$prng->uint16(0,4)) {
         $columns{col_uuid} = [ 'UUID',
                                 undef,
                                 undef,

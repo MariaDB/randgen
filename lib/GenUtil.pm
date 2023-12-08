@@ -254,6 +254,8 @@ sub versionN6 {
     return sprintf("%02d%02d%02d",int($1),int($2),(defined $3 ? int($3) : $max_min));
   } elsif ($version =~ /^\d{6}$/) {
     return $version;
+  } elsif ($version =~ /^\d{4}$/) {
+    return $version.$max_min;
   } else {
     sayError("Unknown version format: $version");
     confess();

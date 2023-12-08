@@ -440,6 +440,21 @@ $key_management_combinations{1009}= [
     ]
   }
 ];
+$key_management_combinations{'es-1004'}= [
+  {
+    file_key_management =>
+      '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
+    hashicorp => [
+      ['--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'],
+      ['--mysqld=--hashicorp-key-management-max-retries=2147483647', '--mysqld=--hashicorp-key-management-max-retries=0', '--mysqld=--hashicorp-key-management-max-retries=1'],
+      ['--mysqld=--hashicorp-key-management-cache-version-timeout=0', '--mysqld=--hashicorp-key-management-cache-version-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-version-timeout=1'],
+      ['--mysqld=--hashicorp-key-management-timeout=0', '--mysqld=--hashicorp-key-management-timeout=86400', '--mysqld=--hashicorp-key-management-timeout=1'],
+      ['--mysqld=--hashicorp-key-management-use-cache-on-timeout=ON','--mysqld=--hashicorp-key-management-use-cache-on-timeout=OFF'],
+      ['--mysqld=--hashicorp-key-management-caching-enabled=ON','--mysqld=--hashicorp-key-management-caching-enabled=OFF'],
+      ['--mysqld=--hashicorp-key-management-cache-timeout=0', '--mysqld=--hashicorp-key-management-cache-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-timeout=1'],
+    ]
+  }
+];
 
 $parameters{key_management_combinations}= \%key_management_combinations;
 $parameters{key_management_combinations_msan_safe}= \%key_management_combinations_msan_safe;
@@ -961,7 +976,14 @@ $optional_replication_unsafe_variables{$minversion}= [
   [ @empty_set_50, '--mysqld=--replicate_wild_ignore_table=test.t%' ],
 ];
 
-$optional_replication_unsafe_variables{1011}= [ @{$optional_replication_unsafe_variables{$minversion}},
+$optional_replication_unsafe_variables{1010}= [ @{$optional_replication_unsafe_variables{$minversion}},
+  [ @empty_set_50, '--mysqld=--slave_max_statement_time=60', '--mysqld=--slave_max_statement_time=10' ],
+];
+$optional_replication_unsafe_variables{'es-1005'}= [ @{$optional_replication_unsafe_variables{$minversion}},
+  [ @empty_set_50, '--mysqld=--slave_max_statement_time=60', '--mysqld=--slave_max_statement_time=10' ],
+];
+
+$optional_replication_unsafe_variables{1011}= [ @{$optional_replication_unsafe_variables{1010}},
   [ @empty_set_50, "--mysqld=--replicate_rewrite_db='test->test'" ],
 ];
 
@@ -1839,6 +1861,26 @@ $ddl_grammars{1004}= [ @{$ddl_grammars{$minversion}},
 ];
 
 $ddl_grammars{1007}= [ @{$ddl_grammars{$minversion}},
+  [@empty_set_50,
+    '--grammar=conf/yy/acl.yy:0.1
+      --mysqld=--plugin-maturity=experimental
+      --mysqld=--plugin-load-add=auth_0x0100.so
+      --mysqld=--plugin-load-add=auth_ed25519.so
+      --mysqld=--plugin-load-add=auth_pam.so
+      --mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
+      --mysqld=--plugin-load-add=simple_password_check.so'],
+  [@empty_set_50,
+    '--grammar=conf/yy/create_user.yy:0.1
+      --mysqld=--plugin-maturity=experimental
+      --mysqld=--plugin-load-add=auth_0x0100.so
+      --mysqld=--plugin-load-add=auth_ed25519.so
+      --mysqld=--plugin-load-add=auth_pam.so
+      --mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
+      --mysqld=--plugin-load-add=simple_password_check.so']
+];
+$ddl_grammars{'es-1004'}= [ @{$ddl_grammars{$minversion}},
   [@empty_set_50,
     '--grammar=conf/yy/acl.yy:0.1
       --mysqld=--plugin-maturity=experimental

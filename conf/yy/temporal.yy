@@ -274,7 +274,9 @@ format_list:
   format_item , format_list ;
 
 format_item:
-  '%a' | '%b' | '%c' | '%D' | '%d' | '%e' | '%f' | '%H' | '%h' | '%I' | '%i' | '%j' | '%k' | '%l' | '%M' | '%m' | '%p' | '%r' | '%S' | '%s' | '%T' | '%U' | '%u' | '%V' | '%v' | '%W' | '%w' | '%X' | '%x' | '%Y' | '%y' | '%%' | '%x' ;
+  '%a' | '%b' | '%c' | '%D' | '%d' | '%e' | '%f' | '%H' | '%h' | '%I' | '%i' | '%j' | '%k' | '%l' | '%M' | '%m' | '%p' | '%r' | '%S' | '%s' | '%T' | '%U' | '%u' | '%V' | '%v' | '%W' | '%w' | '%X' | '%x' | '%Y' | '%y' | '%%' | '%x' |
+  '%z' /* compatibility 11.3.1,es-10.6 */ |
+  '%Z%' /* compatibility 11.3.1,es-10.6 */ ;
 
 format_separator:
   ':' | '-' ;

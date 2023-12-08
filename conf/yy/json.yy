@@ -144,7 +144,7 @@ func_returning_json:
   | JSON_MERGE( text_arg, doc_list )
   | JSON_MERGE_PATCH( text_arg, doc_list )
   | JSON_MERGE_PRESERVE( text_arg, doc_list )
-  | JSON_NORMALIZE( text_arg ) /* compatibililty 10.7.0 */
+  | JSON_NORMALIZE( text_arg ) /* compatibililty 10.7.0,es-10.4 */
   | JSON_OBJECT( key_value_list )
   | JSON_OBJECTAGG( _jsonkey, valid_arg ) /* compatibility 10.5.0 */
   | JSON_QUERY( text_arg, _jsonpath )
@@ -164,12 +164,13 @@ func_other:
     JSON_CONTAINS( text_arg, contains_args )
   | JSON_CONTAINS_PATH( text_arg, one_or_all, path_list_no_wildcard )
   | JSON_DEPTH( text_arg )
-  | JSON_EQUALS( text_arg, text_arg ) /* compatibility 10.7.0 */
+  | JSON_EQUALS( text_arg, text_arg ) /* compatibility 10.7.0,es-10.4 */
   | JSON_EXISTS( text_arg, _jsonpath )
   | JSON_EXTRACT( text_arg, path_list )
   | JSON_LENGTH( text_arg json_optional_path_no_wildcard )
-  | JSON_OVERLAPS( text_arg, text_arg ) /* compatibility 10.9.1 */
+  | JSON_OVERLAPS( text_arg, text_arg ) /* compatibility 10.9.1,es-10.4 */
   | JSON_QUOTE( _json )
+  | JSON_SCHEMA_VALID( _json, _json ) /* compatibility 11.1,es-10.4 */
   | JSON_SEARCH( text_arg, one_or_all, search_string search_args )
   | JSON_TYPE( _json )
   | JSON_UNQUOTE( _json )

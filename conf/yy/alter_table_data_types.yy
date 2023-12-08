@@ -82,7 +82,7 @@ data_types_column_definition:
 # Special strings
   /* compatibility 10.5.0 */ INET6 data_types_nullable DEFAULT { @defaults=("'::'","'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'",$prng->inet6); push @defaults, 'NULL' if $null; $prng->arrayElement(\@defaults) } |
   JSON data_types_nullable DEFAULT { @defaults=("'{}'",$prng->json(($prng->uint16(0,1000) ? $prng->uint16(0,128) : $prng->uint16(0,4294967295)))); push @defaults, 'NULL' if $null; $prng->arrayElement(\@defaults) } |
-  /* compatibility 10.7.0 */ UUID data_types_nullable DEFAULT { @defaults=("'00000000-0000-0000-0000-000000000000'","'ffffffff-ffff-ffff-ffff-ffffffffffff'",$prng->uuid); push @defaults, 'NULL' if $null; $prng->arrayElement(\@defaults) } |
+  /* compatibility 10.7.0,es-10.6 */ UUID data_types_nullable DEFAULT { @defaults=("'00000000-0000-0000-0000-000000000000'","'ffffffff-ffff-ffff-ffff-ffffffffffff'",$prng->uuid); push @defaults, 'NULL' if $null; $prng->arrayElement(\@defaults) } |
   /* compatibility 10.10.0 */ INET4 data_types_nullable DEFAULT { @defaults=("'0.0.0.0'","'255.255.255.255'","'".$prng->uint16(0,255).".".$prng->uint16(0,255).".".$prng->uint16(0,255).".".$prng->uint16(0,255)."'"); push @defaults, 'NULL' if $null; $prng->arrayElement(\@defaults) } |
 # Temporal
   DATE data_types_nullable DEFAULT { @defaults=("'1000-01-01'","'9999-12-31'","'0000-00-00'",$prng->date(),'DATE(NOW())','CURRENT_DATE'); push @defaults, 'NULL' if $null; $prng->arrayElement(\@defaults) } |

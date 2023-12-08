@@ -143,8 +143,8 @@ drop_create:
 alter:
   ==FACTOR:20== ALTER TABLE _table alter_operation |
                 alter_exchange |
-                alter_convert_to /* compatibility 10.7.1 */ |
-                alter_convert_from /* compatibility 10.7.1 */
+                alter_convert_to /* compatibility 10.7.1,es-10.6 */ |
+                alter_convert_from /* compatibility 10.7.1,es-10.6 */
 ;
 
 alter_exchange:
