@@ -51,7 +51,7 @@ alt_alter_item:
   | ==FACTOR:2==   alt_add_column
   | ==FACTOR:3==   alt_modify_column
   |                alt_change_column
-  |                alt_alter_column
+  |                alt_alter_column /* compatibility 10.4 */
   | ==FACTOR:4==   alt_add_index
   | ==FACTOR:0.5== alt_drop_column
   |                alt_drop_index
