@@ -545,18 +545,7 @@ sub run {
         }
         if (defined $table_perms[TABLE_VIEWS]) {
           foreach my $view_id (0..$#{$table_perms[TABLE_VIEWS]}) {
-            my $view_name;
-            if ($#{$table_perms[TABLE_VIEWS]} == 0) {
-               $view_name = 'view_'.$table->[TABLE_NAME];
-            } else {
-               $view_name = 'view_'.$table->[TABLE_NAME]."_$view_id";
-            }
-
-            if ($table_perms[TABLE_VIEWS]->[$view_id] ne '') {
-              $executor->execute("CREATE OR REPLACE ALGORITHM=".uc($table_perms[TABLE_VIEWS]->[$view_id])." VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
-            } else {
-              $executor->execute("CREATE OR REPLACE VIEW `$view_name` AS SELECT * FROM `$table->[TABLE_NAME]`");
-            }
+            $self->createView($table_perms[TABLE_VIEWS]->[$view_id],$table->[TABLE_NAME],$schema);
           }
         }
     }

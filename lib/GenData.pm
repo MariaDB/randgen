@@ -354,7 +354,10 @@ sub createView {
   my ($self, $alg, $table, $db)= @_;
   if (defined $alg) {
     if ($alg ne '') {
-        $self->executor->execute("CREATE ALGORITHM=$alg VIEW $db.view_$table AS SELECT * FROM $db.$table");
+      my @algs= split ',', $alg;
+      foreach my $a (@algs) {
+        $self->executor->execute("CREATE ALGORITHM=$a VIEW $db.view_${table}_".lc($a)." AS SELECT * FROM $db.$table");
+      }
     } else {
         $self->executor->execute("CREATE VIEW $db.view_$table AS SELECT * FROM $db.$table");
     }
