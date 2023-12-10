@@ -21,6 +21,10 @@ MDEV-32982:
 MDEV-32965:
 =~ Assertion \`thd->active_stmt_arena_to_use()-> is_stmt_prepare_or_first_sp_execute() \|\| thd->active_stmt_arena_to_use()-> is_conventional() \|\| thd->active_stmt_arena_to_use()->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'|Assertion \`thd->active_stmt_arena_to_use()-> is_stmt_prepare_or_first_stmt_execute() \|\| thd->active_stmt_arena_to_use()-> is_conventional() \|\| thd->active_stmt_arena_to_use()->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'|Assertion \`active_arena->is_stmt_prepare_or_first_stmt_execute() \|\| active_arena->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'
 =~ Prepared_statement::execute|sp_head::execute
+MDEV-32948:
+=~ Found wrong key definition in
+=~ FeatureUsage detected Archive tables
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-32895:
 =~ AddressSanitizer
 =~ ha_spider::external_lock
@@ -142,7 +146,7 @@ MDEV-32678:
 MDEV-32667:
 =~ MemorySanitizer| runtime error: load of value .*, which is not a valid value for type
 =~ dict_stats_save_index_stat
-=~ dict_stats_func
+=~ dict_stats_func|dict_stats_update
 =~ Version: '10\.[45]|Server version: 10\.[45]
 MDEV-32666:
 =~ MemorySanitizer|Conditional jump or move depends on uninitialised value
@@ -1869,7 +1873,6 @@ MDEV-25083:
 MDEV-25067:
 =~ AddressSanitizer|signal 11
 =~ eliminate_tables
-=~ make_join_statistics
 =~ Prepared_statement::execute|sp_head::execute
 =~ FeatureUsage detected multi-update/delete
 MDEV-25060:
@@ -2730,6 +2733,9 @@ MDEV-22848:
 =~ Assertion \`trx_is_registered_for_2pc(trx)'
 =~ innobase_xa_prepare
 =~ prepare_or_error
+MDEV-22848:
+=~ Transaction not registered for MariaDB 2PC, but transaction is active
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-22832:
 =~ AddressSanitizer|signal
 =~ QUICK_GROUP_MIN_MAX_SELECT::add_range
@@ -3474,8 +3480,8 @@ MDEV-19318:
 =~ Assertion \`!(length < share->base\.min_block_length)'
 =~ _ma_scan_block_record
 MDEV-19303:
-=~ Conditional jump or move depends on uninitialised value
-=~ mi_rrnd|maria_rrnd
+=~ Conditional jump or move depends on uninitialised value|MemorySanitizer:
+=~ mi_rrnd|maria_rrnd|my_get_ptr
 =~ ha_sequence::rnd_pos
 =~ rr_from_pointers
 MDEV-19303:
