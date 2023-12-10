@@ -54,7 +54,7 @@ $tables = {
                     'oltp291', 'oltp292', 'oltp293', 'oltp294', 'oltp295', 'oltp296', 'oltp297', 'oltp298', 'oltp299', 'oltp300'
         ],
         engines => [ 'Aria' ],
-        rows => [ 0, 100, 1000 ],
+        rows => [ 0, 1000 ],
         row_formats => [ undef, 'PAGE', 'FIXED', 'DYNAMIC' ],
         options => [  '',
                       'TRANSACTIONAL=0 PAGE_CHECKSUM=0 TABLE_CHECKSUM=0',

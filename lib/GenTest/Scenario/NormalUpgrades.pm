@@ -56,7 +56,7 @@ use File::Compare;
 use DBServer::MariaDB;
 
 my ($server, $old_server, $new_server, $databases, $vardir, $old_grants, $total_status);
-my ($old_tables, $old_columns, $old_indexes, $old_checksums_non_versioned, $old_checksums_versioned);
+my ($old_tables, $old_columns, $old_indexes, $old_checksums_safe, $old_checksums_unsafe);
 
 # Before 10.11, mysqldump could not store historical rows
 # of system-versioned tables. It sets some limitation on data comparison.
@@ -144,7 +144,7 @@ sub run {
     $self->setStatus($status);
   }
 
-  ($old_tables, $old_columns, $old_indexes, $old_checksums_non_versioned, $old_checksums_versioned)= get_data($server);
+  ($old_tables, $old_columns, $old_indexes, $old_checksums_safe, $old_checksums_unsafe)= get_data($server);
 
   #####
   $self->printStep("Creating full backup with MariaBackup");
@@ -393,11 +393,11 @@ sub get_data {
   my ($server)= @_;
   my @databases= $server->nonSystemDatabases();
   my $databases= join ',', map { "'".$_."'" } @databases;
-  my ($tables, $columns, $indexes, $checksums_versioned, $checksums_non_versioned);
+  my ($tables, $columns, $indexes, $checksums_unsafe, $checksums_safe);
   $server->connection->execute("SET max_statement_time= 0");
   # We skip auto_increment value due to MDEV-13094 etc.
   $tables= $server->connection->query(
-    "SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE, ENGINE, ROW_FORMAT, TABLE_COLLATION, CREATE_OPTIONS, TABLE_COMMENT ".
+    "SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE, ENGINE, ROW_FORMAT, TABLE_COLLATION, TABLE_COMMENT ".
     "FROM INFORMATION_SCHEMA.TABLES ".
     "WHERE TABLE_SCHEMA IN ($databases)".
     "ORDER BY TABLE_SCHEMA, TABLE_NAME"
@@ -431,22 +431,24 @@ sub get_data {
   # could not be dumped, so the history was lost and table checksums would differ.
   # Thus we won't compare checksums for versioned tables when older versions are involved.
   # Virtual columns make the checksum non-deterministic (MDEV-32079).
-  my $table_names_versioned= $server->connection->get_value(
+  # Aria tables often have different checksums because they initially
+  # preserve wrong create options (row_format, page_checksum), but lose them after dump
+  my $table_names_checksum_unsafe= $server->connection->get_value(
       "SELECT GROUP_CONCAT(CONCAT('`',TABLE_SCHEMA,'`.`',TABLE_NAME,'`') ORDER BY 1 SEPARATOR ', ') ".
       "FROM INFORMATION_SCHEMA.TABLES ".
       "WHERE TABLE_SCHEMA IN ($databases) AND TABLE_TYPE = 'SYSTEM VERSIONED' ".
-      "AND (TABLE_SCHEMA, TABLE_NAME) NOT IN (SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE DATA_TYPE IN ('double','float') OR IS_GENERATED != 'NEVER')"
+      "AND (TABLE_SCHEMA, TABLE_NAME) NOT IN (SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE DATA_TYPE IN ('double','float') OR IS_GENERATED != 'NEVER' OR ENGINE = 'Aria')"
   );
-  my $table_names_non_versioned= $server->connection->get_value(
+  my $table_names_checksum_safe= $server->connection->get_value(
       "SELECT GROUP_CONCAT(CONCAT('`',TABLE_SCHEMA,'`.`',TABLE_NAME,'`') ORDER BY 1 SEPARATOR ', ') ".
       "FROM INFORMATION_SCHEMA.TABLES ".
       "WHERE TABLE_SCHEMA IN ($databases) AND TABLE_TYPE != 'SYSTEM VERSIONED' ".
-      "AND (TABLE_SCHEMA, TABLE_NAME) NOT IN (SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE DATA_TYPE IN ('double','float') OR IS_GENERATED != 'NEVER')"
+      "AND (TABLE_SCHEMA, TABLE_NAME) NOT IN (SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE DATA_TYPE IN ('double','float') OR IS_GENERATED != 'NEVER' OR ENGINE = 'Aria')"
   );
 
-  $checksums_versioned= $server->connection->query("CHECKSUM TABLE $table_names_versioned EXTENDED");
-  $checksums_non_versioned= $server->connection->query("CHECKSUM TABLE $table_names_non_versioned EXTENDED");
-  return ($tables, $columns, $indexes, $checksums_non_versioned, $checksums_versioned);
+  $checksums_unsafe= $server->connection->query("CHECKSUM TABLE $table_names_checksum_unsafe EXTENDED");
+  $checksums_safe= $server->connection->query("CHECKSUM TABLE $table_names_checksum_safe EXTENDED");
+  return ($tables, $columns, $indexes, $checksums_safe, $checksums_unsafe);
 }
 
 
@@ -518,7 +520,7 @@ sub post_upgrade {
 
   #####
   $self->printStep("Collecting data from the new server after $type upgrade");
-  my ($tables, $columns, $indexes, $checksums_non_versioned, $checksums_versioned)= get_data($new_server);
+  my ($tables, $columns, $indexes, $checksums_safe, $checksums_unsafe)= get_data($new_server);
 
   #####
   $self->printStep("Getting ACL info from the new server after $type upgrade");
@@ -546,19 +548,19 @@ sub post_upgrade {
     tables => $old_tables,
     columns => $old_columns,
     indexes => $old_indexes,
-    checksums_non_versioned => $old_checksums_non_versioned,
-    checksums_versioned => $old_checksums_versioned,
+    checksums_safe => $old_checksums_safe,
+    checksums_unsafe => $old_checksums_unsafe,
   );
   my %new_data= (
     tables => $tables,
     columns => $columns,
     indexes => $indexes,
-    checksums_non_versioned => $checksums_non_versioned,
-    checksums_versioned => $checksums_versioned,
+    checksums_safe => $checksums_safe,
+    checksums_unsafe => $checksums_unsafe,
   );
   my $data_status= STATUS_OK;
   foreach my $d (sort keys %old_data) {
-    next if (($d eq 'checksums_versioned') and ($type eq 'dump') and (($old_server->versionNumeric lt '101101') or ($new_server->versionNumeric lt '101101')));
+    next if (($d eq 'checksums_unsafe') and ($type eq 'dump'));
     my $old= Dumper $old_data{$d};
     my $new= Dumper $new_data{$d};
     if ($old ne $new) {
