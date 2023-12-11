@@ -37,6 +37,7 @@ use constant SC_COMPATIBILITY          => 8;
 use constant SC_NUMBER_OF_SERVERS      => 9;
 use constant SC_REPORTER_MANAGER       => 10;
 use constant SC_TEST_RUNNER            => 11;
+use constant SC_COMPATIBILITY_ES       => 12;
 
 use constant SC_GALERA_DEFAULT_LISTEN_PORT =>  4800;
 
@@ -58,9 +59,18 @@ sub new {
     $scenario->setTestType($scenario->[SC_SCENARIO_OPTIONS]->{type});
   }
   $scenario->[SC_COMPATIBILITY]= $scenario->getProperty('compatibility') | '000000';
+  $scenario->[SC_COMPATIBILITY_ES]= $scenario->getProperty('compatibility_es') | 0;
   $scenario->backupProperties();
   $scenario->printTitle();
   return $scenario;
+}
+
+sub compatibility {
+  return $_[0]->[SC_COMPATIBILITY];
+}
+
+sub compatibility_es {
+  return $_[0]->[SC_COMPATIBILITY_ES];
 }
 
 # Checks min/max number of servers for the scenario, removes gaps

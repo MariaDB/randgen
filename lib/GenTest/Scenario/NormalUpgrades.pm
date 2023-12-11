@@ -144,7 +144,7 @@ sub run {
     $self->setStatus($status);
   }
 
-  ($old_tables, $old_columns, $old_indexes, $old_checksums_safe, $old_checksums_unsafe)= get_data($server);
+  ($old_tables, $old_columns, $old_indexes, $old_checksums_safe, $old_checksums_unsafe)= $self->get_data($server);
 
   #####
   $self->printStep("Creating full backup with MariaBackup");
@@ -390,7 +390,7 @@ UPGRADE_END:
 ######################################
 
 sub get_data {
-  my ($server)= @_;
+  my ($self, $server)= @_;
   my @databases= $server->nonSystemDatabases();
   my $databases= join ',', map { "'".$_."'" } @databases;
   my ($tables, $columns, $indexes, $checksums_unsafe, $checksums_safe);
@@ -416,12 +416,22 @@ sub get_data {
     "WHERE t.TABLE_SCHEMA IN ($databases) AND t.TABLE_TYPE IN ('VIEW','SYSTEM VIEW') ".
     "ORDER BY TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME"
   );
-  $indexes= $server->connection->query(
-    "SELECT TABLE_SCHEMA, INDEX_NAME, COLUMN_NAME, NON_UNIQUE, SEQ_IN_INDEX, INDEX_TYPE, COMMENT ".
-    "FROM INFORMATION_SCHEMA.STATISTICS ".
-    "WHERE TABLE_SCHEMA IN ($databases)".
-    "ORDER BY TABLE_SCHEMA, TABLE_NAME, INDEX_NAME, COLUMN_NAME"
-  );
+  # Before these versions (fix MDEV-16857) row_end is shown in statistics
+  if (isCompatible('10.3.31,10.4.21,10.5.12,10.6.4',$self->compatibility,$self->compatibility_es)) {
+    $indexes= $server->connection->query(
+      "SELECT TABLE_SCHEMA, INDEX_NAME, COLUMN_NAME, NON_UNIQUE, SEQ_IN_INDEX, INDEX_TYPE, COMMENT ".
+      "FROM INFORMATION_SCHEMA.STATISTICS ".
+      "WHERE TABLE_SCHEMA IN ($databases)".
+      "ORDER BY TABLE_SCHEMA, TABLE_NAME, INDEX_NAME, COLUMN_NAME"
+    )
+  } else {
+    $indexes= $server->connection->query(
+      "SELECT TABLE_SCHEMA, INDEX_NAME, COLUMN_NAME, NON_UNIQUE, SEQ_IN_INDEX, INDEX_TYPE, COMMENT ".
+      "FROM INFORMATION_SCHEMA.STATISTICS ".
+      "WHERE TABLE_SCHEMA IN ($databases) AND COLUMN_NAME != 'row_end' OR (TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME) IN (SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS)".
+      "ORDER BY TABLE_SCHEMA, TABLE_NAME, INDEX_NAME, COLUMN_NAME"
+    )
+  }
 
   # Double and float make checksum non-deterministic (apparently), regardless the type of the upgrade,
   # so they are always excluded.
@@ -522,7 +532,7 @@ sub post_upgrade {
 
   #####
   $self->printStep("Collecting data from the new server after $type upgrade");
-  my ($tables, $columns, $indexes, $checksums_safe, $checksums_unsafe)= get_data($new_server);
+  my ($tables, $columns, $indexes, $checksums_safe, $checksums_unsafe)= $self->get_data($new_server);
 
   #####
   $self->printStep("Getting ACL info from the new server after $type upgrade");
