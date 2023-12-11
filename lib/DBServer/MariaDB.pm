@@ -1151,6 +1151,7 @@ sub checkDatabaseIntegrity {
           # Mysterious loss of connection upon checks
           if ($conn->err() == 2013 || $conn->err() == 2002) {
             if ($retried_lost_connection) {
+              $status= STATUS_SERVER_UNAVAILABLE;
               last ALLDBCHECK;
             } else {
               say("Trying again as sometimes the connection gets lost...");
