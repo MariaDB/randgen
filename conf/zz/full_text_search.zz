@@ -18,13 +18,13 @@
 $schemas = [ 'full_text_search_db' ];
 
 $tables = {
-        rows => [2, 10, 100, 500],
+        rows => [2, 500],
         partitions => [ undef ],
         pk => [ undef, 'int auto_increment' ]
 };
 
 $fields = {
-        types => ['varchar(355)','varchar(255)','char(255)'],
+        types => ['varchar(355)','varchar(128)','char(255)'],
         indexes => ['fulltext key'],
         null => [undef],
         default => [undef, 'default null' , 'not null'],

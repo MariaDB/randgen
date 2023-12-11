@@ -26,8 +26,7 @@ $tables = {
 $fields = {
         types => [ 'tinyblob', 'tinytext', 'blob', 'text' ],
         indexes => [undef, 'key' ],
-        null => [undef, 'null', 'not null'],
-        default => [undef, 'default null'],
+        null => ['null', 'not null'],
         charsets => ['utf8', 'latin1']
 };
 
