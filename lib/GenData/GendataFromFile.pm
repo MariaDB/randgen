@@ -54,6 +54,7 @@ sub run {
 
     my ($tables, $fields, $data, $schemas);  # Specification as read
                                              # from the spec file.
+    my $compatibility= '000000'; # by default compatible with anything
     my (@table_perms, @field_perms, @data_perms, @schema_perms);  # Specification
                                                                     # after
                                                                     # defaults
@@ -118,6 +119,11 @@ sub run {
             croak "Unable to load $spec_file: $perl_errors";
           }
         }
+    }
+
+    unless (isCompatible($compatibility,$self->compatibility,$self->compatibility_es)) {
+      sayWarning("$spec_file requires server $compatibility, not compatible with ".$self->compatibility.($self->compatibility_es ? " ES" : ""));
+      return STATUS_OK;
     }
 
     $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
