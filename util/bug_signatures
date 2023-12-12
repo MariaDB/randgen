@@ -1891,6 +1891,13 @@ MDEV-25060:
 =~ find_or_create_file
 =~ mi_open
 =~ FeatureUsage detected virtual columns
+# Special variation of failure happening in upgrade tests on release binaries
+MDEV-25060:
+=~ signal
+=~ malloc_size_and_flag
+=~ Field_blob::~Field_blob
+=~ closefrm
+=~ fill_schema_table_from_frm
 MDEV-25058:
 =~ signal 11|AddressSanitizer
 =~ cmp_data
