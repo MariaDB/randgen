@@ -505,7 +505,10 @@ sub gen_table {
         }
 
         if ($columns{col_char} and $prng->uint16(0,3)) {
-            $columns{vcol_char}= [  random_char_type(),
+          # Starting from 10.5, some combinations of column types produce an error
+          # because "1105 Expression depends on the @@sql_mode value PAD_CHAR_TO_FULL_LENGTH"
+            my $type= ($columns{col_char}->[0] eq 'CHAR' ? 'CHAR' : random_char_type());
+            $columns{vcol_char}= [  $type,
                                     $prng->uint16(0,255),
                                     undef,
                                     undef,
