@@ -308,7 +308,6 @@ sub getStatus {
 sub finalize {
   my ($self, $status, $servers)= @_;
   if ($self->[SC_TEST_RUNNER]) {
-    say("HERE: calling reportResults");
     $status= $self->[SC_TEST_RUNNER]->reportResults($status);
   }
   if ($servers) {

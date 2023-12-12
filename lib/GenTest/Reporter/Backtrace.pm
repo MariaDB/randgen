@@ -21,6 +21,8 @@ package GenTest::Reporter::Backtrace;
 require Exporter;
 @ISA = qw(GenTest::Reporter);
 
+use File::Find;
+
 use strict;
 use GenUtil;
 use GenTest;
@@ -30,30 +32,31 @@ use GenTest::Reporter;
 sub report {
   my $reporter = shift;
 
+  my %coredumps= ();
+  find(\&wanted,$reporter->server->vardir);
+  sub wanted { $coredumps{File::Spec->rel2abs($File::Find::name)}= 1 if /^core(?:\.?\d+)?$/ };
+
   my $datadir = $reporter->server->serverVariable('datadir');
   my $binary = $reporter->serverInfo('binary');
   my $bindir = $reporter->serverInfo('bindir');
   my $pid = $reporter->serverInfo('pid');
-  say("BackTrace: datadir: $datadir");
-  say("BackTrace: binary: $binary");
-  say("BackTrace: pid: $pid");
 
   my $core;
-  $core = </cores/core.$pid> if $^O eq 'darwin';
-  $core = <$datadir/vgcore*> if defined $reporter->properties->valgrind;
+#  $core = </cores/core.$pid> if $^O eq 'darwin';
+#  $core = <$datadir/vgcore*> if defined $reporter->properties->valgrind;
 
   my @commands;
 
   if (osWindows()) {
+    say("BackTrace: datadir: $datadir");
     $bindir =~ s{/}{\\}sgio;
     my $cdb_cmd = "!sym prompts off; !analyze -v; .ecxr; !for_each_frame dv /t;~*k;q";
     push @commands, 'cdb -i "'.$bindir.'" -y "'.$bindir.';srv*C:\\cdb_symbols*http://msdl.microsoft.com/download/symbols" -z "'.$datadir.'\mysqld.dmp" -lines -c "'.$cdb_cmd.'"';
   } else {
       # Coredump may be not created yet, waiting for a while
       foreach (1..30) {
-        if (defined $core and -f $core) {
-          $core = File::Spec->rel2abs($core);
-          say("core is $core");
+        if ($core and -f $core) {
+          $coredumps{File::Spec->rel2abs($core)}= 1;
           last;
         }
         sleep(1);
@@ -73,6 +76,9 @@ sub report {
         if ($1) {
           ## We do apparently have a working dbx
 
+          say("BackTrace: coredump: $core");
+          say("BackTrace: binary: $binary");
+
           # First, identify all threads
           my @threads = `echo threads | dbx $binary $core 2>&1` =~ m/t@\d+/g;
 
@@ -90,16 +96,26 @@ sub report {
           ## executables.
           push @commands, "pstack $core | c++filt";
         }
-      } elsif (-f $core) {
-          ## Assume all other systems are gdb-"friendly" ;-)
-          push @commands, "gdb --batch --se=$binary --core=$core --command=util/backtrace.gdb";
-          push @commands, "gdb --batch --se=$binary --core=$core --command=util/backtrace-all.gdb";
-      } elsif ($pid and kill(0,$pid)) {
-          say("The process $pid is still alive. Taking stack traces from the running server");
-          push @commands, "gdb --batch --se=$binary -p $pid --command=util/backtrace.gdb";
-          push @commands, "gdb --batch --se=$binary -p $pid --command=util/backtrace-all.gdb";
+      } elsif (scalar(keys %coredumps)) {
+          foreach my $core (keys %coredumps) {
+            my $binary= `file $core`;
+            chomp $binary;
+            $binary =~ s/^.*from '([^' ]*).*$/$1/;
+            say("BackTrace: coredump $core");
+            say("BackTrace: binary   $binary");
+            ## Assume all other systems are gdb-"friendly" ;-)
+            push @commands, "gdb --batch --se=$binary --core=$core --command=util/backtrace.gdb";
+            # push @commands, "gdb --batch --se=$binary --core=$core --command=util/backtrace-all.gdb";
+          }
       } else {
-        sayWarning("Neither core file $core nor process $pid were found!");
+        sayWarning("No coredumps found");
+      }
+      if ($pid and kill(0,$pid)) {
+          say("The process $pid is still alive. Taking stack traces from the running server");
+          say("BackTrace: pid: $pid");
+          say("BackTrace: binary: $binary");
+          push @commands, "gdb --batch --se=$binary -p $pid --command=util/backtrace.gdb";
+          # push @commands, "gdb --batch --se=$binary -p $pid --command=util/backtrace-all.gdb";
       }
   }
 
