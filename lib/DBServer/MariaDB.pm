@@ -32,6 +32,7 @@ use File::Basename qw(dirname);
 use File::Path qw(mkpath rmtree);
 use File::Copy qw(move);
 use Constants;
+use Constants::MariaDBErrorCodes;
 use Connection::Perl;
 
 use strict;
@@ -1038,6 +1039,10 @@ sub normalizeDump {
 
 sub nonSystemDatabases {
   my $self= shift;
+  unless ($self->connection) {
+    sayError("Could not connect to the server to collect non-system databases");
+    return undef;
+  }
   return sort @{$self->connection->get_column(
       "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA ".
       "WHERE LOWER(SCHEMA_NAME) NOT IN (".$self->systemSchemaList.")"
@@ -1118,11 +1123,24 @@ sub checkDatabaseIntegrity {
 
   $conn->execute("SET max_statement_time= 0");
   my $databases = $conn->get_column("SHOW DATABASES");
+  my $retried_lost_connection= 0;
   ALLDBCHECK:
   foreach my $database (sort @$databases) {
       my $db_status= DBSTATUS_OK;
 #      next if $database =~ m{^(information_schema|performance_schema|sys)$}is;
       my $tabl_ref = $conn->query("SELECT TABLE_NAME, TABLE_TYPE, ENGINE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database'");
+      if ($conn->err() && serverGone(errorType($conn->err()))) {
+        if ($retried_lost_connection) {
+          $status= errorType($conn->err());
+          last ALLDBCHECK;
+        } else {
+          say("Trying again as sometimes the connection gets lost...");
+          $retried_lost_connection= 1;
+          redo ALLDBCHECK;
+        }
+      } else {
+        $retried_lost_connection= 0;
+      }
       # 1178 is ER_CHECK_NOT_IMPLEMENTED
       my %tables=();
       foreach (@$tabl_ref) {
@@ -1132,7 +1150,6 @@ sub checkDatabaseIntegrity {
       # table => true
       my %repair_done= ();
       # Mysterious loss of connection upon checks, will retry (once)
-      my $retried_lost_connection= 0;
       CHECKTABLE:
       foreach my $table (sort keys %tables) {
         # Should not do CHECK etc., and especially ALTER, on a view

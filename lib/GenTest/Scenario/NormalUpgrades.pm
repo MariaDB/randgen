@@ -55,7 +55,7 @@ use File::Compare;
 
 use DBServer::MariaDB;
 
-my ($server, $old_server, $new_server, $databases, $vardir, $old_grants, $total_status);
+my ($server, $old_server, $new_server, $databases, $vardir, $old_grants);
 my ($old_tables, $old_columns, $old_indexes, $old_checksums_safe, $old_checksums_unsafe);
 
 # Before 10.11, mysqldump could not store historical rows
@@ -73,7 +73,6 @@ sub run {
   my $self= shift;
 
   my $status= STATUS_OK;
-  $total_status= STATUS_OK;
 
   #####
   # Prepare old server
@@ -120,7 +119,6 @@ sub run {
   # We'll ignore non-critical status for the old server
   $status= $server->stopServer;
   if ($status >= STATUS_CRITICAL_FAILURE) {
-    $total_status= $status;
     sayError("Shutdown of the old server failed");
     goto UPGRADE_END;
   }
@@ -371,18 +369,16 @@ MBACKUP_UPGRADE_END:
   # Back up data directory from the mariabackup upgrade
   system ('mv '.$server->datadir.' '.$server->datadir.'_mbackup_upgrade');
   system ('mv '.$server->errorlog.' '.$server->errorlog.'_mbackup_upgrade');
-  $self->setStatus($status);
 
 UPGRADE_END:
-  $total_status= $status if $status > $total_status;
-  $self->setStatus($total_status);
+  $self->setStatus($status);
   $self->printStep("RESULTS");
   if (scalar(@upgrade_errors)) {
     foreach (@upgrade_errors) { sayError($_) };
   } else {
     say("All upgrades succeeded");
   }
-  return $self->finalize($total_status,[$server]);
+  return $self->finalize($self->getStatus,[$server]);
 }
 
 ######################################

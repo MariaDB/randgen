@@ -301,9 +301,14 @@ sub setStatus {
   return $self->[SC_GLOBAL_RESULT];
 }
 
+sub getStatus {
+  return $_[0]->[SC_GLOBAL_RESULT];
+}
+
 sub finalize {
   my ($self, $status, $servers)= @_;
   if ($self->[SC_TEST_RUNNER]) {
+    say("HERE: calling reportResults");
     $status= $self->[SC_TEST_RUNNER]->reportResults($status);
   }
   if ($servers) {
