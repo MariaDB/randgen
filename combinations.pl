@@ -497,7 +497,7 @@ sub doCombination {
       open(RES,">>$workdir/result.txt");
       print RES "Trial $trial_id:\n";
       close(RES);
-      system("perl $ENV{RQG_HOME}/util/check_for_known_bugs.pl --signatures=$ENV{RQG_HOME}/util/bug_signatures* $from/s*/mysql.err $from/trial.log $workdir/trial${trial_id}.log $from/s*/boot.log 2>&1 | tee -a $workdir/result.txt");
+      system("DB_USER= perl $ENV{RQG_HOME}/util/check_for_known_bugs.pl --signatures=$ENV{RQG_HOME}/util/bug_signatures* $from/s*/mysql.err $from/trial.log $workdir/trial${trial_id}.log $from/s*/boot.log 2>&1 | tee -a $workdir/result.txt");
       unless ($discard_logs) {
         my $to = $workdir.'/vardir1_'.$trial_id;
         sayDebug("Combinations [$thread_id]: Copying $from to $to") if $stdToLog;

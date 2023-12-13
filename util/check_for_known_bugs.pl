@@ -227,7 +227,7 @@ sub print_result {
 }
 
 sub connect_to_db {
-  if (defined $ENV{DB_USER}) {
+  if ($ENV{DB_USER}) {
     my $dbh= DBI->connect("dbi:mysql:host=$ENV{DB_HOST}:port=$ENV{DB_PORT}:mysql_local_infile=1",$ENV{DB_USER}, $ENV{DBP}, { RaiseError => 1 } );
     if ($dbh) {
       return $dbh;
