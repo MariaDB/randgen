@@ -38,6 +38,7 @@ require Exporter;
   GENERATOR_PARSER
   GENERATOR_PARSER_MODE
   GENERATOR_GRAMMAR_POOL
+  GENERATOR_COMPATIBILITY
 );
 
 use strict;
@@ -57,12 +58,14 @@ use constant GENERATOR_ANNOTATE_RULES      => 14;
 use constant GENERATOR_PARSER              => 16;
 use constant GENERATOR_PARSER_MODE         => 17;
 use constant GENERATOR_GRAMMAR_POOL        => 18;
+use constant GENERATOR_COMPATIBILITY       => 19;
 
 use constant VARIATION_PROBABILITY => 50; # Per cent (further adjusted depending on the number of variators)
 
 sub new {
   my $class = shift;
   my $generator = $class->SUPER::new({
+    'compatibility'  => GENERATOR_COMPATIBILITY,
     'grammars'       => GENERATOR_GRAMMARS,
     'seed'           => GENERATOR_SEED,
     'prng'           => GENERATOR_PRNG,
@@ -81,6 +84,7 @@ sub new {
       push @variators, $variator;
     }
     $generator->[GENERATOR_VARIATORS]= \@variators;
+    $generator->[GENERATOR_COMPATIBILITY]= '999999' unless defined $generator->[GENERATOR_COMPATIBILITY];
   }
   return $generator;
 }

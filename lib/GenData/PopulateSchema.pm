@@ -165,7 +165,8 @@ sub populate_table
     my ($self, $executor, $table_name, $rows) = @_;
     $rows = 100 unless defined $rows;
     my $prng = GenTest::Random->new(
-        seed => $self->seed()
+        seed => $self->seed(),
+        compatibility => $self->compatibility()
     );
 
 

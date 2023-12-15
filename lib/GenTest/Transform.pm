@@ -49,7 +49,7 @@ sub seed {
 
 sub random {
   unless ($_[0]->[TRANSFORMER_RANDOM]) {
-    $_[0]->[TRANSFORMER_RANDOM]= GenTest::Random->new(seed => $_[0]->[TRANSFORMER_SEED]);
+    $_[0]->[TRANSFORMER_RANDOM]= GenTest::Random->new(seed => $_[0]->[TRANSFORMER_SEED], compatibility => $_[0]->compatibility);
   }
   return $_[0]->[TRANSFORMER_RANDOM];
 }

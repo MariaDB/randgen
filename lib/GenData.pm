@@ -174,7 +174,7 @@ sub new {
         $self->[GD_SEED] = time();
         say("Converting --seed=time to --seed=".$self->[GD_SEED]);
     }
-    $self->[GD_RAND]= GenTest::Random->new(seed => $self->seed());
+    $self->[GD_RAND]= GenTest::Random->new(seed => $self->seed(), compatibility => $self->[GD_COMPATIBILITY]);
 
     if ($self->server) {
       $self->[GD_EXECUTOR] = GenTest::Executor->newFromServer(

@@ -848,19 +848,20 @@ sub gen_table {
                 $val = $prng->time();
                 $val = ($val, $val, $val, $val, $val, $val, $val, $val, "NULL", "'00:00:00'")[$prng->uint16(0,9)];
             }
-            elsif ($c->[0] eq 'DATETIME' or $c->[0] eq 'TIMESTAMP') {
+            elsif ($c->[0] eq 'DATETIME') {
             # 10% NULLS, 10% "1900-01-01 00:00:00', 20% date + " 00:00:00"
 
                 $val = $prng->datetime();
                 my $val_date_only = $prng->unquotedDate();
-
+                $val = ($val, $val, $val, $val, $val, $val, "'".$val_date_only." 00:00:00'", "'".$val_date_only." 00:00:00'", "NULL", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
+            }
+            elsif ($c->[0] eq 'TIMESTAMP') {
+            # 10% special values
+                $val = $prng->timestamp();
                 # Don't try to insert NULLs into TIMESTAMP columns, it may end up as a current timestamp
                 # due to non-standard behavior of TIMESTAMP columns
-                if ($c->[4] eq 'NOT NULL' or $c->[0] eq 'TIMESTAMP') {
-                    $val = ($val, $val, $val, $val, $val, $val, $val, "'".$val_date_only." 00:00:00'", "'".$val_date_only." 00:00:00'", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
-                } else {
-                    $val = ($val, $val, $val, $val, $val, $val, "'".$val_date_only." 00:00:00'", "'".$val_date_only." 00:00:00'", "NULL", "'1900-01-01 00:00:00'")[$prng->uint16(0,9)];
-                }
+                my $special_value= ('0','0.000001','1','FROM_UNIXTIME(0)','FROM_UNIXTIME(0.000001)','FROM_UNIXTIME(POWER(2,31)-1)','FROM_UNIXTIME(POWER(2,32)-1)')[$prng->uint16(0,6)];
+                $val = ($val, $val, $val, $val, $val, $val, $val, $val, $val, $special_value)[$prng->uint16(0,9)];
             }
             elsif ($c->[0] eq 'CHAR' or $c->[0] eq 'VARCHAR' or $c->[0] eq 'BINARY' or $c->[0] eq 'VARBINARY')
             {

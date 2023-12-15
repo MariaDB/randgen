@@ -88,6 +88,7 @@ efficiency, math is done in integer mode
 use constant RANDOM_SEED    => 0;
 use constant RANDOM_GENERATOR    => 1;
 use constant RANDOM_STRBUF            => 2;
+use constant RANDOM_COMPATIBILITY => 3;
 
 use constant FIELD_TYPE_NUMERIC    => 2;
 use constant FIELD_TYPE_STRING    => 3;
@@ -266,6 +267,7 @@ sub new {
 
   my $prng = $class->SUPER::new({
     'seed'      => RANDOM_SEED,
+    'compatibility' => RANDOM_COMPATIBILITY,
   }, @_ );
 
 
@@ -274,12 +276,17 @@ sub new {
 #  say("Initializing PRNG with seed '".$prng->seed()."' ...");
 
   $prng->[RANDOM_GENERATOR] = $prng->seed();
+  $prng->[RANDOM_COMPATIBILITY] = $prng->compatibility() || '999999';
 
   return $prng;
 }
 
 sub seed {
   return $_[0]->[RANDOM_SEED];
+}
+
+sub compatibility {
+  return $_[0]->[RANDOM_COMPATIBILITY];
 }
 
 sub setSeed {
@@ -479,7 +486,8 @@ sub unquotedDate {
     # Something between 1960-01-01 and 2040-01-01 should be enough
     $ts= $prng->int(-2208994789,2208981600) if not defined $ts;
     my (undef,undef,undef,$mday,$mon,$year,undef,undef,undef)= localtime($ts);
-    return sprintf('%04d-%02d-%02d',$year+1900,$mon+1,$mday);
+    my $d= sprintf('%04d-%02d-%02d',$year+1900,$mon+1,$mday);
+    return $d;
 }
 
 sub date {
@@ -518,7 +526,7 @@ sub datetime {
 
 sub timestamp {
     my ($prng, $ts) = @_;
-    $ts= $prng->int(0,2147483647) if not defined $ts;
+    $ts= $prng->int(0,isCompatible('11.4.1',$prng->compatibility()) ? 4294967295 : 2147483647) if not defined $ts;
     my ($sec,$min,$hour,$mday,$mon,$year,undef,undef,undef)= localtime($ts);
     return sprintf('%04d%02d%02d%02d%02d%02d.%06d',$year+1900,$mon+1,$mday,$hour,$min,$sec,$prng->uint16(0,999999));
 }

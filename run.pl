@@ -403,6 +403,7 @@ sub run {
     }
 
     say("Final command line: \n$cmd");
+    say("Test compatibility: ".$props->{compatibility});
 
     my $config = GenTest::Properties->init($props);
     my $sc= $class->new(properties => $config, scenario_options => \%scenario_options);

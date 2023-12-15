@@ -555,6 +555,7 @@ sub initGenerator {
     }
 
     $self->[TR_GENERATOR] = $generator_name->new(
+      compatibility => $self->config->compatibility,
       grammars => $self->grammars(),
       annotate_rules => $self->config->property('annotate-rules'),
       parser => $self->config->parser,

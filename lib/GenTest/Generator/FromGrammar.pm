@@ -49,7 +49,7 @@ sub new {
 
   if (not defined $generator->prng()) {
     $generator->[GENERATOR_PRNG] = GenTest::Random->new(
-      seed => $generator->[GENERATOR_SEED] || 0,
+      seed => $generator->[GENERATOR_SEED] || 0, compatibility => $generator->[GENERATOR_COMPATIBILITY]
     );
   }
 
