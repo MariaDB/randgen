@@ -43,6 +43,7 @@ sub transform {
 sub variate {
   my ($class, $orig_query) = @_;
   return [ $orig_query ] if $orig_query !~ m{^\s*SELECT}is;
+  return [ $orig_query ] if $orig_query =~ m{^\s*OUTFILE}is;
   return [ modify_query($orig_query) ];
 }
 
