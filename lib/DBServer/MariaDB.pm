@@ -71,11 +71,13 @@ use constant MYSQLD_SERVER_VARIABLES => 31;
 use constant MYSQLD_RR => 32;
 use constant MYSLQD_CONFIG_VARIABLES => 33;
 use constant MYSQLD_CLIENT => 34;
-use constant MARIABACKUP => 35;
-use constant MYSQLD_MANUAL_GDB => 36;
-use constant MYSQLD_HOST => 37;
-use constant MYSQLD_PS_PROTOCOL => 40;
-use constant MYSQLD_LAST_CHECKED_MARKER => 41;
+use constant MYSQLD_MANUAL_GDB => 35;
+use constant MYSQLD_HOST => 36;
+use constant MYSQLD_PS_PROTOCOL => 37;
+use constant MYSQLD_LAST_CHECKED_MARKER => 38;
+
+use constant MARIABACKUP => 50;
+use constant TZINFO_TO_SQL => 51;
 
 use constant MYSQLD_PID_FILE => "mysql.pid";
 use constant MYSQLD_ERRORLOG_FILE => "mysql.err";
@@ -149,8 +151,13 @@ sub new {
                                           osWindows()?("mysql.exe","mariadb.exe"):("mysql","mariadb"));
 
     $self->[MARIABACKUP]= $self->_find([$self->basedir],
-                            osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
+                            osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin","extra"],
                             osWindows()?"mariabackup.exe":"mariabackup"
+                          );
+
+    $self->[TZINFO_TO_SQL]= $self->_find([$self->basedir],
+                            osWindows()?["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"]:["sql","bin"],
+                            osWindows()?("mariadb-tzinfo-to-sql","mysql_tzinfo_to_sql.exe"):("mariadb-tzinfo-to-sql","mysql_tzinfo_to_sql")
                           );
 
     $self->[MYSQLD_CLIENT_BINDIR] = dirname($self->[MYSQLD_DUMPER]);
@@ -349,6 +356,16 @@ sub createMysqlBase  {
     mkpath($self->vardir);
     mkpath($self->tmpdir);
     mkpath($self->datadir);
+
+    if (-x $self->[TZINFO_TO_SQL]) {
+      system("$self->[TZINFO_TO_SQL] $ENV{RQG_HOME}/data/zoneinfo > ".$self->vardir."/tz.sql") && (-e $self->vardir."/tz.sql");
+      if ($? == 0) {
+        push @{$self->[MYSQLD_BOOT_SQL]},$self->vardir."/tz.sql";
+      } else {
+        sayError("Failed to run $self->[TZINFO_TO_SQL] $ENV{RQG_HOME}/data/zoneinfo");
+        return STATUS_ENVIRONMENT_FAILURE;
+      }
+    }
 
     my $defaults = ($self->[MYSQLD_CONFIG_FILE] ? "--defaults-file=$self->[MYSQLD_CONFIG_FILE]" : "--no-defaults");
 
@@ -1952,11 +1969,11 @@ sub get_pid_from_file {
 
 sub storeMetaData {
 # metadata_type:
-# - collations
+# - static (collations, timezones)
 # - system (system schemata)
 # - nonsystem (non-system schemata)
 # - schemata (all schemata except for exempt)
-# - all (all schemata except for exempt, + collations, + whatever else we later start dumping)
+# - all (all schemata except for exempt, + collations/timezones, + whatever else we later start dumping)
 # wait_for_threads (optional) means that before dumping the files,
 # we will be waiting for the given number of executor_NNN_ready flags
 # (indicating that the executors have done everything they wanted before
@@ -1964,6 +1981,7 @@ sub storeMetaData {
 #  
 # Created files:
 # collations.<timestamp>
+# timezones.<timestamp>
 # system-tables.<timestamp>
 # system-proc.<timestamp>
 # nonsystem-tables.<timestamp>
@@ -2022,7 +2040,7 @@ sub storeMetaData {
   # If executors are waiting, we should produce the result regardless the timeout
   my $statement_time= "SET STATEMENT max_statement_time=$timeout FOR";
 
-  if ($metadata_type eq 'all' or $metadata_type eq 'collations') {
+  if ($metadata_type eq 'all' or $metadata_type eq 'static') {
     push @files, "$dumpdir/collations";
     unlink $files[$#files];
     if ($conn) {
@@ -2034,6 +2052,16 @@ sub storeMetaData {
         $status= DBSTATUS_FAILURE;
         goto METAERR;
       }
+      push @files, "$dumpdir/timezones";
+      unlink $files[$#files];
+      $conn->execute("$statement_time SELECT Name ".
+              "INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
+              "FROM mysql.time_zone_name");
+      if ($conn->err) {
+        sayError("Timezone dump failed: ".$conn->print_error);
+        $status= DBSTATUS_FAILURE;
+        goto METAERR;
+      }
     } else {
       sayError("Metadata dumper lost connection to the server");
       $status= DBSTATUS_FAILURE;
@@ -2041,7 +2069,7 @@ sub storeMetaData {
     }
   }
 
-  if ($metadata_type ne 'collations')
+  if ($metadata_type ne 'static')
   {
     my $tbl_query_p1= "$statement_time SELECT table_schema, table_name, table_type";
     my $tbl_query_p2= "FROM information_schema.tables";
@@ -2229,6 +2257,31 @@ sub storeMetaData {
     $coll_count= scalar(@collations);
   }
 
+  my $tz_count;
+  if ($files{"$dumpdir/timezones"}) {
+    unless (open(TZ,"$dumpdir/timezones")) {
+      sayError("Couldn't open timezones dump $dumpdir/timezones: $!");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
+    }
+    my @timezones=();
+    while (<TZ>) {
+      chomp;
+      my $tz= $_;
+      # TODO: maybe better solution
+      push @timezones, [$tz];
+    }
+    close(TZ);
+    unless (open(TZ,">$vardir/timezones-$ts")) {
+      sayError("Couldn't open timezones file for writing: $!");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
+    }
+    print TZ Dumper \@timezones;
+    close(TZ);
+    $tz_count= scalar(@timezones);
+  }
+
   my ($db_count, $tbl_count, $col_count, $ind_count, $proc_count)= (0, 0, 0, 0, 0);
   foreach my $sys ('system','nonsystem') {
     # Columns, tables and index lists may be diverged, since they weren't
@@ -2390,6 +2443,7 @@ sub storeMetaData {
   unlink @waiters;
   say("Finished dumping $metadata_type metadata".($wait_for_threads ? " for $wait_for_threads waiters:" : ":").
     (defined $coll_count ? " $coll_count collations;" : "").
+    (defined $tz_count ? " $tz_count timezones;" : "").
     ($db_count ? " $db_count databases, $tbl_count tables, $col_count columns, $ind_count indexes, $proc_count stored procedures" : "")
   );
   return STATUS_OK;

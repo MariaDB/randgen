@@ -55,11 +55,12 @@ use constant EXECUTOR_ERROR_COUNTS    => 7;
 use constant EXECUTOR_STATUS_COUNTS    => 8;
 use constant EXECUTOR_DEFAULT_SCHEMA    => 9;
 use constant EXECUTOR_SCHEMA_METADATA    => 10;
-use constant EXECUTOR_COLLATION_METADATA  => 11;
-use constant EXECUTOR_META_CACHE    => 12;
-use constant EXECUTOR_CHANNEL      => 13;
-use constant EXECUTOR_SQLTRACE      => 14;
-use constant EXECUTOR_NO_ERR_FILTER             => 15;
+use constant EXECUTOR_COLLATION_METADATA => 11;
+use constant EXECUTOR_TIMEZONE_METADATA  => 12;
+use constant EXECUTOR_META_CACHE    => 13;
+use constant EXECUTOR_CHANNEL       => 14;
+use constant EXECUTOR_SQLTRACE      => 15;
+use constant EXECUTOR_NO_ERR_FILTER => 16;
 use constant EXECUTOR_CONNECTION_ID    => 17;
 use constant EXECUTOR_FLAGS      => 18;
 use constant EXECUTOR_CURRENT_SCHEMA => 19;
@@ -265,7 +266,7 @@ sub currentSchema {
 
 sub cacheMetaData {
   my $self= shift;
-  my ($collations, $non_system, $system);
+  my ($collations, $timezones, $non_system, $system);
 
   my $vardir= $self->server->vardir;
 
@@ -298,6 +299,36 @@ sub cacheMetaData {
       sayWarning("Executor#".$self->threadId()." at ".$self->dsn." could not find a collation dump");
     }
   }
+
+  # Timezone metadata is loaded only once
+  unless (defined $self->[EXECUTOR_TIMEZONE_METADATA]) {
+    my @files= glob("$vardir/timezones-*");
+    if (scalar(@files)) {
+      @files= reverse sort @files;
+      unless (open(TZ,"$files[0]")) {
+        sayError("Executor#".$self->threadId()." failed to open timezones file: $!");
+        return;
+      }
+      read(TZ, my $cont, -s "$files[0]");
+      close(TZ);
+      my $VAR1;
+      eval ($cont);
+      $timezones= $VAR1;
+      if ($timezones) {
+        my $tz= {};
+        foreach my $row (@$timezones) {
+          $tz->{$row->[0]} = 1;
+        }
+        $self->[EXECUTOR_TIMEZONE_METADATA] = $tz;
+        sayDebug("Executor#".$self->threadId()." has loaded ".scalar(keys %$tz)." timezones");
+      } else {
+        sayError("Executor#".$self->threadId()." failed to load timezone metadata");
+      }
+    } else {
+      sayWarning("Executor#".$self->threadId()." at ".$self->dsn." could not find a timezone dump");
+    }
+  }
+
   my @files= glob("$vardir/system-metadata-*");
   if (scalar(@files)) {
     @files= reverse sort @files;
@@ -731,6 +762,22 @@ sub metaCharactersets {
         delete $charsets{''};
         croak "FATAL ERROR: No character sets defined" if (scalar(keys %charsets) == 0);
         $self->[EXECUTOR_META_CACHE]->{$cachekey} = [sort keys %charsets];
+    }
+    return $self->[EXECUTOR_META_CACHE]->{$cachekey};
+}
+
+sub metaTimezones {
+    my ($self) = @_;
+
+    my $cachekey="TIMEZONES";
+
+    if (not defined $self->[EXECUTOR_META_CACHE]->{$cachekey}) {
+        my %timezones= %{$self->[EXECUTOR_TIMEZONE_METADATA]};
+        if (scalar(keys %timezones) == 0) {
+          sayWarning("No timezones found, adding '+00:00'");
+          $timezones{'+00:00'}= 1;
+        }
+        $self->[EXECUTOR_META_CACHE]->{$cachekey} = [sort keys %timezones];
     }
     return $self->[EXECUTOR_META_CACHE]->{$cachekey};
 }

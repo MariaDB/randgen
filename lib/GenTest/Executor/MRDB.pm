@@ -238,6 +238,24 @@ sub loadCollations {
     return \@collations;
 }
 
+sub loadTimezones {
+    ## Return the result from a query with the following columns:
+    ## 1. Timezone name
+    my ($self, $file) = @_;
+
+    unless (open(TZ,$file)) {
+      sayError("Couldn't open timezone dump $file: $!");
+      return undef;
+    }
+    my @timezones=();
+    while (<TZ>) {
+      chomp;
+      push @timezones, [$_];
+    }
+    close(TZ);
+    return \@timezones;
+}
+
 sub read_only {
     my $executor = shift;
     my ($grant_command) = $executor->connection->get_row("SHOW GRANTS FOR CURRENT_USER()");

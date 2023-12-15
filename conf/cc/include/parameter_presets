@@ -1988,6 +1988,8 @@ $gendata{$minversion}= [
   [@empty_set_50,
     '--gendata=data/sql/system_schemata_copy.sql'],
   [@empty_set_20,
+    '--gendata=data/sql/tz.sql'],
+  [@empty_set_20,
     '--gendata=data/sql/updateable_views.sql'],
   [@empty_set_20,
     '--gendata=data/sql/world.sql']

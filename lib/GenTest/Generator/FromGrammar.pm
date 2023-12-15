@@ -322,6 +322,9 @@ sub next {
           } elsif ($item eq '_collation') {
             my $collations = $executors->[0]->metaCollations($last_charset);
             $item = '_'.$prng->arrayElement($collations);
+          } elsif ($item eq '_timezone') {
+            my $timezones = $executors->[0]->metaTimezones();
+            $item = "'".$prng->arrayElement($timezones)."'";
           } elsif ($item eq '_collation_name') {
             my $collations = $executors->[0]->metaCollations($last_charset);
             $item = $prng->arrayElement($collations);
