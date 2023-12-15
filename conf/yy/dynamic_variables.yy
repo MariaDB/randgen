@@ -257,7 +257,7 @@ dynvar_session_variable:
   | TCP_NODELAY= dynvar_boolean /* compatibility 10.4.0 */
   | THREAD_POOL_PRIORITY= { $prng->arrayElement(['DEFAULT','high','low','auto']) }
 # | TIMESTAMP # Tempting, but causes problems, especially with versioning
-  | TIME_ZONE= { sprintf("'%s%02d:%02d'",$prng->arrayElement(['+','-']),$prng->int(0,12),$prng->int(0,59)) }
+  | TIME_ZONE= dynvar_tz_value
 # Very low values disabled due to MDEV-23212
   | TMP_DISK_TABLE_SIZE= { $prng->arrayElement(['DEFAULT',65536,8388608,18446744073709551615]) }
 # | TMP_MEMORY_TABLE_SIZE # == tmp_table_size
@@ -571,6 +571,7 @@ dynvar_global_variable:
   | THREAD_POOL_PRIO_KICKUP_TIMER= { $prng->arrayElement([0,1,2,128,500,10000]) }
   | THREAD_POOL_SIZE= { $prng->int(1,128) }
   | THREAD_POOL_STALL_LIMIT= { $prng->arrayElement([10,100,1000,10000]) }
+  | TIME_ZONE= dynvar_tz_value
 # Galera is not normally used in tests
 # | wsrep_auto_increment_control    global
 # | wsrep_certification_rules       global
@@ -632,6 +633,11 @@ dynvar_default_regex_flags_value:
         ; if (index($val,'EXTENDED_MORE') > -1) { $val.= '/* compatibility 10.5 */' }
         ; $val
     }
+;
+
+dynvar_tz_value:
+  { sprintf("'%s%02d:%02d'",$prng->arrayElement(['+','-']),$prng->int(0,12),$prng->int(0,59)) } |
+  _timezone
 ;
 
 # 10.2: admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk
