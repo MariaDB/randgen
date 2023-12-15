@@ -74,6 +74,11 @@ sub run {
   # Prepare server(s)
 
   $server= $self->prepareServer(1, my $is_active=1);
+  unless ($server) {
+    sayError("Could not initialize the server");
+    $status= STATUS_ENVIRONMENT_FAILURE;
+    goto FINALIZE;
+  }
 
   # If the test is running with binary log enabled, we will use replication
   # for binlog consistency check. Otherwise the check will be skipped
@@ -90,6 +95,11 @@ sub run {
     ;
     $self->setServerSpecific(2,'mysqld',\@mysqld_options);
     $slave= $self->prepareServer(2, my $is_active=0);
+    unless ($slave) {
+      sayError("Could not initialize the slave");
+      $status= STATUS_ENVIRONMENT_FAILURE;
+      goto FINALIZE;
+    }
   }
 
   $datadir= $server->datadir;

@@ -67,6 +67,11 @@ sub run {
   $self->printStep("Starting the server");
 
   $server= $self->prepare_server();
+  unless ($server) {
+    sayError("Could not initialize the server");
+    $status= STATUS_ENVIRONMENT_FAILURE;
+    goto FINALIZE;
+  }
   $status= $server->startServer;
 
   if ($status != STATUS_OK) {

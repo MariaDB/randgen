@@ -71,7 +71,13 @@ sub run {
 
   my @servers= ();
   foreach (1..$srv_count) {
-    push @servers, $self->prepareServer($_, my $is_active=1);
+    my $s= $self->prepareServer($_, my $is_active=1);
+    unless ($s) {
+      sayError("Could not initialize the server");
+      $status= STATUS_ENVIRONMENT_FAILURE;
+      goto FINALIZE;
+    }
+    push @servers, $s;
   }
 
   #####

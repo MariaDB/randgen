@@ -60,6 +60,12 @@ sub run {
   #####
   # Prepare old server
   $old_server=  $self->prepareServer(1, my $is_active=1);
+  unless ($old_server) {
+    sayError("Could not initialize the old server");
+    $status= STATUS_ENVIRONMENT_FAILURE;
+    goto FINALIZE;
+  }
+
   $server= $old_server;
 
   #####

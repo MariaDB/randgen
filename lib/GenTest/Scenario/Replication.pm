@@ -94,7 +94,13 @@ sub run {
     }
     # is_active is for GenData/GenTest to know on which servers to run the flow
     # TODO: should be set to all masters, according to the topology
-    push @servers, $self->prepareServer($s,my $is_active=($s==1));
+    my $s= $self->prepareServer($s,my $is_active=($s==1));
+    unless ($s) {
+      sayError("Could not initialize the server");
+      $total_status= STATUS_ENVIRONMENT_FAILURE;
+      goto FINALIZE;
+    }
+    push @servers, $s;
   }
 
   #####

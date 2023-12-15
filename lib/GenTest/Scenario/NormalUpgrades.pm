@@ -76,7 +76,12 @@ sub run {
 
   #####
   # Prepare old server
-  $old_server=  $self->prepareServer(1, my $is_active=1);
+  $old_server= $self->prepareServer(1, my $is_active=1);
+  unless ($old_server) {
+    sayError("Could not initialize the old server");
+    $self->setStatus(STATUS_ENVIRONMENT_FAILURE);
+    goto FINALIZE;
+  }
   my $server= $old_server;
   $server->backupDatadir($server->datadir."_clean");
   $vardir=$server->vardir;
@@ -234,6 +239,11 @@ sub run {
 
   # Point server_specific to the new server
   $new_server=  $self->prepare_new_server($old_server);
+  unless ($new_server) {
+    sayError("Could not initialize the new server");
+    $self->setStatus(STATUS_ENVIRONMENT_FAILURE);
+    goto FINALIZE;
+  }
   $self->switch_to_new_server();
   $server= $new_server;
 
@@ -378,6 +388,7 @@ UPGRADE_END:
   } else {
     say("All upgrades succeeded");
   }
+FINALIZE:
   return $self->finalize($self->getStatus,[$server]);
 }
 

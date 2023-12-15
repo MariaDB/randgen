@@ -95,6 +95,11 @@ sub run {
   #####
   # Prepare old server
   $old_server=  $self->prepareServer(1, my $is_active=1);
+  unless ($old_server) {
+    sayError("Could not initialize the old server");
+    $status= STATUS_ENVIRONMENT_FAILURE;
+    goto FINALIZE;
+  }
   $server= $old_server;
 
   #####
@@ -233,6 +238,11 @@ sub run {
 
   # Point server_specific to the new server
   $new_server=  $self->prepare_new_server($old_server);
+  unless ($new_server) {
+    sayError("Could not initialize the new server");
+    $status= STATUS_ENVIRONMENT_FAILURE;
+    goto FINALIZE;
+  }
   $server= $new_server;
   $self->switch_to_new_server();
 

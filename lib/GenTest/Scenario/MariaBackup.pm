@@ -52,10 +52,11 @@ sub prepare_server {
   my $self= shift;
 
   my $server= $self->prepareServer(1,my $is_active=1);
-  say("-- Server info: --");
-  say($server->version());
-  $server->printServerOptions();
-
+  if ($server) {
+    say("-- Server info: --");
+    say($server->version());
+    $server->printServerOptions();
+  }
   return $server;
 }
 

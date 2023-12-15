@@ -104,7 +104,13 @@ sub run {
     # is_active is for Gendata/GenTest to know on which servers to execute the flow
     # TODO: should be set for actual masters masters
     print Dumper $self->getProperty('server_specific')->{$s};
-    push @servers, $self->prepareServer($s,my $is_active= ($s == 1));
+    my $server= $self->prepareServer($s,my $is_active= ($s == 1));
+    unless ($server) {
+      sayError("Could not initialize the server");
+      $status= STATUS_ENVIRONMENT_FAILURE;
+      goto FINALIZE;
+    }
+    push @servers, $server;
   }
   if ($status != STATUS_OK) {
     sayError("Galera configuration failed");

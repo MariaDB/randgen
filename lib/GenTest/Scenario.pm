@@ -312,6 +312,7 @@ sub finalize {
   }
   if ($servers) {
     foreach my $s (@$servers) {
+      next unless $s;
       if ($s->running) {
         say("Stopping the server at port ".$s->port);
         my $shutdown_status= $s->stopServer();
