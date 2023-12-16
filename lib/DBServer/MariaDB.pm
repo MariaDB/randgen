@@ -357,14 +357,22 @@ sub createMysqlBase  {
     mkpath($self->tmpdir);
     mkpath($self->datadir);
 
-    if (-x $self->[TZINFO_TO_SQL]) {
-      system("$self->[TZINFO_TO_SQL] $ENV{RQG_HOME}/data/zoneinfo > ".$self->vardir."/tz.sql") && (-e $self->vardir."/tz.sql");
-      if ($? == 0) {
-        push @{$self->[MYSQLD_BOOT_SQL]},$self->vardir."/tz.sql";
+    # Before MDEV-28782 mariadb-tzinfo-to-sql doesn't work in bootstrap
+    unless ($self->_olderThan(10,6,9) && (-x $self->[TZINFO_TO_SQL])) {
+      if (open(TZ,">".$self->vardir."/tz.sql")) {
+        # MDEV-33044 -- mariadb-tzinfo-to-sql does not work with INPLACE
+        print TZ "SET ALTER_ALGORITHM=COPY;\n";
+        close(TZ);
       } else {
+        sayError("Could not open ".$self->vardir."/tz.sql for writing: $!");
+        return STATUS_ENVIRONMENT_FAILURE;
+      }
+      system("$self->[TZINFO_TO_SQL] $ENV{RQG_HOME}/data/zoneinfo >> ".$self->vardir."/tz.sql");
+      unless ($? == 0) {
         sayError("Failed to run $self->[TZINFO_TO_SQL] $ENV{RQG_HOME}/data/zoneinfo");
         return STATUS_ENVIRONMENT_FAILURE;
       }
+      push @{$self->[MYSQLD_BOOT_SQL]},$self->vardir."/tz.sql";
     }
 
     my $defaults = ($self->[MYSQLD_CONFIG_FILE] ? "--defaults-file=$self->[MYSQLD_CONFIG_FILE]" : "--no-defaults");
