@@ -47,6 +47,11 @@ sub report {
     sayWarning("BinlogDump: Binary logging is not enabled");
     return STATUS_OK;
   }
+  my $mysql56_temporal_format= $reporter->server->serverVariable('mysql56_temporal_format');
+  if ($mysql56_temporal_format eq '0' or $mysql56_temporal_format eq 'OFF') {
+    sayWarning("BinlogDump: Due to MDEV-32929 mysqlbinlog does not work with mysql56_temporal_format=OFF");
+    return STATUS_OK;
+  }
   my $status;
   my $vardir = $server->vardir;
   my $datadir = $server->datadir;
@@ -66,7 +71,7 @@ sub report {
 
   my $cmd= "$binlog_utility --no-defaults --verbose --verbose --base64-output=DECODE-ROWS $basename.0* > $vardir/binlog_events.txt";
   say("BinlogDump: Dumping binary log events into the file $vardir/binlog_events.txt");
-  sayDebug($cmd);
+  say($cmd);
   $status = system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
   if ($status != STATUS_OK) {
     sayError("BinlogDump: Dumping binary logs finished with an error: ".($status >> 8));
