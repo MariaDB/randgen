@@ -14,6 +14,10 @@
 # 11.0+
 # Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 
+MDEV-33045:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ Binary_string::c_ptr_safe
+=~ Item_func_binlog_gtid_pos::val_str
 MDEV-33031:
 =~ Assertion \`thd == _current_thd() \|\| ((&(&thd->LOCK_thd_data)->m_mutex)->count > 0 && pthread_equal(pthread_self(), (&(&thd->LOCK_thd_data)->m_mutex)->thread))'
 =~ thd_get_ha_data
