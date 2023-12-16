@@ -50,7 +50,7 @@ sub connect {
   my $executor= shift;
   my $conn = Connection::Perl->new(server => $executor->server, name => 'WRK-'.$executor->threadId());
   unless ($conn) {
-      sayError("Connect() to dsn ".$executor->server->port()." failed: ".$conn->last_error->[0]." ".$conn->last_error->[1]);
+      sayError("Connect() to dsn ".$executor->server->port()." failed");
       return undef;
   }
 }
