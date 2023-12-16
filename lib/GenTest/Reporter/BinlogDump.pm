@@ -52,6 +52,11 @@ sub report {
     sayWarning("BinlogDump: Due to MDEV-32929 mysqlbinlog does not work with mysql56_temporal_format=OFF");
     return STATUS_OK;
   }
+  my $encrypt_binlog= $reporter->server->serverVariable('encrypt_binlog');
+  if ($encrypt_binlog eq '1' or $encrypt_binlog eq 'ON') {
+    sayWarning("BinlogDump: mysqlbinlog cannot read encrypted binary logs from the disk");
+    return STATUS_OK;
+  }
   my $status;
   my $vardir = $server->vardir;
   my $datadir = $server->datadir;
