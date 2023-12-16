@@ -65,6 +65,7 @@ $combinations = [
       ],
       binlog => [
         [ '--mysqld=--log-bin' ],
+        [ '--reporter=BinlogDump' ],
         [ @{$options{scenario_non_crash_combinations}} ],
         [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_combinations}}, @{$options{engine_full_mix_combinations}} ],
         [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
