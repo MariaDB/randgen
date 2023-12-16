@@ -2045,49 +2045,58 @@ sub storeMetaData {
   my $timeout= $end_time - time();
   sayDebug("Starting dumping $metadata_type metadata with $timeout sec timeout".($wait_for_threads ? ", for $wait_for_threads waiters" : ""));
 
-  # If executors are waiting, we should produce the result regardless the timeout
-  my $statement_time= "SET STATEMENT max_statement_time=$timeout FOR";
+  # The function re-run the query if it returned "file already exists",
+  # because it could be that the query started executing, created the file,
+  # got interrupted by server restart, and was retried unsuccessfully
+  # within the connection logic
+  sub store_to_outfile {
+    my ($f, $q1, $q2, $errmsg)= @_;
+    # If executors are waiting, we should produce the result regardless the timeout
+    my $statement_time= "SET STATEMENT max_statement_time=$timeout FOR";
 
-  if ($metadata_type eq 'all' or $metadata_type eq 'static') {
-    push @files, "$dumpdir/collations";
-    unlink $files[$#files];
     if ($conn) {
-      $conn->execute("$statement_time SELECT collation_name,character_set_name ".
-              "INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-              "FROM information_schema.collations");
-      if ($conn->err) {
-        sayError("Collations dump failed: ".$conn->print_error);
-        $status= DBSTATUS_FAILURE;
-        goto METAERR;
+      my $query= $statement_time." ".$q1." INTO OUTFILE '$f' FIELDS TERMINATED BY ';' ".$q2;
+      unlink $f;
+      $conn->execute($query);
+      if ($conn->err == 1086) {
+        sayWarning("File $f already existed, removing and retrying");
+        unlink $f;
+        $conn->execute($query);
       }
-      push @files, "$dumpdir/timezones";
-      unlink $files[$#files];
-      $conn->execute("$statement_time SELECT Name ".
-              "INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-              "FROM mysql.time_zone_name");
-      if ($conn->err) {
-        sayError("Timezone dump failed: ".$conn->print_error);
-        $status= DBSTATUS_FAILURE;
-        goto METAERR;
-      }
-    } else {
-      sayError("Metadata dumper lost connection to the server");
+    }
+    if (not defined $conn or $conn->err) {
+      sayError($errmsg . ($conn ? ": ".$conn->print_error : ""));
       $status= DBSTATUS_FAILURE;
       goto METAERR;
     }
   }
 
+  if ($metadata_type eq 'all' or $metadata_type eq 'static') {
+    push @files, "$dumpdir/collations";
+    store_to_outfile( $files[$#files],
+      "SELECT collation_name,character_set_name ",
+      "FROM information_schema.collations",
+      "Collations dump failed"
+    );
+    push @files, "$dumpdir/timezones";
+    store_to_outfile( $files[$#files],
+      "SELECT Name ",
+      "FROM mysql.time_zone_name",
+      "Timezone dump failed"
+    );
+  }
+
   if ($metadata_type ne 'static')
   {
-    my $tbl_query_p1= "$statement_time SELECT table_schema, table_name, table_type";
+    my $tbl_query_p1= "SELECT table_schema, table_name, table_type";
     my $tbl_query_p2= "FROM information_schema.tables";
-    my $col_query_p1= "$statement_time SELECT table_schema, table_name, column_name, column_key, data_type, character_maximum_length";
+    my $col_query_p1= "SELECT table_schema, table_name, column_name, column_key, data_type, character_maximum_length";
     my $col_query_p2= "FROM information_schema.columns";
-    my $ind_query_p1= "$statement_time SELECT table_schema, table_name, column_name, index_name, non_unique XOR 1";
+    my $ind_query_p1= "SELECT table_schema, table_name, column_name, index_name, non_unique XOR 1";
     my $ind_query_p2= "FROM information_schema.statistics";
-    my $proc_query_p1= "$statement_time SELECT db, name, type";
+    my $proc_query_p1= "SELECT db, name, type";
     my $proc_query_p2= "FROM mysql.proc";
-    my $db_query_p1= "$statement_time SELECT schema_name";
+    my $db_query_p1= "SELECT schema_name";
     my $db_query_p2= "FROM information_schema.schemata";
 
     my $system_schemata= $self->systemSchemaList();
@@ -2098,127 +2107,77 @@ sub storeMetaData {
       {
         # System db
         push @files, "$dumpdir/system-db";
-        unlink $files[$#files];
-        $conn->execute(
-          $db_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-          $db_query_p2." WHERE schema_name IN ($system_schemata)"
+        store_to_outfile( $files[$#files],
+          $db_query_p1,
+          $db_query_p2." WHERE schema_name IN ($system_schemata)",
+          "System schemata dump failed"
         );
-        if ($conn->err) {
-          sayError("System schemata dump failed: ".$conn->print_error);
-          $status= DBSTATUS_FAILURE;
-          goto METAERR;
-        }
         # System tables
         push @files, "$dumpdir/system-tables";
-        unlink $files[$#files];
-        $conn->execute(
-          $tbl_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-          $tbl_query_p2." WHERE table_schema IN ($system_schemata)"
+        store_to_outfile( $files[$#files],
+          $tbl_query_p1,
+          $tbl_query_p2." WHERE table_schema IN ($system_schemata)",
+          "System table dump failed"
         );
-        if ($conn->err) {
-          sayError("System table dump failed: ".$conn->print_error);
-          $status= DBSTATUS_FAILURE;
-          goto METAERR;
-        }
         # System table columns
         push @files, "$dumpdir/system-columns";
-        unlink $files[$#files];
-        $conn->execute(
-          $col_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-          $col_query_p2." WHERE table_schema IN ($system_schemata)"
+        store_to_outfile( $files[$#files],
+          $col_query_p1,
+          $col_query_p2." WHERE table_schema IN ($system_schemata)",
+          "System table column dump failed"
         );
-        if ($conn->err) {
-          sayError("System table column dump failed: ".$conn->print_error);
-          $status= DBSTATUS_FAILURE;
-          goto METAERR;
-        }
         # System table columns
         push @files, "$dumpdir/system-indexes";
-        unlink $files[$#files];
-        $conn->execute(
-          $ind_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-          $ind_query_p2." WHERE table_schema IN ($system_schemata)"
+        store_to_outfile( $files[$#files],
+          $ind_query_p1,
+          $ind_query_p2." WHERE table_schema IN ($system_schemata)",
+          "System table index dump failed"
         );
-        if ($conn->err) {
-          sayError("System table index dump failed: ".$conn->print_error);
-          $status= DBSTATUS_FAILURE;
-          goto METAERR;
-        }
         # System stored proc
         push @files, "$dumpdir/system-proc";
-        unlink $files[$#files];
-        $conn->execute(
-          $proc_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-          $proc_query_p2." WHERE db IN ($system_schemata)"
+        store_to_outfile( $files[$#files],
+          $proc_query_p1,
+          $proc_query_p2." WHERE db IN ($system_schemata)",
+          "System proc dump failed"
         );
-        if ($conn->err) {
-          sayError("System proc dump failed: ".$conn->print_error);
-          $status= DBSTATUS_FAILURE;
-          goto METAERR;
-        }
       }
       if ($metadata_type ne 'system')
       {
         # Non-system db
         push @files, "$dumpdir/nonsystem-db";
-        unlink $files[$#files];
-        $conn->execute(
-          $db_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-          $db_query_p2." WHERE schema_name NOT IN ($system_schemata,$exempt_schemata)"
+        store_to_outfile( $files[$#files],
+          $db_query_p1,
+          $db_query_p2." WHERE schema_name NOT IN ($system_schemata,$exempt_schemata)",
+          "Non-system schemata dump failed"
         );
-        if ($conn->err) {
-          sayError("Non-system schemata dump failed: ".$conn->print_error);
-          $status= DBSTATUS_FAILURE;
-          goto METAERR;
-        }
         # Non-system tables
         push @files, "$dumpdir/nonsystem-tables";
-        unlink $files[$#files];
-        $conn->execute(
-          $tbl_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-          $tbl_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)"
+        store_to_outfile( $files[$#files],
+          $tbl_query_p1,
+          $tbl_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)",
+          "Non-system table dump failed"
         );
-        if ($conn->err) {
-          sayError("Non-system table dump failed: ".$conn->print_error);
-          $status= DBSTATUS_FAILURE;
-          goto METAERR;
-        }
         # Non-system table columns
         push @files, "$dumpdir/nonsystem-columns";
-        unlink $files[$#files];
-        $conn->execute(
-          $col_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-          $col_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)"
+        store_to_outfile( $files[$#files],
+          $col_query_p1,
+          $col_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)",
+          "Non-system table column dump failed"
         );
-        if ($conn->err) {
-          sayError("Non-system table column dump failed: ".$conn->print_error);
-          $status= DBSTATUS_FAILURE;
-          goto METAERR;
-        }
         # Non-system table indexes
         push @files, "$dumpdir/nonsystem-indexes";
-        unlink $files[$#files];
-        $conn->execute(
-          $ind_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-          $ind_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)"
+        store_to_outfile( $files[$#files],
+          $ind_query_p1,
+          $ind_query_p2." WHERE table_schema NOT IN ($system_schemata,$exempt_schemata)",
+          "Non-system table index dump failed"
         );
-        if ($conn->err) {
-          sayError("Non-system table index dump failed: ".$conn->print_error);
-          $status= DBSTATUS_FAILURE;
-          goto METAERR;
-        }
         # Non-system stored procedures
         push @files, "$dumpdir/nonsystem-proc";
-        unlink $files[$#files];
-        $conn->execute(
-          $proc_query_p1." INTO OUTFILE '$files[$#files]' FIELDS TERMINATED BY ';' ".
-          $proc_query_p2." WHERE db NOT IN ($system_schemata,$exempt_schemata)"
+        store_to_outfile( $files[$#files],
+          $proc_query_p1,
+          $proc_query_p2." WHERE db NOT IN ($system_schemata,$exempt_schemata)",
+          "Non-system proc dump failed"
         );
-        if ($conn->err) {
-          sayError("Non-system proc dump failed: ".$conn->print_error);
-          $status= DBSTATUS_FAILURE;
-          goto METAERR;
-        }
       }
     } else {
       sayError("Metadata dumper lost connection to the server");
