@@ -13,7 +13,14 @@
 # Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 # 11.0+
 # Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+# 11.2+
+# Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33077:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ ARRAY::AddValue
+=~ ha_connect::CondFilter
+=~ ha_connect::cond_push
 MDEV-33045:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ Binary_string::c_ptr_safe
@@ -108,6 +115,11 @@ MDEV-32824:
 =~ handler::compare_key
 =~ ha_innobase::multi_range_read_next
 =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-32803:
+=~ Assertion \`total == 0'
+=~ Event_log::write_cache_raw
+=~ online_alter_end_trans
+=~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-32787:
 =~ Assertion \`!wsrep_has_changes(thd) \|\| (thd->lex->sql_command == SQLCOM_CREATE_TABLE && !thd->is_current_stmt_binlog_format_row()) \|\| thd->wsrep_cs()\.transaction()\.state() == wsrep::transaction::s_aborted'
 =~ wsrep_commit_empty
@@ -186,7 +198,7 @@ MDEV-32684:
 MDEV-32614:
 =~ LeakSanitizer
 =~ copy_data_between_tables
-=~ Sql_cmd_alter_table::execute(
+=~ Sql_cmd_alter_table::execute|mysql_alter_table
 =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '11\.1[0-9]|Server version: 11\.1[0-9]|Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 MDEV-32575:
 =~ MemorySanitizer|Conditional jump or move depends on uninitialised value
@@ -1205,6 +1217,11 @@ MDEV-29122:
 =~ my_mb_wc_bin
 =~ Item_func_soundex::val_str
 =~ Protocol::send_result_set_row
+=~ Version: '10\.[3-5]|Server version: 10\.[3-5]
+MDEV-29122:
+=~ AddressSanitizer|signal|MemorySanitizer
+=~ Item_char_typecast::val_str_generic
+=~ Item_handled_func::Handler_str::val_.*
 =~ Version: '10\.[3-5]|Server version: 10\.[3-5]
 MDEV-29113:
 =~ Assertion \`inited==NONE \|\| (inited==RND && scan)'
