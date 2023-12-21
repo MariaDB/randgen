@@ -19,9 +19,15 @@ query_init:
   { $tmp_table = 0; _set_db('test') } CREATE FUNCTION IF NOT EXISTS MIN2(a BIGINT, b BIGINT) RETURNS BIGINT RETURN (a>b,b,a) ;
 
 query:
-    ==FACTOR:9== { _set_db('ANY') }        func_select_or_explain_select
-  |              { _set_db('ANY') }        { $tmp_table++; '' } func_create_and_drop
-  |              { _set_db('NON-SYSTEM') } func_alter_table
+    ==FACTOR:9==    { _set_db('ANY') }        func_select_or_explain_select
+  |                 { _set_db('ANY') }        { $tmp_table++; '' } func_create_and_drop
+  |                 { _set_db('NON-SYSTEM') } func_alter_table
+  | ==FACTOR:0.01== { _set_db('ANY') }        func_set_binlog_variables
+;
+
+func_set_binlog_variables:
+     SELECT VARIABLE_VALUE INTO @func_binlog_file FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE VARIABLE_NAME = 'Binlog_snapshot_file'
+  ;; SELECT VARIABLE_VALUE INTO @func_binlog_pos FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE VARIABLE_NAME = 'Binlog_snapshot_position'
 ;
 
 func_alter_table:
@@ -116,6 +122,7 @@ func_func:
 ;
 
 func_misc_func:
+   BINLOG_GTID_POS(@func_binlog_file,@func_binlog_pos) |
    DEFAULT( _field ) |
    GET_LOCK( func_arg_char , func_zero_or_almost ) |
 # TODO: provide reasonable IP
@@ -123,7 +130,7 @@ func_misc_func:
    INET_NTOA( func_arg ) |
    IS_FREE_LOCK( func_arg_char ) |
    IS_USED_LOCK( func_arg_char ) |
-   MASTER_POS_WAIT( 'log', _int_unsigned, func_zero_or_almost ) |
+   MASTER_POS_WAIT(@func_binlog_file, @func_binlog_pos, func_zero_or_almost ) |
    NAME_CONST( func_const_char_value, func_value ) |
    RAND(_int_unsigned) | RAND( func_arg ) |
    RELEASE_LOCK( func_arg_char ) |
