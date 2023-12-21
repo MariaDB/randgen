@@ -98,4 +98,10 @@ sub run_mbackup_in_background {
     return -1;
 }
 
+sub binlog_info {
+  my $self= shift;
+  my $prng = $self->prng;
+  return $prng->arrayElement(['OFF','ON','LOCKLESS','AUTO']);
+}
+
 1;

@@ -123,6 +123,7 @@ sub run {
     # Test flow can finish (successfully) before end_time, e.g.
     # due to the exceeded number of queries.
     my $test_flow_finished= 0;
+    my $binlog_info= $self->binlog_info();
 
   BACKUPLOOP:
     while (time() < $end_time - $interval_between_backups)
@@ -155,7 +156,7 @@ sub run {
       $backup_num++;
       $self->printStep("Creating full backup #$backup_num");
       my $mbackup_command= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup_${backup_num} $mbackup" : $mbackup);
-      $status= $self->run_mbackup_in_background("$mbackup_command --backup --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
+      $status= $self->run_mbackup_in_background("$mbackup_command --binlog-info=$binlog_info --backup --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
 
       if ($status == STATUS_OK) {
           say("Backup #$backup_num finished successfully");

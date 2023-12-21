@@ -122,6 +122,7 @@ sub run {
     # Test flow can finish (successfully) before end_time, e.g.
     # due to the exceeded number of queries.
     my $test_flow_finished= 0;
+    my $binlog_info= $self->binlog_info();
 
   BACKUPLOOP:
     while (time() < $end_time - $interval_between_backups)
@@ -155,10 +156,10 @@ sub run {
       if ($backup_num == 0)
       {
           $self->printStep("Creating initial full backup");
-          $status= $self->run_mbackup_in_background("$mbackup_command --backup --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_0 --protocol=tcp --port=".$server->port." --user=".$server->user." > $vardir/mbackup_backup_0.log", $end_time);
+          $status= $self->run_mbackup_in_background("$mbackup_command --backup --binlog-info=$binlog_info --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_0 --protocol=tcp --port=".$server->port." --user=".$server->user." > $vardir/mbackup_backup_0.log", $end_time);
       } else {
           $self->printStep("Creating incremental backup #$backup_num");
-          $status= $self->run_mbackup_in_background("$mbackup_command --backup --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --incremental-basedir=${mbackup_target}_".($backup_num-1)." --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
+          $status= $self->run_mbackup_in_background("$mbackup_command --backup --binlog-info=$binlog_info --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --incremental-basedir=${mbackup_target}_".($backup_num-1)." --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
       }
       if ($status == STATUS_OK) {
           say("Backup #$backup_num finished successfully");
