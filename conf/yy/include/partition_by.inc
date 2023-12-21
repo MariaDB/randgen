@@ -141,7 +141,7 @@ drop_create:
   DROP TABLE if_exists _table[invariant] ;; create_part_invar ;
 
 alter:
-  ==FACTOR:20== ALTER TABLE _table alter_operation |
+  ==FACTOR:10== ALTER TABLE _table alter_operation |
                 alter_exchange |
                 alter_convert_to /* compatibility 10.7.1,es-10.6 */ |
                 alter_convert_from /* compatibility 10.7.1,es-10.6 */
@@ -150,12 +150,17 @@ alter:
 alter_exchange:
      CREATE OR REPLACE TABLE tp_exchange LIKE _table[invariant]
   ;; ALTER TABLE tp_exchange REMOVE PARTITIONING
-  ;; ALTER TABLE _table[invariant] EXCHANGE PARTITION partition_name WITH TABLE tp_exchange
+  ;; ALTER TABLE _table[invariant] EXCHANGE PARTITION partition_name WITH TABLE tp_exchange opt_with_without_validation
+;
+
+opt_with_without_validation:
+  | /*!110400 WITH VALIDATION */
+  | /*!110400 WITHOUT VALIDATION */
 ;
 
 alter_convert_to:
      DROP TABLE IF EXISTS tp_exchange
-  ;; ALTER TABLE _table CONVERT PARTITION partition_name TO TABLE tp_exchange
+  ;; ALTER TABLE _table CONVERT PARTITION partition_name TO TABLE tp_exchange opt_with_without_validation
 ;
 
 alter_convert_from:
