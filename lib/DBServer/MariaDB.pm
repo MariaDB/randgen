@@ -414,8 +414,8 @@ sub createMysqlBase  {
     push @$boot_options, "--loose-skip-simple-password-check";
     push @$boot_options, "--loose-skip-password-reuse-check";
     # Can't be read-only
-    push @$boot_options, "--skip-transaction-read-only";
-    push @$boot_options, "--skip-read-only";
+    push @$boot_options, "--loose-skip-transaction-read-only";
+    push @$boot_options, "--loose-skip-read-only";
 
     my $command;
 
@@ -448,25 +448,29 @@ sub createMysqlBase  {
     print BOOT "CREATE DATABASE IF NOT EXISTS test;\n";
     print BOOT "CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria;\n";
     if ($self->user ne 'root') {
-        my $user= $self->user.'@localhost';
-        print BOOT "CREATE ROLE admin;\n";
+      my $user= $self->user.'@localhost';
+      if ($self->_notOlderThan(10,0,5)) {
+        print BOOT "/*!100005 CREATE ROLE admin */;\n";
         print BOOT "GRANT ALL ON *.* TO admin WITH GRANT OPTION;\n";
         print BOOT "CREATE USER $user;\n";
         print BOOT "GRANT /*!100502 BINLOG ADMIN, BINLOG MONITOR, BINLOG REPLAY, CONNECTION ADMIN, FEDERATED ADMIN, ".
                                    "READ_ONLY ADMIN, REPLICATION MASTER ADMIN, REPLICATION REPLICA, REPLICATION SLAVE ADMIN, SET USER, */ ".
                          "/*!100509 REPLICA MONITOR, */ ".
                    "CREATE USER, FILE, PROCESS, RELOAD, REPLICATION CLIENT, SHOW DATABASES, SHUTDOWN, SUPER ON *.* TO $user;\n";
-        print BOOT "GRANT CREATE, SELECT ON *.* TO $user;\n";
-        print BOOT "GRANT ALL ON test.* TO $user;\n";
-        print BOOT "GRANT ALL ON transforms.* TO $user;\n";
-        print BOOT "GRANT ALL ON mysql.rqg_feature_registry TO $user;\n";
-        print BOOT "GRANT INSERT, UPDATE, DELETE ON performance_schema.* TO $user;\n";
-        print BOOT "GRANT EXECUTE ON sys.* TO $user;\n";
-        if ($self->_notOlderThan(10,4,0)) {
-          print BOOT "UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root');\n";
-        }
-        print BOOT "DELETE FROM mysql.roles_mapping WHERE Role = 'admin';\n";
-        print BOOT "INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y');\n";
+      } else {
+        print BOOT "GRANT ALL ON *.* TO $user WITH GRANT OPTION;\n";
+      }
+      print BOOT "GRANT CREATE, SELECT ON *.* TO $user;\n";
+      print BOOT "GRANT ALL ON test.* TO $user;\n";
+      print BOOT "GRANT ALL ON transforms.* TO $user;\n";
+      print BOOT "GRANT ALL ON mysql.rqg_feature_registry TO $user;\n";
+      print BOOT "GRANT INSERT, UPDATE, DELETE ON performance_schema.* TO $user;\n";
+      print BOOT "GRANT EXECUTE ON sys.* TO $user;\n";
+      if ($self->_notOlderThan(10,4,0)) {
+        print BOOT "UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root');\n";
+      }
+      print BOOT "/*!100005 DELETE FROM mysql.roles_mapping WHERE Role = 'admin' */;\n";
+      print BOOT "/*!100005 INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y') */;\n";
     }
     close BOOT;
 
@@ -2052,7 +2056,7 @@ sub storeMetaData {
   sub store_to_outfile {
     my ($f, $q1, $q2, $errmsg)= @_;
     # If executors are waiting, we should produce the result regardless the timeout
-    my $statement_time= "SET STATEMENT max_statement_time=$timeout FOR";
+    my $statement_time= "/*!100102 SET STATEMENT max_statement_time=$timeout FOR */";
 
     if ($conn) {
       my $query= $statement_time." ".$q1." INTO OUTFILE '$f' FIELDS TERMINATED BY ';' ".$q2;
