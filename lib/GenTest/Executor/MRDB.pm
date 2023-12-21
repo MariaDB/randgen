@@ -38,8 +38,8 @@ use GenTest::Random;
 
 sub admin {
   my $executor= shift;
-  $executor->execute("SET ROLE admin");
-  $executor->execute("SET SESSION tx_read_only= OFF");
+  $executor->execute("/*!100005 SET ROLE admin */");
+  $executor->execute("/*!100001 SET SESSION tx_read_only= OFF */");
 }
 
 sub connection {
