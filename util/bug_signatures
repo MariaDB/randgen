@@ -16,6 +16,11 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33104:
+=~ Assertion \`table\.get_ref_count() <= 1'
+=~ trx_t::drop_table
+=~ Sql_cmd_alter_table::execute
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-33077:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ ARRAY::AddValue
@@ -110,7 +115,7 @@ MDEV-32831:
 =~ Query .* RANDOM_BYTES
 =~ Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32824:
-=~ Conditional jump or move depends on uninitialised value
+=~ Conditional jump or move depends on uninitialised value|MemorySanitizer: use-of-uninitialized-value
 =~ key_cmp
 =~ handler::compare_key
 =~ ha_innobase::multi_range_read_next
@@ -211,7 +216,7 @@ MDEV-32572:
 =~ page_cur_search_with_match
 =~ QUICK_RANGE_SELECT::get_next_prefix
 MDEV-32572:
-=~ Conditional jump or move depends on uninitialised value
+=~ Conditional jump or move depends on uninitialised value|MemorySanitizer: use-of-uninitialized-value
 =~ mach_write_to_2
 =~ rec_convert_dtuple_to_rec
 =~ row_ins_clust_index_entry
@@ -272,7 +277,7 @@ MDEV-32437:
 =~ Dec_ptr::cmp
 =~ Arg_comparator::compare
 MDEV-32436:
-=~ Conditional jump or move depends on uninitialised value
+=~ Conditional jump or move depends on uninitialised value|MemorySanitizer: use-of-uninitialized-value
 =~ mach_write_to_
 =~ rec_convert_dtuple_to_rec
 =~ row_ins
@@ -979,7 +984,7 @@ MDEV-29933:
 =~ join_read_always_key
 # Fixed in 10.4, not merged up yet
 MDEV-29932:
-=~ AddressSanitizer|signal|Assertion \`need_refix()'
+  =~ AddressSanitizer|signal|Assertion \`need_refix()'|MemorySanitizer
 =~ Virtual_column_info::need_refix|Virtual_column_info::cleanup_session_expr
 =~ close_thread_table
 =~ handle_delayed_insert
@@ -1154,6 +1159,10 @@ MDEV-29411:
 =~ signal|AddressSanitizer
 =~ Assertion \`!eliminated'
 =~ Item_subselect::exec
+MDEV-29360:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ Item_ref::transform
+=~ pushdown_cond_for_derived
 MDEV-29317:
 =~ Assertion \`sp && savepoint_next && \*sp && \*sp <= savepoint_level'
 =~ federatedx_txn::sp_release|federatedx_txn::sp_rollback
@@ -3627,7 +3636,7 @@ MDEV-18980:
 =~ choose_plan
 =~ make_join_statistics
 MDEV-18977:
-=~ Conditional jump or move depends on uninitialised value
+=~ Conditional jump or move depends on uninitialised value|MemorySanitizer: use-of-uninitialized-value
 =~ TABLE::prune_range_rowid_filters
 =~ TABLE::init_cost_info_for_usable_range_rowid_filters
 MDEV-18947:
