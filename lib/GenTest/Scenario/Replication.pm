@@ -127,8 +127,8 @@ sub run {
       my ($master, $slave)= ($1-1, $2-1);
       say("Enabling $c replication");
       my $master_conn= Connection::Perl->new( server => $servers[$master], role => 'super', name => 'RPL' );
-      $master_conn->execute("SET tx_read_only= OFF");
-      $master_conn->execute("CREATE USER IF NOT EXISTS replication IDENTIFIED BY 'yvp.utu9azv4xgt6VRT'");
+      $master_conn->execute("/*!100001 SET tx_read_only= OFF */");
+      $master_conn->execute("CREATE USER /*!100104 IF NOT EXISTS */ replication IDENTIFIED BY 'yvp.utu9azv4xgt6VRT'");
       unless ($master_conn->err) {
         $master_conn->execute("GRANT REPLICATION SLAVE ON *.* TO replication");
       }
@@ -139,7 +139,7 @@ sub run {
       }
       my $master_port= $servers[$master]->port;
       my $slave_conn= Connection::Perl->new( server => $servers[$slave], role => 'super', name => 'RPL' );
-      $slave_conn->execute("SET GLOBAL tx_read_only= OFF");
+      $slave_conn->execute("/*!100001 SET GLOBAL tx_read_only= OFF */");
       $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT', MASTER_SSL=0");
       $slave_conn->execute("START SLAVE");
       if ($slave_conn->err) {

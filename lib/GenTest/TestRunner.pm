@@ -576,7 +576,7 @@ sub registerFeatures {
     sayError("Could not connect to server to register features @{$features}");
     return;
   }
-  if ($conn->execute("SET STATEMENT enforce_storage_engine= NULL FOR CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria") != STATUS_OK) {
+  if ($conn->execute("/*!100102 SET STATEMENT enforce_storage_engine= NULL FOR */ CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria") != STATUS_OK) {
     sayError("Could not create mysql.rqg_feature_registry: ".$conn->print_error);
     return;
   }
