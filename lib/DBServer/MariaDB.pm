@@ -416,6 +416,10 @@ sub createMysqlBase  {
     # Can't be read-only
     push @$boot_options, "--loose-skip-transaction-read-only";
     push @$boot_options, "--loose-skip-read-only";
+    # The options are being added in 11.5 and low values prevent timezones
+    # from being loaded
+    push @$boot_options, "--loose-max_tmp_space_usage=0";
+    push @$boot_options, "--loose-max_total_tmp_space_usage=0";
 
     my $command;
 
@@ -2044,6 +2048,10 @@ sub storeMetaData {
     goto METAERR;
   }
 
+  if (defined $self->serverVariable('max_tmp_space_usage')) {
+    $conn->execute('SET @@global.max_total_tmp_space_usage=0, @@max_tmp_space_usage=0');
+  }
+
   my @files= ();
 
   my $timeout= $end_time - time();
@@ -2404,6 +2412,10 @@ sub storeMetaData {
   }
 
   METAERR:
+  if (defined $self->serverVariable('max_tmp_space_usage')) {
+    $conn->execute('SET @@global.max_total_tmp_space_usage=DEFAULT, @@max_tmp_space_usage=DEFAULT');
+  }
+
   if ($status != STATUS_OK) {
     unlink @files, @waiters;
     return $status;
