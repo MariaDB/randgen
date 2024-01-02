@@ -41,6 +41,9 @@ MDEV-33031:
 =~ MYSQL_BIN_LOG::set_status_variables
 =~ PFS_status_variable_cache::manifest
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-33031:
+=~ safe_mutex: Found wrong usage of mutex 'lock' and 'LOCK_thd_kill'
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-33030:
 =~ Assertion \`0'
 =~ ha_partition::handle_unordered_next
