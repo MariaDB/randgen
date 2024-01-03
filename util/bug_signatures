@@ -16,6 +16,11 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33167:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ dict_sys_t::load_table
+=~ get_foreign_key_info
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-33165:
 =~ signal|AddressSanitizer
 =~ multi_delete::initialize_tables
