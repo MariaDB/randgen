@@ -16,6 +16,11 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33165:
+=~ signal|AddressSanitizer
+=~ multi_delete::initialize_tables
+=~ mysql_explain_union
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '11\.0|Server version: 11\.0
 MDEV-33137:
 =~ Assertion \`end_lsn == page_lsn'
 =~ recv_recover_page
