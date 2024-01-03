@@ -141,30 +141,35 @@ drop_create:
   DROP TABLE if_exists _table[invariant] ;; create_part_invar ;
 
 alter:
-  ==FACTOR:10== ALTER TABLE _table alter_operation |
-                alter_exchange |
-                alter_convert_to /* compatibility 10.7.1,es-10.6 */ |
-                alter_convert_from /* compatibility 10.7.1,es-10.6 */
+  ==FACTOR:10==   ALTER TABLE _table alter_operation |
+                  alter_exchange |
+                  alter_convert_part_to_table /* compatibility 10.7.1,es-10.6 */ |
+                  create_exchange_table ;; alter_convert_table_to_part /* compatibility 10.7.1,es-10.6 */ |
+  ==FACTOR:0.01== ALTER TABLE _table[invariant] REMOVE PARTITIONING ;; ALTER TABLE _table[invariant] partition
 ;
 
 alter_exchange:
+     create_exchange_table
+  ;; ALTER TABLE _table[invariant] EXCHANGE PARTITION partition_name[invariant] WITH TABLE tp_exchange opt_with_without_validation
+;
+
+create_exchange_table:
      CREATE OR REPLACE TABLE tp_exchange LIKE _table[invariant]
   ;; ALTER TABLE tp_exchange REMOVE PARTITIONING
-  ;; ALTER TABLE _table[invariant] EXCHANGE PARTITION partition_name WITH TABLE tp_exchange opt_with_without_validation
+  ;; INSERT IGNORE INTO tp_exchange SELECT * FROM _table[invariant] opt_pruning
 ;
+
+opt_pruning:
+  | PARTITION (partition_name) ;
 
 opt_with_without_validation:
   | /*!110400 WITH VALIDATION */
-  | /*!110400 WITHOUT VALIDATION */
+  | WITHOUT VALIDATION ;; REPAIR TABLE _table[invariant] ;; ALTER TABLE _table[invariant] REBUILD PARTITION partition_name[invariant] /* compatibility 11.4 */
 ;
 
-alter_convert_to:
+alter_convert_part_to_table:
      DROP TABLE IF EXISTS tp_exchange
-  ;; ALTER TABLE _table CONVERT PARTITION partition_name TO TABLE tp_exchange opt_with_without_validation
-;
-
-alter_convert_from:
-  ALTER TABLE _table CONVERT TABLE tp_exchange TO PARTITION partition_name VALUES LESS THAN MAXVALUE
+  ;; ALTER TABLE _table CONVERT PARTITION partition_name TO TABLE tp_exchange
 ;
 
 alter_operation:
@@ -178,7 +183,6 @@ alter_operation:
   CHECK PARTITION partition_name_list                                 |
   REBUILD PARTITION partition_name_list                               |
   REPAIR PARTITION partition_name_list                                |
-  REMOVE PARTITIONING                                                 |
   OPTIMIZE PARTITION partition_name_list                              |
   ENGINE = engine                                                     |
   ORDER BY part_field                                                 |
@@ -186,7 +190,7 @@ alter_operation:
 ;
 
 subpartition:
-  |
+  ==FACTOR:3== |
   SUBPARTITION BY linear HASH ( part_field ) SUBPARTITIONS partition_count ;
 
 linear:

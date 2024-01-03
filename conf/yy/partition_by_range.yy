@@ -67,7 +67,7 @@ partition_name_list:
   part_list last_part_elem ;
 
 partition_name:
-  { our $nb_part_list= $prng->uint16(0,$nb_parts); 'p'.$nb_part_list } ;
+  { our $nb_part_list= $prng->uint16(0,$nb_parts); 'p'.$nb_part_list . ($prng->uint16(0,3) ? '' : 'sp'.$prng->uint16(0,3)) } ;
 
 partition:
   { our $nb_part_list= $prng->uint16($nb_parts-5,$nb_parts); return undef }
@@ -77,7 +77,12 @@ partition_by_range:
           range_elements { our $ind= 0; return undef }
           PARTITION BY RANGE ( part_field ) subpartition (
           range_list
-          PARTITION {"p".$ind++} VALUES LESS THAN MAXVALUE );
+          PARTITION {"p".$ind++} VALUES LESS THAN partition_top_limit );
+
+partition_top_limit:
+  ({$prng->uint16(10000,2**32-1)}) |
+  MAXVALUE
+;
 
 range_elements:
           { our @range_list; for (my $i=0; $i<$nb_parts; $i++) { push (@range_list, "PARTITION p$i VALUES LESS THAN (".(($i+1)*3)."),")}; return undef } ;
@@ -94,3 +99,7 @@ range_list:
 
 range_elem:
         { $ind<$nb_part_list ? return @range_list[$ind++] : "" } ;
+
+alter_convert_table_to_part:
+  ALTER TABLE _table[invariant] CONVERT TABLE tp_exchange TO PARTITION pn VALUES LESS THAN partition_top_limit opt_with_without_validation ;; ALTER TABLE _table[invariant] DROP PARTITION pn
+;

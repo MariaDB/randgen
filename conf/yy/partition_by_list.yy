@@ -67,8 +67,7 @@ partition_name_comb:
   p0,p3       ;
 
 partition_name:
-  p0 | p1 | p2 | p3 ;
-
+  { 'p'.$prng->uint16(0,3) . ($prng->uint16(0,3) ? '' : 'sp'.$prng->uint16(0,3)) } ;
 
 partition:
   partition_by_list ;
@@ -96,3 +95,11 @@ populate_digits:
 shift_digit:
   { shift @digits };
 
+partition_extra:
+  VALUES IN ( { @vals = @{$prng->shuffleArray([10..100])}; join ',', @vals } ) |
+  DEFAULT
+;
+
+alter_convert_table_to_part:
+  ALTER TABLE _table[invariant] CONVERT TABLE tp_exchange TO PARTITION pn partition_extra opt_with_without_validation ;; ALTER TABLE _table[invariant] DROP PARTITION pn
+;

@@ -98,3 +98,8 @@ partition_by_key:
 
 partition_count:
   96 | 97 | 98 | 98 | 98 | 99 | 99 | 99 | 99 ;
+
+alter_convert_table_to_part:
+  # Not supported for hash partitioning
+  alter_exchange
+;
