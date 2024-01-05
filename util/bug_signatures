@@ -16,6 +16,17 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33190:
+=~ mariadbd: Got error '126 "Index is corrupted"' for .*
+=~ Delete from part .* failed with error 126\. But it was already inserted into part .*, when moving the misplaced row
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-33190:
+=~ Assertion \`trid >= info->s->state\.create_trid'
+=~ transid_store_packed
+=~ _ma_make_key
+=~ ha_partition::check_misplaced_rows
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-33184:
 =~ \[ERROR\] Moved .* misplaced rows
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG
