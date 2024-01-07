@@ -1312,3 +1312,73 @@ INSERT INTO t2_mtr VALUES
 # 
 ############################
 
+DELIMITER //
+create or replace procedure mysql.resetpasswd
+(IN  i_userid  varchar(30),
+ IN  i_database varchar(30),
+ IN  i_password varchar(30),
+ OUT proc_status varchar(30),
+ OUT msg varchar(400)
+)SQL SECURITY INVOKER
+BEGIN
+DECLARE v_readonly varchar(5);
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+BEGIN
+GET DIAGNOSTICS CONDITION 1
+ proc_status=RETURNED_SQLSTATE,
+ msg=MESSAGE_TEXT;
+ RESIGNAL;
+END;
+select variable_value into v_readonly from information_schema.global_variables where variable_name='read_only';
+SELECT v_readonly;
+
+IF ( v_readonly='OFF' and  i_userid <> 'adm' ) THEN
+set @tmpsql=CONCAT_WS('\'','set password for ',i_userid,'@',i_database,'=password(',i_password,')');
+prepare stmt from @tmpsql;
+execute stmt;
+deallocate prepare stmt;
+set @tmpsql=null;
+flush privileges;
+commit;
+
+ELSEIF ( v_readonly='OFF' and i_userid = 'adm' ) THEN
+set sql_log_bin=0;
+set @tmpsql=CONCAT_WS('\'','set password for ',i_userid,'@',i_database,'=password(',i_password,')');
+prepare stmt from @tmpsql;
+execute stmt;
+deallocate prepare stmt;
+set @tmpsql=null;
+flush privileges;
+commit;
+set sql_log_bin=1;
+
+ELSEIF (v_readonly='ON' and  i_userid = 'adm') THEN
+set sql_log_bin=0;
+set @tmpsql=CONCAT_WS('\'','set password for ',i_userid,'@',i_database,'=password(',i_password,')');
+prepare stmt from @tmpsql;
+execute stmt;
+deallocate prepare stmt;
+set @tmpsql=null;
+flush privileges;
+commit;
+set sql_log_bin=1;
+
+ELSEIF (v_readonly='ON' and i_userid <> 'adm') THEN
+select 'Its Slave';
+
+else
+select 'Invalid call';
+set proc_status=100;
+set msg=CONCAT('Failed for these input values->','i_userid:',i_userid,' host:',i_database,' read_only:',v_readonly);
+END IF;
+
+set proc_status=0;
+set msg='Success';
+END;
+//
+
+DELIMITER ;
+
+############################
+#
+############################
