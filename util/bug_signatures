@@ -276,6 +276,10 @@ MDEV-32533:
 MDEV-32533:
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-32533:
+=~ Plugin 'MEMORY' has ref_count=.* after shutdown
+=~ Warning: Memory not freed:
+=~ Version: '11\.[1-9]|Server version: 11\.[1-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-32523:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ dfield_dup|Assertion \`len <= col->len \|\| ((col->mtype) == 5 \|\| (col->mtype) == 14)'
@@ -678,7 +682,7 @@ MDEV-31279:
 MDEV-31278:
 =~ signal|AddressSanitizer
 =~ _ma_unpin_all_pages
-=~ handler::ha_check_overlaps
+=~ handler.*ha_check_overlaps
 =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31278:
 =~ ma_key_recover.c:71:5: runtime error: member access within null pointer of type 'struct st_ma_transaction'
@@ -2291,7 +2295,7 @@ MDEV-24095:
 MDEV-24038:
 =~ Assertion \`next_insert_id >= auto_inc_interval_for_cur_row\.minimum()'
 =~ handler::update_auto_increment
-=~ Query.*: .*ON DUPLICATE KEY UPDATE|mysql_parse.*ON DUPLICATE KEY
+=~ Query.*: .*ON DUPLICATE KEY UPDATE|mysql_parse.*ON DUPLICATE KEY|duplic=DUP_UPDATE
 MDEV-23984:
 =~ Assertion \`result_field'
 =~ Item_result_field::get_tmp_field_src
@@ -4285,4 +4289,4 @@ MDEV-18047: [Innodb indexes are inconsistent]
 =~ Cannot find index .* in InnoDB index dictionary
 =~ InnoDB indexes are inconsistent with what defined
 =~ InnoDB could not find key no .* with name .* from dict cache for table
-=~ contains .* indexes inside InnoDB, which is different from the number of indexes .* defined in the MariaDB
+=~ contains .* indexes inside InnoDB, which is different from the number of indexes .* defined in
