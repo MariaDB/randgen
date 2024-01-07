@@ -2394,7 +2394,6 @@ sub storeMetaData {
     }
     while (<PROC>) {
       chomp;
-      say("HERE: $_");
       my ($schema, $proc, $type) = split /;/, $_;
       $type= lc($type);
       # paramnum will be just a placeholder for now
