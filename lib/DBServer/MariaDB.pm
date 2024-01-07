@@ -2355,23 +2355,6 @@ sub storeMetaData {
       $ind_count++;
     }
     close(IND);
-    unless (open(PROC, "$dumpdir/$sys-proc")) {
-      sayError("Couldn't open $dumpdir/$sys-proc for reading: $!");
-      $status= DBSTATUS_FAILURE;
-      goto METAERR;
-    }
-    while (<PROC>) {
-      chomp;
-      my ($schema, $proc, $type) = split /;/, $_;
-      $type= lc($type);
-      # paramnum will be just a placeholder for now
-      $meta->{$schema}={} if not exists $meta->{$schema};
-      $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
-      $meta->{$schema}->{$type}->{$proc}={} if not exists $meta->{$schema}->{$type}->{$proc};
-      $meta->{$schema}->{$type}->{$proc}->{paramnum}= 0;
-      $proc_count++;
-    }
-    close(PROC);
 
     # Make sure that even empty databases (which wouldn't appear in table/index/column dumps)
     # are accounted for
@@ -2387,7 +2370,7 @@ sub storeMetaData {
     }
     close(DB);
 
-    # Finally, remove tables which have no columns
+    # Remove tables which have no columns
     foreach my $s (keys %$meta) {
       foreach my $tp (keys %{$meta->{$s}}) {
         foreach my $t (keys %{$meta->{$s}->{$tp}}) {
@@ -2401,6 +2384,28 @@ sub storeMetaData {
         }
       }
     }
+
+    # Now also add procedures/functions
+    # if we did it before, we would have removed them in the previous cleanup
+    unless (open(PROC, "$dumpdir/$sys-proc")) {
+      sayError("Couldn't open $dumpdir/$sys-proc for reading: $!");
+      $status= DBSTATUS_FAILURE;
+      goto METAERR;
+    }
+    while (<PROC>) {
+      chomp;
+      say("HERE: $_");
+      my ($schema, $proc, $type) = split /;/, $_;
+      $type= lc($type);
+      # paramnum will be just a placeholder for now
+      $meta->{$schema}={} if not exists $meta->{$schema};
+      $meta->{$schema}->{$type}={} if not exists $meta->{$schema}->{$type};
+      $meta->{$schema}->{$type}->{$proc}={} if not exists $meta->{$schema}->{$type}->{$proc};
+      $meta->{$schema}->{$type}->{$proc}->{paramnum}= 0;
+      $proc_count++;
+    }
+    close(PROC);
+
     unless (open(META,">$vardir/$sys-metadata-$ts")) {
       sayError("Couldn't open metadata file for writing: $!");
       $status= DBSTATUS_FAILURE;
