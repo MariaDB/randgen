@@ -505,6 +505,10 @@ MDEV-31896:
 =~ Assertion \`inited==INDEX'
 =~ collect_statistics_for_index
 =~ collect_statistics_for_table
+MDEV-31896:
+=~ index_init CONNECT: Open error
+=~ Got error 122 when reading table
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-31892:
 =~ signal|AddressSanitizer|Assertion \`aux_table != __null'
 =~ row_fts_merge_insert
@@ -1889,6 +1893,10 @@ MDEV-25488:
 =~ Assertion \`!writer\.checksum_len \|\| writer\.remains == 0'
 =~ MYSQL_BIN_LOG::write_cache|Event_log::write_cache
 =~ MYSQL_BIN_LOG::write_transaction_or_stmt
+MDEV-25488:
+=~ Assertion \`!(entry->using_stmt_cache && !mngr->stmt_cache\.empty() && mngr->get_binlog_cache_log((0))->error)'
+=~ MYSQL_BIN_LOG::write_transaction_or_stmt
+=~ binlog_flush_cache
 MDEV-25438:
 =~ Assertion \`last_pos == 0 \|\| pos > last_pos'
 =~ fts_cache_node_add_positions
@@ -1961,7 +1969,7 @@ MDEV-25083:
 =~ MariaBackup
 =~ strict_none|strict_innodb
 MDEV-25067:
-=~ AddressSanitizer|signal 11
+=~ AddressSanitizer|signal 11|MemorySanitizer
 =~ eliminate_tables
 =~ Prepared_statement::execute|sp_head::execute
 =~ FeatureUsage detected multi-update/delete
@@ -2295,7 +2303,7 @@ MDEV-24095:
 MDEV-24038:
 =~ Assertion \`next_insert_id >= auto_inc_interval_for_cur_row\.minimum()'
 =~ handler::update_auto_increment
-=~ Query.*: .*ON DUPLICATE KEY UPDATE|mysql_parse.*ON DUPLICATE KEY|duplic=DUP_UPDATE
+=~ handler::ha_write_row
 MDEV-23984:
 =~ Assertion \`result_field'
 =~ Item_result_field::get_tmp_field_src
@@ -4202,6 +4210,11 @@ MDEV-8089:
 =~ Apc_target::make_apc_call
 =~ fill_show_explain
 =~ get_schema_tables_result
+MDEV-5518:
+=~ Conditional jump or move depends on uninitialised value|MemorySanitizer: use-of-uninitialized-value
+=~ my_write
+=~ _ma_write_static_record
+=~ create_internal_tmp_table
 MDEV-630:
 =~ Slave SQL: Error 'Partition management on a not partitioned table is not possible'
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG|Test run ends with exit status STATUS_REPLICATION_FAILURE
