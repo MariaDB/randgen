@@ -99,13 +99,8 @@ sub modify {
   }
   else {
     # Query doesn't have ORDER BY
-    if ($query =~ /SELECT\s+(.*?)\s*FROM/) {
-      my $select_list= $1;
-      # select f(x,y) etc -- won't parse for now
-      # TODO: maybe process it later
-      if ($select_list =~ /\([^\)]+,/) {
-        return undef;
-      }
+    # Skipping complicated select list with functions, brackets etc. for now
+    if ($query =~ /SELECT\s+([^\(\)]+)\s+FROM\W+/) {
       my @select_list= split /,/, $1;
       @new_order_by_list= ();
       foreach my $s (@select_list) {
