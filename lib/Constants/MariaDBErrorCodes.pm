@@ -1,7 +1,7 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Use is subject to license terms.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020,2022 MariaDB Corporation
+# Copyright (c) 2020,2024 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -50,6 +50,7 @@ use constant  X_ER_TOO_BIG_ROW                                   => 139; # Too b
 use constant  X_ER_CRASHED2                                      => 145; # Table was marked as crashed and should be repaired
 use constant  X_ER_TABLE_DEF_CHANGED                             => 159; # The table changed in the storage engine
 use constant  X_ER_AUTOINCREMENT                                 => 167; # Failed to set row auto increment value
+use constant  X_ER_INVALID_FTS_ID                                => 182; # Invalid InnoDB FTS Doc ID
 use constant  X_ER_INCOMPATIBLE_FRM                              => 190; # Incompatible key or row definition between the MariaDB .frm file and the information in the storage engine
 
 use constant  ER_NISAMCHK                                       => 1001; # !!! NOT MAPPED !!! # isamchk
@@ -2509,6 +2510,7 @@ sub BEGIN {
     X_ER_CRASHED1()                                     => STATUS_IGNORED_ERROR,
     X_ER_CRASHED2()                                     => STATUS_IGNORED_ERROR,
     X_ER_INCOMPATIBLE_FRM()                             => STATUS_DATABASE_CORRUPTION,
+    X_ER_INVALID_FTS_ID()                               => STATUS_RUNTIME_ERROR,
     X_ER_OUTOFMEMORY2()                                 => STATUS_OUT_OF_MEMORY,
     X_ER_TABLE_DEF_CHANGED()                            => STATUS_RUNTIME_ERROR,
     X_ER_TOO_BIG_ROW()                                  => STATUS_RUNTIME_ERROR,
