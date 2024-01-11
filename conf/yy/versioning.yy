@@ -72,11 +72,16 @@ vers_query:
   | ==FACTOR:0.5==  vers_insert_history /* compatibility 10.11.0 */
   | ==FACTOR:0.5==  vers_delete_history
   | ==FACTOR:0.05== vers_change_variable
-  | ==FACTOR:5==    vers_alter
+  | ==FACTOR:5==    vers_optional_switch_db vers_alter
   | ==FACTOR:2==    vers_alter_partitioning
   | ==FACTOR:15==   vers_select
   | ==FACTOR:0.5==  vers_tx_history
   | ==FACTOR:0.1==  vers_create_view
+;
+
+vers_optional_switch_db:
+  ==FACTOR:100== |
+  { _set_db('NON-SYSTEM) }
 ;
 
 vers_engine:
@@ -234,10 +239,15 @@ vers_partition_number_optional:
 ;
 
 vers_partitioning_interval_or_limit:
-    INTERVAL _positive_digit vers_interval
-  | INTERVAL _positive_digit vers_interval
+    ==FACTOR:2== INTERVAL _positive_digit vers_interval vers_starts_optional
   | LIMIT _smallint_positive
   | LIMIT _positive_digit
+;
+
+vers_starts_optional:
+  |
+#  STARTS _datetime |
+  STARTS { ($sec,$min,$hour,$mday,$mon,$year,undef,undef,undef)= localtime(); "'".sprintf('%04d-%02d-%02d %02d:%02d:%02d',$year+1900,$mon+1,$mday,$hour,$min)."'" }
 ;
 
 vers_subpartitioning_optional:
