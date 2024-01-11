@@ -43,7 +43,7 @@
 
 
 query_init:
-    { $indexcount= 0; '' };
+    { $indexcount= 0; '' } fts_stopword_table;
 
 # Run Select , DML , DDL , transactional statements
 query:
@@ -56,8 +56,32 @@ fts_query:
     create_drop_index |
           transaction |
   ==FACTOR:3== insert |
+  ==FACTOR:0.01== fts_stopword_table |
+  ==FACTOR:0.05== fts_stopword_vars |
   ==FACTOR:0.05== fts_doc_id
 ;
+
+fts_stopword_table:
+  CREATE OR REPLACE TABLE full_text_search_db.stopword (`value` VARCHAR({$prng->uint16(1,256)})) fts_with_system_versioning
+  ;; GRANT ALL ON full_text_search_db.stopword TO _current_user
+  ;; REVOKE ALTER, DELETE ON full_text_search_db.stopword FROM _current_user
+  ;; fts_optional_insert_stopwords ;
+
+fts_with_system_versioning:
+  | ==FACTOR:10== WITH SYSTEM VERSIONING ;
+
+fts_stopword_vars:
+  SET innodb_ft_user_stopword_table = DEFAULT |
+  SET innodb_ft_enable_stopword = __ON_x_OFF |
+  SET innodb_ft_user_stopword_table = 'full_text_search_db/stopword'
+;
+
+fts_optional_insert_stopwords:
+  | INSERT INTO full_text_search_db.stopword VALUES fts_stopword_list ;
+
+fts_stopword_list:
+  (_english) |
+  ==FACTOR:5== (_english), fts_stopword_list ;
 
 # Add/Drop fulltext index
 create_drop_index:
