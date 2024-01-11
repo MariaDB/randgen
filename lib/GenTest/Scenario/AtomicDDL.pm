@@ -64,7 +64,7 @@ sub new {
 
 sub run {
   my $self= shift;
-  my ($status, $server, $slave, $databases, $general_log_file);
+  my ($status, $server, $slave, $databases);
   my ($datadir, $datadir_before_recovery);
   my $prng = $self->prng;
 
@@ -114,11 +114,6 @@ sub run {
     sayError("The server failed to start");
     $status= STATUS_SERVER_STARTUP_FAILURE if $status < STATUS_SERVER_STARTUP_FAILURE;
     goto FINALIZE;
-  }
-
-  $general_log_file= $server->serverVariable('general_log_file');
-  unless ($general_log_file =~ /(?:\/|\\)/) {
-    $general_log_file= $server->datadir.'/'.$general_log_file;
   }
 
   #####
@@ -188,9 +183,6 @@ sub run {
 
   $server->backupDatadir($datadir_before_recovery);
   move($server->errorlog, $server->errorlog.'_before_recovery');
-  if (-e $general_log_file) {
-    move($general_log_file, $general_log_file.'_before_recovery');
-  }
 
   #####
   $self->printStep("Restarting the server");
