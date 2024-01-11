@@ -23,7 +23,37 @@ admin_query:
     admin_analyze_or_explain_query
   | admin_flush
   | ==FACTOR:5== admin_show
+  | ==FACTOR:0.01== admin_cache_index
 ;
+
+admin_cache_index:
+  ==FACTOR:0.05== set_key_buffer_size |
+  ==FACTOR:0.05== set_key_cache_block_size |
+  cache_index |
+  load_index
+;
+
+cache_index:
+  CACHE INDEX _basetable IN cache_name |
+  ==FACTOR:0.01== CACHE INDEX _basetable PARTITION ( ALL ) IN cache_name ;
+
+load_index:
+  LOAD INDEX INTO CACHE _basetable __ignore_leaves(50) |
+  LOAD INDEX INTO CACHE _basetable PARTITION ( ALL ) __ignore_leaves(50) ;
+
+set_key_buffer_size:
+  SET GLOBAL cache_name.key_buffer_size = _tinyint_unsigned |
+  SET GLOBAL cache_name.key_buffer_size = _smallint_unsigned |
+  SET GLOBAL cache_name.key_buffer_size = _mediumint_unsigned ;
+
+set_key_cache_block_size:
+  SET GLOBAL cache_name.key_cache_block_size = key_cache_block_size_enum;
+
+key_cache_block_size_enum:
+  512 | 1024 | 2048 | 4096 | 8192 | 16384 ;
+
+cache_name:
+  c1 | c2 | c3 | c4;
 
 admin_analyze_or_explain_query:
   SHOW admin_analyze_or_explain admin_format_json FOR { $prng->uint16($executors->[0]->connectionId()-10, $executors->[0]->connectionId()+10) } /* compatibility 10.11 */ |
