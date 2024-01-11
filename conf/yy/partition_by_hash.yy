@@ -103,3 +103,6 @@ alter_convert_table_to_part:
   # Not supported for hash partitioning
   alter_exchange
 ;
+
+value:
+  _digit ;

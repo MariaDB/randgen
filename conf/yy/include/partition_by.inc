@@ -31,23 +31,23 @@ init_5:
   init_table ;; init_table ;; init_table ;; init_table ;; init_table ;
 
 init_table:
-  create ;; insert_part ;; cache_index ;; load_index ;
+  create ;; insert_part ;
 
 insert_part:
-  INSERT INTO { $new_table or '_basetable' } ( `col_int_nokey`, `col_int_key` ) VALUES insert_part_vals ;
+  INSERT INTO { $last_table= $new_table or '_basetable' } ( { $last_field= $part_field or '_field' } ) VALUES insert_part_vals ;
 
 insert_part_vals:
   insert_part_vals_5 , insert_part_vals_5 , insert_part_vals_5 , 
   insert_part_vals_5 , insert_part_vals_5 , insert_part_vals_5 ;
 
 insert_part_vals_5:
-  ( value , value ) , ( value , value ) , ( value , value ) , ( value , value ) , ( value , value );
+  ( value ) , ( value ) , ( value ) , ( value ) , ( value );
 
 ##########################################################################
 # Randomly executed SQL
 
 query:
-  { $new_table= ''; _set_db('partition_db') } exec_sql ;
+  { $new_table= ''; $part_field= ''; _set_db('partition_db') } exec_sql ;
 
 exec_sql:
   select_explain |
@@ -58,37 +58,8 @@ exec_sql:
   insert | update | delete | insert | update                            |
   alter | alter | alter | alter | alter | alter                         |
   alter | alter | alter | alter | alter | alter                         |
-  cache_index | load_index                                              |
   create_sel | create_sel | create_sel | create_sel | create_sel        |
-  drop_create                                                           |
-  set_key_buffer_size | set_key_cache_block_size                        ;
-
-cache_index:
-  CACHE INDEX { $new_table or '_basetable' } IN cache_name                                                |
-  CACHE INDEX { $new_table or '_basetable' }  PARTITION ( ALL ) IN cache_name                 |
-  CACHE INDEX { $new_table or '_basetable' }  PARTITION ( partition_name_list ) IN cache_name ;
-
-load_index:
-  LOAD INDEX INTO CACHE { $new_table or '_basetable' } ignore_leaves                                               |
-  LOAD INDEX INTO CACHE { $new_table or '_basetable' } PARTITION ( ALL ) ignore_leaves                 |
-  LOAD INDEX INTO CACHE { $new_table or '_basetable' } PARTITION ( partition_name_list ) ignore_leaves ;
-
-ignore_leaves:
-  | IGNORE LEAVES ;
-
-set_key_buffer_size:
-  SET GLOBAL cache_name.key_buffer_size = _tinyint_unsigned |
-  SET GLOBAL cache_name.key_buffer_size = _smallint_unsigned |
-  SET GLOBAL cache_name.key_buffer_size = _mediumint_unsigned ;
-
-set_key_cache_block_size:
-  SET GLOBAL cache_name.key_cache_block_size = key_cache_block_size_enum;
-
-key_cache_block_size_enum:
-  512 | 1024 | 2048 | 4096 | 8192 | 16384 ;
-
-cache_name:
-  c1 | c2 | c3 | c4;
+  drop_create                                                           ;
 
 select_explain:
   EXPLAIN PARTITIONS SELECT part_field FROM _table where ;
@@ -109,8 +80,8 @@ comparison_operator:
         > | < | = | <> | != | >= | <= ;
 
 insert:
-        insert_replace INTO dml_table_name ( `col_int_nokey`, `col_int_key` ) VALUES ( value , value ) , ( value , value )                     |
-        insert_replace INTO dml_table_name ( `col_int_nokey`, `col_int_key` ) select ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
+        insert_replace INTO dml_table_name ( _field ) VALUES ( value ) , ( value )                     |
+        insert_replace INTO dml_table_name ( _field ) select ORDER BY _field LIMIT limit_rows ;
 
 insert_replace:
         INSERT | REPLACE ;
@@ -121,11 +92,8 @@ update:
 delete:
         DELETE FROM dml_table_name WHERE part_field = value ORDER BY `col_int_key` , `col_int_nokey` LIMIT limit_rows ;
 
-value:
-  _digit ;
-
 part_field:
-        `col_int_nokey` | `col_int_nokey` ;
+  { $part_field = '`col_int_nokey`' } | { $part_field = '`col_int_key`' } ;
 
 create_sel:
         create_part_invar ;

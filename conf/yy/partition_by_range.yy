@@ -27,6 +27,7 @@
 
 query_init:
      CREATE DATABASE IF NOT EXISTS partition_db
+  ;; SET time_zone = _timezone
   ;; SET ROLE admin
      # PS is a workaround for MDEV-30190
   ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON partition_db.* TO ',CURRENT_USER,' WITH GRANT OPTION')
@@ -38,7 +39,29 @@ create:
                 `col_int_nokey` INTEGER,
                 `col_int_key` INTEGER NOT NULL,
                 KEY (`col_int_key` __asc_x_desc(33,33))
-  ) engine_clause partition ;
+  ) engine_clause partition |
+  CREATE TABLE if_not_exists { $new_table= 'trange_'.(++$tblnum).'_'.$generator->threadId() } (`col_ts` TIMESTAMP) engine_clause PARTITION BY RANGE (UNIX_TIMESTAMP(col_ts)) {$ts=0; $max_ts=2147483647; $pn=0; $part_field= '`col_ts`'; ''} (partition_unix_timestamp_list) |
+  CREATE TABLE if_not_exists { $new_table= 'trange_'.(++$tblnum).'_'.$generator->threadId() } (`col_ts` TIMESTAMP)  engine_clause PARTITION BY RANGE (UNIX_TIMESTAMP(col_ts)) {$ts=0; $max_ts=4294967295; $pn=0; $part_field= '`col_ts`'; ''} (partition_unix_timestamp_list) /* compatibility 11.4 */
+;
+
+partition_unix_timestamp_list:
+  partition_unix_ts_list optional_max_value_partition
+;
+
+partition_unix_ts_list:
+  partition_unix_ts |
+  ==FACTOR:3== partition_unix_ts_list, partition_unix_ts
+;
+
+partition_unix_ts:
+  PARTITION { 'p'.($pn++) } VALUES LESS THAN ({$ts= $prng->uint16($ts,$max_ts)});
+
+optional_max_value_partition:
+  ==FACTOR:2== |
+  , PARTITION { 'p'.($pn++) } VALUES LESS THAN ($max_ts) |
+  , PARTITION { 'p'.($pn++) } VALUES LESS THAN (MAXVALUE) |
+  , PARTITION { 'p'.($pn++) } VALUES LESS THAN ($max_ts) , PARTITION { 'p'.($pn++) } VALUES LESS THAN (MAXVALUE)
+;
 
 dml_table_name:
   { our $ind= 0; return undef }
@@ -102,4 +125,11 @@ range_elem:
 
 alter_convert_table_to_part:
   ALTER TABLE _table[invariant] CONVERT TABLE tp_exchange TO PARTITION pn VALUES LESS THAN partition_top_limit opt_with_without_validation ;; ALTER TABLE _table[invariant] DROP PARTITION pn
+;
+
+value:
+  ==FACTOR:3== _digit |
+  { $prng->uint16(0,2147483647) } |
+  ==FACTOR:0.1== FROM_UNIXTIME({ $prng->uint16(2147483647,4294967295) }) |
+  ==FACTOR:0.1== FROM_UNIXTIME(4294967295)
 ;

@@ -103,3 +103,6 @@ partition_extra:
 alter_convert_table_to_part:
   ALTER TABLE _table[invariant] CONVERT TABLE tp_exchange TO PARTITION pn partition_extra opt_with_without_validation ;; ALTER TABLE _table[invariant] DROP PARTITION pn
 ;
+
+value:
+  _digit ;
