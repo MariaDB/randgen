@@ -75,6 +75,7 @@ use constant MYSQLD_MANUAL_GDB => 35;
 use constant MYSQLD_HOST => 36;
 use constant MYSQLD_PS_PROTOCOL => 37;
 use constant MYSQLD_LAST_CHECKED_MARKER => 38;
+use constant MYSQLD_ASAN => 39;
 
 use constant MARIABACKUP => 50;
 use constant TZINFO_TO_SQL => 51;
@@ -138,7 +139,7 @@ sub new {
       croak("We could not find the server binary");
     }
 
-    $self->serverType($self->[MYSQLD_MYSQLD]);
+    $self->checkServerType($self->[MYSQLD_MYSQLD]);
 
     $self->[MYSQLD_BOOT_SQL] = [];
 
@@ -302,15 +303,25 @@ sub valgrind_suppressionfile {
 #}
 
 # Check the type of mysqld server.
-sub serverType {
+sub checkServerType {
     my ($self, $mysqld) = @_;
+    return if defined $self->[MYSQLD_SERVER_TYPE];
+
     $self->[MYSQLD_SERVER_TYPE] = "Release";
 
     my $command="$mysqld --version";
     my $result=`LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command 2>&1`;
 
     $self->[MYSQLD_SERVER_TYPE] = "Debug" if ($result =~ /debug/sig);
-    return $self->[MYSQLD_SERVER_TYPE];
+
+    $self->[MYSQLD_ASAN]= 0;
+    unless (osWindows()) {
+      my $result=`LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ldd $mysqld 2>&1 | grep libasan`;
+      chomp $result;
+      if ($result) {
+        $self->[MYSQLD_ASAN]= 1;
+      }
+    }
 }
 
 sub generateCommand {
@@ -501,6 +512,7 @@ sub startServer {
     my @extra_opts= ( '--max-allowed-packet=1G', # Allow loading bigger blobs
                       '--loose-innodb-ft-min-token-size=10', # Workaround for MDEV-25324
                       '--secure-file-priv=', # Make sure that LOAD_FILE and such works
+                      '--loose-debug-assert-on-not-freed-memory='.($self->[MYSQLD_ASAN] ? 0 : 1),
                       (defined $self->[MYSQLD_SERVER_OPTIONS] ? @{$self->[MYSQLD_SERVER_OPTIONS]} : ())
                     );
 
@@ -1895,7 +1907,7 @@ sub printInfo {
 
     say("Server version: ". $self->version);
     say("Binary: ". $self->binary);
-    say("Type: ". $self->serverType($self->binary));
+    say("Type: ". $self->[MYSQLD_SERVER_TYPE]. ($self->[MYSQLD_ASAN] ? "-ASAN" : ""));
     say("Datadir: ". $self->datadir);
     say("Tmpdir: ". $self->tmpdir);
     say("Corefile: " . $self->corefile);
