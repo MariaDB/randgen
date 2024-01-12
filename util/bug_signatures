@@ -951,6 +951,11 @@ MDEV-30371:
 =~ Assertion \`0'
 =~ Type_handler_string_result::make_packed_sort_key_part
 =~ find_all_keys|create_sort_index
+MDEV-30363:
+=~ InnoDB: Failing assertion: trx->error_state == DB_SUCCESS
+=~ que_run_threads
+=~ fts_load_stopword
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-30309:
 =~ Assertion \`!(\*with_wild)'
 =~ setup_wild
