@@ -156,7 +156,7 @@ MDEV-32824:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer: use-of-uninitialized-value
 =~ key_cmp
 =~ handler::compare_key
-=~ ha_innobase::multi_range_read_next
+=~ handler::multi_range_read_next
 =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-32803:
 =~ Assertion \`total == 0'
