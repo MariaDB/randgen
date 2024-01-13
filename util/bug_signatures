@@ -16,6 +16,25 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33234:
+=~ signal|AddressSanitizer
+=~ String::append
+=~ rpl_slave_state_tostring_helper
+=~ gtid_state_from_binlog_pos
+=~ Version: '10\.[45]|Server version: 10\.[45]
+MDEV-33233:
+=~ Assertion \`table->s->db_options_in_use == part_table->s->db_options_in_use'
+=~ compare_table_with_partition
+=~ Sql_cmd_alter_table_exchange_partition::exchange_partition
+MDEV-33232:
+=~ AddressSanitizer: negative-size-param
+=~ TYPVAL
+=~ ha_connect::ReadIndexed
+MDEV-33231:
+=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
+=~ Assertion \`0'
+=~ row_upd_sec_index_entry
+=~ FeatureUsage detected nopad collations
 MDEV-33230:
 =~ LeakSanitizer
 =~ rec_copy_prefix_to_buf
