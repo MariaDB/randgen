@@ -16,6 +16,16 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33236:
+=~ InnoDB: Flagged corruption of|InnoDB indexes are inconsistent
+=~ Assertion \`inited==INDEX'
+=~ collect_statistics_for_index
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-33235:
+=~ signal|AddressSanitizer
+=~ my_convert_fix
+=~ String_copier_for_item::copy_with_warn(
+=~ Func_handler_shift_left_decimal_to_ulonglong
 MDEV-33234:
 =~ signal|AddressSanitizer
 =~ String::append
