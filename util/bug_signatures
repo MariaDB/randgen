@@ -601,7 +601,7 @@ MDEV-31757:
 =~ FeatureUsage detected binlog alter two phase
 MDEV-31744:
 =~ Assertion \`order_list->elements == 1'
-=~ Frame_range_n_bottom::Frame_range_n_bottom
+=~ Frame_range_n_bottom::Frame_range_n_bottom|Frame_range_n_top::Frame_range_n_top
 =~ get_window_functions_required_cursors
 MDEV-31681:
 =~ \[ERROR\] Duplicated key: used_range_estimates
@@ -1015,7 +1015,7 @@ MDEV-30277:
 MDEV-30263:
 =~ Assertion \`0'
 =~ Protocol::end_statement
-=~ Query .*: HANDLER .* READ
+=~ Query .*: HANDLER .* READ|dispatch_command.* HANDLER .* READ
 MDEV-30115:
 =~ ERROR 4025 (23000) at line .*: CONSTRAINT .* failed for .*
 =~ All databases' schema dump failed to load
@@ -1331,6 +1331,10 @@ MDEV-29089:
 =~ myrocks::Rdb_key_def::pack_index_tuple
 =~ QUICK_RANGE_SELECT::get_next_prefix
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-29085:
+=~ Assertion \`false'
+=~ BINVAL::CompareValue
+=~ FILTERCMP::Eval
 MDEV-29071:
 =~ Assertion \`outer_context \|\| !\*from_field \|\| \*from_field == not_found_field'
 =~ Item_field::fix_outer_field
@@ -3058,7 +3062,7 @@ MDEV-22305:
 MDEV-22279:
 =~ Assertion \`false'
 =~ set_field_mdl_type
-=~ table_metadata_locks::read_row_values
+=~ table_metadata_locks::read_row_values|PFS_engine_table::read_row
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22262:
 =~ signal 11|AddressSanitizer
