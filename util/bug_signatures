@@ -1420,7 +1420,7 @@ MDEV-28913:
 =~ close_thread_table
 =~ FeatureUsage detected sequences
 MDEV-28887:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal|MemorySanitizer
 =~ maria_status
 =~ ha_partition::part_records
 =~ partition_info::vers_check_limit
@@ -3982,7 +3982,7 @@ MDEV-17225:
 =~ Assertion \`log_descriptor\.bc\.buffer->prev_last_lsn == ((LSN)0)'|Assertion \`log_descriptor\.bc\.buffer->prev_last_lsn != ((LSN)0)'
 =~ translog_flush_buffers
 MDEV-17120:
-=~ signal|AddressSanitizer
+=~ signal|AddressSanitizer|MemorySanitizer
 =~ multi_update::prepare
 =~ JOIN::prepare
 =~ sp_head::execute|Prepared_statement::execute
