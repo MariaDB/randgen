@@ -1,4 +1,4 @@
-# Copyright (C) 2022, 2023 MariaDB
+# Copyright (C) 2022, 2024 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -185,8 +185,13 @@ sub run {
   if ($do_sync) {
     $self->printStep("Synchronizing with master");
     my ($file, $pos) = $servers[0]->getMasterPos();
-    unless ($file && $pos && $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration')) == STATUS_OK) {
-      $total_status= STATUS_REPLICATION_FAILURE if STATUS_REPLICATION_FAILURE > $total_status;
+    unless ($file && $pos) {
+      sayError("Could not detect master logname/position");
+      return STATUS_ENVIRONMENT_FAILURE;
+    }
+    $status= $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration'));
+    unless ($status  == STATUS_OK) {
+      $total_status= $status if $status > $total_status;
       goto FINALIZE;
     }
   } else {

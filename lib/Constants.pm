@@ -55,6 +55,7 @@ require Exporter;
   STATUS_SERVER_UNAVAILABLE
   STATUS_SERVER_CRASHED
   STATUS_REPLICATION_FAILURE
+  STATUS_REPLICATION_TIMEOUT
   STATUS_BACKUP_FAILURE
   STATUS_RECOVERY_FAILURE
   STATUS_UPGRADE_FAILURE
@@ -112,6 +113,7 @@ use constant STATUS_CONTENT_MISMATCH         => 43;
 use constant STATUS_CUSTOM_OUTCOME           => 50; # Used for things such as signaling an EXPLAIN hit from the ExplainMatch Validator
 use constant STATUS_ERRORS_IN_LOG            => 70; # Set errors are found in the error log (other than ignorable ones)
 
+use constant STATUS_REPLICATION_TIMEOUT      => 80; # Used when we give up on waiting for slave to catch up with master
 use constant STATUS_SERVER_SHUTDOWN_FAILURE  => 90;
 use constant STATUS_OUT_OF_MEMORY            => 95; # Various non-fatal out-of-memory errors
 use constant STATUS_DATABASE_CORRUPTION      => 96; # Database corruption errors are often bogus, but still important to look at

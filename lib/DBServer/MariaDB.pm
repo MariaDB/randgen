@@ -1391,17 +1391,17 @@ sub syncWithMaster {
           sayError("${f}_Errno: ".$slave_status->{$f.'_Errno'}." (".$slave_status->{$f.'_Error'}.")");
         }
       }
-      return DBSTATUS_FAILURE;
+      return STATUS_REPLICATION_FAILURE;
     } elsif ($wait_result == -1) {
       sayError("Timeout occurred while waiting for the slave to synchronize with the master");
-      return DBSTATUS_FAILURE;
+      return STATUS_REPLICATION_TIMEOUT;
     } else {
       say("Slave SQL thread apparently synchronized successfully: $wait_result events executed");
-      return DBSTATUS_OK;
+      return STATUS_OK;
     }
   } else {
     sayError("Lost connection to the slave");
-    return DBSTATUS_FAILURE;
+    return STATUS_REPLICATION_FAILURE;
   }
 }
 
@@ -1673,6 +1673,7 @@ sub isRecordIgnored {
     or  $line =~ /InnoDB: Unable to rename statistics from/s
     or  $line =~ /InnoDB: User stopword table .* does not exist/s
     or  $line =~ /Invalid roles_mapping table entry user/s
+    or  $line =~ /MYSQL_BIN_LOG::purge_logs was called with file .* not listed in the index/s
     or  $line =~ /(?:mysqld|mariadbd): The table .* is full/s
     or  $line =~ /(?:mysqld|mariadbd): Deadlock found when trying to get lock/s
     or  $line =~ /(?:mysqld|mariadbd): Lock wait timeout exceeded; try restarting transaction/s

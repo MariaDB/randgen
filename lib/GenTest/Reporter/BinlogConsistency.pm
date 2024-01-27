@@ -1,5 +1,5 @@
 # Copyright (C) 2013 Monty Program Ab
-# Copyright (C) 2020, 2023 MariaDB
+# Copyright (C) 2020, 2024 MariaDB
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -91,6 +91,11 @@ sub report {
 
   my $binlog = $conn->get_value("SHOW BINARY LOGS");
   $binlog=~ s/^([^\.]*)\..*/$1/;
+
+  unless (-e "$vardir/data/$binlog.000001") {
+    sayWarning("The first binary log not found, probably logs were purged, cannot check consistency");
+    return STATUS_OK;
+  }
 
   say("Dumping the original server...");
   $status = $reporter->dump_all($vardir."/original.dump");

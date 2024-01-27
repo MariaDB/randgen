@@ -2318,7 +2318,7 @@ sub BEGIN {
     ER_UNKNOWN_STRUCTURED_VARIABLE()                    => STATUS_SEMANTIC_ERROR,
     ER_UNKNOWN_SYSTEM_VARIABLE()                        => STATUS_SYNTAX_ERROR,
     ER_UNKNOWN_TABLE()                                  => STATUS_SEMANTIC_ERROR,
-    ER_UNKNOWN_TARGET_BINLOG()                          => STATUS_REPLICATION_FAILURE,
+    ER_UNKNOWN_TARGET_BINLOG()                          => STATUS_RUNTIME_ERROR, # Happens upon PURGE BINARY LOGS TO <non-existing log>
     ER_UNKNOWN_TIME_ZONE()                              => STATUS_SEMANTIC_ERROR,
     ER_UNKNOWN_VIEW()                                   => STATUS_SEMANTIC_ERROR,
     ER_UNSUPPORTED_ACTION_ON_GENERATED_COLUMN()         => STATUS_UNSUPPORTED,
