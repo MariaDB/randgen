@@ -126,7 +126,7 @@ sub report {
   }
 
   # MDEV-31756 - NOWAIT in DDL makes binary logs difficult or impossible to replay
-  my $cmd= "$binlog_utility --no-defaults $vardir/vardir_orig/data/$binlog.0* | sed -e 's/NOWAIT//g' > $vardir/vardir_orig/binlog_events";
+  my $cmd= "$binlog_utility --no-defaults $vardir/vardir_orig/data/$binlog.[0-9][0-9][0-9][0-9][0-9][0-9] | sed -e 's/NOWAIT//g' > $vardir/vardir_orig/binlog_events";
   say("Dumping binary log events (with adjustments) into a file...");
   sayDebug($cmd);
   $status = system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");

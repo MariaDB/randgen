@@ -74,7 +74,7 @@ sub report {
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
-  my $cmd= "$binlog_utility --no-defaults --verbose --verbose --base64-output=DECODE-ROWS $basename.0* > $vardir/binlog_events.txt";
+  my $cmd= "$binlog_utility --no-defaults --verbose --verbose --base64-output=DECODE-ROWS $basename.[0-9][0-9][0-9][0-9][0-9][0-9] > $vardir/binlog_events.txt";
   say("BinlogDump: Dumping binary log events into the file $vardir/binlog_events.txt");
   say($cmd);
   $status = system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
