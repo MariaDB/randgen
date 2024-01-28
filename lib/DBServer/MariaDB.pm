@@ -1674,10 +1674,12 @@ sub isRecordIgnored {
     or  $line =~ /InnoDB: User stopword table .* does not exist/s
     or  $line =~ /Invalid roles_mapping table entry user/s
     or  $line =~ /MYSQL_BIN_LOG::purge_logs was called with file .* not listed in the index/s
-    or  $line =~ /(?:mysqld|mariadbd): The table .* is full/s
     or  $line =~ /(?:mysqld|mariadbd): Deadlock found when trying to get lock/s
+    or  $line =~ /(?:mysqld|mariadbd): Got error '145 "Table was marked as crashed and should be repaired"'/s
+    or  $line =~ /(?:mysqld|mariadbd): Incorrect information in file/s
     or  $line =~ /(?:mysqld|mariadbd): Lock wait timeout exceeded; try restarting transaction/s
     or  $line =~ /(?:mysqld|mariadbd): Out of sort memory, consider increasing server sort buffer size/s
+    or  $line =~ /(?:mysqld|mariadbd): The table .* is full/s
     or  $line =~ /server_audit: Query log limit was changed/s
     or  $line =~ /server_audit: SysLog facility was changed/s
     or  $line =~ /Slave I\/O: error reconnecting to master/s
