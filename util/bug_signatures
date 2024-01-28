@@ -16,6 +16,10 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33323:
+=~ AddressSanitizer|signal
+=~ grn_bulk_write
+=~ ha_mroonga::generic_store_bulk_fixed_size_string
 MDEV-33236:
 =~ InnoDB: Flagged corruption of|InnoDB indexes are inconsistent
 =~ Assertion \`inited==INDEX'
@@ -1353,7 +1357,7 @@ MDEV-29065:
 =~ Trying to lock uninitialized mutex at .*ha_myisam
 =~ ha_myisam::update_create_info
 =~ binlog_show_create_table
-=~ s3\.yy
+=~ s3\.yy|FeatureUsage detected S3 engine
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-29059:
 =~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
