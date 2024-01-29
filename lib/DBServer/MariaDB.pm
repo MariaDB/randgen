@@ -1675,6 +1675,7 @@ sub isRecordIgnored {
     or  $line =~ /Invalid roles_mapping table entry user/s
     or  $line =~ /MYSQL_BIN_LOG::purge_logs was called with file .* not listed in the index/s
     or  $line =~ /(?:mysqld|mariadbd): Deadlock found when trying to get lock/s
+    or  $line =~ /(?:mysqld:mariadbd): Got error '144 "Table is crashed and last repair failed"' for .*/s
     or  $line =~ /(?:mysqld|mariadbd): Got error '145 "Table was marked as crashed and should be repaired"'/s
     or  $line =~ /(?:mysqld|mariadbd): Incorrect information in file/s
     or  $line =~ /(?:mysqld|mariadbd): Lock wait timeout exceeded; try restarting transaction/s
