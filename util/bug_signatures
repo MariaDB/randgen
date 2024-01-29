@@ -2110,7 +2110,7 @@ MDEV-24931:
 MDEV-24907:
 =~ signal [16]|AddressSanitizer
 =~ Item_field::replace_equal_field
-=~ Item_in_optimizer::transform
+=~ Item_.*::transform
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-24906:
 =~ AddressSanitizer|signal [16]
@@ -2800,7 +2800,7 @@ MDEV-23045:
 MDEV-23041:
 =~ signal [16]|AddressSanitizer|MemorySanitizer
 =~ Item_func_set_user_var::update_hash
-=~ TABLE::update_default_fields|end_write_group|TABLE::update_virtual_fields|end_send_group|Field::set_default
+=~ TABLE::update_default_fields|end_write_group|TABLE::update_virtual_fields|end_send_group|Field::set_default|sql_set_variables
 MDEV-23041:
 =~ free_memory: Assertion \`irem->marker == .*'
 =~ Item_func_set_user_var::update_hash
