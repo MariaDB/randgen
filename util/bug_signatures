@@ -16,6 +16,12 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33330:
+=~ Assertion \`cache_mngr'|signal
+=~ binlog_get_pending_rows_event
+=~ THD::binlog_need_stmt_format
+=~ Sql_cmd_dml::execute
+=~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-33323:
 =~ AddressSanitizer|signal
 =~ grn_bulk_write
