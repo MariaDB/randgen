@@ -231,17 +231,55 @@ sub getSchemaMetaData {
     ## 5. PRIMARY for primary key, INDEXED for indexed column and "ORDINARY" for all other columns
     my ($self) = @_;
     my $query = 
-        "SELECT table_schema, ".
+        "SELECT DISTINCT ".
+               "table_schema, ".
                "table_name, ".
                "CASE WHEN table_type = 'BASE TABLE' THEN 'table' ".
                     "WHEN table_type = 'VIEW' THEN 'view' ".
                     "WHEN table_type = 'SYSTEM VIEW' then 'view' ".
-                    "ELSE 'misc' END, ".
+                    "ELSE 'misc' END AS table_type, ".
                "column_name, ".
-               "'ordinary'". ## Need to figure out how to find indexes and primary keys
+               "CASE WHEN indisprimary THEN 'primary' ".
+                    "WHEN indexrelid IS NOT NULL THEN 'indexed' ".
+                    "ELSE 'ordinary' END as column_key, ".
+               "CASE WHEN data_type IN ('integer','smallint','bigint') THEN 'int' ".
+                    "WHEN data_type IN ('real','double precision') THEN 'float' ".
+                    "WHEN data_type IN ('numeric') THEN 'decimal' ".
+                    "WHEN data_type LIKE 'timestamp%' THEN 'timestamp' ".
+                    "WHEN data_type IN ('character','character varying','bytea') THEN 'char' ".
+                    "WHEN data_type IN ('blob','mediumblob','longblob') THEN 'blob' ".
+                    "WHEN data_type IN ('text') THEN 'text' ".
+                    "ELSE data_type END AS data_type_normalized, ".
+               "CASE WHEN data_type IN ('real') THEN 'float' ".
+                    "WHEN data_type IN ('double precision') THEN 'double' ".
+                    "WHEN data_type IN ('numeric') THEN 'decimal' ".
+                    "WHEN data_type IN ('integer') THEN 'int' ".
+                    "WHEN data_type IN ('character') THEN 'char' ".
+                    "WHEN data_type IN ('character varying') THEN 'varchar' ".
+                    "WHEN data_type IN ('text','smallint','bigint') THEN data_type ".
+                    "WHEN data_type IN ('bytea') THEN 'varbinary' ".
+                    "WHEN data_type LIKE 'timestamp%' THEN 'timestamp' ".
+                    "ELSE data_type END AS data_type, ".
+               "character_maximum_length, ".
+               "table_rows ".
          "FROM information_schema.tables INNER JOIN ".
-              "information_schema.columns USING(table_schema, table_name) ".
-         "WHERE table_name <> 'dummy'"; 
+              "information_schema.columns USING(table_schema, table_name) INNER JOIN ".
+              "(SELECT ".
+                    "nspname AS table_schema, ".
+                    "relname AS table_name, ".
+                    "reltuples AS table_rows ".
+               "FROM pg_class c JOIN ".
+                    "pg_namespace nc ON relnamespace = nc.oid ".
+               ") AS vst USING (table_schema, table_name) ".
+                 "LEFT JOIN LATERAL ".
+                     "(SELECT indisprimary, indexrelid, indkey ".
+                      "FROM pg_namespace si JOIN ".
+                           "pg_class ct ON si.nspname = table_schema ".
+                                          "AND ct.relname = table_name ".
+                                          "AND ct.relnamespace = si.oid JOIN ".
+                           "pg_index ix ON ix.indrelid = ct.oid".
+                      ") AS vix ON ordinal_position = ANY(indkey) ".
+         "WHERE table_name <> 'dummy'";
 
     return $self->dbh()->selectall_arrayref($query);
 }

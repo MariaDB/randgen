@@ -567,6 +567,7 @@ sub run {
                 next if not defined $field->[FIELD_TYPE];
                 my $value;
                 my $quote = 0;
+                my $max_char_length;
                 if ($field->[FIELD_TYPE] =~ m{auto_increment}sio) {
                     if ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE) {
                         $value = undef;		# Trigger auto-increment by inserting NULLS for PK
@@ -605,6 +606,13 @@ sub run {
                     } else {
                         $value_type = DATA_STRING;
                         $quote = 1;
+                        if ($executor->type == DB_POSTGRES) {
+                            # Extract the field max length if specified so we can fit the values
+                            # via casting.
+                            if ($field->[FIELD_TYPE] =~ /([0-9]+)/) {
+                                $max_char_length = $1;
+                            }
+                        }
                     }
                     
                     if (($field->[FIELD_NULLABILITY] eq 'not null') || ($self->[GD_NOTNULL])) {
@@ -635,6 +643,11 @@ sub run {
                 } else {
                     push @data, defined $value ? $value : "NULL";
                 }	
+
+                ## Typecast if the value would exceed the field max length
+                if (defined $max_char_length && length($data[@data - 1]) > $max_char_length) {
+                    push @data, "CAST(".pop(@data)." AS ".$field->[FIELD_TYPE].")";
+                }
             }
             
             push @row_buffer, " (".join(', ', @data).") ";
@@ -657,6 +670,10 @@ sub run {
             $executor->execute("COMMIT");
             
             $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
+        }
+
+        if ($executor->type == DB_POSTGRES) {
+            $executor->execute("ANALYZE ".$table->[TABLE_NAME]);
         }
     }
     }
