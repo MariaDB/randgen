@@ -37,6 +37,14 @@
 ################################################################################
 
 ################################################################################
+# YB changes:
+#   * Remove non-standard SELECT clause options: SQL_SMALL_RESULT, STRAIGHT_JOIN
+#   * For testing batched Nested Loop, randomly add a hint set that disables
+#     hashjoin, mergejoin and material.
+#   * Add FULL OUTER JOIN.
+################################################################################
+
+################################################################################
 # we have the perl code here as these variables are helpers for generating
 # queries
 # nonaggregates -  holds all nonaggregate fields used, stored as the alias used
@@ -71,19 +79,25 @@ query_type:
   simple_select | simple_select | mixed_select | mixed_select | mixed_select | aggregate_select ;
 
 mixed_select:
-        { $stack->push() } SELECT distinct straight_join select_option select_list FROM join WHERE where_list group_by_clause having_clause order_by_clause { $stack->pop(undef) } ;
+        { $stack->push() } hints SELECT distinct straight_join select_option select_list FROM join WHERE where_list group_by_clause having_clause order_by_clause { $stack->pop(undef) } ;
 
 simple_select:
-        { $stack->push() } SELECT distinct straight_join select_option simple_select_list FROM join WHERE where_list  optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
+        { $stack->push() } hints SELECT distinct straight_join select_option simple_select_list FROM join WHERE where_list  optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
 
 aggregate_select:
-        { $stack->push() } SELECT distinct straight_join select_option aggregate_select_list FROM join WHERE where_list optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
+        { $stack->push() } hints SELECT distinct straight_join select_option aggregate_select_list FROM join WHERE where_list optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
+
+hints:
+	nl_hints | nl_hints | ;
+
+nl_hints:
+	/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */ ;
 
 distinct: DISTINCT | | | |  ;
 
-select_option:  | | | | | | | | | SQL_SMALL_RESULT ;
+select_option:  ; #| | | | | | | | | SQL_SMALL_RESULT ;
 
-straight_join:  | | | | | | | | | | | STRAIGHT_JOIN ;
+straight_join:  ; #| | | | | | | | | | | STRAIGHT_JOIN ;
 
 select_list:
 	new_select_item |
@@ -325,6 +339,7 @@ not:
 	| | | NOT;
 
 left_right:
+	LEFT | LEFT | LEFT | RIGHT | FULL |
 	LEFT | LEFT | LEFT | RIGHT ;
 
 outer:
