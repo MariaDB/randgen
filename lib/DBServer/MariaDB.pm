@@ -1667,7 +1667,7 @@ sub isRecordIgnored {
     or  $line =~ /InnoDB: FTS_DOC_ID must be larger than/s
     or  $line =~ /InnoDB: If table .* it can be that there are still queries running on the table/s
     or  $line =~ /InnoDB: In .* is referenced in foreign key constraints which are not compatible with the new table definition/s
-    or  $line =~ /InnoDB: Invalid column name for stopword table/s
+    or  $line =~ /InnoDB: Invalid column (?:name|type) for stopword table/s
     or  $line =~ /InnoDB: Possible reasons/s
     or  $line =~ /InnoDB: Table rename might cause two FOREIGN KEY constraints to have the same internal name in case-insensitive comparison/s
     or  $line =~ /InnoDB: Unable to rename statistics from/s
