@@ -60,6 +60,10 @@ MDEV-33230:
 =~ rec_copy_prefix_to_buf
 =~ row_merge_create_fts_sort_index
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-33218:
+=~ Assertion \`active_arena->is_stmt_prepare_or_first_stmt_execute() \|\| active_arena->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'
+=~ st_select_lex::fix_prepare_information
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-33190:
 =~ mariadbd: Got error '126 "Index is corrupted"' for .*
 =~ Delete from part .* failed with error 126\. But it was already inserted into part .*, when moving the misplaced row
@@ -134,9 +138,6 @@ MDEV-32982:
 =~ Assertion \`0'
 =~ Delayed_prelocking_strategy::handle_view
 =~ Delayed_insert::open_and_lock_table
-MDEV-32965:
-=~ Assertion \`thd->active_stmt_arena_to_use()-> is_stmt_prepare_or_first_sp_execute() \|\| thd->active_stmt_arena_to_use()-> is_conventional() \|\| thd->active_stmt_arena_to_use()->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'|Assertion \`thd->active_stmt_arena_to_use()-> is_stmt_prepare_or_first_stmt_execute() \|\| thd->active_stmt_arena_to_use()-> is_conventional() \|\| thd->active_stmt_arena_to_use()->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'|Assertion \`active_arena->is_stmt_prepare_or_first_stmt_execute() \|\| active_arena->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'
-=~ Prepared_statement::execute|sp_head::execute
 MDEV-32948:
 =~ Found wrong key definition in
 =~ FeatureUsage detected Archive tables
