@@ -16,6 +16,10 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33369:
+=~ AddressSanitizer|signal
+=~ Item_func_json_schema_valid::cleanup
+=~ THD::cleanup_after_query
 MDEV-33330:
 =~ Assertion \`cache_mngr'|signal
 =~ binlog_get_pending_rows_event
@@ -131,9 +135,6 @@ MDEV-33030:
 =~ ha_partition::handle_ordered_prev
 =~ mysql_ha_read
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-33015:
-=~ signal|AddressSanitizer|MemorySanitizer
-=~ Item_func_json_schema_valid::
 MDEV-32982:
 =~ Assertion \`0'
 =~ Delayed_prelocking_strategy::handle_view
