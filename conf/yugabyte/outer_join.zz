@@ -17,7 +17,9 @@
 
 $tables = {
         names => ['A','AA','B','BB','C','CC','D','DD','E','EE','F','FF','G','GG','H','HH','I','II','J','JJ','K','KK','L','LL','M','MM','N','NN','O','OO','P','PP'],
-        rows => [0, 1, 2, 5, 6, 7, 8, 9, 10, 20, 21, 22, 23, 24, 25, 100],
+
+	#rows => [0, 1, 2, 5, 6, 7, 8, 9, 10, 20, 21, 22, 23, 24, 25, 100], # the original
+	rows => [0, 1, 8, 128, 210, 220, 255],
 
 	# N/A to non-MySQL DBs
         #engines => ['MyISAM', 'Innodb' ]

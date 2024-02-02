@@ -87,11 +87,9 @@ simple_select:
 aggregate_select:
         { $stack->push() } hints SELECT distinct straight_join select_option aggregate_select_list FROM join WHERE where_list optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
 
-hints:
-	nl_hints | nl_hints | ;
+hints: nl_hints | | ;
 
-nl_hints:
-	/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */ ;
+nl_hints: /*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */ ;
 
 distinct: DISTINCT | | | |  ;
 
