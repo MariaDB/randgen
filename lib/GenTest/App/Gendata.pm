@@ -595,6 +595,9 @@ sub run {
                     if ($field->[FIELD_TYPE] =~ m{date|time|year}sio) {
                         $value_type = DATA_TEMPORAL;
                         $quote = 1;
+                    } elsif ($executor->type == DB_POSTGRES and $field->[FIELD_TYPE] eq 'text') {
+                        $value_type = DATA_STRING;
+                        $quote = 1;
                     } elsif ($field->[FIELD_TYPE] =~ m{blob|text|binary}sio) {
                         $value_type = DATA_BLOB;
                         $quote = 1;

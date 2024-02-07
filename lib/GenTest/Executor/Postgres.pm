@@ -67,6 +67,7 @@ my %acceptedErrors = (
 
 sub execute {
     my ($self, $query, $silent) = @_;
+    my $executor = $self;
 
     my $dbh = $self->dbh();
 
@@ -93,6 +94,25 @@ sub execute {
             query => $query, 
             status => STATUS_WONT_HANDLE ) 
             if not $query;
+    }
+
+    my $trace_query;
+    my $trace_me = 0;
+
+    # Write query to log before execution so it's sure to get there
+    if ($executor->sqltrace) {
+        if ($query =~ m{(procedure|function)}sgio) {
+            $trace_query = "DELIMITER |\n$query|\nDELIMITER ";
+        } else {
+            $trace_query = $query;
+        }
+        # MarkErrors logging can only be done post-execution
+        if ($executor->sqltrace eq 'MarkErrors') {
+            $trace_me = 1;   # Defer logging
+        } else {
+            print "$trace_query;\n";
+            select()->flush();  # Avoid logging message gets in the middle
+        }
     }
 
     # Autocommit ?
@@ -123,8 +143,19 @@ sub execute {
 
     
     my $end_time = Time::HiRes::time();
-    
     my $err = $sth->err();
+    
+    if ($trace_me eq 1) {
+        if (defined $err) {
+                # Mark invalid queries in the trace by prefixing each line.
+                # We need to prefix all lines of multi-line statements also.
+                $trace_query =~ s/\n/\n# [sqltrace]    /g;
+                print '# [$$] [sqltrace] ERROR '.$err.": $trace_query;\n";
+        } else {
+            print "[$$] $trace_query;\n";
+        }
+    }
+
     my $result;
     
     if (defined $err) {         
@@ -281,7 +312,19 @@ sub getSchemaMetaData {
                       ") AS vix ON ordinal_position = ANY(indkey) ".
          "WHERE table_name <> 'dummy'";
 
-    return $self->dbh()->selectall_arrayref($query);
+    my $res = $self->dbh()->selectall_arrayref($query);
+    croak("FATAL ERROR: Failed to retrieve schema metadata") unless $res;
+
+    my %table_rows = ();
+    foreach my $i (0..$#$res) {
+        my $tbl = $res->[$i]->[0].'.'.$res->[$i]->[1];
+        if ((not defined $table_rows{$tbl}) or ($table_rows{$tbl} eq 'NULL') or ($table_rows{$tbl} eq '')) {
+            my $count_row = $self->dbh()->selectrow_arrayref("SELECT COUNT(*) FROM $tbl");
+            $table_rows{$tbl} = $count_row->[0];
+        }
+        $res=>[$i]->[8] = $table_rows{$tbl};
+    }
+    return $res;
 }
 
 #### This query gives columns with keys (PK and unique constraint, but not indices)

@@ -191,10 +191,6 @@ sub next {
 						$item = $prng->digit();
 					} elsif ($item eq '_positive_digit') {
 						$item = $prng->positive_digit();
-					} elsif ($item eq '_table') {
-						my $tables = $executors->[0]->metaTables($last_database);
-						$last_table = $prng->arrayElement($tables);
-						$item = '`'.$last_table.'`';
 					} elsif ($item eq '_hex') {
 						$item = $prng->hex();
 					} elsif ($item eq '_cwd') {
