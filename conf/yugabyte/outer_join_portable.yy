@@ -38,7 +38,6 @@
 
 ################################################################################
 # YB changes:
-#   * Remove non-standard SELECT clause options: SQL_SMALL_RESULT, STRAIGHT_JOIN
 #   * For testing batched Nested Loop, randomly add a hint set that disables
 #     hashjoin, mergejoin and material.
 #   * Add FULL OUTER JOIN.
@@ -65,7 +64,11 @@
 query:
   { @table_alias_set = ("table1", "table1", "table1", "table1", "table2", "table2", "table2", "table3", "table4", "table5", "table1", "table1", "table2") ; "" }
   { @int_field_set = ("pk", "col_int", "col_int_key") ; "" } 
-  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ;  "" } query_type ;
+  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ;  "" } hints query_type ;
+
+hints: nl_hints | | ;
+
+nl_hints: /*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */ ;
 
 ################################################################################
 # We have various query_type's so that we can ensure more syntactically correct
@@ -79,23 +82,19 @@ query_type:
   simple_select | simple_select | mixed_select | mixed_select | mixed_select | aggregate_select ;
 
 mixed_select:
-        { $stack->push() } hints SELECT distinct straight_join select_option select_list FROM join WHERE where_list group_by_clause having_clause order_by_clause { $stack->pop(undef) } ;
+        { $stack->push() } SELECT distinct straight_join select_option select_list FROM join WHERE where_list group_by_clause having_clause order_by_clause { $stack->pop(undef) } ;
 
 simple_select:
-        { $stack->push() } hints SELECT distinct straight_join select_option simple_select_list FROM join WHERE where_list  optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
+        { $stack->push() } SELECT distinct straight_join select_option simple_select_list FROM join WHERE where_list  optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
 
 aggregate_select:
-        { $stack->push() } hints SELECT distinct straight_join select_option aggregate_select_list FROM join WHERE where_list optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
-
-hints: nl_hints | | ;
-
-nl_hints: /*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */ ;
+        { $stack->push() } SELECT distinct straight_join select_option aggregate_select_list FROM join WHERE where_list optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
 
 distinct: DISTINCT | | | |  ;
 
-select_option:  ; #| | | | | | | | | SQL_SMALL_RESULT ;
+select_option:  | | | | | | | | | SQL_SMALL_RESULT ;
 
-straight_join:  ; #| | | | | | | | | | | STRAIGHT_JOIN ;
+straight_join:  | | | | | | | | | | | STRAIGHT_JOIN ;
 
 select_list:
 	new_select_item |
