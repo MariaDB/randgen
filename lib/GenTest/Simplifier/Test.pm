@@ -58,6 +58,12 @@ my @optimizer_variables = (
 	'debug'
 );
 
+###
+### Modify the ysql_dump command path accordingly.
+###
+my $ysql_dump_command = '~/code/yugabyte-db/build/release-clang-dynamic-ninja/postgres_build/src/bin/pg_dump/ysql_dump';
+my $pg_dump_command = 'pg_dump';
+
 1;
 
 sub new {
@@ -108,6 +114,12 @@ sub simplify {
 	foreach my $i (0,1) {
 		if (defined $executors->[$i]) {
 			my $version = $executors->[$i]->getName()." ".$executors->[$i]->version();
+                        if ($executors->[$i]->type() == DB_POSTGRES) {
+                            my $yb_version = $executors->[$i]->yb_version();
+                            if (defined $yb_version) {
+                                $version .= "-YB-".$yb_version;
+                            }
+                        }
 			$test .= _comment("Server".$i.": $version",$useHash)."\n";
 		}
 	}
@@ -132,7 +144,7 @@ sub simplify {
             }
 		}
 		$test .= "\n\n";
-	} elsif (defined $executors->[0]) {
+	} elsif (defined $executors->[0] and $executors->[0]->type() == DB_MYSQL) {
         $test .= "--disable_abort_on_error\n";
 		foreach my $optimizer_variable (@optimizer_variables) {
 			my $optimizer_value = $executors->[0]->dbh->selectrow_array('SELECT @@'.$optimizer_variable);
@@ -185,12 +197,29 @@ sub simplify {
 			$test .= "--enable_warnings\n\n"
 		}
 			
-		my $mysqldump_cmd = $self->generateMysqldumpCommand() .
-            " --net_buffer_length=4096 --max_allowed_packet=4096 --no-set-names --compact".
-            " --skip_extended_insert --force --protocol=tcp $simplified_database ";
-		$mysqldump_cmd .= join(' ', @$participating_tables) if $#$participating_tables > -1;
-		open (MYSQLDUMP, "$mysqldump_cmd|") or say("Unable to run $mysqldump_cmd: $!");
-		while (<MYSQLDUMP>) {
+                if ($executors->[0]->type() == DB_POSTGRES) {
+                    my $pg_dump_cmd = $self->generatePgdumpCommand().
+                        " $original_database "; # " $simplified_database ";
+                    $pg_dump_cmd .= join(' ', @$participating_tables) if $#$participating_tables > -1;
+                    say "pg_dump_cmd: ".$pg_dump_cmd;
+                    open (MYSQLDUMP, "$pg_dump_cmd|") or say("Unable to run $pg_dump_cmd: $!");
+                    while (<MYSQLDUMP>) {
+			$_ =~ s{,\n}{,}sgio;
+			$_ =~ s{\(\n}{(}sgio;
+			$_ =~ s{\)\n}{)}sgio;
+			$_ =~ s{`([a-zA-Z0-9_]+)`}{$1}sgio;
+			next if $_ =~ m{SET \@saved_cs_client}sio;
+			next if $_ =~ m{SET character_set_client}sio;
+			$test .= $_;
+                    }
+                    close (MYSQLDUMP);
+                } else {
+                    my $mysqldump_cmd = $self->generateMysqldumpCommand() .
+                        " --net_buffer_length=4096 --max_allowed_packet=4096 --no-set-names --compact".
+                        " --skip_extended_insert --force --protocol=tcp $simplified_database ";
+                    $mysqldump_cmd .= join(' ', @$participating_tables) if $#$participating_tables > -1;
+                    open (MYSQLDUMP, "$mysqldump_cmd|") or say("Unable to run $mysqldump_cmd: $!");
+                    while (<MYSQLDUMP>) {
 			$_ =~ s{,\n}{,}sgio;
 			$_ =~ s{\(\n}{(}sgio;
 			$_ =~ s{\)\n}{)}sgio;
@@ -199,29 +228,28 @@ sub simplify {
 			next if $_ =~ m{SET character_set_client}sio;
 			$test .= $_;
 			
-		}
-		close (MYSQLDUMP);
-		
-		$test .= "\n\n";
-		
-        # If show_index variable is defined then SHOW INDEX statement is executed on the list of 
-        # participating tables and the output is printed within comments.
-        # This was a request from optimizer team, for them to understand under which circumstances a 
-        # query result difference or transformation has taken place.
-        if (defined $show_index) {
-            if ($#$participating_tables > -1) {
-                foreach my $tab (@$participating_tables) {
-                    $test .= "# /* Output of `SHOW INDEX from $tab` for query $query_id:\n";
-                    my $stmt = $executors->[0]->execute("SHOW INDEX from $simplified_database.$tab");
-                    $test .= "# |".join("|",@{$stmt->columnNames()})."|\n";
-                    foreach my $row (@{$stmt->data()}) {
-                        $test .= "# |".join("|", @$row)."|\n";
                     }
-                    $test .= "# */\n\n";
-                }
-            }
-        }
-        
+                    close (MYSQLDUMP);
+                    $test .= "\n\n";
+                    
+                    # If show_index variable is defined then SHOW INDEX statement is executed on the list of 
+                    # participating tables and the output is printed within comments.
+                    # This was a request from optimizer team, for them to understand under which circumstances a 
+                    # query result difference or transformation has taken place.
+                    if (defined $show_index) {
+                        if ($#$participating_tables > -1) {
+                            foreach my $tab (@$participating_tables) {
+                                $test .= "# /* Output of `SHOW INDEX from $tab` for query $query_id:\n";
+                                my $stmt = $executors->[0]->execute("SHOW INDEX from $simplified_database.$tab");
+                                $test .= "# |".join("|",@{$stmt->columnNames()})."|\n";
+                                foreach my $row (@{$stmt->data()}) {
+                                    $test .= "# |".join("|", @$row)."|\n";
+                                }
+                                $test .= "# */\n\n";
+                            }
+                        }
+                    }
+                }        
         
         $rewritten_query =~ s{\s+}{ }sgio; # Remove extra spaces.
         $rewritten_query =~ s{`}{}sgio; # Remove backquotes.
@@ -331,5 +359,30 @@ sub generateMysqldumpCommand {
     return $dumper . 
         " -uroot --password='' --host=".$executors->[0]->host().
         " --port=".$executors->[0]->port()
+}
+
+sub generatePgdumpCommand {
+    my($self) = @_;
+    my $executor = $self->executors()->[0];
+    my $dumper = $pg_dump_command;
+
+    if (defined $executor->yb_version()) {
+        $dumper = $ysql_dump_command;
+    }
+
+    $dumper .= " --no-password";
+
+    my $host = $executor->host();
+    my $port = $executor->port();
+
+    if (defined $host) {
+        $dumper .= " --host=".$executor->host();
+    }
+
+    if (defined $port) {
+        $dumper .= " --port=".$executor->port();
+    }
+
+    return $dumper;
 }
 1;

@@ -241,6 +241,16 @@ sub version {
     return $dbh->get_info(18);
 }
 
+sub yb_version {
+    my $self = shift;
+    my $dbh = $self->dbh();
+    my $ver = $dbh->selectrow_array("SELECT VERSION()");
+    if ($ver =~ s/.*-YB-(\S+)\s+.*/$1/sgo) {
+        return $ver;
+    }
+    return undef;
+}
+
 sub currentSchema {
 	my ($self,$schema) = @_;
 
