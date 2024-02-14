@@ -42,6 +42,7 @@ use constant SIMPLIFIER_EXECUTORS	=> 0;
 use constant SIMPLIFIER_QUERIES		=> 1;
 use constant SIMPLIFIER_RESULTS		=> 2;
 
+my $orig_database = 'test';
 
 ### Add options to this list to include them in the generated test
 ### cases. It does not matter whether they only applies to certain
@@ -182,7 +183,7 @@ sub simplify {
 
 		my $tables_simplifier = GenTest::Simplifier::Tables->new(
 			dsn		=> $executors->[0]->dsn(),
-			orig_database	=> 'test',
+			orig_database	=> $orig_database,
 			new_database	=> $simplified_database,
 			end_time	=> $executors->[0]->end_time()
 		);
@@ -199,7 +200,7 @@ sub simplify {
 			
                 if ($executors->[0]->type() == DB_POSTGRES) {
                     my $pg_dump_cmd = $self->generatePgdumpCommand().
-                        " $original_database "; # " $simplified_database ";
+                        " $orig_database "; # " $simplified_database ";
                     $pg_dump_cmd .= join(' ', @$participating_tables) if $#$participating_tables > -1;
                     say "pg_dump_cmd: ".$pg_dump_cmd;
                     open (MYSQLDUMP, "$pg_dump_cmd|") or say("Unable to run $pg_dump_cmd: $!");
