@@ -62,7 +62,7 @@ my @optimizer_variables = (
 ###
 ### Modify the ysql_dump command path accordingly.
 ###
-my $ysql_dump_command = '~/code/yugabyte-db/build/release-clang-dynamic-ninja/postgres_build/src/bin/pg_dump/ysql_dump';
+my $ysql_dump_command = 'ysql_dump';
 my $pg_dump_command = 'pg_dump';
 
 1;
