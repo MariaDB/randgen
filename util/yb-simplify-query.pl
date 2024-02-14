@@ -37,7 +37,7 @@ use GenTest::Comparator;
 # http://forge.mysql.com/wiki/RandomQueryGeneratorSimplification
 #
 
-my $query = "SELECT 1 FROM t";
+my $query = "SELECT 1";
 
 my @desired_outcomes = (
 	STATUS_CONTENT_MISMATCH,
