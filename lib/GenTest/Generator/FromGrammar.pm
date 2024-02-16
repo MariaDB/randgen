@@ -156,10 +156,13 @@ sub next {
 					@{$rule_invariants->{$item}} = expand($rule_counters,$rule_invariants,($item)) unless defined $rule_invariants->{$item};
 					@expansion = @{$rule_invariants->{$item}};
 				} else {
-					@expansion = expand($rule_counters,$rule_invariants,@{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]->[
-						$prng->uint16(0, $#{$grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS]})
-					]});
-
+                                        my $rule_choices = $grammar_rules->{$item}->[GenTest::Grammar::Rule::RULE_COMPONENTS];
+                                        # No space or newline between the colon and semicolon leads to an empty array.
+                                        # i.e.: "<rule>:;"  instead of "<rule>: ;"
+                                        if ($#{$rule_choices} >= 0) {
+                                                @expansion = expand($rule_counters,$rule_invariants,
+                                                                    @{$rule_choices->[$prng->uint16(0, $#{$rule_choices})]});
+                                        }
 				}
 				if ($generator->[GENERATOR_ANNOTATE_RULES]) {
 					@expansion = ("/* rule: $item */ ", @expansion);

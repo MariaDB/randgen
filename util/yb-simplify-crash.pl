@@ -96,7 +96,7 @@ sub start_server {
 
 	if ((not defined $executor) || (not defined $executor->dbh()) || (!$executor->dbh()->ping())) {
             system($ybctl_cmd);
-            $executor = GenTest::Executor::MySQL->new( dsn => $dsn );
+            $executor = GenTest::Executor::Postgres->new( dsn => $dsn );
             $executor->init();
 	}
 }
