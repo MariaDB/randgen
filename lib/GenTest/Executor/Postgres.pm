@@ -235,8 +235,23 @@ sub findStatus {
     }
 }
 
+## Override the base name for ourselves with YB-specific behaviour
+sub getName {
+    my $self = shift;
+    my $yb = $self->yb_version();
+    if (defined $self->yb_version()) {
+        return "Yugabyte"
+    }
+
+    return "Postgres";
+}
+
 sub version {
     my $self = shift;
+    my $yb = $self->yb_version();
+    if (defined $yb) {
+        return $yb
+    }
     my $dbh = $self->dbh();
     return $dbh->get_info(18);
 }
