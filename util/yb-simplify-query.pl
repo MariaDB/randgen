@@ -41,8 +41,16 @@ my $query = "SELECT 1";
 
 my @desired_outcomes = (
 	STATUS_CONTENT_MISMATCH,
-	STATUS_LENGTH_MISMATCH
+	STATUS_LENGTH_MISMATCH,
+        STATUS_ERROR_MISMATCH,
 );
+
+# Optional error string pattern
+my $desired_errstr = undef;
+
+# Optional SQL commands to execute before running each simplified query
+my $pre_sql_cmds = undef;
+#$pre_sql_cmds = "SET enable_hashjoin=OFF; SET enable_mergejoin=OFF; SET enable_material=OFF";
 
 my @dsns = (
 	'dbi:Pg:host=127.0.0.1;port=5433;user=yugabyte;database=test', # YugabyteDB
@@ -69,6 +77,9 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 		my @oracle_results;
 
 		foreach my $executor (@executors) {
+                        if (defined $pre_sql_cmds) {
+                                $executor->dbh()->do($pre_sql_cmds);
+                        }
 			my $oracle_result = $executor->execute($oracle_query, 1);
 			push @oracle_results, $oracle_result;
 		}
@@ -83,6 +94,12 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 			return ORACLE_ISSUE_STILL_REPEATABLE if $outcome == $desired_outcome;
 		}
 
+                if (defined $desired_errstr && $oracle_results[0]->status() != 0) {
+                    my $errstr = $oracle_results[0]->errstr;
+                    if (defined $errstr && $errstr =~ /$desired_errstr/) {
+                        return ORACLE_ISSUE_STILL_REPEATABLE;
+                    }
+                }
 		return ORACLE_ISSUE_NO_LONGER_REPEATABLE;
 	}
 );
