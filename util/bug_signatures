@@ -16,6 +16,16 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33529:
+=~ Assertion \`!s\.uses_buffer_owned_by(this)'
+=~ Binary_string::operator=
+=~ create_internal_tmp_table_from_heap
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]
+MDEV-33462:
+=~ Assertion \`!have_x()'
+=~ void sux_lock.*::s_lock
+=~ UndorecApplier::apply_undo_rec
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-33450:
 =~ Assertion failed: from->s->online_alter_binlog == 0|Assertion \`from->s->online_alter_binlog == __null'
 =~ copy_data_between_tables
@@ -668,6 +678,10 @@ MDEV-31304:
 =~ trx_rollback_last_sql_stat_for_mysql|trx_mark_sql_stat_end
 =~ FeatureUsage detected XA transactions
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-31302:
+=~ Assertion \`mon > 0 && mon < 13'
+=~ sec_since_epoch
+=~ TIME_to_gmt_sec
 MDEV-31278:
 =~ signal|AddressSanitizer
 =~ _ma_unpin_all_pages
@@ -693,7 +707,7 @@ MDEV-31266:
 =~ FeatureUsage detected GIS columns
 MDEV-31255:
 =~ signal|AddressSanitizer
-=~ ha_innobase::ft_read
+=~ ha_innobase::ft_read|ha_innobase::ft_init
 =~ join_ft_read_first
 =~ subselect_single_select_engine
 MDEV-31248:
