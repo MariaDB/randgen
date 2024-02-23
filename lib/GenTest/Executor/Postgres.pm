@@ -60,6 +60,8 @@ sub init {
 my %caches;
 
 my %acceptedErrors = (
+    ### TODO: 42P01 is also used for the missing/invalid FROM-clause entry errors, etc.
+    ### Fix the grammar rules leading to them then stop masking these errors.
     "42P01" => 1,# DROP TABLE on non-existing table is accepted since
                  # tests rely on non-standard MySQL DROP IF EXISTS;
     "42P06" => 1 # Schema already exists
@@ -80,6 +82,8 @@ sub execute {
     my $executor_id = $self->id();
     $query =~ s{/\*executor$executor_id (.*?) \*/}{$1}sg;
     $query =~ s{/\*executor.*?\*/}{}sgo;
+
+    $query =~ s{/\*!\s*IF\s+(|NOT\s+)EXISTS\s*\*/}{IF $1EXISTS}sgo;
     
     $query = $self->preprocess($query);
     

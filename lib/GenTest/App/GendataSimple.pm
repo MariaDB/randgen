@@ -110,6 +110,9 @@ sub run {
     $executor->sqltrace($self->sqltrace);
     $executor->setId($self->executor_id);
     $executor->init();
+
+    # Suppress NOTICE messages from CREATE ... IF EXISTS
+    $executor->dbh()->{PrintWarn} = 0 if $executor->type == DB_POSTGRES && !rqg_debug();
     
     my $names = GDS_DEFAULT_NAMES;
     my $rows;
@@ -222,8 +225,8 @@ sub gen_table {
         say("Creating ".$executor->getName()." table $name, size $size rows");
     
         my $increment_size = (length($name) > 1 ? (length($name) * 5) : 1);
-		$executor->execute("DROP TABLE /*! IF EXISTS */ $name");
-        $executor->execute("DROP SEQUENCE ".$name."_seq");
+		$executor->execute("DROP TABLE IF EXISTS $name");
+        $executor->execute("DROP SEQUENCE IF EXISTS ".$name."_seq");
         $executor->execute("CREATE SEQUENCE ".$name."_seq INCREMENT 1 START $increment_size");
 		$executor->execute("
 		CREATE TABLE $name (

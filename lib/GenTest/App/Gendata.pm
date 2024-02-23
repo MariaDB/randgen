@@ -185,6 +185,8 @@ sub run {
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
     $executor->init();
 
+    # Suppress NOTICE messages from CREATE ... IF EXISTS
+    $executor->dbh()->{PrintWarn} = 0 if $executor->type == DB_POSTGRES && !rqg_debug();
 #  
 # The specification file is actually a perl script, so we read it by
 # eval()-ing it
