@@ -46,23 +46,27 @@ my @desired_outcomes = (
 );
 
 # Optional error string pattern
-my $desired_errstr = undef;
+my $desired_errstr = "";
 
 # Optional SQL commands to execute before running each simplified query
-my $pre_sql_cmds = undef;
-#$pre_sql_cmds = "SET enable_hashjoin=OFF; SET enable_mergejoin=OFF; SET enable_material=OFF";
+my $pre_sql_cmds = "";
+
+# Optional query hints
+my $hints = "";
 
 my @dsns = (
 	'dbi:Pg:host=127.0.0.1;port=5433;user=yugabyte;database=test', # YugabyteDB
 	'dbi:Pg:host=127.0.0.1;port=5432;user=postgres;database=test', # Postgres
 );
 
+my $duration = 3600;
+
 # End of user-editable part
 
 my @executors;
 
 foreach my $dsn (@dsns) {
-	my $executor = GenTest::Executor::Postgres->new( dsn => $dsn );
+	my $executor = GenTest::Executor::Postgres->new( dsn => $dsn, end_time => time() + $duration );
 	my $init_status = $executor->init();
 	exit ($init_status) if $init_status != STATUS_OK;
 	push @executors, $executor;
@@ -77,10 +81,10 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 		my @oracle_results;
 
 		foreach my $executor (@executors) {
-                        if (defined $pre_sql_cmds) {
+                        if ($pre_sql_cmds) {
                                 $executor->dbh()->do($pre_sql_cmds);
                         }
-			my $oracle_result = $executor->execute($oracle_query, 1);
+			my $oracle_result = $executor->execute($hints.$oracle_query, 1);
 			push @oracle_results, $oracle_result;
 		}
 
@@ -94,7 +98,7 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 			return ORACLE_ISSUE_STILL_REPEATABLE if $outcome == $desired_outcome;
 		}
 
-                if (defined $desired_errstr && $oracle_results[0]->status() != 0) {
+                if ($desired_errstr && $oracle_results[0]->status() != 0) {
                     my $errstr = $oracle_results[0]->errstr;
                     if (defined $errstr && $errstr =~ /$desired_errstr/) {
                         return ORACLE_ISSUE_STILL_REPEATABLE;
