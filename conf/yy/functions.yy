@@ -22,6 +22,7 @@ query:
     ==FACTOR:9==    { _set_db('ANY') }        func_select_or_explain_select
   |                 { _set_db('ANY') }        { $tmp_table++; '' } func_create_and_drop
   |                 { _set_db('NON-SYSTEM') } func_alter_table
+  | ==FACTOR:2==                { _set_db('NON-SYSTEM') } func_dml
   | ==FACTOR:0.01== { _set_db('ANY') }        func_set_binlog_variables
 ;
 
@@ -49,7 +50,13 @@ func_opt_col_check:
   CHECK(func_func) ;
 
 func_create_and_drop:
-   CREATE __temporary(50) TABLE { 'test.tmp'.$tmp_table } AS func_select ;; DROP TABLE IF EXISTS { 'test.tmp'.$tmp_table } ;
+      CREATE __temporary(50) TABLE { 'test.tmp'.$tmp_table } AS func_select
+   ;; DROP TABLE IF EXISTS { 'test.tmp'.$tmp_table } ;
+
+func_dml:
+     CREATE OR REPLACE __temporary(50) TABLE { 'test.tmp'.$tmp_table } SELECT _field AS f1, _field AS f2, _field AS f3 FROM _table LIMIT 2
+   ;; INSERT INTO { 'test.tmp'.$tmp_table } VALUES (_anyvalue, _anyvalue, func_arbitrary_args(f1,f2))
+;
 
 func_select_or_explain_select:
    _basics_explain_analyze func_select;
@@ -240,7 +247,7 @@ func_str_func:
    LOAD_FILE( func_arg ) |
    LOCATE( func_arg, func_arg ) | LOCATE( func_arg, func_arg, func_arg ) |
    LOWER( func_arg ) |
-   LPAD( func_arg, MIN2( func_arg, 65536 ), func_arg ) |
+   LPAD( func_arg, test.MIN2( func_arg, 65536 ), func_arg ) |
    LTRIM( func_arg ) |
    MAKE_SET( func_arg_list ) |
    MATCH( func_field_list ) AGAINST ( func_const_char_value func_search_modifier ) |
@@ -253,17 +260,17 @@ func_str_func:
    QUOTE( func_arg ) |
 # TODO: provide reasonable patterns to REGEXP
    func_arg __not(30) REGEXP func_arg | func_arg __not(30) RLIKE func_arg |
-   REPEAT( func_arg, MIN2( func_arg, 65536 ) ) |
+   REPEAT( func_arg, test.MIN2( func_arg, 65536 ) ) |
    REPLACE( func_arg, func_arg, func_arg ) |
    REVERSE( func_arg ) |
    RIGHT( func_arg, func_arg ) |
-   RPAD( func_arg, MIN2( func_arg, 65536 ), func_arg ) |
+   RPAD( func_arg, test.MIN2( func_arg, 65536 ), func_arg ) |
    RTRIM( func_arg ) |
 # Disabled due to MDEV-31024 - crash
 #  SFORMAT( sformat_template, func_arg ) |
    SOUNDEX( func_arg ) |
    func_arg SOUNDS LIKE func_arg |
-   SPACE( MIN2( func_arg, 65536 ) ) |
+   SPACE( test.MIN2( func_arg, 65536 ) ) |
    SUBSTR( func_arg, func_arg ) | SUBSTR( func_arg FROM func_arg ) | SUBSTR( func_arg, func_arg, func_arg ) | SUBSTR( func_arg FROM func_arg FOR func_arg ) |
    SUBSTRING_INDEX( func_arg, func_arg, func_arg ) |
    TRIM( func_arg ) | TRIM( func_trim_mode FROM func_arg ) | TRIM( func_trim_mode func_arg FROM func_arg ) | TRIM( func_arg FROM func_arg ) |
@@ -468,6 +475,19 @@ func_comparison_oper:
    func_arg __not(30) LIKE func_arg |
    STRCMP( func_arg, func_arg )
 ;
+
+func_arbitrary_args:
+   COALESCE |
+   GREATEST |
+   INTERVAL |
+   LEAST |
+   CONCAT_WS |
+   CONCAT |
+   ELT |
+   FIELD |
+   MAKE_SET
+;
+
 
 func_arg_list:
    func_arg_list_2 | func_arg_list_3 | func_arg_list_5 | func_arg_list_10 | func_arg, func_arg_list ;
