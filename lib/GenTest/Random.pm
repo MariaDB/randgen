@@ -36,14 +36,12 @@ require Exporter;
   FIELD_TYPE_LETTER
   FIELD_TYPE_ASCII
   FIELD_TYPE_EMPTY
-  FIELD_TYPE_DATATYPE
   FIELD_TYPE_FIXED
   FIELD_TYPE_UUID
 
   FIELD_TYPE_HEX
   FIELD_TYPE_QUID
   FIELD_TYPE_JSON
-  FIELD_TYPE_JSON_TABLE
 
   FIELD_TYPE_IDENTIFIER
   FIELD_TYPE_IDENTIFIER_UNQUOTED
@@ -116,7 +114,6 @@ use constant FIELD_TYPE_FLOAT    => 21;
 use constant FIELD_TYPE_JSON    => 22;
 use constant FIELD_TYPE_JSONPATH  => 23;
 use constant FIELD_TYPE_JSONKEY     => 24;
-use constant FIELD_TYPE_JSON_TABLE     => 25;
 
 use constant FIELD_TYPE_TEXT  => 29;
 use constant FIELD_TYPE_INET6  => 30;
@@ -126,7 +123,6 @@ use constant FIELD_TYPE_JSONPATH_NO_WILDCARD  => 31;
 use constant FIELD_TYPE_IDENTIFIER          => 32;
 use constant FIELD_TYPE_IDENTIFIER_UNQUOTED => 33;
 use constant FIELD_TYPE_IDENTIFIER_QUOTED   => 34;
-use constant FIELD_TYPE_DATATYPE     => 35;
 use constant FIELD_TYPE_FIXED => 36;
 
 use constant FIELD_TYPE_UUID  => 37;
@@ -214,8 +210,6 @@ my %name2type = (
   'name'          => FIELD_TYPE_IDENTIFIER,
   'name_unquoted' => FIELD_TYPE_IDENTIFIER_UNQUOTED,
   'name_quoted'   => FIELD_TYPE_IDENTIFIER_QUOTED,
-  'json_table'    => FIELD_TYPE_JSON_TABLE,
-  'datatype'      => FIELD_TYPE_DATATYPE,
 );
 
 my $cwd = cwd();
@@ -943,6 +937,12 @@ sub arrayElement {
   return $_[1]->[ $_[0]->uint16(0, $#{$_[1]}) ];
 }
 
+sub anyvalue {
+  my ($rand, $maxlen)= @_;
+  my @field_types= sort keys %name2type;
+  return $rand->fieldType($rand->arrayElement(\@field_types).(defined $maxlen ? "($maxlen)":''));
+}
+
 #
 # Return a random value appropriate for this type of field
 #
@@ -1018,8 +1018,6 @@ sub fieldType {
     return $rand->identifierQuoted();
   } elsif ($field_type == FIELD_TYPE_IDENTIFIER_UNQUOTED) {
     return $rand->identifierUnquoted();
-  } elsif ($field_type == FIELD_TYPE_JSON_TABLE) {
-    return $rand->jsonTable();
   } elsif ($field_type == FIELD_TYPE_DATATYPE) {
     return $rand->dataType($field_length);
   } else {

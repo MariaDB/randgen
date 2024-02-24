@@ -203,7 +203,11 @@ sub next {
         } else {
           my $field_type = (substr($item, 0, 1) eq '_' ? $prng->isFieldType(substr($item, 1)) : undef);
 
-          if ($item eq '_letter') {
+          if ($item eq '_anyvalue') {
+            $item= $prng->anyvalue(16);
+          } elsif ($item eq '_datatype') {
+            $item= $prng->dataType();
+          } elsif ($item eq '_letter') {
             $item = $prng->letter();
           } elsif ($item eq '_digit') {
             $item = $prng->digit();
