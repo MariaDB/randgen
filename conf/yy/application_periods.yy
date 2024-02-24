@@ -65,7 +65,15 @@ query:
 app_periods_query:
     ==FACTOR:20==  dml
   |                ddl
+  |                infoschema /* compatibility 11.4 */
 ;
+
+infoschema:
+  SELECT * FROM INFORMATION_SCHEMA.infoschema_table WHERE TABLE_SCHEMA = 'app_periods' AND TABLE_NAME IN (SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'app_periods') |
+  SELECT * FROM INFORMATION_SCHEMA.infoschema_table WHERE TABLE_SCHEMA = 'app_periods' AND TABLE_NAME LIKE 't%' ;
+
+infoschema_table:
+  PERIODS | KEY_PERIOD_USAGE ;
 
 ##############
 ### CREATE TABLE statements and other DDL
