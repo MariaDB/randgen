@@ -495,7 +495,7 @@ sub createMysqlBase  {
 }
 
 sub startServer {
-    my ($self) = @_;
+    my ($self, $repair_log_tables) = @_;
 
   my @defaults = ($self->[MYSQLD_CONFIG_FILE] ? ("--defaults-group-suffix=.runtime", "--defaults-file=$self->[MYSQLD_CONFIG_FILE]") : ("--no-defaults"));
 
@@ -504,6 +504,7 @@ sub startServer {
     my $command = $self->generateCommand([@defaults],
                                          $self->[MYSQLD_STDOPTS],
                                          ["--core-file",
+                                          "--skip-stack-trace", # disable post-mortem for error log -- forking for addr2line etc.
                                           "--datadir=".$self->datadir,  # Could not add to STDOPTS, because datadir could have changed
                                           "--port=".$self->port,
                                           "--socket=".$self->socketfile,
@@ -655,6 +656,9 @@ sub startServer {
     }
 
     if ($self->waitForServerToStart) {
+        if ($repair_log_tables) {
+          $self->connection->execute("REPAIR TABLE mysql.general_log, mysql.slow_log");
+        }
         $self->serverVariables();
         if ($self->[MYSQLD_MANUAL_GDB]) {
           say("Pausing test to allow attaching debuggers etc. to the server process ".$self->[MYSQLD_SERVERPID].".");
@@ -1655,6 +1659,7 @@ sub isRecordIgnored {
     or  $line =~ /Can't open and lock privilege tables/s
     or  $line =~ /Event Scheduler: /s
     or  $line =~ /ib_buffer_pool' for reading: No such file or directory/s
+    or  $line =~ /Incorrect definition of table (?:mysql\.event|mysql\.column_stats)/s
     or  $line =~ /innodb_table_stats/s
     or  $line =~ /InnoDB: .*because after adding it, the row size is/s
     or  $line =~ /InnoDB: \(1\) Table rename would cause two/s
@@ -1673,6 +1678,7 @@ sub isRecordIgnored {
     or  $line =~ /InnoDB: Unable to rename statistics from/s
     or  $line =~ /InnoDB: User stopword table .* does not exist/s
     or  $line =~ /Invalid roles_mapping table entry user/s
+    or  $line =~ /Missing system table mysql\.roles_mapping; please run mysql_upgrade to create it/s
     or  $line =~ /MYSQL_BIN_LOG::purge_logs was called with file .* not listed in the index/s
     or  $line =~ /(?:mysqld|mariadbd): Deadlock found when trying to get lock/s
     or  $line =~ /(?:mysqld|mariadbd): Got error '144 "Table is crashed and last repair failed"' for .*/s
@@ -1829,7 +1835,11 @@ sub connect {
   my ($self, $name, $role)= @_;
   $name= 'SRV' unless defined $name;
   $role= 'super' unless defined $role;
-  return Connection::Perl->new( server => $self, role => $role, name => $name );
+  my ($conn, $err)= Connection::Perl->new( server => $self, role => $role, name => $name );
+  unless ($conn) {
+    sayDebug("Connection $name failed with error $err")
+  }
+  return $conn;
 }
 
 sub connection {
