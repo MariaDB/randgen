@@ -40,7 +40,10 @@ sub init {
   my $slave_info= $master_executor->connection->get_columns_by_name("SHOW SLAVE HOSTS",'Host','Port');
   my ($slave_host, $slave_port) = ($slave_info->[0]->{Host}, $slave_info->[0]->{Port});
   $slave_host= '127.0.0.1' if ($slave_host eq 'localhost');
-  $slave_conn= Connection::Perl->new(host => $slave_host, port => $slave_port, name => 'WFS');
+  ($slave_conn, my $err)= Connection::Perl->new(host => $slave_host, port => $slave_port, name => 'WFS');
+  unless ($slave_conn) {
+    sayDebug("Connection WFS failed with error $err");
+  }
   return 1;
 }
 

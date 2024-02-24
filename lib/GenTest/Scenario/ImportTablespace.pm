@@ -105,7 +105,12 @@ sub run {
     goto FINALIZE;
   }
 
-  my $conn= Connection::Perl->new(server => $server, role => 'admin', name => 'TBS' );
+  my ($conn, $err)= Connection::Perl->new(server => $server, role => 'admin', name => 'TBS' );
+  unless ($conn) {
+    sayError("ImportTablespace: Connection TBS failed with error $err");
+    $status= STATUS_ENVIRONMENT_FAILURE;
+    goto FINALIZE;
+  }
 
   #####
   $self->printStep("Preparing to discard/import");

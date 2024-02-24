@@ -73,6 +73,11 @@ sub run {
   my $self= shift;
 
   my $status= STATUS_OK;
+  # We may skip certain upgrades due to non-fatal errors during preparation phase
+  # Dump upgrade may be skipped e.g. if dump on the old server failed
+  my $skip_dump_upgrade= 0;
+  # Backup upgrade may be skipped e.g. if mariabackup binary was not found
+  my $skip_backup_upgrade= 0;
 
   #####
   # Prepare old server
@@ -135,16 +140,17 @@ sub run {
     goto UPGRADE_END;
   }
 
-  # Dump all databases for further restoring
+  # Dump all databases for further restoring.
   if ($server->versionNumeric gt '101100') {
-    $status= $server->dumpdb(undef, $vardir.'/all_db.dump',my $for_restoring=1,"--dump-history --force");
+    $status= $server->dumpdb(undef, $vardir.'/all_db.dump',my $for_restoring=1,"--dump-history");
     $history_dump_supported= 1;
   } else {
     $status= $server->dumpdb(undef, $vardir.'/all_db.dump',my $for_restoring=1);
   }
   if ($status != STATUS_OK) {
-    sayWarning("Database dump on the old server failed, but it was running with --force, so we will continue");
-    $self->setStatus($status);
+    sayError("Database dump on the old server failed, dump upgrade will be skipped");
+    $self->setStatus(STATUS_UPGRADE_FAILURE);
+    $skip_dump_upgrade= 1;
   }
 
   ($old_tables, $old_columns, $old_indexes, $old_checksums_safe, $old_checksums_unsafe)= $self->get_data($server);
@@ -152,54 +158,55 @@ sub run {
   #####
   $self->printStep("Creating full backup with MariaBackup");
 
-  my $mbackup;
+  my ($mbackup, $mbackup_command, $cmd);
   my $buffer_pool_size= $server->serverVariable('innodb_buffer_pool_size') * 2;
 
-  unless ($mbackup= $server->mariabackup()) {
-    sayError("Could not find MariaBackup binary for the old server");
-    $status= STATUS_ENVIRONMENT_FAILURE;
-    goto UPGRADE_END;
-  }
+  if ($mbackup= $server->mariabackup()) {
 
-  if ($server->versionNumeric lt '100500') {
-    # Workaround for MDEV-29943 (MariaBackup may lose a DML operation)
-    # Adding a sleep period to avoid the race condition
-    sleep(5);
-  }
-  my $mbackup_command= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup $mbackup" : $mbackup);
-  $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $mbackup_command --backup --target-dir=$vardir/mbackup --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup.log 2>&1");
+    if ($server->versionNumeric lt '100500') {
+      # Workaround for MDEV-29943 (MariaBackup may lose a DML operation)
+      # Adding a sleep period to avoid the race condition
+      sleep(5);
+    }
+    $mbackup_command= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup $mbackup" : $mbackup);
+    $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $mbackup_command --backup --target-dir=$vardir/mbackup --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup.log 2>&1");
 
-  if ($status == STATUS_OK) {
-      say("MariaBackup ran finished successfully");
-  } else {
-      sayFile("$vardir/mbackup_backup.log");
-      sayError("MariaBackup failed: $status");
+    if ($status == STATUS_OK) {
+        say("MariaBackup ran finished successfully");
+    } else {
+        sayFile("$vardir/mbackup_backup.log");
+        sayError("MariaBackup failed: $status");
+        $status= STATUS_BACKUP_FAILURE;
+        goto UPGRADE_END;
+    }
+
+    $self->printStep("Preparing backup");
+
+    say("Storing the backup before prepare attempt...");
+    if (osWindows()) {
+      system("xcopy $vardir/mbackup $vardir/mbackup_before_prepare /E /I /Q");
+    } else {
+      system("cp -r $vardir/mbackup $vardir/mbackup_before_prepare");
+    }
+
+    $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare $mbackup" : $mbackup)
+      . " --use-memory=".($buffer_pool_size * 2)." --prepare --target-dir=$vardir/mbackup --user=".$server->user." 2>$vardir/mbackup_prepare.log 2>&1";
+    say($cmd);
+    system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
+    $status= $? >> 8;
+
+    if ($status == STATUS_OK) {
+        say("Prepare of backup finished successfully");
+    } else {
+      sayFile("$vardir/mbackup_prepare.log");
+      sayError("Backup preparing failed: $status");
       $status= STATUS_BACKUP_FAILURE;
       goto UPGRADE_END;
-  }
-
-  $self->printStep("Preparing backup");
-
-  say("Storing the backup before prepare attempt...");
-  if (osWindows()) {
-    system("xcopy $vardir/mbackup $vardir/mbackup_before_prepare /E /I /Q");
+    }
   } else {
-    system("cp -r $vardir/mbackup $vardir/mbackup_before_prepare");
-  }
-
-  my $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare $mbackup" : $mbackup)
-    . " --use-memory=".($buffer_pool_size * 2)." --prepare --target-dir=$vardir/mbackup --user=".$server->user." 2>$vardir/mbackup_prepare.log 2>&1";
-  say($cmd);
-  system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
-  $status= $? >> 8;
-
-  if ($status == STATUS_OK) {
-      say("Prepare of backup finished successfully");
-  } else {
-    sayFile("$vardir/mbackup_prepare.log");
-    sayError("Backup preparing failed: $status");
-    $status= STATUS_BACKUP_FAILURE;
-    goto UPGRADE_END;
+    sayError("Could not find MariaBackup binary for the old server, mariabackup upgrade will be skipped");
+    $skip_backup_upgrade= 1;
+    $self->setStatus(STATUS_POSSIBLE_FAILURE);
   }
 
   #####
@@ -285,6 +292,10 @@ LIVE_UPGRADE_END:
 
   #####
   $self->printStep("DUMP UPGRADE: Starting the new server on clean datadir for mysqldump upgrade");
+  if ($skip_dump_upgrade) {
+    sayError("Dump upgrade will be skipped due to the previous failures");
+    goto DUMP_UPGRADE_END;
+  }
 
   # Restore clean datadir for mysqldump upgrade
   system ('mv '.$old_server->datadir.'_clean '.$server->datadir);
@@ -337,6 +348,11 @@ DUMP_UPGRADE_END:
   #######################
 
   $self->printStep("BACKUP UPGRADE: Starting the new server on restored mariabackup backup");
+
+  if ($skip_backup_upgrade) {
+    sayError("MariaBackup upgrade will be skipped due to previous issues");
+    goto MBACKUP_UPGRADE_END;
+  }
 
   unless ($mbackup= $server->mariabackup()) {
     sayError("Could not find MariaBackup binary for the new server");

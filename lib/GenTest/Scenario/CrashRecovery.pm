@@ -167,7 +167,7 @@ sub run {
   $server= $new_server;
   $self->switch_to_new_server();
 
-  $status= $new_server->startServer;
+  $status= $new_server->startServer(my $repair_log_tables=1);
 
   if ($status != STATUS_OK) {
     sayError("New server failed to start");

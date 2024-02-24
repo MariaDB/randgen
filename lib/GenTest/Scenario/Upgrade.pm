@@ -130,12 +130,16 @@ sub collectAclData {
   my $res= STATUS_OK;
 
   say("Collecting user names");
-  my $conn= Connection::Perl->new(server => $server, role => 'super', name => 'UPG');
+  my ($conn, $err)= Connection::Perl->new(server => $server, role => 'super', name => 'UPG');
+  unless ($conn) {
+    sayError("Connection UPG failed with error $err");
+    return (STATUS_ENVIRONMENT_FAILURE, undef);
+  }
 
   $conn->execute("FLUSH PRIVILEGES");
   # Needed due to MDEV-24657
   $conn->execute('SET character_set_connection= @@character_set_server, collation_connection= @@collation_server');
-  my $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user WHERE is_role = 'N'";
+  my $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user /*!100000 WHERE is_role = 'N' */";
   my $users= $conn->get_column($query);
   if ($conn->err) {
     sayError("Couldn't fetch users, error: ".$conn->print_error);
@@ -147,7 +151,7 @@ sub collectAclData {
   }
 
   my $roles= [];
-  $roles= $conn->get_column("SELECT CONCAT('`',user,'`') FROM mysql.user WHERE is_role = 'Y'");
+  $roles= $conn->get_column("SELECT CONCAT('`',user,'`') FROM mysql.user WHERE /*!100000 is_role = 'Y' OR */ 0");
   if ($conn->err) {
     sayError("Couldn't fetch roles, error: ".$conn->print_error);
     $roles= [];

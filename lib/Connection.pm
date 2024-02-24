@@ -45,6 +45,7 @@ require Exporter;
   CONNECTION_QNO
   CONNECTION_REPORTED_ERRORS
   CONNECTION_MESSAGE_FILTERING
+  CONNECTION_ERROR_SUPPRESSIONS
 );
 
 use Carp;
@@ -83,6 +84,7 @@ use constant CONNECTION_NAME => 22;
 use constant CONNECTION_QNO => 23;
 use constant CONNECTION_REPORTED_ERRORS => 24;
 use constant CONNECTION_MESSAGE_FILTERING => 25;
+use constant CONNECTION_ERROR_SUPPRESSIONS => 26;
 
 use constant CONNECTION_SUPER_USER => 'root';
 use constant CONNECTION_TEST_USER => 'rqg';
@@ -133,6 +135,12 @@ sub new {
   $obj->[CONNECTION_REPORTED_ERRORS]= {};
   # ON by default, can be turned off
   $obj->[CONNECTION_MESSAGE_FILTERING]= 1 unless defined $obj->[CONNECTION_MESSAGE_FILTERING];
+  # Error suppressions is the way to filter errors *before* they occur for the first time
+  if ($obj->[CONNECTION_ERROR_SUPPRESSIONS]) {
+    sayDebug($obj->[CONNECTION_NAME].": errors ".$obj->[CONNECTION_ERROR_SUPPRESSIONS]." will be suppressed from the start");
+    my @errs= split /,/,$obj->[CONNECTION_ERROR_SUPPRESSIONS];
+    map { $obj->[CONNECTION_REPORTED_ERRORS]->{$_}= 0 } @errs;
+  }
   return $obj;
 }
 
@@ -223,8 +231,8 @@ sub warning_count {
 sub report_error {
   my ($self, $query) = @_;
   my $err_type= $self->[CONNECTION_ERROR_TYPE];
-  # These are types which we filter
   my $filtering_allowed= (
+    # These are types which we filter
     $self->[CONNECTION_MESSAGE_FILTERING] && (
       ($err_type == STATUS_SKIP) ||
       ($err_type == STATUS_UNSUPPORTED) ||
@@ -236,7 +244,7 @@ sub report_error {
     )
   );
 
-  if ($filtering_allowed and $self->[CONNECTION_REPORTED_ERRORS]->{$self->err}) {
+  if ($filtering_allowed and defined $self->[CONNECTION_REPORTED_ERRORS]->{$self->err}) {
     # The error is suppressed, don't print it
   } else {
     my $status= status2text($err_type);

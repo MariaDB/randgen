@@ -47,12 +47,17 @@ sub connection {
 }
 
 sub connect {
-  my $executor= shift;
-  my $conn = Connection::Perl->new(server => $executor->server, name => 'WRK-'.$executor->threadId());
+  my ($executor,$user,$pass)= @_;
+  my ($conn, $err) = Connection::Perl->new(
+    server => $executor->server,
+    name => 'WRK-'.$executor->threadId(),
+    user => $user,
+    password => $pass
+  );
   unless ($conn) {
-      sayError("Connect() to dsn ".$executor->server->port()." failed");
-      return undef;
+      sayDebug("Connection WRK-".$executor->threadId()." to port ".$executor->server->port()." failed with error $err");
   }
+  return $conn;
 }
 
 sub init {

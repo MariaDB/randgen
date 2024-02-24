@@ -299,8 +299,8 @@ sub reportResults {
         ($total_status == STATUS_CONTENT_MISMATCH)
     ) {
         @report_results = $reporter_manager->report(REPORTER_TYPE_DATA | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
-    } elsif ($total_status == STATUS_SERVER_CRASHED) {
-        say("Server crash reported, initiating post-crash analysis...");
+    } elsif ($total_status == STATUS_SERVER_CRASHED || $total_status == STATUS_SERVER_UNAVAILABLE) {
+        say("Server crash may have occurred, initiating post-crash analysis...");
         @report_results = $reporter_manager->report(REPORTER_TYPE_CRASH | REPORTER_TYPE_ALWAYS);
     } elsif ($total_status == STATUS_SERVER_DEADLOCKED) {
         say("Server deadlock reported, initiating analysis...");
@@ -571,9 +571,9 @@ sub initGenerator {
 
 sub registerFeatures {
   my ($self, $features)= @_;
-  my $conn= Connection::Perl->new( server => $self->config->server_specific->{1}->{server}, role => 'super', name => 'FTR' );
+  my ($conn, $err)= Connection::Perl->new( server => $self->config->server_specific->{1}->{server}, role => 'super', name => 'FTR' );
   unless ($conn) {
-    sayError("Could not connect to server to register features @{$features}");
+    sayError("Could not connect to server to register features @{$features}, error $err");
     return;
   }
   if ($conn->execute("/*!100102 SET STATEMENT enforce_storage_engine= NULL FOR */ CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria") != STATUS_OK) {
@@ -625,7 +625,7 @@ sub initReporters {
                 test_start => ( $self->[TR_TEST_START] || time ),
                 test_end => ( $self->[TR_TEST_END] || ($self->[TR_TEST_START] + $self->config->duration) ),
                 test_duration => $self->config->duration,
-                properties => $self->config
+                properties => $self->config,
             });
 
             return $add_result if $add_result > STATUS_OK;

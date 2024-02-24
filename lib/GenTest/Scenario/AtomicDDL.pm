@@ -237,12 +237,12 @@ sub run {
       goto FINALIZE;
     }
 
-    $slave_conn= Connection::Perl->new(server => $slave, name => 'ATO');
+    ($slave_conn, my $err)= Connection::Perl->new(server => $slave, name => 'ATO');
     if ($slave_conn) {
       $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=".$server->port.", MASTER_USER='root'");
       $slave_conn->execute("START SLAVE");
     } else {
-      sayError("Could not connect to the slave");
+      sayError("Could not connect to the slave, error $err");
       $status= STATUS_REPLICATION_FAILURE if $status < STATUS_REPLICATION_FAILURE;
       goto FINALIZE;
     }

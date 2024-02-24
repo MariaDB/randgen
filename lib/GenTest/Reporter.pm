@@ -62,6 +62,7 @@ use constant REPORTER_CUSTOM_ATTRIBUTES => 10;
 # (more or less when the test flow started)
 use constant REPORTER_START_TIME        => 11;
 use constant REPORTER_CONNECTION        => 12;
+# Can be overridden in a reporter to indicate minimal version compatibility
 use constant REPORTER_COMPATIBILITY     => 13;
 
 use constant REPORTER_TYPE_PERIODIC     => 2;
@@ -76,7 +77,6 @@ use constant REPORTER_TYPE_END          => 256;
 
 # The time, in seconds, we will wait for a connect before we consider the server unavailable
 use constant REPORTER_CONNECT_TIMEOUT_THRESHOLD => 20;
-# Can be overridden in a reporter to indicate minimal version compatibility
 
 1;
 
@@ -184,7 +184,10 @@ sub new {
 
 sub connect {
   my $reporter= shift;
-  $reporter->[REPORTER_CONNECTION]= Connection::Perl->new( server => $reporter->server, role => 'super', name => 'RPT' );
+  ($reporter->[REPORTER_CONNECTION], my $err)= Connection::Perl->new( server => $reporter->server, role => 'super', name => 'RPT' );
+  unless ($reporter->[REPORTER_CONNECTION]) {
+    sayDebug("Connection RPT failed with error $err");
+  }
   return $reporter->[REPORTER_CONNECTION];
 }
 

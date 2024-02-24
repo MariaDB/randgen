@@ -41,34 +41,37 @@ sub new {
     user => CONNECTION_USER,
     password => CONNECTION_PASSWORD,
     name => CONNECTION_NAME,
-    filter => CONNECTION_MESSAGE_FILTERING
+    filter => CONNECTION_MESSAGE_FILTERING,
+    suppressions => CONNECTION_ERROR_SUPPRESSIONS,
   },@_ );
   $self->[CONNECTION_DSN]=
     "dbi:mysql".
     ":host=".$self->[CONNECTION_HOST].
     ":port=".$self->[CONNECTION_PORT].
-    ":user=".$self->[CONNECTION_USER].
     ":mysql_local_infile=1".
     ":max_allowed_packet=1G".
     ($self->[CONNECTION_PROTOCOL] eq 'ps' ? ":mysql_server_prepare=1" : "");
-  $self->[CONNECTION_DBH]= $self->connect();
+  ($self->[CONNECTION_DBH], my $err)= $self->connect();
   if ($self->[CONNECTION_DBH]) {
     sayDebug("Connected: ".$self->[CONNECTION_NAME]." as ".$self->[CONNECTION_ROLE]." (".$self->[CONNECTION_USER].")");
     return $self;
   } else {
-    sayWarning($self->[CONNECTION_NAME].": Could not connect to the server");
-    return undef;
+    sayDebug($self->[CONNECTION_NAME].": Could not connect to the server");
+    return (undef, $err);
   }
 }
 
+# If user/pass aren't defined, defauls from DSN are used
 sub connect {
-  my $self= shift;
+  my ($self, $user, $pass)= @_;
+  $user= $self->[CONNECTION_USER] unless defined $user;
+  $pass= $self->[CONNECTION_PASSWORD] unless defined $pass;
   $self->[CONNECTION_ERROR]= undef;
   $self->[CONNECTION_ERROR_STRING]= undef;
   $self->[CONNECTION_ERROR_TYPE]= undef;
   my $dbh= DBI->connect($self->[CONNECTION_DSN],
-    undef,
-    undef,
+    $user,
+    $pass,
     # , mysql_server_prepare => 1
     {PrintError => 0, RaiseError => 0, AutoCommit => 1, mysql_auto_reconnect => 1}
   );
@@ -90,14 +93,14 @@ sub connect {
         sayDebug($self->name().": Upon connecting: instructed not to wait");
         ($self->[CONNECTION_ERROR], $self->[CONNECTION_ERROR_STRING])= (2013,"Could not connect to server");
         $self->report_error("<Connect>");
-        return undef;
+        return (undef, $self->[CONNECTION_ERROR]);
       } else {
         sayError($self->name().": Upon connecting: Server has gone away");
-        return undef;
+        return (undef, $self->[CONNECTION_ERROR]);
       }
     }
   }
-  return $dbh;
+  return ($dbh,$self->[CONNECTION_ERROR]);
 }
 
 sub dbh {

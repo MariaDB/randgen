@@ -126,19 +126,30 @@ sub run {
     if ($c =~ /^(\d+)->(\d+)$/) {
       my ($master, $slave)= ($1-1, $2-1);
       say("Enabling $c replication");
-      my $master_conn= Connection::Perl->new( server => $servers[$master], role => 'super', name => 'RPL' );
+      my ($master_conn, $err)= Connection::Perl->new( server => $servers[$master], role => 'super', name => 'RPL' );
+      unless ($master_conn) {
+        sayError("Connection RPL to the master failed, error $err");
+        $total_status= STATUS_ENVIRONMENT_FAILURE if STATUS_ENVIRONMENT_FAILURE > $total_status;
+        last;
+      }
       $master_conn->execute("/*!100001 SET tx_read_only= OFF */");
       $master_conn->execute("CREATE USER /*!100104 IF NOT EXISTS */ replication IDENTIFIED BY 'yvp.utu9azv4xgt6VRT'");
       unless ($master_conn->err) {
         $master_conn->execute("GRANT REPLICATION SLAVE ON *.* TO replication");
       }
+      $master_conn->execute("RESET MASTER");
       if ($master_conn->err) {
         sayError("Could not configure replication user on server $master: ".$master_conn->print_error);
         $total_status= STATUS_REPLICATION_FAILURE if STATUS_REPLICATION_FAILURE > $total_status;
         last;
       }
       my $master_port= $servers[$master]->port;
-      my $slave_conn= Connection::Perl->new( server => $servers[$slave], role => 'super', name => 'RPL' );
+      my ($slave_conn, $err)= Connection::Perl->new( server => $servers[$slave], role => 'super', name => 'RPL' );
+      unless ($slave_conn) {
+        sayError("Connection RPL to the slave failed, error $err");
+        $total_status= STATUS_ENVIRONMENT_FAILURE if STATUS_ENVIRONMENT_FAILURE > $total_status;
+        last;
+      }
       $slave_conn->execute("/*!100001 SET GLOBAL tx_read_only= OFF */");
       $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT', MASTER_SSL=0");
       $slave_conn->execute("START SLAVE");
