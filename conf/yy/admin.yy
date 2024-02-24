@@ -16,15 +16,51 @@
 #features Aria tables, RocksDB tables
 
 query:
-  { _set_db('ANY') } admin_query
+  ==FACTOR:10== { _set_db('ANY') } SET ROLE admin ;; admin_query |
+  { _set_db('ANY') } SET ROLE NONE ;; admin_query
+;
+
+optional_wait:
+  ==FACTOR:3== |
+  WAIT _digit |
+  NOWAIT
+;
+
+table_list:
+  _basetable | table_list, _basetable
 ;
 
 admin_query:
     admin_analyze_or_explain_query
   | admin_flush
-  | ==FACTOR:5== admin_show
+  | ==FACTOR:10== admin_query_table_maint
+  | admin_show
   | ==FACTOR:0.01== admin_cache_index
 ;
+
+admin_query_table_maint:
+# MDEV-33462 and some already fixed but not merged bug
+#  OPTIMIZE admin_no_write_or_local TABLE table_list optional_wait |
+  OPTIMIZE admin_no_write_or_local TABLE _basetable optional_wait |
+  CHECK TABLE table_list check_option_list |
+  REPAIR admin_no_write_or_local TABLE table_list repair_option_list
+;
+
+repair_option_list:
+  |
+  repair_option |
+  repair_option repair_option_list ;
+
+repair_option:
+  QUICK | EXTENDED | USE_FRM | /*!110400 FORCE */;
+
+check_option_list:
+  |
+  check_option |
+  check_option check_option_list ;
+
+check_option:
+  FOR UPGRADE | QUICK | FAST | MEDIUM | EXTENDED | CHANGED ;
 
 admin_cache_index:
   ==FACTOR:0.05== set_key_buffer_size |
@@ -82,7 +118,9 @@ admin_flush:
 ;
 
 admin_no_write_or_local:
-  | | | | | | NO_WRITE_TO_BINLOG | LOCAL
+  ==FACTOR:3== |
+  NO_WRITE_TO_BINLOG |
+  LOCAL
 ;
 
 admin_flush_list_or_item:
