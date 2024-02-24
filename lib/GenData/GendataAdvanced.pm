@@ -453,26 +453,42 @@ sub gen_table {
         }
 
         if ($columns{col_datetime} and $prng->uint16(0,1)) {
+            my $virtual_type= $self->random_or_predefined_vcol_kind();
+            my $length;
+            if ($virtual_type =~ /(?:STORED|PERSISTENT)/) {
+              # Lossy length conversion depends on TIME_ROUND_FRACTIONAL, warning in 10.4, error in 10.5+
+              $length= $prng->uint16($columns{col_datetime}->[1],6)
+            } else {
+              $length= $prng->uint16(0,6);
+            }
             $columns{vcol_datetime}= ['DATETIME',
-                                    $prng->uint16(0,6),
+                                    $length,
                                     undef,
                                     undef,
                                     undef,
                                     undef,
-                                    'AS (col_datetime) '.$self->random_or_predefined_vcol_kind(),
+                                    'AS (col_datetime) '.$virtual_type,
                                     random_invisible(),
                                     undef
                                 ];
         }
 
         if ($columns{col_timestamp} and $prng->uint16(0,1)) {
+            my $virtual_type= $self->random_or_predefined_vcol_kind();
+            my $length;
+            if ($virtual_type =~ /(?:STORED|PERSISTENT)/) {
+              # Lossy length conversion depends on TIME_ROUND_FRACTIONAL, warning in 10.4, error in 10.5+
+              $length= $prng->uint16($columns{col_timestamp}->[1],6)
+            } else {
+              $length= $prng->uint16(0,6);
+            }
             $columns{vcol_timestamp}= ['TIMESTAMP',
-                                    $prng->uint16(0,6),
+                                    $length,
                                     undef,
                                     undef,
                                     undef,
                                     undef,
-                                    'AS (col_timestamp) '.$self->random_or_predefined_vcol_kind(),
+                                    'AS (col_timestamp) '.$virtual_type,
                                     random_invisible(),
                                     undef
                                 ];
