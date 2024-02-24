@@ -45,7 +45,7 @@ cross_insert:
   insert_replace INTO _table ( _field ) SELECT _table[invariant]._field FROM _table[invariant] ;
 
 insert_replace:
-  ==FACTOR:19== __replace_x_insert_ignore |
+  ==FACTOR:49== __replace_x_insert_ignore |
                 __replace_x_insert DELAYED
 ;
 
