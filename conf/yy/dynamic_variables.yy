@@ -704,10 +704,21 @@ dynvar_old_mode_value:
           NO_DUP_KEY_WARNINGS_WITH_IGNORE
           NO_PROGRESS_INFO
           ZERO_DATE_TIME_CAST
+          UTF8_IS_UTF8MB3
+          IGNORE_INDEX_ONLY_FOR_JOIN
+          COMPAT_5_1_CHECKSUM
+          NO_NULL_COLLATION_IDS
+        ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
+    } /* compatibility 10.11.7 */ |
+    { @modes= qw(
+          NO_DUP_KEY_WARNINGS_WITH_IGNORE
+          NO_PROGRESS_INFO
+          ZERO_DATE_TIME_CAST
           LOCK_ALTER_TABLE_COPY
           UTF8_IS_UTF8MB3
           IGNORE_INDEX_ONLY_FOR_JOIN
           COMPAT_5_1_CHECKSUM
+          NO_NULL_COLLATION_IDS
         ); $length=$prng->int(0,scalar(@modes)); "'" . (join ',', @{$prng->shuffleArray(\@modes)}[0..$length-1]) . "'"
     } /* compatibility 11.2.1 */
 ;
