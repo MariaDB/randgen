@@ -1283,7 +1283,7 @@ $optional_server_variables{1011}= [ @{$optional_server_variables{$minversion}},
   # Default OFF
   [ @empty_set_30, '--mysqld=--thread_pool_exact_stats=ON' ],
   # Default UTF8_IS_UTF8MB3
-  [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST,UTF8_IS_UTF8MB3,IGNORE_INDEX_ONLY_FOR_JOIN,COMPAT_5_1_CHECKSUM', '--mysqld=--old_mode=""' ],
+  [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST,UTF8_IS_UTF8MB3,IGNORE_INDEX_ONLY_FOR_JOIN,COMPAT_5_1_CHECKSUM,NO_NULL_COLLATION_IDS', '--mysqld=--old_mode=""' ],
   # Default DOUBLE_PREC_HB
   [ @empty_set_30, '--mysqld=--histogram_type=SINGLE_PREC_HB', '--mysqld=--histogram_type=JSON_HB' ],
   # Default 8
@@ -1308,7 +1308,7 @@ $optional_server_variables{1100}= [ @{$optional_server_variables{$minversion}},
   # Default OFF
   [ @empty_set_30, '--mysqld=--thread_pool_exact_stats=ON' ],
   # Default UTF8_IS_UTF8MB3
-  [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST,UTF8_IS_UTF8MB3,IGNORE_INDEX_ONLY_FOR_JOIN,COMPAT_5_1_CHECKSUM', '--mysqld=--old_mode=""' ],
+  [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST,UTF8_IS_UTF8MB3,IGNORE_INDEX_ONLY_FOR_JOIN,COMPAT_5_1_CHECKSUM,NO_NULL_COLLATION_IDS', '--mysqld=--old_mode=""' ],
   # Default JSON_HB
   [ @empty_set_30, '--mysqld=--histogram_type=SINGLE_PREC_HB', '--mysqld=--histogram_type=DOUBLE_PREC_HB' ],
   # Default 8
@@ -1333,7 +1333,7 @@ $optional_server_variables{1102}= [ @{$optional_server_variables{$minversion}},
   # Default OFF
   [ @empty_set_30, '--mysqld=--thread_pool_exact_stats=ON' ],
   # Default UTF8_IS_UTF8MB3
-  [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST,UTF8_IS_UTF8MB3,IGNORE_INDEX_ONLY_FOR_JOIN,COMPAT_5_1_CHECKSUM,LOCK_ALTER_TABLE_COPY', '--mysqld=--old_mode=""' ],
+  [ @empty_set_30, '--mysqld=--old_mode=NO_DUP_KEY_WARNINGS_WITH_IGNORE,NO_PROGRESS_INFO,ZERO_DATE_TIME_CAST,UTF8_IS_UTF8MB3,IGNORE_INDEX_ONLY_FOR_JOIN,COMPAT_5_1_CHECKSUM,NO_NULL_COLLATION_IDS,LOCK_ALTER_TABLE_COPY', '--mysqld=--old_mode=""' ],
   # Default DOUBLE_PREC_HB
   [ @empty_set_30, '--mysqld=--histogram_type=SINGLE_PREC_HB', '--mysqld=--histogram_type=JSON_HB' ],
   # Default 8
@@ -1812,7 +1812,7 @@ $read_only_grammars{$minversion}= [
   [@empty_set_30, '--grammar=conf/yy/diagnostics.yy'],
   [@empty_set_50, '--grammar=conf/yy/disks.yy:0.01 --mysqld=--plugin-load-add=disks --mysqld=--loose-disks'],
   [@empty_set_30, '--grammar=conf/yy/gis.yy'],
-  [@empty_set_30, '--grammar=conf/yy/handler.yy'],
+  [@empty_set_50, '--grammar=conf/yy/handler.yy'],
   [@empty_set_20, '--grammar=conf/yy/information_schema.yy'],
   [@empty_set_30, '--grammar=conf/yy/joins.yy'],
 # Useless as it needs a dataset
