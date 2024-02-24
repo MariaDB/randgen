@@ -81,7 +81,7 @@ vers_query:
 
 vers_optional_switch_db:
   ==FACTOR:100== |
-  { _set_db('NON-SYSTEM) }
+  { _set_db('NON-SYSTEM') }
 ;
 
 vers_engine:
@@ -229,19 +229,19 @@ vers_partitioning_definition:
     PARTITION ver_pn CURRENT
   )
   # MDEV-19903
-  | /* compatibility 10.5.0 */ PARTITION BY SYSTEM_TIME vers_partition_number_optional
+  | /* compatibility 10.5.0 */ PARTITION BY SYSTEM_TIME vers_partitioning_interval_or_limit vers_partition_number_optional
 ;
 
 vers_partition_number_optional:
-  | PARTITIONS { $prng->int(1,20) }
-  | LIMIT { $prng->int(990,10000) } /*!100901 AUTO */
-  | vers_partitioning_interval_or_limit /*!100901 AUTO */
+  | ==FACTOR:2== PARTITIONS { $prng->int(1,20) }
+  | /*!100901 AUTO */
 ;
 
 vers_partitioning_interval_or_limit:
-    ==FACTOR:2== INTERVAL _positive_digit vers_interval vers_starts_optional
+    ==FACTOR:3== INTERVAL _positive_digit vers_interval vers_starts_optional
   | LIMIT _smallint_positive
   | LIMIT _positive_digit
+  | LIMIT { $prng->int(990,10000) }
 ;
 
 vers_starts_optional:
@@ -261,7 +261,9 @@ vers_partition_list:
 ;
 
 vers_interval:
-  SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR
+  ==FACTOR:2== SECOND |
+  ==FACTOR:4== MINUTE |
+  HOUR | DAY | WEEK | MONTH | YEAR
 ;
 
 ####################################################
