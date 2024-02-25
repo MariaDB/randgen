@@ -47,6 +47,7 @@ use GenTest;
 use GenTest::TestRunner;
 use GenTest::Properties;
 use Constants;
+use Constants::MariaDBErrorCodes;
 use GenTest::Scenario;
 use GenTest::Scenario::Upgrade;
 use Data::Dumper;
@@ -153,7 +154,12 @@ sub run {
     $skip_dump_upgrade= 1;
   }
 
-  ($old_tables, $old_columns, $old_indexes, $old_checksums_safe, $old_checksums_unsafe)= $self->get_data($server);
+  ($status, $old_tables, $old_columns, $old_indexes, $old_checksums_safe, $old_checksums_unsafe)= $self->get_data($server);
+  unless ($status == STATUS_OK) {
+    sayError("Error occurred upon collecting data from the old server");
+    $self->setSTatus($status);
+    goto UPGRADE_END;
+  }
 
   #####
   $self->printStep("Creating full backup with MariaBackup");
@@ -418,6 +424,8 @@ sub get_data {
   my $databases= join ',', map { "'".$_."'" } @databases;
   my ($tables, $columns, $indexes, $checksums_unsafe, $checksums_safe);
   $server->connection->execute("SET max_statement_time= 0");
+  goto GET_DATA_END if $server->connection->err();
+
   # We skip auto_increment value due to MDEV-13094 etc.
   $tables= $server->connection->query(
     "SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE, ENGINE, ROW_FORMAT, TABLE_COLLATION, TABLE_COMMENT ".
@@ -425,6 +433,8 @@ sub get_data {
     "WHERE TABLE_SCHEMA IN ($databases)".
     "ORDER BY TABLE_SCHEMA, TABLE_NAME"
   );
+  goto GET_DATA_END if $server->connection->err();
+
   # Default for virtual columns can be wrong (MDEV-32077)
   # Views don't preserve virtual column attributes, so we select view columns separately (MDEV-32078)
   $columns= $server->connection->query(
@@ -439,22 +449,25 @@ sub get_data {
     "WHERE t.TABLE_SCHEMA IN ($databases) AND t.TABLE_TYPE IN ('VIEW','SYSTEM VIEW') ".
     "ORDER BY TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME"
   );
+  goto GET_DATA_END if $server->connection->err();
+
   # Before these versions (fix MDEV-16857) row_end is shown in statistics
   if (isCompatible('10.3.31,10.4.21,10.5.12,10.6.4',$self->compatibility,$self->compatibility_es)) {
     $indexes= $server->connection->query(
-      "SELECT TABLE_SCHEMA, INDEX_NAME, COLUMN_NAME, NON_UNIQUE, SEQ_IN_INDEX, INDEX_TYPE, COMMENT ".
+      "SELECT TABLE_SCHEMA, TABLE_NAME, INDEX_NAME, COLUMN_NAME, NON_UNIQUE, SEQ_IN_INDEX, INDEX_TYPE, COMMENT ".
       "FROM INFORMATION_SCHEMA.STATISTICS ".
       "WHERE TABLE_SCHEMA IN ($databases)".
       "ORDER BY TABLE_SCHEMA, TABLE_NAME, INDEX_NAME, COLUMN_NAME"
     )
   } else {
     $indexes= $server->connection->query(
-      "SELECT TABLE_SCHEMA, INDEX_NAME, COLUMN_NAME, NON_UNIQUE, SEQ_IN_INDEX, INDEX_TYPE, COMMENT ".
+      "SELECT TABLE_SCHEMA, TABLE_NAME, INDEX_NAME, COLUMN_NAME, NON_UNIQUE, SEQ_IN_INDEX, INDEX_TYPE, COMMENT ".
       "FROM INFORMATION_SCHEMA.STATISTICS ".
       "WHERE TABLE_SCHEMA IN ($databases) AND (COLUMN_NAME != 'row_end' OR (TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME) IN (SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS))".
       "ORDER BY TABLE_SCHEMA, TABLE_NAME, INDEX_NAME, COLUMN_NAME"
     )
   }
+  goto GET_DATA_END if $server->connection->err();
 
   # Double and float make checksum non-deterministic (apparently), regardless the type of the upgrade,
   # so they are always excluded.
@@ -470,20 +483,26 @@ sub get_data {
       "WHERE TABLE_SCHEMA IN ($databases) AND TABLE_TYPE = 'SYSTEM VERSIONED' ".
       "AND (TABLE_SCHEMA, TABLE_NAME) NOT IN (SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE DATA_TYPE IN ('double','float') OR IS_GENERATED != 'NEVER' OR ENGINE = 'Aria')"
   );
+  goto GET_DATA_END if $server->connection->err();
+
   my $table_names_checksum_safe= $server->connection->get_value(
       "SELECT GROUP_CONCAT(CONCAT('`',TABLE_SCHEMA,'`.`',TABLE_NAME,'`') ORDER BY 1 SEPARATOR ', ') ".
       "FROM INFORMATION_SCHEMA.TABLES ".
       "WHERE TABLE_SCHEMA IN ($databases) AND TABLE_TYPE != 'SYSTEM VERSIONED' ".
       "AND (TABLE_SCHEMA, TABLE_NAME) NOT IN (SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE DATA_TYPE IN ('double','float') OR IS_GENERATED != 'NEVER' OR ENGINE = 'Aria')"
   );
+  goto GET_DATA_END if $server->connection->err();
 
   if ($table_names_checksum_unsafe) {
     $checksums_unsafe= $server->connection->query("CHECKSUM TABLE $table_names_checksum_unsafe EXTENDED");
   }
+  goto GET_DATA_END if $server->connection->err();
+
   if ($table_names_checksum_safe) {
     $checksums_safe= $server->connection->query("CHECKSUM TABLE $table_names_checksum_safe EXTENDED");
   }
-  return ($tables, $columns, $indexes, $checksums_safe, $checksums_unsafe);
+GET_DATA_END:
+  return (errorType($server->connection->err()), $tables, $columns, $indexes, $checksums_safe, $checksums_unsafe);
 }
 
 
@@ -555,7 +574,11 @@ sub post_upgrade {
 
   #####
   $self->printStep("Collecting data from the new server after $type upgrade");
-  my ($tables, $columns, $indexes, $checksums_safe, $checksums_unsafe)= $self->get_data($new_server);
+  my ($status, $tables, $columns, $indexes, $checksums_safe, $checksums_unsafe)= $self->get_data($new_server);
+  if ($status != STATUS_OK) {
+    sayError("Error occurred upon collecting data from the new server after $type upgrade");
+    return $status;
+  }
 
   #####
   $self->printStep("Getting ACL info from the new server after $type upgrade");
