@@ -472,67 +472,31 @@ sub gen_table {
                                 ];
         }
 
-        if ($columns{col_datetime} and $prng->uint16(0,1)) {
-            my $virtual_type= $self->random_or_predefined_vcol_kind();
-            my $length;
-            if ($virtual_type =~ /(?:STORED|PERSISTENT)/) {
-              # Lossy length conversion depends on TIME_ROUND_FRACTIONAL, warning in 10.4, error in 10.5+
-              $length= $prng->uint16($columns{col_datetime}->[1],6)
-            } else {
-              $length= $prng->uint16(0,6);
+        foreach my $t ('timestamp','datetime','time') {
+            my ($nm,$tp)= ('col_'.$t, uc($t));
+            if ($columns{$nm} and $prng->uint16(0,2)) {
+                my $virtual_type= $self->random_or_predefined_vcol_kind();
+                my $length;
+                if ($virtual_type =~ /(?:STORED|PERSISTENT)/) {
+                # Lossy length conversion depends on TIME_ROUND_FRACTIONAL, warning in 10.4, error in 10.5+
+                $length= $prng->uint16($columns{$nm}->[1],6)
+                } else {
+                $length= $prng->uint16(0,6);
+                }
+                # Cannot truncate indexed timestamp column as it depends on TIME_ROUND_FRACTIONAL
+                my $index_forbidden= ($length < $columns{$nm}->[1]);
+                $columns{vcol_timestamp}= [$tp,
+                                        $length,
+                                        undef,
+                                        undef,
+                                        undef,
+                                        undef,
+                                        "AS ($nm) ".$virtual_type,
+                                        random_invisible(),
+                                        undef,
+                                        $index_forbidden
+                                    ];
             }
-            # Cannot truncate indexed timestamp column as it depends on TIME_ROUND_FRACTIONAL
-            my $index_forbidden= ($length < $columns{col_datetime}->[1]);
-            $columns{vcol_datetime}= ['DATETIME',
-                                    $length,
-                                    undef,
-                                    undef,
-                                    undef,
-                                    undef,
-                                    'AS (col_datetime) '.$virtual_type,
-                                    random_invisible(),
-                                    undef,
-                                    undef,
-                                    $index_forbidden
-                                ];
-        }
-
-        if ($columns{col_timestamp} and $prng->uint16(0,1)) {
-            my $virtual_type= $self->random_or_predefined_vcol_kind();
-            my $length;
-            if ($virtual_type =~ /(?:STORED|PERSISTENT)/) {
-              # Lossy length conversion depends on TIME_ROUND_FRACTIONAL, warning in 10.4, error in 10.5+
-              $length= $prng->uint16($columns{col_timestamp}->[1],6)
-            } else {
-              $length= $prng->uint16(0,6);
-            }
-            # Cannot truncate indexed timestamp column as it depends on TIME_ROUND_FRACTIONAL
-            my $index_forbidden= ($length < $columns{col_timestamp}->[1]);
-            $columns{vcol_timestamp}= ['TIMESTAMP',
-                                    $length,
-                                    undef,
-                                    undef,
-                                    undef,
-                                    undef,
-                                    'AS (col_timestamp) '.$virtual_type,
-                                    random_invisible(),
-                                    undef,
-                                    $index_forbidden
-                                ];
-        }
-
-        if ($columns{col_time} and !$prng->uint16(0,3)) {
-            $columns{vcol_time}= [  'TIME',
-                                    $prng->uint16(0,6),
-                                    undef,
-                                    undef,
-                                    undef,
-                                    undef,
-                                    'AS (col_time) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
-                                    undef,
-                                    undef
-                                ];
         }
 
         if ($columns{col_year} and !$prng->uint16(0,4)) {
