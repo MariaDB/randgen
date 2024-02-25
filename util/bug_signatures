@@ -16,6 +16,9 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33536:
+=~ Error.*failed to decrypt .*  rc: -1  dstlen: 0  size: .*
+=~ Test run ends with exit status STATUS_UPGRADE_FAILURE
 MDEV-33529:
 =~ Assertion \`!s\.uses_buffer_owned_by(this)'
 =~ Binary_string::operator=
