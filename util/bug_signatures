@@ -21,11 +21,16 @@ MDEV-33529:
 =~ Binary_string::operator=
 =~ create_internal_tmp_table_from_heap
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]
+# Not merged to 10.11+ yet
 MDEV-33462:
-=~ Assertion \`!have_x()'
-=~ void sux_lock.*::s_lock
+=~ Assertion \`!have_x()'|Assertion \`!have_any()'
+=~ dict_sys_t::freeze
 =~ UndorecApplier::apply_undo_rec
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-33462:
+=~ InnoDB: innodb_fatal_semaphore_wait_threshold was exceeded for dict_sys.latch
+=~ srv_monitor_task
+=~ Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-33450:
 =~ Assertion failed: from->s->online_alter_binlog == 0|Assertion \`from->s->online_alter_binlog == __null'
 =~ copy_data_between_tables
@@ -994,6 +999,10 @@ MDEV-30033:
 =~ Assertion \`0'
 =~ Field_new_decimal::get_equal_const_item
 =~ propagate_equal_fields
+MDEV-30011:
+=~ AddressSanitizer|signal
+=~ spider_db_mbase::fin_loop_check
+=~ spider_db_conn_queue_action
 MDEV-29992:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ row_upd_sec_index_entry
