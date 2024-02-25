@@ -598,6 +598,9 @@ sub post_upgrade {
     next if (($d eq 'checksums_unsafe') and ($type eq 'dump'));
     my $old= Dumper $old_data{$d};
     my $new= Dumper $new_data{$d};
+    # For now we'll just blindly replace all utf8mb3 by utf8
+    $old =~ s/utf8mb3/utf8/g;
+    $new =~ s/utf8mb3/utf8/g;
     if ($old ne $new) {
       $data_status= $self->upgrade_or_recovery_failure();
       $post_upgrade_status= $data_status if $data_status > $post_upgrade_status;
