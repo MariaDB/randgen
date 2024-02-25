@@ -151,7 +151,7 @@ sub gen_table {
 
     my $res= STATUS_OK;
 
-    # column_name => [ type, length, unsigned, zerofill, nullability, default, virtual, invisible, compressed ]
+    # column_name => [ type, length, unsigned, zerofill, nullability, default, virtual, invisible, compressed, optional: index_forbidden ]
 
     # Columns of different types are created with different probability.
 
@@ -165,6 +165,7 @@ sub gen_table {
                         undef,
                         undef,
                         random_invisible(),
+                        undef,
                         undef
                     ]
     );
@@ -178,6 +179,7 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : '0' ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef,
                                 undef
                             ]
     }
@@ -191,6 +193,7 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : '0' ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef,
                                 undef
                             ]
     }
@@ -207,6 +210,7 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : '0' ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef,
                                 undef
                             ]
     }
@@ -220,6 +224,7 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : "'1900-01-01'" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef,
                                 undef
                             ]
     }
@@ -234,6 +239,7 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : "'1900-01-01 00:00:00'" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef,
                                 undef
                             ]
     }
@@ -248,6 +254,7 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : "'1971-01-01 00:00:00'" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef,
                                 undef
                             ]
     }
@@ -262,6 +269,7 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : "'00:00:00'" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef,
                                 undef
                             ]
     }
@@ -276,6 +284,7 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : "1970" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef,
                                 undef
                             ]
     }
@@ -290,6 +299,7 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef,
                                 undef
                             ]
     }
@@ -304,7 +314,8 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
-                                random_compressed()
+                                random_compressed(),
+                                undef
                             ]
     }
 
@@ -318,7 +329,8 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
-                                random_compressed()
+                                random_compressed(),
+                                undef
                             ]
     }
 
@@ -332,6 +344,7 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef,
                                 undef
                             ]
     }
@@ -348,6 +361,7 @@ sub gen_table {
                                    ( $nullable eq 'NULL' ? undef : $prng->spatial($tp) ),
                                    undef,
                                    ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                   undef,
                                    undef
                                 ]
     }
@@ -363,6 +377,7 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : "'::'" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef,
                                 undef
                             ]
     }
@@ -378,6 +393,7 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : "'00000000000000000000000000000000'" ),
                                 undef,
                                 ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                undef,
                                 undef
                             ]
     }
@@ -407,6 +423,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_bit) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -420,6 +437,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_int) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -435,6 +453,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_dec) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -448,6 +467,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_date) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -461,6 +481,8 @@ sub gen_table {
             } else {
               $length= $prng->uint16(0,6);
             }
+            # Cannot truncate indexed timestamp column as it depends on TIME_ROUND_FRACTIONAL
+            my $index_forbidden= ($length < $columns{col_datetime}->[1]);
             $columns{vcol_datetime}= ['DATETIME',
                                     $length,
                                     undef,
@@ -469,7 +491,9 @@ sub gen_table {
                                     undef,
                                     'AS (col_datetime) '.$virtual_type,
                                     random_invisible(),
-                                    undef
+                                    undef,
+                                    undef,
+                                    $index_forbidden
                                 ];
         }
 
@@ -482,6 +506,8 @@ sub gen_table {
             } else {
               $length= $prng->uint16(0,6);
             }
+            # Cannot truncate indexed timestamp column as it depends on TIME_ROUND_FRACTIONAL
+            my $index_forbidden= ($length < $columns{col_timestamp}->[1]);
             $columns{vcol_timestamp}= ['TIMESTAMP',
                                     $length,
                                     undef,
@@ -490,7 +516,8 @@ sub gen_table {
                                     undef,
                                     'AS (col_timestamp) '.$virtual_type,
                                     random_invisible(),
-                                    undef
+                                    undef,
+                                    $index_forbidden
                                 ];
         }
 
@@ -503,6 +530,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_time) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -516,6 +544,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_year) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -532,6 +561,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_char) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -545,6 +575,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_varchar) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -558,6 +589,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_blob) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -571,6 +603,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_enum) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -584,6 +617,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_spatial) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -597,6 +631,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_inet6) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -609,6 +644,7 @@ sub gen_table {
                                     undef,
                                     'AS (col_uuid) '.$self->random_or_predefined_vcol_kind(),
                                     random_invisible(),
+                                    undef,
                                     undef
                                 ];
         }
@@ -763,6 +799,8 @@ sub gen_table {
         my @cols=();
         my $text_only= 1;
         foreach my $c (sort keys %columns) {
+            # Index is forbidden for the column
+            next if $columns{$c}->[9];
             push @cols, $c;
             $text_only= 0 if $columns{$c}->[0] !~ /BLOB|TEXT|CHAR|BINARY/;
         }
