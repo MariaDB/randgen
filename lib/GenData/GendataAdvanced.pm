@@ -757,10 +757,8 @@ sub gen_table {
 
     # The limit for the number of indexes is purely arbitrary, there is no secret wisdom
     my $number_of_indexes= $prng->uint16(0,scalar(keys %columns)*2);
-
     foreach (1..$number_of_indexes)
     {
-        my $number_of_columns= $prng->uint16(1,scalar(keys %columns));
         # TODO: make it conditional depending on the version -- keys %columns vs @column_list
         my @cols=();
         my $text_only= 1;
@@ -772,6 +770,7 @@ sub gen_table {
             push @cols, $c;
             $text_only= 0 if $columns{$c}->[0] !~ /BLOB|TEXT|CHAR|BINARY/;
         }
+        my $number_of_columns= $prng->uint16(1,scalar(@cols));
         $prng->shuffleArray(\@cols);
         @cols= @cols[0..$number_of_columns-1];
         my $ind_type= $prng->uint16(0,5) ? 'INDEX' : 'UNIQUE';
