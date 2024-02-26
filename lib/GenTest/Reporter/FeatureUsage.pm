@@ -43,6 +43,7 @@ my $server_version;
 my %usage_check= (
   'application periods' => \&check_for_application_periods,
   'Archive tables' => \&check_for_archive_tables,
+  'Aria encryption' => \&check_for_aria_encryption,
   'Aria tables' => \&check_for_aria_tables,
   'backup stages' => \&check_for_backup_stages,
   'binlog compression' => \&check_for_binlog_compression,
@@ -323,6 +324,13 @@ sub check_for_application_periods {
 sub check_for_gis {
   if ($_[0]->check_status_var('Feature_gis')) {
     return "according to Feature_gis";
+  }
+  return undef;
+}
+
+sub check_for_aria_encryption {
+  if ($_[0]->check_system_var('aria_encrypt_tables')) {
+    return "according to aria_encrypt_tables variable";
   }
   return undef;
 }
