@@ -173,7 +173,9 @@ alt_col_definition:
 
 
 alt_invisible_optional:
-  | | | | /*!100303 INVISIBLE */
+  ==FACTOR:9== |
+  # Workaround for MDEV-28253 - before the fix INVISIBLE isn't safe for upgrades etc.
+  INVISIBLE /* compatibility 10.3.35,10.4.25,10.5.16,10.6.8,10.7.4 */
 ;
 
 alt_optional_default_or_current_timestamp:

@@ -139,6 +139,10 @@ sub random_asc_desc_key {
 sub gen_table {
     my ($self, $executor, $name, $size, $e, $db) = @_;
 
+    # Workaround for MDEV-28253 and more -- before the fix, INVISIBLE
+    # is not safe for many purposes
+    my $invisible_forbidden= (not isCompatible('10.3.35,10.4.25,10.5.16,10.6,8,10.7.4',$executor->server->version()));
+
     say("Creating table $db.$name, size $size rows, " . ($e ? "engine $e" : "default engine"));
 
     # Remote table should already be created and populated by now,
@@ -166,7 +170,7 @@ sub gen_table {
                         undef,
                         undef,
                         undef,
-                        random_invisible(),
+                        ($invisible_forbidden ? undef : random_invisible()),
                         undef,
                         undef
                     ]
@@ -180,7 +184,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : '0' ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -194,7 +198,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : '0' ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -211,7 +215,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : '0' ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -225,7 +229,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "'1900-01-01'" ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -240,7 +244,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "'1900-01-01 00:00:00'" ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -255,7 +259,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "'1971-01-01 00:00:00'" ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -270,7 +274,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "'00:00:00'" ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -285,7 +289,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "1970" ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -300,7 +304,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -315,7 +319,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 random_compressed(),
                                 undef
                             ]
@@ -330,7 +334,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 random_compressed(),
                                 undef
                             ]
@@ -345,7 +349,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -362,7 +366,7 @@ sub gen_table {
                                    $nullable = random_null(),
                                    ( $nullable eq 'NULL' ? undef : $prng->spatial($tp) ),
                                    undef,
-                                   ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                   ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                    undef,
                                    undef
                                 ]
@@ -378,7 +382,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "'::'" ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -394,7 +398,7 @@ sub gen_table {
                                 $nullable = random_null(),
                                 ( $nullable eq 'NULL' ? undef : "'00000000000000000000000000000000'" ),
                                 undef,
-                                ( $nullable eq 'NULL' ? undef : random_invisible() ),
+                                ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -424,7 +428,7 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_bit) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
                                 ];
@@ -438,7 +442,7 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_int) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
                                 ];
@@ -454,7 +458,7 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_dec) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
                                 ];
@@ -468,7 +472,7 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_date) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
                                 ];
@@ -494,7 +498,7 @@ sub gen_table {
                                         undef,
                                         undef,
                                         "AS ($nm) ".$virtual_type,
-                                        random_invisible(),
+                                        ($invisible_forbidden ? undef : random_invisible()),
                                         undef,
                                         $index_forbidden
                                     ];
@@ -509,7 +513,7 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_year) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
                                 ];
@@ -526,7 +530,7 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_char) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
                                 ];
@@ -540,7 +544,7 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_varchar) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
                                 ];
@@ -554,7 +558,7 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_blob) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
                                 ];
@@ -568,7 +572,7 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_enum) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
                                 ];
@@ -582,7 +586,7 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_spatial) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
                                 ];
@@ -596,7 +600,7 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_inet6) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
                                 ];
@@ -609,7 +613,7 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_uuid) '.$self->random_or_predefined_vcol_kind(),
-                                    random_invisible(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
                                 ];

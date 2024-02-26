@@ -435,11 +435,16 @@ sub get_data {
   );
   goto GET_DATA_END if $server->connection->err();
 
+  # Workaround for MDEV-28253 -- EXTRA can be wrong on old versions
+  my $extra= 'EXTRA';
+#  unless (isCompatible('10.3.35,10.4.24,10.5.6,10.6.8,10.7.4',$server->version())) {
+#    $extra= 'IF(EXTRA="on update current_timestamp(),","on update current_timestamp(), INVISIBLE",EXTRA)';
+#  }
   # Default for virtual columns can be wrong (MDEV-32077)
   # Views don't preserve virtual column attributes, so we select view columns separately (MDEV-32078)
   $columns= $server->connection->query(
     "SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME, c.ORDINAL_POSITION, IF(c.IS_GENERATED='ALWAYS',NULL,COLUMN_DEFAULT), c.IS_NULLABLE, c.DATA_TYPE, ".
-    "CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, DATETIME_PRECISION, CHARACTER_SET_NAME, COLLATION_NAME, COLUMN_KEY, EXTRA, PRIVILEGES, COLUMN_COMMENT, IS_GENERATED ".
+    "CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, DATETIME_PRECISION, CHARACTER_SET_NAME, COLLATION_NAME, COLUMN_KEY, $extra, PRIVILEGES, COLUMN_COMMENT, IS_GENERATED ".
     "FROM INFORMATION_SCHEMA.COLUMNS c JOIN INFORMATION_SCHEMA.TABLES t ON (t.TABLE_SCHEMA = c.TABLE_SCHEMA AND t.TABLE_NAME = c.TABLE_NAME ) ".
     "WHERE t.TABLE_SCHEMA IN ($databases) AND t.TABLE_TYPE NOT IN ('VIEW','SYSTEM VIEW') ".
     "UNION ".
