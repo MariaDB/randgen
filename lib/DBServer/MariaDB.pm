@@ -1167,7 +1167,7 @@ sub checkDatabaseIntegrity {
 
   say("Testing database integrity");
   my $conn= $self->connection;
-  my $status= DBSTATUS_OK;
+  my $status= STATUS_OK;
   my $foreign_key_check_workaround= 0;
 
   $conn->execute("SET max_statement_time= 0");
@@ -1175,7 +1175,7 @@ sub checkDatabaseIntegrity {
   my $retried_lost_connection= 0;
   ALLDBCHECK:
   foreach my $database (sort @$databases) {
-      my $db_status= DBSTATUS_OK;
+      my $db_status= STATUS_OK;
 #      next if $database =~ m{^(information_schema|performance_schema|sys)$}is;
       my $tabl_ref = $conn->query("SELECT TABLE_NAME, TABLE_TYPE, ENGINE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$database'");
       if ($conn->err() && serverGone(errorType($conn->err()))) {
@@ -1213,7 +1213,7 @@ sub checkDatabaseIntegrity {
         if ($conn->err) {
           sayError("Got an error for table ${database}.${table}: ".$conn->print_error);
           # 1178 is ER_CHECK_NOT_IMPLEMENTED. It's not an error
-          $db_status= DBSTATUS_FAILURE unless ($conn->err() == 1178);
+          $db_status= STATUS_DATABASE_CORRUPTION unless ($conn->err() == 1178);
           # Mysterious loss of connection upon checks
           if ($conn->err() == 2013 || $conn->err() == 2002) {
             if ($retried_lost_connection) {
@@ -1319,7 +1319,7 @@ sub checkDatabaseIntegrity {
                 redo CHECKTABLE;
               } else {
                 sayError("For $attrs `$database`.`$table` : $msg_type : $msg_text");
-                $db_status= DBSTATUS_FAILURE;
+                $db_status= STATUS_DATABASE_CORRUPTION;
               }
             } else {
               sayDebug("For table `$database`.`$table` : $msg_type : $msg_text");
@@ -1328,13 +1328,13 @@ sub checkDatabaseIntegrity {
         }
       }
       $status= $db_status if $db_status > $status;
-      if ($db_status == DBSTATUS_OK) {
+      if ($db_status == STATUS_OK) {
         say("Check for database $database OK");
       } else {
         sayError("Check for database $database failed");
       }
   }
-  if ($status > DBSTATUS_OK) {
+  if ($status > STATUS_OK) {
     sayError("Database integrity check failed");
   }
   if ($foreign_key_check_workaround) {
