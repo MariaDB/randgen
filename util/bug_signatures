@@ -16,6 +16,20 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33544:
+=~ error : Wrong base information on indexpage at page
+=~ Test run ends with exit status STATUS_DATABASE_CORRUPTION
+=~ FeatureUsage detected Aria encryption
+MDEV-33538:
+=~ SPIDER plugin initialization failed at
+=~ safe_mutex: Trying to lock uninitialized mutex at .*spd_i_s\.cc
+=~ spider_i_s_alloc_mem_fill_table
+MDEV-33537:
+=~ AddressSanitizer|signal
+=~ my_convert_using_func
+=~ ErrBuff::set_str
+=~ ErrConvString::ptr
+=~ FeatureUsage detected virtual columns
 MDEV-33536:
 =~ Error.*failed to decrypt .*  rc: -1  dstlen: 0  size: .*
 =~ Test run ends with exit status STATUS_UPGRADE_FAILURE
@@ -71,7 +85,6 @@ MDEV-33234:
 MDEV-33233:
 =~ Assertion \`table->s->db_options_in_use == part_table->s->db_options_in_use'
 =~ compare_table_with_partition
-=~ Sql_cmd_alter_table_exchange_partition::exchange_partition
 MDEV-33232:
 =~ AddressSanitizer: negative-size-param
 =~ TYPVAL
@@ -2470,9 +2483,9 @@ MDEV-23500:
 =~ my_ok
 =~ multi_update::send_eof|multi_delete::send_eof
 MDEV-23453:
-=~ signal [16]|AddressSanitizer
-=~ Item_field::type_handler
-=~ Temporal_with_date::make_from_item
+=~ signal|AddressSanitizer|Assertion \`fixed == 1'|Assertion \`fixed()'
+=~ Item_field::
+=~ cut_fields_for_portion_of_time
 =~ sp_head::execute
 MDEV-23448:
 =~ Assertion \`fd != -1'
