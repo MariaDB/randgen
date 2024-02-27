@@ -141,7 +141,7 @@ sub gen_table {
 
     # Workaround for MDEV-28253 and more -- before the fix, INVISIBLE
     # is not safe for many purposes
-    my $invisible_forbidden= (not isCompatible('10.3.35,10.4.25,10.5.16,10.6,8,10.7.4',$executor->server->version()));
+    my $invisible_forbidden= (not isCompatible('10.3.35,10.4.25,10.5.16,10.6.8,10.7.4',$executor->server->version()));
 
     say("Creating table $db.$name, size $size rows, " . ($e ? "engine $e" : "default engine"));
 
