@@ -16,6 +16,11 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33547:
+=~ Assertion \`user_table->get_ref_count() == 1'
+=~ commit_try_rebuild
+=~ ha_innobase::commit_inplace_alter_table
+=~ Version: '10\.5|Server version: 10\.5
 MDEV-33544:
 =~ error : Wrong base information on indexpage at page
 =~ Test run ends with exit status STATUS_DATABASE_CORRUPTION
