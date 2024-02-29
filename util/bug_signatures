@@ -16,6 +16,10 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33572:
+=~ Assertion \`share->now_transactional == share->base\.born_transactional'|Assertion \`share->now_transactional == share->base\.born_transactional \|\| share->internal_table'
+=~ maria_close
+=~ Sql_cmd_optimize_table::execute
 MDEV-33570:
 =~ Error.*: Not allowed for system-versioned .* Change .*system_versioning_alter_history to proceed with ALTER
 =~ status.*: Operation failed
