@@ -16,6 +16,18 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33570:
+=~ Error.*: Not allowed for system-versioned .* Change .*system_versioning_alter_history to proceed with ALTER
+=~ status.*: Operation failed
+=~ Test run ends with exit status STATUS_UPGRADE_FAILURE
+MDEV-33567:
+=~ AddressSanitizer|signal
+=~ my_compress_buffer
+=~ Item_func_compress::val_str
+MDEV-33566:
+=~ Assertion \`curr_tab - join_tab < dbug_join_tab_array_size'
+=~ JOIN::make_aggr_tables_info
+=~ JOIN::optimize_inner
 MDEV-33547:
 =~ Assertion \`user_table->get_ref_count() == 1'
 =~ commit_try_rebuild
