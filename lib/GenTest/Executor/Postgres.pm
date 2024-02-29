@@ -60,11 +60,12 @@ sub init {
 my %caches;
 
 my %acceptedErrors = (
-    ### TODO: 42P01 is also used for the missing/invalid FROM-clause entry errors, etc.
-    ### Fix the grammar rules leading to them then stop masking these errors.
+    ## YB: 42P01 is also used for the missing/invalid FROM-clause entry errors, etc.
+    ## We now take the "IF (NOT) EXISTS" option out of the comment block and stop
+    ## masking these errors.
     "42P01" => 1,# DROP TABLE on non-existing table is accepted since
                  # tests rely on non-standard MySQL DROP IF EXISTS;
-    "42P06" => 1 # Schema already exists
+    # "42P06" => 1 # Schema already exists
     );
 
 sub execute {

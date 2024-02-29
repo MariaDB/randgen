@@ -54,6 +54,10 @@
 query:
 	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } hints query_type ;
 
+################################################################################
+# YB: Randomly add a hint set that encourages Batched Nested Loop plans
+################################################################################
+
 hints: nl_hints | | ;
 
 nl_hints: /*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */ ;
@@ -177,6 +181,8 @@ not:
 # The IS not NULL values in where_item are to hit the ref_or_null and          #
 # the not_exists optimizations.  The LIKE '%a%' rule is to try to hit the      #
 # rnd_pos optimization                                                         #
+#                                                                              #
+# YB: Use _field_indexed instead of pk in the "IS not NULL" pattern            #
 ################################################################################
 where_item:
         table1 .`pk` arithmetic_operator existing_table_item . int_field_name  |
@@ -185,7 +191,7 @@ where_item:
         existing_table_item . char_field_name arithmetic_operator existing_table_item . char_field_name |
         existing_table_item . int_field_name arithmetic_operator int_value  |
         existing_table_item . char_field_name arithmetic_operator char_value  |
-        table1 .`pk` IS not NULL |
+        table1 . _field_indexed IS not NULL |
         table1 . _field IS not NULL |
         table1 . int_indexed arithmetic_operator int_value AND ( table1 . char_field_name LIKE '%a%' OR table1.char_field_name LIKE '%b%') ;
 

@@ -45,11 +45,8 @@
 #                      - ensures the same query produces stable result sets    #
 ################################################################################
 
-################################################################################
-# YB changes:
-#   * For testing batched Nested Loop, randomly add a hint set that disables
-#     hashjoin, mergejoin and material.
-################################################################################
+query_init:
+    SET enable_hashagg = OFF; # YB: to avoid hitting #21012
 
 ################################################################################
 # The perl code in {} helps us with bookkeeping for writing more sensible      #
@@ -58,7 +55,12 @@
 # dodgy.                                                                       #
 ################################################################################
 query:
-	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $subquery_idx=0 ; $child_subquery_idx=0 ; "" } hints main_select ;
+	{ @nonaggregates = () ; $t1 = 1 ; $tables = 0 ; $fields = 0 ; $st1 = 1 ; $subquery_idx=0 ; $cst1 = 1 ; $child_subquery_idx=0 ; "" }
+	hints main_select ;
+
+################################################################################
+# YB: Randomly add a hint set that encourages Batched Nested Loop plans
+################################################################################
 
 hints: nl_hints | | ;
 
@@ -103,7 +105,10 @@ join_list:
 # too many mega-join conditions which take too long to run                     #
 ################################################################################
 	( new_table_item join_type new_table_item ON (join_condition_item ) ) |
-        ( new_table_item join_type ( ( new_table_item join_type new_table_item ON (join_condition_item ) ) ) ON (join_condition_item ) ) ;
+        ( new_table_item
+	      join_type new_table_item ON (join_condition_item )
+	      join_type new_table_item ON (join_condition_item ) ) |
+        ( new_table_item join_type ( ( { ++$t1; "" } new_table_item join_type new_table_item ON (join_condition_item ) { --$t1; "" } ) ) ON (join_condition_item ) ) ;
 
 join_list_disabled:
 ################################################################################
@@ -205,6 +210,10 @@ int_single_value_subquery:
       subquery_body ) |
     ( SELECT distinct select_option aggregate subquery_table_one_two . int_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" } 
       subquery_body ) |
+    ( SELECT select_option subquery_table_one_two . int_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
+      subquery_body ORDER BY 1 LIMIT 1 ) |
+    ( SELECT select_option subquery_table_one_two . int_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
+      subquery_body ORDER BY 1 LIMIT 1 ) |
     ( SELECT _digit FROM DUMMY ) ;
 
 char_single_value_subquery:
@@ -212,12 +221,20 @@ char_single_value_subquery:
       subquery_body ) |
     ( SELECT distinct select_option any_type_aggregate subquery_table_one_two . char_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" } 
       subquery_body ) |
+    ( SELECT distinct select_option subquery_table_one_two . char_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
+      subquery_body ORDER BY 1 LIMIT 1 ) |
+    ( SELECT distinct select_option subquery_table_one_two . char_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
+      subquery_body ORDER BY 1 LIMIT 1 ) |
     ( SELECT _char FROM DUMMY ) ;
    
 int_single_member_subquery:
     ( SELECT distinct select_option subquery_table_one_two . int_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
       subquery_body 
       single_subquery_group_by
+      subquery_having ) |
+    ( SELECT distinct select_option aggregate subquery_table_one_two . int_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" }
+      subquery_body 
+      any_field_subquery_group_by
       subquery_having ) |
     ( SELECT _digit FROM DUMMY ) ;
 
@@ -244,6 +261,10 @@ char_single_member_subquery:
     ( SELECT distinct select_option subquery_table_one_two . char_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
      subquery_body
      single_subquery_group_by
+     subquery_having) |
+    ( SELECT distinct select_option any_type_aggregate subquery_table_one_two . char_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" }
+     subquery_body
+     any_field_subquery_group_by
      subquery_having) ;
 
 char_single_union_subquery:
@@ -268,17 +289,30 @@ char_double_member_subquery:
 int_correlated_subquery:
     ( SELECT distinct select_option subquery_table_one_two . int_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
       FROM subquery_join_list 
-      correlated_subquery_where_clause ) ;
+      correlated_subquery_where_clause ) |
+    int_scalar_correlated_subquery ;
+
+int_scalar_correlated_subquery:
+    ( SELECT distinct select_option aggregate subquery_table_one_two . int_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" }
+      FROM subquery_join_list 
+      correlated_subquery_where_clause ) |
+    ( SELECT distinct select_option subquery_table_one_two . int_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
+      FROM subquery_join_list 
+      correlated_subquery_where_clause ORDER BY 1 LIMIT 1 ) ;
 
 char_correlated_subquery:
     ( SELECT distinct select_option subquery_table_one_two . char_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
       FROM subquery_join_list 
-      correlated_subquery_where_clause ) ;
+      correlated_subquery_where_clause ) |
+    char_scalar_correlated_subquery ;
 
-int_scalar_correlated_subquery:
-     ( SELECT distinct select_option aggregate subquery_table_one_two . int_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" }
+char_scalar_correlated_subquery:
+    ( SELECT distinct select_option any_type_aggregate subquery_table_one_two . char_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" }
       FROM subquery_join_list 
-      correlated_subquery_where_clause ) ;
+      correlated_subquery_where_clause ) |
+    ( SELECT distinct select_option subquery_table_one_two . char_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
+      FROM subquery_join_list 
+      correlated_subquery_where_clause ORDER BY 1 LIMIT 1 ) ;
 
 subquery_body:
       FROM subquery_join_list
@@ -314,7 +348,10 @@ subquery_join_list:
     subquery_new_table_item  |  subquery_new_table_item  |
    ( subquery_new_table_item join_type subquery_new_table_item ON (subquery_join_condition_item ) ) |
    ( subquery_new_table_item join_type subquery_new_table_item ON (subquery_join_condition_item ) ) |
-   ( subquery_new_table_item join_type ( subquery_new_table_item join_type subquery_new_table_item ON (subquery_join_condition_item )  ) ON (subquery_join_condition_item ) ) ;
+   ( subquery_new_table_item
+         join_type subquery_new_table_item ON (subquery_join_condition_item )
+         join_type subquery_new_table_item ON (subquery_join_condition_item ) ) |
+   ( subquery_new_table_item join_type ( { ++$st1; "" } subquery_new_table_item join_type subquery_new_table_item ON (subquery_join_condition_item ) { --$st1; "" } ) ON (subquery_join_condition_item ) ) ;
 
 subquery_join_condition_item:
     subquery_current_table_item . int_field_name = subquery_previous_table_item . int_indexed subquery_on_subquery |
@@ -331,9 +368,11 @@ required_single_subquery_group_by:
 single_subquery_group_by:
     | | | | | | | | | required_single_subquery_group_by ;
 
-
 double_subquery_group_by:
     | | | | | | | | | GROUP BY { SUBQUERY.$subquery_idx."_field1" } ,  { SUBQUERY.$subquery_idx."_field2" } ;
+
+any_field_subquery_group_by:
+    | | | GROUP BY existing_table_item . field_name ;
 
 subquery_having: ;
 
@@ -349,7 +388,6 @@ subquery_having_item:
 	existing_subquery_table_item . int_field_name arithmetic_operator _digit |
         existing_subquery_table_item . char_field_name arithmetic_operator _char ;
 
-
 ################################################################################
 # Child subquery rules
 ################################################################################
@@ -364,11 +402,11 @@ general_child_subquery:
     existing_subquery_table_item . int_field_name arithmetic_operator  int_single_value_child_subquery  |
     existing_subquery_table_item . char_field_name arithmetic_operator char_single_value_child_subquery |
     existing_subquery_table_item . int_field_name membership_operator  int_single_member_child_subquery  |
-#    ( existing_subquery_table_item . int_field_name , existing_subquery_table_item . int_field_name ) not IN int_double_member_child_subquery |
+    ( existing_subquery_table_item . int_field_name , existing_subquery_table_item . int_field_name ) not IN int_double_member_child_subquery |
     existing_subquery_table_item . char_field_name membership_operator  char_single_member_child_subquery  |
-#    ( existing_subquery_table_item . char_field_name , existing_subquery_table_item . char_field_name ) not IN char_double_member_child_subquery |
-#    ( _digit, _digit ) not IN int_double_member_child_subquery |
-#    ( _char, _char ) not IN char_double_member_child_subquery |
+    ( existing_subquery_table_item . char_field_name , existing_subquery_table_item . char_field_name ) not IN char_double_member_child_subquery |
+    ( _digit, _digit ) not IN int_double_member_child_subquery |
+    ( _char, _char ) not IN char_double_member_child_subquery |
     existing_subquery_table_item . int_field_name membership_operator int_single_union_child_subquery |
     existing_subquery_table_item . char_field_name membership_operator char_single_union_child_subquery ;
 
@@ -407,7 +445,7 @@ int_double_member_child_subquery:
     ( SELECT distinct select_option child_subquery_table_one_two . int_field_name AS { "CHILD_SUBQUERY".$child_subquery_idx."_field1" } , 
       aggregate child_subquery_table_one_two . int_field_name ) AS { child_subquery.$child_subquery_idx."_field2" }
       child_subquery_body 
-      single_child_subquery_group_by
+      required_single_child_subquery_group_by
       child_subquery_having );
 
 char_single_member_child_subquery:
@@ -428,18 +466,36 @@ char_double_member_child_subquery:
    ( SELECT distinct select_option child_subquery_table_one_two . char_field_name AS { "CHILD_SUBQUERY".$child_subquery_idx."_field1" } ,
      any_type_aggregate child_subquery_table_one_two . char_field_name ) AS { "CHILD_SUBQUERY".$child_subquery_idx."_field2" }
      child_subquery_body
-     single_child_subquery_group_by
+     required_single_child_subquery_group_by
      child_subquery_having );
 
 int_correlated_child_subquery:
     ( SELECT distinct select_option child_subquery_table_one_two . int_field_name AS { "CHILD_SUBQUERY".$subquery_idx."_field1" }
       FROM child_subquery_join_list 
-      correlated_child_subquery_where_clause ) ;
+      correlated_child_subquery_where_clause ) |
+    int_scalar_correlated_child_subquery ;
+
+int_scalar_correlated_child_subquery:
+    ( SELECT distinct select_option aggregate child_subquery_table_one_two . int_field_name ) AS { "CHILD_SUBQUERY".$subquery_idx."_field1" }
+      FROM child_subquery_join_list 
+      correlated_child_subquery_where_clause ) |
+    ( SELECT distinct select_option child_subquery_table_one_two . int_field_name AS { "CHILD_SUBQUERY".$subquery_idx."_field1" }
+      FROM child_subquery_join_list 
+      correlated_child_subquery_where_clause ORDER BY 1 LIMIT 1 ) ;
 
 char_correlated_child_subquery:
     ( SELECT distinct select_option child_subquery_table_one_two . char_field_name AS { "CHILD_SUBQUERY".$subquery_idx."_field1" }
       FROM child_subquery_join_list 
-      correlated_child_subquery_where_clause ) ;
+      correlated_child_subquery_where_clause ) |
+    char_scalar_correlated_child_subquery ;
+
+char_scalar_correlated_child_subquery:
+    ( SELECT distinct select_option child_subquery_table_one_two . char_field_name AS { "CHILD_SUBQUERY".$subquery_idx."_field1" }
+      FROM child_subquery_join_list 
+      correlated_child_subquery_where_clause ) |
+    ( SELECT distinct select_option any_type_aggregate child_subquery_table_one_two . char_field_name ) AS { "CHILD_SUBQUERY".$subquery_idx."_field1" }
+      FROM child_subquery_join_list 
+      correlated_child_subquery_where_clause ORDER BY 1 LIMIT 1 ) ;
 
 child_subquery_body:
       FROM child_subquery_join_list
@@ -458,7 +514,11 @@ correlated_child_subquery_where_list:
 
 correlated_child_subquery_where_item:
     existing_child_subquery_table_item . int_field_name arithmetic_operator existing_subquery_table_item . int_field_name |
-    existing_child_subquery_table_item . char_field_name arithmetic_operator existing_subquery_table_item . char_field_name ;
+    existing_child_subquery_table_item . int_field_name arithmetic_operator existing_subquery_table_item . int_field_name |
+    existing_child_subquery_table_item . char_field_name arithmetic_operator existing_subquery_table_item . char_field_name |
+    existing_child_subquery_table_item . char_field_name arithmetic_operator existing_subquery_table_item . char_field_name |
+    existing_child_subquery_table_item . int_field_name arithmetic_operator existing_table_item . int_field_name |
+    existing_child_subquery_table_item . char_field_name arithmetic_operator existing_table_item . char_field_name ;
 
 child_subquery_where_list:
     child_subquery_where_item | child_subquery_where_item | child_subquery_where_item |
@@ -474,7 +534,10 @@ child_subquery_join_list:
     child_subquery_new_table_item  |  child_subquery_new_table_item  |
    ( child_subquery_new_table_item join_type child_subquery_new_table_item ON (child_subquery_join_condition_item ) ) |
    ( child_subquery_new_table_item join_type child_subquery_new_table_item ON (child_subquery_join_condition_item ) ) |
-   ( child_subquery_new_table_item join_type ( ( child_subquery_new_table_item join_type child_subquery_new_table_item ON (child_subquery_join_condition_item ) ) ) ON (child_subquery_join_condition_item ) ) ;
+   ( child_subquery_new_table_item
+         join_type child_subquery_new_table_item ON (child_subquery_join_condition_item )
+         join_type child_subquery_new_table_item ON (child_subquery_join_condition_item ) ) |
+   ( child_subquery_new_table_item join_type ( ( { ++$cst1; "" } child_subquery_new_table_item join_type child_subquery_new_table_item ON (child_subquery_join_condition_item ) { --$cst1; "" } ) ) ON (child_subquery_join_condition_item ) ) ;
 
 child_subquery_join_condition_item:
     child_subquery_current_table_item . int_field_name = child_subquery_previous_table_item . int_indexed |
@@ -482,9 +545,11 @@ child_subquery_join_condition_item:
     child_subquery_current_table_item . `col_varchar_key` = child_subquery_previous_table_item . char_field_name |
     child_subquery_current_table_item . char_field_name = child_subquery_previous_table_item . `col_varchar_key` ;
 
-single_child_subquery_group_by:
-    | | | | | | | | | GROUP BY { child_subquery.$child_subquery_idx."_field1" } ;
+required_single_child_subquery_group_by:
+    GROUP BY { child_subquery.$child_subquery_idx."_field1" } ;
 
+single_child_subquery_group_by:
+    | | | | | | | | | required_single_child_subquery_group_by ;
 
 double_child_subquery_group_by:
     | | | | | | | | | GROUP BY { child_subquery.$child_subquery_idx."_field1" } ,  { child_subquery.$child_subquery_idx."_field2" } ;
@@ -653,7 +718,8 @@ select_subquery:
 select_subquery_body:
          int_single_value_subquery AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
          char_single_value_subquery AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-         int_scalar_correlated_subquery AS  { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
+         int_scalar_correlated_subquery AS  { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
+         char_scalar_correlated_subquery AS  { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
 
 select_subquery_body_disabled:
          (  SELECT _digit  UNION all_distinct  ( SELECT _digit ) LIMIT 1 )  AS  { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
@@ -712,7 +778,7 @@ child_subquery_current_table_item:
         { "CHILD_SUBQUERY".$child_subquery_idx."_t".$child_subquery_tables } ;
 
 previous_table_item:
-	{ "table".($tables - 1) };
+	{ "table".($tables - 1) } ;
 
 subquery_previous_table_item:
         { "SUBQUERY".$subquery_idx."_t".($subquery_tables-1) } ;
@@ -721,10 +787,10 @@ child_subquery_previous_table_item:
         { "CHILD_SUBQUERY".$child_subquery_idx."_t".($child_subquery_tables-1) } ;
 
 existing_table_item:
-	{ "table".$prng->int(1,$tables) };
+	{ "table".$prng->int($t1,$tables) };
 
 existing_subquery_table_item:
-        { "SUBQUERY".$subquery_idx."_t".$prng->int(1,$subquery_tables) } ;
+        { "SUBQUERY".$subquery_idx."_t".$prng->int($st1,$subquery_tables) } ;
 
 existing_child_subquery_table_item:
         { "CHILD_SUBQUERY".$child_subquery_idx."_t".$prng->int(1,$child_subquery_tables) } ;
@@ -800,6 +866,11 @@ int_indexed:
 
 char_field_name:
     `col_varchar_key` | `col_varchar_nokey` ;
+
+field_name:
+    int_field_name | int_field_name |
+    char_field_name | char_field_name |
+    col_datetime_key | col_datetime_nokey ;
 
 ################################################################################
 # We define LIMIT_rows in this fashion as LIMIT values can differ depending on      #

@@ -35,11 +35,16 @@ my $basedir = '/Users/mtakahara/code/yugabyte-db/';
 my $dsn = 'dbi:Pg:host=127.0.0.1;port=5433;user=yugabyte;database=test';
 
 my $original_query = "
-        SELECT 1
+SELECT 1
 ";
 
 # Optional query hints
-my $hints = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
+my $hints = "";
+#my $hints = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
+
+
+# for an intermittent crash
+my $trials = 10;
 
 
 # Maximum number of seconds a query will be allowed to proceed. It is assumed that most crashes will happen immediately after takeoff
@@ -58,24 +63,33 @@ start_server();
 my $simplifier = GenTest::Simplifier::SQL->new(
 	oracle => sub {
 		my $oracle_query = shift;
-		my $dbh = $executor->dbh();
-	
-		$dbh->do("SET statement_timeout = $timeout");
 
-		$executor->execute($hints.$oracle_query);
+		foreach my $trial (1..$trials) {
+                    my $dbh = $executor->dbh();
+                    
+                    $dbh->do("SET statement_timeout = $timeout");
 
-		# Or, alternatively, execute as a prepared statement
-		# $executor->execute("PREPARE prep_stmt FROM \"$oracle_query\"");
-		# $executor->execute("EXECUTE prep_stmt");
-		# $executor->execute("EXECUTE prep_stmt");
-		# $executor->execute("DEALLOCATE PREPARE prep_stmt");
+                    my $oracle_result = $executor->execute($hints.$oracle_query);
 
-		if (!$executor->dbh()->ping()) {
-			start_server();
-			return ORACLE_ISSUE_STILL_REPEATABLE;
-		} else {
-			return ORACLE_ISSUE_NO_LONGER_REPEATABLE;
-		}
+                    # Or, alternatively, execute as a prepared statement
+                    # $executor->execute("PREPARE prep_stmt FROM \"$oracle_query\"");
+                    # $executor->execute("EXECUTE prep_stmt");
+                    # $executor->execute("EXECUTE prep_stmt");
+                    # $executor->execute("DEALLOCATE PREPARE prep_stmt");
+
+                    if (!$executor->dbh()->ping()) {
+                        start_server();
+                        return ORACLE_ISSUE_STILL_REPEATABLE;
+                    }
+
+                    # my $outcome = $oracle_result->status();
+                    # if ($outcome == STATUS_SYNTAX_ERROR) {
+                    #     return ORACLE_ISSUE_STILL_REPEATABLE;
+                    # }
+                    print "*";
+
+                }
+                return ORACLE_ISSUE_NO_LONGER_REPEATABLE;
 	}
 );
 

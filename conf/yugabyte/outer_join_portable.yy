@@ -37,13 +37,6 @@
 ################################################################################
 
 ################################################################################
-# YB changes:
-#   * For testing batched Nested Loop, randomly add a hint set that disables
-#     hashjoin, mergejoin and material.
-#   * Add FULL OUTER JOIN.
-################################################################################
-
-################################################################################
 # we have the perl code here as these variables are helpers for generating
 # queries
 # nonaggregates -  holds all nonaggregate fields used, stored as the alias used
@@ -59,12 +52,26 @@
 # int_field_set - we only use integer fields in this grammar and we
 #                 create this helper array for the same purposes as
 #                 table_alias_set
+#
+# YB:
+# - Change table_alias_set to store the id only
+# - Add the following variables:
+#   tables_reqd - max table id used in the SELECT-list so we can add missing
+#                 tables to the FROM-clause.
+#   agg_field_table_alias_set - table alias ids for aggregate function
+#                 arguments.
 ################################################################################
 
 query:
-  { @table_alias_set = ("table1", "table1", "table1", "table1", "table2", "table2", "table2", "table3", "table4", "table5", "table1", "table1", "table2") ; "" }
+  { $tables_reqd = 0; @table_alias_set = (1, 1, 1, 1, 2, 2, 2, 3, 4, 5, 1, 1, 2) ; "" }
   { @int_field_set = ("pk", "col_int", "col_int_key") ; "" } 
-  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ;  "" } hints query_type ;
+  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ;  "" }
+  { @agg_field_table_alias_set = (1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,4,4,5); "" }
+  hints query_type ;
+
+################################################################################
+# YB: Randomly add a hint set that encourages Batched Nested Loop plans
+################################################################################
 
 hints: nl_hints | | ;
 
@@ -82,13 +89,13 @@ query_type:
   simple_select | simple_select | mixed_select | mixed_select | mixed_select | aggregate_select ;
 
 mixed_select:
-        { $stack->push() } SELECT distinct straight_join select_option select_list FROM join WHERE where_list group_by_clause having_clause order_by_clause { $stack->pop(undef) } ;
+        { $stack->push() } SELECT distinct straight_join select_option select_list FROM join_list WHERE where_list group_by_clause having_clause order_by_clause { $stack->pop(undef) } ;
 
 simple_select:
-        { $stack->push() } SELECT distinct straight_join select_option simple_select_list FROM join WHERE where_list  optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
+        { $stack->push() } SELECT distinct straight_join select_option simple_select_list FROM join_list WHERE where_list  optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
 
 aggregate_select:
-        { $stack->push() } SELECT distinct straight_join select_option aggregate_select_list FROM join WHERE where_list optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
+        { $stack->push() } SELECT distinct straight_join select_option aggregate_select_list FROM join_list WHERE where_list optional_group_by having_clause order_by_clause { $stack->pop(undef) } ;
 
 distinct: DISTINCT | | | |  ;
 
@@ -129,10 +136,10 @@ new_select_item:
 ################################################################################
 
 nonaggregate_select_item:
-        { my $x = $prng->arrayElement(\@table_alias_set)." . ".$prng->arrayElement(\@int_field_set); push @nonaggregates , $x ; $x } AS {my $f = "field".++$fields ; $f };
+        { my $n = $prng->arrayElement(\@table_alias_set); $tables_reqd = $n if $tables_reqd < $n; my $x = "table".$n." . ".$prng->arrayElement(\@int_field_set); push @nonaggregates , $x ; $x } AS {my $f = "field".++$fields ; $f };
 
 aggregate_select_item:
-        aggregate table_alias . int_field_name ) AS {"field".++$fields } ; 
+        aggregate agg_field_table_alias . int_field_name ) AS {"field".++$fields } ; 
 
 ################################################################################
 # We make use of the new RQG stack in order to generate more interesting
@@ -140,6 +147,9 @@ aggregate_select_item:
 # of how the stack functions
 ################################################################################
 	
+join_list:
+        join join_missing_table_items ;
+
 join:
        { $stack->push() }      
        table_or_join 
@@ -193,6 +203,25 @@ where_item:
 
 number_list:
         _digit | number_list, _digit ;
+
+################################################################################
+# YB: add missing tables referenced in the SELECT-list.                        #
+# Caution: this rule calls undocumented internal entry point, and might stop   #
+# working with future Generator code changes.                                  #
+################################################################################
+join_missing_table_items:
+    { my @x=(); while ($tables < $tables_reqd) { push @x, expand($rule_counters,$rule_invariants, "join_new_table_item"); } ; join("", @x) } ;
+
+join_new_table_item:
+################################################################################
+# The "xxx" part doesn't matter because int_condition and char_condition only  #
+# looks at the table alias name after "xxx AS " in the table string.           #
+################################################################################
+	{ $stack->push() }
+        { $stack->push(); my $x = "xxx AS table".$prng->int(1,$tables); my @s=($x); $stack->pop(\@s); "" }
+        { $stack->set("left",$stack->get("result")); }
+	left_right outer JOIN new_table_item ON ( join_condition ) ;
+
 
 ################################################################################
 # We ensure that a GROUP BY statement includes all nonaggregates.              #
@@ -262,8 +291,8 @@ limit:
 ################################################################################
 
 table_or_join:
-           table | table | table | table | table | 
-           table | table | table | join | join ;
+           new_table_item | new_table_item | new_table_item | new_table_item | new_table_item | 
+           new_table_item | new_table_item | new_table_item | join | join ;
 
 ################################################################################
 # We stack the probabilities regarding table size via how we create tables
@@ -281,7 +310,7 @@ table_or_join:
 ################################################################################
 
 
-table:
+new_table_item:
 # We use the "AS table" bit here so we can have unique aliases if we use the same table many times
        { $stack->push(); my $x = $prng->arrayElement($executors->[0]->tables())." AS table".++$tables;  my @s=($x); $stack->pop(\@s); $x } ;
 
@@ -305,12 +334,8 @@ char_indexed:
   `col_varchar_10_latin1_key` | `col_varchar_10_utf8_key` |
   `col_varchar_1024_latin1_key` |`col_varchar_1024_utf8_key` ;
 
-table_alias:
-  table1 | table1 | table1 | table1 | table1 | table1 | table1 | table1 | table1 | table1 |
-  table2 | table2 | table2 | table2 | table2 | table2 | table2 | table2 | table2 | other_table ;
-
-other_table:
-  table3 | table3 | table3 | table3 | table3 | table4 | table4 | table5 ;
+agg_field_table_alias:
+	{ my $n = $prng->arrayElement(\@agg_field_table_alias_set); $tables_reqd = $n if $tables_reqd < $n; "table".$n };
 
 existing_table_item:
 	{ "table".$prng->int(1,$tables) };
@@ -335,6 +360,9 @@ aggregate:
 not:
 	| | | NOT;
 
+################################################################################
+# YB: Add FULL
+################################################################################
 left_right:
 	LEFT | LEFT | LEFT | RIGHT | FULL |
 	LEFT | LEFT | LEFT | RIGHT ;
