@@ -16,6 +16,11 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33575:
+=~ Assertion \`rec_get_trx_id(rec, clust_index) < trx->id'
+=~ row_merge_read_clustered_index
+=~ Sql_cmd_optimize_table::execute
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-33572:
 =~ Assertion \`share->now_transactional == share->base\.born_transactional'|Assertion \`share->now_transactional == share->base\.born_transactional \|\| share->internal_table'
 =~ maria_close
