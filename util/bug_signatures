@@ -125,6 +125,10 @@ MDEV-33230:
 =~ rec_copy_prefix_to_buf
 =~ row_merge_create_fts_sort_index
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-33229:
+=~ InnoDB: Records in wrong order
+=~ InnoDB: Flagged corruption of
+=~ FeatureUsage detected nopad collations
 MDEV-33218:
 =~ Assertion \`active_arena->is_stmt_prepare_or_first_stmt_execute() \|\| active_arena->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'
 =~ st_select_lex::fix_prepare_information
