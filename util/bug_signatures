@@ -17,14 +17,14 @@
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
 MDEV-33575:
-=~ Assertion \`rec_get_trx_id(rec, clust_index) < trx->id'
+=~ Assertion \`rec_get_trx_id(rec, clust_index) < trx->id'|\`rec_trx_id < trx->id'
 =~ row_merge_read_clustered_index
 =~ Sql_cmd_optimize_table::execute
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-33572:
 =~ Assertion \`share->now_transactional == share->base\.born_transactional'|Assertion \`share->now_transactional == share->base\.born_transactional \|\| share->internal_table'
 =~ maria_close
-=~ Sql_cmd_optimize_table::execute
+=~ Sql_cmd_optimize_table::execute|tdc_start_shutdown|Sql_cmd_repair_table::execute|Sql_cmd_check_table::execute
 MDEV-33570:
 =~ Error.*: Not allowed for system-versioned .* Change .*system_versioning_alter_history to proceed with ALTER
 =~ status.*: Operation failed
@@ -100,8 +100,8 @@ MDEV-33236:
 MDEV-33235:
 =~ signal|AddressSanitizer
 =~ my_convert_fix
-=~ String_copier_for_item::copy_with_warn(
-=~ Func_handler_shift_left_decimal_to_ulonglong
+=~ String_copier_for_item::copy_with_warn
+=~ TABLE::update_virtual_field
 MDEV-33234:
 =~ signal|AddressSanitizer
 =~ String::append
@@ -112,7 +112,7 @@ MDEV-33233:
 =~ Assertion \`table->s->db_options_in_use == part_table->s->db_options_in_use'
 =~ compare_table_with_partition
 MDEV-33232:
-=~ AddressSanitizer: negative-size-param
+=~ AddressSanitizer: negative-size-param|signal
 =~ TYPVAL
 =~ ha_connect::ReadIndexed
 MDEV-33231:
@@ -2729,8 +2729,8 @@ MDEV-23115:
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-23113:
 =~ signal|AddressSanitizer
+=~ JOIN::optimize_stage2
 =~ make_select|update_ref_and_keys
-=~ st_select_lex::optimize_unflattened_subqueries
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-23073:
 =~ LeakSanitizer: detected memory leaks
@@ -2750,7 +2750,7 @@ MDEV-23045:
 MDEV-23041:
 =~ signal [16]|AddressSanitizer|MemorySanitizer
 =~ Item_func_set_user_var::update_hash
-=~ TABLE::update_default_fields|end_write_group|TABLE::update_virtual_fields|end_send_group|Field::set_default|sql_set_variables
+=~ TABLE::update_default_fields|end_write_group|TABLE::update_virtual_fields|end_send_group|Field::set_default|sql_set_variables|Item::save_int_in_field
 MDEV-23041:
 =~ free_memory: Assertion \`irem->marker == .*'
 =~ Item_func_set_user_var::update_hash
@@ -3849,6 +3849,10 @@ MDEV-17678:
 =~ field_unpack
 =~ print_keydup_error
 =~ ha_myisam::enable_indexes
+MDEV-17657:
+=~ signal|AddressSanitizer
+=~ Gcalc_scan_iterator::event_point::simple_event
+=~ Item_func_distance::val_real
 # Only fixed in 10.5!
 MDEV-17596:
 =~ Assertion \`block->page\.flush_observer == __null \|\| block->page\.flush_observer == observer'
