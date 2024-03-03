@@ -115,16 +115,6 @@ MDEV-33232:
 =~ AddressSanitizer: negative-size-param|signal
 =~ TYPVAL
 =~ ha_connect::ReadIndexed
-MDEV-33231:
-=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
-=~ Assertion \`0'
-=~ row_upd_sec_index_entry
-=~ FeatureUsage detected nopad collations
-MDEV-33230:
-=~ LeakSanitizer
-=~ rec_copy_prefix_to_buf
-=~ row_merge_create_fts_sort_index
-=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-33229:
 =~ InnoDB: Records in wrong order
 =~ InnoDB: Flagged corruption of
@@ -955,27 +945,38 @@ MDEV-30565:
 =~ ha_innobase::open
 =~ innobase_init_vc_templ
 =~ Version: '10\.[34]|Server version: 10\.[34]
+# Not yet merged into 11.1+
+MDEV-30528:
+=~ LeakSanitizer
+=~ rec_copy_prefix_to_buf
+=~ row_merge_create_fts_sort_index
+=~ Version: '11\.[1-9]|Server version: 11\.[1-9]*
+# Not yet merged into 11.1+
 MDEV-30528:
 =~ Assertion \`!mbmaxlen \|\| !(prefix_len % mbmaxlen)'|Assertion \`!mbmaxlen \|\| !(prefix_len % mbmaxlen) \|\| !(prefix_len % 4)'|InnoDB: Failing assertion: !(prefix_len % mbmaxlen) \|\| !(prefix_len % 4)
 =~ dtype_get_at_most_n_mbchars
 =~ mysql_alter_table
 =~ FeatureUsage detected system-versioned tables
+# Not yet merged into 11.1+
 MDEV-30528:
 =~ Assertion \`pos != ((ulint)(-1))'
 =~ trx_undo_page_report_modify
 =~ ha_innobase::update_row
 =~ FeatureUsage detected system-versioned tables
+# Not yet merged into 11.1+
 MDEV-30528:
 =~ signal|AddressSanitizer
 =~ rec_convert_dtuple_to_rec_comp
 =~ BtrBulk::insert
 =~ mysql_alter_table
 =~ FeatureUsage detected system-versioned tables
+# Not yet merged into 11.1+
 MDEV-30528:
 =~ Assertion \`!(col->prtype & 256U)'
 =~ row_merge_buf_add
 =~ mysql_alter_table
 =~ FeatureUsage detected system-versioned tables
+# Not yet merged into 11.1+
 MDEV-30528:
 =~ Index for table .* is corrupt; try to repair it
 =~ InnoDB: No matching column for \`FTS_DOC_ID\` in index \`FTS_DOC_ID_INDEX\` of table
@@ -1051,16 +1052,12 @@ MDEV-30011:
 =~ spider_db_conn_queue_action
 MDEV-29992:
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
+=~ Assertion \`0'
 =~ row_upd_sec_index_entry
-=~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ FeatureUsage detected nopad collations
 MDEV-29992:
-=~ Got error '126 .*Index is corrupted
+=~ Got error '126 .*Index is corrupted|Got an error from thread_id
 =~ Index for table .* is corrupt; try to repair it
-=~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-29992:
-=~ Index for table .* is corrupt; try to repair it
-=~ Got an error from thread_id
-=~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-29958:
 =~ STATUS_SERVER_DEADLOCKED
 =~ Deadlock reporter: Stalled query: (Killed).* ENUM(
