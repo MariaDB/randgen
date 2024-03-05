@@ -40,7 +40,7 @@ SELECT 1
 
 # Optional query hints
 my $hints = "";
-#my $hints = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
+## $hints = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
 
 
 # for an intermittent crash
@@ -63,6 +63,8 @@ start_server();
 my $simplifier = GenTest::Simplifier::SQL->new(
 	oracle => sub {
 		my $oracle_query = shift;
+
+		print ".";
 
 		foreach my $trial (1..$trials) {
                     my $dbh = $executor->dbh();

@@ -37,13 +37,18 @@ use GenTest::Comparator;
 # http://forge.mysql.com/wiki/RandomQueryGeneratorSimplification
 #
 
-my $query = "SELECT 1";
+my $query = "
+SELECT 1
+";
 
 my @desired_outcomes = (
 	STATUS_CONTENT_MISMATCH,
 	STATUS_LENGTH_MISMATCH,
         STATUS_ERROR_MISMATCH,
 );
+
+# Increase the value for an intermittent issue
+my $trials = 1;
 
 # Optional error string pattern
 my $desired_errstr = "";
@@ -53,6 +58,7 @@ my $pre_sql_cmds = "";
 
 # Optional query hints
 my $hints = "";
+## $hints = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
 
 my @dsns = (
 	'dbi:Pg:host=127.0.0.1;port=5433;user=yugabyte;database=test', # YugabyteDB
@@ -80,29 +86,34 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 		my $outcome;
 		my @oracle_results;
 
-		foreach my $executor (@executors) {
+		foreach my $trial (1..$trials) {
+                    foreach my $executor (@executors) {
                         if ($pre_sql_cmds) {
-                                $executor->dbh()->do($pre_sql_cmds);
+                            $executor->dbh()->do($pre_sql_cmds);
                         }
 			my $oracle_result = $executor->execute($hints.$oracle_query, 1);
 			push @oracle_results, $oracle_result;
-		}
-
-		if ($#executors == 0) {
-			$outcome = $oracle_results[0]->status();
-		} else {
-			$outcome = GenTest::Comparator::compare($oracle_results[0], $oracle_results[1]);
-		}
-
-		foreach my $desired_outcome (@desired_outcomes) {
-			return ORACLE_ISSUE_STILL_REPEATABLE if $outcome == $desired_outcome;
-		}
-
-                if ($desired_errstr && $oracle_results[0]->status() != 0) {
-                    my $errstr = $oracle_results[0]->errstr;
-                    if (defined $errstr && $errstr =~ /$desired_errstr/) {
-                        return ORACLE_ISSUE_STILL_REPEATABLE;
                     }
+
+                    if ($#executors == 0) {
+			$outcome = $oracle_results[0]->status();
+                    } else {
+			$outcome = GenTest::Comparator::compare($oracle_results[0], $oracle_results[1]);
+                    }
+
+                    foreach my $desired_outcome (@desired_outcomes) {
+			return ORACLE_ISSUE_STILL_REPEATABLE if $outcome == $desired_outcome;
+                    }
+
+                    if ($desired_errstr && $oracle_results[0]->status() != 0) {
+                        my $errstr = $oracle_results[0]->errstr;
+                        if (defined $errstr && $errstr =~ /$desired_errstr/) {
+                            return ORACLE_ISSUE_STILL_REPEATABLE;
+                        }
+                    }
+
+                    print "*";
+
                 }
 		return ORACLE_ISSUE_NO_LONGER_REPEATABLE;
 	}
