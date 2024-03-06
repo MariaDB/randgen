@@ -45,9 +45,6 @@
 #                      - ensures the same query produces stable result sets    #
 ################################################################################
 
-query_init:
-    SET enable_hashagg = OFF; # YB: to avoid hitting #21012
-
 ################################################################################
 # The perl code in {} helps us with bookkeeping for writing more sensible      #
 # queries.  We need to keep track of these items to ensure we get interesting  #
@@ -183,9 +180,11 @@ general_subquery:
     existing_table_item . int_field_name arithmetic_operator  int_single_value_subquery  |
     existing_table_item . char_field_name arithmetic_operator char_single_value_subquery |
     existing_table_item . int_field_name membership_operator  int_single_member_subquery  |
-    ( existing_table_item . int_field_name , existing_table_item . int_field_name ) not IN int_double_member_subquery |
     existing_table_item . char_field_name membership_operator  char_single_member_subquery  |
+    ( existing_table_item . int_field_name , existing_table_item . int_field_name ) not IN int_double_member_subquery |
     ( existing_table_item . char_field_name , existing_table_item . char_field_name ) not IN char_double_member_subquery |
+    ( current_table_item . int_field_name , existing_table_item . int_field_name ) not IN int_double_member_subquery |
+    ( current_table_item . char_field_name , existing_table_item . char_field_name ) not IN char_double_member_subquery |
     ( _digit, _digit ) not IN int_double_member_subquery |
     ( _char, _char ) not IN char_double_member_subquery |
     existing_table_item . int_field_name membership_operator int_single_union_subquery |
@@ -787,7 +786,7 @@ child_subquery_previous_table_item:
         { "CHILD_SUBQUERY".$child_subquery_idx."_t".($child_subquery_tables-1) } ;
 
 existing_table_item:
-	{ "table".$prng->int($t1,$tables) };
+	{ "table".$prng->int($t1,$tables) } ;
 
 existing_subquery_table_item:
         { "SUBQUERY".$subquery_idx."_t".$prng->int($st1,$subquery_tables) } ;

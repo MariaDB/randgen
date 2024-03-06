@@ -1,0 +1,4 @@
+$rules = {
+        # until #21012 gets fixed
+	'distinct_min_max'	=> sub { $_ =~ m{DISTINCT (MIN|MAX)\( }sgo },
+};

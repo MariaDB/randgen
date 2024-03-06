@@ -38,9 +38,9 @@ my $original_query = "
 SELECT 1
 ";
 
-# Optional query hints
-my $hints = "";
-## $hints = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
+# Optional prefix for hints/EXPLAIN, etc.
+my $prefix = "";
+## $prefix = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
 
 
 # for an intermittent crash
@@ -71,7 +71,7 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                     
                     $dbh->do("SET statement_timeout = $timeout");
 
-                    my $oracle_result = $executor->execute($hints.$oracle_query);
+                    my $oracle_result = $executor->execute($prefix.$oracle_query);
 
                     # Or, alternatively, execute as a prepared statement
                     # $executor->execute("PREPARE prep_stmt FROM \"$oracle_query\"");
@@ -96,7 +96,7 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 );
 
 my $simplified_query = $simplifier->simplify($original_query);
-print "Simplified query:\n$simplified_query;\n\n";
+print "Simplified query:\n$prefix$simplified_query;\n\n";
 
 my $simplifier_test = GenTest::Simplifier::Test->new(
 	executors => [ $executor ],

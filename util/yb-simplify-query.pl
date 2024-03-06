@@ -56,9 +56,10 @@ my $desired_errstr = "";
 # Optional SQL commands to execute before running each simplified query
 my $pre_sql_cmds = "";
 
-# Optional query hints
-my $hints = "";
-## $hints = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
+# Optional prefix for hints/EXPLAIN, etc.
+my $prefix = "";
+## $prefix = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
+## $prefix = "EXPLAIN ";
 
 my @dsns = (
 	'dbi:Pg:host=127.0.0.1;port=5433;user=yugabyte;database=test', # YugabyteDB
@@ -91,7 +92,7 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                         if ($pre_sql_cmds) {
                             $executor->dbh()->do($pre_sql_cmds);
                         }
-			my $oracle_result = $executor->execute($hints.$oracle_query, 1);
+			my $oracle_result = $executor->execute($prefix.$oracle_query, 1);
 			push @oracle_results, $oracle_result;
                     }
 
@@ -102,7 +103,7 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                     }
 
                     foreach my $desired_outcome (@desired_outcomes) {
-			return ORACLE_ISSUE_STILL_REPEATABLE if $outcome == $desired_outcome;
+		        return ORACLE_ISSUE_STILL_REPEATABLE if $outcome == $desired_outcome;
                     }
 
                     if ($desired_errstr && $oracle_results[0]->status() != 0) {
@@ -121,7 +122,7 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 
 my $simplified_query = $simplifier->simplify($query);
 
-print "\nSimplified query:\n$simplified_query ;\n\n";
+print "\nSimplified query:\n$prefix$simplified_query;\n\n";
 
 my @simplified_results;
 
