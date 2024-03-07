@@ -1,4 +1,4 @@
 $rules = {
         # until #21012 gets fixed
-	'distinct_min_max'	=> sub { $_ =~ m{DISTINCT (MIN|MAX)\( }sgo },
+	'bug21012' => qr{\bHashAggregate\b.+[\n \[\],']+\bGroup Key:.+[\n \[\],']+\bInitPlan\b.+[\n \[\],']+->\s+Limit}o,
 };

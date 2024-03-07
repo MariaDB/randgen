@@ -401,9 +401,11 @@ general_child_subquery:
     existing_subquery_table_item . int_field_name arithmetic_operator  int_single_value_child_subquery  |
     existing_subquery_table_item . char_field_name arithmetic_operator char_single_value_child_subquery |
     existing_subquery_table_item . int_field_name membership_operator  int_single_member_child_subquery  |
-    ( existing_subquery_table_item . int_field_name , existing_subquery_table_item . int_field_name ) not IN int_double_member_child_subquery |
     existing_subquery_table_item . char_field_name membership_operator  char_single_member_child_subquery  |
+    ( existing_subquery_table_item . int_field_name , existing_subquery_table_item . int_field_name ) not IN int_double_member_child_subquery |
     ( existing_subquery_table_item . char_field_name , existing_subquery_table_item . char_field_name ) not IN char_double_member_child_subquery |
+    ( current_subquery_table_item . int_field_name , existing_subquery_table_item . int_field_name ) not IN int_double_member_child_subquery |
+    ( current_subquery_table_item . char_field_name , existing_subquery_table_item . char_field_name ) not IN char_double_member_child_subquery |
     ( _digit, _digit ) not IN int_double_member_child_subquery |
     ( _char, _char ) not IN char_double_member_child_subquery |
     existing_subquery_table_item . int_field_name membership_operator int_single_union_child_subquery |
