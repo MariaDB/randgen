@@ -19,12 +19,12 @@
 MDEV-33575:
 =~ Assertion \`rec_get_trx_id(rec, clust_index) < trx->id'|\`rec_trx_id < trx->id'
 =~ row_merge_read_clustered_index
-=~ Sql_cmd_optimize_table::execute
+=~ Sql_cmd_optimize_table::execute|Sql_cmd_repair_table::execute
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-33572:
 =~ Assertion \`share->now_transactional == share->base\.born_transactional'|Assertion \`share->now_transactional == share->base\.born_transactional \|\| share->internal_table'
 =~ maria_close
-=~ Sql_cmd_optimize_table::execute|tdc_start_shutdown|Sql_cmd_repair_table::execute|Sql_cmd_check_table::execute
+=~ Sql_cmd_optimize_table::execute|tdc_start_shutdown|Sql_cmd_repair_table::execute|Sql_cmd_check_table::execute|Sql_cmd_alter_table::execute
 MDEV-33570:
 =~ Error.*: Not allowed for system-versioned .* Change .*system_versioning_alter_history to proceed with ALTER
 =~ status.*: Operation failed
@@ -4126,11 +4126,6 @@ MDEV-11740:
 =~ Assertion \`pos != (~(my_off_t) 0)' failed
 =~ my_seek
 =~ _mi_get_block_info
-MDEV-11739:
-=~ Failing assertion: templ->mysql_null_bit_mask|Assertion \`templ->mysql_null_bit_mask' failed
-=~ row_sel_store_mysql_field_func
-=~ row_search_mvcc
-=~ DsMrr_impl::dsmrr_next
 MDEV-10826:
 =~ Assertion \`thd->get_stmt_da()->is_eof()'
 =~ Query_cache::end_of_result
