@@ -52,7 +52,7 @@ repair_option_list:
   repair_option repair_option_list ;
 
 repair_option:
-  QUICK | EXTENDED | USE_FRM | /*!110400 FORCE */;
+  QUICK | EXTENDED | USE_FRM | /*!110500 FORCE */;
 
 check_option_list:
   |
