@@ -45,11 +45,16 @@ dynvar_global_variable_runtime:
   | INNODB_READ_ONLY_COMPRESSED= dynvar_boolean /* compatibility 10.6.0 */
   | BINLOG_COMMIT_WAIT_COUNT= { $prng->arrayElement([1,10,100]) }
   | BINLOG_COMMIT_WAIT_USEC= { $prng->arrayElement([0,1000,1000000,10000000]) }
+# Synonym of MAX_BINLOG_TOTAL_SIZE (hopefully)
+  | ==FACTOR:0.5== BINLOG_SPACE_LIMIT= { $prng->arrayElement([0,4096,1048576,16777216]) } /* compatibility 11.4.0 */
   | LOG_QUERIES_NOT_USING_INDEXES= dynvar_boolean
   | LOG_SLOW_ADMIN_STATEMENTS= dynvar_boolean
   | LOG_SLOW_SLAVE_STATEMENTS= dynvar_boolean
+# Synonym of BINLOG_SPACE_LIMIT (hopefully)
+  | ==FACTOR:0.5== MAX_BINLOG_TOTAL_SIZE= { $prng->arrayElement([0,4096,1048576,16777216]) } /* compatibility 11.4.0 */
   | RPL_SEMI_SYNC_MASTER_ENABLED= dynvar_boolean /* compatibility 10.3 */
   | RPL_SEMI_SYNC_SLAVE_ENABLED= dynvar_boolean /* compatibility 10.3 */
+  | SLAVE_CONNECTIONS_NEEDED_FOR_PURGE= { $prng->uint16(0,2) } /* compatibility 11.4.0 */
   | USERSTAT= dynvar_boolean
 ;
 
@@ -193,9 +198,9 @@ dynvar_session_variable:
   | NET_RETRY_COUNT= { $prng->int(1,100) }
   | NET_WRITE_TIMEOUT= { $prng->int(20,90) }
   | OLD= dynvar_boolean
-# == from 10.3.7 same as alter_algorithm
+# == from 10.3.7 same as alter_algorithm, removed in 11.2
   | OLD_ALTER_TABLE = dynvar_boolean /* incompatibility 10.3.7 */
-  | OLD_ALTER_TABLE= { $prng->arrayElement(['DEFAULT','COPY','INPLACE','NOCOPY','INSTANT']) } /* compatibility 10.3.7 */
+  | OLD_ALTER_TABLE= { $prng->arrayElement(['DEFAULT','COPY','INPLACE','NOCOPY','INSTANT']) } /* compatibility 10.3.7 */ /* incompatibility 11.2.0 */
   | OLD_MODE= dynvar_old_mode_value
 # Old passwords cause an error due to secure-auth mode or
 # due to the absence of mysql_old_password plugin
@@ -270,7 +275,7 @@ dynvar_session_variable:
   | UPDATABLE_VIEWS_WITH_LIMIT= dynvar_boolean
   | USE_STAT_TABLES= { $prng->arrayElement(['NEVER','PREFERABLY','COMPLEMENTARY','COMPLEMENTARY_FOR_QUERIES /* compatibility 10.4.1 */','PREFERABLY_FOR_QUERIES /* compatibility 10.4.1 */']) }
 # | WAIT_TIMEOUT= { $prng->arrayElement([0,3600]) }
-  | WSREP_CAUSAL_READS= dynvar_boolean
+  | WSREP_CAUSAL_READS= dynvar_boolean /* incompatibility 11.3.0 */
   | WSREP_DIRTY_READS= dynvar_boolean
 # Internal server usage, doesn't seem to be settable
 # | WSREP_GTID_SEQ_NO= { $prng->int(0,18446744073709551615) } /* compatibility 10.5.1 */
