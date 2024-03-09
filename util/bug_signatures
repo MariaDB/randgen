@@ -24,7 +24,7 @@ MDEV-33575:
 MDEV-33572:
 =~ Assertion \`share->now_transactional == share->base\.born_transactional'|Assertion \`share->now_transactional == share->base\.born_transactional \|\| share->internal_table'
 =~ maria_close
-=~ Sql_cmd_optimize_table::execute|tdc_start_shutdown|Sql_cmd_repair_table::execute|Sql_cmd_check_table::execute|Sql_cmd_alter_table::execute
+=~ Sql_cmd_optimize_table::execute|tdc_start_shutdown|close_cached_tables|backup_flush|Sql_cmd_repair_table::execute|Sql_cmd_check_table::execute|Sql_cmd_alter_table::execute
 MDEV-33570:
 =~ Error.*: Not allowed for system-versioned .* Change .*system_versioning_alter_history to proceed with ALTER
 =~ status.*: Operation failed
@@ -443,6 +443,10 @@ MDEV-32135:
 =~ make_range_rowid_filters
 =~ Prepared_statement::execute|sp_head::execute
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-32086:
+=~ Assertion \`producing_item != __null'|signal
+=~ Item_direct_view_ref::derived_field_transformer_for_where|Item_direct_view_ref::in_subq_field_transformer_for_where
+=~ Item_args::transform_args
 MDEV-32021:
 =~ Assertion \`inited==NONE'
 =~ ha_mroonga::storage_get_auto_increment
@@ -1332,6 +1336,10 @@ MDEV-29085:
 =~ Assertion \`false'
 =~ BINVAL::CompareValue
 =~ FILTERCMP::Eval
+MDEV-29079:
+=~ signal|AddressSanitizer
+=~ CntCloseTable
+=~ ha_connect::external_lock
 MDEV-29071:
 =~ Assertion \`outer_context \|\| !\*from_field \|\| \*from_field == not_found_field'
 =~ Item_field::fix_outer_field
@@ -2191,7 +2199,6 @@ MDEV-24686:
 =~ Event_queue::drop_event
 MDEV-24683:
 =~ AddressSanitizer|signal [16]
-=~ Binary_string::copy
 =~ user_var_entry::val_str
 =~ table_uvar_by_thread::materialize
 MDEV-24680:
@@ -2652,6 +2659,10 @@ MDEV-23211:
 =~ Assertion \`t->s->tmp_table \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, t->s->db\.str, t->s->table_name\.str, t->reginfo\.lock_type >= TL_WRITE_ALLOW_WRITE ? MDL_SHARED_WRITE : MDL_SHARED_READ)'
 =~ lock_tables_check
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-23207:
+=~ Assertion \`tl->table == __null'
+=~ THD::open_temporary_table
+=~ mysql_admin_table
 MDEV-23204:
 =~ signal [16]|AddressSanitizer|Assertion \`bit < (map)->n_bits'
 =~ ha_partition::handle_unordered_scan_next_partition|ha_partition::handle_ordered_index_scan|DsMrr_impl::dsmrr_next
