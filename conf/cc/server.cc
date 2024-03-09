@@ -56,7 +56,7 @@ $combinations = [
     {
       normal => [
         [ @{$options{scenario_non_crash_combinations}} ],
-        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_combinations}}, @{$options{engine_full_mix_combinations}} ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
         [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{optional_binlog_unsafe_variables}} ],
@@ -66,7 +66,7 @@ $combinations = [
         [ '--mysqld=--log-bin' ],
         [ '--reporter=BinlogDump' ],
         [ @{$options{scenario_non_crash_combinations}} ],
-        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_combinations}}, @{$options{engine_full_mix_combinations}} ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
         [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
         [ @{$options{optional_encryption}} ],
         # We don't care about binlog safety here, because we are not checking consistency
@@ -76,7 +76,7 @@ $combinations = [
       index => [
         [ @{$options{scenario_non_crash_combinations}} ],
         [ '--reporters=SecondaryIndexConsistency' ],
-        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_combinations}} ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],

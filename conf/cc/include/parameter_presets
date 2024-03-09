@@ -1,4 +1,4 @@
-# Copyright (c) 2022, 2023, MariaDB
+# Copyright (c) 2022, 2024, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -191,37 +191,16 @@ $engine_enforced_combinations{$minversion}= [
   '--engine=HEAP --mysqld=--enforce-storage-engine=HEAP',
 ];
 
-$engine_extra_combinations{$minversion}= [
+$engine_extra_supported_combinations{$minversion}= [
   # RocksDB
   '--engine=RocksDB
    --grammar=conf/yy/engine-rocksdb.yy:0.1
    --mysqld=--default-storage-engine=RocksDB
    --mysqld=--plugin-load-add=ha_rocksdb
   ',
-  # Archive
-  '--engine=Archive
-   --mysqld=--plugin-load-add=ha_archive
-  ',
-#  # Mroonga
-#  '--engine=Mroonga
-#   --gendata=simple
-#   --mysqld=--plugin-load-add=ha_mroonga
-#   --grammar=conf/yy/engine-mroonga.yy
-#  ',
   # Blackhole
   '--engine=Blackhole
    --mysqld=--plugin-load-add=ha_blackhole
-  ',
-  # FederatedX with InnoDB for backing
-  '--engine=InnoDB
-   --mysqld=--plugin-load-add=ha_federatedx
-   --grammar=conf/yy/engine-federatedx.yy:0.1
-  ',
-  # OQGraph with InnoDB for backing
-  '--engine=InnoDB
-   --mysqld=--plugin-load-add=ha_oqgraph
-   --gendata=data/sql/engine-oqgraph.sql
-   --grammar=conf/yy/engine-oqgraph.yy
   ',
   # Spider with InnoDB for backing
   '--engine=InnoDB
@@ -241,13 +220,9 @@ $engine_extra_combinations{$minversion}= [
   '--engine=MyISAM
    --grammar=conf/yy/engine-merge.yy
   ',
-  # Connect
-  '--gendata=conf/zz/oltp-connect.zz
-   --mysqld=--plugin-load-add=ha_connect
-  ',
 ];
 
-$engine_extra_combinations{1005}= [ @{$engine_extra_combinations{$minversion}},
+$engine_extra_supported_combinations{1005}= [ @{$engine_extra_supported_combinations{$minversion}},
   # S3 with Aria for a base
   '--engine=Aria
    --minio
@@ -331,7 +306,7 @@ $engine_full_mix_combinatinos{1005}= [
 
 $parameters{engine_basic_combinations}= \%engine_basic_combinations;
 $parameters{engine_enforced_combinations}= \%engine_enforced_combinations;
-$parameters{engine_extra_combinations}= \%engine_extra_combinations;
+$parameters{engine_extra_supported_combinations}= \%engine_extra_supported_combinations;
 $parameters{engine_full_mix_combinations}= \%engine_full_mix_combinations;
 
 #++++++++++++++++++++++++
@@ -930,6 +905,7 @@ $optional_binlog_unsafe_variables{1006}= [ @{$optional_binlog_unsafe_variables{$
   [ @empty_set_10, '--mysqld=--binlog_expire_logs_seconds=100' ],
 ];
 
+
 $parameters{optional_binlog_safe_variables}= \%optional_binlog_variables;
 $parameters{optional_binlog_unsafe_variables}= \%optional_binlog_unsafe_variables;
 
@@ -967,6 +943,13 @@ $optional_replication_safe_variables{1004}= [ @{$optional_replication_safe_varia
 $optional_replication_safe_variables{1005}= [ @{$optional_replication_safe_variables{$minversion}},
   # Default NO
   [ @empty_set_30, '--mysqld=--slave_run_triggers_for_rbr=YES', '--mysqld=--slave_run_triggers_for_rbr=LOGGING', '--mysqld=--slave_run_triggers_for_rbr=ENFORCE' ],
+];
+
+$optional_replication_safe_variables{1104}= [ @{$optional_replication_safe_variables{1005}},
+  # Default 0
+  [ @empty_set_50, '--mysqld=--max-binlog-total-size=10M', '--mysqld=--max-binlog-total-size=100M', '--mysqld=--max-binlog-total-size=1G' ],
+  # Default 1
+  [ '', '--mysqld=--slave-connections-needed-for-purge=0', '--mysqld=--slave-connections-needed-for-purge=10' ],
 ];
 
 $optional_replication_unsafe_variables{$minversion}= [

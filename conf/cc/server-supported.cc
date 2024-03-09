@@ -56,7 +56,7 @@ $combinations = [
     {
       normal => [
         [ @{$options{scenario_non_crash_combinations}} ],
-        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}} ],
         [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{optional_binlog_unsafe_variables}} ],
@@ -66,22 +66,12 @@ $combinations = [
         [ '--mysqld=--log-bin' ],
         [ '--reporter=BinlogDump' ],
         [ @{$options{scenario_non_crash_combinations}} ],
-        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}} ],
         [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
         [ @{$options{optional_encryption}} ],
         # We don't care about binlog safety here, because we are not checking consistency
         [ @{$options{optional_binlog_unsafe_variables}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
-      ],
-      binlog_check => [
-        [ @{$options{scenario_non_crash_combinations}} ],
-        [ '--reporters=BinlogConsistency --mysqld=--log-bin' ],
-        [ '--filter=conf/ff/replication.ff' ],
-        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}} ],
-        [ @{$options{optional_charsets_safe}} ],
-        # Cannot have binlog encryption here, mysqlbinlog cannot read it
-        [ @{$options{optional_non_binlog_encryption}} ],
-        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{debug_grammars}} ],
       ],
       index => [
         [ @{$options{scenario_non_crash_combinations}} ],
@@ -116,14 +106,6 @@ $combinations = [
         [ @{$options{optional_replication_safe_variables}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
       ],
-      cluster => [
-        [ @{$options{scenario_cluster_combinations}} ],
-        [ '--filter=conf/ff/replication.ff' ],
-        [ '--engine=InnoDB' ],
-        [ @{$options{optional_charsets_safe}} ],
-        [ @{$options{optional_encryption}} ],
-        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
-      ]
     }
   ],
 ];
