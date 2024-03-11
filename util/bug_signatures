@@ -16,6 +16,11 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33641:
+=~ Got an error from thread_id=
+=~ MariaDB thread id .*, OS thread handle
+=~ FeatureUsage detected unique blobs
+=~ FeatureUsage detected system-versioned tables
 MDEV-33575:
 =~ Assertion \`rec_get_trx_id(rec, clust_index) < trx->id'|\`rec_trx_id < trx->id'
 =~ row_merge_read_clustered_index
