@@ -23,7 +23,7 @@ $grammars = [
       --mysqld=--plugin-load-add=cracklib_password_check.so
       --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--loose-password-reuse-check-interval=1
       --mysqld=--plugin-load-add=simple_password_check.so',
-'--grammar=conf/yy/admin.yy',
+'--grammar=conf/yy/admin.yy --filter=conf/ff/optimize.ff',
 '--grammar=conf/yy/all_selects.yy',
 '--grammar=conf/yy/alter_table_columns.yy',
 '--grammar=conf/yy/alter_table_data_types.yy',

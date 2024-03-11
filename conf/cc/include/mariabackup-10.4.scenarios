@@ -23,6 +23,6 @@ $mariabackup_scenarios =
   [
     '--scenario=MariaBackupFull',
     '--scenario=MariaBackupIncremental',
-    '--scenario=MariaBackupFull --redefine=conf/mariadb/alter_table.yy --redefine=conf/mariadb/modules/admin.yy --redefine=conf/mariadb/versioning.yy --redefine=conf/mariadb/sequences.yy --redefine=conf/mariadb/modules/application_periods.yy',
-    '--scenario=MariaBackupIncremental --redefine=conf/mariadb/alter_table.yy --redefine=conf/mariadb/modules/admin.yy --redefine=conf/mariadb/versioning.yy --redefine=conf/mariadb/sequences.yy --redefine=conf/mariadb/modules/application_periods.yy',
+    '--scenario=MariaBackupFull --redefine=conf/mariadb/alter_table.yy --redefine=conf/mariadb/modules/admin.yy --redefine=conf/mariadb/versioning.yy --redefine=conf/mariadb/sequences.yy --redefine=conf/mariadb/modules/application_periods.yy --filter=conf/ff/optimize.ff',
+    '--scenario=MariaBackupIncremental --redefine=conf/mariadb/alter_table.yy --redefine=conf/mariadb/modules/admin.yy --redefine=conf/mariadb/versioning.yy --redefine=conf/mariadb/sequences.yy --redefine=conf/mariadb/modules/application_periods.yy --filter=conf/ff/optimize.ff',
   ];

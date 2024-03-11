@@ -29,7 +29,7 @@ $grammars= [
       --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--loose-password-reuse-check-interval=1
       --mysqld=--plugin-load-add=simple_password_check.so'],
   [@empty_set,
-    '--grammar=conf/yy/admin.yy'],
+    '--grammar=conf/yy/admin.yy --filter=conf/ff/optimize.ff'],
   [@empty_set,
     '--grammar=conf/yy/all_selects.yy'],
   [@empty_set,

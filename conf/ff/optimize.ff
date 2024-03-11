@@ -1,4 +1,4 @@
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2024, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,13 +16,9 @@
 
 ########################################################################
 
-# RQG_HOME must be defined in the environment. But it has to be defined anyway,
-# or the include file won't be found
+# MDEV-33547 (closed as won't fix), MDEV-33575, probably more
+# OPTIMIZE on InnoDB stats tables doesn't end well
 
-$mariabackup_scenarios =
-  [
-    '--scenario=MariaBackupFull',
-    '--scenario=MariaBackupIncremental',
-    '--scenario=MariaBackupFull --redefine=conf/mariadb/alter_table.yy --redefine=conf/mariadb/modules/admin.yy --filter=conf/ff/optimize.ff',
-    '--scenario=MariaBackupIncremental --redefine=conf/mariadb/alter_table.yy --redefine=conf/mariadb/modules/admin.yy --filter=conf/ff/optimize.ff',
-  ];
+$rules = {
+  'mdev33575_1' => sub { $_ =~ m{OPTIMIZE.*innodb_(?:table|index)_stats}s },
+}

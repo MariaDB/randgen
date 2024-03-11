@@ -1705,7 +1705,7 @@ $debug_grammars{$minversion}= [
 ];
 
 $ddl_grammars{$minversion}= [
-  [@empty_set_10, '--grammar=conf/yy/admin.yy'],
+  [@empty_set_10, '--grammar=conf/yy/admin.yy --filter=conf/ff/optimize.ff'],
   [@empty_set_20, '--grammar=conf/yy/alter_table_columns.yy'],
   [@empty_set_20, '--grammar=conf/yy/alter_table_data_types.yy'],
   [@empty_set_20, '--grammar=conf/yy/alter_table.yy'],

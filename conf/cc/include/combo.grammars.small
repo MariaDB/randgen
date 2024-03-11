@@ -23,7 +23,7 @@ $grammars= [
     '--grammar=conf/yy/acl.yy:0.1 --mysqld=--plugin-load-add=auth_ed25519.so'
   ],
   [@empty_set,
-    '--grammar=conf/yy/admin.yy'],
+    '--grammar=conf/yy/admin.yy --filter=conf/ff/optimize.ff'],
   [@empty_set,
     '--grammar=conf/yy/all_selects.yy'],
   [@empty_set,
