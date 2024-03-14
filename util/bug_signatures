@@ -29,7 +29,7 @@ MDEV-33575:
 MDEV-33572:
 =~ Assertion \`share->now_transactional == share->base\.born_transactional'|Assertion \`share->now_transactional == share->base\.born_transactional \|\| share->internal_table'
 =~ maria_close
-=~ Sql_cmd_optimize_table::execute|tdc_start_shutdown|close_cached_tables|backup_flush|Sql_cmd_repair_table::execute|Sql_cmd_check_table::execute|Sql_cmd_alter_table::execute
+=~ Sql_cmd_optimize_table::execute|tdc_start_shutdown|close_cached_tables|backup_flush|Sql_cmd_repair_table::execute|Sql_cmd_check_table::execute|Sql_cmd_alter_table::execute|flush_tables
 MDEV-33570:
 =~ Error.*: Not allowed for system-versioned .* Change .*system_versioning_alter_history to proceed with ALTER
 =~ status.*: Operation failed
