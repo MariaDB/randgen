@@ -175,7 +175,7 @@ sub run {
       sleep(5);
     }
     $mbackup_command= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup $mbackup" : $mbackup);
-    $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $mbackup_command --backup --target-dir=$vardir/mbackup --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup.log 2>&1");
+    $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $mbackup_command --backup --skip-ssl --target-dir=$vardir/mbackup --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup.log 2>&1");
 
     if ($status == STATUS_OK) {
         say("MariaBackup ran finished successfully");
