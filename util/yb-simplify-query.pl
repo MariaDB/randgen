@@ -53,6 +53,9 @@ my $trials = 1;
 # Optional error string pattern
 my $desired_errstr = "";
 
+# Optional warning message string pattern
+my $desired_warningstr = "";
+
 # Optional SQL commands to execute before running each simplified query
 my $pre_sql_cmds = "";
 
@@ -86,6 +89,12 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 
 		my $outcome;
 		my @oracle_results;
+                my $warning;
+
+                local $SIG{__WARN__} = sub { $warning = $_[0]; };
+                if ($desired_warningstr) {
+                    $executors[0]->dbh()->{PrintError} = 1;
+                }
 
 		foreach my $trial (1..$trials) {
                     foreach my $executor (@executors) {
@@ -100,6 +109,10 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 			$outcome = $oracle_results[0]->status();
                     } else {
 			$outcome = GenTest::Comparator::compare($oracle_results[0], $oracle_results[1]);
+                    }
+
+                    if (defined $warning && $warning =~ /$desired_warningstr/) {
+                        return ORACLE_ISSUE_STILL_REPEATABLE;
                     }
 
                     foreach my $desired_outcome (@desired_outcomes) {
