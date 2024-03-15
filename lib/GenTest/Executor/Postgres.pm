@@ -120,6 +120,15 @@ sub execute {
         }
     }
 
+    if (!$dbh->ping()) {
+        ## Reinit if connection is dead
+        say("Postgres connection is dead. Reconnect");
+        $self->disconnect();
+        sleep(1);
+        $self->init();
+        $dbh=$self->dbh();
+    }
+
     # Autocommit ?
 
     my $db = $self->getName()." ".$self->version();

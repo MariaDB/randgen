@@ -50,8 +50,9 @@ my $trials = 10;
 # Maximum number of seconds a query will be allowed to proceed. It is assumed that most crashes will happen immediately after takeoff
 my $timeout = 10000;            # 10 sec
 
-my $ybctl_cmd = "./bin/yb-ctl stop; ./bin/yb-ctl start --tserver_flags 'ysql_beta_features=1,ysql_log_statement=all' --timeout-processes-running-sec 600 --timeout-yb-admin-sec 600";
-
+# my $start_server_cmd = "./bin/yb-ctl stop; ./bin/yb-ctl start --tserver_flags 'ysql_beta_features=1,ysql_log_statement=all' --timeout-processes-running-sec 600 --timeout-yb-admin-sec 600";
+my $start_server_cmd = "./bin/yb-ctl destroy; ./bin/yb-ctl start --tserver_flags 'ysql_beta_features=1,ysql_log_statement=all' --timeout-processes-running-sec 600 --timeout-yb-admin-sec 600";
+my $wait_server_cmd = "until (psql yugabyte -U yugabyte -h 127.0.0.1 -p 5433 -c 'select pg_backend_pid()' 2>&1)|grep -q '(1 row)' >/dev/null;do (echo -n .; sleep 2); done";
 
 my $orig_database = 'test';
 my $new_database = 'crash';
@@ -110,12 +111,13 @@ print $simplified_test;
 
 sub start_server {
 	chdir($basedir) or die "Unable to chdir() to $basedir: $!";
-
+        system($wait_server_cmd);
 	$executor = GenTest::Executor::Postgres->new( dsn => $dsn );
 	$executor->init() if defined $executor;
 
 	if ((not defined $executor) || (not defined $executor->dbh()) || (!$executor->dbh()->ping())) {
-            system($ybctl_cmd);
+            system($start_server_cmd);
+            system($wait_server_cmd);
             $executor = GenTest::Executor::Postgres->new( dsn => $dsn );
             $executor->init();
 	}

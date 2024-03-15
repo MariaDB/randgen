@@ -150,7 +150,9 @@ sub next {
 
 		if (defined $filters) {
 			foreach my $filter (@$filters) {
-				my $explain = Dumper $executors->[0]->execute("EXPLAIN $query") if $query =~ m{^\s*SELECT}sio;
+                                my $opt = "";
+                                $opt = " (COSTS OFF)" if $executors->[0]->type == DB_POSTGRES;
+				my $explain = Dumper $executors->[0]->execute("EXPLAIN$opt $query") if $query =~ m{^\s*(|\/\*\+ *[^\n]+ *\*\/)\s*SELECT}sio;
 				my $filter_result = $filter->filter($query." ".$explain);
 				next query if $filter_result == STATUS_SKIP;
 			}

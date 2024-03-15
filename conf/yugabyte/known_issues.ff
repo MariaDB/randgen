@@ -1,0 +1,9 @@
+$rules = {
+        # until #21012 gets fixed
+	'bug21012' => qr{\bHashAggregate\b.+[\n \[\],']+\bGroup Key:.+[\n \[\],']+\bInitPlan\b.+[\n \[\],']+->\s+Limit}o,
+
+	# 'no_bitmapscans' => qr{Bitmap}o,
+	# 'require_bitmapscans' => sub { $_ !~ m{Bitmap}sgo },
+	# 'no_bnl' => qr{YB Batched Nested Loop}o,
+	# 'require_bnl' => sub { $_ !~ m{YB Batched Nested Loop}sgo },
+};
