@@ -28,7 +28,10 @@ query:
   SET slow_global_or_not slow_var_log_file     = slow_var_log_file_val     |
   SET slow_var_log_file_var     = slow_var_log_file_val     |
   SET slow_global_or_not slow_var_time         = slow_var_time_val         |
-  SET slow_var_time_var         = slow_var_time_val         ;
+  SET slow_var_time_var         = slow_var_time_val         |
+  SET slow_global_or_not slow_var_always_time = slow_var_time_val /* compatibility 11.5.0 */ |
+  SET slow_var_always_time_var = slow_var_time_val /* compatibility 11.5.0 */
+;
 
 slow_global_or_not:
     | GLOBAL | SESSION | LOCAL ;
@@ -155,6 +158,10 @@ slow_var_time:
   slow_var_time_new /* compatibility 10.11.1 */ |
   slow_var_time_legacy ;
 
+slow_var_always_time:
+  LOG_SLOW_ALWAYS_QUERY_TIME /* compatibility 11.5 */ |
+  slow_var_time_legacy ;
+
 slow_var_time_new:
   log_slow_query_time | LOG_SLOW_QUERY_TIME ;
 
@@ -164,6 +171,16 @@ slow_var_time_legacy:
 slow_var_time_var:
   slow_var_time_var_new /* compatibility 10.11.1 */ |
   slow_var_time_var_legacy ;
+
+slow_var_always_time_var:
+  @@log_slow_always_query_time |
+  @@global.log_slow_always_query_time |
+  @@session.log_slow_always_query_time |
+  @@local.log_slow_always_query_time |
+  @@LOG_SLOW_ALWAYS_QUERY_TIME |
+  @@SESSION.LOG_SLOW_ALWAYS_QUERY_TIME |
+  @@GLOBAL.LOG_SLOW_ALWAYS_QUERY_TIME |
+  @@LOCAL.LOG_SLOW_ALWAYS_QUERY_TIME ;
 
 slow_var_time_var_new:
   @@log_slow_query_time |
