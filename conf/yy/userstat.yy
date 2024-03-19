@@ -1,4 +1,4 @@
-#  Copyright (c) 2018, 2022, MariaDB
+#  Copyright (c) 2018, 2024, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 query:
   ==FACTOR:5== SHOW show_item |
                FLUSH flush_list |
+  ==FACTOR:5== SELECT * FROM INFORMATION_SCHEMA. show_item |
                SET GLOBAL userstat= __0_x_1
 ;
 
