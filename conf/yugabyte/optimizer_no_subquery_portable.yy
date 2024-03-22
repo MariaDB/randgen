@@ -45,6 +45,14 @@
 #                      - ensures the same query produces stable result sets    #
 ################################################################################
 
+thread1_init:
+	analyze_tables | analyze_tables | ;
+
+analyze_tables:
+	{ say "Analyzing tables..."; "" }
+	ANALYZE A; ANALYZE B; ANALYZE C; ANALYZE D; ANALYZE E;
+	ANALYZE AA; ANALYZE BB; ANALYZE CC ANALYZE DD ;
+
 ################################################################################
 # The perl code in {} helps us with bookkeeping for writing more sensible      #
 # queries.  We need to keep track of these items to ensure we get interesting  #
@@ -97,14 +105,12 @@ main_select:
 	SELECT distinct select_option select_list
 	FROM join_list
 	where_clause
-#	group_by_clause
+	group_by_clause
 #        having_clause
 	order_by_clause |
     SELECT select_list
 	FROM join_list
 	where_clause
-#	group_by_clause
-#        having_clause
 	any_item_order_by_clause ;
 
 distinct: DISTINCT | | | |  ;

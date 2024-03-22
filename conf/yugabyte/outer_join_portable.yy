@@ -54,7 +54,7 @@
 #                 table_alias_set
 #
 # YB:
-# - Change table_alias_set to store the id only
+# - Change table_alias_set to store the ids only
 # - Add the following variables:
 #   tables_reqd - max table id used in the SELECT-list so we can add missing
 #                 tables to the FROM-clause.
@@ -62,11 +62,16 @@
 #                 arguments.
 ################################################################################
 
+################################################################################
+# YB: Caution: some of the rules in this grammar calls the "expand" subroutine,#
+# an undocumented internal entry point that can stop working with future       #
+#  Generator code changes.                                                     #
+################################################################################
+
 query:
   { $tables_reqd = 0; @table_alias_set = (1, 1, 1, 1, 2, 2, 2, 3, 4, 5, 1, 1, 2) ; "" }
   { @int_field_set = ("pk", "col_int", "col_int_key") ; "" } 
-  { @nonaggregates = () ; $tables = 0 ; $fields = 0 ;  "" }
-  { @agg_field_table_alias_set = (1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,4,4,5); "" }
+  { $gby = "";  @nonaggregates = () ;  @aggregates = (); $t1 = 1; @st1 = (); $tables = 0 ; $fields = 0 ;  "" }
   hints query_type ;
 
 ################################################################################
@@ -139,7 +144,13 @@ nonaggregate_select_item:
         { my $n = $prng->arrayElement(\@table_alias_set); $tables_reqd = $n if $tables_reqd < $n; my $x = "table".$n." . ".$prng->arrayElement(\@int_field_set); push @nonaggregates , $x ; $x } AS {my $f = "field".++$fields ; $f };
 
 aggregate_select_item:
-        aggregate agg_field_table_alias . int_field_name ) AS {"field".++$fields } ; 
+	{ my @s = expand($rule_counters,$rule_invariants, "new_aggregate"); my $x = join("", @s); push @aggregates, $x; $x } AS { "field".++$fields };
+
+new_aggregate:
+	aggregate table_alias . { $prng->arrayElement(\@int_field_set) } );
+
+table_alias:
+	{ my $n = $prng->arrayElement(\@table_alias_set); $tables_reqd = $n if $tables_reqd < $n; "table".$n };
 
 ################################################################################
 # We make use of the new RQG stack in order to generate more interesting
@@ -151,15 +162,20 @@ join_list:
         join join_missing_table_items ;
 
 join:
-       { $stack->push() }      
+     ( { push @st1, $t1; $t1 = $tables + 1; "" }
+       { $stack->push() }
        table_or_join 
        { $stack->set("left",$stack->get("result")); }
-       left_right outer JOIN table_or_join 
-       ON 
-       join_condition ;
+       left_right outer JOIN table_or_join
+       ON
+       join_condition
+       { $t1 = pop @st1; "" } ) ;
 
 join_condition:
-   int_condition | char_condition ;
+   int_condition | char_condition |
+   int_condition | char_condition |
+   int_condition and_or where_item |
+   char_condition and_or where_item ;
 
 int_condition: 
    { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . int_indexed = 
@@ -206,8 +222,6 @@ number_list:
 
 ################################################################################
 # YB: add missing tables referenced in the SELECT-list.                        #
-# Caution: this rule calls undocumented internal entry point, and might stop   #
-# working with future Generator code changes.                                  #
 ################################################################################
 join_missing_table_items:
     { my @x=(); while ($tables < $tables_reqd) { push @x, expand($rule_counters,$rule_invariants, "join_new_table_item"); } ; join("", @x) } ;
@@ -229,16 +243,14 @@ join_new_table_item:
 # that the query doesn't lend itself to variable result sets                   #
 ################################################################################
 group_by_clause:
-	{ scalar(@nonaggregates) > 0 ? " GROUP BY ".join (', ' , @nonaggregates ) : "" }  ;
+	{ $gby = (@nonaggregates > 0 and (@aggregates > 0 or $prng->int(1,3) == 1) ? " GROUP BY ".join (', ' , @nonaggregates ) : "" ) }  ;
 
 optional_group_by:
         | | | | | | | | group_by_clause ;
 
 having_clause:
-  | ;
-
-having_clause_disabled:
-	| | | | HAVING having_list;
+	| | | |
+	{ ($gby or @aggregates > 0)? "HAVING ".join("", expand($rule_counters,$rule_invariants, "having_list")) : "" } ;
 
 having_list:
         having_item |
@@ -253,7 +265,8 @@ having_list:
 ################################################################################
 
 having_item:
-	{ my $y = $prng->arrayElement(\@nonaggregates) ; $y  }  comparison_operator _digit ;
+	{ ($gby and @nonaggregates > 0 and (!@aggregates or $prng->int(1,3) == 1)) ? $prng->arrayElement(\@nonaggregates) : ( @aggregates? $prng->arrayElement(\@aggregates) : "COUNT(*)" ) }
+	comparison_operator _digit ;
 
 ################################################################################
 # We use the total_order_by rule when using the LIMIT operator to ensure that  #
@@ -335,10 +348,10 @@ char_indexed:
   `col_varchar_1024_latin1_key` |`col_varchar_1024_utf8_key` ;
 
 agg_field_table_alias:
-	{ my $n = $prng->arrayElement(\@agg_field_table_alias_set); $tables_reqd = $n if $tables_reqd < $n; "table".$n };
+	{ my $n = $prng->arrayElement(\@table_alias_set); $tables_reqd = $n if $tables_reqd < $n; "table".$n };
 
 existing_table_item:
-	{ "table".$prng->int(1,$tables) };
+	{ "table".$prng->int($t1,$tables) };
 
 existing_select_item:
 	{ "field".$prng->int(1,$fields) };
@@ -349,10 +362,10 @@ _digit:
  
 
 and_or:
-   AND | AND | OR ;
+   AND | AND | { $need_eq ? "AND" : "OR" } ;
 
 comparison_operator:
-	= | > | < | != | <> | <= | >= ;
+	{ $need_eq = 0; "" } = | > | < | != | <> | <= | >= ;
 
 aggregate:
 	COUNT( distinct | SUM( distinct | MIN( distinct | MAX( distinct ;
@@ -364,7 +377,7 @@ not:
 # YB: Add FULL
 ################################################################################
 left_right:
-	LEFT | LEFT | LEFT | RIGHT | FULL |
+	LEFT | LEFT | LEFT | RIGHT | { $need_eq = 1; "" } FULL |
 	LEFT | LEFT | LEFT | RIGHT ;
 
 outer:

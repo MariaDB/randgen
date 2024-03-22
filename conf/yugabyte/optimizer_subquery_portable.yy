@@ -45,6 +45,14 @@
 #                      - ensures the same query produces stable result sets    #
 ################################################################################
 
+thread1_init:
+	analyze_tables | analyze_tables | ;
+
+analyze_tables:
+	{ say "Analyzing tables..."; "" }
+	ANALYZE A; ANALYZE B; ANALYZE C; ANALYZE D; ANALYZE E;
+	ANALYZE AA; ANALYZE BB; ANALYZE CC ANALYZE DD ;
+
 ################################################################################
 # The perl code in {} helps us with bookkeeping for writing more sensible      #
 # queries.  We need to keep track of these items to ensure we get interesting  #
@@ -59,25 +67,23 @@ query:
 # YB: Randomly add a hint set that encourages Batched Nested Loop plans
 ################################################################################
 
-hints: nl_hints | | ;
+hints: nl_hints | | | | | /*+ Set(enable_seqscan OFF) */ ;
 
 nl_hints: /*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */ ;
-       
+
 
 main_select:
 #	explain_extended 
     SELECT distinct straight_join select_option select_list
 	FROM join_list
 	where_clause
-#	group_by_clause
+	group_by_clause
 #        having_clause
 	order_by_clause |
 #	explain_extended 
     SELECT straight_join select_option select_list
 	FROM join_list
 	where_clause
-#	group_by_clause
-#        having_clause
 	any_item_order_by_clause ;
 
 explain_extended:
@@ -125,7 +131,11 @@ join_condition_item:
     current_table_item . int_indexed = previous_table_item . int_field_name on_subquery |
     current_table_item . int_field_name = previous_table_item . int_indexed on_subquery |
     current_table_item . `col_varchar_key` = previous_table_item . char_field_name on_subquery |
-    current_table_item . char_field_name = previous_table_item . `col_varchar_key` on_subquery ;
+    current_table_item . char_field_name = previous_table_item . `col_varchar_key` on_subquery |
+    current_table_item . int_indexed = existing_table_item . int_field_name on_subquery |
+    current_table_item . int_field_name = existing_table_item . int_indexed on_subquery |
+    current_table_item . `col_varchar_key` = existing_table_item . char_field_name on_subquery |
+    current_table_item . char_field_name = existing_table_item . `col_varchar_key` on_subquery ;
 
 on_subquery:
     |||||||||||||||||||| { $subquery_idx += 1 ; $subquery_tables=0 ; ""} and_or general_subquery ;
@@ -356,7 +366,11 @@ subquery_join_condition_item:
     subquery_current_table_item . int_field_name = subquery_previous_table_item . int_indexed subquery_on_subquery |
     subquery_current_table_item . int_indexed = subquery_previous_table_item . int_field_name subquery_on_subquery |
     subquery_current_table_item . `col_varchar_key` = subquery_previous_table_item . char_field_name subquery_on_subquery |
-    subquery_current_table_item . char_field_name = subquery_previous_table_item . `col_varchar_key` subquery_on_subquery ;
+    subquery_current_table_item . char_field_name = subquery_previous_table_item . `col_varchar_key` subquery_on_subquery |
+    subquery_current_table_item . int_field_name = subquery_existing_table_item . int_indexed subquery_on_subquery |
+    subquery_current_table_item . int_indexed = subquery_existing_table_item . int_field_name subquery_on_subquery |
+    subquery_current_table_item . `col_varchar_key` = subquery_existing_table_item . char_field_name subquery_on_subquery |
+    subquery_current_table_item . char_field_name = subquery_existing_table_item . `col_varchar_key` subquery_on_subquery ;
 
 subquery_on_subquery:
     |||||||||||||||||||| { $child_subquery_idx += 1 ; $child_subquery_tables=0 ; ""} and_or general_child_subquery ;
@@ -544,7 +558,11 @@ child_subquery_join_condition_item:
     child_subquery_current_table_item . int_field_name = child_subquery_previous_table_item . int_indexed |
     child_subquery_current_table_item . int_indexed = child_subquery_previous_table_item . int_field_name |
     child_subquery_current_table_item . `col_varchar_key` = child_subquery_previous_table_item . char_field_name |
-    child_subquery_current_table_item . char_field_name = child_subquery_previous_table_item . `col_varchar_key` ;
+    child_subquery_current_table_item . char_field_name = child_subquery_previous_table_item . `col_varchar_key` |
+    child_subquery_current_table_item . int_field_name = child_subquery_existing_table_item . int_indexed |
+    child_subquery_current_table_item . int_indexed = child_subquery_existing_table_item . int_field_name |
+    child_subquery_current_table_item . `col_varchar_key` = child_subquery_existing_table_item . char_field_name |
+    child_subquery_current_table_item . char_field_name = child_subquery_existing_table_item . `col_varchar_key` ;
 
 required_single_child_subquery_group_by:
     GROUP BY { child_subquery.$child_subquery_idx."_field1" } ;

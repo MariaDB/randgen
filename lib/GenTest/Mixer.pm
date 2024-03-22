@@ -149,13 +149,16 @@ sub next {
 		}
 
 		if (defined $filters) {
+                    my $is_select = ($query =~ s{/\*.+\*/}{}sgor) =~ m{^\s*SELECT}sio;
+                    foreach my $ex (@$executors) {
 			foreach my $filter (@$filters) {
-                                my $opt = "";
-                                $opt = " (COSTS OFF)" if $executors->[0]->type == DB_POSTGRES;
-				my $explain = Dumper $executors->[0]->execute("EXPLAIN$opt $query") if $query =~ m{^\s*(|\/\*\+ *[^\n]+ *\*\/)\s*SELECT}sio;
-				my $filter_result = $filter->filter($query." ".$explain);
+                                my $opt = " (COSTS OFF)" if $ex->type == DB_POSTGRES;
+                                my $explain = Dumper $ex->execute("EXPLAIN$opt $query") if $is_select;
+                                my $name = $ex->getName();
+				my $filter_result = $filter->filter($query." ".$name." ".$explain);
 				next query if $filter_result == STATUS_SKIP;
 			}
+                    }
 		}
 
 		my @execution_results;
