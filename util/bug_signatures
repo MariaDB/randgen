@@ -906,6 +906,10 @@ MDEV-31031:
 =~ Assertion \`flags != Gtid_log_event::FL_START_ALTER_E1 \|\| binlog_setup_trx_data()->gtid_flags3 == 0'
 =~ write_bin_log_start_alter
 =~ FeatureUsage detected S3 engine
+MDEV-31030:
+=~ Assertion \`!error'
+=~ ha_partition::update_row
+=~ Sql_cmd_update::update_single_table
 MDEV-31026:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
