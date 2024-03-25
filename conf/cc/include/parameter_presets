@@ -1329,6 +1329,10 @@ $optional_server_variables{1102}= [ @{$optional_server_variables{$minversion}},
   [ @empty_set_10, '--mysqld=--log_slow_query_time=3' ],
 ];
 
+$optional_server_variables{1105}= [ @{$optional_server_variables{1102}},
+  [ @empty_set_10, '--mysqld=--loose-log_slow_always_query_time=4' ],
+];
+
 $parameters{optional_server_variables}= \%optional_server_variables;
 
 #++++++++++++++++++++++++
