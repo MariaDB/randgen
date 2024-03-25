@@ -2780,7 +2780,6 @@ MDEV-23041:
 MDEV-23041:
 =~ free_memory: Assertion \`irem->marker == .*'
 =~ Item_func_set_user_var::update_hash
-=~ TABLE::update_virtual_fields|TABLE::update_default_fields
 MDEV-22943:
 =~ Assertion \`marked_for_read()'
 =~ handler::calculate_checksum
