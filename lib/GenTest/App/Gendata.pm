@@ -186,7 +186,8 @@ sub run {
     $executor->init();
 
     # Suppress NOTICE messages from CREATE ... IF EXISTS
-    $executor->dbh()->{PrintWarn} = 0 if $executor->type == DB_POSTGRES && !rqg_debug();
+    $executor->dbh()->do("SET client_min_messages = warning") if $executor->type == DB_POSTGRES;
+
 #  
 # The specification file is actually a perl script, so we read it by
 # eval()-ing it

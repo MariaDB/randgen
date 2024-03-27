@@ -67,6 +67,8 @@ use constant EXECUTOR_HOST          => 19;
 use constant EXECUTOR_PORT          => 20;
 use constant EXECUTOR_END_TIME	    => 21;
 use constant EXECUTOR_CURRENT_USER	    => 22;
+use constant EXECUTOR_ALT_NAME	    => 23;
+use constant EXECUTOR_ALT_VERSION	    => 24;
 
 use constant FETCH_METHOD_AUTO		=> 0;
 use constant FETCH_METHOD_STORE_RESULT	=> 1;

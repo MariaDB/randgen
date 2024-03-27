@@ -112,7 +112,7 @@ sub run {
     $executor->init();
 
     # Suppress NOTICE messages from CREATE ... IF EXISTS
-    $executor->dbh()->{PrintWarn} = 0 if $executor->type == DB_POSTGRES && !rqg_debug();
+    $executor->dbh()->do("SET client_min_messages = warning") if $executor->type == DB_POSTGRES;
     
     my $names = GDS_DEFAULT_NAMES;
     my $rows;

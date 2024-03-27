@@ -252,19 +252,14 @@ sub findStatus {
 ## Override the base name for ourselves with YB-specific behaviour
 sub getName {
     my $self = shift;
-    my $yb = $self->yb_version();
-    if (defined $self->yb_version()) {
-        return "Yugabyte"
-    }
-
-    return "Postgres";
+    return (defined $self->yb_version())? "Yugabyte": "Postgres";
 }
 
 sub version {
     my $self = shift;
     my $yb = $self->yb_version();
     if (defined $yb) {
-        return $yb
+        return $yb;
     }
     my $dbh = $self->dbh();
     return $dbh->get_info(18);
@@ -272,12 +267,19 @@ sub version {
 
 sub yb_version {
     my $self = shift;
-    my $dbh = $self->dbh();
-    my $ver = $dbh->selectrow_array("SELECT VERSION()");
-    if ($ver =~ s/.*-YB-(\S+)\s+.*/$1/sgo) {
-        return $ver;
+    my $altname = \$_[0]->[GenTest::Executor::EXECUTOR_ALT_NAME];
+    my $altver = \$_[0]->[GenTest::Executor::EXECUTOR_ALT_VERSION];
+    if ((not defined $$altver) and (not defined $$altname)) {
+        my $dbh = $self->dbh();
+        my $ver = $dbh->selectrow_array("SELECT VERSION()");
+        if ($ver =~ s/.*-YB-(\S+)\s+.*/$1/sgo) {
+            $$altname = "Yugabyte";
+            $$altver = $ver;
+        } else {
+            $$altname = "Postgres";
+        }        
     }
-    return undef;
+    return $$altver;
 }
 
 sub currentSchema {
@@ -357,7 +359,8 @@ sub getSchemaMetaData {
     my %table_rows = ();
     foreach my $i (0..$#$res) {
         my $tbl = $res->[$i]->[0].'.'.$res->[$i]->[1];
-        if ((not defined $table_rows{$tbl}) or ($table_rows{$tbl} eq 'NULL') or ($table_rows{$tbl} eq '')) {
+        if (($res->[$i]->[2] == 'table') and
+            ((not defined $table_rows{$tbl}) or ($table_rows{$tbl} eq 'NULL') or ($table_rows{$tbl} eq ''))) {
             my $count_row = $self->dbh()->selectrow_arrayref("SELECT COUNT(*) FROM $tbl");
             $table_rows{$tbl} = $count_row->[0];
         }
