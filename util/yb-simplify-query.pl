@@ -61,7 +61,7 @@ my $pre_sql_cmds = "";
 
 # Optional prefix for hints/EXPLAIN, etc.
 my $prefix = "";
-## $prefix = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
+$prefix = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
 ## $prefix = "EXPLAIN ";
 
 my @dsns = (
@@ -101,6 +101,18 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                         if ($pre_sql_cmds) {
                             $executor->dbh()->do($pre_sql_cmds);
                         }
+
+                        # Add NULLS FIRST to each ORDER BY key item (Workaround for
+                        # NULLS FIRST not being supported by DBIx::MyParsePP)
+                        # 
+                        # $oracle_query =~ s{\s*\n\s*}{ }go;
+                        # my $order_by = ($oracle_query =~ s{.*ORDER BY\s+(.*)}{$1}or);
+                        # $order_by =~ s{\s+LIMIT\s+\d+}{}o;
+                        # # print "\$order_by={$order_by}\n";
+                        # my $new_order_by = ($order_by =~ s{([^,]+)}{$1 NULLS FIRST}gor);
+                        # $oracle_query =~ s{$order_by}{$new_order_by}o;
+                        # # print "\$oracle_query={$oracle_query}\n";
+
 			my $oracle_result = $executor->execute($prefix.$oracle_query, 1);
 			push @oracle_results, $oracle_result;
                     }
@@ -134,8 +146,10 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 );
 
 my $simplified_query = $simplifier->simplify($query);
+die "Simpler query not found\n" if !$simplified_query;
+$simplified_query = $prefix.$simplified_query;
 
-print "\nSimplified query:\n$prefix$simplified_query;\n\n";
+print "\nSimplified query:\n$simplified_query;\n\n";
 
 my @simplified_results;
 

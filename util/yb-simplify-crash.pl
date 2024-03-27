@@ -33,13 +33,31 @@ use GenTest::Simplifier::Test;
 
 my $basedir = '/Users/mtakahara/code/yugabyte-db/';
 my $dsn = 'dbi:Pg:host=127.0.0.1;port=5433;user=yugabyte;database=test';
+my $duration = 3600;
 
 my $original_query = "
-        SELECT 1
+/*+ Set(enable_sort OFF) */
+SELECT
+    SUM (
+        table1.col_int_key
+    )
+FROM (
+        b AS table1
+    LEFT JOIN cc AS table2 ON table1.col_int_key = table2.pk
+    )
+WHERE
+    table1.col_int_key BETWEEN 1
+    AND
+    7
+    AND
+    table1.col_int_key IN (
+        74,
+        3
+    )
 ";
 
-# Optional query hints
-my $hints = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
+# Optional prefix for hints/EXPLAIN, etc.
+my $prefix = "/*+ Set(enable_sort OFF) */";
 
 
 # Maximum number of seconds a query will be allowed to proceed. It is assumed that most crashes will happen immediately after takeoff
@@ -62,7 +80,7 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 	
 		$dbh->do("SET statement_timeout = $timeout");
 
-		$executor->execute($hints.$oracle_query);
+		$executor->execute($prefix.$oracle_query);
 
 		# Or, alternatively, execute as a prepared statement
 		# $executor->execute("PREPARE prep_stmt FROM \"$oracle_query\"");
@@ -80,6 +98,9 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 );
 
 my $simplified_query = $simplifier->simplify($original_query);
+die "Simpler query not found\n" if !$simplified_query;
+$simplified_query = $prefix.$simplified_query;
+
 print "Simplified query:\n$simplified_query;\n\n";
 
 my $simplifier_test = GenTest::Simplifier::Test->new(
@@ -95,12 +116,12 @@ print $simplified_test;
 sub start_server {
 	chdir($basedir) or die "Unable to chdir() to $basedir: $!";
 
-	$executor = GenTest::Executor::Postgres->new( dsn => $dsn );
+	$executor = GenTest::Executor::Postgres->new( dsn => $dsn, end_time => time() + $duration );
 	$executor->init() if defined $executor;
 
 	if ((not defined $executor) || (not defined $executor->dbh()) || (!$executor->dbh()->ping())) {
             system($ybctl_cmd);
-            $executor = GenTest::Executor::Postgres->new( dsn => $dsn );
+            $executor = GenTest::Executor::Postgres->new( dsn => $dsn, end_time => time() + $duration );
             $executor->init();
 	}
 }

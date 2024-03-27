@@ -20,6 +20,7 @@ package GenTest::Simplifier::Tables;
 require Exporter;
 use DBI;
 use GenTest;
+use GenTest::Constants;
 use Data::Dumper;
 
 @ISA = qw(GenTest);
@@ -32,6 +33,7 @@ use constant SIMPLIFIER_DSN		=> 0;
 use constant SIMPLIFIER_ORIG_DATABASE	=> 1;
 use constant SIMPLIFIER_NEW_DATABASE	=> 2;
 use constant SIMPLIFIER_END_TIME	=> 3;
+use constant SIMPLIFIER_DB_TYPE 	=> 4;
 
 1;
 
@@ -42,7 +44,8 @@ sub new {
 		dsn		=> SIMPLIFIER_DSN,
 		orig_database	=> SIMPLIFIER_ORIG_DATABASE,
 		new_database	=> SIMPLIFIER_NEW_DATABASE,
-		end_time	=> SIMPLIFIER_END_TIME
+		end_time	=> SIMPLIFIER_END_TIME,
+                db_type         => SIMPLIFIER_DB_TYPE,
 	}, @_);
 
 	return $simplifier;
@@ -53,11 +56,12 @@ sub simplify {
 
 	my $orig_database = $simplifier->[SIMPLIFIER_ORIG_DATABASE];
 	my $new_database = $simplifier->[SIMPLIFIER_NEW_DATABASE];
+        my $db_type = $simplifier->[SIMPLIFIER_DB_TYPE];
 	my $new_query = $initial_query;
 
 	my @tables_named = $initial_query =~ m{(table[a-z0-9_]+)}sgio;
 	my @tables_quoted = $initial_query =~ m{`(.*?)`}sgio;
-	my @tables_letters = $initial_query =~ m{[ `]([A-Z]|AA|BB|CC|DD|EE|FF|GG|HH|II|JJ|KK|LL|MM|NN|OO|PP|QQ|RR|SS|TT|UU|VV|WW|XX|YY|ZZ|AAA|BBB|CCC|DDD|EEE|FFF|GGG|HHH|III|JJJ|KKK|LLL|MMM|NNN|OOO|PPP|QQQ|RRR|SSS|TTT|UUU|VVV|WWW|XXX|YYY|ZZZ)[ `]}sgo;
+	my @tables_letters = $initial_query =~ m{[ `]([A-Z]|AA|BB|CC|DD|EE|FF|GG|HH|II|JJ|KK|LL|MM|NN|OO|PP|QQ|RR|SS|TT|UU|VV|WW|XX|YY|ZZ|AAA|BBB|CCC|DDD|EEE|FFF|GGG|HHH|III|JJJ|KKK|LLL|MMM|NNN|OOO|PPP|QQQ|RRR|SSS|TTT|UUU|VVV|WWW|XXX|YYY|ZZZ)[ `]}sgio;
 	
 	my @participating_tables = (@tables_named, @tables_quoted, @tables_letters);
 
@@ -72,18 +76,84 @@ sub simplify {
 	map { $participating_fields{$_} = 1 } @participating_fields;
 
 	my $dbh = DBI->connect($simplifier->[SIMPLIFIER_DSN]);
+        my $table_index = 0;
 
-	$dbh->do("DROP DATABASE IF EXISTS $new_database");
-	$dbh->do("CREATE DATABASE $new_database");
+        if ($db_type == DB_POSTGRES) {
+            $dbh->{PrintWarn} = 0;
+            $dbh->do("DROP SCHEMA IF EXISTS $new_database CASCADE");
+            $dbh->do("CREATE SCHEMA $new_database");
 
-	my $table_index = 0;
+            my @existing_tables = $dbh->tables(undef, $orig_database, undef, 'TABLE') if $db_type == DB_POSTGRES;
 
-	foreach my $participating_table (keys %participating_tables) {
+            foreach my $participating_table (keys %participating_tables) {
+                # bail out if this test is taking too long; otherwise all of 
+                # this simplification might take hours
+                if (time() > $simplifier->[SIMPLIFIER_END_TIME]) {
+                    say ("Time specified by --duration=x exceeded; aborting simplification.");
+                    last;
+                }
+
+                # Skip if a view is encountered.
+                next if ( $participating_table =~ m{view_} );
+
+                my $table_exists = grep{/^$orig_database.$participating_table$/} @existing_tables;
+                next if !$table_exists;
+
+                my $new_table_name = 't'.++$table_index;
+                $dbh->do("CREATE TABLE $new_database . $new_table_name (LIKE $orig_database . $participating_table INCLUDING INDEXES)");
+                $dbh->do("INSERT INTO $new_database . $new_table_name SELECT * FROM $orig_database . $participating_table");
+                $new_query =~ s{`$participating_table`}{`$new_table_name`}sg;
+                $new_query =~ s{ $participating_table }{ $new_table_name }sg;
+                $new_query =~ s{ $participating_table$}{ $new_table_name}sg;
+
+                ## Find all fields in table
+                my $sth_colinfo = $dbh->column_info(undef, 'public', $participating_table, undef);
+                my $actual_fields = $sth_colinfo->fetchall_arrayref;
+
+                # ## Find indexed fields in table
+                # my %indices;
+                # map {$indices{$_->[4]}=$_->[2]} @{$dbh->selectall_arrayref("SHOW INDEX FROM `$new_table_name` IN $new_database")};
+
+                ## Calculate which fields to keep
+                my %keep;
+                foreach my $field_info (@$actual_fields) {
+                    my $actual_field = $field_info->[3];
+                    if (not exists $participating_fields{$actual_field}) {
+                        # ## Not used field, but may be part of multi-column index where other column is used
+                        # if (exists $indices{$actual_field}) {
+                        #     foreach my $x (keys %indices) {
+                        #         $keep{$actual_field} = 1 
+                        #             if (exists $participating_fields{$x}) and
+                        #             ($indices{$x} eq $indices{$actual_field});
+                        #     }
+                        # }
+                    } else {
+                        ## Explicitely used field
+                        $keep{$actual_field}=1;
+                    }
+                }
+
+                ## Remove the fields we do not want to keep
+                foreach my $field_info (@$actual_fields) {
+                    my $actual_field = $field_info->[3];
+                    $dbh->do("ALTER TABLE $new_database . $new_table_name DROP COLUMN $actual_field") if not $keep{$actual_field};
+                    if (time() > $simplifier->[SIMPLIFIER_END_TIME]) {
+                        say("Time specified by --duration=x exceeded.  Aborting simplification.");
+                        last if 1;
+                    }
+                }
+            }
+
+        } else {
+            $dbh->do("DROP DATABASE IF EXISTS $new_database");
+            $dbh->do("CREATE DATABASE $new_database");
+
+            foreach my $participating_table (keys %participating_tables) {
 		# bail out if this test is taking too long; otherwise all of 
 		# this simplification might take hours
 		if (time() > $simplifier->[SIMPLIFIER_END_TIME]) {
-			say ("Time specified by --duration=x exceeded; aborting simplification.");
-			last;
+                    say ("Time specified by --duration=x exceeded; aborting simplification.");
+                    last;
 		}
 
 		# Skip if a view is encountered.
@@ -99,7 +169,7 @@ sub simplify {
 		$new_query =~ s{ $participating_table$}{ $new_table_name}sg;
 
 	        ## Find all fields in table
-			my $actual_fields = $dbh->selectcol_arrayref("SHOW FIELDS FROM `$new_table_name` IN $new_database");
+                my $actual_fields = $dbh->selectcol_arrayref("SHOW FIELDS FROM `$new_table_name` IN $new_database");
 	        ## Find indexed fields in table
 	        my %indices;
 	        map {$indices{$_->[4]}=$_->[2]} @{$dbh->selectall_arrayref("SHOW INDEX FROM `$new_table_name` IN $new_database")};
@@ -124,15 +194,17 @@ sub simplify {
 
 	        ## Remove the fields we do not want to keep
 		foreach my $actual_field (@$actual_fields) {
-			$dbh->do("ALTER TABLE $new_database . `$new_table_name` DROP COLUMN `$actual_field`") if not $keep{$actual_field};
-			if (time() > $simplifier->[SIMPLIFIER_END_TIME]) {
-				say("Time specified by --duration=x exceeded.  Aborting simplification.");
-				last if 1;
-			}
+                    $dbh->do("ALTER TABLE $new_database . `$new_table_name` DROP COLUMN `$actual_field`") if not $keep{$actual_field};
+                    if (time() > $simplifier->[SIMPLIFIER_END_TIME]) {
+                        say("Time specified by --duration=x exceeded.  Aborting simplification.");
+                        last if 1;
+                    }
 	        }
-	}
-	
+            }
+        }
+
 	return [ map { 't'.$_ } (1..$table_index) ], $new_query;
 }
+
 
 1;

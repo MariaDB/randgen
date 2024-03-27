@@ -41,6 +41,7 @@ eval
 use constant SIMPLIFIER_EXECUTORS	=> 0;
 use constant SIMPLIFIER_QUERIES		=> 1;
 use constant SIMPLIFIER_RESULTS		=> 2;
+use constant SIMPLIFIER_DATABASE	=> 3;
 
 my $orig_database = 'test';
 
@@ -73,7 +74,8 @@ sub new {
 	my $simplifier = $class->SUPER::new({
 		executors	=> SIMPLIFIER_EXECUTORS,
 		results		=> SIMPLIFIER_RESULTS,
-		queries		=> SIMPLIFIER_QUERIES
+		queries		=> SIMPLIFIER_QUERIES,
+                database        => SIMPLIFIER_DATABASE,
 	}, @_);
 
 	return $simplifier;
@@ -98,6 +100,13 @@ sub simplify {
 
 	my $results = $self->results();
 	my $queries = $self->queries();
+        my $database = $self->database();
+
+        if ($executors->[0]->type() == DB_POSTGRES) {
+            $database = 'test' if not defined $database;
+            # Use schema instead of database for simplification
+            $orig_database = 'public';
+        }
 
     ## We use Hash-comments in an pure MySQL environment due to MTR
     ## limitations
@@ -185,23 +194,24 @@ sub simplify {
 			dsn		=> $executors->[0]->dsn(),
 			orig_database	=> $orig_database,
 			new_database	=> $simplified_database,
-			end_time	=> $executors->[0]->end_time()
+			end_time	=> $executors->[0]->end_time(),
+                        db_type         =>  $executors->[0]->type(),
 		);
 
 		my ($participating_tables, $rewritten_query) = $tables_simplifier->simplify($original_query);
 		
-		if ($#$participating_tables > -1) {
-			$test .= "--disable_warnings\n";
-			foreach my $tab (@$participating_tables) {
-				$test .= "DROP TABLE /*! IF EXISTS */ $tab;\n";
-			}
-			$test .= "--enable_warnings\n\n"
-		}
-			
                 if ($executors->[0]->type() == DB_POSTGRES) {
+                    if ($#$participating_tables > -1) {
+			$test .= "set client_min_messages = warning;\n";
+			foreach my $tab (@$participating_tables) {
+                            $test .= "DROP TABLE IF EXISTS $tab;\n";
+			}
+			$test .= "reset client_min_messages;\n"
+                    }
+                    
                     my $pg_dump_cmd = $self->generatePgdumpCommand().
-                        " $orig_database "; # " $simplified_database ";
-                    $pg_dump_cmd .= join(' ', @$participating_tables) if $#$participating_tables > -1;
+                        " $database --schema=$simplified_database";
+                    $pg_dump_cmd .= " --table=\'$simplified_database.(".join('|', @$participating_tables).")\'" if $#$participating_tables > -1;
                     say "pg_dump_cmd: ".$pg_dump_cmd;
                     open (MYSQLDUMP, "$pg_dump_cmd|") or say("Unable to run $pg_dump_cmd: $!");
                     while (<MYSQLDUMP>) {
@@ -215,6 +225,14 @@ sub simplify {
                     }
                     close (MYSQLDUMP);
                 } else {
+                    if ($#$participating_tables > -1) {
+			$test .= "--disable_warnings\n";
+			foreach my $tab (@$participating_tables) {
+                            $test .= "DROP TABLE /*! IF EXISTS */ $tab;\n";
+			}
+			$test .= "--enable_warnings\n\n"
+                    }
+                    
                     my $mysqldump_cmd = $self->generateMysqldumpCommand() .
                         " --net_buffer_length=4096 --max_allowed_packet=4096 --no-set-names --compact".
                         " --skip_extended_insert --force --protocol=tcp $simplified_database ";
@@ -319,14 +337,23 @@ sub simplify {
 		}
 	
 		#Since cleanup of the databases used by transformers are required in the simplified testcase.
-		if ($rewritten_query =~ m{CREATE DATABASE IF NOT EXISTS transforms}sgio )
-		{
+                if ($executors->[0]->type() == DB_POSTGRES) {
+                    if ($rewritten_query =~ m{CREATE SCHEMA IF NOT EXISTS transforms}sgio )
+                    {
+			$test .= "DROP SCHEMA IF EXISTS transforms;\n";
+                    }elsif ( $rewritten_query =~ m{CREATE DATABASE IF NOT EXISTS literals}sgio )
+                    {
+			$test .= "DROP SCHEMA IF EXISTS literals;\n";
+                    }
+                } else {
+                    if ($rewritten_query =~ m{CREATE DATABASE IF NOT EXISTS transforms}sgio )
+                    {
 			$test .= "DROP DATABASE IF EXISTS transforms;\n";
-		}elsif ( $rewritten_query =~ m{CREATE DATABASE IF NOT EXISTS literals}sgio )
-		{
+                    }elsif ( $rewritten_query =~ m{CREATE DATABASE IF NOT EXISTS literals}sgio )
+                    {
 			$test .= "DROP DATABASE IF EXISTS literals;\n";
-		}
-	
+                    }
+                }
 		$test .= _comment("End of test case for query $query_id",$useHash)."\n\n";
 	}
 
@@ -343,6 +370,10 @@ sub queries {
 
 sub results {
 	return $_[0]->[SIMPLIFIER_RESULTS];
+}
+
+sub database {
+	return $_[0]->[SIMPLIFIER_DATABASE];
 }
 
 ## TODO: Generalize this so that all other mysqldump usage may use it

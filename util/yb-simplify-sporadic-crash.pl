@@ -33,6 +33,7 @@ use GenTest::Simplifier::Test;
 
 my $basedir = '/Users/mtakahara/code/yugabyte-db/';
 my $dsn = 'dbi:Pg:host=127.0.0.1;port=5433;user=yugabyte;database=test';
+my $duration = 3600;
 
 my $original_query = "
 SELECT 1
@@ -112,13 +113,13 @@ print $simplified_test;
 sub start_server {
 	chdir($basedir) or die "Unable to chdir() to $basedir: $!";
         system($wait_server_cmd);
-	$executor = GenTest::Executor::Postgres->new( dsn => $dsn );
+	$executor = GenTest::Executor::Postgres->new( dsn => $dsn, end_time => time() + $duration );
 	$executor->init() if defined $executor;
 
 	if ((not defined $executor) || (not defined $executor->dbh()) || (!$executor->dbh()->ping())) {
             system($start_server_cmd);
             system($wait_server_cmd);
-            $executor = GenTest::Executor::Postgres->new( dsn => $dsn );
+            $executor = GenTest::Executor::Postgres->new( dsn => $dsn, end_time => time() + $duration );
             $executor->init();
 	}
 }
