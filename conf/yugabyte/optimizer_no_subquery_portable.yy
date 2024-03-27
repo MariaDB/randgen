@@ -66,9 +66,21 @@ query:
 # YB: Randomly add a hint set that encourages Batched Nested Loop plans
 ################################################################################
 
-hints: nl_hints | | ;
+hints:
+  | | | |
+  /*+ disable_hashmerge */ |
+  /*+ disable_seqscan disable_sort */ |
+  /*+ disable_seqscan disable_hashagg */ |
+  /*+ disable_seqscan disable_hashagg disable_sort */ |
+  /*+ disable_seqscan disable_hashagg disable_sort disable_hashmerge */ ;
 
-nl_hints: /*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */ ;
+disable_hashmerge: Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) ;
+
+disable_seqscan: | | Set(enable_seqscan OFF) ;
+
+disable_sort: | | Set(enable_sort OFF) ;
+
+disable_hashagg: | | Set(enable_hashagg OFF) ;
 
 
 query_type:

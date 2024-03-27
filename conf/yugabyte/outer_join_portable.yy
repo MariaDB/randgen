@@ -78,9 +78,22 @@ query:
 # YB: Randomly add a hint set that encourages Batched Nested Loop plans
 ################################################################################
 
-hints: nl_hints | | ;
+hints:
+  | | | |
+  /*+ disable_hashmerge */ |
+  /*+ disable_seqscan disable_sort */ |
+  /*+ disable_seqscan disable_hashagg */ |
+  /*+ disable_seqscan disable_hashagg disable_sort */ |
+  /*+ disable_seqscan disable_hashagg disable_sort disable_hashmerge */ ;
 
-nl_hints: /*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */ ;
+disable_hashmerge: Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) ;
+
+disable_seqscan: | | Set(enable_seqscan OFF) ;
+
+disable_sort: | | Set(enable_sort OFF) ;
+
+disable_hashagg: | | Set(enable_hashagg OFF) ;
+
 
 ################################################################################
 # We have various query_type's so that we can ensure more syntactically correct
@@ -147,7 +160,10 @@ aggregate_select_item:
 	{ my @s = expand($rule_counters,$rule_invariants, "new_aggregate"); my $x = join("", @s); push @aggregates, $x; $x } AS { "field".++$fields };
 
 new_aggregate:
-	aggregate table_alias . { $prng->arrayElement(\@int_field_set) } );
+	aggregate table_alias . { $prng->arrayElement(\@int_field_set) } ) |
+	aggregate table_alias . { $prng->arrayElement(\@int_field_set) } ) |
+	aggregate table_alias . { $prng->arrayElement(\@int_field_set) } ) |
+	COUNT(*) ;
 
 table_alias:
 	{ my $n = $prng->arrayElement(\@table_alias_set); $tables_reqd = $n if $tables_reqd < $n; "table".$n };
@@ -265,7 +281,7 @@ having_list:
 ################################################################################
 
 having_item:
-	{ ($gby and @nonaggregates > 0 and (!@aggregates or $prng->int(1,3) == 1)) ? $prng->arrayElement(\@nonaggregates) : ( @aggregates? $prng->arrayElement(\@aggregates) : "COUNT(*)" ) }
+	{ ($gby and @nonaggregates > 0 and (!@aggregates or $prng->int(1,3) == 1)) ? $prng->arrayElement(\@nonaggregates) : join("", expand($rule_counters,$rule_invariants, "new_aggregate")) }
 	comparison_operator _digit ;
 
 ################################################################################
@@ -365,7 +381,7 @@ and_or:
    AND | AND | { $need_eq ? "AND" : "OR" } ;
 
 comparison_operator:
-	{ $need_eq = 0; "" } = | > | < | != | <> | <= | >= ;
+	= | > | < | != | <> | <= | >= ;
 
 aggregate:
 	COUNT( distinct | SUM( distinct | MIN( distinct | MAX( distinct ;
@@ -377,8 +393,10 @@ not:
 # YB: Add FULL
 ################################################################################
 left_right:
-	LEFT | LEFT | LEFT | RIGHT | { $need_eq = 1; "" } FULL |
-	LEFT | LEFT | LEFT | RIGHT ;
+	LEFT | LEFT | LEFT | RIGHT |
+	LEFT | LEFT | LEFT | RIGHT |
+	LEFT | LEFT | LEFT | RIGHT |
+	{ $need_eq = 1; "" } FULL ;
 
 outer:
 	| | | | OUTER ;
