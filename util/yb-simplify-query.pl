@@ -146,7 +146,7 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 );
 
 my $simplified_query = $simplifier->simplify($query);
-die "Simpler query not found\n" if !$simplified_query;
+die "Failed to simplify the query\n" if !$simplified_query;
 $simplified_query = $prefix.$simplified_query;
 
 print "\nSimplified query:\n$simplified_query;\n\n";

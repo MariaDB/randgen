@@ -57,7 +57,8 @@ WHERE
 ";
 
 # Optional prefix for hints/EXPLAIN, etc.
-my $prefix = "/*+ Set(enable_sort OFF) */";
+my $prefix = "";
+##my $prefix = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
 
 
 # Maximum number of seconds a query will be allowed to proceed. It is assumed that most crashes will happen immediately after takeoff
@@ -98,7 +99,7 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 );
 
 my $simplified_query = $simplifier->simplify($original_query);
-die "Simpler query not found\n" if !$simplified_query;
+die "Failed to simplify the query\n" if !$simplified_query;
 $simplified_query = $prefix.$simplified_query;
 
 print "Simplified query:\n$simplified_query;\n\n";

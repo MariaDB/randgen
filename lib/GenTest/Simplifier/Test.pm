@@ -202,11 +202,11 @@ sub simplify {
 		
                 if ($executors->[0]->type() == DB_POSTGRES) {
                     if ($#$participating_tables > -1) {
-			$test .= "set client_min_messages = warning;\n";
+			$test .= "SET client_min_messages = warning;\n";
 			foreach my $tab (@$participating_tables) {
                             $test .= "DROP TABLE IF EXISTS $tab;\n";
 			}
-			$test .= "reset client_min_messages;\n"
+			$test .= "RESET client_min_messages;\n"
                     }
                     
                     my $pg_dump_cmd = $self->generatePgdumpCommand().

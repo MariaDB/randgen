@@ -79,7 +79,7 @@ sub simplify {
         my $table_index = 0;
 
         if ($db_type == DB_POSTGRES) {
-            $dbh->{PrintWarn} = 0;
+            $dbh->do("SET client_min_messages = warning");
             $dbh->do("DROP SCHEMA IF EXISTS $new_database CASCADE");
             $dbh->do("CREATE SCHEMA $new_database");
 
