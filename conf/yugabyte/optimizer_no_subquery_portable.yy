@@ -60,7 +60,7 @@ analyze_tables:
 # dodgy.                                                                       #
 ################################################################################
 query:
-	{ @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } hints query_type ;
+	{ $gby = "";  @int_nonaggregates = () ; @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } hints query_type ;
 
 ################################################################################
 # YB: Randomly add a hint set that encourages Batched Nested Loop plans
@@ -69,8 +69,6 @@ query:
 hints:
   | | | |
   /*+ disable_hashmerge */ |
-  /*+ disable_seqscan disable_sort */ |
-  /*+ disable_seqscan disable_hashagg */ |
   /*+ disable_seqscan disable_hashagg disable_sort */ |
   /*+ disable_seqscan disable_hashagg disable_sort disable_hashmerge */ ;
 
@@ -108,7 +106,8 @@ loose_select_list:
         loose_select_item , loose_select_list ;
 
 loose_select_item:
-        _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;                
+	{ my $f = join("",expand($rule_counters,$rule_invariants, "_field_int")); push @int_nonaggregates , $f ; push @nonaggregates , $f ; $f } AS { "field".++$fields } |
+	{ my $f = join("",expand($rule_counters,$rule_invariants, "_field")); push @nonaggregates , $f ; $f } AS { "field".++$fields } ;
         
 ################################################################################
 # The bulk of interesting things happen with this main rule                    #
@@ -118,9 +117,9 @@ main_select:
 	FROM join_list
 	where_clause
 	group_by_clause
-#        having_clause
+        having_clause
 	order_by_clause |
-    SELECT select_list
+    SELECT noagg_select_list
 	FROM join_list
 	where_clause
 	any_item_order_by_clause ;
@@ -133,6 +132,11 @@ select_list:
 	new_select_item |
 	new_select_item , select_list |
         new_select_item , select_list ;
+
+noagg_select_list:
+	noagg_new_select_item |
+	noagg_new_select_item , noagg_select_list |
+        noagg_new_select_item , noagg_select_list ;
 
 join_list:
 ################################################################################
@@ -159,16 +163,16 @@ join_type:
 join_condition_list:
     join_condition_item | 
     ( join_condition_item ) and_or ( join_condition_item ) |
-    ( current_table_item  .`pk` arithmetic_operator previous_table_item . int_field_name ) AND (current_table_item  .`pk` arithmetic_operator previous_table_item . int_field_name ) ;    
+    ( current_table_item  .`pk` comparison_operator previous_table_item . _field_int ) AND (current_table_item  .`pk` comparison_operator previous_table_item . _field_int ) ;    
 join_condition_item:
-     current_table_item . int_indexed = previous_table_item . int_field_name  |
-     current_table_item . int_field_name = previous_table_item . int_indexed  |
-     current_table_item . `col_varchar_key` = previous_table_item . char_field_name |
-     current_table_item . char_field_name = previous_table_item . `col_varchar_key` |
-     current_table_item . int_indexed arithmetic_operator previous_table_item . int_field_name  |
-     current_table_item . int_field_name arithmetic_operator previous_table_item . int_indexed  |
-     current_table_item . `col_varchar_key` arithmetic_operator previous_table_item . char_field_name |
-     current_table_item . char_field_name arithmetic_operator previous_table_item . `col_varchar_key`;
+     current_table_item . _field_int_indexed = previous_table_item . _field_int  |
+     current_table_item . _field_int = previous_table_item . _field_int_indexed  |
+     current_table_item . `col_varchar_key` = previous_table_item . _field_char |
+     current_table_item . _field_char = previous_table_item . `col_varchar_key` |
+     current_table_item . _field_int_indexed comparison_operator previous_table_item . _field_int  |
+     current_table_item . _field_int comparison_operator previous_table_item . _field_int_indexed  |
+     current_table_item . `col_varchar_key` comparison_operator previous_table_item . _field_char |
+     current_table_item . _field_char comparison_operator previous_table_item . `col_varchar_key`;
 
 
 left_right:
@@ -203,15 +207,16 @@ not:
 # YB: Use _field_indexed instead of pk in the "IS not NULL" pattern            #
 ################################################################################
 where_item:
-        table1 .`pk` arithmetic_operator existing_table_item . int_field_name  |
-        table1 .`pk` arithmetic_operator existing_table_item . int_field_name  |
-        existing_table_item . int_field_name arithmetic_operator existing_table_item . int_field_name |
-        existing_table_item . char_field_name arithmetic_operator existing_table_item . char_field_name |
-        existing_table_item . int_field_name arithmetic_operator int_value  |
-        existing_table_item . char_field_name arithmetic_operator char_value  |
+        table1 .`pk` comparison_operator existing_table_item . _field_int  |
+        table1 .`pk` comparison_operator existing_table_item . _field_int  |
+        existing_table_item . _field_int comparison_operator existing_table_item . _field_int |
+        existing_table_item . _field_char comparison_operator existing_table_item . _field_char |
+        existing_table_item . _field_int comparison_operator int_value  |
+        existing_table_item . _field_char comparison_operator char_value  |
         table1 . _field_indexed IS not NULL |
         table1 . _field IS not NULL |
-        table1 . int_indexed arithmetic_operator int_value AND ( table1 . char_field_name LIKE '%a%' OR table1.char_field_name LIKE '%b%') ;
+        table1 . _field_int_indexed comparison_operator int_value AND ( table1 . _field_char LIKE '%a%' OR table1._field_char LIKE '%b%') |
+	table1 . _field_char_indexed LIKE 'c%' ;
 
 ################################################################################
 # The range_predicate_1* rules below are in place to ensure we hit the         #
@@ -225,9 +230,9 @@ range_predicate1_list:
       ( range_predicate1_item OR range_predicate1_list ) ;
 
 range_predicate1_item:
-         table1 . int_indexed not BETWEEN _tinyint_unsigned[invariant] AND ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
-         table1 . `col_varchar_key` arithmetic_operator _char[invariant] |
-         table1 . int_indexed not IN (number_list) |
+         table1 . _field_int_indexed not BETWEEN _tinyint_unsigned[invariant] AND ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
+         table1 . `col_varchar_key` comparison_operator _char[invariant] |
+         table1 . _field_int_indexed not IN (number_list) |
          table1 . `col_varchar_key` not IN (char_list) |
          table1 . `pk` > _tinyint_unsigned[invariant] AND table1 . `pk` < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
          table1 . `col_int_key` > _tinyint_unsigned[invariant] AND table1 . `col_int_key` < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) ;
@@ -247,9 +252,9 @@ range_predicate2_item:
         table1 . `pk` = _tinyint_unsigned |
         table1 . `col_int_key` = _tinyint_unsigned |
         table1 . `col_varchar_key` = _char |
-        table1 . int_indexed = _tinyint_unsigned |
+        table1 . _field_int_indexed = _tinyint_unsigned |
         table1 . `col_varchar_key` = _char |
-        table1 . int_indexed = existing_table_item . int_indexed |
+        table1 . _field_int_indexed = existing_table_item . _field_int_indexed |
         table1 . `col_varchar_key` = existing_table_item . `col_varchar_key` ;
 
 ################################################################################
@@ -268,11 +273,11 @@ char_list:
 # that the query doesn't lend itself to variable result sets                   #
 ################################################################################
 group_by_clause:
-        |
-	{ scalar(@nonaggregates) > 0 ? " GROUP BY ".join (', ' , @nonaggregates ) : "" }  ;
+	{ $gby = (@nonaggregates > 0 and (@aggregates > 0 or $prng->int(1,3) == 1) ? " GROUP BY ".join (', ' , @nonaggregates ) : "" ) }  ;
 
 having_clause:
-	| HAVING having_list;
+	| |
+	{ ($gby or @aggregates > 0)? "HAVING ".join("", expand($rule_counters,$rule_invariants, "having_list")) : "" } ;
 
 having_list:
         having_item |
@@ -280,7 +285,8 @@ having_list:
 	(having_list and_or having_item)  ;
 
 having_item:
-	existing_select_item arithmetic_operator value ;
+	{ ($gby and @int_nonaggregates > 0 and (!@aggregates or $prng->int(1,3) == 1)) ? $prng->arrayElement(\@int_nonaggregates) : join("", expand($rule_counters,$rule_invariants, "new_aggregate_existing_table_item")) }
+	comparison_operator int_value ;
 
 ################################################################################
 # We use the total_order_by rule when using the LIMIT operator to ensure that  #
@@ -314,7 +320,7 @@ any_item_order_by_item:
 	order_by_item |
         table1 . _field_indexed /*+JavaDB:Postgres: NULLS FIRST*/ , existing_table_item .`pk` desc |
         table1 . _field_indexed desc |
-        CONCAT( existing_table_item . char_field_name, existing_table_item . char_field_name ) /*+JavaDB:Postgres: NULLS FIRST*/ ;
+        CONCAT( existing_table_item . _field_char, existing_table_item . _field_char ) /*+JavaDB:Postgres: NULLS FIRST*/ ;
 
 desc:
         ASC /*+JavaDB:Postgres: NULLS FIRST */| /*+JavaDB:Postgres: NULLS FIRST */ | DESC /*+JavaDB:Postgres: NULLS LAST */ ; 
@@ -331,7 +337,12 @@ limit:
 new_select_item:
 	nonaggregate_select_item |
 	nonaggregate_select_item |
-#	aggregate_select_item |
+	aggregate_select_item |
+        combo_select_item ;
+
+noagg_new_select_item:
+	nonaggregate_select_item |
+	nonaggregate_select_item |
         combo_select_item ;
 
 ################################################################################
@@ -341,26 +352,53 @@ new_select_item:
 ################################################################################
 
 nonaggregate_select_item:
-        table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-        table_one_two . _field_indexed AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-	table_one_two . _field AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
+        { my $x = "table".$prng->int(1,2)." . ".join("",expand($rule_counters,$rule_invariants, "_field_int_indexed")); push @int_nonaggregates , $x ; push @nonaggregates , $x ; $x } AS { "field".++$fields } |
+        { my $x = "table".$prng->int(1,2)." . ".join("",expand($rule_counters,$rule_invariants, "_field_indexed")); push @nonaggregates , $x ; $x } AS { "field".++$fields } |
+        { my $x = "table".$prng->int(1,2)." . ".join("",expand($rule_counters,$rule_invariants, "_field")); push @nonaggregates , $x ; $x } AS { "field".++$fields } |
+        { my $x = "table".$prng->int(1,2)." . ".join("",expand($rule_counters,$rule_invariants, "_field_int")); push @int_nonaggregates , $x ; push @nonaggregates , $x ; $x } AS { "field".++$fields } ;
 
 aggregate_select_item:
-	aggregate table_one_two . _field ) AS { "field".++$fields };
+	{ my $x = join("", expand($rule_counters,$rule_invariants, "new_aggregate")); push @aggregates, $x; $x } AS { "field".++$fields };
+
+new_aggregate:
+	aggregate table_one_two . _field_int ) |
+	aggregate table_one_two . _field_int ) |
+	aggregate table_one_two . _field_int ) |
+	literal_aggregate ;
+
+new_aggregate_existing_table_item:
+	aggregate existing_table_item . _field_int ) |
+	aggregate existing_table_item . _field_int ) |
+	aggregate existing_table_item . _field_int ) |
+	literal_aggregate ;
 
 ################################################################################
 # The combo_select_items are for 'spice' - we actually found                   #
 ################################################################################
 
 combo_select_item:
-    ( ( table_one_two . int_field_name ) math_operator ( table_one_two . int_field_name ) ) AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } |
-    CONCAT( table_one_two . char_field_name , table_one_two . char_field_name ) AS { my $f = "field".++$fields ; push @nonaggregates , $f ; $f } ;
+    int_combo_select_item | char_combo_select_item ;
+
+int_combo_select_item:
+    { my $x = join("",expand($rule_counters,$rule_invariants, "int_combo_expr")); push @int_nonaggregates , $x ; push @nonaggregates , $x ; $x } AS { "field".++$fields } ;
+
+int_combo_expr:
+	( ( table_one_two . _field_int ) math_operator ( table_one_two . _field_int ) ) ;
+
+char_combo_select_item:
+    { my $x = join("",expand($rule_counters,$rule_invariants, "char_combo_expr")); push @nonaggregates , $x ; $x } AS { "field".++$fields } ;
+
+char_combo_expr:
+	CONCAT( table_one_two . _field_char , table_one_two . _field_char ) ;
 
 table_one_two:
 	table1 | table2 ;
 
 aggregate:
 	COUNT( distinct | SUM( distinct | MIN( distinct | MAX( distinct ;
+
+literal_aggregate:
+	COUNT(*) | COUNT(0) | SUM(1) ;
 
 ################################################################################
 # The following rules are for writing more sensible queries - that we don't    #
@@ -385,15 +423,15 @@ existing_select_item:
 # end of utility rules                                                         #
 ################################################################################
 
-arithmetic_operator:
+comparison_operator:
 	= | > | < | != | <> | <= | >= ;
 
 ################################################################################
 # We are trying to skew the ON condition for JOINs to be largely based on      #
-# equalities, but to still allow other arithmetic operators                    #
+# equalities, but to still allow other comparison operators                    #
 ################################################################################
 join_condition_operator:
-    arithmetic_operator | = | = | = ;
+    comparison_operator | = | = | = ;
 
 ################################################################################
 # Used for creating combo_items - ie (field1 + field2) AS fieldX               #
@@ -440,21 +478,10 @@ view:
     view_A | view_B | view_C | view_BB | view_CC ;
 
 _field:
-    int_field_name | char_field_name ;
+    _field_int | _field_char ;
 
 _digit:
     1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | _tinyint_unsigned ;
-
-
-int_field_name:
-    `pk` | `col_int_key` | `col_int_nokey` ;
-
-int_indexed:
-    `pk` | `col_int_key` ;
-
-
-char_field_name:
-    `col_varchar_key` | `col_varchar_nokey` ;
 
 ################################################################################
 # We define LIMIT_rows in this fashion as LIMIT values can differ depending on      #

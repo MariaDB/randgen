@@ -69,7 +69,7 @@
 ################################################################################
 
 query:
-  { $tables_reqd = 0; @table_alias_set = (1, 1, 1, 1, 2, 2, 2, 3, 4, 5, 1, 1, 2) ; "" }
+  { $min_tables = 0; @table_alias_set = (1, 1, 1, 1, 2, 2, 2, 3, 4, 5, 1, 1, 2) ; "" }
   { @int_field_set = ("pk", "col_int", "col_int_key") ; "" } 
   { $gby = "";  @nonaggregates = () ;  @aggregates = (); $t1 = 1; @st1 = (); $tables = 0 ; $fields = 0 ;  "" }
   hints query_type ;
@@ -81,8 +81,6 @@ query:
 hints:
   | | | |
   /*+ disable_hashmerge */ |
-  /*+ disable_seqscan disable_sort */ |
-  /*+ disable_seqscan disable_hashagg */ |
   /*+ disable_seqscan disable_hashagg disable_sort */ |
   /*+ disable_seqscan disable_hashagg disable_sort disable_hashmerge */ ;
 
@@ -154,19 +152,25 @@ new_select_item:
 ################################################################################
 
 nonaggregate_select_item:
-        { my $n = $prng->arrayElement(\@table_alias_set); $tables_reqd = $n if $tables_reqd < $n; my $x = "table".$n." . ".$prng->arrayElement(\@int_field_set); push @nonaggregates , $x ; $x } AS {my $f = "field".++$fields ; $f };
+        { my $n = $prng->arrayElement(\@table_alias_set); $min_tables = $n if $min_tables < $n; my $x = "table".$n." . ".$prng->arrayElement(\@int_field_set); push @nonaggregates , $x ; $x } AS {my $f = "field".++$fields ; $f };
 
 aggregate_select_item:
-	{ my @s = expand($rule_counters,$rule_invariants, "new_aggregate"); my $x = join("", @s); push @aggregates, $x; $x } AS { "field".++$fields };
+	{ my $x = join("", expand($rule_counters,$rule_invariants, "new_aggregate")); push @aggregates, $x; $x } AS { "field".++$fields };
 
 new_aggregate:
-	aggregate table_alias . { $prng->arrayElement(\@int_field_set) } ) |
-	aggregate table_alias . { $prng->arrayElement(\@int_field_set) } ) |
-	aggregate table_alias . { $prng->arrayElement(\@int_field_set) } ) |
-	COUNT(*) ;
+	aggregate table_alias . int_field_name ) |
+	aggregate table_alias . int_field_name ) |
+	aggregate table_alias . int_field_name ) |
+	literal_aggregate ;
+
+new_aggregate_existing_table_item:
+	aggregate existing_table_item . int_field_name ) |
+	aggregate existing_table_item . int_field_name ) |
+	aggregate existing_table_item . int_field_name ) |
+	literal_aggregate ;
 
 table_alias:
-	{ my $n = $prng->arrayElement(\@table_alias_set); $tables_reqd = $n if $tables_reqd < $n; "table".$n };
+	{ my $n = $prng->arrayElement(\@table_alias_set); $min_tables = $n if $min_tables < $n; "table".$n };
 
 ################################################################################
 # We make use of the new RQG stack in order to generate more interesting
@@ -240,7 +244,7 @@ number_list:
 # YB: add missing tables referenced in the SELECT-list.                        #
 ################################################################################
 join_missing_table_items:
-    { my @x=(); while ($tables < $tables_reqd) { push @x, expand($rule_counters,$rule_invariants, "join_new_table_item"); } ; join("", @x) } ;
+    { my @x=(); while ($tables < $min_tables) { push @x, expand($rule_counters,$rule_invariants, "join_new_table_item"); } ; join("", @x) } ;
 
 join_new_table_item:
 ################################################################################
@@ -281,7 +285,7 @@ having_list:
 ################################################################################
 
 having_item:
-	{ ($gby and @nonaggregates > 0 and (!@aggregates or $prng->int(1,3) == 1)) ? $prng->arrayElement(\@nonaggregates) : join("", expand($rule_counters,$rule_invariants, "new_aggregate")) }
+	{ ($gby and @nonaggregates > 0 and (!@aggregates or $prng->int(1,3) == 1)) ? $prng->arrayElement(\@nonaggregates) : join("", expand($rule_counters,$rule_invariants, "new_aggregate_existing_table_item")) }
 	comparison_operator _digit ;
 
 ################################################################################
@@ -291,7 +295,7 @@ having_item:
 
 order_by_clause:
 	| | | 
-        ORDER BY total_order_by desc /*+javadb:postgres: NULLS FIRST*/ limit  |
+	ORDER BY total_order_by desc /*+javadb:postgres: NULLS FIRST*/ limit  |
 	ORDER BY order_by_list /*+javadb:postgres: NULLS FIRST*/ ;
 
 total_order_by:
@@ -364,7 +368,7 @@ char_indexed:
   `col_varchar_1024_latin1_key` |`col_varchar_1024_utf8_key` ;
 
 agg_field_table_alias:
-	{ my $n = $prng->arrayElement(\@table_alias_set); $tables_reqd = $n if $tables_reqd < $n; "table".$n };
+	{ my $n = $prng->arrayElement(\@table_alias_set); $min_tables = $n if $min_tables < $n; "table".$n };
 
 existing_table_item:
 	{ "table".$prng->int($t1,$tables) };
@@ -376,7 +380,6 @@ _digit:
     1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
     1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | _tinyint_unsigned ;
  
-
 and_or:
    AND | AND | { $need_eq ? "AND" : "OR" } ;
 
@@ -385,6 +388,9 @@ comparison_operator:
 
 aggregate:
 	COUNT( distinct | SUM( distinct | MIN( distinct | MAX( distinct ;
+
+literal_aggregate:
+	COUNT(*) | COUNT(0) | SUM(1) ;
 
 not:
 	| | | NOT;
