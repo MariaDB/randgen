@@ -1059,7 +1059,7 @@ MDEV-30097:
 MDEV-30058:
 =~ AddressSanitizer|signal|MemorySanitizer
 =~ MYSQL_LOG::generate_name|MYSQL_LOG::open
-=~ fix_slow_log_file|fix_general_log_file
+=~ fix_slow_log_file|fix_general_log_file|fix_log
 MDEV-30033:
 =~ Assertion \`0'
 =~ Field_new_decimal::get_equal_const_item
