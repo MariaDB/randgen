@@ -74,6 +74,7 @@ sub run {
   my $self= shift;
 
   my $status= STATUS_OK;
+  my @upgrade_errors= ();
   # We may skip certain upgrades due to non-fatal errors during preparation phase
   # Dump upgrade may be skipped e.g. if dump on the old server failed
   my $skip_dump_upgrade= 0;
@@ -150,6 +151,7 @@ sub run {
   }
   if ($status != STATUS_OK) {
     sayError("Database dump on the old server failed, dump upgrade will be skipped");
+    push @upgrade_errors, "DUMP upgrade skipped because database dump on the old server failed";
     $self->setStatus(STATUS_UPGRADE_FAILURE);
     $skip_dump_upgrade= 1;
   }
@@ -259,8 +261,6 @@ sub run {
   }
   $self->switch_to_new_server();
   $server= $new_server;
-
-  my @upgrade_errors;
 
   #######################
   # Live upgrade
