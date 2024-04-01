@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, 2022 MariaDB Corporation Ab
+#  Copyright (c) 2019, 2024 MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -15,20 +15,26 @@
 
 #
 # The test should be run with
-# --mysqld=--plugin-load-add=query_response_time --mysqld=--loose-query-response-time
+# --mysqld=--plugin-load-add=query_response_time [--mysqld=--loose-query-response-time]
 #
 
 query:
-    SHOW QUERY_RESPONSE_TIME | SHOW QUERY_RESPONSE_TIME | SHOW QUERY_RESPONSE_TIME |
-    SHOW QUERY_RESPONSE_TIME | SHOW QUERY_RESPONSE_TIME | SHOW QUERY_RESPONSE_TIME |
-    SELECT * FROM INFORMATION_SCHEMA.QUERY_RESPONSE_TIME |
-    SELECT * FROM INFORMATION_SCHEMA.QUERY_RESPONSE_TIME |
+    ==FACTOR:20== SHOW qrt_stats |
+    ==FACTOR:10== SELECT * FROM INFORMATION_SCHEMA . qrt_stats |
     FLUSH QUERY_RESPONSE_TIME |
-    SET GLOBAL plugin_query_response_vars
+    SET GLOBAL plugin_query_response_vars |
+    SET __global_x_session(33,33) QUERY_RESPONSE_TIME_SESSION_STATS = __off_x_on_x_global /* compatibility 11.5 */
+;
+
+qrt_stats:
+    QUERY_RESPONSE_TIME |
+    QUERY_RESPONSE_TIME_READ /* compatibility 11.5 */ |
+    QUERY_RESPONSE_TIME_READ_WRITE /* compatibility 11.5 */ |
+    QUERY_RESPONSE_TIME_WRITE /* compatibility 11.5 */
 ;
 
 plugin_query_response_vars:
-    plugin_query_response_var | plugin_query_response_var | plugin_query_response_var |
+    ==FACTOR:2== plugin_query_response_var |
     plugin_query_response_var, plugin_query_response_vars
 ;
 
