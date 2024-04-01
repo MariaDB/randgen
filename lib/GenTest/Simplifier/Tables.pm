@@ -97,14 +97,18 @@ sub simplify {
                 next if ( $participating_table =~ m{view_} );
 
                 my $table_exists = grep{/^$orig_database.$participating_table$/} @existing_tables;
+                if (!$table_exists) {
+                    $participating_table = lc($participating_table);
+                    $table_exists = grep{/^$orig_database.$participating_table$/} @existing_tables;
+                }
                 next if !$table_exists;
 
                 my $new_table_name = 't'.++$table_index;
                 $dbh->do("CREATE TABLE $new_database . $new_table_name (LIKE $orig_database . $participating_table INCLUDING INDEXES)");
                 $dbh->do("INSERT INTO $new_database . $new_table_name SELECT * FROM $orig_database . $participating_table");
-                $new_query =~ s{`$participating_table`}{`$new_table_name`}sg;
-                $new_query =~ s{ $participating_table }{ $new_table_name }sg;
-                $new_query =~ s{ $participating_table$}{ $new_table_name}sg;
+                $new_query =~ s{`$participating_table`}{`$new_table_name`}sgi;
+                $new_query =~ s{ $participating_table }{ $new_table_name }sgi;
+                $new_query =~ s{ $participating_table$}{ $new_table_name}sgi;
 
                 ## Find all fields in table
                 my $sth_colinfo = $dbh->column_info(undef, 'public', $participating_table, undef);

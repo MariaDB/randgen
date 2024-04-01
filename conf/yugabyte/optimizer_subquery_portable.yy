@@ -75,7 +75,7 @@ hints:
 
 disable_hashmerge: Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) ;
 
-disable_seqscan: | | Set(enable_seqscan OFF) ;
+disable_seqscan: Set(enable_seqscan OFF) ;
 
 disable_sort: | | Set(enable_sort OFF) ;
 

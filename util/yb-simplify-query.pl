@@ -61,7 +61,7 @@ my $pre_sql_cmds = "";
 
 # Optional prefix for hints/EXPLAIN, etc.
 my $prefix = "";
-$prefix = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
+## $prefix = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
 ## $prefix = "EXPLAIN ";
 
 my @dsns = (
@@ -110,8 +110,8 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                         # $order_by =~ s{\s+LIMIT\s+\d+}{}o;
                         # # print "\$order_by={$order_by}\n";
                         # my $new_order_by = ($order_by =~ s{([^,]+)}{$1 NULLS FIRST}gor);
-                        # $oracle_query =~ s{$order_by}{$new_order_by}o;
-                        # # print "\$oracle_query={$oracle_query}\n";
+                        # $oracle_query =~ s{ORDER BY\s+$order_by}{ORDER BY $new_order_by}o;
+                        # # print "order_by={$order_by} new_order_by={$new_order_by} \$oracle_query={$oracle_query}\n";
 
 			my $oracle_result = $executor->execute($prefix.$oracle_query, 1);
 			push @oracle_results, $oracle_result;

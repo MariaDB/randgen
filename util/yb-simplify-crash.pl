@@ -36,24 +36,7 @@ my $dsn = 'dbi:Pg:host=127.0.0.1;port=5433;user=yugabyte;database=test';
 my $duration = 3600;
 
 my $original_query = "
-/*+ Set(enable_sort OFF) */
-SELECT
-    SUM (
-        table1.col_int_key
-    )
-FROM (
-        b AS table1
-    LEFT JOIN cc AS table2 ON table1.col_int_key = table2.pk
-    )
-WHERE
-    table1.col_int_key BETWEEN 1
-    AND
-    7
-    AND
-    table1.col_int_key IN (
-        74,
-        3
-    )
+SELECT 1
 ";
 
 # Optional prefix for hints/EXPLAIN, etc.
