@@ -63,7 +63,7 @@ my %acceptedErrors = (
     ## YB: 42P01 is also used for the missing/invalid FROM-clause entry errors, etc.
     ## We now take the "IF (NOT) EXISTS" option out of the comment block and stop
     ## masking these errors.
-    "42P01" => 1,# DROP TABLE on non-existing table is accepted since
+    # "42P01" => 1,# DROP TABLE on non-existing table is accepted since
                  # tests rely on non-standard MySQL DROP IF EXISTS;
     # "42P06" => 1 # Schema already exists
     );
@@ -356,16 +356,15 @@ sub getSchemaMetaData {
     my $res = $self->dbh()->selectall_arrayref($query);
     croak("FATAL ERROR: Failed to retrieve schema metadata") unless $res;
 
-    my %table_rows = ();
-    foreach my $i (0..$#$res) {
-        my $tbl = $res->[$i]->[0].'.'.$res->[$i]->[1];
-        if (($res->[$i]->[2] == 'table') and
-            ((not defined $table_rows{$tbl}) or ($table_rows{$tbl} eq 'NULL') or ($table_rows{$tbl} eq ''))) {
-            my $count_row = $self->dbh()->selectrow_arrayref("SELECT COUNT(*) FROM $tbl");
-            $table_rows{$tbl} = $count_row->[0];
-        }
-        $res=>[$i]->[8] = $table_rows{$tbl};
-    }
+    # my %table_rows = ();
+    # foreach my $i (0..$#$res) {
+    #     my $tbl = $res->[$i]->[0].'.'.$res->[$i]->[1];
+    #     if ((not defined $table_rows{$tbl}) or ($table_rows{$tbl} eq 'NULL') or ($table_rows{$tbl} eq '')) {
+    #         my $count_row = $self->dbh()->selectrow_arrayref("SELECT COUNT(*) FROM $tbl");
+    #         $table_rows{$tbl} = $count_row->[0];
+    #     }
+    #     $res=>[$i]->[8] = $table_rows{$tbl};
+    # }
     return $res;
 }
 

@@ -20,22 +20,17 @@ $tables = {
 
 	#rows => [0, 1, 2, 5, 6, 7, 8, 9, 10, 20, 21, 22, 23, 24, 25, 100], # the original
 	rows => [0, 1, 8, 128, 210, 220, 255],
-
-	# N/A to non-MySQL DBs
-        #engines => ['MyISAM', 'Innodb' ]
 };
 
 $fields = {
-        types => [ 'int', 'varchar(10)', 'varchar(1024)' ],
+        types => [ 'int', 'bigint', 'decimal(5,2)', 'varchar(10)', 'varchar(1024)' ],
         indexes => [undef, 'key' ],
         null => [undef ],
-
-	# Non-standard "CARACTER SET" syntax will be commented out for non-MySQL-fork DBs
-	# and harmless.  Just leave it for now.
-        charsets => ['utf8', 'latin1']
 };
 
 $data = {
-        numbers => [ 'digit', 'null', undef ],
-        strings => [ 'letter', 'english' , 'string(1024)']
+      # disable full range values (undef) until 21758 gets fixed
+      #  numbers => [ 'digit', 'digit', 'digit', 'tinyint', 'tinyint', 'decimal(4,2)', 'null', undef ],
+        numbers => [ 'digit', 'digit', 'digit', 'tinyint', 'tinyint', 'decimal(4,2)', 'null' ],
+        strings => [ 'letter', 'tinyint', 'string(4)', 'english' , 'string(1024)']
 };

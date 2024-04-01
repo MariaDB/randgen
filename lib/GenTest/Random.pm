@@ -117,6 +117,8 @@ use constant FIELD_TYPE_JSONOBJECT  => 28;
 
 use constant FIELD_TYPE_TEXT  => 29;
 
+use constant FIELD_TYPE_NUMERIC_DECIMAL => 30;
+
 use constant ASCII_RANGE_START		=> 97;
 use constant ASCII_RANGE_END		=> 122;
 
@@ -159,6 +161,61 @@ my %name2type = (
 	'dec'			=> FIELD_TYPE_NUMERIC,
 	'numeric'		=> FIELD_TYPE_NUMERIC,
 	'fixed'			=> FIELD_TYPE_NUMERIC,
+	'char'			=> FIELD_TYPE_STRING,
+	'varchar'		=> FIELD_TYPE_STRING,
+	'binary'		=> FIELD_TYPE_BLOB,
+	'varbinary'		=> FIELD_TYPE_BLOB,
+	'tinyblob'		=> FIELD_TYPE_BLOB,
+	'blob'			=> FIELD_TYPE_BLOB,
+	'mediumblob'		=> FIELD_TYPE_BLOB,
+	'longblob'		=> FIELD_TYPE_BLOB,
+	'tinytext'		=> FIELD_TYPE_TEXT,
+	'text'			=> FIELD_TYPE_TEXT,
+	'mediumtext'		=> FIELD_TYPE_TEXT,
+	'longtext'		=> FIELD_TYPE_TEXT,
+	'date'			=> FIELD_TYPE_DATE,
+	'time'			=> FIELD_TYPE_TIME,
+	'datetime'		=> FIELD_TYPE_DATETIME,
+	'timestamp'		=> FIELD_TYPE_TIMESTAMP,
+	'year'			=> FIELD_TYPE_YEAR,
+	'enum'			=> FIELD_TYPE_ENUM,
+	'set'			=> FIELD_TYPE_SET,
+	'null'			=> FIELD_TYPE_NULL,
+	'letter'		=> FIELD_TYPE_LETTER,
+	'digit'			=> FIELD_TYPE_DIGIT,
+	'data'			=> FIELD_TYPE_BLOB,
+	'ascii'			=> FIELD_TYPE_ASCII,
+	'string'		=> FIELD_TYPE_STRING,
+	'empty'			=> FIELD_TYPE_EMPTY,
+
+	'hex'			=> FIELD_TYPE_HEX,
+	'quid'			=> FIELD_TYPE_QUID,
+	'json'			=> FIELD_TYPE_JSON,
+	'jsonpath'		=> FIELD_TYPE_JSONPATH,
+	'jsonkey'       => FIELD_TYPE_JSONKEY,
+	'jsonvalue'     => FIELD_TYPE_JSONVALUE,
+	'jsonarray'     => FIELD_TYPE_JSONARRAY,
+	'jsonpair'      => FIELD_TYPE_JSONPAIR,
+	'jsonobject'    => FIELD_TYPE_JSONOBJECT
+);
+
+my %name2subtype = (
+	'bit'			=> FIELD_TYPE_BIT,
+	'bool'			=> FIELD_TYPE_NUMERIC,
+	'boolean'		=> FIELD_TYPE_NUMERIC,
+	'tinyint'		=> FIELD_TYPE_NUMERIC,
+	'smallint'		=> FIELD_TYPE_NUMERIC,
+	'mediumint'		=> FIELD_TYPE_NUMERIC,
+	'int'			=> FIELD_TYPE_NUMERIC,
+	'integer'		=> FIELD_TYPE_NUMERIC,
+	'bigint'		=> FIELD_TYPE_NUMERIC,
+	'float'			=> FIELD_TYPE_FLOAT,
+	'double'		=> FIELD_TYPE_FLOAT,
+	'double precision'	=> FIELD_TYPE_FLOAT,
+	'decimal'		=> FIELD_TYPE_NUMERIC_DECIMAL,
+	'dec'			=> FIELD_TYPE_NUMERIC_DECIMAL,
+	'numeric'		=> FIELD_TYPE_NUMERIC_DECIMAL,
+	'fixed'			=> FIELD_TYPE_NUMERIC_DECIMAL,
 	'char'			=> FIELD_TYPE_STRING,
 	'varchar'		=> FIELD_TYPE_STRING,
 	'binary'		=> FIELD_TYPE_BLOB,
@@ -633,6 +690,11 @@ sub fieldType {
 	} elsif ($field_type == FIELD_TYPE_LETTER) {
 		return $rand->string(1);
 	} elsif ($field_type == FIELD_TYPE_NUMERIC) {
+                if ($name2subtype{$field_full_type} == FIELD_TYPE_NUMERIC_DECIMAL) {
+                    my ($prec, $scale) = split(/,/, $field_length);
+                    my $bound = ('9' x ($prec - $scale)).".".('9' x $scale);
+                    return sprintf("%.".$scale."f", $rand->float("-".$bound, $bound));
+                }
 		return $rand->int(@{$name2range{$field_full_type}});
 	} elsif ($field_type == FIELD_TYPE_FLOAT) {
 		return $rand->float(@{$name2range{$field_full_type}});
