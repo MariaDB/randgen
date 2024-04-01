@@ -1,4 +1,4 @@
-#  Copyright (c) 2018, 2022, MariaDB Corporation Ab
+#  Copyright (c) 2018, 2024, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -155,6 +155,7 @@ admin_flush_option:
 #  | QUERY_RESPONSE_TIME # query_response_time
   | SLAVE
   | STATUS
+  | __global_x_session STATUS /* compatibility 11.5 */
 #  | TABLE_STATISTICS # userstat
   | USER_RESOURCES
 #  | USER_STATISTICS # userstat
