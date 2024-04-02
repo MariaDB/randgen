@@ -60,7 +60,7 @@ analyze_tables:
 # dodgy.                                                                       #
 ################################################################################
 query:
-	{ $gby = "";  @int_nonaggregates = () ; @nonaggregates = () ; $tables = 0 ; $fields = 0 ; "" } hints query_type ;
+	{ $gby = "";  @int_nonaggregates = () ; @nonaggregates = () ; @aggregates = () ; $tables = 0 ; $fields = 0 ; "" } hints query_type ;
 
 ################################################################################
 # YB: Randomly add a hint set that encourages Batched Nested Loop plans
@@ -193,8 +193,9 @@ where_list:
 
 
 generic_where_list:
-        where_item |
-        ( where_list and_or where_item ) ;
+        where_item | where_item |
+        ( where_list and_or where_item ) |
+        ( where_item and_or where_list ) ;
 
 not:
 	| | | NOT;
@@ -451,14 +452,13 @@ and_or:
 
 	
 value:
-	_digit | _digit | _digit | _digit | _tinyint_unsigned|
-        _char(2) | _char(2) | _char(2) | _char(2) | _char(2) ;
+	int_value | char_value ;
 
 int_value:
 	_digit | _digit | _digit | _digit | _tinyint_unsigned ;
 
 char_value:
-        _char(2);
+        _char | _char | _char | _char(2);
 
 date_value:
         _date;

@@ -39,6 +39,9 @@ my $original_query = "
 SELECT 1
 ";
 
+# Optional SQL commands to execute before running each simplified query
+my $pre_sql_cmds = "";
+
 # Optional prefix for hints/EXPLAIN, etc.
 my $prefix = "";
 ## $prefix = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
@@ -72,6 +75,10 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                     my $dbh = $executor->dbh();
                     
                     $dbh->do("SET statement_timeout = $timeout");
+
+                    if ($pre_sql_cmds) {
+                        $executor->dbh()->do($pre_sql_cmds);
+                    }
 
                     my $oracle_result = $executor->execute($prefix.$oracle_query);
 
