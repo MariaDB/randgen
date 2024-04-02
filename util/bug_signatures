@@ -1958,7 +1958,7 @@ MDEV-25332:
 =~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
 =~ Deadlock reporter: Stalled query: .*ANALYZE.*FORMAT=JSON
 MDEV-25311:
-=~ signal 11|AddressSanitizer
+=~ signal 11|AddressSanitizer|MemorySanitizer
 =~ Json_writer_object::add
 =~ sel_arg_and_weight_heuristic
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
