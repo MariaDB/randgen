@@ -1,5 +1,5 @@
 # Copyright (c) 2008,2010 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2021, 2022, MariaDB Corporation
+# Copyright (c) 2021, 2024, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -520,7 +520,7 @@ sub datetime {
 
 sub timestamp {
     my ($prng, $ts) = @_;
-    $ts= $prng->int(0,isCompatible('11.4.1',$prng->compatibility()) ? 4294967295 : 2147483647) if not defined $ts;
+    $ts= $prng->int(0,isCompatible('11.5.0',$prng->compatibility()) ? 4294967295 : 2147483647) if not defined $ts;
     my ($sec,$min,$hour,$mday,$mon,$year,undef,undef,undef)= localtime($ts);
     return sprintf('%04d%02d%02d%02d%02d%02d.%06d',$year+1900,$mon+1,$mday,$hour,$min,$sec,$prng->uint16(0,999999));
 }
