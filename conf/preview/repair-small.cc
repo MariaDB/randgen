@@ -47,7 +47,7 @@ $combinations = [
   [ @{$options{optional_server_variables}} ],
 
 # New
-  [ '--grammar=conf/yy/admin.yy '],
+  [ '--grammar=conf/yy/admin.yy --filter=conf/ff/optimize.ff'],
 
   ##### Engines and scenarios
   [
