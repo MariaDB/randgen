@@ -35,6 +35,25 @@ use constant SIMPLIFIER_NEW_DATABASE	=> 2;
 use constant SIMPLIFIER_END_TIME	=> 3;
 use constant SIMPLIFIER_DB_TYPE 	=> 4;
 
+# DBI column_info fiedls
+use constant COLUMN_INFO_TABLE_CAT          => 0;
+use constant COLUMN_INFO_TABLE_SCHEM        => 1;
+use constant COLUMN_INFO_TABLE_NAME         => 2;
+use constant COLUMN_INFO_COLUMN_NAME        => 3;
+
+# DBI statistics_info fields
+use constant STATISTICS_INFO_TABLE_CAT          => 0;
+use constant STATISTICS_INFO_TABLE_SCHEM        => 1;
+use constant STATISTICS_INFO_TABLE_NAME         => 2;
+use constant STATISTICS_INFO_NON_UNIQUE         => 3;
+use constant STATISTICS_INFO_INDEX_QUALIFIER    => 4;
+use constant STATISTICS_INFO_INDEX_NAME         => 5;
+use constant STATISTICS_INFO_TYPE               => 6;
+use constant STATISTICS_INFO_ORDINAL_POSITION   => 7;
+use constant STATISTICS_INFO_COLUMN_NAME        => 8;
+use constant STATISTICS_INFO_ASC_OR_DESC        => 9;
+use constant STATISTICS_INFO_CARDINALITY        => 10;
+
 1;
 
 sub new {
@@ -59,7 +78,9 @@ sub simplify {
         my $db_type = $simplifier->[SIMPLIFIER_DB_TYPE];
 	my $new_query = $initial_query;
 
-	my @tables_named = $initial_query =~ m{(table[a-z0-9_]+)}sgio;
+        my $debug = 0;
+
+	my @tables_named = $initial_query =~ m{(table[a-z0-9_]+)|(dummy)}sgio;
 	my @tables_quoted = $initial_query =~ m{`(.*?)`}sgio;
 	my @tables_letters = $initial_query =~ m{[ `]([A-Z]|AA|BB|CC|DD|EE|FF|GG|HH|II|JJ|KK|LL|MM|NN|OO|PP|QQ|RR|SS|TT|UU|VV|WW|XX|YY|ZZ|AAA|BBB|CCC|DDD|EEE|FFF|GGG|HHH|III|JJJ|KKK|LLL|MMM|NNN|OOO|PPP|QQQ|RRR|SSS|TTT|UUU|VVV|WWW|XXX|YYY|ZZZ)[ `]}sgio;
 	
@@ -69,11 +90,16 @@ sub simplify {
 	map {$participating_tables{$_} = 1 } @participating_tables;
 
 	my @fields_quoted = $initial_query =~ m{`(.*?)`}sgio;
-	my @fields_named = $initial_query =~ m{((?:char|varchar|int|set|enum|blob|date|time|datetime|pk)(?:`|\s|_key|_nokey))}sgo;
+	my @fields_named = $initial_query =~ m{((?:char|varchar|int|bigint|decimal|set|enum|blob|date|time|datetime|pk)(?:[0-9_]*)(?:`|\b|_key|_nokey))}sgo;
 
 	my @participating_fields = (@fields_quoted, map {'col_'.$_} @fields_named);
 	my %participating_fields;
 	map { $participating_fields{$_} = 1 } @participating_fields;
+        if ($debug) {
+            foreach my $f (@participating_fields) {
+                say("participating: {$f}");
+            }
+        }
 
 	my $dbh = DBI->connect($simplifier->[SIMPLIFIER_DSN]);
         my $table_index = 0;
@@ -111,35 +137,45 @@ sub simplify {
                 $new_query =~ s{ $participating_table$}{ $new_table_name}sgi;
 
                 ## Find all fields in table
-                my $sth_colinfo = $dbh->column_info(undef, 'public', $participating_table, undef);
-                my $actual_fields = $sth_colinfo->fetchall_arrayref;
+                my $sth = $dbh->column_info(undef, $orig_database, $participating_table, undef);
+                my @actual_fields = map {$_->[COLUMN_INFO_COLUMN_NAME]} @{$sth->fetchall_arrayref};
+                if ($debug) {
+                    say("# actual fields: $#actual_fields");
+                    foreach my $f (@actual_fields) {
+                        say("actual field: {$f}");
+                    }
+                }
 
                 # ## Find indexed fields in table
-                # my %indices;
-                # map {$indices{$_->[4]}=$_->[2]} @{$dbh->selectall_arrayref("SHOW INDEX FROM `$new_table_name` IN $new_database")};
+                my %indices;
+                $sth = $dbh->statistics_info( undef, $orig_database, $participating_table, undef, undef );
+                my @ind_info_array = @{$sth->fetchall_arrayref};
+                map {$indices{$_->[STATISTICS_INFO_COLUMN_NAME]}=$_->[STATISTICS_INFO_INDEX_NAME]} @ind_info_array;
 
                 ## Calculate which fields to keep
                 my %keep;
-                foreach my $field_info (@$actual_fields) {
-                    my $actual_field = $field_info->[3];
+                foreach my $actual_field (@actual_fields) {
+                    say("actual: {$actual_field}  \$participating_fields{$actual_field}=$participating_fields{$actual_field} exists=".(exists $participating_fields{$actual_field})) if $debug;
                     if (not exists $participating_fields{$actual_field}) {
-                        # ## Not used field, but may be part of multi-column index where other column is used
-                        # if (exists $indices{$actual_field}) {
-                        #     foreach my $x (keys %indices) {
-                        #         $keep{$actual_field} = 1 
-                        #             if (exists $participating_fields{$x}) and
-                        #             ($indices{$x} eq $indices{$actual_field});
-                        #     }
-                        # }
+                        ## Not used field, but may be part of multi-column index where other column is used
+                        if (exists $indices{$actual_field}) {
+                            foreach my $x (keys %indices) {
+                                next if not $x;
+                                $keep{$actual_field} = 1 
+                                    if (exists $participating_fields{$x}) and
+                                    ($indices{$x} eq $indices{$actual_field});
+                                say("index: {$x} $indices{$x} eq $indices{$actual_field} \$keep{$actual_field}=$keep{$actual_field}") if $debug;
+                            }
+                        }
                     } else {
                         ## Explicitely used field
                         $keep{$actual_field}=1;
+                        say("\$keep{$actual_field}=$keep{$actual_field}") if $debug;
                     }
                 }
 
                 ## Remove the fields we do not want to keep
-                foreach my $field_info (@$actual_fields) {
-                    my $actual_field = $field_info->[3];
+                foreach my $actual_field (@actual_fields) {
                     $dbh->do("ALTER TABLE $new_database . $new_table_name DROP COLUMN $actual_field") if not $keep{$actual_field};
                     if (time() > $simplifier->[SIMPLIFIER_END_TIME]) {
                         say("Time specified by --duration=x exceeded.  Aborting simplification.");

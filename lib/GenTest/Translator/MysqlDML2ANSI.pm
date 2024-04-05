@@ -155,6 +155,7 @@ sub translate {
     ## SELECT STRAIGHT_JOIN is just translated to SELECT
     $dml =~ s/\bSELECT\s+(\/\* rule: \w+ \*\/\s*)*STRAIGHT_JOIN\b/SELECT$1/gsi;
     $dml =~ s/\bDISTINCT\s+(\/\* rule: \w+ \*\/\s*)*STRAIGHT_JOIN\b/DISTINCT$1/gsi;
+    $dml =~ s/CONCAT\s*\(([^,]+),([^)]+),([^)]+)\)/\(\1 || \2 || \3 \)/gsi;
     $dml =~ s/CONCAT\s*\(([^,]+),([^)]+)\)/\(\1 || \2 \)/gsi;
     
     ## Translate LIMIT semantics into ANSI

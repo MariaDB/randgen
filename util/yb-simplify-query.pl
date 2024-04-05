@@ -146,10 +146,13 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 );
 
 my $simplified_query = $simplifier->simplify($query);
-die "Failed to simplify the query\n" if !$simplified_query;
-$simplified_query = $prefix.$simplified_query;
 
-print "\nSimplified query:\n$simplified_query;\n\n";
+if (!$simplified_query or $simplified_query =~ /$prefix/) {
+    print "\nFailed to simplify the query\n";
+    exit;
+}
+print "\nSimplified query:\n$prefix$simplified_query;\n\n";
+
 
 my @simplified_results;
 

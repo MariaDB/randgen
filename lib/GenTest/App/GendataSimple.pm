@@ -248,11 +248,11 @@ sub gen_table {
 
 			PRIMARY KEY (pk))");
 
-		$executor->execute("CREATE INDEX ".$name."_int_key ON $name(col_int_key)");
+		$executor->execute("CREATE INDEX ".$name."_int_key ON $name(col_int_key, col_varchar_key)");
 		$executor->execute("CREATE INDEX ".$name."_date_key ON $name(col_date_key)");
 		$executor->execute("CREATE INDEX ".$name."_time_key ON $name(col_time_key)");
 		$executor->execute("CREATE INDEX ".$name."_datetime_key ON $name(col_datetime_key)");
-		$executor->execute("CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key, col_int_key)");
+		$executor->execute("CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key, col_int_key, col_datetime_key)");
 
 	} else {
         say("Creating ".$executor->getName()." table $name, size $size rows");

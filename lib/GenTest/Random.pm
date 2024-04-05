@@ -692,8 +692,15 @@ sub fieldType {
 	} elsif ($field_type == FIELD_TYPE_NUMERIC) {
                 if ($name2subtype{$field_full_type} == FIELD_TYPE_NUMERIC_DECIMAL) {
                     my ($prec, $scale) = split(/,/, $field_length);
-                    my $bound = ('9' x ($prec - $scale)).".".('9' x $scale);
-                    return sprintf("%.".$scale."f", $rand->float("-".$bound, $bound));
+                    my $value = $rand->int(0, ('9' x $prec) + 0);
+                    if ($scale > 0) {
+                        $value /= ('9' x $scale) + 1;
+                    } elsif ($scale < 0) {
+                        my $divisor = ('9' x -$scale) + 1;
+                        $value = sprintf("%.0f", $value / $divisor) * $divisor;
+                    }
+                    $value *= -1 if $rand->int(0, 1) == 1;
+                    return $value;
                 }
 		return $rand->int(@{$name2range{$field_full_type}});
 	} elsif ($field_type == FIELD_TYPE_FLOAT) {
