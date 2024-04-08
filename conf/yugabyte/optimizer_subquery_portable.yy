@@ -53,6 +53,9 @@ analyze_tables:
 	ANALYZE A; ANALYZE B; ANALYZE C; ANALYZE D; ANALYZE E;
 	ANALYZE AA; ANALYZE BB; ANALYZE CC ANALYZE DD ;
 
+query_init:
+  | SET work_mem = { my $workmem = 64 * 16 ** $prng->int(0, 4); say("SET work_mem = $workmem"); $workmem } ;
+
 ################################################################################
 # The perl code in {} helps us with bookkeeping for writing more sensible      #
 # queries.  We need to keep track of these items to ensure we get interesting  #
@@ -63,23 +66,19 @@ query:
 	{ $gby = "";  @int_nonaggregates = () ; @nonaggregates = () ; @aggregates = () ; $t1 = 1 ; @st1 = (); $tables = 0 ; $fields = 0 ; @ssqt1 = () ; $sqt1 = 1 ; $subquery_idx=0 ; @scsqt1 = () ; $csqt1 = 1 ; $child_subquery_idx=0 ; $max_table_id = $prng->int(1,3); "" }
 	hints main_select ;
 
-################################################################################
-# YB: Randomly add a hint set that encourages Batched Nested Loop plans
-################################################################################
-
 hints:
-  | | | |
+  | | |
+  /*+ IndexScanRegexp(.*) */ |
   /*+ disable_hashmerge */ |
-  /*+ disable_seqscan disable_hashagg disable_sort */ |
-  /*+ disable_seqscan disable_hashagg disable_sort disable_hashmerge */ ;
+  /*+ disable_seq_or_bitmapscan disable_hashagg_or_sort */ |
+  /*+ disable_seq_or_bitmapscan disable_hashagg_or_sort disable_hashmerge */ ;
 
 disable_hashmerge: Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) ;
 
-disable_seqscan: Set(enable_seqscan OFF) ;
+disable_seq_or_bitmapscan:
+	Set(enable_seqscan OFF) | Set(enable_seqscan OFF) | Set(enable_bitmapscan OFF) ;
 
-disable_sort: | | Set(enable_sort OFF) ;
-
-disable_hashagg: | | Set(enable_hashagg OFF) ;
+disable_hashagg_or_sort: | | Set(enable_sort OFF) | Set(enable_hashagg OFF) ;
 
 
 main_select:
@@ -128,7 +127,8 @@ join_list_1:
         new_table_item | new_table_item | join_list_2 ;
 
 join_list_2:
-	( new_table_item join_type new_table_item ON (join_condition_item ) ) |
+	( new_table_item join_type new_table_item ON ( where_list ) ) |
+	( new_table_item join_type new_table_item ON ( where_list and_or join_condition_item ) ) |
 	( new_table_item join_type new_table_item ON (join_condition_item ) ) |
 	join_list_3 ;
 
@@ -183,6 +183,7 @@ where_list:
 
 generic_where_list:
         where_item | where_item |
+        ( where_item and_or where_item ) |
         ( where_list and_or where_item ) |
         ( where_item and_or where_list ) ;
 
@@ -250,6 +251,8 @@ int_single_value_subquery:
       subquery_body ) |
     ( SELECT distinct select_option aggregate subquery_table_alias . int_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" } 
       subquery_body ) |
+    ( SELECT distinct select_option aggregate subquery_table_alias . int_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" } 
+      subquery_body ) |
     ( SELECT select_option subquery_table_alias . int_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
       subquery_body ORDER BY 1 LIMIT 1 ) |
     ( SELECT select_option subquery_table_alias . int_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
@@ -257,6 +260,8 @@ int_single_value_subquery:
     ( SELECT _digit FROM DUMMY ) ;
 
 char_single_value_subquery:
+    ( SELECT distinct select_option any_type_aggregate subquery_table_alias . char_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" } 
+      subquery_body ) |
     ( SELECT distinct select_option any_type_aggregate subquery_table_alias . char_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" } 
       subquery_body ) |
     ( SELECT distinct select_option any_type_aggregate subquery_table_alias . char_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" } 
@@ -271,6 +276,14 @@ int_single_member_subquery:
     ( SELECT distinct select_option subquery_table_alias . int_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
       subquery_body 
       single_subquery_group_by
+      subquery_having ) |
+    ( SELECT distinct select_option subquery_table_alias . int_field_name AS { "SUBQUERY".$subquery_idx."_field1" }
+      subquery_body 
+      single_subquery_group_by
+      subquery_having ) |
+    ( SELECT distinct select_option aggregate subquery_table_alias . int_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" }
+      subquery_body 
+      any_field_subquery_group_by
       subquery_having ) |
     ( SELECT distinct select_option aggregate subquery_table_alias . int_field_name ) AS { "SUBQUERY".$subquery_idx."_field1" }
       subquery_body 

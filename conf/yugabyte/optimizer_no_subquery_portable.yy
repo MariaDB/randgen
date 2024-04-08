@@ -53,6 +53,9 @@ analyze_tables:
 	ANALYZE A; ANALYZE B; ANALYZE C; ANALYZE D; ANALYZE E;
 	ANALYZE AA; ANALYZE BB; ANALYZE CC ANALYZE DD ;
 
+query_init:
+  | SET work_mem = { my $workmem = 64 * 16 ** $prng->int(0, 4); say("SET work_mem = $workmem"); $workmem } ;
+
 ################################################################################
 # The perl code in {} helps us with bookkeeping for writing more sensible      #
 # queries.  We need to keep track of these items to ensure we get interesting  #
@@ -62,23 +65,20 @@ analyze_tables:
 query:
 	{ $gby = "";  @int_nonaggregates = () ; @nonaggregates = () ; @aggregates = () ; $tables = 0 ; $fields = 0 ; "" } hints query_type ;
 
-################################################################################
-# YB: Randomly add a hint set that encourages Batched Nested Loop plans
-################################################################################
 
 hints:
-  | | | |
+  | | |
+  /*+ IndexScanRegexp(.*) */ |
   /*+ disable_hashmerge */ |
-  /*+ disable_seqscan disable_hashagg disable_sort */ |
-  /*+ disable_seqscan disable_hashagg disable_sort disable_hashmerge */ ;
+  /*+ disable_seq_or_bitmapscan disable_hashagg_or_sort */ |
+  /*+ disable_seq_or_bitmapscan disable_hashagg_or_sort disable_hashmerge */ ;
 
 disable_hashmerge: Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) ;
 
-disable_seqscan: Set(enable_seqscan OFF) ;
+disable_seq_or_bitmapscan:
+	Set(enable_seqscan OFF) | Set(enable_seqscan OFF) | Set(enable_bitmapscan OFF) ;
 
-disable_sort: | | Set(enable_sort OFF) ;
-
-disable_hashagg: | | Set(enable_hashagg OFF) ;
+disable_hashagg_or_sort: | | Set(enable_sort OFF) | Set(enable_hashagg OFF) ;
 
 
 query_type:
@@ -194,6 +194,7 @@ where_list:
 
 generic_where_list:
         where_item | where_item |
+        ( where_item and_or where_item ) |
         ( where_list and_or where_item ) |
         ( where_item and_or where_list ) ;
 
