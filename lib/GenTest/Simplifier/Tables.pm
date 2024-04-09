@@ -96,8 +96,9 @@ sub simplify {
 	my %participating_fields;
 	map { $participating_fields{$_} = 1 } @participating_fields;
         if ($debug) {
+            say("participating fields (".scalar(@participating_fields)."):");
             foreach my $f (@participating_fields) {
-                say("participating: {$f}");
+                say("  {$f}");
             }
         }
 
@@ -139,18 +140,26 @@ sub simplify {
                 ## Find all fields in table
                 my $sth = $dbh->column_info(undef, $orig_database, $participating_table, undef);
                 my @actual_fields = map {$_->[COLUMN_INFO_COLUMN_NAME]} @{$sth->fetchall_arrayref};
-                if ($debug) {
-                    say("# actual fields: $#actual_fields");
-                    foreach my $f (@actual_fields) {
-                        say("actual field: {$f}");
-                    }
-                }
 
                 # ## Find indexed fields in table
                 my %indices;
                 $sth = $dbh->statistics_info( undef, $orig_database, $participating_table, undef, undef );
                 my @ind_info_array = @{$sth->fetchall_arrayref};
-                map {$indices{$_->[STATISTICS_INFO_COLUMN_NAME]}=$_->[STATISTICS_INFO_INDEX_NAME]} @ind_info_array;
+                map {$indices{$_->[STATISTICS_INFO_COLUMN_NAME]}{$_->[STATISTICS_INFO_INDEX_NAME]} = 1} @ind_info_array;
+                my %participating_field_indices;
+                foreach my $f (@participating_fields) {
+                    map {$participating_field_indices{$_} = 1} (keys %{%indices{$f}});
+                }
+                if ($debug) {
+                    say("actual fields (".scalar(@actual_fields)."):");
+                    foreach my $f (@actual_fields) {
+                        say("  {$f}");
+                    }
+                    say("indices with participating fields (".scalar(%participating_field_indices)."):");
+                    foreach my $idx (keys %participating_field_indices) {
+                        say("  {$idx}");
+                    }
+                }
 
                 ## Calculate which fields to keep
                 my %keep;
@@ -158,19 +167,16 @@ sub simplify {
                     say("actual: {$actual_field}  \$participating_fields{$actual_field}=$participating_fields{$actual_field} exists=".(exists $participating_fields{$actual_field})) if $debug;
                     if (not exists $participating_fields{$actual_field}) {
                         ## Not used field, but may be part of multi-column index where other column is used
-                        if (exists $indices{$actual_field}) {
-                            foreach my $x (keys %indices) {
-                                next if not $x;
-                                $keep{$actual_field} = 1 
-                                    if (exists $participating_fields{$x}) and
-                                    ($indices{$x} eq $indices{$actual_field});
-                                say("index: {$x} $indices{$x} eq $indices{$actual_field} \$keep{$actual_field}=$keep{$actual_field}") if $debug;
+	                if (exists $indices{$actual_field}) {
+                            foreach my $idx (keys %{%indices{$actual_field}}) {
+                                say("  \$keep{$actual_field}=\$participating_field_indices{$idx}=$participating_field_indices{$idx}") if $debug;
+                                last if ($keep{$actual_field} = $participating_field_indices{$idx});
                             }
                         }
                     } else {
                         ## Explicitely used field
                         $keep{$actual_field}=1;
-                        say("\$keep{$actual_field}=$keep{$actual_field}") if $debug;
+                        say("  \$keep{$actual_field}=$keep{$actual_field}") if $debug;
                     }
                 }
 
