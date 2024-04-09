@@ -16,10 +16,15 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-33868:
+=~ Assertion \`trx->bulk_insert'
+=~ innodb_prepare_commit_versioned
+=~ fix_autocommit
+=~ Version: '10\.11|Server version: 10\.11]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-33858:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ alloc_root
-=~ st_select_lex::save_leaf_tables
+=~ st_select_lex
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-33641:
 =~ Got an error from thread_id=
