@@ -262,17 +262,21 @@ sub run {
     }
 
   WORKEND:
-    foreach my $worker_pid (keys %worker_pids) {
-        my $processtype= ($worker_pid == $metadata_pid ? "metadata" : "worker");
-        say("Killing remaining $processtype process with pid $worker_pid...");
-        kill(15, $worker_pid);
-        foreach (1..5) {
-            last unless kill(0, $worker_pid);
-            sleep 1;
-        }
-        if (kill(0, $worker_pid)) {
+    # Doing it in two loops is faster than sleeping for each pid separately
+    if (scalar(keys %worker_pids)) {
+      foreach my $worker_pid (keys %worker_pids) {
+          my $processtype= ($worker_pid == $metadata_pid ? "metadata" : "worker");
+          say("Stopping remaining $processtype process with pid $worker_pid...");
+          kill(15, $worker_pid);
+      }
+      sleep 1;
+      foreach my $worker_pid (keys %worker_pids) {
+          if (kill(0, $worker_pid)) {
+            my $processtype= ($worker_pid == $metadata_pid ? "metadata" : "worker");
+            say("Killing remaining $processtype process with pid $worker_pid...");
             kill(9, $worker_pid);
-        }
+          }
+      }
     }
 
   TESTEND:
