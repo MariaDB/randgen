@@ -163,16 +163,16 @@ join_type:
 join_condition_list:
     join_condition_item | 
     ( join_condition_item ) and_or ( join_condition_item ) |
-    ( current_table_item  .`pk` comparison_operator previous_table_item . _field_int ) AND (current_table_item  .`pk` comparison_operator previous_table_item . _field_int ) ;    
+    ( current_table_item  ._field_pk comparison_operator previous_table_item . _field_int ) AND (current_table_item  ._field_pk comparison_operator previous_table_item . _field_int ) ;    
 join_condition_item:
      current_table_item . _field_int_indexed = previous_table_item . _field_int  |
      current_table_item . _field_int = previous_table_item . _field_int_indexed  |
-     current_table_item . `col_varchar_key` = previous_table_item . _field_char |
-     current_table_item . _field_char = previous_table_item . `col_varchar_key` |
+     current_table_item . _field_char_indexed = previous_table_item . _field_char |
+     current_table_item . _field_char = previous_table_item . _field_char_indexed |
      current_table_item . _field_int_indexed comparison_operator previous_table_item . _field_int  |
      current_table_item . _field_int comparison_operator previous_table_item . _field_int_indexed  |
-     current_table_item . `col_varchar_key` comparison_operator previous_table_item . _field_char |
-     current_table_item . _field_char comparison_operator previous_table_item . `col_varchar_key`;
+     current_table_item . _field_char_indexed comparison_operator previous_table_item . _field_char |
+     current_table_item . _field_char comparison_operator previous_table_item . _field_char_indexed;
 
 
 left_right:
@@ -209,8 +209,8 @@ not:
 # YB: Use _field_indexed instead of pk in the "IS not NULL" pattern            #
 ################################################################################
 where_item:
-        table1 .`pk` comparison_operator existing_table_item . _field_int  |
-        table1 .`pk` comparison_operator existing_table_item . _field_int  |
+        table1 ._field_pk comparison_operator existing_table_item . _field_int  |
+        table1 ._field_pk comparison_operator existing_table_item . _field_int  |
         existing_table_item . _field_int comparison_operator existing_table_item . _field_int |
         existing_table_item . _field_char comparison_operator existing_table_item . _field_char |
         existing_table_item . _field_int comparison_operator int_value  |
@@ -233,11 +233,11 @@ range_predicate1_list:
 
 range_predicate1_item:
          table1 . _field_int_indexed not BETWEEN _tinyint_unsigned[invariant] AND ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
-         table1 . `col_varchar_key` comparison_operator _char[invariant] |
+         table1 . _field_char_indexed comparison_operator _char[invariant] |
          table1 . _field_int_indexed not IN (number_list) |
-         table1 . `col_varchar_key` not IN (char_list) |
-         table1 . `pk` > _tinyint_unsigned[invariant] AND table1 . `pk` < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
-         table1 . `col_int_key` > _tinyint_unsigned[invariant] AND table1 . `col_int_key` < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) ;
+         table1 . _field_char_indexed not IN (char_list) |
+         table1 . _field_pk > _tinyint_unsigned[invariant] AND table1 . _field_pk < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) |
+         table1 . _field_int_indexed > _tinyint_unsigned[invariant] AND table1 . _field_int_indexed < ( _tinyint_unsigned[invariant] + _tinyint_unsigned ) ;
 
 ################################################################################
 # The range_predicate_2* rules below are in place to ensure we hit the         #
@@ -251,13 +251,13 @@ range_predicate2_list:
       ( range_predicate2_item and_or range_predicate2_list ) ;
 
 range_predicate2_item:
-        table1 . `pk` = _tinyint_unsigned |
-        table1 . `col_int_key` = _tinyint_unsigned |
-        table1 . `col_varchar_key` = _char |
+        table1 . _field_pk = _tinyint_unsigned |
         table1 . _field_int_indexed = _tinyint_unsigned |
-        table1 . `col_varchar_key` = _char |
+        table1 . _field_char_indexed = _char |
+        table1 . _field_int_indexed = _tinyint_unsigned |
+        table1 . _field_char_indexed = _char |
         table1 . _field_int_indexed = existing_table_item . _field_int_indexed |
-        table1 . `col_varchar_key` = existing_table_item . `col_varchar_key` ;
+        table1 . _field_char_indexed = existing_table_item . _field_char_indexed ;
 
 ################################################################################
 # The number and char_list rules are for creating WHERE conditions that test   #
@@ -320,7 +320,7 @@ order_by_item:
 
 any_item_order_by_item:
 	order_by_item |
-        table1 . _field_indexed /*+JavaDB:Postgres: NULLS FIRST*/ , existing_table_item .`pk` desc |
+        table1 . _field_indexed /*+JavaDB:Postgres: NULLS FIRST*/ , existing_table_item ._field_pk desc |
         table1 . _field_indexed desc |
         CONCAT( existing_table_item . _field_char, existing_table_item . _field_char ) /*+JavaDB:Postgres: NULLS FIRST*/ ;
 
