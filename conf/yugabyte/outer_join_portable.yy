@@ -247,8 +247,10 @@ where_item:
 	existing_table_item . _field_char not LIKE CONCAT(char_value, '%') |
 	existing_table_item . _field_char not LIKE CONCAT(char_value, '%', char_value) |
         existing_table_item . _field IS not NULL |
-	( existing_table_item . _field_int_indexed , existing_table_item . _field_char_indexed ) comparison_operator row_value |
-	( existing_table_item . _field_int_indexed , existing_table_item . _field_char_indexed ) not IN ( row_list ) ;
+	( existing_table_item . _field_int_indexed , existing_table_item . _field_char_indexed ) comparison_operator int_char_row_value |
+	( existing_table_item . _field_int_indexed , existing_table_item . _field_char_indexed ) not IN ( int_char_row_list ) |
+	( existing_table_item . _field_char_indexed , existing_table_item . _field_int_indexed ) comparison_operator char_int_row_value |
+	( existing_table_item . _field_char_indexed , existing_table_item . _field_int_indexed ) not IN ( char_int_row_list ) ;
 
 number_list:
         _digit | _digit | number | number_list, number ;
@@ -256,11 +258,17 @@ number_list:
 char_list:
         _char | char_list, _char ;
 
-row_list:
-	row_value | row_list, row_value;
+int_char_row_list:
+	int_char_row_value | int_char_row_list, int_char_row_value;
 
-row_value:
+int_char_row_value:
 	( number , char_value ) ;
+
+char_int_row_list:
+	char_int_row_value | char_int_row_list, char_int_row_value;
+
+char_int_row_value:
+	( char_value, number ) ;
 
 ################################################################################
 # YB: add missing tables referenced in the SELECT-list.                        #
