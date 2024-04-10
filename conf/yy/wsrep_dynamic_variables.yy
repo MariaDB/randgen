@@ -19,19 +19,25 @@ thread1_init:
     dynvar_initial_settings;
 
 query:
-                   SET SESSION dynvar_session_variable
-  | ==FACTOR:0.1== SET GLOBAL dynvar_global_variable
+    ==FACTOR:10==  SET SESSION dynvar_session_variable
+  | ==FACTOR:0.1== dynvar_global_setting
+  |                wsrep_table_action
 ;
 
+wsrep_table_action:
+  ==FACTOR:10== SELECT * FROM wsrep_table |
+                SET ROLE admin ;; DELETE FROM mysql.wsrep_streaming_log ;; SET ROLE NONE
+;
+
+wsrep_table:
+  mysql.wsrep_streaming_log | mysql.wsrep_cluster | mysql.wsrep_cluster_members ;
+
 dynvar_initial_settings:
-  dynvar_global_setting /* initial setting */ |
-  ==FACTOR:10== dynvar_global_setting /* initial setting */ ;; dynvar_initial_settings
+  ==FACTOR:2== dynvar_global_setting /* initial setting */ |
+  dynvar_global_setting /* initial setting */ ;; dynvar_initial_settings
 ;
 
 dynvar_global_setting:
-  SET GLOBAL dynvar_global_variable ;
-
-dynvar_global_variable_runtime:
   SET GLOBAL dynvar_global_variable ;
 
 dynvar_session_variable:
@@ -44,9 +50,8 @@ dynvar_session_variable:
   | WSREP_OSU_METHOD= { $prng->arrayElement(['TOI','RSU']) }
   | WSREP_RETRY_AUTOCOMMIT= { $prng->int(0,10000) }
   | WSREP_SYNC_WAIT= { $prng->int(0,15) }
-# These two don't seem settable, but let's keep them for now
-  | ==FACTOR:0.01== WSREP_TRX_FRAGMENT_SIZE= { $prng->arrayElement(['DEFAULT',0,1,16384,1048576]) } /* compatibility 10.4.2 */
-  | ==FACTOR:0.01== WSREP_TRX_FRAGMENT_UNIT= { $prng->arrayElement(['bytes',"'rows'",'segments']) } /* compatibility 10.4.2 */
+  | WSREP_TRX_FRAGMENT_SIZE= { $prng->arrayElement(['DEFAULT',0,1,16384,1048576]) } /* compatibility 10.4.2 */
+  | WSREP_TRX_FRAGMENT_UNIT= { $prng->arrayElement(['bytes',"'rows'",'statements']) } /* compatibility 10.4.2 */
 ;
 
 dynvar_global_variable:
@@ -58,10 +63,16 @@ dynvar_global_variable:
   | WSREP_CONVERT_LOCK_TO_TRX= dynvar_boolean
 # Unused
 # | wsrep_dbug_option
-  | WSREP_DEBUG= { $prng->arrayElement(['NONE','SERVER','TRANSACTION','STREAMING','CLIENT']) } /* compatibility 10.4.3 */
-  | WSREP_DESYNC= dynvar_boolean
+# Extremely verbose
+  | ==FACTOR:0.001== WSREP_DEBUG= { $prng->arrayElement(['NONE','SERVER','TRANSACTION','STREAMING','CLIENT']) } /* compatibility 10.4.3 */
+  |                  WSREP_DEBUG= NONE /* compatibility 10.4.3 */
+# Makes the cluster unusable
+  | ==FACTOR:0.001== WSREP_DESYNC= dynvar_boolean
+  |                  WSREP_DESYNC= 0
   | WSREP_DRUPAL_282555_WORKAROUND= dynvar_boolean
-  | WSREP_FORCED_BINLOG_FORMAT= { $prng->arrayElement(['STATEMENT','ROW','MIXED','NONE']) }
+# WSREP doesn't really work with STATEMENT?
+  | ==FACTOR:0.001== WSREP_FORCED_BINLOG_FORMAT= { $prng->arrayElement(['STATEMENT','ROW','MIXED','NONE']) }
+  |                  WSREP_FORCED_BINLOG_FORMAT= NONE
   | WSREP_GTID_DOMAIN_ID= { $prng->uint16(1,10) }
   | WSREP_GTID_MODE= dynvar_boolean
   | WSREP_IGNORE_APPLY_ERRORS= { $prng->uint16(0,7) }
@@ -94,11 +105,8 @@ dynvar_global_variable:
 # Deprecated in 10.6
 #  | wsrep_strict_ddl= dynvar_boolean /* compatibility 10.5 */
  | WSREP_TRX_FRAGMENT_SIZE= { $prng->uint16(0,2147483647) } /* compatibility 10.4 */
- | WSREP_TRX_FRAGMENT_UNIT= { $prng->arrayElement(['bytes','rows','statements']) } /* compatibility 10.4 */
+ | WSREP_TRX_FRAGMENT_UNIT= { $prng->arrayElement(['bytes',"'rows'",'statements']) } /* compatibility 10.4 */
 ;
-
-# EXTENDED_MORE added in 10.5
-
 
 dynvar_boolean:
     0 | 1 ;
