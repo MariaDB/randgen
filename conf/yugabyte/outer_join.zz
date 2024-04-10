@@ -28,6 +28,16 @@ $fields = {
         null => [undef ],
 };
 
+$indexes = {
+	 idx1 => ['int', 'bigint', 'varchar(10)'],
+	 idx2 => ['int', 'varchar(10)', 'varchar(1024)', 'bigint'],
+	 idx3 => ['decimal(5,2)', 'varchar(10)', 'bigint', 'int'],
+	 idx4 => ['bigint', 'varchar(10)', 'decimal(5,2)', 'varchar(1024)'],
+	 idx5 => ['varchar(1024)', 'int', 'varchar(10)'],
+	 idx6 => ['varchar(10)', 'bigint', 'varchar(1024)', 'int'],
+	 idx7 => ['varchar(1024)', 'varchar(10)', 'int'],
+};
+
 $data = {
         numbers => [ 'digit', 'digit', 'digit', 'tinyint', 'tinyint', 'decimal(4,2)', 'null', undef ],
         strings => [ 'letter', 'tinyint', 'string(4)', 'english' , 'string(1024)']

@@ -193,7 +193,7 @@ sub run {
 # eval()-ing it
 #  
     
-    my ($tables, $fields, $data, $schemas);  # Specification as read
+    my ($tables, $fields, $data, $schemas, $indexes);  # Specification as read
                                              # from the spec file.
     my (@table_perms, @field_perms, @data_perms, @schema_perms);	# Specification
                                                                     # after
@@ -532,8 +532,35 @@ sub run {
                                        " ON ".$table->[TABLE_NAME]."($1)");
                 }
             }
+
+            # Create composite key indexes
+            foreach my $x (keys %{$indexes}) {
+                my @key_field_list;
+                foreach my $dt (@{$indexes->{$x}}) {
+                    my @keyfields = grep { $_->[FIELD_TYPE] eq $dt
+                                               and $_->[FIELD_INDEX_SQL] =~ m/^key \((`[a-z0-9_]*)/ } @fields_copy;
+                    if (not @keyfields) {
+                        croak "$dt type key field specified for composite index not found";
+                    }
+                    push @key_field_list, $prng->arrayElement(\@keyfields);
+                }
+                my @key_name_list;
+                map {push @key_name_list, $_->[FIELD_NAME]} @key_field_list;
+                my @key_type_list;
+                foreach my $f (@key_field_list) {
+                    my $t = $f->[FIELD_TYPE];
+                    $t =~ s{[^A-Za-z0-9]}{_}sgio;
+                    $t =~ s{ }{_}sgio;
+                    $t =~ s{_+}{_}sgio;
+                    $t =~ s{_+$}{}sgio;
+                    push @key_type_list, $t;
+                }
+                my $sql = "CREATE INDEX idx_".$table->[TABLE_NAME]."_".join("_", @key_type_list).
+                            " ON ".$table->[TABLE_NAME]."(".join(",", @key_name_list).")";
+                say($sql) if rqg_debug();
+                $executor->execute($sql);
+            }
         }
-        
         
         
         if (defined $table_perms[TABLE_VIEWS]) {
@@ -676,9 +703,7 @@ sub run {
             $executor->execute("COMMIT");
             
             $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` ENABLE KEYS");
-        }
-
-        if ($executor->type == DB_POSTGRES) {
+        } elsif ($executor->type == DB_POSTGRES) {
             $executor->execute("ANALYZE ".$table->[TABLE_NAME]);
         }
     }
