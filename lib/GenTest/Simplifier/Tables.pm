@@ -140,6 +140,12 @@ sub simplify {
                 ## Find all fields in table
                 my $sth = $dbh->column_info(undef, $orig_database, $participating_table, undef);
                 my @actual_fields = map {$_->[COLUMN_INFO_COLUMN_NAME]} @{$sth->fetchall_arrayref};
+                if ($debug) {
+                    say("actual fields (".scalar(@actual_fields)."):");
+                    foreach my $f (@actual_fields) {
+                        say("  {$f}");
+                    }
+                }
 
                 # ## Find indexed fields in table
                 my %indices;
@@ -148,13 +154,11 @@ sub simplify {
                 map {$indices{$_->[STATISTICS_INFO_COLUMN_NAME]}{$_->[STATISTICS_INFO_INDEX_NAME]} = 1} @ind_info_array;
                 my %participating_field_indices;
                 foreach my $f (@participating_fields) {
-                    map {$participating_field_indices{$_} = 1} (keys %{%indices{$f}});
+                    my $ind = %indices{$f};
+                    next if not defined $ind;
+                    map {$participating_field_indices{$_} = 1} (keys %{$ind});
                 }
                 if ($debug) {
-                    say("actual fields (".scalar(@actual_fields)."):");
-                    foreach my $f (@actual_fields) {
-                        say("  {$f}");
-                    }
                     say("indices with participating fields (".scalar(%participating_field_indices)."):");
                     foreach my $idx (keys %participating_field_indices) {
                         say("  {$idx}");
