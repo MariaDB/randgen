@@ -99,7 +99,7 @@ sub descend {
 	my @children = $parent->children();
 	return if $#children == -1;
 
-        my $debug = 1;
+        my $debug = 0;
 
         if ($debug) {
                 my $parent_str = $parent->print();
@@ -125,6 +125,7 @@ sub descend {
  
 	foreach my $child_id (reverse (0..$#children)) {
 		my $orig_child = $children[$child_id];
+                next if $orig_child->print() =~ m{^\s*$}so;
                 say("child$child_id={".$orig_child->print()."}") if $debug;
 		
 		# Do not remove the AS from "table1 AS alias1"
@@ -147,6 +148,11 @@ sub descend {
 			$grandparent->[$parent_id + 1] = $orig_parent;
 
                         say("Evaluating new_query1={$new_query1}") if $debug;
+                        if ($new_query1 =~ m{^\s*(?:SELECT)*\s*$}sio) {
+                                say("  Removed too much. Take a step back and continue with child_id=".($child_id - 1)) if $debug;
+                                next;
+                        }
+
                         my $outcome = $simplifier->oracle($new_query1);
 			if ($outcome == ORACLE_ISSUE_STILL_REPEATABLE) {
 				# Problem is still present, make tree modification permanent
