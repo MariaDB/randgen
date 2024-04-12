@@ -62,7 +62,7 @@ sub run {
     $executor->execute("EXECUTE IMMEDIATE CONCAT('GRANT ALL ON ".$self->GDA_DEFAULT_DB.".* TO ',CURRENT_USER,' WITH GRANT OPTION')");
 
     $default_engine= $executor->execute('SELECT @@default_storage_engine');
-    my @engines= ($self->engine ? split /,/, $self->engine : '');
+    my @engines= ($self->engines && scalar(@{$self->engines}) ? @{$self->engines} : (''));
 
     my $res= STATUS_OK;
     foreach my $e (@engines) {
@@ -80,7 +80,7 @@ sub run {
       }
 
       foreach my $i (0..$#$rows) {
-        my $name= ($e eq $self->engine ? 't'.($i+1) : 't'.($i+1).'_'.$e);
+        my $name= scalar(@engines) > 1 ? 't'.($i+1).'_'.$e : 't'.($i+1);
         my $gen_table_result = $self->gen_table($executor, $name, $rows->[$i], $e, $self->GDA_DEFAULT_DB);
         return $gen_table_result if $gen_table_result >= STATUS_CRITICAL_FAILURE;
         $res= $gen_table_result if $gen_table_result > $res;

@@ -56,7 +56,7 @@ require Exporter;
   GD_SPEC
   GD_DEBUG
   GD_SEED
-  GD_ENGINE
+  GD_ENGINES
   GD_ROWS
   GD_VIEWS
   GD_SQLTRACE
@@ -125,7 +125,7 @@ use constant DATA_ENUM    => 4;
 use constant GD_SPEC => 0;
 use constant GD_DEBUG => 1;
 use constant GD_SEED => 3;
-use constant GD_ENGINE => 4;
+use constant GD_ENGINES => 4;
 use constant GD_ROWS => 5;
 use constant GD_VIEWS => 6;
 use constant GD_EXECUTOR_ID => 7;
@@ -150,7 +150,7 @@ sub new {
         'spec_file' => GD_SPEC,
         'debug' => GD_DEBUG,
         'seed' => GD_SEED,
-        'engine' => GD_ENGINE,
+        'engines' => GD_ENGINES,
         'executor_id' => GD_EXECUTOR_ID,
         'gis' => GD_GIS,
         'rows' => GD_ROWS,
@@ -199,7 +199,7 @@ sub doGenData {
   my @server_numbers= ($server_num ? ($server_num) : sort { $a <=> $b } keys %{$props->server_specific});
   my @generators= ();
   my $result= STATUS_OK;
-  foreach my $gd (@{$props->gendata}) {
+  foreach my $gd (@{$props->gendatas}) {
     my $gd_class= 'GendataFromFile';
     if ($gd eq 'simple') {
       $gd_class= 'GendataSimple';
@@ -217,7 +217,7 @@ sub doGenData {
          compatibility => $props->compatibility,
          compatibility_es => $props->compatibility_es,
          debug => $props->debug,
-         engine => $so->{engine},
+         engines => $so->{engines},
          executor_id => $i,
          gis => $so->{gis},
          partitions => $so->{partitions},
@@ -412,8 +412,8 @@ sub server {
   return $_[0]->[GD_SERVER];
 }
 
-sub engine {
-    return $_[0]->[GD_ENGINE];
+sub engines {
+    return $_[0]->[GD_ENGINES];
 }
 
 sub rows {

@@ -65,7 +65,7 @@ sub run {
     # PS is a workaround for MENT-30190
     $executor->execute("EXECUTE IMMEDIATE CONCAT('GRANT ALL ON ".$self->GDS_DEFAULT_DB.".* TO ',CURRENT_USER,' WITH GRANT OPTION')");
 
-    my @engines= ($self->engine ? split /,/, $self->engine : '');
+    my @engines= ($self->engines && scalar(@{$self->engines}) ? @{$self->engines} : (''));
 
     foreach my $e (@engines) {
       if (isFederatedEngine($e) and not $remote_created) {
@@ -82,7 +82,7 @@ sub run {
       }
 
       foreach my $i (0..$#$names) {
-        my $name= ($e eq $self->engine ? $names->[$i] : $names->[$i].'_'.$e);
+        my $name= scalar(@engines) > 1 ? $names->[$i].'_'.$e : $names->[$i];
         my $gen_table_result = $self->gen_table($executor, $name, $rows->[$i], $e, $self->GDS_DEFAULT_DB);
         return $gen_table_result if $gen_table_result != STATUS_OK;
       }

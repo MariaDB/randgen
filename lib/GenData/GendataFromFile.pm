@@ -135,10 +135,15 @@ sub run {
         push(@schema_perms, $executor->defaultSchema());
     }
 
-    if ((exists $tables->{engines}) && (defined $self->engine())) {
-      sayWarning("Engine(s) from test parameters will be ignored, the value from .zz file will be used instead: @{$tables->{engines}}");
+    my $engines;
+    if (exists $tables->{engines}) {
+      sayWarning("Engine(s) from test parameters (if there are any) will be ignored, the value from .zz file will be used instead: @{$tables->{engines}}");
+      $engines= $tables->{engines};
+    } elsif ((defined $self->engines()) && scalar(@{$self->engines()})) {
+      $engines= [ @{$self->engines()} ];
+    } else {
+      $engines= [ '' ];
     }
-    my $engines= (exists $tables->{engines}) ? $tables->{engines} : [ split /,/, $self->engine() ];
     foreach my $e (@$engines) {
       if (isFederatedEngine($e)) {
         foreach my $s (@schema_perms) {

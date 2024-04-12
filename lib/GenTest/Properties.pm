@@ -183,8 +183,8 @@ sub init {
               'base_port',
               'grammars',
               'dsn',
-              'engine',
-              'gendata',
+              'engines',
+              'gendatas',
               'generator',
               'gis',
               'redefines',
@@ -245,10 +245,10 @@ sub setPropertiesFromHash {
   $gentestProps->property('base_port',$props->{base_port}) if defined $props->{base_port};
   $gentestProps->property('debug',1) if defined $props->{debug};
   $gentestProps->property('duration',$props->{duration}) if defined $props->{duration};
-  $gentestProps->property('engine',$props->{engine}) if $props->{engine};
+  $gentestProps->property('engines',$props->{engines}) if $props->{engines};
   $gentestProps->property('filters',$props->{filters}) if defined $props->{filters};
   $gentestProps->property('freeze_time',$props->{freeze_time}) if defined $props->{freeze_time};
-  $gentestProps->property('gendata',$props->{gendata}) if exists $props->{gendata};
+  $gentestProps->property('gendatas',$props->{gendatas}) if exists $props->{gendatas};
   $gentestProps->property('generator',($props->{generator} || 'FromGrammar'));
   $gentestProps->property('gis',1) if defined $props->{gis};
   $gentestProps->property('grammars',$props->{grammars});

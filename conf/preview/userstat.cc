@@ -129,7 +129,7 @@ $combinations = [
         [ '--scenario=Galera' ],
         [ '--filter=conf/ff/replication.ff' ],
         [ '--engine=InnoDB' ],
-        [ '--grammar=conf/yy/wsrep.yy', '' ],
+        [ '--engine=Aria,MyISAM --mysqld=--loose-wsrep-mode="REPLICATE_ARIA,REPLICATE_MYISAM"','--grammar=conf/yy/wsrep.yy','' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],

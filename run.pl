@@ -97,7 +97,7 @@ sub run {
 
   %server_options= (
     basedir     => undef,
-    engine      => undef,
+    engines     => undef,
     gis         => undef,
     manual_gdb  => undef,
     mysqld      => undef,
@@ -115,7 +115,7 @@ sub run {
     #
     # Server-related options
     'basedir=s' => \$server_options{basedir},
-    'engine=s' => \$server_options{engine},
+    'engines=s@' => \@{$server_options{engines}},
     'gis!'     => \$server_options{gis},
     'manual-gdb|manual_gdb' => \$server_options{manual_gdb},
     'mysqld=s@' => \@{$server_options{mysqld}},
@@ -137,7 +137,7 @@ sub run {
     'filters=s@'    => \@{$props->{filters}},
     'freeze_time|freeze-time' => \$props->{freeze_time},
     'genconfig=s' => \$genconfig,
-    'gendata=s@' => \@{$props->{gendata}},
+    'gendatas=s@' => \@{$props->{gendatas}},
     'grammars=s@' => \@{$props->{grammars}},
     'hashicorp|with-hashicorp|with_hashicorp|vault' => \$hashicorp,
     'help' => \$help,
@@ -190,6 +190,25 @@ sub run {
 
   unless ($props->{vardir}) {
     return help("Vardir must be defined");
+  }
+
+  #-------------------
+  # Multiple-value parameters may be given as comma-separated strings.
+  # Convert to proper arrays and remove duplicates
+
+  foreach my $p (qw(engines filters gendatas grammars redefines reporters transformers validators variators)) {
+    my %vals= ();
+    if (exists $props->{$p}) {
+      foreach my $v (@{$props->{$p}}) {
+        map { $vals{$_}=1 } (split ',', $v);
+      }
+      $props->{$p}= [ keys %vals ];
+    } elsif (exists $server_options{$p}) {
+      foreach my $v (@{$server_options{$p}}) {
+        map { $vals{$_}=1 } (split ',', $v);
+      }
+      $server_options{$p}= [ keys %vals ];
+    }
   }
 
   #-------------------
@@ -337,15 +356,6 @@ sub run {
       # Better to use 1 instead of empty string for comparisons later.
       $props->{sqltrace} = 1;
     }
-  }
-
-  ## Multiple-value parameters may be given as comma-separated strings
-  foreach my $p (qw(engines filters gendatas grammars redefines reporters transformers validators variators)) {
-    my @vals= ();
-    foreach my $v (@{$props->{$p}}) {
-      push @vals, split ',', $v;
-    }
-    $props->{$p}= [ @vals ];
   }
 
   if ($genconfig) {
@@ -532,10 +542,10 @@ Run a complete random query generation test scenario
 
     Options related to data generation:
 
-    --engine             : Table engine(s) to use when creating tables
+    --engines            : Table engine(s) to use when creating tables
                            with gendata (default no ENGINE in CREATE TABLE).
                            Comma-separated list
-    --gendata            : 'simple', 'advanced', or a path to .zz template
+    --gendatas           : 'simple', 'advanced', or a path to .zz template
                            or SQL file. Can be provided multiple times
     --gis                : Create GIS columns upon data generation
                            (only affects gendata=advanced).
@@ -560,11 +570,11 @@ Run a complete random query generation test scenario
                         from the generation mechanisms aware of the option
     --duration        : Approximate duration of the test run in seconds.
                         Time for data generation is not included
-    --filter          : Suppress queries which match given patterns.
+    --filters         : Suppress queries which match given patterns.
                         Multiple filters can be provided
     --freeze_time     : Freeze time for each query so that CURRENT_TIMESTAMP
                         gives the same result for all transformers/validators
-    --grammar         : Grammar file to use when generating queries
+    --grammars        : Grammar file to use when generating queries
                         (can be used multiple times)
     --hashicorp       : Prepare Hashicorp vault for the test
     --help            : Print this help message and exit
@@ -579,16 +589,16 @@ Run a complete random query generation test scenario
     --parser-mode     : 'mariadb' or 'oracle'
     --ps-protocol     : Use connector's PS protocol for the test flow
     --queries         : Number of queries to execute per thread
-    --redefine        : Grammar file(s) to redefine and/or add rules
+    --redefines       : Grammar file(s) to redefine and/or add rules
                         to the given grammars
-    --reporter        : Reporters to use (can be provided multiple times)
+    --reporters       : Reporters to use (can be provided multiple times)
     --scenario        : Test scenario to execute
     --seed            : Initial seed for random generation
     --threads         : Number of threads for the test flow
-    --transformer     : Transformers to use (turns on --validator=Transformer).
+    --transformers    : Transformers to use (turns on --validator=Transformer).
                         Can be provided multiple times
-    --validator       : Validators to use. Can be provided multiple times
-    --variator        : Variators to use. Can be provided multiple times
+    --validators      : Validators to use. Can be provided multiple times
+    --variators       : Variators to use. Can be provided multiple times
     --vardir          : Full path to the vardir (will be emptied)
 
     Options related to re-running and reproducing:
