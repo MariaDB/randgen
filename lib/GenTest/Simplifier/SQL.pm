@@ -99,12 +99,33 @@ sub descend {
 	my @children = $parent->children();
 	return if $#children == -1;
 
+        my $debug = 1;
+
+        if ($debug) {
+                my $parent_str = $parent->print();
+                my $orig_parent_str;
+                my $grandparent_str;
+		if (defined $grandparent) {
+                        $orig_parent_str = $grandparent->[$parent_id + 1]->print();
+                        if (ref($grandparent) eq 'DBIx::MyParsePP::Rule') {
+                                $grandparent_str = $grandparent->print();
+                        } elsif (ref($grandparent) eq 'ARRAY') {
+                                $grandparent_str = "[{".join("} , {", map { $_->print() } grep { defined $_ } @{$grandparent})."}]";
+                        } else {
+                                $grandparent_str = ref($grandparent);
+                        }
+                }
+                say("descend: parent:{$parent_str}  grandparent:{$grandparent_str}  parent_id:$parent_id");
+                say("*** \$parent ne \$grandparent->[\$parent_id + 1] ({$orig_parent_str}) *** ") if $parent_str ne $orig_parent_str;
+        }
+
 	
 	# We start chopping from the end in order to remove GROUP BY/HAVING, etc., before we 
 	# start chewing on the SELECT list and the list of joined tables
  
 	foreach my $child_id (reverse (0..$#children)) {
 		my $orig_child = $children[$child_id];
+                say("child$child_id={".$orig_child->print()."}") if $debug;
 		
 		# Do not remove the AS from "table1 AS alias1"
 		next if $orig_child->print() =~ m{^\s*AS}so;
@@ -126,11 +147,22 @@ sub descend {
 			my $new_query1 = $query_root->toString();
 			$grandparent->[$parent_id + 1] = $orig_parent;
 
-			if ($simplifier->oracle($new_query1) == ORACLE_ISSUE_STILL_REPEATABLE) {
+                        say("Evaluating new_query1={$new_query1}") if $debug;
+                        my $outcome = $simplifier->oracle($new_query1);
+			if ($outcome == ORACLE_ISSUE_STILL_REPEATABLE) {
 				# Problem is still present, make tree modification permanent
 				$grandparent->[$parent_id + 1] = $orig_child;
+                                say("  Problem is still present(1). Descend and continue with parent_id as the child_id=$parent_id") if $debug;
 				$simplifier->descend($orig_child, $grandparent, $parent_id);
-			}
+                        } else {
+                                if ($debug) {
+                                        if ($outcome == ORACLE_ISSUE_STATUS_UNKNOWN) {
+                                            say("  Status unknown(1) (syntax error, etc.)");
+                                        } else {
+                                            say("  Problem is no longer present(1)");
+                                        }
+                                }
+                        }
 		}
 
 		# remove the child altogether
@@ -142,14 +174,18 @@ sub descend {
 
 		next if $removed_fragment2 =~ m{^\s*$}sio;	# Empty fragment, skip
 
+                say("Evaluating new_query2={$new_query2}") if $debug;
 		if ($new_query2 =~ m{^\s*$}sio) {		# New query is empty, we amputated too much
+                        say("  Removed too much. Take a step back and continue with child_id=$child_id") if $debug;
 			$simplifier->descend($orig_child, $parent, $child_id);
 		}
 
 		if ($simplifier->oracle($new_query2) == ORACLE_ISSUE_STILL_REPEATABLE) {
+                        say("  Problem is still present(2)") if $debug;
 			# Problem is still present, make tree modification permanent
 			$parent->[$child_id + 1] = $empty_child;
 		} else {
+                        say("  Problem is no longer present(2). Continue with child_id=$child_id") if $debug;
 			$simplifier->descend($orig_child, $parent, $child_id);
 		}
 	}
