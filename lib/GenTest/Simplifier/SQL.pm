@@ -138,11 +138,10 @@ sub descend {
 		# that use InnoDB tables and have unstable query plans due to unstable InnoDB row estimates
 #		next if $orig_child->print() =~ m{^\s*FORCE}so; 
 
-		my $orig_parent = $grandparent->[$parent_id + 1];
-
-		if (defined $grandparent) {	
+		if (defined $grandparent and scalar(@{$grandparent}) > 0) {
 			# replace parent with child
 			my $child_str = $orig_child->toString();
+                        my $orig_parent = $grandparent->[$parent_id + 1];
 			$grandparent->[$parent_id + 1] = $orig_child;
 			my $new_query1 = $query_root->toString();
 			$grandparent->[$parent_id + 1] = $orig_parent;
