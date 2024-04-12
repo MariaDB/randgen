@@ -394,6 +394,10 @@ MDEV-32424:
 MDEV-32424:
 =~ Assertion \`select_lex->select_number == (0x7fffffff \* 2U + 1U) \|\| select_lex->select_number == 0x7fffffff \|\| !output \|\| !output->get_select(select_lex->select_number) || output->get_select(select_lex->select_number)->select_lex == select_lex'
 =~ JOIN::save_explain_data
+MDEV-32395:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ update_depend_map_for_order
+=~ JOIN::optimize_inner
 MDEV-32384:
 =~ AddressSanitizer|signal
 =~ Field_.*::cmp
@@ -865,7 +869,7 @@ MDEV-31180:
 MDEV-31178:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ fix_fields_for_tvc
-=~ TABLE_LIST::handle_derived
+=~ TABLE_LIST::handle_derived|LEX::handle_list_of_derived
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-31178:
 =~ signal|AddressSanitizer|MemorySanitizer
