@@ -48,20 +48,24 @@ my $prefix = "";
 
 
 # for an intermittent crash
-my $trials = 10;
+my $trials = 100;
 
+# Optional warning message string pattern
+my $desired_warningstr = "problem in aloc set";
 
 # Maximum number of seconds a query will be allowed to proceed. It is assumed that most crashes will happen immediately after takeoff
 my $timeout = 10000;            # 10 sec
 
-# my $start_server_cmd = "./bin/yb-ctl stop; ./bin/yb-ctl start --tserver_flags 'ysql_beta_features=1,ysql_log_statement=all' --timeout-processes-running-sec 600 --timeout-yb-admin-sec 600";
-my $start_server_cmd = "./bin/yb-ctl destroy; ./bin/yb-ctl start --tserver_flags 'ysql_beta_features=1,ysql_log_statement=all' --timeout-processes-running-sec 600 --timeout-yb-admin-sec 600";
+my $start_server_cmd = "./bin/yb-ctl stop; ./bin/yb-ctl start --tserver_flags 'ysql_beta_features=1,ysql_log_statement=all' --timeout-processes-running-sec 600 --timeout-yb-admin-sec 600";
+
 my $wait_server_cmd = "until (psql yugabyte -U yugabyte -h 127.0.0.1 -p 5433 -c 'select pg_backend_pid()' 2>&1)|grep -q '(1 row)' >/dev/null;do (echo -n .; sleep 2); done";
 
 my $orig_database = 'test';
 my $new_database = 'crash';
 
 my $executor;
+
+my $debug = 0;
 
 start_server();
 
@@ -70,14 +74,19 @@ my $simplifier = GenTest::Simplifier::SQL->new(
 		my $oracle_query = shift;
 
 		print ".";
+                my $warning;
+                local $SIG{__WARN__} = sub { $warning = $_[0]; };
 
 		foreach my $trial (1..$trials) {
                     my $dbh = $executor->dbh();
                     
+                    if ($desired_warningstr) {
+                        $dbh->{PrintError} = 1;
+                    }
                     $dbh->do("SET statement_timeout = $timeout");
 
                     if ($pre_sql_cmds) {
-                        $executor->dbh()->do($pre_sql_cmds);
+                        $dbh->do($pre_sql_cmds);
                     }
 
                     my $oracle_result = $executor->execute($prefix.$oracle_query);
@@ -88,7 +97,13 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                     # $executor->execute("EXECUTE prep_stmt");
                     # $executor->execute("DEALLOCATE PREPARE prep_stmt");
 
-                    if (!$executor->dbh()->ping()) {
+                    if (defined $warning && $warning =~ /$desired_warningstr/) {
+                        print("ISSUE_STILL_REPEATABLE (desired warning)\n") if $debug;
+                        return ORACLE_ISSUE_STILL_REPEATABLE;
+                    }
+
+                    if (!$dbh->ping()) {
+                        print("ISSUE_STILL_REPEATABLE (server died)\n") if $debug;
                         start_server();
                         return ORACLE_ISSUE_STILL_REPEATABLE;
                     }
@@ -100,6 +115,7 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                     print "*";
 
                 }
+                print("ISSUE_NO_LONGER_REPEATABLE\n") if $debug;
                 return ORACLE_ISSUE_NO_LONGER_REPEATABLE;
 	}
 );
@@ -126,14 +142,22 @@ print $simplified_test;
 
 sub start_server {
 	chdir($basedir) or die "Unable to chdir() to $basedir: $!";
+        print("Waiting for the server...");
         system($wait_server_cmd);
+        print("Connecting to the server...");
 	$executor = GenTest::Executor::Postgres->new( dsn => $dsn, end_time => time() + $duration );
 	$executor->init() if defined $executor;
-
 	if ((not defined $executor) || (not defined $executor->dbh()) || (!$executor->dbh()->ping())) {
-            system($start_server_cmd);
-            system($wait_server_cmd);
-            $executor = GenTest::Executor::Postgres->new( dsn => $dsn, end_time => time() + $duration );
-            $executor->init();
-	}
+                system($start_server_cmd);
+                system($wait_server_cmd);
+                $executor = GenTest::Executor::Postgres->new( dsn => $dsn, end_time => time() + $duration );
+                $executor->init();
+                if ((not defined $executor) || (not defined $executor->dbh()) || (!$executor->dbh()->ping())) {
+                        print("Problem connecting to the restarted server.\n");
+                } else {
+                        print("Connected.\n");
+                }
+	} else {
+                print("Connected.\n");
+        }
 }
