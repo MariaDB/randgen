@@ -24,7 +24,6 @@ MDEV-33868:
 MDEV-33858:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ alloc_root
-=~ st_select_lex
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-33641:
 =~ Got an error from thread_id=
@@ -3062,6 +3061,9 @@ MDEV-22279:
 =~ set_field_mdl_type
 =~ table_metadata_locks::read_row_values|PFS_engine_table::read_row
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-26266:
+=~ Assertion \`state() == s_preparing \|\| (is_xa() && state() == s_replaying) \|\| (ret && (state() == s_must_abort \|\| state() == s_must_replay \|\| state() == s_cert_failed \|\| state() == s_aborted))'
+=~ wsrep::transaction::before_prepare
 MDEV-22262:
 =~ signal 11|AddressSanitizer
 =~ handler::ha_table_flags|ha_partition::info|ha_partition::compare_number_of_records
