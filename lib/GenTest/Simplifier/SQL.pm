@@ -37,6 +37,7 @@ use constant SIMPLIFIER_CACHE		=> 1;
 use constant SIMPLIFIER_QUERY_ROOT	=> 2;
 use constant SIMPLIFIER_PASSING_QUERIES	=> 3;
 use constant SIMPLIFIER_FAILING_QUERIES	=> 4;
+use constant SIMPLIFIER_DEBUG    	=> 5;
 
 1;
 
@@ -45,7 +46,8 @@ sub new {
 
 	my $simplifier = $class->SUPER::new({
 		'oracle'	=> SIMPLIFIER_ORACLE,
-		'cache'		=> SIMPLIFIER_CACHE
+		'cache'		=> SIMPLIFIER_CACHE,
+                'debug'         => SIMPLIFIER_DEBUG,
 	}, @_);
 
 	$simplifier->[SIMPLIFIER_CACHE] = {} if not defined $simplifier->[SIMPLIFIER_CACHE];
@@ -83,6 +85,7 @@ sub simplify {
 
 	my $final_query = $root_shrunk->toString();
 
+        say("Evaluating final_query={$final_query}") if $simplifier->[SIMPLIFIER_DEBUG];
 	if ($simplifier->oracle($final_query) != ORACLE_ISSUE_STILL_REPEATABLE) {
 		warn("Final query $final_query failed to reproduce the same issue.");
 		return undef;
@@ -99,7 +102,7 @@ sub descend {
 	my @children = $parent->children();
 	return if $#children == -1;
 
-        my $debug = 0;
+        my $debug = $simplifier->[SIMPLIFIER_DEBUG];
 
         if ($debug) {
                 my $parent_str = $parent->print();
@@ -180,7 +183,7 @@ sub descend {
 		next if $removed_fragment2 =~ m{^\s*$}sio;	# Empty fragment, skip
 
                 say("Evaluating new_query2={$new_query2}") if $debug;
-		if ($new_query2 =~ m{^\s*$}sio) {		# New query is empty, we amputated too much
+		if ($new_query2 =~ m{^\s*(?:SELECT)*\s*$}sio) {	# New query is empty, we amputated too much
                         say("  Removed too much. Take a step back and continue with child_id=$child_id") if $debug;
 			$simplifier->descend($orig_child, $parent, $child_id);
 		}

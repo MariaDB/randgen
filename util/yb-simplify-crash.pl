@@ -96,7 +96,6 @@ my $simplifier_test = GenTest::Simplifier::Test->new(
 );
 
 my $simplified_test = $simplifier_test->simplify();
-$simplified_test = $prefix.$simplified_test;
 
 print "Simplified test\n\n";
 print $simplified_test;

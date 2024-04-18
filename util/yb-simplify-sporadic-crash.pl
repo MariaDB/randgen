@@ -58,10 +58,16 @@ my $timeout = 10000;            # 10 sec
 
 my $start_server_cmd = "./bin/yb-ctl stop; ./bin/yb-ctl start --tserver_flags 'ysql_beta_features=1,ysql_log_statement=all' --timeout-processes-running-sec 600 --timeout-yb-admin-sec 600";
 
-my $wait_server_cmd = "until (psql yugabyte -U yugabyte -h 127.0.0.1 -p 5433 -c 'select pg_backend_pid()' 2>&1)|grep -q '(1 row)' >/dev/null;do (echo -n .; sleep 2); done";
+my $wait_server_cmd = "until (psql yugabyte -U yugabyte -h 127.0.0.1 -p 5433 -c 'select pg_backend_pid()' 2>&1)|grep -q '(1 row)' >/dev/null;do (echo .; sleep 2); done";
 
 my $orig_database = 'test';
 my $new_database = 'crash';
+
+my @unknown_outcomes = (
+	STATUS_SYNTAX_ERROR,
+        STATUS_SEMANTIC_ERROR,
+        STATUS_UNKNOWN_ERROR,
+);
 
 my $executor;
 
@@ -70,6 +76,7 @@ my $debug = 0;
 start_server();
 
 my $simplifier = GenTest::Simplifier::SQL->new(
+        # debug => 1,
 	oracle => sub {
 		my $oracle_query = shift;
 
@@ -86,7 +93,7 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                     $dbh->do("SET statement_timeout = $timeout");
 
                     if ($pre_sql_cmds) {
-                        $dbh->do($pre_sql_cmds);
+                        $executor->execute($pre_sql_cmds);
                     }
 
                     my $oracle_result = $executor->execute($prefix.$oracle_query);
@@ -98,24 +105,29 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                     # $executor->execute("DEALLOCATE PREPARE prep_stmt");
 
                     if (defined $warning && $warning =~ /$desired_warningstr/) {
-                        print("ISSUE_STILL_REPEATABLE (desired warning)\n") if $debug;
+                        print(STDERR "ISSUE_STILL_REPEATABLE trials=$trial (desired warning)\n") if $debug;
                         return ORACLE_ISSUE_STILL_REPEATABLE;
                     }
 
-                    if (!$dbh->ping()) {
-                        print("ISSUE_STILL_REPEATABLE (server died)\n") if $debug;
+                    if (!$executor->dbh()->ping()) {
+                        print(STDERR "ISSUE_STILL_REPEATABLE trials=$trial (server died)\n") if $debug;
                         start_server();
                         return ORACLE_ISSUE_STILL_REPEATABLE;
                     }
 
-                    # my $outcome = $oracle_result->status();
-                    # if ($outcome == STATUS_SYNTAX_ERROR) {
-                    #     return ORACLE_ISSUE_STILL_REPEATABLE;
-                    # }
+                    my $outcome = $oracle_result->status();
+                    if ($outcome != STATUS_OK) {
+                        foreach my $unknown_outcome (@unknown_outcomes) {
+                            if ($outcome == $unknown_outcome) {
+                                print(STDERR "ISSUE_STATUS_UNKNOWN (invalid query)\n") if $debug;
+                                return ORACLE_ISSUE_STATUS_UNKNOWN;
+                            }
+                        }
+                        print(STDERR "outcome=$outcome  err=".$oracle_result->err."  state=".$oracle_result->sqlstate."  errstr=".$oracle_result->errstr."\n") if $debug;
+                    }
                     print "*";
-
                 }
-                print("ISSUE_NO_LONGER_REPEATABLE\n") if $debug;
+                print(STDERR "ISSUE_NO_LONGER_REPEATABLE: {$oracle_query}\n") if $debug;
                 return ORACLE_ISSUE_NO_LONGER_REPEATABLE;
 	}
 );
@@ -135,16 +147,15 @@ my $simplifier_test = GenTest::Simplifier::Test->new(
 );
 
 my $simplified_test = $simplifier_test->simplify();
-$simplified_test = $prefix.$simplified_test;
 
 print "Simplified test\n\n";
 print $simplified_test;
 
 sub start_server {
 	chdir($basedir) or die "Unable to chdir() to $basedir: $!";
-        print("Waiting for the server...");
+        print(STDERR "Waiting for the server...");
         system($wait_server_cmd);
-        print("Connecting to the server...");
+        print(STDERR "Connecting to the server...");
 	$executor = GenTest::Executor::Postgres->new( dsn => $dsn, end_time => time() + $duration );
 	$executor->init() if defined $executor;
 	if ((not defined $executor) || (not defined $executor->dbh()) || (!$executor->dbh()->ping())) {
@@ -153,11 +164,11 @@ sub start_server {
                 $executor = GenTest::Executor::Postgres->new( dsn => $dsn, end_time => time() + $duration );
                 $executor->init();
                 if ((not defined $executor) || (not defined $executor->dbh()) || (!$executor->dbh()->ping())) {
-                        print("Problem connecting to the restarted server.\n");
+                        print(STDERR "Problem connecting to the restarted server.\n");
                 } else {
-                        print("Connected.\n");
+                        print(STDERR "Connected.\n");
                 }
 	} else {
-                print("Connected.\n");
+                print(STDERR "Connected.\n");
         }
 }
