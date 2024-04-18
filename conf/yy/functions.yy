@@ -23,6 +23,7 @@ query:
   |                 { _set_db('ANY') }        { $tmp_table++; '' } func_create_and_drop
   |                 { _set_db('NON-SYSTEM') } func_alter_table
   | ==FACTOR:2==                { _set_db('NON-SYSTEM') } func_dml
+  | ==FACTOR:10==               { _set_db('NON-SYSTEM') } func_dml_function
   | ==FACTOR:0.01== { _set_db('ANY') }        func_set_binlog_variables
 ;
 
@@ -56,6 +57,17 @@ func_create_and_drop:
 func_dml:
      CREATE OR REPLACE __temporary(50) TABLE { 'test.tmp'.$tmp_table } SELECT _field AS f1, _field AS f2, _field AS f3 FROM _table LIMIT 2
    ;; INSERT INTO { 'test.tmp'.$tmp_table } VALUES (_anyvalue, _anyvalue, func_arbitrary_args(f1,f2))
+;
+
+func_dml_function:
+   CREATE OR REPLACE __temporary(50) TABLE { 'test.tmp'.$tmp_table } SELECT _field AS f1, _field AS f2, _field AS f3 FROM _table LIMIT 2
+   ;; CREATE OR REPLACE FUNCTION { 'test.dml_function_'.abs($$) } () RETURNS INT
+      BEGIN
+        INSERT INTO { 'test.tmp'.$tmp_table } VALUES (_anyvalue, _anyvalue, func_arbitrary_args(f1,f2))
+      ; UPDATE { 'test.tmp'.$tmp_table }  SET f1 = func_func, f2 = func_func, f3 = func_func
+      ; RETURN _digit
+      ; END
+   ;; SELECT { 'test.dml_function_'.abs($$) } ();
 ;
 
 func_select_or_explain_select:
