@@ -48,6 +48,7 @@ $combinations = [
 
 # New
   [ '--grammar=conf/preview/timestamp.yy:0.05' ],
+  [ '--grammar=conf/yy/admin.yy --filter=conf/ff/optimize.ff'],
 
   ##### Engines and scenarios
   [

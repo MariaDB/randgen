@@ -53,6 +53,7 @@ $combinations = [
 
 # New
   [ '--grammar=conf/preview/timestamp.yy:0.05' ],
+  [ '--grammar=conf/yy/admin.yy --filter=conf/ff/optimize.ff'],
 
   ##### Engines and scenarios
   [
@@ -108,7 +109,23 @@ $combinations = [
         [ @{$options{optional_encryption}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{debug_grammars}} ],
       ],
+      more_recovery => [
+        [ @{$options{scenario_crash_combinations}} ],
+        [ '--engine=InnoDB', '--engine=Aria --mysqld=--default-storage-engine=Aria', '--engine=InnoDB,Aria' ],
+        [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{debug_grammars}} ],
+      ],
       upgrade_backup => [
+        [ @{$options{scenario_mariabackup_combinations}}, @{$options{scenario_upgrade_combinations}} ],
+        [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
+        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
+      ],
+      more_upgrade_backup => [
         [ @{$options{scenario_mariabackup_combinations}}, @{$options{scenario_upgrade_combinations}} ],
         [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
         [ @{$options{engine_basic_combinations}} ],
@@ -129,7 +146,7 @@ $combinations = [
         [ '--scenario=Galera' ],
         [ '--filter=conf/ff/replication.ff' ],
         [ '--engine=InnoDB' ],
-        [ '--grammar=conf/yy/wsrep.yy', '' ],
+        [ '--engine=Aria,MyISAM --mysqld=--loose-wsrep-mode="REPLICATE_ARIA,REPLICATE_MYISAM"','--grammar=conf/yy/wsrep.yy','' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
