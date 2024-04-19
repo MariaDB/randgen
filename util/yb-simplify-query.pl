@@ -64,6 +64,8 @@ my $prefix = "";
 ## $prefix = "/*+ Set(enable_hashjoin off) Set(enable_mergejoin off) Set(enable_material off) */";
 ## $prefix = "EXPLAIN ";
 
+my $add_nulls_first; # = 1;
+
 my @dsns = (
 	'dbi:Pg:host=127.0.0.1;port=5433;user=yugabyte;database=test', # YugabyteDB
 	'dbi:Pg:host=127.0.0.1;port=5432;user=postgres;database=test', # Postgres
@@ -102,18 +104,21 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                             $executor->dbh()->do($pre_sql_cmds);
                         }
 
-                        # Add NULLS FIRST to each ORDER BY key item (Workaround for
-                        # NULLS FIRST not being supported by DBIx::MyParsePP)
-                        # 
-                        # $oracle_query =~ s{\s*\n\s*}{ }go;
-                        # my $order_by = ($oracle_query =~ s{.*ORDER BY\s+(.*)}{$1}or);
-                        # $order_by =~ s{\s+LIMIT\s+\d+}{}o;
-                        # # print "\$order_by={$order_by}\n";
-                        # my $new_order_by = ($order_by =~ s{([^,]+)}{$1 NULLS FIRST}gor);
-                        # $oracle_query =~ s{ORDER BY\s+$order_by}{ORDER BY $new_order_by}o;
-                        # # print "order_by={$order_by} new_order_by={$new_order_by} \$oracle_query={$oracle_query}\n";
-
-			my $oracle_result = $executor->execute($prefix.$oracle_query, 1);
+                        if ($add_nulls_first) {
+                            # Add NULLS FIRST to each ORDER BY key item (Workaround for
+                            # NULLS FIRST not being supported by DBIx::MyParsePP)
+                            # 
+                            my $new_query = ($oracle_query =~ s{/\*.+\*/}{}sor);
+                            $new_query =~ s{\s*\n\s*}{ }go;
+                            my $order_by = ($new_query =~ s{.*\s+ORDER\s+BY\s+(\S.*)}{$1}ior);
+                            $order_by =~ s{\s+LIMIT\s+\d+}{}io;
+                            my $new_order_by = ($order_by =~ s{([^,]+)}{$1 NULLS FIRST}gior);
+                            $new_query =~ s{ORDER\s+BY .*}{ORDER BY $new_order_by}io;
+                            # print "oracle_query={$oracle_query}\norder_by={$order_by}\nnew_order_by={$new_order_by}\n\$new_query={$new_query}\n";
+                            my $oracle_result = $executor->execute($prefix.$new_query, 1);
+                        } else {
+                            my $oracle_result = $executor->execute($prefix.$oracle_query, 1);
+                        }
 			push @oracle_results, $oracle_result;
                     }
 
