@@ -102,6 +102,9 @@ MDEV-33330:
 =~ THD::binlog_need_stmt_format
 =~ Sql_cmd_dml::execute
 =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-33289:
+=~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name.str, MDL_SHARED) \|\| thd->mdl_context\.is_lock_warrantee(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
+=~ close_thread_table
 MDEV-33323:
 =~ AddressSanitizer|signal
 =~ grn_bulk_write
