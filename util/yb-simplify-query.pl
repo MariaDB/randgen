@@ -104,6 +104,7 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                             $executor->dbh()->do($pre_sql_cmds);
                         }
 
+                        my $oracle_result;
                         if ($add_nulls_first) {
                             # Add NULLS FIRST to each ORDER BY key item (Workaround for
                             # NULLS FIRST not being supported by DBIx::MyParsePP)
@@ -115,9 +116,9 @@ my $simplifier = GenTest::Simplifier::SQL->new(
                             my $new_order_by = ($order_by =~ s{([^,]+)}{$1 NULLS FIRST}gior);
                             $new_query =~ s{ORDER\s+BY .*}{ORDER BY $new_order_by}io;
                             # print "oracle_query={$oracle_query}\norder_by={$order_by}\nnew_order_by={$new_order_by}\n\$new_query={$new_query}\n";
-                            my $oracle_result = $executor->execute($prefix.$new_query, 1);
+                            $oracle_result = $executor->execute($prefix.$new_query, 1);
                         } else {
-                            my $oracle_result = $executor->execute($prefix.$oracle_query, 1);
+                            $oracle_result = $executor->execute($prefix.$oracle_query, 1);
                         }
 			push @oracle_results, $oracle_result;
                     }
