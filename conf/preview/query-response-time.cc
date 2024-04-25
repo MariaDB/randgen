@@ -52,7 +52,7 @@ $combinations = [
   [ @{$options{optional_server_variables}} ],
 
 # New
-  [ '--grammar=conf/yy/query_response_time.yy --mysqld=--plugin-load-add=query_response_time' ],
+  [ '--grammar=conf/yy/query_response_time.yy --mysqld=--plugin-load-add=query_response_time --grammar=conf/yy/functions.yy' ],
 
   ##### Engines and scenarios
   [
