@@ -46,7 +46,7 @@ sub new {
 	if (not defined $generator->grammar()) {
 #		say("Loading grammar file '".$generator->grammarFile()."' ...");
 		$generator->[GENERATOR_GRAMMAR] = GenTest::Grammar->new(
-			grammar_file	=> $generator->grammarFile(),
+			grammar_files	=> [ $generator->grammarFile() ],
 			grammar_string	=> $generator->grammarString()
 		);
 		return undef if not defined $generator->[GENERATOR_GRAMMAR];

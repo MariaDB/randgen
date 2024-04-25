@@ -42,7 +42,7 @@ my $opt_result = GetOptions(
 
 help() if !$opt_result || $help || not defined $grammar_file;
 
-my $grammar = GenTest::Grammar->new( grammar_file => $grammar_file );
+my $grammar = GenTest::Grammar->new( grammar_files => [$grammar_file] );
 
 my $top_grammar = ($mask_level > 0) ? $grammar->topGrammar($mask_level, "thread".$thread_id, "query") : $grammar;
 
