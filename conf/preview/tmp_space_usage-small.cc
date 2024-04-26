@@ -47,8 +47,8 @@ $combinations = [
   [ @{$options{optional_server_variables}} ],
 
 # New
-  [ '', '--mysqld=--max_tmp_space_usage=16M', '--mysqld=--max_tmp_space_usage=256M' ],
-  [ '', '--mysqld=--max_total_tmp_space_usage=64M', '--mysqld=--max_total_tmp_space_usage=1G' ],
+  [ '', '--mysqld=--max-tmp-session-space-usage=16M', '--mysqld=--max-tmp-session-space-usage=256M' ],
+  [ '', '--mysqld=--max-tmp-total-space-usage=64M', '--mysqld=--max-tmp-total-space-usage=1G' ],
 
   ##### Engines and scenarios
   [
