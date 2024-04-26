@@ -58,6 +58,12 @@ $combinations = [
   ##### Engines and scenarios
   [
     {
+      simple => [
+        [ '--scenario=Standard' ],
+        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
+      ],
       normal => [
         [ @{$options{scenario_non_crash_combinations}} ],
         [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
@@ -120,10 +126,11 @@ $combinations = [
         [ @{$options{optional_replication_safe_variables}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
       ],
-      cluster => [
-        [ @{$options{scenario_cluster_combinations}} ],
+      galera => [
+        [ '--scenario=Galera' ],
         [ '--filter=conf/ff/replication.ff' ],
         [ '--engine=InnoDB' ],
+        [ '--engine=Aria,MyISAM --mysqld=--loose-wsrep-mode="REPLICATE_ARIA,REPLICATE_MYISAM"','--grammar=conf/yy/wsrep.yy','' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
