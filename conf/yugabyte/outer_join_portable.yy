@@ -71,7 +71,7 @@ query_init:
 
 query:
   { $min_tables = 0; $max_table_id = $prng->int(1,10); @table_alias_set = (1, 1, 1, 1, 2, 2, 2, 3, 4, 5, 1, 1, 2) ; "" }
-  { @int_field_set = expand($rule_counters,$rule_invariants, "_field_int"); "" }
+  { @int_field_set = expand($rule_counters,$rule_invariants, "num_field"); "" }
   { $gby = "";  @nonaggregates = () ;  @aggregates = (); $t1 = 1; @st1 = (); $tables = 0 ; $fields = 0 ;  "" }
   hints query_type ;
 
@@ -155,15 +155,15 @@ aggregate_select_item:
 	{ my $x = join("", expand($rule_counters,$rule_invariants, "new_aggregate")); push @aggregates, $x; $x } AS { "field".++$fields };
 
 new_aggregate:
-	aggregate table_alias . _field_int ) |
-	aggregate table_alias . _field_int ) |
-	aggregate table_alias . _field_int ) |
+	aggregate table_alias . num_field ) |
+	aggregate table_alias . num_field ) |
+	aggregate table_alias . num_field ) |
 	literal_aggregate ;
 
 new_aggregate_existing_table_item:
-	aggregate existing_table_item . _field_int ) |
-	aggregate existing_table_item . _field_int ) |
-	aggregate existing_table_item . _field_int ) |
+	aggregate existing_table_item . num_field ) |
+	aggregate existing_table_item . num_field ) |
+	aggregate existing_table_item . num_field ) |
 	literal_aggregate ;
 
 table_alias:
@@ -201,30 +201,30 @@ join_condition:
    char_condition and_or where_item ;
 
 int_condition: 
-   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . _field_int_indexed = 
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . _field_int_indexed
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . num_field_indexed = 
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . num_field_indexed
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
-   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . _field_int_indexed =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . _field_int
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . num_field_indexed =
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . num_field
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
-   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . _field_int =
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . num_field =
    { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/,
- $table_string); $table_array[1] } . _field_int_indexed
+ $table_string); $table_array[1] } . num_field_indexed
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
-   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . _field_int =
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . num_field =
    { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/,
- $table_string); $table_array[1] } . _field_int
+ $table_string); $table_array[1] } . num_field
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } ;
 
 char_condition:
-   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . _field_char =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . _field_char 
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field =
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field 
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
-   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . _field_char_indexed  =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . _field_char 
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_indexed  =
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field 
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } |
-   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . _field_char =
-   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . _field_char_indexed 
+   { my $left = $stack->get("left"); my %s=map{$_=>1} @$left; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field =
+   { my $right = $stack->get("result"); my %s=map{$_=>1} @$right; my @r=(keys %s); my $table_string = $prng->arrayElement(\@r); my @table_array = split(/AS/, $table_string); $table_array[1] } . char_field_indexed 
    { my $left = $stack->get("left");  my $right = $stack->get("result"); my @n = (); push(@n,@$right); push(@n,@$left); $stack->pop(\@n); return undef } ;
 
 where_clause: | | WHERE where_list ;
@@ -235,22 +235,22 @@ where_list:
 
 where_item:
         existing_table_item . _field_pk comparison_operator number  |
-        existing_table_item . _field_pk comparison_operator existing_table_item . _field_int  |
-	existing_table_item . _field_int comparison_operator number  |
-        existing_table_item . _field_int comparison_operator existing_table_item . _field_int |
-        existing_table_item . _field_int not IN (number_list) |
-        existing_table_item . _field_int  not BETWEEN number[invariant] AND ( number[invariant] + _digit ) |
-	existing_table_item . _field_char comparison_operator char_value  |
-        existing_table_item . _field_char comparison_operator existing_table_item . _field_char |
-        existing_table_item . _field_char not IN (char_list) |
-        existing_table_item . _field_char  not BETWEEN char_value[invariant] AND CONCAT(char_value[invariant], char_value) |
-	existing_table_item . _field_char not LIKE CONCAT(char_value, '%') |
-	existing_table_item . _field_char not LIKE CONCAT(char_value, '%', char_value) |
+        existing_table_item . _field_pk comparison_operator existing_table_item . num_field  |
+	existing_table_item . num_field comparison_operator number  |
+        existing_table_item . num_field comparison_operator existing_table_item . num_field |
+        existing_table_item . num_field not IN (number_list) |
+        existing_table_item . num_field  not BETWEEN number[invariant] AND ( number[invariant] + _digit ) |
+	existing_table_item . char_field comparison_operator char_value  |
+        existing_table_item . char_field comparison_operator existing_table_item . char_field |
+        existing_table_item . char_field not IN (char_list) |
+        existing_table_item . char_field  not BETWEEN char_value[invariant] AND CONCAT(char_value[invariant], char_value) |
+	existing_table_item . char_field not LIKE CONCAT(char_value, '%') |
+	existing_table_item . char_field not LIKE CONCAT(char_value, '%', char_value) |
         existing_table_item . _field IS not NULL |
-	( existing_table_item . _field_int_indexed , existing_table_item . _field_char_indexed ) comparison_operator int_char_row_value |
-	( existing_table_item . _field_int_indexed , existing_table_item . _field_char_indexed ) not IN ( int_char_row_list ) |
-	( existing_table_item . _field_char_indexed , existing_table_item . _field_int_indexed ) comparison_operator char_int_row_value |
-	( existing_table_item . _field_char_indexed , existing_table_item . _field_int_indexed ) not IN ( char_int_row_list ) ;
+	( existing_table_item . num_field_indexed , existing_table_item . char_field_indexed ) comparison_operator int_char_row_value |
+	( existing_table_item . num_field_indexed , existing_table_item . char_field_indexed ) not IN ( int_char_row_list ) |
+	( existing_table_item . char_field_indexed , existing_table_item . num_field_indexed ) comparison_operator char_int_row_value |
+	( existing_table_item . char_field_indexed , existing_table_item . num_field_indexed ) not IN ( char_int_row_list ) ;
 
 number_list:
         _digit | _digit | number | number_list, number ;
@@ -396,6 +396,27 @@ char_value:
 	_char | _char | _char | _char | _char |
 	_char(2) | _char(3) | '' | ' ' ;
 
+num_field:
+	num_field_indexed |
+	col_int |
+	col_bigint |
+	col_decimal_5_2 ;
+
+num_field_indexed:
+	pk |
+	col_int_key |
+	col_bigint_key |
+	col_decimal_5_2_key ;
+
+char_field:
+	char_field_indexed |
+	col_char_10 |
+	col_varchar_1024 ;
+
+char_field_indexed:
+	col_char_10_key |
+	col_varchar_1024_key ;
+
 and_or:
    AND | AND | { $need_eq ? "AND" : "OR" } ;
 
@@ -412,10 +433,6 @@ literal_aggregate:
 
 not:
 	| | | NOT;
-
-################################################################################
-# YB: Add FULL
-################################################################################
 
 left_right_full:
 	left_right | left_right | left_right | left_right |
@@ -434,4 +451,3 @@ outer:
 
 limit_size:
     1 | 2 | 10 | 100 | 1000;
-
