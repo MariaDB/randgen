@@ -2078,8 +2078,8 @@ sub storeMetaData {
     goto METAERR;
   }
 
-  if (defined $self->serverVariable('max_tmp_space_usage')) {
-    $conn->execute('SET @@global.max_total_tmp_space_usage=0, @@max_tmp_space_usage=0');
+  if (defined $self->serverVariable('max_tmp_total_space_usage')) {
+    $conn->execute('SET @@global.max_tmp_total_space_usage=0, @@max_tmp_session_space_usage=0');
   }
 
   my @files= ();
@@ -2446,8 +2446,8 @@ sub storeMetaData {
   }
 
   METAERR:
-  if (defined $self->serverVariable('max_tmp_space_usage')) {
-    $conn->execute('SET @@global.max_total_tmp_space_usage=DEFAULT, @@max_tmp_space_usage=DEFAULT');
+  if (defined $self->serverVariable('max_tmp_total_space_usage')) {
+    $conn->execute('SET @@global.max_tmp_total_space_usage=DEFAULT, @@max_tmp_session_space_usage=DEFAULT');
   }
 
   if ($status != STATUS_OK) {
