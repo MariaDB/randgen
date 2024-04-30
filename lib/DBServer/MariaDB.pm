@@ -429,8 +429,8 @@ sub createMysqlBase  {
     push @$boot_options, "--loose-skip-read-only";
     # The options are being added in 11.5 and low values prevent timezones
     # from being loaded
-    push @$boot_options, "--loose-max_tmp_space_usage=0";
-    push @$boot_options, "--loose-max_total_tmp_space_usage=0";
+    push @$boot_options, "--loose-max_tmp_session_space_usage=0";
+    push @$boot_options, "--loose-max_tmp_total_space_usage=0";
 
     my $command;
 
