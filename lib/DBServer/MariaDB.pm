@@ -2446,16 +2446,15 @@ sub storeMetaData {
   }
 
   METAERR:
-  if (defined $self->serverVariable('max_tmp_total_space_usage')) {
-    $conn->execute('SET @@global.max_tmp_total_space_usage=DEFAULT, @@max_tmp_session_space_usage=DEFAULT');
-  }
-
   if ($status != STATUS_OK) {
     unlink @files, @waiters;
     return $status;
   }
 
-  
+  if (defined $self->serverVariable('max_tmp_total_space_usage')) {
+    $conn->execute('SET @@global.max_tmp_total_space_usage=DEFAULT, @@max_tmp_session_space_usage=DEFAULT');
+  }
+
 #    move($f,$f."-$ts");
   unlink @waiters;
   say("Finished dumping $metadata_type metadata".($wait_for_threads ? " for $wait_for_threads waiters:" : ":").
