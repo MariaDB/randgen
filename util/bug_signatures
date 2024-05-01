@@ -1081,6 +1081,10 @@ MDEV-30058:
 =~ AddressSanitizer|signal|MemorySanitizer
 =~ MYSQL_LOG::generate_name|MYSQL_LOG::open
 =~ fix_slow_log_file|fix_general_log_file|fix_log
+MDEV-30037:
+=~ InnoDB: Failing assertion: table->n_rec_locks == 0
+=~ dict_sys_t::remove
+=~ Sql_cmd_truncate_table::execute|Sql_cmd_alter_table::execute
 MDEV-30033:
 =~ Assertion \`0'
 =~ Field_new_decimal::get_equal_const_item
@@ -2495,6 +2499,10 @@ MDEV-23724:
 =~ DsMrr_impl::dsmrr_init
 =~ ha_partition::multi_range_read_init|ha_innobase::multi_range_read_init
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-23701:
+=~ Assertion \`open_tables == __null'
+=~ THD::cleanup
+=~ Status: KILL_CONNECTION
 MDEV-23687:
 =~ Assertion \`is_valid_value_slow()'
 =~ Datetime::Datetime|Date::Date
@@ -2915,7 +2923,7 @@ MDEV-22759:
 MDEV-22754:
 =~ Assertion \`!result'
 =~ convert_const_to_int
-=~ convert_const_compared_to_int_field
+=~ Item_bool_rowready_func2::fix_length_and_dec
 =~ optimize_inner
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22732:
@@ -3048,7 +3056,7 @@ MDEV-22375:
 =~ Item_in_subselect
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22368:
-=~ Assertion \`field_max_length <= m_return_field_def.length \|\| m_return_field_def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && m_return_field_def\.length == 8 && (m_return_field_def\.pack_flag & (1024U\|2048U)))'
+=~ Assertion \`field_max_length <= m_return_field_def\.length \|\| m_return_field_def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && m_return_field_def\.length == 8 && (m_return_field_def\.pack_flag & (1024U\|2048U)))'
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22333:
 =~ Assertion \`len <= fixed_len'
