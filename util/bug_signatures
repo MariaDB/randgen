@@ -16,6 +16,10 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-34055:
+=~ Assertion \`readbytes != (size_t)-1 \|\| (\*__errno_location ()) != 9'
+=~ inline_mysql_file_pread
+=~ ha_maria::repair
 MDEV-33868:
 =~ Assertion \`trx->bulk_insert'
 =~ innodb_prepare_commit_versioned
