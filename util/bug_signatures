@@ -2727,6 +2727,15 @@ MDEV-23188:
 =~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
 =~ create_tmp_table|Create_tmp_table::add_field
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-23179:
+=~ Assertion \`(block->status & (4 \| 8)) == 0'
+=~ pagecache_delete_by_link
+=~ ha_maria::preload_keys
+MDEV-23179:
+=~ signal 11|Assertion \`!hash_link->block \|\| hash_link->block->pins == 0'
+=~ unlink_hash
+=~ flush_pagecache_blocks_int
+=~ ha_maria::preload_keys|free_block
 MDEV-23173:
 =~ Assertion \`length < 249'
 =~ Transaction_state_tracker::store
