@@ -871,8 +871,7 @@ sub dumpdb {
     } elsif ($database) {
       $databases= "$database->[0]";
     }
-    # --skip-disable-keys due to MDEV-26253
-    my $dump_command= '"'.$self->dumper.'" --skip-disable-keys --skip-dump-date -uroot --host='.$self->host.' --port='.$self->port.' --hex-blob '.$databases;
+    my $dump_command= '"'.$self->dumper.'" --skip-dump-date -uroot --host='.$self->host.' --port='.$self->port.' --hex-blob '.$databases;
     unless ($for_restoring) {
       my @heap_tables= @{$conn->get_column(
           "select concat(table_schema,'.',table_name) from ".
@@ -1700,7 +1699,7 @@ sub isRecordIgnored {
     or  $line =~ /Replication event checksum verification failed while reading from a log file/s
     # MDEV-32201 (join_init_read_record() wrongly issues HA_ERR_OUT_OF_MEM)
     or  $line =~ /Got error 128 when reading table/s
-    # MDEV-22927, MDEV-26253 and many more
+    # MDEV-22927 and many more
     or  $line =~ /(?:mysqld|mariadbd): Can't find record in/s
     # MDEV-32772 (Unexpected "aria_sort_buffer_size is too small" error)
     or  $line =~ /aria_sort_buffer_size is too small\. Current aria_sort_buffer_size:/s
