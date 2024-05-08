@@ -16,6 +16,11 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-34122:
+=~ Assertion \`entry'
+=~ Active_tranx::assert_thd_is_waiter
+=~ Repl_semi_sync_master::commit_trx
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-34055:
 =~ Assertion \`readbytes != (size_t)-1 \|\| (\*__errno_location ()) != 9'
 =~ inline_mysql_file_pread
