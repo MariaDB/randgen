@@ -640,13 +640,13 @@ sub gen_table {
         push @columns,
             "$c $coldef->[0]"         # type
             . ($coldef->[1] ? "($coldef->[1])" : '') # length
+            . ($coldef->[8] ? " $coldef->[8]" : '')  # compressed
             . ($coldef->[2] ? " $coldef->[2]" : '')  # unsigned
             . ($coldef->[3] ? " $coldef->[3]" : '')  # zerofill
             . ($coldef->[4] ? " $coldef->[4]" : '')  # nullability
             . (defined $coldef->[5] ? " DEFAULT $coldef->[5]" : '')   # default
             . (defined $coldef->[6] ? " $coldef->[6]" : '') # virtual
             . ($coldef->[7] ? " $coldef->[7]" : '')  # invisible
-            . ($coldef->[8] ? " $coldef->[8]" : '')  # compressed
         ;
     };
     my @create_table_columns= @columns;
