@@ -20,6 +20,10 @@ MDEV-34055:
 =~ Assertion \`readbytes != (size_t)-1 \|\| (\*__errno_location ()) != 9'
 =~ inline_mysql_file_pread
 =~ ha_maria::repair
+MDEV-34021:
+=~ Assertion \`!for_explain_only'
+=~ JOIN_CACHE::put_record
+=~ Item_subselect
 MDEV-33868:
 =~ Assertion \`trx->bulk_insert'
 =~ innodb_prepare_commit_versioned
