@@ -1722,7 +1722,7 @@ $ddl_grammars{$minversion}= [
   [@empty_set_20, '--grammar=conf/yy/full_text_search.yy --gendata=conf/zz/full_text_search.zz'],
   [@empty_set_10, '--grammar=conf/yy/functions.yy'],
   [@empty_set_20, '--grammar=conf/yy/indexes_and_constraints.yy'],
-  [@empty_set_30, '--grammar=conf/yy/json.yy'],
+  [@empty_set_50, '--grammar=conf/yy/json.yy'],
   [@empty_set_30, '--grammar=conf/yy/multiple_triggers.yy'],
   [@empty_set_50, '--grammar=conf/yy/parser_changes.yy:0.01'],
   [@empty_set_30, '--grammar=conf/yy/partition_by_hash.yy'],
@@ -1823,7 +1823,7 @@ $read_only_grammars{$minversion}= [
   [@empty_set_20, '--grammar=conf/yy/transaction.yy'],
   [@empty_set_50, '--grammar=conf/yy/userstat.yy:0.01'],
   [@empty_set_30, '--grammar=conf/yy/user_variables.yy:0.01 --mysqld=--user-variables'],
-  [@empty_set_30, '--grammar=conf/yy/window_functions.yy'],
+  [@empty_set_50, '--grammar=conf/yy/window_functions.yy'],
   [@empty_set_20, '--grammar=conf/yy/xa.yy'],
 ];
 

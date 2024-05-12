@@ -60,6 +60,12 @@ $combinations = [
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
       ],
+      innodb => [
+        [ '--scenario=Standard' ],
+        [ '--engine=InnoDB' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
+      ],
       normal => [
         [ @{$options{scenario_non_crash_combinations}} ],
         [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
@@ -104,6 +110,14 @@ $combinations = [
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{debug_grammars}} ],
+      ],
+      innodb_recovery => [
+        [ @{$options{scenario_crash_combinations}} ],
+        [ '--engine=InnoDB' ],
+        [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
       ],
       upgrade_backup => [
         [ @{$options{scenario_mariabackup_combinations}}, @{$options{scenario_upgrade_combinations}} ],
