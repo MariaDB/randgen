@@ -1,0 +1,25 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Setup Variables
+      run: echo "ARCHIVE_NAME=${GITHUB_REPOSITORY_NAME}-$(echo $GITHUB_REF | sed 's/refs\/heads\///')-${GITHUB_SHA}.tar.gz" >> $GITHUB_ENV
+
+    - name: Archive Repository
+      run: tar -czvf ${ARCHIVE_NAME} -C ${{ github.workspace }} .
+
+    - name: Upload Archive as Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: repository-archive
+        path: ${{ env.ARCHIVE_NAME }}
