@@ -12,14 +12,42 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v2
 
-    - name: Setup Variables
+    - name: Set Archive name
       run: echo "ARCHIVE_NAME=${GITHUB_REPOSITORY_NAME}-$(echo $GITHUB_REF | sed 's/refs\/heads\///')-${GITHUB_SHA}.tar.gz" >> $GITHUB_ENV
 
-    - name: Archive Repository
-      run: tar -czvf ${ARCHIVE_NAME} -C ${{ github.workspace }} .
+    - name: Set Git Commit Hash
+      run: echo "GIT_COMMIT_HASH=${GITHUB_SHA:0:8}" >> $GITHUB_ENV
 
-    - name: Upload Archive as Artifact
-      uses: actions/upload-artifact@v2
+    - name: Prepare Staging Directory
+      run: |
+        mkdir -p /tmp/staging
+        cp -r ${{ github.workspace }}/* /tmp/staging/
+        rm -rf /tmp/staging/.git /tmp/staging/var/log /tmp/staging/tmp 
+    
+    - name: Archive Repository
+      run: tar -czvf ${ARCHIVE_NAME} -C /tmp/staging .
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: repository-archive
-        path: ${{ env.ARCHIVE_NAME }}
+        tag_name: randgen_${{ env.GIT_COMMIT_HASH }}
+        release_name: randgen ${{ env.GIT_COMMIT_HASH }}
+        body: |
+          branch: ${{ github.ref_name }}
+          triggered by: ${{ github.actor }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Assets
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ env.ARCHIVE_NAME }}
+        asset_name: randgen_${{ env.GIT_COMMIT_HASH }}.tar.gz
+        asset_content_type: application/x-tar
