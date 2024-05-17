@@ -64,6 +64,7 @@ use constant DATA_STRING	=> 1;
 use constant DATA_BLOB		=> 2;
 use constant DATA_TEMPORAL	=> 3;
 use constant DATA_ENUM		=> 4;
+use constant DATA_JSON		=> 5;
 
 
 use constant GD_SPEC => 0;
@@ -266,6 +267,7 @@ sub run {
     $data_perms[DATA_BLOB] = $data->{blobs} || [ 'data', 'data', 'data', 'data', (defined $self->[GD_NOTNULL] ? 'data' : 'null') ];
     $data_perms[DATA_TEMPORAL] = $data->{temporals} || [ 'date', 'time', 'datetime', 'year', 'timestamp', (defined $self->[GD_NOTNULL] ? 'date' : 'null') ];
     $data_perms[DATA_ENUM] = $data->{enum} || ['letter', 'letter', 'letter', 'letter', (defined $self->[GD_NOTNULL] ? 'letter' : 'null') ];
+    $data_perms[DATA_JSON] = $data->{json} || ['json', 'json', 'json', 'json', (defined $self->[GD_NOTNULL] ? 'json' : 'null')];
 
     my @tables = (undef);
     my @myisam_tables;
@@ -302,13 +304,19 @@ sub run {
             if (not defined $field_perms[$cycle]) {
                 $old_field;	# Retain old field, no permutations at this stage.
             } elsif (
+                ($executor->type == DB_POSTGRES) &&
+                ($cycle == FIELD_INDEX) &&
+                ($old_field->[FIELD_TYPE] =~ m{jsonb}sio) 
+                ) {
+                $old_field;	# Retain old field, indexing not supported for the types
+            } elsif (
                 ($cycle == FIELD_SIGN) &&
-                ($old_field->[FIELD_TYPE] !~ m{int|float|double|dec|numeric|fixed}sio) 
+                ($old_field->[FIELD_TYPE] !~ m{int|float|real|double|dec|numeric|fixed}sio) 
                 ) {
                 $old_field;	# Retain old field, sign does not apply to non-integer types
             } elsif (
                 ($cycle == FIELD_CHARSET) &&
-                ($old_field->[FIELD_TYPE] =~ m{bit|int|bool|float|double|dec|numeric|fixed|blob|date|time|year|binary}sio)
+                ($old_field->[FIELD_TYPE] =~ m{bit|int|bool|float|real|double|dec|numeric|fixed|blob|date|time|year|binary}sio)
                 ) {
                 $old_field;	# Retain old field, charset does not apply to integer types
             } else {
@@ -598,6 +606,8 @@ sub run {
                 my $value;
                 my $quote = 0;
                 my $max_char_length;
+                my $cast = 0;
+                my $pg_json = 0;
                 if ($field->[FIELD_TYPE] =~ m{auto_increment}sio) {
                     if ($executor->type == DB_MYSQL or $executor->type == DB_DRIZZLE) {
                         $value = undef;		# Trigger auto-increment by inserting NULLS for PK
@@ -631,11 +641,16 @@ sub run {
                     } elsif ($field->[FIELD_TYPE] =~ m{blob|text|binary}sio) {
                         $value_type = DATA_BLOB;
                         $quote = 1;
-                    } elsif ($field->[FIELD_TYPE] =~ m{int|float|double|dec|numeric|fixed|bool|bit}sio) {
+                    } elsif ($field->[FIELD_TYPE] =~ m{int|float|real|double|dec|numeric|fixed|bool|bit}sio) {
                         $value_type = DATA_NUMBER;
                     } elsif ($field->[FIELD_TYPE] eq 'enum') {
                         $value_type = DATA_ENUM;
                         $quote = 1;
+                    } elsif ($executor->type == DB_POSTGRES && $field->[FIELD_TYPE] eq 'jsonb') {
+                        $value_type = DATA_JSON;
+                        $quote = 1;
+                        $cast = 1;
+                        $pg_json = 1;
                     } else {
                         $value_type = DATA_STRING;
                         $quote = 1;
@@ -667,20 +682,30 @@ sub run {
                     }
                 }
                 
+                my $final_value = $value;
                 ## Quote if necessary
                 if ($value =~ m{load_file}sio) {
-                    push @data, defined $value ? $value : "NULL";
+                    $final_value = defined $value ? $value : "NULL";
                 } elsif ($quote) {
                     $value =~ s{'}{\\'}sgio;
-                    push @data, defined $value ? "'$value'" : "NULL";
+                    $final_value = defined $value ? "'$value'" : "NULL";
                 } else {
-                    push @data, defined $value ? $value : "NULL";
-                }	
+                    $final_value = defined $value ? $value : "NULL";
+                }
 
                 ## Typecast if the value would exceed the field max length
-                if (defined $max_char_length && length($data[@data - 1]) > $max_char_length) {
-                    push @data, "CAST(".pop(@data)." AS ".$field->[FIELD_TYPE].")";
+                ## or told to do so for other reasons
+                if ((defined $max_char_length && length($data[@data - 1]) > $max_char_length) ||
+                    $cast) {
+                    $final_value = "CAST(".$final_value." AS ".$field->[FIELD_TYPE].")";
                 }
+
+                if ($pg_json) {
+                    $final_value =~ s/''/'null'/gio;
+                    $final_value =~ s/NULL/null/gio;
+                }
+
+                push @data, $final_value;
             }
             
             push @row_buffer, " (".join(', ', @data).") ";
