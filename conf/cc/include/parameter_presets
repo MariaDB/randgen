@@ -1276,7 +1276,7 @@ $optional_server_variables{1011}= [ @{$optional_server_variables{$minversion}},
   # Default OFF
   [ @empty_set_10, '--mysqld=--log_slow_query=ON' ],
   # Default 10 seconds
-  [ @empty_set_10, '--mysqld=--log_slow_query_time=3' ],
+  [ @empty_set_20, '--mysqld=--log_slow_query_time=0', '--mysqld=--log_slow_query_time=3' ],
 ];
 
 $optional_server_variables{1100}= [ @{$optional_server_variables{$minversion}},
@@ -1330,7 +1330,9 @@ $optional_server_variables{1102}= [ @{$optional_server_variables{$minversion}},
 ];
 
 $optional_server_variables{1105}= [ @{$optional_server_variables{1102}},
-  [ @empty_set_10, '--mysqld=--loose-log_slow_always_query_time=4' ],
+  [ @empty_set_30, '--mysqld=--log_slow_always_query_time=10' ],
+  [ @empty_set_50, '--mysqld=--max-tmp-total-space-usage=1G' ],
+  [ @empty_set_50, '--mysqld=--max-tmp-session-space-usage=256M' ],
 ];
 
 $parameters{optional_server_variables}= \%optional_server_variables;

@@ -52,6 +52,8 @@ dynvar_global_variable_runtime:
   | LOG_SLOW_SLAVE_STATEMENTS= dynvar_boolean
 # Synonym of BINLOG_SPACE_LIMIT (hopefully)
   | ==FACTOR:0.5== MAX_BINLOG_TOTAL_SIZE= { $prng->arrayElement([0,4096,1048576,16777216]) } /* compatibility 11.4.0 */
+  | MAX_TMP_TOTAL_SPACE_USAGE= space_usage_val /* compatibility 11.5.1 */
+  | MAX_TMP_SESSION_SPACE_USAGE= space_usage_val /* compatibility 11.5.1 */
   | RPL_SEMI_SYNC_MASTER_ENABLED= dynvar_boolean /* compatibility 10.3 */
   | RPL_SEMI_SYNC_SLAVE_ENABLED= dynvar_boolean /* compatibility 10.3 */
   | SLAVE_CONNECTIONS_NEEDED_FOR_PURGE= { $prng->uint16(0,2) } /* compatibility 11.4.0 */
@@ -184,6 +186,7 @@ dynvar_session_variable:
   | MAX_SP_RECURSION_DEPTH= { $prng->int(0,25) }
   | MAX_STATEMENT_TIME= { $prng->arrayElement(['DEFAULT',1,10]) }
 # | MAX_TMP_TABLES # Said to be unused
+  | MAX_TMP_SESSION_SPACE_USAGE= space_usage_val /* compatibility 11.5.1 */
 # | MAX_USER_CONNECTIONS # Dynamic conditionally
   | MIN_EXAMINED_ROW_LIMIT= { $prng->arrayElement([0,1,1024,1048576,4294967295]) }
   | MRR_BUFFER_SIZE= { $prng->arrayElement([8192,65535,262144,1048576]) }
@@ -834,3 +837,14 @@ dynvar_engines_list_value:
 dynvar_boolean:
     0 | 1 ;
 
+space_usage_val:
+  DEFAULT |
+  64*1024 |
+  1024*1024 |
+  4*1024*1024 |
+  1024*1024*1024 |
+  ==FACTOR:0.1== space_usage_val_invalid_value
+;
+
+space_usage_val_invalid_value:
+  -2 | -1 | 0 | 1 | 2 | NULL;
