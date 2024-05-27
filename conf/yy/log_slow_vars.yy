@@ -29,8 +29,8 @@ query:
   SET slow_var_log_file_var     = slow_var_log_file_val     |
   SET slow_global_or_not slow_var_time         = slow_var_time_val         |
   SET slow_var_time_var         = slow_var_time_val         |
-  SET slow_global_or_not slow_var_always_time = slow_var_time_val /* compatibility 11.5.0 */ |
-  SET slow_var_always_time_var = slow_var_time_val /* compatibility 11.5.0 */
+  SET slow_global_or_not slow_var_always_time = slow_var_time_val /* compatibility 11.6 */ |
+  SET slow_var_always_time_var = slow_var_time_val /* compatibility 11.6 */
 ;
 
 slow_global_or_not:
@@ -159,7 +159,7 @@ slow_var_time:
   slow_var_time_legacy ;
 
 slow_var_always_time:
-  LOG_SLOW_ALWAYS_QUERY_TIME /* compatibility 11.5 */ |
+  LOG_SLOW_ALWAYS_QUERY_TIME /* compatibility 11.6 */ |
   slow_var_time_legacy ;
 
 slow_var_time_new:
