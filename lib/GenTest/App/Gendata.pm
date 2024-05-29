@@ -695,7 +695,7 @@ sub run {
 
                 ## Typecast if the value would exceed the field max length
                 ## or told to do so for other reasons
-                if ((defined $max_char_length && length($data[@data - 1]) > $max_char_length) ||
+                if ((defined $max_char_length && length($final_value) > $max_char_length) ||
                     $cast) {
                     $final_value = "CAST(".$final_value." AS ".$field->[FIELD_TYPE].")";
                 }
