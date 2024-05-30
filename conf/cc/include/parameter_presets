@@ -1334,9 +1334,9 @@ $optional_server_variables{1105}= [ @{$optional_server_variables{1102}},
   [ @empty_set_50, '--mysqld=--max-tmp-session-space-usage=256M' ],
 ];
 
-$optional_server_variables{1106}= [ @{$optional_server_variables{1105}},
-  [ @empty_set_30, '--mysqld=--log_slow_always_query_time=10' ],
-];
+#$optional_server_variables{1106}= [ @{$optional_server_variables{1105}},
+#  [ @empty_set_30, '--mysqld=--log_slow_always_query_time=10' ],
+#];
 
 $parameters{optional_server_variables}= \%optional_server_variables;
 
