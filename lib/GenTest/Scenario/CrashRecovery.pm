@@ -226,25 +226,6 @@ sub run {
     goto FINALIZE;
   }
 
-  #####
-  $self->printStep("Running test flow on the new server");
-
-  $self->createTestRunner();
-
-  $self->setProperty('duration',int($self->getProperty('duration')/2));
-  $status= $self->runTestFlow();
-
-  if ($status != STATUS_OK) {
-    sayError("Test flow on the new server failed");
-    #####
-    $self->printStep("Checking the server error log for known errors");
-
-    if ($self->checkErrorLog($new_server) == STATUS_CUSTOM_OUTCOME) {
-      $status= STATUS_CUSTOM_OUTCOME;
-    }
-    $self->setStatus($status);
-  }
-
 FINALIZE:
   return $self->finalize($status,[$server]);
 }

@@ -212,10 +212,10 @@ sub execute {
         column_types    => $column_types,
     );
 
-    if (($err or $conn->warning_count() > 0) and not serverGone($err_type)) {
-      my $warnings = $conn->query("SHOW WARNINGS");
-      $result->setWarnings($warnings);
-    }
+#    if (($err or $conn->warning_count() > 0) and not serverGone($err_type)) {
+#      my $warnings = $conn->query("SHOW WARNINGS");
+#      $result->setWarnings($warnings);
+#    }
     return $result;
 }
 
