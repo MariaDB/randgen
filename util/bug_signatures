@@ -16,6 +16,9 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-34252:
+=~ DDL_LOG: Got error 1050 when trying to execute action for entry .* of type 'alter table'
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-34122:
 =~ Assertion \`entry'
 =~ Active_tranx::assert_thd_is_waiter
@@ -312,6 +315,9 @@ MDEV-32684:
 =~ JOIN::transform_in_predicates_into_in_subq
 =~ convert_join_subqueries_to_semijoins
 =~ FeatureUsage detected GIS columns|FeatureUsage detected INET columns
+MDEV-32631:
+=~ Assertion \`0'
+=~ wsrep::transaction::before_rollback
 # Didn't make it to 11.2.3 / 11.3.2 / 11.4.1
 MDEV-32614:
 =~ LeakSanitizer
