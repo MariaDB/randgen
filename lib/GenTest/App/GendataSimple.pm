@@ -256,7 +256,7 @@ sub gen_table {
 
 		$executor->execute("CREATE INDEX ".$name."_int_varchar_key ON $name(col_int_key, col_varchar_key)");
 		$executor->execute("CREATE INDEX ".$name."_int_datetime_varchar_key ON $name(col_int_key, col_datetime_key, col_varchar_key)");
-
+		$executor->execute("CREATE INDEX ".$name."_int_key_include_varchar_nokey ON $name(col_int_key) INCLUDE (col_varchar_nokey)") if $executor->type == DB_POSTGRES;
 	} else {
         say("Creating ".$executor->getName()." table $name, size $size rows");
 
