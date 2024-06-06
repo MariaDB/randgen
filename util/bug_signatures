@@ -19,6 +19,12 @@
 MDEV-34252:
 =~ DDL_LOG: Got error 1050 when trying to execute action for entry .* of type 'alter table'
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG
+MDEV-34164:
+=~ Assertion \`thd->stmt_arena != thd->progress\.arena'
+=~ thd_progress_init
+=~ ha_maria::optimize|ha_maria::repair
+=~ mysql_admin_table
+=~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-34122:
 =~ Assertion \`entry'
 =~ Active_tranx::assert_thd_is_waiter
@@ -890,7 +896,7 @@ MDEV-31180:
 MDEV-31178:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ fix_fields_for_tvc
-=~ TABLE_LIST::handle_derived|LEX::handle_list_of_derived
+=~ TABLE_LIST::handle_derived|LEX::handle_list_of_derived|table_value_constr::prepare
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-31178:
 =~ signal|AddressSanitizer|MemorySanitizer
@@ -943,8 +949,8 @@ MDEV-31031:
 =~ FeatureUsage detected S3 engine
 MDEV-31030:
 =~ Assertion \`!error'
-=~ ha_partition::update_row
-=~ Sql_cmd_update::update_single_table
+=~ ha_partition::update_row|ha_partition::delete_row
+=~ Sql_cmd_update::update_single_table|mysql_delete
 MDEV-31026:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
@@ -2591,7 +2597,7 @@ MDEV-23448:
 MDEV-23444:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
-=~ Item_sum_avg::create_tmp_field
+=~ Item_.*::create_tmp_field
 MDEV-23444:
 =~ AddressSanitizer:
 =~ bin2decimal
