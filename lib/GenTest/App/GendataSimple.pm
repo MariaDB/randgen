@@ -248,15 +248,26 @@ sub gen_table {
 
 			PRIMARY KEY (pk))");
 
-		$executor->execute("CREATE INDEX ".$name."_int_key ON $name(col_int_key)");
-		$executor->execute("CREATE INDEX ".$name."_date_key ON $name(col_date_key)");
-		$executor->execute("CREATE INDEX ".$name."_time_key ON $name(col_time_key)");
-		$executor->execute("CREATE INDEX ".$name."_datetime_key ON $name(col_datetime_key)");
-		$executor->execute("CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key)");
+                # INCLUDE some arbitray columns for postgers
+                if ($executor->type == DB_POSTGRES) {
+                        $executor->execute("CREATE INDEX ".$name."_int_key ON $name(col_int_key) INCLUDE (col_int_nokey, col_varchar_nokey, col_datetime_nokey)") ;
+                        $executor->execute("CREATE INDEX ".$name."_date_key ON $name(col_date_key)");
+                        $executor->execute("CREATE INDEX ".$name."_time_key ON $name(col_time_key)");
+                        $executor->execute("CREATE INDEX ".$name."_datetime_key ON $name(col_datetime_key)");
+                        $executor->execute("CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key) INCLUDE (col_int_nokey, col_varchar_nokey)");
 
-		$executor->execute("CREATE INDEX ".$name."_int_varchar_key ON $name(col_int_key, col_varchar_key)");
-		$executor->execute("CREATE INDEX ".$name."_int_datetime_varchar_key ON $name(col_int_key, col_datetime_key, col_varchar_key)");
-		$executor->execute("CREATE INDEX ".$name."_int_key_include_varchar_nokey ON $name(col_int_key) INCLUDE (col_varchar_nokey)") if $executor->type == DB_POSTGRES;
+                        $executor->execute("CREATE INDEX ".$name."_int_varchar_key ON $name(col_int_key, col_varchar_key) INCLUDE (col_int_nokey, col_datetime_nokey)");
+                        $executor->execute("CREATE INDEX ".$name."_int_datetime_varchar_key ON $name(col_int_key, col_datetime_key, col_varchar_key)");
+                } else {
+                        $executor->execute("CREATE INDEX ".$name."_int_key ON $name(col_int_key)");
+                        $executor->execute("CREATE INDEX ".$name."_date_key ON $name(col_date_key)");
+                        $executor->execute("CREATE INDEX ".$name."_time_key ON $name(col_time_key)");
+                        $executor->execute("CREATE INDEX ".$name."_datetime_key ON $name(col_datetime_key)");
+                        $executor->execute("CREATE INDEX ".$name."_varchar_key ON $name(col_varchar_key)");
+
+                        $executor->execute("CREATE INDEX ".$name."_int_varchar_key ON $name(col_int_key, col_varchar_key)");
+                        $executor->execute("CREATE INDEX ".$name."_int_datetime_varchar_key ON $name(col_int_key, col_datetime_key, col_varchar_key)");
+                }
 	} else {
         say("Creating ".$executor->getName()." table $name, size $size rows");
 
