@@ -28,7 +28,7 @@ MDEV-34252:
 MDEV-34164:
 =~ Assertion \`thd->stmt_arena != thd->progress\.arena'
 =~ thd_progress_init
-=~ ha_maria::optimize|ha_maria::repair
+=~ ha_maria::optimize|ha_maria::repair|mysql_recreate_table
 =~ mysql_admin_table
 =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-34122:
@@ -36,6 +36,10 @@ MDEV-34122:
 =~ Active_tranx::assert_thd_is_waiter
 =~ Repl_semi_sync_master::commit_trx
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-34117:
+=~ Assertion \`! thd->in_sub_stmt'
+=~ trans_rollback_stmt
+=~ Wsrep_client_service::bf_rollback
 MDEV-34055:
 =~ Assertion \`readbytes != (size_t)-1 \|\| (\*__errno_location ()) != 9'
 =~ inline_mysql_file_pread
@@ -44,6 +48,9 @@ MDEV-34021:
 =~ Assertion \`!for_explain_only'
 =~ JOIN_CACHE::put_record
 =~ Item_subselect
+MDEV-33994:
+=~ Assertion \`pause_seqno_\.is_undefined() == false'
+=~ wsrep::server_state::resume
 MDEV-33868:
 =~ Assertion \`trx->bulk_insert'
 =~ innodb_prepare_commit_versioned
@@ -133,6 +140,9 @@ MDEV-33330:
 MDEV-33289:
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name.str, MDL_SHARED) \|\| thd->mdl_context\.is_lock_warrantee(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
 =~ close_thread_table
+MDEV-33249:
+=~ Assertion \`(0)'
+=~ wsrep_to_isolation_begin
 MDEV-33323:
 =~ AddressSanitizer|signal
 =~ grn_bulk_write
@@ -269,6 +279,9 @@ MDEV-32803:
 MDEV-32787:
 =~ Assertion \`!wsrep_has_changes(thd) \|\| (thd->lex->sql_command == SQLCOM_CREATE_TABLE && !thd->is_current_stmt_binlog_format_row()) \|\| thd->wsrep_cs()\.transaction()\.state() == wsrep::transaction::s_aborted'
 =~ wsrep_commit_empty
+MDEV-32780:
+=~ Assertion \`state() == s_executing \|\| state() == s_preparing \|\| state() == s_prepared \|\| state() == s_must_abort \|\| state() == s_aborting \|\| state() == s_cert_failed \|\| state() == s_must_replay'
+=~ wsrep::transaction::before_rollback
 MDEV-32769:
 =~ MemorySanitizer|AddressSanitizer|signal
 =~ Item_func_group_concat::setup
