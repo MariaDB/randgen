@@ -16,6 +16,9 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-34634:
+=~ Assertion \`typeid(\*copy) == typeid(\*this)'
+=~ Item::build_clone|change_cond_ref_to_const
 MDEV-34322:
 =~ AddressSanitizer|signal
 =~ Field::is_null
