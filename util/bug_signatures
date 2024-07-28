@@ -16,8 +16,11 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-34580:
+=~ Assertion \`(key_part->key_part_flag & 4) == 0'
+=~ key_hashnr
 MDEV-34634:
-=~ Assertion \`typeid(\*copy) == typeid(\*this)'
+=~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'|signal 11
 =~ Item::build_clone|change_cond_ref_to_const
 MDEV-34322:
 =~ AddressSanitizer|signal
@@ -1799,7 +1802,7 @@ MDEV-27027:
 MDEV-26992:
 =~ Assertion \`item->null_value'
 =~ Type_handler::Item_send_str
-=~ FixedBinTypeBundle
+=~ FixedBinTypeBundle|Type_handler_fbt
 =~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-26992:
 =~ Assertion \`value\.length() == FbtImpl::binary_length()'
