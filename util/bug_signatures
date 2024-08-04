@@ -16,12 +16,12 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-34634:
+=~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'|signal 11|signal SIGSEGV, Segmentation fault
+=~ Item::build_clone|change_cond_ref_to_const
 MDEV-34580:
 =~ Assertion \`(key_part->key_part_flag & 4) == 0'
 =~ key_hashnr
-MDEV-34634:
-=~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'|signal 11
-=~ Item::build_clone|change_cond_ref_to_const
 MDEV-34322:
 =~ AddressSanitizer|signal
 =~ Field::is_null
@@ -2908,13 +2908,10 @@ MDEV-22885:
 MDEV-22883:
 =~ Assertion \`!parse_error \|\| lex\.sphead == 0'
 =~ Table_triggers_list::check_n_load
-=~ get_all_tables
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22883:
 =~ AddressSanitizer|signal [16]
 =~ Trigger::get_trigger_info
 =~ get_schema_triggers_record
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22873:
 =~ has a primary key in InnoDB data dictionary, but not in MariaDB
 =~ Assertion \`len == ref_length'|AddressSanitizer
