@@ -16,9 +16,6 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
-MDEV-34634:
-=~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'|signal 11|signal SIGSEGV, Segmentation fault
-=~ Item::build_clone|change_cond_ref_to_const
 MDEV-34580:
 =~ Assertion \`(key_part->key_part_flag & 4) == 0'
 =~ key_hashnr
