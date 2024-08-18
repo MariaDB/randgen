@@ -16,6 +16,12 @@
 # 11.2+
 # Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-34768:
+=~ signal|AddressSanitizer
+=~ Item_field::used_tables
+=~ Multiupdate_prelocking_strategy::handle_end
+=~ Prepared_statement::prepare
+=~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-34580:
 =~ Assertion \`(key_part->key_part_flag & 4) == 0'
 =~ key_hashnr
