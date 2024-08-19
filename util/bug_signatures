@@ -25,7 +25,7 @@ MDEV-34775:
 =~ FeatureUsage detected partitioned tables
 MDEV-34771:
 =~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'
-=~ Item::build_clone|change_cond_ref_to_const
+=~ Item_hex_hybrid::do_build_clone
 MDEV-34768:
 =~ signal|AddressSanitizer
 =~ Item_field::used_tables
