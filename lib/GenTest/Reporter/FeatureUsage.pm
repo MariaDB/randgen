@@ -1,4 +1,4 @@
-# Copyright (c) 2021, 2023 MariaDB
+# Copyright (c) 2021, 2024 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -63,6 +63,7 @@ my %usage_check= (
   'nopad collations' => \&check_for_nopad_collations,
   'OQGraph engine' => \&check_for_oqgraph_plugin,
   'OQGraph tables' => \&check_for_oqgraph_tables,
+  'partitioned tables' => \&check_for_partitions,
   'performance schema' => \&check_for_performance_schema,
   'RocksDB engine' => \&check_for_rocksdb_plugin,
   'RocksDB tables' => \&check_for_rocksdb_tables,
@@ -236,6 +237,14 @@ sub check_for_sequences {
   my $reporter= shift;
   if ($server_version ge '1003' and $reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='SEQUENCE'")) {
     return "according to I_S.TABLES";
+  }
+  return undef;
+}
+
+sub check_for_partitions {
+  my $reporter= shift;
+  if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.PARTITIONS WHERE PARTITION_NAME IS NOT NULL")) {
+    return "according to I_S.PARTITIONS";
   }
   return undef;
 }
