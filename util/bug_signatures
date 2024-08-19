@@ -23,6 +23,9 @@ MDEV-34775:
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 =~ FeatureUsage detected system-versioned tables
 =~ FeatureUsage detected partitioned tables
+MDEV-34771:
+=~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'
+=~ Item::build_clone|change_cond_ref_to_const
 MDEV-34768:
 =~ signal|AddressSanitizer
 =~ Item_field::used_tables
