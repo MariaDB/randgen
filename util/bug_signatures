@@ -6,19 +6,24 @@
 
 # Examples of version markers:
 # 10.4-10.5
-# Version: '10\.[45]|Server version: 10\.[45]
+# =~ Version: '10\.[45]|Server version: 10\.[45]
 # 10.6+
-# Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+# =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 # 10.10+
-# Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+# =~ Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 # 11.0+
-# Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+# =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 # 11.2+
-# Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+# =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
-MDEV-34776:
+MDEV-34785:
 =~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'
-=~ Item_string::do_build_clone
+=~ Item_func_or_sum::do_build_clone
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+#MDEV-34776:
+#=~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'
+#=~ Item_string::do_build_clone
+#=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-34775:
 =~ Assertion \`mdl_request->ticket == __null'
 =~ MDL_context::try_acquire_lock_impl
@@ -26,14 +31,14 @@ MDEV-34775:
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 =~ FeatureUsage detected system-versioned tables
 =~ FeatureUsage detected partitioned tables
-MDEV-34771:
-=~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'
-=~ Item_hex_hybrid::do_build_clone
+#MDEV-34771:
+#=~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'
+#=~ Item_hex_hybrid::do_build_clone
 # Not merged into 11.0 yet
-MDEV-34683:
-=~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'|signal
-=~ Item_func_or_sum::do_build_clone|Item_func_case_simple::do_build_clone|Item_date_literal::do_build_clone
-=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+#MDEV-34683:
+#=~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'|signal
+#=~ Item_func_or_sum::do_build_clone|Item_func_case_simple::do_build_clone|Item_date_literal::do_build_clone
+#=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-34768:
 =~ signal|AddressSanitizer
 =~ Item_field::used_tables
