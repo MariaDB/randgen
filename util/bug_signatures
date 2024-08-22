@@ -31,7 +31,7 @@ MDEV-34771:
 =~ Item_hex_hybrid::do_build_clone
 # Not merged into 11.0 yet
 MDEV-34683:
-=~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'
+=~ Assertion \`typeid(\*copy) == typeid(\*this)'|Assertion \`typeid(\*clone) == typeid(\*this)'|signal
 =~ Item_func_or_sum::do_build_clone|Item_func_case_simple::do_build_clone|Item_date_literal::do_build_clone
 =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-34768:
