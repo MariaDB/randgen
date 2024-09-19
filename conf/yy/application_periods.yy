@@ -305,9 +305,8 @@ index_type_opt:
 ;
 
 index_type:
-    ==FACTOR:3== BTREE
-# Disabled due to MDEV-371 issues
-#  |              HASH
+    ==FACTOR:20== BTREE
+  |               HASH
 ;
 
 constraint_definition:
