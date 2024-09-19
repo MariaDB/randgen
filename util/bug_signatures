@@ -1016,6 +1016,11 @@ MDEV-31016:
 MDEV-31007:
 =~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF)'
 =~ find_producing_item
+MDEV-31007:
+=~ AddressSanitizer|signal
+=~ Item_default_value::cleanup
+=~ Item::delete_self
+=~ Query_arena::free_items
 MDEV-30992:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
@@ -1849,8 +1854,7 @@ MDEV-26891:
 =~ TABLE::mark_auto_increment_column
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-26839:
-=~ ma_key.c:279:7: runtime error: null pointer passed as argument 2, which is declared to never be null
-=~ FeatureUsage detected GIS columns
+=~ ma_key.c:.*: runtime error: null pointer passed as argument 2, which is declared to never be null
 MDEV-26835:
 =~ AddressSanitizer|signal
 =~ heap_rrnd
@@ -4110,7 +4114,6 @@ MDEV-16686:
 =~ lock_external
 MDEV-16686:
 =~ signal|AddressSanitizer
-=~ wake_up_waiters
 =~ wait_for_lock
 =~ thr_multi_lock
 MDEV-16686:
