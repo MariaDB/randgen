@@ -29,7 +29,7 @@ use GenTest::Executor::MRDB;
 use Carp;
 use Data::Dumper;
 
-my ($first_mem, $max_mem, $first_cpu, $max_cpu, $max_mem_pct, $last_reported_mem, $conn, $memusage);
+my ($first_mem, $max_mem, $first_cpu, $max_cpu, $max_mem_pct, $last_reported_mem, $conn, $memusage, %last_idle_conn_mem, %max_idle_conn_mem);
 
 sub monitor {
   my $reporter= shift;
@@ -53,13 +53,41 @@ sub monitor {
       $max_mem= $mem;
       $max_mem_pct= $mem_pct;
     }
+    $conn = $reporter->connection unless $conn;
+    unless ($conn) {
+      sayWarning("MemoryUsage monitor could not connect to the server");
+      return STATUS_SERVER_UNAVAILABLE;
+    }
+    my $conn_mem= $conn->query("select id, memory_used from information_schema.processlist where command='Sleep' and info is NULL and time_ms > 200 order by id");
+    if ($conn_mem) {
+      foreach my $r (@$conn_mem) {
+        my ($id, $mem)= @$r;
+        $last_idle_conn_mem{$id}= $mem;
+        if (not exists $max_idle_conn_mem{$id}) {
+          $max_idle_conn_mem{$id}= $mem;
+          sayDebug("MemoryUsage monitor: New maximum idle connection memory usage for connection $id: $max_idle_conn_mem{$id}");
+        } elsif ($max_idle_conn_mem{$id} < $mem) {
+          say("MemoryUsage monitor: Idle connection memory usage for connection $id increased: $max_idle_conn_mem{$id} => $mem");
+          $max_idle_conn_mem{$id}= $mem;
+        } elsif ($max_idle_conn_mem{$id} > $mem) {
+          say("MemoryUsage monitor: Idle connection memory usage for connection $id decreased: $max_idle_conn_mem{$id} => $mem");
+        }
+        if ($mem > 2097152) {
+          sayError("Too much memory is being used: $mem");
+#          return STATUS_MEMORY_LEAK;
+        }
+      }
+    }
+    my $res_str= "";
+    foreach (sort { $a <=> $b } keys %last_idle_conn_mem) {
+      $res_str.= "\n\t$_ : $last_idle_conn_mem{$_} (max seen: $max_idle_conn_mem{$_})";
+    }
+    if ($res_str) {
+      say("MemoryUsage monitor: Idle connection memory usage:$res_str");
+    }
+
     if (($reporter->server->serverVariable('performance_schema') eq '1') or ($reporter->server->serverVariable('performance_schema') eq 'ON')) {
       say("MemoryUsage monitor for pid $pid: memory usage: ".format_mem_value($mem));
-      $conn = $reporter->connection unless $conn;
-      unless ($conn) {
-        sayWarning("MemoryUsage monitor could not connect to the server");
-        return STATUS_SERVER_UNAVAILABLE;
-      }
       $memusage= $conn->query("select event_name, sum_number_of_bytes_alloc, current_number_of_bytes_used, high_number_of_bytes_used from performance_schema.memory_summary_global_by_event_name order by current_number_of_bytes_used desc limit 5");
       say(Dumper($memusage)) if $memusage;
     }
