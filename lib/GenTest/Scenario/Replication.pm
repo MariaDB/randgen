@@ -20,6 +20,14 @@
 # The basic variant of it, M=>S replication, was earlier performed
 # by runall-new.pl running with --rpl-mode=X.
 #
+# The scenario recognized the following options:
+# --scenario-skip-consistency-check:
+#   Do not perform data consistency check which otherwise occurs
+#   if the test reached the end and replication didn't abort
+# --scenario-nosync:
+#   Do not wait for the replica to catch up with the master (and
+#   thus do not perform the data consistency check afterwards)
+#
 # TODO: Make the topology arbitrary, to be determined by the
 # --[scenario-]replication-topology option or alike
 # TODO: Add synchronization at the end of the test, optionally
@@ -66,7 +74,6 @@ sub run {
   my @reporters= $self->getProperty('reporters') ? @{$self->getProperty('reporters')} : ();
   my $do_sync= (exists $self->scenarioOptions->{'nosync'} ? 0 : 1 );
   my $rpl_timeout= $self->scenarioOptions->{'rpl-timeout'} || $self->scenarioOptions->{'rpl_timeout'} || $self->getProperty('duration');
-  push @reporters, 'ReplicationConsistency' if $do_sync;
   push @reporters, 'ReplicationSlaveStatus';
 
   my $srv_count= scalar(keys %{$self->getProperty('server_specific')});
@@ -205,6 +212,27 @@ sub run {
       $total_status= $status if $status > $total_status;
       goto FINALIZE;
     }
+    my ($master_status, %master_data)= $self->get_data($servers[0]);
+    if ($master_status != STATUS_OK) {
+      $total_status= $master_status if $master_status > $total_status;
+      goto FINALIZE;
+    }
+    my ($slave_status, %slave_data)= $self->get_data($servers[1]);
+    if ($slave_status != STATUS_OK) {
+      sayError("Error occurred upon collecting data from the master");
+      $total_status= $slave_status if $slave_status > $total_status;
+      goto FINALIZE;
+    }
+
+    $self->printStep("Comparing data on primary and replica");
+    my $data_status= $self->compare_data(\%master_data, \%slave_data, $servers[0]->vardir, 'replicaton');
+    if ($data_status != STATUS_OK) {
+      $data_status= STATUS_REPLICATION_FAILURE;
+      sayError("Inconsistency between primary and replica");
+      $total_status= $data_status if $data_status > $total_status;
+      goto FINALIZE;
+    }
+
   } else {
     $self->printStep("Checking that the replica is alive");
     my $slave_status= $servers[1]->getSlaveStatus();

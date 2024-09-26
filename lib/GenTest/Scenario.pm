@@ -25,6 +25,7 @@ use strict;
 use GenUtil;
 use GenTest;
 use Constants;
+use Constants::MariaDBErrorCodes;
 use Data::Dumper;
 
 use constant SC_TEST_PROPERTIES        => 1;
@@ -220,6 +221,142 @@ sub generateData {
   return STATUS_OK;
 }
 
+#
+# Data collection for consistency checks (in upgrade tests, replication etc.)
+#
+sub get_data {
+  my ($self, $server)= @_;
+  my @databases= $server->nonSystemDatabases();
+  my $databases= join ',', map { "'".$_."'" } @databases;
+  my ($tables, $columns, $indexes, $checksums_unsafe, $checksums_safe);
+  $server->connection->execute("SET max_statement_time= 0");
+  goto GET_DATA_END if $server->connection->err();
+
+  # We skip auto_increment value due to MDEV-13094 etc.
+  $tables= $server->connection->query(
+    "SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE, ENGINE, ROW_FORMAT, TABLE_COLLATION, TABLE_COMMENT ".
+    "FROM INFORMATION_SCHEMA.TABLES ".
+    "WHERE TABLE_SCHEMA IN ($databases)".
+    "ORDER BY TABLE_SCHEMA, TABLE_NAME"
+  );
+  goto GET_DATA_END if $server->connection->err();
+
+  # Workaround for MDEV-28253 -- EXTRA can be wrong on old versions
+  my $extra= 'EXTRA';
+#  unless (isCompatible('10.3.35,10.4.24,10.5.6,10.6.8,10.7.4',$server->version())) {
+#    $extra= 'IF(EXTRA="on update current_timestamp(),","on update current_timestamp(), INVISIBLE",EXTRA)';
+#  }
+  # Default for virtual columns can be wrong (MDEV-32077)
+  # Views don't preserve virtual column attributes, so we select view columns separately (MDEV-32078)
+  $columns= $server->connection->query(
+    "SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME, c.ORDINAL_POSITION, IF(c.IS_GENERATED='ALWAYS',NULL,COLUMN_DEFAULT), c.IS_NULLABLE, c.DATA_TYPE, ".
+    "CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, DATETIME_PRECISION, CHARACTER_SET_NAME, COLLATION_NAME, COLUMN_KEY, $extra, PRIVILEGES, COLUMN_COMMENT, IS_GENERATED ".
+    "FROM INFORMATION_SCHEMA.COLUMNS c JOIN INFORMATION_SCHEMA.TABLES t ON (t.TABLE_SCHEMA = c.TABLE_SCHEMA AND t.TABLE_NAME = c.TABLE_NAME ) ".
+    "WHERE t.TABLE_SCHEMA IN ($databases) AND t.TABLE_TYPE NOT IN ('VIEW','SYSTEM VIEW') ".
+    "UNION ".
+    "SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME, c.ORDINAL_POSITION, NULL, c.IS_NULLABLE, c.DATA_TYPE, ".
+    "CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, DATETIME_PRECISION, CHARACTER_SET_NAME, COLLATION_NAME, COLUMN_KEY, NULL, PRIVILEGES, COLUMN_COMMENT, NULL ".
+    "FROM INFORMATION_SCHEMA.COLUMNS c JOIN INFORMATION_SCHEMA.TABLES t ON (t.TABLE_SCHEMA = c.TABLE_SCHEMA AND t.TABLE_NAME = c.TABLE_NAME ) ".
+    "WHERE t.TABLE_SCHEMA IN ($databases) AND t.TABLE_TYPE IN ('VIEW','SYSTEM VIEW') ".
+    "ORDER BY TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME"
+  );
+  goto GET_DATA_END if $server->connection->err();
+
+  # Before these versions (fix MDEV-16857) row_end is shown in statistics
+  if (isCompatible('10.3.31,10.4.21,10.5.12,10.6.4',$self->compatibility,$self->compatibility_es)) {
+    $indexes= $server->connection->query(
+      "SELECT TABLE_SCHEMA, TABLE_NAME, INDEX_NAME, COLUMN_NAME, NON_UNIQUE, SEQ_IN_INDEX, INDEX_TYPE, COMMENT ".
+      "FROM INFORMATION_SCHEMA.STATISTICS ".
+      "WHERE TABLE_SCHEMA IN ($databases)".
+      "ORDER BY TABLE_SCHEMA, TABLE_NAME, INDEX_NAME, COLUMN_NAME"
+    )
+  } else {
+    $indexes= $server->connection->query(
+      "SELECT TABLE_SCHEMA, TABLE_NAME, INDEX_NAME, COLUMN_NAME, NON_UNIQUE, SEQ_IN_INDEX, INDEX_TYPE, COMMENT ".
+      "FROM INFORMATION_SCHEMA.STATISTICS ".
+      "WHERE TABLE_SCHEMA IN ($databases) AND (COLUMN_NAME != 'row_end' OR (TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME) IN (SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS))".
+      "ORDER BY TABLE_SCHEMA, TABLE_NAME, INDEX_NAME, COLUMN_NAME"
+    )
+  }
+  goto GET_DATA_END if $server->connection->err();
+
+  # Double and float make checksum non-deterministic (apparently), regardless the type of the upgrade,
+  # so they are always excluded.
+  # For dump upgrade before 10.11, historical rows of system versioned tables
+  # could not be dumped, so the history was lost and table checksums would differ.
+  # Thus we won't compare checksums for versioned tables when older versions are involved.
+  # Virtual columns make the checksum non-deterministic (MDEV-32079).
+  # Aria tables often have different checksums because they initially
+  # preserve wrong create options (row_format, page_checksum), but lose them after dump
+  my $table_names_checksum_unsafe= $server->connection->get_value(
+      "SELECT GROUP_CONCAT(CONCAT('`',TABLE_SCHEMA,'`.`',TABLE_NAME,'`') ORDER BY 1 SEPARATOR ', ') ".
+      "FROM INFORMATION_SCHEMA.TABLES ".
+      "WHERE TABLE_SCHEMA IN ($databases) AND TABLE_TYPE = 'SYSTEM VERSIONED' ".
+      "AND (TABLE_SCHEMA, TABLE_NAME) NOT IN (SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE DATA_TYPE IN ('double','float') OR IS_GENERATED != 'NEVER' OR ENGINE = 'Aria')"
+  );
+  goto GET_DATA_END if $server->connection->err();
+
+  my $table_names_checksum_safe= $server->connection->get_value(
+      "SELECT GROUP_CONCAT(CONCAT('`',TABLE_SCHEMA,'`.`',TABLE_NAME,'`') ORDER BY 1 SEPARATOR ', ') ".
+      "FROM INFORMATION_SCHEMA.TABLES ".
+      "WHERE TABLE_SCHEMA IN ($databases) AND TABLE_TYPE != 'SYSTEM VERSIONED' ".
+      "AND (TABLE_SCHEMA, TABLE_NAME) NOT IN (SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE DATA_TYPE IN ('double','float') OR IS_GENERATED != 'NEVER' OR ENGINE = 'Aria')"
+  );
+  goto GET_DATA_END if $server->connection->err();
+
+  if ($table_names_checksum_unsafe) {
+    $checksums_unsafe= $server->connection->query("CHECKSUM TABLE $table_names_checksum_unsafe EXTENDED");
+  }
+  goto GET_DATA_END if $server->connection->err();
+
+  if ($table_names_checksum_safe) {
+    $checksums_safe= $server->connection->query("CHECKSUM TABLE $table_names_checksum_safe EXTENDED");
+  }
+GET_DATA_END:
+  return (errorType($server->connection->err()), (tables => $tables, columns => $columns, indexes => $indexes, checksums_safe => $checksums_safe, checksums_unsafe => $checksums_unsafe));
+}
+
+#
+# Comarison of data collected in get_data (in upgrade tests, replication etc.)
+# $type for upgrade tests is a type of upgrade (dump, live, etc.)
+# for other tests, just some arbitrary string to put into file names
+#
+
+sub compare_data {
+  my ($self, $old_data, $new_data, $vardir, $type)= @_;
+  my $data_status= STATUS_OK;
+  foreach my $d (sort keys %$old_data) {
+    next if (($d eq 'checksums_unsafe') and ($type eq 'dump-upgrade'));
+    my $old= Dumper $old_data->{$d};
+    my $new= Dumper $new_data->{$d};
+    # For now we'll just blindly replace all utf8mb3 by utf8
+    $old =~ s/utf8mb3/utf8/g;
+    $new =~ s/utf8mb3/utf8/g;
+    if ($old ne $new) {
+      $data_status= STATUS_TEST_FAILURE;
+      unless (-e $vardir.'/old_'.$d.'.dump') {
+        if (open(DT, '>'.$vardir.'/old_'.$d.'.dump')) {
+          print DT $old;
+          close(DT);
+        } else {
+          sayError('Could not write old '.$d." into file: $!");
+        }
+      }
+      if (open(DT, '>'.$vardir.'/'.$type.'_'.$d.'.dump')) {
+        print DT $new;
+        close(DT);
+      } else {
+        sayError('Could not write '.$type.' '.$d." into file: $!");
+      }
+      sayError("Old and new $d differ after $type");
+      if (-e $vardir.'/old_'.$d.'.dump' and -e $vardir.'/'.$type.'_'.$d.'.dump') {
+        system("diff -a -U20 ".$vardir.'/old_'.$d.'.dump'." ".$vardir.'/'.$type.'_'.$d.'.dump');
+      }
+    }
+  }
+  return $data_status;
+}
+
 sub createTestRunner {
   my $self= shift;
   $self->backupProperties();
@@ -244,7 +381,6 @@ sub prepareServer {
   my ($self, $srvnum, $is_active)= @_;
 
   say("Preparing server $srvnum");
-
   my $server= DBServer::MariaDB->new(
                       basedir => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{basedir},
                       config => $self->[SC_TEST_PROPERTIES]->cnf,
