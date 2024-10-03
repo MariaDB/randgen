@@ -25,12 +25,11 @@
 # Rows beyond the 10th are just inserted and delted randomly because each row in that part of the table is self-contained
 #
 
-#query_init:
-#	SET AUTOCOMMIT=OFF ; START TRANSACTION ;
+query_init:
+	{ $txn = $savepoints = 0; "" } ;
 
 query:
-	{ $savepoints = 0; "" }
-	START TRANSACTION ; savepoint ; body ; savepoint ; rollback_to_savepoint; commit_rollback ;
+	start_txn ; savepoint ; body ; savepoint ; rollback_to_savepoint; commit_rollback ;
 
 body:
 	update_all |
@@ -49,6 +48,10 @@ body:
 	delete_multi 
 ;
 
+start_txn:
+	{ $txn++? "": "START TRANSACTION" }
+;
+
 savepoint:
 	| | | | { ++$savepoints; "SAVEPOINT SP$savepoints" }
 ;
@@ -59,12 +62,16 @@ rollback_to_savepoint:
 ;
 
 commit_rollback:
-	{ $savepoints = 0; "COMMIT" } |
+	commit |
 	rollback
 ;
 
+commit:
+	{ my $x = ($txn? "COMMIT": "") ; $txn = $savepoints = 0; $x }
+;
+
 rollback:
-	{ $savepoints = 0; "ROLLBACK" }
+	{ my $x = ($txn? "ROLLBACK": "") ; $txn = $savepoints = 0; $x }
 ;
 
 update_all:
