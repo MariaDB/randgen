@@ -390,11 +390,11 @@ number:
     _digit | _digit | _digit | _digit | _digit |
     _digit | _digit | _digit | _digit | _digit |
     _digit | _digit | _digit | _digit | _digit |
-    4294967296 | -4294967296 | _bigint ;
+    4294967296 | -4294967296 | _bigint | CAST(null AS INTEGER) ;
  
 char_value:
 	_char | _char | _char | _char | _char |
-	_char(2) | _char(3) | '' | ' ' ;
+	_char(2) | _char(3) | '' | ' ' | CAST(null AS CHAR) ;
 
 num_field:
 	num_field_indexed |
