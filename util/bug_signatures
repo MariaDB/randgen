@@ -16,6 +16,9 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35090:
+=~ Assertion \`typeid(\*copy) == typeid(\*this)'
+=~ Item_func_or_sum::do_build_clone
 MDEV-35086:
 =~ Trying to lock mutex at .*session_tracker\.cc, line .*, when the mutex was already locked at .*session_tracker\.cc
 =~ Session_sysvars_tracker::vars_list::store
