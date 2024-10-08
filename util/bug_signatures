@@ -1544,12 +1544,15 @@ MDEV-27422:
 MDEV-27409:
 =~ signal|AddressSanitizer
 =~ oqgraph3::intrusive_ptr_release
-# The bug report is 10.5+, but the failure can happen on 10.4 too, like MDEV-27292
 MDEV-27366:
 =~ signal|AddressSanitizer
 =~ handler_index_cond_check
 =~ row_search_idx_cond_check
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-27366:
+=~ Assertion \`!prebuilt->index->is_primary()'
+=~ row_search_idx_cond_check
+=~ JOIN_TAB_SCAN::open
 MDEV-27305:
 =~ Assertion \`info\.length < field->field_length'
 =~ is_part_of_a_key_prefix
