@@ -16,6 +16,10 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35095:
+=~ Assertion \`(mem_root->flags & 4) == 0'
+=~ Type_std_attributes::agg_item_set_converter
+=~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35090:
 =~ Assertion \`typeid(\*copy) == typeid(\*this)'
 =~ Item_func_or_sum::do_build_clone
@@ -25,6 +29,9 @@ MDEV-35086:
 MDEV-35085:
 =~ Assertion \`!(entry->using_trx_cache && !mngr->trx_cache\.empty() && mngr->get_binlog_cache_log((1))->error)'
 =~ MYSQL_BIN_LOG::write_transaction_or_stmt
+MDEV-34895:
+=~ Assertion \`(mem_root->flags & 4) == 0'
+=~ parse_escaped_string
 MDEV-34775:
 =~ Assertion \`mdl_request->ticket == __null'
 =~ MDL_context::try_acquire_lock_impl
