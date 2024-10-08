@@ -16,6 +16,11 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35100:
+=~ signal|AddressSanitizer
+=~ my_uca_scanner_next_with_nchars_utf8mb4
+=~ Field::key_cmp
+=~ Histogram_json_hb::find_bucket
 MDEV-35095:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ Type_std_attributes::agg_item_set_converter
