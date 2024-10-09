@@ -16,6 +16,10 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35119:
+=~ Assertion \`(mem_root->flags & 4) == 0'
+=~ base_list::push_back
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-35118:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ Query_arena::alloc
