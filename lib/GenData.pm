@@ -205,6 +205,8 @@ sub doGenData {
       $gd_class= 'GendataSimple';
     } elsif ($gd eq 'advanced') {
       $gd_class= 'GendataAdvanced';
+    } elsif (-d "$gd") {
+      $gd_class= 'GendataExternal';
     }
     $gd_class="GenData::$gd_class";
     eval ("require $gd_class") or croak $@;
