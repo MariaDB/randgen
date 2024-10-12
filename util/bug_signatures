@@ -16,6 +16,10 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35133:
+=~ AddressSanitizer|signal
+=~ spider_db_open_handler|spider_send_query
+=~ ha_spider::index_last
 MDEV-35132:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ and_items
