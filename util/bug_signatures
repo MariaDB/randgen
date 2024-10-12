@@ -16,6 +16,10 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35134:
+=~ Assertion \`thd->stmt_arena->is_stmt_prepare_or_first_stmt_execute() \|\| thd->stmt_arena->is_conventional()'
+=~ Item_exists_subselect::exists2in_processor
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-35133:
 =~ AddressSanitizer|signal
 =~ spider_db_open_handler|spider_send_query
@@ -3653,6 +3657,14 @@ MDEV-16789:
 =~ insert_fields
 =~ setup_wild
 =~ sp_head::execute
+MDEV-16768:
+=~ AddressSanitizer|signal
+=~ myrocks::Rdb_field_packing::get_field_in_table
+=~ Rows_log_event::do_apply_event
+=~ Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-16768:
+=~ Slave SQL: Could not execute Update_rows_v1 event on table .* Can't find record in
+=~ FeatureUsage detected RocksDB tables
 MDEV-16755:
 =~ signal 11|AddressSanitizer:
 =~ multi_delete::~multi_delete
