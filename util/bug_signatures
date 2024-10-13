@@ -16,6 +16,11 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35135:
+=~ Assertion `!is_cond()'
+=~ Item_bool_func::val_int
+=~ do_select
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-35134:
 =~ Assertion \`thd->stmt_arena->is_stmt_prepare_or_first_stmt_execute() \|\| thd->stmt_arena->is_conventional()'
 =~ Item_exists_subselect::exists2in_processor
