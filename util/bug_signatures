@@ -16,6 +16,11 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35145:
+=~ AddressSanitizer|signal|Conditional jump or move depends on uninitialised value
+=~ translog_write_parts_on_page
+=~ translog_write_record
+=~ ha_maria::delete_row
 MDEV-35137:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ Item_exists_subselect::select_prepare_to_be_in
@@ -60,7 +65,7 @@ MDEV-35090:
 =~ Item_func_or_sum::do_build_clone
 MDEV-35086:
 =~ Trying to lock mutex at .*, when the mutex was already locked at .*session_tracker\.cc
-=~ Session_sysvars_tracker::vars_list::store
+=~ Session_sysvars_tracker::vars_list::store|sys_var_pluginvar::session_update
 MDEV-35086:
 =~ signal
 =~ safe_mutex_lock
@@ -92,6 +97,10 @@ MDEV-34322:
 =~ Item_param::assign_default
 =~ Prepared_statement::execute
 =~ Version: '11\.[1-9]|Server version: 11\.[1-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-34281:
+=~ Assertion \`is_valid_ident(\*this)'
+=~ Lex_ident_fs::streq
+=~ wsrep_tables_accessible_when_detached
 MDEV-34252:
 =~ DDL_LOG: Got error 1050 when trying to execute action for entry .* of type 'alter table'
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG
@@ -165,6 +174,10 @@ MDEV-33369:
 =~ AddressSanitizer|signal
 =~ Item_func_json_schema_valid::cleanup
 =~ THD::cleanup_after_query
+MDEV-33369:
+=~ AddressSanitizer|signal
+=~ Item_func_json_schema_valid::val_int
+=~ Arg_comparator::compare
 MDEV-33289:
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name.str, MDL_SHARED) \|\| thd->mdl_context\.is_lock_warrantee(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
 =~ close_thread_table
@@ -1614,10 +1627,9 @@ MDEV-27224:
 =~ FeatureUsage detected unique blobs
 MDEV-27223:
 =~ AddressSanitizer|signal
-=~ my_strnncollsp_
+=~ my_strnncollsp_|my_uca_strnncollsp_
 =~ Field_blob::cmp
-=~ check_duplicate_long_entry_key
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ check_duplicate_long_entry_key|handler::check_duplicate_long_entries_update
 =~ FeatureUsage detected unique blobs
 MDEV-27027:
 =~ Assertion \`!param->got_error'
