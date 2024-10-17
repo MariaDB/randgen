@@ -33,6 +33,13 @@ query:
                                      | normal_trans 
 ;
 
+thread1_init:
+      USE oltp_db
+  ;;  DROP TABLE IF EXISTS t1
+  ;;  CREATE TABLE t1 (a int, b int, c int, INDEX i1(a), INDEX i2(b)) 
+  ;;  INSERT INTO t1 VALUES (1,1,0), (1,2,0), (2,1,0), (2,2,0)
+;
+
 complete_xa:
    custom_sql | xa_2phase | xa_1phase | xa_rollback_idle | xa_rollback_prepared
 ;
@@ -45,10 +52,9 @@ custom_sql:
 custom_sql_1:
       
       USE oltp_db
-  ;;  DROP TABLE IF EXISTS t1
-  ;;  CREATE TABLE t1 (a int, b int, c int, INDEX i1(a), INDEX i2(b)) 
-  ;;  INSERT INTO t1 VALUES (1,1,0), (1,2,0), (2,1,0), (2,2,0)
   ;;  XA START { $rand_xid }
+  ;;  DELETE FROM t1
+  ;;  INSERT INTO t1 VALUES (1,1,0), (1,2,0), (2,1,0), (2,2,0)
   ;;  UPDATE t1 FORCE INDEX (i2) SET c=c+1 WHERE a=1 AND b=1
   ;;  XA END { $rand_xid }
   ;;  XA PREPARE { $rand_xid }
