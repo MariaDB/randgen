@@ -170,6 +170,14 @@ MDEV-33529:
 =~ Binary_string::operator=
 =~ create_internal_tmp_table_from_heap
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]
+MDEV-33467:
+=~ MemorySanitizer|signal
+=~ Show::disks_fill_table
+=~ get_schema_tables_result
+MDEV-33444:
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
+=~ ERROR.*Got an error from thread_id=
+=~ ERROR.*MariaDB thread id .*, OS thread handle .*, query id .*
 MDEV-33369:
 =~ AddressSanitizer|signal
 =~ Item_func_json_schema_valid::cleanup
@@ -2761,6 +2769,10 @@ MDEV-22695:
 =~ heap_rnext
 =~ ha_heap::index_next
 =~ QUICK_RANGE_SELECT
+MDEV-26757: [MSAN with compression]
+=~ MemorySanitizer:
+=~ buf_page_is_corrupted
+=~ buf_tmp_reserve_compression_buf
 MDEV-22676:
 =~ InnoDB: Failing assertion: result != FTS_INVALID
 =~ fts_trx_row_get_new_state
