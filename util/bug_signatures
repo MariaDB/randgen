@@ -16,6 +16,23 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35236:
+=~ Assertion \`(mem_root->flags & 4) == 0'
+=~ safe_lexcstrdup_root
+=~ extend_option_list
+MDEV-35235:
+=~ Assertion \`m_status == DA_ERROR'
+=~ Diagnostics_area::sql_errno
+=~ thd_get_error_number
+=~ trx_release_savepoint_for_mysql
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-35234:
+=~ Assertion \`(mem_root->flags & 4) == 0'
+=~ st_select_lex::save_item_list_names
+=~ Prepared_statement::execute|sp_head::execute
+MDEV-35232:
+=~ Failed to write the DROP statement for temporary tables to binary log
+=~ FeatureUsage detected backup stages
 MDEV-35145:
 =~ AddressSanitizer|signal|Conditional jump or move depends on uninitialised value
 =~ translog_write_parts_on_page
@@ -48,7 +65,7 @@ MDEV-35119:
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-35118:
 =~ Assertion \`(mem_root->flags & 4) == 0'
-=~ Query_arena::alloc
+=~ Query_arena::alloc|Query_arena::calloc
 =~ st_select_lex::setup_ref_array
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-35100:
@@ -956,6 +973,11 @@ MDEV-30957:
 =~ AddressSanitizer: use-after-poison
 =~ Item_change_list::rollback_item_tree_changes
 =~ Prepared_statement::cleanup_stmt|sp_lex_keeper::reset_lex_and_exec_core
+MDEV-30943:
+=~ LeakSanitizer: detected memory leaks
+=~ trx_mod_table_time_t::start_bulk_insert
+=~ row_ins_clust_index_entry_low
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-30942:
 =~ MemorySanitizer: use-of-uninitialized-value
 =~ free_root
@@ -1873,7 +1895,7 @@ MDEV-25332:
 =~ Deadlock reporter:.* declaring deadlock|Actual test duration .* is more than .* times the desired duration
 =~ Deadlock reporter: Stalled query: .*ANALYZE.*FORMAT=JSON
 MDEV-25311:
-=~ signal 11|AddressSanitizer|MemorySanitizer
+=~ signal|AddressSanitizer|MemorySanitizer
 =~ Json_writer_object::add
 =~ sel_arg_and_weight_heuristic
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
