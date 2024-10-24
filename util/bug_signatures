@@ -16,6 +16,18 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35249:
+=~ Assertion \`(mem_root->flags & 4) == 0'
+=~ convert_subq_to_jtbm
+MDEV-35243:
+=~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type == 1'
+=~ handler::ha_update_row
+=~ multi_update::send_data
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-35242:
+=~ Assertion \`(mem_root->flags & 4) == 0'
+=~ add_internal_tables
+=~ DML_prelocking_strategy::handle_table
 MDEV-35236:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ safe_lexcstrdup_root
@@ -605,6 +617,11 @@ MDEV-31909:
 =~ Item_ref::const_item
 =~ Item::cache_const_expr_analyzer
 =~ Prepared_statement::execute
+MDEV-31909:
+=~ signal|AddressSanitizer
+=~ Item_ref::update_used_tables
+=~ Used_tables_and_const_cache::used_tables_and_const_cache_update_and_join
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-31908:
 =~ signal|AddressSanitizer
 =~ ha_connect::OpenTable
@@ -1642,7 +1659,7 @@ MDEV-27366:
 MDEV-27366:
 =~ Assertion \`!prebuilt->index->is_primary()'
 =~ row_search_idx_cond_check
-=~ JOIN_TAB_SCAN::open
+=~ JOIN_TAB_SCAN::open|QUICK_RANGE_SELECT::get_next
 MDEV-27305:
 =~ Assertion \`info\.length < field->field_length'
 =~ is_part_of_a_key_prefix
