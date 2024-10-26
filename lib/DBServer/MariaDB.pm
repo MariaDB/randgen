@@ -556,6 +556,10 @@ sub startServer {
         }
         $command = "valgrind --time-stamp=yes --leak-check=yes --suppressions=".$self->valgrind_suppressionfile." ".$val_opt." ".$command;
     }
+    elsif ($ENV{MSAN_LIBS}) {
+        $start_wait_timeout= 60;
+        $startup_timeout= MYSQLD_MAX_SERVER_DOWNTIME * 10;
+    }
     $self->printInfo;
 
     my $errlog_last_update_time= (stat($errorlog))[9] || 0;
@@ -1444,7 +1448,7 @@ sub startPlannedDowntime {
   say("Starting planned downtime, waiting $wait_time seconds, type $restart_type");
   set_expectation($self->vardir,"$wait_time\n(seconds to wait)");
   if ($restart_type eq 'CLEAN') {
-    my $shutdown_timeout= ($wait_time ? int($wait_time/2) : undef);
+    my $shutdown_timeout= ($wait_time >= 0 ? int($wait_time/2) : $default_shutdown_timeout);
     $status= $self->stopServer($shutdown_timeout);
   } else {
     $status= $self->kill($restart_type);
@@ -2044,11 +2048,12 @@ sub storeMetaData {
   my @waiters= ();
   my $status= DBSTATUS_OK;
 
-  unless ($maxtime) {
-    sayError("Max time for metadata dump must be defined, cannot wait forever");
-    $status= DBSTATUS_FAILURE;
-    goto METAERR;
-  }
+  #unless ($maxtime) {
+  #  sayError("Max time for metadata dump must be defined, cannot wait forever");
+  #  $status= DBSTATUS_FAILURE;
+  #  goto METAERR;
+  #}
+  $maxtime= 3600;
 
   unless (defined $self->[MYSQLD_METADATA_CONNECTION] && $self->[MYSQLD_METADATA_CONNECTION]->alive) {
     $self->[MYSQLD_METADATA_CONNECTION]= $self->connect('MET');
