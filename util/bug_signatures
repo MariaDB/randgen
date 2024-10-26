@@ -16,6 +16,9 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35266: [aria-block-size, can't open control file]
+=~ Can't open Aria control file (0)
+=~ mysqld=--aria-block-size=
 MDEV-35249:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ convert_subq_to_jtbm
@@ -2951,7 +2954,7 @@ MDEV-22262:
 MDEV-22241:
 =~ Assertion \`0'
 =~ Protocol::end_statement
-=~ Query.*: .*LIMIT ROWS EXAMINED
+=~ Query.*: .*LIMIT.* ROWS EXAMINED
 MDEV-22238:
 =~ Assertion \`!current_stmt_is_commit \|\| !rgi->tables_to_lock'
 =~ Query_log_event::do_apply_event
