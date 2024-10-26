@@ -34,11 +34,15 @@ sub transform {
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   return STATUS_WONT_HANDLE if $orig_query !~ m{^[\(\s]*(?:SELECT|WITH)}sgio
            || $orig_query =~ m{(INTO|PROCESSLIST)}is;
+  # SET STATEMENT disabled due to MDEV-29217
+  return STATUS_WONT_HANDLE if $orig_query =~ m{SET\s*STATEMENT}sgio;
   return $class->modify($orig_query, my $with_transform_outcome=1, $executor) || STATUS_WONT_HANDLE;
 }
 
 sub variate {
   my ($class, $orig_query, $executor) = @_;
+  # SET STATEMENT disabled due to MDEV-29217
+  return [ $orig_query ] if $orig_query =~ m{SET\s*STATEMENT}sgio;
   return $class->modify($orig_query, undef, $executor) || [ $orig_query ];
 }
 
