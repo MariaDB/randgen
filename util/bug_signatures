@@ -16,6 +16,9 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35276:
+=~ Assertion \`item->type() == Item::FIELD_ITEM \|\| item->type() == Item::TRIGGER_FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF)'
+=~ find_producing_item
 MDEV-35266: [aria-block-size, can't open control file]
 =~ Can't open Aria control file (0)
 =~ mysqld=--aria-block-size=
