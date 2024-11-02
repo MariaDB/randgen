@@ -16,6 +16,11 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35318:
+=~ Assertion \`tl->jtbm_subselect'
+=~ JOIN::calc_allowed_top_level_tables
+=~ Prepared_statement::execute|sp_head::execute
+=~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35307:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
@@ -1028,6 +1033,10 @@ MDEV-30801:
 =~ trx_start_if_not_started_low
 =~ Query_cache::send_result_to_client
 =~ FeatureUsage detected XA transactions
+MDEV-30721:
+=~ Assertion \`fixed()'|Assertion \`fixed == 1'
+=~ Item_cond_and::val_int
+=~ Item_func::is_simplified_cond_processor
 MDEV-30691:
 =~ Assertion \`strlen(Ptr) == str_length'
 =~ Binary_string::chop
@@ -2935,8 +2944,8 @@ MDEV-22375:
 =~ Item_in_subselect
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22368:
-=~ Assertion \`field_max_length <= m_return_field_def\.length \|\| m_return_field_def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && m_return_field_def\.length == 8 && (m_return_field_def\.pack_flag & (1024U\|2048U)))'
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ Assertion \`field_max_length <= m_return_field_def\.length \|\| m_return_field_def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && m_return_field_def\.length == 8 && (m_return_field_def\.pack_flag & (1024U\|2048U)))'|\`field_max_length <= def\.length \|\| def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && def\.length == 8 && (def\.pack_flag & (1024U\|2048U)))'
+=~ sp_instr_stmt::exec_core
 MDEV-22333:
 =~ Assertion \`len <= fixed_len'
 =~ rec_get_converted_size_comp_prefix_low
