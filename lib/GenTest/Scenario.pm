@@ -19,7 +19,6 @@ package GenTest::Scenario;
 
 require Exporter;
 @ISA = qw(GenTest Exporter);
-@EXPORT = qw(SC_GALERA_DEFAULT_LISTEN_PORT);
 
 use strict;
 use GenUtil;
@@ -39,8 +38,7 @@ use constant SC_NUMBER_OF_SERVERS      => 9;
 use constant SC_REPORTER_MANAGER       => 10;
 use constant SC_TEST_RUNNER            => 11;
 use constant SC_COMPATIBILITY_ES       => 12;
-
-use constant SC_GALERA_DEFAULT_LISTEN_PORT =>  4800;
+use constant SC_GALERA_LISTEN_PORT     => 13;
 
 1;
 
@@ -61,6 +59,7 @@ sub new {
   }
   $scenario->[SC_COMPATIBILITY]= $scenario->getProperty('compatibility') | '000000';
   $scenario->[SC_COMPATIBILITY_ES]= $scenario->getProperty('compatibility_es') | 0;
+  $scenario->[SC_GALERA_LISTEN_PORT]= $scenario->getProperty('base_port') + 555;
   $scenario->backupProperties();
   $scenario->printTitle();
   return $scenario;
@@ -72,6 +71,10 @@ sub compatibility {
 
 sub compatibility_es {
   return $_[0]->[SC_COMPATIBILITY_ES];
+}
+
+sub galera_default_listen_port {
+  return $_[0]->[SC_GALERA_LISTEN_PORT];
 }
 
 # Checks min/max number of servers for the scenario, removes gaps
@@ -398,6 +401,7 @@ sub prepareServer {
               );
   $self->setServerSpecific($srvnum,'active',($is_active || 0));
   $self->setServerSpecific($srvnum,'server',$server);
+  $server->skipTestSetup unless $is_active;
   return $server;
 }
 

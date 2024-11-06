@@ -88,8 +88,8 @@ sub run {
         $self->setServerStartupOption($s,'collation-server','utf8mb3_general_ci');
       }
     }
-    my $galera_listen_port = SC_GALERA_DEFAULT_LISTEN_PORT + $s-1;
-    my $galera_cluster_address = ($s-1 ? "gcomm://127.0.0.1:".SC_GALERA_DEFAULT_LISTEN_PORT : "gcomm://")
+    my $galera_listen_port = $self->galera_default_listen_port() + $s-1;
+    my $galera_cluster_address = ($s-1 ? "gcomm://127.0.0.1:".$self->galera_default_listen_port() : "gcomm://")
                                        . "?gmcast.listen_addr=tcp://127.0.0.1:".$galera_listen_port ;
     # Setting default options as per https://mariadb.com/kb/en/configuring-mariadb-galera-cluster/
     # of 2022-11-17
