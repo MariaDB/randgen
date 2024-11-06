@@ -1,4 +1,4 @@
-# Copyright (c) 2022, 2023 MariaDB
+# Copyright (c) 2022, 2024 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 $rules = {
   'plugins'     => sub { $_ =~ m{INSTALL|UNINSTALL}s },
   'mdev31870'   => sub { $_ =~ m{DECODE}s },
-  'set_statement'   => sub { $_ =~ m{SET\W.*STATEMENT\W.*FOR\W}is },
-  'mdev33350'  => sub { $_ =~ m{FOREIGN_KEY_CHECKS\s*=\s*0}is },
+  'set_statement' => sub { $_ =~ m{SET\W.*STATEMENT\W.*FOR\W}is },
+  'mdev33350'    => sub { $_ =~ m{FOREIGN_KEY_CHECKS\s*=\s*0}is },
+  'purge_binlog' => sub { $_ =~ m{PURGE.*LOG}is },
 }

@@ -32,7 +32,7 @@ table_list:
 
 admin_query:
     admin_analyze_or_explain_query
-  | admin_flush
+  | admin_flush_purge
   | ==FACTOR:10== admin_query_table_maint
   | admin_show
   | ==FACTOR:0.01== admin_cache_index
@@ -104,17 +104,21 @@ admin_format_json:
   | | FORMAT=JSON /* compatibility 10.9.1 */
 ;
 
+purge_binlog:
+  SELECT CONCAT("'",VARIABLE_VALUE,"'") INTO @binlog_file FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE VARIABLE_NAME = 'Binlog_snapshot_file'
+    ;; EXECUTE IMMEDIATE CONCAT('PURGE BINARY LOGS TO ',@binlog_file) |
+  PURGE BINARY LOGS BEFORE NOW() |
+  PURGE BINARY LOGS BEFORE FROM_UNIXTIME(@@timestamp - { $prng->uint16(1,60) })
+;
+
 admin_extended_or_partitions:
   | | | | | EXTENDED | EXTENDED | EXTENDED | EXTENDED | PARTITIONS
 ;
 
-admin_flush:
-    FLUSH admin_no_write_or_local admin_flush_list
-  | FLUSH admin_no_write_or_local admin_flush_list
-  | FLUSH admin_no_write_or_local admin_flush_list
-  | FLUSH admin_no_write_or_local admin_flush_list
-  | FLUSH admin_no_write_or_local admin_flush_list
-  | RESET QUERY CACHE
+admin_flush_purge:
+    ==FACTOR:20== FLUSH admin_no_write_or_local admin_flush_list
+  |               RESET QUERY CACHE
+  |               purge_binlog
 ;
 
 admin_no_write_or_local:
