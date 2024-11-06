@@ -179,7 +179,7 @@ my $opt_result = GetOptions(
   'basedir=s@' => \@basedirs,
   'clean' => \$clean,
   'config=s' => \$config_file,
-  'config-version|config_version=s' => \$version,
+  'compatibility|config-version|config_version=s' => \$version,
   'discard_logs|discard-logs' => \$discard_logs,
   'dry-run|dry_run' => \$dry_run,
   'help' => \$help,
