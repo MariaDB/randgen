@@ -2,7 +2,7 @@
 
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2021, 2023 MariaDB
+# Copyright (c) 2021, 2024 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -156,6 +156,7 @@ $SIG{CHLD} = "IGNORE" if osWindows();
 $SIG{INT}= sub { \&group_cleaner; $interrupted=1; $total_status= STATUS_TEST_STOPPED if $total_status < STATUS_TEST_STOPPED };
 
 # Options
+my $archive;
 my @basedirs=();
 my $clean;
 my $config_file;
@@ -174,6 +175,7 @@ my $version= '999999';
 my @pass_through= ();
 
 my $opt_result = GetOptions(
+  'archive=s' => \$archive,
   'basedir=s@' => \@basedirs,
   'clean' => \$clean,
   'config=s' => \$config_file,
@@ -228,15 +230,14 @@ read(CONF, my $config_text, -s $config_file);
 eval ($config_text);
 help("ERROR: Unable to load $config_file: $@") if $@;
 
-say("Using config=$config_file, workdir=$workdir, seed=$comb_seed, adjusted to version $version");
+$archive= $workdir unless ($archive);
+say("Using config=$config_file, workdir=$workdir, archive=$archive, seed=$comb_seed, adjusted to version $version");
 
 if (@ARGV) {
   sayDebug("Unrecognized options will be passed to the runner: @ARGV");
   @pass_through= @ARGV;
   @ARGV= ();
 }
-
-
 
 my $stdToLog = !osWindows() && $threads == 1;
 
@@ -251,6 +252,7 @@ for my $i (1..$threads) {
     ## Child
     $thread_id = $i;
     make_path($workdir);
+    make_path($archive);
     unlink("$workdir/result.txt");
 
     if ($trials eq 'all') {
@@ -416,7 +418,10 @@ sub doRandom {
   foreach my $trial_id (1..$trials) {
     my $c= pickOne($combinations);
     doCombination($trial_id,$c,"random trial");
-    last if $interrupted;
+    if ($interrupted) {
+      say("Test run was interrupted, aborting");
+      last;
+    }
   }
 }
 
@@ -476,11 +481,11 @@ sub doCombination {
       my $r= run(@args);
       exit $r;
     } else {
-      sayError("Could not for for command execution");
+      sayError("Could not fork for command execution");
     }
     group_cleaner();
     # Post-execution activities
-    my $tl = $workdir.'/trial'.$trial_id.'.log';
+    my $tl = $archive.'/trial'.$trial_id.'.log';
     move("$vardir/trial.log",$tl);
     if (defined $clean && $result == 0) {
       say("Combinations [$thread_id]: test run exited with exit status ".status2text($result)."($result). Clean mode active: deleting this OK log");
@@ -493,13 +498,13 @@ sub doCombination {
 
     my $from = $workdir.'/current1_'.$thread_id;
     system("$ENV{RQG_HOME}\\util\\unlock_handles.bat -nobanner \"$from\"") if osWindows() and -e "\"$from\"";
-      if ($result > 0) {
+    if ($result > 0) {
       open(RES,">>$workdir/result.txt");
       print RES "Trial $trial_id:\n";
       close(RES);
       system("DB_USER= perl $ENV{RQG_HOME}/util/check_for_known_bugs.pl --signatures=$ENV{RQG_HOME}/util/bug_signatures* $from/s*/mysql.err $from/trial.log $workdir/trial${trial_id}.log $from/s*/boot.log 2>&1 | tee -a $workdir/result.txt");
       unless ($discard_logs) {
-        my $to = $workdir.'/vardir1_'.$trial_id;
+        my $to = $archive.'/vardir1_'.$trial_id;
         sayDebug("Combinations [$thread_id]: Copying $from to $to") if $stdToLog;
         if (osWindows() and -e $from) {
           system("move \"$from\" \"$to\"");
@@ -515,8 +520,8 @@ sub doCombination {
           close(OUT);
           if (defined $clean) {
             say("Combinations [$thread_id]: Clean mode active & failed run (".status2text($result)."): Archiving this vardir");
-            system('rm -f '.$workdir.'/vardir1_'.$trial_id.'/tmp/master.sock');
-            system('tar zhcf '.$workdir.'/vardir1_'.$trial_id.'.tar.gz -C '.$workdir.' ./vardir1_'.$trial_id);
+            system('rm -f '.$archive.'/vardir1_'.$trial_id.'/tmp/master.sock');
+            system('tar zhcf '.$archive.'/vardir1_'.$trial_id.'.tar.gz -C '.$archive.' ./vardir1_'.$trial_id);
             system("rm -Rf $to");
           }
         }
