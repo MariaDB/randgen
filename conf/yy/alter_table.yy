@@ -52,7 +52,8 @@ alt_rename_multi:
 ;
 
 alt_alter:
-  alt_optional_set_statement ALTER alt_online_optional alt_ignore_optional TABLE alt_if_exists _basetable _basics_wait_nowait alt_alter_list_with_optional_order_by
+  alt_optional_set_statement ALTER alt_online_optional alt_ignore_optional TABLE alt_if_exists _basetable _basics_wait_nowait alt_alter_list_with_optional_order_by |
+  alt_optional_set_statement ALTER ONLINE __ignore(20) TABLE __if_exists(95) _basetable _basics_wait_nowait alt_alter_list, ALGORITHM=COPY
 ;
 
 alt_if_exists:
