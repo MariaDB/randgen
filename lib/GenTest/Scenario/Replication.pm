@@ -144,12 +144,6 @@ sub run {
       unless ($master_conn->err) {
         $master_conn->execute("GRANT REPLICATION SLAVE ON *.* TO replication");
       }
-      $master_conn->execute("RESET MASTER");
-      if ($master_conn->err) {
-        sayError("Could not configure replication user on server $master: ".$master_conn->print_error);
-        $total_status= STATUS_REPLICATION_FAILURE if STATUS_REPLICATION_FAILURE > $total_status;
-        last;
-      }
       my $master_port= $servers[$master]->port;
       my ($slave_conn, $err)= Connection::Perl->new( server => $servers[$slave], role => 'super', name => 'RPL' );
       unless ($slave_conn) {
