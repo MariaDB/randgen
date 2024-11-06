@@ -36,9 +36,10 @@ sub transform {
   return STATUS_WONT_HANDLE if $original_query !~ m{^\s*SELECT}is;
   return STATUS_WONT_HANDLE if $original_query =~ m{LIMIT\s+(?:\d+\s*,\s*)?0}is;
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  #          - CONCAT() in ORDER BY queries, which require more complex regexes below for correct behavior
+  #          - ORDER BY queries which are followed by brackets (either function calls or something else),
+  #            as it requires more complex regexes for correct behavior
   #          - INTO, because there will be nothing to compare
-  return STATUS_WONT_HANDLE if $original_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO|GROUP\s+BY|ORDER\s+BY[^()]*CONCAT\s*\()}is;
+  return STATUS_WONT_HANDLE if $original_query =~ m{(OUTFILE|INFILE|PROCESSLIST|INTO|GROUP\s+BY|ORDER\s+BY.*[()])}is;
 
   my $query= $class->modify($original_query);
   return STATUS_WONT_HANDLE unless defined $query;
@@ -56,13 +57,14 @@ sub transform {
 sub variate {
   my ($class, $original_query) = @_;
   return [ $original_query ] if $original_query !~ m{^\s*SELECT}is;
+  return [ $original_query ] if $original_query =~ m{ORDER\s+BY.*[()]}is;
   return [ $class->modify($original_query) || $original_query ];
 }
 
 sub modify {
   my ($class, $original_query) = @_;
 
-  if ($original_query =~ s{ORDER\s+BY[^\(\)]+$}{}is) {
+  if ($original_query =~ s{ORDER\s+BY.*$}{}is) {
     # Removing ORDER BY
   } elsif ($original_query !~ s{LIMIT[^()]*$}{ORDER BY 1}is) {
     # Won't handle
