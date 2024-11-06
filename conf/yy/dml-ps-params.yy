@@ -1,4 +1,4 @@
-# Copyright (C) 2018, 2022, MariaDB Corporation.
+# Copyright (C) 2018, 2024, MariaDB Corporation.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 query_init:
   # Array index is the part of statement name (stmt_$i), the value
   # is the number of parameters
-  { @ps= (); '' } { _set_db('NON-SYSTEM') } prepare_statement ;
+  { @ps= (); $serverside_counter=0; $serverside_prefix='SSIDE-'.$executors->[0]->threadId().'-'; '' } { _set_db('NON-SYSTEM') } prepare_statement ;
 
 query:
   { _set_db('NON-SYSTEM') } ps_query;
@@ -33,7 +33,8 @@ ps_query:
     prepare_statement |
     ==FACTOR:20== execute_statement |
     trx |
-    ==FACTOR:0.1== deallocate_statement
+    ==FACTOR:0.1== deallocate_statement |
+    ==FACTOR:5== serverside_ps
 ;
 
 execute_statement:
@@ -79,4 +80,9 @@ delete:
 select:
     SELECT /* _table[invariant] */ _field FROM _table[invariant] ORDER BY _field LIMIT { $paramcount= 1; '?' } __for_update(20) |
     SELECT * FROM _table ORDER BY _field LIMIT { $paramcount= 1; '?' } __for_update(20)
+;
+
+serverside_ps:
+  { $sth= $executors->[0]->connection->dbh->selectall_arrayref('/* '.$serverside_prefix.(++$serverside_counter).' */'."REPLACE INTO $last_database.$last_table ($last_field) VALUES (?)", {mysql_server_prepare => 1}, $prng->digit); '' } |
+  { $sth= $executors->[0]->connection->dbh->selectall_arrayref('/* '.$serverside_prefix.(++$serverside_counter).' */'."UPDATE $last_database.$last_table SET $last_field = ? ORDER BY 1 LIMIT 1", {mysql_server_prepare => 1}, $prng->digit); '' }
 ;
