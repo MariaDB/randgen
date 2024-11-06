@@ -1839,17 +1839,21 @@ $ddl_grammars{1004}= [ @{$ddl_grammars{$minversion}},
       --mysqld=--plugin-maturity=experimental
       --mysqld=--plugin-load-add=auth_0x0100.so
       --mysqld=--plugin-load-add=auth_ed25519.so
-      --mysqld=--plugin-load-add=auth_pam.so
-      --mysqld=--plugin-load-add=cracklib_password_check.so
-      --mysqld=--plugin-load-add=simple_password_check.so'],
+      --mysqld=--plugin-load-add=auth_pam.so',
+    [@empty_set_10,
+     '--mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=simple_password_check.so']
+  ],
   [@empty_set_50,
     '--grammar=conf/yy/create_user.yy:0.1
       --mysqld=--plugin-maturity=experimental
       --mysqld=--plugin-load-add=auth_0x0100.so
       --mysqld=--plugin-load-add=auth_ed25519.so
-      --mysqld=--plugin-load-add=auth_pam.so
-      --mysqld=--plugin-load-add=cracklib_password_check.so
-      --mysqld=--plugin-load-add=simple_password_check.so'],
+      --mysqld=--plugin-load-add=auth_pam.so',
+    [@empty_set_10,
+     '--mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=simple_password_check.so']
+  ],
 ];
 
 $ddl_grammars{1007}= [ @{$ddl_grammars{$minversion}},
@@ -1858,39 +1862,48 @@ $ddl_grammars{1007}= [ @{$ddl_grammars{$minversion}},
       --mysqld=--plugin-maturity=experimental
       --mysqld=--plugin-load-add=auth_0x0100.so
       --mysqld=--plugin-load-add=auth_ed25519.so
-      --mysqld=--plugin-load-add=auth_pam.so
-      --mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=auth_pam.so',
+    [@empty_set_10,
+     '--mysqld=--plugin-load-add=cracklib_password_check.so
       --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
-      --mysqld=--plugin-load-add=simple_password_check.so'],
+      --mysqld=--plugin-load-add=simple_password_check.so']
+  ],
   [@empty_set_50,
     '--grammar=conf/yy/create_user.yy:0.1
       --mysqld=--plugin-maturity=experimental
       --mysqld=--plugin-load-add=auth_0x0100.so
       --mysqld=--plugin-load-add=auth_ed25519.so
-      --mysqld=--plugin-load-add=auth_pam.so
-      --mysqld=--plugin-load-add=cracklib_password_check.so
+      --mysqld=--plugin-load-add=auth_pam.so',
+     [@empty_set_10,
+     '--mysqld=--plugin-load-add=cracklib_password_check.so
       --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
       --mysqld=--plugin-load-add=simple_password_check.so']
+  ]
 ];
+
 $ddl_grammars{'es-1004'}= [ @{$ddl_grammars{$minversion}},
   [@empty_set_50,
     '--grammar=conf/yy/acl.yy:0.1
       --mysqld=--plugin-maturity=experimental
       --mysqld=--plugin-load-add=auth_0x0100.so
       --mysqld=--plugin-load-add=auth_ed25519.so
-      --mysqld=--plugin-load-add=auth_pam.so
-      --mysqld=--plugin-load-add=cracklib_password_check.so
-      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
-      --mysqld=--plugin-load-add=simple_password_check.so'],
+      --mysqld=--plugin-load-add=auth_pam.so',
+      [@empty_set_10,
+      '--mysqld=--plugin-load-add=cracklib_password_check.so
+       --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
+       --mysqld=--plugin-load-add=simple_password_check.so'],
+  ],
   [@empty_set_50,
     '--grammar=conf/yy/create_user.yy:0.1
       --mysqld=--plugin-maturity=experimental
       --mysqld=--plugin-load-add=auth_0x0100.so
       --mysqld=--plugin-load-add=auth_ed25519.so
-      --mysqld=--plugin-load-add=auth_pam.so
-      --mysqld=--plugin-load-add=cracklib_password_check.so
-      --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
-      --mysqld=--plugin-load-add=simple_password_check.so']
+      --mysqld=--plugin-load-add=auth_pam.so',
+      [@empty_set_10,
+      '--mysqld=--plugin-load-add=cracklib_password_check.so
+       --mysqld=--plugin-load-add=password_reuse_check.so --mysqld=--password-reuse-check-interval=1
+       --mysqld=--plugin-load-add=simple_password_check.so'],
+  ]
 ];
 
 $ddl_grammars{1008}= [ @{$ddl_grammars{1007}},
