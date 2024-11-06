@@ -1910,6 +1910,10 @@ $ddl_grammars{1008}= [ @{$ddl_grammars{1007}},
   [@empty_set_20, '--grammar=conf/yy/desc_indexes.yy'],
 ];
 
+$ddl_grammars{1107}= [ @{$ddl_grammars{1008}},
+  [@empty_set_10, '--grammar=conf/yy/vector.yy']
+];
+
 $variables_grammars{1100}= [ @{$variables_grammars{1008}},
   [@empty_set_50, '--grammar=conf/yy/optimizer_costs.yy:0.001'],
 ];
