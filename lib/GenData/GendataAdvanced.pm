@@ -1,5 +1,5 @@
 # Copyright (C) 2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2016, 2022 MariaDB Corporation Ab
+# Copyright (c) 2016, 2024 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -153,7 +153,7 @@ sub gen_table {
       return STATUS_OK;
     }
 
-    my ($nullable, $precision);
+    my ($nullable, $precision, $vector_length);
 
     my $res= STATUS_OK;
 
@@ -399,6 +399,23 @@ sub gen_table {
                                 ( $nullable eq 'NULL' ? undef : "'00000000000000000000000000000000'" ),
                                 undef,
                                 ( ($nullable eq 'NULL' || $invisible_forbidden) ? undef : random_invisible() ),
+                                undef,
+                                undef
+                            ]
+    }
+
+    # VECTOR data type was introduced in 11.7.1
+    # VECTOR columns shoudn't be very common, but they're new. 10% after testing
+    if (isCompatible('110700',$self->compatibility,$self->compatibility_es) and !$prng->uint16(0,9)) {
+        $vector_length= ($prng->uint16(0,9) ? $prng->uint16(1,100) : $prng->uint16(101,300));
+        $columns{veccol} = [ 'VECTOR',
+                                $vector_length,
+                                undef,
+                                undef,
+                                'NOT NULL',
+                                '0x'.join ('', map { '0' } (1..$vector_length*8)),
+                                undef,
+                                ( $invisible_forbidden ? undef : random_invisible() ),
                                 undef,
                                 undef
                             ]
@@ -809,6 +826,10 @@ sub gen_table {
         $executor->execute("ALTER TABLE $db.$name ADD SPATIAL(". 'vcol_spatial' . ")");
     }
 
+    if ($columns{veccol} and $columns{veccol}->[4] eq 'NOT NULL' and not $prng->uint16(0,9)) {
+        $executor->execute("ALTER TABLE $db.$name ADD VECTOR(veccol)");
+    }
+
     my @values;
 
     $executor->execute("START TRANSACTION");
@@ -933,6 +954,14 @@ sub gen_table {
                     $val = $prng->spatial($c->[0]);
                 } else {
                     $val = $prng->uint16(0,9) == 9 ? "NULL" : $prng->spatial($c->[0]);
+                }
+            }
+            elsif ($c->[0] eq 'VECTOR')
+            {
+                if ($c->[4] ne 'NOT NULL' and $prng->uint16(0,9) == 0) {
+                  $val= "NULL";
+                } else {
+                  $val = $prng->vector($vector_length);
                 }
             }
             push @row_values, $val;
