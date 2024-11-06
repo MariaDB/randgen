@@ -105,7 +105,7 @@ sub run {
     goto FINALIZE;
   }
 
-  my ($conn, $err)= Connection::Perl->new(server => $server, role => 'admin', name => 'TBS' );
+  my ($conn, $err)= Connection::Perl->new(server => $server, role => 'super', name => 'TBS' );
   unless ($conn) {
     sayError("ImportTablespace: Connection TBS failed with error $err");
     $status= STATUS_ENVIRONMENT_FAILURE;
@@ -148,12 +148,13 @@ sub run {
 
   my $tables = $conn->get_column("select ts.name from information_schema.innodb_sys_tablespaces ts ".
     "join information_schema.tables t on BINARY ts.name = BINARY concat(t.table_schema,'/',t.table_name) ".
-    "where ts.name != 'innodb_system' and ts.name not like 'mysql/%' and ts.name not like '%#%' and t.table_type != 'SEQUENCE' and ts.name not like '%/FTS_0000%'");
+    "where ts.name != 'innodb_system' and ts.name not like 'mysql/%' and ts.name not like '%#%' and ts.name not like '%/FTS_0000%'");
 
   my %databases= ();
   foreach my $tpath (@$tables) {
     $tpath =~ /^(.*)\/(.*)/;
     my ($tschema, $tname)= ($1, $2);
+    say("Table: $tschema.$tname");
     $databases{$tschema}= 1;
 
     # Workaround for MDEV-29966 -- invalid default prevents ALTER or CREATE .. LIKE
@@ -258,7 +259,7 @@ sub run {
   }
 
 FINALIZE:
-  return $self->finalize($status,[]);
+  return $self->finalize($status,[$server]);
 }
 
 1;
