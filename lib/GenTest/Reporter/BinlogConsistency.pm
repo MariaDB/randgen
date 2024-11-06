@@ -115,7 +115,7 @@ sub report {
 
   say("Starting a new server ...");
   say("Creating a clean database...");
-  $server->createMysqlBase();
+  $server->createDatadir();
 
   move($tmpvardir,$vardir.'/vardir_orig');
   my $status = $server->startServer();
