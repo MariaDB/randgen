@@ -279,6 +279,12 @@ MDEV-33190:
 =~ _ma_make_key
 =~ ha_partition::check_misplaced_rows
 =~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-33190:
+=~ AddressSanitizer|signal
+=~ ha_maria::repair
+=~ ha_partition::handle_opt_part
+=~ Moved .* misplaced rows
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-33184:
 =~ \[ERROR\] Moved .* misplaced rows
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG
@@ -2845,16 +2851,6 @@ MDEV-22671:
 =~ MemorySanitizer
 =~ rocksdb::ThreadLocalPtr::StaticMeta::StaticMeta
 =~ __do_global_dtors_aux
-MDEV-22667:
-=~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
-=~ row_update_for_mysql|row_insert_for_mysql
-=~ ha_partition::delete_row|handler::ha_delete_row
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-22667:
-=~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), m_last_part)'
-=~ ha_partition::position
-=~ multi_delete::send_data|multi_update::send_data
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22662:
 =~ Assertion \`fixed == 0'
 =~ Item_func::fix_fields
