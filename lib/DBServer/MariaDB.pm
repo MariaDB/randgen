@@ -1,5 +1,5 @@
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2013, 2023, MariaDB
+# Copyright (c) 2013, 2024, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -76,6 +76,8 @@ use constant MYSQLD_HOST => 36;
 use constant MYSQLD_PS_PROTOCOL => 37;
 use constant MYSQLD_LAST_CHECKED_MARKER => 38;
 use constant MYSQLD_ASAN => 39;
+use constant MYSQLD_SETUP_DONE => 40;
+use constant MYSQLD_DATASET => 41;
 
 use constant MARIABACKUP => 50;
 use constant TZINFO_TO_SQL => 51;
@@ -93,6 +95,7 @@ sub new {
 
     my $self = $class->SUPER::new({'basedir' => MYSQLD_BASEDIR,
                                    'config' => MYSQLD_CONFIG_FILE,
+                                   'dataset' => MYSQLD_DATASET,
                                    'general_log' => MYSQLD_GENERAL_LOG,
                                    'host' => MYSQLD_HOST,
                                    'manual_gdb' => MYSQLD_MANUAL_GDB,
@@ -218,7 +221,7 @@ sub new {
         say("Using existing data for server " .$self->version ." at ".$self->datadir);
     } else {
         say("Creating " . $self->version . " database at ".$self->datadir);
-        if ($self->createMysqlBase != DBSTATUS_OK) {
+        if ($self->createDatadir != DBSTATUS_OK) {
             sayError("FATAL ERROR: Bootstrap failed, cannot proceed!");
             return undef;
         }
@@ -356,8 +359,8 @@ sub systemSchemaList {
   join ',', (map { "'$_'" } ($_[0]->systemSchemas()));
 }
 
-sub createMysqlBase  {
-    my ($self) = @_;
+sub createDatadir  {
+    my $self= shift;
 
     ## Clean old db if any
     if (-d $self->vardir) {
@@ -366,6 +369,15 @@ sub createMysqlBase  {
     ## Create database directory structure
     mkpath($self->vardir);
     mkpath($self->tmpdir);
+
+    if ($self->[MYSQLD_DATASET]) {
+      say("Using an external directory ".$self->[MYSQLD_DATASET]." instead of bootstrap");
+      system("rm -rf ".$self->datadir);
+      system("cp -r ".$self->[MYSQLD_DATASET]." ".$self->datadir);
+      return $?;
+    }
+
+    # Otherwise do the bootstrap
     mkpath($self->datadir);
 
     # Before MDEV-28782 mariadb-tzinfo-to-sql doesn't work in bootstrap
@@ -452,47 +464,60 @@ sub createMysqlBase  {
         push @$boot_options, "--initialize-insecure", "--init-file=$boot";
         $command = $self->generateCommand($boot_options);
     }
-
-    my $usertable= ($self->versionNumeric() gt '100400' ? 'global_priv' : 'user');
-
-    ## Add last strokes to the boot/init file: don't want empty users, but want the test user instead
-    print BOOT "USE mysql;\n";
-    print BOOT "DELETE FROM $usertable WHERE `User` = '';\n";
-    print BOOT "FLUSH PRIVILEGES;\n";
-    print BOOT "CREATE DATABASE IF NOT EXISTS transforms;\n";
-    print BOOT "CREATE DATABASE IF NOT EXISTS test;\n";
-    print BOOT "CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria;\n";
-    if ($self->user ne 'root') {
-      my $user= $self->user.'@localhost';
-      if ($self->_notOlderThan(10,0,5)) {
-        print BOOT "/*!100005 CREATE ROLE admin */;\n";
-        print BOOT "GRANT ALL ON *.* TO admin WITH GRANT OPTION;\n";
-        print BOOT "CREATE USER $user;\n";
-        print BOOT "GRANT /*!100502 BINLOG ADMIN, BINLOG MONITOR, BINLOG REPLAY, CONNECTION ADMIN, FEDERATED ADMIN, ".
-                                   "READ_ONLY ADMIN, REPLICATION MASTER ADMIN, REPLICATION REPLICA, REPLICATION SLAVE ADMIN, SET USER, */ ".
-                         "/*!100509 REPLICA MONITOR, */ ".
-                   "CREATE USER, FILE, PROCESS, RELOAD, REPLICATION CLIENT, SHOW DATABASES, SHUTDOWN, SUPER ON *.* TO $user;\n";
-      } else {
-        print BOOT "GRANT ALL ON *.* TO $user WITH GRANT OPTION;\n";
-      }
-      print BOOT "GRANT CREATE, SELECT ON *.* TO $user;\n";
-      print BOOT "GRANT ALL ON test.* TO $user;\n";
-      print BOOT "GRANT ALL ON transforms.* TO $user;\n";
-      print BOOT "GRANT ALL ON mysql.rqg_feature_registry TO $user;\n";
-      print BOOT "GRANT INSERT, UPDATE, DELETE ON performance_schema.* TO $user;\n";
-      print BOOT "GRANT EXECUTE ON sys.* TO $user;\n";
-      if ($self->_notOlderThan(10,4,0)) {
-        print BOOT "UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root');\n";
-      }
-      print BOOT "/*!100005 DELETE FROM mysql.roles_mapping WHERE Role = 'admin' */;\n";
-      print BOOT "/*!100005 INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y') */;\n";
-    }
     close BOOT;
 
     say("Bootstrap command: $command");
     system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command > \"".$self->vardir."/boot.log\" 2>&1");
     return $?;
 }
+
+sub skipTestSetup {
+  $_[0]->[MYSQLD_SETUP_DONE]= 1;
+}
+
+sub testSetup {
+  my $self= shift;
+  unless ($self->[MYSQLD_SETUP_DONE]) {
+    my $usertable= ($self->versionNumeric() gt '100400' ? 'global_priv' : 'user');
+
+    ## Add last strokes to the boot/init file: don't want empty users, but want the test user instead
+    $self->connection->execute("SET transaction_read_only=0");
+    $self->connection->execute("USE mysql");
+    $self->connection->execute("DELETE FROM $usertable WHERE `User` = ''");
+    $self->connection->execute("FLUSH PRIVILEGES");
+    $self->connection->execute("CREATE DATABASE IF NOT EXISTS transforms");
+    $self->connection->execute("CREATE DATABASE IF NOT EXISTS test");
+    $self->connection->execute("CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=InnoDB");
+    if ($self->user ne 'root') {
+      my $user= $self->user.'@localhost';
+      if ($self->_notOlderThan(10,0,5)) {
+        $self->connection->execute("/*!100005 CREATE ROLE admin */");
+        $self->connection->execute("GRANT ALL ON *.* TO admin WITH GRANT OPTION");
+        $self->connection->execute("CREATE USER $user");
+        $self->connection->execute("GRANT /*!100502 BINLOG ADMIN, BINLOG MONITOR, BINLOG REPLAY, CONNECTION ADMIN, FEDERATED ADMIN, ".
+                                   "READ_ONLY ADMIN, REPLICATION MASTER ADMIN, REPLICATION REPLICA, REPLICATION SLAVE ADMIN, SET USER, */ ".
+                         "/*!100509 REPLICA MONITOR, */ ".
+                   "CREATE USER, FILE, PROCESS, RELOAD, REPLICATION CLIENT, SHOW DATABASES, SHUTDOWN, SUPER ON *.* TO $user");
+      } else {
+        $self->connection->execute("GRANT ALL ON *.* TO $user WITH GRANT OPTION");
+      }
+      $self->connection->execute("GRANT CREATE, SELECT ON *.* TO $user");
+      $self->connection->execute("GRANT ALL ON test.* TO $user");
+      $self->connection->execute("GRANT ALL ON transforms.* TO $user");
+      $self->connection->execute("GRANT ALL ON mysql.rqg_feature_registry TO $user");
+      $self->connection->execute("GRANT INSERT, UPDATE, DELETE ON performance_schema.* TO $user");
+      $self->connection->execute("GRANT EXECUTE ON sys.* TO $user");
+      if ($self->_notOlderThan(10,4,0)) {
+        $self->connection->execute("UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root')");
+      }
+      $self->connection->execute("DELETE FROM mysql.roles_mapping WHERE Role = 'admin'");
+      $self->connection->execute("INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y')");
+      $self->connection->execute("FLUSH PRIVILEGES");
+    }
+    $self->[MYSQLD_SETUP_DONE]= 1;
+  }
+}
+
 
 sub startServer {
     my ($self, $repair_log_tables) = @_;
@@ -659,10 +684,12 @@ sub startServer {
         exec("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command >> \"$errorlog\"  2>&1") || croak("Could not start mysql server");
     }
 
-    if ($self->waitForServerToStart) {
+    my $started= $self->waitForServerToStart();
+    if ($started) {
         if ($repair_log_tables) {
           $self->connection->execute("REPAIR TABLE mysql.general_log, mysql.slow_log");
         }
+        $self->testSetup();
         $self->serverVariables();
         if ($self->[MYSQLD_MANUAL_GDB]) {
           say("Pausing test to allow attaching debuggers etc. to the server process ".$self->[MYSQLD_SERVERPID].".");

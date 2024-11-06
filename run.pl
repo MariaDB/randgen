@@ -49,7 +49,7 @@ sub run {
   use GenTest::GenConfig;
 
   use constant RQG_DEFAULT_SCENARIO  => 'Standard';
-  use constant RQG_DEFAULT_BASE_PORT => 19000;
+  use constant RQG_DEFAULT_BASE_PORT => 21000;
 
   $Carp::Verbose= 1;
   $| = 1;
@@ -97,6 +97,7 @@ sub run {
 
   %server_options= (
     basedir     => undef,
+    dataset     => undef,
     engines     => undef,
     gis         => undef,
     manual_gdb  => undef,
@@ -115,6 +116,7 @@ sub run {
     #
     # Server-related options
     'basedir=s' => \$server_options{basedir},
+    'dataset=s' => \$server_options{dataset},
     'engines=s@' => \@{$server_options{engines}},
     'gis!'     => \$server_options{gis},
     'manual-gdb|manual_gdb' => \$server_options{manual_gdb},
@@ -536,6 +538,8 @@ Run a complete random query generation test scenario
     Options related to the server(s):
 
     --basedir   : Specifies the base directory of a server
+    --dataset   : (optional) Specifies a previously prepared datadir
+                  to be used instead of bootstrap
     --genconfig : Template for server config generation
     --mysqld    : Options passed to the server(s), in a format
                   --mysqld=--opt[=value], can be specified multiple times
