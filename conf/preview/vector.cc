@@ -28,6 +28,13 @@ require "$ENV{RQG_HOME}/conf/cc/include/parameter_presets";
 local @ARGV = ($version);
 require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
 
+# Fillers to adjust probability of options
+my @empty_set_5=  ('','','','','');
+my @empty_set_10= (@empty_set_5,@empty_set_5);
+my @empty_set_20= (@empty_set_10, @empty_set_10);
+my @empty_set_30= (@empty_set_20, @empty_set_10);
+my @empty_set_50= (@empty_set_30, @empty_set_20);
+
 $combinations = [
 
 # Test options
@@ -51,51 +58,85 @@ $combinations = [
   [ @{$options{optional_perfschema}} ],
   [ @{$options{optional_server_variables}} ],
 
+  [ @empty_set_50, '--mysqld=--aria-block-size=16384 --dataset=0', '--mysqld=--aria-block-size=32768 --dataset=0' ],
+  [ @empty_set_50, '--mysqld=--innodb_page_size=4K --dataset=0','--mysqld=--innodb_page_size=8K --dataset=0','--mysqld=--innodb_page_size=32K --dataset=0','--mysqld=--innodb_page_size=64K --dataset=0'],
+
+  [ '--dataset=/data/tmp/vector/datadir' ],
+
 # New
   [ '--grammar=conf/preview/vector.yy:3' ],
-  [ '--mysqld=--mhnsw_cache_size=1M', '--mysqld=--mhnsw_cache_size=8G', '' ],
-  [ '--mysqld=--mhnsw_max_edges_per_node=3', '--mysqld=--mhnsw_max_edges_per_node=4', '--mysqld=--mhnsw_max_edges_per_node=20', '--mysqld=--mhnsw_cache_size=100', '', '' ],
-  [ '--mysqld=--mhnsw_min_limit=1', '--mysqld=--mhnsw_min_limit=2', '--mysqld=--mhnsw_min_limit=10', '--mysqld=--mhnsw_min_limit=100', '--mysqld=--mhnsw_min_limit=65535', '' ],
-  [ '--mysqld=--mhnsw_distance_function=euclidean', '--mysqld=--mhnsw_distance_function=cosine' ],
+  [ '--mysqld=--mhnsw_max_cache_size=128M', '--mysqld=--mhnsw_max_cache_size=8G', '--mysqld=--mhnsw_max_cache_size=4G', '--mysqld=--mhnsw_max_cache_size=1G', '--mysqld=--mhnsw_max_cache_size=1M' ],
+  [ '--mysqld=--mhnsw_default_m=3', '--mysqld=--mhnsw_default_m=4', '--mysqld=--mhnsw_default_m=20', '--mysqld=--mhnsw_max_cache_size=100', '', '' ],
+  [ '--mysqld=--mhnsw_ef_search=1', '--mysqld=--mhnsw_ef_search=2', '--mysqld=--mhnsw_ef_search=5', '--mysqld=--mhnsw_ef_search=10', '--mysqld=--mhnsw_ef_search=20', '--mysqld=--mhnsw_ef_search=100', '--mysqld=--mhnsw_ef_search=200', '--mysqld=--mhnsw_ef_search=4096', '--mysqld=--mhnsw_ef_search=65535', '' ],
+  [ '--mysqld=--mhnsw_default_distance=euclidean', '--mysqld=--mhnsw_default_distance=cosine' ],
+
+  [ '--gendata=simple', '--gendata=advanced' ],
+#  [ '--gendata=conf/preview/deep-image_96_10K.sql' ],
+#  [ '--gendata=conf/preview/gist_960_1K.sql' ],
+#  [ '--gendata=conf/preview/deep-image_96_50K.sql', '' ],
+#  [ '--gendata=conf/preview/deep-image_96_20K.sql', '' ],
+#  [ '--gendata=conf/preview/deep-image_96_100K.sql', '', '' ],
+#  [ '--gendata=conf/preview/gist_fake_1920_1K.sql', '' ],
 
   ##### Engines and scenarios
   [
     {
       simple => [
         [ '--scenario=Standard' ],
-        [ '--gendata=/data/tmp/vector_db' ],
-        [ @{$options{engine_basic_combinations}} ],
+        [ '--engine=InnoDB,MyISAM,Aria' ],
+        [ '--mysqld=--default-storage-engine=InnoDB', '--mysqld=--default-storage-engine=MyISAM', '--mysqld=--default-storage-engine=Aria' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
       ],
       innodb => [
-        [ '--scenario=Standard' ],
-        [ '--gendata=/data/tmp/vector_db' ],
-        [ '--engine=InnoDB' ],
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        [ '--engine=InnoDB --mysqld=--enforce-storage-engine=InnoDB --mysqld=--default-storage-engine=InnoDB' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
+      ],
+      myisam => [
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        [ '--engine=MyISAM --mysqld=--default-storage-engine=MyISAM --mysqld=--enforce-storage-engine=MyISAM' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
+      ],
+      aria => [
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        [ '--engine=Aria --mysqld=--default-storage-engine=Aria --mysqld=--enforce-storage-engine=Aria' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
       ],
       normal => [
-        [ @{$options{scenario_non_crash_combinations}} ],
+        [ '--scenario=Standard', '--scenario=Restart' ],
         [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
         [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{optional_binlog_unsafe_variables}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
       ],
-      index => [
-        [ @{$options{scenario_non_crash_combinations}} ],
-        [ '--gendata=/data/tmp/vector_db' ],
-        [ '--reporters=SecondaryIndexConsistency' ],
-        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}} ],
+      recovery => [
+        [ '--scenario=CrashRecovery', '--scenario=Restart --scenario-restart-type=kill' ],
+        [ '--engine=InnoDB', '--engine=Aria --mysqld=--default-storage-engine=Aria', '--engine=InnoDB,Aria' ],
+        [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
-        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{debug_grammars}} ],
       ],
-      recovery => [
-        [ @{$options{scenario_crash_combinations}} ],
-        [ '--gendata=/data/tmp/vector_db' ],
+      upgrade => [
+        [ '--scenario=NormalUpgrades' ],
         [ '--engine=InnoDB', '--engine=Aria --mysqld=--default-storage-engine=Aria', '--engine=InnoDB,Aria' ],
+        [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{debug_grammars}} ],
+      ],
+      binlog_recovery => [
+        [ '--scenario=CrashRecovery', '--scenario=AtomicDDL' ],
+        [ '--engine=InnoDB', '--engine=Aria --mysqld=--default-storage-engine=Aria', '--engine=InnoDB,Aria' ],
+        [ '--mysqld=--log-bin' ],
+        # extra XA engine
+        [ '--mysqld=--plugin-load-add=ha_rocksdb', '' ],
+        [ '--mysqld=--binlog-format=row', '--mysqld=--binlog-format=mixed' ],
         [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
@@ -103,30 +144,61 @@ $combinations = [
       ],
       innodb_recovery => [
         [ @{$options{scenario_crash_combinations}} ],
-        [ '--gendata=/data/tmp/vector_db' ],
-        [ '--engine=InnoDB' ],
+        [ '--engine=InnoDB --mysqld=--enforce-storage-engine=InnoDB --mysqld=--default-storage-engine=InnoDB' ],
         [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
       ],
-      upgrade_backup => [
+      backup => [
         [ @{$options{scenario_mariabackup_combinations}} ],
+        [ '--engine=InnoDB,MyISAM,Aria' ],
+        [ '--mysqld=--default-storage-engine=InnoDB', '--mysqld=--default-storage-engine=MyISAM', '--mysqld=--default-storage-engine=Aria' ],
         [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
-        [ @{$options{engine_basic_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
+      ],
+      xa_recovery => [
+        [ '--scenario=Standard', '--scenario=Restart', '--scenario=CrashRecovery', '--scenario=AtomicDDL' ],
+        [ '--engine=InnoDB' ],
+        [ '--mysqld=--default-storage-engine=InnoDB' ],
+        [ '--grammar=conf/yy/xa.yy' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
+        [ @{$options{optional_replication_safe_variables}}, @{$options{optional_replication_unsafe_variables}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
       ],
       replication => [
         [ @{$options{scenario_replication_combinations}} ],
         [ '--filter=conf/ff/replication.ff' ],
-        [ @{$options{engine_basic_combinations}} ],
+        [ '--engine=InnoDB,MyISAM,Aria' ],
+        [ '--mysqld=--default-storage-engine=InnoDB', '--mysqld=--default-storage-engine=MyISAM', '--mysqld=--default-storage-engine=Aria' ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{optional_replication_safe_variables}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
       ],
+      binlog => [
+        [ '--mysqld=--log-bin' ],
+        [ '--reporter=BinlogDump' ],
+        [ @{$options{scenario_non_crash_combinations}} ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
+        [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
+        [ @{$options{optional_encryption}} ],
+        # We don't care about binlog safety here, because we are not checking consistency
+        [ @{$options{optional_binlog_unsafe_variables}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
+      ],
+      galera => [
+        [ '--scenario=Galera' ],
+        [ '--filter=conf/ff/replication.ff' ],
+        [ '--engine=InnoDB' ],
+        [ '--engine=Aria,MyISAM --mysqld=--loose-wsrep-mode="REPLICATE_ARIA,REPLICATE_MYISAM"','--grammar=conf/yy/wsrep.yy','' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
+      ]
     }
   ],
 ];
