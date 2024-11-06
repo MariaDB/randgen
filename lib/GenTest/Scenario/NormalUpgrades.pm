@@ -424,6 +424,7 @@ sub start_for_upgrade {
     # Error log might indicate known bugs which will affect the exit code
     $start_status= $self->checkErrorLog($new_server);
     # ... but even if it's a known error, we cannot proceed without the server
+    $new_server->connection->execute("SET GLOBAL max_statement_time=0, transaction_read_only=0");
     return $self->finalize($self->upgrade_or_recovery_failure(),[$new_server]);
   }
 
