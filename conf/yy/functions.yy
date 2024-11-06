@@ -289,7 +289,17 @@ func_str_func:
    TO_CHAR( func_arg func_optional_to_char_fmt ) /* compatibility 10.6.1 */ |
    UCASE( func_arg ) |
    UNHEX( func_arg ) |
-   UPPER( func_arg )
+   UPPER( func_arg ) |
+   VEC_TOTEXT( func_arg_vector ) /* compatibility 11.7.1 */ |
+   VEC_FROMTEXT( func_arg_vector ) /* compatibility 11.7.1 */ |
+   VEC_DISTANCE_EUCLIDEAN( func_arg_vector, func_arg_vector ) /* compatibility 11.7.1 */ |
+   VEC_DISTANCE_COSINE( func_arg, func_arg_vector ) /* compatibility 11.7.1 */
+;
+
+func_arg_vector:
+   func_arg |
+   { $dimensions= $prng->uint16(1,100); $min_value= $prng->uint16(-10,10); $max_value= $prng->uint16($min_value,$min_value+100); @vals= (); for (my $j=0; $j<$dimensions; $j++) { push @vals, sprintf("%.3f",$min_value + rand()*($max_value - $min_value)) }; "'[".(join ',', @vals)."]'" } |
+   _hex( {$prng->uint16(1,100)*8} )
 ;
 
 sformat_template:
