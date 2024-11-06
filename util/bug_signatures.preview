@@ -4,24 +4,3 @@
 # Strong matches
 ##############################################################################
 
-MDEV-34054:
-=~ LeakSanitizer
-=~ compute_window_func
-=~ Window_func_runner::exec
-=~ space-usage=|tmp_space_usage\.yy
-MDEV-33955:
-=~ InnoDB: Table mysql\.innodb_table_stats not found|InnoDB: Table mysql\.innodb_index_stats not found
-=~ Test run ends with exit status STATUS_ERRORS_IN_LOG|Test run ends with exit status STATUS_SERVER_SHUTDOWN_FAILURE
-=~ Version: '11\.5|Server version: 11\.5
-TODO-842: [Non-transactional changes in binlog]
-=~ Write to binary log failed: .* temporary space limit reached\. An incident event is written to binary log and slave will be stopped
-=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
-TODO-842: [Non-transactional changes in binlog]
-=~ Write to binary log failed: .* temporary space limit reached\. An incident event is written to binary log and slave will be stopped
-=~ Slave SQL: The incident LOST_EVENTS occurred on the master\. Message: error writing to the binary log, Internal MariaDB error code: 1590
-=~ STATUS_REPLICATION_FAILURE
-TODO-842: [CRYPTO_zalloc]
-=~ LeakSanitizer
-=~ CRYPTO_zalloc
-=~ init_ssl
-=~ Version: '11\.5|Server version: 11\.5

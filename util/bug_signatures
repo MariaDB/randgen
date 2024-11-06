@@ -62,6 +62,10 @@ MDEV-35234:
 MDEV-35232:
 =~ Failed to write the DROP statement for temporary tables to binary log
 =~ FeatureUsage detected backup stages
+MDEV-35198:
+=~ Assertion \`inited == NONE \|\| table->open_by_handler'
+=~ handler::ha_external_lock
+=~ TABLE::reset_hlindexes
 MDEV-35145:
 =~ AddressSanitizer|signal|Conditional jump or move depends on uninitialised value
 =~ translog_write_parts_on_page
@@ -120,6 +124,9 @@ MDEV-35086:
 MDEV-35085:
 =~ Assertion \`!(entry->using_trx_cache && !mngr->trx_cache\.empty() && mngr->get_binlog_cache_log((1))->error)'
 =~ MYSQL_BIN_LOG::write_transaction_or_stmt
+MDEV-35081:
+=~ Assertion \`!n_mysql_tables_in_use'
+=~ innobase_close_connection
 MDEV-34895:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ parse_escaped_string
@@ -3958,6 +3965,9 @@ TODO-842: [Test problems: Galera does not load]
 TODO-842: [Test problems: Cluster does not initialize]
 =~ WSREP has not yet prepared node for application use
 =~ STATUS_ENVIRONMENT_FAILURE
+TODO-842: [Galera]
+=~ STATUS_ERRORS_IN_LOG|STATUS_SERVER_DEADLOCKED
+=~ scenario=Galera
 
 ##############################################################################
 # Weak matches
