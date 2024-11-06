@@ -42,6 +42,7 @@ require Exporter;
   FIELD_TYPE_HEX
   FIELD_TYPE_QUID
   FIELD_TYPE_JSON
+  FIELD_TYPE_VECTOR
 
   FIELD_TYPE_IDENTIFIER
   FIELD_TYPE_IDENTIFIER_UNQUOTED
@@ -114,6 +115,8 @@ use constant FIELD_TYPE_FLOAT    => 21;
 use constant FIELD_TYPE_JSON    => 22;
 use constant FIELD_TYPE_JSONPATH  => 23;
 use constant FIELD_TYPE_JSONKEY     => 24;
+
+use constant FIELD_TYPE_VECTOR => 25;
 
 use constant FIELD_TYPE_TEXT  => 29;
 use constant FIELD_TYPE_INET6  => 30;
@@ -203,6 +206,7 @@ my %name2type = (
   'jsonpath'    => FIELD_TYPE_JSONPATH,
   'jsonkey'       => FIELD_TYPE_JSONKEY,
   'jsonpath_no_wildcard'    => FIELD_TYPE_JSONPATH_NO_WILDCARD,
+  'vector'    => FIELD_TYPE_VECTOR,
 
   'identifier'    => FIELD_TYPE_IDENTIFIER,
   'identifierUnquoted'    => FIELD_TYPE_IDENTIFIER_UNQUOTED,
@@ -394,6 +398,13 @@ sub hex {
   my ($prng, $length) = @_;
   $length = 4 if not defined $length;
   return '0x'.join ('', map { (0..9,'A'..'F')[$prng->int(0,15)] } (1..$prng->int(1,$length)) );
+}
+
+# For now same as hex, but with the precise requested length
+sub vector {
+  my ($prng, $length)= @_;
+  $length = 1 if not defined $length;
+  return '0x'.join ('', map { map { (0..9,'A'..'F')[$prng->int(0,15)] } (1..8) } (1..$length) );
 }
 
 sub inet6 {
@@ -998,6 +1009,8 @@ sub fieldType {
     return "''";
   } elsif ($field_type == FIELD_TYPE_HEX) {
     return $rand->hex($field_length);
+  } elsif ($field_type == FIELD_TYPE_VECTOR) {
+    return $rand->vector($field_length);
   } elsif ($field_type == FIELD_TYPE_QUID) {
     return $rand->quid();
   } elsif ($field_type == FIELD_TYPE_DICT) {
@@ -1146,6 +1159,7 @@ sub dataType {
     \&varcharType,
     \&charType,
     \&intType,
+#    \&vectorType,
   ];
   my $f= $metatypes->[int(sqrt($prng->uint16(0,scalar(@$metatypes)**2-1)))];
   return $prng->${f};
@@ -1217,6 +1231,12 @@ sub uuidType {
 
 sub jsonType {
   return 'JSON';
+}
+
+sub vectorType {
+  my $prng= shift;
+  my $type= '';
+  return 'VECTOR('.($prng->uint16(0,9) ? $prng->uint16(1,100) : ($prng->uint16(0,19) ? $prng->uint16(101,1000) : $prng->uint16(1001,16384))).')';
 }
 
 sub blobType {
