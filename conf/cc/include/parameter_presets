@@ -1990,8 +1990,6 @@ $gendata{$minversion}= [
     '--gendata=data/smf/smf.sql'],
   [@empty_set_30,
     '--gendata=data/sql/engine-heap.sql'],
-  [@empty_set_50,
-    '--gendata=data/sql/engine-oqgraph.sql'],
   [@empty_set_30,
     '--gendata=data/sql/misc.sql'],
   [@empty_set_50,
