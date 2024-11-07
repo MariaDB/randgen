@@ -580,7 +580,8 @@ sub registerFeatures {
     sayError("Could not connect to server to register features @{$features}, error $err");
     return;
   }
-  if ($conn->execute("/*!100102 SET STATEMENT enforce_storage_engine= NULL FOR */ CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria") != STATUS_OK) {
+  $conn->execute("SET tx_read_only= 0");
+  if ($conn->execute("SET STATEMENT enforce_storage_engine=NULL FOR CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria") != STATUS_OK) {
     sayError("Could not create mysql.rqg_feature_registry: ".$conn->print_error);
     return;
   }
@@ -589,6 +590,7 @@ sub registerFeatures {
     sayError("Could not register features @{$features}: ".$conn->print_error);
   }
   sayDebug("Registered features: @$features");
+  $conn->execute("SET tx_read_only= DEFAULT");
 }
 
 sub initReporters {
