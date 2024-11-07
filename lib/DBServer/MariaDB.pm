@@ -481,7 +481,7 @@ sub testSetup {
     my $usertable= ($self->versionNumeric() gt '100400' ? 'global_priv' : 'user');
 
     ## Add last strokes to the boot/init file: don't want empty users, but want the test user instead
-    $self->connection->execute("SET transaction_read_only=0");
+    $self->connection->execute("SET tx_read_only=0");
     $self->connection->execute("USE mysql");
     $self->connection->execute("DELETE FROM $usertable WHERE `User` = ''");
     $self->connection->execute("FLUSH PRIVILEGES");
