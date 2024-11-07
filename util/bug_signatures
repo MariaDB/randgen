@@ -16,6 +16,10 @@
 # 11.2+
 # =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35360:
+=~ Assertion \`vseg < vseg_end'
+=~ _mi_prefix_search|_ma_prefix_search
+=~ handler::ha_write_row
 MDEV-35359:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ sp_add_used_routine
@@ -728,7 +732,7 @@ MDEV-31808:
 MDEV-31808:
 =~ Assertion \`thd->transaction.*stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_tables_for_reopen
-=~ Sql_cmd_alter_table::execute
+=~ Sql_cmd_alter_table::execute|mysql_alter_table
 =~ FeatureUsage detected sequences
 MDEV-31806:
 =~ InnoDB: Failing assertion: key_part->key_part_flag & HA_PART_KEY_SEG
@@ -2489,7 +2493,7 @@ MDEV-23448:
 MDEV-23444:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
-=~ Item_.*::create_tmp_field
+=~ Item_.*::create_tmp_field|calc_group_buffer
 MDEV-23444:
 =~ AddressSanitizer:
 =~ bin2decimal
