@@ -490,26 +490,22 @@ sub testSetup {
     $self->connection->execute("CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=InnoDB");
     if ($self->user ne 'root') {
       my $user= $self->user.'@localhost';
-      if ($self->_notOlderThan(10,0,5)) {
-        $self->connection->execute("/*!100005 CREATE ROLE admin */");
-        $self->connection->execute("GRANT ALL ON *.* TO admin WITH GRANT OPTION");
-        $self->connection->execute("CREATE USER $user");
-        $self->connection->execute("GRANT /*!100502 BINLOG ADMIN, BINLOG MONITOR, BINLOG REPLAY, CONNECTION ADMIN, FEDERATED ADMIN, ".
-                                   "READ_ONLY ADMIN, REPLICATION MASTER ADMIN, REPLICATION REPLICA, REPLICATION SLAVE ADMIN, SET USER, */ ".
-                         "/*!100509 REPLICA MONITOR, */ ".
-                   "CREATE USER, FILE, PROCESS, RELOAD, REPLICATION CLIENT, SHOW DATABASES, SHUTDOWN, SUPER ON *.* TO $user");
-      } else {
-        $self->connection->execute("GRANT ALL ON *.* TO $user WITH GRANT OPTION");
-      }
+      $self->connection->execute("CREATE ROLE admin");
+      $self->connection->execute("GRANT ALL ON *.* TO admin WITH GRANT OPTION");
+      # Temporary password to work around password check plugins
+      $self->connection->execute("CREATE USER $user IDENTIFIED BY 'pqg8dnw.TUT_dhj7pcv'");
+      $self->connection->execute("GRANT /*!100502 BINLOG ADMIN, BINLOG MONITOR, BINLOG REPLAY, CONNECTION ADMIN, FEDERATED ADMIN, ".
+                                  "READ_ONLY ADMIN, REPLICATION MASTER ADMIN, REPLICATION REPLICA, REPLICATION SLAVE ADMIN, SET USER, */ ".
+                        "/*!100509 REPLICA MONITOR, */ ".
+                  "CREATE USER, FILE, PROCESS, RELOAD, REPLICATION CLIENT, SHOW DATABASES, SHUTDOWN, SUPER ON *.* TO $user");
       $self->connection->execute("GRANT CREATE, SELECT ON *.* TO $user");
       $self->connection->execute("GRANT ALL ON test.* TO $user");
       $self->connection->execute("GRANT ALL ON transforms.* TO $user");
       $self->connection->execute("GRANT ALL ON mysql.rqg_feature_registry TO $user");
       $self->connection->execute("GRANT INSERT, UPDATE, DELETE ON performance_schema.* TO $user");
       $self->connection->execute("GRANT EXECUTE ON sys.* TO $user");
-      if ($self->_notOlderThan(10,4,0)) {
-        $self->connection->execute("UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root')");
-      }
+      $self->connection->execute("UPDATE mysql.global_priv SET Priv = JSON_REPLACE(Priv,'\$.authentication_string','') WHERE User = '".$self->user."'");
+      $self->connection->execute("UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root')");
       $self->connection->execute("DELETE FROM mysql.roles_mapping WHERE Role = 'admin'");
       $self->connection->execute("INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y')");
       $self->connection->execute("FLUSH PRIVILEGES");
