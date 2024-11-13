@@ -16,7 +16,65 @@
 # USA
 
 query:
-  normal_query;
+    {$rand_xid= "'xid".abs($$)."'"; '' } complete_xa
+  | {$rand_xid= "'xid".abs($$)."'"; '' } no_commit_xa
+;
+
+complete_xa:
+  xa_2phase | xa_1phase | xa_rollback_idle | xa_rollback_prepared
+;
+
+no_commit_xa:
+  xa_2phase_upto_prepare | xa_1phase_upto_end
+; 
+
+xa_2phase:
+    XA START { $rand_xid }
+  ; normal_query_list
+  ; XA END { $rand_xid }
+  ; XA PREPARE { $rand_xid }
+  ; XA COMMIT { $rand_xid }
+;
+
+xa_1phase:
+    XA START { $rand_xid }
+  ; normal_query_list
+  ; XA END { $rand_xid }
+  ; XA COMMIT { $rand_xid } ONE PHASE
+;
+
+xa_rollback_idle:
+    XA START { $rand_xid }
+  ; normal_query_list
+  ; XA END { $rand_xid }
+  ; XA ROLLBACK { $rand_xid }
+;
+
+xa_rollback_prepared:
+    XA START { $rand_xid }
+  ; normal_query_list
+  ; XA END { $rand_xid }
+  ; XA PREPARE { $rand_xid }
+  ; XA ROLLBACK { $rand_xid }
+;
+
+xa_2phase_upto_prepare:
+    XA START { $rand_xid }
+  ; normal_query_list
+  ; XA END { $rand_xid }
+  ; XA PREPARE { $rand_xid }
+;
+
+xa_1phase_upto_end:
+     XA START { $rand_xid }
+  ; normal_query_list
+  ; XA END { $rand_xid }
+;
+
+normal_query_list:
+  normal_query |
+  normal_query ; normal_query_list
+;
 
 normal_query:
   selects | inserts | updates | deletes ;
