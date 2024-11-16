@@ -23,8 +23,6 @@ MENT-809: [Error 127, 175 in mariabackup]
 MENT-319: [backup_flush_ticket == 0]
 =~ Assertion \`backup_flush_ticket == 0'
 =~ backup_start
-MENT-264: [Error on file open during table copy]
-=~ Error on file .*\.M.* open during .* table copy
 
 ##########
 # Closed in the next release (10.4.32 / 10.5.23 / 10.6.16)
