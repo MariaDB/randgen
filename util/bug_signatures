@@ -151,6 +151,10 @@ MDEV-34895:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ parse_escaped_string
 =~ Prepared_statement::execute|sp_head::execute
+MDEV-34852:
+=~ MemorySanitizer
+=~ key_copy
+=~ QUICK_ROR_INTERSECT_SELECT::get_next
 MDEV-34775:
 =~ Assertion \`mdl_request->ticket == __null'
 =~ MDL_context::try_acquire_lock_impl
