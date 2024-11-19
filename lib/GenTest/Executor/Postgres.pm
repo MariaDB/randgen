@@ -292,7 +292,16 @@ sub currentSchema {
     }
     
 	return $self->dbh()->selectrow_array("SELECT current_schema()");
-}
+    }
+
+sub isColocated {
+	my ($self) = @_;
+        my $exec_name = $self->getName();
+	return undef if not defined $self->dbh() or not defined $exec_name or $exec_name != "Yugabyte";
+
+        my $result = $self->dbh()->selectrow_array("select yb_is_database_colocated()");
+        return $result;
+    }
 
 sub getSchemaMetaData {
     ## Return the result from a query with the following columns:

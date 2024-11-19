@@ -58,6 +58,7 @@ use constant TABLE_VIEWS	=> 9;
 use constant TABLE_MERGES	=> 10;
 use constant TABLE_NAMES	=> 11;
 use constant TABLE_EXTRA_OPTS	=> 12;
+use constant TABLE_COLOCATION   => 13;
 
 use constant DATA_NUMBER	=> 0;
 use constant DATA_STRING	=> 1;
@@ -186,6 +187,9 @@ sub run {
     my $executor = GenTest::Executor->newFromDSN($self->dsn());
     $executor->init();
 
+    my $is_database_colocated = $executor->isColocated();
+    say ("is database colocated: $is_database_colocated.");
+
     # Suppress NOTICE messages from CREATE ... IF EXISTS
     $executor->dbh()->do("SET client_min_messages = warning") if $executor->type == DB_POSTGRES;
 
@@ -234,7 +238,8 @@ sub run {
     $table_perms[TABLE_MERGES] = $tables->{merges} || undef ;
     
     $table_perms[TABLE_NAMES] = $tables->{names} || [ ];
-    
+    $table_perms[TABLE_COLOCATION] = $tables->{colocation} || [ ];
+
     $field_perms[FIELD_NAMES] = $fields->{names} || [ ];
     $field_perms[FIELD_SQLS] = $fields->{sqls} || [ ];
     $field_perms[FIELD_INDEX_SQLS] = $fields->{index_sqls} || [ ];
@@ -271,8 +276,8 @@ sub run {
 
     my @tables = (undef);
     my @myisam_tables;
-    
-    foreach my $cycle (TABLE_ROW, TABLE_ENGINE, TABLE_CHARSET, TABLE_COLLATION, TABLE_PARTITION, TABLE_PK, TABLE_ROW_FORMAT, TABLE_EXTRA_OPTS) {
+
+    foreach my $cycle (TABLE_ROW, TABLE_ENGINE, TABLE_CHARSET, TABLE_COLLATION, TABLE_PARTITION, TABLE_PK, TABLE_ROW_FORMAT, TABLE_EXTRA_OPTS, TABLE_COLOCATION) {
         @tables = map {
             my $old_table = $_;
             if (not defined $table_perms[$cycle]) {
@@ -463,7 +468,13 @@ sub run {
         $table_copy[TABLE_CHARSET] = "CHARACTER SET ".$table_copy[TABLE_CHARSET] if $table_copy[TABLE_CHARSET] ne '';
         $table_copy[TABLE_COLLATION] = "COLLATE ".$table_copy[TABLE_COLLATION] if $table_copy[TABLE_COLLATION] ne '';
         $table_copy[TABLE_PARTITION] = "/*!50100 PARTITION BY ".$table_copy[TABLE_PARTITION]." */" if $table_copy[TABLE_PARTITION] ne '';
-        
+
+        if (defined $table_copy[TABLE_COLOCATION] and $is_database_colocated) {
+            $table_copy[TABLE_COLOCATION] = "WITH ( COLOCATION=".$table_copy[TABLE_COLOCATION]." )";
+        } else {
+            delete $table_copy[TABLE_COLOCATION]; # Do not include colocation expression.
+        }
+
         delete $table_copy[TABLE_ROW];	# Do not include number of rows in the CREATE TABLE
         delete $table_copy[TABLE_PK];	# Do not include PK definition at the end of CREATE TABLE
         
@@ -488,8 +499,8 @@ sub run {
         }
         
         say("Creating ".$executor->getName().
-            " table: $schema.$table_copy[TABLE_NAME]; engine: $table_copy[TABLE_ENGINE]; rows: $table_copy[TABLE_ROW] .");
-        
+            " table: $schema.$table_copy[TABLE_NAME]; engine: $table_copy[TABLE_ENGINE]; rows: $table_copy[TABLE_ROW]; isColocated $table_copy[TABLE_COLOCATION] .");
+
         if ($table_copy[TABLE_PK] ne '') {
             my $pk_field;
             $pk_field->[FIELD_NAME] = 'pk';
