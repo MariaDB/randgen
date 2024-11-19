@@ -38,6 +38,7 @@ require Exporter;
   FIELD_TYPE_EMPTY
   FIELD_TYPE_FIXED
   FIELD_TYPE_UUID
+  FIELD_TYPE_SPATIAL
 
   FIELD_TYPE_HEX
   FIELD_TYPE_QUID
@@ -129,6 +130,7 @@ use constant FIELD_TYPE_IDENTIFIER_QUOTED   => 34;
 use constant FIELD_TYPE_FIXED => 36;
 
 use constant FIELD_TYPE_UUID  => 37;
+use constant FIELD_TYPE_SPATIAL => 38;
 
 use constant ASCII_RANGE_START    => 97;
 use constant ASCII_RANGE_END    => 122;
@@ -214,6 +216,14 @@ my %name2type = (
   'name'          => FIELD_TYPE_IDENTIFIER,
   'name_unquoted' => FIELD_TYPE_IDENTIFIER_UNQUOTED,
   'name_quoted'   => FIELD_TYPE_IDENTIFIER_QUOTED,
+
+  'geometry'        => FIELD_TYPE_SPATIAL,
+  'point'           => FIELD_TYPE_SPATIAL,
+  'multipoint'      => FIELD_TYPE_SPATIAL,
+  'linestring'      => FIELD_TYPE_SPATIAL,
+  'multilinestring' => FIELD_TYPE_SPATIAL,
+  'polygon'         => FIELD_TYPE_SPATIAL,
+  'multipolygon'    => FIELD_TYPE_SPATIAL,
 );
 
 my $cwd = cwd();
@@ -1033,6 +1043,8 @@ sub fieldType {
     return $rand->identifierUnquoted();
   } elsif ($field_type == FIELD_TYPE_DATATYPE) {
     return $rand->dataType($field_length);
+  } elsif ($field_type == FIELD_TYPE_SPATIAL) {
+    return $rand->spatial();
   } else {
     croak ("unknown field type $field_def");
   }

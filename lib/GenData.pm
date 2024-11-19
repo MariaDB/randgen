@@ -53,6 +53,7 @@ require Exporter;
   DATA_BLOB
   DATA_TEMPORAL
   DATA_ENUM
+  DATA_SPATIAL
   GD_SPEC
   GD_DEBUG
   GD_SEED
@@ -120,7 +121,7 @@ use constant DATA_STRING  => 1;
 use constant DATA_BLOB    => 2;
 use constant DATA_TEMPORAL  => 3;
 use constant DATA_ENUM    => 4;
-
+use constant DATA_SPATIAL => 5;
 
 use constant GD_SPEC => 0;
 use constant GD_DEBUG => 1;

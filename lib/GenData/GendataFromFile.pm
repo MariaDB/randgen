@@ -200,6 +200,7 @@ sub run {
     $data_perms[DATA_BLOB] = $data->{blobs} || [ 'data', 'data', 'data', 'data', 'null' ];
     $data_perms[DATA_TEMPORAL] = $data->{temporals} || [ 'date', 'time', 'datetime', 'year', 'timestamp', 'null' ];
     $data_perms[DATA_ENUM] = $data->{enum} || ['letter', 'letter', 'letter', 'letter', 'null' ];
+    $data_perms[DATA_SPATIAL] = $data->{spatial} || ['point(0,0)', 'point(1.1,1.1)', 'null' ];
 
     my @tables = (undef);
     my @myisam_tables;
@@ -266,15 +267,6 @@ sub run {
         my @field_copy = @$field;
 
         #   $field_copy[FIELD_INDEX] = 'nokey' if $field_copy[FIELD_INDEX] eq '';
-
-        # Remove fields where default null and not null appear together, as its not valid.
-        if ( $field_copy[FIELD_NULLABILITY] =~ m{not null}is )
-        {
-            # Remove the fields array structure and skip.
-      # We dont want to keep this, becasue it causes duplicate coulmns to be created.
-            undef $fields[$field_id];
-            next;
-        }
 
         my $field_name;
         if ($#{$field_perms[FIELD_NAMES]} > -1) {
@@ -494,6 +486,8 @@ sub run {
                     } elsif ($field->[FIELD_TYPE] eq 'enum') {
                         $value_type = DATA_ENUM;
                         $quote = 1;
+                    } elsif ($field->[FIELD_TYPE] =~ m{geometry|point|linestring|polygon}is) {
+                        $value_type = DATA_SPATIAL;
                     } else {
                         $value_type = DATA_STRING;
                         $quote = 1;
