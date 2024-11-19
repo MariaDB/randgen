@@ -504,8 +504,12 @@ sub testSetup {
       $self->connection->execute("GRANT ALL ON mysql.rqg_feature_registry TO $user");
       $self->connection->execute("GRANT INSERT, UPDATE, DELETE ON performance_schema.* TO $user");
       $self->connection->execute("GRANT EXECUTE ON sys.* TO $user");
-      $self->connection->execute("UPDATE mysql.global_priv SET Priv = JSON_REPLACE(Priv,'\$.authentication_string','') WHERE User = '".$self->user."'");
-      $self->connection->execute("UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root')");
+      if ($usertable eq 'global_priv') {
+        $self->connection->execute("UPDATE mysql.global_priv SET Priv = JSON_REPLACE(Priv,'\$.authentication_string','') WHERE User = '".$self->user."'");
+        $self->connection->execute("UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root')");
+      } else {
+        $self->connection->execute("UPDATE mysql.user SET PASSWORD='' WHERE User = '".$self->user."'");
+      }
       $self->connection->execute("DELETE FROM mysql.roles_mapping WHERE Role = 'admin'");
       $self->connection->execute("INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y')");
       $self->connection->execute("FLUSH PRIVILEGES");
