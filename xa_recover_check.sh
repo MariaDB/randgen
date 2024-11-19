@@ -1,6 +1,11 @@
-host='localhost'
-dbuser='root'
-dbport=10558
+##############################################################################################
+#This script applies XA RECOVER items both on master and slave. It also checks table         #
+#checksums on both master and slave. Returns 0 if checksums match, otherwise 1.                                                        #
+#NOTE: Make sure the XA PREPARE db sessions are closed.                                      #
+#      Ideally this script should be run when the slave is not connected to the master.      #
+#Example usage:                                                                              #
+#xa_recover_check.sh --master=localhost:11243:xadb:root: --slave=localhost:11508:xadb:root:  #
+##############################################################################################
 
 #!/bin/bash
 
@@ -43,16 +48,25 @@ if [[ -z "${master_info}" || -z "${slave_info}" ]]; then
   exit 1
 fi
 
-for server_info in ${master_info} ${slave_info}
+IFS=':' read -r -a connect_info <<< "${master_info}"
+host=${connect_info[0]}
+port=${connect_info[1]}
+database=${connect_info[2]}
+user=${connect_info[3]}
+password=${connect_info[4]}
+master_db_connect_str="--host=$host --port=$port --database=$database --user=$user --password=$password"
+
+IFS=':' read -r -a connect_info <<< "${slave_info}"
+host=${connect_info[0]}
+port=${connect_info[1]}
+database=${connect_info[2]}
+user=${connect_info[3]}
+password=${connect_info[4]}
+slave_db_connect_str="--host=$host --port=$port --database=$database --user=$user --password=$password"
+
+for db_connect_str in "${master_db_connect_str}" "${slave_db_connect_str}"
 do
-  echo "Apply XA RECOVER on server: $server_info"
-  IFS=':' read -r -a connect_info <<< "${server_info}"
-  host=${connect_info[0]}
-  port=${connect_info[1]}
-  database=${connect_info[2]}
-  user=${connect_info[3]}
-  password=${connect_info[4]}
-  db_connect_str="--host=$host --port=$port --database=$database --user=$user --password=$password"
+  echo "Apply XA RECOVER on server: $db_connect_str"
   results=($(mariadb $db_connect_str -Bse "XA RECOVER;"))
   re='^[0-9]+$'
   for row in "${results[@]}"
@@ -63,3 +77,29 @@ do
     fi
   done
 done
+echo "Apllied XA RECOVER items successfully both on master and slave."
+
+echo "Check table checksums on master and slave"
+slave_matched=0
+tables=($(mariadb $master_db_connect_str -Bse "SHOW TABLES;"))
+for table in "${tables[@]}"
+do
+  res=$(mariadb $master_db_connect_str -Bse "CHECKSUM TABLE $table;")
+  read -ra arr <<<"$res"
+  master_tbl_chksum=${arr[1]}
+  res=$(mariadb $slave_db_connect_str -Bse "CHECKSUM TABLE $table;")
+  read -ra arr <<<"$res"
+  slave_tbl_chksum=${arr[1]}
+  if [[ "$master_tbl_chksum" != "$slave_tbl_chksum" ]]; then
+    slave_matched=1
+    echo "Master $table checksum $master_tbl_chksum != Slave $table checksum $slave_tbl_chksum"
+  fi
+done
+
+if [[ $slave_matched -eq 0 ]]; then
+  echo "Slave test data is matching with the master data."
+else
+  echo "Slave test data is NOT matching with the master data."
+fi
+
+exit  $slave_matched
