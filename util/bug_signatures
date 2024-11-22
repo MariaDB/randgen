@@ -20,6 +20,15 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35489:
+=~ Assertion \`!ldate->neg'
+=~ mix_date_and_time_complex
+=~ Extract_source::Extract_source
+MDEV-35476:
+=~ signal|AddressSanitizer
+=~ st_select_lex_node::include_down|st_select_lex::master_unit
+=~ mysql_make_view
+=~ FeatureUsage detected sequences
 MDEV-35475:
 =~ Assertion \`!rec_offs_nth_extern(offsets1, n)'
 =~ cmp_rec_rec_simple_field
