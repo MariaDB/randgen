@@ -1717,6 +1717,7 @@ sub isRecordIgnored {
     or  $line =~ /(?:mysqld|mariadbd): Incorrect information in file/s
     or  $line =~ /(?:mysqld|mariadbd): Lock wait timeout exceeded; try restarting transaction/s
     or  $line =~ /(?:mysqld|mariadbd): Out of sort memory, consider increasing server sort buffer size/s
+    # Snapshot isolation
     or  $line =~ /(?:mysqld|mariadbd): Record has changed since last read in table/s
     or  $line =~ /(?:mysqld|mariadbd): Table .* is marked as crashed and last \(automatic\?\) repair failed/s
     or  $line =~ /(?:mysqld|mariadbd): Table .* is marked as crashed and should be repaired/s
@@ -1740,6 +1741,8 @@ sub isRecordIgnored {
     or  $line =~ /You have an error in your SQL syntax; .*col_exists := 0;  select 1 into/s
     # MDEV-32774 (HANDLER after DISABLE KEYS)
     or  $line =~ /mysql_ha_read: Got error 124 when reading table/s
+    # MDEV-35487 (innodb_snapshot_isolation=ON)
+    or  $line =~ /Got error 123 when reading table/s
   );
   return $res;
 }
