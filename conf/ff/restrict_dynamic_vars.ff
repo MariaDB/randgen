@@ -1,4 +1,4 @@
-# Copyright (c) 2022, 2023 MariaDB
+# Copyright (c) 2022, 2024 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +17,4 @@
 ########################################################################
 
 $rules = {
-  # MDEV-24680 and many more anti-uses
-  'fk_checks'       => sub { $_ =~ m{SET.*FOREIGN_KEY_CHECKS}is },
 }
