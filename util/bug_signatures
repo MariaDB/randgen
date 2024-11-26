@@ -39,6 +39,11 @@ MDEV-35472:
 =~ ha_storage_put_memlim
 =~ fetch_data_into_cache
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-35422:
+=~ signal|AddressSanitizer
+=~ spider_db_print_item_type
+=~ spider_group_by_handler::init_scan
+=~ Pushdown_query::execute
 MDEV-35399:
 =~ Assertion \`!(table->key_info\[active_index\]\.flags & 262144U)'
 =~ ha_index_init
@@ -58,7 +63,7 @@ MDEV-35359:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ sp_add_used_routine
 =~ Table_triggers_list::add_tables_and_routines_for_triggers
-=~ sp_instr_stmt::execute
+=~ sp_instr_stmt::execute|Prepared_statement::execute
 MDEV-35342:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ handler::ha_index_init
@@ -1066,7 +1071,7 @@ MDEV-31007:
 MDEV-30992:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
-=~ mysql_alter_table
+=~ mysql_alter_table|ddl_log_execute_action
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-30957:
 =~ AddressSanitizer: use-after-poison
@@ -1745,7 +1750,7 @@ MDEV-27366:
 MDEV-27366:
 =~ Assertion \`!prebuilt->index->is_primary()'
 =~ row_search_idx_cond_check
-=~ JOIN_TAB_SCAN::open|QUICK_RANGE_SELECT::get_next
+=~ row_search_mvcc
 MDEV-27305:
 =~ Assertion \`info\.length < field->field_length'
 =~ is_part_of_a_key_prefix
