@@ -190,8 +190,7 @@ dynvar_session_variable:
 # | MAX_USER_CONNECTIONS # Dynamic conditionally
   | MIN_EXAMINED_ROW_LIMIT= { $prng->arrayElement([0,1,1024,1048576,4294967295]) }
   | MRR_BUFFER_SIZE= { $prng->arrayElement([8192,65535,262144,1048576]) }
-# Too many problems: MDEV-23294, MDEV-23318, MDEV-23363, MDEV-23364, ...
-# | MYISAM_REPAIR_THREADS= { $prng->int(1,10) }
+  | MYISAM_REPAIR_THREADS= { $prng->int(1,5) }
 # Too many problems with low values, removing 131072 from the array
 # e.g. MDEV-23398
   | MYISAM_SORT_BUFFER_SIZE= { $prng->arrayElement([1048576,268434432]) }
