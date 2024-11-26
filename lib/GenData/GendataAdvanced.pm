@@ -786,8 +786,6 @@ sub gen_table {
         foreach my $c (sort keys %columns) {
             # Index is forbidden for the column
             next if $columns{$c}->[9];
-            # We're trying to reduce the exposure to MDEV-25060 (all kinds of failures on MyISAM with virtual keys)
-            next if ($c =~ /^vcol/) and ((lc($e) eq 'myisam') or (($e eq '') and lc($default_engine) eq 'myisam'));
             push @cols, $c;
             $text_only= 0 if $columns{$c}->[0] !~ /BLOB|TEXT|CHAR|BINARY/;
         }
