@@ -207,8 +207,8 @@ sub validate {
 
     my $query = $results->[0]->query();
     $candidate_queries++;
-
-    if ($query !~ m{^\s*SELECT}sio) {
+    my $is_select = ($query =~ s{/\*.+?\*/}{}sgor) =~ m{^\s*SELECT}sio;
+    if (not $is_select) {
         $non_selects++;
         return STATUS_WONT_HANDLE;
     }

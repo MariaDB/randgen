@@ -39,7 +39,8 @@ sub validate {
 	my $executor = $executors->[0];
 	my $query = $results->[0]->query();
 
-	return STATUS_WONT_HANDLE if $query !~ m{^\s*SELECT}sio;
+        my $is_select = ($query =~ s{/\*.+?\*/}{}sgor) =~ m{^\s*SELECT}sio;
+	return STATUS_WONT_HANDLE if not $is_select;
 
         my $explain_output = $executor->dbh()->selectall_arrayref("EXPLAIN $query");
 

@@ -66,9 +66,10 @@ sub validate {
 	) {
 		say("---------- RESULT COMPARISON ISSUE START ----------");
 	}
-		
+
+	my $is_select = ($query =~ s{/\*.+?\*/}{}sgor) =~ m{^\s*SELECT}sio;
 	if ($compare_outcome == STATUS_LENGTH_MISMATCH) {
-		if ($query =~ m{^\s*select}io) {
+		if ($is_select) {
 	                say("Query: $query; failed: result length mismatch between servers (".$results->[0]->rows()." vs. ".$results->[1]->rows().")");
 			say(GenTest::Comparator::dumpDiff($results->[0], $results->[1]));
 		} else {
@@ -80,7 +81,7 @@ sub validate {
 	}
 
 	if (
-		($query =~ m{^\s*select}sio) && (
+		($is_select) && (
 			($compare_outcome == STATUS_LENGTH_MISMATCH) ||
 			($compare_outcome == STATUS_CONTENT_MISMATCH)
 		)

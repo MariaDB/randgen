@@ -49,8 +49,9 @@ sub validate {
 	my ($comparator, $executors, $results) = @_;
 
 	die "Performance validator only works with two servers" if $#$results != 1;
-
-	if ($results->[0]->query() !~ m{^\s*SELECT}sio) {
+        my $query = $results->[0]->query();
+        my $is_select = ($query =~ s{/\*.+?\*/}{}sgor) =~ m{^\s*SELECT}sio;
+	if (not $is_select) {
 		$counters{'non-SELECT queries'}++;
 		return STATUS_WONT_HANDLE;
 	} elsif ($results->[0]->status() != $results->[1]->status()) {

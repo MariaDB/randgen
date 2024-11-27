@@ -149,7 +149,7 @@ sub next {
 		}
 
 		if (defined $filters) {
-                    my $is_select = ($query =~ s{/\*.+\*/}{}sgor) =~ m{^\s*SELECT}sio;
+                    my $is_select = ($query =~ s{/\*.+?\*/}{}sgor) =~ m{^\s*SELECT}sio;
                     foreach my $ex (@$executors) {
 			foreach my $filter (@$filters) {
                                 my $opt = " (COSTS OFF)" if $ex->type == DB_POSTGRES;

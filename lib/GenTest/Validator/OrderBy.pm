@@ -35,7 +35,8 @@ sub validate {
 	my $orig_result = $results->[0];
 	my $orig_query = $orig_result->query();
 
-	return STATUS_OK if $orig_query !~ m{^\s*select}io;
+        my $is_select = ($orig_query =~ s{/\*.+?\*/}{}sgor) =~ m{^\s*SELECT}sio;
+	return STATUS_OK if not $is_select;
 
 	my $fields = $executor->metaColumns();
 	my @field_orders = map { 'ORDER BY OUTR . `'.$_.'` , OUTR . `pk`' } @$fields;

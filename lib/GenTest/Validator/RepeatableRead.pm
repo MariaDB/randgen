@@ -46,7 +46,8 @@ sub validate {
 	my $orig_result = $results->[0];
 	my $orig_query = $orig_result->query();
 
-	return STATUS_OK if $orig_query !~ m{^\s*select}io;
+        my $is_select = ($orig_query =~ s{/\*.+?\*/}{}sgor) =~ m{^\s*SELECT}sio;
+	return STATUS_OK if not $is_select;
 	return STATUS_OK if $orig_result->err() > 0;
 
 	foreach my $predicate (@predicates) {
