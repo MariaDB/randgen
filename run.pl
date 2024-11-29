@@ -160,6 +160,7 @@ sub run {
     'validators=s@' => \@{$props->{validators}},
     'variators=s@' => \@{$props->{variators}},
     'vardir=s' => \$props->{vardir},
+    'user=s' => \$props->{user},
     #
     # Options related to re-running and reproducing
     'exit_status|exit-status=s@' => \@exit_status,
