@@ -20,6 +20,9 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35543:
+=~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
+=~ Datetime_truncation_not_needed::Datetime_truncation_not_needed
 MDEV-35523:
 =~ WSREP: Unknown writeset version: -1
 =~ galera::WriteSetNG::Header::size
@@ -2376,7 +2379,6 @@ MDEV-23812:
 MDEV-23800:
 =~ Assertion \`!result'
 =~ convert_const_to_int
-=~ Item_func::convert_const_compared_to_int_field
 MDEV-23797:
 =~ signal [16]|AddressSanitizer
 =~ create_internal_tmp_table
