@@ -915,6 +915,9 @@ sub dumpdb {
     }
     $dump_command.= " $options";
 
+    # In case previous actions were under autocommit=off
+    $self->connection->execute("COMMIT");
+
     say("Dumping server ".$self->version.($for_restoring ? " for restoring":" data for comparison")." on port ".$self->port);
     say($dump_command);
     my $dump_result = ($for_restoring ?
