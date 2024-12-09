@@ -20,6 +20,11 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35611:
+=~ Assertion \`m_status == DA_ERROR'
+=~ Sql_cmd_alter_table::execute
+=~ Status: KILL_TIMEOUT|Status: KILL_SERVER|Status: KILL_CONNECTION
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35610:
 =~ Assertion \`desync_count_ > 0'|terminate called after throwing an instance|Assertion \`thd->wsrep_desynced_backup_stage == false'
 =~ wsrep::server_state::resync
