@@ -75,6 +75,8 @@ sub new {
         'config' => TR_CONFIG},@_);
 
     croak ("Need config") if not defined $self->config;
+    my $init_generator_result = $self->initGenerator();
+    return $init_generator_result if $init_generator_result != STATUS_OK;
     return $self;
 }
 
@@ -116,9 +118,6 @@ sub run {
     $self->config->printProps;
 
     $self->[TR_CHANNEL] = GenTest::IPC::Channel->new();
-
-    my $init_generator_result = $self->initGenerator();
-    return $init_generator_result if $init_generator_result != STATUS_OK;
 
     $self->[TR_TEST_START] = time();
     $self->[TR_TEST_END] = $self->[TR_TEST_START] + $self->config->duration;
@@ -580,7 +579,7 @@ sub registerFeatures {
     sayError("Could not connect to server to register features @{$features}, error $err");
     return;
   }
-  $conn->execute("SET tx_read_only= 0");
+  $conn->execute("SET tx_read_only= 0, autocommit= 1");
   if ($conn->execute("SET STATEMENT enforce_storage_engine=NULL FOR CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria") != STATUS_OK) {
     sayError("Could not create mysql.rqg_feature_registry: ".$conn->print_error);
     return;
@@ -590,7 +589,6 @@ sub registerFeatures {
     sayError("Could not register features @{$features}: ".$conn->print_error);
   }
   sayDebug("Registered features: @$features");
-  $conn->execute("SET tx_read_only= DEFAULT");
 }
 
 sub initReporters {

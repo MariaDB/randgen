@@ -89,7 +89,6 @@ my %global_status= ();
 my $first_reporter;
 
 my $reporter = shift;
-my $registered_features = undef;
 my $connection_status;
 
 # In case of two or more main servers, we will be called more than once.
@@ -119,25 +118,6 @@ sub monitor {
 #    sayError((ref $reporter)." reporter returning critical failure");
 #    return STATUS_SERVER_UNAVAILABLE;
 #  }
-  # We will only check the table once, as feature registration happens
-  # before reporters are initialized
-  unless (defined $registered_features) {
-    eval {
-        $registered_features= $conn->get_column("SELECT feature FROM mysql.rqg_feature_registry",1);
-        1;
-    } or do {
-      sayWarning("FeatureUsage got an error: ".$conn->last_error->[0]." (".$conn->last_error->[1].") for mysql.rqg_feature_registry query");
-      return errorType($conn->last_error->[0]);
-    };
-    if ($registered_features) {
-      foreach my $f (@$registered_features) {
-        # To get rid of duplicates in grammar lists, when each thread registeres a feature separately
-        $features_used{$f}= "registered by grammar(s)";
-        say("FeatureUsage detected $f ($features_used{$f})");
-      }
-    }
-    $registered_features= 1;
-  }
   %global_status= ();
   foreach my $f (sort keys %usage_check) {
     next if $features_used{$f};
@@ -152,6 +132,30 @@ sub monitor {
   return STATUS_OK;
 }
 
+# Report the initial status (whatever we got from grammars)
+# We only need to check the table once, as feature registration happens
+# before reporters are initialized
+sub init {
+  my $reporter= shift;
+  $conn= $reporter->connection() unless ($conn);
+  my $registered_features;
+  eval {
+      $registered_features= $conn->get_column("SELECT feature FROM mysql.rqg_feature_registry",1);
+      print Dumper $registered_features;
+      1;
+  } or do {
+    sayWarning("FeatureUsage got an error: ".$conn->last_error->[0]." (".$conn->last_error->[1].") for mysql.rqg_feature_registry query");
+    return errorType($conn->last_error->[0]);
+  };
+  if ($registered_features) {
+    foreach my $f (@$registered_features) {
+      # To get rid of duplicates in grammar lists, when each thread registeres a feature separately
+      $features_used{$f}= "registered by grammar(s)";
+      say("FeatureUsage detected $f ($features_used{$f})");
+    }
+  }
+  return STATUS_OK;
+}
 
 sub report {
   my $reporter = shift;
