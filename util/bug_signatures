@@ -1916,6 +1916,11 @@ MDEV-25654:
 =~ purge_node_t::skip
 =~ row_purge_parse_undo_rec
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-25654:
+=~ is marked as crashed and should be repaired
+=~ .*#P#p-* is corrupted\. Please drop the table and recreate
+=~ contains .* user defined columns in InnoDB, but .* columns in MariaDB
+=~ FeatureUsage detected unique blobs
 MDEV-25627:
 =~ signal 11|AddressSanitizer
 =~ get_prefix
