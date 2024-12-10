@@ -86,12 +86,6 @@ MDEV-35359:
 =~ sp_add_used_routine
 =~ Table_triggers_list::add_tables_and_routines_for_triggers
 =~ sp_instr_stmt::execute|Prepared_statement::execute
-# Not merged into 11.6+ yet
-MDEV-35342:
-=~ signal|AddressSanitizer|MemorySanitizer
-=~ handler::ha_index_init
-=~ myrocks::ha_rocksdb::inplace_populate_sk
-=~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35318:
 =~ Assertion \`tl->jtbm_subselect'
 =~ JOIN::calc_allowed_top_level_tables
