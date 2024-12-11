@@ -20,6 +20,11 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35619:
+=~ Assertion \`0'
+=~ row_purge_del_mark_error
+=~ InnoDB: tried to purge non-delete-marked record in index
+=~ row_purge_remove_sec_if_poss_tree
 MDEV-35611:
 =~ Assertion \`m_status == DA_ERROR'
 =~ Sql_cmd_alter_table::execute
