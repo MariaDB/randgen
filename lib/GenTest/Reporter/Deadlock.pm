@@ -69,9 +69,9 @@ sub monitor {
 
   my %new_killed_queries= ();
   foreach my $p (@$processlist) {
-    if ($p->{INFO} && $p->{QUERY_ID} && $p->{STATE} && ($p->{STATE} eq 'Killed')) {
+    if ($p->{INFO} && $p->{QUERY_ID} && (($p->{STATE} && ($p->{STATE} eq 'Killed')) || ($p->{COMMAND} && ($p->{COMMAND} eq 'Killed'))) ) {
       if (defined $killed_queries{$p->{ID}.':'.$p->{QUERY_ID}}) {
-        sayWarning("Deadlock reporter: Stalled query: ".$p->{ID}.": ".$p->{QUERY_ID}." ".$p->{STATE}." ".$p->{TIME}." ".$p->{INFO}." ".$p->{MAX_MEMORY_USED});
+        sayWarning("Deadlock reporter: Stalled query: ".$p->{ID}.": ".$p->{QUERY_ID}." ".$p->{STATE}." ".$p->{COMMAND}." ".$p->{TIME}." ".$p->{INFO}." ".$p->{MAX_MEMORY_USED});
       }
       $new_killed_queries{$p->{ID}.':'.$p->{QUERY_ID}}= $p->{INFO}
     }
