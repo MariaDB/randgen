@@ -1709,6 +1709,7 @@ sub isRecordIgnored {
     or  $line =~ /InnoDB: Invalid column (?:name|type) for stopword table/s
     or  $line =~ /InnoDB: Possible reasons/s
     or  $line =~ /InnoDB: Table rename might cause two FOREIGN KEY constraints to have the same internal name in case-insensitive comparison/s
+    or  $line =~ /InnoDB: Transaction was aborted due to Deadlock/s
     or  $line =~ /InnoDB: Unable to rename statistics from/s
     or  $line =~ /InnoDB: User stopword table .* does not exist/s
     or  $line =~ /Invalid roles_mapping table entry user/s
