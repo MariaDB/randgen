@@ -20,6 +20,11 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35647:
+=~ Assertion \`!have_any()'
+=~ srw_lock_debug::rd_lock
+=~ dict_sys_t::freeze
+=~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35619:
 =~ Assertion \`0'
 =~ row_purge_del_mark_error
