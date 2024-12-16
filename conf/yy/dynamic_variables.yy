@@ -52,8 +52,6 @@ dynvar_global_variable_runtime:
   | LOG_SLOW_SLAVE_STATEMENTS= dynvar_boolean
 # Synonym of BINLOG_SPACE_LIMIT (hopefully)
   | ==FACTOR:0.5== MAX_BINLOG_TOTAL_SIZE= { $prng->arrayElement([0,4096,1048576,16777216]) } /* compatibility 11.4.0 */
-  | MAX_TMP_TOTAL_SPACE_USAGE= space_usage_val /* compatibility 11.5.1 */
-  | MAX_TMP_SESSION_SPACE_USAGE= space_usage_val /* compatibility 11.5.1 */
   | RPL_SEMI_SYNC_MASTER_ENABLED= dynvar_boolean /* compatibility 10.3 */
   | RPL_SEMI_SYNC_SLAVE_ENABLED= dynvar_boolean /* compatibility 10.3 */
   | SLAVE_CONNECTIONS_NEEDED_FOR_PURGE= { $prng->uint16(0,2) } /* compatibility 11.4.0 */
@@ -186,7 +184,6 @@ dynvar_session_variable:
   | MAX_SP_RECURSION_DEPTH= { $prng->int(0,25) }
   | MAX_STATEMENT_TIME= { $prng->arrayElement(['DEFAULT',1,10]) }
 # | MAX_TMP_TABLES # Said to be unused
-  | MAX_TMP_SESSION_SPACE_USAGE= space_usage_val /* compatibility 11.5.1 */
 # | MAX_USER_CONNECTIONS # Dynamic conditionally
   | MIN_EXAMINED_ROW_LIMIT= { $prng->arrayElement([0,1,1024,1048576,4294967295]) }
   | MRR_BUFFER_SIZE= { $prng->arrayElement([8192,65535,262144,1048576]) }
@@ -266,9 +263,6 @@ dynvar_session_variable:
 # | TIMESTAMP # Tempting, but causes problems, especially with versioning
   | TIME_ZONE= dynvar_tz_value
 # Very low values disabled due to MDEV-23212
-  | TMP_DISK_TABLE_SIZE= { $prng->arrayElement(['DEFAULT',65536,8388608,18446744073709551615]) }
-# | TMP_MEMORY_TABLE_SIZE # == tmp_table_size
-  | TMP_TABLE_SIZE= { $prng->arrayElement(['DEFAULT',1024,4194304,16777216,4294967295],'0 /* compatibility 10.5.0 */') }
   | TRANSACTION_ALLOC_BLOCK_SIZE= { $prng->arrayElement(['DEFAULT',1024,8192,16384,65536]) }
   | TRANSACTION_PREALLOC_SIZE= { $prng->arrayElement(['DEFAULT',1024,8192,16384,65536]) }
   | TX_ISOLATION= { $prng->arrayElement(["'READ-UNCOMMITTED'","'READ-COMMITTED'","'REPEATABLE-READ'","'SERIALIZABLE'"]) }

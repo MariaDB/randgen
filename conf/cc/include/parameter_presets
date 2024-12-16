@@ -57,13 +57,13 @@ $test_common_option_combinations{$minversion}= [
   '
     --seed=time
     --queries=1000000
-    --reporters=Backtrace,Deadlock,MemoryUsage,FeatureUsage
+    --reporters=Backtrace,Deadlock,FeatureUsage
     --mysqld=--plugin-maturity=experimental
   '
 ];
 
 $test_concurrency_combinations{$minversion}= [
-  [ '--threads=1','--threads=2','--threads=3','--threads=4','--threads=6','--threads=8' ],
+  [ '--threads=1','--threads=2','--threads=4','--threads=32','--threads=8' ],
   [ '--duration=180 --mysqld=--max-statement-time=20 --mysqld=--lock-wait-timeout=10 --mysqld=--innodb-lock-wait-timeout=5',
     '--duration=200 --mysqld=--max-statement-time=20 --mysqld=--lock-wait-timeout=10 --mysqld=--innodb-lock-wait-timeout=5',
     '--duration=250 --mysqld=--max-statement-time=25 --mysqld=--lock-wait-timeout=12 --mysqld=--innodb-lock-wait-timeout=10',
@@ -106,45 +106,13 @@ $parameters{optional_gendata_unique_hash_keys}= \%optional_gendata_unique_hash_k
 #++++++++++++++++++++++++
 
 $optional_variators{$minversion}= [
-  [@empty_set_30,'--variator=AnalyzeOrExplain'],
-  [@empty_set_30,'--variator=ConvertLiteralsToVariables'],
-  [@empty_set_30,'--variator=ConvertSubqueriesToViews'],
-  [@empty_set_30,'--variator=Count'],
-  [@empty_set_20,'--variator=DisableOptimizations'],
-  [@empty_set_20,'--variator=Distinct'],
-  [@empty_set_10,'--variator=EnableOptimizations'],
-  [@empty_set_30,'--variator=ExecuteAsCTE'],
-  [@empty_set_30,'--variator=ExecuteAsDeleteReturning'],
-  [@empty_set_20,'--variator=ExecuteAsDerived'],
-  [@empty_set_30,'--variator=ExecuteAsExcept'],
-  [@empty_set_10,'--variator=ExecuteAsExecuteImmediate'],
-  [@empty_set_20,'--variator=ExecuteAsFunctionTwice'],
-  [@empty_set_30,'--variator=ExecuteAsInsertSelect'],
-  [@empty_set_30,'--variator=ExecuteAsIntersect'],
-  [@empty_set_30,'--variator=ExecuteAsOracleSP'],
-  [@empty_set_30,'--variator=ExecuteAsPackageSP'],
-  [@empty_set_30,'--variator=ExecuteAsPreparedOnce'],
-  [@empty_set_30,'--variator=ExecuteAsPreparedThrice'],
-  [@empty_set_10,'--variator=ExecuteAsPreparedTwice'],
-  [@empty_set_20,'--variator=ExecuteAsPSWithParams'],
-  [@empty_set_30,'--variator=ExecuteAsSelectItem'],
-  [@empty_set_20,'--variator=ExecuteAsSPTwice'],
-  [@empty_set_30,'--variator=ExecuteAsTrigger'],
-  [@empty_set_30,'--variator=ExecuteAsUnion'],
-  [@empty_set_30,'--variator=ExecuteAsUpdateDelete'],
-  [@empty_set_30,'--variator=ExecuteAsView'],
-  [@empty_set_30,'--variator=ExecuteAsWhereSubquery'],
-  [@empty_set_30,'--variator=FullOrderBy'],
-  [@empty_set_30,'--variator=Having'],
-  [@empty_set_30,'--variator=InlineSubqueries'],
-  [@empty_set_30,'--variator=InlineVirtualColumns'],
-  [@empty_set_30,'--variator=LimitDecrease'],
-  [@empty_set_30,'--variator=LimitIncrease'],
-  [@empty_set_30,'--variator=LimitRowsExamined'],
-  [@empty_set_30,'--variator=NullIf'],
-  [@empty_set_20,'--variator=OrderBy'],
-  [@empty_set_30,'--variator=RemoveIndexHints'],
-  [@empty_set_20,'--variator=SelectOption'],
+  [@empty_set_5,'--variator=DisableOptimizations'],
+  [@empty_set_5,'--variator=EnableOptimizations'],
+  [@empty_set_5,'--variator=ExecuteAsDeleteReturning'],
+  [@empty_set_5,'--variator=ExecuteAsExecuteImmediate'],
+  [@empty_set_5,'--variator=ExecuteAsInsertSelect'],
+  [@empty_set_5,'--variator=ExecuteAsTrigger'],
+  [@empty_set_5,'--variator=ExecuteAsUpdateDelete'],
 ];
 
 $optional_variators{1005}= [ @{$optional_variators{$minversion}},
@@ -582,7 +550,7 @@ $parameters{optional_perfschema}= \%optional_perfschema;
 
 # Default zlib
 $optional_innodb_compression{$minversion}= [
-  @empty_set_20,
+  @empty_set_10,
   '--mysqld=--innodb_compression_algorithm=none',
   '--mysqld=--innodb_compression_default=on',
 ];
@@ -606,7 +574,7 @@ $optional_innodb_compression{1007}= [
 
 # Default 16K
 $optional_innodb_pagesize{$minversion}= [
-  @empty_set_50,
+  @empty_set_10,
   '--mysqld=--innodb_page_size=4K',
   '--mysqld=--innodb_page_size=8K',
   '--mysqld=--innodb_page_size=32K',
@@ -624,11 +592,12 @@ $parameters{optional_innodb_pagesize}= \%optional_innodb_pagesize;
 $optional_innodb_variables{$minversion}= [
   # Default ON
   [ @empty_set_50, '--mysqld=--innodb_adaptive_flushing=OFF' ],
-  # Default ON in 10.4, OFF in 10.5
-  [ @empty_set_50, '--mysqld=--innodb_adaptive_hash_index=OFF', '--mysqld=--innodb_adaptive_hash_index=ON' ],
   # Default 8
-  [ @empty_set_50,
-    '--mysqld=--innodb-adaptive-hash-index-parts=1',
+  [ '--mysqld=--innodb-adaptive-hash-index-parts=1',
+    '--mysqld=--innodb-adaptive-hash-index-parts=2',
+    '--mysqld=--innodb-adaptive-hash-index-parts=4',
+    '--mysqld=--innodb-adaptive-hash-index-parts=8',
+    '--mysqld=--innodb-adaptive-hash-index-parts=16',
     '--mysqld=--innodb-adaptive-hash-index-parts=64',
     '--mysqld=--innodb-adaptive-hash-index-parts=512'
   ],
@@ -639,18 +608,18 @@ $optional_innodb_variables{$minversion}= [
     '--mysqld=--innodb-autoinc-lock-mode=2',
   ],
   # Default ON
-  [ @empty_set_20,
+  [ @empty_set_10,
     '--mysqld=--innodb-doublewrite=OFF',
   ],
   # Default zlib
-  [ @empty_set_20,
+  [ @empty_set_10,
     '--mysqld=--innodb_compression_algorithm=none',
     '--mysqld=--innodb_compression_algorithm=zlib'
   ],
   # No default in 10.2
   # Default fsync in 10.3.7
   # Default O_DIRECT in 10.6.0
-  [ @empty_set_50,
+  [ @empty_set_10,
     '--mysqld=--innodb_flush_method=fsync',
     '--mysqld=--innodb_flush_method=O_DSYNC',
     '--mysqld=--innodb_flush_method=littlesync',
@@ -659,7 +628,7 @@ $optional_innodb_variables{$minversion}= [
     '--mysqld=--innodb_flush_method=O_DIRECT_NO_FSYNC',
   ],
   # Default add_drop_reorder
-  [ @empty_set_30, '--mysqld=--innodb-instant-alter-column-allowed=never', '--mysqld=--innodb-instant-alter-column-allowed=add_last' ],
+  [ @empty_set_10, '--mysqld=--innodb-instant-alter-column-allowed=never', '--mysqld=--innodb-instant-alter-column-allowed=add_last' ],
   # Default fcfs
   # Removed in 10.6.0
   # [ @empty_set_30,
@@ -671,7 +640,7 @@ $optional_innodb_variables{$minversion}= [
     '--mysqld=--innodb-log-buffer-size=128M',
   ],
   # Default 50M, in 10.5+ ~96M
-  [ @empty_set_20,
+  [ @empty_set_5,
     '--mysqld=--innodb-log-file-size=16M',
     '--mysqld=--innodb-log-file-size=256M',
   ],
@@ -683,7 +652,7 @@ $optional_innodb_variables{$minversion}= [
     '--mysqld=--innodb-open-files=10000',
   ],
   # Default 16K
-  [ @empty_set_30,
+  [ @empty_set_10,
     '--mysqld=--innodb_page_size=4K',
     '--mysqld=--innodb_page_size=8K',
     '--mysqld=--innodb_page_size=32K',
@@ -705,7 +674,7 @@ $optional_innodb_variables{$minversion}= [
     '--mysqld=--innodb-sort-buffer-size=64M',
   ],
   # Default 0 in 10.x, 3 in 11.x
-  [ @empty_set_50,
+  [ @empty_set_10,
     '--mysqld=--innodb-undo-tablespaces=0',
     '--mysqld=--innodb-undo-tablespaces=1',
     '--mysqld=--innodb-undo-tablespaces=2',
@@ -740,14 +709,14 @@ $optional_innodb_variables{1004}= [ @$optional_innodb_variables{$minversion},
     '--mysqld=--innodb_checksum_algorithm=strict_full_crc32',
   ],
   # Default all in 10.4, none in 10.5+, removed in 11.0
-  [ @empty_set_50,
+  [ @empty_set_20,
     '--mysqld=--innodb_change_buffering=none',
     '--mysqld=--innodb_change_buffering=all',
   ],
 ];
 $optional_innodb_variables{1006}= [ @$optional_innodb_variables{$minversion},
   # Default full_crc32
-  [ @empty_set_50,
+  [ @empty_set_10,
     '--mysqld=--innodb_checksum_algorithm=crc32',
     '--mysqld=--innodb_checksum_algorithm=strict_crc32',
     '--mysqld=--innodb_checksum_algorithm=strict_full_crc32',
@@ -776,13 +745,13 @@ $optional_innodb_variables{1100}= [ @$optional_innodb_variables{$minversion},
     '--mysqld=--innodb-read-only-compressed=off',
   ],
   # Default full
-  [ @empty_set_50, '--mysqld=--innodb_deadlock_report=off', '--mysqld=--innodb_deadlock_report=basic' ],
+  [ @empty_set_10, '--mysqld=--innodb_deadlock_report=off', '--mysqld=--innodb_deadlock_report=basic' ],
   # Default off
-  [ @empty_set_50, '--mysqld=--innodb_data_file_buffering=ON' ],
+  [ @empty_set_10, '--mysqld=--innodb_data_file_buffering=ON' ],
   # Default off
-  [ @empty_set_50, '--mysqld=--innodb_data_file_write_through=ON' ],
+  [ @empty_set_10, '--mysqld=--innodb_data_file_write_through=ON' ],
   # Default off
-  [ @empty_set_50, '--mysqld=--innodb_log_file_write_through=ON' ],
+  [ @empty_set_10, '--mysqld=--innodb_log_file_write_through=ON' ],
 ];
 
 $parameters{optional_innodb_variables}= \%optional_innodb_variables;
@@ -1938,10 +1907,6 @@ $gendata{$minversion}= [
     '--gendata=conf/zz/current_timestamp.zz'],
   [@empty_set_30,
     '--gendata=conf/zz/custom.zz'],
-  [@empty_set_50,
-    '--gendata=conf/zz/dyncol_dml.zz'],
-  [@empty_set_30,
-    '--gendata=conf/zz/full_text_search.zz'],
   [@empty_set_30,
     '--gendata=conf/zz/innodb-key-block-size.zz'],
   [@empty_set_30,
@@ -1954,8 +1919,6 @@ $gendata{$minversion}= [
     '--gendata=conf/zz/innodb.zz'],
   [@empty_set_20,
     '--gendata=conf/zz/many_indexes.zz'],
-  [@empty_set_20,
-    '--gendata=conf/zz/oltp-aria.zz'],
   [@empty_set_20,
     '--gendata=conf/zz/oltp.zz'],
   [@empty_set_20,
@@ -1988,8 +1951,6 @@ $gendata{$minversion}= [
     '--gendata=data/osm/osm-schema.sql'],
   [@empty_set_50,
     '--gendata=data/smf/smf.sql'],
-  [@empty_set_30,
-    '--gendata=data/sql/engine-heap.sql'],
   [@empty_set_30,
     '--gendata=data/sql/misc.sql'],
   [@empty_set_50,
