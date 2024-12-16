@@ -20,6 +20,15 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35662:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Type_handler_hybrid_field_type::aggregate_for_comparison
+=~ JOIN::choose_subquery_plan
+=~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-35661:
+=~ Assertion \`!cache_list \|\| cache_list->empty()'
+=~ online_alter_close_connection
+=~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35647:
 =~ Assertion \`!have_any()'
 =~ srw_lock_debug::rd_lock
@@ -81,6 +90,11 @@ MDEV-35399:
 =~ ha_index_init
 =~ Expression_cache_tmptable::check_value
 =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-35397:
+=~ Assertion \`rpl_semi_sync_master_off_times > thd->expected_semi_sync_offs'
+=~ Repl_semi_sync_master::commit_trx
+=~ Repl_semi_sync_master::wait_after_commit
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-35361:
 =~ AddressSanitizer|signal
 =~ my_strnncoll.*
@@ -940,6 +954,7 @@ MDEV-31228:
 =~ MemorySanitizer
 =~ dynamic_column_update_many_fmt
 =~ Item_func_dyncol_add::val_str
+# Not merged up yet
 MDEV-31219:
 =~ Assertion \`fixed'|Assertion \`fixed()'
 =~ Item_func_hybrid_field_type
