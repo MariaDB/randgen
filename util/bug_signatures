@@ -149,7 +149,7 @@ MDEV-35137:
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-35134:
 =~ Assertion \`thd->stmt_arena->is_stmt_prepare_or_first_stmt_execute() \|\| thd->stmt_arena->is_conventional()'
-=~ Item_exists_subselect::exists2in_processor
+=~ Item_exists_subselect::exists2in_processor|Item_func_in::in_predicate_to_in_subs_transformer
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-35133:
 =~ AddressSanitizer|signal
@@ -295,7 +295,7 @@ MDEV-33369:
 =~ THD::cleanup_after_query
 MDEV-33369:
 =~ AddressSanitizer|signal
-=~ Item_func_json_schema_valid::val_int
+=~ Item_func_json_schema_valid::val_
 =~ Arg_comparator::compare
 MDEV-33289:
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name.str, MDL_SHARED) \|\| thd->mdl_context\.is_lock_warrantee(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
