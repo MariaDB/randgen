@@ -410,6 +410,13 @@ sub hex {
   return '0x'.join ('', map { (0..9,'A'..'F')[$prng->int(0,15)] } (1..$prng->int(1,$length)) );
 }
 
+# Unlike hex, vector needs the exact length, not a range
+sub vector {
+  my ($prng, $length) = @_;
+  $length = 1 if not defined $length;
+  return '0x'.join ('', map { (0..9,'A'..'F')[$prng->int(0,15)] } (1..$length*8) );
+}
+
 # For now same as hex, but with the precise requested length
 sub vector {
   my ($prng, $length)= @_;

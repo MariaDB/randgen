@@ -335,9 +335,8 @@ func_arg_vector:
    vector_hex_string
 ;
 
-# Vector length * 8
 vector_hex_string:
-   _hex(8) | _hex(16) | _hex(32) | _hex(64) | _hex(768) ;
+   _vector(1) | _vector(2) | _vector(3) | _vector(8) | _vector(96) ;
 
 sformat_template:
   CONCAT(_string, sformat_replacement_field, _string);

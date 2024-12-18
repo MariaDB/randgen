@@ -215,8 +215,6 @@ sub next {
             $item = $prng->word();
           } elsif ($item eq '_positive_digit') {
             $item = $prng->positive_digit();
-          } elsif ($item eq '_hex') {
-            $item = $prng->hex();
           } elsif ($item eq '_cwd') {
             $item = "'".$cwd."'";
           } elsif (
