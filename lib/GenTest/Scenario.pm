@@ -387,6 +387,7 @@ sub prepareServer {
   my $server= DBServer::MariaDB->new(
                       basedir => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{basedir},
                       config => $self->[SC_TEST_PROPERTIES]->cnf,
+                      dataset => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{dataset},
                       general_log => 1,
                       manual_gdb => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{manual_gdb},
                       port => ($self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{port} || $self->[SC_TEST_PROPERTIES]->base_port + $srvnum - 1),
