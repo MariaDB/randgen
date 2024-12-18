@@ -214,7 +214,7 @@ _basics_explain_analyze:
 ;
 
 _basics_comparison_operator:
-    = | != | < | > | >= | <= ;
+    = | != | < | > | >= | <= | <=> | __not(50) LIKE ;
 
 _basics_explain_modifier:
                _basics_format_json_50pct |
