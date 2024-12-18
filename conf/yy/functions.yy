@@ -19,11 +19,12 @@ query_init:
   { $tmp_table = 0; _set_db('test') } CREATE FUNCTION IF NOT EXISTS MIN2(a BIGINT, b BIGINT) RETURNS BIGINT RETURN (a>b,b,a) ;
 
 query:
-    ==FACTOR:9==    { _set_db('ANY') }        func_select_or_explain_select
+    ==FACTOR:10==   { _set_db('ANY') }        func_select
   |                 { _set_db('ANY') }        { $tmp_table++; '' } func_create_and_drop
+  |                 { _set_db('ANY') }        func_view
   |                 { _set_db('NON-SYSTEM') } func_alter_table
-  | ==FACTOR:2==                { _set_db('NON-SYSTEM') } func_dml
-  | ==FACTOR:10==               { _set_db('NON-SYSTEM') } func_dml_function
+  | ==FACTOR:2==    { _set_db('NON-SYSTEM') } func_dml
+  | ==FACTOR:2==    { _set_db('NON-SYSTEM') } func_dml_function
   | ==FACTOR:0.01== { _set_db('ANY') }        func_set_binlog_variables
 ;
 
@@ -51,37 +52,60 @@ func_opt_col_check:
   CHECK(func_func) ;
 
 func_create_and_drop:
-      CREATE __temporary(50) TABLE { 'test.tmp'.$tmp_table } AS func_select
-   ;; DROP TABLE IF EXISTS { 'test.tmp'.$tmp_table } ;
+     CREATE __temporary(50) TABLE { 'test.tmp'.$tmp_table } AS func_select ;; DROP TABLE IF EXISTS { 'test.tmp'.$tmp_table } ;
+
+func_view:
+  CREATE OR REPLACE VIEW { 'test.v'.$tmp_table } AS func_select ;; SELECT * FROM { 'test.v'.$tmp_table } func_where ;; DROP VIEW IF EXISTS { 'test.v'.$tmp_table } ;
 
 func_dml:
-     CREATE OR REPLACE __temporary(50) TABLE { 'test.tmp'.$tmp_table } SELECT _field AS f1, _field AS f2, _field AS f3 FROM _table LIMIT 2
-   ;; INSERT INTO { 'test.tmp'.$tmp_table } VALUES (_anyvalue, _anyvalue, func_arbitrary_args(f1,f2))
+   func_dml_one_field | func_dml_two_fields | func_dml_three_fields
+;
+
+func_dml_one_field:
+     CREATE OR REPLACE __temporary(50) TABLE { 'test.tmp'.$tmp_table } SELECT _field AS f1 FROM _table LIMIT _digit
+   ;; INSERT IGNORE INTO { 'test.tmp'.$tmp_table } VALUES ( func_arg )
+;
+
+func_dml_two_fields:
+     CREATE OR REPLACE __temporary(50) TABLE { 'test.tmp'.$tmp_table } SELECT _field AS f1, _field AS f2 FROM _table LIMIT _digit
+   ;; INSERT IGNORE INTO { 'test.tmp'.$tmp_table } VALUES (func_arg, func_arg)
+;
+
+func_dml_three_fields:
+     CREATE OR REPLACE __temporary(50) TABLE { 'test.tmp'.$tmp_table } SELECT _field AS f1, _field AS f2, _field AS f3 FROM _table LIMIT _digit
+   ;; INSERT IGNORE INTO { 'test.tmp'.$tmp_table } VALUES (func_arg, func_arg, func_arbitrary_args(f1,f2))
 ;
 
 func_dml_function:
-   CREATE OR REPLACE __temporary(50) TABLE { 'test.tmp'.$tmp_table } SELECT _field AS f1, _field AS f2, _field AS f3 FROM _table LIMIT 2
+     CREATE OR REPLACE __temporary(50) TABLE { 'test.tmp'.$tmp_table } SELECT _field AS f1, _field AS f2, _field AS f3 FROM _table LIMIT _digit
    ;; CREATE OR REPLACE FUNCTION { 'test.dml_function_'.abs($$) } () RETURNS INT
       BEGIN
-        INSERT INTO { 'test.tmp'.$tmp_table } VALUES (_anyvalue, _anyvalue, func_arbitrary_args(f1,f2))
-      ; UPDATE { 'test.tmp'.$tmp_table }  SET f1 = func_func, f2 = func_func, f3 = func_func
+        INSERT IGNORE INTO { 'test.tmp'.$tmp_table } VALUES (func_arg, func_arg, func_arbitrary_args(f1,f2))
+      ; UPDATE IGNORE { 'test.tmp'.$tmp_table }  SET f1 = func_func, f2 = func_func, f3 = func_func
       ; RETURN _digit
       ; END
    ;; SELECT { 'test.dml_function_'.abs($$) } ();
 ;
 
-func_select_or_explain_select:
-   _basics_explain_analyze func_select;
+func_select:
+   optional_explain_analyze func_select;
+
+optional_explain_analyze:
+   ==FACTOR:10== |
+   _basics_explain_analyze
+;
 
 func_select_list:
-   func_select_item AS { $num++; 'field'.$num } | func_select_item AS { $num++; 'field'.$num } , func_select_list ;
+   ==FACTOR:5== func_select_item AS { $num++; 'field'.$num }
+   | func_select_item AS { $num++; 'field'.$num } , func_select_list ;
 
 func_select_item:
-   func_func | func_aggregate_func
+   ==FACTOR:3== func_func
+   | func_aggregate_func
 ;
 
 func_select:
-  { $num = 0; '' } /* _table[invariant] */ SELECT __distinct(50) func_select_list FROM _table[invariant] func_where func_group_by_having_order_by_limit ;
+  { $num = 0; '' } /* _table[invariant] */ SELECT __distinct(50) func_select_list FROM _table[invariant] func_where opt_group_by_having_order_by_limit ;
 
 func_aggregate_func:
    COUNT( func_func )
@@ -105,11 +129,12 @@ func_aggregate_func:
 ;
 
 func_where:
-   | WHERE func_func ;
+   | WHERE ( func_func ) field_condition ;
 
-func_group_by_having_order_by_limit:
-   func_group_by_with_rollup func_having _basics_limit_50pct |
-   func_group_by func_having func_order_by _basics_limit_50pct
+opt_group_by_having_order_by_limit:
+   ==FACTOR:5== |
+                func_group_by_with_rollup func_having _basics_limit_50pct |
+   ==FACTOR:2== func_group_by func_having func_order_by _basics_limit_50pct
 ;
 
 func_group_by_with_rollup:
@@ -119,7 +144,13 @@ func_group_by:
    | GROUP BY func_func | GROUP BY func_func, func_func ;
 
 func_having:
-   | HAVING { 'field' . $prng->int(1,$num) } _basics_comparison_operator _basics_any_value ;
+   | HAVING { 'field' . $prng->int(1,$num) } field_condition ;
+
+field_condition:
+   _basics_comparison_operator _basics_any_value |
+   _basics_comparison_operator ( func_func ) |
+   IS __not(50) NULL
+;
 
 func_order_by:
    | ORDER BY func_func | ORDER BY func_func, func_func ;
@@ -132,11 +163,12 @@ func_func:
    func_assign_oper |
    func_cast_oper |
    func_control_flow_func |
-   func_str_func |
-   func_date_func |
+   ==FACTOR:3== func_str_func |
+   ==FACTOR:2== func_date_func |
    func_encrypt_func |
    func_information_func |
-   func_xml_func |
+   # MDEV-35090 and generally problematic and nobody is fixing it
+   ==FACTOR:0.01== func_xml_func |
    func_misc_func
 ;
 
@@ -293,14 +325,19 @@ func_str_func:
    VEC_TOTEXT( func_arg_vector ) /* compatibility 11.7.1 */ |
    VEC_FROMTEXT( func_arg_vector ) /* compatibility 11.7.1 */ |
    VEC_DISTANCE_EUCLIDEAN( func_arg_vector, func_arg_vector ) /* compatibility 11.7.1 */ |
-   VEC_DISTANCE_COSINE( func_arg, func_arg_vector ) /* compatibility 11.7.1 */
+   VEC_DISTANCE_COSINE( func_arg_vector, func_arg_vector ) /* compatibility 11.7.1 */ |
+   VEC_DISTANCE( func_arg_vector, func_arg_vector ) /* compatibility 11.8.0 */
 ;
 
 func_arg_vector:
    func_arg |
    { $dimensions= $prng->uint16(1,100); $min_value= $prng->uint16(-10,10); $max_value= $prng->uint16($min_value,$min_value+100); @vals= (); for (my $j=0; $j<$dimensions; $j++) { push @vals, sprintf("%.3f",$min_value + rand()*($max_value - $min_value)) }; "'[".(join ',', @vals)."]'" } |
-   _hex( {$prng->uint16(1,100)*8} )
+   vector_hex_string
 ;
+
+# Vector length * 8
+vector_hex_string:
+   _hex(8) | _hex(16) | _hex(32) | _hex(64) | _hex(768) ;
 
 sformat_template:
   CONCAT(_string, sformat_replacement_field, _string);
@@ -467,7 +504,7 @@ func_arithm_oper:
 ;
 
 func_logical_or_bitwise_oper:
-   NOT func_arg | ! func_arg | ~ func_arg |
+   NOT ( func_arg ) | ! ( func_arg ) | ~ ( func_arg ) |
    func_arg AND func_arg | func_arg && func_arg | func_arg & func_arg |
    func_arg OR func_arg | func_arg | func_arg |
    func_arg XOR func_arg | func_arg ^ func_arg |
@@ -548,7 +585,7 @@ func_const_char_value:
 ;
 
 func_value:
-   _bigint | _smallint | _int_unsigned | _char(1) | _char(256) | _datetime | _date | _time | NULL ;
+   _bigint | _smallint | _int_unsigned | _char(1) | _char(256) | _datetime | _date | _time | NULL | _anyvalue ;
 
 func_bool_value:
    TRUE | FALSE | UNKNOWN | NULL ;
