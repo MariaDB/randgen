@@ -3150,6 +3150,10 @@ MDEV-21561:
 =~ Assertion \`bitmap_is_subset(&m_part_info->read_partitions, &m_part_info->lock_partitions)'|Assertion \`bitmap_is_subset(&m_part_info->lock_partitions, &m_locked_partitions)'
 =~ ha_partition::start_stmt
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-21530:
+=~ signal|AddressSanitizer
+=~ Item_func_json_extract::read_json
+=~ Arg_comparator::compare_e_json_str_basic
 MDEV-21516:
 =~ Assertion \`lock_rec_find_set_bit(lock) == ((ulint)(-1))'
 =~ lock_rec_free_all_from_discard_page_low
@@ -3875,9 +3879,14 @@ MDEV-15534:
 =~ row_update_prebuilt_trx
 =~ ha_innobase::external_lock
 MDEV-15494:
+=~ Assertion \`"invalid state" == 0'
+=~ ha_innobase::external_lock
+=~ FeatureUsage detected XA transactions
+MDEV-15494:
 =~ InnoDB: Assertion failure.*trx0roll.cc line
 =~ trx_rollback_last_sql_stat_for_mysql
 =~ innobase_rollback
+=~ FeatureUsage detected XA transactions
 MDEV-15471:
 =~ Assertion \`new_clustered == ctx->need_rebuild()'
 =~ ha_innobase::commit_inplace_alter_table
