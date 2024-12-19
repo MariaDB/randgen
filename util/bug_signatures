@@ -20,6 +20,10 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35696:
+=~ Assertion \`old_flags == ((my_flags & 0x10000U) ? 1 : 0)'
+=~ my_realloc
+=~ maria_repair
 MDEV-35662:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Type_handler_hybrid_field_type::aggregate_for_comparison
@@ -48,6 +52,10 @@ MDEV-35610:
 =~ Assertion \`desync_count_ > 0'|terminate called after throwing an instance|Assertion \`thd->wsrep_desynced_backup_stage == false'
 =~ wsrep::server_state::resync
 =~ backup_block_ddl
+MDEV-35596:
+=~ Assertion \`type_handler()->result_type() == value\.type_handler()->result_type()'
+=~ Item_param::get_date
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-35543:
 =~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
 =~ Datetime_truncation_not_needed::Datetime_truncation_not_needed
