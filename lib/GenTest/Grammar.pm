@@ -36,7 +36,7 @@ use constant GRAMMAR_RULES     => 0;
 use constant GRAMMAR_FILE      => 1;
 use constant GRAMMAR_STRING    => 2;
 use constant GRAMMAR_FEATURES  => 3;
-use constant GRAMMAR_REDEFINES => 4;
+use constant GRAMMAR_TEST_CONFIG => 4;
 use constant GRAMMAR_SERVER_VERSION_COMPATIBILITY => 5;
 use constant GRAMMAR_WEIGHT    => 6;
 use constant GRAMMAR_SERVER_ES_COMPATIBILITY => 7;
@@ -48,19 +48,17 @@ sub new {
 
   my $grammar = $class->SUPER::new({
     'grammar_file'   => GRAMMAR_FILE,
-    'redefine_files'  => GRAMMAR_REDEFINES,
-    'compatibility'  => GRAMMAR_SERVER_VERSION_COMPATIBILITY,
-    'compatibility_es'  => GRAMMAR_SERVER_ES_COMPATIBILITY,
+    'config' => GRAMMAR_TEST_CONFIG,
   }, @_);
 
   $grammar->[GRAMMAR_FEATURES]= [];
   $grammar->[GRAMMAR_RULES] = {};
-
   $grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY]= (
-    defined $grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY]
-    ? versionN6($grammar->[GRAMMAR_SERVER_VERSION_COMPATIBILITY])
+    defined $grammar->[GRAMMAR_TEST_CONFIG]->compatibility
+    ? versionN6($grammar->[GRAMMAR_TEST_CONFIG]->compatibility)
     : '000000'
   );
+  $grammar->[GRAMMAR_SERVER_ES_COMPATIBILITY]= $grammar->[GRAMMAR_TEST_CONFIG]->compatibility_es;
 
   # A grammar file can optionally end with :number. It indicates
   # the relative weight of the grammar among all configured grammars.
@@ -140,13 +138,14 @@ sub parseFromString {
   # - #include <other grammar>
   # - #compatibility <version>[,<version>...]
   # - #feature <feature>[,<feature>...]
+  # - #require <gendata option>[,<gendata option>...]
 
   while ($grammar_string =~ s{#include [<"](.*?)[>"]$}{
     {
       my $include_string;
       my $include_file = $1;
-            open (IF, $1) or die "Unable to open include file $include_file: $!";
-            read (IF, $include_string, -s $include_file) or die "Unable to open $include_file: $!";
+      open (IF, $1) or die "Unable to open include file $include_file: $!";
+      read (IF, $include_string, -s $include_file) or die "Unable to open $include_file: $!";
       $include_string;
   }}mie) {};
 
@@ -155,6 +154,15 @@ sub parseFromString {
       sayWarning("Grammar ".$grammar->file." does not meet compatibility requirements, ignoring");
       return;
     }
+  }
+
+  REQS:
+  while ($grammar_string =~ s{#require [<"](.*?)[>"]$}{}mi) {
+    my $require_file = $1;
+    foreach my $g (@{$grammar->[GRAMMAR_TEST_CONFIG]->gendatas}) {
+      next REQS if ($g eq $require_file);
+    }
+    die "Required grammar '$require_file' not found among grammar options (@{$grammar->[GRAMMAR_TEST_CONFIG]->gendatas})";
   }
 
   while ($grammar_string =~ s{#features:?\s+([- \/\w\d,]+)}{}mi) {
@@ -427,59 +435,5 @@ sub patch {
     $self->[GRAMMAR_RULES]= $rules;
 }
 
-
-sub firstMatchingRule {
-    my ($self, @ids) = @_;
-    foreach my $x (@ids) {
-        return $self->rule($x) if defined $self->rule($x);
-    }
-    return undef;
-}
-
-##
-## The "body" of topGrammar
-##
-
-sub topGrammarX {
-    my ($self, $level, $max, @rules) = @_;
-    if ($max > 0) {
-        my $result={};
-        foreach my $rule (@rules) {
-            foreach my $c (@{$rule->components()}) {
-                my @subrules = ();
-                foreach my $cp (@$c) {
-                    push @subrules,$self->rule($cp) if defined $self->rule($cp);
-                }
-                my $componentrules =
-                    $self->topGrammarX($level + 1, $max -1,@subrules);
-                if (defined  $componentrules) {
-                    foreach my $sr (keys %$componentrules) {
-                        $result->{$sr} = $componentrules->{$sr};
-                    }
-                }
-            }
-            $result->{$rule->name()} = $rule;
-        }
-        return $result;
-    } else {
-        return undef;
-    }
-}
-
-
-##
-## Produce a new grammar which is the toplevel $level rules of this
-## grammar
-##
-
-sub topGrammar {
-    my ($self, $levels, @startrules) = @_;
-
-    my $start = $self->firstMatchingRule(@startrules);
-
-    my $rules = $self->topGrammarX(0,$levels, $start);
-
-    return GenTest::Grammar->new(grammar_rules => $rules);
-}
 
 1;

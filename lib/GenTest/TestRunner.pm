@@ -380,7 +380,6 @@ sub workerProcess {
     if ($worker_pid != 0) {
         return $worker_pid;
     }
-
     $| = 1;
 #    my $ctrl_c = 0;
 #    local $SIG{INT} = sub { $ctrl_c = 1 };
@@ -520,8 +519,7 @@ sub initGenerator {
       foreach my $r (@{$self->config->redefines}) {
         my $rg= GenTest::Grammar->new(
           grammar_file => $r,
-          compatibility => $self->config->compatibility,
-          compatibility_es => $self->config->compatibility_es
+          config => $self->config
         );
         if (not defined $rg) {
           sayError("Could not initialize the redefining grammar from $r");
@@ -539,11 +537,9 @@ sub initGenerator {
       my @grammars= ();
       foreach my $g (@{$self->config->grammars}) {
         my $grammar= GenTest::Grammar->new(
-                                  grammar_file => $g,
-                                  redefine_files => $self->config->redefines,
-                                  compatibility => $self->config->compatibility,
-                                  compatibility_es => $self->config->compatibility_es
-                        );
+          grammar_file => $g,
+          config => $self->config
+        );
         if (not defined $grammar) {
           sayError("Could not initialize the grammar from $g, status will be set to ENVIRONMENT_FAILURE");
           return STATUS_ENVIRONMENT_FAILURE;
