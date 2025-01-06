@@ -20,6 +20,10 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35745:
+=~ Assertion \`queue->elements < queue->max_elements'|AddressSanitizer|MemorySanitizer|double free or corruption|signal 11
+=~ mhnsw_read_first|mhnsw_read_next
+=~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35696:
 =~ Assertion \`old_flags == ((my_flags & 0x10000U) ? 1 : 0)'
 =~ my_realloc
@@ -104,7 +108,7 @@ MDEV-35397:
 =~ Repl_semi_sync_master::wait_after_commit
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-35361:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer|signal|MemorySanirizer
 =~ my_strnncoll.*
 =~ heap_rkey
 =~ Expression_cache_tmptable::check_value
