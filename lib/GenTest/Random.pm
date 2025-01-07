@@ -1051,7 +1051,9 @@ sub fieldType {
   } elsif ($field_type == FIELD_TYPE_DATATYPE) {
     return $rand->dataType($field_length);
   } elsif ($field_type == FIELD_TYPE_SPATIAL) {
-    return $rand->spatial();
+  # TODO: GIS in anyvalue causes too much trouble (MDEV-22385)
+    #return $rand->spatial();
+    return $rand->hex($field_length);
   } else {
     croak ("unknown field type $field_def");
   }
