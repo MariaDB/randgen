@@ -903,7 +903,7 @@ sub dumpdb {
       $databases= "$database->[0]";
     }
     # --skip-disable-keys due to MDEV-26253
-    my $dump_command= '"'.$self->dumper.'" --skip-disable-keys --skip-dump-date -uroot --host='.$self->host.' --port='.$self->port.' --hex-blob '.$databases;
+    my $dump_command= '"'.$self->dumper.'" --skip-disable-keys --skip-dump-date --flush-privileges -uroot --host='.$self->host.' --port='.$self->port.' --hex-blob '.$databases;
     unless ($for_restoring) {
       my @heap_tables= @{$conn->get_column(
           "select concat(table_schema,'.',table_name) from ".
