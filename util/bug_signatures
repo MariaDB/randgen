@@ -20,10 +20,19 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
-MDEV-35745:
-=~ Assertion \`queue->elements < queue->max_elements'|AddressSanitizer|MemorySanitizer|double free or corruption|signal 11
+MDEV-35793:
+=~ signal|MemorySanitizer
+=~ Item_func_vec_distance::get_const_arg|Item_func_vec_distance_common::get_const_arg
 =~ mhnsw_read_first|mhnsw_read_next
+MDEV-35792:
+=~ ERROR 1089 (HY000) at line .*: Incorrect prefix key; the used key part isn't a string, the used length is longer than the key part, or the storage engine doesn't support unique prefix keys
 =~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+=~ exit status STATUS_RECOVERY_FAILURE
+Incorrect prefix key; the used key part isn't a string, the used length is longer than the key part, or the storage engine doesn't support unique prefix keys
+#MDEV-35745:
+#=~ Assertion \`queue->elements < queue->max_elements'|AddressSanitizer|MemorySanitizer|double free or corruption|signal 11
+#=~ mhnsw_read_first|mhnsw_read_next
+#=~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35696:
 =~ Assertion \`old_flags == ((my_flags & 0x10000U) ? 1 : 0)'
 =~ my_realloc
@@ -60,6 +69,11 @@ MDEV-35596:
 =~ Assertion \`type_handler()->result_type() == value\.type_handler()->result_type()'
 =~ Item_param::get_date
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-35516:
+=~ MemorySanitizer
+=~ sp_lex_keeper::~sp_lex_keeper
+=~ sp_head::destroy
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35543:
 =~ Assertion \`!is_valid_datetime() \|\| fraction_remainder(((item->decimals) < (6) ? (item->decimals) : (6))) == 0'
 =~ Datetime_truncation_not_needed::Datetime_truncation_not_needed
@@ -1085,6 +1099,14 @@ MDEV-31007:
 MDEV-31007:
 =~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF) \|\| (((Item_ref \*) item)->ref_type() == Item_ref::REF)))'
 =~ get_corresponding_field_pair
+MDEV-31007:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ Item_field::derived_field_transformer_for_having
+=~ Item_default_value::transform
+MDEV-31007:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ Item_field::register_field_in_read_map
+=~ Item_default_value::walk
 MDEV-30992:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
