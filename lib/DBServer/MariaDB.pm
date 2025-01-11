@@ -1924,7 +1924,7 @@ sub version {
         my $ver = `perl $conf --version`;
         chop($ver);
         $self->[MYSQLD_VERSION] = $ver;
-        if (($ver =~ /^\d+\.d+\.\d+\-\d+$/) or ($ver =~ /^2[3-9]\.\d+\.\d+$/)) {
+        if ($ver =~ /^\d+\.\d+\.\d+\-\d+$/) {
           $self->[MYSQLD_ES]= 1;
         } else {
           $self->[MYSQLD_ES]= 0;

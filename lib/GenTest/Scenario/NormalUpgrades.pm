@@ -453,6 +453,8 @@ sub post_upgrade {
 
   #####
   if ( ($old_server->majorVersion ne $new_server->majorVersion)
+        # For cross-grades between CS and ES mariadb-upgrade should always be run
+        or ($old_server->enterprise() != $new_server->enterprise())
         # Follow-up for MDEV-14637 which changed the structure of InnoDB stat tables in 10.2.17 / 10.3.9
         or ($old_server->versionNumeric lt '100217' and $new_server->versionNumeric ge '100217' )
         or ($old_server->versionNumeric lt '100309' and $new_server->versionNumeric ge '100309' )
