@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+MENT-2202: [ASAN heap-use-after-free in vprint_msg_to_blackbox]
+=~ AddressSanitizer: heap-use-after-free
+=~ process_str_arg
+=~ vprint_msg_to_blackbox
+=~ Version: '11\.4|Server version: 11\.4
 MENT-1942: [aria-block-size, can't open control file]
 =~ Can't open Aria control file (0)
 =~ mysqld=--aria-block-size=

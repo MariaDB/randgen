@@ -20,6 +20,10 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35801:
+=~ Assertion \`empty \|\| create \|\| aborted \|\| ddl_replay'
+=~ wsrep_commit_empty
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-35793:
 =~ signal|MemorySanitizer
 =~ Item_func_vec_distance::get_const_arg|Item_func_vec_distance_common::get_const_arg
@@ -646,6 +650,10 @@ MDEV-32190:
 =~ InnoDB: Clustered record for sec rec not found index
 =~ InnoDB: We detected index corruption in an InnoDB type table
 =~ FeatureUsage detected nopad collations
+MDEV-32190:
+=~ InnoDB: Flagged corruption of .* in table .* in CHECK TABLE-check index
+=~ InnoDB: Clustered index record not found for index
+=~ FeatureUsage detected nopad collations
 MDEV-32173:
 =~ Assertion \`res >= 0'
 =~ JOIN::optimize_inner
@@ -914,7 +922,7 @@ MDEV-31429:
 MDEV-31406:
 =~ AddressSanitizer|signal
 =~ ha_maria::repair
-=~ ha_partition::repair
+=~ ha_partition::handle_opt_part
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31395:
 =~ AddressSanitizer|signal
