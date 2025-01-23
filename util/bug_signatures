@@ -20,6 +20,13 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35922:
+=~ signal|AddressSanitizer
+=~ mhnsw_read_first
+=~ TABLE::hlindex_read_first
+MDEV-35920:
+=~ Assertion \`decimals == 0'
+=~ Item_func_mod::fix_length_and_dec_int
 MDEV-35919:
 =~ signal|AddressSanitizer
 =~ Item_func_vec_distance::fix_length_and_dec
