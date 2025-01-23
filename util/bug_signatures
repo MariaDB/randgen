@@ -32,6 +32,10 @@ MDEV-35919:
 =~ Item_func_vec_distance::fix_length_and_dec
 =~ setup_fields
 =~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-35911:
+=~ Assertion \`marked_for_write_or_computed()'
+=~ Field_new_decimal::store_value
+=~ convert_null_to_field_value_or_error
 MDEV-35801:
 =~ Assertion \`empty \|\| create \|\| aborted \|\| ddl_replay'
 =~ wsrep_commit_empty
