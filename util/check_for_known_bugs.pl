@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright (c) 2018, 2022, MariaDB Corporation Ab.
+# Copyright (c) 2018, 2025, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -108,7 +108,7 @@ foreach my $f (@signature_files) {
     }
 }
 
-my %fixed_mdevs= ();
+my %closed_mdevs= ();
 my %draft_mdevs= ();
 my %found_mdevs= ();
 my %fixed_in_future= ();
@@ -214,10 +214,10 @@ sub print_result {
     register_result($match_type);
   }
 
-  if (keys %fixed_mdevs) {
-    foreach my $m (sort keys %fixed_mdevs) {
-      print "\n--- ATTENTION! FOUND FIXED MDEV: -----\n";
-      print "\t$m - $fixed_mdevs{$m}\n";
+  if (keys %closed_mdevs) {
+    foreach my $m (sort keys %closed_mdevs) {
+      print "\n--- ATTENTION! FOUND CLOSED MDEV: -----\n";
+      print "\t$m - $closed_mdevs{$m}\n";
       if ($fixed_in_future{$m}) {
         print "The fix version is in the future\n";
       }
@@ -258,7 +258,7 @@ sub register_result
             my %mdevs_to_register= ();
             if ($type eq 'strong') {
               foreach my $j (keys %found_mdevs) {
-                if (not $draft_mdevs{$j} and not defined $fixed_mdevs{$j}) {
+                if (not $draft_mdevs{$j} and not defined $closed_mdevs{$j}) {
                   $mdevs_to_register{$j}= $found_mdevs{$j};
                 }
               }
@@ -274,12 +274,12 @@ sub register_result
                     $match_type= 'draft';
                 }
                 my $notes= ($match_type eq 'strong' ? $j : $mdevs_to_register{$j}.' - '.$j);
-                if (defined $fixed_mdevs{$j} and not defined $fixed_in_future{$j}) {
-                    $fixdate= "'$fixed_mdevs{$j}'";
+                if (defined $closed_mdevs{$j} and not defined $fixed_in_future{$j}) {
+                    $fixdate= "'$closed_mdevs{$j}'";
                     $match_type= 'fixed';
                 }
                 # Only register matches to fixed items if there is no better choice
-                if ($match_type ne 'fixed' or scalar(keys %fixed_mdevs) == scalar(keys %mdevs_to_register)) {
+                if ($match_type ne 'fixed' or scalar(keys %closed_mdevs) == scalar(keys %mdevs_to_register)) {
 #                    my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$notes\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
                     my $query= "LOAD DATA LOCAL INFILE '/tmp/test_result_digest' INTO TABLE regression.result FIELDS TERMINATED BY 'xxxxxthisxxlinexxxshouldxxneverxxeverxxappearxxinxxanyxxfilexxxxxxxxxxxxxxxxxxxxxxxx' ESCAPED BY '' LINES TERMINATED BY 'XXXTHISXXLINEXXSHOULDXXNEVERXXEVERXXAPPEARXXINXXANYXXFILEXXXXXXXXXXXXXXXXXXXX' (digest) SET ci = '$ci', test_id = '$ENV{TEST_ID}', notes = '$notes', fixdate = $fixdate, match_type = '$match_type', test_result = '$test_result', url = $page_url, server_branch = '$server_branch', server_rev = '$server_revno', test_info = '$test_line'";
                     $dbh->do($query);
@@ -324,7 +324,7 @@ sub process_found_mdev
         $resolution= 'Unresolved';
       }
 
-      $fixed_mdevs{$mdev} = $resolutiondate if $resolution eq 'FIXED';
+      $closed_mdevs{$mdev} = $resolutiondate if $resolution ne 'Unresolved';
 
       unless (-e "/tmp/$mdev.summary") {
         system("wget https://jira.mariadb.org//rest/api/2/issue/$mdev?fields=summary -O /tmp/$mdev.summary -o /dev/null");
@@ -339,7 +339,7 @@ sub process_found_mdev
         $draft_mdevs{$mdev}= 1;
       }
 
-      if ($resolution eq 'FIXED' and not -e "/tmp/$mdev.fixVersions") {
+      if ($resolution ne 'Unresolved' and not -e "/tmp/$mdev.fixVersions") {
         system("wget https://jira.mariadb.org//rest/api/2/issue/$mdev?fields=fixVersions -O /tmp/$mdev.fixVersions -o /dev/null");
       }
 
@@ -352,7 +352,9 @@ sub process_found_mdev
 
       $$info_ref .= "\n$mdev: $nickname\n$summary\n";
 
-      if ($resolution eq 'FIXED') {
+      $$info_ref .= "RESOLUTION: $resolution". ($resolutiondate ? " ($resolutiondate)" : "") . "\n";
+      $$info_ref .= "Affects versions: @affected\n";
+      if ($resolution ne 'Unresolved') {
         my $fixVersions= `cat /tmp/$mdev.fixVersions`;
         my @versions = ($fixVersions =~ /\"name\":\"(.*?)\"/g);
         $$info_ref .= "Fix versions: @versions ($resolutiondate)\n";
@@ -376,10 +378,6 @@ sub process_found_mdev
             $fixed_in_future{$mdev}= 1;
           }
         }
-      }
-      else {
-        $$info_ref .= "RESOLUTION: $resolution". ($resolutiondate ? " ($resolutiondate)" : "") . "\n";
-        $$info_ref .= "Affects versions: @affected\n";
       }
    }
 #   $$info_ref .= "-------------\n";
