@@ -20,6 +20,26 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35945:
+=~ Assertion \`src != ((void \*)0)'
+=~ my_caseup_8bit
+=~ Item_func_case_abbreviation2_switch
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-35944:
+=~ Assertion \`not_autocommit \|\| trx->n_mysql_tables_in_use \|\| (trx->lock\.trx_locks)\.count == 0'
+=~ ha_innobase::external_lock
+=~ handler::create_lookup_handler
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-35944:
+=~ Assertion \`!n_mysql_tables_in_use'
+=~ trx_t::free
+=~ innobase_close_connection
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-35943:
+=~ signal|AddressSanitizer
+=~ Query_arena::free_items
+=~ fill_schema_table_from_frm
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-35922:
 =~ signal|AddressSanitizer
 =~ mhnsw_read_first
