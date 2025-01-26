@@ -22,8 +22,8 @@
 
 MDEV-35945:
 =~ Assertion \`src != ((void \*)0)'
-=~ my_caseup_8bit
-=~ Item_func_case_abbreviation2_switch
+=~ my_caseup|my_casedn
+=~ Item_str_conv::val_str
 =~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35944:
 =~ Assertion \`not_autocommit \|\| trx->n_mysql_tables_in_use \|\| (trx->lock\.trx_locks)\.count == 0'
