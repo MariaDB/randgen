@@ -20,6 +20,10 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-35959:
+=~ Assertion \`\*str != '\\0''
+=~ my_message_sql
+=~ spider_mbase_handler::show_table_status
 MDEV-35945:
 =~ Assertion \`src != ((void \*)0)'
 =~ my_caseup|my_casedn
@@ -77,6 +81,10 @@ MDEV-35696:
 =~ Assertion \`old_flags == ((my_flags & 0x10000U) ? 1 : 0)'
 =~ my_realloc
 =~ maria_repair
+MDEV-35667:
+=~ Assertion \`thd->is_error()'
+=~ Field::sp_prepare_and_store_item
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35662:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Type_handler_hybrid_field_type::aggregate_for_comparison
