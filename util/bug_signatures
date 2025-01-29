@@ -15,8 +15,8 @@
 # =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 # 11.0+
 # =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
-# 11.2+
-# =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+# 11.4+
+# =~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
@@ -28,6 +28,11 @@ MDEV-35959:
 =~ Assertion \`\*str != '\\0''
 =~ my_message_sql
 =~ spider_mbase_handler::show_table_status
+MDEV-35946:
+=~ Assertion \`thd->is_error()'
+=~ Sql_cmd_dml::prepare
+=~ wsrep_mysql_parse
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35945:
 =~ Assertion \`src != ((void \*)0)'
 =~ my_caseup|my_casedn
