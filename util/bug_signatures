@@ -20,6 +20,14 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-36011:
+=~ signal|AddressSanitizer
+=~ Charset::mbminlen
+=~ Item_func_vec_fromtext::val_str
+MDEV-36005:
+=~ signal|AddressSanitizer
+=~ TABLE_SHARE::init_from_sql_statement_string
+=~ TABLE::open_hlindexes_for_write
 MDEV-35977:
 =~ Assertion \`args\[0\]->decimals == 0'
 =~ Item_func_round::fix_arg_hex_hybrid
@@ -28,7 +36,7 @@ MDEV-35971:
 =~ wsrep_create_trigger_query
 =~ Prepared_statement::execute|sp_instr_stmt::execute
 MDEV-35959:
-=~ Assertion \`\*str != '\\0''
+=~ Assertion \`\*str != '\\0''|Assertion \`\*str != '\\\\0''
 =~ my_message_sql
 =~ spider_mbase_handler::show_table_status
 MDEV-35946:
@@ -468,7 +476,7 @@ MDEV-33030:
 =~ ha_partition::handle_unordered_next
 =~ mysql_ha_read
 MDEV-33030:
-=~ Failing assertion: old_n_core_fields <= index->n_core_fields
+=~ Failing assertion: old_n_core_fields <= index->n_core_fields|Failing assertion: old_n_core_fields == index->n_core_fields|Assertion \`old_n_core_fields == index->n_core_fields'
 =~ ha_partition::handle_ordered_prev
 =~ mysql_ha_read
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
@@ -881,7 +889,7 @@ MDEV-31808:
 =~ Sql_cmd_alter_table::execute|mysql_alter_table
 =~ FeatureUsage detected sequences
 MDEV-31806:
-=~ InnoDB: Failing assertion: key_part->key_part_flag & HA_PART_KEY_SEG
+=~ InnoDB: Failing assertion: key_part->key_part_flag & HA_PART_KEY_SEG|AddressSanitizer
 =~ wsrep_store_key_val_for_row
 =~ FeatureUsage detected GIS columns
 MDEV-31757:
@@ -2741,7 +2749,7 @@ MDEV-23202:
 =~ ha_maria::info|TABLE_LIST::fetch_number_of_rows|ha_heap::info|ha_heap::rnd_init|handler::ha_rnd_init
 =~ sp_instr_stmt::exec_core|Prepared_statement::execute
 MDEV-23200:
-=~ Assertion \`btr_page_get_index_id(btr_pcur_get_page(pcur)) == index->id'
+=~ Assertion \`btr_page_get_index_id(btr_pcur_get_page(pcur)) == index->id'|Assertion \`btr_page_get_index_id(btr_pcur_get_block(pcur)->page\.frame) == index->id'
 =~ row_search_mvcc
 =~ mysql_ha_read
 MDEV-23188:
