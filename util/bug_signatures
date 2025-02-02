@@ -20,6 +20,11 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+TODO-1: [enforce no trailing]
+=~ AddressSanitizer|signal
+=~ Warning_info::push_warning
+=~ THD::raise_condition
+=~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36011:
 =~ signal|AddressSanitizer
 =~ Charset::mbminlen
