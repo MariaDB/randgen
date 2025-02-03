@@ -20,6 +20,11 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-36020:
+=~ AddressSanitizer|signal
+=~ Binary_string::replace
+=~ Item_func_insert::val_str
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 TODO-1: [enforce no trailing]
 =~ AddressSanitizer|signal
 =~ Warning_info::push_warning
