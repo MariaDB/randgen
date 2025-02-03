@@ -194,6 +194,11 @@ MDEV-35397:
 =~ Repl_semi_sync_master::commit_trx
 =~ Repl_semi_sync_master::wait_after_commit
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-35375:
+=~ signal|AddressSanitizer
+=~ spider_send_query
+=~ ha_spider::index_first
+=~ mysql_ha_read
 MDEV-35361:
 =~ AddressSanitizer|signal|MemorySanirizer
 =~ my_strnncoll.*
@@ -1412,7 +1417,7 @@ MDEV-29623:
 =~ FeatureUsage detected Spider tables
 MDEV-29580:
 =~ Assertion \`!return_error \|\| thd->is_error() \|\| thd->killed'
-=~ mysql_delete
+=~ mysql_delete|Sql_cmd_delete::delete_from_single_table
 =~ mysql_parse.*MATCH.*AGAINST|Query .*:.*MATCH.*AGAINST
 =~ FeatureUsage detected sequences
 MDEV-29580:
@@ -2778,6 +2783,12 @@ MDEV-23167:
 =~ signal|AddressSanitizer
 =~ row_sel_field_store_in_mysql_format_func|maria_rprev|mi_rprev
 =~ handler::ha_index_prev
+=~ Query.*HANDLER.*READ
+MDEV-23167:
+=~ Assertion \`btr_page_get_index_id(btr_pcur_get_block(pcur)->page\.frame) == index->id'
+=~ row_search_mvcc
+=~ ha_innobase::index_prev
+=~ mysql_ha_read
 =~ Query.*HANDLER.*READ
 MDEV-23151:
 =~ Assertion \`i < get_width()'
