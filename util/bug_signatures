@@ -20,6 +20,10 @@
 # 11.6+
 # =~ Version: '11\.[6-9]|Server version: 11\.[6-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-36028:
+=~ signal|AddressSanitizer
+=~ wsrep_before_SE
+=~ Wsrep_server_service::sst_before_init
 TODO-0 [LeakSanitizer has encountered a fatal error]:
 =~ LeakSanitizer has encountered a fatal error
 MDEV-36020:
