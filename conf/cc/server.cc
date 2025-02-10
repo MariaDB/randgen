@@ -1,4 +1,4 @@
-# Copyright (c) 2023 MariaDB
+# Copyright (c) 2022, 2023 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -54,6 +54,18 @@ $combinations = [
   ##### Engines and scenarios
   [
     {
+      simple => [
+        [ '--scenario=Standard' ],
+        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
+      ],
+      innodb => [
+        [ '--scenario=Standard' ],
+        [ '--engine=InnoDB' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
+      ],
       normal => [
         [ @{$options{scenario_non_crash_combinations}} ],
         [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
@@ -73,6 +85,16 @@ $combinations = [
         [ @{$options{optional_binlog_unsafe_variables}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
       ],
+      binlog_check => [
+        [ @{$options{scenario_non_crash_combinations}} ],
+        [ '--reporters=BinlogConsistency --mysqld=--log-bin' ],
+        [ '--filter=conf/ff/replication.ff' ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        # Cannot have binlog encryption here, mysqlbinlog cannot read it
+        [ @{$options{optional_non_binlog_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{debug_grammars}} ],
+      ],
       index => [
         [ @{$options{scenario_non_crash_combinations}} ],
         [ '--reporters=SecondaryIndexConsistency' ],
@@ -89,12 +111,29 @@ $combinations = [
         [ @{$options{optional_encryption}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{debug_grammars}} ],
       ],
+      innodb_recovery => [
+        [ @{$options{scenario_crash_combinations}} ],
+        [ '--engine=InnoDB' ],
+        [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
+      ],
       upgrade_backup => [
         [ @{$options{scenario_mariabackup_combinations}}, @{$options{scenario_upgrade_combinations}} ],
         [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
         [ @{$options{engine_basic_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
+      ],
+      replication => [
+        [ @{$options{scenario_replication_combinations}} ],
+        [ '--filter=conf/ff/replication.ff' ],
+        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_encryption}} ],
+        [ @{$options{optional_replication_safe_variables}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
       ],
     }
