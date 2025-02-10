@@ -20,6 +20,19 @@
 # 11.8+
 # =~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-36059:
+=~ Assertion `derived->table'
+=~ mysql_derived_merge_for_insert
+=~ Sql_cmd_delete::prepare_inner
+=~ Prepared_statement::execute
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-36059:
+=~ signal|AddressSanitizer
+=~ TABLE::versioned
+=~ mysql_derived_prepare
+=~ Sql_cmd_delete::prepare_inner
+=~ Prepared_statement::execute
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36057:
 =~ Assertion \`0'
 =~ Item_param::can_return_value
@@ -2793,7 +2806,6 @@ MDEV-23179:
 MDEV-23179:
 =~ signal 11|Assertion \`!hash_link->block \|\| hash_link->block->pins == 0'
 =~ unlink_hash
-=~ flush_pagecache_blocks_int
 =~ ha_maria::preload_keys|free_block
 MDEV-23173:
 =~ Assertion \`length < 249'
