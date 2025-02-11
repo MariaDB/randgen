@@ -20,6 +20,12 @@
 # 11.8+
 # =~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
+MDEV-36067:
+=~ Assertion \`!thd->is_error()'
+=~ TABLE_SHARE::init_from_sql_statement_string
+=~ discover_handlerton
+=~ fill_schema_table_by_open
+=~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36059:
 =~ Assertion `derived->table'
 =~ mysql_derived_merge_for_insert
