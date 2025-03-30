@@ -162,7 +162,7 @@ sub parseFromString {
     foreach my $g (@{$grammar->[GRAMMAR_TEST_CONFIG]->gendatas}) {
       next REQS if ($g eq $require_file);
     }
-    die "Required grammar '$require_file' not found among grammar options (@{$grammar->[GRAMMAR_TEST_CONFIG]->gendatas})";
+    die "Grammar '$require_file' required by ".$grammar->[GRAMMAR_FILE]." not found among grammar options (@{$grammar->[GRAMMAR_TEST_CONFIG]->gendatas})";
   }
 
   while ($grammar_string =~ s{#features:?\s+([- \/\w\d,]+)}{}mi) {
