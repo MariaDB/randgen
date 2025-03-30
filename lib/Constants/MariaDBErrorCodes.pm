@@ -1115,7 +1115,10 @@ use constant  ER_INVALID_JSON_VALUE_FOR_CAST                    => 3156;
 use constant  ER_JSON_DOCUMENT_TOO_DEEP                         => 3157;
 use constant  ER_JSON_DOCUMENT_NULL_KEY                         => 3158;
 #--- end of MySQL 5.7 errors ---
-# 3159..3999 are MySQL codes, but not MariaDB
+
+# 11.2+
+use constant  ER_SECURE_TRANSPORT_REQUIRED                      => 3159; # Connections using insecure transport are prohibited while --require_secure_transport=ON
+# 3160..3999 are MySQL codes, but not MariaDB
 
 #   constant  ER_UNUSED_26                                      => 4000; # This error never happens
 #   constant  ER_UNUSED_27                                      => 4001; # This error never happens
@@ -1308,8 +1311,30 @@ use constant  ER_SF_OUT_INOUT_ARG_NOT_ALLOWED                   => 4187; # OUT o
 use constant  ER_INCONSISTENT_SLAVE_TEMP_TABLE                  => 4188; # Replicated query '%s' table `%s.%s` can not be temporary
 # 10.9 and higher
 use constant  ER_VERS_HIST_PART_FAILED                          => 4189; # Versioned table %`s.%`s: adding HISTORY partition(s) failed
+# 10.10+
+use constant  WARN_OPTION_CHANGING                              => 4190; # %s is implicitly changing the value of '%s' from '%s' to '%s'
+use constant  ER_CM_OPTION_MISSING_REQUIREMENT                  => 4191; # CHANGE MASTER TO option '%s=%s' is missing requirement %s
+use constant  ER_SLAVE_STATEMENT_TIMEOUT                        => 4192; # Slave log event execution was interrupted (slave_max_statement_time exceeded)
+# 11.1+
+use constant  ER_JSON_INVALID_VALUE_FOR_KEYWORD                 => 4193; # Invalid value for keyword %s
+use constant  ER_JSON_SCHEMA_KEYWORD_UNSUPPORTED                => 4194; # %s keyword is not supported
+use constant  ER_JSON_NO_VARIABLE_SCHEMA                        => 4195; # Variable schema is not supported
+# 11.4+
+use constant  ER_PSEUDO_THREAD_ID_OVERWRITE                     => 4196; # Pseudo thread id should not be modified by the client as it will be overwritten
+# 11.7+
+use constant  ER_SEQUENCE_TABLE_HAS_WRONG_NUMBER_OF_COLUMNS     => 4197; # Wrong number of columns
+use constant  ER_SEQUENCE_TABLE_CANNOT_HAVE_ANY_KEYS            => 4198; # Sequence tables cannot have any keys
+use constant  ER_SEQUENCE_TABLE_CANNOT_HAVE_ANY_CONSTRAINTS     => 4199; # Sequence tables cannot have any constraints
+use constant  ER_SEQUENCE_TABLE_ORDER_BY                        => 4200; # ORDER BY
+use constant  ER_VARIABLE_IGNORED                               => 4201; # The variable '%s' is ignored. It only exists for compatibility with old installations and will be removed in a future release
+use constant  ER_INCORRECT_COLUMN_NAME_COUNT                    => 4202; # Incorrect column name count for derived table
+use constant  WARN_SORTING_ON_TRUNCATED_LENGTH                  => 4203; # %llu values were longer than max_sort_length. Sorting used only the first %lu bytes
+use constant  ER_VECTOR_BINARY_FORMAT_INVALID                   => 4204; # Invalid binary vector format. Must use IEEE standard float representation in little-endian format. Use VEC_FromText() to generate it
+use constant  ER_VECTOR_FORMAT_INVALID                          => 4205; # Invalid vector format at offset: %d for '%-.100s'. Must be a valid JSON array of numbers
+# preview
+use constant  ER_VEC_DISTANCE_TYPE                              => 4206; # Cannot determine distance type for VEC_DISTANCE, index is not found
 
-# Last as of 2022-07-16, 4190 is an illegal code
+# As of 2025-01-03, 4205 is the last legal code in main
 
 sub BEGIN {
 
@@ -1493,6 +1518,7 @@ sub BEGIN {
     ER_CHECKREAD()                                      => STATUS_RUNTIME_ERROR,
     ER_CHECK_NOT_IMPLEMENTED()                          => STATUS_UNSUPPORTED,
     ER_CHECK_NO_SUCH_TABLE()                            => STATUS_SEMANTIC_ERROR,
+    ER_CM_OPTION_MISSING_REQUIREMENT()                  => STATUS_REPLICATION_FAILURE,
     ER_COALESCE_ONLY_ON_HASH_PARTITION()                => STATUS_SEMANTIC_ERROR,
     ER_COALESCE_PARTITION_NO_PARTITION()                => STATUS_SEMANTIC_ERROR,
     ER_COLLATION_CHARSET_MISMATCH()                     => STATUS_SEMANTIC_ERROR,
@@ -1720,6 +1746,7 @@ sub BEGIN {
     ER_INCONSISTENT_PARTITION_INFO_ERROR()              => STATUS_DATABASE_CORRUPTION,
     ER_INCONSISTENT_SLAVE_TEMP_TABLE()                  => STATUS_REPLICATION_FAILURE,
     ER_INCONSISTENT_TYPE_OF_FUNCTIONS_ERROR()           => STATUS_SEMANTIC_ERROR,
+    ER_INCORRECT_COLUMN_NAME_COUNT()                    => STATUS_SEMANTIC_ERROR,
     ER_INCORRECT_GLOBAL_LOCAL_VAR()                     => STATUS_SEMANTIC_ERROR,
     ER_INCORRECT_GTID_STATE()                           => STATUS_REPLICATION_FAILURE,
     ER_INDEX_COLUMN_TOO_LONG()                          => STATUS_RUNTIME_ERROR,
@@ -1787,7 +1814,9 @@ sub BEGIN {
     ER_JSON_EOS()                                       => STATUS_SEMANTIC_ERROR,
     ER_JSON_ESCAPING()                                  => STATUS_SEMANTIC_ERROR,
     ER_JSON_HISTOGRAM_PARSE_FAILED()                    => STATUS_DATABASE_CORRUPTION,
+    ER_JSON_INVALID_VALUE_FOR_KEYWORD()                 => STATUS_SEMANTIC_ERROR,
     ER_JSON_KEY_TOO_BIG()                               => STATUS_SEMANTIC_ERROR,
+    ER_JSON_NO_VARIABLE_SCHEMA()                        => STATUS_SEMANTIC_ERROR,
     ER_JSON_NOT_JSON_CHR()                              => STATUS_SEMANTIC_ERROR,
     ER_JSON_ONE_OR_ALL()                                => STATUS_SEMANTIC_ERROR,
     ER_JSON_PATH_ARRAY()                                => STATUS_SEMANTIC_ERROR,
@@ -1796,6 +1825,7 @@ sub BEGIN {
     ER_JSON_PATH_EOS()                                  => STATUS_SEMANTIC_ERROR,
     ER_JSON_PATH_NO_WILDCARD()                          => STATUS_SEMANTIC_ERROR,
     ER_JSON_PATH_SYNTAX()                               => STATUS_SEMANTIC_ERROR,
+    ER_JSON_SCHEMA_KEYWORD_UNSUPPORTED()                => STATUS_SEMANTIC_ERROR,
     ER_JSON_SYNTAX()                                    => STATUS_SEMANTIC_ERROR,
     ER_JSON_TABLE_ALIAS_REQUIRED()                      => STATUS_SYNTAX_ERROR,
     ER_JSON_TABLE_ERROR_ON_FIELD()                      => STATUS_RUNTIME_ERROR,
@@ -2021,6 +2051,7 @@ sub BEGIN {
     ER_PROVIDER_NOT_LOADED()                            => STATUS_CONFIGURATION_ERROR,
     ER_PS_MANY_PARAM()                                  => STATUS_SEMANTIC_ERROR,
     ER_PS_NO_RECURSION()                                => STATUS_SEMANTIC_ERROR,
+    ER_PSEUDO_THREAD_ID_OVERWRITE()                     => STATUS_SEMANTIC_ERROR,
     ER_QUERY_CACHE_DISABLED()                           => STATUS_CONFIGURATION_ERROR,
     ER_QUERY_CACHE_IS_DISABLED()                        => STATUS_RUNTIME_ERROR,
     ER_QUERY_CACHE_IS_GLOBALY_DISABLED()                => STATUS_SEMANTIC_ERROR,
@@ -2071,11 +2102,16 @@ sub BEGIN {
     ER_ROW_VARIABLE_DOES_NOT_HAVE_FIELD()               => STATUS_SEMANTIC_ERROR,
     ER_SAME_NAME_PARTITION()                            => STATUS_SEMANTIC_ERROR,
     ER_SAME_NAME_PARTITION_FIELD()                      => STATUS_SEMANTIC_ERROR,
+    ER_SECURE_TRANSPORT_REQUIRED()                      => STATUS_CONFIGURATION_ERROR,
     ER_SEQUENCE_ACCESS_ERROR()                          => STATUS_ACL_ERROR,
     ER_SEQUENCE_BINLOG_FORMAT()                         => STATUS_CONFIGURATION_ERROR,
     ER_SEQUENCE_INVALID_DATA()                          => STATUS_SEMANTIC_ERROR,
     ER_SEQUENCE_INVALID_TABLE_STRUCTURE()               => STATUS_SEMANTIC_ERROR,
     ER_SEQUENCE_RUN_OUT()                               => STATUS_RUNTIME_ERROR,
+    ER_SEQUENCE_TABLE_CANNOT_HAVE_ANY_CONSTRAINTS()     => STATUS_RUNTIME_ERROR,
+    ER_SEQUENCE_TABLE_CANNOT_HAVE_ANY_KEYS()            => STATUS_SEMANTIC_ERROR,
+    ER_SEQUENCE_TABLE_HAS_WRONG_NUMBER_OF_COLUMNS()     => STATUS_SEMANTIC_ERROR,
+    ER_SEQUENCE_TABLE_ORDER_BY()                        => STATUS_SEMANTIC_ERROR,
     ER_SERVER_GONE_ERROR()                              => STATUS_SEMANTIC_ERROR,
     ER_SERVER_IS_IN_SECURE_AUTH_MODE()                  => STATUS_CONFIGURATION_ERROR,
     ER_SERVER_LOST()                                    => STATUS_SERVER_CRASHED,
@@ -2123,6 +2159,7 @@ sub BEGIN {
     ER_SLAVE_SKIP_NOT_IN_GTID()                         => STATUS_CONFIGURATION_ERROR,
     ER_SLAVE_SQL_THREAD_MUST_STOP()                     => STATUS_SEMANTIC_ERROR,
     ER_SLAVE_STARTED()                                  => STATUS_RUNTIME_ERROR,
+    ER_SLAVE_STATEMENT_TIMEOUT()                        => STATUS_REPLICATION_FAILURE,
     ER_SLAVE_STOPPED()                                  => STATUS_RUNTIME_ERROR,
     ER_SLAVE_THREAD()                                   => STATUS_REPLICATION_FAILURE,
     ER_SLAVE_UNEXPECTED_MASTER_SWITCH()                 => STATUS_REPLICATION_FAILURE,
@@ -2180,7 +2217,7 @@ sub BEGIN {
     ER_SP_WRONG_NO_OF_ARGS()                            => STATUS_SEMANTIC_ERROR,
     ER_SP_WRONG_NO_OF_FETCH_ARGS()                      => STATUS_SEMANTIC_ERROR,
     ER_SQLTHREAD_WITH_SECURE_SLAVE()                    => STATUS_SEMANTIC_ERROR,
-    ER_SQL_DISCOVER_ERROR()                             => STATUS_IGNORED_ERROR, # Demoted due to MDEV-30149
+    ER_SQL_DISCOVER_ERROR()                             => STATUS_IGNORED_ERROR, # Demoted due to MDEV-30149, MDEV-35328, MDEV-35769
     ER_SQL_SLAVE_SKIP_COUNTER_NOT_SETTABLE_IN_GTID_MODE() => STATUS_SEMANTIC_ERROR,
     ER_SQL_MODE_NO_EFFECT()                             => STATUS_CONFIGURATION_ERROR,
     ER_SR_INVALID_CREATION_CTX()                        => STATUS_SEMANTIC_ERROR,
@@ -2344,12 +2381,16 @@ sub BEGIN {
     ER_USER_LOCK_WRONG_NAME()                           => STATUS_SEMANTIC_ERROR,
     ER_VALUES_IS_NOT_INT_TYPE_ERROR()                   => STATUS_SEMANTIC_ERROR,
     ER_VALUE_TOO_LONG()                                 => STATUS_RUNTIME_ERROR,
+    ER_VARIABLE_IGNORED()                               => STATUS_CONFIGURATION_ERROR,
     ER_VARIABLE_IS_NOT_STRUCT()                         => STATUS_SEMANTIC_ERROR,
     ER_VARIABLE_IS_READONLY()                           => STATUS_SEMANTIC_ERROR,
     ER_VARIABLE_NOT_SETTABLE_IN_SF_OR_TRIGGER()         => STATUS_SEMANTIC_ERROR,
     ER_VARIABLE_NOT_SETTABLE_IN_SP()                    => STATUS_SEMANTIC_ERROR,
     ER_VARIABLE_NOT_SETTABLE_IN_TRANSACTION()           => STATUS_SEMANTIC_ERROR,
     ER_VAR_CANT_BE_READ()                               => STATUS_SEMANTIC_ERROR,
+    ER_VEC_DISTANCE_TYPE()                              => STATUS_SEMANTIC_ERROR,
+    ER_VECTOR_BINARY_FORMAT_INVALID()                   => STATUS_SEMANTIC_ERROR,
+    ER_VECTOR_FORMAT_INVALID()                          => STATUS_SEMANTIC_ERROR,
     ER_VERS_ALREADY_VERSIONED()                         => STATUS_SEMANTIC_ERROR,
     ER_VERS_ALTER_ENGINE_PROHIBITED()                   => STATUS_UNSUPPORTED,
     ER_VERS_ALTER_NOT_ALLOWED()                         => STATUS_SEMANTIC_ERROR,
@@ -2499,9 +2540,11 @@ sub BEGIN {
     WARN_NO_MASTER_INFO()                               => STATUS_SEMANTIC_ERROR,
     WARN_ON_BLOCKHOLE_IN_RBR()                          => STATUS_CONFIGURATION_ERROR,
     WARN_OPTION_BELOW_LIMIT()                           => STATUS_SEMANTIC_ERROR,
+    WARN_OPTION_CHANGING()                              => STATUS_SEMANTIC_ERROR,
     WARN_OPTION_IGNORED()                               => STATUS_CONFIGURATION_ERROR,
     WARN_PLUGIN_BUSY()                                  => STATUS_SEMANTIC_ERROR,
     WARN_SFORMAT_ERROR()                                => STATUS_RUNTIME_ERROR,
+    WARN_SORTING_ON_TRUNCATED_LENGTH()                  => STATUS_RUNTIME_ERROR,
     WARN_VERS_PARAMETERS()                              => STATUS_SEMANTIC_ERROR,
     WARN_VERS_PART_FULL()                               => STATUS_RUNTIME_ERROR,
     WARN_VERS_PART_NON_HISTORICAL()                     => STATUS_RUNTIME_ERROR,
