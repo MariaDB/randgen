@@ -19,7 +19,7 @@ query_init:
   { $tmp_table = 0; _set_db('test') } CREATE FUNCTION IF NOT EXISTS MIN2(a BIGINT, b BIGINT) RETURNS BIGINT RETURN (a>b,b,a) ;
 
 query:
-    ==FACTOR:10==   { _set_db('ANY') }        func_select
+    ==FACTOR:10==   { _set_db('ANY') }        func_select_explain_analyze
   |                 { _set_db('ANY') }        { $tmp_table++; '' } func_create_and_drop
   |                 { _set_db('ANY') }        func_view
   |                 { _set_db('NON-SYSTEM') } func_alter_table
@@ -55,7 +55,13 @@ func_create_and_drop:
      CREATE __temporary(50) TABLE { 'test.tmp'.$tmp_table } AS func_select ;; DROP TABLE IF EXISTS { 'test.tmp'.$tmp_table } ;
 
 func_view:
-  CREATE OR REPLACE VIEW { 'test.v'.$tmp_table } AS func_select ;; SELECT * FROM { 'test.v'.$tmp_table } func_where ;; DROP VIEW IF EXISTS { 'test.v'.$tmp_table } ;
+  CREATE OR REPLACE optional_view_alg VIEW { 'test.v'.$tmp_table } AS /* _table[invariant] */  view_contents ;; SELECT * FROM { 'test.v'.$tmp_table } func_where ;; DROP VIEW IF EXISTS { 'test.v'.$tmp_table } ;
+
+view_contents:
+   func_select | SELECT * FROM _table[invariant] | SELECT _field FROM _table[invariant] ;
+
+optional_view_alg:
+   | ALGORITHM=MERGE | ==FACTOR:50== ALGORITHM=TEMPTABLE | ALGORITHM=UNDEFINED ;
 
 func_dml:
    func_dml_one_field | func_dml_two_fields | func_dml_three_fields
@@ -87,7 +93,7 @@ func_dml_function:
    ;; SELECT { 'test.dml_function_'.abs($$) } ();
 ;
 
-func_select:
+func_select_explain_analyze:
    optional_explain_analyze func_select;
 
 optional_explain_analyze:
@@ -326,13 +332,14 @@ func_str_func:
    VEC_FROMTEXT( func_arg_vector ) /* compatibility 11.7.1 */ |
    VEC_DISTANCE_EUCLIDEAN( func_arg_vector, func_arg_vector ) /* compatibility 11.7.1 */ |
    VEC_DISTANCE_COSINE( func_arg_vector, func_arg_vector ) /* compatibility 11.7.1 */ |
-   VEC_DISTANCE( func_arg_vector, func_arg_vector ) /* compatibility 11.8.0 */
+   VEC_DISTANCE(veccol, func_arg_vector) /* compatibility 11.8.0 */
 ;
 
 func_arg_vector:
    func_arg |
    { $dimensions= $prng->uint16(1,100); $min_value= $prng->uint16(-10,10); $max_value= $prng->uint16($min_value,$min_value+100); @vals= (); for (my $j=0; $j<$dimensions; $j++) { push @vals, sprintf("%.3f",$min_value + rand()*($max_value - $min_value)) }; "'[".(join ',', @vals)."]'" } |
-   vector_hex_string
+   vector_hex_string |
+   veccol
 ;
 
 vector_hex_string:
