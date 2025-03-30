@@ -208,12 +208,13 @@ fields_for_order_by:
   fld_alias . _field __asc_x_desc(33,33) | fld_alias. _field __asc_x_desc(33,33), fld_alias. _field __asc_x_desc(33,33) ;
 
 vector_distance:
+  VEC_DISTANCE(veccol, vec_distance_arg) /* compatibility 11.8 */ |
   VEC_DISTANCE_EUCLIDEAN(vec_distance_arg, vec_distance_arg) |
   VEC_DISTANCE_COSINE(vec_distance_arg, vec_distance_arg)
 ;
 
 vec_distance_arg:
-  select_alias.veccol_name | sample_vector ;
+  select_alias.veccol_name | sample_vector | veccol;
 
 optional_where_clause:
   | WHERE simple_where_clause_list ;
