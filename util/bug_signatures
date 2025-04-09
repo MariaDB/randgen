@@ -110,7 +110,7 @@ MDEV-35971:
 MDEV-35959:
 =~ Assertion \`\*str != '\\0''|Assertion \`\*str != '\\\\0''
 =~ my_message_sql
-=~ spider_mbase_handler::show_table_status
+=~ spider_mbase_handler::show_table_status|spider_unlock_after_query_1
 MDEV-35946:
 =~ Assertion \`thd->is_error()'
 =~ Sql_cmd_dml::prepare
@@ -2155,6 +2155,9 @@ MDEV-25603:
 =~ row_sel_store_mysql_field
 =~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 =~ FeatureUsage detected virtual columns
+MDEV-25566:
+=~ Assertion \`!thd->wsrep_cs()\.current_error()'
+=~ wsrep_after_command_ignore_result
 MDEV-25548:
 =~ Assertion \`transactional_table \|\| !changed \|\| thd->transaction.*stmt\.modified_non_trans_table'
 =~ select_insert::abort_result_set
