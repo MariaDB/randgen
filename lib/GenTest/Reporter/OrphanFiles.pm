@@ -36,7 +36,7 @@ sub report {
 
   my $res= STATUS_OK;
   foreach my $location ( $datadir, $tmpdir ) {
-    my @tmpfiles= glob("$location/#* $location/*/#*");
+    my @tmpfiles=  grep { $_ !~ /$location\/+\#binlog_cache_files$/ } glob("$location/#* $location/*/#*");
     if (scalar(@tmpfiles)) {
       sayError("Found orphan files: @tmpfiles");
       $res= STATUS_DATABASE_CORRUPTION;
