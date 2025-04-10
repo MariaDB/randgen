@@ -4183,6 +4183,9 @@ TODO-842: [Test problems: Cluster does not initialize]
 TODO-842: [Galera]
 =~ STATUS_ERRORS_IN_LOG|STATUS_SERVER_DEADLOCKED
 =~ scenario=Galera
+TODO-842: [Galera]
+=~ WSREP: Server paused at:
+=~ STATUS_SERVER_UNAVAILABLE
 
 ##############################################################################
 # Weak matches
