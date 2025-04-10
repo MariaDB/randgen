@@ -22,6 +22,10 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36557:
+=~ Assertion \`entry->pos_in_table_list->table == entry'
+=~ free_tmp_table
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36436:
 =~ Assertion \`"unexpected references" == 0'
 =~ ha_innobase::rename_table
@@ -1332,6 +1336,11 @@ MDEV-30391:
 MDEV-30363:
 =~ InnoDB: Failing assertion: trx->error_state == DB_SUCCESS
 =~ que_run_threads
+=~ fts_load_stopword
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-30363:
+=~ Assertion \`!have_any()'
+=~ srw_lock_debug::rd_lock
 =~ fts_load_stopword
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-30309:
