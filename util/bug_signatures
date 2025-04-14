@@ -22,6 +22,12 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36596:
+=~ Assertion \`!thd->is_error()'
+=~ TABLE_SHARE::init_from_sql_statement_string
+=~ pfs_discover_table
+=~ fill_schema_table_from_frm
+=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36595:
 =~ mariadbd: Incorrect information in file:
 =~ AddressSanitizer|signal
