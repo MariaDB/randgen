@@ -1562,10 +1562,6 @@ MDEV-29457:
 =~ ib::fatal::~fatal
 =~ row_undo_step
 =~ FeatureUsage detected GIS columns
-MDEV-29411:
-=~ signal|AddressSanitizer
-=~ Assertion \`!eliminated'
-=~ Item_subselect::exec
 MDEV-29360:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ Item_ref::transform
