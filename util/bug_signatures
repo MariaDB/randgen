@@ -30,7 +30,6 @@ MDEV-36626:
 MDEV-36610:
 =~ Assertion \`!eliminated'
 =~ Item_subselect::exec
-=~ Arg_comparator::compare
 MDEV-36596:
 =~ Assertion \`!thd->is_error()'
 =~ TABLE_SHARE::init_from_sql_statement_string
