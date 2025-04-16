@@ -22,6 +22,11 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36626:
+=~ Assertion \`ptr'
+=~ skip_trailing_space
+=~ my_uca_strnxfrm_utf8mb4
+=~ Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-36610:
 =~ Assertion \`!eliminated'
 =~ Item_subselect::exec
