@@ -37,7 +37,7 @@ MDEV-36596:
 =~ fill_schema_table_from_frm
 =~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36595:
-=~ mariadbd: Incorrect information in file:
+=~ Incorrect information in file:
 =~ AddressSanitizer|signal
 =~ get_schema_column_record|get_geometry_column_record
 =~ fill_schema_table_from_frm
