@@ -22,6 +22,16 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36644:
+=~ AddressSanitizer|signal
+=~ my_strcoll
+=~ charset_info_st::streq
+=~ is_infoschema_db
+=~ FeatureUsage detected sequences
+MDEV-36644:
+=~ Assertion \`!strcmp(table_list->get_db_name()\.str, table_list->mdl_request\.key\.db_name())'|AddressSanitizer
+=~ get_table_def_key
+=~ FeatureUsage detected sequences
 MDEV-36626:
 =~ Assertion \`ptr'
 =~ skip_trailing_space
