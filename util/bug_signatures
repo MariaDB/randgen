@@ -22,6 +22,10 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36645:
+=~ Assertion \`check_field_pointers(table)'
+=~ close_thread_tables
+=~ sp_head::execute
 MDEV-36644:
 =~ AddressSanitizer|signal
 =~ my_strcoll
@@ -1534,7 +1538,6 @@ MDEV-29580:
 =~ Assertion \`!return_error \|\| thd->is_error() \|\| thd->killed'
 =~ mysql_delete|Sql_cmd_delete::delete_from_single_table
 =~ mysql_parse.*MATCH.*AGAINST|Query .*:.*MATCH.*AGAINST
-=~ FeatureUsage detected sequences
 MDEV-29580:
 =~ Assertion \`0'
 =~ Protocol::end_statement
@@ -1843,6 +1846,12 @@ MDEV-28169:
 =~ dfield_data_is_binary_equal
 =~ row_upd_build_difference_binary
 =~ row_ins_clust_index_entry_by_modify
+=~ FeatureUsage detected unique blobs
+MDEV-28169:
+=~ AddressSanitizer|signal
+=~ mem_heap_dup
+=~ row_upd_store_v_row
+=~ row_update_for_mysql
 =~ FeatureUsage detected unique blobs
 MDEV-28130:
 =~ AddressSanitizer|signal
