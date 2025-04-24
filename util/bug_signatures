@@ -22,6 +22,14 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36686:
+=~ signal|AddressSanitizer
+=~ Item_field::used_tables|Item_ref::update_used_tables
+=~ Used_tables_and_const_cache::used_tables_and_const_cache_update_and_join
+MDEV-36686:
+=~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF) \|\| (((Item_ref \*) item)->ref_type() == Item_ref::REF)))'
+=~ get_corresponding_field_pair
+=~ Item_default_value::transform
 MDEV-36683:
 =~ signal|AddressSanitizer
 =~ TABLE_LIST::reset_const_table|base_list_iterator::next
@@ -111,14 +119,14 @@ MDEV-36059:
 =~ Assertion \`derived->table'
 =~ mysql_derived_merge_for_insert
 =~ Sql_cmd_delete::prepare_inner
-=~ Prepared_statement::execute
+=~ Prepared_statement::execute|sp_head::execute
 =~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36059:
 =~ signal|AddressSanitizer
 =~ TABLE::versioned
 =~ mysql_derived_prepare
 =~ Sql_cmd_delete::prepare_inner
-=~ Prepared_statement::execute
+=~ Prepared_statement::execute|sp_head::execute
 =~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36057:
 =~ Assertion \`0'
