@@ -22,6 +22,12 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36683:
+=~ signal|AddressSanitizer
+=~ TABLE_LIST::reset_const_table|base_list_iterator::next
+=~ Sql_cmd_delete::prepare_inner
+=~ Prepared_statement::execute|sp_instr_stmt::exec_core
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36645:
 =~ Assertion \`check_field_pointers(table)'
 =~ close_thread_tables
