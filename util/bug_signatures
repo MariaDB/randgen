@@ -1707,7 +1707,7 @@ MDEV-29071:
 =~ Item_field::fix_outer_field
 =~ mysql_derived_optimize
 MDEV-29065:
-=~ Trying to lock uninitialized mutex at .*ha_myisam
+=~ Trying to lock uninitialized mutex at .*ha_myisam|safe_mutex_lock: Assertion \`mp->name'
 =~ ha_myisam::update_create_info
 =~ binlog_show_create_table
 =~ s3\.yy|FeatureUsage detected S3 engine
