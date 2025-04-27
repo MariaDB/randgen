@@ -22,6 +22,12 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36692:
+=~ Assertion \`pfs_rwlock == sanitize_rwlock(pfs_rwlock)'
+=~ pfs_unlock_rwlock_v1
+=~ Query_cache_query::unlock_writing
+=~ Query_cache::store_query
+=~ Status: KILL_CONNECTION
 MDEV-36686:
 =~ signal|AddressSanitizer
 =~ Item_field::used_tables|Item_ref::update_used_tables
@@ -65,7 +71,6 @@ MDEV-36596:
 =~ fill_schema_table_from_frm
 =~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36595:
-=~ Incorrect information in file:
 =~ AddressSanitizer|signal
 =~ get_schema_column_record|get_geometry_column_record
 =~ fill_schema_table_from_frm
@@ -386,7 +391,7 @@ MDEV-35134:
 MDEV-35133:
 =~ AddressSanitizer|signal
 =~ spider_db_open_handler|spider_send_query
-=~ ha_spider::index_last
+=~ ha_spider::index_
 MDEV-35132:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ and_items
@@ -2512,6 +2517,9 @@ MDEV-24625:
 =~ Could not use .* for logging (error 0)\. Turning logging off
 =~ Assertion \`((__builtin_expect(((WSREP_ON_) != 0),0) && this->variables\.wsrep_on) && wsrep_emulate_bin_log) \|\| mysql_bin_log\.is_open()'|Assertion \`Count >= rest_length'|Assertion \`is_open()'||Assertion \`((thd && (__builtin_expect(((WSREP_ON_) != 0),0) && thd->variables\.wsrep_on)) && wsrep_emulate_bin_log) \|\| mysql_bin_log\.is_open()'
 =~ THD::binlog_update_row|THD::binlog_write_row|THD::binlog_delete_row|_my_b_write|MYSQL_BIN_LOG::trx_group_commit_leader|MYSQL_BIN_LOG::flush_and_set_pending_rows_event
+MDEV-24559:
+=~ Assertion \`select_lex->leaf_tables\.elements != 0'
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-24558:
 =~ Assertion \`!index->is_spatial()'|Assertion \`index->is_btree()'|Assertion \`!dict_index_is_spatial(index)'
 =~ btr_estimate_number_of_different_key_vals
