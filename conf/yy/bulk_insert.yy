@@ -20,7 +20,9 @@ query:
   { _set_db('NON-SYSTEM') } bulk_op ;
 
 bulk_op:
-  ==FACTOR:5== insert_load |
+  ==FACTOR:6== insert_load |
+  DELETE FROM _table LIMIT _tinyint_unsigned |
+  UPDATE IGNORE _table SET _field = _anyvalue LIMIT _smallint_unsigned |
   load_with_variables
 ;
 
