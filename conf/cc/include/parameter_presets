@@ -525,22 +525,7 @@ $parameters{optional_non_binlog_encryption_msan_safe}= \%optional_non_binlog_enc
 # Performance schema
 #++++++++++++++++++++++++
 
-$optional_perfschema{$minversion}= [ @empty_set_20, '
-  --mysqld=--performance-schema=on
-  --mysqld=--performance-schema-instrument="%=ON"
-  --mysqld=--performance-schema-consumer-events-stages-current=ON
-  --mysqld=--performance-schema-consumer-events-stages-history=ON
-  --mysqld=--performance-schema-consumer-events-stages-history-long=ON
-  --mysqld=--performance-schema-consumer-events-statements-current=ON
-  --mysqld=--performance-schema-consumer-events-statements-history=ON
-  --mysqld=--performance-schema-consumer-events-statements-history-long=ON
-  --mysqld=--performance-schema-consumer-events-waits-current=ON
-  --mysqld=--performance-schema-consumer-events-waits-history=ON
-  --mysqld=--performance-schema-consumer-events-waits-history-long=ON
-  --mysqld=--performance-schema-consumer-global-instrumentation=ON
-  --mysqld=--performance-schema-consumer-thread-instrumentation=ON
-  --mysqld=--performance-schema-consumer-statements-digest=ON
-'];
+# minversion assumes 10.5+ here
 
 # Other new perfschema variables in 10.5:
 # PERFORMANCE_SCHEMA_EVENTS_TRANSACTIONS_HISTORY_LONG_SIZE
@@ -554,25 +539,25 @@ $optional_perfschema{$minversion}= [ @empty_set_20, '
 # PERFORMANCE_SCHEMA_MAX_STATEMENT_STACK
 # PERFORMANCE_SCHEMA_MAX_TABLE_LOCK_STAT
 
-$optional_perfschema{1005}= [ @empty_set_10, '
-  --mysqld=--performance-schema=on
-  --mysqld=--performance-schema-instrument="%=ON"
-  --mysqld=--performance-schema-consumer-events-stages-current=ON
-  --mysqld=--performance-schema-consumer-events-stages-history=ON
-  --mysqld=--performance-schema-consumer-events-stages-history-long=ON
-  --mysqld=--performance-schema-consumer-events-statements-current=ON
-  --mysqld=--performance-schema-consumer-events-statements-history=ON
-  --mysqld=--performance-schema-consumer-events-statements-history-long=ON
-  --mysqld=--performance-schema-consumer-events-waits-current=ON
-  --mysqld=--performance-schema-consumer-events-waits-history=ON
-  --mysqld=--performance-schema-consumer-events-waits-history-long=ON
-  --mysqld=--performance-schema-consumer-global-instrumentation=ON
-  --mysqld=--performance-schema-consumer-thread-instrumentation=ON
-  --mysqld=--performance-schema-consumer-statements-digest=ON
-  --mysqld=--performance-schema-consumer-events-transactions-current=ON
-  --mysqld=--performance-schema-consumer-events-transactions-history=ON
-  --mysqld=--performance-schema-consumer-events-transactions-history-long=ON
-'];
+$optional_perfschema{$minversion}= [ @empty_set_10,
+  [ '--mysqld=--performance-schema=on --mysqld=--performance-schema-instrument="%=ON" --grammar=conf/yy/performance_schema.yy',
+    [ '--mysqld=--performance-schema-consumer-events-stages-current=ON', '--mysqld=--performance-schema-consumer-events-stages-history=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-events-stages-history-long=ON', '--mysqld=--performance-schema-consumer-events-stages-history-long=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-events-stages-history-long=ON', '--mysqld=--performance-schema-consumer-events-stages-history-long=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-events-statements-current=ON', '--mysqld=--performance-schema-consumer-events-statements-current=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-events-statements-history=ON', '--mysqld=--performance-schema-consumer-events-statements-history=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-events-statements-history-long=ON', '--mysqld=--performance-schema-consumer-events-statements-history-long=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-events-waits-current=ON', '--mysqld=--performance-schema-consumer-events-waits-current=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-events-waits-history=ON', '--mysqld=--performance-schema-consumer-events-waits-history=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-events-waits-history-long=ON', '--mysqld=--performance-schema-consumer-events-waits-history-long=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-global-instrumentation=ON', '--mysqld=--performance-schema-consumer-global-instrumentation=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-thread-instrumentation=ON', '--mysqld=--performance-schema-consumer-thread-instrumentation=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-statements-digest=ON', '--mysqld=--performance-schema-consumer-statements-digest=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-events-transactions-current=ON', '--mysqld=--performance-schema-consumer-events-transactions-current=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-events-transactions-history=ON', '--mysqld=--performance-schema-consumer-events-transactions-history=OFF' ],
+    [ '--mysqld=--performance-schema-consumer-events-transactions-history-long=ON', '--mysqld=--performance-schema-consumer-events-transactions-history-long=OFF' ],
+  ]
+];
 
 $parameters{optional_perfschema}= \%optional_perfschema;
 
