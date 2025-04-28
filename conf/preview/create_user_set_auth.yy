@@ -36,9 +36,15 @@ full_stack:
 username_for_set_session:
   existing_full_name | root@localhost | rqg@localhost ;
 
+# We can grant permissions to root or rqg users, but mustn't revoke from them
+user_to_be_granted:
+  existing_user | root@localhost | rqg@localhost ;
+
 grant_revoke_set_user:
-  ==FACTOR:5== GRANT SET USER ON *.* TO username __with_grant_option(50) |
-  REVOKE SET USER ON *.* FROM username ;
+  ==FACTOR:5== GRANT SET USER ON *.* TO user_to_be_granted __with_grant_option(50) |
+  REVOKE SET USER ON *.* FROM existing_user |
+  ==FACTOR:10== GRANT ALL ON *.* TO user_to_be_granted __with_grant_option(50) |
+  REVOKE ALL ON *.* FROM existing_user ;
 ;
 
 user_ddl_query:
