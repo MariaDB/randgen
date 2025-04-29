@@ -18,7 +18,7 @@
 ##########################################
 
 query_init:
-  { %created_users = (); %full_user_names = (); '' } ;; create_user ;
+  { %created_users = (); %full_user_names = (); '' } ;; SET ROLE admin ;; create_user ;
 
 query:
   user_ddl_query |
@@ -31,21 +31,32 @@ set_session_auth_query:
   grant_revoke_set_user;
 
 full_stack:
-  CREATE OR REPLACE USER full_user_name[invariant] ;; GRANT SET USER, CREATE USER ON *.* TO full_user_name[invariant] WITH GRANT OPTION ;; SET SESSION AUTHORIZATION full_user_name[invariant] ;
+    CREATE OR REPLACE USER full_user_name[invariant]
+  ;; GRANT SET USER, CREATE USER ON *.* TO full_user_name[invariant] WITH GRANT OPTION
+  ;; GRANT admin TO full_user_name[invariant] WITH ADMIN OPTION
+  ;; SET SESSION AUTHORIZATION full_user_name[invariant]
+  ;; SET ROLE admin
+;
 
 username_for_set_session:
   existing_full_name | root@localhost | rqg@localhost ;
 
 # We can grant permissions to root or rqg users, but mustn't revoke from them
+
 user_to_be_granted:
-  existing_user | root@localhost | rqg@localhost ;
+  created_user | root@localhost | rqg@localhost ;
 
 grant_revoke_set_user:
-  ==FACTOR:5== GRANT SET USER ON *.* TO user_to_be_granted __with_grant_option(50) |
-  REVOKE SET USER ON *.* FROM existing_user |
-  ==FACTOR:10== GRANT ALL ON *.* TO user_to_be_granted __with_grant_option(50) |
-  REVOKE ALL ON *.* FROM existing_user ;
+  ==FACTOR:5== GRANT grant_permission TO user_to_be_granted __with_grant_option(50) |
+  ==FACTOR:5== GRANT admin TO user_to_be_granted __with_admin_option(50) |
+  REVOKE revoke_permission FROM created_user ;
 ;
+
+grant_permission:
+  ALL ON *.* | SET USER ON *.* ;
+
+revoke_permission:
+  ALL ON *.* | SET USER ON *.* | admin ;
 
 user_ddl_query:
                  drop_user
@@ -54,19 +65,19 @@ user_ddl_query:
 ;
 
 drop_user:
-    DROP USER __if_exists(90) existing_user_list;
+    DROP USER __if_exists(90) created_user_list;
 
-existing_user_list:
-    existing_user | existing_user, existing_user_list;
+created_user_list:
+    created_user | created_user, created_user_list;
 
-existing_user:
+created_user:
     { $user = $prng->arrayElement([ keys %created_users ]); $user = 'non_existing_user' if $user =~ /^\s*$/; delete $full_user_names{$user}; delete $created_users{$user}; $user };
 
 existing_full_name:
     { $user = $prng->arrayElement([ keys %full_user_names ]); $user = 'non_existing_user@localhost' if $user =~ /^\s*$/; delete $full_user_names{$user}; delete $created_users{$user}; $user };
 
 alter_user:
-    ALTER USER __if_exists(90) existing_user_definition;
+    ALTER USER __if_exists(90) created_user_definition;
 
 create_user:
     CREATE USER __if_not_exists(90) new_user_definition;
@@ -78,8 +89,8 @@ new_user_definition:
     password_or_lock_option
 ;
 
-existing_user_definition:
-    existing_user_specification_list
+created_user_definition:
+    created_user_specification_list
     require
     with
     password_or_lock_option
@@ -123,14 +134,14 @@ max_value_big_or_small:
 new_user_specification_list:
     new_user_specification | new_user_specification, new_user_specification_list;
 
-existing_user_specification_list:
-    existing_user_specification | existing_user_specification, existing_user_specification_list;
+created_user_specification_list:
+    created_user_specification | created_user_specification, created_user_specification_list;
 
 new_user_specification:
     new_user_name auth_option;
 
-existing_user_specification:
-    existing_user auth_option;
+created_user_specification:
+    created_user auth_option;
 
 auth_option:
       IDENTIFIED BY password
