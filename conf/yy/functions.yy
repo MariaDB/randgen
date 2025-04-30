@@ -270,7 +270,9 @@ func_encrypt_func:
    SHA1( func_arg ) |
    SHA( func_arg ) |
    SHA2( func_arg, func_arg ) |
-   UNCOMPRESS( func_arg ) |
+# MDEV-36718: Running UNCOMPRESS on a non-compressed argument on debug server
+# with high max_allowed_packed causes huge performance impact
+   UNCOMPRESS( COMPRESS(func_arg) ) |
    UNCOMPRESSED_LENGTH( func_arg )
 ;
 
