@@ -22,6 +22,16 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36753:
+=~ Assertion \`str\[strlen(str)-1\] != '\\n''
+=~ my_message_sql
+=~ ma_decrypt
+=~ ha_maria::repair
+MDEV-36752:
+=~ Assertion \`backup_stage <= BACKUP_WAIT_FOR_FLUSH \|\| backup_stage >= BACKUP_END'
+=~ backup_log_ddl
+=~ mysql_create_or_drop_trigger
+=~ FeatureUsage detected backup stages
 MDEV-36692:
 =~ Assertion \`pfs_rwlock == sanitize_rwlock(pfs_rwlock)'
 =~ pfs_unlock_rwlock_v1
@@ -83,6 +93,24 @@ MDEV-36438:
 =~ Assertion \`find_flag != HA_READ_KEY_EXACT'|Assertion \`key_len != 0 \|\| find_flag != HA_READ_KEY_EXACT'
 =~ ha_innobase::index_read
 =~ rr_from_tempfile
+MDEV-36438:
+=~ Assertion \`length > 0'
+=~ create_ref_for_key
+=~ JOIN::get_best_combination
+MDEV-36438:
+=~ Assertion \`m_prebuilt->search_tuple->n_fields > 0' failed
+=~ ha_innobase::index_read
+=~ rr_quick
+MDEV-36438:
+=~ Assertion \`block->page\.buf_fix_count()'
+=~ btr_pcur_store_position
+=~ handler::index_read_map
+=~ rr_quick
+MDEV-36438:
+=~ Assertion \`cursor->pos_state == BTR_PCUR_IS_POSITIONED'
+=~ btr_pcur_get_rec
+=~ handler::index_read_map
+=~ rr_quick
 MDEV-36436:
 =~ Assertion \`"unexpected references" == 0'
 =~ ha_innobase::rename_table
@@ -2447,6 +2475,10 @@ MDEV-24726:
 =~ Assertion \`0'
 =~ Field_varstring_compressed::key_cmp
 =~ key_cmp_if_same
+MDEV-24726:
+=~ Assertion \`length > 0'
+=~ create_ref_for_key
+=~ JOIN::get_best_combination
 MDEV-24725:
 =~ Assertion \`prev_range_last_block_records < stats.block_size'
 =~ handler::multi_range_read_info_const
@@ -4038,10 +4070,6 @@ MDEV-16808:
 =~ cp_buffer_from_ref|store_key_field::copy_inner
 =~ JOIN_CACHE_HASHED::put_record
 =~ evaluate_join_record
-MDEV-16808:
-=~ Assertion \`length > 0'
-=~ create_ref_for_key
-=~ JOIN::get_best_combination
 MDEV-16789:
 =~ signal [16]|AddressSanitizer
 =~ insert_fields
