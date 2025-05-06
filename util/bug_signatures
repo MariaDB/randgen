@@ -22,6 +22,10 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36758:
+=~ Internal memory accounting error
+=~ LeakSanitizer: detected memory leaks
+=~ MHNSW_Share::alloc_node
 MDEV-36753:
 =~ Assertion \`str\[strlen(str)-1\] != '\\n''
 =~ my_message_sql
