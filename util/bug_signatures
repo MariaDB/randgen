@@ -3266,7 +3266,7 @@ MDEV-22440: [thd->transaction.stmt.*is_empty() || / GRANT / KILL_SERVER]
 MDEV-22435:
 =~ Assertion \`len'
 =~ extra2_write_len
-=~ ha_federatedx::discover_assisted
+=~ ha_federatedx::discover_assisted|FeatureUsage detected Federated tables
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22426:
 =~ signal 8|AddressSanitizer: FPE
@@ -4111,7 +4111,7 @@ MDEV-16694:
 =~ THD::~THD
 =~ FeatureUsage detected multi-update/delete
 MDEV-16686:
-=~ Assertion \`(\*tables)->reginfo\.lock_type >= TL_READ'
+=~ Assertion \`(\*tables)->reginfo\.lock_type >= TL_READ'|Assertion \`(\*tables)->reginfo\.lock_type >= TL_READ_SKIP_LOCKED'
 =~ lock_external
 MDEV-16686:
 =~ signal|AddressSanitizer
