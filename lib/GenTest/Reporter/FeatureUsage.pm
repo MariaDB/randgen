@@ -75,6 +75,7 @@ my %usage_check= (
   'Spider tables' => \&check_for_spider_tables,
   'unique blobs' => \&check_for_unique_blobs,
   'UUID columns' => \&check_for_uuid_columns,
+  'vector keys' => \&check_for_vector_keys,
   'virtual columns' => \&check_for_virtual_columns,
   'system-versioned tables' => \&check_for_versioning,
   'XA transactions' => \&check_for_xa,
@@ -257,6 +258,14 @@ sub check_for_foreign_keys {
   my $reporter= shift;
   if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS")) {
     return "according to I_S.REFERENTIAL_CONSTRAINTS";
+  }
+  return undef;
+}
+
+sub check_for_vector_keys {
+  my $reporter= shift;
+  if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_TYPE = 'VECTOR'")) {
+    return "according to I_S.STATISTICS";
   }
   return undef;
 }
