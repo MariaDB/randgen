@@ -22,6 +22,17 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36791:
+=~ Assertion \`!table \|\| !table->in_use \|\| table->in_use == _current_thd()'
+=~ TABLE::hlindex_lock
+MDEV-36791:
+=~ Assertion \`m_lock_type == 2'
+=~ TDC_element::flush_unused
+=~ FeatureUsage detected vector keys
+MDEV-36791:
+=~ Assertion `!n_mysql_tables_in_use'
+=~ trx_t::free
+=~ FeatureUsage detected vector keys
 MDEV-36758:
 =~ Internal memory accounting error
 =~ LeakSanitizer: detected memory leaks
@@ -2553,6 +2564,9 @@ MDEV-24625:
 =~ Could not use .* for logging (error 0)\. Turning logging off
 =~ Assertion \`((__builtin_expect(((WSREP_ON_) != 0),0) && this->variables\.wsrep_on) && wsrep_emulate_bin_log) \|\| mysql_bin_log\.is_open()'|Assertion \`Count >= rest_length'|Assertion \`is_open()'||Assertion \`((thd && (__builtin_expect(((WSREP_ON_) != 0),0) && thd->variables\.wsrep_on)) && wsrep_emulate_bin_log) \|\| mysql_bin_log\.is_open()'
 =~ THD::binlog_update_row|THD::binlog_write_row|THD::binlog_delete_row|_my_b_write|MYSQL_BIN_LOG::trx_group_commit_leader|MYSQL_BIN_LOG::flush_and_set_pending_rows_event
+MDEV-24588:
+=~ Assertion \`item->name\.str && item->name\.str\[0\]'
+=~ TABLE_LIST::create_field_translation
 MDEV-24559:
 =~ Assertion \`select_lex->leaf_tables\.elements != 0'
 =~ Prepared_statement::execute|sp_head::execute
