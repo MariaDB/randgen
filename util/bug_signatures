@@ -22,6 +22,18 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36852:
+=~ signal|AddressSanitizer|Assertion \`key_info->key_part->field->flags & (1<< 30)'
+=~ re_setup_keyinfo_hash
+=~ mysql_prepare_alter_table
+MDEV-36787:
+=~ Assertion \`"invalid state" == 0'
+=~ innobase_rollback_to_savepoint
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-36817:
+=~ Assertion \`bit < map->n_bits'|signal
+=~ do_mark_index_columns
+=~ prepare_record_for_error_message
 MDEV-36791:
 =~ Assertion \`!table \|\| !table->in_use \|\| table->in_use == _current_thd()'
 =~ TABLE::hlindex_lock
