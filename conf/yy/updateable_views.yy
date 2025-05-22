@@ -26,6 +26,8 @@
 #
 ########################################################################
 
+#require <data/sql/updateable_views.sql>
+
 query_init:
      # This is to prevent other grammars from altering the underlying tables
      # PS is a workaround for MDEV-30190

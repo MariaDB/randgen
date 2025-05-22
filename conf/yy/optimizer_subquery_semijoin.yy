@@ -26,9 +26,9 @@
 ################################################################################
 # optimizer_subquery.yy:  Random Query Generator grammar for testing subquery  #
 #                         optimizations.                                       #
-#                         Requires simple dataset with views, or alike         #
-#                        (see hardcoded table and column names)                #
 ################################################################################
+
+#require <simple>
 
 query:
   { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; $subquery_idx=0 ; $child_subquery_idx=0 ; _set_db('simple_db') } main_select ;

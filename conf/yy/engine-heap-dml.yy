@@ -21,9 +21,9 @@
 # * Creating a small set of tables and executing various operations over those tables
 #
 # * Employ TEMPORARY tables in as many DML contexts as possible
-#
-# This grammar goes together with the respective SQL file which creates the tables
 ########################################################################
+
+#require <data/sql/engine-heap.sql>
 
 query_init:
   # This is to prevent other grammars from altering the schema

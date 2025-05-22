@@ -19,12 +19,13 @@
 ################################################################################
 # range_access.yy
 # Purpose:  For testing the range optimization for MySQL
-# gendata:  Use with conf/zz/range_access.zz as a gendata file
 # uses:
 #   valgrind - use MarkErrorLog Validator + --valgrind
 #   comparison between MySQL versions / configurations
 #   3way compares to javadb and postgres
 ################################################################################
+
+#require <conf/zz/range_access.zz>
 
 query:
 # Since the schema is uniform, we can pre-pick any table to get correct field names,

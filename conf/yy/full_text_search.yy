@@ -19,10 +19,7 @@
 # full_text_search.yy
 # Purpose:  Grammar for testing fulltext search condition
 #
-# Notes:    This grammar is designed to be used with
-#           gendata=conf/zz/full_text_search.zz
-#
-#           Fulltext serach condition can be used on the column on which fulltext
+# Notes:    Fulltext serach condition can be used on the column on which fulltext
 #           index is defined.
 #
 #           IMP : Pass '--innodb_ft_enable_stopword=0' to server , this allows
@@ -40,7 +37,7 @@
 ################################################################################
 
 #include <conf/yy/include/basics.inc>
-
+#require <conf/zz/full_text_search.zz>
 
 query_init:
     { $indexcount= 0; '' } fts_stopword_table;

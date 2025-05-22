@@ -17,13 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-################################################################################
-#
-# Unlike other partitioning grammars, this one requires a specific .zz
-# file, e.g. conf/zz/partition_by_columns.zz
-# (column names are hardcoded)
-#
-################################################################################
+#require <conf/zz/partition_by_columns.zz>
 
 query_init:
   # This is to prevent other grammars from altering the schema

@@ -15,9 +15,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-########################################################################
-# To be used with data/smf/smf.sql
-########################################################################
+#require <data/smf/smf.sql>
 
 query_init:
   # This is to prevent other grammars from altering the schema

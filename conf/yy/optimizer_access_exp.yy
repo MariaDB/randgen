@@ -28,9 +28,9 @@
 # However, the grammar will produce a varied amount of EXPLAIN output (shown via
 # --debug) and is useful
 #
-# NOTE: This must be used with a specific gendata file, e.g. range_access.zz
-#       (see hardcoded column names)
 ################################################################################
+
+#require <conf/zz/range_access.zz>
 
 query_init:
   # This is to prevent other grammars from altering the schema

@@ -19,7 +19,7 @@
 
 
 #features: multi-update/delete
-
+#require <simple>
 
 query_init:
   { $total_dur = 0; "" };

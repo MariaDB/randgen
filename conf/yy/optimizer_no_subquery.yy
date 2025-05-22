@@ -19,9 +19,9 @@
 ################################################################################
 # optimizer_no_subquery.yy:  Random Query Generator grammar for testing        #
 #                            non-subquery optimizations.                       #
-#                            Requires simple dataset with views, or alike      #
-#                            (see hardcoded table and column names)            #
 ################################################################################
+
+#require <simple>
 
 query:
   { @nonaggregates = () ; $tables = 0 ; $fields = 0 ; _set_db('simple_db') } query_type ;

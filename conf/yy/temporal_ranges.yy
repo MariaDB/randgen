@@ -19,9 +19,9 @@
 ########################################################################
 # This is a simple grammar derived from range_access2, based on the same
 # principles but using temporal ranges only.
-#
-# It should be used with a temporal-rich dataset, e.g. temporal.zz
 ########################################################################
+
+#require <conf/zz/temporal.zz>
 
 query_init:
   { _set_db('temporal_db') } alter_add ;; alter_add ;; alter_add ;; alter_add ;; alter_add ;
