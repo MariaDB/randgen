@@ -22,10 +22,14 @@ query:
   { _set_db('NON-SYSTEM') } trx_query ;
 
 trx_query:
-  ==FACTOR:3== { %savepoints= (); '' } START TRANSACTION |
-               { %savepoints= (); '' } COMMIT |
-               { %savepoints= (); '' } ROLLBACK |
+  ==FACTOR:10== { %savepoints= (); '' } START TRANSACTION |
+  ==FACTOR:6== { %savepoints= (); '' } COMMIT |
+  ==FACTOR:2== { %savepoints= (); '' } ROLLBACK |
                SET __session_x_global(50,25) TRANSACTION trx_property_list |
+  =FACTOR:2== trx_savepoints
+;
+
+trx_savepoints:
   ==FACTOR:6== SAVEPOINT { $sp= 'sp'.$prng->uint16(1,9); $savepoints{$sp}= 1; $sp } |
   ==FACTOR:2== ROLLBACK TO SAVEPOINT { scalar(keys %savepoints) ? $prng->arrayElement([sort keys %savepoints]) : 'sp0' } |
                RELEASE SAVEPOINT { $sp= scalar(keys %savepoints) ? $prng->arrayElement([sort keys %savepoints]) : 'sp0'; delete $savepoints{$sp}; $sp }
