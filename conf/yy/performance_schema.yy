@@ -25,7 +25,8 @@ perfschema_query:
   { @nonaggregates = () ; @table_names = () ; @database_names = () ; $tables = 0 ; $fields = 0 ; "" } perfschema_select |
   perfschema_update_settings |
   ==FACTOR:0.1== perfschema_truncate |
-  perfschema_show_engine ;
+  perfschema_show_engine |
+  sysschema_stored_routine ;
 
 perfschema_update_settings:
   perfschema_update_consumers |
@@ -306,3 +307,82 @@ perfschema_insert:
 
 yes_or_no:
   'YES' | 'NO' ;
+
+sysschema_stored_routine:
+  DROP DATABASE IF EXISTS { $dbcopy= 'db_copy_'.$prng->int(1,9) } ;; CALL sys.create_synonym_db(sys_database_name_param, { $dbcopy }) |
+  CALL sys.diagnostics(_int_unsigned, _int_unsigned, sys_auto_config_param) |
+  CALL sys.execute_prepared_stmt('SELECT * FROM mysql.user') |
+  SELECT sys.extract_schema_from_file_name(_english) |
+  SELECT sys.extract_table_from_file_name(_english) |
+  SELECT sys.format_bytes(_float) |
+  SELECT sys.format_path(_string) |
+  SELECT sys.format_statement('SELECT * FROM mysql.user') |
+  SELECT sys.format_time(_bigint_unsigned) |
+  SELECT sys.list_add(_text,_english) |
+  SELECT sys.list_drop(_text,_english) |
+  CALL sys.optimizer_switch_choice(on_or_off) |
+  CALL sys.optimizer_switch_off() |
+  CALL sys.optimizer_switch_on() |
+  # TODO: need real consumers, instruments, etc
+  SELECT sys.ps_is_account_enabled('localhost',_user) |
+  SELECT sys.ps_is_consumer_enabled(_string) |
+  SELECT sys.ps_is_instrument_default_enabled(_string) |
+  SELECT sys.ps_is_thread_instrumented(_bigint_unsigned) |
+  CALL sys.ps_setup_disable_background_threads() |
+  CALL sys.ps_setup_disable_consumer(_string) |
+  CALL sys.ps_setup_disable_instrument(_string) |
+  CALL sys.ps_setup_disable_thread(_bigint_unsigned) |
+  CALL sys.ps_setup_enable_background_threads() |
+  CALL sys.ps_setup_enable_consumer(_string) |
+  CALL sys.ps_setup_enable_instrument(_string) |
+  CALL sys.ps_setup_enable_thread(_bigint_unsigned) |
+  CALL sys.ps_setup_reload_saved() |
+  CALL sys.ps_setup_reset_to_default() |
+  CALL sys.ps_setup_save(_int) |
+  CALL sys.ps_setup_show_disabled(__true_x_false, __true_x_false) |
+  CALL sys.ps_setup_show_disabled_consumers() |
+  CALL sys.ps_setup_show_disabled_instruments() |
+  CALL sys.ps_setup_show_enabled(__true_x_false, __true_x_false) |
+  CALL sys.ps_setup_show_enabled_consumers() |
+  CALL sys.ps_setup_show_enabled_instruments() |
+  CALL sys.ps_statement_avg_latency_histogram() |
+  SELECT sys.ps_thread_account(_bigint_unsigned) |
+  SELECT sys.ps_thread_id(_bigint_unsigned) |
+  SELECT sys.ps_thread_stack(_bigint_unsigned ,__true_x_false) |
+  SELECT sys.ps_thread_trx_info(_bigitn_unsigned) |
+  CALL sys.ps_trace_statement_digest(_english, _int, _float, __true_x_false, __true_x_false) |
+  CALL sys.ps_trace_thread(_bigint_unsigned, _string, _float, _float, __true_x_false, __true_x_false, __true_x_false) |
+  CALL sys.ps_truncate_all_tables(__true_x_false) |
+  SELECT sys.quote_identifier(_english) |
+  CALL sys.statement_performance_analyzer(sys_action_param, sys_table_param, sys_views_param) |
+  # TODO: Need real variables and values?
+  CALL sys.sys_get_config(_string,_string) |
+  CALL sys.table_exists(sys_database_name_param,sys_table_name_param,sys_views_param) |
+  SELECT sys.version_major() |
+  SELECT sys.version_minor() |
+  SELECT sys.version_patch()
+;
+
+on_or_off:
+  'ON' | 'OFF' ;
+
+sys_database_name_param:
+  { "'".$prng->arrayElement($executors->[0]->metaAllNonEmptySchemas()) || $prng->arrayElement($executors->[0]->metaAllSchemas()."'" } ;
+
+sys_table_name_param:
+  { "'".$prng->arrayElement($executors->[0]->metaTables($work_database))."'" } ;
+
+sys_table_exists_param:
+  '' | 'BASE TABLE' | 'VIEW' | 'TEMPORARY' | 'SEQUENCE' | 'SYSTEM VIEW' | 'TEMPORARY SEQUENCE' ;
+
+sys_auto_config_param:
+  'current' | 'medium' | 'full' ;
+
+sys_action_param:
+  'snapshot' | 'overall' | 'delta' | 'create_table' | 'create_tmp' | 'save' | 'cleanup' ;
+
+sys_table_param:
+  sys_table_name_param | NULL | NOW() ;
+
+sys_views_param:
+  'with_runtimes_in_95th_percentile' | 'analysis' | 'with_errors_or_warnings' | 'with_full_table_scans' | 'with_sorting' | 'with_temp_tables' | 'custom' ;
