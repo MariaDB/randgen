@@ -18,12 +18,30 @@
 ##########################################
 
 query_init:
-  { %created_users = (); '' };
+  { %created_users = (); %full_user_names = (); '' } ;; create_user ;
 
 query:
-  mdev7978;
+  user_ddl_query |
+  set_session_auth_query /* compatibility 12.0 */
+;
 
-mdev7978:
+set_session_auth_query:
+  ==FACTOR:20== full_stack |
+  SET SESSION AUTHORIZATION username_for_set_session |
+  grant_revoke_set_user;
+
+full_stack:
+  CREATE OR REPLACE USER full_user_name[invariant] ;; GRANT SET USER, CREATE USER ON *.* TO full_user_name[invariant] WITH GRANT OPTION ;; SET SESSION AUTHORIZATION full_user_name[invariant] ;
+
+username_for_set_session:
+  existing_full_name | root@localhost | rqg@localhost ;
+
+grant_revoke_set_user:
+  ==FACTOR:5== GRANT SET USER ON *.* TO username __with_grant_option(50) |
+  REVOKE SET USER ON *.* FROM username ;
+;
+
+user_ddl_query:
                  drop_user
   | ==FACTOR:5== create_user
   | ==FACTOR:4== alter_user
@@ -36,7 +54,10 @@ existing_user_list:
     existing_user | existing_user, existing_user_list;
 
 existing_user:
-    { $user = $prng->arrayElement([ keys %created_users ]); $user = 'non_existing_user' if $user =~ /^\s*$/; delete $created_users{$user}; $user };
+    { $user = $prng->arrayElement([ keys %created_users ]); $user = 'non_existing_user' if $user =~ /^\s*$/; delete $full_user_names{$user}; delete $created_users{$user}; $user };
+
+existing_full_name:
+    { $user = $prng->arrayElement([ keys %full_user_names ]); $user = 'non_existing_user@localhost' if $user =~ /^\s*$/; delete $full_user_names{$user}; delete $created_users{$user}; $user };
 
 alter_user:
     ALTER USER __if_exists(90) existing_user_definition;
@@ -78,16 +99,20 @@ with:
      | WITH resource_option_list;
 
 resource_option_list:
-    resource_option | resource_option resource_option_list;
+    resource_option max_value_big_or_small | resource_option max_value_big_or_small resource_option_list;
 
 resource_option:
-      MAX_QUERIES_PER_HOUR _int_unsigned
-    | MAX_UPDATES_PER_HOUR _int_unsigned
-    | MAX_CONNECTIONS_PER_HOUR _int_unsigned
-# MDEV-11181 - values greater than 2147483647 don't work
-#    | MAX_USER_CONNECTIONS _int_unsigned
-    | MAX_USER_CONNECTIONS _mediumint_unsigned
+      MAX_QUERIES_PER_HOUR
+    | MAX_UPDATES_PER_HOUR
+    | MAX_CONNECTIONS_PER_HOUR
+    | MAX_USER_CONNECTIONS
+    | MAX_STATEMENT_TIME
 ;
+
+max_value_big_or_small:
+# MDEV-11181 - values greater than 2147483647 don't work
+#  _digit | _int_unsigned
+  _digit | _mediumint_unsigned ;
 
 new_user_specification_list:
     new_user_specification | new_user_specification, new_user_specification_list;
@@ -120,8 +145,8 @@ password_hash:
     '' | { "'*". join('', map{ chr($prng->uint16(97, 122)) } (1..40) ) ."'" };
 
 new_user_name:
-      short_user_name { $created_users{$user} = 1; '' }
-    | full_user_name { $created_users{$user.'@'.$host} = 1; '' }
+      short_user_name { $full_name= $user; $created_users{$full_name} = 1; '' }
+    | full_user_name { $full_name= $user.'@'.$host; $full_user_names{$full_name}= 1; $created_users{$full_name} = 1; '' }
 ;
 
 short_user_name:
