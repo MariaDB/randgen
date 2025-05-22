@@ -32,7 +32,8 @@ sub transform {
   my ($class, $orig_query, $executor) = @_;
 
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
-  return STATUS_WONT_HANDLE if $orig_query !~ m{^[\(\s]*(?:SELECT|WITH)}sgio
+  # SET SESSION AUTHORIZATION - not supported in PS
+  return STATUS_WONT_HANDLE if $orig_query !~ m{^[\(\s]*(?:SELECT|WITH|SET\s+SESSION\s+AUTH)}sgio
            || $orig_query =~ m{(INTO|PROCESSLIST)}is;
   # SET STATEMENT disabled due to MDEV-29217
   return STATUS_WONT_HANDLE if $orig_query =~ m{SET\s*STATEMENT}sgio;
@@ -41,6 +42,8 @@ sub transform {
 
 sub variate {
   my ($class, $orig_query, $executor) = @_;
+  # SET SESSION AUTHORIZATION - not supported in PS
+  return [ $orig_query ] if $orig_query !~ m{^[\(\s]*(?:SELECT|WITH|SET\s+SESSION\s+AUTH)}sgio;
   # SET STATEMENT disabled due to MDEV-29217
   return [ $orig_query ] if $orig_query =~ m{SET\s*STATEMENT}sgio;
   return $class->modify($orig_query, undef, $executor) || [ $orig_query ];
