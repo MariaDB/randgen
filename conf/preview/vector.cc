@@ -53,29 +53,25 @@ $combinations = [
   [ @{$options{optional_aria_variables}} ],
   [ @{$options{optional_binlog_safe_variables}} ],
   [ @{$options{optional_innodb_compression}} ],
-  [ @{$options{optional_innodb_pagesize}} ],
   [ @{$options{optional_innodb_variables}} ],
   [ @{$options{optional_perfschema}} ],
   [ @{$options{optional_server_variables}} ],
 
-  [ @empty_set_50, '--mysqld=--aria-block-size=16384 --dataset=0', '--mysqld=--aria-block-size=32768 --dataset=0' ],
-  [ @empty_set_50, '--mysqld=--innodb_page_size=4K --dataset=0','--mysqld=--innodb_page_size=8K --dataset=0','--mysqld=--innodb_page_size=32K --dataset=0','--mysqld=--innodb_page_size=64K --dataset=0'],
-
   [ '--dataset=/data/tmp/vector/datadir' ],
 
 # New
-  [ '--grammar=conf/yy/vector.yy:3' ],
+  [ '--grammar=conf/yy/vector.yy:3 --grammar=conf/yy/functions.yy:2' ],
   [ '--mysqld=--mhnsw_max_cache_size=128M', '--mysqld=--mhnsw_max_cache_size=8G', '--mysqld=--mhnsw_max_cache_size=4G', '--mysqld=--mhnsw_max_cache_size=1G', '--mysqld=--mhnsw_max_cache_size=1M' ],
   [ '--mysqld=--mhnsw_default_m=3', '--mysqld=--mhnsw_default_m=4', '--mysqld=--mhnsw_default_m=20', '--mysqld=--mhnsw_max_cache_size=100', '', '' ],
   [ '--mysqld=--mhnsw_ef_search=1', '--mysqld=--mhnsw_ef_search=2', '--mysqld=--mhnsw_ef_search=5', '--mysqld=--mhnsw_ef_search=10', '--mysqld=--mhnsw_ef_search=20', '--mysqld=--mhnsw_ef_search=100', '--mysqld=--mhnsw_ef_search=200', '--mysqld=--mhnsw_ef_search=4096', '--mysqld=--mhnsw_ef_search=65535', '' ],
   [ '--mysqld=--mhnsw_default_distance=euclidean', '--mysqld=--mhnsw_default_distance=cosine' ],
 
-  [ '--gendata=simple', '--gendata=advanced' ],
-#  [ '--gendata=conf/preview/deep-image_96_10K.sql' ],
+#  [ '--gendata=simple', '--gendata=advanced' ],
+#  [ '--gendata=conf/preview/deep_image_96_10K.sql' ],
 #  [ '--gendata=conf/preview/gist_960_1K.sql' ],
-#  [ '--gendata=conf/preview/deep-image_96_50K.sql', '' ],
-#  [ '--gendata=conf/preview/deep-image_96_20K.sql', '' ],
-#  [ '--gendata=conf/preview/deep-image_96_100K.sql', '', '' ],
+#  [ '--gendata=conf/preview/deep_image_96_50K.sql', '' ],
+#  [ '--gendata=conf/preview/deep_image_96_20K.sql', '' ],
+#  [ '--gendata=conf/preview/deep_image_96_100K.sql', '', '' ],
 #  [ '--gendata=conf/preview/gist_fake_1920_1K.sql', '' ],
 
   ##### Engines and scenarios
