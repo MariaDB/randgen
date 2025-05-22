@@ -2,7 +2,7 @@
 
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2019, 2022, MariaDB Corporation Ab.
+# Copyright (c) 2019, 2025, MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,10 @@
 
 # $0 doesn't work for us as it can be called from combinations.pl
 use constant SCRIPT_NAME => 'run.pl';
+
+use Devel::Leak;
+my $handle;
+Devel::Leak::NoteSV($handle);
 
 sub run {
   @ARGV= @_;
@@ -122,7 +126,7 @@ sub run {
     'manual-gdb|manual_gdb' => \$server_options{manual_gdb},
     'mysqld=s@' => \@{$server_options{mysqld}},
     'partitions!'   => \$server_options{partitions},
-    'perf!' => \$server_options{perf},
+    'perf:i' => \$server_options{perf},
     'ps_protocol|ps-protocol' => \$server_options{ps},
     'rr!' => \$server_options{rr},
     'unique-hash-keys|unique_hash_keys!' => \$server_options{uhashkeys},
@@ -239,6 +243,7 @@ sub run {
     }
   }
 
+
   # Configure Hashicorp vault if it's installed and running
   # (again, it seems an overkill to configure it here, since it will be rarely needed)
   if ($hashicorp) {
@@ -252,6 +257,12 @@ sub run {
       chomp $ENV{VAULT_ADDR};
       say("Hashicorp vault has been configured: $ENV{VAULT_ADDR} $ENV{VAULT_TOKEN}");
     }
+  }
+
+  # If duration of the perf sample is not defined, set it to 90% of test duration
+  # (which may be wrong if the server is restarted etc.)
+  if (defined $server_options{perf} && ! $server_options{perf}) {
+    $server_options{perf}= int($props->{duration}*0.9)
   }
 
   # We collect common and per-server options the following way:
@@ -270,9 +281,11 @@ sub run {
       $scenario_options{$1}= $2;
     } elsif ($o =~ /^--(?:server|srv)(\d+)-([^=]+)(?:=(.*))?$/) {
       if (exists $server_options{$2}) {
-        my %opts= $server_specific->{$1} ? %{$server_specific->{$1}} : ();
+        my %opts= (defined $server_specific->{$1} ? %{$server_specific->{$1}} : ());
         if ($2 eq 'mysqld') {
           $opts{$2}= exists $opts{$2} ? [ @{$opts{$2}}, $3 ] : [ $3 ];
+        } elsif ($2 eq 'perf' and not defined $3) {
+          $opts{$2}= int($props->{duration}*0.9);
         } else {
           $opts{$2}= $3;
         }
@@ -431,8 +444,17 @@ sub run {
       waitpid($run_pid,0);
       $res= ($? >> 8);
     } elsif (defined $run_pid) {
+      if ($props->{debug}) {
+        use Devel::Leak;
+        my $handle;
+        Devel::Leak::NoteSV($handle);
+      }
       # Test runner
-      exit $sc->run()
+      $res= $sc->run();
+      if ($props->{debug}) {
+        Devel::Leak::CheckSV($handle);
+      }
+      exit $res;
     } else {
       sayError("Could not fork for test run: $!");
     }
@@ -623,7 +645,9 @@ Run a complete random query generation test scenario
     --debug          : RQG debug mode (a lot of extra output)
     --manual-gdb     : Pause and wait for keypress after server startup
                        to allow attaching a debugger to the server process
-    --perf           : Run the server under perf record
+    --perf           : Run the server under perf record, the argument is the number
+                       of seconds to run perf after a server start. If not provided,
+                       then 90% of duration (which may be wrong if the server is restarted)
     --rr             : Run the server under rr record
     --sqltrace       : Print all generated SQL statements.
                        Optional: Specify --sqltrace=MarkErrors to mark
@@ -646,6 +670,9 @@ EOF
 # otherwise run(...) subroutine is called from another script
 if (scalar(@ARGV)) {
   my $status= run(@ARGV);
+  if ($props->{debug}) {
+    Devel::Leak::CheckSV($handle);
+  }
   safe_exit($status);
 }
 

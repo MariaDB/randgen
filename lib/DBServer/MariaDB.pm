@@ -1,5 +1,5 @@
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2013, 2024, MariaDB
+# Copyright (c) 2013, 2025, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -526,11 +526,14 @@ sub startServer {
 
     my ($v1,$v2,@rest) = $self->versionNumbers;
     my $v = $v1*1000+$v2;
+    my $errorlog = $self->vardir."/".MYSQLD_ERRORLOG_FILE;
+
     my $command = $self->generateCommand([@defaults],
                                          $self->[MYSQLD_STDOPTS],
                                          ["--core-file",
                                           "--skip-stack-trace", # disable post-mortem for error log -- forking for addr2line etc.
                                           "--datadir=".$self->datadir,  # Could not add to STDOPTS, because datadir could have changed
+                                          "--log-error=".$errorlog,
                                           "--port=".$self->port,
                                           "--socket=".$self->socketfile,
                                           "--pid-file=".$self->pidfile],
@@ -554,8 +557,6 @@ sub startServer {
     unlink($self->pidfile);
     $self->[MYSQLD_SERVERPID]= undef;
 
-    my $errorlog = $self->vardir."/".MYSQLD_ERRORLOG_FILE;
-
     # In seconds, timeout for the server to start updating error log
     # (to write "Starting MariaDB..." or "starting as process" record)
     # after the server startup command has been launched
@@ -569,9 +570,7 @@ sub startServer {
     if ($self->[MYSQLD_RR]) {
         $command = "rr record -h --output-trace-dir=".$self->vardir."/rr_profile_".time()." ".$command;
     }
-    elsif ($self->[MYSQLD_PERF]) {
-        $command= "perf record -o ".$self->vardir."/perf_data_".time()." ".$command;
-    }
+
     elsif (defined $self->[MYSQLD_VALGRIND]) {
         my $val_opt ="";
         $start_wait_timeout= 60;
@@ -681,7 +680,7 @@ sub startServer {
         $self->[MYSQLD_SERVERPID] = int($pid);
         say("Server started with PID ".$self->[MYSQLD_SERVERPID]);
     } else {
-        exec("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command >> \"$errorlog\"  2>&1") || croak("Could not start mysql server");
+        exec("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command 2>&1") || croak("Could not start mysql server");
     }
 
     my $started= $self->waitForServerToStart();
@@ -695,6 +694,11 @@ sub startServer {
           say("Pausing test to allow attaching debuggers etc. to the server process ".$self->[MYSQLD_SERVERPID].".");
           say("Press ENTER to continue the test run...");
           my $keypress = <STDIN>;
+        }
+        elsif ($self->[MYSQLD_PERF]) {
+          my $perf_command= "perf record -o ".$self->vardir."/perf_data_".time()."_".$self->[MYSQLD_SERVERPID]." -p ".$self->[MYSQLD_SERVERPID]." -- sleep ".$self->[MYSQLD_PERF];
+          say("Starting perf: $perf_command");
+          system("$perf_command &");
         }
         return DBSTATUS_OK;
     } else {
@@ -740,6 +744,18 @@ sub kill {
     unlink $self->pidfile if -e $self->pidfile;
     $self->[MYSQLD_SERVERPID]= undef;
     return ($self->running ? DBSTATUS_FAILURE : DBSTATUS_OK);
+}
+
+sub backtrace {
+  my $self= shift;
+  my $bt_file= $self->vardir.'/threads_'.(strftime("%Y%m%d%H%M%S", localtime)).'.txt';
+  if (system('gdb --batch --eval-command="thread apply all bt full" '.$self->binary.' '.$self->serverpid.' > '.$bt_file)) {
+    say("Stack trace from the process ".$self->serverpid." stored as $bt_file");
+    return $bt_file;
+  } else {
+    sayError("Failed to store stack trace from the process ".$self->serverpid);
+    return undef;
+  }
 }
 
 sub corefile {
@@ -1241,8 +1257,8 @@ sub checkDatabaseIntegrity {
           say("Check on S3 table $database.$table is skipped due to MDEV-29136");
           next CHECKTABLE;
         }
-        #say("Verifying table: $database.$table ($tables{$table}->[1]):");
         my $check = $conn->get_columns_by_name("CHECK TABLE `$database`.`$table` EXTENDED", 'Msg_type', 'Msg_text');
+
         if ($conn->err) {
           sayError("Got an error for table ${database}.${table}: ".$conn->print_error);
           # 1178 is ER_CHECK_NOT_IMPLEMENTED. It's not an error
