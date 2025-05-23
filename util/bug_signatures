@@ -1705,7 +1705,7 @@ MDEV-29178:
 =~ signal|AddressSanitizer
 =~ federatedx_io_mysql::~federatedx_io_mysql
 MDEV-29157:
-=~ failed: 1041 Out of memory
+=~ failed: 1041 Out of memory|STATUS_OUT_OF_MEMORY: 1041 "Out of memory\."
 =~ Got error 128 when reading table
 =~ FeatureUsage detected S3 tables
 MDEV-29138:
