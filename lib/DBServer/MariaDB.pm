@@ -686,7 +686,7 @@ sub startServer {
     my $started= $self->waitForServerToStart();
     if ($started) {
         if ($repair_log_tables) {
-          $self->connection->execute("REPAIR TABLE mysql.general_log, mysql.slow_log");
+          $self->connection->execute("SET STATEMENT tx_read_only=0 FOR REPAIR TABLE mysql.general_log, mysql.slow_log");
         }
         $self->testSetup();
         $self->serverVariables();
