@@ -26,7 +26,7 @@ trx_query:
   ==FACTOR:6== { %savepoints= (); '' } COMMIT |
   ==FACTOR:2== { %savepoints= (); '' } ROLLBACK |
                SET __session_x_global(50,25) TRANSACTION trx_property_list |
-  =FACTOR:2== trx_savepoints
+  ==FACTOR:2== trx_savepoints
 ;
 
 trx_savepoints:
