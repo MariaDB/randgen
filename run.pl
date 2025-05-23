@@ -24,10 +24,6 @@
 # $0 doesn't work for us as it can be called from combinations.pl
 use constant SCRIPT_NAME => 'run.pl';
 
-use Devel::Leak;
-my $handle;
-Devel::Leak::NoteSV($handle);
-
 sub run {
   @ARGV= @_;
   unless (defined $ENV{RQG_HOME}) {
@@ -444,16 +440,8 @@ sub run {
       waitpid($run_pid,0);
       $res= ($? >> 8);
     } elsif (defined $run_pid) {
-      if ($props->{debug}) {
-        use Devel::Leak;
-        my $handle;
-        Devel::Leak::NoteSV($handle);
-      }
       # Test runner
       $res= $sc->run();
-      if ($props->{debug}) {
-        Devel::Leak::CheckSV($handle);
-      }
       exit $res;
     } else {
       sayError("Could not fork for test run: $!");
@@ -670,9 +658,6 @@ EOF
 # otherwise run(...) subroutine is called from another script
 if (scalar(@ARGV)) {
   my $status= run(@ARGV);
-  if ($props->{debug}) {
-    Devel::Leak::CheckSV($handle);
-  }
   safe_exit($status);
 }
 
