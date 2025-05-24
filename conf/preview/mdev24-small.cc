@@ -55,11 +55,9 @@ $combinations = [
     '--mysqld=--aria_pagecache_segments=127',
     '--mysqld=--aria_pagecache_segments=128' ],
   [ '--engine=Aria --mysqld=--default-storage-engine=Aria' ],
+# block size less that 8192 is unusable, MDEV-36873
   [
     '--mysqld=--aria_block_size=8192',
-    '--mysqld=--aria_block_size=2048',
-    '--mysqld=--aria_block_size=4096',
-    '--mysqld=--aria_block_size=1024',
     '--mysqld=--aria_block_size=16384'
   ],
   [
@@ -100,9 +98,11 @@ $combinations = [
     '--mysqld=--aria_log_purge_type=external',
     '--mysqld=--aria_log_purge_type=at_flush',
   ],
+  [
     '--mysqld=--aria_max_sort_file_size=9223372036853727232',
     '--mysqld=--aria_max_sort_file_size=879609',
     '--mysqld=--aria_max_sort_file_size=900719925',
+  ],
   [
     '--mysqld=--aria_page_checksum=on',
     '--mysqld=--aria_page_checksum=off',
