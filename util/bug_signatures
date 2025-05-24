@@ -400,8 +400,9 @@ MDEV-35318:
 =~ Prepared_statement::execute|sp_head::execute
 =~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-35266: [aria-block-size, can't open control file]
+=~ BACKUP STAGE START
 =~ Can't open Aria control file (0)
-=~ mysqld=--aria-block-size=
+=~ mysqld=--aria-block-size=|mysqld=--aria_block_size=
 MDEV-35243:
 =~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type == 1'
 =~ handler::ha_update_row
@@ -3990,7 +3991,7 @@ MDEV-17951:
 =~ Query_log_event::do_apply_event
 # The alternative is due to the broken stack trace
 MDEV-17936:
-=~ signal 11|AddressSanitizer: heap-use-after-free
+=~ signal 11|AddressSanitizer: heap-use-after-free|MemorySanitizer:
 =~ Field::is_null
 =~ Arg_comparator::compare
 =~ Prepared_statement::execute|sp_head::execute
@@ -4307,6 +4308,9 @@ TODO-842: [Galera]
 TODO-842: [Galera]
 =~ WSREP: Server paused at:
 =~ STATUS_SERVER_UNAVAILABLE
+TODO-842: [Third Party]
+=~ MemorySanitizer: use-of-uninitialized-value
+=~ in FascistLookUser
 
 ##############################################################################
 # Weak matches
