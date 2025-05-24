@@ -1106,6 +1106,9 @@ MDEV-31670:
 =~ copy_data_between_tables
 =~ mysql_alter_table
 =~ Query_log_event::do_apply_event
+MDEV-31656:
+=~ Assertion \`block->type == PAGECACHE_EMPTY_PAGE \|\| block->type == type \|\| type == PAGECACHE_LSN_PAGE \|\| type == PAGECACHE_READ_UNKNOWN_PAGE \|\| block->type == PAGECACHE_READ_UNKNOWN_PAGE'
+=~ ha_maria::enable_indexes
 MDEV-31650:
 =~ Assertion \`0'
 =~ retrieve_auto_increment|ma_retrieve_auto_increment
