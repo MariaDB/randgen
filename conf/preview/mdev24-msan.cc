@@ -162,7 +162,7 @@ $combinations = [
       ],
       normal => [
         [ @{$options{scenario_non_crash_combinations}} ],
-        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
+        [ @{$options{engine_basic_combinations}} ],
         [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
         [ @{$options{optional_encryption_msan_safe}} ],
         [ @{$options{optional_binlog_unsafe_variables}} ],
