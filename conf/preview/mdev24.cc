@@ -101,9 +101,11 @@ $combinations = [
     '--mysqld=--aria_log_purge_type=external',
     '--mysqld=--aria_log_purge_type=at_flush',
   ],
+  [
     '--mysqld=--aria_max_sort_file_size=9223372036853727232',
     '--mysqld=--aria_max_sort_file_size=879609',
     '--mysqld=--aria_max_sort_file_size=900719925',
+  ],
   [
     '--mysqld=--aria_page_checksum=on',
     '--mysqld=--aria_page_checksum=off',
@@ -114,7 +116,7 @@ $combinations = [
     '--mysqld=--aria_pagecache_age_threshold=9999900',
     '--mysqld=--aria_pagecache_age_threshold=10000',
   ],
-# 16M is a minimul value sufficient for 128 segments
+# 16M is a minimal value sufficient for 128 segments
   [
     '--mysqld=--aria_pagecache_buffer_size=128M',
     '--mysqld=--aria_pagecache_buffer_size=16M',
