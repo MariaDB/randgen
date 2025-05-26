@@ -113,10 +113,11 @@ $combinations = [
     '--mysqld=--aria_pagecache_age_threshold=9999900',
     '--mysqld=--aria_pagecache_age_threshold=10000',
   ],
-# 16M is a minimal value sufficient for 128 segments
+# 16M is a minimal value sufficient for 128 segments with the default block size,
+# but 16K block size requires more
   [
     '--mysqld=--aria_pagecache_buffer_size=128M',
-    '--mysqld=--aria_pagecache_buffer_size=16M',
+    '--mysqld=--aria_pagecache_buffer_size=32M',
     '--mysqld=--aria_pagecache_buffer_size=1G',
     '--mysqld=--aria_pagecache_buffer_size=2G',
   ],
