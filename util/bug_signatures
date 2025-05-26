@@ -189,18 +189,11 @@ MDEV-36028:
 =~ signal|AddressSanitizer
 =~ wsrep_before_SE
 =~ Wsrep_server_service::sst_before_init
-TODO-0 [LeakSanitizer has encountered a fatal error]:
-=~ LeakSanitizer has encountered a fatal error
 MDEV-36020:
 =~ AddressSanitizer|signal
 =~ Binary_string::replace
 =~ Item_func_insert::val_str
 =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
-TODO-1: [enforce no trailing]
-=~ AddressSanitizer|signal
-=~ Warning_info::push_warning
-=~ THD::raise_condition
-=~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36011:
 =~ signal|AddressSanitizer
 =~ Charset::mbminlen
@@ -4314,6 +4307,13 @@ TODO-842: [Galera]
 TODO-842: [Third Party]
 =~ MemorySanitizer: use-of-uninitialized-value
 =~ in FascistLookUser
+TODO-0: [LeakSanitizer has encountered a fatal error]
+=~ LeakSanitizer has encountered a fatal error
+TODO-1: [enforce no trailing]
+=~ AddressSanitizer|signal
+=~ Warning_info::push_warning
+=~ THD::raise_condition
+=~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
 ##############################################################################
 # Weak matches
