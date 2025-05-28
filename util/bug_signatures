@@ -22,6 +22,32 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-36899:
+=~ MemorySanitizer|signal|points to uninitialised bytes
+=~ my_pwrite
+=~ translog_buffer_flush
+=~ translog_flush_buffers
+MDEV-36898:
+=~ Assertion \`!mysql_bin_log\.is_open()'
+=~ THD::mark_tmp_table_as_free_for_reuse
+=~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
+=~ FeatureUsage detected sequences
+MDEV-36888:
+=~ Assertion \`typeid(\*copy) == typeid(\*this)'
+=~ Item_func_or_sum::do_build_clone
+MDEV-36852:
+=~ signal|AddressSanitizer|Assertion \`key_info->key_part->field->flags & (1<< 30)'
+=~ setup_keyinfo_hash
+=~ mysql_alter_table
+MDEV-36852:
+=~ signal|AddressSanitizer
+=~ _mi_make_key|
+=~ handler::ha_write_row
+=~ mysql_alter_table
+MDEV-36852:
+=~ signal|AddressSanitizer
+=~ row_sel_convert_mysql_key_to_innobase|Field::get_key_image
+=~ handler::check_duplicate_long_entry_key
 MDEV-36817:
 =~ Assertion \`bit < map->n_bits'|signal
 =~ do_mark_index_columns
@@ -51,6 +77,10 @@ MDEV-36752:
 =~ backup_log_ddl
 =~ mysql_create_or_drop_trigger
 =~ FeatureUsage detected backup stages
+MDEV-36706:
+=~ Assertion \`copied_in'
+=~ Item_copy_string::val_str
+=~ Item_singlerow_subselect
 MDEV-36692:
 =~ Assertion \`pfs_rwlock == sanitize_rwlock(pfs_rwlock)'
 =~ pfs_unlock_rwlock_v1
@@ -193,6 +223,11 @@ MDEV-36020:
 =~ AddressSanitizer|signal
 =~ Binary_string::replace
 =~ Item_func_insert::val_str
+=~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
+MDEV-36020:
+=~ AddressSanitizer|signal
+=~ Create_tmp_table::add_fields
+=~ Prepared_statement::execute|sp_head::execute
 =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-36011:
 =~ signal|AddressSanitizer
@@ -455,9 +490,6 @@ MDEV-35095:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ Type_std_attributes::agg_item_set_converter
 =~ Prepared_statement::execute|sp_head::execute
-MDEV-35090:
-=~ Assertion \`typeid(\*copy) == typeid(\*this)'
-=~ Item_func_or_sum::do_build_clone
 MDEV-35085:
 =~ Assertion \`!(entry->using_trx_cache && !mngr->trx_cache\.empty() && mngr->get_binlog_cache_log((1))->error)'
 =~ MYSQL_BIN_LOG::write_transaction_or_stmt
@@ -4134,8 +4166,8 @@ MDEV-16686:
 =~ lock_external
 MDEV-16686:
 =~ signal|AddressSanitizer
-=~ wait_for_lock
-=~ thr_multi_lock
+=~ wait_for_lock|thr_unlock
+=~ thr_multi_lock|thr_multi_unlock
 MDEV-16686:
 =~ Assertion \`false'
 =~ lock_flags_to_lock_type
