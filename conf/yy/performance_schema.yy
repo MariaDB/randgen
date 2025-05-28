@@ -308,9 +308,21 @@ perfschema_insert:
 yes_or_no:
   'YES' | 'NO' ;
 
+int_unsigned_or_null:
+  ==FACTOR:20== _int_unsigned |
+  NULL
+;
+
+tinyint_unsigned_or_null:
+  =FACTOR:20== _tinyint_unsigned |
+  NULL
+;
+
 sysschema_stored_routine:
   DROP DATABASE IF EXISTS { $dbcopy= 'db_copy_'.$prng->int(1,9) } ;; CALL sys.create_synonym_db(sys_database_name_param, { $dbcopy }) |
-  CALL sys.diagnostics(_int_unsigned, _int_unsigned, sys_auto_config_param) |
+  # The second parameter is actually INT UNSIGNED, but it means sleep between diagnostics,
+  # so a long one causes a pseudo-deadlock
+  CALL sys.diagnostics(int_unsigned_or_null, tinyint_unsigned_or_null, sys_auto_config_param) |
   CALL sys.execute_prepared_stmt('SELECT * FROM mysql.user') |
   SELECT sys.extract_schema_from_file_name(_english) |
   SELECT sys.extract_table_from_file_name(_english) |
