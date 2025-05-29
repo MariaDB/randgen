@@ -16,6 +16,9 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
+query_init:
+  SET DEFAULT ROLE admin ;; SET ROLE admin ;
+
 query:
   { _set_db('NON-SYSTEM') } perfschema_query ;
 
@@ -308,25 +311,16 @@ perfschema_insert:
 yes_or_no:
   'YES' | 'NO' ;
 
-int_unsigned_or_null:
-  ==FACTOR:20== _int_unsigned |
-  NULL
-;
-
-tinyint_unsigned_or_null:
-  =FACTOR:20== _tinyint_unsigned |
-  NULL
-;
-
 sysschema_stored_routine:
   DROP DATABASE IF EXISTS { $dbcopy= 'db_copy_'.$prng->int(1,9) } ;; CALL sys.create_synonym_db(sys_database_name_param, { $dbcopy }) |
-  # The second parameter is actually INT UNSIGNED, but it means sleep between diagnostics,
-  # so a long one causes a pseudo-deadlock
-  CALL sys.diagnostics(int_unsigned_or_null, tinyint_unsigned_or_null, sys_auto_config_param) |
+  # First two parameters are actually INT UNSIGNED, but they mean duration of diagnostics,
+  # so big values cause a pseudo-deadlock, and anyway we don't want threads
+  # to be spending a lot of time here
+  CALL sys.diagnostics(_digit, _digit, sys_auto_config_param) |
   CALL sys.execute_prepared_stmt('SELECT * FROM mysql.user') |
   SELECT sys.extract_schema_from_file_name(_english) |
   SELECT sys.extract_table_from_file_name(_english) |
-  SELECT sys.format_bytes(_float) |
+  SELECT sys.format_bytes(_fixed_unsigned) |
   SELECT sys.format_path(_string) |
   SELECT sys.format_statement('SELECT * FROM mysql.user') |
   SELECT sys.format_time(_bigint_unsigned) |
@@ -362,8 +356,14 @@ sysschema_stored_routine:
   SELECT sys.ps_thread_id(_bigint_unsigned) |
   SELECT sys.ps_thread_stack(_bigint_unsigned ,__true_x_false) |
   SELECT sys.ps_thread_trx_info(_bigitn_unsigned) |
-  CALL sys.ps_trace_statement_digest(_english, _int, _float, __true_x_false, __true_x_false) |
-  CALL sys.ps_trace_thread(_bigint_unsigned, _string, _float, _float, __true_x_false, __true_x_false, __true_x_false) |
+  # 2nd and 3rd parameters are actually INT and DECIMAL, but they mean duration of diagnostics,
+  # so big values cause a pseudo-deadlock, and anyway we don't want threads
+  # to be spending a lot of time here
+  CALL sys.ps_trace_statement_digest(_english, _digit, _digit, __true_x_false, __true_x_false) |
+  # 3rd and 4th parameters are actually DECIMAL, but they mean duration of diagnostics,
+  # so big values cause a pseudo-deadlock, and anyway we don't want threads
+  # to be spending a lot of time here
+  CALL sys.ps_trace_thread(_bigint_unsigned, _string, _digit, _digit, __true_x_false, __true_x_false, __true_x_false) |
   CALL sys.ps_truncate_all_tables(__true_x_false) |
   SELECT sys.quote_identifier(_english) |
   CALL sys.statement_performance_analyzer(sys_action_param, sys_table_param, sys_views_param) |
@@ -379,7 +379,7 @@ on_or_off:
   'ON' | 'OFF' ;
 
 sys_database_name_param:
-  { "'".$prng->arrayElement($executors->[0]->metaAllNonEmptySchemas()) || $prng->arrayElement($executors->[0]->metaAllSchemas()."'" } ;
+  { "'".($prng->arrayElement($executors->[0]->metaAllNonEmptySchemas()) or $prng->arrayElement($executors->[0]->metaAllSchemas()))."'" } ;
 
 sys_table_name_param:
   { "'".$prng->arrayElement($executors->[0]->metaTables($work_database))."'" } ;
