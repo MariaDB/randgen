@@ -30,6 +30,18 @@ MENT-319: [backup_flush_ticket == 0]
 =~ backup_start
 
 ##########
+# Backport-related
+##########
+
+# 10.11 CS, 10.6 ES
+MDEV-36906:
+=~ signal|AddressSanitizer
+=~ Rows_log_event::find_row
+=~ apply_event_and_update_pos
+=~ FeatureUsage detected partitioned tables
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+
+##########
 # Closed in the next release (10.4.32 / 10.5.23 / 10.6.16)
 ##########
 
