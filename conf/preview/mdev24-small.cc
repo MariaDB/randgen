@@ -54,7 +54,7 @@ $combinations = [
     '--mysqld=--aria_pagecache_segments=64',
     '--mysqld=--aria_pagecache_segments=127',
     '--mysqld=--aria_pagecache_segments=128' ],
-  [ '--engine=Aria --mysqld=--default-storage-engine=Aria' ],
+  [ '--engine=Aria --mysqld=--default-storage-engine=Aria --reporter=AriaTools' ],
 # MDEV-30278 - 4K cannot be used in 10.6+
   [
     '--mysqld=--aria_block_size=8192',
@@ -113,11 +113,10 @@ $combinations = [
     '--mysqld=--aria_pagecache_age_threshold=9999900',
     '--mysqld=--aria_pagecache_age_threshold=10000',
   ],
-# 16M is a minimal value sufficient for 128 segments with the default block size,
-# but 16K block size requires more
+# 16M is a minimal value sufficient for 128 segments
   [
     '--mysqld=--aria_pagecache_buffer_size=128M',
-    '--mysqld=--aria_pagecache_buffer_size=32M',
+    '--mysqld=--aria_pagecache_buffer_size=16M',
     '--mysqld=--aria_pagecache_buffer_size=1G',
     '--mysqld=--aria_pagecache_buffer_size=2G',
   ],
@@ -126,13 +125,11 @@ $combinations = [
     '--mysqld=--aria_pagecache_division_limit=1',
     '--mysqld=--aria_pagecache_division_limit=50',
   ],
-  [ '--mysqld=--aria_recover_options=NORMAL',
-    '--mysqld=--aria_recover_options=BACKUP',
-    '--mysqld=--aria_recover_options=FORCE',
-    '--mysqld=--aria_recover_options=QUICK',
-    '--mysqld=--aria_recover_options=OFF',
-    '--mysqld=--aria_recover_options=BACKUP,QUICK',
-    '--mysqld=--aria_recover_options=BACKUP,FORCE',
+  [ '--mysqld=--aria_recover=NORMAL',
+    '--mysqld=--aria_recover=BACKUP',
+    '--mysqld=--aria_recover=FORCE',
+    '--mysqld=--aria_recover=QUICK',
+    '--mysqld=--aria_recover=OFF',
   ],
   [
     '--mysqld=--aria_repair_threads=1',
@@ -165,7 +162,7 @@ $combinations = [
       ],
       normal => [
         [ @{$options{scenario_non_crash_combinations}} ],
-        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
         [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
         [ @{$options{optional_encryption}} ],
         [ @{$options{optional_binlog_unsafe_variables}} ],
