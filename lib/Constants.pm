@@ -45,6 +45,7 @@ require Exporter;
   STATUS_ACL_ERROR
   STATUS_CONFIGURATION_ERROR
   STATUS_TEST_FAILURE
+  STATUS_CLIENT_FAILURE
   STATUS_REQUIREMENT_UNMET
   STATUS_ERROR_MISMATCH
   STATUS_LENGTH_MISMATCH
@@ -104,6 +105,7 @@ use constant STATUS_SYNTAX_ERROR             => 26; # General parsing errors and
 
 use constant STATUS_TEST_FAILURE             => 30; # Boundary between genuine errors and false positives due to randomness
 
+use constant STATUS_CLIENT_FAILURE           => 33; # Errors returned by tools and clients
 use constant STATUS_POSSIBLE_FAILURE         => 35;
 
 use constant STATUS_ERROR_MISMATCH           => 41; # A DML statement caused those errors, and the test can not continue

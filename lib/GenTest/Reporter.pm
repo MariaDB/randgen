@@ -29,6 +29,7 @@ require Exporter;
   REPORTER_TYPE_ALWAYS
   REPORTER_TYPE_DATA
   REPORTER_TYPE_END
+  REPORTER_TYPE_POST_SHUTDOWN
   REPORTER_CONNECT_TIMEOUT_THRESHOLD
   REPORTER_COMPATIBILITY
   REPORTER_CONNECTION
@@ -72,8 +73,8 @@ use constant REPORTER_TYPE_SUCCESS      => 16;
 use constant REPORTER_TYPE_SERVER_KILLED    => 32;
 use constant REPORTER_TYPE_ALWAYS       => 64;
 use constant REPORTER_TYPE_DATA         => 128;
-# New reporter type which can be used at the end of a test.
 use constant REPORTER_TYPE_END          => 256;
+use constant REPORTER_TYPE_POST_SHUTDOWN => 512;
 
 # The time, in seconds, we will wait for a connect before we consider the server unavailable
 use constant REPORTER_CONNECT_TIMEOUT_THRESHOLD => 20;

@@ -449,7 +449,7 @@ sub getStatus {
 sub finalize {
   my ($self, $status, $servers)= @_;
   if ($self->[SC_TEST_RUNNER]) {
-    $status= $self->[SC_TEST_RUNNER]->reportResults($status);
+    $status= $self->[SC_TEST_RUNNER]->reportResults($status,(my $post_shutdown=0));
   }
   if ($servers) {
     foreach my $s (@$servers) {
@@ -464,6 +464,9 @@ sub finalize {
       }
       $s->errorLogReport() if $status != STATUS_OK;
     }
+  }
+  if ($self->[SC_TEST_RUNNER]) {
+    $status= $self->[SC_TEST_RUNNER]->reportResults($status,(my $post_shutdown=1));
   }
   if (scalar (keys %{$self->detectedBugs})) {
     my $bugs= $self->detectedBugs;
