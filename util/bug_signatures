@@ -82,7 +82,6 @@ MDEV-36752:
 =~ Assertion \`backup_stage <= BACKUP_WAIT_FOR_FLUSH \|\| backup_stage >= BACKUP_END'
 =~ backup_log_ddl
 =~ mysql_create_or_drop_trigger
-=~ FeatureUsage detected backup stages
 MDEV-36706:
 =~ Assertion \`copied_in'
 =~ Item_copy_string::val_str
@@ -618,7 +617,7 @@ MDEV-33444:
 MDEV-33369:
 =~ AddressSanitizer|signal
 =~ Item_func_json_schema_valid::cleanup
-=~ THD::cleanup_after_query
+=~ THD::cleanup_after_query|cleanup_items
 MDEV-33369:
 =~ AddressSanitizer|signal
 =~ Item_func_json_schema_valid::val_
