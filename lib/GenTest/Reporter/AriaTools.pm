@@ -73,22 +73,28 @@ sub report {
       return STATUS_CLIENT_FAILURE;
     }
   }
-  # Due to MDEV-36919 we have to pack one table at a time
-  foreach my $f (@mai_files) {
-    $cmd= "$aria_pack --datadir=$tool_sandbox $f >> $vardir/aria_pack.out 2>&1";
-    say("Running aria_pack ($cmd)");
-    system($cmd);
-    if ($?) {
-      my $res= ($?>>8);
-      # Ignore "is too small to compress" error, there is nothing wrong with being small
-      if ($res == 2) {
-        system("tail -n 1 $vardir/aria_pack.out | grep 'too small to compress'");
-        if ($?) {
-          sayError("aria_pack returned $res, see $vardir/aria_pack.out");
-          return STATUS_CLIENT_FAILURE;
+  # Due to MDEV-36925 we cannot use ignore-control-file, and otherwise non-default
+  # aria-block-size causes a problem
+  if ($reporter->server->serverVariable('aria_block_size') == 8192) {
+    # Due to MDEV-36919 we have to pack one table at a time
+    foreach my $f (@mai_files) {
+      $cmd= "$aria_pack --datadir=$tool_sandbox $f >> $vardir/aria_pack.out 2>&1";
+      say("Running aria_pack ($cmd)");
+      system($cmd);
+      if ($?) {
+        my $res= ($?>>8);
+        # Ignore "is too small to compress" error, there is nothing wrong with being small
+        if ($res == 2) {
+          system("tail -n 1 $vardir/aria_pack.out | grep 'too small to compress'");
+          if ($?) {
+            sayError("aria_pack returned $res, see $vardir/aria_pack.out");
+            return STATUS_CLIENT_FAILURE;
+          }
         }
       }
     }
+  } else {
+    sayWarning("We cannot use aria_pack due to MDEV-36925 and non-default aria_block_size (".$reporter->server->serverVariable('aria_block_size').")");
   }
   # Cannot do aria recover due to MDEV-35696
   #
