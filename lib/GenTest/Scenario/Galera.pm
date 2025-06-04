@@ -71,6 +71,10 @@ sub run {
   }
 
   foreach my $s (1..$srv_count) {
+    if ($self->getServerStartupOption($s,'transaction-read-only') eq 'ON') {
+      sayWarning("Overriding transaction read-only for server $s");
+      $self->setServerStartupOption($s,'transaction-read-only',0);
+    }
     unless($self->getServerStartupOption($s,'wsrep-provider')) {
       if ($wsrep_provider) {
         $self->setServerStartupOption($s,'wsrep-provider',$wsrep_provider);
