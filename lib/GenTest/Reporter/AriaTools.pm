@@ -53,6 +53,7 @@ sub report {
   my $aria_pack = $aria_tool_location.'/aria_pack'.(osWindows()?'.exe':'');
   my $aria_read_log = $aria_tool_location.'/aria_read_log'.(osWindows()?'.exe':'');
   my @mai_files= glob("$tool_sandbox/*/*.MAI");
+  my @aria_logs= glob("$tool_sandbox/aria_log.*");
 
   my $cmd="$aria_chk --datadir=$tool_sandbox @mai_files > $vardir/aria_chk.out 2>&1";
   say("Running aria_chk ($cmd)");
@@ -61,12 +62,16 @@ sub report {
     sayError("aria_chk returned ".($?>>8).", see $vardir/aria_chk.out");
     return STATUS_CLIENT_FAILURE;
   }
-  $cmd="$aria_dump_log $tool_sandbox/aria_log.* > $vardir/aria_dump_log.out 2>&1";
-  say("Running aria_dump_log ($cmd)");
-  system("$cmd");
-  if ($?) {
-    sayError("aria_dump_log returned ".($?>>8).", see $vardir/aria_dump_log.out");
-    return STATUS_CLIENT_FAILURE;
+
+  # aria_dump_log does not promise to work on multiple files
+  foreach my $f (@aria_logs) {
+    $cmd="$aria_dump_log $f >> $vardir/aria_dump_log.out 2>&1";
+    say("Running aria_dump_log ($cmd)");
+    system("$cmd");
+    if ($?) {
+      sayError("aria_dump_log returned ".($?>>8).", see $vardir/aria_dump_log.out");
+      return STATUS_CLIENT_FAILURE;
+    }
   }
   # Due to MDEV-36919 we have to pack one table at a time
   foreach my $f (@mai_files) {
