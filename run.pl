@@ -75,7 +75,7 @@ sub run {
       $props, %scenario_options, %server_options,
       $scenario, $genconfig, $build_thread,
       @exit_status, $trials, $output, $force,
-      $minio, $hashicorp,
+      $minio, $hashicorp, $sort_options
      );
 
   $SIG{INT}= \&group_cleaner;
@@ -92,8 +92,7 @@ sub run {
 
   $trials= 1;
   $scenario= RQG_DEFAULT_SCENARIO;
-
-  my @ARGV_saved = @ARGV;
+  $sort_options= 1;
 
   %server_options= (
     basedir     => undef,
@@ -112,7 +111,19 @@ sub run {
     views       => undef,
   );
 
+  # First decide if we want to sort the command-line options
   my $opt_result = GetOptions(
+    'sort_options|sort-options!' => \$sort_options,
+  );
+  # Given that we use pass_through, it would be some very unexpected error
+  if (!$opt_result) {
+    help("Error occured while reading sort_options: $!");
+  }
+
+  my @ARGV_saved = ($sort_options ? sort @ARGV : @ARGV);
+  @ARGV= @ARGV_saved;
+
+  $opt_result = GetOptions(
     #
     # Server-related options
     'basedir=s' => \$server_options{basedir},
@@ -162,7 +173,7 @@ sub run {
     'vardir=s' => \$props->{vardir},
     'user=s' => \$props->{user},
     #
-    # Options related to re-running and reproducing
+    # Options related to running, re-running and reproducing
     'exit_status|exit-status=s@' => \@exit_status,
     'force' => \$force,
     'output=s' => \$output,
@@ -399,7 +410,9 @@ sub run {
   TRIALS:
   foreach my $trial_id (1..$trials)
   {
-    my $cmd = SCRIPT_NAME . " " . join(" ", @ARGV_saved);
+    my @final_options= ($sort_options ? sort @ARGV_saved : @ARGV_saved);
+
+    my $cmd = SCRIPT_NAME . " " . join(" ", @final_options);
     $props->{seed}= time() if $props_seed_orig eq 'time';
     $cmd =~ s/--seed=\S+//g;
     $cmd.= " --seed=$props->{seed}";
