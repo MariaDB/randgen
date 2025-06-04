@@ -4355,6 +4355,10 @@ TODO-1: [enforce no trailing]
 =~ Warning_info::push_warning
 =~ THD::raise_condition
 =~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+TODO-2: [Third party OPENSSL_init_crypto]
+=~ MemorySanitizer
+=~ OPENSSL_init_crypto
+=~ ha_s3_init
 
 ##############################################################################
 # Weak matches
