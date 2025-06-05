@@ -294,28 +294,28 @@ sub reportResults {
     my $reporter_manager = $self->reporterManager();
     my @report_results;
 
-    if ($post_shutdown) {
+    if ($total_status == STATUS_OK) {
+      if ($post_shutdown) {
         @report_results = $reporter_manager->report(REPORTER_TYPE_POST_SHUTDOWN);
-    } else {
-      if ($total_status == STATUS_OK) {
-          @report_results = $reporter_manager->report(REPORTER_TYPE_SUCCESS | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
-      } elsif (
-          ($total_status == STATUS_LENGTH_MISMATCH) ||
-          ($total_status == STATUS_CONTENT_MISMATCH)
-      ) {
-          @report_results = $reporter_manager->report(REPORTER_TYPE_DATA | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
-      } elsif ($total_status == STATUS_SERVER_CRASHED || $total_status == STATUS_SERVER_UNAVAILABLE) {
-          say("Server crash may have occurred, initiating post-crash analysis...");
-          @report_results = $reporter_manager->report(REPORTER_TYPE_CRASH | REPORTER_TYPE_ALWAYS);
-      } elsif ($total_status == STATUS_SERVER_DEADLOCKED) {
-          say("Server deadlock reported, initiating analysis...");
-          @report_results = $reporter_manager->report(REPORTER_TYPE_DEADLOCK | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
-      } elsif ($total_status == STATUS_SERVER_STOPPED) {
-          $total_status = STATUS_OK;
-          @report_results = $reporter_manager->report(REPORTER_TYPE_SERVER_KILLED | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
       } else {
-          @report_results = $reporter_manager->report(REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
+        @report_results = $reporter_manager->report(REPORTER_TYPE_SUCCESS | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
       }
+    } elsif (
+        ($total_status == STATUS_LENGTH_MISMATCH) ||
+        ($total_status == STATUS_CONTENT_MISMATCH)
+    ) {
+        @report_results = $reporter_manager->report(REPORTER_TYPE_DATA | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
+    } elsif ($total_status == STATUS_SERVER_CRASHED || $total_status == STATUS_SERVER_UNAVAILABLE) {
+        say("Server crash may have occurred, initiating post-crash analysis...");
+        @report_results = $reporter_manager->report(REPORTER_TYPE_CRASH | REPORTER_TYPE_ALWAYS);
+    } elsif ($total_status == STATUS_SERVER_DEADLOCKED) {
+        say("Server deadlock reported, initiating analysis...");
+        @report_results = $reporter_manager->report(REPORTER_TYPE_DEADLOCK | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
+    } elsif ($total_status == STATUS_SERVER_STOPPED) {
+        $total_status = STATUS_OK;
+        @report_results = $reporter_manager->report(REPORTER_TYPE_SERVER_KILLED | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
+    } else {
+        @report_results = $reporter_manager->report(REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
     }
 
     my $report_status = shift @report_results;
