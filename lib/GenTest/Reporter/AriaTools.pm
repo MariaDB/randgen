@@ -41,6 +41,10 @@ sub report {
   }
   my $aria_tool_location= dirname($aria_chk);
 
+  if (! -d $reporter->server->serverVariable('datadir')) {
+    sayWarning("Data directory ".$reporter->server->serverVariable('datadir')." does not exist is is not a directory, possibly it was already renamed");
+    return STATUS_OK;
+  }
   my $tool_sandbox= $reporter->server->serverVariable('datadir');
   $tool_sandbox =~ s/[\/\\]$//;
   $tool_sandbox .='_for_aria_tools';
@@ -55,12 +59,18 @@ sub report {
   my @mai_files= glob("$tool_sandbox/*/*.MAI");
   my @aria_logs= glob("$tool_sandbox/aria_log.*");
 
-  my $cmd="$aria_chk --datadir=$tool_sandbox @mai_files > $vardir/aria_chk.out 2>&1";
-  say("Running aria_chk ($cmd)");
-  system($cmd);
-  if ($?) {
-    sayError("aria_chk returned ".($?>>8).", see $vardir/aria_chk.out");
-    return STATUS_CLIENT_FAILURE;
+  my $cmd;
+  # MDEV-36950 aria_chk doesn't work with encrypted tables
+  if ($reporter->server->serverVariable('aria_encrypt_tables') eq 'ON') {
+    sayWarning("Cannot run aria_chk on encrypted tables due to MDEV-36950");
+  } else {
+    $cmd= "$aria_chk --datadir=$tool_sandbox @mai_files > $vardir/aria_chk.out 2>&1";
+    say("Running aria_chk ($cmd)");
+    system($cmd);
+    if ($?) {
+      sayError("aria_chk returned ".($?>>8).", see $vardir/aria_chk.out");
+      return STATUS_CLIENT_FAILURE;
+    }
   }
 
   # aria_dump_log does not promise to work on multiple files
@@ -75,7 +85,12 @@ sub report {
   }
   # Due to MDEV-36925 we cannot use ignore-control-file, and otherwise non-default
   # aria-block-size causes a problem
-  if ($reporter->server->serverVariable('aria_block_size') == 8192) {
+  # MDEV-36950 aria_pack doesn't work with encrypted tables
+  if ($reporter->server->serverVariable('aria_block_size') != 8192) {
+    sayWarning("We cannot use aria_pack due to MDEV-36925 and non-default aria_block_size (".$reporter->server->serverVariable('aria_block_size').")");
+  } elsif ($reporter->server->serverVariable('aria_encrypt_tables') eq 'ON') {
+    sayWarning("Cannot run aria_chk on encrypted tables due to MDEV-36950");
+  } else {
     # Due to MDEV-36919 we have to pack one table at a time
     foreach my $f (@mai_files) {
       $cmd= "$aria_pack --datadir=$tool_sandbox $f >> $vardir/aria_pack.out 2>&1";
@@ -93,9 +108,8 @@ sub report {
         }
       }
     }
-  } else {
-    sayWarning("We cannot use aria_pack due to MDEV-36925 and non-default aria_block_size (".$reporter->server->serverVariable('aria_block_size').")");
   }
+
   # Cannot do aria recover due to MDEV-35696
   #
   # $cmd= "$aria_chk -rq --datadir=".$reporter->server->serverVariable('datadir')." @mai_files > $vardir/aria_chk_recover.out 2>&1";
