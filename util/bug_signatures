@@ -4175,7 +4175,7 @@ MDEV-16686:
 =~ lock_external
 MDEV-16686:
 =~ signal|AddressSanitizer
-=~ wait_for_lock|thr_unlock
+=~ wait_for_lock|thr_unlock|thr_lock
 =~ thr_multi_lock|thr_multi_unlock
 MDEV-16686:
 =~ Assertion \`false'
