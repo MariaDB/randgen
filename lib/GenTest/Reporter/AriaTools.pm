@@ -57,6 +57,7 @@ sub report {
   my $aria_pack = $aria_tool_location.'/aria_pack'.(osWindows()?'.exe':'');
   my $aria_read_log = $aria_tool_location.'/aria_read_log'.(osWindows()?'.exe':'');
   my @mai_files= glob("$tool_sandbox/*/*.MAI");
+  my $mai_files= "$tool_sandbox/*/*.MAI";
   my @aria_logs= glob("$tool_sandbox/aria_log.*");
 
   my $cmd;
@@ -64,7 +65,8 @@ sub report {
   if ($reporter->server->serverVariable('aria_encrypt_tables') eq 'ON') {
     sayWarning("Cannot run aria_chk on encrypted tables due to MDEV-36950");
   } else {
-    $cmd= "$aria_chk --datadir=$tool_sandbox @mai_files > $vardir/aria_chk.out 2>&1";
+    $cmd= "$aria_chk --datadir=$tool_sandbox $mai_files > $vardir/aria_chk.out 2>&1";
+    print("HERE: $cmd\n");
     say("Running aria_chk ($cmd)");
     system($cmd);
     if ($?) {
@@ -112,14 +114,14 @@ sub report {
 
   # Cannot do aria recover due to MDEV-35696
   #
-  # $cmd= "$aria_chk -rq --datadir=".$reporter->server->serverVariable('datadir')." @mai_files > $vardir/aria_chk_recover.out 2>&1";
+  # $cmd= "$aria_chk -rq --datadir=".$reporter->server->serverVariable('datadir')." $mai_files > $vardir/aria_chk_recover.out 2>&1";
   # say("Running aria_chk recover ($cmd)");
   # system($cmd);
   # if ($?) {
   #   sayError("aria_chk -u returned ".($?>>8).", see $vardir/aria_chk_recover.out");
   #   return STATUS_CLIENT_FAILURE;
   # }
-  # $cmd= "$aria_chk -u --datadir=".$reporter->server->serverVariable('datadir')." @mai_files > $vardir/aria_chk_unpack.out 2>&1";
+  # $cmd= "$aria_chk -u --datadir=".$reporter->server->serverVariable('datadir')." $mai_files > $vardir/aria_chk_unpack.out 2>&1";
   # say("Running aria_chk unpack ($cmd)");
   # system($cmd);
   # if ($?) {
