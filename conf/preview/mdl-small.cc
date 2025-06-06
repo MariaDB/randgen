@@ -48,7 +48,7 @@ $combinations = [
 
 # New
   [ '--mysqld=--metadata-locks-instances=1','--mysqld=--metadata-locks-instances=2','--mysqld=--metadata-locks-instances=8','--mysqld=--metadata-locks-instances=64','--mysqld=--metadata-locks-instances=127','--mysqld=--metadata-locks-instances=128' ],
-  [ '--grammar=conf/yy/backup_locks.yy:0.5', '--grammar=conf/yy/locks.yy:0.5', '--grammar=conf/yy/admin.yy:0.5' ]
+  [ '--grammar=conf/yy/backup_locks.yy:0.5', '--grammar=conf/yy/locks.yy:0.5', '--grammar=conf/yy/admin.yy:0.5' ],
 
   ##### Engines and scenarios
   [
