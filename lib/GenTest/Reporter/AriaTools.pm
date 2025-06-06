@@ -66,7 +66,6 @@ sub report {
     sayWarning("Cannot run aria_chk on encrypted tables due to MDEV-36950");
   } else {
     $cmd= "$aria_chk --datadir=$tool_sandbox $mai_files > $vardir/aria_chk.out 2>&1";
-    print("HERE: $cmd\n");
     say("Running aria_chk ($cmd)");
     system($cmd);
     if ($?) {
