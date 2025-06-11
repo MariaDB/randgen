@@ -177,7 +177,7 @@ sub run {
     'exit_status|exit-status=s@' => \@exit_status,
     'force' => \$force,
     'output=s' => \$output,
-    'trials=i' => \$trials,
+    'trials|repeat=i' => \$trials,
   );
 
   # Given that we use pass_through, it would be some very unexpected error
