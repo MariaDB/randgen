@@ -251,8 +251,13 @@ sub get_data {
 #  }
   # Default for virtual columns can be wrong (MDEV-32077)
   # Views don't preserve virtual column attributes, so we select view columns separately (MDEV-32078)
+  # In 11.7 CS / 11.4 ES along with vectors the format of default values for binary columns have changed,
+  # so e.g. for binary(4) default 0 it was '0\0\0\0' and became x'30000000' -- as strings, with quotes and backslashes.
+  # For now, don't read the default value.
+  # TODO: invent how to convert one to another safely
+  # IF(c.IS_GENERATED='ALWAYS',NULL,COLUMN_DEFAULT)
   $columns= $server->connection->query(
-    "SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME, c.ORDINAL_POSITION, IF(c.IS_GENERATED='ALWAYS',NULL,COLUMN_DEFAULT), c.IS_NULLABLE, c.DATA_TYPE, ".
+    "SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME, c.ORDINAL_POSITION, 'DEFAULT VALUE', c.IS_NULLABLE, c.DATA_TYPE, ".
     "CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, DATETIME_PRECISION, CHARACTER_SET_NAME, COLLATION_NAME, COLUMN_KEY, $extra, PRIVILEGES, COLUMN_COMMENT, IS_GENERATED ".
     "FROM INFORMATION_SCHEMA.COLUMNS c JOIN INFORMATION_SCHEMA.TABLES t ON (t.TABLE_SCHEMA = c.TABLE_SCHEMA AND t.TABLE_NAME = c.TABLE_NAME ) ".
     "WHERE t.TABLE_SCHEMA IN ($databases) AND t.TABLE_TYPE NOT IN ('VIEW','SYSTEM VIEW') ".
