@@ -106,9 +106,9 @@ infoschema_where:
   WHERE infoschema_where_list ;
 
 infoschema_where_list:
-  not infoschema_where_item |
-  not (infoschema_where_list AND infoschema_where_item) |
-  not (infoschema_where_list OR infoschema_where_item) ;
+  __not(30) infoschema_where_item |
+  __not(30) (infoschema_where_list AND infoschema_where_item) |
+  __not(30) (infoschema_where_list OR infoschema_where_item) ;
 
 infoschema_where_item:
   infoschema_existing_table_item . _field infoschema_sign infoschema_value |
