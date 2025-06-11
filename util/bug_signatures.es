@@ -40,6 +40,11 @@ MDEV-36906:
 =~ apply_event_and_update_pos
 =~ FeatureUsage detected partitioned tables
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+# 11.5 CS, 11.4 ES
+MDEV-34134:
+=~ Assertion \`!before_record \|\| bitmap_is_set_all(table->read_set)'
+=~ online_alter_log_row
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
 ##########
 # Closed in the next release (10.4.32 / 10.5.23 / 10.6.16)
