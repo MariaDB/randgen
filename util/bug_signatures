@@ -3043,6 +3043,11 @@ MDEV-23167:
 =~ ha_innobase::index_prev
 =~ mysql_ha_read
 =~ Query.*HANDLER.*READ
+MDEV-23167:
+=~ signal|AddressSanitizer
+=~ SQL_HANDLER::reset
+=~ mysql_ha_hash_free
+=~ Query.*HANDLER.*CLOSE
 MDEV-23151:
 =~ Assertion \`i < get_width()'
 =~ Histogram::get_value|Histogram_binary::get_value
