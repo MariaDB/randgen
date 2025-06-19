@@ -66,14 +66,15 @@ query_init:
 
 query:
     ==FACTOR:4== { _set_db('NON-SYSTEM') } create_trigger |
-    ==FACTOR:2== { _set_db('NON-SYSTEM') } create_trigger_with_skipping_row_op /* compatibility 11.8 */ |
-    ==FACTOR:2== { _set_db('NON-SYSTEM') } drop_trigger |
+                 { _set_db('NON-SYSTEM') } create_trigger_with_skipping_row_op /* compatibility 11.8 */ |
+                 { _set_db('NON-SYSTEM') } create_trigger_with_column_list /* compatibility 11.8 */ |
+                 { _set_db('NON-SYSTEM') } drop_trigger |
     { _set_db('ANY') } create_log_trigger |
     { _set_db('ANY') } create_log2_trigger
 ;
 
 create_log_trigger:
-    CREATE __or_replace_trigger_x_trigger_if_not_exists_x_trigger(50,40)
+    CREATE __or_replace_trigger_x_trigger_if_not_exists_x_trigger(65,30)
     multi_trigger_db.trigger_name
     before_after INSERT ON multi_trigger_db.tlog
     FOR EACH ROW precedes_follows
@@ -81,7 +82,7 @@ create_log_trigger:
 ;
 
 create_log2_trigger:
-    CREATE __or_replace_trigger_x_trigger_if_not_exists_x_trigger(50,40)
+    CREATE __or_replace_trigger_x_trigger_if_not_exists_x_trigger(65,30)
     multi_trigger_db.trigger_name
     BEFORE INSERT ON multi_trigger_db.tlog2
     FOR EACH ROW precedes_follows
@@ -91,7 +92,7 @@ create_log2_trigger:
 # It's important to have the "basetable" comment there
 # before TRIGGER clause, due to MDEV-30295.
 create_trigger:
-    CREATE /* _basetable[invariant] */ __or_replace_trigger_x_trigger_if_not_exists_x_trigger(50,40)
+    CREATE /* _basetable[invariant] */ __or_replace_trigger_x_trigger_if_not_exists_x_trigger(65,30)
     { $last_database }.trigger_name
     before_after ins_upd_del ON _basetable[invariant]
     FOR EACH ROW precedes_follows
@@ -99,8 +100,9 @@ create_trigger:
  ;; REPLACE INTO _basetable[invariant] VALUES ()
 ;
 
+# The logic introduced in MDEV-34724, only applicable to BEFORE triggers
 create_trigger_with_skipping_row_op:
-    CREATE /* _basetable[invariant] */ __or_replace_trigger_x_trigger_if_not_exists_x_trigger(50,40)
+    CREATE /* _basetable[invariant] */ __or_replace_trigger_x_trigger_if_not_exists_x_trigger(65,30)
     { $last_database }.trigger_name
     BEFORE ins_upd_del ON _basetable[invariant]
     FOR EACH ROW precedes_follows
@@ -111,6 +113,19 @@ create_trigger_with_skipping_row_op:
     ; END
  ;; REPLACE INTO _basetable[invariant] VALUES ()
 ;
+
+# The logic introduced in MDEV-34551, only applicable to UPDATE triggers
+create_trigger_with_column_list:
+    CREATE /* _basetable[invariant] */ __or_replace_trigger_x_trigger_if_not_exists_x_trigger(65,30)
+    { $last_database }.trigger_name
+    before_after UPDATE OF update_column_list ON _basetable[invariant]
+    FOR EACH ROW precedes_follows
+    INSERT INTO multi_trigger_db.tlog (tbl,tp,op,fld) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field )
+ ;; REPLACE INTO _basetable[invariant] VALUES ()
+;
+
+update_column_list:
+    _field | _field, update_column_list ;
 
 trigger_name:
     _letter ;
