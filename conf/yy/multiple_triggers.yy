@@ -1,4 +1,4 @@
-# Copyright (C) 2016, 2022 MariaDB Corporation.
+# Copyright (C) 2016, 2025 MariaDB Corporation.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ query_init:
   ;; SET ROLE NONE
      # To prevent the tables from being modified, as we need the structures
      # PS is a workaround for MDEV-30190
-  ;; EXECUTE IMMEDIATE CONCAT('REVOKE ALTER, DROP ON multi_trigger_db FROM ',CURRENT_USER)
+  ;; EXECUTE IMMEDIATE CONCAT('REVOKE ALTER, DROP ON multi_trigger_db.* FROM ',CURRENT_USER)
   ;; { _set_db('multi_trigger_db') }
   CREATE TABLE IF NOT EXISTS multi_trigger_db.tlog (
     pk INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -66,6 +66,7 @@ query_init:
 
 query:
     ==FACTOR:4== { _set_db('NON-SYSTEM') } create_trigger |
+    ==FACTOR:2== { _set_db('NON-SYSTEM') } create_trigger_with_skipping_row_op /* compatibility 11.8 */ |
     ==FACTOR:2== { _set_db('NON-SYSTEM') } drop_trigger |
     { _set_db('ANY') } create_log_trigger |
     { _set_db('ANY') } create_log2_trigger
@@ -94,7 +95,22 @@ create_trigger:
     { $last_database }.trigger_name
     before_after ins_upd_del ON _basetable[invariant]
     FOR EACH ROW precedes_follows
-    INSERT INTO multi_trigger_db.tlog (tbl,tp,op) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field );
+    INSERT INTO multi_trigger_db.tlog (tbl,tp,op,fld) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field )
+ ;; REPLACE INTO _basetable[invariant] VALUES ()
+;
+
+create_trigger_with_skipping_row_op:
+    CREATE /* _basetable[invariant] */ __or_replace_trigger_x_trigger_if_not_exists_x_trigger(50,40)
+    { $last_database }.trigger_name
+    BEFORE ins_upd_del ON _basetable[invariant]
+    FOR EACH ROW precedes_follows
+    BEGIN
+      INSERT INTO multi_trigger_db.tlog (tbl,tp,op,fld) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field )
+    ; SIGNAL SQLSTATE '02TRG'
+    ; INSERT INTO multi_trigger_db.tlog (tbl,tp,op,fld) VALUES ( { "'$last_table','$tp','$op'," . ($op eq 'DELETE' ? 'OLD' : 'NEW') } . _field )
+    ; END
+ ;; REPLACE INTO _basetable[invariant] VALUES ()
+;
 
 trigger_name:
     _letter ;
