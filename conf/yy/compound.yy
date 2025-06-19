@@ -22,8 +22,19 @@
 
 query:
   ==FACTOR:2== { _set_db('NON-SYSTEM') } SET sql_mode=REPLACE(@@sql_mode,'ORACLE','') ;; BEGIN NOT ATOMIC compound_block_default ; END ;; SET sql_mode=DEFAULT |
+  ==FACTOR:2== { _set_db('NON-SYSTEM') } SET sql_mode=REPLACE(@@sql_mode,'ORACLE','') ;; create_and_call_sp ;; SET sql_mode=DEFAULT |
                { _set_db('NON-SYSTEM') } SET sql_mode=ORACLE ;;                          BEGIN NOT ATOMIC compound_block_oracle ;  END ;; SET sql_mode=DEFAULT /* compatibility 11.8 */
 ;
+
+sp_name:
+  { 'sp'.abs($$) };
+
+create_and_call_sp:
+  CREATE OR REPLACE PROCEDURE sp_name (sp_parameters) BEGIN compound_block_default ; END ;; CALL sp_name() ;
+
+sp_parameters:
+  |
+  IN p1 INT DEFAULT _int /* compatibility 11.8 */;
 
 compound_block_default:
   declare_row_type |
