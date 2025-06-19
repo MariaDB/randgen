@@ -26,14 +26,14 @@ select:
   SELECT /* _table[invariant] */ _field FROM _table[invariant] ;
 
 update:
-   UPDATE _table SET _field_no_pk = value WHERE condition update_scope;
+   UPDATE _table index_hint SET _field_no_pk = value WHERE condition update_scope;
 
 update_scope:
   |
   ORDER BY _field_list LIMIT _digit ;
 
 delete:
-  DELETE FROM _table WHERE condition ORDER BY _field_list LIMIT 1 ;
+  DELETE FROM _table index_hint WHERE condition ORDER BY _field_list LIMIT 1 ;
 
 insert:
   INSERT INTO _table ( _field , _field , _field ) VALUES ( value , value , value ) ;
@@ -63,3 +63,11 @@ not:
 
 operator:
   < | > | = | <> | != | <= | >= ;
+
+# Index hints added for UPDATE/DELETE in 11.8 (MDEV-30469)
+index_hint:
+  ==FACTOR:10== |
+  FORCE INDEX (_field) /* compatibility 11.8 */ |
+  IGNORE INDEX (_field) /* compatibility 11.8 */  |
+  USE INDEX (_field) /* compatibility 11.8 */
+;

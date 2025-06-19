@@ -731,18 +731,22 @@ order_by_clause:
   ORDER BY total_order_by limit |
   ORDER BY partial_order_by;
 
+# ORDER BY .. LIMIT added for DELETE in 11.8 (MDEV-30469)
+order_by_clause_11_8:
+  | order_by_clause /* compatibility 11.8 */ ;
+
 partial_order_by:
-   { join(', ', (shuffle ( (map { "field".$_ } 1..$fields), (map { "ifield".$_ } 1..$ifields), (map { "cfield".$_ } 1..$cfields) ))[0..int(rand($fields+$ifields+$cfields))] ) };
+   { join(', ', (shuffle ( (map { "field".$_ } 1..$fields), (map { "ifield".$_ } 1..$ifields), (map { "cfield".$_ } 1..$cfields) ))[0..int(rand($fields+$ifields+$cfields))] ) or 'NULL' };
 
 total_order_by:
-  { join(', ', shuffle ( (map { "field".$_ } 1..$fields), (map { "ifield".$_ } 1..$ifields), (map { "cfield".$_ } 1..$cfields) ) ) };
+  { join(', ', shuffle ( (map { "field".$_ } 1..$fields), (map { "ifield".$_ } 1..$ifields), (map { "cfield".$_ } 1..$cfields) ) ) or 'NULL' };
 
 desc:
   ASC | | DESC ;
 
 
 limit:
-  | | LIMIT limit_size | LIMIT limit_size OFFSET _digit;
+  | | LIMIT limit_size;
 
 new_select_item:
   nonaggregate_select_item |
@@ -957,7 +961,8 @@ multi_update_delete:
   START TRANSACTION ;; multi_update_or_delete ;; ROLLBACK ;
 
 multi_update_or_delete:
-  main_update | main_update ;
+    main_update order_by_clause
+  | main_delete order_by_clause_11_8 ;
 
 main_update:
   explain_extended UPDATE priority_update ignore
@@ -975,8 +980,7 @@ delete1:
 delete2:
   explain_extended DELETE priority_update quick ignore
   FROM delete_tab
-  USING non_comma_join
-        
+  USING non_comma_join;
 
 delete_tab:
   OUTR1.* | OUTR1.*, OUTR2.* ;
