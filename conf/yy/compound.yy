@@ -1,4 +1,4 @@
-# Copyright (c) 2023, MariaDB
+# Copyright (c) 2023, 2025, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -21,11 +21,16 @@
 #features ROW type
 
 query:
-  { _set_db('NON-SYSTEM') } BEGIN NOT ATOMIC compound_block ; END ;
+  ==FACTOR:2== { _set_db('NON-SYSTEM') } SET sql_mode=REPLACE(@@sql_mode,'ORACLE','') ;; BEGIN NOT ATOMIC compound_block_default ; END ;; SET sql_mode=DEFAULT |
+               { _set_db('NON-SYSTEM') } SET sql_mode=ORACLE ;;                          BEGIN NOT ATOMIC compound_block_oracle ;  END ;; SET sql_mode=DEFAULT ;
 
-compound_block:
+compound_block_default:
   declare_row_type |
   declare_row_type_default
+;
+
+compound_block_oracle:
+  declare_type_is_record /* compatibility 11.8 */
 ;
 
 declare_row_type:
@@ -38,3 +43,26 @@ declare_row_type_default:
     DECLARE r ROW TYPE OF _table[invariant] DEFAULT (SELECT * FROM _table[invariant] LIMIT 1)
   ; SELECT r._field
 ;
+
+declare_type_is_record:
+  DECLARE
+    TYPE type_rec IS RECORD (
+      val1 record_val_type,
+      val2 record_val_type,
+      val3 record_val_type,
+      val4 record_val_type
+    )
+    ; rec type_rec:= type_rec(record_val_value,record_val_value,record_val_value,record_val_value)
+    ; str TEXT
+  ; BEGIN
+    str:= CONCAT('val1: ', rec.val1, '; ', 'val2: ', rec.val2, '; ', 'val3: ', rec.val3, '; ', 'val4: ', rec.val4)
+    ; SELECT str
+  ; END
+;
+
+record_val_type:
+  NUMBER(_digit) | VARCHAR2(_tinyint_unsigned)
+;
+
+record_val_value:
+  _int | _english ;
