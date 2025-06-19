@@ -22,7 +22,8 @@
 
 query:
   ==FACTOR:2== { _set_db('NON-SYSTEM') } SET sql_mode=REPLACE(@@sql_mode,'ORACLE','') ;; BEGIN NOT ATOMIC compound_block_default ; END ;; SET sql_mode=DEFAULT |
-               { _set_db('NON-SYSTEM') } SET sql_mode=ORACLE ;;                          BEGIN NOT ATOMIC compound_block_oracle ;  END ;; SET sql_mode=DEFAULT ;
+               { _set_db('NON-SYSTEM') } SET sql_mode=ORACLE ;;                          BEGIN NOT ATOMIC compound_block_oracle ;  END ;; SET sql_mode=DEFAULT /* compatibility 11.8 */
+;
 
 compound_block_default:
   declare_row_type |
@@ -30,7 +31,7 @@ compound_block_default:
 ;
 
 compound_block_oracle:
-  declare_type_is_record /* compatibility 11.8 */
+  declare_type_is_record
 ;
 
 declare_row_type:
