@@ -168,7 +168,7 @@ $combinations = [
       --mysqld=--wsrep_data_home_dir='.$ENV{WORKSPACE}.'/1-1/mariadb/data/
   '],
   ['
-      --server1-basedir'.=$ENV{WORKSPACE}.'/10.6.18-14
+      --server1-basedir='.$ENV{WORKSPACE}.'/10.6.18-14
       --scenario=Replication
       --duration=300
       --threads=4
