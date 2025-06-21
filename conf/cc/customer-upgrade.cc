@@ -45,7 +45,7 @@ $combinations = [
     --reporters=Backtrace,Deadlock,FeatureUsage
   '],
   ['
-      --server1-basedir=$ENV{WORKSPACE}/10.6.18-14
+      --server1-basedir='.$ENV{WORKSPACE}.'/10.6.18-14
       --scenario=NormalUpgrades
       --threads=1
       --duration=60
@@ -156,19 +156,19 @@ $combinations = [
       --mysqld=--plugin-load-add=server_audit2
       --mysqld=--plugin-load-add=simple_password_check
       --mysqld=--plugin-load-add=sql_errlog
-      --mysqld=--innodb_log_group_home_dir=$ENV{WORKSPACE}/1-1/mariadb/data
-      --mysqld=--log_bin_basename=$ENV{WORKSPACE}/1-1/mariadb/bin/logs/bin_logs/bin_log
-      --mysqld=--log_bin_index=$ENV{WORKSPACE}/1-1/mariadb/bin/logs/bin_logs/master_bin_log.index
-      --mysqld=--log_error=$ENV{WORKSPACE}/1-1/mariadb/bin/logs/db_logs/error_mariadb.log
-      --mysqld=--server_audit_file_path=$ENV{WORKSPACE}/1-1/mariadb/bin/logs/audit_logs/audit_mariadb.log
-      --mysqld=--slave_load_tmpdir=$ENV{WORKSPACE}/1-1/mariadb/tmp
-      --mysqld=--slow_query_log_file=$ENV{WORKSPACE}/1-1/mariadb/bin/logs/db_logs/slow_query_mariadb.log
-      --mysqld=--sql_error_log_filename=$ENV{WORKSPACE}/1-1/mariadb/bin/logs/db_logs/sql_error_mariadb.log
-      --mysqld=--tmpdir=$ENV{WORKSPACE}/1-1/mariadb/tmp
-      --mysqld=--wsrep_data_home_dir=$ENV{WORKSPACE}/1-1/mariadb/data/
+      --mysqld=--innodb_log_group_home_dir='.$ENV{WORKSPACE}.'/1-1/mariadb/data
+      --mysqld=--log_bin_basename='.$ENV{WORKSPACE}.'/1-1/mariadb/bin/logs/bin_logs/bin_log
+      --mysqld=--log_bin_index='.$ENV{WORKSPACE}.'/1-1/mariadb/bin/logs/bin_logs/master_bin_log.index
+      --mysqld=--log_error='.$ENV{WORKSPACE}.'/1-1/mariadb/bin/logs/db_logs/error_mariadb.log
+      --mysqld=--server_audit_file_path='.$ENV{WORKSPACE}.'/1-1/mariadb/bin/logs/audit_logs/audit_mariadb.log
+      --mysqld=--slave_load_tmpdir='.$ENV{WORKSPACE}.'/1-1/mariadb/tmp
+      --mysqld=--slow_query_log_file='.$ENV{WORKSPACE}.'/1-1/mariadb/bin/logs/db_logs/slow_query_mariadb.log
+      --mysqld=--sql_error_log_filename='.$ENV{WORKSPACE}.'/1-1/mariadb/bin/logs/db_logs/sql_error_mariadb.log
+      --mysqld=--tmpdir='.$ENV{WORKSPACE}.'/1-1/mariadb/tmp
+      --mysqld=--wsrep_data_home_dir='.$ENV{WORKSPACE}.'/1-1/mariadb/data/
   '],
   ['
-      --server1-basedir=$ENV{WORKSPACE}/10.6.18-14
+      --server1-basedir'.=$ENV{WORKSPACE}.'/10.6.18-14
       --scenario=Replication
       --duration=300
       --threads=4
@@ -280,36 +280,36 @@ $combinations = [
       --mysqld=--plugin-load-add=sql_errlog
       --server1-mysqld=--read_only=OFF
       --server2-mysqld=--read_only=ON
-      --server1-mysqld=--innodb_log_group_home_dir=$ENV{WORKSPACE}/2-1/mariadb/data
-      --server1-mysqld=--log_bin_basename=$ENV{WORKSPACE}/2-1/mariadb/bin/logs/bin_logs/bin_log
-      --server1-mysqld=--log_bin_index=$ENV{WORKSPACE}/2-1/mariadb/bin/logs/bin_logs/master_bin_log.index
-      --server1-mysqld=--log_error=$ENV{WORKSPACE}/2-1/mariadb/bin/logs/db_logs/error_mariadb.log
-      --server1-mysqld=--server_audit_file_path=$ENV{WORKSPACE}/2-1/mariadb/bin/logs/audit_logs/audit_mariadb.log
-      --server1-mysqld=--slave_load_tmpdir=$ENV{WORKSPACE}/2-1/mariadb/tmp
-      --server1-mysqld=--slow_query_log_file=$ENV{WORKSPACE}/2-1/mariadb/bin/logs/db_logs/slow_query_mariadb.log
-      --server1-mysqld=--sql_error_log_filename=$ENV{WORKSPACE}/2-1/mariadb/bin/logs/db_logs/sql_error_mariadb.log
-      --server1-mysqld=--tmpdir=$ENV{WORKSPACE}/2-1/mariadb/tmp
-      --server1-mysqld=--wsrep_data_home_dir=$ENV{WORKSPACE}/2-1/mariadb/data/
-      --server2-mysqld=--innodb_log_group_home_dir=$ENV{WORKSPACE}/2-2/mariadb/data
-      --server2-mysqld=--log_bin_basename=$ENV{WORKSPACE}/2-2/mariadb/bin/logs/bin_logs/bin_log
-      --server2-mysqld=--log_bin_index=$ENV{WORKSPACE}/2-2/mariadb/bin/logs/bin_logs/master_bin_log.index
-      --server2-mysqld=--log_error=$ENV{WORKSPACE}/2-2/mariadb/bin/logs/db_logs/error_mariadb.log
-      --server2-mysqld=--server_audit_file_path=$ENV{WORKSPACE}/2-2/mariadb/bin/logs/audit_logs/audit_mariadb.log
-      --server2-mysqld=--slave_load_tmpdir=$ENV{WORKSPACE}/2-2/mariadb/tmp
-      --server2-mysqld=--slow_query_log_file=$ENV{WORKSPACE}/2-2/mariadb/bin/logs/db_logs/slow_query_mariadb.log
-      --server2-mysqld=--sql_error_log_filename=$ENV{WORKSPACE}/2-2/mariadb/bin/logs/db_logs/sql_error_mariadb.log
-      --server2-mysqld=--tmpdir=$ENV{WORKSPACE}/2-2/mariadb/tmp
-      --server2-mysqld=--wsrep_data_home_dir=$ENV{WORKSPACE}/2-2/mariadb/data/
+      --server1-mysqld=--innodb_log_group_home_dir='.$ENV{WORKSPACE}.'/2-1/mariadb/data
+      --server1-mysqld=--log_bin_basename='.$ENV{WORKSPACE}.'/2-1/mariadb/bin/logs/bin_logs/bin_log
+      --server1-mysqld=--log_bin_index='.$ENV{WORKSPACE}.'/2-1/mariadb/bin/logs/bin_logs/master_bin_log.index
+      --server1-mysqld=--log_error='.$ENV{WORKSPACE}.'/2-1/mariadb/bin/logs/db_logs/error_mariadb.log
+      --server1-mysqld=--server_audit_file_path='.$ENV{WORKSPACE}.'/2-1/mariadb/bin/logs/audit_logs/audit_mariadb.log
+      --server1-mysqld=--slave_load_tmpdir='.$ENV{WORKSPACE}.'/2-1/mariadb/tmp
+      --server1-mysqld=--slow_query_log_file='.$ENV{WORKSPACE}.'/2-1/mariadb/bin/logs/db_logs/slow_query_mariadb.log
+      --server1-mysqld=--sql_error_log_filename='.$ENV{WORKSPACE}.'/2-1/mariadb/bin/logs/db_logs/sql_error_mariadb.log
+      --server1-mysqld=--tmpdir='.$ENV{WORKSPACE}.'/2-1/mariadb/tmp
+      --server1-mysqld=--wsrep_data_home_dir='.$ENV{WORKSPACE}.'/2-1/mariadb/data/
+      --server2-mysqld=--innodb_log_group_home_dir='.$ENV{WORKSPACE}.'/2-2/mariadb/data
+      --server2-mysqld=--log_bin_basename='.$ENV{WORKSPACE}.'/2-2/mariadb/bin/logs/bin_logs/bin_log
+      --server2-mysqld=--log_bin_index='.$ENV{WORKSPACE}.'/2-2/mariadb/bin/logs/bin_logs/master_bin_log.index
+      --server2-mysqld=--log_error='.$ENV{WORKSPACE}.'/2-2/mariadb/bin/logs/db_logs/error_mariadb.log
+      --server2-mysqld=--server_audit_file_path='.$ENV{WORKSPACE}.'/2-2/mariadb/bin/logs/audit_logs/audit_mariadb.log
+      --server2-mysqld=--slave_load_tmpdir='.$ENV{WORKSPACE}.'/2-2/mariadb/tmp
+      --server2-mysqld=--slow_query_log_file='.$ENV{WORKSPACE}.'/2-2/mariadb/bin/logs/db_logs/slow_query_mariadb.log
+      --server2-mysqld=--sql_error_log_filename='.$ENV{WORKSPACE}.'/2-2/mariadb/bin/logs/db_logs/sql_error_mariadb.log
+      --server2-mysqld=--tmpdir='.$ENV{WORKSPACE}.'/2-2/mariadb/tmp
+      --server2-mysqld=--wsrep_data_home_dir='.$ENV{WORKSPACE}.'/2-2/mariadb/data/
   '],
   ['
-      --server1-basedir=$ENV{WORKSPACE}/10.5.29-23
+      --server1-basedir='.$ENV{WORKSPACE}.'/10.5.29-23
       --scenario=NormalUpgrades
       --threads=1
       --duration=60
       --queries=10
   '],
   ['
-      --server1-basedir=$ENV{WORKSPACE}/10.5.29-23
+      --server1-basedir='.$ENV{WORKSPACE}.'/10.5.29-23
       --scenario=Replication
       --duration=300
       --threads=4
