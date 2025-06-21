@@ -114,7 +114,7 @@ $combinations = [
     --mysqld=--server_audit_reload_filters=OFF
     --mysqld=--server_audit_syslog_facility=LOG_USER
     --mysqld=--server_audit_syslog_ident=mysql-server_auditing
-    --mysqld=--server_audit_syslog_info=""
+    --mysqld=--server_audit_syslog_info=
     --mysqld=--server_audit_syslog_priority=LOG_INFO
     --mysqld=--server_audit_timestamp_format="%Y%m%d %H:%i:%s"
     --mysqld=--shutdown_wait_for_slaves=ON
