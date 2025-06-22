@@ -480,7 +480,7 @@ sub testSetup {
   unless ($self->[MYSQLD_SETUP_DONE]) {
     my $usertable= ($self->versionNumeric() gt '100400' ? 'global_priv' : 'user');
 
-    ## Add last strokes to the boot/init file: don't want empty users, but want the test user instead
+    ## Add last strokes: don't want empty users, but want the test user instead
     $self->connection->execute("SET tx_read_only=0");
     $self->connection->execute("USE mysql");
     $self->connection->execute("DELETE FROM $usertable WHERE `User` = ''");
@@ -493,7 +493,7 @@ sub testSetup {
       $self->connection->execute("CREATE ROLE admin");
       $self->connection->execute("GRANT ALL ON *.* TO admin WITH GRANT OPTION");
       # Temporary password to work around password check plugins
-      $self->connection->execute("CREATE USER $user IDENTIFIED BY 'pqg8dnw.TUT_dhj7pcv'");
+      $self->connection->execute("CREATE USER $user IDENTIFIED BY 'pqg8dnw.TUT_dhj7pcv' PASSWORD EXPIRE NEVER");
       $self->connection->execute("GRANT /*!100502 BINLOG ADMIN, BINLOG MONITOR, BINLOG REPLAY, CONNECTION ADMIN, FEDERATED ADMIN, ".
                                   "READ_ONLY ADMIN, REPLICATION MASTER ADMIN, REPLICATION REPLICA, REPLICATION SLAVE ADMIN, SET USER, */ ".
                         "/*!100509 REPLICA MONITOR, */ ".
@@ -1886,7 +1886,7 @@ sub connect {
   $role= 'super' unless defined $role;
   my ($conn, $err)= Connection::Perl->new( server => $self, role => $role, name => $name );
   unless ($conn) {
-    sayDebug("Connection $name failed with error $err")
+    sayError("Connection $name failed with error $err")
   }
   return $conn;
 }

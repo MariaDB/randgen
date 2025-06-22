@@ -388,10 +388,28 @@ sub runTestFlow {
 sub prepareServer {
   my ($self, $srvnum, $is_active)= @_;
 
+  if ($self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{genconfig}) {
+    unless (-e $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{genconfig}) {
+      sayError("Genconfig template ".$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{genconfig}." does not exist");
+      return undef;
+    }
+    my $cnf_contents = GenTest::GenConfig->new( spec_file => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{genconfig},
+                                                seed => $self->getProperty('seed'),
+                                                debug => $self->getProperty('debug')
+    );
+    $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{cnf}= $self->[SC_TEST_PROPERTIES]->vardir."/my${srvnum}.cnf";
+    unless (open(CONFIG,'>'.$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{cnf})) {
+      sayError("Could not open file ".$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{cnf}." for writing: $!");
+    }
+    print CONFIG @$cnf_contents;
+    close(CONFIG);
+  }
+
+
   say("Preparing server $srvnum");
   my $server= DBServer::MariaDB->new(
                       basedir => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{basedir},
-                      config => $self->[SC_TEST_PROPERTIES]->cnf,
+                      config => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{cnf},
                       dataset => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{dataset},
                       general_log => 1,
                       manual_gdb => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{manual_gdb},

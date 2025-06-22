@@ -73,7 +73,7 @@ sub run {
 
   my ($help,
       $props, %scenario_options, %server_options,
-      $scenario, $genconfig, $build_thread,
+      $scenario, $build_thread,
       @exit_status, $trials, $output, $force,
       $minio, $hashicorp, $sort_options
      );
@@ -97,7 +97,9 @@ sub run {
   %server_options= (
     basedir     => undef,
     dataset     => undef,
+    cnf         => undef,
     engines     => undef,
+    genconfig   => undef,
     gis         => undef,
     manual_gdb  => undef,
     mysqld      => undef,
@@ -149,7 +151,7 @@ sub run {
     'duration=i' => \$props->{duration},
     'filters=s@'    => \@{$props->{filters}},
     'freeze_time|freeze-time' => \$props->{freeze_time},
-    'genconfig=s' => \$genconfig,
+    'genconfig=s' => \$server_options{genconfig},
     'gendatas=s@' => \@{$props->{gendatas}},
     'grammars=s@' => \@{$props->{grammars}},
     'hashicorp|with-hashicorp|with_hashicorp|vault' => \$hashicorp,
@@ -381,12 +383,6 @@ sub run {
     }
   }
 
-  if ($genconfig) {
-    unless (-e $genconfig) {
-      return help("Specified config template $genconfig does not exist");
-    }
-  }
-
   # Push the number of "worker" threads into the environment.
   # lib/GenTest/Generator/FromGrammar.pm will generate a corresponding grammar element.
   $ENV{RQG_THREADS}= $props->{threads};
@@ -424,17 +420,6 @@ sub run {
       mkpath($props->{vardir});
       open (STDOUT, "| tee -ai ".$props->{vardir}."/trial.log");
       open STDERR, ">&STDOUT";
-    }
-
-    if ($genconfig) {
-      my $cnf_contents = GenTest::GenConfig->new(spec_file => $genconfig,
-                                                 seed => $props->{seed},
-                                                 debug => $props->{debug}
-      );
-      $props->{cnf}= $props->{vardir}.'/my.cnf';
-      open(CONFIG,'>'.$props->{cnf}) || return help("Could not open file ".$props->{cnf}." for writing: $!");
-      print CONFIG @$cnf_contents;
-      close(CONFIG);
     }
 
     say("Final command line: \n$cmd");

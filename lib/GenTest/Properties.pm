@@ -181,6 +181,7 @@ sub init {
   my $gentestProps= $class->new(
     legal => [
               'base_port',
+              'cnf',
               'grammars',
               'dsn',
               'engines',
@@ -243,6 +244,7 @@ sub setPropertiesFromHash {
 
   $gentestProps->property('annotate-rules',$props->{annotate_rules}) if defined $props->{annotate_rules};
   $gentestProps->property('base_port',$props->{base_port}) if defined $props->{base_port};
+  $gentestProps->property('cnf',$props->{cnf}) if defined $props->{cnf};
   $gentestProps->property('debug',1) if defined $props->{debug};
   $gentestProps->property('duration',$props->{duration}) if defined $props->{duration};
   $gentestProps->property('engines',$props->{engines}) if $props->{engines};
