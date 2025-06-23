@@ -52,9 +52,46 @@ $combinations = [
     --reporters=Backtrace,Deadlock,FeatureUsage
   '],
   [
-    "--scenario=NormalUpgrades --threads=1 --duration=60 --queries=10 --server1-basedir=$ws/10.6.18-14 --server2-basedir=$new_basedir --genconfig=conf/cnf/custom1-master.cnf --compatibility=10.6",
-    "--scenario=Replication --threads=4 --duration=300 --server1-basedir=$ws/10.6.18-14 --server2-basedir=$new_basedir --server1-genconfig=conf/cnf/custom1-master.cnf --server2-genconfig=conf/cnf/custom1-slave.cnf --compatibility=10.6 --filter=conf/ff/replication.ff",
-    "--scenario=NormalUpgrades --threads=1 --duration=60 --queries=10 --server1-basedir=$ws/10.5.29-23 --server2-basedir=$new_basedir --compatibility=10.5",
-    "--scenario=Replication --threads=4 --duration=300 --server1-basedir=$ws/10.5.29-23 --server2-basedir=$new_basedir --compatibility=10.5 --filter=conf/ff/replication.ff"
+    "
+      --scenario=NormalUpgrades
+      --threads=1
+      --duration=60
+      --queries=10
+      --server1-basedir=$ws/10.6.18-14
+      --server2-basedir=$new_basedir
+      --genconfig=conf/cnf/custom1-master.cnf
+      --compatibility=10.6
+    ",
+    "
+      --scenario=Replication
+      --threads=4
+      --duration=300
+      --server1-basedir=$ws/10.6.18-14
+      --server2-basedir=$new_basedir
+      --server1-genconfig=conf/cnf/custom1-master.cnf
+      --server2-genconfig=conf/cnf/custom1-slave.cnf
+      --compatibility=10.6
+      --filter=conf/ff/replication.ff
+      --mysqld=--explicit_defaults_for_timestamp=ON
+    ",
+    "
+      --scenario=NormalUpgrades
+      --threads=1
+      --duration=60
+      --queries=10
+      --server1-basedir=$ws/10.5.29-23
+      --server2-basedir=$new_basedir
+      --compatibility=10.5
+    ",
+    "
+      --scenario=Replication
+      --threads=4
+      --duration=300
+      --server1-basedir=$ws/10.5.29-23
+      --server2-basedir=$new_basedir
+      --compatibility=10.5
+      --filter=conf/ff/replication.ff
+      --mysqld=--explicit_defaults_for_timestamp=ON
+    "
   ],
 ];
