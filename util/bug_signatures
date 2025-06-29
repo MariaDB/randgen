@@ -50,6 +50,10 @@ MDEV-36860:
 =~ Assertion \`maria_tmpdir'
 =~ exec_REDO_LOGREC_REDO_REPAIR_TABLE
 =~ =~ Version: '10\.[56]|Server version: 10\.[56]
+MDEV-36854:
+=~ LeakSanitizer
+=~ get_window_functions_required_cursors
+=~ sub_select_postjoin_aggr
 MDEV-36852:
 =~ signal|AddressSanitizer|Assertion \`key_info->key_part->field->flags & (1<< 30)'
 =~ setup_keyinfo_hash
@@ -562,6 +566,14 @@ MDEV-34117:
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_rollback_stmt
 =~ Wsrep_client_service::bf_rollback
+MDEV-34075:
+=~ AddressSanitizer|signal|MemorySanitizer
+=~ Query_cache::register_all_tables
+=~ Query_cache::store_query
+MDEV-34075:
+=~ AddressSanitizer|signal
+=~ Query_cache::join_free_blocks
+=~ Query_cache::free_old_query
 MDEV-34021:
 =~ Assertion \`!for_explain_only'
 =~ JOIN_CACHE::put_record
@@ -2967,14 +2979,6 @@ MDEV-23265:
 =~ lock_rec_other_trx_holds_expl_callback
 =~ rw_trx_hash_t::debug_iterator
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-23256:
-=~ AddressSanitizer|signal|MemorySanitizer
-=~ Query_cache::register_all_tables
-=~ Query_cache::store_query
-MDEV-23256:
-=~ AddressSanitizer|signal
-=~ Query_cache::join_free_blocks
-=~ Query_cache::free_old_query
 MDEV-23226:
 =~ Assertion \`inited == RND'
 =~ handler::ha_rnd_next

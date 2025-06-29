@@ -17,11 +17,11 @@
 #=~ FeatureUsage detected Aria tables
 #=~ Version: '12\.0|Server version: 12\.0
 # atomic cor
-#MDEV-36475:
-#=~ signal|AddressSanitizer
-#=~ ha_innobase::can_be_renamed_to_backup
-#=~ create_table_impl
-#=~ Version: '12\.0|Server version: 12\.0
+MDEV-36475:
+=~ signal|AddressSanitizer
+=~ ha_innobase::can_be_renamed_to_backup
+=~ create_table_impl
+=~ Version: '12\.0|Server version: 12\.0
 # check FK
 MDEV-35908:
 =~ Assertion \`to_key_part->length >= key_part->length'|Assertion \`to_key_part->length == key_part->length'|MemorySanitizer
