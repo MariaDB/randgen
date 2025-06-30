@@ -22,6 +22,10 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-37117:
+=~ Assertion \`!thd->transaction->xid_state\.is_explicit_XA() \|\| thd->lex->xa_opt == XA_ONE_PHASE'
+=~ ha_commit_trans
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-36958:
 =~ MemorySanitizer
 =~ JOIN::optimize_inner
