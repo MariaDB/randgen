@@ -26,6 +26,10 @@ MDEV-37117:
 =~ Assertion \`!thd->transaction->xid_state\.is_explicit_XA() \|\| thd->lex->xa_opt == XA_ONE_PHASE'
 =~ ha_commit_trans
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-36992:
+=~ signal|AddressSanitizer
+=~ Item_ref::make_send_field
+=~ Protocol::send_result_set_metadata
 MDEV-36958:
 =~ MemorySanitizer
 =~ JOIN::optimize_inner
@@ -454,6 +458,11 @@ MDEV-35318:
 =~ JOIN::calc_allowed_top_level_tables
 =~ Prepared_statement::execute|sp_head::execute
 =~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-35271:
+=~ Slave SQL: Got error 138
+=~ Unsupported extension used for table
+=~ FeatureUsage detected vector keys
+=~ FeatureUsage detected XA transactions
 MDEV-35266: [aria-block-size, can't open control file]
 =~ BACKUP STAGE START
 =~ Can't open Aria control file (0)
@@ -3129,7 +3138,7 @@ MDEV-23045:
 MDEV-23041:
 =~ signal [16]|AddressSanitizer|MemorySanitizer
 =~ Item_func_set_user_var::update_hash
-=~ TABLE::update_default_fields|end_write_group|TABLE::update_virtual_fields|end_send_group|Field::set_default|sql_set_variables|Item::save_int_in_field
+=~ TABLE::update_default_fields|end_write_group|TABLE::update_virtual_fields|end_send_group|Field::set_default|sql_set_variables|Item::save_int_in_field|Item_func_set_user_var::save_in_field
 MDEV-23041:
 =~ free_memory: Assertion \`irem->marker == .*'
 =~ Item_func_set_user_var::update_hash
