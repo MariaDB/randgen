@@ -1,5 +1,5 @@
 # Copyright (C) 2008-2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2025, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,20 @@ many_indexes_query:
    update | insert | delete | select ;
 
 select:
-  SELECT /* _table[invariant] */ _field FROM _table[invariant] ;
+  SELECT /* _table[invariant] */ mysql8_style_index_hint _field FROM _table[invariant];
+
+mysql8_style_index_hint:
+  /*+ QB_NAME(xxxx) */ /* compatibility 12.0 */ |
+  /*+ NO_RANGE_OPTIMIZATION(_xxxx _field) */ /* compatibility 12.0 */ |
+  /*+ NO_ICP(_table[invariant] _field) */ /* compatibility 12.0 */ |
+  /*+ MRR(_table[invariant] _field) */ /* compatibility 12.0 */ |
+  /*+ NO_MRR(_table[invariant] _field) */ /* compatibility 12.0 */ |
+  /*+ BKA(_table[invariant] _field) */ /* compatibility 12.0 */ |
+  /*+ NO_BKA(_table[invariant] _field) */ /* compatibility 12.0 */ |
+  /*+ BNL(_table[invariant] _field) */ /* compatibility 12.0 */ |
+  /*+ NO_BNL(_table[invariant] _field) */ /* compatibility 12.0 */ |
+  ==FACTOR:50==
+;
 
 update:
    UPDATE _table index_hint SET _field_no_pk = value WHERE condition update_scope;
