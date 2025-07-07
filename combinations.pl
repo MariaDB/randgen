@@ -139,8 +139,11 @@
 # trials=N will pick random N of them.
 # trials=rake will only pick a random one of them
 #
-# So, the "rake" mode is meaningless for combinations which don't contain hashes!
+# So, the "rake" mode is generally meaningless for combinations which don't contain hashes.
 #
+# To make 'all' and 'rake' mode more flexible, we add min-trials option.
+# If 'all' or 'rake' generates less combinations than min_trials,
+# then it will pick more until min_trials is reached.
 
 use strict;
 use lib 'lib';
@@ -197,6 +200,7 @@ my $dry_run= 0;
 my $help= 0;
 my $threads= 1;
 my $trials= 0;
+my $min_trials= 1;
 my $seed= 'time';
 my $shuffle= 1;
 my $workdir;
@@ -220,6 +224,7 @@ my $opt_result = GetOptions(
   'run-all-combinations' => \$runall,
   'seed=s' => \$seed,
   'trials=s' => \$trials,
+  'min_trials|min-trials=i' => \$min_trials,
   'workdir=s' => \$workdir,
 );
 
@@ -233,6 +238,11 @@ if (defined $runall) {
   }
 } elsif ($trials eq '0') {
   sayError("No trials requested");
+  exit 1;
+}
+
+if ($trials =~ /^\d+$/ and $min_trials > $trials) {
+  sayError("Minimal number of trials is set to be greater tnan the number of trials: $min_trials > $trials");
   exit 1;
 }
 
@@ -486,18 +496,21 @@ my $trial_counter = 0;
 
 sub doExhaustive {
   my $mode= shift;
-  my $flattened= ($mode eq 'rake' ? rakeCombinations($combinations) : flattenCombinations($combinations));
-  my @combinations= ();
-  # Beautify the names
-  my $num= scalar(@$flattened);
-  my $len= 1;
-  while (($num=int($num/10)) >= 1) {
-    $len++;
-  }
-  my $n= 0;
-  foreach my $k (@$flattened) {
-    $n++;
-    push @combinations, $k
+  my @combinations;
+  while (scalar(@combinations) < $min_trials) {
+    my $flattened= ($mode eq 'rake' ? rakeCombinations($combinations) : flattenCombinations($combinations));
+    unless (scalar(@$flattened)) {
+      sayError("Something went wrong, we could not create any combinations");
+      exit 1
+    };
+    # If @combinations is not empty here, it means that we are repeating
+    # generation at least for the 2nd time to reach min_trials (rake/flattenCombinations returned less than that),
+    # In this case, we want to truncate the resulting amount to exactly min_trials
+    if (scalar(@combinations) and scalar(@combinations)+scalar(@$flattened) > $min_trials) {
+      push @combinations, @{$flattened}[0..$min_trials-scalar(@combinations)-1];
+    } else {
+        push @combinations, @{$flattened};
+    }
   }
   $trials= scalar(@combinations);
 
