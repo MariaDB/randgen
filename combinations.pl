@@ -2,7 +2,7 @@
 
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2021, 2024 MariaDB
+# Copyright (c) 2021, 2025 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -21,16 +21,30 @@
 
 ########################################################################
 # At the top level, $combinations is an array reference.
-# Each element of an array[ref] can be either a scalar, or hashref, or arrayref
+# Each element of an array[ref] can be either a scalar, or hashref, or arrayref.
 #
-# Elements combine as follows:
+# There are 3 modes for picking combinations, depending on the value of --trials option.
+# Semantics of scalars and array refs is the same in each mode.
+# Semantics of hash refs is the same for trials=all and trials=N, but differs for trials=rake
+#
+# "rake" is a special mode which targets combinations based on hashrefs and makes them mandatory,
+# that is it creates at least one combination for each element of each hash at every level.
+# The reason for the special mode is that hash refs typically define high-level scenarios,
+# so we may want to go through them all in a combination set, but don't want to do exhaustive runs
+# which can be insanely big if they include lots of server options.
+#
+# Element combining:
 # Scalars don't combine with anything on the same level.
-# From array[ref] one element is chosen and it's combines with other combinable elements
+# From array[ref] one element is chosen and it combines with other combinable elements
 # at the same level;
-# From hash[ref] one element is chosen. It combines with other combinable elements
+# hash[ref] processing depends on the mode (trials value).
+# For trials=N or trials=all, one element from a hash is chosen. For trials=rake,
+# each element of the hash is chosen, and combinations containing it become mandatory.
+#
+# A hash element combines with other combinable elements
 # at the same level, but it doesn't combine with other hashref elements.
 #
-# Examples demonstrating the difference between hashref and arrayref:
+# Examples demonstrating the difference between elements and modes:
 #
 # $combinations = [
 #   '--opt1a',
@@ -50,7 +64,7 @@
 #              ]
 #   }
 # ]
-# Results in the following exhaustive set of combinations:
+# trials=all mode will result in the following set of combinations:
 # --opt1a
 # --opt1b
 # --opt2a --opt3a
@@ -61,6 +75,20 @@
 # --opt2b --opt3b
 # --opt2b --opt4a
 # --opt2b --opt4b
+# trials=N mode will pick up N random combinations from the above (if N>10, there will be duplicates).
+# trials=rake mode will result in a set of combinations similar to this:
+# --opt3b --opt2b
+# --opt4b --opt2b
+# OR
+# --opt4b --opt2a
+# --opt3b --opt2a
+# OR
+# --opt3b --opt2a
+# --opt4a --opt2b
+# etc.
+# That is, it will always create a combination for one element from opt3 and for one element from opt4,
+# additionally for each combination it will pick either opt2a or opt2b, but it will ignore opt1a and opt1b
+# as they can't combine with anything.
 #
 # $combinations = [
 #   '--opt1a',
@@ -97,8 +125,7 @@
 #     '--opt4b'
 #   ]
 # ]
-
-# Results in the following exhaustive set of combinations:
+# trials=all mode will results in the following set of combinations:
 # --opt1a
 # --opt1b
 # --opt2a --opt3a --opt4a
@@ -109,6 +136,11 @@
 # --opt2b --opt3b --opt4a
 # --opt2b --opt3a --opt4b
 # --opt2b --opt3b --opt4b
+# trials=N will pick random N of them.
+# trials=rake will only pick a random one of them
+#
+# So, the "rake" mode is meaningless for combinations which don't contain hashes!
+#
 
 use strict;
 use lib 'lib';
@@ -255,8 +287,8 @@ for my $i (1..$threads) {
     make_path($archive);
     unlink("$workdir/result.txt");
 
-    if ($trials eq 'all') {
-      doExhaustive();
+    if ($trials eq 'all' or $trials eq 'rake') {
+      doExhaustive($trials);
     } else {
       doRandom();
     }
@@ -295,7 +327,7 @@ if ($thread_id > 0) {
 sub pickOne
 {
   my $group= shift;
-  if (ref $group eq '') {
+  if (ref $group ne 'ARRAY') {
     $group= [ $group ];
   }
   my $opt;
@@ -329,7 +361,7 @@ sub pickOne
 sub flattenCombinations
 {
   my $group= shift;
-  if (ref $group eq '') {
+  if (ref $group ne 'ARRAY') {
     $group= [ $group ];
   }
   my @combinations= ();
@@ -384,10 +416,77 @@ sub flattenCombinations
   return \@combinations;
 }
 
+# Each element is a scalar, an array ref, or a hash ref.
+#
+# If we have arrays which contain hashes somewhere inside, we process them recursively
+# according to the same rules as below.
+#
+# If we have any hashes, we must use them, so we ignore scalars which don't combine with anything.
+# We generate at least one subset of options for every element of every hash.
+# Each subset created from a hash element becomes a part of a future combination.
+#
+# If after the previous step we have a non-empty set of parts, then for each of them
+# we create an addition by the usual pickOne algorithm from the remaining arrays
+# not containing any hashes. We ignore scalars # since they don't combine with anything.
+# Or, if we didn't get any parts related to hashes (no hashes), then we pick a single combination
+# from those generated from scalars and hash-less arrays.
+#
+# Normally all this logic shouldn't be needed, as if we have a hash at some level, then it will
+# likely be the only element of an array. But we are trying to cover the general case.
+
+sub contains_hashes {
+  my $data= shift;
+  if (ref($data) eq 'HASH') {
+    return 1;
+  } elsif (ref($data) eq 'ARRAY') {
+    for my $elem (@$data) {
+      return 1 if contains_hashes($elem);
+    }
+  }
+  return 0;
+}
+
+sub rakeCombinations
+{
+  my $group= shift;
+  # Normalization
+  if (ref $group ne 'ARRAY') {
+    $group= [ $group ];
+  }
+  my @combinations= ();
+  my @mandatory= ();
+  my @extras= ();
+  my @scalars= ();
+  my @hashless_arrays= ();
+  foreach my $g (@$group) {
+    if (ref $g eq 'ARRAY' and contains_hashes($g)) {
+      push @mandatory, @{rakeCombinations($g)};
+    } elsif (ref $g eq 'HASH') {
+      foreach my $e (keys %$g) {
+        push @mandatory, @{rakeCombinations($g->{$e})};
+      }
+    } elsif (ref $g eq 'ARRAY') {
+      push @hashless_arrays, $g;
+    } elsif (ref $g eq '') {
+      push @scalars, $g;
+    }
+  }
+  if (scalar(@mandatory)) {
+    foreach my $m (@mandatory) {
+      my $addon= pickOne(\@hashless_arrays);
+      push @combinations, "$m $addon";
+    }
+  } else {
+    push @combinations, pickOne([@scalars, @hashless_arrays]);
+  }
+  return \@combinations;
+}
+
 my $trial_counter = 0;
 
 sub doExhaustive {
-  my $flattened= flattenCombinations($combinations);
+  my $mode= shift;
+  my $flattened= ($mode eq 'rake' ? rakeCombinations($combinations) : flattenCombinations($combinations));
   my @combinations= ();
   # Beautify the names
   my $num= scalar(@$flattened);
@@ -411,6 +510,7 @@ sub doExhaustive {
     last if $interrupted;
   }
 }
+
 
 ## ----------------------------------------------------
 
