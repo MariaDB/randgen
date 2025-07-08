@@ -83,6 +83,24 @@ $combinations = [
         [ '', '--variator=SelectOption' ],
         [ @{$options{optional_server_variables}} ],
       ],
+      optimizer_transform => [
+        [ '--scenario=Standard' ],
+        ['
+          --gendata=simple
+          --gendata=data/sql/world.sql
+          --gendata=conf/zz/outer_join.zz
+          --grammar=conf/yy/collect_eits.yy
+          --grammar=conf/yy/optimizer_no_subquery.yy
+          --grammar=conf/yy/optimizer_subquery_semijoin.yy
+          --grammar=conf/yy/optimizer.yy
+          --grammar=conf/yy/outer_join.yy
+          --views
+        ' ],
+        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ '--validator=Transformer --transformer=ExecuteAsPreparedTwice --transformer=EnableOptimizations --transformer=DisableOptimizations' ],
+        [ @{$options{optional_server_variables}} ],
+      ],
       ps_sp => [
         [ '--scenario=Standard', '--scenario=Restart' ],
         [ @{$options{engine_basic_combinations}} ],
@@ -115,6 +133,66 @@ $combinations = [
         [ @{$options{optional_innodb_variables}} ],
         [ @{$options{optional_server_variables}} ],
       ],
+      innodb_trx_isolation => [
+        [ '--scenario=Standard', '--scenario=Restart', '--scenario=CrashRecovery' ],
+        [ '--engine=InnoDB' ],
+        [ '--grammar=conf/yy/transaction.yy' ],
+        {
+          uncommitted => '--mysqld=--transaction-isolation=READ-UNCOMMITTED',
+          committed => '--mysqld=--transaction-isolation=READ-COMMITTED',
+          serializable => '--mysqld=--transaction-isolation=SERIALIZABLE'
+        },
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_variators}} ],
+        [ @{$options{optional_binlog_safe_variables}} ],
+        [ @{$options{optional_innodb_compression}} ],
+        [ @{$options{optional_innodb_pagesize}} ],
+        [ @{$options{optional_innodb_variables}} ],
+        [ @{$options{optional_server_variables}} ],
+      ],
+      innodb_xa => [
+        [ '--scenario=Standard', '--scenario=Restart', '--scenario=CrashRecovery' ],
+        [ '--engine=InnoDB' ],
+        [ '--grammar=conf/yy/xa.yy' ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_variators}} ],
+        [ @{$options{optional_binlog_safe_variables}} ],
+        [ @{$options{optional_innodb_compression}} ],
+        [ @{$options{optional_innodb_pagesize}} ],
+        [ @{$options{optional_innodb_variables}} ],
+        [ @{$options{optional_server_variables}} ],
+      ],
+      innodb_compression => [
+        [ '--scenario=Standard' ],
+        [ '--engine=InnoDB' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
+        [ @{$options{optional_variators}} ],
+        [ @{$options{optional_binlog_safe_variables}} ],
+        [ @{$options{mandatory_innodb_compression}} ],
+        [ @{$options{optional_innodb_pagesize}} ],
+        [ @{$options{optional_innodb_variables}} ],
+        [ @{$options{optional_server_variables}} ],
+      ],
+      innodb_pagesize => [
+        [ '--scenario=Standard' ],
+        [ '--engine=InnoDB' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
+        [ @{$options{optional_variators}} ],
+        [ @{$options{optional_binlog_safe_variables}} ],
+        [ @{$options{optional_innodb_compression}} ],
+        {
+            pagesize4k => '--mysqld=--innodb_page_size=4K',
+            pagesize8k => '--mysqld=--innodb_page_size=8K',
+            pagesize32k => '--mysqld=--innodb_page_size=32K',
+            pagesize64k => '--mysqld=--innodb_page_size=64K'
+        },
+        [ @{$options{optional_innodb_variables}} ],
+        [ @{$options{optional_server_variables}} ],
+      ],
       aria => [
         [ '--scenario=Standard' ],
         [ '--engine=Aria --mysqld=--default-storage-engine=Aria' ],
@@ -125,7 +203,18 @@ $combinations = [
         [ @{$options{optional_server_variables}} ],
         [ @{$options{optional_aria_variables}} ],
       ],
-      mix => [
+      mixed_flow => [
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        [ @{$options{optional_gendata_views}} ],
+        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_binlog_unsafe_variables}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
+        [ @{$options{optional_variators}} ],
+        [ @{$options{optional_binlog_safe_variables}} ],
+        [ @{$options{optional_server_variables}} ],
+      ],
+      bigbang => [
         [ '--scenario=Standard', '--scenario=Restart' ],
         [ @{$options{optional_gendata_views}} ],
         [ @{$options{optional_gendata_vcols}} ],
@@ -143,6 +232,56 @@ $combinations = [
         [ @{$options{optional_innodb_pagesize}} ],
         [ @{$options{optional_innodb_variables}} ],
         [ @{$options{optional_perfschema}} ],
+        [ @{$options{optional_server_variables}} ],
+      ],
+      acl => [
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        [ '--grammar=conf/yy/acl.yy', '--grammar=conf/yy/create_user.yy'],
+        ['
+          --mysqld=--plugin-load-add=auth_0x0100.so
+          --mysqld=--plugin-load-add=auth_ed25519.so
+          --mysqld=--plugin-load-add=auth_pam.so
+          --mysqld=--plugin-load-add=password_reuse_check.so
+          --mysqld=--plugin-load-add=cracklib_password_check.so
+          --mysqld=--plugin-load-add=simple_password_check.so
+          --mysqld=--loose-password-reuse-check-interval=1
+        '],
+        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_variators}} ],
+        [ @{$options{optional_server_variables}} ],
+      ],
+      plugins => [
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        ['
+          --grammar=conf/yy/query_response_time.yy
+          --mysqld=--plugin-load-add=query_response_time
+          --mysqld=--loose-query-response-time
+          --grammar=conf/yy/plugin-query_cache_info.yy
+          --mysqld=--plugin-load-add=query_cache_info
+          --mysqld=--loose-query-cache-info
+          --mysqld=--query-cache-type=1
+          --grammar=conf/yy/query_response_time.yy
+          --mysqld=--plugin-load-add=query_response_time
+          --mysqld=--loose-query-response-time
+          --grammar=conf/yy/metadata_lock_info.yy
+          --mysqld=--plugin-load-add=metadata_lock_info
+          --mysqld=--loose-metadata-lock-info
+          --grammar=conf/yy/locales.yy
+          --mysqld=--plugin-load-add=locales
+          --mysqld=--loose-locales
+          --grammar=conf/yy/disks.yy
+          --mysqld=--plugin-load-add=disks
+          --mysqld=--loose-disks
+          --grammar=conf/yy/sql_errlog.yy
+          --mysqld=--plugin-load-add=sql_errlog
+          --mysqld=--loose-sql-error-log
+        '],
+        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{optional_variators}} ],
         [ @{$options{optional_server_variables}} ],
       ],
       gis => [
@@ -232,6 +371,15 @@ $combinations = [
         [ @{$options{optional_innodb_compression}} ],
         [ @{$options{optional_innodb_pagesize}} ],
         [ @{$options{optional_innodb_variables}} ],
+        [ @{$options{optional_server_variables}} ],
+      ],
+      json => [
+        [ '--scenario=Standard' ],
+        [ @{$options{engine_basic_combinations}} ],
+        [ '--grammar=conf/yy/json.yy --variator=JsonTables' ],
+        [ @{$options{optional_charsets_safe}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
+        [ @{$options{optional_binlog_safe_variables}} ],
         [ @{$options{optional_server_variables}} ],
       ],
       index => [
@@ -354,6 +502,27 @@ $combinations = [
         [ '--variator=ExecuteAsPackageSP', '' ],
         [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
+      ],
+      bigbang_with_custom_config => [
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
+        [ @{$options{optional_gendata_views}} ],
+        [ @{$options{optional_gendata_vcols}} ],
+        [ @{$options{optional_gendata_gis}} ],
+        [ @{$options{optional_gendata_unique_hash_keys}} ],
+        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
+        [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
+        [ @{$options{optional_encryption}} ],
+        [ @{$options{optional_binlog_unsafe_variables}} ],
+        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
+        [ @{$options{optional_variators}} ],
+        [ @{$options{optional_aria_variables}} ],
+        [ @{$options{optional_binlog_safe_variables}} ],
+        [ @{$options{optional_innodb_compression}} ],
+        [ @{$options{optional_innodb_pagesize}} ],
+        [ @{$options{optional_innodb_variables}} ],
+        [ @{$options{optional_perfschema}} ],
+        [ @{$options{optional_server_variables}} ],
       ],
     }
   ],
