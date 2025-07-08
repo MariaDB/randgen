@@ -362,7 +362,7 @@ sub pickOne
       $prng->shuffleArray(\@keys);
       my $o= shift @keys;
       my $combo= pickOne($element->{$o});
-      $opt.= ' '.$combo;
+      $opt.= " --combination-name=$o ".$combo;
     }
   }
   return $opt;
@@ -404,7 +404,10 @@ sub flattenCombinations
       # But not with other exclusives on the same level
       # (and of course not with scalars)
       foreach my $e (sort keys %$g) {
-        push @exclusives, @{flattenCombinations($g->{$e})};
+        my $res= flattenCombinations($g->{$e});
+        foreach my $c (@$res) {
+          push @exclusives, "--combination-name=$e $c";
+        }
       }
     }
   }
@@ -473,7 +476,10 @@ sub rakeCombinations
       push @mandatory, @{rakeCombinations($g)};
     } elsif (ref $g eq 'HASH') {
       foreach my $e (keys %$g) {
-        push @mandatory, @{rakeCombinations($g->{$e})};
+        my $res= rakeCombinations($g->{$e});
+        foreach my $c (@$res) {
+          push @mandatory, "--combination-name=$e $c";
+        }
       }
     } elsif (ref $g eq 'ARRAY') {
       push @hashless_arrays, $g;
@@ -519,7 +525,9 @@ sub doExhaustive {
   }
   foreach my $e (@combinations) {
     $trial_counter++;
-    doCombination($trial_counter,$e,"combination");
+    my @names;
+    $e =~ s/--combination-name=([^\s]+)\s*/push @names, $1; ''/ge;
+    doCombination($trial_counter,$e,"combination ".(scalar(@names) ? join '-', @names : '<noname>'));
     last if $interrupted;
   }
 }
@@ -530,7 +538,9 @@ sub doExhaustive {
 sub doRandom {
   foreach my $trial_id (1..$trials) {
     my $c= pickOne($combinations);
-    doCombination($trial_id,$c,"random trial");
+    my @names;
+    $c =~ s/--combination-name=([^\s]+)\s*/push @names, $1; ''/ge;
+    doCombination($trial_id,$c,"random trial ".(scalar(@names) ? join '-', @names : '<noname>'));
     if ($interrupted) {
       say("Test run was interrupted, aborting");
       last;
