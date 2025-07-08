@@ -258,6 +258,7 @@ sub run {
   if ($hashicorp) {
     if (system($ENV{RQG_HOME}.'/util/setup_hashicorp.sh '.$props->{vardir}.' > '.$props->{vardir}.'/vault.log 2>&1')) {
       sayWarning("Could not configure Hashicorp vault");
+      sayFile($props->{vardir}.'/vault.log');
       $ENV{HASHICORP_DOABLE}= '';
     } else {
       $ENV{VAULT_TOKEN}= `cat $props->{vardir}/vault.token | head -n 1`;
