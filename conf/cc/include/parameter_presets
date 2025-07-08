@@ -573,16 +573,30 @@ $optional_innodb_compression{$minversion}= [
   '--mysqld=--innodb_compression_default=on',
 ];
 
+$mandatory_innodb_compression{$minversion}= [
+  '--mysqld=--innodb_compression_default=on',
+];
+
 # Extra libraries do not work with MSAN
 $optional_innodb_compression_msan_safe{$minversion}= [
   @empty_set_20,
   '--mysqld=--innodb_compression_algorithm=none',
   '--mysqld=--innodb_compression_default=on',
 ];
+$mandatory_innodb_compression_msan_safe{$minversion}= [
+  '--mysqld=--innodb_compression_default=on',
+];
 
 $optional_innodb_compression{1007}= [
   @empty_set_50,
   @{$optional_innodb_compression{$minversion}},
+  '--mysqld=--innodb_compression_algorithm=lz4 --mysqld=--plugin-load-add=provider_lz4 --mysqld=--innodb_compression_default=on',
+  '--mysqld=--innodb_compression_algorithm=lzo --mysqld=--plugin-load-add=provider_lzo --mysqld=--innodb_compression_default=on',
+  '--mysqld=--innodb_compression_algorithm=lzma --mysqld=--plugin-load-add=provider_lzma --mysqld=--innodb_compression_default=on',
+  '--mysqld=--innodb_compression_algorithm=bzip2 --mysqld=--plugin-load-add=provider_bzip2 --mysqld=--innodb_compression_default=on',
+  '--mysqld=--innodb_compression_algorithm=snappy --mysqld=--plugin-load-add=provider_snappy --mysqld=--innodb_compression_default=on',
+];
+$mandatory_innodb_compression{1007}= [
   '--mysqld=--innodb_compression_algorithm=lz4 --mysqld=--plugin-load-add=provider_lz4 --mysqld=--innodb_compression_default=on',
   '--mysqld=--innodb_compression_algorithm=lzo --mysqld=--plugin-load-add=provider_lzo --mysqld=--innodb_compression_default=on',
   '--mysqld=--innodb_compression_algorithm=lzma --mysqld=--plugin-load-add=provider_lzma --mysqld=--innodb_compression_default=on',
@@ -599,9 +613,19 @@ $optional_innodb_pagesize{$minversion}= [
   '--mysqld=--innodb_page_size=64K'
 ];
 
+$mandatory_innodb_pagesize{$minversion}= [
+  '--mysqld=--innodb_page_size=4K',
+  '--mysqld=--innodb_page_size=8K',
+  '--mysqld=--innodb_page_size=32K',
+  '--mysqld=--innodb_page_size=64K'
+];
+
 $parameters{optional_innodb_compression}= \%optional_innodb_compression;
+$parameters{mandatory_innodb_compression}= \%mandatory_innodb_compression;
 $parameters{optional_innodb_compression_msan_safe}= \%optional_innodb_compression_msan_safe;
+$parameters{mandatory_innodb_compression_msan_safe}= \%mandatory_innodb_compression_msan_safe;
 $parameters{optional_innodb_pagesize}= \%optional_innodb_pagesize;
+$parameters{mandatory_innodb_pagesize}= \%mandatory_innodb_pagesize;
 
 #++++++++++++++++++++++++
 # InnoDB vars
