@@ -539,7 +539,7 @@ $combinations = [
       upgrade_backup => [
         [ @{$options{scenario_mariabackup_combinations}}, @{$options{scenario_upgrade_combinations}} ],
         [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
-        [ '--grammar=conf/yy/ddl.yy' ],
+        [ '--grammar=conf/yy/dml.yy' ],
         [ @{$options{engine_basic_combinations}} ],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_encryption}} ],
