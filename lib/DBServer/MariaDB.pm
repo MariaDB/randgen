@@ -223,6 +223,7 @@ sub new {
         say("Creating " . $self->version . " database at ".$self->datadir);
         if ($self->createDatadir != DBSTATUS_OK) {
             sayError("FATAL ERROR: Bootstrap failed, cannot proceed!");
+            sayFile($self->vardir."/boot.log");
             return undef;
         }
     }
