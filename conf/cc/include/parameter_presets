@@ -1,4 +1,4 @@
-# Copyright (c) 2022, 2024, MariaDB
+# Copyright (c) 2022, 2025, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -375,26 +375,20 @@ $parameters{scenario_cluster_combinations}= \%scenario_cluster_combinations;
 #++++++++++++++++++++++++
 
 $key_management_combinations{$minversion}= [
-  {
-    file_key_management =>
-    '
-       --mysqld=--file-key-management
-       --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt
-       --mysqld=--plugin-load-add=file_key_management
-    '
-  }
+  '
+      --mysqld=--file-key-management
+      --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt
+      --mysqld=--plugin-load-add=file_key_management
+  '
 ];
 
 # Hashicorp doesn't work with MSAN
 $key_management_combinations_msan_safe{$minversion}= [
-  {
-    file_key_management =>
-    '
-       --mysqld=--file-key-management
-       --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt
-       --mysqld=--plugin-load-add=file_key_management
-    '
-  }
+  '
+      --mysqld=--file-key-management
+      --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt
+      --mysqld=--plugin-load-add=file_key_management
+  '
 ];
 
 # Added later in run.pl
@@ -402,34 +396,28 @@ $key_management_combinations_msan_safe{$minversion}= [
 #      --mysqld=--hashicorp-key-management-token=$ENV{VAULT_TOKEN}
 
 $key_management_combinations{1009}= [
-  {
-    file_key_management =>
-      '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
-    hashicorp => [
-      ['--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'],
-      ['--mysqld=--hashicorp-key-management-max-retries=2147483647', '--mysqld=--hashicorp-key-management-max-retries=0', '--mysqld=--hashicorp-key-management-max-retries=1'],
-      ['--mysqld=--hashicorp-key-management-cache-version-timeout=0', '--mysqld=--hashicorp-key-management-cache-version-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-version-timeout=1'],
-      ['--mysqld=--hashicorp-key-management-timeout=0', '--mysqld=--hashicorp-key-management-timeout=86400', '--mysqld=--hashicorp-key-management-timeout=1'],
-      ['--mysqld=--hashicorp-key-management-use-cache-on-timeout=ON','--mysqld=--hashicorp-key-management-use-cache-on-timeout=OFF'],
-      ['--mysqld=--hashicorp-key-management-caching-enabled=ON','--mysqld=--hashicorp-key-management-caching-enabled=OFF'],
-      ['--mysqld=--hashicorp-key-management-cache-timeout=0', '--mysqld=--hashicorp-key-management-cache-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-timeout=1'],
-    ]
-  }
+  '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
+  [
+    ['--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'],
+    ['--mysqld=--hashicorp-key-management-max-retries=2147483647', '--mysqld=--hashicorp-key-management-max-retries=0', '--mysqld=--hashicorp-key-management-max-retries=1'],
+    ['--mysqld=--hashicorp-key-management-cache-version-timeout=0', '--mysqld=--hashicorp-key-management-cache-version-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-version-timeout=1'],
+    ['--mysqld=--hashicorp-key-management-timeout=0', '--mysqld=--hashicorp-key-management-timeout=86400', '--mysqld=--hashicorp-key-management-timeout=1'],
+    ['--mysqld=--hashicorp-key-management-use-cache-on-timeout=ON','--mysqld=--hashicorp-key-management-use-cache-on-timeout=OFF'],
+    ['--mysqld=--hashicorp-key-management-caching-enabled=ON','--mysqld=--hashicorp-key-management-caching-enabled=OFF'],
+    ['--mysqld=--hashicorp-key-management-cache-timeout=0', '--mysqld=--hashicorp-key-management-cache-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-timeout=1'],
+  ]
 ];
 $key_management_combinations{'es-1004'}= [
-  {
-    file_key_management =>
-      '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
-    hashicorp => [
-      ['--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'],
-      ['--mysqld=--hashicorp-key-management-max-retries=2147483647', '--mysqld=--hashicorp-key-management-max-retries=0', '--mysqld=--hashicorp-key-management-max-retries=1'],
-      ['--mysqld=--hashicorp-key-management-cache-version-timeout=0', '--mysqld=--hashicorp-key-management-cache-version-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-version-timeout=1'],
-      ['--mysqld=--hashicorp-key-management-timeout=0', '--mysqld=--hashicorp-key-management-timeout=86400', '--mysqld=--hashicorp-key-management-timeout=1'],
-      ['--mysqld=--hashicorp-key-management-use-cache-on-timeout=ON','--mysqld=--hashicorp-key-management-use-cache-on-timeout=OFF'],
-      ['--mysqld=--hashicorp-key-management-caching-enabled=ON','--mysqld=--hashicorp-key-management-caching-enabled=OFF'],
-      ['--mysqld=--hashicorp-key-management-cache-timeout=0', '--mysqld=--hashicorp-key-management-cache-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-timeout=1'],
-    ]
-  }
+  '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
+  [
+    ['--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'],
+    ['--mysqld=--hashicorp-key-management-max-retries=2147483647', '--mysqld=--hashicorp-key-management-max-retries=0', '--mysqld=--hashicorp-key-management-max-retries=1'],
+    ['--mysqld=--hashicorp-key-management-cache-version-timeout=0', '--mysqld=--hashicorp-key-management-cache-version-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-version-timeout=1'],
+    ['--mysqld=--hashicorp-key-management-timeout=0', '--mysqld=--hashicorp-key-management-timeout=86400', '--mysqld=--hashicorp-key-management-timeout=1'],
+    ['--mysqld=--hashicorp-key-management-use-cache-on-timeout=ON','--mysqld=--hashicorp-key-management-use-cache-on-timeout=OFF'],
+    ['--mysqld=--hashicorp-key-management-caching-enabled=ON','--mysqld=--hashicorp-key-management-caching-enabled=OFF'],
+    ['--mysqld=--hashicorp-key-management-cache-timeout=0', '--mysqld=--hashicorp-key-management-cache-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-timeout=1'],
+  ]
 ];
 
 $parameters{key_management_combinations}= \%key_management_combinations;

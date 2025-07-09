@@ -31,11 +31,11 @@ require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
 $combinations = [
 
 # Test options
-  [ @{$options{test_common_option_combinations}} ], # seed, reporters
-  [ @{$options{test_concurrency_combinations}} ],   # threads and timeouts
-  [ @{$options{gendata}} ],
+  $options{test_common_option_combinations}, # seed, reporters
+  $options{test_concurrency_combinations},   # threads and timeouts
+  $options{gendata},
 # Disabled for now, too frequent DBD problems
-#  [ @{$options{optional_ps_protocol}} ],
+#  $options{optional_ps_protocol},
 
 # New
   [ '--grammar=conf/yy/vector.yy:3 --gendata=data/sql/vector_gist_960_1K.sql --gendata=data/sql/vector_deep_image_96_10K.sql --grammar=conf/yy/functions.yy:2' ],
@@ -44,28 +44,233 @@ $combinations = [
   [ '--mysqld=--mhnsw_ef_search=1', '--mysqld=--mhnsw_ef_search=2', '--mysqld=--mhnsw_ef_search=5', '--mysqld=--mhnsw_ef_search=10', '--mysqld=--mhnsw_ef_search=20', '--mysqld=--mhnsw_ef_search=100', '--mysqld=--mhnsw_ef_search=200', '--mysqld=--mhnsw_ef_search=4096', '--mysqld=--mhnsw_ef_search=65535', '' ],
   [ '--mysqld=--mhnsw_default_distance=euclidean', '--mysqld=--mhnsw_default_distance=cosine' ],
 
-
   ##### Engines and scenarios
   [
     {
+      aria => [
+        [ '--scenario=Standard' ],
+        [ '--engine=Aria --mysqld=--default-storage-engine=Aria' ],
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
+        $options{optional_variators},
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+        $options{optional_aria_variables},
+      ],
+      binlog => [
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        [ '--reporter=BinlogDump' ],
+        [ '--mysqld=--log-bin' ],
+        $options{engine_basic_combinations},
+        $options{optional_charsets_safe},
+        $options{optional_encryption},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars}, $options{debug_grammars},
+        $options{optional_variators},
+        $options{optional_aria_variables},
+        $options{optional_binlog_safe_variables},
+        $options{optional_innodb_compression},
+        $options{optional_innodb_pagesize},
+        $options{optional_innodb_variables},
+        $options{optional_server_variables},
+      ],
+      custom => [
+        [ '--scenario=Standard' ],
+        [ '--engine=InnoDB,Aria' ],
+        [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
+        [ '--variator=ExecuteAsOracleSP', '' ],
+        [ '--variator=ExecuteAsPackageSP', '' ],
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+      ],
+      custom_recovery => [
+        [ '--scenario=CrashRecovery' ],
+        [ '--engine=InnoDB' ],
+        [ '--variator=ExecuteAsOracleSP', '' ],
+        [ '--variator=ExecuteAsPackageSP', '' ],
+        [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+      ],
+      custom_rpl => [
+        [ '--scenario=Replication' ],
+        [ '--engine=InnoDB' ],
+        [ '--variator=ExecuteAsOracleSP', '' ],
+        [ '--variator=ExecuteAsPackageSP', '' ],
+        [ '--grammar=conf/yy/dml.yy' ],
+        [ '--filter=conf/ff/replication.ff' ],
+        [ '--server1-genconfig=conf/cnf/custom1-master.cnf --server2-genconfig=conf/cnf/custom1-slave.cnf --mysqld=--innodb-buffer-pool-size=1G' ],
+        $options{dml_grammars}, $options{ddl_grammars},
+      ],
+      index => [
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        [ '--reporters=SecondaryIndexConsistency' ],
+        [ '--grammar=conf/yy/many_indexes.yy' ],
+        $options{engine_basic_combinations},
+        $options{optional_charsets_safe},
+        $options{optional_encryption},
+        $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars}, $options{debug_grammars},
+        $options{optional_variators},
+        $options{optional_aria_variables},
+        $options{optional_binlog_safe_variables},
+        $options{optional_innodb_compression},
+        $options{optional_innodb_pagesize},
+        $options{optional_innodb_variables},
+        $options{optional_perfschema},
+        $options{optional_server_variables},
+      ],
+      innodb => [
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        [ '--engine=InnoDB' ],
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
+        $options{optional_variators},
+        $options{optional_binlog_safe_variables},
+        $options{optional_innodb_compression},
+        $options{optional_innodb_pagesize},
+        $options{optional_innodb_variables},
+        $options{optional_server_variables},
+      ],
+      innodb_pagesize => [
+        [ '--scenario=Standard' ],
+        [ '--engine=InnoDB' ],
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
+        $options{optional_variators},
+        $options{optional_binlog_safe_variables},
+        $options{optional_innodb_compression},
+        {
+            pagesize4k => '--mysqld=--innodb_page_size=4K',
+            pagesize8k => '--mysqld=--innodb_page_size=8K',
+            pagesize32k => '--mysqld=--innodb_page_size=32K',
+            pagesize64k => '--mysqld=--innodb_page_size=64K'
+        },
+        $options{optional_innodb_variables},
+        $options{optional_server_variables},
+      ],
+      innodb_recovery => [
+        $options{scenario_crash_combinations},
+        [ '--engine=InnoDB' ],
+        [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
+        $options{optional_charsets_safe},
+        $options{optional_encryption},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        $options{optional_variators},
+        $options{optional_aria_variables},
+        $options{optional_binlog_safe_variables},
+        $options{optional_innodb_compression},
+        $options{optional_innodb_pagesize},
+        $options{optional_innodb_variables},
+        $options{optional_perfschema},
+        $options{optional_server_variables},
+      ],
+      innodb_trx_isolation => [
+        [ '--scenario=Standard', '--scenario=Restart', '--scenario=CrashRecovery' ],
+        [ '--engine=InnoDB' ],
+        [ '--grammar=conf/yy/transaction.yy' ],
+        {
+          uncommitted => '--mysqld=--transaction-isolation=READ-UNCOMMITTED',
+          committed => '--mysqld=--transaction-isolation=READ-COMMITTED',
+          serializable => '--mysqld=--transaction-isolation=SERIALIZABLE'
+        },
+        $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
+        $options{optional_charsets_safe},
+        $options{optional_variators},
+        $options{optional_binlog_safe_variables},
+        $options{optional_innodb_compression},
+        $options{optional_innodb_pagesize},
+        $options{optional_innodb_variables},
+        $options{optional_server_variables},
+      ],
+      innodb_xa => [
+        [ '--scenario=Standard', '--scenario=Restart', '--scenario=CrashRecovery' ],
+        [ '--engine=InnoDB' ],
+        [ '--grammar=conf/yy/xa.yy' ],
+        $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
+        $options{optional_charsets_safe},
+        $options{optional_variators},
+        $options{optional_binlog_safe_variables},
+        $options{optional_innodb_compression},
+        $options{optional_innodb_pagesize},
+        $options{optional_innodb_variables},
+        $options{optional_server_variables},
+      ],
+      json => [
+        [ '--scenario=Standard' ],
+        $options{engine_basic_combinations},
+        [ '--grammar=conf/yy/json.yy --variator=JsonTables' ],
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+      ],
+      locking => [
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        [ '--grammar=conf/yy/backup-locks.yy --grammar=conf/yy/locks.yy' ],
+        $options{engine_basic_combinations},
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+      ],
       minimal => [
         [ '--scenario=Standard' ],
-        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
       ],
-      simple => [
+      mixed_flow => [
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        $options{optional_gendata_views},
+        $options{engine_basic_combinations},
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars}, $options{debug_grammars},
+        $options{optional_variators},
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+      ],
+      optimizer => [
         [ '--scenario=Standard' ],
-        [ @{$options{engine_basic_combinations}} ],
-        [ @{$options{optional_charsets_safe}} ],
-        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
-        [ @{$options{optional_variators}} ],
-        [ @{$options{optional_binlog_safe_variables}} ],
-        [ @{$options{optional_server_variables}} ],
+        ['
+          --gendata=conf/zz/range_access.zz
+          --grammar=conf/yy/analyze_select_single_table.yy
+          --grammar=conf/yy/collect_eits.yy
+          --grammar=conf/yy/optimizer_access_exp.yy
+          --grammar=conf/yy/optimizer_costs.yy
+          --grammar=conf/yy/optimizer_trace.yy
+          --grammar=conf/yy/optimizer_vars.yy
+          --grammar=conf/yy/range_access2.yy
+          --grammar=conf/yy/range_access.yy
+          --grammar=conf/yy/window_functions.yy
+        '],
+        ['
+          --variator=AnalyzeOrExplain
+          --variator=DisableOptimizations
+          --variator=EnableOptimizations
+          --variator=ExecuteAsCTE.pm
+          --variator=ExecuteAsDerived
+          --variator=ExecuteAsExcept
+          --variator=ExecuteAsExecuteImmediate
+          --variator=ExecuteAsIntersect
+          --variator=ExecuteAsPreparedThrice
+          --variator=ExecuteAsSPTwice
+          --variator=ExecuteAsUnion
+          --variator=ExecuteAsWhereSubquery
+        '],
+        $options{optional_gendata_views},
+        $options{engine_basic_combinations},
+        $options{optional_charsets_safe},
+        $options{optional_server_variables},
+      ],
+      ps_sp => [
+        [ '--scenario=Standard', '--scenario=Restart' ],
+        $options{engine_basic_combinations},
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        [ '--variator=ExecuteAsExecuteImmediate --variator=ExecuteAsFunctionTwice --variator=ExecuteAsPreparedThrice --variator=ExecuteAsPSWithParams --variator=ExecuteAsSPTwice --variator=ExecuteAsTrigger' ],
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
       ],
       readonly => [
         [ '--scenario=Standard' ],
-        [ @{$options{engine_basic_combinations}} ],
-        [ @{$options{optional_charsets_safe}} ],
-        [ @{$options{read_only_grammars}} ],
+        $options{engine_basic_combinations},
+        $options{optional_charsets_safe},
+        $options{read_only_grammars},
         [ '', '--variator=AnalyzeOrExplain' ],
         [ '', '--variator=ConvertLiteralsToVariables' ],
         [ '', '--variator=Count' ],
@@ -89,86 +294,27 @@ $combinations = [
         [ '', '--variator=OrderBy' ],
         [ '', '--variator=RemoveIndexHints' ],
         [ '', '--variator=SelectOption' ],
-        [ @{$options{optional_server_variables}} ],
+        $options{optional_server_variables},
       ],
-      ps_sp => [
-        [ '--scenario=Standard', '--scenario=Restart' ],
-        [ @{$options{engine_basic_combinations}} ],
-        [ @{$options{optional_charsets_safe}} ],
-        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
-        [ '--variator=ExecuteAsExecuteImmediate --variator=ExecuteAsFunctionTwice --variator=ExecuteAsPreparedThrice --variator=ExecuteAsPSWithParams --variator=ExecuteAsSPTwice --variator=ExecuteAsTrigger' ],
-        [ @{$options{optional_binlog_safe_variables}} ],
-        [ @{$options{optional_server_variables}} ],
-      ],      innodb => [
+      simple => [
         [ '--scenario=Standard' ],
-        [ '--engine=InnoDB' ],
-        [ @{$options{optional_charsets_safe}} ],
-        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
-        [ @{$options{optional_variators}} ],
-        [ @{$options{optional_binlog_safe_variables}} ],
-        [ @{$options{optional_innodb_compression}} ],
-        [ @{$options{optional_innodb_pagesize}} ],
-        [ @{$options{optional_innodb_variables}} ],
-        [ @{$options{optional_server_variables}} ],
+        $options{engine_basic_combinations},
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        [ '--variator=ExecuteAsPreparedTwice' ],
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
       ],
-      mix => [
-        [ '--scenario=Standard', '--scenario=Restart' ],
-        [ @{$options{optional_gendata_views}} ],
-        [ @{$options{optional_gendata_vcols}} ],
-        [ @{$options{optional_gendata_gis}} ],
-        [ @{$options{optional_gendata_unique_hash_keys}} ],
-        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
-        [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
-        [ @{$options{optional_encryption}} ],
-        [ @{$options{optional_binlog_unsafe_variables}} ],
-        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
-        [ @{$options{optional_variators}} ],
-        [ @{$options{optional_aria_variables}} ],
-        [ @{$options{optional_binlog_safe_variables}} ],
-        [ @{$options{optional_innodb_compression}} ],
-        [ @{$options{optional_innodb_pagesize}} ],
-        [ @{$options{optional_innodb_variables}} ],
-        [ @{$options{optional_perfschema}} ],
-        [ @{$options{optional_server_variables}} ],
-      ],
-      binlog => [
-        [ '--scenario=Standard', '--scenario=Restart' ],
-        [ '--reporter=BinlogDump' ],
-        [ '--mysqld=--log-bin' ],
-        [ @{$options{engine_basic_combinations}}, @{$options{engine_extra_supported_combinations}}, @{$options{engine_full_mix_combinations}} ],
-        [ @{$options{optional_charsets_safe}}, @{$options{optional_charsets_unsafe}} ],
-        [ @{$options{optional_encryption}} ],
-        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
-        [ @{$options{optional_variators}} ],
-        [ @{$options{optional_aria_variables}} ],
-        # We don't care about binlog safety here, because we are not checking consistency
-        [ @{$options{optional_binlog_safe_variables}}, @{$options{optional_binlog_unsafe_variables}} ],
-        [ @{$options{optional_innodb_compression}} ],
-        [ @{$options{optional_innodb_pagesize}} ],
-        [ @{$options{optional_innodb_variables}} ],
-        [ @{$options{optional_server_variables}} ],
-      ],
-      innodb_recovery => [
-        [ @{$options{scenario_crash_combinations}} ],
-        [ '--engine=InnoDB' ],
-        [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
-        [ @{$options{optional_charsets_safe}} ],
-        [ @{$options{optional_encryption}} ],
-        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
-        [ @{$options{optional_variators}} ],
-        [ @{$options{optional_aria_variables}} ],
-        [ @{$options{optional_binlog_safe_variables}} ],
-        [ @{$options{optional_innodb_compression}} ],
-        [ @{$options{optional_innodb_pagesize}} ],
-        [ @{$options{optional_innodb_variables}} ],
-        [ @{$options{optional_perfschema}} ],
-        [ @{$options{optional_server_variables}} ],
-      ],
-      custom => [
+      views => [
         [ '--scenario=Standard' ],
-        [ '--engine=InnoDB' ],
-        [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
-        [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}} ],
+        $options{engine_basic_combinations},
+        [ '--gendata=advanced', '--gendata=simple --gendata=data/sql/updateable_views.sql --grammar=conf/yy/updateable_views.yy' ],
+        [ '--views', '--views=MERGE', '--views=TEMPTABLE' ],
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        [ '--variator=ConvertSubqueriesToViews --variator=ExecuteAsView' ],
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
       ],
     }
   ],
