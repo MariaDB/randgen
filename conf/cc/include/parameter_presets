@@ -1782,6 +1782,7 @@ $dml_grammars{$minversion}= [
 
 $variables_grammars{$minversion}= [
   [@empty_set_20, '--grammar=conf/yy/dynamic_variables.yy:0.01'],
+  [@empty_set_20, '--grammar=conf/yy/innodb_compression_algorithms.yy:0.01'],
   [@empty_set_50, '--grammar=conf/yy/log_slow_vars.yy:0.01'],
   [@empty_set_30, '--grammar=conf/yy/optimizer_vars.yy:0.001'],
   [@empty_set_20, '--grammar=conf/yy/server_audit.yy --mysqld=--plugin-load-add=server_audit --mysqld=--server-audit --mysqld=--server-audit-logging=on'],
@@ -1791,6 +1792,7 @@ $variables_grammars{$minversion}= [
 
 $variables_grammars{'es-'.$minversion}= [
   [@empty_set_20, '--grammar=conf/yy/dynamic_variables.yy:0.01'],
+  [@empty_set_20, '--grammar=conf/yy/innodb_compression_algorithms.yy:0.01'],
   [@empty_set_50, '--grammar=conf/yy/log_slow_vars.yy:0.01'],
   [@empty_set_30, '--grammar=conf/yy/optimizer_vars.yy:0.001'],
   [@empty_set_10,
