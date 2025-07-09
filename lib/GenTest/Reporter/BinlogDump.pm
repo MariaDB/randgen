@@ -74,6 +74,18 @@ sub report {
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
+  my $client = DBServer::MariaDB::_find(undef,
+    [$reporter->server->serverVariable('basedir')],
+    osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
+    osWindows()?"mysql.exe":"mysql"
+  );
+
+  unless ($client) {
+    sayError("BinlogDump: Could not find mysql client. Status will be set to ENVIRONMENT_FAILURE");
+    return STATUS_ENVIRONMENT_FAILURE;
+  }
+  $client .= " -uroot --host=127.0.0.1 --port=$port --protocol=tcp";
+
   my $cmd= "$binlog_utility --no-defaults --verbose --verbose --base64-output=DECODE-ROWS $basename.[0-9][0-9][0-9][0-9][0-9][0-9] > $vardir/binlog_events.txt";
   say("BinlogDump: Dumping binary log events into the file $vardir/binlog_events.txt");
   say($cmd);
@@ -83,7 +95,42 @@ sub report {
     return STATUS_CRITICAL_FAILURE;
   } else {
     say("BinlogDump: dumping binary logs finished successfully");
-    return STATUS_OK;
+  }
+
+  $status = $server->stopServer();
+  if ($status != STATUS_OK) {
+    sayError("Shutdown failed. Status will be set to STATUS_SERVER_SHUTDOWN_FAILURE");
+    return STATUS_SERVER_SHUTDOWN_FAILURE;
+  }
+
+  my $tmpvardir = $vardir.'_'.time().'_tmp';
+  move($vardir,$tmpvardir);
+
+  say("Starting a new server ...");
+  say("Creating a clean database...");
+  $server->createDatadir();
+
+  move($tmpvardir,$vardir.'/vardir_orig');
+  my $status = $server->startServer();
+
+  if ($status > STATUS_OK) {
+    sayError("BinlogDump: Server startup finished with an error");
+    return $status;
+  }
+
+  # MDEV-31756 - NOWAIT in DDL makes binary logs difficult or impossible to replay
+  system("cat $vardir/vardir_orig/binlog_events | sed -e 's/NOWAIT//g' > $vardir/binlog_events_adjusted");
+
+  # Cannot apply binlog events with transaction_read_only
+  $reporter->connection->execute("SET GLOBAL tx_read_only= OFF");
+
+  say("Feeding binary log events of the original server to the new one");
+  # We need --force here because there can be events in the error log
+  # written with error codes
+  $status = system("$client --force --binary-mode < $vardir/binlog_events_adjusted") >> 8;
+  if ($status > STATUS_OK) {
+    sayError("BinlogDump: Feeding binary logs to the server finished with an error");
+    return STATUS_RECOVERY_FAILURE;
   }
 }
 
