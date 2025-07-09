@@ -214,6 +214,7 @@ $combinations = [
       innodb_compression => [
         [ '--scenario=Standard' ],
         [ '--engine=InnoDB' ],
+        [ '--grammar=conf/yy/innodb_compression_algorithms.yy'],
         [ @{$options{optional_charsets_safe}} ],
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}} ],
         [ @{$options{optional_variators}} ],
@@ -318,6 +319,39 @@ $combinations = [
         [ @{$options{read_only_grammars}}, @{$options{dml_grammars}}, @{$options{ddl_grammars}}, @{$options{variables_grammars}}, @{$options{debug_grammars}} ],
         [ @{$options{optional_variators}} ],
         [ @{$options{optional_binlog_safe_variables}} ],
+        [ @{$options{optional_server_variables}} ],
+      ],
+      optimizer => [
+        [ '--scenario=Standard' ],
+        ['
+          --gendata=conf/zz/range_access.zz
+          --grammar=conf/yy/analyze_select_single_table.yy
+          --grammar=conf/yy/collect_eits.yy
+          --grammar=conf/yy/optimizer_access_exp.yy
+          --grammar=conf/yy/optimizer_costs.yy
+          --grammar=conf/yy/optimizer_trace.yy
+          --grammar=conf/yy/optimizer_vars.yy
+          --grammar=conf/yy/range_access2.yy
+          --grammar=conf/yy/range_access.yy
+          --grammar=conf/yy/window_functions.yy
+        '],
+        ['
+          --variator=AnalyzeOrExplain
+          --variator=DisableOptimizations
+          --variator=EnableOptimizations
+          --variator=ExecuteAsCTE.pm
+          --variator=ExecuteAsDerived
+          --variator=ExecuteAsExcept
+          --variator=ExecuteAsExecuteImmediate
+          --variator=ExecuteAsIntersect
+          --variator=ExecuteAsPreparedThrice
+          --variator=ExecuteAsSPTwice
+          --variator=ExecuteAsUnion
+          --variator=ExecuteAsWhereSubquery
+        '],
+        [ @{$options{optional_gendata_views}} ],
+        [ @{$options{engine_basic_combinations}} ],
+        [ @{$options{optional_charsets_safe}} ],
         [ @{$options{optional_server_variables}} ],
       ],
       optimizer_transform => [
