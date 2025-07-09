@@ -18,7 +18,9 @@ thread1_init:
   INSTALL SONAME 'provider_bzip2' ;; INSTALL SONAME 'provider_lz4' ;; INSTALL SONAME 'provider_lzma' ;; INSTALL SONAME 'provider_lzo' ;; INSTALL SONAME 'provider_snappy' ;
 
 query:
-  SET GLOBAL INNODB_COMPRESSION_ALGORITHM = compression_alg ;
+  ==FACTOR:5== SET GLOBAL INNODB_COMPRESSION_ALGORITHM = compression_alg |
+               SET __global(50) INNODB_COMPRESSION_DEFAULT = __on_x_off
+;
 
 compression_alg:
   bzip2 | lz4 | lzma | lzo | snappy | zlib | DEFAULT ;
