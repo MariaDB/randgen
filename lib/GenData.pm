@@ -200,25 +200,25 @@ sub doGenData {
   my @server_numbers= ($server_num ? ($server_num) : sort { $a <=> $b } keys %{$props->server_specific});
   my @generators= ();
   my $result= STATUS_OK;
-  foreach my $gd (@{$props->gendatas}) {
-    my $gd_class= 'GendataFromFile';
-    if ($gd eq 'simple') {
-      $gd_class= 'GendataSimple';
-    } elsif ($gd eq 'advanced') {
-      $gd_class= 'GendataAdvanced';
-    } elsif (-d "$gd") {
-      $gd_class= 'GendataExternal';
+  foreach my $i (@server_numbers) {
+    my $so= $props->server_specific->{$i};
+    next unless $so->{active};
+    if ($so->{server}->hasDifferentServerForGendata()) {
+      say("Restarting the server for data generation");
+      $so->{server}->stopServer();
+      $so->{server}->startServerForGendata();
     }
-    $gd_class="GenData::$gd_class";
-    eval ("require $gd_class") or croak $@;
-    foreach my $i (@server_numbers) {
-      my $so= $props->server_specific->{$i};
-      next unless $so->{active};
-      if ($so->{server}->hasDifferentServerForGendata()) {
-        say("Restarting the server for data generation");
-        $so->{server}->stopServer();
-        $so->{server}->startServerForGendata();
+    foreach my $gd (@{$props->gendatas}) {
+      my $gd_class= 'GendataFromFile';
+      if ($gd eq 'simple') {
+        $gd_class= 'GendataSimple';
+      } elsif ($gd eq 'advanced') {
+        $gd_class= 'GendataAdvanced';
+      } elsif (-d "$gd") {
+        $gd_class= 'GendataExternal';
       }
+      $gd_class="GenData::$gd_class";
+      eval ("require $gd_class") or croak $@;
       say("Running $gd_class".($gd_class eq 'GenData::GendataFromFile' ? " from $gd" : "")." on server $i");
       my $res= $gd_class->new(
          basedir => $so->{basedir},
@@ -248,11 +248,11 @@ sub doGenData {
         $result= $res;
       }
       say("$gd_class finished with result ".status2text($res));
-      if ($so->{server}->hasDifferentServerForGendata()) {
-        say("Restarting the server after data generation");
-        $so->{server}->stopServer();
-        $so->{server}->startServer();
-      }
+    }
+    if ($so->{server}->hasDifferentServerForGendata()) {
+      say("Restarting the server after data generation");
+      $so->{server}->stopServer();
+      $so->{server}->startServer();
     }
   }
   if ($result < STATUS_CRITICAL_FAILURE && scalar(@server_numbers) > 1) {

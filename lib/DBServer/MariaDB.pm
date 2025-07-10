@@ -350,8 +350,9 @@ sub generateCommand {
     my ($self, $for_gendata, @opts) = @_;
 
     my $binary= ($for_gendata ? $self->[MYSQLD_MYSQLD_GENDATA] : $self->[MYSQLD_MYSQLD]);
+    my $basedir= ($for_gendata ? $self->[MYSQLD_BASEDIR_GENDATA] : $self->[MYSQLD_BASEDIR]);
     my $command = '"'.$binary.'"';
-    foreach my $opt (@opts) {
+    foreach my $opt (@opts, ["--basedir=$basedir"]) {
         $command .= ' '.join(' ',map{'"'.$_.'"'} @$opt);
     }
     $command =~ s/\//\\/g if osWindows();
