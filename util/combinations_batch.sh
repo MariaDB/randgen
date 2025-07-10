@@ -23,6 +23,8 @@
 # It allows more reliable cleanup between runs which is sometimes needed
 # especially in remote systems like Jenkins, Azure etc.
 
+set -o pipefail
+
 set +e
 
 opts=""
@@ -61,6 +63,7 @@ else
 
   t=0
   set +x
+  result=0
   while IFS= read -r line; do
     if [[ "$line" =~ Combinations.*:\ running ]] ; then
       echo ""
@@ -71,6 +74,9 @@ else
       args=`echo $line | sed -e 's/.* arguments://g'`
       timeout -k 3600 3600 perl ./run.pl $args --vardir=$workdir/var
       res=$?
+      if [ "$res" -gt "$result" ] ; then
+        result=$?
+      fi
       sleep 1
       kill -11 `ps -ef | grep -E 'mysqld|mariadbd' | grep -E "port=$port_prefix" | grep -v grep | awk '{print $2}' | xargs`
       kill `ps -ef | grep run.pl | grep -v grep | awk '{print $2}' | xargs` || true
@@ -81,4 +87,5 @@ else
       fi
     fi
   done < $workdir/combinations.txt
+  (exit $result)
 fi
