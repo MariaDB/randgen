@@ -60,6 +60,7 @@ else
   echo "Number of combinations generated: $comb_count"
 
   t=0
+  set +x
   while IFS= read -r line; do
     if [[ "$line" =~ Combinations.*:\ running ]] ; then
       echo ""
@@ -69,12 +70,13 @@ else
       t=$((t+1))
       args=`echo $line | sed -e 's/.* arguments://g'`
       timeout -k 3600 3600 perl ./run.pl $args --vardir=$workdir/var
+      res=$?
       sleep 1
       kill -11 `ps -ef | grep -E 'mysqld|mariadbd' | grep -E "port=$port_prefix" | grep -v grep | awk '{print $2}' | xargs`
       kill `ps -ef | grep run.pl | grep -v grep | awk '{print $2}' | xargs` || true
       sleep 1
       cp $workdir/var/trial.log  $archive/trial${t}.log
-      if [ -z "$discard_logs" ] ; then
+      if [ -z "$discard_logs" ] && [ "$res" != "0" ] ; then
         cp -r $workdir/var $archive/var${t}
       fi
     fi
