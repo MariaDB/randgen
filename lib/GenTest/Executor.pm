@@ -850,6 +850,7 @@ sub DESTROY {
     if (scalar(keys %{$executor->[EXECUTOR_STATUS_COUNTS]})) {
       say("-----------------------");
       say("Statuses: for Executor#".$executor->threadId().": ".join(', ', map { status2text($_).": ".$executor->[EXECUTOR_STATUS_COUNTS]->{$_}." queries" } sort keys %{$executor->[EXECUTOR_STATUS_COUNTS]}));
+      say("Errors: for Executor#".$executor->threadId().": ".join(', ', map { $_.": ".$executor->[EXECUTOR_ERROR_COUNTS]->{$_}." queries" } sort keys %{$executor->[EXECUTOR_ERROR_COUNTS]}));
       say("-----------------------");
     }
 }

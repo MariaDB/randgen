@@ -170,7 +170,10 @@ sub execute {
     my ($err,$errstr) = $conn->last_error;
     my $err_type = errorType($err);
 
-    $executor->[EXECUTOR_STATUS_COUNTS]->{$conn->err_type}++ unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS);
+    unless ($execution_flags & EXECUTOR_FLAG_SKIP_STATS) {
+      $executor->[EXECUTOR_STATUS_COUNTS]->{$conn->err_type}++;
+      $executor->[EXECUTOR_ERROR_COUNTS]->{$err}++;
+    }
 
     my $mysql_info = $conn->mysql_info;
     my ($matched_rows, $changed_rows) = $mysql_info =~ m{^Rows matched:\s+(\d+)\s+Changed:\s+(\d+)}sgio;
