@@ -95,22 +95,23 @@ sub run {
   $sort_options= 1;
 
   %server_options= (
-    basedir     => undef,
-    dataset     => undef,
-    cnf         => undef,
-    engines     => undef,
-    genconfig   => undef,
-    gis         => undef,
-    manual_gdb  => undef,
-    mysqld      => undef,
-    partitions  => undef,
-    perf        => undef,
-    ps          => undef,
-    rr          => undef,
-    uhashkeys   => undef,
-    valgrind    => undef,
-    vcols       => undef,
-    views       => undef,
+    basedir         => undef,
+    basedir_gendata => undef,
+    dataset         => undef,
+    cnf             => undef,
+    engines         => undef,
+    genconfig       => undef,
+    gis             => undef,
+    manual_gdb      => undef,
+    mysqld          => undef,
+    partitions      => undef,
+    perf            => undef,
+    ps              => undef,
+    rr              => undef,
+    uhashkeys       => undef,
+    valgrind        => undef,
+    vcols           => undef,
+    views           => undef,
   );
 
   # First decide if we want to sort the command-line options
@@ -129,6 +130,7 @@ sub run {
     #
     # Server-related options
     'basedir=s' => \$server_options{basedir},
+    'basedir-gendata|basedir_gendata=s' => \$server_options{basedir_gendata},
     'dataset=s' => \$server_options{dataset},
     'engines=s@' => \@{$server_options{engines}},
     'gis!'     => \$server_options{gis},
@@ -547,7 +549,10 @@ Run a complete random query generation test scenario
 
     Options related to the server(s):
 
-    --basedir   : Specifies the base directory of a server
+    --basedir           : Specifies the base directory of a server
+    --basedir-gendata   : Specifies the base directory of a server for original data generation.
+                          It can be useful if the data is big and basedir is debug, then generating data
+                          on a release build can greatly reduce execution time
     --dataset   : (optional) Specifies a previously prepared datadir
                   to be used instead of bootstrap
     --genconfig : Template for server config generation

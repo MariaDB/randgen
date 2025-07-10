@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2022, MariaDB Corporation Ab
+# Copyright (C) 2017, 2025, MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -409,6 +409,7 @@ sub prepareServer {
   say("Preparing server $srvnum");
   my $server= DBServer::MariaDB->new(
                       basedir => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{basedir},
+                      basedir_gendata => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{basedir_gendata},
                       config => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{cnf},
                       dataset => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{dataset},
                       general_log => 1,

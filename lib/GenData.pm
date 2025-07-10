@@ -214,6 +214,11 @@ sub doGenData {
     foreach my $i (@server_numbers) {
       my $so= $props->server_specific->{$i};
       next unless $so->{active};
+      if ($so->{server}->hasDifferentServerForGendata()) {
+        say("Restarting the server for data generation");
+        $so->{server}->stopServer();
+        $so->{server}->startServerForGendata();
+      }
       say("Running $gd_class".($gd_class eq 'GenData::GendataFromFile' ? " from $gd" : "")." on server $i");
       my $res= $gd_class->new(
          basedir => $so->{basedir},
@@ -243,6 +248,11 @@ sub doGenData {
         $result= $res;
       }
       say("$gd_class finished with result ".status2text($res));
+      if ($so->{server}->hasDifferentServerForGendata()) {
+        say("Restarting the server after data generation");
+        $so->{server}->stopServer();
+        $so->{server}->startServer();
+      }
     }
   }
   if ($result < STATUS_CRITICAL_FAILURE && scalar(@server_numbers) > 1) {

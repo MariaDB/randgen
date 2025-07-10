@@ -78,6 +78,8 @@ use constant MYSQLD_LAST_CHECKED_MARKER => 38;
 use constant MYSQLD_ASAN => 39;
 use constant MYSQLD_SETUP_DONE => 40;
 use constant MYSQLD_DATASET => 41;
+use constant MYSQLD_BASEDIR_GENDATA => 42;
+use constant MYSQLD_MYSQLD_GENDATA => 43;
 
 use constant MARIABACKUP => 50;
 use constant TZINFO_TO_SQL => 51;
@@ -94,6 +96,7 @@ sub new {
     my $class = shift;
 
     my $self = $class->SUPER::new({'basedir' => MYSQLD_BASEDIR,
+                                   'basedir_gendata' => MYSQLD_BASEDIR_GENDATA,
                                    'config' => MYSQLD_CONFIG_FILE,
                                    'dataset' => MYSQLD_DATASET,
                                    'general_log' => MYSQLD_GENERAL_LOG,
@@ -119,9 +122,12 @@ sub new {
     croak "Cannot use both valgrind and perf at once" if $self->[MYSQLD_VALGRIND] and defined $self->[MYSQLD_PERF];
     croak "Vardir is not defined for the server" unless $self->[MYSQLD_VARDIR];
 
+    $self->[MYSQLD_BASEDIR_GENDATA]= $self->[MYSQLD_BASEDIR] unless defined $self->[MYSQLD_BASEDIR_GENDATA];
+
     if (osWindows()) {
         ## Use unix-style path's since that's what Perl expects...
         $self->[MYSQLD_BASEDIR] =~ s/\\/\//g;
+        $self->[MYSQLD_BASEDIR_GENDATA] =~ s/\\/\//g;
         $self->[MYSQLD_VARDIR] =~ s/\\/\//g;
         $self->[MYSQLD_DATADIR] =~ s/\\/\//g;
     }
@@ -141,8 +147,15 @@ sub new {
     unless (defined $self->[MYSQLD_MYSQLD]) {
       croak("We could not find the server binary");
     }
-
     $self->checkServerType($self->[MYSQLD_MYSQLD]);
+
+    if ($self->[MYSQLD_BASEDIR] eq $self->[MYSQLD_BASEDIR_GENDATA]) {
+      $self->[MYSQLD_MYSQLD_GENDATA]= $self->[MYSQLD_MYSQLD];
+    } else {
+      $self->[MYSQLD_MYSQLD_GENDATA] = $self->_find([$self->[MYSQLD_BASEDIR_GENDATA]],
+                                          osWindows()?["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"]:["sql","libexec","bin","sbin"],
+                                          osWindows()?("mysqld.exe","mariadbd.exe"):("mysqld","mariadbd"));
+    }
 
     $self->[MYSQLD_BOOT_SQL] = [];
 
@@ -328,15 +341,26 @@ sub checkServerType {
     }
 }
 
-sub generateCommand {
-    my ($self, @opts) = @_;
+sub hasDifferentServerForGendata {
+  my $self= shift;
+  return $self->[MYSQLD_MYSQLD] ne $self->[MYSQLD_MYSQLD_GENDATA];
+}
 
-    my $command = '"'.$self->binary.'"';
+sub generateCommand {
+    my ($self, $for_gendata, @opts) = @_;
+
+    my $binary= ($for_gendata ? $self->[MYSQLD_MYSQLD_GENDATA] : $self->[MYSQLD_MYSQLD]);
+    my $command = '"'.$binary.'"';
     foreach my $opt (@opts) {
         $command .= ' '.join(' ',map{'"'.$_.'"'} @$opt);
     }
     $command =~ s/\//\\/g if osWindows();
     return $command;
+}
+
+sub startServerForGendata {
+  my $self= shift;
+  return $self->startServer((for_gendata => 1));
 }
 
 sub addServerOptions {
@@ -459,11 +483,11 @@ sub createDatadir  {
         }
 
         push(@$boot_options,"--bootstrap") ;
-        $command = $self->generateCommand($boot_options);
+        $command = $self->generateCommand(my $for_gendata=0, $boot_options);
         $command = "LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command < \"$boot\"";
     } else {
         push @$boot_options, "--initialize-insecure", "--init-file=$boot";
-        $command = $self->generateCommand($boot_options);
+        $command = $self->generateCommand(my $for_gendata=0, $boot_options);
     }
     close BOOT;
 
@@ -521,7 +545,9 @@ sub testSetup {
 
 
 sub startServer {
-    my ($self, $repair_log_tables) = @_;
+    my ($self, %args) = @_;
+    my $repair_log_tables= $args{repair_log_tables} || 0;
+    my $for_gendata= $args{for_gendata} || 0;
 
   my @defaults = ($self->[MYSQLD_CONFIG_FILE] ? ("--defaults-group-suffix=.runtime", "--defaults-file=$self->[MYSQLD_CONFIG_FILE]") : ("--no-defaults"));
 
@@ -529,7 +555,7 @@ sub startServer {
     my $v = $v1*1000+$v2;
     my $errorlog = $self->vardir."/".MYSQLD_ERRORLOG_FILE;
 
-    my $command = $self->generateCommand([@defaults],
+    my $command = $self->generateCommand($for_gendata, [@defaults],
                                          $self->[MYSQLD_STDOPTS],
                                          ["--core-file",
                                           "--skip-stack-trace", # disable post-mortem for error log -- forking for addr2line etc.
