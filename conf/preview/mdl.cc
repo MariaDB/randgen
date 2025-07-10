@@ -613,7 +613,7 @@ $combinations = [
       views => [
         [ '--scenario=Standard' ],
         $options{engine_basic_combinations},
-        [ '--gendata=advanced', '--gendata=simple --gendata=data/sql/updateable_views.sql --grammar=conf/yy/updateable_views.yy' ],
+        [ '--gendata=advanced', '--gendata=simple --grammar=conf/yy/views.yy' ],
         [ '--views', '--views=MERGE', '--views=TEMPTABLE' ],
         $options{optional_charsets_safe},
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},

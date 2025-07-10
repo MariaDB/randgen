@@ -44,7 +44,6 @@ $combinations = [
     --gendata=conf/zz/optimizer_basic.zz
     --gendata=conf/zz/temporal.zz
     --gendata=data/dbt3/dbt3-s0.0001.dump
-    --gendata=data/sql/updateable_views.sql
     --gendata=advanced
     --views=MERGE,TEMPTABLE
     --vcols
@@ -92,6 +91,8 @@ $combinations = [
       --compatibility=10.5
       --filter=conf/ff/replication.ff
       --mysqld=--explicit_defaults_for_timestamp=ON
+      --mysqld=--slave_type_conversions=ALL_NON_LOSSY
+      --mysqld=--binlog-format=row
     "
   ],
 ];

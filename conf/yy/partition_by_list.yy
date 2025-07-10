@@ -26,11 +26,8 @@
 
 
 query_init:
-     CREATE DATABASE IF NOT EXISTS partition_db
-  ;; SET ROLE admin
-     # PS is a workaround for MDEV-30190
-  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON partition_db.* TO ',CURRENT_USER,' WITH GRANT OPTION')
-  ;; SET ROLE NONE
+     SET DEFAULT ROLE admin ;; SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS partition_db
   ;; {$tblnum=0 ; _set_db('partition_db') } init_db ;
 
 create:

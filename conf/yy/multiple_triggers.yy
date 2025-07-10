@@ -40,23 +40,20 @@
 # ERROR 1360 for DROP TRIGGER IF EXISTS is also because of one of these two problems
 
 query_init:
-     CREATE DATABASE IF NOT EXISTS multi_trigger_db
-  ;; SET ROLE admin
-     # PS is a workaround for MDEV-30190
-  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON multi_trigger_db.* TO ',CURRENT_USER,' WITH GRANT OPTION')
-  ;; SET ROLE NONE
+     SET DEFAULT ROLE admin ;; SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS multi_trigger_db
      # To prevent the tables from being modified, as we need the structures
      # PS is a workaround for MDEV-30190
   ;; EXECUTE IMMEDIATE CONCAT('REVOKE ALTER, DROP ON multi_trigger_db.* FROM ',CURRENT_USER)
   ;; { _set_db('multi_trigger_db') }
-  CREATE TABLE IF NOT EXISTS multi_trigger_db.tlog (
-    pk INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    dt TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-    tbl VARCHAR(16),
-    tp ENUM('BEFORE','AFTER'),
-    op ENUM('INSERT','UPDATE','DELETE'),
-    fld BLOB
-  )
+     CREATE TABLE IF NOT EXISTS multi_trigger_db.tlog (
+      pk INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      dt TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+      tbl VARCHAR(16),
+      tp ENUM('BEFORE','AFTER'),
+      op ENUM('INSERT','UPDATE','DELETE'),
+      fld BLOB
+    )
   ;; CREATE TABLE IF NOT EXISTS multi_trigger_db.tlog2 (
       log_id INT NOT NULL,
       dt TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),

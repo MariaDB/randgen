@@ -1,4 +1,4 @@
-# Copyright (C) 2018, 2022 MariaDB Corporation Ab
+# Copyright (C) 2018, 2025 MariaDB Corporation Ab
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,9 @@
 #
 ########################################################################
 
+query_init:
+  SET DEFAULT ROLE admin ;; SET ROLE admin ;
+
 query:
   { _set_db('ANY') } acl
 ;
@@ -34,8 +37,8 @@ acl:
   | ==FACTOR:0.5== acl_set_password
   | ==FACTOR:4== acl_create_role
   | ==FACTOR:0.5== acl_drop_role
-  | ==FACTOR:3== acl_set_role
-  | ==FACTOR:2== acl_set_default_role
+  | ==FACTOR:3== acl_set_role ;; SET ROLE admin
+  | ==FACTOR:2== acl_set_default_role ;;; SET DEFAULT ROLE admin
   | acl_show_grants
   # MDEV-7597 - Expiration of user passwords (10.4.3)
   | /*!100403 acl_password_expiration_variables */
@@ -264,7 +267,7 @@ acl_short_name:
     ==FACTOR:8== _letter
   | ==FACTOR:0.1== '%'
   # Prevent damaging the current user
-  | { $shortname= $prng->unquotedString(8); ${shortname}.'@localhost' ne $executors->[0]->user() and ${shortname} ne 'root' ? '`'.$shortname.'`' : '`'.$shortname.'_`' }
+  | { $shortname= $prng->unquotedString(8); ${shortname}.'@localhost' ne $executors->[0]->user() and ${shortname} ne 'root' and ${shortname} ne 'admin' ? '`'.$shortname.'`' : '`'.$shortname.'_`' }
   | ==FACTOR:0.1== PUBLIC
   | ==FACTOR:0.1== NONE
 ;

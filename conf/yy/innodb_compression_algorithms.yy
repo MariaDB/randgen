@@ -15,7 +15,13 @@
 
 # Will fail on 10.6 but let it
 thread1_init:
-  INSTALL SONAME 'provider_bzip2' ;; INSTALL SONAME 'provider_lz4' ;; INSTALL SONAME 'provider_lzma' ;; INSTALL SONAME 'provider_lzo' ;; INSTALL SONAME 'provider_snappy' ;
+     SET DEFAULT ROLE admin ;; SET ROLE admin
+  ;; INSTALL SONAME 'provider_bzip2'
+  ;; INSTALL SONAME 'provider_lz4'
+  ;; INSTALL SONAME 'provider_lzma'
+  ;; INSTALL SONAME 'provider_lzo'
+  ;; INSTALL SONAME 'provider_snappy'
+;
 
 query:
   ==FACTOR:5== SET GLOBAL INNODB_COMPRESSION_ALGORITHM = compression_alg |

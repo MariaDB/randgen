@@ -169,12 +169,11 @@ $grammars = [
       --gendata=conf/zz/temporal.zz',
 '--grammar=conf/yy/temporal.yy',
 '--grammar=conf/yy/trx_stress.yy',
-'--grammar=conf/yy/updateable_views.yy
-      --gendata=data/sql/updateable_views.sql',
 '--grammar=conf/yy/userstat.yy',
 '--grammar=conf/yy/user_variables.yy
       --mysqld=--user-variables',
 '--grammar=conf/yy/versioning.yy',
+'--grammar=conf/yy/views.yy',
 '--grammar=conf/yy/virtual_columns.yy',
 '--grammar=conf/yy/xa.yy',
 ];

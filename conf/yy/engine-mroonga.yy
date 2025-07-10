@@ -19,11 +19,8 @@
 ########################################################################
 
 query_init:
-     CREATE DATABASE IF NOT EXISTS mroonga_db
-  ;; SET ROLE admin
-  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON mroonga_db.* TO ',CURRENT_USER,' WITH GRANT OPTION')
-  ;; FLUSH PRIVILEGES
-  ;; SET ROLE NONE
+     SET DEFAULT ROLE admin ;; SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS mroonga_db
   ;; { _set_db('mroonga_db') } create_like
   ;; create_one_field
 ;

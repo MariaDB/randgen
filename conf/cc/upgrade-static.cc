@@ -35,7 +35,6 @@ $combinations = [
     --gendata=conf/zz/optimizer_basic.zz
     --gendata=conf/zz/temporal.zz
     --gendata=data/dbt3/dbt3-s0.0001.dump
-    --gendata=data/sql/updateable_views.sql
     --gendata=advanced
     --views=MERGE,TEMPTABLE
     --vcols

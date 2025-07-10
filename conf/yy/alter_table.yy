@@ -19,11 +19,8 @@
 
 query_init:
   { $tbnum=0; '' }
-     CREATE DATABASE IF NOT EXISTS alt_table_db
-  ;; SET ROLE admin
-     # PS is a workaround for MDEV-30190
-  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON alt_table_db.* TO ',CURRENT_USER,' WITH GRANT OPTION')
-  ;; SET ROLE NONE
+     SET DEFAULT ROLE admin ;; SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS alt_table_db
   ;; { _set_db('alt_table_db') }
      alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace
   ;; alt_create_or_replace ;; alt_create_or_replace ;; alt_create_or_replace

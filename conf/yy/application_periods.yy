@@ -35,11 +35,8 @@
 # Pre-create simple tables, to make sure they all exist
 #
 query_init:
-     CREATE DATABASE IF NOT EXISTS app_periods
-  ;; SET ROLE admin
-     # PS is a workaround for MDEV-30190
-  ;; EXECUTE IMMEDIATE CONCAT('GRANT ALL ON app_periods.* TO ',CURRENT_USER,' WITH GRANT OPTION')
-  ;; SET ROLE NONE
+     SET DEFAULT ROLE admin ;; SET ROLE admin
+  ;; CREATE DATABASE IF NOT EXISTS app_periods
   ;; { _set_db('app_periods') }
      { $tnum=1; '' } create_simple_with_period_init
   ;; { $tnum++; '' } create_simple_with_period_init

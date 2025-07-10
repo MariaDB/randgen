@@ -18,7 +18,10 @@
 ##########################################
 
 query_init:
-  { %created_users = (); %full_user_names = (); '' } ;; SET ROLE admin ;; create_user ;
+  { %created_users = (); %full_user_names = (); '' }
+  SET DEFAULT ROLE admin ;; SET ROLE admin
+  ;; create_user
+;
 
 query:
   user_ddl_query |

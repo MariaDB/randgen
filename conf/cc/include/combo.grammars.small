@@ -140,13 +140,12 @@ $grammars= [
   [@empty_set,
     '--grammar=conf/yy/trx_stress.yy'],
   [@empty_set,
-    '--grammar=conf/yy/updateable_views.yy
-      --gendata=data/sql/updateable_views.sql'],
-  [@empty_set,
     '--grammar=conf/yy/user_variables.yy:0.01
       --mysqld=--user-variables'],
   [@empty_set,
     '--grammar=conf/yy/versioning.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/views.yy'],
   [@empty_set,
     '--grammar=conf/yy/window_functions.yy'],
   [@empty_set,
@@ -198,8 +197,6 @@ $gendata= [
     '--gendata=data/dbt3/dbt3-s0.0001.dump',
     '--gendata=data/dbt3/dbt3-s0.001.dump',
   ],
-  [@empty_set,
-    '--gendata=data/sql/updateable_views.sql'],
   [@empty_set,
     '--gendata=data/sql/world.sql']
 ];

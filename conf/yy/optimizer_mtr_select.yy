@@ -18,7 +18,7 @@
 ########################################################################
 
 thread1_init:
-  SET ROLE admin
+  SET DEFAULT ROLE admin ;; SET ROLE admin
 #
 # From main.select
 #
@@ -109,7 +109,6 @@ thread1_init:
   ;; INSERT INTO t2 VALUES (_char(1)),(_char(1)),('k'),('l')
   ;; CREATE TABLE t3 ( c VARCHAR(1) NOT NULL, KEY(c) )
   ;; INSERT INTO t3 VALUES (_char(1)),(_char(1)),('m'),('n')
-  ;; SET ROLE none
 ;
 
 t4_extra_params:

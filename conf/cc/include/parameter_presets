@@ -1743,8 +1743,8 @@ $ddl_grammars{$minversion}= [
   [@empty_set_20, '--grammar=conf/yy/sequences.yy'],
   [@empty_set_30, '--grammar=conf/yy/signal_resignal.yy'],
   [@empty_set_20, '--grammar=conf/yy/temporal.yy'],
-  [@empty_set_30, '--grammar=conf/yy/updateable_views.yy --gendata=data/sql/updateable_views.sql'],
   [@empty_set_30, '--grammar=conf/yy/versioning.yy'],
+  [@empty_set_30, '--grammar=conf/yy/views.yy'],
   [@empty_set_30, '--grammar=conf/yy/virtual_columns.yy'],
 ];
 
@@ -1999,8 +1999,6 @@ $gendata{$minversion}= [
     '--gendata=data/sql/system_schemata_copy.sql'],
   [@empty_set_20,
     '--gendata=data/sql/tz.sql'],
-  [@empty_set_20,
-    '--gendata=data/sql/updateable_views.sql'],
   [@empty_set_20,
     '--gendata=data/sql/world.sql']
 ];

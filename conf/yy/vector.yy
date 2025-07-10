@@ -16,17 +16,16 @@
 #compatibility 11.7.0
 
 query_init:
-     SET ROLE admin
+     SET DEFAULT ROLE admin ;; SET ROLE admin
   ;; SET GLOBAL mhnsw_max_cache_size=8*1024*1024*1024
   ;; CREATE DATABASE IF NOT EXISTS vector_db
-  ;; USE vector_db
-  ;; { $create_table_name = 't1_'.abs($$); '' } create_vector_table
+  ;; { _set_db('vector_db') }
+     { $create_table_name = 't1_'.abs($$); '' } create_vector_table
   ;; { $create_table_name = 't2_'.abs($$); '' } create_vector_table
   ;; { $create_table_name = 't3_'.abs($$); '' } create_vector_table
   ;; { $create_table_name = 't4_'.abs($$); '' } create_vector_table
   ;; GRANT ALL ON vector_db.* TO CURRENT_USER()
   ;; SET GLOBAL mhnsw_max_cache_size=DEFAULT
-  ;; SET ROLE NONE
 ;
 
 query:

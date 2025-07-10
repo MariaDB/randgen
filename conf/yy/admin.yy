@@ -15,9 +15,13 @@
 
 #features Aria tables, RocksDB tables
 
+query_init:
+  SET DEFAULT ROLE admin ;; SET ROLE admin
+;
+
 query:
-  ==FACTOR:10== { _set_db('ANY') } SET ROLE admin ;; admin_query |
-  { _set_db('ANY') } SET ROLE NONE ;; admin_query
+  ==FACTOR:10== { _set_db('ANY') } admin_query |
+                { _set_db('ANY') } SET ROLE NONE ;; admin_query ;; SET ROLE admin
 ;
 
 optional_wait:

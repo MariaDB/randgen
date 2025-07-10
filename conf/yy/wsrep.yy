@@ -16,7 +16,9 @@
 #include <conf/yy/include/basics.inc>
 
 thread1_init:
-    dynvar_initial_settings;
+     SET DEFAULT ROLE admin ;; SET ROLE admin
+  ;; dynvar_initial_settings
+;
 
 query:
     SET SESSION dynvar_session_variable
@@ -26,7 +28,7 @@ query:
 
 wsrep_table_action:
   ==FACTOR:10== SELECT * FROM wsrep_table |
-                SET ROLE admin ;; DELETE FROM mysql.wsrep_streaming_log ;; SET ROLE NONE
+                DELETE FROM mysql.wsrep_streaming_log
 ;
 
 wsrep_table:

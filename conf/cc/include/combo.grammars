@@ -284,15 +284,14 @@ $grammars= [
   [@empty_set,
     '--grammar=conf/yy/trx_stress.yy'],
   [@empty_set,
-    '--grammar=conf/yy/updateable_views.yy
-      --gendata=data/sql/updateable_views.sql'],
-  [@empty_set,
     '--grammar=conf/yy/userstat.yy:0.01'],
   [@empty_set,
     '--grammar=conf/yy/user_variables.yy:0.01
       --mysqld=--user-variables'],
   [@empty_set,
     '--grammar=conf/yy/versioning.yy'],
+  [@empty_set,
+    '--grammar=conf/yy/views.yy'],
   [@empty_set,
     '--grammar=conf/yy/virtual_columns.yy'],
   [@empty_set,
@@ -366,8 +365,6 @@ $gendata= [
     '--gendata=data/sql/misc.sql'],
   [@empty_set,
     '--gendata=data/sql/system_schemata_copy.sql'],
-  [@empty_set,
-    '--gendata=data/sql/updateable_views.sql'],
   [@empty_set,
     '--gendata=data/sql/world.sql']
 ];
