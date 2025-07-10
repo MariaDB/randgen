@@ -83,7 +83,7 @@ else
       sleep 1
       cp $workdir/var/trial.log  $archive/trial${t}.log
       if [ -z "$discard_logs" ] && [ "$res" != "0" ] ; then
-        cp -r $workdir/var $archive/vardir${t}
+        cp -r $workdir/var $archive/vardir1_${t}
       fi
     fi
   done < $workdir/combinations.txt
