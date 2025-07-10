@@ -1,3 +1,5 @@
+SET @mhnsw_max_cache_size.save= @@mhnsw_max_cache_size;
+SET GLOBAL mhnsw_max_cache_size = IF(@@mhnsw_max_cache_size < 1024*1024*1024,1024*1024*1024,@@mhnsw_max_cache_size);
 CREATE DATABASE IF NOT EXISTS vector_db;
 SET autocommit=0, unique_checks=0, foreign_key_checks=0;
 CREATE OR REPLACE TABLE vector_db.gist_1K (pk BIGINT AUTO_INCREMENT PRIMARY KEY, veccol VECTOR(960) NOT NULL)
@@ -1006,3 +1008,4 @@ INSERT INTO vector_db.gist_1K (veccol) VALUES
 ;
 COMMIT;
 SET STATEMENT max_statement_time=0 FOR ALTER TABLE vector_db.gist_1K ADD VECTOR(veccol);
+SET GLOBAL mhnsw_max_cache_size = @mhnsw_max_cache_size.save;

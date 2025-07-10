@@ -1,3 +1,5 @@
+SET @mhnsw_max_cache_size.save= @@mhnsw_max_cache_size;
+SET GLOBAL mhnsw_max_cache_size = IF(@@mhnsw_max_cache_size < 1024*1024*1024,1024*1024*1024,@@mhnsw_max_cache_size);
 CREATE DATABASE IF NOT EXISTS vector_db;
 SET autocommit=0, unique_checks=0, foreign_key_checks=0;
 CREATE OR REPLACE TABLE vector_db.t_data (pk BIGINT AUTO_INCREMENT PRIMARY KEY, veccol VECTOR(96) NOT NULL);
@@ -10016,3 +10018,4 @@ INSERT INTO vector_db.t_data (veccol) VALUES
 COMMIT;
 SET STATEMENT max_statement_time=0 FOR ALTER TABLE vector_db.t_data ADD VECTOR(veccol);
 RENAME TABLE vector_db.t_data TO vector_db.deep_image_10K;
+SET GLOBAL mhnsw_max_cache_size = @mhnsw_max_cache_size.save;
