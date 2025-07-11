@@ -1679,7 +1679,7 @@ sub checkErrorLogForErrors {
         }
     }
     # Ignore "Couldn't load plugins", but only if it's the case of a missing library
-    if (/Can't open shared library '.*\/(.*?\.so)' \(errno: 2, cannot open shared object file: No such file or directory\)/s) {
+    if (/Can't open shared library '.*\/(.*?\.so)' \(errno: .*, cannot open shared object file: No such file or directory\)/s) {
       $missing_plugins{$1}= 1;
       next;
     }
