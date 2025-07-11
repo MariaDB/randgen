@@ -139,7 +139,7 @@ sub report {
 }
 
 sub type {
-  return REPORTER_TYPE_POST_SHUTDOWN ;
+  return REPORTER_TYPE_SUCCESS_POST_SHUTDOWN ;
 }
 
 1;

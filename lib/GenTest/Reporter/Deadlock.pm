@@ -1,5 +1,5 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2021, 2023, MariaDB
+# Copyright (c) 2021, 2025, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -102,29 +102,11 @@ sub monitor {
 }
 
 sub report {
-  my $reporter = shift;
-  my $datadir = $reporter->server->serverVariable('datadir');
-  my $server_pid = $reporter->serverInfo('pid');
-  if ($server_pid) {
-    if (($^O eq 'MSWin32') || ($^O eq 'MSWin64')) {
-      my $cdb_command = "cdb -p $server_pid -c \".dump /m $datadir\\mysqld.dmp;q\"";
-      say("Deadlock reporter: Executing $cdb_command");
-      system($cdb_command);
-    } else {
-      say("Deadlock reporter: Killing mysqld with pid $server_pid with SIGHUP in order to force debug output.");
-      kill(1, $server_pid);
-      sleep(2);
-      say("Deadlock reporter: Killing mysqld with pid $server_pid with SIGSEGV in order to capture core.");
-      $reporter->server->kill('SEGV');
-    }
-  } else {
-    say("Deadlock reporter: Server PID not found, not sending signals");
-  }
-  return STATUS_SERVER_DEADLOCKED;
+  # We rely on Backtrace reporter to get stack traces etc.
 }
 
 sub type {
-  return REPORTER_TYPE_PERIODIC | REPORTER_TYPE_DEADLOCK;
+  return REPORTER_TYPE_PERIODIC;
 }
 
 1;

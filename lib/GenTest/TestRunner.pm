@@ -294,30 +294,48 @@ sub reportResults {
     my $reporter_manager = $self->reporterManager();
     my @report_results;
 
-    if ($total_status == STATUS_OK) {
-      if ($post_shutdown) {
-        @report_results = $reporter_manager->report(REPORTER_TYPE_POST_SHUTDOWN);
-      } else {
-        @report_results = $reporter_manager->report(REPORTER_TYPE_SUCCESS | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
-      }
-    } elsif (
-        ($total_status == STATUS_LENGTH_MISMATCH) ||
-        ($total_status == STATUS_CONTENT_MISMATCH)
-    ) {
-        @report_results = $reporter_manager->report(REPORTER_TYPE_DATA | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
-    } elsif ($total_status == STATUS_SERVER_CRASHED || $total_status == STATUS_SERVER_UNAVAILABLE) {
-        say("Server crash may have occurred, initiating post-crash analysis...");
-        @report_results = $reporter_manager->report(REPORTER_TYPE_CRASH | REPORTER_TYPE_ALWAYS);
-    } elsif ($total_status == STATUS_SERVER_DEADLOCKED) {
-        say("Server deadlock reported, initiating analysis...");
-        @report_results = $reporter_manager->report(REPORTER_TYPE_DEADLOCK | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
-    } elsif ($total_status == STATUS_SERVER_STOPPED) {
-        $total_status = STATUS_OK;
-        @report_results = $reporter_manager->report(REPORTER_TYPE_SERVER_KILLED | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
-    } else {
-        @report_results = $reporter_manager->report(REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END);
-    }
+    my $reporter_types= 0;
 
+    if ($total_status == STATUS_SERVER_STOPPED) {
+        $total_status = STATUS_OK;
+    }
+    if ($total_status == STATUS_OK && $post_shutdown) {
+        $reporter_types= $reporter_types | REPORTER_TYPE_SUCCESS_POST_SHUTDOWN;
+    }
+    elsif ($total_status == STATUS_OK) {
+        $reporter_types= $reporter_types | REPORTER_TYPE_SUCCESS | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END;
+    }
+    elsif (! $post_shutdown) {
+      $reporter_types= REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END;
+
+      if (
+          ($total_status == STATUS_INTERNAL_ERROR) ||
+          ($total_status == STATUS_UNKNOWN_ERROR) ||
+          ($total_status == STATUS_ENVIRONMENT_FAILURE) ||
+          ($total_status == STATUS_CRITICAL_FAILURE) ||
+          ($total_status == STATUS_SERVER_UNAVAILABLE) ||
+          ($total_status == STATUS_SERVER_CRASHED) ||
+          ($total_status == STATUS_REPLICATION_FAILURE) ||
+          ($total_status == STATUS_BACKUP_FAILURE) ||
+          ($total_status == STATUS_RECOVERY_FAILURE) ||
+          ($total_status == STATUS_SERVER_SHUTDOWN_FAILURE) ||
+          ($total_status == STATUS_SERVER_STARTUP_FAILURE) ||
+          ($total_status == STATUS_ALARM)
+      ) {
+          say("Initiating possible crash analysis...");
+          $reporter_types= $reporter_types | REPORTER_TYPE_CRASH;
+      }
+      if ($total_status == STATUS_SERVER_DEADLOCKED) {
+          say("Initiating possible deadlock analysis...");
+          $reporter_types= $reporter_types | REPORTER_TYPE_DEADLOCK;
+      }
+      if (
+          ($total_status == STATUS_SERVER_CRASHED) ||
+          ($total_status == STATUS_SERVER_UNAVAILABLE)
+      ) {
+      }
+    }
+    @report_results = $reporter_manager->report($reporter_types);
     my $report_status = shift @report_results;
     $total_status = $report_status if $report_status > $total_status;
 
