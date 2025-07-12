@@ -104,7 +104,7 @@ MDEV-36758:
 =~ LeakSanitizer: detected memory leaks
 =~ MHNSW_Share::alloc_node
 MDEV-36753:
-=~ Assertion \`str\[strlen(str)-1\] != '\\n''
+=~ Assertion \`str\[strlen(str)-1\] != '\\\n''
 =~ my_message_sql
 =~ ma_decrypt
 =~ ha_maria::repair
@@ -2214,7 +2214,7 @@ MDEV-26805:
 =~ Sql_cmd_create_table_like::execute
 MDEV-26692:
 =~ Assertion \`table\.get_ref_count() <= 1'|Assertion \`user_table->get_ref_count() == 1'
-=~ commit_try_rebuild|dberr_t trx_t::drop_table
+=~ commit_try_rebuild|dberr_t trx_t::drop_table|prepare_inplace_alter_table_dict
 =~ FeatureUsage detected OQGraph tables
 MDEV-26677:
 =~ RocksDB: Failed to get column family flags from CF with id
