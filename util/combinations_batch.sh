@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 #
-# Copyright (c) 2021, 2025 MariaDB
+# Copyright (c) 2025 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -81,9 +81,18 @@ else
       kill -11 `ps -ef | grep -E 'mysqld|mariadbd' | grep -E "port=$port_prefix" | grep -v grep | awk '{print $2}' | xargs`
       kill `ps -ef | grep run.pl | grep -v grep | awk '{print $2}' | xargs` || true
       sleep 1
-      cp $workdir/var/trial.log  $archive/trial${t}.log
+      mv $workdir/var/trial.log  $archive/trial${t}.log
       if [ -z "$discard_logs" ] && [ "$res" != "0" ] ; then
-        cp -r $workdir/var $archive/vardir1_${t}
+        # We don't want to remove accidentally files which start with "core" but end with something different
+        find $workdir/var -type f -name "core" -delete
+        find $workdir/var -type f -name "core.*" -delete
+        find $workdir/var -type f -name "mysql.sock" -delete
+        mv $workdir/var $archive/vardir1_${t}
+        perl util/check_for_known_bugs.pl --signatures=util/bug_signatures* $archive/vardir1_${t}/s*/mysql.err $archive/trial${t}.log $archive/vardir1_${t}/s*/boot.log 2>&1 | tee $archive/results.txt
+        cd $archive
+        tar zcf logs_${t}.tar.gz vardir1_${t} trial${t}.log
+        rm -rf trial${t}.log vardir1_${t}
+        cd -
       fi
     fi
   done < $workdir/combinations.txt
