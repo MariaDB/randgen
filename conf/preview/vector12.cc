@@ -38,7 +38,7 @@ $combinations = [
 #  $options{optional_ps_protocol},
 
 # New
-  [ '--grammar=conf/yy/vector.yy:3 --gendata=data/sql/vector_gist_960_1K.sql --gendata=data/sql/vector_deep_image_96_10K.sql --grammar=conf/yy/functions.yy:2' ],
+  [ '--grammar=conf/yy/vector.yy:3 --gendata=data/sql/vector_gist_960_1K.sql --gendata=data/sql/vector_deep_image_96_10K.sql' ],
   [ '--mysqld=--mhnsw_max_cache_size=128M', '--mysqld=--mhnsw_max_cache_size=8G', '--mysqld=--mhnsw_max_cache_size=4G', '--mysqld=--mhnsw_max_cache_size=1G', '--mysqld=--mhnsw_max_cache_size=1M' ],
   [ '--mysqld=--mhnsw_default_m=3', '--mysqld=--mhnsw_default_m=4', '--mysqld=--mhnsw_default_m=20', '--mysqld=--mhnsw_default_m=100', '', '' ],
   [ '--mysqld=--mhnsw_ef_search=1', '--mysqld=--mhnsw_ef_search=2', '--mysqld=--mhnsw_ef_search=5', '--mysqld=--mhnsw_ef_search=10', '--mysqld=--mhnsw_ef_search=20', '--mysqld=--mhnsw_ef_search=100', '--mysqld=--mhnsw_ef_search=200', '--mysqld=--mhnsw_ef_search=4096', '--mysqld=--mhnsw_ef_search=65535', '' ],
@@ -48,6 +48,7 @@ $combinations = [
   [
     {
       acl => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
         [ '--grammar=conf/yy/acl.yy', '--grammar=conf/yy/create_user.yy'],
         ['
@@ -66,6 +67,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       aria => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         [ '--engine=Aria --mysqld=--default-storage-engine=Aria' ],
         $options{optional_charsets_safe},
@@ -76,6 +78,7 @@ $combinations = [
         $options{optional_aria_variables},
       ],
       bigbang => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
         $options{optional_gendata_views},
         $options{optional_gendata_vcols},
@@ -96,6 +99,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       bigbang_with_custom_config => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
         [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
         $options{optional_gendata_views},
@@ -117,6 +121,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       binlog => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
         [ '--reporter=BinlogDump' ],
         [ '--mysqld=--log-bin' ],
@@ -134,6 +139,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       custom => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         [ '--engine=InnoDB,Aria' ],
         [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
@@ -142,6 +148,7 @@ $combinations = [
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
       ],
       custom_recovery => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=CrashRecovery' ],
         [ '--engine=InnoDB' ],
         [ '--variator=ExecuteAsOracleSP', '' ],
@@ -150,6 +157,7 @@ $combinations = [
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
       ],
       custom_rpl => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Replication' ],
         [ '--engine=InnoDB' ],
         [ '--variator=ExecuteAsOracleSP', '' ],
@@ -160,6 +168,7 @@ $combinations = [
         $options{dml_grammars}, $options{ddl_grammars},
       ],
       encryption => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=CrashRecovery' ],
         [ '--engine=InnoDB,Aria' ],
         {
@@ -185,6 +194,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       galera => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Galera' ],
         [ '--filter=conf/ff/replication.ff' ],
         [ '--engine=InnoDB' ],
@@ -201,6 +211,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       gis => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
         [ '--gendata=advanced --gis'],
         [ '--grammar=conf/yy/gis.yy --grammar=conf/yy/alter_table.yy'],
@@ -216,6 +227,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       index => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
         [ '--reporters=SecondaryIndexConsistency' ],
         [ '--grammar=conf/yy/many_indexes.yy' ],
@@ -233,6 +245,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       innodb => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
         [ '--engine=InnoDB' ],
         $options{optional_charsets_safe},
@@ -245,6 +258,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       innodb_compression => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         [ '--engine=InnoDB' ],
         [ '--grammar=conf/yy/innodb_compression_algorithms.yy'],
@@ -258,6 +272,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       innodb_pagesize => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         [ '--engine=InnoDB' ],
         $options{optional_charsets_safe},
@@ -275,6 +290,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       innodb_recovery => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         $options{scenario_crash_combinations},
         [ '--engine=InnoDB' ],
         [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
@@ -291,6 +307,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       innodb_trx_isolation => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart', '--scenario=CrashRecovery' ],
         [ '--engine=InnoDB' ],
         [ '--grammar=conf/yy/transaction.yy' ],
@@ -309,6 +326,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       innodb_xa => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart', '--scenario=CrashRecovery' ],
         [ '--engine=InnoDB' ],
         [ '--grammar=conf/yy/xa.yy' ],
@@ -322,6 +340,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       json => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         $options{engine_basic_combinations},
         [ '--grammar=conf/yy/json.yy --variator=JsonTables' ],
@@ -331,6 +350,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       locking => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
         [ '--grammar=conf/yy/backup-locks.yy --grammar=conf/yy/locks.yy' ],
         $options{engine_basic_combinations},
@@ -340,10 +360,12 @@ $combinations = [
         $options{optional_server_variables},
       ],
       minimal => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
       ],
       mixed_flow => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
         $options{optional_gendata_views},
         $options{engine_basic_combinations},
@@ -355,6 +377,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       optimizer => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         ['
           --gendata=conf/zz/range_access.zz
@@ -406,6 +429,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       perfschema => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
         $options{engine_basic_combinations},
         $options{optional_charsets_safe},
@@ -435,6 +459,7 @@ $combinations = [
         [ '--mysqld=--performance-schema-consumer-events-transactions-history-long=ON', '--mysqld=--performance-schema-consumer-events-transactions-history-long=OFF' ],
       ],
       plugins => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
         ['
           --grammar=conf/yy/query_response_time.yy
@@ -467,6 +492,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       ps_sp => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
         $options{engine_basic_combinations},
         $options{optional_charsets_safe},
@@ -476,6 +502,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       readonly => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         $options{engine_basic_combinations},
         $options{optional_charsets_safe},
@@ -506,6 +533,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       recovery => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         $options{scenario_crash_combinations},
         [ '--engine=InnoDB', '--engine=Aria --mysqld=--default-storage-engine=Aria', '--engine=InnoDB,Aria' ],
         [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
@@ -523,6 +551,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       replication => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         $options{scenario_replication_combinations},
         [ '--grammar=conf/yy/replication.yy --filter=conf/ff/replication.ff' ],
         $options{engine_basic_combinations},
@@ -540,6 +569,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       replication_mbr => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         $options{scenario_replication_combinations},
         [ '--mysqld=--log-bin --mysqld=--binlog-format=mixed' ],
         [ '--grammar=conf/yy/replication.yy --filter=conf/ff/replication.ff' ],
@@ -550,6 +580,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       replication_rbr => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         $options{scenario_replication_combinations},
         [ '--mysqld=--log-bin --mysqld=--binlog-format=row' ],
         [ '--grammar=conf/yy/replication.yy --filter=conf/ff/replication.ff' ],
@@ -560,6 +591,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       simple => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         $options{engine_basic_combinations},
         $options{optional_charsets_safe},
@@ -569,6 +601,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       spider => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         ['
           --mysqld=--plugin-load-add=ha_spider
@@ -583,6 +616,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       unique_hash => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
         [ '--gendata=advanced --unique-hash-keys'],
         $options{engine_basic_combinations},
@@ -597,6 +631,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       upgrade_backup => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         $options{scenario_mariabackup_combinations}, $options{scenario_upgrade_combinations},
         [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
         [ '--grammar=conf/yy/dml.yy' ],
@@ -614,6 +649,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       views => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         $options{engine_basic_combinations},
         [ '--gendata=advanced', '--gendata=simple --grammar=conf/yy/views.yy' ],
@@ -625,6 +661,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       virtual_columns => [
+        [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
         [ '--gendata=advanced' ],
         [ '--grammar=conf/yy/virtual_columns.yy' ],
