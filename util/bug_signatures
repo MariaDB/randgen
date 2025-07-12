@@ -22,6 +22,17 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-37215:
+=~ InnoDB: Failing assertion: UT_LIST_GET_LEN(lock\.trx_locks) == 0
+=~ trx_t::commit
+=~ ha_commit_one_phase
+MDEV-37215:
+=~ Assertion \`!trx->is_autocommit_non_locking()'
+=~ lock_table_create
+=~ ha_innobase::index
+MDEV-37214:
+=~ Internal MariaDB error code: 1396
+=~ Test run ends with exit status STATUS_REPLICATION_FAILURE
 MDEV-37192:
 =~ InnoDB: OPT_PAGE_CHECKSUM mismatch on
 =~ InnoDB: Set innodb_force_recovery=1 to ignore corruption
