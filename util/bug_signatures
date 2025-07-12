@@ -2979,7 +2979,7 @@ MDEV-23315:
 MDEV-23298:
 =~ Assertion \`table_list->prelocking_placeholder == TABLE_LIST::PRELOCK_NONE'
 =~ check_lock_and_start_stmt
-=~ select_create::create_table_from_items
+=~ select_create::create_table_from_items|Query.*:.*CREATE.*OR REPLACE TABLE
 MDEV-23297:
 =~ Assertion \`info->dfile\.file == share->bitmap\.file\.file'
 =~ _ma_scan_init_block_record
