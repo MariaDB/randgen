@@ -88,7 +88,10 @@ else
         find $workdir/var -type f -name "core.*" -delete
         find $workdir/var -type f -name "mysql.sock" -delete
         mv $workdir/var $archive/vardir1_${t}
+        echo "###################################" | tee -a $archive/results.txt
+        echo "Log: trial${t}.log" | tee -a $archive/results.txt
         perl util/check_for_known_bugs.pl --signatures=util/bug_signatures* $archive/vardir1_${t}/s*/mysql.err $archive/trial${t}.log $archive/vardir1_${t}/s*/boot.log 2>&1 | tee -a $archive/results.txt
+        echo "###################################" | tee -a $archive/results.txt
         cd $archive
         tar zcf logs_${t}.tar.gz vardir1_${t} trial${t}.log
         rm -rf trial${t}.log vardir1_${t}
