@@ -1,4 +1,4 @@
-# Copyright (C) 2022, 2024 MariaDB
+# Copyright (C) 2022, 2025 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -140,9 +140,9 @@ sub run {
         last;
       }
       $master_conn->execute("/*!100001 SET tx_read_only= OFF */");
-      $master_conn->execute("CREATE USER /*!100104 IF NOT EXISTS */ replication IDENTIFIED BY 'yvp.utu9azv4xgt6VRT'");
+      $master_conn->execute("CREATE USER /*!100104 IF NOT EXISTS */ replication\@localhost IDENTIFIED BY 'yvp.utu9azv4xgt6VRT'");
       unless ($master_conn->err) {
-        $master_conn->execute("GRANT REPLICATION SLAVE ON *.* TO replication");
+        $master_conn->execute("GRANT REPLICATION SLAVE ON *.* TO replication\@localhost");
       }
       my $master_port= $servers[$master]->port;
       my ($slave_conn, $err)= Connection::Perl->new( server => $servers[$slave], role => 'super', name => 'RPL' );
