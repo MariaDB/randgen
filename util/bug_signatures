@@ -22,6 +22,10 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-37218:
+=~ Assertion \`inited==INDEX'
+=~ handler::ha_index_first
+=~ collect_statistics_for_index
 MDEV-37215:
 =~ InnoDB: Failing assertion: UT_LIST_GET_LEN(lock\.trx_locks) == 0
 =~ trx_t::commit
@@ -215,6 +219,11 @@ MDEV-36436:
 =~ Assertion \`"unexpected references" == 0'
 =~ ha_innobase::rename_table
 =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
+MDEV-36436:
+=~ Assertion \`"unexpected references" == 0'
+=~ ha_innobase::rename_table
+=~ FeatureUsage detected OQGraph tables
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 # Not merged to main yet
 MDEV-36227:
 =~ Assertion \`ib_table->stat_initialized()'
