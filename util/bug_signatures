@@ -131,7 +131,7 @@ MDEV-36753:
 MDEV-36752:
 =~ Assertion \`backup_stage <= BACKUP_WAIT_FOR_FLUSH \|\| backup_stage >= BACKUP_END'
 =~ backup_log_ddl
-=~ mysql_create_or_drop_trigger
+=~ mysql_create_or_drop_trigger|mysql_admin_table
 MDEV-36706:
 =~ Assertion \`copied_in'
 =~ Item_copy_string::val_str
