@@ -19,6 +19,9 @@
 # This grammar goes together with the respective SQL file which creates the tables
 ########################################################################
 
+#require <data/sql/engine-oqgraph.sql>
+#features OQGraph engine, OQGraph tables
+
 query_init:
   # This is to prevent other grammars from altering the schema
   # PS is a workaround for MDEV-30190
