@@ -316,6 +316,7 @@ sub reportResults {
           ($total_status == STATUS_SERVER_UNAVAILABLE) ||
           ($total_status == STATUS_SERVER_CRASHED) ||
           ($total_status == STATUS_REPLICATION_FAILURE) ||
+          ($total_status == STATUS_REPLICATION_TIMEOUT) ||
           ($total_status == STATUS_BACKUP_FAILURE) ||
           ($total_status == STATUS_RECOVERY_FAILURE) ||
           ($total_status == STATUS_SERVER_SHUTDOWN_FAILURE) ||
