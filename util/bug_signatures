@@ -22,6 +22,11 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-37222:
+=~ Assertion \`"invalid state" == 0'
+=~ innobase_xa_prepare
+=~ prepare_or_error
+=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-37221:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ lex_string_set
