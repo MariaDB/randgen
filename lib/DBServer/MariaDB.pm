@@ -1783,6 +1783,7 @@ sub isRecordIgnored {
     or  $line =~ /server_audit: Query log limit was changed/s
     or  $line =~ /server_audit: SysLog facility was changed/s
     or  $line =~ /Slave I\/O: error reconnecting to master/s
+    or  $line =~ /Write to binary log failed: Multi-row statements required more than 'max_binlog_stmt_cache_size' bytes of storage/s
     # CSV is not crash-safe x 2
     or  $line =~ /(?:mysqld|mariadbd): Table 'general_log' is marked as crashed and should be repaired/s
     or  $line =~ /(?:mysqld|mariadbd): Table 'slow_log' is marked as crashed and should be repaired/s
