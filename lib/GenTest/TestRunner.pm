@@ -302,10 +302,13 @@ sub reportResults {
     if ($total_status == STATUS_OK && $post_shutdown) {
         $reporter_types= $reporter_types | REPORTER_TYPE_SUCCESS_POST_SHUTDOWN;
     }
+    elsif ($post_shutdown) {
+        $reporter_types= $reporter_types | REPORTER_TYPE_FAILURE_POST_SHUTDOWN;
+    }
     elsif ($total_status == STATUS_OK) {
         $reporter_types= $reporter_types | REPORTER_TYPE_SUCCESS | REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END;
     }
-    elsif (! $post_shutdown) {
+    else {
       $reporter_types= REPORTER_TYPE_ALWAYS | REPORTER_TYPE_END;
 
       if (
