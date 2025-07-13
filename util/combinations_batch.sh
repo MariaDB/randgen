@@ -96,6 +96,8 @@ else
         tar zcf logs_${t}.tar.gz vardir1_${t} trial${t}.log
         rm -rf trial${t}.log vardir1_${t}
         cd -
+      else
+        gzip $archive/trial${t}.log
       fi
     fi
   done < $workdir/combinations.txt
