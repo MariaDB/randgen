@@ -147,13 +147,16 @@ sub report {
     } elsif (scalar(@corefiles)) {
       say("Getting stack traces from ".scalar(@corefiles)." coredump(s), starting from the latest");
       foreach my $core (sort { -M $a <=> -M $b } @corefiles) {
-        my $binary= `file $core`;
-        chomp $binary;
-        $binary =~ s/^.*from '([^' ]*).*$/$1/;
+        my $core_binary= `file $core`;
+        chomp $core_binary;
+        unless ($core_binary =~ s/^.*from '([^' ]*).*$/$1/) {
+          sayWarning("Could not determine the binary from $core, assuming the default server binary $binary");
+          $core_binary= $binary;
+        }
         say("----------------------------  START OF STACK TRACE FROM THE COREDUMP  ----------------------------\n");
         say("BackTrace: coredump $core");
-        say("BackTrace: binary   $binary");
-        system("gdb --batch --se=$binary --core=$core --command=util/backtrace.gdb | grep -vE 'New LWP [0-9]*'");
+        say("BackTrace: binary   $core_binary");
+        system("gdb --batch --se=$core_binary --core=$core --command=util/backtrace.gdb | grep -vE 'New LWP [0-9]*'");
         say("----------------------------  START OF STACK TRACE FROM THE COREDUMP  ----------------------------\n");
       }
     } else {
