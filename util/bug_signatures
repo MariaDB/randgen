@@ -22,6 +22,20 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+# Not merged into 11.4+ yet!
+# Remains not fixed in 10.6!
+MDEV-37237:
+=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
+=~ FeatureUsage detected virtual columns
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+# Not merged into 11.4+ yet!
+# Remains not fixed in 10.6!
+MDEV-37237:
+=~ Assertion \`0'
+=~ row_upd_sec_index_entry
+=~ row_update_for_mysql
+=~ FeatureUsage detected virtual columns
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-37235:
 =~ AddressSanitizer|signal
 =~ ha_mroonga::generic_reset
