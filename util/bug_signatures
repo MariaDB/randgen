@@ -22,6 +22,11 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-37238:
+=~ Assertion \`inited == RND'
+=~ handler::ha_rnd_next
+=~ TR_table::query_sees
+=~ FeatureUsage detected system-versioned tables
 # Not merged into 11.4+ yet!
 # Remains not fixed in 10.6!
 MDEV-37237:
@@ -1297,7 +1302,7 @@ MDEV-31498:
 MDEV-31497:
 =~ Assertion \`! thd->in_sub_stmt'|Assertion \`!(thd->in_sub_stmt)'
 =~ trans_commit_stmt
-=~ sequence_insert
+=~ sequence_insert|FeatureUsage detected sequences
 =~ sp_head::execute
 MDEV-31451:
 =~ Assertion \`marked_for_write_or_computed()'
