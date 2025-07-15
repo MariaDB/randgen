@@ -94,11 +94,10 @@ else
         echo "###################################" | tee -a $archive/results.txt
         cd $archive
         tar zcf logs_${t}.tar.gz vardir1_${t} trial${t}.log
-        rm -rf trial${t}.log vardir1_${t}
+        rm -rf vardir1_${t}
         cd -
-      else
-        gzip $archive/trial${t}.log
       fi
+      gzip $archive/trial${t}.log
     fi
   done < $workdir/combinations.txt
   (exit $result)
