@@ -34,6 +34,16 @@ MENT-319: [backup_flush_ticket == 0]
 ##########
 
 # 10.11 CS, 10.6 ES
+MDEV-37264:
+=~ AddressSanitizer|signal
+=~ key_copy
+=~ ha_partition::position
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-37264:
+=~ InnoDB: Failing assertion: field->col->mtype == type
+=~ row_sel_convert_mysql_key_to_innobase
+=~ ha_partition::rnd_pos
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-36906:
 =~ signal|AddressSanitizer
 =~ Rows_log_event::find_row
