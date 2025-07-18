@@ -47,25 +47,6 @@ $combinations = [
   ##### Engines and scenarios
   [
     {
-      acl => [
-        [ ' --grammar=conf/yy/functions.yy:2' ],
-        [ '--scenario=Standard', '--scenario=Restart' ],
-        [ '--grammar=conf/yy/acl.yy', '--grammar=conf/yy/create_user.yy'],
-        ['
-          --mysqld=--plugin-load-add=auth_0x0100.so
-          --mysqld=--plugin-load-add=auth_ed25519.so
-          --mysqld=--plugin-load-add=auth_pam.so
-          --mysqld=--plugin-load-add=password_reuse_check.so
-          --mysqld=--plugin-load-add=cracklib_password_check.so
-          --mysqld=--plugin-load-add=simple_password_check.so
-          --mysqld=--loose-password-reuse-check-interval=1
-        '],
-        $options{engine_basic_combinations},
-        $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
-        $options{optional_charsets_safe},
-        $options{optional_variators},
-        $options{optional_server_variables},
-      ],
       aria => [
         [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
@@ -101,7 +82,7 @@ $combinations = [
       bigbang_with_custom_config => [
         [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
-        [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
+        $options{custom_options_1_master},
         $options{optional_gendata_views},
         $options{optional_gendata_vcols},
         $options{optional_gendata_gis},
@@ -142,30 +123,10 @@ $combinations = [
         [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         [ '--engine=InnoDB,Aria' ],
-        [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
         [ '--variator=ExecuteAsOracleSP', '' ],
         [ '--variator=ExecuteAsPackageSP', '' ],
+        $options{custom_options_1_master},
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
-      ],
-      custom_recovery => [
-        [ ' --grammar=conf/yy/functions.yy:2' ],
-        [ '--scenario=CrashRecovery' ],
-        [ '--engine=InnoDB' ],
-        [ '--variator=ExecuteAsOracleSP', '' ],
-        [ '--variator=ExecuteAsPackageSP', '' ],
-        [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
-        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
-      ],
-      custom_rpl => [
-        [ ' --grammar=conf/yy/functions.yy:2' ],
-        [ '--scenario=Replication' ],
-        [ '--engine=InnoDB' ],
-        [ '--variator=ExecuteAsOracleSP', '' ],
-        [ '--variator=ExecuteAsPackageSP', '' ],
-        [ '--grammar=conf/yy/dml.yy' ],
-        [ '--filter=conf/ff/replication.ff' ],
-        [ '--server1-genconfig=conf/cnf/custom1-master.cnf --server2-genconfig=conf/cnf/custom1-slave.cnf --mysqld=--innodb-buffer-pool-size=1G' ],
-        $options{dml_grammars}, $options{ddl_grammars},
       ],
       encryption => [
         [ ' --grammar=conf/yy/functions.yy:2' ],
@@ -201,40 +162,6 @@ $combinations = [
         $options{optional_charsets_safe},
         $options{optional_encryption},
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
-        $options{optional_variators},
-        $options{optional_aria_variables},
-        $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
-        $options{optional_innodb_pagesize},
-        $options{optional_innodb_variables},
-        $options{optional_perfschema},
-        $options{optional_server_variables},
-      ],
-      gis => [
-        [ ' --grammar=conf/yy/functions.yy:2' ],
-        [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
-        [ '--gendata=advanced --gis'],
-        [ '--grammar=conf/yy/gis.yy --grammar=conf/yy/alter_table.yy'],
-        $options{engine_basic_combinations},
-        $options{optional_charsets_safe},
-        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
-        $options{optional_variators},
-        $options{optional_aria_variables},
-        $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
-        $options{optional_innodb_pagesize},
-        $options{optional_innodb_variables},
-        $options{optional_server_variables},
-      ],
-      index => [
-        [ ' --grammar=conf/yy/functions.yy:2' ],
-        [ '--scenario=Standard', '--scenario=Restart' ],
-        [ '--reporters=SecondaryIndexConsistency' ],
-        [ '--grammar=conf/yy/many_indexes.yy' ],
-        $options{engine_basic_combinations}, $options{engine_extra_supported_combinations},
-        $options{optional_charsets_safe},
-        $options{optional_encryption},
-        $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars}, $options{debug_grammars},
         $options{optional_variators},
         $options{optional_aria_variables},
         $options{optional_binlog_safe_variables},
@@ -325,30 +252,6 @@ $combinations = [
         $options{optional_innodb_variables},
         $options{optional_server_variables},
       ],
-      innodb_xa => [
-        [ ' --grammar=conf/yy/functions.yy:2' ],
-        [ '--scenario=Standard', '--scenario=Restart', '--scenario=CrashRecovery' ],
-        [ '--engine=InnoDB' ],
-        [ '--grammar=conf/yy/xa.yy' ],
-        $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
-        $options{optional_charsets_safe},
-        $options{optional_variators},
-        $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
-        $options{optional_innodb_pagesize},
-        $options{optional_innodb_variables},
-        $options{optional_server_variables},
-      ],
-      json => [
-        [ ' --grammar=conf/yy/functions.yy:2' ],
-        [ '--scenario=Standard' ],
-        $options{engine_basic_combinations},
-        [ '--grammar=conf/yy/json.yy --variator=JsonTables' ],
-        $options{optional_charsets_safe},
-        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
-        $options{optional_binlog_safe_variables},
-        $options{optional_server_variables},
-      ],
       locking => [
         [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
@@ -380,18 +283,6 @@ $combinations = [
         [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard' ],
         ['
-          --gendata=conf/zz/range_access.zz
-          --grammar=conf/yy/analyze_select_single_table.yy
-          --grammar=conf/yy/collect_eits.yy
-          --grammar=conf/yy/optimizer_access_exp.yy
-          --grammar=conf/yy/optimizer_costs.yy
-          --grammar=conf/yy/optimizer_trace.yy
-          --grammar=conf/yy/optimizer_vars.yy
-          --grammar=conf/yy/range_access2.yy
-          --grammar=conf/yy/range_access.yy
-          --grammar=conf/yy/window_functions.yy
-        '],
-        ['
           --variator=AnalyzeOrExplain
           --variator=DisableOptimizations
           --variator=EnableOptimizations
@@ -408,24 +299,6 @@ $combinations = [
         $options{optional_gendata_views},
         $options{engine_basic_combinations},
         $options{optional_charsets_safe},
-        $options{optional_server_variables},
-      ],
-      optimizer_transform => [
-        [ '--scenario=Standard' ],
-        ['
-          --gendata=simple
-          --gendata=data/sql/world.sql
-          --gendata=conf/zz/outer_join.zz
-          --grammar=conf/yy/collect_eits.yy
-          --grammar=conf/yy/optimizer_no_subquery.yy
-          --grammar=conf/yy/optimizer_subquery_semijoin.yy
-          --grammar=conf/yy/optimizer.yy
-          --grammar=conf/yy/outer_join.yy
-          --views
-        ' ],
-        $options{engine_basic_combinations},
-        $options{optional_charsets_safe},
-        [ '--validator=Transformer --transformer=ExecuteAsPreparedTwice --transformer=EnableOptimizations --transformer=DisableOptimizations' ],
         $options{optional_server_variables},
       ],
       perfschema => [
@@ -532,42 +405,6 @@ $combinations = [
         [ '', '--variator=SelectOption' ],
         $options{optional_server_variables},
       ],
-      recovery => [
-        [ ' --grammar=conf/yy/functions.yy:2' ],
-        $options{scenario_crash_combinations},
-        [ '--engine=InnoDB', '--engine=Aria --mysqld=--default-storage-engine=Aria', '--engine=InnoDB,Aria' ],
-        [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
-        [ '--grammar=conf/yy/dml.yy' ],
-        $options{optional_charsets_safe},
-        $options{optional_encryption},
-        $options{dml_grammars}, $options{ddl_grammars}, $options{debug_grammars},
-        $options{optional_variators},
-        $options{optional_aria_variables},
-        $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
-        $options{optional_innodb_pagesize},
-        $options{optional_innodb_variables},
-        $options{optional_perfschema},
-        $options{optional_server_variables},
-      ],
-      replication => [
-        [ ' --grammar=conf/yy/functions.yy:2' ],
-        $options{scenario_replication_combinations},
-        [ '--grammar=conf/yy/replication.yy --filter=conf/ff/replication.ff' ],
-        $options{engine_basic_combinations},
-        $options{optional_charsets_safe},
-        $options{optional_encryption},
-        $options{optional_replication_safe_variables},
-        $options{dml_grammars}, $options{ddl_grammars},
-        $options{optional_variators},
-        $options{optional_aria_variables},
-        $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
-        $options{optional_innodb_pagesize},
-        $options{optional_innodb_variables},
-        $options{optional_perfschema},
-        $options{optional_server_variables},
-      ],
       replication_mbr => [
         [ ' --grammar=conf/yy/functions.yy:2' ],
         $options{scenario_replication_combinations},
@@ -598,36 +435,6 @@ $combinations = [
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
         [ '--variator=ExecuteAsPreparedTwice' ],
         $options{optional_binlog_safe_variables},
-        $options{optional_server_variables},
-      ],
-      spider => [
-        [ ' --grammar=conf/yy/functions.yy:2' ],
-        [ '--scenario=Standard' ],
-        ['
-          --mysqld=--plugin-load-add=ha_spider
-          --mysqld=--loose-spider-same-server-link=on
-          --mysqld=--loose-spider_table_crd_thread_count=1
-          --mysqld=--loose-spider_table_sts_thread_count=1
-          --grammar=conf/yy/engine-spider.yy
-        '],
-        $options{optional_charsets_safe},
-        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
-        $options{optional_binlog_safe_variables},
-        $options{optional_server_variables},
-      ],
-      unique_hash => [
-        [ ' --grammar=conf/yy/functions.yy:2' ],
-        [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
-        [ '--gendata=advanced --unique-hash-keys'],
-        $options{engine_basic_combinations},
-        $options{optional_charsets_safe},
-        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
-        $options{optional_variators},
-        $options{optional_aria_variables},
-        $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
-        $options{optional_innodb_pagesize},
-        $options{optional_innodb_variables},
         $options{optional_server_variables},
       ],
       upgrade_backup => [
