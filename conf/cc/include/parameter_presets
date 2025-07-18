@@ -1463,9 +1463,9 @@ $optional_server_variables{1107}= [ @{$optional_server_variables{1105}},
   [ @empty_set_30, '--mysqld=--mhnsw_default_distance=euclidean', '--mysqld=--mhnsw_default_distance=cosine' ],
 ];
 
-$optional_server_variables{1201}= [ @{$optional_server_variables{1107}},
-  [ @empty_set_30, '--mysqld=--metadata-locks-instances=1', '--mysqld=--metadata-locks-instances=2', '--mysqld=--metadata-locks-instances=8', '--mysqld=--metadata-locks-instances=64', '--mysqld=--metadata-locks-instances=127', '--mysqld=--metadata-locks-instances=128' ],
-];
+#$optional_server_variables{1201}= [ @{$optional_server_variables{1107}},
+#  [ @empty_set_30, '--mysqld=--metadata-locks-instances=1', '--mysqld=--metadata-locks-instances=2', '--mysqld=--metadata-locks-instances=8', '--mysqld=--metadata-locks-instances=64', '--mysqld=--metadata-locks-#instances=127', '--mysqld=--metadata-locks-instances=128' ],
+#];
 
 $parameters{optional_server_variables}= \%optional_server_variables;
 
