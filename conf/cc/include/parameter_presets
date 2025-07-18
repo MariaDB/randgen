@@ -371,6 +371,130 @@ $parameters{scenario_cluster_combinations}= \%scenario_cluster_combinations;
 #########################
 
 #++++++++++++++++++++++++
+# Sets of options from realistic setups
+#++++++++++++++++++++++++
+
+# Same as conf/cnf/custom1-master.cnf but in a more reproducing-friendly form.
+# innodb-buffer-pool-size is scaled down
+# default_password_lifetime=90 removed
+# non-default paths (innodb data home dir, logs, etc.) removed
+# optimizer_switch changed to the difference from default settings (of the version which the config was used on)
+# optimizer_switch=index_merge=on,index_merge_union=on,index_merge_sort_union=on,index_merge_intersection=on,index_merge_sort_intersection=off,index_condition_pushdown=on,derived_merge=on,derived_with_keys=on,firstmatch=on,loosescan=on,materialization=on,in_to_exists=on,semijoin=on,partial_match_rowid_merge=on,partial_match_table_scan=on,subquery_cache=on,mrr=on,mrr_cost_based=on,mrr_sort_keys=off,outer_join_with_cache=on,semijoin_with_cache=on,join_cache_incremental=on,join_cache_hashed=on,join_cache_bka=on,optimize_join_buffer_size=on,table_elimination=on,extended_keys=on,exists_to_in=on,orderby_uses_equalities=on,condition_pushdown_for_derived=on,split_materialized=on,condition_pushdown_for_subquery=on,rowid_filter=on,condition_pushdown_from_having=on,not_null_range_scan=off,hash_join_cardinality=off,cset_narrowing=off,sargable_casefold=off
+
+$custom_options_1= '
+  --mysqld=--binlog_annotate_row_events=OFF
+  --mysqld=--binlog_cache_size=1048576
+  --mysqld=--binlog_expire_logs_seconds=432000
+  --mysqld=--binlog_format=ROW
+  --mysqld=--binlog_stmt_cache_size=131072
+  --mysqld=--character_set_server=utf8mb3
+  --mysqld=--collation_server=utf8mb3_general_ci
+  --mysqld=--disconnect_on_expired_password=ON
+  --mysqld=--expire_logs_days=5.0
+  --mysqld=--explicit_defaults_for_timestamp=ON
+  --mysqld=--gtid_strict_mode=ON
+  --mysqld=--host_cache_size=1103
+  --mysqld=--ignore_db_dirs=lost+found
+  --mysqld=--innodb_autoinc_lock_mode=2
+  --mysqld=--innodb_buffer_pool_size=2G
+  --mysqld=--innodb_flush_neighbors=0
+  --mysqld=--innodb_io_capacity=400
+  --mysqld=--innodb_io_capacity_max=4000
+  --mysqld=--innodb_lock_wait_timeout=180
+  --mysqld=--innodb_log_buffer_size=67108864
+  --mysqld=--innodb_log_file_size=4294967296
+  --mysqld=--innodb_max_dirty_pages_pct=50.0
+  --mysqld=--innodb_open_files=2048
+  --mysqld=--innodb_print_all_deadlocks=ON
+  --mysqld=--innodb_read_io_threads=8
+  --mysqld=--innodb_sort_buffer_size=12582912
+  --mysqld=--innodb_write_io_threads=8
+  --mysqld=--join_buffer_size=4194304
+  --mysqld=--join_buffer_space_limit=4194304
+  --mysqld=--join_cache_level=6
+  --mysqld=--key_buffer_size=67108864
+  --mysqld=--lock_wait_timeout=10800
+  --mysqld=--log_bin_compress=ON
+  --mysqld=--log_bin_trust_function_creators=ON
+  --mysqld=--log_slave_updates=ON
+  --mysqld=--log_slow_verbosity=innodb,query_plan
+  --mysqld=--long_query_time=30
+  --mysqld=--loose-server_audit_file_rotate_now=OFF
+  --mysqld=--loose-server_audit_file_rotate_size=50000000
+  --mysqld=--loose-server_audit_file_rotations=100
+  --mysqld=--loose-server_audit_load_on_error=ON
+  --mysqld=--loose-server_audit_logging=ON
+  --mysqld=--loose-server_audit_mode=0
+  --mysqld=--loose-server_audit_output_type=file
+  --mysqld=--loose-server_audit_query_log_limit=1024
+  --mysqld=--loose-server_audit_reload_filters=OFF
+  --mysqld=--loose-server_audit_syslog_facility=LOG_USER
+  --mysqld=--loose-server_audit_syslog_ident=mysql-server_auditing
+  --mysqld=--loose-server_audit_syslog_info=
+  --mysqld=--loose-server_audit_syslog_priority=LOG_INFO
+  --mysqld=--loose-server_audit_timestamp_format=%Y%m%d="%H:%i:%s"
+  --mysqld=--loose-simple_password_check_digits=1
+  --mysqld=--loose-simple_password_check_letters_same_case=1
+  --mysqld=--loose-simple_password_check_minimal_length=15
+  --mysqld=--loose-simple_password_check_other_characters=1
+  --mysqld=--loose-shutdown_wait_for_slaves=ON
+  --mysqld=--loose-sql_error_log_rate=1
+  --mysqld=--loose-sql_error_log_rotate=OFF
+  --mysqld=--loose-sql_error_log_rotations=9
+  --mysqld=--loose-sql_error_log_size_limit=268435456
+  --mysqld=--loose-sql_error_log_with_db_and_thread_info=OFF
+  --mysqld=--lower_case_table_names=1
+  --mysqld=--master_verify_checksum=ON
+  --mysqld=--max_allowed_packet=67108864
+  --mysqld=--max_binlog_size=268435456
+  --mysqld=--max_connect_errors=10000
+  --mysqld=--max_connections=10000
+  --mysqld=--max_heap_table_size=33554432
+  --mysqld=--max_password_errors=5
+  --mysqld=--max_relay_log_size=268435456
+  --mysqld=--myisam_recover_options=BACKUP,FORCE
+  --mysqld=--myisam_sort_buffer_size=67108864
+  --mysqld=--open_files_limit=278528
+  --mysqld=--optimizer_search_depth=0
+  --mysqld=--optimizer_switch=mrr=on,mrr_cost_based=on
+  --mysqld=--plugin_maturity=stable
+  --mysqld=--proxy_protocol_networks=*
+  --mysqld=--query_cache_size=0
+  --mysqld=--relay_log_recovery=ON
+  --mysqld=--replicate_events_marked_for_skip=FILTER_ON_MASTER
+  --mysqld=--rpl_semi_sync_master_enabled=ON
+  --mysqld=--rpl_semi_sync_slave_enabled=ON
+  --mysqld=--slave_net_timeout=10
+  --mysqld=--slave_parallel_max_queued=67108864
+  --mysqld=--slave_parallel_threads=4
+  --mysqld=--slave_parallel_workers=4
+  --mysqld=--slow_query_log=ON
+  --mysqld=--sql_mode=PIPES_AS_CONCAT,ANSI_QUOTES,IGNORE_SPACE,ORACLE,NO_KEY_OPTIONS,NO_TABLE_OPTIONS,NO_FIELD_OPTIONS,STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,SIMULTANEOUS_ASSIGNMENT
+  --mysqld=--sync_binlog=1
+  --mysqld=--sync_master_info=1
+  --mysqld=--table_definition_cache=16384
+  --mysqld=--table_open_cache=16384
+  --mysqld=--thread_cache_size=256
+  --mysqld=--thread_pool_size=16
+  --mysqld=--thread_stack=262144
+  --mysqld=--tmp_memory_table_size=33554432
+  --mysqld=--tmp_table_size=33554432
+  --mysqld=--transaction_isolation=READ-COMMITTED
+  --mysqld=--use_stat_tables=PREFERABLY
+  --mysqld=--userstat=ON
+  --mysqld=--wait_timeout=3600
+  --mysqld=--plugin-load-add=server_audit2
+  --mysqld=--plugin-load-add=simple_password_check
+  --mysqld=--plugin-load-add=sql_errlog
+';
+$custom_options_1_master{$minversion}=[ $custom_options_1 . ' --server1-mysqld=--log_bin=custom1-master --server1-mysqld=--read_only=0'];
+$custom_options_1_slave{$minversion}= [ $custom_options_1 . ' --server2-mysqld=--log_bin=custom1-slave --server2-mysqld=--read_only=1'];
+
+$parameters{custom_options_1_master}= \%custom_options_1_master;
+$parameters{custom_options_1_slave}= \%custom_options_1_slave;
+
+
+#++++++++++++++++++++++++
 # Encryption
 #++++++++++++++++++++++++
 
@@ -1337,6 +1461,10 @@ $optional_server_variables{1107}= [ @{$optional_server_variables{1105}},
   [ @empty_set_30, '--mysqld=--mhnsw_default_m=3', '--mysqld=--mhnsw_default_m=4', '--mysqld=--mhnsw_default_m=20', '--mysqld=--mhnsw_default_m=100' ],
   [ @empty_set_30, '--mysqld=--mhnsw_ef_search=1', '--mysqld=--mhnsw_ef_search=2', '--mysqld=--mhnsw_ef_search=5', '--mysqld=--mhnsw_ef_search=10', '--mysqld=--mhnsw_ef_search=20', '--mysqld=--mhnsw_ef_search=100', '--mysqld=--mhnsw_ef_search=200', '--mysqld=--mhnsw_ef_search=4096', '--mysqld=--mhnsw_ef_search=65535' ],
   [ @empty_set_30, '--mysqld=--mhnsw_default_distance=euclidean', '--mysqld=--mhnsw_default_distance=cosine' ],
+];
+
+$optional_server_variables{1201}= [ @{$optional_server_variables{1107}},
+  [ @empty_set_30, '--mysqld=--metadata-locks-instances=1', '--mysqld=--metadata-locks-instances=2', '--mysqld=--metadata-locks-instances=8', '--mysqld=--metadata-locks-instances=64', '--mysqld=--metadata-locks-instances=127', '--mysqld=--metadata-locks-instances=128' ],
 ];
 
 $parameters{optional_server_variables}= \%optional_server_variables;

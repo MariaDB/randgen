@@ -90,7 +90,7 @@ $combinations = [
       ],
       bigbang_with_custom_config => [
         [ '--scenario=Standard', '--scenario=Restart' ],
-        [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
+        $options{custom_options_1_master},
         $options{optional_gendata_views},
         $options{optional_gendata_vcols},
         $options{optional_gendata_gis},
@@ -129,9 +129,9 @@ $combinations = [
       custom => [
         [ '--scenario=Standard' ],
         [ '--engine=InnoDB,Aria' ],
-        [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
         [ '--variator=ExecuteAsOracleSP', '' ],
         [ '--variator=ExecuteAsPackageSP', '' ],
+        $options{custom_options_1_master},
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
       ],
       custom_recovery => [
@@ -139,7 +139,7 @@ $combinations = [
         [ '--engine=InnoDB' ],
         [ '--variator=ExecuteAsOracleSP', '' ],
         [ '--variator=ExecuteAsPackageSP', '' ],
-        [ '--genconfig=conf/cnf/custom1-master.cnf --mysqld=--innodb-buffer-pool-size=2G' ],
+        $options{custom_options_1_master},
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
       ],
       custom_rpl => [
@@ -149,7 +149,8 @@ $combinations = [
         [ '--variator=ExecuteAsPackageSP', '' ],
         [ '--grammar=conf/yy/dml.yy' ],
         [ '--filter=conf/ff/replication.ff' ],
-        [ '--server1-genconfig=conf/cnf/custom1-master.cnf --server2-genconfig=conf/cnf/custom1-slave.cnf --mysqld=--innodb-buffer-pool-size=1G' ],
+        $options{custom_options_1_master},
+        $options{custom_options_1_slave},
         $options{dml_grammars}, $options{ddl_grammars},
       ],
       encryption => [
