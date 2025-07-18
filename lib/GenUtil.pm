@@ -199,7 +199,7 @@ sub intersect_arrays {
 # Shortens message for keeping output more sensible
 sub shorten_message {
   my $msg= shift;
-  if (length($msg) > 8191) {
+  if (length($msg) > 16383) {
     my ($prefix, $suffix) = (substr($msg,0,2000),substr($msg,-512));
     if (substr($prefix,1999) eq '\\') { chop $prefix };
     if (substr($suffix,0,1) eq "'" or substr($suffix,0,1) eq '"') { $suffix= substr($suffix,1) };
