@@ -1485,6 +1485,11 @@ MDEV-31178:
 =~ fill_record
 =~ select_union_direct::send_data
 =~ mysql_handle_single_derived
+MDEV-31178:
+=~ signal|AddressSanitizer|MemorySanitizer
+=~ print_list_item
+=~ table_value_constr::print
+=~ Prepared_statement::execute|sp_head::execute
 MDEV-31122:
 =~ signal|AddressSanitizer
 =~ mysql_lock_abort_for_thread
