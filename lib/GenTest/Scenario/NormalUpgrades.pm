@@ -1,4 +1,4 @@
-# Copyright (C) 2022, 2024 MariaDB
+# Copyright (C) 2022, 2025 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -269,6 +269,7 @@ sub run {
   #####
   $self->printStep("LIVE UPGRADE: Starting the new server on the old datadir");
 
+  $server->skipTestSetup();
   $status= $self->start_for_upgrade('live');
 
   if ($status != STATUS_OK) {
@@ -321,7 +322,8 @@ LIVE_UPGRADE_END:
   $self->printStep("Restoring the dump of all databases");
   my $client_command= $server->client.' -uroot --host=127.0.0.1 --protocol=tcp --port='.$server->port;
 
-  $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ".$client_command.' < '.$vardir.'/all_db.dump');
+  $status= system("(echo 'SET max_statement_time=0;'; cat ${vardir}/all_db.dump) | LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $client_command");
+#  $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ".$client_command.' < '.$vardir.'/all_db.dump');
   if ($status != STATUS_OK) {
     sayError("All databases' schema dump failed to load");
     $self->setStatus($self->upgrade_or_recovery_failure());
