@@ -1195,8 +1195,17 @@ sub binary {
     return $_[0]->[MYSQLD_MYSQLD];
 }
 
+sub isRunning {
+  my $self= shift;
+  return $self->serverpid && kill 0 => $self->serverpid;
+}
+
 sub stopServer {
     my ($self, $shutdown_timeout) = @_;
+    unless ($self->isRunning()) {
+      say("Server is not running, nothing to stop");
+      return STATUS_OK;
+    }
     $shutdown_timeout = $default_shutdown_timeout unless defined $shutdown_timeout;
     my $res= STATUS_OK;
 

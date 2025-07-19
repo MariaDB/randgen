@@ -31,7 +31,10 @@ use Data::Dumper;
 
 sub report {
   my $reporter = shift;
-
+  unless ($reporter->server->isRunning) {
+    sayWarning("UniqueConstraintValidity: Server isn't running, skipping the check");
+    return STATUS_OK;
+  }
   my $conn = $reporter->connection;
   unless ($conn) {
     sayWarning("UniqueConstraintValidity: could not connect to the server");
