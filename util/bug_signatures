@@ -22,10 +22,21 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-37282:
+=~ Assertion `thd->status_var\.tmp_space_used >= track->previous_file_size'
+=~ temp_file_size_cb_func
+=~ reset_tracking_io_cache
+=~ binlog_cache_mngr::~binlog_cache_mngr
+=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-37268:
-=~ is corrupt; try to repair it
+=~ is corrupt; try to repair it|Can't find record in
 =~ FeatureUsage detected unique blobs
 =~ Test run ends with exit status STATUS_DATABASE_CORRUPTION|Test run ends with exit status STATUS_ERRORS_IN_LOG
+=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-37268:
+=~ Assertion \`new_data == table->record\[0\]'
+=~ handler::ha_update_row
+=~ FeatureUsage detected unique blobs
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-37268:
 =~ Assertion \`inited == RND'
@@ -47,6 +58,10 @@ MDEV-37264:
 =~ row_sel_convert_mysql_key_to_innobase
 =~ ha_partition::rnd_pos
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-37247:
+=~ signal|AddressSanitizer
+=~ FVector::distance_to|FVectorNode::load_from_record|search_layer
+=~ TABLE::hlindex_read_next
 MDEV-37239:
 =~ Assertion \`inited == NONE'
 =~ handler::ha_reset
@@ -1974,7 +1989,6 @@ MDEV-29016:
 =~ LeakSanitizer
 =~ get_quick_select
 =~ TRP_RANGE::make_quick
-=~ make_join_statistics
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-29009:
 =~ Assertion \`dd_val >= last_val'

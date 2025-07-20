@@ -33,6 +33,13 @@ MENT-319: [backup_flush_ticket == 0]
 # Backport-related
 ##########
 
+# 11.5 CS, 11.4 ES
+MDEV-37282:
+=~ Assertion `thd->status_var\.tmp_space_used >= track->previous_file_size'
+=~ temp_file_size_cb_func
+=~ reset_tracking_io_cache
+=~ binlog_cache_mngr::~binlog_cache_mngr
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 # 10.11 CS, 10.6 ES
 MDEV-37264:
 =~ AddressSanitizer|signal
