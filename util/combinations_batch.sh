@@ -62,7 +62,7 @@ else
   echo "Number of combinations generated: $comb_count"
 
   t=0
-  set +x
+  set -x
   result=0
   while IFS= read -r line; do
     if [[ "$line" =~ Combinations.*:\ running ]] ; then
