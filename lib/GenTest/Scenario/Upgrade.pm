@@ -137,9 +137,8 @@ sub collectAclData {
   }
 
   $conn->execute("FLUSH PRIVILEGES");
-  # Needed due to MDEV-24657
-  $conn->execute('SET character_set_connection= @@character_set_server, collation_connection= @@collation_server');
-  my $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user /*!100000 WHERE is_role = 'N' */";
+  # BINARY needed due to MDEV-24657
+  my $query= "SELECT CONCAT('`',user,'`','\@','`',host,'`') FROM mysql.user /*!100000 WHERE BINARY is_role = BINARY 'N' */";
   my $users= $conn->get_column($query);
   if ($conn->err) {
     sayError("Couldn't fetch users, error: ".$conn->print_error);
@@ -151,7 +150,8 @@ sub collectAclData {
   }
 
   my $roles= [];
-  $roles= $conn->get_column("SELECT CONCAT('`',user,'`') FROM mysql.user WHERE /*!100000 is_role = 'Y' OR */ 0");
+  # BINARY needed due to MDEV-24657
+  $roles= $conn->get_column("SELECT CONCAT('`',user,'`') FROM mysql.user WHERE /*!100000 BINARY is_role = BINARY 'Y' OR */ 0");
   if ($conn->err) {
     sayError("Couldn't fetch roles, error: ".$conn->print_error);
     $roles= [];
