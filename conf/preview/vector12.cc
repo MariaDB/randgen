@@ -82,6 +82,7 @@ $combinations = [
       bigbang_with_custom_config => [
         [ ' --grammar=conf/yy/functions.yy:2' ],
         [ '--scenario=Standard', '--scenario=Restart' ],
+        $options{custom_options_1},
         $options{custom_options_1_master},
         $options{optional_gendata_views},
         $options{optional_gendata_vcols},
@@ -125,6 +126,7 @@ $combinations = [
         [ '--engine=InnoDB,Aria' ],
         [ '--variator=ExecuteAsOracleSP', '' ],
         [ '--variator=ExecuteAsPackageSP', '' ],
+        $options{custom_options_1},
         $options{custom_options_1_master},
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
       ],
@@ -136,6 +138,7 @@ $combinations = [
         [ '--variator=ExecuteAsPackageSP', '' ],
         [ '--grammar=conf/yy/dml.yy' ],
         [ '--filter=conf/ff/replication.ff' ],
+        $options{custom_options_1},
         $options{custom_options_1_master},
         $options{custom_options_1_slave},
         $options{dml_grammars}, $options{ddl_grammars},

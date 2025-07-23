@@ -381,7 +381,7 @@ $parameters{scenario_cluster_combinations}= \%scenario_cluster_combinations;
 # optimizer_switch changed to the difference from default settings (of the version which the config was used on)
 # optimizer_switch=index_merge=on,index_merge_union=on,index_merge_sort_union=on,index_merge_intersection=on,index_merge_sort_intersection=off,index_condition_pushdown=on,derived_merge=on,derived_with_keys=on,firstmatch=on,loosescan=on,materialization=on,in_to_exists=on,semijoin=on,partial_match_rowid_merge=on,partial_match_table_scan=on,subquery_cache=on,mrr=on,mrr_cost_based=on,mrr_sort_keys=off,outer_join_with_cache=on,semijoin_with_cache=on,join_cache_incremental=on,join_cache_hashed=on,join_cache_bka=on,optimize_join_buffer_size=on,table_elimination=on,extended_keys=on,exists_to_in=on,orderby_uses_equalities=on,condition_pushdown_for_derived=on,split_materialized=on,condition_pushdown_for_subquery=on,rowid_filter=on,condition_pushdown_from_having=on,not_null_range_scan=off,hash_join_cardinality=off,cset_narrowing=off,sargable_casefold=off
 
-$custom_options_1= '
+$custom_options_1{$minversion}= ['
   --mysqld=--binlog_annotate_row_events=OFF
   --mysqld=--binlog_cache_size=1048576
   --mysqld=--binlog_expire_logs_seconds=432000
@@ -486,10 +486,11 @@ $custom_options_1= '
   --mysqld=--plugin-load-add=server_audit2
   --mysqld=--plugin-load-add=simple_password_check
   --mysqld=--plugin-load-add=sql_errlog
-';
-$custom_options_1_master{$minversion}=[ $custom_options_1 . ' --server1-mysqld=--log_bin=custom1-master --server1-mysqld=--read_only=0'];
-$custom_options_1_slave{$minversion}= [ $custom_options_1 . ' --server2-mysqld=--log_bin=custom1-slave --server2-mysqld=--read_only=1'];
+'];
+$custom_options_1_master{$minversion}=['--server1-mysqld=--log_bin=custom1-master --server1-mysqld=--read_only=0'];
+$custom_options_1_slave{$minversion}= ['--server2-mysqld=--log_bin=custom1-slave --server2-mysqld=--read_only=1'];
 
+$parameters{custom_options_1}= \%custom_options_1;
 $parameters{custom_options_1_master}= \%custom_options_1_master;
 $parameters{custom_options_1_slave}= \%custom_options_1_slave;
 
