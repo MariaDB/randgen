@@ -75,7 +75,7 @@ else
       timeout -k 3600 3600 perl ./run.pl $args --vardir=$workdir/var
       res=$?
       if [ "$res" -gt "$result" ] ; then
-        result=$?
+        result=$res
       fi
       sleep 1
       kill -11 `ps -ef | grep -E 'mysqld|mariadbd' | grep -E "port=$port_prefix" | grep -v grep | awk '{print $2}' | xargs`
