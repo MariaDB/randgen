@@ -1635,6 +1635,7 @@ sub checkErrorLogForErrors {
   my $count= 0;
   my $is_wsrep= 0;
   my %missing_plugins= ();
+  my %immature_plugins= ();
   while (<ERRLOG>)
   {
     if (/^SHUTDOWN_\d+$|^KILL_\d+_\w*$/) {
@@ -1688,15 +1689,23 @@ sub checkErrorLogForErrors {
         }
     }
     # Ignore "Couldn't load plugins", but only if it's the case of a missing library
+    # or incompatible maturity level
     if (/Can't open shared library '.*\/(.*?\.so)' \(errno: .*, cannot open shared object file: No such file or directory\)/s) {
       $missing_plugins{$1}= 1;
+      next;
+    }
+    elsif (/Can't open shared library '.*\/(.*?\.so)' \(errno: .*, Loading of .* plugin .* is prohibited by --plugin-maturity=.*\)/s) {
+      $immature_plugins{$1}= 1;
       next;
     }
     elsif (/Couldn't load plugins from '(.*?)'/ and defined $missing_plugins{$1}) {
       sayWarning("Ignore missing plugin $1");
       next;
     }
-
+    elsif (/Couldn't load plugins from '(.*?)'/ and defined $immature_plugins{$1}) {
+      sayWarning("Ignore plugin with insufficient maturity $1");
+      next;
+    }
 
     # Crashes
     if (
