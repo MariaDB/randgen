@@ -35,7 +35,7 @@ MENT-319: [backup_flush_ticket == 0]
 
 # 11.5 CS, 11.4 ES
 MDEV-37282:
-=~ Assertion `thd->status_var\.tmp_space_used >= track->previous_file_size'
+=~ Assertion \`thd->status_var\.tmp_space_used >= track->previous_file_size'
 =~ temp_file_size_cb_func
 =~ reset_tracking_io_cache
 =~ binlog_cache_mngr::~binlog_cache_mngr
