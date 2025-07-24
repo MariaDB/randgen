@@ -22,6 +22,10 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-37310:
+=~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
+=~ row_update_for_mysql
+=~ ha_partition::
 MDEV-37302:
 =~ Assertion \`static_cast<int>(table_list->lock_type) >= static_cast<int>(TL_WRITE_ALLOW_WRITE)'
 =~ Table_triggers_list::add_tables_and_routines_for_triggers
@@ -2327,8 +2331,8 @@ MDEV-26805:
 =~ wait_while_table_is_used
 =~ Sql_cmd_create_table_like::execute
 MDEV-26692:
-=~ Assertion \`table\.get_ref_count() <= 1'|Assertion \`user_table->get_ref_count() == 1'
-=~ commit_try_rebuild|dberr_t trx_t::drop_table|prepare_inplace_alter_table_dict
+=~ Assertion \`table\.get_ref_count() <= 1'|Assertion \`user_table->get_ref_count() == 1'|table->get_ref_count() == 0
+=~ commit_try_rebuild|dberr_t trx_t::drop_table|prepare_inplace_alter_table_dict|dict_sys_t::remove
 =~ FeatureUsage detected OQGraph tables
 MDEV-26677:
 =~ RocksDB: Failed to get column family flags from CF with id
