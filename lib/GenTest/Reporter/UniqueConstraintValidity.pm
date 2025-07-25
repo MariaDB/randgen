@@ -40,7 +40,7 @@ sub report {
     sayWarning("UniqueConstraintValidity: could not connect to the server");
     return STATUS_SERVER_UNAVAILABLE;
   }
-  my $indexes = $conn->query("select concat('`',table_schema,'`.`',table_name,'`') as tbl, index_name, group_concat(concat('`',column_name,'`')) cols, index_type from INFORMATION_SCHEMA.STATISTICS where non_unique=0 group by tbl, index_name order by tbl, index_name");
+  my $indexes = $conn->query("set statement max_statement_time=0 for select concat('`',table_schema,'`.`',table_name,'`') as tbl, index_name, group_concat(concat('`',column_name,'`')) cols, index_type from INFORMATION_SCHEMA.STATISTICS where non_unique=0 group by tbl, index_name order by tbl, index_name");
   if ($conn->err or not $indexes) {
     sayError("UniqueConstraintValidity: could not retrieve unique indexes: ".$conn->print_error());
     return STATUS_DATABASE_CORRUPTION;
@@ -51,10 +51,18 @@ sub report {
     my $non_null = join ' AND ', (map { "$_ IS NOT NULL" } split /,/, $cols);
     my $multiple_results= $conn->query("select $cols, count(*) cnt from $tbl WHERE $non_null group by $cols having cnt > 1");
     # Ignore certain errors related to engine specifics, we are here not for this
+    # 1159: Got timeout reading communication packets (Spider)
     # 1168: Unable to open underlying table (Merge)
     # 1296: Got error 122 'Open error 2 in mode rb on... (Connect)
     # 1429: Unable to connect to foreign data source (Spider)
-    if (($conn->err == 1168) || ($conn->err == 1296) || ($conn->err == 1429)) {
+    # 12719: An infinite loop is detected when opening table (Spider)
+    if (
+      ($conn->err == 1159) ||
+      ($conn->err == 1168) ||
+      ($conn->err == 1296) ||
+      ($conn->err == 1429) ||
+      ($conn->err == 12719)
+    ) {
       sayWarning("UniqueConstraintValidity: Got error ".$conn->print_error()." for $tbl, ignoring");
     } elsif ($conn->err or not $multiple_results) {
       sayError("UniqueConstraintValidity: could not perform counts on unique indexes: ".$conn->print_error());
