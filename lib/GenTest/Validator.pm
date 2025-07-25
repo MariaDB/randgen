@@ -74,13 +74,17 @@ sub reconcile_table {
     $table_backup.= '_v_bk';
     $table_tmp.= '_v_new';
   }
-  my $create = $executors->[0]->connection->selectcol_get_value("SHOW CREATE TABLE $table", 1, 2);
+  my $create = $executors->[0]->connection->get_value("SHOW CREATE TABLE $table", 1, 2);
   $create =~ s/^.*?\(/\(/;
   my ($dump_fh, $dump)= tempfile("validatorXXXXXX", DIR => $executors->[0]->vardir);
   unlink($dump);
   $executors->[0]->connection->execute("SELECT * INTO OUTFILE '$dump' FROM $table");
   foreach my $e (@$executors) {
-    $e->connection->execute("SET \@sql_mode.validator= \@\@sql_mode; SET sql_mode= ''; CREATE OR REPLACE TABLE $table_tmp $create; RENAME TABLE $table TO $table_backup, $table_tmp TO $table; DROP TABLE $table_backup; SET sql_mode= \@sql_mode.validator");
+    $e->connection->execute("SET \@sql_mode.validator= \@\@sql_mode; SET sql_mode= ''");
+    $e->connection->execute("CREATE OR REPLACE TABLE $table_tmp $create");
+    $e->connection->execute("RENAME TABLE $table TO $table_backup, $table_tmp TO $table");
+    $e->connection->execute("DROP TABLE $table_backup");
+    $e->connection->execute("SET sql_mode= \@sql_mode.validator");
     if ($e->connection->err) {
       sayWarning("Could not reconcile table $table: ".$e->connection->print_error);
       $e->connection->execute("DROP TABLE IF EXISTS $table_backup, $table_tmp; SET sql_mode= \@sql_mode.validator");
