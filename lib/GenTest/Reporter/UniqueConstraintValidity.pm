@@ -40,14 +40,14 @@ sub report {
     sayWarning("UniqueConstraintValidity: could not connect to the server");
     return STATUS_SERVER_UNAVAILABLE;
   }
-  my $indexes = $conn->query("select concat('`',table_schema,'`.`',table_name,'`') as tbl, index_name, group_concat(concat('`',column_name,'`')) cols from INFORMATION_SCHEMA.STATISTICS where non_unique=0 group by tbl, index_name order by tbl, index_name");
+  my $indexes = $conn->query("select concat('`',table_schema,'`.`',table_name,'`') as tbl, index_name, group_concat(concat('`',column_name,'`')) cols, index_type from INFORMATION_SCHEMA.STATISTICS where non_unique=0 group by tbl, index_name order by tbl, index_name");
   if ($conn->err or not $indexes) {
     sayError("UniqueConstraintValidity: could not retrieve unique indexes: ".$conn->print_error());
     return STATUS_DATABASE_CORRUPTION;
   }
   my $res=STATUS_OK;
   foreach my $tbl_ind (@$indexes) {
-    my ($tbl, $ind, $cols)= @$tbl_ind;
+    my ($tbl, $ind, $cols, $tp)= @$tbl_ind;
     my $non_null = join ' AND ', (map { "$_ IS NOT NULL" } split /,/, $cols);
     my $multiple_results= $conn->query("select $cols, count(*) cnt from $tbl WHERE $non_null group by $cols having cnt > 1");
     # Ignore certain errors related to engine specifics, we are here not for this
@@ -60,7 +60,7 @@ sub report {
       sayError("UniqueConstraintValidity: could not perform counts on unique indexes: ".$conn->print_error());
       return STATUS_DATABASE_CORRUPTION;
     } elsif (scalar(@$multiple_results)) {
-      sayError("UniqueConstraintValidity: unique constraint $ind ($cols) on table $tbl contains non-unique values");
+      sayError("UniqueConstraintValidity: unique constraint $ind ($cols) of type $tp on table $tbl contains non-unique values");
       foreach my $vals (@$multiple_results) {
         my $cnt= pop @$vals;
         say('Values: "'.(join ',', (map { defined $_ ? $_ : '<null>' } @$vals) ).'" : count '.$cnt);
