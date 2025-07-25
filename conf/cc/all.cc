@@ -160,6 +160,7 @@ $combinations = [
       encryption => [
         [ '--scenario=Standard', '--scenario=CrashRecovery' ],
         [ '--engine=InnoDB,Aria' ],
+        [ '--grammar=conf/yy/dml.yy' ],
         {
           file_key_management => '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
           hashicorp => '--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'
