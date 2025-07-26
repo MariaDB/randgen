@@ -49,7 +49,7 @@ sub report {
   foreach my $tbl_ind (@$indexes) {
     my ($tbl, $ind, $cols, $tp)= @$tbl_ind;
     my $non_null = join ' AND ', (map { "$_ IS NOT NULL" } split /,/, $cols);
-    my $multiple_results= $conn->query("select $cols, count(*) cnt from $tbl WHERE $non_null group by $cols having cnt > 1");
+    my $multiple_results= $conn->query("set statement max_statement_time=0 for select $cols, count(*) cnt from $tbl WHERE $non_null group by $cols having cnt > 1");
     # Ignore certain errors related to engine specifics, we are here not for this
     # 1159: Got timeout reading communication packets (Spider)
     # 1168: Unable to open underlying table (Merge)
