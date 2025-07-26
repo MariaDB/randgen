@@ -1694,7 +1694,7 @@ sub checkErrorLogForErrors {
       $missing_plugins{$1}= 1;
       next;
     }
-    elsif (/Can't open shared library '.*\/(.*?\.so)' \(errno: .*, Loading of .* plugin .* is prohibited by --plugin-maturity=.*\)/s) {
+    elsif (/Can't open shared library '(.*?\.so)' \(errno: .*, Loading of .* plugin .* is prohibited by --plugin-maturity=.*\)/s) {
       $immature_plugins{$1}= 1;
       next;
     }
