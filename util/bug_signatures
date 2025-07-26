@@ -4397,6 +4397,10 @@ MDEV-15494:
 =~ trx_rollback_last_sql_stat_for_mysql
 =~ innobase_rollback
 =~ FeatureUsage detected XA transactions
+MDEV-15494:
+=~ Assertion \`trx_state == TRX_STATE_ACTIVE'
+=~ ha_innobase::store_lock
+=~ FeatureUsage detected XA transactions
 MDEV-15471:
 =~ Assertion \`new_clustered == ctx->need_rebuild()'
 =~ ha_innobase::commit_inplace_alter_table
