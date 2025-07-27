@@ -2341,6 +2341,10 @@ MDEV-26692:
 =~ Assertion \`table\.get_ref_count() <= 1'|Assertion \`user_table->get_ref_count() == 1'|table->get_ref_count() == 0
 =~ commit_try_rebuild|dberr_t trx_t::drop_table|prepare_inplace_alter_table_dict|dict_sys_t::remove
 =~ FeatureUsage detected OQGraph tables
+MDEV-26692:
+=~ signal|AddressSanitizer
+=~ myrocks::ha_rocksdb::update_stats
+=~ ha_oqgraph::rnd_init
 MDEV-26677:
 =~ RocksDB: Failed to get column family flags from CF with id
 =~ signal 6
