@@ -1613,7 +1613,7 @@ sub BEGIN {
     ER_ERROR_ON_MASTER()                                => STATUS_REPLICATION_FAILURE,
     ER_ERROR_ON_READ()                                  => STATUS_ENVIRONMENT_FAILURE,
     ER_ERROR_ON_RENAME()                                => STATUS_RUNTIME_ERROR,
-    ER_ERROR_ON_WRITE()                                 => STATUS_ENVIRONMENT_FAILURE,
+    ER_ERROR_ON_WRITE()                                 => STATUS_RUNTIME_ERROR, # Downgraded to runtime error due to MDEV-37317
     ER_ERROR_WHEN_EXECUTING_COMMAND()                   => STATUS_RUNTIME_ERROR,
     ER_EVENTS_DB_ERROR()                                => STATUS_DATABASE_CORRUPTION,
     ER_EVENT_ALREADY_EXISTS()                           => STATUS_SEMANTIC_ERROR,
