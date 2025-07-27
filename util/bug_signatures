@@ -22,9 +22,11 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
-MDEV-37296:
-=~ UniqueConstraintValidity: unique constraint .* of type HASH on .* contains non-unique values
-=~ Version: '10\.11|Server version: 10\.11
+MDEV-37320:
+=~ signal|AddressSanitizer
+=~ Field::is_null
+=~ Item_param::assign_default
+=~ Prepared_statement::execute
 MDEV-37315:
 =~ Assertion \`!xid_state\.xid_cache_element'
 =~ trans_xa_rollback
@@ -37,6 +39,9 @@ MDEV-37302:
 =~ Assertion \`static_cast<int>(table_list->lock_type) >= static_cast<int>(TL_WRITE_ALLOW_WRITE)'
 =~ Table_triggers_list::add_tables_and_routines_for_triggers
 =~ open_and_process_table
+MDEV-37296:
+=~ UniqueConstraintValidity: unique constraint .* of type HASH on .* contains non-unique values
+=~ Version: '10\.11|Server version: 10\.11
 MDEV-37282:
 =~ Assertion \`thd->status_var\.tmp_space_used >= track->previous_file_size'
 =~ temp_file_size_cb_func

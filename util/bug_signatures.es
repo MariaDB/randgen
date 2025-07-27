@@ -1,5 +1,12 @@
 # Bug signatures for recognizing known bugs by server and test logs
 
+# 10.6+
+# =~ Version: '10\.[6-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 10\.[6-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '10\.1[01]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 10\.1[01]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[1-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
+# 11.4+
+# =~ Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
+# 11.8+
+# =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
+
 ##############################################################################
 # Strong matches
 ##############################################################################
@@ -33,35 +40,41 @@ MENT-319: [backup_flush_ticket == 0]
 # Backport-related
 ##########
 
+# 11.7 CS, 11.4 ES
+MDEV-37219:
+=~ Query_arena::free_items
+=~ THD::cleanup_after_query
+=~ FeatureUsage detected Spider tables
+=~ Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 # 11.5 CS, 11.4 ES
 MDEV-37282:
 =~ Assertion \`thd->status_var\.tmp_space_used >= track->previous_file_size'
 =~ temp_file_size_cb_func
 =~ reset_tracking_io_cache
 =~ binlog_cache_mngr::~binlog_cache_mngr
-=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+=~ Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 # 10.11 CS, 10.6 ES
 MDEV-37264:
 =~ AddressSanitizer|signal
 =~ key_copy
 =~ ha_partition::position
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ Version: '10\.[6-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 10\.[6-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '10\.1[01]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 10\.1[01]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[1-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 MDEV-37264:
 =~ InnoDB: Failing assertion: field->col->mtype == type
 =~ row_sel_convert_mysql_key_to_innobase
 =~ ha_partition::rnd_pos
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ Version: '10\.[6-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 10\.[6-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '10\.1[01]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 10\.1[01]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[1-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 MDEV-36906:
 =~ signal|AddressSanitizer
 =~ Rows_log_event::find_row
 =~ apply_event_and_update_pos
 =~ FeatureUsage detected partitioned tables
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ Version: '10\.[6-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 10\.[6-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '10\.1[01]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 10\.1[01]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[1-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 # 11.5 CS, 11.4 ES
 MDEV-34134:
 =~ Assertion \`!before_record \|\| bitmap_is_set_all(table->read_set)'
 =~ online_alter_log_row
-=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+=~ Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 
 ##########
 # Closed in the next release (10.4.32 / 10.5.23 / 10.6.16)
