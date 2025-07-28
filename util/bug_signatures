@@ -137,6 +137,11 @@ MDEV-37219:
 =~ THD::cleanup_after_query
 =~ FeatureUsage detected Spider tables
 =~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-37218:
+=~ Table encrypted but decryption failed
+=~ Assertion \`0'
+=~ Stat_table::update_stat
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-37217:
 =~ Assertion \`inited==INDEX'
 =~ handler::ha_index_first
@@ -235,6 +240,7 @@ MDEV-36758:
 =~ Internal memory accounting error
 =~ LeakSanitizer: detected memory leaks
 =~ MHNSW_Share::alloc_node
+# Only fixed in 10.11+
 MDEV-36753:
 =~ Assertion \`str\[strlen(str)-1\] != '\\\n''
 =~ my_message_sql
