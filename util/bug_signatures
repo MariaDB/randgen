@@ -172,7 +172,8 @@ MDEV-36992:
 MDEV-36958:
 =~ MemorySanitizer
 =~ JOIN::optimize_inner
-=~ mysql_select
+=~ Uninitialized value was stored to memory at
+=~ Item::remove_eq_conds
 MDEV-36906:
 =~ signal|AddressSanitizer
 =~ Rows_log_event::find_row
