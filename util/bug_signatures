@@ -1891,6 +1891,11 @@ MDEV-29457:
 =~ ib::fatal::~fatal
 =~ row_undo_step
 =~ FeatureUsage detected GIS columns
+MDEV-29454:
+=~ Got error 1440 when reading table
+=~ FeatureUsage detected Spider tables
+=~ FeatureUsage detected XA transactions
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-29360:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ Item_ref::transform
@@ -3218,7 +3223,7 @@ MDEV-23167:
 =~ mysql_ha_hash_free
 =~ Query.*HANDLER.*CLOSE
 MDEV-23151:
-=~ Assertion \`i < get_width()'
+=~ Assertion \`i < get_width()'|AddressSanitizer
 =~ Histogram::get_value|Histogram_binary::get_value
 =~ get_column_range_cardinality
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
