@@ -22,6 +22,10 @@
 # 12.0+
 # =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 
+MDEV-37339:
+=~ mysqld: caching_sha2_password: cannot auto-generate keys with WolfSSL
+=~ mysqld: caching_sha2_password: failed to read private_key\.pem: 2 "No such file or directory"
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-37328:
 =~ Assertion \`data_offset == ((null_count + 7) / 8)'
 =~ make_empty_rec
@@ -3864,7 +3868,7 @@ MDEV-20501:
 =~ Type_handler_.*_result
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-20498:
-=~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type == 1'
+=~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type == 1'|Assertion \`table_share->tmp_table \|\| m_lock_type == 1'
 =~ handler::ha_write_row
 =~ ha_partition::copy_partitions
 =~ fast_alter_partition_table
