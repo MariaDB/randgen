@@ -696,6 +696,11 @@ MDEV-35085:
 MDEV-35081:
 =~ Assertion \`!n_mysql_tables_in_use'
 =~ innobase_close_connection
+MDEV-34984:
+=~ Assertion \`length <= copy->to_length - 2'
+=~ do_varstring2_no_truncation
+=~ do_copy_null
+=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-34895:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ parse_escaped_string
