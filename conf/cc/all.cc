@@ -157,14 +157,19 @@ $combinations = [
         $options{custom_options_1_slave},
         $options{dml_grammars}, $options{ddl_grammars},
       ],
+      custom_unique_hash => [
+        [ '--scenario=Standard' ],
+        [ '--engine=InnoDB' ],
+        [ '--gendata=advanced --unique-hash-keys --gendata=conf/zz/blobs.zz --grammar=conf/yy/indexes_and_constraints.yy' ],
+        $options{custom_options_1},
+        $options{custom_options_1_master},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
+      ],
       encryption => [
         [ '--scenario=Standard', '--scenario=CrashRecovery' ],
         [ '--engine=InnoDB,Aria' ],
         [ '--grammar=conf/yy/dml.yy' ],
-        {
-          file_key_management => '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
-          hashicorp => '--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'
-        },
+        $options{key_management_hash},
         [ '
             --mysqld=--log-bin
             --mysqld=--innodb-encrypt-tables
@@ -404,6 +409,16 @@ $combinations = [
         [ '--validator=Transformer --transformer=ExecuteAsPreparedTwice --transformer=EnableOptimizations --transformer=DisableOptimizations' ],
         $options{optional_server_variables},
       ],
+      partitions => [
+        [ '--scenario=Standard' ],
+        [ '--grammar=conf/yy/partition_by_hash.yy  --grammar=conf/yy/partition_by_list.yy  --grammar=conf/yy/partition_by_range.yy  --grammar=conf/yy/partition-dml.yy' ],
+        [ '--gendata=conf/zz/partition_by_columns.zz --gendata=advanced --partitions' ],
+        $options{engine_basic_combinations},
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+      ],
       perfschema => [
         [ '--scenario=Standard', '--scenario=Restart' ],
         $options{engine_basic_combinations},
@@ -583,8 +598,8 @@ $combinations = [
       ],
       unique_hash => [
         [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
-        [ '--gendata=advanced --unique-hash-keys'],
-        $options{engine_basic_combinations},
+        [ '--gendata=advanced --unique-hash-keys --gendata=conf/zz/blobs.zz --grammar=conf/yy/indexes_and_constraints.yy' ],
+        [ '--engine=InnoDB,MyISAM' ],
         $options{optional_charsets_safe},
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
         $options{optional_variators},

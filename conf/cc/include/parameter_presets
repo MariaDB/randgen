@@ -545,8 +545,22 @@ $key_management_combinations{'es-1004'}= [
   ]
 ];
 
+$key_management_hash{$minversion}= {
+  file_key_management => '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
+};
+$key_management_hash{1009}= {
+  file_key_management => '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
+  hashicorp => '--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'
+};
+$key_management_hash{'es-1004'}= {
+  file_key_management => '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
+  hashicorp => '--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'
+};
+
 $parameters{key_management_combinations}= \%key_management_combinations;
 $parameters{key_management_combinations_msan_safe}= \%key_management_combinations_msan_safe;
+$parameters{key_management_hash}= \%key_management_hash;
+
 
 $encryption_innodb_options{$minversion}= ['
   --mysqld=--innodb-encrypt-tables
