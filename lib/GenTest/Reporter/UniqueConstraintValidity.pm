@@ -40,7 +40,7 @@ sub report {
     sayWarning("UniqueConstraintValidity: could not connect to the server");
     return STATUS_SERVER_UNAVAILABLE;
   }
-  my $indexes = $conn->query("set statement max_statement_time=0 for select concat('`',table_schema,'`.`',table_name,'`') as tbl, index_name, group_concat(concat('`',column_name,'`')) cols, index_type from INFORMATION_SCHEMA.STATISTICS where non_unique=0 group by tbl, index_name order by tbl, index_name");
+  my $indexes = $conn->query("set statement max_statement_time=0 for select concat('`',table_schema,'`.`',table_name,'`') as tbl, index_name, group_concat(concat('`',column_name,'`')) cols, index_type from INFORMATION_SCHEMA.STATISTICS where non_unique=0 group by BINARY tbl, index_name order by tbl, index_name");
   if (ignorable_error($conn->err)) {
     sayWarning("UniqueConstraintValidity: Got error ".$conn->print_error()." upong retrieving indexes, skipping the check");
     return STATUS_OK;
