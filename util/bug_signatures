@@ -1998,11 +1998,6 @@ MDEV-25784:
 =~ Table_function_json_table::print
 =~ sp_instr_freturn::print
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-25781:
-=~ AddressSanitizer|signal 11|Invalid read of size
-=~ SHA1_Update
-=~ Item_func_sha::
-=~ Item_result_field::save_in_result_field|TABLE::update_virtual_field
 MDEV-25696:
 =~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type != 2'
 =~ get_dup_key
@@ -3089,10 +3084,6 @@ MDEV-21414:
 =~ AddressSanitizer:
 =~ Field_blob::cmp
 =~ myrocks::ha_rocksdb::find_icp_matching_index_rec
-MDEV-21307:
-=~ Assertion \`cache_mngr->trx_cache\.empty() && cache_mngr->stmt_cache\.empty()'
-=~ binlog_close_connection
-=~ plugin_foreach_with_mask
 MDEV-21242:
 =~ Assertion \`marked_for_read()'
 =~ Field_.*::val_.*
