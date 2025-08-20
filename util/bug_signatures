@@ -31,6 +31,11 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 
 
+MDEV-37404:
+=~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
+=~ row_update_for_mysql
+=~ FeatureUsage detected unique blobs
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-37341:
 =~ Assertion \`null_ptr < ptr'|Assertion \`ptr - null_ptr <= (int)table->s->rec_buff_length'
 =~ Field::move_field_offset
@@ -146,6 +151,10 @@ MDEV-37217:
 MDEV-37214:
 =~ Internal MariaDB error code: 1396
 =~ Test run ends with exit status STATUS_REPLICATION_FAILURE
+MDEV-37079:
+=~ Assertion \`!natural_using_join->join_columns'
+=~ store_natural_using_join_columns
+=~ store_top_level_join_columns
 MDEV-36992:
 =~ signal|AddressSanitizer
 =~ Item_ref::make_send_field
