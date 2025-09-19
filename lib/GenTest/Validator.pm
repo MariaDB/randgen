@@ -104,7 +104,7 @@ sub is_table_invalidated {
 }
 
 sub vindicate_table {
-  delete %{$_[0]->[VALIDATOR_INVALIDATED_TABlES]}{$_[1]};
+  delete $_[0]->[VALIDATOR_INVALIDATED_TABlES]{$_[1]};
 }
 
 sub resultsetsNotComparable {
