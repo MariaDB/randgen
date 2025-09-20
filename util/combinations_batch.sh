@@ -94,7 +94,7 @@ else
         # We don't want to remove accidentally files which start with "core" but end with something different
         find $workdir/var -type f -name "core" -delete
         find $workdir/var -type f -name "core.*" -delete
-        find $workdir/var -type f -name "mysql.sock" -delete
+        find $workdir/var -name "mysql.sock" -delete
         mv $workdir/var $archive/vardir1_${t}
         cd $archive
         tar zcf logs_${t}.tar.gz vardir1_${t} trial${t}.log
