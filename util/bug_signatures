@@ -30,7 +30,15 @@
 # 11.8+
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 
-
+MDEV-37710:
+=~ AddressSanitizer|signal
+=~ find_type2
+=~ sp_head::execute
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-37456:
+=~ Assertion \`lock_rec_has_expl(LOCK_X \| 1024U, g\.cell(), id, heap_no, &trx)'
+=~ lock_trx_has_expl_x_lock
+=~ FeatureUsage detected unique blobs
 MDEV-37404:
 =~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
 =~ row_update_for_mysql
@@ -159,6 +167,10 @@ MDEV-36992:
 =~ signal|AddressSanitizer
 =~ Item_ref::make_send_field
 =~ Protocol::send_result_set_metadata
+MDEV-36990:
+=~ signal|AddressSanitizer|runtime error: division by zero
+=~ get_max_range_rowid_filter_elems_for_table
+=~ TABLE::init_cost_info_for_usable_range_rowid_filters
 MDEV-36958:
 =~ MemorySanitizer
 =~ JOIN::optimize_inner
@@ -394,6 +406,10 @@ MDEV-35359:
 =~ sp_add_used_routine
 =~ Table_triggers_list::add_tables_and_routines_for_triggers
 =~ sp_instr_stmt::execute|Prepared_statement::execute
+MDEV-35352:
+=~ signal|AddressSanitizer
+=~ Arg_comparator::compare_e_json_str_basic
+=~ Item_func_equal::val_bool
 MDEV-35271:
 =~ Slave SQL: Got error 138
 =~ Unsupported extension used for table
