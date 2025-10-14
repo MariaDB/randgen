@@ -1461,7 +1461,7 @@ sub getGtidPos {
   my $self= shift;
   my $pos = $self->connection->get_value('SELECT @@gtid_binlog_pos');
   unless ($pos) {
-    sayError("Could not retrieve master GTID position");
+    sayError("Could not retrieve master GTID position " . ($self->connection->err ? $self->connection->print_error : ''));
   }
   return $pos;
 }
