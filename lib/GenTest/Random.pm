@@ -967,7 +967,13 @@ sub arrayElement {
 
 sub anyvalue {
   my ($rand, $maxlen)= @_;
-  my @field_types= sort keys %name2type;
+  my %types = %name2type;
+  # These don't work as values
+  delete $types{identifierUnquoted};
+  delete $types{name_unquoted};
+  delete $types{name};
+  delete $types{identifier};
+  my @field_types= sort keys %types;
   return $rand->fieldType($rand->arrayElement(\@field_types).(defined $maxlen ? "($maxlen)":''));
 }
 
