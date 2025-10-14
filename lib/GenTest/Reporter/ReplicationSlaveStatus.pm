@@ -53,15 +53,15 @@ sub status {
   $first_reporter = $reporter if not defined $first_reporter;
   return STATUS_OK if $reporter ne $first_reporter;
 
-    my $server = $reporter->properties->server_specific->{1}->{server};
-    my $conn = $reporter->connection;
+    my $slave = $reporter->properties->server_specific->{2}->{server};
+    my $conn = $slave->connection;
     unless ($conn) {
       sayWarning("ReplicationSlaveStatus reporter could not connect to the server");
       return STATUS_SERVER_UNAVAILABLE;
     }
 
   if ($conn) {
-    my $slave_status = $conn->get_row("SHOW SLAVE STATUS");
+    my $slave_status = $conn->get_row("SHOW SLAVE STATUS /* ReplicationSlaveStatus */");
 
     if ($slave_status->[SLAVE_STATUS_LAST_IO_ERROR] ne '') {
       say("Slave IO thread has stopped with error: ".$slave_status->[SLAVE_STATUS_LAST_IO_ERROR]);
