@@ -43,6 +43,7 @@ dynvar_global_variable_runtime:
 # is known to cause raice conditions
 #  | INNODB_LOG_CHECKPOINT_NOW= dynvar_boolean
   | INNODB_READ_ONLY_COMPRESSED= dynvar_boolean /* compatibility 10.6.0 */
+  | BINLOG_CHECKSUM= { $prng->arrayElement(['CRC32','NONE']) }
   | BINLOG_COMMIT_WAIT_COUNT= { $prng->arrayElement([1,10,100]) }
   | BINLOG_COMMIT_WAIT_USEC= { $prng->arrayElement([0,1000,1000000,10000000]) }
 # Synonym of MAX_BINLOG_TOTAL_SIZE (hopefully)
@@ -50,6 +51,9 @@ dynvar_global_variable_runtime:
   | LOG_QUERIES_NOT_USING_INDEXES= dynvar_boolean
   | LOG_SLOW_ADMIN_STATEMENTS= dynvar_boolean
   | LOG_SLOW_SLAVE_STATEMENTS= dynvar_boolean
+  | MAX_BINLOG_CACHE_SIZE= { $prng->arrayElement([1048576,16777216,1073741824]) }
+  | MAX_BINLOG_SIZE= { $prng->arrayElement([1048576,16777216,2147483648]) }
+  | MAX_BINLOG_STMT_CACHE_SIZE= { $prng->arrayElement([1048576,16777216,1073741824]) }
 # Synonym of BINLOG_SPACE_LIMIT (hopefully)
   | ==FACTOR:0.5== MAX_BINLOG_TOTAL_SIZE= { $prng->arrayElement([0,4096,1048576,16777216]) } /* compatibility 11.4.0 */
   | MAX_TMP_TOTAL_SPACE_USAGE= space_usage_val /* compatibility 11.5.1 */
