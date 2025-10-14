@@ -32,11 +32,37 @@ load_with_variables:
 ;
 
 insert_load:
-  ==FACTOR:4== create_datafile ;; self_load |
-  ==FACTOR:4== self_insert |
-  cross_load |
-  cross_insert
+  ==FACTOR:2== create_datafile ;; self_load |
+  ==FACTOR:2== self_insert |
+  ==FACTOR:5== insert_many_values |
+               cross_load |
+               cross_insert
 ;
+
+insert_many_values:
+  insert_replace INTO _table ( _field ) VALUES long_value_list ;
+
+long_value_list:
+               values100000 |
+  ==FACTOR:3== values10000 |
+  ==FACTOR:5== values1000 |
+  ==FACTOR:2== values100 |
+               values10 ;
+
+values100000:
+  values10000,values10000,values10000,values10000,values10000,values10000,values10000,values10000,values10000,values10000;
+
+values10000:
+  values1000,values1000,values1000,values1000,values1000,values1000,values1000,values1000,values1000,values1000;
+
+values1000:
+  values100,values100,values100,values100,values100,values100,values100,values100,values100,values100;
+
+values100:
+  values10,values10,values10,values10,values10,values10,values10,values10,values10,values10;
+
+values10:
+  (_anyvalue),(_anyvalue),(_anyvalue),(_anyvalue),(_anyvalue),(_anyvalue),(_anyvalue),(_anyvalue),(_anyvalue),(_anyvalue) ;
 
 # Select from any table into the same table
 self_insert:
@@ -47,7 +73,7 @@ cross_insert:
   insert_replace INTO _table ( _field ) SELECT _table[invariant]._field FROM _table[invariant] ;
 
 insert_replace:
-  ==FACTOR:49== __replace_x_insert_ignore |
+  ==FACTOR:99== __replace_x_insert_ignore |
                 __replace_x_insert DELAYED
 ;
 
