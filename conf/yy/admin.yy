@@ -36,7 +36,7 @@ table_list:
 
 admin_query:
     admin_analyze_or_explain_query
-  | admin_flush_purge
+  | admin_flush_purge_reset
   | ==FACTOR:10== admin_query_table_maint
   | admin_show
   | ==FACTOR:0.01== admin_cache_index
@@ -119,10 +119,11 @@ admin_extended_or_partitions:
   | | | | | EXTENDED | EXTENDED | EXTENDED | EXTENDED | PARTITIONS
 ;
 
-admin_flush_purge:
-    ==FACTOR:20== FLUSH admin_no_write_or_local admin_flush_list
+admin_flush_purge_reset:
+    ==FACTOR:50== FLUSH admin_no_write_or_local admin_flush_list
   |               RESET QUERY CACHE
-  |               purge_binlog
+  | ==FACTOR:5==  purge_binlog
+  |               RESET MASTER
 ;
 
 admin_no_write_or_local:
@@ -156,6 +157,7 @@ admin_flush_option:
   | HOSTS
 #  | INDEX_STATISTICS # userstat
   | admin_flush_log_type LOGS
+  | BINARY LOGS DELETE_DOMAIN_ID=(domain_id_list)
 # Disabled due to MDEV-17977
 #  | MASTER
   | PRIVILEGES
@@ -168,6 +170,10 @@ admin_flush_option:
   | USER_RESOURCES
 #  | USER_STATISTICS # userstat
 ;
+
+domain_id_list:
+  _digit |
+  ==FACTOR:2== _digit, domain_id_list ;
 
 admin_flush_log_type:
   | | | ERROR | ENGINE | GENERAL | SLOW | BINARY | RELAY
