@@ -22,7 +22,7 @@ query:
   { _set_db('NON-SYSTEM') } trx_query ;
 
 trx_query:
-  ==FACTOR:10== { %savepoints= (); '' } START TRANSACTION |
+  ==FACTOR:10== { %savepoints= (); '' } START TRANSACTION __with_consistent_snapshot(10) |
   ==FACTOR:6== { %savepoints= (); '' } COMMIT |
   ==FACTOR:2== { %savepoints= (); '' } ROLLBACK |
                SET __session_x_global(50,25) TRANSACTION trx_property_list |
