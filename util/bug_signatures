@@ -31,7 +31,10 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
-
+MDEV-37860:
+=~ Assertion \`!waiting'
+=~ TP_connection_generic::wait_begin
+=~ Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 MDEV-37782:
 =~ Assertion \`buf < end'
 =~ mtr_t::encrypt
@@ -2950,6 +2953,9 @@ MDEV-22375:
 MDEV-22368:
 =~ Assertion \`field_max_length <= m_return_field_def\.length \|\| m_return_field_def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && m_return_field_def\.length == 8 && (m_return_field_def\.pack_flag & (1024U\|2048U)))'|\`field_max_length <= def\.length \|\| def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && def\.length == 8 && (def\.pack_flag & (1024U\|2048U)))'
 =~ sp_instr_stmt::exec_core
+MDEV-22338:
+=~ Assertion \`!current_stmt_is_commit \|\| !rgi->tables_to_lock'
+=~ Query_log_event::do_apply_event
 MDEV-22333:
 =~ Assertion \`len <= fixed_len'
 =~ rec_get_converted_size_comp_prefix_low
@@ -2974,9 +2980,6 @@ MDEV-22241:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ Query.*: .*LIMIT.* ROWS EXAMINED
-MDEV-22238:
-=~ Assertion \`!current_stmt_is_commit \|\| !rgi->tables_to_lock'
-=~ Query_log_event::do_apply_event
 MDEV-22196:
 =~ AddressSanitizer|signal
 =~ String::copy
