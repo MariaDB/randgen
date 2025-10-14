@@ -53,7 +53,11 @@ sub modify {
   return undef if $original_query !~ m{^\s*SELECT\W}is;
   return undef if $original_query =~ m{\W(?:OUTFILE|PROCESSLIST|INTO|GROUP_CONCAT)\W}is;
   my $query= $original_query;
-  $query =~ s/ORDER\s+BY\s+.*?(LIMIT|OFFSET|FETCH|FOR\s+UPDATE)/\1/is;
+  my $extra_clause = '';
+  while ($query =~ s/(FOR\s+UPDATE|LOCK\s+IN\s+SHARE\s+MODE|SKIP\s+LOCKED|WAIT\s+\d+|NOWAIT)//is) {
+    $extra_clause .= " $1";
+  }
+  $query =~ s/ORDER\s+BY\s+.*?(LIMIT|OFFSET|FETCH)/\1/is;
   while ($query =~ s/(?:ORDER\s+BY|LIMIT|OFFSET|FETCH)\s+.*?[^\(\)]*$//is) {};
   unless (defined $number_of_fields) {
     my $conn= $executor->connection();
@@ -73,7 +77,7 @@ sub modify {
   for (1..$number_of_fields) {
     push @full_order_by, $_ . ($self->random->uint16(0,1) ? '' : ($self->random->uint16(0,1) ? ' DESC' : ' ASC' ));
   }
-  $query.= ' ORDER BY '.( join ',', @{$self->random->shuffleArray(\@full_order_by)} );
+  $query.= ' ORDER BY '.( join ',', @{$self->random->shuffleArray(\@full_order_by)} ) . " $extra_clause";
   sayDebug("FullOrderBy: Original query [ $original_query ] ; Modified query [ $query ]");
   return $query;
 }
