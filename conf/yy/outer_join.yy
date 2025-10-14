@@ -30,7 +30,7 @@ query_init:
   EXECUTE IMMEDIATE CONCAT('REVOKE ALTER, DROP ON outer_join_db.* FROM ',CURRENT_USER);
 
 query:
-  { _set_db('outer_join_db') } outer_join_query ;
+  { _set_db('outer_join_db') } /* _table */ outer_join_query ;
 
 outer_join_query:
   { @nonaggregates = () ; $tables = 0 ; $fields = 0 ;  "" } query_type ;
@@ -198,11 +198,6 @@ table_or_join_count_control:
 table_or_join:
            ==FACTOR:8== { $min_tables_to_join--; '' } table |
            ==FACTOR:2== join ;
-
-table_disabled:
-# We use the "AS alias" bit here so we can have unique aliases if we use the same table many times
-       { $stack->push(); my $x = $prng->arrayElement(\@table_set)." AS alias".++$tables;  my @s=($x); $stack->pop(\@s); $x } ;
-
 
 table:
 # We use the "AS alias" bit here so we can have unique aliases if we use the same table many times
