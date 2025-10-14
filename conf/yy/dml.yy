@@ -1,4 +1,4 @@
-# Copyright (C) 2018, 2022, MariaDB Corporation.
+# Copyright (C) 2018, 2025, MariaDB Corporation.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,7 +28,67 @@ query:
 dml_query:
     ==FACTOR:9== generic_dml_query |
     ==FACTOR:3== generic_dml_transaction |
-    generic_dml_trx
+    generic_dml_trx |
+    START TRANSACTION ;; very_long_transaction ;; __commit_x_rollback(70,30)
+;
+
+very_long_transaction:
+               generic_dml_10000 |
+  ==FACTOR:5== generic_dml_1000  |
+               generic_dml_100
+;
+
+
+generic_dml_10:
+     generic_dml_dml
+  ;; generic_dml_dml
+  ;; generic_dml_dml
+  ;; generic_dml_dml
+  ;; generic_dml_dml
+  ;; generic_dml_dml
+  ;; generic_dml_dml
+  ;; generic_dml_dml
+  ;; generic_dml_dml
+  ;; generic_dml_dml
+;
+
+generic_dml_100:
+     generic_dml_10
+  ;; generic_dml_10
+  ;; generic_dml_10
+  ;; generic_dml_10
+  ;; generic_dml_10
+  ;; generic_dml_10
+  ;; generic_dml_10
+  ;; generic_dml_10
+  ;; generic_dml_10
+  ;; generic_dml_10
+;
+
+generic_dml_1000:
+     generic_dml_100
+  ;; generic_dml_100
+  ;; generic_dml_100
+  ;; generic_dml_100
+  ;; generic_dml_100
+  ;; generic_dml_100
+  ;; generic_dml_100
+  ;; generic_dml_100
+  ;; generic_dml_100
+  ;; generic_dml_100
+;
+
+generic_dml_10000:
+     generic_dml_1000
+  ;; generic_dml_1000
+  ;; generic_dml_1000
+  ;; generic_dml_1000
+  ;; generic_dml_1000
+  ;; generic_dml_1000
+  ;; generic_dml_1000
+  ;; generic_dml_1000
+  ;; generic_dml_1000
+  ;; generic_dml_1000
 ;
 
 generic_dml_trx:
