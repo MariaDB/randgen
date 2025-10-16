@@ -53,7 +53,6 @@ $combinations = [
   [ '--grammar=conf/yy/dml.yy', '', '' ],
   [ '--grammar=conf/preview/server_domain_id.yy:0.05', '', '', '' ],
   [ '--reporter=PurgeBinaryLogs', '', '' ],
-  [ '--grammar=conf/yy/xa.yy', '' ],
 
   [
     '--mysqld=--plugin-load-add=ha_spider --mysqld=--loose-spider-same-server-link=on --mysqld=--loose-spider_table_crd_thread_count=1 --mysqld=--loose-spider_table_sts_thread_count=1 --grammar=conf/yy/engine-spider.yy',
@@ -311,17 +310,6 @@ $combinations = [
         $options{optional_innodb_pagesize},
         $options{optional_innodb_variables},
         $options{optional_perfschema},
-        $options{optional_server_variables},
-      ],
-      innodb_xa => [
-        [ '--engine=InnoDB' ],
-        [ '--grammar=conf/yy/xa.yy' ],
-        $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
-        $options{optional_charsets_safe},
-        $options{optional_variators},
-        $options{optional_innodb_compression},
-        $options{optional_innodb_pagesize},
-        $options{optional_innodb_variables},
         $options{optional_server_variables},
       ],
       json => [
