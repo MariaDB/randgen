@@ -132,7 +132,7 @@ opt_pruning:
 
 opt_with_without_validation:
   | /*!110400 WITH VALIDATION */
-  | WITHOUT VALIDATION ;; REPAIR TABLE _table[invariant] ;; ALTER TABLE _table[invariant] REBUILD PARTITION partition_name[invariant] /* compatibility 11.4 */
+  | WITH VALIDATION ;; REPAIR TABLE _table[invariant] ;; ALTER TABLE _table[invariant] REBUILD PARTITION partition_name[invariant] /* compatibility 11.4 */
 ;
 
 alter_convert_part_to_table:

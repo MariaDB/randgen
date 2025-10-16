@@ -359,10 +359,7 @@ sub run {
                 $tnames{$table_name} = 1;
             }
 
-            if (
-                (uc($table_copy[TABLE_ENGINE]) eq 'MYISAM') ||
-                ($table_copy[TABLE_ENGINE] eq '')
-                ) {
+            if (uc($table_copy[TABLE_ENGINE]) eq 'MYISAM') {
                 push @myisam_tables, $table_name;
             }
 
@@ -439,6 +436,8 @@ sub run {
           next;
         }
 
+        # Just in case it doesn't have one yet
+        $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` ADD pk BIGINT AUTO_INCREMENT PRIMARY KEY");
         $executor->execute("ALTER TABLE `$table->[TABLE_NAME]` DISABLE KEYS");
 
         if ($table->[TABLE_ROW] > 100) {

@@ -37,7 +37,7 @@ join_buffer_space_limit=4194304
 join_cache_level=6
 key_buffer_size=67108864
 lock_wait_timeout=10800
-log_bin=custom1-slave
+log_bin
 log_bin_compress=ON
 log_bin_trust_function_creators=ON
 log_slave_updates=ON
