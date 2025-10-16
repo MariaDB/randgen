@@ -33,6 +33,8 @@ use Constants;
 use Cwd 'abs_path';
 use GenTest::Reporter;
 use Data::Dumper;
+use File::Basename;
+use POSIX qw(strftime);
 
 sub report {
   my $reporter = shift;
@@ -49,10 +51,12 @@ sub report {
   # In case the server is still somehow running
   if ($pid) {
     sub runcmd {
-      my $command= shift;
-      say("Backtrace: Executing $command");
+      my @commands= shift;
+      say("Backtrace: Executing @commands");
       say("----------------------------  START OF STACK TRACE FROM THE RUNNING SERVER  ----------------------------\n");
-      system($command);
+      foreach (@commands) {
+        system($_);
+      }
       say("-----------------------------  END OF STACK TRACE FROM THE RUNNING SERVER -----------------------------\n");
     }
     if (osWindows()) {
@@ -62,7 +66,8 @@ sub report {
       say("BackTrace: pid: $pid");
       say("BackTrace: binary: $binary");
 
-      runcmd("gdb --batch --se=$binary -p $pid --command=util/backtrace-all.gdb");
+      my $bt_file= $vardir.'/threads_pid_'.$pid.'.txt';
+      runcmd("gdb --batch --se=$binary -p $pid --command=util/backtrace-all.gdb > $bt_file", "grep -A1000 'Thread 1 ' $bt_file");
       say("Backtrace: Sending SIGHUP to the server with pid $pid in order to force debug output.");
       kill(1, $pid);
       sleep(2);
@@ -153,11 +158,13 @@ sub report {
           sayWarning("Could not determine the binary from $core, assuming the default server binary $binary");
           $core_binary= $binary;
         }
+        my $bt_file= $vardir.'/threads_'.basename($core).'_'.(strftime("%Y%m%d%H%M%S", localtime)).'.txt';
         say("----------------------------  START OF STACK TRACE FROM THE COREDUMP  ----------------------------\n");
         say("BackTrace: coredump $core");
         say("BackTrace: binary   $core_binary");
-        system("gdb --batch --se=$core_binary --core=$core --command=util/backtrace.gdb | grep -vE 'New LWP [0-9]*'");
-        say("----------------------------  START OF STACK TRACE FROM THE COREDUMP  ----------------------------\n");
+        system("gdb --batch --se=$core_binary --core=$core --command=util/backtrace-all.gdb > $bt_file");
+        system("grep -A1000 'Thread 1 ' $bt_file");
+        say("-----------------------------  END OF STACK TRACE FROM THE COREDUMP  -----------------------------\n");
       }
     } else {
       sayWarning("BackTrace: No coredumps found");
