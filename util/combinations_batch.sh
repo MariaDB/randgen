@@ -82,16 +82,20 @@ else
       kill `ps -ef | grep run.pl | grep -v grep | awk '{print $2}' | xargs` || true
       sleep 1
       mv $workdir/var/trial.log  $archive/trial${t}.log
+      echo "###################################" | tee -a $archive/results.txt
+      echo "Log: trial${t}.log" | tee -a $archive/results.txt
+      if [ "$res" != "0" ] ; then
+        perl util/check_for_known_bugs.pl --signatures=util/bug_signatures* $workdir/var/s*/mysql.err $archive/trial${t}.log $workdir/var/s*/boot.log 2>&1 | tee -a $archive/results.txt
+      else
+        grep 'Test run ends with exit status' $archive/trial${t}.log >> $archive/results.txt
+      fi
+      echo "###################################" | tee -a $archive/results.txt
       if [ -z "$discard_logs" ] && [ "$res" != "0" ] ; then
         # We don't want to remove accidentally files which start with "core" but end with something different
         find $workdir/var -type f -name "core" -delete
         find $workdir/var -type f -name "core.*" -delete
-        find $workdir/var -type f -name "mysql.sock" -delete
+        find $workdir/var -name "mysql.sock" -delete
         mv $workdir/var $archive/vardir1_${t}
-        echo "###################################" | tee -a $archive/results.txt
-        echo "Log: trial${t}.log" | tee -a $archive/results.txt
-        perl util/check_for_known_bugs.pl --signatures=util/bug_signatures* $archive/vardir1_${t}/s*/mysql.err $archive/trial${t}.log $archive/vardir1_${t}/s*/boot.log 2>&1 | tee -a $archive/results.txt
-        echo "###################################" | tee -a $archive/results.txt
         cd $archive
         tar zcf logs_${t}.tar.gz vardir1_${t} trial${t}.log
         rm -rf vardir1_${t}
