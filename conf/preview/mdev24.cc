@@ -128,11 +128,11 @@ $combinations = [
     '--mysqld=--aria_pagecache_division_limit=1',
     '--mysqld=--aria_pagecache_division_limit=50',
   ],
-  [ '--mysqld=--aria_recover=NORMAL',
-    '--mysqld=--aria_recover=BACKUP',
-    '--mysqld=--aria_recover=FORCE',
-    '--mysqld=--aria_recover=QUICK',
-    '--mysqld=--aria_recover=OFF',
+  [ '--mysqld=--aria_recover_options=NORMAL',
+    '--mysqld=--aria_recover_options=BACKUP',
+    '--mysqld=--aria_recover_options=FORCE',
+    '--mysqld=--aria_recover_options=QUICK',
+    '--mysqld=--aria_recover_options=OFF',
   ],
   [
     '--mysqld=--aria_repair_threads=1',
@@ -154,6 +154,8 @@ $combinations = [
     '--mysqld=--aria_sync_log_dir=NEVER',
     '--mysqld=--aria_sync_log_dir=ALWAYS',
   ],
+
+  [ '--grammar=conf/preview/mdev24-repair.yy:0.1' ],
 
   ##### Engines and scenarios
   [
