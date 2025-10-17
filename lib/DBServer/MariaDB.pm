@@ -776,8 +776,9 @@ sub kill {
 
 sub backtrace {
   my $self= shift;
-  my $bt_file= $self->vardir.'/threads_'.(strftime("%Y%m%d%H%M%S", localtime)).'.txt';
-  if (system('gdb --batch --eval-command="thread apply all bt full" '.$self->binary.' '.$self->serverpid.' > '.$bt_file)) {
+  my $bt_file= $self->vardir.'/../threads_pid_'.$self->serverpid.'_'.(strftime("%Y%m%d%H%M%S", localtime)).'.txt';
+  say('Running gdb --batch --eval-command="thread apply all bt" '.$self->binary.' '.$self->serverpid.' > '.$bt_file);
+  if (system('gdb --batch --eval-command="thread apply all bt" '.$self->binary.' '.$self->serverpid.' > '.$bt_file)) {
     say("Stack trace from the process ".$self->serverpid." stored as $bt_file");
     return $bt_file;
   } else {
@@ -1224,6 +1225,7 @@ sub stopServer {
         if ($res != STATUS_OK) {
             # Terminate process
             sayWarning("Server doesn't shut down properly. Terminating it with SIGABRT");
+            $self->backtrace();
             $res= STATUS_SERVER_SHUTDOWN_FAILURE;
             $self->kill('ABRT');
         } else {
