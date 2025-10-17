@@ -1457,6 +1457,15 @@ sub waitForServerToStop {
   return ($self->running ? STATUS_SERVER_SHUTDOWN_FAILURE : STATUS_OK);
 }
 
+sub getGtidPos {
+  my $self= shift;
+  my $pos = $self->connection->get_value('SELECT @@gtid_binlog_pos');
+  unless ($pos) {
+    sayError("Could not retrieve master GTID position");
+  }
+  return $pos;
+}
+
 sub getMasterPos {
   my $self= shift;
   my ($file, $pos) = @{$self->connection->get_row("SHOW MASTER STATUS")};
@@ -1495,12 +1504,41 @@ sub syncWithMaster {
   }
 }
 
+sub syncWithMasterGtid {
+  my ($self, $pos, $rpl_timeout)= @_;
+  say("Waiting for the slave to synchronize with master ($pos)");
+  $rpl_timeout ||= 0;
+  if ($self->connection) {
+    $self->connection->execute("SET max_statement_time=0");
+    my $wait_result = $self->connection->get_value("SELECT MASTER_GTID_WAIT('$pos',$rpl_timeout)");
+    my $slave_status= $self->getSlaveStatus();
+    if (not defined $wait_result) {
+      sayError("Slave failed to synchronize with master");
+      foreach my $f ('Last_SQL','Last_IO') {
+        if ($slave_status->{$f.'_Errno'}) {
+          sayError("${f}_Errno: ".$slave_status->{$f.'_Errno'}." (".$slave_status->{$f.'_Error'}.")");
+        }
+      }
+      return STATUS_REPLICATION_FAILURE;
+    } elsif ($wait_result == -1) {
+      sayError("Timeout occurred while waiting for the slave to synchronize with the master");
+      return STATUS_REPLICATION_TIMEOUT;
+    } else {
+      say("Slave SQL thread apparently synchronized successfully: $wait_result events executed");
+      return STATUS_OK;
+    }
+  } else {
+    sayError("Lost connection to the slave");
+    return STATUS_REPLICATION_FAILURE;
+  }
+}
+
 sub getSlaveStatus {
   my $self= shift;
   my $status= undef;
   # Cannot do selectrow_array, as fields have different positions in different versions
   if ($self->connection) {
-    $status= $self->connection->get_columns_by_name("SHOW SLAVE STATUS");
+    $status= $self->connection->get_columns_by_name("SHOW SLAVE STATUS /* getSlaveStatus */");
   }
   return $status->[0];
 }

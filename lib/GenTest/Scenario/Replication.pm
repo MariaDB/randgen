@@ -27,12 +27,13 @@
 # --scenario-nosync:
 #   Do not wait for the replica to catch up with the master (and
 #   thus do not perform the data consistency check afterwards)
+# --scenario-use-gtid (1|0, 0 by default):
+#   Run replication with MASTER_USE_GTID and corresponding wait
 #
 # TODO: Make the topology arbitrary, to be determined by the
 # --[scenario-]replication-topology option or alike
 # TODO: Add synchronization at the end of the test, optionally
 #       (unless --nosync is provided)
-# TODO: add optional MASTER_USE_GTID
 #
 ########################################################################
 
@@ -72,7 +73,8 @@ sub run {
   $topology= '1->2';
 
   my @reporters= $self->getProperty('reporters') ? @{$self->getProperty('reporters')} : ();
-  my $do_sync= (exists $self->scenarioOptions->{'nosync'} ? 0 : 1 );
+  my $do_sync= (exists $self->scenarioOptions->{'nosync'} && $self->scenarioOptions->{'nosync'} ne '0' && $self->scenarioOptions->{'nosync'} ne 'off' ? 0 : 1 );
+  my $use_gtid= (exists $self->scenarioOptions->{'use-gtid'} && $self->scenarioOptions->{'use-gtid'} ne '0' && $self->scenarioOptions->{'use-gtid'} ne 'off' ? 1 : 0 );
   my $rpl_timeout= $self->scenarioOptions->{'rpl-timeout'} || $self->scenarioOptions->{'rpl_timeout'} || $self->getProperty('duration');
   push @reporters, 'ReplicationSlaveStatus';
 
@@ -89,10 +91,11 @@ sub run {
 # TODO: make log-slave-updates be set only on slaves, and randomly
   foreach my $s (1..$srv_count) {
     my $server_id= $self->getServerStartupOption($s,'server-id');
+    my $id = 1000 + $s;
     if ($server_id) {
-      sayWarning("Overridding server id $server_id by $s for server $s");
+      sayWarning("Overridding server id $server_id by $id for server $s");
     }
-    $self->setServerStartupOption($s,'server-id',$s);
+    $self->setServerStartupOption($s,'server-id',$id);
     unless ($self->getServerStartupOption($s,'log-bin')) {
       $self->setServerStartupOption($s,'log-bin',undef);
     }
@@ -129,11 +132,12 @@ sub run {
   $self->setProperty('reporters',[ @$reporters, 'ReplicationSlaveStatus' ]);
 
   my @connections= split /,/, $topology;
+  my ($master_conn, $slave_conn, $err);
   foreach my $c (@connections) {
     if ($c =~ /^(\d+)->(\d+)$/) {
       my ($master, $slave)= ($1-1, $2-1);
       say("Enabling $c replication");
-      my ($master_conn, $err)= Connection::Perl->new( server => $servers[$master], role => 'super', name => 'RPL' );
+      ($master_conn, $err)= Connection::Perl->new( server => $servers[$master], role => 'super', name => 'RPL' );
       unless ($master_conn) {
         sayError("Connection RPL to the master failed, error $err");
         $total_status= STATUS_ENVIRONMENT_FAILURE if STATUS_ENVIRONMENT_FAILURE > $total_status;
@@ -145,14 +149,18 @@ sub run {
         $master_conn->execute("GRANT REPLICATION SLAVE ON *.* TO replication\@localhost");
       }
       my $master_port= $servers[$master]->port;
-      my ($slave_conn, $err)= Connection::Perl->new( server => $servers[$slave], role => 'super', name => 'RPL' );
+      ($slave_conn, $err)= Connection::Perl->new( server => $servers[$slave], role => 'super', name => 'RPL' );
       unless ($slave_conn) {
         sayError("Connection RPL to the slave failed, error $err");
         $total_status= STATUS_ENVIRONMENT_FAILURE if STATUS_ENVIRONMENT_FAILURE > $total_status;
         last;
       }
       $slave_conn->execute("/*!100001 SET GLOBAL tx_read_only= OFF */");
-      $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT', MASTER_SSL=0");
+      if ($use_gtid) {
+        $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT', MASTER_SSL=0, MASTER_USE_GTID=current_pos");
+      } else {
+        $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT', MASTER_SSL=0");
+      }
       $slave_conn->execute("START SLAVE");
       if ($slave_conn->err) {
         sayError("Could not start replication $master -> $slave: ".$slave_conn->print_error);
@@ -195,13 +203,39 @@ sub run {
 
   #####
   if ($do_sync) {
-    $self->printStep("Synchronizing with master");
-    my ($file, $pos) = $servers[0]->getMasterPos();
-    unless ($file && $pos) {
-      sayError("Could not detect master logname/position");
+    my $slave_status = $servers[1]->getSlaveStatus();
+    foreach my $f ('Last_SQL','Last_IO') {
+      if ($slave_status->{$f.'_Errno'}) {
+        sayError("${f}_Errno: ".$slave_status->{$f.'_Errno'}." (".$slave_status->{$f.'_Error'}.")");
+        $total_status = STATUS_REPLICATION_FAILURE if $total_status < STATUS_REPLICATION_FAILURE;
+        goto FINALIZE;
+      }
+    }
+    my ($file, $pos);
+    if ($use_gtid) {
+      $pos = $servers[0]->getGtidPos();
+    } else {
+      ($file, $pos) = $servers[0]->getMasterPos();
+    }
+    unless ($pos) {
+      sayError("Could not detect master GTID position");
       return STATUS_ENVIRONMENT_FAILURE;
     }
-    $status= $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration'));
+    if ($slave_status->{Slave_IO_Running} eq 'No' || $slave_status->{Slave_SQL_Running} eq 'No') {
+      say("Replication was stopped, restarting to wait for synchronization");
+      $slave_conn->execute("STOP SLAVE");
+      if ($use_gtid) {
+        $slave_conn->execute("START SLAVE UNTIL SQL_AFTER_GTIDS = '$pos'");
+      } else {
+        $slave_conn->execute("START SLAVE UNTIL MASTER_LOG_FILE = '$file', MASTER_LOG_POS = '$pos'");
+      }
+    }
+    $self->printStep("Synchronizing with master");
+    if ($use_gtid) {
+      $status= $servers[1]->syncWithMasterGtid($pos, $self->getProperty('duration'));
+    } else {
+      $status= $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration'));
+    }
     unless ($status  == STATUS_OK) {
       $total_status= $status if $status > $total_status;
       goto FINALIZE;
