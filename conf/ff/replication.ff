@@ -23,6 +23,6 @@ $rules = {
   'purge_binlog'  => sub { $_ =~ m{PURGE.*LOG}is },
   'mdev37061'     => sub { $_ =~ m{ALTER.+TABLE\W.*(?:INSTANT|NOCOPY).*ORDER\s+BY}is },
   'mdev37065'     => sub { $_ =~ m{ALTER.+TABLE\W.*COLLATE.+COLLATE}is },
-  'mdev37071'     => sub { $_ =~ m{ALTER.+IGNORE.+TABLE}is },
-  'versioning'  => sub { $_ =~ m{VERSIONING}is },
+  'validation'    => sub { $_ =~ m{WITHOUT.*VALIDATION}is },
+  'reset_master'  => sub { $_ =~ m{RESET.*MASTER}is },
 }
