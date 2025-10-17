@@ -63,6 +63,7 @@ sql_debug_sync:
   ==FACTOR:1== sql_view_debug_sync |
   ==FACTOR:1== table_cache_debug_sync |
   ==FACTOR:1== table_debug_sync |
+  ==FACTOR:10== thr_lock_debug_sync |
   ==FACTOR:1== threadpool_common_debug_sync |
   ==FACTOR:1== transaction_debug_sync |
   ==FACTOR:1== wsrep_client_service_debug_sync |
@@ -326,6 +327,10 @@ table_cache_debug_sync:
 
 table_debug_sync:
   'TABLE_after_field_clone WAIT_FOR goforit' ;
+
+# Not sql/, mysys/, but let it be here for now
+thr_lock_debug_sync:
+  'thr_multi_lock_after_thr_lock WAIT_FOR goforit' ;
 
 threadpool_common_debug_sync:
   'before_do_command_net_read WAIT_FOR goforit' ;

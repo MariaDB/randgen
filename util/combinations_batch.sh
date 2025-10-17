@@ -91,10 +91,10 @@ else
       fi
       echo "###################################" | tee -a $archive/results.txt
       if [ -z "$discard_logs" ] && [ "$res" != "0" ] ; then
-        # We don't want to remove accidentally files which start with "core" but end with something different
-        find $workdir/var -type f -name "core" -delete
-        find $workdir/var -type f -name "core.*" -delete
-        find $workdir/var -name "mysql.sock" -delete
+        # We don't want to remove accidentally files which start with "core" but end with something different, that's why two patterns
+        # And first, let's see what we are deleting
+        find "$workdir/var" -type f \( -name "core" -o -name "core.*" -o -name "mysql.sock" \)
+        find "$workdir/var" -type f \( -name "core" -o -name "core.*" -o -name "mysql.sock" \) -delete
         mv $workdir/var $archive/vardir1_${t}
         cd $archive
         tar zcf logs_${t}.tar.gz vardir1_${t} trial${t}.log

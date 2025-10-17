@@ -29,7 +29,7 @@ dml_query:
     ==FACTOR:9== generic_dml_query |
     ==FACTOR:3== generic_dml_transaction |
     generic_dml_trx |
-    START TRANSACTION ;; very_long_transaction ;; __commit_x_rollback(70,30)
+    ==FACTOR:0.05== START TRANSACTION ;; very_long_transaction ;; __commit_x_rollback(70,30)
 ;
 
 very_long_transaction:
