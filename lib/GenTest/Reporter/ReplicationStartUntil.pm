@@ -70,7 +70,7 @@ sub status {
       return STATUS_REPLICATION_FAILURE;
     }
   }
-  my $gtid_pos = $master->getGtidPos();
+  my $gtid_pos = $master->getMasterGtidPos();
   unless ($gtid_pos) {
     sayWarning("ReplicationStartUntil reporter could not get GTID position from primary");
     return STATUS_REPLICATION_FAILURE;

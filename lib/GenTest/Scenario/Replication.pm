@@ -213,7 +213,7 @@ sub run {
     }
     my ($file, $pos);
     if ($use_gtid) {
-      $pos = $servers[0]->getGtidPos();
+      $pos = $servers[0]->getMasterGtidPos();
     } else {
       ($file, $pos) = $servers[0]->getMasterPos();
     }
@@ -231,11 +231,7 @@ sub run {
       }
     }
     $self->printStep("Synchronizing with master");
-    if ($use_gtid) {
-      $status= $servers[1]->syncWithMasterGtid($pos, $self->getProperty('duration'));
-    } else {
-      $status= $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration'));
-    }
+    $status= $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration'));
     unless ($status  == STATUS_OK) {
       $total_status= $status if $status > $total_status;
       goto FINALIZE;
