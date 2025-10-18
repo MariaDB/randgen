@@ -1487,7 +1487,7 @@ sub syncWithMaster {
   my ($self, $file, $pos, $rpl_timeout)= @_;
   say("Waiting for the slave to synchronize with master (".($file ? "$file, " : '')."$pos)");
   $rpl_timeout ||= 0;
-  my $using_gtid = ($pos =~ /^\d+-\d+-\d+$/);
+  my $using_gtid = ($pos =~ /^\d+-\d+-\d+/);
   if ($self->connection) {
     $self->connection->execute("SET max_statement_time=0");
     my $wait_result;
