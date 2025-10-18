@@ -51,8 +51,9 @@ $combinations = [
   [ '--grammar=conf/yy/admin.yy', '', '' ],
   [ '--grammar=conf/yy/bulk_insert.yy', '', '' ],
   [ '--grammar=conf/yy/dml.yy', '', '' ],
-  [ '--grammar=conf/preview/server_domain_id.yy:0.05', '', '', '' ],
-  [ '--reporter=PurgeBinaryLogs', '', '' ],
+  [ '--grammar=conf/preview/server_domain_id.yy:0.05', '', '', '', '', '' ],
+  [ '--reporter=PurgeBinaryLogs', '', '', '', '' ],
+  [ '--reporter=ResetMaster', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
 
   [
     '--mysqld=--plugin-load-add=ha_spider --mysqld=--loose-spider-same-server-link=on --mysqld=--loose-spider_table_crd_thread_count=1 --mysqld=--loose-spider_table_sts_thread_count=1 --grammar=conf/yy/engine-spider.yy',
