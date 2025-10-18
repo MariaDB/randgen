@@ -87,7 +87,7 @@ else
       if [ "$res" != "0" ] ; then
         perl util/check_for_known_bugs.pl --signatures=util/bug_signatures* $workdir/var/s*/mysql.err $archive/trial${t}.log $workdir/var/s*/boot.log 2>&1 | tee -a $archive/results.txt
       else
-        grep 'Test run ends with exit status' $archive/trial${t}.log >> $archive/results.txt
+        grep -a 'Test run ends with exit status' $archive/trial${t}.log >> $archive/results.txt
       fi
       echo "###################################" | tee -a $archive/results.txt
       if [ -z "$discard_logs" ] && [ "$res" != "0" ] ; then
