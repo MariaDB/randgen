@@ -48,6 +48,7 @@ $combinations = [
   $options{optional_binlog_safe_variables},
   [ '--filter=conf/preview/new_binlog.ff' ],
 
+  [ '--grammar=conf/yy/xa.yy', '', '', '' ],
   [ '--grammar=conf/yy/admin.yy', '', '' ],
   [ '--grammar=conf/yy/bulk_insert.yy', '', '' ],
   [ '--grammar=conf/yy/dml.yy', '', '' ],
