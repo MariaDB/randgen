@@ -80,6 +80,7 @@ use constant MYSQLD_SETUP_DONE => 40;
 use constant MYSQLD_DATASET => 41;
 use constant MYSQLD_BASEDIR_GENDATA => 42;
 use constant MYSQLD_MYSQLD_GENDATA => 43;
+use constant MYSQLD_ID => 44;
 
 use constant MARIABACKUP => 50;
 use constant TZINFO_TO_SQL => 51;
@@ -101,6 +102,7 @@ sub new {
                                    'dataset' => MYSQLD_DATASET,
                                    'general_log' => MYSQLD_GENERAL_LOG,
                                    'host' => MYSQLD_HOST,
+                                   'id' => MYSQLD_ID,
                                    'manual_gdb' => MYSQLD_MANUAL_GDB,
                                    'perf' => MYSQLD_PERF,
                                    'port' => MYSQLD_PORT,
@@ -246,6 +248,10 @@ sub new {
 
 sub basedir {
     return $_[0]->[MYSQLD_BASEDIR];
+}
+
+sub id {
+  return $_[0]->[MYSQLD_ID];
 }
 
 sub sourcedir {
@@ -776,22 +782,16 @@ sub kill {
 
 sub backtrace {
   my $self= shift;
-  my $bt_file= $self->vardir.'/../threads_pid_'.$self->serverpid.'_'.(strftime("%Y%m%d%H%M%S", localtime)).'.txt';
-  say('Running gdb --batch --eval-command="thread apply all bt" '.$self->binary.' '.$self->serverpid.' > '.$bt_file);
-  if (system('gdb --batch --eval-command="thread apply all bt" '.$self->binary.' '.$self->serverpid.' > '.$bt_file)) {
-    say("Stack trace from the process ".$self->serverpid." stored as $bt_file");
+  my $bt_file= $self->vardir.'/../threads_pid_'.$self->id.'_'.$self->serverpid.'_'.(strftime("%Y%m%d%H%M%S", localtime)).'.txt';
+  my $cmd = 'gdb --batch --se='.$self->binary.' -p '.$self->serverpid.' --command=util/backtrace-all.gdb >'.$bt_file;
+  say("Running $cmd");
+  if (system($cmd)) {
+    say("Stack trace from the server ".$self->id.", pid ".$self->serverpid." stored as $bt_file");
     return $bt_file;
   } else {
-    sayError("Failed to store stack trace from the process ".$self->serverpid);
+    sayError("Failed to store stack trace from the server ".$self->id.", process ".$self->serverpid);
     return undef;
   }
-}
-
-sub corefile {
-    my ($self) = @_;
-    # It can end up being named differently, depending on system settings,
-    # it's just the best guess
-    return $self->datadir."/core";
 }
 
 sub upgradeDb {
@@ -2057,7 +2057,6 @@ sub printInfo {
     say("Type: ". $self->[MYSQLD_SERVER_TYPE]. ($self->[MYSQLD_ASAN] ? "-ASAN" : ""));
     say("Datadir: ". $self->datadir);
     say("Tmpdir: ". $self->tmpdir);
-    say("Corefile: " . $self->corefile);
 }
 
 sub versionNumbers {

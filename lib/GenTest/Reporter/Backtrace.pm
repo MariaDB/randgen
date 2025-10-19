@@ -39,54 +39,60 @@ use POSIX qw(strftime);
 sub report {
   my $reporter = shift;
 
-  my $datadir = $reporter->server->serverVariable('datadir');
-  my $binary = $reporter->serverInfo('binary');
-  my $bindir = $reporter->serverInfo('bindir');
-  my $pid = $reporter->serverInfo('pid');
+  my @server_nums = keys %{$reporter->properties->server_specific};
   my $vardir = $reporter->properties->vardir;
 
-  say("BackTrace: datadir: $datadir");
-  say("BackTrace: vardir:  $vardir");
+  foreach my $id (@server_nums) {
+    my $server = $reporter->properties->server_specific->{$id}->{server};
+    next unless $server;
+    my $datadir = $server->datadir;
+    my $binary = $server->binary;
+    my $bindir = dirname($binary);
+    my $pid = $server->serverpid;
 
-  # In case the server is still somehow running
-  if ($pid) {
-    sub runcmd {
-      my @commands= shift;
-      say("Backtrace: Executing @commands");
-      say("----------------------------  START OF STACK TRACE FROM THE RUNNING SERVER  ----------------------------\n");
-      foreach (@commands) {
-        system($_);
+    say("Backtrace: server:  $id");
+    say("Backtrace: datadir: $datadir");
+    say("Backtrace: vardir:  $vardir");
+
+    # In case the server is still somehow running
+    if ($pid) {
+      sub runcmd {
+        my @commands= shift;
+        say("Backtrace: Executing @commands");
+        say("----------------------------  START OF STACK TRACE FROM THE RUNNING SERVER  ----------------------------\n");
+        foreach (@commands) {
+          system($_);
+        }
+        say("-----------------------------  END OF STACK TRACE FROM THE RUNNING SERVER -----------------------------\n");
       }
-      say("-----------------------------  END OF STACK TRACE FROM THE RUNNING SERVER -----------------------------\n");
-    }
-    if (osWindows()) {
-      runcmd("cdb -p $pid -c \".dump /m $datadir\\mysqld.dmp;q\"");
-    } elsif (kill(0,$pid)) {
-      say("Backtrace: The process $pid is still alive. Taking stack traces from the running server");
-      say("BackTrace: pid: $pid");
-      say("BackTrace: binary: $binary");
-
-      my $bt_file= $vardir.'/threads_pid_'.$pid.'.txt';
-      runcmd("gdb --batch --se=$binary -p $pid --command=util/backtrace-all.gdb > $bt_file", "grep -A1000 'Thread 1 ' $bt_file");
-      say("Backtrace: Sending SIGHUP to the server with pid $pid in order to force debug output.");
-      kill(1, $pid);
-      sleep(2);
-      say("Backtrace: Killing the server with pid $pid with SIGSEGV in order to capture core.");
-      $reporter->server->kill('SEGV');
+      if (osWindows()) {
+        runcmd("cdb -p $pid -c \".dump /m $datadir\\mysqld.dmp;q\"");
+      } elsif (kill(0,$pid)) {
+        say("Backtrace: The process $pid for the server $id is still alive. Taking stack traces from the running server using binary $binary");
+        my $bt_file= $vardir.'/threads_s'.$id.'_pid_'.$pid.'.txt';
+        runcmd("gdb --batch --se=$binary -p $pid --command=util/backtrace-all.gdb > $bt_file", "grep -A1000 'Thread 1 ' $bt_file");
+        say("Backtrace: Sending SIGHUP to the server $id with pid $pid in order to force debug output.");
+        kill(1, $pid);
+        sleep(2);
+        say("Backtrace: Killing the server $id with pid $pid with SIGSEGV in order to capture core.");
+        $server->kill('SEGV');
+      }
     }
   }
-
-  #  $core = </cores/core.$pid> if $^O eq 'darwin';
-  #  $core = <$datadir/vgcore*> if defined $reporter->properties->valgrind;
+    #  $core = </cores/core.$pid> if $^O eq 'darwin';
+    #  $core = <$datadir/vgcore*> if defined $reporter->properties->valgrind;
 
   if (osWindows()) {
+    # Default values which might be not right
+    my $bindir = $reporter->serverInfo('bindir');
+    my $datadir = $reporter->server->serverVariable('datadir');
     $bindir =~ s{/}{\\}sgio;
     my $cdb_cmd = "!sym prompts off; !analyze -v; .ecxr; !for_each_frame dv /t;~*k;q";
     system('cdb -i "'.$bindir.'" -y "'.$bindir.';srv*C:\\cdb_symbols*http://msdl.microsoft.com/download/symbols" -z "'.$datadir.'\mysqld.dmp" -lines -c "'.$cdb_cmd.'"');
   } else {
     my @corefiles;
     my $core;
-    say("Waiting for a few seconds in case a new core file starts getting written...");
+    say("Backtrace: Waiting for a few seconds in case a new core file starts getting written...");
     sleep(5);
     # We are searching for coredumps not just in the datadir or in server's vardir,
     # but in the entire test vardir, because we want to process all coredumps --
@@ -111,7 +117,7 @@ sub report {
           say("Assuming that all coredumps have been written in full");
           last COREWAIT;
         }
-        say("Coredump $core was last modified less than 10 seconds ago, waiting to see if it's still being written..'");
+        say("Backtrace: Coredump $core was last modified less than 10 seconds ago, waiting to see if it's still being written..'");
         sleep(10);
       }
     }
@@ -127,10 +133,13 @@ sub report {
       ## The code below is "inspired by MTR
       `echo | dbx - $core 2>&1` =~ m/Corefile specified executable: "([^"]+)"/;
       if ($1) {
+        # Default value which might be not right
+        my $binary = $reporter->serverInfo('binary');
+
         ## We do apparently have a working dbx
 
-        say("BackTrace: coredump: $core");
-        say("BackTrace: binary: $binary");
+        say("Backtrace: coredump: $core");
+        say("Backtrace: binary: $binary");
 
         # First, identify all threads
         my @threads = `echo threads | dbx $binary $core 2>&1` =~ m/t@\d+/g;
@@ -150,24 +159,33 @@ sub report {
         system("pstack $core | c++filt");
       }
     } elsif (scalar(@corefiles)) {
-      say("Getting stack traces from ".scalar(@corefiles)." coredump(s), starting from the latest");
+      say("Backtrace: Getting stack traces from ".scalar(@corefiles)." coredump(s), starting from the latest");
       foreach my $core (sort { -M $a <=> -M $b } @corefiles) {
+        my $sn = '';
+        if ($core =~ /\/(s\d+)\//) {
+          $sn = $1.'_';
+        }
+        my $size = (-s $core);
+        my $bt_file= $vardir.'/threads_'.$sn.basename($core).'_'.$size.'.txt';
+        if (-e $bt_file) {
+          say("Backtrace: thread dump $bt_file already exists, skipping the coredump $core");
+          next;
+        }
         my $core_binary= `file $core`;
         chomp $core_binary;
         unless ($core_binary =~ s/^.*from '([^' ]*).*$/$1/) {
-          sayWarning("Could not determine the binary from $core, assuming the default server binary $binary");
-          $core_binary= $binary;
+          $core_binary = $reporter->serverInfo('binary');
+          sayWarning("Backtrace: Could not determine the binary from $core, assuming the default server binary $core_binary");
         }
-        my $bt_file= $vardir.'/threads_'.basename($core).'_'.(strftime("%Y%m%d%H%M%S", localtime)).'.txt';
         say("----------------------------  START OF STACK TRACE FROM THE COREDUMP  ----------------------------\n");
-        say("BackTrace: coredump $core");
-        say("BackTrace: binary   $core_binary");
-        system("gdb --batch --se=$core_binary --core=$core --command=util/backtrace-all.gdb > $bt_file");
-        system("grep -A1000 'Thread 1 ' $bt_file");
+        my $cmd = "gdb --batch --se=$core_binary --core=$core --command=util/backtrace-all.gdb > $bt_file";
+        say("Backtrace: running $cmd");
+        system($cmd);
+        system("grep -A1000 'Thread 1 ' $bt_file | grep -E '^Thread|^#'");
         say("-----------------------------  END OF STACK TRACE FROM THE COREDUMP  -----------------------------\n");
       }
     } else {
-      sayWarning("BackTrace: No coredumps found");
+      sayWarning("Backtrace: No coredumps found");
     }
   }
   return STATUS_OK;
