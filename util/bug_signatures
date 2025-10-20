@@ -1726,6 +1726,11 @@ MDEV-28569:
 =~ Assertion \`offsets'
 =~ btr_check_node_ptr
 =~ btr_insert_into_right_sibling
+MDEV-28650:
+=~ signal|Assertion \`table && table->s->sequence'| Assertion \`table'
+=~ Item_func_nextval::val_int
+=~ Item_default_value::calculate
+=~ Item_direct_view_ref::send
 MDEV-28466:
 =~ AddressSanitizer|signal
 =~ _mi_make_key|calc_row_difference
@@ -3732,6 +3737,10 @@ MDEV-16242:
 =~ Slave worker thread retried transaction
 =~ Can't find record|Невозможно найти запись в
 =~ rocksdb
+MDEV-15879:
+=~ Assertion \`share->now_transactional \|\| (info->dup_key_trid == 0)'
+=~ maria_write
+=~ mysql_insert
 MDEV-15878:
 =~ Assertion \`table->file->stats\.records > 0 \|\| error'
 =~ join_read_const_table
