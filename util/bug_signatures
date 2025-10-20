@@ -31,6 +31,11 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-37906:
+=~ signal|AddressSanitizer
+=~ Item_func_nextval::update_table
+=~ Field::set_default
+=~ Query .*: .*INSERT.*DELAYED
 MDEV-37904:
 =~ signal|MemorySanitizer|Conditional jump or move depends on uninitialised value
 =~ Explain_table_access::tag_to_json
