@@ -1382,6 +1382,10 @@ MDEV-30058:
 =~ AddressSanitizer|signal|MemorySanitizer
 =~ MYSQL_LOG::generate_name|MYSQL_LOG::open
 =~ fix_slow_log_file|fix_general_log_file|fix_log
+MDEV-30051:
+=~ AddressSanitizer|signal
+=~ Item_equal_iterator<List_iterator_fast, Item>::get_curr_field
+=~ Item_equal::contains
 MDEV-30037:
 =~ InnoDB: Failing assertion: table->n_rec_locks == 0
 =~ dict_sys_t::remove
@@ -3689,18 +3693,6 @@ MDEV-16694:
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ THD::~THD
 =~ FeatureUsage detected multi-update/delete
-MDEV-16686:
-=~ Assertion \`(\*tables)->reginfo\.lock_type >= TL_READ'|Assertion \`(\*tables)->reginfo\.lock_type >= TL_READ_SKIP_LOCKED'
-=~ lock_external
-MDEV-16686:
-=~ signal|AddressSanitizer
-=~ wait_for_lock|thr_unlock|thr_lock
-=~ thr_multi_lock|thr_multi_unlock
-MDEV-16686:
-=~ Assertion \`false'
-=~ lock_flags_to_lock_type
-=~ pfs_start_table_lock_wait_v1
-=~ thr_multi_lock
 MDEV-16659:
 =~ Assertion \`anc_page->org_size == anc_page->size'
 =~ d_search
