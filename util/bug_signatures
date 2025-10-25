@@ -65,10 +65,17 @@ MDEV-37708:
 =~ Assertion \`!trx->is_bulk_insert()'
 =~ ha_innobase::delete_row
 =~ Query .*: .*REPLACE
+MDEV-37491:
+=~ Assertion \`(mem_root->flags & 4) == 0'
+=~ Query_arena::calloc
 MDEV-37456:
 =~ Assertion \`lock_rec_has_expl(LOCK_X \| 1024U, g\.cell(), id, heap_no, &trx)'
 =~ lock_trx_has_expl_x_lock
 =~ FeatureUsage detected unique blobs
+MDEV-37432:
+=~ Assertion \`!trx->is_started()'
+=~ innobase_start_trx_and_assign_read_view
+=~ snapshot_handlerton
 MDEV-37404:
 =~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
 =~ row_update_for_mysql
@@ -998,6 +1005,11 @@ MDEV-31867:
 =~ Reprepare_observer::can_retry
 =~ sp_head::execute
 =~ Version: '11\.[2-9]|Server version: 11]\.[2-9]|'1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-31845:
+=~ signal|AddressSanitizer
+=~ my_strnncollsp
+=~ sortcmp
+=~ Arg_comparator::compare_string
 MDEV-31824:
 =~ STATUS_REPLICATION_FAILURE
 =~ Slave SQL: Error 'Cannot change column .*: used in a foreign key constraint .* on query. .* Internal MariaDB error code: 1832
@@ -2146,6 +2158,8 @@ MDEV-25261:
 =~ Assertion \`arg1_int >= 0'|Assertion \`arg2_int >= 0'
 =~ Item_func_additive_op::result_precision
 =~ Item_num_op::fix_length_and_dec
+MDEV-25157:
+=~ Slave SQL: Error executing row event: 'CONNECT Unsupported command'
 MDEV-25119:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ innobase_rename_table
