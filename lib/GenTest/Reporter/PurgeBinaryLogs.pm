@@ -58,14 +58,19 @@ sub status {
     return STATUS_SERVER_UNAVAILABLE;
   }
 
-  my $logs = $slave_conn->get_columns_by_name('SHOW REPLICA STATUS', 'Master_Log_File');
-  my $master_log;
-  if ($logs && scalar(@$logs)) {
-    $master_log = $logs->[0]->{Master_Log_File};
-  }
-  unless ($master_log) {
-    sayError("PurgeBinaryLogs: failed to get the current master log from slave status");
+#  my $logs = $slave_conn->get_columns_by_name('SHOW REPLICA STATUS', 'Master_Log_File');
+  my $logs = $slave_conn->get_columns_by_name('SHOW REPLICA STATUS');
+  if ($slave_conn->err) {
+    sayError("PurgeBinaryLogs: Got error trying to get Master_Log_File from slave status: ".$slave_conn->print_error);
     return STATUS_REPLICATION_FAILURE;
+  }
+  my $purge_limit;
+  if ($logs && scalar(@$logs)) {
+    $purge_limit = "TO '".$logs->[0]->{Master_Log_File}."'";
+
+  } else {
+    say('PurgeBinaryLogs: Slave status is empty, assuming no replication');
+    $purge_limit = 'BEFORE NOW()';
   }
   my $master_conn = $reporter->connection;
   unless ($master_conn) {
@@ -73,18 +78,21 @@ sub status {
     return STATUS_SERVER_UNAVAILABLE;
   }
   $logs = $master_conn->query("SHOW BINARY LOGS");
-  say("PurgeBinaryLogs: Running flush and purging binary logs to $master_log. Logs before flush and purge: " . Dumper $logs);
+  say("PurgeBinaryLogs: Running flush and purging binary logs $purge_limit. Logs before flush and purge: " . Dumper $logs);
   $master_conn->execute('FLUSH BINARY LOGS');
   if ($master_conn->err) {
-    sayError("FLUSH BINARY LOGS failed: " . $master_conn->print_error);
+    sayError("PurgeBinaryLogs: FLUSH BINARY LOGS failed: " . $master_conn->print_error);
     return STATUS_CRITICAL_FAILURE;
   }
-  $master_conn->execute("PURGE BINARY LOGS TO '$master_log'");
+  $master_conn->execute("PURGE BINARY LOGS $purge_limit");
   if ($master_conn->err) {
-    sayWarning("PURGE BINARY LOGS TO '$master_log' failed: " . $master_conn->print_error);
+    sayWarning("PurgeBinaryLogs: PURGE BINARY LOGS $purge_limit failed: " . $master_conn->print_error);
   }
   $logs = $master_conn->query("SHOW BINARY LOGS");
+  my $indt = $Data::Dumper::Indent;
+  $Data::Dumper::Indent = 0;
   say("PurgeBinaryLogs: Logs after flush and purge: " . Dumper $logs);
+  $Data::Dumper::Indent = $indt;
   return STATUS_OK;
 }
 
