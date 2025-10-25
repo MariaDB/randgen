@@ -89,10 +89,7 @@ sub status {
     sayWarning("PurgeBinaryLogs: PURGE BINARY LOGS $purge_limit failed: " . $master_conn->print_error);
   }
   $logs = $master_conn->query("SHOW BINARY LOGS");
-  my $indt = $Data::Dumper::Indent;
-  $Data::Dumper::Indent = 0;
   say("PurgeBinaryLogs: Logs after flush and purge: " . Dumper $logs);
-  $Data::Dumper::Indent = $indt;
   return STATUS_OK;
 }
 
