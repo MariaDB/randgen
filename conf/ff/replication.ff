@@ -25,4 +25,5 @@ $rules = {
   'mdev37065'     => sub { $_ =~ m{ALTER.+TABLE\W.*COLLATE.+COLLATE}is },
   'validation'    => sub { $_ =~ m{WITHOUT.*VALIDATION}is },
   'reset_master'  => sub { $_ =~ m{RESET.*MASTER}is },
+  'mdev25157'     => sub { $_ =~ m{ENGINE(\s=)*CONNECT}is },
 }
