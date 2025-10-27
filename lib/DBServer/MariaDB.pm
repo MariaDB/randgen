@@ -1786,6 +1786,7 @@ sub isRecordIgnored {
         $line =~ /\[Note\]|\[Warning\]/s
     or  $line =~ /^\s*$/s
     or  $line =~ /Can't open and lock privilege tables/s
+    or  $line =~ /Couldn't fix table with quick recovery: Found wrong number of deleted records/s
     or  $line =~ /Event Scheduler: /s
     or  $line =~ /ib_buffer_pool' for reading: No such file or directory/s
     or  $line =~ /Incorrect definition of table (?:mysql\.event|mysql\.column_stats)/s
@@ -1821,6 +1822,7 @@ sub isRecordIgnored {
     or  $line =~ /(?:mysqld|mariadbd): Table .* is marked as crashed and last \(automatic\?\) repair failed/s
     or  $line =~ /(?:mysqld|mariadbd): Table .* is marked as crashed and should be repaired/s
     or  $line =~ /(?:mysqld|mariadbd): (?:The table .* is full|Таблица .* переполнена|表.*已满)/s
+    or  $line =~ /Run recovery again without --quick/s
     or  $line =~ /server_audit: Query log limit was changed/s
     or  $line =~ /server_audit: SysLog facility was changed/s
     or  $line =~ /Slave I\/O: error reconnecting to master/s
