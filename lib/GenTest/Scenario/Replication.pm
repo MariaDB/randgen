@@ -217,24 +217,31 @@ sub run {
     } else {
       ($file, $pos) = $servers[0]->getMasterPos();
     }
-    unless ($pos) {
+    unless (defined $pos) {
       sayError("Could not detect master GTID position");
       return STATUS_ENVIRONMENT_FAILURE;
     }
     if ($slave_status->{Slave_IO_Running} eq 'No' || $slave_status->{Slave_SQL_Running} eq 'No') {
       say("Replication was stopped, restarting to wait for synchronization");
       $slave_conn->execute("STOP SLAVE");
-      if ($use_gtid) {
-        $slave_conn->execute("START SLAVE UNTIL SQL_AFTER_GTIDS = '$pos'");
+      # pos may be empty, which must mean that master didn't execute anything after RESET
+      if ($pos) {
+        if ($use_gtid) {
+          $slave_conn->execute("START SLAVE UNTIL SQL_AFTER_GTIDS = '$pos'");
+        } else {
+          $slave_conn->execute("START SLAVE UNTIL MASTER_LOG_FILE = '$file', MASTER_LOG_POS = '$pos'");
+        }
       } else {
-        $slave_conn->execute("START SLAVE UNTIL MASTER_LOG_FILE = '$file', MASTER_LOG_POS = '$pos'");
+        $slave_conn->execute("START SLAVE");
       }
     }
-    $self->printStep("Synchronizing with master");
-    $status= $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration'));
-    unless ($status  == STATUS_OK) {
-      $total_status= $status if $status > $total_status;
-      goto FINALIZE;
+    if ($pos) {
+      $self->printStep("Synchronizing with master");
+      $status= $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration'));
+      unless ($status  == STATUS_OK) {
+        $total_status= $status if $status > $total_status;
+        goto FINALIZE;
+      }
     }
     my ($master_status, %master_data)= $self->get_data($servers[0]);
     if ($master_status != STATUS_OK) {

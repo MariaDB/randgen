@@ -1462,8 +1462,12 @@ sub waitForServerToStop {
 sub getMasterGtidPos {
   my $self= shift;
   my $pos = $self->connection->get_value('SELECT @@gtid_binlog_pos');
+  if ($self->connection->err) {
+    sayError("Could not retrieve master GTID position: " . $self->connection->print_error);
+    return undef;
+  }
   unless ($pos) {
-    sayError("Could not retrieve master GTID position " . ($self->connection->err ? $self->connection->print_error : ''));
+    sayWarning("Master GTID position is empty");
   }
   return $pos;
 }

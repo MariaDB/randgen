@@ -71,13 +71,17 @@ sub status {
     }
   }
   my $gtid_pos = $master->getMasterGtidPos();
-  unless ($gtid_pos) {
+  unless (defined $gtid_pos) {
     sayWarning("ReplicationStartUntil reporter could not get GTID position from primary");
     return STATUS_REPLICATION_FAILURE;
   }
-  my $before_after = ('master_gtid_pos','SQL_BEFORE_GTIDS','SQL_AFTER_GTIDS')[$reporter->prng->uint16(0,2)];
-  say("ReplicationStartUntil: Replica is currently at Gtid_IO_Pos ".$slave_status->{Gtid_IO_Pos}.", restarting with SLAVE UNTIL $before_after = '$gtid_pos'");
-  $slave_conn->query("START SLAVE UNTIL $before_after = '$gtid_pos' /* ReplicationStartUntil */");
+  # pos may be empty, which must mean that master didn't execute anything after RESET
+  my $before_after = '';
+  if ($gtid_pos) {
+    $before_after = 'UNTIL ' . ('master_gtid_pos','SQL_BEFORE_GTIDS','SQL_AFTER_GTIDS')[$reporter->prng->uint16(0,2)] . " = '$gtid_pos'";
+  }
+  say("ReplicationStartUntil: Replica is currently at Gtid_IO_Pos ".$slave_status->{Gtid_IO_Pos}.", restarting SLAVE $before_after");
+  $slave_conn->query("START SLAVE $before_after /* ReplicationStartUntil */");
   return STATUS_OK;
 }
 
