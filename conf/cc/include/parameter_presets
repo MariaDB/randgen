@@ -240,23 +240,16 @@ $engine_full_mix_combinations{$minversion}= [
    --mysqld=--plugin-load-add=ha_archive
    --mysqld=--plugin-load-add=ha_blackhole
    --mysqld=--plugin-load-add=ha_federatedx
-   --mysqld=--plugin-load-add=ha_oqgraph
    --mysqld=--plugin-load-add=ha_spider
-   --mysqld=--plugin-load-add=ha_mroonga
-   --mysqld=--plugin-load-add=ha_connect
    --mysqld=--loose-spider-same-server-link=on
    --mysqld=--loose-spider_table_crd_thread_count=1
    --mysqld=--loose-spider_table_sts_thread_count=1
-   --gendata=data/sql/engine-oqgraph.sql
    --gendata=data/sql/engine-heap.sql
-   --gendata=conf/zz/oltp-connect.zz
-   --grammar=conf/yy/engine-oqgraph.yy:0.1
    --grammar=conf/yy/engine-federatedx.yy:0.1
    --grammar=conf/yy/engine-spider.yy:0.5
    --grammar=conf/yy/engine-heap-ddl.yy
    --grammar=conf/yy/engine-heap-dml.yy
    --grammar=conf/yy/engine-merge.yy
-   --grammar=conf/yy/engine-mroonga.yy
   '
 ];
 
@@ -265,11 +258,8 @@ $engine_full_mix_combinatinos{1005}= [
    --mysqld=--plugin-load-add=ha_archive
    --mysqld=--plugin-load-add=ha_blackhole
    --mysqld=--plugin-load-add=ha_federatedx
-   --mysqld=--plugin-load-add=ha_oqgraph
    --mysqld=--plugin-load-add=ha_spider
    --mysqld=--plugin-load-add=ha_s3
-   --mysqld=--plugin-load-add=ha_mroonga
-   --mysqld=--plugin-load-add=ha_connect
    --mysqld=--loose-spider-same-server-link=on
    --mysqld=--loose-spider_table_crd_thread_count=1
    --mysqld=--loose-spider_table_sts_thread_count=1
@@ -282,17 +272,13 @@ $engine_full_mix_combinatinos{1005}= [
    --mysqld=--loose-s3-region=""
    --mysqld=--loose-s3-port=9000
    --mysqld=--loose-s3-use-http=on
-   --gendata=data/sql/engine-oqgraph.sql
    --gendata=data/sql/engine-heap.sql
-   --gendata=conf/zz/oltp-connect.zz
-   --grammar=conf/yy/engine-oqgraph.yy:0.1
    --grammar=conf/yy/engine-federatedx.yy:0.1
    --grammar=conf/yy/engine-spider.yy:0.5
    --grammar=conf/yy/engine-s3.yy:0.1
    --grammar=conf/yy/engine-heap-ddl.yy
    --grammar=conf/yy/engine-heap-dml.yy
    --grammar=conf/yy/engine-merge.yy
-   --grammar=conf/yy/engine-mroonga.yy
   ',
 ];
 
