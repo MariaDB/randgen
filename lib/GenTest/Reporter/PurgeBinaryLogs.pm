@@ -58,15 +58,15 @@ sub status {
     return STATUS_SERVER_UNAVAILABLE;
   }
 
-#  my $logs = $slave_conn->get_columns_by_name('SHOW REPLICA STATUS', 'Master_Log_File');
+# We are using Relay_Master_Log_File and not Master_Log_File due to MDEV-4698
   my $logs = $slave_conn->get_columns_by_name('SHOW REPLICA STATUS');
   if ($slave_conn->err) {
-    sayError("PurgeBinaryLogs: Got error trying to get Master_Log_File from slave status: ".$slave_conn->print_error);
+    sayError("PurgeBinaryLogs: Got error trying to get Relay_Master_Log_File from slave status: ".$slave_conn->print_error);
     return STATUS_REPLICATION_FAILURE;
   }
   my $purge_limit;
   if ($logs && scalar(@$logs)) {
-    $purge_limit = "TO '".$logs->[0]->{Master_Log_File}."'";
+    $purge_limit = "TO '".$logs->[0]->{Relay_Master_Log_File}."'";
 
   } else {
     say('PurgeBinaryLogs: Slave status is empty, assuming no replication');
