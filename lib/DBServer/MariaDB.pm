@@ -1829,6 +1829,7 @@ sub isRecordIgnored {
     or  $line =~ /Run recovery again without --quick/s
     or  $line =~ /server_audit: Query log limit was changed/s
     or  $line =~ /server_audit: SysLog facility was changed/s
+    or  $line =~ /RocksDB: Failed .*Status: Invalid argument: Transaction name must be unique/s
     or  $line =~ /Slave I\/O: error reconnecting to master/s
     or  $line =~ /Write to binary log failed: Multi-row statements required more than 'max_binlog_stmt_cache_size' bytes of storage/s
     # CSV is not crash-safe x 2
