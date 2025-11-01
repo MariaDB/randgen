@@ -510,11 +510,10 @@ sub skipTestSetup {
 sub testSetup {
   my $self= shift;
   unless ($self->[MYSQLD_SETUP_DONE]) {
-    my $usertable= ($self->versionNumeric() gt '100400' ? 'global_priv' : 'user');
+    my $usertable= ($self->versionNumeric() gt '100400' ? 'mysql.global_priv' : 'mysql.user');
 
     ## Add last strokes: don't want empty users, but want the test user instead
     $self->connection->execute("SET tx_read_only=0");
-    $self->connection->execute("USE mysql");
     $self->connection->execute("DELETE FROM $usertable WHERE `User` = ''");
     $self->connection->execute("FLUSH PRIVILEGES");
     $self->connection->execute("CREATE DATABASE IF NOT EXISTS transforms");
@@ -536,7 +535,7 @@ sub testSetup {
       $self->connection->execute("GRANT ALL ON mysql.rqg_feature_registry TO $user");
       $self->connection->execute("GRANT INSERT, UPDATE, DELETE ON performance_schema.* TO $user");
       $self->connection->execute("GRANT EXECUTE ON sys.* TO $user");
-      if ($usertable eq 'global_priv') {
+      if ($usertable eq 'mysql.global_priv') {
         $self->connection->execute("UPDATE mysql.global_priv SET Priv = JSON_REPLACE(Priv,'\$.authentication_string','') WHERE User = '".$self->user."'");
         $self->connection->execute("UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root')");
       } else {
@@ -1826,7 +1825,7 @@ sub isRecordIgnored {
     or  $line =~ /(?:mysqld|mariadbd): Table .* is marked as crashed and last \(automatic\?\) repair failed/s
     or  $line =~ /(?:mysqld|mariadbd): Table .* is marked as crashed and should be repaired/s
     or  $line =~ /(?:mysqld|mariadbd): (?:The table .* is full|Таблица .* переполнена|表.*已满)/s
-    or  $line =~ /Run recovery again without --quick/s
+    or  $line =~ /Run recovery again without --q/s
     or  $line =~ /server_audit: Query log limit was changed/s
     or  $line =~ /server_audit: SysLog facility was changed/s
     or  $line =~ /RocksDB: Failed .*Status: Invalid argument: Transaction name must be unique/s
