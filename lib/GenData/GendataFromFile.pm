@@ -126,8 +126,6 @@ sub run {
       return STATUS_OK;
     }
 
-    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
-
     if (defined $schemas) {
         push(@schema_perms, @$schemas);
         $self->executor->defaultSchema($schema_perms[0]);

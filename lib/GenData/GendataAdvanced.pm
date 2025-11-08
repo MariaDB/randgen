@@ -55,7 +55,6 @@ sub run {
     }
 
     my $res= STATUS_OK;
-    $executor->execute("SET SQL_MODE= CONCAT(\@\@sql_mode,',NO_ENGINE_SUBSTITUTION'), ENFORCE_STORAGE_ENGINE= NULL");
     say("GendataAdvanced is creating tables");
     $executor->execute("CREATE DATABASE IF NOT EXISTS ".$self->GDA_DEFAULT_DB);
     # PS is a workaround for MENT-30190
