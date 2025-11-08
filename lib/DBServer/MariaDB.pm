@@ -1790,6 +1790,7 @@ sub isRecordIgnored {
     or  $line =~ /^\s*$/s
     or  $line =~ /Can't open and lock privilege tables/s
     or  $line =~ /Couldn't fix table with quick recovery: Found wrong number of deleted records/s
+    or  $line =~ /Error reading packet from server: Lost connection to server during query/s
     or  $line =~ /Event Scheduler: /s
     or  $line =~ /ib_buffer_pool' for reading: No such file or directory/s
     or  $line =~ /Incorrect definition of table (?:mysql\.event|mysql\.column_stats)/s
