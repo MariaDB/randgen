@@ -486,6 +486,10 @@ MDEV-35242:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ add_internal_tables
 =~ DML_prelocking_strategy::handle_table
+MDEV-35242:
+=~ Assertion \`(mem_root->flags & 4) == 0'
+=~ mysql_derived_merge
+=~ LEX::handle_list_of_derived
 MDEV-35234:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ st_select_lex::save_item_list_names
@@ -892,6 +896,11 @@ MDEV-32373:
 =~ AddressSanitizer|signal
 =~ ha_connect::GetStringOption
 =~ MYCAT::MakeTableDesc
+MDEV-32323:
+=~ AddressSanitizer|signal
+=~ Item_field::type_handler
+=~ Item::result_type
+=~ Item_ref::check_cols
 MDEV-32237:
 =~ AddressSanitizer|signal
 =~ my_charlen_utf8
