@@ -108,6 +108,7 @@ sub run {
     perf            => undef,
     ps              => undef,
     rr              => undef,
+    start_dirty     => undef,
     uhashkeys       => undef,
     valgrind        => undef,
     vcols           => undef,
