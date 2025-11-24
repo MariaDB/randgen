@@ -141,6 +141,7 @@ sub run {
     'perf:i' => \$server_options{perf},
     'ps_protocol|ps-protocol' => \$server_options{ps},
     'rr!' => \$server_options{rr},
+    'start_dirty|start-dirty!'     => \$server_options{start_dirty},
     'unique-hash-keys|unique_hash_keys!' => \$server_options{uhashkeys},
     'valgrind:s'    => \$server_options{valgrind},
     'vcols:s'        => \$server_options{vcols},
@@ -293,16 +294,18 @@ sub run {
     if ($o =~ /^--scenario-([^=]+)(?:=(.*))?$/) {
       $scenario_options{$1}= $2;
     } elsif ($o =~ /^--(?:server|srv)(\d+)-([^=]+)(?:=(.*))?$/) {
-      if (exists $server_options{$2}) {
-        my %opts= (defined $server_specific->{$1} ? %{$server_specific->{$1}} : ());
-        if ($2 eq 'mysqld') {
-          $opts{$2}= exists $opts{$2} ? [ @{$opts{$2}}, $3 ] : [ $3 ];
-        } elsif ($2 eq 'perf' and not defined $3) {
-          $opts{$2}= int($props->{duration}*0.9);
+      my ($srv, $opt, $val) = ($1, $2, $3);
+      $opt =~ s/-/_/g;
+      if (exists $server_options{$opt}) {
+        my %opts= (defined $server_specific->{$srv} ? %{$server_specific->{$srv}} : ());
+        if ($opt eq 'mysqld') {
+          $opts{$opt}= exists $opts{$opt} ? [ @{$opts{$opt}}, $val ] : [ $val ];
+        } elsif ($opt eq 'perf' and not defined $val) {
+          $opts{$opt}= int($props->{duration}*0.9);
         } else {
-          $opts{$2}= $3;
+          $opts{$opt}= $val;
         }
-        %{$server_specific->{$1}}= %opts;
+        %{$server_specific->{$srv}}= %opts;
       } else {
         push @unknown_options, $o;
       }
