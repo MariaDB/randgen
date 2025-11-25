@@ -521,10 +521,10 @@ sub testSetup {
     $self->connection->execute("CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=InnoDB");
     if ($self->user ne 'root') {
       my $user= $self->user.'@localhost';
-      $self->connection->execute("CREATE ROLE admin");
+      $self->connection->execute("CREATE ROLE IF NOT EXISTS admin");
       $self->connection->execute("GRANT ALL ON *.* TO admin WITH GRANT OPTION");
       # Temporary password to work around password check plugins
-      $self->connection->execute("CREATE USER $user IDENTIFIED BY 'pqg8dnw.TUT_dhj7pcv' PASSWORD EXPIRE NEVER");
+      $self->connection->execute("CREATE USER IF NOT EXISTS $user IDENTIFIED BY 'pqg8dnw.TUT_dhj7pcv' PASSWORD EXPIRE NEVER");
       $self->connection->execute("GRANT /*!100502 BINLOG ADMIN, BINLOG MONITOR, BINLOG REPLAY, CONNECTION ADMIN, FEDERATED ADMIN, ".
                                   "READ_ONLY ADMIN, REPLICATION MASTER ADMIN, REPLICATION REPLICA, REPLICATION SLAVE ADMIN, SET USER, */ ".
                         "/*!100509 REPLICA MONITOR, */ ".
