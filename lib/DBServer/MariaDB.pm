@@ -513,7 +513,7 @@ sub testSetup {
     my $usertable= ($self->versionNumeric() gt '100400' ? 'mysql.global_priv' : 'mysql.user');
 
     ## Add last strokes: don't want empty users, but want the test user instead
-    $self->connection->execute("SET tx_read_only=0");
+    $self->connection->execute("SET tx_read_only=0, binlog_format=STATEMENT");
     $self->connection->execute("DELETE FROM $usertable WHERE `User` = ''");
     $self->connection->execute("FLUSH PRIVILEGES");
     $self->connection->execute("CREATE DATABASE IF NOT EXISTS transforms");
@@ -544,6 +544,7 @@ sub testSetup {
       $self->connection->execute("DELETE FROM mysql.roles_mapping WHERE Role = 'admin'");
       $self->connection->execute("INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y')");
       $self->connection->execute("FLUSH PRIVILEGES");
+      $self->connection->execute("SET binlog_format=DEFAULT");
     }
     $self->[MYSQLD_SETUP_DONE]= 1;
   }
