@@ -45,8 +45,6 @@ $combinations = [
     '--mysqld=--log_bin --mysqld=--binlog_storage_engine=innodb --scenario-use-gtid',
     '--mysqld=--log_bin --mysqld=--binlog_storage_engine=innodb --scenario-use-gtid',
     '--mysqld=--log_bin --mysqld=--binlog_storage_engine=innodb --mysqld=--max_binlog_size=32M --scenario-use-gtid',
-    '--mysqld=--log_bin --scenario-use-gtid',
-    '--mysqld=--log_bin'
   ],
   [ '--mysqld=--binlog-directory=binlogs --mysqld=--ignore-db-dirs=binlogs',
     ''
