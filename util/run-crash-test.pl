@@ -198,7 +198,7 @@ say("Backing up vardir as $vardir_backup...");
 my $cmd = $cmd_prefix. "mv $opt_guest_vardir $vardir_backup";
 system($cmd);
 
-my $rqg_recovery_options="@ARGV --scenario=Replication --scenario-use-gtid --basedir=$opt_guest_basedir --vardir=$opt_guest_vardir --server1-dataset=$vardir_backup/s1/data --queries=10 --duration=$opt_duration";
+my $rqg_recovery_options="@ARGV --scenario=Replication --skip-gendata --scenario-use-gtid --basedir=$opt_guest_basedir --vardir=$opt_guest_vardir --server1-dataset=$vardir_backup/s1/data --queries=10 --duration=$opt_duration";
 
 $cmd = $cmd_prefix . '"cd $HOME/rqg && '.'perl ./run.pl ' . "$rqg_recovery_options".'"';
 say("Running $cmd ...");

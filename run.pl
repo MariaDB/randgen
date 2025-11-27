@@ -171,6 +171,7 @@ sub run {
     'scenario:s' => \$scenario,
     'seed=s' => \$props->{seed},
     'short_column_names|short-column-names!' => \$props->{short_column_names},
+    'skip-gendata|skip_gendata' => \$props->{skip_gendata},
     'sqltrace:s' => \$props->{sqltrace},
     'threads=i' => \$props->{threads},
     'transformers=s@' => \@{$props->{transformers}},

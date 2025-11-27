@@ -156,13 +156,15 @@ sub parseFromString {
     }
   }
 
-  REQS:
-  while ($grammar_string =~ s{#require [<"](.*?)[>"]$}{}mi) {
-    my $require_file = $1;
-    foreach my $g (@{$grammar->[GRAMMAR_TEST_CONFIG]->gendatas}) {
-      next REQS if ($g eq $require_file);
+  unless ($grammar->[GRAMMAR_TEST_CONFIG]->skip_gendata) {
+    REQS:
+    while ($grammar_string =~ s{#require [<"](.*?)[>"]$}{}mi) {
+      my $require_file = $1;
+      foreach my $g (@{$grammar->[GRAMMAR_TEST_CONFIG]->gendatas}) {
+        next REQS if ($g eq $require_file);
+      }
+      die "Grammar '$require_file' required by ".$grammar->[GRAMMAR_FILE]." not found among grammar options (@{$grammar->[GRAMMAR_TEST_CONFIG]->gendatas})";
     }
-    die "Grammar '$require_file' required by ".$grammar->[GRAMMAR_FILE]." not found among grammar options (@{$grammar->[GRAMMAR_TEST_CONFIG]->gendatas})";
   }
 
   while ($grammar_string =~ s{#features:?\s+([- \/\w\d,]+)}{}mi) {
