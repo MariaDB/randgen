@@ -81,8 +81,13 @@ sub status {
   say("PurgeBinaryLogs: Running flush and purging binary logs $purge_limit. Logs before flush and purge: " . Dumper $logs);
   $master_conn->execute('FLUSH BINARY LOGS');
   if ($master_conn->err) {
-    sayError("PurgeBinaryLogs: FLUSH BINARY LOGS failed: " . $master_conn->print_error);
-    return STATUS_CRITICAL_FAILURE;
+    if ($master_conn->err == 1205 || $master_conn->err == 1213) {
+      sayWarning("FLUSH BINARY LOGS failed with ".$master_conn->err." which is apparently allowed");
+      return STATUS_OK;
+    } else {
+      sayError("PurgeBinaryLogs: FLUSH BINARY LOGS failed: " . $master_conn->print_error);
+      return STATUS_CRITICAL_FAILURE;
+    }
   }
   $master_conn->execute("PURGE BINARY LOGS $purge_limit");
   if ($master_conn->err) {
