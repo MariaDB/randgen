@@ -91,9 +91,9 @@ sub numberOfServers {
     if (defined $max and scalar(@servers)>$max) {
       sayWarning(scalar(@servers)." servers configured, but only up to $max can be used, ignoring the rest");
     } elsif (defined $min and scalar(@servers)<$min) {
-      sayWarning(scalar(@servers)." servers configured, but at least $min needed, cloning the first server");
-      foreach my $i ($min - scalar(@servers)..$min) {
-        $self->copyServerSpecific(1,$i);
+      sayWarning(scalar(@servers)." servers configured, but at least $min needed, using the common options");
+      foreach my $i ($min - scalar(@servers) + 1..$min) {
+        $self->[SC_TEST_PROPERTIES]->server_specific->{$i}= {}
       }
     }
     $self->[SC_NUMBER_OF_SERVERS]= ((defined $max and scalar(keys %{$self->getProperty('server_specific')}) > $max) ? $max : scalar(keys %{$self->getProperty('server_specific')}));
@@ -407,23 +407,34 @@ sub prepareServer {
 
 
   say("Preparing server $srvnum");
+  my $server_options = $self->[SC_TEST_PROPERTIES]->server_common;
+  my $server_specific = $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum};
+  for my $o (keys %$server_options) {
+    if ($o eq 'mysqld') {
+      @{$server_specific->{mysqld}}= $server_specific->{mysqld} ? ( @{$server_options->{mysqld}}, @{$server_specific->{mysqld}} ) : ( @{$server_options->{mysqld}} );
+    } elsif (defined $server_options->{$o} and not exists $server_specific->{$o}) {
+      $server_specific->{$o}= $server_options->{$o};
+    }
+  }
+  $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum} = { %$server_specific };
+
   my $server= DBServer::MariaDB->new(
-                      basedir => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{basedir},
-                      basedir_gendata => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{basedir_gendata},
-                      config => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{cnf},
-                      dataset => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{dataset},
+                      basedir => $server_specific->{basedir},
+                      basedir_gendata => $server_specific->{basedir_gendata},
+                      config => $server_specific->{cnf},
+                      dataset => $server_specific->{dataset},
                       general_log => 1,
                       id => $srvnum,
-                      manual_gdb => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{manual_gdb},
-                      port => ($self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{port} || $self->[SC_TEST_PROPERTIES]->base_port + $srvnum - 1),
-                      rr => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{rr},
-                      perf => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{perf},
-                      ps => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{ps},
-                      server_options => [ @{$self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{mysqld}} ],
-                      start_dirty => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{start_dirty} || 0,
+                      manual_gdb => $server_specific->{manual_gdb},
+                      port => ($server_specific->{port} || $self->[SC_TEST_PROPERTIES]->base_port + $srvnum - 1),
+                      rr => $server_specific->{rr},
+                      perf => $server_specific->{perf},
+                      ps => $server_specific->{ps},
+                      server_options => [ @{$server_specific->{mysqld}} ],
+                      start_dirty => $server_specific->{start_dirty} || 0,
                       user => $self->[SC_TEST_PROPERTIES]->user,
-                      valgrind => $self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{valgrind},
-                      vardir => ($self->[SC_TEST_PROPERTIES]->server_specific->{$srvnum}->{vardir} || $self->[SC_TEST_PROPERTIES]->vardir.'/s'.$srvnum),
+                      valgrind => $server_specific->{valgrind},
+                      vardir => ($server_specific->{vardir} || $self->[SC_TEST_PROPERTIES]->vardir.'/s'.$srvnum),
               );
   $self->setServerSpecific($srvnum,'active',($is_active || 0));
   $self->setServerSpecific($srvnum,'server',$server);
