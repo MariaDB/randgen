@@ -48,6 +48,7 @@ dynvar_global_variable_runtime:
   | BINLOG_COMMIT_WAIT_USEC= { $prng->arrayElement([0,1000,1000000,10000000]) }
 # Synonym of MAX_BINLOG_TOTAL_SIZE (hopefully)
   | ==FACTOR:0.5== BINLOG_SPACE_LIMIT= { $prng->arrayElement([0,4096,1048576,16777216]) } /* compatibility 11.4.0 */
+  | CREATE_TMP_TABLE_BINLOG_FORMATS= { $prng->arrayElement(['STATEMENT','MIXED,STATEMENT']) }
   | LOG_QUERIES_NOT_USING_INDEXES= dynvar_boolean
   | LOG_SLOW_ADMIN_STATEMENTS= dynvar_boolean
   | LOG_SLOW_SLAVE_STATEMENTS= dynvar_boolean
@@ -110,6 +111,7 @@ dynvar_session_variable:
   | COLUMN_COMPRESSION_ZLIB_STRATEGY= { $prng->arrayElement(['DEFAULT_STRATEGY','FILTERED','HUFFMAN_ONLY','RLE','FIXED']) } /* compatibility 10.3.2 */
   | COLUMN_COMPRESSION_ZLIB_WRAP= dynvar_boolean /* compatibility 10.3.2 */
   | COMPLETION_TYPE= { $prng->arrayElement([0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,2]) }
+  | CREATE_TMP_TABLE_BINLOG_FORMATS= { $prng->arrayElement(['STATEMENT','MIXED,STATEMENT']) }
   | DEADLOCK_SEARCH_DEPTH_LONG= { $prng->int(0,33) }
   | DEADLOCK_SEARCH_DEPTH_SHORT= { $prng->int(0,32) }
   | DEADLOCK_TIMEOUT_LONG= { $prng->arrayElement([0,1,10000,50000000,4294967295]) }
@@ -317,6 +319,7 @@ dynvar_global_variable:
   | BINLOG_STMT_CACHE_SIZE= { $prng->arrayElement([4096,65536,1048576]) }
   | CONCURRENT_INSERT= { $prng->arrayElement(['AUTO','NEVER','ALWAYS']) }
 # | CONNECT_TIMEOUT
+  | CREATE_TMP_TABLE_BINLOG_FORMATS= { $prng->arrayElement(['STATEMENT','MIXED,STATEMENT']) }
   | DEBUG_BINLOG_FSYNC_SLEEP= { $prng->arrayElement([1000,500000,1000000]) }
   | DEFAULT_PASSWORD_LIFETIME= { $prng->arrayElement([150,300,600]) } /* compatibility 10.4.3 */
   | DELAYED_INSERT_LIMIT= { $prng->arrayElement([1,50,1000,10000]) }

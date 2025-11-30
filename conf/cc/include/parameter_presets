@@ -1024,6 +1024,11 @@ $optional_binlog_safe_variables{1008}= [ @{$optional_binlog_safe_variables{1005}
   [ @empty_set_20, '--mysqld=--binlog-alter-two-phase=ON' ],
 ];
 
+$optional_binlog_safe_variables{1200}= [ @{$optional_binlog_safe_variables{1008}},
+  # Default STATEMENT
+  [ @empty_set_5, '--mysqld=--create-tmp-table-binlog-formats=MIXED,STATEMENT' ],
+];
+
 $optional_binlog_unsafe_variables{$minversion}= [
   # Default mixed
   [ @empty_set_10, '--mysqld=--binlog-format=statement' ],
