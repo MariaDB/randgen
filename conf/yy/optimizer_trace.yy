@@ -24,9 +24,9 @@
 
 query:
   opttrace_set_max_mem_size |
+  opt_set_store_context /* compatibility 12.1 */ |
   opttrace_enable_disable_trace |
-  opttrace_is_select | opttrace_is_select | opttrace_is_select | opttrace_is_select |
-  opttrace_is_select | opttrace_is_select | opttrace_is_select | opttrace_is_select
+  ==FACTOR:10== opttrace_is_select
 ;
 
 opttrace_enable_disable_trace:
@@ -37,6 +37,9 @@ opttrace_enabled_value:
 
 opttrace_set_max_mem_size:
   SET __session_x_global(60,20) optimizer_trace_max_mem_size = opttrace_max_mem_size ;
+
+opt_set_store_context:
+  SET optimizer_record_context = __on_x_off ;
 
 opttrace_max_mem_size:
   opttrace_big_size | opttrace_small_size | DEFAULT ;
