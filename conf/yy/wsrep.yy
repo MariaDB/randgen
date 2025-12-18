@@ -87,6 +87,7 @@ dynvar_global_variable:
 # STRICT_REPLICATION,BINLOG_ROW_FORMAT_ONLY,REQUIRED_PRIMARY_KEY,REPLICATE_MYISAM,REPLICATE_ARIA,DISALLOW_LOCAL_GTID,BF_ABORT_MARIABACKUP
 # Repeated intentionally, to give it higher probability but with focus on REPLICATE_MYISAM/ARIA
   |                  WSREP_MODE= { $prng->uint16(0,127) } /* compatibility 10.6 */
+  |                  WSREP_MODE= { $prng->uint16(0,255) } /* compatibility 12.0 */
   |                  WSREP_MODE= 'REPLICATE_MYISAM' /* compatibility 10.6 */
   |                  WSREP_MODE= 'REPLICATE_ARIA' /* compatibility 10.6 */
   |                  WSREP_MODE= 'REPLICATE_MYISAM,REPLICATE_ARIA' /* compatibility 10.6 */
