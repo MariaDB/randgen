@@ -779,6 +779,7 @@ dynvar_all_optimizer_switches:
             rowid_filter
             condition_pushdown_from_having
             not_null_range_scan
+            duplicateweedout
     ); ''
   };
 
@@ -786,6 +787,7 @@ dynvar_optimizer_switch_compatibility_markers:
   { if (index($val,'not_null_range_scan') > -1) { $val.= ' /* compatibility 10.5 */' }
     elsif ((index($val,'condition_pushdown_for_subquery') > -1) or (index($val,'rowid_filter') > -1) or (index($val,'condition_pushdown_from_having') > -1)) { $val.= ' /* compatibility 10.4 */' }
     elsif (index($val,'split_materialized') > -1) { $val.= ' /* compatibility 10.3.4 */' }
+    elsif (index($val,'duplicateweedout') > -1) { $val.= ' /* compatibility 12.0.1 */' }
     ; $val }
   ;
 
