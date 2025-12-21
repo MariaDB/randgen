@@ -49,9 +49,11 @@ MDEV-38060:
 =~ Item_func_nextval::val_int
 =~ TABLE::update_default_fields
 =~ fill_record_n_invoke_before_triggers
+# Not merged above 11.8 yet
 MDEV-38005:
 =~ Assertion \`(yyvsp\[-3\]\.simple_string) < (yyvsp\[-1\]\.simple_string)'
 =~ MYSQLparse
+# Not merged above 10.11 yet
 MDEV-37972:
 =~ Slave SQL: Error 'This xid does not exist'
 =~ FeatureUsage detected Spider engine
@@ -69,26 +71,6 @@ MDEV-37904:
 =~ Explain_table_access::tag_to_json
 =~ Explain_query::print_explain_json
 =~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
-MDEV-37885:
-=~ signal|AddressSanitizer
-=~ my_hash_free_elements
-=~ rpl_binlog_state::drop_domain
-=~ MYSQL_BIN_LOG::rotate_and_purge|MYSQL_BIN_LOG::flush_binlogs_engine
-=~ reload_acl_and_cache
-MDEV-37860:
-=~ Assertion \`!waiting'
-=~ TP_connection_generic::wait_begin
-=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
-MDEV-37782:
-=~ Assertion \`buf < end'
-=~ mtr_t::encrypt
-=~ mtr_t::do_write
-=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-37710:
-=~ AddressSanitizer|signal
-=~ find_type2
-=~ sp_head::execute
-=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-37708:
 =~ Assertion \`!trx->is_bulk_insert()'
 =~ ha_innobase::delete_row
@@ -104,11 +86,6 @@ MDEV-37432:
 =~ Assertion \`!trx->is_started()'
 =~ innobase_start_trx_and_assign_read_view
 =~ snapshot_handlerton
-MDEV-37404:
-=~ InnoDB: Failing assertion: node->pcur->rel_pos == BTR_PCUR_ON
-=~ row_update_for_mysql
-=~ FeatureUsage detected unique blobs
-=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-37341:
 =~ Assertion \`null_ptr < ptr'|Assertion \`ptr - null_ptr <= (int)table->s->rec_buff_length'
 =~ Field::move_field_offset
@@ -430,6 +407,10 @@ MDEV-35661:
 =~ Assertion \`!cache_list \|\| cache_list->empty()'
 =~ online_alter_close_connection
 =~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-35654:
+=~ Assertion \`(engine->uncacheable() & ~8) \|\| ! engine->is_executed() \|\| with_recursive_reference'
+=~ Item_in_subselect
+=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-35610:
 =~ Assertion \`desync_count_ > 0'|terminate called after throwing an instance|Assertion \`thd->wsrep_desynced_backup_stage == false'
 =~ wsrep::server_state::resync
@@ -570,10 +551,11 @@ MDEV-34768:
 =~ Multiupdate_prelocking_strategy::handle_end
 =~ Prepared_statement::prepare
 =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
-MDEV-34281:
-=~ Assertion \`is_valid_ident(\*this)'
-=~ Lex_ident_fs::streq
-=~ wsrep_tables_accessible_when_detached
+# Closed as not reproducible
+#MDEV-34281:
+#=~ Assertion \`is_valid_ident(\*this)'
+#=~ Lex_ident_fs::streq
+#=~ wsrep_tables_accessible_when_detached
 MDEV-34253:
 =~ Committing alter table to storage engine
 =~ exit status STATUS_SERVER_DEADLOCKED
@@ -582,15 +564,7 @@ MDEV-34253:
 MDEV-34252:
 =~ DDL_LOG: Got error 1050 when trying to execute action for entry .* of type 'alter table'
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG
-MDEV-34134:
-=~ Assertion \`!before_record \|\| bitmap_is_set_all(table->read_set)'
-=~ online_alter_log_row
-=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
-# 11.5 CS, 11.4 ES
-MDEV-34134:
-=~ Assertion \`!before_record \|\| bitmap_is_set_all(table->read_set)'
-=~ online_alter_log_row
-=~ Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
+# Not merged above 11.8 yet
 MDEV-34117:
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_rollback_stmt
@@ -662,9 +636,6 @@ MDEV-33369:
 MDEV-33289:
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name.str, MDL_SHARED) \|\| thd->mdl_context\.is_lock_warrantee(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
 =~ close_thread_table
-MDEV-33249:
-=~ Assertion \`(0)'
-=~ wsrep_to_isolation_begin
 MDEV-33323:
 =~ AddressSanitizer|signal
 =~ grn_bulk_write
@@ -685,26 +656,6 @@ MDEV-33229:
 =~ InnoDB: Records in wrong order
 =~ InnoDB: Flagged corruption of
 =~ FeatureUsage detected nopad collations
-MDEV-33190:
-=~ mariadbd: Got error '126 "Index is corrupted"' for .*
-=~ Delete from part .* failed with error 126\. But it was already inserted into part .*, when moving the misplaced row
-=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
-=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
-MDEV-33190:
-=~ Assertion \`trid >= info->s->state\.create_trid'
-=~ transid_store_packed
-=~ _ma_make_key
-=~ ha_partition::check_misplaced_rows
-=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
-MDEV-33190:
-=~ AddressSanitizer|signal
-=~ ha_maria::repair
-=~ ha_partition::handle_opt_part
-=~ Moved .* misplaced rows
-=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
-MDEV-33184:
-=~ \[ERROR\] Moved .* misplaced rows
-=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-33170:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ Query_cache::invalidate_table
@@ -1082,20 +1033,11 @@ MDEV-31757:
 =~ Only Format_description_log_event and row events are allowed in BINLOG statements (but Query_compressed was provided)
 =~ FeatureUsage detected binlog compression
 =~ FeatureUsage detected binlog alter two phase
-MDEV-31744:
-=~ Assertion \`order_list->elements == 1'
-=~ Frame_range_n_bottom::Frame_range_n_bottom|Frame_range_n_top::Frame_range_n_top
-=~ get_window_functions_required_cursors
 MDEV-31681:
 =~ \[ERROR\] Duplicated key: used_range_estimates
 =~ Assertion \`is_uniq_key'
 =~ Json_writer::add_member
 =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
-MDEV-31678:
-=~ Assertion \`marked_for_read()'
-=~ Field_long::val_int
-=~ calc_row_difference
-=~ Log_event::apply_event
 MDEV-31670:
 =~ Assertion \`marked_for_write_or_computed()'
 =~ copy_data_between_tables
@@ -1143,10 +1085,6 @@ MDEV-31500:
 =~ Field::make_key_image
 =~ calculate_cond_selectivity_for_table
 =~ FeatureUsage detected RocksDB tables
-MDEV-31499:
-=~ Assertion \`(0)'
-=~ Gis_geometry_collection::init_from_opresult
-=~ Item_func_spatial_operation::val_str
 MDEV-31498:
 =~ Assertion \`(key_dependent & s->key_dependent) == key_dependent'
 =~ best_access_path
@@ -1384,14 +1322,6 @@ MDEV-30801:
 =~ trx_start_if_not_started_low
 =~ Query_cache::send_result_to_client
 =~ FeatureUsage detected XA transactions
-MDEV-30721:
-=~ Assertion \`fixed()'|Assertion \`fixed == 1'
-=~ Item_cond_and::val_int
-=~ Item_func::is_simplified_cond_processor
-MDEV-30691:
-=~ Assertion \`strlen(Ptr) == str_length'
-=~ Binary_string::chop
-=~ Item_func_json_format::val_str
 MDEV-30434:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ Item_trigger_field::setup_field
@@ -1426,10 +1356,6 @@ MDEV-30292:
 =~ Window_funcs_computation::exec
 =~ Query.*:.*PERCENTILE_DISC
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-30277:
-=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
-=~ Diagnostics_area::set_error_status
-=~ Reprepare_observer::report_error
 # Closed as won't fix
 MDEV-30161:
 =~ safe_mutex: Found wrong usage of mutex 'wait_mutex' and 'LOCK_thd_data'
@@ -1611,6 +1537,7 @@ MDEV-29457:
 =~ ib::fatal::~fatal
 =~ row_undo_step
 =~ FeatureUsage detected GIS columns
+# Closed as not a bug
 MDEV-29454:
 =~ Got error 1440 when reading table
 =~ FeatureUsage detected Spider tables
@@ -1791,6 +1718,10 @@ MDEV-28466:
 =~ handler::ha_update_row
 =~ FeatureUsage detected system-versioned tables
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-28598:
+=~ Assertion \`got_name == named_item_expected()'
+=~ Json_writer::on_start_object
+=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-28438:
 =~ Assertion \`thd->transaction\.stmt\.is_empty() \|\| thd->in_sub_stmt'
 =~ mysql_execute_command
@@ -1847,10 +1778,6 @@ MDEV-28024:
 =~ ha_start_consistent_snapshot
 =~ FeatureUsage detected Spider engine
 =~ FeatureUsage detected RocksDB engine
-MDEV-27878:
-=~ Assertion \`got_name == named_item_expected()'
-=~ Json_writer::on_start_object
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-27845:
 =~ AddressSanitizer|signal
 =~ server_mysql_real_connect
@@ -1863,15 +1790,6 @@ MDEV-27756:
 =~ SEL_ARG::tree_delete
 =~ and_range_trees
 =~ SQL_SELECT::test_quick_select
-MDEV-27675:
-=~ InnoDB: Corruption of index|Assertion \`ret && btr_cur->low_match == n_fields'
-=~ rtr_page_get_father_node_ptr
-=~ row_insert_for_mysql
-MDEV-27675:
-=~ Assertion \`offsets'|signal
-=~ rec_offs_n_fields|rec_get_info_bits
-=~ btr_root_raise_and_insert|btr_page_split_and_insert
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-27674:
 =~ sig=8|Assertion failure
 =~ row_ins_cascade_calc_update_vec
@@ -2030,10 +1948,6 @@ MDEV-26594:
 =~ Field::stored_field_make_mm_leaf
 =~ calculate_cond_selectivity_for_table
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-26540:
-=~ Assertion \`inited==RND'
-=~ handler::ha_rnd_end
-=~ ha_partition::direct_delete_rows
 MDEV-26509:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer|AddressSanitizer|signal
 =~ strmake|safe_substract
@@ -2408,6 +2322,7 @@ MDEV-24588:
 MDEV-24559:
 =~ Assertion \`select_lex->leaf_tables\.elements != 0'
 =~ Prepared_statement::execute|sp_head::execute
+# Not merged above 10.11 yet
 MDEV-24558:
 =~ Assertion \`!index->is_spatial()'|Assertion \`index->is_btree()'|Assertion \`!dict_index_is_spatial(index)'
 =~ btr_estimate_number_of_different_key_vals
@@ -2784,15 +2699,18 @@ MDEV-23145:
 =~ handler::ha_external_lock
 =~ close_system_tables|close_thread_tables|JOIN::join_free
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+# Not yet merged above 10.11
 MDEV-23132:
 =~ Assertion \`trn->locked_tables == 0 && trn->used_instances == 0'
 =~ trnman_end_trn
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+# Not yet merged above 10.11
 MDEV-23132:
 =~ signal [16]|AddressSanitizer
 =~ reset_thd_trn|_ma_reset_trn_for_table
 =~ ma_commit|maria_commit
 =~ Sp_handler::db_find_routine
+# Not yet merged above 10.11
 MDEV-23132:
 =~ Assertion \`file->trn_next == 0 && file->trn_prev == 0'
 =~ ha_maria::close
@@ -2851,10 +2769,6 @@ MDEV-22927:
 =~ lock_rec_lock
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 =~ FeatureUsage detected sequences
-MDEV-22915:
-=~ Assertion \`binlog_table_maps == 0 \|\| locked_tables_mode == LTM_LOCK_TABLES'
-=~ reset_for_next_command
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22907:
 =~ Assertion \`(m_storage_engine_name\.str != __null) == used_engine'
 =~ Prepared_statement::execute|sp_head::execute
@@ -3027,10 +2941,6 @@ MDEV-22385:
 =~ stored_field_cmp_to_item
 =~ convert_const_to_int
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-22375:
-=~ Assertion \`(engine->uncacheable() & ~8) \|\| ! engine->is_executed() \|\| with_recursive_reference'
-=~ Item_in_subselect
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22368:
 =~ Assertion \`field_max_length <= m_return_field_def\.length \|\| m_return_field_def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && m_return_field_def\.length == 8 && (m_return_field_def\.pack_flag & (1024U\|2048U)))'|\`field_max_length <= def\.length \|\| def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && def\.length == 8 && (def\.pack_flag & (1024U\|2048U)))'
 =~ sp_instr_stmt::exec_core
@@ -3057,10 +2967,6 @@ MDEV-22262:
 =~ ha_partition::open
 =~ check_duplicate_long_entries_update|handler::create_lookup_handler|clone_handler_for_update|ha_partition::clone
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-22241:
-=~ Assertion \`0'
-=~ Protocol::end_statement
-=~ Query.*: .*LIMIT.* ROWS EXAMINED
 MDEV-22196:
 =~ AddressSanitizer|signal
 =~ String::copy
@@ -3316,11 +3222,6 @@ MDEV-20501:
 =~ Item_func_round::date_op
 =~ Type_handler_.*_result
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-20498:
-=~ Assertion \`table_share->tmp_table != NO_TMP_TABLE \|\| m_lock_type == 1'|Assertion \`table_share->tmp_table \|\| m_lock_type == 1'
-=~ handler::ha_write_row
-=~ ha_partition::copy_partitions
-=~ fast_alter_partition_table
 MDEV-20493:
 =~ signal [16]
 =~ in Protocol::send_result_set_row
