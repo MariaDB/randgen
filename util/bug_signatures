@@ -351,6 +351,11 @@ MDEV-36438:
 =~ btr_pcur_get_rec
 =~ handler::index_read_map
 =~ rr_quick
+MDEV-36438:
+=~ signal|AddressSanitizer
+=~ handler::keyread_time
+=~ find_shortest_key
+=~ make_join_readinfo
 MDEV-36436:
 =~ Assertion \`"unexpected references" == 0'
 =~ ha_innobase::rename_table
