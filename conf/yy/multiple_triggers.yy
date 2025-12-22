@@ -39,6 +39,8 @@
 # ERROR 1360 for CREATE OR REPLACE TRIGGER is added because of MDEV-10912 (CREATE OR REPLACE TRIGGER produces ER_TRG_DOES_NOT_EXIST)
 # ERROR 1360 for DROP TRIGGER IF EXISTS is also because of one of these two problems
 
+#features triggers
+
 query_init:
      SET DEFAULT ROLE admin ;; SET ROLE admin
   ;; CREATE DATABASE IF NOT EXISTS multi_trigger_db

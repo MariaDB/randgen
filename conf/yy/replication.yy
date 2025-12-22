@@ -20,6 +20,8 @@
 # Rather random set of statements which is meant to employ replication
 ########################################################################
 
+#features triggers
+
 query:
   { _set_db('NON-SYSTEM') } replication_query ;
 
