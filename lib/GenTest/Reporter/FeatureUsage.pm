@@ -73,6 +73,7 @@ my %usage_check= (
   'sequences' => \&check_for_sequences,
   'Spider engine' => \&check_for_spider_plugin,
   'Spider tables' => \&check_for_spider_tables,
+  'triggers' => \&check_for_triggers,
   'unique blobs' => \&check_for_unique_blobs,
   'UUID columns' => \&check_for_uuid_columns,
   'vector keys' => \&check_for_vector_keys,
@@ -291,6 +292,14 @@ sub check_for_inet_columns {
   my $reporter= shift;
   if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_TYPE IN ('inet4','inet6')")) {
     return "according to I_S.COLUMNS";
+  }
+  return undef;
+}
+
+sub check_for_triggers {
+  my $reporter= shift;
+  if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS")) {
+    return "according to I_S.TRIGGERS";
   }
   return undef;
 }
