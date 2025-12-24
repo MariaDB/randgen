@@ -18,9 +18,14 @@
 #include <conf/yy/include/basics.inc>
 #features foreign keys
 
+# $cnt and %dropped_keys are a workaround for MDEV-19194:
+# trying to avoid repeated DROP FOREIGN KEY x
+# for the same x in one statement
+query_init:
+  { $cnt = 0; '' };
 
 query:
-  { _set_db('NON-SYSTEM') } fk_query ;
+  { %dropped_keys = (); _set_db('NON-SYSTEM') } fk_query ;
 
 fk_query:
     fk_alter_table | fk_alter_table | fk_alter_table | fk_alter_table
@@ -90,7 +95,7 @@ fk_index_name_optional:
 ;
 
 fk_drop_foreign_key:
-  DROP FOREIGN KEY fk_if_exists _letter
+  DROP FOREIGN KEY fk_if_exists { $nm = $prng->letter(); if ($dropped_keys{$nm}) { $nm .= $cnt } else { $dropped_keys{$nm} = 1 }; $nm }
 ;
 
 fk_if_exists:
