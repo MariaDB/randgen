@@ -1338,6 +1338,11 @@ MDEV-30434:
 =~ Item_trigger_field::setup_field
 =~ Prepared_statement::execute
 =~ Version: Version: '11\.[5-9]|Server version: 11\.[1-9][0-9]|Version: '1[2-9]\.[0-9]*
+MDEV-30434:
+=~ Assertion \`b\.is_valid_ident()'
+=~ Lex_ident<Compare>::streq
+=~ Item_trigger_field::setup_field
+=~ Version: Version: '11\.[5-9]|Server version: 11\.[1-9][0-9]|Version: '1[2-9]\.[0-9]*
 MDEV-30391:
 =~ signal|AddressSanitizer
 =~ spider_set_direct_limit_offset
@@ -3818,6 +3823,11 @@ MDEV-10826:
 =~ signal [16]|AddressSanitizer
 =~ Query_cache::double_linked_list_exclude
 =~ Query_cache::free_query
+MDEV-9160:
+=~ Slave IO thread did not receive an expected Rows-log end-of-statement for event
+=~ Relay log write failure: could not queue event from master
+=~ FeatureUsage detected triggers
+=~ STATUS_REPLICATION_FAILURE
 MDEV-8089:
 =~ Apc_target::make_apc_call
 =~ fill_show_explain
