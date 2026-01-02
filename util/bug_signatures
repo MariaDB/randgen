@@ -3639,6 +3639,10 @@ MDEV-16929:
 =~ FeatureUsage detected sequences
 =~ KILL_SERVER|KILL_CONNECTION|KILL_QUERY|KILL_TIMEOUT|close failed in file object destructor
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV_16837:
+=~ Assertion \`trigger_table->pos_in_table_list->trg_event_map & static_cast<uint>(1 << static_cast<int>(event))'|Assertion \`trigger_table->pos_in_table_list->trg_event_map & trg2bit(event)'
+=~ Table_triggers_list::process_triggers
+=~ Rows_log_event::do_apply_event
 MDEV-16789:
 =~ signal [16]|AddressSanitizer
 =~ insert_fields
