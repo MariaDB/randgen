@@ -31,6 +31,15 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38475:
+=~ signal|AddressSanitizer
+=~ find_field_in_table
+=~ Item::fix_fields_if_needed
+=~ mysql_derived_optimize
+MDEV-38475:
+=~ Assertion \`typeid(\*copy) == typeid(\*this)'
+=~ Item_field::do_build_clone
+=~ Item_field::derived_field_transformer_for_where
 MDEV-38474:
 =~ AddressSanitizer|double free or corruption
 =~ st_join_table::cleanup
