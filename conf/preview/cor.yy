@@ -32,7 +32,7 @@ crea_query:
 ;
 
 crea_sequence_definition:
-  optional_engine | LIKE _sequence ;
+  optional_engine ;
 
 crea_sequence_name:
     `CreateOrReplaceSequence` | { 'CreateOrReplaceSequence'.abs($$) } | _sequence | _table ;
