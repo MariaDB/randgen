@@ -28,6 +28,23 @@ require "$ENV{RQG_HOME}/conf/cc/include/parameter_presets";
 local @ARGV = ($version);
 require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
 
+$forbidden = [
+# Reset in the middle of replication does not make sense
+  [ 'ResetMaster', 'scenario=Replication' ],
+# Reset makes binlog inconsistent
+  [ 'ResetMaster', 'BinlogConsistency' ],
+# Purge is dangerous in replication context, but let's see how it goes
+#  [ 'PurgeBinaryLogs', 'scenario=Replication' ],
+# Binlog consistency check is impossible after PURGE
+  [ 'PurgeBinaryLogs', 'BinlogConsistency' ],
+  [ 'BinlogDump', 'PurgeBinaryLogs' ],
+# slave fails trying to reconnect after the master is restarted
+  [ 'BinlogDump', 'scenario=Replication' ],
+# InnoDB does not work with STATEMENT + READ-COMMITTED or READ-UNCOMMITTED
+  [ 'binlog[-_]format=STATEMENT', 'transaction[-_]isolation=READ-COMMITTED' ],
+  [ 'binlog[-_]format=STATEMENT', 'transaction[-_]isolation=READ-UNCOMMITTED' ],
+];
+
 $combinations = [
 
 # Test options
@@ -88,7 +105,7 @@ $combinations = [
     '--scenario=Restart --reporter=BinlogDump --filter=conf/ff/replication.ff',
     '--scenario=CrashRecovery --reporter=BinlogDump --filter=conf/ff/replication.ff',
     '--scenario=CrashRecovery --reporter=BinlogDump --filter=conf/ff/replication.ff',
-#    '--scenario=AtomicDDL --reporter=BinlogDump --filter=conf/ff/replication.ff',
+    '--scenario=AtomicDDL --reporter=BinlogDump --filter=conf/ff/replication.ff',
     '--scenario=MariaBackupFull --reporter=BinlogDump --filter=conf/ff/replication.ff',
     '--scenario=MariaBackupIncremental --reporter=BinlogDump --filter=conf/ff/replication.ff',
     '--scenario=NormalUpgrades --reporter=BinlogDump --filter=conf/ff/replication.ff',
