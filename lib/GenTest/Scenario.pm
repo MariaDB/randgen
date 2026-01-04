@@ -28,7 +28,6 @@ use Constants::MariaDBErrorCodes;
 use Data::Dumper;
 
 use constant SC_TEST_PROPERTIES        => 1;
-use constant SC_TYPE                   => 3;
 use constant SC_DETECTED_BUGS          => 4;
 use constant SC_GLOBAL_RESULT          => 5;
 use constant SC_SCENARIO_OPTIONS       => 6;
@@ -54,9 +53,6 @@ sub new {
   $scenario->[SC_GLOBAL_RESULT] = STATUS_OK;
   $scenario->[SC_RAND]= GenTest::Random->new(seed => $scenario->getProperty('seed'));
 
-  if ($scenario->[SC_SCENARIO_OPTIONS] and defined $scenario->[SC_SCENARIO_OPTIONS]->{type}) {
-    $scenario->setTestType($scenario->[SC_SCENARIO_OPTIONS]->{type});
-  }
   $scenario->[SC_COMPATIBILITY]= $scenario->getProperty('compatibility') | '000000';
   $scenario->[SC_COMPATIBILITY_ES]= $scenario->getProperty('compatibility_es') | 0;
   $scenario->[SC_GALERA_LISTEN_PORT]= $scenario->getProperty('base_port') + 555;
@@ -111,14 +107,6 @@ sub prng {
 
 sub backupProperties {
   $_[0]->[SC_TEST_PROPERTIES]->backupProperties();
-}
-
-sub getTestType {
-  return $_[0]->[SC_TYPE];
-}
-
-sub setTestType {
-  $_[0]->[SC_TYPE]= $_[1];
 }
 
 sub getProperties {
@@ -430,6 +418,7 @@ sub prepareServer {
                       rr => $server_specific->{rr},
                       perf => $server_specific->{perf},
                       ps => $server_specific->{ps},
+                      seed => $self->getProperty('seed'),
                       server_options => [ @{$server_specific->{mysqld}} ],
                       start_dirty => $server_specific->{start_dirty} || 0,
                       user => $self->[SC_TEST_PROPERTIES]->user,
