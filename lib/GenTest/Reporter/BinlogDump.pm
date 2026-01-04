@@ -62,6 +62,7 @@ sub report {
   my $datadir = $server->datadir;
   my $port = $server->port;
   my $basename= $server->serverVariable('log_bin_basename');
+  my $binlog_directory= $server->serverVariable('binlog_directory');
 
   my $binlog_utility= DBServer::MariaDB::_find(undef,
                        [$reporter->server->serverVariable('basedir')],
@@ -88,7 +89,13 @@ sub report {
 
   my @binlog_files= ();
   if ((not defined $basename) or ($basename eq '') or ($basename eq 'NULL')) {
-    @binlog_files = glob("$datadir/binlog-[0-9][0-9][0-9][0-9][0-9][0-9].ibb");
+    my $binlog_location = '';
+    if ($binlog_directory and ($binlog_directory ne 'NULL')) {
+      $binlog_location = $binlog_directory =~ /^\// ? $binlog_directory : $datadir.'/'.$binlog_directory;
+    } else {
+      $binlog_location = $datadir;
+    }
+    @binlog_files = glob("$binlog_location/binlog-[0-9][0-9][0-9][0-9][0-9][0-9].ibb");
   } else {
     @binlog_files = glob("$basename.[0-9][0-9][0-9][0-9][0-9][0-9]");
   }
@@ -99,7 +106,7 @@ sub report {
   if ($status != STATUS_OK) {
     sayError("BinlogDump: Dumping binary logs finished with an error: ".($status >> 8));
     # Currently returns a rather bogus error ERROR: File is an empty pre-allocated binlog, contains no data yet
-#    return STATUS_CRITICAL_FAILURE;
+    return STATUS_CRITICAL_FAILURE;
   } else {
     say("BinlogDump: dumping binary logs finished successfully");
   }
