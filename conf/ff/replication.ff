@@ -26,5 +26,6 @@ $rules = {
   'validation'    => sub { $_ =~ m{WITHOUT.*VALIDATION}is },
   'reset_master'  => sub { $_ =~ m{RESET.*MASTER}is },
   'mdev25157'     => sub { $_ =~ m{ENGINE(\s=)*CONNECT}is },
-  'mdev37979'     => sub { $_ =~ m{CALL\s+sys}is }
+  'mdev37979'     => sub { $_ =~ m{CALL\s+sys}is },
+  'mdev38465'     => sub { $_ =~ m{CREATE.*TRIGGER.*SAVEPOINT}is }
 }
