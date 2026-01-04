@@ -34,6 +34,7 @@ use File::Copy qw(move);
 use Constants;
 use Constants::MariaDBErrorCodes;
 use Connection::Perl;
+use GenTest::Random;
 
 use strict;
 
@@ -81,6 +82,8 @@ use constant MYSQLD_DATASET => 41;
 use constant MYSQLD_BASEDIR_GENDATA => 42;
 use constant MYSQLD_MYSQLD_GENDATA => 43;
 use constant MYSQLD_ID => 44;
+use constant MYSQLD_RAND => 45;
+use constant MYSQLD_SEED => 46;
 
 use constant MARIABACKUP => 50;
 use constant TZINFO_TO_SQL => 51;
@@ -108,6 +111,7 @@ sub new {
                                    'port' => MYSQLD_PORT,
                                    'ps' => MYSQLD_PS_PROTOCOL,
                                    'rr' => MYSQLD_RR,
+                                   'seed' => MYSQLD_SEED,
                                    'server_options' => MYSQLD_SERVER_OPTIONS,
                                    'sourcedir' => MYSQLD_SOURCEDIR,
                                    'start_dirty' => MYSQLD_START_DIRTY,
@@ -180,8 +184,8 @@ sub new {
                           );
 
     $self->[MYSQLD_CLIENT_BINDIR] = dirname($self->[MYSQLD_DUMPER]);
-
     $self->[MYSQLD_HOST] = '127.0.0.1' unless $self->[MYSQLD_HOST];
+    $self->[MYSQLD_RAND] = GenTest::Random->new(seed => $self->[MYSQLD_SEED]);
 
     ## Check for CMakestuff to get hold of source dir:
 
@@ -244,6 +248,10 @@ sub new {
     }
 
     return $self;
+}
+
+sub prng {
+  return $_[0]->[MYSQLD_RAND];
 }
 
 sub basedir {
@@ -1427,6 +1435,17 @@ sub checkDatabaseIntegrity {
   }
   if ($foreign_key_check_workaround) {
     $conn->execute("SET FOREIGN_KEY_CHECKS= DEFAULT");
+  }
+  my $xa_ref = $conn->query("XA RECOVER /* checkDatabaseIntegrity */");
+  foreach (@$xa_ref) {
+    my $xa= $_->[3];
+    if ($self->prng->uint16(0,1)) {
+      say("Committing recovered XA $xa");
+      $conn->query("XA COMMIT '$xa'");
+    } else {
+      say("Rolling back recovered XA $xa");
+      $conn->query("XA ROLLBACK '$xa'");
+    }
   }
   return $status;
 }
