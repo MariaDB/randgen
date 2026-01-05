@@ -173,7 +173,7 @@ sub report {
         }
         my $core_binary= `file $core`;
         chomp $core_binary;
-        unless ($core_binary =~ s/^.*from '([^' ]*).*$/$1/) {
+        unless ($core_binary =~ s/^.*from '([^' ]*).*$/$1/ && (-x $core_binary)) {
           $core_binary = $reporter->serverInfo('binary');
           sayWarning("Backtrace: Could not determine the binary from $core, assuming the default server binary $core_binary");
         }
