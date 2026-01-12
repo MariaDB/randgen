@@ -62,7 +62,7 @@ $combinations = [
   [ '--mysqld=--binlog-directory=binlogs --mysqld=--ignore-db-dirs=binlogs',
     ''
   ],
-  [ '--mysqld=--innodb-binlog-state-interval=1638400',
+  [ '--mysqld=--innodb-binlog-state-interval=1048576',
     '--mysqld=--innodb-binlog-state-interval=65536',
     ''
   ],
