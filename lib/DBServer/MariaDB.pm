@@ -75,7 +75,6 @@ use constant MYSQLD_MANUAL_GDB => 35;
 use constant MYSQLD_HOST => 36;
 use constant MYSQLD_PS_PROTOCOL => 37;
 use constant MYSQLD_LAST_CHECKED_MARKER => 38;
-use constant MYSQLD_ASAN => 39;
 use constant MYSQLD_SETUP_DONE => 40;
 use constant MYSQLD_DATASET => 41;
 use constant MYSQLD_BASEDIR_GENDATA => 42;
@@ -150,6 +149,8 @@ sub new {
       croak("We could not find the server binary");
     }
     $self->checkServerType($self->[MYSQLD_MYSQLD]);
+    $self->fixServerOptions();
+
 
     if ($self->[MYSQLD_BASEDIR] eq $self->[MYSQLD_BASEDIR_GENDATA]) {
       $self->[MYSQLD_MYSQLD_GENDATA]= $self->[MYSQLD_MYSQLD];
@@ -325,26 +326,64 @@ sub valgrind_suppressionfile {
 #    return $_[0]->[MYSQLD_LIBMYSQL];
 #}
 
+
+# Adjust server options for specific build types
+sub fixServerOptions {
+  my $self = shift;
+  if ($self->isMSAN()) {
+    sayWarning("Setting big enough thread stack in the command line options, to override possible config settings");
+    my $needs_custom_stack = 1;
+    for (my $i=0; $i < @{$self->[MYSQLD_SERVER_OPTIONS]}; $i++) {
+      if ($self->[MYSQLD_SERVER_OPTIONS]->[$i] =~ /--thread[-_]stack=(\d+)/) {
+        if ($1 < 3000000) {
+          delete $self->[MYSQLD_SERVER_OPTIONS]->[$i];
+        } else {
+          $needs_custom_stack = 0;
+        }
+      }
+    }
+    if ($self->[MYSQLD_CONFIG_FILE] && $needs_custom_stack) {
+      push @{$self->[MYSQLD_SERVER_OPTIONS]}, '--thread_stack=3M';
+    }
+  }
+}
+
 # Check the type of mysqld server.
 sub checkServerType {
     my ($self, $mysqld) = @_;
     return if defined $self->[MYSQLD_SERVER_TYPE];
 
-    $self->[MYSQLD_SERVER_TYPE] = "Release";
-
     my $command="$mysqld --version";
     my $result=`LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command 2>&1`;
+    $self->[MYSQLD_SERVER_TYPE] = ($result =~ /debug/i ? "Debug" : "Release");
 
-    $self->[MYSQLD_SERVER_TYPE] = "Debug" if ($result =~ /debug/sig);
-
-    $self->[MYSQLD_ASAN]= 0;
     unless (osWindows()) {
-      my $result=`LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ldd $mysqld 2>&1 | grep libasan`;
-      chomp $result;
-      if ($result) {
-        $self->[MYSQLD_ASAN]= 1;
+      $result=`LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ldd $mysqld 2>&1`;
+      if ($result =~ /libasan/i) {
+        $self->[MYSQLD_SERVER_TYPE] .= '-ASAN';
+      }
+      if ($result =~ /libubsan/i) {
+        $self->[MYSQLD_SERVER_TYPE] .= '-UBSAN';
+      }
+      if ($ENV{MSAN_LIBS} && $result =~ /$ENV{MSAN_LIBS}/i) {
+        $self->[MYSQLD_SERVER_TYPE] .= '-MSAN';
       }
     }
+}
+
+sub isASAN {
+  my $self = shift;
+  return ($self->[MYSQLD_SERVER_TYPE] =~ /ASAN/);
+}
+
+sub isMSAN {
+  my $self = shift;
+  return ($self->[MYSQLD_SERVER_TYPE] =~ /MSAN/);
+}
+
+sub isUBSAN {
+  my $self = shift;
+  return ($self->[MYSQLD_SERVER_TYPE] =~ /UBSAN/);
 }
 
 sub hasDifferentServerForGendata {
@@ -575,7 +614,7 @@ sub startServer {
     my @extra_opts= ( '--max-allowed-packet=1G', # Allow loading bigger blobs
                       '--loose-innodb-ft-min-token-size=10', # Workaround for MDEV-25324
                       '--secure-file-priv=', # Make sure that LOAD_FILE and such works
-                      '--loose-debug-assert-on-not-freed-memory='.($self->[MYSQLD_ASAN] ? 0 : 1),
+                      '--loose-debug-assert-on-not-freed-memory='.($self->isASAN() ? 0 : 1),
                       (defined $self->[MYSQLD_SERVER_OPTIONS] ? @{$self->[MYSQLD_SERVER_OPTIONS]} : ())
                     );
 
@@ -2056,7 +2095,7 @@ sub printInfo {
 
     say("Server version: ". $self->version);
     say("Binary: ". $self->binary);
-    say("Type: ". $self->[MYSQLD_SERVER_TYPE]. ($self->[MYSQLD_ASAN] ? "-ASAN" : ""));
+    say("Build type: ". $self->[MYSQLD_SERVER_TYPE]);
     say("Datadir: ". $self->datadir);
     say("Tmpdir: ". $self->tmpdir);
 }
