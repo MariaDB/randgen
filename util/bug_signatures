@@ -31,6 +31,15 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38556:
+=~ MemorySanitizer: use-of-uninitialized-value
+=~ Item_cond_or::not_null_tables
+=~ Item::fix_fields_if_needed
+MDEV-38551:
+=~ Conditional jump or move depends on uninitialised value|MemorySanitizer: use-of-uninitialized-value
+=~ maria_page_crc_set_normal
+=~ flush_cached_blocks
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38475:
 =~ signal|AddressSanitizer
 =~ find_field_in_table
@@ -236,6 +245,11 @@ MDEV-36990:
 =~ signal|AddressSanitizer|runtime error: division by zero
 =~ get_max_range_rowid_filter_elems_for_table
 =~ TABLE::init_cost_info_for_usable_range_rowid_filters
+MDEV-36985:
+=~ Assertion \`!thd->is_error()'
+=~ TABLE_SHARE::init_from_sql_statement_string
+=~ prepare_for_repair
+=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]|Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 MDEV-36958:
 =~ MemorySanitizer
 =~ JOIN::optimize_inner
