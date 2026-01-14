@@ -87,18 +87,19 @@ sub report {
   }
   $client .= " -uroot --host=127.0.0.1 --port=$port --protocol=tcp";
 
-  my @binlog_files= ();
-  if ((not defined $basename) or ($basename eq '') or ($basename eq 'NULL')) {
-    my $binlog_location = '';
-    if ($binlog_directory and ($binlog_directory ne 'NULL')) {
-      $binlog_location = $binlog_directory =~ /^\// ? $binlog_directory : $datadir.'/'.$binlog_directory;
-    } else {
-      $binlog_location = $datadir;
-    }
-    @binlog_files = glob("$binlog_location/binlog-[0-9][0-9][0-9][0-9][0-9][0-9].ibb");
+  my $binlog_pattern = '';
+  if ($basename) {
+    $binlog_pattern = "$basename.[0-9][0-9][0-9][0-9][0-9][0-9]"
+  } elsif ($binlog_directory) {
+    $binlog_pattern = "$binlog_directory/binlog-[0-9][0-9][0-9][0-9][0-9][0-9].ibb"
   } else {
-    @binlog_files = glob("$basename.[0-9][0-9][0-9][0-9][0-9][0-9]");
+    $binlog_pattern = "binlog-[0-9][0-9][0-9][0-9][0-9][0-9].ibb"
   }
+  unless ($binlog_pattern =~ /^\//) {
+    $binlog_pattern = "$datadir/$binlog_pattern"
+  }
+
+  my @binlog_files = glob("$binlog_pattern");
   my $cmd= "$binlog_utility --no-defaults --verbose --verbose @binlog_files > $vardir/binlog_events.txt";
   say("BinlogDump: Dumping binary log events into the file $vardir/binlog_events.txt");
   say($cmd);
