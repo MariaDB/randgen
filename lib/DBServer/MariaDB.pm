@@ -336,10 +336,9 @@ sub fixServerOptions {
     for (my $i=0; $i < @{$self->[MYSQLD_SERVER_OPTIONS]}; $i++) {
       if ($self->[MYSQLD_SERVER_OPTIONS]->[$i] =~ /--thread[-_]stack=(\d+)/) {
         if ($1 < 3000000) {
-          delete $self->[MYSQLD_SERVER_OPTIONS]->[$i];
-        } else {
-          $needs_custom_stack = 0;
+          $self->[MYSQLD_SERVER_OPTIONS]->[$i] = '--thread-stack=3000000'
         }
+        $needs_custom_stack = 0;
       }
     }
     if ($self->[MYSQLD_CONFIG_FILE] && $needs_custom_stack) {
