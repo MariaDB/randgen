@@ -578,6 +578,12 @@ MDEV-34895:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ parse_escaped_string
 =~ Prepared_statement::execute|sp_head::execute
+MDEV-34886:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ THD::my_ok_with_recreate_info
+=~ Sql_cmd_alter_table::execute
+=~ FeatureUsage detected Spider engine
 MDEV-34852:
 =~ MemorySanitizer
 =~ key_copy
@@ -1350,6 +1356,12 @@ MDEV-30935:
 =~ Assertion \`marked_for_read()'
 =~ Item_cond::fix_fields|Item_func.*::fix_fields
 =~ Virtual_column_info::fix_expr
+MDEV-30907:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ THD::my_ok_with_recreate_info
+=~ Sql_cmd_alter_table::execute
+=~ FeatureUsage detected Connect tables
 MDEV-30886:
 =~ Assertion \`0'
 =~ Protocol::end_statement
@@ -3524,6 +3536,10 @@ MDEV-18421:
 MDEV-18418:
 =~ Assertion \`mdl_ticket->m_type == MDL_SHARED_UPGRADABLE \|\| mdl_ticket->m_type == MDL_SHARED_NO_WRITE \|\| mdl_ticket->m_type == MDL_SHARED_NO_READ_WRITE \|\| mdl_ticket->m_type == MDL_SHARED_READ \|\| mdl_ticket->m_type == MDL_SHARED_WRITE'
 =~ MDL_context::upgrade_shared_lock
+MDEV-18341:
+=~ mysqld: Got error 176 "Read page with wrong checksum" from storage engine Aria
+=~ mysqld: failed to decrypt '\./mysql/proc'  rc: -1
+=~ status STATUS_ERRORS_IN_LOG
 MDEV-18293:
 =~ signal 11|AddressSanitizer: SEGV
 =~ row_sel_sec_rec_is_for_clust_rec
