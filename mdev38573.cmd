@@ -1,0 +1,5 @@
+if [ -z "$1" ] ; then
+  echo "ERROR: run as ./mdev38573.cmd <basedir>"
+else
+  perl ./run.pl --base-port=14000 --basedir=$1 --compatibility=120399 --duration=200 --engine=InnoDB --filter=mdev38573.ff --gendata=advanced --gendata=conf/zz/oltp-aria.zz --grammar=conf/preview/cor.yy:2 --grammar=conf/yy/all_selects.yy:0.0001 --grammar=conf/yy/oltp-write.yy --mysqld=--character-set-server=utf8mb4 --mysqld=--collation-server=utf8mb4_slovak_ci --mysqld=--innodb-lock-wait-timeout=5 --mysqld=--join_cache_level=8 --mysqld=--lock-wait-timeout=10 --mysqld=--max-statement-time=20 --mysqld=--mhnsw_ef_search=100 --mysqld=--mhnsw_max_cache_size=1M --mysqld=--plugin-maturity=experimental --mysqld=--query-cache-size=4M --mysqld=--slave-transaction-retry-errors=1213,1205 --queries=1000000 --reporters=Backtrace,Deadlock,FeatureUsage,UniqueConstraintValidity --reporters=OrphanFiles --scenario=Restart  --threads=6 --trials=10 --vardir=/dev/shm/var-mdev38573 --variator=Distinct --variator=ExecuteAsPreparedTwice --variator=LimitDecrease --variator=RemoveIndexHints --seed=1768324382
+fi
