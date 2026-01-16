@@ -4,8 +4,6 @@
 # Strong matches
 ##############################################################################
 
-MDEV-38462:
-=~ InnoDB: Crash recovery is broken due to insufficient innodb_log_file_size
 # check FK
 #MDEV-36643:
 #=~ InnoDB: Failing assertion: prebuilt->select_lock_type != LOCK_NONE \|\| srv_read_only_mode \|\| trx->read_view\.is_open()|Assertion \`prebuilt->sql_stat_start \|\| prebuilt->table->no_rollback()'
@@ -13,24 +11,18 @@ MDEV-38462:
 #=~ check_key_referential_integrity
 #=~ Version: '12\.0|Server version: 12\.0
 # atomic cor
-#MDEV-36497:
-#=~ Assertion \`thd->transaction->stmt\.is_empty() \|\| thd->in_sub_stmt'
-#=~ mysql_execute_command
-#=~ FeatureUsage detected Aria tables
-#=~ Version: '12\.0|Server version: 12\.0
-# atomic cor
-#MDEV-36475:
-#=~ signal|AddressSanitizer
-#=~ ha_innobase::can_be_renamed_to_backup
-#=~ create_table_impl
-#=~ Version: '12\.0|Server version: 12\.0
+MDEV-36475:
+=~ signal|AddressSanitizer
+=~ ha_innobase::can_be_renamed_to_backup
+=~ create_table_impl
+=~ Version: '12\.3|Server version: 12\.3
 ## check FK
 #MDEV-35908:
 #=~ Assertion \`to_key_part->length >= key_part->length'|Assertion \`to_key_part->length == key_part->length'|MemorySanitizer
 #=~ handler::check_record_reference
 #=~ check_key_referential_integrity
 #=~ Version: '12\.0|Server version: 12\.0
-# check FK
+## check FK
 #MDEV-35908:
 #=~ MemorySanitizer
 #=~ dtuple_validate
