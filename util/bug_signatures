@@ -570,8 +570,8 @@ MDEV-35085:
 =~ Assertion \`!(entry->using_trx_cache && !mngr->trx_cache\.empty() && mngr->get_binlog_cache_log((1))->error)'
 =~ MYSQL_BIN_LOG::write_transaction_or_stmt
 MDEV-34984:
-=~ Assertion \`length <= copy->to_length - 2'
-=~ do_varstring2_no_truncation
+=~ Assertion \`length <= copy->to_length - 2'|Assertion \`length <= copy->to_length - 1'
+=~ do_varstring2_no_truncation|do_varstring1_no_truncation
 =~ do_copy_null
 =~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-34895:

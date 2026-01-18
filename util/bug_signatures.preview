@@ -4,6 +4,12 @@
 # Strong matches
 ##############################################################################
 
+# atomic cor
+MDEV-38573:
+=~ Assertion `!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ select_insert::send_ok_packet
+=~ return_zero_rows
 # check FK
 #MDEV-36643:
 #=~ InnoDB: Failing assertion: prebuilt->select_lock_type != LOCK_NONE \|\| srv_read_only_mode \|\| trx->read_view\.is_open()|Assertion \`prebuilt->sql_stat_start \|\| prebuilt->table->no_rollback()'
