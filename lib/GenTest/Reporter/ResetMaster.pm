@@ -46,6 +46,7 @@ sub status {
   my $reporter = shift;
 
   alarm(3600);
+  my $res = STATUS_OK;
 
   $first_reporter = $reporter if not defined $first_reporter;
   return STATUS_OK if $reporter ne $first_reporter;
@@ -74,15 +75,20 @@ sub status {
   } else {
     ($file, $pos) = $master->getMasterPos()
   }
-  unless ($pos) {
+  unless (defined $pos) {
     sayError('ResetMaster: Failed to get master position');
-    return STATUS_REPLICATION_FAILURE;
+    $res = STATUS_REPLICATION_FAILURE;
+    goto UNLOCK;
   }
-  $slave->syncWithMaster($file, $pos);
+  # pos may be empty, which must mean that master didn't execute anything after RESET
+  if ($pos) {
+    $slave->syncWithMaster($file, $pos);
+  }
   $slave_conn->execute('STOP SLAVE /* ResetMaster */');
   if ($slave_conn->err) {
     sayError('ResetMaster: Failed to stop slave: '.$slave_conn->print_error());
-    return STATUS_REPLICATION_FAILURE;
+    $res = STATUS_REPLICATION_FAILURE;
+    goto UNLOCK;
   }
   my $slave_status = $slave->getSlaveStatus();
   while ($slave_status->{Slave_IO_Running} ne 'No' or $slave_status->{Slave_SQL_Running} ne 'No') {
@@ -93,40 +99,47 @@ sub status {
   foreach my $f ('Last_SQL','Last_IO') {
     if ($slave_status->{$f.'_Errno'}) {
       sayError("${f}_Errno: ".$slave_status->{$f.'_Errno'}." (".$slave_status->{$f.'_Error'}.")");
-      return STATUS_REPLICATION_FAILURE;
+      $res = STATUS_REPLICATION_FAILURE;
+      goto UNLOCK;
     }
   }
   $master_conn->execute('FLUSH BINARY LOGS /* ResetMaster */');
   if ($master_conn->err) {
     sayError('ResetMaster: Failed to flush binary logs: '.$master_conn->print_error());
-    return STATUS_RUNTIME_ERROR;
+    $res = STATUS_RUNTIME_ERROR;
+    goto UNLOCK;
   }
   $master_conn->execute('RESET MASTER /* ResetMaster */');
   if ($master_conn->err) {
     sayError('ResetMaster: Failed to reset master: '.$master_conn->print_error());
-    return STATUS_RUNTIME_ERROR;
+    $res = STATUS_RUNTIME_ERROR;
+    goto UNLOCK;
   }
   $slave_conn->execute('RESET SLAVE /* ResetMaster */');
   if ($slave_conn->err) {
     sayError('ResetMaster: Failed to reset slave: '.$slave_conn->print_error());
-    return STATUS_RUNTIME_ERROR;
+    $res = STATUS_RUNTIME_ERROR;
+    goto UNLOCK;
   }
   $slave_conn->execute("SET GLOBAL gtid_slave_pos='' /* ResetMaster */");
   if ($slave_conn->err) {
     sayError('ResetMaster: Failed to reset GTID position: '.$slave_conn->print_error());
-    return STATUS_RUNTIME_ERROR;
+    $res = STATUS_RUNTIME_ERROR;
+    goto UNLOCK;
   }
   $slave_conn->execute('START SLAVE /* ResetMaster */');
   if ($slave_conn->err) {
     sayError('ResetMaster: Failed to start slave: '.$slave_conn->print_error());
-    return STATUS_REPLICATION_FAILURE;
+    $res = STATUS_REPLICATION_FAILURE;
+    goto UNLOCK;
   }
+ UNLOCK:
   $master_conn->execute('UNLOCK TABLES /* ResetMaster */');
   if ($master_conn->err) {
     sayError('ResetMaster: Failed to unlock tables: '.$master_conn->print_error());
-    return STATUS_RUNTIME_ERROR;
+    return STATUS_CRITICAL_FAILURE;
   }
-  return STATUS_OK;
+  return $res;
 }
 
 sub type {

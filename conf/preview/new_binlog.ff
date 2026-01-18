@@ -20,12 +20,8 @@ $rules = {
   'plugins'       => sub { $_ =~ m{INSTALL|UNINSTALL}s },
   'set_statement' => sub { $_ =~ m{SET\W.*STATEMENT\W.*FOR\W}is },
   'mdev33350'     => sub { $_ =~ m{FOREIGN_KEY_CHECKS\s*=\s*0}is },
-  'purge_binlog'  => sub { $_ =~ m{PURGE.*LOG}is },
-  'mdev37061'     => sub { $_ =~ m{ALTER.+TABLE\W.*(?:INSTANT|NOCOPY).*ORDER\s+BY}is },
-  'mdev37065'     => sub { $_ =~ m{ALTER.+TABLE\W.*COLLATE.+COLLATE}is },
   'validation'    => sub { $_ =~ m{WITHOUT.*VALIDATION}is },
-  'reset_master'  => sub { $_ =~ m{RESET.*MASTER}is },
-  'mdev25157'     => sub { $_ =~ m{ENGINE(\s=)*CONNECT}is },
-  'mdev37979'     => sub { $_ =~ m{CALL\s+sys}is },
-  'mdev38465'     => sub { $_ =~ m{CREATE.*TRIGGER.*SAVEPOINT}is }
+  'wrong_engine'  => sub { $_ =~ m{rocksdb|spider}is },
+  'leave_pk'      => sub { $_ =~ m{DROP\s+PRIMARY\s+KEY}is },
+  'mdev33575'      => sub { $_ =~ m{OPTIMIZE.*TABLE}is }
 }

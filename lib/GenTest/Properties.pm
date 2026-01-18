@@ -205,12 +205,14 @@ sub init {
               'views',
               'filters',
               'short_column_names',
+              'server_common',
               'server_specific',
               'freeze_time',
               'valgrind',
               'rr',
               'sqltrace',
               'servers',
+              'skip_gendata',
               'multi-master',
               'annotate-rules',
               'restart-timeout',
@@ -264,8 +266,10 @@ sub setPropertiesFromHash {
   $gentestProps->property('reporters',$props->{reporters}) if $props->{reporters};
   $gentestProps->property('rows',$props->{rows}) if defined $props->{rows};
   $gentestProps->property('seed',$props->{seed}) if defined $props->{seed};
+  $gentestProps->property('server_common',$props->{server_common}) if $props->{server_common};
   $gentestProps->property('server_specific',$props->{server_specific}) if $props->{server_specific};
   $gentestProps->property('short_column_names',$props->{short_column_names}) if defined $props->{short_column_names};
+  $gentestProps->property('skip_gendata',1) if defined $props->{skip_gendata};
   $gentestProps->property('sqltrace',$props->{sqltrace}) if $props->{sqltrace};
   $gentestProps->property('threads',$props->{threads}) if defined $props->{threads};
   $gentestProps->property('transformers',$props->{transformers}) if $props->{transformers};

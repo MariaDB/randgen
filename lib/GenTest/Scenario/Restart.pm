@@ -157,16 +157,14 @@ sub run {
       }
 
       #####
-      if ($self->getTestType and ($self->getTestType eq 'normal')) {
-        $self->printStep("Checking the database state after restart");
+      $self->printStep("Checking the database state after restart");
 
-        $status= $server->checkDatabaseIntegrity;
+      $status= $server->checkDatabaseIntegrity;
 
-        if ($status != STATUS_OK) {
-          $total_status= STATUS_RECOVERY_FAILURE if STATUS_RECOVERY_FAILURE > $total_status;
-          sayError("Database appears to be corrupt after restart");
-          last TESTRUN;
-        }
+      if ($status != STATUS_OK) {
+        $total_status= STATUS_RECOVERY_FAILURE if STATUS_RECOVERY_FAILURE > $total_status;
+        sayError("Database appears to be corrupt after restart");
+        last TESTRUN;
       }
     }
   }

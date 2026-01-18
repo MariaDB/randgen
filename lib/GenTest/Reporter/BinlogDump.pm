@@ -62,6 +62,7 @@ sub report {
   my $datadir = $server->datadir;
   my $port = $server->port;
   my $basename= $server->serverVariable('log_bin_basename');
+  my $binlog_directory= $server->serverVariable('binlog_directory');
 
   my $binlog_utility= DBServer::MariaDB::_find(undef,
                        [$reporter->server->serverVariable('basedir')],
@@ -86,12 +87,26 @@ sub report {
   }
   $client .= " -uroot --host=127.0.0.1 --port=$port --protocol=tcp";
 
-  my $cmd= "$binlog_utility --no-defaults --verbose --verbose --base64-output=DECODE-ROWS $basename.[0-9][0-9][0-9][0-9][0-9][0-9] > $vardir/binlog_events.txt";
+  my $binlog_pattern = '';
+  if ($basename) {
+    $binlog_pattern = "$basename.[0-9][0-9][0-9][0-9][0-9][0-9]"
+  } elsif ($binlog_directory) {
+    $binlog_pattern = "$binlog_directory/binlog-[0-9][0-9][0-9][0-9][0-9][0-9].ibb"
+  } else {
+    $binlog_pattern = "binlog-[0-9][0-9][0-9][0-9][0-9][0-9].ibb"
+  }
+  unless ($binlog_pattern =~ /^\//) {
+    $binlog_pattern = "$datadir/$binlog_pattern"
+  }
+
+  my @binlog_files = glob("$binlog_pattern");
+  my $cmd= "$binlog_utility --no-defaults --verbose --verbose @binlog_files > $vardir/binlog_events.txt";
   say("BinlogDump: Dumping binary log events into the file $vardir/binlog_events.txt");
   say($cmd);
   $status = system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
   if ($status != STATUS_OK) {
     sayError("BinlogDump: Dumping binary logs finished with an error: ".($status >> 8));
+    # Currently returns a rather bogus error ERROR: File is an empty pre-allocated binlog, contains no data yet
     return STATUS_CRITICAL_FAILURE;
   } else {
     say("BinlogDump: dumping binary logs finished successfully");
@@ -106,20 +121,19 @@ sub report {
   my $tmpvardir = $vardir.'_'.time().'_tmp';
   move($vardir,$tmpvardir);
 
-  say("Starting a new server ...");
   say("Creating a clean database...");
   $server->createDatadir();
 
   move($tmpvardir,$vardir.'/vardir_orig');
+  say("Starting a new server ...");
   my $status = $server->startServer();
 
   if ($status > STATUS_OK) {
     sayError("BinlogDump: Server startup finished with an error");
     return $status;
   }
-
   # MDEV-31756 - NOWAIT in DDL makes binary logs difficult or impossible to replay
-  system("cat $vardir/vardir_orig/binlog_events | sed -e 's/NOWAIT//g' > $vardir/binlog_events_adjusted");
+  system("cat $vardir/vardir_orig/binlog_events.txt | sed -e 's/NOWAIT//g' > $vardir/binlog_events_adjusted");
 
   # Cannot apply binlog events with transaction_read_only
   $reporter->connection->execute("SET GLOBAL tx_read_only= OFF");

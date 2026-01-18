@@ -1,0 +1,3 @@
+$rules = {
+  'domain'       => sub { $_ =~ m{DELETE_DOMAIN_ID}s },
+}

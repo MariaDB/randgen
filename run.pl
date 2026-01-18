@@ -108,6 +108,7 @@ sub run {
     perf            => undef,
     ps              => undef,
     rr              => undef,
+    start_dirty     => undef,
     uhashkeys       => undef,
     valgrind        => undef,
     vcols           => undef,
@@ -140,6 +141,7 @@ sub run {
     'perf:i' => \$server_options{perf},
     'ps_protocol|ps-protocol' => \$server_options{ps},
     'rr!' => \$server_options{rr},
+    'start_dirty|start-dirty!'     => \$server_options{start_dirty},
     'unique-hash-keys|unique_hash_keys!' => \$server_options{uhashkeys},
     'valgrind:s'    => \$server_options{valgrind},
     'vcols:s'        => \$server_options{vcols},
@@ -169,6 +171,7 @@ sub run {
     'scenario:s' => \$scenario,
     'seed=s' => \$props->{seed},
     'short_column_names|short-column-names!' => \$props->{short_column_names},
+    'skip-gendata|skip_gendata' => \$props->{skip_gendata},
     'sqltrace:s' => \$props->{sqltrace},
     'threads=i' => \$props->{threads},
     'transformers=s@' => \@{$props->{transformers}},
@@ -268,6 +271,7 @@ sub run {
       $ENV{VAULT_ADDR}= `cat $props->{vardir}/vault.token | tail -n 1`;
       chomp $ENV{VAULT_ADDR};
       say("Hashicorp vault has been configured: $ENV{VAULT_ADDR} $ENV{VAULT_TOKEN}");
+      push @{$server_options{mysqld}}, "--hashicorp-key-management-vault-url=$ENV{VAULT_ADDR}/v1/mariadbtest", "--hashicorp-key-management-token=$ENV{VAULT_TOKEN}";
     }
   }
 
@@ -292,16 +296,18 @@ sub run {
     if ($o =~ /^--scenario-([^=]+)(?:=(.*))?$/) {
       $scenario_options{$1}= $2;
     } elsif ($o =~ /^--(?:server|srv)(\d+)-([^=]+)(?:=(.*))?$/) {
-      if (exists $server_options{$2}) {
-        my %opts= (defined $server_specific->{$1} ? %{$server_specific->{$1}} : ());
-        if ($2 eq 'mysqld') {
-          $opts{$2}= exists $opts{$2} ? [ @{$opts{$2}}, $3 ] : [ $3 ];
-        } elsif ($2 eq 'perf' and not defined $3) {
-          $opts{$2}= int($props->{duration}*0.9);
+      my ($srv, $opt, $val) = ($1, $2, $3);
+      $opt =~ s/-/_/g;
+      if (exists $server_options{$opt}) {
+        my %opts= (defined $server_specific->{$srv} ? %{$server_specific->{$srv}} : ());
+        if ($opt eq 'mysqld') {
+          $opts{$opt}= exists $opts{$opt} ? [ @{$opts{$opt}}, $val ] : [ $val ];
+        } elsif ($opt eq 'perf' and not defined $val) {
+          $opts{$opt}= int($props->{duration}*0.9);
         } else {
-          $opts{$2}= $3;
+          $opts{$opt}= $val;
         }
-        %{$server_specific->{$1}}= %opts;
+        %{$server_specific->{$srv}}= %opts;
       } else {
         push @unknown_options, $o;
       }
@@ -310,24 +316,12 @@ sub run {
     }
   }
 
-  foreach my $s (keys %$server_specific) {
-    for my $o (keys %server_options) {
-      if ($o eq 'mysqld') {
-        @{$server_specific->{$s}{mysqld}}= $server_specific->{$s}{mysqld} ? ( @{$server_options{mysqld}}, @{$server_specific->{$s}{mysqld}} ) : ( @{$server_options{mysqld}} );
-      } elsif (defined $server_options{$o} and not exists ${$server_specific->{$s}}{$o}) {
-        ${$server_specific->{$s}}{$o}= $server_options{$o};
-      }
-    }
-    if ($hashicorp && $ENV{VAULT_TOKEN} && $ENV{VAULT_ADDR}) {
-      push @{$server_specific->{$s}{mysqld}}, "--hashicorp-key-management-vault-url=$ENV{VAULT_ADDR}/v1/mariadbtest", "--hashicorp-key-management-token=$ENV{VAULT_TOKEN}";
-    }
-  }
-
-  unless ($server_specific->{1}{basedir}) {
+  unless ($server_options{basedir} || $server_specific->{1}{basedir}) {
     return help("At least one basedir must be defined");
   }
 
   $props->{server_specific}= $server_specific;
+  $props->{server_common}= \%server_options;
 
   if (scalar(@unknown_options)) {
     return help("Unknown options: @unknown_options");

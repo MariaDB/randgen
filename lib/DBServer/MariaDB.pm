@@ -34,6 +34,7 @@ use File::Copy qw(move);
 use Constants;
 use Constants::MariaDBErrorCodes;
 use Connection::Perl;
+use GenTest::Random;
 
 use strict;
 
@@ -80,6 +81,8 @@ use constant MYSQLD_DATASET => 41;
 use constant MYSQLD_BASEDIR_GENDATA => 42;
 use constant MYSQLD_MYSQLD_GENDATA => 43;
 use constant MYSQLD_ID => 44;
+use constant MYSQLD_RAND => 45;
+use constant MYSQLD_SEED => 46;
 
 use constant MARIABACKUP => 50;
 use constant TZINFO_TO_SQL => 51;
@@ -107,6 +110,7 @@ sub new {
                                    'port' => MYSQLD_PORT,
                                    'ps' => MYSQLD_PS_PROTOCOL,
                                    'rr' => MYSQLD_RR,
+                                   'seed' => MYSQLD_SEED,
                                    'server_options' => MYSQLD_SERVER_OPTIONS,
                                    'sourcedir' => MYSQLD_SOURCEDIR,
                                    'start_dirty' => MYSQLD_START_DIRTY,
@@ -181,8 +185,8 @@ sub new {
                           );
 
     $self->[MYSQLD_CLIENT_BINDIR] = dirname($self->[MYSQLD_DUMPER]);
-
     $self->[MYSQLD_HOST] = '127.0.0.1' unless $self->[MYSQLD_HOST];
+    $self->[MYSQLD_RAND] = GenTest::Random->new(seed => $self->[MYSQLD_SEED]);
 
     ## Check for CMakestuff to get hold of source dir:
 
@@ -245,6 +249,10 @@ sub new {
     }
 
     return $self;
+}
+
+sub prng {
+  return $_[0]->[MYSQLD_RAND];
 }
 
 sub basedir {
@@ -548,11 +556,10 @@ sub skipTestSetup {
 sub testSetup {
   my $self= shift;
   unless ($self->[MYSQLD_SETUP_DONE]) {
-    my $usertable= ($self->versionNumeric() gt '100400' ? 'global_priv' : 'user');
+    my $usertable= ($self->versionNumeric() gt '100400' ? 'mysql.global_priv' : 'mysql.user');
 
     ## Add last strokes: don't want empty users, but want the test user instead
-    $self->connection->execute("SET tx_read_only=0");
-    $self->connection->execute("USE mysql");
+    $self->connection->execute("SET tx_read_only=0, binlog_format=STATEMENT");
     $self->connection->execute("DELETE FROM $usertable WHERE `User` = ''");
     $self->connection->execute("FLUSH PRIVILEGES");
     $self->connection->execute("CREATE DATABASE IF NOT EXISTS transforms");
@@ -560,10 +567,10 @@ sub testSetup {
     $self->connection->execute("CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=InnoDB");
     if ($self->user ne 'root') {
       my $user= $self->user.'@localhost';
-      $self->connection->execute("CREATE ROLE admin");
+      $self->connection->execute("CREATE ROLE IF NOT EXISTS admin");
       $self->connection->execute("GRANT ALL ON *.* TO admin WITH GRANT OPTION");
       # Temporary password to work around password check plugins
-      $self->connection->execute("CREATE USER $user IDENTIFIED BY 'pqg8dnw.TUT_dhj7pcv' PASSWORD EXPIRE NEVER");
+      $self->connection->execute("CREATE USER IF NOT EXISTS $user IDENTIFIED BY 'pqg8dnw.TUT_dhj7pcv' PASSWORD EXPIRE NEVER");
       $self->connection->execute("GRANT /*!100502 BINLOG ADMIN, BINLOG MONITOR, BINLOG REPLAY, CONNECTION ADMIN, FEDERATED ADMIN, ".
                                   "READ_ONLY ADMIN, REPLICATION MASTER ADMIN, REPLICATION REPLICA, REPLICATION SLAVE ADMIN, SET USER, */ ".
                         "/*!100509 REPLICA MONITOR, */ ".
@@ -574,7 +581,7 @@ sub testSetup {
       $self->connection->execute("GRANT ALL ON mysql.rqg_feature_registry TO $user");
       $self->connection->execute("GRANT INSERT, UPDATE, DELETE ON performance_schema.* TO $user");
       $self->connection->execute("GRANT EXECUTE ON sys.* TO $user");
-      if ($usertable eq 'global_priv') {
+      if ($usertable eq 'mysql.global_priv') {
         $self->connection->execute("UPDATE mysql.global_priv SET Priv = JSON_REPLACE(Priv,'\$.authentication_string','') WHERE User = '".$self->user."'");
         $self->connection->execute("UPDATE mysql.global_priv SET Priv = JSON_INSERT(Priv, '\$.password_lifetime', 0) WHERE user in('".$self->user."', 'root')");
       } else {
@@ -583,6 +590,7 @@ sub testSetup {
       $self->connection->execute("DELETE FROM mysql.roles_mapping WHERE Role = 'admin'");
       $self->connection->execute("INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y')");
       $self->connection->execute("FLUSH PRIVILEGES");
+      $self->connection->execute("SET binlog_format=DEFAULT");
     }
     $self->[MYSQLD_SETUP_DONE]= 1;
   }
@@ -1466,6 +1474,17 @@ sub checkDatabaseIntegrity {
   if ($foreign_key_check_workaround) {
     $conn->execute("SET FOREIGN_KEY_CHECKS= DEFAULT");
   }
+  my $xa_ref = $conn->query("XA RECOVER /* checkDatabaseIntegrity */");
+  foreach (@$xa_ref) {
+    my $xa= $_->[3];
+    if ($self->prng->uint16(0,1)) {
+      say("Committing recovered XA $xa");
+      $conn->query("XA COMMIT '$xa'");
+    } else {
+      say("Rolling back recovered XA $xa");
+      $conn->query("XA ROLLBACK '$xa'");
+    }
+  }
   return $status;
 }
 
@@ -1500,8 +1519,12 @@ sub waitForServerToStop {
 sub getMasterGtidPos {
   my $self= shift;
   my $pos = $self->connection->get_value('SELECT @@gtid_binlog_pos');
+  if ($self->connection->err) {
+    sayError("Could not retrieve master GTID position: " . $self->connection->print_error);
+    return undef;
+  }
   unless ($pos) {
-    sayError("Could not retrieve master GTID position " . ($self->connection->err ? $self->connection->print_error : ''));
+    sayWarning("Master GTID position is empty");
   }
   return $pos;
 }
@@ -1825,6 +1848,7 @@ sub isRecordIgnored {
     or  $line =~ /^\s*$/s
     or  $line =~ /Can't open and lock privilege tables/s
     or  $line =~ /Couldn't fix table with quick recovery: Found wrong number of deleted records/s
+    or  $line =~ /Error reading packet from server: Lost connection to server during query/s
     or  $line =~ /Event Scheduler: /s
     or  $line =~ /ib_buffer_pool' for reading: No such file or directory/s
     or  $line =~ /Incorrect definition of table (?:mysql\.event|mysql\.column_stats)/s
@@ -1860,9 +1884,10 @@ sub isRecordIgnored {
     or  $line =~ /(?:mysqld|mariadbd): Table .* is marked as crashed and last \(automatic\?\) repair failed/s
     or  $line =~ /(?:mysqld|mariadbd): Table .* is marked as crashed and should be repaired/s
     or  $line =~ /(?:mysqld|mariadbd): (?:The table .* is full|Таблица .* переполнена|表.*已满)/s
-    or  $line =~ /Run recovery again without --quick/s
+    or  $line =~ /Run recovery again without --q/s
     or  $line =~ /server_audit: Query log limit was changed/s
     or  $line =~ /server_audit: SysLog facility was changed/s
+    or  $line =~ /RocksDB: Failed .*Status: Invalid argument: Transaction name must be unique/s
     or  $line =~ /Slave I\/O: error reconnecting to master/s
     or  $line =~ /Write to binary log failed: Multi-row statements required more than 'max_binlog_stmt_cache_size' bytes of storage/s
     # CSV is not crash-safe x 2

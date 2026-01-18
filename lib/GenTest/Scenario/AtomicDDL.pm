@@ -240,7 +240,7 @@ sub run {
     ($slave_conn, my $err)= Connection::Perl->new(server => $slave, name => 'ATO', role => 'super');
     if ($slave_conn) {
       $slave_conn->execute("SET GLOBAL tx_read_only= OFF");
-      $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=".$server->port.", MASTER_USER='root', MASTER_SSL=0");
+      $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=".$server->port.", MASTER_USER='root', MASTER_SSL=0, MASTER_USE_GTID=current_pos");
       $slave_conn->execute("START SLAVE");
     } else {
       sayError("Could not connect to the slave, error $err");
@@ -263,8 +263,8 @@ sub run {
   if ($slave) {
     #####
     $self->printStep("Replicating the data");
-    my ($file, $pos) = $server->getMasterPos();
-    if ($file && $pos && $slave->syncWithMaster($file, $pos, $self->getProperty('duration')) == STATUS_OK) {
+    my $gtid_pos = $server->getMasterGtidPos();
+    if ($gtid_pos && $slave->syncWithMaster(undef, $gtid_pos, $self->getProperty('duration')) == STATUS_OK) {
       $slave_conn->execute("STOP SLAVE");
     } else {
       $status= STATUS_REPLICATION_FAILURE if $status < STATUS_REPLICATION_FAILURE;

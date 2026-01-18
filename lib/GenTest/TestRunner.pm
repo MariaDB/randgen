@@ -606,7 +606,7 @@ sub registerFeatures {
     return;
   }
   my $feature_list= join ',', map { "('$_')" } (@$features);
-  if ($conn->execute("REPLACE INTO mysql.rqg_feature_registry VALUES $feature_list") != STATUS_OK) {
+  if ($conn->execute("SET STATEMENT binlog_format=STATEMENT FOR REPLACE INTO mysql.rqg_feature_registry VALUES $feature_list") != STATUS_OK) {
     sayError("Could not register features @{$features}: ".$conn->print_error);
   }
   sayDebug("Registered features: @$features");

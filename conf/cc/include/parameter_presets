@@ -193,12 +193,6 @@ $engine_enforced_combinations{$minversion}= [
 ];
 
 $engine_extra_supported_combinations{$minversion}= [
-  # RocksDB
-  '--engine=RocksDB
-   --grammar=conf/yy/engine-rocksdb.yy:0.1
-   --mysqld=--default-storage-engine=RocksDB
-   --mysqld=--plugin-load-add=ha_rocksdb
-  ',
   # Blackhole
   '--engine=Blackhole
    --mysqld=--plugin-load-add=ha_blackhole
@@ -242,43 +236,30 @@ $engine_extra_supported_combinations{1005}= [ @{$engine_extra_supported_combinat
 ];
 
 $engine_full_mix_combinations{$minversion}= [
-  '--engine=InnoDB,MyISAM,Aria,HEAP,Archive,Blackhole,RocksDB
+  '--engine=InnoDB,MyISAM,Aria,HEAP,Archive,Blackhole
    --mysqld=--plugin-load-add=ha_archive
    --mysqld=--plugin-load-add=ha_blackhole
    --mysqld=--plugin-load-add=ha_federatedx
-   --mysqld=--plugin-load-add=ha_rocksdb
-   --mysqld=--plugin-load-add=ha_oqgraph
    --mysqld=--plugin-load-add=ha_spider
-   --mysqld=--plugin-load-add=ha_mroonga
-   --mysqld=--plugin-load-add=ha_connect
    --mysqld=--loose-spider-same-server-link=on
    --mysqld=--loose-spider_table_crd_thread_count=1
    --mysqld=--loose-spider_table_sts_thread_count=1
-   --gendata=data/sql/engine-oqgraph.sql
    --gendata=data/sql/engine-heap.sql
-   --gendata=conf/zz/oltp-connect.zz
-   --grammar=conf/yy/engine-oqgraph.yy:0.1
    --grammar=conf/yy/engine-federatedx.yy:0.1
    --grammar=conf/yy/engine-spider.yy:0.5
    --grammar=conf/yy/engine-heap-ddl.yy
    --grammar=conf/yy/engine-heap-dml.yy
    --grammar=conf/yy/engine-merge.yy
-   --grammar=conf/yy/engine-mroonga.yy
-   --grammar=conf/yy/engine-rocksdb.yy:0.1
   '
 ];
 
 $engine_full_mix_combinatinos{1005}= [
-  '--engine=InnoDB,MyISAM,Aria,HEAP,Archive,Blackhole,RocksDB
+  '--engine=InnoDB,MyISAM,Aria,HEAP,Archive,Blackhole
    --mysqld=--plugin-load-add=ha_archive
    --mysqld=--plugin-load-add=ha_blackhole
    --mysqld=--plugin-load-add=ha_federatedx
-   --mysqld=--plugin-load-add=ha_rocksdb
-   --mysqld=--plugin-load-add=ha_oqgraph
    --mysqld=--plugin-load-add=ha_spider
    --mysqld=--plugin-load-add=ha_s3
-   --mysqld=--plugin-load-add=ha_mroonga
-   --mysqld=--plugin-load-add=ha_connect
    --mysqld=--loose-spider-same-server-link=on
    --mysqld=--loose-spider_table_crd_thread_count=1
    --mysqld=--loose-spider_table_sts_thread_count=1
@@ -291,17 +272,13 @@ $engine_full_mix_combinatinos{1005}= [
    --mysqld=--loose-s3-region=""
    --mysqld=--loose-s3-port=9000
    --mysqld=--loose-s3-use-http=on
-   --gendata=data/sql/engine-oqgraph.sql
    --gendata=data/sql/engine-heap.sql
-   --gendata=conf/zz/oltp-connect.zz
-   --grammar=conf/yy/engine-oqgraph.yy:0.1
    --grammar=conf/yy/engine-federatedx.yy:0.1
    --grammar=conf/yy/engine-spider.yy:0.5
    --grammar=conf/yy/engine-s3.yy:0.1
    --grammar=conf/yy/engine-heap-ddl.yy
    --grammar=conf/yy/engine-heap-dml.yy
    --grammar=conf/yy/engine-merge.yy
-   --grammar=conf/yy/engine-mroonga.yy
   ',
 ];
 
@@ -462,8 +439,6 @@ $custom_options_1{$minversion}= ['
   --mysqld=--query_cache_size=0
   --mysqld=--relay_log_recovery=ON
   --mysqld=--replicate_events_marked_for_skip=FILTER_ON_MASTER
-  --mysqld=--rpl_semi_sync_master_enabled=ON
-  --mysqld=--rpl_semi_sync_slave_enabled=ON
   --mysqld=--slave_net_timeout=10
   --mysqld=--slave_parallel_max_queued=67108864
   --mysqld=--slave_parallel_threads=4
@@ -487,8 +462,8 @@ $custom_options_1{$minversion}= ['
   --mysqld=--plugin-load-add=simple_password_check
   --mysqld=--plugin-load-add=sql_errlog
 '];
-$custom_options_1_master{$minversion}=['--server1-mysqld=--log_bin=custom1-master --server1-mysqld=--read_only=0'];
-$custom_options_1_slave{$minversion}= ['--server2-mysqld=--log_bin=custom1-slave --server2-mysqld=--read_only=1'];
+$custom_options_1_master{$minversion}=['--server1-mysqld=--log_bin --server1-mysqld=--read_only=0'];
+$custom_options_1_slave{$minversion}= ['--server2-mysqld=--log_bin --server2-mysqld=--read_only=1'];
 
 $parameters{custom_options_1}= \%custom_options_1;
 $parameters{custom_options_1_master}= \%custom_options_1_master;
@@ -520,41 +495,8 @@ $key_management_combinations_msan_safe{$minversion}= [
 #      --mysqld=--hashicorp-key-management-vault-url=$ENV{VAULT_ADDR}/v1/mariadbtest
 #      --mysqld=--hashicorp-key-management-token=$ENV{VAULT_TOKEN}
 
-$key_management_combinations{1009}= [
-  '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
-  [
-    ['--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'],
-    ['--mysqld=--hashicorp-key-management-max-retries=2147483647', '--mysqld=--hashicorp-key-management-max-retries=0', '--mysqld=--hashicorp-key-management-max-retries=1'],
-    ['--mysqld=--hashicorp-key-management-cache-version-timeout=0', '--mysqld=--hashicorp-key-management-cache-version-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-version-timeout=1'],
-    ['--mysqld=--hashicorp-key-management-timeout=0', '--mysqld=--hashicorp-key-management-timeout=86400', '--mysqld=--hashicorp-key-management-timeout=1'],
-    ['--mysqld=--hashicorp-key-management-use-cache-on-timeout=ON','--mysqld=--hashicorp-key-management-use-cache-on-timeout=OFF'],
-    ['--mysqld=--hashicorp-key-management-caching-enabled=ON','--mysqld=--hashicorp-key-management-caching-enabled=OFF'],
-    ['--mysqld=--hashicorp-key-management-cache-timeout=0', '--mysqld=--hashicorp-key-management-cache-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-timeout=1'],
-  ]
-];
-$key_management_combinations{'es-1004'}= [
-  '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
-  [
-    ['--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'],
-    ['--mysqld=--hashicorp-key-management-max-retries=2147483647', '--mysqld=--hashicorp-key-management-max-retries=0', '--mysqld=--hashicorp-key-management-max-retries=1'],
-    ['--mysqld=--hashicorp-key-management-cache-version-timeout=0', '--mysqld=--hashicorp-key-management-cache-version-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-version-timeout=1'],
-    ['--mysqld=--hashicorp-key-management-timeout=0', '--mysqld=--hashicorp-key-management-timeout=86400', '--mysqld=--hashicorp-key-management-timeout=1'],
-    ['--mysqld=--hashicorp-key-management-use-cache-on-timeout=ON','--mysqld=--hashicorp-key-management-use-cache-on-timeout=OFF'],
-    ['--mysqld=--hashicorp-key-management-caching-enabled=ON','--mysqld=--hashicorp-key-management-caching-enabled=OFF'],
-    ['--mysqld=--hashicorp-key-management-cache-timeout=0', '--mysqld=--hashicorp-key-management-cache-timeout=9223372036854775807', '--mysqld=--hashicorp-key-management-cache-timeout=1'],
-  ]
-];
-
 $key_management_hash{$minversion}= {
   file_key_management => '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
-};
-$key_management_hash{1009}= {
-  file_key_management => '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
-  hashicorp => '--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'
-};
-$key_management_hash{'es-1004'}= {
-  file_key_management => '--mysqld=--file-key-management --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt --mysqld=--plugin-load-add=file_key_management',
-  hashicorp => '--hashicorp --mysqld=--plugin-load-add=hashicorp_key_management --mysqld=--hashicorp-key-management'
 };
 
 $parameters{key_management_combinations}= \%key_management_combinations;
@@ -591,7 +533,6 @@ $encryption_options{$minversion}= [
   @{$encryption_innodb_options{$minversion}},
   @{$encryption_aria_options{$minversion}},
   @{$encryption_tmp_options{$minversion}},
-  @{$encryption_binlog_options{$minversion}},
 ];
 
 $optional_encryption{$minversion} = [
@@ -611,14 +552,6 @@ $optional_encryption_msan_safe{$minversion} = [
   ]
 ];
 
-$optional_encryption{1009} = [
-  @empty_set_20,
-  [
-    $key_management_combinations{1009},
-    $encryption_options{$minversion}
-  ]
-];
-
 $optional_non_binlog_encryption{$minversion} = [
   @empty_set_20,
   [
@@ -632,14 +565,6 @@ $optional_non_binlog_encryption_msan_safe{$minversion} = [
   @empty_set_20,
   [
     $key_management_combinations_msan_safe{$minversion},
-    $encryption_non_binlog_options{$minversion}
-  ]
-];
-
-$optional_non_binlog_encryption{1009} = [
-  @empty_set_20,
-  [
-    $key_management_combinations{1009},
     $encryption_non_binlog_options{$minversion}
   ]
 ];
@@ -1089,7 +1014,7 @@ $optional_replication_safe_variables{1005}= [ @{$optional_replication_safe_varia
 
 $optional_replication_safe_variables{1104}= [ @{$optional_replication_safe_variables{1005}},
   # Default 0
-  [ @empty_set_50, '--mysqld=--max-binlog-total-size=10M', '--mysqld=--max-binlog-total-size=100M', '--mysqld=--max-binlog-total-size=1G' ],
+  [ @empty_set_5, '--mysqld=--max-binlog-total-size=10M', '--mysqld=--max-binlog-total-size=100M', '--mysqld=--max-binlog-total-size=1G' ],
   # Default 1
   [ '', '--mysqld=--slave-connections-needed-for-purge=0', '--mysqld=--slave-connections-needed-for-purge=10' ],
 ];
@@ -1267,10 +1192,8 @@ $optional_server_variables{$minversion}= [
     '--mysqld=--thread-stack=1M',
   ],
   # Default REPEATABLE-READ
-  [ @empty_set_10,
-    '--mysqld=--transaction-isolation=READ-UNCOMMITTED',
+  [ '',
     '--mysqld=--transaction-isolation=READ-COMMITTED',
-    '--mysqld=--transaction-isolation=SERIALIZABLE',
   ],
   # Default OFF
   [ @empty_set_50, '--mysqld=--transaction-read-only=ON' ],

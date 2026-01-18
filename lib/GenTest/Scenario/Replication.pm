@@ -72,11 +72,9 @@ sub run {
 
   $topology= '1->2';
 
-  my @reporters= $self->getProperty('reporters') ? @{$self->getProperty('reporters')} : ();
   my $do_sync= (exists $self->scenarioOptions->{'nosync'} && $self->scenarioOptions->{'nosync'} ne '0' && $self->scenarioOptions->{'nosync'} ne 'off' ? 0 : 1 );
   my $use_gtid= (exists $self->scenarioOptions->{'use-gtid'} && $self->scenarioOptions->{'use-gtid'} ne '0' && $self->scenarioOptions->{'use-gtid'} ne 'off' ? 1 : 0 );
   my $rpl_timeout= $self->scenarioOptions->{'rpl-timeout'} || $self->scenarioOptions->{'rpl_timeout'} || $self->getProperty('duration');
-  push @reporters, 'ReplicationSlaveStatus';
 
   my $srv_count= scalar(keys %{$self->getProperty('server_specific')});
   if ($srv_count < 2) {
@@ -129,7 +127,11 @@ sub run {
 
   my $reporters= $self->getProperty('reporters');
   $reporters= [] unless $reporters;
-  $self->setProperty('reporters',[ @$reporters, 'ReplicationSlaveStatus' ]);
+  if (exists $self->scenarioOptions->{'primary-crash-recovery'}) {
+    $self->setProperty('reporters',[ @$reporters, 'PrimaryCrashRecovery' ]);
+  } else {
+    $self->setProperty('reporters',[ @$reporters, 'ReplicationSlaveStatus' ]);
+  }
 
   my @connections= split /,/, $topology;
   my ($master_conn, $slave_conn, $err);
@@ -156,10 +158,11 @@ sub run {
         last;
       }
       $slave_conn->execute("/*!100001 SET GLOBAL tx_read_only= OFF */");
+      my $change_master_statement = "CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT', MASTER_SSL=0, MASTER_CONNECT_RETRY=1";
       if ($use_gtid) {
-        $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT', MASTER_SSL=0, MASTER_USE_GTID=current_pos");
+        $slave_conn->execute($change_master_statement .", MASTER_USE_GTID=current_pos");
       } else {
-        $slave_conn->execute("CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=$master_port, MASTER_USER='replication', MASTER_PASSWORD='yvp.utu9azv4xgt6VRT', MASTER_SSL=0");
+        $slave_conn->execute($change_master_statement);
       }
       $slave_conn->execute("START SLAVE");
       if ($slave_conn->err) {
@@ -217,24 +220,31 @@ sub run {
     } else {
       ($file, $pos) = $servers[0]->getMasterPos();
     }
-    unless ($pos) {
+    unless (defined $pos) {
       sayError("Could not detect master GTID position");
       return STATUS_ENVIRONMENT_FAILURE;
     }
     if ($slave_status->{Slave_IO_Running} eq 'No' || $slave_status->{Slave_SQL_Running} eq 'No') {
       say("Replication was stopped, restarting to wait for synchronization");
       $slave_conn->execute("STOP SLAVE");
-      if ($use_gtid) {
-        $slave_conn->execute("START SLAVE UNTIL SQL_AFTER_GTIDS = '$pos'");
+      # pos may be empty, which must mean that master didn't execute anything after RESET
+      if ($pos) {
+        if ($use_gtid) {
+          $slave_conn->execute("START SLAVE UNTIL SQL_AFTER_GTIDS = '$pos'");
+        } else {
+          $slave_conn->execute("START SLAVE UNTIL MASTER_LOG_FILE = '$file', MASTER_LOG_POS = '$pos'");
+        }
       } else {
-        $slave_conn->execute("START SLAVE UNTIL MASTER_LOG_FILE = '$file', MASTER_LOG_POS = '$pos'");
+        $slave_conn->execute("START SLAVE");
       }
     }
-    $self->printStep("Synchronizing with master");
-    $status= $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration'));
-    unless ($status  == STATUS_OK) {
-      $total_status= $status if $status > $total_status;
-      goto FINALIZE;
+    if ($pos) {
+      $self->printStep("Synchronizing with master");
+      $status= $servers[1]->syncWithMaster($file, $pos, $self->getProperty('duration'));
+      unless ($status  == STATUS_OK) {
+        $total_status= $status if $status > $total_status;
+        goto FINALIZE;
+      }
     }
     my ($master_status, %master_data)= $self->get_data($servers[0]);
     if ($master_status != STATUS_OK) {

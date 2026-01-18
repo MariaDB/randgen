@@ -253,6 +253,10 @@ my @commands;
 my $max_result = 0;
 my $thread_id = 0;
 my $comb_seed= ($seed eq 'time' ? time() : $seed);
+# Array ref of array refs, each array ref contains a set of patterns.
+# If the resulting combinations command line matches all patterns,
+# it cannot be used
+my $forbidden;
 
 my $es= '';
 if ($version =~ s/^es-//) {
@@ -333,6 +337,25 @@ if ($thread_id > 0) {
 
 
 ## ----------------------------------------------------
+
+sub checkForbidden {
+  my $line = shift;
+ PATTERNSET:
+  foreach my $f (@$forbidden) {
+   PATTERN:
+    foreach my $p (@$f) {
+      unless ($line =~ /$p/i) {
+        # line does not match a pattern, the forbidden pattern set does not apply
+        next PATTERNSET;
+      }
+    }
+    # all patterns in a pattern set matched the line, the combination is forbidden
+    sayWarning("The combination [ $line ] is forbidden by the pattern set [ @$f ], skipping it");
+    return 1;
+  }
+  # checked all forbidden patterns, none applies
+  return 0;
+}
 
 sub pickOne
 {
@@ -590,67 +613,69 @@ sub doCombination {
 
   $commands[$trial_id] = [ @args ];
 
-  say("Combinations [$thread_id]: arguments: @args");
-  unless ($dry_run)
-  {
-    my $result= STATUS_PERL_FAILURE;
-    my $cmd_pid= fork();
-    if ($cmd_pid) {
-      # Parent, waiting for command execution to finish
-      waitpid($cmd_pid,0);
-      $result= ($? >> 8);
-    } elsif (defined $cmd_pid) {
-      # Command execution
-      my $r= run(@args);
-      exit $r;
-    } else {
-      sayError("Could not fork for command execution");
-    }
-    group_cleaner();
-    # Post-execution activities
-    my $tl = $archive.'/trial'.$trial_id.'.log';
-    move("$vardir/trial.log",$tl);
-    if (defined $clean && $result == 0) {
-      say("Combinations [$thread_id]: test run exited with exit status ".status2text($result)."($result). Clean mode active: deleting this OK log");
-      system("rm -f $tl");
-    } else {
-      say("Combinations [$thread_id]: test run exited with exit status ".status2text($result)."($result), see $tl");
-    }
+  if (! checkForbidden("@args")) {
+    say("Combinations [$thread_id]: arguments: @args");
+    unless ($dry_run)
+    {
+      my $result= STATUS_PERL_FAILURE;
+      my $cmd_pid= fork();
+      if ($cmd_pid) {
+        # Parent, waiting for command execution to finish
+        waitpid($cmd_pid,0);
+        $result= ($? >> 8);
+      } elsif (defined $cmd_pid) {
+        # Command execution
+        my $r= run(@args);
+        exit $r;
+      } else {
+        sayError("Could not fork for command execution");
+      }
+      group_cleaner();
+      # Post-execution activities
+      my $tl = $archive.'/trial'.$trial_id.'.log';
+      move("$vardir/trial.log",$tl);
+      if (defined $clean && $result == 0) {
+        say("Combinations [$thread_id]: test run exited with exit status ".status2text($result)."($result). Clean mode active: deleting this OK log");
+        system("rm -f $tl");
+      } else {
+        say("Combinations [$thread_id]: test run exited with exit status ".status2text($result)."($result), see $tl");
+      }
 
-    $max_result = $result if $result > $max_result;
+      $max_result = $result if $result > $max_result;
 
-    my $from = $workdir.'/current1_'.$thread_id;
-    system("$ENV{RQG_HOME}\\util\\unlock_handles.bat -nobanner \"$from\"") if osWindows() and -e "\"$from\"";
-    if ($result > 0) {
-      open(RES,">>$workdir/result.txt");
-      print RES "Trial $trial_id:\n";
-      close(RES);
-      system("DB_USER= perl $ENV{RQG_HOME}/util/check_for_known_bugs.pl --signatures=$ENV{RQG_HOME}/util/bug_signatures* $from/s*/mysql.err $from/trial.log $workdir/trial${trial_id}.log $from/s*/boot.log 2>&1 | tee -a $workdir/result.txt");
-      unless ($discard_logs) {
-        my $to = $archive.'/vardir1_'.$trial_id;
-        sayDebug("Combinations [$thread_id]: Copying $from to $to") if $stdToLog;
-        if (osWindows() and -e $from) {
-          system("move \"$from\" \"$to\"");
-          system("move \"$from"."_slave\" \"$to\"") if -e $from.'_slave';
-          open(OUT, ">$to/command");
-          print OUT "@args";
-          close(OUT);
-        } else {
-          system("cp -r $from $to") if -e $from;
-          system("cp -r $from"."_slave $to") if -e $from.'_slave';
-          open(OUT, ">$to/command");
-          print OUT "@args";
-          close(OUT);
-          if (defined $clean) {
-            say("Combinations [$thread_id]: Clean mode active & failed run (".status2text($result)."): Archiving this vardir");
-            system('rm -f '.$archive.'/vardir1_'.$trial_id.'/tmp/master.sock');
-            system('tar zhcf '.$archive.'/vardir1_'.$trial_id.'.tar.gz -C '.$archive.' ./vardir1_'.$trial_id);
-            system("rm -Rf $to");
+      my $from = $workdir.'/current1_'.$thread_id;
+      system("$ENV{RQG_HOME}\\util\\unlock_handles.bat -nobanner \"$from\"") if osWindows() and -e "\"$from\"";
+      if ($result > 0) {
+        open(RES,">>$workdir/result.txt");
+        print RES "Trial $trial_id:\n";
+        close(RES);
+        system("DB_USER= perl $ENV{RQG_HOME}/util/check_for_known_bugs.pl --signatures=$ENV{RQG_HOME}/util/bug_signatures* $from/s*/mysql.err $from/trial.log $workdir/trial${trial_id}.log $from/s*/boot.log 2>&1 | tee -a $workdir/result.txt");
+        unless ($discard_logs) {
+          my $to = $archive.'/vardir1_'.$trial_id;
+          sayDebug("Combinations [$thread_id]: Copying $from to $to") if $stdToLog;
+          if (osWindows() and -e $from) {
+            system("move \"$from\" \"$to\"");
+            system("move \"$from"."_slave\" \"$to\"") if -e $from.'_slave';
+            open(OUT, ">$to/command");
+            print OUT "@args";
+            close(OUT);
+          } else {
+            system("cp -r $from $to") if -e $from;
+            system("cp -r $from"."_slave $to") if -e $from.'_slave';
+            open(OUT, ">$to/command");
+            print OUT "@args";
+            close(OUT);
+            if (defined $clean) {
+              say("Combinations [$thread_id]: Clean mode active & failed run (".status2text($result)."): Archiving this vardir");
+              system('rm -f '.$archive.'/vardir1_'.$trial_id.'/tmp/master.sock');
+              system('tar zhcf '.$archive.'/vardir1_'.$trial_id.'.tar.gz -C '.$archive.' ./vardir1_'.$trial_id);
+              system("rm -Rf $to");
+            }
           }
         }
       }
+      $results{$result >> 8}++;
     }
-    $results{$result >> 8}++;
   }
 }
 
