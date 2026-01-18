@@ -40,6 +40,8 @@ $forbidden = [
   [ 'BinlogDump', 'PurgeBinaryLogs' ],
 # slave fails trying to reconnect after the master is restarted
   [ 'BinlogDump', 'scenario=Replication' ],
+# datadir/binlogs are elsewhere after upgrade
+  [ 'BinlogDump', 'scenario=NormalUpgrades' ],
 # InnoDB does not work with STATEMENT + READ-COMMITTED or READ-UNCOMMITTED
   [ 'binlog[-_]format=STATEMENT', 'transaction[-_]isolation=READ-COMMITTED' ],
   [ 'binlog[-_]format=STATEMENT', 'transaction[-_]isolation=READ-UNCOMMITTED' ],
