@@ -1928,7 +1928,7 @@ sub errorLogReport {
     my $server_is_being_killed= 0;
 
     while (<ERRLOG>) {
-      if (/Starting.*as process.*/s) {
+      if (/Starting.*as process.*|Shutdown complete/s) {
         $server_is_being_killed= 0;
         push @lines, $_;
       };
