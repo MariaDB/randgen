@@ -101,7 +101,7 @@ sub report {
 
   my @binlog_files = glob("$binlog_pattern");
   my $cmd= "$binlog_utility --no-defaults --verbose --verbose @binlog_files > $vardir/binlog_events.txt";
-  say("BinlogDump: Dumping binary log events into the file $vardir/binlog_events.txt");
+  say("BinlogDump: Dumping events from $binlog_pattern binary logs into the file $vardir/binlog_events.txt");
   say($cmd);
   $status = system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
   if ($status != STATUS_OK) {
