@@ -6,7 +6,7 @@
 
 # atomic cor
 MDEV-38573:
-=~ Assertion `!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ select_insert::send_ok_packet
 =~ return_zero_rows
