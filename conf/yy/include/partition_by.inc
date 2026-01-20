@@ -22,7 +22,7 @@
 # tables defined in init instead.
 ##########################################################################
 
-#features Aria tables
+#features Aria tables, REPAIR commands
 
 init_db:
   init_5 ;; init_5 ;;

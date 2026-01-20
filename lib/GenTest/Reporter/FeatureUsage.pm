@@ -65,6 +65,7 @@ my %usage_check= (
   'OQGraph tables' => \&check_for_oqgraph_tables,
   'partitioned tables' => \&check_for_partitions,
   'performance schema' => \&check_for_performance_schema,
+  'REPAIR commands' => \&check_for_repair,
   'RocksDB engine' => \&check_for_rocksdb_plugin,
   'RocksDB tables' => \&check_for_rocksdb_tables,
   'ROW type' => \&void_check,
@@ -325,6 +326,13 @@ sub check_for_nopad_collations {
   my $reporter= shift;
   if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_COLLATION LIKE '%nopad%'")) {
     return "according to I_S.TABLES";
+  }
+  return undef;
+}
+
+sub check_for_repair {
+  if ($_[0]->check_status_var('Com_repair')) {
+    return "according to Com_repair";
   }
   return undef;
 }

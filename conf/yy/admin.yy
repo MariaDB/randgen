@@ -13,7 +13,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
-#features Aria tables, RocksDB tables
+#features Aria tables, RocksDB tables, REPAIR commands
 
 query_init:
   SET DEFAULT ROLE admin ;; SET ROLE admin
