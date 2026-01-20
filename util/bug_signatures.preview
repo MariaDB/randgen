@@ -4,18 +4,24 @@
 # Strong matches
 ##############################################################################
 
+# to_date
+MDEV-38606:
+=~ Assertion \`year < 100'
+=~ oracle_year_2000_handling
+=~ Version: '12\.3|Server version: 12\.3
 # atomic cor
 MDEV-38573:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ select_insert::send_ok_packet
 =~ return_zero_rows
+=~ Version: '12\.3|Server version: 12\.3
 # check FK
 #MDEV-36643:
 #=~ InnoDB: Failing assertion: prebuilt->select_lock_type != LOCK_NONE \|\| srv_read_only_mode \|\| trx->read_view\.is_open()|Assertion \`prebuilt->sql_stat_start \|\| prebuilt->table->no_rollback()'
 #=~ row_search_mvcc
 #=~ check_key_referential_integrity
-#=~ Version: '12\.0|Server version: 12\.0
+#=~ Version: '12\.0|Server version: 12\.3
 # atomic cor
 MDEV-36475:
 =~ signal|AddressSanitizer
@@ -27,11 +33,11 @@ MDEV-36475:
 #=~ Assertion \`to_key_part->length >= key_part->length'|Assertion \`to_key_part->length == key_part->length'|MemorySanitizer
 #=~ handler::check_record_reference
 #=~ check_key_referential_integrity
-#=~ Version: '12\.0|Server version: 12\.0
+#=~ Version: '12\.0|Server version: 12\.3
 ## check FK
 #MDEV-35908:
 #=~ MemorySanitizer
 #=~ dtuple_validate
 #=~ check_key_referential_integrity
-#=~ Version: '12\.0|Server version: 12\.0
+#=~ Version: '12\.0|Server version: 12\.3
 # The assertion changed
