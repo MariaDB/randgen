@@ -31,6 +31,10 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38610:
+=~ signal|AddressSanitizer
+=~ find_select_handler|find_select_handler_inner
+=~ Sql_cmd_create_table_like
 MDEV-38604:
 =~ Assertion \`thd->utime_after_query >= thd->utime_after_lock'
 =~ query_response_time_audit_notify
