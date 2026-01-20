@@ -1,0 +1,224 @@
+# Copyright (c) 2022, 2025 MariaDB
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+# USA
+
+########################################################################
+
+use Data::Dumper;
+use strict;
+
+our (%parameters, %options);
+
+require "$ENV{RQG_HOME}/conf/cc/include/parameter_presets";
+
+# Choose options based on $version value
+# ($version may be defined via config-version, otherwise 999999 will be used)
+local @ARGV = ($version);
+require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
+
+$combinations = [
+
+# Test options
+  $options{test_common_option_combinations}, # seed, reporters
+  $options{test_concurrency_combinations},   # threads and timeouts
+  $options{gendata},
+# Disabled for now, too frequent DBD problems
+#  $options{optional_ps_protocol},
+  [ '--scenario=MariaBackupFull', '--scenario=MariaBackupIncremental', '--scenario=NormalUpgrades', '--scenario=CrashRecovery' ],
+  [ '--engine=Aria --mysqld=--default-storage-engine=Aria' ],
+
+  ##### Engines and scenarios
+  [
+    {
+      aria => [
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
+        $options{optional_variators},
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+        $options{optional_aria_variables},
+      ],
+      binlog => [
+        [ '--reporter=BinlogDump' ],
+        [ '--mysqld=--log-bin' ],
+        $options{optional_charsets_safe},
+        $options{optional_encryption_msan_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars}, $options{debug_grammars},
+        $options{optional_variators},
+        $options{optional_aria_variables},
+        $options{optional_binlog_safe_variables},
+        $options{optional_innodb_compression_msan_safe},
+        $options{optional_innodb_pagesize},
+        $options{optional_innodb_variables},
+        $options{optional_server_variables},
+      ],
+      custom => [
+        [ '--variator=ExecuteAsOracleSP', '' ],
+        [ '--variator=ExecuteAsPackageSP', '' ],
+        $options{custom_options_1},
+        $options{custom_options_1_master},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+      ],
+      custom_recovery => [
+        [ '--variator=ExecuteAsOracleSP', '' ],
+        [ '--variator=ExecuteAsPackageSP', '' ],
+        $options{custom_options_1},
+        $options{custom_options_1_master},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+      ],
+      custom_rpl => [
+        [ '--engine=InnoDB' ],
+        [ '--variator=ExecuteAsOracleSP', '' ],
+        [ '--variator=ExecuteAsPackageSP', '' ],
+        [ '--grammar=conf/yy/dml.yy' ],
+        [ '--filter=conf/ff/replication.ff' ],
+        $options{custom_options_1},
+        $options{custom_options_1_master},
+        $options{custom_options_1_slave},
+        $options{dml_grammars}, $options{ddl_grammars},
+      ],
+      index => [
+        [ '--reporters=SecondaryIndexConsistency' ],
+        [ '--grammar=conf/yy/many_indexes.yy' ],
+        $options{optional_charsets_safe},
+        $options{optional_encryption_msan_safe},
+        $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars}, $options{debug_grammars},
+        $options{optional_variators},
+        $options{optional_aria_variables},
+        $options{optional_binlog_safe_variables},
+        $options{optional_innodb_compression_msan_safe},
+        $options{optional_innodb_pagesize},
+        $options{optional_innodb_variables},
+        $options{optional_perfschema},
+        $options{optional_server_variables},
+      ],
+      json => [
+        [ '--grammar=conf/yy/json.yy --variator=JsonTables' ],
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+      ],
+      locking => [
+        [ '--grammar=conf/yy/backup-locks.yy --grammar=conf/yy/locks.yy' ],
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+      ],
+      minimal => [
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+      ],
+      mixed_flow => [
+        $options{optional_gendata_views},
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars}, $options{debug_grammars},
+        $options{optional_variators},
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+      ],
+      optimizer => [
+        ['
+          --gendata=conf/zz/range_access.zz
+          --grammar=conf/yy/analyze_select_single_table.yy
+          --grammar=conf/yy/collect_eits.yy
+          --grammar=conf/yy/optimizer_access_exp.yy
+          --grammar=conf/yy/optimizer_costs.yy
+          --grammar=conf/yy/optimizer_trace.yy
+          --grammar=conf/yy/optimizer_vars.yy
+          --grammar=conf/yy/range_access2.yy
+          --grammar=conf/yy/range_access.yy
+          --grammar=conf/yy/window_functions.yy
+        '],
+        ['
+          --variator=AnalyzeOrExplain
+          --variator=DisableOptimizations
+          --variator=EnableOptimizations
+          --variator=ExecuteAsCTE
+          --variator=ExecuteAsDerived
+          --variator=ExecuteAsExcept
+          --variator=ExecuteAsExecuteImmediate
+          --variator=ExecuteAsIntersect
+          --variator=ExecuteAsPreparedThrice
+          --variator=ExecuteAsSPTwice
+          --variator=ExecuteAsUnion
+          --variator=ExecuteAsWhereSubquery
+        '],
+        $options{optional_gendata_views},
+        $options{optional_charsets_safe},
+        $options{optional_server_variables},
+      ],
+      partitions => [
+        [ '--grammar=conf/yy/partition_by_hash.yy  --grammar=conf/yy/partition_by_list.yy  --grammar=conf/yy/partition_by_range.yy  --grammar=conf/yy/partition-dml.yy' ],
+        [ '--gendata=conf/zz/partition_by_columns.zz --gendata=advanced --partitions' ],
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+      ],
+      ps_sp => [
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        [ '--variator=ExecuteAsExecuteImmediate --variator=ExecuteAsFunctionTwice --variator=ExecuteAsPreparedThrice --variator=ExecuteAsPSWithParams --variator=ExecuteAsSPTwice --variator=ExecuteAsTrigger' ],
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+      ],
+      readonly => [
+        $options{optional_charsets_safe},
+        $options{read_only_grammars},
+        [ '', '--variator=AnalyzeOrExplain' ],
+        [ '', '--variator=ConvertLiteralsToVariables' ],
+        [ '', '--variator=Count' ],
+        [ '', '--variator=DisableOptimizations' ],
+        [ '', '--variator=Distinct' ],
+        [ '', '--variator=EnableOptimizations' ],
+        [ '', '--variator=ExecuteAsCTE' ],
+        [ '', '--variator=ExecuteAsDerived' ],
+        [ '', '--variator=ExecuteAsExcept' ],
+        [ '', '--variator=ExecuteAsIntersect' ],
+        [ '', '--variator=ExecuteAsSelectItem' ],
+        [ '', '--variator=ExecuteAsUnion' ],
+        [ '', '--variator=ExecuteAsWhereSubquery' ],
+        [ '', '--variator=FullOrderBy' ],
+        [ '', '--variator=Having' ],
+        [ '', '--variator=InlineSubqueries' ],
+        [ '', '--variator=LimitDecrease' ],
+        [ '', '--variator=LimitIncrease' ],
+        [ '', '--variator=LimitRowsExamined' ],
+        [ '', '--variator=NullIf' ],
+        [ '', '--variator=OrderBy' ],
+        [ '', '--variator=RemoveIndexHints' ],
+        [ '', '--variator=SelectOption' ],
+        $options{optional_server_variables},
+      ],
+      simple => [
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        [ '--variator=ExecuteAsPreparedTwice' ],
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+      ],
+      views => [
+        [ '--gendata=advanced', '--gendata=simple --grammar=conf/yy/views.yy' ],
+        [ '--views', '--views=MERGE', '--views=TEMPTABLE' ],
+        $options{optional_charsets_safe},
+        $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
+        [ '--variator=ConvertSubqueriesToViews --variator=ExecuteAsView' ],
+        $options{optional_binlog_safe_variables},
+        $options{optional_server_variables},
+      ],
+    }
+  ],
+];
