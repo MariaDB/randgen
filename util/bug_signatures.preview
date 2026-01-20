@@ -5,6 +5,12 @@
 ##############################################################################
 
 # to_date
+MDEV-38608:
+=~ signal|AddressSanitizer
+=~ my_uca_strnncoll_multilevel_generic
+=~ check_duplicates_in_interval
+=~ Version: '12\.3|Server version: 12\.3
+# to_date
 MDEV-38606:
 =~ Assertion \`year < 100'
 =~ oracle_year_2000_handling
