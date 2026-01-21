@@ -46,6 +46,10 @@ MDEV-38599:
 =~ FeatureUsage detected REPAIR commands
 =~ Test run ends with exit status STATUS_REPLICATION_FAILURE
 =~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]|Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
+MDEV-38589:
+=~ Assertion \`!thd->async_state\.pending_ops() \|\| ((thd && (WSREP_PROVIDER_EXISTS_ && thd->variables\.wsrep_on)) && thd->wsrep_trx()\.state() == wsrep::transaction::s_aborted)'
+=~ do_command
+=~ Version: '1[2-9]\.[3-9][3-9]*|Server version: 1[2-9]\.[3-9][3-9]*
 MDEV-38556:
 =~ MemorySanitizer: use-of-uninitialized-value
 =~ Item_cond_or::not_null_tables
