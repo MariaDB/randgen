@@ -5,6 +5,12 @@
 ##############################################################################
 
 # to_date
+MDEV-38627:
+=~ Use of uninitialised value|MemorySanitizer: use-of-uninitialized-value
+=~ parse_format_string
+=~ Item_func_to_date::get_format
+=~ Version: '12\.3|Server version: 12\.3
+# to_date
 MDEV-38608:
 =~ signal|AddressSanitizer
 =~ my_uca_strnncoll_multilevel_generic
