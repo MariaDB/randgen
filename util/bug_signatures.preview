@@ -5,6 +5,10 @@
 ##############################################################################
 
 # to_date
+MDEV-38635:
+=~ item_timefunc\.h:.*: runtime error: load of value .*, which is not a valid value for type 'PARSE_TYPE_FLAGS'
+=~ Version: '12\.3|Server version: 12\.3
+# to_date
 MDEV-38627:
 =~ Use of uninitialised value|MemorySanitizer: use-of-uninitialized-value
 =~ parse_format_string
