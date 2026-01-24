@@ -32,6 +32,7 @@ port_group=14000
 workdir=""
 archive=""
 discard_logs=""
+signatures="util/bug_signatures"
 
 for arg in "$@" ; do
   val=`echo "$arg" | sed -e "s;--[^=]*=;;"`
@@ -40,6 +41,7 @@ for arg in "$@" ; do
     --workdir=*|--vardir=*) workdir="$val" ;;
     --archive=*)            archive="$val" ;;
     --discard-logs*)        discard_logs=1 ;;
+    --signatures=*)        signatures=$val ;;
     *)                      opts="$opts $arg" ;;
   esac
 done
@@ -82,7 +84,7 @@ else
       echo "###################################" | tee -a $archive/results.txt
       echo "Log: trial${t}.log" | tee -a $archive/results.txt
       if [ "$res" != "0" ] ; then
-        perl util/check_for_known_bugs.pl --signatures=util/bug_signatures* $archive/trial${t}.log 2>&1 | tee -a $archive/results.txt
+        perl util/check_for_known_bugs.pl --signatures=$signatures $archive/trial${t}.log 2>&1 | tee -a $archive/results.txt
       else
         grep -a 'Test run ends with exit status' $archive/trial${t}.log >> $archive/results.txt
       fi
