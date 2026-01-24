@@ -1884,6 +1884,7 @@ sub isRecordIgnored {
     or  $line =~ /(?:mysqld|mariadbd): Table .* is marked as crashed and last \(automatic\?\) repair failed/s
     or  $line =~ /(?:mysqld|mariadbd): Table .* is marked as crashed and should be repaired/s
     or  $line =~ /(?:mysqld|mariadbd): (?:The table .* is full|Таблица .* переполнена|表.*已满)/s
+    or  $line =~ /(?:mysqld|mariadbd): This transaction was rolled back and cannot be committed\. Only supported operation is to roll it back, so all pending changes will be discarded\. Please restart another transaction/
     or  $line =~ /Run recovery again without --q/s
     or  $line =~ /server_audit: Query log limit was changed/s
     or  $line =~ /server_audit: SysLog facility was changed/s
