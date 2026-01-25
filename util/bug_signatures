@@ -2013,6 +2013,10 @@ MDEV-26940:
 =~ get_field_item_for_having
 =~ Item::transform
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-26908:
+=~ Slave IO thread did not receive an expected Rows-log end-of-statement for event starting at log
+=~ FeatureUsage detected temporary tables
+=~ STATUS_REPLICATION_FAILURE
 MDEV-26839:
 =~ ma_key.c:.*: runtime error: null pointer passed as argument 2, which is declared to never be null
 MDEV-26822:
