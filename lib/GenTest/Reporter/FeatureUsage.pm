@@ -75,6 +75,7 @@ my %usage_check= (
   'sequences' => \&check_for_sequences,
   'Spider engine' => \&check_for_spider_plugin,
   'Spider tables' => \&check_for_spider_tables,
+  'temporary tables' => \&check_for_temporary_tables,
   'triggers' => \&check_for_triggers,
   'unique blobs' => \&check_for_unique_blobs,
   'UUID columns' => \&check_for_uuid_columns,
@@ -342,6 +343,13 @@ sub check_for_nopad_collations {
 sub check_for_repair {
   if ($_[0]->check_status_var('Com_repair')) {
     return "according to Com_repair";
+  }
+  return undef;
+}
+
+sub check_for_temporary_tables {
+  if ($_[0]->check_status_var('Com_create_temporary_table')) {
+    return "according to Com_create_temporary_table";
   }
   return undef;
 }
