@@ -14,6 +14,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #compatibility 11.7.0
+#features temporary tables, vector keys
 
 query_init:
      SET DEFAULT ROLE admin ;; SET ROLE admin

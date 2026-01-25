@@ -14,8 +14,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #include <conf/yy/include/basics.inc>
-#features Aria tables, foreign keys, virtual columns
-
+#features Aria tables, foreign keys, virtual columns, temporary tables
 
 query_init:
   { $tbnum=0; '' }

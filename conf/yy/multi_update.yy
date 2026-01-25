@@ -18,7 +18,7 @@
 # USA
 
 
-#features: multi-update/delete
+#features: multi-update/delete, temporary tables
 #require <simple>
 
 query_init:
