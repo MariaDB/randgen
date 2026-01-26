@@ -39,13 +39,12 @@ MDEV-38667:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
 =~ THD::my_ok_with_recreate_info
-=~ Sql_cmd_alter_table::execute
-=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
-MDEV-38656:
-=~ Assertion \`binlog_table_maps == 0 \|\| locked_tables_mode == LTM_LOCK_TABLES'
-=~ THD::reset_for_next_command
-=~ wsrep_mysql_parse
-=~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
+=~ mysql_alter_table
+MDEV-38667:
+=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+=~ Diagnostics_area::set_ok_status
+=~ select_insert::send_ok_packet
+=~ select_create::send_eof
 MDEV-38655:
 =~ AddressSanitizer|Invalid read of size
 =~ Atomic_counter<int>::operator
@@ -3682,13 +3681,13 @@ MDEV-17782:
 =~ my_decimal_get_binary_size
 =~ calc_group_buffer
 MDEV-17754:
-=~ AddressSanitizer|signal [16]
+=~ AddressSanitizer|signal 11
 =~ _ma_block_start_trans
 =~ thr_multi_lock
 =~ mysql_lock_tables
 =~ open_and_lock_tables
 MDEV-17754:
-=~ signal [16]|AddressSanitizer
+=~ signal 11|AddressSanitizer
 =~ l_find
 =~ initialize_bucket
 =~ lf_hash_search
