@@ -55,7 +55,7 @@ MDEV-38655:
 =~ thd_async_state::pending_ops
 =~ federatedx_txn::close
 MDEV-38654:
-=~ Assertion \`str\[strlen(str)-1\] != '\\n''
+=~ Assertion \`str\[strlen(str)-1\] != '\\\n''
 =~ TABLE_SHARE::init_from_sql_statement_string
 =~ ha_federatedx::discover_assisted
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
