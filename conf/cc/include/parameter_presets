@@ -979,7 +979,7 @@ $optional_binlog_unsafe_variables{1006}= [ @{$optional_binlog_unsafe_variables{$
 ];
 
 
-$parameters{optional_binlog_safe_variables}= \%optional_binlog_variables;
+$parameters{optional_binlog_safe_variables}= \%optional_binlog_safe_variables;
 $parameters{optional_binlog_unsafe_variables}= \%optional_binlog_unsafe_variables;
 
 #++++++++++++++++++++++++
