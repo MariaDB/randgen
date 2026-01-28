@@ -3973,54 +3973,65 @@ MENT-809: [Error 127, 175 in mariabackup]
 =~ mariabackup: Aria engine: starting recovery
 =~ Got error 127 when executing|Got error 175 when executing
 =~ Version: '10\.[6-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 10\.[6-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '10\.1[01]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 10\.1[01]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[1-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
-TODO-842: [Common causes: marked_for_read]
-=~ marked_for_read
-=~ Item::save_in_field|Item_field::val_.*|Field::store_field
-=~ TABLE::update_virtual_fields|Item::print_parenthesised|find_all_keys|TABLE::verify_constraints
-TODO-842: [Common causes: Diagnostics_area::set_ok_status]
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ Diagnostics_area::set_ok_status
-TODO-842: [Common causes: ha_spider::~ha_spider]
-=~ signal|AddressSanitizer
-=~ spider_free_mem
-=~ ha_spider::~ha_spider
-TODO-842: [Common causes: Protocol::end_statement]
-=~ Assertion \`0'
-=~ Protocol::end_statement
-TODO-842: [Test problems: Metadata dump]
-=~ Not enough time to do the metadata dump
-=~ STATUS_ENVIRONMENT_FAILURE
-TODO-842: [Test problems: Galera does not load]
-=~ WSREP: Failed to create a new provider
-=~ STATUS_ENVIRONMENT_FAILURE
-TODO-842: [Test problems: Cluster does not initialize]
-=~ WSREP has not yet prepared node for application use
-=~ STATUS_ENVIRONMENT_FAILURE
-TODO-842: [Galera]
-=~ STATUS_ERRORS_IN_LOG|STATUS_SERVER_DEADLOCKED
-=~ scenario=Galera
-TODO-842: [Galera]
-=~ WSREP: Server paused at:
-=~ STATUS_SERVER_UNAVAILABLE
-TODO-842: [Third Party]
-=~ MemorySanitizer: use-of-uninitialized-value
-=~ in FascistLookUser
-TODO-0: [LeakSanitizer has encountered a fatal error]
-=~ LeakSanitizer has encountered a fatal error
-TODO-1: [enforce no trailing]
-=~ AddressSanitizer|signal
-=~ Warning_info::push_warning
-=~ THD::raise_condition
-=~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
-TODO-2: [Third party OPENSSL_init_crypto]
-=~ MemorySanitizer
-=~ OPENSSL_init_crypto
-=~ ha_s3_init
+# TODO-842: [Common causes: marked_for_read]
+# =~ marked_for_read
+# =~ Item::save_in_field|Item_field::val_.*|Field::store_field
+# =~ TABLE::update_virtual_fields|Item::print_parenthesised|find_all_keys|TABLE::verify_constraints
+# TODO-842: [Common causes: Diagnostics_area::set_ok_status]
+# =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+# =~ Diagnostics_area::set_ok_status
+# TODO-842: [Common causes: ha_spider::~ha_spider]
+# =~ signal|AddressSanitizer
+# =~ spider_free_mem
+# =~ ha_spider::~ha_spider
+# TODO-842: [Common causes: Protocol::end_statement]
+# =~ Assertion \`0'
+# =~ Protocol::end_statement
+# TODO-842: [Test problems: Metadata dump]
+# =~ Not enough time to do the metadata dump
+# =~ STATUS_ENVIRONMENT_FAILURE
+# TODO-842: [Test problems: Galera does not load]
+# =~ WSREP: Failed to create a new provider
+# =~ STATUS_ENVIRONMENT_FAILURE
+# TODO-842: [Test problems: Cluster does not initialize]
+# =~ WSREP has not yet prepared node for application use
+# =~ STATUS_ENVIRONMENT_FAILURE
+# TODO-1: [enforce no trailing]
+# =~ AddressSanitizer|signal
+# =~ Warning_info::push_warning
+# =~ THD::raise_condition
+# =~ Version: '11\.[7-9]|Server version: 11\.[7-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 
 ##############################################################################
 # Weak matches
 ##############################################################################
 
+TODO-9: [Spider deadlock]
+=~ Spider table background statistics/cardinality action handler
+=~ Test run ends with exit status STATUS_SERVER_DEADLOCKED
+TODO-8: [LeakSanitizer: CRYPTO_malloc]
+=~ LeakSanitizer: detected memory leaks
+=~ in CRYPTO_malloc
+=~ Test run ends with exit status STATUS_MEMORY_LEAK
+TODO-7: [LeakSanitizer has encountered a fatal error]
+=~ LeakSanitizer has encountered a fatal error
+TODO-6: [Third Party: FascistLookUser]
+=~ MemorySanitizer: use-of-uninitialized-value
+=~ in FascistLookUser
+TODO-5: [WSREP server paused]
+=~ WSREP: Server paused at:
+=~ STATUS_SERVER_UNAVAILABLE
+TODO-4: [Galera errors in log]
+=~ STATUS_ERRORS_IN_LOG
+=~ scenario=Galera
+TODO-3: [Galera deadlock]
+=~ STATUS_SERVER_DEADLOCKED
+=~ scenario=Galera
+TODO-2: [MemorySanitizer: OPENSSL_init_crypto]
+=~ MemorySanitizer
+=~ OPENSSL_init_crypto
+=~ ha_s3_init
+####
 MDEV-31907: [Memory leak with variable of row type]
 =~ Warning: Memory not freed:
 =~ FeatureUsage detected ROW type
