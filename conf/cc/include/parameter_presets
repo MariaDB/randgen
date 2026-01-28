@@ -1,4 +1,4 @@
-# Copyright (c) 2022, 2025, MariaDB
+# Copyright (c) 2022, 2026, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -952,6 +952,12 @@ $optional_binlog_safe_variables{1008}= [ @{$optional_binlog_safe_variables{1005}
 $optional_binlog_safe_variables{1200}= [ @{$optional_binlog_safe_variables{1008}},
   # Default STATEMENT
   [ @empty_set_5, '--mysqld=--create-tmp-table-binlog-formats=MIXED,STATEMENT' ],
+];
+
+$optional_binlog_safe_variables{1203}= [ @{$optional_binlog_safe_variables{1200}},
+  [ '', '', '--mysqld=--loose-binlog-storage-engine=InnoDB' ],
+  [ @empty_set_10, '--mysqld=--loose-binlog-directory=binlogs' ],
+  [ @empty_set_30, '--mysqld=--loose-innodb-binlog-state-interval=1048576', '--mysqld=--loose-innodb-binlog-state-interval=65536' ],
 ];
 
 $optional_binlog_unsafe_variables{$minversion}= [
