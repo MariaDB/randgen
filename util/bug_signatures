@@ -35,6 +35,12 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38709:
+=~ AddressSanitizer|signal
+=~ my_convert_using_func
+=~ String::copy
+=~ Protocol::send_result_set_row
+=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-38687:
 =~ MemorySanitizer: use-of-uninitialized-value
 =~ ftb_parse_query_internal
@@ -158,6 +164,12 @@ MDEV-37959:
 =~ Assertion \`!thd->transaction->xid_state\.is_explicit_XA() \|\| thd->lex->xa_opt == XA_ONE_PHASE'
 =~ ha_commit_trans
 =~ FeatureUsage detected XA transactions
+MDEV-37927:
+=~ AddressSanitizer|signal
+=~ my_printf_error
+=~ Field::check_assignability_from
+=~ sp_head::execute
+=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-37906:
 =~ signal|AddressSanitizer
 =~ Item_func_nextval::update_table
@@ -3350,7 +3362,7 @@ MDEV-20518:
 MDEV-20501:
 =~ Assertion \`maybe_null \|\| !null_value'|Assertion \`maybe_null() \|\| !null_value'
 =~ Item_func_round::date_op
-=~ Type_handler_.*_result
+=~ Item_func_hybrid_field_type
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-20493:
 =~ signal [16]
@@ -4006,6 +4018,10 @@ MENT-809: [Error 127, 175 in mariabackup]
 # Weak matches
 ##############################################################################
 
+TODO-10: [PCRE assert]
+=~ Assertion \`_pcre2_valid_utf_8(prev, ptr - prev, &dummyoffset) == 0'
+=~ pcre2_compile_8
+=~ Regexp_processor_pcre::compile
 TODO-9: [Spider deadlock]
 =~ Spider table background statistics/cardinality action handler
 =~ Test run ends with exit status STATUS_SERVER_DEADLOCKED
