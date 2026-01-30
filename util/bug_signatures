@@ -2685,8 +2685,8 @@ MDEV-23444:
 =~ Item_.*::create_tmp_field|calc_group_buffer
 MDEV-23444:
 =~ AddressSanitizer:
-=~ bin2decimal
-=~ Field_new_decimal::val_decimal
+=~ bin2decimal|decimal2bin
+=~ Field_new_decimal::
 MDEV-23443:
 =~ AddressSanitizer|MemorySanitizer|signal [16]
 =~ _ma_unique_comp
