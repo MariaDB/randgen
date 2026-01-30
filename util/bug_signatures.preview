@@ -5,13 +5,6 @@
 ##############################################################################
 
 # to_date
-MDEV-38675:
-=~ Conditional jump or move depends on uninitialised value|MemorySanitizer: use-of-uninitialized-value
-=~ my_strcoll_
-=~ extract_oracle_date_time
-=~ Item_func_to_date::get_date_common
-=~ Version: '12\.3|Server version: 12\.3
-# to_date
 MDEV-38635:
 =~ item_timefunc\.h:.*: runtime error: load of value .*, which is not a valid value for type 'PARSE_TYPE_FLAGS'
 =~ Version: '12\.3|Server version: 12\.3
