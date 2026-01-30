@@ -35,6 +35,16 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38714:
+=~ AddressSanitizer|signal
+=~ Item_field::used_tables
+=~ Used_tables_and_const_cache::used_tables_and_const_cache_join
+=~ Sql_cmd_dml::execute
+MDEV-38714:
+=~ AddressSanitizer|signal
+=~ add_key_equal_fields
+=~ update_ref_and_keys
+=~ Sql_cmd_dml::execute
 MDEV-38709:
 =~ AddressSanitizer|signal
 =~ my_convert_using_func
@@ -2566,8 +2576,8 @@ MDEV-23837:
 =~ AddressSanitizer|valgrind
 =~ malloc
 =~ JOIN_CACHE::alloc_buffer
-=~ JOIN_CACHE_HASHED::init|JOIN_CACHE_BNL::init
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ JOIN_CACHE_HASHED::init|JOIN_CACHE_BNL::init|JOIN_CACHE::init
+=~ Version: '10\.6|Server version: 10\.6|Version: '10\.11|Server version: 10\.11
 MDEV-23828:
 =~ Assertion \`0'
 =~ subselect_hash_sj_engine::init
