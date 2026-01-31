@@ -712,6 +712,12 @@ MDEV-34021:
 =~ Assertion \`!for_explain_only'
 =~ JOIN_CACHE::put_record
 =~ Item_subselect
+# Only fixed in 10.11+
+MDEV-33985:
+=~ signal|AddressSanitizer
+=~ Item_func_nextval::val_int
+=~ Field::set_default
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-33641:
 =~ Got an error from thread_id=
 =~ MariaDB thread id .*, OS thread handle
@@ -1231,7 +1237,7 @@ MDEV-31498:
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-31497:
 =~ Assertion \`! thd->in_sub_stmt'|Assertion \`!(thd->in_sub_stmt)'
-=~ trans_commit_stmt
+=~ trans_commit_stmt|mysql_execute_command
 =~ sequence_insert|FeatureUsage detected sequences
 =~ sp_head::execute
 MDEV-31451:
