@@ -1844,7 +1844,7 @@ sub checkErrorLogForErrors {
 sub isRecordIgnored {
   my ($self,$line)= @_;
   my $res= (
-        $line =~ /\[Note\]|\[Warning\]/s
+        (($line =~ /\[Note\]|\[Warning\]/) && ($line !~ /The slave is applying a ROW event on behalf of an/))
     or  $line =~ /^\s*$/s
     or  $line =~ /Can't open and lock privilege tables/s
     or  $line =~ /Couldn't fix table with quick recovery: Found wrong number of deleted records/s
