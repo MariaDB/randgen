@@ -35,6 +35,10 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38724:
+=~ MemorySanitizer: use-of-uninitialized-value
+=~ ha_partition::handle_ordered_prev
+=~ mysql_ha_read
 MDEV-38716:
 =~ AddressSanitizer|signal
 =~ TABLE::evaluate_update_default_function
@@ -644,7 +648,8 @@ MDEV-35134:
 MDEV-35133:
 =~ AddressSanitizer|signal
 =~ spider_db_open_handler|spider_send_query
-=~ ha_spider::index_
+=~ ha_spider::index_|ha_spider::rnd_
+=~ FeatureUsage detected handler commands|Query.*:.*HANDLER
 MDEV-35132:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ and_items
@@ -892,9 +897,6 @@ MDEV-32747:
 =~ partition_info::print_no_partition_found
 =~ ha_partition::print_error
 =~ write_record
-MDEV-32705:
-=~ Assertion \`outer_context \|\| !\*from_field \|\| \*from_field == not_found_field'
-=~ Item_field::fix_outer_field
 MDEV-32685:
 =~ Decoding ttl from PK value failed, for index
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG
