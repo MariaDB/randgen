@@ -564,7 +564,7 @@ sub testSetup {
     $self->connection->execute("FLUSH PRIVILEGES");
     $self->connection->execute("CREATE DATABASE IF NOT EXISTS transforms");
     $self->connection->execute("CREATE DATABASE IF NOT EXISTS test");
-    $self->connection->execute("CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=InnoDB");
+    $self->connection->execute("CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria");
     if ($self->user ne 'root') {
       my $user= $self->user.'@localhost';
       $self->connection->execute("CREATE ROLE IF NOT EXISTS admin");
