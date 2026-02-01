@@ -57,6 +57,7 @@ my %usage_check= (
   'Federated tables' => \&check_for_federated_tables,
   'foreign keys' => \&check_for_foreign_keys,
   'GIS columns' => \&check_for_gis,
+  'handler commands' => \&check_for_handler,
   'INET columns' => \&check_for_inet_columns,
   'multi-update/delete' => \&check_for_multi_upd_del,
   'Mroonga engine' => \&check_for_mroonga_plugin,
@@ -357,6 +358,13 @@ sub check_for_temporary_tables {
 sub check_for_xa {
   if ($_[0]->check_status_var('Com_xa_start')) {
     return "according to Com_xa_start";
+  }
+  return undef;
+}
+
+sub check_for_handler {
+  if ($_[0]->check_status_var('Com_ha_open')) {
+    return "according to Com_ha_open";
   }
   return undef;
 }
