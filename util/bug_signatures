@@ -62,8 +62,8 @@ MDEV-38709:
 =~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-38687:
 =~ MemorySanitizer: use-of-uninitialized-value
-=~ ftb_parse_query_internal
-=~ Item_func_match::init_search
+=~ ft_init_boolean_search
+=~ ha_maria::ft_init_ext|ha_myisam::ft_init_ext
 MDEV-38685:
 =~ Assertion \`length <= copy->to_length - .*'
 =~ do_varstring2_no_truncation|do_varstring1_no_truncation
@@ -4053,6 +4053,9 @@ MENT-809: [Error 127, 175 in mariabackup]
 # Weak matches
 ##############################################################################
 
+TODO-11: [RBR timeout]
+=~ The slave is applying a ROW event on behalf of an .* and is currently taking a considerable amount of time
+=~ Test run ends with exit status STATUS_REPLICATION_TIMEOUT
 TODO-10: [PCRE assert]
 =~ Assertion \`_pcre2_valid_utf_8(prev, ptr - prev, &dummyoffset) == 0'
 =~ pcre2_compile_8
