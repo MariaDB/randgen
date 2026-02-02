@@ -251,6 +251,10 @@ sub new {
     return $self;
 }
 
+sub under_rr {
+  return $_[0]->[MYSQLD_RR];
+}
+
 sub prng {
   return $_[0]->[MYSQLD_RAND];
 }

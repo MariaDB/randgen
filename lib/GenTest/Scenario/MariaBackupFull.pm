@@ -155,7 +155,7 @@ sub run {
 
       $backup_num++;
       $self->printStep("Creating full backup #$backup_num");
-      my $mbackup_command= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup_${backup_num} $mbackup" : $mbackup);
+      my $mbackup_command= ($server->under_rr() ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup_${backup_num} $mbackup" : $mbackup);
       $status= $self->run_mbackup_in_background("$mbackup_command --binlog-info=$binlog_info --backup --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
 
       if ($status == STATUS_OK) {
@@ -176,7 +176,7 @@ sub run {
         system("cp -r ${mbackup_target}_${backup_num} ${mbackup_target}_${backup_num}_before_prepare");
       }
 
-      $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_$backup_num $mbackup" : $mbackup)
+      $cmd= ($server->under_rr() ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_$backup_num $mbackup" : $mbackup)
         . " --use-memory=$buffer_pool_size --prepare --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --user=".$server->user." 2>$vardir/mbackup_prepare_${backup_num}.log";
       say($cmd);
       system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
