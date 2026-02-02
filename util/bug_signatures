@@ -35,6 +35,11 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38732:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ Query .*:.*@
+=~ FeatureUsage detected Spider tables
 MDEV-38727:
 =~ mariabackup: Error 176 reading index file
 =~ Aria data files backup process is finished with error
