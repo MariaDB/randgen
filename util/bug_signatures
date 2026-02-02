@@ -565,6 +565,15 @@ MDEV-35696:
 =~ Assertion \`old_flags == ((my_flags & 0x10000U) ? 1 : 0)'
 =~ my_realloc
 =~ maria_repair
+MDEV-35676:
+=~ Assertion \`outer_context \|\| !\*from_field \|\| \*from_field == not_found_field'
+=~ Item_field::fix_outer_field
+=~ sp_head::execute|Prepared_statement::execute
+MDEV-35676:
+=~ Assertion \`(\*select_ref)->fixed()'
+=~ resolve_ref_in_select_and_group
+=~ sp_head::execute|Prepared_statement::execute
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-35661:
 =~ Assertion \`!cache_list \|\| cache_list->empty()'
 =~ online_alter_close_connection
