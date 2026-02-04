@@ -3990,6 +3990,11 @@ MDEV-15255:
 =~ Assertion \`m_lock_type == 2'
 =~ handler::ha_close
 =~ FeatureUsage detected sequences
+MDEV-15255:
+=~ LeakSanitizer: detected memory leaks
+=~ get_lock_data
+=~ mysql_alter_table
+=~ FeatureUsage detected sequences
 # Fixed in 10.11+
 MDEV-15164:
 =~ Assertion \`ikey_\.type == kTypeValue'
