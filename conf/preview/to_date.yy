@@ -305,6 +305,7 @@ func_str_func:
    SUBSTRING_INDEX( func_arg, func_arg, func_arg ) |
    TRIM( func_arg ) | TRIM( func_trim_mode FROM func_arg ) | TRIM( func_trim_mode func_arg FROM func_arg ) | TRIM( func_arg FROM func_arg ) |
    TO_CHAR( func_arg func_optional_to_char_fmt ) /* compatibility 10.6.1 */ |
+   ==FACTOR:50== TO_CHAR( func_arg, to_date_format_str ) |
    UCASE( func_arg ) |
    UNHEX( func_arg ) |
    UPPER( func_arg ) |
@@ -426,16 +427,25 @@ to_date_args:
 ;
 
 to_date_date_str:
+  ==FACTOR:0.01== NULL |
+  ==FACTOR:0.01== "" |
+  ==FACTOR:0.05== _field |
   to_date_string_expr to_date_optional_default ;
 
 to_date_string_expr:
-  to_date_string_element |
-  CONCAT(to_date_string_element_list)
+  to_date_string_part |
+  CONCAT(to_date_string_parts)
 ;
 
-to_date_string_element_list:
-  to_date_string_element, to_date_string_separator, to_date_string_element |
-  to_date_string_element, to_date_string_separator, to_date_string_element_list
+to_date_string_part:
+  to_date_string_element |
+  to_date_string_separator |
+  ==FACTOR:0.005== func_arg
+;
+
+to_date_string_parts:
+  to_date_string_part, to_date_string_part |
+  ==FACTOR:2== to_date_string_part, to_date_string_parts
 ;
 
 to_date_string_element:
@@ -553,20 +563,38 @@ month_name_abbr:
   # Error
   'Umo' ;
 
-
+# chr(35) is #, it breaks the parsing
 to_date_string_separator:
-
-  ' ' | '\t' | '!' | { "'".chr(35)."'" } | '%' | '(' | ')' | '*' | '+' | ',' | '-' | '.' | '/' | ':' | ';' | '<' | '=' | '>' | "'"
+  ' ' | '\t' | '!' | { "'".chr(35)."'" } | '%' | '(' | ')' | '*' | '+' | ',' | '-' | '.' | '/' | ':' | ';' | '<' | '=' | '>' | "'" |  '"' |
+  '\" \"' | '\"\t\"' | '\"!\"' | { "\"".chr(35)."\"" } | '\"%\"' | '\"(\"' | '\")\"' | '\"*\"' | '\"+\"' | '\",\"' | '\"-\"' | '\".\"' | '\"/\"' | '\":\"' | '\";\"' | '\"<\"' | '\"=\"' | '\">\"' | "\"'\"" |
+  # Generally not allowed
+   ==FACTOR:0.01== "'".chr(prng->uint16(128,255))."'" }
 ;
+
 
 to_date_format_str:
-  to_date_format_element |
-  CONCAT(to_date_format_element_list)
+  ==FACTOR:0.01== NULL |
+  ==FACTOR:0.01== "" |
+  to_date_format_expr
 ;
 
-to_date_format_element_list:
-  to_date_format_element, to_date_string_separator, to_date_format_element |
-  to_date_format_element, to_date_string_separator, to_date_format_element_list
+to_date_format_expr:
+  to_date_format_part |
+  CONCAT(to_date_format_parts) |
+  # Very long line
+  ==FACTOR:0.01== CONCAT(to_date_format_parts,to_date_format_parts,to_date_format_parts,to_date_format_parts,to_date_format_parts)
+;
+
+to_date_format_part:
+  to_date_format_element |
+  to_date_string_separator |
+  ==FACTOR:0.05== _field |
+  ==FACTOR:0.005== func_arg
+;
+
+to_date_format_parts:
+  to_date_format_part, to_date_format_part |
+  ==FACTOR:2== to_date_format_part, to_date_format_parts
 ;
 
 to_date_format_element:
@@ -578,6 +606,7 @@ to_date_format_element:
   'DD' |
   'DDD' |
   'DY' |
+  'FF' |
   { "'".'FF'.$prng->uint16(0,7)."'" } |
   'HH' |
   'HH12' |
@@ -595,17 +624,27 @@ to_date_format_element:
   'Y' |
   'YY' |
   'YYY' |
-  'YYYY'
+  'YYYY' |
+  # Not supported for TO_DATE but for TO_CHAR ?
+  ==FACTOR:0.1== 'BC' |
+  ==FACTOR:0.1== 'B.C.' |
+  ==FACTOR:0.1== 'IW' |
+  ==FACTOR:0.1== 'I' |
+  ==FACTOR:0.1== 'IY' |
+  ==FACTOR:0.1== 'IYY' |
+  ==FACTOR:0.1== 'IYYY'
 ;
 
 # MDEV-38585
 to_date_nls_format_str:
-  nls_format_element # |
-#  CONCAT(nls_format_element,' ',nls_format_element)
+  nls_format_element |
+  ==FACTOR:0.005== func_arg |
+  ==FACTOR:0.005== CONCAT(nls_format_element,' ',nls_format_element)
 ;
 
 nls_format_element:
   'NLS_CALENDAR=GREGORIAN' |
+  ==FACTOR:0.005== 'NLS_CALENDAR=SOMEOTHER' |
   'NLS_DATE_LANGUAGE=ENGLISH' |
   'NLS_DATE_LANGUAGE=ALBANIAN' |
   'NLS_DATE_LANGUAGE=AMERICAN' |
@@ -656,7 +695,11 @@ nls_format_element:
   'NLS_DATE_LANGUAGE=THAI' |
   'NLS_DATE_LANGUAGE=''TRADITIONAL CHINESE''' |
   'NLS_DATE_LANGUAGE=TURKISH' |
-  'NLS_DATE_LANGUAGE=UKRAINIAN'
+  'NLS_DATE_LANGUAGE=UKRAINIAN' |
+  ==FACTOR:0.005== 'NLS_DATE_LANGUAGE=SOMEOTHER' |
+  'NLS_DATE_LANGUAGE=en_US' |
+  'NLS_DATE_LANGUAGE=ru_RU' |
+  ' NLS_DATE_LANGUAGE  = ENGLISH  '
 ;
 
 func_week_mode:

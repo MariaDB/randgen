@@ -39,6 +39,7 @@ $combinations = [
 
 # New
   [ '--grammar=conf/preview/to_date.yy:2' ],
+  [ '--filter=conf/preview/to_date.ff' ],
 
   ##### Engines and scenarios
   [
