@@ -45,7 +45,7 @@ MDEV-38734:
 =~ Assertion \`marked_for_read()'
 =~ Field_blob::hash_not_null
 =~ Rows_log_event::find_row
-=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-38733:
 =~ Assertion \`0'
 =~ Protocol::end_statement
@@ -1480,7 +1480,7 @@ MDEV-30992:
 =~ mysql_alter_table|ddl_log_execute_action
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 MDEV-30957:
-=~ AddressSanitizer: use-after-poison
+=~ AddressSanitizer: use-after-poison|stack-use-after-return
 =~ Item_change_list::rollback_item_tree_changes
 =~ Prepared_statement::cleanup_stmt|sp_lex_keeper::reset_lex_and_exec_core
 MDEV-30943:
@@ -1515,6 +1515,10 @@ MDEV-30801:
 =~ trx_start_if_not_started_low
 =~ Query_cache::send_result_to_client
 =~ FeatureUsage detected XA transactions
+MDEV-30756:
+=~ AddressSanitizer|signal
+=~ get_sort_by_table
+=~ make_join_statistics
 MDEV-30434:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ Item_trigger_field::setup_field
@@ -2961,6 +2965,11 @@ MDEV-23041:
 =~ signal [16]|AddressSanitizer|MemorySanitizer
 =~ Item_func_set_user_var::update_hash
 =~ TABLE::update_default_fields|end_write_group|TABLE::update_virtual_fields|end_send_group|Field::set_default|sql_set_variables|Item::save_int_in_field|Item_func_set_user_var::save_in_field
+MDEV-23041:
+=~ signal|AddressSanitizer
+=~ user_var_entry::val_int
+=~ Item_func_get_user_var:|Item_func_set_user_var:
+=~ TABLE::update_virtual_fields
 MDEV-23041:
 =~ free_memory: Assertion \`irem->marker == .*'
 =~ Item_func_set_user_var::update_hash
