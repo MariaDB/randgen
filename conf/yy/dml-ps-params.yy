@@ -34,7 +34,7 @@ ps_query:
     ==FACTOR:20== execute_statement |
     trx |
     ==FACTOR:0.1== deallocate_statement |
-    ==FACTOR:5== serverside_ps
+    ==FACTOR:5== /* _table _field */ serverside_ps
 ;
 
 execute_statement:
