@@ -90,6 +90,10 @@ MDEV-38709:
 =~ String::copy
 =~ Protocol::send_result_set_row
 =~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-38699:
+=~ MemorySanitizer: use-of-uninitialized-value
+=~ Item_field::is_null
+=~ Item::remove_eq_conds
 MDEV-38687:
 =~ MemorySanitizer: use-of-uninitialized-value
 =~ ft_init_boolean_search
@@ -1021,7 +1025,7 @@ MDEV-32437:
 =~ MemorySanitizer|Conditional jump or move depends on uninitialised value
 =~ do_sub
 =~ Dec_ptr::cmp
-=~ Arg_comparator::compare
+=~ Arg_comparator::compare|Cached_item_decimal::cmp
 MDEV-32436:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer: use-of-uninitialized-value
 =~ mach_write_to_
