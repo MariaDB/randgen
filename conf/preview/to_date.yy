@@ -422,9 +422,30 @@ func_date_func:
 ;
 
 to_date_args:
-  to_date_date_str, to_date_format_str |
-  to_date_date_str, to_date_format_str, to_date_nls_format_str
+  to_date_arg2 |
+  to_date_arg2, to_date_nls_format_str
 ;
+
+to_date_arg2:
+  to_date_valid_arg2 |
+  to_date_date_str, to_date_format_str
+;
+
+# TODO: extend significantly. Note: not all of them are really valid,
+# it's an attempt to match the string and the format
+to_date_valid_arg2:
+  _date, 'YYYY-MM-DD' |
+  ==FACTOR:0.1== CONCAT(_date,to_date_string_separators[invariant],'BC'), CONCAT('YYYY-MM-DD',to_date_string_separators[invariant],'BC') |
+  _datetime, 'YYYY-MM-DD HH24:MI:SS' |
+  _datetime, 'YYYY-MM-DD HH24:MI:SS.FF6' |
+  { "'".$prng->uint16(1,12).':'.$prng->uint16(0,59).':'.$prng->uint16(0,59).' '.$prng->arrayElement(['AM','A.M.','PM','P.M'])."'" }, CONCAT('HH:MI:SS ', to_date_am_pm) |
+  CONCAT(_datetime,to_date_string_separators,to_date_am_pm), CONCAT('YYYY-MM-DD HH:MI:SS.FF',to_date_string_separators,to_date_am_pm) |
+  CONCAT(_date,to_date_string_separators,_time), CONCAT('YYYY-MM-DD',to_date_string_separators,'HH24:MI:SS.FF6') |
+  CONCAT(_date,to_date_string_separators[invariant],_time), CONCAT('YYYY-MM-DD',to_date_string_separators[invariant],'HH24:MI:SS.FF6')
+;
+
+to_date_am_pm:
+  'AM' | 'A.M.' | 'PM' | 'P.M' ;
 
 to_date_date_str:
   ==FACTOR:0.01== NULL |
@@ -438,8 +459,8 @@ to_date_string_expr:
 ;
 
 to_date_string_part:
-  to_date_string_element |
-  to_date_string_separator |
+  ==FACTOR:3== to_date_string_element |
+  to_date_string_separators |
   ==FACTOR:0.005== func_arg
 ;
 
@@ -563,18 +584,23 @@ month_name_abbr:
   # Error
   'Umo' ;
 
-# chr(35) is #, it breaks the parsing
-to_date_string_separator:
-  ' ' | '\t' | '!' | { "'".chr(35)."'" } | '%' | '(' | ')' | '*' | '+' | ',' | '-' | '.' | '/' | ':' | ';' | '<' | '=' | '>' | "'" |  '"' |
-  '\" \"' | '\"\t\"' | '\"!\"' | { "\"".chr(35)."\"" } | '\"%\"' | '\"(\"' | '\")\"' | '\"*\"' | '\"+\"' | '\",\"' | '\"-\"' | '\".\"' | '\"/\"' | '\":\"' | '\";\"' | '\"<\"' | '\"=\"' | '\">\"' | "\"'\"" |
-  # Generally not allowed
-   ==FACTOR:0.01== "'".chr(prng->uint16(128,255))."'" }
-;
+to_date_string_separator_list:
+  to_date_string_separator, to_date_string_separator |
+  to_date_string_separator, to_date_string_separator_list;
+
+# chr(35) is #, it breaks grammar parsing
+# ; breaks query parsing, maybe try CHAR(59)
+to_date_string_separators:
+  { @valid_separators = (' ', '!', '\t', chr(35), '%', '(', ')', '*', '+', ',', '-', '.', '/', ':', '<', '=', '>', '\\\'',  '"')
+    ; $invalid_separator = chr(195)
+    ; $length = ($prng->uint16(0,9) ? $prng->uint16(1,2) : ($prng->uint16(0,9) ? $prng->uint16(3,10) : ($prng->uint16(0,9) ? $prng->uint16(11,20) : 200)) ) ; $separators = ''; $sep=''
+    ; map { $sep=$prng->arrayElement(\@valid_separators) ; $separators .= ($prng->uint16(0,9) ? $sep : ($prng->uint16(0,9) ?  $sep.$sep : $invalid_separator)) } (1..$length)
+    ; "'".$separators."'"  };
 
 
 to_date_format_str:
   ==FACTOR:0.01== NULL |
-  ==FACTOR:0.01== "" |
+  ==FACTOR:0.01== "''" |
   to_date_format_expr
 ;
 
@@ -586,8 +612,8 @@ to_date_format_expr:
 ;
 
 to_date_format_part:
-  to_date_format_element |
-  to_date_string_separator |
+  ==FACTOR:3== to_date_format_element |
+  to_date_string_separators |
   ==FACTOR:0.05== _field |
   ==FACTOR:0.005== func_arg
 ;
@@ -625,14 +651,33 @@ to_date_format_element:
   'YY' |
   'YYY' |
   'YYYY' |
-  # Not supported for TO_DATE but for TO_CHAR ?
-  ==FACTOR:0.1== 'BC' |
-  ==FACTOR:0.1== 'B.C.' |
-  ==FACTOR:0.1== 'IW' |
-  ==FACTOR:0.1== 'I' |
-  ==FACTOR:0.1== 'IY' |
-  ==FACTOR:0.1== 'IYY' |
-  ==FACTOR:0.1== 'IYYY'
+  ==FACTOR:0.01== to_date_format_element_not_supported
+;
+
+# Some not supported for TO_DATE but for TO_CHAR ?
+to_date_format_element_not_supported:
+  'BC' |
+  'B.C.' |
+  'IW' |
+  'I' |
+  'IY' |
+  'IYY' |
+  'IYYY' |
+  'D' |
+  'DL' |
+  'DS' |
+  'E' |
+  'EE' |
+  ==FACTOR:100= 'FM' |
+  'FX' |
+  'RM' |
+  'SSSSS' |
+  'TS' |
+  'TZD' |
+  'TZH' |
+  'TZR' |
+  'X' |
+  'SY'
 ;
 
 # MDEV-38585

@@ -17,5 +17,5 @@
 ########################################################################
 
 $rules = {
-  'diagnostics_area' => sub { $_ =~ m{innodb_index_stats} },
+  'diagnostics_area' => sub { $_ =~ m{innodb_index_stats|innodb_table_stats} },
 }
