@@ -35,6 +35,11 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38798:
+=~ Assertion \`mdl_key->length() == 3'
+=~ MDL_map::find_or_insert
+=~ MDL_context::acquire_lock
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38784:
 =~ signal|AddressSanitizer
 =~ Item_func_nextval::val_int
@@ -817,6 +822,11 @@ MDEV-33537:
 =~ ErrBuff::set_str
 =~ ErrConvString::ptr
 =~ FeatureUsage detected virtual columns
+MDEV-33537:
+=~ MemorySanitizer|AddressSanitizer|signal
+=~ Field::save_in_field_str
+=~ TABLE::update_virtual_field
+=~ row_merge_build_indexes
 MDEV-33536:
 =~ Error.*failed to decrypt .*  rc: -1  dstlen: 0  size: .*
 =~ Test run ends with exit status STATUS_UPGRADE_FAILURE
@@ -2524,6 +2534,10 @@ MDEV-24683:
 =~ AddressSanitizer|signal [16]
 =~ user_var_entry::val_str
 =~ table_uvar_by_thread::materialize
+MDEV-24658:
+=~ Assertion \`marked_for_read()'
+=~ Field_*::val_*
+=~ Item::print_value
 MDEV-24646:
 =~ AddressSanitizer|signal [16]
 =~ Field_blob::pack
