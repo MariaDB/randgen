@@ -35,6 +35,16 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38784:
+=~ signal|AddressSanitizer
+=~ Item_func_nextval::val_int
+=~ TABLE::update_default_fields
+=~ sp_instr_stmt::execute
+MDEV-38783:
+=~ LeakSanitizer
+=~ rec_copy_prefix_to_buf
+=~ row_merge_create_fts_sort_index
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-38747:
 =~ AddressSanitizer|signal
 =~ Optimizer_hint_parser::Identifier::to_ident_cli
@@ -84,6 +94,10 @@ MDEV-38714:
 =~ add_key_equal_fields
 =~ update_ref_and_keys
 =~ Sql_cmd_dml::execute
+MDEV-38713:
+=~ Assertion \`prebuilt->sql_stat_start \|\| prebuilt->table->no_rollback()'|InnoDB: Failing assertion: prebuilt->select_lock_type != LOCK_NONE \|\| srv_read_only_mode \|\| trx->read_view\.is_open()
+=~ row_search_mvcc
+=~ ha_innobase::general_fetch
 MDEV-38709:
 =~ AddressSanitizer|signal
 =~ my_convert_using_func
