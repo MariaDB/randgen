@@ -35,6 +35,11 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38813:
+=~ AddressSanitizer|signal
+=~ copy_data_between_tables
+=~ mysql_alter_table
+=~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
 MDEV-38806:
 =~ InnoDB: Failing assertion: old_rec
 =~ btr_pcur_t::restore_position
@@ -1810,6 +1815,14 @@ MDEV-29454:
 =~ FeatureUsage detected Spider tables
 =~ FeatureUsage detected XA transactions
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG
+MDEV-29386:
+=~ Assertion \`0'
+=~ row_upd_sec_index_entry
+=~ multi_update
+=~ FeatureUsage detected virtual columns
+MDEV-29386:
+=~ [ERROR] InnoDB: Record in index .* was not found on update: TUPLE
+=~ FeatureUsage detected virtual columns
 MDEV-29360:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ Item_ref::transform
@@ -1832,7 +1845,7 @@ MDEV-29214:
 MDEV-29214:
 =~ AddressSanitizer|signal
 =~ federatedx_txn::txn_commit|federatedx_txn::txn_rollback
-=~ trans_commit|trans_rollback|trans_begin
+=~ trans_commit|trans_rollback|trans_begin|trans_xa_commit|trans_xa_rollback
 MDEV-29197:
 =~ LeakSanitizer: detected memory leaks
 =~ Direct leak
