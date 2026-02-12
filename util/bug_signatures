@@ -35,6 +35,12 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38815:
+=~ signal|AddressSanitizer
+=~ Item_func_nextval::val_int
+=~ Field::set_default
+=~ Item_default_value::calculate
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38813:
 =~ AddressSanitizer|signal
 =~ copy_data_between_tables
@@ -71,17 +77,13 @@ MDEV-38784:
 =~ Item_func_nextval::val_int
 =~ TABLE::update_default_fields
 =~ sp_instr_stmt::execute
+=~ fill_record_n_invoke_before_triggers
+=~ FeatureUsage detected triggers
 MDEV-38783:
 =~ LeakSanitizer
 =~ rec_copy_prefix_to_buf
 =~ row_merge_create_fts_sort_index
 =~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
-MDEV-38747:
-=~ AddressSanitizer|signal
-=~ Optimizer_hint_parser::Identifier::to_ident_cli
-=~ LEX::resolve_optimizer_hints
-=~ Table_triggers_list::process_triggers
-=~ Version: '12\.[23]|Server version: 12\.[23]|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
 MDEV-38734:
 =~ Assertion \`marked_for_read()'
 =~ Field_blob::hash_not_null
@@ -106,11 +108,6 @@ MDEV-38724:
 =~ MemorySanitizer: use-of-uninitialized-value
 =~ ha_partition::handle_ordered_prev
 =~ mysql_ha_read
-MDEV-38716:
-=~ AddressSanitizer|signal
-=~ TABLE::evaluate_update_default_function
-=~ Sql_cmd_update::update_single_table
-=~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
 MDEV-38715:
 =~ Received malformed packet|Commands out of sync
 =~ FeatureUsage detected Federated tables
@@ -129,12 +126,6 @@ MDEV-38713:
 =~ Assertion \`prebuilt->sql_stat_start \|\| prebuilt->table->no_rollback()'|InnoDB: Failing assertion: prebuilt->select_lock_type != LOCK_NONE \|\| srv_read_only_mode \|\| trx->read_view\.is_open()
 =~ row_search_mvcc
 =~ ha_innobase::general_fetch
-MDEV-38709:
-=~ AddressSanitizer|signal
-=~ my_convert_using_func
-=~ String::copy
-=~ Protocol::send_result_set_row
-=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-38699:
 =~ MemorySanitizer: use-of-uninitialized-value
 =~ Item_field::is_null
@@ -157,54 +148,29 @@ MDEV-38674:
 =~ Assertion \`marked_for_read()'
 =~ ha_spider::update_row
 =~ Version: '10\.6|Server version: 10\.6|Version: '10\.11|Server version: 10\.11
-MDEV-38667:
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ Diagnostics_area::set_ok_status
-=~ THD::my_ok_with_recreate_info
-=~ mysql_alter_table
-MDEV-38667:
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ Diagnostics_area::set_ok_status
-=~ select_insert::send_ok_packet
-=~ select_create::send_eof
 MDEV-38655:
 =~ AddressSanitizer|Invalid read of size
 =~ Atomic_counter<int>::operator
 =~ thd_async_state::pending_ops
 =~ federatedx_txn::close
-MDEV-38654:
-=~ Assertion \`str\[strlen(str)-1\] != '\\\n''
-=~ TABLE_SHARE::init_from_sql_statement_string
-=~ ha_federatedx::discover_assisted
-=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38649:
 =~ Test run ends with exit status STATUS_LENGTH_MISMATCH
 =~ Transformed query: .* DisableOptimizations
 =~ Version: '12\.[23]|Server version: 12\.[23]|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
 =~ FeatureUsage detected desc keys
-MDEV-38620:
-=~ signal|AddressSanitizer
-=~ operator
-=~ setup_returning_fields
-=~ Prepared_statement::execute|sp_instr_stmt::exec
-=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-38610:
 =~ signal|AddressSanitizer
 =~ find_select_handler|find_select_handler_inner
 =~ Sql_cmd_create_table_like
-MDEV-38604:
-=~ Assertion \`thd->utime_after_query >= thd->utime_after_lock'
-=~ query_response_time_audit_notify
-=~ Prepared_statement::execute|sp_head::execute
 MDEV-38599:
 =~ Slave SQL: Could not execute .*, Internal MariaDB error code: 1032
 =~ FeatureUsage detected REPAIR commands
 =~ Test run ends with exit status STATUS_REPLICATION_FAILURE
 =~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]|Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
-MDEV-38589:
+MDEV-38589: [Not fixed in 10.6]
 =~ Assertion \`!thd->async_state\.pending_ops() \|\| ((thd && (WSREP_PROVIDER_EXISTS_ && thd->variables\.wsrep_on)) && thd->wsrep_trx()\.state() == wsrep::transaction::s_aborted)'
 =~ do_command
-=~ Version: '1[2-9]\.[3-9][3-9]*|Server version: 1[2-9]\.[3-9][3-9]*
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-38556:
 =~ MemorySanitizer: use-of-uninitialized-value
 =~ Item_cond_or::not_null_tables
@@ -214,15 +180,6 @@ MDEV-38551:
 =~ maria_page_crc_set_normal
 =~ flush_cached_blocks
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-38475:
-=~ signal|AddressSanitizer
-=~ find_field_in_table
-=~ Item::fix_fields_if_needed
-=~ mysql_derived_optimize
-MDEV-38475:
-=~ Assertion \`typeid(\*copy) == typeid(\*this)'
-=~ Item_field::do_build_clone
-=~ Item_field::derived_field_transformer_for_where
 MDEV-38474:
 =~ AddressSanitizer|double free or corruption
 =~ st_join_table::cleanup
@@ -255,14 +212,6 @@ MDEV-38060:
 =~ Item_func_nextval::val_int
 =~ TABLE::update_default_fields
 =~ fill_record_n_invoke_before_triggers
-# Not merged above 11.8 yet
-MDEV-38005:
-=~ Assertion \`(yyvsp\[-3\]\.simple_string) < (yyvsp\[-1\]\.simple_string)'
-=~ MYSQLparse
-# Not merged above 10.11 yet
-MDEV-37972:
-=~ Slave SQL: Error 'This xid does not exist'
-=~ FeatureUsage detected Spider engine
 MDEV-37959:
 =~ Assertion \`!thd->transaction->xid_state\.is_explicit_XA() \|\| thd->lex->xa_opt == XA_ONE_PHASE'
 =~ ha_commit_trans
@@ -298,14 +247,16 @@ MDEV-37432:
 =~ Assertion \`!trx->is_started()'
 =~ innobase_start_trx_and_assign_read_view
 =~ snapshot_handlerton
-MDEV-37341:
+MDEV-37341: [Not fixed in 10.6]
 =~ Assertion \`null_ptr < ptr'|Assertion \`ptr - null_ptr <= (int)table->s->rec_buff_length'
 =~ Field::move_field_offset
 =~ fill_record_n_invoke_before_triggers|Create_tmp_table::finalize
-MDEV-37326:
+=~ Version: '10\.6|Server version: 10\.6
+MDEV-37326: [Not fixed in 10.6]
 =~ Assertion \`bitmap_is_set(&(m_part_info->read_partitions), m_last_part)'
 =~ ha_partition::position
 =~ handler::ha_check_long_uniques
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-37282:
 =~ Assertion \`thd->status_var\.tmp_space_used >= track->previous_file_size'
 =~ temp_file_size_cb_func
@@ -360,13 +311,11 @@ MDEV-37238:
 =~ handler::ha_rnd_next
 =~ TR_table::query_sees
 =~ FeatureUsage detected system-versioned tables
-# Remains not fixed in 10.6!
-MDEV-37237:
+MDEV-37237: [Not fixed in 10.6]
 =~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
 =~ FeatureUsage detected virtual columns
 =~ Version: '10\.6|Server version: 10\.6
-# Remains not fixed in 10.6!
-MDEV-37237:
+MDEV-37237: [Not fixed in 10.6]
 =~ Assertion \`0'
 =~ row_upd_sec_index_entry
 =~ row_update_for_mysql
@@ -445,11 +394,7 @@ MDEV-36898:
 =~ THD::mark_tmp_table_as_free_for_reuse
 =~ Version: '1[2-9]\.[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*
 =~ FeatureUsage detected sequences
-MDEV-36888:
-=~ Assertion \`typeid(\*copy) == typeid(\*this)'
-=~ Item_func_or_sum::do_build_clone
-# Only fixed in 10.11+
-MDEV-36860:
+MDEV-36860: [Not fixed in 10.6]
 =~ Assertion \`maria_tmpdir'
 =~ exec_REDO_LOGREC_REDO_REPAIR_TABLE
 =~ =~ Version: '10\.6|Server version: 10\.6
@@ -457,8 +402,7 @@ MDEV-36854:
 =~ LeakSanitizer
 =~ get_window_functions_required_cursors
 =~ sub_select_postjoin_aggr
-# Only fixed in 10.11+
-MDEV-36753:
+MDEV-36753: [Not fixed in 10.6]
 =~ Assertion \`str\[strlen(str)-1\] != '\\\n''
 =~ my_message_sql
 =~ ma_decrypt
@@ -478,14 +422,16 @@ MDEV-36692:
 =~ Query_cache_query::unlock_writing
 =~ Query_cache::store_query
 =~ Status: KILL_CONNECTION
-MDEV-36686:
+MDEV-36686: [Not fixed in 10.6]
 =~ signal|AddressSanitizer
 =~ Item_field::used_tables|Item_ref::update_used_tables
 =~ Used_tables_and_const_cache::used_tables_and_const_cache_update_and_join
-MDEV-36686:
+=~ Version: '10\.6|Server version: 10\.6
+MDEV-36686: [Not fixed in 10.6]
 =~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF) \|\| (((Item_ref \*) item)->ref_type() == Item_ref::REF)))'
 =~ get_corresponding_field_pair
 =~ Item_default_value::transform
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-36683:
 =~ signal|AddressSanitizer
 =~ TABLE_LIST::reset_const_table|base_list_iterator::next
@@ -749,7 +695,7 @@ MDEV-35118:
 =~ Prepared_statement::execute|sp_head::execute
 MDEV-35100:
 =~ signal|AddressSanitizer
-=~ my_uca_scanner_next_with_nchars_utf8mb4
+=~ my_uca_scanner_next_with_nchars_.*
 =~ Field::key_cmp
 =~ Histogram_json_hb::find_bucket
 MDEV-35095:
@@ -759,11 +705,6 @@ MDEV-35095:
 MDEV-35085:
 =~ Assertion \`!(entry->using_trx_cache && !mngr->trx_cache\.empty() && mngr->get_binlog_cache_log((1))->error)'
 =~ MYSQL_BIN_LOG::write_transaction_or_stmt
-MDEV-34984:
-=~ Assertion \`length <= copy->to_length - 2'|Assertion \`length <= copy->to_length - 1'
-=~ do_varstring2_no_truncation|do_varstring1_no_truncation
-=~ do_copy_null
-=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-34895:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ parse_escaped_string
@@ -784,11 +725,6 @@ MDEV-34768:
 =~ Multiupdate_prelocking_strategy::handle_end
 =~ Prepared_statement::prepare
 =~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
-# Closed as not reproducible
-#MDEV-34281:
-#=~ Assertion \`is_valid_ident(\*this)'
-#=~ Lex_ident_fs::streq
-#=~ wsrep_tables_accessible_when_detached
 MDEV-34253:
 =~ Committing alter table to storage engine
 =~ exit status STATUS_SERVER_DEADLOCKED
@@ -797,17 +733,22 @@ MDEV-34253:
 MDEV-34252:
 =~ DDL_LOG: Got error 1050 when trying to execute action for entry .* of type 'alter table'
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG
-# Fixed in 10.11+
-MDEV-34117:
+MDEV-34117: [Not fixed in 10.6]
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_rollback_stmt
 =~ Wsrep_client_service::bf_rollback
-MDEV-34021:
+=~ Version: '10\.6|Server version: 10\.6
+MDEV-34021: [Not fixed in 10.6]
 =~ Assertion \`!for_explain_only'
 =~ JOIN_CACHE::put_record
 =~ Item_subselect
-# Only fixed in 10.11+
-MDEV-33985:
+=~ Version: '10\.6|Server version: 10\.6
+MDEV-34021: [Not fixed in 10.6]
+=~ signal|AddressSanitizer
+=~ JOIN_CACHE::write_record_data
+=~ subselect_single_select_engine::exec
+=~ Version: '10\.6|Server version: 10\.6
+MDEV-33985: [Not fixed in 10.6]
 =~ signal|AddressSanitizer
 =~ Item_func_nextval::val_int
 =~ Field::set_default
@@ -877,9 +818,10 @@ MDEV-33369:
 =~ AddressSanitizer|signal
 =~ Item_func_json_schema_valid::val_
 =~ Arg_comparator::compare
-MDEV-33289:
+MDEV-33289: [Not fixed in 10.6]
 =~ Assertion \`thd->mdl_context\.is_lock_owner(MDL_key::TABLE, table->s->db\.str, table->s->table_name.str, MDL_SHARED) \|\| thd->mdl_context\.is_lock_warrantee(MDL_key::TABLE, table->s->db\.str, table->s->table_name\.str, MDL_SHARED)'
 =~ close_thread_table
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-33323:
 =~ AddressSanitizer|signal
 =~ grn_bulk_write
@@ -957,11 +899,6 @@ MDEV-32866:
 =~ IGNORE
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 =~ FeatureUsage detected application periods
-MDEV-32838:
-=~ Record was not updated. New values were the same as original values
-=~ InnoDB: Record in index .* of table .* was not found on update
-=~ FeatureUsage detected unique blobs
-=~ FeatureUsage detected system-versioned tables
 MDEV-32831:
 =~ AddressSanitizer|signal
 =~ charset_info_st
@@ -1174,8 +1111,7 @@ MDEV-31941:
 =~ Assertion \`!trx->auto_commit \|\| trx->will_lock'|Assertion \`!trx->is_autocommit_non_locking()'
 =~ lock_table_create
 =~ oqgraph3::cursor::seek_to
-# Closed as not a bug
-MDEV-31935:
+MDEV-31935: [Closed as not a bug]
 =~ AddressSanitizer: allocator is out of memory
 =~ JOIN_CACHE::alloc_buffer
 =~ JOIN::init_join_caches
@@ -1236,10 +1172,6 @@ MDEV-31896:
 =~ index_init CONNECT: Open error
 =~ Got error 122 when reading table
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG
-MDEV-31892:
-=~ signal|AddressSanitizer|Assertion \`aux_table != __null'
-=~ row_fts_merge_insert
-=~ fts_parallel_merge
 MDEV-31878:
 =~ Assertion \`bit < map->n_bits'
 =~ bitmap_is_set
@@ -1403,11 +1335,12 @@ MDEV-31266:
 =~ _ma_seq_search
 =~ _ma_ck_write_btree
 =~ FeatureUsage detected GIS columns
-MDEV-31255:
+MDEV-31255: [Not fixed in 10.6]
 =~ signal|AddressSanitizer
 =~ ha_innobase::ft_read|ha_innobase::ft_init
 =~ join_ft_read_first
 =~ subselect_single_select_engine
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-31248:
 =~ Assertion \`false'
 =~ set_field_object_type
@@ -1421,12 +1354,6 @@ MDEV-31236:
 =~ Assertion \`prebuilt->select_lock_type == LOCK_NONE \|\| (index)->is_spatial()'
 =~ row_search_mvcc
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
-MDEV-31233:
-=~ signal|AddressSanitizer
-=~ multi_update::prepare|open_tables_for_query
-=~ Sql_cmd_dml::prepare
-=~ Prepared_statement::execute|sp_head::execute
-=~ Version: '1[1-9]\.[1-9]|Server version: 1[1-9]\.[1-9]
 MDEV-31228:
 =~ signal|AddressSanitizer
 =~ dynamic_column_update_many_fmt
@@ -1519,25 +1446,30 @@ MDEV-31016:
 =~ Field::store_from_statistical_minmax_field
 =~ read_statistics_for_table
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
-MDEV-31007:
+MDEV-31007: [Not fixed in 10.6]
 =~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF)'
 =~ find_producing_item
-MDEV-31007:
+=~ Version: '10\.6|Server version: 10\.6
+MDEV-31007: [Not fixed in 10.6]
 =~ AddressSanitizer|signal
 =~ Item_default_value::cleanup
 =~ Item::delete_self
 =~ Query_arena::free_items
-MDEV-31007:
+=~ Version: '10\.6|Server version: 10\.6
+MDEV-31007: [Not fixed in 10.6]
 =~ Assertion \`item->type() == Item::FIELD_ITEM \|\| (item->type() == Item::REF_ITEM && ((((Item_ref \*) item)->ref_type() == Item_ref::VIEW_REF) \|\| (((Item_ref \*) item)->ref_type() == Item_ref::REF)))'
 =~ get_corresponding_field_pair
-MDEV-31007:
+=~ Version: '10\.6|Server version: 10\.6
+MDEV-31007: [Not fixed in 10.6]
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ Item_field::derived_field_transformer_for_having
 =~ Item_default_value::transform
-MDEV-31007:
+=~ Version: '10\.6|Server version: 10\.6
+MDEV-31007: [Not fixed in 10.6]
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ Item_field::register_field_in_read_map
 =~ Item_default_value::walk
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-30992:
 =~ Assertion \`err != DB_DUPLICATE_KEY'
 =~ row_rename_table_for_mysql
@@ -1622,14 +1554,12 @@ MDEV-30292:
 =~ Window_funcs_computation::exec
 =~ Query.*:.*PERCENTILE_DISC
 =~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-# Only fixed in 10.11+
-MDEV-30277:
+MDEV-30277: [Not fixed in 10.6]
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
 =~ Reprepare_observer::report_error
 =~ Version: '10\.6|Server version: 10\.6
-# Closed as won't fix
-MDEV-30161:
+MDEV-30161: [Closed as won't fix]
 =~ safe_mutex: Found wrong usage of mutex 'wait_mutex' and 'LOCK_thd_data'
 =~ service_wsrep\.cc
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
@@ -1660,14 +1590,6 @@ MDEV-30011:
 =~ AddressSanitizer|signal
 =~ spider_db_mbase::fin_loop_check
 =~ spider_db_conn_queue_action
-MDEV-29992:
-=~ InnoDB: Record in index .* of table .* was not found on update: TUPLE
-=~ Assertion \`0'
-=~ row_upd_sec_index_entry
-=~ FeatureUsage detected nopad collations
-MDEV-29992:
-=~ Got error '126 .*Index is corrupted|Got an error from thread_id
-=~ Index for table .* is corrupt; try to repair it
 MDEV-29958:
 =~ STATUS_SERVER_DEADLOCKED
 =~ Deadlock reporter: Stalled query: (Killed).* ENUM(
@@ -1734,12 +1656,6 @@ MDEV-29691:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
 =~ MYSQL_BIN_LOG::flush_and_set_pending_rows_event
-MDEV-29680:
-=~ AddressSanitizer|signal
-=~ myrocks::Rdb_transaction::on_commit|myrocks::Rdb_transaction_impl::prepare
-=~ select_create::send_eof
-=~ Sql_cmd_create_table_like::execute
-=~ Version: '10\.1[1-9]|Server version: 10\.1[1-9]
 MDEV-29623:
 =~ Out of memory
 =~ FeatureUsage detected Spider tables
@@ -1927,11 +1843,6 @@ MDEV-29018:
 =~ AddressSanitizer|signal
 =~ ha_spider::field_exchange
 =~ ha_spider::set_select_column_mode
-MDEV-29016:
-=~ LeakSanitizer
-=~ get_quick_select
-=~ TRP_RANGE::make_quick
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-29009:
 =~ Assertion \`dd_val >= last_val'
 =~ myrocks::ha_rocksdb::load_auto_incr_value_from_index
@@ -1987,11 +1898,12 @@ MDEV-28569:
 =~ Assertion \`offsets'
 =~ btr_check_node_ptr
 =~ btr_insert_into_right_sibling
-MDEV-28650:
+MDEV-28650: [Not fixed in 10.6]
 =~ signal|Assertion \`table && table->s->sequence'| Assertion \`table'
 =~ Item_func_nextval::val_int
 =~ Item_default_value::calculate
 =~ Item_direct_view_ref::send
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-28466:
 =~ AddressSanitizer|signal
 =~ _mi_make_key|calc_row_difference
@@ -2176,11 +2088,11 @@ MDEV-27223:
 =~ Field_blob::cmp
 =~ check_duplicate_long_entry_key|handler::check_duplicate_long_entries_update
 =~ FeatureUsage detected unique blobs
-MDEV-27027:
+MDEV-27027: [Not fixed in 10.6]
 =~ Assertion \`!param->got_error'
 =~ Table_triggers_list::change_table_name
 =~ ddl_log_execute_action
-=~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-26992:
 =~ Assertion \`item->null_value'
 =~ Type_handler::Item_send_str
@@ -2603,19 +2515,13 @@ MDEV-24625:
 =~ Could not use .* for logging (error 0)\. Turning logging off
 =~ Assertion \`((__builtin_expect(((WSREP_ON_) != 0),0) && this->variables\.wsrep_on) && wsrep_emulate_bin_log) \|\| mysql_bin_log\.is_open()'|Assertion \`Count >= rest_length'|Assertion \`is_open()'||Assertion \`((thd && (__builtin_expect(((WSREP_ON_) != 0),0) && thd->variables\.wsrep_on)) && wsrep_emulate_bin_log) \|\| mysql_bin_log\.is_open()'
 =~ THD::binlog_update_row|THD::binlog_write_row|THD::binlog_delete_row|_my_b_write|MYSQL_BIN_LOG::trx_group_commit_leader|MYSQL_BIN_LOG::flush_and_set_pending_rows_event
-# Fixed in 10.11+
-MDEV-24588:
+MDEV-24588: [Not fixed in 10.6]
 =~ Assertion \`item->name\.str && item->name\.str\[0\]'
 =~ TABLE_LIST::create_field_translation
 =~ Version: '10\.6|Server version: 10\.6
 MDEV-24559:
 =~ Assertion \`select_lex->leaf_tables\.elements != 0'
 =~ Prepared_statement::execute|sp_head::execute
-# Not merged above 10.11 yet
-MDEV-24558:
-=~ Assertion \`!index->is_spatial()'|Assertion \`index->is_btree()'|Assertion \`!dict_index_is_spatial(index)'
-=~ btr_estimate_number_of_different_key_vals
-=~ mysql_inplace_alter_table
 MDEV-24521:
 =~ InnoDB: Flagged corruption of .* in table .* Partition .* in CHECK TABLE; Wrong count
 =~ For InnoDB SYSTEM VERSIONED .* : error : Partition .* returned error
@@ -2627,29 +2533,25 @@ MDEV-24513:
 =~ set_bit
 =~ sort_and_filter_keyuse
 =~ make_join_statistics
-# Closed as can't reproduce in 10.11+, so it can still affect 10.6
-MDEV-24349:
+MDEV-24349: [Not fixed in 10.6]
 =~ AddressSanitizer|signal [16]|Assertion \`name\.length == strlen(name\.str)'
 =~ get_quote_char_for_identifier|Item::print_item_w_name
 =~ st_select_lex::print
 =~ opt_trace_print_expanded_query
 =~ Version: '10\.6|Server version: 10\.6
-# Closed as can't reproduce in 10.11+, so it can still affect 10.6
-MDEV-24349:
+MDEV-24349: [Not fixed in 10.6]
 =~ AddressSanitizer|MemorySanitizer
 =~ get_hash_symbol
 =~ get_quote_char_for_identifier
 =~ opt_trace_print_expanded_query
 =~ Version: '10\.6|Server version: 10\.6
-# Closed as can't reproduce in 10.11+, so it can still affect 10.6
-MDEV-24349:
+MDEV-24349: [Not fixed in 10.6]
 =~ AddressSanitizer|signal
 =~ check_column_name
 =~ st_select_lex::print
 =~ opt_trace_print_expanded_query
 =~ Version: '10\.6|Server version: 10\.6
-# Closed as can't reproduce in 10.11+, so it can still affect 10.6
-MDEV-24349:
+MDEV-24349: [Not fixed in 10.6]
 =~ AddressSanitizer|signal
 =~ st_select_lex::print
 =~ With_element::print
@@ -2869,10 +2771,6 @@ MDEV-23315:
 =~ subselect_single_select_engine::prepare
 =~ Prepared_statement::execute|sp_head::execute
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-23298:
-=~ Assertion \`table_list->prelocking_placeholder == TABLE_LIST::PRELOCK_NONE'
-=~ check_lock_and_start_stmt
-=~ select_create::create_table_from_items|Query.*:.*CREATE.*OR REPLACE TABLE
 MDEV-23297:
 =~ Assertion \`info->dfile\.file == share->bitmap\.file\.file'
 =~ _ma_scan_init_block_record
@@ -2918,8 +2816,7 @@ MDEV-23211:
 =~ Assertion \`t->s->tmp_table \|\| thd->mdl_context\.is_lock_owner(MDL_key::TABLE, t->s->db\.str, t->s->table_name\.str, t->reginfo\.lock_type >= TL_WRITE_ALLOW_WRITE ? MDL_SHARED_WRITE : MDL_SHARED_READ)'
 =~ lock_tables_check
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-# Only fixed in 10.11+
-MDEV-23207:
+MDEV-23207: [Not fixed in 10.6]
 =~ Assertion \`tl->table == __null'
 =~ THD::open_temporary_table
 =~ mysql_admin_table
@@ -2993,22 +2890,6 @@ MDEV-23145:
 =~ handler::ha_external_lock
 =~ close_system_tables|close_thread_tables|JOIN::join_free
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-# Not yet merged above 10.11
-MDEV-23132:
-=~ Assertion \`trn->locked_tables == 0 && trn->used_instances == 0'
-=~ trnman_end_trn
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-# Not yet merged above 10.11
-MDEV-23132:
-=~ signal [16]|AddressSanitizer
-=~ reset_thd_trn|_ma_reset_trn_for_table
-=~ ma_commit|maria_commit
-=~ Sp_handler::db_find_routine
-# Not yet merged above 10.11
-MDEV-23132:
-=~ Assertion \`file->trn_next == 0 && file->trn_prev == 0'
-=~ ha_maria::close
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-23127:
 =~ signal [16]|AddressSanitizer
 =~ Query_cache::double_linked_list_exclude|Assertion \`table_block_data->m_cached_query_count >= 0'|Assertion \`table_block_data->m_cached_query_count == 0'
@@ -3507,9 +3388,10 @@ MDEV-20597:
 MDEV-20595:
 =~ Assertion \`0 < sel && sel <= 2\.0'|Assertion \`0 < sel && sel <= 1\.0'|Assertion \`0\.0 < sel && sel <= 1\.0'
 =~ table_cond_selectivity
-MDEV-20586:
+MDEV-20586: [Not fixed in 10.6]
 =~ Assertion \`!thd->in_active_multi_stmt_transaction() \|\| thd->in_multi_stmt_transaction_mode()'
 =~ Query_log_event::do_apply_event
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-20518:
 =~ Assertion \`share->now_transactional == share->base\.born_transactional'
 =~ maria_close
@@ -3972,19 +3854,16 @@ MDEV-16694:
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ THD::~THD
 =~ FeatureUsage detected multi-update/delete
-# Only fixed in 10.11+
-MDEV-16686:
+MDEV-16686: [Not fixed in 10.6]
 =~ Assertion \`(\*tables)->reginfo\.lock_type >= TL_READ'|Assertion \`(\*tables)->reginfo\.lock_type >= TL_READ_SKIP_LOCKED'
 =~ lock_external
 =~ Version: '10\.6|Server version: 10\.6
-# Only fixed in 10.11+
-MDEV-16686:
+MDEV-16686: [Not fixed in 10.6]
 =~ signal|AddressSanitizer
 =~ wait_for_lock|thr_unlock|thr_lock
 =~ thr_multi_lock|thr_multi_unlock
 =~ Version: '10\.6|Server version: 10\.6
-# Only fixed in 10.11+
-MDEV-16686:
+MDEV-16686: [Not fixed in 10.6]
 =~ Assertion \`false'
 =~ lock_flags_to_lock_type
 =~ pfs_start_table_lock_wait_v1
@@ -4006,8 +3885,7 @@ MDEV-16539: [THD::mark_tmp_table_as_free_for_reuse]
 =~ mark_tmp_table_as_free_for_reuse
 =~ unlock_locked_tables
 =~ Status: KILL_TIMEOUT|Status: KILL_SERVER
-# Fixed in 10.11+
-MDEV-16523:
+MDEV-16523: [Not fixed in 10.6]
 =~ Assertion \`!level_and_file\.second->being_compacted'
 =~ rocksdb::.*::LevelCompactionBuilder::SetupInitialFiles
 =~ Version: '10\.6|Server version: 10\.6
@@ -4080,8 +3958,7 @@ MDEV-15255:
 =~ get_lock_data
 =~ mysql_alter_table
 =~ FeatureUsage detected sequences
-# Fixed in 10.11+
-MDEV-15164:
+MDEV-15164: [Not fixed in 10.6]
 =~ Assertion \`ikey_\.type == kTypeValue'
 =~ rocksdb::CompactionIterator::NextFromInput
 =~ rocksdb::DBImpl::BackgroundCompaction
