@@ -35,6 +35,10 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38854:
+=~ Assertion \`table->vers_write'
+=~ vers_update_or_validate_fields
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38815:
 =~ signal|AddressSanitizer
 =~ Item_func_nextval::val_int
@@ -69,7 +73,6 @@ MDEV-38806:
 =~ FeatureUsage detected handler commands
 MDEV-38798:
 =~ Assertion \`mdl_key->length() == 3'
-=~ MDL_map::find_or_insert
 =~ MDL_context::acquire_lock
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38784:
@@ -183,8 +186,8 @@ MDEV-38551:
 MDEV-38474:
 =~ AddressSanitizer|double free or corruption
 =~ st_join_table::cleanup
-=~ Sql_cmd_dml::execute
-=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+=~ Sql_cmd_dml::execute|st_select_lex_unit::cleanup
+=~ =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38472:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
