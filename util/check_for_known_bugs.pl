@@ -273,11 +273,11 @@ sub register_result
                 if ($draft_mdevs{$j}) {
                     $match_type= 'draft';
                 }
-                my $notes= ($match_type eq 'strong' ? $j : $mdevs_to_register{$j}.' - '.$j);
                 if (defined $closed_mdevs{$j} and not defined $fixed_in_future{$j}) {
                     $fixdate= "'$closed_mdevs{$j}'";
                     $match_type= 'fixed';
                 }
+                my $notes= ($match_type eq 'strong' ? $j : $mdevs_to_register{$j}.' - '.$j);
                 # Only register matches to fixed items if there is no better choice
                 if ($match_type ne 'fixed' or scalar(keys %closed_mdevs) == scalar(keys %mdevs_to_register)) {
 #                    my $query= "INSERT INTO regression.result (ci, test_id, notes, fixdate, match_type, test_result, url, server_branch, server_rev, test_info) VALUES (\'$ci\',\'$ENV{TEST_ID}\',\'$notes\', $fixdate, \'$match_type\', \'$test_result\', $page_url, \'$server_branch\', \'$server_revno\', \'$test_line\')";
