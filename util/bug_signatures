@@ -383,6 +383,10 @@ MDEV-36992:
 =~ signal|AddressSanitizer
 =~ Item_ref::make_send_field
 =~ Protocol::send_result_set_metadata
+MDEV-36992:
+=~ signal|AddressSanitizer
+=~ Item_field::register_field_in_read_map
+=~ Item_default_value::walk
 MDEV-36990:
 =~ signal|AddressSanitizer|runtime error: division by zero
 =~ get_max_range_rowid_filter_elems_for_table
@@ -3077,11 +3081,6 @@ MDEV-22661:
 =~ Assertion \`time_type == MYSQL_TIMESTAMP_DATETIME'
 =~ Datetime::is_valid_datetime_slow
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-22648:
-=~ AddressSanitizer
-=~ Field_blob::cmp|Field::cmp_offset|Field::cmp_binary_offset|Field_blob::cmp_prefix
-=~ multi_update|check_duplicate_long_entry_key
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22600:
 =~ Assertion \`prebuilt->mysql_prefix_len <= prebuilt->mysql_row_len'|AddressSanitizer|signal [16]
 =~ row_sel_dequeue_cached_row_for_mysql|row_sel_store_mysql_field
