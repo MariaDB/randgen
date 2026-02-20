@@ -39,6 +39,11 @@ MDEV-38854:
 =~ Assertion \`table->vers_write'
 =~ vers_update_or_validate_fields
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-38830:
+=~ signal|AddressSanitizer
+=~ TABLE::evaluate_update_default_function
+=~ fill_record_n_invoke_before_triggers
+=~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
 MDEV-38815:
 =~ signal|AddressSanitizer
 =~ Item_func_nextval::val_int
