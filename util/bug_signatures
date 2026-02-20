@@ -2844,6 +2844,22 @@ MDEV-23200:
 =~ Assertion \`btr_page_get_index_id(btr_pcur_get_page(pcur)) == index->id'|Assertion \`btr_page_get_index_id(btr_pcur_get_block(pcur)->page\.frame) == index->id'
 =~ row_search_mvcc
 =~ mysql_ha_read
+=~ FeatureUsage detected handler commands
+MDEV-23200:
+=~ Assertion \`!__asan_region_is_poisoned((void\*) dest,templ->mysql_col_len)'
+=~ row_sel_field_store_in_mysql_format_func
+=~ ha_partition::index_prev
+=~ FeatureUsage detected handler commands
+MDEV-23200:
+=~ Assertion \`!index \|\| lock->index == index'
+=~ lock_rec_queue_validate
+=~ ha_partition::index_prev
+=~ FeatureUsage detected handler commands
+MDEV-23200:
+=~ Assertion \`old_n_core_fields == index->n_core_fields'
+=~ btr_pcur_t::restore_position
+=~ ha_partition::index_prev
+=~ FeatureUsage detected handler commands
 MDEV-23188:
 =~ Assertion \`!new_field->field_name\.str \|\| strlen(new_field->field_name\.str) == new_field->field_name\.length'|Assertion \`!field->field_name\.str \|\| strlen(field->field_name\.str) == field->field_name\.length'
 =~ create_tmp_table|Create_tmp_table::add_field
