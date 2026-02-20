@@ -932,6 +932,11 @@ MDEV-32769:
 =~ Item_func_group_concat::setup
 =~ Item_sum::aggregator_setup
 =~ JOIN::optimize
+MDEV-32760:
+=~ Assertion \`null_ref_table'|AddressSanitizer|signal 11
+=~ Item_direct_view_ref::check_null_ref
+=~ Arg_comparator::compare
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32747:
 =~ MemorySanitizer|Conditional jump or move depends on uninitialised value
 =~ int10_to_str
@@ -1226,6 +1231,15 @@ MDEV-31757:
 =~ Only Format_description_log_event and row events are allowed in BINLOG statements (but Query_compressed was provided)
 =~ FeatureUsage detected binlog compression
 =~ FeatureUsage detected binlog alter two phase
+MDEV-31744: [Not fixed in 10.6]
+=~ Assertion \`order_list->elements == 1'
+=~ Frame_range_n_bottom::Frame_range_n_bottom
+=~ Version: '10\.6|Server version: 10\.6
+MDEV-31744: [Not fixed in 10.6]
+=~ LeakSanitizer: detected memory leaks
+=~ Frame_range_n_top::pre_next_partition
+=~ Window_func_runner::exec
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-31681:
 =~ \[ERROR\] Duplicated key: used_range_estimates
 =~ Assertion \`is_uniq_key'
