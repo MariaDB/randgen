@@ -222,7 +222,7 @@ MDEV-38061:
 MDEV-38060:
 =~ signal|AddressSanitizer|Assertion \`table->s->sequence'
 =~ Item_func_nextval::val_int|Field::set_default
-=~ TABLE::update_default_fields
+=~ TABLE::update_default_fields|Field::set_default
 =~ fill_record_n_invoke_before_triggers
 MDEV-37959:
 =~ Assertion \`!thd->transaction->xid_state\.is_explicit_XA() \|\| thd->lex->xa_opt == XA_ONE_PHASE'
@@ -544,14 +544,12 @@ MDEV-36101:
 MDEV-36059:
 =~ Assertion \`derived->table'
 =~ mysql_derived_merge_for_insert
-=~ Sql_cmd_delete::prepare_inner
 =~ Prepared_statement::execute|sp_head::execute
 =~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36059:
 =~ signal|AddressSanitizer
 =~ TABLE::versioned
 =~ mysql_derived_prepare
-=~ Sql_cmd_delete::prepare_inner
 =~ Prepared_statement::execute|sp_head::execute
 =~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-36028:
@@ -1769,7 +1767,7 @@ MDEV-29454:
 MDEV-29386:
 =~ Assertion \`0'
 =~ row_upd_sec_index_entry
-=~ multi_update
+=~ ha_innobase::update_row
 =~ FeatureUsage detected virtual columns
 MDEV-29386:
 =~ [ERROR] InnoDB: Record in index .* was not found on update: TUPLE
@@ -2063,7 +2061,6 @@ MDEV-27483:
 =~ AddressSanitizer|signal
 =~ get_column_range_cardinality
 =~ records_in_column_ranges
-=~ Version: '10\.6|Server version: 10\.6
 MDEV-27479:
 =~ Assertion \`thd->m_transaction_psi == __null'
 =~ trans_commit_implicit
