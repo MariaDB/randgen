@@ -1,4 +1,4 @@
-# Copyright (c) 2021, 2022, MariaDB Corporation Ab.
+# Copyright (c) 2021, 2026, MariaDB Corporation Ab.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -173,8 +173,7 @@ func_func:
    ==FACTOR:2== func_date_func |
    func_encrypt_func |
    func_information_func |
-   # MDEV-35090 and generally problematic and nobody is fixing it
-   ==FACTOR:0.01== func_xml_func |
+   func_xml_func |
    func_misc_func
 ;
 

@@ -1,4 +1,4 @@
-#  Copyright (c) 2024, MariaDB
+#  Copyright (c) 2024, 2026, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -100,8 +100,7 @@ dynvar_global_variable:
 # | wsrep_replicate_myisam  global
  |                   WSREP_RESTART_SLAVE= __0_x_1
  |                   WSREP_SLAVE_FK_CHECKS= __0_x_1
-# Hangs, MDEV-30418
-# |                   WSREP_SLAVE_THREADS= { $prng->uint16(1,8) }
+ |                   WSREP_SLAVE_THREADS= { $prng->uint16(1,8) }
  |                   WSREP_SLAVE_UK_CHECKS= __0_x_1
 # TODO (maybe)
 # | wsrep_sst_auth  global
