@@ -2530,7 +2530,7 @@ sub BEGIN {
     ER_XA_RBROLLBACK()                                  => STATUS_RUNTIME_ERROR,
     ER_XA_RBTIMEOUT()                                   => STATUS_RUNTIME_ERROR,
     ER_ZLIB_Z_BUF_ERROR()                               => STATUS_ENVIRONMENT_FAILURE,
-    ER_ZLIB_Z_DATA_ERROR()                              => STATUS_ENVIRONMENT_FAILURE,
+    ER_ZLIB_Z_DATA_ERROR()                              => STATUS_IGNORED_ERROR, # Any wrong input can cause this error, e.g. UNCOMPRESSED_LENGTH(0)
     ER_ZLIB_Z_MEM_ERROR()                               => STATUS_ENVIRONMENT_FAILURE,
 
     WARN_COND_ITEM_TRUNCATED()                          => STATUS_RUNTIME_ERROR,
