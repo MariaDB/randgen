@@ -50,7 +50,7 @@ MDEV-38951:
 MDEV-38949:
 =~ Assertion \`undo_no <= 1'
 =~ reset_and_truncate_undo
-=~ select_create::send_eof
+=~ select_create::send_eof|mysql_alter_table
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38948:
 =~ Assertion \`time\.valid(undo->top_undo_no)'
