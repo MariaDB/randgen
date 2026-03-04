@@ -35,6 +35,12 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38969:
+=~ signal|AddressSanitizer
+=~ setup_tables_and_check_access
+=~ Multiupdate_prelocking_strategy::handle_end
+=~ Prepared_statement::execute|sp_head::execute
+=~ Version: '11\.4|Server version: 11\.4|Version: '1[2-9]\.\[0-9][0-9]*|Server version: 1[2-9]\.\[0-9][0-9]*
 MDEV-38965:
 =~ AddressSanitizer
 =~ my_strnncoll_binary
@@ -3340,7 +3346,7 @@ MDEV-21630:
 =~ mysql_derived_prepare
 =~ Multiupdate_prelocking_strategy::handle_end|Sql_cmd_delete::prepare_inner
 =~ sp_instr_stmt::exec_core
-=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ Version: '10\.[2-9]|Server version: 10\.[2-9]|Version: '10\.1[01]|Server version: 10\.1[01]
 MDEV-21579:
 =~ Assertion \`ordered_index_usage == ordered_index_order_by'
 =~ JOIN::optimize_distinct
