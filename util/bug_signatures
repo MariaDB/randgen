@@ -35,6 +35,10 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38965:
+=~ AddressSanitizer
+=~ my_strnncoll_binary
+=~ Arg_comparator::compare_string
 MDEV-38963:
 =~ Assertion \`mod_tables\.size() == 0 \|\| mod_tables\.begin()->first == table'
 =~ trx_t::reset_and_truncate_undo
