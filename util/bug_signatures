@@ -35,6 +35,18 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38971:
+=~ runtime error: index .* out of bounds for type 'uchar .*'
+=~ runtime error: load of address .* with insufficient space for an object of type 'uchar'
+MDEV-38971:
+=~ AddressSanitizer|signal
+=~ check_date
+=~ time_to_datetime_with_warn
+=~ Temporal_with_date::make_from_item
+MDEV-38971:
+=~ Assertion \`is_valid_value_slow()'
+=~ Datetime::Datetime
+=~ emporal_hybrid::Temporal_hybrid
 MDEV-38969:
 =~ signal|AddressSanitizer
 =~ setup_tables_and_check_access
@@ -931,7 +943,7 @@ MDEV-33030:
 =~ mysql_ha_read
 MDEV-33030:
 =~ Failing assertion: old_n_core_fields <= index->n_core_fields|Failing assertion: old_n_core_fields == index->n_core_fields|Assertion \`old_n_core_fields == index->n_core_fields'
-=~ ha_partition::handle_ordered_prev
+=~ ha_partition::handle_
 =~ mysql_ha_read
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-32982:
