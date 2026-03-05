@@ -35,6 +35,12 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38987:
+=~ signal|AddressSanitizer
+=~ mysql_derived_prepare
+=~ sp_head::execute
+=~ Table_triggers_list::process_triggers
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-38971:
 =~ runtime error: index .* out of bounds for type 'uchar .*'
 =~ runtime error: load of address .* with insufficient space for an object of type 'uchar'
@@ -266,8 +272,8 @@ MDEV-38551:
 =~ flush_cached_blocks
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38474:
-=~ AddressSanitizer|double free or corruption
-=~ st_join_table::cleanup
+=~ AddressSanitizer|double free or corruption|signal
+=~ st_join_table::cleanup|handler::keyread_enabled
 =~ Sql_cmd_dml::execute|st_select_lex_unit::cleanup
 =~ =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38472:
