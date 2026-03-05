@@ -218,6 +218,12 @@ MDEV-38685:
 =~ do_varstring2_no_truncation|do_varstring1_no_truncation
 =~ do_copy_null
 =~ Version: '12\.[23]|Server version: 12\.[23]|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
+MDEV-38685:
+=~ my_hash_sort_bin
+=~ my_ci_hash_sort
+=~ heap_rkey
+=~ handler::ha_index_read_map
+=~ Version: '12\.[23]|Server version: 12\.[23]|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
 MDEV-38679:
 =~ Assertion \`!info->error'
 =~ flush_write_buffer_if_file_backed
@@ -828,6 +834,11 @@ MDEV-34021: [Not fixed in 10.6]
 =~ JOIN_CACHE::write_record_data
 =~ subselect_single_select_engine::exec
 =~ Version: '10\.6|Server version: 10\.6
+MDEV-34005:
+=~ LeakSanitizer
+=~ alloc_dynamic
+=~ MYSQLparse|ORAparse
+=~ Prepared_statement::prepare
 MDEV-33985: [Not fixed in 10.6]
 =~ signal|AddressSanitizer
 =~ Item_func_nextval::val_int
