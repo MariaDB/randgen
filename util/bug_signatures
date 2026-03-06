@@ -760,11 +760,6 @@ MDEV-35234:
 MDEV-35232:
 =~ Failed to write the DROP statement for temporary tables to binary log
 =~ FeatureUsage detected backup stages
-MDEV-35145:
-=~ AddressSanitizer|signal|Conditional jump or move depends on uninitialised value
-=~ translog_write_parts_on_page
-=~ translog_write_record
-=~ ha_maria::delete_row
 MDEV-35137:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ Item_exists_subselect::select_prepare_to_be_in
