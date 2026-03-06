@@ -35,6 +35,18 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38997:
+=~ signal|AddressSanitizer
+=~ maria_create_trn_for_mysql
+=~ mysql_lock_tables
+=~ CrashRecovery
+=~ FeatureUsage detected sequences
+MDEV-38997:
+=~ signal|AddressSanitizer
+=~ MDL_context::upgrade_shared_lock
+=~ mysql_alter_table
+=~ CrashRecovery
+=~ FeatureUsage detected sequences
 MDEV-38993:
 =~ Assertion \`trx->undo_no == 1'
 =~ trx_undo_report_row_operation
@@ -3312,14 +3324,6 @@ MDEV-21837: [status_var.local_memory_used == 0]
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'
 =~ THD::~THD
 =~ KILL_SERVER|KILL_CONNECTION
-MDEV-21830:
-=~ Assertion \`share->in_trans == 0'
-=~ maria_close
-=~ ha_partition::close|tc_remove_table|closefrm
-MDEV-21830:
-=~ signal 11|AddressSanitizer:
-=~ ha_maria::implicit_commit
-=~ ha_commit_trans
 MDEV-21821:
 =~ AddressSanitizer:|signal
 =~ myrocks::Rdb_transaction_impl::commit_no_binlog
