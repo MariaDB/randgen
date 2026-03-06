@@ -35,6 +35,11 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-38993:
+=~ Assertion \`trx->undo_no == 1'
+=~ trx_undo_report_row_operation
+=~ mysql_alter_table
+=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38988:
 =~ Assertion \`0'
 =~ Protocol::end_statement
