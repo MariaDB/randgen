@@ -73,28 +73,6 @@ MDEV-38965:
 =~ AddressSanitizer
 =~ my_strnncoll_binary
 =~ Arg_comparator::compare_string
-MDEV-38963:
-=~ Assertion \`mod_tables\.size() == 0 \|\| mod_tables\.begin()->first == table'
-=~ trx_t::reset_and_truncate_undo
-=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-38951:
-=~ Assertion \`0'
-=~ row_upd_sec_index_entry
-=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-38951:
-=~ InnoDB: Record in index .* was not found on update: TUPLE
-=~ ha_innobase::delete_row
-=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-38949:
-=~ Assertion \`undo_no <= 1'
-=~ reset_and_truncate_undo
-=~ select_create::send_eof|mysql_alter_table
-=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-38948:
-=~ Assertion \`time\.valid(undo->top_undo_no)'
-=~ trx_undo_report_row_operation
-=~ mysql_alter_table
-=~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38904:
 =~ is marked as crashed and should be repaired
 =~ latin7
