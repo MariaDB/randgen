@@ -3424,10 +3424,6 @@ MDEV-21107:
 =~ Assertion \`!tmp_gco->next_gco \|\| tmp_gco->last_sub_id > sub_id'
 =~ finish_event_group
 =~ handle_rpl_parallel_thread
-MDEV-21085:
-=~ Assertion \`info->last_key\.keyinfo == key->keyinfo'
-=~ _ma_search_no_save
-=~ maria_rkey
 MDEV-21016:
 =~ AddressSanitizer: heap-use-after-free
 =~ trx_update_mod_tables_timestamp
@@ -4088,11 +4084,6 @@ MDEV-14656: [Got error 22 when trying to lock mutex]
 =~ signal 6
 =~ Got error 22 when trying to lock mutex LOCK_event_queue|safe_mutex: Trying to lock uninitialized mutex at .*sql/event_queue\.cc
 =~ KILL_SERVER
-MDEV-14557:
-=~ Assertion \`m_sp == __null'
-=~ Item_func_sp::init_result_field
-=~ find_field_in_view
-=~ sp_instr_stmt::exec_core
 MDEV-14472:
 =~ Assertion \`is_current_stmt_binlog_format_row()'
 =~ THD::binlog_write_table_map
