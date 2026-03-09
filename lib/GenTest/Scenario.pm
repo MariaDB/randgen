@@ -319,10 +319,15 @@ GET_DATA_END:
 #
 
 sub compare_data {
-  my ($self, $old_data, $new_data, $vardir, $type)= @_;
+  my ($self, $old_data, $new_data, $vardir, $type, $old_version, $new_version)= @_;
   my $data_status= STATUS_OK;
   foreach my $d (sort keys %$old_data) {
     next if (($d eq 'checksums_unsafe') and ($type eq 'dump-upgrade'));
+    # For system versioned tables before and after MDEV-32188 (extended timestamp)
+    # checksum is often different after mysql_upgrade, as row_end is different
+    next if $d eq 'checksums_unsafe'
+      and defined $old_version and defined $new_version
+      and $old_version < '110501' and $new_version >= '110501';
     my $old= Dumper $old_data->{$d};
     my $new= Dumper $new_data->{$d};
     # For now we'll just blindly replace all utf8mb3 by utf8
