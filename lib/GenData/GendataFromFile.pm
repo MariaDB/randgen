@@ -162,7 +162,10 @@ sub run {
     $table_perms[TABLE_ENGINE] = $engines;
     $table_perms[TABLE_CHARSET] = $tables->{charsets} || [ undef ];
     $table_perms[TABLE_COLLATION] = $tables->{collations} || [ undef ];
-    $table_perms[TABLE_PARTITION] = $tables->{partitions} || [ undef ];
+    # We will only create partitions if the test run configuration does not
+    # explicitly forbids it (that is, if --partitions or not provided,
+    # but not if --nopartitions)
+    $table_perms[TABLE_PARTITION] = (($self->partitions or not defined $self->partitions) && $tables->{partitions}) ? $tables->{partitions} : [ undef ];
     $table_perms[TABLE_PK] = $tables->{pk} || $tables->{primary_key} || [ 'integer auto_increment' ];
     $table_perms[TABLE_ROW_FORMAT] = $tables->{row_formats} || [ undef ];
     $table_perms[TABLE_EXTRA_OPTS] = $tables->{options} || [ undef ];
