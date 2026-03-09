@@ -515,7 +515,14 @@ sub post_upgrade {
 
   #####
   $self->printStep("Comparing databases before and after $type upgrade");
-  my $data_status= $self->compare_data(\%old_data, \%new_data, $vardir, "${type}-upgrade");
+  my $data_status= $self->compare_data(
+    \%old_data,
+    \%new_data,
+    $vardir,
+    "${type}-upgrade",
+    $old_server->versionNumeric,
+    $new_server->versionNumeric
+  );
   if ($data_status != STATUS_OK) {
     $data_status= $self->upgrade_or_recovery_failure();
   }
