@@ -1,5 +1,5 @@
 # Copyright (C) 2009 Sun Microsystems, Inc. All rights reserved.
-# Copyright (c) 2016, 2024 MariaDB Corporation Ab
+# Copyright (c) 2016, 2026 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -99,6 +99,24 @@ sub random_zerofill {
 }
 sub random_int_type {
     return $prng->arrayElement(['TINYINT','SMALLINT','MEDIUMINT','INT','BIGINT']);
+}
+sub superset_int_type {
+    my $basetype = shift;
+    if ($basetype eq 'DECIMAL') {
+        return $prng->arrayElement(['TINYINT','SMALLINT','MEDIUMINT','INT','BIGINT','DECIMAL']);
+    } elsif ($basetype eq 'BIGINT') {
+        return $prng->arrayElement(['TINYINT','SMALLINT','MEDIUMINT','INT','BIGINT']);
+    } elsif ($basetype eq 'INT') {
+        return $prng->arrayElement(['TINYINT','SMALLINT','MEDIUMINT','INT']);
+    } elsif ($basetype eq 'MEDIUMINT') {
+        return $prng->arrayElement(['TINYINT','SMALLINT','MEDIUMINT']);
+    } elsif ($basetype eq 'SMALLINT') {
+        return $prng->arrayElement(['TINYINT','SMALLINT']);
+    } elsif ($basetype eq 'TINYINT') {
+        return $prng->arrayElement(['TINYINT']);
+    }
+    # Just in case
+    return $prng->arrayElement(['TINYINT','SMALLINT','MEDIUMINT','INT','BIGINT','DECIMAL']);
 }
 sub random_char_type {
     return $prng->uint16(0,1) ? 'CHAR' : 'BINARY' ;
@@ -438,7 +456,7 @@ sub gen_table {
 
         if ($columns{col_bit} and !$prng->uint16(0,9)) {
             $columns{vcol_bit}= [   'BIT',
-                                    $prng->uint16(0,64),
+                                    $prng->uint16($columns{col_bit}->[1],64),
                                     undef,
                                     undef,
                                     undef,
@@ -451,9 +469,9 @@ sub gen_table {
         }
 
         if ($columns{col_int} and $prng->uint16(0,9)) {
-            $columns{vcol_int}= [   random_int_type(),
-                                    $prng->uint16(0,64),
-                                    undef,
+            $columns{vcol_int}= [   superset_int_type($columns{col_int}->[0]),
+                                    $prng->uint16($columns{col_int}->[1],64),
+                                    $columns{col_int}->[2],
                                     random_zerofill(),
                                     undef,
                                     undef,
@@ -540,7 +558,7 @@ sub gen_table {
           # because "1105 Expression depends on the @@sql_mode value PAD_CHAR_TO_FULL_LENGTH"
             my $type= ($columns{col_char}->[0] eq 'CHAR' ? 'CHAR' : random_char_type());
             $columns{vcol_char}= [  $type,
-                                    $prng->uint16(0,255),
+                                    $prng->uint16($columns{col_char}->[1],255),
                                     undef,
                                     undef,
                                     undef,
@@ -554,7 +572,7 @@ sub gen_table {
 
         if ($columns{col_varchar} and $prng->uint16(0,9)) {
             $columns{vcol_varchar}= [random_varchar_type(),
-                                    $prng->uint16(0,4096),
+                                    $prng->uint16($columns{col_varchar}->[1],4096),
                                     undef,
                                     undef,
                                     undef,
