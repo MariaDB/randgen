@@ -1,4 +1,4 @@
-# Copyright (c) 2023 MariaDB
+# Copyright (c) 2023, 2026 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 use strict;
 
 $combinations = [
-  [
-  '
+  ['
     --threads=1
     --duration=60
     --queries=10
@@ -38,7 +37,6 @@ $combinations = [
     --gendata=advanced
     --views=MERGE,TEMPTABLE
     --vcols
-    --partitions
     --reporters=Backtrace,Deadlock,FeatureUsage
     --mysqld=--log_output=FILE
     --mysqld=--loose-max-statement-time=20
@@ -46,16 +44,17 @@ $combinations = [
     --mysqld=--innodb-lock-wait-timeout=5
     --scenario=NormalUpgrades
   '],
-  [
+  { innodb =>
     [
-      '
+      ['
+        --partitions
         --engine=InnoDB
         --gendata=conf/zz/innodb-key-block-size.zz
         --gendata=conf/zz/innodb-page-compression-partition.zz
         --gendata=conf/zz/innodb-page-compression.zz
         --gendata=conf/zz/innodb-partition.zz
         --gendata=conf/zz/innodb.zz
-      ',
+      '],
       [ '--mysqld=--innodb_compression_algorithm=none', '--mysqld=--innodb_compression_default=on' ],
       [ '--mysqld=--innodb_page_size=4K',
         '--mysqld=--innodb_page_size=8K',
@@ -63,19 +62,33 @@ $combinations = [
         '--mysqld=--innodb_page_size=32K',
         '--mysqld=--innodb_page_size=64K'
       ],
+      [ '',
+        '--mysqld=--innodb-encrypt-tables
+        --mysqld=--innodb-encrypt-log
+        --mysqld=--innodb-encryption-threads=4
+        --mysqld=--aria-encrypt-tables=1
+        --mysqld=--encrypt-tmp-disk-tables=1
+        --mysqld=--encrypt-binlog
+        --mysqld=--file-key-management
+        --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt
+        --mysqld=--plugin-load-add=file_key_management
+        '
+      ],
     ],
-    [ '--engine=MyISAM,Aria' ]
-  ],
-  [ '',
-    '--mysqld=--innodb-encrypt-tables
-     --mysqld=--innodb-encrypt-log
-     --mysqld=--innodb-encryption-threads=4
-     --mysqld=--aria-encrypt-tables=1
-     --mysqld=--encrypt-tmp-disk-tables=1
-     --mysqld=--encrypt-binlog
-     --mysqld=--file-key-management
-     --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt
-     --mysqld=--plugin-load-add=file_key_management
-    '
-  ],
+  myisam =>
+    [ ['--engine=MyISAM,Aria'],
+      [ '--partitions',
+        '--mysqld=--innodb-encrypt-tables
+        --mysqld=--innodb-encrypt-log
+        --mysqld=--innodb-encryption-threads=4
+        --mysqld=--aria-encrypt-tables=1
+        --mysqld=--encrypt-tmp-disk-tables=1
+        --mysqld=--encrypt-binlog
+        --mysqld=--file-key-management
+        --mysqld=--file-key-management-filename='.$ENV{RQG_HOME}.'/util/file_key_management_keys.txt
+        --mysqld=--plugin-load-add=file_key_management
+        '
+      ],
+    ],
+  },
 ];
