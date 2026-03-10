@@ -1015,7 +1015,14 @@ $optional_replication_safe_variables{1004}= [ @{$optional_replication_safe_varia
 ];
 $optional_replication_safe_variables{1005}= [ @{$optional_replication_safe_variables{$minversion}},
   # Default NO
-  [ @empty_set_30, '--mysqld=--slave_run_triggers_for_rbr=YES', '--mysqld=--slave_run_triggers_for_rbr=LOGGING', '--mysqld=--slave_run_triggers_for_rbr=ENFORCE' ],
+  # Having ENFORCE easily leads to ER_CANT_UPDATE_USED_TABLE_IN_SF_OR_TRG (1442)
+  # in tests, because the trigger is the same on master and slave, master
+  # updates a table via it first, it goes into binlog, slave tries to update it
+  # again, hence the error
+  [ @empty_set_30,
+    '--mysqld=--slave_run_triggers_for_rbr=YES',
+    '--mysqld=--slave_run_triggers_for_rbr=LOGGING',
+    '--mysqld=--slave_run_triggers_for_rbr=ENFORCE --mysqld=--slave-skip-errors=1442' ],
 ];
 
 $optional_replication_safe_variables{1104}= [ @{$optional_replication_safe_variables{1005}},
