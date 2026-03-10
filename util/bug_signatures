@@ -212,7 +212,7 @@ MDEV-38724:
 MDEV-38715:
 =~ Received malformed packet|Commands out of sync
 =~ FeatureUsage detected Federated tables
-=~ status_var\.local_memory_used == 0|Warning: Internal memory accounting error|Atomic_counter
+=~ status_var\.local_memory_used == 0|Warning: Internal memory accounting error|Atomic_counter|Test run ends with exit status STATUS_CLIENT_FAILURE
 MDEV-38714:
 =~ AddressSanitizer|signal
 =~ Item_field::used_tables
