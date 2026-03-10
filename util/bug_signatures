@@ -839,6 +839,9 @@ MDEV-34253:
 MDEV-34252:
 =~ DDL_LOG: Got error 1050 when trying to execute action for entry .* of type 'alter table'
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG
+MDEV-34230: [Expected more data in file]
+=~ Got error 175 "File too short; Expected more data in file" from storage engine Aria
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG|Test run ends with exit status STATUS_DATABASE_CORRUPTION
 MDEV-34117: [Not fixed in 10.6]
 =~ Assertion \`! thd->in_sub_stmt'
 =~ trans_rollback_stmt
@@ -963,7 +966,7 @@ MDEV-33170:
 =~ Query_cache::invalidate_table
 =~ fast_end_partition
 =~ fast_alter_partition_table
-=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ Version: '10\.[7-9]|Server version: 10\.[7-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*|=~ Version: '10\.[6-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 10\.[6-9]\.[0-9][0-9]*-[0-9][0-9]*
 MDEV-33162:
 =~ Assertion \`thd->active_stmt_arena_to_use()-> is_stmt_prepare_or_first_sp_execute() \|\| thd->active_stmt_arena_to_use()-> is_conventional() \|\| thd->active_stmt_arena_to_use()->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'|Assertion \`thd->active_stmt_arena_to_use()-> is_stmt_prepare_or_first_stmt_execute() \|\| thd->active_stmt_arena_to_use()-> is_conventional() \|\| thd->active_stmt_arena_to_use()->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'|Assertion \`active_arena->is_stmt_prepare_or_first_stmt_execute() \|\| active_arena->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'
 =~ Prepared_statement::execute|sp_head::execute
@@ -4184,7 +4187,7 @@ TODO-9: [Spider deadlock]
 TODO-8: [LeakSanitizer: CRYPTO_malloc]
 =~ LeakSanitizer: detected memory leaks
 =~ in CRYPTO_malloc
-=~ Test run ends with exit status STATUS_MEMORY_LEAK
+=~ Test run ends with exit status STATUS_MEMORY_LEAK|Test run ends with exit status STATUS_SERVER_SHUTDOWN_FAILURE
 TODO-7: [LeakSanitizer has encountered a fatal error]
 =~ LeakSanitizer has encountered a fatal error
 TODO-6: [Third Party: FascistLookUser]
@@ -4229,8 +4232,6 @@ MDEV-26990: [Unknown (generic) error from engine]
 MDEV-22873: [primary key in InnoDB data dictionary, but not in MariaDB]
 =~ has a primary key in InnoDB data dictionary, but not in MariaDB
 =~ FeatureUsage detected GIS columns
-MDEV-21085: [Expected more data in file]
-=~ Got error 175 "File too short; Expected more data in file" from storage engine Aria
 MDEV-18213:
 =~ Error: failed to execute query BACKUP STAGE BLOCK_COMMIT: Deadlock found when trying to get lock
 MDEV-18209: [Enabling keys got errno 0]
