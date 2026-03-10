@@ -1,7 +1,7 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Use is subject to license terms.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020,2024 MariaDB
+# Copyright (c) 2020, 2026 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -1024,12 +1024,13 @@ use constant  WARN_INNODB_PARTITION_OPTION_IGNORED              => 1982; # <%-.6
 
 # 2xxx are client codes, perror doesn't show them
 
-use constant  ER_CONNECTION_ERROR                               => 2002;
-use constant  ER_CONN_HOST_ERROR                                => 2003;
-use constant  ER_SERVER_GONE_ERROR                              => 2006;
-use constant  ER_SERVER_LOST                                    => 2013;
+use constant  CR_CONNECTION_ERROR                               => 2002;
+use constant  CR_CONN_HOST_ERROR                                => 2003;
+use constant  CR_SERVER_GONE_ERROR                              => 2006;
+use constant  CR_SERVER_LOST                                    => 2013;
 use constant  CR_COMMANDS_OUT_OF_SYNC                           => 2014;  # Caused by old DBD::mysql
-use constant  ER_SERVER_LOST_EXTENDED                           => 2055;
+use constant  CR_MALFORMED_PACKET                               => 2027;
+use constant  CR_SERVER_LOST_EXTENDED                           => 2055;
 
 use constant  ER_FILE_CORRUPT                                   => 3000; # File %s is corrupted
 use constant  ER_ERROR_ON_MASTER                                => 3001; # Query partially completed on the master (error on master: %d) and was aborted. There <...>
@@ -1340,7 +1341,13 @@ sub BEGIN {
 
   %err2type = (
 
-    CR_COMMANDS_OUT_OF_SYNC() => STATUS_CRITICAL_FAILURE,
+    CR_COMMANDS_OUT_OF_SYNC()                           => STATUS_CLIENT_FAILURE,
+    CR_CONNECTION_ERROR()                               => STATUS_SERVER_UNAVAILABLE,
+    CR_CONN_HOST_ERROR()                                => STATUS_SERVER_UNAVAILABLE,
+    CR_MALFORMED_PACKET()                               => STATUS_CLIENT_FAILURE,
+    CR_SERVER_GONE_ERROR()                              => STATUS_SEMANTIC_ERROR,
+    CR_SERVER_LOST()                                    => STATUS_SERVER_UNAVAILABLE,
+    CR_SERVER_LOST_EXTENDED()                           => STATUS_SERVER_UNAVAILABLE,
 
     ER_ABORTING_CONNECTION()                            => STATUS_RUNTIME_ERROR,
     ER_ACCESS_DENIED_CHANGE_USER_ERROR()                => STATUS_ACL_ERROR,
@@ -1533,11 +1540,9 @@ sub BEGIN {
     ER_CONFLICT_FN_PARSE_ERROR()                        => STATUS_SYNTAX_ERROR,
     ER_CONFLICTING_FOR_SYSTEM_TIME()                    => STATUS_SEMANTIC_ERROR,
     ER_CONNECTION_ALREADY_EXISTS()                      => STATUS_CRITICAL_FAILURE,
-    ER_CONNECTION_ERROR()                               => STATUS_SERVER_CRASHED,
     ER_CONNECTION_KILLED()                              => STATUS_RUNTIME_ERROR,
     ER_CONNECT_TO_FOREIGN_DATA_SOURCE()                 => STATUS_RUNTIME_ERROR,
     ER_CONNECT_TO_MASTER()                              => STATUS_REPLICATION_FAILURE,
-    ER_CONN_HOST_ERROR()                                => STATUS_SERVER_CRASHED,
     ER_CONSECUTIVE_REORG_PARTITIONS()                   => STATUS_SEMANTIC_ERROR,
     ER_CONSTRAINT_FAILED()                              => STATUS_RUNTIME_ERROR,
     ER_CON_COUNT_ERROR()                                => STATUS_ENVIRONMENT_FAILURE,
@@ -2112,10 +2117,7 @@ sub BEGIN {
     ER_SEQUENCE_TABLE_CANNOT_HAVE_ANY_KEYS()            => STATUS_SEMANTIC_ERROR,
     ER_SEQUENCE_TABLE_HAS_WRONG_NUMBER_OF_COLUMNS()     => STATUS_SEMANTIC_ERROR,
     ER_SEQUENCE_TABLE_ORDER_BY()                        => STATUS_SEMANTIC_ERROR,
-    ER_SERVER_GONE_ERROR()                              => STATUS_SEMANTIC_ERROR,
     ER_SERVER_IS_IN_SECURE_AUTH_MODE()                  => STATUS_CONFIGURATION_ERROR,
-    ER_SERVER_LOST()                                    => STATUS_SERVER_CRASHED,
-    ER_SERVER_LOST_EXTENDED()                           => STATUS_SERVER_CRASHED,
     ER_SERVER_OFFLINE_MODE()                            => STATUS_CONFIGURATION_ERROR,
     ER_SERVER_SHUTDOWN()                                => STATUS_SERVER_STOPPED,
     ER_SET_CONSTANTS_ONLY()                             => STATUS_SEMANTIC_ERROR,
