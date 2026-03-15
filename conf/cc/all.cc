@@ -208,6 +208,7 @@ $combinations = [
         [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
         [ '--gendata=advanced --gis'],
         [ '--grammar=conf/yy/gis.yy --grammar=conf/yy/alter_table.yy'],
+        [ '--filter=conf/ff/replication.ff' ],
         $options{engine_basic_combinations},
         $options{optional_charsets_safe},
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
@@ -598,6 +599,7 @@ $combinations = [
       ],
       unique_hash => [
         [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
+        [ '--filter=conf/ff/replication.ff' ],
         [ '--gendata=advanced --unique-hash-keys --gendata=conf/zz/blobs.zz --grammar=conf/yy/indexes_and_constraints.yy' ],
         [ '--engine=InnoDB,MyISAM' ],
         $options{optional_charsets_safe},
@@ -640,6 +642,7 @@ $combinations = [
       ],
       virtual_columns => [
         [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
+        [ '--filter=conf/ff/replication.ff' ],
         [ '--gendata=advanced' ],
         [ '--grammar=conf/yy/virtual_columns.yy' ],
         [ '--vcols', '--vcols=VIRTUAL', '--vcols=STORED' ],

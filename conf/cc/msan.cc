@@ -324,6 +324,7 @@ $combinations = [
         [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
         [ '--gendata=advanced --unique-hash-keys --gendata=conf/zz/blobs.zz --grammar=conf/yy/indexes_and_constraints.yy' ],
         [ '--engine=InnoDB,MyISAM' ],
+        [ '--filter=conf/ff/replication.ff' ],
         $options{optional_charsets_safe},
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
         $options{optional_variators},
