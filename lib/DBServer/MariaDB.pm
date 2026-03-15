@@ -1877,6 +1877,8 @@ sub isRecordIgnored {
     or  $line =~ /Invalid roles_mapping table entry user/s
     or  $line =~ /Missing system table mysql\.roles_mapping; please run mysql_upgrade to create it/s
     or  $line =~ /MYSQL_BIN_LOG::purge_logs was called with file .* not listed in the index/s
+    # MDEV-37339 doesn't appear to be properly backported
+    or  $line =~ /(?:mysqld|mariadbd): caching_sha2_password: failed to read private_key\.pem/
     or  $line =~ /(?:mysqld|mariadbd): Deadlock found when trying to get lock/s
     or  $line =~ /(?:mysqld|mariadbd): Got error '144 "Table is crashed and last repair failed"' for .*/s
     or  $line =~ /(?:mysqld|mariadbd): Got error '145 "Table was marked as crashed and should be repaired"'/s
