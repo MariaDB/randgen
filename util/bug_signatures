@@ -337,7 +337,6 @@ MDEV-37904:
 =~ signal|MemorySanitizer|Conditional jump or move depends on uninitialised value
 =~ Explain_table_access::tag_to_json
 =~ Explain_query::print_explain_json
-=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-37708:
 =~ Assertion \`!trx->is_bulk_insert()'
 =~ ha_innobase::delete_row
@@ -1858,8 +1857,7 @@ MDEV-29457:
 =~ ib::fatal::~fatal
 =~ row_undo_step
 =~ FeatureUsage detected GIS columns
-# Closed as not a bug
-MDEV-29454:
+MDEV-29454: [Closed as not a bug]
 =~ Got error 1440 when reading table
 =~ FeatureUsage detected Spider tables
 =~ FeatureUsage detected XA transactions
@@ -3112,8 +3110,7 @@ MDEV-22873:
 =~ has a primary key in InnoDB data dictionary, but not in MariaDB
 =~ Assertion \`len == ref_length'|AddressSanitizer
 =~ ha_innobase::position
-=~ find_all_keys|mysql_update
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ find_all_keys|mysql_update|Sql_cmd_update::update_single_table
 =~ FeatureUsage detected GIS columns
 MDEV-22873:
 =~ AddressSanitizer|signal 11
