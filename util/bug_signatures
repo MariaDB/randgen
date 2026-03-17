@@ -36,10 +36,10 @@
 ######
 
 MDEV-39081:
-=~ MemorySanitizer: use-of-uninitialized-value
-=~ Binary_string::c_ptr
-=~ Explain_table_access::tag_to_json
-=~ Explain_query::print_explain_json
+=~ InnoDB: tried to purge non-delete-marked record in index
+=~ Assertion \`0'
+=~ row_purge_del_mark_error
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-39002:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
 =~ Diagnostics_area::set_ok_status
