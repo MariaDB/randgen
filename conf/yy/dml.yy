@@ -97,6 +97,7 @@ dml_trx:
 
 dml_dml:
                dml_select |
+      dml_select_from_cte |
   ==FACTOR:9== dml_update |
   ==FACTOR:2== dml_delete |
   ==FACTOR:5== dml_insert
@@ -116,15 +117,36 @@ dml_data_value:
   NULL | DEFAULT | _tinyint_unsigned | _english | _char(1) | ''
 ;
 
+dml_field_condition:
+  _field IS __not(50) NULL |
+  _field _basics_comparison_operator _tinyint_unsigned |
+  _field _basics_comparison_operator _english | _char(1)
+;
+
 dml_update:
-  UPDATE __ignore(80) _table SET _field = dml_data_value ORDER BY _field LIMIT _digit
+  UPDATE __ignore(80) _table SET _field = dml_data_value ORDER BY _field LIMIT _digit |
+  dml_with_1cte UPDATE __ignore(80) _table SET _field = dml_data_value WHERE EXISTS (SELECT * FROM cte ) ORDER BY _field LIMIT _digit /* compatibility 12.3.1 */ |
+  dml_with_2cte UPDATE __ignore(80) _table, cte1, cte2 SET _field = cte2._field WHERE EXISTS (SELECT * FROM cte1 ) ORDER BY _field LIMIT _digit /* compatibility 12.3.1 */
 ;
 
 dml_delete:
-  DELETE FROM _table ORDER BY _field LIMIT _digit
+  DELETE FROM _table ORDER BY _field LIMIT _digit |
+  dml_with_1cte DELETE FROM _table WHERE dml_field_condition AND EXISTS ( SELECT * FROM cte ) /* compatibility 12.3.1 */ |
+  dml_with_2cte DELETE FROM _table[invariant] USING _table[invariant], cte1, cte2 WHERE _field = cte2._field AND EXISTS ( SELECT * FROM cte1 NATURAL JOIN cte2 ) /* compatibility 12.3.1 */
 ;
 
 dml_select:
   SELECT /* _table[invariant] */ _field FROM _table[invariant] ORDER BY _field LIMIT _tinyint_unsigned __for_update(20) |
   SELECT * FROM _table ORDER BY _field LIMIT _tinyint_unsigned __for_update(20)
 ;
+
+dml_select_from_cte:
+  dml_with_1cte SELECT * FROM cte WHERE dml_field_condition |
+  dml_with_2cte SELECT * FROM cte1 WHERE EXISTS (SELECT * FROM cte2 WHERE dml_field_condition)
+;
+
+dml_with_1cte:
+  WITH cte AS ( dml_select );
+
+dml_with_2cte:
+  WITH cte1 AS ( dml_select ), cte2 AS ( dml_select );
