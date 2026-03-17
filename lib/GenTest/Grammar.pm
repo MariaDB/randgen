@@ -322,9 +322,9 @@ sub parseFromString {
       $component_string =~ s{([_a-zA-Z0-9'"`\{\}\$\[\]]+)}{|$1|}sgio;
 
       # Revert overzealous splitting that splits things like _varchar(32)
-      # or __on_off(33,33) into several tokens
+      # or __on_off_maybe(33,33,33) into several tokens
 
-      $component_string =~ s{\|(\d+)\|,\|(\d+)\|}{\|$1,$2\|}sgo;
+      $component_string =~ s{\((\|\d+\|(?>,\|\d+\|)*)\)}{'(|' . ($1 =~ tr/|//dr) . '|)'}ge;
       $component_string =~ s{([a-zA-Z0-9_]+)\|\(\|([,\d]+)\|\)}{$1($2)|}sgo;
 
       # Remove leading and trailing pipes
