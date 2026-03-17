@@ -26,117 +26,105 @@ query:
   { _set_db('NON-SYSTEM') } dml_query;
 
 dml_query:
-  ==FACTOR:9== generic_dml_query |
-  ==FACTOR:3== generic_dml_transaction |
-  generic_dml_trx |
-  ==FACTOR:0.05== START TRANSACTION ;; very_long_transaction ;; __commit_x_rollback(70,30)
+  ==FACTOR:9== dml_dml |
+               dml_trx |
+  ==FACTOR:0.05== START TRANSACTION ;; dml_long_transaction ;; __commit_x_rollback(70,30)
 ;
 
-very_long_transaction:
-               generic_dml_10000 |
-  ==FACTOR:3== generic_dml_1000  |
-  ==FACTOR:9== generic_dml_100
+dml_long_transaction:
+               dml_10000 |
+  ==FACTOR:3== dml_1000  |
+  ==FACTOR:9== dml_100
 ;
 
 
-generic_dml_10:
-     generic_dml_dml
-  ;; generic_dml_dml
-  ;; generic_dml_dml
-  ;; generic_dml_dml
-  ;; generic_dml_dml
-  ;; generic_dml_dml
-  ;; generic_dml_dml
-  ;; generic_dml_dml
-  ;; generic_dml_dml
-  ;; generic_dml_dml
+dml_10:
+     dml_dml
+  ;; dml_dml
+  ;; dml_dml
+  ;; dml_dml
+  ;; dml_dml
+  ;; dml_dml
+  ;; dml_dml
+  ;; dml_dml
+  ;; dml_dml
+  ;; dml_dml
 ;
 
-generic_dml_100:
-     generic_dml_10
-  ;; generic_dml_10
-  ;; generic_dml_10
-  ;; generic_dml_10
-  ;; generic_dml_10
-  ;; generic_dml_10
-  ;; generic_dml_10
-  ;; generic_dml_10
-  ;; generic_dml_10
-  ;; generic_dml_10
+dml_100:
+     dml_10
+  ;; dml_10
+  ;; dml_10
+  ;; dml_10
+  ;; dml_10
+  ;; dml_10
+  ;; dml_10
+  ;; dml_10
+  ;; dml_10
+  ;; dml_10
 ;
 
-generic_dml_1000:
-     generic_dml_100
-  ;; generic_dml_100
-  ;; generic_dml_100
-  ;; generic_dml_100
-  ;; generic_dml_100
-  ;; generic_dml_100
-  ;; generic_dml_100
-  ;; generic_dml_100
-  ;; generic_dml_100
-  ;; generic_dml_100
+dml_1000:
+     dml_100
+  ;; dml_100
+  ;; dml_100
+  ;; dml_100
+  ;; dml_100
+  ;; dml_100
+  ;; dml_100
+  ;; dml_100
+  ;; dml_100
+  ;; dml_100
 ;
 
-generic_dml_10000:
-     generic_dml_1000
-  ;; generic_dml_1000
-  ;; generic_dml_1000
-  ;; generic_dml_1000
-  ;; generic_dml_1000
-  ;; generic_dml_1000
-  ;; generic_dml_1000
-  ;; generic_dml_1000
-  ;; generic_dml_1000
-  ;; generic_dml_1000
+dml_10000:
+     dml_1000
+  ;; dml_1000
+  ;; dml_1000
+  ;; dml_1000
+  ;; dml_1000
+  ;; dml_1000
+  ;; dml_1000
+  ;; dml_1000
+  ;; dml_1000
+  ;; dml_1000
 ;
 
-generic_dml_trx:
+dml_trx:
   START TRANSACTION |
   COMMIT
 ;
 
-generic_dml_transaction:
-  START TRANSACTION ;; generic_dml_set ;; COMMIT ;
-
-generic_dml_set:
-  generic_dml_dml |
-  generic_dml_dml ;; generic_dml_set
+dml_dml:
+               dml_select |
+  ==FACTOR:9== dml_update |
+  ==FACTOR:2== dml_delete |
+  ==FACTOR:5== dml_insert
 ;
 
-generic_dml_query:
-  generic_dml_select |
-  ==FACTOR:10== generic_dml_dml ;
-
-generic_dml_dml:
-  ==FACTOR:3== generic_dml_update |
-  generic_dml_delete |
-  ==FACTOR:2== generic_dml_insert
+dml_insert:
+  dml_insert_op INTO _table ( _field ) VALUES ( dml_data_value ) |
+  dml_insert_op INTO _table ( _field, _field_next ) VALUES ( dml_data_value, dml_data_value ) |
+  dml_insert_op INTO _table () VALUES _basics_empty_values_list
 ;
 
-generic_dml_insert:
-  generic_dml_insert_op INTO _table ( _field ) VALUES ( generic_dml_data_value ) |
-  generic_dml_insert_op INTO _table ( _field, _field_next ) VALUES ( generic_dml_data_value, generic_dml_data_value ) |
-  generic_dml_insert_op INTO _table () VALUES _basics_empty_values_list
-;
-
-generic_dml_insert_op:
+dml_insert_op:
   INSERT __ignore_x_delayed(85,3) | REPLACE
 ;
 
-generic_dml_data_value:
+dml_data_value:
   NULL | DEFAULT | _tinyint_unsigned | _english | _char(1) | ''
 ;
 
-generic_dml_update:
-  UPDATE __ignore(80) _table SET _field = generic_dml_data_value ORDER BY _field LIMIT _digit
+dml_update:
+  UPDATE __ignore(80) _table SET _field = dml_data_value ORDER BY _field LIMIT _digit
 ;
 
-generic_dml_delete:
+dml_delete:
   DELETE FROM _table ORDER BY _field LIMIT _digit
 ;
 
-generic_dml_select:
+dml_select:
   SELECT /* _table[invariant] */ _field FROM _table[invariant] ORDER BY _field LIMIT _tinyint_unsigned __for_update(20) |
   SELECT * FROM _table ORDER BY _field LIMIT _tinyint_unsigned __for_update(20)
 ;
