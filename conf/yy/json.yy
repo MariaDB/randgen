@@ -1,4 +1,4 @@
-# Copyright (C) 2017, 2022 MariaDB Corporation Ab.
+# Copyright (C) 2017, 2026 MariaDB Corporation Ab.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,8 +61,10 @@ alter:
     ALTER TABLE test.`tmp` ADD index_type INDEX ( key_field key_length )
   | ALTER TABLE test.`tmp` DROP INDEX key_field
   | ==FACTOR:0.01== ALTER TABLE test.`tmp` column_op `vfld` TEXT AS ( vcol_expression ) virt_persist opt_col_check
+  | ==FACTOR:0.01== ALTER TABLE test.`tmp` column_op `vfld` BOOL AS ( vcol_expression json_predicate ) virt_persist opt_col_check /* compatibility 12.3.1 */
   | ALTER TABLE test.`tmp` MODIFY `fld` fld_type opt_col_check
-;
+  | ==FACTOR:0.5== ALTER TABLE test.`tmp` column_op `bfld` BOOL DEFAULT ( fld json_predicate ) opt_col_check /* compatibility 12.3.1 */
+;;
 
 opt_col_check:
   ==FACTOR:10== |
@@ -107,6 +109,8 @@ update:
 ;
 
 select:
+# This occasionally causes a syntax error when the rule picks a sys view
+# with a field 'query'. Let it be.
   ==FACTOR:3== /* _table[invariant] _field { $json_table_field = $last_field } */ SELECT select_item AS fld FROM _table[invariant] where LIMIT _digit |
   SELECT { $col= $prng->uint16(1,20); $json_table_field = 'col'.$col; '' } select_item FROM { $prng->jsonTable($prng->uint16($col,25)) } /* compatibility 10.6.0 */
 ;
@@ -122,6 +126,12 @@ where:
   | | | |
   | WHERE text_arg _basics_comparison_operator text_arg
   | WHERE func_other _basics_comparison_operator func_other
+  | WHERE text_arg json_predicate /* compatibility 12.3.1 */
+  | WHERE func_other json_predicate /* compatibility 12.3.1 */
+;
+
+json_predicate:
+  IS __not(50) JSON __array_x_object_x_scalar(25,25,25) /* compatibility 12.3.1 */
 ;
 
 text_arg:
