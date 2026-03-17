@@ -131,8 +131,11 @@ where:
 ;
 
 json_predicate:
-  IS __not(50) JSON __array_x_object_x_scalar(25,25,25) /* compatibility 12.3.1 */
+  IS __not(50) JSON __array_x_object_x_scalar_x_value(20,20,20,20) optional_json_predicate_unique /* compatibility 12.3.1 */
 ;
+
+optional_json_predicate_unique:
+  | __with_x_without(50,50) UNIQUE __keys(50) ;
 
 text_arg:
   _json |
