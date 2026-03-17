@@ -406,8 +406,8 @@ sub gen_table {
     }
 
     # UUID data type was introduced in 10.7.1
-    # UUID columns shoudn't be very common, but they're new. 20% for now
-    if (isCompatible('100701,es-1006',$self->compatibility,$self->compatibility_es) and !$prng->uint16(0,4)) {
+    # UUID columns shoudn't be very common. 10% for now
+    if (isCompatible('100701,es-1006',$self->compatibility,$self->compatibility_es) and !$prng->uint16(0,9)) {
         $columns{col_uuid} = [ 'UUID',
                                 undef,
                                 undef,
@@ -422,8 +422,8 @@ sub gen_table {
     }
 
     # VECTOR data type was introduced in 11.7.1
-    # VECTOR columns shoudn't be very common, but they're new. 10% after testing
-    if (isCompatible('110700',$self->compatibility,$self->compatibility_es) and !$prng->uint16(0,9)) {
+    # VECTOR columns shoudn't be very common, but they're fashionable. 10%
+    if (isCompatible('110701,es-1104',$self->compatibility,$self->compatibility_es) and !$prng->uint16(0,9)) {
         $vector_length= ($prng->uint16(0,9) ? $prng->uint16(1,100) : $prng->uint16(101,300));
         $columns{veccol} = [ 'VECTOR',
                                 $vector_length,
@@ -431,6 +431,22 @@ sub gen_table {
                                 undef,
                                 'NOT NULL',
                                 '0x'.join ('', map { '0' } (1..$vector_length*8)),
+                                undef,
+                                ( $invisible_forbidden ? undef : random_invisible() ),
+                                undef,
+                                undef
+                            ]
+    }
+
+    # XMLTYPE data type was introduced in 12.3.1
+    # XMLTYPE columns shoudn't be very common. 10%
+    if (isCompatible('120301',$self->compatibility,$self->compatibility_es) and !$prng->uint16(0,9)) {
+        $columns{col_xmltype} = [ 'XMLTYPE',
+                                undef,
+                                undef,
+                                undef,
+                                $nullable = random_null(),
+                                ( $nullable eq 'NULL' ? undef : "''" ),
                                 undef,
                                 ( $invisible_forbidden ? undef : random_invisible() ),
                                 undef,
@@ -639,7 +655,7 @@ sub gen_table {
                                     undef
                                 ];
         }
-        if ($columns{col_uuid} and !$prng->uint16(0,4)) {
+        if ($columns{col_uuid} and !$prng->uint16(0,9)) {
             $columns{vcol_uuid}= [ 'UUID',
                                     undef,
                                     undef,
@@ -647,6 +663,19 @@ sub gen_table {
                                     undef,
                                     undef,
                                     'AS (col_uuid) '.$self->random_or_predefined_vcol_kind(),
+                                    ($invisible_forbidden ? undef : random_invisible()),
+                                    undef,
+                                    undef
+                                ];
+        }
+        if ($columns{col_xmltype} and !$prng->uint16(0,9)) {
+            $columns{vcol_xmltype}= [ 'UUID',
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    undef,
+                                    'AS (col_xmltype) '.$self->random_or_predefined_vcol_kind(),
                                     ($invisible_forbidden ? undef : random_invisible()),
                                     undef,
                                     undef
@@ -944,10 +973,11 @@ sub gen_table {
                 $val= $prng->string($length);
               }
             }
-            elsif ($c->[0] =~ /(TINY|MEDIUM|LONG)?TEXT/)
+            # TODO: Make XMLTYPE actual XML
+            elsif ($c->[0] =~ /(TINY|MEDIUM|LONG)?TEXT|XMLTYPE/)
             {
                 my $maxlength= 65535;
-                if ($1 eq 'TINY') {
+                if ($1 && $1 eq 'TINY') {
                   $maxlength= 255;
                 }
                 my $length= $prng->uint16(0,$maxlength);
