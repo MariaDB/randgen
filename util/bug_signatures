@@ -144,6 +144,9 @@ MDEV-38813:
 =~ copy_data_between_tables
 =~ mysql_alter_table
 =~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
+MDEV-38809:
+=~ Column .* of table .* cannot be converted from type 'longblob' to type 'xmltype'
+=~ Test run ends with exit status STATUS_REPLICATION_FAILURE
 MDEV-38806:
 =~ InnoDB: Failing assertion: old_rec
 =~ btr_pcur_t::restore_position
