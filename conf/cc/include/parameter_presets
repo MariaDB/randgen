@@ -49,6 +49,24 @@ my @empty_set_50= (@empty_set_30, @empty_set_20);
 # Test parameters
 #########################
 
+$forbidden = [
+# Reset in the middle of replication does not make sense
+  [ 'ResetMaster', 'scenario=Replication' ],
+# Reset makes binlog inconsistent
+  [ 'ResetMaster', 'BinlogConsistency' ],
+# Binlog consistency check is impossible after PURGE
+  [ 'PurgeBinaryLogs', 'BinlogConsistency' ],
+  [ 'BinlogDump', 'PurgeBinaryLogs' ],
+# slave fails trying to reconnect after the master is restarted
+  [ 'BinlogDump', 'scenario=Replication' ],
+# datadir/binlogs are elsewhere after upgrade
+  [ 'BinlogDump', 'scenario=NormalUpgrades' ],
+# InnoDB does not work with STATEMENT + READ-COMMITTED or READ-UNCOMMITTED
+  [ 'binlog[-_]format=STATEMENT', 'transaction[-_]isolation=READ-COMMITTED' ],
+# Galera does not work with binlog-storage-engine
+  [ 'scenario=Galera', 'binlog[-_]storage[-_]engine=InnoDB' ],
+];
+
 #++++++++++++++++++++++++
 # Common test run parameters
 #++++++++++++++++++++++++
