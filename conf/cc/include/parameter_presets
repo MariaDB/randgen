@@ -65,6 +65,9 @@ $forbidden = [
   [ 'binlog[-_]format=STATEMENT', 'transaction[-_]isolation=READ-COMMITTED' ],
 # Galera does not work with binlog-storage-engine
   [ 'scenario=Galera', 'binlog[-_]storage[-_]engine=InnoDB' ],
+# Semisync does not work with binlog-storage-engine
+  [ 'rpl[-_]semi[-_]sync[-_]master[-_]enabled=on', 'binlog[-_]storage[-_]engine=InnoDB' ],
+  [ 'rpl[-_]semi[-_]sync[-_]slave[-_]enabled=on', 'binlog[-_]storage[-_]engine=InnoDB' ],
 ];
 
 #++++++++++++++++++++++++
