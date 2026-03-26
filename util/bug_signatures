@@ -35,6 +35,9 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-39181:
+=~ DDL_LOG: Got error 1696 when trying to execute action
+=~ Test run ends with exit status STATUS_RECOVERY_FAILURE
 MDEV-39081:
 =~ InnoDB: tried to purge non-delete-marked record in index
 =~ Assertion \`0'
