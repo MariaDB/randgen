@@ -1,4 +1,4 @@
-# Copyright (c) 2021, 2024 MariaDB
+# Copyright (c) 2021, 2026 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -80,6 +80,7 @@ my %usage_check= (
   'triggers' => \&check_for_triggers,
   'unique blobs' => \&check_for_unique_blobs,
   'UUID columns' => \&check_for_uuid_columns,
+  'vector columns' => \&check_for_vector_columns,
   'vector keys' => \&check_for_vector_keys,
   'virtual columns' => \&check_for_virtual_columns,
   'system-versioned tables' => \&check_for_versioning,
@@ -319,6 +320,14 @@ sub check_for_triggers {
 sub check_for_uuid_columns {
   my $reporter= shift;
   if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_TYPE IN ('uuid')")) {
+    return "according to I_S.COLUMNS";
+  }
+  return undef;
+}
+
+sub check_for_vector_columns {
+  my $reporter= shift;
+  if ($reporter->getval("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_TYPE LIKE 'vector%'")) {
     return "according to I_S.COLUMNS";
   }
   return undef;
