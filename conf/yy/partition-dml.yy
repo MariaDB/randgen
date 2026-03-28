@@ -18,6 +18,7 @@
 # USA
 
 #require <conf/zz/partition_by_columns.zz>
+#features partitioned tables
 
 query_init:
   # This is to prevent other grammars from altering the schema

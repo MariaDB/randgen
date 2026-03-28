@@ -23,6 +23,7 @@
 ##########################################################################
 
 #include <conf/yy/include/partition_by.inc>
+#features partitioned tables
 
 
 query_init:
