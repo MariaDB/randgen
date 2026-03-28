@@ -83,6 +83,7 @@ use constant MYSQLD_MYSQLD_GENDATA => 43;
 use constant MYSQLD_ID => 44;
 use constant MYSQLD_RAND => 45;
 use constant MYSQLD_SEED => 46;
+use constant MYSQLD_INSTANCE_LOCKED => 47;
 
 use constant MARIABACKUP => 50;
 use constant TZINFO_TO_SQL => 51;
@@ -571,12 +572,15 @@ sub testSetup {
     $self->connection->execute("CREATE TABLE IF NOT EXISTS mysql.rqg_feature_registry (feature VARCHAR(64), PRIMARY KEY(feature)) ENGINE=Aria");
     if ($self->user ne 'root') {
       my $user= $self->user.'@localhost';
+      $self->connection->execute("CREATE ROLE IF NOT EXISTS superadmin");
+      $self->connection->execute("GRANT ALL ON *.* TO superadmin WITH GRANT OPTION");
       $self->connection->execute("CREATE ROLE IF NOT EXISTS admin");
       $self->connection->execute("GRANT ALL ON *.* TO admin WITH GRANT OPTION");
+      $self->connection->execute("REVOKE READ_ONLY ADMIN ON *.* FROM admin");
       # Temporary password to work around password check plugins
       $self->connection->execute("CREATE USER IF NOT EXISTS $user IDENTIFIED BY 'pqg8dnw.TUT_dhj7pcv' PASSWORD EXPIRE NEVER");
       $self->connection->execute("GRANT /*!100502 BINLOG ADMIN, BINLOG MONITOR, BINLOG REPLAY, CONNECTION ADMIN, FEDERATED ADMIN, ".
-                                  "READ_ONLY ADMIN, REPLICATION MASTER ADMIN, REPLICATION REPLICA, REPLICATION SLAVE ADMIN, SET USER, */ ".
+                                  "REPLICATION MASTER ADMIN, REPLICATION REPLICA, REPLICATION SLAVE ADMIN, SET USER, */ ".
                         "/*!100509 REPLICA MONITOR, */ ".
                   "CREATE USER, FILE, PROCESS, RELOAD, REPLICATION CLIENT, SHOW DATABASES, SHUTDOWN, SUPER ON *.* TO $user");
       $self->connection->execute("GRANT CREATE, SELECT ON *.* TO $user");
@@ -593,6 +597,7 @@ sub testSetup {
       }
       $self->connection->execute("DELETE FROM mysql.roles_mapping WHERE Role = 'admin'");
       $self->connection->execute("INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','admin','Y')");
+      $self->connection->execute("INSERT INTO mysql.roles_mapping VALUES ('localhost','".$self->user."','superadmin','Y')");
       $self->connection->execute("FLUSH PRIVILEGES");
       $self->connection->execute("SET binlog_format=DEFAULT");
     }
@@ -897,32 +902,107 @@ sub mariabackup {
   return $_[0]->[MARIABACKUP];
 }
 
+sub lock_instance {
+  my $self = shift;
+  if ($self->[MYSQLD_INSTANCE_LOCKED]) {
+    return STATUS_OK;
+  }
+  say("Locking the instance for administrative operation");
+  my $conn = $self->connection();
+  $conn->execute("SET max_statement_time= 0, lock_wait_timeout= 3600");
+  if ($conn->err) {
+    sayError("Failed to set variables: ".$conn->print_error());
+    return STATUS_INTERNAL_ERROR;
+  }
+  $conn->execute("FLUSH TABLES WITH READ LOCK");
+  if ($conn->err) {
+    sayError("Failed to FTWRL-ock tables: ".$conn->print_error());
+    return STATUS_INTERNAL_ERROR;
+  }
+  $conn->execute("SET GLOBAL read_only = 1");
+  if ($conn->err) {
+    sayError("Failed to set global read-only: ".$conn->print_error());
+    return STATUS_INTERNAL_ERROR;
+  }
+  $conn->execute("UNLOCK TABLES");
+  if ($conn->err) {
+    sayError("Failed to unlock tables after setting read-only: ".$conn->print_error());
+    return STATUS_INTERNAL_ERROR;
+  }
+  $conn->execute("SET SESSION TRANSACTION READ WRITE");
+  # In case it was set to READ ONLY before
+  if ($conn->err) {
+    sayError("Failed to set session transaction to read-write: ".$conn->print_error());
+    return STATUS_INTERNAL_ERROR;
+  }
+  $self->[MYSQLD_INSTANCE_LOCKED] = 1;
+  return STATUS_OK;
+}
+
+sub unlock_instance {
+  my $self = shift;
+  if (!$self->[MYSQLD_INSTANCE_LOCKED]) {
+    return STATUS_OK;
+  }
+  say("Unlocking the instance");
+  my $conn = $self->connection();
+  $conn->execute("SET GLOBAL read_only = 0");
+  if ($conn->err) {
+    sayError("Failed to unset global read-only: ".$conn->print_error());
+    return STATUS_INTERNAL_ERROR;
+  }
+  $self->[MYSQLD_INSTANCE_LOCKED] = 0;
+  return STATUS_OK;
+}
+
 sub drop_broken {
   my $self= shift;
-  my $conn= $self->connection();
   say("Checking view and merge table consistency");
-  # In case it was set to READ ONLY before
-  $conn->execute("SET SESSION TRANSACTION READ WRITE");
+  unless ($self->[MYSQLD_INSTANCE_LOCKED]) {
+    sayError("Instance must be locked for dropping broken tables/views");
+    return STATUS_INTERNAL_ERROR;
+  }
+  my $conn= $self->connection();
   while (1) {
-    my $broken= $conn->query("select * from information_schema.tables where table_comment like 'Unable to open underlying table which is differently defined or of non-MyISAM type or%' or table_comment like '%references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them' or table_comment like 'Table % is differently defined or of non-MyISAM type or%'");
-    last unless ($broken && scalar(@$broken));
-    # If we don't succeed to drop anything in a round, we'll give up
-    my $count= 0;
-    foreach my $vt (@$broken) {
-      my $fullname= '`'.$vt->[1].'`.`'.$vt->[2].'`';
-      my $type= ($vt->[3] eq 'VIEW' ? 'view' : 'table');
-      my $err= $vt->[20];
-      sayWarning("Error $err for $type $fullname, dropping");
-      $conn->execute("DROP $type $fullname");
-      if ($conn->err) {
-        sayWarning("Failed to drop $type $fullname: ".$conn->print_error);
-      } else {
-        $count++;
+    my $broken= $conn->query("select * from information_schema.tables where table_comment like '%is differently defined or of non-MyISAM type or%' or table_comment like '%references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them' or table_comment like 'Table % is differently defined or of non-MyISAM type or%' or table_comment like 'The foreign data source you are trying to reference does not exist%' or table_comment like 'An infinite loop is detected when opening table%' or table_comment like 'Remote table%is not found'");
+    if ($conn->err == 1146) {
+      sayWarning("Got error 1146 upon reading from I_S, going through tables one by one");
+      # Workaround for MDEV-39196 -- we will have to go through tables one by one
+      # to find the guilty one(s)
+      my $tables = $conn->query("select table_schema, table_name from information_schema.tables");
+      foreach my $t (@$tables) {
+        $conn->query("select * from information_schema.tables where table_schema = '$t->[0]' and table_name = '$t->[1]'");
+        if ($conn->err == 1146) {
+          sayWarning("Table $t->[0].$t->[1] is broken, query from I_S returns 1146. Dropping it").
+          $conn->execute("DROP TABLE $t->[0].$t->[1]");
+          if ($conn->err) {
+            sayWarning("Failed to drop table $t->[0].$t->[1]");
+          }
+        }
       }
-    }
-    if ($count == 0) {
-      sayError("Couldn't drop any of ".scalar(@$broken)." broken objects, giving up");
+    } elsif ($conn->err) {
+      sayError("Got unexpected error upon reading from I_S: ".$conn->print_error);
       return DBSTATUS_FAILURE;
+    } else {
+      last unless ($broken && scalar(@$broken));
+      # If we don't succeed to drop anything in a round, we'll give up
+      my $count= 0;
+      foreach my $vt (@$broken) {
+        my $fullname= '`'.$vt->[1].'`.`'.$vt->[2].'`';
+        my $type= ($vt->[3] eq 'VIEW' ? 'view' : 'table');
+        my $err= $vt->[20];
+        sayWarning("Error $err for $type $fullname, dropping");
+        $conn->execute("DROP $type $fullname");
+        if ($conn->err) {
+          sayWarning("Failed to drop $type $fullname: ".$conn->print_error);
+        } else {
+          $count++;
+        }
+      }
+      if ($count == 0) {
+        sayError("Couldn't drop any of ".scalar(@$broken)." broken objects, giving up");
+        return DBSTATUS_FAILURE;
+      }
     }
   }
   return DBSTATUS_OK;
@@ -936,11 +1016,14 @@ sub drop_broken {
 
 sub dumpdb {
     my ($self,$database,$file,$for_restoring,$options) = @_;
-    my $conn= $self->connection();
-    $conn->execute('SET GLOBAL max_statement_time=0');
+    unless ($self->lock_instance() == STATUS_OK) {
+      sayError("Failed to lock instance for dumpdb");
+      return STATUS_INTERNAL_ERROR;
+    }
     if ($self->drop_broken() != DBSTATUS_OK) {
       return DBSTATUS_FAILURE;
     }
+    my $conn= $self->connection();
     if ($for_restoring) {
       # Workaround for MDEV-29954 and many more
       # (unique hash keys are so broken that we cannot hope that the dump
@@ -1018,6 +1101,10 @@ sub dumpdb {
       system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $dump_command 2>&1 1>$file") :
       system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $dump_command | sort 2>&1 1>$file")
     );
+    unless ($self->unlock_instance() == STATUS_OK) {
+      sayError("Failed to unlock instance after dumping");
+      return STATUS_INTERNAL_ERROR;
+    }
     return $dump_result;
 }
 
@@ -1026,6 +1113,10 @@ sub dumpdb {
 sub dumpSchema {
     my ($self,$database, $file) = @_;
 
+    unless ($self->lock_instance() == STATUS_OK) {
+      sayError("Failed to lock instance for dumpSchema");
+      return STATUS_INTERNAL_ERROR;
+    }
     if ($self->drop_broken() != DBSTATUS_OK) {
       return DBSTATUS_FAILURE;
     }
@@ -1076,6 +1167,10 @@ sub dumpSchema {
       sayError("Dump failed, trying to collect some information");
       system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ".$self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SHOW FULL PROCESSLIST'");
       system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ".$self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO'");
+    }
+    unless ($self->unlock_instance() == STATUS_OK) {
+      sayError("Failed to unlock instance after dumping schema");
+      return STATUS_INTERNAL_ERROR;
     }
     return $dump_result;
 }
@@ -1304,11 +1399,14 @@ sub checkDatabaseIntegrity {
   my $self= shift;
 
   say("Testing database integrity");
+  unless ($self->lock_instance() == STATUS_OK) {
+    sayError("Failed to lock instance for checkDatabaseIntegrity");
+    return STATUS_INTERNAL_ERROR;
+  }
   my $conn= $self->connection;
   my $status= STATUS_OK;
   my $foreign_key_check_workaround= 0;
-
-  $conn->execute("SET max_statement_time= 0");
+  $self->drop_broken();
   my $databases = $conn->get_column("SHOW DATABASES");
   my $retried_lost_connection= 0;
   ALLDBCHECK:
@@ -1413,9 +1511,14 @@ sub checkDatabaseIntegrity {
               if ($table_attributes{$tname}->[1] eq 'Aria') {
                 $attrs= ($table_attributes{$tname}->[3] =~ /transactional=1/ ? "transactional $attrs" : "non-transactional $attrs");
               }
-              if ($msg_text =~ /Unable to open underlying table which is differently defined or of non-MyISAM type or doesn't exist/) {
+              if ($msg_text =~ /is differently defined or of non-MyISAM type or doesn't exist/) {
                 sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
                 sayWarning("... ignoring inconsistency for the MERGE table");
+                last CHECKOUTPUT;
+              }
+              elsif ($engine eq 'SPIDER' && $msg_text =~ /An infinite loop is detected when opening table/) {
+                sayWarning("For $attrs `$database`.`$table` : $msg_type : $msg_text");
+                sayWarning("... ignoring inconsistency for the SPIDER table");
                 last CHECKOUTPUT;
               }
               # MDEV-20313: Transactional Aria table stays corrupt after crash-recovery
@@ -1488,6 +1591,11 @@ sub checkDatabaseIntegrity {
       say("Rolling back recovered XA $xa");
       $conn->query("XA ROLLBACK '$xa'");
     }
+  }
+  $conn->execute("SET FOREIGN_KEY_CHECKS= DEFAULT");
+  unless ($self->unlock_instance() == STATUS_OK) {
+    sayError("Failed to unlock instance after checkDatabaseIntegrity");
+    return STATUS_INTERNAL_ERROR;
   }
   return $status;
 }
