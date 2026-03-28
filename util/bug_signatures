@@ -40,8 +40,9 @@ MDEV-39191:
 =~ Test run ends with exit status STATUS_DATABASE_CORRUPTION
 =~ FeatureUsage detected vector columns
 MDEV-39181:
-=~ DDL_LOG: Got error 1696 when trying to execute action
+=~ DDL_LOG: Got error .* when trying to execute action
 =~ Test run ends with exit status STATUS_RECOVERY_FAILURE
+=~ FeatureUsage detected partitioned tables
 MDEV-39081:
 =~ InnoDB: tried to purge non-delete-marked record in index
 =~ Assertion \`0'
