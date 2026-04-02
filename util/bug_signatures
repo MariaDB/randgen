@@ -35,6 +35,9 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-39250:
+=~ Slave SQL: Error 'Invalid default value for 'col_inet6''
+=~ Test run ends with exit status STATUS_REPLICATION_FAILURE
 MDEV-39249:
 =~ WSREP: FSM: no such a transition CERTIFYING -> COMMITTED
 =~ galera::TrxHandle::set_state
