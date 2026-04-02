@@ -35,6 +35,9 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-39249:
+=~ WSREP: FSM: no such a transition CERTIFYING -> COMMITTED
+=~ galera::TrxHandle::set_state
 MDEV-39191:
 =~ Found orphan files: .*\#sql-alter-.*.ibd
 =~ Test run ends with exit status STATUS_DATABASE_CORRUPTION
@@ -43,6 +46,9 @@ MDEV-39181:
 =~ DDL_LOG: Got error .* when trying to execute action
 =~ Test run ends with exit status STATUS_RECOVERY_FAILURE
 =~ FeatureUsage detected partitioned tables
+MDEV-39152:
+=~ WSREP: FSM: no such a transition COMMITTED -> COMMITTED
+=~ queue_for_group_commit
 MDEV-39081:
 =~ InnoDB: tried to purge non-delete-marked record in index
 =~ Assertion \`0'
