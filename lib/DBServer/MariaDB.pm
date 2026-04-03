@@ -909,6 +909,7 @@ sub lock_instance {
   }
   say("Locking the instance for administrative operation");
   my $conn = $self->connection();
+  return STATUS_SERVER_UNAVAILABLE unless ($conn);
   $conn->execute("SET max_statement_time= 0, lock_wait_timeout= 3600");
   if ($conn->err) {
     sayError("Failed to set variables: ".$conn->print_error());
@@ -946,6 +947,7 @@ sub unlock_instance {
   }
   say("Unlocking the instance");
   my $conn = $self->connection();
+  return STATUS_SERVER_UNAVAILABLE unless ($conn);
   $conn->execute("SET GLOBAL read_only = 0");
   if ($conn->err) {
     sayError("Failed to unset global read-only: ".$conn->print_error());
