@@ -4197,7 +4197,7 @@ MENT-809: [Error 127, 175 in mariabackup]
 ##############################################################################
 
 TODO-11: [RBR timeout]
-=~ The slave is applying a ROW event on behalf of an .* and is currently taking a considerable amount of time
+=~ The slave is applying a ROW event on behalf of .* and is currently taking a considerable amount of time
 =~ Test run ends with exit status STATUS_REPLICATION_TIMEOUT
 TODO-10: [PCRE assert]
 =~ Assertion \`_pcre2_valid_utf_8(prev, ptr - prev, &dummyoffset) == 0'
