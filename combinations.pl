@@ -613,6 +613,8 @@ sub doCombination {
 
   $commands[$trial_id] = [ @args ];
 
+  workarounds(\@args);
+
   if (! checkForbidden("@args")) {
     say("Combinations [$thread_id]: arguments: @args");
     unless ($dry_run)
@@ -676,6 +678,18 @@ sub doCombination {
       }
       $results{$result >> 8}++;
     }
+  }
+}
+
+sub workarounds {
+  my $args_ref = shift;
+  my $cmd = "@$args_ref";
+  if (
+        $cmd =~ /--sql[-_]mode=[\w,]*(?:ORACLE|NO_TABLE_OPTIONS)/
+    &&  $cmd =~ /scenario=Replication/
+  ) {
+    say("Workaround for MDEV-39259: Adding replication-oracle.ff filter for ORACLE/NO_TABLE_OPTIONS with Replication scenario");
+    push @$args_ref, '--filter=conf/ff/replication-oracle.ff';
   }
 }
 
