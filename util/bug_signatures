@@ -41,10 +41,6 @@ MDEV-39250:
 MDEV-39249:
 =~ WSREP: FSM: no such a transition CERTIFYING -> COMMITTED
 =~ galera::TrxHandle::set_state
-MDEV-39191:
-=~ Found orphan files: .*\#sql-alter-.*.ibd
-=~ Test run ends with exit status STATUS_DATABASE_CORRUPTION
-=~ FeatureUsage detected vector columns
 MDEV-39181:
 =~ DDL_LOG: Got error .* when trying to execute action
 =~ Test run ends with exit status STATUS_RECOVERY_FAILURE
@@ -145,6 +141,10 @@ MDEV-38854:
 =~ Assertion \`table->vers_write'
 =~ vers_update_or_validate_fields
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-38842:
+=~ Found orphan files: .*\#sql-alter-.*.ibd
+=~ Test run ends with exit status STATUS_DATABASE_CORRUPTION
+=~ FeatureUsage detected vector columns
 MDEV-38830:
 =~ signal|AddressSanitizer
 =~ TABLE::evaluate_update_default_function
