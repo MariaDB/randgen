@@ -90,7 +90,7 @@ MDEV-38988:
 =~ Assertion \`0'
 =~ Protocol::end_statement
 =~ Query .*: .*LIMIT ROWS EXAMINED
-=~ Version: '10\.6|Server version: 10\.6|Version: '10\.11|Server version: 10\.11
+=~ Query .*: .*INTERSECT|=~ Query .*: .*EXCEPT
 MDEV-38987:
 =~ signal|AddressSanitizer
 =~ mysql_derived_prepare
