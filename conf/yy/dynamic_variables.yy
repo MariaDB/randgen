@@ -1,4 +1,4 @@
-#  Copyright (c) 2020, 2022, MariaDB Corporation
+#  Copyright (c) 2020, 2026, MariaDB Corporation
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -299,8 +299,7 @@ dynvar_session_variable:
 dynvar_global_variable:
     ARIA_CHECKPOINT_INTERVAL= { $prng->int(0,300) }
   | ARIA_CHECKPOINT_LOG_ACTIVITY= { $prng->arrayElement([0,1024,8192,16384,65536,1048576,4194304,16777216]) }
-# Disabled due to MDEV-24640
-# | ARIA_ENCRYPT_TABLES= dynvar_boolean
+  | ARIA_ENCRYPT_TABLES= dynvar_boolean
   | ARIA_GROUP_COMMIT= { $prng->arrayElement(['none','hard','soft']) }
   | ARIA_GROUP_COMMIT_INTERVAL= { $prng->arrayElement([0,1000,1000000,10000000,60000000]) }
   | ARIA_LOG_FILE_SIZE= { $prng->arrayElement([65536,1048576,134217728,1073741824]) }
