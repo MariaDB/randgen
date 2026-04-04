@@ -4,6 +4,11 @@
 # Strong matches
 ##############################################################################
 
+# Not yet fixed in feature tree
+MDEV-38810:
+=~ signal|AddressSanitizer
+=~ foreach_file_in_datadir
+=~ BackupStages::do_backup_binlogs
 # atomic cor
 MDEV-38573:
 =~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
