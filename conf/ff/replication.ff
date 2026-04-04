@@ -27,5 +27,6 @@ $rules = {
   'reset_master'  => sub { $_ =~ m{RESET.*MASTER}is },
   'mdev25157'     => sub { $_ =~ m{ENGINE(\s=)*CONNECT}is },
   'mdev37979'     => sub { $_ =~ m{CALL\s+sys}is },
-  'mdev38465'     => sub { $_ =~ m{CREATE.*TRIGGER.*SAVEPOINT}is }
+  'mdev38465'     => sub { $_ =~ m{CREATE.*TRIGGER.*SAVEPOINT}is },
+  'mdev39260'     => sub { $_ =~ m{ENGINE[ =]+(?:PERFORMANCE_SCHEMA|SEQUENCE)}s }
 }
