@@ -1181,7 +1181,6 @@ MDEV-32436:
 =~ join_read_key2
 MDEV-32384:
 =~ AddressSanitizer|signal
-=~ Field_.*::cmp
 =~ SEL_ARG::sel_cmp
 =~ calculate_cond_selectivity_for_table
 =~ FeatureUsage detected Archive tables
