@@ -2,7 +2,7 @@
 
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2021, 2025 MariaDB
+# Copyright (c) 2021, 2026 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -147,8 +147,11 @@
 
 use strict;
 use lib 'lib';
+use lib 'conf/cc/include';
 use lib "$ENV{RQG_HOME}/lib";
+use lib "$ENV{RQG_HOME}/conf/cc/include";
 use Carp;
+use ConfigCommon qw($version $combinations);
 use Cwd;
 use GenUtil;
 use GenTest::Random;
@@ -205,8 +208,6 @@ my $seed= 'time';
 my $shuffle= 1;
 my $workdir;
 my $runall; # Backward compatibility, synonym of trials=all
-# Config files may be parameterized depending on version number
-my $version= '999999';
 
 my @pass_through= ();
 
@@ -247,7 +248,6 @@ if ($trials =~ /^\d+$/ and $min_trials > $trials) {
 }
 
 # Variables
-my $combinations;
 my %results;
 my @commands;
 my $max_result = 0;
@@ -498,7 +498,7 @@ sub rakeCombinations
     if (ref $g eq 'ARRAY' and contains_hashes($g)) {
       push @mandatory, @{rakeCombinations($g)};
     } elsif (ref $g eq 'HASH') {
-      foreach my $e (keys %$g) {
+      foreach my $e (sort keys %$g) {
         my $res= rakeCombinations($g->{$e});
         foreach my $c (@$res) {
           push @mandatory, "--combination-name=$e $c";

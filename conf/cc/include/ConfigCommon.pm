@@ -1,4 +1,4 @@
-# Copyright (c) 2026 MariaDB
+# Copyright (c) 2026, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,13 +14,27 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-########################################################################
+package ConfigCommon;
 
-require "$ENV{RQG_HOME}/conf/cc/small.cc";
 
-# New
-push @$combinations, (
-  [ '--mysqld=--drop-before-create-or-replace=ON', '', '', '', '' ],
-  [ '--grammar=conf/preview/cor.yy:2' ],
-  [ '--reporters=OrphanFiles' ],
+use strict;
+use warnings;
+use Exporter qw(import);
+
+our @EXPORT_OK = qw(
+    $version
+    $combinations
+    %parameters
+    %options
+    $msan_safe
 );
+
+our ($version, $combinations, %parameters, %options, $msan_safe);
+# Config files may be parameterized depending on version number
+$version = 999999;
+$combinations = [];
+%parameters = ();
+%options = ();
+$msan_safe = 0;
+
+1;

@@ -19,14 +19,16 @@
 use Data::Dumper;
 use strict;
 
-our (%parameters, %options);
-
+use lib "$ENV{RQG_HOME}/conf/cc/include";
+use ConfigCommon qw($version $combinations %parameters %options $msan_safe);
 require "$ENV{RQG_HOME}/conf/cc/include/parameter_presets";
 
 # Choose options based on $version value
 # ($version may be defined via config-version, otherwise 999999 will be used)
 local @ARGV = ($version);
 require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
+
+my $msan_suffix = ($msan_safe ? '_msan_safe' : '');
 
 $combinations = [
 
@@ -56,12 +58,12 @@ $combinations = [
         [ '--mysqld=--log-bin' ],
         $options{engine_basic_combinations},
         $options{optional_charsets_safe},
-        $options{optional_encryption},
+        $options{"optional_encryption${msan_suffix}"},
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars}, $options{debug_grammars},
         $options{optional_variators},
         $options{optional_aria_variables},
         $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
+        $options{"optional_innodb_compression${msan_suffix}"},
         $options{optional_innodb_pagesize},
         $options{optional_innodb_variables},
         $options{optional_server_variables},
@@ -110,12 +112,12 @@ $combinations = [
         [ '--grammar=conf/yy/many_indexes.yy' ],
         $options{engine_basic_combinations},
         $options{optional_charsets_safe},
-        $options{optional_encryption},
+        $options{"optional_encryption${msan_suffix}"},
         $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars}, $options{debug_grammars},
         $options{optional_variators},
         $options{optional_aria_variables},
         $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
+        $options{"optional_innodb_compression${msan_suffix}"},
         $options{optional_innodb_pagesize},
         $options{optional_innodb_variables},
         $options{optional_perfschema},
@@ -128,7 +130,7 @@ $combinations = [
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
         $options{optional_variators},
         $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
+        $options{"optional_innodb_compression${msan_suffix}"},
         $options{optional_innodb_pagesize},
         $options{optional_innodb_variables},
         $options{optional_server_variables},
@@ -140,7 +142,7 @@ $combinations = [
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
         $options{optional_variators},
         $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
+        $options{"optional_innodb_compression${msan_suffix}"},
         {
             pagesize4k => '--mysqld=--innodb_page_size=4K',
             pagesize8k => '--mysqld=--innodb_page_size=8K',
@@ -155,12 +157,12 @@ $combinations = [
         [ '--engine=InnoDB' ],
         [ '--filter=conf/ff/restrict_dynamic_vars.ff' ],
         $options{optional_charsets_safe},
-        $options{optional_encryption},
+        $options{"optional_encryption${msan_suffix}"},
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars},
         $options{optional_variators},
         $options{optional_aria_variables},
         $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
+        $options{"optional_innodb_compression${msan_suffix}"},
         $options{optional_innodb_pagesize},
         $options{optional_innodb_variables},
         $options{optional_perfschema},
@@ -179,7 +181,7 @@ $combinations = [
         $options{optional_charsets_safe},
         $options{optional_variators},
         $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
+        $options{"optional_innodb_compression${msan_suffix}"},
         $options{optional_innodb_pagesize},
         $options{optional_innodb_variables},
         $options{optional_server_variables},
@@ -192,7 +194,7 @@ $combinations = [
         $options{optional_charsets_safe},
         $options{optional_variators},
         $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
+        $options{"optional_innodb_compression${msan_suffix}"},
         $options{optional_innodb_pagesize},
         $options{optional_innodb_variables},
         $options{optional_server_variables},
@@ -330,7 +332,7 @@ $combinations = [
         $options{optional_variators},
         $options{optional_aria_variables},
         $options{optional_binlog_safe_variables},
-        $options{optional_innodb_compression},
+        $options{"optional_innodb_compression${msan_suffix}"},
         $options{optional_innodb_pagesize},
         $options{optional_innodb_variables},
         $options{optional_server_variables},
