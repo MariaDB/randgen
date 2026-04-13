@@ -559,7 +559,7 @@ dynvar_global_variable:
   | SLAVE_SQL_VERIFY_CHECKSUM= dynvar_boolean
   | SLAVE_TRANSACTION_RETRIES= { $prng->int(0,1000) }
   | SLAVE_TRANSACTION_RETRY_INTERVAL= { $prng->arrayElement([1,2,10,60,300]) } /* compatibility 10.3.3 */
-  | SLAVE_TYPE_CONVERSIONS= { $prng->arrayElement(['ALL_LOSSY','ALL_NON_LOSSY']) }
+  | SLAVE_TYPE_CONVERSIONS= slave_type_conv_val
   | SLOW_LAUNCH_TIME= { $prng->int(0,300) }
 # | slow_query_log_file
   | STORED_PROGRAM_CACHE= { $prng->arrayElement([257,1024,4096,524288]) }
@@ -627,6 +627,11 @@ dynvar_global_variable:
 # | wsrep_strict_ddl        global /* compatibility 10.5 */
 # | WSREP_TRX_FRAGMENT_SIZE /* compatibility 10.4 */
 # | WSREP_TRX_FRAGMENT_UNIT /* compatibility 10.4 */
+;
+
+slave_type_conv_val:
+  { $prng->arrayElement(['ALL_LOSSY','ALL_NON_LOSSY']) } |
+  { $prng->arrayElement(['ALL_LOSSY','ALL_NON_LOSSY','ERROR_IF_MISSING_FIELD']) } /* compatibility 12.3.1 */
 ;
 
 # EXTENDED_MORE added in 10.5

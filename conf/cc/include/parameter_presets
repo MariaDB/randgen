@@ -1027,7 +1027,7 @@ $optional_replication_safe_variables{$minversion}= [
   # Default ON
   [ @empty_set_20, '--mysqld=--slave_sql_verify_checksum=OFF' ],
   # Default empty
-  [ @empty_set_30, '--mysqld=--slave_type_conversions=ALL_LOSSY','--mysqld=--slave_type_conversions=ALL_NON_LOSSY','--mysqld=--slave_type_conversions=ALL_LOSSY,ALL_NON_LOSSY' ],
+  [ @empty_set_30, '--mysqld=--slave_type_conversions=ALL_NON_LOSSY' ],
 ];
 
 $optional_replication_safe_variables{1004}= [ @{$optional_replication_safe_variables{$minversion}},
@@ -1053,11 +1053,24 @@ $optional_replication_safe_variables{1104}= [ @{$optional_replication_safe_varia
   [ '', '--mysqld=--slave-connections-needed-for-purge=0', '--mysqld=--slave-connections-needed-for-purge=10' ],
 ];
 
+$optional_replication_safe_variables{1203}= [ @{$optional_replication_safe_variables{1104}},
+  # Default empty
+  [ @empty_set_50,
+    '--mysqld=--slave_type_conversions=ERROR_IF_MISSING_FIELD',
+    '--mysqld=--slave_type_conversions=ERROR_IF_MISSING_FIELD,ALL_NON_LOSSY'
+  ],
+];
+
 $optional_replication_unsafe_variables{$minversion}= [
   # Default 0
   [ @empty_set_50, '--mysqld=--read_binlog_speed_limit=1024' ],
   [ @empty_set_30, '--mysqld=--replicate_ignore_db=mysql' ],
   [ @empty_set_50, '--mysqld=--replicate_wild_ignore_table=test.t%' ],
+  # Default empty
+  [ @empty_set_40,
+    '--mysqld=--slave_type_conversions=ALL_LOSSY',
+    '--mysqld=--slave_type_conversions=ALL_LOSSY,ALL_NON_LOSSY'
+  ],
 ];
 
 $optional_replication_unsafe_variables{1010}= [ @{$optional_replication_unsafe_variables{$minversion}},
@@ -1069,6 +1082,13 @@ $optional_replication_unsafe_variables{'es-1005'}= [ @{$optional_replication_uns
 
 $optional_replication_unsafe_variables{1011}= [ @{$optional_replication_unsafe_variables{1010}},
   [ @empty_set_50, "--mysqld=--replicate_rewrite_db='test->test'" ],
+];
+
+$optional_replication_unsafe_variables{1203}= [ @{$optional_replication_unsafe_variables{1011}},
+  [ @empty_set_50,
+    '--mysqld=--slave_type_conversions=ALL_LOSSY,ERROR_IF_MISSING_FIELD',
+    '--mysqld=--slave_type_conversions=ALL_LOSSY,ALL_NON_LOSSY,ERROR_IF_MISSING_FIELD'
+  ],
 ];
 
 $parameters{optional_replication_safe_variables}= \%optional_replication_safe_variables;
