@@ -197,6 +197,7 @@ optimizer_switch_val:
   'rowid_filter=on' | 'rowid_filter=off' |
   'condition_pushdown_from_having=on' | 'condition_pushdown_from_having=off' |
   'not_null_range_scan=on' | 'not_null_range_scan=off'
+  'reorder_outer_joins=on' /* compatibility 12.3.1 */ | 'reorder_outer_joins=off' /* compatibility 12.3.1 */
 ;
 
 # Default PREFERABLY_FOR_QUERIES as of 11.0
