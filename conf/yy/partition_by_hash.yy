@@ -1,5 +1,5 @@
 # Copyright (c) 2003, 2012, Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2026 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -92,7 +92,21 @@ linear:
   | LINEAR;
 
 partition_by_key:
-  PARTITION BY KEY(`col_int_key`) PARTITIONS partition_count ;
+  PARTITION BY linear KEY optional_partition_algorithm_clause (`col_int_key`) PARTITIONS partition_count ;
+
+optional_partition_algorithm_clause:
+  |
+  ALGORITHM=partition_algorithm /* compatibility 12.3 */
+;
+
+partition_algorithm:
+  MYSQL51 |
+  MYSQL55 |
+  BASE31 |
+  CRC32C |
+  XXH32 |
+  XXH3
+;
 
 partition_count:
   96 | 97 | 98 | 98 | 98 | 99 | 99 | 99 | 99 ;
