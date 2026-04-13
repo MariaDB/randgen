@@ -1,4 +1,4 @@
-# Copyright (c) 2023, 2025, MariaDB
+# Copyright (c) 2023, 2026, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,8 @@
 query:
   ==FACTOR:2== { _set_db('NON-SYSTEM') } SET sql_mode=REPLACE(@@sql_mode,'ORACLE','') ;; BEGIN NOT ATOMIC compound_block_default ; END ;; SET sql_mode=DEFAULT |
   ==FACTOR:2== { _set_db('NON-SYSTEM') } SET sql_mode=REPLACE(@@sql_mode,'ORACLE','') ;; create_and_call_sp ;; SET sql_mode=DEFAULT |
-               { _set_db('NON-SYSTEM') } SET sql_mode=ORACLE ;;                          BEGIN NOT ATOMIC compound_block_oracle ;  END ;; SET sql_mode=DEFAULT /* compatibility 11.8 */
+               { _set_db('NON-SYSTEM') } SET sql_mode=ORACLE ;;                          BEGIN NOT ATOMIC compound_block_oracle ;  END ;; SET sql_mode=DEFAULT /* compatibility 11.8 */ |
+  ==FACTOR:0.05== SET PATH _database /* compatibility 12.3 */
 ;
 
 sp_name:
