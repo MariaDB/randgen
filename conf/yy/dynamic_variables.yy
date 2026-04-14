@@ -21,7 +21,7 @@ thread1_init:
 query:
                    SET SESSION dynvar_session_variable
   | ==FACTOR:0.1== SET GLOBAL dynvar_global_variable_runtime
-  # Not a variable as such, but let it be here for now
+  # Let it be here for now, although it can be used as a variable too
   | ==FACTOR:0.01== SET PATH _database /* compatibility 12.3 */
 ;
 
