@@ -35,6 +35,11 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-39361:
+=~ signal|AddressSanitizer
+=~ Item_field::used_tables
+=~ update_depend_map_for_order
+=~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
 MDEV-39265:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ DML_prelocking_strategy::handle_table
@@ -743,8 +748,8 @@ MDEV-35527:
 =~ Version: '10\.[6-9]|Server version: 10\.[6-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-35476:
 =~ signal|AddressSanitizer
-=~ st_select_lex_node::include_down|st_select_lex::master_unit
 =~ mysql_make_view
+=~ open_and_process_table
 =~ FeatureUsage detected sequences
 MDEV-35397:
 =~ Assertion \`rpl_semi_sync_master_off_times > thd->expected_semi_sync_offs'
