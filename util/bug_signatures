@@ -2504,8 +2504,8 @@ MDEV-25058:
 MDEV-25056:
 =~ signal [16]|AddressSanitizer
 =~ Protocol::net_store_data
-=~ Protocol_text::store
 =~ Protocol::send_result_set_row
+=~ FeatureUsage detected virtual columns
 MDEV-25050:
 =~ LeakSanitizer: detected memory leaks|Warning: Memory not freed
 =~ create_file
@@ -4209,6 +4209,9 @@ MENT-809: [Error 127, 175 in mariabackup]
 # Weak matches
 ##############################################################################
 
+TODO-12: [Binlog dump error]
+=~ BinlogDump: Dumping binary logs finished with an error: 72057594037927935
+=~ Test run ends with exit status STATUS_CRITICAL_FAILURE
 TODO-11: [RBR timeout]
 =~ The slave is applying a ROW event on behalf of .* and is currently taking a considerable amount of time
 =~ Test run ends with exit status STATUS_REPLICATION_TIMEOUT
