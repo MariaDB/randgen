@@ -35,6 +35,11 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-39387:
+=~ LeakSanitizer
+=~ Table_map_log_event::do_apply_event
+=~ apply_event_and_update_pos_apply
+=~ rpt_handle_event
 MDEV-39361:
 =~ signal|AddressSanitizer
 =~ Item_field::used_tables
