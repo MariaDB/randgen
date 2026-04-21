@@ -260,15 +260,30 @@ sub next {
             } elsif ($item eq '_sequence') {
               $obj = $prng->arrayElement($executors->[0]->metaSequences($work_database));
             }
-            ($last_database, $last_table) = ($obj ? @$obj : ('!non_existing_database', '!non_existing_object'));
+            if ($obj) {
+              ($last_database, $last_table) = @$obj;
+            } else {
+              $executors->[0]->create_placeholder('table');
+              ($last_database, $last_table) = ('test','placeholder');
+            }
             $item = ($work_database_non_specific ? '`'.$last_database.'`.`'.$last_table.'`' : '`'.$last_table.'`');
           } elsif ($item eq '_procedure') {
             my $obj = $prng->arrayElement($executors->[0]->metaProcedures($work_database));
-            ($last_database, $last_procedure) = ($obj ? @$obj : ('!non_existing_database', '!non_existing_object'));
+            if ($obj) {
+              ($last_database, $last_procedure) = @$obj;
+            } else {
+              $executors->[0]->create_placeholder('procedure');
+              ($last_database, $last_procedure) = ('test','placeholder');
+            }
             $item = ($work_database_non_specific ? '`'.$last_database.'`.`'.$last_procedure.'`' : '`'.$last_procedure.'`');
           } elsif ($item eq '_function') {
             my $obj = $prng->arrayElement($executors->[0]->metaFunctions($work_database));
-            ($last_database, $last_procedure) = ($obj ? @$obj : ('!non_existing_database', '!non_existing_object'));
+            if ($obj) {
+              ($last_database, $last_function) = @$obj;
+            } else {
+              $executors->[0]->create_placeholder('function');
+              ($last_database, $last_function) = ('test','placeholder');
+            }
             $item = ($work_database_non_specific ? '`'.$last_database.'`.`'.$last_function.'`' : '`'.$last_function.'`');
           } elsif ($item eq '_index') {
             my $indexes = $executors->[0]->metaIndexes([$last_database,$last_table]);

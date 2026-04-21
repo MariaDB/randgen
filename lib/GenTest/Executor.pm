@@ -603,7 +603,8 @@ sub _metaFindTable {
       }
     }
     sayWarning("metaFindTable: Could not find table $table in any schema");
-    return ('!non_existing_database','!non_existing_object');
+    create_placeholder('table');
+    return('test','placeholder');
 }
 
 
@@ -635,14 +636,16 @@ sub _collectTableObjects {
       my $objref;
       unless (defined $meta->{$schema}->{tables}->{$table}) {
         sayWarning("Table/view `$schema`.`$table` does not exist in the cache");
-        return ['!non_existing_object'];
+        create_placeholder('table');
+        return ['placeholder'];
       }
       if ($meta->{$schema}->{tables}->{$table}->{$objtype}) {
         $objref = $meta->{$schema}->{tables}->{$table}->{$objtype};
       }
       unless (defined $objref && scalar(keys %$objref)) {
         sayDebug("Table/view `$schema`.`$table` has no ".($objtype eq 'COL' ? 'columns' : 'indexes'));
-        return ['!non_existing_object'];
+        create_placeholder('table');
+        return ['placeholder'];
       }
       $objects= [ sort keys %$objref ];
 

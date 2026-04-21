@@ -279,12 +279,26 @@ sub read_only {
 sub engines {
   my $self= shift;
   unless ($self->[EXECUTOR_ENGINES]) {
-    my $engines= $self->connection->get_column("select engine from information_schema.engines where support in ('YES','DEFAULT')");
+    my $engines= $self->connection->get_column("select engine from information_schema.engines where support in ('YES','DEFAULT') AND engine NOT IN ('PERFORMANCE_SCHEMA','SEQUENCE')");
     if ($engines) {
       $self->[EXECUTOR_ENGINES]= [ @$engines ];
     }
   }
   return $self->[EXECUTOR_ENGINES];
+}
+
+sub create_placeholder {
+  my ($self, $obj) = @_;
+  $self->connection->execute("CREATE DATABASE IF NOT EXISTS test");
+  if ($obj eq 'table') {
+    $self->connection->execute("CREATE TABLE IF NOT EXISTS test.placeholder ".
+      "(pk INT PRIMARY KEY, placeholder VARCHAR(8), KEY(placeholder))"
+    );
+  } elsif ($obj eq 'procedure') {
+    $self->connection->execute("CREATE PROCEDURE IF NOT EXISTS test.placeholder() BEGIN END");
+  } elsif ($obj eq 'function') {
+    $self->connection->execute("CREATE FUNCTION IF NOT EXISTS test.placeholder() RETURNS INT RETURN 1;");
+  }
 }
 
 1;
