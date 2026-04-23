@@ -1,6 +1,6 @@
 # Copyright (c) 2008,2012 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013, Monty Program Ab.
-# Copyright (c) 2020, 2023, MariaDB
+# Copyright (c) 2020, 2026, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -222,6 +222,11 @@ sub defaultSchema {
         $self->[EXECUTOR_DEFAULT_SCHEMA] = $schema;
     }
     return $self->[EXECUTOR_DEFAULT_SCHEMA];
+}
+
+sub create_placeholder {
+    carp "create_placeholder not defined for ". (ref $_[0]);
+    return [[undef,undef]];
 }
 
 sub loadCollations {
