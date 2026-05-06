@@ -81,6 +81,11 @@ MDEV-39361:
 =~ Item_field::used_tables
 =~ update_depend_map_for_order
 =~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
+MDEV-39356: [Not merged to 12.3 yet]
+=~ Assertion \`a'
+=~ my_strnncoll_utf8mb3_general1400_as_ci
+=~ Multiupdate_prelocking_strategy::handle_end
+=~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
 MDEV-39265:
 =~ Assertion \`(mem_root->flags & 4) == 0'
 =~ DML_prelocking_strategy::handle_table
