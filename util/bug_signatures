@@ -599,7 +599,7 @@ MDEV-36645:
 MDEV-36644:
 =~ AddressSanitizer|signal
 =~ my_strcoll
-=~ charset_info_st::streq
+=~ charset_info_st::
 =~ is_infoschema_db
 =~ FeatureUsage detected sequences
 MDEV-36644:
