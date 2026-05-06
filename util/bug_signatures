@@ -197,7 +197,7 @@ MDEV-38815:
 =~ Item_default_value::calculate
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-38813:
-=~ AddressSanitizer|signal
+=~ AddressSanitizer: use-after-poison|signal
 =~ copy_data_between_tables
 =~ mysql_alter_table
 =~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
@@ -228,8 +228,7 @@ MDEV-38784:
 MDEV-38783:
 =~ LeakSanitizer
 =~ rec_copy_prefix_to_buf
-=~ row_merge_create_fts_sort_index
-=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+=~ row_merge_build_indexes
 MDEV-38761:
 =~ LeakSanitizer
 =~ get_quick_select
@@ -610,8 +609,7 @@ MDEV-36644:
 MDEV-36626:
 =~ Assertion \`ptr'
 =~ skip_trailing_space
-=~ my_uca_strnxfrm_utf8mb4
-=~ Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ charset_info_st::strnxfrm
 MDEV-36610:
 =~ Assertion \`!eliminated'
 =~ Item_subselect::exec
