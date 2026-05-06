@@ -1745,6 +1745,10 @@ MDEV-30115:
 MDEV-30097:
 =~ Assertion \`low == (int)buckets\.size()-1 \|\| field->key_cmp((uchar\*)buckets\[low+1\]\.start_value\.data(), lookup_val)> 0'
 =~ Histogram_json_hb::find_bucket
+MDEV-30083:
+=~ signal|AddressSanitizer
+=~ federatedx_txn::acquire
+=~ open_table_from_share
 MDEV-30058:
 =~ AddressSanitizer|signal|MemorySanitizer
 =~ MYSQL_LOG::generate_name|MYSQL_LOG::open
