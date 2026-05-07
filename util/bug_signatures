@@ -515,17 +515,17 @@ MDEV-37221:
 =~ lex_string_set
 =~ st_select_lex::restore_item_list_names
 =~ Prepared_statement::execute|sp_instr_stmt::exec
-MDEV-37219:
-=~ Query_arena::free_items
-=~ THD::cleanup_after_query
-=~ FeatureUsage detected Spider tables
-=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 # 11.7 CS, 11.4 ES
 MDEV-37219:
 =~ Query_arena::free_items
 =~ THD::cleanup_after_query
 =~ FeatureUsage detected Spider tables
-=~ Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
+=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]|Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
+MDEV-37219:
+=~ Binary_string::free_buffer
+=~ spider_db_free_result
+=~ mysql_admin_table
+=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]|Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 MDEV-37218:
 =~ Table encrypted but decryption failed
 =~ Assertion \`0'
@@ -1374,6 +1374,11 @@ MDEV-31867:
 =~ Reprepare_observer::can_retry
 =~ sp_head::execute
 =~ Version: '11\.[2-9]|Server version: 11]\.[2-9]|'1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+MDEV-31860:
+=~ AddressSanitizer|signal
+=~ Binary_string::free_buffer
+=~ TMP_TABLE_PARAM::cleanup
+=~ spider_db_free
 MDEV-31845:
 =~ signal|AddressSanitizer
 =~ my_strnncollsp
