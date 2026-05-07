@@ -1376,7 +1376,6 @@ MDEV-31867:
 =~ Version: '11\.[2-9]|Server version: 11]\.[2-9]|'1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-31860:
 =~ AddressSanitizer|signal
-=~ Binary_string::free_buffer
 =~ TMP_TABLE_PARAM::cleanup
 =~ spider_db_free
 MDEV-31845:
@@ -3674,6 +3673,11 @@ MDEV-19817:
 =~ Assertion \`nj_col->table_ref->table == nj_col->table_field->field->table'
 =~ find_field_in_natural_join
 =~ mysql_multi_update
+MDEV-19817:
+=~ signal|AddressSanitizer
+=~ convert_null_to_field_value_or_error
+=~ Item::save_in_field
+=~ =~ FeatureUsage detected foreign keys
 MDEV-19672:
 =~ safe_mutex: Trying to lock mutex at .*, when the mutex was already locked at .*
 =~ safe_mutex_lock
