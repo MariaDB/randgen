@@ -38,6 +38,10 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-39547:
+=~ Assertion \`binlog_table_maps == 0 \|\| locked_tables_mode == LTM_LOCK_TABLES'
+=~ THD::reset_for_next_command
+=~ FeatureUsage detected S3 engine
 MDEV-39543:
 =~ Assertion \`entry->pos_in_table_list->table == entry'
 =~ free_tmp_table
@@ -355,6 +359,11 @@ MDEV-38551:
 =~ maria_page_crc_set_normal
 =~ flush_cached_blocks
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-38543:
+=~ signal|AddressSanitizer
+=~ handler::multi_range_read_info_const
+=~ DsMrr_impl::dsmrr_info_const
+=~ get_key_scans_params
 MDEV-38474:
 =~ AddressSanitizer|double free or corruption|signal
 =~ st_join_table::cleanup|handler::keyread_enabled
