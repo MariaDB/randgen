@@ -38,6 +38,11 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-39559:
+=~ Assertion \`b'
+=~ my_strnncoll.*_nopad_ci
+=~ Field_blob::
+=~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-39547:
 =~ Assertion \`binlog_table_maps == 0 \|\| locked_tables_mode == LTM_LOCK_TABLES'
 =~ THD::reset_for_next_command
@@ -3677,7 +3682,12 @@ MDEV-19817:
 =~ signal|AddressSanitizer
 =~ convert_null_to_field_value_or_error
 =~ Item::save_in_field
-=~ =~ FeatureUsage detected foreign keys
+=~ FeatureUsage detected foreign keys
+MDEV-19817:
+=~ signal|AddressSantizer|Assertion \`table_list->table'
+=~ find_field_in_table_ref
+=~ Item::fix_fields_if_needed_for_scalar
+=~ Item_subselect::fix_fields
 MDEV-19672:
 =~ safe_mutex: Trying to lock mutex at .*, when the mutex was already locked at .*
 =~ safe_mutex_lock
