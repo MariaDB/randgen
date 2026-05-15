@@ -63,19 +63,19 @@ MDEV-39536:
 =~ THD::push_warning
 =~ Field_xmltype
 =~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
-MDEV-39535:
+MDEV-39535: [Not merged to main yet]
 =~ Assertion \`0'
 =~ ha_partition::handle_unordered
 =~ mysql_ha_read
-=~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
-MDEV-39535:
+=~ '1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
+MDEV-39535: [Not merged to main yet]
 =~ signal|AddressSanitizer
 =~ que_fork_get_first_thr
 =~ mysql_ha_read
-=~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
-MDEV-39535:
+=~ '1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
+MDEV-39535: [Not merged to main yet]
 =~ que0que.inl:.* runtime error: member access within null pointer of type 'struct que_fork_t'
-=~ Version: '12\.3|Server version: 12\.3|'1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
+=~ '1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
 =~ FeatureUsage detected handler commands
 MDEV-39532:
 =~ AddressSanitizer|signal
