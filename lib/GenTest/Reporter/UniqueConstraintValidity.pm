@@ -40,7 +40,7 @@ sub report {
     sayWarning("UniqueConstraintValidity: could not connect to the server");
     return STATUS_SERVER_UNAVAILABLE;
   }
-  my $indexes = $conn->query("set statement max_statement_time=0 for select concat('`',istat.table_schema,'`.`',istat.table_name,'`') as tbl, index_name, group_concat(concat('`',column_name,'`')) cols, index_type from INFORMATION_SCHEMA.STATISTICS istat join INFORMATION_SCHEMA.TABLES itbl on (istat.table_schema = itbl.table_schema and istat.table_name = itbl.table_name) where non_unique=0 and itbl.engine not in ('Spider','MRG_MyISAM', 'Federated') group by BINARY tbl, index_name order by tbl, index_name");
+  my $indexes = $conn->query("set statement max_statement_time=0 for select BINARY concat('`',istat.table_schema,'`.`',istat.table_name,'`') as tbl, index_name, group_concat(concat('`',column_name,'`')) cols, index_type from INFORMATION_SCHEMA.STATISTICS istat join INFORMATION_SCHEMA.TABLES itbl on (istat.table_schema = itbl.table_schema and istat.table_name = itbl.table_name) where non_unique=0 and itbl.engine not in ('Spider','MRG_MyISAM', 'Federated') group by tbl, index_name order by tbl, index_name, index_type");
   if (ignorable_error($conn->err)) {
     sayWarning("UniqueConstraintValidity: Got error ".$conn->print_error()." upong retrieving indexes, skipping the check");
     return STATUS_OK;
