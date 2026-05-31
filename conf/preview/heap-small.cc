@@ -335,8 +335,7 @@ $combinations = [
         $options{optional_server_variables},
       ],
       unique_hash => [
-        [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
-        [ '--filter=conf/ff/replication.ff' ],
+        [ '--scenario=Standard','--scenario=Replication --scenario-nosync --filter=conf/ff/replication.ff' ],
         [ '--gendata=advanced --unique-hash-keys --gendata=conf/zz/blobs.zz --grammar=conf/yy/indexes_and_constraints.yy' ],
         [ '--engine=InnoDB,MyISAM' ],
         $options{optional_charsets_safe},

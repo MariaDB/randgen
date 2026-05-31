@@ -1,4 +1,4 @@
-# Copyright (c) 2022, 2025 MariaDB
+# Copyright (c) 2022, 2026 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -140,10 +140,9 @@ push @$combinations, (
         $options{optional_server_variables},
       ],
       gis => [
-        [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
+        [ '--scenario=Standard','--scenario=Replication --scenario-nosync --filter=conf/ff/replication.ff' ],
         [ '--gendata=advanced --gis'],
         [ '--grammar=conf/yy/gis.yy --grammar=conf/yy/alter_table.yy'],
-        [ '--filter=conf/ff/replication.ff' ],
         $options{engine_basic_combinations},
         $options{optional_charsets_safe},
         $options{read_only_grammars}, $options{dml_grammars}, $options{ddl_grammars}, $options{variables_grammars},
@@ -373,8 +372,7 @@ push @$combinations, (
         $options{optional_server_variables},
       ],
       virtual_columns => [
-        [ '--scenario=Standard','--scenario=Replication --scenario-nosync' ],
-        [ '--filter=conf/ff/replication.ff' ],
+        [ '--scenario=Standard','--scenario=Replication --scenario-nosync --filter=conf/ff/replication.ff' ],
         [ '--gendata=advanced' ],
         [ '--grammar=conf/yy/virtual_columns.yy' ],
         [ '--vcols', '--vcols=VIRTUAL', '--vcols=STORED' ],
