@@ -1745,6 +1745,9 @@ MDEV-30756:
 =~ AddressSanitizer|signal
 =~ get_sort_by_table
 =~ make_join_statistics
+MDEV-30609:
+=~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'|Warning: Memory not freed: -|Warning: Internal memory accounting error of -
+=~ FeatureUsage detected Federated tables
 MDEV-30434:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ Item_trigger_field::setup_field
