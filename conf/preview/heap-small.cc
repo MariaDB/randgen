@@ -47,6 +47,7 @@ $combinations = [
     --gendata=data/sql/engine-heap.sql
     --gendata=conf/zz/blobs.zz
     --gis
+    --grammar=conf/preview/heap.yy
   '],
   ['--mysqld=--default-storage-engine=HEAP', ''],
   ['--mysqld=--default-tmp-storage-engine=HEAP', ''],
