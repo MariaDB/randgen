@@ -1,4 +1,4 @@
-# Copyright (c) 2023, MariaDB
+# Copyright (c) 2023, 2026, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 #
 # Transactional statements
 # including the InnoDB plugin and Falcon, their locking and transactional mechanisms. It can
+
+#features transaction isolation changes
 
 query:
   { _set_db('NON-SYSTEM') } trx_query ;

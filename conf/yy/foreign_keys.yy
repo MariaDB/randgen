@@ -1,4 +1,4 @@
-#  Copyright (c) 2018, 2022, MariaDB
+#  Copyright (c) 2018, 2026, MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 ########################################
 
 #include <conf/yy/include/basics.inc>
-#features foreign keys
+#features foreign keys, alter ignore
 
 # $cnt and %dropped_keys are a workaround for MDEV-19194:
 # trying to avoid repeated DROP FOREIGN KEY x
@@ -38,24 +38,12 @@ fk_global_session:
 ;
 
 fk_alter_table:
-  ALTER fk_online_optional fk_ignore_optional TABLE _table _basics_wait_nowait fk_add_drop_list fk_algorithm fk_lock
+  ALTER __online(25) __ignore(30) TABLE _table _basics_wait_nowait fk_add_drop_list fk_algorithm fk_lock
 ;
 
 
 fk_set_checks:
-  SET fk_global_session FOREIGN_KEY_CHECKS = fk_on_off
-;
-
-fk_on_off:
-  ON | OFF
-;
-
-fk_online_optional:
-  | | | ONLINE
-;
-
-fk_ignore_optional:
-  | | IGNORE
+  SET fk_global_session FOREIGN_KEY_CHECKS = __on_x_off
 ;
 
 fk_add_drop_list:

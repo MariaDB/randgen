@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 MariaDB
+#  Copyright (c) 2023, 2026 MariaDB
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #include <conf/yy/include/basics.inc>
+#features alter ignore
 
 # ALTER table grammar with a limited range of operations, more suitable
 # for tests which don't need full ALTER coverage but need its presence,

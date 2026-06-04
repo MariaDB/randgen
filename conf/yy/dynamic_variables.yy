@@ -14,6 +14,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #include <conf/yy/include/basics.inc>
+#features transaction isolation changes
 
 thread1_init:
     dynvar_initial_settings;

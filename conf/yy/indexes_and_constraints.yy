@@ -1,4 +1,4 @@
-#  Copyright (c) 2019, 2022, MariaDB Corporation Ab
+#  Copyright (c) 2019, 2026, MariaDB Corporation Ab
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #include <conf/yy/include/basics.inc>
-#features GIS columns
+#features GIS columns, alter ignore
 ### GIS is included via the use of _basics_column_type
 
 

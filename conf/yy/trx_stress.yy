@@ -1,6 +1,6 @@
 # Copyright (C) 2008 Sun Microsystems, Inc. All rights reserved.
 # Use is subject to license terms.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2026, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,6 +29,8 @@
 # At the same time, please note that this grammar does not aim to cover all possible
 # table access methods. The grammars from conf/optimizer/optimizer* are more suitable for that.
 #
+
+#features transaction isolation changes
 
 query:
   { _set_db('NON-SYSTEM') } trx_stress_query ;

@@ -1,4 +1,4 @@
-#  Copyright (c) 2022, MariaDB Corporation
+#  Copyright (c) 2022, 2026, MariaDB Corporation
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
 ##############################################
 # Data types via ALTER TABLE, except for GIS
 ##############################################
+
+#features alter ignore
 
 query_init:
   { $col=0; @enum_vals=(); foreach (1..65535) { push @enum_vals, "'".$_."'" }; '' } ;

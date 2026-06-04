@@ -1,4 +1,4 @@
-#  Copyright (c) 2018, 2022, MariaDB Corporation
+#  Copyright (c) 2018, 2026, MariaDB Corporation
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #include <conf/yy/include/basics.inc>
+#features alter ignore
 
 query_init:
   { $colnum=0; '' } ;
@@ -23,15 +24,7 @@ query:
 ;
 
 alttcol_query:
-  ALTER alttcol_online alttcol_ignore TABLE _basetable _basics_wait_nowait alttcol_list_with_optional_order_by
-;
-
-alttcol_online:
-  | | | ONLINE
-;
-
-alttcol_ignore:
-  | | IGNORE
+  ALTER __online(25) __ignore(30) TABLE _basetable _basics_wait_nowait alttcol_list_with_optional_order_by
 ;
 
 alttcol_list_with_optional_order_by:

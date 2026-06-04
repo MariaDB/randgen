@@ -42,6 +42,7 @@ my $server_version;
 
 my %usage_check= (
   'application periods' => \&check_for_application_periods,
+  'alter ignore' => \&void_check,
   'Archive tables' => \&check_for_archive_tables,
   'Aria encryption' => \&check_for_aria_encryption,
   'Aria tables' => \&check_for_aria_tables,
@@ -77,6 +78,7 @@ my %usage_check= (
   'Spider engine' => \&check_for_spider_plugin,
   'Spider tables' => \&check_for_spider_tables,
   'temporary tables' => \&check_for_temporary_tables,
+  'transaction isolation changes' => \&void_check,
   'triggers' => \&check_for_triggers,
   'unique blobs' => \&check_for_unique_blobs,
   'UUID columns' => \&check_for_uuid_columns,
@@ -180,6 +182,7 @@ sub report {
 # Checkers
 
 sub void_check {
+  # Can only be declared explicitly, no runtime check
   return undef;
 }
 

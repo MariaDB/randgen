@@ -1,4 +1,4 @@
-# Copyright (c) 2023, MariaDB
+# Copyright (c) 2023, 2026, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 ########################################################################
 # This grammar assumes that Mroonga engine is installed
 ########################################################################
+
+#features alter ignore
 
 query_init:
      SET DEFAULT ROLE admin ;; SET ROLE admin
@@ -38,7 +40,7 @@ create:
   create_like | create_one_field ;
 
 create_like:
-  { $mroonga_table= 'mroonga_db.t_mroonga_'.abs($$) ; _set_db('NON-SYSTEM') } CREATE OR REPLACE __temporary(20) TABLE { $mroonga_table } ENGINE=Mroonga AS SELECT * FROM _table ;; ALTER __ignore(5) TABLE { 'mroonga_db.t_mroonga_'.abs($$) } ADD IF NOT EXISTS mtext TEXT, ADD FULLTEXT(mtext) ;
+  { $mroonga_table= 'mroonga_db.t_mroonga_'.abs($$) ; _set_db('NON-SYSTEM') } CREATE OR REPLACE __temporary(20) TABLE { $mroonga_table } ENGINE=Mroonga AS SELECT * FROM _table ;; ALTER __ignore(50) TABLE { 'mroonga_db.t_mroonga_'.abs($$) } ADD IF NOT EXISTS mtext TEXT, ADD FULLTEXT(mtext) ;
 
 create_one_field:
   { $mroonga_table= 'mroonga_db.t_mroonga_one_field_'.abs($$) ; _set_db('NON-SYSTEM') } CREATE OR REPLACE __temporary(20) TABLE { $mroonga_table } (mtext TEXT, FULLTEXT(mtext)) ENGINE=Mroonga ;; insert100 ;

@@ -14,7 +14,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #include <conf/yy/include/basics.inc>
-#features Aria tables, foreign keys, virtual columns, temporary tables
+#features Aria tables, foreign keys, virtual columns, temporary tables, alter ignore
 
 query_init:
   { $tbnum=0; '' }
@@ -48,21 +48,8 @@ alt_rename_multi:
 ;
 
 alt_alter:
-  alt_optional_set_statement ALTER alt_online_optional alt_ignore_optional TABLE alt_if_exists _basetable _basics_wait_nowait alt_alter_list_with_optional_order_by |
+  alt_optional_set_statement ALTER __online(25) __ignore(30) TABLE __if_exists(95) _basetable _basics_wait_nowait alt_alter_list_with_optional_order_by |
   alt_optional_set_statement ALTER ONLINE __ignore(20) TABLE __if_exists(95) _basetable _basics_wait_nowait alt_alter_list, ALGORITHM=COPY
-;
-
-alt_if_exists:
-  |
-  ==FACTOR:95== IF EXISTS /* compatibility 10.5.2 */
-;
-
-alt_ignore_optional:
-  | | IGNORE
-;
-
-alt_online_optional:
-  | | | ONLINE
 ;
 
 alt_alter_list_with_optional_order_by:

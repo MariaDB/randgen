@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 # Use is subject to license terms.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2026, MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 # USA
 
-#features temporary tables
+#features temporary tables, alter ignore
 
 query:
   { _set_db('NON-SYSTEM') } current_ts_query ;
