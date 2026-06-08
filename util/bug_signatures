@@ -187,7 +187,7 @@ MDEV-38971:
 MDEV-38971:
 =~ Assertion \`is_valid_value_slow()'
 =~ Datetime::Datetime
-=~ emporal_hybrid::Temporal_hybrid
+=~ Temporal_hybrid::Temporal_hybrid
 MDEV-38969:
 =~ signal|AddressSanitizer
 =~ setup_tables_and_check_access
@@ -1771,6 +1771,10 @@ MDEV-30434:
 =~ Lex_ident<Compare>::streq
 =~ Item_trigger_field::setup_field
 =~ Version: Version: '11\.[5-9]|Server version: 11\.[1-9][0-9]|Version: '1[2-9]\.[0-9]*
+MDEV-30410:
+=~ signal|AddressSanitizer
+=~ federatedx_txn::release|federatedx_txn::acquire
+=~ handler::ha_open
 MDEV-30391:
 =~ signal|AddressSanitizer
 =~ spider_set_direct_limit_offset
