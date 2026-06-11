@@ -38,6 +38,11 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-40004:
+=~ signal|AddressSanitizer
+=~ base_list::push_back
+=~ sp_head::register_instr_mem_root_for_deallocation
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-39846:
 =~ UniqueConstraintValidity: unique constraint .* of type HASH on table .* contains non-unique values, returning STATUS_DATABASE_CORRUPTION
 =~ Test run ends with exit status STATUS_DATABASE_CORRUPTION
