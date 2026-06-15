@@ -38,6 +38,12 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-40057:
+=~ Assertion \`marked_for_read()'
+=~ Field_blob::hash_not_null
+=~ TABLE::update_virtual_fields
+=~ Rows_log_event::do_apply_event
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-40004:
 =~ signal|AddressSanitizer
 =~ base_list::push_back
@@ -49,6 +55,11 @@ MDEV-39846:
 =~ FeatureUsage detected alter ignore
 =~ FeatureUsage detected transaction isolation changes|mysqld=--transaction[-_]isolation=
 =~ Version: '10\.6|Server version: 10\.6|=~ Version: '10\.11|Server version: 10\.11
+MDEV-39805:
+=~ signal|AddressSanitizer
+=~ que_fork_get_first_thr
+=~ ha_innobase::general_fetch
+=~ Version: '12\.3|Server version: 12\.3|Version: '1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
 MDEV-39774:
 =~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
 =~ handler::ha_reset
