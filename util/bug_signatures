@@ -869,6 +869,11 @@ MDEV-34117: [Not fixed in 10.6]
 =~ trans_rollback_stmt
 =~ Wsrep_client_service::bf_rollback
 =~ Version: '10\.6|Server version: 10\.6
+MDEV-34113:
+=~ AddressSanitizer|signal
+=~ spider_tree_insert
+=~ ha_spider::rnd_init
+=~ mysql_alter_table
 MDEV-34021: [Not fixed in 10.6]
 =~ Assertion \`!for_explain_only'
 =~ JOIN_CACHE::put_record
