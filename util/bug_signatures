@@ -38,6 +38,11 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-40147:
+=~ MemorySanitizer: use-of-uninitialized-value
+=~ my_time_compare
+=~ stored_field_cmp_to_item
+=~ calculate_cond_selectivity_for_table
 MENT-2698:
 =~ signal|AddressSanitizer
 =~ Binary_string::ptr
