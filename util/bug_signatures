@@ -3628,6 +3628,12 @@ MDEV-19672:
 =~ safe_mutex: Trying to lock mutex at .*, when the mutex was already locked at .*
 =~ safe_mutex_lock
 =~ update_syslog_facility
+MDEV-19665:
+=~ in log_query
+=~ in auditing
+=~ mysql_audit_notify
+=~ Version: '11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[4-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
+=~ Test run ends with exit status STATUS_SERVER_DEADLOCKED
 MDEV-19609:
 =~ Slave SQL: Error 'You have an error in your SQL syntax .* near 'TYPE=
 =~ CREATE TABLE
