@@ -4,18 +4,32 @@
 # Strong matches
 ##############################################################################
 
-# Not yet fixed in feature tree
-MDEV-38810:
+# Atomic CoR
+MDEV-40157:
+=~ signal|AddressSanitizer|Assertion \`table == thd->open_tables'
+=~ close_thread_table
+=~ drop_open_table
+=~ Sql_cmd_create_table_like::execute
+# Atomic CoR
+MDEV-40157:
 =~ signal|AddressSanitizer
-=~ foreach_file_in_datadir
-=~ BackupStages::do_backup_binlogs
-# atomic cor
-MDEV-38573:
-=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-=~ Diagnostics_area::set_ok_status
-=~ select_insert::send_ok_packet
-=~ return_zero_rows
-=~ Version: '13\.0|Server version: 13\.0
+=~ set_bad_null_error
+=~ not_null_fields_have_null_values
+=~ fill_record_n_invoke_before_triggers
+# Atomic CoR
+MDEV-40157:
+=~ Assertion \`thd->lock == 0'
+=~ lock_tables
+=~ open_and_lock_tables
+=~ sp_head::execute
+=~ Table_triggers_list::process_triggers
+## Atomic cor
+#MDEV-38573:
+#=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
+#=~ Diagnostics_area::set_ok_status
+#=~ select_insert::send_ok_packet
+#=~ return_zero_rows
+#=~ Version: '13\.0|Server version: 13\.0
 # check FK
 #MDEV-36643:
 #=~ InnoDB: Failing assertion: prebuilt->select_lock_type != LOCK_NONE \|\| srv_read_only_mode \|\| trx->read_view\.is_open()|Assertion \`prebuilt->sql_stat_start \|\| prebuilt->table->no_rollback()'
