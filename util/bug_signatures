@@ -359,6 +359,11 @@ MDEV-37904: [Not fixed in 10.6]
 =~ Explain_table_access::tag_to_json
 =~ Explain_query::print_explain_json
 =~ Version: '10\.6|Server version: 10\.6
+MDEV-37719:
+=~ signal|AddressSanitizer
+=~ mysql_create_like_table
+=~ Sql_cmd_create_table_like::execute
+=~ Version: '12\.3|Server version: 12\.3|Version: '1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
 MDEV-37708:
 =~ Assertion \`!trx->is_bulk_insert()'
 =~ ha_innobase::delete_row
@@ -490,6 +495,10 @@ MDEV-37217:
 MDEV-37214:
 =~ Internal MariaDB error code: 1396
 =~ Test run ends with exit status STATUS_REPLICATION_FAILURE
+MDEV-37090:
+=~ Assertion \`!n_mysql_tables_in_use'
+=~ trx_t::free
+=~ innobase_close_connection
 MDEV-37079:
 =~ Assertion \`!natural_using_join->join_columns'
 =~ store_natural_using_join_columns
