@@ -6,6 +6,11 @@
 
 # Atomic CoR
 MDEV-40157:
+=~ signal|AddressSanitizer
+=~ handler::log_not_redoable_operation
+=~ select_create::abort_result_set
+=~ Sql_cmd_create_table_like::execute
+MDEV-40157:
 =~ signal|AddressSanitizer|Assertion \`table == thd->open_tables'
 =~ close_thread_table
 =~ drop_open_table
