@@ -5,6 +5,10 @@
 ##############################################################################
 
 # Atomic CoR
+MDEV-40172:
+=~ Assertion \`!mysql_bin_log\.is_open() \|\| is_binlog_format_row()'
+=~ THD::mark_tmp_table_as_free_for_reuse
+=~ close_thread_tables
 MDEV-40157:
 =~ signal|AddressSanitizer
 =~ handler::log_not_redoable_operation
@@ -12,7 +16,6 @@ MDEV-40157:
 =~ Sql_cmd_create_table_like::execute
 MDEV-40157:
 =~ signal|AddressSanitizer|Assertion \`table == thd->open_tables'
-=~ close_thread_table
 =~ drop_open_table
 =~ Sql_cmd_create_table_like::execute
 # Atomic CoR

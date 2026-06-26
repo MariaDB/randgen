@@ -16,7 +16,7 @@
 # 11.0+
 # =~ Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
 # 11.4+
-# =~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
+# =~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 # 11.8+
 # =~ Version: '11\.[8-9]|Server version: 11\.[8-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 # 12.0+
@@ -80,6 +80,12 @@ MDEV-39711:
 =~ AddressSanitizer|signal
 =~ Field_blob::pack
 =~ THD::binlog_update_row|THD::binlog_delete_row|THD::binlog_write_row
+MDEV-39609:
+=~ signal|AddressSanitizer
+=~ process_i_s_table_temporary_tables
+=~ get_all_tables
+=~ get_schema_tables_result
+=~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-39559:
 =~ Assertion \`b'
 =~ my_strnncoll.*_nopad
@@ -101,7 +107,7 @@ MDEV-39542: [Q3 - Not merged up yet]
 =~ Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-39532:
 =~ AddressSanitizer|signal
-=~ lzo1x_1_15_compress|lzma_block_buffer_encode
+=~ lzo1x_1_15_compress|lzma_block_buffer_encode|lzma_easy_buffer_encode
 =~ fil_page_compress_low
 =~ buf_flush_page_cleaner
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
