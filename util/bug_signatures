@@ -111,6 +111,12 @@ MDEV-39532:
 =~ fil_page_compress_low
 =~ buf_flush_page_cleaner
 =~ Version: '10\.11|Server version: 10\.11|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+MDEV-39454:
+=~ signal|AddressSanitizer
+=~ THD::free_tmp_table_share
+=~ THD::drop_temporary_table
+=~ mysql_alter_table
+=~ FeatureUsage detected vector keys
 MDEV-39387:
 =~ LeakSanitizer
 =~ Table_map_log_event::do_apply_event
