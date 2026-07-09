@@ -54,7 +54,7 @@ MDEV-40057:
 =~ TABLE::update_virtual_fields
 =~ Rows_log_event::do_apply_event
 =~ Version: '11\.[4-9]|Server version: 11\.[4-9]|Version: '1[4-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
-MDEV-40004:
+MDEV-40004 [Not merged up yet]:
 =~ signal|AddressSanitizer
 =~ base_list::push_back
 =~ sp_head::register_instr_mem_root_for_deallocation
@@ -2890,11 +2890,11 @@ MDEV-23448:
 =~ my_seek
 =~ azrewind
 =~ ha_archive::read_data_header
-MDEV-23444:
+MDEV-23444 [Not merged up yet]:
 =~ Assertion \`precision > 0'
 =~ decimal_bin_size
 =~ Item_.*::create_tmp_field|calc_group_buffer
-MDEV-23444:
+MDEV-23444 [Not merged up yet]:
 =~ AddressSanitizer:
 =~ bin2decimal|decimal2bin
 =~ Field_new_decimal::
@@ -3206,14 +3206,6 @@ MDEV-22754:
 =~ Item_bool_rowready_func2::fix_length_and_dec
 =~ optimize_inner
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-22732:
-=~ AddressSanitizer|signal [16]
-=~ create_tmp_table
-=~ multi_update::initialize_tables|Multiupdate_prelocking_strategy
-MDEV-22732:
-=~ AddressSanitizer|signal
-=~ Field::cmp_binary
-=~ compare_record
 MDEV-22713:
 =~ Assertion \`(\*select_ref)->fixed()'
 =~ resolve_ref_in_select_and_group
@@ -3245,26 +3237,6 @@ MDEV-22662:
 MDEV-22661:
 =~ Assertion \`time_type == MYSQL_TIMESTAMP_DATETIME'
 =~ Datetime::is_valid_datetime_slow
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-22600:
-=~ Assertion \`prebuilt->mysql_prefix_len <= prebuilt->mysql_row_len'|AddressSanitizer|signal [16]
-=~ row_sel_dequeue_cached_row_for_mysql|row_sel_store_mysql_field
-=~ row_search_mvcc
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-22600:
-=~ AddressSanitizer|signal [16]
-=~ row_mysql_store_col_in_innobase_format
-=~ row_insert_for_mysql
-=~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-22600:
-=~ AddressSanitizer|signal [16]
-=~ Field::is_null_in_record
-=~ calc_row_difference|Column_definition::Column_definition
-=~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-22600:
-=~ signal [16]|AddressSanitizer
-=~ TABLE::init
-=~ open_table|open_temporary_table
 =~ Version: '10\.[3-9]|Server version: 10\.[3-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-22576:
 =~ Assertion \`false'
