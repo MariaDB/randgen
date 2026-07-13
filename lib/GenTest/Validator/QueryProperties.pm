@@ -56,6 +56,9 @@ sub validate {
     my @query_properties = $query =~ m{((?:QProp\.RESULTSET_|QProp\.ERROR_|QProp\.ERR_|QProp\.QUERY_).*?)[^A-Z_0-9]}sg;
 
     return STATUS_WONT_HANDLE if $#query_properties == -1;
+    # If the query has gone through a transformation, we can't expect it to
+    # keep the original properties
+    return STATUS_WONT_HANDLE if $query =~ /Transformed by/;
 
     my $query_status = STATUS_OK;
 
