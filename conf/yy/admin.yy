@@ -153,7 +153,7 @@ admin_flush_tables:
 admin_flush_option:
 #    CHANGED_PAGE_BITMAPS
 #    CLIENT_STATISTICS # userstat
-    DES_KEY_FILE
+    DES_KEY_FILE /* incompatibility 13.0 */
   | HOSTS
 #  | INDEX_STATISTICS # userstat
   | admin_flush_log_type LOGS
