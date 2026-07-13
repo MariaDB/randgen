@@ -23,4 +23,5 @@
 $rules = {
   'mdev33575_1' => sub { $_ =~ m{OPTIMIZE.*innodb_(?:table|index)_stats}s },
   'mdev33955_1' => sub { $_ =~ m{REPAIR.*innodb_(?:table|index)_stats}s },
+  'mdev33572_1' => sub { $_ =~ m{OPTIMIZE.*time_zone_transition}s },
 }
