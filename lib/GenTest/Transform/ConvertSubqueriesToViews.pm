@@ -78,7 +78,9 @@ sub modify {
     }
   }sgexi;
   if ($view_counter > 0) {
-    return [@view_ddl, $query.($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : "") ];
+    return [@view_ddl,
+            $query." /* Transformed by " . shortClassName($class) . " */"
+            .($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : "") ];
   } else {
     return undef;
   }

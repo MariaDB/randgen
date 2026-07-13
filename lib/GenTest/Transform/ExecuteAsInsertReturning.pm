@@ -42,7 +42,8 @@ sub transform {
 sub variate {
   my ($self, $query, $executor)= @_;
   if ($query =~ /^\s*(?:INSERT|REPLACE)/is && $query !~ /RETURNING/is) {
-    return [ "$query RETURNING *" ];
+    return [ "$query RETURNING *"
+      . " /* Transformed by " . shortClassName($self) . " */" ];
   } elsif ($query =~ /^[\(\s]*SELECT/is) {
     return $self->modify($query, $executor);
   } else {
@@ -56,8 +57,11 @@ sub modify {
   return [
     [
       'SET /* TRANSFORM_SETUP */ @tx_read_only.save= @@session.tx_read_only, tx_read_only= 0',
-      "CREATE /* TRANSFORM_SETUP */ OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query",
-      "REPLACE INTO $table_name $query RETURNING *".($transform_outcome ? " /* $transform_outcome */" : ""),
+      "CREATE /* TRANSFORM_SETUP */ OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query"
+        . " /* Transformed by " . shortClassName($self) . " */",
+      "REPLACE INTO $table_name $query RETURNING *"
+        . " /* Transformed by " . shortClassName($self) . " */"
+        .($transform_outcome ? " /* $transform_outcome */" : ""),
     ],
     [ '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save' ]
   ];

@@ -55,7 +55,9 @@ sub modify {
   my ($class, $orig_query, $executor, $transform_outcome) = @_;
   my $flags= ($orig_query !~ /^[\s\(]*SELECT/i or $orig_query =~ /RESULTSETS_NOT_COMPARABLE/) ? '/* RESULTSETS_NOT_COMPARABLE */' : '';
   return [
-    "PREPARE /* TRANSFORM_SETUP */ stmt_ExecuteAsPreparedThrice_".abs($$)."_".(++$count)." FROM ".$executor->connection->quote($orig_query),
+    "PREPARE /* TRANSFORM_SETUP */ stmt_ExecuteAsPreparedThrice_".abs($$)."_".(++$count)
+      . " FROM ".$executor->connection->quote($orig_query)
+      . " /* Transformed by " . shortClassName($class) . " */",
     "EXECUTE $flags stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 1st execution */",
     "EXECUTE $flags stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 2nd execution */",
     "EXECUTE $flags stmt_ExecuteAsPreparedThrice_".abs($$)."_$count /* $transform_outcome *//* 3rd execution */",

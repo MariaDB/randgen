@@ -55,7 +55,8 @@ sub modify_query {
       "SET /* TRANSFORM_SETUP */ \@switch_saved = \@\@optimizer_switch, optimizer_switch = REPLACE( \@\@optimizer_switch, '=off', '=on' )",
       # Due to MDEV-28878 and maybe more
       # "/*!100501 SET SESSION optimizer_switch = 'rowid_filter=off' */",
-      "$original_query ".($transform_outcome ? " /* $transform_outcome */" : ''),
+      "$original_query "." /* Transformed by " . shortClassName($self) . " */"
+        . ($transform_outcome ? " /* $transform_outcome */" : ''),
     ],[ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=\@switch_saved" ]
   ];
 }

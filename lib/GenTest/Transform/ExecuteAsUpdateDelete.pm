@@ -64,13 +64,14 @@ sub transform {
       'SET SESSION tx_read_only= 0',
       #Include database transforms creation DDL so that it appears in the simplified testcase.
       "DROP TABLE IF EXISTS $table_name",
-      "CREATE TABLE $table_name $orig_query",
+      "CREATE TABLE $table_name $orig_query"
+        . " /* Transformed by " . shortClassName($class) . " */",
 
       # If the result set has more than 1 row, we can not use it in the SET clause
       ( $original_result->rows() == 1 ?
         "UPDATE $table_name SET `$col_name` = ( $orig_query ) + 9999 WHERE `$col_name` NOT IN ( $orig_query )" :
         "UPDATE $table_name SET `$col_name` = $col_name + 9999 WHERE `$col_name` NOT IN ( $orig_query )"
-      ),
+      ) . " /* Transformed by " . shortClassName($class) . " */",
 
       # The queries above should not have updated any rows. Sometimes ROW_COUNT() returns -1
       "SELECT IF((ROW_COUNT() = 0 OR ROW_COUNT() = -1), 1, 0) /* TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE */",
@@ -79,14 +80,15 @@ sub transform {
       ( $original_result->rows() == 1 ?
         "UPDATE $table_name SET `$col_name` = ( $orig_query ) WHERE `$col_name` IN ( $orig_query )" :
         "UPDATE $table_name SET `$col_name` = $col_name WHERE `$col_name` IN ( $orig_query )"
-      ),
+      ) . " /* Transformed by " . shortClassName($class) . " */",
 
       # The queries above should have updated all rows
       "SELECT IF((ROW_COUNT() = ".$original_result->rows()." OR ROW_COUNT() = -1), 1, 0) /* TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE */",
       "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
 
       # All rows should end up deleted
-      "DELETE FROM $table_name WHERE `$col_name` IN ( $orig_query ) ",
+      "DELETE FROM $table_name WHERE `$col_name` IN ( $orig_query ) "
+        . " /* Transformed by " . shortClassName($class) . " */",
       "SELECT IF((ROW_COUNT() = ".$original_result->rows()." OR ROW_COUNT() = -1), 1, 0) /* TRANSFORM_OUTCOME_SINGLE_INTEGER_ONE */",
       "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
       "DROP TABLE IF EXISTS $table_name",
@@ -100,9 +102,14 @@ sub variate {
   my $exists= ($class->random->uint16(0,1) ? 'NOT EXISTS' : 'EXISTS');
   my $table= $class->random->arrayElement($executor->metaTables());
   if ($class->random->uint16(0,1)) {
-    return [ "UPDATE IGNORE ".$table->[0].".".$table->[1]." SET ".$class->random->arrayElement($executor->metaColumns($table))." = NULL WHERE $exists ( $orig_query)" ];
+    return [ "UPDATE IGNORE ".$table->[0].".".$table->[1]
+      . " SET ".$class->random->arrayElement($executor->metaColumns($table))
+      . " = NULL WHERE $exists ( $orig_query)"
+      . " /* Transformed by " . shortClassName($class) . " */" ];
   } else {
-    return [ "DELETE FROM ".$table->[0].".".$table->[1]." WHERE $exists ( $orig_query )" ];
+    return [ "DELETE FROM ".$table->[0].".".$table->[1]
+      . " WHERE $exists ( $orig_query )"
+      . " /* Transformed by " . shortClassName($class) . " */" ];
   }
 }
 

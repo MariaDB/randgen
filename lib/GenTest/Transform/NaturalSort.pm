@@ -55,7 +55,7 @@ sub transform {
     $sql_select_limit= 'SET STATEMENT SQL_SELECT_LIMIT=DEFAULT FOR ';
   }
 
-  my $new_query= modify($original_query);
+  my $new_query= $self->modify($original_query);
   if (defined $new_query) {
     $new_query =~ s/LIMIT\s+\d+//g;
     return $sql_select_limit .$new_query." /* $transform_outcome */ ";
@@ -67,11 +67,11 @@ sub transform {
 sub variate {
   my ($self, $original_query, $executor) = @_;
   return [ $original_query ] if $original_query !~ m{^\s*SELECT}is;
-  return [ modify($original_query) || $original_query ];
+  return [ $self->modify($original_query) || $original_query ];
 }
 
 sub modify {
-  my $query= shift;
+  my ($self, $query) = @_;
   my @new_order_by_list;
 
   my $query_suffix= '';
@@ -113,7 +113,7 @@ sub modify {
 
   if (scalar(@new_order_by_list)) {
     $query .= ' ORDER BY ' . (join ', ' , @new_order_by_list) . ' '. $query_suffix;
-    return $query;
+    return $query. " /* Transformed by " . shortClassName($self) . " */";
   } else {
     return undef;
   }

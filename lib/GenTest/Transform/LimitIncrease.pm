@@ -51,14 +51,13 @@ sub variate {
 
 sub modify {
   my ($class, $orig_query) = @_;
-  my $suffix= '';
   # Store trailing INTO or FOR UPDATE
   if ($orig_query =~ s{(INTO\s+OUTFILE\s+(?:['"].*?[."]|\@\w+)|FOR\s+UPDATE)\s*$}{}is) {};
   if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 4294836225}isg) {}
   elsif ($orig_query =~ s{FETCH\s+(NEXT|FIRST)\s+\d+\s+(ROWS?)\s+(ONLY|WITH\s+TIES)}{FETCH $1 4294836225 $2 $3}isg) {}
   elsif ($orig_query =~ s{LIMIT\s+ROWS\s+EXAMINED}{LIMIT 4294836225 ROWS EXAMINED}isg) {}
   else { $orig_query.= " LIMIT 4294836225" };
-  return $orig_query.($suffix ? " $suffix" : '');
+  return $orig_query . " /* Transformed by " . shortClassName($class) . " */";
 }
 
 1;

@@ -55,7 +55,8 @@ sub transform {
   my $fname= 'func_ExecuteAsFunctionTwice_'.abs($$);
 
   return [
-    "CREATE OR REPLACE FUNCTION $fname () RETURNS $return_type NOT DETERMINISTIC BEGIN DECLARE ret $return_type; $orig_query INTO ret ; RETURN ret; END",
+    "CREATE OR REPLACE FUNCTION $fname () RETURNS $return_type NOT DETERMINISTIC BEGIN DECLARE ret $return_type; $orig_query INTO ret ; RETURN ret; END"
+      . " /* Transformed by " . shortClassName($class) . " */",
     "SELECT $fname() /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
     "SELECT $fname() /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
   ];
@@ -72,7 +73,7 @@ sub variate {
     $query= "CREATE /* TRANSFORM_SETUP */ OR REPLACE FUNCTION $fname () RETURNS INT NOT DETERMINISTIC BEGIN $orig_query; RETURN 0; END";
   }
   return [
-    $query,
+    $query . " /* Transformed by " . shortClassName($class) . " */",
     "SELECT $fname()",
     "SELECT $fname()",
   ];

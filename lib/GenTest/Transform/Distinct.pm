@@ -54,11 +54,13 @@ sub modify {
 
   if ($orig_query =~ m{SELECT\s+DISTINCT}io) {
     $orig_query =~ s{SELECT\s+DISTINCT}{SELECT }gio;
-    return $orig_query.($with_transform_outcome ? " /* TRANSFORM_OUTCOME_SUPERSET */" : "");
+    return $orig_query." /* Transformed by " . shortClassName($class) . " */"
+      . ($with_transform_outcome ? " /* TRANSFORM_OUTCOME_SUPERSET */" : "");
   } else {
     $orig_query =~ s{^([\s\(]*)SELECT(\W)}{${1}SELECT DISTINCT${2}}gio;
     $orig_query =~ s{(\W)SELECT(\W)}{${1}SELECT DISTINCT${2}}gio;
-    return $orig_query.($with_transform_outcome ? " /* TRANSFORM_OUTCOME_DISTINCT */" : "");
+    return $orig_query. " /* Transformed by " . shortClassName($class) . " */"
+      . ($with_transform_outcome ? " /* TRANSFORM_OUTCOME_DISTINCT */" : "");
   }
 }
 

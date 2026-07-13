@@ -48,15 +48,18 @@ sub transform {
       'sql_mode=replace(replace(@@sql_mode,"STRICT_TRANS_TABLES",""),"STRICT_ALL_TABLES",""), '.
       'tx_read_only= 0',
       #Include database transforms creation DDL so that it appears in the simplified testcase.
-      "CREATE OR REPLACE TABLE $table_name $original_query",
+      "CREATE OR REPLACE TABLE $table_name $original_query"
+        . " /* Transformed by " . shortClassName($class) . " */",
       "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
       "DELETE FROM $table_name",
 
-      "INSERT INTO $table_name $original_query",
+      "INSERT INTO $table_name $original_query"
+        . " /* Transformed by " . shortClassName($class) . " */",
       "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
       "DELETE FROM $table_name",
 
-      "REPLACE INTO $table_name $original_query",
+      "REPLACE INTO $table_name $original_query"
+        . " /* Transformed by " . shortClassName($class) . " */",
       "SELECT * FROM $table_name /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
     ],[
       '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save, sql_mode= DEFAULT'
@@ -69,8 +72,10 @@ sub variate {
   my ($self, $query) = @_;
   return [ $query ] if $query =~ m{INTO\s}is || $query !~ m{^[\s\(]*SELECT}is;
   return [
-    "CREATE /* TRANSFORM_SETUP */ OR REPLACE TEMPORARY TABLE tmp_ExecuteAsInsertSelect AS $query",
+    "CREATE /* TRANSFORM_SETUP */ OR REPLACE TEMPORARY TABLE tmp_ExecuteAsInsertSelect AS $query"
+      . " /* Transformed by " . shortClassName($self) . " */",
     "REPLACE INTO tmp_ExecuteAsInsertSelect $query"
+      . " /* Transformed by " . shortClassName($self) . " */"
   ]
 }
 

@@ -64,7 +64,10 @@ sub variate {
       $orig_query.= $ignore;
     }
   }
-  $query.= $orig_query;
+  $query = ($query ?
+      $query . $orig_query . " /* Transformed by " . shortClassName($self) . " */"
+    : $orig_query
+  );
   return [ $query ];
 }
 

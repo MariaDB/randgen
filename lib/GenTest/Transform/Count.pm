@@ -116,7 +116,7 @@ sub modify {
       $transform_outcome= ' /* TRANSFORM_OUTCOME_COUNT */';
     }
   }
-  $query.= $transform_outcome;
+  $query.= " /* Transformed by " . shortClassName($class) . " */" . $transform_outcome;
   return [ $query ];
 }
 

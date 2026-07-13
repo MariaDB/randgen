@@ -204,7 +204,8 @@ sub transform {
   $transformed_query = convert_selects_to_cte($transformed_query, 1);
   $transformed_query =~ s/=====ESCAPED_SINGLE_QUOTE=====/\\'/g;
   $transformed_query =~ s/=====ESCAPED_DOUBLE_QUOTE=====/\\"/g;
-  return $transformed_query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+  return $transformed_query." /* Transformed by " . shortClassName($class) . " */"
+    ." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 }
 
 sub variate {
@@ -217,7 +218,7 @@ sub variate {
   $query =~ s/=====ESCAPED_SINGLE_QUOTE=====/\\'/g;
   $query =~ s/=====ESCAPED_DOUBLE_QUOTE=====/\\"/g;
   sayDebug("ExecuteAsCTE: after: $query");
-  return [ $query ];
+  return [ $query . " /* Transformed by " . shortClassName($self) . " */" ];
 }
 
 sub is_applicable {

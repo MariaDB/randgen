@@ -34,19 +34,26 @@ sub transform {
   # We skip: - [OUTFILE | INFILE] queries because these are not data producing and fail (STATUS_ENVIRONMENT_FAILURE)
   return STATUS_WONT_HANDLE if $orig_query =~ m{(?:OUTFILE|INFILE|PROCESSLIST)}is
     || $orig_query !~ m{(?:FORCE|IGNORE|USE)\s+(?:KEY|INDEX)}is;
-  return $class->modify($orig_query)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+  my $new_query = $class->modify($orig_query);
+  return ($new_query
+    ? $new_query . " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"
+    : $orig_query
+  )
 }
 
 sub variate {
   my ($class, $orig_query) = @_;
   return [ $orig_query ] if $orig_query !~ m{(FORCE|IGNORE|USE)\s+(KEY|INDEX)};
-  return [ $class->modify($orig_query) ];
+  return [ $class->modify($orig_query) || $orig_query ];
 }
 
 sub modify {
   my ($class, $orig_query) = @_;
-  $orig_query =~ s{(FORCE|IGNORE|USE)\s+(INDEX|KEY)\s*\(.*?\)}{}isg;
-  return $orig_query;
+  if ($orig_query =~ s{(FORCE|IGNORE|USE)\s+(INDEX|KEY)\s*\(.*?\)}{}isg) {
+    return $orig_query . " /* Transformed by " . shortClassName($class) . " */";
+  } else {
+    return undef;
+  }
 }
 
 1;

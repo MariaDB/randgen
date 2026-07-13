@@ -46,7 +46,9 @@ sub modify {
     return [
       [
         "SET  /* TRANSFORM_SETUP */ \@sql_mode.save=\@\@sql_mode, sql_mode=CONCAT(\@\@sql_mode,',ORACLE')",
-        "CREATE /* TRANSFORM_SETUP */ OR REPLACE PROCEDURE sp1_ExecuteAsOracleSP_".abs($$)." AS BEGIN $orig_query; END",
+        "CREATE /* TRANSFORM_SETUP */ OR REPLACE PROCEDURE sp1_ExecuteAsOracleSP_".abs($$)
+          . " AS BEGIN $orig_query; END"
+          . " /* Transformed by " . shortClassName($class) . " */",
         "CALL sp1_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
         "CALL sp1_ExecuteAsOracleSP_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
         "CREATE /* TRANSFORM_SETUP */ OR REPLACE PROCEDURE sp2_ExecuteAsOracleSP_".abs($$)." AS BEGIN sp1_ExecuteAsOracleSP_".abs($$)."; END",

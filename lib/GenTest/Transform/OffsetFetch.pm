@@ -72,7 +72,10 @@ sub variate {
   else {
     $query.= " $clause";
   }
-  return [ $query.($suffix ? " $suffix" : '') ];
+  return [
+    $query.($suffix ? " $suffix" : '')
+      . " /* Transformed by " . shortClassName($self) . " */"
+  ];
 }
 
 sub transform {
@@ -91,7 +94,9 @@ sub transform {
   $query =~ s/(ORDER\s+BY\s+.*?)LIMIT\s+(\d+)\s+OFFSET\s+(\d+\s+ROWS?)/$1OFFSET $3 FETCH FIRST $2 ROWS WITH TIES/g;
   $query =~ s/(ORDER\s+BY\s+.*?)LIMIT\s+(\d+)\s*,\s*(\d+)/$1OFFSET $3 ROWS FETCH FIRST $2 ROWS WITH TIES/g;
   if ($query ne $orig_query) {
-    push @queries, $query.' /* TRANSFORM_OUTCOME_SUPERSET */';
+    push @queries,
+      $query.' /* TRANSFORM_OUTCOME_SUPERSET */'
+        . " /* Transformed by " . shortClassName($self) . " */";
   }
   return (scalar @queries ? [ @queries ] : STATUS_WONT_HANDLE);
 }

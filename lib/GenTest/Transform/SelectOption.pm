@@ -82,7 +82,8 @@ sub modify {
   # Also remove duplicate SQL_CACHE / SQL_NO_CACHE options. It removes
   # them from subqueries, too
   while ($q =~ s/^(.*SQL_(?:NO_)?CACHE.*)SQL_(?:NO_)?CACHE/$1/) {};
-  push @modified_queries, $q;
+  push @modified_queries,
+   $q . ($q eq $query ? "" : " /* Transformed by " . shortClassName($class) . " */");
   foreach my $o (@select_options) {
     my $q= $query;
     if ($o eq 'SQL_CACHE' or $o eq 'SQL_NO_CACHE' or $o eq 'SQL_BUFFER_RESULT' or $o eq 'HIGH_PRIORITY' or $o eq 'SQL_CALC_FOUND_ROWS') {
@@ -91,7 +92,8 @@ sub modify {
     } else {
       $q =~ s{(^[\s\(]*SELECT|\WSELECT)(\W)}{$1 $o${2}}iog;
     }
-    push @modified_queries, $q;
+    push @modified_queries,
+      $q . ($q eq $query ? "" : " /* Transformed by " . shortClassName($class) . " */");
   }
   return \@modified_queries;
 }

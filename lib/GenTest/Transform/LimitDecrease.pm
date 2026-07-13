@@ -48,14 +48,14 @@ sub variate {
 
 sub modify {
   my ($class, $orig_query) = @_;
-  if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 1}isg) {
-    return $orig_query;
-  } elsif ($orig_query =~ s{FETCH\s+(NEXT|FIRST)\s+\d+\s+(ROWS?)\s+(ONLY|WITH\s+TIES)}{FETCH $1 1 $2 $3}isg) {
-    return $orig_query;
-  } elsif ($orig_query =~ s{LIMIT\s+ROWS\s+EXAMINED}{LIMIT 1 ROWS EXAMINED}isg) {
-    return $orig_query;
-  } else {
-    return $orig_query." LIMIT 1";
+
+  if ($orig_query =~ s{LIMIT\s+\d+}{LIMIT 1}isg) {}
+  elsif ($orig_query =~ s{FETCH\s+(NEXT|FIRST)\s+\d+\s+(ROWS?)\s+(ONLY|WITH\s+TIES)}{FETCH $1 1 $2 $3}isg) {}
+  elsif ($orig_query =~ s{LIMIT\s+ROWS\s+EXAMINED}{LIMIT 1 ROWS EXAMINED}isg) {}
+  else {
+    $orig_query .= " LIMIT 1";
   }
+  return $orig_query . " /* Transformed by " . shortClassName($class) . " */";
+;
 }
 1;

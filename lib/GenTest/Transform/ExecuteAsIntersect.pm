@@ -49,14 +49,15 @@ sub transform {
     }
 
   my @queries= (
-    "( $orig_query ) INTERSECT ( $orig_query ) /* TRANSFORM_OUTCOME_DISTINCT */",
+    "( $orig_query ) INTERSECT ( $orig_query ) /* TRANSFORM_OUTCOME_DISTINCT */"
+      . " /* Transformed by " . shortClassName($class) . " */",
     "( $orig_query ) INTERSECT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
+      . " /* Transformed by " . shortClassName($class) . " */",
+    "( $orig_query ) INTERSECT ALL ( $orig_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"
+      . " /* Transformed by " . shortClassName($class) . " */",
+    "( $orig_query ) INTERSECT ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
+      . " /* Transformed by " . shortClassName($class) . " */"
   );
-  if ($executor->server->versionNumeric() >= 100502) {
-    push @queries,
-      "( $orig_query ) INTERSECT ALL ( $orig_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-      "( $orig_query ) INTERSECT ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */";
-  }
   return \@queries;
 }
 
@@ -73,6 +74,8 @@ sub variate {
     push @intersect_modes, 'ALL';
   }
   my $intersect_mode= $self->random->arrayElement(\@intersect_modes);
-  return [ "( $query ) INTERSECT $intersect_mode ( $query )" ];
+  return [ "( $query ) INTERSECT $intersect_mode ( $query )"
+    . " /* Transformed by " . shortClassName($self) . " */"
+ ];
 }
 1;

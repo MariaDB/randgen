@@ -50,7 +50,8 @@ sub modify {
   return [
     [
       "SET /* TRANSFORM_SETUP */ \@switch_saved = \@\@optimizer_switch, optimizer_switch = REPLACE(REPLACE( \@\@optimizer_switch, '=on', '=off' ), 'in_to_exists=off', 'in_to_exists=on')",
-      $original_query.($transform_outcome ? " /* $transform_outcome */" : ""),
+      $original_query." /* Transformed by " . shortClassName($self) . " */"
+        . ($transform_outcome ? " /* $transform_outcome */" : ""),
     ],[ "/* TRANSFORM_CLEANUP */ SET SESSION optimizer_switch=\@switch_saved" ]
   ];
 }

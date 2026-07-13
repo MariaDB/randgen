@@ -68,7 +68,7 @@ sub modify {
     $query =~ s{\`?$virtual_column\`?}{$virtual_columns{$virtual_column}}sgi;
   }
 
-  return $query;
+  return $query . " /* Transformed by " . shortClassName($class) . " */";
 }
 
 1;

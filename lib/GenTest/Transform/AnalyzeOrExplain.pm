@@ -65,7 +65,7 @@ sub variate {
     $cmd =~ s/ANALYZE/EXPLAIN/;
   }
   $query =~ s/^\s*?([\s\(]*(?:SELECT|UPDATE|DELETE|INSERT|REPLACE))/$cmd $1/;
-  return [ $query ];
+  return [ $query . " /* Transformed by " . shortClassName($self) . " */" ];
 }
 
 sub transform {

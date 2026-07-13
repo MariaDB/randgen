@@ -37,19 +37,20 @@ sub transform {
     || $orig_result->rows() != 1
     || $#{$orig_result->data->[0]} != 0;
 
-  return modify_query($orig_query). " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
+  return $class->modify($orig_query). " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */";
 }
 
 sub variate {
   my ($class, $orig_query) = @_;
   return [ $orig_query ] if $orig_query !~ m{^\s*SELECT}is;
   return [ $orig_query ] if $orig_query =~ m{^\s*OUTFILE}is;
-  return [ modify_query($orig_query) ];
+  return [ $class->modify($orig_query) ];
 }
 
-sub modify_query {
-  my $orig_query= shift;
-  return "SELECT (".$orig_query.") AS s1";
+sub modify {
+  my ($self, $orig_query) = @_;
+  return "SELECT (".$orig_query.") AS s1"
+    . " /* Transformed by " . shortClassName($self) . " */";
 }
 
 1;

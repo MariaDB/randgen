@@ -541,7 +541,7 @@ sub variate {
   $query =~ s/=====ESCAPED_SINGLE_QUOTE=====/\\'/g;
   $query =~ s/=====ESCAPED_DOUBLE_QUOTE=====/\\"/g;
   sayDebug("JsonTables variator is returning query $query");
-  return [ $query ];
+  return [ $query . " /* Transformed by " . shortClassName($self) . " */" ];
 }
 
 sub transform {
@@ -578,7 +578,9 @@ sub transform {
       push @queries, "CREATE OR REPLACE TEMPORARY TABLE ${tmp_table_prefix}${i} SELECT * FROM JSON_TABLE $def AS jt LIMIT 0";
       push @queries, "INSERT IGNORE INTO ${tmp_table_prefix}${i} SELECT * FROM JSON_TABLE $def AS jt";
     }
-    push @queries, $query. ' /* TRANSFORM_OUTCOME_UNORDERED_MATCH */';
+    push @queries, $query
+      . ' /* TRANSFORM_OUTCOME_UNORDERED_MATCH */'
+      . " /* Transformed by " . shortClassName($self) . " */";
     return [
       [ '/* TRANSFORM_SETUP */ SET @sql_mode.save= @@sql_mode',
         '/* TRANSFORM_SETUP */ SET SQL_MODE=REPLACE(REPLACE(@@sql_mode,'."'STRICT_TRANS_TABLES',''),'STRICT_ALL_TABLES','')"

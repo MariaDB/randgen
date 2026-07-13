@@ -55,9 +55,14 @@ sub transform {
 
   return [
     #Include database transforms creation DDL so that it appears in the simplified testcase.
-    "CREATE OR REPLACE TABLE $table_name $original_query",
-    "SELECT * FROM $table_name WHERE (".join(', ', map { "`$_`" } @column_names).") IN ( $original_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "SELECT * FROM $table_name WHERE (".join(', ', map { "`$_`" } @column_names).") NOT IN ( $original_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
+    "CREATE OR REPLACE TABLE $table_name $original_query"
+      . " /* Transformed by " . shortClassName($class) . " */",
+    "SELECT * FROM $table_name WHERE (".join(', ', map { "`$_`" } @column_names)
+      . ") IN ( $original_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"
+      . " /* Transformed by " . shortClassName($class) . " */",
+    "SELECT * FROM $table_name WHERE (".join(', ', map { "`$_`" } @column_names)
+      . ") NOT IN ( $original_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
+      . " /* Transformed by " . shortClassName($class) . " */",
     "DROP TABLE $table_name",
   ];
 }
@@ -74,7 +79,8 @@ sub variate {
   }
   my $table= $class->random->arrayElement($executor->metaTables('NON-SYSTEM'))->[1];
   my $not= ($class->random->uint16(0,1) ? 'NOT' : '');
-  return [ "SELECT * FROM $table WHERE $not EXISTS ($original_query)" ];
+  return [ "SELECT * FROM $table WHERE $not EXISTS ($original_query)"
+    . " /* Transformed by " . shortClassName($class) . " */" ];
 }
 
 1;

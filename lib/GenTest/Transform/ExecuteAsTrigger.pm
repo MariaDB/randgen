@@ -46,8 +46,10 @@ sub transform {
     #Include database transforms creation DDL so that it appears in the simplified testcase.
     "DROP TABLE IF EXISTS trigger1".abs($$).",  transforms.trigger2".abs($$),
     "CREATE TABLE IF NOT EXISTS trigger1".abs($$)." (f1 INTEGER)",
-    "CREATE TABLE IF NOT EXISTS transforms.trigger2".abs($$)." $zero_query",
-    "CREATE TRIGGER trigger1".abs($$)." BEFORE INSERT ON trigger1".abs($$)." FOR EACH ROW INSERT INTO transforms.trigger2".abs($$)." $orig_query",
+    "CREATE TABLE IF NOT EXISTS transforms.trigger2".abs($$)." $zero_query"
+      . " /* Transformed by " . shortClassName($class) . " */",
+    "CREATE TRIGGER trigger1".abs($$)." BEFORE INSERT ON trigger1".abs($$)." FOR EACH ROW INSERT INTO transforms.trigger2".abs($$)." $orig_query"
+      . " /* Transformed by " . shortClassName($class) . " */",
     "INSERT INTO trigger1".abs($$)." VALUES (1)",
     "SELECT * FROM transforms.trigger2".abs($$)." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
     "DROP TABLE IF EXISTS trigger1".abs($$).",  transforms.trigger2".abs($$)
@@ -65,7 +67,9 @@ sub variate {
     return [ $orig_query ];
   }
   return [
-    "CREATE /* TRANSFORM_SETUP */ OR REPLACE TRIGGER tr_Execute_AsTrigger_".abs($$)." AFTER DELETE ON $table FOR EACH ROW $query",
+    "CREATE /* TRANSFORM_SETUP */ OR REPLACE TRIGGER tr_Execute_AsTrigger_".abs($$)
+      . " AFTER DELETE ON $table FOR EACH ROW $query"
+      . " /* Transformed by " . shortClassName($class) . " */",
     "DELETE FROM $table LIMIT 1"
   ];
 }

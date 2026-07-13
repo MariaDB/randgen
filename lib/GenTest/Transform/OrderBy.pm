@@ -70,7 +70,7 @@ sub modify {
     # Won't handle
     return undef;
   }
-  return $original_query;
+  return $original_query . " /* Transformed by " . shortClassName($class) . " */";
 }
 
 1;

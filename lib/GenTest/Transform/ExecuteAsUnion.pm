@@ -50,10 +50,14 @@ sub transform {
   }
 
   return [
-    "( $orig_query ) UNION ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "( $orig_query_zero_limit ) UNION ALL ( $orig_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "( $orig_query ) UNION DISTINCT ( $orig_query ) /* TRANSFORM_OUTCOME_DISTINCT */",
+    "( $orig_query ) UNION ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"
+      . " /* Transformed by " . shortClassName($class) . " */",
+    "( $orig_query_zero_limit ) UNION ALL ( $orig_query ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"
+      . " /* Transformed by " . shortClassName($class) . " */",
+    "( $orig_query ) UNION DISTINCT ( $orig_query ) /* TRANSFORM_OUTCOME_DISTINCT */"
+      . " /* Transformed by " . shortClassName($class) . " */",
     "( $orig_query ) UNION ALL ( $orig_query ) /* TRANSFORM_OUTCOME_SUPERSET */"
+      . " /* Transformed by " . shortClassName($class) . " */"
   ];
 }
 
@@ -62,7 +66,8 @@ sub variate {
   # CTE do not work due to MDEV-15177 (closed as "won't fix")
   return [ $query ] if $query =~ m{(OUTFILE|INFILE|INTO)}is || $query !~ m{^\s*SELECT}is || $query =~ m{^\s*WITH}is;
   my $union_type= $self->random->arrayElement(['','ALL','DISTINCT']);
-  return [ "( $query ) UNION $union_type ( $query )" ];
+  return [ "( $query ) UNION $union_type ( $query )"
+    . " /* Transformed by " . shortClassName($self) . " */" ];
 }
 
 1;

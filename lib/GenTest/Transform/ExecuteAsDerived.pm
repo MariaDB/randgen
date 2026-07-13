@@ -45,7 +45,7 @@ sub variate {
 sub modify_query {
   my ($self, $orig_query)= @_;
   $orig_query =~ s{SELECT (.*?) FROM ([^;]*)}{SELECT * FROM ( SELECT $1 FROM $2 ) AS tbl_ExecuteAsDerived }is;
-  return $orig_query;
+  return $orig_query . " /* Transformed by " . shortClassName($self) . " */";
 }
 
 1;

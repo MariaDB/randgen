@@ -111,7 +111,8 @@ sub modify {
         push @transformed_queries,
           'SET /* TRANSFORM_SETUP */ @'.$switch_name.'_saved = @@'.$switch_name,
           "SET /* TRANSFORM_SETUP */ SESSION $switch",
-          $original_query.($transform_outcome ? " /* $transform_outcome */" : "");
+          $original_query." /* Transformed by " . shortClassName($class) . " */"
+            . ($transform_outcome ? " /* $transform_outcome */" : "");
         push @cleanup_block,
           '/* TRANSFORM_CLEANUP */ SET SESSION '.$switch_name.'=@'.$switch_name.'_saved';
       }

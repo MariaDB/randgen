@@ -45,7 +45,9 @@ sub modify {
   my ($class, $orig_query, $transform_outcome) = @_;
   return [ $orig_query ] if $orig_query =~ m{TRIGGER|PROCEDURE|FUNCTION}is;
   return [
-    "CREATE  /* TRANSFORM_SETUP */ OR REPLACE PROCEDURE sp_ExecuteAsSPTwice_".abs($$)." () LANGUAGE SQL $orig_query",
+    "CREATE  /* TRANSFORM_SETUP */ OR REPLACE PROCEDURE sp_ExecuteAsSPTwice_".abs($$)
+      . " () LANGUAGE SQL $orig_query"
+      . " /* Transformed by " . shortClassName($class) . " */",
     "CALL sp_ExecuteAsSPTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
     "CALL sp_ExecuteAsSPTwice_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ''),
   ];

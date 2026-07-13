@@ -50,7 +50,10 @@ sub transform {
   return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is;
   return STATUS_WONT_HANDLE if $query !~ m{SELECT.*\s+IN\s*\(\s*SELECT}is;
   $query= $class->modify($query, $executor);
-  return (defined $query ? [ $query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" ] : STATUS_WONT_HANDLE);
+  return (defined $query
+    ? [ $query." /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" ]
+    : STATUS_WONT_HANDLE
+  );
 }
 
 sub variate {
@@ -96,7 +99,10 @@ sub modify {
     }
   }sgexi;
 
-  return ($inline_successful ? $query : undef);
+  return ($inline_successful
+    ? $query . " /* Transformed by " . shortClassName($class) . " */"
+    : undef
+  );
 }
 
 1;

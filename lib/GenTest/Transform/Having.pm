@@ -52,7 +52,7 @@ sub variate {
 sub modify {
   my ($class, $orig_query) = @_;
   $orig_query =~ s{HAVING.*?(ORDER\s+BY|LIMIT|$)}{ $1}isg;
-  return $orig_query;
+  return $orig_query . " /* Transformed by " . shortClassName($class) . " */";
 }
 
 1;

@@ -60,7 +60,7 @@ sub modify {
   if ($order_by) {
     $new_query.= ", $order_by";
   }
-  return $new_query;
+  return $new_query . "/* Transformed by " . shortClassName($class) . " */*;
 }
 
 1;

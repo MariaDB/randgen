@@ -48,22 +48,35 @@ sub transform {
   }
 
   my @queries= (
-    "( $orig_query ) EXCEPT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_DISTINCT */",
-    "( $orig_query ) EXCEPT /*!100500 DISTINCT */ ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
+    "( $orig_query ) EXCEPT ( $orig_query_zero_limit )"
+    . " /* Transformed by " . shortClassName($class) . " */"
+    . " /* TRANSFORM_OUTCOME_DISTINCT */",
+    "( $orig_query ) EXCEPT DISTINCT ( $orig_query )"
+    . " /* Transformed by " . shortClassName($class) . " */"
+    . " /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
+    "( $orig_query ) EXCEPT ALL ( $orig_query_zero_limit )"
+    . " /* Transformed by " . shortClassName($class) . " */"
+    . "/* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+    "( $orig_query ) EXCEPT ALL ( $orig_query )"
+    . " /* Transformed by " . shortClassName($class) . " */"
+    . " /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
   );
   
-  if ($executor->server->versionNumeric() >= 100502) {
+  if ($executor->server->versionNumeric() >= 100601
+    and $executor->server->serverVariable('sql_mode') =~ /oracle/i) {
     push @queries,
-      "( $orig_query ) EXCEPT ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-      "( $orig_query ) EXCEPT ALL ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */";
-  };
-
-  if ($executor->server->versionNumeric() >= 100601 and $executor->server->serverVariable('sql_mode') =~ /oracle/i) {
-    push @queries,
-      "( $orig_query ) MINUS DISTINCT ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_DISTINCT */",
-      "( $orig_query ) MINUS ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */",
-      "( $orig_query ) MINUS ALL ( $orig_query_zero_limit ) /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-      "( $orig_query ) MINUS ALL ( $orig_query ) /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
+      "( $orig_query ) MINUS DISTINCT ( $orig_query_zero_limit )"
+        . " /* Transformed by " . shortClassName($class) . " */"
+        . " /* TRANSFORM_OUTCOME_DISTINCT */",
+      "( $orig_query ) MINUS ( $orig_query )"
+        . " /* Transformed by " . shortClassName($class) . " */"
+        . "/* TRANSFORM_OUTCOME_EMPTY_RESULT */",
+      "( $orig_query ) MINUS ALL ( $orig_query_zero_limit )"
+        . " /* Transformed by " . shortClassName($class) . " */"
+        . " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
+      "( $orig_query ) MINUS ALL ( $orig_query )"
+        . " /* Transformed by " . shortClassName($class) . " */"
+        . " /* TRANSFORM_OUTCOME_EMPTY_RESULT */"
   };
 
   return \@queries;
@@ -86,7 +99,8 @@ sub variate {
     push @except_modes, 'ALL';
   }
   my $except_mode= $self->random->arrayElement(\@except_modes);
-  return [ "( $query ) $except_word $except_mode ( $query )" ];
+  return [ "( $query ) $except_word $except_mode ( $query )"
+    . " /* Transformed by " . shortClassName($self) . " */" ];
 }
 
 1;

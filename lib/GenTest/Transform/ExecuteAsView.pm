@@ -43,9 +43,11 @@ sub transform {
   return [
     #Include database transforms creation DDL so that it appears in the simplified testcase.
     "DROP VIEW IF EXISTS transforms.view_".abs($$)."_merge , transforms.view_".abs($$)."_temptable",
-    "CREATE OR REPLACE ALGORITHM=MERGE VIEW transforms.view_".abs($$)."_merge AS $orig_query",
+    "CREATE OR REPLACE ALGORITHM=MERGE VIEW transforms.view_".abs($$)."_merge AS $orig_query"
+      . " /* Transformed by " . shortClassName($class) . " */",
     "SELECT * FROM transforms.view_".abs($$)."_merge /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "CREATE OR REPLACE ALGORITHM=TEMPTABLE VIEW transforms.view_".abs($$)."_temptable AS $orig_query",
+    "CREATE OR REPLACE ALGORITHM=TEMPTABLE VIEW transforms.view_".abs($$)."_temptable AS $orig_query"
+      . " /* Transformed by " . shortClassName($class) . " */",
     "SELECT * FROM transforms.view_".abs($$)."_temptable /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
     "DROP VIEW transforms.view_".abs($$)."_merge , transforms.view_".abs($$)."_temptable"
   ];
@@ -57,7 +59,8 @@ sub variate {
   return [ $query ] if $query !~ /^\s*(?:SELECT|VALUES)/i;
   my $alg= $self->random->arrayElement(['ALGORITHM=TEMPTABLE','ALGORITHM=MERGE','ALGORITHM=UNDEFINED','']);
   my $vname= 'transforms.v_ExecuteAsView_'.abs($$);
-  return [ "/* TRANSFORM_SETUP */ CREATE OR REPLACE $alg VIEW $vname AS $query",
+  return [ "/* TRANSFORM_SETUP */ CREATE OR REPLACE $alg VIEW $vname AS $query"
+             . " /* Transformed by " . shortClassName($self) . " */",
            "SELECT * FROM $vname "
          ];
 }

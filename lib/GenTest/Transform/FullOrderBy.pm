@@ -39,7 +39,10 @@ sub transform {
 
   # Transformer already knows column number, so there is no point trying to detect it upon modification
   $original_query= $self->modify($original_query,$executor,scalar(@{$original_result->columnNames()}));
-  return (defined $original_query ? $original_query ." /* $transform_outcome */" : STATUS_WONT_HANDLE);
+  return (defined $original_query
+    ? $original_query ." /* $transform_outcome */"
+      . " /* Transformed by " . shortClassName($self) . " */"
+    : STATUS_WONT_HANDLE);
 }
 
 sub variate {
@@ -79,7 +82,7 @@ sub modify {
   }
   $query.= ' ORDER BY '.( join ',', @{$self->random->shuffleArray(\@full_order_by)} ) . " $extra_clause";
   sayDebug("FullOrderBy: Original query [ $original_query ] ; Modified query [ $query ]");
-  return $query;
+  return $query . " /* Transformed by " . shortClassName($self) . " */";
 }
 
 1;

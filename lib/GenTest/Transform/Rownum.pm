@@ -35,9 +35,12 @@ sub transform {
   return STATUS_WONT_HANDLE if $query =~ m{(OUTFILE|INFILE|PROCESSLIST)}is
     || $query !~ m{^\s*SELECT}io;
   return [ 
-    "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() < 2147483648 /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() >= 0 /* TRANSFORM_OUTCOME_UNORDERED_MATCH */",
-    "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() <= ".$self->random->uint16(0,1000)." /* TRANSFORM_OUTCOME_SUBSET */",
+    "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() < 2147483648 /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"
+      . " /* Transformed by " . shortClassName($self) . " */",
+    "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() >= 0 /* TRANSFORM_OUTCOME_UNORDERED_MATCH */"
+      . " /* Transformed by " . shortClassName($self) . " */",
+    "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() <= ".$self->random->uint16(0,1000)." /* TRANSFORM_OUTCOME_SUBSET */"
+      . " /* Transformed by " . shortClassName($self) . " */",
   ];
 }
 
@@ -49,8 +52,10 @@ sub variate {
 
   if ($query =~ /\WWHERE\W/) {
     $query =~ s/(\W)WHERE(\W)/${1}WHERE \/\* RESULTSETS_NOT_COMPARABLE \*\/ ROWNUM() ${op} ${limit} AND${2}/g;
+    $query .= " /* Transformed by " . shortClassName($self) . " */";
   } elsif ($query =~ /^\s*SELECT/ && $query !~ /INTO\s+OUTFILE/) {
     $query = "SELECT * FROM ( $query ) rownumquery WHERE ROWNUM() ${op} ${limit}";
+    $query .= " /* Transformed by " . shortClassName($self) . " */";
   }
 
   return [ $query ];

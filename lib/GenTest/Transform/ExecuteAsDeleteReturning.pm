@@ -49,7 +49,7 @@ sub transform {
 sub variate {
   my ($self, $query)= @_;
   if ($query =~ /^\s*DELETE/i && $query !~ /RETURNING/i) {
-    return [ "$query RETURNING *" ]
+    return [ "$query RETURNING *" . " /* Transformed by " . shortClassName($self) . " */" ]
   } elsif ($query =~ /^[\s\(]*SELECT/ && $query !~ /\WINTO\W/) {
     return $self->modify($query);
   } else {
@@ -64,7 +64,8 @@ sub modify {
   return [
     [
       'SET /* TRANSFORM_SETUP */ @tx_read_only.save= @@session.tx_read_only, tx_read_only= 0',
-      "CREATE /* TRANSFORM_SETUP */ OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query",
+      "CREATE /* TRANSFORM_SETUP */ OR REPLACE TEMPORARY TABLE $table_name IGNORE AS $query"
+        . " /* Transformed by " . shortClassName($self) . " */",
       "DELETE FROM $table_name RETURNING $column_list".($transform_outcome ? " /* $transform_outcome */" : ""),
     ],[ '/* TRANSFORM_CLEANUP */ SET SESSION tx_read_only= @tx_read_only.save' ]
   ];

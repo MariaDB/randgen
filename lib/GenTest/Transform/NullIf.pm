@@ -88,7 +88,7 @@ sub modify {
         $transformed_query =~ s/\Q$func_call/$replacement\E/i;
     }
 
-    return $transformed_query;
+    return $transformed_query . " /* Transformed by " . shortClassName($class) . " */";
 }
 
 1;

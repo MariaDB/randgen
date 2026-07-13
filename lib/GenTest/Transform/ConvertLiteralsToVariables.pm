@@ -79,7 +79,8 @@ sub modify {
   if ($var_counter > 0) {
     return [
       "SET /* TRANSFORM_SETUP */ ".join(", ", @var_variables),
-      $new_query.($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : "")
+      $new_query." /* Transformed by " . shortClassName($class) . " */".
+      ($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : "")
     ];
   } else {
     return undef;

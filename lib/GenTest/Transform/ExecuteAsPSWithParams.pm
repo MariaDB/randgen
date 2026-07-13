@@ -87,7 +87,9 @@ sub modify {
     my $flags= ($new_query !~ /^[\s\(]*SELECT/i or $new_query =~ /RESULTSETS_NOT_COMPARABLE/) ? '/* RESULTSETS_NOT_COMPARABLE */' : '';
     return [
       "SET  /* TRANSFORM_SETUP */ ".join(", ", @var_variables),
-      "PREPARE /* TRANSFORM_SETUP */ $stmt FROM ".$executor->connection()->quote($new_query),
+      "PREPARE /* TRANSFORM_SETUP */ $stmt FROM "
+        . $executor->connection()->quote($new_query)
+        . " /* Transformed by " . shortClassName($class) . " */",
       "EXECUTE $flags $stmt USING ". (join ',', map { '@var'.$_ } (1..$var_counter)).($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : ""),
       "EXECUTE $flags $stmt USING ". (join ',', map { '@var'.$_ } (1..$var_counter)).($with_transform_outcome ? " /* TRANSFORM_OUTCOME_UNORDERED_MATCH */" : ""),
     ];

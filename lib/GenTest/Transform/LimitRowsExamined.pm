@@ -119,7 +119,7 @@ sub modify {
     elsif ($query =~ s{(SELECT.+)(PROCEDURE\s+\w+|INTO\s+OUTFILE|INTO\s+DUMPFILE|FOR\s+UPDATE|LOCK\s+IN\s+SHARE\s+MODE)}{$1 LIMIT ROWS EXAMINED $limit $2}is) {}
     else {$query .= " LIMIT ROWS EXAMINED $limit"};
   }
-  return $query;
+  return $query . " /* Transformed by " . shortClassName($self) . " */";
 }
 
 1;

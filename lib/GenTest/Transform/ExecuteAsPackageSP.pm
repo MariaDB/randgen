@@ -47,7 +47,10 @@ sub modify {
     [
       "SET /* TRANSFORM_SETUP */ \@sql_mode.save=\@\@sql_mode, sql_mode=CONCAT(\@\@sql_mode,',ORACLE')",
       "CREATE /* TRANSFORM_SETUP */ OR REPLACE PACKAGE pkg_ExecuteAsPackageSP_".abs($$)." IS PROCEDURE sp1_".abs($$)."; PROCEDURE sp2_".abs($$)."; END",
-      "CREATE /* TRANSFORM_SETUP */ OR REPLACE PACKAGE BODY pkg_ExecuteAsPackageSP_".abs($$)." IS PROCEDURE sp1_".abs($$)." AS BEGIN $orig_query; END; PROCEDURE sp2_".abs($$)." AS BEGIN sp1_".abs($$)."; END; END",
+      "CREATE /* TRANSFORM_SETUP */ OR REPLACE PACKAGE BODY pkg_ExecuteAsPackageSP_".abs($$)
+        . " IS PROCEDURE sp1_".abs($$)." AS BEGIN $orig_query; END; PROCEDURE sp2_".abs($$)
+        . " AS BEGIN sp1_".abs($$)."; END; END"
+        . " /* Transformed by " . shortClassName($class) . " */",
       "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp1_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
       "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp1_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
       "CALL pkg_ExecuteAsPackageSP_".abs($$).".sp2_".abs($$).($transform_outcome ? " /* $transform_outcome */" : ""),
