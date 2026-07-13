@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights
 # reserved.
-# Copyright (c) 2022, MariaDB
+# Copyright (c) 2022, 2026 MariaDB
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ use base 'Exporter';
            'isNewerVersion', 'isOlderVersion',
            'shorten_message', 'set_expectation', 'unset_expectation',
            'intersect_arrays', 'isFederatedEngine',
-           'isCompatible'
+           'isCompatible', 'shortClassName'
            );
 
 use strict;
@@ -343,5 +343,8 @@ sub isFederatedEngine {
   return (lc($engine) eq 'federated' or lc($engine) eq 'spider');
 }
 
+sub shortClassName {
+  return (split /::/, ref($_[0]))[-1];
+}
 
 1;
