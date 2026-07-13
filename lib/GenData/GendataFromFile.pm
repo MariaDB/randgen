@@ -23,6 +23,7 @@ package GenData::GendataFromFile;
 use strict;
 use Carp;
 use Data::Dumper;
+use File::Basename;
 
 use GenData;
 use GenData::PopulateSchema;
@@ -48,6 +49,10 @@ sub asc_desc_key {
 sub run {
     my $self= shift;
 
+    unless ($self->spec_file()) {
+        sayError("No spec file provided");
+        return STATUS_ENVIRONMENT_FAILURE;
+    }
     my $executor = $self->executor();
     my $spec_file = $self->spec_file();
     my $prng = $self->rand();
@@ -61,64 +66,88 @@ sub run {
                                                                     # have
                                                                     # been
                                                                     # substituted
-   my $short_column_names= $self->short_column_names; # Can also be set in the spec file by names => 'short' or names => 'full'
+    my $short_column_names= $self->short_column_names; # Can also be set in the spec file by names => 'short' or names => 'full'
 
+    #
+    # The spec file can be one of the following:
+    # - .zz file (perl code describing object patterns), we eval it
+    # - .pl file (standalone perl script), we execute it, it should
+    #   produce an sql file as output, and then we go to the next step
+    # - .sql (either from the beginning, or produced by .pl), we feed it
+    #   to the server
+    #
 
-    if ($spec_file ne '') {
+    if ($spec_file =~ /\.zz$/) {
         open(CONF , $spec_file) or croak "unable to open gendata file '$spec_file': $!";
         read(CONF, my $spec_text, -s $spec_file);
         close(CONF);
-        #
-        # Usually the specification file is actually a perl script (all those .zz),
-        #  so we read it by eval()-ing it
-        #
         my $eval_res= ($self->debug()
-                       ? eval ( $spec_text )
-                       : eval { local $SIG{__WARN__} = sub {}; eval ( $spec_text ) }
-                      );
-        unless ($eval_res)
-        {
-          my $perl_errors= $@;
-          say("Could not evaluate $spec_file as Perl, trying to feed it to the server as SQL");
-          # ... but if it turns out to be something else, we'll try to interpret it
-          # as an SQL file (e.g. a dump) and feed it directly to the server.
-          # Run with --force in case of partial errors (e.g. some values don't work with the current server charset).
-          # If it turns out that nothing is loaded at all, it will be a pointless test,
-          # but such things should be caught at test implementation stage
+            ? eval ( $spec_text )
+            : eval { local $SIG{__WARN__} = sub {}; eval ( $spec_text ) }
+        );
+        if ($eval_res) {
+            return STATUS_OK;
+        } else {
+            sayError("Could not evaluate $spec_file as .zz file: $@");
+            return STATUS_ENVIRONMENT_FAILURE;
+        }
+    }
 
-          my $dbs= $executor->connection->get_column("SELECT schema_name from INFORMATION_SCHEMA.SCHEMATA ORDER BY schema_name");
-          my %dbs_before= ();
-          foreach (@$dbs) { $dbs_before{$_}= 1; };
-          
-          my @populate_rows= (defined $self->rows() ? split(',', $self->rows()) : (0));
-          my $populate = GenData::PopulateSchema->new(spec_file => $spec_file,
-                                               debug => $self->debug,
-                                               seed => $self->seed,
-                                               server => $self->server,
-                                               rows => \@populate_rows,
-                                               basedir => $executor->server->serverVariable('basedir'),
-          );
-          if ($populate->run() == STATUS_OK)
-          {
+    if ($spec_file =~ /\.pl$/) {
+        my $fname = basename($spec_file);
+        $fname =~ s/\.pl$/\.sql/;
+        $fname = $executor->vardir().'/'.$fname;
+        if (-e $fname) {
+            say("File $fname has already been generated, re-using it");
+        } else {
+            system("perl $spec_file > $fname");
+            if ($? != 0) {
+                sayError("Failed to execute $spec_file: $?");
+                return STATUS_ENVIRONMENT_FAILURE;
+            }
+        }
+        $spec_file = $fname;
+    }
+    if ($spec_file =~ /\.sql$/) {
+        # Run with --force in case of partial errors (e.g. some values don't work with the current server charset).
+        # If it turns out that nothing is loaded at all, it will be a pointless test,
+        # but such things should be caught at test implementation stage
+
+        my $dbs= $executor->connection->get_column("SELECT schema_name from INFORMATION_SCHEMA.SCHEMATA ORDER BY schema_name");
+        my %dbs_before= ();
+        foreach (@$dbs) { $dbs_before{$_}= 1; };
+
+        my @populate_rows= (defined $self->rows() ? split(',', $self->rows()) : (0));
+        my $populate = GenData::PopulateSchema->new(spec_file => $spec_file,
+                                            debug => $self->debug,
+                                            seed => $self->seed,
+                                            server => $self->server,
+                                            rows => \@populate_rows,
+                                            basedir => $executor->server->serverVariable('basedir'),
+        );
+        if ($populate->run() == STATUS_OK) {
             say("Loaded SQL file $spec_file and populated the tables");
             $dbs= $executor->connection->get_column("SELECT schema_name from INFORMATION_SCHEMA.SCHEMATA ORDER BY schema_name");
             if ($dbs && scalar(@$dbs)) {
-              foreach (@$dbs) {
+                foreach (@$dbs) {
                 unless ($dbs_before{$_}) {
-                  say("New schema $_ was created");
-                  # PS is a workaround for MENT-30190
-                  $executor->execute("EXECUTE IMMEDIATE CONCAT('GRANT ALL ON ".$_.".* TO ',CURRENT_USER,' WITH GRANT OPTION')");
-                  if ($executor->connection->err) {
+                    say("New schema $_ was created");
+                    # PS is a workaround for MENT-30190
+                    $executor->execute("EXECUTE IMMEDIATE CONCAT('GRANT ALL ON ".$_.".* TO ',CURRENT_USER,' WITH GRANT OPTION')");
+                    if ($executor->connection->err) {
                     sayError("Failed to grant permissions on database $_: ".$executor->connection->print_error);
-                  }
+                    }
                 }
-              }
+                }
             }
             return STATUS_OK;
-          } else {
-            croak "Unable to load $spec_file: $perl_errors";
-          }
+        } else {
+            sayError("Failed to load $spec_file");
+            return STATUS_ENVIRONMENT_FAILURE;
         }
+    } else {
+        sayError("Unknown spec file type: $spec_file");
+        return STATUS_ENVIRONMENT_FAILURE;
     }
 
     unless (isCompatible($compatibility,$self->compatibility,$self->compatibility_es)) {
