@@ -73,8 +73,8 @@ sub run {
     # - .zz file (perl code describing object patterns), we eval it
     # - .pl file (standalone perl script), we execute it, it should
     #   produce an sql file as output, and then we go to the next step
-    # - .sql (either from the beginning, or produced by .pl), we feed it
-    #   to the server
+    # - .sql or .dump (either from the beginning, or produced by .pl)
+    #    we feed it to the server
     #
 
     if ($spec_file =~ /\.zz$/) {
@@ -108,7 +108,7 @@ sub run {
         }
         $spec_file = $fname;
     }
-    if ($spec_file =~ /\.sql$/) {
+    if ($spec_file =~ /\.(sql|dump)$/) {
         # Run with --force in case of partial errors (e.g. some values don't work with the current server charset).
         # If it turns out that nothing is loaded at all, it will be a pointless test,
         # but such things should be caught at test implementation stage
