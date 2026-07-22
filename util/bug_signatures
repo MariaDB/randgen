@@ -38,6 +38,10 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-40486:
+=~ Assertion \`len_arg <= (65535-2-1)'
+=~ Field_vector::Field_vector
+=~ Item_func_vec_fromtext::
 MDEV-40414:
 =~ signal|AddressSanitizer
 =~ Charset::charset
