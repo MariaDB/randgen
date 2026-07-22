@@ -1509,10 +1509,11 @@ MDEV-31269:
 =~ Item::print_parenthesised
 =~ Item_bool_rowready_func2::print
 =~ Prepared_statement::execute|sp_head::execute
-MDEV-31267:
+MDEV-31267: [Not fixed in 10.6]
 =~ signal|AddressSanitizer|Assertion \`n > 0 && n < SINUSES_CALCULATED*2+1'
 =~ get_n_sincos
 =~ Item_func_buffer::Transporter::add
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-31266:
 =~ AddressSanitizer|signal
 =~ _ma_seq_search
