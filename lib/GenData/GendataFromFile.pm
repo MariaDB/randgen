@@ -77,22 +77,6 @@ sub run {
     #    we feed it to the server
     #
 
-    if ($spec_file =~ /\.zz$/) {
-        open(CONF , $spec_file) or croak "unable to open gendata file '$spec_file': $!";
-        read(CONF, my $spec_text, -s $spec_file);
-        close(CONF);
-        my $eval_res= ($self->debug()
-            ? eval ( $spec_text )
-            : eval { local $SIG{__WARN__} = sub {}; eval ( $spec_text ) }
-        );
-        if ($eval_res) {
-            return STATUS_OK;
-        } else {
-            sayError("Could not evaluate $spec_file as .zz file: $@");
-            return STATUS_ENVIRONMENT_FAILURE;
-        }
-    }
-
     if ($spec_file =~ /\.pl$/) {
         my $fname = basename($spec_file);
         $fname =~ s/\.pl$/\.sql/;
@@ -108,7 +92,20 @@ sub run {
         }
         $spec_file = $fname;
     }
-    if ($spec_file =~ /\.(sql|dump)$/) {
+    if ($spec_file =~ /\.zz$/) {
+        open(CONF , $spec_file) or croak "unable to open gendata file '$spec_file': $!";
+        read(CONF, my $spec_text, -s $spec_file);
+        close(CONF);
+        my $eval_res= ($self->debug()
+            ? eval ( $spec_text )
+            : eval { local $SIG{__WARN__} = sub {}; eval ( $spec_text ) }
+        );
+        if (!$eval_res) {
+            sayError("Could not evaluate $spec_file as .zz file: $@");
+            return STATUS_ENVIRONMENT_FAILURE;
+        }
+    }
+    elsif ($spec_file =~ /\.(sql|dump)$/) {
         # Run with --force in case of partial errors (e.g. some values don't work with the current server charset).
         # If it turns out that nothing is loaded at all, it will be a pointless test,
         # but such things should be caught at test implementation stage
