@@ -219,6 +219,7 @@ push @$combinations, (
           --grammar=conf/yy/optimizer.yy
           --grammar=conf/yy/outer_join.yy
           --views
+          --threads=1
         ' ],
         $options{engine_basic_combinations},
         $options{optional_charsets_safe},
