@@ -124,8 +124,61 @@ sub run {
     help("Error occured while reading sort_options: $!");
   }
 
-  my @ARGV_saved = ($sort_options ? sort @ARGV : @ARGV);
-  @ARGV= @ARGV_saved;
+  say("Starting \\ \n# ".join(" \\ \n# ", @ARGV));
+  my @ARGV_saved = @ARGV;
+
+  if ($sort_options) {
+    # We want the options to be sorted on the command line so that it's easier
+    # to read and modify, but we only want to sort option names, not values.
+    # That is, if the command line contains --threads=8 ... --threads=1, we
+    # want it to end up with the last provided 1, as customary for command
+    # lines; with the straightforward sorting we had before, it would be
+    # sorted to --threads=1 --threads=8 and we would have 8.
+    # We won't do de-duplication now; whatever is possible will be done at
+    # the next stage by GetOptions
+
+    # Given an option string, return its "sort key": everything up to the last
+    # top-level '=', i.e. with the trailing "=value" stripped off. An '=' that
+    # sits inside quotes is part of the value and does NOT count as a separator.
+    #   --threads=8                     -> --threads
+    #   --mysqld=--innodb               -> --mysqld
+    #   --mysqld=--lock-wait-timeout=30 -> --mysqld=--lock-wait-timeout
+    #   --compatibility='1 2 3'         -> --compatibility
+    #   --innodb  (no '=' at all)       -> --innodb
+    sub optkey {
+        my ($s) = @_;             # $s = the option string (first/only argument)
+        my $last = -1;            # index of the last '=' found outside quotes; -1 = none yet
+        my $q = '';               # the quote char we're currently inside ('' means "not in quotes")
+
+        # Walk the string one character at a time, tracking whether we're inside quotes.
+        for my $i (0 .. length($s) - 1) {
+            my $c = substr($s, $i, 1);    # the character at position $i
+            if ($q) {
+                # Currently inside quotes: only a matching quote char closes them.
+                $q = '' if $c eq $q;
+            } elsif ($c eq "'" or $c eq '"') {
+                # Not in quotes and we hit a quote: remember which kind opened.
+                $q = $c;
+            } elsif ($c eq '=') {
+                # A top-level '=' (outside quotes): candidate separator. Keep the last one.
+                $last = $i;
+            }
+        }
+
+        # Key = text before that last '='; if there was none, the whole string is the key.
+        return $last >= 0 ? substr($s, 0, $last) : $s;
+    }
+
+    # Sort @ARGV by option name (the key above), keeping the original order among
+    # options that share a key (Perl's sort is stable, so duplicates stay put).
+    # This is the "Schwartzian transform": read the three steps bottom-to-top.
+    my @sorted =
+        map  { $_->[1] }                      # 3. keep only the original string
+        sort { $a->[0] cmp $b->[0] }          # 2. sort by key ('cmp' = string comparison)
+        map  { [ optkey($_), $_ ] }           # 1. pair each option with its key: [key, original]
+        @ARGV;
+    @ARGV_saved = @sorted;
+  }
 
   $opt_result = GetOptions(
     #
@@ -355,8 +408,6 @@ sub run {
     sayWarning("Could not get RQG git revision");
   }
 
-  say("Starting \\ \n# ".join(" \\ \n# ", @ARGV_saved));
-
   if (defined $props->{sqltrace}) {
     # --sqltrace may have a string value (optional).
     # Allowed values for --sqltrace:
@@ -403,7 +454,7 @@ sub run {
   TRIALS:
   foreach my $trial_id (1..$trials)
   {
-    my @final_options= ($sort_options ? sort @ARGV_saved : @ARGV_saved);
+    my @final_options= @ARGV_saved;
 
     my $cmd = SCRIPT_NAME . " " . join(" ", @final_options);
     $props->{seed}= time() if $props_seed_orig eq 'time';
