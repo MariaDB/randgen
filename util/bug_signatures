@@ -351,7 +351,7 @@ MDEV-38099:
 =~ st_select_lex::optimize_unflattened_subqueries
 =~ Version: '12\.[2-9]|Server version: 12\.[2-9]|Version: '1[3-9]\.[0-9]|Server version: 1[3-9]\.[0-9]
 MDEV-38061:
-=~ Assertion \`args[0]->decimal_precision() < 22'
+=~ Assertion \`args\[0\]->decimal_precision() < 22'
 =~ Item_func_round::fix_arg_hex_hybrid
 MDEV-38060:
 =~ signal|AddressSanitizer|Assertion \`table->s->sequence'

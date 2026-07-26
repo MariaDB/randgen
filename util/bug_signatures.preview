@@ -4,11 +4,32 @@
 # Strong matches
 ##############################################################################
 
+# Also happens on the baseline, ignoring
+TODO-10000: [Ignore list]
+=~ Slave has stopped with error: Column .* of table .* cannot be converted from type 'var.*' to type 'var.*
+=~ Test run ends with exit status STATUS_REPLICATION_FAILURE
+TODO-10000: [Ignore list]
+=~ For SPIDER BASE TABLE .* : Error : Unable to connect to foreign data source: s
+=~ Test run ends with exit status STATUS_RECOVERY_FAILURE
+TODO-10000: [Ignore list]
+=~ Binlog encryption is not available with --binlog-storage-engine|Semi-synchronous replication is not yet supported with --binlog-storage-engine|Galera cannot be used with the --binlog-storage-engine option
+=~ Test run ends with exit status STATUS_SERVER_STARTUP_FAILURE|Test run ends with exit status STATUS_ENVIRONMENT_FAILURE
+TODO-10000: [Ignore list]
+=~ Assertion \`null_ptr < ptr'|Assertion \`ptr - null_ptr <= (int)table->s->rec_buff_length'
+=~ Field::move_field_offset
+=~ Create_tmp_table::finalize
+TODO-10000: [Ignore list]
+=~ Assertion \`b'|Assertion \`a'
+=~ my_strnncoll_.*
+TODO-10000: [Ignore list]
+=~ Table '.*' doesn't exist
+=~ Test run ends with exit status STATUS_REPLICATION_FAILURE
 # HEAP blobs
-MDEV-40523:
-=~ AddressSanitizer|signal
-=~ hp_write_run_data
-=~ hp_write_blobs
+# MDEV-40523:
+# =~ AddressSanitizer|signal
+# =~ hp_write_run_data
+# =~ hp_write_blobs
+# =~ versioning|FeatureUsage detected system-versioned tables
 # Atomic CoR
 #MDEV-40172:
 #=~ Assertion \`!mysql_bin_log\.is_open() \|\| is_binlog_format_row()'
