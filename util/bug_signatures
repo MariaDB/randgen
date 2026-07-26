@@ -206,6 +206,10 @@ MDEV-38893:
 =~ InnoDB: DROP TABLE .*: Record changed
 =~ FeatureUsage detected unique blobs
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG
+MDEV-38860:
+=~ Assertion \`null_ptr < ptr'|Assertion \`ptr - null_ptr <= (int)table->s->rec_buff_length'
+=~ Field::move_field_offset
+=~ Create_tmp_table::finalize
 MDEV-38854:
 =~ Assertion \`table->vers_write'
 =~ vers_update_or_validate_fields
