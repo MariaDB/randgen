@@ -1247,6 +1247,11 @@ MDEV-32139:
 =~ AddressSanitizer|signal
 =~ ha_mroonga::create_share_for_create
 =~ THD::rm_temporary_table
+MDEV-32136:
+=~ signal|AddressSanitizer
+=~ maria_rtree_get_next
+=~ Rows_log_event::find_row
+=~ FeatureUsage detected GIS columns
 MDEV-32135:
 =~ Assertion \`!(tab->ref\.key == -1 && tab->quick && tab->quick->index == tab->range_rowid_filter_info->key_no)'
 =~ make_range_rowid_filters
