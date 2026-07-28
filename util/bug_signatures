@@ -38,6 +38,9 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-40535:
+=~ [ERROR] Got error 1054 when reading table .*spider.*
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-40486:
 =~ Assertion \`len_arg <= (65535-2-1)'
 =~ Field_vector::Field_vector
