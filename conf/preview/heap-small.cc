@@ -41,16 +41,30 @@ $combinations = [
 
 # NEW
   ['
-    --engine=HEAP
-    --grammar=conf/yy/engine-heap-dml.yy
-    --grammar=conf/yy/engine-heap-ddl.yy
     --gendata=data/sql/engine-heap.sql
     --gendata=conf/zz/blobs.zz
-    --gis
     --grammar=conf/preview/heap.yy
   '],
-  ['--mysqld=--default-storage-engine=HEAP', ''],
-  ['--mysqld=--default-tmp-storage-engine=HEAP', ''],
+  ['', '--grammar=conf/yy/engine-heap-dml.yy', '--grammar=conf/yy/engine-heap-dml.yy:2'],
+  ['', '--grammar=conf/yy/engine-heap-ddl.yy', '--grammar=conf/yy/engine-heap-ddl.yy:2'],
+  ['', '--gendata=advanced --gis', '--gendata=advanced --uhashkeys', '--gendata=advanced --gis --uhashkeys'],
+  ['', '--engine=HEAP', '--engine=HEAP,MyISAM', '--engine=HEAP,Aria', '--engine=HEAP,InnoDB'],
+  ['', '--mysqld=--default-storage-engine=HEAP'],
+  ['', '--mysqld=--default-tmp-storage-engine=HEAP'],
+  ['', '', '--mysqld=--optimizer_switch=derived_merge=off'],
+  [
+   '',
+   '--mysqld=--tmp-table-size=0',
+   '--mysqld=--tmp-table-size=1K',
+   '--mysqld=--tmp-table-size=128M'
+  ],
+  [
+   '',
+   '--mysqld=--max-heap-table-size=16K',
+   '--mysqld=--max-heap-table-size=1M',
+   '--mysqld=--max-heap-table-size=128M',
+   '--mysqld=--max-heap-table-size=4G',
+  ],
 
   ##### Engines and scenarios
   [
