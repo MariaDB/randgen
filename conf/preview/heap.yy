@@ -6,8 +6,7 @@ coverage_fixes:
   ==FACTOR:0.1== ddl |
   ==FACTOR:0.1== cast |
   ==FACTOR:0.1== geometry |
-                 dml |
-                 compound
+                 dml
 ;
 
 # Courtesy of Claude which says:
