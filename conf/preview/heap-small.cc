@@ -68,7 +68,7 @@ my $msan_suffix = ($msan_safe ? '_msan_safe' : '');
    '--mysqld=--max-heap-table-size=16K',
    '--mysqld=--max-heap-table-size=1M',
    '--mysqld=--max-heap-table-size=128M',
-   '--mysqld=--max-heap-table-size=4G',
+   '--mysqld=--max-heap-table-size=2G',
   ],
 );
 
