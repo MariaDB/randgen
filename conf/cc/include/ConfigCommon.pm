@@ -24,17 +24,33 @@ use Exporter qw(import);
 our @EXPORT_OK = qw(
     $version
     $combinations
+    $scenarios
+    @common_options
+    @new_options
     %parameters
     %options
     $msan_safe
 );
 
-our ($version, $combinations, %parameters, %options, $msan_safe);
+our (
+    $version,
+    $combinations,
+    $scenarios,
+    @common_options,
+    @new_options,
+    %parameters,
+    %options,
+    $msan_safe
+);
 # Config files may be parameterized depending on version number
 $version = 999999;
 $combinations = [];
+$scenarios = {};
 %parameters = ();
 %options = ();
 $msan_safe = 0;
+@common_options = ();
+# For ad-hoc testing, mostly feature testing
+@new_options = ();
 
 1;
