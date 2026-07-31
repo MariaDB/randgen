@@ -39,7 +39,15 @@ require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
 
 my $msan_suffix = ($msan_safe ? '_msan_safe' : '');
 
-@new_options = ();
+@new_options = (
+  [' --grammar=conf/yy/vector.yy:2
+     --grammar=conf/yy/vector_subdist.yy:2
+     --grammar=conf/preview/vector_indexes_is.yy:2
+     --gendata=data/sql/vector_deep_image_96_10K.sql
+     --gendata=data/sql/vector_gist_960_1K.sql
+     --gendata=util/gen_vector_subdist_dataset.pl
+  ']
+);
 
 @common_options = (
   $options{test_common_option_combinations}, # seed, reporters

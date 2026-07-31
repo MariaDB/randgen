@@ -40,13 +40,36 @@ require "$ENV{RQG_HOME}/conf/cc/include/versioned_options.pl";
 my $msan_suffix = ($msan_safe ? '_msan_safe' : '');
 
 @new_options = (
-  [' --grammar=conf/yy/vector.yy:2
-     --grammar=conf/yy/vector_subdist.yy:2
-     --grammar=conf/preview/vector_indexes_is.yy:2
-     --gendata=data/sql/vector_deep_image_96_10K.sql
-     --gendata=data/sql/vector_gist_960_1K.sql
-     --gendata=util/gen_vector_subdist_dataset.pl
-  ']
+  ['
+    --gendata=data/sql/engine-heap.sql
+    --gendata=conf/zz/blobs.zz
+    --grammar=conf/preview/heap.yy
+  '],
+  ['', '--grammar=conf/yy/engine-heap-dml.yy', '--grammar=conf/yy/engine-heap-dml.yy:2'],
+  ['', '--grammar=conf/yy/engine-heap-ddl.yy', '--grammar=conf/yy/engine-heap-ddl.yy:2'],
+  [
+    '',
+    '--gendata=advanced --gis',
+    '--gendata=advanced --unique-hash-keys',
+    '--gendata=advanced --gis --unique-hash-keys'
+  ],
+  ['', '--engine=HEAP', '--engine=HEAP,MyISAM', '--engine=HEAP,Aria', '--engine=HEAP,InnoDB'],
+  ['', '--mysqld=--default-storage-engine=HEAP'],
+  ['', '--mysqld=--default-tmp-storage-engine=HEAP'],
+  ['', '', '--mysqld=--optimizer_switch=derived_merge=off'],
+  [
+   '',
+   '--mysqld=--tmp-table-size=0',
+   '--mysqld=--tmp-table-size=1K',
+   '--mysqld=--tmp-table-size=128M'
+  ],
+  [
+   '',
+   '--mysqld=--max-heap-table-size=16K',
+   '--mysqld=--max-heap-table-size=1M',
+   '--mysqld=--max-heap-table-size=128M',
+   '--mysqld=--max-heap-table-size=4G',
+  ],
 );
 
 @common_options = (
