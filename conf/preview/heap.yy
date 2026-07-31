@@ -6,7 +6,11 @@ coverage_fixes:
   ==FACTOR:0.1== ddl |
   ==FACTOR:0.1== cast |
   ==FACTOR:0.1== geometry |
-                 dml
+                 dml |
+                 force_index |
+                 zero_length |
+                 blob_replace |
+  ==FACTOR:0.1== compound
 ;
 
 # Courtesy of Claude which says:
@@ -21,12 +25,12 @@ coverage_fixes:
 
 compound:
   BEGIN NOT ATOMIC
-    DECLARE rec ROW(c SYS_REFCURSOR);
-    DECLARE c0 SYS_REFCURSOR;
-    OPEN c0 FOR SELECT 1;
-    SET rec.c= c0;
-    SELECT * FROM (SELECT rec.c AS x FROM DUAL LIMIT 1) dt;
-  END
+    DECLARE rec ROW(c SYS_REFCURSOR)
+    ; DECLARE c0 SYS_REFCURSOR
+    ; OPEN c0 FOR SELECT 1
+    ; SET rec.c= c0
+    ; SELECT * FROM (SELECT rec.c AS x FROM DUAL LIMIT 1) dt
+  ; END
 ;
 
 aggregate:
@@ -70,6 +74,37 @@ cast:
     CAST(_field[invariant] AS BINARY(16777215)) AS cb16777215,
     CAST(_field[invariant] AS BINARY(16777216)) AS cb16777216
     FROM _table[invariant] LIMIT 0;
+
+force_index:
+  CREATE OR REPLACE TABLE test.tmp (id INT, k VARCHAR(20), b BLOB, KEY k1 (k)) ENGINE=HEAP
+  ;; INSERT INTO test.tmp VALUES (1, 'key1', REPEAT('a',300))
+  ;; UPDATE test.tmp SET k= 'moved', b= REPEAT('z',60000) WHERE id= 1
+  ;; SELECT k FROM test.tmp FORCE INDEX (k1) WHERE k= 'key1'
+  ;; SELECT COUNT(*) FROM test.tmp FORCE INDEX (k1) WHERE k= 'moved'
+;
+
+zero_length:
+  CREATE OR REPLACE TABLE test.tmp1 (a CHAR(0) NOT NULL)
+  ;; CREATE TABLE test.tmp2 (c CHAR(0) NOT NULL)
+  ;; INSERT INTO test.tmp1 VALUES ('')
+  ;; INSERT INTO test.tmp2 VALUES ('')
+  ;; SELECT * FROM test.tmp2, (SELECT * FROM test.tmp1) dt WHERE dt.a = t2.c
+  ;; DROP TABLE test.tmp1, test.tmp2
+;
+
+blob_replace:
+  CREATE OR REPLACE TABLE test.tmp (pk INT PRIMARY KEY, b TEXT, c VARCHAR(8), UNIQUE(c))
+    ENGINE=HEAP CHARACTER SET latin1
+  ;; INSERT INTO test.tmp VALUES (1, REPEAT('x',561), 'foo')
+  ;; REPLACE INTO test.tmp SELECT * FROM test.tmp
+  ;; SELECT b = REPEAT('x',561) AS blob_ok FROM test.tmp
+  |
+  CREATE TABLE test.tmp (pk INT PRIMARY KEY, b1 TEXT, b2 TEXT, c VARCHAR(8), UNIQUE(c))
+    ENGINE=HEAP CHARACTER SET latin1
+  ;; INSERT INTO test.tmp VALUES (1, REPEAT('a',561), REPEAT('b',561), 'bar')
+  ;; REPLACE INTO test.tmp SELECT pk, b1, REPEAT('c',300), c FROM test.tmp
+  ;; SELECT b1 = REPEAT('a',561) AS b1_ok, b2 = REPEAT('c',300) AS b2_ok FROM test.tmp;
+;
 
 geometry:
   CREATE OR REPLACE TABLE test.tmp_geom (f GEOMETRY) ENGINE=HEAP |
