@@ -47,7 +47,12 @@ $combinations = [
   '],
   ['', '--grammar=conf/yy/engine-heap-dml.yy', '--grammar=conf/yy/engine-heap-dml.yy:2'],
   ['', '--grammar=conf/yy/engine-heap-ddl.yy', '--grammar=conf/yy/engine-heap-ddl.yy:2'],
-  ['', '--gendata=advanced --gis', '--gendata=advanced --uhashkeys', '--gendata=advanced --gis --uhashkeys'],
+  [
+    '',
+    '--gendata=advanced --gis',
+    '--gendata=advanced --unique-hash-keys',
+    '--gendata=advanced --gis --unique-hash-keys'
+  ],
   ['', '--engine=HEAP', '--engine=HEAP,MyISAM', '--engine=HEAP,Aria', '--engine=HEAP,InnoDB'],
   ['', '--mysqld=--default-storage-engine=HEAP'],
   ['', '--mysqld=--default-tmp-storage-engine=HEAP'],
