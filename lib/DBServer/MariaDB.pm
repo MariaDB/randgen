@@ -1,5 +1,5 @@
 # Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2013, 2025, MariaDB
+# Copyright (c) 2013, 2026, MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -2020,6 +2020,8 @@ sub isRecordIgnored {
     or  $line =~ /mysql_ha_read: Got error 124 when reading table/s
     # MDEV-35487 (innodb_snapshot_isolation=ON)
     or  $line =~ /Got error 123 when reading table/s
+    # MDEV-40583
+    or  $line =~ /Failed to parse histogram for table .*: Un-escape error at offset/s
   );
   return $res;
 }
