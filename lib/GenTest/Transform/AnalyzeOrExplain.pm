@@ -1,4 +1,4 @@
-# Copyright (c) 2021, 2022 MariaDB Corporation Ab.
+# Copyright (c) 2021, 2026 MariaDB Corporation Ab.
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -55,13 +55,8 @@ sub variate {
   } else {
     $cmd= 'EXPLAIN'
   }
-  # but EXPLAIN is disabled for UPDATE with UNIONs due to MDEV-16694,
-  # so the percentage is off
-  if ($query =~ /UPDATE.*(?:UNION|INTERSECT|EXCEPT)/) {
-    $cmd =~ s/EXPLAIN( EXTENDED| PARTITIONS)?/ANALYZE/;
-  }
-  # and ANALYZE is disabled for INSERT DELAYED due to MDEV-29160
-  elsif ($query =~ /INSERT.*DELAYED/) {
+  # ANALYZE is disabled for INSERT DELAYED due to MDEV-29160
+  if ($query =~ /INSERT.*DELAYED/) {
     $cmd =~ s/ANALYZE/EXPLAIN/;
   }
   $query =~ s/^\s*?([\s\(]*(?:SELECT|UPDATE|DELETE|INSERT|REPLACE))/$cmd $1/;

@@ -1,6 +1,6 @@
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2014 SkySQL Ab
-# Copyright (c) 2015, 2022 MariaDB Corporation Ab
+# Copyright (c) 2015, 2026 MariaDB Corporation Ab
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -90,9 +90,8 @@ multi_main_delete:
 explain_extended:
   | | | | | | | | | explain_extended2 ;
 
-# Disabled due to MDEV-16694
 explain_extended2:
-#  | | | | EXPLAIN | EXPLAIN EXTENDED
+  | | | | EXPLAIN | EXPLAIN EXTENDED
 ;
 
 distinct: DISTINCT | | | | | | | | | ;
