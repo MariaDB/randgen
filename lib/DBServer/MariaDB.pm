@@ -2022,6 +2022,8 @@ sub isRecordIgnored {
     or  $line =~ /Got error 123 when reading table/s
     # MDEV-40583
     or  $line =~ /Failed to parse histogram for table .*: Un-escape error at offset/s
+    # MDEV-40535
+    or  $line =~ /Got error 1054 when reading table .*spider.*/s
   );
   return $res;
 }
