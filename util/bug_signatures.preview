@@ -25,6 +25,10 @@ TODO-10000: [Ignore list]
 =~ Table '.*' doesn't exist
 =~ Test run ends with exit status STATUS_REPLICATION_FAILURE
 # HEAP blobs
+MDEV-40585:
+=~ Assertion \`(data_len == 0) == (data_ptr == ((void \*)0))'
+=~ hp_flush_unaliased_blob_free
+# HEAP blobs
 # MDEV-40523:
 # =~ AddressSanitizer|signal
 # =~ hp_write_run_data
