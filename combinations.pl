@@ -268,14 +268,14 @@ if ($version =~ /^\d+\.\d+$/) {
 
 $version= $es.versionN6($version);
 
-help("ERROR: Config file must be provided") unless defined $config_file;
+help("Config file must be provided") unless defined $config_file;
 unless ($dry_run || defined $workdir) {
-  help("ERROR: Workdir must be provided");
+  help("Workdir must be provided");
 }
-open(CONF, $config_file) or help("ERROR: Unable to open config file '$config_file': $!");
+open(CONF, $config_file) or help("Unable to open config file '$config_file': $!");
 read(CONF, my $config_text, -s $config_file);
 eval ($config_text);
-help("ERROR: Unable to load $config_file: $@") if $@;
+help("Unable to load $config_file: $@") if $@;
 
 $archive= $workdir unless ($archive);
 say("Using config=$config_file, workdir=$workdir, archive=$archive, seed=$comb_seed, adjusted to version $version");
