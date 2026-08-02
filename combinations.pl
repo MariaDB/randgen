@@ -249,7 +249,6 @@ if ($trials =~ /^\d+$/ and $min_trials > $trials) {
 
 # Variables
 my %results;
-my @commands;
 my $max_result = 0;
 my $thread_id = 0;
 my $comb_seed= ($seed eq 'time' ? time() : $seed);
@@ -270,7 +269,9 @@ if ($version =~ /^\d+\.\d+$/) {
 $version= $es.versionN6($version);
 
 help("ERROR: Config file must be provided") unless defined $config_file;
-help("ERROR: Workdir must be provided") unless defined $workdir;
+unless ($dry_run || defined $workdir) {
+  help("ERROR: Workdir must be provided");
+}
 open(CONF, $config_file) or help("ERROR: Unable to open config file '$config_file': $!");
 read(CONF, my $config_text, -s $config_file);
 eval ($config_text);
@@ -607,18 +608,15 @@ sub doCombination {
   my $runscript= (defined $ENV{RQG_HOME} ? $ENV{RQG_HOME}."/run.pl" : "./run.pl");
   require "$runscript";
 
-  # Count the number of basedirs in the final string to add the vardirs
-  my $vardir= "$workdir/current1_${thread_id}";
-  push @args, "--vardir=$vardir";
-
-  $commands[$trial_id] = [ @args ];
-
   workarounds(\@args);
 
   if (! checkForbidden("@args")) {
     say("Combinations [$thread_id]: arguments: @args");
     unless ($dry_run)
     {
+      my $vardir= "$workdir/current1_${thread_id}";
+      push @args, "--vardir=$vardir";
+
       my $result= STATUS_PERL_FAILURE;
       my $cmd_pid= fork();
       if ($cmd_pid) {
