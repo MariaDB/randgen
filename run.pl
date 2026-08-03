@@ -82,7 +82,7 @@ sub run {
 
   # Defaults
   $props->{user}= 'rqg';
-  $props->{threads}= 4;
+  $props->{threads}= 1;
   $props->{queries}= 100000000;
   $props->{duration}= 300;
   $props->{seed}= 'time';
@@ -115,16 +115,26 @@ sub run {
     views           => undef,
   );
 
-  # First decide if we want to sort the command-line options
+  say("Starting \\ \n# ".join(" \\ \n# ", @ARGV));
+
+  # First decide if we want to sort the command-line options,
+  # and threat some other options in a special way (currently
+  # only threads, but can be others)
+  my @threads = ();
   my $opt_result = GetOptions(
     'sort_options|sort-options!' => \$sort_options,
+    'threads=i@' => \@threads,
   );
   # Given that we use pass_through, it would be some very unexpected error
   if (!$opt_result) {
     help("Error occured while reading sort_options: $!");
   }
+  if (scalar(@threads)) {
+    my $t = (sort { $a <=> $b } @threads)[0];
+    say("Using threads value $t out of [@threads]");
+    push @ARGV, "--threads=$t";
+  }
 
-  say("Starting \\ \n# ".join(" \\ \n# ", @ARGV));
   my @ARGV_saved = @ARGV;
 
   if ($sort_options) {
