@@ -16,11 +16,8 @@
 
 ########################################################################
 
-require "$ENV{RQG_HOME}/conf/cc/msan.cc";
+use lib "$ENV{RQG_HOME}/conf/cc/include";
+use ConfigCommon qw($msan_safe);
+$msan_safe = 1;
+require "$ENV{RQG_HOME}/conf/preview/cor-small.cc";
 
-# New
-push @$combinations, (
-  [ '--mysqld=--drop-before-create-or-replace=ON', '', '', '', '' ],
-  [ '--grammar=conf/preview/cor.yy:2' ],
-  [ '--reporters=OrphanFiles' ],
-);

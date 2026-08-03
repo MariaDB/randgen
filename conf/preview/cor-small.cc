@@ -16,11 +16,28 @@
 
 ########################################################################
 
+use lib "$ENV{RQG_HOME}/conf/cc/include";
+use ConfigCommon qw(
+  $version
+  $combinations
+  $scenarios
+  @common_options
+  @new_options
+  %parameters
+  %options
+  $msan_safe
+);
+
 require "$ENV{RQG_HOME}/conf/cc/small.cc";
 
-# New
-push @$combinations, (
+@new_options = (
   [ '--mysqld=--drop-before-create-or-replace=ON', '', '', '', '' ],
   [ '--grammar=conf/preview/cor.yy:2' ],
   [ '--reporters=OrphanFiles' ],
 );
+
+$combinations = [
+  @common_options,
+  @new_options,
+  $scenarios
+];
