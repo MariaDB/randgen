@@ -24,50 +24,11 @@ TODO-10000: [Ignore list]
 TODO-10000: [Ignore list]
 =~ Table '.*' doesn't exist
 =~ Test run ends with exit status STATUS_REPLICATION_FAILURE
-# HEAP blobs
-MDEV-40585:
-=~ Assertion \`(data_len == 0) == (data_ptr == ((void \*)0))'
-=~ hp_flush_unaliased_blob_free
-# HEAP blobs
-# MDEV-40523:
-# =~ AddressSanitizer|signal
-# =~ hp_write_run_data
-# =~ hp_write_blobs
-# =~ versioning|FeatureUsage detected system-versioned tables
 # Atomic CoR
-#MDEV-40172:
-#=~ Assertion \`!mysql_bin_log\.is_open() \|\| is_binlog_format_row()'
-#=~ THD::mark_tmp_table_as_free_for_reuse
-#=~ close_thread_tables
-#MDEV-40157:
-#=~ signal|AddressSanitizer
-#=~ handler::log_not_redoable_operation
-#=~ select_create::abort_result_set
-#=~ Sql_cmd_create_table_like::execute
-#MDEV-40157:
-#=~ signal|AddressSanitizer|Assertion \`table == thd->open_tables'
-#=~ drop_open_table
-#=~ Sql_cmd_create_table_like::execute
-# Atomic CoR
-#MDEV-40157:
-#=~ signal|AddressSanitizer
-#=~ set_bad_null_error
-#=~ not_null_fields_have_null_values
-#=~ fill_record_n_invoke_before_triggers
-# Atomic CoR
-#MDEV-40157:
-#=~ Assertion \`thd->lock == 0'
-#=~ lock_tables
-#=~ open_and_lock_tables
-#=~ sp_head::execute
-#=~ Table_triggers_list::process_triggers
-## Atomic cor
-#MDEV-38573:
-#=~ Assertion \`!is_set() \|\| (m_status == DA_OK_BULK && is_bulk_op())'
-#=~ Diagnostics_area::set_ok_status
-#=~ select_insert::send_ok_packet
-#=~ return_zero_rows
-#=~ Version: '13\.0|Server version: 13\.0
+MDEV-40172: [Not in the feature tree yet]
+=~ Assertion \`!mysql_bin_log\.is_open() \|\| is_binlog_format_row()'
+=~ THD::mark_tmp_table_as_free_for_reuse
+=~ close_thread_tables
 # check FK
 #MDEV-36643:
 #=~ InnoDB: Failing assertion: prebuilt->select_lock_type != LOCK_NONE \|\| srv_read_only_mode \|\| trx->read_view\.is_open()|Assertion \`prebuilt->sql_stat_start \|\| prebuilt->table->no_rollback()'
