@@ -53,6 +53,11 @@ MDEV-40414:
 =~ signal|AddressSanitizer
 =~ Charset::charset
 =~ Item_func_json_.*::val_.*
+MDEV-40302:
+=~ MemorySanitizer: use-of-uninitialized-value
+=~ hp_rec_hashnr
+=~ hp_write_key
+=~ Version: '12\.3|Server version: 12\.3|Version: '1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
 MDEV-40147:
 =~ MemorySanitizer: use-of-uninitialized-value
 =~ my_time_compare
