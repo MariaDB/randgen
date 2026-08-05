@@ -2378,6 +2378,11 @@ MDEV-26416:
 MDEV-26393:
 =~ wsrep::this_thread::get_id() == owning_thread_id_
 =~ wsrep::client_state::state
+MDEV-26373:
+=~ signal|AddressSanitizer
+=~ wr_lock
+=~ trx_undo_assign_low
+=~ trx_undo_report_row_operation
 MDEV-26152:
 =~ InnoDB: Failing assertion: prebuilt->template_type == ROW_MYSQL_WHOLE_ROW
 =~ row_update_for_mysql
