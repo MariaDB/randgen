@@ -90,6 +90,10 @@ MDEV-39805:
 =~ que_fork_get_first_thr
 =~ ha_innobase::general_fetch
 =~ Version: '12\.3|Server version: 12\.3|Version: '1[3-9]\.[0-9][0-9]*|Server version: 1[3-9]\.[0-9][0-9]*
+MDEV-39797:
+=~ signal|AddressSanitizer
+=~ ha_tina::rnd_init
+=~ handler::ha_rnd_init_with_error
 MDEV-39774:
 =~ Assertion \`bitmap_is_set_all(&table->s->all_set)'
 =~ handler::ha_reset
