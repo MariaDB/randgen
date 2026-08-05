@@ -1,4 +1,4 @@
-# Copyright (c) 2025, MariaDB
+# Copyright (c) 2025, 2026 MariaDB
 # Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@ sub report {
   foreach my $location ( $datadir, $tmpdir ) {
     my @tmpfiles=  grep { $_ !~ /\#binlog_cache_files$/ } glob("$location/#* $location/*/#*");
     if (scalar(@tmpfiles)) {
-      sayError("Found orphan files: @tmpfiles");
+      sayError("OrphanFiles: Found orphan files: @tmpfiles");
       $res= STATUS_DATABASE_CORRUPTION;
     }
   }
