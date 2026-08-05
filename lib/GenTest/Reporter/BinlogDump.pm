@@ -1,4 +1,4 @@
-# Copyright (C) 2023 MariaDB
+# Copyright (C) 2023, 2026 MariaDB
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -114,8 +114,8 @@ sub report {
 
   $status = $server->stopServer();
   if ($status != STATUS_OK) {
-    sayError("Shutdown failed. Status will be set to STATUS_SERVER_SHUTDOWN_FAILURE");
-    return STATUS_SERVER_SHUTDOWN_FAILURE;
+    sayError("BinlogDump: Shutdown failed. Status will be set to ".status2text($status));
+    return $status;
   }
 
   my $tmpvardir = $vardir.'_'.time().'_tmp';
@@ -126,7 +126,7 @@ sub report {
 
   move($tmpvardir,$vardir.'/vardir_orig');
   say("Starting a new server ...");
-  my $status = $server->startServer();
+  $status = $server->startServer();
 
   if ($status > STATUS_OK) {
     sayError("BinlogDump: Server startup finished with an error");
