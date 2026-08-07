@@ -81,6 +81,7 @@ $test_common_option_combinations{$minversion}= [
     --queries=1000000
     --reporters=Backtrace,Deadlock,FeatureUsage,UniqueConstraintValidity
     --mysqld=--plugin-maturity=experimental
+    --filter=conf/ff/global.ff
   '
 ];
 
