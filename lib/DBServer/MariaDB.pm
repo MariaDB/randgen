@@ -1957,6 +1957,7 @@ sub checkErrorLogForErrors {
 # certain errors and other error log messages
 sub isRecordIgnored {
   my ($self,$line)= @_;
+  return 0 if ($line =~ 'Fatal error');
   my $res= (
         (($line =~ /\[Note\]|\[Warning\]/) && ($line !~ /The slave is applying a ROW event on behalf of/))
     or  $line =~ /^\s*$/s
