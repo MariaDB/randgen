@@ -1046,6 +1046,11 @@ MDEV-33170: [Q3 - Not merged up yet]
 MDEV-33162:
 =~ Assertion \`thd->active_stmt_arena_to_use()-> is_stmt_prepare_or_first_sp_execute() \|\| thd->active_stmt_arena_to_use()-> is_conventional() \|\| thd->active_stmt_arena_to_use()->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'|Assertion \`thd->active_stmt_arena_to_use()-> is_stmt_prepare_or_first_stmt_execute() \|\| thd->active_stmt_arena_to_use()-> is_conventional() \|\| thd->active_stmt_arena_to_use()->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'|Assertion \`active_arena->is_stmt_prepare_or_first_stmt_execute() \|\| active_arena->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'|Assertion \`src->is_empty() \|\| arena->is_stmt_prepare_or_first_stmt_execute() \|\| arena->is_conventional() \|\| arena->state == Query_arena::STMT_SP_QUERY_ARGUMENTS'
 =~ Prepared_statement::execute|sp_head::execute
+MDEV-33131:
+=~ Assertion \`!table->s->tmp_table'|MDL_lock::incompatible_granted_types_bitmap
+=~ wait_while_table_is_used
+=~ fast_alter_partition_table
+=~ Query.* ALTER.*CONVERT.*PARTITION
 MDEV-33077:
 =~ signal|AddressSanitizer|MemorySanitizer
 =~ ARRAY::AddValue
