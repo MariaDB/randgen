@@ -2893,9 +2893,9 @@ MDEV-23676:
 =~ my_time_packed_to_binary
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
 MDEV-23665:
-=~ Assertion \`length <= 64'|Assertion \`length <= sizeof(m_str)'|Assertion \`length <= NAME_CHAR_LEN'
+=~ Assertion \`length <= 64'|Assertion \`length <= sizeof(m_str)'|Assertion \`length <= NAME_CHAR_LEN'|signal|AddressSanitizer
 =~ PFS_variable_name_row::make_row
-=~ Version: '10\.[5-9]|Server version: 10\.[5-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
+=~ User_variables::materialize
 MDEV-23654:
 =~ Assertion \`args\[0\]->max_length <= ((9 \* 9) + 2)'
 =~ Item_func_int_val::fix_length_and_dec_int_or_decimal
