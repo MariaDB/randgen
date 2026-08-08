@@ -47,7 +47,7 @@ sub report {
 }
 
 sub type {
-  return REPORTER_TYPE_END ;
+  return REPORTER_TYPE_SUCCESS_POST_SHUTDOWN ;
 }
 
 1;
