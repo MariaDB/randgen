@@ -2844,6 +2844,10 @@ MDEV-23828:
 =~ subselect_hash_sj_engine::init
 =~ Item_in_subselect::setup_mat_engine
 =~ Prepared_statement::execute|sp_head::execute
+MDEV-23828: [Very loose assumption]
+=~ Original query:  .*SELECT.* WHERE.* EXISTS
+=~ Transformed query: .* ExecuteAsPreparedTwice .* EXECUTE|Transformed query: .* ExecuteAsPreparedThrice .* EXECUTE
+=~ Test run ends with exit status STATUS_LENGTH_MISMATCH
 MDEV-23812:
 =~ signal [16]|AddressSanitizer
 =~ get_constant_key_infix
