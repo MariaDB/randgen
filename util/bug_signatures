@@ -38,6 +38,12 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-40676:
+=~ Assertion \`! is_set() \|\| m_can_overwrite_status'
+=~ Diagnostics_area::set_error_status
+=~ Reprepare_observer::report_error
+=~ check_and_update_table_version
+=~ Version: '11\.[2-9]|Server version: 11\.[2-9]|Version: '1[2-9]\.[0-9]|Server version: 1[2-9]\.[0-9]
 MDEV-40568:
 =~ Assertion \`read_only'
 =~ mariadb_error_read_only
