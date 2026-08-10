@@ -647,7 +647,7 @@ MDEV-36626:
 =~ Assertion \`ptr'
 =~ skip_trailing_space
 =~ charset_info_st::strnxfrm
-MDEV-36610:
+MDEV-36610: [Not merged up yet]
 =~ Assertion \`!eliminated'
 =~ Item_subselect::exec
 MDEV-36595:
@@ -1415,13 +1415,13 @@ MDEV-31823:
 =~ Sql_cmd_alter_table::execute
 =~ Log_event::apply_event
 =~ Version: '10\.[8-9]|Server version: 10\.[8-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9]|Server version: 1[1-9]\.[0-9]
-MDEV-31808:
+MDEV-31808: [Not merged up yet]
 =~ signal|AddressSanitizer
 =~ mysql_lock_merge|NEXTVAL
 =~ THD::create_and_open_tmp_table
 =~ Sql_cmd_alter_table::execute|mysql_alter_table
 =~ FeatureUsage detected sequences
-MDEV-31808:
+MDEV-31808: [Not merged up yet]
 =~ Assertion \`thd->transaction.*stmt\.is_empty() \|\| (thd->state_flags & Open_tables_state::BACKUPS_AVAIL)'
 =~ close_tables_for_reopen
 =~ Sql_cmd_alter_table::execute|mysql_alter_table
@@ -3332,9 +3332,10 @@ MDEV-22385:
 =~ stored_field_cmp_to_item
 =~ convert_const_to_int
 =~ Version: '10\.[4-9]|Server version: 10\.[4-9]|Version: '10\.1[01]|Server version: 10\.1[01]|Version: '1[1-9]\.[0-9][0-9]*|Server version: 1[1-9]\.[0-9][0-9]*
-MDEV-22368:
+MDEV-22368: [Not fixed in 10.6]
 =~ Assertion \`field_max_length <= m_return_field_def\.length \|\| m_return_field_def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && m_return_field_def\.length == 8 && (m_return_field_def\.pack_flag & (1024U\|2048U)))'|\`field_max_length <= def\.length \|\| def\.type_handler()->cmp_type() == INT_RESULT \|\| (_current_thd()->stmt_arena->is_stmt_execute() && def\.length == 8 && (def\.pack_flag & (1024U\|2048U)))'
 =~ sp_instr_stmt::exec_core
+=~ Version: '10\.6|Server version: 10\.6
 MDEV-22338:
 =~ Assertion \`!current_stmt_is_commit \|\| !rgi->tables_to_lock'
 =~ Query_log_event::do_apply_event
