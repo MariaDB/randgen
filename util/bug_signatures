@@ -38,6 +38,10 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-40687:
+=~ Cannot get geometry object from data you send to the GEOMETRY field
+=~ schema dump failed to load
+=~ Test run ends with exit status STATUS_RECOVERY_FAILURE|Test run ends with exit status STATUS_UPGRADE_FAILURE
 MDEV-40676:
 =~ Assertion \`! is_set() \|\| m_can_overwrite_status'
 =~ Diagnostics_area::set_error_status
