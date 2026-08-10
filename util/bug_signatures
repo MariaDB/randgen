@@ -3897,6 +3897,9 @@ MDEV-18082:
 =~ Diagnostics_area::disable_status
 =~ Prepared_statement::prepare
 =~ EXPLAIN
+MDEV-18065:
+=~ Fatal error: Can't open and lock privilege tables: Table 'db' was not locked with LOCK TABLES
+=~ Test run ends with exit status STATUS_ERRORS_IN_LOG
 MDEV-18047:
 =~ index->magic_n == 76789786|Assertion \`pos < index->n_def'|InnoDB: Failing assertion: pos < index->n_def|AddressSanitizer: heap-use-after-free
 =~ dict_index_get_nth_field|dict_index_get_nth_col
