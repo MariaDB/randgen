@@ -1305,6 +1305,16 @@ MDEV-31969:
 =~ Assertion \`status_var\.local_memory_used == 0 \|\| !debug_assert_on_not_freed_memory'|Assertion \`(longlong) thd->status_var\.local_memory_used >= 0 \|\| !debug_assert_on_not_freed_memory'
 =~ my_hash_free
 =~ Session_sysvars_tracker::vars_list::deinit
+MDEV-31969:
+=~ signal|AddressSanitizer
+=~ plugin_hton
+=~ TABLE_SHARE::db_type
+=~ fill_schema_table_from_frm
+MDEV-31969:
+=~ intern_plugin_unlock
+=~ plugin_unlock
+=~ TABLE_SHARE::destroy
+=~ tdc_delete_share_from_hash
 MDEV-31968:
 =~ Assertion \`name_length <= sizeof(pfs_uvar\.m_name)'
 =~ User_variables::materialize
