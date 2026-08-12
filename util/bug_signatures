@@ -38,6 +38,16 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-40737:
+=~ AddressSanitizer: heap-buffer-overflow
+=~ inline_mysql_rwlock_rdlock
+=~ mi_rnext|mi_rprev
+=~ handler::ha_index_first|handler::ha_index_last
+=~ Sql_cmd_dml::execute
+MDEV-40736:
+=~ ERROR 1114 (HY000) at line .*: The table .* is full
+=~ schema dump failed to load
+=~ Test run ends with exit status STATUS_RECOVERY_FAILURE|Test run ends with exit status STATUS_UPGRADE_FAILURE
 MDEV-40687:
 =~ Cannot get geometry object from data you send to the GEOMETRY field
 =~ schema dump failed to load
