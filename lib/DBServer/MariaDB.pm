@@ -1034,7 +1034,7 @@ sub dumpdb {
       foreach my $uh (@$uniq_hashes) {
         $conn->execute("alter table $uh->[0] drop key $uh->[1]");
       }
-      # Workaround for MDEV-29936 (ENUM/SET with invalid values cause problems)
+      # Workaround for MDEV-29936 (ENUM with invalid values cause problems)
       my $enums= $conn->query(
         "select table_schema, table_name, column_name from information_schema.columns ".
         "where table_schema not in ('information_schema','performance_schema') ".
@@ -1072,6 +1072,15 @@ sub dumpdb {
       );
       foreach my $t (@$merge_triggers) {
         $conn->execute("drop trigger $t");
+      }
+      # Workaround for MDEV-40747 (DISABLED flag)
+      my $disabled= $conn->query(
+        "select distinct table_schema, table_name from information_schema.statistics ".
+        "where table_schema not in ('information_schema','performance_schema') ".
+        "and comment like '%disabled%'"
+      );
+      foreach my $e (@$disabled) {
+        $conn->execute("alter table $e->[0].$e->[1] enable keys /* enabling keys before dump */");
       }
     } # End of $for_restoring
 
