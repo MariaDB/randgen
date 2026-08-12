@@ -1034,12 +1034,11 @@ sub dumpdb {
       foreach my $uh (@$uniq_hashes) {
         $conn->execute("alter table $uh->[0] drop key $uh->[1]");
       }
-      # Workaround for MDEV-29936 (unique ENUM/SET with invalid values cause problems)
+      # Workaround for MDEV-29936 (ENUM/SET with invalid values cause problems)
       my $enums= $conn->query(
-        "select cols.table_schema, cols.table_name, cols.column_name from information_schema.columns cols ".
-        "join information_schema.table_constraints constr on (cols.table_schema = constr.constraint_schema and cols.table_name = constr.table_name) ".
-        "join information_schema.statistics stat on (constr.constraint_name = stat.index_name and cols.table_schema = stat.table_schema and cols.table_name = stat.table_name and cols.column_name = stat.column_name) ".
-        "where (column_type like 'enum%' or column_type like 'set%') and constraint_type in ('UNIQUE','PRIMARY KEY')"
+        "select table_schema, table_name, column_name from information_schema.columns ".
+        "where table_schema not in ('information_schema','performance_schema') ".
+        "and column_type like 'enum%'"
       );
       foreach my $e (@$enums) {
         $conn->execute("delete ignore from $e->[0].$e->[1] where $e->[2] = 0 /* dropping enums with invalid values */");
