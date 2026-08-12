@@ -50,7 +50,7 @@ sub report {
     "where non_unique=0 and itbl.engine not in ('Spider','MRG_MyISAM', 'Federated') " .
     "and not (itbl.table_collation like '%nopad%' " .
     "or itbl.table_collation in ('tis620_thai_ci','latin2_czech_cs','latin2_czech_cs') ) " .
-    "group by tbl, index_name order by tbl, index_name, index_type"
+    "group by tbl, index_name, index_type order by tbl, index_name, index_type"
   );
   if (ignorable_error($conn->err)) {
     sayWarning("UniqueConstraintValidity: Got error ".$conn->print_error()." upong retrieving indexes, skipping the check");
