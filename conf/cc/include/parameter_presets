@@ -1836,7 +1836,9 @@ $parameters{optional_charsets_unsafe}= \%optional_charsets_unsafe;
 $debug_grammars{$minversion}= [
 # Disabled due to MDEV-15130 (won't fix)
 # [@empty_set_30, '--grammar=conf/yy/debug-injections-hidden_columns.yy:0.001'],
-  [@empty_set_50, '--grammar=conf/yy/debug-injections-sql_table.yy:0.001'],
+# Disabled as debug injections in random general tests can cause various
+# unexpected errors, better leave them for targeted tests
+#  [@empty_set_50, '--grammar=conf/yy/debug-injections-sql_table.yy:0.001'],
   [@empty_set_30, '--grammar=conf/yy/debug-sync-sql.yy:0.001 --mysqld=--loose-debug-sync-timeout=10'],
 ];
 

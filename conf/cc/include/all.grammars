@@ -54,7 +54,9 @@ $grammars = [
       --gendata=data/dbt3/dbt3-s0.0001.dump',
 # Disabled due to MDEV-15130 (won't fix)
 #'--grammar=conf/yy/debug-injections-hidden_columns.yy',
-'--grammar=conf/yy/debug-injections-sql_table.yy',
+# Disabled as debug injections in random general tests can cause various
+# unexpected errors, better leave them for targeted tests
+#'--grammar=conf/yy/debug-injections-sql_table.yy',
 '--grammar=conf/yy/debug-sync-sql.yy',
 '--grammar=conf/yy/desc_indexes.yy',
 '--grammar=conf/yy/diagnostics.yy',
