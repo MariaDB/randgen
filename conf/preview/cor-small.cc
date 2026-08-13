@@ -34,6 +34,10 @@ require "$ENV{RQG_HOME}/conf/cc/small.cc";
   [ '--mysqld=--drop-before-create-or-replace=ON', '', '', '', '' ],
   [ '--grammar=conf/preview/cor.yy:2' ],
   [ '--reporters=OrphanFiles' ],
+  [ '--reporters=PrimaryCrashRecovery', '', '', '', '' ],
+  [ '--mysqld=--plugin-load-add=ha_duckdb --mysqld=--default-storage-engine=DuckDB',
+    '--mysqld=--plugin-load-add=ha_duckdb',
+    '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
 );
 
 $combinations = [
