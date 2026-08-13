@@ -24,21 +24,21 @@ query:
   { _set_db('NON-SYSTEM') } crea_query;
 
 crea_query:
-  CREATE OR REPLACE __temporary(50) TABLE crea_table_name LIKE _table |
-  CREATE OR REPLACE __temporary(50) TABLE crea_table_name optional_engine AS SELECT * FROM _table LIMIT crea_limit |
-  CREATE OR REPLACE __temporary(50) TABLE crea_table_name crea_table_definition |
+  CREATE OR REPLACE __temporary(25) TABLE crea_table_name LIKE _table |
+  CREATE OR REPLACE __temporary(25) TABLE crea_table_name optional_engine AS SELECT * FROM _table LIMIT crea_limit |
+  CREATE OR REPLACE __temporary(25) TABLE crea_table_name crea_table_definition |
   CREATE OR REPLACE __temporary(10) SEQUENCE crea_sequence_name crea_sequence_definition |
   ==FACTOR:0.1==
        LOCK TABLE crea_table_name[invariant] WRITE, _table[invariant] WRITE
-    ;; CREATE OR REPLACE __temporary(50) TABLE crea_table_name[invariant] LIKE _table[invariant]
+    ;; CREATE OR REPLACE __temporary(25) TABLE crea_table_name[invariant] LIKE _table[invariant]
     ;; UNLOCK TABLES |
   ==FACTOR:0.1==
        LOCK TABLE crea_table_name[invariant] WRITE, _table[invariant] WRITE
-    ;; CREATE OR REPLACE __temporary(50) TABLE crea_table_name[invariant] optional_engine AS SELECT * FROM _table[invariant] LIMIT crea_limit
+    ;; CREATE OR REPLACE __temporary(25) TABLE crea_table_name[invariant] optional_engine AS SELECT * FROM _table[invariant] LIMIT crea_limit
     ;; UNLOCK TABLES |
   ==FACTOR:0.1==
        LOCK TABLE create_table_name[invariant] WRITE
-    ;; CREATE OR REPLACE __temporary(50) TABLE crea_table_name[invariant] crea_table_definition
+    ;; CREATE OR REPLACE __temporary(25) TABLE crea_table_name[invariant] crea_table_definition
     ;; UNLOCK TABLES |
   ==FACTOR:0.1==
        LOCK TABLE crea_sequence_name[invariant] WRITE
