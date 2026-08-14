@@ -95,7 +95,7 @@ alt_alter_item_can_skip_binlog:
 ;
 
 alt_alter_item_skip_binlog:
-  SET STATEMENT SQL_LOG_BIN=0 FOR ALTER TABLE alt_if_exists _basetable _basics_wait_nowait alt_alter_item_can_skip_binlog
+  SET STATEMENT SQL_LOG_BIN=0 FOR ALTER TABLE __if_exists(95) _basetable _basics_wait_nowait alt_alter_item_can_skip_binlog
 ;
 
 # Can't put it on the list, as ORDER BY should always go last
