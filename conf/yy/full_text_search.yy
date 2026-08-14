@@ -38,6 +38,7 @@
 
 #include <conf/yy/include/basics.inc>
 #require <conf/zz/full_text_search.zz>
+#features fulltext search
 
 query_init:
     { $indexcount= 0; '' } fts_stopword_table;

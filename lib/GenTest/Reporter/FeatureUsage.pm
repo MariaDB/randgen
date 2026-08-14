@@ -57,6 +57,7 @@ my %usage_check= (
   'Federated engine' => \&check_for_federated_plugin,
   'Federated tables' => \&check_for_federated_tables,
   'foreign keys' => \&check_for_foreign_keys,
+  'fulltext search' => \&check_for_fulltext_search,
   'GIS columns' => \&check_for_gis,
   'handler commands' => \&check_for_handler,
   'INET columns' => \&check_for_inet_columns,
@@ -377,6 +378,13 @@ sub check_for_xa {
 sub check_for_handler {
   if ($_[0]->check_status_var('Com_ha_open')) {
     return "according to Com_ha_open";
+  }
+  return undef;
+}
+
+sub check_for_fulltext_search {
+  if ($_[0]->check_status_var('Feature_fulltext')) {
+    return "according to Feature_fulltext";
   }
   return undef;
 }

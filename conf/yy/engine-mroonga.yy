@@ -18,7 +18,7 @@
 # This grammar assumes that Mroonga engine is installed
 ########################################################################
 
-#features alter ignore
+#features alter ignore,fulltext search
 
 query_init:
      SET DEFAULT ROLE admin ;; SET ROLE admin
