@@ -1,4 +1,4 @@
-# Copyright (c) 2025 MariaDB
+# Copyright (c) 2025, 2026 MariaDB
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -54,6 +54,7 @@ sub monitor {
   if (time() > $last_crash_time + 30) {
     $last_crash_time = time();
 
+    say("PrimaryCrashRecovery: Shutting down the server at port ".$server->port()." for restart");
     $status= $server->startPlannedDowntime('KILL',60);
 
     if ($status != STATUS_OK) {
@@ -63,6 +64,7 @@ sub monitor {
     }
 
     $server->setStartDirty(1);
+    say("PrimaryCrashRecovery: Restarting the server at port ".$server->port());
     $status= $server->startServer;
     $server->endPlannedDowntime();
 
