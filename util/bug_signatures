@@ -38,6 +38,11 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-40766:
+=~ Assertion \`0'
+=~ Protocol::end_statement
+=~ FeatureUsage detected fulltext search
+=~ FeatureUsage detected sequences
 MDEV-40737:
 =~ AddressSanitizer: heap-buffer-overflow
 =~ inline_mysql_rwlock_rdlock
