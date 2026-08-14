@@ -1613,7 +1613,9 @@ $optional_charsets_safe{$minversion}= [
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_croatian_mysql561_ci',
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_unicode_520_ci',
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_vietnamese_ci',
-  '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_general_mysql500_ci',
+  # With utf8=>utf8mb4 becoming a default conversion, utf8_general_mysql500_ci
+  # has nothing to be converted to (no utf8mb4_general_mysql500_ci)
+  #'--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_general_mysql500_ci',
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_croatian_ci',
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_myanmar_ci',
   '--mysqld=--character-set-server=utf8 --mysqld=--collation-server=utf8_thai_520_w2',
