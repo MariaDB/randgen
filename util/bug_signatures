@@ -171,6 +171,10 @@ MDEV-39387:
 =~ Table_map_log_event::do_apply_event
 =~ apply_event_and_update_pos_apply
 =~ rpt_handle_event
+MDEV-39346:
+=~ Assertion \`m_using_unique_constraint \|\| m_group_buff <= param->group_buff + param->group_length'
+=~ Create_tmp_table::finalize
+=~ JOIN::create_postjoin_aggr_table
 MDEV-39250:
 =~ Slave SQL: Error 'Invalid default value for 'col_inet6''
 =~ Test run ends with exit status STATUS_REPLICATION_FAILURE
