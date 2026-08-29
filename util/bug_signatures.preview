@@ -4,11 +4,6 @@
 # Strong matches
 ##############################################################################
 
-# HEAP blobs
-MDEV-40739:
-=~ signal|AddressSanitizer
-=~ spider_db_open_item_field
-=~ spider_db_print_item_type
 # Also happens on the baseline, ignoring
 TODO-10000: [Ignore list]
 =~ Slave has stopped with error: Column .* of table .* cannot be converted from type 'var.*' to type 'var.*
