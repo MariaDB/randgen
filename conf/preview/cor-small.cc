@@ -38,6 +38,8 @@ require "$ENV{RQG_HOME}/conf/cc/small.cc";
   [ '--mysqld=--plugin-load-add=ha_duckdb --mysqld=--default-storage-engine=DuckDB',
     '--mysqld=--plugin-load-add=ha_duckdb',
     '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
+  [ '--mysqld=--binlog-format=statement --mysqld=--log-bin',
+    '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
 );
 
 $combinations = [
