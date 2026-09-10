@@ -67,6 +67,7 @@ my %usage_check= (
   'nopad collations' => \&check_for_nopad_collations,
   'OQGraph engine' => \&check_for_oqgraph_plugin,
   'OQGraph tables' => \&check_for_oqgraph_tables,
+  'Oracle mode' => \&check_for_oracle_mode,
   'partitioned tables' => \&check_for_partitions,
   'performance schema' => \&check_for_performance_schema,
   'REPAIR commands' => \&check_for_repair,
@@ -501,6 +502,15 @@ sub check_for_plugin {
     }
   }
   return ($plugins{lc($plugin)} ? return "according to I_S.PLUGINS" : undef);
+}
+
+sub check_for_oracle_mode {
+  my $reporter = shift;
+  my $mode = $reporter->getval('SELECT @@global.sql_mode');
+  if ($mode =~ /ORACLE/) {
+    return "according to global SQL_MODE";
+  }
+  return undef;
 }
 
 sub check_system_var {
