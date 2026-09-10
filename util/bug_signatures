@@ -175,6 +175,7 @@ MDEV-39346:
 =~ Assertion \`m_using_unique_constraint \|\| m_group_buff <= param->group_buff + param->group_length'
 =~ Create_tmp_table::finalize
 =~ JOIN::create_postjoin_aggr_table
+=~ FeatureUsage detected Oracle mode
 MDEV-39250:
 =~ Slave SQL: Error 'Invalid default value for 'col_inet6''
 =~ Test run ends with exit status STATUS_REPLICATION_FAILURE
@@ -4249,7 +4250,7 @@ MDEV-5518:
 =~ Conditional jump or move depends on uninitialised value|MemorySanitizer: use-of-uninitialized-value
 =~ my_write|my_b_write
 =~ _ma_write_static_record
-=~ create_internal_tmp_table
+=~ create_internal_tmp_table|handler::ha_write_tmp_row
 MDEV-630:
 =~ Slave SQL: Error 'Partition management on a not partitioned table is not possible'
 =~ Test run ends with exit status STATUS_ERRORS_IN_LOG|Test run ends with exit status STATUS_REPLICATION_FAILURE
