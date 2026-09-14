@@ -43,7 +43,7 @@ require "$ENV{RQG_HOME}/conf/cc/small.cc";
   ['', '--grammar=conf/yy/engine-heap-ddl.yy', '--grammar=conf/yy/engine-heap-ddl.yy:2'],
   ['', '--grammar=conf/yy/window_functions.yy' ],
   ['', '--grammar=conf/yy/optimizer.yy' ],
-  ['', '--grammar=conf/yy/optimizer_subquery_semijoin.yy' ],
+  ['', '--grammar=conf/yy/optimizer_subquery_semijoin.yy --gendata=simple' ],
   ['', '--grammar=conf/yy/optimizer_vars.yy' ],
   [
     '',
