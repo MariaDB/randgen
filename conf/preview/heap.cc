@@ -30,7 +30,7 @@ require "$ENV{RQG_HOME}/conf/cc/all.cc";
   ['
     --gendata=data/sql/engine-heap.sql
     --gendata=conf/zz/blobs.zz
-    --grammar=conf/preview/heap.yy
+    --grammar=conf/preview/heap.yy:2
   '],
   ['', '--grammar=conf/yy/engine-heap-dml.yy', '--grammar=conf/yy/engine-heap-dml.yy:2'],
   ['', '--grammar=conf/yy/engine-heap-ddl.yy', '--grammar=conf/yy/engine-heap-ddl.yy:2'],

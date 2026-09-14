@@ -41,6 +41,10 @@ require "$ENV{RQG_HOME}/conf/cc/small.cc";
   '],
   ['', '--grammar=conf/yy/engine-heap-dml.yy', '--grammar=conf/yy/engine-heap-dml.yy:2'],
   ['', '--grammar=conf/yy/engine-heap-ddl.yy', '--grammar=conf/yy/engine-heap-ddl.yy:2'],
+  ['', '--grammar=conf/yy/window_functions.yy' ],
+  ['', '--grammar=conf/yy/optimizer.yy' ],
+  ['', '--grammar=conf/yy/optimizer_subquery_semijoin.yy' ],
+  ['', '--grammar=conf/yy/optimizer_vars.yy' ],
   [
     '',
     '--gendata=advanced --gis',
@@ -52,13 +56,13 @@ require "$ENV{RQG_HOME}/conf/cc/small.cc";
   ['', '--mysqld=--default-tmp-storage-engine=HEAP'],
   ['', '', '--mysqld=--optimizer_switch=derived_merge=off'],
   [
-   '',
+   '','','',
    '--mysqld=--tmp-table-size=0',
    '--mysqld=--tmp-table-size=1K',
    '--mysqld=--tmp-table-size=128M'
   ],
   [
-   '',
+   '','','',
    '--mysqld=--max-heap-table-size=16K',
    '--mysqld=--max-heap-table-size=1M',
    '--mysqld=--max-heap-table-size=128M',

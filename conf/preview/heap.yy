@@ -10,8 +10,36 @@ coverage_fixes:
                  force_index |
                  zero_length |
                  blob_replace |
+                 check_table |
   ==FACTOR:0.1== compound
 ;
+
+check_table:
+  CHECK TABLE table_list check_option_list |
+  REPAIR admin_no_write_or_local TABLE table_list repair_option_list;
+
+check_option_list:
+  |
+  check_option |
+  check_option check_option_list ;
+
+table_list:
+  table_or_basetable | table_list, table_or_basetable ;
+
+table_or_basetable:
+  ==FACTOR:20== _basetable |
+                _table ;
+
+check_option:
+  FOR UPGRADE | QUICK | FAST | MEDIUM | EXTENDED | CHANGED ;
+
+repair_option_list:
+  |
+  repair_option |
+  repair_option repair_option_list ;
+
+repair_option:
+  QUICK | EXTENDED | /*!110500 FORCE */;
 
 # Courtesy of Claude which says:
 ## Covers `plugin/type_cursor/plugin.cc:332` and `sql_derived.cc:897-906` — **5 lines**.
