@@ -67,7 +67,7 @@ sub report {
 
         if (defined $dbh) {
             say("Shutting down server on port $port via DBI...");
-            $dbh->func('shutdown', 'admin');
+            $dbh->do("SHUTDOWN");
         }
 
         if (defined $dbh) {

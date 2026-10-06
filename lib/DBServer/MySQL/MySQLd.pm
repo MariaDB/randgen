@@ -856,7 +856,9 @@ sub stopServer {
         my $dbh = $self->dbh();
         # Need to check if $dbh is defined, in case the server has crashed
         if (defined $dbh) {
-            $res = $dbh->func('shutdown','127.0.0.1','root','admin');
+            ## Shut down via SQL: newer DBD::mysql has no admin() method,
+            ## which $dbh->func('shutdown', ..., 'admin') depends on
+            $res = $dbh->do("SHUTDOWN");
             if (!$res) {
                 ## If shutdown fails, we want to know why:
                 say("Shutdown failed due to ".$dbh->err.":".$dbh->errstr);
