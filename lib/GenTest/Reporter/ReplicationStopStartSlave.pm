@@ -24,6 +24,21 @@ package GenTest::Reporter::ReplicationStopStartSlave;
 # both slave threads and always does the STOP SLAVE / START SLAVE pair within
 # one cycle.
 #
+# Usage:
+#
+#   --reporters=ErrorLog,Backtrace,ReplicationStopStartSlave
+#
+# Passing --reporters replaces the default reporters, so ErrorLog and Backtrace
+# have to be listed as well. With --rpl_mode, ReplicationConsistency and
+# ReplicationSlaveStatus are added automatically.
+#
+# The first cycle runs shortly after the workload starts and the next ones every
+# 10 seconds (plus the time the slave is left stopped), so the test has to run
+# long enough to get several cycles, e.g. --queries=25000 instead of 2000.
+#
+# The slave is located with SHOW SLAVE HOSTS, falling back to 127.0.0.1 on the
+# master's port + 2, and is accessed as root without a password.
+#
 # Do not use it together with the ReplicationWaitForSlave validator: while the
 # SQL thread is stopped, MASTER_POS_WAIT returns NULL and the validator reports
 # a replication failure.
