@@ -38,6 +38,10 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-41672:
+=~ signal 11|AddressSanitizer
+=~ ha_partition::init_record_priority_queue
+=~ join_init_read_record
 MDEV-41470:
 =~ signal 11|AddressSanitizer
 =~ check_grant
