@@ -38,6 +38,21 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-41690:
+=~ signal 11|AddressSanitizer: heap-use-after-free
+=~ Query_cache_block::query|Query_cache::free_query
+=~ query_cache_insert
+=~ Protocol::send_eof
+MDEV-41690:
+=~ signal 11|AddressSanitizer: heap-use-after-free
+=~ pfs_start_rwlock_wait_v1
+=~ Query_cache_query::lock_writing
+=~ Protocol::send_eof
+MDEV-41690:
+=~ MemorySanitizer: use-of-uninitialized-value
+=~ Query_cache_block::query
+=~ Query_cache::insert
+=~ end_send
 MDEV-41672:
 =~ signal 11|AddressSanitizer
 =~ ha_partition::init_record_priority_queue
