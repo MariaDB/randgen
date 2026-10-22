@@ -3,7 +3,9 @@ query:
     { _set_db('NON-SYSTEM') } ddl ;
 
 set_qcache_type:
-  SET __global_x_session QUERY_CACHE_TYPE = qcache_type_value ;
+# global causes too much trouble, MDEV-41690
+# __global_x_session
+  SET SESSION QUERY_CACHE_TYPE = qcache_type_value ;
 
 qcache_type_value:
     OFF |

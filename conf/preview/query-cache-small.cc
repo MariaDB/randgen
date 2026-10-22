@@ -38,11 +38,19 @@ require "$ENV{RQG_HOME}/conf/cc/small.cc";
     --grammar=conf/preview/query-cache.yy:2
   '],
   [
-    '--mysqld=--query-cache-type=0',
-    '--mysqld=--query-cache-type=1',
-    '--mysqld=--query-cache-type=2',
+    '--mysqld=--query-cache-type=OFF',
+    '--mysqld=--query-cache-type=ON',
+    '--mysqld=--query-cache-type=DEMAND',
+    '--mysqld=--query-cache-type=DEMAND_STRICT',
+    '--mysqld=--query-cache-type=TABLES',
+    '--mysqld=--query-cache-type=ALWAYS_OFF'
+  ],
+  [
+    '--mysqld=--query-cache-size=0',
     '--mysqld=--query-cache-size=128K',
+    '--mysqld=--query-cache-size=1M',
     '--mysqld=--query-cache-size=4M',
+    '--mysqld=--query-cache-size=16M',
     '--mysqld=--query-cache-size=256M',
   ],
   [
