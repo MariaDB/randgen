@@ -38,10 +38,13 @@
 # =~ Version: '11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Server version: 11\.[8-9]\.[0-9][0-9]*-[0-9][0-9]*|Version: '1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*|Server version: 1[2-9]\.[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*
 ######
 
+MDEV-42045:
+=~ Wrong index given to a function
+=~ FeatureUsage detected partitioned tables
 MDEV-41690:
 =~ signal 11|AddressSanitizer: heap-use-after-free
 =~ Query_cache_block::query|Query_cache::free_query
-=~ query_cache_insert
+=~ query_cache_insert|Query_cache::abort
 =~ Protocol::send_eof
 MDEV-41690:
 =~ signal 11|AddressSanitizer: heap-use-after-free
@@ -51,7 +54,7 @@ MDEV-41690:
 MDEV-41690:
 =~ MemorySanitizer: use-of-uninitialized-value
 =~ Query_cache_block::query
-=~ Query_cache::insert
+=~ Query_cache::insert|Query_cache::abort
 =~ end_send
 MDEV-41672:
 =~ signal 11|AddressSanitizer
@@ -2592,7 +2595,7 @@ MDEV-24906:
 =~ QUICK_GROUP_MIN_MAX_SELECT::get_next
 =~ rr_quick
 MDEV-24899:
-=~ signal [16]|AddressSanitizer
+=~ signal [16]|AddressSanitizer|MemorySanitizer
 =~ get_suffix
 =~ find_body
 =~ Temporal::
@@ -3833,7 +3836,8 @@ MDEV-18291:
 =~ dict_table_remove_from_cache|dict_sys_t::remove
 =~ ha_delete_table|ha_innobase_inplace_ctx::~ha_innobase_inplace_ctx|Sql_cmd_truncate_table::handler_truncate|row_merge_drop_table
 MDEV-18274:
-=~ Assertion \`!!new_clustered == (innobase_need_rebuild(ha_alter_info, old_table) \|\| add_fts_doc_id)'
+=~ Assertion \`!!new_clustered == (innobase_need_rebuild(ha_alter_info, old_table) \|\| add_fts_doc_id)'|Assertion \`!!new
+_clustered == (innobase_need_rebuild(ha_alter_info, old_opt) \|\| add_fts_doc_id)'
 =~ prepare_inplace_alter_table_dict
 =~ FeatureUsage detected GIS columns
 MDEV-18274:
