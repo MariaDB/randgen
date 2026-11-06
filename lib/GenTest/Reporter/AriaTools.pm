@@ -21,6 +21,7 @@ require Exporter;
 @ISA = qw(GenTest::Reporter);
 
 use File::Basename qw(dirname);
+use File::Glob qw(bsd_glob);
 
 use strict;
 use GenUtil;
@@ -57,9 +58,12 @@ sub report {
   my $aria_ftdump = $aria_tool_location.'/'.exe_name('aria_ftdump');
   my $aria_pack = $aria_tool_location.'/'.exe_name('aria_pack');
   my $aria_read_log = $aria_tool_location.'/'.exe_name('aria_read_log');
-  my @mai_files= glob("$tool_sandbox/*/*.MAI");
+  # Tool paths can contain spaces, and cmd.exe on Windows does not accept
+  # unquoted program paths with forward slashes
+  $_= shell_quote($_) foreach ($aria_chk, $aria_dump_log, $aria_ftdump, $aria_pack, $aria_read_log);
+  my @mai_files= bsd_glob("$tool_sandbox/*/*.MAI");
   my $mai_files= "$tool_sandbox/*/*.MAI";
-  my @aria_logs= glob("$tool_sandbox/aria_log.*");
+  my @aria_logs= bsd_glob("$tool_sandbox/aria_log.*");
 
   my $cmd;
   # MDEV-36950 aria_chk doesn't work with encrypted tables
@@ -67,7 +71,7 @@ sub report {
     sayWarning("Cannot run aria_chk on encrypted tables due to MDEV-36950");
   } else {
     # The pattern is expanded here rather than by the shell, for portability
-    $cmd= "$aria_chk --datadir=$tool_sandbox ".(scalar(@mai_files) ? "@mai_files" : $mai_files)." > $vardir/aria_chk.out 2>&1";
+    $cmd= "$aria_chk --datadir=$tool_sandbox ".(scalar(@mai_files) ? join(' ', map { shell_quote($_) } @mai_files) : $mai_files)." > $vardir/aria_chk.out 2>&1";
     say("Running aria_chk ($cmd)");
     system($cmd);
     if ($?) {
@@ -78,7 +82,7 @@ sub report {
 
   # aria_dump_log does not promise to work on multiple files
   foreach my $f (@aria_logs) {
-    $cmd="$aria_dump_log $f >> $vardir/aria_dump_log.out 2>&1";
+    $cmd="$aria_dump_log ".shell_quote($f)." >> $vardir/aria_dump_log.out 2>&1";
     say("Running aria_dump_log ($cmd)");
     system("$cmd");
     if ($?) {
@@ -96,7 +100,7 @@ sub report {
   } else {
     # Due to MDEV-36919 we have to pack one table at a time
     foreach my $f (@mai_files) {
-      $cmd= "$aria_pack --datadir=$tool_sandbox $f >> $vardir/aria_pack.out 2>&1";
+      $cmd= "$aria_pack --datadir=$tool_sandbox ".shell_quote($f)." >> $vardir/aria_pack.out 2>&1";
       say("Running aria_pack ($cmd)");
       system($cmd);
       if ($?) {

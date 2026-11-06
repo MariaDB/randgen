@@ -95,6 +95,9 @@ sub run {
     $status= STATUS_ENVIRONMENT_FAILURE if $status < STATUS_ENVIRONMENT_FAILURE;
     goto FINALIZE;
   }
+  # The path is quoted, as it can contain spaces, and cmd.exe on Windows
+  # does not accept unquoted program paths with forward slashes
+  $mbackup= shell_quote($mbackup);
 
   $vardir= $server->vardir;
   my $mbackup_target= $vardir.'/backup';
@@ -156,10 +159,10 @@ sub run {
       if ($backup_num == 0)
       {
           $self->printStep("Creating initial full backup");
-          $status= $self->run_mbackup_in_background("$mbackup_command --backup --binlog-info=$binlog_info --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_0 --protocol=tcp --port=".$server->port." --user=".$server->user." > $vardir/mbackup_backup_0.log", $end_time);
+          $status= $self->run_mbackup_in_background("$mbackup_command --backup --binlog-info=$binlog_info --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_0 --protocol=tcp --port=".$server->port." --user=".$server->user, $end_time, "$vardir/mbackup_backup_0.log");
       } else {
           $self->printStep("Creating incremental backup #$backup_num");
-          $status= $self->run_mbackup_in_background("$mbackup_command --backup --binlog-info=$binlog_info --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --incremental-basedir=${mbackup_target}_".($backup_num-1)." --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
+          $status= $self->run_mbackup_in_background("$mbackup_command --backup --binlog-info=$binlog_info --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --incremental-basedir=${mbackup_target}_".($backup_num-1)." --protocol=tcp --port=".$server->port." --user=".$server->user, $end_time, "$vardir/mbackup_backup_${backup_num}.log");
       }
       if ($status == STATUS_OK) {
           say("Backup #$backup_num finished successfully");

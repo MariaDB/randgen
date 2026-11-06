@@ -115,6 +115,7 @@ sub report {
 sub get_top_output {
   my $pid= shift;
   return undef unless $pid;
+  return get_tasklist_output($pid) if osWindows();
   my ($mem, $unit, $cpu, $mem_pct);
   if (open(TOP, 'top -b -n 1 -p '.$pid.' |')) {
     while (<TOP>) {
@@ -144,6 +145,24 @@ sub get_top_output {
     }
   } else {
     logError("MemoryUsage monitor could not run top for pid $pid");
+    return undef;
+  }
+}
+
+# There is no top on Windows. tasklist provides the working set size
+# (the analog of RES) in KiB, but not CPU or memory percentage,
+# so they are reported as 0 and '?' respectively
+sub get_tasklist_output {
+  my $pid= shift;
+  my $out= `tasklist /FI "PID eq $pid" /FO CSV /NH 2>NUL`;
+  # "mariadbd.exe","1234","Console","1","123,456 K"
+  # (the thousands separator depends on the locale)
+  my @fields= ($out =~ /"([^"]*)"/g);
+  if (scalar(@fields) >= 5 and $fields[1] eq $pid and $fields[4] =~ /\d/) {
+    (my $mem= $fields[4]) =~ s/\D//g;
+    return [$mem, 0, '?'];
+  } else {
+    sayWarning("MemoryUsage monitor got no usable output from tasklist for pid $pid");
     return undef;
   }
 }

@@ -42,6 +42,7 @@ use GenTest::Random;
 use Constants;
 use File::Find;
 use File::Spec;
+use File::Basename ();
 use Connection::Perl;
 use Carp;
 use POSIX;
@@ -107,8 +108,15 @@ sub new {
     my $binary;
     my $bindir;
     my $binname;
+    if (osWindows() and $reporter->server and $reporter->server->binary) {
+        # Windows builds have mariadbd.exe, but not necessarily mysqld.exe,
+        # and searching the whole basedir is slow, so use the known binary
+        $binary= $reporter->server->binary;
+        $reporter->[REPORTER_SERVER_INFO]->{bindir} = File::Basename::dirname($binary);
+        $reporter->[REPORTER_SERVER_INFO]->{binary} = $binary;
+    }
     # Use debug server, mysqld_debug.
-    if ($reporter->serverDebug){
+    elsif ($reporter->serverDebug){
         $binname = osWindows() ? 'mysqld-debug.exe' : 'mysqld-debug';
         ($bindir,$binary)=$reporter->findMySQLD($binname);
         if ((-e $binary)) {

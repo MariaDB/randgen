@@ -62,7 +62,8 @@ sub run {
 
   # Checking for wsrep-provider
   my $wsrep_provider= $ENV{WSREP_PROVIDER};
-  unless ($wsrep_provider) {
+  # (there is no ldconfig, and no Galera library, on Windows)
+  unless ($wsrep_provider or osWindows()) {
     $wsrep_provider=`/sbin/ldconfig -p | grep libgalera_smm.so | sed -e 's/.*=>[[:space:]]*//'`;
     chomp $wsrep_provider;
     unless (-e $wsrep_provider) {

@@ -66,9 +66,12 @@ sub mbackup_backup_interval {
 
 # The subroutine will return STATUS_OK (0) if the process finished successfully,
 # non-zero positive exit code if it failed,
-# and -1 if it hung
+# and -1 if it hung.
+# stdout and stderr of the command are written into $log
 sub run_mbackup_in_background {
-    my ($self, $cmd, $end_time)= @_;
+    my ($self, $cmd, $end_time, $log)= @_;
+    return $self->_run_mbackup_in_background_windows($cmd, $end_time, $log) if osWindows();
+    $cmd.= " >$log";
     my $vardir= $self->getProperty('vardir');
     open(MBACKUP,">$vardir/mbackup_script") || die "Could not open $vardir/mbackup_script for writing: $!\n";
     print(MBACKUP "rm -f $vardir/mbackup_exit_code $vardir/mbackup_pid\n");
@@ -95,6 +98,77 @@ sub run_mbackup_in_background {
     }
     sayError("Backup did not finish in due time");
     kill(6, $mbackup_pid);
+    return -1;
+}
+
+# There is no sh on Windows, and fork is emulated with threads there.
+# Instead, a helper Perl process is started asynchronously. It redirects
+# its output into the log, starts mariabackup directly (not via cmd.exe,
+# so that the pid is of mariabackup itself), stores the pid in mbackup_pid
+# (which is also used by group_cleaner), and exits with mariabackup's
+# exit code. The command must not contain redirections or other shell
+# constructs.
+sub _run_mbackup_in_background_windows {
+    my ($self, $cmd, $end_time, $log)= @_;
+    my $vardir= $self->getProperty('vardir');
+    my $pidfile= "$vardir/mbackup_pid";
+    my $script= "$vardir/mbackup_script.pl";
+    unlink($pidfile);
+    local $Data::Dumper::Terse= 1;
+    local $Data::Dumper::Useqq= 1;
+    local $Data::Dumper::Indent= 0;
+    open(my $fh, '>', $script) || die "Could not open $script for writing: $!\n";
+    print $fh 'my ($cmd, $log, $pidfile)= ('.join(', ', map { Dumper($_) } ($cmd, $log, $pidfile)).");\n";
+    print $fh <<'END_OF_SCRIPT';
+open(STDOUT, '>', $log) or die "Could not open $log for writing: $!\n";
+open(STDERR, '>&', \*STDOUT) or die "Could not redirect STDERR: $!\n";
+$|= 1;
+my $pid= system(1, $cmd);
+unless ($pid and $pid > 0) {
+  print "Could not start $cmd: $!\n";
+  exit 255;
+}
+if (open(my $pf, '>', $pidfile)) {
+  print $pf "$pid\n";
+  close($pf);
+}
+waitpid($pid, 0);
+exit($? >> 8);
+END_OF_SCRIPT
+    close($fh);
+    sayFile($script);
+    my $helper_pid= system(1, $^X, $script);
+    unless ($helper_pid and $helper_pid > 0) {
+      sayError("Could not start the helper process for mariabackup: $!");
+      return 255;
+    }
+    my $wait_time= $end_time - time();
+    $wait_time= 60 if $wait_time < 60;
+    say("Waiting $wait_time sec for mariabackup (started by helper process $helper_pid) to finish");
+    foreach (1 .. $wait_time)
+    {
+        if (waitpid($helper_pid, WNOHANG) == 0) {
+            sleep 1;
+        }
+        else {
+            return ($? >> 8);
+        }
+    }
+    sayError("Backup did not finish in due time");
+    my $mbackup_pid= read_file($pidfile);
+    if (defined $mbackup_pid and $mbackup_pid =~ /(\d+)/) {
+      $mbackup_pid= $1;
+      say("Killing mariabackup with pid $mbackup_pid (there is no SIGABRT on Windows, no coredump will be produced)");
+      kill('KILL', $mbackup_pid);
+    }
+    foreach (1..30) {
+      last if waitpid($helper_pid, WNOHANG) != 0;
+      sleep 1;
+    }
+    if (waitpid($helper_pid, WNOHANG) == 0) {
+      kill('KILL', $helper_pid);
+      waitpid($helper_pid, 0);
+    }
     return -1;
 }
 

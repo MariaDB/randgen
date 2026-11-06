@@ -66,7 +66,17 @@ sub report {
         say("-----------------------------  END OF STACK TRACE FROM THE RUNNING SERVER -----------------------------\n");
       }
       if (osWindows()) {
-        runcmd("cdb -p $pid -c \".dump /m $datadir\\mysqld.dmp;q\"");
+        if (kill(0,$pid)) {
+          say("Backtrace: The process $pid for the server $id is still alive. Taking stack traces from the running server");
+          say("----------------------------  START OF STACK TRACE FROM THE RUNNING SERVER  ----------------------------\n");
+          my $bt_file= $server->backtrace();
+          my $bt= (defined $bt_file ? read_file($bt_file) : undef);
+          print $bt if defined $bt;
+          say("-----------------------------  END OF STACK TRACE FROM THE RUNNING SERVER -----------------------------\n");
+          # There is no SIGSEGV on Windows to produce a dump, the process is just terminated
+          say("Backtrace: Killing the server $id with pid $pid");
+          $server->kill('KILL');
+        }
       } elsif (kill(0,$pid)) {
         say("Backtrace: The process $pid for the server $id is still alive. Taking stack traces from the running server using binary $binary");
         my $bt_file= $vardir.'/threads_s'.$id.'_pid_'.$pid.'.txt';
@@ -83,12 +93,7 @@ sub report {
     #  $core = <$datadir/vgcore*> if defined $reporter->properties->valgrind;
 
   if (osWindows()) {
-    # Default values which might be not right
-    my $bindir = $reporter->serverInfo('bindir');
-    my $datadir = $reporter->server->serverVariable('datadir');
-    $bindir =~ s{/}{\\}sgio;
-    my $cdb_cmd = "!sym prompts off; !analyze -v; .ecxr; !for_each_frame dv /t;~*k;q";
-    system('cdb -i "'.$bindir.'" -y "'.$bindir.';srv*C:\\cdb_symbols*http://msdl.microsoft.com/download/symbols" -z "'.$datadir.'\mysqld.dmp" -lines -c "'.$cdb_cmd.'"');
+    windows_dumps($reporter, $vardir, \@server_nums);
   } else {
     my @corefiles;
     my $core;
@@ -189,6 +194,49 @@ sub report {
     }
   }
   return STATUS_OK;
+}
+
+# On Windows, the server (with --core-file) writes a minidump (<name>.dmp)
+# into the datadir when it crashes. As with coredumps, we search the entire
+# test vardir, and get stack traces from all of them with cdb
+# (Debugging Tools for Windows)
+sub windows_dumps {
+  my ($reporter, $vardir, $server_nums)= @_;
+  my @dumps;
+  find(sub { push @dumps, $File::Find::name if /\.dmp$/i }, $vardir);
+  unless (scalar(@dumps)) {
+    sayWarning("Backtrace: No minidumps found");
+    return;
+  }
+  my $cdb= find_in_path('cdb');
+  unless ($cdb) {
+    sayWarning("Backtrace: cdb (Debugging Tools for Windows) was not found in PATH, cannot get stack traces from ".scalar(@dumps)." minidump(s)");
+    return;
+  }
+  # Binaries (and their .pdb files) of all servers, plus the Microsoft
+  # symbol server for system libraries
+  my %bindirs;
+  foreach my $id (@$server_nums) {
+    my $server= $reporter->properties->server_specific->{$id}->{server};
+    $bindirs{unix2winPath(dirname($server->binary))}= 1 if $server and $server->binary;
+  }
+  my $sympath= join(';', sort(keys %bindirs), 'srv*C:\\cdb_symbols*https://msdl.microsoft.com/download/symbols');
+  say("Backtrace: Getting stack traces from ".scalar(@dumps)." minidump(s), starting from the latest");
+  foreach my $dump (sort { -M $a <=> -M $b } @dumps) {
+    my $sn= ($dump =~ /\/(s\d+)\// ? $1.'_' : '');
+    my $bt_file= $vardir.'/threads_'.$sn.basename($dump).'_'.(-s $dump).'.txt';
+    if (-e $bt_file) {
+      say("Backtrace: thread dump $bt_file already exists, skipping the minidump $dump");
+      next;
+    }
+    say("----------------------------  START OF STACK TRACE FROM THE MINIDUMP  ----------------------------\n");
+    my $cmd= "\"$cdb\" -z \"".unix2winPath($dump)."\" -y \"$sympath\" -lines -c \"!sym prompts off; .ecxr; kc; ~*kc; q\" > \"$bt_file\" 2>&1";
+    say("Backtrace: running $cmd");
+    system($cmd);
+    my $bt= read_file($bt_file);
+    print $bt if defined $bt;
+    say("-----------------------------  END OF STACK TRACE FROM THE MINIDUMP  -----------------------------\n");
+  }
 }
 
 sub type {

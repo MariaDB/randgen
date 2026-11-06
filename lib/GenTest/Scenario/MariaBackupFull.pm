@@ -95,6 +95,9 @@ sub run {
     $status= STATUS_ENVIRONMENT_FAILURE if $status < STATUS_ENVIRONMENT_FAILURE;
     goto FINALIZE;
   }
+  # The path is quoted, as it can contain spaces, and cmd.exe on Windows
+  # does not accept unquoted program paths with forward slashes
+  $mbackup= shell_quote($mbackup);
 
   $vardir= $server->vardir;
   my $mbackup_target= $vardir.'/backup';
@@ -156,7 +159,7 @@ sub run {
       $backup_num++;
       $self->printStep("Creating full backup #$backup_num");
       my $mbackup_command= ($server->under_rr() ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup_${backup_num} $mbackup" : $mbackup);
-      $status= $self->run_mbackup_in_background("$mbackup_command --binlog-info=$binlog_info --backup --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup_${backup_num}.log", $end_time);
+      $status= $self->run_mbackup_in_background("$mbackup_command --binlog-info=$binlog_info --backup --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --protocol=tcp --port=".$server->port." --user=".$server->user, $end_time, "$vardir/mbackup_backup_${backup_num}.log");
 
       if ($status == STATUS_OK) {
           say("Backup #$backup_num finished successfully");

@@ -30,6 +30,8 @@ use GenTest;
 use Constants;
 use GenTest::Reporter;
 use File::Copy;
+use File::Glob qw(bsd_glob);
+use File::Spec;
 
 use DBServer::MariaDB;
 
@@ -78,14 +80,14 @@ sub report {
   my $client = DBServer::MariaDB::_find(undef,
     [$reporter->server->serverVariable('basedir')],
     ["client","bin"],
-    "mysql"
+    "mysql","mariadb"
   );
 
   unless ($client) {
     sayError("BinlogDump: Could not find mysql client. Status will be set to ENVIRONMENT_FAILURE");
     return STATUS_ENVIRONMENT_FAILURE;
   }
-  $client .= " -uroot --host=127.0.0.1 --port=$port --protocol=tcp";
+  $client= shell_quote($client)." -uroot --host=127.0.0.1 --port=$port --protocol=tcp";
 
   my $binlog_pattern = '';
   if ($basename) {
@@ -95,12 +97,12 @@ sub report {
   } else {
     $binlog_pattern = "binlog-[0-9][0-9][0-9][0-9][0-9][0-9].ibb"
   }
-  unless ($binlog_pattern =~ /^\//) {
+  unless (File::Spec->file_name_is_absolute($binlog_pattern)) {
     $binlog_pattern = "$datadir/$binlog_pattern"
   }
 
-  my @binlog_files = glob("$binlog_pattern");
-  my $cmd= "$binlog_utility --no-defaults --verbose --verbose @binlog_files > $vardir/binlog_events.txt";
+  my @binlog_files = bsd_glob($binlog_pattern);
+  my $cmd= shell_quote($binlog_utility)." --no-defaults --verbose --verbose ".join(' ', map { shell_quote($_) } @binlog_files)." > $vardir/binlog_events.txt";
   say("BinlogDump: Dumping events from $binlog_pattern binary logs into the file $vardir/binlog_events.txt");
   say($cmd);
   $status = system(with_msan_libs($cmd));

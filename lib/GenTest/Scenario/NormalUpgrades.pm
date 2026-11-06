@@ -170,6 +170,7 @@ sub run {
   my $buffer_pool_size= $server->serverVariable('innodb_buffer_pool_size') * 2;
 
   if ($mbackup= $server->mariabackup()) {
+    $mbackup= shell_quote($mbackup);
 
     if ($server->versionNumeric lt '100500') {
       # Workaround for MDEV-29943 (MariaBackup may lose a DML operation)
@@ -316,7 +317,7 @@ LIVE_UPGRADE_END:
 
   #####
   $self->printStep("Restoring the dump of all databases");
-  my $client_command= $server->client.' -uroot --host=127.0.0.1 --protocol=tcp --port='.$server->port;
+  my $client_command= shell_quote($server->client).' -uroot --host=127.0.0.1 --protocol=tcp --port='.$server->port;
 
   $status= system(with_msan_libs($client_command.' --init-command='.shell_quote('SET max_statement_time=0').' < '.$vardir.'/all_db.dump'));
 #  $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ".$client_command.' < '.$vardir.'/all_db.dump');
@@ -363,6 +364,7 @@ DUMP_UPGRADE_END:
     $status= STATUS_ENVIRONMENT_FAILURE;
     goto MBACKUP_UPGRADE_END;
   }
+  $mbackup= shell_quote($mbackup);
 
   $self->printStep("Restoring mariabackup");
   remove_path($server->datadir);

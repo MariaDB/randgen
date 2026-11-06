@@ -179,8 +179,8 @@ sub new {
                                           "mysql","mariadb");
 
     $self->[MARIABACKUP]= $self->_find([$self->basedir],
-                            ["client","bin","extra"],
-                            "mariabackup"
+                            ["client","bin","extra","extra/mariabackup"],
+                            "mariabackup","mariadb-backup"
                           );
 
     $self->[TZINFO_TO_SQL]= $self->_find([$self->basedir],
@@ -349,6 +349,12 @@ sub valgrind_suppressionfile {
 # Adjust server options for specific build types
 sub fixServerOptions {
   my $self = shift;
+  if (osWindows()) {
+    # Plugin libraries are .dll on Windows
+    foreach my $o (@{$self->[MYSQLD_SERVER_OPTIONS]}) {
+      $o =~ s/\.so\b/.dll/g if $o =~ /^--(?:loose[-_])?plugin[-_]load(?:[-_]add)?=/;
+    }
+  }
   if ($self->isMSAN()) {
     sayWarning("Setting big enough thread stack in the command line options, to override possible config settings");
     my $needs_custom_stack = 1;
@@ -881,7 +887,7 @@ sub upgradeDb {
 
   my $mysql_upgrade= $self->_find([$self->basedir],
                                         ["client","bin"],
-                                        "mysql_upgrade");
+                                        "mysql_upgrade","mariadb-upgrade");
   my $upgrade_command=
     '"'.$mysql_upgrade.'" --host='.$self->host.' --port='.$self->port.' -uroot';
   my $upgrade_log= $self->datadir.'/mysql_upgrade.log';
@@ -1928,11 +1934,12 @@ sub checkErrorLogForErrors {
     }
     # Ignore "Couldn't load plugins", but only if it's the case of a missing library
     # or incompatible maturity level
-    if (/Can't open shared library '.*\/(.*?\.so)' \(errno: .*, cannot open shared object file: No such file or directory\)/s) {
+    # (.dll and "The specified module could not be found" are for Windows)
+    if (/Can't open shared library '.*[\/\\](.*?\.(?:so|dll))' \(errno: .*, (?:cannot open shared object file: No such file or directory|The specified module could not be found)/s) {
       $missing_plugins{$1}= 1;
       next;
     }
-    elsif (/Can't open shared library '(.*?\.so)' \(errno: .*, Loading of .* plugin .* is prohibited by --plugin-maturity=.*\)/s) {
+    elsif (/Can't open shared library '(.*?\.(?:so|dll))' \(errno: .*, Loading of .* plugin .* is prohibited by --plugin-maturity=.*\)/s) {
       $immature_plugins{$1}= 1;
       next;
     }
@@ -2116,6 +2123,9 @@ sub serverVariables {
         my $array_ref = $self->connection->query("SHOW VARIABLES");
         my %vars = ();
         foreach my $r (@$array_ref) {
+            # On Windows, absolute paths (basedir, datadir, log_bin_basename
+            # etc.) are converted to forward slashes, as all paths in RQG
+            $r->[1]= win2unixPath($r->[1]) if osWindows() and defined $r->[1] and $r->[1] =~ /^[A-Za-z]:[\\\/]/;
             $vars{$r->[0]} = $r->[1];
         }
         $self->[MYSQLD_SERVER_VARIABLES] = \%vars;

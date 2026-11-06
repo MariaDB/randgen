@@ -41,6 +41,8 @@ sub monitor {
 
   my $conn = $reporter->connection();
 
+  return kill_binlog_dump_connections($conn) if osWindows();
+
   my $slave_host = $reporter->serverInfo('slave_host');
   my $master_port = $reporter->server->serverVariable('port');
 
@@ -70,6 +72,28 @@ sub monitor {
     exec($command);
     exit(STATUS_OK);
   }
+}
+
+# There is no tcpkill on Windows. Instead, the replication connections
+# are killed on the primary side with KILL CONNECTION, repeatedly
+# during KILL_DURATION seconds, so that the replica's reconnection
+# attempts also fail for a while
+sub kill_binlog_dump_connections {
+  my $conn= shift;
+  unless ($conn) {
+    sayWarning("ReplicationConnectionKiller could not connect to the server");
+    return STATUS_OK;
+  }
+  my $end_time= time() + KILL_DURATION;
+  while (time() < $end_time) {
+    my $ids= $conn->get_column("SELECT ID FROM INFORMATION_SCHEMA.PROCESSLIST WHERE COMMAND = 'Binlog Dump'");
+    foreach my $id (@{$ids || []}) {
+      say("ReplicationConnectionKiller: Killing replication connection $id");
+      $conn->execute("KILL CONNECTION $id");
+    }
+    sleep(1);
+  }
+  return STATUS_OK;
 }
 
 sub type {

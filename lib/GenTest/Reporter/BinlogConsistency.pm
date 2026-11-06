@@ -36,6 +36,7 @@ use GenTest;
 use Constants;
 use GenTest::Reporter;
 use File::Copy;
+use File::Glob qw(bsd_glob);
 
 use DBServer::MariaDB;
 
@@ -61,7 +62,7 @@ sub report {
   my $client = DBServer::MariaDB::_find(undef,
     [$reporter->server->serverVariable('basedir')],
     ["client","bin"],
-    "mysql"
+    "mysql","mariadb"
   );
 
   unless ($client) {
@@ -69,13 +70,13 @@ sub report {
     return STATUS_ENVIRONMENT_FAILURE;
   }
 
-  $client .= " -uroot --host=127.0.0.1 --port=$port --protocol=tcp";
+  $client= shell_quote($client)." -uroot --host=127.0.0.1 --port=$port --protocol=tcp";
 
 
   my $binlog_utility= DBServer::MariaDB::_find(undef,
                        [$reporter->server->serverVariable('basedir')],
                        ["client","bin"],
-                       "mysqlbinlog");
+                       "mysqlbinlog","mariadb-binlog");
 
   unless ($binlog_utility) {
     sayError("BinlogConsistency: Could not find mysqlbinlog. Status will be set to ENVIRONMENT_FAILURE");
@@ -129,8 +130,8 @@ sub report {
   # The file pattern is expanded and NOWAIT is removed in Perl (rather than
   # by the shell and sed), for portability. As before, the status is
   # of the adjustment, not of the binlog utility (it is only reported)
-  my @binlog_files= glob("$vardir/vardir_orig/data/$binlog.[0-9][0-9][0-9][0-9][0-9][0-9]");
-  my $cmd= "$binlog_utility --no-defaults @binlog_files > $vardir/vardir_orig/binlog_events.raw";
+  my @binlog_files= bsd_glob("$vardir/vardir_orig/data/$binlog.[0-9][0-9][0-9][0-9][0-9][0-9]");
+  my $cmd= shell_quote($binlog_utility)." --no-defaults ".join(' ', map { shell_quote($_) } @binlog_files)." > $vardir/vardir_orig/binlog_events.raw";
   say("Dumping binary log events (with adjustments) into a file...");
   sayDebug($cmd);
   if (system(with_msan_libs($cmd))) {
