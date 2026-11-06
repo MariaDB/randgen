@@ -46,10 +46,21 @@ sub monitor {
 
   my $actual_test_duration = time() - $reporter->testStart();
 
-  sigaction SIGALRM, new POSIX::SigAction sub {
+  my $alarm_handler= sub {
     sayError("Deadlock reporter: Timeout upon getting a PROCESSLIST");
     return STATUS_SERVER_DEADLOCKED;
-  } or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
+  };
+  if (osWindows()) {
+    # POSIX::sigaction is not implemented on Windows. The alarm there is
+    # emulated and cannot interrupt a blocking call, so the message will
+    # only appear after the query returns
+    $SIG{ALRM}= $alarm_handler;
+  } else {
+    sigaction(SIGALRM, POSIX::SigAction->new($alarm_handler))
+      or die "Deadlock reporter: Error setting SIGALRM handler: $!\n";
+
+  }
+
 
   alarm($reporter->testDuration());
   $conn= $reporter->connection() unless $conn;

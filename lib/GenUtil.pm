@@ -125,8 +125,15 @@ sub tmpdir {
 
 sub safe_exit {
   my $exit_status = shift;
+  # On Windows fork is emulated with threads, child "processes" have
+  # negative pids and POSIX::_exit would terminate the whole process
+  # (the parent and all siblings), so a normal exit is used there
+  if (osWindows() and $$ < 0) {
+    exit($exit_status);
+  }
   POSIX::_exit($exit_status);
 }
+
 
 sub osWindows {
   if (($^O eq 'MSWin32') || ($^O eq 'MSWin64')) {

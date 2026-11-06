@@ -67,6 +67,9 @@ use constant TR_EXECUTORS => 12;
 
 # In seconds
 use constant TR_META_RELOAD_INTERVAL => 20;
+# How long to wait for remaining workers to stop after TERM on Windows
+use constant TR_WINDOWS_WORKER_STOP_TIMEOUT => 30;
+
 
 sub new {
     my $class = shift;
@@ -268,7 +271,25 @@ sub run {
           say("Stopping remaining $processtype process with pid $worker_pid...");
           kill(15, $worker_pid);
       }
-      sleep 1;
+      if (osWindows()) {
+        # On Windows workers are threads (emulated fork). TERM is delivered
+        # to them as a message which is only processed when the thread
+        # is executing Perl code (not while it is waiting for a query),
+        # and KILL terminates the thread abruptly, which can leave
+        # the process in an inconsistent state (e.g. with a lock held).
+        # So we give the workers more time to stop gracefully
+        my $wait_until= time() + TR_WINDOWS_WORKER_STOP_TIMEOUT;
+        while (time() < $wait_until) {
+          foreach my $worker_pid (keys %worker_pids) {
+            delete $worker_pids{$worker_pid} if waitpid($worker_pid, WNOHANG) != 0;
+          }
+          last unless scalar(keys %worker_pids);
+          Time::HiRes::sleep(0.5);
+        }
+      } else {
+        sleep 1;
+      }
+
       foreach my $worker_pid (keys %worker_pids) {
           if (kill(0, $worker_pid)) {
             my $processtype= ($worker_pid == $metadata_pid ? "metadata" : "worker");

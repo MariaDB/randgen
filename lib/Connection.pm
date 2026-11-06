@@ -46,6 +46,7 @@ require Exporter;
   CONNECTION_REPORTED_ERRORS
   CONNECTION_MESSAGE_FILTERING
   CONNECTION_ERROR_SUPPRESSIONS
+  CONNECTION_OWNER_PID
 );
 
 use Carp;
@@ -85,6 +86,9 @@ use constant CONNECTION_QNO => 23;
 use constant CONNECTION_REPORTED_ERRORS => 24;
 use constant CONNECTION_MESSAGE_FILTERING => 25;
 use constant CONNECTION_ERROR_SUPPRESSIONS => 26;
+# The process which created the database handle (see Connection::Perl::_checkOwner)
+use constant CONNECTION_OWNER_PID => 27;
+
 
 use constant CONNECTION_SUPER_USER => 'root';
 use constant CONNECTION_TEST_USER => 'rqg';

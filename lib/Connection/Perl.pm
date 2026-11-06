@@ -52,6 +52,7 @@ sub new {
     ":max_allowed_packet=1G".
     ($self->[CONNECTION_PROTOCOL] eq 'ps' ? ":mysql_server_prepare=1" : "");
   ($self->[CONNECTION_DBH], my $err)= $self->connect();
+  $self->[CONNECTION_OWNER_PID]= $$;
   if ($self->[CONNECTION_DBH]) {
     sayDebug("Connected: ".$self->[CONNECTION_NAME]." as ".$self->[CONNECTION_ROLE]." (".$self->[CONNECTION_USER].")");
     return $self;
@@ -103,18 +104,44 @@ sub connect {
   return ($dbh,$self->[CONNECTION_ERROR]);
 }
 
+# On Windows fork is emulated with threads, and a child gets copies
+# of the parent's objects, including Connection objects (e.g. the ones
+# cached in DBServer objects). DBI handles cannot be used in a thread
+# other than the one which created them (DBI croaks), so in a child
+# the connection is re-established.
+# The parent's handle is left alone (DBI ignores DESTROY of handles owned
+# by another thread), so the parent's connection is not affected.
+# On Linux the behavior is unchanged
+sub _checkOwner {
+  my $self= shift;
+  return unless osWindows();
+  return if not defined $self->[CONNECTION_OWNER_PID] or $self->[CONNECTION_OWNER_PID] == $$;
+  sayDebug($self->name().": Connection was inherited from process ".$self->[CONNECTION_OWNER_PID].", reconnecting in $$");
+  $self->[CONNECTION_OWNER_PID]= $$;
+  $self->[CONNECTION_DBH]= undef;
+  ($self->[CONNECTION_DBH])= $self->connect();
+}
+
 sub dbh {
+  $_[0]->_checkOwner();
   return $_[0]->[CONNECTION_DBH];
 }
 
 sub disconnect {
   my $self= shift;
+  if (osWindows() and defined $self->[CONNECTION_OWNER_PID] and $self->[CONNECTION_OWNER_PID] != $$) {
+    # Inherited from the parent (see _checkOwner), it is not ours to close
+    $self->[CONNECTION_DBH]= undef;
+    return;
+  }
   $self->[CONNECTION_DBH]->disconnect() if $self->[CONNECTION_DBH];
+
   ($self->[CONNECTION_ERROR], $self->[CONNECTION_ERROR_STRING])= ($DBI::err||0,$DBI::errstr||'');
 }
 
 sub refresh {
   my $self= shift;
+  $self->_checkOwner();
   if ($self->[CONNECTION_DBH] && $self->[CONNECTION_DBH]->ping) {
     return STATUS_OK;
   } else {
@@ -281,6 +308,8 @@ sub get_value {
 
 sub alive {
   my $self= shift;
+  $self->_checkOwner();
+
   return 1 if $self->dbh && $self->dbh->ping;
   if ($self->[CONNECTION_SERVER]->isPlannedDowntime()) {
     if ($self->[CONNECTION_SERVER]->waitPlannedDowntime() != STATUS_OK) {
