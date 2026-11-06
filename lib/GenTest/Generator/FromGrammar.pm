@@ -42,8 +42,11 @@ use constant GENERATOR_MAX_LENGTH  => 10000000;
 
 my $field_pos;
 my $cwd = cwd();
+# The value is used in SQL strings, where backslashes would need escaping
+$cwd = win2unixPath($cwd) if osWindows();
 
 sub new {
+
   my $class = shift;
   my $generator = $class->SUPER::new(@_);
 

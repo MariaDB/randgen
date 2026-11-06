@@ -22,7 +22,10 @@ package DBServer::MariaDB;
 
 use DBServer;
 use GenUtil;
-use if osWindows(), Win32::Process;
+use if osWindows(), 'Win32';
+use if osWindows(), 'Win32::Process';
+use DBI;
+
 use Time::HiRes;
 use POSIX ":sys_wait_h";
 use POSIX;
@@ -308,6 +311,9 @@ sub server_options {
 
 sub socketfile {
     my ($self) = @_;
+    # On Windows --socket is the name of a named pipe (not used by RQG,
+    # all connections are TCP), it cannot contain slashes
+    return "RQGmysql.".$self->port if osWindows();
     my $socketFileName = $_[0]->vardir."/mysql.sock";
     if (length($socketFileName) >= 100) {
   $socketFileName = "/tmp/RQGmysql.".$self->port.".sock";
@@ -365,7 +371,7 @@ sub checkServerType {
     my ($self, $mysqld) = @_;
     return if defined $self->[MYSQLD_SERVER_TYPE];
 
-    my $command="$mysqld --version";
+    my $command="\"$mysqld\" --version";
     my $result=`${\ with_msan_libs("$command 2>&1")}`;
     $self->[MYSQLD_SERVER_TYPE] = ($result =~ /debug/i ? "Debug" : "Release");
 
@@ -463,7 +469,10 @@ sub createDatadir  {
     mkpath($self->datadir);
 
     # Before MDEV-28782 mariadb-tzinfo-to-sql doesn't work in bootstrap
-    unless ($self->_olderThan(10,6,9) && (-x $self->[TZINFO_TO_SQL])) {
+    if (osWindows() and not $self->[TZINFO_TO_SQL]) {
+      sayWarning("mariadb-tzinfo-to-sql was not found, time zones will not be loaded");
+    }
+    elsif (not ($self->_olderThan(10,6,9) && (-x $self->[TZINFO_TO_SQL]))) {
       if (open(TZ,">".$self->vardir."/tz.sql")) {
         # MDEV-33044 -- mariadb-tzinfo-to-sql does not work with INPLACE
         print TZ "SET ALTER_ALGORITHM=COPY;\n";
@@ -472,7 +481,7 @@ sub createDatadir  {
         sayError("Could not open ".$self->vardir."/tz.sql for writing: $!");
         return STATUS_ENVIRONMENT_FAILURE;
       }
-      system("$self->[TZINFO_TO_SQL] $ENV{RQG_HOME}/data/zoneinfo >> ".$self->vardir."/tz.sql");
+      system("\"$self->[TZINFO_TO_SQL]\" \"$ENV{RQG_HOME}/data/zoneinfo\" >> \"".$self->vardir."/tz.sql\"");
       unless ($? == 0) {
         sayError("Failed to run $self->[TZINFO_TO_SQL] $ENV{RQG_HOME}/data/zoneinfo");
         return STATUS_ENVIRONMENT_FAILURE;
@@ -681,7 +690,15 @@ sub startServer {
     }
     say("Starting server ".$self->version.": $command");
 
-    $self->[MYSQLD_AUXPID] = fork();
+    if (osWindows()) {
+      # There is no real fork on Windows (it is emulated with threads,
+      # and an exec'ed process would hold the emulated child until it exits),
+      # so the server is started as a separate process directly
+      $self->[MYSQLD_AUXPID]= _spawnWindowsProcess($command);
+      return STATUS_SERVER_STARTUP_FAILURE unless $self->[MYSQLD_AUXPID];
+    } else {
+      $self->[MYSQLD_AUXPID] = fork();
+    }
     if ($self->[MYSQLD_AUXPID]) {
 
         my $wait_time = 0.5;
@@ -808,7 +825,20 @@ sub kill {
         } elsif ($signal ne '0') {
           $self->addErrorLogMarker('KILL_'.time().'_'.$signal);
         }
-        kill $signal => $self->serverpid;
+        if (osWindows() and $signal ne '0') {
+          # On Windows any signal (except for 0) terminates the process
+          # immediately, so for TERM a normal shutdown is requested via SQL
+          if (($signal eq 'TERM') or ($signal eq '15')) {
+            $self->_shutdownViaSQL();
+          } else {
+            unless ($signal eq 'KILL' or $signal eq '9') {
+              sayWarning("Signal $signal is not supported on Windows, the server process will be terminated");
+            }
+            kill 'KILL' => $self->serverpid;
+          }
+        } else {
+          kill $signal => $self->serverpid;
+        }
         my $sleep_time= 0.2;
         my $waits = int($timeout / $sleep_time);
         while ($self->running && $waits) {
@@ -833,6 +863,7 @@ sub kill {
 
 sub backtrace {
   my $self= shift;
+  return $self->_backtraceWindows() if osWindows();
   my $bt_file= $self->vardir.'/../threads_pid_'.$self->id.'_'.$self->serverpid.'_'.(strftime("%Y%m%d%H%M%S", localtime)).'.txt';
   my $cmd = 'gdb --batch --se='.$self->binary.' -p '.$self->serverpid.' --command=util/backtrace-all.gdb >'.$bt_file;
   say("Running $cmd");
@@ -2214,15 +2245,24 @@ sub version {
     my($self) = @_;
 
     if (not defined $self->[MYSQLD_VERSION]) {
-        my $conf = $self->_find([$self->basedir],
-                                ['scripts',
-                                 'bin',
-                                 'sbin'],
-                                'mysql_config.pl', 'mysql_config');
-        ## This will not work if there is no perl installation,
-        ## but without perl, RQG won't work either :-)
-        my $ver = `perl $conf --version`;
-        chop($ver);
+        my $ver;
+        if (osWindows()) {
+          # mysql_config is a shell script, it is not available on Windows.
+          # Server output: "<path> Ver 10.6.28-MariaDB..." or "Ver 10.6.28-23-MariaDB-enterprise..."
+          my $out= `"$self->[MYSQLD_MYSQLD]" --version 2>&1`;
+          ($ver)= ($out =~ /Ver\s+(\d+\.\d+\.\d+(?:-\d+)?)/);
+          sayError("Could not determine server version from '$out'") unless defined $ver;
+        } else {
+          my $conf = $self->_find([$self->basedir],
+                                  ['scripts',
+                                   'bin',
+                                   'sbin'],
+                                  'mysql_config.pl', 'mysql_config');
+          ## This will not work if there is no perl installation,
+          ## but without perl, RQG won't work either :-)
+          $ver = `perl $conf --version`;
+          chop($ver);
+        }
         $self->[MYSQLD_VERSION] = $ver;
         if ($ver =~ /^\d+\.\d+\.\d+\-\d+$/) {
           $self->[MYSQLD_ES]= 1;
@@ -2333,7 +2373,73 @@ sub _notOlderThan {
     return not _olderThan(@_);
 }
 
+# Starts a process on Windows without a shell, returns its pid or undef.
+# The command line must start with the quoted path to the executable
+# (as generateCommand creates it).
+# The process inherits our STDOUT/STDERR (like 2>&1 to the RQG output on Linux).
+# It is created in a new process group, so that Ctrl+C in the console
+# doesn't shut it down (on Linux the server ignores SIGINT); leftover
+# processes are killed by group_cleaner instead
+sub _spawnWindowsProcess {
+  my $command= shift;
+  my ($app)= ($command =~ /^"([^"]+)"/);
+  unless ($app) {
+    sayError("Cannot start '$command': the command line doesn't start with a quoted executable path");
+    return undef;
+  }
+  my $proc;
+  unless (Win32::Process::Create($proc, $app, $command, 1,
+            Win32::Process::NORMAL_PRIORITY_CLASS() | Win32::Process::CREATE_NEW_PROCESS_GROUP(),
+            '.'))
+  {
+    sayError("Could not start $app: ".Win32::FormatMessage(Win32::GetLastError()));
+    return undef;
+  }
+  return $proc->GetProcessID();
+}
+
+# Windows replacement for SIGTERM: requests a normal shutdown via SQL.
+# A dedicated short-lived connection with timeouts is used, so that
+# a hanging server does not block the caller (who waits for the process
+# to disappear and escalates if it doesn't)
+sub _shutdownViaSQL {
+  my $self= shift;
+  my $dbh= DBI->connect($self->dsn('root').":mysql_connect_timeout=10:mysql_read_timeout=30", undef, undef,
+                        { PrintError => 0, RaiseError => 0, AutoCommit => 1 });
+  unless ($dbh) {
+    sayWarning("Could not connect to the server on port ".$self->port." to shut it down: ".($DBI::errstr || ''));
+    return;
+  }
+  $dbh->do("SHUTDOWN");
+  # The connection is normally lost upon shutdown, errors are expected
+  $dbh->disconnect();
+}
+
+# Windows replacement for the gdb-based backtrace. Requires cdb.exe
+# (Debugging Tools for Windows) in PATH. The debugger is attached
+# non-invasively, the server keeps running
+sub _backtraceWindows {
+  my $self= shift;
+  my $cdb= find_in_path('cdb');
+  unless ($cdb) {
+    sayWarning("cdb (Debugging Tools for Windows) was not found in PATH, cannot get stack traces from the server ".$self->id);
+    return undef;
+  }
+  my $bt_file= $self->vardir.'/../threads_pid_'.$self->id.'_'.$self->serverpid.'_'.(strftime("%Y%m%d%H%M%S", localtime)).'.txt';
+  my $bindir= unix2winPath(dirname($self->binary));
+  my $cmd= "\"$cdb\" -pv -p ".$self->serverpid." -y \"$bindir\" -lines -c \"!sym prompts off; ~*kc; qd\" > \"$bt_file\" 2>&1";
+  say("Running $cmd");
+  if (system($cmd) == 0) {
+    say("Stack trace from the server ".$self->id.", pid ".$self->serverpid." stored as $bt_file");
+    return $bt_file;
+  } else {
+    sayError("Failed to store stack trace from the server ".$self->id.", process ".$self->serverpid);
+    return undef;
+  }
+}
+
 # Returns the number of server startups recorded in the error log,
+
 # and the pid of the last one
 sub _server_starts_in_errorlog {
   my $errorlog= shift;

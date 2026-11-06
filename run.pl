@@ -54,16 +54,11 @@ sub run {
   $Carp::Verbose= 1;
   $| = 1;
 
-  if (osWindows()) {
-    $SIG{CHLD} = { print "Caught signal\n" };
-  }
-
   if (defined $ENV{RQG_HOME}) {
-    if (osWindows()) {
-      $ENV{RQG_HOME} = $ENV{RQG_HOME}.'\\';
-    } else {
-      $ENV{RQG_HOME} = $ENV{RQG_HOME}.'/';
-    }
+    # On Windows, forward slashes are used for all paths (they work for
+    # Windows API, Perl and the server, and don't need escaping in SQL)
+    $ENV{RQG_HOME} = win2unixPath($ENV{RQG_HOME}) if osWindows();
+    $ENV{RQG_HOME} = $ENV{RQG_HOME}.'/';
   }
 
   use Getopt::Long;
@@ -297,10 +292,13 @@ sub run {
 
   #-------------------
 
+  $props->{vardir}= win2unixPath($props->{vardir}) if osWindows();
   if (-d $props->{vardir}) {
     remove_tree($props->{vardir});
   }
   mkpath($props->{vardir});
+  # On Windows, group_cleaner looks for leftover servers under vardir
+  set_cleanup_root($props->{vardir});
   # copy STDOUT to another filehandle
   open (my $STDOUTOLD, '>&', STDOUT);
   open (my $STDERROLD, '>&', STDERR);
@@ -326,7 +324,11 @@ sub run {
 
   # Configure Hashicorp vault if it's installed and running
   # (again, it seems an overkill to configure it here, since it will be rarely needed)
-  if ($hashicorp) {
+  if ($hashicorp and osWindows()) {
+    sayWarning("Hashicorp vault setup is not supported on Windows (it uses a shell script)");
+    $ENV{HASHICORP_DOABLE}= '';
+  } elsif ($hashicorp) {
+
     if (system($ENV{RQG_HOME}.'/util/setup_hashicorp.sh '.$props->{vardir}.' > '.$props->{vardir}.'/vault.log 2>&1')) {
       sayWarning("Could not configure Hashicorp vault");
       sayFile($props->{vardir}.'/vault.log');

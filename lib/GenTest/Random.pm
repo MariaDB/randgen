@@ -227,7 +227,10 @@ my %name2type = (
 );
 
 my $cwd = cwd();
+# The location is used in LOAD_FILE, where backslashes would need escaping
+$cwd = win2unixPath($cwd) if osWindows();
 my $data_location= "$cwd/data/blobs";
+
 my @json_files= glob("$data_location/*.json");
 my @dictionaries= qw(chinese croatian english german hebrew japanese thai vietnamese states);
 

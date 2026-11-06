@@ -23,14 +23,15 @@ use base 'Exporter';
            'tmpdir', 'safe_exit', 'group_cleaner',
            'osWindows', 'osLinux', 'osSolaris', 'osMac',
            'isoTimestamp', 'isoUTCTimestamp', 'isoUTCSimpleTimestamp',
-           'rqg_debug', 'unix2winPath', 'versionN6',
+           'rqg_debug', 'unix2winPath', 'win2unixPath', 'versionN6',
            'isNewerVersion', 'isOlderVersion',
            'shorten_message', 'set_expectation', 'unset_expectation',
            'intersect_arrays', 'isFederatedEngine',
            'isCompatible', 'shortClassName',
            'with_msan_libs', 'shell_quote', 'exe_name',
            'read_file', 'copy_dir', 'move_path', 'remove_path',
-           'sort_file', 'diff_files', 'tee_stdout', 'find_in_path'
+           'sort_file', 'diff_files', 'tee_stdout', 'find_in_path',
+           'set_cleanup_root'
            );
 
 use strict;
@@ -50,6 +51,9 @@ use File::Spec;
 use Constants;
 
 my $tmpdir;
+# The directory under which group_cleaner looks for leftover processes
+# on Windows (see group_cleaner)
+my $cleanup_root;
 
 1;
 
@@ -62,11 +66,11 @@ sub BEGIN {
   }
 
   if (defined $tmpdir) {
-    if (($^O eq 'MSWin32') || ($^O eq 'MSWin64')) {
-      $tmpdir = $tmpdir.'\\';
-    } else {
-      $tmpdir = $tmpdir.'/';
-    }
+    # Forward slashes work for all file operations on Windows,
+    # and unlike backslashes, they can be used in SQL strings
+    # (e.g. for INTO OUTFILE) without escaping
+    $tmpdir =~ s{\\}{/}g if (($^O eq 'MSWin32') || ($^O eq 'MSWin64'));
+    $tmpdir = $tmpdir.'/';
   }
 
   croak("Unable to locate suitable temporary directory.") if not defined $tmpdir;
@@ -187,6 +191,16 @@ sub unix2winPath {
   return $path;
 }
 
+# win2unixPath:
+#   Converts the given file path from Windows native style to forward slashes,
+#   which are understood by Windows API, Perl and the server, and don't need
+#   escaping in SQL strings.
+sub win2unixPath {
+  my $path = shift;
+  $path =~ s{\\}{/}g;
+  return $path;
+}
+
 sub rqg_debug {
   if ($ENV{RQG_DEBUG}) {
     return 1;
@@ -216,8 +230,49 @@ sub shorten_message {
   return $msg;
 }
 
+# Sets the directory under which group_cleaner searches for pid files
+# of processes which should be killed (only used on Windows)
+sub set_cleanup_root {
+  $cleanup_root= shift;
+}
+
+# Process image names which group_cleaner is allowed to kill on Windows
+my $cleanable_images= qr/^(?:mariadbd|mysqld|mariabackup|mariadb-backup)(?:-debug)?\.exe$/i;
+
+sub _windows_image_name {
+  my $pid= shift;
+  my $out= `tasklist /FI "PID eq $pid" /FO CSV /NH 2>NUL`;
+  return ($out =~ /^"([^"]+)"/ ? $1 : undef);
+}
+
+# Windows has no process groups. Instead, we find pid files of servers
+# (and mariabackup) under the cleanup root, and kill the processes
+# if they are still running and are what we expect them to be
+# (pid files can be stale, and pids can be reused)
+sub _group_cleaner_windows {
+  return STATUS_TEST_STOPPED unless $cleanup_root and -d $cleanup_root;
+  my @pidfiles;
+  File::Find::find({
+    no_chdir => 1,
+    wanted => sub { push @pidfiles, $File::Find::name if /(?:^|\/)(?:mysql\.pid|mbackup_pid)$/ }
+  }, $cleanup_root);
+  foreach my $f (@pidfiles) {
+    my $contents= read_file($f);
+    next unless defined $contents and $contents =~ /(\d+)/;
+    my $pid= $1;
+    next unless kill(0, $pid);
+    my $image= _windows_image_name($pid);
+    if (defined $image and $image =~ $cleanable_images) {
+      sayDebug("Killing leftover process $pid ($image) from $f");
+      kill('KILL', $pid);
+    }
+  }
+  return STATUS_TEST_STOPPED;
+}
+
 sub group_cleaner {
-  return if osWindows();
+  return _group_cleaner_windows() if osWindows();
+
   my $group_id= `ps -ho pgrp -p $$`;
   chomp $group_id;
 #  system("ps -ho pgrp,pid,args | grep -v tee");
