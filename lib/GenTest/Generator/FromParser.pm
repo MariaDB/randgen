@@ -84,10 +84,11 @@ sub parseParser {
     }
   }
 
-  my $main_parser= `cat $parser/sql/sql_yacc.yy` || croak("FATAL ERROR: Could not read sql_yacc.yy\n");
-  my $gen_lex_token= `cat $parser/sql/gen_lex_token.cc` || croak("FATAL ERROR: Could not read gen_lex_token.cc\n");
-  my $lex_h= `cat $parser/sql/lex.h` || croak("FATAL ERROR: Could not read gen_lex.h\n");
-  my $sql_lex_cc= `cat $parser/sql/sql_lex.cc` || croak("FATAL ERROR: Could not read sql_lex.cc\n");
+  my $main_parser= read_file("$parser/sql/sql_yacc.yy") || croak("FATAL ERROR: Could not read sql_yacc.yy\n");
+  my $gen_lex_token= read_file("$parser/sql/gen_lex_token.cc") || croak("FATAL ERROR: Could not read gen_lex_token.cc\n");
+  my $lex_h= read_file("$parser/sql/lex.h") || croak("FATAL ERROR: Could not read gen_lex.h\n");
+  my $sql_lex_cc= read_file("$parser/sql/sql_lex.cc") || croak("FATAL ERROR: Could not read sql_lex.cc\n");
+
 
   if ($generator->parserMode() == PARSER_MODE_ORACLE) {
     ###########################

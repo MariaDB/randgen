@@ -113,14 +113,11 @@ sub dumpDiff {
     print FILE $data_sorted;
     close FILE;
   }
-  my $diff_cmd = "diff -a -u $files[0] $files[1]";
+  (undef, my $diff_text)= diff_files($files[0], $files[1], '-a -u');
+  # Skip the header (file names)
+  $diff_text =~ s/^(?:[^\n]*\n){0,2}//;
+  $diff= $diff_text if $diff_text ne '';
 
-  open (DIFF, "$diff_cmd|");
-  <DIFF>; <DIFF>; # Skip the header (file names)
-  while (<DIFF>) {
-    $diff .= $_;
-  }
-  close DIFF;
 
   foreach my $file (@files) {
     unlink($file);

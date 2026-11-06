@@ -92,7 +92,7 @@ sub run {
         $mysql_client_path = DBServer::MariaDB->_find(
             [$basedir,$basedir.'/..',$basedir.'/../debug/',$basedir.'/../relwithdebinfo/'],
            ['client','bin'],
-           'mysql.exe', 'mysql' );
+           'mysql' );
     } else {
         say("WARNING: basedir was not defined, relying on MySQL client being on the default path");
     }
@@ -115,7 +115,8 @@ sub run {
             $old_tables{$_->[0]} = $_->[1];
         }
 
-        system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $mysql_client_path --no-defaults --init-command='/*!100105 SET tx_read_only=OFF */' --port=$port --protocol=tcp -uroot --force ".$self->db." < $schema_file");
+        system(with_msan_libs("\"$mysql_client_path\" --no-defaults --init-command=".shell_quote('/*!100105 SET tx_read_only=OFF */')." --port=$port --protocol=tcp -uroot --force ".$self->db." < $schema_file"));
+
         if ($?) {
             sayError("Failed to load $schema_file through MySQL client");
             return STATUS_ENVIRONMENT_FAILURE;

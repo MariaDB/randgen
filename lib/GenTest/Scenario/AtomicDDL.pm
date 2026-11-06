@@ -283,7 +283,8 @@ sub run {
     $status= compare($server->vardir.'/server_schema_recovered.dump', $server->vardir.'/slave_schema.dump');
     if ($status != STATUS_OK) {
       sayError("Database structures differ");
-      system('diff -a -u '.$server->vardir.'/server_schema_recovered.dump'.' '.$server->vardir.'/slave_schema.dump');
+      print((diff_files($server->vardir.'/server_schema_recovered.dump', $server->vardir.'/slave_schema.dump', '-a -u'))[1]);
+
       $status= STATUS_RECOVERY_FAILURE if $status < STATUS_RECOVERY_FAILURE;
       goto FINALIZE;
     }

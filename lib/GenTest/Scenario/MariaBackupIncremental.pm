@@ -221,11 +221,7 @@ sub run {
   say("Storing the backup before prepare attempt...");
 
   foreach my $b (0..$backup_num-1) {
-      if (osWindows()) {
-        system('xcopy "'.$mbackup_target.'_'.${b}.' '.$mbackup_target.'_before_prepare_'.${b}.'" /E /I /Q');
-      } else {
-        system("cp -r ${mbackup_target}_${b} ${mbackup_target}_before_prepare_${b}");
-      }
+      copy_dir("${mbackup_target}_${b}", "${mbackup_target}_before_prepare_${b}");
   }
 
   #####
@@ -237,7 +233,7 @@ sub run {
   $cmd= ($server->under_rr() ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_0 $mbackup" : $mbackup)
     . " --prepare --skip-ssl --loose-disable-ssl-verify-server-cert --use-memory=$buffer_pool_size $apply_log_only_option --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --user=".$server->user." 2>$vardir/mbackup_prepare_0.log";
   say($cmd);
-  system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
+  system(with_msan_libs($cmd));
   $status= $? >> 8;
 
   if ($status != STATUS_OK) {
@@ -254,7 +250,7 @@ sub run {
       $cmd= ($server->under_rr() ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_$b $mbackup" : $mbackup)
         . " --prepare --skip-ssl --loose-disable-ssl-verify-server-cert --use-memory=$buffer_pool_size $apply_log_only_option --innodb-file-io-threads=1 --target-dir=${mbackup_target}_0 --incremental-dir=${mbackup_target}_${b} --user=".$server->user." 2>$vardir/mbackup_prepare_${b}.log";
       say($cmd);
-      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
+      system(with_msan_libs($cmd));
       $status= $? >> 8;
 
       if ($status != STATUS_OK) {
@@ -267,10 +263,11 @@ sub run {
 
   #####
   $self->printStep("Restoring backup");
-  system("rm -rf ".$server->datadir);
+  remove_path($server->datadir);
+
   $cmd= "$mbackup --copy-back --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_0 --datadir=".$server->datadir." --user=".$server->user." 2>$vardir/mbackup_restore_${b}.log";
   say($cmd);
-  system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
+  system(with_msan_libs($cmd));
   $status= $? >> 8;
 
   if ($status != STATUS_OK) {

@@ -1,0 +1,4 @@
+# Check out all files byte-for-byte as they are stored in the repository.
+# Without it, Git for Windows with core.autocrlf=true converts line endings
+# to CRLF, which breaks grammars, configuration templates and data files.
+* -text

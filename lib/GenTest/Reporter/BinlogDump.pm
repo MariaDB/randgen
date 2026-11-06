@@ -66,8 +66,8 @@ sub report {
 
   my $binlog_utility= DBServer::MariaDB::_find(undef,
                        [$reporter->server->serverVariable('basedir')],
-                       osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-                       osWindows()?("mariadb-binlog.exe","mysqlbinlog.exe"):("mariadb-binlog","mysqlbinlog")
+                       ["client","bin"],
+                       "mariadb-binlog","mysqlbinlog"
   );
 
   unless ($binlog_utility) {
@@ -77,8 +77,8 @@ sub report {
 
   my $client = DBServer::MariaDB::_find(undef,
     [$reporter->server->serverVariable('basedir')],
-    osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-    osWindows()?"mysql.exe":"mysql"
+    ["client","bin"],
+    "mysql"
   );
 
   unless ($client) {
@@ -103,7 +103,7 @@ sub report {
   my $cmd= "$binlog_utility --no-defaults --verbose --verbose @binlog_files > $vardir/binlog_events.txt";
   say("BinlogDump: Dumping events from $binlog_pattern binary logs into the file $vardir/binlog_events.txt");
   say($cmd);
-  $status = system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
+  $status = system(with_msan_libs($cmd));
   if ($status != STATUS_OK) {
     sayError("BinlogDump: Dumping binary logs finished with an error: ".($status >> 8));
     # Currently returns a rather bogus error ERROR: File is an empty pre-allocated binlog, contains no data yet
@@ -133,7 +133,7 @@ sub report {
     return $status;
   }
   # MDEV-31756 - NOWAIT in DDL makes binary logs difficult or impossible to replay
-  system("cat $vardir/vardir_orig/binlog_events.txt | sed -e 's/NOWAIT//g' > $vardir/binlog_events_adjusted");
+  _remove_nowait("$vardir/vardir_orig/binlog_events.txt", "$vardir/binlog_events_adjusted");
 
   # Cannot apply binlog events with transaction_read_only
   $reporter->connection->execute("SET GLOBAL tx_read_only= OFF");
@@ -148,7 +148,25 @@ sub report {
   }
 }
 
+sub _remove_nowait {
+  my ($in, $out)= @_;
+  my ($fin, $fout);
+  unless (open($fin, '<', $in) and open($fout, '>', $out)) {
+    sayError("BinlogDump: Could not open $in or $out: $!");
+    return;
+  }
+  binmode $fin;
+  binmode $fout;
+  while (<$fin>) {
+    s/NOWAIT//g;
+    print $fout $_;
+  }
+  close($fin);
+  close($fout);
+}
+
 sub type {
+
   return REPORTER_TYPE_SUCCESS;
 }
 

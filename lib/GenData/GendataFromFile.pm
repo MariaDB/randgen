@@ -84,7 +84,8 @@ sub run {
         if (-e $fname) {
             say("File $fname has already been generated, re-using it");
         } else {
-            system("perl $spec_file > $fname");
+            system(shell_quote($^X)." $spec_file > $fname");
+
             if ($? != 0) {
                 sayError("Failed to execute $spec_file: $?");
                 return STATUS_ENVIRONMENT_FAILURE;

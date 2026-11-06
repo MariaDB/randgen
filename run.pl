@@ -305,13 +305,16 @@ sub run {
   open (my $STDOUTOLD, '>&', STDOUT);
   open (my $STDERROLD, '>&', STDERR);
 
-  open (STDOUT, "| tee -ai ".$props->{vardir}."/trial.log");
-  open STDERR, ">&STDOUT";
+  tee_stdout($props->{vardir}."/trial.log", my $with_stderr=1);
 
   # Configure MinIO if it's installed and running
   # (it seems an overkill to start the server here, since it will be rarely needed)
   if ($minio) {
-    if (system("mc alias set local http://127.0.0.1:9000 minio minioadmin && ( mc rb --force local/rqg || true ) && mc mb local/rqg")) {
+    # "mc rb" is allowed to fail (the bucket may not exist)
+    if (system("mc alias set local http://127.0.0.1:9000 minio minioadmin")
+        or (system("mc rb --force local/rqg"), 0)
+        or system("mc mb local/rqg"))
+    {
       sayWarning("Could not configure S3 backend");
       $ENV{S3_DOABLE}= '';
     } else {
@@ -329,9 +332,10 @@ sub run {
       sayFile($props->{vardir}.'/vault.log');
       $ENV{HASHICORP_DOABLE}= '';
     } else {
-      $ENV{VAULT_TOKEN}= `cat $props->{vardir}/vault.token | head -n 1`;
+      my @vault_lines= read_file($props->{vardir}.'/vault.token');
+      $ENV{VAULT_TOKEN}= (defined $vault_lines[0] ? $vault_lines[0] : '');
       chomp $ENV{VAULT_TOKEN};
-      $ENV{VAULT_ADDR}= `cat $props->{vardir}/vault.token | tail -n 1`;
+      $ENV{VAULT_ADDR}= (defined $vault_lines[-1] ? $vault_lines[-1] : '');
       chomp $ENV{VAULT_ADDR};
       say("Hashicorp vault has been configured: $ENV{VAULT_ADDR} $ENV{VAULT_TOKEN}");
       push @{$server_options{mysqld}}, "--hashicorp-key-management-vault-url=$ENV{VAULT_ADDR}/v1/mariadbtest", "--hashicorp-key-management-token=$ENV{VAULT_TOKEN}";
@@ -407,11 +411,11 @@ sub run {
     $props->{generator}= 'FromParser';
   }
 
-  my $git_rev= `cd $ENV{RQG_HOME} && git log -1 --pretty=%h`;
+  my $git_rev= `git -C "$ENV{RQG_HOME}" log -1 --pretty=%h`;
   if ($git_rev) {
     # Apparently git command succeeded
     chomp $git_rev;
-    system("cd $ENV{RQG_HOME} && git diff > ".$props->{vardir}."/rqg.$git_rev.diff");
+    system("git -C \"$ENV{RQG_HOME}\" diff > \"".$props->{vardir}."/rqg.$git_rev.diff\"");
     say("RQG git revision $git_rev".((-s $props->{vardir}."/rqg.diff") ? ' with local changes' : ''));
     say("###############################################################");
   } else {
@@ -476,8 +480,8 @@ sub run {
       say("Running trial ".$trial_id."/".$trials);
       $props->{vardir}= $props_vardir_orig."/trial.${trial_id}";
       mkpath($props->{vardir});
-      open (STDOUT, "| tee -ai ".$props->{vardir}."/trial.log");
-      open STDERR, ">&STDOUT";
+      tee_stdout($props->{vardir}."/trial.log", my $with_stderr=1);
+
     }
 
     say("Final command line: \n$cmd");

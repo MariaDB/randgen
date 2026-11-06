@@ -22,6 +22,7 @@ use strict;
 use Carp;
 use Data::Dumper;
 use File::Basename;
+use File::Copy ();
 
 use GenData;
 use GenTest;
@@ -68,7 +69,9 @@ sub run {
       my ($name,undef,$ext) = fileparse("$f", qr/\.[^.]*/);
       if (-e "$spec_dir/$name.frm" && -e "$spec_dir/$name.MYI") {
         say("Found MyISAM table $name, copying...");
-        system("cp $spec_dir/$name.* $spec_dir/$name#* $datadir/$schema_name/");
+        foreach my $src (glob("$spec_dir/$name.*"), glob("$spec_dir/$name#*")) {
+          File::Copy::cp($src, "$datadir/$schema_name/") || sayError("Could not copy $src to $datadir/$schema_name/: $!");
+        }
       } else {
         sayWarning("Found $name.MYD file, but either $name.frm or $name.MAI does not exist, ignoring");
       }
@@ -95,7 +98,10 @@ sub run {
               next;
             }
             $executor->connection->query("ALTER TABLE $name DISCARD TABLESPACE");
-            system("cp $spec_dir/$name*.ibd $datadir/$schema_name/");
+            foreach my $src (glob("$spec_dir/$name*.ibd")) {
+              File::Copy::cp($src, "$datadir/$schema_name/") || sayError("Could not copy $src to $datadir/$schema_name/: $!");
+            }
+
             $executor->connection->query("ALTER TABLE $name IMPORT TABLESPACE");
         }
       } else {

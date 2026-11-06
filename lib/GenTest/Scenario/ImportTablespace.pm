@@ -244,7 +244,8 @@ sub run {
     $status= compare($server->vardir."/server_data_${db}.dump", $server->vardir."/server_data_${db}_import.dump");
     if ($status != STATUS_OK) {
       sayError("Data in ${db} and {$db}_import differs");
-      system('diff -a -u '.$server->vardir."/server_data_${db}.dump".' '.$server->vardir."/server_data_${db}_import.dump");
+      print((diff_files($server->vardir."/server_data_${db}.dump", $server->vardir."/server_data_${db}_import.dump", '-a -u'))[1]);
+
       $status= STATUS_DATABASE_CORRUPTION if $status < STATUS_DATABASE_CORRUPTION;
     }
     else {

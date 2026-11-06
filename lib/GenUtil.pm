@@ -27,7 +27,10 @@ use base 'Exporter';
            'isNewerVersion', 'isOlderVersion',
            'shorten_message', 'set_expectation', 'unset_expectation',
            'intersect_arrays', 'isFederatedEngine',
-           'isCompatible', 'shortClassName'
+           'isCompatible', 'shortClassName',
+           'with_msan_libs', 'shell_quote', 'exe_name',
+           'read_file', 'copy_dir', 'move_path', 'remove_path',
+           'sort_file', 'diff_files', 'tee_stdout', 'find_in_path'
            );
 
 use strict;
@@ -37,7 +40,12 @@ use POSIX;
 use Carp;
 use Fcntl qw(:flock SEEK_END);
 use File::Temp qw/ :POSIX /;
-use GDBM_File;
+use File::Basename qw(dirname);
+use File::Compare qw(compare);
+use File::Copy qw();
+use File::Find qw();
+use File::Path qw(mkpath remove_tree);
+use File::Spec;
 
 use Constants;
 
@@ -345,6 +353,201 @@ sub isFederatedEngine {
 
 sub shortClassName {
   return (split /::/, ref($_[0]))[-1];
+}
+
+########################################################################
+# Portability helpers
+#
+# These replace inline shell constructs (cp -r, rm -rf, mv, cat, sort,
+# diff, tee, LD_LIBRARY_PATH=... prefix, '...' quoting), so that the
+# same code can work on Linux and on Windows. On Linux they keep the
+# previous behavior.
+########################################################################
+
+# Prepends the LD_LIBRARY_PATH setting for MSAN-instrumented libraries
+# to a shell command line which runs a server or a client tool.
+# It is done per command (rather than once in %ENV), so that other tools
+# (gdb, diff, etc.) are not affected by instrumented libraries.
+# On Windows the prefix is not valid shell syntax and is not needed.
+sub with_msan_libs {
+  my $cmd= shift;
+  return $cmd if osWindows();
+  return "LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd";
+}
+
+# Quotes an argument for the platform shell (sh on Unix, cmd.exe on Windows)
+sub shell_quote {
+  my $arg= shift;
+  if (osWindows()) {
+    $arg =~ s/"/\\"/g;
+    return '"'.$arg.'"';
+  } else {
+    $arg =~ s/'/'\\''/g;
+    return "'".$arg."'";
+  }
+}
+
+# Appends .exe to a binary name on Windows, unless it already has an extension
+sub exe_name {
+  my $name= shift;
+  return $name unless osWindows();
+  return ($name =~ /\.(?:exe|bat|cmd|pl)$/i ? $name : $name.'.exe');
+}
+
+# Searches for an executable in PATH, returns its full path or undef
+sub find_in_path {
+  my $prog= shift;
+  foreach my $dir (File::Spec->path()) {
+    my $f= File::Spec->catfile($dir, exe_name($prog));
+    return $f if -f $f and (osWindows() or -x $f);
+  }
+  return undef;
+}
+
+# Returns the contents of a file (a list of lines in the list context),
+# or undef if the file cannot be read
+sub read_file {
+  my $file= shift;
+  my $fh;
+  unless (open($fh, '<', $file)) {
+    sayDebug("Could not open $file for reading: $!");
+    return undef;
+  }
+  binmode $fh;
+  if (wantarray) {
+    my @lines= <$fh>;
+    close($fh);
+    return @lines;
+  }
+  local $/= undef;
+  my $contents= <$fh>;
+  close($fh);
+  return $contents;
+}
+
+# Recursive copy, an equivalent of "cp -r src dst" when dst does not exist,
+# or "cp -r src/* dst/" when it does. Regular files are copied with
+# permission bits. Returns 0 on success, non-zero on failure (like system())
+sub copy_dir {
+  my ($src, $dst)= @_;
+  unless (-d $src) {
+    sayError("copy_dir: source $src is not a directory");
+    return 1;
+  }
+  my $errors= 0;
+  mkpath($dst) unless -d $dst;
+  $src= File::Spec->canonpath($src);
+  File::Find::find({
+    no_chdir => 1,
+    wanted => sub {
+      my $rel= File::Spec->abs2rel($File::Find::name, $src);
+      return if $rel eq '.';
+      my $target= File::Spec->catfile($dst, $rel);
+      if (-d $File::Find::name) {
+        mkpath($target) unless -d $target;
+      } elsif (! File::Copy::cp($File::Find::name, $target)) {
+        sayError("copy_dir: could not copy $File::Find::name to $target: $!");
+        $errors++;
+      }
+    }
+  }, $src);
+  return ($errors ? 1 : 0);
+}
+
+# Equivalent of "mv src dst". Returns 0 on success, non-zero on failure
+sub move_path {
+  my ($src, $dst)= @_;
+  if (File::Copy::move($src, $dst)) {
+    return 0;
+  }
+  sayError("Could not move $src to $dst: $!");
+  return 1;
+}
+
+# Equivalent of "rm -rf"
+sub remove_path {
+  foreach my $p (@_) {
+    if (-d $p) {
+      remove_tree($p);
+    } elsif (-e $p or -l $p) {
+      unlink($p);
+    }
+  }
+}
+
+# Sorts lines of a file (byte-wise, like LC_ALL=C sort).
+# If $out is not defined, the file is sorted in place.
+# Returns 0 on success, non-zero on failure
+sub sort_file {
+  my ($in, $out)= @_;
+  $out= $in unless defined $out;
+  my @lines= read_file($in);
+  unless (@lines and defined $lines[0]) {
+    return 1 unless -e $in;
+    @lines= ();
+  }
+  $lines[-1] .= "\n" if scalar(@lines) and $lines[-1] !~ /\n$/;
+  my $fh;
+  unless (open($fh, '>', $out)) {
+    sayError("Could not open $out for writing: $!");
+    return 1;
+  }
+  binmode $fh;
+  print $fh sort @lines;
+  close($fh);
+  return 0;
+}
+
+# Compares two files. Returns the status (0 if equal, 1 if different,
+# 2 on error, as diff does) and the diff text (empty if files are equal).
+# $opts are options for diff utility, e.g. '-a -u'.
+# The external diff utility is used if available (on Windows it is shipped
+# e.g. with Git for Windows); otherwise a primitive line-by-line comparison
+# is printed.
+sub diff_files {
+  my ($f1, $f2, $opts)= @_;
+  $opts= '-a -u' unless defined $opts;
+  unless (-e $f1 and -e $f2) {
+    my $msg= "diff: ".(-e $f1 ? $f2 : $f1).": No such file or directory\n";
+    return (2, $msg);
+  }
+  return (0, '') if compare($f1, $f2) == 0;
+  my $diff_bin= (osWindows() ? find_in_path('diff') : 'diff');
+  if ($diff_bin) {
+    my $cmd= join(' ', shell_quote($diff_bin), $opts, shell_quote($f1), shell_quote($f2));
+    my $text= `$cmd`;
+    return ($? >> 8, $text);
+  }
+  my @l1= read_file($f1);
+  my @l2= read_file($f2);
+  my $text= "--- $f1\n+++ $f2\n";
+  my $max= (scalar(@l1) > scalar(@l2) ? scalar(@l1) : scalar(@l2));
+  my $shown= 0;
+  for (my $i= 0; $i < $max and $shown < 100; $i++) {
+    my ($a, $b)= ($l1[$i], $l2[$i]);
+    next if defined $a and defined $b and $a eq $b;
+    $text.= "@@ line ".($i+1)." @@\n";
+    $text.= "-$a" if defined $a;
+    $text.= "+$b" if defined $b;
+    $shown++;
+  }
+  $text.= "(the output is truncated, install diff utility for a full diff)\n" if $shown >= 100;
+  return (1, $text);
+}
+
+# Redirects STDOUT (and STDERR, if $with_stderr is true) to the terminal
+# and appends it to the file, like "| tee -ai file" (tee ignores SIGINT,
+# so that the output of the cleanup is not lost upon Ctrl-C).
+# Implemented in Perl, as tee is not available on Windows
+sub tee_stdout {
+  my ($file, $with_stderr)= @_;
+  my $code= 'use strict; $SIG{INT}=q(IGNORE); my $f; open($f, q(>>), $ARGV[0]) or die qq(tee: cannot open $ARGV[0]: $!); binmode $f; binmode STDIN; binmode STDOUT; my $b; while (sysread(STDIN, $b, 65536)) { syswrite(STDOUT, $b); syswrite($f, $b) }';
+  my $cmd= '| '.shell_quote($^X).' -e '.shell_quote($code).' '.shell_quote($file);
+  open(STDOUT, $cmd) or croak("Could not redirect output to $file: $!");
+  STDOUT->autoflush(1);
+  if ($with_stderr) {
+    open(STDERR, ">&STDOUT") or croak("Could not redirect STDERR: $!");
+  }
 }
 
 1;

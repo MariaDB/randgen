@@ -33,8 +33,9 @@ sub report {
 
   my $aria_chk = DBServer::MariaDB::_find(undef,
     [$reporter->server->serverVariable('basedir')],
-    osWindows()?["storage/maria/Debug","storage/maria/RelWithDebInfo","storage/maria/Release","bin"]:["storage/maria","bin"],
-    osWindows()?"aria_chk.exe":"aria_chk");
+    ["storage/maria","bin"],
+    "aria_chk");
+
   unless (defined $aria_chk) {
     sayError("Could not find aria_chk");
     return STATUS_ENVIRONMENT_FAILURE;
@@ -52,10 +53,10 @@ sub report {
 
   my $vardir= $reporter->server->vardir;
 
-  my $aria_dump_log = $aria_tool_location.'/aria_dump_log'.(osWindows()?'.exe':'');
-  my $aria_ftdump = $aria_tool_location.'/aria_ftdump'.(osWindows()?'.exe':'');
-  my $aria_pack = $aria_tool_location.'/aria_pack'.(osWindows()?'.exe':'');
-  my $aria_read_log = $aria_tool_location.'/aria_read_log'.(osWindows()?'.exe':'');
+  my $aria_dump_log = $aria_tool_location.'/'.exe_name('aria_dump_log');
+  my $aria_ftdump = $aria_tool_location.'/'.exe_name('aria_ftdump');
+  my $aria_pack = $aria_tool_location.'/'.exe_name('aria_pack');
+  my $aria_read_log = $aria_tool_location.'/'.exe_name('aria_read_log');
   my @mai_files= glob("$tool_sandbox/*/*.MAI");
   my $mai_files= "$tool_sandbox/*/*.MAI";
   my @aria_logs= glob("$tool_sandbox/aria_log.*");
@@ -65,7 +66,8 @@ sub report {
   if ($reporter->server->serverVariable('aria_encrypt_tables') eq 'ON') {
     sayWarning("Cannot run aria_chk on encrypted tables due to MDEV-36950");
   } else {
-    $cmd= "$aria_chk --datadir=$tool_sandbox $mai_files > $vardir/aria_chk.out 2>&1";
+    # The pattern is expanded here rather than by the shell, for portability
+    $cmd= "$aria_chk --datadir=$tool_sandbox ".(scalar(@mai_files) ? "@mai_files" : $mai_files)." > $vardir/aria_chk.out 2>&1";
     say("Running aria_chk ($cmd)");
     system($cmd);
     if ($?) {
@@ -101,8 +103,11 @@ sub report {
         my $res= ($?>>8);
         # Ignore "is too small to compress" error, there is nothing wrong with being small
         if ($res == 2) {
-          system("tail -n 1 $vardir/aria_pack.out | grep 'too small to compress'");
-          if ($?) {
+          my @aria_pack_out= read_file("$vardir/aria_pack.out");
+          my $last_line= (scalar(@aria_pack_out) ? $aria_pack_out[-1] : '');
+          if ($last_line =~ /too small to compress/) {
+            print $last_line;
+          } else {
             sayError("aria_pack returned $res, see $vardir/aria_pack.out");
             return STATUS_CLIENT_FAILURE;
           }

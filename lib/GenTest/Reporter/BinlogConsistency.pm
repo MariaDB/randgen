@@ -60,8 +60,8 @@ sub report {
 
   my $client = DBServer::MariaDB::_find(undef,
     [$reporter->server->serverVariable('basedir')],
-    osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-    osWindows()?"mysql.exe":"mysql"
+    ["client","bin"],
+    "mysql"
   );
 
   unless ($client) {
@@ -74,8 +74,8 @@ sub report {
 
   my $binlog_utility= DBServer::MariaDB::_find(undef,
                        [$reporter->server->serverVariable('basedir')],
-                       osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-                       osWindows()?"mysqlbinlog.exe":"mysqlbinlog");
+                       ["client","bin"],
+                       "mysqlbinlog");
 
   unless ($binlog_utility) {
     sayError("BinlogConsistency: Could not find mysqlbinlog. Status will be set to ENVIRONMENT_FAILURE");
@@ -126,10 +126,18 @@ sub report {
   }
 
   # MDEV-31756 - NOWAIT in DDL makes binary logs difficult or impossible to replay
-  my $cmd= "$binlog_utility --no-defaults $vardir/vardir_orig/data/$binlog.[0-9][0-9][0-9][0-9][0-9][0-9] | sed -e 's/NOWAIT//g' > $vardir/vardir_orig/binlog_events";
+  # The file pattern is expanded and NOWAIT is removed in Perl (rather than
+  # by the shell and sed), for portability. As before, the status is
+  # of the adjustment, not of the binlog utility (it is only reported)
+  my @binlog_files= glob("$vardir/vardir_orig/data/$binlog.[0-9][0-9][0-9][0-9][0-9][0-9]");
+  my $cmd= "$binlog_utility --no-defaults @binlog_files > $vardir/vardir_orig/binlog_events.raw";
   say("Dumping binary log events (with adjustments) into a file...");
   sayDebug($cmd);
-  $status = system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
+  if (system(with_msan_libs($cmd))) {
+    sayWarning("BinlogConsistency: binlog utility returned ".($? >> 8));
+  }
+  $status = _remove_nowait("$vardir/vardir_orig/binlog_events.raw", "$vardir/vardir_orig/binlog_events");
+  unlink("$vardir/vardir_orig/binlog_events.raw");
   if ($status != STATUS_OK) {
     sayError("BinlogConsistency: Dumping binary logs finished with an error: ".($status >> 8));
     return STATUS_CRITICAL_FAILURE;
@@ -155,7 +163,8 @@ sub report {
   }
 
   say("Comparing SQL dumps between servers...");
-  $status = system("diff -a -u $vardir/vardir_orig/original.dump.sorted $vardir/restored.dump.sorted") >> 8;
+  ($status, my $diff)= diff_files("$vardir/vardir_orig/original.dump.sorted", "$vardir/restored.dump.sorted", '-a -u');
+  print $diff;
 
   unlink("$vardir/vardir_orig/original.dump.sorted");
   unlink("$vardir/restored.dump.sorted");
@@ -182,14 +191,35 @@ sub dump_all {
   # We don't check "real" mysqldump exit code, because it might be bad due to view problems etc.,
   # but we still want to continue. But if sort fails, that's really bad because it must mean the file doesn't exist,
   # or something equally fatal.
-  $dump_result = system("sort $dumpfile > $dumpfile.sorted");
+  $dump_result = sort_file($dumpfile, "$dumpfile.sorted");
   if ($dump_result > 0) {
     sayError("BinlogConsistency: dump returned error code $dump_result. Status will be set to ENVIRONMENT_FAILURE");
     return STATUS_ENVIRONMENT_FAILURE;
   }
 }
 
+# Copies the file removing NOWAIT (MDEV-31756).
+# Returns 0 on success, non-zero on failure
+sub _remove_nowait {
+  my ($in, $out)= @_;
+  my ($fin, $fout);
+  unless (open($fin, '<', $in) and open($fout, '>', $out)) {
+    sayError("BinlogConsistency: Could not open $in or $out: $!");
+    return 1;
+  }
+  binmode $fin;
+  binmode $fout;
+  while (<$fin>) {
+    s/NOWAIT//g;
+    print $fout $_;
+  }
+  close($fin);
+  close($fout);
+  return 0;
+}
+
 sub type {
+
   return REPORTER_TYPE_SUCCESS;
 }
 

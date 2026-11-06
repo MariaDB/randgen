@@ -148,8 +148,8 @@ sub new {
     $self->[MYSQLD_DATADIR] = $self->[MYSQLD_VARDIR]."/data";
 
     $self->[MYSQLD_MYSQLD] = $self->_find([$self->basedir],
-                                          osWindows()?["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"]:["sql","libexec","bin","sbin"],
-                                          osWindows()?("mysqld.exe","mariadbd.exe"):("mysqld","mariadbd"));
+                                          ["sql","libexec","bin","sbin"],
+                                          "mysqld","mariadbd");
     unless (defined $self->[MYSQLD_MYSQLD]) {
       croak("We could not find the server binary");
     }
@@ -161,28 +161,28 @@ sub new {
       $self->[MYSQLD_MYSQLD_GENDATA]= $self->[MYSQLD_MYSQLD];
     } else {
       $self->[MYSQLD_MYSQLD_GENDATA] = $self->_find([$self->[MYSQLD_BASEDIR_GENDATA]],
-                                          osWindows()?["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"]:["sql","libexec","bin","sbin"],
-                                          osWindows()?("mysqld.exe","mariadbd.exe"):("mysqld","mariadbd"));
+                                          ["sql","libexec","bin","sbin"],
+                                          "mysqld","mariadbd");
     }
 
     $self->[MYSQLD_BOOT_SQL] = [];
 
     $self->[MYSQLD_DUMPER] = $self->_find([$self->basedir],
-                                          osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-                                          osWindows()?("mysqldump.exe","mariadb-dump.exe"):("mysqldump","mariadb-dump"));
+                                          ["client","bin"],
+                                          "mysqldump","mariadb-dump");
 
     $self->[MYSQLD_CLIENT] = $self->_find([$self->basedir],
-                                          osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-                                          osWindows()?("mysql.exe","mariadb.exe"):("mysql","mariadb"));
+                                          ["client","bin"],
+                                          "mysql","mariadb");
 
     $self->[MARIABACKUP]= $self->_find([$self->basedir],
-                            osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin","extra"],
-                            osWindows()?"mariabackup.exe":"mariabackup"
+                            ["client","bin","extra"],
+                            "mariabackup"
                           );
 
     $self->[TZINFO_TO_SQL]= $self->_find([$self->basedir],
-                            osWindows()?["sql/Debug","sql/RelWithDebInfo","sql/Release","bin"]:["sql","bin"],
-                            osWindows()?("mariadb-tzinfo-to-sql","mysql_tzinfo_to_sql.exe"):("mariadb-tzinfo-to-sql","mysql_tzinfo_to_sql")
+                            ["sql","bin"],
+                            "mariadb-tzinfo-to-sql","mysql_tzinfo_to_sql"
                           );
 
     $self->[MYSQLD_CLIENT_BINDIR] = dirname($self->[MYSQLD_DUMPER]);
@@ -366,11 +366,11 @@ sub checkServerType {
     return if defined $self->[MYSQLD_SERVER_TYPE];
 
     my $command="$mysqld --version";
-    my $result=`LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command 2>&1`;
+    my $result=`${\ with_msan_libs("$command 2>&1")}`;
     $self->[MYSQLD_SERVER_TYPE] = ($result =~ /debug/i ? "Debug" : "Release");
 
     unless (osWindows()) {
-      $result=`LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ldd $mysqld 2>&1`;
+      $result=`${\ with_msan_libs("ldd $mysqld 2>&1")}`;
       if ($result =~ /libasan/i) {
         $self->[MYSQLD_SERVER_TYPE] .= '-ASAN';
       }
@@ -455,9 +455,8 @@ sub createDatadir  {
 
     if ($self->[MYSQLD_DATASET]) {
       say("Using an external directory ".$self->[MYSQLD_DATASET]." instead of bootstrap");
-      system("rm -rf ".$self->datadir);
-      system("cp -r ".$self->[MYSQLD_DATASET]." ".$self->datadir);
-      return $?;
+      remove_path($self->datadir);
+      return copy_dir($self->[MYSQLD_DATASET], $self->datadir);
     }
 
     # Otherwise do the bootstrap
@@ -542,7 +541,7 @@ sub createDatadir  {
 
         push(@$boot_options,"--bootstrap") ;
         $command = $self->generateCommand(my $for_gendata=0, $boot_options);
-        $command = "LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command < \"$boot\"";
+        $command = with_msan_libs("$command < \"$boot\"");
     } else {
         push @$boot_options, "--initialize-insecure", "--init-file=$boot";
         $command = $self->generateCommand(my $for_gendata=0, $boot_options);
@@ -550,7 +549,7 @@ sub createDatadir  {
     close BOOT;
 
     say("Bootstrap command: $command");
-    system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command > \"".$self->vardir."/boot.log\" 2>&1");
+    system(with_msan_libs("$command > \"".$self->vardir."/boot.log\" 2>&1"));
     return $?;
 }
 
@@ -678,9 +677,8 @@ sub startServer {
     my $errlog_last_update_time= (stat($errorlog))[9] || 0;
     my $number_of_previous_starts= 0;
     if (-f $errorlog) {
-      $number_of_previous_starts= `grep -Ec 'Starting MariaDB .* as process [0-9][0-9]*|starting as process [0-9][0-9]*' $errorlog`;
+      ($number_of_previous_starts)= _server_starts_in_errorlog($errorlog);
     }
-    chomp $number_of_previous_starts;
     say("Starting server ".$self->version.": $command");
 
     $self->[MYSQLD_AUXPID] = fork();
@@ -704,11 +702,9 @@ sub startServer {
           my $update_time= (stat($errorlog))[9] || 0;
           if ($update_time > $errlog_last_update_time) {
             $errlog_last_update_time= $update_time;
-            my $number_of_starts= `grep -Ec 'Starting MariaDB .* as process [0-9][0-9]*|starting as process [0-9][0-9]*' $errorlog`;
-            chomp $number_of_starts;
+            my ($number_of_starts, $last_pid)= _server_starts_in_errorlog($errorlog);
             if ($number_of_starts > $number_of_previous_starts) {
-              $pid= `grep -E 'Starting MariaDB .* as process [0-9][0-9]*|starting as process [0-9][0-9]*' $errorlog | tail -n 1 | sed -e 's/.*as process \\([0-9]*\\).*/\\1/'`;
-              chomp $pid;
+              $pid= $last_pid;
               if ($pid and $pid =~ /^\d+$/) {
                 say("Pid file " . $self->pidfile . " does not exist and timeout hasn't passed yet, but the error log has already been updated and contains pid $pid");
                 last;
@@ -769,7 +765,7 @@ sub startServer {
         $self->[MYSQLD_SERVERPID] = int($pid);
         say("Server started with PID ".$self->[MYSQLD_SERVERPID]);
     } else {
-        exec("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $command 2>&1") || croak("Could not start mysql server");
+        exec(with_msan_libs("$command 2>&1")) || croak("Could not start mysql server");
     }
 
     my $started= $self->waitForServerToStart();
@@ -853,13 +849,13 @@ sub upgradeDb {
   my $self= shift;
 
   my $mysql_upgrade= $self->_find([$self->basedir],
-                                        osWindows()?["client/Debug","client/RelWithDebInfo","client/Release","bin"]:["client","bin"],
-                                        osWindows()?"mysql_upgrade.exe":"mysql_upgrade");
+                                        ["client","bin"],
+                                        "mysql_upgrade");
   my $upgrade_command=
     '"'.$mysql_upgrade.'" --host='.$self->host.' --port='.$self->port.' -uroot';
   my $upgrade_log= $self->datadir.'/mysql_upgrade.log';
   say("Running mysql_upgrade:\n  $upgrade_command");
-  my $res= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $upgrade_command > $upgrade_log 2>&1");
+  my $res= system(with_msan_libs("$upgrade_command > $upgrade_log 2>&1"));
   if ($res == DBSTATUS_OK) {
     # mysql_upgrade can return exit code 0 even if user tables are corrupt,
     # so we don't trust the exit code, we should also check the actual output
@@ -1107,10 +1103,19 @@ sub dumpdb {
 
     say("Dumping server ".$self->version.($for_restoring ? " for restoring":" data for comparison")." on port ".$self->port);
     say($dump_command);
-    my $dump_result = ($for_restoring ?
-      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $dump_command 2>&1 1>$file") :
-      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $dump_command | sort 2>&1 1>$file")
-    );
+    my $dump_result;
+    if ($for_restoring) {
+      $dump_result= system(with_msan_libs("$dump_command 2>&1 1>$file"));
+    } else {
+      # Sorting is done in Perl rather than via "| sort", for portability.
+      # As before, the result is the status of sorting, not of the dump
+      # (with a pipe, the status of the dump was not visible)
+      if (system(with_msan_libs("$dump_command 1>$file.unsorted"))) {
+        sayWarning("Dump command returned non-zero exit code ".($? >> 8));
+      }
+      $dump_result= sort_file("$file.unsorted", $file);
+      unlink("$file.unsorted");
+    }
     unless ($self->unlock_instance() == STATUS_OK) {
       sayError("Failed to unlock instance after dumping");
       return STATUS_INTERNAL_ERROR;
@@ -1145,7 +1150,7 @@ sub dumpSchema {
                              " --port=".$self->port.
                              " $databases";
     say($dump_command);
-    my $dump_result = system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $dump_command 2>&1 1>$file");
+    my $dump_result = system(with_msan_libs("$dump_command 2>&1 1>$file"));
     if ($dump_result != 0) {
       # MDEV-28577: There can be Federated tables with virtual columns, they make mysqldump fail
 
@@ -1175,8 +1180,8 @@ sub dumpSchema {
       }
 
       sayError("Dump failed, trying to collect some information");
-      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ".$self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SHOW FULL PROCESSLIST'");
-      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ".$self->[MYSQLD_CLIENT_BINDIR]."/mysql -uroot --protocol=tcp --port=".$self->port." -e 'SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO'");
+      system(with_msan_libs('"'.$self->client.'" -uroot --protocol=tcp --port='.$self->port.' -e '.shell_quote('SHOW FULL PROCESSLIST')));
+      system(with_msan_libs('"'.$self->client.'" -uroot --protocol=tcp --port='.$self->port.' -e '.shell_quote('SELECT * FROM INFORMATION_SCHEMA.METADATA_LOCK_INFO')));
     }
     unless ($self->unlock_instance() == STATUS_OK) {
       sayError("Failed to unlock instance after dumping schema");
@@ -1490,7 +1495,7 @@ sub checkDatabaseIntegrity {
                   # Something is wrong, table's info was not retrieved from I_S
                   # Try to find out from the file system first (glob because the table can be partitioned)
                   say("Checking ".$self->datadir."/$database for the presence of $table data files");
-                  system("ls ".$self->datadir."/$database/$table.*");
+                  say(join(' ', glob($self->datadir."/$database/$table.*")));
                   if (glob $self->datadir."/$database/$table*.MAD") {
                       # Could happen as a part of
                       # MDEV-20313: Encrypted transactional Aria tables remain corrupt after crash recovery
@@ -1813,11 +1818,7 @@ sub backupDatadir {
   my $backup_name= shift;
 
   say("Copying datadir... (interrupting the copy operation may cause investigation problems later)");
-  if (osWindows()) {
-      system('xcopy "'.$self->datadir.'" "'.$backup_name.' /E /I /Q');
-  } else {
-      system('cp -r '.$self->datadir.' '.$backup_name);
-  }
+  copy_dir($self->datadir, $backup_name);
 }
 
 # Extract important messages from the error log.
@@ -2110,7 +2111,7 @@ sub running {
       } else {
         # It looks like in some cases the process may be not responding
         # to ping but is still not quite dead
-        return ! system("[ -e /proc/$pid ]")
+        return (-e "/proc/$pid")
       }
     } else {
       sayDebug("PID not found");
@@ -2118,9 +2119,17 @@ sub running {
     }
 }
 
+# Searches for a file (normally a binary) in subdirectories of base directories.
+# On Windows, .exe is appended to the names which don't have an extension,
+# and for each subdirectory, Visual Studio build configuration
+# subdirectories (Debug, RelWithDebInfo, Release) are also searched
 sub _find {
     my($self, $bases, $subdir, @names) = @_;
 
+    if (osWindows()) {
+      @names= map { /\.[^\/]+$/ ? $_ : exe_name($_) } @names;
+      $subdir= [ map { ("$_/Debug", "$_/RelWithDebInfo", "$_/Release", $_) } @$subdir ];
+    }
     foreach my $base (@$bases) {
         foreach my $s (@$subdir) {
           foreach my $n (@names) {
@@ -2324,7 +2333,25 @@ sub _notOlderThan {
     return not _olderThan(@_);
 }
 
+# Returns the number of server startups recorded in the error log,
+# and the pid of the last one
+sub _server_starts_in_errorlog {
+  my $errorlog= shift;
+  my ($count, $pid)= (0, undef);
+  if (open(my $fh, '<', $errorlog)) {
+    while (<$fh>) {
+      if (/Starting MariaDB .* as process [0-9][0-9]*|starting as process [0-9][0-9]*/) {
+        $count++;
+        ($pid)= /.*as process ([0-9]*)/;
+      }
+    }
+    close($fh);
+  }
+  return ($count, $pid);
+}
+
 sub get_pid_from_file {
+
   my $fname= shift;
   my $separ= $/;
   $/= undef;

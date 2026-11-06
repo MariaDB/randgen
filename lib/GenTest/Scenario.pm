@@ -351,7 +351,7 @@ sub compare_data {
       }
       sayError("Old and new $d differ after $type");
       if (-e $vardir.'/old_'.$d.'.dump' and -e $vardir.'/'.$type.'_'.$d.'.dump') {
-        system("diff -a -U20 ".$vardir.'/old_'.$d.'.dump'." ".$vardir.'/'.$type.'_'.$d.'.dump');
+        print((diff_files($vardir.'/old_'.$d.'.dump', $vardir.'/'.$type.'_'.$d.'.dump', '-a -U20'))[1]);
       }
     }
   }

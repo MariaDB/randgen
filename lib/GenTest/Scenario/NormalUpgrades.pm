@@ -177,7 +177,7 @@ sub run {
       sleep(5);
     }
     $mbackup_command= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_backup $mbackup" : $mbackup);
-    $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $mbackup_command --backup --skip-ssl --target-dir=$vardir/mbackup --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup.log 2>&1");
+    $status= system(with_msan_libs("$mbackup_command --backup --skip-ssl --target-dir=$vardir/mbackup --protocol=tcp --port=".$server->port." --user=".$server->user." >$vardir/mbackup_backup.log 2>&1"));
 
     if ($status == STATUS_OK) {
         say("MariaBackup ran finished successfully");
@@ -191,16 +191,12 @@ sub run {
     $self->printStep("Preparing backup");
 
     say("Storing the backup before prepare attempt...");
-    if (osWindows()) {
-      system("xcopy $vardir/mbackup $vardir/mbackup_before_prepare /E /I /Q");
-    } else {
-      system("cp -r $vardir/mbackup $vardir/mbackup_before_prepare");
-    }
+    copy_dir("$vardir/mbackup", "$vardir/mbackup_before_prepare");
 
     $cmd= ($self->getProperty('rr') ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare $mbackup" : $mbackup)
       . " --use-memory=".($buffer_pool_size * 2)." --prepare --target-dir=$vardir/mbackup --user=".$server->user." 2>$vardir/mbackup_prepare.log 2>&1";
     say($cmd);
-    system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
+    system(with_msan_libs($cmd));
     $status= $? >> 8;
 
     if ($status == STATUS_OK) {
@@ -247,8 +243,8 @@ sub run {
     goto UPGRADE_END;
   }
   # Back up data directory and error log from the old server
-  system ('cp -r '.$server->datadir.' '.$server->datadir.'_orig');
-  system ('mv '.$server->errorlog.' '.$server->errorlog.'_orig');
+  copy_dir($server->datadir, $server->datadir.'_orig');
+  move_path($server->errorlog, $server->errorlog.'_orig');
 
   ######################################################################
 
@@ -289,8 +285,8 @@ LIVE_UPGRADE_END:
   # In case it wasn't stopped before
   $server->stopServer;
   # Back up data directory from the live upgrade
-  system ('mv '.$server->datadir.' '.$server->datadir.'_live_upgrade');
-  system ('mv '.$server->errorlog.' '.$server->errorlog.'_live_upgrade');
+  move_path($server->datadir, $server->datadir.'_live_upgrade');
+  move_path($server->errorlog, $server->errorlog.'_live_upgrade');
   $self->setStatus($status);
 
   #######################
@@ -305,7 +301,7 @@ LIVE_UPGRADE_END:
   }
 
   # Restore clean datadir for mysqldump upgrade
-  system ('mv '.$old_server->datadir.'_clean '.$server->datadir);
+  move_path($old_server->datadir.'_clean', $server->datadir);
 
   # enforce-storage-engine needs to be unset, otherwise the dump won't load
   my $enforced_stored= $self->getServerStartupOption(1,'enforce-storage-engine');
@@ -322,7 +318,7 @@ LIVE_UPGRADE_END:
   $self->printStep("Restoring the dump of all databases");
   my $client_command= $server->client.' -uroot --host=127.0.0.1 --protocol=tcp --port='.$server->port;
 
-  $status= system("(echo 'SET max_statement_time=0;'; cat ${vardir}/all_db.dump) | LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $client_command");
+  $status= system(with_msan_libs($client_command.' --init-command='.shell_quote('SET max_statement_time=0').' < '.$vardir.'/all_db.dump'));
 #  $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH ".$client_command.' < '.$vardir.'/all_db.dump');
   if ($status != STATUS_OK) {
     sayError("All databases' schema dump failed to load");
@@ -345,8 +341,8 @@ DUMP_UPGRADE_END:
   # In case it wasn't stopped before
   $server->stopServer;
   # Back up data directory from the live upgrade
-  system ('mv '.$server->datadir.' '.$server->datadir.'_dump_upgrade');
-  system ('mv '.$server->errorlog.' '.$server->errorlog.'_dump_upgrade');
+  move_path($server->datadir, $server->datadir.'_dump_upgrade');
+  move_path($server->errorlog, $server->errorlog.'_dump_upgrade');
   $self->setStatus($status);
 
   $server->addServerOptions(['--enforce-storage-engine='.$enforced_stored]) if ($enforced_stored);
@@ -369,10 +365,10 @@ DUMP_UPGRADE_END:
   }
 
   $self->printStep("Restoring mariabackup");
-  system("rm -rf ".$server->datadir);
+  remove_path($server->datadir);
   $cmd= "$mbackup --copy-back --target-dir=$vardir/mbackup --datadir=".$server->datadir." --user=".$server->user." > $vardir/mbackup_restore.log 2>&1";
   say($cmd);
-  $status= system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
+  $status= system(with_msan_libs($cmd));
   if ($status != STATUS_OK) {
     $status= $self->upgrade_or_recovery_failure();
     sayFile("$vardir/mbackup_restore.log");
@@ -401,8 +397,9 @@ MBACKUP_UPGRADE_END:
   # In case it wasn't stopped before
   $server->stopServer;
   # Back up data directory from the mariabackup upgrade
-  system ('mv '.$server->datadir.' '.$server->datadir.'_mbackup_upgrade');
-  system ('mv '.$server->errorlog.' '.$server->errorlog.'_mbackup_upgrade');
+  move_path($server->datadir, $server->datadir.'_mbackup_upgrade');
+  move_path($server->errorlog, $server->errorlog.'_mbackup_upgrade');
+
 
 UPGRADE_END:
   $self->setStatus($status);

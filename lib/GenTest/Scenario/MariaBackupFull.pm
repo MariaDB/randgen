@@ -170,16 +170,12 @@ sub run {
       $self->printStep("Preparing backup #$backup_num");
 
       say("Storing the backup before prepare attempt...");
-      if (osWindows()) {
-        system("xcopy ${mbackup_target}_${backup_num} ${mbackup_target}_${backup_num}_before_prepare /E /I /Q");
-      } else {
-        system("cp -r ${mbackup_target}_${backup_num} ${mbackup_target}_${backup_num}_before_prepare");
-      }
+      copy_dir("${mbackup_target}_${backup_num}", "${mbackup_target}_${backup_num}_before_prepare");
 
       $cmd= ($server->under_rr() ? "rr record -h --output-trace-dir=$vardir/rr_profile_prepare_$backup_num $mbackup" : $mbackup)
         . " --use-memory=$buffer_pool_size --prepare --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${backup_num} --user=".$server->user." 2>$vardir/mbackup_prepare_${backup_num}.log";
       say($cmd);
-      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
+      system(with_msan_libs($cmd));
       $status= $? >> 8;
 
       if ($status == STATUS_OK) {
@@ -242,10 +238,11 @@ sub run {
 
       #####
       $self->printStep("Restoring backup #$b");
-      system("rm -rf ".$server->datadir);
+      remove_path($server->datadir);
       $cmd= "$mbackup --copy-back --skip-ssl --loose-disable-ssl-verify-server-cert --target-dir=${mbackup_target}_${b} --datadir=".$server->datadir." --user=".$server->user." 2>$vardir/mbackup_restore_${b}.log";
       say($cmd);
-      system("LD_LIBRARY_PATH=\$MSAN_LIBS:\$LD_LIBRARY_PATH $cmd");
+      system(with_msan_libs($cmd));
+
       $status= $? >> 8;
 
       if ($status != STATUS_OK) {
