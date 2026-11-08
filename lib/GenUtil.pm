@@ -50,6 +50,47 @@ use File::Spec;
 
 use Constants;
 
+# On Windows, fork is emulated with threads, and each thread has its own
+# C library locale. In a pseudo-process created by fork, the actual
+# numeric locale is the system one (e.g. with a decimal comma), even though
+# Perl reports it as "C". As a result, fractional numbers are stringified
+# with a comma (1794173708,08145 instead of 1794173708.08145), which breaks
+# generated SQL, file names, etc. To avoid it, fork is overridden so that
+# the numeric locale is reset in the child.
+# GenUtil is loaded before any module which forks, so the override
+# applies to all of them
+BEGIN {
+  if ($^O eq 'MSWin32') {
+    *CORE::GLOBAL::fork= sub {
+      my $pid= CORE::fork();
+      _reset_numeric_locale() if defined $pid and $pid == 0;
+      return $pid;
+    };
+  }
+}
+
+sub _numeric_locale_ok {
+  my $two= 2;
+  my $half= 1/$two;
+  return ("$half" eq '0.5');
+}
+
+# Since Perl may consider the locale already set to "C" and not call
+# the C library, several ways are tried, until numbers are formatted
+# correctly
+sub _reset_numeric_locale {
+  return if _numeric_locale_ok();
+  foreach my $reset (
+    sub { POSIX::setlocale(POSIX::LC_NUMERIC(), "C") },
+    sub { POSIX::setlocale(POSIX::LC_NUMERIC(), ""); POSIX::setlocale(POSIX::LC_NUMERIC(), "C") },
+    sub { POSIX::setlocale(POSIX::LC_ALL(), "C") },
+  ) {
+    $reset->();
+    return if _numeric_locale_ok();
+  }
+  print STDERR "WARNING: Could not reset the numeric locale in pseudo-process $$, fractional numbers will be formatted according to the system locale\n";
+}
+
 my $tmpdir;
 # The directory under which group_cleaner looks for leftover processes
 # on Windows (see group_cleaner)
