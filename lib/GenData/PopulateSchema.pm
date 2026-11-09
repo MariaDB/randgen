@@ -50,7 +50,7 @@ sub new {
 sub port {
   if (defined $_[1]) {
     $_[0]->[POPULATE_SCHEMA_PORT]= $_[1];
-    $_[0]->[POPULATE_SCHEMA_DSN]= "dbi:mysql:host=127.0.0.1:port=$_[1]:user=root";
+    $_[0]->[POPULATE_SCHEMA_DSN]= "dbi:MariaDB:host=127.0.0.1:port=$_[1]:user=root";
   } else {
     return $_[0]->[POPULATE_SCHEMA_PORT];
   }

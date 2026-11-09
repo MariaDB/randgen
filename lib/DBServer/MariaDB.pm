@@ -27,8 +27,7 @@ use if osWindows(), 'Win32::Process';
 use DBI;
 
 use Time::HiRes;
-use POSIX ":sys_wait_h";
-use POSIX;
+use POSIX qw(:DEFAULT !NULL);
 use Carp;
 use Data::Dumper;
 use File::Basename qw(dirname);
@@ -541,6 +540,10 @@ sub createDatadir  {
     push @$boot_options, "--loose-max_tmp_session_space_usage=0";
     push @$boot_options, "--loose-max_tmp_total_space_usage=0";
 
+	my $boot_log = $self->vardir."/boot.log";
+
+	push @$boot_options, "--log-error=$boot_log";
+
     my $command;
 
     if (not $self->_isMySQL or $self->_olderThan(5,7,5)) {
@@ -564,7 +567,7 @@ sub createDatadir  {
     close BOOT;
 
     say("Bootstrap command: $command");
-    system(with_msan_libs("$command > \"".$self->vardir."/boot.log\" 2>&1"));
+    system(with_msan_libs("$command > \"$boot_log\" 2>&1"));
     return $?;
 }
 
@@ -682,6 +685,7 @@ sub startServer {
             $val_opt = $self->[MYSQLD_VALGRIND];
         }
         $command = "valgrind --time-stamp=yes --leak-check=yes --suppressions=".$self->valgrind_suppressionfile." ".$val_opt." ".$command;
+
     }
     elsif ($ENV{MSAN_LIBS}) {
         $start_wait_timeout= 60;
@@ -2196,13 +2200,11 @@ sub host {
 sub dsn {
     my ($self,$user) = @_;
     $user= $self->[MYSQLD_USER] unless $user;
-    return "dbi:mysql".
+    return "dbi:MariaDB".
       ":host=".$self->[MYSQLD_HOST].
       ":port=".$self->[MYSQLD_PORT].
       ":user=".$user.
-      ":mysql_local_infile=1".
-      ":max_allowed_packet=1G".
-      ($self->[MYSQLD_PS_PROTOCOL] ? ":mysql_server_prepare=1" : "")
+      ($self->[MYSQLD_PS_PROTOCOL] ? ":mariadb_server_prepare=1" : "")
 ;
 }
 
@@ -2414,15 +2416,15 @@ sub _spawnWindowsProcess {
 # to disappear and escalates if it doesn't)
 sub _shutdownViaSQL {
   my $self= shift;
-  my $dbh= DBI->connect($self->dsn('root').":mysql_connect_timeout=10:mysql_read_timeout=30", undef, undef,
+  my $dbh= DBI->connect($self->dsn('root').":mariadb_connect_timeout=10:mariadb_read_timeout=30", undef, undef,
                         { PrintError => 0, RaiseError => 0, AutoCommit => 1 });
-  unless ($dbh) {
-    sayWarning("Could not connect to the server on port ".$self->port." to shut it down: ".($DBI::errstr || ''));
-    return;
+  my $conn = $self->connection() || $self->connect();
+  unless ($conn) {
+	sayWarning("Could not connect to the server to shut it down");
+	return;
   }
-  $dbh->do("SHUTDOWN");
+  $conn->execute("SHUTDOWN");
   # The connection is normally lost upon shutdown, errors are expected
-  $dbh->disconnect();
 }
 
 # Windows replacement for the gdb-based backtrace. Requires cdb.exe

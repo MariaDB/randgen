@@ -45,12 +45,10 @@ sub new {
     suppressions => CONNECTION_ERROR_SUPPRESSIONS,
   },@_ );
   $self->[CONNECTION_DSN]=
-    "dbi:mysql".
+    "dbi:MariaDB".
     ":host=".$self->[CONNECTION_HOST].
     ":port=".$self->[CONNECTION_PORT].
-    ":mysql_local_infile=1".
-    ":max_allowed_packet=1G".
-    ($self->[CONNECTION_PROTOCOL] eq 'ps' ? ":mysql_server_prepare=1" : "");
+    ($self->[CONNECTION_PROTOCOL] eq 'ps' ? ":mariadb_server_prepare=1" : "");
   ($self->[CONNECTION_DBH], my $err)= $self->connect();
   $self->[CONNECTION_OWNER_PID]= $$;
   if ($self->[CONNECTION_DBH]) {
@@ -73,8 +71,7 @@ sub connect {
   my $dbh= DBI->connect($self->[CONNECTION_DSN],
     $user,
     $pass,
-    # , mysql_server_prepare => 1
-    {PrintError => 0, RaiseError => 0, AutoCommit => 1, mysql_auto_reconnect => 1}
+    {PrintError => 0, RaiseError => 0, AutoCommit => 1, mariadb_auto_reconnect => 1}
   );
   ($self->[CONNECTION_ERROR], $self->[CONNECTION_ERROR_STRING])= ($DBI::err||0,$DBI::errstr||'');
   $self->[CONNECTION_ERROR_TYPE]= errorType($self->[CONNECTION_ERROR]);
@@ -206,7 +203,7 @@ sub query {
   if (index($query,";") == -1) {
     $sth= $self->dbh()->prepare($send_query);
   } else {
-    $sth= $self->dbh()->prepare($send_query, { mysql_server_prepare => 0 });
+    $sth= $self->dbh()->prepare($send_query, { mariadb_server_prepare => 0 });
   }
   sayDebug("Prepared query $send_query");
   if ($DBI::err) {

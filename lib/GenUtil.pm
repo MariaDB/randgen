@@ -31,7 +31,7 @@ use base 'Exporter';
            'with_msan_libs', 'shell_quote', 'exe_name',
            'read_file', 'copy_dir', 'move_path', 'remove_path',
            'sort_file', 'diff_files', 'tee_stdout', 'find_in_path',
-           'set_cleanup_root'
+           'set_cleanup_root', 'adjust_cmd_for_windows'
            );
 
 use strict;
@@ -650,6 +650,16 @@ sub tee_stdout {
   STDOUT->autoflush(1);
   if ($with_stderr) {
     open(STDERR, ">&STDOUT") or croak("Could not redirect STDERR: $!");
+  }
+}
+
+# Values with % on the Windows command line get expanded
+sub adjust_args_for_windows {
+  if (($^O eq 'MSWin32') || ($^O eq 'MSWin64')) {
+    my $argref = shift;
+    for my $i (0..$#$argref) {
+	  $argref->[$i] =~ s/\%/\%%/g;
+    }
   }
 }
 

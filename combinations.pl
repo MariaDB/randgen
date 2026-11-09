@@ -611,6 +611,7 @@ sub doCombination {
   workarounds(\@args);
 
   if (! checkForbidden("@args")) {
+    adjust_args_for_windows(\@args);
     say("Combinations [$thread_id]: arguments: @args");
     unless ($dry_run)
     {
