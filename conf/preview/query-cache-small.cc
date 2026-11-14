@@ -35,8 +35,13 @@ require "$ENV{RQG_HOME}/conf/cc/small.cc";
 
 @new_options = (
   ['
-    --grammar=conf/preview/query-cache.yy:2
+    --grammar=conf/preview/query-cache.yy
   '],
+  [
+    '--mysqld=--query-cache-use-rw-lock=OFF',
+    '--mysqld=--query-cache-use-rw-lock=ON',
+    '--mysqld=--query-cache-use-rw-lock=ON'
+  ],
   [
     '--mysqld=--query-cache-type=OFF',
     '--mysqld=--query-cache-type=ON',
